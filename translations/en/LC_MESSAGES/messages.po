@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-02-09 11:07+0100\n"
+"POT-Creation-Date: 2026-04-06 12:12+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -16,7 +16,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.17.0\n"
+"Generated-By: Babel 2.18.0\n"
 
 #: models/dashboard/dashboard_service.py:75
 #: templates/components/_unified_dashboard_header.html:7
@@ -106,59 +106,68 @@ msgstr "You completed the %(type)s quest '%(name)s'! +%(xp)d XP"
 msgid "Visualizza Quests"
 msgstr "View Quests"
 
-#: models/individual_match/match_lifecycle_service.py:206
+#: models/individual_match/match_lifecycle_service.py:177
 msgid "Match tra 2 ore"
 msgstr ""
 
-#: models/individual_match/match_lifecycle_service.py:208
+#: models/individual_match/match_lifecycle_service.py:179
 #, python-format
 msgid "Il tuo match è programmato per le %(time)s%(location)s"
 msgstr ""
 
-#: models/individual_match/match_lifecycle_service.py:214
-#: models/individual_match/proposal_service.py:195
-#: models/individual_match/proposal_service.py:487
-#: models/individual_match/proposal_service.py:526
+#: models/individual_match/match_lifecycle_service.py:185
+#: models/individual_match/proposal_service.py:207
+#: models/individual_match/proposal_service.py:524
+#: models/individual_match/proposal_service.py:565
 #, fuzzy
 msgid "Visualizza"
 msgstr "View Streak"
 
-#: models/individual_match/proposal_service.py:162
-#: models/individual_match/proposal_service.py:413
+#: models/individual_match/proposal_service.py:172
+#: models/individual_match/proposal_service.py:446
 #, fuzzy
 msgid "Un giocatore"
 msgstr "Player 2"
 
-#: models/individual_match/proposal_service.py:188
+#: models/individual_match/proposal_service.py:198
 msgid "Nuova proposta di match"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:189
+#: models/individual_match/proposal_service.py:200
 #, python-format
 msgid "%(username)s propone un match aperto%(location)s il %(date)s"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:419
+#: models/individual_match/proposal_service.py:281
+msgid "Giocatore già invitato a questa proposta"
+msgstr ""
+
+#: models/individual_match/proposal_service.py:441
+#, fuzzy
+msgid "Proposta già accettata"
+msgstr "Set Result"
+
+#: models/individual_match/proposal_service.py:452
 msgid "Proposta accettata!"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:420
+#: models/individual_match/proposal_service.py:454
 #, python-format
 msgid "%(player)s ha accettato la tua proposta di match%(location)s"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:425
+#: models/individual_match/proposal_service.py:460
 msgid "Vai al match"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:482
-#: models/individual_match/proposal_service.py:521
+#: models/individual_match/proposal_service.py:517
+#: models/individual_match/proposal_service.py:558
 #, fuzzy
 msgid "Proposta scaduta"
 msgstr "Set Result"
 
-#: models/individual_match/proposal_service.py:483
-#: models/individual_match/proposal_service.py:522
+#: models/individual_match/proposal_service.py:519
+#: models/individual_match/proposal_service.py:560
 #, python-format
 msgid "La tua proposta di match%(location)s è scaduta senza accettazioni."
 msgstr ""
@@ -293,7 +302,7 @@ msgstr "Competition Enrollment"
 msgid "Che piacere rivederti!"
 msgstr ""
 
-#: routes/auth.py:33 templates/base.html:510
+#: routes/auth.py:33 templates/base.html:512
 #, fuzzy
 msgid "Tutto pronto per giocare?"
 msgstr "Ready to Start"
@@ -365,6 +374,23 @@ msgstr "Create Championship"
 msgid "Non hai i permessi per creare un campionato."
 msgstr ""
 
+#: routes/admin/campionato.py:601
+#, python-format
+msgid "Campionato \"%(name)s\" terminato con successo."
+msgstr "Championship \"%(name)s\" terminated successfully."
+
+#: routes/admin/campionato.py:605
+msgid "Il campionato è già stato terminato."
+msgstr "The championship has already been terminated."
+
+#: routes/admin/campionato.py:623
+msgid "Parametri non validi."
+msgstr "Invalid parameters."
+
+#: routes/admin/campionato.py:630
+msgid "Requisito minimo gare aggiornato."
+msgstr "Minimum races requirement updated."
+
 #: routes/admin/kpi.py:189
 msgid "Nessun match giocato negli ultimi 3 giorni"
 msgstr ""
@@ -401,7 +427,11 @@ msgstr ""
 msgid "Password impostata con successo"
 msgstr "Registration completed successfully."
 
-#: routes/gamification/admin.py:74 templates/base.html:230
+#: routes/admin/competition/crud.py:175
+msgid "Non è possibile creare gare in un campionato terminato."
+msgstr "Cannot create races in a terminated championship."
+
+#: routes/gamification/admin.py:74 templates/base.html:232
 #: templates/base_navbar_section.html:39
 #: templates/gamification/admin/dashboard.html:5
 msgid "Admin Gamification"
@@ -519,30 +549,30 @@ msgstr ""
 msgid "Configurazione Streak"
 msgstr "Round Discipline Configuration"
 
-#: routes/gamification/dashboard.py:51 routes/gamification/dashboard.py:143
-#: routes/gamification/dashboard.py:253 routes/gamification/dashboard.py:293
+#: routes/gamification/dashboard.py:55 routes/gamification/dashboard.py:147
+#: routes/gamification/dashboard.py:257 routes/gamification/dashboard.py:297
 msgid "Gli amministratori non partecipano alla gamification."
 msgstr "Administrators do not participate in gamification."
 
-#: routes/gamification/dashboard.py:89
+#: routes/gamification/dashboard.py:93
 msgid "Dashboard Gamification"
 msgstr "Gamification Dashboard"
 
-#: routes/gamification/dashboard.py:171
+#: routes/gamification/dashboard.py:175
 msgid "I Tuoi Achievement"
 msgstr ""
 
-#: routes/gamification/dashboard.py:231
+#: routes/gamification/dashboard.py:235
 #: templates/components/_player_campionato_classifications.html:6
 #, fuzzy
 msgid "Classifiche"
 msgstr "Notifications"
 
-#: routes/gamification/dashboard.py:271
+#: routes/gamification/dashboard.py:275
 msgid "Quest Settimanali/Mensili"
 msgstr ""
 
-#: routes/gamification/dashboard.py:308
+#: routes/gamification/dashboard.py:312
 msgid "Le Tue Streak"
 msgstr ""
 
@@ -599,7 +629,7 @@ msgstr ""
 msgid "Drill completati in gara"
 msgstr "Completed"
 
-#: routes/gamification/features.py:55 templates/base.html:175
+#: routes/gamification/features.py:55 templates/base.html:177
 #: templates/gamification/admin/dashboard.html:112
 #: templates/gamification/admin/dashboard.html:155
 #: templates/gamification/admin/feature_create.html:63
@@ -662,7 +692,7 @@ msgstr ""
 msgid "Feature creata con successo"
 msgstr "Registration completed successfully."
 
-#: routes/individual_match/matches.py:404 templates/match_detail.html:411
+#: routes/individual_match/matches.py:404 templates/match_detail.html:433
 msgid "Forfait dichiarato"
 msgstr ""
 
@@ -758,83 +788,83 @@ msgstr "Championship visible"
 msgid "Campionato non era nascosto"
 msgstr "Championship was not hidden"
 
-#: templates/base.html:164
+#: templates/base.html:166
 msgid "Campionati Biliardo"
 msgstr "Billiard Championships"
 
-#: templates/base.html:187
+#: templates/base.html:189
 msgid "Apri menu"
 msgstr ""
 
-#: templates/admin/kpi.html:51 templates/base.html:197 templates/base.html:301
+#: templates/admin/kpi.html:51 templates/base.html:199 templates/base.html:303
 #: templates/base_navbar_section.html:6 templates/player/history.html:17
 msgid "Dashboard"
 msgstr "Dashboard"
 
-#: templates/base.html:204 templates/base.html:317
+#: templates/base.html:206 templates/base.html:319
 #: templates/base_navbar_section.html:13
 msgid "Sale Biliardo"
 msgstr "Billiard Halls"
 
-#: templates/base.html:221 templates/base_navbar_section.html:30
+#: templates/base.html:223 templates/base_navbar_section.html:30
 msgid "Match Individuali"
 msgstr "Individual Matches"
 
-#: templates/base.html:235 templates/base.html:314
+#: templates/base.html:237 templates/base.html:316
 #: templates/base_navbar_section.html:44
 #: templates/gamification/admin/dashboard.html:113
 msgid "Utenti"
 msgstr "Users"
 
-#: templates/base.html:248 templates/base_navbar_section.html:57
+#: templates/base.html:250 templates/base_navbar_section.html:57
 msgid "Reset DB"
 msgstr ""
 
-#: templates/base.html:289
+#: templates/base.html:291
 msgid "Notifiche"
 msgstr "Notifications"
 
-#: templates/base.html:294
+#: templates/base.html:296
 msgid "Le mie Richieste Gestore"
 msgstr ""
 
-#: templates/base.html:305 templates/player/profile.html:6
+#: templates/base.html:307 templates/player/profile.html:6
 #: templates/player/profile.html:19
 msgid "Il mio Profilo"
 msgstr "My Profile"
 
-#: templates/base.html:323
+#: templates/base.html:325
 msgid "Richieste Gestore Sala"
 msgstr ""
 
-#: templates/base.html:326
+#: templates/base.html:328
 msgid "Richieste Director"
 msgstr ""
 
-#: templates/base.html:334 templates/player/profile.html:131
+#: templates/base.html:336 templates/player/profile.html:131
 msgid "Elimina Account"
 msgstr ""
 
-#: templates/base.html:342
+#: templates/base.html:344
 msgid "Logout"
 msgstr "Logout"
 
-#: templates/base.html:348
+#: templates/base.html:350
 msgid "Login"
 msgstr "Login"
 
-#: templates/base.html:351
+#: templates/base.html:353
 msgid "Registrati"
 msgstr "Register"
 
-#: templates/base.html:479 templates/base.html:485
+#: templates/base.html:481 templates/base.html:487
 #, fuzzy
 msgid "Conferma"
 msgstr "Confirm result"
 
 #: templates/admin/campionato_wizard_step1.html:14
 #: templates/admin/campionato_wizard_step1.html:184
-#: templates/admin/campionato_wizard_step2.html:14 templates/base.html:484
+#: templates/admin/campionato_wizard_step2.html:14 templates/base.html:486
 #: templates/components/_admin_new_campionato_modal.html:28
 #: templates/components/_campionato_create_modal.html:27
 #: templates/components/_campionato_edit_form.html:192
@@ -851,53 +881,53 @@ msgstr "Confirm result"
 msgid "Annulla"
 msgstr "Cancel"
 
-#: templates/base.html:500
+#: templates/base.html:502
 msgid "XP OTTENUTI"
 msgstr "XP EARNED"
 
-#: templates/base.html:501
+#: templates/base.html:503
 msgid "LEVEL UP!"
 msgstr "LEVEL UP!"
 
-#: templates/base.html:502
+#: templates/base.html:504
 msgid "Nuovo livello raggiunto!"
 msgstr "New level reached!"
 
-#: templates/base.html:503
+#: templates/base.html:505
 msgid "NUOVO TRAGUARDO!"
 msgstr "NEW MILESTONE!"
 
-#: templates/base.html:504
+#: templates/base.html:506
 #, fuzzy
 msgid "STREAK!"
 msgstr "Tournament Type:"
 
-#: templates/base.html:505
+#: templates/base.html:507
 msgid "Freeze attivo"
 msgstr "Freeze active"
 
-#: templates/base.html:506
+#: templates/base.html:508
 msgid "STREAK PERSA"
 msgstr "STREAK LOST"
 
-#: templates/base.html:507
+#: templates/base.html:509
 msgid "Non mollare, riprovare!"
 msgstr "Don't give up, try again!"
 
-#: templates/base.html:508
+#: templates/base.html:510
 #, fuzzy
 msgid "QUEST COMPLETATA!"
 msgstr "Quest Completed!"
 
-#: templates/base.html:509
+#: templates/base.html:511
 msgid "TI DIAMO IL BENTORNATO!"
 msgstr "WELCOME BACK!"
 
-#: templates/base.html:511
+#: templates/base.html:513
 msgid "Ciao!"
 msgstr ""
 
-#: templates/base.html:512
+#: templates/base.html:514
 #, fuzzy, python-format
 msgid "Ciao %(username)s!"
 msgstr "Hello %(username)s!"
@@ -971,7 +1001,7 @@ msgstr "Awaiting validation"
 
 #: templates/components/_ssr_section.html:14 templates/gara_detail.html:231
 #: templates/individual_match/match_detail.html:133 utils/status_ui.py:120
-#: utils/status_ui.py:137
+#: utils/status_ui.py:138
 msgid "Completato"
 msgstr "Completed"
 
@@ -1335,17 +1365,17 @@ msgstr ""
 "All registered players will receive a cancellation notification.\n"
 "This action is IRREVERSIBLE!"
 
-#: templates/gara_detail.html:747 templates/gara_detail.html:1544
+#: templates/gara_detail.html:747 templates/gara_detail.html:1584
 msgid "Sei sicuro di voler resettare questa partita?"
 msgstr "Are you sure you want to reset this match?"
 
-#: templates/gara_detail.html:748 templates/gara_detail.html:1562
+#: templates/gara_detail.html:748 templates/gara_detail.html:1608
 #, fuzzy
 msgid "Sei sicuro di voler resettare questo trio?"
 msgstr "Are you sure you want to reset this match?"
 
-#: templates/gara_detail.html:749 templates/gara_detail.html:1584
-#: templates/match_detail.html:592
+#: templates/gara_detail.html:749 templates/gara_detail.html:1636
+#: templates/match_detail.html:625
 msgid ""
 "Confermi di voler validare questo risultato? Il tavolo verrà liberato e "
 "assegnato alla prossima partita in attesa."
@@ -1354,20 +1384,20 @@ msgstr ""
 #: templates/components/_match_admin_controls.html:223
 #: templates/components/_match_admin_controls.html:265
 #: templates/gara_detail.html:750 templates/gara_detail.html:765
-#: templates/individual_match/match_detail.html:254
-#: templates/individual_match/match_detail.html:277
-#: templates/individual_match/match_detail.html:305
-#: templates/individual_match/match_detail.html:329
-#: templates/individual_match/match_detail.html:353
-#: templates/individual_match/match_detail.html:392
-#: templates/match_detail.html:211 templates/match_detail.html:240
-#: templates/match_detail.html:269 templates/match_detail.html:299
-#: templates/match_detail.html:324 templates/match_detail.html:346
-#: templates/match_detail.html:368 templates/match_detail.html:390
-#: templates/match_detail.html:414 templates/match_detail.html:439
-#: templates/match_detail.html:462 templates/match_detail.html:484
-#: templates/match_detail.html:532 templates/match_detail.html:581
-#: templates/match_detail.html:604
+#: templates/individual_match/match_detail.html:255
+#: templates/individual_match/match_detail.html:281
+#: templates/individual_match/match_detail.html:312
+#: templates/individual_match/match_detail.html:339
+#: templates/individual_match/match_detail.html:365
+#: templates/individual_match/match_detail.html:404
+#: templates/match_detail.html:212 templates/match_detail.html:244
+#: templates/match_detail.html:276 templates/match_detail.html:308
+#: templates/match_detail.html:334 templates/match_detail.html:359
+#: templates/match_detail.html:384 templates/match_detail.html:409
+#: templates/match_detail.html:436 templates/match_detail.html:464
+#: templates/match_detail.html:490 templates/match_detail.html:515
+#: templates/match_detail.html:565 templates/match_detail.html:614
+#: templates/match_detail.html:637
 msgid "Errore:"
 msgstr "Error:"
 
@@ -1427,9 +1457,9 @@ msgstr ""
 msgid "Errore durante l'impostazione del risultato"
 msgstr ""
 
-#: templates/gara_detail.html:763 templates/match_detail.html:558
-#: templates/match_detail.html:563 templates/match_detail.html:581
-#: templates/match_detail.html:586
+#: templates/gara_detail.html:763 templates/match_detail.html:591
+#: templates/match_detail.html:596 templates/match_detail.html:614
+#: templates/match_detail.html:619
 msgid "Errore durante il reset"
 msgstr ""
 
@@ -1438,7 +1468,7 @@ msgstr ""
 msgid "Errore durante il reset del trio"
 msgstr "Error during cancellation:"
 
-#: templates/gara_detail.html:766 templates/match_detail.html:609
+#: templates/gara_detail.html:766 templates/match_detail.html:642
 #, fuzzy
 msgid "Errore durante la validazione"
 msgstr "Error during cancellation:"
@@ -1471,15 +1501,15 @@ msgstr ""
 #: templates/components/_match_admin_controls.html:223
 #: templates/components/_match_admin_controls.html:265
 #: templates/gara_detail.html:773
-#: templates/individual_match/match_detail.html:392
-#: templates/match_detail.html:211 templates/match_detail.html:240
-#: templates/match_detail.html:269 templates/match_detail.html:299
-#: templates/match_detail.html:324 templates/match_detail.html:439
-#: templates/match_detail.html:532
+#: templates/individual_match/match_detail.html:404
+#: templates/match_detail.html:212 templates/match_detail.html:244
+#: templates/match_detail.html:276 templates/match_detail.html:308
+#: templates/match_detail.html:334 templates/match_detail.html:464
+#: templates/match_detail.html:565
 msgid "Errore sconosciuto"
 msgstr "Unknown error"
 
-#: templates/gara_detail.html:774 templates/match_detail.html:604
+#: templates/gara_detail.html:774 templates/match_detail.html:637
 #, fuzzy
 msgid "Impossibile validare il risultato"
 msgstr "Unable to remove rack"
@@ -1498,7 +1528,13 @@ msgstr "Unknown"
 msgid "Click per scambiare con match occupante"
 msgstr ""
 
-#: templates/gara_detail.html:1363
+#: templates/components/_gara_matches.html:43
+#: templates/components/_gara_matches.html:67
+#: templates/components/_match_header.html:13 templates/gara_detail.html:779
+msgid "Tavolo"
+msgstr "Table"
+
+#: templates/gara_detail.html:1400
 msgid ""
 "Sei sicuro di voler chiudere le iscrizioni? La gara tornerà allo stato di"
 " setup."
@@ -1559,110 +1595,151 @@ msgid ""
 "                        match."
 msgstr ""
 
-#: templates/match_detail.html:216
+#: templates/match_detail.html:218
 #, fuzzy
 msgid "Errore durante l'aggiunta del rack al trio"
 msgstr "Error while adding rack"
 
-#: templates/individual_match/match_detail.html:282
-#: templates/match_detail.html:245 templates/match_detail.html:351
-#: templates/match_detail.html:467
+#: templates/individual_match/match_detail.html:287
+#: templates/match_detail.html:250 templates/match_detail.html:365
+#: templates/match_detail.html:496
 msgid "Errore durante la rimozione del rack"
 msgstr ""
 
-#: templates/match_detail.html:274
+#: templates/match_detail.html:282
 msgid "Errore durante la conferma del risultato"
 msgstr "Error confirming result"
 
-#: templates/match_detail.html:279
+#: templates/match_detail.html:288
 msgid "Sei sicuro di voler dichiarare forfait per questo giocatore?"
 msgstr "Are you sure you want to declare forfeit for this player?"
 
-#: templates/match_detail.html:304
+#: templates/match_detail.html:313
 msgid "Errore durante la registrazione del forfait"
 msgstr "Error registering forfeit"
 
-#: templates/individual_match/match_detail.html:259
-#: templates/match_detail.html:329
+#: templates/individual_match/match_detail.html:261
+#: templates/match_detail.html:340
 msgid "Errore durante l'aggiunta del rack"
 msgstr "Error while adding rack"
 
-#: templates/match_detail.html:346 templates/match_detail.html:462
+#: templates/match_detail.html:359 templates/match_detail.html:490
 msgid "Impossibile rimuovere il rack"
 msgstr "Unable to remove rack"
 
-#: templates/match_detail.html:368
+#: templates/match_detail.html:384
 msgid "Impossibile confermare il risultato"
 msgstr "Unable to confirm result"
 
-#: templates/individual_match/match_detail.html:310
-#: templates/match_detail.html:373
+#: templates/individual_match/match_detail.html:318
+#: templates/match_detail.html:390
 msgid "Errore durante la conferma"
 msgstr "Error during confirmation"
 
-#: templates/match_detail.html:378
+#: templates/match_detail.html:396
 msgid "Sei sicuro di voler rifiutare il risultato? L'ultimo rack verrà rimosso."
 msgstr ""
 
-#: templates/match_detail.html:390
+#: templates/match_detail.html:409
 msgid "Impossibile rifiutare il risultato"
 msgstr ""
 
-#: templates/individual_match/match_detail.html:334
-#: templates/match_detail.html:395
+#: templates/individual_match/match_detail.html:345
+#: templates/match_detail.html:415
 msgid "Errore durante il rifiuto"
 msgstr ""
 
-#: templates/match_detail.html:401
+#: templates/match_detail.html:422
 msgid ""
 "Sei sicuro di voler dichiarare forfait? Questo comporterà la tua uscita "
 "dalla gara secondo la policy impostata."
 msgstr ""
 
-#: templates/match_detail.html:414
+#: templates/match_detail.html:436
 msgid "Impossibile dichiarare forfait"
 msgstr ""
 
-#: templates/individual_match/match_detail.html:358
-#: templates/match_detail.html:419
+#: templates/individual_match/match_detail.html:370
+#: templates/match_detail.html:442
 msgid "Errore durante la dichiarazione di forfait"
 msgstr ""
 
-#: templates/match_detail.html:444
+#: templates/match_detail.html:470
 #, fuzzy
 msgid "Errore durante l'aggiunta del rack al set"
 msgstr "Error while adding rack"
 
-#: templates/match_detail.html:449
+#: templates/match_detail.html:476
 msgid "Rimuovere l'ultimo rack dal set?"
 msgstr ""
 
-#: templates/match_detail.html:484
+#: templates/match_detail.html:515
 #, fuzzy
 msgid "Impossibile iniziare il nuovo set"
 msgstr "Unable to remove rack"
 
-#: templates/match_detail.html:489
+#: templates/match_detail.html:521
 #, fuzzy
 msgid "Errore durante l'avvio del nuovo set"
 msgstr "Error during cancellation:"
 
-#: templates/match_detail.html:539
+#: templates/match_detail.html:572
 msgid "Errore durante l'aggiornamento"
 msgstr ""
 
-#: templates/match_detail.html:547
+#: templates/match_detail.html:580
 msgid ""
 "Sei sicuro di voler resettare completamente questa partita? Tutti i "
 "risultati verranno cancellati."
 msgstr ""
 
-#: templates/match_detail.html:569
+#: templates/match_detail.html:602
 #, fuzzy
 msgid ""
 "Sei sicuro di voler resettare completamente questa partita trio? Tutti i "
 "risultati verranno cancellati."
 msgstr "Are you sure you want to reset this match?"
+
+#: templates/admin/campionato_detail.html:26
+msgid "Termina Campionato"
+msgstr "Terminate Championship"
+
+#: templates/admin/campionato_detail.html:50
+msgid "Campionato terminato"
+msgstr "Championship terminated"
+
+#: templates/admin/campionato_detail.html:52
+msgid "Playoff in attesa di avvio"
+msgstr "Playoffs awaiting start"
+
+#: templates/admin/campionato_detail.html:61
+#: templates/components/_history_campionati_tab.html:89
+msgid "Playoff"
+msgstr "Playoffs"
+
+#: templates/admin/campionato_detail.html:65
+msgid "Funzionalità in arrivo"
+msgstr "Coming soon"
+
+#: templates/admin/campionato_detail.html:66
+msgid "Avvia Playoff"
+msgstr "Start Playoffs"
+
+#: templates/admin/campionato_detail.html:115
+msgid ""
+"Sei sicuro di voler terminare il campionato? Le gare non completate "
+"verranno eliminate."
+msgstr ""
+"Are you sure you want to terminate the championship? Non-completed races "
+"will be removed."
+
+#: templates/admin/campionato_detail.html:117
+msgid ""
+"Attenzione: alcuni playoff hanno un requisito minimo gare non "
+"raggiungibile. Vuoi terminare comunque?"
+msgstr ""
+"Warning: some playoffs have a minimum races requirement that cannot be met. "
+"Terminate anyway?"
 
 #: templates/admin/campionato_wizard_step1.html:3
 msgid "Nuovo Campionato - Step 1"
@@ -1956,7 +2033,7 @@ msgid "Indietro"
 msgstr ""
 
 #: templates/admin/campionato_wizard_step2.html:170
-#: templates/components/_unified_cards.html:282
+#: templates/components/_unified_cards.html:285
 msgid "Crea Campionato"
 msgstr "Create Championship"
 
@@ -2751,8 +2828,8 @@ msgstr ""
 
 #: templates/components/_gara_management.html:284
 #: templates/components/_soft_delete_modal.html:102
-#: templates/components/_unified_cards.html:255
-#: templates/components/_unified_cards.html:262
+#: templates/components/_unified_cards.html:258
+#: templates/components/_unified_cards.html:265
 msgid "Elimina Gara"
 msgstr "Delete Race"
 
@@ -2798,12 +2875,6 @@ msgstr "Result"
 #: templates/public/campionatos_list.html:27
 msgid "Stato"
 msgstr "Status"
-
-#: templates/components/_gara_matches.html:43
-#: templates/components/_gara_matches.html:67
-#: templates/components/_match_header.html:13
-msgid "Tavolo"
-msgstr "Table"
 
 #: templates/components/_gara_matches.html:44
 #: templates/components/_gara_matches.html:68
@@ -2863,10 +2934,6 @@ msgstr "Participants:"
 #: templates/components/_history_campionati_tab.html:84
 #: templates/components/_unified_cards.html:76
 msgid "Senza X"
-msgstr ""
-
-#: templates/components/_history_campionati_tab.html:89
-msgid "Playoff"
 msgstr ""
 
 #: templates/components/_history_campionati_tab.html:94
@@ -3136,33 +3203,33 @@ msgid "hai inserito"
 msgstr ""
 
 #: templates/components/_match_admin_controls.html:244
-#: templates/individual_match/match_detail.html:371
+#: templates/individual_match/match_detail.html:383
 msgid "Inserisci almeno un orario"
 msgstr ""
 
 #: templates/components/_match_admin_controls.html:262
-#: templates/individual_match/match_detail.html:389
+#: templates/individual_match/match_detail.html:401
 #, fuzzy
 msgid "Tempi aggiornati con successo"
 msgstr "Privacy settings updated successfully."
 
 #: templates/components/_match_admin_controls.html:270
-#: templates/individual_match/match_detail.html:397
+#: templates/individual_match/match_detail.html:409
 #, fuzzy
 msgid "Errore durante l'aggiornamento dei tempi"
 msgstr "Error while adding rack"
 
 #: templates/components/_match_card.html:24
 #: templates/components/_match_result_row.html:100
-#: templates/components/_match_result_row.html:103 utils/status_ui.py:135
-#: utils/status_ui.py:170
+#: templates/components/_match_result_row.html:103 utils/status_ui.py:136
+#: utils/status_ui.py:171
 msgid "In Attesa"
 msgstr "Pending"
 
 #: templates/components/_match_card.html:26
 #: templates/components/_match_result_row.html:108
 #: templates/components/_match_result_row.html:111 utils/status_ui.py:89
-#: utils/status_ui.py:119 utils/status_ui.py:136
+#: utils/status_ui.py:119 utils/status_ui.py:137
 msgid "In Corso"
 msgstr "In Progress"
 
@@ -3292,7 +3359,7 @@ msgid "iscritti"
 msgstr "Registered"
 
 #: templates/components/_nearby_gare.html:43
-#: templates/components/_unified_cards.html:224
+#: templates/components/_unified_cards.html:226
 msgid "Iscriviti"
 msgstr "Register"
 
@@ -3327,7 +3394,7 @@ msgid "Sei iscritto a questa gara"
 msgstr "You are registered for this race"
 
 #: templates/components/_player_inscription_info.html:13
-#: templates/components/_unified_cards.html:229
+#: templates/components/_unified_cards.html:232
 msgid "In lista d'attesa"
 msgstr "In waitlist"
 
@@ -3562,8 +3629,8 @@ msgid "Questa azione non elimina permanentemente i dati."
 msgstr ""
 
 #: templates/components/_soft_delete_modal.html:97
-#: templates/components/_unified_cards.html:243
-#: templates/components/_unified_cards.html:247
+#: templates/components/_unified_cards.html:246
+#: templates/components/_unified_cards.html:250
 msgid "Elimina Campionato"
 msgstr ""
 
@@ -3730,23 +3797,23 @@ msgstr ""
 msgid "Massimo raggiunto"
 msgstr ""
 
-#: templates/components/_unified_cards.html:220
+#: templates/components/_unified_cards.html:222
 msgid "Lista d'attesa"
 msgstr "Waitlist"
 
-#: templates/components/_unified_cards.html:259
+#: templates/components/_unified_cards.html:262
 msgid "Sei SICURO di voler eliminare definitivamente questa gara?"
 msgstr ""
 
-#: templates/components/_unified_cards.html:276
+#: templates/components/_unified_cards.html:279
 msgid "Nessuna Competizione"
 msgstr "No Competitions"
 
-#: templates/components/_unified_cards.html:277
+#: templates/components/_unified_cards.html:280
 msgid "Non ci sono ancora campionati o gare da mostrare."
 msgstr "No championships or races to show yet."
 
-#: templates/components/_unified_cards.html:287
+#: templates/components/_unified_cards.html:290
 msgid "Crea Gara"
 msgstr "Create Race"
 
@@ -3766,7 +3833,7 @@ msgid "set"
 msgstr "Setup"
 
 #: templates/components/_unified_match_score.html:83
-#: templates/components/_unified_match_score.html:105 utils/status_ui.py:171
+#: templates/components/_unified_match_score.html:105 utils/status_ui.py:172
 msgid "Confermato"
 msgstr ""
 
@@ -4041,7 +4108,7 @@ msgid "Esplorazione"
 msgstr "Description:"
 
 #: templates/gamification/achievements.html:75
-#: templates/gamification/streaks.html:88
+#: templates/gamification/streaks.html:87
 msgid "Traguardi"
 msgstr ""
 
@@ -4076,31 +4143,31 @@ msgid "Streak Settimanali"
 msgstr ""
 
 #: templates/gamification/dashboard.html:70
-#: templates/gamification/streaks.html:57
+#: templates/gamification/streaks.html:56
 msgid "Attivita Settimanale"
 msgstr ""
 
 #: templates/gamification/dashboard.html:72
-#: templates/gamification/streaks.html:59
+#: templates/gamification/streaks.html:58
 msgid "Partite Settimanali"
 msgstr ""
 
 #: templates/gamification/dashboard.html:74
-#: templates/gamification/streaks.html:61
+#: templates/gamification/streaks.html:60
 msgid "Tornei Settimanali"
 msgstr ""
 
 #: templates/gamification/admin/streaks.html:98
 #: templates/gamification/dashboard.html:80
-#: templates/gamification/streaks.html:82
+#: templates/gamification/streaks.html:81
 msgid "Record"
 msgstr ""
 
 #: templates/gamification/admin/streak_config.html:181
 #: templates/gamification/dashboard.html:81
 #: templates/gamification/dashboard.html:87
-#: templates/gamification/streaks.html:32
-#: templates/gamification/streaks.html:113
+#: templates/gamification/streaks.html:31
+#: templates/gamification/streaks.html:112
 #: templates/gamification/widget.html:39
 msgid "settimane"
 msgstr ""
@@ -4299,87 +4366,87 @@ msgstr ""
 msgid "Mantieni le tue attivita settimanali per guadagnare bonus XP"
 msgstr ""
 
-#: templates/gamification/streaks.html:30
+#: templates/gamification/streaks.html:29
 msgid "Settimane consecutive di attivita"
 msgstr ""
 
-#: templates/gamification/streaks.html:32
+#: templates/gamification/streaks.html:31
 msgid "Record personale"
 msgstr ""
 
-#: templates/gamification/streaks.html:38
+#: templates/gamification/streaks.html:37
 #, fuzzy
 msgid ""
 "freeze\n"
 "                            disponibili"
 msgstr "no limit"
 
-#: templates/gamification/streaks.html:63
+#: templates/gamification/streaks.html:62
 #, fuzzy
 msgid "Challenge Settimanali"
 msgstr "Available Challenges"
 
-#: templates/gamification/streaks.html:70
+#: templates/gamification/streaks.html:69
 msgid "A rischio!"
 msgstr ""
 
 #: templates/gamification/admin/streaks.html:97
-#: templates/gamification/streaks.html:78
+#: templates/gamification/streaks.html:77
 #, fuzzy
 msgid "Streak Attuale"
 msgstr "Current table:"
 
-#: templates/gamification/streaks.html:93
-#: templates/gamification/streaks.html:98
-#: templates/gamification/streaks.html:103
+#: templates/gamification/streaks.html:92
+#: templates/gamification/streaks.html:97
+#: templates/gamification/streaks.html:102
 #, fuzzy
 msgid "sett."
 msgstr "Status"
 
-#: templates/gamification/streaks.html:113
+#: templates/gamification/streaks.html:112
 msgid "Prossimo traguardo"
 msgstr ""
 
-#: templates/gamification/streaks.html:115
+#: templates/gamification/streaks.html:114
 msgid "da raggiungere"
 msgstr ""
 
-#: templates/gamification/streaks.html:123
+#: templates/gamification/streaks.html:122
 msgid "freeze"
 msgstr ""
 
-#: templates/gamification/streaks.html:127
+#: templates/gamification/streaks.html:126
 msgid "Usa Freeze"
 msgstr ""
 
-#: templates/gamification/streaks.html:139
+#: templates/gamification/streaks.html:138
 msgid "Inizia a giocare per costruire le tue streak settimanali!"
 msgstr ""
 
-#: templates/gamification/streaks.html:148
+#: templates/gamification/streaks.html:147
 msgid "Come funzionano le Streak"
 msgstr ""
 
-#: templates/gamification/streaks.html:150
+#: templates/gamification/streaks.html:149
 msgid "Ogni settimana che giochi almeno una partita, la tua streak aumenta"
 msgstr ""
 
-#: templates/gamification/streaks.html:151
+#: templates/gamification/streaks.html:150
 msgid "Raggiungi 4 settimane consecutive per sbloccare un freeze"
 msgstr ""
 
-#: templates/gamification/streaks.html:152
+#: templates/gamification/streaks.html:151
 msgid "I freeze ti permettono di saltare una settimana senza perdere la streak"
 msgstr ""
 
-#: templates/gamification/streaks.html:153
+#: templates/gamification/streaks.html:152
 msgid ""
 "Traguardi: 4 settimane (+1 freeze), 12 settimane (+1 freeze), 52 "
 "settimane (+1\n"
 "                            freeze)"
 msgstr ""
 
-#: templates/gamification/streaks.html:155
+#: templates/gamification/streaks.html:154
 msgid "Massimo 3 freeze accumulabili"
 msgstr ""
 
@@ -5602,40 +5669,40 @@ msgstr "active"
 msgid "Modifica Tempi"
 msgstr "Edit Race"
 
-#: templates/individual_match/match_detail.html:264
+#: templates/individual_match/match_detail.html:267
 msgid "Rimuovere l'ultimo rack vinto da questo giocatore?"
 msgstr ""
 
-#: templates/individual_match/match_detail.html:288
+#: templates/individual_match/match_detail.html:294
 #, fuzzy
 msgid "Confermare il risultato del match?"
 msgstr "Confirm result"
 
-#: templates/individual_match/match_detail.html:299
+#: templates/individual_match/match_detail.html:306
 #, fuzzy
 msgid "Match completato con successo!"
 msgstr "Registration completed successfully."
 
-#: templates/individual_match/match_detail.html:301
+#: templates/individual_match/match_detail.html:308
 msgid "Risultato confermato! In attesa dell'altro giocatore."
 msgstr ""
 
-#: templates/individual_match/match_detail.html:316
+#: templates/individual_match/match_detail.html:325
 msgid ""
 "Rifiutare il risultato? L'ultimo rack verrà rimosso e si potrà continuare"
 " a giocare."
 msgstr ""
 
-#: templates/individual_match/match_detail.html:326
+#: templates/individual_match/match_detail.html:336
 msgid "Ultimo rack rimosso. Continuate a giocare!"
 msgstr ""
 
-#: templates/individual_match/match_detail.html:340
+#: templates/individual_match/match_detail.html:352
 #, fuzzy
 msgid "Sei sicuro di voler dichiarare forfait? L'avversario vincerà il match."
 msgstr "Are you sure you want to declare forfeit for this player?"
 
-#: templates/individual_match/match_detail.html:350
+#: templates/individual_match/match_detail.html:362
 msgid "Forfait dichiarato."
 msgstr ""
 
@@ -5992,501 +6059,512 @@ msgstr "Open Registrations"
 msgid "Spareggi"
 msgstr "Draw!"
 
-#: utils/status_ui.py:138
+#: utils/status_ui.py:121
+msgid "Terminato"
+msgstr "Terminated"
+
+#: utils/status_ui.py:139
 msgid "Validato"
 msgstr "Validated"
 
-#: utils/status_ui.py:153
+#: utils/status_ui.py:154
 msgid "In Valutazione"
 msgstr "Under Review"
 
-#: utils/status_ui.py:154
+#: utils/status_ui.py:155
 msgid "Approvata"
 msgstr "Approved"
 
-#: utils/status_ui.py:155
+#: utils/status_ui.py:156
 msgid "Respinta"
 msgstr "Rejected"
 
-#: utils/status_ui.py:172
+#: utils/status_ui.py:173
 msgid "Rifiutato"
 msgstr ""
 
-#: utils/status_ui.py:215
+#: utils/status_ui.py:216
 msgid "Sconosciuto"
 msgstr "Unknown"
 
-#: venv/lib/python3.9/site-packages/click/_termui_impl.py:556
+#: venv/lib/python3.11/site-packages/click/_termui_impl.py:613
 #, python-brace-format
 msgid "{editor}: Editing failed"
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/_termui_impl.py:560
+#: venv/lib/python3.11/site-packages/click/_termui_impl.py:617
 #, python-brace-format
 msgid "{editor}: Editing failed: {e}"
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/core.py:1124
-msgid "Aborted!"
-msgstr ""
-
-#: venv/lib/python3.9/site-packages/click/core.py:1349
-#: venv/lib/python3.9/site-packages/click/core.py:1379
+#: venv/lib/python3.11/site-packages/click/core.py:1114
+#: venv/lib/python3.11/site-packages/click/core.py:1151
 #, python-brace-format
-msgid "(Deprecated) {text}"
+msgid "{text} {deprecated_message}"
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/core.py:1396
+#: venv/lib/python3.11/site-packages/click/core.py:1170
 msgid "Options"
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/core.py:1422
+#: venv/lib/python3.11/site-packages/click/core.py:1245
 #, python-brace-format
 msgid "Got unexpected extra argument ({args})"
 msgid_plural "Got unexpected extra arguments ({args})"
 msgstr[0] ""
 msgstr[1] ""
 
-#: venv/lib/python3.9/site-packages/click/core.py:1438
+#: venv/lib/python3.11/site-packages/click/core.py:1264
 #, python-brace-format
-msgid "DeprecationWarning: The command {name!r} is deprecated."
+msgid "DeprecationWarning: The command {name!r} is deprecated.{extra_message}"
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/core.py:1645
+#: venv/lib/python3.11/site-packages/click/core.py:1448
+msgid "Aborted!"
+msgstr ""
+
+#: venv/lib/python3.11/site-packages/click/core.py:1822
 msgid "Commands"
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/core.py:1677
+#: venv/lib/python3.11/site-packages/click/core.py:1853
 msgid "Missing command."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/core.py:1755
+#: venv/lib/python3.11/site-packages/click/core.py:1931
 #, python-brace-format
 msgid "No such command {name!r}."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/core.py:2313
+#: venv/lib/python3.11/site-packages/click/core.py:2355
 msgid "Value must be an iterable."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/core.py:2334
+#: venv/lib/python3.11/site-packages/click/core.py:2378
 #, python-brace-format
 msgid "Takes {nargs} values but 1 was given."
 msgid_plural "Takes {nargs} values but {len} were given."
 msgstr[0] ""
 msgstr[1] ""
 
-#: venv/lib/python3.9/site-packages/click/core.py:2783
+#: venv/lib/python3.11/site-packages/click/core.py:2567
+#, python-brace-format
+msgid ""
+"DeprecationWarning: The {param_type} {name!r} is "
+"deprecated.{extra_message}"
+msgstr ""
+
+#: venv/lib/python3.11/site-packages/click/core.py:3015
 #, python-brace-format
 msgid "env var: {var}"
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/core.py:2813
-msgid "(dynamic)"
-msgstr ""
-
-#: venv/lib/python3.9/site-packages/click/core.py:2828
+#: venv/lib/python3.11/site-packages/click/core.py:3018
 #, python-brace-format
 msgid "default: {default}"
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/core.py:2841
+#: venv/lib/python3.11/site-packages/click/core.py:3022
 msgid "required"
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/decorators.py:457
+#: venv/lib/python3.11/site-packages/click/core.py:3082
+msgid "(dynamic)"
+msgstr ""
+
+#: venv/lib/python3.11/site-packages/click/decorators.py:465
 #, python-format
 msgid "%(prog)s, version %(version)s"
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/decorators.py:520
+#: venv/lib/python3.11/site-packages/click/decorators.py:522
 msgid "Show the version and exit."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/decorators.py:541
+#: venv/lib/python3.11/site-packages/click/decorators.py:548
 msgid "Show this message and exit."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/exceptions.py:49
-#: venv/lib/python3.9/site-packages/click/exceptions.py:88
+#: venv/lib/python3.11/site-packages/click/exceptions.py:50
+#: venv/lib/python3.11/site-packages/click/exceptions.py:89
 #, python-brace-format
 msgid "Error: {message}"
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/exceptions.py:80
+#: venv/lib/python3.11/site-packages/click/exceptions.py:81
 #, python-brace-format
 msgid "Try '{command} {option}' for help."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/exceptions.py:129
+#: venv/lib/python3.11/site-packages/click/exceptions.py:130
 #, python-brace-format
 msgid "Invalid value: {message}"
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/exceptions.py:131
+#: venv/lib/python3.11/site-packages/click/exceptions.py:132
 #, python-brace-format
 msgid "Invalid value for {param_hint}: {message}"
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/exceptions.py:187
+#: venv/lib/python3.11/site-packages/click/exceptions.py:190
 msgid "Missing argument"
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/exceptions.py:189
+#: venv/lib/python3.11/site-packages/click/exceptions.py:192
 msgid "Missing option"
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/exceptions.py:191
+#: venv/lib/python3.11/site-packages/click/exceptions.py:194
 msgid "Missing parameter"
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/exceptions.py:193
+#: venv/lib/python3.11/site-packages/click/exceptions.py:196
 #, python-brace-format
 msgid "Missing {param_type}"
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/exceptions.py:200
+#: venv/lib/python3.11/site-packages/click/exceptions.py:203
 #, python-brace-format
 msgid "Missing parameter: {param_name}"
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/exceptions.py:220
+#: venv/lib/python3.11/site-packages/click/exceptions.py:223
 #, python-brace-format
 msgid "No such option: {name}"
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/exceptions.py:232
+#: venv/lib/python3.11/site-packages/click/exceptions.py:235
 #, python-brace-format
 msgid "Did you mean {possibility}?"
 msgid_plural "(Possible options: {possibilities})"
 msgstr[0] ""
 msgstr[1] ""
 
-#: venv/lib/python3.9/site-packages/click/exceptions.py:270
+#: venv/lib/python3.11/site-packages/click/exceptions.py:282
 msgid "unknown error"
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/exceptions.py:277
+#: venv/lib/python3.11/site-packages/click/exceptions.py:289
 #, python-brace-format
 msgid "Could not open file {filename!r}: {message}"
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/parser.py:233
+#: venv/lib/python3.11/site-packages/click/parser.py:199
 #, python-brace-format
 msgid "Argument {name!r} takes {nargs} values."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/parser.py:415
+#: venv/lib/python3.11/site-packages/click/parser.py:381
 #, python-brace-format
 msgid "Option {name!r} does not take a value."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/parser.py:476
+#: venv/lib/python3.11/site-packages/click/parser.py:444
 #, python-brace-format
 msgid "Option {name!r} requires an argument."
 msgid_plural "Option {name!r} requires {nargs} arguments."
 msgstr[0] ""
 msgstr[1] ""
 
-#: venv/lib/python3.9/site-packages/click/shell_completion.py:326
+#: venv/lib/python3.11/site-packages/click/shell_completion.py:332
 msgid "Shell completion is not supported for Bash versions older than 4.4."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/shell_completion.py:333
+#: venv/lib/python3.11/site-packages/click/shell_completion.py:339
 msgid "Couldn't detect Bash version, shell completion is not supported."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/termui.py:158
+#: venv/lib/python3.11/site-packages/click/termui.py:165
 msgid "Repeat for confirmation"
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/termui.py:174
+#: venv/lib/python3.11/site-packages/click/termui.py:181
 msgid "Error: The value you entered was invalid."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/termui.py:176
+#: venv/lib/python3.11/site-packages/click/termui.py:183
 #, python-brace-format
 msgid "Error: {e.message}"
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/termui.py:187
+#: venv/lib/python3.11/site-packages/click/termui.py:194
 msgid "Error: The two entered values do not match."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/termui.py:243
+#: venv/lib/python3.11/site-packages/click/termui.py:253
 msgid "Error: invalid input"
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/termui.py:773
+#: venv/lib/python3.11/site-packages/click/termui.py:872
 msgid "Press any key to continue..."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/types.py:267
+#: venv/lib/python3.11/site-packages/click/types.py:332
 #, python-brace-format
 msgid ""
 "Choose from:\n"
 "\t{choices}"
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/types.py:299
+#: venv/lib/python3.11/site-packages/click/types.py:369
 #, python-brace-format
 msgid "{value!r} is not {choice}."
 msgid_plural "{value!r} is not one of {choices}."
 msgstr[0] ""
 msgstr[1] ""
 
-#: venv/lib/python3.9/site-packages/click/types.py:393
+#: venv/lib/python3.11/site-packages/click/types.py:460
 #, python-brace-format
 msgid "{value!r} does not match the format {format}."
 msgid_plural "{value!r} does not match the formats {formats}."
 msgstr[0] ""
 msgstr[1] ""
 
-#: venv/lib/python3.9/site-packages/click/types.py:415
+#: venv/lib/python3.11/site-packages/click/types.py:482
 #, python-brace-format
 msgid "{value!r} is not a valid {number_type}."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/types.py:471
+#: venv/lib/python3.11/site-packages/click/types.py:538
 #, python-brace-format
 msgid "{value} is not in the range {range}."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/types.py:612
+#: venv/lib/python3.11/site-packages/click/types.py:719
 #, python-brace-format
-msgid "{value!r} is not a valid boolean."
+msgid "{value!r} is not a valid boolean. Recognized values: {states}"
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/types.py:636
+#: venv/lib/python3.11/site-packages/click/types.py:747
 #, python-brace-format
 msgid "{value!r} is not a valid UUID."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/types.py:826
+#: venv/lib/python3.11/site-packages/click/types.py:937
 msgid "file"
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/types.py:828
+#: venv/lib/python3.11/site-packages/click/types.py:939
 msgid "directory"
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/types.py:830
+#: venv/lib/python3.11/site-packages/click/types.py:941
 #, fuzzy
 msgid "path"
 msgstr "Match"
 
-#: venv/lib/python3.9/site-packages/click/types.py:881
+#: venv/lib/python3.11/site-packages/click/types.py:988
 #, python-brace-format
 msgid "{name} {filename!r} does not exist."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/types.py:890
+#: venv/lib/python3.11/site-packages/click/types.py:997
 #, python-brace-format
 msgid "{name} {filename!r} is a file."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/types.py:898
+#: venv/lib/python3.11/site-packages/click/types.py:1005
 #, python-brace-format
 msgid "{name} {filename!r} is a directory."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/types.py:907
+#: venv/lib/python3.11/site-packages/click/types.py:1014
 #, python-brace-format
 msgid "{name} {filename!r} is not readable."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/types.py:916
+#: venv/lib/python3.11/site-packages/click/types.py:1023
 #, python-brace-format
 msgid "{name} {filename!r} is not writable."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/types.py:925
+#: venv/lib/python3.11/site-packages/click/types.py:1032
 #, python-brace-format
 msgid "{name} {filename!r} is not executable."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/click/types.py:992
+#: venv/lib/python3.11/site-packages/click/types.py:1099
 #, python-brace-format
 msgid "{len_type} values are required, but {len_value} was given."
 msgid_plural "{len_type} values are required, but {len_value} were given."
 msgstr[0] ""
 msgstr[1] ""
 
-#: venv/lib/python3.9/site-packages/flask_wtf/file.py:55
-#: venv/lib/python3.9/site-packages/wtforms/validators.py:293
-#: venv/lib/python3.9/site-packages/wtforms/validators.py:323
+#: venv/lib/python3.11/site-packages/flask_wtf/file.py:55
+#: venv/lib/python3.11/site-packages/wtforms/validators.py:293
+#: venv/lib/python3.11/site-packages/wtforms/validators.py:323
 msgid "This field is required."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/flask_wtf/file.py:94
+#: venv/lib/python3.11/site-packages/flask_wtf/file.py:94
 #, python-brace-format
 msgid "File does not have an approved extension: {extensions}"
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/flask_wtf/file.py:101
+#: venv/lib/python3.11/site-packages/flask_wtf/file.py:101
 msgid "File does not have an approved extension."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/wtforms/validators.py:86
+#: venv/lib/python3.11/site-packages/wtforms/validators.py:86
 #, python-format
 msgid "Invalid field name '%s'."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/wtforms/validators.py:99
+#: venv/lib/python3.11/site-packages/wtforms/validators.py:99
 #, python-format
 msgid "Field must be equal to %(other_name)s."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/wtforms/validators.py:146
+#: venv/lib/python3.11/site-packages/wtforms/validators.py:146
 #, python-format
 msgid "Field must be at least %(min)d character long."
 msgid_plural "Field must be at least %(min)d characters long."
 msgstr[0] ""
 msgstr[1] ""
 
-#: venv/lib/python3.9/site-packages/wtforms/validators.py:152
+#: venv/lib/python3.11/site-packages/wtforms/validators.py:152
 #, python-format
 msgid "Field cannot be longer than %(max)d character."
 msgid_plural "Field cannot be longer than %(max)d characters."
 msgstr[0] ""
 msgstr[1] ""
 
-#: venv/lib/python3.9/site-packages/wtforms/validators.py:158
+#: venv/lib/python3.11/site-packages/wtforms/validators.py:158
 #, python-format
 msgid "Field must be exactly %(max)d character long."
 msgid_plural "Field must be exactly %(max)d characters long."
 msgstr[0] ""
 msgstr[1] ""
 
-#: venv/lib/python3.9/site-packages/wtforms/validators.py:164
+#: venv/lib/python3.11/site-packages/wtforms/validators.py:164
 #, python-format
 msgid "Field must be between %(min)d and %(max)d characters long."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/wtforms/validators.py:216
+#: venv/lib/python3.11/site-packages/wtforms/validators.py:216
 #, python-format
 msgid "Number must be at least %(min)s."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/wtforms/validators.py:219
+#: venv/lib/python3.11/site-packages/wtforms/validators.py:219
 #, python-format
 msgid "Number must be at most %(max)s."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/wtforms/validators.py:222
+#: venv/lib/python3.11/site-packages/wtforms/validators.py:222
 #, python-format
 msgid "Number must be between %(min)s and %(max)s."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/wtforms/validators.py:358
+#: venv/lib/python3.11/site-packages/wtforms/validators.py:358
 #, fuzzy
 msgid "Invalid input."
 msgstr "Set Result"
 
-#: venv/lib/python3.9/site-packages/wtforms/validators.py:422
+#: venv/lib/python3.11/site-packages/wtforms/validators.py:422
 msgid "Invalid email address."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/wtforms/validators.py:460
+#: venv/lib/python3.11/site-packages/wtforms/validators.py:460
 msgid "Invalid IP address."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/wtforms/validators.py:503
+#: venv/lib/python3.11/site-packages/wtforms/validators.py:503
 msgid "Invalid Mac address."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/wtforms/validators.py:540
+#: venv/lib/python3.11/site-packages/wtforms/validators.py:540
 msgid "Invalid URL."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/wtforms/validators.py:561
+#: venv/lib/python3.11/site-packages/wtforms/validators.py:561
 msgid "Invalid UUID."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/wtforms/validators.py:595
+#: venv/lib/python3.11/site-packages/wtforms/validators.py:595
 #, python-format
 msgid "Invalid value, must be one of: %(values)s."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/wtforms/validators.py:631
+#: venv/lib/python3.11/site-packages/wtforms/validators.py:631
 #, python-format
 msgid "Invalid value, can't be any of: %(values)s."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/wtforms/validators.py:700
+#: venv/lib/python3.11/site-packages/wtforms/validators.py:700
 msgid "This field cannot be edited."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/wtforms/validators.py:716
+#: venv/lib/python3.11/site-packages/wtforms/validators.py:716
 msgid "This field is disabled and cannot have a value."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/wtforms/csrf/core.py:96
+#: venv/lib/python3.11/site-packages/wtforms/csrf/core.py:96
 msgid "Invalid CSRF Token."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/wtforms/csrf/session.py:64
+#: venv/lib/python3.11/site-packages/wtforms/csrf/session.py:64
 msgid "CSRF token missing."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/wtforms/csrf/session.py:72
+#: venv/lib/python3.11/site-packages/wtforms/csrf/session.py:72
 msgid "CSRF failed."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/wtforms/csrf/session.py:77
+#: venv/lib/python3.11/site-packages/wtforms/csrf/session.py:77
 msgid "CSRF token expired."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/wtforms/fields/choices.py:142
+#: venv/lib/python3.11/site-packages/wtforms/fields/choices.py:142
 msgid "Invalid Choice: could not coerce."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/wtforms/fields/choices.py:149
-#: venv/lib/python3.9/site-packages/wtforms/fields/choices.py:203
+#: venv/lib/python3.11/site-packages/wtforms/fields/choices.py:149
+#: venv/lib/python3.11/site-packages/wtforms/fields/choices.py:203
 msgid "Choices cannot be None."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/wtforms/fields/choices.py:155
+#: venv/lib/python3.11/site-packages/wtforms/fields/choices.py:155
 msgid "Not a valid choice."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/wtforms/fields/choices.py:194
+#: venv/lib/python3.11/site-packages/wtforms/fields/choices.py:194
 msgid "Invalid choice(s): one or more data inputs could not be coerced."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/wtforms/fields/choices.py:212
+#: venv/lib/python3.11/site-packages/wtforms/fields/choices.py:212
 #, python-format
 msgid "'%(value)s' is not a valid choice for this field."
 msgid_plural "'%(value)s' are not valid choices for this field."
 msgstr[0] ""
 msgstr[1] ""
 
-#: venv/lib/python3.9/site-packages/wtforms/fields/datetime.py:52
+#: venv/lib/python3.11/site-packages/wtforms/fields/datetime.py:52
 msgid "Not a valid datetime value."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/wtforms/fields/datetime.py:78
+#: venv/lib/python3.11/site-packages/wtforms/fields/datetime.py:78
 msgid "Not a valid date value."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/wtforms/fields/datetime.py:104
+#: venv/lib/python3.11/site-packages/wtforms/fields/datetime.py:104
 msgid "Not a valid time value."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/wtforms/fields/datetime.py:149
+#: venv/lib/python3.11/site-packages/wtforms/fields/datetime.py:149
 msgid "Not a valid week value."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/wtforms/fields/numeric.py:82
-#: venv/lib/python3.9/site-packages/wtforms/fields/numeric.py:92
+#: venv/lib/python3.11/site-packages/wtforms/fields/numeric.py:82
+#: venv/lib/python3.11/site-packages/wtforms/fields/numeric.py:92
 msgid "Not a valid integer value."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/wtforms/fields/numeric.py:168
+#: venv/lib/python3.11/site-packages/wtforms/fields/numeric.py:168
 msgid "Not a valid decimal value."
 msgstr ""
 
-#: venv/lib/python3.9/site-packages/wtforms/fields/numeric.py:197
+#: venv/lib/python3.11/site-packages/wtforms/fields/numeric.py:197
 msgid "Not a valid float value."
 msgstr ""
 
@@ -6756,5 +6834,14 @@ msgstr ""
 #~ msgstr ""
 
 #~ msgid "Si è verificato un errore interno. Riprova più tardi."
+#~ msgstr ""
+
+#~ msgid "(Deprecated) {text}"
+#~ msgstr ""
+
+#~ msgid "DeprecationWarning: The command {name!r} is deprecated."
+#~ msgstr ""
+
+#~ msgid "{value!r} is not a valid boolean."
 #~ msgstr ""
 
