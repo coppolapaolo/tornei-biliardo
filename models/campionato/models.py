@@ -130,46 +130,13 @@ class Campionato(db.Model):
         return True
 
     def get_status(self):
-        """Restituisce lo status del campionato"""
-        if self.terminated_at:
-            if self.has_playoff_configurations():
-                # TERMINATED until all playoffs completed, then COMPLETED
-                from models.playoff.models import PlayoffConfiguration, PlayoffTournament
-                active_configs = PlayoffConfiguration.query.filter_by(
-                    campionato_id=self.id, is_active=True
-                ).all()
-                if active_configs:
-                    # Every active config must have a completed tournament
-                    all_completed = all(
-                        (t := PlayoffTournament.query.filter_by(configuration_id=cfg.id).first())
-                        is not None and t.status == "completed"
-                        for cfg in active_configs
-                    )
-                    if all_completed:
-                        return TournamentStatus.COMPLETED.value
-                return TournamentStatus.TERMINATED.value
-            return TournamentStatus.COMPLETED.value
+        """Restituisce lo status del campionato.
 
-        gare = getattr(self, "gare", [])
-        if not gare:
-            return TournamentStatus.SETUP.value
+        Delegates to compute_campionato_status() as single source of truth.
+        """
+        from models.campionato.statistics_service import compute_campionato_status
 
-        has_playing = any(p.status == GaraStatus.PLAYING.value for p in gare)
-        has_completed = any(
-            p.status == GaraStatus.COMPLETED.value for p in gare
-        )
-        has_inscription = any(
-            p.status == GaraStatus.INSCRIPTION.value for p in gare
-        )
-
-        if has_playing:
-            return TournamentStatus.IN_PROGRESS.value
-        elif has_completed and not has_playing and not has_inscription:
-            return TournamentStatus.COMPLETED.value
-        elif has_inscription:
-            return TournamentStatus.REGISTRATION_OPEN.value
-        else:
-            return TournamentStatus.SETUP.value
+        return compute_campionato_status(self)
 
     def can_create_gara(self) -> bool:
         """Verifica se è possibile creare nuove gare sotto questo campionato."""

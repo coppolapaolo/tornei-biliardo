@@ -84,7 +84,7 @@ pass-through `IndividualMatchService.report_result`, plus the now-unused
 `MatchProposal` import in `match_lifecycle_service.py`. Pyright clean,
 77 individual_match/toctou tests pass.
 
-## Deferred: Unify `get_status()` and `compute_campionato_status()`
+## ~~Deferred: Unify `get_status()` and `compute_campionato_status()`~~ ✅ DONE (2026-04-06)
 
 Source: Review of terminate-campionato feature (2026-04-06).
 
