@@ -91,6 +91,27 @@ Una gara **amalfi** è una gara in cui non c'è eliminazione e tutti i giocatori
 Inizialmente gli iscritti vengono abbinati casualmente. Una variante prevede un abbinamento iniziale basato sulla classifica del campionato (comunque nella prima gara, in cui la classifica è assente, l'abbinamento è casuale). Un'altra variante prevede che l'abbinamento iniziale sia basato sulla classifica del _Fargo rating_ o del _Elo rating_.
 Amalfi abbina ad ogni turno i giocatori partendo dalla classifica precedente e saltando un numero di posizioni pari ai turni che mancano alla fine.  
 
+#### Selezione trio nell'algoritmo Amalfi
+
+Quando il numero di giocatori è dispari e la policy è "trio", la selezione dei 3 giocatori per il trio segue un algoritmo a 3 step:
+
+**Step 1 — Salto con BYE sentinel.** Il salto Amalfi standard gira con un BYE sentinel al posto del giocatore mancante. Chi atterra sul BYE diventa l'"ancora" del trio. Le restanti coppie formano la rappresentazione intermedia.
+
+**Step 2 — Swap dell'ancora per rotazione.** Se l'ancora ha un conteggio trio superiore al minimo tra tutti i giocatori, viene scambiata con il giocatore in coppia che ha il conteggio trio più basso; a parità, quello più basso in classifica (più "spirito Amalfi"). Nessun check anti-rematch in questo step.
+
+**Step 3 — Selezione compagni per score.** Tra tutte le combinazioni C(N-1, 2) di 2 giocatori dal pool delle coppie, si calcola uno score a tuple:
+1. `companion_count_sum` — somma dei conteggi trio dei 2 compagni (rotazione equa)
+2. `trio_rematches` — quante delle 3 coppie nel trio si sono già incontrate (anti-rematch)
+3. `orphan_rematch` — 1 se i 2 orfani (giocatori rimasti senza partner) si sono già incontrati, 0 altrimenti
+4. `-position_sum` — somma delle posizioni in classifica dei 2 compagni (spirito Amalfi — preferisce entrambi i compagni bassi in classifica, non solo uno dei due)
+
+Si sceglie la combinazione con score minimo (lessicografico). La ricomposizione produce i Pairing finali: un trio con i 3 giocatori ordinati per classifica, le coppie invariate, e l'eventuale coppia orfani.
+
+**Ordine di sacrificio** (cosa si cede per prima quando i vincoli confliggono):
+1. Posizione in classifica — si devia dallo spirito Amalfi pur di evitare rematch
+2. Anti-rematch — si accetta un rematch nel trio pur di garantire rotazione equa
+3. Rotazione equa (ultima a cedere) — la differenza di conteggio trio tra giocatori deve restare minima
+
 
 ## Match
 

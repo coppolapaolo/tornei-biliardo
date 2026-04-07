@@ -1,6 +1,7 @@
 from __future__ import annotations
 import random
-from typing import Optional, Sequence, Dict, Any, List, TYPE_CHECKING
+from itertools import combinations
+from typing import Optional, Sequence, Dict, Any, List, Tuple, TYPE_CHECKING
 
 from .base import BaseStrategy, Pairing
 from models import db
@@ -295,28 +296,28 @@ class AmalfiStrategy(BaseStrategy):
 
         # Ottieni i giocatori che hanno già avuto un bye o trio
         players_with_bye = self._get_players_with_bye(gara_id) if gara_id else set()
-        players_with_trio = self._get_players_with_trio(gara_id) if (gara_id and use_trio) else set()
+        trio_counts = self._get_trio_counts(gara_id) if (gara_id and use_trio) else {}
+
+        # Build player_to_index mapping (player_id -> classification position index)
+        player_to_index: dict[int, int] = {
+            c.user_id: i for i, c in enumerate(classifica)
+        }
 
         if len(players) % 2 == 1:
             if use_trio:
-                # Trio: extract 3 lowest-ranked players for a trio match
-                # Prefer players who haven't had a trio yet
-                trio_players = self._select_trio_players(
-                    players, players_with_trio
-                )
-                coppie.append(
-                    Pairing(
-                        players=tuple(trio_players),
-                        is_bye=False,
-                        round_number=turno,
-                    )
-                )
-                abbinati.update(trio_players)
-                # Remove trio players from regular pairing
-                players = [p for p in players if p not in abbinati]
+                # Trio: use 3-step algorithm (salto + swap + companion selection)
+                # Step 1: run salto with BYE sentinel to get intermediate repr
+                # (handled below in the while loop)
+                players = players + [self.BYE_PLAYER_ID]
             else:
                 # Bye: add BYE_PLAYER_ID sentinel
                 players = players + [self.BYE_PLAYER_ID]
+
+        # --- Salto loop (same logic for both bye and trio modes) ---
+        # When use_trio=True, produces intermediate representation
+        # When use_trio=False, produces Pairing objects directly
+        anchor: int | None = None
+        intermediate_pairs: List[Tuple[int, int]] = []
 
         p1 = 0
         while p1 < len(players):
@@ -333,6 +334,7 @@ class AmalfiStrategy(BaseStrategy):
             # 1. p2 è già abbinato
             # 2. I due giocatori hanno già giocato insieme (anti-rematch)
             # 3. p1 ha già avuto un bye e p2 è BYE_PLAYER_ID (max 1 bye per giocatore)
+            #    (In trio mode, BYE landing is always allowed — no bye history check)
             # Safety: limit iterations to avoid infinite loop when all pairs exhausted
             max_attempts = len(players)
             attempts = 0
@@ -344,7 +346,8 @@ class AmalfiStrategy(BaseStrategy):
                     and self._have_already_played(players[p1], players[p2], gara_id)
                 )
                 or (
-                    players[p2] == self.BYE_PLAYER_ID
+                    not use_trio
+                    and players[p2] == self.BYE_PLAYER_ID
                     and players[p1] in players_with_bye
                 )
             ):
@@ -352,36 +355,146 @@ class AmalfiStrategy(BaseStrategy):
                 attempts += 1
                 if attempts >= max_attempts:
                     # All partners exhausted — allow rematch with best available
+                    # Prefer non-BYE candidates; fall back to BYE only if needed
+                    fallback_p2: int | None = None
+                    fallback_bye: int | None = None
                     for candidate_idx in range(len(players)):
                         if (
                             players[candidate_idx] not in abbinati
                             and players[candidate_idx] != players[p1]
                         ):
-                            p2 = candidate_idx
-                            break
+                            if players[candidate_idx] == self.BYE_PLAYER_ID:
+                                fallback_bye = candidate_idx
+                            else:
+                                fallback_p2 = candidate_idx
+                                break
+                    if fallback_p2 is not None:
+                        p2 = fallback_p2
+                    elif fallback_bye is not None:
+                        p2 = fallback_bye
                     break
 
-            # Crea il pairing tra p1 e p2
-            if players[p2] == self.BYE_PLAYER_ID:
-                coppie.append(
-                    Pairing(
-                        players=(players[p1],),
-                        is_bye=True,
-                        round_number=turno,
-                    )
-                )
+            if use_trio:
+                # Intermediate representation: anchor + pairs
+                if players[p2] == self.BYE_PLAYER_ID:
+                    # This player lands on BYE — becomes the anchor
+                    anchor = players[p1]
+                    # Mark BYE as used so no other player can land on it
+                    abbinati.add(self.BYE_PLAYER_ID)
+                else:
+                    intermediate_pairs.append((players[p1], players[p2]))
+                    abbinati.add(players[p2])
             else:
-                coppie.append(
-                    Pairing(
-                        players=(players[p1], players[p2]),
-                        is_bye=False,
-                        round_number=turno,
+                # Direct Pairing creation (bye mode)
+                if players[p2] == self.BYE_PLAYER_ID:
+                    coppie.append(
+                        Pairing(
+                            players=(players[p1],),
+                            is_bye=True,
+                            round_number=turno,
+                        )
                     )
-                )
-                abbinati.add(players[p2])
+                else:
+                    coppie.append(
+                        Pairing(
+                            players=(players[p1], players[p2]),
+                            is_bye=False,
+                            round_number=turno,
+                        )
+                    )
+                    abbinati.add(players[p2])
             p1 += 1
 
-        return coppie
+        if not use_trio:
+            return coppie
+
+        # --- Trio orchestration: Steps 2-3 + recomposition ---
+        if anchor is None:
+            raise ValueError("Trio mode must produce an anchor")
+        if anchor == self.BYE_PLAYER_ID:
+            raise ValueError("BYE_PLAYER_ID must not be the anchor")
+        if any(
+            p == self.BYE_PLAYER_ID for pair in intermediate_pairs for p in pair
+        ):
+            raise ValueError("BYE_PLAYER_ID must not appear in intermediate pairs")
+
+        # Step 2: Swap anchor if needed for fair rotation
+        anchor, intermediate_pairs = self._swap_anchor_if_needed(
+            anchor, intermediate_pairs, trio_counts, player_to_index
+        )
+
+        # Step 3: Select 2 companions for the anchor
+        from models.classification.encounter_service import PlayerEncounterService
+
+        raw_matrix = (
+            PlayerEncounterService.get_encounter_matrix(gara_id)
+            if gara_id
+            else {}
+        )
+        # Guard: cached decorator may return [] instead of {} for empty results
+        encounter_matrix: Dict[Tuple[int, int], bool] = (
+            raw_matrix if isinstance(raw_matrix, dict) else {}
+        )
+
+        comp1, comp2 = self._select_trio_companions(
+            anchor, intermediate_pairs, trio_counts, encounter_matrix, player_to_index
+        )
+
+        # Determine which pairs are affected and build final pairs
+        pool_player_to_pair: dict[int, int] = {}
+        for i, (a, b) in enumerate(intermediate_pairs):
+            pool_player_to_pair[a] = i
+            pool_player_to_pair[b] = i
+
+        affected_pair_indices = {pool_player_to_pair[comp1], pool_player_to_pair[comp2]}
+        final_pairs: List[Tuple[int, int]] = []
+
+        if pool_player_to_pair[comp1] == pool_player_to_pair[comp2]:
+            # Both companions from same pair — no orphans
+            for i, pair in enumerate(intermediate_pairs):
+                if i not in affected_pair_indices:
+                    final_pairs.append(pair)
+        else:
+            # Companions from different pairs — collect orphans
+            orphans: List[int] = []
+            for i, (a, b) in enumerate(intermediate_pairs):
+                if i in affected_pair_indices:
+                    # Find the orphan (the player not chosen as companion)
+                    if a in (comp1, comp2):
+                        orphans.append(b)
+                    else:
+                        orphans.append(a)
+                else:
+                    final_pairs.append((a, b))
+            if len(orphans) != 2:
+                raise ValueError(f"Expected 2 orphans, got {len(orphans)}")
+            final_pairs.append((orphans[0], orphans[1]))
+
+        # Recomposition: build Pairing sequence
+        # Trio players sorted by classification position
+        trio_players = sorted(
+            [anchor, comp1, comp2], key=lambda p: player_to_index[p]
+        )
+
+        # Final check: no BYE_PLAYER_ID in output
+        if any(p == self.BYE_PLAYER_ID for p in trio_players):
+            raise ValueError("BYE_PLAYER_ID in trio output")
+        if any(p == self.BYE_PLAYER_ID for pair in final_pairs for p in pair):
+            raise ValueError("BYE_PLAYER_ID in pair output")
+
+        result: List[Pairing] = [
+            Pairing(
+                players=tuple(trio_players),
+                is_bye=False,
+                round_number=turno,
+            )
+        ]
+        for a, b in final_pairs:
+            result.append(
+                Pairing(players=(a, b), is_bye=False, round_number=turno)
+            )
+
+        return result
 
     def _have_already_played(
         self, player1_id: int, player2_id: int, gara_id: int
@@ -401,8 +514,12 @@ class AmalfiStrategy(BaseStrategy):
 
         return {match.player1_id for match in bye_matches if match.player1_id}
 
-    def _get_players_with_trio(self, gara_id: int) -> set[int]:
-        """Ottieni l'insieme dei giocatori che hanno già partecipato a un trio."""
+    def _get_trio_counts(self, gara_id: int) -> dict[int, int]:
+        """Conta quanti trio ha fatto ogni giocatore in questa gara.
+
+        Returns:
+            dict mapping player_id -> number of trio matches played
+        """
         from models.match.models import Match, TrioMatch
 
         trio_matches = (
@@ -412,36 +529,122 @@ class AmalfiStrategy(BaseStrategy):
             .all()
         )
 
-        players = set()
+        counts: dict[int, int] = {}
         for trio in trio_matches:
-            players.add(trio.player1_id)
-            players.add(trio.player2_id)
-            players.add(trio.player3_id)
-        return players
+            counts[trio.player1_id] = counts.get(trio.player1_id, 0) + 1
+            counts[trio.player2_id] = counts.get(trio.player2_id, 0) + 1
+            counts[trio.player3_id] = counts.get(trio.player3_id, 0) + 1
+        return counts
 
-    def _select_trio_players(
-        self, players: List[int], players_with_trio: set[int]
-    ) -> List[int]:
-        """Select 3 players for a trio match from the end of the classification.
+    def _swap_anchor_if_needed(
+        self,
+        anchor: int,
+        pairs: List[Tuple[int, int]],
+        trio_counts: dict[int, int],
+        player_to_index: dict[int, int],
+    ) -> Tuple[int, List[Tuple[int, int]]]:
+        """Pure function. Swap anchor with a player in pairs if anchor has too many trios.
 
-        Prefers players who haven't been in a trio yet. Takes the 3
-        lowest-ranked players, but swaps in higher-ranked players if
-        all 3 lowest have already had a trio.
+        If the anchor's trio_count is above the minimum across all players
+        (anchor + all players in pairs), swap with the player that has the
+        lowest trio_count; ties broken by lowest classification position
+        (higher index = lower in classification = more Amalfi spirit).
         """
-        # Start with the 3 lowest-ranked
-        candidates = list(players[-3:])
+        all_in_pairs = [p for pair in pairs for p in pair]
+        if not all_in_pairs:
+            return anchor, pairs
 
-        # If all 3 already had a trio, try to swap one with a non-trio player
-        all_had_trio = all(p in players_with_trio for p in candidates)
-        if all_had_trio and len(players) > 3:
-            # Find highest-ranked player without a prior trio
-            for p in reversed(players[:-3]):
-                if p not in players_with_trio:
-                    # Swap with the highest-ranked of the 3 candidates
-                    candidates[0] = p
-                    break
+        min_count = min(
+            trio_counts.get(anchor, 0),
+            *(trio_counts.get(p, 0) for p in all_in_pairs),
+        )
+        if trio_counts.get(anchor, 0) <= min_count:
+            return anchor, pairs  # Anchor already at min_count
 
-        return candidates
+        # Find best swap candidate: lowest trio_count, then highest index (lowest rank)
+        best = min(
+            all_in_pairs,
+            key=lambda q: (trio_counts.get(q, 0), -player_to_index.get(q, 0)),
+        )
+        if trio_counts.get(best, 0) >= trio_counts.get(anchor, 0):
+            return anchor, pairs  # No improvement
+
+        # Execute swap: best becomes anchor, anchor takes best's place in pair
+        new_pairs: List[Tuple[int, int]] = []
+        for a, b in pairs:
+            if best == a:
+                new_pairs.append((anchor, b))
+            elif best == b:
+                new_pairs.append((a, anchor))
+            else:
+                new_pairs.append((a, b))
+        return best, new_pairs
+
+    def _select_trio_companions(
+        self,
+        anchor: int,
+        pairs: List[Tuple[int, int]],
+        trio_counts: dict[int, int],
+        encounter_matrix: Dict[Tuple[int, int], bool],
+        player_to_index: dict[int, int],
+    ) -> Tuple[int, int]:
+        """Pure function. Select 2 companions for the anchor from the pair pool.
+
+        Evaluates all C(pool_size, 2) combinations and picks the one with
+        the minimum score tuple:
+            (companion_count_sum, trio_rematches, orphan_rematch, -position_sum)
+        """
+        pool = [p for pair in pairs for p in pair]
+        if len(pool) < 2:
+            raise ValueError(
+                f"Need at least 2 players in pool for companion selection, got {len(pool)}"
+            )
+        if anchor in pool:
+            raise ValueError(f"Anchor {anchor} must not be in the companion pool")
+
+        # Map each player to the pair they belong to
+        player_to_pair: dict[int, int] = {}
+        for i, (a, b) in enumerate(pairs):
+            player_to_pair[a] = i
+            player_to_pair[b] = i
+
+        best_score: Tuple[int, int, int, int] | None = None
+        best_companions: Tuple[int, int] = (pool[0], pool[1])
+
+        for c1, c2 in combinations(pool, 2):
+            # companion_count_sum: sum of trio_counts for the 2 companions only
+            companion_count_sum = trio_counts.get(c1, 0) + trio_counts.get(c2, 0)
+
+            # trio_rematches: how many of the 3 pairs in the trio already met
+            trio_rematches = 0
+            for pa, pb in [(anchor, c1), (anchor, c2), (c1, c2)]:
+                if encounter_matrix.get((pa, pb), False):
+                    trio_rematches += 1
+
+            # orphan_rematch: if companions come from different pairs, check orphans
+            if player_to_pair[c1] == player_to_pair[c2]:
+                orphan_rematch = 0  # Same pair, no orphans created
+            else:
+                # Find the orphans (partners left behind)
+                pair_idx_1 = player_to_pair[c1]
+                pair_idx_2 = player_to_pair[c2]
+                orphan1 = pairs[pair_idx_1][0] if pairs[pair_idx_1][1] == c1 else pairs[pair_idx_1][1]
+                orphan2 = pairs[pair_idx_2][0] if pairs[pair_idx_2][1] == c2 else pairs[pair_idx_2][1]
+                orphan_rematch = 1 if encounter_matrix.get((orphan1, orphan2), False) else 0
+
+            # position_sum: higher sum = both companions lower in classification = more Amalfi spirit
+            # Using sum (not max) ensures we prefer (CRISTIAN=5, EGLE=6) sum=11
+            # over (player1=0, EGLE=6) sum=6 — avoids sacrificing top-ranked players
+            position_sum = (
+                player_to_index.get(c1, 0) + player_to_index.get(c2, 0)
+            )
+
+            score = (companion_count_sum, trio_rematches, orphan_rematch, -position_sum)
+            if best_score is None or score < best_score:
+                best_score = score
+                best_companions = (c1, c2)
+
+        return best_companions
 
     def _get_classification(
         self, gara_id: int, round_number: int
