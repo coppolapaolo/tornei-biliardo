@@ -144,6 +144,151 @@ class TestTrioQuickResultValidation:
         assert trio.winner_id == user1.id  # Player with most racks
 
 
+class TestTrioQuickResultScoreDistribution:
+    """Regression: Trio quick result with asymmetric scores (e.g. 3-1-5)
+    was distributed incorrectly by the greedy rack assignment algorithm.
+
+    Bug: set_result_direct used a greedy "prefer P1, then P2, fallback P1"
+    strategy that over-allocated racks to P1 when both players in a matchup
+    had 0 remaining wins. E.g., entering 3-1-5 resulted in 4-1-4.
+
+    Fix: Always assign each rack to the player with more remaining wins.
+    """
+
+    def test_asymmetric_scores_315_distance6(self, db_session):
+        """Regression: 3-1-5 with distance 6 should produce exactly 3-1-5."""
+        user1 = User(username="dist_p1", email="dist1@test.com", password_hash="x")
+        user2 = User(username="dist_p2", email="dist2@test.com", password_hash="x")
+        user3 = User(username="dist_p3", email="dist3@test.com", password_hash="x")
+        db_session.add_all([user1, user2, user3])
+        db_session.flush()
+
+        gara = create_test_gara(
+            db_session, "Test Trio Dist", distance=6, odd_number_policy="trio"
+        )
+
+        match = Match(
+            gara_id=gara.id, round_number=1,
+            player1_id=user1.id, player2_id=user2.id,
+            is_trio=True, status=MatchStatus.PLAYING.value,
+        )
+        db_session.add(match)
+        db_session.flush()
+
+        trio = TrioMatch(
+            match_id=match.id,
+            player1_id=user1.id, player2_id=user2.id, player3_id=user3.id,
+        )
+        db_session.add(trio)
+        db_session.flush()
+
+        # WHEN: set 3-1-5
+        TrioScoringService.set_result_direct(trio.id, 3, 1, 5)
+        db_session.expire(trio)
+
+        # THEN: racks should match exactly
+        assert trio.player1_racks == 3
+        assert trio.player2_racks == 1
+        assert trio.player3_racks == 5
+
+    def test_asymmetric_scores_510_distance5(self, db_session):
+        """5-1-0 with distance 5 (6 total racks) should produce 5-1-0."""
+        user1 = User(username="dist2_p1", email="dist2_1@test.com", password_hash="x")
+        user2 = User(username="dist2_p2", email="dist2_2@test.com", password_hash="x")
+        user3 = User(username="dist2_p3", email="dist2_3@test.com", password_hash="x")
+        db_session.add_all([user1, user2, user3])
+        db_session.flush()
+
+        gara = create_test_gara(
+            db_session, "Test Trio Dist2", distance=5, odd_number_policy="trio"
+        )
+
+        match = Match(
+            gara_id=gara.id, round_number=1,
+            player1_id=user1.id, player2_id=user2.id,
+            is_trio=True, status=MatchStatus.PLAYING.value,
+        )
+        db_session.add(match)
+        db_session.flush()
+
+        trio = TrioMatch(
+            match_id=match.id,
+            player1_id=user1.id, player2_id=user2.id, player3_id=user3.id,
+        )
+        db_session.add(trio)
+        db_session.flush()
+
+        # Distance 5: 2 rounds, 6 total racks, max 4 per player
+        # 5 exceeds max_per_player=4 — should raise ValueError
+        with pytest.raises(ValueError, match="non può vincere più di 4"):
+            TrioScoringService.set_result_direct(trio.id, 5, 1, 0)
+
+    def test_equal_scores_333_distance6(self, db_session):
+        """3-3-3 with distance 6 should work correctly."""
+        user1 = User(username="eq_p1", email="eq1@test.com", password_hash="x")
+        user2 = User(username="eq_p2", email="eq2@test.com", password_hash="x")
+        user3 = User(username="eq_p3", email="eq3@test.com", password_hash="x")
+        db_session.add_all([user1, user2, user3])
+        db_session.flush()
+
+        gara = create_test_gara(
+            db_session, "Test Trio Equal", distance=6, odd_number_policy="trio"
+        )
+
+        match = Match(
+            gara_id=gara.id, round_number=1,
+            player1_id=user1.id, player2_id=user2.id,
+            is_trio=True, status=MatchStatus.PLAYING.value,
+        )
+        db_session.add(match)
+        db_session.flush()
+
+        trio = TrioMatch(
+            match_id=match.id,
+            player1_id=user1.id, player2_id=user2.id, player3_id=user3.id,
+        )
+        db_session.add(trio)
+        db_session.flush()
+
+        TrioScoringService.set_result_direct(trio.id, 3, 3, 3)
+        db_session.expire(trio)
+
+        assert trio.player1_racks == 3
+        assert trio.player2_racks == 3
+        assert trio.player3_racks == 3
+
+    def test_max_per_player_validation(self, db_session):
+        """A player can't win more racks than they participate in."""
+        user1 = User(username="max_p1", email="max1@test.com", password_hash="x")
+        user2 = User(username="max_p2", email="max2@test.com", password_hash="x")
+        user3 = User(username="max_p3", email="max3@test.com", password_hash="x")
+        db_session.add_all([user1, user2, user3])
+        db_session.flush()
+
+        gara = create_test_gara(
+            db_session, "Test Max", distance=6, odd_number_policy="trio"
+        )
+
+        match = Match(
+            gara_id=gara.id, round_number=1,
+            player1_id=user1.id, player2_id=user2.id,
+            is_trio=True, status=MatchStatus.PLAYING.value,
+        )
+        db_session.add(match)
+        db_session.flush()
+
+        trio = TrioMatch(
+            match_id=match.id,
+            player1_id=user1.id, player2_id=user2.id, player3_id=user3.id,
+        )
+        db_session.add(trio)
+        db_session.flush()
+
+        # Distance 6: 3 rounds, max 6 per player. 7-1-1=9 but P1 > 6
+        with pytest.raises(ValueError, match="non può vincere più di 6"):
+            TrioScoringService.set_result_direct(trio.id, 7, 1, 1)
+
+
 class TestTrioResetOnTableRemoval:
     """Regression tests for Bug 2: Trio reset when removing table.
 

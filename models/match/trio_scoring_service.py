@@ -204,6 +204,15 @@ class TrioScoringService:
                 f"per un trio con distanza {config.distance}"
             )
 
+        # Validate per-player maximum (each player plays 2 racks per round)
+        max_per_player = 2 * config.num_rounds
+        for label, racks in [("P1", player1_racks), ("P2", player2_racks), ("P3", player3_racks)]:
+            if racks > max_per_player:
+                raise ValueError(
+                    f"{label} non può vincere più di {max_per_player} rack "
+                    f"(partecipa a {max_per_player} matchup su {config.total_played_racks})"
+                )
+
         # Delete any existing racks
         for rack in trio.racks.all():
             db.session.delete(rack)
@@ -228,14 +237,13 @@ class TrioScoringService:
             current_p2_id = trio.player_ids[p2_idx]
             waiting_id = trio.player_ids[waiting_idx]
 
-            # Assign winner: prefer player who still needs wins
-            if remaining_wins.get(current_p1_id, 0) > 0:
+            # Assign winner: prefer player who still needs more wins
+            p1_needs = remaining_wins.get(current_p1_id, 0)
+            p2_needs = remaining_wins.get(current_p2_id, 0)
+            if p1_needs >= p2_needs:
                 winner_id = current_p1_id
-            elif remaining_wins.get(current_p2_id, 0) > 0:
-                winner_id = current_p2_id
             else:
-                # Should not happen if scores are valid
-                winner_id = current_p1_id
+                winner_id = current_p2_id
 
             remaining_wins[winner_id] = remaining_wins.get(winner_id, 0) - 1
 
