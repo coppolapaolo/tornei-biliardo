@@ -89,3 +89,21 @@ pass-through `IndividualMatchService.report_result`, plus the now-unused
 Source: Review of terminate-campionato feature (2026-04-06).
 
 `Campionato.get_status()` (in `models.py`) and `compute_campionato_status()` (in `statistics_service.py`) implement the same logic independently. Both were modified to add the `terminated_at` short-circuit. Any future change to one risks silent divergence from the other. Consider making `get_status()` delegate to `compute_campionato_status()` or vice versa.
+
+## Refactor: unificare data source anti-rematch (salto + Step 3)
+
+Source: Review Amalfi trio (2026-04-07), ECH #3.
+
+Il salto (Step 1) usa `_have_already_played()` (query per-coppia) mentre Step 3 usa `encounter_matrix` (query singola cached). Asimmetria architetturale accettata per questa feature — refactoring opzionale per far usare la matrice anche al salto.
+
+## Trio forfeit: gestione in create_matches_from_pairings
+
+Source: Review Amalfi trio (2026-04-07), ECH #7.
+
+`round_creation.py` non gestisce forfeit per match trio (branch `len(pairing.players) == 3`). Un giocatore in `forfeit_user_ids` viene inserito nel trio senza adeguamento. Pre-esistente, non causato dalla feature trio selection.
+
+## Review random matchmaking specification
+
+Source: Conversazione Amalfi trio (2026-04-07).
+
+Verificare che la specifica del matchmaking random sia completa e corretta, in particolare l'interazione con anti-rematch e gestione dispari (bye/trio). Da fare dopo il fix Amalfi trio.
