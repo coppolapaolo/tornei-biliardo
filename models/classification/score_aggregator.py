@@ -353,8 +353,11 @@ class ScoreAggregator:
                 continue
 
             player_racks = racks[i]
-            # Opponent racks = sum of other two players' racks
-            opponent_racks = sum(r for j, r in enumerate(racks) if j != i)
+            # Each player plays exactly (2 * num_rounds) racks in a trio.
+            # Racks lost = racks_played - racks_won (not sum of others' scores).
+            # This ensures zero-sum diff and parity with normal matches.
+            racks_per_player = 2 * (distance // 2)
+            opponent_racks = racks_per_player - player_racks
 
             # Add bonus racks to each player (equalization with normal matches)
             player_stats[pid]["racks_won"] += player_racks + bonus_racks
