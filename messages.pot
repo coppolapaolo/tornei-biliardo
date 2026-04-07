@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-04-06 15:39+0200\n"
+"POT-Creation-Date: 2026-04-07 13:56+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -356,66 +356,70 @@ msgstr ""
 msgid "Non hai i permessi per creare un campionato."
 msgstr ""
 
-#: routes/admin/campionato.py:626
+#: routes/admin/campionato.py:630
 #, python-format
 msgid "Campionato \"%(name)s\" terminato con successo."
 msgstr ""
 
-#: routes/admin/campionato.py:630
+#: routes/admin/campionato.py:634
 msgid "Il campionato è già stato terminato."
 msgstr ""
 
-#: routes/admin/campionato.py:648
+#: routes/admin/campionato.py:652
 msgid "Parametri non validi."
 msgstr ""
 
-#: routes/admin/campionato.py:655
+#: routes/admin/campionato.py:659
 msgid "Requisito minimo gare aggiornato."
 msgstr ""
 
-#: routes/admin/campionato.py:676
+#: routes/admin/campionato.py:681
+msgid "Playoff avviati ma nessun giocatore qualificato. Verifica la classifica."
+msgstr ""
+
+#: routes/admin/campionato.py:686
 #, python-format
 msgid "Playoff avviati: %(count)s giocatori qualificati."
 msgstr ""
 
-#: routes/admin/campionato.py:699
+#: routes/admin/campionato.py:713
 msgid "Configurazione playoff non trovata."
 msgstr ""
 
-#: routes/admin/campionato.py:713
+#: routes/admin/campionato.py:727
 #, python-format
 msgid "Gara playoff \"%(name)s\" creata con successo."
 msgstr ""
 
-#: routes/admin/campionato.py:735
+#: routes/admin/campionato.py:749
 msgid "Seleziona un giocatore."
 msgstr ""
 
-#: routes/admin/campionato.py:742
+#: routes/admin/campionato.py:756
 msgid "Giocatore aggiunto ai playoff."
 msgstr ""
 
-#: routes/admin/campionato.py:762
+#: routes/admin/campionato.py:776
 msgid "Qualificazione non specificata."
 msgstr ""
 
-#: routes/admin/campionato.py:769
+#: routes/admin/campionato.py:783
 msgid "Giocatore rimosso dai playoff."
 msgstr ""
 
-#: routes/admin/campionato.py:804
+#: routes/admin/campionato.py:818
 msgid "Configurazione playoff aggiornata."
 msgstr ""
 
-#: routes/admin/campionato.py:828
+#: routes/admin/campionato.py:842
 msgid "Tutti i campi obbligatori devono essere compilati."
 msgstr ""
 
-#: routes/admin/campionato.py:847
+#: routes/admin/campionato.py:861
 msgid "Configurazione playoff aggiunta."
 msgstr ""
 
-#: routes/admin/campionato.py:867
+#: routes/admin/campionato.py:881
 msgid "Configurazione playoff disattivata."
 msgstr ""
 
@@ -3917,6 +3921,33 @@ msgstr ""
 msgid "Override Attivo"
 msgstr ""
 
+#: templates/errors/400.html:3
+msgid "Sessione scaduta"
+msgstr ""
+
+#: templates/errors/400.html:11
+msgid "Sessione scaduta!"
+msgstr ""
+
+#: templates/errors/400.html:13
+msgid ""
+"La pagina era aperta da troppo tempo e la sessione è scaduta. Torna "
+"indietro e ricarica la pagina per riprovare."
+msgstr ""
+
+#: templates/errors/400.html:18
+msgid "Consiglio: non lasciare il modulo aperto troppo a lungo prima di inviare!"
+msgstr ""
+
+#: templates/errors/400.html:21
+msgid "Torna indietro"
+msgstr ""
+
+#: templates/errors/400.html:24 templates/errors/404.html:21
+#: templates/errors/429.html:21 templates/errors/500.html:21
+msgid "Torna al tavolo"
+msgstr ""
+
 #: templates/errors/404.html:3
 msgid "Pagina non trovata"
 msgstr ""
@@ -3935,11 +3966,6 @@ msgstr ""
 msgid ""
 "Consiglio: controlla il tiro (URL) e riprova. Anche i campioni sbagliano "
 "ogni tanto."
-msgstr ""
-
-#: templates/errors/404.html:21 templates/errors/429.html:21
-#: templates/errors/500.html:21
-msgid "Torna al tavolo"
 msgstr ""
 
 #: templates/errors/429.html:3

@@ -276,6 +276,12 @@ def create_app(config_name=None):
             return jsonify(status="unhealthy", error=str(e)), 503
 
     # Custom error pages
+    from flask_wtf.csrf import CSRFError
+
+    @app.errorhandler(CSRFError)
+    def csrf_error(e):
+        return render_template("errors/400.html"), 400
+
     @app.errorhandler(404)
     def not_found(e):
         return render_template("errors/404.html"), 404
