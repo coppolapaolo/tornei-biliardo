@@ -188,8 +188,9 @@ class RoundClassification(db.Model):
                         continue
 
                     player_racks = racks[i]
-                    # Opponent racks = sum of other two players' racks
-                    opponent_racks = sum(r for j, r in enumerate(racks) if j != i)
+                    from models.match.trio_config import trio_racks_lost
+
+                    opponent_racks = trio_racks_lost(player_racks, distance)
 
                     # Add bonus racks to each player (equalization)
                     player_stats[pid]["rack_won"] += player_racks + bonus_racks

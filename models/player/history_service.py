@@ -276,17 +276,20 @@ class PlayerHistoryService:
         racks_lost = 0
         for m in matches:
             if m.is_trio and m.trio_match:
-                # Trio match: find user's racks and sum opponents' racks
+                from models.match.trio_config import trio_racks_lost
+
                 trio = m.trio_match
+                distance = m.gara.distance if m.gara else 5
                 if trio.player1_id == user_id:
-                    racks_won += trio.player1_racks or 0
-                    racks_lost += (trio.player2_racks or 0) + (trio.player3_racks or 0)
+                    player_r = trio.player1_racks or 0
                 elif trio.player2_id == user_id:
-                    racks_won += trio.player2_racks or 0
-                    racks_lost += (trio.player1_racks or 0) + (trio.player3_racks or 0)
+                    player_r = trio.player2_racks or 0
                 elif trio.player3_id == user_id:
-                    racks_won += trio.player3_racks or 0
-                    racks_lost += (trio.player1_racks or 0) + (trio.player2_racks or 0)
+                    player_r = trio.player3_racks or 0
+                else:
+                    player_r = 0
+                racks_won += player_r
+                racks_lost += trio_racks_lost(player_r, distance)
             else:
                 # Regular 2-player match
                 if m.player1_id == user_id:

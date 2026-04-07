@@ -68,8 +68,20 @@ class TrioConfig:
 
     @property
     def max_racks_per_player(self) -> int:
-        """Maximum racks a player can win (equals distance)."""
+        """Maximum racks a player can win (equals distance).
+
+        This includes bonus racks: racks_played_per_player + bonus_racks.
+        """
         return self.distance
+
+    @property
+    def racks_played_per_player(self) -> int:
+        """Racks each player actually plays in the round-robin (2 per round).
+
+        Each round has 3 racks; each player sits out 1, plays 2.
+        This is the denominator for rack differential: lost = played - won.
+        """
+        return 2 * self.num_rounds
 
     @property
     def racks_per_round(self) -> int:
@@ -165,3 +177,16 @@ def get_trio_config_from_gara(gara) -> Optional[TrioConfig]:
         return None
 
     return config
+
+
+def trio_racks_lost(player_racks: int, distance: int) -> int:
+    """Compute racks lost for a trio player.
+
+    Each player plays 2 racks per round (sits out 1 of 3).
+    Racks lost = racks_played - racks_won.
+
+    This is the single source of truth for trio rack differential.
+    Use this instead of inline calculations.
+    """
+    racks_played = 2 * (distance // 2)
+    return racks_played - player_racks
