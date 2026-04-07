@@ -102,6 +102,19 @@ Source: Review Amalfi trio (2026-04-07), ECH #7.
 
 `round_creation.py` non gestisce forfeit per match trio (branch `len(pairing.players) == 3`). Un giocatore in `forfeit_user_ids` viene inserito nel trio senza adeguamento. Pre-esistente, non causato dalla feature trio selection.
 
+## Redesign playoff configuration UI
+
+Source: Test manuale (2026-04-07).
+
+La UI attuale di configurazione playoff ha diversi problemi:
+- Max/min gare non ha senso come parametro
+- Distance e rounds dovrebbero essere precompilati (ereditati dal campionato)
+- Mancano tutte le opzioni tipiche di gara: selezione primo turno, forfait, gestione dispari, tiebreak, ecc.
+- "Add configuration" è criptico — non è chiaro cosa faccia
+- Manca la preview dei partecipanti qualificati in base alla classifica
+
+Serve un redesign completo della sezione playoff in `campionato_detail.html` e probabilmente del modello `PlayoffConfig`.
+
 ## Review random matchmaking specification
 
 Source: Conversazione Amalfi trio (2026-04-07).
