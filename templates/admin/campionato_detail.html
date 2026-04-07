@@ -21,7 +21,7 @@
             <i class="fas fa-edit"></i> Modifica Campionato
         </a>
         {% endif %}
-        {% if not campionato.terminated_at and campionato.get_status() != 'completed' %}
+        {% if not campionato.terminated_at %}
         <button type="button" class="btn btn-danger" id="btn-terminate-campionato">
             <i class="fas fa-stop-circle"></i> {{ _("Termina Campionato") }}
         </button>
