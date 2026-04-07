@@ -29,7 +29,7 @@ Spec `spec-eventbus-sentry-dedupe.md`. Risolto con `ignore_logger("models.events
 dentro il try/except import esistente. Net: 1 solo Sentry event per handler failure
 (da explicit capture) invece di 3 (2 auto-log + 1 explicit).
 
-## Priority 4: Performance optimizations (profile first)
+## ~~Priority 4: Performance optimizations (profile first)~~ ✅ DONE (2026-04-05)
 
 Low priority — no user-reported issues.
 

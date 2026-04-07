@@ -13,8 +13,6 @@
 {% include "components/_player_dashboard_content.html" %}
 {% endif %}
 
-{% endblock %}
-
 {% if vm.caps and (vm.caps.can_create_campionato or vm.caps.can_create_standalone) %}
 {% include "components/_campionato_create_modal.html" %}
 {% endif %}
@@ -22,6 +20,8 @@
 {% if vm.caps and vm.caps.can_create_standalone %}
 {% include "components/_admin_new_campionato_modal.html" %}
 {% endif %}
+
+{% endblock %}
 
 {% block scripts %}
 <script>

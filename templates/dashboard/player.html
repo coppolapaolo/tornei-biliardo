@@ -5,11 +5,11 @@
 
 {% block dashboard_content %}
 {% include "components/_player_dashboard_content.html" %}
-{% endblock %}
 
 {% if vm.caps and vm.caps.can_create_campionato %}
   {% include "components/_campionato_create_modal.html" %}
 {% endif %}
+{% endblock %}
 
 {% block scripts %}
 <script>
