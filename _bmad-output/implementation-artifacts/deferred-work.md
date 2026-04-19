@@ -116,10 +116,11 @@ walkover. `_process_trio_match` walkover branch credita winner con
 rack. `initialize_matchup()` al walkover creation per risolvere admin
 reset crash. 26 test (13 unit + 4 integration + 9 trio_forfeit).
 
-## Residui da review walkover unified (2026-04-19)
+## ~~Residui da review walkover unified (2026-04-19)~~ ✅ ALL DONE (2026-04-19)
 
 Scoperti dai 3 reviewer (Blind Hunter + Edge Case Hunter + Acceptance
-Auditor) durante step-04 del bmad-quick-dev.
+Auditor) durante step-04 del bmad-quick-dev. Tutti chiusi in una singola
+sessione di cleanup.
 
 - ~~**Broad `except Exception` in XP handler**~~ ✅ DONE (2026-04-19):
   Walkover detection (match lookup + `WithdrawPolicyService.get_forfeit_user_ids`)
@@ -184,10 +185,11 @@ e lo passa a entrambi i call-site di `create_matches_from_pairings`
 (branch random e non-random). 5 regression test in
 `tests/new/unit/test_start_first_round_forfeit.py`.
 
-## Residui da review fix-forfeit-first-round (2026-04-19)
+## ~~Residui da review fix-forfeit-first-round (2026-04-19)~~ ✅ ALL DONE (2026-04-19)
 
 Scoperti dai 3 reviewer (Blind Hunter + Edge Case Hunter + Acceptance
-Auditor) durante step-04 del bmad-quick-dev.
+Auditor) durante step-04 del bmad-quick-dev. Tutti chiusi in una singola
+sessione di cleanup.
 
 - ~~**Waitlist + forfeit interaction untested**~~ ✅ DONE (2026-04-19):
   `WithdrawPolicyService.get_forfeit_inscriptions` ora filtra per
