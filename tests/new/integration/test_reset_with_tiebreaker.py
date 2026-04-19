@@ -166,6 +166,10 @@ class TestResetWithTiebreakerHttp:
         resp = client.post(f"/admin/match/{match.id}/reset", follow_redirects=True)
 
         assert resp.status_code == 200
+        # Flash message must carry the tiebreaker reason (defense-in-depth
+        # would be silently undetectable without this assertion)
+        body = resp.get_data(as_text=True).lower()
+        assert "spareggio" in body
         # Match state must be intact — no reset happened
         db_session.refresh(match)
         assert match.winner_id == p1.id
