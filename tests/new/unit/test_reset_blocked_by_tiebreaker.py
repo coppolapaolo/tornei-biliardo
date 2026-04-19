@@ -187,3 +187,147 @@ class TestResetBlockedByActiveTiebreaker:
 
         assert can_modify is False
         assert "spareggio" in reason.lower()
+
+
+@pytest.mark.unit
+class TestResetBlockedByCampionatoTiebreaker:
+    """TB campionato-level (gara_id=NULL, campionato_id=X) bloccano i reset
+    dei match delle gare del campionato — il playoff campionato certifica
+    il ranking che dipende dagli score dei match sottostanti.
+    """
+
+    def _make_campionato(self, db_session):
+        from models.campionato.models import Campionato
+
+        existing = db_session.query(Campionato).count()
+        c = Campionato(name=f"TB-Campionato {existing + 1}")
+        db_session.add(c)
+        db_session.flush()
+        return c
+
+    def test_campionato_tiebreaker_blocks_reset_of_match_in_gara(
+        self, db_session, isolated_players
+    ):
+        """TB con gara_id=NULL + campionato_id=X blocca reset match in gara di X."""
+        from models.tiebreaker.models import Tiebreaker
+
+        campionato = self._make_campionato(db_session)
+        gara = _make_playing_gara(db_session)
+        gara.campionato_id = campionato.id
+        db_session.flush()
+        p1, p2 = isolated_players[:2]
+        match = _make_completed_match(db_session, gara, p1, p2)
+
+        tb = Tiebreaker(
+            match_id=match.id,
+            gara_id=None,
+            campionato_id=campionato.id,
+            tiebreaker_type=TiebreakerType.PLAYOFF_MATCH.value,
+            status=TiebreakerStatus.PENDING.value,
+            player1_id=p1.id,
+            player2_id=p2.id,
+        )
+        db_session.add(tb)
+        db_session.commit()
+
+        can_modify, reason = AdvancedRoundManager.can_modify_match(match.id)
+
+        assert can_modify is False
+        assert "spareggio" in reason.lower()
+
+    def test_campionato_tiebreaker_does_not_block_unrelated_standalone_gara(
+        self, db_session, isolated_players
+    ):
+        """TB campionato-level non blocca gare standalone (campionato_id=None)."""
+        from models.tiebreaker.models import Tiebreaker
+
+        campionato = self._make_campionato(db_session)
+        # Standalone gara (no campionato link)
+        standalone_gara = _make_playing_gara(db_session)
+        assert standalone_gara.campionato_id is None
+        p1, p2 = isolated_players[:2]
+        match = _make_completed_match(db_session, standalone_gara, p1, p2)
+
+        tb = Tiebreaker(
+            match_id=match.id,
+            gara_id=None,
+            campionato_id=campionato.id,
+            tiebreaker_type=TiebreakerType.PLAYOFF_MATCH.value,
+            status=TiebreakerStatus.PENDING.value,
+            player1_id=p1.id,
+            player2_id=p2.id,
+        )
+        db_session.add(tb)
+        db_session.commit()
+
+        can_modify, reason = AdvancedRoundManager.can_modify_match(match.id)
+
+        assert can_modify is True
+        assert reason == ""
+
+
+@pytest.mark.unit
+class TestCancelRoundBlockedByTiebreaker:
+    """cancel_round bloccato da tiebreaker attivo (coerenza con reset)."""
+
+    def test_cancel_round_blocked_by_active_tiebreaker(
+        self, db_session, isolated_players
+    ):
+        gara = _make_playing_gara(db_session)
+        p1, p2 = isolated_players[:2]
+        # Round 1 with a match that has 0 score (no partial results)
+        match = Match(
+            gara_id=gara.id,
+            player1_id=p1.id,
+            player2_id=p2.id,
+            round_number=1,
+            status=MatchStatus.PENDING.value,
+            player1_score=0,
+            player2_score=0,
+        )
+        db_session.add(match)
+        db_session.add(Inscription(gara_id=gara.id, user_id=p1.id))
+        db_session.add(Inscription(gara_id=gara.id, user_id=p2.id))
+        db_session.flush()
+        gara.current_round = 1
+        _make_tiebreaker(db_session, gara, p1, p2, TiebreakerStatus.PENDING.value)
+        db_session.commit()
+
+        success, reason = AdvancedRoundManager.cancel_round(gara.id, 1)
+
+        assert success is False
+        assert "spareggio" in reason.lower()
+
+    def test_cancel_round_succeeds_after_tiebreaker_cancellation(
+        self, db_session, isolated_players
+    ):
+        gara = _make_playing_gara(db_session)
+        p1, p2 = isolated_players[:2]
+        match = Match(
+            gara_id=gara.id,
+            player1_id=p1.id,
+            player2_id=p2.id,
+            round_number=1,
+            status=MatchStatus.PENDING.value,
+            player1_score=0,
+            player2_score=0,
+        )
+        db_session.add(match)
+        db_session.add(Inscription(gara_id=gara.id, user_id=p1.id))
+        db_session.add(Inscription(gara_id=gara.id, user_id=p2.id))
+        db_session.flush()
+        gara.current_round = 1
+        tb = _make_tiebreaker(db_session, gara, p1, p2, TiebreakerStatus.PENDING.value)
+        db_session.commit()
+
+        # Blocked first
+        success, _ = AdvancedRoundManager.cancel_round(gara.id, 1)
+        assert success is False
+
+        # Cancel TB
+        tb.status = TiebreakerStatus.CANCELLED.value
+        db_session.commit()
+
+        # Now succeeds
+        success, msg = AdvancedRoundManager.cancel_round(gara.id, 1)
+        assert success is True, f"cancel_round should succeed after TB cancel: {msg}"

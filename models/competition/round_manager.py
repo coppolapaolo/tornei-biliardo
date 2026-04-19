@@ -120,16 +120,7 @@ class AdvancedRoundManager:
         # implicitamente l'integrità dei match della gara. Qualsiasi
         # tiebreaker in stato != CANCELLED blocca il reset; il director
         # deve prima cancellare lo spareggio per modificare i match.
-        active_tiebreaker_exists = (
-            db.session.query(Tiebreaker.id)
-            .filter(
-                Tiebreaker.gara_id == gara.id,
-                Tiebreaker.status != TiebreakerStatus.CANCELLED.value,
-            )
-            .first()
-            is not None
-        )
-        if active_tiebreaker_exists:
+        if AdvancedRoundManager._gara_has_active_tiebreaker(gara.id):
             return (
                 False,
                 str(
@@ -141,6 +132,42 @@ class AdvancedRoundManager:
             )
 
         return True, ""
+
+    @staticmethod
+    def _gara_has_active_tiebreaker(gara_id: int) -> bool:
+        """True se la gara ha almeno un `Tiebreaker` non-CANCELLED.
+
+        Implementa la semantica ADR-026 "SSR certifica i risultati":
+        finché esiste uno spareggio non annullato, i match non possono
+        essere modificati né il round cancellato. Usato sia da
+        `can_modify_match` (single-match reset) che da `cancel_round`
+        (round cancellation) per coerenza.
+
+        Scope del blocco:
+        - `Tiebreaker.gara_id == gara_id` — spareggio di gara (SSR/rally)
+        - `Tiebreaker.campionato_id == gara.campionato_id` se la gara
+          appartiene a un campionato — spareggio campionato-level
+          (playoff match fra gare) ancora non annullato: modificare
+          un match della gara sottostante invaliderebbe la ranking che
+          ha portato al playoff
+        """
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            return False
+
+        filters = [Tiebreaker.gara_id == gara_id]
+        if gara.campionato_id is not None:
+            filters.append(Tiebreaker.campionato_id == gara.campionato_id)
+
+        return (
+            db.session.query(Tiebreaker.id)
+            .filter(
+                db.or_(*filters),
+                Tiebreaker.status != TiebreakerStatus.CANCELLED.value,
+            )
+            .first()
+            is not None
+        )
 
     @staticmethod
     @transactional(domain="competition")
@@ -206,6 +233,21 @@ class AdvancedRoundManager:
         gara = db.session.get(Gara, gara_id)
         if not gara:
             return False, "Gara non trovata"
+
+        # ADR-026: uno spareggio attivo certifica la gara. cancel_round
+        # cancellerebbe tutti i match del round — incoerente con il blocco
+        # del reset single-match. Il director deve annullare lo spareggio
+        # prima di poter cancellare qualsiasi round.
+        if AdvancedRoundManager._gara_has_active_tiebreaker(gara.id):
+            return (
+                False,
+                str(
+                    _(
+                        "Gara certificata da spareggio: annulla prima lo "
+                        "spareggio per cancellare il turno"
+                    )
+                ),
+            )
 
         # Only allow canceling the current round or higher
         if round_number < gara.current_round:

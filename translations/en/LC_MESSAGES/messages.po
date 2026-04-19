@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-04-19 23:01+0200\n"
+"POT-Creation-Date: 2026-04-19 23:14+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -18,13 +18,21 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: models/competition/round_manager.py:137
+#: models/competition/round_manager.py:128
 msgid ""
 "Gara certificata da spareggio: annulla prima lo spareggio per modificare "
 "i match"
 msgstr ""
 "Competition certified by tiebreaker: cancel the tiebreaker first to "
 "modify the matches"
+
+#: models/competition/round_manager.py:246
+msgid ""
+"Gara certificata da spareggio: annulla prima lo spareggio per cancellare "
+"il turno"
+msgstr ""
+"Competition certified by tiebreaker: cancel the tiebreaker first to "
+"cancel the round"
 
 #: models/dashboard/dashboard_service.py:75
 #: templates/components/_unified_dashboard_header.html:7
@@ -195,8 +203,7 @@ msgstr "Milestone: %(value)s matches!"
 msgid "Sono stati giocati %(value)s match sulla piattaforma. La community cresce!"
 msgstr ""
 "%(value)s matches have been played on the platform. The community is "
-"growing!%(value)s matches have been played on the platform. The community"
-" is growing!"
+"growing!"
 
 #: models/kpi/notifications.py:61
 #, python-format
@@ -773,9 +780,8 @@ msgstr "An error occurred while generating the archive. Please try again later."
 #: routes/player/exports.py:514
 msgid "Export avviato. Riceverai una notifica quando sarà pronto per il download."
 msgstr ""
-"Export started. You'll receive a notification when it's ready to "
-"download.Export started. You will receive a notification when it is ready"
-" for download."
+"Export started. You will receive a notification when it is ready for "
+"download."
 
 #: routes/player/exports.py:539
 msgid "Il file di export non esiste o è scaduto."
@@ -5638,9 +5644,7 @@ msgstr "Last rack removed. Continue playing!"
 
 #: templates/individual_match/match_detail.html:352
 msgid "Sei sicuro di voler dichiarare forfait? L'avversario vincerà il match."
-msgstr ""
-"Are you sure you want to forfeit? Your opponent will win the match.Are "
-"you sure you want to declare forfeit? Your opponent will win the match."
+msgstr "Are you sure you want to forfeit? Your opponent will win the match."
 
 #: templates/individual_match/match_detail.html:362
 msgid "Forfait dichiarato."
