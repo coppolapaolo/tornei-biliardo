@@ -93,28 +93,80 @@ def create_matches_from_pairings(
                 )
                 db.session.add(match)
         elif len(pairing.players) == 3:
-            match = Match(
-                gara_id=gara.id,
-                round_number=round_number,
-                player1_id=pairing.players[0],
-                player2_id=pairing.players[1],
-                is_bye=False,
-                is_trio=True,
-                discipline=round_discipline,
-                match_distance=round_distance,
-            )
-            db.session.add(match)
-            db.session.flush()
+            p0, p1, p2 = pairing.players
+            n_forfeit = sum(1 for p in pairing.players if p in forfeit_user_ids)
 
-            trio_match = TrioMatch(
-                match_id=match.id,
-                player1_id=pairing.players[0],
-                player2_id=pairing.players[1],
-                player3_id=pairing.players[2],
-            )
-            db.session.add(trio_match)
-            db.session.flush()
-            trio_match.initialize_matchup()
+            if n_forfeit == 0:
+                match = Match(
+                    gara_id=gara.id,
+                    round_number=round_number,
+                    player1_id=p0,
+                    player2_id=p1,
+                    is_bye=False,
+                    is_trio=True,
+                    discipline=round_discipline,
+                    match_distance=round_distance,
+                )
+                db.session.add(match)
+                db.session.flush()
+
+                trio_match = TrioMatch(
+                    match_id=match.id,
+                    player1_id=p0,
+                    player2_id=p1,
+                    player3_id=p2,
+                )
+                db.session.add(trio_match)
+                db.session.flush()
+                trio_match.initialize_matchup()
+            elif n_forfeit == 1:
+                survivors = [p for p in pairing.players if p not in forfeit_user_ids]
+                match = Match(
+                    gara_id=gara.id,
+                    round_number=round_number,
+                    player1_id=survivors[0],
+                    player2_id=survivors[1],
+                    is_bye=False,
+                    is_trio=False,
+                    discipline=round_discipline,
+                    match_distance=round_distance,
+                    is_multi_set=gara.is_multi_set,
+                )
+                db.session.add(match)
+            else:
+                if n_forfeit == 2:
+                    winner_id = next(
+                        p for p in pairing.players if p not in forfeit_user_ids
+                    )
+                else:
+                    winner_id = p0
+
+                match = Match(
+                    gara_id=gara.id,
+                    round_number=round_number,
+                    player1_id=p0,
+                    player2_id=p1,
+                    is_bye=False,
+                    is_trio=True,
+                    player1_score=round_distance,
+                    player2_score=0,
+                    winner_id=winner_id,
+                    status="completed",
+                    discipline=round_discipline,
+                    match_distance=round_distance,
+                )
+                db.session.add(match)
+                db.session.flush()
+
+                trio_match = TrioMatch(
+                    match_id=match.id,
+                    player1_id=p0,
+                    player2_id=p1,
+                    player3_id=p2,
+                    winner_id=winner_id,
+                    is_completed=True,
+                )
+                db.session.add(trio_match)
 
 
 class RoundCreationService:
@@ -199,9 +251,7 @@ class RoundCreationService:
                 .all()
             )
             normal_matches = sum(
-                1
-                for m in matches
-                if not m.is_bye and not getattr(m, "is_trio", False)
+                1 for m in matches if not m.is_bye and not getattr(m, "is_trio", False)
             )
             bye_matches = sum(1 for m in matches if m.is_bye)
             trio_matches = sum(1 for m in matches if getattr(m, "is_trio", False))
@@ -235,6 +285,7 @@ class RoundCreationService:
 
         # Get forfeit players for this gara to handle completed matches
         from models.competition.withdraw_policy_service import WithdrawPolicyService
+
         forfeit_user_ids = set(
             inscription.user_id
             for inscription in WithdrawPolicyService.get_forfeit_inscriptions(gara_id)
@@ -242,10 +293,17 @@ class RoundCreationService:
 
         # Get round configuration for distance override
         from models.competition.round_configuration import RoundConfiguration
+
         round_config = RoundConfiguration.get_for_gara_round(gara_id, round_number)
-        round_distance = round_config.get_effective_distance(gara.distance) if round_config else gara.distance
+        round_distance = (
+            round_config.get_effective_distance(gara.distance)
+            if round_config
+            else gara.distance
+        )
         # Use discipline_override if provided, otherwise check round_config
-        effective_discipline = discipline_override or (round_config.discipline if round_config else None)
+        effective_discipline = discipline_override or (
+            round_config.discipline if round_config else None
+        )
 
         # Crea i match nel database
         create_matches_from_pairings(
