@@ -270,10 +270,18 @@ class AdvancedRoundManager:
         # cancel_round on reset matches, which reset_match_complete had
         # worked around by pre-cleaning encounters — a workaround removed
         # by ADR-026.
+        # Bye matches are excluded: the bye's `player1_score = round_distance`
+        # is a persistence convention for classification machinery, not a
+        # user-entered result. Conceptually the bye is always "in initial
+        # state" (no racks to play), so it does not count as partial result.
+        # Walkovers (2-player forfeit, trio walkover) remain included — they
+        # represent human actions (iscritto forfeit) and must be reset
+        # deliberately before round cancellation.
         matches_with_results = [
             m
             for m in round_matches
-            if (m.player1_score or 0) > 0 or (m.player2_score or 0) > 0
+            if not m.is_bye
+            and ((m.player1_score or 0) > 0 or (m.player2_score or 0) > 0)
         ]
         if matches_with_results:
             return (
