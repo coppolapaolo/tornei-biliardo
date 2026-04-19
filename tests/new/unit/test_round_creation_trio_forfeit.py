@@ -216,9 +216,11 @@ class TestTrioForfeitTwo:
         assert trio.winner_id == p1
         # No TrioRack rows created for walkover
         assert trio.total_racks_played == 0
-        # current_* not initialized for walkover (no rack to play)
-        assert trio.current_player1_id is None
-        assert trio.current_player2_id is None
+        # Matchup initialized at creation so admin-reset-to-playing does not
+        # crash trio_state_serializer on NULL current_player*_id.
+        assert trio.current_player1_id is not None
+        assert trio.current_player2_id is not None
+        assert trio.waiting_player_id is not None
 
     def test_two_forfeits_other_pair(self, db_session, isolated_players):
         gara = _make_gara(db_session)

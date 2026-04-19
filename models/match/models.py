@@ -139,6 +139,26 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
         return self.status == MatchStatus.COMPLETED.value
 
     @property
+    def is_walkover(self) -> bool:
+        """True if completed without any real racks ever played (bye, forfeit, trio walkover).
+
+        Used by gamification/rating handlers to skip XP/Elo updates for walkover
+        outcomes and by classification to credit the nominal winner with distance
+        racks in trio walkovers.
+
+        Includes soft-deleted racks in the emptiness check: a match whose racks
+        were played and then removed by admin is NOT a walkover — only matches
+        where no rack ever existed qualify.
+        """
+        if self.status != MatchStatus.COMPLETED.value or self.winner_id is None:
+            return False
+        if self.is_trio:
+            return (
+                self.trio_match is not None and self.trio_match.total_racks_played == 0
+            )
+        return len(self.racks or []) == 0
+
+    @property
     def is_at_distance(self) -> bool:
         """Check if match has reached its required distance.
 
@@ -287,16 +307,19 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
     def start_next_set(self) -> "Set":
         """Start the next set in a multi-set match. Delegates to SetLifecycleService."""
         from .set_lifecycle_service import SetLifecycleService
+
         return SetLifecycleService.start_next_set(self)
 
     def get_current_set(self) -> Optional["Set"]:
         """Get the current set being played. Delegates to SetLifecycleService."""
         from .set_lifecycle_service import SetLifecycleService
+
         return SetLifecycleService.get_current_set(self)
 
     def complete_set(self, set_number: int, winner_id: int) -> None:
         """Complete a set and check if match is finished. Delegates to SetLifecycleService."""
         from .set_lifecycle_service import SetLifecycleService
+
         SetLifecycleService.complete_set(self, set_number, winner_id)
 
     def _remove_last_rack(self, user_id: int) -> None:
@@ -563,6 +586,7 @@ class TrioMatch(db.Model):
         """
         if self.total_racks_played == 0 and self.current_player1_id is None:
             from .trio_scoring_service import TrioScoringService
+
             TrioScoringService._update_current_players(self)
 
     def confirm_result_by_player(self, user_id: int) -> dict:
@@ -594,11 +618,9 @@ class TrioMatch(db.Model):
         elif user_id == self.player3_id:
             self.player3_confirmed = True
 
-        confirmations = sum([
-            self.player1_confirmed,
-            self.player2_confirmed,
-            self.player3_confirmed
-        ])
+        confirmations = sum(
+            [self.player1_confirmed, self.player2_confirmed, self.player3_confirmed]
+        )
 
         # Complete if all 3 confirmed
         if confirmations == 3:
@@ -607,14 +629,14 @@ class TrioMatch(db.Model):
                 "success": True,
                 "is_completed": True,
                 "confirmations": 3,
-                "message": "Tutti i giocatori hanno confermato, partita completata"
+                "message": "Tutti i giocatori hanno confermato, partita completata",
             }
 
         return {
             "success": True,
             "is_completed": False,
             "confirmations": confirmations,
-            "message": f"Conferma registrata ({confirmations}/3)"
+            "message": f"Conferma registrata ({confirmations}/3)",
         }
 
     def confirm_result_by_admin(self) -> dict:
@@ -634,7 +656,7 @@ class TrioMatch(db.Model):
         return {
             "success": True,
             "is_completed": True,
-            "message": "Partita validata dall'amministratore"
+            "message": "Partita validata dall'amministratore",
         }
 
     def _finalize_trio(self) -> None:
@@ -657,7 +679,9 @@ class TrioMatch(db.Model):
             # Use state service to complete match and emit SSE
             MatchStateService.to_completed(match_obj.id)
 
-    def handle_forfeit(self, forfeiting_player_id: int, added_by_id: int = None) -> bool:
+    def handle_forfeit(
+        self, forfeiting_player_id: int, added_by_id: int = None
+    ) -> bool:
         """Handle player forfeit in trio match.
 
         When a player forfeits:
@@ -723,6 +747,7 @@ class TrioMatch(db.Model):
 
             # Update matchup for next rack
             from .trio_scoring_service import TrioScoringService
+
             TrioScoringService._update_current_players(self)
 
         # If all racks now played, apply bonus and enter confirmation
@@ -747,9 +772,7 @@ class TrioMatch(db.Model):
         # Determine winner using Condorcet/Schulze (excluding forfeit player)
         from models.match.trio_schulze import determine_trio_winner
 
-        remaining = [
-            pid for pid in self.player_ids if pid != self.forfeit_player_id
-        ]
+        remaining = [pid for pid in self.player_ids if pid != self.forfeit_player_id]
         self.winner_id = determine_trio_winner(self.active_racks, remaining)
 
         self.awaiting_confirmation = True
@@ -760,6 +783,7 @@ class TrioMatch(db.Model):
     def get_current_state(self):
         """Return current state of the trio for UI rendering. Delegates to TrioStateSerializer."""
         from .trio_state_serializer import TrioStateSerializer
+
         return TrioStateSerializer.serialize(self)
 
     def __repr__(self):

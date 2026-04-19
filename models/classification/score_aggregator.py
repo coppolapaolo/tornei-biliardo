@@ -104,7 +104,8 @@ class ScoreAggregator:
         for gara in gare:
             # Include both 'completed' and 'validated' as finished matches
             matches = [
-                m for m in gara.matches
+                m
+                for m in gara.matches
                 if m.status in ["completed", "validated"] and not m.is_bye
             ]
             for match in matches:
@@ -326,12 +327,7 @@ class ScoreAggregator:
             return
 
         player_ids = [trio.player1_id, trio.player2_id, trio.player3_id]
-        racks = [trio.player1_racks, trio.player2_racks, trio.player3_racks]
-
-        # Calculate bonus racks (1 if distance is odd, 0 otherwise)
-        # This equalizes trio players with normal match players
         distance = match.gara.distance if match.gara else 5
-        bonus_racks = distance % 2  # 1 for distance 3,5; 0 for distance 2,4
 
         # Initialize all three players if not seen
         for pid in player_ids:
@@ -346,6 +342,24 @@ class ScoreAggregator:
                 }
 
         winner_id = match.winner_id
+
+        # Walkover branch: completed trio with no racks played.
+        # Credit the nominal winner with `distance` racks (parallel to 2-player
+        # walkover where `Match.player1_score = round_distance`). Others get
+        # matches_lost but no rack movement — they didn't play.
+        if trio.is_completed and trio.total_racks_played == 0 and winner_id:
+            for pid in player_ids:
+                if not pid:
+                    continue
+                if pid == winner_id:
+                    player_stats[pid]["matches_won"] += 1
+                    player_stats[pid]["racks_won"] += distance
+                else:
+                    player_stats[pid]["matches_lost"] += 1
+            return
+
+        racks = [trio.player1_racks, trio.player2_racks, trio.player3_racks]
+        bonus_racks = distance % 2  # 1 for distance 3,5; 0 for distance 2,4
 
         # Process each player
         for i, pid in enumerate(player_ids):

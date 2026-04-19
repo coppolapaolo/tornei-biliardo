@@ -26,6 +26,7 @@ def create_matches_from_pairings(
     round_service.py and round_creation.py.
     """
     from models.match.models import Match, TrioMatch
+    from models.match.state_service import MatchStateService
 
     if forfeit_user_ids is None:
         forfeit_user_ids = set()
@@ -41,11 +42,13 @@ def create_matches_from_pairings(
                 is_bye=True,
                 player1_score=bye_score,
                 winner_id=pairing.players[0],
-                status="completed",
+                status="pending",
                 discipline=round_discipline,
                 match_distance=round_distance,
             )
             db.session.add(match)
+            db.session.flush()
+            MatchStateService.to_completed(match.id)
         elif len(pairing.players) == 2 and not pairing.is_bye:
             player1_forfeit = pairing.players[0] in forfeit_user_ids
             player2_forfeit = pairing.players[1] in forfeit_user_ids
@@ -74,12 +77,19 @@ def create_matches_from_pairings(
                     player1_score=player1_score,
                     player2_score=player2_score,
                     winner_id=winner_id,
-                    status="completed",
+                    status="pending",
                     discipline=round_discipline,
                     match_distance=round_distance,
                     is_multi_set=gara.is_multi_set,
                 )
                 db.session.add(match)
+                db.session.flush()
+                # Runtime-only flag (no column on Match) telling
+                # MatchStateService.to_completed this pending non-trio non-bye
+                # match is admin-validated. Same pattern used by
+                # ScoringService._apply_result and TrioMatch._finalize_trio.
+                match.validated_by_admin = True  # type: ignore[attr-defined]
+                MatchStateService.to_completed(match.id)
             else:
                 match = Match(
                     gara_id=gara.id,
@@ -151,7 +161,7 @@ def create_matches_from_pairings(
                     player1_score=round_distance,
                     player2_score=0,
                     winner_id=winner_id,
-                    status="completed",
+                    status="pending",
                     discipline=round_discipline,
                     match_distance=round_distance,
                 )
@@ -167,6 +177,9 @@ def create_matches_from_pairings(
                     is_completed=True,
                 )
                 db.session.add(trio_match)
+                db.session.flush()
+                trio_match.initialize_matchup()
+                MatchStateService.to_completed(match.id)
 
 
 class RoundCreationService:

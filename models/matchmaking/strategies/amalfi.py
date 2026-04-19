@@ -290,8 +290,14 @@ class AmalfiStrategy(BaseStrategy):
         salto_iniziale = n - t + 1
 
         gara_id = classifica[0].gara_id if classifica else None
-        odd_policy = getattr(gara, "odd_number_policy", OddNumberPolicy.BYE.value) if gara else OddNumberPolicy.BYE.value
-        use_trio = odd_policy in (OddNumberPolicy.TRIO.value, "trio") and len(players) % 2 == 1
+        odd_policy = (
+            getattr(gara, "odd_number_policy", OddNumberPolicy.BYE.value)
+            if gara
+            else OddNumberPolicy.BYE.value
+        )
+        use_trio = (
+            odd_policy in (OddNumberPolicy.TRIO.value, "trio") and len(players) % 2 == 1
+        )
 
         # Ottieni i giocatori che hanno già avuto un bye o trio
         players_with_bye = self._get_players_with_bye(gara_id) if gara_id else set()
@@ -422,9 +428,7 @@ class AmalfiStrategy(BaseStrategy):
             raise ValueError("Trio mode must produce an anchor")
         if anchor == self.BYE_PLAYER_ID:
             raise ValueError("BYE_PLAYER_ID must not be the anchor")
-        if any(
-            p == self.BYE_PLAYER_ID for pair in intermediate_pairs for p in pair
-        ):
+        if any(p == self.BYE_PLAYER_ID for pair in intermediate_pairs for p in pair):
             raise ValueError("BYE_PLAYER_ID must not appear in intermediate pairs")
 
         # Step 2: Swap anchor if needed for fair rotation
@@ -469,9 +473,7 @@ class AmalfiStrategy(BaseStrategy):
 
         # Recomposition: build Pairing sequence
         # Trio players sorted by classification position
-        trio_players = sorted(
-            [anchor, comp1, comp2], key=lambda p: player_to_index[p]
-        )
+        trio_players = sorted([anchor, comp1, comp2], key=lambda p: player_to_index[p])
 
         # Final check: no BYE_PLAYER_ID in output
         if any(p == self.BYE_PLAYER_ID for p in trio_players):
@@ -487,9 +489,7 @@ class AmalfiStrategy(BaseStrategy):
             )
         ]
         for a, b in final_pairs:
-            result.append(
-                Pairing(players=(a, b), is_bye=False, round_number=turno)
-            )
+            result.append(Pairing(players=(a, b), is_bye=False, round_number=turno))
 
         return result
 
@@ -498,18 +498,20 @@ class AmalfiStrategy(BaseStrategy):
         from models.match.models import Match
 
         bye_matches = (
-            db.session.query(Match)
-            .filter_by(gara_id=gara_id, is_bye=True)
-            .all()
+            db.session.query(Match).filter_by(gara_id=gara_id, is_bye=True).all()
         )
 
         return {match.player1_id for match in bye_matches if match.player1_id}
 
     def _get_trio_counts(self, gara_id: int) -> dict[int, int]:
-        """Conta quanti trio ha fatto ogni giocatore in questa gara.
+        """Conta quanti trio CONTESI ha giocato ogni giocatore in questa gara.
+
+        Walkover trios (2/3 o 3/3 forfeit → 0 rack giocati) sono esclusi:
+        il survivor di un walkover non deve essere considerato "già saturo di
+        trio" nella rotazione dei prossimi turni.
 
         Returns:
-            dict mapping player_id -> number of trio matches played
+            dict mapping player_id -> number of contested trio matches played
         """
         from models.match.models import Match, TrioMatch
 
@@ -522,6 +524,8 @@ class AmalfiStrategy(BaseStrategy):
 
         counts: dict[int, int] = {}
         for trio in trio_matches:
+            if trio.total_racks_played == 0:
+                continue
             counts[trio.player1_id] = counts.get(trio.player1_id, 0) + 1
             counts[trio.player2_id] = counts.get(trio.player2_id, 0) + 1
             counts[trio.player3_id] = counts.get(trio.player3_id, 0) + 1
@@ -619,16 +623,24 @@ class AmalfiStrategy(BaseStrategy):
                 # Find the orphans (partners left behind)
                 pair_idx_1 = player_to_pair[c1]
                 pair_idx_2 = player_to_pair[c2]
-                orphan1 = pairs[pair_idx_1][0] if pairs[pair_idx_1][1] == c1 else pairs[pair_idx_1][1]
-                orphan2 = pairs[pair_idx_2][0] if pairs[pair_idx_2][1] == c2 else pairs[pair_idx_2][1]
-                orphan_rematch = 1 if encounter_matrix.get((orphan1, orphan2), False) else 0
+                orphan1 = (
+                    pairs[pair_idx_1][0]
+                    if pairs[pair_idx_1][1] == c1
+                    else pairs[pair_idx_1][1]
+                )
+                orphan2 = (
+                    pairs[pair_idx_2][0]
+                    if pairs[pair_idx_2][1] == c2
+                    else pairs[pair_idx_2][1]
+                )
+                orphan_rematch = (
+                    1 if encounter_matrix.get((orphan1, orphan2), False) else 0
+                )
 
             # position_sum: higher sum = both companions lower in classification = more Amalfi spirit
             # Using sum (not max) ensures we prefer (CRISTIAN=5, EGLE=6) sum=11
             # over (player1=0, EGLE=6) sum=6 — avoids sacrificing top-ranked players
-            position_sum = (
-                player_to_index.get(c1, 0) + player_to_index.get(c2, 0)
-            )
+            position_sum = player_to_index.get(c1, 0) + player_to_index.get(c2, 0)
 
             score = (companion_count_sum, trio_rematches, orphan_rematch, -position_sum)
             if best_score is None or score < best_score:
@@ -662,9 +674,8 @@ class AmalfiStrategy(BaseStrategy):
         # Filter active inscriptions (not withdrawn, not waitlist)
         active = []
         for i in inscriptions:
-            if (
-                not getattr(i, "is_withdrawn", False)
-                and not getattr(i, "is_waitlist", False)
+            if not getattr(i, "is_withdrawn", False) and not getattr(
+                i, "is_waitlist", False
             ):
                 active.append(i)
 

@@ -104,48 +104,71 @@ nel trio: 0/3 invariato, 1/3 convertito in Match 2-player pending,
 (winner = players[0]). Zero schema changes. 7 regression test in
 `tests/new/unit/test_round_creation_trio_forfeit.py`.
 
-## Walkover non registra PlayerEncounter / gamification / classification side effects
+## ~~Walkover non registra PlayerEncounter / gamification / classification side effects~~ ✅ DONE (2026-04-19)
 
-Source: Review trio forfeit fix (2026-04-19), ECH #1.
+Spec `spec-walkover-side-effects-unified.md`. Tutti e 3 i branch walkover
+(bye, 2-player forfeit, trio 2/3 e 3/3) ora passano attraverso
+`MatchStateService.to_completed()`. `Match.is_walkover` property derivata
+(nessuna colonna nuova). XP handler skippa forfeiter via
+`WithdrawPolicyService.get_forfeit_inscriptions`. Rating handler skip su
+walkover. `_process_trio_match` walkover branch credita winner con
+`round_distance` racks. Amalfi `_get_trio_counts` filtra trii con 0
+rack. `initialize_matchup()` al walkover creation per risolvere admin
+reset crash. 26 test (13 unit + 4 integration + 9 trio_forfeit).
 
-Tutti i match "creati già completati" in `create_matches_from_pairings`
-(bye, 2-player forfeit, trio walkover) settano `status="completed"`
-direttamente senza passare per `MatchStateService.to_completed()`. Side
-effect saltati: `PlayerEncounter` recording (anti-rematch non vede la
-coppia come "giocata"), `MatchCompletedEvent` publishing (XP/streak/rating
-handlers non scattano), `_update_classification_if_needed` (solo random),
-`table_release_and_reassign`. Pre-esistente: già presente sul branch
-2-player forfeit e bye da prima del fix trio. Valutare se far confluire
-i tre branch su `to_completed()` o emettere manualmente gli eventi
-necessari. Impatto potenziale: anti-rematch degradato, XP non
-riconosciuto per walkover wins.
+## Residui da review walkover unified (2026-04-19)
 
-## Classification trio walkover: racks registrati come 0-0-0
+Scoperti dai 3 reviewer (Blind Hunter + Edge Case Hunter + Acceptance
+Auditor) durante step-04 del bmad-quick-dev.
 
-Source: Review trio forfeit fix (2026-04-19), ECH #3.
+- **Broad `except Exception` in XP handler**: il try/except top-level in
+  `handle_match_completed_for_xp` ora racchiude anche la nuova logica di
+  walkover detection (`db.session.get(Match)` + `WithdrawPolicyService`).
+  Se fallisce silenziosamente, XP viene assegnato ai forfeiter. Pre-esistente
+  (pattern "log and continue") ma reso più rischioso dalla nuova complessità.
+  Considerare re-raise per errori di lookup Match/forfeit.
 
-`ScoreAggregator._process_trio_match` e `RoundClassification` leggono
-`TrioMatch.player1_racks/player2_racks/player3_racks` (computed da
-`TrioRack`). Per un walkover 2/3 o 3/3, nessun rack viene creato → tutti
-e tre i player hanno 0 racks registrati, anche il vincitore. Il
-`Match.player1_score = round_distance` scritto per il Match-level non
-viene letto per i trio. Net: sistema WINS OK (winner +1 match), ma
-sistema RACK penalizza il vincitore del walkover. By-design nello spec
-attuale (nessun rack per walkover), ma merita valutazione: eventualmente
-creare `TrioRack` simbolici tutti vinti dal survivor.
+- **`AchievementService` calls non wrapped**: nel handler XP, 4
+  `check_and_award_achievement` sequenziali senza try/except. Se uno fallisce,
+  i successivi + streak/quest non vengono eseguiti. Pre-esistente, aggravato
+  perché ora sono condizionali (`if winner_id not in forfeit_ids`). Wrapping
+  in try/except separato come per streak/quest.
 
-## Amalfi `_get_trio_counts` conta walkover come trio giocato
+- **`is_walkover` su Match detached**: il property usa `self.racks` che
+  lazy-loads. In dispatch asincroni futuri (worker thread, background queue)
+  `DetachedInstanceError` verrebbe catturato dal broad except del handler,
+  `forfeit_ids` stays empty, XP granted to forfeiters. Attualmente sync
+  dispatch rende il problema latente. Mitigation: `db.session.query(Rack)`
+  esplicita.
 
-Source: Review trio forfeit fix (2026-04-19), ECH #4.
+- **Trio event handlers miss player3**: `MatchCompletedEvent` carica solo
+  `player1_id` / `player2_id` dal Match (p0 e p1 del trio). Per trio walkover
+  2/3 dove survivor è p2, handler itera solo p0/p1 per streak/quest — p2
+  (il vero vincitore) NON riceve weekly streak / quest progress. Pre-esistente:
+  stesso design vale per trii normali completati — p3 non ottiene nulla. Il
+  refactor walkover espone il bug per i walkover ma non lo crea. Fix: estendere
+  `MatchCompletedEvent` con `player_ids: list[int]` o aggiungere lookup via
+  `match.trio_match.player_ids` nel handler.
 
-`_get_trio_counts` in `amalfi.py` itera tutti i TrioMatch del campionato
-per bilanciare la rotazione dei trii. Il winner di un walkover viene
-contato come "ha giocato un trio" anche se non ha giocato nessun rack;
-di conseguenza Amalfi eviterà di metterlo in un altro trio a breve. I
-due forfeiters vengono anch'essi contati. Questo è un side effect del
-design walkover; possibile fix: filtrare trio con `total_racks_played > 0`
-in `_get_trio_counts`. Priorità bassa: impatta solo distribuzione trio
-in campionati con forfeit.
+- **Walkover trii storici in prod hanno `current_player*_id=NULL`**:
+  `initialize_matchup()` è chiamato solo per walkover CREATI dopo questo
+  refactor. I walkover trii già presenti in DB continuano ad avere
+  `current_player*_id=NULL` → admin reset crash-erebbe ancora su di loro.
+  Impatto: basso se nessun admin resetta walkover trii antichi. Mitigation
+  opzionale: migration che scorre tutti i trii con `is_completed=True AND
+  current_player1_id IS NULL` e applica `initialize_matchup()`.
+
+## ~~Classification trio walkover: racks registrati come 0-0-0~~ ✅ DONE (2026-04-19)
+
+Spec `spec-walkover-side-effects-unified.md`. `ScoreAggregator._process_trio_match`
+ora ha branch walkover che assegna `round_distance` racks al winner (0 agli altri)
+quando `trio.is_completed and trio.total_racks_played == 0 and winner_id`.
+
+## ~~Amalfi `_get_trio_counts` conta walkover come trio giocato~~ ✅ DONE (2026-04-19)
+
+Spec `spec-walkover-side-effects-unified.md`. Filtro Python-level su
+`total_racks_played > 0` in `_get_trio_counts`. Solo trii "contestati"
+contribuiscono alla rotazione.
 
 ## `forfeit_user_ids` non passato da `RoundService.start_first_round`
 
@@ -160,19 +183,17 @@ dello stesso problema indipendentemente dal fix trio. Fix banale:
 copiare il blocco `WithdrawPolicyService.get_forfeit_inscriptions(gara_id)`
 di `_create_round_impl` nei due call-site.
 
-## Admin reset di walkover trio lascia UI in stato rotto
+## ~~Admin reset di walkover trio lascia UI in stato rotto~~ ✅ DONE (2026-04-19)
 
-Source: Review trio forfeit fix (2026-04-19), ECH #8 + #12.
+Spec `spec-walkover-side-effects-unified.md`. `trio_match.initialize_matchup()`
+chiamato al walkover creation (branch 2/3 e 3/3), quindi `current_player*_id`
+sono sempre popolati. Admin reset + `trio_state_serializer.serialize()`
+funziona senza crash. Regression test:
+`tests/new/unit/test_walkover_side_effects.py::test_to_playing_then_serialize_no_crash`.
 
-Il walkover trio ha `is_completed=True`, `winner_id`, nessun rack e
-`current_player1_id/current_player2_id/waiting_player_id = NULL`. Se un
-admin fa reset via `MatchStateService.to_playing`, la transizione
-riesce ma lo stato gioco è incompleto: `trio_state_serializer` ritorna
-`current_matchup: (None, None, None)` e `TrioScoringService.add_rack_win`
-su `current_player1_id=None` crasha in `_update_current_players`. Latent
-edge case; in pratica nessuno resetta un walkover. Fix possibile:
-`to_playing` chiama `trio_match.initialize_matchup()` se `current_*`
-sono None.
+**NOTA**: walkover trii CREATI PRIMA di questo refactor in DB hanno ancora
+`current_player*_id=NULL`. Admin reset su di loro continuerebbe a crashare.
+Vedere "Residui da review walkover unified" sopra per migration opzionale.
 
 ## Redesign playoff configuration UI
 
