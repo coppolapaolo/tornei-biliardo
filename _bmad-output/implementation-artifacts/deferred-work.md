@@ -152,13 +152,15 @@ Auditor) durante step-04 del bmad-quick-dev.
   `MatchCompletedEvent` con `player_ids: list[int]` o aggiungere lookup via
   `match.trio_match.player_ids` nel handler.
 
-- **Walkover trii storici in prod hanno `current_player*_id=NULL`**:
-  `initialize_matchup()` è chiamato solo per walkover CREATI dopo questo
-  refactor. I walkover trii già presenti in DB continuano ad avere
-  `current_player*_id=NULL` → admin reset crash-erebbe ancora su di loro.
-  Impatto: basso se nessun admin resetta walkover trii antichi. Mitigation
-  opzionale: migration che scorre tutti i trii con `is_completed=True AND
-  current_player1_id IS NULL` e applica `initialize_matchup()`.
+- ~~**Walkover trii storici in prod hanno `current_player*_id=NULL`**~~ ✅ DONE (2026-04-19):
+  Migration `20260419_backfill_walkover_trio_matchup.py` popola
+  `current_player1_id=player1_id`, `current_player2_id=player2_id`,
+  `waiting_player_id=player3_id` per trii `is_completed=True AND
+  current_player1_id IS NULL AND` senza trio_rack attivi. Per rack 1 il
+  matchup è costante (P1 vs P2, P3 aspetta) indipendente da distance, quindi
+  si evita di reimplementare la logica Python in SQL. Idempotente (filtro
+  `current_player1_id IS NULL`). 6 regression test in
+  `tests/new/unit/test_backfill_walkover_trio_migration.py`.
 
 ## ~~Classification trio walkover: racks registrati come 0-0-0~~ ✅ DONE (2026-04-19)
 
