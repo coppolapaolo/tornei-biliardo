@@ -289,6 +289,12 @@ def reset_match_complete(match_id: int) -> None:
 
 **Purpose**: Represents a 3-player match using round-robin format.
 
+**Lifecycle**: 1:1 with parent `Match` via `Match.trio_match` backref
+(`uselist=False`, `cascade="all, delete-orphan"`). Deleting the parent
+`Match` automatically removes the associated `TrioMatch` row — prevents
+orphan rows after `AdvancedRoundManager.cancel_round` or similar
+`db.session.delete(match)` call-sites.
+
 **Critical Fields:**
 ```python
 id: int (PK)

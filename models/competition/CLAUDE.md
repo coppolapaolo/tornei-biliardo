@@ -173,9 +173,19 @@ sbagliato (vedi "Previous Assumption Debunked" in ADR-026).
 - **Intent del director**: "Voglio annullare l'intero turno. I pair potranno
   essere ri-generati diversamente al prossimo avvio."
 - **Precondizione**: nessun match del round può avere risultati parziali
-  (usare `bulk_reset_round_matches` prima se necessario)
+  (usare `bulk_reset_round_matches` prima se necessario). **I match bye
+  (`is_bye=True`) sono esclusi dal check**: il loro `player1_score =
+  round_distance` è convenzione di persistenza per la classification
+  machinery, non risultato utente. Semanticamente il bye è "sempre in
+  stato iniziale". Walkover (`is_bye=False` + forfeit → `score > 0`)
+  invece bloccano — rappresentano azioni umane e vanno resettati.
+  Spec: `spec-cancel-round-ignores-bye.md`.
+- **Bloccato se la gara ha un `Tiebreaker` attivo** (stato != `CANCELLED`) —
+  stessa semantica del reset (vedi sopra).
 - Solo round corrente o successivi sono cancellabili
-- **`Match` eliminati**, `Rack` eliminati, `RoundClassification` eliminate
+- **`Match` eliminati**, `Rack` eliminati, `RoundClassification` eliminate.
+  `TrioMatch` associati cascano via `cascade="all, delete-orphan"` sulla
+  backref `Match.trio_match`.
 - **`PlayerEncounter` del round ELIMINATI** via `delete_round_encounters` —
   pair liberati per ri-generazione diversa
 - `gara.current_round` decrementato (torna a INSCRIPTION se era il primo round)
