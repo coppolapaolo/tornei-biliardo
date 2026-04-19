@@ -134,7 +134,7 @@ context:
   - `test_seed_deterministic` + `test_no_global_random_contamination`: due test su isolamento RNG
 
 **Acceptance Criteria:**
-- Given gara Random con match `(1,2)` in turno 1 resettato via `RackService.reset_match_complete`, when si crea turno 2, then il pair `(1,2)` può essere riassegnato (encounter_matrix non lo contiene)
+- Given gara Random con match `(1,2)` in turno 1 resettato via `RackService.reset_match_complete`, when si crea turno 2, then il pair `(1,2)` è correttamente considerato "incontrato" (semantica reset = correzione score, pair preservato — vedi ADR-026)
 - Given 4 giocatori e 5 dei 6 pair già incontrati, when si crea un nuovo turno, then il matching forza al massimo 1 rematch (non 2) e `logger.warning` viene emesso
 - Given `gara.odd_number_policy=None`, 5 giocatori e `gara.distance=10`, when si crea un turno, then si usa bye (`BYE_WITH_CHALLENGE`) non trio (ADR-005)
 - Given trio walkover `(1,2,3)` in turno 1 con `total_racks_played=0`, when si calcola `trio_count` per turno 2, then `trio_count[1]=trio_count[2]=trio_count[3]=0`
@@ -189,18 +189,17 @@ L'intent iniziale era unificare completamente su `PlayerEncounterService.get_enc
 - `previous_pairs`: letto da `Match.query` (vecchio comportamento preservato) — vede i match pending/playing/completed, necessario per "all rounds at startup".
 - `trio_counts`: letto da `PlayerEncounterService.get_trio_counts(gara_id, exclude_walkover=True)` — cached, filtro walkover (valore aggiunto coerente con Amalfi post-2026-04-19).
 
-### Limitation documentata: reset match + Random
+### Reset match + Random: semantica chiarita (G3 risolto via ADR-026)
 
-`RackService.reset_match_complete` (ADR-002) elimina il `PlayerEncounter` ma mantiene il Match (cambia solo `status` + elimina i `Rack`). Con il data source ibrido:
-- **Amalfi**: usa `encounter_matrix` → reset funziona, il pair è riaccoppiabile.
-- **Random**: usa `Match.query` → il Match resettato rimane visibile → pair **NON** è riaccoppiabile.
+La sezione precedente ("Limitation documentata") descriveva come **bug** ciò che invece è il comportamento **corretto** del reset. L'intent del reset è "correzione score, pair preservato" (non "annullamento pairing"); il comportamento di Random (pair preservato via `Match.query`) è semanticamente corretto.
 
-Questo è un comportamento PREESISTENTE al refactor (il vecchio codice aveva lo stesso problema). Tentare di risolverlo richiede decisioni UX prima che implementative:
-- Eliminare il Match al reset? Impatta altri sistemi (classifica, storico).
-- Aggiungere `Match.is_reset` colonna e filtrare `previous_pairs`? Semplice ma accumula debito schema.
-- Rigenerare i round successivi automaticamente al reset? UX non ovvia (il director ha già visto gli abbinamenti).
+Il vero difetto era nel lato opposto del data source ibrido: `reset_match_complete` cancellava `PlayerEncounter` creando una finestra di inconsistenza. Fix applicato via [ADR-026](../../docs/adr/ADR-026-reset-match-preserves-pair-semantics.md):
+- `RackService.reset_match_complete` non tocca più `PlayerEncounter`
+- `PlayerEncounter.delete_encounter` rimosso (dead code)
+- Test invertito: `test_contract_reset_preserves_encounter`
+- `cancel_round` resta l'unica operazione che libera i pair (via `delete_round_encounters`)
 
-Tracciato come gap **G3** in deferred-work.md, fuori scope di questo refactor.
+Gap **G3** chiuso come misdiagnosi. ADR-026 documenta "Previous Assumption Debunked" + "Operations Glossary" canonico.
 
 ### Bye lookup (semplificato dopo discovery data source ibrido)
 

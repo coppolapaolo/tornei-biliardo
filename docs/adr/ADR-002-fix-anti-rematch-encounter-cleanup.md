@@ -1,7 +1,7 @@
 # ADR-002 Bug Fix: Anti-Rematch Encounter Cleanup
 
 **Data**: 2025-12-28
-**Stato**: Accepted
+**Stato**: Accepted (superseded in part by [ADR-026](ADR-026-reset-match-preserves-pair-semantics.md) per la parte `reset_match_complete`; la parte `cancel_round` resta valida)
 **Tipo**: Bug Fix
 
 ## Problema Riscontrato

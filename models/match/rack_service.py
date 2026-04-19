@@ -99,9 +99,11 @@ class RackService:
         Il match viene riportato allo stato appropriato in base all'assegnazione
         del tavolo: PLAYING se ha un tavolo, PENDING altrimenti.
 
-        IMPORTANT: Also deletes the PlayerEncounter record to maintain
-        anti-rematch consistency. This ensures that when a match is reset,
-        the players can be paired again in future rounds.
+        Semantica del reset (ADR-026): correzione score, pair preservato.
+        Il `PlayerEncounter` del pair NON viene toccato — gli stessi due
+        giocatori torneranno a giocare lo stesso match. Per liberare il pair
+        usare `AdvancedRoundManager.cancel_round`, che ha semantica distinta
+        e cleanup dedicata via `delete_round_encounters`.
 
         For Trio matches, delegates to TrioScoringService.reset() which handles
         TrioRack deletion and trio-specific state reset.
@@ -116,6 +118,7 @@ class RackService:
         # Handle Trio matches separately via TrioScoringService
         if match.is_trio and match.trio_match:
             from .trio_scoring_service import TrioScoringService
+
             TrioScoringService.reset(match.trio_match.id)
             return
 
@@ -124,15 +127,8 @@ class RackService:
         for rack in existing_racks:
             db.session.delete(rack)
 
-        # Delete PlayerEncounter to maintain anti-rematch consistency
-        # This ensures players can be paired again after match reset
-        if match.player2_id:  # Only for non-bye matches
-            from models.classification.models import PlayerEncounter
-            PlayerEncounter.delete_encounter(
-                gara_id=match.gara_id,
-                player1_id=match.player1_id,
-                player2_id=match.player2_id
-            )
+        # PlayerEncounter preserved by design (ADR-026): stessi due rigiocano
+        # lo stesso match, il pair resta "incontrato" per l'anti-rematch.
 
         # Reset match scores
         match.player1_score = 0
@@ -160,14 +156,13 @@ class RackService:
         # Clear forfeit flags on inscriptions for both players
         # This allows the player to continue competing after match reset
         from models.competition.models import Inscription
+
         for player_id in [match.player1_id, match.player2_id]:
             if player_id:  # player2_id could be None for bye matches
                 inscription = (
                     db.session.query(Inscription)
                     .filter_by(
-                        user_id=player_id,
-                        gara_id=match.gara_id,
-                        is_forfeit=True
+                        user_id=player_id, gara_id=match.gara_id, is_forfeit=True
                     )
                     .first()
                 )
@@ -223,6 +218,7 @@ class RackService:
             # Se era completed, rimettilo in playing
             if match.status == MatchStatus.COMPLETED.value:
                 from .match_service import MatchService
+
                 MatchService.to_playing(match.id)
 
         return {

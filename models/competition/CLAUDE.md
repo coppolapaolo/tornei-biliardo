@@ -133,6 +133,58 @@ setup ──→ inscription ──→ playing ──→ completed
 
 ---
 
+## Match Lifecycle Operations
+
+Definizioni canoniche delle operazioni che agiscono sui `Match` di una gara.
+Razionale completo in [ADR-026](../../docs/adr/ADR-026-reset-match-preserves-pair-semantics.md)
+(sezione "Operations Glossary").
+
+**Regola generale:** `reset` corregge, `cancel_round` annulla. Sono operazioni
+semanticamente distinte — confonderle è stata la causa di ADR-002 parzialmente
+sbagliato (vedi "Previous Assumption Debunked" in ADR-026).
+
+### `RackService.reset_match_complete(match_id)` — score correction
+
+- **Intent del director**: "Ho sbagliato a inserire lo score, lo correggo
+  rigiocando gli stessi rack con gli stessi giocatori."
+- **Match preservato** (stesso id/round/pair), rack eliminati, scores azzerati,
+  status → PLAYING/PENDING (in base al `table_assignment`)
+- **`PlayerEncounter` PRESERVATO** — il pair resta "incontrato" per l'anti-rematch
+- Per trio match delega a `TrioScoringService.reset` (azzera trio rack e stato)
+- Bloccato per match bye; bloccato da `RoundLockStatus.LOCKED` quando passato
+  attraverso `AdvancedRoundManager.reset_match_with_validation`
+
+### `AdvancedRoundManager.bulk_reset_round_matches(gara_id, round_number)` — mass reset
+
+- **Intent del director**: "Voglio resettare tutti i match di un turno,
+  tipicamente per poi annullarlo (`cancel_round` richiede match senza risultati)."
+- Delega a `reset_match_with_validation` per ciascun match completato del round
+- Ogni singolo reset segue la semantica di `reset_match_complete` (pair preservato)
+- Errori per-match raccolti (savepoint rollback), continua sui rimanenti
+- Aggiorna la progressione del round dopo il reset massivo
+
+### `AdvancedRoundManager.cancel_round(gara_id, round_number)` — round cancellation
+
+- **Intent del director**: "Voglio annullare l'intero turno. I pair potranno
+  essere ri-generati diversamente al prossimo avvio."
+- **Precondizione**: nessun match del round può avere risultati parziali
+  (usare `bulk_reset_round_matches` prima se necessario)
+- Solo round corrente o successivi sono cancellabili
+- **`Match` eliminati**, `Rack` eliminati, `RoundClassification` eliminate
+- **`PlayerEncounter` del round ELIMINATI** via `delete_round_encounters` —
+  pair liberati per ri-generazione diversa
+- `gara.current_round` decrementato (torna a INSCRIPTION se era il primo round)
+
+### Tabella riassuntiva
+
+| Operazione | `Match` | `Rack` | `PlayerEncounter` | Pair semantics |
+|---|---|---|---|---|
+| `reset_match_complete` | preservato | eliminato | **preservato** | stessi due rigiocano |
+| `bulk_reset_round_matches` | preservati (tutti) | eliminati (tutti) | **preservati** (tutti) | stessi pair del round rigiocano |
+| `cancel_round` | **eliminati** | eliminati | **eliminati** | pair liberati, ri-generabili |
+
+---
+
 ## Cross-References
 
 - **Matchmaking**: [../matchmaking/](../matchmaking/) - Pairing strategies (Amalfi, Round-Robin, Elimination)

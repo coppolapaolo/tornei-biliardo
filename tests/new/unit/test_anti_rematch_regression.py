@@ -12,18 +12,13 @@ Scenari testati:
 Vedi: docs/decisions/NNNN-fix-anti-rematch-enforcement.md (se applicabile)
 """
 
-import pytest
-from datetime import date, timedelta, datetime
-from unittest.mock import patch
-from collections import defaultdict
+from datetime import date, timedelta
 
-from models.competition.models import Gara
 from models.competition.services import GaraService, RoundService
 from models.competition.inscription_service import InscriptionService
 from models.match.models import Match
 from models.classification.models import RoundClassification, PlayerEncounter
 from models.classification.encounter_service import PlayerEncounterService
-from models.matchmaking.strategies.amalfi import AmalfiStrategy
 from models.matchmaking.policies import anti_rematch_allowed
 from models import db
 from models.base import utc_now
@@ -94,7 +89,9 @@ class TestAntiRematchRegression:
         # Open inscriptions and start tournament
         inscription_start = utc_now()
         inscription_end = utc_now() + timedelta(hours=1)
-        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        InscriptionService.open_inscriptions(
+            gara.id, inscription_start, inscription_end
+        )
         RoundService.start_first_round(gara.id)
 
         # Track all pairings across ALL rounds
@@ -139,16 +136,18 @@ class TestAntiRematchRegression:
                     # Normalize pairing (smaller id first)
                     pairing = (
                         min(match.player1_id, match.player2_id),
-                        max(match.player1_id, match.player2_id)
+                        max(match.player1_id, match.player2_id),
                     )
 
                     if pairing in all_encounters:
-                        rematches_found.append({
-                            "round": round_num,
-                            "player1_id": match.player1_id,
-                            "player2_id": match.player2_id,
-                            "pairing": pairing
-                        })
+                        rematches_found.append(
+                            {
+                                "round": round_num,
+                                "player1_id": match.player1_id,
+                                "player2_id": match.player2_id,
+                                "pairing": pairing,
+                            }
+                        )
                     else:
                         all_encounters.add(pairing)
 
@@ -214,7 +213,9 @@ class TestAntiRematchRegression:
         # Start tournament
         inscription_start = utc_now()
         inscription_end = utc_now() + timedelta(hours=1)
-        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        InscriptionService.open_inscriptions(
+            gara.id, inscription_start, inscription_end
+        )
         RoundService.start_first_round(gara.id)
 
         # Track encounters
@@ -249,14 +250,11 @@ class TestAntiRematchRegression:
                 if not match.is_bye and match.player2_id:
                     pairing = (
                         min(match.player1_id, match.player2_id),
-                        max(match.player1_id, match.player2_id)
+                        max(match.player1_id, match.player2_id),
                     )
 
                     if pairing in all_encounters:
-                        rematches_found.append({
-                            "round": round_num,
-                            "pairing": pairing
-                        })
+                        rematches_found.append({"round": round_num, "pairing": pairing})
                     else:
                         all_encounters.add(pairing)
 
@@ -321,7 +319,7 @@ class TestAntiRematchRegression:
             gara_id=gara.id,
             player1_id=player1.id,
             player2_id=player2.id,
-            round_number=1
+            round_number=1,
         )
         db.session.flush()
 
@@ -344,7 +342,6 @@ class TestAntiRematchRegression:
         when generating pairings.
         """
         from models.user.models import User
-        from models.matchmaking.strategies.amalfi import AmalfiStrategy
 
         # Create 4 players for minimal scenario
         players = []
@@ -387,7 +384,9 @@ class TestAntiRematchRegression:
         # Start tournament
         inscription_start = utc_now()
         inscription_end = utc_now() + timedelta(hours=1)
-        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        InscriptionService.open_inscriptions(
+            gara.id, inscription_start, inscription_end
+        )
         RoundService.start_first_round(gara.id)
 
         # Get round 1 pairings
@@ -397,7 +396,7 @@ class TestAntiRematchRegression:
             if not match.is_bye and match.player2_id:
                 pairing = (
                     min(match.player1_id, match.player2_id),
-                    max(match.player1_id, match.player2_id)
+                    max(match.player1_id, match.player2_id),
                 )
                 round1_pairings.add(pairing)
 
@@ -424,7 +423,7 @@ class TestAntiRematchRegression:
             if not match.is_bye and match.player2_id:
                 pairing = (
                     min(match.player1_id, match.player2_id),
-                    max(match.player1_id, match.player2_id)
+                    max(match.player1_id, match.player2_id),
                 )
                 round2_pairings.add(pairing)
 
@@ -472,8 +471,12 @@ class TestAntiRematchRegression:
             f"Expected validation error for rounds_count with 4 players "
             f"and 5 rounds (max is 3), but got errors: {errors}"
         )
-        assert "anti-rematch" in errors["rounds_count"].lower() or "turni" in errors["rounds_count"].lower(), (
-            f"Expected error message to mention anti-rematch constraint, got: {errors['rounds_count']}"
+        assert (
+            "anti-rematch" in errors["rounds_count"].lower()
+            or "turni" in errors["rounds_count"].lower()
+        ), (
+            "Expected error message to mention anti-rematch constraint, "
+            f"got: {errors['rounds_count']}"
         )
 
     def test_anti_rematch_validation_valid_configuration(
@@ -496,7 +499,8 @@ class TestAntiRematchRegression:
 
         # Should NOT have an error for rounds_count
         assert "rounds_count" not in errors, (
-            f"Unexpected validation error for valid config (8 players, 3 rounds): {errors}"
+            "Unexpected validation error for valid config "
+            f"(8 players, 3 rounds): {errors}"
         )
 
     def test_anti_rematch_validation_no_max_participants(
@@ -520,13 +524,11 @@ class TestAntiRematchRegression:
 
         # Should NOT have an anti-rematch error (can't validate without max)
         if "rounds_count" in errors:
-            assert "anti-rematch" not in errors["rounds_count"].lower(), (
-                f"Should not validate anti-rematch without max_participants: {errors}"
-            )
+            assert (
+                "anti-rematch" not in errors["rounds_count"].lower()
+            ), f"Should not validate anti-rematch without max_participants: {errors}"
 
-    def test_anti_rematch_validation_disabled(
-        self, isolated_director_user, db_session
-    ):
+    def test_anti_rematch_validation_disabled(self, isolated_director_user, db_session):
         """
         Validation test: With anti-rematch disabled, no constraint applies.
         """
@@ -542,28 +544,32 @@ class TestAntiRematchRegression:
 
         # Should NOT have an anti-rematch error
         if "rounds_count" in errors:
-            assert "anti-rematch" not in errors["rounds_count"].lower(), (
-                f"Should not validate anti-rematch when disabled: {errors}"
-            )
+            assert (
+                "anti-rematch" not in errors["rounds_count"].lower()
+            ), f"Should not validate anti-rematch when disabled: {errors}"
 
-    def test_encounter_cleanup_on_match_reset(
+    def test_contract_reset_preserves_encounter(
         self, isolated_director_user, db_session
     ):
         """
-        Regression test: Encounters must be deleted when matches are reset.
+        Contract test: reset_match_complete PRESERVES the PlayerEncounter.
 
-        Bug scenario:
-        1. Round 1 matches completed → encounters recorded
-        2. Match reset (e.g., director fixes error)
-        3. Encounters NOT deleted (bug!)
-        4. Next pairing generation sees stale encounters
-        5. Anti-rematch incorrectly prevents valid pairings
+        Semantics (see docs/adr/ADR-026-reset-match-preserves-pair-semantics.md):
+        Reset = score correction, pair preserved. The same two players will
+        replay the same match, so the encounter between them must remain as
+        "already happened" for the anti-rematch logic.
 
-        Fix: PlayerEncounter records must be deleted when match is reset.
+        To release a pair (e.g. regenerate the round with different pairings),
+        the director must cancel the round via
+        `AdvancedRoundManager.cancel_round`, which has its own cleanup via
+        `PlayerEncounter.delete_round_encounters`.
+
+        This test supersedes the previous `test_encounter_cleanup_on_match_reset`
+        (named after the assumption codified in ADR-002) which enforced the
+        opposite semantics. ADR-026 documents why ADR-002 was partly wrong.
         """
         from models.user.models import User
         from models.match.services import RackService
-        from models.competition.round_manager import AdvancedRoundManager
 
         # Create 4 test players
         players = []
@@ -582,10 +588,10 @@ class TestAntiRematchRegression:
         gara = GaraService.create_gara(
             campionato_id=None,
             number=1,
-            name="Encounter Cleanup Test",
+            name="Encounter Preserved on Reset",
             date=tomorrow,
             location="Test Location",
-            description="Test encounter cleanup on reset",
+            description="Contract: reset preserves encounter (ADR-026)",
             rounds_count=2,
             min_participants=4,
             max_participants=8,
@@ -606,12 +612,15 @@ class TestAntiRematchRegression:
         # Start tournament
         inscription_start = utc_now()
         inscription_end = utc_now() + timedelta(hours=1)
-        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        InscriptionService.open_inscriptions(
+            gara.id, inscription_start, inscription_end
+        )
         RoundService.start_first_round(gara.id)
 
         # Complete round 1 matches using MatchService.to_completed()
         # which records encounters
         from models.match.services import MatchService
+
         round1_matches = Match.query.filter_by(gara_id=gara.id, round_number=1).all()
         for match in round1_matches:
             if not match.is_bye and match.player2_id:
@@ -628,30 +637,37 @@ class TestAntiRematchRegression:
         round1_matches = Match.query.filter_by(gara_id=gara.id, round_number=1).all()
 
         # Verify encounters were recorded
-        round1_pairings = []
         for match in round1_matches:
             if not match.is_bye and match.player2_id:
-                p1, p2 = min(match.player1_id, match.player2_id), max(match.player1_id, match.player2_id)
-                round1_pairings.append((p1, p2))
-                assert PlayerEncounter.have_played(gara.id, p1, p2), \
-                    f"Encounter should exist after match completion: {p1} vs {p2}"
+                p1 = min(match.player1_id, match.player2_id)
+                p2 = max(match.player1_id, match.player2_id)
+                assert PlayerEncounter.have_played(
+                    gara.id, p1, p2
+                ), f"Encounter should exist after match completion: {p1} vs {p2}"
 
         # Now reset the first match
         first_match = round1_matches[0]
         if not first_match.is_bye and first_match.player2_id:
-            # Reset match
+            # Reset match (score correction scenario)
             RackService.reset_match_complete(first_match.id)
             db.session.flush()
 
-            # CRITICAL: Encounter should be deleted after reset
+            # CONTRACT: Encounter must be PRESERVED after reset.
+            # The same two players will replay the same match; the pair
+            # remains "already faced" from the anti-rematch perspective.
             p1 = min(first_match.player1_id, first_match.player2_id)
             p2 = max(first_match.player1_id, first_match.player2_id)
 
-            # This assertion will FAIL until the bug is fixed
-            assert not PlayerEncounter.have_played(gara.id, p1, p2), (
-                f"Encounter should NOT exist after match reset! "
-                f"Players {p1} vs {p2} encounter still present. "
-                f"This causes anti-rematch to incorrectly block valid pairings."
+            assert PlayerEncounter.have_played(gara.id, p1, p2), (
+                f"Encounter MUST exist after match reset (ADR-026). "
+                f"Players {p1} vs {p2}: reset is score correction, "
+                f"the pair is preserved by design. To release a pair, "
+                f"use cancel_round instead."
+            )
+            # Symmetry: (p2, p1) must also report the encounter
+            assert PlayerEncounter.have_played(gara.id, p2, p1), (
+                "have_played must be symmetric: reset preservation holds "
+                "regardless of argument order (ADR-026)."
             )
 
     def test_encounter_cleanup_on_round_cancel(
@@ -712,11 +728,14 @@ class TestAntiRematchRegression:
         # Start tournament
         inscription_start = utc_now()
         inscription_end = utc_now() + timedelta(hours=1)
-        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        InscriptionService.open_inscriptions(
+            gara.id, inscription_start, inscription_end
+        )
         RoundService.start_first_round(gara.id)
 
         # Complete round 1 matches to record encounters
         from models.match.services import MatchService
+
         round1_matches = Match.query.filter_by(gara_id=gara.id, round_number=1).all()
         for match in round1_matches:
             if not match.is_bye and match.player2_id:
@@ -736,7 +755,9 @@ class TestAntiRematchRegression:
         round1_pairings = []
         for match in round1_matches:
             if not match.is_bye and match.player2_id:
-                p1, p2 = min(match.player1_id, match.player2_id), max(match.player1_id, match.player2_id)
+                p1, p2 = min(match.player1_id, match.player2_id), max(
+                    match.player1_id, match.player2_id
+                )
                 round1_pairings.append((p1, p2))
                 assert PlayerEncounter.have_played(gara.id, p1, p2)
 
@@ -744,16 +765,26 @@ class TestAntiRematchRegression:
         for match in round1_matches:
             if not match.is_bye and match.winner_id:
                 from models.match.services import RackService
+
                 RackService.reset_match_complete(match.id)
         db.session.flush()
 
-        # Cancel round 1
+        # Cancel round 1 — MUST succeed. Previously this test would pass
+        # even if cancel_round returned (False, ...) silently, because the
+        # cleanup inside reset_match_complete (removed by ADR-026) would
+        # have done the work. Now we assert success explicitly so a
+        # regression where cancel_round's precondition blocks reset
+        # matches again would fail loudly.
         success, message = AdvancedRoundManager.cancel_round(gara.id, 1)
         db.session.flush()
+        assert success, (
+            f"cancel_round must succeed on a round where all matches have "
+            f"been reset (score=0, status=PENDING/PLAYING). Got: {message}"
+        )
 
         # CRITICAL: All encounters for round 1 should be deleted
+        # by cancel_round's own cleanup (delete_round_encounters).
         for p1, p2 in round1_pairings:
-            # This assertion will FAIL until the bug is fixed
             assert not PlayerEncounter.have_played(gara.id, p1, p2), (
                 f"Encounter should NOT exist after round cancel! "
                 f"Players {p1} vs {p2} encounter still present."

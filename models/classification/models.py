@@ -2,7 +2,8 @@
 Module: models/classification/models.py
 Purpose: Classification domain models
 (Classification, RoundClassification, GaraClassification, PlayerEncounter)
-Data Structures: Classification, RoundClassification, GaraClassification, PlayerEncounter
+Data Structures:
+    Classification, RoundClassification, GaraClassification, PlayerEncounter
 Dependencies: models.base.db, datetime
 
 Phase 5 Refactor Notes:
@@ -116,7 +117,8 @@ class RoundClassification(db.Model):
         and creates/updates RoundClassification entries for all players.
 
         For Random strategy: classification is based on total racks won
-        For other strategies: classification is based on matches won, then rack difference
+        For other strategies: classification is based on matches won,
+        then rack difference
 
         Args:
             gara_id: ID of the gara
@@ -133,14 +135,17 @@ class RoundClassification(db.Model):
         if not gara:
             raise ValueError(f"Gara {gara_id} not found")
 
-        # Get all finished matches up to this round (including bye matches)
-        # Include both 'completed' (admin) and 'validated' (bilateral player confirmation)
+        # Get all finished matches up to this round (including bye matches).
+        # Include both 'completed' (admin) and 'validated' (bilateral
+        # player confirmation).
         completed_matches = (
             db.session.query(Match)
             .filter(
                 Match.gara_id == gara_id,
                 Match.round_number <= round_number,
-                Match.status.in_(["completed", "validated"]),  # type: ignore[union-attr]
+                Match.status.in_(  # type: ignore[union-attr]
+                    ["completed", "validated"]
+                ),
             )
             .all()
         )
@@ -230,10 +235,18 @@ class RoundClassification(db.Model):
                     # Multi-set: player1_score/player2_score are SETS won, not racks
                     # We need to sum racks from all sets
                     for set_obj in match.sets:
-                        player_stats[match.player1_id]["rack_won"] += set_obj.player1_racks
-                        player_stats[match.player1_id]["rack_lost"] += set_obj.player2_racks
-                        player_stats[match.player2_id]["rack_won"] += set_obj.player2_racks
-                        player_stats[match.player2_id]["rack_lost"] += set_obj.player1_racks
+                        player_stats[match.player1_id][
+                            "rack_won"
+                        ] += set_obj.player1_racks
+                        player_stats[match.player1_id][
+                            "rack_lost"
+                        ] += set_obj.player2_racks
+                        player_stats[match.player2_id][
+                            "rack_won"
+                        ] += set_obj.player2_racks
+                        player_stats[match.player2_id][
+                            "rack_lost"
+                        ] += set_obj.player1_racks
                 else:
                     # Single-set: player1_score/player2_score are racks won
                     player_stats[match.player1_id]["rack_won"] += match.player1_score
@@ -249,9 +262,7 @@ class RoundClassification(db.Model):
         ssr_scores: dict[int, int] = {}
         if gara.matchmaking_strategy == "random":
             existing_gara_class = (
-                db.session.query(GaraClassification)
-                .filter_by(gara_id=gara_id)
-                .all()
+                db.session.query(GaraClassification).filter_by(gara_id=gara_id).all()
             )
             for gc in existing_gara_class:
                 if gc.spot_shot_wins is not None:
@@ -259,8 +270,9 @@ class RoundClassification(db.Model):
 
         # Sort players by classification criteria based on strategy
         if gara.matchmaking_strategy == "random":
-            # For Random strategy: order by total racks won, then SSR score, then rack difference
-            # SSR score of -1 means not entered (sorts last among same racks)
+            # For Random strategy: order by total racks won, then SSR score,
+            # then rack difference. SSR score of -1 means not entered
+            # (sorts last among same racks).
             sorted_players = sorted(
                 player_stats.items(),
                 key=lambda x: (
@@ -271,7 +283,8 @@ class RoundClassification(db.Model):
                 ),
             )
         else:
-            # For other strategies (Amalfi, etc): order by matches won, then rack difference
+            # For other strategies (Amalfi, etc): order by matches won,
+            # then rack difference.
             sorted_players = sorted(
                 player_stats.items(),
                 key=lambda x: (
@@ -312,8 +325,9 @@ class RoundClassification(db.Model):
                 # Update existing
                 classification.position = position
                 classification.matches_won = stats["matches_won"]
-                # For Random strategy, store total racks won in rack_difference field for display
-                # For other strategies, store actual rack difference
+                # For Random strategy, store total racks won in
+                # rack_difference field for display.
+                # For other strategies, store actual rack difference.
                 if gara.matchmaking_strategy == "random":
                     classification.rack_difference = stats[
                         "rack_won"
@@ -331,8 +345,9 @@ class RoundClassification(db.Model):
                     user_id=player_id,
                     position=position,
                     matches_won=stats["matches_won"],
-                    # For Random strategy, store total racks won in rack_difference field
-                    # For other strategies, store actual rack difference
+                    # For Random strategy, store total racks won in
+                    # rack_difference field.
+                    # For other strategies, store actual rack difference.
                     rack_difference=(
                         stats["rack_won"]
                         if gara.matchmaking_strategy == "random"
@@ -383,7 +398,9 @@ class GaraClassification(db.Model, TimestampMixin):
     rack_difference = db.Column(db.Integer, default=0)
 
     # Tiebreaker resolution
-    tied_with_player_ids = db.Column(db.JSON, nullable=True)  # IDs of originally tied players
+    tied_with_player_ids = db.Column(
+        db.JSON, nullable=True
+    )  # IDs of originally tied players
     tiebreaker_resolved = db.Column(db.Boolean, default=True)
     spot_shot_wins = db.Column(db.Integer, default=0)
 
@@ -407,7 +424,10 @@ class GaraClassification(db.Model, TimestampMixin):
     )
 
     def __repr__(self):
-        return f"<GaraClassification {self.user_id} -> {self.position} (Gara {self.gara_id})>"
+        return (
+            f"<GaraClassification {self.user_id} -> {self.position} "
+            f"(Gara {self.gara_id})>"
+        )
 
 
 class PlayerEncounter(db.Model):
@@ -517,33 +537,6 @@ class PlayerEncounter(db.Model):
         db.session.add(encounter)
         # Transaction managed by @transactional decorator
         return encounter
-
-    @staticmethod
-    @transactional(domain="classification")
-    def delete_encounter(gara_id: int, player1_id: int, player2_id: int) -> bool:
-        """
-        Delete the encounter record between two players.
-
-        Used when a match is reset to clear stale anti-rematch data.
-
-        Args:
-            gara_id: ID of the gara
-            player1_id: ID of first player
-            player2_id: ID of second player
-
-        Returns:
-            True if deleted, False if not found
-        """
-        # Ensure consistent ordering
-        p1, p2 = min(player1_id, player2_id), max(player1_id, player2_id)
-
-        deleted = (
-            db.session.query(PlayerEncounter)
-            .filter_by(gara_id=gara_id, player1_id=p1, player2_id=p2)
-            .delete()
-        )
-
-        return deleted > 0
 
     @staticmethod
     @transactional(domain="classification")

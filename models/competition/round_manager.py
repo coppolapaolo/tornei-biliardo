@@ -192,11 +192,19 @@ class AdvancedRoundManager:
         if not round_matches:
             return False, f"Nessun match trovato per il turno {round_number}"
 
-        # Check if any matches have partial results
+        # Check if any matches have partial results (ADR-026 extended scope).
+        # A match "has partial results" only when at least one player has won
+        # a rack (score > 0). Both `None` and `0` mean "no result": `None` for
+        # never-played matches (column nullable until first flush), `0` for
+        # reset matches (reset_match_complete zeroes scores, preserving pair
+        # per ADR-026). Previous check `is not None` incorrectly blocked
+        # cancel_round on reset matches, which reset_match_complete had
+        # worked around by pre-cleaning encounters — a workaround removed
+        # by ADR-026.
         matches_with_results = [
             m
             for m in round_matches
-            if m.player1_score is not None or m.player2_score is not None
+            if (m.player1_score or 0) > 0 or (m.player2_score or 0) > 0
         ]
         if matches_with_results:
             return (
@@ -220,6 +228,7 @@ class AdvancedRoundManager:
 
         # Delete PlayerEncounters for this round to maintain anti-rematch consistency
         from models.classification.models import PlayerEncounter
+
         PlayerEncounter.delete_round_encounters(gara_id, round_number)
 
         # Update gara current round if we cancelled the current round
@@ -327,8 +336,10 @@ class AdvancedRoundManager:
 
             # Count both COMPLETED and VALIDATED as finished
             completed_matches = [
-                m for m in round_matches
-                if m.status in [MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value]
+                m
+                for m in round_matches
+                if m.status
+                in [MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value]
             ]
             pending_matches = [
                 m for m in round_matches if m.status == MatchStatus.PENDING.value
