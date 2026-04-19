@@ -153,12 +153,18 @@ class WithdrawPolicyService:
     def get_forfeit_inscriptions(gara_id: int) -> list[Inscription]:
         """
         Get inscriptions marked as forfeit (for auto-completion logic).
+
+        Excludes waitlist entries: a waitlisted player cannot have matches to
+        forfeit, and promotion to active must clear `is_forfeit` — filtering
+        here is defense-in-depth so a promoted-but-still-forfeit inscription
+        never reaches matchmaking as a forfeit target.
         """
         return (
             db.session.query(Inscription)
             .filter_by(
                 gara_id=gara_id,
                 is_withdrawn=False,
+                is_waitlist=False,
                 is_forfeit=True
             )
             .all()

@@ -183,15 +183,11 @@ e lo passa a entrambi i call-site di `create_matches_from_pairings`
 Scoperti dai 3 reviewer (Blind Hunter + Edge Case Hunter + Acceptance
 Auditor) durante step-04 del bmad-quick-dev.
 
-- **Waitlist + forfeit interaction untested**: `WithdrawPolicyService.get_forfeit_inscriptions`
-  non filtra per `is_waitlist`. Se un iscritto è sia forfeit sia waitlist,
-  il suo `user_id` finisce nel set `forfeit_user_ids` ma non appare in
-  nessun pairing (gli waitlist sono esclusi dalla query inscriptions del
-  first round), quindi currently harmless. Rischio futuro: se la logica
-  di promozione waitlist→attivo preserva `is_forfeit=True`, un promosso
-  verrebbe routato a walkover in modo silenzioso. Fix: aggiungere filtro
-  `is_waitlist=False` in `get_forfeit_inscriptions`, oppure test
-  esplicito che documenti il comportamento.
+- ~~**Waitlist + forfeit interaction untested**~~ ✅ DONE (2026-04-19):
+  `WithdrawPolicyService.get_forfeit_inscriptions` ora filtra per
+  `is_waitlist=False` (defense-in-depth contro waitlist promotion che
+  preservi `is_forfeit=True`). 3 regression test in
+  `tests/new/unit/test_withdraw_policy_forfeit_filter.py`.
 
 - **Copy-paste drift risk tra `start_first_round` e `_create_round_impl`**:
   le 4 righe di calcolo `forfeit_user_ids` sono duplicate letteralmente
