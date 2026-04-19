@@ -94,34 +94,39 @@ class GamificationEventHandlers:
         trio 2/3 or 3/3 walkover) grants no XP/quest/streak/achievement side effects
         to any player in the gara's forfeit set — the nominal 3/3 winner included.
 
+        Error handling policy:
+        - Walkover detection (match lookup + forfeit set) runs OUTSIDE the
+          broad except: a failure here would leave `forfeit_ids` empty and
+          silently route XP to forfeiters, so we let EventBus catch and
+          report the error.
+        - Each AchievementService call is isolated: a single achievement
+          failure must not block the remaining three nor the streak/quest
+          side effects that follow.
+
         Args:
             event: MatchCompletedEvent with match_id, winner_id, player1_id, player2_id
         """
+        if not event.winner_id:
+            logger.warning(
+                f"Match {event.match_id} completed without winner - no XP awarded"
+            )
+            return
+
+        # Walkover detection: load match and gather forfeit set once.
+        # Intentionally outside the broad try/except below — see docstring.
+        from models.match.models import Match
+        from models.base import db as _db
+
+        match = _db.session.get(Match, event.match_id)
+        forfeit_ids: set[int] = set()
+        if match is not None and match.is_walkover and match.gara_id:
+            from models.competition.withdraw_policy_service import (
+                WithdrawPolicyService,
+            )
+
+            forfeit_ids = WithdrawPolicyService.get_forfeit_user_ids(match.gara_id)
+
         try:
-            if not event.winner_id:
-                logger.warning(
-                    f"Match {event.match_id} completed without winner - no XP awarded"
-                )
-                return
-
-            # Walkover detection: load match and gather forfeit set once.
-            from models.match.models import Match
-            from models.base import db as _db
-
-            match = _db.session.get(Match, event.match_id)
-            forfeit_ids: set[int] = set()
-            if match is not None and match.is_walkover and match.gara_id:
-                from models.competition.withdraw_policy_service import (
-                    WithdrawPolicyService,
-                )
-
-                forfeit_ids = {
-                    ins.user_id
-                    for ins in WithdrawPolicyService.get_forfeit_inscriptions(
-                        match.gara_id
-                    )
-                }
-
             # Determine loser
             loser_id: Optional[int] = None
             if event.player1_id and event.player2_id:
@@ -157,20 +162,24 @@ class GamificationEventHandlers:
                     f"Awarded {XP_RATES[XPTransactionType.MATCH_LOSS]} XP to user {loser_id} for match participation"
                 )
 
-            # Check match-related achievements for winner (skip if winner is a forfeit)
+            # Check match-related achievements for winner (skip if winner is a forfeit).
+            # Each call isolated: failure in one must not block the others.
             if event.winner_id not in forfeit_ids:
-                AchievementService.check_and_award_achievement(
-                    event.winner_id, "first_blood"
-                )
-                AchievementService.check_and_award_achievement(
-                    event.winner_id, "veteran_player", progress_increment=1
-                )
-                AchievementService.check_and_award_achievement(
-                    event.winner_id, "century_club", progress_increment=1
-                )
-                AchievementService.check_and_award_achievement(
-                    event.winner_id, "match_marathon", progress_increment=1
-                )
+                winner_achievements = [
+                    ("first_blood", {}),
+                    ("veteran_player", {"progress_increment": 1}),
+                    ("century_club", {"progress_increment": 1}),
+                    ("match_marathon", {"progress_increment": 1}),
+                ]
+                for code, kwargs in winner_achievements:
+                    try:
+                        AchievementService.check_and_award_achievement(
+                            event.winner_id, code, **kwargs
+                        )
+                    except Exception as ach_error:
+                        logger.warning(
+                            f"Error checking achievement '{code}' for user {event.winner_id}: {ach_error}"
+                        )
 
             # Record weekly streaks for both players (skip forfeiters)
             # WEEKLY_MATCH: At least 1 match per week

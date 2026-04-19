@@ -121,18 +121,21 @@ reset crash. 26 test (13 unit + 4 integration + 9 trio_forfeit).
 Scoperti dai 3 reviewer (Blind Hunter + Edge Case Hunter + Acceptance
 Auditor) durante step-04 del bmad-quick-dev.
 
-- **Broad `except Exception` in XP handler**: il try/except top-level in
-  `handle_match_completed_for_xp` ora racchiude anche la nuova logica di
-  walkover detection (`db.session.get(Match)` + `WithdrawPolicyService`).
-  Se fallisce silenziosamente, XP viene assegnato ai forfeiter. Pre-esistente
-  (pattern "log and continue") ma reso più rischioso dalla nuova complessità.
-  Considerare re-raise per errori di lookup Match/forfeit.
+- ~~**Broad `except Exception` in XP handler**~~ ✅ DONE (2026-04-19):
+  Walkover detection (match lookup + `WithdrawPolicyService.get_forfeit_user_ids`)
+  spostata FUORI dal try/except top-level di `handle_match_completed_for_xp`.
+  Un errore di lookup ora raisa e viene catturato da `EventBus.publish()`
+  (logger.error + Sentry), invece di lasciare `forfeit_ids={}` che
+  silenziosamente routava XP ai forfeiter. Regression test
+  `TestWalkoverDetectionErrorsPropagate` in
+  `tests/new/unit/gamification/test_match_completed_handler_isolation.py`.
 
-- **`AchievementService` calls non wrapped**: nel handler XP, 4
-  `check_and_award_achievement` sequenziali senza try/except. Se uno fallisce,
-  i successivi + streak/quest non vengono eseguiti. Pre-esistente, aggravato
-  perché ora sono condizionali (`if winner_id not in forfeit_ids`). Wrapping
-  in try/except separato come per streak/quest.
+- ~~**`AchievementService` calls non wrapped**~~ ✅ DONE (2026-04-19):
+  Le 4 `check_and_award_achievement` nel winner-branch di
+  `handle_match_completed_for_xp` ora sono iterate in un loop con
+  try/except individuale — un achievement failing logga warning e
+  non blocca i successivi né streak/quest. Regression test
+  `TestAchievementIsolation` in stesso file.
 
 - ~~**`is_walkover` su Match detached**~~ ✅ DONE (2026-04-19):
   `Match.is_walkover` ora usa `db.session.query(Rack).filter_by(match_id=self.id).count()`
