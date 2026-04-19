@@ -299,10 +299,7 @@ class RoundCreationService:
         # Get forfeit players for this gara to handle completed matches
         from models.competition.withdraw_policy_service import WithdrawPolicyService
 
-        forfeit_user_ids = set(
-            inscription.user_id
-            for inscription in WithdrawPolicyService.get_forfeit_inscriptions(gara_id)
-        )
+        forfeit_user_ids = WithdrawPolicyService.get_forfeit_user_ids(gara_id)
 
         # Get round configuration for distance override
         from models.competition.round_configuration import RoundConfiguration

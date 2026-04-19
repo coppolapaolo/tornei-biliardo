@@ -171,6 +171,17 @@ class WithdrawPolicyService:
         )
 
     @staticmethod
+    def get_forfeit_user_ids(gara_id: int) -> set[int]:
+        """
+        Return forfeit player user_ids as a set — canonical source for the
+        `forfeit_user_ids` parameter consumed by `create_matches_from_pairings`.
+        """
+        return {
+            ins.user_id
+            for ins in WithdrawPolicyService.get_forfeit_inscriptions(gara_id)
+        }
+
+    @staticmethod
     def is_player_forfeit(gara_id: int, user_id: int) -> bool:
         """
         Check if a specific player is marked as forfeit in this gara.

@@ -73,10 +73,7 @@ class RoundService:
         # random strategy we generate all rounds in the same transaction.
         from models.competition.withdraw_policy_service import WithdrawPolicyService
 
-        forfeit_user_ids = set(
-            inscription.user_id
-            for inscription in WithdrawPolicyService.get_forfeit_inscriptions(gara_id)
-        )
+        forfeit_user_ids = WithdrawPolicyService.get_forfeit_user_ids(gara_id)
 
         # Gestione diversa per strategia Random vs altre strategie
         if gara.matchmaking_strategy == "random":

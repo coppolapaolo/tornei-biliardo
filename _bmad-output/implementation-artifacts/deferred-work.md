@@ -189,12 +189,13 @@ Auditor) durante step-04 del bmad-quick-dev.
   preservi `is_forfeit=True`). 3 regression test in
   `tests/new/unit/test_withdraw_policy_forfeit_filter.py`.
 
-- **Copy-paste drift risk tra `start_first_round` e `_create_round_impl`**:
-  le 4 righe di calcolo `forfeit_user_ids` sono duplicate letteralmente
-  (spec lo accetta esplicitamente). Se in futuro `_create_round_impl`
-  cambia logica (es. include withdrawn-mid-round players), il call-site
-  in `start_first_round` divergerà silenziosamente. Mitigation quando
-  compare un terzo call-site: estrarre `WithdrawPolicyService.get_forfeit_user_ids(gara_id) -> Set[int]`.
+- ~~**Copy-paste drift risk tra `start_first_round` e `_create_round_impl`**~~ ✅ DONE (2026-04-19):
+  Estratto `WithdrawPolicyService.get_forfeit_user_ids(gara_id) -> set[int]`.
+  Entrambi i call-site (`start_first_round` in `round_service.py` e
+  `_create_round_impl` in `round_creation.py`) ora chiamano l'helper;
+  qualsiasi futura modifica (es. withdrawn-mid-round) tocca un solo punto.
+  3 regression test `TestGetForfeitUserIds` in
+  `tests/new/unit/test_withdraw_policy_forfeit_filter.py`.
 
 ## ~~Admin reset di walkover trio lascia UI in stato rotto~~ ✅ DONE (2026-04-19)
 

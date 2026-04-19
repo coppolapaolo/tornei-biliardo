@@ -95,3 +95,61 @@ class TestGetForfeitInscriptionsWaitlistFilter:
         result = WithdrawPolicyService.get_forfeit_inscriptions(gara.id)
 
         assert result == []
+
+
+@pytest.mark.unit
+class TestGetForfeitUserIds:
+    """Helper that returns forfeit user_ids as a set.
+
+    Introduced to deduplicate the 3-line pattern previously inlined in
+    `RoundService.start_first_round` and `RoundCreationService._create_round_impl`
+    — any future addition (e.g. withdrawn-mid-round players) changes one
+    place and both call-sites follow.
+    """
+
+    def test_returns_user_ids_as_set(self, db_session, isolated_players):
+        gara = _make_gara(db_session)
+        forfeiter_a, forfeiter_b, active = (p.id for p in isolated_players[:3])
+        db_session.add(
+            Inscription(gara_id=gara.id, user_id=forfeiter_a, is_forfeit=True)
+        )
+        db_session.add(
+            Inscription(gara_id=gara.id, user_id=forfeiter_b, is_forfeit=True)
+        )
+        db_session.add(Inscription(gara_id=gara.id, user_id=active))
+        db_session.commit()
+
+        result = WithdrawPolicyService.get_forfeit_user_ids(gara.id)
+
+        assert isinstance(result, set)
+        assert result == {forfeiter_a, forfeiter_b}
+
+    def test_empty_when_no_forfeit(self, db_session, isolated_players):
+        gara = _make_gara(db_session)
+        db_session.add(
+            Inscription(gara_id=gara.id, user_id=isolated_players[0].id)
+        )
+        db_session.commit()
+
+        assert WithdrawPolicyService.get_forfeit_user_ids(gara.id) == set()
+
+    def test_inherits_waitlist_filter(self, db_session, isolated_players):
+        """Helper must honor the same waitlist exclusion as get_forfeit_inscriptions."""
+        gara = _make_gara(db_session)
+        active, waitlisted = (p.id for p in isolated_players[:2])
+        db_session.add(
+            Inscription(gara_id=gara.id, user_id=active, is_forfeit=True)
+        )
+        db_session.add(
+            Inscription(
+                gara_id=gara.id,
+                user_id=waitlisted,
+                is_forfeit=True,
+                is_waitlist=True,
+                waitlist_position=1,
+                waitlist_reason="capacity",
+            )
+        )
+        db_session.commit()
+
+        assert WithdrawPolicyService.get_forfeit_user_ids(gara.id) == {active}
