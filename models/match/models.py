@@ -26,7 +26,7 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
     )
     round_number = db.Column(
         db.Integer, nullable=False
-    )  # 1, 2, 3. RESOLVED: See docs/ARCHITECTURAL_DECISIONS.md ADR-003. Decision: Keep as integer field (YAGNI).
+    )  # 1, 2, 3. See docs/ARCHITECTURAL_DECISIONS.md ADR-003 (YAGNI).
 
     player1_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     player2_id = db.Column(db.Integer, db.ForeignKey("user.id"))
@@ -140,7 +140,7 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
 
     @property
     def is_walkover(self) -> bool:
-        """True if completed without any real racks ever played (bye, forfeit, trio walkover).
+        """True if completed without real racks played (bye, forfeit, trio walkover).
 
         Used by gamification/rating handlers to skip XP/Elo updates for walkover
         outcomes and by classification to credit the nominal winner with distance
@@ -318,7 +318,7 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
         return SetLifecycleService.get_current_set(self)
 
     def complete_set(self, set_number: int, winner_id: int) -> None:
-        """Complete a set and check if match is finished. Delegates to SetLifecycleService."""
+        """Complete a set and check if match is finished. Delegates to SetLifecycleService."""  # noqa: E501
         from .set_lifecycle_service import SetLifecycleService
 
         SetLifecycleService.complete_set(self, set_number, winner_id)
@@ -467,8 +467,18 @@ class TrioMatch(db.Model):
     created_at = db.Column(db.DateTime, default=utc_now)
 
     # Relations
-    # uselist=False because each Match has at most one TrioMatch (1:1 relationship)
-    match = db.relationship("Match", backref=db.backref("trio_match", uselist=False))
+    # uselist=False because each Match has at most one TrioMatch (1:1 relationship).
+    # cascade="all, delete-orphan" ensures TrioMatch is removed when parent Match
+    # is deleted (e.g. AdvancedRoundManager.cancel_round, round_cancellation.py).
+    # Prevents orphan TrioMatch rows with dangling match_id references.
+    match = db.relationship(
+        "Match",
+        backref=db.backref(
+            "trio_match",
+            uselist=False,
+            cascade="all, delete-orphan",
+        ),
+    )
     player1 = db.relationship("User", foreign_keys=[player1_id])
     player2 = db.relationship("User", foreign_keys=[player2_id])
     player3 = db.relationship("User", foreign_keys=[player3_id])
@@ -782,7 +792,7 @@ class TrioMatch(db.Model):
     # NOTE: reset() moved to TrioScoringService.reset()
 
     def get_current_state(self):
-        """Return current state of the trio for UI rendering. Delegates to TrioStateSerializer."""
+        """Return current state of the trio for UI rendering. Delegates to TrioStateSerializer."""  # noqa: E501
         from .trio_state_serializer import TrioStateSerializer
 
         return TrioStateSerializer.serialize(self)
@@ -848,4 +858,7 @@ class TrioRack(db.Model):
         self.removed_at = utc_now()
 
     def __repr__(self):
-        return f"<TrioRack {self.rack_number} trio={self.trio_match_id} winner={self.winner_id}>"
+        return (
+            f"<TrioRack {self.rack_number} "
+            f"trio={self.trio_match_id} winner={self.winner_id}>"
+        )

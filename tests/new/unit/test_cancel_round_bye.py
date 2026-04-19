@@ -22,7 +22,7 @@ import pytest
 
 from models.competition.models import Gara, Inscription
 from models.competition.round_manager import AdvancedRoundManager
-from models.match.models import Match
+from models.match.models import Match, TrioMatch
 from models.match.rack_service import RackService
 from models.status_enum import GaraStatus, MatchStatus
 
@@ -120,6 +120,42 @@ def _add_walkover_match(
     db_session.add(match)
     db_session.add(Inscription(gara_id=gara.id, user_id=winner.id))
     db_session.add(Inscription(gara_id=gara.id, user_id=loser.id, is_forfeit=True))
+    db_session.flush()
+    return match
+
+
+def _add_trio_pending_match(
+    db_session, gara, p1, p2, p3, round_number: int = 1
+) -> Match:
+    """Trio pending: match + TrioMatch creati, nessun rack giocato.
+
+    Rappresenta lo stato "all'inizio del round" per un trio non-walkover.
+    cancel_round deve poter procedere (score=0) e il TrioMatch deve
+    essere rimosso via cascade delete-orphan sulla relationship.
+    """
+    match = Match(
+        gara_id=gara.id,
+        player1_id=p1.id,
+        player2_id=p2.id,
+        round_number=round_number,
+        is_bye=False,
+        is_trio=True,
+        status=MatchStatus.PENDING.value,
+        player1_score=0,
+        player2_score=0,
+    )
+    db_session.add(match)
+    db_session.add(Inscription(gara_id=gara.id, user_id=p1.id))
+    db_session.add(Inscription(gara_id=gara.id, user_id=p2.id))
+    db_session.add(Inscription(gara_id=gara.id, user_id=p3.id))
+    db_session.flush()
+    trio = TrioMatch(
+        match_id=match.id,
+        player1_id=p1.id,
+        player2_id=p2.id,
+        player3_id=p3.id,
+    )
+    db_session.add(trio)
     db_session.flush()
     return match
 
@@ -256,6 +292,39 @@ class TestCancelRoundIgnoresBye:
             db_session.query(Match).filter_by(gara_id=gara.id, round_number=1).count()
         )
         assert remaining == 2
+
+
+@pytest.mark.unit
+class TestCancelRoundCascadesTrioMatch:
+    """`cancel_round` su trio pending non lascia TrioMatch orfano.
+
+    Pre-existing latent bug scoperto da review adversariale: la
+    relationship `Match.trio_match` (backref da `TrioMatch.match`) non
+    aveva cascade delete-orphan → `db.session.delete(match)` lasciava
+    righe orfane in `trio_match`. Fix: cascade aggiunto alla backref.
+    """
+
+    def test_cancel_round_with_trio_pending_removes_trio_match(
+        self, db_session, isolated_players
+    ):
+        """Dopo cancel_round di un round con trio pending, nessun
+        TrioMatch sopravvive in DB con match_id orfano."""
+        gara = _make_playing_gara(db_session)
+        p1, p2, p3 = isolated_players[:3]
+        match = _add_trio_pending_match(db_session, gara, p1, p2, p3)
+        trio_id = match.trio_match.id
+        gara.current_round = 1
+        db_session.commit()
+
+        # Pre-condition: TrioMatch esiste
+        assert db_session.query(TrioMatch).filter_by(id=trio_id).count() == 1
+
+        success, message = AdvancedRoundManager.cancel_round(gara.id, 1)
+
+        assert success is True, f"Expected success, got: {message}"
+        # Post-condition: Match e TrioMatch entrambi eliminati
+        assert db_session.query(Match).filter_by(id=match.id).count() == 0
+        assert db_session.query(TrioMatch).filter_by(id=trio_id).count() == 0
 
 
 @pytest.mark.unit
