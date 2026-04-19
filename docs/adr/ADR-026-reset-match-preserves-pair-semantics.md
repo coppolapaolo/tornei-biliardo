@@ -235,6 +235,7 @@ Definizioni canoniche delle operazioni di lifecycle dei match. **Questa sezione 
 **Blocchi operativi**:
 - `RoundLockStatus.LOCKED` se la strategia supporta round locking e un round successivo è attivo (`can_modify_match` via `reset_match_with_validation`)
 - Non può resettare un match bye (`raise ValueError("Non puoi resettare una partita bye!")`)
+- **Gara con tiebreaker attivo** (stato != `CANCELLED`): lo SSR certifica implicitamente i risultati della gara, quindi `can_modify_match` blocca il reset finché il director non annulla lo spareggio. Scope del blocco: tutti i match della gara (non solo dei giocatori in parità). Nessun override admin. Spec: `_bmad-output/implementation-artifacts/spec-reset-blocked-by-tiebreaker.md`. Residuo originario in ADR-026 §Operations Glossary ("Tiebreaker rows sopravvivono al reset") risolto riqualificando il framing: non si cancellano o rigenerano tiebreaker al reset — si impedisce il reset.
 
 **Caller**: `RackService.reset_match_complete` → invocato da `routes/admin/match/scoring.py:reset_match`, da `routes/admin/competition/rounds.py:reset_match_advanced`, e da `AdvancedRoundManager.reset_match_with_validation` (che aggiunge validazione lock + aggiornamento classifiche + progressione round).
 

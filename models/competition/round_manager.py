@@ -8,12 +8,15 @@ from __future__ import annotations
 from typing import Dict, Any, Tuple
 from enum import Enum
 
+from flask_babel import lazy_gettext as _
+
 from models.base import db
 from models.competition.models import Gara
 from models.match.models import Match
 from models.status_enum import GaraStatus, MatchStatus
 from models.classification.models import RoundClassification
 from models.classification.services import RoundClassificationService
+from models.tiebreaker.models import Tiebreaker, TiebreakerStatus
 from models.transaction.manager import transactional
 
 
@@ -111,6 +114,30 @@ class AdvancedRoundManager:
             return (
                 False,
                 "Il turno è bloccato perché un turno successivo è già iniziato",
+            )
+
+        # ADR-026 residuo: lo spareggio (SSR/rally/playoff) certifica
+        # implicitamente l'integrità dei match della gara. Qualsiasi
+        # tiebreaker in stato != CANCELLED blocca il reset; il director
+        # deve prima cancellare lo spareggio per modificare i match.
+        active_tiebreaker_exists = (
+            db.session.query(Tiebreaker.id)
+            .filter(
+                Tiebreaker.gara_id == gara.id,
+                Tiebreaker.status != TiebreakerStatus.CANCELLED.value,
+            )
+            .first()
+            is not None
+        )
+        if active_tiebreaker_exists:
+            return (
+                False,
+                str(
+                    _(
+                        "Gara certificata da spareggio: annulla prima lo "
+                        "spareggio per modificare i match"
+                    )
+                ),
             )
 
         return True, ""

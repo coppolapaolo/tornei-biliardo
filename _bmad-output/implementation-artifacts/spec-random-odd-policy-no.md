@@ -2,7 +2,7 @@
 title: 'Random + OddNumberPolicy.NO: lock-in semantica parity waitlist'
 type: 'doc + regression test (zero code change)'
 created: '2026-04-19'
-status: 'draft'
+status: 'done'
 baseline_commit: '38fc050'
 parent_spec: '_bmad-output/implementation-artifacts/spec-random-anti-rematch.md'
 context:

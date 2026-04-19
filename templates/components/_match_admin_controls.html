@@ -114,7 +114,7 @@
         {% if match.is_trio and match.trio_match %}
             {% set has_scores = (match.trio_match.player1_racks > 0 or match.trio_match.player2_racks > 0 or match.trio_match.player3_racks > 0) %}
         {% endif %}
-        {% if match.status == 'completed' or has_scores %}
+        {% if (match.status == 'completed' or has_scores) and (match_can_modify is not defined or match_can_modify) %}
         <button class="btn btn-danger" onclick="{% if match.is_trio and match.trio_match %}resetTrio({{ match.trio_match.id }}){% else %}resetMatch({{ match.id }}){% endif %}">
             <i class="fas fa-undo"></i> {{ _('Reset Partita') }}
         </button>

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-04-07 13:56+0200\n"
+"POT-Creation-Date: 2026-04-19 23:01+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,6 +16,12 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
+
+#: models/competition/round_manager.py:137
+msgid ""
+"Gara certificata da spareggio: annulla prima lo spareggio per modificare "
+"i match"
+msgstr ""
 
 #: models/dashboard/dashboard_service.py:75
 #: templates/components/_unified_dashboard_header.html:7

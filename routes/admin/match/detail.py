@@ -49,7 +49,9 @@ def match_detail(match_id):
         if match.is_trio and match.trio_match:
             trio = match.trio_match
             is_player_in_match = current_user.id in [
-                trio.player1_id, trio.player2_id, trio.player3_id
+                trio.player1_id,
+                trio.player2_id,
+                trio.player3_id,
             ]
         else:
             is_player_in_match = current_user.id in [match.player1_id, match.player2_id]
@@ -57,9 +59,9 @@ def match_detail(match_id):
         # Se è player nel match, verifica che non abbia dato forfait per i controlli
         if is_player_in_match:
             from models.competition.withdraw_policy_service import WithdrawPolicyService
+
             has_forfeit = WithdrawPolicyService.is_player_forfeit(
-                gara_id=match.gara_id,
-                user_id=current_user.id
+                gara_id=match.gara_id, user_id=current_user.id
             )
             # user_is_player = True solo se non ha dato forfait (per i controlli UI)
             user_is_player = not has_forfeit
@@ -71,17 +73,16 @@ def match_detail(match_id):
     player2_is_forfeit = False
     if match.player1:
         from models.competition.withdraw_policy_service import WithdrawPolicyService
+
         player1_is_forfeit = WithdrawPolicyService.is_player_forfeit(
-            gara_id=match.gara_id,
-            user_id=match.player1_id
+            gara_id=match.gara_id, user_id=match.player1_id
         )
     if match.player2:
         player2_is_forfeit = WithdrawPolicyService.is_player_forfeit(
-            gara_id=match.gara_id,
-            user_id=match.player2_id
+            gara_id=match.gara_id, user_id=match.player2_id
         )
 
-    # Verifica accesso: deve essere gestore O player nel match (anche se forfait per sola lettura)
+    # Accesso: gestore O player nel match (anche forfait: sola lettura consentita)
     if not (user_can_manage or is_player_in_match):
         abort(403)
 
@@ -117,6 +118,14 @@ def match_detail(match_id):
                 )
             )
 
+    match_can_modify = True
+    if match.gara_id:
+        from models.competition.round_manager import AdvancedRoundManager
+
+        match_can_modify, _modify_reason = AdvancedRoundManager.can_modify_match(
+            match.id
+        )
+
     return render_template(
         "match_detail.html",
         match=match,
@@ -127,6 +136,7 @@ def match_detail(match_id):
         player_challenge_progress=player_challenge_progress,
         player1_is_forfeit=player1_is_forfeit,
         player2_is_forfeit=player2_is_forfeit,
+        match_can_modify=match_can_modify,
     )
 
 
@@ -155,21 +165,16 @@ def update_match_times(match_id):
         end_time = data.get("end_time")
 
         if not start_time and not end_time:
-            return jsonify({
-                "success": False,
-                "error": "Specificare almeno un orario"
-            }), 400
+            return (
+                jsonify({"success": False, "error": "Specificare almeno un orario"}),
+                400,
+            )
 
         MatchService.update_times(
-            match_id=match_id,
-            start_time_str=start_time,
-            end_time_str=end_time
+            match_id=match_id, start_time_str=start_time, end_time_str=end_time
         )
 
-        return jsonify({
-            "success": True,
-            "message": "Orari aggiornati con successo"
-        })
+        return jsonify({"success": True, "message": "Orari aggiornati con successo"})
 
     except ValueError as ve:
         return jsonify({"success": False, "error": str(ve)}), 400
@@ -205,6 +210,7 @@ def assign_table(match_id):
         - Rimozione tavolo se table_name=null
     """
     import logging
+
     logger = logging.getLogger(__name__)
 
     from models import db
@@ -235,54 +241,84 @@ def assign_table(match_id):
 
                 # Emit to gara scope (for gara_detail page)
                 if match.gara_id:
-                    emit_gara_event(match.gara_id, "match_updated", {
-                        "match_id": match_id,
-                        "table_assignment": match.table_assignment,
-                        "status": match.status,
-                        "event": event_type,
-                    })
+                    emit_gara_event(
+                        match.gara_id,
+                        "match_updated",
+                        {
+                            "match_id": match_id,
+                            "table_assignment": match.table_assignment,
+                            "status": match.status,
+                            "event": event_type,
+                        },
+                    )
 
                 # Emit to match scope (for match_detail page)
                 from routes.sse import emit_match_event, emit_user_event
-                emit_match_event(match_id, event_type, {
-                    "match_id": match_id,
-                    "table_assignment": match.table_assignment,
-                    "status": match.status,
-                })
+
+                emit_match_event(
+                    match_id,
+                    event_type,
+                    {
+                        "match_id": match_id,
+                        "table_assignment": match.table_assignment,
+                        "status": match.status,
+                    },
+                )
 
                 # Emit to user scope (for player dashboard)
                 for player_id in [match.player1_id, match.player2_id]:
                     if player_id:
-                        emit_user_event(player_id, "match_table_changed", {
-                            "match_id": match_id,
-                            "table_assignment": match.table_assignment,
-                            "event": event_type,
-                        })
+                        emit_user_event(
+                            player_id,
+                            "match_table_changed",
+                            {
+                                "match_id": match_id,
+                                "table_assignment": match.table_assignment,
+                                "event": event_type,
+                            },
+                        )
 
                 # If there was a swap, also emit for the swapped match
                 if swapped_match_id:
                     swapped_match = db.session.get(Match, swapped_match_id)
                     if swapped_match:
                         if swapped_match.gara_id:
-                            emit_gara_event(swapped_match.gara_id, "match_updated", {
+                            emit_gara_event(
+                                swapped_match.gara_id,
+                                "match_updated",
+                                {
+                                    "match_id": swapped_match_id,
+                                    "table_assignment": swapped_match.table_assignment,
+                                    "status": swapped_match.status,
+                                    "event": "table_swapped",
+                                },
+                            )
+                        emit_match_event(
+                            swapped_match_id,
+                            "table_swapped",
+                            {
                                 "match_id": swapped_match_id,
                                 "table_assignment": swapped_match.table_assignment,
                                 "status": swapped_match.status,
-                                "event": "table_swapped",
-                            })
-                        emit_match_event(swapped_match_id, "table_swapped", {
-                            "match_id": swapped_match_id,
-                            "table_assignment": swapped_match.table_assignment,
-                            "status": swapped_match.status,
-                        })
+                            },
+                        )
                         # Emit to users of swapped match
-                        for player_id in [swapped_match.player1_id, swapped_match.player2_id]:
+                        for player_id in [
+                            swapped_match.player1_id,
+                            swapped_match.player2_id,
+                        ]:
                             if player_id:
-                                emit_user_event(player_id, "match_table_changed", {
-                                    "match_id": swapped_match_id,
-                                    "table_assignment": swapped_match.table_assignment,
-                                    "event": "table_swapped",
-                                })
+                                emit_user_event(
+                                    player_id,
+                                    "match_table_changed",
+                                    {
+                                        "match_id": swapped_match_id,
+                                        "table_assignment": (
+                                            swapped_match.table_assignment
+                                        ),
+                                        "event": "table_swapped",
+                                    },
+                                )
 
         logger.info(
             f"Service returned: success={success}, message='{message}', "

@@ -153,6 +153,11 @@ sbagliato (vedi "Previous Assumption Debunked" in ADR-026).
 - Per trio match delega a `TrioScoringService.reset` (azzera trio rack e stato)
 - Bloccato per match bye; bloccato da `RoundLockStatus.LOCKED` quando passato
   attraverso `AdvancedRoundManager.reset_match_with_validation`
+- **Bloccato se la gara ha un `Tiebreaker` attivo** (stato != `CANCELLED`):
+  lo spareggio certifica implicitamente i risultati della gara. Il director
+  deve prima annullare lo spareggio (o attendere che ne venga creato uno
+  nuovo) per riabilitare il reset. Vedi spec
+  `_bmad-output/implementation-artifacts/spec-reset-blocked-by-tiebreaker.md`.
 
 ### `AdvancedRoundManager.bulk_reset_round_matches(gara_id, round_number)` — mass reset
 
