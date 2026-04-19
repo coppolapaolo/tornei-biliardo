@@ -66,6 +66,18 @@ class RoundService:
         for i, inscription in enumerate(inscriptions, 1):
             inscription.initial_order = i
 
+        # Forfeit routing: identical pattern to _create_round_impl so that
+        # players marked is_forfeit=True BEFORE gara start are properly
+        # converted to walkovers by create_matches_from_pairings (both the
+        # 2-player and trio branches). Computed once here because for the
+        # random strategy we generate all rounds in the same transaction.
+        from models.competition.withdraw_policy_service import WithdrawPolicyService
+
+        forfeit_user_ids = set(
+            inscription.user_id
+            for inscription in WithdrawPolicyService.get_forfeit_inscriptions(gara_id)
+        )
+
         # Gestione diversa per strategia Random vs altre strategie
         if gara.matchmaking_strategy == "random":
             # Per strategia Random: crea tutti i turni subito usando la strategia
@@ -114,6 +126,7 @@ class RoundService:
                     round_number=round_num,
                     round_distance=round_distance,
                     round_discipline=round_discipline,
+                    forfeit_user_ids=forfeit_user_ids,
                 )
 
             gara.current_round = 1
@@ -156,6 +169,7 @@ class RoundService:
                 round_number=1,
                 round_distance=round_distance,
                 round_discipline=round_discipline,
+                forfeit_user_ids=forfeit_user_ids,
             )
 
             gara.current_round = 1

@@ -170,18 +170,35 @@ Spec `spec-walkover-side-effects-unified.md`. Filtro Python-level su
 `total_racks_played > 0` in `_get_trio_counts`. Solo trii "contestati"
 contribuiscono alla rotazione.
 
-## `forfeit_user_ids` non passato da `RoundService.start_first_round`
+## ~~`forfeit_user_ids` non passato da `RoundService.start_first_round`~~ ✅ DONE (2026-04-19)
 
-Source: Review trio forfeit fix (2026-04-19), ECH #2.
+Spec `spec-fix-forfeit-first-round.md`. `RoundService.start_first_round`
+ora calcola `forfeit_user_ids` una volta (via `WithdrawPolicyService.get_forfeit_inscriptions`)
+e lo passa a entrambi i call-site di `create_matches_from_pairings`
+(branch random e non-random). 5 regression test in
+`tests/new/unit/test_start_first_round_forfeit.py`.
 
-`models/competition/round_service.py:111-117` e `153-159` chiamano
-`create_matches_from_pairings` senza l'argomento `forfeit_user_ids`.
-Se un giocatore è marcato forfeit prima dell'avvio del primo turno, il
-matchmaker lo include nei pairings e il match viene creato come pending
-normale (bug). Pre-esistente: il branch 2-player forfeit soffre già
-dello stesso problema indipendentemente dal fix trio. Fix banale:
-copiare il blocco `WithdrawPolicyService.get_forfeit_inscriptions(gara_id)`
-di `_create_round_impl` nei due call-site.
+## Residui da review fix-forfeit-first-round (2026-04-19)
+
+Scoperti dai 3 reviewer (Blind Hunter + Edge Case Hunter + Acceptance
+Auditor) durante step-04 del bmad-quick-dev.
+
+- **Waitlist + forfeit interaction untested**: `WithdrawPolicyService.get_forfeit_inscriptions`
+  non filtra per `is_waitlist`. Se un iscritto è sia forfeit sia waitlist,
+  il suo `user_id` finisce nel set `forfeit_user_ids` ma non appare in
+  nessun pairing (gli waitlist sono esclusi dalla query inscriptions del
+  first round), quindi currently harmless. Rischio futuro: se la logica
+  di promozione waitlist→attivo preserva `is_forfeit=True`, un promosso
+  verrebbe routato a walkover in modo silenzioso. Fix: aggiungere filtro
+  `is_waitlist=False` in `get_forfeit_inscriptions`, oppure test
+  esplicito che documenti il comportamento.
+
+- **Copy-paste drift risk tra `start_first_round` e `_create_round_impl`**:
+  le 4 righe di calcolo `forfeit_user_ids` sono duplicate letteralmente
+  (spec lo accetta esplicitamente). Se in futuro `_create_round_impl`
+  cambia logica (es. include withdrawn-mid-round players), il call-site
+  in `start_first_round` divergerà silenziosamente. Mitigation quando
+  compare un terzo call-site: estrarre `WithdrawPolicyService.get_forfeit_user_ids(gara_id) -> Set[int]`.
 
 ## ~~Admin reset di walkover trio lascia UI in stato rotto~~ ✅ DONE (2026-04-19)
 
