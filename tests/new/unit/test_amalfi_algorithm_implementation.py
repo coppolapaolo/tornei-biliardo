@@ -41,7 +41,10 @@ class TestAmalfiAlgorithmImplementation:
         classifications = self.create_mock_classification(player_ids)
 
         # Mock anti-rematch to allow all pairings
-        with patch.object(strategy, '_have_already_played', return_value=False):
+        with patch(
+            'models.classification.encounter_service.PlayerEncounterService.get_encounter_matrix',
+            return_value={},
+        ):
             pairings = strategy._amalfi_pairing(classifications, turno=2, max_turni=5)
 
         # Verify all players are paired
@@ -58,7 +61,10 @@ class TestAmalfiAlgorithmImplementation:
         player_ids = [1, 2, 3, 4]
         classifications = self.create_mock_classification(player_ids)
 
-        with patch.object(strategy, '_have_already_played', return_value=False):
+        with patch(
+            'models.classification.encounter_service.PlayerEncounterService.get_encounter_matrix',
+            return_value={},
+        ):
             # Test different rounds with max_turni = 5
             test_cases = [
                 (2, 5, 3),  # turno 2 di 5: salto = 5-2 = 3
@@ -81,7 +87,10 @@ class TestAmalfiAlgorithmImplementation:
         player_ids = [1, 2, 3, 4, 5]
         classifications = self.create_mock_classification(player_ids)
 
-        with patch.object(strategy, '_have_already_played', return_value=False):
+        with patch(
+            'models.classification.encounter_service.PlayerEncounterService.get_encounter_matrix',
+            return_value={},
+        ):
             pairings = strategy._amalfi_pairing(classifications, turno=2, max_turni=5)
 
         # Count different pairing types
@@ -104,11 +113,13 @@ class TestAmalfiAlgorithmImplementation:
         player_ids = [1, 2, 3, 4]
         classifications = self.create_mock_classification(player_ids)
 
-        # Mock that players 1 and 2 have already played
-        def mock_have_played(p1, p2, gara_id):
-            return (p1 == 1 and p2 == 2) or (p1 == 2 and p2 == 1)
+        # Players 1 and 2 have already played (matrix stores both directions)
+        encounter_matrix = {(1, 2): True, (2, 1): True}
 
-        with patch.object(strategy, '_have_already_played', side_effect=mock_have_played):
+        with patch(
+            'models.classification.encounter_service.PlayerEncounterService.get_encounter_matrix',
+            return_value=encounter_matrix,
+        ):
             pairings = strategy._amalfi_pairing(classifications, turno=2, max_turni=5)
 
         # Verify that players 1 and 2 are not paired together
@@ -129,14 +140,17 @@ class TestAmalfiAlgorithmImplementation:
         player_ids = [1, 2, 3, 4, 5, 6]
         classifications = self.create_mock_classification(player_ids)
 
-        # Mock extensive anti-rematch constraints to force circular search
-        def mock_have_played(p1, p2, gara_id):
-            # Force many rematches to test circular search logic
-            forbidden_pairs = [(1, 2), (1, 3), (3, 4), (4, 5)]
-            pair = tuple(sorted([p1, p2]))
-            return pair in forbidden_pairs
+        # Force many rematches to test circular search logic
+        forbidden_pairs = [(1, 2), (1, 3), (3, 4), (4, 5)]
+        encounter_matrix = {}
+        for a, b in forbidden_pairs:
+            encounter_matrix[(a, b)] = True
+            encounter_matrix[(b, a)] = True
 
-        with patch.object(strategy, '_have_already_played', side_effect=mock_have_played):
+        with patch(
+            'models.classification.encounter_service.PlayerEncounterService.get_encounter_matrix',
+            return_value=encounter_matrix,
+        ):
             pairings = strategy._amalfi_pairing(classifications, turno=3, max_turni=5)
 
         # Should still produce valid pairings
@@ -151,7 +165,10 @@ class TestAmalfiAlgorithmImplementation:
         player_ids = [1, 2, 3]  # 3 players
         classifications = self.create_mock_classification(player_ids)
 
-        with patch.object(strategy, '_have_already_played', return_value=False):
+        with patch(
+            'models.classification.encounter_service.PlayerEncounterService.get_encounter_matrix',
+            return_value={},
+        ):
             pairings = strategy._amalfi_pairing(classifications, turno=2, max_turni=4)
 
         # Should have 1 normal pairing + 1 bye
@@ -170,7 +187,10 @@ class TestAmalfiAlgorithmImplementation:
 
     def test_amalfi_empty_classification(self, strategy):
         """Test behavior with empty classification."""
-        with patch.object(strategy, '_have_already_played', return_value=False):
+        with patch(
+            'models.classification.encounter_service.PlayerEncounterService.get_encounter_matrix',
+            return_value={},
+        ):
             pairings = strategy._amalfi_pairing([], turno=2, max_turni=5)
 
         assert len(pairings) == 0
@@ -180,7 +200,10 @@ class TestAmalfiAlgorithmImplementation:
         player_ids = [1]
         classifications = self.create_mock_classification(player_ids)
 
-        with patch.object(strategy, '_have_already_played', return_value=False):
+        with patch(
+            'models.classification.encounter_service.PlayerEncounterService.get_encounter_matrix',
+            return_value={},
+        ):
             pairings = strategy._amalfi_pairing(classifications, turno=2, max_turni=5)
 
         # Should create one bye pairing
@@ -193,7 +216,10 @@ class TestAmalfiAlgorithmImplementation:
         player_ids = [1, 2, 3, 4]
         classifications = self.create_mock_classification(player_ids)
 
-        with patch.object(strategy, '_have_already_played', return_value=False):
+        with patch(
+            'models.classification.encounter_service.PlayerEncounterService.get_encounter_matrix',
+            return_value={},
+        ):
             pairings = strategy._amalfi_pairing(classifications, turno=3, max_turni=5)
 
         # All pairings should have correct round number
@@ -212,7 +238,10 @@ class TestAmalfiAlgorithmImplementation:
         player_ids = [1, 2, 3, 4, 5, 6, 7, 8]
         classifications = self.create_mock_classification(player_ids)
 
-        with patch.object(strategy, '_have_already_played', return_value=False):
+        with patch(
+            'models.classification.encounter_service.PlayerEncounterService.get_encounter_matrix',
+            return_value={},
+        ):
             pairings = strategy._amalfi_pairing(classifications, turno=2, max_turni=3)
 
         # Salto = 2 → 1° vs 3°, 2° vs 4°, 5° vs 7°, 6° vs 8°
@@ -232,7 +261,10 @@ class TestAmalfiAlgorithmImplementation:
         player_ids = [1, 2, 3, 4, 5, 6, 7, 8]
         classifications = self.create_mock_classification(player_ids)
 
-        with patch.object(strategy, '_have_already_played', return_value=False):
+        with patch(
+            'models.classification.encounter_service.PlayerEncounterService.get_encounter_matrix',
+            return_value={},
+        ):
             pairings = strategy._amalfi_pairing(classifications, turno=3, max_turni=3)
 
         # Salto = 1 → 1° vs 2°, 3° vs 4°, 5° vs 6°, 7° vs 8°
@@ -254,7 +286,10 @@ class TestAmalfiAlgorithmImplementation:
         player_ids = [1, 2, 3, 4, 5, 6, 7, 8]
         classifications = self.create_mock_classification(player_ids)
 
-        with patch.object(strategy, '_have_already_played', return_value=False):
+        with patch(
+            'models.classification.encounter_service.PlayerEncounterService.get_encounter_matrix',
+            return_value={},
+        ):
             pairings = strategy._amalfi_pairing(classifications, turno=1, max_turni=3)
 
         # Salto = 3 → 1° vs 4°, 2° vs 5°, 3° vs 6°, 7° vs 8° (ciclico)
@@ -275,11 +310,12 @@ class TestAmalfiAlgorithmImplementation:
         classifications = self.create_mock_classification(player_ids)
 
         # Player 1 e 3 hanno già giocato
-        def mock_have_played(p1, p2, gara_id):
-            pair = tuple(sorted([p1, p2]))
-            return pair == (1, 3)
+        encounter_matrix = {(1, 3): True, (3, 1): True}
 
-        with patch.object(strategy, '_have_already_played', side_effect=mock_have_played):
+        with patch(
+            'models.classification.encounter_service.PlayerEncounterService.get_encounter_matrix',
+            return_value=encounter_matrix,
+        ):
             pairings = strategy._amalfi_pairing(classifications, turno=2, max_turni=3)
 
         # Player 1 deve essere abbinato con qualcuno diverso da 3

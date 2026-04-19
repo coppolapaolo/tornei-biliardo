@@ -22,6 +22,7 @@ from models.competition.services import GaraService, RoundService
 from models.competition.inscription_service import InscriptionService
 from models.match.models import Match
 from models.classification.models import RoundClassification, PlayerEncounter
+from models.classification.encounter_service import PlayerEncounterService
 from models.matchmaking.strategies.amalfi import AmalfiStrategy
 from models.matchmaking.policies import anti_rematch_allowed
 from models import db
@@ -117,13 +118,8 @@ class TestAntiRematchRegression:
                         match.player1_score = 5
                         match.player2_score = 2
                         match.winner_id = match.player1_id
-                        # Record encounter BEFORE calculating classification
-                        PlayerEncounter.record_encounter(
-                            gara_id=gara.id,
-                            player1_id=match.player1_id,
-                            player2_id=match.player2_id,
-                            round_number=round_num - 1
-                        )
+                        # Usa il service come in produzione (invalida la cache)
+                        PlayerEncounterService.record_match_encounters(match)
                 db.session.flush()
 
                 # Calculate classification for completed round
@@ -237,12 +233,7 @@ class TestAntiRematchRegression:
                         match.player1_score = 5
                         match.player2_score = 2
                         match.winner_id = match.player1_id
-                        PlayerEncounter.record_encounter(
-                            gara_id=gara.id,
-                            player1_id=match.player1_id,
-                            player2_id=match.player2_id,
-                            round_number=round_num - 1
-                        )
+                        PlayerEncounterService.record_match_encounters(match)
                 db.session.flush()
 
                 RoundClassification.calculate_classification_after_round(
@@ -343,11 +334,11 @@ class TestAntiRematchRegression:
         assert PlayerEncounter.have_played(gara.id, player2.id, player1.id)
         assert not anti_rematch_allowed(gara.id, player2.id, player1.id)
 
-    def test_amalfi_strategy_respects_have_already_played(
+    def test_amalfi_strategy_respects_encounter_history(
         self, isolated_director_user, db_session
     ):
         """
-        Integration test: Verify AmalfiStrategy calls _have_already_played.
+        Integration test: Verify AmalfiStrategy applies anti-rematch in round 2+.
 
         This tests that the strategy actually uses the encounter data
         when generating pairings.
@@ -375,7 +366,7 @@ class TestAntiRematchRegression:
             name="Amalfi HAP Test",
             date=tomorrow,
             location="Test Location",
-            description="Test _have_already_played integration",
+            description="Test encounter history integration",
             rounds_count=2,
             min_participants=4,
             max_participants=8,
@@ -417,12 +408,7 @@ class TestAntiRematchRegression:
                 match.player1_score = 5
                 match.player2_score = 2
                 match.winner_id = match.player1_id
-                PlayerEncounter.record_encounter(
-                    gara_id=gara.id,
-                    player1_id=match.player1_id,
-                    player2_id=match.player2_id,
-                    round_number=1
-                )
+                PlayerEncounterService.record_match_encounters(match)
         db.session.flush()
 
         # Calculate classification

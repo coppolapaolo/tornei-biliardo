@@ -340,12 +340,7 @@ class TestAmalfiPairingTrioIntegration:
         monkeypatch.setattr(
             strategy, "_get_players_with_bye", lambda gara_id: players_with_bye or set()
         )
-        monkeypatch.setattr(
-            strategy,
-            "_have_already_played",
-            lambda p1, p2, gid: (encounter_matrix or {}).get((p1, p2), False),
-        )
-        # Patch PlayerEncounterService.get_encounter_matrix
+        # Patch PlayerEncounterService.get_encounter_matrix (usata sia dal salto sia da Step 3)
         monkeypatch.setattr(
             "models.classification.encounter_service.PlayerEncounterService"
             ".get_encounter_matrix",

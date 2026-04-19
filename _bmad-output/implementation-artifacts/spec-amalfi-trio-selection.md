@@ -167,7 +167,7 @@ for a, b in final_pairs:  # Coppie non toccate + eventuale coppia orfani
 - La qualità della coppia orfani in termini di distanza in classifica NON è un criterio: potrebbe risultare in orfani #1 vs #7. Accettato perché un 5° elemento nello score aggiungerebbe complessità senza beneficio significativo
 - Sciogliere coppie del salto può ricreare rematch che il salto aveva evitato: coperto all'~80% da `orphan_rematch`, il rischio residuo è accettato
 - In tornei molto lunghi (turni > C(N,2)) la qualità degli abbinamenti trio degrada: comportamento atteso, non un bug
-- Il salto (Step 1) usa `_have_already_played()` (query per-coppia) mentre Step 3 usa `encounter_matrix` (query singola): inconsistenza accettata. Refactoring opzionale per far usare la matrice anche al salto
+- ~~Il salto (Step 1) usa `_have_already_played()` (query per-coppia) mentre Step 3 usa `encounter_matrix` (query singola): inconsistenza accettata.~~ Risolto (2026-04-19): entrambi gli step usano `encounter_matrix` caricata una sola volta all'inizio del metodo
 
 ## Verification
 

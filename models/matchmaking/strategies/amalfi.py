@@ -5,7 +5,6 @@ from typing import Optional, Sequence, Dict, Any, List, Tuple, TYPE_CHECKING
 
 from .base import BaseStrategy, Pairing
 from models import db
-from models.matchmaking.policies import anti_rematch_allowed
 from models.matchmaking.configuration import FirstRoundPolicy
 
 if TYPE_CHECKING:
@@ -298,6 +297,17 @@ class AmalfiStrategy(BaseStrategy):
         players_with_bye = self._get_players_with_bye(gara_id) if gara_id else set()
         trio_counts = self._get_trio_counts(gara_id) if (gara_id and use_trio) else {}
 
+        # Carica la matrice encounter una sola volta (cached 10 min).
+        # Usata sia dal loop salto per l'anti-rematch sia dallo Step 3 (trio companion selection).
+        from models.classification.encounter_service import PlayerEncounterService
+
+        raw_matrix = (
+            PlayerEncounterService.get_encounter_matrix(gara_id) if gara_id else {}
+        )
+        encounter_matrix: Dict[Tuple[int, int], bool] = (
+            raw_matrix if isinstance(raw_matrix, dict) else {}
+        )
+
         # Build player_to_index mapping (player_id -> classification position index)
         player_to_index: dict[int, int] = {
             c.user_id: i for i, c in enumerate(classifica)
@@ -342,8 +352,7 @@ class AmalfiStrategy(BaseStrategy):
                 players[p2] in abbinati
                 or (
                     players[p2] != self.BYE_PLAYER_ID
-                    and gara_id
-                    and self._have_already_played(players[p1], players[p2], gara_id)
+                    and encounter_matrix.get((players[p1], players[p2]), False)
                 )
                 or (
                     not use_trio
@@ -423,19 +432,7 @@ class AmalfiStrategy(BaseStrategy):
             anchor, intermediate_pairs, trio_counts, player_to_index
         )
 
-        # Step 3: Select 2 companions for the anchor
-        from models.classification.encounter_service import PlayerEncounterService
-
-        raw_matrix = (
-            PlayerEncounterService.get_encounter_matrix(gara_id)
-            if gara_id
-            else {}
-        )
-        # Guard: cached decorator may return [] instead of {} for empty results
-        encounter_matrix: Dict[Tuple[int, int], bool] = (
-            raw_matrix if isinstance(raw_matrix, dict) else {}
-        )
-
+        # Step 3: Select 2 companions for the anchor (usa la matrice già caricata)
         comp1, comp2 = self._select_trio_companions(
             anchor, intermediate_pairs, trio_counts, encounter_matrix, player_to_index
         )
@@ -495,12 +492,6 @@ class AmalfiStrategy(BaseStrategy):
             )
 
         return result
-
-    def _have_already_played(
-        self, player1_id: int, player2_id: int, gara_id: int
-    ) -> bool:
-        """Controlla se due giocatori hanno già giocato insieme in questa gara."""
-        return not anti_rematch_allowed(gara_id, player1_id, player2_id)
 
     def _get_players_with_bye(self, gara_id: int) -> set[int]:
         """Ottieni l'insieme dei giocatori che hanno già avuto un bye in questa gara."""

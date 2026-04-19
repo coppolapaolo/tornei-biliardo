@@ -90,11 +90,11 @@ Source: Review of terminate-campionato feature (2026-04-06).
 
 `Campionato.get_status()` (in `models.py`) and `compute_campionato_status()` (in `statistics_service.py`) implement the same logic independently. Both were modified to add the `terminated_at` short-circuit. Any future change to one risks silent divergence from the other. Consider making `get_status()` delegate to `compute_campionato_status()` or vice versa.
 
-## Refactor: unificare data source anti-rematch (salto + Step 3)
+## ~~Refactor: unificare data source anti-rematch (salto + Step 3)~~ ✅ DONE (2026-04-19)
 
 Source: Review Amalfi trio (2026-04-07), ECH #3.
 
-Il salto (Step 1) usa `_have_already_played()` (query per-coppia) mentre Step 3 usa `encounter_matrix` (query singola cached). Asimmetria architetturale accettata per questa feature — refactoring opzionale per far usare la matrice anche al salto.
+`_crea_coppie_algoritmo_amalfi` ora carica `encounter_matrix` una sola volta (cached 10 min) e la riusa sia nel loop salto (Step 1) sia nella companion selection (Step 3). Metodo `_have_already_played` rimosso. I test di regressione che bypassavano il service (`PlayerEncounter.record_encounter` diretto) ora usano `PlayerEncounterService.record_match_encounters(match)` per coerenza con la produzione (cache invalidation automatica).
 
 ## Trio forfeit: gestione in create_matches_from_pairings
 

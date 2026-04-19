@@ -94,7 +94,7 @@ Creati in `tests/new/unit/test_anti_rematch_regression.py`:
 - `test_encounter_cleanup_on_match_reset`: Verifica che l'encounter venga eliminato dopo reset match
 - `test_encounter_cleanup_on_round_cancel`: Verifica che gli encounter vengano eliminati dopo cancel round
 - `test_player_encounter_have_played_returns_true_after_match`: Test unitario base
-- `test_amalfi_strategy_respects_have_already_played`: Test integrazione strategia Amalfi
+- `test_amalfi_strategy_respects_encounter_history`: Test integrazione strategia Amalfi
 
 ## Note Aggiuntive
 
