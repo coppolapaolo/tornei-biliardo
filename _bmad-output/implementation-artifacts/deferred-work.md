@@ -230,8 +230,31 @@ La UI attuale di configurazione playoff ha diversi problemi:
 
 Serve un redesign completo della sezione playoff in `campionato_detail.html` e probabilmente del modello `PlayoffConfig`.
 
-## Review random matchmaking specification
+## ~~Review random matchmaking specification~~ ✅ ALL DONE (2026-04-19, 3 fasi complete)
 
-Source: Conversazione Amalfi trio (2026-04-07).
+Source: Conversazione Amalfi trio (2026-04-07). Sbloccato da refactor Amalfi 2026-04-19.
 
-Verificare che la specifica del matchmaking random sia completa e corretta, in particolare l'interazione con anti-rematch e gestione dispari (bye/trio). Da fare dopo il fix Amalfi trio.
+Review adversariale + 3 fasi implementative complete. Spec consolidata in `spec-random-anti-rematch.md` (status: done, hybrid data source). Suite: 30/30 unit + 225/225 integration + pyright 0 errori.
+
+### Problemi risolti
+
+- **NetworkX pesi espliciti** (`_apply_weighted_matching`): weight=100 per non-rematch, weight=1 per rematch. Un solo matching invece di due sequenziali. `max_weight_matching(G, maxcardinality=True)` minimizza i rematch forzati.
+- **Silent fallback eliminato**: `logger.warning` emesso con gara_id/round_number/n_rematches quando rematch è forzato.
+- **Fallback hardcoded `[3,5,7]` rimosso**: `_should_use_trio` ora delega a `StrategyBehaviorConfig.get_default_odd_policy(gara.distance)` quando `gara.odd_number_policy` non è settato. ADR-005 rispettato.
+- **Enum `OddNumberPolicy` allineato**: `models/matchmaking/CLAUDE.md` ora elenca i 4 valori reali (NO, BYE, BYE_WITH_CHALLENGE, TRIO) + sezione "Random Anti-Rematch" con link allo spec.
+- **RNG instance-based**: `set_context(PairingContext(seed))` sfrutta il meccanismo già presente nel registry. No contaminazione globale con `pytest -n auto`.
+- **Walkover filter su trio_counts**: nuovo `PlayerEncounterService.get_trio_counts(gara_id, exclude_walkover=True)` con cache + invalidation. Coerente con Amalfi `_get_trio_counts` (filtro `total_racks_played > 0`).
+
+### Scope change scoperto durante implementazione
+
+**Data source ibrido invece di unificato**. Causa: `RoundService.start_first_round` per Random crea tutti i round in una singola transazione con `db.session.flush()` fra un round e l'altro. `PlayerEncounter` è popolato solo al completamento match → vuoto per i round pre-creati → anti-rematch non funziona se si migra interamente al service.
+
+Soluzione adottata:
+- `previous_pairs` → `Match.query` (vecchio comportamento preservato per all-rounds-at-startup)
+- `trio_counts` → `PlayerEncounterService.get_trio_counts` (valore aggiunto preservato)
+
+### Gap restanti (tracciati come G1-G3)
+
+- **G1** ✅ VERIFICATO: `creates_all_rounds_at_startup=True` per Random è effettivamente implementato in `round_service.py:79-127`. Non è un gap ma un'intent confermato.
+- **G2** PENDING: `OddNumberPolicy.NO` (parity waitlist) — comportamento runtime per Random ancora non specificato, nessun test. Fuori scope review.
+- **G3** PENDING: Supporto reset match in gara Random. Limitation documentata (reset non libera il pair perché Match row rimane). Fix richiede decisione UX tra: (a) eliminare Match al reset, (b) `Match.is_reset` colonna, (c) rigenerare round successivi automaticamente.

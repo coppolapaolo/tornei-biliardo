@@ -414,6 +414,7 @@ class TestRandomAntiRematchStrategy:
         # Mock Gara
         mock_gara = Mock()
         mock_gara.id = 1
+        mock_gara.odd_number_policy = "bye"  # 3 active players → 1 match + 1 bye
 
         # Mock inscriptions with one withdrawn
         mock_inscriptions = []
@@ -437,23 +438,42 @@ class TestRandomAntiRematchStrategy:
     # ==================== Edge Cases and Error Handling ====================
 
     def test_should_use_trio_logic(self):
-        """Test _should_use_trio method logic."""
+        """Test _should_use_trio method logic.
+
+        After the spec-random-anti-rematch refactor, the hardcoded fallback
+        `[3,5,7] players → trio` has been removed. Trio decision now flows
+        from gara.odd_number_policy, with StrategyBehaviorConfig as fallback
+        when only gara.distance is available.
+        """
         # Even number - never use trio
         assert self.strategy._should_use_trio([1, 2, 3, 4]) is False
 
-        # Odd number with no gara config - use hardcoded logic
-        assert self.strategy._should_use_trio([1, 2, 3]) is True  # 3 players
-        assert self.strategy._should_use_trio([1, 2, 3, 4, 5]) is True  # 5 players
-        assert self.strategy._should_use_trio([1, 2, 3, 4, 5, 6, 7]) is True  # 7 players
-        assert self.strategy._should_use_trio([1]*9) is False  # 9 players - use bye
+        # Odd number without gara - safe default is bye (no policy, no distance)
+        assert self.strategy._should_use_trio([1, 2, 3]) is False
+        assert self.strategy._should_use_trio([1, 2, 3, 4, 5]) is False
 
-        # With gara config
+        # Explicit policy on gara
         mock_gara = Mock()
         mock_gara.odd_number_policy = "trio"
         assert self.strategy._should_use_trio([1, 2, 3], mock_gara) is True
 
         mock_gara.odd_number_policy = "bye"
         assert self.strategy._should_use_trio([1, 2, 3], mock_gara) is False
+
+        mock_gara.odd_number_policy = "bye_with_challenge"
+        assert self.strategy._should_use_trio([1, 2, 3], mock_gara) is False
+
+        mock_gara.odd_number_policy = "no"
+        assert self.strategy._should_use_trio([1, 2, 3], mock_gara) is False
+
+        # No explicit policy: delegate to StrategyBehaviorConfig via distance
+        mock_gara2 = Mock(spec=["odd_number_policy", "distance"])
+        mock_gara2.odd_number_policy = None
+        mock_gara2.distance = 5  # Race to 5 → TRIO per ADR-005
+        assert self.strategy._should_use_trio([1, 2, 3], mock_gara2) is True
+
+        mock_gara2.distance = 10  # Race to 10 → BYE_WITH_CHALLENGE (ADR-005)
+        assert self.strategy._should_use_trio([1, 2, 3], mock_gara2) is False
 
     def test_graph_based_matching_performance(self):
         """Test that graph-based algorithm handles large player counts efficiently."""
@@ -560,3 +580,190 @@ class TestEncounterHistory:
 
             # Verify method was called correctly
             mock_history.assert_called_once_with(mock_gara, current_round=2)
+
+
+class TestWeightedMatching:
+    """Test the weighted NetworkX matching: non-rematch pairs preferred."""
+
+    def setup_method(self):
+        self.strategy = RandomAntiRematchStrategy()
+
+    def test_matching_minimizes_rematches_when_fallback(self):
+        """When anti-rematch is infeasible, matching picks the minimum-rematch option.
+
+        Scenario: 4 players, 5 of 6 possible pairs already met. The only
+        non-rematch pair is (3,4). Pairing 3-4 forces (1,2) as the other pair,
+        which IS a rematch — so we have 1 forced rematch total. The old
+        double-matching approach could have picked matchings with 2 rematches.
+        """
+        player_ids = [1, 2, 3, 4]
+        # Only (3,4) is not in previous_pairs
+        previous_pairings = {(1, 2), (1, 3), (1, 4), (2, 3), (2, 4)}
+
+        pairings = self.strategy._generate_valid_random_pairings(
+            player_ids, previous_pairings, round_number=5
+        )
+
+        assert len(pairings) == 2
+        created_pairs = {tuple(sorted(p.players)) for p in pairings}
+        # (3,4) must be selected — it's the only non-rematch option
+        assert (3, 4) in created_pairs
+        # Exactly 1 rematch forced (the complement pair covering players 1 and 2)
+        rematches = created_pairs & previous_pairings
+        assert len(rematches) == 1
+
+    def test_warning_logged_on_forced_rematch(self, caplog):
+        """logger.warning is emitted when any pair in the matching is a rematch."""
+        import logging
+
+        player_ids = [1, 2, 3, 4]
+        # All pairs met → every selected pair will be a rematch
+        previous_pairings = {(1, 2), (1, 3), (1, 4), (2, 3), (2, 4), (3, 4)}
+
+        mock_gara = Mock()
+        mock_gara.id = 42
+        mock_gara.odd_number_policy = "bye"
+        mock_gara.inscriptions = []
+
+        with caplog.at_level(
+            logging.WARNING, logger="models.matchmaking.strategies.random_anti_rematch"
+        ):
+            with patch.object(self.strategy, "_get_encounter_history") as mock_history:
+                mock_history.return_value = (previous_pairings, {})
+                self.strategy._generate_valid_random_pairings(
+                    player_ids, set(), round_number=3, gara=mock_gara
+                )
+
+        assert any(
+            "rematch forzato" in rec.message for rec in caplog.records
+        ), f"Expected warning about forced rematch, got: {[r.message for r in caplog.records]}"
+
+    def test_no_warning_when_no_rematch(self, caplog):
+        """No warning when matching finds a complete non-rematch cover."""
+        import logging
+
+        player_ids = [1, 2, 3, 4]
+        previous_pairings: Set[Tuple[int, int]] = set()  # fresh gara
+
+        with caplog.at_level(
+            logging.WARNING, logger="models.matchmaking.strategies.random_anti_rematch"
+        ):
+            self.strategy._generate_valid_random_pairings(
+                player_ids, previous_pairings, round_number=1
+            )
+
+        forced = [r for r in caplog.records if "rematch forzato" in r.message]
+        assert not forced
+
+
+class TestDeterministicSeeding:
+    """Test that set_context provides deterministic, isolated RNG."""
+
+    def test_seed_deterministic(self):
+        """Same seed → same output across two separate strategy instances."""
+        from models.matchmaking.registry import PairingContext
+
+        player_ids = [1, 2, 3, 4, 5, 6]
+
+        s1 = RandomAntiRematchStrategy()
+        s1.set_context(PairingContext(seed=42))
+        p1 = s1._generate_valid_random_pairings(
+            player_ids, set(), round_number=1
+        )
+
+        s2 = RandomAntiRematchStrategy()
+        s2.set_context(PairingContext(seed=42))
+        p2 = s2._generate_valid_random_pairings(
+            player_ids, set(), round_number=1
+        )
+
+        pairs1 = sorted(tuple(sorted(p.players)) for p in p1)
+        pairs2 = sorted(tuple(sorted(p.players)) for p in p2)
+        assert pairs1 == pairs2
+
+    def test_no_global_random_contamination(self):
+        """Two strategies with different seeds do not share RNG state."""
+        from models.matchmaking.registry import PairingContext
+
+        player_ids = [1, 2, 3, 4, 5, 6]
+
+        s1 = RandomAntiRematchStrategy()
+        s1.set_context(PairingContext(seed=111))
+
+        s2 = RandomAntiRematchStrategy()
+        s2.set_context(PairingContext(seed=222))
+
+        # Interleave calls — if they shared a global RNG, output would depend
+        # on call order, not on instance seed.
+        p1_a = s1._generate_valid_random_pairings(
+            player_ids, set(), round_number=1
+        )
+        _ = s2._generate_valid_random_pairings(
+            player_ids, set(), round_number=1
+        )
+        p1_b = s1._generate_valid_random_pairings(
+            player_ids, set(), round_number=1
+        )
+
+        # Reset s1 to same seed; the sequence of two consecutive calls must be
+        # reproducible from scratch, independent of s2 activity.
+        s1_bis = RandomAntiRematchStrategy()
+        s1_bis.set_context(PairingContext(seed=111))
+        p1_a_bis = s1_bis._generate_valid_random_pairings(
+            player_ids, set(), round_number=1
+        )
+        p1_b_bis = s1_bis._generate_valid_random_pairings(
+            player_ids, set(), round_number=1
+        )
+
+        to_set = lambda pairings: frozenset(
+            tuple(sorted(p.players)) for p in pairings
+        )
+        assert to_set(p1_a) == to_set(p1_a_bis)
+        assert to_set(p1_b) == to_set(p1_b_bis)
+
+
+class TestTrioCountWalkoverFilter:
+    """Verify that get_trio_counts excludes walkover trios (coherent with Amalfi)."""
+
+    def test_trio_count_excludes_walkover(self):
+        """PlayerEncounterService.get_trio_counts(exclude_walkover=True) skips
+        trios with total_racks_played == 0.
+
+        Mocks the DB query since this is a unit test.
+        """
+        from models.classification.encounter_service import PlayerEncounterService
+
+        trio_contested = Mock()
+        trio_contested.total_racks_played = 3
+        trio_contested.player1_id = 1
+        trio_contested.player2_id = 2
+        trio_contested.player3_id = 3
+
+        trio_walkover = Mock()
+        trio_walkover.total_racks_played = 0  # walkover
+        trio_walkover.player1_id = 4
+        trio_walkover.player2_id = 5
+        trio_walkover.player3_id = 6
+
+        with patch(
+            "models.classification.encounter_service.db.session.query"
+        ) as mock_query:
+            mock_query.return_value.join.return_value.filter.return_value.all.return_value = [
+                trio_contested,
+                trio_walkover,
+            ]
+
+            # Bypass cache by clearing any memoized value for this gara
+            # (cached decorator uses gara_id + args as key; unique id avoids hits)
+            counts = PlayerEncounterService.get_trio_counts(
+                gara_id=99991, exclude_walkover=True
+            )
+
+        # Contested trio counted; walkover trio skipped
+        assert counts.get(1) == 1
+        assert counts.get(2) == 1
+        assert counts.get(3) == 1
+        assert 4 not in counts
+        assert 5 not in counts
+        assert 6 not in counts

@@ -124,6 +124,44 @@ class PlayerEncounterService:
         return matrix
 
     @staticmethod
+    @cached(ttl_seconds=600, tags=["encounter", "gara"], key_generator="gara")
+    def get_trio_counts(
+        gara_id: int, exclude_walkover: bool = True
+    ) -> Dict[int, int]:
+        """Count contested trio matches per player in a gara.
+
+        Cached 10 min with same invalidation scheme as encounter_matrix.
+        Walkover trios (total_racks_played == 0) are excluded by default,
+        so that survivors of a walkover are not penalized in trio rotation.
+
+        Coherent with AmalfiStrategy._get_trio_counts (spec-walkover-side-effects-unified).
+
+        Args:
+            gara_id: ID of the gara
+            exclude_walkover: If True (default), trios with 0 racks played are skipped
+
+        Returns:
+            Dict mapping player_id -> number of contested trio matches played
+        """
+        from ..match.models import Match, TrioMatch
+
+        trio_matches = (
+            db.session.query(TrioMatch)
+            .join(Match)
+            .filter(Match.gara_id == gara_id, Match.is_trio == True)  # noqa: E712
+            .all()
+        )
+
+        counts: Dict[int, int] = {}
+        for trio in trio_matches:
+            if exclude_walkover and trio.total_racks_played == 0:
+                continue
+            counts[trio.player1_id] = counts.get(trio.player1_id, 0) + 1
+            counts[trio.player2_id] = counts.get(trio.player2_id, 0) + 1
+            counts[trio.player3_id] = counts.get(trio.player3_id, 0) + 1
+        return counts
+
+    @staticmethod
     @cached(ttl_seconds=1200, tags=["encounter", "gara"])
     def get_encounter_statistics(gara_id: int) -> Dict[str, Any]:
         """Get comprehensive encounter statistics for the gara."""

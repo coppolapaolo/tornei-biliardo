@@ -82,8 +82,13 @@ registry.create_strategy(name, seed=42)  # Deterministic for testing
 - **Odd players**: Last-place gets bye
 
 ### Random Anti-Rematch
-- Uses NetworkX maximum cardinality matching
-- Multi-objective trio selection: fairness → anti-rematch → efficiency
+- Uses NetworkX `max_weight_matching(G, maxcardinality=True)` with edge weights (100 non-rematch, 1 rematch) — prefers non-rematch pairings when possible, minimizes rematches when forced.
+- Multi-objective trio selection: `(max(trio_count), rematch_penalty, sum(trio_count))` — protects the player with highest trio exposure first.
+- Data source: `PlayerEncounterService.get_encounter_matrix(gara_id)` + `get_trio_counts(gara_id, exclude_walkover=True)` — cached 10 min, invalidated on match completion. Coherent with ADR-002 cleanup (reset match frees the pair).
+- Bye history: `Match.query filter_by(is_bye=True)` (bye does not create `PlayerEncounter`).
+- Forced rematches: `logger.warning` emitted with gara_id/round_number/n_rematches for audit trail.
+- Determinism: `set_context(PairingContext(seed))` enables reproducible pairing generation for testing/replay.
+- Full spec: [`_bmad-output/implementation-artifacts/spec-random-anti-rematch.md`](../../_bmad-output/implementation-artifacts/spec-random-anti-rematch.md)
 
 ---
 
@@ -103,9 +108,10 @@ class FirstRoundPolicy(str, Enum):
     RATING = "rating"
 
 class OddNumberPolicy(str, Enum):
-    BYE = "bye"
-    TRIO = "trio"
-    CHALLENGE = "challenge"
+    NO = "no"                                # Parity waitlist — odd player moved to waitlist
+    BYE = "bye"                              # Odd player sits out (automatic win)
+    BYE_WITH_CHALLENGE = "bye_with_challenge"  # Bye + challenge completion for XP
+    TRIO = "trio"                            # 3-player match (requires distance 2-7, ADR-005)
 ```
 
 ---
