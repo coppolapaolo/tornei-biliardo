@@ -88,6 +88,7 @@ registry.create_strategy(name, seed=42)  # Deterministic for testing
 - Bye history: `Match.query filter_by(is_bye=True)` (bye does not create `PlayerEncounter`).
 - Forced rematches: `logger.warning` emitted with gara_id/round_number/n_rematches for audit trail.
 - Determinism: `set_context(PairingContext(seed))` enables reproducible pairing generation for testing/replay.
+- Odd player handling with `OddNumberPolicy.NO`: enforced at **inscription level**, not in the strategy. `InscriptionService` keeps `active_count` even by moving the last inscription to a parity waitlist (`is_waitlist=True`, `waitlist_reason=WaitlistReason.PARITY`); the strategy filters `is_waitlist=False` inscriptions like all others. See [`inscription_service.py:130-170`](../competition/inscription_service.py) and [`spec-random-odd-policy-no.md`](../../_bmad-output/implementation-artifacts/spec-random-odd-policy-no.md).
 - Full spec: [`_bmad-output/implementation-artifacts/spec-random-anti-rematch.md`](../../_bmad-output/implementation-artifacts/spec-random-anti-rematch.md)
 
 ---

@@ -29,16 +29,14 @@ class TestRandomAntiRematchTournamentFlow:
             inscription = Mock()
             inscription.user_id = user_id
             inscription.is_withdrawn = False
+            inscription.is_waitlist = False
             mock_inscriptions.append(inscription)
         mock_gara.inscriptions = mock_inscriptions
 
         return mock_gara
 
     def simulate_tournament_round(
-        self,
-        gara: Mock,
-        round_number: int,
-        previous_matches: List[Tuple[int, ...]]
+        self, gara: Mock, round_number: int, previous_matches: List[Tuple[int, ...]]
     ) -> List[Pairing]:
         """Simulate a tournament round with encounter history."""
 
@@ -65,7 +63,7 @@ class TestRandomAntiRematchTournamentFlow:
                     for j in range(i + 1, len(players)):
                         previous_pairs.add(tuple(sorted([players[i], players[j]])))
 
-        with patch.object(self.strategy, '_get_encounter_history') as mock_history:
+        with patch.object(self.strategy, "_get_encounter_history") as mock_history:
             mock_history.return_value = (previous_pairs, trio_count)
 
             processed_data = {"gara": gara}
@@ -191,9 +189,9 @@ class TestRandomAntiRematchTournamentFlow:
             f"distribution={dict(trio_participation)}"
         )
         # All players should participate at least once (9 slots > 7 players)
-        assert min_participation >= 1, (
-            f"Some players never did trio: distribution={dict(trio_participation)}"
-        )
+        assert (
+            min_participation >= 1
+        ), f"Some players never did trio: distribution={dict(trio_participation)}"
 
     def test_trio_distribution_fairness_over_multiple_simulations(self):
         """Test that trio participation is fairly distributed across many simulations.
@@ -235,7 +233,9 @@ class TestRandomAntiRematchTournamentFlow:
                 total_participation[player] += count
 
         # Calculate average participation per player across all simulations
-        avg_participation = {p: total_participation[p] / num_simulations for p in players}
+        avg_participation = {
+            p: total_participation[p] / num_simulations for p in players
+        }
 
         # Expected average: 9 slots / 7 players = 1.29 per simulation
         expected_avg = (3 * 3) / 7  # rounds * players_per_trio / total_players
@@ -321,9 +321,14 @@ class TestRandomAntiRematchTournamentFlow:
 
         # Round 2: Switch to trio policy
         gara.odd_number_policy = "trio"
-        all_matches = [tuple(sorted(p.players)) if not p.is_bye
-                       else (p.players[0], self.strategy.BYE_PLAYER_ID)
-                       for p in round1_pairings]
+        all_matches = [
+            (
+                tuple(sorted(p.players))
+                if not p.is_bye
+                else (p.players[0], self.strategy.BYE_PLAYER_ID)
+            )
+            for p in round1_pairings
+        ]
 
         round2_pairings = self.simulate_tournament_round(gara, 2, all_matches)
 
@@ -424,6 +429,7 @@ class TestBYEPlayerIDConsistency:
             inscription = Mock()
             inscription.user_id = user_id
             inscription.is_withdrawn = False
+            inscription.is_waitlist = False
             mock_gara.inscriptions.append(inscription)
 
         # Generate pairings

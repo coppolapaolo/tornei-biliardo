@@ -123,6 +123,7 @@ class TestRandomAntiRematchStrategy:
     def test_anti_rematch_with_limited_options(self):
         """Test behavior when avoiding rematches limits options."""
         import random
+
         random.seed(42)  # Reset random state for test isolation
 
         player_ids = [1, 2, 3, 4]
@@ -170,11 +171,21 @@ class TestRandomAntiRematchStrategy:
 
         # Simulate 5 complete rounds (15 pairs = all possible combinations)
         all_possible_pairs = [
-            (1, 2), (1, 3), (1, 4), (1, 5), (1, 6),
-            (2, 3), (2, 4), (2, 5), (2, 6),
-            (3, 4), (3, 5), (3, 6),
-            (4, 5), (4, 6),
-            (5, 6)
+            (1, 2),
+            (1, 3),
+            (1, 4),
+            (1, 5),
+            (1, 6),
+            (2, 3),
+            (2, 4),
+            (2, 5),
+            (2, 6),
+            (3, 4),
+            (3, 5),
+            (3, 6),
+            (4, 5),
+            (4, 6),
+            (5, 6),
         ]
         previous_pairings = set(all_possible_pairs)  # All pairs played
 
@@ -203,7 +214,7 @@ class TestRandomAntiRematchStrategy:
         mock_gara.id = 1  # Fix: Real integer ID
 
         # Mock the encounter history to avoid DB queries
-        with patch.object(self.strategy, '_get_encounter_history') as mock_history:
+        with patch.object(self.strategy, "_get_encounter_history") as mock_history:
             mock_history.return_value = (set(), {})  # No previous matches
 
             pairings = self.strategy._generate_valid_random_pairings(
@@ -222,6 +233,7 @@ class TestRandomAntiRematchStrategy:
     def test_bye_anti_rematch(self):
         """Test that bye assignments follow anti-rematch logic."""
         import random
+
         random.seed(123)  # Reset random state for test isolation
 
         player_ids = [1, 2, 3]
@@ -232,11 +244,13 @@ class TestRandomAntiRematchStrategy:
         mock_gara.id = 1
 
         # Mock encounter history - player 1 already had bye
-        with patch.object(self.strategy, '_get_encounter_history') as mock_history:
+        with patch.object(self.strategy, "_get_encounter_history") as mock_history:
             # Player 1 had bye in round 1
             mock_history.return_value = (
-                {tuple(sorted([1, self.strategy.BYE_PLAYER_ID]))},  # previous pairs in canonical form
-                {}  # trio count
+                {
+                    tuple(sorted([1, self.strategy.BYE_PLAYER_ID]))
+                },  # previous pairs in canonical form
+                {},  # trio count
             )
 
             pairings = self.strategy._generate_valid_random_pairings(
@@ -260,7 +274,7 @@ class TestRandomAntiRematchStrategy:
         mock_gara.id = 1
 
         # Mock the encounter history
-        with patch.object(self.strategy, '_get_encounter_history') as mock_history:
+        with patch.object(self.strategy, "_get_encounter_history") as mock_history:
             mock_history.return_value = (set(), {})
 
             pairings = self.strategy._generate_valid_random_pairings(
@@ -286,7 +300,7 @@ class TestRandomAntiRematchStrategy:
         mock_gara.id = 1
 
         # Mock the encounter history to avoid DB queries
-        with patch.object(self.strategy, '_get_encounter_history') as mock_history:
+        with patch.object(self.strategy, "_get_encounter_history") as mock_history:
             mock_history.return_value = (set(), {})  # No previous matches
 
             pairings = self.strategy._generate_valid_random_pairings(
@@ -310,7 +324,7 @@ class TestRandomAntiRematchStrategy:
         mock_gara.id = 1
 
         # Mock the encounter history to avoid DB queries
-        with patch.object(self.strategy, '_get_encounter_history') as mock_history:
+        with patch.object(self.strategy, "_get_encounter_history") as mock_history:
             mock_history.return_value = (set(), {})  # No previous matches
 
             pairings = self.strategy._generate_valid_random_pairings(
@@ -336,7 +350,7 @@ class TestRandomAntiRematchStrategy:
         mock_gara.id = 1
 
         # Mock encounter history
-        with patch.object(self.strategy, '_get_encounter_history') as mock_history:
+        with patch.object(self.strategy, "_get_encounter_history") as mock_history:
             mock_history.return_value = (previous_pairings, {})
 
             # Try multiple times to account for randomness
@@ -364,7 +378,7 @@ class TestRandomAntiRematchStrategy:
         mock_gara.id = 1
 
         # Mock encounter history - players 1,2,3 were in trio before
-        with patch.object(self.strategy, '_get_encounter_history') as mock_history:
+        with patch.object(self.strategy, "_get_encounter_history") as mock_history:
             trio_count = {1: 1, 2: 1, 3: 1}  # These players had trio before
             mock_history.return_value = (set(), trio_count)
 
@@ -396,6 +410,7 @@ class TestRandomAntiRematchStrategy:
             inscription = Mock()
             inscription.user_id = user_id
             inscription.is_withdrawn = False
+            inscription.is_waitlist = False
             mock_inscriptions.append(inscription)
         mock_gara.inscriptions = mock_inscriptions
 
@@ -421,7 +436,8 @@ class TestRandomAntiRematchStrategy:
         for user_id in [1, 2, 3, 4]:
             inscription = Mock()
             inscription.user_id = user_id
-            inscription.is_withdrawn = (user_id == 3)  # Player 3 withdrawn
+            inscription.is_withdrawn = user_id == 3  # Player 3 withdrawn
+            inscription.is_waitlist = False
             mock_inscriptions.append(inscription)
         mock_gara.inscriptions = mock_inscriptions
 
@@ -525,8 +541,11 @@ class TestRandomAntiRematchStrategy:
         mock_gara.id = 1
 
         # Mock encounter history - no previous matches, so all players never did trio
-        with patch.object(self.strategy, '_get_encounter_history') as mock_history:
-            mock_history.return_value = (set(), {})  # No previous matches, no trio history
+        with patch.object(self.strategy, "_get_encounter_history") as mock_history:
+            mock_history.return_value = (
+                set(),
+                {},
+            )  # No previous matches, no trio history
 
             # Generate pairings multiple times and collect trios
             trio_selections = []
@@ -564,15 +583,19 @@ class TestEncounterHistory:
         expected_pairs = {
             (1, 2),  # Regular match
             (3, self.strategy.BYE_PLAYER_ID),  # Bye match
-            (4, 5), (4, 6), (5, 6)  # Trio internal pairs
+            (4, 5),
+            (4, 6),
+            (5, 6),  # Trio internal pairs
         }
         expected_trio_count = {4: 1, 5: 1, 6: 1}
 
-        with patch.object(self.strategy, '_get_encounter_history') as mock_history:
+        with patch.object(self.strategy, "_get_encounter_history") as mock_history:
             mock_history.return_value = (expected_pairs, expected_trio_count)
 
             # Call method
-            previous_pairs, trio_count = self.strategy._get_encounter_history(mock_gara, current_round=2)
+            previous_pairs, trio_count = self.strategy._get_encounter_history(
+                mock_gara, current_round=2
+            )
 
             # Verify results
             assert previous_pairs == expected_pairs
@@ -667,15 +690,11 @@ class TestDeterministicSeeding:
 
         s1 = RandomAntiRematchStrategy()
         s1.set_context(PairingContext(seed=42))
-        p1 = s1._generate_valid_random_pairings(
-            player_ids, set(), round_number=1
-        )
+        p1 = s1._generate_valid_random_pairings(player_ids, set(), round_number=1)
 
         s2 = RandomAntiRematchStrategy()
         s2.set_context(PairingContext(seed=42))
-        p2 = s2._generate_valid_random_pairings(
-            player_ids, set(), round_number=1
-        )
+        p2 = s2._generate_valid_random_pairings(player_ids, set(), round_number=1)
 
         pairs1 = sorted(tuple(sorted(p.players)) for p in p1)
         pairs2 = sorted(tuple(sorted(p.players)) for p in p2)
@@ -695,15 +714,9 @@ class TestDeterministicSeeding:
 
         # Interleave calls — if they shared a global RNG, output would depend
         # on call order, not on instance seed.
-        p1_a = s1._generate_valid_random_pairings(
-            player_ids, set(), round_number=1
-        )
-        _ = s2._generate_valid_random_pairings(
-            player_ids, set(), round_number=1
-        )
-        p1_b = s1._generate_valid_random_pairings(
-            player_ids, set(), round_number=1
-        )
+        p1_a = s1._generate_valid_random_pairings(player_ids, set(), round_number=1)
+        _ = s2._generate_valid_random_pairings(player_ids, set(), round_number=1)
+        p1_b = s1._generate_valid_random_pairings(player_ids, set(), round_number=1)
 
         # Reset s1 to same seed; the sequence of two consecutive calls must be
         # reproducible from scratch, independent of s2 activity.
@@ -716,9 +729,7 @@ class TestDeterministicSeeding:
             player_ids, set(), round_number=1
         )
 
-        to_set = lambda pairings: frozenset(
-            tuple(sorted(p.players)) for p in pairings
-        )
+        to_set = lambda pairings: frozenset(tuple(sorted(p.players)) for p in pairings)
         assert to_set(p1_a) == to_set(p1_a_bis)
         assert to_set(p1_b) == to_set(p1_b_bis)
 

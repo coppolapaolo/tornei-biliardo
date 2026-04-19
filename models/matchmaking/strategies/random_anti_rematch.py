@@ -75,7 +75,10 @@ class RandomAntiRematchStrategy(BaseStrategy):
         """Generate random pairings while avoiding rematches."""
         inscriptions = list(gara.inscriptions)  # type: ignore[arg-type]
         active_inscriptions = [
-            i for i in inscriptions if not getattr(i, "is_withdrawn", False)
+            i
+            for i in inscriptions
+            if not getattr(i, "is_withdrawn", False)
+            and not getattr(i, "is_waitlist", False)
         ]
         player_ids = [i.user_id for i in active_inscriptions]
 
@@ -139,9 +142,7 @@ class RandomAntiRematchStrategy(BaseStrategy):
 
             for pair in selected_pairs:
                 if self.BYE_PLAYER_ID in pair:
-                    real_player = (
-                        pair[0] if pair[1] == self.BYE_PLAYER_ID else pair[1]
-                    )
+                    real_player = pair[0] if pair[1] == self.BYE_PLAYER_ID else pair[1]
                     pairings.append(
                         Pairing(
                             players=(real_player,),
@@ -150,9 +151,7 @@ class RandomAntiRematchStrategy(BaseStrategy):
                         )
                     )
                 else:
-                    pairings.append(
-                        Pairing(players=pair, round_number=round_number)
-                    )
+                    pairings.append(Pairing(players=pair, round_number=round_number))
 
         return pairings
 

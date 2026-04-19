@@ -256,5 +256,5 @@ Soluzione adottata:
 ### Gap restanti (tracciati come G1-G3)
 
 - **G1** ✅ VERIFICATO: `creates_all_rounds_at_startup=True` per Random è effettivamente implementato in `round_service.py:79-127`. Non è un gap ma un'intent confermato.
-- **G2** PENDING: `OddNumberPolicy.NO` (parity waitlist) — comportamento runtime per Random ancora non specificato, nessun test. Fuori scope review.
+- **G2** ✅ DONE (2026-04-19): `OddNumberPolicy.NO` (parity waitlist). Spec `spec-random-odd-policy-no.md`. Scoperto bug latente durante test integration: `RandomAntiRematchStrategy._generate_round_pairings` filtrava `is_withdrawn` ma NON `is_waitlist` — quindi parity waitlist finivano nel pool round e generavano bye implicito. Fix 2-righe in `random_anti_rematch.py:77-83` (ora allineato al pattern di amalfi/round_robin/direct_elim/double_knockout/base). 9 nuovi integration test in `test_random_odd_policy_no.py`. Decisione UX: nessuna differenziazione UI PARITY vs CAPACITY (messaggio unificato "in lista d'attesa" resta). Aggiornato `models/matchmaking/CLAUDE.md` sezione "Random Anti-Rematch".
 - **G3** PENDING: Supporto reset match in gara Random. Limitation documentata (reset non libera il pair perché Match row rimane). Fix richiede decisione UX tra: (a) eliminare Match al reset, (b) `Match.is_reset` colonna, (c) rigenerare round successivi automaticamente.
