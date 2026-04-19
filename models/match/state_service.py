@@ -170,6 +170,13 @@ class MatchStateService:
         # Build score string
         score = f"{match.player1_score}-{match.player2_score}"
 
+        # Full participant roster — trio p3 is not exposed via player1/2 fields.
+        player_ids: list[int] = []
+        if match.is_trio and match.trio_match is not None:
+            player_ids = [pid for pid in match.trio_match.player_ids if pid is not None]
+        else:
+            player_ids = [pid for pid in (match.player1_id, match.player2_id) if pid is not None]
+
         event = MatchCompletedEvent(
             match_id=match.id,
             player1_id=match.player1_id,
@@ -180,6 +187,7 @@ class MatchStateService:
             winner_name=winner_name,
             score=score,
             gara_id=match.gara_id,  # For SSE routing
+            player_ids=player_ids,
         )
         EventBus.publish(event)
 

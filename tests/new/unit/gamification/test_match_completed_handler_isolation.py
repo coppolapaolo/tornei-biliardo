@@ -9,6 +9,10 @@ the streak/quest side effects that follow).
 A1 — Failures in the walkover detection path (match lookup, forfeit set)
 must propagate to EventBus rather than be silently caught — otherwise
 `forfeit_ids` stays empty and XP is awarded to forfeiters.
+
+A4 — `MatchCompletedEvent.player_ids` must carry all participant ids so
+that trio handlers can iterate the full roster (p3 included) for streak
+and quest side effects.
 """
 
 from __future__ import annotations
@@ -147,3 +151,72 @@ class TestWalkoverDetectionErrorsPropagate:
             ):
                 with pytest.raises(Boom):
                     GamificationEventHandlers.handle_match_completed_for_xp(event)
+
+
+@pytest.mark.unit
+class TestTrioPlayerIds:
+    """A4 — `player_ids` carries the full roster so trio p3 is reachable."""
+
+    def test_streak_and_quest_include_trio_p3_when_event_has_player_ids(
+        self, db_session, isolated_players
+    ):
+        gara = _make_gara(db_session)
+        p0, p1, p2 = (isolated_players[i].id for i in range(3))
+        m = _make_completed_match(db_session, gara, winner_id=p2, loser_id=p0)
+        event = MatchCompletedEvent(
+            match_id=m.id,
+            winner_id=p2,
+            player1_id=p0,
+            player2_id=p1,
+            player1_name="P0",
+            player2_name="P1",
+            player_ids=[p0, p1, p2],
+            gara_id=gara.id,
+        )
+
+        streak_calls: List[int] = []
+        quest_calls: List[int] = []
+
+        with patch(
+            "models.gamification.event_handlers.StreakService.record_activity",
+            side_effect=lambda user_id, streak_type: streak_calls.append(user_id),
+        ), patch(
+            "models.gamification.event_handlers.QuestService.record_activity_for_quests",
+            side_effect=lambda user_id, activity_type, activity_count: quest_calls.append(
+                user_id
+            ),
+        ):
+            GamificationEventHandlers.handle_match_completed_for_xp(event)
+
+        assert p2 in streak_calls, "trio p3 missing from streak recording"
+        assert p2 in quest_calls, "trio p3 missing from quest recording"
+
+    def test_player_ids_absent_falls_back_to_pair(
+        self, db_session, isolated_players
+    ):
+        """Backward-compat: events without player_ids still cover the 2-player case."""
+        gara = _make_gara(db_session)
+        p0, p1 = (isolated_players[i].id for i in range(2))
+        m = _make_completed_match(db_session, gara, winner_id=p0, loser_id=p1)
+        event = MatchCompletedEvent(
+            match_id=m.id,
+            winner_id=p0,
+            player1_id=p0,
+            player2_id=p1,
+            player1_name="P0",
+            player2_name="P1",
+            gara_id=gara.id,
+        )
+
+        streak_calls: List[int] = []
+
+        with patch(
+            "models.gamification.event_handlers.StreakService.record_activity",
+            side_effect=lambda user_id, streak_type: streak_calls.append(user_id),
+        ), patch(
+            "models.gamification.event_handlers.QuestService.record_activity_for_quests"
+        ):
+            GamificationEventHandlers.handle_match_completed_for_xp(event)
+
+        assert set(streak_calls) >= {p0, p1}
+        assert all(uid in {p0, p1} for uid in streak_calls)

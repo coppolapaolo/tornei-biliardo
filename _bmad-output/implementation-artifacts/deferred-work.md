@@ -143,14 +143,16 @@ Auditor) durante step-04 del bmad-quick-dev.
   `DetachedInstanceError` in dispatch async futuri. 2 regression test
   (detached walkover, detached match con rack) in `TestIsWalkoverProperty`.
 
-- **Trio event handlers miss player3**: `MatchCompletedEvent` carica solo
-  `player1_id` / `player2_id` dal Match (p0 e p1 del trio). Per trio walkover
-  2/3 dove survivor è p2, handler itera solo p0/p1 per streak/quest — p2
-  (il vero vincitore) NON riceve weekly streak / quest progress. Pre-esistente:
-  stesso design vale per trii normali completati — p3 non ottiene nulla. Il
-  refactor walkover espone il bug per i walkover ma non lo crea. Fix: estendere
-  `MatchCompletedEvent` con `player_ids: list[int]` o aggiungere lookup via
-  `match.trio_match.player_ids` nel handler.
+- ~~**Trio event handlers miss player3**~~ ✅ DONE (2026-04-19):
+  `MatchCompletedEvent` ora espone `player_ids: Optional[List[int]]` + helper
+  `get_all_player_ids()` che fa fallback a `[player1_id, player2_id]`.
+  `MatchStateService._emit_completion_event` popola `player_ids` con
+  `trio_match.player_ids` quando `match.is_trio`, altrimenti con la coppia
+  standard. Il gamification handler itera `get_all_player_ids()` per
+  streak/quest — trio p3 finalmente riceve weekly streak e quest progress
+  (sia in partite normali che walkover dove è survivor). 2 regression test
+  `TestTrioPlayerIds` in
+  `tests/new/unit/gamification/test_match_completed_handler_isolation.py`.
 
 - ~~**Walkover trii storici in prod hanno `current_player*_id=NULL`**~~ ✅ DONE (2026-04-19):
   Migration `20260419_backfill_walkover_trio_matchup.py` popola

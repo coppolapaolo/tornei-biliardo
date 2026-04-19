@@ -7,7 +7,7 @@ individual matches, and match execution workflows.
 
 from __future__ import annotations
 
-from typing import Dict, Any, Optional
+from typing import Dict, Any, List, Optional
 from dataclasses import dataclass
 from datetime import datetime
 
@@ -88,7 +88,15 @@ class MatchAcceptedEvent(DomainEvent):
 
 @dataclass
 class MatchCompletedEvent(DomainEvent):
-    """Event published when a match is completed."""
+    """Event published when a match is completed.
+
+    `player_ids` carries the full participant roster (trio = 3, 2-player = 2).
+    Handlers iterating per-player side effects (streak/quest) must prefer this
+    field over (`player1_id`, `player2_id`) so that trio `player3` is not
+    silently skipped — `player1_id`/`player2_id` map to `Match.player1_id` and
+    `Match.player2_id`, which in trios are only the first two of three.
+    Optional for backward compatibility; fallback is `[player1_id, player2_id]`.
+    """
 
     match_id: int
     player1_id: int
@@ -101,6 +109,7 @@ class MatchCompletedEvent(DomainEvent):
     location_id: Optional[int] = None
     location_name: Optional[str] = None
     gara_id: Optional[int] = None  # For SSE routing to gara detail page
+    player_ids: Optional[List[int]] = None
 
     def __post_init__(self):
         super().__post_init__()
@@ -108,6 +117,12 @@ class MatchCompletedEvent(DomainEvent):
 
     def get_event_type(self) -> str:
         return "match.completed"
+
+    def get_all_player_ids(self) -> List[int]:
+        """All participant ids — trio p3 included when `player_ids` is populated."""
+        if self.player_ids:
+            return list(self.player_ids)
+        return [pid for pid in (self.player1_id, self.player2_id) if pid is not None]
 
     def _get_event_data(self) -> Dict[str, Any]:
         return {
@@ -122,6 +137,7 @@ class MatchCompletedEvent(DomainEvent):
             "location_id": self.location_id,
             "location_name": self.location_name,
             "gara_id": self.gara_id,
+            "player_ids": list(self.player_ids) if self.player_ids else None,
         }
 
 

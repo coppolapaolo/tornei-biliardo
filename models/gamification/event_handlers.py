@@ -181,10 +181,13 @@ class GamificationEventHandlers:
                             f"Error checking achievement '{code}' for user {event.winner_id}: {ach_error}"
                         )
 
-            # Record weekly streaks for both players (skip forfeiters)
+            # Iterate the full participant roster so trio p3 is not skipped.
+            all_player_ids = event.get_all_player_ids()
+
+            # Record weekly streaks for all participants (skip forfeiters)
             # WEEKLY_MATCH: At least 1 match per week
             # WEEKLY_ACTIVITY: Any activity per week
-            for player_id in [event.player1_id, event.player2_id]:
+            for player_id in all_player_ids:
                 if player_id and player_id not in forfeit_ids:
                     try:
                         StreakService.record_activity(
@@ -198,10 +201,10 @@ class GamificationEventHandlers:
                             f"Error recording streak for user {player_id}: {streak_error}"
                         )
 
-            # Update quest progress for both players (skip forfeiters)
+            # Update quest progress for all participants (skip forfeiters)
             # "matches_played": Any match completed
             # "matches_won": Match won (winner only)
-            for player_id in [event.player1_id, event.player2_id]:
+            for player_id in all_player_ids:
                 if player_id and player_id not in forfeit_ids:
                     try:
                         QuestService.record_activity_for_quests(
