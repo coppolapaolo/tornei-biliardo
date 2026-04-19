@@ -134,12 +134,11 @@ Auditor) durante step-04 del bmad-quick-dev.
   perché ora sono condizionali (`if winner_id not in forfeit_ids`). Wrapping
   in try/except separato come per streak/quest.
 
-- **`is_walkover` su Match detached**: il property usa `self.racks` che
-  lazy-loads. In dispatch asincroni futuri (worker thread, background queue)
-  `DetachedInstanceError` verrebbe catturato dal broad except del handler,
-  `forfeit_ids` stays empty, XP granted to forfeiters. Attualmente sync
-  dispatch rende il problema latente. Mitigation: `db.session.query(Rack)`
-  esplicita.
+- ~~**`is_walkover` su Match detached**~~ ✅ DONE (2026-04-19):
+  `Match.is_walkover` ora usa `db.session.query(Rack).filter_by(match_id=self.id).count()`
+  invece di `self.racks or []`, evitando il lazy-load che andava in
+  `DetachedInstanceError` in dispatch async futuri. 2 regression test
+  (detached walkover, detached match con rack) in `TestIsWalkoverProperty`.
 
 - **Trio event handlers miss player3**: `MatchCompletedEvent` carica solo
   `player1_id` / `player2_id` dal Match (p0 e p1 del trio). Per trio walkover

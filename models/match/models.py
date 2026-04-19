@@ -146,9 +146,10 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
         outcomes and by classification to credit the nominal winner with distance
         racks in trio walkovers.
 
-        Includes soft-deleted racks in the emptiness check: a match whose racks
-        were played and then removed by admin is NOT a walkover — only matches
-        where no rack ever existed qualify.
+        Rack count uses an explicit `db.session.query(Rack)` by match_id rather
+        than `self.racks`, which would lazy-load the relationship and raise
+        `DetachedInstanceError` if the Match instance is detached (relevant for
+        future async dispatch where handlers receive detached objects).
         """
         if self.status != MatchStatus.COMPLETED.value or self.winner_id is None:
             return False
@@ -156,7 +157,7 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
             return (
                 self.trio_match is not None and self.trio_match.total_racks_played == 0
             )
-        return len(self.racks or []) == 0
+        return db.session.query(Rack).filter_by(match_id=self.id).count() == 0
 
     @property
     def is_at_distance(self) -> bool:

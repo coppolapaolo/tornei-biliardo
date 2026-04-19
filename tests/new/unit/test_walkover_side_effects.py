@@ -397,3 +397,64 @@ class TestIsWalkoverProperty:
         db_session.add(m)
         db_session.flush()
         assert m.is_walkover is False
+
+    def test_is_walkover_on_detached_match_does_not_lazy_load_racks(
+        self, db_session, isolated_players
+    ):
+        """Detached walkover match must not crash on `racks` lazy load.
+
+        Deferred-work.md A3 (2026-04-19): in future async dispatch the Match
+        instance handed to the handler may be detached. The original
+        implementation used `self.racks` lazy relationship, which would raise
+        `DetachedInstanceError` and, via the top-level except in
+        `handle_match_completed_for_xp`, silently route XP to forfeiters.
+        The query-based implementation queries `Rack` by `match_id` using
+        `db.session`, which stays session-scoped even when `self` is detached.
+
+        Column attributes are touched before expunge so expire_on_commit does
+        not force a refresh on first access — the narrow regression we guard
+        against is the relationship lazy-load, not the unloaded-column path.
+        """
+        gara = _make_gara(db_session)
+        p0, p1 = isolated_players[0].id, isolated_players[1].id
+        m = Match(
+            gara_id=gara.id,
+            round_number=1,
+            player1_id=p0,
+            player2_id=p1,
+            match_distance=5,
+            status="completed",
+            winner_id=p0,
+        )
+        db_session.add(m)
+        db_session.commit()
+        _ = (m.id, m.status, m.winner_id, m.is_trio)
+        db_session.expunge(m)
+
+        assert m.is_walkover is True
+
+    def test_is_walkover_false_on_detached_match_with_racks(
+        self, db_session, isolated_players
+    ):
+        """Detached match with at least one rack must not be classified walkover."""
+        from models.match.models import Rack
+
+        gara = _make_gara(db_session)
+        p0, p1 = isolated_players[0].id, isolated_players[1].id
+        m = Match(
+            gara_id=gara.id,
+            round_number=1,
+            player1_id=p0,
+            player2_id=p1,
+            match_distance=5,
+            status="completed",
+            winner_id=p0,
+        )
+        db_session.add(m)
+        db_session.flush()
+        db_session.add(Rack(match_id=m.id, rack_number=1, winner_id=p0))
+        db_session.commit()
+        _ = (m.id, m.status, m.winner_id, m.is_trio)
+        db_session.expunge(m)
+
+        assert m.is_walkover is False
