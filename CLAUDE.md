@@ -338,6 +338,33 @@ flash_gamification_event(GamificationEventType.XP, {
 
 See `docs/GAMIFICATION_V2.md` for event types and animation system.
 
+### 13. Production Endpoint Allowlist (ADR-028)
+Endpoint visibility in production is gated by an explicit role matrix in `utils/feature_flags.py`. **Endpoint not listed = admin-only in production.** In development (`DEBUG_MODE=true`) and tests (`TESTING=true`) the middleware is pass-through.
+
+**ADR-028 — When you add a new route, decide its visibility explicitly.**
+
+```python
+# utils/feature_flags.py
+ENDPOINT_ROLES = {
+    "main.public_garas_list":     {"anonimo", "player", "director"},  # public
+    "dashboard.dashboard":        {"player", "director"},              # logged-in
+    "player.inscribe_to_gara":    {"player"},                          # player only
+    "admin.competition.start_first_round": {"director"},               # director only
+    # NOT in matrix → admin-only in prod by default
+}
+```
+
+Steps when adding a route:
+
+1. **Decide who should see it** in production. Roles: `anonimo`, `player`, `director`. Admin always sees everything.
+2. **Add an entry** to `ENDPOINT_ROLES` with the role set, OR leave it out if it should stay admin-only for now.
+3. **If the route appears in a menu/link**, wrap with `{% if feature_visible('endpoint.name') %}…{% endif %}` (vedi `templates/base.html`).
+4. **Verify**: the test `tests/new/integration/test_endpoint_allowlist.py::test_endpoint_roles_names_are_real` catches typos in endpoint names.
+
+A 404 reported by a real user that should NOT be 404 is evidence of a missing matrix entry. Find the real endpoint name (`app.url_map`) and add it.
+
+See `docs/adr/ADR-028-production-endpoint-allowlist.md` (incl. **Open Items**) for full design and follow-up work.
+
 ---
 
 ## Architecture
@@ -458,6 +485,8 @@ pytest tests/new/unit/ -n auto && pytest tests/new/integration/ -n 4
 | `@transactional` on facade AND inner service | Only decorate the innermost method (nested causes rollback) |
 | `match.gara.distance` in scoring/validation | Use `match.distance_config` or `match.effective_*` (ADR-027) |
 | `RoundConfiguration` salvato solo in `localStorage` | API endpoint `POST /admin/gara/<id>/round-config/<n>` (ADR-027) |
+| Nuova route senza entry in `ENDPOINT_ROLES` | Sarà admin-only in prod (ADR-028) — aggiungila a `utils/feature_flags.py` se non è il comportamento voluto |
+| Link a endpoint in template senza `feature_visible(...)` | In prod il link compare ma porta a 404 (ADR-028) — avvolgi con `{% if feature_visible('endpoint.name') %}` |
 
 ---
 

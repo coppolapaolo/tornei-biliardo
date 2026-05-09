@@ -272,6 +272,36 @@ ENDPOINT_ROLES = {
 }
 ```
 
+## Open Items / Follow-up
+
+Lista dei lavori residui collegati a questa decisione. Aggiornare man mano che si completano (rimuovere voci concluse, aggiungerne di nuove emerse dall'uso reale).
+
+### 1. Espansione matrice da feedback empirico
+
+La matrice oggi copre il flusso MVP (registrazione, login, iscrizione, gioco, profilo, gestione gare/campionati per director). Restano ~210 endpoint visibili solo all'admin per default. Procedere come segue:
+
+- Monitorare i log di produzione per 404 inattesi (pattern: utente raggiunge endpoint dichiarato "admin-only" mentre stava facendo qualcosa di legittimo).
+- Per ogni 404 evidenziato come falso positivo, identificare l'endpoint reale (`app.url_map`) e aggiungerlo a `ENDPOINT_ROLES` con i ruoli corretti.
+- Quando una macro-area è giudicata pronta (es. gamification user-facing), promuovere tutti i suoi endpoint user-side in blocco.
+
+### 2. Estensione `feature_visible(...)` ad altri template
+
+Ad oggi il guard è applicato solo in `templates/base.html` (navbar + dropdown profilo). Altri template potrebbero contenere link a endpoint nascosti — cliccandoci portano a 404 corretto lato server, ma UX subottimale. Quando si individua un link "morto" durante l'uso reale:
+
+- Trovare il template che lo emette (`grep -r "url_for('endpoint.name')" templates/`).
+- Avvolgerlo con `{% if feature_visible('endpoint.name') %}…{% endif %}`.
+- Bonus: per i link che hanno già una condizione ABAC (es. `{% if current_user.can_access('do_challenge') %}`), comporre con `and feature_visible(…)` (vedi `templates/base.html:211` per l'esempio).
+
+### 3. Promozione default da "implicit admin-only" a "explicit declaration required"
+
+Oggi un endpoint Flask non listato in `ENDPOINT_ROLES` è admin-only. Comodo durante la migrazione, ma a regime è preferibile **forzare la dichiarazione esplicita**: ogni endpoint registrato deve avere un'entry, anche se è `set()` vuoto (= "solo admin, scelta consapevole"). Questo evita che un endpoint nuovo finisca admin-only per inerzia.
+
+Quando la matrice avrà ~120+ voci (oggi ~80) e sarà giudicata stabile:
+
+- Modificare `tests/new/integration/test_endpoint_allowlist.py::test_report_unclassified_endpoints` da `warnings.warn(...)` a `assert not unclassified, ...`.
+- Aggiungere nella matrice tutte le voci attualmente "implicit admin-only" con `set()` esplicito (~210 voci da popolare in blocco a quel punto).
+- Aggiornare la sezione "Quando aggiungi una nuova route" in `routes/CLAUDE.md` per riflettere il nuovo regime obbligatorio.
+
 ## Riferimenti
 
 - File correlati:

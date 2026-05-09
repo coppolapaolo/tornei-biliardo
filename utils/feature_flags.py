@@ -25,6 +25,12 @@ Role = str  # "anonimo" | "player" | "director"
 # MVP allowlist: starting set covering registration → login → inscription →
 # play → profile (for player/director) and gara/campionato creation (for
 # director). All non-listed endpoints are admin-only in production.
+#
+# TODO(ADR-028 Open Items §1): expand this matrix as features mature.
+# Each unexpected 404 in prod logs from a legitimate user flow is evidence
+# of a missing entry — find the real endpoint name via app.url_map and add
+# it here with the right role set. Promote whole feature areas in blocks
+# when judged ready. See docs/adr/ADR-028 sezione "Open Items".
 # ---------------------------------------------------------------------------
 
 ENDPOINT_ROLES: dict[str, set[Role]] = {

@@ -49,6 +49,11 @@ def test_report_unclassified_endpoints(app):
     Unclassified endpoints are admin-only in production by default. This
     is intentional during MVP rollout; the test only emits a warning so
     we can see the gap shrink as features are promoted.
+
+    TODO(ADR-028 Open Items §3): when the matrix is stable (~120+ explicit
+    entries) convert this warning to a hard `assert not unclassified`. At
+    that point every Flask endpoint must be classified explicitly — even
+    admin-only ones with `set()` — to prevent silent admin-only-by-inertia.
     """
     real = _flask_endpoints(app)
     classified = set(ENDPOINT_ROLES.keys()) | INFRASTRUCTURE_ALLOWLIST

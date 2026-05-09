@@ -169,6 +169,10 @@
                 {% endif %}
             </a>
 
+            {# TODO(ADR-028 Open Items §2): extend feature_visible(...) to other
+               templates that link to non-MVP endpoints (e.g. dashboard cards,
+               sidebars, footer). Right now only navbar+profile-dropdown are
+               guarded — links elsewhere may render and 404 on click. #}
             <!-- Gamification Badge (Always Visible for Players/Directors) -->
             {% if current_user.is_authenticated and not current_user.is_admin and gamification_context and
             gamification_context.progress and feature_visible('gamification.dashboard') %}
