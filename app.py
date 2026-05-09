@@ -1,5 +1,5 @@
 # app.py - Clean application factory pattern
-from flask import Flask, render_template, request, session, jsonify
+from flask import Flask, abort, render_template, request, session, jsonify
 from flask_babel import Babel
 from flask_login import LoginManager, current_user
 import os
@@ -8,17 +8,17 @@ from dotenv import load_dotenv
 
 load_dotenv(".envrc")  # Load environment variables from .env file
 
-# Import configurazioni e modelli
-from config import config
-from models import db, User
-from utils import create_admin_if_not_exists, UserPermissions
-from utils.database_utils import get_database_stats
-from models.gamification.ui_helpers import GamificationUIHelper
+# Import configurazioni e modelli (after load_dotenv so env vars are populated)
+from config import config  # noqa: E402
+from models import db, User  # noqa: E402
+from utils import create_admin_if_not_exists, UserPermissions  # noqa: E402
+from utils.database_utils import get_database_stats  # noqa: E402
+from models.gamification.ui_helpers import GamificationUIHelper  # noqa: E402
 
-from utils.status_ui import register_status_filters
+from utils.status_ui import register_status_filters  # noqa: E402
 
-from sqlalchemy.orm import Session as SASession
-from models.soft_delete import register_soft_delete_filters
+from sqlalchemy.orm import Session as SASession  # noqa: E402
+from models.soft_delete import register_soft_delete_filters  # noqa: E402
 
 
 def create_app(config_name=None):
@@ -81,19 +81,23 @@ def create_app(config_name=None):
     login_manager = LoginManager()
     login_manager.init_app(app)
     setattr(login_manager, "login_view", "auth.login")
-    
+
     # Setup Babel
     def get_locale():
         # 1. Try language from session
         if "language" in session:
             return session["language"]
         # 2. Try language from user profile (if logged in)
-        if current_user.is_authenticated and hasattr(current_user, "language") and current_user.language:
+        if (
+            current_user.is_authenticated
+            and hasattr(current_user, "language")
+            and current_user.language
+        ):
             return current_user.language
         # 3. Best match from request headers
         return request.accept_languages.best_match(["it", "en"])
 
-    babel = Babel(app, locale_selector=get_locale)
+    babel = Babel(app, locale_selector=get_locale)  # noqa: F841
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -174,10 +178,16 @@ def create_app(config_name=None):
             if not hasattr(g, '_gamification_progress'):
                 try:
                     from models.gamification.level_service import LevelService
-                    g._gamification_progress = LevelService.get_level_progress(current_user.id)
+                    g._gamification_progress = LevelService.get_level_progress(
+                        current_user.id
+                    )
                 except Exception:
                     g._gamification_progress = None
-            stats = {"progress": g._gamification_progress} if g._gamification_progress else None
+            stats = (
+                {"progress": g._gamification_progress}
+                if g._gamification_progress
+                else None
+            )
         return {"gamification_context": stats}
 
     # Context processor per enum
@@ -190,6 +200,20 @@ def create_app(config_name=None):
             "GaraStatus": GaraStatus,
             "MatchStatus": MatchStatus,
         }
+
+    # Production endpoint allowlist (ADR-028) — pass-through in dev/test.
+    from utils.feature_flags import is_endpoint_visible
+
+    @app.before_request
+    def enforce_endpoint_allowlist():
+        if not is_endpoint_visible(request.endpoint, current_user):
+            abort(404)
+
+    @app.context_processor
+    def inject_endpoint_visibility():
+        def feature_visible(endpoint: str) -> bool:
+            return is_endpoint_visible(endpoint, current_user)
+        return {"feature_visible": feature_visible}
 
     # Filtri Jinja per status
     register_status_filters(app)
@@ -224,9 +248,11 @@ def create_app(config_name=None):
 
     # Register gamification event handlers
     # This imports the module which auto-registers handlers with EventBus
-    from models.gamification import event_handlers  # noqa: F401
+    from models.gamification import (  # noqa: F401, F811
+        event_handlers as _gamification_eh,
+    )
     # Register rating event handlers
-    from models.rating import event_handlers  # noqa: F401
+    from models.rating import event_handlers as _rating_eh  # noqa: F401, F811
     # Register gamification notification handlers
     # Creates notifications for level ups, achievements, streaks, quests
     from models.gamification import notification_handlers  # noqa: F401
@@ -289,7 +315,8 @@ def create_app(config_name=None):
     @app.errorhandler(500)
     def internal_error(e):
         db.session.rollback()
-        if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
+        if request.is_json or is_ajax:
             return jsonify({"error": "Errore interno del server"}), 500
         return render_template("errors/500.html"), 500
 

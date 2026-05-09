@@ -69,6 +69,40 @@ login_required    → Any authenticated user
 
 ---
 
+## Production Endpoint Visibility (ADR-028)
+
+L'allowlist endpoint **non sostituisce** i decoratori di permesso sopra: agisce come layer ortogonale che controlla solo se un endpoint è **raggiungibile in produzione** (200 vs 404). I decoratori controllano cosa l'utente può fare una volta raggiunto. Vedi `docs/adr/ADR-028-production-endpoint-allowlist.md`.
+
+### Modello matriciale
+
+`config/features.py::ENDPOINT_ROLES` mappa ogni endpoint Flask a un set di ruoli ammessi (`anonimo`, `player`, `director`). Admin è bypass globale (vede tutto, anche endpoint non listati). Endpoint non listato → solo admin lo vede in produzione.
+
+```python
+ENDPOINT_ROLES = {
+    "auth.login":                              {"anonimo"},
+    "main.public_garas_list":                  {"anonimo", "player", "director"},
+    "admin.competition.gara_detail":           {"anonimo", "player", "director"},  # polimorfica
+    "dashboard.dashboard":                     {"player", "director"},
+    "player.inscribe_competition":             {"player"},
+    "admin.competition.create_gara_standalone": {"director"},
+    # NON listato → solo admin: admin.kpi.index, admin.user.director_requests, ecc.
+}
+```
+
+### Quando aggiungi una nuova route
+
+1. Decidi quali ruoli devono vederla in produzione.
+2. Aggiungi l'entry in `ENDPOINT_ROLES` (anche `set()` esplicito = "solo admin", per documentare la decisione).
+3. Se la route compare in un menu/link condizionato, aggiungi `{% if feature_visible('endpoint.name') %}` nel template.
+
+Il test `tests/new/unit/test_endpoint_coverage.py` verifica che ogni endpoint Flask registrato abbia un'entry esplicita in `ENDPOINT_ROLES` o in `INFRASTRUCTURE_ALLOWLIST` — fallisce se ne dimentichi una.
+
+### In sviluppo
+
+In `development` (`DEBUG_MODE=true`) il middleware passa-through e tutto è visibile come oggi. La matrice ha effetto solo in produzione.
+
+---
+
 ## Request/Response Patterns
 
 ### AJAX vs Page Requests

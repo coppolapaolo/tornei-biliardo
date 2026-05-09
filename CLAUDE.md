@@ -475,6 +475,8 @@ pytest tests/new/unit/ -n auto && pytest tests/new/integration/ -n 4
 - **[docs/UI_CONVENTIONS.md](docs/UI_CONVENTIONS.md)**: UI conventions (icons, colors, design decisions)
 - **[docs/adr/](docs/adr/)**: Architecture Decision Records (ADR)
 - **[docs/adr/ADR-027-round-level-configuration-enforcement.md](docs/adr/ADR-027-round-level-configuration-enforcement.md)**: Override per turno persistiti server-side + uso obbligatorio di `Distance` VO nello scoring
+- **[docs/adr/ADR-028-production-endpoint-allowlist.md](docs/adr/ADR-028-production-endpoint-allowlist.md)**: allowlist endpoint deny-by-default in produzione, matrice ruoli (anonimo/player/director) con admin bypass — vedi anche `docs/PRODUCTION_INVENTORY.md`
+- **[docs/PRODUCTION_INVENTORY.md](docs/PRODUCTION_INVENTORY.md)**: inventario completo route/UI/permessi/feature WIP, base per la matrice di ADR-028
 
 ---
 
