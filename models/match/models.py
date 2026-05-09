@@ -41,11 +41,16 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
     )  # Current racks won (single-set) or sets won (multi-set)
     winner_id = db.Column(db.Integer, db.ForeignKey("user.id"))
 
-    # Multi-set configuration (use distance_config property for abstraction)
-    match_distance = db.Column(db.Integer, default=1)  # Number of sets to win the match
-    is_multi_set = db.Column(
-        db.Boolean, default=False
-    )  # Whether this match has multiple sets
+    # Distance configuration. Per ADR-027 questi campi sono override per
+    # match (e quindi indirettamente per turno) sopra la configurazione gara:
+    # - single-set: match_distance = rack per vincere
+    # - multi-set:  match_distance = set per vincere il match
+    # is_race_to / is_race_to_sets nullable: NULL = eredita da gara.
+    # Use distance_config property for the unified abstraction.
+    match_distance = db.Column(db.Integer, default=1)
+    is_multi_set = db.Column(db.Boolean, default=False)
+    is_race_to = db.Column(db.Boolean, nullable=True)  # NULL = eredita da gara
+    is_race_to_sets = db.Column(db.Boolean, nullable=True)  # NULL = eredita da gara
     current_set_number = db.Column(db.Integer, default=1)  # Current set being played
 
     # Disciplina override (se diversa da quella della gara)
@@ -177,21 +182,12 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
             config = self.trio_match.trio_config
             return self.trio_match.total_racks_played >= config.total_played_racks
 
-        # Regular 2-player match
-        if not self.gara:
-            # Standalone match - use defaults
-            distance = 5
-            is_race_to = True
-        else:
-            distance = self.gara.distance
-            is_race_to = self.gara.is_race_to
-
-        if is_race_to:
-            # Race to N: one player must reach N
+        # Regular 2-player match — usa Distance VO per rispettare gli override
+        # per match/turno (ADR-027). Niente accesso diretto a self.gara.distance.
+        distance = self.effective_distance
+        if self.effective_is_race_to:
             return self.player1_score >= distance or self.player2_score >= distance
-        else:
-            # Exactly N: total racks must equal N
-            return self.player1_score + self.player2_score == distance
+        return self.player1_score + self.player2_score == distance
 
     @property
     def is_player_validated(self) -> bool:
@@ -224,26 +220,46 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
 
     @property
     def effective_distance(self) -> int:
-        """Get the effective distance (racks to win) for this match.
+        """Numero di rack per vincere il match (single-set).
 
-        Supports per-round distance overrides. Falls back to gara.distance
-        for legacy matches without match_distance set.
+        Per ADR-027 round-creation popola sempre `match_distance` con la
+        distanza effettiva (override round o default gara). La migration
+        20260509 ha uniformato i match legacy che avevano match_distance=1.
 
-        Legacy matches have match_distance=1 (default), so we detect this
-        and use gara.distance instead.
+        Heuristic single-set: `match_distance == 1` viene trattato come "non
+        popolato" (default schema) e fa fallback a `gara.distance`. In
+        pratica nessuno vuole una gara race-to-1, quindi il valore 1 è
+        sempre un default residuale di Match() istanziato senza override
+        esplicito (es. test legacy o codice che crea match programmatici
+        senza passare per round-creation).
 
-        Returns:
-            int: Number of racks needed to win (for single-set matches)
+        Per match standalone (gara_id NULL), fallback a 5.
         """
-        gara_dist = self.gara.distance
-        # Use match_distance if explicitly set (> 1 or equals gara.distance)
         if self.match_distance and self.match_distance > 1:
             return self.match_distance
-        elif self.match_distance and self.match_distance == gara_dist:
-            return self.match_distance
-        else:
-            # Legacy match with default match_distance=1
-            return gara_dist
+        if self.match_distance == 1 and self.gara is None:
+            # Standalone match con default — fallback al default standalone
+            return 5
+        return self.gara.distance if self.gara else 5
+
+    @property
+    def effective_is_race_to(self) -> bool:
+        """Modalità (race-to vs esatto) per questo match.
+
+        Override per match (NULL = eredita da gara). Per ADR-027.
+        """
+        if self.is_race_to is not None:
+            return self.is_race_to
+        return self.gara.is_race_to if self.gara else True
+
+    @property
+    def effective_is_race_to_sets(self) -> bool:
+        """Modalità multi-set: race-to-N-sets vs esatto N sets."""
+        if self.is_race_to_sets is not None:
+            return self.is_race_to_sets
+        if self.gara is not None:
+            return getattr(self.gara, "is_race_to_sets", True)
+        return True
 
     @property
     def rack_score(self):
@@ -490,13 +506,17 @@ class TrioMatch(db.Model):
 
     @property
     def trio_config(self):
-        """Get TrioConfig based on gara distance."""
+        """Get TrioConfig basato sulla distanza effettiva del match.
+
+        ADR-027: usa match.effective_distance per rispettare gli override
+        per turno. Senza questo, un trio in un round con override esatti
+        userebbe sempre la distanza della gara.
+        """
         from models.match.trio_config import TrioConfig
 
         match_obj = db.session.get(Match, self.match_id)
-        if match_obj and match_obj.gara:
-            return TrioConfig(distance=match_obj.gara.distance)
-        # Default fallback
+        if match_obj:
+            return TrioConfig(distance=match_obj.effective_distance)
         return TrioConfig(distance=2)
 
     @property

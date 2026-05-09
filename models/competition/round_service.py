@@ -101,29 +101,27 @@ class RoundService:
             if not strategy:
                 raise ValueError(f"Strategia {registry_name} non trovata nel registry")
 
-            # Crea tutti i turni contemporaneamente
-            from models.competition.round_creation import create_matches_from_pairings
+            # Crea tutti i turni contemporaneamente (per random)
+            from models.competition.round_creation import (
+                create_matches_from_pairings,
+                resolve_round_overrides,
+            )
 
             for round_num in range(1, gara.rounds_count + 1):
-                # Flush before generating pairings so anti-rematch can see previous rounds
+                # Flush before pairings so anti-rematch can see previous rounds
                 if round_num > 1:
                     db.session.flush()
 
                 pairings = strategy.create_round(gara, round_num)
 
-                from models.competition.round_configuration import RoundConfiguration
-
-                round_config = RoundConfiguration.get_for_gara_round(gara_id, round_num)
-                round_discipline = round_config.discipline if round_config else None
-                round_distance = round_config.get_effective_distance(gara.distance) if round_config else gara.distance
-
+                # ADR-027: propaga override per turno.
+                overrides = resolve_round_overrides(gara, round_num)
                 create_matches_from_pairings(
                     gara=gara,
                     pairings=pairings,
                     round_number=round_num,
-                    round_distance=round_distance,
-                    round_discipline=round_discipline,
                     forfeit_user_ids=forfeit_user_ids,
+                    **overrides,
                 )
 
             gara.current_round = 1
@@ -134,7 +132,10 @@ class RoundService:
         else:
             # Per altre strategie: crea solo il primo turno
             from models.matchmaking.bootstrap import get_registry
-            from models.competition.round_creation import create_matches_from_pairings
+            from models.competition.round_creation import (
+                create_matches_from_pairings,
+                resolve_round_overrides,
+            )
 
             registry = get_registry()
 
@@ -154,19 +155,14 @@ class RoundService:
 
             pairings = strategy.create_round(gara, 1)
 
-            from models.competition.round_configuration import RoundConfiguration
-
-            round_config = RoundConfiguration.get_for_gara_round(gara_id, 1)
-            round_discipline = round_config.discipline if round_config else None
-            round_distance = round_config.get_effective_distance(gara.distance) if round_config else gara.distance
-
+            # ADR-027: propaga override per turno (anche per il primo round).
+            overrides = resolve_round_overrides(gara, 1)
             create_matches_from_pairings(
                 gara=gara,
                 pairings=pairings,
                 round_number=1,
-                round_distance=round_distance,
-                round_discipline=round_discipline,
                 forfeit_user_ids=forfeit_user_ids,
+                **overrides,
             )
 
             gara.current_round = 1
@@ -184,7 +180,7 @@ class RoundService:
     @staticmethod
     @transactional(domain="competition")
     def update_round_progression(gara_id: int) -> None:
-        """Aggiorna la progressione dei turni e calcola le classifiche quando necessario."""
+        """Aggiorna progressione dei turni e calcola classifiche se necessario."""
         from models.match.models import Match
         from models.status_enum import MatchStatus
         from models.classification.models import RoundClassification

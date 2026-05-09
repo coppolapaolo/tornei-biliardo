@@ -116,66 +116,52 @@ class Distance:
         """
         return cls(
             racks=gara.distance,
-            is_race_to_racks=getattr(gara, "is_race_to", getattr(gara, "best_of", True)),
+            is_race_to_racks=getattr(
+                gara, "is_race_to", getattr(gara, "best_of", True)
+            ),
             is_multi_set=getattr(gara, "is_multi_set", False),
-            sets=getattr(gara, "match_distance", 1) if getattr(gara, "is_multi_set", False) else 1,
-            is_race_to_sets=getattr(gara, "is_race_to_sets", True)  # Fallback for now
+            sets=(
+                getattr(gara, "match_distance", 1)
+                if getattr(gara, "is_multi_set", False)
+                else 1
+            ),
+            is_race_to_sets=getattr(gara, "is_race_to_sets", True),  # Fallback for now
         )
 
     @classmethod
     def from_match(cls, match) -> "Distance":
-        """Factory: Create Distance from Match model.
+        """Factory: Distance dal Match model.
 
-        Handles both single-set and multi-set matches.
-        Uses match.match_distance for per-round distance overrides.
-        Supports standalone matches (match.gara is None).
+        Per ADR-027, ogni proprietà di gioco è leggibile dal match (override
+        per match/turno) con fallback a gara. La logica di fallback è
+        centralizzata nelle property `effective_*` del Match per evitare
+        duplicazione: qui leggiamo solo quelle.
 
-        Args:
-            match: Match model instance
-
-        Returns:
-            Distance object representing the match's configuration
+        Supporta match standalone (match.gara is None) tramite i fallback
+        nelle property del Match.
         """
-        # Handle standalone matches (gara_id is NULL after soft delete with keep_matches)
         gara = match.gara
-        gara_dist = gara.distance if gara else 5  # Default distance for standalone
-        is_race_to = (
-            getattr(gara, "is_race_to", True) if gara
-            else True  # Default to race-to for standalone
-        )
+        is_race_to = match.effective_is_race_to
 
         if not match.is_multi_set:
-            # Single-set match - use match's distance (supports per-round overrides)
-            # Fall back to gara.distance for legacy matches without match_distance set
-            # Legacy matches have match_distance=1 (default), so we need to detect this
-            match_dist = getattr(match, "match_distance", None)
-
-            # Use match_distance if explicitly set to a value different from default (1)
-            # or if it equals gara.distance (confirming it was set intentionally)
-            if match_dist and match_dist > 1:
-                effective_distance = match_dist
-            elif match_dist and match_dist == gara_dist:
-                effective_distance = match_dist
-            else:
-                # Legacy match with default match_distance=1, use gara.distance
-                effective_distance = gara_dist
-
             return cls(
-                racks=effective_distance,
+                racks=match.effective_distance,
                 is_race_to_racks=is_race_to,
                 is_multi_set=False,
                 sets=1,
-                is_race_to_sets=True
+                is_race_to_sets=True,
             )
-        else:
-            # Multi-set match
-            return cls(
-                racks=gara_dist,
-                is_race_to_racks=is_race_to,
-                is_multi_set=True,
-                sets=getattr(match, "match_distance", 1),
-                is_race_to_sets=True  # Assume race-to for sets
-            )
+
+        # Multi-set: i rack-per-set vengono dalla gara (single source per i set
+        # ancora non istanziati); per set già istanziati usa Distance.from_set.
+        gara_dist = gara.distance if gara else 5
+        return cls(
+            racks=gara_dist,
+            is_race_to_racks=is_race_to,
+            is_multi_set=True,
+            sets=getattr(match, "match_distance", 1) or 1,
+            is_race_to_sets=match.effective_is_race_to_sets,
+        )
 
     @classmethod
     def from_set(cls, set_obj) -> "Distance":
@@ -189,8 +175,10 @@ class Distance:
         """
         return cls(
             racks=set_obj.distance,
-            is_race_to_racks=getattr(set_obj, "is_race_to", getattr(set_obj, "best_of", True)),
+            is_race_to_racks=getattr(
+                set_obj, "is_race_to", getattr(set_obj, "best_of", True)
+            ),
             is_multi_set=False,
             sets=1,
-            is_race_to_sets=True
+            is_race_to_sets=True,
         )

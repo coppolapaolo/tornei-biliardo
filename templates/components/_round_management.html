@@ -144,170 +144,218 @@
                 <div class="alert alert-info p-2">
                     <small>
                         <i class="fas fa-info-circle"></i>
-                        <strong>{{ _('Nota:') }}</strong> {{ _('Le configurazioni vengono salvate e applicate automaticamente quando ogni turno viene avviato.') }}
+                        <strong>{{ _('Nota:') }}</strong> {{ _('Le configurazioni vengono salvate sul server e applicate automaticamente quando ogni turno viene avviato.') }}
                         {{ _("Puoi modificare queste impostazioni fino all'apertura delle iscrizioni.") }}
                     </small>
                 </div>
+                <div id="roundConfigStatus{{ gara.id }}" class="small text-muted text-end" aria-live="polite"></div>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-// Default values from gara
-const garaDefaults_{{ gara.id }} = {
-    discipline: '{{ gara.discipline }}',
-    distance: {{ gara.distance }},
-    isRaceTo: {{ 'true' if gara.is_race_to else 'false' }},
-    isMultiSet: {{ 'true' if gara.is_multi_set else 'false' }},
-    matchDistance: {{ gara.match_distance or 2 }},
-    isRaceToSets: {{ 'true' if gara.is_race_to_sets is not defined or gara.is_race_to_sets else 'false' }}
-};
+// ADR-027: la configurazione per turno è persistita server-side via API.
+// Endpoint:
+//   GET    /admin/gara/{id}/round-config
+//   POST   /admin/gara/{id}/round-config/{n}
+//   DELETE /admin/gara/{id}/round-config/{n}
+// localStorage non è più usato — lo cancelliamo per pulizia delle precedenti
+// installazioni che salvavano lì gli override (mai propagati al server).
 
-function toggleRoundMultiSet(roundNumber) {
-    const isMultiSet = document.getElementById(`roundIsMultiSet${roundNumber}`).checked;
-    const config = document.getElementById(`roundMultiSetConfig${roundNumber}`);
-    config.style.display = isMultiSet ? 'block' : 'none';
-    updateRoundConfig(roundNumber);
-}
-
-function updateRoundConfig(roundNumber) {
+(function() {
     const garaId = {{ gara.id }};
-    const defaults = garaDefaults_{{ gara.id }};
+    const roundsCount = {{ gara.rounds_count }};
+    const baseUrl = `/admin/gara/${garaId}/round-config`;
+    const statusEl = document.getElementById(`roundConfigStatus${garaId}`);
 
-    // Get current values
-    const discipline = document.getElementById(`roundDiscipline${roundNumber}`).value;
-    const distance = parseInt(document.getElementById(`roundDistance${roundNumber}`).value) || defaults.distance;
-    const exactNumber = document.getElementById(`roundExactNumber${roundNumber}`).checked;
-    const isMultiSet = document.getElementById(`roundIsMultiSet${roundNumber}`).checked;
-    const matchDistance = parseInt(document.getElementById(`roundMatchDistance${roundNumber}`).value) || defaults.matchDistance;
-    const isRaceToSets = document.getElementById(`roundIsRaceToSets${roundNumber}`).checked;
-
-    // Save to localStorage
-    const config = {
-        discipline: discipline,
-        distance: distance,
-        exactNumber: exactNumber,
-        isMultiSet: isMultiSet,
-        matchDistance: matchDistance,
-        isRaceToSets: isRaceToSets
+    const garaDefaults = {
+        discipline: '{{ gara.discipline }}',
+        distance: {{ gara.distance }},
+        isRaceTo: {{ 'true' if gara.is_race_to else 'false' }},
+        isMultiSet: {{ 'true' if gara.is_multi_set else 'false' }},
+        matchDistance: {{ gara.match_distance or 2 }},
+        isRaceToSets: {{ 'true' if gara.is_race_to_sets is not defined or gara.is_race_to_sets else 'false' }}
     };
-    localStorage.setItem(`roundConfig_${garaId}_${roundNumber}`, JSON.stringify(config));
 
-    // Update preview badge
-    updateRoundPreview(roundNumber, config);
-
-    // Highlight if different from default
-    highlightIfChanged(roundNumber, config, defaults);
-}
-
-function updateRoundPreview(roundNumber, config) {
-    const preview = document.getElementById(`roundPreview${roundNumber}`);
-    let text;
-
-    if (!config.isMultiSet) {
-        // Single-set
-        text = config.exactNumber ? `${config.distance} rack esatti` : `Al ${config.distance}`;
-    } else {
-        // Multi-set
-        const setsDesc = config.isRaceToSets ? `Al ${config.matchDistance}` : `${config.matchDistance}`;
-        const racksDesc = config.exactNumber ? `${config.distance} esatti` : `al ${config.distance}`;
-        text = `${setsDesc} set, ${racksDesc}`;
+    // Pulisce eventuali config legacy in localStorage (pre-ADR-027).
+    for (let n = 1; n <= roundsCount; n++) {
+        try { localStorage.removeItem(`roundConfig_${garaId}_${n}`); } catch (e) { /* ignore */ }
     }
 
-    preview.textContent = text;
-}
-
-function highlightIfChanged(roundNumber, config, defaults) {
-    const card = document.getElementById(`roundDiscipline${roundNumber}`).closest('.card');
-
-    const isChanged = (
-        config.discipline !== defaults.discipline ||
-        config.distance !== defaults.distance ||
-        config.exactNumber !== !defaults.isRaceTo ||
-        config.isMultiSet !== defaults.isMultiSet ||
-        (config.isMultiSet && (
-            config.matchDistance !== defaults.matchDistance ||
-            config.isRaceToSets !== defaults.isRaceToSets
-        ))
-    );
-
-    if (isChanged) {
-        card.classList.remove('bg-light');
-        card.classList.add('bg-warning', 'bg-opacity-25');
-    } else {
-        card.classList.remove('bg-warning', 'bg-opacity-25');
-        card.classList.add('bg-light');
-    }
-}
-
-function resetRoundToDefault(roundNumber) {
-    const garaId = {{ gara.id }};
-    const defaults = garaDefaults_{{ gara.id }};
-
-    // Reset form values
-    document.getElementById(`roundDiscipline${roundNumber}`).value = defaults.discipline;
-    document.getElementById(`roundDistance${roundNumber}`).value = defaults.distance;
-    document.getElementById(`roundExactNumber${roundNumber}`).checked = !defaults.isRaceTo;
-    document.getElementById(`roundIsMultiSet${roundNumber}`).checked = defaults.isMultiSet;
-    document.getElementById(`roundMatchDistance${roundNumber}`).value = defaults.matchDistance;
-    document.getElementById(`roundIsRaceToSets${roundNumber}`).checked = defaults.isRaceToSets;
-
-    // Update multi-set visibility
-    document.getElementById(`roundMultiSetConfig${roundNumber}`).style.display = defaults.isMultiSet ? 'block' : 'none';
-
-    // Remove from localStorage
-    localStorage.removeItem(`roundConfig_${garaId}_${roundNumber}`);
-
-    // Update UI
-    updateRoundConfig(roundNumber);
-}
-
-function loadStoredRoundConfigs() {
-    const garaId = {{ gara.id }};
-    const defaults = garaDefaults_{{ gara.id }};
-
-    {% for round_num in range(1, gara.rounds_count + 1) %}
-    (function() {
-        const roundNumber = {{ round_num }};
-        const stored = localStorage.getItem(`roundConfig_${garaId}_${roundNumber}`);
-
-        if (stored) {
-            try {
-                const config = JSON.parse(stored);
-
-                document.getElementById(`roundDiscipline${roundNumber}`).value = config.discipline || defaults.discipline;
-                document.getElementById(`roundDistance${roundNumber}`).value = config.distance || defaults.distance;
-                document.getElementById(`roundExactNumber${roundNumber}`).checked = config.exactNumber !== undefined ? config.exactNumber : !defaults.isRaceTo;
-                document.getElementById(`roundIsMultiSet${roundNumber}`).checked = config.isMultiSet !== undefined ? config.isMultiSet : defaults.isMultiSet;
-                document.getElementById(`roundMatchDistance${roundNumber}`).value = config.matchDistance || defaults.matchDistance;
-                document.getElementById(`roundIsRaceToSets${roundNumber}`).checked = config.isRaceToSets !== undefined ? config.isRaceToSets : defaults.isRaceToSets;
-
-                // Update multi-set visibility
-                document.getElementById(`roundMultiSetConfig${roundNumber}`).style.display = config.isMultiSet ? 'block' : 'none';
-
-                // Update preview and highlighting
-                updateRoundPreview(roundNumber, config);
-                highlightIfChanged(roundNumber, config, defaults);
-            } catch (e) {
-                console.error('Error loading round config:', e);
-            }
-        } else {
-            // Initialize preview with defaults
-            updateRoundPreview(roundNumber, {
-                discipline: defaults.discipline,
-                distance: defaults.distance,
-                exactNumber: !defaults.isRaceTo,
-                isMultiSet: defaults.isMultiSet,
-                matchDistance: defaults.matchDistance,
-                isRaceToSets: defaults.isRaceToSets
-            });
+    function setStatus(message, isError) {
+        if (!statusEl) return;
+        statusEl.textContent = message;
+        statusEl.classList.toggle('text-danger', !!isError);
+        statusEl.classList.toggle('text-muted', !isError);
+        if (message && !isError) {
+            setTimeout(() => { if (statusEl.textContent === message) statusEl.textContent = ''; }, 1500);
         }
-    })();
-    {% endfor %}
-}
+    }
 
-// Load stored configs on page load
-document.addEventListener('DOMContentLoaded', loadStoredRoundConfigs);
+    function readForm(roundNumber) {
+        const isMultiSet = document.getElementById(`roundIsMultiSet${roundNumber}`).checked;
+        return {
+            discipline: document.getElementById(`roundDiscipline${roundNumber}`).value,
+            distance: parseInt(document.getElementById(`roundDistance${roundNumber}`).value, 10) || garaDefaults.distance,
+            exactNumber: document.getElementById(`roundExactNumber${roundNumber}`).checked,
+            isMultiSet: isMultiSet,
+            matchDistance: parseInt(document.getElementById(`roundMatchDistance${roundNumber}`).value, 10) || garaDefaults.matchDistance,
+            isRaceToSets: document.getElementById(`roundIsRaceToSets${roundNumber}`).checked
+        };
+    }
+
+    function isDefault(form) {
+        return (
+            form.discipline === garaDefaults.discipline &&
+            form.distance === garaDefaults.distance &&
+            form.exactNumber === !garaDefaults.isRaceTo &&
+            form.isMultiSet === garaDefaults.isMultiSet &&
+            (!form.isMultiSet || (
+                form.matchDistance === garaDefaults.matchDistance &&
+                form.isRaceToSets === garaDefaults.isRaceToSets
+            ))
+        );
+    }
+
+    function toApiPayload(form) {
+        return {
+            discipline: form.discipline,
+            distance: form.distance,
+            is_race_to: !form.exactNumber,
+            is_multi_set: form.isMultiSet,
+            match_distance: form.isMultiSet ? form.matchDistance : null,
+            is_race_to_sets: form.isMultiSet ? form.isRaceToSets : null
+        };
+    }
+
+    function updatePreview(roundNumber, form) {
+        const preview = document.getElementById(`roundPreview${roundNumber}`);
+        if (!preview) return;
+        let text;
+        if (!form.isMultiSet) {
+            text = form.exactNumber ? `${form.distance} rack esatti` : `Al ${form.distance}`;
+        } else {
+            const setsDesc = form.isRaceToSets ? `Al ${form.matchDistance}` : `${form.matchDistance}`;
+            const racksDesc = form.exactNumber ? `${form.distance} esatti` : `al ${form.distance}`;
+            text = `${setsDesc} set, ${racksDesc}`;
+        }
+        preview.textContent = text;
+    }
+
+    function highlight(roundNumber, form) {
+        const discEl = document.getElementById(`roundDiscipline${roundNumber}`);
+        if (!discEl) return;
+        const card = discEl.closest('.card');
+        if (!card) return;
+        if (!isDefault(form)) {
+            card.classList.remove('bg-light');
+            card.classList.add('bg-warning', 'bg-opacity-25');
+        } else {
+            card.classList.remove('bg-warning', 'bg-opacity-25');
+            card.classList.add('bg-light');
+        }
+    }
+
+    function applyOverrideToForm(roundNumber, override) {
+        // override può essere null (= usa defaults gara)
+        const o = override || {};
+        const set = (id, value) => {
+            const el = document.getElementById(id);
+            if (el !== null) el.value = value;
+        };
+        const setChecked = (id, value) => {
+            const el = document.getElementById(id);
+            if (el !== null) el.checked = value;
+        };
+        set(`roundDiscipline${roundNumber}`, o.discipline ?? garaDefaults.discipline);
+        set(`roundDistance${roundNumber}`, o.distance ?? garaDefaults.distance);
+        const isRaceTo = o.is_race_to ?? garaDefaults.isRaceTo;
+        setChecked(`roundExactNumber${roundNumber}`, !isRaceTo);
+        const isMultiSet = o.is_multi_set ?? garaDefaults.isMultiSet;
+        setChecked(`roundIsMultiSet${roundNumber}`, isMultiSet);
+        set(`roundMatchDistance${roundNumber}`, o.match_distance ?? garaDefaults.matchDistance);
+        const isRaceToSets = o.is_race_to_sets ?? garaDefaults.isRaceToSets;
+        setChecked(`roundIsRaceToSets${roundNumber}`, isRaceToSets);
+        const cfgEl = document.getElementById(`roundMultiSetConfig${roundNumber}`);
+        if (cfgEl !== null) cfgEl.style.display = isMultiSet ? 'block' : 'none';
+        const form = readForm(roundNumber);
+        updatePreview(roundNumber, form);
+        highlight(roundNumber, form);
+    }
+
+    async function persistRoundConfig(roundNumber) {
+        const form = readForm(roundNumber);
+        try {
+            let resp;
+            if (isDefault(form)) {
+                resp = await fetch(`${baseUrl}/${roundNumber}`, { method: 'DELETE' });
+            } else {
+                resp = await fetch(`${baseUrl}/${roundNumber}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(toApiPayload(form))
+                });
+            }
+            if (!resp.ok) {
+                const data = await resp.json().catch(() => ({}));
+                setStatus(data.error || `Errore ${resp.status} salvataggio turno ${roundNumber}`, true);
+                return;
+            }
+            setStatus(`Turno ${roundNumber} salvato`, false);
+        } catch (err) {
+            console.error('Errore salvataggio config turno', err);
+            setStatus(`Errore di rete salvataggio turno ${roundNumber}`, true);
+        }
+    }
+
+    // ── Funzioni invocate dagli onchange/onclick inline ─────────────
+    window.toggleRoundMultiSet = function(roundNumber) {
+        const isMultiSet = document.getElementById(`roundIsMultiSet${roundNumber}`).checked;
+        document.getElementById(`roundMultiSetConfig${roundNumber}`).style.display = isMultiSet ? 'block' : 'none';
+        updateRoundConfig(roundNumber);
+    };
+
+    window.updateRoundConfig = function(roundNumber) {
+        const form = readForm(roundNumber);
+        updatePreview(roundNumber, form);
+        highlight(roundNumber, form);
+        persistRoundConfig(roundNumber);
+    };
+
+    window.resetRoundToDefault = async function(roundNumber) {
+        applyOverrideToForm(roundNumber, null);
+        try {
+            await fetch(`${baseUrl}/${roundNumber}`, { method: 'DELETE' });
+            setStatus(`Turno ${roundNumber} ripristinato al default`, false);
+        } catch (err) {
+            console.error('Errore reset config turno', err);
+            setStatus(`Errore di rete reset turno ${roundNumber}`, true);
+        }
+    };
+
+    async function loadServerConfigs() {
+        try {
+            const resp = await fetch(baseUrl);
+            if (!resp.ok) {
+                setStatus(`Impossibile caricare la configurazione (${resp.status})`, true);
+                for (let n = 1; n <= roundsCount; n++) applyOverrideToForm(n, null);
+                return;
+            }
+            const data = await resp.json();
+            const overridesByRound = {};
+            (data.overrides || []).forEach(o => { overridesByRound[o.round_number] = o; });
+            for (let n = 1; n <= roundsCount; n++) {
+                applyOverrideToForm(n, overridesByRound[n] || null);
+            }
+        } catch (err) {
+            console.error('Errore caricamento round-config', err);
+            setStatus('Errore di rete caricamento configurazioni', true);
+            for (let n = 1; n <= roundsCount; n++) applyOverrideToForm(n, null);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadServerConfigs);
+})();
 </script>
 {% endif %}

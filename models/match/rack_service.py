@@ -202,14 +202,15 @@ class RackService:
                 f"nor player2 ({match.player2_id})"
             )
 
-        # Controlla sempre se il punteggio giustifica ancora il winner_id
+        # ADR-027: usa match.distance_config per rispettare override per turno.
+        distance = match.distance_config
         should_clear_winner = False
-        if match.gara.is_race_to:
-            winning_score = match.gara.distance_config.get_winning_racks()
+        if distance.is_race_to_racks:
+            winning_score = distance.get_winning_racks()
             if max(match.player1_score, match.player2_score) < winning_score:
                 should_clear_winner = True
         else:  # esatto numero
-            if (match.player1_score + match.player2_score) < match.gara.distance:
+            if (match.player1_score + match.player2_score) < distance.racks:
                 should_clear_winner = True
 
         if should_clear_winner:

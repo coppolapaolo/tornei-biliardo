@@ -188,6 +188,31 @@ winning_racks = distance.get_winning_racks()
 distance_cfg = match.distance_config
 ```
 
+**ADR-027 — `Distance` VO is the single source of truth for match scoring.**
+
+In ogni path di scoring/validation/aggregation usa `match.distance_config` o
+le property `Match.effective_*`. NON leggere `match.gara.distance` o
+`match.gara.is_race_to` direttamente — gli override per turno
+(`RoundConfiguration`) verrebbero silenziosamente persi.
+
+```python
+# ✅ CORRECT - rispetta override per turno
+distance = match.distance_config
+if distance.is_race_to_racks:
+    winning = distance.get_winning_racks()
+else:
+    total = match.player1_score + match.player2_score
+    if total == distance.racks: ...
+
+# ❌ WRONG - bypassa RoundConfiguration
+if match.gara.is_race_to:  # override per turno persi!
+    winning = match.gara.distance_config.get_winning_racks()
+```
+
+L'unico posto autorizzato a leggere `self.gara.distance`/`is_race_to` sono i
+fallback dentro `Match.effective_*` (per restituire il default della gara
+quando non c'è override). Vedi `docs/adr/ADR-027-round-level-configuration-enforcement.md`.
+
 ### 7. Translated Strings in JavaScript (CRITICAL)
 When embedding translated strings in JavaScript, **ALWAYS use `|tojson`** filter. This prevents syntax errors from apostrophes and special characters in Italian text.
 
@@ -431,6 +456,8 @@ pytest tests/new/unit/ -n auto && pytest tests/new/integration/ -n 4
 | Manual SMTP sending | Use `EmailService` for all emails |
 | `max(rack_number) WHERE is_deleted=False` | Include ALL records for sequential IDs with UNIQUE constraints |
 | `@transactional` on facade AND inner service | Only decorate the innermost method (nested causes rollback) |
+| `match.gara.distance` in scoring/validation | Use `match.distance_config` or `match.effective_*` (ADR-027) |
+| `RoundConfiguration` salvato solo in `localStorage` | API endpoint `POST /admin/gara/<id>/round-config/<n>` (ADR-027) |
 
 ---
 
@@ -447,6 +474,7 @@ pytest tests/new/unit/ -n auto && pytest tests/new/integration/ -n 4
 - **[docs/usecases/gare.md](docs/usecases/gare.md)**: Detailed workflow documentation
 - **[docs/UI_CONVENTIONS.md](docs/UI_CONVENTIONS.md)**: UI conventions (icons, colors, design decisions)
 - **[docs/adr/](docs/adr/)**: Architecture Decision Records (ADR)
+- **[docs/adr/ADR-027-round-level-configuration-enforcement.md](docs/adr/ADR-027-round-level-configuration-enforcement.md)**: Override per turno persistiti server-side + uso obbligatorio di `Distance` VO nello scoring
 
 ---
 

@@ -6,7 +6,7 @@ impossible since the match ends when the first player reaches n.
 """
 
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 from models.match.scoring_service import ScoringService
 
@@ -15,17 +15,28 @@ class TestRaceToScoreValidation:
     """Tests for _validate_score_limits with race-to-n matches."""
 
     def _create_mock_match(self, distance: int, is_race_to: bool):
-        """Create a mock match with gara configuration."""
-        mock_distance_config = MagicMock()
-        mock_distance_config.get_winning_racks.return_value = distance
+        """Crea mock match con Distance VO sul match (ADR-027).
+
+        Lo scoring legge `match.distance_config` (non `match.gara.distance`),
+        per rispettare gli override per turno. Il mock fornisce direttamente
+        un Distance reale.
+        """
+        from models.match.distance import Distance
+
+        real_distance = Distance(
+            racks=distance,
+            is_race_to_racks=is_race_to,
+            is_multi_set=False,
+        )
 
         mock_gara = MagicMock()
         mock_gara.distance = distance
         mock_gara.is_race_to = is_race_to
-        mock_gara.distance_config = mock_distance_config
+        mock_gara.distance_config = real_distance
 
         mock_match = MagicMock()
         mock_match.gara = mock_gara
+        mock_match.distance_config = real_distance
         return mock_match
 
     def test_race_to_5_rejects_5_5_score(self):
@@ -78,7 +89,7 @@ class TestRaceToScoreValidation:
         assert "entrambi i giocatori" in str(exc_info.value).lower()
 
     def test_exact_mode_allows_equal_scores_when_total_equals_distance(self):
-        """In 'exact' mode (not race-to), equal scores are allowed when total=distance."""
+        """Exact mode (not race-to): equal scores valid when total=distance."""
         match = self._create_mock_match(distance=6, is_race_to=False)
 
         # In exact mode with distance=6, score 3-3 (total=6) is a valid tie result

@@ -200,8 +200,31 @@ sbagliato (vedi "Previous Assumption Debunked" in ADR-026).
 
 ---
 
+## Round-level overrides (RoundConfiguration, ADR-027)
+
+`RoundConfiguration` permette al director (in stato `setup`) di sovrascrivere
+disciplina, distanza e modalità per ogni singolo turno della gara. Persistito
+via API:
+
+| Endpoint | Scopo |
+|---|---|
+| `GET /admin/gara/<id>/round-config` | Lista override + defaults gara |
+| `POST /admin/gara/<id>/round-config/<n>` | Upsert (JSON body) |
+| `DELETE /admin/gara/<id>/round-config/<n>` | Rimuovi override (idempotente) |
+
+Bloccato fuori da setup → 409 Conflict. Un round senza override usa i
+default della gara.
+
+I match creati dal round-creation sono popolati con i valori effettivi
+(override ∨ default gara) tramite l'helper `resolve_round_overrides(gara, n)`
+in `round_creation.py`. Lo scoring legge poi `match.distance_config` /
+`match.effective_*` (vedi `models/match/CLAUDE.md`).
+
+---
+
 ## Cross-References
 
 - **Matchmaking**: [../matchmaking/](../matchmaking/) - Pairing strategies (Amalfi, Round-Robin, Elimination)
 - **Match Execution**: [../match/](../match/) - Match and scoring
 - **Classification**: [../classification/](../classification/) - Rankings
+- **ADR-027**: [../../docs/adr/ADR-027-round-level-configuration-enforcement.md](../../docs/adr/ADR-027-round-level-configuration-enforcement.md) - Round-level configuration enforcement

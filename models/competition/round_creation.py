@@ -1,6 +1,7 @@
 """
 Module: models/competition/round_creation.py
-Purpose: Round creation logic (create_round_with_strategy, start_next_round, _create_round_impl)
+Purpose: Round creation logic (create_round_with_strategy, start_next_round,
+_create_round_impl)
 """
 
 from __future__ import annotations
@@ -12,6 +13,42 @@ from models.status_enum import GaraStatus
 from .models import Gara
 
 
+def resolve_round_overrides(gara: Gara, round_number: int) -> dict:
+    """Risolvi gli override per turno (RoundConfiguration) su una gara.
+
+    ADR-027: dato il modello override-NULL=fallback-gara, restituisce un
+    dict pronto per essere espanso negli kwarg di create_matches_from_pairings.
+    Centralizza la logica per evitare duplicazione tra round_creation e
+    round_service (entrambi creano match e devono propagare le stesse regole).
+    """
+    from models.competition.round_configuration import RoundConfiguration
+
+    round_config = RoundConfiguration.get_for_gara_round(gara.id, round_number)
+    if not round_config:
+        return {
+            "round_distance": gara.distance,
+            "round_discipline": None,
+            "round_is_race_to": gara.is_race_to,
+            "round_is_multi_set": gara.is_multi_set,
+            "round_match_distance": gara.match_distance,
+            "round_is_race_to_sets": getattr(gara, "is_race_to_sets", True),
+        }
+    return {
+        "round_distance": round_config.get_effective_distance(gara.distance),
+        "round_discipline": round_config.discipline,
+        "round_is_race_to": round_config.get_effective_is_race_to(gara.is_race_to),
+        "round_is_multi_set": round_config.get_effective_is_multi_set(
+            gara.is_multi_set
+        ),
+        "round_match_distance": round_config.get_effective_match_distance(
+            gara.match_distance
+        ),
+        "round_is_race_to_sets": round_config.get_effective_is_race_to_sets(
+            getattr(gara, "is_race_to_sets", True)
+        ),
+    }
+
+
 def create_matches_from_pairings(
     gara: Gara,
     pairings: list,
@@ -19,11 +56,17 @@ def create_matches_from_pairings(
     round_distance: int,
     round_discipline: Optional[str] = None,
     forfeit_user_ids: Optional[Set[int]] = None,
+    round_is_race_to: Optional[bool] = None,
+    round_is_multi_set: Optional[bool] = None,
+    round_match_distance: Optional[int] = None,
+    round_is_race_to_sets: Optional[bool] = None,
 ) -> None:
     """Create Match (and TrioMatch) objects from strategy pairings.
 
-    Centralizes match creation logic to avoid duplication across
-    round_service.py and round_creation.py.
+    ADR-027: oltre a discipline e distance, propaga gli override per turno
+    (is_race_to, is_multi_set, match_distance multi-set, is_race_to_sets) a
+    ogni Match creato. I parametri round_* nullable=None mantengono il default
+    della gara, NON solo per back-compat ma per esprimere "nessun override".
     """
     from models.match.models import Match, TrioMatch
     from models.match.state_service import MatchStateService
@@ -31,20 +74,60 @@ def create_matches_from_pairings(
     if forfeit_user_ids is None:
         forfeit_user_ids = set()
 
+    # Override risolti: passati esplicitamente o ereditati dalla gara.
+    is_multi_set = (
+        round_is_multi_set if round_is_multi_set is not None else gara.is_multi_set
+    )
+    # Per single-set: match_distance memorizza i rack-per-vincere del round.
+    # Per multi-set: match_distance memorizza i set-per-vincere il match.
+    if is_multi_set:
+        match_distance_field = (
+            round_match_distance
+            if round_match_distance is not None
+            else (gara.match_distance or 1)
+        )
+    else:
+        match_distance_field = round_distance
+
+    # is_race_to / is_race_to_sets sono nullable su Match: NULL = eredita gara.
+    # Memorizziamo l'override esplicito solo se differisce dalla gara, per
+    # tenere lo schema parlante (NULL = "nessun override").
+    is_race_to_override = (
+        round_is_race_to
+        if (round_is_race_to is not None and round_is_race_to != gara.is_race_to)
+        else None
+    )
+    gara_irts = getattr(gara, "is_race_to_sets", True)
+    is_race_to_sets_override = (
+        round_is_race_to_sets
+        if (round_is_race_to_sets is not None and round_is_race_to_sets != gara_irts)
+        else None
+    )
+
+    common_kwargs = {
+        "gara_id": gara.id,
+        "round_number": round_number,
+        "discipline": round_discipline,
+        "match_distance": match_distance_field,
+        "is_multi_set": is_multi_set,
+        "is_race_to": is_race_to_override,
+        "is_race_to_sets": is_race_to_sets_override,
+    }
+
+    # Per il bye/forfeit "winning_score" è il numero di rack del round,
+    # non la match_distance (che in multi-set è il numero di set).
+    winning_score = round_distance
+
     for pairing in pairings:
         if len(pairing.players) == 1 and pairing.is_bye:
-            bye_score = round_distance
             match = Match(
-                gara_id=gara.id,
-                round_number=round_number,
+                **common_kwargs,
                 player1_id=pairing.players[0],
                 player2_id=None,
                 is_bye=True,
-                player1_score=bye_score,
+                player1_score=winning_score,
                 winner_id=pairing.players[0],
                 status="pending",
-                discipline=round_discipline,
-                match_distance=round_distance,
             )
             db.session.add(match)
             db.session.flush()
@@ -54,7 +137,6 @@ def create_matches_from_pairings(
             player2_forfeit = pairing.players[1] in forfeit_user_ids
 
             if player1_forfeit or player2_forfeit:
-                winning_score = round_distance
                 if player1_forfeit and player2_forfeit:
                     winner_id = pairing.players[0]
                     player1_score = winning_score
@@ -69,8 +151,7 @@ def create_matches_from_pairings(
                     player2_score = 0
 
                 match = Match(
-                    gara_id=gara.id,
-                    round_number=round_number,
+                    **common_kwargs,
                     player1_id=pairing.players[0],
                     player2_id=pairing.players[1],
                     is_bye=False,
@@ -78,9 +159,6 @@ def create_matches_from_pairings(
                     player2_score=player2_score,
                     winner_id=winner_id,
                     status="pending",
-                    discipline=round_discipline,
-                    match_distance=round_distance,
-                    is_multi_set=gara.is_multi_set,
                 )
                 db.session.add(match)
                 db.session.flush()
@@ -92,14 +170,10 @@ def create_matches_from_pairings(
                 MatchStateService.to_completed(match.id)
             else:
                 match = Match(
-                    gara_id=gara.id,
-                    round_number=round_number,
+                    **common_kwargs,
                     player1_id=pairing.players[0],
                     player2_id=pairing.players[1],
                     is_bye=False,
-                    discipline=round_discipline,
-                    match_distance=round_distance,
-                    is_multi_set=gara.is_multi_set,
                 )
                 db.session.add(match)
         elif len(pairing.players) == 3:
@@ -107,15 +181,19 @@ def create_matches_from_pairings(
             n_forfeit = sum(1 for p in pairing.players if p in forfeit_user_ids)
 
             if n_forfeit == 0:
+                # Trio: i trio non sono multi-set e usano match_distance per
+                # racks (TrioConfig calcola da effective_distance).
+                trio_kwargs = {
+                    **common_kwargs,
+                    "is_multi_set": False,
+                    "match_distance": round_distance,
+                }
                 match = Match(
-                    gara_id=gara.id,
-                    round_number=round_number,
+                    **trio_kwargs,
                     player1_id=p0,
                     player2_id=p1,
                     is_bye=False,
                     is_trio=True,
-                    discipline=round_discipline,
-                    match_distance=round_distance,
                 )
                 db.session.add(match)
                 db.session.flush()
@@ -132,15 +210,11 @@ def create_matches_from_pairings(
             elif n_forfeit == 1:
                 survivors = [p for p in pairing.players if p not in forfeit_user_ids]
                 match = Match(
-                    gara_id=gara.id,
-                    round_number=round_number,
+                    **common_kwargs,
                     player1_id=survivors[0],
                     player2_id=survivors[1],
                     is_bye=False,
                     is_trio=False,
-                    discipline=round_discipline,
-                    match_distance=round_distance,
-                    is_multi_set=gara.is_multi_set,
                 )
                 db.session.add(match)
             else:
@@ -151,19 +225,21 @@ def create_matches_from_pairings(
                 else:
                     winner_id = p0
 
+                trio_kwargs = {
+                    **common_kwargs,
+                    "is_multi_set": False,
+                    "match_distance": round_distance,
+                }
                 match = Match(
-                    gara_id=gara.id,
-                    round_number=round_number,
+                    **trio_kwargs,
                     player1_id=p0,
                     player2_id=p1,
                     is_bye=False,
                     is_trio=True,
-                    player1_score=round_distance,
+                    player1_score=winning_score,
                     player2_score=0,
                     winner_id=winner_id,
                     status="pending",
-                    discipline=round_discipline,
-                    match_distance=round_distance,
                 )
                 db.session.add(match)
                 db.session.flush()
@@ -239,7 +315,7 @@ class RoundCreationService:
     def _create_round_impl(
         gara_id: int, round_number: int, discipline_override: Optional[str] = None
     ) -> tuple[int, int, int, int]:
-        """Core round creation logic (no @transactional — called within a transaction)."""
+        """Core round creation (no @transactional, called inside a transaction)."""
         from models.match.models import Match, TrioMatch
 
         gara = db.session.get(Gara, gara_id)
@@ -301,28 +377,18 @@ class RoundCreationService:
 
         forfeit_user_ids = WithdrawPolicyService.get_forfeit_user_ids(gara_id)
 
-        # Get round configuration for distance override
-        from models.competition.round_configuration import RoundConfiguration
+        # ADR-027: risolvi tutti gli override per turno via helper.
+        overrides = resolve_round_overrides(gara, round_number)
+        # discipline_override (param routes) vince su quello della config.
+        if discipline_override:
+            overrides["round_discipline"] = discipline_override
 
-        round_config = RoundConfiguration.get_for_gara_round(gara_id, round_number)
-        round_distance = (
-            round_config.get_effective_distance(gara.distance)
-            if round_config
-            else gara.distance
-        )
-        # Use discipline_override if provided, otherwise check round_config
-        effective_discipline = discipline_override or (
-            round_config.discipline if round_config else None
-        )
-
-        # Crea i match nel database
         create_matches_from_pairings(
             gara=gara,
             pairings=pairings,
-            round_number=round_number,
-            round_distance=round_distance,
-            round_discipline=effective_discipline,
             forfeit_user_ids=forfeit_user_ids,
+            round_number=round_number,
+            **overrides,
         )
 
         # Conta i risultati

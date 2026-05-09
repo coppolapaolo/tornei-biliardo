@@ -33,9 +33,7 @@ class ScoringService:
 
     @staticmethod
     @transactional(domain="match")
-    def add_rack_for_player(
-        match_id: int, user_id: int, winner_id: int
-    ) -> Rack:
+    def add_rack_for_player(match_id: int, user_id: int, winner_id: int) -> Rack:
         """Add a rack won by specified player (simplified UX for tournament matches).
 
         Args:
@@ -102,9 +100,7 @@ class ScoringService:
 
     @staticmethod
     @transactional(domain="match")
-    def remove_rack_for_player(
-        match_id: int, user_id: int, player_id: int
-    ) -> None:
+    def remove_rack_for_player(match_id: int, user_id: int, player_id: int) -> None:
         """Remove last rack won by specified player (simplified UX).
 
         Args:
@@ -186,10 +182,12 @@ class ScoringService:
 
         # Complete the match
         from .state_service import MatchStateService
+
         match = MatchStateService.to_completed(match_id)
 
         # Handle gara-level forfait policy
         from models.competition.withdraw_policy_service import WithdrawPolicyService
+
         WithdrawPolicyService.handle_forfeit(gara_id=match.gara_id, user_id=user_id)
 
         return match
@@ -232,6 +230,7 @@ class ScoringService:
 
         # Find next rack number and add rack
         from .services import RackService
+
         last_rack = (
             Rack.query.filter_by(match_id=match_id)
             .order_by(Rack.rack_number.desc())
@@ -326,11 +325,12 @@ class ScoringService:
         """Check if winner should be cleared based on current scores."""
         if not match.gara:
             return True
-        if match.gara.is_race_to:
-            winning_score = match.gara.distance_config.get_winning_racks()
+        # ADR-027: usa la distance del match per rispettare gli override per turno.
+        distance = match.distance_config
+        if distance.is_race_to_racks:
+            winning_score = distance.get_winning_racks()
             return max(match.player1_score, match.player2_score) < winning_score
-        else:
-            return (match.player1_score + match.player2_score) < match.gara.distance
+        return (match.player1_score + match.player2_score) < distance.racks
 
     @staticmethod
     def _validate_forfeit(match: Match, user_id: int) -> None:
@@ -392,7 +392,8 @@ class ScoringService:
         else:
             temp_p2_score += 1
 
-        distance = match.gara.distance_config
+        # ADR-027: usa match.distance_config per rispettare override per turno.
+        distance = match.distance_config
         if distance.is_race_to_racks:
             winning_racks = distance.get_winning_racks()
             if temp_p1_score > winning_racks or temp_p2_score > winning_racks:
@@ -418,6 +419,7 @@ class ScoringService:
             match.winner_id = None
             if validated_by_admin:
                 from .state_service import MatchStateService
+
                 MatchStateService.to_completed(match.id)
             else:
                 match.status = MatchStatus.COMPLETED.value
@@ -431,6 +433,7 @@ class ScoringService:
 
             if validated_by_admin:
                 from .services import MatchResultService
+
                 MatchResultService.submit_result(match.id, final_winner_id)
             else:
                 match.winner_id = final_winner_id
@@ -450,26 +453,25 @@ class ScoringService:
         if player1_score < 0 or player2_score < 0:
             raise ValueError("I punteggi non possono essere negativi!")
 
-        max_score = match.gara.distance
+        # ADR-027: usa match.distance_config per rispettare override per turno.
+        distance = match.distance_config
+        max_score = distance.racks
         if player1_score > max_score or player2_score > max_score:
             raise ValueError(f"I punteggi non possono superare {max_score}!")
 
-        # In "race to n" matches, both players cannot have winning score
-        # (match ends when first player reaches it)
-        if match.gara.is_race_to:
-            winning_score = match.gara.distance_config.get_winning_racks()
+        if distance.is_race_to_racks:
+            winning_score = distance.get_winning_racks()
             if player1_score >= winning_score and player2_score >= winning_score:
                 raise ValueError(
                     f"In un match 'al {winning_score}', entrambi i giocatori "
                     f"non possono avere {winning_score} o più punti!"
                 )
         else:
-            # In "exact number" mode, total racks must equal distance
             total_racks = player1_score + player2_score
-            if total_racks != match.gara.distance:
+            if total_racks != distance.racks:
                 raise ValueError(
                     f"In modalità 'esatto numero', il totale dei rack ({total_racks}) "
-                    f"deve essere esattamente {match.gara.distance}!"
+                    f"deve essere esattamente {distance.racks}!"
                 )
 
     @staticmethod
@@ -477,9 +479,11 @@ class ScoringService:
         match: Match, player1_score: int, player2_score: int
     ) -> Tuple[bool, Optional[int]]:
         """Calculate if result is complete and who won."""
-        winning_score = match.gara.distance_config.get_winning_racks()
+        # ADR-027: usa match.distance_config per rispettare override per turno.
+        distance = match.distance_config
+        winning_score = distance.get_winning_racks()
 
-        if match.gara.is_race_to:
+        if distance.is_race_to_racks:
             if player1_score >= winning_score:
                 return True, match.player1_id
             elif player2_score >= winning_score:
@@ -487,7 +491,7 @@ class ScoringService:
             return False, None
         else:
             total_racks = player1_score + player2_score
-            if total_racks == match.gara.distance:
+            if total_racks == distance.racks:
                 if player1_score > player2_score:
                     return True, match.player1_id
                 elif player2_score > player1_score:
@@ -516,15 +520,23 @@ class ScoringService:
         rack_number = 1
         for _ in range(player1_score):
             RackService.add_rack_result(
-                match.id, rack_number, match.player1_id, 1,
-                validated_by_admin=True, bypass_validation=True
+                match.id,
+                rack_number,
+                match.player1_id,
+                1,
+                validated_by_admin=True,
+                bypass_validation=True,
             )
             rack_number += 1
 
         for _ in range(player2_score):
             RackService.add_rack_result(
-                match.id, rack_number, match.player2_id, 1,
-                validated_by_admin=True, bypass_validation=True
+                match.id,
+                rack_number,
+                match.player2_id,
+                1,
+                validated_by_admin=True,
+                bypass_validation=True,
             )
             rack_number += 1
 
@@ -551,6 +563,7 @@ class ScoringService:
             # Release table
             if match.table_assignment:
                 from .table_assignment_service import TableAssignmentService
+
                 TableAssignmentService.release_and_reassign_table(match.id)
                 match.table_assignment = None
         else:

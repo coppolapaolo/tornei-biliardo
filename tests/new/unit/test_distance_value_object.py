@@ -58,7 +58,7 @@ class TestDistanceCreation:
             is_race_to_racks=True,
             is_multi_set=True,
             sets=3,
-            is_race_to_sets=True
+            is_race_to_sets=True,
         )
 
         assert distance.racks == 5
@@ -76,7 +76,7 @@ class TestDistanceCreation:
             is_race_to_racks=True,
             is_multi_set=True,
             sets=5,
-            is_race_to_sets=True
+            is_race_to_sets=True,
         )
 
         assert distance.get_winning_racks() == 7
@@ -89,7 +89,7 @@ class TestDistanceCreation:
             is_race_to_racks=True,
             is_multi_set=True,
             sets=4,
-            is_race_to_sets=False
+            is_race_to_sets=False,
         )
 
         assert distance.racks == 3
@@ -106,7 +106,7 @@ class TestDistanceCreation:
             is_race_to_racks=False,
             is_multi_set=True,
             sets=2,
-            is_race_to_sets=False
+            is_race_to_sets=False,
         )
 
         assert distance.racks == 3
@@ -123,7 +123,7 @@ class TestDistanceCreation:
             is_race_to_racks=False,
             is_multi_set=True,
             sets=3,
-            is_race_to_sets=True
+            is_race_to_sets=True,
         )
 
         assert distance.get_winning_racks() == 2
@@ -169,12 +169,7 @@ class TestDistanceValidation:
 
     def test_accept_even_exact_sets(self):
         """Accept even number for exact sets."""
-        distance = Distance(
-            racks=5,
-            is_multi_set=True,
-            sets=4,
-            is_race_to_racks=False
-        )
+        distance = Distance(racks=5, is_multi_set=True, sets=4, is_race_to_racks=False)
         assert distance.sets == 4
         assert distance.get_winning_sets() == 4
 
@@ -204,7 +199,7 @@ class TestDistanceDisplayStrings:
             is_race_to_racks=True,
             is_multi_set=True,
             sets=3,
-            is_race_to_sets=True
+            is_race_to_sets=True,
         )
         expected = "Al 3 set, ogni set al 5 rack"
         assert distance.to_display_string() == expected
@@ -216,7 +211,7 @@ class TestDistanceDisplayStrings:
             is_race_to_racks=True,
             is_multi_set=True,
             sets=4,
-            is_race_to_sets=False
+            is_race_to_sets=False,
         )
         expected = "Esattamente 4 set, ogni set al 3 rack"
         assert distance.to_display_string() == expected
@@ -228,7 +223,7 @@ class TestDistanceDisplayStrings:
             is_race_to_racks=False,
             is_multi_set=True,
             sets=5,
-            is_race_to_sets=True
+            is_race_to_sets=True,
         )
         expected = "Al 5 set, ogni set esattamente 2 rack"
         assert distance.to_display_string() == expected
@@ -240,7 +235,7 @@ class TestDistanceDisplayStrings:
             is_race_to_racks=False,
             is_multi_set=True,
             sets=2,
-            is_race_to_sets=False
+            is_race_to_sets=False,
         )
         expected = "Esattamente 2 set, ogni set esattamente 3 rack"
         assert distance.to_display_string() == expected
@@ -267,6 +262,7 @@ class TestDistanceFactoryMethods:
 
     def test_from_gara_race_to_7(self):
         """Create Distance from gara with race-to-7."""
+
         # Mock gara object
         class MockGara:
             distance = 7
@@ -282,6 +278,7 @@ class TestDistanceFactoryMethods:
 
     def test_from_gara_exact_4(self):
         """Create Distance from gara with exactly-4."""
+
         class MockGara:
             distance = 4
             is_race_to = False
@@ -294,14 +291,27 @@ class TestDistanceFactoryMethods:
         assert distance.get_winning_racks() == 4
 
     def test_from_match_single_set(self):
-        """Create Distance from single-set match."""
+        """Create Distance from single-set match.
+
+        Post-ADR-027: Distance.from_match legge match.effective_*. Il mock
+        deve esporre quelle property (anche se costanti).
+        """
+
         class MockGara:
             distance = 5
             is_race_to = True
+            is_race_to_sets = True
 
         class MockMatch:
             is_multi_set = False
+            match_distance = 5  # popolato da round-creation
+            is_race_to = None  # NULL = eredita da gara
+            is_race_to_sets = None
             gara = MockGara()
+            # Property sintetiche che imitano Match.effective_*
+            effective_distance = 5
+            effective_is_race_to = True
+            effective_is_race_to_sets = True
 
         match = MockMatch()
         distance = Distance.from_match(match)
@@ -311,15 +321,22 @@ class TestDistanceFactoryMethods:
         assert distance.get_winning_racks() == 5
 
     def test_from_match_multi_set(self):
-        """Create Distance from multi-set match."""
+        """Create Distance from multi-set match (post-ADR-027)."""
+
         class MockGara:
             distance = 5
             is_race_to = True
+            is_race_to_sets = True
 
         class MockMatch:
             is_multi_set = True
-            match_distance = 3
+            match_distance = 3  # multi-set: numero di set per vincere
+            is_race_to = None
+            is_race_to_sets = None
             gara = MockGara()
+            effective_distance = 5
+            effective_is_race_to = True
+            effective_is_race_to_sets = True
 
         match = MockMatch()
         distance = Distance.from_match(match)
@@ -332,6 +349,7 @@ class TestDistanceFactoryMethods:
 
     def test_from_set_race_to_5(self):
         """Create Distance from Set with race-to-5."""
+
         class MockSet:
             distance = 5
             is_race_to = True

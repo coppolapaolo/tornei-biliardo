@@ -38,7 +38,7 @@ class ScoreAggregator:
         from models.match.models import Match
         from models.base import db
 
-        # Include both 'completed' (admin) and 'validated' (bilateral player confirmation)
+        # Include both 'completed' (admin) and 'validated' (player confirmation)
         matches = (
             db.session.query(Match)
             .filter(
@@ -327,7 +327,10 @@ class ScoreAggregator:
             return
 
         player_ids = [trio.player1_id, trio.player2_id, trio.player3_id]
-        distance = match.gara.distance if match.gara else 5
+        # ADR-027: usa la distanza effettiva del match (rispetta override per
+        # turno). Il trio_config dentro trio_match risale alla gara originale,
+        # ma per l'aggregazione qui ci basta il numero di rack-per-girone.
+        distance = match.effective_distance
 
         # Initialize all three players if not seen
         for pid in player_ids:

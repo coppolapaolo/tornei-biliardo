@@ -33,7 +33,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-from . import competition_bp
+from . import competition_bp  # noqa: E402  (deferred import to avoid circular)
 
 
 @competition_bp.route("/<int:gara_id>/start_first_round", methods=["POST"])
@@ -116,7 +116,15 @@ def terminate_gara(gara_id):
         real_status = gara.get_real_status()
         if real_status != "campionato_completed":
             if is_ajax:
-                return jsonify({"success": False, "error": "Non tutti i turni sono ancora completati!"}), 400
+                return (
+                    jsonify(
+                        {
+                            "success": False,
+                            "error": "Non tutti i turni sono ancora completati!",
+                        }
+                    ),
+                    400,
+                )
             flash("Non tutti i turni sono ancora completati!", "error")
             return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
@@ -127,24 +135,43 @@ def terminate_gara(gara_id):
         if tiebreakers:
             # Return tiebreaker data - suggest using SSR workflow
             if is_ajax:
-                return jsonify({
-                    "success": False,
-                    "needs_tiebreaker": True,
-                    "tiebreakers": tiebreakers,
-                    "message": f"Ci sono parimerito nelle prime {gara.tiebreaker_until_position or 3} posizioni. Usa 'Avvia SSR' per inserire i punteggi."
-                })
-            flash(f"Ci sono parimerito nelle prime {gara.tiebreaker_until_position or 3} posizioni. Usa 'Avvia SSR' per inserire i punteggi.", "warning")
+                return jsonify(
+                    {
+                        "success": False,
+                        "needs_tiebreaker": True,
+                        "tiebreakers": tiebreakers,
+                        "message": (
+                            f"Ci sono parimerito nelle prime "
+                            f"{gara.tiebreaker_until_position or 3} posizioni. "
+                            f"Usa 'Avvia SSR' per inserire i punteggi."
+                        ),
+                    }
+                )
+            flash(
+                (
+                    f"Ci sono parimerito nelle prime "
+                    f"{gara.tiebreaker_until_position or 3} posizioni. "
+                    f"Usa 'Avvia SSR' per inserire i punteggi."
+                ),
+                "warning",
+            )
             return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
         # No tiebreakers or all resolved - complete the gara
         GaraService.complete(gara_id)
         if is_ajax:
-            return jsonify({
-                "success": True,
-                "message": "Gara terminata con successo!",
-                "redirect": url_for("admin.competition.gara_detail", gara_id=gara_id)
-            })
-        flash("Gara terminata con successo! I risultati sono ora definitivi.", "success")
+            return jsonify(
+                {
+                    "success": True,
+                    "message": "Gara terminata con successo!",
+                    "redirect": url_for(
+                        "admin.competition.gara_detail", gara_id=gara_id
+                    ),
+                }
+            )
+        flash(
+            "Gara terminata con successo! I risultati sono ora definitivi.", "success"
+        )
     except Exception as e:
         if is_ajax:
             return safe_json_error(e, "terminating gara")
@@ -172,7 +199,12 @@ def start_ssr(gara_id):
     # Must be in playing state
     if gara.status != GaraStatus.PLAYING.value:
         if is_ajax:
-            return jsonify({"success": False, "error": "La gara non è in stato 'in corso'!"}), 400
+            return (
+                jsonify(
+                    {"success": False, "error": "La gara non è in stato 'in corso'!"}
+                ),
+                400,
+            )
         flash("La gara non è in stato 'in corso'!", "error")
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
@@ -180,7 +212,15 @@ def start_ssr(gara_id):
     real_status = gara.get_real_status()
     if real_status != "campionato_completed":
         if is_ajax:
-            return jsonify({"success": False, "error": "Non tutti i turni sono ancora completati!"}), 400
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "error": "Non tutti i turni sono ancora completati!",
+                    }
+                ),
+                400,
+            )
         flash("Non tutti i turni sono ancora completati!", "error")
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
@@ -188,7 +228,12 @@ def start_ssr(gara_id):
     tiebreakers = SpareggioService.detect_tiebreakers(gara_id)
     if not tiebreakers:
         if is_ajax:
-            return jsonify({"success": False, "error": "Non ci sono parimerito da risolvere!"}), 400
+            return (
+                jsonify(
+                    {"success": False, "error": "Non ci sono parimerito da risolvere!"}
+                ),
+                400,
+            )
         flash("Non ci sono parimerito da risolvere!", "warning")
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
@@ -200,12 +245,18 @@ def start_ssr(gara_id):
         all_groups = SpareggioService.get_all_ssr_groups(gara_id)
 
         if is_ajax:
-            return jsonify({
-                "success": True,
-                "message": "Fase SSR avviata. Inserire i punteggi per i parimerito.",
-                "ssr_groups": all_groups,
-                "redirect": url_for("admin.competition.gara_detail", gara_id=gara_id)
-            })
+            return jsonify(
+                {
+                    "success": True,
+                    "message": (
+                        "Fase SSR avviata. Inserire i punteggi per i parimerito."
+                    ),
+                    "ssr_groups": all_groups,
+                    "redirect": url_for(
+                        "admin.competition.gara_detail", gara_id=gara_id
+                    ),
+                }
+            )
         flash("Fase SSR avviata. Inserire i punteggi per i parimerito.", "success")
     except Exception as e:
         if is_ajax:
@@ -242,17 +293,29 @@ def save_ssr_group(gara_id):
     raw_scores = data.get("scores")
 
     if group_position is None or not raw_scores:
-        return jsonify({"success": False, "error": "Posizione gruppo e punteggi richiesti"}), 400
+        return (
+            jsonify(
+                {"success": False, "error": "Posizione gruppo e punteggi richiesti"}
+            ),
+            400,
+        )
 
     # Convert to integers
     try:
         group_position = int(group_position)
         scores = {int(k): int(v) for k, v in raw_scores.items()}
     except (ValueError, TypeError):
-        return jsonify({"success": False, "error": "I punteggi devono essere numeri interi"}), 400
+        return (
+            jsonify(
+                {"success": False, "error": "I punteggi devono essere numeri interi"}
+            ),
+            400,
+        )
 
     # Save scores for this specific group
-    success, message = SpareggioService.save_ssr_scores_for_group(gara_id, group_position, scores)
+    success, message = SpareggioService.save_ssr_scores_for_group(
+        gara_id, group_position, scores
+    )
     if not success:
         return jsonify({"success": False, "error": message}), 400
 
@@ -268,12 +331,14 @@ def save_ssr_group(gara_id):
     # Get updated groups for display
     all_groups = SpareggioService.get_all_ssr_groups(gara_id)
 
-    return jsonify({
-        "success": True,
-        "message": f"Punteggi SSR per posizione {group_position} salvati",
-        "all_resolved": all_resolved,
-        "ssr_groups": all_groups
-    })
+    return jsonify(
+        {
+            "success": True,
+            "message": f"Punteggi SSR per posizione {group_position} salvati",
+            "all_resolved": all_resolved,
+            "ssr_groups": all_groups,
+        }
+    )
 
 
 @competition_bp.route("/<int:gara_id>/save_ssr_scores", methods=["POST"])
@@ -299,7 +364,15 @@ def save_ssr_scores(gara_id):
     if gara.status == GaraStatus.PLAYING.value:
         real_status = gara.get_real_status()
         if real_status != "campionato_completed":
-            return jsonify({"success": False, "error": "Non tutti i turni sono ancora completati!"}), 400
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "error": "Non tutti i turni sono ancora completati!",
+                    }
+                ),
+                400,
+            )
 
     # Parse scores from request
     data = request.get_json()
@@ -310,7 +383,12 @@ def save_ssr_scores(gara_id):
     try:
         scores = {int(k): int(v) for k, v in data["scores"].items()}
     except (ValueError, TypeError):
-        return jsonify({"success": False, "error": "I punteggi devono essere numeri interi"}), 400
+        return (
+            jsonify(
+                {"success": False, "error": "I punteggi devono essere numeri interi"}
+            ),
+            400,
+        )
 
     # Save SSR scores
     success, message = SpareggioService.save_ssr_scores(gara_id, scores)
@@ -325,21 +403,25 @@ def save_ssr_scores(gara_id):
     # Check if there are still unresolved tiebreakers
     remaining_tiebreakers = SpareggioService.detect_tiebreakers(gara_id)
     if remaining_tiebreakers:
-        return jsonify({
-            "success": False,
-            "needs_tiebreaker": True,
-            "tiebreakers": remaining_tiebreakers,
-            "message": "Alcuni spareggi non sono ancora risolti."
-        })
+        return jsonify(
+            {
+                "success": False,
+                "needs_tiebreaker": True,
+                "tiebreakers": remaining_tiebreakers,
+                "message": "Alcuni spareggi non sono ancora risolti.",
+            }
+        )
 
     # All tiebreakers resolved - complete the gara
     try:
         GaraService.complete(gara_id)
-        return jsonify({
-            "success": True,
-            "message": "Gara terminata con successo!",
-            "redirect": url_for("admin.competition.gara_detail", gara_id=gara_id)
-        })
+        return jsonify(
+            {
+                "success": True,
+                "message": "Gara terminata con successo!",
+                "redirect": url_for("admin.competition.gara_detail", gara_id=gara_id),
+            }
+        )
     except Exception as e:
         return safe_json_error(e, "completing gara after SSR")
 
@@ -371,7 +453,8 @@ def amalfi_classification(gara_id, round_number):
     # Controlla se tutti i match del turno sono completati
     # Bye matches are considered completed automatically
     incomplete_matches = [
-        m for m in matches_in_round
+        m
+        for m in matches_in_round
         if m.status != MatchStatus.COMPLETED.value and not m.is_bye
     ]
     if incomplete_matches:
@@ -575,10 +658,8 @@ def start_round_generic(gara_id, round_number):
             discipline_override = None
 
         # Create round + advance gara state in one transaction
-        total, n_normal, n_bye, n_trio, tables_assigned = (
-            RoundService.start_next_round(
-                gara_id, round_number, discipline_override
-            )
+        total, n_normal, n_bye, n_trio, tables_assigned = RoundService.start_next_round(
+            gara_id, round_number, discipline_override
         )
 
         # Refresh gara to get updated strategy name
@@ -789,3 +870,153 @@ def get_round_status(gara_id):
             "rounds_summary": rounds_summary,
         }
     )
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# Round configuration overrides (ADR-027)
+#
+# Persistono gli override per turno (disciplina, distanza, modalità) che la
+# UI in templates/components/_round_management.html prima salvava solo in
+# localStorage. Il valore di RoundConfiguration viene letto dal round-creation
+# (models/competition/round_creation.py) per popolare i Match.
+#
+# Vincolo di stato: gli override sono modificabili solo in setup. Una volta
+# aperte le iscrizioni il backend rifiuta le modifiche (parallelo del
+# can_be_modified() della gara). Lo stato è leggibile sempre.
+# ─────────────────────────────────────────────────────────────────────────
+
+
+def _serialize_round_config(config) -> dict:
+    """Serializza RoundConfiguration in JSON. NULL → None (default ereditato)."""
+    return {
+        "round_number": config.round_number,
+        "discipline": config.discipline,
+        "distance": config.distance,
+        "is_race_to": config.is_race_to,
+        "is_multi_set": config.is_multi_set,
+        "match_distance": config.match_distance,
+        "is_race_to_sets": config.is_race_to_sets,
+    }
+
+
+@competition_bp.route("/<int:gara_id>/round-config", methods=["GET"])
+@login_required
+@gara_manager_required
+def list_round_configs(gara_id: int):
+    """Restituisce gli override per turno della gara come lista JSON."""
+    from models.competition.round_configuration import RoundConfiguration
+
+    gara = get_or_ajax_404(Gara, gara_id, "Gara")
+    configs = RoundConfiguration.get_all_for_gara(gara.id)
+    return jsonify(
+        {
+            "gara_id": gara.id,
+            "rounds_count": gara.rounds_count,
+            "defaults": {
+                "discipline": gara.discipline,
+                "distance": gara.distance,
+                "is_race_to": gara.is_race_to,
+                "is_multi_set": gara.is_multi_set,
+                "match_distance": gara.match_distance,
+                "is_race_to_sets": getattr(gara, "is_race_to_sets", True),
+            },
+            "overrides": [_serialize_round_config(c) for c in configs],
+        }
+    )
+
+
+@competition_bp.route(
+    "/<int:gara_id>/round-config/<int:round_number>", methods=["POST"]
+)
+@login_required
+@gara_manager_required
+def upsert_round_config(gara_id: int, round_number: int):
+    """Crea o aggiorna l'override per il turno indicato.
+
+    Body JSON: { discipline?, distance?, is_race_to?, is_multi_set?,
+                 match_distance?, is_race_to_sets? }
+
+    NULL omesso = nessun override per quel campo.
+    Risponde 409 se la gara non è in stato setup.
+    """
+    from models.competition.round_configuration import RoundConfiguration
+    from models.transaction.manager import transactional
+
+    gara = get_or_ajax_404(Gara, gara_id, "Gara")
+
+    if gara.status != GaraStatus.SETUP.value:
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "error": "Gli override per turno sono modificabili "
+                    "solo in stato setup.",
+                }
+            ),
+            409,
+        )
+
+    if round_number < 1 or round_number > gara.rounds_count:
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "error": f"Turno {round_number} non valido per questa gara.",
+                }
+            ),
+            400,
+        )
+
+    payload = request.get_json(silent=True) or {}
+
+    @transactional(domain="competition")
+    def _persist() -> RoundConfiguration:
+        return RoundConfiguration.create_or_update(
+            gara_id=gara.id,
+            round_number=round_number,
+            discipline=payload.get("discipline"),
+            distance=payload.get("distance"),
+            is_race_to=payload.get("is_race_to"),
+            is_multi_set=payload.get("is_multi_set"),
+            match_distance=payload.get("match_distance"),
+            is_race_to_sets=payload.get("is_race_to_sets"),
+        )
+
+    try:
+        config = _persist()
+    except ValueError as ve:
+        return jsonify({"success": False, "error": str(ve)}), 400
+
+    return jsonify({"success": True, "config": _serialize_round_config(config)})
+
+
+@competition_bp.route(
+    "/<int:gara_id>/round-config/<int:round_number>", methods=["DELETE"]
+)
+@login_required
+@gara_manager_required
+def delete_round_config(gara_id: int, round_number: int):
+    """Rimuove l'override per il turno indicato. Idempotente."""
+    from models.competition.round_configuration import RoundConfiguration
+    from models.transaction.manager import transactional
+
+    gara = get_or_ajax_404(Gara, gara_id, "Gara")
+
+    if gara.status != GaraStatus.SETUP.value:
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "error": "Gli override per turno sono modificabili "
+                    "solo in stato setup.",
+                }
+            ),
+            409,
+        )
+
+    @transactional(domain="competition")
+    def _delete() -> bool:
+        return RoundConfiguration.delete_for_round(gara.id, round_number)
+
+    deleted = _delete()
+    return jsonify({"success": True, "deleted": deleted})

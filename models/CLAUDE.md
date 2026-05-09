@@ -83,6 +83,27 @@ gara.distance = 5  # First to 5 racks wins
 gara.distance = 9
 ```
 
+### Distance VO obbligatorio per scoring (ADR-027)
+
+`Match` espone `is_race_to`, `match_distance`, `is_race_to_sets` come
+override per turno (NULL = eredita da gara). Le property `effective_*` e
+`distance_config` materializzano i fallback. **Non leggere mai
+`match.gara.distance` o `match.gara.is_race_to` direttamente**: gli override
+per turno verrebbero persi.
+
+```python
+# ✅ Correct
+distance = match.distance_config
+if distance.is_race_to_racks:
+    winning = distance.get_winning_racks()
+
+# ❌ Wrong - bypassa override per turno
+if match.gara.is_race_to:
+    winning = match.gara.distance_config.get_winning_racks()
+```
+
+Vedi `docs/adr/ADR-027-round-level-configuration-enforcement.md`.
+
 ---
 
 ## Domain Architecture

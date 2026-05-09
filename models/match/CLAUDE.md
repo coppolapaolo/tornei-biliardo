@@ -502,6 +502,33 @@ if match.gara_id is None:
     # Use match.discipline for discipline
 ```
 
+---
+
+### Distance VO is mandatory for scoring (ADR-027)
+
+`Match` espone tre campi nullable per override per turno:
+
+| Campo | Default | Significato |
+|-------|---------|-------------|
+| `match.match_distance` | popolato da round-creation | Single-set: rack per vincere. Multi-set: set per vincere il match |
+| `match.is_race_to` | NULL = eredita da gara | Modalità: race-to vs esatto numero |
+| `match.is_race_to_sets` | NULL = eredita da gara | Solo multi-set |
+
+Il valore "effettivo" (override + fallback gara) è esposto da:
+- `match.effective_distance` → `int`
+- `match.effective_is_race_to` → `bool`
+- `match.effective_is_race_to_sets` → `bool`
+- `match.distance_config` → `Distance` VO (combina tutto)
+
+**Regola dura**: ogni codice che valuta lo scoring (validation, completion
+detection, classification) DEVE leggere `match.distance_config` o
+`effective_*`. Non leggere `match.gara.distance` / `match.gara.is_race_to`
+direttamente: gli override per turno verrebbero persi silenziosamente.
+
+L'unica eccezione autorizzata è dentro le property `effective_*` stesse, che
+implementano il fallback al default della gara quando l'override è NULL.
+Vedi `docs/adr/ADR-027-round-level-configuration-enforcement.md`.
+
 **Templates must check `match.gara` before accessing:**
 ```jinja2
 {% if match.gara %}

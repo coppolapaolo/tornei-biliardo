@@ -101,7 +101,7 @@ class PlayerHistoryService:
         """
         # Base query - completed matches where user participated
         # Use outerjoin for Gara to include standalone matches (gara_id = NULL)
-        # Also outerjoin TrioMatch to include trio matches where user is one of 3 players
+        # outerjoin TrioMatch too: trio matches have user as one of the 3 players
         query = (
             db.session.query(Match)
             .outerjoin(Gara, Gara.id == Match.gara_id)
@@ -142,9 +142,7 @@ class PlayerHistoryService:
         query = PlayerHistoryService._apply_match_filters(query, user_id, filters)
 
         # Order by date descending
-        query = query.order_by(
-            Gara.date.desc().nullslast(), Match.created_at.desc()
-        )
+        query = query.order_by(Gara.date.desc().nullslast(), Match.created_at.desc())
 
         # Calculate stats BEFORE pagination (on filtered results)
         stats = PlayerHistoryService._calculate_match_stats(query.all(), user_id)
@@ -188,18 +186,14 @@ class PlayerHistoryService:
             )
         )
         query = PlayerHistoryService._apply_match_filters(query, user_id, filters)
-        query = query.order_by(
-            Gara.date.desc().nullslast(), Match.created_at.desc()
-        )
+        query = query.order_by(Gara.date.desc().nullslast(), Match.created_at.desc())
 
         pagination = query.paginate(page=page, per_page=per_page, error_out=False)
 
         return pagination, stats
 
     @staticmethod
-    def _apply_match_filters(
-        query: Any, user_id: int, filters: HistoryFilters
-    ) -> Any:
+    def _apply_match_filters(query: Any, user_id: int, filters: HistoryFilters) -> Any:
         """Apply filter conditions to match query."""
 
         # Discipline filter (check both match override and gara discipline)
@@ -268,8 +262,7 @@ class PlayerHistoryService:
         won = sum(1 for m in matches if m.winner_id == user_id)
         # For losses: count matches where someone else won (not ties, not wins)
         lost = sum(
-            1 for m in matches
-            if m.winner_id is not None and m.winner_id != user_id
+            1 for m in matches if m.winner_id is not None and m.winner_id != user_id
         )
 
         racks_won = 0
@@ -279,7 +272,8 @@ class PlayerHistoryService:
                 from models.match.trio_config import trio_racks_lost
 
                 trio = m.trio_match
-                distance = m.gara.distance if m.gara else 5
+                # ADR-027: rispetta gli override per turno via effective_distance.
+                distance = m.effective_distance
                 if trio.player1_id == user_id:
                     player_r = trio.player1_racks or 0
                 elif trio.player2_id == user_id:
@@ -526,7 +520,9 @@ class PlayerHistoryService:
         )
 
         # Use scalar_subquery() for IN() to avoid SQLAlchemy warnings
-        opponent_ids_subq = opponent_ids_as_p1.union(opponent_ids_as_p2).scalar_subquery()
+        opponent_ids_subq = opponent_ids_as_p1.union(
+            opponent_ids_as_p2
+        ).scalar_subquery()
 
         opponents = (
             db.session.query(User)
