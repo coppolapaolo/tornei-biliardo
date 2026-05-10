@@ -216,6 +216,12 @@ class GamificationFrontendBridge:
         Send nudge event to frontend.
         feature_config is expected to be a FeatureConfig model instance.
         """
+        # ADR-028 alignment: don't promote a feature whose primary endpoint
+        # is hidden by the production allowlist for the current user.
+        from models.gamification.feature_endpoint_map import feature_visible_to_user
+        if not feature_visible_to_user(feature_config.code, current_user):
+            return
+
         # I18n should be handled by the frontend or pre-translated here.
         # Ensure we pass keys or English text that can be translated.
         GamificationFrontendBridge._flash_gamification_event(
@@ -235,6 +241,13 @@ class GamificationFrontendBridge:
         Send feature unlock event to frontend.
         Typically triggered via manual flash or specific domain event.
         """
+        # ADR-028 alignment: stay silent for features whose endpoint isn't
+        # in the allowlist — celebrating an unlock the user can't act on
+        # would be misleading.
+        from models.gamification.feature_endpoint_map import feature_visible_to_user
+        if not feature_visible_to_user(feature_config.code, current_user):
+            return
+
         GamificationFrontendBridge._flash_gamification_event(
             "unlock",
             {

@@ -14,10 +14,13 @@ from __future__ import annotations
 from typing import Optional
 import logging
 
+from flask_login import current_user
+
 from models.base import db, utc_now
 from models.gamification.feature_models import FeatureConfig, UserFeatureUsage
 from models.gamification.unlock_engine import UnlockEngine
 from models.gamification.frontend_bridge import GamificationFrontendBridge
+from models.gamification.feature_endpoint_map import feature_visible_to_user
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +57,14 @@ class NudgeService:
             
             if usage and usage.usage_count > 0:
                 continue # Already used, skip
-                
+
+            # ADR-028 alignment: skip features whose primary endpoint isn't
+            # visible to this user in the current environment. Otherwise the
+            # nudge promotes a link that the navbar hides (and that returns
+            # 404 if reached directly).
+            if not feature_visible_to_user(feature.code, current_user):
+                continue
+
             # Check if unlocked
             if UnlockEngine.check_eligibility(user_id, feature.code):
                 # Unlocked AND Unused!
