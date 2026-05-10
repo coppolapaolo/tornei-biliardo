@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-05-10 18:26+0200\n"
+"POT-Creation-Date: 2026-05-10 18:42+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -372,37 +372,37 @@ msgstr ""
 msgid "Iscrizione a Gara"
 msgstr ""
 
-#: routes/auth.py:33
+#: routes/auth.py:39
 msgid "Che piacere rivederti!"
 msgstr ""
 
-#: routes/auth.py:34 templates/base.html:528
+#: routes/auth.py:40 templates/base.html:528
 msgid "Tutto pronto per giocare?"
 msgstr ""
 
-#: routes/auth.py:50
+#: routes/auth.py:64
 msgid ""
-"Il tuo account non è ancora verificato. Finché non confermi la tua email,"
-" non puoi iscriverti alle gare né proporre partite."
+"Il tuo account non è ancora verificato. Senza email confermata non potrai"
+" recuperare la password se la dimentichi."
 msgstr ""
 
-#: routes/auth.py:55
+#: routes/auth.py:72
 msgid "Reinvia email di verifica"
 msgstr ""
 
-#: routes/auth.py:61
+#: routes/auth.py:79
 msgid "Username o password errati."
 msgstr ""
 
-#: routes/auth.py:91
+#: routes/auth.py:108
 msgid "Registrazione completata! Controlla la tua email per verificare l'account."
 msgstr ""
 
-#: routes/auth.py:98
+#: routes/auth.py:119
 msgid "Ti diamo il benvenuto!"
 msgstr ""
 
-#: routes/auth.py:99
+#: routes/auth.py:120
 msgid "Registrazione completata con successo."
 msgstr ""
 
@@ -6776,5 +6776,12 @@ msgstr ""
 #~ msgstr ""
 
 #~ msgid "(somma rack = %(distance)s)"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Il tuo account non è ancora "
+#~ "verificato. Finché non confermi la tua"
+#~ " email, non puoi iscriverti alle gare"
+#~ " né proporre partite."
 #~ msgstr ""
 

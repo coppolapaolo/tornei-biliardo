@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-05-10 18:26+0200\n"
+"POT-Creation-Date: 2026-05-10 18:42+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -103,7 +103,7 @@ msgid "Sei attivo da %(weeks)d settimane consecutive!"
 msgstr "%(weeks)d Week Streak!"
 
 #: models/gamification/frontend_bridge.py:205
-#, fuzzy, python-format
+#, fuzzy
 msgid "Hai guadagnato un congelatore!"
 msgstr "You earned %(count)d freeze!"
 
@@ -396,38 +396,40 @@ msgstr ""
 msgid "Iscrizione a Gara"
 msgstr "Competition Enrollment"
 
-#: routes/auth.py:33
+#: routes/auth.py:39
 msgid "Che piacere rivederti!"
 msgstr "Nice to see you again!"
 
-#: routes/auth.py:34 templates/base.html:528
+#: routes/auth.py:40 templates/base.html:528
 msgid "Tutto pronto per giocare?"
 msgstr "Ready to play?"
 
-#: routes/auth.py:50
+#: routes/auth.py:64
 msgid ""
-"Il tuo account non è ancora verificato. Finché non confermi la tua email,"
-" non puoi iscriverti alle gare né proporre partite."
+"Il tuo account non è ancora verificato. Senza email confermata non potrai"
+" recuperare la password se la dimentichi."
 msgstr ""
+"Your account is not yet verified. Without a confirmed email you will not "
+"be able to recover your password if you forget it."
 
-#: routes/auth.py:55
+#: routes/auth.py:72
 msgid "Reinvia email di verifica"
 msgstr ""
 
-#: routes/auth.py:61
+#: routes/auth.py:79
 msgid "Username o password errati."
 msgstr ""
 
-#: routes/auth.py:91
+#: routes/auth.py:108
 #, fuzzy
 msgid "Registrazione completata! Controlla la tua email per verificare l'account."
 msgstr "Registration completed successfully."
 
-#: routes/auth.py:98
+#: routes/auth.py:119
 msgid "Ti diamo il benvenuto!"
 msgstr "Welcome aboard!"
 
-#: routes/auth.py:99
+#: routes/auth.py:120
 msgid "Registrazione completata con successo."
 msgstr "Registration completed successfully."
 
@@ -1348,7 +1350,7 @@ msgid "Esattamente"
 msgstr "Exactly"
 
 #: templates/gara_detail.html:551
-#, fuzzy, python-format
+#, fuzzy
 msgid "somma rack ="
 msgstr "(rack sum = %(distance)s)"
 
@@ -6912,4 +6914,11 @@ msgstr "Not a valid float value."
 
 #~ msgid "(vince chi vince %(distance)s rack)"
 #~ msgstr "(first to win %(distance)s racks)"
+
+#~ msgid ""
+#~ "Il tuo account non è ancora "
+#~ "verificato. Finché non confermi la tua"
+#~ " email, non puoi iscriverti alle gare"
+#~ " né proporre partite."
+#~ msgstr ""
 

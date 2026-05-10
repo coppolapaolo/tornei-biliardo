@@ -40,3 +40,24 @@ def test_login_logout_routes_flow(client, db_session):
     # Act: logout
     resp = client.get("/auth/logout")
     assert resp.status_code in (200, 302)
+
+
+def test_unverified_login_flash_renders_resend_link_as_html(client, db_session):
+    """Regression: the "non è ancora verificato" warning embeds an inline
+    link via Markup. A previous version concatenated `Markup + str` which
+    silently escaped the `<a>` tag, leaving raw HTML visible in the page."""
+    from models.user.services import UserService  # type: ignore
+
+    UserService.create_user("dave", "dave@test.local", "p@ss123")
+    # Default is_verified=False — login must redirect AND set the warning flash.
+
+    resp = client.post(
+        "/auth/login",
+        data={"username": "dave", "password": "p@ss123"},
+        follow_redirects=True,
+    )
+    assert resp.status_code == 200
+    body = resp.get_data(as_text=True)
+    # The link must appear rendered, not escaped.
+    assert 'class="alert-link"' in body
+    assert "&lt;a href=" not in body

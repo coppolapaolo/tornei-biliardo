@@ -24,36 +24,54 @@ def login():
 
         if user:
             login_user(user)
-            
+
             # Gamification: Welcome message
             try:
-                from models.gamification.frontend_bridge import flash_gamification_event, GamificationEventType
-                flash_gamification_event(GamificationEventType.WELCOME, {
-                    "username": user.username,
-                    "title": _("Che piacere rivederti!"),
-                    "subtitle": _("Tutto pronto per giocare?")
-                })
-                
+                from models.gamification.frontend_bridge import (
+                    flash_gamification_event,
+                    GamificationEventType,
+                )
+
+                flash_gamification_event(
+                    GamificationEventType.WELCOME,
+                    {
+                        "username": user.username,
+                        "title": _("Che piacere rivederti!"),
+                        "subtitle": _("Tutto pronto per giocare?"),
+                    },
+                )
+
                 # Check for feature nudges (unused unlocked features)
                 from models.gamification.nudge_service import NudgeService
+
                 NudgeService.check_login_nudges(user.id)
-                
+
             except Exception as e:
                 import logging
-                logging.getLogger(__name__).warning(f"Gamification welcome flash failed: {e}")
+
+                logging.getLogger(__name__).warning(
+                    f"Gamification welcome flash failed: {e}"
+                )
 
             if not user.is_verified:
-                # B11: explain consequences + offer resend link inline.
+                # B11: explain real consequence (password recovery) + resend link.
+                # NB: `Markup + str` re-escapes the str — keep every HTML chunk
+                # wrapped in Markup() and rely on escape() for user-derived data.
                 resend_url = url_for("player.request_verification_email")
-                msg = Markup(
-                    escape(_(
-                        "Il tuo account non è ancora verificato. Finché non confermi la tua "
-                        "email, non puoi iscriverti alle gare né proporre partite."
-                    ))
-                    + ' <a href="'
-                ) + Markup(escape(resend_url)) + Markup('" class="alert-link">') + Markup(
-                    escape(_("Reinvia email di verifica"))
-                ) + Markup("</a>")
+                msg = (
+                    escape(
+                        _(
+                            "Il tuo account non è ancora verificato. Senza "
+                            "email confermata non potrai recuperare la "
+                            "password se la dimentichi."
+                        )
+                    )
+                    + Markup(' <a href="')
+                    + escape(resend_url)
+                    + Markup('" class="alert-link">')
+                    + escape(_("Reinvia email di verifica"))
+                    + Markup("</a>")
+                )
                 flash(msg, "warning")
 
             return redirect(url_for("dashboard.dashboard"))
@@ -75,32 +93,35 @@ def register():
 
         # Use service layer for user creation
         try:
-            user = UserService.create_user(
+            UserService.create_user(
                 username=username,
                 email=email,
                 password=password,
                 phone=phone if phone else None,
             )
 
-            # login_user(user) # Don't login automatically if verification is required? 
-            # The prompt says "email venisse verificata", usually this means verify first then login.
-            # But earlier I planned to login but warn. 
-            # However, standard practice: Redirect to login or "check email" page.
-            # Let's flash message and redirect to login.
-            
-            flash(_("Registrazione completata! Controlla la tua email per verificare l'account."), "success")
-            
+            # Standard practice: don't auto-login on register; flash and send to
+            # login page so the user goes through the verify-email flow first.
+
+            flash(
+                _(
+                    "Registrazione completata! Controlla la tua email per "
+                    "verificare l'account."
+                ),
+                "success",
+            )
+
             # Show welcome gamification event on the login page
             welcome_payload = {
                 "type": "welcome",
                 "data": {
                     "username": username,
                     "title": _("Ti diamo il benvenuto!"),
-                    "subtitle": _("Registrazione completata con successo.")
-                }
+                    "subtitle": _("Registrazione completata con successo."),
+                },
             }
             flash(json.dumps(welcome_payload), category="gamification_event")
-            
+
             return redirect(url_for("auth.login"))
 
         except ValueError as e:
@@ -125,7 +146,7 @@ def verify_email(token):
         flash("Email verificata con successo! Ora puoi effettuare il login.", "success")
     else:
         flash("Link di verifica non valido o scaduto.", "error")
-    
+
     return redirect(url_for("auth.login"))
 
 
@@ -136,7 +157,10 @@ def forgot_password():
     if request.method == "POST":
         email = request.form["email"]
         if UserProfileService.request_password_reset(email):
-            flash("Se l'email esiste, riceverai un link per resettare la password.", "info")
+            flash(
+                "Se l'email esiste, riceverai un link per resettare la password.",
+                "info",
+            )
             return redirect(url_for("auth.login"))
         else:
             flash("Errore nell'invio della richiesta.", "error")
@@ -168,7 +192,10 @@ def reset_password(token):
 
         try:
             if UserProfileService.reset_password_with_token(token, password):
-                flash("Password aggiornata con successo! Ora puoi effettuare il login.", "success")
+                flash(
+                    "Password aggiornata con successo! Ora puoi effettuare il login.",
+                    "success",
+                )
                 return redirect(url_for("auth.login"))
             else:
                 flash("Token non valido o scaduto.", "error")
