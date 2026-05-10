@@ -1,7 +1,7 @@
 """
 Test per la validazione delle configurazioni gara.
 
-Regole da docs/CLASSIFICATION_SYSTEM.md sezione 9.
+Regole da docs/reference/CLASSIFICATION_SYSTEM.md sezione 9.
 """
 
 import pytest

@@ -321,7 +321,7 @@ email_service.send_email(
 ```
 
 Configuration via environment: `MAIL_SERVER`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`.
-See `docs/AUTHENTICATION.md` for full setup.
+See `docs/reference/AUTHENTICATION.md` for full setup.
 
 ### 12. Gamification Frontend Bridge
 Domain events trigger toast notifications via the frontend bridge:
@@ -336,7 +336,7 @@ flash_gamification_event(GamificationEventType.XP, {
 })
 ```
 
-See `docs/GAMIFICATION_V2.md` for event types and animation system.
+See `docs/reference/GAMIFICATION_V2.md` for event types and animation system.
 
 ### 13. Production Endpoint Allowlist (ADR-028)
 Endpoint visibility in production is gated by an explicit role matrix in `utils/feature_flags.py`. **Endpoint not listed = admin-only in production.** In development (`DEBUG_MODE=true`) and tests (`TESTING=true`) the middleware is pass-through.
@@ -492,20 +492,20 @@ pytest tests/new/unit/ -n auto && pytest tests/new/integration/ -n 4
 
 ## Additional Documentation
 
-- **[docs/DATABASE_SCHEMA.md](docs/DATABASE_SCHEMA.md)**: Auto-generated database schema (tables, columns, FKs) - regenerate with `python scripts/generate_schema_docs.py`
-- **[docs/AUTHENTICATION.md](docs/AUTHENTICATION.md)**: Email verification, password reset, Flask-Mail setup
-- **[docs/GAMIFICATION_V2.md](docs/GAMIFICATION_V2.md)**: Frontend bridge, toast notifications, mascot system
+- **[docs/reference/DATABASE_SCHEMA.md](docs/reference/DATABASE_SCHEMA.md)**: Auto-generated database schema (tables, columns, FKs) - regenerate with `python scripts/generate_schema_docs.py`
+- **[docs/reference/AUTHENTICATION.md](docs/reference/AUTHENTICATION.md)**: Email verification, password reset, Flask-Mail setup
+- **[docs/reference/GAMIFICATION_V2.md](docs/reference/GAMIFICATION_V2.md)**: Frontend bridge, toast notifications, mascot system
 - **[models/CLAUDE.md](models/CLAUDE.md)**: Complete model reference with all fields and methods
 - **[routes/CLAUDE.md](routes/CLAUDE.md)**: Route handlers and API endpoints
 - **[tests/CLAUDE.md](tests/CLAUDE.md)**: Testing strategy and test organization
 - **[models/gamification/CLAUDE.md](models/gamification/CLAUDE.md)**: Gamification system (XP, achievements, streaks)
-- **[docs/SPECIFICHE.md](docs/SPECIFICHE.md)**: Complete platform requirements (Italian)
+- **[docs/reference/SPECIFICHE.md](docs/reference/SPECIFICHE.md)**: Complete platform requirements (Italian)
 - **[docs/usecases/gare.md](docs/usecases/gare.md)**: Detailed workflow documentation
-- **[docs/UI_CONVENTIONS.md](docs/UI_CONVENTIONS.md)**: UI conventions (icons, colors, design decisions)
+- **[docs/reference/UI_CONVENTIONS.md](docs/reference/UI_CONVENTIONS.md)**: UI conventions (icons, colors, design decisions)
 - **[docs/adr/](docs/adr/)**: Architecture Decision Records (ADR)
 - **[docs/adr/ADR-027-round-level-configuration-enforcement.md](docs/adr/ADR-027-round-level-configuration-enforcement.md)**: Override per turno persistiti server-side + uso obbligatorio di `Distance` VO nello scoring
-- **[docs/adr/ADR-028-production-endpoint-allowlist.md](docs/adr/ADR-028-production-endpoint-allowlist.md)**: allowlist endpoint deny-by-default in produzione, matrice ruoli (anonimo/player/director) con admin bypass — vedi anche `docs/PRODUCTION_INVENTORY.md`
-- **[docs/PRODUCTION_INVENTORY.md](docs/PRODUCTION_INVENTORY.md)**: inventario completo route/UI/permessi/feature WIP, base per la matrice di ADR-028
+- **[docs/adr/ADR-028-production-endpoint-allowlist.md](docs/adr/ADR-028-production-endpoint-allowlist.md)**: allowlist endpoint deny-by-default in produzione, matrice ruoli (anonimo/player/director) con admin bypass — vedi anche `docs/reference/PRODUCTION_INVENTORY.md`
+- **[docs/reference/PRODUCTION_INVENTORY.md](docs/reference/PRODUCTION_INVENTORY.md)**: inventario completo route/UI/permessi/feature WIP, base per la matrice di ADR-028
 
 ---
 
@@ -541,4 +541,4 @@ See `docs/adr/ADR-012-transactional-circular-import-fix.md` for a detailed case 
 
 ## Audit Status
 
-Codebase audit completed (Dec 2025): 0 FAIL, 0 WARNING. Details in `docs/AUDIT_REFACTORING_PLAN.md`.
+Codebase audit completed (Dec 2025): 0 FAIL, 0 WARNING. Details in `docs/_archive/2025-12-audit-refactoring-plan.md`.

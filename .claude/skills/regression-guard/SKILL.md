@@ -58,7 +58,7 @@ grep -rn "test.*caso_specifico" tests/new/
 ### Verifica Specifiche
 
 Consulta:
-- `docs/SPECIFICHE.md` - Requisiti completi
+- `docs/reference/SPECIFICHE.md` - Requisiti completi
 - `docs/usecases/gare.md` - Workflow dettagliati
 - `**/CLAUDE.md` - Convenzioni di dominio
 
@@ -75,7 +75,7 @@ Consulta:
 ```python
 # Commento che spiega il fix
 # Fix: [descrizione breve]
-# Vedi ADR: docs/decisions/NNNN-*.md
+# Vedi ADR: docs/adr/NNNN-*.md
 ```
 
 ### Dopo la Correzione
@@ -102,7 +102,7 @@ class TestNomeFunzionalitaRegression:
 
         Bug: [comportamento errato osservato]
         Fix: [cosa è stato corretto]
-        Vedi: docs/decisions/NNNN-*.md
+        Vedi: docs/adr/NNNN-*.md
         """
         # GIVEN: setup condizioni che causavano il bug
         ...
@@ -141,7 +141,7 @@ test_anti_rematch_should_prevent_pairing_when_players_already_faced
 
 ### Per Bug Significativi → ADR
 
-Crea ADR in `docs/decisions/` se il bug:
+Crea ADR in `docs/adr/` se il bug:
 - Rivela un problema architetturale
 - Richiede decisioni su come gestire casi edge
 - Ha impatto su più moduli
@@ -205,7 +205,7 @@ def test_caso_corretto(self):
 **1. Analisi**
 ```python
 # Verifico specifiche anti-rematch
-# docs/SPECIFICHE.md dice: "evita re-match tra stessi giocatori"
+# docs/reference/SPECIFICHE.md dice: "evita re-match tra stessi giocatori"
 
 # Cerco implementazione
 grep -rn "anti_rematch" models/matchmaking/
@@ -233,7 +233,7 @@ def test_amalfi_anti_rematch_prevents_same_pairing():
 
 **4. Documenta**
 ```markdown
-# docs/decisions/0001-fix-anti-rematch-enforcement.md
+# docs/adr/0001-fix-anti-rematch-enforcement.md
 ```
 
 ## Checklist Finale

@@ -9,7 +9,7 @@ Usage:
     python scripts/generate_schema_docs.py
 
 Output:
-    docs/DATABASE_SCHEMA.md
+    docs/reference/DATABASE_SCHEMA.md
 """
 
 import sys
@@ -289,7 +289,7 @@ def generate_schema_docs():
         output_lines.append("")
 
         # Write to file
-        output_path = project_root / "docs" / "DATABASE_SCHEMA.md"
+        output_path = project_root / "docs" / "reference" / "DATABASE_SCHEMA.md"
         output_path.parent.mkdir(exist_ok=True)
         output_path.write_text("\n".join(output_lines), encoding="utf-8")
 

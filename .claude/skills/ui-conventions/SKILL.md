@@ -23,7 +23,7 @@ Attiva questa skill quando nella conversazione:
 
 | File | Contenuto |
 |------|-----------|
-| `docs/UI_CONVENTIONS.md` | Convenzioni complete del design system |
+| `docs/reference/UI_CONVENTIONS.md` | Convenzioni complete del design system |
 | `templates/base.html` | Template base con struttura comune |
 | `static/css/` | Stili custom se presenti |
 
@@ -32,7 +32,7 @@ Attiva questa skill quando nella conversazione:
 ### 1. Prima di Proporre una Scelta
 
 ```
-Leggo docs/UI_CONVENTIONS.md per verificare:
+Leggo docs/reference/UI_CONVENTIONS.md per verificare:
 - Esiste già una convenzione per questo concetto?
 - L'elemento proposto è già usato per altro?
 - Quale sezione è rilevante? (Icone, Colori, Bottoni, Badge, etc.)
@@ -49,7 +49,7 @@ Quando si converge su una scelta:
 
 ### 3. Aggiornamento Documentazione
 
-Aggiorna `docs/UI_CONVENTIONS.md` nella sezione appropriata:
+Aggiorna `docs/reference/UI_CONVENTIONS.md` nella sezione appropriata:
 
 **Per Icone** (sezione Icon Conventions):
 ```markdown

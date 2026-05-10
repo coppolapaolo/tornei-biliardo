@@ -26,7 +26,7 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
     )
     round_number = db.Column(
         db.Integer, nullable=False
-    )  # 1, 2, 3. See docs/ARCHITECTURAL_DECISIONS.md ADR-003 (YAGNI).
+    )  # 1, 2, 3. See docs/_archive/2025-12-architectural-decisions-pre-adr.md ADR-003 (YAGNI).
 
     player1_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     player2_id = db.Column(db.Integer, db.ForeignKey("user.id"))

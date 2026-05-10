@@ -1,7 +1,7 @@
 """
 Test per la lista attesa basata sulla parità (opzione NO).
 
-Regole da docs/CLASSIFICATION_SYSTEM.md sezione 3.5:
+Regole da docs/reference/CLASSIFICATION_SYSTEM.md sezione 3.5:
 - Iscrizione con N pari → N+1 dispari: va in lista attesa
 - Iscrizione con N dispari → N+1 pari: si iscrive + primo in lista attesa si iscrive
 - Disiscrizione con N pari → N-1 dispari: ultimo iscritto va in lista attesa

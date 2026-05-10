@@ -3,7 +3,7 @@ Migration: add_gara_bye_challenge_table
 Purpose: Create gara_bye_challenge table and migrate existing X replacement data
 
 Sprint 11 - Challenge/Gara Decoupling
-See docs/decisions/ADR-004-challenge-gara-decoupling.md
+See docs/adr/ADR-004-challenge-gara-decoupling.md
 
 This migration:
 1. Creates the gara_bye_challenge table (Competition → Challenge bridge)

@@ -54,7 +54,7 @@ class Gara(SoftDeleteMixin, db.Model):
     deleted_reason = db.Column(db.String(255), nullable=True)
 
     # FK nullable per supportare standalone competitions
-    # RESOLVED: See docs/ARCHITECTURAL_DECISIONS.md ADR-002.
+    # RESOLVED: See docs/_archive/2025-12-architectural-decisions-pre-adr.md ADR-002.
     # Decision: Keep FK in Gara (natural direction, efficient queries).
     campionato_id = db.Column(
         db.Integer, db.ForeignKey("campionato.id", ondelete="CASCADE"),
@@ -64,7 +64,7 @@ class Gara(SoftDeleteMixin, db.Model):
     # Director FK per standalone competitions
     director_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
 
-    # RESOLVED: See docs/ARCHITECTURAL_DECISIONS.md ADR-005.
+    # RESOLVED: See docs/_archive/2025-12-architectural-decisions-pre-adr.md ADR-005.
     # Decision: Keep on Gara, add validation for standalone gare.
     number = db.Column(db.Integer, nullable=False)  # 1-10
     name = db.Column(db.String(100))
@@ -284,13 +284,13 @@ class Gara(SoftDeleteMixin, db.Model):
             self.available_tables = None
 
     # Property per identificare se è standalone
-    # RESOLVED: See docs/ARCHITECTURAL_DECISIONS.md ADR-002 - keep bidirectional
+    # RESOLVED: See docs/_archive/2025-12-architectural-decisions-pre-adr.md ADR-002 - keep bidirectional
     @property
     def is_standalone(self):
         """Check if this is a standalone competition."""
         return self.campionato_id is None
 
-    # RESOLVED: See docs/ARCHITECTURAL_DECISIONS.md ADR-002.
+    # RESOLVED: See docs/_archive/2025-12-architectural-decisions-pre-adr.md ADR-002.
     # Decision: Keep bidirectional - Gara has FK, Campionato has property.
     def get_display_name(self):
         """Get display name including campionato/standalone info."""

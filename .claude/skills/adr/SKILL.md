@@ -27,7 +27,7 @@ Attiva questa skill quando nella conversazione:
 ## Directory e Naming
 
 ```
-docs/decisions/
+docs/adr/
 ├── 0001-use-flask-sqlalchemy.md
 ├── 0002-transactional-decorator-pattern.md
 ├── 0003-soft-delete-for-users.md
@@ -98,7 +98,7 @@ Segnali che indicano la necessità di un ADR:
 Prima di scrivere l'ADR:
 ```bash
 # Trova il prossimo numero disponibile
-ls docs/decisions/*.md 2>/dev/null | tail -1
+ls docs/adr/*.md 2>/dev/null | tail -1
 ```
 
 Chiedi o deduci:
@@ -117,7 +117,7 @@ Chiedi o deduci:
 
 Dopo la creazione:
 - Aggiungi riferimento nei file di codice rilevanti
-- Aggiorna README.md in docs/decisions/ se esiste
+- Aggiorna README.md in docs/adr/ se esiste
 - Menziona l'ADR nel commit message se appropriato
 
 ## Esempi di ADR per Questo Progetto

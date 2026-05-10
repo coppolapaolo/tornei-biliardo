@@ -7,7 +7,7 @@ This migration adds classification system configuration:
 - gara.classification_system: RACK, WINS, or POSITION
 - campionato.default_classification_system: Default for new gare
 
-See docs/CLASSIFICATION_SYSTEM.md for details on each system:
+See docs/reference/CLASSIFICATION_SYSTEM.md for details on each system:
 - RACK: Orders by total racks won
 - WINS: Orders by matches won, then rack differential
 - POSITION: Orders by bracket position (elimination tournaments)

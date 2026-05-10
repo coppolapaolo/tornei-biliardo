@@ -9,7 +9,7 @@ Scenari testati:
   e non dovrebbe mai incontrare lo stesso avversario due volte.
 - 6 giocatori, 3 round: scenario più piccolo per debug.
 
-Vedi: docs/decisions/NNNN-fix-anti-rematch-enforcement.md (se applicabile)
+Vedi: docs/adr/NNNN-fix-anti-rematch-enforcement.md (se applicabile)
 """
 
 from datetime import date, timedelta
