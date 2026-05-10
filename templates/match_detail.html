@@ -253,11 +253,15 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
     }
 
     function confirmTrioResult(btn) {
-        // Player endpoint has priority (fairness: directors who are players use player flow)
-        {% if user_is_player %}
-        const trioEndpoint = `/player/match/{{ match.id }}/trio/confirm`;
-        {% elif user_can_manage %}
+        // B28: director (admin) endpoint has priority over player endpoint when the
+        // user holds both roles. Validating the match is an administrative act, so
+        // the higher-privilege role should drive the action (one-shot completion).
+        // A director-player who genuinely wants to confirm only as player can do so
+        // from a non-admin page where user_can_manage is false.
+        {% if user_can_manage %}
         const trioEndpoint = `/admin/gara/trio/{{ match.trio_match.id }}/confirm`;
+        {% elif user_is_player %}
+        const trioEndpoint = `/player/match/{{ match.id }}/trio/confirm`;
         {% endif %}
 
         const restore = withLoading(btn);
@@ -286,11 +290,12 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
 
     function declareForfeit(playerId) {
         showConfirm({{ _("Sei sicuro di voler dichiarare forfait per questo giocatore?")| tojson }}, () => {
-            // Player endpoint has priority (fairness: directors who are players use player flow)
-            {% if user_is_player %}
-            const forfeitEndpoint = `/player/match/{{ match.id }}/trio/forfeit`;
-            {% elif user_can_manage %}
+            // B28: director endpoint has priority — forfeit declaration is an
+            // administrative action when the user holds the director role.
+            {% if user_can_manage %}
             const forfeitEndpoint = `/admin/gara/trio/{{ match.trio_match.id }}/forfeit`;
+            {% elif user_is_player %}
+            const forfeitEndpoint = `/player/match/{{ match.id }}/trio/forfeit`;
             {% endif %}
 
             fetch(forfeitEndpoint, {
@@ -530,7 +535,7 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
     function addRackWin(winnerId) {
         // Previeni chiamate multiple
         if (isAddingRack) {
-            console.log('Richiesta già in corso, ignorata');
+            console.log('Request already in progress, ignored');
             return;
         }
 

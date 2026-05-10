@@ -84,17 +84,14 @@
                                 {% endif %}
                                 <p class="mb-2">
                                     <i class="fas fa-trophy text-muted me-2"></i>
-                                    {{ gara.discipline|replace('_', ' ')|title }} - {{ _("Al") }} {{ gara.distance }}
+                                    {{ gara.discipline|discipline_display }} - {{ _("Al") }} {{ gara.distance }}
                                 </p>
 
                                 <!-- User's position in this gara -->
                                 {% if gara.status == 'completed' %}
-                                    {% set user_final_position = None %}
-                                    {% for rc in gara.round_classifications %}
-                                        {% if rc.user_id == current_user.id and rc.round_number == gara.current_round %}
-                                            {% set user_final_position = rc.position %}
-                                        {% endif %}
-                                    {% endfor %}
+                                    {# Use max round_number, not gara.current_round, so SSR finals show correctly #}
+                                    {% set user_rcs = gara.round_classifications | selectattr('user_id', 'equalto', current_user.id) | sort(attribute='round_number', reverse=True) | list %}
+                                    {% set user_final_position = user_rcs[0].position if user_rcs else None %}
 
                                     {% if user_final_position %}
                                     <p class="mb-0">

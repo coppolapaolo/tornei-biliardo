@@ -34,7 +34,7 @@
                             <div class="card-body p-3">
                                 <h6 class="card-title">{{ _("Gara %(num)s", num=gara.number) }}</h6>
                                 <p class="card-text mb-1">
-                                    <strong>{{ gara.discipline }}</strong><br>
+                                    <strong>{{ gara.discipline|discipline_display }}</strong><br>
                                     <small class="text-muted">{{ gara.date|date_local }}</small>
                                 </p>
                                 {% if gara.location %}

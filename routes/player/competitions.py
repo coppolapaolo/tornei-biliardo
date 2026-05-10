@@ -183,6 +183,7 @@ def history():
             user_id=current_user.id,
             page=page,
             per_page=20,
+            filters=filters,
         )
 
     # Get filter options for dropdowns

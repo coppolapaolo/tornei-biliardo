@@ -10,7 +10,7 @@
             {% for inscription in my_inscriptions %}
                 <div class="d-flex justify-content-between align-items-center mb-3 p-3 border rounded">
                     <div>
-                        <strong>Gara {{ inscription.gara.number }}</strong> - {{ inscription.gara.discipline }}
+                        <strong>Gara {{ inscription.gara.number }}</strong> - {{ inscription.gara.discipline|discipline_display }}
                         {% if inscription.gara.name %} ({{ inscription.gara.name }}){% endif %}
                         <br><small class="text-muted">{{ inscription.gara.date|date_local }} -
                         {{ inscription.gara.distance_config|format_distance }}

@@ -151,7 +151,7 @@
                                         {% endif %}
                                     </td>
                                     <td>{{ match.player1_score }} - {{ match.player2_score }}</td>
-                                    <td>{{ match.discipline.replace('_', ' ').title() }}</td>
+                                    <td>{{ match.discipline|discipline_display }}</td>
                                     <td>
                                         <span class="badge bg-{{ 'success' if match.status.value == 'completed' else 'primary' if match.status.value == 'in_progress' else 'warning' if match.status.value == 'scheduled' else 'danger' }}">
                                             {{ match.status.value.replace('_', ' ').title() }}

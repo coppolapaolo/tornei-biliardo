@@ -104,6 +104,12 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "admin.competition.create_gara":              {"director"},
     "admin.competition.edit_gara":                {"director"},
     "admin.competition.cancel_gara":              {"director"},
+    "admin.competition.delete_gara":              {"director"},
+    "admin.competition.soft_delete_gara":         {"director"},
+
+    # Director assignment
+    "admin.competition.add_director":             {"director"},
+    "admin.competition.remove_director":          {"director"},
 
     # Inscription management
     "admin.competition.open_inscriptions":        {"director"},
@@ -115,8 +121,12 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # Round management
     "admin.competition.start_first_round":        {"director"},
     "admin.competition.start_round_generic":      {"director"},
+    "admin.competition.amalfi_start_round":       {"director"},
     "admin.competition.cancel_first_round":       {"director"},
     "admin.competition.cancel_current_round":     {"director"},
+    "admin.competition.cancel_round_advanced":    {"director"},
+    "admin.competition.bulk_reset_round_matches": {"director"},
+    "admin.competition.reset_match_advanced":     {"director"},
     "admin.competition.terminate_gara":           {"director"},
     "admin.competition.round_management_overview": {"director"},
     "admin.competition.get_round_status":         {"director"},
@@ -127,10 +137,41 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "admin.competition.get_strategy_constraints": {"director"},
     "admin.competition.check_match_modification": {"director"},
 
-    # Match scoring (admin side, for the director managing the gara)
-    "admin.match.match_detail":                   {"director"},
+    # SSR (spareggi) — risoluzione parimerito a fine gara
+    "admin.competition.start_ssr":                {"director"},
+    "admin.competition.save_ssr_group":           {"director"},
+    "admin.competition.save_ssr_scores":          {"director"},
+
+    # Challenge management (per gare Random con drill-based scoring)
+    "admin.competition.add_challenge_to_gara":    {"director"},
+    "admin.competition.remove_challenge_from_gara": {"director"},
+    "admin.competition.create_new_challenge":     {"director"},
+    "admin.competition.get_available_challenges": {"director"},
+    "admin.competition.get_available_challenges_for_gara": {"director"},
+    "admin.competition.get_gara_challenges":      {"director"},
+    "admin.competition.get_gara_challenge_classification": {"director"},
+
+    # Match scoring (admin side, for the director managing the gara).
+    # Authorization is enforced by @match_manager_required: visibility here
+    # is just "director can reach it"; the decorator then verifies that the
+    # specific match belongs to a gara the director manages.
+    #
+    # match_detail è "vista unificata" (routes/admin/match/detail.py): si
+    # adatta automaticamente al ruolo (admin/director con permessi → vista
+    # gestionale; player iscritto → vista semplificata). Quindi è esposta
+    # anche al player. La pagina stessa decide cosa mostrare in base a
+    # current_user.can_manage_competition(...) e is_player_in_match.
+    "admin.match.match_detail":                   {"player", "director"},
     "admin.match.update_match_times":             {"director"},
     "admin.match.assign_table":                   {"director"},
+    "admin.match.add_rack_result":                {"director"},
+    "admin.match.remove_rack_admin":              {"director"},
+    "admin.match.set_match_result_direct":        {"director"},
+    "admin.match.validate_match":                 {"director"},
+    "admin.match.validate_rack_admin":            {"director"},
+    "admin.match.reset_match":                    {"director"},
+    "admin.match.record_challenge_attempt":       {"director"},
+    "admin.match.record_challenge_attempts":      {"director"},
     "admin.match.start_next_set":                 {"director"},
     "admin.match.add_set_rack":                   {"director"},
     "admin.match.remove_set_rack":                {"director"},
@@ -138,10 +179,25 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "admin.competition.trio_remove_rack":         {"director"},
     "admin.competition.trio_confirm":             {"director"},
     "admin.competition.trio_forfeit":             {"director"},
+    "admin.competition.trio_reset":               {"director"},
+    "admin.competition.trio_set_result":          {"director"},
 
     # User listing (so a director can find players to enroll manually)
     "admin.user.users_list":                      {"director"},
     "admin.user.user_detail":                     {"director"},
+
+    # Gamification (player + director). Admin handles its own bypass.
+    # B23: target of the "Visualizza progressi" button on level-up notifications
+    # plus related screens linked from achievement/quest/streak notifications.
+    "gamification.dashboard":                     {"player", "director"},
+    "gamification.achievements":                  {"player", "director"},
+    "gamification.quests":                        {"player", "director"},
+    "gamification.streaks":                       {"player", "director"},
+    "gamification.leaderboards":                  {"anonimo", "player", "director"},
+    "gamification.api_level_progress":            {"player", "director"},
+    "gamification.api_user_stats":                {"player", "director"},
+    "gamification.api_achievements":              {"player", "director"},
+    "gamification.api_streaks":                   {"player", "director"},
 }
 
 

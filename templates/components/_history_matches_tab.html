@@ -163,7 +163,7 @@
                                 <small class="text-muted">
                                     <i class="fas fa-trophy me-1"></i>
                                     {% set discipline = match.discipline or (match.gara.discipline if match.gara else '') %}
-                                    {{ discipline|replace('_', ' ')|title if discipline else '-' }}
+                                    {{ discipline|discipline_display if discipline else '-' }}
                                 </small>
                             </div>
 

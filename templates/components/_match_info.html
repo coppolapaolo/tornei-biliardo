@@ -10,7 +10,7 @@
             {% endif %}
             <p><strong>Gara:</strong> {{ match.gara.name or match.gara.number }}</p>
             <p><strong>Turno:</strong> {{ match.round_number }}/{{ match.gara.rounds_count }}</p>
-            <p><strong>Disciplina:</strong> {{ match.gara.discipline }}</p>
+            <p><strong>Disciplina:</strong> {{ (match.discipline or match.gara.discipline)|discipline_display }}</p>
             <p><strong>Data:</strong> {{ match.gara.date|date_local }}</p>
             {% if match.gara.location %}
                 <p><strong>Luogo:</strong> {{ match.gara.location }}</p>
@@ -20,7 +20,7 @@
             <p><strong>Tipo:</strong> <span class="badge bg-secondary">{{ _('Match Individuale') }}</span></p>
             <p><strong>Turno:</strong> {{ match.round_number }}</p>
             {% if match.discipline %}
-            <p><strong>Disciplina:</strong> {{ match.discipline|replace('_', ' ')|title }}</p>
+            <p><strong>Disciplina:</strong> {{ match.discipline|discipline_display }}</p>
             {% endif %}
             {% if match.created_at %}
             <p><strong>Data:</strong> {{ match.created_at|date_local }}</p>

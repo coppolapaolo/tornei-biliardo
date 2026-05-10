@@ -8,7 +8,7 @@
     {% for p in vm.available_garas %}
     <div class="d-flex justify-content-between align-items-center mb-3 p-3 border rounded">
       <div>
-        <strong>Gara {{ p.number }}</strong> - {{ p.discipline }}{% if p.name %} ({{ p.name }}){% endif %}
+        <strong>Gara {{ p.number }}</strong> - {{ p.discipline|discipline_display }}{% if p.name %} ({{ p.name }}){% endif %}
         <br><small class="text-muted">
           {{ p.date|date_local }} –
           {{ p.distance_config|format_distance }}

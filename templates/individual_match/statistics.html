@@ -87,7 +87,7 @@
                                 {% for discipline_stat in statistics.by_discipline %}
                                 <tr>
                                     <td>
-                                        <strong>{{ discipline_stat.discipline.replace('_', ' ').title() }}</strong>
+                                        <strong>{{ discipline_stat.discipline|discipline_display }}</strong>
                                     </td>
                                     <td class="text-center">{{ discipline_stat.total_matches }}</td>
                                     <td class="text-center">

@@ -93,7 +93,7 @@ class RackService:
 
     @staticmethod
     @transactional(domain="match")
-    def reset_match_complete(match_id: int) -> None:
+    def reset_match_complete(match_id: int, auto_assign_table: bool = True) -> None:
         """Reset completo di una partita eliminando tutti i rack.
 
         Il match viene riportato allo stato appropriato in base all'assegnazione
@@ -107,6 +107,15 @@ class RackService:
 
         For Trio matches, delegates to TrioScoringService.reset() which handles
         TrioRack deletion and trio-specific state reset.
+
+        Args:
+            match_id: ID of the match to reset.
+            auto_assign_table: B17. When True (default), if the match ends up
+                without a table, try to grab a free one from the gara so the
+                match jumps directly to PLAYING. Callers like
+                ``TableAssignmentService.reassign_table(..., None)`` that
+                deliberately want to leave the match without a table must
+                pass ``auto_assign_table=False``.
         """
         match = db.session.get(Match, match_id)
         if not match:
@@ -171,6 +180,15 @@ class RackService:
                     inscription.forfeit_at = None
 
         db.session.add(match)
+
+        # B17: if match is back to PENDING (no table) and there's a free table
+        # in the gara, auto-assign it so the match jumps directly to PLAYING.
+        # Skipped when the caller explicitly wants the match to stay without
+        # a table (e.g. table removal via reassign_table(None)).
+        if auto_assign_table and match.status == MatchStatus.PENDING.value:
+            from .table_assignment_service import TableAssignmentService
+            db.session.flush()
+            TableAssignmentService.assign_available_tables(match.gara_id)
 
     @staticmethod
     @transactional(domain="match")

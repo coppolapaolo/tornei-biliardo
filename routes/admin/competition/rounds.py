@@ -450,12 +450,15 @@ def amalfi_classification(gara_id, round_number):
         flash(f"Il turno {round_number} non è ancora iniziato!")
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
-    # Controlla se tutti i match del turno sono completati
-    # Bye matches are considered completed automatically
+    # Controlla se tutti i match del turno sono completati.
+    # VALIDATED è uno stato post-COMPLETED (admin ha confermato): conta
+    # comunque come "match finito" ai fini della progressione del turno.
+    # Bye matches are considered completed automatically.
+    finished_statuses = (MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value)
     incomplete_matches = [
         m
         for m in matches_in_round
-        if m.status != MatchStatus.COMPLETED.value and not m.is_bye
+        if m.status not in finished_statuses and not m.is_bye
     ]
     if incomplete_matches:
         flash(
@@ -543,8 +546,10 @@ def amalfi_start_round(gara_id, round_number):
             prev_matches = Match.query.filter_by(
                 gara_id=gara_id, round_number=round_number - 1
             ).all()
+            # VALIDATED conta come "match finito" (post-COMPLETED, admin-confirmed).
+            finished = (MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value)
             incomplete_prev = [
-                m for m in prev_matches if m.status != MatchStatus.COMPLETED.value
+                m for m in prev_matches if m.status not in finished
             ]
             if incomplete_prev:
                 return jsonify(
@@ -639,8 +644,10 @@ def start_round_generic(gara_id, round_number):
             prev_matches = Match.query.filter_by(
                 gara_id=gara_id, round_number=round_number - 1
             ).all()
+            # VALIDATED conta come "match finito" (post-COMPLETED, admin-confirmed).
+            finished = (MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value)
             incomplete_prev = [
-                m for m in prev_matches if m.status != MatchStatus.COMPLETED.value
+                m for m in prev_matches if m.status not in finished
             ]
             if incomplete_prev:
                 return jsonify(

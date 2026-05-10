@@ -27,6 +27,59 @@ class SpareggioService:
     """Service for detecting and resolving tiebreakers in top 3 positions."""
 
     @staticmethod
+    def _group_by_classification(gara: Gara) -> Tuple[List, Dict]:
+        """Carica le RoundClassification del final round e le raggruppa per la
+        chiave di parimerito appropriata al ``classification_system`` della gara.
+
+        Una "chiave di parimerito" identifica univocamente lo stato classifica
+        di un giocatore: due giocatori che condividono la stessa chiave sono
+        parimerito (e candidati a SSR se nelle prime ``tiebreaker_until_position``
+        posizioni).
+
+        - **WINS** (default), **POSITION**: chiave ``(matches_won, rack_difference)``.
+          Due giocatori sono parimerito solo se *entrambi* coincidono. Bug B20:
+          prima il servizio raggruppava sempre per ``rack_difference`` solo,
+          generando falsi parimerito quando la gara è WINS e due player hanno
+          stesso rack_diff ma diversi matches_won.
+        - **RACK**: chiave ``rack_difference`` (intero), come prima.
+
+        Returns:
+            Tuple ``(sorted_keys, groups_by_key)``. Le keys sono ordinate
+            descending; per le tuple WINS lessicograficamente ``(wins, diff)``.
+            Lista vuota se non ci sono classifications per il final round.
+        """
+        classification_system = (gara.classification_system or "WINS").upper()
+        final_round = SpareggioService._get_effective_final_round(gara)
+        query = db.session.query(RoundClassification).filter_by(
+            gara_id=gara.id, round_number=final_round
+        )
+        if classification_system == "RACK":
+            classifications = query.order_by(
+                RoundClassification.rack_difference.desc()
+            ).all()
+        else:
+            classifications = query.order_by(
+                RoundClassification.matches_won.desc(),
+                RoundClassification.rack_difference.desc(),
+            ).all()
+
+        if not classifications:
+            return [], {}
+
+        def classification_key(c):
+            if classification_system == "RACK":
+                return c.rack_difference
+            return (c.matches_won, c.rack_difference)
+
+        groups_by_key: Dict = {}
+        for c in classifications:
+            key = classification_key(c)
+            groups_by_key.setdefault(key, []).append(c)
+
+        sorted_keys = sorted(groups_by_key.keys(), reverse=True)
+        return sorted_keys, groups_by_key
+
+    @staticmethod
     def _get_effective_final_round(gara: Gara) -> int:
         """Get the effective final round for classification.
 
@@ -66,36 +119,20 @@ class SpareggioService:
         # Get the position limit for tiebreakers (default to 3 if not set)
         tiebreaker_limit = gara.tiebreaker_until_position or 3
 
-        # Get final round classification
-        final_round = SpareggioService._get_effective_final_round(gara)
-        classifications = (
-            db.session.query(RoundClassification)
-            .filter_by(gara_id=gara_id, round_number=final_round)
-            .order_by(RoundClassification.rack_difference.desc())
-            .all()
-        )
-
-        if not classifications:
+        sorted_keys, groups_by_key = SpareggioService._group_by_classification(gara)
+        if not sorted_keys:
             return []
-
-        # Group players by rack_difference (which stores total racks for Random strategy)
-        # For other strategies, this is rack_difference
-        groups_by_racks: Dict[int, List[RoundClassification]] = {}
-        for c in classifications:
-            rack_key = c.rack_difference
-            if rack_key not in groups_by_racks:
-                groups_by_racks[rack_key] = []
-            groups_by_racks[rack_key].append(c)
-
-        # Sort rack counts descending
-        sorted_rack_counts = sorted(groups_by_racks.keys(), reverse=True)
 
         # Find groups that affect top 3 positions
         tiebreaker_groups: List[TiebreakerGroup] = []
         current_position = 1
 
-        for rack_count in sorted_rack_counts:
-            group = groups_by_racks[rack_count]
+        for key in sorted_keys:
+            group = groups_by_key[key]
+            # rack_totali nel TiebreakerGroup tiene il rack_difference comune
+            # del gruppo (per WINS è il secondo elemento della tuple, per RACK
+            # è la chiave intera). Mantenuto per compat col template.
+            rack_count = key[1] if isinstance(key, tuple) else key
 
             # Check if this group includes any position within tiebreaker limit
             if current_position <= tiebreaker_limit and len(group) > 1:
@@ -189,35 +226,19 @@ class SpareggioService:
         # Get the position limit for tiebreakers (default to 3 if not set)
         tiebreaker_limit = gara.tiebreaker_until_position or 3
 
-        # Get final round classification
-        final_round = SpareggioService._get_effective_final_round(gara)
-        classifications = (
-            db.session.query(RoundClassification)
-            .filter_by(gara_id=gara_id, round_number=final_round)
-            .order_by(RoundClassification.rack_difference.desc())
-            .all()
-        )
-
-        if not classifications:
+        sorted_keys, groups_by_key = SpareggioService._group_by_classification(gara)
+        if not sorted_keys:
             return []
-
-        # Group players by rack_difference
-        groups_by_racks: Dict[int, List[RoundClassification]] = {}
-        for c in classifications:
-            rack_key = c.rack_difference
-            if rack_key not in groups_by_racks:
-                groups_by_racks[rack_key] = []
-            groups_by_racks[rack_key].append(c)
-
-        # Sort rack counts descending
-        sorted_rack_counts = sorted(groups_by_racks.keys(), reverse=True)
 
         # Find ALL groups that affect top 3 positions (resolved or not)
         all_groups: List[TiebreakerGroup] = []
         current_position = 1
 
-        for rack_count in sorted_rack_counts:
-            group = groups_by_racks[rack_count]
+        for key in sorted_keys:
+            group = groups_by_key[key]
+            # rack_totali è il rack_difference comune del gruppo (per WINS è il
+            # secondo elemento della tuple, per RACK è la chiave intera).
+            rack_count = key[1] if isinstance(key, tuple) else key
 
             # Check if this group includes any position within tiebreaker limit AND has multiple players
             if current_position <= tiebreaker_limit and len(group) > 1:

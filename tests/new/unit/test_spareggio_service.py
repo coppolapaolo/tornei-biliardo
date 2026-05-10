@@ -85,23 +85,29 @@ class TestSpareggioServiceDetection:
         mock_gara.tiebreaker_until_position = 3
         mock_db.session.get.return_value = mock_gara
 
-        # Create mock classifications with no ties in top 3
+        # B20: Spareggio key now uses (matches_won, rack_difference) for WINS;
+        # MagicMock attributes must be set to comparable ints.
+        mock_gara.classification_system = "WINS"
+
         mock_class1 = MagicMock()
         mock_class1.user_id = 1
+        mock_class1.matches_won = 3
         mock_class1.rack_difference = 20
         mock_class1.user = MagicMock(display_name="Player 1")
 
         mock_class2 = MagicMock()
         mock_class2.user_id = 2
+        mock_class2.matches_won = 2
         mock_class2.rack_difference = 18
         mock_class2.user = MagicMock(display_name="Player 2")
 
         mock_class3 = MagicMock()
         mock_class3.user_id = 3
+        mock_class3.matches_won = 1
         mock_class3.rack_difference = 15
         mock_class3.user = MagicMock(display_name="Player 3")
 
-        # Each position has unique rack count = no ties
+        # Each position has unique (wins, rack) = no ties
         mock_db.session.query.return_value.filter_by.return_value.order_by.return_value.all.return_value = [
             mock_class1, mock_class2, mock_class3
         ]
@@ -121,19 +127,24 @@ class TestSpareggioServiceDetection:
         mock_gara.tiebreaker_until_position = 3
         mock_db.session.get.return_value = mock_gara
 
-        # Create mock classifications with tie for 1st place
+        # B20: tie now means same (matches_won, rack_difference) tuple
+        mock_gara.classification_system = "WINS"
+
         mock_class1 = MagicMock()
         mock_class1.user_id = 1
+        mock_class1.matches_won = 3
         mock_class1.rack_difference = 20  # Tied
         mock_class1.user = MagicMock(display_name="Player 1")
 
         mock_class2 = MagicMock()
         mock_class2.user_id = 2
+        mock_class2.matches_won = 3
         mock_class2.rack_difference = 20  # Tied
         mock_class2.user = MagicMock(display_name="Player 2")
 
         mock_class3 = MagicMock()
         mock_class3.user_id = 3
+        mock_class3.matches_won = 1
         mock_class3.rack_difference = 15
         mock_class3.user = MagicMock(display_name="Player 3")
 
@@ -160,24 +171,30 @@ class TestSpareggioServiceDetection:
         mock_gara.tiebreaker_until_position = 3
         mock_db.session.get.return_value = mock_gara
 
-        # Create mock classifications with tie for 3rd place
+        # B20: tie now means same (matches_won, rack_difference) tuple
+        mock_gara.classification_system = "WINS"
+
         mock_class1 = MagicMock()
         mock_class1.user_id = 1
+        mock_class1.matches_won = 3
         mock_class1.rack_difference = 20
         mock_class1.user = MagicMock(display_name="Player 1")
 
         mock_class2 = MagicMock()
         mock_class2.user_id = 2
+        mock_class2.matches_won = 2
         mock_class2.rack_difference = 18
         mock_class2.user = MagicMock(display_name="Player 2")
 
         mock_class3 = MagicMock()
         mock_class3.user_id = 3
+        mock_class3.matches_won = 1
         mock_class3.rack_difference = 15  # Tied for 3rd
         mock_class3.user = MagicMock(display_name="Player 3")
 
         mock_class4 = MagicMock()
         mock_class4.user_id = 4
+        mock_class4.matches_won = 1
         mock_class4.rack_difference = 15  # Tied for 3rd
         mock_class4.user = MagicMock(display_name="Player 4")
 

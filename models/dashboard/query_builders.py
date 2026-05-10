@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import List, Optional
 
-from sqlalchemy import or_, select
+from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import joinedload
 
 from models.base import db
@@ -74,10 +74,18 @@ def standalone_available_for_user(
         .scalar_subquery()
     )
 
+    # B22: SETUP gare with a past date are zombie (forgotten) — hide from
+    # player dashboard. INSCRIPTION/PLAYING/AWAITING_SSR are always shown
+    # regardless of date.
+    from datetime import date as _date
+    today = _date.today()
     q = standalone_q().filter(
         or_(
             Gara.status == GaraStatus.INSCRIPTION.value,
-            Gara.status == GaraStatus.SETUP.value,
+            and_(
+                Gara.status == GaraStatus.SETUP.value,
+                or_(Gara.date.is_(None), Gara.date >= today),
+            ),
         ),
         ~Gara.id.in_(subq_all_my_gara_ids),
     )

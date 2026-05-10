@@ -29,8 +29,14 @@
         {% endif %}
         {% endfor %}
 
+        {# B16: Order depends on gara status. In-progress gara → most recent first
+           (current round on top, useful for director); completed gara → chronological. #}
+        {% set is_gara_finished = gara.status == 'completed' %}
+        {% set ordered_active = active_rounds if is_gara_finished else (active_rounds | reverse | list) %}
+        {% set ordered_completed = completed_rounds if is_gara_finished else (completed_rounds | reverse | list) %}
+
         {# Display active rounds first #}
-        {% for round_num in active_rounds %}
+        {% for round_num in ordered_active %}
         {% set round_matches = display_matches | selectattr("round_number", "equalto", round_num) | list %}
         <h6 class="mt-3 mb-2">{{ _('Turno %(num)s', num=round_num) }}</h6>
         <div class="table-responsive">
@@ -54,7 +60,7 @@
         {% endfor %}
 
         {# Then display completed rounds #}
-        {% for round_num in completed_rounds %}
+        {% for round_num in ordered_completed %}
         {% set round_matches = display_matches | selectattr("round_number", "equalto", round_num) | list %}
         <h6 class="mt-3 mb-2">{{ _('Turno %(num)s', num=round_num) }}</h6>
         <div class="table-responsive">

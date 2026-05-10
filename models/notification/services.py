@@ -379,16 +379,23 @@ class NotificationService:
 
     @staticmethod
     @transactional(domain="notification")
-    def auto_delete_by_user_preferences() -> int:
-        """Auto-delete old notifications based on user preferences."""
+    def auto_delete_by_user_preferences(user_id: Optional[int] = None) -> int:
+        """Auto-delete old notifications based on user preferences.
+
+        If user_id is provided, only that user's preferences are processed
+        (used for just-in-time cleanup on notification page access). If None,
+        all users are processed (cron/scheduled job mode).
+        """
         from sqlalchemy import and_
 
         total_deleted = 0
 
-        # Get all users with auto-delete preferences set
-        preferences = NotificationPreference.query.filter(
+        query = NotificationPreference.query.filter(
             NotificationPreference.auto_delete_days.isnot(None)  # type: ignore[attr-defined]
-        ).all()
+        )
+        if user_id is not None:
+            query = query.filter(NotificationPreference.user_id == user_id)
+        preferences = query.all()
 
         for preference in preferences:
             if not preference.auto_delete_days:

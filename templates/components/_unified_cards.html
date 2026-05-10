@@ -22,7 +22,7 @@
               {% if item.type == 'campionato' %}
               {{ item.entity.campionato_type }} • {{ item.entity.gare|length }} {{ _('gare') }}
               {% else %}
-              {{ item.entity.discipline|replace('_',' ')|title if item.entity.discipline }}
+              {{ item.entity.discipline|discipline_display if item.entity.discipline }}
               {% if item.entity.distance %}
               • {{ item.entity.distance_config|format_distance }}
               {% endif %}

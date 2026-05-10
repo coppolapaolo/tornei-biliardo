@@ -116,7 +116,7 @@
             {% endif %}
             
             <small class="text-muted">
-              <i class="fas fa-trophy me-1"></i>{{ match.gara.discipline|replace('_',' ')|title }}
+              <i class="fas fa-trophy me-1"></i>{{ (match.discipline or match.gara.discipline)|discipline_display }}
               - {{ match.distance_config|format_distance }}
               {% if match.table_assignment %}
                 <br><i class="fas fa-table me-1"></i>Tavolo {{ match.table_assignment }}
@@ -219,7 +219,7 @@
                     {% endif %}
                   </h6>
                   <small class="text-muted">
-                    {{ item.entity.discipline|replace('_',' ')|title if item.entity.discipline }}
+                    {{ item.entity.discipline|discipline_display if item.entity.discipline }}
                     {% if item.entity.distance %}
                       • {{ item.entity.distance_config|format_distance }}
                     {% endif %}

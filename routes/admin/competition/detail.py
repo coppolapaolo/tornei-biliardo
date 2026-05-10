@@ -262,9 +262,13 @@ def gara_detail(gara_id):
                 ).all()
                 if not round_matches:
                     return False
-                # Exclude bye matches from completion check
+                # Exclude bye matches; VALIDATED conta come finito (post-COMPLETED).
+                finished = (
+                    MatchStatus.COMPLETED.value,
+                    MatchStatus.VALIDATED.value,
+                )
                 return all(
-                    match.status == MatchStatus.COMPLETED.value or match.is_bye
+                    match.status in finished or match.is_bye
                     for match in round_matches
                 )
 

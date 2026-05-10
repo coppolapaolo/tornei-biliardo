@@ -4,10 +4,10 @@
         <small>
         {% if match.gara %}
             {{ match.gara|gara_display_name }} - {{ _('Turno') }} {{ match.round_number }} -
-            {{ (match.discipline or match.gara.discipline)|replace('_', ' ')|title }} -
+            {{ (match.discipline or match.gara.discipline)|discipline_display }} -
         {% else %}
             {{ _('Match Individuale') }} -
-            {{ match.discipline|replace('_', ' ')|title if match.discipline else '' }} -
+            {{ match.discipline|discipline_display if match.discipline else '' }} -
         {% endif %}
         {{ match.distance_config|format_distance }}
         {% if match.table_assignment %}- {{ _('Tavolo') }} {{ match.table_assignment }}{% endif %}

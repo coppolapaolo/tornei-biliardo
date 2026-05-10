@@ -17,7 +17,7 @@
                             <small class="text-muted">
                                 <strong>{{ _('Strategia:') }}</strong> {{ gara.matchmaking_strategy.replace("_", " ").title() }}<br>
                                 <strong>{{ _('Turni Totali:') }}</strong> {{ gara.rounds_count }}<br>
-                                <strong>{{ _('Disciplina Default:') }}</strong> {{ gara.discipline.replace("_", " ").title() }}<br>
+                                <strong>{{ _('Disciplina Default:') }}</strong> {{ gara.discipline|discipline_display }}<br>
                                 <strong>{{ _('Distanza Default:') }}</strong> {{ gara.distance_config|format_distance }}
                             </small>
                         </div>
@@ -57,7 +57,7 @@
                                         <label class="form-label small text-muted mb-1">{{ _('Disciplina:') }}</label>
                                         <select class="form-select form-select-sm" id="roundDiscipline{{ round_num }}"
                                             onchange="updateRoundConfig({{ round_num }})">
-                                            <option value="{{ gara.discipline }}">{{ gara.discipline.replace("_", " ").title() }} {{ _('(Default)') }}</option>
+                                            <option value="{{ gara.discipline }}">{{ gara.discipline|discipline_display }} {{ _('(Default)') }}</option>
                                             {% for value, label in discipline_choices %}
                                             {% if value != gara.discipline %}
                                             <option value="{{ value }}">{{ label }}</option>
@@ -168,6 +168,7 @@
     const roundsCount = {{ gara.rounds_count }};
     const baseUrl = `/admin/gara/${garaId}/round-config`;
     const statusEl = document.getElementById(`roundConfigStatus${garaId}`);
+    const csrfToken = {{ csrf_token()|tojson }};
 
     const garaDefaults = {
         discipline: '{{ gara.discipline }}',
@@ -289,11 +290,17 @@
         try {
             let resp;
             if (isDefault(form)) {
-                resp = await fetch(`${baseUrl}/${roundNumber}`, { method: 'DELETE' });
+                resp = await fetch(`${baseUrl}/${roundNumber}`, {
+                    method: 'DELETE',
+                    headers: { 'X-CSRFToken': csrfToken }
+                });
             } else {
                 resp = await fetch(`${baseUrl}/${roundNumber}`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
                     body: JSON.stringify(toApiPayload(form))
                 });
             }
@@ -326,7 +333,10 @@
     window.resetRoundToDefault = async function(roundNumber) {
         applyOverrideToForm(roundNumber, null);
         try {
-            await fetch(`${baseUrl}/${roundNumber}`, { method: 'DELETE' });
+            await fetch(`${baseUrl}/${roundNumber}`, {
+                method: 'DELETE',
+                headers: { 'X-CSRFToken': csrfToken }
+            });
             setStatus(`Turno ${roundNumber} ripristinato al default`, false);
         } catch (err) {
             console.error('Errore reset config turno', err);

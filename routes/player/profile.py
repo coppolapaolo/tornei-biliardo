@@ -47,6 +47,8 @@ def profile():
     )
 
     # Partite giocate (incluse gare standalone)
+    # Order by Match.created_at first so standalone and campionato matches
+    # appear together in chronological order (B25).
     matches = (
         Match.query.filter(
             db.or_(
@@ -54,9 +56,9 @@ def profile():
             )
         )
         .join(Gara)
-        .outerjoin(Campionato)  # LEFT JOIN per includere gare standalone
+        .outerjoin(Campionato)
         .order_by(
-            Campionato.created_at.desc().nullslast(),
+            Match.created_at.desc(),
             Gara.date.desc(),
             Match.round_number.desc(),
         )

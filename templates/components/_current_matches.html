@@ -17,7 +17,7 @@
         </h6>
         <p class="mb-2">
           <strong>Gara {{ m.gara.number }}</strong> – Turno {{ m.round_number }}/{{ m.gara.rounds_count }}
-          <br><small class="text-muted">{{ m.gara.discipline }} –
+          <br><small class="text-muted">{{ m.gara.discipline|discipline_display }} –
             {{ m.distance_config|format_distance }}
           </small>
         </p>

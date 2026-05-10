@@ -4,6 +4,9 @@
 {# Optional: ssr_scores_map (from parent context) #}
 
 {% if classification %}
+{# B14: respect gara.classification_system. RACK → only racks; else → wins + racks. #}
+{% set classification_sys = (gara.classification_system or 'WINS')|upper %}
+{% set is_rack_only = classification_sys == 'RACK' %}
 <div class="card mt-3">
   <div class="card-header py-2 d-flex justify-content-between align-items-center">
     <h6 class="mb-0"><i class="fas fa-trophy"></i> {{ _('Classifica') }}</h6>
@@ -33,14 +36,17 @@
             </td>
             <td><strong>{{ entry.user.username }}</strong></td>
             <td class="text-end">
-              {# Show SSR badge first (left), then rack (right) for alignment #}
+              {# Show SSR badge first (left), then wins+rack (right) for alignment #}
               {% if ssr_scores_map is defined and ssr_scores_map %}
                 {% set ssr_score = ssr_scores_map.get(entry.user_id) %}
                 {% if ssr_score is not none %}
                 <span class="badge bg-warning text-dark me-1" title="SSR">{{ ssr_score }}</span>
                 {% endif %}
               {% endif %}
-              <span class="badge bg-secondary">{{ entry.rack_difference }}</span>
+              {% if not is_rack_only %}
+                <span class="badge bg-success me-1" title="{{ _('Vittorie') }}">{{ entry.matches_won }}</span>
+              {% endif %}
+              <span class="badge bg-secondary" title="{% if is_rack_only %}{{ _('Rack Totali') }}{% else %}{{ _('Diff. Rack') }}{% endif %}">{{ entry.rack_difference }}</span>
             </td>
           </tr>
           {% endfor %}
@@ -73,14 +79,17 @@
             <strong class="ms-2">{{ entry.user.username }}</strong>
           </div>
           <div class="text-end">
-            {# Show SSR badge first (left), then rack (right) for alignment #}
+            {# Show SSR badge first (left), then wins+rack (right) for alignment #}
             {% if ssr_scores_map is defined and ssr_scores_map %}
               {% set ssr_score = ssr_scores_map.get(entry.user_id) %}
               {% if ssr_score is not none %}
               <span class="badge bg-warning text-dark me-1" title="SSR">{{ ssr_score }}</span>
               {% endif %}
             {% endif %}
-            <span class="badge bg-secondary">{{ entry.rack_difference }}</span>
+            {% if not is_rack_only %}
+              <span class="badge bg-success me-1" title="{{ _('Vittorie') }}">{{ entry.matches_won }}</span>
+            {% endif %}
+            <span class="badge bg-secondary" title="{% if is_rack_only %}{{ _('Rack Totali') }}{% else %}{{ _('Diff. Rack') }}{% endif %}">{{ entry.rack_difference }}</span>
           </div>
         </div>
         <div class="small text-muted mt-1 ms-4">

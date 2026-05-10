@@ -267,10 +267,24 @@ class TrioScoringService:
         # Flush to ensure computed properties work
         db.session.flush()
 
-        # Determine winner using Condorcet/Schulze pairwise comparison
-        trio.winner_id = determine_trio_winner(
-            trio.active_racks, trio.player_ids
-        )
+        # Determine winner: with explicit totals from direct-entry, the natural
+        # interpretation is "highest total wins". Schulze on synthetic racks can
+        # report a tie even when totals are clearly dominant, because the greedy
+        # synthetic distribution often equalizes pairwise matchups.
+        # Only fall back to Schulze when totals themselves are tied.
+        totals = {
+            trio.player1_id: player1_racks,
+            trio.player2_id: player2_racks,
+            trio.player3_id: player3_racks,
+        }
+        max_racks = max(totals.values())
+        top_players = [pid for pid, r in totals.items() if r == max_racks]
+        if len(top_players) == 1:
+            trio.winner_id = top_players[0]
+        else:
+            trio.winner_id = determine_trio_winner(
+                trio.active_racks, trio.player_ids
+            )
 
         # Update associated match and complete via service (emits SSE)
         match_obj = db.session.get(Match, trio.match_id)
@@ -333,6 +347,12 @@ class TrioScoringService:
                 match_obj.status = MatchStatus.PLAYING.value
             else:
                 match_obj.status = MatchStatus.PENDING.value
+
+            # B32: if match has no table, try to auto-assign a free one.
+            if match_obj.status == MatchStatus.PENDING.value:
+                from .table_assignment_service import TableAssignmentService
+                db.session.flush()
+                TableAssignmentService.assign_available_tables(match_obj.gara_id)
 
     # -----------------------------
     # HELPER METHODS (Private)

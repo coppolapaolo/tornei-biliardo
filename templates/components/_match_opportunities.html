@@ -13,7 +13,7 @@
     {% for proposal in vm.match_opportunities %}
     <div class="d-flex justify-content-between align-items-center mb-3 p-3 border rounded">
       <div>
-        <strong>{{ proposal.discipline.replace('_', ' ').title() }} Match</strong>
+        <strong>{{ proposal.discipline|discipline_display }} Match</strong>
         <br><small class="text-muted">
           <i class="fas fa-user"></i> {{ proposal.proposer.username }} –
           <i class="fas fa-map-marker-alt"></i> {{ proposal.location }}

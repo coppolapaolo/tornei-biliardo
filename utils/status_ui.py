@@ -248,8 +248,14 @@ def register_status_filters(app) -> None:
     app.jinja_env.globals["status_text"] = filter_status_text
 
     # Filtri Jinja per date (formattazione locale nel browser)
-    from utils.jinja import format_date_local, format_datetime_local, format_time_local
+    from utils.jinja import (
+        format_date_local,
+        format_datetime_local,
+        format_time_local,
+        format_discipline,
+    )
 
     app.jinja_env.filters["date_local"] = format_date_local
     app.jinja_env.filters["datetime_local"] = format_datetime_local
     app.jinja_env.filters["time_local"] = format_time_local
+    app.jinja_env.filters["discipline_display"] = format_discipline

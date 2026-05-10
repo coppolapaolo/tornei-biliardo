@@ -28,6 +28,18 @@ def notifications():
     # Mark PENDING notifications as SENT (via service layer)
     NotificationService.mark_pending_as_sent(current_user.id)
 
+    # B24: Auto-delete read notifications older than the user's preference
+    # before listing, so the user lands on a clean view.
+    try:
+        NotificationService.auto_delete_by_user_preferences(current_user.id)
+    except Exception:
+        # Auto-delete is a best-effort cleanup: never block the listing.
+        import logging
+        logging.getLogger(__name__).warning(
+            "auto_delete_by_user_preferences failed for user %s", current_user.id,
+            exc_info=True,
+        )
+
     # Get all notifications for current user
     user_notifications = (
         Notification.query.filter_by(user_id=current_user.id)

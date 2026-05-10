@@ -15,9 +15,9 @@
                     <div class="col-md-2">
                         <h6 class="text-muted mb-0">Turno {{ match.round_number }}</h6>
                         {% if match.discipline and match.discipline != gara.discipline %}
-                            <small class="badge bg-warning">{{ match.discipline }}</small>
+                            <small class="badge bg-warning">{{ match.discipline|discipline_display }}</small>
                         {% else %}
-                            <small class="badge bg-info">{{ gara.discipline }}</small>
+                            <small class="badge bg-info">{{ gara.discipline|discipline_display }}</small>
                         {% endif %}
                     </div>
 

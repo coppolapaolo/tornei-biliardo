@@ -14,6 +14,7 @@ import logging
 from typing import Dict, Any
 
 from flask import flash, has_request_context
+from flask_babel import gettext as _
 from flask_login import current_user
 
 from models.events.base import EventBus
@@ -74,12 +75,12 @@ class GamificationFrontendBridge:
             priority=0
         )
         
-        EventBus.register_handler(
-            StreakBrokenEvent,
-            GamificationFrontendBridge.handle_streak_broken,
-            priority=0
-        )
-        
+        # B4: do NOT register a frontend handler for StreakBrokenEvent — the
+        # toast is non-actionable (user can't "undo" a broken streak), so it
+        # adds noise without value. The event is still emitted by the service
+        # layer for analytics/notifications.
+
+
         EventBus.register_handler(
             QuestCompletedEvent,
             GamificationFrontendBridge.handle_quest_completed,
@@ -130,13 +131,17 @@ class GamificationFrontendBridge:
         if event.xp_amount <= 0:
             return
 
-        # Improved reason formatting
-        reason = "XP Ottenuti"
+        # B21: narrative reason — describe the action, not the entity ID.
+        reason = _("Hai guadagnato XP")
         if event.related_entities:
             if "match_id" in event.related_entities:
-                reason = f"Partita #{event.related_entities['match_id']}"
+                reason = _("Per aver giocato la partita")
             elif "gara_id" in event.related_entities:
-                reason = f"Torneo #{event.related_entities['gara_id']}"
+                reason = _("Per aver partecipato al torneo")
+            elif "quest_id" in event.related_entities:
+                reason = _("Per aver completato la quest")
+            elif "achievement_id" in event.related_entities:
+                reason = _("Per aver sbloccato un achievement")
 
         GamificationFrontendBridge._flash_gamification_event(
             "xp",
@@ -150,11 +155,23 @@ class GamificationFrontendBridge:
     @staticmethod
     def handle_level_up(event: LevelUpEvent) -> None:
         """Send level up event to frontend."""
+        # B21: include total XP and unlocks summary so the toast is self-contained.
+        unlock_count = len(event.unlocks) if event.unlocks else 0
+        if unlock_count > 0:
+            subtitle = _(
+                "Hai accumulato %(xp)d XP totali — %(n)d nuove funzioni sbloccate!",
+                xp=event.total_xp,
+                n=unlock_count,
+            )
+        else:
+            subtitle = _("Hai accumulato %(xp)d XP totali", xp=event.total_xp)
+
         GamificationFrontendBridge._flash_gamification_event(
             "levelup",
             {
                 "level": event.new_level,
-                "title": f"Livello {event.new_level}"  # Could be enhanced with rank titles
+                "title": _("Livello %(level)d raggiunto!", level=event.new_level),
+                "subtitle": subtitle,
             },
             event.user_id
         )
@@ -162,13 +179,16 @@ class GamificationFrontendBridge:
     @staticmethod
     def handle_achievement_unlocked(event: AchievementUnlockedEvent) -> None:
         """Send achievement event to frontend."""
+        # B21: prefer the semantic achievement description (already i18n) when
+        # present; fall back to a generic XP-only line.
+        description = _get_achievement_description(event)
         GamificationFrontendBridge._flash_gamification_event(
             "achievement",
             {
                 "name": event.achievement_name,
-                "description": _get_achievement_description(event), # Helper needed or simple text
-                "rarity": event.achievement_difficulty.lower(), # common, rare, epic, legendary
-                "icon": "🏆" # Placeholder, JS handles images based on rarity
+                "description": description,
+                "rarity": event.achievement_difficulty.lower(),
+                "icon": "🏆"
             },
             event.user_id
         )
@@ -176,12 +196,21 @@ class GamificationFrontendBridge:
     @staticmethod
     def handle_streak_milestone(event: StreakMilestoneEvent) -> None:
         """Send streak milestone event to frontend."""
+        # B21: human-readable narrative — "filotto" used in pool jargon.
+        if event.streak_type == "WEEKLY_MATCH":
+            message = _("Hai giocato per %(weeks)d settimane consecutive!", weeks=event.current_streak)
+        else:
+            message = _("Sei attivo da %(weeks)d settimane consecutive!", weeks=event.current_streak)
+        if event.freeze_earned > 0:
+            message = message + " " + _("Hai guadagnato un congelatore!")
+
         GamificationFrontendBridge._flash_gamification_event(
             "streak",
             {
                 "count": event.current_streak,
                 "type": event.streak_type,
-                "hasFreeze": event.freeze_earned > 0
+                "hasFreeze": event.freeze_earned > 0,
+                "message": message,
             },
             event.user_id
         )
@@ -189,10 +218,12 @@ class GamificationFrontendBridge:
     @staticmethod
     def handle_streak_broken(event: StreakBrokenEvent) -> None:
         """Send streak lost event to frontend."""
+        # B21 + B4: kept for back-compat but message i18n'd; B4 will remove
+        # the bridge handler entirely.
         GamificationFrontendBridge._flash_gamification_event(
             "streak_lost",
             {
-                "message": f"Hai perso uno streak di {event.streak_length} settimane!"
+                "message": _("Hai perso una serie di %(weeks)d settimane.", weeks=event.streak_length)
             },
             event.user_id
         )
@@ -204,11 +235,50 @@ class GamificationFrontendBridge:
             "quest",
             {
                 "name": event.quest_name,
-                "description": "Quest completata!" 
+                "description": _("Quest completata: %(name)s — +%(xp)d XP", name=event.quest_name, xp=event.xp_awarded),
             },
             event.user_id
         )
 
+
+    # B10: per-feature narrative copy for nudge toasts. The DB stores the
+    # English code/name; we translate at toast-emission time so the user sees
+    # an actionable Italian message ("vai alla classifica" rather than
+    # "View Other Profiles").
+    _NUDGE_COPY: Dict[str, Dict[str, str]] = {
+        "view_other_profiles": {
+            "name": "Scopri gli altri giocatori",
+            "description": "Ora puoi sbirciare i profili degli altri. Vai alla classifica per cominciare!",
+        },
+        "view_global_stats": {
+            "name": "Statistiche globali",
+            "description": "Confronta le tue performance con quelle della community.",
+        },
+        "create_match_direct": {
+            "name": "Crea una partita diretta",
+            "description": "Sfida un avversario specifico — proponi luogo e data.",
+        },
+        "create_match_community": {
+            "name": "Proponi una partita aperta",
+            "description": "Lancia una proposta alla community e aspetta che qualcuno si faccia avanti.",
+        },
+        "manage_availability": {
+            "name": "Imposta la tua disponibilità",
+            "description": "Fai sapere quando sei libero così altri possono proporti partite.",
+        },
+        "create_gara": {
+            "name": "Organizza una gara",
+            "description": "Sei pronto: puoi creare la tua prima gara standalone.",
+        },
+        "create_campionato": {
+            "name": "Organizza un campionato",
+            "description": "Crea una serie di gare e gestisci una stagione completa.",
+        },
+        "do_challenge": {
+            "name": "Prova le sfide",
+            "description": "Allenati con drill mirati: ogni completamento conta per la classifica.",
+        },
+    }
 
     @staticmethod
     def handle_nudge_event(user_id: int, feature_config: Any) -> None:
@@ -222,14 +292,18 @@ class GamificationFrontendBridge:
         if not feature_visible_to_user(feature_config.code, current_user):
             return
 
-        # I18n should be handled by the frontend or pre-translated here.
-        # Ensure we pass keys or English text that can be translated.
+        # B10: prefer per-feature narrative copy over the raw DB strings
+        # (which are English code names), wrapped in _() for i18n.
+        copy = GamificationFrontendBridge._NUDGE_COPY.get(feature_config.code)
+        name = _(copy["name"]) if copy else feature_config.name
+        description = _(copy["description"]) if copy else feature_config.description
+
         GamificationFrontendBridge._flash_gamification_event(
             "nudge",
             {
                 "code": feature_config.code,
-                "name": feature_config.name,
-                "description": feature_config.description,
+                "name": name,
+                "description": description,
                 "badge": feature_config.badge_slug
             },
             user_id
@@ -248,21 +322,43 @@ class GamificationFrontendBridge:
         if not feature_visible_to_user(feature_config.code, current_user):
             return
 
+        # B10: same narrative copy as the nudge — see _NUDGE_COPY above.
+        copy = GamificationFrontendBridge._NUDGE_COPY.get(feature_config.code)
+        name = _(copy["name"]) if copy else feature_config.name
+        description = _(copy["description"]) if copy else feature_config.description
+
         GamificationFrontendBridge._flash_gamification_event(
             "unlock",
             {
                 "code": feature_config.code,
-                "name": feature_config.name,
-                "description": feature_config.description,
+                "name": name,
+                "description": description,
                 "icon": "🔓"
             },
             user_id
         )
 
 def _get_achievement_description(event: AchievementUnlockedEvent) -> str:
-    """Helper to get a simple description properly formatted."""
-    # Ideally should fetch from DB or translation, but for animation simple is fine
-    return f"+{event.xp_awarded} XP - {event.achievement_category.capitalize()}"
+    """B21: prefer the achievement.description from DB (semantic, i18n-ready)
+    over a generic "+XP - category" line. Falls back to the generic line if
+    the achievement record is unavailable.
+    """
+    try:
+        from models.gamification.models import Achievement
+        from models.base import db
+
+        achievement = db.session.get(Achievement, event.achievement_id)
+        if achievement and achievement.description:
+            return f"{achievement.description} — +{event.xp_awarded} XP"
+    except Exception:
+        # Avoid breaking the toast pipeline if DB access fails for any reason
+        logger.debug("Could not fetch achievement description; using fallback", exc_info=True)
+
+    return _(
+        "+%(xp)d XP — %(category)s",
+        xp=event.xp_awarded,
+        category=event.achievement_category.capitalize(),
+    )
 
 
 # Auto-register handlers

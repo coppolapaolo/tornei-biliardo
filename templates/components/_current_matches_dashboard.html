@@ -20,7 +20,7 @@
                         </h6>
                         <p class="mb-1">
                             <strong>Gara {{ match.gara.number }}</strong> - Turno {{ match.round_number }}/{{ match.gara.rounds_count }}
-                            <br><small class="text-muted">{{ match.gara.discipline }} -
+                            <br><small class="text-muted">{{ (match.discipline or match.gara.discipline)|discipline_display }} -
                             {% if match.is_trio and match.trio_match %}
                                 {% set config = match.trio_match.trio_config %}
                                 {% if config.num_rounds == 1 %}

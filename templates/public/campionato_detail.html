@@ -107,7 +107,7 @@
                             <td>{{ gara.number }}</td>
                             <td>{{ gara.name }}</td>
                             <td>{{ gara.date|date_local }}</td>
-                            <td>{{ gara.discipline }}</td>
+                            <td>{{ gara.discipline|discipline_display }}</td>
                             <td>
                                 <span class="badge {{ gara | status_badge_class }}">
                                     {{ gara | status_text }}

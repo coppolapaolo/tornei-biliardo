@@ -23,8 +23,7 @@
                 <div class="card border-info">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start mb-2">
-                            <h6 class="card-title">Match{% if proposal.discipline %} {{ proposal.discipline.replace('_',
-                                ' ').title() }}{% endif %}</h6>
+                            <h6 class="card-title">Match{% if proposal.discipline %} {{ proposal.discipline|discipline_display }}{% endif %}</h6>
                             {% set user_invitation = proposal.get_invitation_for_user(current_user.id) %}
                             {% if user_invitation %}
                             <span
@@ -99,8 +98,7 @@
                 <div class="card border-primary">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start mb-2">
-                            <h6 class="card-title">Match{% if proposal.discipline %} {{ proposal.discipline.replace('_',
-                                ' ').title() }}{% endif %}</h6>
+                            <h6 class="card-title">Match{% if proposal.discipline %} {{ proposal.discipline|discipline_display }}{% endif %}</h6>
                             <span
                                 class="badge bg-{{ 'success' if proposal.status.value == 'pending' else 'secondary' }}">
                                 {{ proposal.status.value.title() }}
@@ -170,8 +168,7 @@
                 <div class="card border-success">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start mb-2">
-                            <h6 class="card-title">Match{% if proposal.discipline %} {{ proposal.discipline.replace('_',
-                                ' ').title() }}{% endif %}</h6>
+                            <h6 class="card-title">Match{% if proposal.discipline %} {{ proposal.discipline|discipline_display }}{% endif %}</h6>
                             <span class="badge bg-success">Aperto</span>
                         </div>
                         <p class="card-text">

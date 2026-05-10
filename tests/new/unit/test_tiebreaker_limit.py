@@ -12,27 +12,34 @@ def test_detect_tiebreakers_respects_limit(mock_db):
     mock_gara.rounds_count = 3
     mock_gara.tiebreaker_enabled = True
     mock_gara.tiebreaker_until_position = 2  # Only top 2
+    # B20: SpareggioService now keys on (matches_won, rack_difference) for WINS;
+    # tests must populate matches_won for proper tuple comparison.
+    mock_gara.classification_system = "WINS"
     mock_db.session.get.return_value = mock_gara
 
     # Create mock classifications:
-    # 1: P1 (20)
-    # 2: P2 (18)
-    # 3: P3 (15) - Tied
-    # 4: P4 (15) - Tied
+    # 1: P1 (3w/20)
+    # 2: P2 (2w/18)
+    # 3: P3 (1w/15) - Tied
+    # 4: P4 (1w/15) - Tied
     mock_class1 = MagicMock()
     mock_class1.user_id = 1
+    mock_class1.matches_won = 3
     mock_class1.rack_difference = 20
-    
+
     mock_class2 = MagicMock()
     mock_class2.user_id = 2
+    mock_class2.matches_won = 2
     mock_class2.rack_difference = 18
-    
+
     mock_class3 = MagicMock()
     mock_class3.user_id = 3
+    mock_class3.matches_won = 1
     mock_class3.rack_difference = 15
-    
+
     mock_class4 = MagicMock()
     mock_class4.user_id = 4
+    mock_class4.matches_won = 1
     mock_class4.rack_difference = 15
 
     mock_db.session.query.return_value.filter_by.return_value.order_by.return_value.all.return_value = [

@@ -4,7 +4,7 @@
         <h1>{% if gara.campionato_id %}{{ _('Gara %(id)s', id=gara.number) }}{% if gara.name %} - {{ gara.name }}{%
             endif %}{% else %}{{ gara.name or _('Gara Standalone') }}{% endif %}</h1>
         <p class="text-muted mb-0">
-            {{ gara.date|date_local }} - {{ gara.discipline.replace('_', ' ') }} -
+            {{ gara.date|date_local }} - {{ gara.discipline|discipline_display }} -
             {{ gara.distance_config|format_distance }}
             {% if gara.location %} - {{ gara.location }}{% endif %}
         </p>

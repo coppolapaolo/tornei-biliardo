@@ -173,7 +173,7 @@
             {% else %}
               <button class="btn btn-warning flex-grow-1" style="min-height: 44px;"
                       data-bs-toggle="modal" data-bs-target="#quickResultModal"
-                      onclick='openQuickResult({{ match.id }}, {{ match.player1.username|tojson }}, {{ match.player2.username|tojson }}, {{ match.player1_score }}, {{ match.player2_score }}, {{ (match.started_at.strftime("%H:%M") if match.started_at else "")|tojson }})'>
+                      onclick='openQuickResult({{ match.id }}, {{ match.player1.username|tojson }}, {{ match.player2.username|tojson }}, {{ match.player1_score }}, {{ match.player2_score }}, {{ (match.started_at.strftime("%H:%M") if match.started_at else "")|tojson }}, {{ match.effective_distance }}, {{ 'true' if match.effective_is_race_to else 'false' }})'>
                 <i class="fas fa-tachometer-alt"></i> {{ _('Risultato') }}
               </button>
             {% endif %}

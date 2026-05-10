@@ -10,7 +10,7 @@
                 {{ p.name or ('Gara ' ~ (p.number or '')) }}
               </h5>
               {% if p.discipline %}
-                <small class="text-muted">{{ p.discipline|replace('_',' ')|title }}</small>
+                <small class="text-muted">{{ p.discipline|discipline_display }}</small>
               {% endif %}
             </div>
             {# destra header: distanza (niente badge di stato) #}

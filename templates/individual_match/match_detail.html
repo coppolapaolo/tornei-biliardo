@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Match {{ match.discipline.replace('_', ' ').title() }} - Campionato Biliardo{% endblock %}
+{% block title %}Match {{ match.discipline|discipline_display }} - Campionato Biliardo{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
@@ -24,7 +24,7 @@
                 <div class="card-header">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h4><i class="fas fa-shield-halved"></i> {{ match.discipline.replace('_', ' ').title() }}</h4>
+                            <h4><i class="fas fa-shield-halved"></i> {{ match.discipline|discipline_display }}</h4>
                             <small class="text-muted">{{ match.location_display }} - {{ match.scheduled_at|datetime_local if
                                 match.scheduled_at }}</small>
                         </div>
@@ -97,7 +97,7 @@
                 <div class="card-body">
                     <dl class="row">
                         <dt class="col-sm-5">{{ _('Disciplina') }}:</dt>
-                        <dd class="col-sm-7">{{ match.discipline.replace('_', ' ').title() }}</dd>
+                        <dd class="col-sm-7">{{ match.discipline|discipline_display }}</dd>
 
                         <dt class="col-sm-5">{{ _('Formato') }}:</dt>
                         <dd class="col-sm-7">

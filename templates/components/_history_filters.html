@@ -16,6 +16,7 @@
             <form method="GET" action="{{ url_for('player.history') }}">
                 <input type="hidden" name="tab" value="{{ active_tab }}">
                 <div class="row g-3">
+                    {% if filter_type != 'campionati' %}
                     <!-- Discipline -->
                     <div class="col-md-3">
                         <label for="discipline" class="form-label">{{ _("Disciplina") }}</label>
@@ -42,6 +43,7 @@
                             {% endfor %}
                         </datalist>
                     </div>
+                    {% endif %}
 
                     {% if filter_type == 'matches' %}
                     <!-- Opponent (only for matches) -->
@@ -88,6 +90,24 @@
                     </div>
                     {% endif %}
 
+                    {% if filter_type == 'campionati' %}
+                    <!-- Status filter (for campionati) -->
+                    <div class="col-md-3">
+                        <label for="campionato_status" class="form-label">{{ _("Stato") }}</label>
+                        <select name="campionato_status" id="campionato_status" class="form-select">
+                            <option value="" {{ 'selected' if not filters.campionato_status else '' }}>
+                                {{ _("Tutti") }}
+                            </option>
+                            <option value="active" {{ 'selected' if filters.campionato_status == 'active' else '' }}>
+                                {{ _("Attivi") }}
+                            </option>
+                            <option value="completed" {{ 'selected' if filters.campionato_status == 'completed' else '' }}>
+                                {{ _("Conclusi") }}
+                            </option>
+                        </select>
+                    </div>
+                    {% endif %}
+
                     <!-- Date From -->
                     <div class="col-md-2">
                         <label for="date_from" class="form-label">{{ _("Da") }}</label>
@@ -102,6 +122,7 @@
                                value="{{ filters.date_to.isoformat() if filters.date_to else '' }}">
                     </div>
 
+                    {% if filter_type != 'campionati' %}
                     <!-- Campionato -->
                     <div class="col-md-3">
                         <label for="campionato_id" class="form-label">{{ _("Campionato") }}</label>
@@ -115,6 +136,7 @@
                             {% endfor %}
                         </select>
                     </div>
+                    {% endif %}
 
                     <!-- Action buttons -->
                     <div class="col-md-3 d-flex align-items-end gap-2">

@@ -187,10 +187,10 @@ class TableAssignmentService:
 
             # Check if both players are free
             player1_busy = TableAssignmentService._is_player_busy(
-                gara_id, match.player1_id
+                gara_id, match.player1_id, exclude_match_id=match.id
             )
             player2_busy = TableAssignmentService._is_player_busy(
-                gara_id, match.player2_id
+                gara_id, match.player2_id, exclude_match_id=match.id
             )
 
             if not player1_busy and not player2_busy:
@@ -227,20 +227,27 @@ class TableAssignmentService:
         return match
 
     @staticmethod
-    def _is_player_busy(gara_id: int, player_id: int) -> bool:
+    def _is_player_busy(
+        gara_id: int, player_id: int, exclude_match_id: int | None = None
+    ) -> bool:
         """Check if a player is currently busy in another match.
 
-        A player is busy if they have a match with status PLAYING in the gara.
+        A player is busy if they have a match with status PLAYING in the gara,
+        excluding ``exclude_match_id`` from the check. Excluding the current
+        match is necessary when called from ``change_table_assignment`` for a
+        match already in PLAYING (e.g. after a reset that left it without a
+        table) — without the exclusion the check finds the match itself and
+        raises a misleading "player is busy" error.
         """
         if not player_id:
             return False
 
-        busy_match = (
-            Match.query.filter_by(gara_id=gara_id, status=MatchStatus.PLAYING.value)
-            .filter((Match.player1_id == player_id) | (Match.player2_id == player_id))
-            .first()
-        )
-        return busy_match is not None
+        query = Match.query.filter_by(
+            gara_id=gara_id, status=MatchStatus.PLAYING.value
+        ).filter((Match.player1_id == player_id) | (Match.player2_id == player_id))
+        if exclude_match_id is not None:
+            query = query.filter(Match.id != exclude_match_id)
+        return query.first() is not None
 
     @staticmethod
     @transactional(domain="match")
@@ -290,10 +297,10 @@ class TableAssignmentService:
 
             # Check if both players are free
             player1_busy = TableAssignmentService._is_player_busy(
-                gara_id, waiting_match.player1_id
+                gara_id, waiting_match.player1_id, exclude_match_id=waiting_match.id
             )
             player2_busy = TableAssignmentService._is_player_busy(
-                gara_id, waiting_match.player2_id
+                gara_id, waiting_match.player2_id, exclude_match_id=waiting_match.id
             )
 
             if not player1_busy and not player2_busy:
@@ -409,10 +416,10 @@ class TableAssignmentService:
         # This only applies when assigning a new table, not when removing
         if new_table is not None and not old_table:
             player1_busy = TableAssignmentService._is_player_busy(
-                match.gara_id, match.player1_id
+                match.gara_id, match.player1_id, exclude_match_id=match.id
             )
             player2_busy = TableAssignmentService._is_player_busy(
-                match.gara_id, match.player2_id
+                match.gara_id, match.player2_id, exclude_match_id=match.id
             )
             if player1_busy or player2_busy:
                 from models.user.models import User
@@ -432,7 +439,9 @@ class TableAssignmentService:
             match.table_assignment = None
             # Reset started_at since match hasn't really started without racks
             match.started_at = None
-            RackService.reset_match_complete(match.id)
+            # Caller explicitly wants the match without a table — don't let
+            # the B17 auto-assign helper re-grab a free one.
+            RackService.reset_match_complete(match.id, auto_assign_table=False)
             db.session.add(match)
             return True, f"Tavolo '{old_table}' rimosso dal match", None
 
@@ -479,7 +488,10 @@ class TableAssignmentService:
 
                 occupying_match.table_assignment = None
                 occupying_match.started_at = None  # Reset since no racks
-                RackService.reset_match_complete(occupying_match.id)
+                # Eviction: caller is reassigning a specific table; don't
+                # let the evicted match grab another free table behind the
+                # caller's back. The director can manually reassign later.
+                RackService.reset_match_complete(occupying_match.id, auto_assign_table=False)
 
             match.table_assignment = new_table
             if (match.status or MatchStatus.PENDING.value) != MatchStatus.PLAYING.value:

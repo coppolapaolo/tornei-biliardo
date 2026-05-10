@@ -213,7 +213,24 @@ def create_app(config_name=None):
     def inject_endpoint_visibility():
         def feature_visible(endpoint: str) -> bool:
             return is_endpoint_visible(endpoint, current_user)
-        return {"feature_visible": feature_visible}
+
+        def url_visible(url: str) -> bool:
+            """B23: True if the URL maps to an endpoint visible for the current user.
+
+            Used to defensively gate links built from stored URLs (e.g. notification
+            action_url) so we don't promote endpoints the user can't reach.
+            Returns True for unparseable/external URLs (no false negatives).
+            """
+            if not url or not url.startswith("/"):
+                return True
+            try:
+                adapter = app.url_map.bind("")
+                endpoint, _args = adapter.match(url, method="GET")
+                return is_endpoint_visible(endpoint, current_user)
+            except Exception:
+                return True
+
+        return {"feature_visible": feature_visible, "url_visible": url_visible}
 
     # Filtri Jinja per status
     register_status_filters(app)

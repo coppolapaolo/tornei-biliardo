@@ -118,7 +118,12 @@ def test_player_blocked_from_director_only(app, production_mode):
             is_endpoint_visible("admin.competition.create_gara_standalone", player)
             is False
         )
-        assert is_endpoint_visible("admin.match.match_detail", player) is False
+        # admin.match.match_detail is the unified match view (player + director),
+        # see B8 fix and the comment in utils/feature_flags.py.
+        assert (
+            is_endpoint_visible("admin.match.set_match_result_direct", player)
+            is False
+        )
 
 
 def test_director_sees_director_endpoints(app, production_mode):

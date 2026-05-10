@@ -106,7 +106,9 @@
                     </small>
                 </div>
                 <div class="ms-3">
-                    {% if notification.action_url %}
+                    {# B23: hide action button if target endpoint is not visible
+                       to the current user (avoids 404 from stale stored URLs). #}
+                    {% if notification.action_url and url_visible(notification.action_url) %}
                     <a href="{{ notification.action_url }}"
                        class="btn btn-{% if notification.status.value != 'read' %}primary{% else %}outline-primary{% endif %} btn-sm"
                        {% if notification.status.value != 'read' %}

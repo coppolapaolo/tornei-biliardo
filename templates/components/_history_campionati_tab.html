@@ -1,6 +1,8 @@
 <!-- templates/components/_history_campionati_tab.html - Tab campionati storico -->
 
-<!-- No filters for campionati (simpler view) -->
+<!-- Filters: status (active/completed) + dates (B27) -->
+{% set filter_type = 'campionati' %}
+{% include "components/_history_filters.html" %}
 
 <!-- Results List -->
 <div class="card">

@@ -38,39 +38,22 @@
     box-shadow: 0 10px 40px var(--shadow-md),
                 0 0 20px var(--toast-glow);
     pointer-events: auto;
-    min-width: 300px;
-    max-width: 400px;
     backdrop-filter: blur(10px);
     border: 1px solid var(--toast-border);
 
-    /* Entry animation */
-    animation: toastSlideIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+    /* Tutti i toast gamification sono centrati sul viewport (hero style).
+       La queue di GamificationToast (gamification.js) mostra un toast alla
+       volta, quindi non si sovrappongono nonostante position: fixed. */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: min(420px, calc(100vw - 32px));
+    transform: translate(-50%, -50%) scale(1);
+    animation: toastCenterIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
 }
 
 .gamification-toast.hiding {
-    animation: toastSlideOut 0.4s ease-in forwards;
-}
-
-@keyframes toastSlideIn {
-    0% {
-        opacity: 0;
-        transform: translateX(100px) scale(0.8);
-    }
-    100% {
-        opacity: 1;
-        transform: translateX(0) scale(1);
-    }
-}
-
-@keyframes toastSlideOut {
-    0% {
-        opacity: 1;
-        transform: translateX(0) scale(1);
-    }
-    100% {
-        opacity: 0;
-        transform: translateX(100px) scale(0.8);
-    }
+    animation: toastCenterOut 0.4s ease-in forwards;
 }
 
 /* ========================================
@@ -191,7 +174,7 @@
 .gamification-toast.level-up {
     background: linear-gradient(135deg, var(--level-purple-dark) 0%, var(--level-purple) 50%, var(--level-purple-dark) 100%);
     background-size: 200% 200%;
-    animation: toastSlideIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards,
+    animation: toastCenterIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards,
                levelUpGlow 2s ease-in-out infinite;
     border: 2px solid var(--level-purple-light);
     box-shadow: 0 10px 40px rgba(124, 58, 237, 0.4),
@@ -548,50 +531,10 @@
    Responsive Adjustments
    ======================================== */
 
-@media (max-width: 768px) {
-    .gamification-toast-container {
-        right: 10px;
-        left: 10px;
-    }
+/* Su mobile la `width: min(420px, calc(100vw - 32px))` del toast base
+   gestisce già il responsive (~viewport - 32px su schermi stretti). */
 
-    .gamification-toast {
-        min-width: auto;
-        max-width: none;
-    }
-}
-
-/* ========================================
-   Centered Variants (welcome, nudge, unlock)
-   ========================================
-   Questi toast veicolano messaggi "headline" (saluto al login, sblocco
-   feature, suggerimento d'uso) e devono catturare l'attenzione al centro
-   dello schermo, non in alto a destra come xp/level/achievement. Ogni
-   toast con classe .welcome/.nudge/.unlock esce dal flusso del container
-   con position: fixed e si centra rispetto al viewport — stesso
-   comportamento desktop e mobile. Il queue di GamificationToast garantisce
-   che non si sovrappongano (un toast per volta).
-*/
-
-.gamification-toast.welcome,
-.gamification-toast.nudge,
-.gamification-toast.unlock {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    right: auto;
-    width: min(420px, calc(100vw - 32px));
-    min-width: 0;
-    max-width: none;
-    margin: 0;
-    transform: translate(-50%, -50%) scale(1);
-    animation: toastCenterIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
-}
-
-.gamification-toast.welcome.hiding,
-.gamification-toast.nudge.hiding,
-.gamification-toast.unlock.hiding {
-    animation: toastCenterOut 0.4s ease-in forwards;
-}
+/* Centramento toast: vedi `.gamification-toast` base. */
 
 @keyframes toastCenterIn {
     0% {

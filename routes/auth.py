@@ -1,6 +1,7 @@
 # routes/auth.py - Route di autenticazione
 import json
 from flask import Blueprint, render_template, request, redirect, url_for, flash
+from markupsafe import Markup, escape
 from flask_login import login_user, logout_user, login_required
 from flask_babel import gettext as _
 from models.user.services import UserService
@@ -42,11 +43,22 @@ def login():
                 logging.getLogger(__name__).warning(f"Gamification welcome flash failed: {e}")
 
             if not user.is_verified:
-                flash("Attenzione: il tuo account non è ancora verificato. Controlla la tua email.", "warning")
+                # B11: explain consequences + offer resend link inline.
+                resend_url = url_for("player.request_verification_email")
+                msg = Markup(
+                    escape(_(
+                        "Il tuo account non è ancora verificato. Finché non confermi la tua "
+                        "email, non puoi iscriverti alle gare né proporre partite."
+                    ))
+                    + ' <a href="'
+                ) + Markup(escape(resend_url)) + Markup('" class="alert-link">') + Markup(
+                    escape(_("Reinvia email di verifica"))
+                ) + Markup("</a>")
+                flash(msg, "warning")
 
             return redirect(url_for("dashboard.dashboard"))
         else:
-            flash("Username o password errati. Error.", "error")
+            flash(_("Username o password errati."), "error")
 
     return render_template("login.html")
 
@@ -76,7 +88,7 @@ def register():
             # However, standard practice: Redirect to login or "check email" page.
             # Let's flash message and redirect to login.
             
-            flash("Registrazione completata! Controlla la tua email per verificare l'account.", "success")
+            flash(_("Registrazione completata! Controlla la tua email per verificare l'account."), "success")
             
             # Show welcome gamification event on the login page
             welcome_payload = {

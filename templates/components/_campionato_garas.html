@@ -31,7 +31,7 @@
                                 <td>{{ gara.date|date_local }}</td>
                                 <td>{{ gara.location or '-' }}</td>
                                 <td>
-                                    {{ gara.discipline }}
+                                    {{ gara.discipline|discipline_display }}
                                     <small class="text-muted">({{ gara|format_distance }})</small>
                                 </td>
                                 <td>{{ gara|format_distance_short }}</td>
@@ -125,7 +125,7 @@
                             </div>
                             <div class="col-6 text-end">
                                 <small class="d-block">
-                                    <i class="fas fa-8-ball me-1 text-muted"></i>{{ gara.discipline|replace('_',' ')|title }}
+                                    <i class="fas fa-8-ball me-1 text-muted"></i>{{ gara.discipline|discipline_display }}
                                 </small>
                                 <small class="text-muted d-block">
                                     {{ gara|format_distance_short }}

@@ -32,6 +32,7 @@ class HistoryFilters:
     campionato_id: Optional[int] = None
     gara_id: Optional[int] = None
     completed_only: bool = True  # For gare: show only completed
+    campionato_status: Optional[str] = None  # 'active' | 'completed' | None=all
 
     @classmethod
     def from_request(cls, request_args: Any) -> "HistoryFilters":
@@ -46,6 +47,7 @@ class HistoryFilters:
             campionato_id=request_args.get("campionato_id", type=int),
             gara_id=request_args.get("gara_id", type=int),
             completed_only=request_args.get("completed_only", "true").lower() == "true",
+            campionato_status=request_args.get("campionato_status") or None,
         )
 
     @staticmethod
@@ -427,10 +429,12 @@ class PlayerHistoryService:
         user_id: int,
         page: int = 1,
         per_page: int = 20,
+        filters: Optional["HistoryFilters"] = None,
     ) -> Pagination:
         """Get paginated campionato history.
 
         Returns campionati where user participated in at least one gara.
+        Supports optional status filter ('active' | 'completed' | None=all).
         """
         # Subquery for gare where user inscribed
         inscribed_gara_ids = (
@@ -460,8 +464,14 @@ class PlayerHistoryService:
                 Campionato.id.in_(campionato_ids_with_participation),
                 Campionato.is_deleted == False,  # noqa: E712
             )
-            .order_by(Campionato.created_at.desc())
         )
+
+        if filters and filters.campionato_status == "active":
+            query = query.filter(Campionato.is_active == True)  # noqa: E712
+        elif filters and filters.campionato_status == "completed":
+            query = query.filter(Campionato.is_active == False)  # noqa: E712
+
+        query = query.order_by(Campionato.created_at.desc())
 
         pagination = query.paginate(page=page, per_page=per_page, error_out=False)
 

@@ -81,7 +81,7 @@
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-8">
-                                    <h5>{{ proposal.discipline.replace('_', ' ').title() }}</h5>
+                                    <h5>{{ proposal.discipline|discipline_display }}</h5>
                                     <p class="mb-2">
                                         <i class="fas fa-map-marker-alt"></i> {{ proposal.location_display }}<br>
                                         <i class="fas fa-clock"></i> {{ proposal.scheduled_at|datetime_local if
@@ -161,7 +161,7 @@
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-8">
-                                    <h5>{{ proposal.discipline.replace('_', ' ').title() }}</h5>
+                                    <h5>{{ proposal.discipline|discipline_display }}</h5>
                                     <p class="mb-2">
                                         <i class="fas fa-map-marker-alt"></i> {{ proposal.location_display }}<br>
                                         <i class="fas fa-clock"></i> {{ proposal.scheduled_at|datetime_local if
@@ -245,7 +245,7 @@
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-8">
-                                    <h5>{{ proposal.discipline.replace('_', ' ').title() }}</h5>
+                                    <h5>{{ proposal.discipline|discipline_display }}</h5>
                                     <p class="mb-2">
                                         <i class="fas fa-map-marker-alt"></i> {{ proposal.location_display }}<br>
                                         <i class="fas fa-clock"></i> {{ proposal.scheduled_at|datetime_local if

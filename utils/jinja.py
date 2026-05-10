@@ -82,17 +82,55 @@ def format_datetime_local(value) -> Markup:
 
 
 def format_time_local(value) -> Markup:
-    """Formatta un orario per la visualizzazione locale."""
+    """Formatta un orario in formato HH:MM (timezone Italia per i datetime).
+
+    Accetta sia `time` (formattato direttamente) sia `datetime` (convertito
+    da UTC al timezone Italia per coerenza con format_datetime_local).
+    """
     if not value:
         return Markup(_("N/A"))
 
-    # Se è un oggetto time, convertilo in stringa
-    if isinstance(value, time):
+    if isinstance(value, datetime):
+        from zoneinfo import ZoneInfo
+
+        if value.tzinfo is None:
+            utc_dt = value.replace(tzinfo=ZoneInfo("UTC"))
+        else:
+            utc_dt = value.astimezone(ZoneInfo("UTC"))
+        italian_time = utc_dt.astimezone(ZoneInfo("Europe/Rome"))
+        time_str = italian_time.strftime('%H:%M')
+    elif isinstance(value, time):
         time_str = value.strftime('%H:%M')
     else:
         time_str = str(value)
 
     return Markup(escape(time_str))
+
+
+def format_discipline(value) -> Markup:
+    """B3: render a discipline value (enum or raw string) using its display_name.
+
+    Centralizes the discipline → "8-Ball"/"9-Ball" mapping so templates
+    don't need to repeat ``.replace('_', ' ')|title`` ad-hoc.
+
+    Examples:
+        {{ gara.discipline|discipline_display }}     → "8-Ball"
+        {{ '9_ball'|discipline_display }}            → "9-Ball"
+    """
+    if not value:
+        return Markup(_("N/A"))
+
+    # Lazy import to avoid circular dependency at module load
+    from models.status_enum import Discipline
+
+    if isinstance(value, Discipline):
+        return Markup(escape(value.display_name))
+
+    raw = str(value)
+    try:
+        return Markup(escape(Discipline(raw).display_name))
+    except ValueError:
+        return Markup(escape(raw.replace("_", " ").title()))
 
 
 def format_distance(distance_obj) -> Markup:

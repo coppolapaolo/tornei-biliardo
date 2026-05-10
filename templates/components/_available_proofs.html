@@ -9,7 +9,7 @@
         {% for gara in available_garas %}
             <div class="d-flex justify-content-between align-items-center mb-3 p-3 border rounded">
                 <div>
-                    <strong>Gara {{ gara.number }}</strong> - {{ gara.discipline }}
+                    <strong>Gara {{ gara.number }}</strong> - {{ gara.discipline|discipline_display }}
                     {% if gara.name %} ({{ gara.name }}){% endif %}
                     <br><small class="text-muted">{{ gara.date|date_local }} - 
                     {{ gara.distance_config|format_distance }}

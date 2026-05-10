@@ -60,7 +60,7 @@
                     <!-- Match Details -->
                     <h4 class="card-title mb-4">
                         <i class="fas fa-trophy text-warning"></i>
-                        {{ proposal.discipline.replace('_', ' ').title() if proposal.discipline else 'Disciplina non specificata' }}
+                        {{ proposal.discipline|discipline_display if proposal.discipline else 'Disciplina non specificata' }}
                     </h4>
 
                     <div class="row mb-4">

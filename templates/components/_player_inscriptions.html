@@ -9,6 +9,25 @@
             {% set campionato_inscriptions = inscriptions|selectattr('gara.campionato') %}
             {% set standalone_inscriptions = inscriptions|rejectattr('gara.campionato') %}
             
+            {% macro position_badge(gara) %}
+                {# Show final position if gara is completed and user has a RoundClassification #}
+                {% if gara.status == 'completed' %}
+                    {% set user_rcs = gara.round_classifications | selectattr('user_id', 'equalto', current_user.id) | sort(attribute='round_number', reverse=True) | list %}
+                    {% if user_rcs %}
+                        {% set pos = user_rcs[0].position %}
+                        {% if pos == 1 %}
+                            <span class="badge bg-warning text-dark ms-1"><i class="fas fa-medal"></i> 1°</span>
+                        {% elif pos == 2 %}
+                            <span class="badge bg-secondary ms-1"><i class="fas fa-medal"></i> 2°</span>
+                        {% elif pos == 3 %}
+                            <span class="badge bg-danger ms-1"><i class="fas fa-medal"></i> 3°</span>
+                        {% else %}
+                            <span class="badge bg-light text-dark ms-1">{{ pos }}°</span>
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+            {% endmacro %}
+
             {# Iscrizioni per campionato #}
             {% if campionato_inscriptions %}
                 {% set campionati = campionato_inscriptions|groupby('gara.campionato.name') %}
@@ -18,16 +37,17 @@
                         {% for inscription in camp_inscriptions %}
                             <li>
                                 <small>
-                                    Gara {{ inscription.gara.number }} - 
+                                    Gara {{ inscription.gara.number }} -
                                     {{ inscription.gara.date|date_local }}
                                     {{ status_badge(inscription.gara, 'gara') }}
+                                    {{ position_badge(inscription.gara) }}
                                 </small>
                             </li>
                         {% endfor %}
                     </ul>
                 {% endfor %}
             {% endif %}
-            
+
             {# Iscrizioni standalone #}
             {% if standalone_inscriptions %}
                 <h6><i class="fas fa-bullseye text-primary me-1"></i>Gare Singole</h6>
@@ -35,9 +55,10 @@
                     {% for inscription in standalone_inscriptions %}
                         <li>
                             <small>
-                                {{ inscription.gara.name or ('Gara ' ~ inscription.gara.number) }} - 
+                                {{ inscription.gara.name or ('Gara ' ~ inscription.gara.number) }} -
                                 {{ inscription.gara.date|date_local }}
                                 {{ status_badge(inscription.gara, 'gara') }}
+                                {{ position_badge(inscription.gara) }}
                             </small>
                         </li>
                     {% endfor %}

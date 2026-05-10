@@ -142,10 +142,13 @@ def campionato_detail_public(campionato_id):
 
 @main_bp.route("/garas")
 def public_garas_list():
-    """Lista pubblica delle gare standalone - visibile ai guest"""
+    """Lista pubblica delle gare standalone - visibile ai guest.
+
+    B5: split active vs completed gare so the guest sees two distinct
+    sections instead of completed gare mixed with active ones.
+    """
     from models.status_enum import GaraStatus
 
-    # Get all standalone garas
     standalone_garas = (
         Gara.query.filter_by(campionato_id=None)
         .filter(Gara.status != GaraStatus.SETUP.value)  # Hide setup garas
@@ -153,7 +156,15 @@ def public_garas_list():
         .all()
     )
 
-    return render_template("public/garas_list.html", garas=standalone_garas)
+    completed_status = GaraStatus.COMPLETED.value
+    active_garas = [g for g in standalone_garas if g.status != completed_status]
+    completed_garas = [g for g in standalone_garas if g.status == completed_status]
+
+    return render_template(
+        "public/garas_list.html",
+        active_garas=active_garas,
+        completed_garas=completed_garas,
+    )
 
 
 @main_bp.route("/gara/<int:gara_id>")
