@@ -10,8 +10,12 @@ from unittest.mock import Mock, patch
 from typing import List
 
 from models.matchmaking.strategies.amalfi import AmalfiStrategy
-from models.matchmaking.strategies.base import Pairing
 from models import RoundClassification
+
+ENCOUNTER_MATRIX_PATH = (
+    "models.classification.encounter_service."
+    "PlayerEncounterService.get_encounter_matrix"
+)
 
 
 @pytest.mark.unit
@@ -23,7 +27,9 @@ class TestAmalfiAlgorithmImplementation:
         """Create AmalfiStrategy instance."""
         return AmalfiStrategy()
 
-    def create_mock_classification(self, player_ids: List[int], gara_id: int = 1) -> List[RoundClassification]:
+    def create_mock_classification(
+        self, player_ids: List[int], gara_id: int = 1
+    ) -> List[RoundClassification]:
         """Helper to create mock RoundClassification objects."""
         classifications = []
         for i, player_id in enumerate(player_ids, 1):
@@ -42,7 +48,7 @@ class TestAmalfiAlgorithmImplementation:
 
         # Mock anti-rematch to allow all pairings
         with patch(
-            'models.classification.encounter_service.PlayerEncounterService.get_encounter_matrix',
+            ENCOUNTER_MATRIX_PATH,
             return_value={},
         ):
             pairings = strategy._amalfi_pairing(classifications, turno=2, max_turni=5)
@@ -62,7 +68,7 @@ class TestAmalfiAlgorithmImplementation:
         classifications = self.create_mock_classification(player_ids)
 
         with patch(
-            'models.classification.encounter_service.PlayerEncounterService.get_encounter_matrix',
+            ENCOUNTER_MATRIX_PATH,
             return_value={},
         ):
             # Test different rounds with max_turni = 5
@@ -74,7 +80,9 @@ class TestAmalfiAlgorithmImplementation:
             ]
 
             for turno, max_turni, expected_salto in test_cases:
-                pairings = strategy._amalfi_pairing(classifications, turno=turno, max_turni=max_turni)
+                pairings = strategy._amalfi_pairing(
+                    classifications, turno=turno, max_turni=max_turni
+                )
 
                 # Verify basic structure
                 assert len(pairings) == 2  # 4 players = 2 pairings
@@ -88,7 +96,7 @@ class TestAmalfiAlgorithmImplementation:
         classifications = self.create_mock_classification(player_ids)
 
         with patch(
-            'models.classification.encounter_service.PlayerEncounterService.get_encounter_matrix',
+            ENCOUNTER_MATRIX_PATH,
             return_value={},
         ):
             pairings = strategy._amalfi_pairing(classifications, turno=2, max_turni=5)
@@ -117,7 +125,7 @@ class TestAmalfiAlgorithmImplementation:
         encounter_matrix = {(1, 2): True, (2, 1): True}
 
         with patch(
-            'models.classification.encounter_service.PlayerEncounterService.get_encounter_matrix',
+            ENCOUNTER_MATRIX_PATH,
             return_value=encounter_matrix,
         ):
             pairings = strategy._amalfi_pairing(classifications, turno=2, max_turni=5)
@@ -148,7 +156,7 @@ class TestAmalfiAlgorithmImplementation:
             encounter_matrix[(b, a)] = True
 
         with patch(
-            'models.classification.encounter_service.PlayerEncounterService.get_encounter_matrix',
+            ENCOUNTER_MATRIX_PATH,
             return_value=encounter_matrix,
         ):
             pairings = strategy._amalfi_pairing(classifications, turno=3, max_turni=5)
@@ -166,7 +174,7 @@ class TestAmalfiAlgorithmImplementation:
         classifications = self.create_mock_classification(player_ids)
 
         with patch(
-            'models.classification.encounter_service.PlayerEncounterService.get_encounter_matrix',
+            ENCOUNTER_MATRIX_PATH,
             return_value={},
         ):
             pairings = strategy._amalfi_pairing(classifications, turno=2, max_turni=4)
@@ -188,7 +196,7 @@ class TestAmalfiAlgorithmImplementation:
     def test_amalfi_empty_classification(self, strategy):
         """Test behavior with empty classification."""
         with patch(
-            'models.classification.encounter_service.PlayerEncounterService.get_encounter_matrix',
+            ENCOUNTER_MATRIX_PATH,
             return_value={},
         ):
             pairings = strategy._amalfi_pairing([], turno=2, max_turni=5)
@@ -201,7 +209,7 @@ class TestAmalfiAlgorithmImplementation:
         classifications = self.create_mock_classification(player_ids)
 
         with patch(
-            'models.classification.encounter_service.PlayerEncounterService.get_encounter_matrix',
+            ENCOUNTER_MATRIX_PATH,
             return_value={},
         ):
             pairings = strategy._amalfi_pairing(classifications, turno=2, max_turni=5)
@@ -217,7 +225,7 @@ class TestAmalfiAlgorithmImplementation:
         classifications = self.create_mock_classification(player_ids)
 
         with patch(
-            'models.classification.encounter_service.PlayerEncounterService.get_encounter_matrix',
+            ENCOUNTER_MATRIX_PATH,
             return_value={},
         ):
             pairings = strategy._amalfi_pairing(classifications, turno=3, max_turni=5)
@@ -239,7 +247,7 @@ class TestAmalfiAlgorithmImplementation:
         classifications = self.create_mock_classification(player_ids)
 
         with patch(
-            'models.classification.encounter_service.PlayerEncounterService.get_encounter_matrix',
+            ENCOUNTER_MATRIX_PATH,
             return_value={},
         ):
             pairings = strategy._amalfi_pairing(classifications, turno=2, max_turni=3)
@@ -248,9 +256,9 @@ class TestAmalfiAlgorithmImplementation:
         expected_pairs = [(1, 3), (2, 4), (5, 7), (6, 8)]
         actual_pairs = [tuple(sorted(p.players)) for p in pairings if not p.is_bye]
 
-        assert sorted(actual_pairs) == sorted(expected_pairs), (
-            f"Expected {sorted(expected_pairs)}, got {sorted(actual_pairs)}"
-        )
+        assert sorted(actual_pairs) == sorted(
+            expected_pairs
+        ), f"Expected {sorted(expected_pairs)}, got {sorted(actual_pairs)}"
 
     def test_amalfi_round3_of_3_produces_consecutive_pairings(self, strategy):
         """Turno finale (3 di 3) deve abbinare 1° vs 2°, 3° vs 4°, etc.
@@ -262,7 +270,7 @@ class TestAmalfiAlgorithmImplementation:
         classifications = self.create_mock_classification(player_ids)
 
         with patch(
-            'models.classification.encounter_service.PlayerEncounterService.get_encounter_matrix',
+            ENCOUNTER_MATRIX_PATH,
             return_value={},
         ):
             pairings = strategy._amalfi_pairing(classifications, turno=3, max_turni=3)
@@ -271,33 +279,46 @@ class TestAmalfiAlgorithmImplementation:
         expected_pairs = [(1, 2), (3, 4), (5, 6), (7, 8)]
         actual_pairs = [tuple(sorted(p.players)) for p in pairings if not p.is_bye]
 
-        assert sorted(actual_pairs) == sorted(expected_pairs), (
-            f"Expected {sorted(expected_pairs)}, got {sorted(actual_pairs)}"
-        )
+        assert sorted(actual_pairs) == sorted(
+            expected_pairs
+        ), f"Expected {sorted(expected_pairs)}, got {sorted(actual_pairs)}"
 
     def test_amalfi_round1_of_3_produces_wide_spread_pairings(self, strategy):
-        """Turno 1 di 3 deve abbinare 1° vs 4°, 2° vs 5°, 3° vs 6°, 7° vs 8°.
+        """Turno 1 di 3: la maggior parte dei pairing deve avere position_diff = salto.
 
-        Nel primo turno mancano 3 turni, quindi salto = 3.
-        I giocatori vengono abbinati saltando 3 posizioni.
-        L'ultimo giocatore (8°) viene abbinato con il 7° perché non ci sono
-        più giocatori dopo di lui.
+        Nel primo turno mancano 3 turni, quindi salto = 3. Per 8 giocatori
+        sono possibili al più 3 pairing a position_diff esatto 3 (es. 1-4, 2-5,
+        3-6); l'ultimo pairing copre i giocatori residui (7-8 oppure 4-7 e 5-8
+        a seconda del matching scelto).
+
+        Il maximum-weighted-matching del caso pari (vedi SPECIFICHE.md "Garanzia
+        anti-rematch nel caso pari" e ADR-029) può scegliere combinazioni
+        equivalenti per peso totale: il test verifica la *proprietà* di "wide
+        spread" (almeno 3 pairing al salto target), non un output specifico.
         """
         player_ids = [1, 2, 3, 4, 5, 6, 7, 8]
         classifications = self.create_mock_classification(player_ids)
 
         with patch(
-            'models.classification.encounter_service.PlayerEncounterService.get_encounter_matrix',
+            ENCOUNTER_MATRIX_PATH,
             return_value={},
         ):
             pairings = strategy._amalfi_pairing(classifications, turno=1, max_turni=3)
 
-        # Salto = 3 → 1° vs 4°, 2° vs 5°, 3° vs 6°, 7° vs 8° (ciclico)
-        expected_pairs = [(1, 4), (2, 5), (3, 6), (7, 8)]
         actual_pairs = [tuple(sorted(p.players)) for p in pairings if not p.is_bye]
 
-        assert sorted(actual_pairs) == sorted(expected_pairs), (
-            f"Expected {sorted(expected_pairs)}, got {sorted(actual_pairs)}"
+        # Tutti i giocatori coperti, esattamente 4 pairing senza bye
+        assert len(actual_pairs) == 4
+        all_players = {p for pair in actual_pairs for p in pair}
+        assert all_players == set(player_ids)
+
+        # Spirito Amalfi: almeno 3 dei 4 pairing devono avere position_diff = salto = 3
+        position_index = {pid: i for i, pid in enumerate(player_ids)}
+        diffs = [abs(position_index[a] - position_index[b]) for a, b in actual_pairs]
+        at_target = sum(1 for d in diffs if d == 3)
+        assert at_target >= 3, (
+            f"Expected ≥3 pairings at salto target=3, got diffs={diffs} "
+            f"from pairs={actual_pairs}"
         )
 
     def test_amalfi_with_rematch_finds_alternative(self, strategy):
@@ -313,7 +334,7 @@ class TestAmalfiAlgorithmImplementation:
         encounter_matrix = {(1, 3): True, (3, 1): True}
 
         with patch(
-            'models.classification.encounter_service.PlayerEncounterService.get_encounter_matrix',
+            ENCOUNTER_MATRIX_PATH,
             return_value=encounter_matrix,
         ):
             pairings = strategy._amalfi_pairing(classifications, turno=2, max_turni=3)
@@ -326,6 +347,6 @@ class TestAmalfiAlgorithmImplementation:
                 break
 
         assert player1_pairing is not None, "Player 1 should be paired"
-        assert 3 not in player1_pairing.players, (
-            "Player 1 should not be paired with player 3 (rematch)"
-        )
+        assert (
+            3 not in player1_pairing.players
+        ), "Player 1 should not be paired with player 3 (rematch)"

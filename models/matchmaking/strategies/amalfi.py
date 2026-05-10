@@ -304,7 +304,8 @@ class AmalfiStrategy(BaseStrategy):
         trio_counts = self._get_trio_counts(gara_id) if (gara_id and use_trio) else {}
 
         # Carica la matrice encounter una sola volta (cached 10 min).
-        # Usata sia dal loop salto per l'anti-rematch sia dallo Step 3 (trio companion selection).
+        # Usata sia dal loop salto per l'anti-rematch sia dallo Step 3
+        # (trio companion selection).
         from models.classification.encounter_service import PlayerEncounterService
 
         raw_matrix = (
@@ -318,6 +319,18 @@ class AmalfiStrategy(BaseStrategy):
         player_to_index: dict[int, int] = {
             c.user_id: i for i, c in enumerate(classifica)
         }
+
+        # Caso pari: tenta il matching ottimo sul grafo complementare degli incontri
+        # (zero rematch garantito quando matematicamente possibile, vedi SPECIFICHE.md
+        # "Garanzia anti-rematch nel caso pari" e ADR-029).
+        # Il greedy salto resta come fallback quando il complementare non ammette
+        # matching perfetto (rematch matematicamente inevitabile).
+        if len(players) % 2 == 0:
+            optimal_pairs = self._try_optimal_pair_matching(
+                players, encounter_matrix, salto_iniziale, player_to_index, turno
+            )
+            if optimal_pairs is not None:
+                return optimal_pairs
 
         if len(players) % 2 == 1:
             if use_trio:
@@ -493,6 +506,56 @@ class AmalfiStrategy(BaseStrategy):
 
         return result
 
+    def _try_optimal_pair_matching(
+        self,
+        players: List[int],
+        encounter_matrix: Dict[Tuple[int, int], bool],
+        salto_target: int,
+        player_to_index: dict[int, int],
+        turno: int,
+    ) -> Optional[List[Pairing]]:
+        """Maximum weighted matching sul grafo complementare (caso pari).
+
+        Garantisce zero rematch quando matematicamente possibile.
+        Pesi codificano lo "spirito Amalfi": position_diff vicino al salto
+        target → peso alto. Con `maxcardinality=True`, networkx massimizza
+        prima la cardinalità (zero rematch), poi il peso totale.
+
+        Returns:
+            Lista di Pairing se esiste matching perfetto sul complementare;
+            None altrimenti (il chiamante usa il greedy salto come fallback).
+        """
+        import networkx as nx
+
+        n = len(players)
+        if n == 0 or n % 2 == 1:
+            return None
+
+        max_weight_offset = n + 1
+        graph: nx.Graph = nx.Graph()
+        graph.add_nodes_from(players)
+        for i, a in enumerate(players):
+            for b in players[i + 1 :]:
+                if encounter_matrix.get((a, b), False):
+                    continue
+                position_diff = abs(player_to_index[a] - player_to_index[b])
+                weight = max_weight_offset - abs(position_diff - salto_target)
+                if weight < 1:
+                    weight = 1
+                graph.add_edge(a, b, weight=weight)
+
+        matching = nx.max_weight_matching(graph, maxcardinality=True)
+        if len(matching) != n // 2:
+            return None
+
+        pairs: List[Pairing] = []
+        for a, b in matching:
+            if player_to_index[a] > player_to_index[b]:
+                a, b = b, a
+            pairs.append(Pairing(players=(a, b), is_bye=False, round_number=turno))
+        pairs.sort(key=lambda p: player_to_index[p.players[0]])
+        return pairs
+
     def _get_players_with_bye(self, gara_id: int) -> set[int]:
         """Ottieni l'insieme dei giocatori che hanno già avuto un bye in questa gara."""
         from models.match.models import Match
@@ -538,7 +601,7 @@ class AmalfiStrategy(BaseStrategy):
         trio_counts: dict[int, int],
         player_to_index: dict[int, int],
     ) -> Tuple[int, List[Tuple[int, int]]]:
-        """Pure function. Swap anchor with a player in pairs if anchor has too many trios.
+        """Pure function. Swap anchor with a pair player if anchor has too many trios.
 
         If the anchor's trio_count is above the minimum across all players
         (anchor + all players in pairs), swap with the player that has the
@@ -592,7 +655,7 @@ class AmalfiStrategy(BaseStrategy):
         pool = [p for pair in pairs for p in pair]
         if len(pool) < 2:
             raise ValueError(
-                f"Need at least 2 players in pool for companion selection, got {len(pool)}"
+                f"Need at least 2 players for companion selection, got {len(pool)}"
             )
         if anchor in pool:
             raise ValueError(f"Anchor {anchor} must not be in the companion pool")
@@ -637,9 +700,10 @@ class AmalfiStrategy(BaseStrategy):
                     1 if encounter_matrix.get((orphan1, orphan2), False) else 0
                 )
 
-            # position_sum: higher sum = both companions lower in classification = more Amalfi spirit
-            # Using sum (not max) ensures we prefer (CRISTIAN=5, EGLE=6) sum=11
-            # over (player1=0, EGLE=6) sum=6 — avoids sacrificing top-ranked players
+            # position_sum: higher sum = both companions lower in classification
+            # = more Amalfi spirit. Using sum (not max) ensures we prefer
+            # (CRISTIAN=5, EGLE=6) sum=11 over (player1=0, EGLE=6) sum=6 —
+            # avoids sacrificing top-ranked players.
             position_sum = player_to_index.get(c1, 0) + player_to_index.get(c2, 0)
 
             score = (companion_count_sum, trio_rematches, orphan_rematch, -position_sum)

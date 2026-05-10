@@ -89,7 +89,17 @@ Per distanze superiori a 7, i rack totali da giocare diventano troppi rispetto a
 
 Una gara **amalfi** è una gara in cui non c'è eliminazione e tutti i giocatori giocano lo stesso numero di turni.
 Inizialmente gli iscritti vengono abbinati casualmente. Una variante prevede un abbinamento iniziale basato sulla classifica del campionato (comunque nella prima gara, in cui la classifica è assente, l'abbinamento è casuale). Un'altra variante prevede che l'abbinamento iniziale sia basato sulla classifica del _Fargo rating_ o del _Elo rating_.
-Amalfi abbina ad ogni turno i giocatori partendo dalla classifica precedente e saltando un numero di posizioni pari ai turni che mancano alla fine.  
+Amalfi abbina ad ogni turno i giocatori partendo dalla classifica precedente e saltando un numero di posizioni pari ai turni che mancano alla fine.
+
+#### Garanzia anti-rematch nel caso pari
+
+Quando il numero di giocatori è **pari** e l'opzione `anti_rematch_enabled` è attiva, l'algoritmo Amalfi **garantisce zero rematch quando matematicamente possibile**, ovvero quando esiste un matching perfetto sul grafo complementare degli incontri già giocati. La garanzia è raggiunta sostituendo il greedy salto con un _maximum weighted matching_ sul grafo complementare:
+
+- **Cardinalità massima** — gli archi del grafo sono solo le coppie di giocatori che NON si sono ancora incontrati; un matching perfetto (cardinalità `N/2`) implica zero rematch.
+- **Pesi per spirito Amalfi** — gli archi sono pesati per minimizzare lo scostamento dal salto target (`max_turni - turno + 1`): tra tutti i matching perfetti possibili, viene scelto quello che meglio rispetta il salto Amalfi.
+- **Fallback** — quando il matching perfetto sul complementare non esiste (rematch matematicamente inevitabile), l'algoritmo accetta il numero minimo di rematch e usa il greedy salto come tie-breaker.
+
+Per il caso **dispari** la priorità è descritta nella sezione successiva (selezione trio): la rotazione equa dei trii vince sull'anti-rematch.
 
 #### Selezione trio nell'algoritmo Amalfi
 

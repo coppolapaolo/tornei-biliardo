@@ -419,7 +419,7 @@ service = MatchmakingService(gara_id=gara.id, strategy=MatchmakingStrategy.AMALF
 matches = service.create_next_round()
 ```
 
-**Note**: The Random Anti-Rematch strategy uses `networkx` for maximum cardinality matching on the anti-rematch graph. Don't reimplement graph algorithms — use `nx` (already in requirements.txt).
+**Note**: Both the Random Anti-Rematch strategy and the Amalfi strategy (caso pari, vedi ADR-029) usano `networkx` per maximum (cardinality / weighted) matching sul grafo anti-rematch. Don't reimplement graph algorithms — use `nx` (already in requirements.txt).
 
 ### Multi-Set Matches
 ```python
