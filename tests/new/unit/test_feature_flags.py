@@ -1,4 +1,5 @@
 """Unit tests for ADR-028 production endpoint allowlist engine."""
+
 from __future__ import annotations
 
 import pytest
@@ -121,8 +122,7 @@ def test_player_blocked_from_director_only(app, production_mode):
         # admin.match.match_detail is the unified match view (player + director),
         # see B8 fix and the comment in utils/feature_flags.py.
         assert (
-            is_endpoint_visible("admin.match.set_match_result_direct", player)
-            is False
+            is_endpoint_visible("admin.match.set_match_result_direct", player) is False
         )
 
 
@@ -164,6 +164,57 @@ def test_unlisted_endpoint_admin_only(app, production_mode):
         assert is_endpoint_visible("gamification.admin_dashboard", player) is False
         assert is_endpoint_visible("gamification.admin_dashboard", director) is False
         assert is_endpoint_visible("gamification.admin_dashboard", admin) is True
+
+
+def test_gamification_hidden_from_player_and_anonymous(app, production_mode):
+    """Gamification UI/API are director-only (admin bypasses). Player and
+    anonymous viewers must NOT see them in production until the feature
+    stabilises — toasts/widgets are filtered by feature_visible() and the
+    nudge/unlock dispatcher in models/gamification/frontend_bridge.py."""
+    with app.app_context():
+        anon = FakeUser()
+        player = FakeUser(is_authenticated=True, is_player=True)
+        director = FakeUser(is_authenticated=True, is_director=True)
+        admin = FakeUser(is_authenticated=True, is_admin=True)
+
+        for endpoint in (
+            "gamification.dashboard",
+            "gamification.achievements",
+            "gamification.quests",
+            "gamification.streaks",
+            "gamification.leaderboards",
+            "gamification.api_level_progress",
+            "gamification.api_user_stats",
+            "gamification.api_achievements",
+            "gamification.api_streaks",
+        ):
+            assert is_endpoint_visible(endpoint, anon) is False, endpoint
+            assert is_endpoint_visible(endpoint, player) is False, endpoint
+            assert is_endpoint_visible(endpoint, director) is True, endpoint
+            assert is_endpoint_visible(endpoint, admin) is True, endpoint
+
+
+def test_privacy_endpoints_visible_to_player_and_director(app, production_mode):
+    """Privacy controls (privacy_settings + hide/show toggles for
+    matches/inscriptions/campionati) must be reachable by every logged-in
+    user managing their own data — both player and director."""
+    with app.app_context():
+        anon = FakeUser()
+        player = FakeUser(is_authenticated=True, is_player=True)
+        director = FakeUser(is_authenticated=True, is_director=True)
+
+        for endpoint in (
+            "player.privacy_settings",
+            "player.hide_match",
+            "player.show_match",
+            "player.hide_inscription",
+            "player.show_inscription",
+            "player.hide_campionato",
+            "player.show_campionato",
+        ):
+            assert is_endpoint_visible(endpoint, anon) is False, endpoint
+            assert is_endpoint_visible(endpoint, player) is True, endpoint
+            assert is_endpoint_visible(endpoint, director) is True, endpoint
 
 
 def test_infrastructure_allowlist_visible_to_everyone(app, production_mode):

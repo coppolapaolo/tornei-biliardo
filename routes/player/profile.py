@@ -407,7 +407,7 @@ def edit_profile():
 def request_verification_email():
     """Richiede l'invio di una nuova email di verifica."""
     if current_user.is_verified:
-        flash("La tua email è già verificata.", "info")
+        flash(_("La tua email è già verificata."), "info")
         return redirect(url_for("player.edit_profile"))
 
     from models.user.profile_service import UserProfileService
@@ -416,13 +416,13 @@ def request_verification_email():
         # Use existing service method to generate token and send email
         if UserProfileService.request_verification_email(current_user):
             flash(
-                "Email di verifica inviata. Controlla la tua casella di posta.",
+                _("Email di verifica inviata. Controlla la tua casella di posta."),
                 "success",
             )
         else:
-            flash("Impossibile inviare l'email. Riprova più tardi.", "error")
+            flash(_("Impossibile inviare l'email. Riprova più tardi."), "error")
     except Exception as e:
-        flash(f"Errore durante l'invio: {str(e)}", "error")
+        flash(_("Errore durante l'invio: %(detail)s", detail=str(e)), "error")
 
     return redirect(url_for("player.edit_profile"))
 

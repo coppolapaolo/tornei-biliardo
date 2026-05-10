@@ -13,10 +13,10 @@ endpoint to non-admins, add an entry here. Visibility is orthogonal to
 authorization (the existing decorators @login_required, @admin_required,
 etc. still apply once the endpoint is reached).
 """
+
 from __future__ import annotations
 
 from flask import current_app
-
 
 Role = str  # "anonimo" | "player" | "director"
 
@@ -35,122 +35,117 @@ Role = str  # "anonimo" | "player" | "director"
 
 ENDPOINT_ROLES: dict[str, set[Role]] = {
     # === Anonymous-only (not logged in) ===
-    "auth.login":                                 {"anonimo"},
-    "auth.register":                              {"anonimo"},
-    "auth.forgot_password":                       {"anonimo"},
-    "auth.reset_password":                        {"anonimo"},
-    "auth.verify_email":                          {"anonimo"},
-
+    "auth.login": {"anonimo"},
+    "auth.register": {"anonimo"},
+    "auth.forgot_password": {"anonimo"},
+    "auth.reset_password": {"anonimo"},
+    "auth.verify_email": {"anonimo"},
     # === Public (polymorphic: every role sees, template adapts) ===
-    "main.index":                                 {"anonimo", "player", "director"},
-    "main.public_garas_list":                     {"anonimo", "player", "director"},
-    "main.public_campionatos_list":               {"anonimo", "player", "director"},
-    "main.gara_detail_public":                    {"anonimo", "player", "director"},
-    "main.campionato_detail_public":              {"anonimo", "player", "director"},
-    "admin.competition.gara_detail":              {"anonimo", "player", "director"},
-    "i18n.set_language":                          {"anonimo", "player", "director"},
-
+    "main.index": {"anonimo", "player", "director"},
+    "main.public_garas_list": {"anonimo", "player", "director"},
+    "main.public_campionatos_list": {"anonimo", "player", "director"},
+    "main.gara_detail_public": {"anonimo", "player", "director"},
+    "main.campionato_detail_public": {"anonimo", "player", "director"},
+    "admin.competition.gara_detail": {"anonimo", "player", "director"},
+    "i18n.set_language": {"anonimo", "player", "director"},
     # === Logged-in (player or director) ===
-    "auth.logout":                                {"player", "director"},
-    "dashboard.dashboard":                        {"player", "director"},
+    "auth.logout": {"player", "director"},
+    "dashboard.dashboard": {"player", "director"},
     # Player-side dashboard at /player/ (the "back to dashboard" target from
     # several profile/list pages — also reached by the dashboard router).
-    "player.dashboard":                           {"player", "director"},
-
+    "player.dashboard": {"player", "director"},
     # Profile
-    "player.profile":                             {"player", "director"},
-    "player.view_profile":                        {"player", "director"},
-    "player.edit_profile":                        {"player", "director"},
-    "player.change_password":                     {"player", "director"},
-    "player.request_verification_email":          {"player", "director"},
-
+    "player.profile": {"player", "director"},
+    "player.view_profile": {"player", "director"},
+    "player.edit_profile": {"player", "director"},
+    "player.change_password": {"player", "director"},
+    "player.request_verification_email": {"player", "director"},
     # Notifications
-    "player.notifications":                       {"player", "director"},
-    "player.mark_notification_read":              {"player", "director"},
-    "player.mark_all_notifications_read":         {"player", "director"},
-    "player.delete_selected_notifications":       {"player", "director"},
-    "player.update_auto_delete":                  {"player", "director"},
-
+    "player.notifications": {"player", "director"},
+    "player.mark_notification_read": {"player", "director"},
+    "player.mark_all_notifications_read": {"player", "director"},
+    "player.delete_selected_notifications": {"player", "director"},
+    "player.update_auto_delete": {"player", "director"},
+    # Privacy controls (hide/show personal history items + privacy_settings page)
+    "player.privacy_settings": {"player", "director"},
+    "player.hide_match": {"player", "director"},
+    "player.show_match": {"player", "director"},
+    "player.hide_inscription": {"player", "director"},
+    "player.show_inscription": {"player", "director"},
+    "player.hide_campionato": {"player", "director"},
+    "player.show_campionato": {"player", "director"},
     # Inscriptions and play (a director can also play in someone else's gara).
     # main.public_*_list lists gare; player.gara_detail shows a gara from the
     # player's perspective (with inscription/unsubscribe controls); the
     # polymorphic admin.competition.gara_detail above shows the same gara
     # with admin/director management UI.
-    "player.history":                             {"player", "director"},
-    "player.gara_detail":                         {"player", "director"},
-    "player.inscribe_to_gara":                    {"player", "director"},
-    "player.unsubscribe_from_gara":               {"player", "director"},
-
+    "player.history": {"player", "director"},
+    "player.gara_detail": {"player", "director"},
+    "player.inscribe_to_gara": {"player", "director"},
+    "player.unsubscribe_from_gara": {"player", "director"},
     # Match scoring (player side, for matches the user is playing)
-    "player.add_rack_simplified":                 {"player", "director"},
-    "player.remove_rack_simplified":              {"player", "director"},
-    "player.confirm_match_result":                {"player", "director"},
-    "player.reject_match_result":                 {"player", "director"},
-    "player.forfeit_match":                       {"player", "director"},
-    "player.add_trio_rack":                       {"player", "director"},
-    "player.remove_trio_rack":                    {"player", "director"},
-    "player.confirm_trio_result":                 {"player", "director"},
-    "player.forfeit_trio":                        {"player", "director"},
-
+    "player.add_rack_simplified": {"player", "director"},
+    "player.remove_rack_simplified": {"player", "director"},
+    "player.confirm_match_result": {"player", "director"},
+    "player.reject_match_result": {"player", "director"},
+    "player.forfeit_match": {"player", "director"},
+    "player.add_trio_rack": {"player", "director"},
+    "player.remove_trio_rack": {"player", "director"},
+    "player.confirm_trio_result": {"player", "director"},
+    "player.forfeit_trio": {"player", "director"},
     # === Director only: campionato/gara creation and management ===
-    "admin.campionato.create_campionato":         {"director"},
-    "admin.campionato.edit_campionato":           {"director"},
-    "admin.campionato.campionato_detail":         {"director"},
-    "admin.campionato.wizard_start":              {"director"},
-    "admin.campionato.wizard_create":             {"director"},
-    "admin.campionato.wizard_step2":              {"director"},
-    "admin.campionato.wizard_cancel":             {"director"},
-    "admin.competition.create_gara_standalone":   {"director"},
-    "admin.competition.create_gara":              {"director"},
-    "admin.competition.edit_gara":                {"director"},
-    "admin.competition.cancel_gara":              {"director"},
-    "admin.competition.delete_gara":              {"director"},
-    "admin.competition.soft_delete_gara":         {"director"},
-
+    "admin.campionato.create_campionato": {"director"},
+    "admin.campionato.edit_campionato": {"director"},
+    "admin.campionato.campionato_detail": {"director"},
+    "admin.campionato.wizard_start": {"director"},
+    "admin.campionato.wizard_create": {"director"},
+    "admin.campionato.wizard_step2": {"director"},
+    "admin.campionato.wizard_cancel": {"director"},
+    "admin.competition.create_gara_standalone": {"director"},
+    "admin.competition.create_gara": {"director"},
+    "admin.competition.edit_gara": {"director"},
+    "admin.competition.cancel_gara": {"director"},
+    "admin.competition.delete_gara": {"director"},
+    "admin.competition.soft_delete_gara": {"director"},
     # Director assignment
-    "admin.competition.add_director":             {"director"},
-    "admin.competition.remove_director":          {"director"},
-
+    "admin.competition.add_director": {"director"},
+    "admin.competition.remove_director": {"director"},
     # Inscription management
-    "admin.competition.open_inscriptions":        {"director"},
-    "admin.competition.close_inscriptions":       {"director"},
+    "admin.competition.open_inscriptions": {"director"},
+    "admin.competition.close_inscriptions": {"director"},
     "admin.competition.modify_inscription_dates": {"director"},
-    "admin.competition.admin_inscribe_user":      {"director"},
-    "admin.competition.admin_uninscribe_user":    {"director"},
-
+    "admin.competition.admin_inscribe_user": {"director"},
+    "admin.competition.admin_uninscribe_user": {"director"},
     # Round management
-    "admin.competition.start_first_round":        {"director"},
-    "admin.competition.start_round_generic":      {"director"},
-    "admin.competition.amalfi_start_round":       {"director"},
-    "admin.competition.cancel_first_round":       {"director"},
-    "admin.competition.cancel_current_round":     {"director"},
-    "admin.competition.cancel_round_advanced":    {"director"},
+    "admin.competition.start_first_round": {"director"},
+    "admin.competition.start_round_generic": {"director"},
+    "admin.competition.amalfi_start_round": {"director"},
+    "admin.competition.cancel_first_round": {"director"},
+    "admin.competition.cancel_current_round": {"director"},
+    "admin.competition.cancel_round_advanced": {"director"},
     "admin.competition.bulk_reset_round_matches": {"director"},
-    "admin.competition.reset_match_advanced":     {"director"},
-    "admin.competition.terminate_gara":           {"director"},
+    "admin.competition.reset_match_advanced": {"director"},
+    "admin.competition.terminate_gara": {"director"},
     "admin.competition.round_management_overview": {"director"},
-    "admin.competition.get_round_status":         {"director"},
-    "admin.competition.list_round_configs":       {"director"},
-    "admin.competition.upsert_round_config":      {"director"},
-    "admin.competition.delete_round_config":      {"director"},
-    "admin.competition.amalfi_classification":    {"director"},
+    "admin.competition.get_round_status": {"director"},
+    "admin.competition.list_round_configs": {"director"},
+    "admin.competition.upsert_round_config": {"director"},
+    "admin.competition.delete_round_config": {"director"},
+    "admin.competition.amalfi_classification": {"director"},
     "admin.competition.get_strategy_constraints": {"director"},
     "admin.competition.check_match_modification": {"director"},
-
     # SSR (spareggi) — risoluzione parimerito a fine gara
-    "admin.competition.start_ssr":                {"director"},
-    "admin.competition.save_ssr_group":           {"director"},
-    "admin.competition.save_ssr_scores":          {"director"},
-
+    "admin.competition.start_ssr": {"director"},
+    "admin.competition.save_ssr_group": {"director"},
+    "admin.competition.save_ssr_scores": {"director"},
     # Challenge management (per gare Random con drill-based scoring)
-    "admin.competition.add_challenge_to_gara":    {"director"},
+    "admin.competition.add_challenge_to_gara": {"director"},
     "admin.competition.remove_challenge_from_gara": {"director"},
-    "admin.competition.create_new_challenge":     {"director"},
+    "admin.competition.create_new_challenge": {"director"},
     "admin.competition.get_available_challenges": {"director"},
     "admin.competition.get_available_challenges_for_gara": {"director"},
-    "admin.competition.get_gara_challenges":      {"director"},
+    "admin.competition.get_gara_challenges": {"director"},
     "admin.competition.get_gara_challenge_classification": {"director"},
-
     # Match scoring (admin side, for the director managing the gara).
     # Authorization is enforced by @match_manager_required: visibility here
     # is just "director can reach it"; the decorator then verifies that the
@@ -161,43 +156,45 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # gestionale; player iscritto → vista semplificata). Quindi è esposta
     # anche al player. La pagina stessa decide cosa mostrare in base a
     # current_user.can_manage_competition(...) e is_player_in_match.
-    "admin.match.match_detail":                   {"player", "director"},
-    "admin.match.update_match_times":             {"director"},
-    "admin.match.assign_table":                   {"director"},
-    "admin.match.add_rack_result":                {"director"},
-    "admin.match.remove_rack_admin":              {"director"},
-    "admin.match.set_match_result_direct":        {"director"},
-    "admin.match.validate_match":                 {"director"},
-    "admin.match.validate_rack_admin":            {"director"},
-    "admin.match.reset_match":                    {"director"},
-    "admin.match.record_challenge_attempt":       {"director"},
-    "admin.match.record_challenge_attempts":      {"director"},
-    "admin.match.start_next_set":                 {"director"},
-    "admin.match.add_set_rack":                   {"director"},
-    "admin.match.remove_set_rack":                {"director"},
-    "admin.competition.trio_add_rack":            {"director"},
-    "admin.competition.trio_remove_rack":         {"director"},
-    "admin.competition.trio_confirm":             {"director"},
-    "admin.competition.trio_forfeit":             {"director"},
-    "admin.competition.trio_reset":               {"director"},
-    "admin.competition.trio_set_result":          {"director"},
-
+    "admin.match.match_detail": {"player", "director"},
+    "admin.match.update_match_times": {"director"},
+    "admin.match.assign_table": {"director"},
+    "admin.match.add_rack_result": {"director"},
+    "admin.match.remove_rack_admin": {"director"},
+    "admin.match.set_match_result_direct": {"director"},
+    "admin.match.validate_match": {"director"},
+    "admin.match.validate_rack_admin": {"director"},
+    "admin.match.reset_match": {"director"},
+    "admin.match.record_challenge_attempt": {"director"},
+    "admin.match.record_challenge_attempts": {"director"},
+    "admin.match.start_next_set": {"director"},
+    "admin.match.add_set_rack": {"director"},
+    "admin.match.remove_set_rack": {"director"},
+    "admin.competition.trio_add_rack": {"director"},
+    "admin.competition.trio_remove_rack": {"director"},
+    "admin.competition.trio_confirm": {"director"},
+    "admin.competition.trio_forfeit": {"director"},
+    "admin.competition.trio_reset": {"director"},
+    "admin.competition.trio_set_result": {"director"},
     # User listing (so a director can find players to enroll manually)
-    "admin.user.users_list":                      {"director"},
-    "admin.user.user_detail":                     {"director"},
-
-    # Gamification (player + director). Admin handles its own bypass.
-    # B23: target of the "Visualizza progressi" button on level-up notifications
-    # plus related screens linked from achievement/quest/streak notifications.
-    "gamification.dashboard":                     {"player", "director"},
-    "gamification.achievements":                  {"player", "director"},
-    "gamification.quests":                        {"player", "director"},
-    "gamification.streaks":                       {"player", "director"},
-    "gamification.leaderboards":                  {"anonimo", "player", "director"},
-    "gamification.api_level_progress":            {"player", "director"},
-    "gamification.api_user_stats":                {"player", "director"},
-    "gamification.api_achievements":              {"player", "director"},
-    "gamification.api_streaks":                   {"player", "director"},
+    "admin.user.users_list": {"director"},
+    "admin.user.user_detail": {"director"},
+    # Gamification: director-only at the moment. Player and anonymous viewers
+    # do NOT see gamification UI/toasts/notifications in production until the
+    # feature stabilises. Admin bypasses the matrix as usual.
+    # NB: feature_visible() in templates and the nudge/event filters in
+    # models/gamification/frontend_bridge.py automatically hide buttons and
+    # suppress toasts for any role not listed here — no code changes elsewhere
+    # are required to flip visibility.
+    "gamification.dashboard": {"director"},
+    "gamification.achievements": {"director"},
+    "gamification.quests": {"director"},
+    "gamification.streaks": {"director"},
+    "gamification.leaderboards": {"director"},
+    "gamification.api_level_progress": {"director"},
+    "gamification.api_user_stats": {"director"},
+    "gamification.api_achievements": {"director"},
+    "gamification.api_streaks": {"director"},
 }
 
 
@@ -226,6 +223,7 @@ INFRASTRUCTURE_ALLOWLIST: set[str] = {
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
+
 
 def _is_production() -> bool:
     """True when the allowlist must be enforced.
