@@ -54,10 +54,13 @@ def login():
                 )
 
             if not user.is_verified:
-                # B11: explain real consequence (password recovery) + resend link.
+                # B11: explain real consequence (password recovery) + link to
+                # the profile page where the resend form already lives. The
+                # /verify-email route is POST-only (CSRF-protected), so we do
+                # NOT link to it directly from a flash anchor.
                 # NB: `Markup + str` re-escapes the str — keep every HTML chunk
                 # wrapped in Markup() and rely on escape() for user-derived data.
-                resend_url = url_for("player.request_verification_email")
+                profile_url = url_for("player.edit_profile") + "#email"
                 msg = (
                     escape(
                         _(
@@ -67,9 +70,9 @@ def login():
                         )
                     )
                     + Markup(' <a href="')
-                    + escape(resend_url)
+                    + escape(profile_url)
                     + Markup('" class="alert-link">')
-                    + escape(_("Reinvia email di verifica"))
+                    + escape(_("Vai al profilo per verificare l'email"))
                     + Markup("</a>")
                 )
                 flash(msg, "warning")

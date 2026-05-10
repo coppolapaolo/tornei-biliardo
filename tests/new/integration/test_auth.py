@@ -45,7 +45,10 @@ def test_login_logout_routes_flow(client, db_session):
 def test_unverified_login_flash_renders_resend_link_as_html(client, db_session):
     """Regression: the "non è ancora verificato" warning embeds an inline
     link via Markup. A previous version concatenated `Markup + str` which
-    silently escaped the `<a>` tag, leaving raw HTML visible in the page."""
+    silently escaped the `<a>` tag, leaving raw HTML visible in the page.
+
+    Also asserts the link target is GET-safe (the actual resend endpoint is
+    POST-only and would 405 if linked directly from an <a> tag)."""
     from models.user.services import UserService  # type: ignore
 
     UserService.create_user("dave", "dave@test.local", "p@ss123")
@@ -61,3 +64,7 @@ def test_unverified_login_flash_renders_resend_link_as_html(client, db_session):
     # The link must appear rendered, not escaped.
     assert 'class="alert-link"' in body
     assert "&lt;a href=" not in body
+    # The link must point to a GET-safe page (profile), not the POST-only
+    # resend route — otherwise the user gets 405 Method Not Allowed.
+    assert "/player/profile/edit" in body
+    assert 'href="/player/profile/verify-email"' not in body

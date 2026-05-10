@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-05-10 18:42+0200\n"
+"POT-Creation-Date: 2026-05-10 18:48+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -379,29 +379,29 @@ msgstr ""
 msgid "Tutto pronto per giocare?"
 msgstr ""
 
-#: routes/auth.py:64
+#: routes/auth.py:67
 msgid ""
 "Il tuo account non è ancora verificato. Senza email confermata non potrai"
 " recuperare la password se la dimentichi."
 msgstr ""
 
-#: routes/auth.py:72
-msgid "Reinvia email di verifica"
+#: routes/auth.py:75
+msgid "Vai al profilo per verificare l'email"
 msgstr ""
 
-#: routes/auth.py:79
+#: routes/auth.py:82
 msgid "Username o password errati."
 msgstr ""
 
-#: routes/auth.py:108
+#: routes/auth.py:111
 msgid "Registrazione completata! Controlla la tua email per verificare l'account."
 msgstr ""
 
-#: routes/auth.py:119
+#: routes/auth.py:122
 msgid "Ti diamo il benvenuto!"
 msgstr ""
 
-#: routes/auth.py:120
+#: routes/auth.py:123
 msgid "Registrazione completata con successo."
 msgstr ""
 
