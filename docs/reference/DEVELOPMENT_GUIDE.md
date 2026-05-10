@@ -1,6 +1,6 @@
 # Guida allo Sviluppo
 
-> Generato automaticamente il 2026-04-04 | Scansione esaustiva
+> **Snapshot del 2026-04-04** (BMad full-scan). Per la guida operativa più aggiornata (convenzioni, errori comuni, debugging) il riferimento corrente è [`CLAUDE.md`](../../CLAUDE.md).
 
 ## Prerequisiti
 

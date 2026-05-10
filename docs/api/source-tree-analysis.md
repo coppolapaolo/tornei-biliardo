@@ -1,23 +1,24 @@
 # Analisi Albero Sorgente
 
-> Generato automaticamente il 2026-04-04 | Scansione esaustiva
+> **Generato originariamente il 2026-04-04** (BMad full-scan) — statistiche aggiornate il **2026-05-10**.
+> Per pattern architetturali correnti consultare [`CLAUDE.md`](../../CLAUDE.md), gli ADR in [`docs/adr/`](../adr/) e [`docs/reference/ARCHITECTURE.md`](../reference/ARCHITECTURE.md).
 
-## Statistiche Codebase
+## Statistiche Codebase (aggiornate 2026-05-10)
 
-| Metrica | Valore |
-|---------|--------|
-| File totali (esclusi venv, legacy, bmad) | ~775 |
-| Righe Python | 116.106 |
-| Righe Template HTML | 29.419 |
-| Classi modello SQLAlchemy | ~50 |
-| Classi servizio | ~50 |
-| Template Jinja2 | ~160 |
-| File JS | 4 |
-| File CSS | 3 |
-| Migrazioni DB | 38 |
-| Lingue supportate | it, en |
-| Nodi CodeGraph | 9.042 |
-| Edges CodeGraph | 21.079 |
+| Metrica | Valore | Note |
+|---------|--------|------|
+| File Python (esclusi venv, bmad, .codegraph) | 625 | da `find . -name "*.py"` |
+| Righe Python | 189.525 | da `wc -l` aggregato |
+| Righe Template HTML | 33.487 | |
+| Template Jinja2 | 206 | da `find templates -name "*.html"` |
+| Classi modello SQLAlchemy | ~50 | invariato |
+| Classi servizio | ~50 | invariato |
+| File JS | 7 | |
+| File CSS | 6 | |
+| Migrazioni DB | 42 | `migrations/*.py` esclusi `__init__`, `runner` |
+| Test file (`tests/new/`) | 118 | |
+| ADR | 23 | `docs/adr/ADR-*.md` (ADR-001..028, con buchi) |
+| Lingue supportate | it, en | invariato |
 
 ---
 

@@ -1,6 +1,7 @@
 # Architettura del Sistema
 
-> Generato automaticamente il 2026-04-04 | Scansione esaustiva
+> **Generato originariamente il 2026-04-04** (BMad full-scan) — integrato il **2026-05-10** con sezione "Decisioni architetturali recenti".
+> Le sezioni 1-7 descrivono pattern strutturali stabili; per le decisioni puntuali consultare gli ADR in [`docs/adr/`](../adr/) e la guida operativa in [`CLAUDE.md`](../../CLAUDE.md).
 
 ## Executive Summary
 
@@ -288,3 +289,18 @@ Componenti:
 | Polling | Browser → Server | polling.js per stato match |
 | Email | Server → Utente | Flask-Mail SMTP |
 | Flash | Service → Template | Flash message + gamification toast |
+
+---
+
+## Decisioni architetturali recenti (post-2026-04-04)
+
+Tra il 2026-04-05 e il 2026-05-09 sono state introdotte quattro decisioni che modificano vincoli architetturali importanti rispetto al testo di questo documento. Vedere gli ADR per il contesto completo; qui un riepilogo per orientamento.
+
+| ADR | Area | Effetto su questa architettura |
+|-----|------|-------------------------------|
+| [ADR-025](../adr/ADR-025-savepoint-integrity-error-translation.md) | Service Layer / Transactions | Aggiunge `SAVEPOINT` + `flush()` per tradurre `IntegrityError` in `ValueError` di dominio nel pattern `@transactional`. Mantiene atomicità senza propagare errori SQL ai layer superiori. |
+| [ADR-026](../adr/ADR-026-reset-match-preserves-pair-semantics.md) | Match domain | Il reset di un match ora preserva la semantica della coppia (player1/player2 non vengono swappati). Cambia il contratto di `MatchService.reset_to_pending()`. |
+| [ADR-027](../adr/ADR-027-round-level-configuration-enforcement.md) | Match scoring / Distance VO | Override per turno (`RoundConfiguration`) persistiti server-side. **`Distance` VO è la single source of truth per scoring/validation**: usare `match.distance_config` o `match.effective_*`, **non** `match.gara.distance`/`is_race_to`. |
+| [ADR-028](../adr/ADR-028-production-endpoint-allowlist.md) | Routing / Sicurezza | Allowlist deny-by-default in produzione: `utils/feature_flags.ENDPOINT_ROLES` definisce per ogni endpoint quali ruoli (anonimo/player/director) possono raggiungerlo; admin sempre. Nuovi endpoint senza entry sono admin-only. Inventario completo in [`docs/reference/PRODUCTION_INVENTORY.md`](./PRODUCTION_INVENTORY.md). |
+
+Per l'elenco completo degli ADR vedere [`docs/adr/README.md`](../adr/README.md).

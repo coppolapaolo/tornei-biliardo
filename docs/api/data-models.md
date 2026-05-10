@@ -1,7 +1,8 @@
 # Data Models — Catalogo Completo Modelli SQLAlchemy
 
-> Generato automaticamente il 2026-04-04 | Scansione esaustiva
-> **80+ classi modello** | **70+ tabelle** | **15 domini**
+> **Snapshot del 2026-04-04** (BMad full-scan). Per lo schema corrente delle tabelle (incluso quanto introdotto dalle migrazioni successive) vedere [`docs/reference/DATABASE_SCHEMA.md`](../reference/DATABASE_SCHEMA.md), rigenerabile con `python scripts/generate_schema_docs.py`.
+> Aggiornamenti rilevanti post-2026-04: `Match` ha guadagnato `RoundConfiguration` ([ADR-027](../adr/ADR-027-round-level-configuration-enforcement.md)) e i campi `started_at`/`ended_at` sono stati portati a regime.
+> **80+ classi modello** | **70+ tabelle** | **15 domini** (al 2026-04-04)
 
 ---
 

@@ -1,7 +1,7 @@
 # API Contracts — Inventario Completo Endpoint
 
-> Generato automaticamente il 2026-04-04 | Scansione esaustiva
-> **275 endpoint totali** | 10 blueprint principali + 8 sotto-blueprint
+> **Snapshot del 2026-04-04** (BMad full-scan). I conteggi e gli URL listati riflettono lo stato di quella data; **per la lista corrente di endpoint visibili in produzione vedere [`docs/reference/PRODUCTION_INVENTORY.md`](../reference/PRODUCTION_INVENTORY.md) e la matrice ruoli in `utils/feature_flags.ENDPOINT_ROLES`** ([ADR-028](../adr/ADR-028-production-endpoint-allowlist.md)).
+> **275 endpoint totali** (al 2026-04-04) | 10 blueprint principali + 8 sotto-blueprint
 
 ---
 
