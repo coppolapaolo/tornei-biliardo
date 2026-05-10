@@ -15,6 +15,7 @@ from flask import (
     flash,
 )
 from flask_login import login_required, current_user
+from flask_babel import gettext as _
 
 from models import db, Gara, Inscription, Match
 from models.status_enum import MatchStatus
@@ -25,7 +26,6 @@ from utils import player_only
 from utils.route_helpers import handle_service_action
 
 from . import player_bp
-
 
 # ============ PROFILO UTENTE E GESTIONE ACCOUNT ============
 
@@ -108,7 +108,10 @@ def profile():
     challenge_stats = None
     challenge_history = []
     try:
-        from models.competition.gara_challenge import GaraChallenge, GaraChallengeAttempt
+        from models.competition.gara_challenge import (
+            GaraChallenge,
+            GaraChallengeAttempt,
+        )
         from models.challenge import Challenge
 
         # Get all challenge attempts by this user
@@ -369,13 +372,30 @@ def edit_profile():
         phone = (request.form.get("phone") or "").strip() or None
 
         try:
-            UserService.update_user(current_user.id, username=username, email=email, phone=phone)
-            flash("Informazioni aggiornate correttamente.", "success")
+            user = UserService.update_user(
+                current_user.id, username=username, email=email, phone=phone
+            )
+            # If the email changed, update_user revoked is_verified and queued
+            # a verification token. Send the email AFTER the transaction commits
+            # (i.e. now, post-@transactional return) to avoid I/O under DB lock.
+            if hasattr(user, "_pending_verification_email"):
+                from models.user.profile_service import UserProfileService
+
+                UserProfileService.send_pending_verification_email(user)
+                flash(
+                    _(
+                        "Informazioni aggiornate. Abbiamo inviato una "
+                        "nuova email di verifica al nuovo indirizzo."
+                    ),
+                    "success",
+                )
+            else:
+                flash(_("Informazioni aggiornate correttamente."), "success")
             return redirect(url_for("player.profile"))
         except ValueError as e:
             flash(str(e), "error")
         except Exception:
-            flash("Si è verificato un errore durante l'aggiornamento.", "error")
+            flash(_("Si è verificato un errore durante l'aggiornamento."), "error")
 
     # GET o POST fallito → ripresenta il form
     return render_template("player/profile_edit.html", user=current_user)
@@ -395,7 +415,10 @@ def request_verification_email():
     try:
         # Use existing service method to generate token and send email
         if UserProfileService.request_verification_email(current_user):
-            flash("Email di verifica inviata. Controlla la tua casella di posta.", "success")
+            flash(
+                "Email di verifica inviata. Controlla la tua casella di posta.",
+                "success",
+            )
         else:
             flash("Impossibile inviare l'email. Riprova più tardi.", "error")
     except Exception as e:

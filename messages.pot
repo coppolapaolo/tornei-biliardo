@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-05-10 18:48+0200\n"
+"POT-Creation-Date: 2026-05-10 19:04+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -912,6 +912,20 @@ msgstr ""
 
 #: routes/player/privacy.py:118
 msgid "Campionato non era nascosto"
+msgstr ""
+
+#: routes/player/profile.py:387
+msgid ""
+"Informazioni aggiornate. Abbiamo inviato una nuova email di verifica al "
+"nuovo indirizzo."
+msgstr ""
+
+#: routes/player/profile.py:393
+msgid "Informazioni aggiornate correttamente."
+msgstr ""
+
+#: routes/player/profile.py:398
+msgid "Si è verificato un errore durante l'aggiornamento."
 msgstr ""
 
 #: templates/base.html:166

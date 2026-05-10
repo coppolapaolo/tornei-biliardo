@@ -89,7 +89,9 @@ class UserProfileService:
 
         # Block 'admin' variants
         if username.strip().lower() == "admin":
-            raise ValueError("Lo username 'admin' (e le sue varianti) è riservato al sistema.")
+            raise ValueError(
+                "Lo username 'admin' (e le sue varianti) è riservato al sistema."
+            )
 
         if not email or not email.strip():
             raise ValueError("Email is required")
@@ -98,9 +100,7 @@ class UserProfileService:
             raise ValueError("Password must be at least 6 characters")
 
         # Check for existing username (case sensitive)
-        existing_user = User.query.filter(
-            User.username == username.strip()
-        ).first()
+        existing_user = User.query.filter(User.username == username.strip()).first()
         if existing_user:
             raise ValueError(f"Username '{username}' already exists")
 
@@ -122,22 +122,23 @@ class UserProfileService:
         user.set_password(password)
 
         user.set_password(password)
-        
-        # New users are not verified by default (except admin for bootstrapping if needed, but let's keep consistent)
+
+        # New users are not verified by default — even admin must verify
+        # (kept consistent for predictability in the auth/recovery flow).
         user.is_verified = False
 
         db.session.add(user)
         db.session.flush()  # Need ID for token
-        
+
         if send_verification_email:
             # Create verification token (saved in same transaction)
             token = UserToken.create_token(user.id, "verification")
-            
-            # Store data for post-commit email sending
-            # The caller should call send_pending_verification_email() after this returns
+
+            # Store data for post-commit email sending. The caller should
+            # invoke send_pending_verification_email() after this returns.
             user._pending_verification_email = {
-                'token': token,
-                'base_url': request.host_url.rstrip("/")
+                "token": token,
+                "base_url": request.host_url.rstrip("/"),
             }
 
         return user
@@ -145,28 +146,26 @@ class UserProfileService:
     @staticmethod
     def send_pending_verification_email(user: User) -> bool:
         """Send verification email for a user that was just created.
-        
+
         This method should be called AFTER the transaction that created the user
         has been committed, to avoid holding database locks during email sending.
-        
+
         Args:
             user: User instance with _pending_verification_email attribute set
-            
+
         Returns:
             bool: True if email sent successfully, False otherwise
         """
-        pending_data = getattr(user, '_pending_verification_email', None)
+        pending_data = getattr(user, "_pending_verification_email", None)
         if not pending_data:
             return False
-            
+
         try:
             EmailService.send_verification_email(
-                user, 
-                pending_data['token'], 
-                pending_data['base_url']
+                user, pending_data["token"], pending_data["base_url"]
             )
             # Clean up the temporary attribute
-            delattr(user, '_pending_verification_email')
+            delattr(user, "_pending_verification_email")
             return True
         except Exception:
             # Don't block if email fails, but log it
@@ -204,25 +203,50 @@ class UserProfileService:
         # Validate username uniqueness if being updated
         if "username" in kwargs:
             new_username = kwargs["username"].strip()
-            
+
             # Block 'admin' variants
             if new_username.lower() == "admin":
-                raise ValueError("Lo username 'admin' (e le sue varianti) è riservato al sistema.")
-                
+                raise ValueError(
+                    "Lo username 'admin' (e le sue varianti) è riservato al sistema."
+                )
+
             existing_user = User.query.filter(
                 User.username == new_username, User.id != user_id
             ).first()
             if existing_user:
                 raise ValueError(f"Username '{new_username}' already exists")
 
-        # Update allowed fields
+        # Update allowed fields, tracking whether the email actually changed
+        # so we can revoke verification + queue a new verification email.
         allowed_fields = ["username", "email", "phone"]
+        email_changed = False
         for field, value in kwargs.items():
             if field in allowed_fields and hasattr(user, field):
                 if isinstance(value, str):
-                    setattr(user, field, value.strip() if value else None)
+                    new_value = value.strip() if value else None
                 else:
-                    setattr(user, field, value)
+                    new_value = value
+                if field == "email":
+                    current = (user.email or "").lower() if user.email else None
+                    incoming = (
+                        new_value.lower()
+                        if isinstance(new_value, str) and new_value
+                        else None
+                    )
+                    if current != incoming:
+                        email_changed = True
+                setattr(user, field, new_value)
+
+        # Email change → email is no longer confirmed; queue a verification
+        # email using the same pattern as create_user (sent post-commit).
+        if email_changed:
+            user.is_verified = False
+            db.session.flush()  # ensure user.id is persisted before token FK
+            token = UserToken.create_token(user.id, "verification")
+            user._pending_verification_email = {
+                "token": token,
+                "base_url": request.host_url.rstrip("/"),
+            }
 
         return user
 
@@ -313,9 +337,7 @@ class UserProfileService:
         if not username or not password:
             return None
 
-        user = User.query.filter(
-            User.username == username.strip()
-        ).first()
+        user = User.query.filter(User.username == username.strip()).first()
         if user and user.check_password(password):
             return user
         return None
@@ -338,9 +360,7 @@ class UserProfileService:
         """
         if not username:
             return None
-        return User.query.filter(
-            User.username == username.strip()
-        ).first()
+        return User.query.filter(User.username == username.strip()).first()
 
     @staticmethod
     @read_only(domain="user")
@@ -488,11 +508,14 @@ class UserProfileService:
         """
         if user.is_verified:
             return False
-            
+
         try:
             token = UserToken.create_token(user.id, "verification")
-            # request.host_url requires Flask request context, usually available in service call from route
-            EmailService.send_verification_email(user, token, request.host_url.rstrip("/"))
+            # request.host_url needs a Flask request context (always present
+            # when invoked from a route handler, which is the only call site).
+            EmailService.send_verification_email(
+                user, token, request.host_url.rstrip("/")
+            )
             return True
         except Exception:
             # Helper to log exception would be good here
@@ -509,7 +532,9 @@ class UserProfileService:
         Returns:
             bool: True if verified successfully, False otherwise
         """
-        token = UserToken.query.filter_by(token=token_str, token_type="verification").first()
+        token = UserToken.query.filter_by(
+            token=token_str, token_type="verification"
+        ).first()
         if not token or not token.is_valid():
             return False
 
@@ -530,7 +555,8 @@ class UserProfileService:
             email: User email
 
         Returns:
-            bool: True if request processed (even if user not found, for security), False on error
+            bool: True if request processed (even if user not found, for
+                security against user enumeration), False on error.
         """
         user = UserProfileService.get_user_by_email(email)
         if not user:
@@ -538,10 +564,12 @@ class UserProfileService:
 
         try:
             token = UserToken.create_token(user.id, "password_reset")
-            EmailService.send_password_reset_email(user, token, request.host_url.rstrip("/"))
+            EmailService.send_password_reset_email(
+                user, token, request.host_url.rstrip("/")
+            )
         except Exception:
             return False
-            
+
         return True
 
     @staticmethod
@@ -556,7 +584,9 @@ class UserProfileService:
         Returns:
             bool: True if success, False otherwise
         """
-        token = UserToken.query.filter_by(token=token_str, token_type="password_reset").first()
+        token = UserToken.query.filter_by(
+            token=token_str, token_type="password_reset"
+        ).first()
         if not token or not token.is_valid():
             return False
 
@@ -597,7 +627,9 @@ class UserProfileService:
             raise ValueError("Utente non trovato")
 
         if user.role == UserRole.ADMIN.value:
-            raise ValueError("Non è possibile modificare la password dell'amministratore")
+            raise ValueError(
+                "Non è possibile modificare la password dell'amministratore"
+            )
 
         if not new_password or len(new_password.strip()) < 6:
             raise ValueError("La password deve essere di almeno 6 caratteri")
@@ -605,4 +637,3 @@ class UserProfileService:
         user.set_password(new_password)
         current_app.logger.info(f"Admin {admin_id} set password for user {user_id}")
         return True
-

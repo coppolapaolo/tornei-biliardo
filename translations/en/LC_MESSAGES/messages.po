@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-05-10 18:48+0200\n"
+"POT-Creation-Date: 2026-05-10 19:04+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -945,6 +945,22 @@ msgstr "Championship visible"
 #: routes/player/privacy.py:118
 msgid "Campionato non era nascosto"
 msgstr "Championship was not hidden"
+
+#: routes/player/profile.py:387
+msgid ""
+"Informazioni aggiornate. Abbiamo inviato una nuova email di verifica al "
+"nuovo indirizzo."
+msgstr ""
+"Information updated. A new verification email has been sent to the new "
+"address."
+
+#: routes/player/profile.py:393
+msgid "Informazioni aggiornate correttamente."
+msgstr "Information updated successfully."
+
+#: routes/player/profile.py:398
+msgid "Si è verificato un errore durante l'aggiornamento."
+msgstr "An error occurred during the update."
 
 #: templates/base.html:166
 msgid "Tornei Biliardo"
