@@ -365,6 +365,29 @@ A 404 reported by a real user that should NOT be 404 is evidence of a missing ma
 
 See `docs/adr/ADR-028-production-endpoint-allowlist.md` (incl. **Open Items**) for full design and follow-up work.
 
+### 14. Naming Conventions
+I termini di dominio (`campionato`, `gara`, `iscrizione`, `partita`, `turno`)
+sono in **italiano** con **plurale italiano**. Mai anglicizzare con `-s`.
+
+```python
+# ✅ CORRECT
+campionati = Campionato.query.all()
+def gare_attive(): ...
+template = "campionati_list.html"
+
+# ❌ WRONG (anti-pattern: italian root + english -s)
+campionatos = ...
+def garas_attive(): ...
+template = "campionatos_list.html"
+```
+
+I suffissi tecnici/pattern restano in inglese (`Service`, `Builder`,
+`Strategy`, ecc.). Le classi `Service` usano il singolare del modello
+(es. `CampionatoService`, non `CampionatiService`).
+
+Vedi `docs/reference/NAMING_CONVENTIONS.md` per regole complete (URL,
+DB columns, test, eccezioni storiche come `Match`).
+
 ---
 
 ## Architecture
@@ -502,6 +525,7 @@ pytest tests/new/unit/ -n auto && pytest tests/new/integration/ -n 4
 - **[docs/reference/SPECIFICHE.md](docs/reference/SPECIFICHE.md)**: Complete platform requirements (Italian)
 - **[docs/usecases/gare.md](docs/usecases/gare.md)**: Detailed workflow documentation
 - **[docs/reference/UI_CONVENTIONS.md](docs/reference/UI_CONVENTIONS.md)**: UI conventions (icons, colors, design decisions)
+- **[docs/reference/NAMING_CONVENTIONS.md](docs/reference/NAMING_CONVENTIONS.md)**: Naming conventions (italian plurals, italian/english split, URL, test, DB columns)
 - **[docs/adr/](docs/adr/)**: Architecture Decision Records (ADR)
 - **[docs/adr/ADR-027-round-level-configuration-enforcement.md](docs/adr/ADR-027-round-level-configuration-enforcement.md)**: Override per turno persistiti server-side + uso obbligatorio di `Distance` VO nello scoring
 - **[docs/adr/ADR-028-production-endpoint-allowlist.md](docs/adr/ADR-028-production-endpoint-allowlist.md)**: allowlist endpoint deny-by-default in produzione, matrice ruoli (anonimo/player/director) con admin bypass — vedi anche `docs/reference/PRODUCTION_INVENTORY.md`
