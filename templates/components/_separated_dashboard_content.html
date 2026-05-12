@@ -500,18 +500,29 @@
   {% endif %}
 </div>
 
-{# Sezione 2: Campionati #}
+{# Sezione 2: Campionati (attivi + coda recente di completati) #}
+{# Coerente con homepage guest (ADR-030): partizioniamo per status
+   derivato, attivi prima, poi DASHBOARD_COMPLETED_LIMIT completati come
+   "coda recente". Il resto vive dietro "Vedi tutti" → /campionatos
+   (pagina con filtri/ricerca). #}
 <div class="mb-4">
-  <h4><i class="fas fa-trophy text-warning"></i> Campionati</h4>
-  {% set campionati = [] %}
-  
-  {# Raccogli tutti i campionati #}
-  {% for item in vm.unified_items %}
-    {% if item.type == 'campionato' %}
-      {% set _void = campionati.append(item) %}
+  {% set active_items = vm.campionati_active_items or [] %}
+  {% set completed_shown = vm.campionati_completed_shown_items or [] %}
+  {% set campionati = active_items + completed_shown %}
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">
+      <i class="fas fa-trophy text-warning"></i>
+      {{ _("Campionati (%(count)s)", count=active_items|length) }}
+    </h4>
+    {% if campionati %}
+    <a href="{{ url_for('main.public_campionatos_list') }}"
+       class="btn btn-outline-primary btn-sm">
+      <i class="fas fa-list"></i> {{ _("Vedi tutti") }}
+    </a>
     {% endif %}
-  {% endfor %}
-  
+  </div>
+
   {% if campionati %}
     <div class="row">
       {% for item in campionati %}
@@ -525,7 +536,7 @@
                     {{ item.name }}
                   </h6>
                   <small class="text-muted">
-                    {{ item.entity.campionato_type }} • {{ item.entity.gare|length }} gare
+                    {{ item.entity.campionato_type }} • {{ ngettext('%(num)s gara', '%(num)s gare', item.entity.gare|length, num=item.entity.gare|length) }}
                   </small>
                 </div>
                 <div class="text-end">
@@ -535,61 +546,59 @@
                 </div>
               </div>
             </div>
-            
+
             <div class="card-body py-2">
               {# Info campionato #}
               <div class="mb-2">
                 {% if item.next_prova_date %}
                   <small class="text-success fw-bold">
                     <i class="fas fa-calendar me-1"></i>
-                    Prossima: {{ item.next_prova_date|date_local }}
+                    {{ _("Prossima:") }} {{ item.next_prova_date|date_local }}
                   </small>
                 {% else %}
                   <small class="text-muted">
                     <i class="fas fa-calendar-times me-1"></i>
-                    Nessuna gara programmata
+                    {{ _("Nessuna gara programmata") }}
                   </small>
                 {% endif %}
               </div>
-              
+
               {# Badges campionato #}
               <div class="d-flex justify-content-between align-items-center">
                 <small>
-                  {% if item.entity.without_x %}<span class="badge bg-info me-1">Senza X</span>{% endif %}
-                  {% if item.entity.final_playoffs %}<span class="badge bg-success me-1">Playoff</span>{% endif %}
-                  {% if item.entity.challenge_mode %}<span class="badge bg-warning me-1">Challenge</span>{% endif %}
+                  {% if item.entity.without_x %}<span class="badge bg-info me-1">{{ _("Senza X") }}</span>{% endif %}
+                  {% if item.entity.final_playoffs %}<span class="badge bg-success me-1">{{ _("Playoff") }}</span>{% endif %}
+                  {% if item.entity.challenge_mode %}<span class="badge bg-warning me-1">{{ _("Challenge") }}</span>{% endif %}
                 </small>
               </div>
-              
+
               {# Mini classifica (top 3) se disponibile #}
               {% if item.entity.gare|selectattr('status', 'equalto', 'completed')|list %}
                 <div class="mt-2 border-top pt-2">
-                  <small class="text-muted fw-bold">Classifica:</small>
+                  <small class="text-muted fw-bold">{{ _("Classifica:") }}</small>
                   <small class="text-muted d-block">
-                    {# TODO: Mostrare top 3 dalla classifica generale #}
-                    <em>Visualizza dettagli per la classifica completa</em>
+                    <em>{{ _("Visualizza dettagli per la classifica completa") }}</em>
                   </small>
                 </div>
               {% endif %}
             </div>
-            
+
             <div class="card-footer py-2 bg-transparent">
               <div class="btn-group w-100" role="group">
                 {# Pulsante dettagli/gestione in base ai permessi #}
                 {% if item.can_manage %}
                   <a href="{{ url_for('admin.campionato.campionato_detail', campionato_id=item.id) }}"
                      class="btn btn-outline-primary btn-sm">
-                    <i class="fas fa-cog"></i> Gestione
+                    <i class="fas fa-cog"></i> {{ _("Gestione") }}
                   </a>
                 {% elif item.can_view_details %}
                   <a href="{{ url_for('main.campionato_detail_public', campionato_id=item.id) }}"
                      class="btn btn-outline-primary btn-sm">
-                    <i class="fas fa-eye"></i> Dettagli
+                    <i class="fas fa-eye"></i> {{ _("Dettagli") }}
                   </a>
                 {% else %}
-                  {# Per ora mostra solo badge senza link per i player #}
                   <button class="btn btn-outline-info btn-sm" disabled>
-                    <i class="fas fa-chart-line"></i> Classifica
+                    <i class="fas fa-chart-line"></i> {{ _("Classifica") }}
                   </button>
                 {% endif %}
 
@@ -606,9 +615,15 @@
         </div>
       {% endfor %}
     </div>
+
+    {% if (vm.campionati_completed_total or 0) > (completed_shown|length) %}
+    <div class="text-center text-muted small mb-3">
+      {{ _("Mostrati %(shown)s di %(total)s campionati completati", shown=completed_shown|length, total=vm.campionati_completed_total) }}
+    </div>
+    {% endif %}
   {% else %}
     <div class="alert alert-info">
-      <i class="fas fa-info-circle"></i> Nessun campionato disponibile al momento.
+      <i class="fas fa-info-circle"></i> {{ _("Nessun campionato disponibile al momento.") }}
     </div>
   {% endif %}
 </div>

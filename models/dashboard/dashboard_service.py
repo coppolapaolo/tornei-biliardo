@@ -40,6 +40,35 @@ from .item_builders import (
     build_selector_items,
     caps_for,
 )
+from models.status_enum import TournamentStatus
+
+# How many completed campionati to show in player/director dashboards.
+# Older completed campionati are accessible via /campionatos archive page.
+DASHBOARD_COMPLETED_LIMIT = 2
+
+_TERMINAL_TOURNAMENT_STATUSES = frozenset({
+    TournamentStatus.COMPLETED.value,
+    TournamentStatus.TERMINATED.value,
+})
+
+
+def _partition_campionato_items(unified_items):
+    """Split unified_items into (active_items, completed_shown, completed_total).
+
+    Operates on UnifiedDashboardItem so the template keeps access to
+    can_manage / can_view_details / next_prova_date computed by
+    build_unified_items. Order is preserved.
+    """
+    active: list = []
+    completed: list = []
+    for it in unified_items:
+        if it.type != "campionato":
+            continue
+        if it.entity.get_status() in _TERMINAL_TOURNAMENT_STATUSES:
+            completed.append(it)
+        else:
+            active.append(it)
+    return active, completed[:DASHBOARD_COMPLETED_LIMIT], len(completed)
 
 
 class DashboardService:
@@ -135,23 +164,30 @@ class DashboardService:
         if selected_gara and selected_gara.campionato_id is not None:
             selected_gara = None
 
-        player_sections = DashboardSectionBuilder.build_player_sections(user_id, selected)
+        player_sections = DashboardSectionBuilder.build_player_sections(
+            user_id, selected
+        )
 
         all_current_matches = (
             db.session.query(TournamentMatch)
             .join(Gara, Gara.id == TournamentMatch.gara_id)
             .filter(
-                TournamentMatch.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value]),  # type: ignore[attr-defined]
+                TournamentMatch.status.in_(  # type: ignore[attr-defined]
+                    [MatchStatus.PENDING.value, MatchStatus.PLAYING.value]
+                ),
                 _user_is_match_participant(user_id),
             )
             .order_by(
-                TournamentMatch.created_at.desc().nullslast(), TournamentMatch.id.desc()
+                TournamentMatch.created_at.desc().nullslast(),
+                TournamentMatch.id.desc(),
             )
             .limit(10)
             .all()
         )
 
-        individual_sections = DashboardSectionBuilder.build_individual_match_sections(user_id)
+        individual_sections = (
+            DashboardSectionBuilder.build_individual_match_sections(user_id)
+        )
 
         sa_available = standalone_available_for_user(
             user_id, exclude_director_id=user_id
@@ -209,9 +245,16 @@ class DashboardService:
             campionati, standalones_all, user_role="director", user_id=user_id
         )
 
+        active_items, completed_shown_items, completed_total = (
+            _partition_campionato_items(unified_items)
+        )
+
         return DashboardVM(
             title=_("Dashboard Direttore"),
             campionati=campionati,
+            campionati_active_items=active_items,
+            campionati_completed_shown_items=completed_shown_items,
+            campionati_completed_total=completed_total,
             unified_items=unified_items,
             selected_campionato=selected,
             selected_gara=selected_gara,
@@ -236,7 +279,9 @@ class DashboardService:
             match_proposals=individual_sections["match_proposals"],
             individual_matches=individual_sections["individual_matches"],
             match_opportunities=individual_sections["match_opportunities"],
-            gamification_stats=DashboardSectionBuilder.build_gamification_stats(user_id),
+            gamification_stats=DashboardSectionBuilder.build_gamification_stats(
+                user_id
+            ),
         )
 
     # ---- PLAYER -------------------------------------------------------
@@ -269,23 +314,30 @@ class DashboardService:
         if selected_gara and selected_gara.campionato_id is not None:
             selected_gara = None
 
-        player_sections = DashboardSectionBuilder.build_player_sections(user_id, selected)
+        player_sections = DashboardSectionBuilder.build_player_sections(
+            user_id, selected
+        )
 
         all_current_matches = (
             db.session.query(TournamentMatch)
             .join(Gara, Gara.id == TournamentMatch.gara_id)
             .filter(
-                TournamentMatch.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value]),  # type: ignore[attr-defined]
+                TournamentMatch.status.in_(  # type: ignore[attr-defined]
+                    [MatchStatus.PENDING.value, MatchStatus.PLAYING.value]
+                ),
                 _user_is_match_participant(user_id),
             )
             .order_by(
-                TournamentMatch.created_at.desc().nullslast(), TournamentMatch.id.desc()
+                TournamentMatch.created_at.desc().nullslast(),
+                TournamentMatch.id.desc(),
             )
             .limit(10)
             .all()
         )
 
-        individual_sections = DashboardSectionBuilder.build_individual_match_sections(user_id)
+        individual_sections = (
+            DashboardSectionBuilder.build_individual_match_sections(user_id)
+        )
 
         sa_available = standalone_available_for_user(user_id)
 
@@ -316,9 +368,16 @@ class DashboardService:
             campionati, all_standalone_garas, user_role="player", user_id=user_id
         )
 
+        active_items, completed_shown_items, completed_total = (
+            _partition_campionato_items(unified_items)
+        )
+
         return DashboardVM(
             title=_("Dashboard Giocatore"),
             campionati=campionati,
+            campionati_active_items=active_items,
+            campionati_completed_shown_items=completed_shown_items,
+            campionati_completed_total=completed_total,
             unified_items=unified_items,
             selected_campionato=selected,
             selected_gara=selected_gara,
@@ -345,7 +404,9 @@ class DashboardService:
             match_opportunities=individual_sections["match_opportunities"],
             available_challenges=challenge_sections["available_challenges"],
             player_challenge_progress=challenge_sections["player_challenge_progress"],
-            gamification_stats=DashboardSectionBuilder.build_gamification_stats(user_id),
+            gamification_stats=DashboardSectionBuilder.build_gamification_stats(
+                user_id
+            ),
         )
 
     @staticmethod

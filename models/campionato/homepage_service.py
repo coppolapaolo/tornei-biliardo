@@ -12,8 +12,9 @@ from typing import Any, Dict, Optional
 
 from models.campionato.models import Campionato
 from models.competition.models import Gara
-from models.status_enum import GaraStatus, TournamentStatus
+from models.status_enum import GaraStatus
 from models.campionato.services import TournamentService
+from models.campionato.statistics_service import partition_campionati_by_status
 
 # How many completed campionati to surface alongside active ones on the homepage.
 # Older ones live behind the "Vedi tutti" link to /campionatos.
@@ -47,21 +48,9 @@ class HomepageService:
             .all()
         )
 
-        # Status is derived from related gare; computed once per row.
-        active: list[Campionato] = []
-        completed: list[Campionato] = []
-        terminal_statuses = {
-            TournamentStatus.COMPLETED.value,
-            TournamentStatus.TERMINATED.value,
-        }
-        for c in candidates:
-            if c.get_status() in terminal_statuses:
-                completed.append(c)
-            else:
-                active.append(c)
-
-        completed_shown = completed[:HOMEPAGE_COMPLETED_LIMIT]
-        campionatos_to_show = active + completed_shown
+        partition = partition_campionati_by_status(
+            candidates, completed_limit=HOMEPAGE_COMPLETED_LIMIT
+        )
 
         standalone_garas = (
             Gara.query.filter_by(campionato_id=None)
@@ -71,19 +60,19 @@ class HomepageService:
             .all()
         )
 
-        if not campionatos_to_show and not standalone_garas:
+        if not partition["to_show"] and not standalone_garas:
             return None
 
         tournaments_data = [
-            HomepageService._build_tournament_data(c) for c in campionatos_to_show
+            HomepageService._build_tournament_data(c) for c in partition["to_show"]
         ]
 
         return {
             "tournaments_data": tournaments_data,
-            "active_campionatos": campionatos_to_show,
-            "active_count": len(active),
-            "completed_total": len(completed),
-            "completed_shown": len(completed_shown),
+            "active_campionatos": partition["to_show"],
+            "active_count": len(partition["active"]),
+            "completed_total": partition["completed_total"],
+            "completed_shown": len(partition["completed_shown"]),
             "standalone_garas": standalone_garas,
         }
 

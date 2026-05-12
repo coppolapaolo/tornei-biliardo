@@ -392,3 +392,58 @@ def compute_campionato_status(campionato: Campionato) -> str:
         return TournamentStatus.COMPLETED.value
 
     return TournamentStatus.SETUP.value
+
+
+# -----------------------------
+# Partizione per presentazione: attivi vs completati/terminati
+# -----------------------------
+
+
+_TERMINAL_TOURNAMENT_STATUSES = frozenset({
+    TournamentStatus.COMPLETED.value,
+    TournamentStatus.TERMINATED.value,
+})
+
+
+def partition_campionati_by_status(
+    campionati: list[Campionato],
+    completed_limit: int,
+) -> dict:
+    """Partiziona campionati in attivi vs completati/terminati per la UI.
+
+    Le viste pubbliche (homepage guest, dashboard player/director) mostrano
+    tutti gli attivi e una "coda recente" di completati limitata a
+    `completed_limit`. Il resto resta accessibile via pagina archivio
+    (`/campionati` con filtri).
+
+    Args:
+        campionati: lista pre-filtrata (es. is_active=True, oppure scopata
+            al singolo utente). L'ordinamento viene preservato.
+        completed_limit: numero massimo di completati da includere in `to_show`.
+
+    Returns:
+        Dict con:
+        - `active`: lista di campionati con status non-terminale
+        - `completed`: lista completa dei campionati COMPLETED/TERMINATED
+        - `completed_shown`: prefisso di `completed` con al più
+          `completed_limit` elementi (preserva l'ordine in input)
+        - `to_show`: `active + completed_shown` (lista renderizzabile)
+        - `completed_total`: `len(completed)`, utile al template per
+          decidere se mostrare "Vedi tutti".
+    """
+    active: list[Campionato] = []
+    completed: list[Campionato] = []
+    for c in campionati:
+        if c.get_status() in _TERMINAL_TOURNAMENT_STATUSES:
+            completed.append(c)
+        else:
+            active.append(c)
+
+    completed_shown = completed[:completed_limit]
+    return {
+        "active": active,
+        "completed": completed,
+        "completed_shown": completed_shown,
+        "to_show": active + completed_shown,
+        "completed_total": len(completed),
+    }

@@ -1,0 +1,157 @@
+"""Regression: campionati COMPLETED non sotto un header "attivi" nelle
+dashboard player/director (allineamento con ADR-030 per la homepage guest).
+
+Pattern atteso:
+- `vm.campionati_active_items` contiene SOLO campionati con status derivato
+  non terminale (SETUP, REGISTRATION_OPEN, IN_PROGRESS).
+- `vm.campionati_completed_shown_items` ne contiene al più
+  `DASHBOARD_COMPLETED_LIMIT` (= 2 al momento).
+- `vm.campionati_completed_total` riporta il totale dei completati nello
+  scope dell'utente — usato dal template per decidere se mostrare
+  "Vedi tutti" verso /campionatos.
+"""
+
+from __future__ import annotations
+
+import uuid
+from datetime import date, timedelta
+
+import pytest
+
+from models import Campionato, Gara
+from models.campionato.services import TournamentService
+from models.competition.services import GaraService
+from models.dashboard.dashboard_service import (
+    DashboardService,
+    DASHBOARD_COMPLETED_LIMIT,
+)
+from models.status_enum import GaraStatus, TournamentStatus
+
+
+def _make_campionato(name_prefix: str, director_id: int) -> Campionato:
+    suffix = uuid.uuid4().hex[:6]
+    return TournamentService().create_campionato_with_director(
+        name=f"{name_prefix}_{suffix}",
+        creator_user_id=director_id,
+        campionato_type="Amalfi",
+        is_active=True,
+    )
+
+
+def _add_completed_gara(
+    db_session, campionato_id: int, number: int, director_id: int
+) -> Gara:
+    """Crea una gara, poi forza COMPLETED. Necessario perché
+    GaraService rifiuta date passate alla creazione, ma non c'è
+    validazione successiva sullo status."""
+    gara = GaraService.create_gara(
+        campionato_id=campionato_id,
+        number=number,
+        name=f"Gara {number}",
+        date=date.today() + timedelta(days=number),
+        location="Test Venue",
+        description="completed",
+        rounds_count=1,
+        min_participants=2,
+        max_participants=4,
+        entry_fee=0.0,
+        discipline="palla_9",
+        distance=5,
+        is_race_to=True,
+        director_id=director_id,
+        matchmaking_strategy="amalfi",
+    )
+    gara.status = GaraStatus.COMPLETED.value
+    db_session.commit()
+    return gara
+
+
+@pytest.mark.integration
+class TestPlayerDashboardCampionatiPartition:
+    """Player dashboard: stesso pattern guest (cap 2 completati + Vedi tutti)."""
+
+    def test_completed_campionato_not_in_active_items(
+        self, db_session, isolated_director_user, isolated_players
+    ):
+        campionato = _make_campionato("Done", isolated_director_user.id)
+        _add_completed_gara(
+            db_session, campionato.id, 1, isolated_director_user.id
+        )
+
+        # Sanity
+        assert campionato.get_status() == TournamentStatus.COMPLETED.value
+        assert campionato.is_active is True
+
+        vm = DashboardService.for_player(isolated_players[0].id)
+
+        active_ids = [it.id for it in (vm.campionati_active_items or [])]
+        completed_ids = [
+            it.id for it in (vm.campionati_completed_shown_items or [])
+        ]
+        assert campionato.id not in active_ids
+        assert campionato.id in completed_ids
+        assert vm.campionati_completed_total == 1
+
+    def test_setup_campionato_counts_as_active(
+        self, db_session, isolated_director_user, isolated_players
+    ):
+        """SETUP (in preparazione, no gare) deve risultare ATTIVO."""
+        campionato = _make_campionato("Prep", isolated_director_user.id)
+        # Nessuna gara → status SETUP
+        assert campionato.get_status() == TournamentStatus.SETUP.value
+
+        vm = DashboardService.for_player(isolated_players[0].id)
+
+        active_ids = [it.id for it in (vm.campionati_active_items or [])]
+        assert campionato.id in active_ids
+
+    def test_completed_tail_caps_at_dashboard_limit(
+        self, db_session, isolated_director_user, isolated_players
+    ):
+        extra = DASHBOARD_COMPLETED_LIMIT + 2
+        for i in range(extra):
+            c = _make_campionato(f"Past{i}", isolated_director_user.id)
+            _add_completed_gara(db_session, c.id, 1, isolated_director_user.id)
+
+        vm = DashboardService.for_player(isolated_players[0].id)
+
+        assert vm.campionati_completed_total == extra
+        assert (
+            len(vm.campionati_completed_shown_items or []) == DASHBOARD_COMPLETED_LIMIT
+        )
+
+
+@pytest.mark.integration
+class TestDirectorDashboardCampionatiPartition:
+    """Director dashboard: stesso pattern, includendo SETUP fra gli attivi
+    (anche campionati appena creati dal director)."""
+
+    def test_completed_campionato_not_in_active_items(
+        self, db_session, isolated_director_user
+    ):
+        campionato = _make_campionato("Old", isolated_director_user.id)
+        _add_completed_gara(
+            db_session, campionato.id, 1, isolated_director_user.id
+        )
+
+        vm = DashboardService.for_director(isolated_director_user.id)
+
+        active_ids = [it.id for it in (vm.campionati_active_items or [])]
+        completed_ids = [
+            it.id for it in (vm.campionati_completed_shown_items or [])
+        ]
+        assert campionato.id not in active_ids
+        assert campionato.id in completed_ids
+
+    def test_setup_campionato_director_created_is_active(
+        self, db_session, isolated_director_user
+    ):
+        """Un campionato in preparazione creato dal director compare fra
+        gli attivi (richiesta esplicita dell'utente)."""
+        campionato = _make_campionato("Prep", isolated_director_user.id)
+        assert campionato.get_status() == TournamentStatus.SETUP.value
+
+        vm = DashboardService.for_director(isolated_director_user.id)
+
+        active_ids = [it.id for it in (vm.campionati_active_items or [])]
+        assert campionato.id in active_ids

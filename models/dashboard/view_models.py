@@ -158,5 +158,14 @@ class DashboardVM:
         None  # Player progress on challenges
     )
 
-    # Gamification
-    gamification_stats: Optional[dict[str, Any]] = None  # {level, xp, next_level_xp, streaks}
+    # Gamification: {level, xp, next_level_xp, streaks}
+    gamification_stats: Optional[dict[str, Any]] = None
+
+    # Partizione campionati per presentazione: liste di
+    # UnifiedDashboardItem (non Campionato puri) per preservare i flag
+    # can_manage/can_view_details/next_prova_date già calcolati da
+    # build_unified_items. Il template separa attivi vs completati e
+    # mostra "Vedi tutti" quando completed_total > len(completed_shown).
+    campionati_active_items: Optional[List["UnifiedDashboardItem"]] = None
+    campionati_completed_shown_items: Optional[List["UnifiedDashboardItem"]] = None
+    campionati_completed_total: int = 0
