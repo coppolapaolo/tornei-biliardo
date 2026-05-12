@@ -5,13 +5,23 @@
 {% block content %}
 {% include "components/_index_registration_info.html" %}
 
-<!-- Header con lista campionati attivi -->
+<!-- Header con lista campionati (attivi + ultimi completati) -->
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1><i class="fas fa-trophy"></i> {{ _("Campionati Attivi (%(count)s)", count=active_campionatos|length) }}</h1>
+    <h1><i class="fas fa-trophy"></i> {{ _("Campionati (%(count)s)", count=active_count) }}</h1>
+    {% if (completed_total or 0) > (completed_shown or 0) or tournaments_data %}
+    <a href="{{ url_for('main.public_campionatos_list') }}" class="btn btn-outline-primary btn-sm">
+        <i class="fas fa-list"></i> {{ _("Vedi tutti") }}
+    </a>
+    {% endif %}
 </div>
 
 {% if tournaments_data %}
     {% include "components/_index_campionato_cards.html" %}
+    {% if (completed_total or 0) > (completed_shown or 0) %}
+    <div class="text-center text-muted small mb-3">
+        {{ _("Mostrati %(shown)s di %(total)s campionati completati", shown=completed_shown, total=completed_total) }}
+    </div>
+    {% endif %}
 {% else %}
     <div class="alert alert-info text-center">
         <i class="fas fa-info-circle"></i> {{ _("Nessun campionato attivo al momento.") }}

@@ -95,15 +95,44 @@ def quick_login(username):
 
 @main_bp.route("/campionatos")
 def public_campionatos_list():
-    """Lista pubblica dei campionati - visibile ai guest"""
-    active_campionatos = (
-        Campionato.query.filter_by(is_active=True)
-        .order_by(Campionato.created_at.desc())
-        .all()
-    )
+    """Lista pubblica dei campionati - visibile ai guest.
+
+    Supporta filtro di stato derivato (in_corso/completati/terminati/all) e
+    ricerca per nome. Lo stato è calcolato da `compute_campionato_status`
+    via `Campionato.get_status()` e quindi va filtrato in Python — non c'è
+    una colonna SQL equivalente.
+    """
+    from models.status_enum import TournamentStatus
+
+    raw_status = (request.args.get("status") or "all").strip().lower()
+    raw_query = (request.args.get("q") or "").strip()
+
+    valid_statuses = {"all", "in_corso", "completati", "terminati"}
+    status_filter = raw_status if raw_status in valid_statuses else "all"
+
+    query = Campionato.query.filter_by(is_active=True, is_deleted=False)
+    if raw_query:
+        query = query.filter(Campionato.name.ilike(f"%{raw_query}%"))
+
+    campionatos = query.order_by(Campionato.created_at.desc()).all()
+
+    if status_filter != "all":
+        wanted = {
+            "in_corso": {
+                TournamentStatus.SETUP.value,
+                TournamentStatus.REGISTRATION_OPEN.value,
+                TournamentStatus.IN_PROGRESS.value,
+            },
+            "completati": {TournamentStatus.COMPLETED.value},
+            "terminati": {TournamentStatus.TERMINATED.value},
+        }[status_filter]
+        campionatos = [c for c in campionatos if c.get_status() in wanted]
 
     return render_template(
-        "public/campionatos_list.html", campionatos=active_campionatos
+        "public/campionatos_list.html",
+        campionatos=campionatos,
+        status_filter=status_filter,
+        search_query=raw_query,
     )
 
 
@@ -178,7 +207,6 @@ def gara_detail_public(gara_id):
     return redirect(url_for('admin.competition.gara_detail', gara_id=gara_id))
 
 
-
 @main_bp.route("/reset/save", methods=["POST"])
 def save_reset_snapshot():
     """Salva lo stato corrente del database come snapshot"""
@@ -225,7 +253,7 @@ def debug_create_player():
     # Crea il nuovo utente usando il servizio
     from models.user.services import UserService
 
-    new_user = UserService.create_user(
+    UserService.create_user(
         username=username,
         email=f"{username}@debug.local",
         role="player",
@@ -239,7 +267,7 @@ def debug_create_player():
 
 @main_bp.route("/debug/fill_gara/<int:gara_id>")
 def debug_fill_gara(gara_id):
-    """Riempie una gara iscrivendo tutti i player*, mario e pino - SOLO in modalità debug"""
+    """Iscrive tutti i player*, mario e pino a una gara (debug only)."""
     if not Config.DEBUG_MODE:
         return "Funzione non disponibile in produzione", 403
 
@@ -269,7 +297,8 @@ def debug_fill_gara(gara_id):
 
     if not available_players:
         flash(
-            f"Nessun player*, mario o pino disponibile da iscrivere. Iscritti attuali: {current_inscriptions}",
+            f"Nessun player*, mario o pino disponibile da iscrivere. "
+            f"Iscritti attuali: {current_inscriptions}",
             "info",
         )
         return redirect(request.referrer or url_for("dashboard.dashboard"))
@@ -279,7 +308,8 @@ def debug_fill_gara(gara_id):
         slots_available = gara.max_participants - current_inscriptions
         if slots_available <= 0:
             flash(
-                f"La gara ha già raggiunto il massimo di {gara.max_participants} iscritti",
+                f"La gara ha già raggiunto il massimo di "
+                f"{gara.max_participants} iscritti",
                 "info",
             )
             return redirect(request.referrer or url_for("dashboard.dashboard"))
@@ -298,7 +328,8 @@ def debug_fill_gara(gara_id):
             new_inscriptions += 1
 
     flash(
-        f"Aggiunti {new_inscriptions} iscritti alla gara. Totale: {current_inscriptions + new_inscriptions}",
+        f"Aggiunti {new_inscriptions} iscritti alla gara. "
+        f"Totale: {current_inscriptions + new_inscriptions}",
         "success",
     )
     return redirect(
@@ -308,7 +339,7 @@ def debug_fill_gara(gara_id):
 
 @main_bp.route("/debug/complete_current_round/<int:gara_id>")
 def debug_complete_current_round(gara_id):
-    """Completa tutti i match del turno attuale con risultati random - SOLO in modalità debug"""
+    """Completa i match del turno attuale con risultati random (debug only)."""
     if not Config.DEBUG_MODE:
         return "Funzione non disponibile in produzione", 403
 
@@ -350,7 +381,7 @@ def debug_complete_current_round(gara_id):
 
         # Genera risultati random basati sulla modalità gara
         if gara.is_race_to:
-            # Race to N - il vincitore deve arrivare a distance_config.get_winning_racks()
+            # Race to N: vincitore deve arrivare a get_winning_racks()
             winning_score = gara.distance_config.get_winning_racks()
             loser_score = random.randint(0, winning_score - 1)
 

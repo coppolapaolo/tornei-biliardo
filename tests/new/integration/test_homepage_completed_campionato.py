@@ -1,0 +1,219 @@
+"""Regression tests: completed campionato must NOT appear in the
+"active" homepage section.
+
+Bug: a campionato where all gare were COMPLETED naturally (without
+manual termination) kept `is_active=True`, so the previous
+`HomepageService.get_homepage_data()` query (filter_by(is_active=True))
+listed it under "Campionati Attivi" — with the badge "Completato" — which
+contradicted the section header.
+
+Fix: HomepageService now partitions by derived status
+(`compute_campionato_status`), exposes `active_count` separately, and
+appends at most HOMEPAGE_COMPLETED_LIMIT completed campionati as a
+"recent completed" tail. The /campionatos page provides full browsing.
+"""
+
+from __future__ import annotations
+
+import uuid
+from datetime import date, timedelta
+
+import pytest
+
+from models import Campionato, Gara
+from models.campionato.homepage_service import (
+    HomepageService,
+    HOMEPAGE_COMPLETED_LIMIT,
+)
+from models.campionato.services import TournamentService
+from models.competition.services import GaraService
+from models.status_enum import GaraStatus, TournamentStatus
+
+
+def _guest_render(app, endpoint_path, query_string=""):
+    """Render a route as a guest by pushing a fresh anonymous request
+    context.
+
+    We deliberately do not go through `app.test_client()`: when other
+    tests on the same xdist worker have logged users in, Flask-Login
+    state can survive at the app/session level, and `current_user`
+    resolves to a (detached) authenticated user — making `/` redirect
+    to `/dashboard`. A bare `test_request_context` is the only way to
+    guarantee `current_user.is_authenticated is False`.
+    """
+    from flask_login import AnonymousUserMixin
+
+    url = endpoint_path + ("?" + query_string if query_string else "")
+    with app.test_request_context(url):
+        # Force anonymous: Flask-Login reads session, which is empty here
+        from flask import g
+        g._login_user = AnonymousUserMixin()
+        # Dispatch through the app: matches the URL and runs the view
+        # function with the normal middleware/before_request chain.
+        return app.full_dispatch_request()
+
+
+def _make_campionato(name_prefix: str, director_id: int) -> Campionato:
+    """Helper to build a campionato with a unique name."""
+    suffix = uuid.uuid4().hex[:6]
+    return TournamentService().create_campionato_with_director(
+        name=f"{name_prefix}_{suffix}",
+        creator_user_id=director_id,
+        campionato_type="Amalfi",
+        is_active=True,
+    )
+
+
+def _add_completed_gara(
+    db_session, campionato_id: int, number: int, director_id: int
+) -> Gara:
+    """Create a gara attached to a campionato, then force its status to
+    COMPLETED.
+
+    Note: `GaraService.create_gara` rejects dates in the past, so we
+    create with a future date and only afterwards mark the gara as
+    COMPLETED (the model itself has no such validation post-creation).
+    """
+    gara = GaraService.create_gara(
+        campionato_id=campionato_id,
+        number=number,
+        name=f"Gara {number}",
+        date=date.today() + timedelta(days=number),
+        location="Test Venue",
+        description="completed",
+        rounds_count=1,
+        min_participants=2,
+        max_participants=4,
+        entry_fee=0.0,
+        discipline="palla_9",
+        distance=5,
+        is_race_to=True,
+        director_id=director_id,
+        matchmaking_strategy="amalfi",
+    )
+    gara.status = GaraStatus.COMPLETED.value
+    db_session.commit()
+    return gara
+
+
+@pytest.mark.integration
+class TestHomepageCompletedCampionato:
+    """Regression for: completed campionato shown as Attivo on homepage."""
+
+    def test_completed_campionato_does_not_count_as_active(
+        self, db_session, isolated_director_user
+    ):
+        """A campionato with all gare COMPLETED must not increase
+        `active_count`. It may still appear in `tournaments_data` as part
+        of the "recent completed" tail."""
+        campionato = _make_campionato("Old", isolated_director_user.id)
+        _add_completed_gara(db_session, campionato.id, 1, isolated_director_user.id)
+
+        # Sanity: derived status is COMPLETED, is_active is still True
+        assert campionato.is_active is True
+        assert campionato.get_status() == TournamentStatus.COMPLETED.value
+
+        data = HomepageService.get_homepage_data()
+        assert data is not None
+        assert data["active_count"] == 0
+        assert data["completed_total"] == 1
+        assert data["completed_shown"] == 1
+        # Tail: campionato is rendered, but the section header reads "0 attivi"
+        assert any(
+            d["campionato"].id == campionato.id for d in data["tournaments_data"]
+        )
+
+    def test_in_progress_campionato_counts_as_active(
+        self, db_session, isolated_director_user
+    ):
+        """A campionato with at least one PLAYING gara counts as active."""
+        campionato = _make_campionato("Live", isolated_director_user.id)
+        gara = _add_completed_gara(
+            db_session, campionato.id, 1, isolated_director_user.id
+        )
+        gara.status = GaraStatus.PLAYING.value
+        db_session.commit()
+
+        data = HomepageService.get_homepage_data()
+        assert data is not None
+        assert data["active_count"] == 1
+        assert data["completed_total"] == 0
+
+    def test_completed_tail_caps_at_homepage_limit(
+        self, db_session, isolated_director_user
+    ):
+        """When there are more than HOMEPAGE_COMPLETED_LIMIT completed
+        campionati, only the most recent are shown; the rest live behind
+        the /campionatos page."""
+        extra = HOMEPAGE_COMPLETED_LIMIT + 2
+        for i in range(extra):
+            c = _make_campionato(f"Done{i}", isolated_director_user.id)
+            _add_completed_gara(db_session, c.id, 1, isolated_director_user.id)
+
+        data = HomepageService.get_homepage_data()
+        assert data is not None
+        assert data["completed_total"] == extra
+        assert data["completed_shown"] == HOMEPAGE_COMPLETED_LIMIT
+        assert len(data["tournaments_data"]) == HOMEPAGE_COMPLETED_LIMIT
+
+    def test_guest_homepage_renders_with_completed_only(
+        self, app, db_session, isolated_director_user
+    ):
+        """Smoke: GET / works with only completed campionati and the
+        section header shows 0 active, not 1."""
+        campionato = _make_campionato("Past", isolated_director_user.id)
+        _add_completed_gara(db_session, campionato.id, 1, isolated_director_user.id)
+
+        response = _guest_render(app, "/")
+        assert response.status_code == 200, response.data[:200]
+        body = response.get_data(as_text=True)
+        # New section header (count = 0 active)
+        assert "Campionati (0)" in body
+        # Campionato name still visible (in the "recent completed" tail)
+        assert campionato.name in body
+
+
+@pytest.mark.integration
+class TestPublicCampionatosListFilters:
+    """Tests for the new /campionatos filters and search."""
+
+    def test_status_filter_completati_excludes_in_progress(
+        self, app, db_session, isolated_director_user
+    ):
+        live = _make_campionato("LiveOne", isolated_director_user.id)
+        live_gara = _add_completed_gara(
+            db_session, live.id, 1, isolated_director_user.id
+        )
+        live_gara.status = GaraStatus.PLAYING.value
+        db_session.commit()
+
+        done = _make_campionato("DoneOne", isolated_director_user.id)
+        _add_completed_gara(db_session, done.id, 1, isolated_director_user.id)
+
+        response = _guest_render(app, "/campionatos", "status=completati")
+        assert response.status_code == 200
+        body = response.get_data(as_text=True)
+        assert done.name in body
+        assert live.name not in body
+
+    def test_search_filters_by_name(
+        self, app, db_session, isolated_director_user
+    ):
+        a = _make_campionato("AlphaSearch", isolated_director_user.id)
+        b = _make_campionato("BetaSearch", isolated_director_user.id)
+
+        response = _guest_render(app, "/campionatos", f"q={a.name[:5]}")
+        assert response.status_code == 200
+        body = response.get_data(as_text=True)
+        assert a.name in body
+        assert b.name not in body
+
+    def test_invalid_status_falls_back_to_all(
+        self, app, db_session, isolated_director_user
+    ):
+        c = _make_campionato("AnyStatus", isolated_director_user.id)
+        response = _guest_render(app, "/campionatos", "status=<script>")
+        assert response.status_code == 200
+        # All campionatos visible when filter is invalid
+        body = response.get_data(as_text=True)
+        assert c.name in body

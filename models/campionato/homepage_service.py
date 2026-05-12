@@ -12,8 +12,12 @@ from typing import Any, Dict, Optional
 
 from models.campionato.models import Campionato
 from models.competition.models import Gara
-from models.status_enum import GaraStatus
+from models.status_enum import GaraStatus, TournamentStatus
 from models.campionato.services import TournamentService
+
+# How many completed campionati to surface alongside active ones on the homepage.
+# Older ones live behind the "Vedi tutti" link to /campionatos.
+HOMEPAGE_COMPLETED_LIMIT = 2
 
 
 class HomepageService:
@@ -23,16 +27,41 @@ class HomepageService:
     def get_homepage_data() -> Optional[Dict[str, Any]]:
         """Return all data needed to render the homepage.
 
+        The homepage shows a single "Campionati" section: all in-progress
+        campionati first (status != COMPLETED/TERMINATED), then the most
+        recent few completed ones as a tail.
+
         Returns:
-            Dict with keys: tournaments_data, active_campionatos, standalone_garas.
-            None if there are no active campionatos and no standalone garas
-            (caller should render the "no campionato" page).
+            Dict with keys:
+              - tournaments_data: list of dicts (active + tail of completed)
+              - active_campionatos: backwards-compat list (same campionati)
+              - active_count, completed_total, completed_shown: counters
+                used by the template ("Vedi tutti" appears when there are
+                more completed than shown).
+              - standalone_garas: list of standalone Gara.
+            None if there is nothing public to show.
         """
-        active_campionatos = (
+        candidates = (
             Campionato.query.filter_by(is_active=True)
             .order_by(Campionato.created_at.desc())
             .all()
         )
+
+        # Status is derived from related gare; computed once per row.
+        active: list[Campionato] = []
+        completed: list[Campionato] = []
+        terminal_statuses = {
+            TournamentStatus.COMPLETED.value,
+            TournamentStatus.TERMINATED.value,
+        }
+        for c in candidates:
+            if c.get_status() in terminal_statuses:
+                completed.append(c)
+            else:
+                active.append(c)
+
+        completed_shown = completed[:HOMEPAGE_COMPLETED_LIMIT]
+        campionatos_to_show = active + completed_shown
 
         standalone_garas = (
             Gara.query.filter_by(campionato_id=None)
@@ -42,16 +71,19 @@ class HomepageService:
             .all()
         )
 
-        if not active_campionatos and not standalone_garas:
+        if not campionatos_to_show and not standalone_garas:
             return None
 
         tournaments_data = [
-            HomepageService._build_tournament_data(c) for c in active_campionatos
+            HomepageService._build_tournament_data(c) for c in campionatos_to_show
         ]
 
         return {
             "tournaments_data": tournaments_data,
-            "active_campionatos": active_campionatos,
+            "active_campionatos": campionatos_to_show,
+            "active_count": len(active),
+            "completed_total": len(completed),
+            "completed_shown": len(completed_shown),
             "standalone_garas": standalone_garas,
         }
 

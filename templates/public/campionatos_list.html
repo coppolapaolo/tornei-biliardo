@@ -1,30 +1,59 @@
 {% extends "base.html" %}
-{% block title %}{{ _('Campionati Pubblici') }}{% endblock %}
+{% block title %}{{ _('Campionati') }}{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
     <div class="row">
         <div class="col-12">
-            <h2><i class="fas fa-trophy"></i> {{ _('Campionati Attivi') }}</h2>
-            <p class="text-muted">{{ _('Lista pubblica dei campionati in corso - nessuna registrazione richiesta per visualizzare') }}</p>
+            <h2><i class="fas fa-trophy"></i> {{ _('Campionati') }}</h2>
+            <p class="text-muted">{{ _('Lista pubblica dei campionati - nessuna registrazione richiesta per visualizzare') }}</p>
+
+            <form method="get" class="row g-2 align-items-end mb-4">
+                <div class="col-md-5">
+                    <label for="q" class="form-label small text-muted mb-1">{{ _('Cerca') }}</label>
+                    <input type="text" class="form-control form-control-sm" id="q" name="q"
+                           value="{{ search_query }}" placeholder="{{ _('Nome campionato...') }}">
+                </div>
+                <div class="col-md-4">
+                    <label for="status" class="form-label small text-muted mb-1">{{ _('Stato') }}</label>
+                    <select class="form-select form-select-sm" id="status" name="status">
+                        <option value="all" {% if status_filter == 'all' %}selected{% endif %}>{{ _('Tutti') }}</option>
+                        <option value="in_corso" {% if status_filter == 'in_corso' %}selected{% endif %}>{{ _('In corso') }}</option>
+                        <option value="completati" {% if status_filter == 'completati' %}selected{% endif %}>{{ _('Completati') }}</option>
+                        <option value="terminati" {% if status_filter == 'terminati' %}selected{% endif %}>{{ _('Terminati') }}</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="fas fa-filter"></i> {{ _('Filtra') }}
+                    </button>
+                    {% if search_query or status_filter != 'all' %}
+                    <a href="{{ url_for('main.public_campionatos_list') }}" class="btn btn-outline-secondary btn-sm">
+                        {{ _('Reset') }}
+                    </a>
+                    {% endif %}
+                </div>
+            </form>
 
             {% if campionatos %}
+                <p class="text-muted small">
+                    {{ ngettext('%(num)s campionato trovato', '%(num)s campionati trovati', campionatos|length, num=campionatos|length) }}
+                </p>
                 <div class="row">
                     {% for campionato in campionatos %}
                     <div class="col-md-6 col-lg-4 mb-4">
                         <div class="card h-100">
                             <div class="card-header">
-                                <h5 class="card-title">{{ campionato.name }}</h5>
-                                <span class="badge badge-primary">{{ campionato.campionato_type }}</span>
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <h5 class="card-title mb-1">{{ campionato.name }}</h5>
+                                    <span class="badge {{ campionato | status_badge_class }}">{{ campionato | status_text }}</span>
+                                </div>
+                                <span class="badge bg-secondary">{{ campionato.campionato_type }}</span>
                             </div>
                             <div class="card-body">
-                                {% if campionato.description %}
-                                <p class="card-text">{{ campionato.description[:100] }}...</p>
-                                {% endif %}
-
-                                <ul class="list-unstyled">
+                                <ul class="list-unstyled small mb-0">
                                     <li><i class="fas fa-calendar"></i> {{ _('Creato') }}: {{ campionato.created_at|date_local }}</li>
-                                    <li><i class="fas fa-users"></i> {{ _('Stato') }}: {{ _("Attivo") if campionato.is_active else _("Non Attivo") }}</li>
+                                    <li><i class="fas fa-flag-checkered"></i> {{ _('Gare totali:') }} {{ campionato.gare|length }}</li>
                                 </ul>
                             </div>
                             <div class="card-footer">
@@ -40,7 +69,11 @@
             {% else %}
                 <div class="alert alert-info">
                     <i class="fas fa-info-circle"></i>
-                    {{ _('Nessun campionato attivo al momento.') }}
+                    {% if search_query or status_filter != 'all' %}
+                        {{ _('Nessun campionato corrisponde ai filtri selezionati.') }}
+                    {% else %}
+                        {{ _('Nessun campionato disponibile al momento.') }}
+                    {% endif %}
                 </div>
             {% endif %}
 
