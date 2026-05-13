@@ -42,8 +42,10 @@ class HomepageService:
               - standalone_garas: list of standalone Gara.
             None if there is nothing public to show.
         """
+        # is_deleted=False include i terminated come archivio storico
+        # (vedi ADR-030 §"Scope": esclude solo i soft-deleted).
         candidates = (
-            Campionato.query.filter_by(is_active=True)
+            Campionato.query.filter_by(is_deleted=False)
             .order_by(Campionato.created_at.desc())
             .all()
         )

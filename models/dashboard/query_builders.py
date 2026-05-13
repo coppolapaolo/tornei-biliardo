@@ -18,18 +18,28 @@ from models.status_enum import GaraStatus
 
 
 def campionatos_q():
-    """All campionati with eagerly loaded gare, ordered by creation date."""
+    """Campionati visibili nelle viste pubbliche (dashboard, archivio).
+
+    Filtra solo i soft-deleted (`is_deleted=True`); include i terminated
+    (`is_active=False` + `terminated_at IS NOT NULL`) perché vanno mostrati
+    come archivio storico — il campionato esiste ancora, è solo concluso.
+
+    Coerente con `HomepageService.get_homepage_data` e
+    `routes/main.py:public_campionatos_list`.
+    """
     return (
         db.session.query(Campionato)
+        .filter(Campionato.is_deleted.is_(False))
         .options(joinedload(getattr(Campionato, "gare")))
         .order_by(Campionato.created_at.desc())
     )
 
 
 def managed_campionatos_q(user_id: int):
-    """Campionati managed by a specific director."""
+    """Campionati managed by a specific director (non-deleted)."""
     return (
         db.session.query(Campionato)
+        .filter(Campionato.is_deleted.is_(False))
         .join(
             DirectorAssignment,
             (DirectorAssignment.entity_type == "campionato")

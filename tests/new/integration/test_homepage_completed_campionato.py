@@ -217,3 +217,54 @@ class TestPublicCampionatosListFilters:
         # All campionatos visible when filter is invalid
         body = response.get_data(as_text=True)
         assert c.name in body
+
+    def test_terminated_campionato_visible_in_archive(
+        self, app, db_session, isolated_director_user
+    ):
+        """Regression: un campionato terminato manualmente (`is_active=False`,
+        `terminated_at IS NOT NULL`, `is_deleted=False`) deve restare
+        visibile nell'archivio `/campionatos`. Prima del fix la query
+        filtrava `is_active=True` e questi campionati sparivano sia
+        dall'archivio sia dalla homepage.
+
+        Nota: senza playoff config, un campionato manually-terminated
+        ha status derivato COMPLETED (vedi `compute_campionato_status`),
+        non TERMINATED. Per questo il filtro è `completati`.
+        """
+        from models.base import utc_now
+
+        c = _make_campionato("ManualTerm", isolated_director_user.id)
+        c.is_active = False
+        c.terminated_at = utc_now()
+        db_session.commit()
+
+        assert c.is_active is False
+        assert c.is_deleted is False
+        assert c.terminated_at is not None
+
+        # Verifica scope archivio
+        response_all = _guest_render(app, "/campionatos", "")
+        assert response_all.status_code == 200
+        assert c.name in response_all.get_data(as_text=True)
+
+        # Verifica filtro coerente
+        response_filtered = _guest_render(app, "/campionatos", "status=completati")
+        assert response_filtered.status_code == 200
+        assert c.name in response_filtered.get_data(as_text=True)
+
+    def test_soft_deleted_campionato_hidden_from_archive(
+        self, app, db_session, isolated_director_user
+    ):
+        """Un campionato soft-deleted (`is_deleted=True`) NON appare
+        nell'archivio pubblico (è amministrativo, solo admin può
+        vederlo)."""
+        c = _make_campionato("Trash", isolated_director_user.id)
+        c.soft_delete("test")
+        db_session.commit()
+
+        assert c.is_deleted is True
+
+        response = _guest_render(app, "/campionatos", "")
+        assert response.status_code == 200
+        body = response.get_data(as_text=True)
+        assert c.name not in body

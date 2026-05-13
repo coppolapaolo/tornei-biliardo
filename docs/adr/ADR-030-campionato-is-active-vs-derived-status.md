@@ -1,6 +1,6 @@
 # ADR-030 — `Campionato.is_active` non implica "in corso" nelle viste pubbliche
 
-**Data**: 2026-05-12
+**Data**: 2026-05-12 (rev 2026-05-12)
 **Stato**: Accepted
 **Decisori**: Paolo Coppola
 
@@ -43,7 +43,16 @@ header "Attivi" anche se nei singoli badge erano marcati "Completato".
    molte query già esistenti (matchmaking, soft-delete restore,
    filtri admin).
 
-2. **La presentazione delle viste pubbliche guest deve filtrare per
+2. **Scope delle viste pubbliche = `is_deleted=False`** (rev 2026-05-12):
+   includiamo i campionati terminati manualmente (`is_active=False`,
+   `terminated_at IS NOT NULL`) perché restano archivio storico
+   navigabile: l'utente vuole vedere "Garetta del MerColedì 2026" come
+   campionato concluso, anche se il director l'ha terminato.
+
+   Filtriamo solo i soft-deleted (`is_deleted=True`), perché quelli
+   sono "rimossi" e devono sparire da tutte le viste tranne admin.
+
+3. **La presentazione delle viste pubbliche deve filtrare per
    status derivato**, non per `is_active`:
 
    - **Homepage `/`** — sezione unica "Campionati" che mostra tutti i
@@ -131,12 +140,21 @@ File toccati:
 
 - `models/campionato/homepage_service.py` — partizionamento per status
   derivato, esposizione di `active_count`, `completed_total`,
-  `completed_shown`.
+  `completed_shown`. Filtra `is_deleted=False`.
 - `templates/index.html` — rinomina sezione "Campionati Attivi" → "Campionati",
   pulsante "Vedi tutti", contatore "Mostrati N di M completati".
 - `routes/main.py:public_campionatos_list` — filtri di status + search.
+  Filtra `is_deleted=False`.
 - `templates/public/campionatos_list.html` — form filtri, badge status
   derivato (`| status_text`).
+- `models/dashboard/query_builders.py:campionatos_q()` e
+  `managed_campionatos_q()` — filtrano `is_deleted=False` per allineare
+  dashboard player/director con homepage e archivio.
+- `models/campionato/statistics_service.py:partition_campionati_by_status`
+  — helper riusabile per la partizione attivi vs terminali.
+- `models/dashboard/dashboard_service.py:_partition_campionato_items` —
+  stessa partizione ma su UnifiedDashboardItem (preserva can_manage,
+  can_view_details, next_prova_date).
 
 Test:
 

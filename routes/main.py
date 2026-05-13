@@ -110,7 +110,10 @@ def public_campionatos_list():
     valid_statuses = {"all", "in_corso", "completati", "terminati"}
     status_filter = raw_status if raw_status in valid_statuses else "all"
 
-    query = Campionato.query.filter_by(is_active=True, is_deleted=False)
+    # is_deleted=False include i terminated come archivio storico
+    # (vedi ADR-030 §"Scope"). is_active=False (terminated) appare
+    # sotto filtro status="terminati".
+    query = Campionato.query.filter_by(is_deleted=False)
     if raw_query:
         query = query.filter(Campionato.name.ilike(f"%{raw_query}%"))
 
