@@ -160,17 +160,195 @@ class TestHomepageCompletedCampionato:
         self, app, db_session, isolated_director_user
     ):
         """Smoke: GET / works with only completed campionati and the
-        section header shows 0 active, not 1."""
+        section header shows 0 attivi, not 1.
+
+        Regression 2026-05-14: header esplicito "0 attivi" (ngettext),
+        non "Campionati (0)" da solo — l'utente segnalava l'ambiguità
+        di vedere "Campionati (0)" con un campionato listato sotto.
+        """
         campionato = _make_campionato("Past", isolated_director_user.id)
         _add_completed_gara(db_session, campionato.id, 1, isolated_director_user.id)
 
         response = _guest_render(app, "/")
         assert response.status_code == 200, response.data[:200]
         body = response.get_data(as_text=True)
-        # New section header (count = 0 active)
-        assert "Campionati (0)" in body
+        # New section header (count = 0 active, explicit "attivi")
+        assert "0 attivi" in body
         # Campionato name still visible (in the "recent completed" tail)
         assert campionato.name in body
+
+    def test_homepage_setup_with_future_date_visible_to_guest(
+        self, app, db_session, isolated_director_user
+    ):
+        """ADR-030 rev 2026-05-14: SETUP con data futura/NULL è visibile
+        al pubblico (homepage guest). SETUP con data passata è zombie e
+        resta nascosta — solo il director/admin proprietario la vede
+        nella sua dashboard.
+        """
+        # Gara SETUP con data futura
+        future_gara = GaraService.create_gara(
+            campionato_id=None,
+            number=1,
+            name="Future Setup",
+            date=date.today() + timedelta(days=10),
+            location="Test",
+            description="",
+            rounds_count=1,
+            min_participants=2,
+            max_participants=4,
+            entry_fee=0.0,
+            discipline="palla_9",
+            distance=5,
+            is_race_to=True,
+            director_id=isolated_director_user.id,
+            matchmaking_strategy="amalfi",
+        )
+        future_gara.status = GaraStatus.SETUP.value
+        db_session.commit()
+
+        data = HomepageService.get_homepage_data()
+        assert data is not None
+        standalone_ids = [g.id for g in data["standalone_garas"]]
+        assert future_gara.id in standalone_ids
+        # Conta come "attiva" (non completata)
+        assert data["standalone_active_count"] >= 1
+
+    def test_homepage_setup_with_past_date_hidden_from_guest(
+        self, app, db_session, isolated_director_user
+    ):
+        """SETUP con data passata = zombie/dimenticata: non deve apparire
+        al guest in homepage."""
+        zombie_gara = GaraService.create_gara(
+            campionato_id=None,
+            number=1,
+            name="Zombie Setup",
+            date=date.today() + timedelta(days=5),
+            location="Test",
+            description="",
+            rounds_count=1,
+            min_participants=2,
+            max_participants=4,
+            entry_fee=0.0,
+            discipline="palla_9",
+            distance=5,
+            is_race_to=True,
+            director_id=isolated_director_user.id,
+            matchmaking_strategy="amalfi",
+        )
+        # Forziamo SETUP + data passata
+        zombie_gara.status = GaraStatus.SETUP.value
+        zombie_gara.date = date.today() - timedelta(days=1)
+        db_session.commit()
+
+        data = HomepageService.get_homepage_data()
+        # data può essere None se nessun campionato/gara visibile
+        if data is not None:
+            standalone_ids = [g.id for g in data["standalone_garas"]]
+            assert zombie_gara.id not in standalone_ids
+
+    def test_garas_list_setup_future_visible_setup_past_hidden(
+        self, app, db_session, isolated_director_user
+    ):
+        """Stessa regola per /garas (route public_garas_list)."""
+        future = GaraService.create_gara(
+            campionato_id=None,
+            number=1,
+            name="GarasFuture",
+            date=date.today() + timedelta(days=10),
+            location="Test",
+            description="",
+            rounds_count=1,
+            min_participants=2,
+            max_participants=4,
+            entry_fee=0.0,
+            discipline="palla_9",
+            distance=5,
+            is_race_to=True,
+            director_id=isolated_director_user.id,
+            matchmaking_strategy="amalfi",
+        )
+        future.status = GaraStatus.SETUP.value
+
+        zombie = GaraService.create_gara(
+            campionato_id=None,
+            number=2,
+            name="GarasZombie",
+            date=date.today() + timedelta(days=5),
+            location="Test",
+            description="",
+            rounds_count=1,
+            min_participants=2,
+            max_participants=4,
+            entry_fee=0.0,
+            discipline="palla_9",
+            distance=5,
+            is_race_to=True,
+            director_id=isolated_director_user.id,
+            matchmaking_strategy="amalfi",
+        )
+        zombie.status = GaraStatus.SETUP.value
+        zombie.date = date.today() - timedelta(days=1)
+        db_session.commit()
+
+        response = _guest_render(app, "/garas")
+        assert response.status_code == 200
+        body = response.get_data(as_text=True)
+        assert future.name in body
+        assert zombie.name not in body
+
+    def test_homepage_standalone_active_count_excludes_completed(
+        self, db_session, isolated_director_user
+    ):
+        """Regression 2026-05-14: `standalone_active_count` deve contare
+        solo le gare standalone NON completate, non `len(standalone_garas)`
+        che include la coda completati.
+        """
+        # Una gara standalone in stato INSCRIPTION (attiva)
+        active_gara = GaraService.create_gara(
+            campionato_id=None,
+            number=1,
+            name="Active Standalone",
+            date=date.today() + timedelta(days=1),
+            location="Test",
+            description="",
+            rounds_count=1,
+            min_participants=2,
+            max_participants=4,
+            entry_fee=0.0,
+            discipline="palla_9",
+            distance=5,
+            is_race_to=True,
+            director_id=isolated_director_user.id,
+            matchmaking_strategy="amalfi",
+        )
+        active_gara.status = GaraStatus.INSCRIPTION.value
+
+        # Una gara standalone completata
+        completed_gara = GaraService.create_gara(
+            campionato_id=None,
+            number=2,
+            name="Done Standalone",
+            date=date.today() + timedelta(days=2),
+            location="Test",
+            description="",
+            rounds_count=1,
+            min_participants=2,
+            max_participants=4,
+            entry_fee=0.0,
+            discipline="palla_9",
+            distance=5,
+            is_race_to=True,
+            director_id=isolated_director_user.id,
+            matchmaking_strategy="amalfi",
+        )
+        completed_gara.status = GaraStatus.COMPLETED.value
+        db_session.commit()
+
+        data = HomepageService.get_homepage_data()
+        assert data is not None
+        # len(standalone_garas) sarebbe 2, ma active = 1
+        assert data["standalone_active_count"] == 1
+        assert len(data["standalone_garas"]) == 2
 
 
 @pytest.mark.integration

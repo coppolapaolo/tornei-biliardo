@@ -46,6 +46,10 @@ from models.status_enum import TournamentStatus
 # Older completed campionati are accessible via /campionatos archive page.
 DASHBOARD_COMPLETED_LIMIT = 2
 
+# How many completed standalone gare to surface as "recent tail" in the
+# Gare section. Older completed gare live behind /garas archive.
+DASHBOARD_STANDALONE_COMPLETED_LIMIT = 2
+
 _TERMINAL_TOURNAMENT_STATUSES = frozenset({
     TournamentStatus.COMPLETED.value,
     TournamentStatus.TERMINATED.value,
@@ -69,6 +73,27 @@ def _partition_campionato_items(unified_items):
         else:
             active.append(it)
     return active, completed[:DASHBOARD_COMPLETED_LIMIT], len(completed)
+
+
+def _standalone_completed_tail(standalones):
+    """Estrae le gare standalone COMPLETED come coda recente.
+
+    Ordina per data decrescente (più recenti prima), date NULL in fondo,
+    poi applica il cap. `standalones` arriva da `standalone_q` (date asc
+    nulls last), qui ribaltiamo per la sezione "coda recente".
+    """
+    from datetime import date as _date_cls
+    completed = [
+        g for g in standalones if g.status == GaraStatus.COMPLETED.value
+    ]
+    completed.sort(
+        key=lambda g: g.date or _date_cls.min,
+        reverse=True,
+    )
+    return (
+        completed[:DASHBOARD_STANDALONE_COMPLETED_LIMIT],
+        len(completed),
+    )
 
 
 class DashboardService:
@@ -249,12 +274,18 @@ class DashboardService:
             _partition_campionato_items(unified_items)
         )
 
+        standalone_completed_recent, standalone_completed_total = (
+            _standalone_completed_tail(standalones_all)
+        )
+
         return DashboardVM(
             title=_("Dashboard Direttore"),
             campionati=campionati,
             campionati_active_items=active_items,
             campionati_completed_shown_items=completed_shown_items,
             campionati_completed_total=completed_total,
+            standalone_completed_recent=standalone_completed_recent,
+            standalone_completed_total=standalone_completed_total,
             unified_items=unified_items,
             selected_campionato=selected,
             selected_gara=selected_gara,
@@ -372,12 +403,18 @@ class DashboardService:
             _partition_campionato_items(unified_items)
         )
 
+        standalone_completed_recent, standalone_completed_total = (
+            _standalone_completed_tail(all_standalone_garas)
+        )
+
         return DashboardVM(
             title=_("Dashboard Giocatore"),
             campionati=campionati,
             campionati_active_items=active_items,
             campionati_completed_shown_items=completed_shown_items,
             campionati_completed_total=completed_total,
+            standalone_completed_recent=standalone_completed_recent,
+            standalone_completed_total=standalone_completed_total,
             unified_items=unified_items,
             selected_campionato=selected,
             selected_gara=selected_gara,

@@ -54,9 +54,23 @@ class HomepageService:
             candidates, completed_limit=HOMEPAGE_COMPLETED_LIMIT
         )
 
+        # Gare in SETUP sono visibili al pubblico SOLO se la data è
+        # futura (o NULL). Le SETUP con data passata sono "zombie"
+        # (gare dimenticate) e restano visibili solo al director/admin
+        # proprietario tramite le rispettive dashboard.
+        from sqlalchemy import and_, or_
+        today = date.today()
         standalone_garas = (
             Gara.query.filter_by(campionato_id=None)
-            .filter(Gara.status != GaraStatus.SETUP.value)
+            .filter(
+                or_(
+                    Gara.status != GaraStatus.SETUP.value,
+                    and_(
+                        Gara.status == GaraStatus.SETUP.value,
+                        or_(Gara.date.is_(None), Gara.date >= today),
+                    ),
+                )
+            )
             .order_by(Gara.date.desc())
             .limit(5)
             .all()
@@ -69,6 +83,13 @@ class HomepageService:
             HomepageService._build_tournament_data(c) for c in partition["to_show"]
         ]
 
+        # Gare standalone "attive" = quelle non in stato finale COMPLETED.
+        # La lista standalone_garas mescola attive + completate recenti
+        # (analogo del pattern campionati: coda completati come richiamo).
+        standalone_active_count = sum(
+            1 for g in standalone_garas if g.status != GaraStatus.COMPLETED.value
+        )
+
         return {
             "tournaments_data": tournaments_data,
             "active_campionatos": partition["to_show"],
@@ -76,6 +97,7 @@ class HomepageService:
             "completed_total": partition["completed_total"],
             "completed_shown": len(partition["completed_shown"]),
             "standalone_garas": standalone_garas,
+            "standalone_active_count": standalone_active_count,
         }
 
     @staticmethod

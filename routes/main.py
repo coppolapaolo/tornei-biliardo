@@ -180,10 +180,24 @@ def public_garas_list():
     sections instead of completed gare mixed with active ones.
     """
     from models.status_enum import GaraStatus
+    from datetime import date as _date
+    from sqlalchemy import and_, or_
 
+    # SETUP con data passata = zombie, visibili solo al director (ADR-030
+    # rev 2026-05-14). Le SETUP con data futura/NULL restano visibili al
+    # pubblico come "in preparazione".
+    today = _date.today()
     standalone_garas = (
         Gara.query.filter_by(campionato_id=None)
-        .filter(Gara.status != GaraStatus.SETUP.value)  # Hide setup garas
+        .filter(
+            or_(
+                Gara.status != GaraStatus.SETUP.value,
+                and_(
+                    Gara.status == GaraStatus.SETUP.value,
+                    or_(Gara.date.is_(None), Gara.date >= today),
+                ),
+            )
+        )
         .order_by(Gara.date.desc())
         .all()
     )

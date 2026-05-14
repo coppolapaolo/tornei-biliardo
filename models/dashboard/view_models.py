@@ -169,3 +169,10 @@ class DashboardVM:
     campionati_active_items: Optional[List["UnifiedDashboardItem"]] = None
     campionati_completed_shown_items: Optional[List["UnifiedDashboardItem"]] = None
     campionati_completed_total: int = 0
+
+    # Coda recente di gare standalone COMPLETED per la sezione Gare in
+    # dashboard player/director (analogo del pattern campionati).
+    # Le gare-di-campionato completate restano accessibili tramite il
+    # campionato di appartenenza, non vengono duplicate qui.
+    standalone_completed_recent: Optional[List[Any]] = None
+    standalone_completed_total: int = 0

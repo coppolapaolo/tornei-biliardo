@@ -158,20 +158,22 @@
 </div>
 {% endif %}
 
-{# Sezione 1: Gare Disponibili #}
+{# Sezione 1: Gare (attive + coda recente di standalone completate) #}
+{# Coerente con homepage guest e sezione Campionati: prima tutte le gare
+   attive (standalone e di-campionato), poi cap di standalone completate
+   come "coda recente". "Vedi tutte" → /garas (archivio standalone). #}
 <div class="mb-4">
-  <h4><i class="fas fa-bullseye text-primary"></i> Gare</h4>
-  {% set available_garas = [] %}
+  {% set active_garas = [] %}
 
-  {# Raccogli gare attive (escluse completate - quelle vanno nello storico) #}
+  {# Raccogli gare attive (escluse completate - quelle vanno in coda recente) #}
   {% for item in vm.unified_items %}
     {% if item.type == 'gara' and item.entity.get_real_status() in [GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value, 'inscription_closed', GaraStatus.PLAYING.value, 'round_completed', GaraStatus.AWAITING_SSR.value, 'campionato_completed'] %}
-      {% set _void = available_garas.append(item) %}
+      {% set _void = active_garas.append(item) %}
     {% elif item.type == 'campionato' %}
       {# Aggiungi le gare del campionato attive #}
       {% for gara in item.entity.gare %}
         {% if gara.get_real_status() in [GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value, 'inscription_closed', GaraStatus.PLAYING.value, 'round_completed', GaraStatus.AWAITING_SSR.value, 'campionato_completed'] %}
-          {% set _void = available_garas.append({
+          {% set _void = active_garas.append({
             'type': 'gara',
             'id': gara.id,
             'name': gara.name or ('Gara ' ~ gara.number),
@@ -185,9 +187,41 @@
       {% endfor %}
     {% endif %}
   {% endfor %}
-  
-  {# Ordina per data #}
-  {% set available_garas = available_garas|sort(attribute='next_prova_date') %}
+
+  {# Ordina attive per data #}
+  {% set active_garas = active_garas|sort(attribute='next_prova_date') %}
+
+  {# Coda recente: standalone completate (cap dal service) #}
+  {% set completed_tail_entities = vm.standalone_completed_recent or [] %}
+  {% set completed_tail = [] %}
+  {% for gara in completed_tail_entities %}
+    {% set _void = completed_tail.append({
+      'type': 'gara',
+      'id': gara.id,
+      'name': gara.name or ('Gara ' ~ gara.number),
+      'entity': gara,
+      'next_prova_date': gara.date,
+      'campionato_name': none,
+      'can_manage': current_user.is_admin,
+      'can_view_details': true,
+    }) %}
+  {% endfor %}
+
+  {% set available_garas = active_garas + completed_tail %}
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">
+      <i class="fas fa-bullseye text-primary"></i>
+      {{ _("Gare") }}
+      ({{ ngettext("%(count)s attiva", "%(count)s attive", active_garas|length, count=active_garas|length) }})
+    </h4>
+    {% if available_garas %}
+    <a href="{{ url_for('main.public_garas_list') }}"
+       class="btn btn-outline-primary btn-sm">
+      <i class="fas fa-list"></i> {{ _("Vedi tutte") }}
+    </a>
+    {% endif %}
+  </div>
   
   {% if available_garas %}
     <div class="row">
@@ -493,9 +527,15 @@
         </div>
       {% endfor %}
     </div>
+
+    {% if (vm.standalone_completed_total or 0) > (completed_tail|length) %}
+    <div class="text-center text-muted small mb-3">
+      {{ _("Mostrati %(shown)s di %(total)s gare completate", shown=completed_tail|length, total=vm.standalone_completed_total) }}
+    </div>
+    {% endif %}
   {% else %}
     <div class="alert alert-info">
-      <i class="fas fa-info-circle"></i> Nessuna gara con iscrizioni aperte al momento.
+      <i class="fas fa-info-circle"></i> {{ _("Nessuna gara con iscrizioni aperte al momento.") }}
     </div>
   {% endif %}
 </div>
@@ -513,7 +553,8 @@
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="mb-0">
       <i class="fas fa-trophy text-warning"></i>
-      {{ _("Campionati (%(count)s)", count=active_items|length) }}
+      {{ _("Campionati") }}
+      ({{ ngettext("%(count)s attivo", "%(count)s attivi", active_items|length, count=active_items|length) }})
     </h4>
     {% if campionati %}
     <a href="{{ url_for('main.public_campionatos_list') }}"

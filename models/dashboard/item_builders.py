@@ -28,7 +28,8 @@ def build_unified_items(
     user_id: Optional[int] = None,
 ) -> List[UnifiedDashboardItem]:
     """
-    Crea lista unificata di campionati e gare standalone ordinata per data prossima prova.
+    Crea lista unificata di campionati e gare standalone, ordinata per
+    data prossima prova.
 
     N+1 fix: batch-loads DirectorAssignment for the user upfront instead of
     querying per-entity inside the loop.
@@ -100,6 +101,7 @@ def build_unified_items(
         )
 
     # Aggiungi gare standalone
+    today = date_cls.today()
     for gara in standalone_garas:
         gara_name = gara.name or f'Gara {gara.number or ""}'
 
@@ -121,6 +123,17 @@ def build_unified_items(
             can_view_details = gara.status == GaraStatus.INSCRIPTION.value
 
         gara_date = getattr(gara, "date", None)
+
+        # Skip gare SETUP con data passata (zombie/dimenticate) per chi
+        # NON le gestisce. Director/admin proprietari le vedono comunque
+        # per poterle gestire/cancellare.
+        if (
+            gara.status == GaraStatus.SETUP.value
+            and gara_date is not None
+            and gara_date < today
+            and not can_manage
+        ):
+            continue
         if gara_date:
             sort_key = f"{gara_date.strftime('%Y-%m-%d')}_gara_{gara.id}"
         else:

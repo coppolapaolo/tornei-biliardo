@@ -24,8 +24,32 @@ from models.competition.services import GaraService
 from models.dashboard.dashboard_service import (
     DashboardService,
     DASHBOARD_COMPLETED_LIMIT,
+    DASHBOARD_STANDALONE_COMPLETED_LIMIT,
 )
 from models.status_enum import GaraStatus, TournamentStatus
+
+
+def _make_standalone_gara(director_id: int, number: int, status: str) -> Gara:
+    """Crea una gara standalone (no campionato) e forza lo status."""
+    gara = GaraService.create_gara(
+        campionato_id=None,
+        number=number,
+        name=f"Standalone {number}",
+        date=date.today() + timedelta(days=number),
+        location="Test",
+        description="",
+        rounds_count=1,
+        min_participants=2,
+        max_participants=4,
+        entry_fee=0.0,
+        discipline="palla_9",
+        distance=5,
+        is_race_to=True,
+        director_id=director_id,
+        matchmaking_strategy="amalfi",
+    )
+    gara.status = status
+    return gara
 
 
 def _make_campionato(name_prefix: str, director_id: int) -> Campionato:
@@ -155,3 +179,144 @@ class TestDirectorDashboardCampionatiPartition:
 
         active_ids = [it.id for it in (vm.campionati_active_items or [])]
         assert campionato.id in active_ids
+
+
+@pytest.mark.integration
+class TestDashboardStandaloneCompletedTail:
+    """Regression 2026-05-14: la sezione Gare in dashboard player/director
+    deve mostrare una coda recente di standalone COMPLETED (cap = 2) +
+    pulsante "Vedi tutte" → /garas. Le gare-di-campionato completate
+    restano accessibili tramite il campionato, non sono duplicate qui.
+    """
+
+    def test_player_standalone_completed_tail_exposed(
+        self, db_session, isolated_director_user, isolated_players
+    ):
+        completed_gara = _make_standalone_gara(
+            isolated_director_user.id, 1, GaraStatus.COMPLETED.value
+        )
+        db_session.commit()
+
+        vm = DashboardService.for_player(isolated_players[0].id)
+        ids = [g.id for g in (vm.standalone_completed_recent or [])]
+        assert completed_gara.id in ids
+        assert vm.standalone_completed_total == 1
+
+    def test_player_standalone_completed_tail_caps(
+        self, db_session, isolated_director_user, isolated_players
+    ):
+        extra = DASHBOARD_STANDALONE_COMPLETED_LIMIT + 2
+        for i in range(extra):
+            _make_standalone_gara(
+                isolated_director_user.id, i + 1, GaraStatus.COMPLETED.value
+            )
+        db_session.commit()
+
+        vm = DashboardService.for_player(isolated_players[0].id)
+        assert vm.standalone_completed_total == extra
+        assert (
+            len(vm.standalone_completed_recent or [])
+            == DASHBOARD_STANDALONE_COMPLETED_LIMIT
+        )
+
+    def test_director_standalone_completed_tail_exposed(
+        self, db_session, isolated_director_user
+    ):
+        completed_gara = _make_standalone_gara(
+            isolated_director_user.id, 1, GaraStatus.COMPLETED.value
+        )
+        db_session.commit()
+
+        vm = DashboardService.for_director(isolated_director_user.id)
+        ids = [g.id for g in (vm.standalone_completed_recent or [])]
+        assert completed_gara.id in ids
+
+    def test_active_standalone_not_in_completed_tail(
+        self, db_session, isolated_director_user, isolated_players
+    ):
+        active = _make_standalone_gara(
+            isolated_director_user.id, 1, GaraStatus.INSCRIPTION.value
+        )
+        db_session.commit()
+
+        vm = DashboardService.for_player(isolated_players[0].id)
+        ids = [g.id for g in (vm.standalone_completed_recent or [])]
+        assert active.id not in ids
+        assert vm.standalone_completed_total == 0
+
+
+@pytest.mark.integration
+class TestDashboardSetupVisibility:
+    """ADR-030 rev 2026-05-14: gare SETUP con data passata = zombie,
+    visibili SOLO al director/admin proprietario. SETUP con data
+    futura/NULL restano visibili a tutti.
+    """
+
+    def test_player_does_not_see_zombie_setup(
+        self, db_session, isolated_director_user, isolated_players
+    ):
+        zombie = _make_standalone_gara(
+            isolated_director_user.id, 1, GaraStatus.SETUP.value
+        )
+        zombie.date = date.today() - timedelta(days=1)
+        db_session.commit()
+
+        vm = DashboardService.for_player(isolated_players[0].id)
+        gara_ids = [
+            it.id for it in (vm.unified_items or []) if it.type == "gara"
+        ]
+        assert zombie.id not in gara_ids
+
+    def test_player_sees_future_setup(
+        self, db_session, isolated_director_user, isolated_players
+    ):
+        future = _make_standalone_gara(
+            isolated_director_user.id, 1, GaraStatus.SETUP.value
+        )
+        # Date already in the future (number=1 → today+1 day)
+        db_session.commit()
+
+        vm = DashboardService.for_player(isolated_players[0].id)
+        gara_ids = [
+            it.id for it in (vm.unified_items or []) if it.type == "gara"
+        ]
+        assert future.id in gara_ids
+
+    def test_director_owner_sees_zombie_setup(
+        self, db_session, isolated_director_user
+    ):
+        """Il director proprietario vede la sua zombie SETUP per poterla
+        gestire (cancellarla o aggiornare la data)."""
+        zombie = _make_standalone_gara(
+            isolated_director_user.id, 1, GaraStatus.SETUP.value
+        )
+        zombie.date = date.today() - timedelta(days=1)
+        db_session.commit()
+
+        vm = DashboardService.for_director(isolated_director_user.id)
+        gara_ids = [
+            it.id for it in (vm.unified_items or []) if it.type == "gara"
+        ]
+        assert zombie.id in gara_ids
+
+    def test_director_non_owner_does_not_see_zombie_setup(
+        self, db_session, isolated_director_user, isolated_players
+    ):
+        """Un director non-proprietario è equivalente a un player per
+        visibilità — non vede la zombie SETUP altrui."""
+        zombie = _make_standalone_gara(
+            isolated_director_user.id, 1, GaraStatus.SETUP.value
+        )
+        zombie.date = date.today() - timedelta(days=1)
+        db_session.commit()
+
+        # Promuovi il player a director (non proprietario della gara)
+        other = isolated_players[0]
+        other.role = "director"
+        db_session.commit()
+
+        vm = DashboardService.for_director(other.id)
+        gara_ids = [
+            it.id for it in (vm.unified_items or []) if it.type == "gara"
+        ]
+        assert zombie.id not in gara_ids

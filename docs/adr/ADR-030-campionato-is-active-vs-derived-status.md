@@ -1,6 +1,6 @@
 # ADR-030 — `Campionato.is_active` non implica "in corso" nelle viste pubbliche
 
-**Data**: 2026-05-12 (rev 2026-05-12)
+**Data**: 2026-05-12 (rev 2026-05-14)
 **Stato**: Accepted
 **Decisori**: Paolo Coppola
 
@@ -51,6 +51,29 @@ header "Attivi" anche se nei singoli badge erano marcati "Completato".
 
    Filtriamo solo i soft-deleted (`is_deleted=True`), perché quelli
    sono "rimossi" e devono sparire da tutte le viste tranne admin.
+
+2-bis. **Gare standalone in SETUP: filtro per data** (rev 2026-05-14):
+
+   Una gara in `SETUP` è "in preparazione" — il director sta ancora
+   configurando. La regola di visibilità:
+
+   - `SETUP` con `date >= today` o `date IS NULL` → visibile a tutti
+     (guest, player, director). Rappresenta una gara legittimamente in
+     preparazione che il director sta organizzando.
+   - `SETUP` con `date < today` → "zombie" (dimenticata): visibile SOLO
+     al director/admin proprietario, che la deve gestire (cancellarla o
+     aggiornarne la data).
+
+   Motivazione: senza filtro per data, una gara SETUP creata anni fa e
+   mai pubblicata rimane visibile in homepage guest come "in
+   preparazione" indefinitamente. Con il filtro, le gare zombie restano
+   private (solo al gestore) finché non vengono ripulite.
+
+   Etichette: il template usa `ngettext` per `Gare Standalone (N attive)`
+   /  `Campionati (N attivi)` per distinguere il contatore (= non
+   completate) dal totale visibile (= attive + coda di completate
+   recenti). Vedi anche `tests/new/integration/
+   test_homepage_completed_campionato.py::test_homepage_setup_*`.
 
 3. **La presentazione delle viste pubbliche deve filtrare per
    status derivato**, non per `is_active`:
