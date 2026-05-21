@@ -117,7 +117,7 @@ class StrategyBasedClassificationService:
         self._tiebreaker = TiebreakerResolver()
 
     def get_strategy_for_gara(self, gara) -> Any:
-        """Get appropriate round strategy based on gara's matchmaking strategy.
+        """Get appropriate round strategy based on gara.classification_system.
 
         Args:
             gara: Gara model instance
@@ -125,13 +125,17 @@ class StrategyBasedClassificationService:
         Returns:
             ClassificationStrategy for this gara type
         """
+        cs = (getattr(gara, "classification_system", None) or "WINS").upper()
+        # round_robin matchmaking conserva la sua strategia round dedicata
+        # (semantica già allineata a WINS, ma serve l'ordine stabile per pairing)
+        if gara.matchmaking_strategy == "round_robin":
+            return self._registry.get("round_robin_round")
         strategy_map = {
-            "amalfi": "amalfi_round",
-            "random": "random_round",
-            "round_robin": "round_robin_round",
+            "WINS": "amalfi_round",
+            "POSITION": "amalfi_round",
+            "RACK": "random_round",
         }
-        strategy_name = strategy_map.get(gara.matchmaking_strategy, "amalfi_round")
-        return self._registry.get(strategy_name)
+        return self._registry.get(strategy_map.get(cs, "amalfi_round"))
 
     def get_gara_final_strategy(self, gara) -> Any:
         """Get strategy for final gara classification.
@@ -142,12 +146,13 @@ class StrategyBasedClassificationService:
         Returns:
             ClassificationStrategy for gara final ranking
         """
+        cs = (getattr(gara, "classification_system", None) or "WINS").upper()
         strategy_map = {
-            "amalfi": "amalfi_gara",
-            "random": "random_gara",
+            "WINS": "amalfi_gara",
+            "POSITION": "amalfi_gara",
+            "RACK": "random_gara",
         }
-        strategy_name = strategy_map.get(gara.matchmaking_strategy, "amalfi_gara")
-        return self._registry.get(strategy_name)
+        return self._registry.get(strategy_map.get(cs, "amalfi_gara"))
 
     @transactional(domain="classification")
     def calculate_round_classification(

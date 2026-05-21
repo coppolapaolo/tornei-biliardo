@@ -33,12 +33,16 @@ class AmalfiGaraClassificationStrategy(ClassificationStrategy):
     scope = ClassificationScope.GARA
 
     def get_sort_key(self, score: PlayerScore) -> Tuple[Any, ...]:
-        """Sort key includes spot shot wins for tiebreaking."""
+        """Sort key includes spot shot wins for tiebreaking.
+
+        player_id intenzionalmente escluso: due giocatori altrimenti parimerito
+        DEVONO ricevere la stessa chiave perché `_build_entries_with_ties`
+        rilevi `has_ties=True` e SpareggioService possa attivare lo spareggio.
+        """
         return (
             -score.matches_won,
             -score.rack_difference,
             -score.spot_shot_wins,  # Tiebreaker
-            score.player_id,
         )
 
     def calculate(
@@ -66,14 +70,24 @@ class AmalfiGaraClassificationStrategy(ClassificationStrategy):
         # Get spot shot results for tiebreaking
         spot_shot_results = context.get("spot_shot_results") if context else None
 
-        if not previous_classification.has_ties or not spot_shot_results:
-            # No ties or no tiebreaker data - use previous classification as-is
+        # Ricostruisci entries usando il sort key di GARA (senza player_id, vedi
+        # `get_sort_key`) per rilevare ties che il round strategy ha nascosto
+        # includendo player_id. Bug 4 produzione 2026-05-20: senza questo, due
+        # giocatori parimerito ricevono position diverse e SSR non scatta.
+        rebuilt_scores = sorted(
+            (e.score for e in previous_classification.entries),
+            key=self.get_sort_key,
+        )
+        rebuilt_entries, rebuilt_has_ties = self._build_entries_with_ties(
+            rebuilt_scores
+        )
+
+        if not rebuilt_has_ties or not spot_shot_results:
             return ClassificationResult(
-                entries=previous_classification.entries,
+                entries=tuple(rebuilt_entries),
                 scope=self.scope,
-                has_ties=previous_classification.has_ties,
-                requires_tiebreaker=previous_classification.has_ties
-                and not spot_shot_results,
+                has_ties=rebuilt_has_ties,
+                requires_tiebreaker=rebuilt_has_ties and not spot_shot_results,
                 metadata={
                     "strategy": self.name,
                     "tiebreaker_applied": False,
@@ -82,7 +96,7 @@ class AmalfiGaraClassificationStrategy(ClassificationStrategy):
 
         # Resolve ties using spot shot results
         resolved_entries = self._resolve_ties_with_spot_shot(
-            previous_classification.entries, spot_shot_results
+            tuple(rebuilt_entries), spot_shot_results
         )
 
         return ClassificationResult(
@@ -174,11 +188,13 @@ class RandomGaraClassificationStrategy(ClassificationStrategy):
     scope = ClassificationScope.GARA
 
     def get_sort_key(self, score: PlayerScore) -> Tuple[Any, ...]:
-        """Sort key: racks_won DESC, spot_shot DESC."""
+        """Sort key: racks_won DESC, spot_shot DESC.
+
+        player_id intenzionalmente escluso: vedi nota in AmalfiGara.
+        """
         return (
             -score.racks_won,
             -score.spot_shot_wins,
-            score.player_id,
         )
 
     def calculate(
@@ -202,13 +218,23 @@ class RandomGaraClassificationStrategy(ClassificationStrategy):
 
         spot_shot_results = context.get("spot_shot_results") if context else None
 
-        if not previous_classification.has_ties or not spot_shot_results:
+        # Vedi nota in AmalfiGara.calculate: ricostruisci entries usando il
+        # sort key di gara per rilevare i parimerito che il round strategy
+        # nasconde tramite player_id nel sort key.
+        rebuilt_scores = sorted(
+            (e.score for e in previous_classification.entries),
+            key=self.get_sort_key,
+        )
+        rebuilt_entries, rebuilt_has_ties = self._build_entries_with_ties(
+            rebuilt_scores
+        )
+
+        if not rebuilt_has_ties or not spot_shot_results:
             return ClassificationResult(
-                entries=previous_classification.entries,
+                entries=tuple(rebuilt_entries),
                 scope=self.scope,
-                has_ties=previous_classification.has_ties,
-                requires_tiebreaker=previous_classification.has_ties
-                and not spot_shot_results,
+                has_ties=rebuilt_has_ties,
+                requires_tiebreaker=rebuilt_has_ties and not spot_shot_results,
                 metadata={
                     "strategy": self.name,
                     "tiebreaker_applied": False,
@@ -217,7 +243,7 @@ class RandomGaraClassificationStrategy(ClassificationStrategy):
 
         # Use parent class resolve method reapplied
         resolved_entries = self._resolve_ties_with_spot_shot(
-            previous_classification.entries, spot_shot_results
+            tuple(rebuilt_entries), spot_shot_results
         )
 
         return ClassificationResult(
