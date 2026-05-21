@@ -130,6 +130,10 @@ class GaraFormParser:
             data["anti_rematch_enabled"] = (
                 request.form.get("anti_rematch_enabled") == "on"
             )
+            cs = request.form.get("classification_system", "WINS")
+            if cs not in ("WINS", "RACK"):
+                cs = "WINS"
+            data["classification_system"] = cs
 
         # ── SSR tiebreaker ───────────────────────────────────────
         data["tiebreaker_enabled"] = request.form.get("tiebreaker_enabled") == "on"

@@ -745,6 +745,7 @@
     "i18n": {
       "confirmStartRandom": {{ _("Sei sicuro di voler avviare la gara? Tutti i turni verranno creati contemporaneamente e le iscrizioni chiuse definitivamente.") | tojson }},
       "confirmStartStandard": {{ _("Sei sicuro di voler avviare il primo turno? Le iscrizioni verranno chiuse definitivamente.") | tojson }},
+      "startingScheduleMessage": {{ _("Calcolo dello schedule in corso… Per gare con trio (giocatori dispari) il calcolo può richiedere qualche secondo.") | tojson }},
       "confirmCancelFirstRound": {{ _("Sei sicuro di voler cancellare l'avvio del primo turno? Tutte le partite del primo turno verranno eliminate e la gara tornerà allo stato di iscrizioni.") | tojson }},
       "confirmCancelCurrentRound": {{ _("Sei sicuro di voler cancellare l'avvio del turno corrente? Tutte le partite del turno verranno eliminate e si tornerà al turno precedente.") | tojson }},
       "confirmTerminate": {{ _("Sei sicuro di voler terminare la gara?\n\nDopo la conferma, i risultati saranno definitivi e non sarà più possibile modificarli.") | tojson }},
@@ -803,6 +804,10 @@
     }
 
     showConfirm(message, () => {
+      // Loading overlay durante il calcolo dello schedule (per la strategia
+      // Random il server pre-genera tutti i turni — per trio mode il
+      // branch-and-bound può richiedere qualche secondo).
+      showScheduleOverlay();
       const form = document.createElement('form');
       form.method = 'POST';
       form.action = `/admin/gara/${provaId}/start_first_round`;
@@ -814,6 +819,25 @@
       document.body.appendChild(form);
       form.submit();
     });
+  }
+
+  function showScheduleOverlay() {
+    if (document.getElementById('schedule-loading-overlay')) return;
+    const overlay = document.createElement('div');
+    overlay.id = 'schedule-loading-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:1080;background:rgba(0,0,0,0.55);' +
+      'display:flex;align-items:center;justify-content:center;flex-direction:column;color:#fff;';
+    const spinner = document.createElement('div');
+    spinner.className = 'spinner-border text-light';
+    spinner.style.cssText = 'width:3rem;height:3rem;';
+    spinner.setAttribute('role', 'status');
+    overlay.appendChild(spinner);
+    const label = document.createElement('div');
+    label.className = 'mt-3 px-3 text-center';
+    label.style.cssText = 'max-width:480px;';
+    label.textContent = GARA_CONFIG.i18n.startingScheduleMessage;
+    overlay.appendChild(label);
+    document.body.appendChild(overlay);
   }
 
   function cancelFirstRound(provaId) {
