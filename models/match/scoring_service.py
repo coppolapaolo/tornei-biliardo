@@ -57,6 +57,11 @@ class ScoringService:
         if winner_id not in (match.player1_id, match.player2_id):
             raise ValueError("Invalid winner ID")
 
+        # Validate against match.distance_config (ADR-027, override per turno).
+        # Mirror del path admin (riga 229): senza questo, in modalità
+        # "rack esatti" lo score può superare il limite via UI giocatore.
+        ScoringService._validate_rack_addition(match, winner_id)
+
         # Get next rack number
         max_rack = (
             db.session.query(func.max(Rack.rack_number))
