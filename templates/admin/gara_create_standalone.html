@@ -295,6 +295,23 @@
                                         </div>
                                     </div>
 
+                                    <div class="row">
+                                        <div class="col-sm-6 mb-2">
+                                            <label for="classification_system" class="form-label small">
+                                                {{ _('Sistema di Classifica') }}
+                                            </label>
+                                            <select class="form-select form-select-sm" id="classification_system"
+                                                name="classification_system">
+                                                <option value="WINS" selected>
+                                                    {{ _('Vittorie (match vinti → diff rack)') }}
+                                                </option>
+                                                <option value="RACK">
+                                                    {{ _('Rack Totali (rack accumulati)') }}
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+
                                     <!-- SSR (Spot Shot Rally) Configuration -->
                                     <div class="border-top pt-3 mt-3">
                                         <h6 class="text-uppercase small fw-bold text-muted mb-3">
@@ -371,6 +388,7 @@
                                             <span id="summary-anti-rematch" class="badge bg-secondary">-</span>
                                             <span id="summary-first-round" class="badge bg-secondary">- Seeding</span>
                                             <span id="summary-odd-policy" class="badge bg-secondary">- Dispari</span>
+                                            <span id="summary-classification" class="badge bg-info text-dark">-</span>
                                             <span id="summary-ssr" class="badge bg-warning text-dark">-</span>
                                         </div>
                                     </div>
@@ -527,6 +545,10 @@
 
             const oddPolicy = document.getElementById('odd_number_policy');
             document.getElementById('summary-odd-policy').textContent = `Dispari: ${oddPolicy.options[oddPolicy.selectedIndex].text}`;
+
+            const classification = document.getElementById('classification_system');
+            document.getElementById('summary-classification').textContent =
+                `Classifica: ${classification.options[classification.selectedIndex].text}`;
 
             // SSR configuration summary
             const ssrEnabled = document.getElementById('tiebreaker_enabled').checked;
