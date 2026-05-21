@@ -778,3 +778,200 @@ class TestTrioCountWalkoverFilter:
         assert 4 not in counts
         assert 5 not in counts
         assert 6 not in counts
+
+
+class TestFullSchedulePreGeneration:
+    """Tests del nuovo generatore globale dello schedule (Bug 1).
+
+    Tre rami:
+      - Ramo A: N pari → circle method puro (zero reincontri ≤ N-1 round).
+      - Ramo B: N dispari + BYE → circle method su N+1 con sentinella.
+      - Ramo C: N dispari + TRIO → branch-and-bound search globale.
+    """
+
+    def setup_method(self):
+        from models.matchmaking.registry import PairingContext
+
+        self.strategy = RandomAntiRematchStrategy()
+        self.strategy.set_context(PairingContext(seed=42))
+
+    # ---------- helpers ----------
+
+    @staticmethod
+    def _make_gara(rounds_count, odd_policy=None, gara_id=1):
+        gara = Mock()
+        gara.id = gara_id
+        gara.rounds_count = rounds_count
+        gara.odd_number_policy = odd_policy
+        return gara
+
+    @staticmethod
+    def _all_pairs_in_schedule(schedule):
+        """Return list of canonical (sorted) pair tuples across all rounds."""
+        pairs = []
+        for round_pairings in schedule:
+            for p in round_pairings:
+                if p.is_bye or len(p.players) == 1:
+                    continue
+                if len(p.players) == 2:
+                    pairs.append(tuple(sorted(p.players)))
+                elif len(p.players) == 3:
+                    # Trio: 3 internal pairs
+                    for i in range(3):
+                        for j in range(i + 1, 3):
+                            pairs.append(tuple(sorted([p.players[i], p.players[j]])))
+        return pairs
+
+    # ---------- Ramo A: N pari ----------
+
+    def test_circle_method_even_zero_rematches(self):
+        """6 player × 5 round → zero reincontri (round-robin completo)."""
+        gara = self._make_gara(rounds_count=5)
+        player_ids = [10, 20, 30, 40, 50, 60]
+
+        schedule = self.strategy._pre_generate_full_schedule(gara, player_ids, 5)
+
+        assert schedule is not None
+        assert len(schedule) == 5
+        # Ogni round ha esattamente 3 pair (6/2)
+        for round_pairings in schedule:
+            assert len(round_pairings) == 3
+            assert all(not p.is_bye for p in round_pairings)
+        # Zero reincontri
+        pairs = self._all_pairs_in_schedule(schedule)
+        assert len(pairs) == len(set(pairs)), "Reincontri trovati nello schedule"
+        # Round-robin completo: tutte le 15 coppie distinte
+        assert len(set(pairs)) == 6 * 5 // 2
+
+    def test_circle_method_even_truncated_no_rematches(self):
+        """6 player × 4 round (caso bug produzione 2026-05-20) → zero reincontri."""
+        gara = self._make_gara(rounds_count=4)
+        player_ids = [1, 2, 3, 4, 5, 6]
+
+        schedule = self.strategy._pre_generate_full_schedule(gara, player_ids, 4)
+
+        assert schedule is not None
+        assert len(schedule) == 4
+        pairs = self._all_pairs_in_schedule(schedule)
+        assert len(pairs) == len(set(pairs))
+
+    def test_circle_method_even_too_many_rounds_returns_none(self):
+        """Oltre N-1 round per N pari → pre-gen non applicabile, fallback."""
+        gara = self._make_gara(rounds_count=10)
+        player_ids = [1, 2, 3, 4, 5, 6]
+
+        schedule = self.strategy._pre_generate_full_schedule(gara, player_ids, 10)
+
+        # 10 round con 6 player superano la capacità round-robin (5 round)
+        assert schedule is None
+
+    # ---------- Ramo B: N dispari + BYE ----------
+
+    def test_circle_method_odd_bye_zero_rematches(self):
+        """5 player × 5 round, policy=BYE → 0 reincontri, 1 bye per giocatore."""
+        gara = self._make_gara(rounds_count=5, odd_policy="bye")
+        player_ids = [11, 22, 33, 44, 55]
+
+        schedule = self.strategy._pre_generate_full_schedule(gara, player_ids, 5)
+
+        assert schedule is not None
+        assert len(schedule) == 5
+
+        # Ogni round: 2 pair + 1 bye = 3 pairing
+        bye_counts: dict[int, int] = {p: 0 for p in player_ids}
+        for round_pairings in schedule:
+            byes = [p for p in round_pairings if p.is_bye]
+            assert len(byes) == 1, f"Atteso 1 bye per round, trovati {len(byes)}"
+            bye_counts[byes[0].players[0]] += 1
+
+        # Ogni giocatore esattamente 1 bye sui 5 round
+        assert all(v == 1 for v in bye_counts.values())
+
+        # Zero reincontri sulle vere coppie
+        pairs = self._all_pairs_in_schedule(schedule)
+        assert len(pairs) == len(set(pairs))
+
+    # ---------- Ramo C: N dispari + TRIO ----------
+
+    def test_trio_search_returns_schedule(self):
+        """5 player × 4 round, policy=TRIO → schedule completo, ogni round
+        con 1 trio + 1 pair."""
+        gara = self._make_gara(rounds_count=4, odd_policy="trio")
+        player_ids = [1, 2, 3, 4, 5]
+
+        schedule = self.strategy._pre_generate_full_schedule(gara, player_ids, 4)
+
+        assert schedule is not None
+        assert len(schedule) == 4
+        for round_pairings in schedule:
+            trios = [p for p in round_pairings if len(p.players) == 3]
+            pairs = [p for p in round_pairings if len(p.players) == 2 and not p.is_bye]
+            assert len(trios) == 1
+            assert len(pairs) == 1
+
+    def test_trio_search_balanced_counts(self):
+        """5 player × 4 round, policy=TRIO → max trio_count ≤ ceil(12/5) = 3."""
+        import math
+
+        gara = self._make_gara(rounds_count=4, odd_policy="trio")
+        player_ids = [1, 2, 3, 4, 5]
+
+        schedule = self.strategy._pre_generate_full_schedule(gara, player_ids, 4)
+
+        assert schedule is not None
+        trio_counts: dict[int, int] = {p: 0 for p in player_ids}
+        for round_pairings in schedule:
+            for pairing in round_pairings:
+                if len(pairing.players) == 3:
+                    for p in pairing.players:
+                        trio_counts[p] += 1
+
+        target_max = math.ceil(4 * 3 / 5)  # = 3
+        assert max(trio_counts.values()) <= target_max
+        # Bilanciamento minimo: nessun giocatore zero trii sulla rotazione
+        assert min(trio_counts.values()) >= 2
+
+    def test_trio_search_deadline_fallback(self):
+        """Deadline 0 ms → search ritorna None → fallback al path incrementale."""
+        player_ids = [1, 2, 3, 4, 5]
+        result = self.strategy._search_trio_schedule(
+            player_ids, n_rounds=4, deadline_ms=0
+        )
+        # Con deadline=0 la search non ha tempo di trovare nulla
+        assert result is None
+
+    # ---------- Cache & dispatch ----------
+
+    def test_schedule_signature_cached_across_rounds(self):
+        """Stessa signature → cache hit, no ricomputo."""
+        gara = self._make_gara(rounds_count=5, gara_id=42)
+        player_ids = [1, 2, 3, 4, 5, 6]
+
+        # Prima chiamata: build
+        s1 = self.strategy._get_or_build_schedule(gara, player_ids)
+        assert s1 is not None
+        # Seconda chiamata (stessa signature): cache hit, stessa istanza in memoria
+        s2 = self.strategy._get_or_build_schedule(gara, player_ids)
+        assert s2 is s1
+
+    def test_schedule_cache_invalidated_by_set_context(self):
+        """set_context() invalida la cache (nuovo seed → nuovo schedule)."""
+        from models.matchmaking.registry import PairingContext
+
+        gara = self._make_gara(rounds_count=5, gara_id=43)
+        player_ids = [1, 2, 3, 4, 5, 6]
+
+        s1 = self.strategy._get_or_build_schedule(gara, player_ids)
+        self.strategy.set_context(PairingContext(seed=999))
+        s2 = self.strategy._get_or_build_schedule(gara, player_ids)
+        assert s2 is not s1
+
+    def test_pairing_round_numbers_consistent(self):
+        """Le Pairing in schedule[i] hanno round_number == i+1."""
+        gara = self._make_gara(rounds_count=3)
+        # 4 player × 3 round = round-robin completo (N-1)
+        schedule = self.strategy._pre_generate_full_schedule(gara, [1, 2, 3, 4], 3)
+        assert schedule is not None
+        for i, round_pairings in enumerate(schedule):
+            for pairing in round_pairings:
+                assert pairing.round_number == i + 1

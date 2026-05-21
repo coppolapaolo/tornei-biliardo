@@ -7,9 +7,11 @@ Spec: _bmad-output/implementation-artifacts/spec-random-anti-rematch.md
 from __future__ import annotations
 
 import logging
+import math
 import random
+import time
 from itertools import combinations
-from typing import Sequence, List, Tuple, Set, Dict, Any, TYPE_CHECKING
+from typing import Optional, Sequence, List, Tuple, Set, Dict, Any, TYPE_CHECKING
 import networkx as nx
 
 from .base import Pairing, BaseStrategy
@@ -20,6 +22,11 @@ if TYPE_CHECKING:
 
 
 logger = logging.getLogger(__name__)
+
+# Trio-search deadline (ramo C). Per N ≤ 9 e rounds ≤ 8 (scenari pratici) la
+# ricerca completa termina largamente sotto questa soglia. Oltre il deadline
+# si ricade sul path incrementale (`_apply_weighted_matching` per round).
+_TRIO_SEARCH_DEADLINE_MS = 8000
 
 
 class RandomAntiRematchStrategy(BaseStrategy):
@@ -57,10 +64,18 @@ class RandomAntiRematchStrategy(BaseStrategy):
         super().__init__()
         self.strategy_name = "random_anti_rematch"
         self._rng: random.Random = random.Random()
+        # Cache della pre-generazione completa dello schedule, condivisa tra
+        # le `create_round` consecutive di `start_first_round`. Vedi
+        # `_get_or_build_schedule`. Una signature non-matching la invalida.
+        self._precomputed_schedule: Optional[List[List[Pairing]]] = None
+        self._schedule_signature: Optional[Tuple[Any, ...]] = None
 
     def set_context(self, context: "PairingContext") -> None:
         """Inject deterministic RNG from PairingContext (see registry.py)."""
         self._rng = context.get_rng()
+        # Nuovo context = potenzialmente nuovi seed/RNG: scarta la cache.
+        self._precomputed_schedule = None
+        self._schedule_signature = None
 
     def _generate_pairings(
         self, processed_data: Dict[str, Any], round_number: int
@@ -72,7 +87,14 @@ class RandomAntiRematchStrategy(BaseStrategy):
         )
 
     def _generate_round_pairings(self, gara: Gara, round_number: int) -> List[Pairing]:
-        """Generate random pairings while avoiding rematches."""
+        """Generate random pairings while avoiding rematches.
+
+        Path preferito: pre-generazione globale dello schedule (vedi
+        `_get_or_build_schedule`) — circle method per N pari / dispari+BYE,
+        branch-and-bound search per N dispari+TRIO. Fallback automatico al
+        path incrementale (`_apply_weighted_matching` per round) se la
+        pre-generazione non è applicabile o supera il deadline.
+        """
         inscriptions = list(gara.inscriptions)  # type: ignore[arg-type]
         active_inscriptions = [
             i
@@ -82,9 +104,315 @@ class RandomAntiRematchStrategy(BaseStrategy):
         ]
         player_ids = [i.user_id for i in active_inscriptions]
 
+        schedule = self._get_or_build_schedule(gara, player_ids)
+        if schedule is not None and 1 <= round_number <= len(schedule):
+            return list(schedule[round_number - 1])
+
         return self._generate_valid_random_pairings(
             player_ids, set(), round_number, gara
         )
+
+    def _get_or_build_schedule(
+        self, gara: Gara, player_ids: List[int]
+    ) -> Optional[List[List[Pairing]]]:
+        """Return cached schedule if signature matches, else build at first call.
+
+        Restituisce `None` se la pre-generazione non è applicabile (es. troppi
+        round per round-robin, search trio fallita entro il deadline). In quel
+        caso il caller cade nel path incrementale. La signature è cached anche
+        quando il risultato è None, per evitare di ritentare la search a ogni
+        round.
+        """
+        n_rounds = getattr(gara, "rounds_count", None)
+        if not isinstance(n_rounds, int) or n_rounds < 1:
+            return None
+
+        signature = (
+            getattr(gara, "id", None),
+            tuple(sorted(player_ids)),
+            n_rounds,
+            getattr(gara, "odd_number_policy", None),
+        )
+        if self._schedule_signature == signature:
+            return self._precomputed_schedule
+
+        schedule = self._pre_generate_full_schedule(gara, player_ids, n_rounds)
+        self._precomputed_schedule = schedule
+        self._schedule_signature = signature
+        return schedule
+
+    def _pre_generate_full_schedule(
+        self, gara: Gara, player_ids: List[int], n_rounds: int
+    ) -> Optional[List[List[Pairing]]]:
+        """Dispatch fra i tre rami (A: pari, B: dispari+BYE, C: dispari+TRIO).
+
+        Ritorna `None` quando il caso non ammette pre-generazione (rounds
+        oltre la capacità round-robin, o search trio fallita).
+        """
+        n = len(player_ids)
+        if n < 2:
+            return None
+
+        odd_policy = getattr(gara, "odd_number_policy", None)
+        is_odd = n % 2 == 1
+
+        # Ramo C — N dispari + TRIO: branch-and-bound search globale.
+        if is_odd and odd_policy == "trio":
+            return self._search_trio_schedule(player_ids, n_rounds)
+
+        # Ramo B — N dispari + BYE: circle method su N+1 con sentinella.
+        if is_odd:
+            if n_rounds > n:
+                return None  # oltre N round servono reincontri
+            return self._circle_method(
+                list(player_ids) + [self.BYE_PLAYER_ID], n_rounds
+            )
+
+        # Ramo A — N pari: circle method puro.
+        if n_rounds > n - 1:
+            return None  # oltre N-1 round servono reincontri
+        return self._circle_method(list(player_ids), n_rounds)
+
+    def _circle_method(
+        self, players: List[int], n_rounds: int
+    ) -> List[List[Pairing]]:
+        """Berger tables / circle method. Richiede `len(players)` pari.
+
+        Shuffle iniziale via `self._rng` per casualità deterministica (stesso
+        seed → stesso schedule). Fissa il primo giocatore, ruota gli altri
+        di una posizione per ogni turno. Genera `n_rounds` turni di `len/2`
+        coppie ciascuno. Le coppie contenenti `BYE_PLAYER_ID` (ramo B)
+        diventano `Pairing(is_bye=True, players=(real_player,))`.
+        """
+        ordered = list(players)
+        self._rng.shuffle(ordered)
+        n = len(ordered)
+        assert n % 2 == 0, "circle method requires even player count"
+
+        schedule: List[List[Pairing]] = []
+        fixed = ordered[0]
+        rotating = ordered[1:]
+
+        for round_idx in range(n_rounds):
+            round_players = [fixed] + rotating
+            round_pairings: List[Pairing] = []
+            for i in range(n // 2):
+                p1 = round_players[i]
+                p2 = round_players[n - 1 - i]
+                round_pairings.append(self._pair_to_pairing(p1, p2, round_idx + 1))
+            schedule.append(round_pairings)
+            # rotate: last element goes to front
+            rotating = [rotating[-1]] + rotating[:-1]
+
+        return schedule
+
+    def _pair_to_pairing(self, p1: int, p2: int, round_number: int) -> Pairing:
+        """Convert raw pair to `Pairing`, mapping `BYE_PLAYER_ID` to is_bye."""
+        if p1 == self.BYE_PLAYER_ID:
+            return Pairing(players=(p2,), is_bye=True, round_number=round_number)
+        if p2 == self.BYE_PLAYER_ID:
+            return Pairing(players=(p1,), is_bye=True, round_number=round_number)
+        return Pairing(players=(p1, p2), round_number=round_number)
+
+    def _search_trio_schedule(
+        self,
+        player_ids: List[int],
+        n_rounds: int,
+        deadline_ms: int = _TRIO_SEARCH_DEADLINE_MS,
+    ) -> Optional[List[List[Pairing]]]:
+        """Branch-and-bound search globale per schedule trio (Ramo C).
+
+        Obiettivo lessicografico (minimize):
+          1. `max_player(trio_count)` (fairness)
+          2. somma totale di reincontri (incluso quelli interni al trio)
+          3. `sum_player(trio_count)` (tie-break secondario)
+
+        Determinismo: ordine di enumerazione dei trii guidato da
+        `self._rng.shuffle(player_ids)`. Stesso seed → stesso schedule.
+
+        Pruning:
+          - relax progressiva del max trio_count consentito (target, +1, +2);
+          - lower bound dal partial score (max/rematches/sum sono monotone
+            non-decrescenti durante il branch).
+
+        Deadline `deadline_ms`: oltre questa soglia ritorna `None`
+        (caller usa il fallback incrementale).
+        """
+        n = len(player_ids)
+        if n < 3 or n_rounds < 1:
+            return None
+        if (n - 3) % 2 != 0:
+            # Resto dopo il trio deve essere accoppiabile a coppie. Per N
+            # dispari (n-3) è sempre pari, quindi questo non scatta in pratica.
+            return None
+
+        deadline = time.monotonic() + deadline_ms / 1000.0
+
+        ordered_players = list(player_ids)
+        self._rng.shuffle(ordered_players)
+        ordered_set = set(ordered_players)
+        target_max = math.ceil(n_rounds * 3 / n)
+
+        best_schedule: Optional[List[List[Pairing]]] = None
+        best_score: Tuple[int, int, int] = (10**9, 10**9, 10**9)
+
+        def partial_score(
+            trio_counts: Dict[int, int], rematches: int
+        ) -> Tuple[int, int, int]:
+            max_t = max(trio_counts.values()) if trio_counts else 0
+            sum_t = sum(trio_counts.values())
+            return (max_t, rematches, sum_t)
+
+        def recurse(
+            round_idx: int,
+            schedule: List[List[Pairing]],
+            trio_counts: Dict[int, int],
+            pair_counts: Dict[Tuple[int, int], int],
+            rematches: int,
+        ) -> None:
+            nonlocal best_schedule, best_score
+            if time.monotonic() > deadline:
+                return
+            current_score = partial_score(trio_counts, rematches)
+            # Tutti e tre i campi sono monotoni non-decrescenti durante il
+            # branch → current_score è LB sul final score.
+            if current_score >= best_score:
+                return
+            if round_idx == n_rounds:
+                best_schedule = [list(r) for r in schedule]
+                best_score = current_score
+                return
+
+            for relaxation in (target_max, target_max + 1, target_max + 2):
+                candidates: List[
+                    Tuple[int, Tuple[int, ...], List[Tuple[int, int]], List[Tuple[int, int]]]
+                ] = []
+                for trio in combinations(ordered_players, 3):
+                    if any(
+                        trio_counts.get(p, 0) + 1 > relaxation for p in trio
+                    ):
+                        continue
+                    trio_pairs = [
+                        tuple(sorted([trio[i], trio[j]]))
+                        for i, j in ((0, 1), (0, 2), (1, 2))
+                    ]
+                    trio_rematches = sum(
+                        1 for tp in trio_pairs if pair_counts.get(tp, 0) >= 1
+                    )
+                    remaining = [p for p in ordered_players if p not in trio]
+                    matched = self._matching_for_round(remaining, pair_counts)
+                    if matched is None:
+                        continue
+                    pairs, pair_rematches = matched
+                    candidates.append(
+                        (trio_rematches + pair_rematches, trio, trio_pairs, pairs)
+                    )
+
+                if not candidates:
+                    continue  # try a more relaxed level
+
+                # Esplora prima i trii a minor incremento di reincontri.
+                candidates.sort(key=lambda c: c[0])
+
+                for delta_rematches, trio, trio_pairs, pairs in candidates:
+                    if time.monotonic() > deadline:
+                        return
+                    round_pairings: List[Pairing] = [
+                        Pairing(
+                            players=tuple(trio), round_number=round_idx + 1
+                        )
+                    ]
+                    for p1, p2 in pairs:
+                        round_pairings.append(
+                            self._pair_to_pairing(p1, p2, round_idx + 1)
+                        )
+
+                    for p in trio:
+                        trio_counts[p] = trio_counts.get(p, 0) + 1
+                    for tp in trio_pairs:
+                        pair_counts[tp] = pair_counts.get(tp, 0) + 1
+                    for pp in pairs:
+                        cp = tuple(sorted(pp))
+                        pair_counts[cp] = pair_counts.get(cp, 0) + 1
+                    schedule.append(round_pairings)
+
+                    recurse(
+                        round_idx + 1,
+                        schedule,
+                        trio_counts,
+                        pair_counts,
+                        rematches + delta_rematches,
+                    )
+
+                    schedule.pop()
+                    for p in trio:
+                        trio_counts[p] -= 1
+                        if trio_counts[p] == 0:
+                            del trio_counts[p]
+                    for tp in trio_pairs:
+                        pair_counts[tp] -= 1
+                        if pair_counts[tp] == 0:
+                            del pair_counts[tp]
+                    for pp in pairs:
+                        cp = tuple(sorted(pp))
+                        pair_counts[cp] -= 1
+                        if pair_counts[cp] == 0:
+                            del pair_counts[cp]
+
+                # Fermarsi al primo livello di relax che ha candidati. Se la
+                # search non trova mai una soluzione completa con relax stretto
+                # ma backtracking ha già esplorato tutti i candidati, la
+                # ricorsione ritorna e l'iterazione esterna passa al livello
+                # successivo.
+                return
+
+        # Sanity check: il sub-problem (remaining = ordered_set - trio) deve
+        # essere consistente. `ordered_set` usato solo per assertion futura.
+        _ = ordered_set
+
+        recurse(0, [], {}, {}, 0)
+        return best_schedule
+
+    def _matching_for_round(
+        self,
+        players: List[int],
+        pair_counts: Dict[Tuple[int, int], int],
+    ) -> Optional[Tuple[List[Tuple[int, int]], int]]:
+        """Max-weight matching su `players` (pari, no sentinella).
+
+        Riusa la logica weighted di `_apply_weighted_matching` ma su un
+        `pair_counts` dict (consumato dalla search trio) invece di un set di
+        coppie. Pesi: `_WEIGHT_NON_REMATCH` per coppie mai incontrate,
+        `_WEIGHT_REMATCH` per quelle già viste almeno una volta.
+
+        Ritorna `(pairs, n_rematches)` o `None` se non esiste perfect matching.
+        """
+        if len(players) == 0:
+            return [], 0
+        if len(players) % 2 != 0:
+            return None
+        if len(players) == 2:
+            cp = tuple(sorted(players))
+            n_rem = 1 if pair_counts.get(cp, 0) >= 1 else 0
+            return [(players[0], players[1])], n_rem
+
+        G = nx.Graph()
+        G.add_nodes_from(players)
+        for p1, p2 in combinations(players, 2):
+            cp = tuple(sorted([p1, p2]))
+            weight = (
+                self._WEIGHT_REMATCH
+                if pair_counts.get(cp, 0) >= 1
+                else self._WEIGHT_NON_REMATCH
+            )
+            G.add_edge(p1, p2, weight=weight)
+
+        matching = nx.max_weight_matching(G, maxcardinality=True)
+        if len(matching) * 2 != len(players):
+            return None
+        pairs = [tuple(sorted(pair)) for pair in matching]
+        n_rem = sum(1 for p in pairs if pair_counts.get(p, 0) >= 1)
+        return pairs, n_rem
 
     def _generate_valid_random_pairings(
         self,
