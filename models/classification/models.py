@@ -258,9 +258,17 @@ class RoundClassification(db.Model):
         for player_id, stats in player_stats.items():
             stats["rack_difference"] = stats["rack_won"] - stats["rack_lost"]
 
+        # B14 / Bug 4: la chiave di classifica dipende da `classification_system`
+        # (WINS/RACK), NON dal `matchmaking_strategy`. Storicamente il codice
+        # usava matchmaking_strategy come proxy, ma una gara random+WINS o
+        # amalfi+RACK rompevano l'invariante (label "Diff. Rack" mostrava
+        # in realtà rack_won totali). Allineato ai sort key di
+        # `gara_strategies.py` (PR #3 ADR-B14).
+        is_rack_system = (gara.classification_system or "WINS").upper() == "RACK"
+
         # Load SSR scores from GaraClassification if available (for tiebreaking)
         ssr_scores: dict[int, int] = {}
-        if gara.matchmaking_strategy == "random":
+        if is_rack_system:
             existing_gara_class = (
                 db.session.query(GaraClassification).filter_by(gara_id=gara_id).all()
             )
@@ -268,9 +276,9 @@ class RoundClassification(db.Model):
                 if gc.spot_shot_wins is not None:
                     ssr_scores[gc.user_id] = gc.spot_shot_wins
 
-        # Sort players by classification criteria based on strategy
-        if gara.matchmaking_strategy == "random":
-            # For Random strategy: order by total racks won, then SSR score,
+        # Sort players by classification criteria based on classification_system
+        if is_rack_system:
+            # RACK system: order by total racks won, then SSR score,
             # then rack difference. SSR score of -1 means not entered
             # (sorts last among same racks).
             sorted_players = sorted(
@@ -283,7 +291,7 @@ class RoundClassification(db.Model):
                 ),
             )
         else:
-            # For other strategies (Amalfi, etc): order by matches won,
+            # WINS / POSITION system: order by matches won,
             # then rack difference.
             sorted_players = sorted(
                 player_stats.items(),
@@ -325,32 +333,31 @@ class RoundClassification(db.Model):
                 # Update existing
                 classification.position = position
                 classification.matches_won = stats["matches_won"]
-                # For Random strategy, store total racks won in
-                # rack_difference field for display.
-                # For other strategies, store actual rack difference.
-                if gara.matchmaking_strategy == "random":
+                # B14: il valore mostrato dalla UI nella colonna
+                # "Rack Totali" (sistema RACK) o "Diff. Rack" (sistema WINS)
+                # dipende da classification_system, NON da matchmaking_strategy.
+                # Il template usa la stessa chiave `is_rack_only` per scegliere
+                # la label, quindi va in cortocircuito col valore qui salvato.
+                if is_rack_system:
                     classification.rack_difference = stats[
                         "rack_won"
                     ]  # Store total racks won
                 else:
                     classification.rack_difference = stats[
                         "rack_difference"
-                    ]  # Store rack difference
+                    ]  # Store actual rack difference (won - lost)
                 classification.previous_position = previous_position
             else:
-                # Create new
+                # Create new — vedi commento sopra per la logica is_rack_system.
                 classification = RoundClassification(
                     gara_id=gara_id,
                     round_number=round_number,
                     user_id=player_id,
                     position=position,
                     matches_won=stats["matches_won"],
-                    # For Random strategy, store total racks won in
-                    # rack_difference field.
-                    # For other strategies, store actual rack difference.
                     rack_difference=(
                         stats["rack_won"]
-                        if gara.matchmaking_strategy == "random"
+                        if is_rack_system
                         else stats["rack_difference"]
                     ),
                     previous_position=previous_position,
