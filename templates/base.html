@@ -473,6 +473,10 @@
                             class="btn btn-warning quick-login-btn">
                             Fill Gara
                         </a>
+                        <a href="{{ url_for('main.debug_inscribe_next_player', gara_id=gara.id) }}"
+                            class="btn btn-success quick-login-btn">
+                            + Iscrivi
+                        </a>
                         <a href="{{ url_for('main.debug_complete_current_round', gara_id=gara.id) }}"
                             class="btn btn-info quick-login-btn"
                             onclick="return confirmLink(this, 'Completare i match in corso del turno attuale con risultati random?')">

@@ -282,73 +282,130 @@ def debug_create_player():
     return redirect(request.referrer or url_for("dashboard.dashboard"))
 
 
+def _available_quick_login_players(gara_id: int):
+    """Quick-login players (role=PLAYER) non già iscritti alla gara,
+    in ordine quick-login (admin/director esclusi)."""
+    from models.competition.models import Inscription
+    from utils.database_utils import get_quick_login_users
+    from models.user.role_enum import UserRole
+
+    inscribed_ids = {
+        i.user_id
+        for i in Inscription.query.filter_by(gara_id=gara_id).all()
+    }
+    return [
+        u for u in get_quick_login_users(limit=32)
+        if u.role == UserRole.PLAYER.value and u.id not in inscribed_ids
+    ]
+
+
+def _current_active_inscriptions(gara_id: int) -> int:
+    from models.competition.models import Inscription
+    return Inscription.query.filter_by(
+        gara_id=gara_id, is_waitlist=False, is_withdrawn=False
+    ).count()
+
+
 @main_bp.route("/debug/fill_gara/<int:gara_id>")
 def debug_fill_gara(gara_id):
-    """Iscrive tutti i player*, mario e pino a una gara (debug only)."""
+    """Riempi la gara fino al MIN partecipanti pescando dai quick-login."""
     if not Config.DEBUG_MODE:
         return "Funzione non disponibile in produzione", 403
 
-    from models.user.models import User
-    from models.competition.models import Inscription
-    from sqlalchemy import or_
-
     gara = Gara.query.get_or_404(gara_id)
+    current_active = _current_active_inscriptions(gara_id)
 
-    # Conta iscritti attuali
-    current_inscriptions = Inscription.query.filter_by(gara_id=gara_id).count()
-
-    # Trova giocatori player*, mario e pino esistenti non iscritti
-    existing_player_ids = db.session.query(Inscription.user_id).filter_by(
-        gara_id=gara_id
-    )
-    available_players = (
-        User.query.filter(User.role == "player")
-        .filter(or_(
-            User.username.like("player%"),  # Utenti player*
-            User.username.in_(["mario", "pino"])  # mario e pino
-        ))
-        .filter(User.deleted_at.is_(None))
-        .filter(~User.id.in_(existing_player_ids))
-        .all()
-    )
-
-    if not available_players:
+    min_required = gara.min_participants or 0
+    if min_required <= 0:
         flash(
-            f"Nessun player*, mario o pino disponibile da iscrivere. "
-            f"Iscritti attuali: {current_inscriptions}",
+            "min_participants non impostato per questa gara: nulla da fare.",
             "info",
         )
         return redirect(request.referrer or url_for("dashboard.dashboard"))
 
-    # Se c'è un limite max_participants, rispettalo
-    if gara.max_participants and gara.max_participants > 0:
-        slots_available = gara.max_participants - current_inscriptions
-        if slots_available <= 0:
-            flash(
-                f"La gara ha già raggiunto il massimo di "
-                f"{gara.max_participants} iscritti",
-                "info",
-            )
-            return redirect(request.referrer or url_for("dashboard.dashboard"))
-        players_to_add = available_players[:slots_available]
-    else:
-        # Nessun limite: iscrivi tutti i player disponibili
-        players_to_add = available_players
+    slots_needed = max(0, min_required - current_active)
+    if slots_needed == 0:
+        flash(
+            f"Minimo già raggiunto ({current_active}/{min_required}).",
+            "info",
+        )
+        return redirect(request.referrer or url_for("dashboard.dashboard"))
 
-    # Iscrive i giocatori alla gara usando il servizio
+    # Rispetta anche il limite massimo, se più stringente
+    if gara.max_participants and gara.max_participants > 0:
+        slots_needed = min(slots_needed, gara.max_participants - current_active)
+
+    candidates = _available_quick_login_players(gara_id)
+    if not candidates:
+        flash(
+            "Nessun giocatore quick-login disponibile da iscrivere.",
+            "info",
+        )
+        return redirect(request.referrer or url_for("dashboard.dashboard"))
+
     from models.competition.inscription_service import InscriptionService
 
     new_inscriptions = 0
-    for player in players_to_add:
+    for player in candidates[:slots_needed]:
         inscription = InscriptionService.inscribe_user(player.id, gara_id)
         if inscription:
             new_inscriptions += 1
 
     flash(
-        f"Aggiunti {new_inscriptions} iscritti alla gara. "
-        f"Totale: {current_inscriptions + new_inscriptions}",
+        f"Aggiunti {new_inscriptions} iscritti dai quick-login. "
+        f"Totale attivi: {current_active + new_inscriptions}/{min_required}",
         "success",
     )
+    return redirect(
+        request.referrer or url_for("admin.competition.gara_detail", gara_id=gara_id)
+    )
+
+
+@main_bp.route("/debug/inscribe_next_player/<int:gara_id>")
+def debug_inscribe_next_player(gara_id):
+    """Iscrive il prossimo quick-login player non ancora iscritto."""
+    if not Config.DEBUG_MODE:
+        return "Funzione non disponibile in produzione", 403
+
+    gara = Gara.query.get_or_404(gara_id)
+    current_active = _current_active_inscriptions(gara_id)
+
+    if gara.max_participants and current_active >= gara.max_participants:
+        flash(
+            f"Massimo raggiunto ({current_active}/{gara.max_participants}).",
+            "info",
+        )
+        return redirect(
+            request.referrer
+            or url_for("admin.competition.gara_detail", gara_id=gara_id)
+        )
+
+    candidates = _available_quick_login_players(gara_id)
+    if not candidates:
+        flash(
+            "Nessun giocatore quick-login disponibile da iscrivere.",
+            "info",
+        )
+        return redirect(
+            request.referrer
+            or url_for("admin.competition.gara_detail", gara_id=gara_id)
+        )
+
+    from models.competition.inscription_service import InscriptionService
+
+    player = candidates[0]
+    inscription = InscriptionService.inscribe_user(player.id, gara_id)
+
+    if inscription:
+        flash(
+            f"Iscritto '{player.username}'. "
+            f"Totale attivi: {current_active + 1}"
+            f"{'/' + str(gara.max_participants) if gara.max_participants else ''}",
+            "success",
+        )
+    else:
+        flash(f"Iscrizione di '{player.username}' fallita.", "warning")
+
     return redirect(
         request.referrer or url_for("admin.competition.gara_detail", gara_id=gara_id)
     )
