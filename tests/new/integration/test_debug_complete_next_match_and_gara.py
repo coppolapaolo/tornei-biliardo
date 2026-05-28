@@ -98,17 +98,96 @@ def test_complete_next_match_completes_one(client, db_session):
     )
     assert resp.status_code in (302, 303)
 
-    completed = Match.query.filter_by(
-        gara_id=gara.id, round_number=1, status=MatchStatus.COMPLETED.value
+    # Complete Match pesca da TUTTI i round attivi (bug 12), quindi il match
+    # completato puo' essere indifferentemente di round 1 o round 2.
+    completed_total = Match.query.filter_by(
+        gara_id=gara.id, status=MatchStatus.COMPLETED.value
     ).count()
-    pending = Match.query.filter_by(
-        gara_id=gara.id, round_number=1
-    ).filter(
+    pending_total = Match.query.filter_by(gara_id=gara.id).filter(
         Match.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value])
     ).count()
 
-    assert completed == 1, f"Atteso 1 completato, trovati {completed}"
-    assert pending == 1, f"Atteso 1 ancora in corso, trovati {pending}"
+    assert completed_total == 1, (
+        f"Atteso 1 completato, trovati {completed_total}"
+    )
+    assert pending_total == 3, f"Atteso 3 ancora aperti, trovati {pending_total}"
+
+
+@pytest.mark.integration
+def test_complete_round_advances_to_next_active_round(client, db_session):
+    """Bug 12: dopo aver completato il turno 1, current_round resta 1
+    (update_round_progression non avanza finche' round 2 non e'
+    completato). Il secondo click su Complete Round deve riconoscere
+    che il primo round attivo e' ora il 2 e completarlo, non dire
+    "nessun match"."""
+    gara = _setup_random_pregenerated_gara(db_session)
+
+    # Primo click: completa round 1
+    resp1 = client.get(
+        f"/debug/complete_current_round/{gara.id}", follow_redirects=False
+    )
+    assert resp1.status_code in (302, 303)
+    r1_done = Match.query.filter_by(
+        gara_id=gara.id, round_number=1
+    ).filter(Match.status == MatchStatus.COMPLETED.value).count()
+    assert r1_done == 2
+
+    # Secondo click: deve completare round 2 (non dire "nessun match")
+    resp2 = client.get(
+        f"/debug/complete_current_round/{gara.id}", follow_redirects=False
+    )
+    assert resp2.status_code in (302, 303)
+    r2_done = Match.query.filter_by(
+        gara_id=gara.id, round_number=2
+    ).filter(
+        Match.status.in_(
+            [MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value]
+        )
+    ).count()
+    assert r2_done == 2, f"Atteso 2 match round 2 completati, trovati {r2_done}"
+
+
+@pytest.mark.integration
+def test_complete_next_match_picks_from_any_round(client, db_session):
+    """Bug 12: Complete Match deve pescare da qualsiasi round attivo,
+    non solo da gara.current_round."""
+    gara = _setup_random_pregenerated_gara(db_session)
+
+    # Forza la simulazione che current_round resti a 1 ma round 2 abbia
+    # match PLAYING attivi: completa direttamente i 2 match di round 1.
+    r1_matches = Match.query.filter_by(
+        gara_id=gara.id, round_number=1
+    ).all()
+    for m in r1_matches:
+        m.status = MatchStatus.COMPLETED.value
+        m.player1_score = 5
+        m.player2_score = 0
+        m.winner_id = m.player1_id
+    db_session.commit()
+
+    # Promuovi i match di round 2 a PLAYING con tavolo, mantenendo
+    # current_round=1 (caso "tipico" random: i match successivi sono
+    # gia' pronti ma current_round non si e' avanzato)
+    r2_matches = Match.query.filter_by(
+        gara_id=gara.id, round_number=2
+    ).all()
+    for i, m in enumerate(r2_matches):
+        m.status = MatchStatus.PLAYING.value
+        m.table_assignment = str(i + 1)
+    db_session.commit()
+
+    resp = client.get(
+        f"/debug/complete_next_match/{gara.id}", follow_redirects=False
+    )
+    assert resp.status_code in (302, 303)
+
+    r2_completed = Match.query.filter_by(
+        gara_id=gara.id, round_number=2,
+        status=MatchStatus.COMPLETED.value,
+    ).count()
+    assert r2_completed == 1, (
+        f"Atteso 1 match round 2 completato, trovati {r2_completed}"
+    )
 
 
 @pytest.mark.integration

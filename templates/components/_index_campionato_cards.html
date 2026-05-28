@@ -55,7 +55,7 @@
                                         {{ gara.inscription_end|datetime_local if gara.inscription_end else 'N/A' }}
                                     </span>
                                 </small>
-                                {% elif gara.get_real_status() == 'inscription_not_started' %}
+                                {% elif gara.get_real_status() == 'inscription_not_yet_open' %}
                                 <br><small class="text-info">
                                     <i class="fas fa-clock"></i>
                                     {{ _("Iniziano:") }} <span

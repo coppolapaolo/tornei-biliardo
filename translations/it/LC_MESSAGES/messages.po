@@ -2401,7 +2401,7 @@ msgid "I tre giocatori piu' bassi giocano un match a 3."
 msgstr ""
 
 #: templates/admin/campionato_wizard_step2.html:145
-msgid "Solo per distanze 2-5."
+msgid "Solo per distanze 2-7."
 msgstr ""
 
 #: templates/admin/campionato_wizard_step2.html:156

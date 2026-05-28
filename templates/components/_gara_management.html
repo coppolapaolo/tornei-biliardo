@@ -99,7 +99,7 @@
                     min=gara.min_participants, current=gara.get_active_inscriptions_count()) }}</small>
                 {% endif %}
 
-                {% elif gara.get_real_status() == 'inscription_not_started' %}
+                {% elif gara.get_real_status() == 'inscription_not_yet_open' %}
                 <div class="alert alert-info p-2 mb-2">
                     <small>
                         <i class="fas fa-clock"></i>

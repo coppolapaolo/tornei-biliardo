@@ -1,4 +1,6 @@
 # routes/main.py - AGGIORNATO per correggere import path
+from typing import Optional
+
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import current_user, logout_user
 from models import db, Campionato, Gara, User
@@ -519,9 +521,42 @@ def _debug_incomplete_matches_in_round(gara_id: int, round_number: int):
     )
 
 
+def _debug_all_incomplete_matches(gara_id: int):
+    """Tutti i match della gara in stato PENDING o PLAYING, ordinati per
+    round e poi id. Necessario per strategie pre-generate (es. random)
+    dove `gara.current_round` resta indietro rispetto al primo round che
+    ha ancora match attivi.
+    """
+    from models.match.models import Match
+    from models.status_enum import MatchStatus
+    return (
+        Match.query.filter_by(gara_id=gara_id)
+        .filter(
+            Match.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value])
+        )
+        .order_by(Match.round_number, Match.id)
+        .all()
+    )
+
+
+def _debug_first_active_round(gara_id: int) -> Optional[int]:
+    """Primo round_number con almeno un match non completato.
+
+    Per gare random/round_robin che pre-generano tutti i turni,
+    `gara.current_round` resta al valore raggiunto dalla progressione
+    "stretta" (= tutti i match del turno N completati). Le debug action
+    devono invece operare sul primo turno con match attivi, anche se
+    `current_round` non è stato avanzato.
+    """
+    matches = _debug_all_incomplete_matches(gara_id)
+    if not matches:
+        return None
+    return matches[0].round_number
+
+
 @main_bp.route("/debug/complete_current_round/<int:gara_id>")
 def debug_complete_current_round(gara_id):
-    """Completa i match del turno attuale con risultati random (debug only)."""
+    """Completa i match del primo round attivo con risultati random."""
     if not Config.DEBUG_MODE:
         return "Funzione non disponibile in produzione", 403
 
@@ -534,16 +569,18 @@ def debug_complete_current_round(gara_id):
             or url_for("admin.competition.gara_detail", gara_id=gara_id)
         )
 
-    incomplete_matches = _debug_incomplete_matches_in_round(
-        gara_id, gara.current_round
-    )
-
-    if not incomplete_matches:
-        flash("Nessun match da completare nel turno attuale!", "info")
+    # Per strategie pre-generate (random), `gara.current_round` può non
+    # avanzare anche se il turno è di fatto concluso: usa il primo turno
+    # con match attivi.
+    target_round = _debug_first_active_round(gara_id)
+    if target_round is None:
+        flash("Nessun match da completare nella gara!", "info")
         return redirect(
             request.referrer
             or url_for("admin.competition.gara_detail", gara_id=gara_id)
         )
+
+    incomplete_matches = _debug_incomplete_matches_in_round(gara_id, target_round)
 
     completed_count = sum(
         1 for m in incomplete_matches if _debug_random_score_match(m)
@@ -554,7 +591,7 @@ def debug_complete_current_round(gara_id):
     assigned = _debug_release_tables_and_reassign(incomplete_matches, gara_id)
 
     flash(
-        f"Completati {completed_count} match del turno attuale "
+        f"Completati {completed_count} match del turno {target_round} "
         f"({assigned} tavoli riassegnati ai turni successivi).",
         "success",
     )
@@ -565,7 +602,12 @@ def debug_complete_current_round(gara_id):
 
 @main_bp.route("/debug/complete_next_match/<int:gara_id>")
 def debug_complete_next_match(gara_id):
-    """Completa UN match pending/playing del turno corrente con scoring random."""
+    """Completa UN match pending/playing qualsiasi della gara.
+
+    Cerca in tutti i round, non solo `gara.current_round`: per strategie
+    pre-generate (random) molti match dei turni successivi sono già
+    PLAYING quando il current_round non si è ancora avanzato.
+    """
     if not Config.DEBUG_MODE:
         return "Funzione non disponibile in produzione", 403
 
@@ -579,12 +621,9 @@ def debug_complete_next_match(gara_id):
             or url_for("admin.competition.gara_detail", gara_id=gara_id)
         )
 
-    candidates = [
-        m for m in _debug_incomplete_matches_in_round(gara_id, gara.current_round)
-        if not m.is_bye and not m.is_trio
-    ]
+    candidates = [m for m in _debug_all_incomplete_matches(gara_id) if not m.is_bye]
     if not candidates:
-        flash("Nessun match da completare nel turno attuale!", "info")
+        flash("Nessun match da completare nella gara!", "info")
         return redirect(
             request.referrer
             or url_for("admin.competition.gara_detail", gara_id=gara_id)
@@ -598,7 +637,7 @@ def debug_complete_next_match(gara_id):
     assigned = _debug_release_tables_and_reassign([chosen], gara_id)
 
     flash(
-        f"Completato 1 match (#{chosen.id}) del turno {gara.current_round} "
+        f"Completato 1 match (#{chosen.id}) del turno {chosen.round_number} "
         f"({assigned} tavoli riassegnati).",
         "success",
     )
@@ -640,30 +679,27 @@ def debug_complete_gara(gara_id):
         safety_iter += 1
         db.session.refresh(gara)
 
-        # Stop se gara terminata
         if gara.status == GaraStatus.COMPLETED.value:
             break
 
-        incomplete = _debug_incomplete_matches_in_round(gara_id, gara.current_round)
-        if incomplete:
+        # Per strategie pre-generate (random) usa il primo round con match
+        # attivi, non `gara.current_round` (che resta indietro se i match
+        # del round corrente sono tutti completi ma quelli successivi no).
+        target_round = _debug_first_active_round(gara_id)
+        if target_round is not None:
+            incomplete = _debug_incomplete_matches_in_round(gara_id, target_round)
             for m in incomplete:
                 if _debug_random_score_match(m):
                     total_completed += 1
             RoundService.update_round_progression(gara_id)
             _debug_release_tables_and_reassign(incomplete, gara_id)
-            db.session.refresh(gara)
+            continue
 
-        # Se siamo all ultimo turno e tutto completato: fine
+        # Nessun match attivo: o la gara è finita, o siamo su una strategia
+        # on-demand (es. Amalfi) e dobbiamo generare il prossimo turno.
         if gara.current_round >= (gara.rounds_count or 0):
-            # Verifica che davvero non ci siano residui
-            if not _debug_incomplete_matches_in_round(gara_id, gara.current_round):
-                break
-
-        # Prova ad avanzare al turno successivo (idempotente per strategie
-        # che pre-generano i match, es. random / round_robin)
-        next_round = gara.current_round + 1
-        if next_round > (gara.rounds_count or 0):
             break
+        next_round = gara.current_round + 1
         try:
             RoundService.start_next_round(gara_id, next_round)
             total_rounds_advanced += 1
