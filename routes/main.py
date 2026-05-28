@@ -411,18 +411,56 @@ def debug_inscribe_next_player(gara_id):
     )
 
 
+def _debug_random_score_trio(match) -> bool:
+    """Assegna un risultato random al TrioMatch associato a `match`.
+
+    Distribuisce `total_played_racks` vittorie tra i 3 player rispettando
+    il vincolo `max_per_player = 2 * num_rounds`. Chiama
+    `TrioScoringService.set_result_direct` che si occupa di creare i
+    TrioRack sintetici, calcolare il winner e completare il match.
+    """
+    import random
+    from models.match.trio_scoring_service import TrioScoringService
+
+    trio = match.trio_match
+    if trio is None:
+        return False
+
+    config = trio.trio_config
+    total = config.total_played_racks
+    max_per = 2 * config.num_rounds
+    counts = {trio.player1_id: 0, trio.player2_id: 0, trio.player3_id: 0}
+
+    for _ in range(total):
+        eligible = [pid for pid, c in counts.items() if c < max_per]
+        if not eligible:
+            return False
+        counts[random.choice(eligible)] += 1
+
+    TrioScoringService.set_result_direct(
+        trio.id,
+        counts[trio.player1_id],
+        counts[trio.player2_id],
+        counts[trio.player3_id],
+    )
+    return True
+
+
 def _debug_random_score_match(match) -> bool:
-    """Assegna un risultato random a `match` (skip bye/trio). True se completato.
+    """Assegna un risultato random a `match` (skip bye). True se completato.
 
     ADR-027: usa match.effective_* / match.distance_config per rispettare
-    gli override RoundConfiguration.
+    gli override RoundConfiguration. Per i match trio delega a
+    `_debug_random_score_trio` che usa `TrioScoringService.set_result_direct`.
     """
     from models.status_enum import MatchStatus
     from models.classification.encounter_service import PlayerEncounterService
     import random
 
-    if match.is_bye or match.is_trio:
+    if match.is_bye:
         return False
+    if match.is_trio:
+        return _debug_random_score_trio(match)
 
     if match.effective_is_race_to:
         winning_score = match.distance_config.get_winning_racks()
