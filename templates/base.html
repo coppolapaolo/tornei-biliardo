@@ -482,6 +482,15 @@
                             onclick="return confirmLink(this, 'Completare i match in corso del turno attuale con risultati random?')">
                             Complete Round
                         </a>
+                        <a href="{{ url_for('main.debug_complete_next_match', gara_id=gara.id) }}"
+                            class="btn btn-info quick-login-btn">
+                            Complete Match
+                        </a>
+                        <a href="{{ url_for('main.debug_complete_gara', gara_id=gara.id) }}"
+                            class="btn btn-danger quick-login-btn"
+                            onclick="return confirmLink(this, 'Completare l intera gara con risultati random fino alla fine?')">
+                            Complete Gara
+                        </a>
                         {% endif %}
                     </div>
                 </div>

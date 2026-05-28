@@ -411,16 +411,81 @@ def debug_inscribe_next_player(gara_id):
     )
 
 
+def _debug_random_score_match(match) -> bool:
+    """Assegna un risultato random a `match` (skip bye/trio). True se completato.
+
+    ADR-027: usa match.effective_* / match.distance_config per rispettare
+    gli override RoundConfiguration.
+    """
+    from models.status_enum import MatchStatus
+    from models.classification.encounter_service import PlayerEncounterService
+    import random
+
+    if match.is_bye or match.is_trio:
+        return False
+
+    if match.effective_is_race_to:
+        winning_score = match.distance_config.get_winning_racks()
+        loser_score = random.randint(0, winning_score - 1)
+        if random.choice([True, False]):
+            match.player1_score = winning_score
+            match.player2_score = loser_score
+            match.winner_id = match.player1_id
+        else:
+            match.player1_score = loser_score
+            match.player2_score = winning_score
+            match.winner_id = match.player2_id
+    else:
+        total = match.effective_distance
+        p1 = random.randint(0, total)
+        p2 = total - p1
+        if p1 > p2:
+            match.winner_id = match.player1_id
+        elif p2 > p1:
+            match.winner_id = match.player2_id
+        else:
+            match.winner_id = random.choice([match.player1_id, match.player2_id])
+        match.player1_score = p1
+        match.player2_score = p2
+
+    match.status = MatchStatus.COMPLETED.value
+    PlayerEncounterService.record_match_encounters(match)
+    return True
+
+
+def _debug_release_tables_and_reassign(matches, gara_id: int) -> int:
+    """Rilascia table_assignment dei match completed e richiama il pull.
+
+    Ritorna il numero di tavoli riassegnati ai match pending (anche dei
+    turni successivi, grazie al sorting (round_number, id) di
+    assign_available_tables).
+    """
+    from models.match.table_assignment_service import TableAssignmentService
+
+    for m in matches:
+        if m.table_assignment:
+            m.table_assignment = None
+            db.session.add(m)
+    return TableAssignmentService.assign_available_tables(gara_id)
+
+
+def _debug_incomplete_matches_in_round(gara_id: int, round_number: int):
+    from models.match.models import Match
+    from models.status_enum import MatchStatus
+    return (
+        Match.query.filter_by(gara_id=gara_id, round_number=round_number)
+        .filter(
+            Match.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value])
+        )
+        .all()
+    )
+
+
 @main_bp.route("/debug/complete_current_round/<int:gara_id>")
 def debug_complete_current_round(gara_id):
     """Completa i match del turno attuale con risultati random (debug only)."""
     if not Config.DEBUG_MODE:
         return "Funzione non disponibile in produzione", 403
-
-    from models.match.models import Match
-    from models.status_enum import MatchStatus
-    from models.classification.encounter_service import PlayerEncounterService
-    import random
 
     gara = Gara.query.get_or_404(gara_id)
 
@@ -431,13 +496,8 @@ def debug_complete_current_round(gara_id):
             or url_for("admin.competition.gara_detail", gara_id=gara_id)
         )
 
-    # Trova tutti i match non completati del turno attuale (PENDING o PLAYING)
-    incomplete_matches = (
-        Match.query.filter_by(gara_id=gara_id, round_number=gara.current_round)
-        .filter(
-            Match.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value])
-        )
-        .all()
+    incomplete_matches = _debug_incomplete_matches_in_round(
+        gara_id, gara.current_round
     )
 
     if not incomplete_matches:
@@ -447,71 +507,139 @@ def debug_complete_current_round(gara_id):
             or url_for("admin.competition.gara_detail", gara_id=gara_id)
         )
 
-    completed_count = 0
-    for match in incomplete_matches:
-        # Skip bye (già completato) e trio (scoring 3-player non gestito qui)
-        if match.is_bye or match.is_trio:
-            continue
+    completed_count = sum(
+        1 for m in incomplete_matches if _debug_random_score_match(m)
+    )
 
-        # ADR-027: usa match.effective_* / match.distance_config per
-        # rispettare gli override per turno (RoundConfiguration).
-        if match.effective_is_race_to:
-            # Race to N: vincitore deve arrivare a get_winning_racks()
-            winning_score = match.distance_config.get_winning_racks()
-            loser_score = random.randint(0, winning_score - 1)
-
-            # Random winner
-            if random.choice([True, False]):
-                match.player1_score = winning_score
-                match.player2_score = loser_score
-                match.winner_id = match.player1_id
-            else:
-                match.player1_score = loser_score
-                match.player2_score = winning_score
-                match.winner_id = match.player2_id
-        else:
-            # N rack esatti - la somma deve essere match.effective_distance
-            total_score = match.effective_distance
-            player1_score = random.randint(0, total_score)
-            player2_score = total_score - player1_score
-
-            # Il vincitore è chi ha più punti
-            if player1_score > player2_score:
-                match.winner_id = match.player1_id
-            elif player2_score > player1_score:
-                match.winner_id = match.player2_id
-            else:
-                # Pareggio - forza una vittoria random
-                match.winner_id = random.choice([match.player1_id, match.player2_id])
-
-            match.player1_score = player1_score
-            match.player2_score = player2_score
-
-        match.status = MatchStatus.COMPLETED.value
-        completed_count += 1
-
-        # Record encounter for anti-rematch logic
-        PlayerEncounterService.record_match_encounters(match)
-
-    # Flask handles transaction commit automatically
-    # Dopo aver completato i match, controlla se ci sono turni da aggiornare
     from models.competition.round_service import RoundService
-    from models.match.table_assignment_service import TableAssignmentService
-
     RoundService.update_round_progression(gara_id)
-
-    # I match completati hanno ancora il loro tavolo: liberali e riassegna
-    # tavoli ai match in attesa (privilegiando i turni successivi tramite
-    # il sorting di assign_available_tables: round_number, id ASC).
-    for match in incomplete_matches:
-        if match.table_assignment:
-            match.table_assignment = None
-            db.session.add(match)
-    assigned = TableAssignmentService.assign_available_tables(gara_id)
+    assigned = _debug_release_tables_and_reassign(incomplete_matches, gara_id)
 
     flash(
         f"Completati {completed_count} match del turno attuale "
         f"({assigned} tavoli riassegnati ai turni successivi).",
+        "success",
+    )
+    return redirect(
+        request.referrer or url_for("admin.competition.gara_detail", gara_id=gara_id)
+    )
+
+
+@main_bp.route("/debug/complete_next_match/<int:gara_id>")
+def debug_complete_next_match(gara_id):
+    """Completa UN match pending/playing del turno corrente con scoring random."""
+    if not Config.DEBUG_MODE:
+        return "Funzione non disponibile in produzione", 403
+
+    import random
+
+    gara = Gara.query.get_or_404(gara_id)
+    if gara.current_round == 0:
+        flash("La gara non è ancora iniziata!", "warning")
+        return redirect(
+            request.referrer
+            or url_for("admin.competition.gara_detail", gara_id=gara_id)
+        )
+
+    candidates = [
+        m for m in _debug_incomplete_matches_in_round(gara_id, gara.current_round)
+        if not m.is_bye and not m.is_trio
+    ]
+    if not candidates:
+        flash("Nessun match da completare nel turno attuale!", "info")
+        return redirect(
+            request.referrer
+            or url_for("admin.competition.gara_detail", gara_id=gara_id)
+        )
+
+    chosen = random.choice(candidates)
+    _debug_random_score_match(chosen)
+
+    from models.competition.round_service import RoundService
+    RoundService.update_round_progression(gara_id)
+    assigned = _debug_release_tables_and_reassign([chosen], gara_id)
+
+    flash(
+        f"Completato 1 match (#{chosen.id}) del turno {gara.current_round} "
+        f"({assigned} tavoli riassegnati).",
+        "success",
+    )
+    return redirect(
+        request.referrer or url_for("admin.competition.gara_detail", gara_id=gara_id)
+    )
+
+
+@main_bp.route("/debug/complete_gara/<int:gara_id>")
+def debug_complete_gara(gara_id):
+    """Completa l intera gara: cicla su match pending/playing fino a fine gara.
+
+    Per ogni iterazione:
+    1. completa tutti i match del current_round
+    2. update_round_progression avanza il current_round
+    3. assign_available_tables assegna tavoli ai pending (sorting per round)
+    4. start_next_round per strategie che generano on-demand (es. Amalfi)
+    """
+    if not Config.DEBUG_MODE:
+        return "Funzione non disponibile in produzione", 403
+
+    from models.competition.round_service import RoundService
+    from models.status_enum import GaraStatus
+
+    gara = Gara.query.get_or_404(gara_id)
+    if gara.current_round == 0:
+        flash("La gara non è ancora iniziata!", "warning")
+        return redirect(
+            request.referrer
+            or url_for("admin.competition.gara_detail", gara_id=gara_id)
+        )
+
+    total_completed = 0
+    total_rounds_advanced = 0
+    safety_iter = 0
+    MAX_ITER = (gara.rounds_count or 1) + 5
+
+    while safety_iter < MAX_ITER:
+        safety_iter += 1
+        db.session.refresh(gara)
+
+        # Stop se gara terminata
+        if gara.status == GaraStatus.COMPLETED.value:
+            break
+
+        incomplete = _debug_incomplete_matches_in_round(gara_id, gara.current_round)
+        if incomplete:
+            for m in incomplete:
+                if _debug_random_score_match(m):
+                    total_completed += 1
+            RoundService.update_round_progression(gara_id)
+            _debug_release_tables_and_reassign(incomplete, gara_id)
+            db.session.refresh(gara)
+
+        # Se siamo all ultimo turno e tutto completato: fine
+        if gara.current_round >= (gara.rounds_count or 0):
+            # Verifica che davvero non ci siano residui
+            if not _debug_incomplete_matches_in_round(gara_id, gara.current_round):
+                break
+
+        # Prova ad avanzare al turno successivo (idempotente per strategie
+        # che pre-generano i match, es. random / round_robin)
+        next_round = gara.current_round + 1
+        if next_round > (gara.rounds_count or 0):
+            break
+        try:
+            RoundService.start_next_round(gara_id, next_round)
+            total_rounds_advanced += 1
+        except Exception as e:
+            flash(
+                f"Stop al turno {gara.current_round}: "
+                f"impossibile avviare il turno {next_round} ({e}).",
+                "warning",
+            )
+            break
+
+    flash(
+        f"Complete gara: {total_completed} match completati, "
+        f"{total_rounds_advanced} turni avanzati.",
         "success",
     )
     return redirect(
