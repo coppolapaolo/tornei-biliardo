@@ -3038,6 +3038,38 @@ msgstr "no limit"
 msgid "Iscritti:"
 msgstr "Registered:"
 
+#: templates/components/_gara_cards.html:44
+#: templates/components/_unified_cards.html:114
+msgid "Aperte dal:"
+msgstr "Open since:"
+
+#: templates/components/_gara_cards.html:58
+msgid "Lista d'attesa:"
+msgstr "Waitlist:"
+
+#: templates/components/_gara_cards.html:64
+#: templates/components/_unified_cards.html:126
+msgid "Iscrizioni non ancora aperte"
+msgstr "Registrations not yet open"
+
+#: templates/components/_gara_cards.html:69
+#: templates/components/_unified_cards.html:130
+msgid "Apriranno il:"
+msgstr "Will open on:"
+
+#: templates/components/_gara_cards.html:75
+#: templates/components/_unified_cards.html:136
+msgid "Chiuderanno il:"
+msgstr "Will close on:"
+
+#: templates/components/_gara_cards.html:80
+msgid "In preparazione"
+msgstr "In preparation"
+
+#: templates/components/_gara_cards.html:83
+msgid "Le iscrizioni apriranno a breve"
+msgstr "Registrations will open soon"
+
 #: templates/components/_gara_info.html:37
 #: templates/components/_round_management.html:28
 msgid "Abilitato"

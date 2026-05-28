@@ -24,7 +24,7 @@ class GaraStatusResolver:
             gara: A Gara instance (or duck-typed object with status, matches, etc.)
 
         Returns:
-            The resolved status string (may be a GaraStatus or ProvaDerivedStatus value).
+            The resolved status string (GaraStatus or ProvaDerivedStatus value).
         """
         status = getattr(gara, "status", None)
 
@@ -83,8 +83,12 @@ class GaraStatusResolver:
     @staticmethod
     def _resolve_inscription(gara: Any) -> str:
         """Resolve status for a gara in INSCRIPTION state."""
+        now = utc_now()
+        inscription_start = getattr(gara, "inscription_start", None)
+        if inscription_start and now < inscription_start:
+            return ProvaDerivedStatus.INSCRIPTION_NOT_YET_OPEN.value
         inscription_end = getattr(gara, "inscription_end", None)
-        if inscription_end and utc_now() > inscription_end:
+        if inscription_end and now > inscription_end:
             return ProvaDerivedStatus.INSCRIPTION_CLOSED.value
         return GaraStatus.INSCRIPTION.value
 
@@ -93,6 +97,10 @@ class GaraStatusResolver:
 STATUS_BADGE_MAP: dict[str, dict[str, str]] = {
     GaraStatus.SETUP.value: {"class": "bg-warning", "text": "Setup"},
     GaraStatus.INSCRIPTION.value: {"class": "bg-info", "text": "Iscrizioni Aperte"},
+    ProvaDerivedStatus.INSCRIPTION_NOT_YET_OPEN.value: {
+        "class": "bg-secondary",
+        "text": "Iscrizioni Non Ancora Aperte",
+    },
     ProvaDerivedStatus.INSCRIPTION_CLOSED.value: {
         "class": "bg-secondary",
         "text": "Iscrizioni Chiuse",

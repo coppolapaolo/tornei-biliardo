@@ -62,6 +62,7 @@ class ProvaDerivedStatus(_StrEnum):
     ma non vanno salvati nel DB.
     """
 
+    INSCRIPTION_NOT_YET_OPEN = "inscription_not_yet_open"
     INSCRIPTION_CLOSED = "inscription_closed"
     READY_TO_START = "ready_to_start"
     ROUND_COMPLETED = "round_completed"
@@ -208,7 +209,7 @@ class Discipline(_StrEnum):
 
     @classmethod
     def get_choices(cls) -> list[tuple[str, str]]:
-        """Restituisce le scelte per form/template come lista di tuple (value, label)."""
+        """Restituisce le scelte form/template come lista di tuple (value, label)."""
         return [(discipline.value, discipline.display_name) for discipline in cls]
 
     @classmethod

@@ -73,7 +73,9 @@ class Gara(SoftDeleteMixin, db.Model):
 
     # Location - FK to BilliardHall (nullable for backward compatibility)
     billiard_hall_id = db.Column(
-        db.Integer, db.ForeignKey("billiard_hall.id", ondelete="SET NULL"), nullable=True
+        db.Integer,
+        db.ForeignKey("billiard_hall.id", ondelete="SET NULL"),
+        nullable=True,
     )
     # Legacy: string-based location (kept for backward compatibility and display cache)
     location = db.Column(db.String(200))
@@ -103,7 +105,9 @@ class Gara(SoftDeleteMixin, db.Model):
     # Multi-set configuration (Phase 6: Frontend Integration)
     is_multi_set = db.Column(db.Boolean, default=False, nullable=False)
     match_distance = db.Column(db.Integer, nullable=True)  # Number of sets
-    is_race_to_sets = db.Column(db.Boolean, default=True, nullable=True)  # Race-to vs exact sets
+    is_race_to_sets = db.Column(
+        db.Boolean, default=True, nullable=True
+    )  # Race-to vs exact sets
 
     # Date iscrizioni
     inscription_start = db.Column(db.DateTime)
@@ -119,7 +123,7 @@ class Gara(SoftDeleteMixin, db.Model):
         db.String(10), nullable=False, default=DEFAULT_WITHDRAW_POLICY
     )
 
-    # Classification system: RACK (rack totali), WINS (vittorie+diff), POSITION (bracket)
+    # Classification: RACK (rack totali), WINS (vittorie+diff), POSITION (bracket)
     # See docs/CLASSIFICATION_SYSTEM.md for constraints per system
     classification_system = db.Column(
         db.String(10), nullable=False, default="WINS"
@@ -284,7 +288,8 @@ class Gara(SoftDeleteMixin, db.Model):
             self.available_tables = None
 
     # Property per identificare se è standalone
-    # RESOLVED: See docs/_archive/2025-12-architectural-decisions-pre-adr.md ADR-002 - keep bidirectional
+    # RESOLVED: ADR-002 (docs/_archive/2025-12-architectural-decisions-pre-adr.md)
+    # — keep bidirectional
     @property
     def is_standalone(self):
         """Check if this is a standalone competition."""
@@ -340,7 +345,10 @@ class Gara(SoftDeleteMixin, db.Model):
         """Verifica se si possono fare iscrizioni"""
         if self.status != GaraStatus.INSCRIPTION.value:
             return False
-        if self.inscription_end and utc_now() > self.inscription_end:
+        now = utc_now()
+        if self.inscription_start and now < self.inscription_start:
+            return False
+        if self.inscription_end and now > self.inscription_end:
             return False
         return True
 
@@ -599,7 +607,11 @@ class Gara(SoftDeleteMixin, db.Model):
                 is_race_to_racks=self.is_race_to,
                 is_multi_set=True,
                 sets=self.match_distance if self.match_distance else 1,
-                is_race_to_sets=self.is_race_to_sets if self.is_race_to_sets is not None else True
+                is_race_to_sets=(
+                    self.is_race_to_sets
+                    if self.is_race_to_sets is not None
+                    else True
+                ),
             )
 
     def copy_settings_from(self, source_gara):
@@ -624,7 +636,8 @@ class Gara(SoftDeleteMixin, db.Model):
 
     def get_podium(self):
         """
-        Restituisce il podio (top positions) della classifica finale in base a tiebreaker_until_position.
+        Restituisce il podio (top positions) della classifica finale in base
+        a tiebreaker_until_position.
 
         Returns:
             List[dict]: Lista di dizionari con 'position', 'user', 'username'
@@ -697,7 +710,7 @@ class Inscription(db.Model):
     # Lista d'attesa
     is_waitlist = db.Column(db.Boolean, default=False, nullable=False)
     waitlist_position = db.Column(db.Integer, nullable=True)
-    # Reason for waitlist: 'capacity' (max exceeded) or 'parity' (odd count with NO policy)
+    # Reason: 'capacity' (max exceeded) or 'parity' (odd count w/ NO policy)
     waitlist_reason = db.Column(db.String(20), nullable=True)
 
     @classmethod

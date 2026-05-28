@@ -36,27 +36,51 @@
 
                 {% if p.is_inscription_open %}
                   <div class="mt-2">
-                    <span class="badge bg-success">Iscrizioni aperte</span>
-                    <span class="badge bg-warning ms-1">
-                      <i class="fas fa-clock"></i>
-                      Scade: {{ p.inscription_end|datetime_local if p.inscription_end else 'N/D' }}
-                    </span>
+                    <span class="badge bg-success">{{ _('Iscrizioni aperte') }}</span>
                   </div>
+                  {% if p.inscription_start %}
+                  <small class="text-muted d-block mt-1">
+                    <i class="fas fa-play"></i>
+                    {{ _('Aperte dal:') }} {{ p.inscription_start|datetime_local }}
+                  </small>
+                  {% endif %}
+                  {% if p.inscription_end %}
+                  <small class="text-warning d-block">
+                    <i class="fas fa-clock"></i>
+                    {{ _('Scade:') }} {{ p.inscription_end|datetime_local }}
+                  </small>
+                  {% endif %}
                   <small class="text-muted d-block mt-1">
                     <i class="fas fa-users"></i>
-                    Iscritti: {{ p.get_active_inscriptions_count() }}{% if p.max_participants %}/{{ p.max_participants }}{% endif %}
+                    {{ _('Iscritti:') }} {{ p.get_active_inscriptions_count() }}{% if p.max_participants %}/{{ p.max_participants }}{% endif %}
                     {% if p.get_waitlist_count() > 0 %}
                       <span class="text-warning ms-1">
-                        <i class="fas fa-clock"></i> Lista d'attesa: {{ p.get_waitlist_count() }}
+                        <i class="fas fa-clock"></i> {{ _("Lista d'attesa:") }} {{ p.get_waitlist_count() }}
                       </span>
                     {% endif %}
                   </small>
+                {% elif p.get_real_status() == 'inscription_not_yet_open' %}
+                  <div class="mt-2">
+                    <span class="badge bg-secondary">{{ _('Iscrizioni non ancora aperte') }}</span>
+                  </div>
+                  {% if p.inscription_start %}
+                  <small class="text-info d-block mt-1">
+                    <i class="fas fa-hourglass-start"></i>
+                    {{ _('Apriranno il:') }} {{ p.inscription_start|datetime_local }}
+                  </small>
+                  {% endif %}
+                  {% if p.inscription_end %}
+                  <small class="text-muted d-block">
+                    <i class="fas fa-clock"></i>
+                    {{ _('Chiuderanno il:') }} {{ p.inscription_end|datetime_local }}
+                  </small>
+                  {% endif %}
                 {% elif p.status == 'setup' %}
                   <div class="mt-2">
-                    <span class="badge bg-secondary">In preparazione</span>
+                    <span class="badge bg-secondary">{{ _('In preparazione') }}</span>
                   </div>
                   <small class="text-muted d-block mt-1">
-                    Le iscrizioni apriranno a breve
+                    {{ _('Le iscrizioni apriranno a breve') }}
                   </small>
                 {% else %}
                   <small class="text-muted d-block mt-2">
