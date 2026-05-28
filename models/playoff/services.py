@@ -182,7 +182,8 @@ class PlayoffService:
         if configuration is None:
             raise ValueError("Configurazione playoff non trovata")
 
-        # Get current qualified/confirmed players by querying directly instead of using relationship
+        # Get current qualified/confirmed players (querying directly,
+        # not via relationship)
         confirmed_qualifications = PlayoffQualification.query.filter_by(
             configuration_id=configuration_id,
             status=QualificationStatus.CONFIRMED.value,
@@ -204,7 +205,9 @@ class PlayoffService:
                     configuration_id=configuration_id,
                     user_id=player_data["user_id"],
                     qualifying_position=player_data["position"],
-                    qualification_reason=f"Replacement - {player_data['qualification_reason']}",
+                    qualification_reason=(
+                        f"Replacement - {player_data['qualification_reason']}"
+                    ),
                 )
                 db.session.add(replacement)
                 return replacement
@@ -298,7 +301,9 @@ class PlayoffService:
         }
 
         for config in configurations:
-            total_q = PlayoffQualification.query.filter_by(configuration_id=config.id).count()
+            total_q = PlayoffQualification.query.filter_by(
+                configuration_id=config.id
+            ).count()
             confirmed_q = PlayoffQualification.query.filter_by(
                 configuration_id=config.id, status=QualificationStatus.CONFIRMED
             ).count()
@@ -410,7 +415,10 @@ class PlayoffService:
         min_garas_played: Optional[int] = None,
         **kwargs: Any,
     ) -> PlayoffConfiguration:
-        """Add a new playoff configuration. Blocked if any config already has qualifications."""
+        """Add a new playoff configuration.
+
+        Blocked if any config already has qualifications.
+        """
         existing_configs = PlayoffConfiguration.query.filter_by(
             campionato_id=campionato_id, is_active=True
         ).all()
@@ -428,8 +436,10 @@ class PlayoffService:
             positions_to=positions_to,
         )
         # Optional gara params
-        for key in ("discipline", "distance", "rounds_count", "strategy_type",
-                     "odd_number_policy", "location", "scheduled_date", "entry_fee"):
+        for key in (
+            "discipline", "distance", "rounds_count", "strategy_type",
+            "odd_number_policy", "location", "scheduled_date", "entry_fee",
+        ):
             if key in kwargs:
                 setattr(config, key, kwargs[key])
 
@@ -453,10 +463,13 @@ class PlayoffService:
 
     @staticmethod
     @transactional(domain="playoff")
-    def start_playoff(campionato_id: int) -> Dict[str, List[PlayoffQualification]]:
-        """Start playoffs: generate qualifications from classification for all active configs.
+    def start_playoff(
+        campionato_id: int,
+    ) -> Dict[str, List[PlayoffQualification]]:
+        """Start playoffs: generate qualifications from classification.
 
-        Sets response_deadline (default 7 days) and sends notifications.
+        Iterates over all active configs of the campionato. Sets
+        response_deadline (default 7 days) and sends notifications.
         Returns dict of config_name → list of new qualifications.
         """
         from ..campionato.models import Campionato
@@ -468,7 +481,9 @@ class PlayoffService:
             raise ValueError("Campionato non trovato")
 
         if campionato.get_status() != TournamentStatus.TERMINATED.value:
-            raise ValueError("Il campionato deve essere terminato per avviare i playoff")
+            raise ValueError(
+                "Il campionato deve essere terminato per avviare i playoff"
+            )
 
         configs = PlayoffConfiguration.query.filter_by(
             campionato_id=campionato_id, is_active=True
@@ -480,6 +495,21 @@ class PlayoffService:
         # Pre-flight: check ALL configs before any creation
         if any(c.has_qualifications() for c in configs):
             raise ValueError("Playoff già avviati per questo campionato")
+
+        # Make sure Classification records are up-to-date: la UI calcola la
+        # classifica on-the-fly via calculate_general_classification, ma
+        # qui leggiamo dai Classification persistiti per congelare i dati.
+        try:
+            from ..classification.campionato_classification import (
+                ClassificationService,
+            )
+            ClassificationService.update_campionato_classification(campionato_id)
+        except Exception:
+            logger.warning(
+                "Impossibile aggiornare la classifica campionato %d "
+                "prima di start_playoff",
+                campionato_id,
+            )
 
         # Get the frozen classification
         classifications = (
@@ -510,7 +540,9 @@ class PlayoffService:
                                     configuration_id=config.id,
                                     user_id=cls.user_id,
                                     qualifying_position=cls.position,
-                                    qualification_reason=f"Posizione {cls.position} in classifica",
+                                    qualification_reason=(
+                                        f"Posizione {cls.position} in classifica"
+                                    ),
                                     invited_at=now,
                                     expires_at=config.response_deadline,
                                 )
@@ -536,7 +568,9 @@ class PlayoffService:
                                 configuration_id=config.id,
                                 user_id=cls.user_id,
                                 qualifying_position=cls.position,
-                                qualification_reason=f"Rimpiazzo — posizione {cls.position}",
+                                qualification_reason=(
+                                    f"Rimpiazzo — posizione {cls.position}"
+                                ),
                                 invited_at=now,
                                 expires_at=config.response_deadline,
                             )
@@ -556,7 +590,9 @@ class PlayoffService:
         # Notify all qualified players via NotificationFactory
         db.session.flush()
         for config in configs:
-            PlayoffService._send_playoff_invitations(config, results.get(config.name, []))
+            PlayoffService._send_playoff_invitations(
+                config, results.get(config.name, [])
+            )
 
         return results
 
@@ -597,14 +633,13 @@ class PlayoffService:
 
     @staticmethod
     @transactional(domain="playoff")
-    def create_playoff_gara(configuration_id: int) -> "Gara":  # type: ignore[name-defined]
-        """Create the actual Gara for a playoff config and inscribe confirmed players.
+    def create_playoff_gara(configuration_id: int):
+        """Create the playoff Gara for a config and inscribe confirmed players.
 
-        Returns the created Gara.
+        Returns the created Gara instance.
         """
         from ..competition.services import GaraService
         from ..competition.inscription_service import InscriptionService
-        from ..competition.models import Gara
         from datetime import date as date_type, time as time_type
 
         config = db.session.get(PlayoffConfiguration, configuration_id)
@@ -622,9 +657,11 @@ class PlayoffService:
         gara_date: Any
         gara_time: Any
         if config.scheduled_date:
-            candidate = config.scheduled_date.date() if isinstance(config.scheduled_date, datetime) else config.scheduled_date
+            sched = config.scheduled_date
+            is_dt = isinstance(sched, datetime)
+            candidate = sched.date() if is_dt else sched
             gara_date = max(candidate, date_type.today())
-            gara_time = config.scheduled_date.time() if isinstance(config.scheduled_date, datetime) else time_type(20, 0)
+            gara_time = sched.time() if is_dt else time_type(20, 0)
         else:
             gara_date = date_type.today()
             gara_time = time_type(20, 0)
@@ -648,9 +685,13 @@ class PlayoffService:
             rounds_count=params.get("rounds_count", 1),
             max_participants=config.max_participants,
             playoff_config_id=config.id,
-            **{k: v for k, v in params.items()
-               if k in ("location", "entry_fee", "matchmaking_strategy", "odd_number_policy")
-               and v is not None},
+            **{
+                k: v for k, v in params.items()
+                if v is not None and k in (
+                    "location", "entry_fee",
+                    "matchmaking_strategy", "odd_number_policy",
+                )
+            },
         )
 
         # Inscribe all confirmed players
@@ -695,7 +736,10 @@ class PlayoffService:
     def admin_add_player(
         configuration_id: int, user_id: int, admin_username: str
     ) -> PlayoffQualification:
-        """Manually add a player to a playoff config. Admin override — no position/min_garas check."""
+        """Manually add a player to a playoff config.
+
+        Admin override — bypasses position and min_garas checks.
+        """
         from ..competition.models import Inscription, Gara
 
         config = db.session.get(PlayoffConfiguration, configuration_id)
@@ -759,7 +803,9 @@ class PlayoffService:
 
         qual.status = QualificationStatus.DECLINED
         original_reason = qual.qualification_reason
-        qual.qualification_reason = f"Rimosso da {admin_username} (era: {original_reason})"
+        qual.qualification_reason = (
+            f"Rimosso da {admin_username} (era: {original_reason})"
+        )
         qual.responded_at = utc_now()
         return qual
 

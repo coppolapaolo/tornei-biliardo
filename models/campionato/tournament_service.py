@@ -173,7 +173,8 @@ class TournamentService(TournamentStatisticsService):
 
         if not campionato.can_be_modified():
             raise ValueError(
-                "Impossibile modificare il campionato: alcune gare hanno già delle iscrizioni!"
+                "Impossibile modificare il campionato: "
+                "alcune gare hanno già delle iscrizioni!"
             )
 
         # Aggiorna solo i campi forniti
@@ -546,11 +547,42 @@ class TournamentService(TournamentStatisticsService):
         if campionato.terminated_at:
             return False
 
-        from models.status_enum import GaraStatus
+        from models.status_enum import GaraStatus, ProvaDerivedStatus
+        from models.competition.state_service import StateService
 
         for gara in campionato.gare:
-            if not gara.is_deleted and gara.status != GaraStatus.COMPLETED.value:
-                gara.soft_delete("Campionato terminato")
+            if gara.is_deleted or gara.status == GaraStatus.COMPLETED.value:
+                continue
+            # Gare di fatto concluse (tutti i match completati ma status=PLAYING):
+            # promuovile a COMPLETED invece di soft-eliminarle, altrimenti la
+            # classifica del campionato e i playoff non hanno dati.
+            try:
+                derived = gara.get_real_status()
+            except Exception:
+                derived = gara.status
+            terminal_states = (
+                ProvaDerivedStatus.TOURNAMENT_COMPLETED.value,
+                ProvaDerivedStatus.ROUND_COMPLETED.value,
+            )
+            if derived in terminal_states:
+                try:
+                    StateService.complete(gara)
+                    continue
+                except Exception:
+                    # Fallback: se la transizione non e' lecita la trattiamo
+                    # come gara non completabile e procediamo al soft-delete.
+                    pass
+            gara.soft_delete("Campionato terminato")
+
+        # Aggiorna la classifica del campionato in modo che start_playoff
+        # trovi i Classification records popolati.
+        try:
+            from models.classification.campionato_classification import (
+                ClassificationService,
+            )
+            ClassificationService.update_campionato_classification(campionato_id)
+        except Exception:
+            pass
 
         campionato.terminated_at = utc_now()
         campionato.updated_at = utc_now()
