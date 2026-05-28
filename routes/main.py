@@ -496,11 +496,22 @@ def debug_complete_current_round(gara_id):
     # Flask handles transaction commit automatically
     # Dopo aver completato i match, controlla se ci sono turni da aggiornare
     from models.competition.round_service import RoundService
+    from models.match.table_assignment_service import TableAssignmentService
 
     RoundService.update_round_progression(gara_id)
 
+    # I match completati hanno ancora il loro tavolo: liberali e riassegna
+    # tavoli ai match in attesa (privilegiando i turni successivi tramite
+    # il sorting di assign_available_tables: round_number, id ASC).
+    for match in incomplete_matches:
+        if match.table_assignment:
+            match.table_assignment = None
+            db.session.add(match)
+    assigned = TableAssignmentService.assign_available_tables(gara_id)
+
     flash(
-        f"Completati {completed_count} match del turno attuale con risultati random!",
+        f"Completati {completed_count} match del turno attuale "
+        f"({assigned} tavoli riassegnati ai turni successivi).",
         "success",
     )
     return redirect(
