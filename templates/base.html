@@ -436,7 +436,7 @@
                         {% if debug_info.database_stats %}
                         Users: <span class="debug-value">{{ debug_info.database_stats.users }}</span> |
                         Campionati: <span class="debug-value">{{ debug_info.database_stats.campionati }}</span> |
-                        Provas: <span class="debug-value">{{ debug_info.database_stats.provas }}</span> |
+                        Gare: <span class="debug-value">{{ debug_info.database_stats.gare }}</span> |
                         Inscriptions: <span class="debug-value">{{ debug_info.database_stats.inscriptions }}</span> |
                         Matches: <span class="debug-value">{{ debug_info.database_stats.matches }}</span>
                         {% else %}
@@ -445,29 +445,26 @@
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <!-- NUOVO: Quick Login Actions (PUNTO 8) -->
                     <div class="debug-item">
-                        <strong>Quick Actions:</strong><br>
+                        <strong>Database:</strong><br>
                         <a href="{{ url_for('main.reset_database') }}" class="text-warning">Reset DB</a> |
-                        <a href="#" onclick="saveCurrentReset(); return false;" class="text-success">Save Reset</a>
+                        <a href="#" data-bs-toggle="modal" data-bs-target="#saveResetModal" class="text-success">Save Reset</a>
                     </div>
                     <div class="debug-item">
                         <strong>Quick Login:</strong><br>
-                        <a href="{{ url_for('main.quick_login', username='admin') }}"
-                            class="btn btn-danger quick-login-btn">
-                            Admin
-                        </a>
-                        <a href="{{ url_for('main.quick_login', username='mario') }}"
-                            class="btn btn-primary quick-login-btn">
-                            Mario
-                        </a>
-                        <a href="{{ url_for('main.quick_login', username='pino') }}"
-                            class="btn btn-secondary quick-login-btn">
-                            Pino
-                        </a>
+                        {% for u in debug_info.quick_login_users %}
+                            {% if u.is_admin %}{% set btn_class = 'btn-danger' %}
+                            {% elif u.is_director %}{% set btn_class = 'btn-warning' %}
+                            {% else %}{% set btn_class = 'btn-primary' %}
+                            {% endif %}
+                            <a href="{{ url_for('main.quick_login', username=u.username) }}"
+                                class="btn {{ btn_class }} quick-login-btn">
+                                {{ u.username }}
+                            </a>
+                        {% endfor %}
                     </div>
                     <div class="debug-item">
-                        <strong>Quick Actions:</strong><br>
+                        <strong>Test Fixtures:</strong><br>
                         <a href="{{ url_for('main.debug_create_player') }}" class="btn btn-success quick-login-btn">
                             + Player
                         </a>
@@ -538,38 +535,32 @@
     <script src="{{ url_for('static', filename='js/polling.js') }}?v={{ config.VERSION }}"></script>
 
     {% if debug_info.debug_mode %}
-    <script>
-        function saveCurrentReset() {
-            const name = prompt("Nome per lo snapshot del database corrente:");
-            if (!name) {
-                return;
-            }
-
-            const description = prompt("Descrizione (opzionale):");
-
-            // Crea un form nascosto e lo invia
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '{{ url_for("main.save_reset_snapshot") }}';
-
-            const nameInput = document.createElement('input');
-            nameInput.type = 'hidden';
-            nameInput.name = 'name';
-            nameInput.value = name;
-            form.appendChild(nameInput);
-
-            if (description) {
-                const descInput = document.createElement('input');
-                descInput.type = 'hidden';
-                descInput.name = 'description';
-                descInput.value = description;
-                form.appendChild(descInput);
-            }
-
-            document.body.appendChild(form);
-            form.submit();
-        }
-    </script>
+    <div class="modal fade" id="saveResetModal" tabindex="-1" aria-labelledby="saveResetModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <form method="POST" action="{{ url_for('main.save_reset_snapshot') }}">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="saveResetModalLabel">Save Reset Snapshot</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="saveResetName" class="form-label">Nome snapshot</label>
+                            <input type="text" class="form-control" id="saveResetName" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="saveResetDescription" class="form-label">Descrizione (opzionale)</label>
+                            <input type="text" class="form-control" id="saveResetDescription" name="description">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                        <button type="submit" class="btn btn-success">Salva</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
     {% endif %}
 
     <!-- Gamification Bridge: Consumes events from Flask flash and triggers JS animations -->

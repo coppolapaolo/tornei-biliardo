@@ -12,7 +12,7 @@ load_dotenv(".envrc")  # Load environment variables from .env file
 from config import config  # noqa: E402
 from models import db, User  # noqa: E402
 from utils import create_admin_if_not_exists, UserPermissions  # noqa: E402
-from utils.database_utils import get_database_stats  # noqa: E402
+from utils.database_utils import get_database_stats, get_quick_login_users  # noqa: E402
 from models.gamification.ui_helpers import GamificationUIHelper  # noqa: E402
 
 from utils.status_ui import register_status_filters  # noqa: E402
@@ -132,6 +132,7 @@ def create_app(config_name=None):
                 "database_stats": (
                     get_database_stats() if current_user.is_authenticated else {}
                 ),
+                "quick_login_users": get_quick_login_users(),
             }
         return {"debug_info": debug_info}
 

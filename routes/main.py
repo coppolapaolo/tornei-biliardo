@@ -392,14 +392,15 @@ def debug_complete_current_round(gara_id):
 
     completed_count = 0
     for match in incomplete_matches:
-        # Skip se è un bye match (già completato)
-        if match.is_bye:
+        # Skip bye (già completato) e trio (scoring 3-player non gestito qui)
+        if match.is_bye or match.is_trio:
             continue
 
-        # Genera risultati random basati sulla modalità gara
-        if gara.is_race_to:
+        # ADR-027: usa match.effective_* / match.distance_config per
+        # rispettare gli override per turno (RoundConfiguration).
+        if match.effective_is_race_to:
             # Race to N: vincitore deve arrivare a get_winning_racks()
-            winning_score = gara.distance_config.get_winning_racks()
+            winning_score = match.distance_config.get_winning_racks()
             loser_score = random.randint(0, winning_score - 1)
 
             # Random winner
@@ -412,8 +413,8 @@ def debug_complete_current_round(gara_id):
                 match.player2_score = winning_score
                 match.winner_id = match.player2_id
         else:
-            # N rack esatti - la somma deve essere gara.distance
-            total_score = gara.distance
+            # N rack esatti - la somma deve essere match.effective_distance
+            total_score = match.effective_distance
             player1_score = random.randint(0, total_score)
             player2_score = total_score - player1_score
 

@@ -558,17 +558,19 @@ Per costruire la production allowlist, scorri ogni area in Sezione 1 e marca esp
 
 ### Debug Footer (if `debug_info.debug_mode`)
 
-Quick Login Buttons:
-- `/debug/login/admin`
-- `/debug/login/mario`
-- `/debug/login/pino`
-
-Quick Actions:
+**Database:**
 - `Reset DB` - `url_for('main.reset_database')`
-- `Save Reset` - Prompt per snapshot name
+- `Save Reset` - apre modale `#saveResetModal` (form nome/descrizione → POST `main.save_reset_snapshot`)
+
+**Quick Login** (lista dinamica da `debug_info.quick_login_users`):
+- Popolata da `utils.database_utils.get_quick_login_users(limit=16, max_directors=4)`
+- Ordine: admin → director (max 4) → player, fino a 16 totali
+- Colore bottone per ruolo: admin = `btn-danger`, director = `btn-warning`, player = `btn-primary`
+
+**Test Fixtures:**
 - `+ Player` - `url_for('main.debug_create_player')`
-- `Fill Gara` - `url_for('main.debug_fill_gara', gara_id=gara.id)` (se su pagina gara)
-- `Complete Round` - `url_for('main.debug_complete_current_round', gara_id=gara.id)` (se su pagina gara)
+- `Fill Gara` - `url_for('main.debug_fill_gara', gara_id=gara.id)` (solo su `admin.competition.gara_detail`)
+- `Complete Round` - `url_for('main.debug_complete_current_round', gara_id=gara.id)` (solo su `admin.competition.gara_detail`). ADR-027 compliant: usa `match.effective_*` / `match.distance_config`, salta `is_bye` e `is_trio`.
 
 ---
 
