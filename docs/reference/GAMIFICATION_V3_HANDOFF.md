@@ -18,21 +18,71 @@ Il design è interamente deciso e documentato — leggere come fonte di verità:
 - **Segnale-domanda → director** (richieste geolocalizzate, soglia ≥6 nel raggio).
 - **Leaderboard** riformulato locale/contributo; loop quotidiano auto-referenziale.
 - **Quest**: status calcolato dalle date + seed minimo, dietro maturity-gate.
-- **Achievement**: agganciare `seed_achievements` in prod; nascondere i non-ottenibili.
+- **Achievement**: seed **già agganciato** all'avvio (vedi correzioni sotto);
+  **disattivare** (`is_active=False`) i non-ottenibili.
 - **Badge navbar** vivo (anello progresso + scala di intensità toast-vs-badge).
 
-## Prossimo passo: Fase 1 — pulizia a basso rischio (non visibile agli utenti)
-Da pianificare nel dettaglio (file, ordine, verifica):
-1. Agganciare `seed_achievements` a migrazione/startup; nascondere stub
-   `win_streak`/`category_reached` + progress-based non cablati.
-2. Quest: status **lazy** (derivato da `start_date`/`end_date`) — rimuove la
-   dipendenza dal cron; seed minimo quest personali.
-3. Dedup proposte match: ritirare `routes/player/proposals.py` (vecchia),
-   redirigere ai link, allineare il service `models/individual_match/`.
-4. Fix micro-bug `STREAK_LONGEST` senza `calculated_at` (leaderboard).
-5. Cablare `ConfigService.get_xp_rate()` nell'editor tassi XP **oppure** rimuovere
-   l'editor `/admin/config/xp` (oggi no-op, usa `XP_RATES` hardcoded).
-6. Rimuovere legacy `LEVEL_UNLOCKS` + consolidare console unlock su `/admin/features`.
+## Verifica codice (2026-06-05) — correzioni e ancore reali
+Esplorazione read-only del codice prima di pianificare la Fase 1. Correzioni
+rispetto al design:
+- **`seed_achievements` È GIÀ chiamato in prod** all'avvio (`app.py:282-290`, solo
+  se non `TESTING`, idempotente) → il task "agganciare il seeding" **è già fatto**.
+  (Il design diceva "mai chiamato in prod": ERRATO, corretto in V3 §11-ter e ADR-031.)
+- **`is_hidden` non nasconde davvero**: il service ritorna tutti gli
+  `is_active=True` (`achievement_service.py:511`, nessun filtro `is_hidden`); il
+  template mostra solo "???" per hidden+locked → un badge non ottenibile resterebbe
+  visibile come "???" per sempre. Per **toglierlo davvero** usare `is_active=False`
+  (il service lo filtra già).
+- **Achievement non ottenibili (10)**: 2 stub che ritornano sempre False
+  (`win_streak`, `category_reached`, `achievement_seeds.py`) + 8 progress-based mai
+  incrementati (`social_butterfly`, `popular_player`, `diverse_competitor`,
+  `community_pillar`, `strategy_explorer`, `challenge_master`, `perfectionist`,
+  `drill_addict`). Wired e funzionanti: match_wins/tournament/level/streak/win_rate.
+- **Gotcha seeding idempotente**: `seed_achievements` **salta** gli esistenti →
+  cambiare `is_active` nei seed **non** aggiorna le righe già in prod. Serve una
+  **migrazione** `UPDATE` per i DB esistenti.
+- **`STREAK_LONGEST`**: `leaderboard_service.py` `_calculate_streak_longest()`
+  (~riga 201) non setta `calculated_at` **né `score`** (gli altri 4
+  `_calculate_*` sì). Nessun test leaderboard esistente.
+- **Quest status**: precalcolato in DB, **nessuna** derivazione a read-time;
+  `update_quest_statuses()` (`quest_service.py:137`) **mai chiamato** in prod (solo
+  test); read-path usa `status` (`get_user_quests`, filtro `active_only`).
+  Eventi quest cablati su match/win/inscription/completion. **Nessun seed quest**.
+- **Editor XP no-op (#5)**: award legge `XP_RATES` hardcoded
+  (`event_handlers.py:143,156,255,333,348`); `ConfigService.get_xp_rate()` mai usato.
+- **Dedup proposte (#3)**: legacy `routes/player/proposals.py`
+  (`player.match_proposals`, referenziato dai componenti dashboard) vs nuovo
+  `routes/individual_match/proposals.py`. ⚠️ il legacy contiene **anche il sistema
+  Availability** (righe ~221-453) **non** replicato altrove → non è un delete pulito.
+- **`LEVEL_UNLOCKS` (#6)**: non fa gating (lo fa FeatureConfig/UnlockEngine), ma è
+  ancora letto per **notifica level-up** + **hint "prossimo unlock"**
+  (`level_service.py:113,130,248,260`) → reinstradare su FeatureConfig prima di togliere.
+
+## Prossimo passo: Fase 1 — SOLO i 3 a basso rischio (non visibile agli utenti)
+Ambito deciso: i task a rischio medio/alto (#3, #5, #6 + cablaggi/seed) → **Fase 2**.
+
+- **Task 0 — doc** (nessun codice): correzioni sopra già applicate in V3/ADR/handoff.
+- **Task A — fix `STREAK_LONGEST`** (basso): in `_calculate_streak_longest()`
+  aggiungere `calculated_at=utc_now()` e `score=streak.longest_streak`. + **primo
+  test leaderboard** (`tests/new/.../test_leaderboard_service.py`).
+- **Task B — disattivare i 10 achievement non ottenibili** (basso): `is_active=False`
+  nei seed **+ migrazione** `UPDATE achievement SET is_active=0 WHERE slug IN (...)`.
+  Test: `get_user_achievements` non li include.
+- **Task C — quest status lazy** (medio, contenuto): property
+  `Quest.is_currently_active`/`effective_status` derivata da `start_date`/`end_date`
+  con `utc_now()`, usata nel read-path (`get_user_quests`, `active_only`); `status`
+  resta per override admin. (Il **seed quest** è feature → Fase 2.) Test su date
+  passate/future/correnti senza chiamare `update_quest_statuses`.
+
+Sequenza: 0 → A → B → C, commit atomici; chiudere con `pyright` +
+`pytest tests/new/unit -n auto` + `pytest tests/new/integration -n 4`.
+
+### Rimandato a Fase 2 (rischio medio/alto, richiede decisioni)
+- **#5 editor XP**: decisione **A** (cablare award→`ConfigService.get_xp_rate()`,
+  `XP_RATES` come fallback) **vs B** (rimuovere editor) — APERTA.
+- **#3 dedup proposte**: sciogliere con cura il sistema Availability del file legacy.
+- **#6 `LEVEL_UNLOCKS`**: reinstradare notifica + hint su FeatureConfig, poi rimuovere.
+- **Cablaggio social achievements** (i 4 economici) + **seed quest** (feature).
 
 Tutto resta **director-only** (maturity-gate ADR-028) finché non validato.
 

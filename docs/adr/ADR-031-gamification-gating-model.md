@@ -257,9 +257,11 @@ Decisione **non ancora in implementazione**. Dettagli risolti il 2026-06-05
   Dettaglio in `GAMIFICATION_V3.md` §10-ter.
 
 - **Quest & Achievement** (principio: mai mostrare contenuto non ottenibile/non
-  attivo). *Achievement*: agganciare `seed_achievements` a migrazione/startup;
-  nascondere (`is_hidden`) i 2 stub (`win_streak`, `category_reached`) e i
-  progress-based non cablati; cablare agli eventi i progress-based economici.
+  attivo). *Achievement*: seeding **già agganciato** all'avvio (`app.py:282-290`,
+  *correzione 2026-06-05: non "mai chiamato in prod"*); **disattivare**
+  (`is_active=False`, non `is_hidden` che mostra solo "???") i 2 stub (`win_streak`,
+  `category_reached`) e gli 8 progress-based non cablati — via migrazione `UPDATE`
+  per i DB esistenti; cablare agli eventi i progress-based economici (Fase 2).
   *Quest*: status **calcolato dalle date** (niente cron) + **seed minimo** di
   quest personali ricorrenti, dietro maturity-gate. Dettaglio in
   `GAMIFICATION_V3.md` §11-ter.

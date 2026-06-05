@@ -293,17 +293,21 @@ Fox). Si popola ciò che funziona, si nasconde il resto finché non funziona.
 
 Stato verificato:
 - **Achievement**: 31 definiti (`achievement_seeds.py`), valutazione per lo più
-  reale; `seed_achievements` **mai chiamato in prod**; stub sempre `False`
-  (`win_streak`, `category_reached`); alcuni progress-based forse non cablati
-  agli eventi.
+  reale; `seed_achievements` **è già chiamato all'avvio** (`app.py:282-290`,
+  idempotente — *correzione 2026-06-05: il design diceva "mai chiamato", era
+  errato*); stub sempre `False` (`win_streak`, `category_reached`); 8 progress-based
+  definiti ma mai incrementati (non cablati agli eventi). Nota: `is_hidden` non
+  nasconde (mostra "???"); per togliere un badge non ottenibile usare `is_active=False`.
 - **Quest**: motore + cablaggio eventi pronti (`record_activity_for_quests` su 4
   eventi); manca l'automazione del ciclo di vita (`update_quest_statuses` mai
   chiamato) e il contenuto (nessun seed).
 
 **Decisione — Achievement:**
-- Agganciare `seed_achievements` a **migrazione/startup** (i 31 esistono in prod).
-- **Nascondere** (`is_hidden`) i non-ottenibili: i 2 stub (`win_streak`,
-  `category_reached`) e gli eventuali progress-based non cablati.
+- Seeding **già agganciato** all'avvio (`app.py`) — niente da fare qui.
+- **Disattivare** (`is_active=False`, *non* `is_hidden`) i non-ottenibili: i 2 stub
+  (`win_streak`, `category_reached`) e gli 8 progress-based non cablati. Il service
+  filtra già `is_active=True`. Per i DB esistenti serve una **migrazione `UPDATE`**
+  (il seeding è idempotente e salta gli esistenti).
 - **Cablare agli eventi** i progress-based economici (`unique_opponents`,
   `match_proposals_created/accepted`, …) così progrediscono davvero.
 - `win_streak`/`category_reached` restano nascosti finché non esistono i
