@@ -201,6 +201,8 @@ class LeaderboardService:
                     leaderboard_type=LeaderboardType.STREAK_LONGEST,
                     user_id=streak.user_id,
                     rank=rank,
+                    score=streak.longest_streak,
+                    calculated_at=utc_now()
                 ))
         return entries
 
