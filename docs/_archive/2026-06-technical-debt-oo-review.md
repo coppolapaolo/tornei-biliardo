@@ -80,7 +80,8 @@ in pausa da riprendere, sparisce dalla vista (recuperabile da git ma "out of sig
 ### Decisione 3 — Refactor architetturali: quali (se) affrontare? ⏳ IN CORSO (2026-06-05)
 > **Fatto:** dedup `BaseModel`/`UtilityMixin` + `User`/`TimestampMixin` (F4.1/F4.2).
 > **Rimasti:** Form Object completo (campionato wizard/edit + test anti-drift),
-> tassonomia eccezioni (§3, additivo), predicati di stato sugli enum (§5.3, ~50
+> tassonomia eccezioni (§3) ✅ infrastruttura fatta (adozione incrementale da
+> completare), predicati di stato sugli enum (§5.3, ~50
 > call-site raw su 10+ file → sweep ampio). Da prioritizzare col maintainer.
 
 **Situazione.** Debito strutturale ma non urgente, indipendente dai bug:
@@ -376,7 +377,15 @@ nessuno di questi.
 
 ## 3. Eccezioni: nessuna tassonomia di dominio (🟡→🔴 per i call site)
 
-- **F3.1 🔴 458 `raise ValueError` grezzi, 1 sola eccezione custom.**
+- **F3.1 ✅ INFRASTRUTTURA FATTA (2026-06-05) — tassonomia eccezioni di dominio.**
+  > Aggiunta gerarchia in `models/exceptions.py`: `DomainError(ValueError)` →
+  > `ValidationError`/`NotFoundError`/`ConflictError`/`PermissionDeniedError`;
+  > `InvalidTransitionError` ora è `ConflictError`. `DomainError` resta un
+  > `ValueError` → i 458 `except ValueError` continuano a funzionare
+  > (migrazione incrementale). Helper `http_status_for_exception()` + wiring in
+  > `handle_ajax_service_action` (404/409/422/403 invece di 400 generico).
+  > **Resta da fare:** adozione incrementale delle sottoclassi nei servizi.
+  > Testo originale:
   `models/exceptions.py` definisce solo `InvalidTransitionError`. Validazione,
   not-found, conflitto, permessi, regole di business → tutti `ValueError`
   indistinguibili. Le route fanno `except ValueError` generico (cfr.

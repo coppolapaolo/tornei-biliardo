@@ -13,6 +13,7 @@ from typing import Any, Callable, Optional
 from flask import abort, flash, jsonify, make_response, redirect, request
 
 from models.base import db
+from models.exceptions import http_status_for_exception
 
 logger = logging.getLogger(__name__)
 
@@ -93,7 +94,7 @@ def handle_ajax_service_action(
     except (ValueError, PermissionError) as e:
         msg = f"{error_prefix}: {e}" if error_prefix else str(e)
         if is_json:
-            return ajax_error(msg)
+            return ajax_error(msg, status=http_status_for_exception(e))
         flash(msg, "error")
     except Exception as e:
         logger.error("Unexpected error in AJAX service action: %s", e, exc_info=True)
