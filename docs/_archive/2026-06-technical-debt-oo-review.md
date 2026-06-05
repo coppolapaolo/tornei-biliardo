@@ -18,10 +18,24 @@
 
 ---
 
+## Nota sull'architettura monolitica (chiarimento)
+
+"Monolite" qui è **descrittivo, non un difetto**. Per questo contesto — singolo
+maintainer, deploy unico su PythonAnywhere, SQLite, dominio fortemente coeso
+(tornei) — un **monolite modulare** è la scelta architetturale *corretta*:
+microservizi introdurrebbero rete, transazioni distribuite, overhead di deploy e
+complessità ingiustificati. La codebase è già di fatto un monolite *modulare*
+(bounded context separati sotto `models/`), che è esattamente il pattern giusto.
+**Nessuna delle raccomandazioni di questo documento richiede di cambiare lo stile
+architetturale**: sono interventi *dentro* il monolite (coesione, duplicazione,
+dead code), non una spinta verso microservizi. L'unico margine di miglioramento
+architetturale reale è rendere più netti i confini tra i moduli (ridurre gli
+import incrociati tra servizi, F8.4) — ma resta un monolite.
+
 ## Sintesi esecutiva
 
-Il progetto è, nel complesso, **ben architettato per un monolite Flask**: DDD
-con bounded context chiari, Strategy/Factory reali (non if-elif), event bus
+Il progetto è, nel complesso, **ben architettato come monolite modulare Flask**:
+DDD con bounded context chiari, Strategy/Factory reali (non if-elif), event bus
 pulito, VO `Distance`/`Score`, convenzione `@transactional` rispettata (nessun
 `db.session.commit()` manuale nei servizi). La documentazione (ADR, CLAUDE.md)
 è ricca e per lo più allineata al codice.
@@ -33,10 +47,11 @@ impatto**. I tre più importanti:
    morte): `DomainOrchestrator`, il monitoring di `QueryOptimizer`, le metriche
    / isolation-level / read-only di `TransactionManager`, la base `DomainService`
    (usata da 3 servizi su 79). Costo di manutenzione senza valore a runtime.
-2. **Astrazione transazionale che "perde"**: la correttezza dipende dal sapere
-   "decora solo il metodo più interno" (savepoint annidati). È la radice
-   ricorrente di bug (ADR-012, ADR-025, ≥4 warning in CLAUDE.md) ed è ancora
-   violata in più punti.
+2. **Astrazione transazionale "che perde"** (debito *gestito*, non da
+   rifattorizzare): la correttezza dipende dal sapere "decora solo il metodo più
+   interno". ⚠️ Dopo aver letto ADR-012/025 ho **ritirato** la proposta di
+   riscrivere il manager: il core è load-bearing e protetto da test (vedi §2).
+   L'unico intervento sicuro è togliere i decoratori *ridondanti* sui facade.
 3. **Nessuna tassonomia di eccezioni di dominio**: 458 `raise ValueError`
    grezzi, 1 sola eccezione custom. I layer superiori non possono distinguere
    validazione / not-found / conflitto / permessi.
@@ -50,13 +65,18 @@ primitive obsession sugli stati).
 | # | Intervento | Severità | Sforzo | Payoff |
 |---|-----------|----------|--------|--------|
 | A | Fix bug `is_active is True` (+ test) | 🔴 | XS | Alto |
-| B | Rendere `@transactional` rientrante (join invece di savepoint) | 🔴 | M | Alto (elimina un'intera classe di bug) |
-| C | Eliminare infra morta (orchestrator, query-monitoring, DomainService) | 🔴 | S | Alto (−~1.5k LOC) |
-| D | `BaseModel` eredita i mixin invece di duplicarli | 🔴 | XS | Medio |
+| B | Togliere `@transactional` ridondante sui facade di pura delega (F2.2/F2.3) — **non** toccare il core del manager | 🟡 | S | Medio |
+| C | Eliminare infra morta (orchestrator, query-monitoring, DomainService) — già confermata morta dal handoff 2026-02 | 🔴 | S | Alto (−~1.5k LOC) |
+| D | `BaseModel`/`UtilityMixin`: rimuovere la duplicazione (entrambi quasi inutilizzati in prod) | 🟡 | XS | Medio |
 | E | Mini-gerarchia eccezioni di dominio | 🟡 | S | Medio |
 | F | Predicati di stato sugli enum (`is_finished()`…) | 🟡 | S | Medio |
 | G | Estrarre view-model service dai fat controller | 🟡 | M | Medio |
 | H | Deduplicare algoritmi (matching nx, trio, tie-break, stats) | 🟡 | M | Medio |
+
+> **Nota su B:** la versione originale di questa riga ("rendere `@transactional`
+> rientrante") è stata **ritirata** dopo aver letto ADR-012/025 — vedi §2. Il core
+> transazionale è load-bearing e protetto da test; si interviene solo sui
+> decoratori ridondanti.
 
 ---
 
@@ -66,7 +86,23 @@ Pattern ricorrente: componenti "enterprise" costruiti in anticipo e **mai
 collegati all'app in esecuzione**. Verificato che `app.py` non inizializza
 nessuno di questi.
 
-- **F1.1 🔴 `DomainOrchestrator` è codice morto e per giunta rotto.**
+> **VERIFICA "abbandonato vs pianificato" (2026-06-05).** Il dubbio legittimo è:
+> sono *feature da completare* o *codice morto da rimuovere*? Riscontro
+> documentale: il handoff interno
+> [`docs/_archive/2026-02-handoff-technical-debt.md`](./2026-02-handoff-technical-debt.md)
+> (TASK 4.1, righe 209-213, 257-258) **aveva già classificato `DomainOrchestrator`
+> e `MatchmakingOrchestrator` come "codice morto"** a febbraio 2026, cancellando i
+> task collegati ("nessun beneficio in produzione"). Stessa cosa per
+> `UtilityMixin`/duplicazione `BaseModel` (TASK 4.2). Quindi **non sono inizi di
+> feature: sono già stati riconosciuti come abbandonati dal maintainer**, solo non
+> rimossi. I documenti di roadmap/spec (`docs/wishlist*.md`,
+> `_bmad-output/.../deferred-work.md`, `SPECIFICHE.md`) **non li elencano** tra il
+> lavoro pianificato. *Eccezione che richiede conferma:* `models/scoring/` —
+> vedi caveat in F1.5.
+
+- **F1.1 🔴 `DomainOrchestrator` (e `MatchmakingOrchestrator`) sono codice morto e per giunta rotti.**
+  > Confermato dead code dal handoff 2026-02 (TASK 4.1). `MatchmakingOrchestrator`
+  > vive in `models/matchmaking/service.py`; stesso status del `DomainOrchestrator`.
   `models/orchestration/service.py`. Istanziato solo in `tests/legacy/`
   (non mantenuti). 5 helper privati sono stub che ritornano `[]`/`{}`
   (`:334-366`, "Implementation would…"). Inoltre `setup_complete_campionato`
@@ -99,30 +135,56 @@ nessuno di questi.
   `tournament_service.py`). Astrazione non guadagnata. *Fix:* rimuoverla o
   adottarla davvero — non lasciarla a metà.
 
-- **F1.5 🟡 Gerarchia `ScoringPolicy` morta in `models/scoring/`.**
-  `models/scoring/strategies.py` (`ClassicScoringPolicy`/`Fargo`/`Elo`) +
-  `policies.py`: nessun consumatore in produzione (solo `tests/legacy/`; il
-  `routes/admin/match/scoring.py` è omonimo ma non li usa). Duplica
-  concettualmente le strategie di classificazione. *Fix:* eliminare il package.
+- **F1.5 🟡 Gerarchia `ScoringPolicy` morta in `models/scoring/` — ⚠️ CONFERMARE prima di rimuovere.**
+  `models/scoring/strategies.py` (`ClassicScoringPolicy`/`FargoRatingScoringPolicy`/
+  `EloRatingScoringPolicy`) + `policies.py`: nessun consumatore in produzione (solo
+  `tests/legacy/`; il `routes/admin/match/scoring.py` è omonimo ma non li usa).
+  **Caveat importante:** `SPECIFICHE.md:60,91,144` descrive Fargo/Elo come concetto
+  *reale e desiderato* (primo abbinamento basato su rating, handicap per differenza
+  rating). MA quel concetto è servito dal dominio **`models/rating/`** (live:
+  `rating_service.py`, `handicap_service.py`, `routes/rating.py`), **non** da
+  `models/scoring/`, che è un tentativo parallelo precedente mai cablato. *Fix
+  consigliato:* **non eliminare di slancio** — confermare col maintainer che la
+  roadmap Fargo/Elo passa da `rating/` (probabile), poi rimuovere `scoring/` come
+  duplicato. Rischio basso ma è l'unico componente "morto" con un aggancio a una
+  feature di spec, quindi merita una conferma esplicita.
 
 > **Impatto cluster:** rimuovere ~1.5–2k LOC riduce superficie di manutenzione,
 > tempo di onboarding e rischio di drift, senza alcuna perdita funzionale.
 
 ---
 
-## 2. Astrazione transazionale che "perde" (🔴)
+## 2. Astrazione transazionale (🟡) — ⚠️ AREA AD ALTO RISCHIO, NON RIFATTORIZZARE IL CORE
 
-- **F2.1 🔴 `@transactional` non rientrante → footgun strutturale.**
-  `models/transaction/manager.py:144-318`. Una chiamata annidata crea un
-  **savepoint** invece di unirsi alla transazione corrente; la correttezza
-  dipende dalla regola umana "decora solo il metodo più interno" (documentata in
-  `transaction/CLAUDE.md`, ADR-012, ADR-025 e nella tabella "Common Mistakes").
-  La logica `is_true_nested`/`is_pseudo_nested` con doppi `commit()` e molti
-  `try/except` che ingoiano errori (`:233-289`) è fragile.
-  *Fix proporzionato:* rendere il decoratore **idempotente/rientrante** — se una
-  transazione è già attiva, eseguire la funzione **senza** aprire savepoint e
-  lasciare commit/rollback all'outermost. Elimina alla radice il bug
-  "doppia decorazione" senza costringere i dev a ragionare sull'ordine.
+> **REVISIONE 2026-06-05 dopo lettura ADR-012 e ADR-025.** La mia prima stesura
+> consigliava di rendere `@transactional` rientrante riscrivendo
+> `TransactionManager.transaction()`. **Ritiro quella raccomandazione.** Motivi:
+> 1. **Due meccanismi savepoint distinti, da non confondere.** (a) Il
+>    `begin_nested()` *manuale* applicato nei service è una **scelta deliberata e
+>    testata** (ADR-025): serve a forzare `IntegrityError` a flush-time e tradurlo
+>    in `ValueError` di dominio per le UNIQUE TOCTOU. È coperto da
+>    `tests/new/integration/test_unique_constraints_toctou.py`. **Va lasciato
+>    intatto.** (b) Il savepoint *automatico* dentro il decoratore
+>    (`is_true_nested`/`is_pseudo_nested`) è il meccanismo che genera il footgun.
+> 2. **Storia di bug subdoli.** ADR-012 documenta un bug "ritorna success ma non
+>    persiste" causato proprio dal layer transazionale. La logica
+>    `is_pseudo_nested` (gestione dell'autobegin di SQLAlchemy) è quasi certamente
+>    stata calibrata *contro* test reali. Riscriverla = rischio alto, ROI incerto.
+> **Conclusione:** trattare il core di `TransactionManager` come *load-bearing e da
+> non toccare* senza un caso di fallimento concreto e riproducibile. Gli interventi
+> a valore sicuro sono solo quelli **locali e coperti da test** sotto (F2.2/F2.3).
+
+- **F2.1 🟡 (declassato da 🔴) `@transactional` non rientrante è un footgun, ma il
+  costo/rischio di rimuoverlo supera il beneficio — DA NON FARE ora.**
+  `models/transaction/manager.py:144-318`. Una chiamata annidata crea un savepoint
+  invece di unirsi alla transazione; la correttezza dipende dalla regola umana
+  "decora solo il metodo più interno". È un debito *reale* ma **gestito** via
+  convenzione documentata + test. *Raccomandazione rivista:* **non riscrivere il
+  manager.** Se in futuro si vuole eliminare il footgun, farlo solo con: (1) un
+  test di caratterizzazione che cattura il comportamento attuale di autobegin/
+  savepoint, (2) verifica esplicita che i test TOCTOU (ADR-025) restino verdi,
+  (3) un caso concreto che giustifichi il rischio. Finché non c'è, la mitigazione
+  corretta è quella già in uso: rimuovere i decoratori *ridondanti* (F2.2/F2.3).
 
 - **F2.2 🔴 Nested `@transactional` ancora presente in `IndividualMatchService`.**
   `models/individual_match/services.py:180-360` (~20 metodi facade tutti
@@ -171,13 +233,20 @@ nessuno di questi.
 
 ## 4. Base classes & inheritance (🔴/🟡)
 
-- **F4.1 🔴 `BaseModel` duplica `UtilityMixin` invece di ereditarlo.**
+- **F4.1 🟡 (declassato da 🔴) `BaseModel` duplica `UtilityMixin` — ma entrambi
+  sono quasi inutilizzati in produzione.**
   `models/base.py:230-275` re-implementa `save`/`delete`/`to_dict`/`find_by_id`/
-  `find_all` già definiti in `UtilityMixin` (`:69-114`). Le due copie **sono già
-  divergenti**: `UtilityMixin.to_dict` (`:88`) gestisce `__table__ is None` e ha
-  `refresh()`, `BaseModel.to_dict` (`:257`) no. *Fix:*
-  `class BaseModel(TimestampMixin, UtilityMixin, db.Model)` ed eliminare i corpi
-  duplicati. `TimestampedModel` (`:289`) è ridondante con `BaseModel` → collassare.
+  `find_all` già in `UtilityMixin` (`:69-114`); copie **già divergenti**
+  (`UtilityMixin.to_dict:88` gestisce `__table__ is None` e ha `refresh()`,
+  `BaseModel.to_dict:257` no). **Riscontro:** il handoff 2026-02 (TASK 4.2) ha già
+  verificato che *tutti* i metodi di `UtilityMixin` sono usati **solo nei test
+  legacy** (i servizi usano `@transactional` + query dirette). Quindi non è un
+  rischio runtime ma rumore/confusione. *Fix proporzionato:* poiché il mixin è
+  morto in prod, la mossa più pulita è **rimuovere `UtilityMixin` e
+  `TimestampedModel`** e tenere il solo `BaseModel`; oppure, se si preferisce
+  riuso, far ereditare `BaseModel` dai mixin ed eliminare i corpi duplicati.
+  Verificare prima che i pochi `find_by_id`/`save` eventualmente usati siano
+  coperti.
 
 - **F4.2 🟡 `User` mixa `TimestampMixin` già fornito da `BaseModel`.**
   `models/user/models.py:34` —
