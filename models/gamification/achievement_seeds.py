@@ -24,6 +24,36 @@ Each achievement has:
 from models.gamification.models import AchievementCategory, AchievementDifficulty
 
 
+# Achievement non ottenibili allo stato attuale del codice (Fase 1 / Task B,
+# vedi GAMIFICATION_V3_HANDOFF.md). Vengono seminati con is_active=False così il
+# service li esclude (is_hidden NON li nasconde davvero, mostra "???").
+#
+# Due categorie:
+#   - 2 stub di requisito sempre False in _check_requirements:
+#       win_streak       → hot_streak, unstoppable
+#       category_reached → category_climber, elite_player
+#   - 8 progress-based mai incrementati (nessun handler li cabla agli eventi).
+#
+# Riattivare un singolo slug quando il rispettivo tracking/cablaggio esiste.
+UNOBTAINABLE_ACHIEVEMENT_SLUGS = frozenset({
+    # stub win_streak (manca tracking win-streak consecutivi)
+    "hot_streak",
+    "unstoppable",
+    # stub category_reached (manca tracking categoria giocatore)
+    "category_climber",
+    "elite_player",
+    # progress-based non cablati agli eventi
+    "social_butterfly",
+    "popular_player",
+    "diverse_competitor",
+    "community_pillar",
+    "strategy_explorer",
+    "challenge_master",
+    "perfectionist",
+    "drill_addict",
+})
+
+
 PREDEFINED_ACHIEVEMENTS = [
     # ========================================
     # Match Achievements
@@ -395,9 +425,12 @@ def seed_achievements(db_session):
         if existing:
             skipped_count += 1
             continue
-        
-        # Create new achievement
+
+        # Create new achievement. I non ottenibili nascono disattivati così il
+        # service li esclude (vedi UNOBTAINABLE_ACHIEVEMENT_SLUGS).
         achievement = Achievement(**achievement_data)
+        if achievement_data["slug"] in UNOBTAINABLE_ACHIEVEMENT_SLUGS:
+            achievement.is_active = False
         db_session.add(achievement)
         created_count += 1
     
