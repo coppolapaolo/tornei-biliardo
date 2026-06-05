@@ -86,6 +86,23 @@ Pattern ricorrente: componenti "enterprise" costruiti in anticipo e **mai
 collegati all'app in esecuzione**. Verificato che `app.py` non inizializza
 nessuno di questi.
 
+> **STORIA REALE GITHUB (verificata via MCP, 2026-06-05).** La history locale è un
+> singolo commit di import; quella vera è su GitHub. Riscontro:
+> - `models/orchestration/service.py` — ultimo commit *sostanziale* `901eab9`
+>   (**2025-08-24**, "feat: …Add advanced MatchmakingOrchestrator… Phase 3 backend
+>   architecture"). Dopo, solo il refactor bulk `utc_now()` (2026-02) lo ha
+>   toccato di striscio. **~10 mesi senza lavoro reale** → abbandonato, non
+>   "appena iniziato".
+> - `models/scoring/strategies.py` — due commit, entrambi **2025-08-25**
+>   (`0bd86024` lo cabla a `ClassificationService`; `18ba16c4` "complete
+>   refactoring roadmap ADR-0001"). Poi il sistema di classifica è stato
+>   **ridisegnato** (ADR-013), lasciando `scoring/` orfano. Quindi non è
+>   pre-costruito-per-il-futuro: è una **implementazione superata** da un redesign.
+> - L'intero cluster (orchestration + caching + optimization + MatchmakingOrchestrator)
+>   nasce nello stesso push "Phase 3 backend architecture" di agosto 2025: molta
+>   infrastruttura *forward-looking* aggiunta in blocco e mai cablata al prodotto.
+>   Questa è l'origine del dead-code cluster.
+>
 > **VERIFICA "abbandonato vs pianificato" (2026-06-05).** Il dubbio legittimo è:
 > sono *feature da completare* o *codice morto da rimuovere*? Riscontro
 > documentale: il handoff interno
