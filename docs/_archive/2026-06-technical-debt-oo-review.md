@@ -54,6 +54,15 @@ fixo ora e, per F9.2, se minimo o "giusto".
 >   `DomainOrchestrator` non è uno stub — è istanziato in `MatchmakingService` e
 >   contiene `create_round_with_handicaps` (logica handicap, allineata alla roadmap).
 >   Classificato **pausa**, da rivedere separatamente.
+>   **AGGIORNAMENTO (2026-06-05, follow-up #4 — SCARTATO).** La review sul codice ha
+>   smentito il "pausa funzionante": l'orchestrator non ha chiamanti in produzione
+>   (`.orchestrator` solo in `tests/legacy/`) ed è **rotto a runtime** —
+>   `create_round_with_handicaps` chiama `MatchService.create_match(**match_data)`
+>   con `handicap_data=`/`suggested_format=` che la firma non accetta → `TypeError`.
+>   Stesso difetto di `DomainOrchestrator` (F1.1). Il path handicap reale è
+>   `models/rating/HandicapService` (vivo), non questo wrapper. **Rimosso** (classe +
+>   istanza `self._orchestrator` + property in `MatchmakingService`), con conferma
+>   del maintainer. Nessuna perdita funzionale; suite verde.
 > - **`QueryOptimizer` monitoring → SCARTO PARZIALE.** Rimossi `QueryAnalyzer`, la
 >   detection N+1, la dashboard e i listener SQLAlchemy *sempre attivi* (overhead per
 >   ogni query, zero consumatori). **Tenuti** `optimized_query` (caching) e
@@ -252,8 +261,12 @@ nessuno di questi.
 > lavoro pianificato. *Eccezione che richiede conferma:* `models/scoring/` —
 > vedi caveat in F1.5.
 
-- **F1.1 ✅ RISOLTO (parziale, 2026-06-05) — `DomainOrchestrator` era codice morto e rotto: rimosso.**
-  > `MatchmakingOrchestrator` invece NON rimosso (non è uno stub: handicap-aware, in pausa). Dataclass spostate in `models/shared/operation_result.py`.
+- **F1.1 ✅ RISOLTO (2026-06-05) — `DomainOrchestrator` e `MatchmakingOrchestrator` rimossi (orfani rotti).**
+  > `DomainOrchestrator` rimosso subito; dataclass spostate in
+  > `models/shared/operation_result.py`. `MatchmakingOrchestrator` rimosso col
+  > follow-up #4 dopo che la review ha mostrato lo **stesso difetto runtime**
+  > (`create_round_with_handicaps` → `MatchService.create_match` con kwargs non
+  > accettati → `TypeError`) e zero chiamanti in produzione. Vedi Decisione 2.
   > Confermato dead code dal handoff 2026-02 (TASK 4.1). `MatchmakingOrchestrator`
   > vive in `models/matchmaking/service.py`; stesso status del `DomainOrchestrator`.
   `models/orchestration/service.py`. Istanziato solo in `tests/legacy/`
