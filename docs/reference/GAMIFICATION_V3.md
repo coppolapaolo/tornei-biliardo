@@ -215,6 +215,42 @@ attribuzione). Non necessario per la granularità città.
 - **Max 1 messaggio gamification per sessione**, mai sovrapposti; micro-guadagni
   XP accorpati/silenziati.
 
+## 11-bis. Leaderboard & confronto sociale (riformulazione locale/contributo)
+
+Lo status **non è il fine**: si **riformula** il confronto sociale, non lo si
+elimina. Base in letteratura: [Hanus & Fox (2015)](https://www.semanticscholar.org/paper/Assessing-the-effects-of-gamification-in-the-A-on-Hanus-Fox/dff76a9862467d426113ec530f83942016ae3a97)
+(longitudinale: leaderboard *globale status-based* ↓ motivazione intrinseca,
+soddisfazione, voti); [Mekler et al. (2017)](https://www.sciencedirect.com/science/article/abs/pii/S0747563215301229)
+(punti/livelli/leaderboard = *progress indicator*, non muovono la motivazione
+intrinseca); SDT/CET (over-justification); Festinger (il confronto con
+*simili-vicini* motiva, quello con lontani demoralizza); modello a leghe di
+Duolingo.
+
+Regole decise:
+1. **Classifiche sportive (gara/campionato): intoccate** — competizione
+   legittima di dominio, non gamification vanity.
+2. **Leaderboard XP globale assoluto: rimosso dalla UI principale** — è un
+   secondo strato di status ridondante, in tensione con gli obiettivi e col
+   "problema del 50.000° posto".
+3. **Sostituito da confronto locale + contributo**:
+   - **Locale/geografico**: "classifica della tua zona" (aggancio al modello
+     geo §10-bis), rilevante e *vincibile*; eventualmente a **leghe** di simili
+     (modello Duolingo) per evitare la coda lunga che si disimpegna.
+   - **Contributo/pro-sociale**: metrica = *engagement generato* (drill
+     completati da altri, gare organizzate, persone aiutate), **non XP grezzi**
+     → status virtuoso, agganciato al sistema drill a engagement (§9).
+   - **Opt-in/contestuale**: ranking mostrato dove la competizione è attesa, non
+     nel loop quotidiano.
+4. **Default del loop quotidiano = progresso auto-referenziale** (il *tuo*
+   streak/livello/record personale), non ranking sugli altri → nutre la
+   Competenza-SDT **senza** il confronto sociale corrosivo.
+
+Impatto tecnico: `LeaderboardService` (oggi global/XP) va riorientato — aggiungere
+scope **geografico** (filtro per raggio/zona riusando il nuovo
+`GeoMatchingService`) e una metrica **contributo**; ritirare il board XP globale
+come default. Sinergia con §9 (drill) e §10-bis (geo): la stessa nozione di
+engagement e la stessa geografia alimentano sia gli slot drill sia le classifiche.
+
 ## 12. Debito tecnico / pulizia (da ADR-031, verificato)
 
 - **BUG/maturity**: `gamification.*` è `{"director"}` in `feature_flags.py`: è il
@@ -257,3 +293,6 @@ attribuzione). Non necessario per la granularità città.
 - Modello geografico (§10-bis): da formalizzare in un ADR dedicato prima
   dell'implementazione (schema `cities`, migrazione sale italiane, riscrittura
   `GeoMatchingService`).
+- Classifiche locali (§11-bis): design preciso — **a leghe** (gruppi di simili,
+  promozione/retrocessione) vs **raggio fisso**; quali metriche di contributo
+  esporre; cosa resta opt-in.

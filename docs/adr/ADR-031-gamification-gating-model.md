@@ -238,8 +238,18 @@ Decisione **non ancora in implementazione**. Dettagli risolti il 2026-06-05
   etichetta; `province` legacy. Merita un **ADR dedicato**. Dettaglio in
   `GAMIFICATION_V3.md` §10-bis.
 
+- **Leaderboard & confronto sociale**: lo status non è il fine → **riformulazione
+  locale/contributo** (non rimozione totale). Classifiche sportive di
+  gara/campionato intoccate; leaderboard XP globale assoluto ritirato dalla UI
+  principale; sostituito da classifiche **locali/geografiche** (modello a leghe
+  à la Duolingo, aggancio al modello geo) e basate sul **contributo/engagement**
+  (non XP grezzi); loop quotidiano su progresso **auto-referenziale**. Base:
+  Hanus & Fox 2015, Mekler et al. 2017, SDT/CET, Festinger. Dettaglio in
+  `GAMIFICATION_V3.md` §11-bis.
+
 Restano da tarare le soglie numeriche, la grafica dell'onboarding, il raggio di
-default e la formalizzazione del modello geografico.
+default, la formalizzazione del modello geografico e il design preciso delle
+classifiche locali (a leghe vs raggio fisso).
 
 File coinvolti (riferimento, non ancora modificati):
 - `models/gamification/xp_config.py` — rimozione `LEVEL_UNLOCKS`/helper legacy.
