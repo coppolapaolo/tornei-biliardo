@@ -215,10 +215,23 @@ per i momenti che contano (level-up, sblocco funzione, milestone streak), **max
 
 ## Note Implementative
 
-Decisione **non ancora in implementazione**: i dettagli (soglie esatte, forma
-dell'onboarding, se "creare drill per altri" sia solo-director o metrica pura)
-sono in affinamento. Vedi `docs/reference/GAMIFICATION_V3.md` per la mappa di
-progressione proposta, l'onboarding minimo e il piano di pulizia.
+Decisione **non ancora in implementazione**. Dettagli risolti il 2026-06-05
+(vedi `docs/reference/GAMIFICATION_V3.md`):
+
+- **Onboarding**: brevissimo e obbligatorio (zona + interessi); per gli **utenti
+  esistenti** (sistema già in produzione) si innesca **al primo login** via flag
+  `User.onboarding_completed` (default `False`, backfill su tutti gli account).
+- **Anti-invasività**: eventi celebrativi → **solo toast**; notifica persistente
+  **solo se azionabile** (invito a match, gara in zona). Feedback sobrio sul
+  level-up = micro-animazione del badge in navbar (**da costruire**: oggi non
+  esiste).
+- **Creare drill per altri**: ingresso a **metrica pura** (N drill completati),
+  con **pubblicazione progressiva a engagement**: 3 slot iniziali,
+  `cap = 3 + (# tuoi drill con ≥1 completamento esterno)`; senza engagement si
+  resta a 3 e per crearne uno nuovo se ne ritira uno vecchio. "Si crea solo
+  finché si ingaggia" → qualità auto-regolata, niente moderazione manuale.
+
+Restano da tarare solo le soglie numeriche e la grafica dell'onboarding.
 
 File coinvolti (riferimento, non ancora modificati):
 - `models/gamification/xp_config.py` — rimozione `LEVEL_UNLOCKS`/helper legacy.
