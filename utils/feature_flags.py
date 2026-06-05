@@ -60,6 +60,7 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "player.edit_profile": {"player", "director"},
     "player.change_password": {"player", "director"},
     "player.request_verification_email": {"player", "director"},
+    "player.delete_account": {"player", "director"},
     # Notifications
     "player.notifications": {"player", "director"},
     "player.mark_notification_read": {"player", "director"},
