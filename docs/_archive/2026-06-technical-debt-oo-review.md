@@ -43,10 +43,13 @@ pulito, VO `Distance`/`Score`, convenzione `@transactional` rispettata (nessun
 Il debito tecnico non è diffuso ma **concentrato in pochi cluster ad alto
 impatto**. I tre più importanti:
 
-1. **Infrastruttura "enterprise" speculativa mai collegata** (~1500–2000 LOC
-   morte): `DomainOrchestrator`, il monitoring di `QueryOptimizer`, le metriche
-   / isolation-level / read-only di `TransactionManager`, la base `DomainService`
-   (usata da 3 servizi su 79). Costo di manutenzione senza valore a runtime.
+1. **Infrastruttura "enterprise" non collegata all'app** (~1500–2000 LOC *non
+   referenziate dal codice di produzione*): `DomainOrchestrator`, il monitoring di
+   `QueryOptimizer`, le metriche/isolation-level/read-only di `TransactionManager`,
+   la base `DomainService` (3 servizi su 79). ⚠️ "non usato" è un *fatto*;
+   "abbandonato" è un *intento da confermare col maintainer* (vedi §1, correzione
+   terminologica). Costo di manutenzione senza valore a runtime, ma la scelta
+   pausa-vs-scarto è tua.
 2. **Astrazione transazionale "che perde"** (debito *gestito*, non da
    rifattorizzare): la correttezza dipende dal sapere "decora solo il metodo più
    interno". ⚠️ Dopo aver letto ADR-012/025 ho **ritirato** la proposta di
@@ -66,7 +69,7 @@ primitive obsession sugli stati).
 |---|-----------|----------|--------|--------|
 | A | Fix bug `is_active is True` (+ test) | 🔴 | XS | Alto |
 | B | Togliere `@transactional` ridondante sui facade di pura delega (F2.2/F2.3) — **non** toccare il core del manager | 🟡 | S | Medio |
-| C | Eliminare infra morta (orchestrator, query-monitoring, DomainService) — già confermata morta dal handoff 2026-02 | 🔴 | S | Alto (−~1.5k LOC) |
+| C | Infra non usata in prod (orchestrator, query-monitoring, DomainService): **confermare con maintainer** se pausa o scarto, poi rimuovere | 🟡 | S | Alto se rimossa (−~1.5k LOC) |
 | D | `BaseModel`/`UtilityMixin`: rimuovere la duplicazione (entrambi quasi inutilizzati in prod) | 🟡 | XS | Medio |
 | E | Mini-gerarchia eccezioni di dominio | 🟡 | S | Medio |
 | F | Predicati di stato sugli enum (`is_finished()`…) | 🟡 | S | Medio |
@@ -80,9 +83,31 @@ primitive obsession sugli stati).
 
 ---
 
-## 1. Infrastruttura speculativa / dead code (🔴 cluster)
+## 1. Infrastruttura non usata in produzione (cluster) — ⚠️ intento da confermare col maintainer
 
-Pattern ricorrente: componenti "enterprise" costruiti in anticipo e **mai
+> **CORREZIONE TERMINOLOGICA (2026-06-05).** Obiezione corretta del maintainer:
+> *"non trovo più commit recenti" ≠ "abbandonato"*. Codice è davvero abbandonato
+> solo se (a) **esplicitamente** dichiarato tale, oppure (b) **incompatibile** con
+> scelte successive. La mancanza di attività recente può essere lavoro *messo in
+> pausa, deprioritizzato o dimenticato*. Quindi riformulo: distinguo il **fatto
+> osservabile** ("non referenziato dal codice di produzione", che posso provare)
+> dall'**intento** ("abbandonato", che NON posso provare dagli artefatti). La
+> decisione su cosa farne resta del maintainer; io fornisco fatti + livello di
+> evidenza.
+
+| Componente | Fatto osservabile | Evidenza sull'intento | Classificazione onesta |
+|-----------|-------------------|----------------------|------------------------|
+| `DomainOrchestrator` / `MatchmakingOrchestrator` | Usati solo da test legacy; `setup_complete_campionato` chiama `TournamentService` in modo statico → si romperebbe | Handoff 2026-02 (TASK 4.1) li chiama "codice morto" e cancella il task | **Più vicino ad (a)**: un maintainer li ha *osservati* morti, ma non è una decisione formale di non costruire mai l'orchestrazione. Resta riprendibile. |
+| `models/scoring/` (ScoringPolicy Classic/Fargo/Elo) | Non referenziato dal codice di produzione; la classifica live passa per `classification/strategies` + registry | ADR-013 ha ridisegnato la classifica con un **meccanismo parallelo**, ma **non dice** di rimuovere `scoring/` | **(b) parziale**: *reso ridondante in pratica*, non strettamente "incompatibile". Non posso affermare che sia stato deciso di buttarlo. |
+| `QueryOptimizer`/`QueryAnalyzer` monitoring | Nessun consumatore in prod (solo test legacy) | Nessuna dichiarazione, nessuna incompatibilità | **Né (a) né (b)**: solo *non usato*, intento ignoto → potrebbe essere lavoro in pausa. |
+| `DomainService` base | 3 servizi su 79 | Nessuna | **Né (a) né (b)**: adozione incompleta, intento ignoto. |
+
+> **Implicazione pratica:** per la riga 1 (orchestrators) e 2 (`scoring/`) la
+> rimozione è ragionevole ma va **confermata da te** (sai se era "pausa" o "scarto");
+> per le righe 3-4 la raccomandazione corretta **non è "elimina"** ma *"decidi tu se
+> è pausa o scarto"*. Non spaccio un'inferenza per un fatto.
+
+Pattern ricorrente: componenti "enterprise" costruiti in anticipo e **non
 collegati all'app in esecuzione**. Verificato che `app.py` non inizializza
 nessuno di questi.
 
@@ -375,6 +400,29 @@ nessuno di questi.
 ---
 
 ## 7. Fat controllers & duplicazione nelle route (🟡)
+
+> **CHIARIMENTO SUL PATTERN (risposta a "è colpa dell'MVC?").** No: **MVC non è il
+> pattern sbagliato e va bene così**. Il problema wizard/edit *non* è MVC; è una
+> **astrazione mancante DENTRO il layer controller/view**. In termini MVC:
+> - *Model* = `Gara`/`Campionato` → corretti.
+> - *View* = i template (create, wizard, edit) → tre viste, legittime.
+> - *Controller* = `create_gara`/wizard/`edit_gara` → **ciascuno parsa il form per
+>   conto suo**.
+>
+> Il difetto nasce perché il mapping **form↔modello** (parsing + validazione +
+> quali campi sono editabili) è *duplicato* tra i controller invece di vivere in un
+> unico posto. La soluzione classica e leggera è il pattern **Form Object** (DTO/
+> "form schema": in Flask sarebbe `FlaskForm`/WTForms; qui esiste già in forma
+> embrionale come `GaraFormParser`) che: (1) definisce l'insieme dei campi UNA
+> volta, (2) è condiviso da create+wizard+edit, (3) codifica le regole di
+> editabilità per-campo. Quindi la tua terza ipotesi è quella giusta: **il pattern
+> corretto esiste ed è buono, ma non è applicato ovunque** (l'edit lo bypassa →
+> drift → bug F9.2). MVC da solo non previene questa classe di bug; la previene il
+> Form Object + un **controllo che sia sempre applicato** (es. un test che verifica
+> che create ed edit coprano lo stesso set di campi). *Non* serve migrare tutto a
+> WTForms (sarebbe sovraingegnerizzazione): basta rendere `GaraFormParser` l'unica
+> fonte usata da tutti e tre i percorsi, più un test-guardia anti-drift.
+
 
 > Nota positiva: **nessun `db.session.add/commit/delete` diretto nelle route**
 > (boundary service+@transactional rispettato), ed esistono buoni helper
