@@ -32,6 +32,7 @@ from utils import (
     director_or_admin_required,
 )
 from models.campionato.services import TournamentService
+from .campionato_form_parser import CampionatoFormParser
 
 # Initialize the TournamentService
 campionato_service = TournamentService()
@@ -193,46 +194,10 @@ def wizard_create():
         flash(_("Sessione wizard scaduta. Ricomincia la creazione."), "error")
         return redirect(url_for("admin.campionato.wizard_start"))
 
-    # Get Step 2 data from form
-    default_venue_id = request.form.get("default_venue_id")
-    if default_venue_id:
-        try:
-            default_venue_id = int(default_venue_id)
-        except ValueError:
-            default_venue_id = None
-    else:
-        default_venue_id = None
+    # Step 2 default-gare settings (single source shared with edit_campionato)
+    settings = CampionatoFormParser.parse_default_settings(request.form)
 
-    default_entry_fee = request.form.get("default_entry_fee")
-    if default_entry_fee:
-        try:
-            default_entry_fee = float(default_entry_fee)
-        except ValueError:
-            default_entry_fee = None
-    else:
-        default_entry_fee = None
-
-    default_rounds_count = request.form.get("default_rounds_count", "3")
-    try:
-        default_rounds_count = int(default_rounds_count)
-        if default_rounds_count < 1:
-            default_rounds_count = 3
-    except ValueError:
-        default_rounds_count = 3
-
-    default_odd_policy = request.form.get("default_odd_policy", OddNumberPolicy.BYE.value)
-    valid_policies = [
-        OddNumberPolicy.NO.value,
-        OddNumberPolicy.BYE.value,
-        OddNumberPolicy.BYE_WITH_CHALLENGE.value,
-        OddNumberPolicy.TRIO.value,
-    ]
-    if default_odd_policy not in valid_policies:
-        default_odd_policy = OddNumberPolicy.BYE.value
-
-    default_anti_rematch = "default_anti_rematch" in request.form
-
-    # Get classification system from Step 1
+    # Classification system comes from Step 1 (session)
     classification_system = wizard_data.get("classification_system", "WINS")
 
     # Create the campionato
@@ -244,12 +209,8 @@ def wizard_create():
             challenge_mode=wizard_data["challenge_mode"],
             is_active=True,
             planned_gare_count=wizard_data["planned_gare_count"],
-            default_venue_id=default_venue_id,
-            default_entry_fee=default_entry_fee,
-            default_rounds_count=default_rounds_count,
-            default_odd_policy=default_odd_policy,
-            default_anti_rematch=default_anti_rematch,
             default_classification_system=classification_system,
+            **settings,
         )
 
         # Create playoff configurations if enabled
@@ -343,7 +304,7 @@ def create_campionato():
     default_odd_policy = OddNumberPolicy.TRIO.value if without_x else OddNumberPolicy.BYE.value
 
     # Usa il service layer
-    campionato = campionato_service.create_campionato_with_director(
+    campionato_service.create_campionato_with_director(
         name=name,
         creator_user_id=current_user.id,
         campionato_type=campionato_type,
@@ -486,21 +447,14 @@ def edit_campionato(campionato_id):
     if request.method == "POST":
         # Usa il service layer invece del direct database access
         try:
-            # Parse default_venue_id (can be empty string)
-            default_venue_id = request.form.get("default_venue_id")
-            default_venue_id = int(default_venue_id) if default_venue_id else None
-
-            # Parse default_entry_fee (can be empty string)
-            default_entry_fee = request.form.get("default_entry_fee")
-            default_entry_fee = (
-                float(default_entry_fee) if default_entry_fee else None
-            )
-
-            # Parse planned_gare_count
+            # Parse planned_gare_count (Step 1 field)
             planned_gare_count = request.form.get("planned_gare_count")
             planned_gare_count = (
                 int(planned_gare_count) if planned_gare_count else None
             )
+
+            # Default-gare settings (single source shared with wizard_create)
+            settings = CampionatoFormParser.parse_default_settings(request.form)
 
             campionato_service.update_campionato(
                 campionato_id=campionato_id,
@@ -512,14 +466,8 @@ def edit_campionato(campionato_id):
                 default_classification_system=request.form.get(
                     "default_classification_system", "WINS"
                 ),
-                # Step 2 fields - Default gare settings
-                default_venue_id=default_venue_id,
-                default_entry_fee=default_entry_fee,
-                default_rounds_count=int(
-                    request.form.get("default_rounds_count", 3)
-                ),
-                default_odd_policy=request.form.get("default_odd_policy", "bye"),
-                default_anti_rematch="default_anti_rematch" in request.form,
+                # Step 2 fields - Default gare settings (shared parser)
+                **settings,
             )
             flash("Campionato aggiornato con successo!")
         except ValueError as ve:

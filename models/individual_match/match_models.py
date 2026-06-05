@@ -11,7 +11,7 @@ from enum import Enum
 
 from sqlalchemy import func
 
-from ..base import db, BaseModel, TimestampMixin, utc_now
+from ..base import db, BaseModel, utc_now
 from ..status_enum import MatchStatus
 from ..match.base_match import BaseMatchMixin
 

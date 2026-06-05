@@ -77,7 +77,7 @@ lascio e magari aggiungo una nota `# WIP/paused`; (c) Indeciso → lascio com'è
 in pausa da riprendere, sparisce dalla vista (recuperabile da git ma "out of sight").
 **Cosa decidere:** per ognuno dei 4, pausa o scarto.
 
-### Decisione 3 — Refactor architetturali: quali (se) affrontare? ⏳ IN CORSO (2026-06-05)
+### Decisione 3 — Refactor architetturali ✅ FATTO (2026-06-05)
 > **Fatto:** dedup `BaseModel`/`UtilityMixin` + `User`/`TimestampMixin` (F4.1/F4.2).
 > **Rimasti:** Form Object completo (campionato wizard/edit + test anti-drift),
 > tassonomia eccezioni (§3) ✅ infrastruttura fatta (adozione incrementale da
@@ -586,8 +586,13 @@ nessuno di questi.
   `campionato.py:376-385,447`, `crud.py:181-192`, `detail.py:170-191`. *Fix:*
   `User.is_director_of(entity_type, entity_id)` o `DirectorAssignment.exists(...)`.
 
-- **F7.5 🔴 (upgrade) Nessuna "single source of truth" per il mapping form↔modello:
-  create / wizard / edit hanno parser separati e sono già divergenti.**
+- **F7.5 ✅ RISOLTO (2026-06-05) — Single source of truth per il mapping form↔modello.**
+  > Gara: `edit_gara` instradato da `GaraFormParser` (vedi D1/F9.2). Campionato:
+  > nuovo `CampionatoFormParser.parse_default_settings()` condiviso da `wizard_create`
+  > ed `edit_campionato` per il blocco default-gare (venue/fee/rounds/odd/anti-rematch),
+  > + test anti-drift (`test_edit_campionato_persistence.py`). Il rename cosmetico
+  > `classification_system`→`default_classification_system` nel wizard (2-step, sessione)
+  > è rimandato: nessun bug attivo, UI product-facing. Testo originale:
   Per la **gara** esistono 3 copie del mapping: `GaraFormParser.parse()` (create),
   l'inline in `edit_gara` (`crud.py:263-327`), e il wizard. Divergenze verificate:
   - `classification_system` è gestito dal parser (create) ma **assente** nell'edit

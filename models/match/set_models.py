@@ -4,7 +4,7 @@ Set models for multi-set matches.
 
 from typing import Optional, List, Dict, Any
 
-from models.base import db, BaseModel, TimestampMixin, utc_now
+from models.base import db, BaseModel, utc_now
 from models.status_enum import MatchStatus
 
 
