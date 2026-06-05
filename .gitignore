@@ -89,6 +89,8 @@ instance/
 # Claude Code — track settings + custom skills, ignore plugin-installed
 .claude/*
 !.claude/settings.json
+!.claude/hooks/
+!.claude/hooks/session-start.sh
 !.claude/skills/
 .claude/skills/*
 !.claude/skills/adr/
