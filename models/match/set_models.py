@@ -5,6 +5,7 @@ Set models for multi-set matches.
 from typing import Optional, List, Dict, Any
 
 from models.base import db, BaseModel, TimestampMixin, utc_now
+from models.status_enum import MatchStatus
 
 
 class Set(BaseModel):
@@ -62,7 +63,7 @@ class Set(BaseModel):
 
     def can_be_modified(self) -> bool:
         """Check if set can be modified (racks added/removed)."""
-        return self.status == "playing"
+        return self.status == MatchStatus.PLAYING.value
 
     def configure_multi_discipline(
         self, disciplines: List[str], mode: str = "rotation"
@@ -169,7 +170,7 @@ class Set(BaseModel):
 
     def start_set(self) -> None:
         """Start the set."""
-        if self.status != "pending":
+        if self.status != MatchStatus.PENDING.value:
             raise ValueError("Set can only be started from pending status")
 
         self.status = "playing"
@@ -182,7 +183,7 @@ class Set(BaseModel):
         discipline_override: Optional[str] = None,
     ) -> "SetRack":
         """Add a rack result to this set."""
-        if self.status != "playing":
+        if self.status != MatchStatus.PLAYING.value:
             raise ValueError("Cannot add rack result to non-playing set")
 
         if winner_id not in [self.match.player1_id, self.match.player2_id]:
@@ -264,7 +265,7 @@ class Set(BaseModel):
 
     def is_completed(self) -> bool:
         """Check if set is completed."""
-        return self.status == "completed"
+        return self.status == MatchStatus.COMPLETED.value
 
     @property
     def distance_config(self):

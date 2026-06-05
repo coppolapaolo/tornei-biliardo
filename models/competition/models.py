@@ -332,7 +332,7 @@ class Gara(SoftDeleteMixin, db.Model):
         # Must have matches in current round AND all must be finished
         # Note: VALIDATED (bilateral player confirmation) also counts as finished
         return bool(current_round_matches) and all(
-            m.status in [MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value]
+            MatchStatus.is_finished(m.status)
             for m in current_round_matches
         )
 

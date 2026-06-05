@@ -7,6 +7,7 @@ from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import joinedload, selectinload
 from models.base import db
 from .models import Classification
+from ..status_enum import MatchStatus
 from ..caching import cached, cache_invalidate, cache_manager
 from ..optimization import optimized_query
 from ..transaction import transactional
@@ -52,7 +53,7 @@ class ClassificationService:
             # Include both 'completed' and 'validated' as finished matches
             completed_matches = [
                 m for m in gara.matches
-                if m.status in ["completed", "validated"] and not m.is_bye
+                if MatchStatus.is_finished(m.status) and not m.is_bye
             ]
             for match in completed_matches:
                 if match.player1_id:

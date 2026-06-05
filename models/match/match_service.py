@@ -552,7 +552,7 @@ class MatchService:
 
         # Check if current set is complete or doesn't exist
         current_set = match.get_current_set()
-        if current_set and current_set.status == "playing":
+        if current_set and current_set.status == MatchStatus.PLAYING.value:
             raise ValueError(f"Set {current_set.set_number} ancora in corso")
 
         # Determine next set number
@@ -611,7 +611,7 @@ class MatchService:
         if not current_set:
             raise ValueError("Nessun set attivo. Inizia un nuovo set.")
 
-        if current_set.status != "playing":
+        if current_set.status != MatchStatus.PLAYING.value:
             raise ValueError(f"Set {current_set.set_number} non è in corso")
 
         # Use Set's add_rack_result method which handles score updates and completion
@@ -663,7 +663,7 @@ class MatchService:
             current_set.player2_racks = max(0, current_set.player2_racks - 1)
 
         # If set was completed, reopen it
-        if current_set.status == "completed":
+        if current_set.status == MatchStatus.COMPLETED.value:
             current_set.status = "playing"
             current_set.winner_id = None
             current_set.completed_at = None

@@ -7,6 +7,7 @@ Dependencies: typing, .strategies.base, models.base
 
 from typing import List, Dict, Any, Optional
 from .strategies.base import PlayerScore
+from models.status_enum import MatchStatus
 
 
 class ScoreAggregator:
@@ -106,7 +107,7 @@ class ScoreAggregator:
             matches = [
                 m
                 for m in gara.matches
-                if m.status in ["completed", "validated"] and not m.is_bye
+                if MatchStatus.is_finished(m.status) and not m.is_bye
             ]
             for match in matches:
                 if match.is_trio and match.trio_match:

@@ -453,8 +453,14 @@ nessuno di questi.
   (`:517-572`). *Fix:* estrarre un collaboratore `GaraStrategyPolicy`/`GaraView`;
   lasciare a `Gara` identità + relazioni + invarianti.
 
-- **F5.3 🟡 Primitive obsession sugli stati: liste di `.value` e stringhe grezze
-  sparse.**
+- **F5.3 ✅ PARZIALE (2026-06-05) — Primitive obsession sugli stati.**
+  > Aggiunti predicati `MatchStatus.is_finished()/is_active()` (+ `finished_values`/
+  > `active_values`) e adottati nei check multi-stato (liste `["completed",
+  > "validated"]` in competition/classification/tiebreaker). Sostituiti i letterali
+  > raw nei confronti su istanze dei model (`set_models`, `individual_match/
+  > match_models`, set-check in `match_service`) con `MatchStatus.*.value`
+  > (value-preserving). **Resta da fare:** ~25 letterali nei filtri SQL
+  > (kpi/, statistics, user/models) → sweep meccanico a parte. Testo originale:
   Confronti `m.status in [COMPLETED.value, VALIDATED.value]`
   (`competition/models.py:334`), e **letterali raw** `"playing"`/`"completed"`
   in `user/models.py:257,270,280` e `individual_match/match_models.py:509,553`
