@@ -95,6 +95,7 @@ class VenueManagerService:
 
         # Check if venue already has a manager (contested request)
         from models.user.models import VenueManagement
+
         current_manager = VenueManagement.query.filter_by(venue_id=venue_id).first()
         is_contested = current_manager is not None
 
@@ -111,20 +112,23 @@ class VenueManagerService:
 
         # Get admin user IDs for event
         from models.user.role_enum import UserRole
+
         admin_users = User.query.filter_by(role=UserRole.ADMIN.value).all()
         admin_user_ids = [admin.id for admin in admin_users]
 
         # Publish event for venue manager request created
-        EventBus.publish(VenueManagerRequestCreatedEvent(
-            request_id=request.id,
-            user_id=user_id,
-            username=user.username,
-            venue_id=venue_id,
-            venue_name=venue.name,
-            motivation=notes.strip(),
-            admin_user_ids=admin_user_ids,
-            is_contested=is_contested
-        ))
+        EventBus.publish(
+            VenueManagerRequestCreatedEvent(
+                request_id=request.id,
+                user_id=user_id,
+                username=user.username,
+                venue_id=venue_id,
+                venue_name=venue.name,
+                motivation=notes.strip(),
+                admin_user_ids=admin_user_ids,
+                is_contested=is_contested,
+            )
+        )
 
         return request
 
@@ -154,7 +158,9 @@ class VenueManagerService:
         """
         # Validate admin user
         if admin_user.role != UserRole.ADMIN.value:
-            raise PermissionDeniedError("Only administrators can process venue manager requests")
+            raise PermissionDeniedError(
+                "Only administrators can process venue manager requests"
+            )
 
         request = db.session.get(VenueManagerRequest, request_id)
         if not request:
@@ -174,37 +180,41 @@ class VenueManagerService:
             venue_management = VenueManagement(
                 user_id=request.user_id,
                 venue_id=request.venue_id,
-                assigned_by_id=admin_user.id
+                assigned_by_id=admin_user.id,
             )
             db.session.add(venue_management)
 
             # Publish event for venue manager request approved
-            EventBus.publish(VenueManagerRequestProcessedEvent(
-                request_id=request.id,
-                user_id=request.user_id,
-                username=request.user.username,
-                venue_id=request.venue_id,
-                venue_name=request.venue.name,
-                status="approved",
-                processed_by_id=admin_user.id,
-                notes=notes
-            ))
+            EventBus.publish(
+                VenueManagerRequestProcessedEvent(
+                    request_id=request.id,
+                    user_id=request.user_id,
+                    username=request.user.username,
+                    venue_id=request.venue_id,
+                    venue_name=request.venue.name,
+                    status="approved",
+                    processed_by_id=admin_user.id,
+                    notes=notes,
+                )
+            )
         else:
             request.status = VenueManagerRequestStatus.REJECTED.value
             request.processed_by_id = admin_user.id
             request.notes = notes
 
             # Publish event for venue manager request rejected
-            EventBus.publish(VenueManagerRequestProcessedEvent(
-                request_id=request.id,
-                user_id=request.user_id,
-                username=request.user.username,
-                venue_id=request.venue_id,
-                venue_name=request.venue.name,
-                status="rejected",
-                processed_by_id=admin_user.id,
-                notes=notes
-            ))
+            EventBus.publish(
+                VenueManagerRequestProcessedEvent(
+                    request_id=request.id,
+                    user_id=request.user_id,
+                    username=request.user.username,
+                    venue_id=request.venue_id,
+                    venue_name=request.venue.name,
+                    status="rejected",
+                    processed_by_id=admin_user.id,
+                    notes=notes,
+                )
+            )
 
         return request
 
@@ -386,9 +396,7 @@ class VenueManagerService:
             raise NotFoundError("Venue not found")
 
         # Check if venue already has an active manager
-        existing_assignment = VenueManagement.query.filter_by(
-            venue_id=venue_id
-        ).first()
+        existing_assignment = VenueManagement.query.filter_by(venue_id=venue_id).first()
         if existing_assignment:
             raise ConflictError("Venue already has a manager")
 
@@ -417,7 +425,9 @@ class VenueManagerService:
             PermissionError: If revoked_by is not admin
         """
         if revoked_by.role != UserRole.ADMIN.value:
-            raise PermissionDeniedError("Only administrators can revoke venue manager assignments")
+            raise PermissionDeniedError(
+                "Only administrators can revoke venue manager assignments"
+            )
 
         assignment = db.session.get(VenueManagement, assignment_id)
         if not assignment:
@@ -430,16 +440,18 @@ class VenueManagerService:
         # Publish event for venue manager assignment revoked
         # Using VenueManagerRequestProcessedEvent for now, could create
         # specific VenueAssignmentRevokedEvent later
-        EventBus.publish(VenueManagerRequestProcessedEvent(
-            request_id=0,  # No specific request for revocation
-            user_id=assignment.user_id,
-            username=assignment.user.username,
-            venue_id=assignment.venue_id,
-            venue_name=assignment.venue.name,
-            status="revoked",
-            processed_by_id=revoked_by.id,
-            notes="Gestione sala revocata dall'amministratore"
-        ))
+        EventBus.publish(
+            VenueManagerRequestProcessedEvent(
+                request_id=0,  # No specific request for revocation
+                user_id=assignment.user_id,
+                username=assignment.user.username,
+                venue_id=assignment.venue_id,
+                venue_name=assignment.venue.name,
+                status="revoked",
+                processed_by_id=revoked_by.id,
+                notes="Gestione sala revocata dall'amministratore",
+            )
+        )
 
         return assignment
 

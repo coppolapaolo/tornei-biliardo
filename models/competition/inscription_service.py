@@ -189,7 +189,7 @@ class InscriptionService:
             user_id=user_id,
             username=user.username,
             inscription_status=inscription_status,
-            waitlist_position=waitlist_position
+            waitlist_position=waitlist_position,
         )
         EventBus.publish(event)
 
@@ -445,10 +445,9 @@ class InscriptionService:
             insc.waitlist_position = i
 
         # Invia notifica
-        gara_display = gara.name or f'Gara {gara.number}'
+        gara_display = gara.name or f"Gara {gara.number}"
         msg = (
-            f"Sei stato promosso dalla lista d'attesa "
-            f"per la gara '{gara_display}'"
+            f"Sei stato promosso dalla lista d'attesa " f"per la gara '{gara_display}'"
         )
         try:
             NotificationFactory.create_account_update_notification(
@@ -457,19 +456,14 @@ class InscriptionService:
                 message=msg,
                 priority=NotificationPriority.HIGH,
                 update_type="waitlist_promotion",
-                related_entities={
-                    "gara_id": gara.id,
-                    "gara_name": gara.name
-                }
+                related_entities={"gara_id": gara.id, "gara_name": gara.name},
             )
         except Exception as e:
             print(f"DEBUG: Error creating promotion notification: {e}")
 
     @staticmethod
     @transactional(domain="competition")
-    def admin_uninscribe_user(
-        user_id: int, gara_id: int, admin_user_id: int
-    ) -> bool:
+    def admin_uninscribe_user(user_id: int, gara_id: int, admin_user_id: int) -> bool:
         """Disiscrive un utente dalla gara da parte di admin/direttore.
 
         Invia notifica all'utente discritto e promuove il primo della
@@ -490,13 +484,9 @@ class InscriptionService:
             gara = db.session.get(Gara, gara_id)
             admin_user = db.session.get(User, admin_user_id)
 
-            was_active = (
-                not inscription.is_waitlist and not inscription.is_withdrawn
-            )
+            was_active = not inscription.is_waitlist and not inscription.is_withdrawn
             gara_name = gara.name or f"Gara {gara.number}"
-            admin_role = (
-                "admin" if admin_user.is_admin else "direttore di gara"
-            )
+            admin_role = "admin" if admin_user.is_admin else "direttore di gara"
 
             # Invia notifica all'utente discritto
             try:
@@ -527,10 +517,7 @@ class InscriptionService:
                     f"{user_id}: {notification_result}"
                 )
             except Exception as e:
-                print(
-                    f"DEBUG: Error creating notification "
-                    f"for user {user_id}: {e}"
-                )
+                print(f"DEBUG: Error creating notification " f"for user {user_id}: {e}")
 
             # Rimuovi l'iscrizione
             db.session.delete(inscription)
@@ -540,11 +527,7 @@ class InscriptionService:
             if was_active:
                 first_waitlist = (
                     db.session.query(Inscription)
-                    .filter_by(
-                        gara_id=gara_id,
-                        is_waitlist=True,
-                        is_withdrawn=False
-                    )
+                    .filter_by(gara_id=gara_id, is_waitlist=True, is_withdrawn=False)
                     .order_by(Inscription.waitlist_position.asc())
                     .first()
                 )
@@ -559,9 +542,7 @@ class InscriptionService:
                     remaining_waitlist = (
                         db.session.query(Inscription)
                         .filter_by(
-                            gara_id=gara_id,
-                            is_waitlist=True,
-                            is_withdrawn=False
+                            gara_id=gara_id, is_waitlist=True, is_withdrawn=False
                         )
                         .order_by(Inscription.waitlist_position.asc())
                         .all()
@@ -572,20 +553,15 @@ class InscriptionService:
 
                     # Invia notifica al promosso
                     try:
-                        from models.notification.factory import (
-                            NotificationFactory
-                        )
-                        from models.notification.models import (
-                            NotificationPriority
-                        )
+                        from models.notification.factory import NotificationFactory
+                        from models.notification.models import NotificationPriority
 
                         promo_msg = (
                             f"Sei stato promosso dalla lista d'attesa "
                             f"per {gara_name}"
                         )
                         notification_result = (
-                            NotificationFactory
-                            .create_tournament_notification(
+                            NotificationFactory.create_tournament_notification(
                                 user_ids=[first_waitlist.user_id],
                                 tournament_name=gara_name,
                                 message_template=promo_msg,
@@ -632,6 +608,7 @@ class InscriptionService:
         if gara.date and gara.time:
             # Converti date in datetime per confronto
             from datetime import datetime as dt
+
             gara_datetime = dt.combine(gara.date, gara.time)
 
             if inscription_end > gara_datetime:

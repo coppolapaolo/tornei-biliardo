@@ -19,21 +19,24 @@ from models.competition.models import Inscription, Gara
 from models.status_enum import MatchStatus
 from models.user.models import DirectorAssignment
 
+
 class UserMetricService:
     """
     Aggregates user metrics for gamification.
     """
 
     @staticmethod
-    def get_metric(user_id: int, metric_name: str, context: Optional[Dict[str, Any]] = None) -> Any:
+    def get_metric(
+        user_id: int, metric_name: str, context: Optional[Dict[str, Any]] = None
+    ) -> Any:
         """
         Get value for a specific metric.
-        
+
         Args:
             user_id: ID of the user
             metric_name: Name of the metric (e.g., 'total_matches')
             context: Optional context filter (e.g., {'location_id': 5})
-            
+
         Returns:
             The metric value (usually int, bool, or float)
         """
@@ -43,16 +46,20 @@ class UserMetricService:
         return 0
 
     @staticmethod
-    def _get_total_matches(user_id: int, context: Optional[Dict[str, Any]] = None) -> int:
+    def _get_total_matches(
+        user_id: int, context: Optional[Dict[str, Any]] = None
+    ) -> int:
         """Count total completed matches."""
         query = Match.query.filter(
             or_(Match.player1_id == user_id, Match.player2_id == user_id),
-            Match.status == MatchStatus.COMPLETED.value
+            Match.status == MatchStatus.COMPLETED.value,
         )
         return query.count()
 
     @staticmethod
-    def _get_scores_inserted(user_id: int, context: Optional[Dict[str, Any]] = None) -> int:
+    def _get_scores_inserted(
+        user_id: int, context: Optional[Dict[str, Any]] = None
+    ) -> int:
         """
         Count distinct matches where the user has inserted at least one rack.
 
@@ -65,65 +72,76 @@ class UserMetricService:
         from models.individual_match.models import IndividualRack
 
         # Tournament matches (regular 1v1)
-        tournament_count = db.session.query(
-            func.count(func.distinct(Rack.match_id))
-        ).filter(
-            Rack.added_by_id == user_id,
-            Rack.is_deleted == False  # noqa: E712
-        ).scalar() or 0
+        tournament_count = (
+            db.session.query(func.count(func.distinct(Rack.match_id)))
+            .filter(Rack.added_by_id == user_id, Rack.is_deleted == False)  # noqa: E712
+            .scalar()
+            or 0
+        )
 
         # Individual matches (casual 1v1)
-        individual_count = db.session.query(
-            func.count(func.distinct(IndividualRack.match_id))
-        ).filter(
-            IndividualRack.added_by_id == user_id,
-            IndividualRack.is_deleted == False  # noqa: E712
-        ).scalar() or 0
+        individual_count = (
+            db.session.query(func.count(func.distinct(IndividualRack.match_id)))
+            .filter(
+                IndividualRack.added_by_id == user_id,
+                IndividualRack.is_deleted == False,  # noqa: E712
+            )
+            .scalar()
+            or 0
+        )
 
         # Trio matches
-        trio_count = db.session.query(
-            func.count(func.distinct(TrioRack.trio_match_id))
-        ).filter(
-            TrioRack.added_by_id == user_id,
-            TrioRack.is_deleted == False  # noqa: E712
-        ).scalar() or 0
+        trio_count = (
+            db.session.query(func.count(func.distinct(TrioRack.trio_match_id)))
+            .filter(
+                TrioRack.added_by_id == user_id,
+                TrioRack.is_deleted == False,  # noqa: E712
+            )
+            .scalar()
+            or 0
+        )
 
         return tournament_count + individual_count + trio_count
 
     @staticmethod
-    def _get_tournaments_played(user_id: int, context: Optional[Dict[str, Any]] = None) -> int:
+    def _get_tournaments_played(
+        user_id: int, context: Optional[Dict[str, Any]] = None
+    ) -> int:
         """Count tournaments participated in."""
         query = Inscription.query.filter_by(user_id=user_id)
-        
+
         # If filtering by location
-        if context and 'location_id' in context:
+        if context and "location_id" in context:
             # Join Gara to check location
-            query = query.join(Gara).filter(Gara.venue_id == context['location_id'])
-            
+            query = query.join(Gara).filter(Gara.venue_id == context["location_id"])
+
         return query.count()
 
     @staticmethod
-    def _get_tournaments_organized(user_id: int, context: Optional[Dict[str, Any]] = None) -> int:
+    def _get_tournaments_organized(
+        user_id: int, context: Optional[Dict[str, Any]] = None
+    ) -> int:
         """Count tournaments organized or co-organized."""
         # Check DirectorAssignment
         assignments = DirectorAssignment.query.filter_by(
-            user_id=user_id, 
-            entity_type='gara'
+            user_id=user_id, entity_type="gara"
         ).count()
         # Admin implies all? No, metric should be specific action.
         return assignments
 
     @staticmethod
-    def _get_matches_in_location(user_id: int, context: Optional[Dict[str, Any]] = None) -> int:
+    def _get_matches_in_location(
+        user_id: int, context: Optional[Dict[str, Any]] = None
+    ) -> int:
         """Count matches played in a specific location."""
-        if not context or 'location_id' not in context:
+        if not context or "location_id" not in context:
             return 0
-            
-        location_id = context['location_id']
+
+        location_id = context["location_id"]
         query = Match.query.filter(
             or_(Match.player1_id == user_id, Match.player2_id == user_id),
             Match.status == MatchStatus.COMPLETED.value,
-            Match.venue_id == location_id
+            Match.venue_id == location_id,
         )
         return query.count()
 
@@ -134,20 +152,24 @@ class UserMetricService:
         # But usually roles are checked via "has_role" condition type, not "metric".
         # If needed as metric, return bitmask or similar?
         # For now, this might be unused if we use separate ConditionType.ROLE
-        return 0 
+        return 0
 
     @staticmethod
-    def _get_challenges_completed(user_id: int, context: Optional[Dict[str, Any]] = None) -> int:
+    def _get_challenges_completed(
+        user_id: int, context: Optional[Dict[str, Any]] = None
+    ) -> int:
         """Count completed challenge attempts (drills)."""
         from models.challenge.models import ChallengeAttempt
 
         return ChallengeAttempt.query.filter(
             ChallengeAttempt.user_id == user_id,
-            ChallengeAttempt.completed == True  # noqa: E712
+            ChallengeAttempt.completed == True,  # noqa: E712
         ).count()
 
     @staticmethod
-    def _get_distinct_opponents(user_id: int, context: Optional[Dict[str, Any]] = None) -> int:
+    def _get_distinct_opponents(
+        user_id: int, context: Optional[Dict[str, Any]] = None
+    ) -> int:
         """Count unique players played against."""
         p1_query = db.session.query(Match.player2_id).filter(
             Match.player1_id == user_id, Match.status == MatchStatus.COMPLETED.value
@@ -155,28 +177,34 @@ class UserMetricService:
         p2_query = db.session.query(Match.player1_id).filter(
             Match.player2_id == user_id, Match.status == MatchStatus.COMPLETED.value
         )
-        
+
         opponents = set([r[0] for r in p1_query.all()] + [r[0] for r in p2_query.all()])
         return len(opponents)
 
     @staticmethod
-    def _get_tournaments_in_location(user_id: int, context: Optional[Dict[str, Any]] = None) -> int:
+    def _get_tournaments_in_location(
+        user_id: int, context: Optional[Dict[str, Any]] = None
+    ) -> int:
         """Count tournaments played in a specific location."""
         return UserMetricService._get_tournaments_played(user_id, context)
 
     @staticmethod
-    def _get_tournament_drills_completed(user_id: int, context: Optional[Dict[str, Any]] = None) -> int:
+    def _get_tournament_drills_completed(
+        user_id: int, context: Optional[Dict[str, Any]] = None
+    ) -> int:
         """Count drills completed during a tournament context (with gara_id set)."""
         from models.challenge.models import ChallengeAttempt
 
         return ChallengeAttempt.query.filter(
             ChallengeAttempt.user_id == user_id,
             ChallengeAttempt.completed == True,  # noqa: E712
-            ChallengeAttempt.gara_id.isnot(None)  # Has tournament context
+            ChallengeAttempt.gara_id.isnot(None),  # Has tournament context
         ).count()
 
     @staticmethod
-    def _get_gare_with_drill_played(user_id: int, context: Optional[Dict[str, Any]] = None) -> int:
+    def _get_gare_with_drill_played(
+        user_id: int, context: Optional[Dict[str, Any]] = None
+    ) -> int:
         """
         Count distinct gare where user completed at least one challenge/drill.
 
@@ -185,10 +213,13 @@ class UserMetricService:
         """
         from models.challenge.models import ChallengeAttempt
 
-        return db.session.query(
-            func.count(func.distinct(ChallengeAttempt.gara_id))
-        ).filter(
-            ChallengeAttempt.user_id == user_id,
-            ChallengeAttempt.completed == True,  # noqa: E712
-            ChallengeAttempt.gara_id.isnot(None)
-        ).scalar() or 0
+        return (
+            db.session.query(func.count(func.distinct(ChallengeAttempt.gara_id)))
+            .filter(
+                ChallengeAttempt.user_id == user_id,
+                ChallengeAttempt.completed == True,  # noqa: E712
+                ChallengeAttempt.gara_id.isnot(None),
+            )
+            .scalar()
+            or 0
+        )

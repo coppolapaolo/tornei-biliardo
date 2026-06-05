@@ -7,9 +7,7 @@ Implements:
 - Step 2: Default values for gare (venue, cost, rounds, odd policy)
 """
 
-from flask import (
-    Blueprint, render_template, request, redirect, url_for, flash, session
-)
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from flask_login import login_required, current_user
 from sqlalchemy.exc import IntegrityError
 from flask_babel import _
@@ -106,8 +104,13 @@ def wizard_step2():
         flash(_("Il numero di gare deve essere un numero positivo"), "error")
         return redirect(url_for("admin.campionato.wizard_start"))
 
-    campionato_type = request.form.get("campionato_type", MatchmakingStrategy.AMALFI.value)
-    if campionato_type not in [MatchmakingStrategy.AMALFI.value, MatchmakingStrategy.RANDOM.value]:
+    campionato_type = request.form.get(
+        "campionato_type", MatchmakingStrategy.AMALFI.value
+    )
+    if campionato_type not in [
+        MatchmakingStrategy.AMALFI.value,
+        MatchmakingStrategy.RANDOM.value,
+    ]:
         campionato_type = MatchmakingStrategy.AMALFI.value
 
     classification_system = request.form.get("default_classification_system", "WINS")
@@ -121,7 +124,9 @@ def wizard_step2():
     playoff_elite_participants = 6
     if playoff_elite_enabled:
         try:
-            playoff_elite_participants = int(request.form.get("playoff_elite_participants", "6"))
+            playoff_elite_participants = int(
+                request.form.get("playoff_elite_participants", "6")
+            )
         except ValueError:
             playoff_elite_participants = 6
 
@@ -129,7 +134,9 @@ def wizard_step2():
     playoff_academy_participants = 6
     if playoff_academy_enabled:
         try:
-            playoff_academy_participants = int(request.form.get("playoff_academy_participants", "6"))
+            playoff_academy_participants = int(
+                request.form.get("playoff_academy_participants", "6")
+            )
         except ValueError:
             playoff_academy_participants = 6
 
@@ -148,9 +155,7 @@ def wizard_step2():
 
     # Get venues for dropdown
     venues = (
-        BilliardHall.query.filter_by(is_active=True)
-        .order_by(BilliardHall.name)
-        .all()
+        BilliardHall.query.filter_by(is_active=True).order_by(BilliardHall.name).all()
     )
 
     # Filter odd policies based on classification system
@@ -162,7 +167,11 @@ def wizard_step2():
     all_odd_policies = [
         (OddNumberPolicy.NO.value, _("Lista Attesa (solo pari)"), ["WINS", "RACK"]),
         (OddNumberPolicy.BYE.value, _("Bye (riposo)"), ["WINS"]),
-        (OddNumberPolicy.BYE_WITH_CHALLENGE.value, _("Bye con Challenge"), ["WINS", "RACK"]),
+        (
+            OddNumberPolicy.BYE_WITH_CHALLENGE.value,
+            _("Bye con Challenge"),
+            ["WINS", "RACK"],
+        ),
         (OddNumberPolicy.TRIO.value, _("Trio (match a 3)"), ["WINS", "RACK"]),
     ]
 
@@ -226,7 +235,11 @@ def wizard_create():
             )
 
         if wizard_data.get("playoff_academy_enabled"):
-            elite_size = wizard_data.get("playoff_elite_participants", 6) if wizard_data.get("playoff_elite_enabled") else 0
+            elite_size = (
+                wizard_data.get("playoff_elite_participants", 6)
+                if wizard_data.get("playoff_elite_enabled")
+                else 0
+            )
             academy_size = wizard_data.get("playoff_academy_participants", 6)
             _create_playoff_config(
                 campionato_id=campionato.id,
@@ -239,8 +252,13 @@ def wizard_create():
         # Clear wizard session
         session.pop(WIZARD_SESSION_KEY, None)
 
-        flash(_('Campionato "%(name)s" creato con successo!', name=wizard_data["name"]), "success")
-        return redirect(url_for("admin.campionato.campionato_detail", campionato_id=campionato.id))
+        flash(
+            _('Campionato "%(name)s" creato con successo!', name=wizard_data["name"]),
+            "success",
+        )
+        return redirect(
+            url_for("admin.campionato.campionato_detail", campionato_id=campionato.id)
+        )
 
     except Exception as e:
         flash(_("Errore durante la creazione: %(error)s", error=str(e)), "error")
@@ -303,7 +321,9 @@ def create_campionato():
     final_playoffs = "final_playoffs" in request.form
 
     # Map without_x to default_odd_policy
-    default_odd_policy = OddNumberPolicy.TRIO.value if without_x else OddNumberPolicy.BYE.value
+    default_odd_policy = (
+        OddNumberPolicy.TRIO.value if without_x else OddNumberPolicy.BYE.value
+    )
 
     # Usa il service layer
     campionato_service.create_campionato_with_director(
@@ -381,7 +401,9 @@ def campionato_detail(campionato_id):
     # Playoff feasibility check (for terminate button warning)
     playoff_feasibility = None
     if campionato.has_playoff_configurations() and not campionato.terminated_at:
-        playoff_feasibility = campionato_service.check_playoff_feasibility(campionato_id)
+        playoff_feasibility = campionato_service.check_playoff_feasibility(
+            campionato_id
+        )
 
     # Playoff status (for terminated campionati with playoff configs)
     playoff_status = None
@@ -397,6 +419,7 @@ def campionato_detail(campionato_id):
         # Get campionato players for manual add dropdown
         from models.competition.models import Inscription, Gara
         from models.user.models import User
+
         player_ids = (
             db.session.query(Inscription.user_id)
             .join(Gara)
@@ -451,9 +474,7 @@ def edit_campionato(campionato_id):
         try:
             # Parse planned_gare_count (Step 1 field)
             planned_gare_count = request.form.get("planned_gare_count")
-            planned_gare_count = (
-                int(planned_gare_count) if planned_gare_count else None
-            )
+            planned_gare_count = int(planned_gare_count) if planned_gare_count else None
 
             # Default-gare settings (single source shared with wizard_create)
             settings = CampionatoFormParser.parse_default_settings(request.form)
@@ -542,7 +563,7 @@ def soft_delete_campionato(campionato_id):
             campionato_id=campionato_id,
             deleted_by_id=current_user.id,
             cascade_option=cascade_option,
-            reason=reason
+            reason=reason,
         )
 
         if success:
@@ -550,10 +571,12 @@ def soft_delete_campionato(campionato_id):
                 flash(
                     f'Campionato "{campionato_name}" eliminato. '
                     f"I match sono stati mantenuti come match individuali.",
-                    "success"
+                    "success",
                 )
             else:
-                flash(f'Campionato "{campionato_name}" eliminato con successo!', "success")
+                flash(
+                    f'Campionato "{campionato_name}" eliminato con successo!', "success"
+                )
         else:
             flash(f'Campionato "{campionato_name}" era già eliminato.', "warning")
 
@@ -577,7 +600,10 @@ def terminate_campionato(campionato_id):
         success = campionato_service.terminate_campionato(campionato_id)
         if success:
             flash(
-                _('Campionato "%(name)s" terminato con successo.', name=campionato_name),
+                _(
+                    'Campionato "%(name)s" terminato con successo.',
+                    name=campionato_name,
+                ),
                 "success",
             )
         else:
@@ -628,7 +654,9 @@ def start_playoff(campionato_id):
         total = sum(len(qs) for qs in results.values())
         if total == 0:
             flash(
-                _("Playoff avviati ma nessun giocatore qualificato. Verifica la classifica."),
+                _(
+                    "Playoff avviati ma nessun giocatore qualificato. Verifica la classifica."
+                ),
                 "warning",
             )
         else:
@@ -749,18 +777,39 @@ def playoff_edit_config(campionato_id, config_id):
     from models.playoff.services import PlayoffService
 
     fields = {}
-    for key in ("name", "positions_from", "positions_to", "max_participants",
-                "min_garas_played", "discipline", "distance", "rounds_count",
-                "strategy_type", "odd_number_policy"):
+    for key in (
+        "name",
+        "positions_from",
+        "positions_to",
+        "max_participants",
+        "min_garas_played",
+        "discipline",
+        "distance",
+        "rounds_count",
+        "strategy_type",
+        "odd_number_policy",
+    ):
         val = request.form.get(key)
         if val is not None and val != "":
-            if key in ("positions_from", "positions_to", "max_participants",
-                       "min_garas_played", "distance", "rounds_count"):
+            if key in (
+                "positions_from",
+                "positions_to",
+                "max_participants",
+                "min_garas_played",
+                "distance",
+                "rounds_count",
+            ):
                 fields[key] = int(val)
             else:
                 fields[key] = val
-        elif val == "" and key in ("discipline", "strategy_type", "odd_number_policy",
-                                    "min_garas_played", "distance", "rounds_count"):
+        elif val == "" and key in (
+            "discipline",
+            "strategy_type",
+            "odd_number_policy",
+            "min_garas_played",
+            "distance",
+            "rounds_count",
+        ):
             fields[key] = None  # Clear override → inherit from campionato
 
     try:
@@ -774,9 +823,7 @@ def playoff_edit_config(campionato_id, config_id):
     )
 
 
-@campionato_bp.route(
-    "/<int:campionato_id>/playoff/config/add", methods=["POST"]
-)
+@campionato_bp.route("/<int:campionato_id>/playoff/config/add", methods=["POST"])
 @login_required
 @campionato_manager_required(lambda campionato_id, **_: campionato_id)
 def playoff_add_config(campionato_id):

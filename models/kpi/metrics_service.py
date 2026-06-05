@@ -50,7 +50,9 @@ class MetricsService:
         return _calculate_trend(current, previous)
 
     @staticmethod
-    def get_daily_registrations(date_range: Optional[DateRange]) -> List[Dict[str, Any]]:
+    def get_daily_registrations(
+        date_range: Optional[DateRange],
+    ) -> List[Dict[str, Any]]:
         """Get daily registration counts for charting."""
         from ..user.models import User
 
@@ -332,7 +334,9 @@ class MetricsService:
             query = query.filter(and_(*filters))
         current_usage = query.group_by(KpiFeatureUsage.feature_name).all()
 
-        usage_map = {r.feature_name: (r.usage or 0, r.unique or 0) for r in current_usage}
+        usage_map = {
+            r.feature_name: (r.usage or 0, r.unique or 0) for r in current_usage
+        }
 
         prev_map: Dict[str, int] = {}
         if date_range and date_range.is_bounded:
@@ -362,9 +366,11 @@ class MetricsService:
                     "unique_users": unique,
                     "trend_percent": trend.trend_percent,
                     "trend_direction": trend.trend_direction,
-                    "percentage": round((current / total_usage * 100), 1)
-                    if total_usage > 0
-                    else 0,
+                    "percentage": (
+                        round((current / total_usage * 100), 1)
+                        if total_usage > 0
+                        else 0
+                    ),
                 }
             )
 

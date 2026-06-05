@@ -42,7 +42,7 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
         EncryptedString(200), unique=True, nullable=True
     )  # Encrypted personal data
     password_hash = db.Column(db.String(120), nullable=False)
-    
+
     # Verification status
     is_verified = db.Column(db.Boolean, default=False, nullable=False)
 
@@ -249,9 +249,7 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
         from ..match.models import Match
         from ..status_enum import GaraStatus, MatchStatus
 
-        total_inscriptions = (
-            Inscription.query.filter_by(user_id=self.id).count()
-        )
+        total_inscriptions = Inscription.query.filter_by(user_id=self.id).count()
 
         matches: List["Match"] = Match.query.filter(
             db.or_(Match.player1_id == self.id, Match.player2_id == self.id),
@@ -332,24 +330,27 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
 
         return AchievementService.has_achievement(self.id, achievement_slug)
 
-    def can_access(self, feature_code: str, context: Dict[str, Any] | None = None) -> bool:
+    def can_access(
+        self, feature_code: str, context: Dict[str, Any] | None = None
+    ) -> bool:
         """
         Check if user can access a specific feature based on gamification rules.
-        
+
         Args:
             feature_code: Code of the feature to check (e.g., 'create_match')
             context: Optional context for rule evaluation (e.g., location_id)
-            
+
         Returns:
             True if feature is unlocked or overridden, False otherwise.
         """
         if self.gamification_override:
             return True
-            
+
         if self.is_admin:
             return True
-            
+
         from models.gamification.unlock_engine import UnlockEngine
+
         return UnlockEngine.check_eligibility(self.id, feature_code, context)
 
     # debug ─────────────────────────────────────────────────────────────────────

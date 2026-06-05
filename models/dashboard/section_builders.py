@@ -223,9 +223,6 @@ class DashboardSectionBuilder:
             progress = LevelService.get_level_progress(user_id)
             streaks = StreakService.get_all_streaks(user_id)
 
-            return {
-                "progress": progress,
-                "streaks": streaks
-            }
+            return {"progress": progress, "streaks": streaks}
         except Exception:
             return {}

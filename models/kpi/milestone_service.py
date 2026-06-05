@@ -48,9 +48,7 @@ class MilestoneService:
 
         from ..competition.models import Gara
 
-        completed_gare = Gara.query.filter_by(
-            status=GaraStatus.COMPLETED.value
-        ).count()
+        completed_gare = Gara.query.filter_by(status=GaraStatus.COMPLETED.value).count()
         for threshold in GARA_MILESTONES:
             if completed_gare >= threshold and not KpiMilestone.is_reached(
                 MilestoneType.GARE_COMPLETED, threshold

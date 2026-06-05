@@ -73,6 +73,7 @@ class CommunityService:
             # relationships, so each g.inscriptions access would fire its own
             # SELECT otherwise.
             from sqlalchemy.orm import selectinload
+
             gara_ids = [g.id for g in managed_garas]
             managed_garas = (
                 Gara.query.filter(Gara.id.in_(gara_ids))
@@ -96,16 +97,20 @@ class CommunityService:
                     saturation_count += 1
 
             avg_saturation = (
-                round(saturation_sum / saturation_count, 1) if saturation_count > 0 else 0.0
+                round(saturation_sum / saturation_count, 1)
+                if saturation_count > 0
+                else 0.0
             )
 
-            results.append({
-                "director_id": director.id,
-                "director_name": director.username,
-                "total_garas": total_garas,
-                "completed_garas": completed_garas,
-                "avg_saturation": avg_saturation
-            })
+            results.append(
+                {
+                    "director_id": director.id,
+                    "director_name": director.username,
+                    "total_garas": total_garas,
+                    "completed_garas": completed_garas,
+                    "avg_saturation": avg_saturation,
+                }
+            )
 
         results.sort(key=lambda x: x["avg_saturation"], reverse=True)
         return results
@@ -130,16 +135,17 @@ class CommunityService:
             .filter(
                 Match.updated_at >= sixty_days_ago,
                 Match.updated_at < thirty_days_ago,
-                Match.status == MatchStatus.COMPLETED.value
+                Match.status == MatchStatus.COMPLETED.value,
             )
             .union(
-                db.session.query(Match.player2_id)
-                .filter(
+                db.session.query(Match.player2_id).filter(
                     Match.updated_at >= sixty_days_ago,
                     Match.updated_at < thirty_days_ago,
-                    Match.status == MatchStatus.COMPLETED.value
+                    Match.status == MatchStatus.COMPLETED.value,
                 )
-            ).distinct().all()
+            )
+            .distinct()
+            .all()
         )
         prev_active_ids = {r[0] for r in active_last_month if r[0]}
 
@@ -147,15 +153,16 @@ class CommunityService:
             db.session.query(Match.player1_id)
             .filter(
                 Match.updated_at >= thirty_days_ago,
-                Match.status == MatchStatus.COMPLETED.value
+                Match.status == MatchStatus.COMPLETED.value,
             )
             .union(
-                db.session.query(Match.player2_id)
-                .filter(
+                db.session.query(Match.player2_id).filter(
                     Match.updated_at >= thirty_days_ago,
-                    Match.status == MatchStatus.COMPLETED.value
+                    Match.status == MatchStatus.COMPLETED.value,
                 )
-            ).distinct().all()
+            )
+            .distinct()
+            .all()
         )
         curr_active_ids = {r[0] for r in active_this_month if r[0]}
 
@@ -193,16 +200,14 @@ class CommunityService:
             total_sample += 1
 
         virality_score = (
-            round((viral_matches / total_sample * 100), 1)
-            if total_sample > 0
-            else 0.0
+            round((viral_matches / total_sample * 100), 1) if total_sample > 0 else 0.0
         )
 
         return {
             "stickiness": stickiness,
             "churn_count": churned_count,
             "churn_rate": churn_rate,
-            "virality_score": virality_score
+            "virality_score": virality_score,
         }
 
     @staticmethod
@@ -219,8 +224,7 @@ class CommunityService:
 
         p1_counts = (
             db.session.query(
-                Match.player1_id.label("user_id"),
-                func.count(Match.id).label("count")
+                Match.player1_id.label("user_id"), func.count(Match.id).label("count")
             )
             .filter(
                 Match.updated_at >= thirty_days_ago,
@@ -233,8 +237,7 @@ class CommunityService:
 
         p2_counts = (
             db.session.query(
-                Match.player2_id.label("user_id"),
-                func.count(Match.id).label("count")
+                Match.player2_id.label("user_id"), func.count(Match.id).label("count")
             )
             .filter(
                 Match.updated_at >= thirty_days_ago,
@@ -248,7 +251,7 @@ class CommunityService:
         trio_p1_counts = (
             db.session.query(
                 TrioMatch.player1_id.label("user_id"),
-                func.count(TrioMatch.id).label("count")
+                func.count(TrioMatch.id).label("count"),
             )
             .join(Match, Match.id == TrioMatch.match_id)
             .filter(
@@ -263,7 +266,7 @@ class CommunityService:
         trio_p2_counts = (
             db.session.query(
                 TrioMatch.player2_id.label("user_id"),
-                func.count(TrioMatch.id).label("count")
+                func.count(TrioMatch.id).label("count"),
             )
             .join(Match, Match.id == TrioMatch.match_id)
             .filter(
@@ -278,7 +281,7 @@ class CommunityService:
         trio_p3_counts = (
             db.session.query(
                 TrioMatch.player3_id.label("user_id"),
-                func.count(TrioMatch.id).label("count")
+                func.count(TrioMatch.id).label("count"),
             )
             .join(Match, Match.id == TrioMatch.match_id)
             .filter(
@@ -291,21 +294,27 @@ class CommunityService:
         )
 
         user_counts: Dict[int, int] = {}
-        for counts in [p1_counts, p2_counts, trio_p1_counts, trio_p2_counts, trio_p3_counts]:
+        for counts in [
+            p1_counts,
+            p2_counts,
+            trio_p1_counts,
+            trio_p2_counts,
+            trio_p3_counts,
+        ]:
             for r in counts:
                 if r.user_id:
                     user_counts[r.user_id] = user_counts.get(r.user_id, 0) + r.count
 
-        sorted_users = sorted(user_counts.items(), key=lambda x: x[1], reverse=True)[:limit]
+        sorted_users = sorted(user_counts.items(), key=lambda x: x[1], reverse=True)[
+            :limit
+        ]
 
         results = []
         for uid, count in sorted_users:
             user = User.query.get(uid)
             if user:
-                results.append({
-                    "user_id": uid,
-                    "username": user.username,
-                    "match_count": count
-                })
+                results.append(
+                    {"user_id": uid, "username": user.username, "match_count": count}
+                )
 
         return results
