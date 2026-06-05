@@ -256,9 +256,17 @@ Decisione **non ancora in implementazione**. Dettagli risolti il 2026-06-05
   (e i giocatori notificati). Chiude il loop "crea l'offerta dove c'è domanda".
   Dettaglio in `GAMIFICATION_V3.md` §10-ter.
 
+- **Quest & Achievement** (principio: mai mostrare contenuto non ottenibile/non
+  attivo). *Achievement*: agganciare `seed_achievements` a migrazione/startup;
+  nascondere (`is_hidden`) i 2 stub (`win_streak`, `category_reached`) e i
+  progress-based non cablati; cablare agli eventi i progress-based economici.
+  *Quest*: status **calcolato dalle date** (niente cron) + **seed minimo** di
+  quest personali ricorrenti, dietro maturity-gate. Dettaglio in
+  `GAMIFICATION_V3.md` §11-ter.
+
 Restano da tarare le soglie numeriche, la grafica dell'onboarding, il raggio di
-default, la formalizzazione del modello geografico e il design preciso delle
-classifiche locali (a leghe vs raggio fisso).
+default, la formalizzazione del modello geografico, il design delle classifiche
+locali (leghe vs raggio) e il set esatto di quest seed / achievement da cablare.
 
 File coinvolti (riferimento, non ancora modificati):
 - `models/gamification/xp_config.py` — rimozione `LEVEL_UNLOCKS`/helper legacy.

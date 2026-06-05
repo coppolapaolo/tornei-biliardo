@@ -284,6 +284,44 @@ scope **geografico** (filtro per raggio/zona riusando il nuovo
 come default. Sinergia con §9 (drill) e §10-bis (geo): la stessa nozione di
 engagement e la stessa geografia alimentano sia gli slot drill sia le classifiche.
 
+## 11-ter. Quest & Achievement (popolare ciò che funziona, nascondere il resto)
+
+**Principio unificante**: mai mostrare contenuto **non ottenibile o non attivo**
+(un badge bloccato-per-sempre o una quest mai-attiva demotivano — spirito Hanus &
+Fox). Si popola ciò che funziona, si nasconde il resto finché non funziona.
+
+Stato verificato:
+- **Achievement**: 31 definiti (`achievement_seeds.py`), valutazione per lo più
+  reale; `seed_achievements` **mai chiamato in prod**; stub sempre `False`
+  (`win_streak`, `category_reached`); alcuni progress-based forse non cablati
+  agli eventi.
+- **Quest**: motore + cablaggio eventi pronti (`record_activity_for_quests` su 4
+  eventi); manca l'automazione del ciclo di vita (`update_quest_statuses` mai
+  chiamato) e il contenuto (nessun seed).
+
+**Decisione — Achievement:**
+- Agganciare `seed_achievements` a **migrazione/startup** (i 31 esistono in prod).
+- **Nascondere** (`is_hidden`) i non-ottenibili: i 2 stub (`win_streak`,
+  `category_reached`) e gli eventuali progress-based non cablati.
+- **Cablare agli eventi** i progress-based economici (`unique_opponents`,
+  `match_proposals_created/accepted`, …) così progrediscono davvero.
+- `win_streak`/`category_reached` restano nascosti finché non esistono i
+  rispettivi tracking (win-streak; categoria giocatore).
+
+**Decisione — Quest:**
+- **Status calcolato dalle date a runtime** (ACTIVE/EXPIRED derivati da
+  `start_date`/`end_date` alla lettura) → **niente cron**, robusto su
+  PythonAnywhere. (Da verificare: i flussi admin activate/expire diventano
+  override manuali sopra il default temporale.)
+- **Seed minimo** di quest **personali ricorrenti** (es. 1-2 settimanali tipo
+  "gioca N partite", "completa N drill") → loop di abitudine vivo, framing
+  personale (no confronto sociale, coerente con §11-bis).
+- Tutto dietro **maturity-gate** (beta director) finché validato.
+
+**Coerenza**: le quest sono *goal-setting personale* (competenza-SDT senza
+status); gli achievement il *riconoscimento di traguardi reali*. Entrambi
+alimentano l'abitudine (obiettivo #2) senza spingere lo status come fine.
+
 ## 12. Debito tecnico / pulizia (da ADR-031, verificato)
 
 - **BUG/maturity**: `gamification.*` è `{"director"}` in `feature_flags.py`: è il
@@ -322,6 +360,8 @@ engagement e la stessa geografia alimentano sia gli slot drill sia le classifich
   campi non essenziali).
 - Segnale-domanda (§10-ter, design fatto): restano da tarare soglia (≥6),
   default raggio (~30 km), finestra scadenza (~60 gg), durata cooldown.
+- Quest & achievement (§11-ter, design fatto): da definire il set esatto delle
+  quest seed e l'elenco preciso dei progress-based da cablare vs nascondere.
 - Raggio di default per la discovery (~30–50 km) e se renderlo per-utente.
 - Modello geografico (§10-bis): da formalizzare in un ADR dedicato prima
   dell'implementazione (schema `cities`, migrazione sale italiane, riscrittura
