@@ -21,6 +21,12 @@ from datetime import datetime
 
 from models.base import db, utc_now
 from models.status_enum import GaraStatus
+from models.exceptions import (
+    NotFoundError,
+    ConflictError,
+    ValidationError,
+    PermissionDeniedError,
+)
 from .models import Inscription
 from models.transaction.manager import transactional
 
@@ -73,7 +79,7 @@ class InscriptionService:
 
         # Playoff gare: inscription reserved to qualified players only
         if gara.is_playoff and not _bypass_playoff_check:
-            raise ValueError(
+            raise PermissionDeniedError(
                 "Gara playoff — iscrizione riservata ai qualificati"
             )
 
@@ -83,7 +89,7 @@ class InscriptionService:
 
         # Validazione: Admin non può partecipare ai tornei
         if user.role == UserRole.ADMIN.value:
-            raise ValueError("Admin non può partecipare ai tornei")
+            raise PermissionDeniedError("Admin non può partecipare ai tornei")
 
         # Validazione: Verifica periodo di iscrizione
         # IMPORTANT: Use UTC for all datetime comparisons
@@ -91,9 +97,9 @@ class InscriptionService:
         now = utc_now()
         if gara.inscription_start and gara.inscription_end:
             if now < gara.inscription_start:
-                raise ValueError("Iscrizioni non ancora aperte")
+                raise ConflictError("Iscrizioni non ancora aperte")
             if now > gara.inscription_end:
-                raise ValueError("Iscrizioni chiuse")
+                raise ConflictError("Iscrizioni chiuse")
 
         # Conta iscrizioni attive (non in waitlist)
         active_count = (
@@ -613,13 +619,13 @@ class InscriptionService:
         from models.competition.state_service import StateService
 
         if inscription_start > inscription_end:
-            raise ValueError(
+            raise ValidationError(
                 "La data di inizio deve essere precedente alla data di fine!"
             )
 
         gara = db.session.get(Gara, gara_id)
         if not gara:
-            raise ValueError(f"Gara {gara_id} non trovata")
+            raise NotFoundError(f"Gara {gara_id} non trovata")
 
         # Valida che la data di fine iscrizioni non superi la data della gara
         adjusted = False
@@ -662,21 +668,21 @@ class InscriptionService:
 
         gara = db.session.get(Gara, gara_id)
         if not gara:
-            raise ValueError(f"Gara {gara_id} non trovata")
+            raise NotFoundError(f"Gara {gara_id} non trovata")
 
         if not gara.can_modify_inscription_dates():
-            raise ValueError(
+            raise ConflictError(
                 "Impossibile modificare le date: il primo turno è già stato avviato!"
             )
 
         if inscription_start > inscription_end:
-            raise ValueError(
+            raise ValidationError(
                 "La data di inizio deve essere precedente alla data di fine!"
             )
 
         # Verifica che la fine iscrizioni non sia dopo la data della gara
         if gara.date and inscription_end.date() > gara.date:
-            raise ValueError(
+            raise ValidationError(
                 "Le iscrizioni non possono terminare dopo la data della gara!"
             )
 

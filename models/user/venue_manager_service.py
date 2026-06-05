@@ -10,6 +10,12 @@ from models.base import db
 from models.user.models import User, VenueManagerRequest, VenueManagement
 from models.user.role_enum import UserRole
 from models.status_enum import VenueManagerRequestStatus
+from models.exceptions import (
+    NotFoundError,
+    ConflictError,
+    ValidationError,
+    PermissionDeniedError,
+)
 from models.transaction.manager import transactional, read_only
 from models.events.base import EventBus
 from models.events.user_events import (
@@ -64,14 +70,14 @@ class VenueManagerService:
         """
         user = db.session.get(User, user_id)
         if not user:
-            raise ValueError("User not found")
+            raise NotFoundError("User not found")
 
         # Import BilliardHall model for venue validation
         from models.location.models import BilliardHall
 
         venue = db.session.get(BilliardHall, venue_id)
         if not venue:
-            raise ValueError("Venue not found")
+            raise NotFoundError("Venue not found")
 
         # Check for existing pending request
         # Ensures only one pending request per user-venue pair at a time
@@ -81,11 +87,11 @@ class VenueManagerService:
             status=VenueManagerRequestStatus.PENDING.value,
         ).first()
         if existing_request:
-            raise ValueError("Pending request already exists for this venue")
+            raise ConflictError("Pending request already exists for this venue")
 
         # Validate notes
         if not notes or not notes.strip():
-            raise ValueError("Notes are required")
+            raise ValidationError("Notes are required")
 
         # Check if venue already has a manager (contested request)
         from models.user.models import VenueManagement
@@ -148,14 +154,14 @@ class VenueManagerService:
         """
         # Validate admin user
         if admin_user.role != UserRole.ADMIN.value:
-            raise ValueError("Only administrators can process venue manager requests")
+            raise PermissionDeniedError("Only administrators can process venue manager requests")
 
         request = db.session.get(VenueManagerRequest, request_id)
         if not request:
-            raise ValueError("Request not found")
+            raise NotFoundError("Request not found")
 
         if request.status != VenueManagerRequestStatus.PENDING.value:
-            raise ValueError("Request is not pending")
+            raise ConflictError("Request is not pending")
 
         # Process the request with appropriate status and venue assignment
         if approve:
@@ -331,14 +337,14 @@ class VenueManagerService:
         """
         # Validate admin user
         if admin_user.role != UserRole.ADMIN.value:
-            raise ValueError("Only administrators can remove venue managers")
+            raise PermissionDeniedError("Only administrators can remove venue managers")
 
         venue_management = VenueManagement.query.filter_by(
             user_id=user_id, venue_id=venue_id
         ).first()
 
         if not venue_management:
-            raise ValueError("Venue management assignment not found")
+            raise NotFoundError("Venue management assignment not found")
 
         db.session.delete(venue_management)
         return True
@@ -363,28 +369,28 @@ class VenueManagerService:
             PermissionError: If assigned_by is not admin
         """
         if assigned_by.role != UserRole.ADMIN.value:
-            raise ValueError("Only administrators can assign venue managers")
+            raise PermissionDeniedError("Only administrators can assign venue managers")
 
         # Import User model for user validation
         from models.user.models import User
 
         user = db.session.get(User, user_id)
         if not user:
-            raise ValueError("User not found")
+            raise NotFoundError("User not found")
 
         # Import BilliardHall model for venue validation
         from models.location.models import BilliardHall
 
         venue = db.session.get(BilliardHall, venue_id)
         if not venue:
-            raise ValueError("Venue not found")
+            raise NotFoundError("Venue not found")
 
         # Check if venue already has an active manager
         existing_assignment = VenueManagement.query.filter_by(
             venue_id=venue_id
         ).first()
         if existing_assignment:
-            raise ValueError("Venue already has a manager")
+            raise ConflictError("Venue already has a manager")
 
         # Create assignment
         assignment = VenueManagement(
@@ -411,11 +417,11 @@ class VenueManagerService:
             PermissionError: If revoked_by is not admin
         """
         if revoked_by.role != UserRole.ADMIN.value:
-            raise ValueError("Only administrators can revoke venue manager assignments")
+            raise PermissionDeniedError("Only administrators can revoke venue manager assignments")
 
         assignment = db.session.get(VenueManagement, assignment_id)
         if not assignment:
-            raise ValueError("Venue management assignment not found")
+            raise NotFoundError("Venue management assignment not found")
 
         # Soft delete the assignment by setting a revoked_by field if it exists,
         # or delete it completely
@@ -488,13 +494,13 @@ class VenueManagerService:
         """
         request = db.session.get(VenueManagerRequest, request_id)
         if not request:
-            raise ValueError("Request not found")
+            raise NotFoundError("Request not found")
 
         if request.status != VenueManagerRequestStatus.PENDING.value:
-            raise ValueError("Only pending requests can be cancelled")
+            raise ConflictError("Only pending requests can be cancelled")
 
         if request.user_id != user.id:
-            raise ValueError("You can only cancel your own requests")
+            raise PermissionDeniedError("You can only cancel your own requests")
 
         # Update request status to cancelled
         request.status = VenueManagerRequestStatus.CANCELLED.value

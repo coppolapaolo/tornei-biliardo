@@ -384,8 +384,17 @@ nessuno di questi.
   > `ValueError` → i 458 `except ValueError` continuano a funzionare
   > (migrazione incrementale). Helper `http_status_for_exception()` + wiring in
   > `handle_ajax_service_action` (404/409/422/403 invece di 400 generico).
-  > **Resta da fare:** adozione incrementale delle sottoclassi nei servizi.
-  > Testo originale:
+  > **Follow-up #1 avviato (2026-06-05):** adozione delle sottoclassi nei primi
+  > servizi core — `VenueManagerService` (tutti i 18 raise: not-found→`NotFoundError`,
+  > conflitto/stato→`ConflictError`, input→`ValidationError`, permessi→
+  > `PermissionDeniedError`) e `InscriptionService` (not-found, conflitti di periodo
+  > iscrizione, validazione date, eleggibilità playoff/admin→permesso). Lasciata
+  > `ValueError` l'eccezione *informativa* di `open_inscriptions` (data aggiustata =
+  > successo-con-avviso, non un errore). `StateService` usava già
+  > `InvalidTransitionError` (ora `ConflictError`→409). Test:
+  > `tests/new/unit/test_domain_exceptions_adoption.py` (tipi + mapping HTTP).
+  > **Resta da fare:** estendere l'adozione agli altri servizi (è incrementale per
+  > definizione; il pattern e il test-guida sono ora in place). Testo originale:
   `models/exceptions.py` definisce solo `InvalidTransitionError`. Validazione,
   not-found, conflitto, permessi, regole di business → tutti `ValueError`
   indistinguibili. Le route fanno `except ValueError` generico (cfr.
