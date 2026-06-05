@@ -200,6 +200,39 @@ attribuzione). Non necessario per la granularità città.
   lat/lng (via tabella `cities`).
 - Merita probabilmente un **ADR dedicato** ("modello geografico per prossimità").
 
+## 10-ter. Segnale-domanda → organizzatori ("crea l'offerta dove c'è domanda")
+
+Chiude la leva #4 dell'empty-state (§10): la domanda inespressa dei giocatori
+diventa un trigger azionabile per i director. Riusa la geografia (§10-bis) e la
+policy notifiche (§11: azionabile → **notifica persistente**).
+
+**Richiesta**: un giocatore esprime "vorrei una gara nella mia zona". Campi:
+giocatore, coordinate, `created_at`, `expires_at`.
+
+**Zona del director**: cerchio attorno alla home del director, **raggio
+regolabile dal director** (default **~30 km**). Conteggio = richieste *attive*
+con distanza Haversine ≤ raggio (linea d'aria dalle lat/lng GeoNames).
+
+**Soglia & trigger** (notifica persistente, azionabile):
+- **Fronte di salita** a **≥6** richieste attive nella zona (notifica al passaggio
+  5→6, *non* in continuo finché ≥6). Soglia configurabile.
+- **Player → director**: alla promozione si valuta la sua zona; se già ≥6,
+  notifica una-tantum → chiude il loop domanda→offerta.
+- **Cambio home/raggio** del director → rivaluta.
+- **Cooldown** per director/zona dopo una notifica (anti-nag).
+
+**Scadenza & refresh**: `expires_at` ~**60 giorni**; **auto-refresh** se il
+giocatore è attivo sulla piattaforma **+ prompt di riconferma** prima della
+scadenza. Scaduta → esce silenziosamente dal conteggio.
+
+**Chiusura del cerchio**: quando il director crea la gara, le richieste
+corrispondenti vengono **consumate** (non rifanno scattare la soglia) e i
+giocatori ricevono la notifica azionabile "gara aperta vicino a te → iscriviti".
+
+**Zona senza director**: la domanda si accumula come **segnale per l'admin**
+(dove reclutare/promuovere un director) e resta in attesa del trigger
+player→director.
+
 ## 11. Calibrazione dei segnali (anti-invasività)
 
 - **Doppio canale → policy**: eventi celebrativi (XP, level-up, achievement,
@@ -287,8 +320,8 @@ engagement e la stessa geografia alimentano sia gli slot drill sia le classifich
 - Soglie numeriche §8/§9 sui dati reali.
 - Grafica esatta dell'onboarding (modale vs pagina; come gestire lo skip dei soli
   campi non essenziali).
-- Dettaglio "segnale domanda → organizzatori": dove e come i director vedono
-  l'interesse aggregato (raggruppamento per città/cluster, §10-bis).
+- Segnale-domanda (§10-ter, design fatto): restano da tarare soglia (≥6),
+  default raggio (~30 km), finestra scadenza (~60 gg), durata cooldown.
 - Raggio di default per la discovery (~30–50 km) e se renderlo per-utente.
 - Modello geografico (§10-bis): da formalizzare in un ADR dedicato prima
   dell'implementazione (schema `cities`, migrazione sale italiane, riscrittura

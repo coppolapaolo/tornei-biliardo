@@ -247,6 +247,15 @@ Decisione **non ancora in implementazione**. Dettagli risolti il 2026-06-05
   Hanus & Fox 2015, Mekler et al. 2017, SDT/CET, Festinger. Dettaglio in
   `GAMIFICATION_V3.md` §11-bis.
 
+- **Segnale-domanda → organizzatori**: i giocatori esprimono richieste di gara
+  geolocalizzate; quando la domanda *attiva* in una **zona del director** (cerchio
+  a **raggio regolabile**, default ~30 km, Haversine) raggiunge **≥6** (fronte di
+  salita), il director riceve una **notifica azionabile**; idem alla promozione
+  player→director se la domanda esiste già. Richieste con **scadenza ~60 gg** +
+  **auto-refresh sull'attività + riconferma**; consumate quando la gara è creata
+  (e i giocatori notificati). Chiude il loop "crea l'offerta dove c'è domanda".
+  Dettaglio in `GAMIFICATION_V3.md` §10-ter.
+
 Restano da tarare le soglie numeriche, la grafica dell'onboarding, il raggio di
 default, la formalizzazione del modello geografico e il design preciso delle
 classifiche locali (a leghe vs raggio fisso).
