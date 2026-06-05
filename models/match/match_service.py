@@ -10,7 +10,7 @@ from typing import List, Optional, Dict, Any, TYPE_CHECKING
 from datetime import datetime
 
 if TYPE_CHECKING:
-    from models.orchestration.service import OperationResult
+    from models.shared.operation_result import OperationResult
 
 from models.base import db, utc_now
 from models.status_enum import MatchStatus
@@ -192,7 +192,7 @@ class MatchService:
         Returns:
             OperationResult indicating success or failure
         """
-        from models.orchestration.service import OperationResult, OperationType
+        from models.shared.operation_result import OperationResult, OperationType
         from .rack_service import RackService
 
         match = db.session.get(Match, match_id)
@@ -271,7 +271,7 @@ class MatchService:
         Returns:
             OperationResult indicating success or failure
         """
-        from models.orchestration.service import OperationResult, OperationType
+        from models.shared.operation_result import OperationResult, OperationType
 
         match = db.session.get(Match, match_id)
         if not match:
@@ -319,7 +319,7 @@ class MatchService:
         Returns:
             OperationResult with batch correction results
         """
-        from models.orchestration.service import OperationResult, OperationType
+        from models.shared.operation_result import OperationResult, OperationType
         from .rack_service import RackService
 
         results = []

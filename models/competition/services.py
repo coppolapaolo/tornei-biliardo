@@ -16,7 +16,7 @@ from __future__ import annotations
 from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from models.orchestration.service import OperationResult
+    from models.shared.operation_result import OperationResult
 from datetime import date, datetime
 
 from models.base import db, utc_now
@@ -672,7 +672,7 @@ class GaraService:
         """
         from models.match.models import Match
         from models.classification.models import RoundClassification
-        from models.orchestration.service import OperationResult, OperationType
+        from models.shared.operation_result import OperationResult, OperationType
 
         gara = db.session.get(Gara, gara_id)
         if not gara:
@@ -809,7 +809,7 @@ class GaraService:
         Returns:
             OperationResult with success status and details
         """
-        from models.orchestration.service import OperationResult, OperationType
+        from models.shared.operation_result import OperationResult, OperationType
 
         gara = db.session.get(Gara, gara_id)
         if not gara:

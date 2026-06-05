@@ -42,7 +42,31 @@ ha due livelli — fix minimo (leggere il campo nell'edit) vs fix "giusto" (far 
 l'edit da `GaraFormParser`, che però è già Decisione 3). **Cosa decidere:** quali bug
 fixo ora e, per F9.2, se minimo o "giusto".
 
-### Decisione 2 — Infra non usata in produzione: pausa o scarto? (solo tu lo sai)
+### Decisione 2 — Infra non usata in produzione: pausa o scarto? ✅ PARZIALE (2026-06-05)
+> **Esiti decisi col maintainer:**
+> - **`models/scoring/` → SCARTO.** Confermato che la roadmap Elo/Fargo (handicap +
+>   primo turno Amalfi su rating) passa da `models/rating/` (vivo), non da `scoring/`
+>   (doppione orfano superato da ADR-013 + `classification/`). Rimosso.
+> - **`DomainOrchestrator` (`models/orchestration/`) → SCARTO**, conservando le
+>   dataclass `OperationResult`/`OperationType` (usate da codice vivo) spostate in
+>   `models/shared/operation_result.py`. **`MatchmakingOrchestrator`
+>   (`models/matchmaking/service.py`) NON rimosso:** a differenza di
+>   `DomainOrchestrator` non è uno stub — è istanziato in `MatchmakingService` e
+>   contiene `create_round_with_handicaps` (logica handicap, allineata alla roadmap).
+>   Classificato **pausa**, da rivedere separatamente.
+> - **`QueryOptimizer` monitoring → SCARTO PARZIALE.** Rimossi `QueryAnalyzer`, la
+>   detection N+1, la dashboard e i listener SQLAlchemy *sempre attivi* (overhead per
+>   ogni query, zero consumatori). **Tenuti** `optimized_query` (caching) e
+>   `bulk_load_relationships` (eager load), che hanno un consumatore reale.
+> - **`DomainService` base (④) → RINVIATO.** Verifica sul codice: NON è "3 servizi
+>   appena tocchi" ma è **pervasivo** in `campionato/tournament_service.py` (servizio
+>   core, 50+ call site `_execute_with_tracking`/`_track_domain_access`). Rimuoverlo è
+>   un refactor meccanico ampio su un servizio vivo, sproporzionato rispetto al valore:
+>   meglio una pass dedicata. Lasciato com'è per ora.
+>
+> Test: suite unit 926 verde, integration rilevanti verdi, pyright 0 errori.
+
+### Decisione 2 (originale) — Infra non usata in produzione: pausa o scarto? (solo tu lo sai)
 **Situazione.** 4 componenti non referenziati dal codice di produzione (vedi §1,
 tabella evidenza): orchestrators, `models/scoring/`, monitoring `QueryOptimizer`,
 base `DomainService`. **"Non usato" è un fatto; "abbandonato" è un intento che solo
@@ -211,7 +235,8 @@ nessuno di questi.
 > lavoro pianificato. *Eccezione che richiede conferma:* `models/scoring/` —
 > vedi caveat in F1.5.
 
-- **F1.1 🔴 `DomainOrchestrator` (e `MatchmakingOrchestrator`) sono codice morto e per giunta rotti.**
+- **F1.1 ✅ RISOLTO (parziale, 2026-06-05) — `DomainOrchestrator` era codice morto e rotto: rimosso.**
+  > `MatchmakingOrchestrator` invece NON rimosso (non è uno stub: handicap-aware, in pausa). Dataclass spostate in `models/shared/operation_result.py`.
   > Confermato dead code dal handoff 2026-02 (TASK 4.1). `MatchmakingOrchestrator`
   > vive in `models/matchmaking/service.py`; stesso status del `DomainOrchestrator`.
   `models/orchestration/service.py`. Istanziato solo in `tests/legacy/`
@@ -224,7 +249,8 @@ nessuno di questi.
   (queste sono realmente usate da `competition/services.py` e `match_service.py`)
   spostandole in `models/shared/`.
 
-- **F1.2 🔴 `QueryOptimizer`/`QueryAnalyzer` (monitoring N+1, ~400 LOC) inutile in produzione.**
+- **F1.2 ✅ RISOLTO (2026-06-05) — `QueryOptimizer`/`QueryAnalyzer` monitoring N+1 rimosso.**
+  > Tenuti `optimized_query` + `bulk_load_relationships` (consumatore reale); rimossi analyzer, dashboard e listener SQLAlchemy sempre-attivi.
   `models/optimization/query_optimizer.py:94-540`. `detect_n1_problems`,
   `get_performance_dashboard`, `get_optimization_recommendations` sono usati
   **solo** da `tests/legacy/`. *Solo* il decoratore `optimized_query` e
@@ -240,13 +266,16 @@ nessuno di questi.
   thread-local) non hanno consumatori. *Fix:* ridurre il manager all'essenziale
   (begin/commit/rollback + savepoint) — vedi anche F2.
 
-- **F1.4 🟡 `DomainService` base class quasi inutilizzata.**
+- **F1.4 ⏸️ RINVIATO (2026-06-05) — `DomainService` base class: più usata del previsto.**
+  > Correzione: pervasiva in `tournament_service.py` (50+ call site). Rimozione = refactor meccanico ampio su servizio core → pass dedicata, non in questo cleanup.
+- **F1.4 (originale) 🟡 `DomainService` base class quasi inutilizzata.**
   `models/transaction/manager.py:472`. Solo **3 servizi su 79** la estendono
   (`user/services.py`, `campionato/statistics_service.py`, indirettamente
   `tournament_service.py`). Astrazione non guadagnata. *Fix:* rimuoverla o
   adottarla davvero — non lasciarla a metà.
 
-- **F1.5 🟡 Gerarchia `ScoringPolicy` morta in `models/scoring/` — ⚠️ CONFERMARE prima di rimuovere.**
+- **F1.5 ✅ RISOLTO (2026-06-05) — Gerarchia `ScoringPolicy` morta in `models/scoring/`: rimossa.**
+  > Maintainer ha confermato che la roadmap Elo/Fargo passa da `models/rating/`, non da `scoring/`.
   `models/scoring/strategies.py` (`ClassicScoringPolicy`/`FargoRatingScoringPolicy`/
   `EloRatingScoringPolicy`) + `policies.py`: nessun consumatore in produzione (solo
   `tests/legacy/`; il `routes/admin/match/scoring.py` è omonimo ma non li usa).
