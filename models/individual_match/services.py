@@ -159,7 +159,6 @@ class MatchProposalService:
         return ProposalService.cancel_proposal(user_id, proposal_id)
 
     @staticmethod
-    @transactional(domain="individual_match")
     def expire_proposals() -> int:
         """Mark expired proposals as expired. Returns count of expired proposals."""
         return ProposalService.expire_old_proposals()
@@ -178,7 +177,6 @@ class IndividualMatchService:
     # ========== Proposal Methods (delegate to ProposalService) ==========
 
     @staticmethod
-    @transactional(domain="individual_match")
     def create_direct_proposal(
         proposer_id: int,
         invited_user_ids: List[int],
@@ -208,7 +206,6 @@ class IndividualMatchService:
         )
 
     @staticmethod
-    @transactional(domain="individual_match")
     def create_open_proposal(
         proposer_id: int,
         location: str,
@@ -267,7 +264,6 @@ class IndividualMatchService:
         )
 
     @staticmethod
-    @transactional(domain="individual_match")
     def invite_player_to_match(
         proposal_id: int, inviter_id: int, invitee_id: int
     ) -> ProposalInvitation:
@@ -275,7 +271,6 @@ class IndividualMatchService:
         return ProposalService.invite_player_to_match(proposal_id, inviter_id, invitee_id)
 
     @staticmethod
-    @transactional(domain="individual_match")
     def respond_to_invitation(
         invitation_id: int, invitee_id: int, response: str
     ) -> bool:
@@ -290,37 +285,31 @@ class IndividualMatchService:
         return ProposalService.get_user_proposals(user_id, include_expired)
 
     @staticmethod
-    @transactional(domain="individual_match")
     def accept_proposal(user_id: int, proposal_id: int) -> IndividualMatch:
         """Accept a match proposal."""
         return ProposalService.accept_proposal(user_id, proposal_id)
 
     @staticmethod
-    @transactional(domain="individual_match")
     def reject_invitation(user_id: int, proposal_id: int) -> None:
         """Reject a direct invitation."""
         return ProposalService.reject_invitation(user_id, proposal_id)
 
     @staticmethod
-    @transactional(domain="individual_match")
     def cancel_proposal(user_id: int, proposal_id: int) -> None:
         """Cancel a match proposal."""
         return ProposalService.cancel_proposal(user_id, proposal_id)
 
     @staticmethod
-    @transactional(domain="individual_match")
     def expire_old_proposals() -> int:
         """Expire proposals that have passed their expiration time."""
         return ProposalService.expire_old_proposals()
 
     @staticmethod
-    @transactional(domain="individual_match")
     def _expire_pending_proposals() -> int:
         """Mark expired pending proposals as expired."""
         return ProposalService._expire_pending_proposals()
 
     @staticmethod
-    @transactional(domain="individual_match")
     def express_interest_in_open_invitation(
         proposal_id: int, interested_player_id: int, message: Optional[str] = None
     ) -> Dict[str, Any]:
@@ -330,7 +319,6 @@ class IndividualMatchService:
         )
 
     @staticmethod
-    @transactional(domain="individual_match")
     def accept_interest_for_open_invitation(
         proposal_id: int, proposer_id: int, accepted_player_id: int
     ) -> Dict[str, Any]:
@@ -340,7 +328,6 @@ class IndividualMatchService:
         )
 
     @staticmethod
-    @transactional(domain="individual_match")
     def create_individual_match_from_accepted_invitation(
         invitation_id: int,
     ) -> IndividualMatch:
@@ -400,31 +387,26 @@ class IndividualMatchService:
     # ========== Match Lifecycle Methods (delegate to MatchLifecycleService) ==========
 
     @staticmethod
-    @transactional(domain="individual_match")
     def start_match(match_id: int, user_id: int) -> IndividualMatch:
         """Start an individual match (must be one of the players)."""
         return MatchLifecycleService.start_match(match_id, user_id)
 
     @staticmethod
-    @transactional(domain="individual_match")
     def confirm_match_result(match_id: int, user_id: int) -> IndividualMatch:
         """Confirm match result by a player (new UX)."""
         return MatchLifecycleService.confirm_match_result(match_id, user_id)
 
     @staticmethod
-    @transactional(domain="individual_match")
     def reject_match_result(match_id: int, user_id: int) -> IndividualMatch:
         """Reject match result - removes last rack (new UX)."""
         return MatchLifecycleService.reject_match_result(match_id, user_id)
 
     @staticmethod
-    @transactional(domain="individual_match")
     def complete_match(match_id: int, winner_id: int, user_id: int) -> IndividualMatch:
         """Complete a match - legacy method for backward compatibility."""
         return MatchLifecycleService.complete_match(match_id, winner_id, user_id)
 
     @staticmethod
-    @transactional(domain="individual_match")
     def complete_individual_match(
         match_id: int, winner_id: int, user_id: int
     ) -> IndividualMatch:
@@ -432,7 +414,6 @@ class IndividualMatchService:
         return MatchLifecycleService.complete_individual_match(match_id, winner_id, user_id)
 
     @staticmethod
-    @transactional(domain="individual_match")
     def cancel_match(
         match_id: int, user_id: int, reason: Optional[str] = None
     ) -> IndividualMatch:

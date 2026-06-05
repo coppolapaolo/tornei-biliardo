@@ -88,7 +88,18 @@ in pausa da riprendere, sparisce dalla vista (recuperabile da git ma "out of sig
 alla volta con test. **Cosa decidere:** quali di questi entrano nello scope ora, quali
 rimandati.
 
-### Decisione 4 — Conferma "non si tocca": core `TransactionManager`
+### Decisione 4 — Core `TransactionManager`: non toccare + pulizia decoratori ✅ FATTO (2026-06-05)
+> **Esito:** confermato che il **core resta intoccato** (load-bearing, ADR-012/025).
+> Eseguita solo la pulizia dei decoratori `@transactional` *ridondanti* sui facade
+> di **pura delega**: 19 metodi in `IndividualMatchService`/`MatchProposalService`
+> (F2.2) + 5 in `MatchService` (F2.3, `to_playing`/`to_completed`/`add_rack_for_player`/
+> `remove_rack_for_player`/`forfeit_match`). **Mantenuti** i decoratori sui metodi che
+> hanno logica propria o orchestrano più passi (es. `confirm_match_result`,
+> `update_times`, `reject_proposal`, availability). Verificato prima di ogni rimozione
+> che il metodo interno sia `@transactional` (altrimenti la transazione sparirebbe).
+> Suite unit 926 verde, integration match/individual verdi, pyright 0 errori.
+
+### Decisione 4 (originale) — Conferma "non si tocca": core `TransactionManager`
 **Situazione.** Ho ritirato la proposta di rifattorizzarlo (load-bearing, protetto
 da test, ADR-012/025). Resta solo l'intervento locale di togliere `@transactional`
 ridondanti sui facade (F2.2/F2.3). **Cosa decidere:** confermi che il core resta
@@ -326,14 +337,16 @@ nessuno di questi.
   (3) un caso concreto che giustifichi il rischio. Finché non c'è, la mitigazione
   corretta è quella già in uso: rimuovere i decoratori *ridondanti* (F2.2/F2.3).
 
-- **F2.2 🔴 Nested `@transactional` ancora presente in `IndividualMatchService`.**
+- **F2.2 ✅ RISOLTO (2026-06-05) — Nested `@transactional` in `IndividualMatchService`.**
+  > Rimossi i decoratori dai 19 facade di pura delega; mantenuti sui 4 con logica propria.
   `models/individual_match/services.py:180-360` (~20 metodi facade tutti
   `@transactional`) che delegano a `ProposalService.*` **anch'essi**
   `@transactional` (es. facade `accept_proposal:293` → `proposal_service.py:417`).
   Esattamente l'anti-pattern vietato da CLAUDE.md. *Fix:* togliere il decoratore
   dai facade di pura delega.
 
-- **F2.3 🔴 Duplicazione superficie scoring: `MatchService` riavvolge `ScoringService`.**
+- **F2.3 ✅ RISOLTO parziale (2026-06-05) — `MatchService` riavvolge `ScoringService`.**
+  > Rimossi i decoratori dai 5 wrapper di pura delega. La violazione SRP "due servizi possiedono scoring" resta (refactor a parte).
   `models/match/match_service.py:425-520`: `add_rack_for_player`,
   `forfeit_match`, `confirm_match_result`, … sono wrapper `@transactional` su
   metodi omonimi di `ScoringService` (`scoring_service.py`), a loro volta

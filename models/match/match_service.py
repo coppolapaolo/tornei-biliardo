@@ -74,7 +74,6 @@ class MatchService:
     # Delegates to MatchStateService
     # -----------------------------
     @staticmethod
-    @transactional(domain="match")
     def to_playing(match_id: int) -> Match:
         """pending/completed → playing (delegates to MatchStateService)."""
         from .state_service import MatchStateService
@@ -82,7 +81,6 @@ class MatchService:
         return MatchStateService.to_playing(match_id)
 
     @staticmethod
-    @transactional(domain="match")
     def to_completed(match_id: int) -> Match:
         """playing → completed (delegates to MatchStateService)."""
         from .state_service import MatchStateService
@@ -423,7 +421,6 @@ class MatchService:
     # SIMPLIFIED UX - Delegates to ScoringService
     # ---------------------------------------
     @staticmethod
-    @transactional(domain="match")
     def add_rack_for_player(
         match_id: int, user_id: int, winner_id: int
     ) -> Rack:
@@ -433,7 +430,6 @@ class MatchService:
         return ScoringService.add_rack_for_player(match_id, user_id, winner_id)
 
     @staticmethod
-    @transactional(domain="match")
     def remove_rack_for_player(
         match_id: int, user_id: int, player_id: int
     ) -> None:
@@ -509,7 +505,6 @@ class MatchService:
         return match
 
     @staticmethod
-    @transactional(domain="match")
     def forfeit_match(match_id: int, user_id: int) -> Match:
         """Forfeit match (delegates to ScoringService)."""
         from .scoring_service import ScoringService
