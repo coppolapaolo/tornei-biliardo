@@ -217,6 +217,27 @@ def test_privacy_endpoints_visible_to_player_and_director(app, production_mode):
             assert is_endpoint_visible(endpoint, director) is True, endpoint
 
 
+def test_delete_account_visible_to_player_and_director(app, production_mode):
+    """Self-service account deletion (player.delete_account) must be reachable
+    by every logged-in user managing their own account — player and director.
+
+    Regression: the endpoint was missing from ENDPOINT_ROLES, so in production
+    it fell through to admin-only and a real player hitting the "Elimina
+    account" link got a 404 (ADR-028). Anonymous users still 404 (they have no
+    account to delete); admin bypasses the matrix.
+    """
+    with app.app_context():
+        anon = FakeUser()
+        player = FakeUser(is_authenticated=True, is_player=True)
+        director = FakeUser(is_authenticated=True, is_director=True)
+        admin = FakeUser(is_authenticated=True, is_admin=True)
+
+        assert is_endpoint_visible("player.delete_account", anon) is False
+        assert is_endpoint_visible("player.delete_account", player) is True
+        assert is_endpoint_visible("player.delete_account", director) is True
+        assert is_endpoint_visible("player.delete_account", admin) is True
+
+
 def test_infrastructure_allowlist_visible_to_everyone(app, production_mode):
     """Polling and static endpoints are reachable for every role."""
     with app.app_context():
