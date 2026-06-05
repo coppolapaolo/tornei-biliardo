@@ -231,7 +231,15 @@ Decisione **non ancora in implementazione**. Dettagli risolti il 2026-06-05
   resta a 3 e per crearne uno nuovo se ne ritira uno vecchio. "Si crea solo
   finché si ingaggia" → qualità auto-regolata, niente moderazione manuale.
 
-Restano da tarare solo le soglie numeriche e la grafica dell'onboarding.
+- **Modello geografico** (community internazionale, Italia+Europa): si passa da
+  province italiane a **prossimità per coordinate + raggio**, country-agnostic e
+  **identico per utenti e sale**. Dataset città **GeoNames `cities500`** bundlato
+  offline (zero dipendenze runtime); coordinate = fonte di verità, città =
+  etichetta; `province` legacy. Merita un **ADR dedicato**. Dettaglio in
+  `GAMIFICATION_V3.md` §10-bis.
+
+Restano da tarare le soglie numeriche, la grafica dell'onboarding, il raggio di
+default e la formalizzazione del modello geografico.
 
 File coinvolti (riferimento, non ancora modificati):
 - `models/gamification/xp_config.py` — rimozione `LEVEL_UNLOCKS`/helper legacy.

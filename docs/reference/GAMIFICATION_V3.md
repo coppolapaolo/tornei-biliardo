@@ -147,6 +147,59 @@ moderazione manuale.
    l'interesse **aggregato per zona** diventa un segnale che mostra ai director
    *dove* conviene organizzare (feature nuova: crea l'offerta dove c'è domanda).
 
+## 10-bis. Modello geografico (selezione luogo, internazionale)
+
+La community è internazionale (**Italia in particolare, Europa in generale**).
+La geografia attuale è **Italia-only** (`BilliardHall.province` = codice
+provincia italiana, `country` default "Italy", `GeoMatchingService` interamente
+provincia-based; `latitude`/`longitude` presenti ma **inutilizzati**). Va
+sostituita con un modello **per prossimità**, country-agnostic, **identico per
+utenti e per sale**.
+
+### Principio
+Coordinate (lat/lng) = **fonte di verità**; discovery per **raggio** (default
+~30–50 km, regolabile) sostituisce l'uguaglianza-provincia. `city` + `country`
+restano come **etichetta** leggibile e per il raggruppamento del segnale-domanda
+(§10.4). `province` degradato a campo legacy di display per le sale italiane
+esistenti.
+
+### Dataset città: GeoNames, offline
+[GeoNames](https://www.geonames.org) (licenza **CC BY 4.0**, gazetteer mondiale)
+pubblica dump di città con coordinate. Si **bundla `cities500`** (~185k righe,
+pop>500 *oppure* sedi amministrative fino a PPLA4) in una tabella `cities`
+locale → **zero dipendenze a runtime**, nessun problema di whitelist.
+- Per **Italia+Europa** è la scelta giusta: in Italia i **comuni** sono inclusi
+  anche se piccoli (sedi amministrative PPLA3/PPLA4); in Europa copre i centri
+  >500 ab. Attribuzione GeoNames in footer.
+- 185k righe con indice = banali per SQLite.
+
+### Selezione (utenti e sale, stesso flusso)
+- **Geolocalizzazione browser** ("usa la mia posizione") → lat/lng dal device →
+  città più vicina dalla tabella locale (Haversine). Zero dipendenze.
+- **Ricerca città** (autocomplete) offline sulla tabella `cities`.
+- Creazione **sala**: scegli la città (eredita coordinate) + coordinata precisa
+  opzionale del gestore.
+- **Robustezza ai buchi**: se un luogo non è nel dataset, le coordinate
+  (geolocalizzazione o punto manuale) bastano comunque per la discovery; si
+  mostra la città nota più vicina come etichetta. **Mai un blocco.**
+
+### Nominatim (online) — opzionale, futuro
+Solo se servirà la precisione a livello di **indirizzo/via** per le sale;
+dipende dalla whitelist di produzione e dai limiti d'uso (≈1 req/s +
+attribuzione). Non necessario per la granularità città.
+
+### Impatto tecnico
+- Accoppiamento attuale piccolo: `models/location/geo_service.py`,
+  `routes/player/geo.py`.
+- Nuova tabella `cities` (seed da GeoNames `cities500`).
+  `BilliardHall`/`UserLocationAvailability` ancorate a `city`+coordinate;
+  `province` legacy.
+- `GeoMatchingService` riscritto per **raggio** (bounding-box + Haversine su
+  SQLite, niente PostGIS).
+- Migrazione dati: geocodificare le sale italiane esistenti da città/provincia a
+  lat/lng (via tabella `cities`).
+- Merita probabilmente un **ADR dedicato** ("modello geografico per prossimità").
+
 ## 11. Calibrazione dei segnali (anti-invasività)
 
 - **Doppio canale → policy**: eventi celebrativi (XP, level-up, achievement,
@@ -199,4 +252,8 @@ moderazione manuale.
 - Grafica esatta dell'onboarding (modale vs pagina; come gestire lo skip dei soli
   campi non essenziali).
 - Dettaglio "segnale domanda → organizzatori": dove e come i director vedono
-  l'interesse aggregato.
+  l'interesse aggregato (raggruppamento per città/cluster, §10-bis).
+- Raggio di default per la discovery (~30–50 km) e se renderlo per-utente.
+- Modello geografico (§10-bis): da formalizzare in un ADR dedicato prima
+  dell'implementazione (schema `cities`, migrazione sale italiane, riscrittura
+  `GeoMatchingService`).
