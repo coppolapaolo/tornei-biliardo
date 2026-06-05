@@ -25,6 +25,42 @@ if match.status == MatchStatus.COMPLETED.value:
 if gara.status == GaraStatus.PLAYING:
 ```
 
+**Multi-status checks: use the `MatchStatus` predicates** (typo-safe), not raw
+string lists:
+
+```python
+# ✅ Correct
+if MatchStatus.is_finished(match.status):   # completed | validated
+if MatchStatus.is_active(match.status):     # playing | in_progress
+
+# ❌ Wrong - a typo'd string fails silently
+if match.status in ["completed", "validated"]:
+if match.status == "playing":               # use MatchStatus.PLAYING.value
+```
+
+### Domain Exceptions (tassonomia)
+
+I servizi sollevano eccezioni di dominio da `models/exceptions.py`. La gerarchia
+deriva da `ValueError`, quindi i `except ValueError` esistenti continuano a
+catturarle (migrazione incrementale):
+
+```python
+from models.exceptions import (
+    DomainError, ValidationError, NotFoundError, ConflictError,
+    PermissionDeniedError,  # InvalidTransitionError è un ConflictError
+)
+
+# DomainError(ValueError)
+#  ├─ ValidationError       → HTTP 422
+#  ├─ NotFoundError         → HTTP 404
+#  ├─ ConflictError         → HTTP 409  (es. InvalidTransitionError)
+#  └─ PermissionDeniedError → HTTP 403
+```
+
+Le route AJAX mappano automaticamente al codice HTTP corretto via
+`http_status_for_exception()` (usato in `handle_ajax_service_action`). Sollevare
+la sottoclasse specifica dove la distinzione conta; `ValueError` generico → 400.
+
 ### Transaction Management
 
 **All service methods that modify state MUST use `@transactional`:**
@@ -216,10 +252,13 @@ matches = service.create_next_round()
 
 ### Base Classes
 
-- `BaseModel`: Business entities with timestamps
-- `SimpleModel`: Utility methods only
-- `SoftDeleteMixin`: Soft delete support
-- `TimestampMixin`: created_at/updated_at
+- `BaseModel`: business entities — `created_at`/`updated_at` + utility methods (`save`/`delete`/`to_dict`/`find_by_id`/`find_all`)
+- `TimestampMixin`: `created_at`/`updated_at` for `db.Model` subclasses that don't extend `BaseModel` (e.g. `Match`, `Classification`, gamification models)
+- `SoftDeleteMixin`: soft delete support (`deleted_at` + `is_deleted`)
+
+> **Nota (2026-06):** `UtilityMixin`, `SimpleModel` e `TimestampedModel` sono stati
+> rimossi (duplicavano `BaseModel`, nessuna sottoclasse in produzione). Usa
+> `BaseModel`; per i soli timestamp su un `db.Model` usa `TimestampMixin`.
 
 ---
 

@@ -178,6 +178,26 @@ def edit_gara(gara_id):
     # ... rest of handler
 ```
 
+### Form parsing: single source (Form Object)
+
+Quando più route (create / wizard / edit) parsano lo **stesso** form, il mapping
+form↔modello deve vivere in **un solo posto**, non copiato in ogni handler
+(altrimenti drift silenzioso → campi persi, cfr. ADR/tech-debt F7.5/F9.2):
+
+| Entità | Parser | Usato da |
+|--------|--------|----------|
+| Gara | `routes/admin/competition/form_parser.py::GaraFormParser` | `create_gara`, `create_gara_standalone`, `edit_gara` |
+| Campionato | `routes/admin/campionato_form_parser.py::CampionatoFormParser` | `wizard_create`, `edit_campionato` (blocco default-gare) |
+
+```python
+parser = GaraFormParser(campionato=gara.campionato)  # o None per standalone
+data = parser.parse()
+GaraService.update_gara(gara_id, name=..., **data)
+```
+
+Aggiungere un test anti-drift quando una stessa entità ha >1 form (vedi
+`tests/new/integration/test_edit_*_persistence.py`).
+
 ### Flash Messages with i18n
 
 ```python

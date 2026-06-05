@@ -36,7 +36,7 @@ tornei-biliardo/
 ├── babel.cfg                       # Estrazione stringhe i18n
 ├── messages.pot                    # Catalogo stringhe traducibili
 │
-├── models/                         # ★ DOMINIO — 52.265 LOC, 27 domini
+├── models/                         # ★ DOMINIO — ~50.000 LOC, 25 domini
 │   ├── __init__.py                 # Esporta db, User e modelli principali
 │   ├── base.py                     # BaseModel, utc_now(), mail, transactional import
 │   ├── status_enum.py              # GaraStatus, MatchStatus, InscriptionStatus
@@ -224,10 +224,6 @@ tornei-biliardo/
 │   │   ├── models.py              # TiebreakerConfig, TiebreakerMatch
 │   │   └── services.py            # TiebreakerService, TiebreakerConfigurationService
 │   │
-│   ├── scoring/                    # Strategie punteggio
-│   │   ├── strategies.py          # Strategie scoring per tipo gara
-│   │   └── policies.py            # Politiche punteggio
-│   │
 │   ├── dashboard/                  # Dashboard composito
 │   │   ├── dashboard_service.py   # DashboardService
 │   │   ├── section_builders.py    # Builder sezioni dashboard
@@ -236,17 +232,18 @@ tornei-biliardo/
 │   │   ├── view_models.py         # ViewModel dashboard
 │   │   └── services.py            # Facade
 │   │
-│   ├── orchestration/              # Orchestrazione cross-dominio
-│   │   └── service.py             # DomainOrchestrator (27 sym)
+│   ├── shared/                     # Value object / helper cross-dominio
+│   │   ├── operation_result.py    # OperationResult, OperationType
+│   │   └── email_service.py       # EmailService
 │   │
 │   ├── transaction/                # Gestione transazioni
-│   │   └── manager.py             # @transactional, DomainService (45 sym)
+│   │   └── manager.py             # @transactional, DomainService
 │   │
 │   ├── caching/                    # Cache query
 │   │   └── manager.py             # CacheManager (61 sym)
 │   │
-│   ├── optimization/               # Ottimizzazione query
-│   │   └── query_optimizer.py     # QueryOptimizer (46 sym)
+│   ├── optimization/               # Helper ottimizzazione query
+│   │   └── query_optimizer.py     # optimized_query (caching) + bulk_load_relationships
 │   │
 │   ├── soft_delete/                # Filtro soft delete globale
 │   │   └── filter.py              # register_soft_delete_filters

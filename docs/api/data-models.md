@@ -27,20 +27,22 @@
 
 | Classe | File | Uso |
 |--------|------|-----|
-| **BaseModel** | `models/base.py` | `db.Model + TimestampMixin + UtilityMixin` — Maggior parte entità |
-| **SimpleModel** | `models/base.py` | `UtilityMixin + db.Model` — Tabelle leggere senza timestamp |
+| **BaseModel** | `models/base.py` | `db.Model` con `created_at`/`updated_at` + metodi utility (`save`/`delete`/`to_dict`/`find_by_id`/`find_all`) — maggior parte entità |
 | **SoftDeleteMixin** | `models/base.py` | `deleted_at` + `is_deleted` — GDPR compliance |
 
 ### Mixin
 
 | Mixin | Funzionalità |
 |-------|-------------|
-| **UtilityMixin** | `save()`, `delete()`, `to_dict()`, `find_by_id()`, `find_all()` |
-| **TimestampMixin** | `created_at`, `updated_at` auto-gestiti |
+| **TimestampMixin** | `created_at`, `updated_at` auto-gestiti (per `db.Model` che non estendono `BaseModel`) |
 | **SoftDeleteMixin** | `deleted_at` + property `is_deleted` |
 | **AuditMixin** | `created_by_id`, `updated_by_id` |
 | **ValidationMixin** | `validate()` + `save_with_validation()` |
 | **BaseMatchMixin** | Validazione/conferma condivisa Match e IndividualMatch |
+
+> **Nota (2026-06):** `UtilityMixin`, `SimpleModel`, `TimestampedModel` rimossi
+> (duplicavano `BaseModel`). I metodi utility (`save`/`delete`/`to_dict`/
+> `find_by_id`/`find_all`) vivono ora su `BaseModel`.
 
 ### Value Objects
 
