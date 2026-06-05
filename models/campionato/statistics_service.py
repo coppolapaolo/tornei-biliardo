@@ -14,17 +14,11 @@ from models.match.models import Match
 from models.status_enum import TournamentStatus, GaraStatus, MatchStatus
 from models.matchmaking.configuration import MatchmakingStrategy
 from .models import Campionato
-from ..transaction.manager import (
-    DomainService,
-    read_only,
-)
+from ..transaction.manager import read_only
 
 
-class TournamentStatisticsService(DomainService):
+class TournamentStatisticsService:
     """Statistics and classification operations for Campionati."""
-
-    def __init__(self):
-        super().__init__("campionato")
 
     @read_only(domain="campionato")
     def get_campionato_statistics(self, campionato_id: int) -> Dict[str, Any]:
@@ -39,36 +33,23 @@ class TournamentStatisticsService(DomainService):
         """
         from models.competition.models import Gara, Inscription
 
-        # Track domain access
-        self._track_domain_access()
-
-        campionato = self._execute_with_tracking(
-            lambda: db.session.get(Campionato, campionato_id)
-        )
+        campionato = db.session.get(Campionato, campionato_id)
         if not campionato:
             raise ValueError("Campionato not found")
 
         # Get all provas for this campionato
-        gare = self._execute_with_tracking(
-            lambda: Gara.query.filter_by(campionato_id=campionato_id).all()
-        )
+        gare = Gara.query.filter_by(campionato_id=campionato_id).all()
         gara_ids = [p.id for p in gare]
 
         # Calculate statistics
         total_garas = len(gare)
-        total_inscriptions = self._execute_with_tracking(
-            lambda: (
-                Inscription.query.filter(Inscription.gara_id.in_(gara_ids)).count()
-                if gara_ids
-                else 0
-            )
+        total_inscriptions = (
+            Inscription.query.filter(Inscription.gara_id.in_(gara_ids)).count()
+            if gara_ids
+            else 0
         )
-        total_matches = self._execute_with_tracking(
-            lambda: (
-                Match.query.filter(Match.gara_id.in_(gara_ids)).count()
-                if gara_ids
-                else 0
-            )
+        total_matches = (
+            Match.query.filter(Match.gara_id.in_(gara_ids)).count() if gara_ids else 0
         )
 
         # Status distribution
@@ -179,8 +160,7 @@ class TournamentStatisticsService(DomainService):
                     .all()
                 )
                 gara_ssr_scores = {
-                    gc.user_id: gc.spot_shot_wins or 0
-                    for gc in gara_classifications
+                    gc.user_id: gc.spot_shot_wins or 0 for gc in gara_classifications
                 }
 
             for classification in classifications:
@@ -203,8 +183,8 @@ class TournamentStatisticsService(DomainService):
                     classification.rack_difference or 0
                 )
                 # Aggiungi punteggio SSR per campionati Random
-                player_totals[user_id]["total_spot_shot_wins"] += (
-                    gara_ssr_scores.get(user_id, 0)
+                player_totals[user_id]["total_spot_shot_wins"] += gara_ssr_scores.get(
+                    user_id, 0
                 )
                 player_totals[user_id]["participations"] += 1
 
@@ -214,7 +194,16 @@ class TournamentStatisticsService(DomainService):
             MatchmakingStrategy.RANDOM.value,
         ]:
             position_points = {
-                1: 10, 2: 7, 3: 5, 4: 4, 5: 3, 6: 2, 7: 2, 8: 1, 9: 1, 10: 1
+                1: 10,
+                2: 7,
+                3: 5,
+                4: 4,
+                5: 3,
+                6: 2,
+                7: 2,
+                8: 1,
+                9: 1,
+                10: 1,
             }
             for gara in garas:
                 final_round = gara.rounds_count
@@ -295,9 +284,7 @@ class TournamentStatisticsService(DomainService):
             db.session.query(Gara)
             .filter_by(campionato_id=campionato_id)
             .filter(
-                Gara.status.in_(
-                    [GaraStatus.COMPLETED.value, GaraStatus.PLAYING.value]
-                )
+                Gara.status.in_([GaraStatus.COMPLETED.value, GaraStatus.PLAYING.value])
             )
             .order_by(Gara.number)
             .all()
@@ -368,16 +355,25 @@ def compute_campionato_status(campionato: Campionato) -> str:
     Ritorna la stringa dello stato (compat con UI/template esistenti).
     """
     if getattr(campionato, "terminated_at", None):
-        if hasattr(campionato, "has_playoff_configurations") and campionato.has_playoff_configurations():
+        if (
+            hasattr(campionato, "has_playoff_configurations")
+            and campionato.has_playoff_configurations()
+        ):
             # TERMINATED until all playoffs completed, then COMPLETED
             from models.playoff.models import PlayoffTournament, PlayoffConfiguration
+
             active_configs = PlayoffConfiguration.query.filter_by(
                 campionato_id=campionato.id, is_active=True
             ).all()
             if active_configs:
                 all_completed = all(
-                    (t := PlayoffTournament.query.filter_by(configuration_id=cfg.id).first())
-                    is not None and t.status == "completed"
+                    (
+                        t := PlayoffTournament.query.filter_by(
+                            configuration_id=cfg.id
+                        ).first()
+                    )
+                    is not None
+                    and t.status == "completed"
                     for cfg in active_configs
                 )
                 if all_completed:
@@ -407,10 +403,12 @@ def compute_campionato_status(campionato: Campionato) -> str:
 # -----------------------------
 
 
-_TERMINAL_TOURNAMENT_STATUSES = frozenset({
-    TournamentStatus.COMPLETED.value,
-    TournamentStatus.TERMINATED.value,
-})
+_TERMINAL_TOURNAMENT_STATUSES = frozenset(
+    {
+        TournamentStatus.COMPLETED.value,
+        TournamentStatus.TERMINATED.value,
+    }
+)
 
 
 def partition_campionati_by_status(

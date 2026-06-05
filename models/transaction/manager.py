@@ -467,33 +467,3 @@ def serializable(domain: Optional[str] = None):
     return transactional(
         isolation_level=TransactionIsolationLevel.SERIALIZABLE, domain=domain
     )
-
-
-class DomainService:
-    """Enhanced base class for domain services with transaction support."""
-
-    def __init__(self, domain_name: str):
-        self.domain_name = domain_name
-
-    def _track_domain_access(self):
-        """Track domain access in current transaction."""
-        transaction_manager.track_domain_access(self.domain_name)
-
-    def _execute_with_tracking(self, operation: Callable[[], T]) -> T:
-        """Execute operation with domain tracking."""
-        self._track_domain_access()
-        transaction_manager.track_query_execution()
-        return operation()
-
-    @contextmanager
-    def domain_transaction(
-        self,
-        isolation_level: Optional[TransactionIsolationLevel] = None,
-        read_only: bool = False,
-    ):
-        """Start transaction with automatic domain tracking."""
-        with transaction_manager.transaction(
-            isolation_level=isolation_level, read_only=read_only
-        ) as context:
-            self._track_domain_access()
-            yield context

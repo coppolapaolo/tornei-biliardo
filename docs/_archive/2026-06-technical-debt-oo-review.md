@@ -283,8 +283,19 @@ nessuno di questi.
   thread-local) non hanno consumatori. *Fix:* ridurre il manager all'essenziale
   (begin/commit/rollback + savepoint) — vedi anche F2.
 
-- **F1.4 ⏸️ RINVIATO (2026-06-05) — `DomainService` base class: più usata del previsto.**
-  > Correzione: pervasiva in `tournament_service.py` (50+ call site). Rimozione = refactor meccanico ampio su servizio core → pass dedicata, non in questo cleanup.
+- **F1.4 ✅ FATTO (2026-06-05, follow-up #3) — `DomainService` base class rimossa.**
+  > La base aggiungeva solo tracking di metriche (`_track_domain_access`/
+  > `_execute_with_tracking` → `transaction_manager.track_*`), prive di consumatori
+  > in produzione (F1.3). Rimossa la classe da `transaction/manager.py` + export in
+  > `transaction/__init__.py`; le 3 sottoclassi (`TournamentService` via
+  > `TournamentStatisticsService`, `UserServiceCore`) sono ora classi semplici.
+  > Sostituiti i 32 `_execute_with_tracking(lambda: X)` → `X` e rimossi i 20
+  > `_track_domain_access()` (matching parentesi + black). Il tracking di dominio
+  > resta dichiarato dal solo argomento `domain=` dei decoratori. **Core del manager
+  > non toccato** (Decisione 4): i metodi `track_*` restano, semplicemente non più
+  > chiamati. Unit suite verde, integration campionato/user/venue verdi, pyright 0,
+  > nessuna nuova violazione flake8 (anzi −2 E303). `models/transaction/CLAUDE.md`
+  > aggiornato. Testo originale:
 - **F1.4 (originale) 🟡 `DomainService` base class quasi inutilizzata.**
   `models/transaction/manager.py:472`. Solo **3 servizi su 79** la estendono
   (`user/services.py`, `campionato/statistics_service.py`, indirettamente

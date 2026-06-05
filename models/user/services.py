@@ -23,7 +23,6 @@ from sqlalchemy.engine.row import Row
 from ..base import db, utc_now
 from .models import User, DirectorRequest
 from ..transaction.manager import (
-    DomainService,
     transactional,
     read_only,
 )
@@ -40,17 +39,14 @@ from .stats_service import UserStatsService  # noqa: F401
 from .venue_manager_service import VenueManagerService  # noqa: F401
 
 
-class UserServiceCore(DomainService):
+class UserServiceCore:
     """
     Enhanced service class for user-related business operations with transaction management.
 
     This class encapsulates all business logic related to user management,
     including creation, role management, and user operations with proper
-    transaction boundaries and domain tracking.
+    transaction boundaries.
     """
-
-    def __init__(self):
-        super().__init__("user")
 
 
 class UserService:
@@ -116,7 +112,6 @@ class UserService:
 
         All functionality now handled by UserPermissionService.demote_director_to_player()
         """
-
 
     @staticmethod
     @transactional(domain="user")
@@ -228,9 +223,7 @@ class UserService:
         username_normalized = username.strip()
 
         # Find user by username (case sensitive)
-        user = User.query.filter(
-            User.username == username_normalized
-        ).first()
+        user = User.query.filter(User.username == username_normalized).first()
 
         # Check if user exists and password is correct
         if user and user.check_password(password):
@@ -249,9 +242,7 @@ class UserService:
         Returns:
             User if found, None otherwise
         """
-        return User.query.filter(
-            User.username == username.strip()
-        ).first()
+        return User.query.filter(User.username == username.strip()).first()
 
     @staticmethod
     def get_user_by_email(email: str) -> Optional[User]:
@@ -315,7 +306,6 @@ class UserService:
     ) -> DirectorRequest:
         """Delegate to UserPermissionService for director promotion requests."""
         return UserPermissionService.request_director_promotion(user_id, notes)
-
 
     @staticmethod
     def get_director_requests() -> List[DirectorRequest]:
@@ -422,9 +412,13 @@ class DirectorRequestService:
     """REMOVED: Functionality moved to UserPermissionService in permission_service.py"""
 
     @staticmethod
-    def process_request(request_id: int, admin_user: User, approve: bool) -> DirectorRequest:
+    def process_request(
+        request_id: int, admin_user: User, approve: bool
+    ) -> DirectorRequest:
         """Delegate to UserPermissionService."""
-        return UserPermissionService.process_director_request(request_id, admin_user, approve)
+        return UserPermissionService.process_director_request(
+            request_id, admin_user, approve
+        )
 
 
 class UserDeletionService:
@@ -458,28 +452,33 @@ class VenueManagementService:
     def assign_venue_manager(user_id: int, venue_id: int, assigned_by: User):
         """Delegate to VenueManagerService for venue manager assignment."""
         from .venue_manager_service import VenueManagerService
+
         return VenueManagerService.assign_venue_manager(user_id, venue_id, assigned_by)
 
     @staticmethod
     def revoke_venue_manager(assignment_id: int, revoked_by: User):
         """Delegate to VenueManagerService for venue manager revocation."""
         from .venue_manager_service import VenueManagerService
+
         return VenueManagerService.revoke_venue_manager(assignment_id, revoked_by)
 
     @staticmethod
     def get_venue_assignments(venue_id: int):
         """Delegate to VenueManagerService for venue assignments."""
         from .venue_manager_service import VenueManagerService
+
         return VenueManagerService.get_venue_assignments(venue_id)
 
     @staticmethod
     def get_venue_manager(venue_id: int):
         """Delegate to VenueManagerService for venue manager lookup."""
         from .venue_manager_service import VenueManagerService
+
         return VenueManagerService.get_venue_manager(venue_id)
 
     @staticmethod
     def get_user_venues(user_id: int):
         """Delegate to VenueManagerService for user managed venues."""
         from .venue_manager_service import VenueManagerService
+
         return VenueManagerService.get_managed_venues(user_id)
