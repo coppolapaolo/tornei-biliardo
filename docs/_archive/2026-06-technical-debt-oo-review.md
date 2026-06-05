@@ -386,10 +386,31 @@ nessuno di questi.
   `campionato.py:376-385,447`, `crud.py:181-192`, `detail.py:170-191`. *Fix:*
   `User.is_director_of(entity_type, entity_id)` o `DirectorAssignment.exists(...)`.
 
-- **F7.5 🟡 `edit_gara` e wizard bypassano `GaraFormParser`.**
-  `routes/admin/competition/crud.py:263-327` e `campionato.py:80-284`
-  re-parsano ~25 campi inline, duplicando `GaraFormParser.parse()`. *Fix:*
-  estendere il parser a edit + wizard.
+- **F7.5 🔴 (upgrade) Nessuna "single source of truth" per il mapping form↔modello:
+  create / wizard / edit hanno parser separati e sono già divergenti.**
+  Per la **gara** esistono 3 copie del mapping: `GaraFormParser.parse()` (create),
+  l'inline in `edit_gara` (`crud.py:263-327`), e il wizard. Divergenze verificate:
+  - `classification_system` è gestito dal parser (create) ma **assente** nell'edit
+    → **bug F9.2** (perdita silenziosa).
+  Per il **campionato**: il wizard
+  (`campionato_wizard_step1/2.html`) espone `playoff_elite_*`/`playoff_academy_*`
+  e usa `name="classification_system"`; il form di **modifica**
+  (`_campionato_edit_form.html`) **omette** la config playoff e usa
+  `name="default_classification_system"`. Quindi divergono sia l'insieme dei campi
+  sia i *nomi* dei campi (impedendo il riuso del template).
+  > **Nota onesta:** alcune differenze create-vs-edit sono *legittime e volute*
+  > (es. la config playoff ha verosimilmente una UI dedicata — ADR-024 + backlog
+  > "Redesign playoff configuration UI"; certi campi vanno bloccati dopo l'avvio
+  > della gara). Il problema **non è il modello di dominio** (`Gara`/`Campionato`
+  > sono coerenti) ma il fatto che l'editabilità per-campo è un *incidente* di quale
+  > handler ha cablato cosa, invece di una regola *dichiarata*.
+  *Fix proporzionato:* un unico schema/parser per entità, condiviso da
+  create+wizard+edit, con regole esplicite di editabilità per-campo (quali campi
+  sono immutabili dopo iscrizioni/avvio). Risolve insieme F9.2, la divergenza
+  campionato e la duplicazione. **Ambito:** concentrato su questi form CRUD admin;
+  non è un anti-pattern pervasivo (poche entità hanno il triplo create+wizard+edit),
+  ma la lezione "una sola fonte di verità form↔modello" vale ovunque ci sia >1 form
+  per la stessa entità.
 
 - **F7.6 🟡 Logica di scoring in una route (e viola ADR-027).**
   `routes/main.py:357-450` (`debug_complete_current_round`) muta
@@ -462,7 +483,52 @@ nessuno di questi.
   `BilliardHall.is_active == True` (o `.is_(True)`); aggiungere test di
   regressione. **Intervento minimo, alto valore.**
 
+- **F9.2 🔴 Edit gara scarta silenziosamente `classification_system`.**
+  Il form di modifica (`templates/components/_gara_edit_form.html:50,61`) invia
+  `classification_system` (c'è perfino un doppio input: hidden + `<select>`), ma
+  l'handler `edit_gara` (`routes/admin/competition/crud.py:263-327`) **non lo
+  legge mai** e non lo passa a `GaraService.update_gara`. Risultato: il direttore
+  cambia il sistema di classifica, la UI mostra "Gara aggiornata con successo!",
+  ma il valore **non viene salvato**. È la conseguenza diretta del fatto che
+  creazione e modifica hanno parser di form *separati* (F7.5): `GaraFormParser`
+  (create) gestisce il campo, l'edit a mano se l'è dimenticato. *Fix:* far passare
+  l'edit dallo stesso `GaraFormParser` (risolve bug + duplicazione insieme).
+  Bonus bug: i due input con lo stesso `name` nel form sono di per sé un difetto.
+
 ---
+
+## 10. Incompletezza di prodotto ≠ debito tecnico (risposta onesta)
+
+Domanda: feature "appena accennate" (match individuali, gamification,
+monitoraggio admin/KPI) → sono debito tecnico / errori OO-architetturali?
+**Risposta verificata: no, sono per lo più maturità di prodotto, non debito.**
+
+Riscontri:
+- **Non sono "appena accennate" nel codice.** Volumi misurati: gamification
+  **6.834 LOC** + 27 template + 1.325 LOC di route; individual_match **3.882 LOC**
+  + 11 template + 974 LOC di route; KPI **1.878 LOC**. Sono tra i domini più
+  costruiti e sono event-driven/architetturati, non stub.
+- **La gamification è deliberatamente disattivata in produzione "until the feature
+  stabilises"** (`utils/feature_flags.py:182-188`: visibile solo a director, non a
+  player/anonimo). Questa è una **decisione di rilascio**, la definizione stessa di
+  "feature completa ma non ancora rilasciata" — non di debito.
+
+Quindi la distinzione che fai è corretta: una feature sottile/da rifinire è
+**scope/prodotto**, non un errore architetturale o OO.
+
+**Dove però l'incompletezza *diventa* debito (la sfumatura onesta):** quando lascia
+*impalcatura o accoppiamento* dietro di sé — codice che esiste ma non fa nulla, o
+che vincola il resto. Esempi che abbiamo già catalogato a parte: orchestratori
+morti (F1.1), `ScoringPolicy` morto (F1.5). La linea è netta:
+- "Esiste codice che non fa nulla / vincola altro codice?" → **debito** (vedi §1).
+- "Esiste una feature che funziona ma è sottile/non rilasciata?" → **prodotto**.
+
+Per gamification/individual_match il backend è sostanzioso e disaccoppiato via
+eventi: completarli è soprattutto lavoro di prodotto/UX/QA. **Unica tassa reale da
+nominare:** una sottosistema event-wired grande e spento (gli handler gamification
+scattano su ogni match/iscrizione) impone una *manutenzione continua* ai domini
+core (ogni evento deve continuare ad alimentarlo). È un costo vero, ma è un
+**trade-off architetturale voluto** (decoupling a eventi), non un errore.
 
 ## Falsi positivi corretti (verifica sul codice)
 
