@@ -602,9 +602,16 @@ nessuno di questi.
   > Gara: `edit_gara` instradato da `GaraFormParser` (vedi D1/F9.2). Campionato:
   > nuovo `CampionatoFormParser.parse_default_settings()` condiviso da `wizard_create`
   > ed `edit_campionato` per il blocco default-gare (venue/fee/rounds/odd/anti-rematch),
-  > + test anti-drift (`test_edit_campionato_persistence.py`). Il rename cosmetico
-  > `classification_system`→`default_classification_system` nel wizard (2-step, sessione)
-  > è rimandato: nessun bug attivo, UI product-facing. Testo originale:
+  > + test anti-drift (`test_edit_campionato_persistence.py`).
+  > **Follow-up #6 completato (2026-06-05):** rename cosmetico
+  > `classification_system`→`default_classification_system` nel wizard (2-step):
+  > campo HTML (`name`/`id`/`label`/JS) in `campionato_wizard_step1.html`, chiave di
+  > sessione + `request.form.get` in `routes/admin/campionato.py`, e riferimenti
+  > `wizard_data.*` in `campionato_wizard_step2.html`. Ora wizard ed edit usano lo
+  > stesso nome del campo del model (`default_classification_system`). Il kwarg
+  > `classification_system=` passato a step2 era già inutilizzato (step2 legge
+  > `wizard_data.*`); la variabile Python locale resta invariata. Test wizard
+  > regression aggiornato e verde. Testo originale:
   Per la **gara** esistono 3 copie del mapping: `GaraFormParser.parse()` (create),
   l'inline in `edit_gara` (`crud.py:263-327`), e il wizard. Divergenze verificate:
   - `classification_system` è gestito dal parser (create) ma **assente** nell'edit

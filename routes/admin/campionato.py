@@ -110,7 +110,7 @@ def wizard_step2():
     if campionato_type not in [MatchmakingStrategy.AMALFI.value, MatchmakingStrategy.RANDOM.value]:
         campionato_type = MatchmakingStrategy.AMALFI.value
 
-    classification_system = request.form.get("classification_system", "WINS")
+    classification_system = request.form.get("default_classification_system", "WINS")
     if classification_system not in ["WINS", "RACK", "POSITION"]:
         classification_system = "WINS"
 
@@ -138,7 +138,7 @@ def wizard_step2():
         "name": name,
         "planned_gare_count": planned_gare_count,
         "campionato_type": campionato_type,
-        "classification_system": classification_system,
+        "default_classification_system": classification_system,
         "challenge_mode": challenge_mode,
         "playoff_elite_enabled": playoff_elite_enabled,
         "playoff_elite_participants": playoff_elite_participants,
@@ -154,7 +154,9 @@ def wizard_step2():
     )
 
     # Filter odd policies based on classification system
-    classification_system = session[WIZARD_SESSION_KEY].get("classification_system", "WINS")
+    classification_system = session[WIZARD_SESSION_KEY].get(
+        "default_classification_system", "WINS"
+    )
 
     # All available policies with their compatible systems
     all_odd_policies = [
@@ -198,7 +200,7 @@ def wizard_create():
     settings = CampionatoFormParser.parse_default_settings(request.form)
 
     # Classification system comes from Step 1 (session)
-    classification_system = wizard_data.get("classification_system", "WINS")
+    classification_system = wizard_data.get("default_classification_system", "WINS")
 
     # Create the campionato
     try:
