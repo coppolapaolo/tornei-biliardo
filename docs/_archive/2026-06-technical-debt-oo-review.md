@@ -77,7 +77,12 @@ lascio e magari aggiungo una nota `# WIP/paused`; (c) Indeciso → lascio com'è
 in pausa da riprendere, sparisce dalla vista (recuperabile da git ma "out of sight").
 **Cosa decidere:** per ognuno dei 4, pausa o scarto.
 
-### Decisione 3 — Refactor architetturali: quali (se) affrontare?
+### Decisione 3 — Refactor architetturali: quali (se) affrontare? ⏳ IN CORSO (2026-06-05)
+> **Fatto:** dedup `BaseModel`/`UtilityMixin` + `User`/`TimestampMixin` (F4.1/F4.2).
+> **Rimasti:** Form Object completo (campionato wizard/edit + test anti-drift),
+> tassonomia eccezioni (§3, additivo), predicati di stato sugli enum (§5.3, ~50
+> call-site raw su 10+ file → sweep ampio). Da prioritizzare col maintainer.
+
 **Situazione.** Debito strutturale ma non urgente, indipendente dai bug:
 - **Form Object** (single-source `GaraFormParser` per create+wizard+edit + test
   anti-drift) → risolve la classe wizard/edit (§7). Sforzo M.
@@ -386,8 +391,10 @@ nessuno di questi.
 
 ## 4. Base classes & inheritance (🔴/🟡)
 
-- **F4.1 🟡 (declassato da 🔴) `BaseModel` duplica `UtilityMixin` — ma entrambi
-  sono quasi inutilizzati in produzione.**
+- **F4.1 ✅ RISOLTO (2026-06-05) — `BaseModel` duplicava `UtilityMixin`.**
+  > Rimossi `UtilityMixin`, `SimpleModel`, `TimestampedModel` da `models/base.py`
+  > (nessuna sottoclasse in produzione; solo `tests/legacy`). `TimestampMixin`
+  > resta (vivo: Match, Classification, gamification, ecc.). Resta sotto il testo originale:
   `models/base.py:230-275` re-implementa `save`/`delete`/`to_dict`/`find_by_id`/
   `find_all` già in `UtilityMixin` (`:69-114`); copie **già divergenti**
   (`UtilityMixin.to_dict:88` gestisce `__table__ is None` e ha `refresh()`,
@@ -401,7 +408,9 @@ nessuno di questi.
   Verificare prima che i pochi `find_by_id`/`save` eventualmente usati siano
   coperti.
 
-- **F4.2 🟡 `User` mixa `TimestampMixin` già fornito da `BaseModel`.**
+- **F4.2 ✅ RISOLTO (2026-06-05) — `User` mixava `TimestampMixin` già fornito da `BaseModel`.**
+  > Rimosso `TimestampMixin` dalle basi di `User` (e dall'import): `created_at`/
+  > `updated_at` arrivano da `BaseModel`, MRO non più ambiguo. Colonne invariate.
   `models/user/models.py:34` —
   `User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin)`: `created_at/
   updated_at` arrivano due volte (MRO ambiguo). *Fix:* togliere `TimestampMixin`.

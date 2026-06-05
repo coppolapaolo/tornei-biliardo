@@ -25,13 +25,13 @@ if TYPE_CHECKING:  # Avoid runtime circular imports
     from ..match.models import Match
     from ..campionato.models import Campionato
 
-from models.base import TimestampMixin, SoftDeleteMixin, utc_now
+from models.base import SoftDeleteMixin, utc_now
 
 
 # ────────────────────────────────────────────────────────────────────────────────
 # USER
 # ────────────────────────────────────────────────────────────────────────────────
-class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
+class User(UserMixin, BaseModel, SoftDeleteMixin):
     """Core user entity with role-based permissions and rich statistics."""
 
     __tablename__ = "user"
