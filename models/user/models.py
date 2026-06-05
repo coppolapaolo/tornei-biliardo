@@ -247,6 +247,7 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
             Gara,
         )
         from ..match.models import Match
+        from ..status_enum import GaraStatus, MatchStatus
 
         total_inscriptions = (
             Inscription.query.filter_by(user_id=self.id).count()
@@ -254,7 +255,7 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
 
         matches: List["Match"] = Match.query.filter(
             db.or_(Match.player1_id == self.id, Match.player2_id == self.id),
-            Match.status == "completed",
+            Match.status == MatchStatus.COMPLETED.value,
         ).all()
 
         total_matches = len(matches)
@@ -267,7 +268,8 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
         tournaments_played = (
             Inscription.query.filter_by(user_id=self.id)
             .join(Gara)
-            .filter(Gara.status == "completed")  # Solo gare completate
+            # Solo gare completate
+            .filter(Gara.status == GaraStatus.COMPLETED.value)
             .with_entities(Gara.campionato_id)
             .distinct()
             .count()
@@ -277,7 +279,8 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
         provas_played = (
             Inscription.query.filter_by(user_id=self.id)
             .join(Gara)
-            .filter(Gara.status == "completed")  # Solo gare completate
+            # Solo gare completate
+            .filter(Gara.status == GaraStatus.COMPLETED.value)
             .count()
         )
 

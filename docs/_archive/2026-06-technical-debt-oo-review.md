@@ -453,14 +453,26 @@ nessuno di questi.
   (`:517-572`). *Fix:* estrarre un collaboratore `GaraStrategyPolicy`/`GaraView`;
   lasciare a `Gara` identità + relazioni + invarianti.
 
-- **F5.3 ✅ PARZIALE (2026-06-05) — Primitive obsession sugli stati.**
+- **F5.3 ✅ FATTO (2026-06-05) — Primitive obsession sugli stati.**
   > Aggiunti predicati `MatchStatus.is_finished()/is_active()` (+ `finished_values`/
   > `active_values`) e adottati nei check multi-stato (liste `["completed",
   > "validated"]` in competition/classification/tiebreaker). Sostituiti i letterali
   > raw nei confronti su istanze dei model (`set_models`, `individual_match/
   > match_models`, set-check in `match_service`) con `MatchStatus.*.value`
-  > (value-preserving). **Resta da fare:** ~25 letterali nei filtri SQL
-  > (kpi/, statistics, user/models) → sweep meccanico a parte. Testo originale:
+  > (value-preserving).
+  > **Follow-up #2 completato (2026-06-05):** sweep value-preserving dei letterali
+  > raw nei filtri SQL → costanti enum, con l'enum corretto per campo
+  > (`Match.status`→`MatchStatus`, `Gara.status`→`GaraStatus`,
+  > `VenueManagerRequest.status`→`VenueManagerRequestStatus`). File: `kpi/`
+  > (community/metrics/user_metrics/milestone), `campionato/statistics_service`,
+  > `user/models`, `user/venue_manager_service`, `dashboard/section_builders`.
+  > Rimossi 3 `# type: ignore` divenuti superflui con l'enum (pyright resta 0).
+  > **Lasciati intenzionalmente** (nessun enum applicabile): `PlayoffTournament.status`
+  > (`"registration"/"completed"` ad-hoc), la stringa `primaryjoin` di relationship
+  > in `User.director_request`, e i payload-evento `status=` di
+  > `VenueManagerRequestProcessedEvent` (incl. `"revoked"`, non nell'enum). Suite
+  > unit verde, integration rilevanti verdi, pyright 0 errori, E501 nei file toccati
+  > 31→30. Testo originale:
   Confronti `m.status in [COMPLETED.value, VALIDATED.value]`
   (`competition/models.py:334`), e **letterali raw** `"playing"`/`"completed"`
   in `user/models.py:257,270,280` e `individual_match/match_models.py:509,553`

@@ -11,7 +11,7 @@ from typing import List, Dict, Any
 
 from models.base import db
 from models.match.models import Match
-from models.status_enum import TournamentStatus, GaraStatus
+from models.status_enum import TournamentStatus, GaraStatus, MatchStatus
 from models.matchmaking.configuration import MatchmakingStrategy
 from .models import Campionato
 from ..transaction.manager import (
@@ -107,7 +107,8 @@ class TournamentStatisticsService(DomainService):
             .join(Gara, Inscription.gara_id == Gara.id)
             .filter(
                 Gara.campionato_id == campionato_id,
-                Gara.status == "inscription",  # Solo gare con iscrizioni aperte
+                # Solo gare con iscrizioni aperte
+                Gara.status == GaraStatus.INSCRIPTION.value,
             )
         )
         currently_inscribed_players = active_inscriptions_query.count()
@@ -118,7 +119,7 @@ class TournamentStatisticsService(DomainService):
             .join(Gara, Match.gara_id == Gara.id)
             .filter(
                 Gara.campionato_id == campionato_id,
-                Match.status == "completed",  # type: ignore[attr-defined]
+                Match.status == MatchStatus.COMPLETED.value,
             )
         )
         total_completed_matches = completed_matches_query.scalar() or 0
@@ -129,7 +130,7 @@ class TournamentStatisticsService(DomainService):
             .join(Gara, Match.gara_id == Gara.id)
             .filter(
                 Gara.campionato_id == campionato_id,
-                Match.status == "completed",  # type: ignore[attr-defined]
+                Match.status == MatchStatus.COMPLETED.value,
             )
         )
         total_racks_played = rack_sum_query.scalar() or 0
@@ -293,7 +294,11 @@ class TournamentStatisticsService(DomainService):
         all_garas = (
             db.session.query(Gara)
             .filter_by(campionato_id=campionato_id)
-            .filter(Gara.status.in_(["completed", "playing"]))
+            .filter(
+                Gara.status.in_(
+                    [GaraStatus.COMPLETED.value, GaraStatus.PLAYING.value]
+                )
+            )
             .order_by(Gara.number)
             .all()
         )
@@ -301,9 +306,12 @@ class TournamentStatisticsService(DomainService):
         # Filtra le gare che sono realmente completate
         completed_garas = []
         for gara in all_garas:
-            if gara.status == "completed":
+            if gara.status == GaraStatus.COMPLETED.value:
                 completed_garas.append(gara)
-            elif gara.status == "playing" and gara.current_round > gara.rounds_count:
+            elif (
+                gara.status == GaraStatus.PLAYING.value
+                and gara.current_round > gara.rounds_count
+            ):
                 # Gara con tutti i round completati
                 completed_garas.append(gara)
 

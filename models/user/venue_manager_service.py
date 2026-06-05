@@ -9,6 +9,7 @@ from typing import Optional, List
 from models.base import db
 from models.user.models import User, VenueManagerRequest, VenueManagement
 from models.user.role_enum import UserRole
+from models.status_enum import VenueManagerRequestStatus
 from models.transaction.manager import transactional, read_only
 from models.events.base import EventBus
 from models.events.user_events import (
@@ -75,7 +76,9 @@ class VenueManagerService:
         # Check for existing pending request
         # Ensures only one pending request per user-venue pair at a time
         existing_request = VenueManagerRequest.query.filter_by(
-            user_id=user_id, venue_id=venue_id, status="pending"
+            user_id=user_id,
+            venue_id=venue_id,
+            status=VenueManagerRequestStatus.PENDING.value,
         ).first()
         if existing_request:
             raise ValueError("Pending request already exists for this venue")
@@ -94,7 +97,7 @@ class VenueManagerService:
             user_id=user_id,
             venue_id=venue_id,
             notes=notes.strip(),
-            status="pending",
+            status=VenueManagerRequestStatus.PENDING.value,
             is_contested=is_contested,
         )
 
@@ -151,12 +154,12 @@ class VenueManagerService:
         if not request:
             raise ValueError("Request not found")
 
-        if request.status != "pending":
+        if request.status != VenueManagerRequestStatus.PENDING.value:
             raise ValueError("Request is not pending")
 
         # Process the request with appropriate status and venue assignment
         if approve:
-            request.status = "approved"
+            request.status = VenueManagerRequestStatus.APPROVED.value
             request.processed_by_id = admin_user.id
             request.notes = notes
 
@@ -181,7 +184,7 @@ class VenueManagerService:
                 notes=notes
             ))
         else:
-            request.status = "rejected"
+            request.status = VenueManagerRequestStatus.REJECTED.value
             request.processed_by_id = admin_user.id
             request.notes = notes
 
@@ -212,7 +215,9 @@ class VenueManagerService:
             - Filters to only pending status requests
             - Ordered by request creation date
         """
-        return VenueManagerRequest.query.filter_by(status="pending").all()
+        return VenueManagerRequest.query.filter_by(
+            status=VenueManagerRequestStatus.PENDING.value
+        ).all()
 
     @staticmethod
     @read_only(domain="user")
@@ -485,13 +490,13 @@ class VenueManagerService:
         if not request:
             raise ValueError("Request not found")
 
-        if request.status != "pending":
+        if request.status != VenueManagerRequestStatus.PENDING.value:
             raise ValueError("Only pending requests can be cancelled")
 
         if request.user_id != user.id:
             raise ValueError("You can only cancel your own requests")
 
         # Update request status to cancelled
-        request.status = "cancelled"
+        request.status = VenueManagerRequestStatus.CANCELLED.value
 
         return request

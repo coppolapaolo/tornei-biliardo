@@ -11,6 +11,7 @@ from typing import Dict, List, Any, Optional
 from sqlalchemy import func, and_, or_
 
 from ..base import db, utc_now
+from ..status_enum import GaraStatus, MatchStatus
 from .models import KpiFeatureUsage
 from .enums import FeatureName
 from .services import MetricWithTrend, DateRange, _build_date_filters, _calculate_trend
@@ -83,14 +84,14 @@ class MetricsService:
 
         users_with_matches = (
             db.session.query(func.count(func.distinct(Match.player1_id)))
-            .filter(Match.status == "completed")
+            .filter(Match.status == MatchStatus.COMPLETED.value)
             .scalar()
             or 0
         )
 
         users_with_matches_p2 = (
             db.session.query(func.count(func.distinct(Match.player2_id)))
-            .filter(Match.status == "completed")
+            .filter(Match.status == MatchStatus.COMPLETED.value)
             .scalar()
             or 0
         )
@@ -142,7 +143,7 @@ class MetricsService:
             .filter(
                 and_(
                     Match.updated_at >= cutoff,
-                    Match.status == "completed",
+                    Match.status == MatchStatus.COMPLETED.value,
                     Match.player1_id.isnot(None),
                 )
             )
@@ -155,7 +156,7 @@ class MetricsService:
             .filter(
                 and_(
                     Match.updated_at >= cutoff,
-                    Match.status == "completed",
+                    Match.status == MatchStatus.COMPLETED.value,
                     Match.player2_id.isnot(None),
                 )
             )
@@ -207,7 +208,7 @@ class MetricsService:
                 and_(
                     or_(Match.player1_id == user.id, Match.player2_id == user.id),
                     Match.updated_at >= activity_after,
-                    Match.status == "completed",
+                    Match.status == MatchStatus.COMPLETED.value,
                 )
             ).first()
             if has_activity:
@@ -222,14 +223,14 @@ class MetricsService:
         """Get total completed matches."""
         from ..match.models import Match
 
-        return Match.query.filter_by(status="completed").count()
+        return Match.query.filter_by(status=MatchStatus.COMPLETED.value).count()
 
     @staticmethod
     def get_matches_in_period(date_range: Optional[DateRange]) -> int:
         """Get matches completed in date range."""
         from ..match.models import Match
 
-        filters = [Match.status == "completed"]
+        filters = [Match.status == MatchStatus.COMPLETED.value]
         filters.extend(_build_date_filters(func.date(Match.updated_at), date_range))
         return Match.query.filter(and_(*filters)).count()
 
@@ -249,7 +250,7 @@ class MetricsService:
         """Get daily match counts for charting."""
         from ..match.models import Match
 
-        filters = [Match.status == "completed"]
+        filters = [Match.status == MatchStatus.COMPLETED.value]
         filters.extend(_build_date_filters(func.date(Match.updated_at), date_range))
 
         results = (
@@ -270,14 +271,14 @@ class MetricsService:
         """Get count of currently active gare (status = playing)."""
         from ..competition.models import Gara
 
-        return Gara.query.filter_by(status="playing").count()
+        return Gara.query.filter_by(status=GaraStatus.PLAYING.value).count()
 
     @staticmethod
     def get_completed_gare_count(date_range: Optional[DateRange] = None) -> int:
         """Get count of completed gare."""
         from ..competition.models import Gara
 
-        filters = [Gara.status == "completed"]
+        filters = [Gara.status == GaraStatus.COMPLETED.value]
         filters.extend(_build_date_filters(Gara.date, date_range))
         return Gara.query.filter(and_(*filters)).count()
 

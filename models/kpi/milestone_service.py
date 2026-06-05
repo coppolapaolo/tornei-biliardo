@@ -8,6 +8,7 @@ from __future__ import annotations
 from typing import List, Tuple
 
 from ..base import utc_now
+from ..status_enum import GaraStatus, MatchStatus
 from ..transaction.manager import transactional
 from .models import KpiMilestone
 from .enums import (
@@ -47,7 +48,9 @@ class MilestoneService:
 
         from ..competition.models import Gara
 
-        completed_gare = Gara.query.filter_by(status="completed").count()
+        completed_gare = Gara.query.filter_by(
+            status=GaraStatus.COMPLETED.value
+        ).count()
         for threshold in GARA_MILESTONES:
             if completed_gare >= threshold and not KpiMilestone.is_reached(
                 MilestoneType.GARE_COMPLETED, threshold
@@ -66,7 +69,7 @@ class MilestoneService:
         alerts = []
 
         last_match = (
-            Match.query.filter_by(status="completed")
+            Match.query.filter_by(status=MatchStatus.COMPLETED.value)
             .order_by(Match.updated_at.desc())
             .first()
         )

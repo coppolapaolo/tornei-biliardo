@@ -12,6 +12,7 @@ from sqlalchemy import func
 
 from ..base import db, utc_now
 from ..match.models import Match, TrioMatch
+from ..status_enum import GaraStatus, MatchStatus
 from .metrics_service import MetricsService
 
 
@@ -80,7 +81,9 @@ class CommunityService:
             )
 
             total_garas = len(managed_garas)
-            completed_garas = sum(1 for g in managed_garas if g.status == "completed")
+            completed_garas = sum(
+                1 for g in managed_garas if g.status == GaraStatus.COMPLETED.value
+            )
 
             saturation_sum = 0.0
             saturation_count = 0
@@ -127,14 +130,14 @@ class CommunityService:
             .filter(
                 Match.updated_at >= sixty_days_ago,
                 Match.updated_at < thirty_days_ago,
-                Match.status == "completed"
+                Match.status == MatchStatus.COMPLETED.value
             )
             .union(
                 db.session.query(Match.player2_id)
                 .filter(
                     Match.updated_at >= sixty_days_ago,
                     Match.updated_at < thirty_days_ago,
-                    Match.status == "completed"
+                    Match.status == MatchStatus.COMPLETED.value
                 )
             ).distinct().all()
         )
@@ -144,13 +147,13 @@ class CommunityService:
             db.session.query(Match.player1_id)
             .filter(
                 Match.updated_at >= thirty_days_ago,
-                Match.status == "completed"
+                Match.status == MatchStatus.COMPLETED.value
             )
             .union(
                 db.session.query(Match.player2_id)
                 .filter(
                     Match.updated_at >= thirty_days_ago,
-                    Match.status == "completed"
+                    Match.status == MatchStatus.COMPLETED.value
                 )
             ).distinct().all()
         )
@@ -164,7 +167,12 @@ class CommunityService:
         )
 
         # 3. Virality: % of matches between New (<30d) and Vet (>30d) users
-        recent_matches = Match.query.filter_by(status="completed").order_by(Match.updated_at.desc()).limit(100).all()
+        recent_matches = (
+            Match.query.filter_by(status=MatchStatus.COMPLETED.value)
+            .order_by(Match.updated_at.desc())
+            .limit(100)
+            .all()
+        )
 
         viral_matches = 0
         total_sample = 0
@@ -216,7 +224,7 @@ class CommunityService:
             )
             .filter(
                 Match.updated_at >= thirty_days_ago,
-                Match.status == "completed",
+                Match.status == MatchStatus.COMPLETED.value,
                 Match.is_trio == False,  # noqa: E712
             )
             .group_by(Match.player1_id)
@@ -230,7 +238,7 @@ class CommunityService:
             )
             .filter(
                 Match.updated_at >= thirty_days_ago,
-                Match.status == "completed",
+                Match.status == MatchStatus.COMPLETED.value,
                 Match.is_trio == False,  # noqa: E712
             )
             .group_by(Match.player2_id)
@@ -245,7 +253,7 @@ class CommunityService:
             .join(Match, Match.id == TrioMatch.match_id)
             .filter(
                 Match.updated_at >= thirty_days_ago,
-                Match.status == "completed",
+                Match.status == MatchStatus.COMPLETED.value,
                 Match.is_trio == True,  # noqa: E712
             )
             .group_by(TrioMatch.player1_id)
@@ -260,7 +268,7 @@ class CommunityService:
             .join(Match, Match.id == TrioMatch.match_id)
             .filter(
                 Match.updated_at >= thirty_days_ago,
-                Match.status == "completed",
+                Match.status == MatchStatus.COMPLETED.value,
                 Match.is_trio == True,  # noqa: E712
             )
             .group_by(TrioMatch.player2_id)
@@ -275,7 +283,7 @@ class CommunityService:
             .join(Match, Match.id == TrioMatch.match_id)
             .filter(
                 Match.updated_at >= thirty_days_ago,
-                Match.status == "completed",
+                Match.status == MatchStatus.COMPLETED.value,
                 Match.is_trio == True,  # noqa: E712
             )
             .group_by(TrioMatch.player3_id)

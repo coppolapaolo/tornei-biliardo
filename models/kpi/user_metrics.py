@@ -16,6 +16,7 @@ from sqlalchemy import func, or_
 from models.base import db
 from models.match.models import Match
 from models.competition.models import Inscription, Gara
+from models.status_enum import MatchStatus
 from models.user.models import DirectorAssignment
 
 class UserMetricService:
@@ -46,7 +47,7 @@ class UserMetricService:
         """Count total completed matches."""
         query = Match.query.filter(
             or_(Match.player1_id == user_id, Match.player2_id == user_id),
-            Match.status == 'completed'
+            Match.status == MatchStatus.COMPLETED.value
         )
         return query.count()
 
@@ -121,7 +122,7 @@ class UserMetricService:
         location_id = context['location_id']
         query = Match.query.filter(
             or_(Match.player1_id == user_id, Match.player2_id == user_id),
-            Match.status == 'completed',
+            Match.status == MatchStatus.COMPLETED.value,
             Match.venue_id == location_id
         )
         return query.count()
@@ -149,10 +150,10 @@ class UserMetricService:
     def _get_distinct_opponents(user_id: int, context: Optional[Dict[str, Any]] = None) -> int:
         """Count unique players played against."""
         p1_query = db.session.query(Match.player2_id).filter(
-            Match.player1_id == user_id, Match.status == 'completed'
+            Match.player1_id == user_id, Match.status == MatchStatus.COMPLETED.value
         )
         p2_query = db.session.query(Match.player1_id).filter(
-            Match.player2_id == user_id, Match.status == 'completed'
+            Match.player2_id == user_id, Match.status == MatchStatus.COMPLETED.value
         )
         
         opponents = set([r[0] for r in p1_query.all()] + [r[0] for r in p2_query.all()])
