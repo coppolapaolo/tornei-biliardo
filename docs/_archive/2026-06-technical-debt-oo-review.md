@@ -8,6 +8,62 @@
 > Severità: 🔴 **HIGH** (debito strutturale / rischio bug) · 🟡 **MEDIUM**
 > (smell consolidato, refactor consigliato) · 🟢 **LOW** (nit incrementale).
 
+## ⏭️ Handoff — decisioni aperte per la prossima sessione
+
+> Questa sezione è il punto di ripartenza dopo un azzeramento del contesto. Ogni
+> decisione è descritta con **situazione**, **opzioni**, **pro/contro** e **cosa
+> esattamente sto chiedendo di decidere**. Nessun lavoro di modifica è ancora stato
+> fatto: finora ho solo prodotto e revisionato questo documento. Branch:
+> `claude/technical-debt-oo-review-1SSMG`.
+
+### Decisione 1 — I due bug reali: fixarli subito?
+**Situazione.** Due bug confermati, indipendenti dal resto e a basso rischio:
+- **F9.1** `models/user/models.py:222` — `BilliardHall.is_active is True` (identità
+  Python invece di `==`) → `get_managed_venues()` ritorna sempre vuoto.
+- **F9.2** `routes/admin/competition/crud.py:263-327` — l'edit gara scarta
+  silenziosamente `classification_system` (il form lo invia, l'handler non lo legge).
+**Opzioni.** (a) Fix entrambi ora con test di regressione; (b) solo F9.1 (più
+banale); (c) nessuno ora.
+**Pro fix:** correttezza user-facing, sforzo minimo (F9.1 ~1 riga). **Contro:** F9.2
+ha due livelli — fix minimo (leggere il campo nell'edit) vs fix "giusto" (far passare
+l'edit da `GaraFormParser`, che però è già Decisione 3). **Cosa decidere:** quali bug
+fixo ora e, per F9.2, se minimo o "giusto".
+
+### Decisione 2 — Infra non usata in produzione: pausa o scarto? (solo tu lo sai)
+**Situazione.** 4 componenti non referenziati dal codice di produzione (vedi §1,
+tabella evidenza): orchestrators, `models/scoring/`, monitoring `QueryOptimizer`,
+base `DomainService`. **"Non usato" è un fatto; "abbandonato" è un intento che solo
+tu puoi confermare.**
+**Opzioni per ciascuno.** (a) Scarto → rimuovo (git conserva la storia); (b) Pausa →
+lascio e magari aggiungo una nota `# WIP/paused`; (c) Indeciso → lascio com'è.
+**Pro rimozione:** −~1.5–2k LOC, meno confusione/onboarding. **Contro:** se era lavoro
+in pausa da riprendere, sparisce dalla vista (recuperabile da git ma "out of sight").
+**Cosa decidere:** per ognuno dei 4, pausa o scarto.
+
+### Decisione 3 — Refactor architetturali: quali (se) affrontare?
+**Situazione.** Debito strutturale ma non urgente, indipendente dai bug:
+- **Form Object** (single-source `GaraFormParser` per create+wizard+edit + test
+  anti-drift) → risolve la classe wizard/edit (§7). Sforzo M.
+- **Tassonomia eccezioni** di dominio (§3). Sforzo S, adozione incrementale.
+- **Dedup `BaseModel`/`UtilityMixin`** (§4). Sforzo XS.
+- **Predicati di stato sugli enum** (§5.3/F4.3). Sforzo S.
+**Pro:** riducono drift e bug futuri. **Contro:** toccano molti file; vanno fatti uno
+alla volta con test. **Cosa decidere:** quali di questi entrano nello scope ora, quali
+rimandati.
+
+### Decisione 4 — Conferma "non si tocca": core `TransactionManager`
+**Situazione.** Ho ritirato la proposta di rifattorizzarlo (load-bearing, protetto
+da test, ADR-012/025). Resta solo l'intervento locale di togliere `@transactional`
+ridondanti sui facade (F2.2/F2.3). **Cosa decidere:** confermi che il core resta
+intoccato e che, al massimo, ripuliamo i decoratori ridondanti?
+
+### Come ripartire dopo il `/clear`
+Dimmi semplicemente *"riprendi dal doc di technical-debt"*: rileggo questa sezione e
+ti pongo le domande (1→4) una alla volta, con le opzioni, e procedo solo dopo le tue
+risposte.
+
+---
+
 ## Metodo
 - 531 file Python; ~55k LOC in `models/`, ~73k LOC totali (escl. test/migrations).
 - Codegraph MCP non disponibile in questo ambiente → analisi via grep/read +
