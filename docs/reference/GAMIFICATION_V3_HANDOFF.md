@@ -58,24 +58,31 @@ rispetto al design:
   ancora letto per **notifica level-up** + **hint "prossimo unlock"**
   (`level_service.py:113,130,248,260`) → reinstradare su FeatureConfig prima di togliere.
 
-## Prossimo passo: Fase 1 — SOLO i 3 a basso rischio (non visibile agli utenti)
+## Fase 1 — SOLO i 3 a basso rischio (non visibile agli utenti) — ✅ COMPLETATA
+**Stato (2026-06-05)**: implementata su `claude/gamification-system-review-beIB0`
+(Task A `368afcc`, Task B `fd372d9`, Task C `0b92775`). Ogni task ha test dedicati;
+`pyright` pulito; unit suite + gamification integration verdi. Dettaglio sotto.
+
 Ambito deciso: i task a rischio medio/alto (#3, #5, #6 + cablaggi/seed) → **Fase 2**.
 
-- **Task 0 — doc** (nessun codice): correzioni sopra già applicate in V3/ADR/handoff.
-- **Task A — fix `STREAK_LONGEST`** (basso): in `_calculate_streak_longest()`
-  aggiungere `calculated_at=utc_now()` e `score=streak.longest_streak`. + **primo
-  test leaderboard** (`tests/new/.../test_leaderboard_service.py`).
-- **Task B — disattivare i 10 achievement non ottenibili** (basso): `is_active=False`
-  nei seed **+ migrazione** `UPDATE achievement SET is_active=0 WHERE slug IN (...)`.
-  Test: `get_user_achievements` non li include.
-- **Task C — quest status lazy** (medio, contenuto): property
-  `Quest.is_currently_active`/`effective_status` derivata da `start_date`/`end_date`
-  con `utc_now()`, usata nel read-path (`get_user_quests`, `active_only`); `status`
-  resta per override admin. (Il **seed quest** è feature → Fase 2.) Test su date
-  passate/future/correnti senza chiamare `update_quest_statuses`.
+- **Task 0 — doc** (nessun codice): correzioni già applicate in V3/ADR/handoff.
+- ✅ **Task A — fix `STREAK_LONGEST`** (`368afcc`): `_calculate_streak_longest()`
+  ora imposta `score=streak.longest_streak` e `calculated_at=utc_now()`. Era un
+  crash, non solo un campo mancante: `score` è `NOT NULL` → il refresh falliva.
+  Primo test del leaderboard in `tests/new/integration/gamification/test_leaderboard_service.py`.
+- ✅ **Task B — disattivare gli achievement non ottenibili** (`fd372d9`):
+  costante `UNOBTAINABLE_ACHIEVEMENT_SLUGS` (**12** slug: i 2 stub mappano a 4
+  badge + 8 progress-based — l'"(10)" era impreciso) + `is_active=False` nei seed
+  **+ migrazione** idempotente `20260605_disable_unobtainable_achievements.py`.
+  Test su seed/service + drift-guard seed↔migrazione.
+- ✅ **Task C — quest status lazy** (`0b92775`): property
+  `Quest.effective_status`/`is_currently_active` derivate da `start_date`/`end_date`
+  con `utc_now()` (override admin `COMPLETED`/`EXPIRED` prioritari); `get_user_quests`
+  con `active_only` filtra su `is_currently_active`. Test su date passate/future/
+  correnti + override, senza chiamare `update_quest_statuses`.
 
-Sequenza: 0 → A → B → C, commit atomici; chiudere con `pyright` +
-`pytest tests/new/unit -n auto` + `pytest tests/new/integration -n 4`.
+Sequenza eseguita: 0 → A → B → C, commit atomici; chiuso con `pyright` (0 errori)
++ unit suite e gamification integration verdi (solo skip preesistenti).
 
 ### Rimandato a Fase 2 (rischio medio/alto, richiede decisioni)
 - **#5 editor XP**: decisione **A** (cablare award→`ConfigService.get_xp_rate()`,
@@ -83,6 +90,18 @@ Sequenza: 0 → A → B → C, commit atomici; chiudere con `pyright` +
 - **#3 dedup proposte**: sciogliere con cura il sistema Availability del file legacy.
 - **#6 `LEVEL_UNLOCKS`**: reinstradare notifica + hint su FeatureConfig, poi rimuovere.
 - **Cablaggio social achievements** (i 4 economici) + **seed quest** (feature).
+- **`champion` / `podium_finish` non ottenibili** (scoperto in Fase 1, *fuori
+  scope*): entrambi `is_progressive=False`, chiamati dagli handler senza
+  `progress_increment` (`event_handlers.py:400,412`), ma `_check_requirements`
+  per `tournament_wins`/`tournament_podium` ritorna `False` quando
+  `current_progress is None` (`achievement_service.py:235-239,227-233`). Quindi
+  "vinci un torneo" / "podio" non si sbloccano mai. **Non disattivati in Fase 1**
+  (l'handoff li dava per "tournament wired") per non far sparire badge di punta
+  senza una decisione. Decisione APERTA: **A** cablare il vero conteggio nel
+  ramo non-progressive (es. `tournament_wins` da `UserStatsService` / podi da
+  `Classification`) — *preferibile*, li rende ottenibili; **vs B** disattivarli
+  come gli altri 12. Vale anche la pena rivedere se `tournament_dominator`
+  (progressive, `progress_increment=1`) si sblocca davvero end-to-end.
 
 Tutto resta **director-only** (maturity-gate ADR-028) finché non validato.
 

@@ -291,7 +291,20 @@ File coinvolti (riferimento, non ancora modificati):
 
 - **Leaderboard** (`leaderboard_service.py`): reale e cablato — 5 tipi calcolati
   da `UserLevel`/`StreakTracker`/`PlayerRating`, cache con refresh on-demand.
-  Micro-bug: `STREAK_LONGEST` non setta `calculated_at`.
+  ~~Micro-bug: `STREAK_LONGEST` non setta `calculated_at`.~~ **Risolto in Fase 1**
+  (`STREAK_LONGEST` non impostava né `score` né `calculated_at`: poiché
+  `score` è `NOT NULL`, la classifica falliva del tutto al refresh; ora allineata
+  agli altri `_calculate_*`).
+- **Achievement non ottenibili — set più ampio del previsto**: oltre ai 12
+  disattivati in Fase 1 (2 stub `win_streak`/`category_reached` → 4 badge + 8
+  progress-based), anche **`champion`** (`tournament_wins`) e **`podium_finish`**
+  (`tournament_podium`) sono di fatto **non ottenibili**. Sono `is_progressive=False`
+  e gli handler li chiamano senza `progress_increment`
+  (`event_handlers.py:400,412`), ma `_check_requirements` per quei due tipi ritorna
+  `False` quando `current_progress is None` (`achievement_service.py:227-239`).
+  **Non toccati in Fase 1** (l'handoff li classificava come "tournament wired") per
+  non far sparire dalla UI badge di punta ("vinci un torneo") senza decisione
+  esplicita → **Fase 2** (vedi `GAMIFICATION_V3_HANDOFF.md`).
 - **Quest**: registrazione progresso cablata end-to-end (event handlers →
   `record_activity_for_quests` → auto-join/incremento/XP/evento), MA **nessun
   seed** e `update_quest_statuses()` **mai invocato** (niente cron/route) → le
