@@ -244,7 +244,8 @@ player→director.
   forti, non per ogni evento.
 - **Tieni un feedback evidente ma sobrio** su XP/level-up: es. **badge in navbar
   che pulsa/anima**. *Da costruire*: oggi il feedback è il toast con mascotte, la
-  micro-animazione del badge non esiste ancora → va creata come sostituto.
+  micro-animazione del badge non esiste ancora → va creata come sostituto
+  (design in §11-quater).
 - **Max 1 messaggio gamification per sessione**, mai sovrapposti; micro-guadagni
   XP accorpati/silenziati.
 
@@ -321,6 +322,43 @@ Stato verificato:
 **Coerenza**: le quest sono *goal-setting personale* (competenza-SDT senza
 status); gli achievement il *riconoscimento di traguardi reali*. Entrambi
 alimentano l'abitudine (obiettivo #2) senza spingere lo status come fine.
+
+## 11-quater. Feedback badge in navbar (sostituto sobrio della mascotte)
+
+Il badge navbar **esiste già** (`templates/base.html`, pill livello+XP gated da
+`feature_visible('gamification.dashboard')`) ma è **statico**. Gli eventi sono
+già emessi dal frontend bridge (`XP`, `LEVEL_UP`, `ACHIEVEMENT`, `STREAK`…) e
+`static/css/gamification.css` ha già classi di animazione → va reso **vivo**, non
+costruito da zero.
+
+**Scala di intensità del feedback** (chiude alla radice il problema toast+notifica
+di §11: la maggioranza degli eventi va sul badge silenzioso, il toast resta ai
+momenti forti):
+
+| Evento | Feedback | Mascotte/confetti |
+|---|---|---|
+| Micro guadagno XP | badge: *pulse* + count-up del numero. **Nessun toast** | no |
+| **Level-up** | badge: glow dorato + incremento livello + **un solo toast** | sì (momento forte) |
+| Achievement sbloccato | toast + icona badge | sì |
+| Milestone streak | toast | sì |
+| Tick streak ordinario / progresso quest | solo badge o silenzioso | no |
+
+**Comportamento del badge** (decisione: *con anello di progresso*):
+- **Anello/barra sottile** di progresso verso il livello successivo (da
+  `get_xp_progress`) → la pill statica diventa un **indicatore di progresso
+  vivo**: è il feedback di competenza-SDT **auto-referenziale** che sostituisce
+  lo status da leaderboard (§11-bis).
+- **Su XP**: micro-pulse + count-up; niente toast (micro-guadagni
+  accorpati/silenziati).
+- **Su level-up**: glow + incremento + l'**unico** toast celebrativo giustificato.
+- **Accessibilità**: rispettare `prefers-reduced-motion` → nessuna animazione,
+  solo aggiornamento del valore.
+- **Max 1 messaggio gamification per sessione** (§11): vale per i toast, non per
+  l'aggiornamento ambient del badge.
+
+**Impatto tecnico**: nessun nuovo componente — estendere `gamification.css`
+(`.badge-pulse`, `.badge-levelup`, anello SVG/conic-gradient) e il JS che già
+consuma gli eventi del bridge, instradando XP→badge e level-up→badge+toast.
 
 ## 12. Debito tecnico / pulizia (da ADR-031, verificato)
 

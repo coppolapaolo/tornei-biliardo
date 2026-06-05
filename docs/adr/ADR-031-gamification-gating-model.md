@@ -264,9 +264,16 @@ Decisione **non ancora in implementazione**. Dettagli risolti il 2026-06-05
   quest personali ricorrenti, dietro maturity-gate. Dettaglio in
   `GAMIFICATION_V3.md` §11-ter.
 
-Restano da tarare le soglie numeriche, la grafica dell'onboarding, il raggio di
-default, la formalizzazione del modello geografico, il design delle classifiche
-locali (leghe vs raggio) e il set esatto di quest seed / achievement da cablare.
+- **Feedback badge navbar**: il badge livello+XP esiste già ma è statico → si
+  rende **vivo** con un **anello di progresso** (feedback auto-referenziale di
+  competenza) + *pulse* su XP e *glow*+toast su level-up. **Scala di intensità**:
+  la maggioranza degli eventi resta sul badge silenzioso, il toast (e la
+  mascotte) solo ai momenti forti → chiude il problema toast+notifica. Rispetto di
+  `prefers-reduced-motion`. Dettaglio in `GAMIFICATION_V3.md` §11-quater.
+
+Con questo il **design è completo**. Restano solo tarature (soglie numeriche,
+grafica onboarding, raggio default, classifiche locali leghe-vs-raggio, set quest
+seed / achievement da cablare) e la pianificazione dell'implementazione a fasi.
 
 File coinvolti (riferimento, non ancora modificati):
 - `models/gamification/xp_config.py` — rimozione `LEVEL_UNLOCKS`/helper legacy.
