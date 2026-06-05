@@ -251,79 +251,34 @@ def edit_gara(gara_id):
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
     if request.method == "POST":
-        # Handle venue auto-creation for location - returns tuple (location_str, billiard_hall_id)
+        from .form_parser import GaraFormParser
+
+        # Venue auto-creation -> (location_str, billiard_hall_id)
         location = request.form.get("location", "").strip()
         tables_input = request.form.get("available_tables", "").strip()
 
         location, billiard_hall_id = _handle_venue_creation(location, tables_input)
 
-        # Parse tables for gara-specific configuration
-        available_tables = Gara.parse_tables_input(tables_input) if tables_input else []
-
         try:
-            max_participants = request.form.get("max_participants")
-            max_participants = int(max_participants) if max_participants else None
+            # Single source of truth for form↔model mapping: reuse the same parser
+            # as create (and wizard). A campionato gara inherits its strategy and
+            # classification system from the campionato; a standalone gara reads
+            # them from the form. Hand-rolling the parsing here is what caused the
+            # silent loss of `classification_system` (regression F9.2 / F7.5).
+            parser = GaraFormParser(campionato=gara.campionato)
+            data = parser.parse()
 
-            exact_number = "exact_number" in request.form
-            is_race_to = not exact_number
-
-            # Multi-set configuration (Phase 6: Frontend Integration)
-            is_multi_set = "is_multi_set" in request.form
-            match_distance = request.form.get("match_distance")
-            match_distance = int(match_distance) if match_distance else None
-            is_race_to_sets = "is_race_to_sets" in request.form
-
-            # Estratti i parametri di configurazione matchmaking
-            matchmaking_strategy = request.form.get(
-                "matchmaking_strategy", gara.matchmaking_strategy
-            )
-            first_round_policy = request.form.get(
-                "first_round_policy", gara.first_round_policy
-            )
-            odd_number_policy = request.form.get(
-                "odd_number_policy", gara.odd_number_policy
-            )
-            anti_rematch_enabled = request.form.get("anti_rematch_enabled") == "on"
-
-            # SSR (Spot Shot Rally) tiebreaker configuration
-            tiebreaker_enabled = request.form.get("tiebreaker_enabled") == "on"
-            tiebreaker_until_position = int(request.form.get("tiebreaker_until_position", 3))
-
-            # Estrai il campo time
-            time_str = request.form.get("time", "20:00")
+            errors = GaraFormParser.validate_strategy(data)
+            if errors:
+                flash(f"Configurazione non valida: {', '.join(errors)}", "error")
+                return redirect(url_for("admin.competition.edit_gara", gara_id=gara_id))
 
             GaraService.update_gara(
                 gara_id=gara_id,
                 name=request.form.get("name", gara.name),
-                date_str=request.form["date"],
-                time_str=time_str,
                 billiard_hall_id=billiard_hall_id,  # FK to BilliardHall
                 location=location,  # String for backward compat/display cache
-                description=request.form.get("description", ""),
-                rounds_count=int(request.form.get("rounds_count", 3)),
-                min_participants=int(request.form.get("min_participants", 2)),
-                max_participants=max_participants,
-                entry_fee=float(request.form.get("entry_fee", 0.0)),
-                discipline=request.form["discipline"],
-                distance=int(request.form["distance"]),
-                is_race_to=is_race_to,
-                withdraw_policy=request.form.get(
-                    "withdraw_policy", WithdrawPolicy.EXCLUDE.value
-                ),
-                # Aggiunti i parametri di configurazione matchmaking
-                matchmaking_strategy=matchmaking_strategy,
-                first_round_policy=first_round_policy,
-                odd_number_policy=odd_number_policy,
-                anti_rematch_enabled=anti_rematch_enabled,
-                # Phase 6: Multi-set configuration
-                is_multi_set=is_multi_set,
-                match_distance=match_distance,
-                is_race_to_sets=is_race_to_sets,
-                # SSR (Spot Shot Rally) tiebreaker configuration
-                tiebreaker_enabled=tiebreaker_enabled,
-                tiebreaker_until_position=tiebreaker_until_position,
-                # Operational settings (tables, location)
-                available_tables=available_tables,
+                **data,
             )
 
             flash("Gara aggiornata con successo!")

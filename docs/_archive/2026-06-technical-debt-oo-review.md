@@ -16,7 +16,20 @@
 > fatto: finora ho solo prodotto e revisionato questo documento. Branch:
 > `claude/technical-debt-oo-review-1SSMG`.
 
-### Decisione 1 — I due bug reali: fixarli subito?
+### Decisione 1 — I due bug reali: fixarli subito? ✅ FATTO (2026-06-05)
+> **Esito:** scelta "entrambi, F9.2 giusto". F9.1 fixato (`.is_(True)`); F9.2
+> fixato instradando `edit_gara` attraverso `GaraFormParser` (single source con
+> create/wizard). Test di regressione aggiunti:
+> `tests/new/unit/test_get_managed_venues_regression.py` e
+> `tests/new/integration/test_edit_gara_classification_regression.py` (rossi prima,
+> verdi dopo; suite unit 926 verde; pyright 0 errori).
+> **Due implicazioni di comportamento del fix "giusto" (intenzionali, simmetriche a
+> create):** (1) l'edit ora valida la strategia (`validate_strategy`) come fa create
+> standalone — una config strategia invalida viene rifiutata invece di salvata;
+> (2) per una gara *in campionato* strategia e `classification_system` vengono ora
+> ereditati dal campionato anche in modifica (prima l'handler li leggeva dal form).
+> Questo è coerente con `create` e risolve il drift form↔modello (F7.5).
+
 **Situazione.** Due bug confermati, indipendenti dal resto e a basso rischio:
 - **F9.1** `models/user/models.py:222` — `BilliardHall.is_active is True` (identità
   Python invece di `==`) → `get_managed_venues()` ritorna sempre vuoto.
@@ -594,7 +607,7 @@ nessuno di questi.
 
 ## 9. Bug reali individuati
 
-- **F9.1 🔴 `BilliardHall.is_active is True` → query sempre vuota.**
+- **F9.1 ✅ RISOLTO (2026-06-05) — `BilliardHall.is_active is True` → query sempre vuota.**
   `models/user/models.py:222`:
   `BilliardHall.query.filter(BilliardHall.id.in_(venue_ids),
   BilliardHall.is_active is True)`. `is True` è un confronto d'identità Python
@@ -604,7 +617,10 @@ nessuno di questi.
   `BilliardHall.is_active == True` (o `.is_(True)`); aggiungere test di
   regressione. **Intervento minimo, alto valore.**
 
-- **F9.2 🔴 Edit gara scarta silenziosamente `classification_system`.**
+- **F9.2 ✅ RISOLTO (2026-06-05) — Edit gara scarta silenziosamente `classification_system`.**
+  > Fix: `edit_gara` ora usa `GaraFormParser(campionato=gara.campionato)` + `**data`
+  > verso `update_gara`, eliminando il parser inline divergente. Vedi nota in
+  > Decisione 1 per le due implicazioni di comportamento.
   Il form di modifica (`templates/components/_gara_edit_form.html:50,61`) invia
   `classification_system` (c'è perfino un doppio input: hidden + `<select>`), ma
   l'handler `edit_gara` (`routes/admin/competition/crud.py:263-327`) **non lo

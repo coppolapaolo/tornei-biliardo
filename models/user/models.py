@@ -219,7 +219,7 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
             return []
 
         return BilliardHall.query.filter(
-            BilliardHall.id.in_(venue_ids), BilliardHall.is_active is True
+            BilliardHall.id.in_(venue_ids), BilliardHall.is_active.is_(True)
         ).all()
 
     # ───────────────────
