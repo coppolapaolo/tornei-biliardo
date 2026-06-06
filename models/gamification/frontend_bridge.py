@@ -358,6 +358,34 @@ class GamificationFrontendBridge:
         )
 
 
+def _i18n_nudge_anchor() -> None:
+    """Ancora di estrazione i18n per ``_NUDGE_COPY`` — **mai chiamata**.
+
+    Le copy dei nudge vengono tradotte a emission-time con ``_(copy["name"])`` /
+    ``_(copy["description"])``: passando una *variabile* a ``_()``, pybabel non
+    riesce a estrarle staticamente, quindi senza questa ancora resterebbero in
+    italiano anche in EN. Qui ripetiamo i literal (identici ai valori
+    concatenati in ``_NUDGE_COPY``) dentro ``_()`` solo perché l'estrazione
+    statica li includa nel catalogo. Non viene mai eseguita.
+    """
+    _("Scopri gli altri giocatori")
+    _("Ora puoi sbirciare i profili degli altri. Vai alla classifica per cominciare!")
+    _("Statistiche globali")
+    _("Confronta le tue performance con quelle della community.")
+    _("Crea una partita diretta")
+    _("Sfida un avversario specifico — proponi luogo e data.")
+    _("Proponi una partita aperta")
+    _("Lancia una proposta alla community e aspetta che qualcuno si faccia avanti.")
+    _("Imposta la tua disponibilità")
+    _("Fai sapere quando sei libero così altri possono proporti partite.")
+    _("Organizza una gara")
+    _("Sei pronto: puoi creare la tua prima gara standalone.")
+    _("Organizza un campionato")
+    _("Crea una serie di gare e gestisci una stagione completa.")
+    _("Prova le sfide")
+    _("Allenati con drill mirati: ogni completamento conta per la classifica.")
+
+
 def _get_achievement_description(event: AchievementUnlockedEvent) -> str:
     """B21: prefer the achievement.description from DB (semantic, i18n-ready)
     over a generic "+XP - category" line. Falls back to the generic line if

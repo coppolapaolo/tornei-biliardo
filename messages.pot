@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-06 12:40+0000\n"
+"POT-Creation-Date: 2026-06-06 13:06+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -117,7 +117,75 @@ msgstr ""
 msgid "description"
 msgstr ""
 
+#: models/gamification/frontend_bridge.py:371
+msgid "Scopri gli altri giocatori"
+msgstr ""
+
+#: models/gamification/frontend_bridge.py:372
+msgid ""
+"Ora puoi sbirciare i profili degli altri. Vai alla classifica per "
+"cominciare!"
+msgstr ""
+
+#: models/gamification/frontend_bridge.py:373
+msgid "Statistiche globali"
+msgstr ""
+
+#: models/gamification/frontend_bridge.py:374
+msgid "Confronta le tue performance con quelle della community."
+msgstr ""
+
+#: models/gamification/frontend_bridge.py:375
+msgid "Crea una partita diretta"
+msgstr ""
+
+#: models/gamification/frontend_bridge.py:376
+msgid "Sfida un avversario specifico — proponi luogo e data."
+msgstr ""
+
+#: models/gamification/frontend_bridge.py:377
+msgid "Proponi una partita aperta"
+msgstr ""
+
+#: models/gamification/frontend_bridge.py:378
+msgid ""
+"Lancia una proposta alla community e aspetta che qualcuno si faccia "
+"avanti."
+msgstr ""
+
+#: models/gamification/frontend_bridge.py:379
+msgid "Imposta la tua disponibilità"
+msgstr ""
+
 #: models/gamification/frontend_bridge.py:380
+msgid "Fai sapere quando sei libero così altri possono proporti partite."
+msgstr ""
+
+#: models/gamification/frontend_bridge.py:381
+msgid "Organizza una gara"
+msgstr ""
+
+#: models/gamification/frontend_bridge.py:382
+msgid "Sei pronto: puoi creare la tua prima gara standalone."
+msgstr ""
+
+#: models/gamification/frontend_bridge.py:383
+msgid "Organizza un campionato"
+msgstr ""
+
+#: models/gamification/frontend_bridge.py:384
+msgid "Crea una serie di gare e gestisci una stagione completa."
+msgstr ""
+
+#: models/gamification/frontend_bridge.py:385
+msgid "Prova le sfide"
+msgstr ""
+
+#: models/gamification/frontend_bridge.py:386
+msgid "Allenati con drill mirati: ogni completamento conta per la classifica."
+msgstr ""
+
+#: models/gamification/frontend_bridge.py:408
 #, python-format
 msgid "+%(xp)d XP — %(category)s"
 msgstr ""
@@ -756,58 +824,58 @@ msgstr ""
 msgid "Feature creata con successo"
 msgstr ""
 
-#: routes/individual_match/availability.py:68
+#: routes/individual_match/availability.py:85
 msgid "La località è obbligatoria"
 msgstr ""
 
-#: routes/individual_match/availability.py:95
-#: routes/individual_match/availability.py:145
+#: routes/individual_match/availability.py:106
+#: routes/individual_match/availability.py:153
 #, python-format
 msgid "Disponibilità aggiornata per %(loc)s"
 msgstr ""
 
-#: routes/individual_match/availability.py:98
+#: routes/individual_match/availability.py:109
 #, python-format
 msgid "Notificati %(n)s giocatori della tua disponibilità"
 msgstr ""
 
-#: routes/individual_match/availability.py:125
+#: routes/individual_match/availability.py:135
 msgid "Devi selezionare una sala"
 msgstr ""
 
-#: routes/individual_match/availability.py:140
-#: routes/individual_match/availability.py:190
+#: routes/individual_match/availability.py:148
+#: routes/individual_match/availability.py:198
 #, python-format
 msgid "Sala #%(id)s"
 msgstr ""
 
-#: routes/individual_match/availability.py:227
+#: routes/individual_match/availability.py:235
 msgid "La località è obbligatoria per richiedere un match"
 msgstr ""
 
-#: routes/individual_match/availability.py:239
+#: routes/individual_match/availability.py:247
 msgid "Formato data/ora non valido"
 msgstr ""
 
-#: routes/individual_match/availability.py:257
+#: routes/individual_match/availability.py:265
 #, python-format
 msgid "Utente #%(id)s"
 msgstr ""
 
-#: routes/individual_match/availability.py:262
+#: routes/individual_match/availability.py:270
 #, python-format
 msgid "Richiesta di match inviata a %(name)s"
 msgstr ""
 
-#: routes/individual_match/availability.py:283
+#: routes/individual_match/availability.py:291
 msgid "Record non trovato"
 msgstr ""
 
-#: routes/individual_match/availability.py:284
+#: routes/individual_match/availability.py:292
 msgid "Disponibilità non trovata"
 msgstr ""
 
-#: routes/individual_match/availability.py:289
+#: routes/individual_match/availability.py:297
 msgid "Disponibilità rimossa"
 msgstr ""
 
@@ -5698,7 +5766,7 @@ msgid "Transazioni Recenti"
 msgstr ""
 
 #: templates/gamification/admin/xp_management.html:83
-#: templates/individual_match/discover_players.html:74
+#: templates/individual_match/discover_players.html:76
 #: templates/public/campionato_detail.html:98
 #: templates/public/garas_list.html:11
 msgid "Data"
@@ -6039,27 +6107,27 @@ msgstr ""
 msgid "Nessun giocatore disponibile trovato. Prova a cambiare i filtri."
 msgstr ""
 
-#: templates/individual_match/discover_players.html:54
+#: templates/individual_match/discover_players.html:55
 msgid "giocatori"
 msgstr ""
 
-#: templates/individual_match/discover_players.html:63
+#: templates/individual_match/discover_players.html:65
 msgid "Richiedi match"
 msgstr ""
 
-#: templates/individual_match/discover_players.html:78
+#: templates/individual_match/discover_players.html:80
 msgid "Ora"
 msgstr ""
 
-#: templates/individual_match/discover_players.html:82
+#: templates/individual_match/discover_players.html:84
 msgid "Messaggio"
 msgstr ""
 
-#: templates/individual_match/discover_players.html:83
+#: templates/individual_match/discover_players.html:85
 msgid "Facoltativo"
 msgstr ""
 
-#: templates/individual_match/discover_players.html:87
+#: templates/individual_match/discover_players.html:89
 msgid "Invia richiesta"
 msgstr ""
 
