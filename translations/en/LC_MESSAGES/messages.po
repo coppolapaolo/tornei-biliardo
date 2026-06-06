@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-06 11:27+0000\n"
+"POT-Creation-Date: 2026-06-06 11:34+0000\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -53,47 +53,47 @@ msgstr "Player Dashboard"
 msgid "Vista Pubblica"
 msgstr "Public View"
 
-#: models/gamification/frontend_bridge.py:135
+#: models/gamification/frontend_bridge.py:134
 msgid "Hai guadagnato XP"
 msgstr "You earned XP"
 
-#: models/gamification/frontend_bridge.py:138
+#: models/gamification/frontend_bridge.py:137
 msgid "Per aver giocato la partita"
 msgstr "For playing the match"
 
-#: models/gamification/frontend_bridge.py:140
+#: models/gamification/frontend_bridge.py:139
 msgid "Per aver partecipato al torneo"
 msgstr "For tournament participation"
 
-#: models/gamification/frontend_bridge.py:142
+#: models/gamification/frontend_bridge.py:141
 msgid "Per aver completato la quest"
 msgstr "For completing the quest"
 
-#: models/gamification/frontend_bridge.py:144
+#: models/gamification/frontend_bridge.py:143
 msgid "Per aver sbloccato un achievement"
 msgstr "For unlocking an achievement"
 
-#: models/gamification/frontend_bridge.py:162
+#: models/gamification/frontend_bridge.py:156
 #, python-format
 msgid "Hai accumulato %(xp)d XP totali — %(n)d nuove funzioni sbloccate!"
 msgstr "You've accumulated %(xp)d total XP — %(n)d new features unlocked!"
 
-#: models/gamification/frontend_bridge.py:167
+#: models/gamification/frontend_bridge.py:161
 #, python-format
 msgid "Hai accumulato %(xp)d XP totali"
 msgstr "You've accumulated %(xp)d total XP"
 
-#: models/gamification/frontend_bridge.py:173
+#: models/gamification/frontend_bridge.py:167
 #, python-format
 msgid "Livello %(level)d raggiunto!"
 msgstr "Level %(level)d reached!"
 
-#: models/gamification/frontend_bridge.py:201
+#: models/gamification/frontend_bridge.py:196
 #, python-format
 msgid "Hai giocato per %(weeks)d settimane consecutive!"
 msgstr "You've played for %(weeks)d consecutive weeks!"
 
-#: models/gamification/frontend_bridge.py:203
+#: models/gamification/frontend_bridge.py:201
 #, python-format
 msgid "Sei attivo da %(weeks)d settimane consecutive!"
 msgstr "You've been active for %(weeks)d consecutive weeks!"
@@ -102,27 +102,27 @@ msgstr "You've been active for %(weeks)d consecutive weeks!"
 msgid "Hai guadagnato un congelatore!"
 msgstr "You earned a streak freeze!"
 
-#: models/gamification/frontend_bridge.py:226
+#: models/gamification/frontend_bridge.py:227
 #, python-format
 msgid "Hai perso una serie di %(weeks)d settimane."
 msgstr "You lost a %(weeks)d-week streak."
 
-#: models/gamification/frontend_bridge.py:239
+#: models/gamification/frontend_bridge.py:242
 #, python-format
 msgid "Quest completata: %(name)s — +%(xp)d XP"
 msgstr "Quest completed: %(name)s — +%(xp)d XP"
 
-#: models/gamification/frontend_bridge.py:302
-#: models/gamification/frontend_bridge.py:331
+#: models/gamification/frontend_bridge.py:316
+#: models/gamification/frontend_bridge.py:346
 msgid "name"
 msgstr "name"
 
-#: models/gamification/frontend_bridge.py:303
-#: models/gamification/frontend_bridge.py:332
+#: models/gamification/frontend_bridge.py:317
+#: models/gamification/frontend_bridge.py:347
 msgid "description"
 msgstr "description"
 
-#: models/gamification/frontend_bridge.py:362
+#: models/gamification/frontend_bridge.py:380
 #, python-format
 msgid "+%(xp)d XP — %(category)s"
 msgstr "+%(xp)d XP — %(category)s"
