@@ -1,7 +1,10 @@
 # Gamification V3 — Handoff per l'implementazione
 
-**Data**: 2026-06-05 · **Branch**: `claude/gamification-system-review-beIB0`
-**Stato**: design **completo**, codice **non ancora toccato**.
+**Data**: 2026-06-05 (agg. 2026-06-06) · **Branch**: `claude/gamification-system-review-beIB0`
+**Stato**: Fasi 1–3 **implementate**; ADR-031 (minori), ADR-032/033 (availability),
+ADR-034 (geo-prossimità) **implementati**. Vedi "Aggiornamento 2026-06-06" sotto.
+Entry-point operativo gemello: `GAMIFICATION_V3_RESUME.md` (stato sintetico +
+passi di deploy).
 
 ## Cos'è questo
 Punto di ingresso per la fase di **implementazione** della revisione gamification.
@@ -14,7 +17,10 @@ Il design è interamente deciso e documentato — leggere come fonte di verità:
 - Livelli = **feedback**, non barriera. Loop base aperto dal day-1.
 - **Onboarding** brevissimo/obbligatorio + backfill esistenti al primo login (`User.onboarding_completed`).
 - Drill: creazione a **slot di engagement** (cap = 3 + drill ingaggiati).
-- **Modello geografico per prossimità** (coordinate + raggio), GeoNames `cities500` offline, identico per utenti e sale → merita **ADR dedicato** prima di implementare.
+- **Modello geografico per prossimità** (coordinate + raggio) → **FATTO** in
+  ADR-034 (vedi Aggiornamento 2026-06-06). Nota: rispetto al design iniziale
+  NON usa GeoNames offline né posizione utente persistita — GPS browser effimero
+  + fallback centroide-città dalle coord sala.
 - **Segnale-domanda → director** (richieste geolocalizzate, soglia ≥6 nel raggio).
 - **Leaderboard** riformulato locale/contributo; loop quotidiano auto-referenziale.
 - **Quest**: status calcolato dalle date + seed minimo, dietro maturity-gate.
@@ -154,6 +160,67 @@ Commit `a046995` (backend), `f23e6c6` (frontend).
   toast soggetto al **cap di sessione** (≤1 toast capped/sessione via
   `sessionStorage`; level-up esente). Test: `test_navbar_badge_render.py` (rende
   `base.html` in request context, robusto al leak `@transactional` dei route).
+
+## Aggiornamento 2026-06-06 — chiusure ADR-031 + availability + geo
+
+Lavoro successivo alle Fasi 1–3, tutto su `claude/gamification-system-review-beIB0`.
+
+### Chiusure decisioni di prodotto ADR-031 (3 item minori)
+- **Level-up vs gating** (`3e4e241`): la toast diceva "N nuove funzioni
+  sbloccate" contando i `LevelUnlock`, ma quel vocabolario è disgiunto dai gate
+  reali (FeatureConfig) → reword onesto "N nuove ricompense di livello!". Nessun
+  cambio al gating.
+- **`perfectionist`** (`cc8dfcd`): descrizione allineata alla metrica reale
+  ("Supera 5 drill pass/fail diversi") + migrazione
+  `20260606_perfectionist_honest_description` (i drill a punteggio non hanno max
+  assoluto nel modello → restano esclusi by design).
+- **Nudge copy i18n** (`856f4b7`): le 16 `_NUDGE_COPY` in `frontend_bridge.py`
+  usavano `_(variabile)` (non estraibili) → aggiunta `_i18n_nudge_anchor()`
+  (pattern quest-seed); ora estratte e tradotte EN.
+
+### Availability: ADR-032 (consolidamento) → ADR-033 (rimozione testo-libero)
+- **ADR-032**: superficie disponibilità unificata sul blueprint
+  `individual_match` con `AvailabilityService` come unica fonte di verità; 5 route
+  legacy + `routes/player/proposals.py` rimossi.
+- **ADR-033** (`6fce2f3`): rimosso del tutto `PlayerAvailability` (disponibilità
+  per *località testo-libero*). Disponibilità ora **solo per sala**
+  (`UserLocationAvailability`/FK). Eligibility proposte aperte e discovery →
+  sala + storico-giocato. Migrazione `20260606_drop_player_availability` (mappa
+  per nome→sala dove combacia, **scarta** le località non censite, poi DROP).
+  UI località rimossa; admin overview → "Sale attive".
+
+### ADR-034 — Modello geo/prossimità (`2c6d27c` design, `2ab2209` impl.)
+Intervista strutturata + ADR, poi implementazione. Decisioni:
+- Posizione: **GPS browser effimero** (mai persistito) + fallback
+  `User.home_city` (livello città, opt-in) risolto a **centroide delle coord
+  sala** di quella città (nessuna rete/geocoding).
+- Prossimità su **sale** e **proposte aperte** (NON giocatori → zero coordinate
+  giocatore). È overlay di **ordinamento/filtro**: l'eligibility ADR-033 resta
+  invariata.
+- Coord sala **manuali** (form admin); sale senza coord mostrate in sezione
+  separata, mai nascoste.
+- Tecnica: `utils/geo.py` (haversine + bounding-box + clamp raggio + centroide),
+  SQLite, **no PostGIS**. Default raggio **20 km**, cap **100**, sort ON.
+- Migrazione `20260606_geo_proximity` (`user.home_city` + indice coord sala).
+- Test: 16 unit (`utils/geo`) + 9 integrazione (`test_geo_proximity.py`).
+
+### Stato verifica (2026-06-06)
+Unit **956**, integrazione **340** (skip preesistenti), `pyright` 0 errori sui
+file toccati (resta 1 errore **preesistente** in `round_manager.py`, non in
+scope), cataloghi i18n EN **100%**.
+
+### Deploy (oltre a quanto già in RESUME)
+`python migrations/runner.py` applica anche `20260606_perfectionist_honest_description`,
+`20260606_drop_player_availability`, `20260606_geo_proximity`. Le coordinate sala
+vanno inserite a mano (form admin) perché la prossimità abbia dati.
+
+### Aperto / prossimi (design già in V3, codice non iniziato)
+- **Onboarding obbligatorio + backfill** (`User.onboarding_completed`).
+- **Segnale-domanda → director** (richieste geolocalizzate, soglia ≥6 nel raggio)
+  — ora abilitabile sopra il modello geo di ADR-034.
+- **Leaderboard locale/contributo**.
+- **Maturity-gate ADR-028**: promozione ai player a blocchi (gamification +
+  availability/discovery) quando validati — *non senza via dello stakeholder*.
 
 ## Convenzioni
 Vedi `CLAUDE.md` (transactional, utc_now, Distance VO/ADR-027, ADR-028 endpoint
