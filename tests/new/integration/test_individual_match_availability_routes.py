@@ -115,6 +115,19 @@ class TestAvailabilitySurfaceRoutes:
         assert len(records) == 1
         assert records[0].preferred_times == "20:00-23:00"
 
+    def test_unchecked_availability_is_saved_as_unavailable(
+        self, client, player, db_session
+    ):
+        """An omitted is_available (unchecked checkbox) must mean NOT available."""
+        self._login(client, player)
+        # No is_available key in the body == checkbox left unchecked
+        client.post("/match/availability/location", data={"location": "Bar Sport"})
+        rec = PlayerAvailability.query.filter_by(
+            user_id=player.id, location="Bar Sport"
+        ).first()
+        assert rec is not None
+        assert rec.is_available is False
+
     def test_set_location_availability_requires_location(self, client, player):
         self._login(client, player)
         resp = client.post("/match/availability/location", data={"location": "  "})

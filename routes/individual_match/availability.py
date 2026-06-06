@@ -74,7 +74,9 @@ def set_location_availability():
     data = request.get_json() if request.is_json else request.form
 
     location = (data.get("location") or "").strip()
-    is_available = _form_bool(data, "is_available", default=True)
+    # Unchecked HTML checkboxes are omitted from the POST body, so a missing
+    # value means "not available" (matches the form's switch semantics).
+    is_available = _form_bool(data, "is_available", default=False)
     preferred_times = (data.get("preferred_times") or "").strip()
     day_ints = _form_day_ints(data, "preferred_days")
 
@@ -122,7 +124,9 @@ def set_venue_availability():
     except (TypeError, ValueError):
         venue_id = None
 
-    is_available = _form_bool(data, "is_available", default=True)
+    # Unchecked HTML checkboxes are omitted from the POST body, so a missing
+    # value means "not available" (matches the form's switch semantics).
+    is_available = _form_bool(data, "is_available", default=False)
     preferred_times = (data.get("preferred_times") or "").strip()
     day_ints = _form_day_ints(data, "available_days")
 
