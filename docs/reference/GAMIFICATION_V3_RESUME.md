@@ -103,9 +103,14 @@ Questo è il punto d'ingresso rapido per riprendere. Per il dettaglio:
 - **Nudge copy i18n**: ~~FATTO~~ — aggiunta `_i18n_nudge_anchor()` in
   `frontend_bridge.py` (stesso pattern delle quest seed); le 16 copy di
   `_NUDGE_COPY` sono ora estratte e tradotte in EN (catalogo 100%).
+- **Modello geografico / prossimità**: ~~DESIGN FATTO~~ — **ADR-034** (intervista
+  completata): GPS browser effimero + fallback città; nessuna posizione utente
+  persistita; prossimità su sale + proposte aperte (NON giocatori); coord sala
+  manuali; SQLite bounding-box + haversine in Python (no PostGIS/no rete).
+  *Implementazione non ancora iniziata* (piano nelle fasi dell'ADR; restano 3
+  domande aperte: default raggio, città in profilo sì/no, sort default vs toggle).
 - **Item di design V3 mai iniziati** (fasi successive): onboarding obbligatorio +
-  backfill, modello geografico per prossimità (merita ADR dedicato),
-  segnale-domanda → director, leaderboard locale/contributo.
+  backfill, segnale-domanda → director, leaderboard locale/contributo.
 
 ## Note ambiente (per non riscoprirle)
 - Le dipendenze non sono preinstallate: servono `flask_sqlalchemy flask-mail
