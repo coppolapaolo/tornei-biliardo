@@ -65,7 +65,7 @@ class TestAchievementWorkflowMatchBased:
         GIVEN "first_blood" achievement exists
         WHEN user wins first match
         THEN achievement is automatically unlocked
-        AND notification is created
+        AND NO persistent notification is created (§11: achievement = toast-only)
         """
         # Arrange: Seed achievements
         created, skipped = seed_achievements(db_session)
@@ -98,15 +98,11 @@ class TestAchievementWorkflowMatchBased:
         assert user_achievement is not None
         assert user_achievement.is_unlocked is True
 
-        # Assert: Notification created
+        # Assert: NO persistent notification (§11 — celebratory = toast-only).
         notification = Notification.query.filter_by(
             user_id=player1.id, notification_type=NotificationType.ACHIEVEMENT_UNLOCKED
         ).first()
-        assert notification is not None
-        assert (
-            "First Blood" in notification.message
-            or "first" in notification.message.lower()
-        )
+        assert notification is None
 
     def test_veteran_player_achievement_unlocks_at_metric_threshold(
         self, db_session, isolated_players
