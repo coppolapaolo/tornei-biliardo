@@ -41,6 +41,10 @@ class AchievementMetrics:
             "unique_opponents",
             "match_proposals_created",
             "match_proposals_accepted",
+            "win_streak",
+            "strategies_tried",
+            "challenges_completed",
+            "perfect_challenges",
         }
     )
 
@@ -193,6 +197,91 @@ class AchievementMetrics:
 
         return int(MatchProposal.query.filter_by(accepted_by_id=user_id).count())
 
+    @staticmethod
+    def _win_streak(user_id: int) -> int:
+        """Massima serie di vittorie consecutive in partite di gara (esclusi i bye).
+
+        Seleziona solo `winner_id` (niente caricamento oggetti → niente N+1) in
+        ordine cronologico e calcola la run massima di vittorie.
+        """
+        from models.match.models import Match, TrioMatch
+
+        rows = (
+            db.session.query(Match.winner_id)
+            .outerjoin(TrioMatch, TrioMatch.match_id == Match.id)
+            .filter(
+                Match.status.in_(_PLAYED_MATCH_STATUSES),
+                Match.is_bye.is_(False),
+                db.or_(
+                    Match.player1_id == user_id,
+                    Match.player2_id == user_id,
+                    TrioMatch.player1_id == user_id,
+                    TrioMatch.player2_id == user_id,
+                    TrioMatch.player3_id == user_id,
+                ),
+            )
+            .order_by(Match.created_at.asc(), Match.id.asc())
+            .all()
+        )
+
+        longest = current = 0
+        for (winner_id,) in rows:
+            if winner_id == user_id:
+                current += 1
+                longest = max(longest, current)
+            else:
+                current = 0
+        return longest
+
+    @staticmethod
+    def _strategies_tried(user_id: int) -> int:
+        """Strategie di matchmaking distinte delle gare a cui l'utente ha preso parte."""
+        from models.competition.models import Gara, Inscription
+
+        rows = (
+            db.session.query(Gara.matchmaking_strategy)
+            .join(Inscription, Inscription.gara_id == Gara.id)
+            .filter(
+                Inscription.user_id == user_id,
+                Inscription.is_withdrawn.is_(False),
+                Inscription.is_waitlist.is_(False),
+            )
+            .distinct()
+            .all()
+        )
+        return len({strategy for (strategy,) in rows if strategy})
+
+    @staticmethod
+    def _challenges_completed(user_id: int) -> int:
+        """Numero totale di drill/challenge completati dall'utente."""
+        from models.challenge.models import ChallengeAttempt
+
+        return int(
+            ChallengeAttempt.query.filter_by(user_id=user_id, completed=True).count()
+        )
+
+    @staticmethod
+    def _perfect_challenges(user_id: int) -> int:
+        """Drill DISTINTI superati con esito 'perfetto'.
+
+        'Perfetto' è ben definito per i drill pass/fail (`passed=True`). I drill a
+        punteggio non dichiarano un massimo nel modello, quindi non vengono
+        conteggiati qui (evitiamo semantiche inventate).
+        """
+        from models.challenge.models import ChallengeAttempt
+
+        rows = (
+            db.session.query(ChallengeAttempt.challenge_id)
+            .filter(
+                ChallengeAttempt.user_id == user_id,
+                ChallengeAttempt.completed.is_(True),
+                ChallengeAttempt.passed.is_(True),
+            )
+            .distinct()
+            .all()
+        )
+        return len(rows)
+
 
 _RESOLVERS = {
     "match_wins": AchievementMetrics._match_wins,
@@ -202,4 +291,8 @@ _RESOLVERS = {
     "unique_opponents": AchievementMetrics._unique_opponents,
     "match_proposals_created": AchievementMetrics._proposals_created,
     "match_proposals_accepted": AchievementMetrics._proposals_accepted,
+    "win_streak": AchievementMetrics._win_streak,
+    "strategies_tried": AchievementMetrics._strategies_tried,
+    "challenges_completed": AchievementMetrics._challenges_completed,
+    "perfect_challenges": AchievementMetrics._perfect_challenges,
 }

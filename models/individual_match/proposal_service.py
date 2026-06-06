@@ -24,19 +24,19 @@ from .models import (
 )
 
 
-def _reevaluate_social_achievement(user_id: int, slug: str) -> None:
-    """Rivaluta un achievement social legato alle proposte di partita.
+def _reconcile_user_achievements(user_id: int) -> None:
+    """Riconcilia gli achievement dell'utente dopo un'azione sulle proposte.
 
     Mirror del pattern di privacy_service: chiamata cross-dominio verso la
     gamification con errori isolati — un fallimento gamification non deve mai
-    bloccare la creazione/accettazione di una proposta. L'idoneità è
-    metric-driven (conteggio reale delle proposte), quindi è sufficiente
-    richiedere la rivalutazione.
+    bloccare la creazione/accettazione di una proposta. Metric-driven: una sola
+    riconciliazione copre social_butterfly/popular_player (e qualunque futuro
+    achievement basato su dati reali).
     """
     try:
         from models.gamification.achievement_service import AchievementService
 
-        AchievementService.check_and_award_achievement(user_id, slug)
+        AchievementService.reconcile_achievements(user_id)
     except Exception:
         pass
 
@@ -127,7 +127,7 @@ class ProposalService:
                     pass  # Notification failure shouldn't block proposal creation
 
         # Gamification: il proponente può aver sbloccato "social_butterfly".
-        _reevaluate_social_achievement(proposer_id, "social_butterfly")
+        _reconcile_user_achievements(proposer_id)
 
         return proposal
 
@@ -231,7 +231,7 @@ class ProposalService:
             pass  # Notification failure shouldn't block proposal creation
 
         # Gamification: il proponente può aver sbloccato "social_butterfly".
-        _reevaluate_social_achievement(proposer_id, "social_butterfly")
+        _reconcile_user_achievements(proposer_id)
 
         return proposal
 
@@ -486,7 +486,7 @@ class ProposalService:
             pass  # Notification failure shouldn't block acceptance
 
         # Gamification: chi accetta può aver sbloccato "popular_player".
-        _reevaluate_social_achievement(user_id, "popular_player")
+        _reconcile_user_achievements(user_id)
 
         return individual_match
 

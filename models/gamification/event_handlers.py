@@ -162,42 +162,21 @@ class GamificationEventHandlers:
                     f"Awarded {XP_RATES[XPTransactionType.MATCH_LOSS]} XP to user {loser_id} for match participation"
                 )
 
-            # Win-based achievements for winner (skip if winner is a forfeit).
-            # Each call isolated: failure in one must not block the others.
-            # L'idoneità è metric-driven (won_matches reali), quindi basta
-            # richiedere la rivalutazione — niente increment manuale.
-            if event.winner_id not in forfeit_ids:
-                for code in (
-                    "first_blood",
-                    "veteran_player",
-                    "century_club",
-                    "match_marathon",
-                ):
-                    try:
-                        AchievementService.check_and_award_achievement(
-                            event.winner_id, code
-                        )
-                    except Exception as ach_error:
-                        logger.warning(
-                            f"Error checking achievement '{code}' for user {event.winner_id}: {ach_error}"
-                        )
-
             # Iterate the full participant roster so trio p3 is not skipped.
             all_player_ids = event.get_all_player_ids()
 
-            # Opponent-based achievements for ALL participants (skip forfeiters):
-            # aver giocato questa partita può aver aumentato gli avversari unici.
+            # Achievement: riconcilia ogni partecipante non forfait. Metric-driven
+            # → un'unica chiamata copre vittorie (first_blood/veteran/...),
+            # serie di vittorie e avversari unici. Isolata per-utente: un errore
+            # non blocca gli altri né gli effetti collaterali sotto.
             for player_id in all_player_ids:
                 if player_id and player_id not in forfeit_ids:
-                    for code in ("diverse_competitor", "community_pillar"):
-                        try:
-                            AchievementService.check_and_award_achievement(
-                                player_id, code
-                            )
-                        except Exception as ach_error:
-                            logger.warning(
-                                f"Error checking achievement '{code}' for user {player_id}: {ach_error}"
-                            )
+                    try:
+                        AchievementService.reconcile_achievements(player_id)
+                    except Exception as ach_error:
+                        logger.warning(
+                            f"Error reconciling achievements for user {player_id}: {ach_error}"
+                        )
 
             # Record weekly streaks for all participants (skip forfeiters)
             # WEEKLY_MATCH: At least 1 match per week
@@ -276,13 +255,13 @@ class GamificationEventHandlers:
                 f"Awarded {XP_RATES[XPTransactionType.TOURNAMENT_INSCRIPTION]} XP to user {event.user_id} for tournament inscription"
             )
 
-            # Check tournament participation achievements (metric-driven)
-            AchievementService.check_and_award_achievement(
-                event.user_id, "tournament_debut"
-            )
-            AchievementService.check_and_award_achievement(
-                event.user_id, "tournament_regular"
-            )
+            # Achievement: riconcilia (tournament_participation + strategie provate)
+            try:
+                AchievementService.reconcile_achievements(event.user_id)
+            except Exception as ach_error:
+                logger.warning(
+                    f"Error reconciling achievements for user {event.user_id}: {ach_error}"
+                )
 
             # Record weekly streaks
             # WEEKLY_TOURNAMENT: At least 1 tournament registration per week
@@ -396,11 +375,18 @@ class GamificationEventHandlers:
 
                 logger.info(f"Awarded podium bonuses to {len(podium)} players")
 
-            # Check tournament completion achievements
+            # Achievement: riconcilia lo stato di ogni partecipante. I premi di
+            # piazzamento (TOURNAMENT_WIN/PODIUM) sono già a ledger sopra, quindi
+            # champion/podium_finish/tournament_dominator si sbloccano qui.
+            # `aspiring_director` (director_eligibility) è escluso dalla
+            # riconciliazione (costoso) e va controllato a parte.
             for participant_id in participant_ids:
-                # Everyone who completes gets checked (they all finished the tournament)
-                # Check "Aspirante Direttore" achievement (director eligibility)
-                # This requires 10+ completed gare OR 1+ complete campionato
+                try:
+                    AchievementService.reconcile_achievements(participant_id)
+                except Exception as ach_error:
+                    logger.warning(
+                        f"Error reconciling achievements for user {participant_id}: {ach_error}"
+                    )
                 try:
                     AchievementService.check_and_award_achievement(
                         participant_id, "aspiring_director"
@@ -409,24 +395,6 @@ class GamificationEventHandlers:
                     logger.warning(
                         f"Error checking aspiring_director achievement for user {participant_id}: {ach_error}"
                     )
-
-            # Check winner achievement
-            if event.winner_id:
-                AchievementService.check_and_award_achievement(
-                    event.winner_id, "champion"
-                )
-                AchievementService.check_and_award_achievement(
-                    event.winner_id, "tournament_dominator"
-                )
-
-            # Check podium achievements (top 3)
-            if event.final_standings and len(event.final_standings) >= 3:
-                for standing in event.final_standings[:3]:
-                    user_id = standing.get("user_id")
-                    if user_id:
-                        AchievementService.check_and_award_achievement(
-                            user_id, "podium_finish"
-                        )
 
             # Update quest progress for all participants
             # "tournaments_completed": Finished a tournament

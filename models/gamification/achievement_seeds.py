@@ -23,37 +23,18 @@ Each achievement has:
 
 from models.gamification.models import AchievementCategory, AchievementDifficulty
 
-# Achievement non ottenibili allo stato attuale del codice. Vengono seminati con
-# is_active=False così il service li esclude (is_hidden NON li nasconde davvero,
-# mostra "???"). Riattivare un singolo slug quando il rispettivo tracking esiste.
+# Achievement seminati con is_active=False perché non ottenibili (il service li
+# esclude; is_hidden NON li nasconde davvero, mostra "???").
 #
-# Restano disattivati 8 achievement, in due categorie:
-#   - 2 stub di requisito sempre False in _check_requirements:
-#       win_streak       → hot_streak, unstoppable          (serie di vittorie)
-#       category_reached → category_climber, elite_player   (categoria giocatore)
-#   - 4 progress-based legati a drill/strategie: tracking non ancora cablato
-#       challenges_completed → challenge_master, drill_addict
-#       perfect_challenges   → perfectionist
-#       strategies_tried     → strategy_explorer
-#
-# I 4 social/avversari (social_butterfly, popular_player, diverse_competitor,
-# community_pillar) erano qui ma ora sono metric-driven (AchievementMetrics) e
-# cablati agli eventi → ATTIVI. Vedi migrazione 20260606 per i DB esistenti.
-UNOBTAINABLE_ACHIEVEMENT_SLUGS = frozenset(
-    {
-        # stub win_streak (manca tracking serie di vittorie consecutive)
-        "hot_streak",
-        "unstoppable",
-        # stub category_reached (manca tracking categoria giocatore)
-        "category_climber",
-        "elite_player",
-        # progress-based drill/strategie: tracking non ancora cablato
-        "strategy_explorer",
-        "challenge_master",
-        "perfectionist",
-        "drill_addict",
-    }
-)
+# **Ora vuoto**: tutti gli achievement hanno una sorgente dati reale e sono
+# ottenibili (metric-driven). Storico delle riattivazioni sui DB esistenti:
+#   - 20260605: disattivati 12 non ottenibili;
+#   - 20260606: riattivati i 4 social/avversari (metriche reali);
+#   - 20260607: riattivati gli ultimi 8 (serie vittorie, categoria giocatore,
+#     drill completati/perfetti, strategie provate) ora cablati.
+# Mantenuto come punto di estensione esplicito per achievement futuri non ancora
+# cablati: aggiungere lo slug qui + migrazione di disattivazione.
+UNOBTAINABLE_ACHIEVEMENT_SLUGS: frozenset[str] = frozenset()
 
 
 PREDEFINED_ACHIEVEMENTS = [

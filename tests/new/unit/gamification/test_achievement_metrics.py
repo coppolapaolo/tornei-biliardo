@@ -175,6 +175,123 @@ class TestUniqueOpponents:
         )
 
 
+class TestWinStreakAndStrategies:
+    def test_win_streak_counts_max_consecutive_wins(self, db_session, isolated_players):
+        from models.competition.models import Gara
+        from models.match.models import Match
+
+        uid = isolated_players[0].id
+        opp = isolated_players[1].id
+        gara = Gara(
+            name="streak gara",
+            number=1,
+            date=date.today(),
+            distance=5,
+            discipline="palla_9",
+            matchmaking_strategy="amalfi",
+            status="playing",
+        )
+        db_session.add(gara)
+        db_session.flush()
+
+        # Sequenza cronologica: W, W, L, W, W, W → max run = 3.
+        outcomes = [uid, uid, opp, uid, uid, uid]
+        for i, winner in enumerate(outcomes):
+            db_session.add(
+                Match(
+                    gara_id=gara.id,
+                    round_number=i + 1,
+                    player1_id=uid,
+                    player2_id=opp,
+                    status="completed",
+                    winner_id=winner,
+                    player1_score=5 if winner == uid else 2,
+                    player2_score=2 if winner == uid else 5,
+                )
+            )
+        db_session.commit()
+
+        assert AchievementMetrics.current_value(uid, "win_streak", {"count": 5}) == 3
+
+    def test_strategies_tried_counts_distinct(self, db_session, isolated_players):
+        from models.competition.models import Gara, Inscription
+
+        uid = isolated_players[0].id
+        for i, strat in enumerate(["amalfi", "random", "amalfi", "round_robin"]):
+            gara = Gara(
+                name=f"g{i}",
+                number=i + 1,
+                date=date.today(),
+                distance=5,
+                discipline="palla_9",
+                matchmaking_strategy=strat,
+                status="playing",
+            )
+            db_session.add(gara)
+            db_session.flush()
+            db_session.add(Inscription(gara_id=gara.id, user_id=uid))
+        db_session.commit()
+
+        # amalfi, random, round_robin → 3 distinte
+        assert (
+            AchievementMetrics.current_value(uid, "strategies_tried", {"count": 5}) == 3
+        )
+
+
+class TestChallengeMetrics:
+    def _make_challenge(self, **kw):
+        from models.challenge.models import Challenge
+
+        c = Challenge(description="drill", image_path="drill.png", **kw)
+        db.session.add(c)
+        db.session.flush()
+        return c
+
+    def _make_attempt(self, user_id, challenge_id, *, passed=None):
+        from models.challenge.models import ChallengeAttempt
+
+        a = ChallengeAttempt(
+            challenge_id=challenge_id,
+            user_id=user_id,
+            completed=True,
+            passed=passed,
+        )
+        db.session.add(a)
+        return a
+
+    def test_challenges_completed_counts_total(self, db_session, isolated_players):
+        uid = isolated_players[0].id
+        c1 = self._make_challenge(pass_fail_only=True)
+        c2 = self._make_challenge(pass_fail_only=True)
+        self._make_attempt(uid, c1.id, passed=True)
+        self._make_attempt(uid, c1.id, passed=False)  # ripetuto → 2 totali
+        self._make_attempt(uid, c2.id, passed=True)
+        db_session.commit()
+
+        assert (
+            AchievementMetrics.current_value(uid, "challenges_completed", {"count": 10})
+            == 3
+        )
+
+    def test_perfect_challenges_counts_distinct_passed(
+        self, db_session, isolated_players
+    ):
+        uid = isolated_players[0].id
+        c1 = self._make_challenge(pass_fail_only=True)
+        c2 = self._make_challenge(pass_fail_only=True)
+        c3 = self._make_challenge(pass_fail_only=True)
+        self._make_attempt(uid, c1.id, passed=True)
+        self._make_attempt(uid, c1.id, passed=True)  # stesso drill → conta 1
+        self._make_attempt(uid, c2.id, passed=True)
+        self._make_attempt(uid, c3.id, passed=False)  # non perfetto
+        db_session.commit()
+
+        assert (
+            AchievementMetrics.current_value(uid, "perfect_challenges", {"count": 5})
+            == 2
+        )
+
+
 class TestNonCountable:
     @pytest.mark.parametrize(
         "req_type",
@@ -184,11 +301,7 @@ class TestNonCountable:
             "weekly_streak",
             "gaming_data_shared",
             "director_eligibility",
-            "win_streak",
             "category_reached",
-            "challenges_completed",
-            "perfect_challenges",
-            "strategies_tried",
             "unknown_future_type",
         ],
     )

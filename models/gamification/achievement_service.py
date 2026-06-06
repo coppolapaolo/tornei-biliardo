@@ -31,17 +31,20 @@ from models.events.base import EventBus
 logger = logging.getLogger(__name__)
 
 
-# Requisiti senza una sorgente dati ancora cablata: restano non ottenibili
-# (i relativi achievement sono disattivati, vedi achievement_seeds). Riattivare
-# il singolo slug quando il tracking esiste (serie vittorie, categoria
-# giocatore, drill/strategie completate).
-_UNTRACKED_REQUIREMENT_TYPES = frozenset(
+# Requisiti senza alcuna sorgente dati: resterebbero non ottenibili. Ora vuoto —
+# tutti i tipi hanno un calcolo reale (metriche conteggiabili in
+# AchievementMetrics o rami booleani in _check_requirements). Mantenuto come
+# punto di estensione esplicito per eventuali requisiti futuri non ancora cablati.
+_UNTRACKED_REQUIREMENT_TYPES: frozenset[str] = frozenset()
+
+
+# Requisiti con trigger dedicato o costosi da valutare: esclusi dalla
+# riconciliazione di massa (`reconcile_achievements`) e gestiti dal loro handler
+# specifico. `director_eligibility` itera i campionati (caro) → valutato solo a
+# fine gara.
+_RECONCILE_EXCLUDED_TYPES = frozenset(
     {
-        "win_streak",
-        "category_reached",
-        "challenges_completed",
-        "perfect_challenges",
-        "strategies_tried",
+        "director_eligibility",
     }
 )
 
@@ -63,13 +66,16 @@ class AchievementService:
         user_id: int, achievement_slug: str, force_check: bool = False
     ) -> Tuple[Optional[UserAchievement], bool]:
         """
-        Re-evaluate an achievement for a user and award it if now eligible.
+        Re-evaluate a single achievement for a user and award it if now eligible.
 
         L'idoneità è sempre calcolata sulla **fonte di verità** (statistiche/
         ledger/conteggi reali via `_check_requirements`), non su un contatore
         incrementale: la chiamata è quindi idempotente e auto-correttiva. Per
         gli achievement "conta N", `current_progress` viene riallineato al
         valore reale della metrica solo a scopo di display.
+
+        Per rivalutare in blocco gli achievement di un utente (uso tipico negli
+        event handler) preferire `reconcile_achievements`.
 
         Args:
             user_id: User ID
@@ -81,12 +87,6 @@ class AchievementService:
 
         Emits:
             AchievementUnlockedEvent if newly unlocked
-
-        Example:
-            # Basta "richiedere la rivalutazione": niente increment manuale.
-            user_achievement, unlocked = AchievementService.check_and_award_achievement(
-                user_id=42, achievement_slug="veteran_player"
-            )
         """
         # Skip gamification for admin users
         from models.user.models import User
@@ -96,14 +96,66 @@ class AchievementService:
             logger.debug(f"Skipping achievement check for admin user {user_id}")
             return None, False
 
-        # Get achievement
         achievement = Achievement.query.filter_by(slug=achievement_slug).first()
-
         if not achievement or not achievement.is_active:
             logger.warning(f"Achievement {achievement_slug} not found or inactive")
             return None, False
 
-        # Get or create UserAchievement
+        return AchievementService._evaluate_and_award(
+            user_id, achievement, force_check=force_check
+        )
+
+    @staticmethod
+    @transactional(domain="gamification")
+    def reconcile_achievements(user_id: int) -> List[str]:
+        """Rivaluta in blocco gli achievement attivi 'a basso costo' dell'utente.
+
+        Punto d'ingresso unico per gli event handler: invece di elencare slug a
+        mano, si "riconcilia" lo stato dai dati reali (metric-driven). Sblocca
+        quelli diventati idonei. Esclude i requisiti con trigger dedicato/costoso
+        (`_RECONCILE_EXCLUDED_TYPES`, es. director_eligibility). Ogni achievement
+        è isolato: un errore su uno non blocca gli altri.
+
+        Returns:
+            La lista degli slug appena sbloccati.
+        """
+        from models.user.models import User
+
+        user = db.session.get(User, user_id)
+        if user and user.is_admin:
+            return []
+
+        newly_unlocked: List[str] = []
+        for achievement in Achievement.query.filter_by(is_active=True).all():
+            try:
+                requirement_type = json.loads(achievement.requirements).get("type")
+            except (ValueError, TypeError):
+                continue
+            if requirement_type in _RECONCILE_EXCLUDED_TYPES:
+                continue
+            try:
+                _, unlocked = AchievementService._evaluate_and_award(
+                    user_id, achievement
+                )
+                if unlocked:
+                    newly_unlocked.append(achievement.slug)
+            except Exception as exc:  # isolamento per-achievement
+                logger.warning(
+                    f"reconcile: errore su '{achievement.slug}' "
+                    f"per user {user_id}: {exc}"
+                )
+        return newly_unlocked
+
+    @staticmethod
+    def _evaluate_and_award(
+        user_id: int, achievement: Achievement, force_check: bool = False
+    ) -> Tuple[Optional[UserAchievement], bool]:
+        """Core (non transazionale) di valutazione+assegnazione di un achievement.
+
+        Assume utente non-admin e achievement attivo (verificati dai chiamanti).
+        Opera sulla sessione corrente: il commit è del decoratore @transactional
+        del chiamante (`check_and_award_achievement` / `reconcile_achievements`).
+        """
         user_achievement = UserAchievement.query.filter_by(
             user_id=user_id, achievement_id=achievement.id
         ).first()
@@ -120,7 +172,6 @@ class AchievementService:
         if user_achievement.is_unlocked and not force_check:
             return user_achievement, False
 
-        # Parse requirements
         requirements = json.loads(achievement.requirements)
         requirement_type = requirements.get("type")
 
@@ -141,18 +192,13 @@ class AchievementService:
             requirements=requirements,
         )
 
-        if not is_eligible:
-            return user_achievement, False
-
-        # Already unlocked
-        if user_achievement.is_unlocked:
+        if not is_eligible or user_achievement.is_unlocked:
             return user_achievement, False
 
         # Award achievement!
         user_achievement.is_unlocked = True
         user_achievement.unlocked_at = utc_now()
 
-        # Award XP bonus
         if achievement.xp_reward > 0:
             LevelService.award_xp(
                 user_id=user_id,
@@ -165,7 +211,6 @@ class AchievementService:
                 },
             )
 
-        # Emit event
         EventBus.publish(
             AchievementUnlockedEvent(
                 user_id=user_id,
@@ -266,6 +311,21 @@ class AchievementService:
                 min_gare=requirements.get("min_gare", 10),
                 min_campionati=requirements.get("min_campionati_completi", 1),
             )
+
+        if requirement_type == "category_reached":
+            # "Raggiungi la categoria X" = categoria attuale pari o superiore
+            # (A migliore di B di C di D). Ordine: A=1 … D=4.
+            from models.rating.models import PlayerCategory
+
+            order = {"A": 1, "B": 2, "C": 3, "D": 4}
+            target = order.get(str(requirements.get("category", "B")).upper())
+            if target is None:
+                return False
+            current = PlayerCategory.get_user_current_category(user_id)
+            if current is None:
+                return False
+            current_rank = order.get(current.category.value.upper())
+            return current_rank is not None and current_rank <= target
 
         # 3) Tipi privi di tracking → non ottenibili (achievement disattivati).
         if requirement_type in _UNTRACKED_REQUIREMENT_TYPES:

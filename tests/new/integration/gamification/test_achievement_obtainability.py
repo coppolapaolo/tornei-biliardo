@@ -5,7 +5,9 @@ attraverso i percorsi reali:
 - champion / podium_finish: dal libro mastro XP (premi di piazzamento gara);
 - social_butterfly: creando proposte via ProposalService;
 - popular_player: accettando una proposta via ProposalService;
-- diverse_competitor: raggiungendo la soglia di avversari unici.
+- diverse_competitor: raggiungendo la soglia di avversari unici;
+- category_climber: ricevendo una categoria via RatingService;
+- challenge_master: completando drill via ChallengeService.
 """
 
 from datetime import timedelta
@@ -104,3 +106,65 @@ class TestSocialAchievementsViaProposalService:
                 ProposalService.accept_proposal(accepter.id, proposal.id)
 
         assert AchievementService.has_achievement(accepter.id, "popular_player") is True
+
+
+class TestCategoryAchievementViaRatingService:
+    def test_category_climber_unlocks_on_category_assignment(
+        self, db_session, isolated_players
+    ):
+        from models.rating.models import CategoryLevel
+        from models.rating.rating_service import RatingService
+
+        seed_achievements(db.session)
+        player = isolated_players[0]
+
+        assert (
+            AchievementService.has_achievement(player.id, "category_climber") is False
+        )
+
+        # Assegnare la categoria B innesca la riconciliazione → sblocco.
+        RatingService.assign_player_category(player.id, CategoryLevel.B)
+
+        assert AchievementService.has_achievement(player.id, "category_climber") is True
+        # elite_player (categoria A) NON deve sbloccarsi con la sola B.
+        assert AchievementService.has_achievement(player.id, "elite_player") is False
+
+
+class TestChallengeAchievementViaChallengeService:
+    def test_challenge_master_unlocks_after_ten_completions(
+        self, db_session, isolated_players
+    ):
+        from models.challenge.models import Challenge, ChallengeAttempt
+        from models.challenge.services import ChallengeService
+
+        seed_achievements(db.session)
+        player = isolated_players[0]
+
+        challenge = Challenge(
+            description="drill", image_path="d.png", pass_fail_only=True
+        )
+        db_session.add(challenge)
+        db_session.flush()
+
+        # 9 completamenti già a registro.
+        for _ in range(9):
+            db_session.add(
+                ChallengeAttempt(
+                    challenge_id=challenge.id,
+                    user_id=player.id,
+                    completed=True,
+                    passed=True,
+                )
+            )
+        db_session.commit()
+        assert (
+            AchievementService.has_achievement(player.id, "challenge_master") is False
+        )
+
+        # Il 10º completamento passa dal service → reconcile → sblocco.
+        pending = ChallengeAttempt(challenge_id=challenge.id, user_id=player.id)
+        db_session.add(pending)
+        db_session.commit()
+        ChallengeService.complete_challenge_attempt(pending.id, passed=True)
+
+        assert AchievementService.has_achievement(player.id, "challenge_master") is True

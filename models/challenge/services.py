@@ -233,6 +233,16 @@ class ChallengeService:
         if notes:
             attempt.notes = notes
 
+        # Gamification: completare un drill può sbloccare achievement
+        # (challenge_master, drill_addict, perfectionist). Cross-dominio con
+        # errori isolati — un fallimento gamification non blocca il drill.
+        try:
+            from models.gamification.achievement_service import AchievementService
+
+            AchievementService.reconcile_achievements(attempt.user_id)
+        except Exception:
+            pass
+
         return attempt
 
     @staticmethod
