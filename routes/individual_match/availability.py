@@ -11,7 +11,7 @@ See docs/adr/ADR-032-availability-surface-consolidation.md.
 
 from datetime import datetime
 
-from flask import render_template, request, redirect, url_for, flash, jsonify
+from flask import render_template, request, redirect, url_for, flash
 from flask_babel import _
 from flask_login import current_user
 
@@ -21,15 +21,33 @@ from models.individual_match.models import PlayerAvailability
 from models.location.models import BilliardHall, UserLocationAvailability
 from models.user.models import User
 from models.user.permissions import RoleRequirement
+from utils.route_helpers import ajax_error, ajax_success, is_ajax_request
 
 from . import individual_match_bp
+
+_TRUTHY = ("true", "on", "1")
 
 
 def _wants_json() -> bool:
     """True when the caller expects a JSON response (AJAX or JSON body)."""
-    return request.is_json or (
-        request.headers.get("X-Requested-With") == "XMLHttpRequest"
-    )
+    return is_ajax_request() or request.is_json
+
+
+def _form_bool(data, key: str, default: bool = False) -> bool:
+    """Parse a checkbox/boolean field from form or JSON data."""
+    raw = data.get(key)
+    if raw is None:
+        return default
+    return str(raw).lower() in _TRUTHY
+
+
+def _form_day_ints(data, key: str) -> list[int]:
+    """Parse a multi-value day field (form getlist or JSON list) to ints."""
+    if hasattr(data, "getlist"):
+        values = data.getlist(key)
+    else:
+        values = data.get(key) or []
+    return [int(d) for d in values if str(d).isdigit()]
 
 
 @individual_match_bp.route("/availability")
@@ -56,20 +74,15 @@ def set_location_availability():
     data = request.get_json() if request.is_json else request.form
 
     location = (data.get("location") or "").strip()
-    is_available = str(data.get("is_available", "true")).lower() in ("true", "on", "1")
+    is_available = _form_bool(data, "is_available", default=True)
     preferred_times = (data.get("preferred_times") or "").strip()
-    if hasattr(data, "getlist"):
-        preferred_days = data.getlist("preferred_days")
-    else:
-        preferred_days = data.get("preferred_days") or []
+    day_ints = _form_day_ints(data, "preferred_days")
 
     if not location:
         return _availability_error(
             _("La località è obbligatoria"),
             redirect_endpoint="individual_match.manage_availability",
         )
-
-    day_ints = [int(d) for d in preferred_days if str(d).isdigit()]
 
     AvailabilityService.set_player_availability(
         user_id=current_user.id,
@@ -80,17 +93,13 @@ def set_location_availability():
     )
 
     notified = 0
-    if is_available and str(data.get("notify_players", "")).lower() in (
-        "true",
-        "on",
-        "1",
-    ):
+    if is_available and _form_bool(data, "notify_players"):
         notified = AvailabilityService.notify_players_of_availability(
             user_id=current_user.id, location=location
         )
 
     if _wants_json():
-        return jsonify({"success": True, "notified": notified})
+        return ajax_success(data={"notified": notified})
 
     flash(_("Disponibilità aggiornata per %(loc)s", loc=location), "success")
     if notified:
@@ -113,20 +122,15 @@ def set_venue_availability():
     except (TypeError, ValueError):
         venue_id = None
 
-    is_available = str(data.get("is_available", "true")).lower() in ("true", "on", "1")
+    is_available = _form_bool(data, "is_available", default=True)
     preferred_times = (data.get("preferred_times") or "").strip()
-    if hasattr(data, "getlist"):
-        available_days = data.getlist("available_days")
-    else:
-        available_days = data.get("available_days") or []
+    day_ints = _form_day_ints(data, "available_days")
 
     if not venue_id:
         return _availability_error(
             _("Devi selezionare una sala"),
             redirect_endpoint="individual_match.manage_availability",
         )
-
-    day_ints = [int(d) for d in available_days if str(d).isdigit()]
 
     AvailabilityService.set_venue_availability(
         user_id=current_user.id,
@@ -140,7 +144,7 @@ def set_venue_availability():
     venue_name = venue.name if venue else _("Sala #%(id)s", id=venue_id)
 
     if _wants_json():
-        return jsonify({"success": True})
+        return ajax_success()
 
     flash(_("Disponibilità aggiornata per %(loc)s", loc=venue_name), "success")
     return redirect(url_for("individual_match.manage_availability"))
@@ -257,7 +261,7 @@ def request_availability_match(target_user_id):
     target_name = target.username if target else _("Utente #%(id)s", id=target_user_id)
 
     if _wants_json():
-        return jsonify({"success": True})
+        return ajax_success()
 
     flash(_("Richiesta di match inviata a %(name)s", name=target_name), "success")
     return redirect(url_for("individual_match.discover_players"))
@@ -271,7 +275,7 @@ def request_availability_match(target_user_id):
 def _availability_error(message: str, redirect_endpoint: str):
     """Return a JSON 400 or a flashed redirect depending on the request type."""
     if _wants_json():
-        return jsonify({"success": False, "error": message}), 400
+        return ajax_error(message)
     flash(message, "danger")
     return redirect(url_for(redirect_endpoint))
 
@@ -280,12 +284,12 @@ def _availability_remove_response(removed: bool):
     """Shared response for the two remove endpoints."""
     if not removed:
         if _wants_json():
-            return jsonify({"success": False, "error": _("Record non trovato")}), 404
+            return ajax_error(_("Record non trovato"), status=404)
         flash(_("Disponibilità non trovata"), "warning")
         return redirect(url_for("individual_match.manage_availability"))
 
     if _wants_json():
-        return jsonify({"success": True})
+        return ajax_success()
     flash(_("Disponibilità rimossa"), "success")
     return redirect(url_for("individual_match.manage_availability"))
 

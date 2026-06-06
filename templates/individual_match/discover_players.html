@@ -48,6 +48,7 @@
       {% endif %}
 
       {% for place, players in available_players.items() %}
+      {% set group_index = loop.index %}
       <div class="card mb-3">
         <div class="card-header d-flex justify-content-between align-items-center">
           <span><i class="fas fa-map-marker-alt me-1"></i>{{ place }}</span>
@@ -55,18 +56,19 @@
         </div>
         <div class="card-body">
           {% for player in players %}
+          {% set collapse_id = "request-%d-%d"|format(group_index, loop.index) %}
           <div class="border rounded p-3 mb-2">
             <div class="d-flex justify-content-between align-items-center">
               <h6 class="mb-0"><i class="fas fa-user me-1"></i>{{ player.username }}</h6>
               <button class="btn btn-sm btn-outline-success" type="button" data-bs-toggle="collapse"
-                      data-bs-target="#request-{{ place|replace(' ', '-')|replace('#', '') }}-{{ player.user_id }}">
+                      data-bs-target="#{{ collapse_id }}">
                 <i class="fas fa-paper-plane me-1"></i>{{ _("Richiedi match") }}
               </button>
             </div>
             <div class="small text-muted mt-1">
               {% if player.preferred_times %}<i class="fas fa-clock me-1"></i>{{ player.preferred_times }}{% endif %}
             </div>
-            <div class="collapse mt-2" id="request-{{ place|replace(' ', '-')|replace('#', '') }}-{{ player.user_id }}">
+            <div class="collapse mt-2" id="{{ collapse_id }}">
               <form method="POST" action="{{ url_for('individual_match.request_availability_match', target_user_id=player.user_id) }}" class="row g-2">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="location" value="{{ place }}">
