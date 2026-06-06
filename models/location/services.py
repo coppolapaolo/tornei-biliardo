@@ -95,6 +95,8 @@ class LocationService:
         hourly_rate: Optional[float] = None,
         added_by_id: Optional[int] = None,
         business_hours: Optional[str] = None,
+        latitude: Optional[float] = None,
+        longitude: Optional[float] = None,
     ) -> BilliardHall:
         """Create a new billiard hall."""
 
@@ -110,6 +112,8 @@ class LocationService:
             number_of_tables=number_of_tables,
             hourly_rate=hourly_rate,
             added_by_id=added_by_id,
+            latitude=latitude,
+            longitude=longitude,
         )
 
         if business_hours:
@@ -415,6 +419,8 @@ class LocationService:
             "hourly_rate",
             "is_active",
             "verified",
+            "latitude",
+            "longitude",
         ]
 
         for field in simple_fields:

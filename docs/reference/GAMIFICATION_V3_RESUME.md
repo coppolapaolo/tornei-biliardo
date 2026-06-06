@@ -72,7 +72,8 @@ Questo è il punto d'ingresso rapido per riprendere. Per il dettaglio:
    `20260606_drop_player_availability` — quest'ultima migra le disponibilità
    "località" testo-libero su sala dove il nome combacia e poi droppa la tabella
    `player_availability`; **perdita accettata** per le località non censite,
-   vedi ADR-033).
+   vedi ADR-033). Include anche `20260606_geo_proximity` (aggiunge
+   `user.home_city` + indice coord sala, ADR-034).
 2. `python scripts/reconcile_achievements.py` (una volta, concede badge storici).
 
 ## Aperto / prossime fasi (NON ancora fatto)
@@ -103,12 +104,14 @@ Questo è il punto d'ingresso rapido per riprendere. Per il dettaglio:
 - **Nudge copy i18n**: ~~FATTO~~ — aggiunta `_i18n_nudge_anchor()` in
   `frontend_bridge.py` (stesso pattern delle quest seed); le 16 copy di
   `_NUDGE_COPY` sono ora estratte e tradotte in EN (catalogo 100%).
-- **Modello geografico / prossimità**: ~~DESIGN FATTO~~ — **ADR-034** (intervista
-  completata): GPS browser effimero + fallback città; nessuna posizione utente
-  persistita; prossimità su sale + proposte aperte (NON giocatori); coord sala
-  manuali; SQLite bounding-box + haversine in Python (no PostGIS/no rete).
-  *Implementazione non ancora iniziata* (piano nelle fasi dell'ADR; restano 3
-  domande aperte: default raggio, città in profilo sì/no, sort default vs toggle).
+- **Modello geografico / prossimità**: ~~FATTO~~ — **ADR-034** progettato e
+  implementato. GPS browser effimero + fallback `User.home_city` (centroide
+  sale della città, no rete); nessuna posizione utente persistita; prossimità su
+  sale + proposte aperte (NON giocatori); coord sala manuali (form admin);
+  SQLite bounding-box + haversine (`utils/geo.py`, no PostGIS). Discovery
+  riordina/filtra per distanza (default 20 km, cap 100, sort ON), eligibility
+  ADR-033 invariata. Migrazione `20260606_geo_proximity`. 9 test integrazione +
+  16 unit (`utils/geo`), i18n EN 100%.
 - **Item di design V3 mai iniziati** (fasi successive): onboarding obbligatorio +
   backfill, segnale-domanda → director, leaderboard locale/contributo.
 

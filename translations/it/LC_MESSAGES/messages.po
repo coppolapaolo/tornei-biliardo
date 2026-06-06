@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-06 14:19+0000\n"
+"POT-Creation-Date: 2026-06-06 15:37+0000\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -825,48 +825,48 @@ msgstr ""
 msgid "Feature creata con successo"
 msgstr ""
 
-#: routes/individual_match/availability.py:88
+#: routes/individual_match/availability.py:89
 msgid "Devi selezionare una sala"
 msgstr ""
 
-#: routes/individual_match/availability.py:101
-#: routes/individual_match/availability.py:132
+#: routes/individual_match/availability.py:102
+#: routes/individual_match/availability.py:149
 #, python-format
 msgid "Sala #%(id)s"
 msgstr ""
 
-#: routes/individual_match/availability.py:106
+#: routes/individual_match/availability.py:107
 #, python-format
 msgid "Disponibilità aggiornata per %(loc)s"
 msgstr ""
 
-#: routes/individual_match/availability.py:168
+#: routes/individual_match/availability.py:221
 msgid "La località è obbligatoria per richiedere un match"
 msgstr ""
 
-#: routes/individual_match/availability.py:180
+#: routes/individual_match/availability.py:233
 msgid "Formato data/ora non valido"
 msgstr ""
 
-#: routes/individual_match/availability.py:198
+#: routes/individual_match/availability.py:251
 #, python-format
 msgid "Utente #%(id)s"
 msgstr ""
 
-#: routes/individual_match/availability.py:203
+#: routes/individual_match/availability.py:256
 #, python-format
 msgid "Richiesta di match inviata a %(name)s"
 msgstr ""
 
-#: routes/individual_match/availability.py:224
+#: routes/individual_match/availability.py:277
 msgid "Record non trovato"
 msgstr ""
 
-#: routes/individual_match/availability.py:225
+#: routes/individual_match/availability.py:278
 msgid "Disponibilità non trovata"
 msgstr ""
 
-#: routes/individual_match/availability.py:230
+#: routes/individual_match/availability.py:283
 msgid "Disponibilità rimossa"
 msgstr ""
 
@@ -978,33 +978,33 @@ msgstr ""
 msgid "Campionato non era nascosto"
 msgstr ""
 
-#: routes/player/profile.py:387
+#: routes/player/profile.py:392
 msgid ""
 "Informazioni aggiornate. Abbiamo inviato una nuova email di verifica al "
 "nuovo indirizzo."
 msgstr ""
 
-#: routes/player/profile.py:393
+#: routes/player/profile.py:398
 msgid "Informazioni aggiornate correttamente."
 msgstr ""
 
-#: routes/player/profile.py:398
+#: routes/player/profile.py:403
 msgid "Si è verificato un errore durante l'aggiornamento."
 msgstr ""
 
-#: routes/player/profile.py:410
+#: routes/player/profile.py:415
 msgid "La tua email è già verificata."
 msgstr ""
 
-#: routes/player/profile.py:419
+#: routes/player/profile.py:424
 msgid "Email di verifica inviata. Controlla la tua casella di posta."
 msgstr ""
 
-#: routes/player/profile.py:423
+#: routes/player/profile.py:428
 msgid "Impossibile inviare l'email. Riprova più tardi."
 msgstr ""
 
-#: routes/player/profile.py:425
+#: routes/player/profile.py:430
 #, python-format
 msgid "Errore durante l'invio: %(detail)s"
 msgstr ""
@@ -1029,7 +1029,7 @@ msgstr ""
 
 #: templates/base.html:239 templates/base_navbar_section.html:30
 #: templates/individual_match/availability.html:39
-#: templates/individual_match/discover_players.html:9
+#: templates/individual_match/discover_players.html:46
 msgid "Match Individuali"
 msgstr ""
 
@@ -3363,7 +3363,6 @@ msgstr ""
 #: templates/components/_history_filters.html:36
 #: templates/individual_match/availability.html:75
 #: templates/individual_match/availability.html:102
-#: templates/individual_match/discover_players.html:24
 msgid "Sala"
 msgstr ""
 
@@ -3408,7 +3407,7 @@ msgid "Campionato"
 msgstr ""
 
 #: templates/components/_history_filters.html:144
-#: templates/individual_match/discover_players.html:33
+#: templates/individual_match/discover_players.html:91
 #: templates/public/campionatos_list.html:28
 msgid "Filtra"
 msgstr ""
@@ -5756,7 +5755,7 @@ msgid "Transazioni Recenti"
 msgstr ""
 
 #: templates/gamification/admin/xp_management.html:83
-#: templates/individual_match/discover_players.html:72
+#: templates/individual_match/discover_players.html:22
 #: templates/public/campionato_detail.html:98
 #: templates/public/garas_list.html:11
 msgid "Data"
@@ -5834,7 +5833,7 @@ msgid "Attualmente disponibile"
 msgstr ""
 
 #: templates/individual_match/availability.html:40
-#: templates/individual_match/discover_players.html:10
+#: templates/individual_match/discover_players.html:47
 msgid "Disponibilità"
 msgstr ""
 
@@ -5847,7 +5846,7 @@ msgid "Indica dove sei disponibile a giocare per ricevere proposte di match"
 msgstr ""
 
 #: templates/individual_match/availability.html:52
-#: templates/individual_match/discover_players.html:11
+#: templates/individual_match/discover_players.html:48
 msgid "Trova giocatori"
 msgstr ""
 
@@ -6052,44 +6051,107 @@ msgstr ""
 msgid "Trova Giocatori"
 msgstr ""
 
-#: templates/individual_match/discover_players.html:17
-msgid "Trova giocatori disponibili"
-msgstr ""
-
-#: templates/individual_match/discover_players.html:18
-msgid "Scopri chi è disponibile nelle sale e invia una richiesta di match"
-msgstr ""
-
-#: templates/individual_match/discover_players.html:26
-msgid "Tutte le sale"
-msgstr ""
-
-#: templates/individual_match/discover_players.html:42
-msgid "Nessun giocatore disponibile trovato. Prova a cambiare i filtri."
-msgstr ""
-
-#: templates/individual_match/discover_players.html:51
-msgid "giocatori"
-msgstr ""
-
-#: templates/individual_match/discover_players.html:61
+#: templates/individual_match/discover_players.html:11
 msgid "Richiedi match"
 msgstr ""
 
-#: templates/individual_match/discover_players.html:76
+#: templates/individual_match/discover_players.html:26
 msgid "Ora"
 msgstr ""
 
-#: templates/individual_match/discover_players.html:80
+#: templates/individual_match/discover_players.html:30
 msgid "Messaggio"
 msgstr ""
 
-#: templates/individual_match/discover_players.html:81
+#: templates/individual_match/discover_players.html:31
 msgid "Facoltativo"
 msgstr ""
 
-#: templates/individual_match/discover_players.html:85
+#: templates/individual_match/discover_players.html:35
 msgid "Invia richiesta"
+msgstr ""
+
+#: templates/individual_match/discover_players.html:54
+msgid "Trova giocatori disponibili"
+msgstr ""
+
+#: templates/individual_match/discover_players.html:55
+msgid "Scopri chi è disponibile nelle sale e invia una richiesta di match"
+msgstr ""
+
+#: templates/individual_match/discover_players.html:62
+msgid "Raggio (km)"
+msgstr ""
+
+#: templates/individual_match/discover_players.html:68
+msgid "Vicino a me"
+msgstr ""
+
+#: templates/individual_match/discover_players.html:73
+msgid "Mostra tutte"
+msgstr ""
+
+#: templates/individual_match/discover_players.html:82
+msgid "Oppure filtra per sala"
+msgstr ""
+
+#: templates/individual_match/discover_players.html:84
+msgid "Tutte le sale"
+msgstr ""
+
+#: templates/individual_match/discover_players.html:101
+#, python-format
+msgid "Risultati ordinati per distanza dalla tua posizione, entro %(r)s km"
+msgstr ""
+
+#: templates/individual_match/discover_players.html:103
+#, python-format
+msgid "Posizione non disponibile: uso la tua città, entro %(r)s km"
+msgstr ""
+
+#: templates/individual_match/discover_players.html:111
+msgid "Proposte aperte vicino a te"
+msgstr ""
+
+#: templates/individual_match/discover_players.html:119
+#: templates/individual_match/discover_players.html:138
+#, python-format
+msgid "a %(d)s km"
+msgstr ""
+
+#: templates/individual_match/discover_players.html:129
+msgid ""
+"Nessun giocatore disponibile trovato. Prova ad aumentare il raggio o a "
+"cambiare i filtri."
+msgstr ""
+
+#: templates/individual_match/discover_players.html:140
+#: templates/individual_match/discover_players.html:160
+msgid "giocatori"
+msgstr ""
+
+#: templates/individual_match/discover_players.html:154
+msgid "Sale senza posizione"
+msgstr ""
+
+#: templates/individual_match/discover_players.html:155
+msgid ""
+"Queste sale non hanno coordinate, quindi non possono essere ordinate per "
+"distanza."
+msgstr ""
+
+#: templates/individual_match/discover_players.html:184
+msgid "Geolocalizzazione non supportata dal browser."
+msgstr ""
+
+#: templates/individual_match/discover_players.html:187
+msgid "Rilevamento della posizione…"
+msgstr ""
+
+#: templates/individual_match/discover_players.html:201
+msgid ""
+"Posizione non disponibile. Imposta una città nel profilo o filtra per "
+"sala."
 msgstr ""
 
 #: templates/individual_match/match_detail.html:53
@@ -6466,6 +6528,16 @@ msgstr ""
 
 #: templates/player/profile.html:129
 msgid "Queste azioni sono irreversibili."
+msgstr ""
+
+#: templates/player/profile_edit.html:39
+msgid "Città"
+msgstr ""
+
+#: templates/player/profile_edit.html:41
+msgid ""
+"Usata per trovare sale e proposte vicino a te quando il GPS non è "
+"disponibile."
 msgstr ""
 
 #: templates/public/campionato_detail.html:22
@@ -7083,5 +7155,8 @@ msgstr ""
 #~ msgstr ""
 
 #~ msgid "Es: Bar Sport"
+#~ msgstr ""
+
+#~ msgid "Nessun giocatore disponibile trovato. Prova a cambiare i filtri."
 #~ msgstr ""
 

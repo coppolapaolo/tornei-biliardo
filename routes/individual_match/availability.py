@@ -17,9 +17,10 @@ from flask_login import current_user
 
 from models.base import db
 from models.individual_match.availability_service import AvailabilityService
-from models.location.models import BilliardHall, UserLocationAvailability
+from models.location.models import BilliardHall
 from models.user.models import User
 from models.user.permissions import RoleRequirement
+from utils.geo import clamp_radius, haversine_km
 from utils.route_helpers import ajax_error, ajax_success, is_ajax_request
 
 from . import individual_match_bp
@@ -122,31 +123,83 @@ def remove_venue_availability(availability_id):
 @individual_match_bp.route("/availability/discover")
 @RoleRequirement.player_or_director_required
 def discover_players():
-    """Discover players available at venues (ADR-033: venue-only)."""
+    """Discover players and open proposals, ranked by proximity (ADR-034).
+
+    Venue-only after ADR-033. Proximity origin = browser GPS (``near_lat``/
+    ``near_lng``) or, as fallback, the centroid of venues in the user's
+    ``home_city``. Proximity only sorts/filters; it never changes eligibility.
+    """
     venue_filter = request.args.get("venue_id", type=int)
-
-    available_players: dict = {}
-
-    if venue_filter:
-        venue = db.session.get(BilliardHall, venue_filter)
-        venue_name = venue.name if venue else _("Sala #%(id)s", id=venue_filter)
-        available_players[venue_name] = (
-            AvailabilityService.get_available_players_at_venue(
-                billiard_hall_id=venue_filter, exclude_user_id=current_user.id
-            )
-        )
-    else:
-        available_players = _discover_everywhere()
+    near_lat = request.args.get("near_lat", type=float)
+    near_lng = request.args.get("near_lng", type=float)
+    radius_km = clamp_radius(request.args.get("radius_km"))
 
     active_venues = (
         BilliardHall.query.filter_by(is_active=True).order_by(BilliardHall.name).all()
     )
 
+    venue_groups: list = []
+    placeless_groups: list = []
+    near_proposals = None
+    proximity_active = False
+    proximity_origin = None
+
+    if venue_filter:
+        venue = db.session.get(BilliardHall, venue_filter)
+        name = venue.name if venue else _("Sala #%(id)s", id=venue_filter)
+        players = AvailabilityService.get_available_players_at_venue(
+            billiard_hall_id=venue_filter, exclude_user_id=current_user.id
+        )
+        venue_groups.append({"name": name, "distance_km": None, "players": players})
+    else:
+        origin = _resolve_origin(near_lat, near_lng)
+        venues = AvailabilityService.get_venues_with_available_players(
+            exclude_user_id=current_user.id
+        )
+        if origin:
+            proximity_active = True
+            (lat, lng), proximity_origin = origin
+            with_coords = []
+            for v in venues:
+                if v["latitude"] is not None and v["longitude"] is not None:
+                    dist = haversine_km(lat, lng, v["latitude"], v["longitude"])
+                    if dist <= radius_km:
+                        with_coords.append((dist, v))
+                else:
+                    placeless_groups.append(
+                        {"name": v["venue_name"], "players": v["players"]}
+                    )
+            with_coords.sort(key=lambda t: t[0])
+            venue_groups = [
+                {
+                    "name": v["venue_name"],
+                    "distance_km": round(dist, 1),
+                    "players": v["players"],
+                }
+                for dist, v in with_coords
+            ]
+            near_proposals = _open_proposals_near(lat, lng, radius_km)
+        else:
+            venue_groups = [
+                {
+                    "name": v["venue_name"],
+                    "distance_km": None,
+                    "players": v["players"],
+                }
+                for v in venues
+            ]
+
     return render_template(
         "individual_match/discover_players.html",
-        available_players=available_players,
+        venue_groups=venue_groups,
+        placeless_groups=placeless_groups,
+        near_proposals=near_proposals,
+        proximity_active=proximity_active,
+        proximity_origin=proximity_origin,
+        radius_km=radius_km,
         active_venues=active_venues,
         venue_filter=venue_filter,
+        has_home_city=bool(getattr(current_user, "home_city", None)),
     )
 
 
@@ -231,25 +284,38 @@ def _availability_remove_response(removed: bool):
     return redirect(url_for("individual_match.manage_availability"))
 
 
-def _discover_everywhere() -> dict:
-    """Build the discovery map across every venue with available players."""
-    available_players: dict = {}
+def _resolve_origin(near_lat, near_lng):
+    """Return ((lat, lng), source) or None. source in {'gps', 'city'}.
 
-    venues = (
-        db.session.query(UserLocationAvailability.billiard_hall_id, BilliardHall.name)
-        .join(BilliardHall)
-        .filter(
-            UserLocationAvailability.is_available.is_(True),
-            UserLocationAvailability.user_id != current_user.id,
-        )
-        .distinct()
-        .all()
+    Browser GPS wins; otherwise fall back to the centroid of venues in the
+    user's self-declared home city (network-free, ADR-034).
+    """
+    if near_lat is not None and near_lng is not None:
+        return ((near_lat, near_lng), "gps")
+    home_city = getattr(current_user, "home_city", None)
+    if home_city:
+        centroid = AvailabilityService.city_centroid_for(home_city)
+        if centroid:
+            return (centroid, "city")
+    return None
+
+
+def _open_proposals_near(lat, lng, radius_km):
+    """Eligible open proposals (ADR-033) within radius, sorted by venue distance.
+
+    Eligibility is unchanged: we only rank/filter what the user can already see.
+    """
+    from models.individual_match.proposal_service import ProposalService
+
+    proposals = ProposalService.get_user_proposals(current_user.id).get(
+        "open_proposals", []
     )
-    for venue_id, venue_name in venues:
-        players = AvailabilityService.get_available_players_at_venue(
-            billiard_hall_id=venue_id, exclude_user_id=current_user.id
-        )
-        if players:
-            available_players[venue_name] = players
-
-    return available_players
+    ranked = []
+    for proposal in proposals:
+        venue = proposal.billiard_hall
+        if venue and venue.latitude is not None and venue.longitude is not None:
+            dist = haversine_km(lat, lng, venue.latitude, venue.longitude)
+            if dist <= radius_km:
+                ranked.append({"proposal": proposal, "distance_km": round(dist, 1)})
+    ranked.sort(key=lambda r: r["distance_km"])
+    return ranked

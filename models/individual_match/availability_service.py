@@ -133,6 +133,72 @@ class AvailabilityService:
         return players
 
     @staticmethod
+    def get_venues_with_available_players(
+        exclude_user_id: Optional[int] = None,
+    ) -> List[Dict[str, Any]]:
+        """Active venues that have at least one available player.
+
+        Each item: venue_id, venue_name, city, latitude, longitude, players.
+        Used by the discovery page; proximity ranking is applied by the caller
+        (ADR-034) using ``utils.geo`` on this already-small working set.
+        """
+        venues = (
+            db.session.query(BilliardHall)
+            .join(
+                UserLocationAvailability,
+                UserLocationAvailability.billiard_hall_id == BilliardHall.id,
+            )
+            .filter(
+                UserLocationAvailability.is_available.is_(True),
+                BilliardHall.is_active.is_(True),
+            )
+            .distinct()
+            .all()
+        )
+
+        result = []
+        for venue in venues:
+            players = AvailabilityService.get_available_players_at_venue(
+                billiard_hall_id=venue.id, exclude_user_id=exclude_user_id
+            )
+            if players:
+                result.append(
+                    {
+                        "venue_id": venue.id,
+                        "venue_name": venue.name,
+                        "city": venue.city,
+                        "latitude": venue.latitude,
+                        "longitude": venue.longitude,
+                        "players": players,
+                    }
+                )
+        return result
+
+    @staticmethod
+    def city_centroid_for(city: str):
+        """Approximate origin = centroid of known venue coords in a city.
+
+        Network-free fallback (ADR-034) when the user has no GPS fix but has a
+        self-declared home city. Returns (lat, lng) or None.
+        """
+        from utils.geo import city_centroid
+
+        if not city:
+            return None
+        rows = (
+            db.session.query(BilliardHall.latitude, BilliardHall.longitude)
+            .filter(
+                BilliardHall.is_active.is_(True),
+                db.func.lower(db.func.trim(BilliardHall.city))
+                == city.strip().lower(),
+                BilliardHall.latitude.isnot(None),
+                BilliardHall.longitude.isnot(None),
+            )
+            .all()
+        )
+        return city_centroid(rows)
+
+    @staticmethod
     def get_players_who_played_at_location(
         location: str, exclude_user_id: Optional[int] = None
     ) -> List[int]:

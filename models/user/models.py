@@ -57,6 +57,11 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
     # per utenti cancellati
     previous_username = db.Column(db.String(80), nullable=True)
 
+    # Città "home" auto-dichiarata (livello città) usata come fallback per la
+    # discovery di prossimità quando il GPS del browser non è disponibile
+    # (ADR-034). Opt-in; mai coordinate precise dell'utente.
+    home_city = db.Column(db.String(100), nullable=True)
+
     # Gamification Override
     gamification_override = db.Column(db.Boolean, default=False, nullable=False)
 
