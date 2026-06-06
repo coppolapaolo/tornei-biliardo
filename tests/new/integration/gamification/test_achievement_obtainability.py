@@ -168,3 +168,43 @@ class TestChallengeAchievementViaChallengeService:
         ChallengeService.complete_challenge_attempt(pending.id, passed=True)
 
         assert AchievementService.has_achievement(player.id, "challenge_master") is True
+
+
+class TestRetroactiveReconcileScript:
+    """Lo script di reconcile concede retroattivamente i badge già meritati
+    (ricalcolo idempotente, nessun reset)."""
+
+    def _load_reconcile_all(self):
+        import importlib.util
+        from pathlib import Path
+
+        path = (
+            Path(__file__).resolve().parents[4]
+            / "scripts"
+            / "reconcile_achievements.py"
+        )
+        spec = importlib.util.spec_from_file_location("_reconcile_script", path)
+        assert spec and spec.loader
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module.reconcile_all
+
+    def test_reconcile_all_grants_retroactive_badges(
+        self, db_session, isolated_players
+    ):
+        seed_achievements(db.session)
+        player = isolated_players[0]
+
+        # Dato storico: una vittoria di gara a ledger, ma badge non ancora dato.
+        _award_tournament_win(player.id)
+        assert AchievementService.has_achievement(player.id, "champion") is False
+
+        reconcile_all = self._load_reconcile_all()
+        stats = reconcile_all(dry_run=False)
+
+        assert stats["total_unlocked"] >= 1
+        assert AchievementService.has_achievement(player.id, "champion") is True
+
+        # Idempotente: una seconda passata non sblocca nient'altro.
+        stats2 = reconcile_all(dry_run=False)
+        assert stats2["total_unlocked"] == 0
