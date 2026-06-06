@@ -84,14 +84,23 @@ Ambito deciso: i task a rischio medio/alto (#3, #5, #6 + cablaggi/seed) → **Fa
 Sequenza eseguita: 0 → A → B → C, commit atomici; chiuso con `pyright` (0 errori)
 + unit suite e gamification integration verdi (solo skip preesistenti).
 
-### Rimandato a Fase 2 (rischio medio/alto, richiede decisioni)
-- **#5 editor XP**: decisione **A** (cablare award→`ConfigService.get_xp_rate()`,
-  `XP_RATES` come fallback) **vs B** (rimuovere editor) — APERTA.
-- **#3 dedup proposte**: sciogliere con cura il sistema Availability del file legacy.
-- **#6 `LEVEL_UNLOCKS`**: reinstradare notifica + hint su FeatureConfig, poi rimuovere.
-- ~~Cablaggio social achievements (i 4 economici)~~ **FATTO** (vedi sotto).
-- **seed quest** (feature) — ancora da fare.
-- ~~`champion` / `podium_finish` non ottenibili~~ **RISOLTO** (vedi sotto).
+### Fase 2 — ✅ COMPLETATA (tutti gli item)
+- ✅ **#5 editor XP**: scelta **A** — award event-driven + milestone streak
+  instradati su `GamificationConfigService.get_xp_rate()` (override DB, fallback
+  `DEFAULT_XP_RATES` esteso con gara/campionato creation). Editor ora effettivo.
+- ✅ **#3 dedup proposte**: consolidato sul blueprint `individual_match`;
+  rimosse le route/template proposta legacy; **preservato** il sistema
+  Availability (solo nel file legacy). Allowlist ADR-028 invariata.
+- ✅ **#6 `LEVEL_UNLOCKS`**: il runtime già passava da ConfigService (DB
+  `LevelUnlock`); rimosso il duplicato morto `xp_config.LEVEL_UNLOCKS` +
+  funzioni. Fonte unica; sblocchi-per-livello = feedback (ADR-031), gating =
+  FeatureConfig.
+- ✅ **Achievement ottenibili** (tutti): vedi sotto — i 4 social + gli 8
+  rimanenti, re-engineering metric-driven.
+- ✅ **seed quest**: quest personali settimanali ricorrenti
+  (`quest_seeds.seed_weekly_quests`, idempotente, no cron). Visibilità gated.
+- ✅ **reconcile retroattivo**: `scripts/reconcile_achievements.py` (ricalcolo
+  idempotente, nessun reset) per concedere i badge storici dopo il deploy.
 
 ### ✅ Achievement ottenibili — FATTO (re-engineering metric-driven)
 Scelta utente: blocco "Achievement ottenibili" + opzione **A** (cablare). Invece
@@ -112,11 +121,18 @@ unico** (commit `refactor(gamification): idoneità achievement metric-driven` +
   (`is_active=1`) con migrazione idempotente `20260606` (netto disattivato 8).
   *Bonus*: il refactor ha sanato anche `tournament_debut`/`tournament_regular`,
   anch'essi rotti (chiave stats inesistente).
-- Restano disattivati 8 (no sorgente dati): hot_streak, unstoppable,
-  category_climber, elite_player, strategy_explorer, challenge_master,
-  perfectionist, drill_addict.
+- **Gli 8 ultimi resi ottenibili** (seconda iterazione): `win_streak`
+  (hot_streak/unstoppable, max vittorie consecutive da Match), `strategies_tried`
+  (strategy_explorer, strategie distinte da Inscription→Gara),
+  `challenges_completed` (challenge_master/drill_addict, drill completati),
+  `perfect_challenges` (perfectionist, drill pass/fail superati distinti),
+  `category_reached` (category_climber/elite_player, da PlayerCategory). Trigger:
+  match/inscription/competition handler + ChallengeService + RatingService, tutti
+  via il primitivo unico **`reconcile_achievements`**. UNOBTAINABLE ora **vuoto**;
+  migrazione `20260607` riattiva gli 8 sui DB esistenti.
 
-Tutto resta **director-only** (maturity-gate ADR-028) finché non validato.
+**Nessun achievement resta non ottenibile.** Tutto resta **director-only**
+(maturity-gate ADR-028) finché non validato.
 
 ## Convenzioni
 Vedi `CLAUDE.md` (transactional, utc_now, Distance VO/ADR-027, ADR-028 endpoint

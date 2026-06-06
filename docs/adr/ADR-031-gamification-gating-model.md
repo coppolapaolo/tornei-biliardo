@@ -306,22 +306,21 @@ File coinvolti (riferimento, non ancora modificati):
   social_butterfly/popular_player (proposte). I 4 social riattivati con migrazione
   `20260606`. Restano disattivati 8 senza sorgente dati (serie vittorie,
   categoria giocatore, drill/strategie). Vedi `GAMIFICATION_V3_HANDOFF.md`.
-- **Quest**: registrazione progresso cablata end-to-end (event handlers →
-  `record_activity_for_quests` → auto-join/incremento/XP/evento), MA **nessun
-  seed** e `update_quest_statuses()` **mai invocato** (niente cron/route) → le
-  quest non si attivano/scadono automaticamente; sistema **dormiente** salvo
-  azione manuale admin. Serve uno scheduler o una transizione di stato lazy.
-- **Config runtime** (`config_service.py` + `routes/gamification/config.py`):
-  curva livelli e level-unlock **cablati** (letti a runtime con fallback ai
-  default); **tassi XP NO-OP** — gli event handler usano `XP_RATES` hardcoded da
-  `xp_config.py` invece di `ConfigService.get_xp_rate()`, quindi l'editor
-  `/admin/config/xp` non ha effetto sugli award. Da cablare o rimuovere
-  l'editor.
-- **Sistema legacy level-unlock vivo**: `LevelService.award_xp` consulta
-  `ConfigService.get_all_level_unlocks_dict()` per popolare gli sblocchi nel
-  `LevelUpEvent`. Rimuoverlo (Decisione §3) impatta anche il **contenuto della
-  celebrazione di level-up**, non solo il gating → prevedere sostituto coerente
-  col "trucco" (celebrare sblocchi-per-metrica).
+- **Quest**: registrazione progresso cablata end-to-end. ~~Nessun seed;
+  update_quest_statuses mai invocato.~~ **RISOLTO (Fase 1+2)**: status calcolato
+  a read-time (`Quest.effective_status`, niente cron) + **seed** di quest
+  personali settimanali ricorrenti (`quest_seeds.seed_weekly_quests`, idempotente,
+  all'avvio).
+- **Config runtime** (`config_service.py`): ~~tassi XP NO-OP (editor ininfluente)~~
+  **RISOLTO (Fase 2, #5)**: gli award event-driven + i milestone streak passano da
+  `GamificationConfigService.get_xp_rate()` (override DB + fallback
+  `DEFAULT_XP_RATES`); l'editor `/admin/config/xp` ora ha effetto.
+- **Sistema legacy level-unlock**: ~~`LevelService` consulta LEVEL_UNLOCKS~~
+  **CHIARITO/PULITO (Fase 2, #6)**: il runtime usa già `ConfigService` (DB
+  `LevelUnlock`); rimosso il duplicato morto `xp_config.LEVEL_UNLOCKS`. Gli
+  sblocchi-per-livello sono **feedback/celebrazione** (non gating, che è
+  FeatureConfig/ABAC). *Aperto*: riconciliare il contenuto della celebrazione con
+  l'effettivo gating FeatureConfig se in futuro divergono.
 - **Invasività = doppio canale** (`frontend_bridge.py` + `notification_handlers.py`):
   4 eventi su 5 (LevelUp, Achievement, StreakMilestone, QuestCompleted) emettono
   **sia toast sia notifica persistente**, senza dedup né rate-limit; una partita
