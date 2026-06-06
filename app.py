@@ -1,5 +1,14 @@
 # app.py - Clean application factory pattern
-from flask import Flask, abort, render_template, request, session, jsonify
+from flask import (
+    Flask,
+    abort,
+    render_template,
+    request,
+    session,
+    jsonify,
+    redirect,
+    url_for,
+)
 from flask_babel import Babel
 from flask_login import LoginManager, current_user
 import os
@@ -42,6 +51,7 @@ def create_app(config_name=None):
     if dsn:
         import sentry_sdk
         from sentry_sdk.integrations.flask import FlaskIntegration
+
         sentry_sdk.init(
             dsn=dsn,
             integrations=[FlaskIntegration()],
@@ -53,26 +63,29 @@ def create_app(config_name=None):
     if config_name == "development":
         logging.basicConfig(
             level=logging.INFO,
-            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+            format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         )
         # Abilita logging per i nostri moduli
-        logging.getLogger(
-            'models.match.table_assignment_service'
-        ).setLevel(logging.INFO)
-        logging.getLogger('routes.admin.match').setLevel(logging.INFO)
+        logging.getLogger("models.match.table_assignment_service").setLevel(
+            logging.INFO
+        )
+        logging.getLogger("routes.admin.match").setLevel(logging.INFO)
 
     # Inizializza estensioni
     db.init_app(app)
     from models.base import mail
+
     if mail:
         mail.init_app(app)
 
     # CSRF protection
     from flask_wtf.csrf import CSRFProtect
+
     csrf = CSRFProtect(app)  # noqa: F841
 
     # Rate limiting
     from utils.rate_limiter import limiter
+
     limiter.init_app(app)
 
     register_soft_delete_filters(SASession)
@@ -147,7 +160,7 @@ def create_app(config_name=None):
             from models.notification.models import Notification, NotificationStatus
 
             # Check if already computed during this request
-            if not hasattr(g, 'unread_notifications_count'):
+            if not hasattr(g, "unread_notifications_count"):
                 g.unread_notifications_count = Notification.query.filter_by(
                     user_id=current_user.id, status=NotificationStatus.PENDING
                 ).count()
@@ -175,9 +188,11 @@ def create_app(config_name=None):
         stats = None
         if current_user.is_authenticated:
             from flask import g
-            if not hasattr(g, '_gamification_progress'):
+
+            if not hasattr(g, "_gamification_progress"):
                 try:
                     from models.gamification.level_service import LevelService
+
                     g._gamification_progress = LevelService.get_level_progress(
                         current_user.id
                     )
@@ -208,6 +223,19 @@ def create_app(config_name=None):
     def enforce_endpoint_allowlist():
         if not is_endpoint_visible(request.endpoint, current_user):
             abort(404)
+
+    # Onboarding obbligatorio (ADR-035): finché non completato, ogni utente
+    # autenticato non-admin viene reindirizzato alla pagina dedicata. Attivo in
+    # dev/prod, disattivato nei test (config ONBOARDING_ENFORCED). La decisione
+    # è in utils.onboarding (funzione pura, testata in isolamento).
+    from utils.onboarding import needs_onboarding_redirect, ONBOARDING_ENDPOINT
+
+    @app.before_request
+    def enforce_onboarding():
+        if not app.config.get("ONBOARDING_ENFORCED", True):
+            return None
+        if needs_onboarding_redirect(current_user, request.endpoint):
+            return redirect(url_for(ONBOARDING_ENDPOINT))
 
     @app.context_processor
     def inject_endpoint_visibility():
@@ -268,13 +296,17 @@ def create_app(config_name=None):
     from models.gamification import (  # noqa: F401, F811
         event_handlers as _gamification_eh,
     )
+
     # Register rating event handlers
     from models.rating import event_handlers as _rating_eh  # noqa: F401, F811
+
     # Register gamification notification handlers
     # Creates notifications for level ups, achievements, streaks, quests
     from models.gamification import notification_handlers  # noqa: F401
+
     # Register SSE bridge - routes domain events to SSE for real-time updates
     from routes import sse_bridge  # noqa: F401
+
     # Register gamification frontend bridge - pipes events to flash messages for UI
     from models.gamification import frontend_bridge  # noqa: F401
 
@@ -285,6 +317,7 @@ def create_app(config_name=None):
             create_admin_if_not_exists()
             # Seed gamification achievements (idempotent)
             from models.gamification.achievement_seeds import seed_achievements
+
             created, skipped = seed_achievements(db.session)
             if created > 0:
                 app.logger.info(f"Gamification: seeded {created} achievements")
@@ -292,6 +325,7 @@ def create_app(config_name=None):
             # L'avvio dell'app si ripete ~quotidianamente: ogni nuova settimana
             # ISO ottiene così le proprie quest, senza scheduler.
             from models.gamification.quest_seeds import seed_weekly_quests
+
             quests_created = seed_weekly_quests(db.session)
             if quests_created > 0:
                 app.logger.info(f"Gamification: seeded {quests_created} weekly quests")
@@ -319,6 +353,7 @@ def create_app(config_name=None):
     @app.route("/health")
     def health():
         from sqlalchemy import text
+
         try:
             db.session.execute(text("SELECT 1"))
             return jsonify(status="healthy", version=app.config["VERSION"]), 200

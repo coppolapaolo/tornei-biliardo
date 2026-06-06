@@ -214,10 +214,26 @@ scope), cataloghi i18n EN **100%**.
 `20260606_drop_player_availability`, `20260606_geo_proximity`. Le coordinate sala
 vanno inserite a mano (form admin) perché la prossimità abbia dati.
 
+### ADR-035 — Onboarding obbligatorio + backfill (FATTO)
+Intervista (3 scelte: pagina dedicata, home_city+sale, interessi inclusi) + ADR
++ implementazione. Riconcilia il design §7 col modello ADR-033/034 (province →
+sale + `home_city`).
+- `User.onboarding_completed` (default False, backfill) + `onboarding_interests`
+  (CSV) + property `interests_list`. Migrazione `20260607_onboarding`.
+- `OnboardingService.complete_onboarding` (`@transactional`, availability sala
+  **inlinate** per evitare nesting di savepoint). Route `onboarding.onboarding`
+  (`GET/POST /onboarding`) + template; entry in `ENDPOINT_ROLES`.
+- Enforcement: `before_request` `enforce_onboarding` in `app.py`, decisione pura
+  in `utils/onboarding.needs_onboarding_redirect` (admin esenti, esenti
+  onboarding/logout/lingua/infra, endpoint None passthrough). Gated da config
+  `ONBOARDING_ENFORCED` (True dev/prod, **False nei test** → suite intatta; i
+  test dedicati lo riattivano localmente).
+- Soft-gate proposte deferito al maturity-gate ADR-028 (in beta sono già
+  admin/director-only). Test: 13 unit + 7 integrazione.
+
 ### Aperto / prossimi (design già in V3, codice non iniziato)
-- **Onboarding obbligatorio + backfill** (`User.onboarding_completed`).
 - **Segnale-domanda → director** (richieste geolocalizzate, soglia ≥6 nel raggio)
-  — ora abilitabile sopra il modello geo di ADR-034.
+  — ora abilitabile sopra il modello geo di ADR-034. **(IN CORSO)**
 - **Leaderboard locale/contributo**.
 - **Maturity-gate ADR-028**: promozione ai player a blocchi (gamification +
   availability/discovery) quando validati — *non senza via dello stakeholder*.

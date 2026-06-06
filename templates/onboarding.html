@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _("Benvenuto!") }} - Campionato Biliardo{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8 col-lg-7">
+    <div class="card shadow-sm">
+      <div class="card-header">
+        <h4 class="mb-0">
+          <i class="fas fa-hand-sparkles"></i>
+          {{ _("Ti diamo il benvenuto!") }}
+        </h4>
+      </div>
+      <div class="card-body">
+        <p class="text-muted">
+          {{ _("Due informazioni veloci per proporti subito qualcosa di utile. Puoi cambiarle in qualsiasi momento dal tuo profilo.") }}
+        </p>
+
+        <form method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          {# ── Step 1: Dove ── #}
+          <h5 class="mt-3">
+            <i class="fas fa-map-marker-alt text-primary"></i>
+            {{ _("Dove vuoi giocare?") }}
+          </h5>
+
+          <div class="mb-3">
+            <label class="form-label" for="home_city">{{ _("La tua città") }}</label>
+            <input id="home_city" name="home_city" type="text"
+                   class="form-control"
+                   value="{{ current_user.home_city or '' }}"
+                   placeholder="{{ _('Es. Napoli') }}">
+            <div class="form-text text-muted">
+              {{ _("Usata per trovare sale e proposte vicino a te quando il GPS non è disponibile.") }}
+            </div>
+          </div>
+
+          {% if active_venues %}
+          <div class="mb-3">
+            <label class="form-label">{{ _("Le sale dove giochi (opzionale)") }}</label>
+            <div class="form-text text-muted mb-2">
+              {{ _("Selezionale per ricevere proposte di match in quelle sale.") }}
+            </div>
+            <div class="row">
+              {% for venue in active_venues %}
+              <div class="col-sm-6">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox"
+                         name="venue_ids" value="{{ venue.id }}"
+                         id="venue-{{ venue.id }}">
+                  <label class="form-check-label" for="venue-{{ venue.id }}">
+                    {{ venue.name }}{% if venue.city %} <span class="text-muted">({{ venue.city }})</span>{% endif %}
+                  </label>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+
+          {# ── Step 2: Cosa ── #}
+          <h5 class="mt-4">
+            <i class="fas fa-bullseye text-primary"></i>
+            {{ _("Cosa ti interessa di più?") }}
+          </h5>
+          <div class="form-text text-muted mb-2">
+            {{ _("Scegli quello che preferisci (puoi selezionarne più di uno).") }}
+          </div>
+
+          <div class="mb-4">
+            {% set interest_labels = {"drill": _("Allenarmi con i drill"), "match": _("Proporre match individuali"), "tornei": _("Partecipare ai tornei")} %}
+            {% for key in valid_interests %}
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox"
+                     name="interests" value="{{ key }}" id="interest-{{ key }}">
+              <label class="form-check-label" for="interest-{{ key }}">
+                {{ interest_labels[key] }}
+              </label>
+            </div>
+            {% endfor %}
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="fas fa-check"></i> {{ _("Inizia a giocare") }}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

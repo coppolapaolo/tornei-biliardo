@@ -24,10 +24,17 @@ class Config:
     # Email Service (SMTP)
     MAIL_SERVER = os.environ.get("MAIL_SERVER") or "smtp.gmail.com"
     MAIL_PORT = int(os.environ.get("MAIL_PORT") or 587)
-    MAIL_USE_TLS = os.environ.get("MAIL_USE_TLS", "true").lower() in ("1", "true", "yes")
+    MAIL_USE_TLS = os.environ.get("MAIL_USE_TLS", "true").lower() in (
+        "1",
+        "true",
+        "yes",
+    )
     MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
-    MAIL_DEFAULT_SENDER = os.environ.get("MAIL_DEFAULT_SENDER") or f"Campionato Biliardo <{MAIL_USERNAME}>"
+    MAIL_DEFAULT_SENDER = (
+        os.environ.get("MAIL_DEFAULT_SENDER")
+        or f"Campionato Biliardo <{MAIL_USERNAME}>"
+    )
 
     # Error tracking (GlitchTip/Sentry)
     GLITCHTIP_DSN = os.environ.get("GLITCHTIP_DSN")
@@ -42,10 +49,15 @@ class Config:
     VENUE_UPLOAD_FOLDER = "venues"
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file size
     ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
-    
+
     # I18n settings
     BABEL_DEFAULT_LOCALE = "it"
     BABEL_TRANSLATION_DIRECTORIES = "translations"
+
+    # Onboarding obbligatorio (ADR-035): quando True, gli utenti non-admin con
+    # onboarding non completato vengono reindirizzati alla pagina dedicata.
+    # Attivo in dev e prod; disattivato nei test (vedi TestingConfig).
+    ONBOARDING_ENFORCED = True
 
 
 class DevelopmentConfig(Config):
@@ -81,6 +93,10 @@ class TestingConfig(Config):
     TESTING = True
     GLITCHTIP_DSN = None
     WTF_CSRF_ENABLED = False
+    # L'enforcement onboarding è opt-in nei test: la maggior parte usa utenti
+    # con onboarding_completed=False e finirebbe reindirizzata. I test dedicati
+    # (ADR-035) lo riattivano localmente con app.config["ONBOARDING_ENFORCED"].
+    ONBOARDING_ENFORCED = False
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
     SQLALCHEMY_SESSION_OPTIONS = {"expire_on_commit": False}
     ADMIN_USERNAME = "admin"

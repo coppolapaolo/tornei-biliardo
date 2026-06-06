@@ -51,6 +51,8 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # === Logged-in (player or director) ===
     "auth.logout": {"player", "director"},
     "dashboard.dashboard": {"player", "director"},
+    # Onboarding obbligatorio (ADR-035): reachable by ogni utente loggato.
+    "onboarding.onboarding": {"player", "director"},
     # Player-side dashboard at /player/ (the "back to dashboard" target from
     # several profile/list pages — also reached by the dashboard router).
     "player.dashboard": {"player", "director"},

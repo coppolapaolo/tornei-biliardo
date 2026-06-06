@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-06 15:37+0000\n"
+"POT-Creation-Date: 2026-06-06 16:19+0000\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -416,12 +416,16 @@ msgstr ""
 msgid "Registrazione completata! Controlla la tua email per verificare l'account."
 msgstr ""
 
-#: routes/auth.py:122
+#: routes/auth.py:122 templates/onboarding.html:12
 msgid "Ti diamo il benvenuto!"
 msgstr ""
 
 #: routes/auth.py:123
 msgid "Registrazione completata con successo."
+msgstr ""
+
+#: routes/onboarding.py:50
+msgid "Tutto pronto! Buon divertimento."
 msgstr ""
 
 #: routes/admin/campionato.py:96 routes/admin/campionato.py:332
@@ -2001,6 +2005,66 @@ msgstr ""
 msgid ""
 "Sei sicuro di voler resettare completamente questa partita trio? Tutti i "
 "risultati verranno cancellati."
+msgstr ""
+
+#: templates/onboarding.html:3
+msgid "Benvenuto!"
+msgstr ""
+
+#: templates/onboarding.html:17
+msgid ""
+"Due informazioni veloci per proporti subito qualcosa di utile. Puoi "
+"cambiarle in qualsiasi momento dal tuo profilo."
+msgstr ""
+
+#: templates/onboarding.html:26
+msgid "Dove vuoi giocare?"
+msgstr ""
+
+#: templates/onboarding.html:30
+msgid "La tua città"
+msgstr ""
+
+#: templates/onboarding.html:34
+msgid "Es. Napoli"
+msgstr ""
+
+#: templates/onboarding.html:36 templates/player/profile_edit.html:41
+msgid ""
+"Usata per trovare sale e proposte vicino a te quando il GPS non è "
+"disponibile."
+msgstr ""
+
+#: templates/onboarding.html:42
+msgid "Le sale dove giochi (opzionale)"
+msgstr ""
+
+#: templates/onboarding.html:44
+msgid "Selezionale per ricevere proposte di match in quelle sale."
+msgstr ""
+
+#: templates/onboarding.html:66
+msgid "Cosa ti interessa di più?"
+msgstr ""
+
+#: templates/onboarding.html:69
+msgid "Scegli quello che preferisci (puoi selezionarne più di uno)."
+msgstr ""
+
+#: templates/onboarding.html:73
+msgid "Allenarmi con i drill"
+msgstr ""
+
+#: templates/onboarding.html:73
+msgid "Proporre match individuali"
+msgstr ""
+
+#: templates/onboarding.html:73
+msgid "Partecipare ai tornei"
+msgstr ""
+
+#: templates/onboarding.html:86
+msgid "Inizia a giocare"
 msgstr ""
 
 #: templates/admin/campionato_detail.html:26
@@ -6532,12 +6596,6 @@ msgstr ""
 
 #: templates/player/profile_edit.html:39
 msgid "Città"
-msgstr ""
-
-#: templates/player/profile_edit.html:41
-msgid ""
-"Usata per trovare sale e proposte vicino a te quando il GPS non è "
-"disponibile."
 msgstr ""
 
 #: templates/public/campionato_detail.html:22

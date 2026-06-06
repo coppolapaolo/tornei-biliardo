@@ -112,8 +112,13 @@ Questo è il punto d'ingresso rapido per riprendere. Per il dettaglio:
   riordina/filtra per distanza (default 20 km, cap 100, sort ON), eligibility
   ADR-033 invariata. Migrazione `20260606_geo_proximity`. 9 test integrazione +
   16 unit (`utils/geo`), i18n EN 100%.
-- **Item di design V3 mai iniziati** (fasi successive): onboarding obbligatorio +
-  backfill, segnale-domanda → director, leaderboard locale/contributo.
+- **Onboarding obbligatorio + backfill**: ~~FATTO~~ — **ADR-035**. Pagina
+  dedicata `/onboarding` (home_city + selezione sale + interessi), enforcement
+  `before_request` gated da `ONBOARDING_ENFORCED` (off nei test),
+  `User.onboarding_completed`/`onboarding_interests`, migrazione
+  `20260607_onboarding`, `OnboardingService`. 13 unit + 7 integrazione, EN 100%.
+- **Item di design V3 mai iniziati** (fasi successive): segnale-domanda →
+  director (IN CORSO), leaderboard locale/contributo.
 
 ## Note ambiente (per non riscoprirle)
 - Le dipendenze non sono preinstallate: servono `flask_sqlalchemy flask-mail
