@@ -162,19 +162,20 @@ class GamificationEventHandlers:
                     f"Awarded {XP_RATES[XPTransactionType.MATCH_LOSS]} XP to user {loser_id} for match participation"
                 )
 
-            # Check match-related achievements for winner (skip if winner is a forfeit).
+            # Win-based achievements for winner (skip if winner is a forfeit).
             # Each call isolated: failure in one must not block the others.
+            # L'idoneità è metric-driven (won_matches reali), quindi basta
+            # richiedere la rivalutazione — niente increment manuale.
             if event.winner_id not in forfeit_ids:
-                winner_achievements = [
-                    ("first_blood", {}),
-                    ("veteran_player", {"progress_increment": 1}),
-                    ("century_club", {"progress_increment": 1}),
-                    ("match_marathon", {"progress_increment": 1}),
-                ]
-                for code, kwargs in winner_achievements:
+                for code in (
+                    "first_blood",
+                    "veteran_player",
+                    "century_club",
+                    "match_marathon",
+                ):
                     try:
                         AchievementService.check_and_award_achievement(
-                            event.winner_id, code, **kwargs
+                            event.winner_id, code
                         )
                     except Exception as ach_error:
                         logger.warning(
@@ -183,6 +184,20 @@ class GamificationEventHandlers:
 
             # Iterate the full participant roster so trio p3 is not skipped.
             all_player_ids = event.get_all_player_ids()
+
+            # Opponent-based achievements for ALL participants (skip forfeiters):
+            # aver giocato questa partita può aver aumentato gli avversari unici.
+            for player_id in all_player_ids:
+                if player_id and player_id not in forfeit_ids:
+                    for code in ("diverse_competitor", "community_pillar"):
+                        try:
+                            AchievementService.check_and_award_achievement(
+                                player_id, code
+                            )
+                        except Exception as ach_error:
+                            logger.warning(
+                                f"Error checking achievement '{code}' for user {player_id}: {ach_error}"
+                            )
 
             # Record weekly streaks for all participants (skip forfeiters)
             # WEEKLY_MATCH: At least 1 match per week
@@ -261,12 +276,12 @@ class GamificationEventHandlers:
                 f"Awarded {XP_RATES[XPTransactionType.TOURNAMENT_INSCRIPTION]} XP to user {event.user_id} for tournament inscription"
             )
 
-            # Check tournament participation achievements
+            # Check tournament participation achievements (metric-driven)
             AchievementService.check_and_award_achievement(
                 event.user_id, "tournament_debut"
             )
             AchievementService.check_and_award_achievement(
-                event.user_id, "tournament_regular", progress_increment=1
+                event.user_id, "tournament_regular"
             )
 
             # Record weekly streaks
@@ -401,7 +416,7 @@ class GamificationEventHandlers:
                     event.winner_id, "champion"
                 )
                 AchievementService.check_and_award_achievement(
-                    event.winner_id, "tournament_dominator", progress_increment=1
+                    event.winner_id, "tournament_dominator"
                 )
 
             # Check podium achievements (top 3)

@@ -13,11 +13,20 @@ These tests verify the complete event-driven achievement workflow.
 
 import pytest
 from datetime import datetime
+from unittest.mock import patch
 
 from models.events.base import EventBus
 from models.events.match_events import MatchCompletedEvent
-from models.events.competition_events import InscriptionCreatedEvent, CompetitionCompletedEvent
-from models.gamification.models import Achievement, UserAchievement, AchievementCategory, AchievementDifficulty
+from models.events.competition_events import (
+    InscriptionCreatedEvent,
+    CompetitionCompletedEvent,
+)
+from models.gamification.models import (
+    Achievement,
+    UserAchievement,
+    AchievementCategory,
+    AchievementDifficulty,
+)
 from models.gamification.achievement_seeds import seed_achievements
 from models.gamification.event_handlers import GamificationEventHandlers
 from models.notification.models import Notification, NotificationType
@@ -46,8 +55,12 @@ def register_gamification_handlers():
 class TestAchievementWorkflowMatchBased:
     """Test achievement workflow triggered by match events."""
 
-    @pytest.mark.skip(reason="Achievement handlers have session isolation issues with @transactional")
-    def test_first_blood_achievement_unlocked_on_first_win(self, db_session, isolated_players):
+    @pytest.mark.skip(
+        reason="Achievement handlers have session isolation issues with @transactional"
+    )
+    def test_first_blood_achievement_unlocked_on_first_win(
+        self, db_session, isolated_players
+    ):
         """
         GIVEN "first_blood" achievement exists
         WHEN user wins first match
@@ -70,7 +83,7 @@ class TestAchievementWorkflowMatchBased:
             player2_name=player2.username,
             winner_id=player1.id,
             winner_name=player1.username,
-            score="5-2"
+            score="5-2",
         )
         EventBus.publish(event)
         db_session.flush()
@@ -80,28 +93,31 @@ class TestAchievementWorkflowMatchBased:
         assert first_blood is not None
 
         user_achievement = UserAchievement.query.filter_by(
-            user_id=player1.id,
-            achievement_id=first_blood.id
+            user_id=player1.id, achievement_id=first_blood.id
         ).first()
         assert user_achievement is not None
         assert user_achievement.is_unlocked is True
 
         # Assert: Notification created
         notification = Notification.query.filter_by(
-            user_id=player1.id,
-            notification_type=NotificationType.ACHIEVEMENT_UNLOCKED
+            user_id=player1.id, notification_type=NotificationType.ACHIEVEMENT_UNLOCKED
         ).first()
         assert notification is not None
-        assert "First Blood" in notification.message or "first" in notification.message.lower()
+        assert (
+            "First Blood" in notification.message
+            or "first" in notification.message.lower()
+        )
 
-    def test_veteran_player_achievement_tracks_progress(self, db_session, isolated_players):
+    def test_veteran_player_achievement_unlocks_at_metric_threshold(
+        self, db_session, isolated_players
+    ):
         """
         GIVEN "veteran_player" achievement (50 wins) exists
-        WHEN user wins multiple matches
-        THEN progress is tracked incrementally
-        AND achievement unlocks at 50 wins
+        WHEN a match-completed event is processed
+        THEN il progresso riflette le vittorie reali e l'achievement si sblocca
+             solo al raggiungimento della soglia (metric-driven, niente
+             increment per evento).
         """
-        # Arrange: Seed achievements
         seed_achievements(db_session)
 
         player1 = isolated_players[0]
@@ -111,43 +127,55 @@ class TestAchievementWorkflowMatchBased:
         assert veteran is not None
         assert veteran.is_progressive is True
 
-        # Act: Simulate 50 match wins
-        for i in range(50):
+        def publish_win():
             event = MatchCompletedEvent(
-                match_id=i + 1,
+                match_id=1,
                 player1_id=player1.id,
                 player1_name=player1.username,
                 player2_id=player2.id,
                 player2_name=player2.username,
                 winner_id=player1.id,
                 winner_name=player1.username,
-                score="5-2"
+                score="5-2",
             )
             EventBus.publish(event)
             db_session.flush()
 
-            # Check progress
-            user_achievement = UserAchievement.query.filter_by(
-                user_id=player1.id,
-                achievement_id=veteran.id
-            ).first()
+        # Sotto soglia: l'evento innesca la rivalutazione, progresso = reale.
+        with patch(
+            "models.user.services.UserStatsService.get_user_stats",
+            return_value={"won_matches": 49},
+        ):
+            publish_win()
+        ua = UserAchievement.query.filter_by(
+            user_id=player1.id, achievement_id=veteran.id
+        ).first()
+        assert ua is not None
+        assert ua.current_progress == 49
+        assert ua.is_unlocked is False
 
-            if user_achievement:
-                if i < 49:
-                    # Not yet unlocked
-                    assert user_achievement.current_progress == i + 1
-                    assert user_achievement.is_unlocked is False
-                else:
-                    # Unlocked on 50th win
-                    assert user_achievement.current_progress == 50
-                    assert user_achievement.is_unlocked is True
+        # Raggiunta la soglia: si sblocca.
+        with patch(
+            "models.user.services.UserStatsService.get_user_stats",
+            return_value={"won_matches": 50},
+        ):
+            publish_win()
+        ua = UserAchievement.query.filter_by(
+            user_id=player1.id, achievement_id=veteran.id
+        ).first()
+        assert ua.current_progress == 50
+        assert ua.is_unlocked is True
 
 
 class TestAchievementWorkflowTournamentBased:
     """Test achievement workflow for tournament events."""
 
-    @pytest.mark.skip(reason="Achievement handlers have session isolation issues with @transactional")
-    def test_tournament_debut_unlocked_on_first_inscription(self, db_session, isolated_players):
+    @pytest.mark.skip(
+        reason="Achievement handlers have session isolation issues with @transactional"
+    )
+    def test_tournament_debut_unlocked_on_first_inscription(
+        self, db_session, isolated_players
+    ):
         """
         GIVEN "tournament_debut" achievement exists
         WHEN user registers for first tournament
@@ -164,7 +192,7 @@ class TestAchievementWorkflowTournamentBased:
             gara_name="Test Tournament",
             user_id=player.id,
             username=player.username,
-            inscription_status="confirmed"
+            inscription_status="confirmed",
         )
         EventBus.publish(event)
         db_session.flush()
@@ -172,15 +200,18 @@ class TestAchievementWorkflowTournamentBased:
         # Assert
         debut = Achievement.query.filter_by(slug="tournament_debut").first()
         user_achievement = UserAchievement.query.filter_by(
-            user_id=player.id,
-            achievement_id=debut.id
+            user_id=player.id, achievement_id=debut.id
         ).first()
 
         assert user_achievement is not None
         assert user_achievement.is_unlocked is True
 
-    @pytest.mark.skip(reason="Achievement handlers have session isolation issues with @transactional")
-    def test_champion_achievement_unlocked_on_tournament_win(self, db_session, isolated_players):
+    @pytest.mark.skip(
+        reason="Achievement handlers have session isolation issues with @transactional"
+    )
+    def test_champion_achievement_unlocked_on_tournament_win(
+        self, db_session, isolated_players
+    ):
         """
         GIVEN "champion" achievement exists
         WHEN user wins a tournament
@@ -202,7 +233,7 @@ class TestAchievementWorkflowTournamentBased:
                 {"user_id": player2.id, "position": 2},
             ],
             total_participants=2,
-            total_rounds=3
+            total_rounds=3,
         )
         EventBus.publish(event)
         db_session.flush()
@@ -210,14 +241,15 @@ class TestAchievementWorkflowTournamentBased:
         # Assert
         champion = Achievement.query.filter_by(slug="champion").first()
         user_achievement = UserAchievement.query.filter_by(
-            user_id=player1.id,
-            achievement_id=champion.id
+            user_id=player1.id, achievement_id=champion.id
         ).first()
 
         assert user_achievement is not None
         assert user_achievement.is_unlocked is True
 
-    @pytest.mark.skip(reason="Achievement handlers have session isolation issues with @transactional")
+    @pytest.mark.skip(
+        reason="Achievement handlers have session isolation issues with @transactional"
+    )
     def test_podium_finish_unlocked_for_top3(self, db_session, isolated_players):
         """
         GIVEN "podium_finish" achievement exists
@@ -240,7 +272,7 @@ class TestAchievementWorkflowTournamentBased:
                 {"user_id": player1.id, "position": 2},  # Player1 gets 2nd
             ],
             total_participants=2,
-            total_rounds=3
+            total_rounds=3,
         )
         EventBus.publish(event)
         db_session.flush()
@@ -248,8 +280,7 @@ class TestAchievementWorkflowTournamentBased:
         # Assert: Player 1 gets podium achievement (2nd place)
         podium = Achievement.query.filter_by(slug="podium_finish").first()
         user_achievement = UserAchievement.query.filter_by(
-            user_id=player1.id,
-            achievement_id=podium.id
+            user_id=player1.id, achievement_id=podium.id
         ).first()
 
         assert user_achievement is not None
@@ -259,7 +290,9 @@ class TestAchievementWorkflowTournamentBased:
 class TestAchievementWorkflowXPBonus:
     """Test XP bonus awarded on achievement unlock."""
 
-    @pytest.mark.skip(reason="Achievement handlers have session isolation issues with @transactional")
+    @pytest.mark.skip(
+        reason="Achievement handlers have session isolation issues with @transactional"
+    )
     def test_achievement_unlock_awards_bonus_xp(self, db_session, isolated_players):
         """
         GIVEN an achievement with XP reward
@@ -284,7 +317,7 @@ class TestAchievementWorkflowXPBonus:
             player2_name=player2.username,
             winner_id=player1.id,
             winner_name=player1.username,
-            score="5-2"
+            score="5-2",
         )
         EventBus.publish(event)
         db_session.flush()
@@ -304,8 +337,12 @@ class TestAchievementWorkflowXPBonus:
 class TestAchievementWorkflowMultipleAchievements:
     """Test multiple achievements unlocking from single event."""
 
-    @pytest.mark.skip(reason="Achievement handlers have session isolation issues with @transactional")
-    def test_single_event_can_unlock_multiple_achievements(self, db_session, isolated_players):
+    @pytest.mark.skip(
+        reason="Achievement handlers have session isolation issues with @transactional"
+    )
+    def test_single_event_can_unlock_multiple_achievements(
+        self, db_session, isolated_players
+    ):
         """
         GIVEN multiple match-based achievements (first_blood, veteran_player, etc.)
         WHEN user wins a match
@@ -322,7 +359,7 @@ class TestAchievementWorkflowMultipleAchievements:
             user_id=player1.id,
             achievement_id=veteran.id,
             current_progress=49,
-            is_unlocked=False
+            is_unlocked=False,
         )
         db_session.add(user_achievement_veteran)
         db_session.flush()
@@ -336,7 +373,7 @@ class TestAchievementWorkflowMultipleAchievements:
             player2_name=player2.username,
             winner_id=player1.id,
             winner_name=player1.username,
-            score="5-2"
+            score="5-2",
         )
         EventBus.publish(event)
         db_session.flush()
@@ -344,8 +381,7 @@ class TestAchievementWorkflowMultipleAchievements:
         # Assert: Both achievements unlocked
         first_blood = Achievement.query.filter_by(slug="first_blood").first()
         ua_first = UserAchievement.query.filter_by(
-            user_id=player1.id,
-            achievement_id=first_blood.id
+            user_id=player1.id, achievement_id=first_blood.id
         ).first()
         assert ua_first is not None
         assert ua_first.is_unlocked is True

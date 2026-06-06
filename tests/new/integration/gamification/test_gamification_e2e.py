@@ -12,10 +12,22 @@ from datetime import datetime, timedelta
 
 from models.base import db
 from models import (
-    User, Gara, Inscription, Match, Campionato,
-    UserLevel, XPTransaction, Achievement, UserAchievement,
-    StreakTracker, Notification, NotificationType,
-    XPTransactionType, StreakType, AchievementCategory, AchievementDifficulty
+    User,
+    Gara,
+    Inscription,
+    Match,
+    Campionato,
+    UserLevel,
+    XPTransaction,
+    Achievement,
+    UserAchievement,
+    StreakTracker,
+    Notification,
+    NotificationType,
+    XPTransactionType,
+    StreakType,
+    AchievementCategory,
+    AchievementDifficulty,
 )
 from models.gamification.level_service import LevelService
 from models.gamification.achievement_service import AchievementService
@@ -59,7 +71,7 @@ class TestGamificationE2EWorkflows:
             user_id=self.player1.id,
             xp_amount=100,
             transaction_type=XPTransactionType.MATCH_WIN,
-            reason="Test XP award"
+            reason="Test XP award",
         )
 
         # Verify UserLevel was created
@@ -82,7 +94,7 @@ class TestGamificationE2EWorkflows:
             user_id=self.player1.id,
             xp_amount=300,
             transaction_type=XPTransactionType.TOURNAMENT_WIN,
-            reason="Tournament victory"
+            reason="Tournament victory",
         )
 
         level = UserLevel.query.filter_by(user_id=self.player1.id).first()
@@ -98,14 +110,12 @@ class TestGamificationE2EWorkflows:
         # Check achievement (won't unlock without actual match data)
         # This creates the UserAchievement record for tracking
         result, was_unlocked = AchievementService.check_and_award_achievement(
-            user_id=self.player1.id,
-            achievement_slug="first_blood"
+            user_id=self.player1.id, achievement_slug="first_blood"
         )
 
         # Verify UserAchievement record was created for tracking
         user_ach = UserAchievement.query.filter_by(
-            user_id=self.player1.id,
-            achievement_id=first_blood.id
+            user_id=self.player1.id, achievement_id=first_blood.id
         ).first()
         assert user_ach is not None
         # Non-progressive achievements require actual stats check
@@ -113,35 +123,35 @@ class TestGamificationE2EWorkflows:
         assert was_unlocked is False
 
     def test_progressive_achievement_tracking(self, db_session):
-        """Test progressive achievement progress tracking."""
-        # Get "veteran_player" (50 wins, progressive)
+        """Progressive achievement metric-driven: il progresso = dato reale."""
+        from unittest.mock import patch
+
+        # "veteran_player" (50 wins, progressive)
         veteran = Achievement.query.filter_by(slug="veteran_player").first()
         assert veteran is not None
         assert veteran.is_progressive is True
 
-        # Increment progress multiple times
-        for i in range(5):
+        # 5 vittorie reali → progresso 5, non sbloccato (serve 50).
+        with patch(
+            "models.user.services.UserStatsService.get_user_stats",
+            return_value={"won_matches": 5},
+        ):
             AchievementService.check_and_award_achievement(
-                user_id=self.player1.id,
-                achievement_slug="veteran_player",
-                progress_increment=1
+                user_id=self.player1.id, achievement_slug="veteran_player"
             )
 
-        # Check progress
         user_ach = UserAchievement.query.filter_by(
-            user_id=self.player1.id,
-            achievement_id=veteran.id
+            user_id=self.player1.id, achievement_id=veteran.id
         ).first()
         assert user_ach is not None
-        assert user_ach.current_progress == 5
+        assert user_ach.current_progress == 5  # riflette le vittorie reali
         assert user_ach.is_unlocked is False  # Need 50 wins
 
     def test_streak_recording_and_continuation(self, db_session):
         """Test weekly streak tracking."""
         # Record first activity
         tracker, result = StreakService.record_activity(
-            user_id=self.player1.id,
-            streak_type=StreakType.WEEKLY_MATCH
+            user_id=self.player1.id, streak_type=StreakType.WEEKLY_MATCH
         )
 
         assert tracker.current_streak == 1
@@ -149,8 +159,7 @@ class TestGamificationE2EWorkflows:
 
         # Record another activity in the same week
         tracker, result = StreakService.record_activity(
-            user_id=self.player1.id,
-            streak_type=StreakType.WEEKLY_MATCH
+            user_id=self.player1.id, streak_type=StreakType.WEEKLY_MATCH
         )
 
         # Same week, streak should continue but not increment
@@ -161,14 +170,12 @@ class TestGamificationE2EWorkflows:
         """Test that different streak types are tracked independently."""
         # Record match activity
         match_tracker, _ = StreakService.record_activity(
-            user_id=self.player1.id,
-            streak_type=StreakType.WEEKLY_MATCH
+            user_id=self.player1.id, streak_type=StreakType.WEEKLY_MATCH
         )
 
         # Record tournament activity
         tournament_tracker, _ = StreakService.record_activity(
-            user_id=self.player1.id,
-            streak_type=StreakType.WEEKLY_TOURNAMENT
+            user_id=self.player1.id, streak_type=StreakType.WEEKLY_TOURNAMENT
         )
 
         # Both should have independent streaks
@@ -180,16 +187,18 @@ class TestGamificationE2EWorkflows:
         assert len(all_streaks) == 2
 
     def test_get_all_user_achievements(self, db_session):
-        """Test retrieving user achievement status."""
-        # Start progress on a progressive achievement
-        AchievementService.check_and_award_achievement(
-            user_id=self.player1.id,
-            achievement_slug="veteran_player",
-            progress_increment=10
-        )
+        """get_user_achievements riflette il progresso reale (metric-driven)."""
+        from unittest.mock import patch
 
-        # Get all achievements for user
-        achievements = AchievementService.get_user_achievements(self.player1.id)
+        with patch(
+            "models.user.services.UserStatsService.get_user_stats",
+            return_value={"won_matches": 10},
+        ):
+            AchievementService.check_and_award_achievement(
+                user_id=self.player1.id, achievement_slug="veteran_player"
+            )
+            # get_user_achievements calcola il progresso live: dentro il patch.
+            achievements = AchievementService.get_user_achievements(self.player1.id)
 
         # Should have at least one achievement with progress
         in_progress = [a for a in achievements if a.get("current_progress", 0) > 0]
@@ -198,7 +207,7 @@ class TestGamificationE2EWorkflows:
         # Check the veteran_player progress (note: achievement object is nested)
         veteran = next(
             (a for a in achievements if a.get("achievement").slug == "veteran_player"),
-            None
+            None,
         )
         assert veteran is not None
         assert veteran.get("current_progress") == 10
@@ -211,7 +220,7 @@ class TestGamificationE2EWorkflows:
             user_id=self.player1.id,
             xp_amount=100,
             transaction_type=XPTransactionType.MATCH_WIN,
-            reason="Test"
+            reason="Test",
         )
 
         # Get progress
@@ -230,30 +239,34 @@ class TestGamificationE2EWorkflows:
             user_id=self.player1.id,
             xp_amount=50,
             transaction_type=XPTransactionType.MATCH_WIN,
-            reason="Won match 1"
+            reason="Won match 1",
         )
         LevelService.award_xp(
             user_id=self.player1.id,
             xp_amount=20,
             transaction_type=XPTransactionType.MATCH_LOSS,
-            reason="Lost match 2"
+            reason="Lost match 2",
         )
         LevelService.award_xp(
             user_id=self.player1.id,
             xp_amount=100,
             transaction_type=XPTransactionType.TOURNAMENT_COMPLETION,
-            reason="Completed tournament"
+            reason="Completed tournament",
         )
 
         # Verify all transactions logged
-        transactions = XPTransaction.query.filter_by(
-            user_id=self.player1.id
-        ).order_by(XPTransaction.created_at).all()
+        transactions = (
+            XPTransaction.query.filter_by(user_id=self.player1.id)
+            .order_by(XPTransaction.created_at)
+            .all()
+        )
 
         assert len(transactions) == 3
         assert transactions[0].transaction_type == XPTransactionType.MATCH_WIN
         assert transactions[1].transaction_type == XPTransactionType.MATCH_LOSS
-        assert transactions[2].transaction_type == XPTransactionType.TOURNAMENT_COMPLETION
+        assert (
+            transactions[2].transaction_type == XPTransactionType.TOURNAMENT_COMPLETION
+        )
 
         # Total XP should match sum
         level = UserLevel.query.filter_by(user_id=self.player1.id).first()
@@ -266,7 +279,7 @@ class TestGamificationE2EWorkflows:
             user_id=self.player1.id,
             xp_amount=500,
             transaction_type=XPTransactionType.ADMIN_GRANT,
-            reason="Bonus for community contribution"
+            reason="Bonus for community contribution",
         )
 
         # Verify XP granted
@@ -275,8 +288,7 @@ class TestGamificationE2EWorkflows:
 
         # Verify transaction logged with ADMIN_GRANT type
         transaction = XPTransaction.query.filter_by(
-            user_id=self.player1.id,
-            transaction_type=XPTransactionType.ADMIN_GRANT
+            user_id=self.player1.id, transaction_type=XPTransactionType.ADMIN_GRANT
         ).first()
         assert transaction is not None
         assert "community contribution" in transaction.reason
@@ -311,7 +323,7 @@ class TestGamificationIntegrationWithCompetitions:
             date=datetime.now().date() + timedelta(days=1),
             discipline="palla_8",
             distance=5,
-            status=GaraStatus.INSCRIPTION.value
+            status=GaraStatus.INSCRIPTION.value,
         )
         db_session.add(self.gara)
         db_session.flush()
@@ -324,10 +336,7 @@ class TestGamificationIntegrationWithCompetitions:
     def test_inscription_creates_gamification_opportunity(self, db_session):
         """Test that tournament inscription can trigger gamification."""
         # Create inscription
-        inscription = Inscription(
-            user_id=self.player1.id,
-            gara_id=self.gara.id
-        )
+        inscription = Inscription(user_id=self.player1.id, gara_id=self.gara.id)
         db_session.add(inscription)
         db_session.flush()
 
@@ -336,13 +345,12 @@ class TestGamificationIntegrationWithCompetitions:
             user_id=self.player1.id,
             xp_amount=25,
             transaction_type=XPTransactionType.TOURNAMENT_INSCRIPTION,
-            reason=f"Inscribed to {self.gara.name}"
+            reason=f"Inscribed to {self.gara.name}",
         )
 
         # Record tournament streak
         StreakService.record_activity(
-            user_id=self.player1.id,
-            streak_type=StreakType.WEEKLY_TOURNAMENT
+            user_id=self.player1.id, streak_type=StreakType.WEEKLY_TOURNAMENT
         )
 
         # Verify XP awarded
@@ -351,8 +359,7 @@ class TestGamificationIntegrationWithCompetitions:
 
         # Verify streak started
         streak = StreakTracker.query.filter_by(
-            user_id=self.player1.id,
-            streak_type=StreakType.WEEKLY_TOURNAMENT
+            user_id=self.player1.id, streak_type=StreakType.WEEKLY_TOURNAMENT
         ).first()
         assert streak.current_streak == 1
 
@@ -367,7 +374,7 @@ class TestGamificationIntegrationWithCompetitions:
             status="completed",
             player1_score=5,
             player2_score=3,
-            winner_id=self.player1.id
+            winner_id=self.player1.id,
         )
         db_session.add(match)
         db_session.flush()
@@ -377,13 +384,13 @@ class TestGamificationIntegrationWithCompetitions:
             user_id=self.player1.id,
             xp_amount=50,
             transaction_type=XPTransactionType.MATCH_WIN,
-            reason="Won match"
+            reason="Won match",
         )
         LevelService.award_xp(
             user_id=self.player2.id,
             xp_amount=20,
             transaction_type=XPTransactionType.MATCH_LOSS,
-            reason="Lost match"
+            reason="Lost match",
         )
 
         # Verify winner XP

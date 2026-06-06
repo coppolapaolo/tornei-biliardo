@@ -46,19 +46,22 @@ class TestAchievementUnlock:
             difficulty=AchievementDifficulty.COMMON,
             requirements='{"type": "match_wins", "count": 1}',
             is_progressive=False,
-            xp_reward=50
+            xp_reward=50,
         )
         db_session.add(achievement)
         db_session.flush()
 
         # Mock UserStatsService to return 1 win
-        with patch('models.user.services.UserStatsService.get_user_stats') as mock_stats:
+        with patch(
+            "models.user.services.UserStatsService.get_user_stats"
+        ) as mock_stats:
             mock_stats.return_value = {"won_matches": 1}
 
             # Act
-            user_achievement, was_unlocked = AchievementService.check_and_award_achievement(
-                user_id=player.id,
-                achievement_slug="first_blood"
+            user_achievement, was_unlocked = (
+                AchievementService.check_and_award_achievement(
+                    user_id=player.id, achievement_slug="first_blood"
+                )
             )
 
         # Assert
@@ -66,15 +69,17 @@ class TestAchievementUnlock:
         assert user_achievement.is_unlocked is True
         assert user_achievement.unlocked_at is not None
 
-    def test_progressive_achievement_tracks_progress(self, db_session, isolated_players):
+    def test_progressive_achievement_unlocks_at_metric_threshold(
+        self, db_session, isolated_players
+    ):
         """
         GIVEN a progressive achievement (e.g., 50 wins)
-        WHEN user incrementally progresses
-        THEN progress is tracked and achievement unlocks at target
+        WHEN the user's real metric (won_matches) reaches the target
+        THEN the achievement unlocks; below threshold il progresso riflette
+             il valore reale ma non sblocca. (Metric-driven: nessun increment.)
         """
         player = isolated_players[0]
 
-        # Arrange: Create "veteran_player" achievement (50 wins)
         achievement = Achievement(
             slug="veteran_player",
             name="Veteran Player",
@@ -83,26 +88,35 @@ class TestAchievementUnlock:
             difficulty=AchievementDifficulty.UNCOMMON,
             requirements='{"type": "match_wins", "count": 50}',
             is_progressive=True,
-            xp_reward=250
+            xp_reward=250,
         )
         db_session.add(achievement)
         db_session.flush()
 
-        # Act: Simulate 50 wins
-        for i in range(50):
-            user_achievement, was_unlocked = AchievementService.check_and_award_achievement(
-                user_id=player.id,
-                achievement_slug="veteran_player",
-                progress_increment=1
+        with patch(
+            "models.user.services.UserStatsService.get_user_stats"
+        ) as mock_stats:
+            # Sotto soglia: progresso allineato al reale, non sbloccato.
+            mock_stats.return_value = {"won_matches": 49}
+            user_achievement, was_unlocked = (
+                AchievementService.check_and_award_achievement(
+                    user_id=player.id, achievement_slug="veteran_player"
+                )
             )
+            assert was_unlocked is False
+            assert user_achievement.current_progress == 49
+            assert user_achievement.is_unlocked is False
 
-            if i < 49:
-                assert was_unlocked is False  # Not yet unlocked
-                assert user_achievement.current_progress == i + 1
-            else:
-                assert was_unlocked is True  # Unlocked on 50th win
-                assert user_achievement.current_progress == 50
-                assert user_achievement.is_unlocked is True
+            # Raggiunta la soglia: si sblocca.
+            mock_stats.return_value = {"won_matches": 50}
+            user_achievement, was_unlocked = (
+                AchievementService.check_and_award_achievement(
+                    user_id=player.id, achievement_slug="veteran_player"
+                )
+            )
+            assert was_unlocked is True
+            assert user_achievement.current_progress == 50
+            assert user_achievement.is_unlocked is True
 
     def test_achievement_unlock_awards_xp_bonus(self, db_session, isolated_players):
         """
@@ -121,19 +135,22 @@ class TestAchievementUnlock:
             difficulty=AchievementDifficulty.COMMON,
             requirements='{"type": "match_wins", "count": 1}',
             is_progressive=False,
-            xp_reward=100
+            xp_reward=100,
         )
         db_session.add(achievement)
         db_session.flush()
 
         # Mock requirements check
-        with patch('models.user.services.UserStatsService.get_user_stats') as mock_stats:
+        with patch(
+            "models.user.services.UserStatsService.get_user_stats"
+        ) as mock_stats:
             mock_stats.return_value = {"won_matches": 1}
 
             # Act
-            user_achievement, was_unlocked = AchievementService.check_and_award_achievement(
-                user_id=player.id,
-                achievement_slug="test_achievement"
+            user_achievement, was_unlocked = (
+                AchievementService.check_and_award_achievement(
+                    user_id=player.id, achievement_slug="test_achievement"
+                )
             )
 
         # Assert: XP was awarded
@@ -141,7 +158,9 @@ class TestAchievementUnlock:
         assert user_level is not None
         assert user_level.total_xp >= 100  # At least the achievement XP
 
-    def test_already_unlocked_achievement_returns_false(self, db_session, isolated_players):
+    def test_already_unlocked_achievement_returns_false(
+        self, db_session, isolated_players
+    ):
         """
         GIVEN an already unlocked achievement
         WHEN check_and_award is called again
@@ -158,7 +177,7 @@ class TestAchievementUnlock:
             difficulty=AchievementDifficulty.COMMON,
             requirements='{"type": "match_wins", "count": 1}',
             is_progressive=False,
-            xp_reward=50
+            xp_reward=50,
         )
         db_session.add(achievement)
         db_session.flush()
@@ -168,15 +187,14 @@ class TestAchievementUnlock:
             achievement_id=achievement.id,
             current_progress=0,
             is_unlocked=True,
-            unlocked_at=utc_now()
+            unlocked_at=utc_now(),
         )
         db_session.add(user_achievement)
         db_session.flush()
 
         # Act
         result, was_unlocked = AchievementService.check_and_award_achievement(
-            user_id=player.id,
-            achievement_slug="test_achievement"
+            user_id=player.id, achievement_slug="test_achievement"
         )
 
         # Assert
@@ -205,7 +223,7 @@ class TestAchievementProgress:
             difficulty=AchievementDifficulty.COMMON,
             requirements='{"type": "match_wins", "count": 1}',
             is_progressive=False,
-            xp_reward=50
+            xp_reward=50,
         )
         achievement2 = Achievement(
             slug="second",
@@ -215,7 +233,7 @@ class TestAchievementProgress:
             difficulty=AchievementDifficulty.UNCOMMON,
             requirements='{"type": "match_wins", "count": 50}',
             is_progressive=True,
-            xp_reward=250
+            xp_reward=250,
         )
         db_session.add_all([achievement1, achievement2])
         db_session.flush()
@@ -226,7 +244,7 @@ class TestAchievementProgress:
             achievement_id=achievement1.id,
             current_progress=0,
             is_unlocked=True,
-            unlocked_at=utc_now()
+            unlocked_at=utc_now(),
         )
         db_session.add(user_achievement1)
 
@@ -235,13 +253,18 @@ class TestAchievementProgress:
             user_id=player.id,
             achievement_id=achievement2.id,
             current_progress=25,
-            is_unlocked=False
+            is_unlocked=False,
         )
         db_session.add(user_achievement2)
         db_session.flush()
 
-        # Act
-        achievements = AchievementService.get_user_achievements(user_id=player.id)
+        # Act — il progresso è metric-driven: con 25 vittorie reali il secondo
+        # achievement (match_wins 50) è al 50%.
+        with patch(
+            "models.user.services.UserStatsService.get_user_stats"
+        ) as mock_stats:
+            mock_stats.return_value = {"won_matches": 25}
+            achievements = AchievementService.get_user_achievements(user_id=player.id)
 
         # Assert
         assert len(achievements) == 2
@@ -276,7 +299,7 @@ class TestAchievementProgress:
             difficulty=AchievementDifficulty.COMMON,
             requirements='{"type": "match_wins", "count": 1}',
             is_progressive=False,
-            xp_reward=50
+            xp_reward=50,
         )
         achievement2 = Achievement(
             slug="locked",
@@ -286,7 +309,7 @@ class TestAchievementProgress:
             difficulty=AchievementDifficulty.UNCOMMON,
             requirements='{"type": "match_wins", "count": 50}',
             is_progressive=True,
-            xp_reward=250
+            xp_reward=250,
         )
         db_session.add_all([achievement1, achievement2])
         db_session.flush()
@@ -296,7 +319,7 @@ class TestAchievementProgress:
             achievement_id=achievement1.id,
             current_progress=0,
             is_unlocked=True,
-            unlocked_at=utc_now()
+            unlocked_at=utc_now(),
         )
         db_session.add(user_achievement1)
         db_session.flush()
@@ -328,11 +351,15 @@ class TestAchievementStats:
                 slug=f"achievement_{i}",
                 name=f"Achievement {i}",
                 description="Test",
-                category=AchievementCategory.MATCH if i < 2 else AchievementCategory.TOURNAMENT,
+                category=(
+                    AchievementCategory.MATCH
+                    if i < 2
+                    else AchievementCategory.TOURNAMENT
+                ),
                 difficulty=AchievementDifficulty.COMMON,
                 requirements='{"type": "match_wins", "count": 1}',
                 is_progressive=False,
-                xp_reward=50
+                xp_reward=50,
             )
             for i in range(4)
         ]
@@ -345,14 +372,14 @@ class TestAchievementStats:
             achievement_id=achievements[0].id,
             current_progress=0,
             is_unlocked=True,
-            unlocked_at=utc_now()
+            unlocked_at=utc_now(),
         )
         user_achievement2 = UserAchievement(
             user_id=player.id,
             achievement_id=achievements[2].id,
             current_progress=0,
             is_unlocked=True,
-            unlocked_at=utc_now()
+            unlocked_at=utc_now(),
         )
         db_session.add_all([user_achievement1, user_achievement2])
         db_session.flush()
