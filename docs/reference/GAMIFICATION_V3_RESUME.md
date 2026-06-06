@@ -67,7 +67,8 @@ Questo è il punto d'ingresso rapido per riprendere. Per il dettaglio:
   byte-identici); cataloghi riallineati. **Nessun debito introdotto.**
 
 ## Da fare al DEPLOY (operativo, non codice)
-1. `python migrations/runner.py` (applica `20260605/06/07`).
+1. `python migrations/runner.py` (applica `20260605/06/07` + la nuova
+   `20260606_perfectionist_honest_description`).
 2. `python scripts/reconcile_achievements.py` (una volta, concede badge storici).
 
 ## Aperto / prossime fasi (NON ancora fatto)
@@ -84,15 +85,17 @@ Questo è il punto d'ingresso rapido per riprendere. Per il dettaglio:
   `routes/player/proposals.py` sono state rimosse. Restano aperte come *prodotto*:
   la deprecazione completa di `PlayerAvailability` (ancora usato da
   `ProposalService`) e l'eventuale promozione ai player (maturity gate ADR-028).
-- **Decisioni di prodotto aperte** (annotate in ADR-031):
-  - riconciliare la *celebrazione* level-up (LevelUnlock) con il *gating* reale
-    (FeatureConfig) se divergono;
-  - `perfectionist` conta solo drill pass/fail (i drill a punteggio non hanno
-    `max_score` nel modello).
-- **Nudge copy i18n** (minore, pre-esistente): le stringhe di `_NUDGE_COPY` in
-  `frontend_bridge.py` passano da `_(variabile)` → non estraibili staticamente da
-  pybabel, quindi restano IT anche in EN. Se servirà l'EN per i nudge: spostarle
-  in un'ancora di estrazione come fatto per le quest seed.
+- **Decisioni di prodotto aperte** (annotate in ADR-031): ~~CHIUSE~~
+  - celebrazione level-up vs gating: **reword onesto** — la toast ora dice
+    "%(n)d nuove ricompense di livello!" invece di "funzioni sbloccate" (i
+    LevelUnlock sono feedback/ricompense, non i gate reali FeatureConfig, con
+    vocabolari disgiunti by design). Nessun cambio al gating.
+  - `perfectionist`: descrizione allineata alla metrica onesta ("Supera 5 drill
+    pass/fail diversi") + migrazione `20260606_perfectionist_honest_description`.
+    I drill a punteggio restano esclusi (nessun max assoluto nel modello).
+- **Nudge copy i18n**: ~~FATTO~~ — aggiunta `_i18n_nudge_anchor()` in
+  `frontend_bridge.py` (stesso pattern delle quest seed); le 16 copy di
+  `_NUDGE_COPY` sono ora estratte e tradotte in EN (catalogo 100%).
 - **Item di design V3 mai iniziati** (fasi successive): onboarding obbligatorio +
   backfill, modello geografico per prossimità (merita ADR dedicato),
   segnale-domanda → director, leaderboard locale/contributo.
