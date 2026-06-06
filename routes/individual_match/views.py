@@ -50,55 +50,8 @@ def user_statistics():
             return redirect(url_for("individual_match.dashboard"))
 
 
-@individual_match_bp.route("/availability", methods=["GET", "POST"])
-@RoleRequirement.player_or_director_required
-def manage_availability():
-    """Manage player availability for match proposals."""
-    from models.location.models import BilliardHall
-
-    verified_venues = BilliardHall.query.filter_by(
-        is_active=True, verified=True
-    ).order_by(BilliardHall.name).all()
-
-    if request.method == "GET":
-        availability_data = IndividualMatchService.get_user_availability(
-            current_user.id
-        )
-        return render_template(
-            "individual_match/availability.html",
-            verified_venues=verified_venues,
-            **availability_data,
-        )
-
-    try:
-        data = request.get_json() if request.is_json else request.form
-
-        availability_data = data.get("availability", [])
-        if not isinstance(availability_data, list):
-            raise ValueError("Availability data must be a list")
-
-        IndividualMatchService.update_user_availability(
-            user_id=current_user.id, availability_data=availability_data
-        )
-
-        if request.is_json:
-            return jsonify(
-                {"success": True, "message": "Availability updated successfully"}
-            )
-        else:
-            flash("Availability updated successfully!", "success")
-            return redirect(url_for("individual_match.manage_availability"))
-
-    except ValueError as e:
-        error_msg = f"Error updating availability: {str(e)}"
-        if request.is_json:
-            return jsonify({"success": False, "error": error_msg}), 400
-        else:
-            flash(error_msg, "danger")
-            return render_template(
-                "individual_match/availability.html",
-                verified_venues=verified_venues,
-            )
+# Availability and player-discovery routes live in availability.py
+# (consolidated onto AvailabilityService — see ADR-032).
 
 
 # Admin routes

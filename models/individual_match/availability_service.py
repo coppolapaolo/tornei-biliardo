@@ -321,6 +321,38 @@ class AvailabilityService:
 
     @staticmethod
     @transactional(domain="individual_match")
+    def remove_player_availability(user_id: int, availability_id: int) -> bool:
+        """Delete a location-based availability record owned by the user.
+
+        Returns True if a record was deleted, False if not found or not owned
+        by the user (callers should treat False as a 404).
+        """
+        availability = PlayerAvailability.query.filter_by(
+            id=availability_id, user_id=user_id
+        ).first()
+        if availability is None:
+            return False
+        db.session.delete(availability)
+        return True
+
+    @staticmethod
+    @transactional(domain="individual_match")
+    def remove_venue_availability(user_id: int, availability_id: int) -> bool:
+        """Delete a venue-based availability record owned by the user.
+
+        Returns True if a record was deleted, False if not found or not owned
+        by the user (callers should treat False as a 404).
+        """
+        availability = UserLocationAvailability.query.filter_by(
+            id=availability_id, user_id=user_id
+        ).first()
+        if availability is None:
+            return False
+        db.session.delete(availability)
+        return True
+
+    @staticmethod
+    @transactional(domain="individual_match")
     def create_availability_based_match_request(
         requesting_user_id: int,
         target_user_id: int,
