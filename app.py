@@ -288,6 +288,13 @@ def create_app(config_name=None):
             created, skipped = seed_achievements(db.session)
             if created > 0:
                 app.logger.info(f"Gamification: seeded {created} achievements")
+            # Seed quest personali della settimana corrente (idempotente).
+            # L'avvio dell'app si ripete ~quotidianamente: ogni nuova settimana
+            # ISO ottiene così le proprie quest, senza scheduler.
+            from models.gamification.quest_seeds import seed_weekly_quests
+            quests_created = seed_weekly_quests(db.session)
+            if quests_created > 0:
+                app.logger.info(f"Gamification: seeded {quests_created} weekly quests")
 
     # Security headers
     @app.after_request
