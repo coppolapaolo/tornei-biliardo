@@ -309,7 +309,7 @@ PREDEFINED_ACHIEVEMENTS = [
     {
         "slug": "perfectionist",
         "name": "Perfezionista",
-        "description": "Ottieni perfect score su 5 drill diversi",
+        "description": "Supera 5 drill pass/fail diversi",
         "category": AchievementCategory.SKILL,
         "difficulty": AchievementDifficulty.UNCOMMON,
         "requirements": '{"type": "perfect_challenges", "count": 5}',
