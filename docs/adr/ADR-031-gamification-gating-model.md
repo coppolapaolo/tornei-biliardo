@@ -295,16 +295,17 @@ File coinvolti (riferimento, non ancora modificati):
   (`STREAK_LONGEST` non impostava né `score` né `calculated_at`: poiché
   `score` è `NOT NULL`, la classifica falliva del tutto al refresh; ora allineata
   agli altri `_calculate_*`).
-- **Achievement non ottenibili — set più ampio del previsto**: oltre ai 12
-  disattivati in Fase 1 (2 stub `win_streak`/`category_reached` → 4 badge + 8
-  progress-based), anche **`champion`** (`tournament_wins`) e **`podium_finish`**
-  (`tournament_podium`) sono di fatto **non ottenibili**. Sono `is_progressive=False`
-  e gli handler li chiamano senza `progress_increment`
-  (`event_handlers.py:400,412`), ma `_check_requirements` per quei due tipi ritorna
-  `False` quando `current_progress is None` (`achievement_service.py:227-239`).
-  **Non toccati in Fase 1** (l'handoff li classificava come "tournament wired") per
-  non far sparire dalla UI badge di punta ("vinci un torneo") senza decisione
-  esplicita → **Fase 2** (vedi `GAMIFICATION_V3_HANDOFF.md`).
+- **Achievement non ottenibili — RISOLTO in Fase 2 (re-engineering metric-driven)**:
+  la causa radice era `_check_requirements` con due meccanismi incoerenti
+  (contatore incrementale fragile vs query reali). Oltre ai 12 disattivati in
+  Fase 1, erano di fatto non ottenibili anche `champion`/`podium_finish`/
+  `tournament_dominator` e perfino `tournament_debut`/`tournament_regular`.
+  Reingegnerizzata l'idoneità su modello unico (`AchievementMetrics`, fonte di
+  verità per ogni metrica "conta N"); resi ottenibili e cablati champion/podium/
+  dominator (ledger XP), diverse_competitor/community_pillar (avversari unici) e
+  social_butterfly/popular_player (proposte). I 4 social riattivati con migrazione
+  `20260606`. Restano disattivati 8 senza sorgente dati (serie vittorie,
+  categoria giocatore, drill/strategie). Vedi `GAMIFICATION_V3_HANDOFF.md`.
 - **Quest**: registrazione progresso cablata end-to-end (event handlers →
   `record_activity_for_quests` → auto-join/incremento/XP/evento), MA **nessun
   seed** e `update_quest_statuses()` **mai invocato** (niente cron/route) → le

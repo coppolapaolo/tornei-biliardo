@@ -89,19 +89,32 @@ Sequenza eseguita: 0 → A → B → C, commit atomici; chiuso con `pyright` (0 
   `XP_RATES` come fallback) **vs B** (rimuovere editor) — APERTA.
 - **#3 dedup proposte**: sciogliere con cura il sistema Availability del file legacy.
 - **#6 `LEVEL_UNLOCKS`**: reinstradare notifica + hint su FeatureConfig, poi rimuovere.
-- **Cablaggio social achievements** (i 4 economici) + **seed quest** (feature).
-- **`champion` / `podium_finish` non ottenibili** (scoperto in Fase 1, *fuori
-  scope*): entrambi `is_progressive=False`, chiamati dagli handler senza
-  `progress_increment` (`event_handlers.py:400,412`), ma `_check_requirements`
-  per `tournament_wins`/`tournament_podium` ritorna `False` quando
-  `current_progress is None` (`achievement_service.py:235-239,227-233`). Quindi
-  "vinci un torneo" / "podio" non si sbloccano mai. **Non disattivati in Fase 1**
-  (l'handoff li dava per "tournament wired") per non far sparire badge di punta
-  senza una decisione. Decisione APERTA: **A** cablare il vero conteggio nel
-  ramo non-progressive (es. `tournament_wins` da `UserStatsService` / podi da
-  `Classification`) — *preferibile*, li rende ottenibili; **vs B** disattivarli
-  come gli altri 12. Vale anche la pena rivedere se `tournament_dominator`
-  (progressive, `progress_increment=1`) si sblocca davvero end-to-end.
+- ~~Cablaggio social achievements (i 4 economici)~~ **FATTO** (vedi sotto).
+- **seed quest** (feature) — ancora da fare.
+- ~~`champion` / `podium_finish` non ottenibili~~ **RISOLTO** (vedi sotto).
+
+### ✅ Achievement ottenibili — FATTO (re-engineering metric-driven)
+Scelta utente: blocco "Achievement ottenibili" + opzione **A** (cablare). Invece
+di patchare i singoli rami, è stata reingegnerizzata l'idoneità su un **modello
+unico** (commit `refactor(gamification): idoneità achievement metric-driven` +
+`feat(gamification): rendi ottenibili i 4 social/avversari`):
+
+- nuovo **`AchievementMetrics`**: ogni achievement "conta N" deriva il valore
+  reale dalla fonte di verità (won_matches, iscrizioni, **ledger XP** per i
+  piazzamenti gara, avversari unici, proposte create/accettate). Idempotente,
+  auto-correttivo, niente backfill. `current_progress` diventa solo display.
+- `_check_requirements` semplificato (rimosso `current_progress`, ~145 righe
+  if/elif collassate); `check_and_award` senza `progress_increment`.
+- Resi ottenibili: **champion, podium_finish, tournament_dominator** (dal ledger
+  XP), **diverse_competitor, community_pillar** (avversari unici, via match
+  handler), **social_butterfly, popular_player** (proposte, via `proposal_service`
+  con rivalutazione cross-dominio a errori isolati). Riattivati i 4 social
+  (`is_active=1`) con migrazione idempotente `20260606` (netto disattivato 8).
+  *Bonus*: il refactor ha sanato anche `tournament_debut`/`tournament_regular`,
+  anch'essi rotti (chiave stats inesistente).
+- Restano disattivati 8 (no sorgente dati): hot_streak, unstoppable,
+  category_climber, elite_player, strategy_explorer, challenge_master,
+  perfectionist, drill_addict.
 
 Tutto resta **director-only** (maturity-gate ADR-028) finché non validato.
 
