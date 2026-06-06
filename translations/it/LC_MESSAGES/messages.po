@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-06 13:23+0000\n"
+"POT-Creation-Date: 2026-06-06 14:19+0000\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -218,14 +218,14 @@ msgstr ""
 
 #: models/individual_match/match_lifecycle_service.py:185
 #: models/individual_match/proposal_service.py:227
-#: models/individual_match/proposal_service.py:550
-#: models/individual_match/proposal_service.py:591 templates/index.html:112
+#: models/individual_match/proposal_service.py:554
+#: models/individual_match/proposal_service.py:595 templates/index.html:112
 #: templates/public/garas_list.html:43
 msgid "Visualizza"
 msgstr ""
 
 #: models/individual_match/proposal_service.py:192
-#: models/individual_match/proposal_service.py:469
+#: models/individual_match/proposal_service.py:473
 msgid "Un giocatore"
 msgstr ""
 
@@ -242,30 +242,30 @@ msgstr ""
 msgid "Giocatore già invitato a questa proposta"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:464
+#: models/individual_match/proposal_service.py:468
 msgid "Proposta già accettata"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:475
+#: models/individual_match/proposal_service.py:479
 msgid "Proposta accettata!"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:477
+#: models/individual_match/proposal_service.py:481
 #, python-format
 msgid "%(player)s ha accettato la tua proposta di match%(location)s"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:483
+#: models/individual_match/proposal_service.py:487
 msgid "Vai al match"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:543
-#: models/individual_match/proposal_service.py:584
+#: models/individual_match/proposal_service.py:547
+#: models/individual_match/proposal_service.py:588
 msgid "Proposta scaduta"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:545
-#: models/individual_match/proposal_service.py:586
+#: models/individual_match/proposal_service.py:549
+#: models/individual_match/proposal_service.py:590
 #, python-format
 msgid "La tua proposta di match%(location)s è scaduta senza accettazioni."
 msgstr ""
@@ -825,58 +825,48 @@ msgstr ""
 msgid "Feature creata con successo"
 msgstr ""
 
-#: routes/individual_match/availability.py:85
-msgid "La località è obbligatoria"
-msgstr ""
-
-#: routes/individual_match/availability.py:106
-#: routes/individual_match/availability.py:153
-#, python-format
-msgid "Disponibilità aggiornata per %(loc)s"
-msgstr ""
-
-#: routes/individual_match/availability.py:109
-#, python-format
-msgid "Notificati %(n)s giocatori della tua disponibilità"
-msgstr ""
-
-#: routes/individual_match/availability.py:135
+#: routes/individual_match/availability.py:88
 msgid "Devi selezionare una sala"
 msgstr ""
 
-#: routes/individual_match/availability.py:148
-#: routes/individual_match/availability.py:198
+#: routes/individual_match/availability.py:101
+#: routes/individual_match/availability.py:132
 #, python-format
 msgid "Sala #%(id)s"
 msgstr ""
 
-#: routes/individual_match/availability.py:235
+#: routes/individual_match/availability.py:106
+#, python-format
+msgid "Disponibilità aggiornata per %(loc)s"
+msgstr ""
+
+#: routes/individual_match/availability.py:168
 msgid "La località è obbligatoria per richiedere un match"
 msgstr ""
 
-#: routes/individual_match/availability.py:247
+#: routes/individual_match/availability.py:180
 msgid "Formato data/ora non valido"
 msgstr ""
 
-#: routes/individual_match/availability.py:265
+#: routes/individual_match/availability.py:198
 #, python-format
 msgid "Utente #%(id)s"
 msgstr ""
 
-#: routes/individual_match/availability.py:270
+#: routes/individual_match/availability.py:203
 #, python-format
 msgid "Richiesta di match inviata a %(name)s"
 msgstr ""
 
-#: routes/individual_match/availability.py:291
+#: routes/individual_match/availability.py:224
 msgid "Record non trovato"
 msgstr ""
 
-#: routes/individual_match/availability.py:292
+#: routes/individual_match/availability.py:225
 msgid "Disponibilità non trovata"
 msgstr ""
 
-#: routes/individual_match/availability.py:297
+#: routes/individual_match/availability.py:230
 msgid "Disponibilità rimossa"
 msgstr ""
 
@@ -2969,7 +2959,6 @@ msgstr ""
 
 #: templates/components/_directors_management.html:29
 #: templates/individual_match/availability.html:84
-#: templates/individual_match/availability.html:104
 msgid "Rimuovi"
 msgstr ""
 
@@ -3373,7 +3362,7 @@ msgstr ""
 
 #: templates/components/_history_filters.html:36
 #: templates/individual_match/availability.html:75
-#: templates/individual_match/availability.html:122
+#: templates/individual_match/availability.html:102
 #: templates/individual_match/discover_players.html:24
 msgid "Sala"
 msgstr ""
@@ -3419,7 +3408,7 @@ msgid "Campionato"
 msgstr ""
 
 #: templates/components/_history_filters.html:144
-#: templates/individual_match/discover_players.html:37
+#: templates/individual_match/discover_players.html:33
 #: templates/public/campionatos_list.html:28
 msgid "Filtra"
 msgstr ""
@@ -5767,7 +5756,7 @@ msgid "Transazioni Recenti"
 msgstr ""
 
 #: templates/gamification/admin/xp_management.html:83
-#: templates/individual_match/discover_players.html:76
+#: templates/individual_match/discover_players.html:72
 #: templates/public/campionato_detail.html:98
 #: templates/public/garas_list.html:11
 msgid "Data"
@@ -5868,73 +5857,39 @@ msgstr ""
 
 #: templates/individual_match/availability.html:67
 msgid ""
-"Non hai ancora impostato nessuna disponibilità. Aggiungi una sala o una "
-"località qui sotto!"
+"Non hai ancora impostato nessuna disponibilità. Aggiungi una sala qui "
+"sotto!"
 msgstr ""
 
-#: templates/individual_match/availability.html:95
-#: templates/individual_match/discover_players.html:33
-msgid "Località"
-msgstr ""
-
-#: templates/individual_match/availability.html:116
+#: templates/individual_match/availability.html:96
 msgid "Aggiungi una sala"
 msgstr ""
 
-#: templates/individual_match/availability.html:124
+#: templates/individual_match/availability.html:104
 msgid "Seleziona una sala…"
 msgstr ""
 
-#: templates/individual_match/availability.html:132
+#: templates/individual_match/availability.html:112
 msgid "Aggiungi sala"
 msgstr ""
 
-#: templates/individual_match/availability.html:141
-msgid "Aggiungi una località"
-msgstr ""
-
-#: templates/individual_match/availability.html:147
-#: templates/individual_match/create_proposal.html:65
-#: templates/individual_match/match_detail.html:114
-#: templates/player/playoff_invitation.html:24
-#: templates/public/garas_list.html:12
-msgid "Luogo"
-msgstr ""
-
-#: templates/individual_match/availability.html:149
-#: templates/individual_match/create_proposal.html:67
-msgid "Es: Bar Sport, Sala Biliardi Centro"
-msgstr ""
-
-#: templates/individual_match/availability.html:156
-msgid "Seleziona una sala esistente o scrivine una nuova"
-msgstr ""
-
-#: templates/individual_match/availability.html:162
-msgid "Avvisa i giocatori che hanno già giocato qui"
-msgstr ""
-
-#: templates/individual_match/availability.html:166
-msgid "Aggiungi località"
-msgstr ""
-
-#: templates/individual_match/availability.html:177
+#: templates/individual_match/availability.html:123
 msgid "Come Funziona?"
 msgstr ""
 
-#: templates/individual_match/availability.html:181
-msgid "Aggiungi le sale o le località dove giochi abitualmente"
+#: templates/individual_match/availability.html:127
+msgid "Aggiungi le sale dove giochi abitualmente"
 msgstr ""
 
-#: templates/individual_match/availability.html:182
+#: templates/individual_match/availability.html:128
 msgid "Indica i tuoi giorni e orari preferiti"
 msgstr ""
 
-#: templates/individual_match/availability.html:183
+#: templates/individual_match/availability.html:129
 msgid "Altri giocatori vedranno le tue disponibilità"
 msgstr ""
 
-#: templates/individual_match/availability.html:184
+#: templates/individual_match/availability.html:130
 msgid "Riceverai proposte di match nelle tue zone"
 msgstr ""
 
@@ -5954,6 +5909,17 @@ msgstr ""
 msgid ""
 "Modifica i parametri se desiderato, poi invia la\n"
 "                                            proposta"
+msgstr ""
+
+#: templates/individual_match/create_proposal.html:65
+#: templates/individual_match/match_detail.html:114
+#: templates/player/playoff_invitation.html:24
+#: templates/public/garas_list.html:12
+msgid "Luogo"
+msgstr ""
+
+#: templates/individual_match/create_proposal.html:67
+msgid "Es: Bar Sport, Sala Biliardi Centro"
 msgstr ""
 
 #: templates/individual_match/create_proposal.html:117
@@ -6091,44 +6057,38 @@ msgid "Trova giocatori disponibili"
 msgstr ""
 
 #: templates/individual_match/discover_players.html:18
-msgid ""
-"Scopri chi è disponibile nelle sale e nelle località, e invia una "
-"richiesta di match"
+msgid "Scopri chi è disponibile nelle sale e invia una richiesta di match"
 msgstr ""
 
 #: templates/individual_match/discover_players.html:26
 msgid "Tutte le sale"
 msgstr ""
 
-#: templates/individual_match/discover_players.html:34
-msgid "Es: Bar Sport"
-msgstr ""
-
-#: templates/individual_match/discover_players.html:46
+#: templates/individual_match/discover_players.html:42
 msgid "Nessun giocatore disponibile trovato. Prova a cambiare i filtri."
 msgstr ""
 
-#: templates/individual_match/discover_players.html:55
+#: templates/individual_match/discover_players.html:51
 msgid "giocatori"
 msgstr ""
 
-#: templates/individual_match/discover_players.html:65
+#: templates/individual_match/discover_players.html:61
 msgid "Richiedi match"
 msgstr ""
 
-#: templates/individual_match/discover_players.html:80
+#: templates/individual_match/discover_players.html:76
 msgid "Ora"
 msgstr ""
 
-#: templates/individual_match/discover_players.html:84
+#: templates/individual_match/discover_players.html:80
 msgid "Messaggio"
 msgstr ""
 
-#: templates/individual_match/discover_players.html:85
+#: templates/individual_match/discover_players.html:81
 msgid "Facoltativo"
 msgstr ""
 
-#: templates/individual_match/discover_players.html:89
+#: templates/individual_match/discover_players.html:85
 msgid "Invia richiesta"
 msgstr ""
 
@@ -7084,5 +7044,44 @@ msgstr ""
 #~ msgstr ""
 
 #~ msgid "Hai accumulato %(xp)d XP totali — %(n)d nuove funzioni sbloccate!"
+#~ msgstr ""
+
+#~ msgid "La località è obbligatoria"
+#~ msgstr ""
+
+#~ msgid "Notificati %(n)s giocatori della tua disponibilità"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Non hai ancora impostato nessuna "
+#~ "disponibilità. Aggiungi una sala o una"
+#~ " località qui sotto!"
+#~ msgstr ""
+
+#~ msgid "Località"
+#~ msgstr ""
+
+#~ msgid "Aggiungi una località"
+#~ msgstr ""
+
+#~ msgid "Seleziona una sala esistente o scrivine una nuova"
+#~ msgstr ""
+
+#~ msgid "Avvisa i giocatori che hanno già giocato qui"
+#~ msgstr ""
+
+#~ msgid "Aggiungi località"
+#~ msgstr ""
+
+#~ msgid "Aggiungi le sale o le località dove giochi abitualmente"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Scopri chi è disponibile nelle sale "
+#~ "e nelle località, e invia una "
+#~ "richiesta di match"
+#~ msgstr ""
+
+#~ msgid "Es: Bar Sport"
 #~ msgstr ""
 

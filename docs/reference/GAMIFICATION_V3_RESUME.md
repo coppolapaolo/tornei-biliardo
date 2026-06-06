@@ -67,8 +67,12 @@ Questo è il punto d'ingresso rapido per riprendere. Per il dettaglio:
   byte-identici); cataloghi riallineati. **Nessun debito introdotto.**
 
 ## Da fare al DEPLOY (operativo, non codice)
-1. `python migrations/runner.py` (applica `20260605/06/07` + la nuova
-   `20260606_perfectionist_honest_description`).
+1. `python migrations/runner.py` (applica `20260605/06/07`,
+   `20260606_perfectionist_honest_description` e
+   `20260606_drop_player_availability` — quest'ultima migra le disponibilità
+   "località" testo-libero su sala dove il nome combacia e poi droppa la tabella
+   `player_availability`; **perdita accettata** per le località non censite,
+   vedi ADR-033).
 2. `python scripts/reconcile_achievements.py` (una volta, concede badge storici).
 
 ## Aperto / prossime fasi (NON ancora fatto)
@@ -79,12 +83,15 @@ Questo è il punto d'ingresso rapido per riprendere. Per il dettaglio:
   in prod (voluto in beta). Promuovere ai player a blocchi (`utils/feature_flags.py`
   + `feature_visible` nei template) quando ogni area è validata. **Non farlo senza
   via esplicito dello stakeholder.**
-- **Migrazione Availability**: ~~FATTA~~ (ADR-032). La disponibilità è unificata
-  sul blueprint `individual_match` con `AvailabilityService` come unica fonte di
-  verità (località + sala + discovery); le 5 route legacy e
-  `routes/player/proposals.py` sono state rimosse. Restano aperte come *prodotto*:
-  la deprecazione completa di `PlayerAvailability` (ancora usato da
-  `ProposalService`) e l'eventuale promozione ai player (maturity gate ADR-028).
+- **Migrazione Availability**: ~~FATTA~~ (ADR-032 + ADR-033). La disponibilità è
+  unificata sul blueprint `individual_match` con `AvailabilityService` come unica
+  fonte di verità; le 5 route legacy e `routes/player/proposals.py` rimosse.
+  **ADR-033 (FATTO)**: `PlayerAvailability` (località testo-libero) **rimosso del
+  tutto** — disponibilità ora solo per sala (`UserLocationAvailability`/FK).
+  Eligibility proposte aperte e discovery passate a sala + storico giocato;
+  migrazione dati + `DROP TABLE`; UI località rimossa; admin overview → "Sale
+  attive". Resta aperta solo l'eventuale promozione ai player (maturity gate
+  ADR-028).
 - **Decisioni di prodotto aperte** (annotate in ADR-031): ~~CHIUSE~~
   - celebrazione level-up vs gating: **reword onesto** — la toast ora dice
     "%(n)d nuove ricompense di livello!" invece di "funzioni sbloccate" (i

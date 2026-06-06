@@ -38,7 +38,6 @@ from models.individual_match.models import (
     ProposalInvitation,
     IndividualMatch,
     IndividualRack,
-    PlayerAvailability,
     ProposalType,
     ProposalStatus,
     MatchStatus,

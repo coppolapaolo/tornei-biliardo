@@ -17,11 +17,11 @@ from .models import (
     MatchProposal,
     ProposalInvitation,
     IndividualMatch,
-    PlayerAvailability,
     ProposalType,
     ProposalStatus,
     InvitationStatus,
 )
+from ..location.models import UserLocationAvailability
 
 
 def _reconcile_user_achievements(user_id: int) -> None:
@@ -202,13 +202,13 @@ class ProposalService:
                 )
                 eligible_user_ids = [p["user_id"] for p in venue_players]
             elif location:
-                # Location-based: find players available at this location string
-                location_players = (
-                    AvailabilityService.get_available_players_at_location(
+                # Free-text location (no venue FK): notify players who have
+                # already played there (ADR-033 — no more location availability).
+                eligible_user_ids = (
+                    AvailabilityService.get_players_who_played_at_location(
                         location=location, exclude_user_id=proposer_id
                     )
                 )
-                eligible_user_ids = [p["user_id"] for p in location_players]
 
             if eligible_user_ids:
                 scheduled_str = scheduled_at.strftime("%d/%m/%Y alle %H:%M")
@@ -405,29 +405,33 @@ class ProposalService:
             .all()
         )
 
-        # Filter open proposals by user's eligible locations
-        user_locations = {
-            av.location
-            for av in PlayerAvailability.query.filter_by(
+        # Filter open proposals by the user's eligible venues/locations.
+        # Eligibility (ADR-033): venues the user is available at, plus the
+        # venues/locations where the user has already played.
+        eligible_venue_ids = {
+            av.billiard_hall_id
+            for av in UserLocationAvailability.query.filter_by(
                 user_id=user_id, is_available=True
             ).all()
         }
 
-        played_locations = {
-            match.location
-            for match in IndividualMatch.query.filter(
-                db.or_(
-                    IndividualMatch.player1_id == user_id,
-                    IndividualMatch.player2_id == user_id,
-                )
-            ).all()
+        played_matches = IndividualMatch.query.filter(
+            db.or_(
+                IndividualMatch.player1_id == user_id,
+                IndividualMatch.player2_id == user_id,
+            )
+        ).all()
+        eligible_locations = {m.location for m in played_matches if m.location}
+        eligible_venue_ids |= {
+            m.billiard_hall_id for m in played_matches if m.billiard_hall_id
         }
 
-        eligible_locations = user_locations.union(played_locations)
-
-        if eligible_locations:
+        if eligible_venue_ids or eligible_locations:
             open_proposals = [
-                p for p in open_proposals if p.location in eligible_locations
+                p
+                for p in open_proposals
+                if (p.billiard_hall_id and p.billiard_hall_id in eligible_venue_ids)
+                or (p.location and p.location in eligible_locations)
             ]
 
         return {

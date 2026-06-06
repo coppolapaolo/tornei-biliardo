@@ -6,7 +6,7 @@ Player-to-player casual match organization system outside formal tournaments.
 
 **Key Features:**
 - Match Proposals: Direct invitations or open community requests
-- Player Availability: Location-based player discovery
+- Player Availability: venue-based player discovery (`UserLocationAvailability`, ADR-033)
 - Multi-Set Support: Single-set and multi-set configurations
 - Match History: Track casual game statistics
 - Bilateral Confirmation: VALIDATED status after both players confirm result
@@ -22,7 +22,7 @@ Player-to-player casual match organization system outside formal tournaments.
 ```python
 from models.individual_match.models import (
     MatchProposal, ProposalInvitation, IndividualMatch, IndividualRack,
-    PlayerAvailability, ProposalType, ProposalStatus, InvitationStatus,
+    ProposalType, ProposalStatus, InvitationStatus,
 )
 from models.individual_match.services import IndividualMatchService
 from models.individual_match.availability_service import AvailabilityService

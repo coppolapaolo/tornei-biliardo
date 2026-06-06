@@ -17,7 +17,6 @@ from flask_login import current_user
 
 from models.base import db
 from models.individual_match.availability_service import AvailabilityService
-from models.individual_match.models import PlayerAvailability
 from models.location.models import BilliardHall, UserLocationAvailability
 from models.user.models import User
 from models.user.permissions import RoleRequirement
@@ -53,7 +52,7 @@ def _form_day_ints(data, key: str) -> list[int]:
 @individual_match_bp.route("/availability")
 @RoleRequirement.player_or_director_required
 def manage_availability():
-    """Manage player availability (location strings + billiard-hall venues)."""
+    """Manage player availability (billiard-hall venues, ADR-033)."""
     preferences = AvailabilityService.get_user_availability_preferences(current_user.id)
     active_venues = (
         BilliardHall.query.filter_by(is_active=True).order_by(BilliardHall.name).all()
@@ -61,55 +60,9 @@ def manage_availability():
 
     return render_template(
         "individual_match/availability.html",
-        locations=preferences["locations"],
         venues=preferences["venues"],
         active_venues=active_venues,
     )
-
-
-@individual_match_bp.route("/availability/location", methods=["POST"])
-@RoleRequirement.player_or_director_required
-def set_location_availability():
-    """Set or update availability for a free-text location."""
-    data = request.get_json() if request.is_json else request.form
-
-    location = (data.get("location") or "").strip()
-    # Unchecked HTML checkboxes are omitted from the POST body, so a missing
-    # value means "not available" (matches the form's switch semantics).
-    is_available = _form_bool(data, "is_available", default=False)
-    preferred_times = (data.get("preferred_times") or "").strip()
-    day_ints = _form_day_ints(data, "preferred_days")
-
-    if not location:
-        return _availability_error(
-            _("La località è obbligatoria"),
-            redirect_endpoint="individual_match.manage_availability",
-        )
-
-    AvailabilityService.set_player_availability(
-        user_id=current_user.id,
-        location=location,
-        is_available=is_available,
-        preferred_days=day_ints or None,
-        preferred_times=preferred_times or None,
-    )
-
-    notified = 0
-    if is_available and _form_bool(data, "notify_players"):
-        notified = AvailabilityService.notify_players_of_availability(
-            user_id=current_user.id, location=location
-        )
-
-    if _wants_json():
-        return ajax_success(data={"notified": notified})
-
-    flash(_("Disponibilità aggiornata per %(loc)s", loc=location), "success")
-    if notified:
-        flash(
-            _("Notificati %(n)s giocatori della tua disponibilità", n=notified),
-            "info",
-        )
-    return redirect(url_for("individual_match.manage_availability"))
 
 
 @individual_match_bp.route("/availability/venue", methods=["POST"])
@@ -155,18 +108,6 @@ def set_venue_availability():
 
 
 @individual_match_bp.route(
-    "/availability/location/<int:availability_id>/remove", methods=["POST"]
-)
-@RoleRequirement.player_or_director_required
-def remove_location_availability(availability_id):
-    """Delete a location-based availability record owned by the current user."""
-    removed = AvailabilityService.remove_player_availability(
-        user_id=current_user.id, availability_id=availability_id
-    )
-    return _availability_remove_response(removed)
-
-
-@individual_match_bp.route(
     "/availability/venue/<int:availability_id>/remove", methods=["POST"]
 )
 @RoleRequirement.player_or_director_required
@@ -181,19 +122,12 @@ def remove_venue_availability(availability_id):
 @individual_match_bp.route("/availability/discover")
 @RoleRequirement.player_or_director_required
 def discover_players():
-    """Discover players available at locations and venues."""
-    location_filter = request.args.get("location", "").strip()
+    """Discover players available at venues (ADR-033: venue-only)."""
     venue_filter = request.args.get("venue_id", type=int)
 
     available_players: dict = {}
 
-    if location_filter:
-        available_players[location_filter] = (
-            AvailabilityService.get_available_players_at_location(
-                location=location_filter, exclude_user_id=current_user.id
-            )
-        )
-    elif venue_filter:
+    if venue_filter:
         venue = db.session.get(BilliardHall, venue_filter)
         venue_name = venue.name if venue else _("Sala #%(id)s", id=venue_filter)
         available_players[venue_name] = (
@@ -212,7 +146,6 @@ def discover_players():
         "individual_match/discover_players.html",
         available_players=available_players,
         active_venues=active_venues,
-        location_filter=location_filter,
         venue_filter=venue_filter,
     )
 
@@ -299,24 +232,8 @@ def _availability_remove_response(removed: bool):
 
 
 def _discover_everywhere() -> dict:
-    """Build the discovery map across every location and venue with players."""
+    """Build the discovery map across every venue with available players."""
     available_players: dict = {}
-
-    locations = (
-        db.session.query(PlayerAvailability.location)
-        .filter(
-            PlayerAvailability.is_available.is_(True),
-            PlayerAvailability.user_id != current_user.id,
-        )
-        .distinct()
-        .all()
-    )
-    for (location,) in locations:
-        players = AvailabilityService.get_available_players_at_location(
-            location=location, exclude_user_id=current_user.id
-        )
-        if players:
-            available_players[location] = players
 
     venues = (
         db.session.query(UserLocationAvailability.billiard_hall_id, BilliardHall.name)

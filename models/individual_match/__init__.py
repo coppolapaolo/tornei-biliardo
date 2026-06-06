@@ -10,7 +10,6 @@ from .models import (
     ProposalInvitation,
     IndividualMatch,
     IndividualRack,
-    PlayerAvailability,
     ProposalType,
     ProposalStatus,
     MatchStatus,
@@ -30,7 +29,6 @@ __all__ = [
     "ProposalInvitation",
     "IndividualMatch",
     "IndividualRack",
-    "PlayerAvailability",
     # Enums
     "ProposalType",
     "ProposalStatus",
