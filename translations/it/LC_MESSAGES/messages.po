@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-06 16:41+0000\n"
+"POT-Creation-Date: 2026-06-06 20:35+0000\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -729,12 +729,12 @@ msgstr ""
 msgid "Configurazione Streak"
 msgstr ""
 
-#: routes/gamification/dashboard.py:55 routes/gamification/dashboard.py:147
-#: routes/gamification/dashboard.py:257 routes/gamification/dashboard.py:297
+#: routes/gamification/dashboard.py:57 routes/gamification/dashboard.py:148
+#: routes/gamification/dashboard.py:241 routes/gamification/dashboard.py:281
 msgid "Gli amministratori non partecipano alla gamification."
 msgstr ""
 
-#: routes/gamification/dashboard.py:93
+#: routes/gamification/dashboard.py:94
 msgid "Dashboard Gamification"
 msgstr ""
 
@@ -742,16 +742,16 @@ msgstr ""
 msgid "I Tuoi Achievement"
 msgstr ""
 
-#: routes/gamification/dashboard.py:235
+#: routes/gamification/dashboard.py:219
 #: templates/components/_player_campionato_classifications.html:6
 msgid "Classifiche"
 msgstr ""
 
-#: routes/gamification/dashboard.py:275
+#: routes/gamification/dashboard.py:259
 msgid "Quest Settimanali/Mensili"
 msgstr ""
 
-#: routes/gamification/dashboard.py:312
+#: routes/gamification/dashboard.py:296
 msgid "Le Tue Streak"
 msgstr ""
 
@@ -808,7 +808,6 @@ msgstr ""
 #: templates/gamification/admin/level_config.html:142
 #: templates/gamification/admin/level_config.html:193
 #: templates/gamification/dashboard.html:24
-#: templates/gamification/leaderboards.html:27
 msgid "Livello"
 msgstr ""
 
@@ -1268,7 +1267,7 @@ msgstr ""
 #: templates/admin/campionato_detail.html:201
 #: templates/components/_detailed_classification.html:23
 #: templates/components/_ssr_section.html:28
-#: templates/gamification/leaderboards.html:122 templates/gara_detail.html:252
+#: templates/gamification/leaderboards.html:43 templates/gara_detail.html:252
 msgid "Giocatore"
 msgstr ""
 
@@ -2829,7 +2828,7 @@ msgstr ""
 #: templates/admin/kpi.html:660 templates/gamification/admin/dashboard.html:136
 #: templates/gamification/admin/streaks.html:41
 #: templates/gamification/admin/streaks.html:122
-#: templates/gamification/leaderboards.html:154
+#: templates/gamification/leaderboards.html:73
 msgid "Nessun dato disponibile"
 msgstr ""
 
@@ -4808,33 +4807,60 @@ msgid "Hai raggiunto il livello "
 msgstr ""
 
 #: templates/gamification/leaderboards.html:12
-msgid "I campioni della community"
+msgid "La tua zona e chi fa crescere la community"
 msgstr ""
 
 #: templates/gamification/leaderboards.html:21
-msgid "XP Totali"
+msgid "La tua zona"
 msgstr ""
 
-#: templates/gamification/admin/dashboard.html:74
-#: templates/gamification/leaderboards.html:33
-#: templates/gamification/streaks.html:12
-msgid "Streak"
+#: templates/gamification/leaderboards.html:27
+#: templates/gamification/leaderboards.html:116
+msgid "Contributo"
 msgstr ""
 
-#: templates/gamification/leaderboards.html:40
-msgid "Elo Rating"
-msgstr ""
-
-#: templates/gamification/leaderboards.html:115
-msgid "La rincorsa"
-msgstr ""
-
-#: templates/gamification/leaderboards.html:136
+#: templates/gamification/leaderboards.html:59
 msgid "Tu"
 msgstr ""
 
-#: templates/gamification/leaderboards.html:155
-msgid "Gioca qualche partita per apparire qui!"
+#: templates/gamification/leaderboards.html:84
+msgid "Accedi per vedere la classifica della tua zona"
+msgstr ""
+
+#: templates/gamification/leaderboards.html:89
+msgid "Imposta la tua città per vedere la classifica locale"
+msgstr ""
+
+#: templates/gamification/leaderboards.html:91
+msgid "Vai al profilo"
+msgstr ""
+
+#: templates/gamification/leaderboards.html:98
+#, python-format
+msgid "Zona: %(city)s"
+msgstr ""
+
+#: templates/gamification/leaderboards.html:100
+#, python-format
+msgid "Sei %(rank)s°"
+msgstr ""
+
+#: templates/gamification/admin/achievements.html:25
+#: templates/gamification/admin/xp_management.html:86
+#: templates/gamification/leaderboards.html:104
+msgid "XP"
+msgstr ""
+
+#: templates/gamification/leaderboards.html:106
+msgid "Gioca qualche partita per apparire nella classifica della tua zona!"
+msgstr ""
+
+#: templates/gamification/leaderboards.html:114
+msgid "Drill creati per altri, gare organizzate e proposte accettate."
+msgstr ""
+
+#: templates/gamification/leaderboards.html:118
+msgid "Crea drill, organizza gare o proponi match per far crescere la community!"
 msgstr ""
 
 #: templates/gamification/admin/dashboard.html:56
@@ -4888,6 +4914,11 @@ msgstr ""
 
 #: templates/gamification/quests.html:153
 msgid "XP Guadagnati"
+msgstr ""
+
+#: templates/gamification/admin/dashboard.html:74
+#: templates/gamification/streaks.html:12
+msgid "Streak"
 msgstr ""
 
 #: templates/gamification/streaks.html:16
@@ -5113,11 +5144,6 @@ msgstr ""
 #: templates/gamification/admin/feature_detail.html:33
 #: templates/gamification/admin/features.html:24
 msgid "Codice"
-msgstr ""
-
-#: templates/gamification/admin/achievements.html:25
-#: templates/gamification/admin/xp_management.html:86
-msgid "XP"
 msgstr ""
 
 #: templates/gamification/admin/achievements.html:26
@@ -7245,5 +7271,20 @@ msgstr ""
 #~ msgstr ""
 
 #~ msgid "Nessun giocatore disponibile trovato. Prova a cambiare i filtri."
+#~ msgstr ""
+
+#~ msgid "I campioni della community"
+#~ msgstr ""
+
+#~ msgid "XP Totali"
+#~ msgstr ""
+
+#~ msgid "Elo Rating"
+#~ msgstr ""
+
+#~ msgid "La rincorsa"
+#~ msgstr ""
+
+#~ msgid "Gioca qualche partita per apparire qui!"
 #~ msgstr ""
 

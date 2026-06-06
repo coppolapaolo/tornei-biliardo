@@ -250,8 +250,25 @@ open items; maturity-gated) + ADR + implementazione.
   segnale-admin per zone senza director, auto-refresh/prompt pre-scadenza,
   tarature (soglia/raggio/cooldown/scadenza).
 
+### ADR-037 — Leaderboard locale + contributo (FATTO, v1)
+Intervista (3 scelte: zona per home_city+raggio città; contributo composito;
+ritiro board XP globale) + ADR + implementazione (§11-bis).
+- `CommunityLeaderboardService`: `get_local_leaderboard` (giocatori della
+  `home_city` + città vicine via centroide ADR-034, ranking per XP totale —
+  *vincibile*); `compute_contribution`/`get_contribution_leaderboard`
+  (composito = drill-completati-da-altri + gare organizzate + proposte aperte
+  accettate). Calcolo **on-demand** (nessuna migrazione).
+- Route `gamification.leaderboards` riorientata → tab **Zona** + **Contributo**;
+  board XP globale ritirato dalla UI (`LeaderboardService` resta nel codice, non
+  più default). Loop quotidiano = progresso auto-referenziale (invariato).
+  Allowlist invariata (`{director}`, maturity-gated).
+- Test: 6 unit + 2 integrazione. **Open items**: leghe a coorti, tarature
+  (pesi/raggio/periodicità), performance (materializzazione se cresce),
+  gare_organized via DirectorAssignment (oggi solo `Gara.director_id`).
+
 ### Aperto / prossimi (design già in V3, codice non iniziato)
-- **Leaderboard locale/contributo**.
+- *(nessuno tra gli item principali §11-bis/§10-ter/§7 — restano gli open items
+  per-ADR e il maturity-gate ADR-028 di rollout ai player).*
 - **Leaderboard locale/contributo**.
 - **Maturity-gate ADR-028**: promozione ai player a blocchi (gamification +
   availability/discovery) quando validati — *non senza via dello stakeholder*.

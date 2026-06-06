@@ -9,111 +9,32 @@
             <h1 class="display-4 fw-bold text-gradient">
                 <i class="fas fa-trophy text-warning me-3"></i>{{ page_title }}
             </h1>
-            <p class="lead text-muted">{{ _('I campioni della community') }}</p>
+            <p class="lead text-muted">{{ _('La tua zona e chi fa crescere la community') }}</p>
         </div>
     </div>
 
     <!-- Navigation Tabs -->
     <ul class="nav nav-pills justify-content-center mb-5" id="leaderboardTabs" role="tablist">
         <li class="nav-item mx-2" role="presentation">
-            <button class="nav-link rounded-pill px-4 py-2 {% if active_tab == 'xp' %}active{% endif %}" id="xp-tab"
-                data-bs-toggle="tab" data-bs-target="#xp" type="button" role="tab">
-                <i class="fas fa-star me-2"></i>{{ _('XP Totali') }}
+            <button class="nav-link rounded-pill px-4 py-2 {% if active_tab == 'local' %}active{% endif %}"
+                id="local-tab" data-bs-toggle="tab" data-bs-target="#local" type="button" role="tab">
+                <i class="fas fa-map-marker-alt me-2"></i>{{ _('La tua zona') }}
             </button>
         </li>
         <li class="nav-item mx-2" role="presentation">
-            <button class="nav-link rounded-pill px-4 py-2 {% if active_tab == 'level' %}active{% endif %}"
-                id="level-tab" data-bs-toggle="tab" data-bs-target="#level" type="button" role="tab">
-                <i class="fas fa-level-up-alt me-2"></i>{{ _('Livello') }}
+            <button class="nav-link rounded-pill px-4 py-2 {% if active_tab == 'contribution' %}active{% endif %}"
+                id="contribution-tab" data-bs-toggle="tab" data-bs-target="#contribution" type="button" role="tab">
+                <i class="fas fa-hands-helping me-2"></i>{{ _('Contributo') }}
             </button>
         </li>
-        <li class="nav-item mx-2" role="presentation">
-            <button class="nav-link rounded-pill px-4 py-2 {% if active_tab == 'streak' %}active{% endif %}"
-                id="streak-tab" data-bs-toggle="tab" data-bs-target="#streak" type="button" role="tab">
-                <i class="fas fa-fire me-2"></i>{{ _('Streak') }}
-            </button>
-        </li>
-        {% if can_view_ratings %}
-        <li class="nav-item mx-2" role="presentation">
-            <button class="nav-link rounded-pill px-4 py-2 {% if active_tab == 'elo' %}active{% endif %}" id="elo-tab"
-                data-bs-toggle="tab" data-bs-target="#elo" type="button" role="tab">
-                <i class="fas fa-chart-line me-2"></i>{{ _('Elo Rating') }}
-            </button>
-        </li>
-        {% endif %}
     </ul>
 
     <div class="tab-content" id="leaderboardTabsContent">
 
-        <!-- MACRO: Podium & List -->
-        {% macro render_leaderboard(entries, type_label, unit_label, icon_class) %}
+        <!-- MACRO: simple ranked list (rank, player, score) -->
+        {% macro render_board(entries, unit_label, icon_class, empty_msg) %}
         {% if entries %}
-        <!-- Top 3 Podium -->
-        <div class="row g-4 mb-5 justify-content-center align-items-end">
-            <!-- 2nd Place -->
-            {% if entries|length > 1 %}
-            <div class="col-10 col-md-4 order-2 order-md-1">
-                <div class="card border-0 shadow-lg podium-card silver">
-                    <div class="card-body text-center py-4">
-                        <div class="position-relative d-inline-block mb-3">
-                            <i class="fas fa-user-circle fa-4x text-secondary"></i>
-                            <span
-                                class="position-absolute bottom-0 end-0 badge rounded-pill bg-secondary border border-2 border-white">2</span>
-                        </div>
-                        <h4 class="fw-bold mb-1 text-truncate">{{ entries[1].user.username }}</h4>
-                        <div class="display-6 fw-bold text-secondary mb-0">{{ entries[1].score|int }}</div>
-                        <small class="text-uppercase text-muted">{{ unit_label }}</small>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-
-            <!-- 1st Place -->
-            {% if entries|length > 0 %}
-            <div class="col-10 col-md-4 order-1 order-md-2">
-                <div class="card border-0 shadow-lg podium-card gold transform-scale-110">
-                    <div class="card-body text-center py-5">
-                        <div class="mb-3">
-                            <i class="fas fa-crown fa-3x text-warning mb-2 d-block"></i>
-                            <div class="position-relative d-inline-block">
-                                <i class="fas fa-user-circle fa-6x text-warning"></i>
-                                <span
-                                    class="position-absolute bottom-0 end-0 badge rounded-pill bg-warning text-dark border border-2 border-white">1</span>
-                            </div>
-                        </div>
-                        <h3 class="fw-bold mb-1 text-truncate">{{ entries[0].user.username }}</h3>
-                        <div class="display-5 fw-bold text-warning mb-0">{{ entries[0].score|int }}</div>
-                        <small class="text-uppercase text-muted fw-bold">{{ unit_label }}</small>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-
-            <!-- 3rd Place -->
-            {% if entries|length > 2 %}
-            <div class="col-10 col-md-4 order-3 order-md-3">
-                <div class="card border-0 shadow-lg podium-card bronze">
-                    <div class="card-body text-center py-4">
-                        <div class="position-relative d-inline-block mb-3">
-                            <i class="fas fa-user-circle fa-4x text-bronze"></i>
-                            <span
-                                class="position-absolute bottom-0 end-0 badge rounded-pill bg-bronze border border-2 border-white">3</span>
-                        </div>
-                        <h4 class="fw-bold mb-1 text-truncate">{{ entries[2].user.username }}</h4>
-                        <div class="display-6 fw-bold text-bronze mb-0">{{ entries[2].score|int }}</div>
-                        <small class="text-uppercase text-muted">{{ unit_label }}</small>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-        </div>
-
-        <!-- Rest of the List (4+) -->
-        {% if entries|length > 3 %}
         <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-            <div class="card-header bg-white border-0 py-3">
-                <h5 class="mb-0 fw-bold text-muted">{{ _('La rincorsa') }}</h5>
-            </div>
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
@@ -124,117 +45,87 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for entry in entries[3:] %}
-                        <tr
-                            class="{% if current_user.is_authenticated and entry.user.id == current_user.id %}table-active-highlight{% endif %}">
-                            <td class="ps-4 fw-bold text-muted">{{ entry.rank }}</td>
+                        {% for entry in entries %}
+                        <tr class="{% if entry.is_viewer %}table-active-highlight{% endif %}">
+                            <td class="ps-4 fw-bold text-muted">
+                                {% if entry.rank == 1 %}<i class="fas fa-crown text-warning"></i>
+                                {% else %}{{ entry.rank }}{% endif %}
+                            </td>
                             <td>
                                 <div class="d-flex align-items-center">
                                     <i class="fas fa-user-circle fa-lg text-muted me-3"></i>
                                     <span class="fw-bold">{{ entry.user.username }}</span>
-                                    {% if current_user.is_authenticated and entry.user.id == current_user.id %}
+                                    {% if entry.is_viewer %}
                                     <span class="badge bg-primary ms-2">{{ _('Tu') }}</span>
                                     {% endif %}
                                 </div>
                             </td>
-                            <td class="text-end pe-4 fw-bold font-monospace fs-5">
-                                {{ entry.score|int }}
-                            </td>
+                            <td class="text-end pe-4 fw-bold font-monospace fs-5">{{ entry.score|int }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
         </div>
-        {% endif %}
-
         {% else %}
         <div class="text-center py-5">
             <div class="mb-3"><i class="{{ icon_class }} fa-4x text-muted opacity-50"></i></div>
             <h4 class="text-muted">{{ _('Nessun dato disponibile') }}</h4>
-            <p class="text-muted">{{ _('Gioca qualche partita per apparire qui!') }}</p>
+            <p class="text-muted">{{ empty_msg }}</p>
         </div>
         {% endif %}
         {% endmacro %}
 
-        <!-- XP Tab -->
-        <div class="tab-pane fade {% if active_tab == 'xp' %}show active{% endif %}" id="xp" role="tabpanel">
-            {{ render_leaderboard(xp_leaderboard, 'XP Totali', 'XP', 'fas fa-star') }}
+        <!-- LOCAL Tab -->
+        <div class="tab-pane fade {% if active_tab == 'local' %}show active{% endif %}" id="local" role="tabpanel">
+            {% if not current_user.is_authenticated %}
+            <div class="text-center py-5">
+                <div class="mb-3"><i class="fas fa-map-marker-alt fa-4x text-muted opacity-50"></i></div>
+                <h4 class="text-muted">{{ _('Accedi per vedere la classifica della tua zona') }}</h4>
+            </div>
+            {% elif local_board and not local_board.available %}
+            <div class="text-center py-5">
+                <div class="mb-3"><i class="fas fa-city fa-4x text-muted opacity-50"></i></div>
+                <h4 class="text-muted">{{ _('Imposta la tua città per vedere la classifica locale') }}</h4>
+                <a href="{{ url_for('player.edit_profile') }}" class="btn btn-primary mt-2">
+                    <i class="fas fa-user-edit me-2"></i>{{ _('Vai al profilo') }}
+                </a>
+            </div>
+            {% else %}
+            {% if local_board and local_board.zone_label %}
+            <p class="text-center text-muted mb-4">
+                <i class="fas fa-map-marker-alt me-1"></i>
+                {{ _('Zona: %(city)s', city=local_board.zone_label) }}
+                {% if local_board.viewer_rank %}
+                · {{ _('Sei %(rank)s°', rank=local_board.viewer_rank) }}
+                {% endif %}
+            </p>
+            {% endif %}
+            {{ render_board(local_board.entries if local_board else [], _('XP'),
+               'fas fa-map-marker-alt',
+               _('Gioca qualche partita per apparire nella classifica della tua zona!')) }}
+            {% endif %}
         </div>
 
-        <!-- Level Tab -->
-        <div class="tab-pane fade {% if active_tab == 'level' %}show active{% endif %}" id="level" role="tabpanel">
-            {{ render_leaderboard(level_leaderboard, 'Livello', 'Livello', 'fas fa-level-up-alt') }}
+        <!-- CONTRIBUTION Tab -->
+        <div class="tab-pane fade {% if active_tab == 'contribution' %}show active{% endif %}" id="contribution"
+            role="tabpanel">
+            <p class="text-center text-muted mb-4">
+                {{ _('Drill creati per altri, gare organizzate e proposte accettate.') }}
+            </p>
+            {{ render_board(contribution_board, _('Contributo'),
+               'fas fa-hands-helping',
+               _('Crea drill, organizza gare o proponi match per far crescere la community!')) }}
         </div>
-
-        <!-- Streak Tab -->
-        <div class="tab-pane fade {% if active_tab == 'streak' %}show active{% endif %}" id="streak" role="tabpanel">
-            {{ render_leaderboard(streak_leaderboard, 'Streak Attuale', 'Settimane', 'fas fa-fire') }}
-        </div>
-
-        <!-- Elo Tab -->
-        {% if can_view_ratings %}
-        <div class="tab-pane fade {% if active_tab == 'elo' %}show active{% endif %}" id="elo" role="tabpanel">
-            {{ render_leaderboard(elo_leaderboard, 'Elo Rating', 'Punti Elo', 'fas fa-chart-line') }}
-        </div>
-        {% endif %}
 
     </div>
 </div>
 
 <style>
-    /* Custom Styles for Leaderboard */
     .text-gradient {
         background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-    }
-
-    .podium-card {
-        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        border-radius: 20px;
-        overflow: hidden;
-    }
-
-    .podium-card:hover {
-        transform: translateY(-10px);
-    }
-
-    .podium-card.gold {
-        background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
-        border: 2px solid #fbbf24 !important;
-    }
-
-    .podium-card.silver {
-        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-        border: 2px solid #94a3b8 !important;
-    }
-
-    .podium-card.bronze {
-        background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
-        border: 2px solid #fdba74 !important;
-        --bs-text-bronze: #c2410c;
-    }
-
-    .text-bronze,
-    .bg-bronze {
-        color: #c2410c;
-        background-color: #ffedd5;
-    }
-
-    .bg-bronze {
-        background-color: #c2410c;
-        color: white;
-    }
-
-    .transform-scale-110 {
-        transform: scale(1.1);
-        z-index: 10;
-    }
-
-    .transform-scale-110:hover {
-        transform: scale(1.15);
-        /* Maintain scale on hover + lift */
     }
 
     .table-active-highlight {
@@ -242,7 +133,6 @@
         border-left: 4px solid #3b82f6;
     }
 
-    /* Nav Pills Customization */
     .nav-pills .nav-link {
         color: #64748b;
         background-color: #f1f5f9;

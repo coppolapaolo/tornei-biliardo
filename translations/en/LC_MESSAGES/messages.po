@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-06 16:41+0000\n"
+"POT-Creation-Date: 2026-06-06 20:35+0000\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -756,12 +756,12 @@ msgstr "Invalid level value"
 msgid "Configurazione Streak"
 msgstr "Streak Configuration"
 
-#: routes/gamification/dashboard.py:55 routes/gamification/dashboard.py:147
-#: routes/gamification/dashboard.py:257 routes/gamification/dashboard.py:297
+#: routes/gamification/dashboard.py:57 routes/gamification/dashboard.py:148
+#: routes/gamification/dashboard.py:241 routes/gamification/dashboard.py:281
 msgid "Gli amministratori non partecipano alla gamification."
 msgstr "Administrators do not participate in gamification."
 
-#: routes/gamification/dashboard.py:93
+#: routes/gamification/dashboard.py:94
 msgid "Dashboard Gamification"
 msgstr "Gamification Dashboard"
 
@@ -769,16 +769,16 @@ msgstr "Gamification Dashboard"
 msgid "I Tuoi Achievement"
 msgstr "Your Achievements"
 
-#: routes/gamification/dashboard.py:235
+#: routes/gamification/dashboard.py:219
 #: templates/components/_player_campionato_classifications.html:6
 msgid "Classifiche"
 msgstr "Leaderboards"
 
-#: routes/gamification/dashboard.py:275
+#: routes/gamification/dashboard.py:259
 msgid "Quest Settimanali/Mensili"
 msgstr "Weekly/Monthly Quests"
 
-#: routes/gamification/dashboard.py:312
+#: routes/gamification/dashboard.py:296
 msgid "Le Tue Streak"
 msgstr "Your Streaks"
 
@@ -835,7 +835,6 @@ msgstr "Drills completed in competition"
 #: templates/gamification/admin/level_config.html:142
 #: templates/gamification/admin/level_config.html:193
 #: templates/gamification/dashboard.html:24
-#: templates/gamification/leaderboards.html:27
 msgid "Livello"
 msgstr "Level"
 
@@ -1305,7 +1304,7 @@ msgstr "Tie for %(pos)s place"
 #: templates/admin/campionato_detail.html:201
 #: templates/components/_detailed_classification.html:23
 #: templates/components/_ssr_section.html:28
-#: templates/gamification/leaderboards.html:122 templates/gara_detail.html:252
+#: templates/gamification/leaderboards.html:43 templates/gara_detail.html:252
 msgid "Giocatore"
 msgstr "Player"
 
@@ -2933,7 +2932,7 @@ msgstr "Power Users (30d)"
 #: templates/gamification/admin/dashboard.html:136
 #: templates/gamification/admin/streaks.html:41
 #: templates/gamification/admin/streaks.html:122
-#: templates/gamification/leaderboards.html:154
+#: templates/gamification/leaderboards.html:73
 msgid "Nessun dato disponibile"
 msgstr "No data available"
 
@@ -4956,34 +4955,65 @@ msgid "Hai raggiunto il livello "
 msgstr "You reached level "
 
 #: templates/gamification/leaderboards.html:12
-msgid "I campioni della community"
-msgstr "The community champions"
+msgid "La tua zona e chi fa crescere la community"
+msgstr "Your area and who helps the community grow"
 
 #: templates/gamification/leaderboards.html:21
-msgid "XP Totali"
-msgstr "Total XP"
+msgid "La tua zona"
+msgstr "Your area"
 
-#: templates/gamification/admin/dashboard.html:74
-#: templates/gamification/leaderboards.html:33
-#: templates/gamification/streaks.html:12
-msgid "Streak"
-msgstr "Streak"
+#: templates/gamification/leaderboards.html:27
+#: templates/gamification/leaderboards.html:116
+msgid "Contributo"
+msgstr "Contribution"
 
-#: templates/gamification/leaderboards.html:40
-msgid "Elo Rating"
-msgstr "Elo Rating"
-
-#: templates/gamification/leaderboards.html:115
-msgid "La rincorsa"
-msgstr "The chase"
-
-#: templates/gamification/leaderboards.html:136
+#: templates/gamification/leaderboards.html:59
 msgid "Tu"
 msgstr "You"
 
-#: templates/gamification/leaderboards.html:155
-msgid "Gioca qualche partita per apparire qui!"
-msgstr "Play some matches to appear here!"
+#: templates/gamification/leaderboards.html:84
+msgid "Accedi per vedere la classifica della tua zona"
+msgstr "Log in to see your area ranking"
+
+#: templates/gamification/leaderboards.html:89
+msgid "Imposta la tua città per vedere la classifica locale"
+msgstr "Set your city to see the local ranking"
+
+#: templates/gamification/leaderboards.html:91
+msgid "Vai al profilo"
+msgstr "Go to profile"
+
+#: templates/gamification/leaderboards.html:98
+#, python-format
+msgid "Zona: %(city)s"
+msgstr "Area: %(city)s"
+
+#: templates/gamification/leaderboards.html:100
+#, python-format
+msgid "Sei %(rank)s°"
+msgstr "You're #%(rank)s"
+
+#: templates/gamification/admin/achievements.html:25
+#: templates/gamification/admin/xp_management.html:86
+#: templates/gamification/leaderboards.html:104
+msgid "XP"
+msgstr "XP"
+
+#: templates/gamification/leaderboards.html:106
+msgid "Gioca qualche partita per apparire nella classifica della tua zona!"
+msgstr "Play some matches to appear in your area ranking!"
+
+#: templates/gamification/leaderboards.html:114
+msgid "Drill creati per altri, gare organizzate e proposte accettate."
+msgstr ""
+"Drills created for others, tournaments organized and proposals accepted."
+
+#: templates/gamification/leaderboards.html:118
+msgid ""
+"Crea drill, organizza gare o proponi match per far crescere la community!"
+msgstr ""
+"Create drills, organize tournaments or propose matches to help the community"
+" grow!"
 
 #: templates/gamification/admin/dashboard.html:56
 #: templates/gamification/quests.html:11
@@ -5038,6 +5068,11 @@ msgstr "Type"
 #: templates/gamification/quests.html:153
 msgid "XP Guadagnati"
 msgstr "XP Earned"
+
+#: templates/gamification/admin/dashboard.html:74
+#: templates/gamification/streaks.html:12
+msgid "Streak"
+msgstr "Streak"
 
 #: templates/gamification/streaks.html:16
 msgid "Mantieni le tue attivita settimanali per guadagnare bonus XP"
@@ -5267,11 +5302,6 @@ msgstr "New Achievement"
 #: templates/gamification/admin/features.html:24
 msgid "Codice"
 msgstr "Code"
-
-#: templates/gamification/admin/achievements.html:25
-#: templates/gamification/admin/xp_management.html:86
-msgid "XP"
-msgstr "XP"
 
 #: templates/gamification/admin/achievements.html:26
 msgid "Sbloccato da"
@@ -7371,3 +7401,15 @@ msgstr "Unknown"
 
 #~ msgid "Es: Bar Sport"
 #~ msgstr "E.g. Bar Sport"
+
+#~ msgid "I campioni della community"
+#~ msgstr "The community champions"
+
+#~ msgid "XP Totali"
+#~ msgstr "Total XP"
+
+#~ msgid "Elo Rating"
+#~ msgstr "Elo Rating"
+
+#~ msgid "La rincorsa"
+#~ msgstr "The chase"

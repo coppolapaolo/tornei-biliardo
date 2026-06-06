@@ -124,8 +124,16 @@ Questo è il punto d'ingresso rapido per riprendere. Per il dettaglio:
   `demand.create_signal`. Migrazione `20260607_demand_signal`. 7 unit + 4
   integrazione, EN 100%. Open items: re-eval promozione, segnale-admin zone
   senza director, auto-refresh scadenza, tarature.
-- **Item di design V3 mai iniziati** (fasi successive): leaderboard
-  locale/contributo.
+- **Leaderboard locale/contributo**: ~~FATTO~~ (v1) — **ADR-037**.
+  `CommunityLeaderboardService`: classifica locale per `home_city` (+ città
+  vicine via centroide, ranking XP) + board contributo composito (drill
+  altrui + gare organizzate + proposte accettate). Route `gamification.
+  leaderboards` → tab Zona + Contributo; board XP globale ritirato dalla UI.
+  Calcolo on-demand (no migrazione). 6 unit + 2 integrazione, EN 100%. Open
+  items: leghe, tarature, performance, gare via DirectorAssignment.
+- **Item di design V3 principali**: tutti avviati (§7 onboarding, §10-ter
+  segnale-domanda, §11-bis leaderboard). Restano gli *open items* per-ADR e il
+  **maturity-gate ADR-028** (rollout ai player, production-visible).
 
 ## Note ambiente (per non riscoprirle)
 - Le dipendenze non sono preinstallate: servono `flask_sqlalchemy flask-mail
