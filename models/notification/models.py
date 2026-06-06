@@ -45,6 +45,10 @@ class NotificationType(Enum):
     ACCOUNT_UPDATE = "account_update"  # Account-related updates
     ADMIN_ACTION_REQUIRED = "admin_action_required"  # Action required by admin
 
+    # Demand signal → director (ADR-036)
+    DEMAND_THRESHOLD_REACHED = "demand_threshold_reached"  # Director: domanda ≥ soglia
+    DEMAND_GARA_NEARBY = "demand_gara_nearby"  # Player: gara aperta nella tua zona
+
     # Gamification
     ACHIEVEMENT_UNLOCKED = "achievement_unlocked"  # Achievement earned
     LEVEL_UP = "level_up"  # Level up with unlocks
@@ -118,7 +122,9 @@ class Notification(BaseModel):
 
     # i18n support: store template key + params instead of pre-translated strings
     # This enables proper language switching at display time
-    template_key = db.Column(db.String(100), nullable=True)  # e.g., "achievement.unlocked"
+    template_key = db.Column(
+        db.String(100), nullable=True
+    )  # e.g., "achievement.unlocked"
     template_params = db.Column(db.Text, nullable=True)  # JSON params for template
 
     # Relationships
@@ -215,18 +221,24 @@ class Notification(BaseModel):
             )
 
             template = NOTIFICATION_TEMPLATES.get(self.template_key, {})
-            params = self.get_template_params().copy()  # Copy to avoid mutating original
+            params = (
+                self.get_template_params().copy()
+            )  # Copy to avoid mutating original
 
             # Translate special keys that need runtime translation
             if "difficulty_key" in params:
                 difficulty_key = params.pop("difficulty_key")
                 # DIFFICULTY_LABELS values are lazy_gettext, convert to string for current locale
-                params["difficulty"] = str(DIFFICULTY_LABELS.get(difficulty_key, difficulty_key))
+                params["difficulty"] = str(
+                    DIFFICULTY_LABELS.get(difficulty_key, difficulty_key)
+                )
 
             if "type_key" in params:
                 type_key = params.pop("type_key")
                 # Try streak types first, then quest types
-                label = STREAK_TYPE_LABELS.get(type_key) or QUEST_TYPE_LABELS.get(type_key, type_key)
+                label = STREAK_TYPE_LABELS.get(type_key) or QUEST_TYPE_LABELS.get(
+                    type_key, type_key
+                )
                 params["type"] = str(label)
 
             # Translate template strings and substitute params
@@ -236,9 +248,17 @@ class Notification(BaseModel):
 
             try:
                 return {
-                    "title": _(title_template) % params if params else _(title_template),
-                    "message": _(message_template) % params if params else _(message_template),
-                    "action_text": _(action_template) % params if params and action_template else _(action_template) if action_template else "",
+                    "title": (
+                        _(title_template) % params if params else _(title_template)
+                    ),
+                    "message": (
+                        _(message_template) % params if params else _(message_template)
+                    ),
+                    "action_text": (
+                        _(action_template) % params
+                        if params and action_template
+                        else _(action_template) if action_template else ""
+                    ),
                 }
             except (KeyError, TypeError):
                 # Fallback if param substitution fails
@@ -342,9 +362,7 @@ class NotificationPreference(BaseModel):
         if not self.max_per_day:
             return False
 
-        today_start = utc_now().replace(
-            hour=0, minute=0, second=0, microsecond=0
-        )
+        today_start = utc_now().replace(hour=0, minute=0, second=0, microsecond=0)
         today_count = Notification.query.filter(
             Notification.user_id == self.user_id,
             Notification.notification_type == self.notification_type,

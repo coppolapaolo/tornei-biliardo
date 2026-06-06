@@ -100,6 +100,7 @@ from .location.models import (
     UserLocationAvailability,
     DayOfWeek,
 )
+from .demand.models import DemandSignal, DemandSignalStatus
 from .tiebreaker.models import (
     Tiebreaker,
     SpotShot,
@@ -225,6 +226,8 @@ __all__ = [
     # Location domain models (Phase 3)
     "BilliardHall",
     "UserLocationAvailability",
+    "DemandSignal",
+    "DemandSignalStatus",
     "DayOfWeek",
     # Tiebreaker domain models (Phase 4)
     "Tiebreaker",

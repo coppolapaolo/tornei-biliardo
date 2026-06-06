@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-06 16:19+0000\n"
+"POT-Creation-Date: 2026-06-06 16:41+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -46,6 +46,31 @@ msgstr ""
 
 #: models/dashboard/dashboard_service.py:473
 msgid "Vista Pubblica"
+msgstr ""
+
+#: models/demand/service.py:177
+msgid "C'è domanda nella tua zona!"
+msgstr ""
+
+#: models/demand/service.py:179
+#, python-format
+msgid ""
+"%(count)s giocatori vorrebbero una gara vicino a te. Potrebbe essere il "
+"momento di organizzarne una."
+msgstr ""
+
+#: models/demand/service.py:238
+msgid "Una gara è stata aperta vicino a te!"
+msgstr ""
+
+#: models/demand/service.py:240
+msgid ""
+"La gara che aspettavi nella tua zona è stata pubblicata: dai un'occhiata "
+"e iscriviti."
+msgstr ""
+
+#: models/demand/service.py:246
+msgid "Vedi la gara"
 msgstr ""
 
 #: models/gamification/frontend_bridge.py:134
@@ -421,6 +446,10 @@ msgstr ""
 
 #: routes/auth.py:123
 msgid "Registrazione completata con successo."
+msgstr ""
+
+#: routes/demand.py:47
+msgid "Fatto! Ti avviseremo se apre una gara nella tua zona."
 msgstr ""
 
 #: routes/onboarding.py:50

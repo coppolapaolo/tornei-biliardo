@@ -303,6 +303,8 @@ def create_app(config_name=None):
     # Register gamification notification handlers
     # Creates notifications for level ups, achievements, streaks, quests
     from models.gamification import notification_handlers  # noqa: F401
+    # Register demand-signal handlers (ADR-036): consume signals on gara created
+    from models.demand import event_handlers as _demand_eh  # noqa: F401, F811
 
     # Register SSE bridge - routes domain events to SSE for real-time updates
     from routes import sse_bridge  # noqa: F401

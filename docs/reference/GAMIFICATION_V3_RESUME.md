@@ -117,8 +117,15 @@ Questo è il punto d'ingresso rapido per riprendere. Per il dettaglio:
   `before_request` gated da `ONBOARDING_ENFORCED` (off nei test),
   `User.onboarding_completed`/`onboarding_interests`, migrazione
   `20260607_onboarding`, `OnboardingService`. 13 unit + 7 integrazione, EN 100%.
-- **Item di design V3 mai iniziati** (fasi successive): segnale-domanda →
-  director (IN CORSO), leaderboard locale/contributo.
+- **Segnale-domanda → director**: ~~FATTO~~ (core v1) — **ADR-036**. Modello
+  `DemandSignal` (geo sul record, ADR-034), fronte di salita ≥6 con cooldown →
+  notifica azionabile al director, consumo su creazione gara (handler
+  `CompetitionCreatedEvent`) → notifica "gara vicino a te". Route maturity-gated
+  `demand.create_signal`. Migrazione `20260607_demand_signal`. 7 unit + 4
+  integrazione, EN 100%. Open items: re-eval promozione, segnale-admin zone
+  senza director, auto-refresh scadenza, tarature.
+- **Item di design V3 mai iniziati** (fasi successive): leaderboard
+  locale/contributo.
 
 ## Note ambiente (per non riscoprirle)
 - Le dipendenze non sono preinstallate: servono `flask_sqlalchemy flask-mail

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-06 16:19+0000\n"
+"POT-Creation-Date: 2026-06-06 16:41+0000\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -52,6 +52,35 @@ msgstr "Player Dashboard"
 #: models/dashboard/dashboard_service.py:473
 msgid "Vista Pubblica"
 msgstr "Public View"
+
+#: models/demand/service.py:177
+msgid "C'è domanda nella tua zona!"
+msgstr "There's demand in your area!"
+
+#: models/demand/service.py:179
+#, python-format
+msgid ""
+"%(count)s giocatori vorrebbero una gara vicino a te. Potrebbe essere il "
+"momento di organizzarne una."
+msgstr ""
+"%(count)s players would like a tournament near you. It might be a good time "
+"to organize one."
+
+#: models/demand/service.py:238
+msgid "Una gara è stata aperta vicino a te!"
+msgstr "A tournament has opened near you!"
+
+#: models/demand/service.py:240
+msgid ""
+"La gara che aspettavi nella tua zona è stata pubblicata: dai un'occhiata e "
+"iscriviti."
+msgstr ""
+"The tournament you were waiting for in your area has been published: take a "
+"look and sign up."
+
+#: models/demand/service.py:246
+msgid "Vedi la gara"
+msgstr "View the tournament"
 
 #: models/gamification/frontend_bridge.py:134
 msgid "Hai guadagnato XP"
@@ -444,6 +473,10 @@ msgstr "Welcome aboard!"
 #: routes/auth.py:123
 msgid "Registrazione completata con successo."
 msgstr "Registration completed successfully."
+
+#: routes/demand.py:47
+msgid "Fatto! Ti avviseremo se apre una gara nella tua zona."
+msgstr "Done! We'll let you know if a tournament opens in your area."
 
 #: routes/onboarding.py:50
 msgid "Tutto pronto! Buon divertimento."

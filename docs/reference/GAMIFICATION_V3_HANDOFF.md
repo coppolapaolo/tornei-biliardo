@@ -231,9 +231,27 @@ sale + `home_city`).
 - Soft-gate proposte deferito al maturity-gate ADR-028 (in beta sono già
   admin/director-only). Test: 13 unit + 7 integrazione.
 
+### ADR-036 — Segnale-domanda → director (FATTO, core v1)
+Intervista (3 scelte: GPS→fallback home_city con coord SUL record; core v1 +
+open items; maturity-gated) + ADR + implementazione.
+- `DemandSignal` (`models/demand/`): user, lat/lng (sul record, mai sull'utente —
+  ADR-034), city, status, expires_at ~60gg, consumed_by_gara_id. Migrazione
+  `20260607_demand_signal` (+ `User.signal_radius_km` default 30,
+  `User.signal_notified_at` cooldown).
+- `DemandSignalService`: create_signal (GPS effimero → centroide home_city);
+  fronte di salita **≥6** (crossing esatto) con cooldown 7gg → notifica
+  persistente azionabile al director; consumo via handler su
+  `CompetitionCreatedEvent` quando la gara ha sala geolocalizzata → segnali
+  `consumed` + notifica "gara vicino a te" ai giocatori.
+- `NotificationType.DEMAND_THRESHOLD_REACHED`/`DEMAND_GARA_NEARBY`. Route
+  `demand.create_signal` (`POST /demand/signal`), `ENDPOINT_ROLES` `{"director"}`
+  (maturity-gated). Test: 7 unit + 4 integrazione.
+- **Open items** (ADR-036, rimandati): re-eval alla promozione player→director,
+  segnale-admin per zone senza director, auto-refresh/prompt pre-scadenza,
+  tarature (soglia/raggio/cooldown/scadenza).
+
 ### Aperto / prossimi (design già in V3, codice non iniziato)
-- **Segnale-domanda → director** (richieste geolocalizzate, soglia ≥6 nel raggio)
-  — ora abilitabile sopra il modello geo di ADR-034. **(IN CORSO)**
+- **Leaderboard locale/contributo**.
 - **Leaderboard locale/contributo**.
 - **Maturity-gate ADR-028**: promozione ai player a blocchi (gamification +
   availability/discovery) quando validati — *non senza via dello stakeholder*.

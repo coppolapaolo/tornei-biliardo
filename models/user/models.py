@@ -70,6 +70,12 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
     # ("drill", "match", "tornei"). Opt-in, usato per personalizzare landing.
     onboarding_interests = db.Column(db.String(100), nullable=True)
 
+    # Segnale-domanda → director (ADR-036). Raggio (km) della zona del director
+    # per il conteggio delle richieste di domanda; regolabile dal director.
+    signal_radius_km = db.Column(db.Integer, default=30, nullable=False)
+    # Cooldown anti-nag: ultimo invio di notifica "soglia domanda raggiunta".
+    signal_notified_at = db.Column(db.DateTime, nullable=True)
+
     # Gamification Override
     gamification_override = db.Column(db.Boolean, default=False, nullable=False)
 
