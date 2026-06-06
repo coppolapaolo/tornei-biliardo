@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-06 11:34+0000\n"
+"POT-Creation-Date: 2026-06-06 12:40+0000\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -757,6 +757,61 @@ msgstr ""
 msgid "Feature creata con successo"
 msgstr ""
 
+#: routes/individual_match/availability.py:68
+msgid "La località è obbligatoria"
+msgstr ""
+
+#: routes/individual_match/availability.py:95
+#: routes/individual_match/availability.py:145
+#, python-format
+msgid "Disponibilità aggiornata per %(loc)s"
+msgstr ""
+
+#: routes/individual_match/availability.py:98
+#, python-format
+msgid "Notificati %(n)s giocatori della tua disponibilità"
+msgstr ""
+
+#: routes/individual_match/availability.py:125
+msgid "Devi selezionare una sala"
+msgstr ""
+
+#: routes/individual_match/availability.py:140
+#: routes/individual_match/availability.py:190
+#, python-format
+msgid "Sala #%(id)s"
+msgstr ""
+
+#: routes/individual_match/availability.py:227
+msgid "La località è obbligatoria per richiedere un match"
+msgstr ""
+
+#: routes/individual_match/availability.py:239
+msgid "Formato data/ora non valido"
+msgstr ""
+
+#: routes/individual_match/availability.py:257
+#, python-format
+msgid "Utente #%(id)s"
+msgstr ""
+
+#: routes/individual_match/availability.py:262
+#, python-format
+msgid "Richiesta di match inviata a %(name)s"
+msgstr ""
+
+#: routes/individual_match/availability.py:283
+msgid "Record non trovato"
+msgstr ""
+
+#: routes/individual_match/availability.py:284
+msgid "Disponibilità non trovata"
+msgstr ""
+
+#: routes/individual_match/availability.py:289
+msgid "Disponibilità rimossa"
+msgstr ""
+
 #: routes/individual_match/matches.py:404 templates/match_detail.html:438
 msgid "Forfait dichiarato"
 msgstr ""
@@ -915,6 +970,8 @@ msgid "Sale Biliardo"
 msgstr ""
 
 #: templates/base.html:239 templates/base_navbar_section.html:30
+#: templates/individual_match/availability.html:39
+#: templates/individual_match/discover_players.html:9
 msgid "Match Individuali"
 msgstr ""
 
@@ -2843,6 +2900,8 @@ msgid "Direttore campionato"
 msgstr ""
 
 #: templates/components/_directors_management.html:29
+#: templates/individual_match/availability.html:84
+#: templates/individual_match/availability.html:104
 msgid "Rimuovi"
 msgstr ""
 
@@ -3245,6 +3304,9 @@ msgid "Tutte"
 msgstr ""
 
 #: templates/components/_history_filters.html:36
+#: templates/individual_match/availability.html:75
+#: templates/individual_match/availability.html:122
+#: templates/individual_match/discover_players.html:24
 msgid "Sala"
 msgstr ""
 
@@ -3289,6 +3351,7 @@ msgid "Campionato"
 msgstr ""
 
 #: templates/components/_history_filters.html:144
+#: templates/individual_match/discover_players.html:37
 #: templates/public/campionatos_list.html:28
 msgid "Filtra"
 msgstr ""
@@ -5636,6 +5699,7 @@ msgid "Transazioni Recenti"
 msgstr ""
 
 #: templates/gamification/admin/xp_management.html:83
+#: templates/individual_match/discover_players.html:74
 #: templates/public/campionato_detail.html:98
 #: templates/public/garas_list.html:11
 msgid "Data"
@@ -5651,6 +5715,159 @@ msgstr ""
 
 #: templates/gamification/admin/xp_management.html:136
 msgid "Sei sicuro di voler resettare il livello di questo utente?"
+msgstr ""
+
+#: templates/individual_match/availability.html:3
+msgid "Gestisci Disponibilità"
+msgstr ""
+
+#: templates/individual_match/availability.html:5
+#: templates/individual_match/availability.html:6
+msgid "Dom"
+msgstr ""
+
+#: templates/individual_match/availability.html:5
+#: templates/individual_match/availability.html:6
+msgid "Lun"
+msgstr ""
+
+#: templates/individual_match/availability.html:5
+#: templates/individual_match/availability.html:6
+msgid "Mar"
+msgstr ""
+
+#: templates/individual_match/availability.html:5
+#: templates/individual_match/availability.html:6
+msgid "Mer"
+msgstr ""
+
+#: templates/individual_match/availability.html:5
+#: templates/individual_match/availability.html:6
+msgid "Gio"
+msgstr ""
+
+#: templates/individual_match/availability.html:5
+#: templates/individual_match/availability.html:6
+msgid "Ven"
+msgstr ""
+
+#: templates/individual_match/availability.html:5
+#: templates/individual_match/availability.html:6
+msgid "Sab"
+msgstr ""
+
+#: templates/individual_match/availability.html:14
+msgid "Giorni Preferiti"
+msgstr ""
+
+#: templates/individual_match/availability.html:25
+msgid "Orari Preferiti"
+msgstr ""
+
+#: templates/individual_match/availability.html:26
+msgid "Es: 18:00-22:00"
+msgstr ""
+
+#: templates/individual_match/availability.html:27
+msgid "Fascia oraria in cui sei disponibile"
+msgstr ""
+
+#: templates/individual_match/availability.html:31
+msgid "Attualmente disponibile"
+msgstr ""
+
+#: templates/individual_match/availability.html:40
+#: templates/individual_match/discover_players.html:10
+msgid "Disponibilità"
+msgstr ""
+
+#: templates/individual_match/availability.html:48
+msgid "Gestisci la tua Disponibilità"
+msgstr ""
+
+#: templates/individual_match/availability.html:49
+msgid "Indica dove sei disponibile a giocare per ricevere proposte di match"
+msgstr ""
+
+#: templates/individual_match/availability.html:52
+#: templates/individual_match/discover_players.html:11
+msgid "Trova giocatori"
+msgstr ""
+
+#: templates/individual_match/availability.html:61
+msgid "Le tue disponibilità"
+msgstr ""
+
+#: templates/individual_match/availability.html:67
+msgid ""
+"Non hai ancora impostato nessuna disponibilità. Aggiungi una sala o una "
+"località qui sotto!"
+msgstr ""
+
+#: templates/individual_match/availability.html:95
+#: templates/individual_match/discover_players.html:33
+msgid "Località"
+msgstr ""
+
+#: templates/individual_match/availability.html:116
+msgid "Aggiungi una sala"
+msgstr ""
+
+#: templates/individual_match/availability.html:124
+msgid "Seleziona una sala…"
+msgstr ""
+
+#: templates/individual_match/availability.html:132
+msgid "Aggiungi sala"
+msgstr ""
+
+#: templates/individual_match/availability.html:141
+msgid "Aggiungi una località"
+msgstr ""
+
+#: templates/individual_match/availability.html:147
+#: templates/individual_match/create_proposal.html:65
+#: templates/individual_match/match_detail.html:114
+#: templates/player/playoff_invitation.html:24
+#: templates/public/garas_list.html:12
+msgid "Luogo"
+msgstr ""
+
+#: templates/individual_match/availability.html:149
+#: templates/individual_match/create_proposal.html:67
+msgid "Es: Bar Sport, Sala Biliardi Centro"
+msgstr ""
+
+#: templates/individual_match/availability.html:156
+msgid "Seleziona una sala esistente o scrivine una nuova"
+msgstr ""
+
+#: templates/individual_match/availability.html:162
+msgid "Avvisa i giocatori che hanno già giocato qui"
+msgstr ""
+
+#: templates/individual_match/availability.html:166
+msgid "Aggiungi località"
+msgstr ""
+
+#: templates/individual_match/availability.html:177
+msgid "Come Funziona?"
+msgstr ""
+
+#: templates/individual_match/availability.html:181
+msgid "Aggiungi le sale o le località dove giochi abitualmente"
+msgstr ""
+
+#: templates/individual_match/availability.html:182
+msgid "Indica i tuoi giorni e orari preferiti"
+msgstr ""
+
+#: templates/individual_match/availability.html:183
+msgid "Altri giocatori vedranno le tue disponibilità"
+msgstr ""
+
+#: templates/individual_match/availability.html:184
+msgid "Riceverai proposte di match nelle tue zone"
 msgstr ""
 
 #: templates/individual_match/create_proposal.html:26
@@ -5669,17 +5886,6 @@ msgstr ""
 msgid ""
 "Modifica i parametri se desiderato, poi invia la\n"
 "                                            proposta"
-msgstr ""
-
-#: templates/individual_match/create_proposal.html:65
-#: templates/individual_match/match_detail.html:114
-#: templates/player/playoff_invitation.html:24
-#: templates/public/garas_list.html:12
-msgid "Luogo"
-msgstr ""
-
-#: templates/individual_match/create_proposal.html:67
-msgid "Es: Bar Sport, Sala Biliardi Centro"
 msgstr ""
 
 #: templates/individual_match/create_proposal.html:117
@@ -5806,6 +6012,56 @@ msgstr ""
 
 #: templates/individual_match/create_proposal.html:320
 msgid "Caricamento giocatori..."
+msgstr ""
+
+#: templates/individual_match/discover_players.html:3
+msgid "Trova Giocatori"
+msgstr ""
+
+#: templates/individual_match/discover_players.html:17
+msgid "Trova giocatori disponibili"
+msgstr ""
+
+#: templates/individual_match/discover_players.html:18
+msgid ""
+"Scopri chi è disponibile nelle sale e nelle località, e invia una "
+"richiesta di match"
+msgstr ""
+
+#: templates/individual_match/discover_players.html:26
+msgid "Tutte le sale"
+msgstr ""
+
+#: templates/individual_match/discover_players.html:34
+msgid "Es: Bar Sport"
+msgstr ""
+
+#: templates/individual_match/discover_players.html:46
+msgid "Nessun giocatore disponibile trovato. Prova a cambiare i filtri."
+msgstr ""
+
+#: templates/individual_match/discover_players.html:54
+msgid "giocatori"
+msgstr ""
+
+#: templates/individual_match/discover_players.html:63
+msgid "Richiedi match"
+msgstr ""
+
+#: templates/individual_match/discover_players.html:78
+msgid "Ora"
+msgstr ""
+
+#: templates/individual_match/discover_players.html:82
+msgid "Messaggio"
+msgstr ""
+
+#: templates/individual_match/discover_players.html:83
+msgid "Facoltativo"
+msgstr ""
+
+#: templates/individual_match/discover_players.html:87
+msgid "Invia richiesta"
 msgstr ""
 
 #: templates/individual_match/match_detail.html:53

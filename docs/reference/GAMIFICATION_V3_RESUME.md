@@ -32,8 +32,9 @@ Questo è il punto d'ingresso rapido per riprendere. Per il dettaglio:
   `ConfigService`/`LevelUnlock`; sblocchi-per-livello = feedback (gating = FeatureConfig).
 - **Quest seed**: `models/gamification/quest_seeds.py` (settimanali ricorrenti,
   idempotenti, all'avvio).
-- **#3 dedup proposte**: consolidate su blueprint `individual_match`; **Availability
-  preservato** in `routes/player/proposals.py` (solo quello resta lì).
+- **#3 dedup proposte**: consolidate su blueprint `individual_match`. **Availability
+  ora unificata** sul blueprint (ADR-032): `routes/player/proposals.py` rimosso,
+  `AvailabilityService` unica fonte di verità (località + sala + discovery).
 - **Reconcile retroattivo**: `scripts/reconcile_achievements.py` (ricalcolo
   idempotente, NIENTE reset).
 
@@ -77,9 +78,12 @@ Questo è il punto d'ingresso rapido per riprendere. Per il dettaglio:
   in prod (voluto in beta). Promuovere ai player a blocchi (`utils/feature_flags.py`
   + `feature_visible` nei template) quando ogni area è validata. **Non farlo senza
   via esplicito dello stakeholder.**
-- **Migrazione Availability**: il sistema disponibilità è ancora nel file legacy
-  `routes/player/proposals.py`; migrarlo al blueprint `individual_match` (refactor
-  a basso rischio, l'ultimo residuo del dedup proposte #3).
+- **Migrazione Availability**: ~~FATTA~~ (ADR-032). La disponibilità è unificata
+  sul blueprint `individual_match` con `AvailabilityService` come unica fonte di
+  verità (località + sala + discovery); le 5 route legacy e
+  `routes/player/proposals.py` sono state rimosse. Restano aperte come *prodotto*:
+  la deprecazione completa di `PlayerAvailability` (ancora usato da
+  `ProposalService`) e l'eventuale promozione ai player (maturity gate ADR-028).
 - **Decisioni di prodotto aperte** (annotate in ADR-031):
   - riconciliare la *celebrazione* level-up (LevelUnlock) con il *gating* reale
     (FeatureConfig) se divergono;
