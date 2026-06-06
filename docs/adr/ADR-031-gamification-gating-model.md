@@ -321,16 +321,18 @@ File coinvolti (riferimento, non ancora modificati):
   sblocchi-per-livello sono **feedback/celebrazione** (non gating, che è
   FeatureConfig/ABAC). *Aperto*: riconciliare il contenuto della celebrazione con
   l'effettivo gating FeatureConfig se in futuro divergono.
-- **Invasività = doppio canale** (`frontend_bridge.py` + `notification_handlers.py`):
-  4 eventi su 5 (LevelUp, Achievement, StreakMilestone, QuestCompleted) emettono
-  **sia toast sia notifica persistente**, senza dedup né rate-limit; una partita
-  può generare ~3 toast + ~3 notifiche. XP è protetto (solo toast, soppresso se
-  ≤0); StreakBroken volutamente muto. Intervento mirato ad alto impatto per
-  l'obiettivo "non invasiva".
-- **Feedback sobrio non esiste ancora**: in `gamification.js` il feedback *è* il
-  toast con mascotte "Chalky" + confetti. La scelta "giù mascotte, tieni un
-  feedback evidente (badge che pulsa)" richiede di **costruire** la micro-
-  animazione del badge come sostituto, non solo di rimuovere.
+- **Invasività = doppio canale** — **RISOLTO (§11)**: ~~4 eventi su 5 (LevelUp,
+  Achievement, StreakMilestone, QuestCompleted) emettono sia toast sia notifica
+  persistente.~~ Le notifiche persistenti celebrative sono state **ritirate**:
+  questi eventi sono ora **toast-only**. `notification_handlers.py` è un seam
+  documentato per future notifiche *azionabili* (es. streak a rischio). Resta la
+  policy: notifica persistente solo per ciò che è azionabile/che puoi perderti.
+- **Feedback sobrio** — **RISOLTO (§11-quater)**: ~~non esiste ancora.~~ Il badge
+  in navbar è ora **vivo**: anello di progresso (`progress_percentage`), pulse su
+  XP, glow su level-up, `prefers-reduced-motion`. **Scala d'intensità** in
+  `gamification.js`: micro XP → solo badge (niente toast); level-up → glow + un
+  solo toast; achievement/streak/quest → pulse + toast con **cap di sessione**
+  (≤1 toast capped/sessione). Mascotte/confetti restano solo sui toast forti.
 
 ## Riferimenti
 

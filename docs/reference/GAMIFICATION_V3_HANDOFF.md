@@ -134,6 +134,27 @@ unico** (commit `refactor(gamification): idoneità achievement metric-driven` +
 **Nessun achievement resta non ottenibile.** Tutto resta **director-only**
 (maturity-gate ADR-028) finché non validato.
 
+## Fase 3 — Anti-invasività & badge navbar vivo (§11 + §11-quater) — ✅ COMPLETATA
+Commit `a046995` (backend), `f23e6c6` (frontend).
+
+- **Notifiche celebrative toast-only** (`a046995`): i 4 eventi celebrativi
+  (LevelUp, Achievement, StreakMilestone, QuestCompleted) **non** creano più una
+  notifica persistente — risolve alla radice il doppio canale toast+notifica.
+  `notification_handlers.py` diventa un seam documentato (`register_all_handlers`
+  no-op) per future notifiche gamification *azionabili* (es. "streak a rischio").
+  Test: `test_anti_invasivita_notifications.py` (nessuna notifica per i 4 eventi);
+  aggiornato il test skipped in `test_achievement_workflow.py` al nuovo contratto.
+- **Badge navbar vivo** (`f23e6c6`): `base.html` espone anello di progresso
+  (conic-gradient da `progress_percentage`) + data-* (`level`/`current-xp`/
+  `xp-next`/`progress`); `gamification.css` aggiunge `.gami-badge-ring`,
+  `.badge-pulse`, `.badge-levelup`, con `prefers-reduced-motion`.
+- **Scala d'intensità** (`gamification.js`, classe `GamificationBadge`): micro XP
+  → solo badge (count-up + pulse, **niente toast**); level-up → glow del badge +
+  **l'unico toast celebrativo giustificato**; achievement/streak/quest → pulse +
+  toast soggetto al **cap di sessione** (≤1 toast capped/sessione via
+  `sessionStorage`; level-up esente). Test: `test_navbar_badge_render.py` (rende
+  `base.html` in request context, robusto al leak `@transactional` dei route).
+
 ## Convenzioni
 Vedi `CLAUDE.md` (transactional, utc_now, Distance VO/ADR-027, ADR-028 endpoint
 allowlist, naming italiano, EventBus isolation nei test). Verifica con `pyright`

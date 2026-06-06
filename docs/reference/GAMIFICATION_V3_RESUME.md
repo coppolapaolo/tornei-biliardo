@@ -51,10 +51,21 @@ Questo è il punto d'ingresso rapido per riprendere. Per il dettaglio:
     (FeatureConfig) se divergono;
   - `perfectionist` conta solo drill pass/fail (i drill a punteggio non hanno
     `max_score` nel modello).
-- **Item di design V3 mai iniziati** (fasi successive): anti-invasività doppio
-  canale (toast+notifica, dedup/rate-limit), feedback sobrio/badge navbar vivo,
-  onboarding obbligatorio + backfill, modello geografico per prossimità (merita
-  ADR dedicato), segnale-domanda → director, leaderboard locale/contributo.
+- **Anti-invasività + badge navbar vivo (§11 + §11-quater)** — ✅ **FATTO**
+  (commit `a046995`, `f23e6c6`):
+  - Notifiche celebrative **toast-only**: i 4 eventi (level-up, achievement,
+    streak, quest) non creano più notifica persistente; `notification_handlers.py`
+    è ora un seam per future notifiche *azionabili* (es. streak a rischio).
+  - **Badge navbar vivo**: anello di progresso (conic-gradient da
+    `progress_percentage`), pulse su XP, glow su level-up, `prefers-reduced-motion`.
+  - **Scala d'intensità** (JS): micro XP → solo badge (niente toast); level-up →
+    glow + l'unico toast giustificato; achievement/streak/quest → pulse + toast
+    soggetto al **cap di sessione** (≤1 toast capped/sessione via `sessionStorage`,
+    level-up esente).
+  - Test: `test_anti_invasivita_notifications.py`, `test_navbar_badge_render.py`.
+- **Item di design V3 mai iniziati** (fasi successive): onboarding obbligatorio +
+  backfill, modello geografico per prossimità (merita ADR dedicato),
+  segnale-domanda → director, leaderboard locale/contributo.
 
 ## Note ambiente (per non riscoprirle)
 - Le dipendenze non sono preinstallate: servono `flask_sqlalchemy flask-mail
