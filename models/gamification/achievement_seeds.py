@@ -23,35 +23,37 @@ Each achievement has:
 
 from models.gamification.models import AchievementCategory, AchievementDifficulty
 
-
-# Achievement non ottenibili allo stato attuale del codice (Fase 1 / Task B,
-# vedi GAMIFICATION_V3_HANDOFF.md). Vengono seminati con is_active=False così il
-# service li esclude (is_hidden NON li nasconde davvero, mostra "???").
+# Achievement non ottenibili allo stato attuale del codice. Vengono seminati con
+# is_active=False così il service li esclude (is_hidden NON li nasconde davvero,
+# mostra "???"). Riattivare un singolo slug quando il rispettivo tracking esiste.
 #
-# Due categorie:
+# Restano disattivati 8 achievement, in due categorie:
 #   - 2 stub di requisito sempre False in _check_requirements:
-#       win_streak       → hot_streak, unstoppable
-#       category_reached → category_climber, elite_player
-#   - 8 progress-based mai incrementati (nessun handler li cabla agli eventi).
+#       win_streak       → hot_streak, unstoppable          (serie di vittorie)
+#       category_reached → category_climber, elite_player   (categoria giocatore)
+#   - 4 progress-based legati a drill/strategie: tracking non ancora cablato
+#       challenges_completed → challenge_master, drill_addict
+#       perfect_challenges   → perfectionist
+#       strategies_tried     → strategy_explorer
 #
-# Riattivare un singolo slug quando il rispettivo tracking/cablaggio esiste.
-UNOBTAINABLE_ACHIEVEMENT_SLUGS = frozenset({
-    # stub win_streak (manca tracking win-streak consecutivi)
-    "hot_streak",
-    "unstoppable",
-    # stub category_reached (manca tracking categoria giocatore)
-    "category_climber",
-    "elite_player",
-    # progress-based non cablati agli eventi
-    "social_butterfly",
-    "popular_player",
-    "diverse_competitor",
-    "community_pillar",
-    "strategy_explorer",
-    "challenge_master",
-    "perfectionist",
-    "drill_addict",
-})
+# I 4 social/avversari (social_butterfly, popular_player, diverse_competitor,
+# community_pillar) erano qui ma ora sono metric-driven (AchievementMetrics) e
+# cablati agli eventi → ATTIVI. Vedi migrazione 20260606 per i DB esistenti.
+UNOBTAINABLE_ACHIEVEMENT_SLUGS = frozenset(
+    {
+        # stub win_streak (manca tracking serie di vittorie consecutive)
+        "hot_streak",
+        "unstoppable",
+        # stub category_reached (manca tracking categoria giocatore)
+        "category_climber",
+        "elite_player",
+        # progress-based drill/strategie: tracking non ancora cablato
+        "strategy_explorer",
+        "challenge_master",
+        "perfectionist",
+        "drill_addict",
+    }
+)
 
 
 PREDEFINED_ACHIEVEMENTS = [
@@ -118,7 +120,6 @@ PREDEFINED_ACHIEVEMENTS = [
         "is_progressive": False,
         "xp_reward": 300,
     },
-
     # ========================================
     # Tournament Achievements
     # ========================================
@@ -172,7 +173,6 @@ PREDEFINED_ACHIEVEMENTS = [
         "is_progressive": True,
         "xp_reward": 1500,
     },
-
     # ========================================
     # Social Achievements
     # ========================================
@@ -226,7 +226,6 @@ PREDEFINED_ACHIEVEMENTS = [
         "is_progressive": True,
         "xp_reward": 500,
     },
-
     # ========================================
     # Skill Achievements
     # ========================================
@@ -270,7 +269,6 @@ PREDEFINED_ACHIEVEMENTS = [
         "is_progressive": False,
         "xp_reward": 600,
     },
-
     # ========================================
     # Consistency Achievements (Weekly Streaks)
     # ========================================
@@ -304,7 +302,6 @@ PREDEFINED_ACHIEVEMENTS = [
         "is_progressive": False,
         "xp_reward": 2000,
     },
-
     # ========================================
     # Exploration Achievements
     # ========================================
@@ -348,7 +345,6 @@ PREDEFINED_ACHIEVEMENTS = [
         "is_progressive": True,
         "xp_reward": 500,
     },
-
     # ========================================
     # Director Eligibility Achievement
     # ========================================
@@ -363,7 +359,6 @@ PREDEFINED_ACHIEVEMENTS = [
         "xp_reward": 200,
         "is_hidden": False,
     },
-
     # ========================================
     # Milestone Achievements
     # ========================================
@@ -403,25 +398,25 @@ PREDEFINED_ACHIEVEMENTS = [
 def seed_achievements(db_session):
     """
     Seed predefined achievements into database.
-    
+
     Creates Achievement records for all predefined achievements.
     Skips achievements that already exist (idempotent).
-    
+
     Args:
         db_session: SQLAlchemy session
-        
+
     Returns:
         Tuple of (created_count, skipped_count)
     """
     from models.gamification.models import Achievement
-    
+
     created_count = 0
     skipped_count = 0
-    
+
     for achievement_data in PREDEFINED_ACHIEVEMENTS:
         # Check if achievement already exists
         existing = Achievement.query.filter_by(slug=achievement_data["slug"]).first()
-        
+
         if existing:
             skipped_count += 1
             continue
@@ -433,7 +428,7 @@ def seed_achievements(db_session):
             achievement.is_active = False
         db_session.add(achievement)
         created_count += 1
-    
+
     db_session.commit()
-    
+
     return created_count, skipped_count

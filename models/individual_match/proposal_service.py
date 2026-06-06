@@ -24,6 +24,23 @@ from .models import (
 )
 
 
+def _reevaluate_social_achievement(user_id: int, slug: str) -> None:
+    """Rivaluta un achievement social legato alle proposte di partita.
+
+    Mirror del pattern di privacy_service: chiamata cross-dominio verso la
+    gamification con errori isolati — un fallimento gamification non deve mai
+    bloccare la creazione/accettazione di una proposta. L'idoneità è
+    metric-driven (conteggio reale delle proposte), quindi è sufficiente
+    richiedere la rivalutazione.
+    """
+    try:
+        from models.gamification.achievement_service import AchievementService
+
+        AchievementService.check_and_award_achievement(user_id, slug)
+    except Exception:
+        pass
+
+
 class ProposalService:
     """Service for match proposal creation and management."""
 
@@ -108,6 +125,9 @@ class ProposalService:
                     )
                 except Exception:
                     pass  # Notification failure shouldn't block proposal creation
+
+        # Gamification: il proponente può aver sbloccato "social_butterfly".
+        _reevaluate_social_achievement(proposer_id, "social_butterfly")
 
         return proposal
 
@@ -209,6 +229,9 @@ class ProposalService:
                 )
         except Exception:
             pass  # Notification failure shouldn't block proposal creation
+
+        # Gamification: il proponente può aver sbloccato "social_butterfly".
+        _reevaluate_social_achievement(proposer_id, "social_butterfly")
 
         return proposal
 
@@ -461,6 +484,9 @@ class ProposalService:
             )
         except Exception:
             pass  # Notification failure shouldn't block acceptance
+
+        # Gamification: chi accetta può aver sbloccato "popular_player".
+        _reevaluate_social_achievement(user_id, "popular_player")
 
         return individual_match
 

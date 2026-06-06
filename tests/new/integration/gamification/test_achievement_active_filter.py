@@ -32,11 +32,27 @@ class TestUnobtainableAchievementsDisabled:
             assert ach.is_active is False, f"{slug} dovrebbe essere disattivato"
 
     def test_obtainable_achievements_stay_active(self, db_session):
-        """Gli achievement cablati e funzionanti restano attivi."""
+        """Gli achievement cablati e funzionanti restano attivi.
+
+        Include i 4 social/avversari resi metric-driven e cablati agli eventi.
+        """
         seed_achievements(db.session)
 
-        for slug in ("first_blood", "veteran_player", "tournament_debut",
-                     "level_10_milestone", "weekly_warrior", "sharpshooter"):
+        for slug in (
+            "first_blood",
+            "veteran_player",
+            "tournament_debut",
+            "level_10_milestone",
+            "weekly_warrior",
+            "sharpshooter",
+            "champion",
+            "podium_finish",
+            "tournament_dominator",
+            "social_butterfly",
+            "popular_player",
+            "diverse_competitor",
+            "community_pillar",
+        ):
             ach = Achievement.query.filter_by(slug=slug).first()
             assert ach is not None
             assert ach.is_active is True, f"{slug} dovrebbe restare attivo"
@@ -55,26 +71,35 @@ class TestUnobtainableAchievementsDisabled:
 
 
 class TestSeedMigrationConsistency:
-    def test_seed_and_migration_slug_lists_match(self):
+    def test_seed_and_migration_net_state_match(self):
         """
-        Il set hardcoded nella migrazione (DB esistenti) deve coincidere col set
-        dei seed (nuovi DB), così i due percorsi non divergono nel tempo.
+        Lo stato netto delle migrazioni (DB esistenti) deve coincidere col set
+        dei seed (nuovi DB): disattivati(20260605) − riattivati(20260606) == set
+        dei seed. Così i due percorsi non divergono nel tempo.
         """
         import importlib.util
         from pathlib import Path
 
-        migration_path = (
-            Path(__file__).resolve().parents[4]
-            / "migrations"
-            / "20260605_disable_unobtainable_achievements.py"
-        )
-        spec = importlib.util.spec_from_file_location(
-            "_mig_disable_unobtainable", migration_path
-        )
-        assert spec and spec.loader
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
+        migrations_dir = Path(__file__).resolve().parents[4] / "migrations"
 
-        assert set(module.UNOBTAINABLE_ACHIEVEMENT_SLUGS) == set(
-            UNOBTAINABLE_ACHIEVEMENT_SLUGS
+        def _load(filename: str):
+            path = migrations_dir / filename
+            spec = importlib.util.spec_from_file_location(f"_mig_{filename}", path)
+            assert spec and spec.loader
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
+
+        disabled = set(
+            _load(
+                "20260605_disable_unobtainable_achievements.py"
+            ).UNOBTAINABLE_ACHIEVEMENT_SLUGS
         )
+        reactivated = set(
+            _load(
+                "20260606_reactivate_social_achievements.py"
+            ).REACTIVATED_ACHIEVEMENT_SLUGS
+        )
+
+        assert reactivated <= disabled  # i riattivati erano stati disattivati
+        assert (disabled - reactivated) == set(UNOBTAINABLE_ACHIEVEMENT_SLUGS)
