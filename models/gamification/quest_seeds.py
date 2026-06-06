@@ -25,11 +25,34 @@ from __future__ import annotations
 from datetime import datetime, timedelta, time, date
 from typing import Optional
 
+from flask_babel import gettext as _
+
 from models.base import utc_now
 from models.gamification.models import Quest, QuestType
 
+
+def _i18n_extraction_anchor() -> None:
+    """Ancora di estrazione i18n — **mai chiamata**.
+
+    Le quest seed memorizzano in DB le stringhe IT *sorgente* (vedi
+    PERSONAL_WEEKLY_QUESTS): non possiamo tradurle al seed perché gira
+    all'avvio, fuori da un request context (gettext solleverebbe). La
+    traduzione avviene quindi a **display-time** nei template con `_(quest.name)`
+    / `_(quest.description)`. Qui ripetiamo i literal dentro `_()` solo perché
+    pybabel (estrazione statica) li includa nel catalogo. Questa funzione non
+    viene mai eseguita: serve unicamente come ancora di estrazione.
+    """
+    _("Sfida settimanale: gioca 3 partite")
+    _("Gioca 3 partite questa settimana per mantenere il ritmo.")
+    _("Vinci una partita questa settimana")
+    _("Conquista almeno una vittoria questa settimana.")
+
+
 # Template delle quest personali settimanali. `key` è solo interno; il `name`
 # include il periodo per essere univoco e idempotente settimana per settimana.
+# I `name`/`description` sono le stringhe IT *sorgente* (msgid): restano stabili
+# in DB (idempotenza del seed) e vengono tradotti a display-time, vedi
+# `_i18n_extraction_anchor` sopra.
 PERSONAL_WEEKLY_QUESTS = [
     {
         "name": "Sfida settimanale: gioca 3 partite",

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-05-21 09:37+0000\n"
+"POT-Creation-Date: 2026-06-06 11:27+0000\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -107,93 +107,41 @@ msgstr "You earned a streak freeze!"
 msgid "Hai perso una serie di %(weeks)d settimane."
 msgstr "You lost a %(weeks)d-week streak."
 
-#: models/gamification/frontend_bridge.py:238
+#: models/gamification/frontend_bridge.py:239
 #, python-format
 msgid "Quest completata: %(name)s — +%(xp)d XP"
 msgstr "Quest completed: %(name)s — +%(xp)d XP"
 
-#: models/gamification/frontend_bridge.py:298
-#: models/gamification/frontend_bridge.py:327
+#: models/gamification/frontend_bridge.py:302
+#: models/gamification/frontend_bridge.py:331
 msgid "name"
 msgstr "name"
 
-#: models/gamification/frontend_bridge.py:299
-#: models/gamification/frontend_bridge.py:328
+#: models/gamification/frontend_bridge.py:303
+#: models/gamification/frontend_bridge.py:332
 msgid "description"
 msgstr "description"
 
-#: models/gamification/frontend_bridge.py:358
+#: models/gamification/frontend_bridge.py:362
 #, python-format
 msgid "+%(xp)d XP — %(category)s"
 msgstr "+%(xp)d XP — %(category)s"
 
-#: models/gamification/notification_handlers.py:94
-msgid "Hai sbloccato: "
-msgstr "You unlocked: "
+#: models/gamification/quest_seeds.py:45
+msgid "Sfida settimanale: gioca 3 partite"
+msgstr "Weekly challenge: play 3 matches"
 
-#: models/gamification/notification_handlers.py:96
-#, python-format
-msgid "Livello %(level)d Raggiunto!"
-msgstr "Level %(level)d Reached!"
+#: models/gamification/quest_seeds.py:46
+msgid "Gioca 3 partite questa settimana per mantenere il ritmo."
+msgstr "Play 3 matches this week to keep up the pace."
 
-#: models/gamification/notification_handlers.py:98
-#, python-format
-msgid "Congratulazioni! Hai raggiunto il livello %(level)d!%(unlocks)s"
-msgstr "Congratulations! You reached level %(level)d!%(unlocks)s"
+#: models/gamification/quest_seeds.py:47
+msgid "Vinci una partita questa settimana"
+msgstr "Win a match this week"
 
-#: models/gamification/notification_handlers.py:122
-msgid "Visualizza Progressi"
-msgstr "View Progress"
-
-#: models/gamification/notification_handlers.py:154
-#: templates/gamification/dashboard.html:316
-msgid "Achievement Sbloccato!"
-msgstr "Achievement Unlocked!"
-
-#: models/gamification/notification_handlers.py:156
-#, python-format
-msgid "Hai ottenuto '%(name)s' (%(difficulty)s)! +%(xp)d XP"
-msgstr "You earned '%(name)s' (%(difficulty)s)! +%(xp)d XP"
-
-#: models/gamification/notification_handlers.py:184
-msgid "Visualizza Achievement"
-msgstr "View Achievement"
-
-#: models/gamification/notification_handlers.py:221
-#, python-format
-msgid "Hai guadagnato %(count)d freeze!"
-msgstr "You earned %(count)d freeze!"
-
-#: models/gamification/notification_handlers.py:225
-#, python-format
-msgid "Streak di %(weeks)d Settimane!"
-msgstr "%(weeks)d Week Streak!"
-
-#: models/gamification/notification_handlers.py:227
-#, python-format
-msgid ""
-"Incredibile! Hai mantenuto il tuo streak di %(type)s per %(weeks)d "
-"settimane consecutive!%(freeze)s +%(xp)d XP"
-msgstr ""
-"Incredible! You maintained your %(type)s streak for %(weeks)d consecutive"
-" weeks!%(freeze)s +%(xp)d XP"
-
-#: models/gamification/notification_handlers.py:257
-msgid "Visualizza Streak"
-msgstr "View Streak"
-
-#: models/gamification/notification_handlers.py:288
-msgid "Quest Completata!"
-msgstr "Quest Completed!"
-
-#: models/gamification/notification_handlers.py:290
-#, python-format
-msgid "Hai completato la quest %(type)s '%(name)s'! +%(xp)d XP"
-msgstr "You completed the %(type)s quest '%(name)s'! +%(xp)d XP"
-
-#: models/gamification/notification_handlers.py:318
-msgid "Visualizza Quests"
-msgstr "View Quests"
+#: models/gamification/quest_seeds.py:48
+msgid "Conquista almeno una vittoria questa settimana."
+msgstr "Win at least one match this week."
 
 #: models/individual_match/match_lifecycle_service.py:177
 msgid "Match tra 2 ore"
@@ -205,55 +153,55 @@ msgid "Il tuo match è programmato per le %(time)s%(location)s"
 msgstr "Your match is scheduled for %(time)s%(location)s"
 
 #: models/individual_match/match_lifecycle_service.py:185
-#: models/individual_match/proposal_service.py:207
-#: models/individual_match/proposal_service.py:524
-#: models/individual_match/proposal_service.py:565 templates/index.html:112
+#: models/individual_match/proposal_service.py:227
+#: models/individual_match/proposal_service.py:550
+#: models/individual_match/proposal_service.py:591 templates/index.html:112
 #: templates/public/garas_list.html:43
 msgid "Visualizza"
 msgstr "View"
 
-#: models/individual_match/proposal_service.py:172
-#: models/individual_match/proposal_service.py:446
+#: models/individual_match/proposal_service.py:192
+#: models/individual_match/proposal_service.py:469
 msgid "Un giocatore"
 msgstr "One player"
 
-#: models/individual_match/proposal_service.py:198
+#: models/individual_match/proposal_service.py:218
 msgid "Nuova proposta di match"
 msgstr "New match proposal"
 
-#: models/individual_match/proposal_service.py:200
+#: models/individual_match/proposal_service.py:220
 #, python-format
 msgid "%(username)s propone un match aperto%(location)s il %(date)s"
 msgstr "%(username)s proposes an open match%(location)s on %(date)s"
 
-#: models/individual_match/proposal_service.py:281
+#: models/individual_match/proposal_service.py:304
 msgid "Giocatore già invitato a questa proposta"
 msgstr "Player already invited to this proposal"
 
-#: models/individual_match/proposal_service.py:441
+#: models/individual_match/proposal_service.py:464
 msgid "Proposta già accettata"
 msgstr "Proposal already accepted"
 
-#: models/individual_match/proposal_service.py:452
+#: models/individual_match/proposal_service.py:475
 msgid "Proposta accettata!"
 msgstr "Proposal accepted!"
 
-#: models/individual_match/proposal_service.py:454
+#: models/individual_match/proposal_service.py:477
 #, python-format
 msgid "%(player)s ha accettato la tua proposta di match%(location)s"
 msgstr "%(player)s accepted your match proposal%(location)s"
 
-#: models/individual_match/proposal_service.py:460
+#: models/individual_match/proposal_service.py:483
 msgid "Vai al match"
 msgstr "Go to match"
 
-#: models/individual_match/proposal_service.py:517
-#: models/individual_match/proposal_service.py:558
+#: models/individual_match/proposal_service.py:543
+#: models/individual_match/proposal_service.py:584
 msgid "Proposta scaduta"
 msgstr "Proposal expired"
 
-#: models/individual_match/proposal_service.py:519
-#: models/individual_match/proposal_service.py:560
+#: models/individual_match/proposal_service.py:545
+#: models/individual_match/proposal_service.py:586
 #, python-format
 msgid "La tua proposta di match%(location)s è scaduta senza accettazioni."
 msgstr "Your match proposal%(location)s expired without acceptances."
@@ -390,7 +338,7 @@ msgstr "Competition Enrollment"
 msgid "Che piacere rivederti!"
 msgstr "Nice to see you again!"
 
-#: routes/auth.py:40 templates/base.html:528
+#: routes/auth.py:40 templates/base.html:538
 msgid "Tutto pronto per giocare?"
 msgstr "Ready to play?"
 
@@ -584,7 +532,7 @@ msgstr "Password set successfully"
 msgid "Non è possibile creare gare in un campionato terminato."
 msgstr "Cannot create competitions in a terminated championship."
 
-#: routes/gamification/admin.py:74 templates/base.html:238
+#: routes/gamification/admin.py:74 templates/base.html:248
 #: templates/base_navbar_section.html:39
 #: templates/gamification/admin/dashboard.html:5
 msgid "Admin Gamification"
@@ -970,80 +918,80 @@ msgstr "Error while sending: %(detail)s"
 msgid "Tornei Biliardo"
 msgstr "Billiard Championships"
 
-#: templates/base.html:193
+#: templates/base.html:203
 msgid "Apri menu"
 msgstr "Open menu"
 
-#: templates/admin/kpi.html:51 templates/base.html:203 templates/base.html:309
+#: templates/admin/kpi.html:51 templates/base.html:213 templates/base.html:319
 #: templates/base_navbar_section.html:6 templates/player/history.html:17
 msgid "Dashboard"
 msgstr "Dashboard"
 
-#: templates/base.html:211 templates/base.html:328
+#: templates/base.html:221 templates/base.html:338
 #: templates/base_navbar_section.html:13
 msgid "Sale Biliardo"
 msgstr "Billiard Halls"
 
-#: templates/base.html:229 templates/base_navbar_section.html:30
+#: templates/base.html:239 templates/base_navbar_section.html:30
 msgid "Match Individuali"
 msgstr "Individual Matches"
 
-#: templates/base.html:243 templates/base.html:323
+#: templates/base.html:253 templates/base.html:333
 #: templates/base_navbar_section.html:44
 #: templates/gamification/admin/dashboard.html:113
 msgid "Utenti"
 msgstr "Users"
 
-#: templates/base.html:256 templates/base_navbar_section.html:57
+#: templates/base.html:266 templates/base_navbar_section.html:57
 msgid "Reset DB"
 msgstr "Reset DB"
 
-#: templates/base.html:297
+#: templates/base.html:307
 msgid "Notifiche"
 msgstr "Notifications"
 
-#: templates/base.html:302
+#: templates/base.html:312
 msgid "Le mie Richieste Gestore"
 msgstr "My Venue Manager Requests"
 
-#: templates/base.html:313 templates/player/profile.html:6
+#: templates/base.html:323 templates/player/profile.html:6
 #: templates/player/profile.html:19
 msgid "Il mio Profilo"
 msgstr "My Profile"
 
-#: templates/base.html:338
+#: templates/base.html:348
 msgid "Richieste Gestore Sala"
 msgstr "Venue Manager Requests"
 
-#: templates/base.html:343
+#: templates/base.html:353
 msgid "Richieste Director"
 msgstr "Director Requests"
 
-#: templates/base.html:352 templates/player/profile.html:131
+#: templates/base.html:362 templates/player/profile.html:131
 msgid "Elimina Account"
 msgstr "Delete Account"
 
-#: templates/base.html:360
+#: templates/base.html:370
 msgid "Logout"
 msgstr "Logout"
 
-#: templates/base.html:366
+#: templates/base.html:376
 msgid "Login"
 msgstr "Login"
 
-#: templates/base.html:369
+#: templates/base.html:379
 #: templates/components/_index_registration_info.html:18
 #: templates/index.html:130
 msgid "Registrati"
 msgstr "Register"
 
-#: templates/base.html:497 templates/base.html:503
+#: templates/base.html:507 templates/base.html:513
 msgid "Conferma"
 msgstr "Confirm"
 
 #: templates/admin/campionato_wizard_step1.html:14
 #: templates/admin/campionato_wizard_step1.html:184
-#: templates/admin/campionato_wizard_step2.html:14 templates/base.html:502
+#: templates/admin/campionato_wizard_step2.html:14 templates/base.html:512
 #: templates/components/_admin_new_campionato_modal.html:28
 #: templates/components/_campionato_create_modal.html:27
 #: templates/components/_campionato_edit_form.html:192
@@ -1060,51 +1008,51 @@ msgstr "Confirm"
 msgid "Annulla"
 msgstr "Cancel"
 
-#: templates/base.html:518
+#: templates/base.html:528
 msgid "XP OTTENUTI"
 msgstr "XP EARNED"
 
-#: templates/base.html:519
+#: templates/base.html:529
 msgid "LEVEL UP!"
 msgstr "LEVEL UP!"
 
-#: templates/base.html:520
+#: templates/base.html:530
 msgid "Nuovo livello raggiunto!"
 msgstr "New level reached!"
 
-#: templates/base.html:521
+#: templates/base.html:531
 msgid "NUOVO TRAGUARDO!"
 msgstr "NEW MILESTONE!"
 
-#: templates/base.html:522
+#: templates/base.html:532
 msgid "STREAK!"
 msgstr "STREAK!"
 
-#: templates/base.html:523
+#: templates/base.html:533
 msgid "Freeze attivo"
 msgstr "Freeze active"
 
-#: templates/base.html:524
+#: templates/base.html:534
 msgid "STREAK PERSA"
 msgstr "STREAK LOST"
 
-#: templates/base.html:525
+#: templates/base.html:535
 msgid "Non mollare, riprovare!"
 msgstr "Don't give up, try again!"
 
-#: templates/base.html:526
+#: templates/base.html:536
 msgid "QUEST COMPLETATA!"
 msgstr "QUEST COMPLETED!"
 
-#: templates/base.html:527
+#: templates/base.html:537
 msgid "TI DIAMO IL BENTORNATO!"
 msgstr "WELCOME BACK!"
 
-#: templates/base.html:529
+#: templates/base.html:539
 msgid "Ciao!"
 msgstr "Hello!"
 
-#: templates/base.html:530
+#: templates/base.html:540
 #, python-format
 msgid "Ciao %(username)s!"
 msgstr "Hello %(username)s!"
@@ -4749,6 +4697,10 @@ msgstr "XP Earned!"
 msgid "Nuovo Livello!"
 msgstr "New Level!"
 
+#: templates/gamification/dashboard.html:316
+msgid "Achievement Sbloccato!"
+msgstr "Achievement Unlocked!"
+
 #: templates/gamification/dashboard.html:317
 msgid "Totale: "
 msgstr "Total: "
@@ -6872,4 +6824,49 @@ msgstr "Unknown"
 
 #~ msgid "Not a valid float value."
 #~ msgstr "Not a valid float value."
+
+#~ msgid "Hai sbloccato: "
+#~ msgstr "You unlocked: "
+
+#~ msgid "Livello %(level)d Raggiunto!"
+#~ msgstr "Level %(level)d Reached!"
+
+#~ msgid "Congratulazioni! Hai raggiunto il livello %(level)d!%(unlocks)s"
+#~ msgstr "Congratulations! You reached level %(level)d!%(unlocks)s"
+
+#~ msgid "Visualizza Progressi"
+#~ msgstr "View Progress"
+
+#~ msgid "Hai ottenuto '%(name)s' (%(difficulty)s)! +%(xp)d XP"
+#~ msgstr "You earned '%(name)s' (%(difficulty)s)! +%(xp)d XP"
+
+#~ msgid "Visualizza Achievement"
+#~ msgstr "View Achievement"
+
+#~ msgid "Hai guadagnato %(count)d freeze!"
+#~ msgstr "You earned %(count)d freeze!"
+
+#~ msgid "Streak di %(weeks)d Settimane!"
+#~ msgstr "%(weeks)d Week Streak!"
+
+#~ msgid ""
+#~ "Incredibile! Hai mantenuto il tuo streak"
+#~ " di %(type)s per %(weeks)d settimane "
+#~ "consecutive!%(freeze)s +%(xp)d XP"
+#~ msgstr ""
+#~ "Incredible! You maintained your %(type)s "
+#~ "streak for %(weeks)d consecutive "
+#~ "weeks!%(freeze)s +%(xp)d XP"
+
+#~ msgid "Visualizza Streak"
+#~ msgstr "View Streak"
+
+#~ msgid "Quest Completata!"
+#~ msgstr "Quest Completed!"
+
+#~ msgid "Hai completato la quest %(type)s '%(name)s'! +%(xp)d XP"
+#~ msgstr "You completed the %(type)s quest '%(name)s'! +%(xp)d XP"
+
+#~ msgid "Visualizza Quests"
+#~ msgstr "View Quests"
 

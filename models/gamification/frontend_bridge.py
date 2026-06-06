@@ -234,8 +234,12 @@ class GamificationFrontendBridge:
         GamificationFrontendBridge._flash_gamification_event(
             "quest",
             {
-                "name": event.quest_name,
-                "description": _("Quest completata: %(name)s — +%(xp)d XP", name=event.quest_name, xp=event.xp_awarded),
+                "name": _(event.quest_name),
+                "description": _(
+                    "Quest completata: %(name)s — +%(xp)d XP",
+                    name=_(event.quest_name),
+                    xp=event.xp_awarded,
+                ),
             },
             event.user_id
         )

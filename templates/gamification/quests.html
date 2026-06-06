@@ -51,8 +51,8 @@
                             </div>
                         </div>
                         <div class="card-body">
-                            <h5 class="card-title">{{ quest.name }}</h5>
-                            <p class="card-text text-muted small">{{ quest.description }}</p>
+                            <h5 class="card-title">{{ _(quest.name) }}</h5>
+                            <p class="card-text text-muted small">{{ _(quest.description) }}</p>
 
                             {% if quest_info.is_participating %}
                             <!-- Progress Bar -->
@@ -121,8 +121,8 @@
                                 {% elif quest.quest_type.value == 'monthly' %}{{ _('Mensile') }}
                                 {% else %}{{ _('Speciale') }}{% endif %}
                             </span>
-                            <h6 class="card-title">{{ quest.name }}</h6>
-                            <p class="card-text text-muted small">{{ quest.description|truncate(80) }}</p>
+                            <h6 class="card-title">{{ _(quest.name) }}</h6>
+                            <p class="card-text text-muted small">{{ _(quest.description)|truncate(80) }}</p>
                             <small class="text-muted">
                                 <i class="fas fa-calendar me-1"></i>
                                 {{ _('Inizia') }}: {{ quest.start_date|datetime_local }}
@@ -160,7 +160,7 @@
                         <tr>
                             <td>
                                 <i class="fas fa-check-circle text-success me-2"></i>
-                                {{ quest.name }}
+                                {{ _(quest.name) }}
                             </td>
                             <td>
                                 <span class="badge

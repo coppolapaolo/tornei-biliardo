@@ -248,9 +248,9 @@
                                         {% else %}
                                         <span class="badge bg-warning me-1">{{ _('Speciale') }}</span>
                                         {% endif %}
-                                        {{ quest.name }}
+                                        {{ _(quest.name) }}
                                     </h6>
-                                    <p class="card-text small text-muted">{{ quest.description|truncate(80) }}</p>
+                                    <p class="card-text small text-muted">{{ _(quest.description)|truncate(80) }}</p>
 
                                     {% if quest_info.is_participating %}
                                     <div class="progress mb-2" style="height: 8px;">

@@ -41,8 +41,10 @@ Questo è il punto d'ingresso rapido per riprendere. Per il dettaglio:
 2. `python scripts/reconcile_achievements.py` (una volta, concede badge storici).
 
 ## Aperto / prossime fasi (NON ancora fatto)
-- **i18n**: nomi/descrizioni quest seed sono stringhe IT non in `_()`; eventuale
-  `/translate` se vanno tradotte.
+- ~~**i18n quest seed**~~ ✅ **FATTO**: nomi/descrizioni delle quest seed
+  tradotti a display-time (`_(quest.name)`/`_(quest.description)` nei template +
+  toast bridge), con ancora di estrazione in `quest_seeds.py` (il valore in DB
+  resta la sorgente IT, idempotenza intatta). Catalogo EN aggiornato e compilato.
 - **Maturity-gate (ADR-028)**: endpoint proposte/quest/achievement NON in
   `ENDPOINT_ROLES` → admin-only in prod (voluto in beta). Quando validati per i
   player, aggiungere le entry in `utils/feature_flags.py` + `feature_visible` nei
