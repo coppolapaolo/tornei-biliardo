@@ -4,9 +4,12 @@
 **Stato**: Fase 1 e Fase 2 **completate**, tutto committato e pushato, working tree pulito.
 
 Questo è il punto d'ingresso rapido per riprendere. Per il dettaglio:
-- `docs/reference/GAMIFICATION_V3_HANDOFF.md` — piano + esito Fase 1/2 (con ancore).
+- `docs/reference/GAMIFICATION_V3_HANDOFF.md` — piano + esito Fase 1/2/3 (con ancore).
 - `docs/reference/GAMIFICATION_V3.md` — design completo.
 - `docs/adr/ADR-031-gamification-gating-model.md` — decisione + audit aggiornato.
+- `docs/reference/GAMIFICATION_V3_MANUAL_TESTS.md` — **checklist test manuali**
+  (frontend badge/toast, cap sessione, reduced-motion, centro notifiche) non
+  coperti dai test automatici.
 
 ## Cosa è FATTO (verde: pyright 0 errori; `pytest tests/new/integration -n 4` ok)
 
