@@ -149,11 +149,15 @@ class GamificationFrontendBridge:
     @staticmethod
     def handle_level_up(event: LevelUpEvent) -> None:
         """Send level up event to frontend."""
-        # B21: include total XP and unlocks summary so the toast is self-contained.
+        # B21: include total XP and unlocks summary so the toast is
+        # self-contained. ADR-031: i LevelUnlock sono *feedback/ricompense* di
+        # livello, non i gate reali (quelli sono FeatureConfig/ABAC, con codici
+        # distinti). Evitiamo quindi "funzioni sbloccate", che sovra-prometteva
+        # accesso a capacità non necessariamente concesse dal livello.
         unlock_count = len(event.unlocks) if event.unlocks else 0
         if unlock_count > 0:
             subtitle = _(
-                "Hai accumulato %(xp)d XP totali — %(n)d nuove funzioni sbloccate!",
+                "Hai accumulato %(xp)d XP totali — %(n)d nuove ricompense di livello!",
                 xp=event.total_xp,
                 n=unlock_count,
             )

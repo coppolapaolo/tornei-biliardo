@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-06 13:06+0000\n"
+"POT-Creation-Date: 2026-06-06 13:23+0000\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -69,124 +69,124 @@ msgstr ""
 msgid "Per aver sbloccato un achievement"
 msgstr ""
 
-#: models/gamification/frontend_bridge.py:156
+#: models/gamification/frontend_bridge.py:160
 #, python-format
-msgid "Hai accumulato %(xp)d XP totali — %(n)d nuove funzioni sbloccate!"
+msgid "Hai accumulato %(xp)d XP totali — %(n)d nuove ricompense di livello!"
 msgstr ""
 
-#: models/gamification/frontend_bridge.py:161
+#: models/gamification/frontend_bridge.py:165
 #, python-format
 msgid "Hai accumulato %(xp)d XP totali"
 msgstr ""
 
-#: models/gamification/frontend_bridge.py:167
+#: models/gamification/frontend_bridge.py:171
 #, python-format
 msgid "Livello %(level)d raggiunto!"
 msgstr ""
 
-#: models/gamification/frontend_bridge.py:196
+#: models/gamification/frontend_bridge.py:200
 #, python-format
 msgid "Hai giocato per %(weeks)d settimane consecutive!"
 msgstr ""
 
-#: models/gamification/frontend_bridge.py:201
+#: models/gamification/frontend_bridge.py:205
 #, python-format
 msgid "Sei attivo da %(weeks)d settimane consecutive!"
 msgstr ""
 
-#: models/gamification/frontend_bridge.py:205
+#: models/gamification/frontend_bridge.py:209
 msgid "Hai guadagnato un congelatore!"
 msgstr ""
 
-#: models/gamification/frontend_bridge.py:227
+#: models/gamification/frontend_bridge.py:231
 #, python-format
 msgid "Hai perso una serie di %(weeks)d settimane."
 msgstr ""
 
-#: models/gamification/frontend_bridge.py:242
+#: models/gamification/frontend_bridge.py:246
 #, python-format
 msgid "Quest completata: %(name)s — +%(xp)d XP"
 msgstr ""
 
-#: models/gamification/frontend_bridge.py:316
-#: models/gamification/frontend_bridge.py:346
+#: models/gamification/frontend_bridge.py:320
+#: models/gamification/frontend_bridge.py:350
 msgid "name"
 msgstr ""
 
-#: models/gamification/frontend_bridge.py:317
-#: models/gamification/frontend_bridge.py:347
+#: models/gamification/frontend_bridge.py:321
+#: models/gamification/frontend_bridge.py:351
 msgid "description"
 msgstr ""
 
-#: models/gamification/frontend_bridge.py:371
+#: models/gamification/frontend_bridge.py:375
 msgid "Scopri gli altri giocatori"
 msgstr ""
 
-#: models/gamification/frontend_bridge.py:372
+#: models/gamification/frontend_bridge.py:376
 msgid ""
 "Ora puoi sbirciare i profili degli altri. Vai alla classifica per "
 "cominciare!"
 msgstr ""
 
-#: models/gamification/frontend_bridge.py:373
+#: models/gamification/frontend_bridge.py:377
 msgid "Statistiche globali"
 msgstr ""
 
-#: models/gamification/frontend_bridge.py:374
+#: models/gamification/frontend_bridge.py:378
 msgid "Confronta le tue performance con quelle della community."
 msgstr ""
 
-#: models/gamification/frontend_bridge.py:375
+#: models/gamification/frontend_bridge.py:379
 msgid "Crea una partita diretta"
 msgstr ""
 
-#: models/gamification/frontend_bridge.py:376
+#: models/gamification/frontend_bridge.py:380
 msgid "Sfida un avversario specifico — proponi luogo e data."
 msgstr ""
 
-#: models/gamification/frontend_bridge.py:377
+#: models/gamification/frontend_bridge.py:381
 msgid "Proponi una partita aperta"
 msgstr ""
 
-#: models/gamification/frontend_bridge.py:378
+#: models/gamification/frontend_bridge.py:382
 msgid ""
 "Lancia una proposta alla community e aspetta che qualcuno si faccia "
 "avanti."
 msgstr ""
 
-#: models/gamification/frontend_bridge.py:379
+#: models/gamification/frontend_bridge.py:383
 msgid "Imposta la tua disponibilità"
 msgstr ""
 
-#: models/gamification/frontend_bridge.py:380
+#: models/gamification/frontend_bridge.py:384
 msgid "Fai sapere quando sei libero così altri possono proporti partite."
 msgstr ""
 
-#: models/gamification/frontend_bridge.py:381
+#: models/gamification/frontend_bridge.py:385
 msgid "Organizza una gara"
 msgstr ""
 
-#: models/gamification/frontend_bridge.py:382
+#: models/gamification/frontend_bridge.py:386
 msgid "Sei pronto: puoi creare la tua prima gara standalone."
 msgstr ""
 
-#: models/gamification/frontend_bridge.py:383
+#: models/gamification/frontend_bridge.py:387
 msgid "Organizza un campionato"
 msgstr ""
 
-#: models/gamification/frontend_bridge.py:384
+#: models/gamification/frontend_bridge.py:388
 msgid "Crea una serie di gare e gestisci una stagione completa."
 msgstr ""
 
-#: models/gamification/frontend_bridge.py:385
+#: models/gamification/frontend_bridge.py:389
 msgid "Prova le sfide"
 msgstr ""
 
-#: models/gamification/frontend_bridge.py:386
+#: models/gamification/frontend_bridge.py:390
 msgid "Allenati con drill mirati: ogni completamento conta per la classifica."
 msgstr ""
 
-#: models/gamification/frontend_bridge.py:408
+#: models/gamification/frontend_bridge.py:412
 #, python-format
 msgid "+%(xp)d XP — %(category)s"
 msgstr ""
@@ -7081,5 +7081,8 @@ msgstr ""
 #~ msgstr ""
 
 #~ msgid "Visualizza Quests"
+#~ msgstr ""
+
+#~ msgid "Hai accumulato %(xp)d XP totali — %(n)d nuove funzioni sbloccate!"
 #~ msgstr ""
 
