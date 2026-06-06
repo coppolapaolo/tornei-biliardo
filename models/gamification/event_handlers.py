@@ -30,7 +30,9 @@ from models.gamification.level_service import LevelService
 from models.gamification.achievement_service import AchievementService
 from models.gamification.streak_service import StreakService
 from models.gamification.quest_service import QuestService
-from models.gamification.xp_config import XP_RATES
+from models.gamification.config_service import (
+    GamificationConfigService as ConfigService,
+)
 from models.gamification.models import XPTransactionType, StreakType
 
 logger = logging.getLogger(__name__)
@@ -138,28 +140,30 @@ class GamificationEventHandlers:
 
             # Award winner XP (skip if winner is a forfeit — covers trio 3/3 walkover)
             if event.winner_id not in forfeit_ids:
+                win_xp = ConfigService.get_xp_rate(XPTransactionType.MATCH_WIN)
                 LevelService.award_xp(
                     user_id=event.winner_id,
-                    xp_amount=XP_RATES[XPTransactionType.MATCH_WIN],
+                    xp_amount=win_xp,
                     transaction_type=XPTransactionType.MATCH_WIN,
                     reason=f"Won match {event.match_id}",
                     related_entities={"match_id": event.match_id},
                 )
                 logger.info(
-                    f"Awarded {XP_RATES[XPTransactionType.MATCH_WIN]} XP to user {event.winner_id} for match win"
+                    f"Awarded {win_xp} XP to user {event.winner_id} for match win"
                 )
 
             # Award loser participation XP (skip if loser is a forfeit)
             if loser_id and loser_id not in forfeit_ids:
+                loss_xp = ConfigService.get_xp_rate(XPTransactionType.MATCH_LOSS)
                 LevelService.award_xp(
                     user_id=loser_id,
-                    xp_amount=XP_RATES[XPTransactionType.MATCH_LOSS],
+                    xp_amount=loss_xp,
                     transaction_type=XPTransactionType.MATCH_LOSS,
                     reason=f"Participated in match {event.match_id}",
                     related_entities={"match_id": event.match_id},
                 )
                 logger.info(
-                    f"Awarded {XP_RATES[XPTransactionType.MATCH_LOSS]} XP to user {loser_id} for match participation"
+                    f"Awarded {loss_xp} XP to user {loser_id} for match participation"
                 )
 
             # Iterate the full participant roster so trio p3 is not skipped.
@@ -244,15 +248,18 @@ class GamificationEventHandlers:
             event: InscriptionCreatedEvent with user_id, gara_id
         """
         try:
+            inscription_xp = ConfigService.get_xp_rate(
+                XPTransactionType.TOURNAMENT_INSCRIPTION
+            )
             LevelService.award_xp(
                 user_id=event.user_id,
-                xp_amount=XP_RATES[XPTransactionType.TOURNAMENT_INSCRIPTION],
+                xp_amount=inscription_xp,
                 transaction_type=XPTransactionType.TOURNAMENT_INSCRIPTION,
                 reason=f"Registered for tournament {event.gara_id}",
                 related_entities={"gara_id": event.gara_id},
             )
             logger.info(
-                f"Awarded {XP_RATES[XPTransactionType.TOURNAMENT_INSCRIPTION]} XP to user {event.user_id} for tournament inscription"
+                f"Awarded {inscription_xp} XP to user {event.user_id} for tournament inscription"
             )
 
             # Achievement: riconcilia (tournament_participation + strategie provate)
@@ -321,35 +328,40 @@ class GamificationEventHandlers:
                 ]
 
             # Award all participants completion XP
+            completion_xp = ConfigService.get_xp_rate(
+                XPTransactionType.TOURNAMENT_COMPLETION
+            )
             for participant_id in participant_ids:
                 LevelService.award_xp(
                     user_id=participant_id,
-                    xp_amount=XP_RATES[XPTransactionType.TOURNAMENT_COMPLETION],
+                    xp_amount=completion_xp,
                     transaction_type=XPTransactionType.TOURNAMENT_COMPLETION,
                     reason=f"Completed tournament {event.gara_id}",
                     related_entities={"gara_id": event.gara_id},
                 )
 
             logger.info(
-                f"Awarded {XP_RATES[XPTransactionType.TOURNAMENT_COMPLETION]} XP "
+                f"Awarded {completion_xp} XP "
                 f"to {len(participant_ids)} participants for tournament {event.gara_id} completion"
             )
 
             # Bonus for winner
             if event.winner_id:
+                win_xp = ConfigService.get_xp_rate(XPTransactionType.TOURNAMENT_WIN)
                 LevelService.award_xp(
                     user_id=event.winner_id,
-                    xp_amount=XP_RATES[XPTransactionType.TOURNAMENT_WIN],
+                    xp_amount=win_xp,
                     transaction_type=XPTransactionType.TOURNAMENT_WIN,
                     reason=f"Won tournament {event.gara_id}",
                     related_entities={"gara_id": event.gara_id, "position": 1},
                 )
-                logger.info(
-                    f"Awarded {XP_RATES[XPTransactionType.TOURNAMENT_WIN]} XP to winner {event.winner_id}"
-                )
+                logger.info(f"Awarded {win_xp} XP to winner {event.winner_id}")
 
             # Bonus for podium (top 3, excluding winner who already got bonus)
             if event.final_standings and len(event.final_standings) >= 2:
+                podium_xp = ConfigService.get_xp_rate(
+                    XPTransactionType.TOURNAMENT_PODIUM
+                )
                 # Get top 3 (positions 1, 2, 3)
                 podium = [
                     s
@@ -364,7 +376,7 @@ class GamificationEventHandlers:
                     if user_id:
                         LevelService.award_xp(
                             user_id=user_id,
-                            xp_amount=XP_RATES[XPTransactionType.TOURNAMENT_PODIUM],
+                            xp_amount=podium_xp,
                             transaction_type=XPTransactionType.TOURNAMENT_PODIUM,
                             reason=f"Finished {position} in tournament {event.gara_id}",
                             related_entities={
@@ -419,15 +431,16 @@ class GamificationEventHandlers:
     def handle_competition_created_for_xp(event: CompetitionCreatedEvent) -> None:
         """Award XP for creating a competition (Gara)."""
         try:
+            gara_xp = ConfigService.get_xp_rate(XPTransactionType.GARA_CREATION)
             LevelService.award_xp(
                 user_id=event.creator_id,
-                xp_amount=XP_RATES[XPTransactionType.GARA_CREATION],
+                xp_amount=gara_xp,
                 transaction_type=XPTransactionType.GARA_CREATION,
                 reason=f"Created competition {event.name}",
                 related_entities={"gara_id": event.gara_id},
             )
             logger.info(
-                f"Awarded {XP_RATES[XPTransactionType.GARA_CREATION]} XP to user {event.creator_id} for creating Gara"
+                f"Awarded {gara_xp} XP to user {event.creator_id} for creating Gara"
             )
         except Exception as e:
             logger.error(
@@ -438,15 +451,18 @@ class GamificationEventHandlers:
     def handle_campionato_created_for_xp(event: CampionatoCreatedEvent) -> None:
         """Award XP for creating a Campionato."""
         try:
+            campionato_xp = ConfigService.get_xp_rate(
+                XPTransactionType.CAMPIONATO_CREATION
+            )
             LevelService.award_xp(
                 user_id=event.creator_id,
-                xp_amount=XP_RATES[XPTransactionType.CAMPIONATO_CREATION],
+                xp_amount=campionato_xp,
                 transaction_type=XPTransactionType.CAMPIONATO_CREATION,
                 reason=f"Created campionato {event.name}",
                 related_entities={"campionato_id": event.campionato_id},
             )
             logger.info(
-                f"Awarded {XP_RATES[XPTransactionType.CAMPIONATO_CREATION]} XP to user {event.creator_id} for creating Campionato"
+                f"Awarded {campionato_xp} XP to user {event.creator_id} for creating Campionato"
             )
         except Exception as e:
             logger.error(

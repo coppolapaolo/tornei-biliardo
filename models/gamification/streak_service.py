@@ -29,7 +29,9 @@ from models.gamification.models import (
 from models.gamification.xp_config import (
     FREEZE_MILESTONES_WEEKLY,
     MAX_FREEZE_COUNT,
-    XP_RATES,
+)
+from models.gamification.config_service import (
+    GamificationConfigService as ConfigService,
 )
 from models.gamification.events import (
     StreakMilestoneEvent,
@@ -360,7 +362,7 @@ class StreakService:
             tracker.last_freeze_earned_at = date.today()
 
             # Award XP bonus
-            xp_bonus = XP_RATES[XPTransactionType.STREAK_BONUS] * 4  # 30 * 4 = 120 XP
+            xp_bonus = ConfigService.get_xp_rate(XPTransactionType.STREAK_BONUS) * 4  # 30 * 4 = 120 XP
             LevelService.award_xp(
                 user_id=tracker.user_id,
                 xp_amount=xp_bonus,
@@ -400,7 +402,7 @@ class StreakService:
             tracker.total_freeze_earned += freeze_earned
             tracker.last_freeze_earned_at = date.today()
 
-            xp_bonus = XP_RATES[XPTransactionType.STREAK_BONUS] * 12  # 30 * 12 = 360 XP
+            xp_bonus = ConfigService.get_xp_rate(XPTransactionType.STREAK_BONUS) * 12  # 30 * 12 = 360 XP
             LevelService.award_xp(
                 user_id=tracker.user_id,
                 xp_amount=xp_bonus,
@@ -434,7 +436,7 @@ class StreakService:
                 tracker.total_freeze_earned += freeze_earned
                 tracker.last_freeze_earned_at = date.today()
 
-            xp_bonus = XP_RATES[XPTransactionType.STREAK_BONUS] * 12
+            xp_bonus = ConfigService.get_xp_rate(XPTransactionType.STREAK_BONUS) * 12
             LevelService.award_xp(
                 user_id=tracker.user_id,
                 xp_amount=xp_bonus,
@@ -468,7 +470,7 @@ class StreakService:
             tracker.total_freeze_earned += freeze_earned
             tracker.last_freeze_earned_at = date.today()
 
-            xp_bonus = XP_RATES[XPTransactionType.STREAK_BONUS] * 52  # 30 * 52 = 1560 XP
+            xp_bonus = ConfigService.get_xp_rate(XPTransactionType.STREAK_BONUS) * 52  # 30 * 52 = 1560 XP
             LevelService.award_xp(
                 user_id=tracker.user_id,
                 xp_amount=xp_bonus,
