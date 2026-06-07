@@ -1,4 +1,4 @@
-"""Integration tests for playoff routes — permissions, start, confirm/decline, create gara."""
+"""Integration tests for playoff routes (start, confirm/decline, create gara)."""
 
 import pytest
 import uuid
@@ -10,7 +10,10 @@ from models.competition.models import Gara, Inscription
 from models.classification.models import Classification
 from models.status_enum import GaraStatus
 from models.playoff.models import (
-    PlayoffConfiguration, PlayoffQualification, PlayoffType, QualificationStatus,
+    PlayoffConfiguration,
+    PlayoffQualification,
+    PlayoffType,
+    QualificationStatus,
 )
 from models.user.models import User
 
@@ -45,17 +48,28 @@ def terminated_campionato_with_playoff(db_session, admin_user):
     db_session.flush()
 
     gara = Gara(
-        campionato_id=c.id, number=1, name="Gara 1",
-        date=date(2026, 1, 15), discipline="nine_ball",
-        status=GaraStatus.COMPLETED.value, rounds_count=3, current_round=1, distance=5,
+        campionato_id=c.id,
+        number=1,
+        name="Gara 1",
+        date=date(2026, 1, 15),
+        discipline="nine_ball",
+        status=GaraStatus.COMPLETED.value,
+        rounds_count=3,
+        current_round=1,
+        distance=5,
     )
     db_session.add(gara)
     db_session.flush()
 
     cfg = PlayoffConfiguration(
-        campionato_id=c.id, name="Elite", playoff_type=PlayoffType.TOP_N,
-        max_participants=6, positions_from=1, positions_to=6,
-        is_active=True, auto_generate=True,
+        campionato_id=c.id,
+        name="Elite",
+        playoff_type=PlayoffType.TOP_N,
+        max_participants=6,
+        positions_from=1,
+        positions_to=6,
+        is_active=True,
+        auto_generate=True,
     )
     db_session.add(cfg)
     db_session.flush()
@@ -67,13 +81,23 @@ def terminated_campionato_with_playoff(db_session, admin_user):
         db_session.add(p)
         db_session.flush()
         Classification(
-            campionato_id=c.id, user_id=p.id, position=i + 1,
-            total_matches_won=10 - i, total_point_difference=20 - i, gare_played=5,
+            campionato_id=c.id,
+            user_id=p.id,
+            position=i + 1,
+            total_matches_won=10 - i,
+            total_point_difference=20 - i,
+            gare_played=5,
         )
-        db_session.add(Classification(
-            campionato_id=c.id, user_id=p.id, position=i + 1,
-            total_matches_won=10 - i, total_point_difference=20 - i, gare_played=5,
-        ))
+        db_session.add(
+            Classification(
+                campionato_id=c.id,
+                user_id=p.id,
+                position=i + 1,
+                total_matches_won=10 - i,
+                total_point_difference=20 - i,
+                gare_played=5,
+            )
+        )
         db_session.add(Inscription(user_id=p.id, gara_id=gara.id))
         players.append(p)
 
@@ -83,42 +107,81 @@ def terminated_campionato_with_playoff(db_session, admin_user):
 
 
 def _login(client, user):
-    client.post("/auth/login", data={"username": user.username, "password": "test1234"}, follow_redirects=True)
+    client.post(
+        "/auth/login",
+        data={"username": user.username, "password": "test1234"},
+        follow_redirects=True,
+    )
 
 
 class TestStartPlayoffRoute:
-    def test_admin_can_start_playoff(self, client, db_session, admin_user, terminated_campionato_with_playoff):
+    def test_admin_can_start_playoff(
+        self, client, db_session, admin_user, terminated_campionato_with_playoff
+    ):
         c, cfg, players, _ = terminated_campionato_with_playoff
         _login(client, admin_user)
 
-        resp = client.post(f"/admin/campionato/{c.id}/start-playoff", follow_redirects=True)
+        resp = client.post(
+            f"/admin/campionato/{c.id}/start-playoff", follow_redirects=True
+        )
         assert resp.status_code == 200
 
         quals = PlayoffQualification.query.filter_by(configuration_id=cfg.id).all()
         assert len(quals) == 6
 
-    def test_player_cannot_start_playoff(self, client, db_session, player_user, terminated_campionato_with_playoff):
+    def test_player_cannot_start_playoff(
+        self, client, db_session, player_user, terminated_campionato_with_playoff
+    ):
         c, _, _, _ = terminated_campionato_with_playoff
         _login(client, player_user)
 
-        resp = client.post(f"/admin/campionato/{c.id}/start-playoff", follow_redirects=True)
+        resp = client.post(
+            f"/admin/campionato/{c.id}/start-playoff", follow_redirects=True
+        )
         # Should be forbidden or redirected
         assert resp.status_code in (403, 200)  # 200 if redirected with flash
         quals = PlayoffQualification.query.all()
         assert len(quals) == 0
 
-    def test_start_playoff_already_started(self, client, db_session, admin_user, terminated_campionato_with_playoff):
+    def test_start_playoff_already_started(
+        self, client, db_session, admin_user, terminated_campionato_with_playoff
+    ):
         c, cfg, players, _ = terminated_campionato_with_playoff
         _login(client, admin_user)
 
         client.post(f"/admin/campionato/{c.id}/start-playoff", follow_redirects=True)
-        resp = client.post(f"/admin/campionato/{c.id}/start-playoff", follow_redirects=True)
+        resp = client.post(
+            f"/admin/campionato/{c.id}/start-playoff", follow_redirects=True
+        )
         assert resp.status_code == 200  # Redirected with flash error
         assert b"avviati" in resp.data or b"error" in resp.data.lower()
 
 
 class TestPlayerConfirmDeclineRoute:
-    def test_player_can_confirm(self, client, db_session, admin_user, terminated_campionato_with_playoff):
+    def test_player_can_view_invitation_page(
+        self, client, db_session, admin_user, terminated_campionato_with_playoff
+    ):
+        """Bug 15: la pagina di invito (target dell'action_url della notifica)
+        è raggiungibile dal player e mostra i bottoni Conferma/Rifiuto."""
+        c, cfg, players, _ = terminated_campionato_with_playoff
+        _login(client, admin_user)
+        client.post(f"/admin/campionato/{c.id}/start-playoff", follow_redirects=True)
+
+        player = players[0]
+        qual = PlayoffQualification.query.filter_by(
+            configuration_id=cfg.id, user_id=player.id
+        ).first()
+
+        _login(client, player)
+        resp = client.get(f"/player/playoff/invitation/{qual.id}")
+        assert resp.status_code == 200
+        # I due form di azione devono essere presenti
+        assert f"/player/playoff/confirm/{qual.id}".encode() in resp.data
+        assert f"/player/playoff/decline/{qual.id}".encode() in resp.data
+
+    def test_player_can_confirm(
+        self, client, db_session, admin_user, terminated_campionato_with_playoff
+    ):
         c, cfg, players, _ = terminated_campionato_with_playoff
         _login(client, admin_user)
         client.post(f"/admin/campionato/{c.id}/start-playoff", follow_redirects=True)
@@ -135,7 +198,9 @@ class TestPlayerConfirmDeclineRoute:
         updated = db.session.get(PlayoffQualification, qual.id)
         assert updated.status == QualificationStatus.CONFIRMED
 
-    def test_player_can_decline(self, client, db_session, admin_user, terminated_campionato_with_playoff):
+    def test_player_can_decline(
+        self, client, db_session, admin_user, terminated_campionato_with_playoff
+    ):
         c, cfg, players, _ = terminated_campionato_with_playoff
         _login(client, admin_user)
         client.post(f"/admin/campionato/{c.id}/start-playoff", follow_redirects=True)
@@ -152,7 +217,14 @@ class TestPlayerConfirmDeclineRoute:
         updated = db.session.get(PlayoffQualification, qual.id)
         assert updated.status == QualificationStatus.DECLINED
 
-    def test_other_player_cannot_confirm(self, client, db_session, admin_user, player_user, terminated_campionato_with_playoff):
+    def test_other_player_cannot_confirm(
+        self,
+        client,
+        db_session,
+        admin_user,
+        player_user,
+        terminated_campionato_with_playoff,
+    ):
         c, cfg, players, _ = terminated_campionato_with_playoff
         _login(client, admin_user)
         client.post(f"/admin/campionato/{c.id}/start-playoff", follow_redirects=True)
@@ -167,7 +239,9 @@ class TestPlayerConfirmDeclineRoute:
 
 
 class TestCreatePlayoffGaraRoute:
-    def test_create_playoff_gara(self, client, db_session, admin_user, terminated_campionato_with_playoff):
+    def test_create_playoff_gara(
+        self, client, db_session, admin_user, terminated_campionato_with_playoff
+    ):
         c, cfg, players, _ = terminated_campionato_with_playoff
         _login(client, admin_user)
 
@@ -176,6 +250,7 @@ class TestCreatePlayoffGaraRoute:
 
         # Confirm 5 players
         from models.playoff.services import PlayoffService
+
         for p in players[:5]:
             qual = PlayoffQualification.query.filter_by(
                 configuration_id=cfg.id, user_id=p.id
@@ -196,7 +271,9 @@ class TestCreatePlayoffGaraRoute:
 
 
 class TestConfigManagementRoute:
-    def test_edit_config(self, client, db_session, admin_user, terminated_campionato_with_playoff):
+    def test_edit_config(
+        self, client, db_session, admin_user, terminated_campionato_with_playoff
+    ):
         c, cfg, _, _ = terminated_campionato_with_playoff
         _login(client, admin_user)
 
@@ -211,7 +288,9 @@ class TestConfigManagementRoute:
         assert updated.name == "Super Elite"
         assert updated.positions_to == 8
 
-    def test_add_config(self, client, db_session, admin_user, terminated_campionato_with_playoff):
+    def test_add_config(
+        self, client, db_session, admin_user, terminated_campionato_with_playoff
+    ):
         c, _, _, _ = terminated_campionato_with_playoff
         _login(client, admin_user)
 
@@ -227,10 +306,14 @@ class TestConfigManagementRoute:
         )
         assert resp.status_code == 200
 
-        configs = PlayoffConfiguration.query.filter_by(campionato_id=c.id, is_active=True).all()
+        configs = PlayoffConfiguration.query.filter_by(
+            campionato_id=c.id, is_active=True
+        ).all()
         assert len(configs) == 2
 
-    def test_deactivate_config(self, client, db_session, admin_user, terminated_campionato_with_playoff):
+    def test_deactivate_config(
+        self, client, db_session, admin_user, terminated_campionato_with_playoff
+    ):
         c, cfg, _, _ = terminated_campionato_with_playoff
         _login(client, admin_user)
 

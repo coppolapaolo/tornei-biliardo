@@ -94,6 +94,10 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "player.remove_trio_rack": {"player", "director"},
     "player.confirm_trio_result": {"player", "director"},
     "player.forfeit_trio": {"player", "director"},
+    # Playoff invitation: confirm/decline participation (bug 15)
+    "player.playoff_invitation": {"player", "director"},
+    "player.playoff_confirm": {"player", "director"},
+    "player.playoff_decline": {"player", "director"},
     # === Director only: campionato/gara creation and management ===
     "admin.campionato.create_campionato": {"director"},
     "admin.campionato.edit_campionato": {"director"},

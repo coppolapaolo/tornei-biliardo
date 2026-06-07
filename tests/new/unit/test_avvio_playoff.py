@@ -1,17 +1,20 @@
-"""Unit tests for playoff start (Spec 2) — config management, qualifications, player management."""
+"""Unit tests for playoff start: config, qualifications, player management."""
 
 import pytest
 import uuid
-from datetime import date, timedelta
+from datetime import date
 
 from models import Campionato
 from models.base import db, utc_now
 from models.competition.models import Gara, Inscription
 from models.classification.models import Classification
-from models.status_enum import TournamentStatus, GaraStatus
+from models.status_enum import GaraStatus
 from models.playoff.models import (
-    PlayoffConfiguration, PlayoffQualification, PlayoffTournament,
-    PlayoffType, QualificationStatus,
+    PlayoffConfiguration,
+    PlayoffQualification,
+    PlayoffTournament,
+    PlayoffType,
+    QualificationStatus,
 )
 from models.playoff.services import PlayoffService
 from models.user.models import User
@@ -44,20 +47,34 @@ def _make_gara(db_session, campionato, number=1, status=GaraStatus.COMPLETED.val
     day = ((number - 1) % 28) + 1
     month = ((number - 1) // 28) % 12 + 1
     g = Gara(
-        campionato_id=campionato.id, number=number, name=f"Gara {number}",
-        date=date(2026, month, day), discipline="nine_ball",
-        status=status, rounds_count=3, current_round=1, distance=5,
+        campionato_id=campionato.id,
+        number=number,
+        name=f"Gara {number}",
+        date=date(2026, month, day),
+        discipline="nine_ball",
+        status=status,
+        rounds_count=3,
+        current_round=1,
+        distance=5,
     )
     db_session.add(g)
     db_session.flush()
     return g
 
 
-def _make_config(db_session, campionato, name="Elite", pos_from=1, pos_to=6, max_p=6, min_garas=0):
+def _make_config(
+    db_session, campionato, name="Elite", pos_from=1, pos_to=6, max_p=6, min_garas=0
+):
     cfg = PlayoffConfiguration(
-        campionato_id=campionato.id, name=name, playoff_type=PlayoffType.TOP_N,
-        max_participants=max_p, positions_from=pos_from, positions_to=pos_to,
-        is_active=True, auto_generate=True, min_garas_played=min_garas,
+        campionato_id=campionato.id,
+        name=name,
+        playoff_type=PlayoffType.TOP_N,
+        max_participants=max_p,
+        positions_from=pos_from,
+        positions_to=pos_to,
+        is_active=True,
+        auto_generate=True,
+        min_garas_played=min_garas,
     )
     db_session.add(cfg)
     db_session.flush()
@@ -66,9 +83,12 @@ def _make_config(db_session, campionato, name="Elite", pos_from=1, pos_to=6, max
 
 def _make_classification(db_session, campionato, user, position, gare_played=5):
     cls = Classification(
-        campionato_id=campionato.id, user_id=user.id,
-        position=position, total_matches_won=10 - position,
-        total_point_difference=20 - position, gare_played=gare_played,
+        campionato_id=campionato.id,
+        user_id=user.id,
+        position=position,
+        total_matches_won=10 - position,
+        total_point_difference=20 - position,
+        gare_played=gare_played,
     )
     db_session.add(cls)
     db_session.flush()
@@ -91,7 +111,9 @@ class TestConfigManagement:
         cfg = _make_config(db_session, c)
         db_session.commit()
 
-        PlayoffService.update_configuration(cfg.id, name="New Name", positions_to=8, max_participants=8)
+        PlayoffService.update_configuration(
+            cfg.id, name="New Name", positions_to=8, max_participants=8
+        )
         updated = db.session.get(PlayoffConfiguration, cfg.id)
         assert updated.name == "New Name"
         assert updated.positions_to == 8
@@ -117,7 +139,11 @@ class TestConfigManagement:
         db_session.commit()
 
         cfg = PlayoffService.add_configuration(
-            c.id, "Consolazione", positions_from=9, positions_to=16, max_participants=8,
+            c.id,
+            "Consolazione",
+            positions_from=9,
+            positions_to=16,
+            max_participants=8,
         )
         assert cfg.id is not None
         assert cfg.name == "Consolazione"
@@ -172,6 +198,27 @@ class TestStartPlayoff:
         assert all(q.status == QualificationStatus.PENDING for q in quals)
         assert all(q.invited_at is not None for q in quals)
 
+    def test_start_playoff_sends_invitation_with_deeplink(self, db_session):
+        """Bug 15: ogni qualificato riceve una notifica con action_url che
+        deep-linka alla propria pagina di invito (dove conferma/rifiuta),
+        e qualification_id nelle related_entities."""
+        from models.notification.models import Notification, NotificationType
+
+        c, cfg, players = self._setup_campionato(db_session)
+        PlayoffService.start_playoff(c.id)
+
+        quals = PlayoffQualification.query.filter_by(configuration_id=cfg.id).all()
+        assert len(quals) == 6
+        for qual in quals:
+            notif = Notification.query.filter_by(
+                user_id=qual.user_id,
+                notification_type=NotificationType.PLAYOFF_INVITATION,
+            ).first()
+            assert notif is not None, f"Nessuna notifica per user {qual.user_id}"
+            assert notif.action_url == f"/player/playoff/invitation/{qual.id}"
+            assert notif.action_text
+            assert notif.get_related_entities().get("qualification_id") == qual.id
+
     def test_start_playoff_not_terminated(self, db_session):
         c = _make_campionato(db_session, terminated=False)
         _make_config(db_session, c)
@@ -189,7 +236,7 @@ class TestStartPlayoff:
 
     def test_start_playoff_no_active_configs(self, db_session):
         c = _make_campionato(db_session, terminated=True)
-        # Add a config then deactivate it, so campionato has playoff_configs but none active
+        # Add a config then deactivate it: campionato has configs but none active
         cfg = _make_config(db_session, c)
         cfg.is_active = False
         db_session.commit()
@@ -199,7 +246,7 @@ class TestStartPlayoff:
 
     def test_min_garas_excludes_player(self, db_session):
         c = _make_campionato(db_session, terminated=True)
-        cfg = _make_config(db_session, c, min_garas=3)
+        _make_config(db_session, c, min_garas=3)
         gara = _make_gara(db_session, c)
         players = []
         for i in range(8):
@@ -209,7 +256,12 @@ class TestStartPlayoff:
             _make_inscription(db_session, p, gara)
             # Create actual inscriptions matching gare_played for min_garas check
             for j in range(gare_played):
-                extra_gara = _make_gara(db_session, c, number=10 + i * 10 + j, status=GaraStatus.COMPLETED.value)
+                extra_gara = _make_gara(
+                    db_session,
+                    c,
+                    number=10 + i * 10 + j,
+                    status=GaraStatus.COMPLETED.value,
+                )
                 _make_inscription(db_session, p, extra_gara)
             players.append(p)
         db_session.commit()
@@ -486,7 +538,7 @@ class TestGetGaraParams:
     def test_inherits_from_campionato(self, db_session):
         c = _make_campionato(db_session)
         cfg = _make_config(db_session, c)
-        gara = _make_gara(db_session, c)  # nine_ball, distance=5
+        _make_gara(db_session, c)  # nine_ball, distance=5
         db_session.commit()
 
         params = cfg.get_gara_params()
@@ -553,7 +605,9 @@ class TestTerminatedToCompleted:
 
         # Complete the playoff tournament
         tournament = PlayoffTournament.query.filter_by(configuration_id=cfg.id).first()
-        PlayoffService.complete_playoff_campionato(tournament.id, winner_id=players[0].id)
+        PlayoffService.complete_playoff_campionato(
+            tournament.id, winner_id=players[0].id
+        )
 
         # Now should be COMPLETED
         assert c.get_status() == "completed"
@@ -562,7 +616,7 @@ class TestTerminatedToCompleted:
         """With 2 playoff configs, if only 1 is completed, stay TERMINATED."""
         c = _make_campionato(db_session, terminated=True)
         cfg1 = _make_config(db_session, c, name="Elite", pos_from=1, pos_to=3, max_p=3)
-        cfg2 = _make_config(db_session, c, name="Academy", pos_from=4, pos_to=6, max_p=3)
+        _make_config(db_session, c, name="Academy", pos_from=4, pos_to=6, max_p=3)
         gara = _make_gara(db_session, c)
         players = []
         for i in range(6):
@@ -598,7 +652,7 @@ class TestPlayoffNotifications:
         from models.notification.models import Notification, NotificationType
 
         c = _make_campionato(db_session, terminated=True)
-        cfg = _make_config(db_session, c)
+        _make_config(db_session, c)
         gara = _make_gara(db_session, c)
         players = []
         for i in range(6):

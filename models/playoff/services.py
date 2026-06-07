@@ -393,10 +393,20 @@ class PlayoffService:
             raise ValueError("Non modificabile dopo avvio playoff")
 
         allowed = {
-            "name", "positions_from", "positions_to", "max_participants",
-            "min_garas_played", "location", "scheduled_date", "entry_fee",
-            "response_deadline", "discipline", "distance", "rounds_count",
-            "strategy_type", "odd_number_policy",
+            "name",
+            "positions_from",
+            "positions_to",
+            "max_participants",
+            "min_garas_played",
+            "location",
+            "scheduled_date",
+            "entry_fee",
+            "response_deadline",
+            "discipline",
+            "distance",
+            "rounds_count",
+            "strategy_type",
+            "odd_number_policy",
         }
         for key, value in fields.items():
             if key in allowed:
@@ -437,8 +447,14 @@ class PlayoffService:
         )
         # Optional gara params
         for key in (
-            "discipline", "distance", "rounds_count", "strategy_type",
-            "odd_number_policy", "location", "scheduled_date", "entry_fee",
+            "discipline",
+            "distance",
+            "rounds_count",
+            "strategy_type",
+            "odd_number_policy",
+            "location",
+            "scheduled_date",
+            "entry_fee",
         ):
             if key in kwargs:
                 setattr(config, key, kwargs[key])
@@ -503,6 +519,7 @@ class PlayoffService:
             from ..classification.campionato_classification import (
                 ClassificationService,
             )
+
             ClassificationService.update_campionato_classification(campionato_id)
         except Exception:
             logger.warning(
@@ -601,33 +618,49 @@ class PlayoffService:
         config: PlayoffConfiguration,
         qualifications: List[PlayoffQualification],
     ) -> None:
-        """Send in-app notifications to qualified players."""
-        from ..notification.factory import NotificationFactory
+        """Send in-app notifications to qualified players.
+
+        Una notifica PER qualifica, con deep-link alla pagina di invito
+        (`/player/playoff/invitation/<id>`) dove il giocatore conferma o
+        rifiuta la partecipazione (bug 15). Non si può usare una bulk
+        notification: l'`action_url` deve contenere la qualification_id
+        specifica di ciascun giocatore.
+        """
+        import logging
+        from ..notification.services import NotificationService
         from ..notification.models import NotificationType, NotificationPriority
 
         if not qualifications:
             return
 
-        user_ids = [q.user_id for q in qualifications]
         campionato_name = config.campionato.name if config.campionato else ""
 
-        NotificationFactory.create_bulk_notification(
-            user_ids=user_ids,
-            notification_type=NotificationType.PLAYOFF_INVITATION,
-            title=f"Invito Playoff — {config.name}",
-            message=(
-                f"Sei stato qualificato per {config.name} "
-                f"del campionato {campionato_name}. "
-                f"Conferma o rifiuta la partecipazione."
-            ),
-            priority=NotificationPriority.HIGH,
-            related_entities={
-                "campionato_id": config.campionato_id,
-                "configuration_id": config.id,
-                "configuration_name": config.name,
-            },
-            continue_on_error=True,
-        )
+        for qual in qualifications:
+            try:
+                NotificationService.create_notification(
+                    user_id=qual.user_id,
+                    notification_type=NotificationType.PLAYOFF_INVITATION,
+                    title=f"Invito Playoff — {config.name}",
+                    message=(
+                        f"Sei stato qualificato per {config.name} "
+                        f"del campionato {campionato_name}. "
+                        f"Conferma o rifiuta la partecipazione."
+                    ),
+                    priority=NotificationPriority.HIGH,
+                    action_url=f"/player/playoff/invitation/{qual.id}",
+                    action_text="Conferma o rifiuta",
+                    related_entities={
+                        "campionato_id": config.campionato_id,
+                        "configuration_id": config.id,
+                        "configuration_name": config.name,
+                        "qualification_id": qual.id,
+                    },
+                    expires_at=getattr(qual, "expires_at", None),
+                )
+            except Exception:
+                logging.getLogger(__name__).exception(
+                    "Invio invito playoff fallito per qualification %s", qual.id
+                )
 
     # ── Creazione gara playoff ───────────────────────────────────
 
@@ -668,6 +701,7 @@ class PlayoffService:
 
         # Next gara number: after all existing gare in campionato
         from ..competition.models import Gara as GaraModel
+
         max_number = (
             db.session.query(db.func.max(GaraModel.number))
             .filter_by(campionato_id=config.campionato_id)
@@ -686,19 +720,28 @@ class PlayoffService:
             max_participants=config.max_participants,
             playoff_config_id=config.id,
             **{
-                k: v for k, v in params.items()
-                if v is not None and k in (
-                    "location", "entry_fee",
-                    "matchmaking_strategy", "odd_number_policy",
+                k: v
+                for k, v in params.items()
+                if v is not None
+                and k
+                in (
+                    "location",
+                    "entry_fee",
+                    "matchmaking_strategy",
+                    "odd_number_policy",
                 )
             },
         )
 
         # Inscribe all confirmed players
-        confirmed = PlayoffQualification.query.filter_by(
-            configuration_id=configuration_id,
-            status=QualificationStatus.CONFIRMED,
-        ).order_by(PlayoffQualification.qualifying_position).all()
+        confirmed = (
+            PlayoffQualification.query.filter_by(
+                configuration_id=configuration_id,
+                status=QualificationStatus.CONFIRMED,
+            )
+            .order_by(PlayoffQualification.qualifying_position)
+            .all()
+        )
 
         for qual in confirmed:
             InscriptionService.inscribe_user(
@@ -771,6 +814,7 @@ class PlayoffService:
 
         # Determine position from classification if available
         from ..classification.models import Classification
+
         cls = Classification.query.filter_by(
             campionato_id=config.campionato_id, user_id=user_id
         ).first()
