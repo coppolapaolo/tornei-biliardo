@@ -87,7 +87,7 @@ class DashboardSectionBuilder:
             .join(Gara, Gara.id == TournamentMatch.gara_id)
             .filter(
                 Gara.campionato_id == selected.id,
-                TournamentMatch.status == "completed",  # type: ignore[operator]
+                TournamentMatch.status == MatchStatus.COMPLETED.value,
                 _user_is_match_participant(user_id),
             )
             .order_by(
@@ -223,9 +223,6 @@ class DashboardSectionBuilder:
             progress = LevelService.get_level_progress(user_id)
             streaks = StreakService.get_all_streaks(user_id)
 
-            return {
-                "progress": progress,
-                "streaks": streaks
-            }
+            return {"progress": progress, "streaks": streaks}
         except Exception:
             return {}

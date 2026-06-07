@@ -11,6 +11,7 @@ from sqlalchemy import func
 
 from models.base import db
 from models.match.models import Match
+from models.status_enum import MatchStatus
 from models.transaction.manager import transactional
 
 
@@ -274,7 +275,7 @@ class TiebreakerService:
 
         # Calculate resolution status (VALIDATED also counts as finished)
         all_matches_completed = all(
-            m.status in ["completed", "validated"] for m in tiebreaker_matches
+            MatchStatus.is_finished(m.status) for m in tiebreaker_matches
         )
         all_attempts_completed = all(a.completed for a in tiebreaker_attempts)
 

@@ -47,9 +47,9 @@
                     </div>
                     <div class="col-6 col-md-3">
                         <strong>{{ _("Classifica:") }}</strong><br>
-                        {% if wizard_data.classification_system == 'WINS' %}{{ _("Vittorie") }}
-                        {% elif wizard_data.classification_system == 'RACK' %}{{ _("Rack Totali") }}
-                        {% else %}{{ wizard_data.classification_system }}{% endif %}
+                        {% if wizard_data.default_classification_system == 'WINS' %}{{ _("Vittorie") }}
+                        {% elif wizard_data.default_classification_system == 'RACK' %}{{ _("Rack Totali") }}
+                        {% else %}{{ wizard_data.default_classification_system }}{% endif %}
                     </div>
                     <div class="col-6 col-md-3">
                         <strong>{{ _("Strategia:") }}</strong><br>{{ wizard_data.campionato_type|capitalize }}

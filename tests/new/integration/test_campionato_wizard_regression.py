@@ -111,6 +111,6 @@ class TestCampionatoWizardRouteRegression:
         html = response.data.decode("utf-8")
 
         # Classification system select should be present
-        assert 'id="classification_system"' in html
+        assert 'id="default_classification_system"' in html
         assert 'value="WINS"' in html
         assert 'value="RACK"' in html

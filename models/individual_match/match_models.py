@@ -11,7 +11,7 @@ from enum import Enum
 
 from sqlalchemy import func
 
-from ..base import db, BaseModel, TimestampMixin, utc_now
+from ..base import db, BaseModel, utc_now
 from ..status_enum import MatchStatus
 from ..match.base_match import BaseMatchMixin
 
@@ -506,7 +506,7 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
 
         # Find the set that is currently playing, or the last completed set
         for s in self.sets:  # type: ignore
-            if s.status == "playing":
+            if s.status == MatchStatus.PLAYING.value:
                 return s
 
         # No playing set - return None (need to start next set)
@@ -550,7 +550,7 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
 
         # Check that current set is completed
         current_set = self.get_current_set()
-        if current_set and current_set.status == "playing":
+        if current_set and current_set.status == MatchStatus.PLAYING.value:
             raise ValueError(f"Set {current_set.set_number} is still in progress")
 
         # Check if match is already complete
@@ -669,7 +669,7 @@ class IndividualSet(BaseModel):
 
     def start_set(self) -> None:
         """Start the set."""
-        if self.status != "pending":
+        if self.status != MatchStatus.PENDING.value:
             raise ValueError("Set can only be started from pending status")
 
         self.status = "playing"
@@ -681,7 +681,7 @@ class IndividualSet(BaseModel):
         rack_number: Optional[int] = None,
     ) -> "IndividualRack":
         """Add a rack result to this set."""
-        if self.status != "playing":
+        if self.status != MatchStatus.PLAYING.value:
             raise ValueError("Cannot add rack result to non-playing set")
 
         if winner_id not in [self.match.player1_id, self.match.player2_id]:
@@ -754,7 +754,7 @@ class IndividualSet(BaseModel):
 
     def is_completed(self) -> bool:
         """Check if set is completed."""
-        return self.status == "completed"
+        return self.status == MatchStatus.COMPLETED.value
 
     def remove_last_rack(self, user_id: int) -> Optional["IndividualRack"]:
         """Remove the last rack from this set (soft delete).
@@ -787,7 +787,7 @@ class IndividualSet(BaseModel):
             self.player2_racks = max(0, self.player2_racks - 1)
 
         # If set was completed, reopen it
-        if self.status == "completed":
+        if self.status == MatchStatus.COMPLETED.value:
             self.status = "playing"
             self.completed_at = None
 

@@ -25,13 +25,13 @@ if TYPE_CHECKING:  # Avoid runtime circular imports
     from ..match.models import Match
     from ..campionato.models import Campionato
 
-from models.base import TimestampMixin, SoftDeleteMixin, utc_now
+from models.base import SoftDeleteMixin, utc_now
 
 
 # ────────────────────────────────────────────────────────────────────────────────
 # USER
 # ────────────────────────────────────────────────────────────────────────────────
-class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
+class User(UserMixin, BaseModel, SoftDeleteMixin):
     """Core user entity with role-based permissions and rich statistics."""
 
     __tablename__ = "user"
@@ -42,7 +42,7 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
         EncryptedString(200), unique=True, nullable=True
     )  # Encrypted personal data
     password_hash = db.Column(db.String(120), nullable=False)
-    
+
     # Verification status
     is_verified = db.Column(db.Boolean, default=False, nullable=False)
 
@@ -219,7 +219,7 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
             return []
 
         return BilliardHall.query.filter(
-            BilliardHall.id.in_(venue_ids), BilliardHall.is_active is True
+            BilliardHall.id.in_(venue_ids), BilliardHall.is_active.is_(True)
         ).all()
 
     # ───────────────────
@@ -247,14 +247,13 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
             Gara,
         )
         from ..match.models import Match
+        from ..status_enum import GaraStatus, MatchStatus
 
-        total_inscriptions = (
-            Inscription.query.filter_by(user_id=self.id).count()
-        )
+        total_inscriptions = Inscription.query.filter_by(user_id=self.id).count()
 
         matches: List["Match"] = Match.query.filter(
             db.or_(Match.player1_id == self.id, Match.player2_id == self.id),
-            Match.status == "completed",
+            Match.status == MatchStatus.COMPLETED.value,
         ).all()
 
         total_matches = len(matches)
@@ -267,7 +266,8 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
         tournaments_played = (
             Inscription.query.filter_by(user_id=self.id)
             .join(Gara)
-            .filter(Gara.status == "completed")  # Solo gare completate
+            # Solo gare completate
+            .filter(Gara.status == GaraStatus.COMPLETED.value)
             .with_entities(Gara.campionato_id)
             .distinct()
             .count()
@@ -277,7 +277,8 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
         provas_played = (
             Inscription.query.filter_by(user_id=self.id)
             .join(Gara)
-            .filter(Gara.status == "completed")  # Solo gare completate
+            # Solo gare completate
+            .filter(Gara.status == GaraStatus.COMPLETED.value)
             .count()
         )
 
@@ -329,24 +330,27 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
 
         return AchievementService.has_achievement(self.id, achievement_slug)
 
-    def can_access(self, feature_code: str, context: Dict[str, Any] | None = None) -> bool:
+    def can_access(
+        self, feature_code: str, context: Dict[str, Any] | None = None
+    ) -> bool:
         """
         Check if user can access a specific feature based on gamification rules.
-        
+
         Args:
             feature_code: Code of the feature to check (e.g., 'create_match')
             context: Optional context for rule evaluation (e.g., location_id)
-            
+
         Returns:
             True if feature is unlocked or overridden, False otherwise.
         """
         if self.gamification_override:
             return True
-            
+
         if self.is_admin:
             return True
-            
+
         from models.gamification.unlock_engine import UnlockEngine
+
         return UnlockEngine.check_eligibility(self.id, feature_code, context)
 
     # debug ─────────────────────────────────────────────────────────────────────

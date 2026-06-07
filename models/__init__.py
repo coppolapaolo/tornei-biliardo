@@ -134,8 +134,8 @@ from .gamification.feature_models import (
     UserFeatureUsage,
 )
 
-# PHASE 3.2: Cross-domain orchestration
-from .orchestration import DomainOrchestrator, OperationResult, OperationType
+# Shared operation result value objects (formerly under orchestration/)
+from .shared.operation_result import OperationResult, OperationType
 
 # Export all available models for backward compatibility
 __all__ = [
@@ -255,8 +255,7 @@ __all__ = [
     # Gamification ABAC models (Phase 4.5)
     "FeatureConfig",
     "UserFeatureUsage",
-    # Cross-domain orchestration (Phase 3.2)
-    "DomainOrchestrator",
+    # Shared operation result value objects (formerly under orchestration/)
     "OperationResult",
     "OperationType",
 ]
