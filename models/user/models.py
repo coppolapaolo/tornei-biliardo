@@ -75,6 +75,10 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
     signal_radius_km = db.Column(db.Integer, default=30, nullable=False)
     # Cooldown anti-nag: ultimo invio di notifica "soglia domanda raggiunta".
     signal_notified_at = db.Column(db.DateTime, nullable=True)
+    # Ultimo accesso "attivo" (touch throttled per richiesta autenticata) —
+    # usato per l'auto-refresh dei segnali-domanda (ADR-036). Opt-out di privacy
+    # non necessario: è un timestamp grezzo, non una posizione.
+    last_active_at = db.Column(db.DateTime, nullable=True)
 
     # Gamification Override
     gamification_override = db.Column(db.Boolean, default=False, nullable=False)

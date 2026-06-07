@@ -237,6 +237,18 @@ def create_app(config_name=None):
         if needs_onboarding_redirect(current_user, request.endpoint):
             return redirect(url_for(ONBOARDING_ENDPOINT))
 
+    # Tracciamento attività utente (ADR-036): touch throttled di last_active_at,
+    # usato per l'auto-refresh dei segnali-domanda. Skip nei test per non
+    # interferire con l'isolamento della suite (commit per-richiesta).
+    from utils.activity import touch_user_activity
+
+    @app.before_request
+    def track_user_activity():
+        if app.config.get("TESTING", False):
+            return None
+        touch_user_activity(current_user)
+        return None
+
     @app.context_processor
     def inject_endpoint_visibility():
         def feature_visible(endpoint: str) -> bool:
@@ -303,6 +315,7 @@ def create_app(config_name=None):
     # Register gamification notification handlers
     # Creates notifications for level ups, achievements, streaks, quests
     from models.gamification import notification_handlers  # noqa: F401
+
     # Register demand-signal handlers (ADR-036): consume signals on gara created
     from models.demand import event_handlers as _demand_eh  # noqa: F401, F811
 

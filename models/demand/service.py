@@ -25,6 +25,9 @@ DEMAND_COOLDOWN_DAYS = 7
 DEFAULT_DIRECTOR_RADIUS_KM = 30
 # Finestra del prompt di riconferma prima della scadenza (open item 3).
 DEMAND_REMINDER_WINDOW_DAYS = 7
+# Un utente è "attivo" se ha avuto attività entro questi giorni: i suoi segnali
+# vengono auto-rinnovati invece di ricevere il prompt di riconferma.
+DEMAND_ACTIVE_WITHIN_DAYS = 30
 
 
 class DemandSignalService:
@@ -369,9 +372,6 @@ class DemandSignalService:
         e non scaduti la cui scadenza cade entro ``within_days``. Ritorna il
         numero di promemoria inviati.
         """
-        from models.notification.factory import NotificationFactory
-        from models.notification.models import NotificationType, NotificationPriority
-
         now = utc_now()
         horizon = now + timedelta(days=within_days)
         expiring = DemandSignal.query.filter(
@@ -383,24 +383,79 @@ class DemandSignalService:
 
         count = 0
         for s in expiring:
-            try:
-                NotificationFactory.create_bulk_notification(
-                    user_ids=[s.user_id],
-                    notification_type=NotificationType.DEMAND_SIGNAL_EXPIRING,
-                    title=_("La tua richiesta sta per scadere"),
-                    message=_(
-                        "La tua richiesta di una gara nella tua zona sta per "
-                        "scadere. Confermala se ti interessa ancora."
-                    ),
-                    priority=NotificationPriority.NORMAL,
-                    related_entities={"demand_signal_id": s.id},
-                    continue_on_error=True,
-                )
-            except Exception:
-                pass  # un fallimento notifica non blocca il batch
+            DemandSignalService._send_expiry_prompt(s)
             s.reminded_at = now
             count += 1
         return count
+
+    @staticmethod
+    def _send_expiry_prompt(signal: DemandSignal) -> None:
+        """Invia il prompt di riconferma per un singolo segnale (errori isolati)."""
+        from models.notification.factory import NotificationFactory
+        from models.notification.models import NotificationType, NotificationPriority
+
+        try:
+            NotificationFactory.create_bulk_notification(
+                user_ids=[signal.user_id],
+                notification_type=NotificationType.DEMAND_SIGNAL_EXPIRING,
+                title=_("La tua richiesta sta per scadere"),
+                message=_(
+                    "La tua richiesta di una gara nella tua zona sta per "
+                    "scadere. Confermala se ti interessa ancora."
+                ),
+                priority=NotificationPriority.NORMAL,
+                related_entities={"demand_signal_id": signal.id},
+                continue_on_error=True,
+            )
+        except Exception:
+            pass  # un fallimento notifica non blocca il batch
+
+    @staticmethod
+    @transactional(domain="demand")
+    def process_expiring_signals(
+        within_days: int = DEMAND_REMINDER_WINDOW_DAYS,
+        active_within_days: int = DEMAND_ACTIVE_WITHIN_DAYS,
+    ) -> dict:
+        """Gestisce i segnali prossimi alla scadenza (ADR-036 open item 3).
+
+        Per ogni segnale attivo che scade entro ``within_days``:
+        - se il proprietario è **attivo** (``last_active_at`` entro
+          ``active_within_days``) → **auto-refresh** (estende, azzera reminder);
+        - altrimenti, se non ancora avvisato → invia il **prompt di riconferma**.
+
+        Ritorna ``{"refreshed": int, "reminded": int}``.
+        """
+        from models.user.models import User
+
+        now = utc_now()
+        horizon = now + timedelta(days=within_days)
+        active_cutoff = now - timedelta(days=active_within_days)
+
+        expiring = DemandSignal.query.filter(
+            DemandSignal.status == DemandSignalStatus.ACTIVE,
+            DemandSignal.expires_at > now,
+            DemandSignal.expires_at <= horizon,
+        ).all()
+
+        refreshed = 0
+        reminded = 0
+        for s in expiring:
+            owner = db.session.get(User, s.user_id)
+            is_active = (
+                owner is not None
+                and owner.last_active_at is not None
+                and owner.last_active_at >= active_cutoff
+            )
+            if is_active:
+                s.expires_at = now + timedelta(days=DEMAND_EXPIRY_DAYS)
+                s.reminded_at = None
+                refreshed += 1
+            elif s.reminded_at is None:
+                DemandSignalService._send_expiry_prompt(s)
+                s.reminded_at = now
+                reminded += 1
+
+        return {"refreshed": refreshed, "reminded": reminded}
 
     @staticmethod
     @transactional(domain="demand")

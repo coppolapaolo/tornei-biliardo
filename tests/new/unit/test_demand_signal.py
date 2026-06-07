@@ -345,3 +345,80 @@ def test_refresh_signal_rejects_non_owner(db_session):
     other = _user()
     s = _make_signal(u.id, expires_in_days=2)
     assert DemandSignalService.refresh_signal(s.id, other.id) is False
+
+
+# ── auto-refresh per utenti attivi (ADR-036 open item 3) ─────────────────────
+
+
+def _set_last_active(user_id, days_ago):
+    from datetime import timedelta as td
+    from models import User
+
+    u = db.session.get(User, user_id)
+    u.last_active_at = utc_now() - td(days=days_ago)
+    db.session.commit()
+
+
+def test_process_expiring_auto_refreshes_active_user(db_session):
+    u = _user()
+    _set_last_active(u.id, days_ago=1)  # attivo
+    s = _make_signal(u.id, expires_in_days=2)
+    old_exp = s.expires_at
+
+    result = DemandSignalService.process_expiring_signals()
+    assert result["refreshed"] == 1
+    assert result["reminded"] == 0
+    refreshed = db.session.get(DemandSignal, s.id)
+    assert refreshed.expires_at > old_exp  # esteso
+    assert refreshed.reminded_at is None
+
+
+def test_process_expiring_prompts_inactive_user(db_session):
+    from models.notification.models import Notification, NotificationType
+
+    u = _user()
+    _set_last_active(u.id, days_ago=90)  # inattivo
+    s = _make_signal(u.id, expires_in_days=2)
+
+    result = DemandSignalService.process_expiring_signals()
+    assert result["refreshed"] == 0
+    assert result["reminded"] == 1
+    assert db.session.get(DemandSignal, s.id).reminded_at is not None
+    notifs = [
+        n
+        for n in Notification.query.filter_by(user_id=u.id).all()
+        if n.notification_type == NotificationType.DEMAND_SIGNAL_EXPIRING
+    ]
+    assert len(notifs) == 1
+
+
+def test_process_expiring_prompts_user_never_active(db_session):
+    u = _user()  # last_active_at None → trattato come inattivo
+    s = _make_signal(u.id, expires_in_days=3)
+    result = DemandSignalService.process_expiring_signals()
+    assert result == {"refreshed": 0, "reminded": 1}
+    assert db.session.get(DemandSignal, s.id).reminded_at is not None
+
+
+def test_process_expiring_ignores_far_signals(db_session):
+    u = _user()
+    _set_last_active(u.id, days_ago=1)
+    _make_signal(u.id, expires_in_days=30)  # fuori finestra (7gg)
+    result = DemandSignalService.process_expiring_signals()
+    assert result == {"refreshed": 0, "reminded": 0}
+
+
+def test_touch_user_activity_throttled(db_session):
+    from utils.activity import touch_user_activity
+
+    u = _user()
+    assert u.last_active_at is None
+    # primo touch: scrive
+    assert touch_user_activity(u) is True
+    from models import User
+
+    ts1 = db.session.get(User, u.id).last_active_at
+    assert ts1 is not None
+    # secondo touch immediato: throttled, nessuna scrittura
+    assert touch_user_activity(u) is False
+    assert db.session.get(User, u.id).last_active_at == ts1

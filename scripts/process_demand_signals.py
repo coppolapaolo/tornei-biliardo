@@ -24,9 +24,13 @@ from models.demand.service import DemandSignalService
 def main():
     app = create_app()
     with app.app_context():
-        reminded = DemandSignalService.send_expiry_reminders()
+        result = DemandSignalService.process_expiring_signals()
         expired = DemandSignalService.expire_due_signals()
-        print(f"Demand: {reminded} promemoria inviati, {expired} segnali scaduti")
+        print(
+            f"Demand: {result['refreshed']} auto-rinnovati, "
+            f"{result['reminded']} promemoria inviati, "
+            f"{expired} segnali scaduti"
+        )
 
 
 if __name__ == "__main__":

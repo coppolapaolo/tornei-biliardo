@@ -102,15 +102,21 @@ dev/test l'allowlist è pass-through.
 2. ~~**Segnale-admin** per zone senza director~~ — **FATTO**:
    `_maybe_notify_admins_no_director` su crossing soglia quando nessun director
    copre il punto (`NotificationType.DEMAND_ZONE_NO_DIRECTOR`).
-3. **Prompt di riconferma + scadenza** — **FATTO** (parziale):
-   `expire_due_signals` (→ EXPIRED), `send_expiry_reminders` (prompt una-tantum
-   entro 7 gg, `reminded_at`, `NotificationType.DEMAND_SIGNAL_EXPIRING`),
-   `refresh_signal` (riconferma estende di 60 gg) + route
-   `POST /demand/signal/<id>/refresh` + script `scripts/process_demand_signals.py`.
-   *Resta aperto*: l'**auto-refresh per utenti attivi** richiede un campo di
-   ultima-attività utente (oggi assente) → da fare con activity-tracking.
+3. **Auto-refresh + prompt di riconferma + scadenza** — **FATTO**:
+   - `User.last_active_at` (migrazione `20260607_user_last_active`) aggiornato
+     da un hook `before_request` *throttled* (`utils.activity.touch_user_activity`,
+     1/ora/utente; skip nei test). È il tracciamento di attività che mancava.
+   - `process_expiring_signals(within_days=7, active_within_days=30)`: per i
+     segnali in scadenza, **auto-refresh** se il proprietario è attivo (entro 30
+     gg), altrimenti **prompt di riconferma** una-tantum (`reminded_at`,
+     `NotificationType.DEMAND_SIGNAL_EXPIRING`).
+   - `expire_due_signals` (→ EXPIRED), `refresh_signal` (riconferma manuale,
+     route `POST /demand/signal/<id>/refresh`), `send_expiry_reminders`
+     (prompt-only primitivo). Script `scripts/process_demand_signals.py`
+     (auto-refresh + prompt + expiry).
 4. **Tarature**: soglia (6), raggio default (30 km), cooldown (7 gg), scadenza
-   (60 gg), finestra promemoria (7 gg) — affinare sui dati reali.
+   (60 gg), finestra promemoria (7 gg), finestra "attivo" (30 gg), throttle
+   attività (60 min) — costanti documentate, affinare sui dati reali.
 
 ## Note implementative
 - `models/demand/` (`models.py` `DemandSignal`, `service.py`
