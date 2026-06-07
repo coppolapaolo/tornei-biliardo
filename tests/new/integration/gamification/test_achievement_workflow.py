@@ -12,7 +12,6 @@ These tests verify the complete event-driven achievement workflow.
 """
 
 import pytest
-from datetime import datetime
 from unittest.mock import patch
 
 from models.events.base import EventBus
@@ -24,8 +23,6 @@ from models.events.competition_events import (
 from models.gamification.models import (
     Achievement,
     UserAchievement,
-    AchievementCategory,
-    AchievementDifficulty,
 )
 from models.gamification.achievement_seeds import seed_achievements
 from models.gamification.event_handlers import GamificationEventHandlers
@@ -55,9 +52,6 @@ def register_gamification_handlers():
 class TestAchievementWorkflowMatchBased:
     """Test achievement workflow triggered by match events."""
 
-    @pytest.mark.skip(
-        reason="Achievement handlers have session isolation issues with @transactional"
-    )
     def test_first_blood_achievement_unlocked_on_first_win(
         self, db_session, isolated_players
     ):
@@ -85,8 +79,13 @@ class TestAchievementWorkflowMatchBased:
             winner_name=player1.username,
             score="5-2",
         )
-        EventBus.publish(event)
-        db_session.flush()
+        # Metrica match-win = won_matches (nessun Match reale nel test).
+        with patch(
+            "models.user.services.UserStatsService.get_user_stats",
+            return_value={"won_matches": 1},
+        ):
+            EventBus.publish(event)
+            db_session.flush()
 
         # Assert: "first_blood" achievement unlocked
         first_blood = Achievement.query.filter_by(slug="first_blood").first()
@@ -166,9 +165,6 @@ class TestAchievementWorkflowMatchBased:
 class TestAchievementWorkflowTournamentBased:
     """Test achievement workflow for tournament events."""
 
-    @pytest.mark.skip(
-        reason="Achievement handlers have session isolation issues with @transactional"
-    )
     def test_tournament_debut_unlocked_on_first_inscription(
         self, db_session, isolated_players
     ):
@@ -190,8 +186,14 @@ class TestAchievementWorkflowTournamentBased:
             username=player.username,
             inscription_status="confirmed",
         )
-        EventBus.publish(event)
-        db_session.flush()
+        # Metrica partecipazione tornei = inscription_count (nessuna Inscription
+        # reale nel test).
+        with patch(
+            "models.user.services.UserStatsService.get_user_stats",
+            return_value={"inscription_count": 1},
+        ):
+            EventBus.publish(event)
+            db_session.flush()
 
         # Assert
         debut = Achievement.query.filter_by(slug="tournament_debut").first()
@@ -202,9 +204,6 @@ class TestAchievementWorkflowTournamentBased:
         assert user_achievement is not None
         assert user_achievement.is_unlocked is True
 
-    @pytest.mark.skip(
-        reason="Achievement handlers have session isolation issues with @transactional"
-    )
     def test_champion_achievement_unlocked_on_tournament_win(
         self, db_session, isolated_players
     ):
@@ -243,9 +242,6 @@ class TestAchievementWorkflowTournamentBased:
         assert user_achievement is not None
         assert user_achievement.is_unlocked is True
 
-    @pytest.mark.skip(
-        reason="Achievement handlers have session isolation issues with @transactional"
-    )
     def test_podium_finish_unlocked_for_top3(self, db_session, isolated_players):
         """
         GIVEN "podium_finish" achievement exists
@@ -286,9 +282,6 @@ class TestAchievementWorkflowTournamentBased:
 class TestAchievementWorkflowXPBonus:
     """Test XP bonus awarded on achievement unlock."""
 
-    @pytest.mark.skip(
-        reason="Achievement handlers have session isolation issues with @transactional"
-    )
     def test_achievement_unlock_awards_bonus_xp(self, db_session, isolated_players):
         """
         GIVEN an achievement with XP reward
@@ -315,8 +308,12 @@ class TestAchievementWorkflowXPBonus:
             winner_name=player1.username,
             score="5-2",
         )
-        EventBus.publish(event)
-        db_session.flush()
+        with patch(
+            "models.user.services.UserStatsService.get_user_stats",
+            return_value={"won_matches": 1},
+        ):
+            EventBus.publish(event)
+            db_session.flush()
 
         # Assert: User received match win XP + achievement XP
         from models.gamification.models import UserLevel
@@ -333,9 +330,6 @@ class TestAchievementWorkflowXPBonus:
 class TestAchievementWorkflowMultipleAchievements:
     """Test multiple achievements unlocking from single event."""
 
-    @pytest.mark.skip(
-        reason="Achievement handlers have session isolation issues with @transactional"
-    )
     def test_single_event_can_unlock_multiple_achievements(
         self, db_session, isolated_players
     ):
@@ -371,8 +365,13 @@ class TestAchievementWorkflowMultipleAchievements:
             winner_name=player1.username,
             score="5-2",
         )
-        EventBus.publish(event)
-        db_session.flush()
+        # 50ª vittoria reale: patch della metrica won_matches.
+        with patch(
+            "models.user.services.UserStatsService.get_user_stats",
+            return_value={"won_matches": 50},
+        ):
+            EventBus.publish(event)
+            db_session.flush()
 
         # Assert: Both achievements unlocked
         first_blood = Achievement.query.filter_by(slug="first_blood").first()

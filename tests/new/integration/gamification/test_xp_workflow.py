@@ -12,13 +12,15 @@ These tests verify the complete event-driven gamification workflow.
 """
 
 import pytest
-from datetime import datetime
 
 from models.events.base import EventBus
 from models.events.match_events import MatchCompletedEvent
-from models.events.competition_events import InscriptionCreatedEvent, CompetitionCompletedEvent
+from models.events.competition_events import (
+    InscriptionCreatedEvent,
+    CompetitionCompletedEvent,
+)
 from models.gamification.models import UserLevel, XPTransaction, XPTransactionType
-from models.gamification.xp_config import XP_RATES, get_xp_for_level
+from models.gamification.xp_config import XP_RATES
 from models.gamification.event_handlers import GamificationEventHandlers
 from models.notification.models import Notification, NotificationType
 
@@ -67,7 +69,7 @@ class TestXPWorkflowMatchCompletion:
             player2_name=player2.username,
             winner_id=player1.id,
             winner_name=player1.username,
-            score="5-3"
+            score="5-3",
         )
 
         # Act: Publish event (triggers gamification event handler)
@@ -87,8 +89,7 @@ class TestXPWorkflowMatchCompletion:
 
         # Assert: Transactions created
         winner_txn = XPTransaction.query.filter_by(
-            user_id=player1.id,
-            transaction_type=XPTransactionType.MATCH_WIN
+            user_id=player1.id, transaction_type=XPTransactionType.MATCH_WIN
         ).first()
         assert winner_txn is not None
         assert winner_txn.xp_amount == 50
@@ -96,8 +97,7 @@ class TestXPWorkflowMatchCompletion:
         assert winner_txn.level_after == 1
 
         loser_txn = XPTransaction.query.filter_by(
-            user_id=player2.id,
-            transaction_type=XPTransactionType.MATCH_LOSS
+            user_id=player2.id, transaction_type=XPTransactionType.MATCH_LOSS
         ).first()
         assert loser_txn is not None
         assert loser_txn.xp_amount == 20
@@ -106,27 +106,56 @@ class TestXPWorkflowMatchCompletion:
 class TestXPWorkflowLevelUp:
     """Test level up workflow with notifications."""
 
-    @pytest.mark.skip(reason="LevelService @transactional has session isolation with test fixtures")
     def test_level_up_via_direct_service_call(self, db_session, isolated_players):
-        """
-        GIVEN a user at level 1
-        WHEN enough XP is awarded via LevelService
-        THEN user levels up correctly
+        """GIVEN un utente a livello 1, WHEN si assegnano abbastanza XP via
+        LevelService THEN sale di livello (282 XP = livello 2)."""
+        player = isolated_players[0]
+        from models.gamification.level_service import LevelService
 
-        Note: Skipped due to @transactional session isolation.
-        Level-up logic tested in unit tests.
-        """
-        pass
+        final_level, did_level_up = LevelService.award_xp(
+            user_id=player.id,
+            xp_amount=300,  # > 282 (livello 2), < 519 (livello 3)
+            transaction_type=XPTransactionType.TOURNAMENT_WIN,
+            reason="Test level up diretto",
+        )
+        assert did_level_up is True
+        assert final_level.current_level == 2
+        assert final_level.total_xp == 300
 
-    @pytest.mark.skip(reason="EventBus handlers have session isolation issues with test fixtures")
-    def test_sufficient_xp_triggers_level_up_and_notification(
+    def test_sufficient_xp_triggers_level_up_via_events_no_persistent_notification(
         self, db_session, isolated_players
     ):
-        """
-        Note: Skipped due to session isolation between EventBus handlers and test fixtures.
-        The level-up logic works correctly when tested via direct service calls.
-        """
-        pass
+        """Via EventBus: vincite sufficienti → level up. La policy
+        anti-invasività (Fase 3) rende il level-up SOLO toast → nessuna
+        notifica persistente LEVEL_UP creata."""
+        player1 = isolated_players[0]
+        player2 = isolated_players[1]
+
+        # 6 vittorie * 50 XP = 300 XP → livello 2.
+        for match_id in range(1, 7):
+            EventBus.publish(
+                MatchCompletedEvent(
+                    match_id=match_id,
+                    player1_id=player1.id,
+                    player1_name=player1.username,
+                    player2_id=player2.id,
+                    player2_name=player2.username,
+                    winner_id=player1.id,
+                    winner_name=player1.username,
+                    score="5-0",
+                )
+            )
+            db_session.flush()
+
+        level = db_session.get(UserLevel, player1.id)
+        assert level.total_xp == 300
+        assert level.current_level == 2  # level up avvenuto
+
+        # Anti-invasività: nessuna notifica persistente di level-up.
+        levelup_notifs = Notification.query.filter_by(
+            user_id=player1.id, notification_type=NotificationType.LEVEL_UP
+        ).count()
+        assert levelup_notifs == 0
 
 
 class TestXPWorkflowTournamentInscription:
@@ -147,7 +176,7 @@ class TestXPWorkflowTournamentInscription:
             gara_name="Test Tournament",
             user_id=player.id,
             username=player.username,
-            inscription_status="confirmed"
+            inscription_status="confirmed",
         )
         EventBus.publish(event)
         db_session.flush()
@@ -159,8 +188,7 @@ class TestXPWorkflowTournamentInscription:
 
         # Assert transaction
         txn = XPTransaction.query.filter_by(
-            user_id=player.id,
-            transaction_type=XPTransactionType.TOURNAMENT_INSCRIPTION
+            user_id=player.id, transaction_type=XPTransactionType.TOURNAMENT_INSCRIPTION
         ).first()
         assert txn is not None
         assert txn.xp_amount == 25
@@ -169,19 +197,37 @@ class TestXPWorkflowTournamentInscription:
 class TestXPWorkflowTournamentCompletion:
     """Test XP workflow for tournament completion with bonuses."""
 
-    @pytest.mark.skip(reason="CompetitionCompletedEvent handler needs update to use final_standings")
     def test_tournament_completion_awards_bonuses_correctly(
         self, db_session, isolated_players
     ):
-        """
-        GIVEN a completed tournament with multiple participants
-        WHEN CompetitionCompletedEvent is published
-        THEN all participants get XP bonuses
+        """CompetitionCompletedEvent con ``final_standings`` → bonus corretti:
+        vincitore 100+500=600; podio (2°/3°) 100+200=300; altri 100.
 
-        Note: Currently skipped - the event handler uses participant_ids
-        which was removed from CompetitionCompletedEvent. Handler needs update.
+        (La vecchia skip parlava di ``participant_ids`` rimosso: l'handler ora
+        usa ``final_standings``.)
         """
-        pass
+        p1, p2, p3, p4 = isolated_players[:4]
+        EventBus.publish(
+            CompetitionCompletedEvent(
+                gara_id=999,
+                name="Torneo Test",
+                winner_id=p1.id,
+                winner_name=p1.username,
+                final_standings=[
+                    {"user_id": p1.id, "position": 1},
+                    {"user_id": p2.id, "position": 2},
+                    {"user_id": p3.id, "position": 3},
+                    {"user_id": p4.id, "position": 4},
+                ],
+                total_participants=4,
+            )
+        )
+        db_session.flush()
+
+        assert db_session.get(UserLevel, p1.id).total_xp == 600  # 100 + 500
+        assert db_session.get(UserLevel, p2.id).total_xp == 300  # 100 + 200
+        assert db_session.get(UserLevel, p3.id).total_xp == 300  # 100 + 200
+        assert db_session.get(UserLevel, p4.id).total_xp == 100  # solo completion
 
 
 class TestXPWorkflowMultipleLevelUps:
@@ -200,21 +246,19 @@ class TestXPWorkflowMultipleLevelUps:
 
         # Arrange: User at level 1 with 0 XP
         user_level = UserLevel(
-            user_id=player.id,
-            current_xp=0,
-            total_xp=0,
-            current_level=1
+            user_id=player.id, current_xp=0, total_xp=0, current_level=1
         )
         db_session.add(user_level)
         db_session.flush()
 
         # Act: Simulate large XP award
         from models.gamification.level_service import LevelService
+
         final_level, did_level_up = LevelService.award_xp(
             user_id=player.id,
             xp_amount=1000,
             transaction_type=XPTransactionType.TOURNAMENT_WIN,
-            reason="Test massive XP award"
+            reason="Test massive XP award",
         )
 
         # Assert: User leveled up multiple times
@@ -241,16 +285,12 @@ class TestXPWorkflowEventBusIntegration:
         # This test verifies that handlers are auto-registered
         # by checking if MatchCompletedEvent has gamification handlers
 
-        from models.gamification.event_handlers import GamificationEventHandlers
-
         # Verify handlers are registered (this happens on module import)
         # The actual verification is implicit - if handlers weren't registered,
         # previous tests would fail
         assert True  # Placeholder - actual verification is in other tests
 
-    def test_multiple_events_accumulate_xp(
-        self, db_session, isolated_players
-    ):
+    def test_multiple_events_accumulate_xp(self, db_session, isolated_players):
         """
         GIVEN a user participating in multiple activities
         WHEN multiple events are published
@@ -261,16 +301,18 @@ class TestXPWorkflowEventBusIntegration:
 
         # Arrange & Act: Simulate user journey - 2 match wins
         for match_id in [1, 2]:
-            EventBus.publish(MatchCompletedEvent(
-                match_id=match_id,
-                player1_id=player1.id,
-                player1_name=player1.username,
-                player2_id=player2.id,
-                player2_name=player2.username,
-                winner_id=player1.id,
-                winner_name=player1.username,
-                score="5-2"
-            ))
+            EventBus.publish(
+                MatchCompletedEvent(
+                    match_id=match_id,
+                    player1_id=player1.id,
+                    player1_name=player1.username,
+                    player2_id=player2.id,
+                    player2_name=player2.username,
+                    winner_id=player1.id,
+                    winner_name=player1.username,
+                    score="5-2",
+                )
+            )
             db_session.flush()
 
         # Assert: Total XP accumulated
