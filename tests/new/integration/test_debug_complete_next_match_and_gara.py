@@ -191,6 +191,51 @@ def test_complete_next_match_picks_from_any_round(client, db_session):
 
 
 @pytest.mark.integration
+def test_complete_next_match_ignores_matches_without_table(client, db_session):
+    """Bug 13: Complete Match deve completare SOLO match con tavolo
+    assegnato e in corso. Se nessun match ha un tavolo (tutti PENDING in
+    attesa), non deve completare nulla."""
+    gara = _setup_random_pregenerated_gara(db_session)
+
+    # Rimuove i tavoli e riporta tutti i match a PENDING: nessuno è "al
+    # tavolo", quindi Complete Match non deve toccare nulla.
+    for m in Match.query.filter_by(gara_id=gara.id).all():
+        m.status = MatchStatus.PENDING.value
+        m.table_assignment = None
+    db_session.commit()
+
+    resp = client.get(
+        f"/debug/complete_next_match/{gara.id}", follow_redirects=False
+    )
+    assert resp.status_code in (302, 303)
+
+    completed = Match.query.filter_by(
+        gara_id=gara.id, status=MatchStatus.COMPLETED.value
+    ).count()
+    assert completed == 0, (
+        f"Nessun match ha tavolo: atteso 0 completati, trovati {completed}"
+    )
+
+
+@pytest.mark.integration
+def test_completable_matches_only_playing_with_table(client, db_session):
+    """Bug 13: l'helper di selezione restituisce solo i match PLAYING con
+    tavolo assegnato, mai i PENDING senza tavolo."""
+    from routes.main import _debug_completable_matches
+
+    gara = _setup_random_pregenerated_gara(db_session)
+
+    completable = _debug_completable_matches(gara.id)
+
+    # Setup: 2 match round 1 PLAYING+tavolo, 2 round 2 PENDING senza tavolo.
+    assert len(completable) == 2
+    for m in completable:
+        assert m.status == MatchStatus.PLAYING.value
+        assert m.table_assignment is not None
+        assert m.round_number == 1
+
+
+@pytest.mark.integration
 def test_complete_gara_finishes_all_matches(client, db_session):
     gara = _setup_random_pregenerated_gara(db_session)
 

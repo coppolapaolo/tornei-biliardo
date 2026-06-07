@@ -539,6 +539,29 @@ def _debug_all_incomplete_matches(gara_id: int):
     )
 
 
+def _debug_completable_matches(gara_id: int):
+    """Match completabili da 'Complete Match': solo quelli con tavolo
+    assegnato e in corso (PLAYING).
+
+    Un match senza tavolo è PENDING (in attesa che un tavolo si liberi) e
+    non è ancora "al tavolo": completarlo salterebbe la fase di gioco reale.
+    In questo dominio `table_assignment` e stato PLAYING sono accoppiati
+    (vedi TableAssignmentService.assign_available_tables), ma filtriamo su
+    entrambi per esplicitare l'intento (bug 13 docs/debug20260528.md).
+    """
+    from models.match.models import Match
+    from models.status_enum import MatchStatus
+    return (
+        Match.query.filter_by(
+            gara_id=gara_id, status=MatchStatus.PLAYING.value
+        )
+        .filter(Match.is_bye == False)  # noqa: E712
+        .filter(Match.table_assignment.isnot(None))
+        .order_by(Match.round_number, Match.id)
+        .all()
+    )
+
+
 def _debug_first_active_round(gara_id: int) -> Optional[int]:
     """Primo round_number con almeno un match non completato.
 
@@ -602,11 +625,12 @@ def debug_complete_current_round(gara_id):
 
 @main_bp.route("/debug/complete_next_match/<int:gara_id>")
 def debug_complete_next_match(gara_id):
-    """Completa UN match pending/playing qualsiasi della gara.
+    """Completa UN match con tavolo assegnato e in corso (PLAYING).
 
     Cerca in tutti i round, non solo `gara.current_round`: per strategie
     pre-generate (random) molti match dei turni successivi sono già
-    PLAYING quando il current_round non si è ancora avanzato.
+    PLAYING quando il current_round non si è ancora avanzato. Esclude i
+    match PENDING senza tavolo: non sono ancora "al tavolo" (bug 13).
     """
     if not Config.DEBUG_MODE:
         return "Funzione non disponibile in produzione", 403
@@ -621,9 +645,12 @@ def debug_complete_next_match(gara_id):
             or url_for("admin.competition.gara_detail", gara_id=gara_id)
         )
 
-    candidates = [m for m in _debug_all_incomplete_matches(gara_id) if not m.is_bye]
+    candidates = _debug_completable_matches(gara_id)
     if not candidates:
-        flash("Nessun match da completare nella gara!", "info")
+        flash(
+            "Nessun match con tavolo assegnato e in corso da completare!",
+            "info",
+        )
         return redirect(
             request.referrer
             or url_for("admin.competition.gara_detail", gara_id=gara_id)
