@@ -152,6 +152,26 @@ The test suite follows a modern pytest-based approach with clear separation betw
 - Complete user workflow validation
 - Cross-browser compatibility testing
 
+### Frontend Headless Tests (`frontend/` — jsdom, Node)
+**Purpose**: Test the deterministic **client-side JS logic** that the Python
+suite cannot reach (no browser). Currently covers the gamification badge /
+anti-invasiveness intensity scale (§11/§11-quater).
+
+- **File**: `tests/frontend/test_gamification_badge.cjs` — loads the *real*
+  `static/js/gamification.js` in a jsdom window and asserts: XP → no toast
+  (badge-only), level-up → one toast exempt from the session cap + glow + level
+  update, cap = 1 capped toast/session (with reset + privacy degrade),
+  `prefers-reduced-motion` no-op, confetti only on strong events,
+  welcome/nudge/unlock toasts. **26 checks**.
+- **Run**: `cd tests/frontend && npm install && npm test`
+  (jsdom is the only dependency; `node_modules` is gitignored).
+- **Standalone toolchain**: intentionally decoupled from pytest and not in CI
+  yet. Run it manually after touching `static/js/gamification.js` or the badge
+  markup in `templates/base.html`.
+- **Scope**: covers the *automatable* subset of
+  `docs/reference/GAMIFICATION_V3_MANUAL_TEST_REPORT.md` (24/36 rows `✅ auto`);
+  the remaining 12 rows are visual and stay a human browser gate.
+
 ## Test Markers and Categories
 
 ### Pytest Markers
