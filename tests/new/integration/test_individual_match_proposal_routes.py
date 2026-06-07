@@ -313,3 +313,95 @@ class TestMatchLifecycleRoutes:
         # chi dichiara forfait perde → vince l'avversario
         assert resp.get_json()["winner_id"] == p2id
         assert db.session.get(IndividualMatch, mid).winner_id == p2id
+
+
+@pytest.mark.integration
+class TestMatchScoringExtraRoutes:
+    """Route di scoring/lifecycle non coperte altrove: remove_rack, reject,
+    complete (legacy), update-times, rematch."""
+
+    def _started(self, app, p1, p2):
+        mid = _accept_via_client(app, p1, p2)
+        c1 = _client_for(app, p1)
+        c2 = _client_for(app, p2)
+        assert _post(c1, f"/match/matches/{mid}/start", json={}).status_code == 200
+        return mid, c1, c2
+
+    def test_remove_rack_decrements_score(self, app):
+        p1, p2 = _player(), _player()
+        p1id = p1.id
+        mid, c1, _c2 = self._started(app, p1, p2)
+        # 2 rack a p1
+        _post(c1, f"/match/matches/{mid}/racks/add", json={"winner_id": p1id})
+        r = _post(c1, f"/match/matches/{mid}/racks/add", json={"winner_id": p1id})
+        assert r.get_json()["player1_score"] == 2
+        # rimuovi un rack di p1
+        rem = _post(c1, f"/match/matches/{mid}/racks/remove", json={"player_id": p1id})
+        assert rem.status_code == 200
+        assert rem.get_json()["player1_score"] == 1
+
+    def test_reject_result_removes_last_rack(self, app):
+        from models.individual_match.models import IndividualMatch
+
+        p1, p2 = _player(), _player()
+        p1id = p1.id
+        mid, c1, _c2 = self._started(app, p1, p2)
+        for _ in range(5):  # p1 arriva a 5 → pronto per validazione
+            _post(c1, f"/match/matches/{mid}/racks/add", json={"winner_id": p1id})
+        assert db.session.get(IndividualMatch, mid).is_ready_for_validation() is True
+
+        resp = _post(c1, f"/match/matches/{mid}/reject", json={})
+        assert resp.status_code == 200
+        assert resp.get_json()["player1_score"] == 4
+        assert db.session.get(IndividualMatch, mid).is_ready_for_validation() is False
+
+    def test_complete_match_legacy(self, app):
+        from models.individual_match.models import IndividualMatch
+
+        p1, p2 = _player(), _player()
+        p1id = p1.id
+        mid, c1, _c2 = self._started(app, p1, p2)
+        for _ in range(5):
+            _post(c1, f"/match/matches/{mid}/racks/add", json={"winner_id": p1id})
+
+        resp = _post(c1, f"/match/matches/{mid}/complete", json={"winner_id": p1id})
+        assert resp.status_code == 200
+        assert resp.get_json()["success"] is True
+        assert db.session.get(IndividualMatch, mid).winner_id == p1id
+
+    def test_update_match_times(self, app):
+        from datetime import timedelta
+
+        p1, p2 = _player(), _player()
+        mid, c1, _c2 = self._started(app, p1, p2)
+        started = (utc_now() - timedelta(hours=1)).isoformat()
+        resp = _post(
+            c1,
+            f"/match/matches/{mid}/update-times",
+            json={"started_at": started},
+        )
+        assert resp.status_code == 200
+        assert resp.get_json()["success"] is True
+
+    def test_rematch_redirects_to_create_with_params(self, app):
+        # Match portato a VALIDATED, poi rematch → redirect a create_proposal.
+        p1, p2 = _player(), _player()
+        p1id = p1.id
+        mid, c1, c2 = self._started(app, p1, p2)
+        for _ in range(5):
+            _post(c1, f"/match/matches/{mid}/racks/add", json={"winner_id": p1id})
+        _post(c1, f"/match/matches/{mid}/confirm", json={})
+        _post(c2, f"/match/matches/{mid}/confirm", json={})
+
+        resp = _get(c1, f"/match/matches/{mid}/rematch", follow_redirects=False)
+        assert resp.status_code == 302
+        loc = resp.headers["Location"]
+        assert "/match/proposals/create" in loc and "rematch=true" in loc
+
+    def test_rematch_blocked_if_not_completed(self, app):
+        # Match solo avviato (non concluso) → niente rematch.
+        p1, p2 = _player(), _player()
+        mid, c1, _c2 = self._started(app, p1, p2)
+        resp = _get(c1, f"/match/matches/{mid}/rematch", follow_redirects=False)
+        assert resp.status_code == 302
+        assert resp.headers["Location"].endswith(f"/match/matches/{mid}")
