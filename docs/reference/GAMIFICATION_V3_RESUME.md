@@ -77,8 +77,15 @@ Questo è il punto d'ingresso rapido per riprendere. Per il dettaglio:
 2. `python scripts/reconcile_achievements.py` (una volta, concede badge storici).
 
 ## Aperto / prossime fasi (NON ancora fatto)
-- **Verifica manuale browser** del badge/anti-invasività (vedi MANUAL_TESTS.md)
-  prima di promuovere ai player.
+- **Verifica manuale browser** del badge/anti-invasività prima di promuovere ai
+  player. Checklist: `GAMIFICATION_V3_MANUAL_TESTS.md`; **report compilabile**
+  (esiti da spuntare + firma): `GAMIFICATION_V3_MANUAL_TEST_REPORT.md`.
+  È l'unico gate rimasto che i test automatici non coprono.
+- **Copertura test pre-apertura** (FATTO, per area): match individuali (route
+  proposte/discovery/lifecycle, `matches.py` 19%→63%, `proposals.py` 21%→66%;
+  trovato+corretto bug `decline` 500 e incongruenza VALIDATED/completed), rating
+  (0→suite dedicata, `rating_service` 35%→77%), catena gamification (9 skip
+  sbloccate: XP/achievement end-to-end).
 - **Maturity-gate (ADR-028)** — *scelta di rollout, production-visible*: endpoint
   gamification/proposte/quest/achievement NON in `ENDPOINT_ROLES` → admin/director-only
   in prod (voluto in beta). Promuovere ai player a blocchi (`utils/feature_flags.py`
