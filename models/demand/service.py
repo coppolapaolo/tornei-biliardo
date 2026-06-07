@@ -84,7 +84,12 @@ class DemandSignalService:
         db.session.add(signal)
         db.session.flush()
 
-        DemandSignalService._notify_directors_rising_edge(signal)
+        covered = DemandSignalService._notify_directors_rising_edge(signal)
+        # Zona senza director (ADR-036 open item 2): se nessun director copre il
+        # punto e la domanda locale tocca la soglia, avvisa gli admin (dove
+        # reclutare/promuovere un director).
+        if not covered:
+            DemandSignalService._maybe_notify_admins_no_director(signal)
         return signal
 
     # ── query di prossimità ────────────────────────────────────────────────
@@ -116,9 +121,14 @@ class DemandSignalService:
     # ── trigger director (fronte di salita ≥ soglia) ─────────────────────────
 
     @staticmethod
-    def _notify_directors_rising_edge(new_signal: DemandSignal) -> None:
+    def _notify_directors_rising_edge(new_signal: DemandSignal) -> bool:
         """Notifica i director la cui zona raggiunge ESATTAMENTE la soglia con
-        questo nuovo segnale (crossing), nel rispetto del cooldown."""
+        questo nuovo segnale (crossing), nel rispetto del cooldown.
+
+        Ritorna ``True`` se almeno un director **copre** il punto del segnale
+        (a prescindere dall'invio), così il chiamante sa se la zona ha un
+        responsabile (vedi segnale-admin).
+        """
         from models.user.models import User
         from models.user.role_enum import UserRole
 
@@ -126,6 +136,7 @@ class DemandSignalService:
 
         now = utc_now()
         cooldown = timedelta(days=DEMAND_COOLDOWN_DAYS)
+        covered = False
 
         for director in directors:
             origin = DemandSignalService._director_origin(director)
@@ -142,6 +153,7 @@ class DemandSignalService:
             ):
                 continue
 
+            covered = True
             count_after = DemandSignalService.count_active_within(d_lat, d_lng, radius)
             # Fronte di salita: notifica solo al crossing esatto della soglia.
             if count_after != DEMAND_THRESHOLD:
@@ -154,6 +166,88 @@ class DemandSignalService:
 
             DemandSignalService._notify_director_threshold(director, count_after)
             director.signal_notified_at = now
+
+        return covered
+
+    @staticmethod
+    def evaluate_zone_for_new_director(director_id: int) -> bool:
+        """Re-eval alla promozione player→director (ADR-036 open item 1).
+
+        Se la zona del neo-director ha già ≥ soglia richieste attive, invia una
+        notifica una-tantum (rispetta il cooldown). Pensata per essere chiamata
+        *dentro* la transazione di promozione. Ritorna True se ha notificato.
+        """
+        from models.user.models import User
+
+        director = db.session.get(User, director_id)
+        if director is None:
+            return False
+
+        origin = DemandSignalService._director_origin(director)
+        if origin is None:
+            return False
+
+        radius = clamp_radius(director.signal_radius_km or DEFAULT_DIRECTOR_RADIUS_KM)
+        count = DemandSignalService.count_active_within(origin[0], origin[1], radius)
+        if count < DEMAND_THRESHOLD:
+            return False
+
+        now = utc_now()
+        cooldown = timedelta(days=DEMAND_COOLDOWN_DAYS)
+        if director.signal_notified_at and (
+            now - director.signal_notified_at < cooldown
+        ):
+            return False
+
+        DemandSignalService._notify_director_threshold(director, count)
+        director.signal_notified_at = now
+        return True
+
+    @staticmethod
+    def _maybe_notify_admins_no_director(new_signal: DemandSignal) -> bool:
+        """Avvisa gli admin se la domanda locale tocca la soglia in una zona
+        senza director (ADR-036 open item 2). Crossing-only per limitare lo spam.
+        """
+        count = DemandSignalService.count_active_within(
+            new_signal.latitude, new_signal.longitude, DEFAULT_DIRECTOR_RADIUS_KM
+        )
+        if count != DEMAND_THRESHOLD:
+            return False
+
+        from models.user.models import User
+        from models.user.role_enum import UserRole
+        from models.notification.factory import NotificationFactory
+        from models.notification.models import NotificationType, NotificationPriority
+
+        admin_ids = [
+            u.id for u in User.query.filter(User.role == UserRole.ADMIN.value).all()
+        ]
+        if not admin_ids:
+            return False
+
+        zone = (new_signal.city or "").strip()
+        if zone:
+            message = _(
+                "%(count)s giocatori vorrebbero una gara a %(city)s, una zona "
+                "senza un director. Valuta di reclutarne o promuoverne uno.",
+                count=count,
+                city=zone,
+            )
+        else:
+            message = _(
+                "%(count)s giocatori vorrebbero una gara in una zona senza un "
+                "director. Valuta di reclutarne o promuoverne uno.",
+                count=count,
+            )
+
+        NotificationFactory.create_bulk_notification(
+            user_ids=admin_ids,
+            notification_type=NotificationType.DEMAND_ZONE_NO_DIRECTOR,
+            title=_("Domanda in una zona senza director"),
+            message=message,
+            priority=NotificationPriority.NORMAL,
+        )
+        return True
 
     @staticmethod
     def _director_origin(director) -> Optional[Tuple[float, float]]:

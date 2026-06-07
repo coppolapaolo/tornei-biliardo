@@ -132,8 +132,13 @@ Questo è il punto d'ingresso rapido per riprendere. Per il dettaglio:
   Calcolo on-demand (no migrazione). 6 unit + 2 integrazione, EN 100%. Open
   items: leghe, tarature, performance, gare via DirectorAssignment.
 - **Item di design V3 principali**: tutti avviati (§7 onboarding, §10-ter
-  segnale-domanda, §11-bis leaderboard). Restano gli *open items* per-ADR e il
-  **maturity-gate ADR-028** (rollout ai player, production-visible).
+  segnale-domanda, §11-bis leaderboard).
+- **Open items per-ADR chiusi**: ADR-036 re-eval promozione + segnale-admin zone
+  senza director; ADR-037 gare_organized via DirectorAssignment. *Restano*:
+  ADR-036 auto-refresh/prompt scadenza + tarature; ADR-037 leghe + tarature +
+  performance.
+- **maturity-gate ADR-028** (rollout ai player, production-visible) — da fare
+  solo con via esplicito dello stakeholder.
 
 ## Note ambiente (per non riscoprirle)
 - Le dipendenze non sono preinstallate: servono `flask_sqlalchemy flask-mail

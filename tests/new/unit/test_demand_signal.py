@@ -200,3 +200,77 @@ def test_consume_signals_marks_and_notifies(db_session):
             if n.notification_type == NotificationType.DEMAND_GARA_NEARBY
         ]
         assert len(notifs) == 1
+
+
+# ── re-eval alla promozione (ADR-036 open item 1) ────────────────────────────
+
+
+def _admin_notifications(user_id):
+    from models.notification.models import Notification, NotificationType
+
+    return [
+        n
+        for n in Notification.query.filter_by(user_id=user_id).all()
+        if n.notification_type == NotificationType.DEMAND_ZONE_NO_DIRECTOR
+    ]
+
+
+def test_evaluate_zone_for_new_director_notifies_when_threshold(db_session):
+    _napoli_venue()
+    # 6 segnali nella zona, creati senza alcun director esistente.
+    for _ in range(DEMAND_THRESHOLD):
+        DemandSignalService.create_signal(_user().id, NAP_LAT, NAP_LNG)
+
+    director = _user(role=UserRole.DIRECTOR, home_city="Napoli", radius=30)
+    notified = DemandSignalService.evaluate_zone_for_new_director(director.id)
+    assert notified is True
+    assert len(_director_notifications(director.id)) == 1
+
+
+def test_evaluate_zone_for_new_director_silent_below_threshold(db_session):
+    _napoli_venue()
+    for _ in range(DEMAND_THRESHOLD - 2):
+        DemandSignalService.create_signal(_user().id, NAP_LAT, NAP_LNG)
+
+    director = _user(role=UserRole.DIRECTOR, home_city="Napoli", radius=30)
+    notified = DemandSignalService.evaluate_zone_for_new_director(director.id)
+    assert notified is False
+    assert _director_notifications(director.id) == []
+
+
+def test_promotion_triggers_demand_reeval(db_session):
+    from models.user.permission_service import UserPermissionService
+
+    _napoli_venue()
+    admin = _user(role=UserRole.ADMIN)
+    for _ in range(DEMAND_THRESHOLD):
+        DemandSignalService.create_signal(_user().id, NAP_LAT, NAP_LNG)
+
+    candidate = _user(home_city="Napoli")
+    UserPermissionService.promote_to_director(candidate.id, admin.id)
+
+    assert len(_director_notifications(candidate.id)) == 1
+
+
+# ── segnale-admin per zona senza director (ADR-036 open item 2) ──────────────
+
+
+def test_admin_signal_when_no_director_covers_zone(db_session):
+    admin = _user(role=UserRole.ADMIN)
+    # 6 segnali in una zona senza alcun director.
+    for _ in range(DEMAND_THRESHOLD):
+        DemandSignalService.create_signal(_user().id, NAP_LAT, NAP_LNG, city="Napoli")
+
+    assert len(_admin_notifications(admin.id)) == 1
+
+
+def test_no_admin_signal_when_director_covers(db_session):
+    _napoli_venue()
+    admin = _user(role=UserRole.ADMIN)
+    _user(role=UserRole.DIRECTOR, home_city="Napoli", radius=30)
+
+    for _ in range(DEMAND_THRESHOLD):
+        DemandSignalService.create_signal(_user().id, NAP_LAT, NAP_LNG, city="Napoli")
+
+    # Il director copre la zona → nessun segnale-admin.
+    assert _admin_notifications(admin.id) == []

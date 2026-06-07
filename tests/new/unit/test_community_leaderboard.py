@@ -189,3 +189,46 @@ def test_contribution_leaderboard_ranks_and_excludes_zero(db_session):
     assert board[0]["user"].id == author.id
     assert board[0]["rank"] == 1
     assert board[0]["score"] == 1
+
+
+def test_gare_organized_counts_director_assignment(db_session):
+    """gare_organized include le gare assegnate via DirectorAssignment
+    (ADR-037 open item 4), non solo Gara.director_id."""
+    from datetime import date, timedelta as td
+    from models.competition.services import GaraService
+    from models.user.models import DirectorAssignment
+
+    director = _user(role=UserRole.DIRECTOR)
+    admin = _user(role=UserRole.ADMIN)
+
+    # Gara standalone via director_id.
+    GaraService.create_gara(
+        number=1,
+        name="Standalone",
+        date=date.today() + td(days=2),
+        discipline="palla_8",
+        distance=5,
+        director_id=director.id,
+    )
+
+    # Gara "di campionato" simulata: assegnazione esplicita via DirectorAssignment.
+    other_gara = GaraService.create_gara(
+        number=1,
+        name="Assigned",
+        date=date.today() + td(days=3),
+        discipline="palla_8",
+        distance=5,
+        director_id=admin.id,
+    )
+    db.session.add(
+        DirectorAssignment(
+            user_id=director.id,
+            entity_type="gara",
+            entity_id=other_gara.id,
+            assigned_by_id=admin.id,
+        )
+    )
+    db.session.commit()
+
+    b = CommunityLeaderboardService.compute_contribution(director.id)
+    assert b["gare_organized"] == 2

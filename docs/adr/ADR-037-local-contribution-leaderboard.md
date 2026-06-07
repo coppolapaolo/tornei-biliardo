@@ -91,8 +91,9 @@ promozione ai player col maturity-gate quando validato.
 1. **Leghe** a coorti di simili (promozione/retrocessione settimanale).
 2. **Tarature**: pesi del contributo, raggio espansione città, periodicità.
 3. **Performance**: materializzare/cachare se la community cresce.
-4. **gare_organized**: includere i director di campionato via
-   `DirectorAssignment` (oggi solo `Gara.director_id`).
+4. ~~**gare_organized** via `DirectorAssignment`~~ — **FATTO**: `_gare_organized`
+   conta gare distinte da `Gara.director_id` ∪ `DirectorAssignment`
+   (entity_type='gara'); candidati allineati.
 
 ## Note implementative
 - `models/gamification/community_leaderboard_service.py`

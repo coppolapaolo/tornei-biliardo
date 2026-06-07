@@ -266,9 +266,19 @@ ritiro board XP globale) + ADR + implementazione (§11-bis).
   (pesi/raggio/periodicità), performance (materializzazione se cresce),
   gare_organized via DirectorAssignment (oggi solo `Gara.director_id`).
 
+### Open items per-ADR — chiusure successive
+- **ADR-036**: re-eval alla promozione (1) e segnale-admin zone senza director
+  (2) **FATTI** (`evaluate_zone_for_new_director` agganciato a
+  `process_director_request`/`promote_to_director`;
+  `_maybe_notify_admins_no_director` +
+  `NotificationType.DEMAND_ZONE_NO_DIRECTOR`). Restano: auto-refresh/prompt
+  scadenza (3), tarature (4).
+- **ADR-037**: `gare_organized` via `DirectorAssignment` (4) **FATTO**. Restano:
+  leghe (1), tarature (2), performance/materializzazione (3).
+
 ### Aperto / prossimi (design già in V3, codice non iniziato)
-- *(nessuno tra gli item principali §11-bis/§10-ter/§7 — restano gli open items
-  per-ADR e il maturity-gate ADR-028 di rollout ai player).*
+- *(nessuno tra gli item principali §11-bis/§10-ter/§7. Restano gli open items
+  per-ADR sopra e il maturity-gate ADR-028 di rollout ai player.)*
 - **Leaderboard locale/contributo**.
 - **Maturity-gate ADR-028**: promozione ai player a blocchi (gamification +
   availability/discovery) quando validati — *non senza via dello stakeholder*.

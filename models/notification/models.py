@@ -48,6 +48,9 @@ class NotificationType(Enum):
     # Demand signal → director (ADR-036)
     DEMAND_THRESHOLD_REACHED = "demand_threshold_reached"  # Director: domanda ≥ soglia
     DEMAND_GARA_NEARBY = "demand_gara_nearby"  # Player: gara aperta nella tua zona
+    DEMAND_ZONE_NO_DIRECTOR = (
+        "demand_zone_no_director"  # Admin: domanda in zona senza director
+    )
 
     # Gamification
     ACHIEVEMENT_UNLOCKED = "achievement_unlocked"  # Achievement earned

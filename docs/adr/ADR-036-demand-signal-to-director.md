@@ -95,12 +95,15 @@ dev/test l'allowlist è pass-through.
   zona del director non è calcolabile → nessuna notifica (accettato).
 
 ## Open Items (rimandati, design in §10-ter)
-1. **Re-eval alla promozione** player→director: alla promozione valutare la zona
-   del nuovo director; se già ≥6, notifica una-tantum.
-2. **Segnale-admin** per zone senza director: accumulo come segnale "dove
-   reclutare/promuovere un director".
+1. ~~**Re-eval alla promozione** player→director~~ — **FATTO**:
+   `evaluate_zone_for_new_director` chiamato da `process_director_request` e
+   `promote_to_director` (errori isolati); se zona già ≥ soglia → notifica
+   una-tantum (cooldown).
+2. ~~**Segnale-admin** per zone senza director~~ — **FATTO**:
+   `_maybe_notify_admins_no_director` su crossing soglia quando nessun director
+   copre il punto (`NotificationType.DEMAND_ZONE_NO_DIRECTOR`).
 3. **Auto-refresh + prompt di riconferma** prima della scadenza per utenti
-   attivi.
+   attivi (richiede lifecycle/scheduled task) — *ancora aperto*.
 4. **Tarature**: soglia (6), raggio default (30 km), cooldown (7 gg), scadenza
    (60 gg) — affinare sui dati reali.
 

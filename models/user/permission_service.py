@@ -150,6 +150,7 @@ class UserPermissionService:
             user = db.session.get(User, director_request.user_id)
             if user:
                 user.role = UserRole.DIRECTOR.value
+                UserPermissionService._evaluate_demand_zone(user.id)
         else:
             director_request.status = DirectorRequestStatus.REJECTED.value
             director_request.processed_by_id = admin_user.id
@@ -168,9 +169,13 @@ class UserPermissionService:
                 request_id=director_request.id,
                 user_id=user.id,
                 username=user.username,
-                status=DirectorRequestStatus.APPROVED.value if approve else DirectorRequestStatus.REJECTED.value,
+                status=(
+                    DirectorRequestStatus.APPROVED.value
+                    if approve
+                    else DirectorRequestStatus.REJECTED.value
+                ),
                 processed_by_id=admin_user.id,
-                notes=notes
+                notes=notes,
             )
             EventBus.publish(event)
 
@@ -373,10 +378,28 @@ class UserPermissionService:
             raise ValueError("Cannot promote admin user")
 
         user.role = UserRole.DIRECTOR.value
+        UserPermissionService._evaluate_demand_zone(user.id)
 
         # Direct promotion without formal request process
         # Maintains backward compatibility with existing User model
         return True
+
+    @staticmethod
+    def _evaluate_demand_zone(director_id: int) -> None:
+        """Re-eval del segnale-domanda alla promozione (ADR-036 open item 1).
+
+        Errori isolati: la promozione non deve fallire per la valutazione.
+        """
+        try:
+            from models.demand.service import DemandSignalService
+
+            DemandSignalService.evaluate_zone_for_new_director(director_id)
+        except Exception:
+            import logging
+
+            logging.getLogger(__name__).warning(
+                "Re-eval zona domanda fallita per il neo-director %s", director_id
+            )
 
     @staticmethod
     @transactional(domain="user")

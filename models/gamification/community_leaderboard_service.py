@@ -195,10 +195,28 @@ class CommunityLeaderboardService:
 
     @staticmethod
     def _gare_organized(user_id: int) -> int:
-        """Gare di cui l'utente è responsabile (v1: ``Gara.director_id``)."""
+        """Gare di cui l'utente è responsabile: standalone (``Gara.director_id``)
+        + assegnazioni di gara (``DirectorAssignment`` entity_type='gara',
+        ADR-037 open item 4). Conteggio per gara distinta."""
         from models.competition.models import Gara
+        from models.user.models import DirectorAssignment
 
-        return Gara.query.filter_by(director_id=user_id).count()
+        gara_ids = {
+            gid
+            for (gid,) in db.session.query(Gara.id)
+            .filter(Gara.director_id == user_id)
+            .all()
+        }
+        gara_ids.update(
+            eid
+            for (eid,) in db.session.query(DirectorAssignment.entity_id)
+            .filter(
+                DirectorAssignment.user_id == user_id,
+                DirectorAssignment.entity_type == "gara",
+            )
+            .all()
+        )
+        return len(gara_ids)
 
     @staticmethod
     def _proposals_accepted(user_id: int) -> int:
@@ -246,6 +264,15 @@ class CommunityLeaderboardService:
             .all()
         )
         ids.update(r[0] for r in director_rows if r[0])
+
+        from models.user.models import DirectorAssignment
+
+        assignment_rows = (
+            db.session.query(db.func.distinct(DirectorAssignment.user_id))
+            .filter(DirectorAssignment.entity_type == "gara")
+            .all()
+        )
+        ids.update(r[0] for r in assignment_rows if r[0])
 
         proposer_rows = (
             db.session.query(db.func.distinct(MatchProposal.proposer_id))
