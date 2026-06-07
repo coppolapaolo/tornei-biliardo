@@ -6,7 +6,6 @@ from flask_login import current_user, logout_user
 from models import db, Campionato, Gara, User
 from config import Config
 
-
 main_bp = Blueprint("main", __name__)
 
 
@@ -223,7 +222,7 @@ def gara_detail_public(gara_id):
     La vista unificata in admin.competition.gara_detail si adatta
     automaticamente in base ai permessi dell'utente (anche per guest).
     """
-    return redirect(url_for('admin.competition.gara_detail', gara_id=gara_id))
+    return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
 
 @main_bp.route("/reset/save", methods=["POST"])
@@ -277,7 +276,7 @@ def debug_create_player():
         email=f"{username}@debug.local",
         role="player",
         password="123456",  # Il servizio si occupa dell'hashing
-        send_verification_email=False  # Skip email for debug users
+        send_verification_email=False,  # Skip email for debug users
     )
 
     flash(f"Player '{username}' creato con successo! Password: 123456", "success")
@@ -292,17 +291,18 @@ def _available_quick_login_players(gara_id: int):
     from models.user.role_enum import UserRole
 
     inscribed_ids = {
-        i.user_id
-        for i in Inscription.query.filter_by(gara_id=gara_id).all()
+        i.user_id for i in Inscription.query.filter_by(gara_id=gara_id).all()
     }
     return [
-        u for u in get_quick_login_users(limit=32)
+        u
+        for u in get_quick_login_users(limit=32)
         if u.role == UserRole.PLAYER.value and u.id not in inscribed_ids
     ]
 
 
 def _current_active_inscriptions(gara_id: int) -> int:
     from models.competition.models import Inscription
+
     return Inscription.query.filter_by(
         gara_id=gara_id, is_waitlist=False, is_withdrawn=False
     ).count()
@@ -431,13 +431,34 @@ def _debug_random_score_trio(match) -> bool:
     config = trio.trio_config
     total = config.total_played_racks
     max_per = 2 * config.num_rounds
-    counts = {trio.player1_id: 0, trio.player2_id: 0, trio.player3_id: 0}
+    pids = [trio.player1_id, trio.player2_id, trio.player3_id]
 
-    for _ in range(total):
-        eligible = [pid for pid, c in counts.items() if c < max_per]
-        if not eligible:
+    def _distribute():
+        counts = {pid: 0 for pid in pids}
+        for _ in range(total):
+            eligible = [pid for pid, c in counts.items() if c < max_per]
+            if not eligible:
+                return None
+            counts[random.choice(eligible)] += 1
+        return counts
+
+    # Genera una distribuzione con un vincitore NETTO (top unico). Un pareggio
+    # in testa lascerebbe winner_id=None (set_result_direct ripiega su Schulze
+    # sui rack sintetici, che può restituire pareggio), rendendo il trio
+    # incompleto ai fini di classifica/playoff — inutile per il debug footer
+    # che deve far progredire la gara. I pareggi sono ~1/4 dei casi: rigenerare
+    # converge immediatamente (P(100 pareggi consecutivi) ~ 0).
+    counts = None
+    for _ in range(100):
+        candidate = _distribute()
+        if candidate is None:
             return False
-        counts[random.choice(eligible)] += 1
+        top = max(candidate.values())
+        if list(candidate.values()).count(top) == 1:
+            counts = candidate
+            break
+    if counts is None:
+        return False
 
     TrioScoringService.set_result_direct(
         trio.id,
@@ -512,6 +533,7 @@ def _debug_release_tables_and_reassign(matches, gara_id: int) -> int:
 def _debug_incomplete_matches_in_round(gara_id: int, round_number: int):
     from models.match.models import Match
     from models.status_enum import MatchStatus
+
     return (
         Match.query.filter_by(gara_id=gara_id, round_number=round_number)
         .filter(
@@ -529,6 +551,7 @@ def _debug_all_incomplete_matches(gara_id: int):
     """
     from models.match.models import Match
     from models.status_enum import MatchStatus
+
     return (
         Match.query.filter_by(gara_id=gara_id)
         .filter(
@@ -551,10 +574,9 @@ def _debug_completable_matches(gara_id: int):
     """
     from models.match.models import Match
     from models.status_enum import MatchStatus
+
     return (
-        Match.query.filter_by(
-            gara_id=gara_id, status=MatchStatus.PLAYING.value
-        )
+        Match.query.filter_by(gara_id=gara_id, status=MatchStatus.PLAYING.value)
         .filter(Match.is_bye == False)  # noqa: E712
         .filter(Match.table_assignment.isnot(None))
         .order_by(Match.round_number, Match.id)
@@ -605,11 +627,10 @@ def debug_complete_current_round(gara_id):
 
     incomplete_matches = _debug_incomplete_matches_in_round(gara_id, target_round)
 
-    completed_count = sum(
-        1 for m in incomplete_matches if _debug_random_score_match(m)
-    )
+    completed_count = sum(1 for m in incomplete_matches if _debug_random_score_match(m))
 
     from models.competition.round_service import RoundService
+
     RoundService.update_round_progression(gara_id)
     assigned = _debug_release_tables_and_reassign(incomplete_matches, gara_id)
 
@@ -660,6 +681,7 @@ def debug_complete_next_match(gara_id):
     _debug_random_score_match(chosen)
 
     from models.competition.round_service import RoundService
+
     RoundService.update_round_progression(gara_id)
     assigned = _debug_release_tables_and_reassign([chosen], gara_id)
 
