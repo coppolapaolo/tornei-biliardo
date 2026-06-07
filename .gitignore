@@ -77,6 +77,10 @@ db_snapshots/
 ehthumbs.db
 Thumbs.db
 
+# Node (frontend headless tests — tests/frontend)
+node_modules/
+package-lock.json
+
 # Flask
 instance/
 .env

@@ -6,7 +6,12 @@ pre-apertura** completati; tutto committato e pushato, working tree pulito.
 Suite: **unit 1013 / integration 383** verdi (`-n 4`), pyright 0 errori.
 **Gate rimasto**: esecuzione test manuali gamification in browser
 (`GAMIFICATION_V3_MANUAL_TEST_REPORT.md`) prima dell'apertura ai player
-(maturity-gate ADR-028, non senza via esplicito).
+(maturity-gate ADR-028, non senza via esplicito). **Sottoinsieme
+automatizzabile FATTO (2026-06-07)**: harness headless jsdom
+`tests/frontend/test_gamification_badge.cjs` (26/26 verdi) pre-verifica 24/36
+righe (scala d'intensità, cap sessione, reduced-motion, confetti); restano 12
+righe **visive** (badge/anello reale, centro notifiche, responsive, no-errori-JS)
+da confermare a occhio + firma.
 
 Questo è il punto d'ingresso rapido per riprendere. Per il dettaglio:
 - `docs/reference/GAMIFICATION_V3_HANDOFF.md` — piano + esito Fase 1/2/3 (con ancore).
@@ -85,7 +90,11 @@ Questo è il punto d'ingresso rapido per riprendere. Per il dettaglio:
 - **Verifica manuale browser** del badge/anti-invasività prima di promuovere ai
   player. Checklist: `GAMIFICATION_V3_MANUAL_TESTS.md`; **report compilabile**
   (esiti da spuntare + firma): `GAMIFICATION_V3_MANUAL_TEST_REPORT.md`.
-  È l'unico gate rimasto che i test automatici non coprono.
+  **Aggiornamento 2026-06-07**: il sottoinsieme automatizzabile è ora coperto
+  da automazione headless (`tests/frontend/test_gamification_badge.cjs`, jsdom
+  sul vero `gamification.js`, 26/26 verdi → 24/36 righe pre-verificate `✅ auto`).
+  Restano **12 righe visive** (gate umano) da spuntare + firma nel report.
+  Riesecuzione harness: `cd tests/frontend && npm install && npm test`.
 - **Copertura test pre-apertura** (FATTO, per area): match individuali (route
   proposte/discovery/lifecycle, `matches.py` 19%→63%, `proposals.py` 21%→66%;
   trovato+corretto bug `decline` 500 e incongruenza VALIDATED/completed), rating

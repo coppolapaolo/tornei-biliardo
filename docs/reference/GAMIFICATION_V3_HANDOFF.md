@@ -314,6 +314,15 @@ Obiettivo: nessuna area aperta ai player senza test verdi. Esito per area:
   anti-invasività). `test_xp_workflow`/`test_achievement_workflow` ora end-to-end.
 - **Report test manuali**: `GAMIFICATION_V3_MANUAL_TEST_REPORT.md` (fillable,
   esiti+firma) — il gate umano rimasto prima dell'apertura.
+- **Automazione headless del sottoinsieme automatizzabile** (2026-06-07):
+  `tests/frontend/test_gamification_badge.cjs` carica il vero
+  `static/js/gamification.js` in jsdom e asserisce la logica deterministica
+  (scala d'intensità, cap di sessione, reduced-motion, confetti, helper console)
+  — **26/26 verdi**, pre-verifica **24/36** righe del report (`✅ auto`).
+  Toolchain Node standalone (jsdom, `node_modules` gitignored, fuori dalla CI
+  Python): `cd tests/frontend && npm install && npm test`. **Restano 12 righe
+  visive** (badge/anello reale, anello statico reduced-motion, centro notifiche,
+  responsive, assenza errori JS end-to-end) come gate umano + firma.
 
 Stato suite a fine sessione: **unit 1013 / integration 383** verdi, pyright 0
 errori. Skip integration 19→10 (rimossi i 9 gamification). Nota: flake
