@@ -8,14 +8,14 @@ corrente da una query sul dominio, NON da un contatore incrementale fragile
   evento è stato perso o un achievement viene riattivato a posteriori;
 - **nessun backfill**: i dati storici contano retroattivamente;
 - **handler più semplici**: non incrementano contatori, si limitano a
-  "riconciliare" (vedi `AchievementService.reconcile_metric_achievements`).
+  "riconciliare" (vedi `AchievementService.reconcile_achievements`).
 
-I tipi NON conteggiabili (win_rate, level_reached, weekly_streak,
-gaming_data_shared, director_eligibility) hanno logica booleana propria in
-`AchievementService._check_requirements` e qui ritornano `None`. Anche gli stub
-privi di tracking (win_streak, category_reached, challenges_completed,
-perfect_challenges, strategies_tried) ritornano `None` → restano non
-ottenibili finché non esiste la sorgente dati.
+I tipi conteggiabili includono anche win_streak, strategies_tried,
+challenges_completed e perfect_challenges (tutti con resolver in `_RESOLVERS` →
+ora ottenibili). I tipi NON conteggiabili (win_rate, level_reached,
+weekly_streak, gaming_data_shared, director_eligibility, category_reached) hanno
+logica booleana/a soglia propria in `AchievementService._check_requirements` e
+qui ritornano `None`.
 """
 
 from __future__ import annotations

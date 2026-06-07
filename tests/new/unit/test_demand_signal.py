@@ -347,28 +347,6 @@ def test_expire_due_signals(db_session):
     assert db.session.get(DemandSignal, future.id).status == DemandSignalStatus.ACTIVE
 
 
-def test_send_expiry_reminders_once(db_session):
-    from models.notification.models import Notification, NotificationType
-
-    u = _user()
-    soon = _make_signal(u.id, expires_in_days=3)  # entro la finestra (7gg)
-    _make_signal(u.id, expires_in_days=30)  # fuori finestra
-    _make_signal(u.id, expires_in_days=2, reminded=True)  # già avvisato
-
-    n = DemandSignalService.send_expiry_reminders(within_days=7)
-    assert n == 1
-    assert db.session.get(DemandSignal, soon.id).reminded_at is not None
-    notifs = [
-        x
-        for x in Notification.query.filter_by(user_id=u.id).all()
-        if x.notification_type == NotificationType.DEMAND_SIGNAL_EXPIRING
-    ]
-    assert len(notifs) == 1
-
-    # Idempotente: una seconda esecuzione non re-invia.
-    assert DemandSignalService.send_expiry_reminders(within_days=7) == 0
-
-
 def test_refresh_signal_extends_and_clears_reminder(db_session):
     u = _user()
     s = _make_signal(u.id, expires_in_days=2, reminded=True)

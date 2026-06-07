@@ -380,31 +380,6 @@ class DemandSignalService:
         return len(due)
 
     @staticmethod
-    @transactional(domain="demand")
-    def send_expiry_reminders(within_days: int = DEMAND_REMINDER_WINDOW_DAYS) -> int:
-        """Prompt di riconferma per i segnali attivi prossimi alla scadenza.
-
-        Invia una notifica una-tantum (``reminded_at``) ai segnali ancora attivi
-        e non scaduti la cui scadenza cade entro ``within_days``. Ritorna il
-        numero di promemoria inviati.
-        """
-        now = utc_now()
-        horizon = now + timedelta(days=within_days)
-        expiring = DemandSignal.query.filter(
-            DemandSignal.status == DemandSignalStatus.ACTIVE,
-            DemandSignal.expires_at > now,
-            DemandSignal.expires_at <= horizon,
-            DemandSignal.reminded_at.is_(None),
-        ).all()
-
-        count = 0
-        for s in expiring:
-            DemandSignalService._send_expiry_prompt(s)
-            s.reminded_at = now
-            count += 1
-        return count
-
-    @staticmethod
     def _send_expiry_prompt(signal: DemandSignal) -> None:
         """Invia il prompt di riconferma per un singolo segnale (errori isolati)."""
         from models.notification.factory import NotificationFactory

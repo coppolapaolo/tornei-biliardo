@@ -187,16 +187,26 @@ class CommunityLeaderboardService:
         Ritorna ``[{"user_id", "score", "breakdown", "rank"}]`` — niente oggetti
         ORM, così è sicuro da mettere in cache tra richieste. Usato anche dalla
         misura di performance (KPI admin).
+
+        Usa :meth:`_contribution_components` (≈4 query aggregate in tutto) invece
+        di ``compute_contribution`` per-utente: il costo è indipendente dal
+        numero di contributori (era ``O(contributori × 4 query)``, ADR-037).
         """
-        candidate_ids = CommunityLeaderboardService._contribution_candidate_ids()
+        components = CommunityLeaderboardService._contribution_components()
         rows = []
-        for uid in candidate_ids:
-            breakdown = CommunityLeaderboardService.compute_contribution(uid)
-            if breakdown["total"] <= 0:
+        for uid, c in components.items():
+            if not uid:
                 continue
-            rows.append(
-                {"user_id": uid, "score": breakdown["total"], "breakdown": breakdown}
+            total = (
+                c["drills_engaged"] * CONTRIBUTION_WEIGHTS["drills_engaged"]
+                + c["gare_organized"] * CONTRIBUTION_WEIGHTS["gare_organized"]
+                + c["proposals_accepted"] * CONTRIBUTION_WEIGHTS["proposals_accepted"]
             )
+            if total <= 0:
+                continue
+            breakdown = dict(c)
+            breakdown["total"] = total
+            rows.append({"user_id": uid, "score": total, "breakdown": breakdown})
         rows.sort(key=lambda r: (r["score"], -r["user_id"]), reverse=True)
         rows = rows[:limit]
         for idx, r in enumerate(rows, start=1):
@@ -301,57 +311,82 @@ class CommunityLeaderboardService:
         ).count()
 
     @staticmethod
-    def _contribution_candidate_ids() -> set:
-        """Id utente con potenziale contributo (unione delle tre fonti)."""
+    def _contribution_components() -> Dict[int, Dict[str, int]]:
+        """Calcola in **batch** i 3 componenti del contributo per tutti gli utenti.
+
+        Ritorna ``{user_id: {"drills_engaged", "gare_organized",
+        "proposals_accepted"}}`` con ~4 query aggregate **in tutto** (indipendenti
+        dal numero di contributori). È la fonte unica usata sia dal ranking sia
+        dalle KPI di performance, così le definizioni non divergono (ADR-037).
+        Semantica identica ai helper per-utente ``_drills_engaged`` /
+        ``_gare_organized`` / ``_proposals_accepted`` (usati per il singolo).
+        """
+        from collections import defaultdict
         from models.challenge.models import Challenge, ChallengeAttempt
         from models.competition.models import Gara
+        from models.user.models import DirectorAssignment
         from models.individual_match.models import (
             MatchProposal,
             ProposalType,
             ProposalStatus,
         )
 
-        ids: set = set()
+        comp: Dict[int, Dict[str, int]] = defaultdict(
+            lambda: {
+                "drills_engaged": 0,
+                "gare_organized": 0,
+                "proposals_accepted": 0,
+            }
+        )
 
-        # autori di drill che hanno ricevuto almeno un tentativo completato
-        author_rows = (
-            db.session.query(db.func.distinct(Challenge.created_by_id))
+        # Drill: tentativi completati da ALTRI sui drill di cui l'utente è autore.
+        drill_rows = (
+            db.session.query(
+                Challenge.created_by_id, db.func.count(ChallengeAttempt.id)
+            )
             .join(ChallengeAttempt, ChallengeAttempt.challenge_id == Challenge.id)
             .filter(
                 Challenge.created_by_id.isnot(None),
+                ChallengeAttempt.user_id != Challenge.created_by_id,
                 ChallengeAttempt.completed.is_(True),
             )
+            .group_by(Challenge.created_by_id)
             .all()
         )
-        ids.update(r[0] for r in author_rows if r[0])
+        for uid, cnt in drill_rows:
+            comp[uid]["drills_engaged"] = cnt or 0
 
-        director_rows = (
-            db.session.query(db.func.distinct(Gara.director_id))
+        # Gare: gara distinte per utente da Gara.director_id + DirectorAssignment.
+        gare_pairs: Dict[int, set] = defaultdict(set)
+        for uid, gid in (
+            db.session.query(Gara.director_id, Gara.id)
             .filter(Gara.director_id.isnot(None))
             .all()
-        )
-        ids.update(r[0] for r in director_rows if r[0])
-
-        from models.user.models import DirectorAssignment
-
-        assignment_rows = (
-            db.session.query(db.func.distinct(DirectorAssignment.user_id))
+        ):
+            gare_pairs[uid].add(gid)
+        for uid, gid in (
+            db.session.query(DirectorAssignment.user_id, DirectorAssignment.entity_id)
             .filter(DirectorAssignment.entity_type == "gara")
             .all()
-        )
-        ids.update(r[0] for r in assignment_rows if r[0])
+        ):
+            gare_pairs[uid].add(gid)
+        for uid, gids in gare_pairs.items():
+            comp[uid]["gare_organized"] = len(gids)
 
-        proposer_rows = (
-            db.session.query(db.func.distinct(MatchProposal.proposer_id))
+        # Proposte aperte accettate per proponente.
+        prop_rows = (
+            db.session.query(MatchProposal.proposer_id, db.func.count(MatchProposal.id))
             .filter(
                 MatchProposal.proposal_type == ProposalType.OPEN,
                 MatchProposal.status == ProposalStatus.ACCEPTED,
             )
+            .group_by(MatchProposal.proposer_id)
             .all()
         )
-        ids.update(r[0] for r in proposer_rows if r[0])
+        for uid, cnt in prop_rows:
+            comp[uid]["proposals_accepted"] = cnt or 0
 
-        return ids
+        return dict(comp)
 
     # ── Performance / osservabilità (ADR-037) ───────────────────────────────
 
@@ -367,7 +402,7 @@ class CommunityLeaderboardService:
 
         User = CommunityLeaderboardService._User()
 
-        contributors = len(CommunityLeaderboardService._contribution_candidate_ids())
+        contributors = len(CommunityLeaderboardService._contribution_components())
         distinct_cities = (
             db.session.query(
                 db.func.count(

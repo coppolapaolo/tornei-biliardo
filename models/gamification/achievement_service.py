@@ -37,6 +37,11 @@ logger = logging.getLogger(__name__)
 # punto di estensione esplicito per eventuali requisiti futuri non ancora cablati.
 _UNTRACKED_REQUIREMENT_TYPES: frozenset[str] = frozenset()
 
+# Sentinella per distinguere "metric_value non fornito" da "None" (None è
+# significativo: requisito non conteggiabile). Usata per riusare il valore già
+# calcolato ed evitare di interrogare due volte AchievementMetrics per achievement.
+_METRIC_UNSET = object()
+
 
 # Requisiti con trigger dedicato o costosi da valutare: esclusi dalla
 # riconciliazione di massa (`reconcile_achievements`) e gestiti dal loro handler
@@ -185,11 +190,14 @@ class AchievementService:
             target = requirements.get("count", 1)
             user_achievement.current_progress = min(metric_value, target)
 
-        # Check if requirements met (single source of truth)
+        # Check if requirements met (single source of truth). Riusa il
+        # metric_value già calcolato sopra per non interrogare due volte
+        # AchievementMetrics per lo stesso achievement (perf reconcile, ADR-037).
         is_eligible = AchievementService._check_requirements(
             user_id=user_id,
             requirement_type=requirement_type,
             requirements=requirements,
+            metric_value=metric_value,
         )
 
         if not is_eligible or user_achievement.is_unlocked:
@@ -235,6 +243,7 @@ class AchievementService:
         user_id: int,
         requirement_type: str,
         requirements: Dict[str, Any],
+        metric_value: Any = _METRIC_UNSET,
     ) -> bool:
         """
         Check if a user currently meets an achievement's requirements.
@@ -255,9 +264,11 @@ class AchievementService:
             True if requirements are met
         """
         # 1) Metriche conteggiabili: idoneità = valore reale >= target.
-        metric_value = AchievementMetrics.current_value(
-            user_id, requirement_type, requirements
-        )
+        # Riusa il valore se già calcolato dal chiamante (evita doppia query).
+        if metric_value is _METRIC_UNSET:
+            metric_value = AchievementMetrics.current_value(
+                user_id, requirement_type, requirements
+            )
         if metric_value is not None:
             return metric_value >= requirements.get("count", 1)
 
