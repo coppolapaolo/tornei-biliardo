@@ -69,3 +69,24 @@ class TestLeaderboardPage:
         # il visitatore è elencato
         viewer_username = db.session.get(User, viewer_id).username
         assert viewer_username in body
+
+
+@pytest.mark.integration
+class TestKpiPerformanceTab:
+    def test_performance_tab_renders(self, app):
+        admin = User(
+            username=f"adm_{uuid.uuid4().hex[:8]}",
+            email=f"adm_{uuid.uuid4().hex[:8]}@test.com",
+            role=UserRole.ADMIN.value,
+        )
+        admin.set_password("pw123456")
+        db.session.add(admin)
+        db.session.commit()
+
+        client = app.test_client()
+        _login(client, admin)
+        resp = client.get("/admin/kpi/?tab=performance")
+        assert resp.status_code == 200
+        body = resp.get_data(as_text=True)
+        assert "Performance" in body
+        assert "Contributori" in body

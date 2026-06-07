@@ -14,10 +14,20 @@ from __future__ import annotations
 from typing import Any, Dict, List
 
 from models.base import db
+from models.caching.manager import cached
 from utils.geo import haversine_km, clamp_radius
 
 # Raggio default di espansione alle città vicine (taratura = ADR-037 open item).
 LOCAL_ZONE_RADIUS_KM = 30
+
+# TTL della cache delle classifiche (calcolo on-demand → materializzazione
+# leggera, ADR-037). Freschezza ≤ TTL; invalidazione solo a tempo.
+LEADERBOARD_CACHE_TTL = 300
+
+# Soglie oltre le quali valutare la materializzazione vera (ADR-037 open item):
+# esposte nelle KPI admin per capire SE/QUANDO servirà.
+PERF_CONTRIBUTORS_THRESHOLD = 200
+PERF_COMPUTE_MS_THRESHOLD = 500
 
 # Pesi della metrica di contributo (taratura ADR-037: costanti documentate,
 # facili da affinare sui dati reali). Default: peso uguale per ogni componente.
@@ -34,6 +44,7 @@ class CommunityLeaderboardService:
     # ── Locale (per zona / home_city) ────────────────────────────────────────
 
     @staticmethod
+    @cached(ttl_seconds=LEADERBOARD_CACHE_TTL, tags=["leaderboard"])
     def cities_in_zone(home_city: str, radius_km: int = LOCAL_ZONE_RADIUS_KM) -> set:
         """Insieme di città nella zona: la propria + quelle vicine (centroide).
 
@@ -170,27 +181,66 @@ class CommunityLeaderboardService:
         }
 
     @staticmethod
-    def get_contribution_leaderboard(limit: int = 50) -> List[Dict[str, Any]]:
-        """Top contributori community-wide (contributo > 0), ordinati."""
-        User = CommunityLeaderboardService._User()
+    def _compute_contribution_ranking(limit: int = 50) -> List[Dict[str, Any]]:
+        """Calcolo (NON cache-ato) del ranking contributo come **dati grezzi**.
 
+        Ritorna ``[{"user_id", "score", "breakdown", "rank"}]`` — niente oggetti
+        ORM, così è sicuro da mettere in cache tra richieste. Usato anche dalla
+        misura di performance (KPI admin).
+        """
         candidate_ids = CommunityLeaderboardService._contribution_candidate_ids()
         rows = []
         for uid in candidate_ids:
             breakdown = CommunityLeaderboardService.compute_contribution(uid)
             if breakdown["total"] <= 0:
                 continue
-            user = db.session.get(User, uid)
-            if not user or user.is_deleted:
-                continue
             rows.append(
-                {"user": user, "score": breakdown["total"], "breakdown": breakdown}
+                {"user_id": uid, "score": breakdown["total"], "breakdown": breakdown}
             )
-
-        rows.sort(key=lambda r: (r["score"], -r["user"].id), reverse=True)
-        for idx, r in enumerate(rows[:limit], start=1):
+        rows.sort(key=lambda r: (r["score"], -r["user_id"]), reverse=True)
+        rows = rows[:limit]
+        for idx, r in enumerate(rows, start=1):
             r["rank"] = idx
-        return rows[:limit]
+        return rows
+
+    @staticmethod
+    @cached(ttl_seconds=LEADERBOARD_CACHE_TTL, tags=["leaderboard"])
+    def _contribution_ranking(limit: int = 50) -> List[Dict[str, Any]]:
+        """Wrapper cache-ato (dati grezzi) di :meth:`_compute_contribution_ranking`."""
+        return CommunityLeaderboardService._compute_contribution_ranking(limit)
+
+    @staticmethod
+    def get_contribution_leaderboard(limit: int = 50) -> List[Dict[str, Any]]:
+        """Top contributori community-wide (contributo > 0), ordinati.
+
+        Legge il ranking (dati grezzi) dalla cache TTL e **idrata** gli oggetti
+        ``User`` per-richiesta (gli oggetti ORM non vanno mai messi in cache).
+        """
+        User = CommunityLeaderboardService._User()
+        ranking = CommunityLeaderboardService._contribution_ranking(limit)
+        if not ranking:
+            return []
+
+        users = {
+            u.id: u
+            for u in User.query.filter(
+                User.id.in_([r["user_id"] for r in ranking])
+            ).all()
+        }
+        out = []
+        for r in ranking:
+            user = users.get(r["user_id"])
+            if not user or user.is_deleted:
+                continue  # utente sparito/cancellato dopo il calcolo in cache
+            out.append(
+                {
+                    "rank": r["rank"],
+                    "user": user,
+                    "score": r["score"],
+                    "breakdown": r["breakdown"],
+                }
+            )
+        return out
 
     # ── helper metriche ──────────────────────────────────────────────────────
 
@@ -302,6 +352,62 @@ class CommunityLeaderboardService:
         ids.update(r[0] for r in proposer_rows if r[0])
 
         return ids
+
+    # ── Performance / osservabilità (ADR-037) ───────────────────────────────
+
+    @staticmethod
+    def performance_stats() -> Dict[str, Any]:
+        """Metriche di costo del calcolo on-demand delle classifiche.
+
+        Esposte nelle KPI admin per decidere SE/QUANDO serve la materializzazione
+        (ADR-037 open item): il board contributo è ``O(contributori × 3 query)``.
+        Misura il tempo del calcolo **non cache-ato** per dare il costo reale.
+        """
+        import time
+
+        User = CommunityLeaderboardService._User()
+
+        contributors = len(CommunityLeaderboardService._contribution_candidate_ids())
+        distinct_cities = (
+            db.session.query(
+                db.func.count(
+                    db.func.distinct(db.func.lower(db.func.trim(User.home_city)))
+                )
+            )
+            .filter(User.home_city.isnot(None))
+            .scalar()
+        ) or 0
+        total_users = User.query.filter_by(is_deleted=False).count()
+
+        start = time.perf_counter()
+        CommunityLeaderboardService._compute_contribution_ranking()
+        compute_ms = round((time.perf_counter() - start) * 1000, 1)
+
+        reasons = []
+        if contributors > PERF_CONTRIBUTORS_THRESHOLD:
+            reasons.append(
+                f"contributori ({contributors}) oltre la soglia "
+                f"({PERF_CONTRIBUTORS_THRESHOLD})"
+            )
+        if compute_ms > PERF_COMPUTE_MS_THRESHOLD:
+            reasons.append(
+                f"calcolo ({compute_ms} ms) oltre la soglia "
+                f"({PERF_COMPUTE_MS_THRESHOLD} ms)"
+            )
+
+        return {
+            "contributors": contributors,
+            "distinct_cities": distinct_cities,
+            "total_users": total_users,
+            "contribution_compute_ms": compute_ms,
+            "cache_ttl_seconds": LEADERBOARD_CACHE_TTL,
+            "recommend_materialization": bool(reasons),
+            "reasons": reasons,
+            "thresholds": {
+                "contributors": PERF_CONTRIBUTORS_THRESHOLD,
+                "compute_ms": PERF_COMPUTE_MS_THRESHOLD,
+            },
+        }
 
     @staticmethod
     def _User():

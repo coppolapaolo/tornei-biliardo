@@ -276,9 +276,12 @@ ritiro board XP globale) + ADR + implementazione (§11-bis).
   `20260607_user_last_active`). **Tutti gli open item ADR-036 chiusi** (resta
   solo la taratura numerica, costanti documentate).
 - **ADR-037**: `gare_organized` via `DirectorAssignment` (4) **FATTO**. Tarature
-  (2) **FATTO** (costanti documentate: `CONTRIBUTION_WEIGHTS`,
-  `LOCAL_ZONE_RADIUS_KM`). Leghe (1) **RIMANDATE** (community troppo piccola per
-  coorti significative). Resta: performance/materializzazione (3), prematura ora.
+  (2) **FATTO** (costanti documentate). Performance (3): **cache TTL FATTA**
+  (`@cached` su `cities_in_zone` + ranking contributo a dati grezzi, hydration
+  ORM per-richiesta) + **tab KPI admin "Performance"**
+  (`performance_stats()`: contributori/tempo board/soglie → raccomanda la
+  materializzazione quando serve). Leghe (1) e materializzazione piena (3)
+  **RIMANDATE** finché le KPI non mostrano il superamento delle soglie.
 
 ### Aperto / prossimi (design già in V3, codice non iniziato)
 - *(nessuno tra gli item principali §11-bis/§10-ter/§7. Restano gli open items

@@ -248,3 +248,42 @@ def test_contribution_total_uses_weights(db_session, monkeypatch):
     b = mod.CommunityLeaderboardService.compute_contribution(author.id)
     assert b["drills_engaged"] == 1
     assert b["total"] == 3
+
+
+def test_performance_stats_shape_and_recommendation(db_session):
+    """performance_stats espone i conteggi e NON raccomanda materializzazione
+    su community piccola (ADR-037 KPI admin)."""
+    author = _user(role=UserRole.DIRECTOR)
+    other = _user()
+    ch = _challenge(author.id)
+    _attempt(ch.id, other.id, completed=True)
+
+    stats = CommunityLeaderboardService.performance_stats()
+    assert set(stats) >= {
+        "contributors",
+        "distinct_cities",
+        "total_users",
+        "contribution_compute_ms",
+        "cache_ttl_seconds",
+        "recommend_materialization",
+        "reasons",
+        "thresholds",
+    }
+    assert stats["contributors"] == 1  # solo l'autore ha contributo
+    assert stats["recommend_materialization"] is False
+    assert stats["reasons"] == []
+    assert stats["contribution_compute_ms"] >= 0
+
+
+def test_contribution_leaderboard_hydrates_from_cache(db_session):
+    """get_contribution_leaderboard ritorna oggetti User idratati (non ORM in
+    cache): lo username è accessibile senza DetachedInstanceError."""
+    author = _user(role=UserRole.DIRECTOR)
+    other = _user()
+    ch = _challenge(author.id)
+    _attempt(ch.id, other.id, completed=True)
+
+    board = CommunityLeaderboardService.get_contribution_leaderboard()
+    assert len(board) == 1
+    assert board[0]["user"].username == author.username
+    assert board[0]["score"] == 1

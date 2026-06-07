@@ -95,8 +95,18 @@ promozione ai player col maturity-gate quando validato.
 2. **Tarature** — **FATTO** (costanti documentate): pesi del contributo
    centralizzati in `CONTRIBUTION_WEIGHTS` (default peso 1), raggio espansione
    città in `LOCAL_ZONE_RADIUS_KM`. Facili da affinare; nessun pannello runtime.
-3. **Performance**: materializzare/cachare (come `LeaderboardEntry`) se la
-   community cresce — *ancora aperto* (premature ora).
+3. **Performance** — **cache TTL FATTA**, materializzazione piena rimandata:
+   - cache in memoria (TTL 300 s, `@cached`) su `cities_in_zone` e sul ranking
+     contributo (**dati grezzi**, non oggetti ORM: si idratano gli `User`
+     per-richiesta per evitare `DetachedInstanceError`);
+   - **osservabilità** nelle KPI admin (tab *Performance*):
+     `CommunityLeaderboardService.performance_stats()` espone contributori,
+     città distinte, tempo di calcolo del board e una raccomandazione quando si
+     superano le soglie (`PERF_CONTRIBUTORS_THRESHOLD=200`,
+     `PERF_COMPUTE_MS_THRESHOLD=500 ms`).
+   - *Rimandata* la materializzazione vera (tabella tipo `LeaderboardEntry` /
+     job schedulato): da fare quando le KPI mostrano il superamento delle
+     soglie.
 4. ~~**gare_organized** via `DirectorAssignment`~~ — **FATTO**.
 
 ## Note implementative

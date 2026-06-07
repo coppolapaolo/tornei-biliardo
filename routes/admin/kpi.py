@@ -62,8 +62,14 @@ def index():
         "days": days,
         "date_range": date_range,
         "is_custom": is_custom,
-        "start_date": date_range.start.strftime("%Y-%m-%d") if date_range and date_range.start else "",
-        "end_date": date_range.end.strftime("%Y-%m-%d") if date_range and date_range.end else "",
+        "start_date": (
+            date_range.start.strftime("%Y-%m-%d")
+            if date_range and date_range.start
+            else ""
+        ),
+        "end_date": (
+            date_range.end.strftime("%Y-%m-%d") if date_range and date_range.end else ""
+        ),
     }
 
     if tab == "overview":
@@ -101,6 +107,15 @@ def index():
         context["directors"] = KpiService.get_director_performance()
         context["community"] = KpiService.get_community_health()
         context["power_users"] = KpiService.get_power_users()
+
+    elif tab == "performance":
+        # Costo del calcolo on-demand delle classifiche (ADR-037): aiuta a
+        # capire SE/QUANDO serve la materializzazione.
+        from models.gamification.community_leaderboard_service import (
+            CommunityLeaderboardService,
+        )
+
+        context["leaderboard_perf"] = CommunityLeaderboardService.performance_stats()
 
     return render_template("admin/kpi.html", **context)
 

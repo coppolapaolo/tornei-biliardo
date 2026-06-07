@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-07 08:19+0000\n"
+"POT-Creation-Date: 2026-06-07 12:35+0000\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -53,7 +53,7 @@ msgstr "Player Dashboard"
 msgid "Vista Pubblica"
 msgstr "Public View"
 
-#: models/demand/service.py:233
+#: models/demand/service.py:236
 #, python-format
 msgid ""
 "%(count)s giocatori vorrebbero una gara a %(city)s, una zona senza un "
@@ -62,7 +62,7 @@ msgstr ""
 "%(count)s players would like a tournament in %(city)s, an area without a "
 "director. Consider recruiting or promoting one."
 
-#: models/demand/service.py:240
+#: models/demand/service.py:243
 #, python-format
 msgid ""
 "%(count)s giocatori vorrebbero una gara in una zona senza un director. "
@@ -71,15 +71,15 @@ msgstr ""
 "%(count)s players would like a tournament in an area without a director. "
 "Consider recruiting or promoting one."
 
-#: models/demand/service.py:248
+#: models/demand/service.py:251
 msgid "Domanda in una zona senza director"
 msgstr "Demand in an area without a director"
 
-#: models/demand/service.py:273
+#: models/demand/service.py:276
 msgid "C'è domanda nella tua zona!"
 msgstr "There's demand in your area!"
 
-#: models/demand/service.py:275
+#: models/demand/service.py:278
 #, python-format
 msgid ""
 "%(count)s giocatori vorrebbero una gara vicino a te. Potrebbe essere il "
@@ -88,11 +88,11 @@ msgstr ""
 "%(count)s players would like a tournament near you. It might be a good time "
 "to organize one."
 
-#: models/demand/service.py:334
+#: models/demand/service.py:337
 msgid "Una gara è stata aperta vicino a te!"
 msgstr "A tournament has opened near you!"
 
-#: models/demand/service.py:336
+#: models/demand/service.py:339
 msgid ""
 "La gara che aspettavi nella tua zona è stata pubblicata: dai un'occhiata e "
 "iscriviti."
@@ -100,15 +100,15 @@ msgstr ""
 "The tournament you were waiting for in your area has been published: take a "
 "look and sign up."
 
-#: models/demand/service.py:342
+#: models/demand/service.py:345
 msgid "Vedi la gara"
 msgstr "View the tournament"
 
-#: models/demand/service.py:390
+#: models/demand/service.py:401
 msgid "La tua richiesta sta per scadere"
 msgstr "Your request is about to expire"
 
-#: models/demand/service.py:392
+#: models/demand/service.py:403
 msgid ""
 "La tua richiesta di una gara nella tua zona sta per scadere. Confermala se "
 "ti interessa ancora."
@@ -648,29 +648,29 @@ msgstr "Playoff configuration added."
 msgid "Configurazione playoff disattivata."
 msgstr "Playoff configuration deactivated."
 
-#: routes/admin/kpi.py:189
+#: routes/admin/kpi.py:204
 msgid "Nessun match giocato negli ultimi 3 giorni"
 msgstr "No matches played in the last 3 days"
 
-#: routes/admin/kpi.py:196
+#: routes/admin/kpi.py:211
 msgid "Nessun match giocato negli ultimi 7 giorni"
 msgstr "No matches played in the last 7 days"
 
-#: routes/admin/kpi.py:203
+#: routes/admin/kpi.py:218
 msgid "Nessuna nuova registrazione negli ultimi 7 giorni"
 msgstr "No new registrations in the last 7 days"
 
-#: routes/admin/kpi.py:227
+#: routes/admin/kpi.py:242
 #, python-format
 msgid "Milestone raggiunta: %(value)s utenti!"
 msgstr "Milestone reached: %(value)s users!"
 
-#: routes/admin/kpi.py:235
+#: routes/admin/kpi.py:250
 #, python-format
 msgid "Milestone raggiunta: %(value)s match giocati!"
 msgstr "Milestone reached: %(value)s matches played!"
 
-#: routes/admin/kpi.py:244
+#: routes/admin/kpi.py:259
 #, python-format
 msgid "Milestone raggiunta: %(value)s gare completate!"
 msgstr "Milestone reached: %(value)s competitions completed!"
@@ -900,7 +900,7 @@ msgstr "Achievement"
 msgid "Admin"
 msgstr "Admin"
 
-#: routes/gamification/features.py:73 templates/admin/kpi.html:594
+#: routes/gamification/features.py:73 templates/admin/kpi.html:600
 msgid "Director"
 msgstr "Director"
 
@@ -1991,7 +1991,7 @@ msgstr "There are no championships or competitions organized yet."
 msgid "Accedi"
 msgstr "Login"
 
-#: templates/admin/kpi.html:746 templates/match_detail.html:3
+#: templates/admin/kpi.html:803 templates/match_detail.html:3
 msgid "Match"
 msgstr "Match"
 
@@ -2817,160 +2817,165 @@ msgstr "Features"
 msgid "Business & Community"
 msgstr "Business & Community"
 
-#: templates/admin/kpi.html:173 templates/admin/kpi.html:279
+#: templates/admin/kpi.html:161
+msgid "Performance"
+msgstr "Performance"
+
+#: templates/admin/kpi.html:179 templates/admin/kpi.html:285
+#: templates/admin/kpi.html:702
 msgid "Utenti totali"
 msgstr "Total users"
 
-#: templates/admin/kpi.html:182
+#: templates/admin/kpi.html:188
 msgid "Nuovi utenti"
 msgstr "New users"
 
-#: templates/admin/kpi.html:201 templates/admin/kpi.html:261
-#: templates/admin/kpi.html:803
+#: templates/admin/kpi.html:207 templates/admin/kpi.html:267
+#: templates/admin/kpi.html:860
 msgid "Match giocati"
 msgstr "Matches played"
 
-#: templates/admin/kpi.html:220
+#: templates/admin/kpi.html:226
 msgid "Gare attive"
 msgstr "Active competitions"
 
-#: templates/admin/kpi.html:229
+#: templates/admin/kpi.html:235
 msgid "Attivazione"
 msgstr "Activation"
 
-#: templates/admin/kpi.html:249 templates/admin/kpi.html:720
+#: templates/admin/kpi.html:255 templates/admin/kpi.html:777
 msgid "Registrazioni"
 msgstr "Registrations"
 
-#: templates/admin/kpi.html:287
+#: templates/admin/kpi.html:293
 msgid "Nuovi nel periodo"
 msgstr "New in period"
 
-#: templates/admin/kpi.html:296
+#: templates/admin/kpi.html:302
 msgid "vs periodo precedente"
 msgstr "vs previous period"
 
-#: templates/admin/kpi.html:305
+#: templates/admin/kpi.html:311
 msgid "Periodo precedente"
 msgstr "Previous period"
 
-#: templates/admin/kpi.html:313
+#: templates/admin/kpi.html:319
 msgid "Trend registrazioni"
 msgstr "Registration trend"
 
-#: templates/admin/kpi.html:330
+#: templates/admin/kpi.html:336
 msgid "Utenti attivi oggi"
 msgstr "Active users today"
 
-#: templates/admin/kpi.html:339
+#: templates/admin/kpi.html:345
 msgid "Utenti attivi settimana"
 msgstr "Active users per week"
 
-#: templates/admin/kpi.html:348
+#: templates/admin/kpi.html:354
 msgid "Utenti attivi mese"
 msgstr "Active users per month"
 
-#: templates/admin/kpi.html:359
+#: templates/admin/kpi.html:365
 msgid "Retention 7gg"
 msgstr "7-day retention"
 
-#: templates/admin/kpi.html:360
+#: templates/admin/kpi.html:366
 msgid "Tornati entro 7 giorni"
 msgstr "Returned within 7 days"
 
-#: templates/admin/kpi.html:368
+#: templates/admin/kpi.html:374
 msgid "Retention 30gg"
 msgstr "30-day retention"
 
-#: templates/admin/kpi.html:369
+#: templates/admin/kpi.html:375
 msgid "Tornati entro 30 giorni"
 msgstr "Returned within 30 days"
 
-#: templates/admin/kpi.html:377
+#: templates/admin/kpi.html:383
 msgid "Utenti dormienti"
 msgstr "Dormant users"
 
-#: templates/admin/kpi.html:378
+#: templates/admin/kpi.html:384
 msgid "Registrati ma mai attivi"
 msgstr "Registered but never active"
 
-#: templates/admin/kpi.html:391
+#: templates/admin/kpi.html:397
 msgid "Match totali"
 msgstr "Total matches"
 
-#: templates/admin/kpi.html:399
+#: templates/admin/kpi.html:405
 msgid "Nel periodo"
 msgstr "In period"
 
-#: templates/admin/kpi.html:417
+#: templates/admin/kpi.html:423
 msgid "Gare in corso"
 msgstr "Competitions in progress"
 
-#: templates/admin/kpi.html:425 templates/public/campionato_detail.html:70
+#: templates/admin/kpi.html:431 templates/public/campionato_detail.html:70
 msgid "Gare completate"
 msgstr "Competitions completed"
 
-#: templates/admin/kpi.html:436
+#: templates/admin/kpi.html:442
 msgid "Match/utente attivo"
 msgstr "Matches/active user"
 
-#: templates/admin/kpi.html:444
+#: templates/admin/kpi.html:450
 msgid "Livello medio"
 msgstr "Average level"
 
-#: templates/admin/kpi.html:452
+#: templates/admin/kpi.html:458
 msgid "XP erogati"
 msgstr "XP awarded"
 
-#: templates/admin/kpi.html:460
+#: templates/admin/kpi.html:466
 msgid "Match giornalieri"
 msgstr "Daily matches"
 
-#: templates/admin/kpi.html:473
+#: templates/admin/kpi.html:479
 msgid "Utilizzo funzionalità"
 msgstr "Feature usage"
 
-#: templates/admin/kpi.html:480
+#: templates/admin/kpi.html:486
 msgid "Funzionalità"
 msgstr "Feature"
 
-#: templates/admin/kpi.html:481
+#: templates/admin/kpi.html:487
 msgid "Utilizzi"
 msgstr "Uses"
 
-#: templates/admin/kpi.html:482
+#: templates/admin/kpi.html:488
 msgid "Utenti unici"
 msgstr "Unique users"
 
-#: templates/admin/kpi.html:483
+#: templates/admin/kpi.html:489
 msgid "Trend"
 msgstr "Trend"
 
-#: templates/admin/kpi.html:535
+#: templates/admin/kpi.html:541
 msgid "Nessun dato di utilizzo disponibile"
 msgstr "No usage data available"
 
-#: templates/admin/kpi.html:587
+#: templates/admin/kpi.html:593
 msgid "Performance Directors"
 msgstr "Director Performance"
 
-#: templates/admin/kpi.html:595
+#: templates/admin/kpi.html:601
 msgid "Gare Gestite"
 msgstr "Competitions Managed"
 
-#: templates/admin/kpi.html:596
+#: templates/admin/kpi.html:602
 msgid "Saturazione Avg"
 msgstr "Avg Saturation"
 
-#: templates/admin/kpi.html:631
+#: templates/admin/kpi.html:637
 msgid "Nessun dato director disponibile"
 msgstr "No director data available"
 
-#: templates/admin/kpi.html:646
+#: templates/admin/kpi.html:652
 msgid "Power Users (30gg)"
 msgstr "Power Users (30d)"
 
-#: templates/admin/kpi.html:660
+#: templates/admin/kpi.html:666
 #: templates/gamification/admin/dashboard.html:136
 #: templates/gamification/admin/streaks.html:41
 #: templates/gamification/admin/streaks.html:122
@@ -2978,7 +2983,53 @@ msgstr "Power Users (30d)"
 msgid "Nessun dato disponibile"
 msgstr "No data available"
 
-#: templates/admin/kpi.html:775
+#: templates/admin/kpi.html:682
+msgid "Contributori"
+msgstr "Contributors"
+
+#: templates/admin/kpi.html:683 templates/admin/kpi.html:690
+msgid "soglia"
+msgstr "threshold"
+
+#: templates/admin/kpi.html:689
+msgid "Calcolo board (ms)"
+msgstr "Board compute (ms)"
+
+#: templates/admin/kpi.html:696
+msgid "Città distinte"
+msgstr "Distinct cities"
+
+#: templates/admin/kpi.html:710
+msgid "Valuta la materializzazione delle classifiche."
+msgstr "Consider materializing the leaderboards."
+
+#: templates/admin/kpi.html:711
+#, python-format
+msgid ""
+"Le classifiche sono calcolate on-demand (cache %(ttl)s s). Soglie superate:"
+msgstr ""
+"Leaderboards are computed on-demand (cache %(ttl)s s). Thresholds exceeded:"
+
+#: templates/admin/kpi.html:719
+#, python-format
+msgid ""
+"Calcolo on-demand nei limiti: nessuna materializzazione necessaria. Cache "
+"TTL %(ttl)s s."
+msgstr ""
+"On-demand compute within limits: no materialization needed. Cache TTL "
+"%(ttl)s s."
+
+#: templates/admin/kpi.html:723
+msgid ""
+"Il board \"Contributo\" costa ~(contributori × 3 query). Quando i numeri "
+"sopra superano le soglie, conviene materializzare/cachare in tabella (vedi "
+"ADR-037)."
+msgstr ""
+"The \"Contribution\" board costs ~(contributors × 3 queries). When the "
+"numbers above exceed the thresholds, it is worth materializing/caching in a "
+"table (see ADR-037)."
+
+#: templates/admin/kpi.html:832
 msgid "Nuove registrazioni"
 msgstr "New registrations"
 

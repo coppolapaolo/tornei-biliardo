@@ -136,9 +136,10 @@ Questo è il punto d'ingresso rapido per riprendere. Per il dettaglio:
 - **Open items per-ADR chiusi**: **ADR-036 tutti chiusi** (re-eval promozione,
   segnale-admin, ciclo scadenza + **auto-refresh** via `User.last_active_at` +
   `process_expiring_signals` + script); ADR-037 gare_organized via
-  DirectorAssignment + tarature (costanti documentate). *Restano*: ADR-037
-  **leghe RIMANDATE** (community piccola) + performance/materializzazione; solo
-  tarature numeriche su entrambi.
+  DirectorAssignment + tarature (costanti documentate) + **cache TTL**
+  classifiche + **tab KPI "Performance"** (osservabilità: dice quando
+  materializzare). *Restano*: ADR-037 **leghe** e **materializzazione piena**
+  RIMANDATE (cache TTL già attiva); solo tarature numeriche.
 - **maturity-gate ADR-028** (rollout ai player, production-visible) — da fare
   solo con via esplicito dello stakeholder.
 

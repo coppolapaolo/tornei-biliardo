@@ -155,6 +155,12 @@
             <i class="bi bi-briefcase"></i> {{ _('Business & Community') }}
         </a>
     </li>
+    <li class="nav-item" role="presentation">
+        <a class="nav-link {% if active_tab == 'performance' %}active{% endif %}"
+           href="{{ tab_url('performance') }}">
+            <i class="bi bi-cpu"></i> {{ _('Performance') }}
+        </a>
+    </li>
 </ul>
 
 <!-- Alert Container -->
@@ -665,6 +671,57 @@
             </div>
         </div>
     </div>
+
+    {% elif active_tab == 'performance' %}
+    <!-- PERFORMANCE TAB (ADR-037: costo classifiche on-demand) -->
+    {% set perf = leaderboard_perf %}
+    <div class="row g-3 mb-3">
+        <div class="col-md-3 col-6">
+            <div class="card h-100"><div class="card-body text-center">
+                <div class="display-6">{{ perf.contributors }}</div>
+                <div class="text-muted small">{{ _('Contributori') }}</div>
+                <div class="text-muted small">{{ _('soglia') }}: {{ perf.thresholds.contributors }}</div>
+            </div></div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card h-100"><div class="card-body text-center">
+                <div class="display-6">{{ perf.contribution_compute_ms }}</div>
+                <div class="text-muted small">{{ _('Calcolo board (ms)') }}</div>
+                <div class="text-muted small">{{ _('soglia') }}: {{ perf.thresholds.compute_ms }} ms</div>
+            </div></div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card h-100"><div class="card-body text-center">
+                <div class="display-6">{{ perf.distinct_cities }}</div>
+                <div class="text-muted small">{{ _('Città distinte') }}</div>
+            </div></div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card h-100"><div class="card-body text-center">
+                <div class="display-6">{{ perf.total_users }}</div>
+                <div class="text-muted small">{{ _('Utenti totali') }}</div>
+            </div></div>
+        </div>
+    </div>
+
+    {% if perf.recommend_materialization %}
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle"></i>
+        <strong>{{ _('Valuta la materializzazione delle classifiche.') }}</strong>
+        {{ _('Le classifiche sono calcolate on-demand (cache %(ttl)s s). Soglie superate:', ttl=perf.cache_ttl_seconds) }}
+        <ul class="mb-0">
+            {% for r in perf.reasons %}<li>{{ r }}</li>{% endfor %}
+        </ul>
+    </div>
+    {% else %}
+    <div class="alert alert-success">
+        <i class="bi bi-check-circle"></i>
+        {{ _('Calcolo on-demand nei limiti: nessuna materializzazione necessaria. Cache TTL %(ttl)s s.', ttl=perf.cache_ttl_seconds) }}
+    </div>
+    {% endif %}
+    <p class="text-muted small">
+        {{ _('Il board "Contributo" costa ~(contributori × 3 query). Quando i numeri sopra superano le soglie, conviene materializzare/cachare in tabella (vedi ADR-037).') }}
+    </p>
     {% endif %}
 </div>
 {% endblock %}
