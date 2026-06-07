@@ -274,8 +274,10 @@ ritiro board XP globale) + ADR + implementazione (§11-bis).
   `scripts/process_demand_signals.py` (migrazione
   `20260607_demand_signal_reminded`). Resta: auto-refresh per utenti *attivi*
   (serve activity-tracking utente) + tarature (4).
-- **ADR-037**: `gare_organized` via `DirectorAssignment` (4) **FATTO**. Restano:
-  leghe (1), tarature (2), performance/materializzazione (3).
+- **ADR-037**: `gare_organized` via `DirectorAssignment` (4) **FATTO**. Tarature
+  (2) **FATTO** (costanti documentate: `CONTRIBUTION_WEIGHTS`,
+  `LOCAL_ZONE_RADIUS_KM`). Leghe (1) **RIMANDATE** (community troppo piccola per
+  coorti significative). Resta: performance/materializzazione (3), prematura ora.
 
 ### Aperto / prossimi (design già in V3, codice non iniziato)
 - *(nessuno tra gli item principali §11-bis/§10-ter/§7. Restano gli open items

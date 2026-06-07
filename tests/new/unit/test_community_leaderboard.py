@@ -232,3 +232,19 @@ def test_gare_organized_counts_director_assignment(db_session):
 
     b = CommunityLeaderboardService.compute_contribution(director.id)
     assert b["gare_organized"] == 2
+
+
+def test_contribution_total_uses_weights(db_session, monkeypatch):
+    """Il total del contributo rispetta CONTRIBUTION_WEIGHTS (taratura ADR-037)."""
+    from models.gamification import community_leaderboard_service as mod
+
+    author = _user(role=UserRole.DIRECTOR)
+    other = _user()
+    ch = _challenge(author.id)
+    _attempt(ch.id, other.id, completed=True)  # 1 drill engaged
+
+    # Peso 3 sui drill → total = 3 (gli altri componenti sono 0).
+    monkeypatch.setitem(mod.CONTRIBUTION_WEIGHTS, "drills_engaged", 3)
+    b = mod.CommunityLeaderboardService.compute_contribution(author.id)
+    assert b["drills_engaged"] == 1
+    assert b["total"] == 3

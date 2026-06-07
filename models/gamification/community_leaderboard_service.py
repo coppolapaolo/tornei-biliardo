@@ -19,6 +19,14 @@ from utils.geo import haversine_km, clamp_radius
 # Raggio default di espansione alle città vicine (taratura = ADR-037 open item).
 LOCAL_ZONE_RADIUS_KM = 30
 
+# Pesi della metrica di contributo (taratura ADR-037: costanti documentate,
+# facili da affinare sui dati reali). Default: peso uguale per ogni componente.
+CONTRIBUTION_WEIGHTS = {
+    "drills_engaged": 1,
+    "gare_organized": 1,
+    "proposals_accepted": 1,
+}
+
 
 class CommunityLeaderboardService:
     """Classifiche locali e di contributo (ADR-037)."""
@@ -141,15 +149,24 @@ class CommunityLeaderboardService:
 
     @staticmethod
     def compute_contribution(user_id: int) -> Dict[str, int]:
-        """Scompone il contributo pro-sociale di un utente (ADR-037)."""
+        """Scompone il contributo pro-sociale di un utente (ADR-037).
+
+        Il ``total`` è la somma **pesata** dei componenti secondo
+        :data:`CONTRIBUTION_WEIGHTS` (pesi documentati e tarabili).
+        """
         drills = CommunityLeaderboardService._drills_engaged(user_id)
         gare = CommunityLeaderboardService._gare_organized(user_id)
         proposals = CommunityLeaderboardService._proposals_accepted(user_id)
+        total = (
+            drills * CONTRIBUTION_WEIGHTS["drills_engaged"]
+            + gare * CONTRIBUTION_WEIGHTS["gare_organized"]
+            + proposals * CONTRIBUTION_WEIGHTS["proposals_accepted"]
+        )
         return {
             "drills_engaged": drills,
             "gare_organized": gare,
             "proposals_accepted": proposals,
-            "total": drills + gare + proposals,
+            "total": total,
         }
 
     @staticmethod

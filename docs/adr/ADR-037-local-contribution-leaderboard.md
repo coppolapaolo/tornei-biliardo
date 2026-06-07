@@ -88,12 +88,16 @@ promozione ai player col maturity-gate quando validato.
   via trim/lower. Città senza centroide → niente espansione (solo match esatto).
 
 ## Open Items
-1. **Leghe** a coorti di simili (promozione/retrocessione settimanale).
-2. **Tarature**: pesi del contributo, raggio espansione città, periodicità.
-3. **Performance**: materializzare/cachare se la community cresce.
-4. ~~**gare_organized** via `DirectorAssignment`~~ — **FATTO**: `_gare_organized`
-   conta gare distinte da `Gara.director_id` ∪ `DirectorAssignment`
-   (entity_type='gara'); candidati allineati.
+1. **Leghe** a coorti di simili (promozione/retrocessione settimanale) —
+   **RIMANDATO**: ha valore solo con abbastanza utenti per coorte; nel beta
+   piccolo darebbe coorti da 1-2 persone (controproducente). Da riprendere
+   quando la community cresce.
+2. **Tarature** — **FATTO** (costanti documentate): pesi del contributo
+   centralizzati in `CONTRIBUTION_WEIGHTS` (default peso 1), raggio espansione
+   città in `LOCAL_ZONE_RADIUS_KM`. Facili da affinare; nessun pannello runtime.
+3. **Performance**: materializzare/cachare (come `LeaderboardEntry`) se la
+   community cresce — *ancora aperto* (premature ora).
+4. ~~**gare_organized** via `DirectorAssignment`~~ — **FATTO**.
 
 ## Note implementative
 - `models/gamification/community_leaderboard_service.py`

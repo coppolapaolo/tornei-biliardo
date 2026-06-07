@@ -133,10 +133,11 @@ Questo è il punto d'ingresso rapido per riprendere. Per il dettaglio:
   items: leghe, tarature, performance, gare via DirectorAssignment.
 - **Item di design V3 principali**: tutti avviati (§7 onboarding, §10-ter
   segnale-domanda, §11-bis leaderboard).
-- **Open items per-ADR chiusi**: ADR-036 re-eval promozione + segnale-admin zone
-  senza director; ADR-037 gare_organized via DirectorAssignment. *Restano*:
-  ADR-036 auto-refresh/prompt scadenza + tarature; ADR-037 leghe + tarature +
-  performance.
+- **Open items per-ADR chiusi**: ADR-036 re-eval promozione + segnale-admin +
+  ciclo scadenza (expire/reminder/refresh + script); ADR-037 gare_organized via
+  DirectorAssignment + tarature (costanti documentate). *Restano*: ADR-036
+  auto-refresh per utenti attivi (serve activity-tracking) + tarature numeriche;
+  ADR-037 **leghe RIMANDATE** (community piccola) + performance/materializzazione.
 - **maturity-gate ADR-028** (rollout ai player, production-visible) — da fare
   solo con via esplicito dello stakeholder.
 
