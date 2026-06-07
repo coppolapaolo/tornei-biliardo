@@ -14,14 +14,23 @@ Ciclo completo di traduzione per l'app Flask con Flask-Babel. L'app è Italian-f
 ### 1. Extract
 
 ```bash
-pybabel extract -F babel.cfg -o messages.pot .
+pybabel extract -F babel.cfg --ignore-dirs 'venv .* _* node_modules' -o messages.pot .
 ```
+
+**IMPORTANTE**: `--ignore-dirs` è obbligatorio. Senza, `pybabel` scansiona
+anche `venv/` ed estrae migliaia di stringhe di librerie terze (click,
+networkx, ecc.); `update` poi le riattiva generando **duplicati** che fanno
+fallire `msgfmt`. Babel non supporta esclusioni in `babel.cfg`, quindi vanno
+passate qui. (`.* _*` sono i default di Babel da preservare.)
 
 ### 2. Update catalogs
 
 ```bash
-pybabel update -i messages.pot -d translations
+pybabel update -i messages.pot -d translations --ignore-obsolete
 ```
+
+`--ignore-obsolete` rimuove le entry `#~` non più presenti nel sorgente
+(incl. eventuale cruft venv pregresso), mantenendo i `.po` puliti.
 
 ### 3. Find new untranslated EN strings
 

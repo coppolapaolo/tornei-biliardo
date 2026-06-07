@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-05-21 09:37+0000\n"
+"POT-Creation-Date: 2026-06-07 23:09+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -390,7 +390,7 @@ msgstr "Competition Enrollment"
 msgid "Che piacere rivederti!"
 msgstr "Nice to see you again!"
 
-#: routes/auth.py:40 templates/base.html:528
+#: routes/auth.py:40 templates/base.html:538
 msgid "Tutto pronto per giocare?"
 msgstr "Ready to play?"
 
@@ -422,126 +422,126 @@ msgstr "Welcome aboard!"
 msgid "Registrazione completata con successo."
 msgstr "Registration completed successfully."
 
-#: routes/admin/campionato.py:96 routes/admin/campionato.py:332
+#: routes/admin/campionato.py:95 routes/admin/campionato.py:313
 msgid "Il nome del campionato è obbligatorio"
 msgstr "Championship name is required"
 
-#: routes/admin/campionato.py:105
+#: routes/admin/campionato.py:104
 msgid "Il numero di gare deve essere un numero positivo"
 msgstr "Number of competitions must be a positive number"
 
-#: routes/admin/campionato.py:160
+#: routes/admin/campionato.py:168
 msgid "Lista Attesa (solo pari)"
 msgstr "Waitlist (even only)"
 
-#: routes/admin/campionato.py:161
+#: routes/admin/campionato.py:169
 msgid "Bye (riposo)"
 msgstr "Bye (rest)"
 
-#: routes/admin/campionato.py:162
+#: routes/admin/campionato.py:172
 msgid "Bye con Challenge"
 msgstr "Bye with Challenge"
 
-#: routes/admin/campionato.py:163
+#: routes/admin/campionato.py:175
 msgid "Trio (match a 3)"
 msgstr "Trio (3-player match)"
 
-#: routes/admin/campionato.py:193
+#: routes/admin/campionato.py:205
 msgid "Sessione wizard scaduta. Ricomincia la creazione."
 msgstr "Wizard session expired. Please start again."
 
-#: routes/admin/campionato.py:259
+#: routes/admin/campionato.py:231
 #: templates/admin/campionato_wizard_step1.html:137
 msgid "Playoff Elite"
 msgstr "Playoff Elite"
 
-#: routes/admin/campionato.py:270
+#: routes/admin/campionato.py:246
 #: templates/admin/campionato_wizard_step1.html:164
 msgid "Playoff Academy"
 msgstr "Playoff Academy"
 
-#: routes/admin/campionato.py:279 routes/admin/campionato.py:358
+#: routes/admin/campionato.py:256 routes/admin/campionato.py:341
 #, python-format
 msgid "Campionato \"%(name)s\" creato con successo!"
 msgstr "Championship \"%(name)s\" created successfully!"
 
-#: routes/admin/campionato.py:283
+#: routes/admin/campionato.py:264
 #, python-format
 msgid "Errore durante la creazione: %(error)s"
 msgstr "Error during creation: %(error)s"
 
-#: routes/admin/campionato.py:309
+#: routes/admin/campionato.py:290
 msgid "Creazione campionato annullata"
 msgstr "Championship creation cancelled"
 
-#: routes/admin/campionato.py:327
+#: routes/admin/campionato.py:308
 msgid "Non hai i permessi per creare un campionato."
 msgstr "You do not have permission to create a championship."
 
-#: routes/admin/campionato.py:630
+#: routes/admin/campionato.py:604
 #, python-format
 msgid "Campionato \"%(name)s\" terminato con successo."
 msgstr "Championship \"%(name)s\" terminated successfully."
 
-#: routes/admin/campionato.py:634
+#: routes/admin/campionato.py:610
 msgid "Il campionato è già stato terminato."
 msgstr "The championship has already been terminated."
 
-#: routes/admin/campionato.py:652
+#: routes/admin/campionato.py:628
 msgid "Parametri non validi."
 msgstr "Invalid parameters."
 
-#: routes/admin/campionato.py:659
+#: routes/admin/campionato.py:635
 msgid "Requisito minimo gare aggiornato."
 msgstr "Minimum competition requirement updated."
 
-#: routes/admin/campionato.py:681
+#: routes/admin/campionato.py:658
 msgid "Playoff avviati ma nessun giocatore qualificato. Verifica la classifica."
 msgstr "Playoffs started but no players qualified. Check the standings."
 
-#: routes/admin/campionato.py:686
+#: routes/admin/campionato.py:664
 #, python-format
 msgid "Playoff avviati: %(count)s giocatori qualificati."
 msgstr "Playoffs started: %(count)s players qualified."
 
-#: routes/admin/campionato.py:713
+#: routes/admin/campionato.py:691
 msgid "Configurazione playoff non trovata."
 msgstr "Playoff configuration not found."
 
-#: routes/admin/campionato.py:727
+#: routes/admin/campionato.py:705
 #, python-format
 msgid "Gara playoff \"%(name)s\" creata con successo."
 msgstr "Playoff gara \"%(name)s\" created successfully."
 
-#: routes/admin/campionato.py:749
+#: routes/admin/campionato.py:727
 msgid "Seleziona un giocatore."
 msgstr "Select a player."
 
-#: routes/admin/campionato.py:756
+#: routes/admin/campionato.py:734
 msgid "Giocatore aggiunto ai playoff."
 msgstr "Player added to playoffs."
 
-#: routes/admin/campionato.py:776
+#: routes/admin/campionato.py:754
 msgid "Qualificazione non specificata."
 msgstr "Qualification not specified."
 
-#: routes/admin/campionato.py:783
+#: routes/admin/campionato.py:761
 msgid "Giocatore rimosso dai playoff."
 msgstr "Player removed from playoffs."
 
-#: routes/admin/campionato.py:818
+#: routes/admin/campionato.py:817
 msgid "Configurazione playoff aggiornata."
 msgstr "Playoff configuration updated."
 
-#: routes/admin/campionato.py:842
+#: routes/admin/campionato.py:839
 msgid "Tutti i campi obbligatori devono essere compilati."
 msgstr "All required fields must be filled."
 
-#: routes/admin/campionato.py:861
+#: routes/admin/campionato.py:858
 msgid "Configurazione playoff aggiunta."
 msgstr "Playoff configuration added."
 
-#: routes/admin/campionato.py:881
+#: routes/admin/campionato.py:878
 msgid "Configurazione playoff disattivata."
 msgstr "Playoff configuration deactivated."
 
@@ -1037,13 +1037,13 @@ msgstr "Login"
 msgid "Registrati"
 msgstr "Register"
 
-#: templates/base.html:497 templates/base.html:503
+#: templates/base.html:507 templates/base.html:513
 msgid "Conferma"
 msgstr "Confirm"
 
 #: templates/admin/campionato_wizard_step1.html:14
 #: templates/admin/campionato_wizard_step1.html:184
-#: templates/admin/campionato_wizard_step2.html:14 templates/base.html:502
+#: templates/admin/campionato_wizard_step2.html:14 templates/base.html:512
 #: templates/components/_admin_new_campionato_modal.html:28
 #: templates/components/_campionato_create_modal.html:27
 #: templates/components/_campionato_edit_form.html:192
@@ -1060,51 +1060,51 @@ msgstr "Confirm"
 msgid "Annulla"
 msgstr "Cancel"
 
-#: templates/base.html:518
+#: templates/base.html:528
 msgid "XP OTTENUTI"
 msgstr "XP EARNED"
 
-#: templates/base.html:519
+#: templates/base.html:529
 msgid "LEVEL UP!"
 msgstr "LEVEL UP!"
 
-#: templates/base.html:520
+#: templates/base.html:530
 msgid "Nuovo livello raggiunto!"
 msgstr "New level reached!"
 
-#: templates/base.html:521
+#: templates/base.html:531
 msgid "NUOVO TRAGUARDO!"
 msgstr "NEW MILESTONE!"
 
-#: templates/base.html:522
+#: templates/base.html:532
 msgid "STREAK!"
 msgstr "STREAK!"
 
-#: templates/base.html:523
+#: templates/base.html:533
 msgid "Freeze attivo"
 msgstr "Freeze active"
 
-#: templates/base.html:524
+#: templates/base.html:534
 msgid "STREAK PERSA"
 msgstr "STREAK LOST"
 
-#: templates/base.html:525
+#: templates/base.html:535
 msgid "Non mollare, riprovare!"
 msgstr "Don't give up, try again!"
 
-#: templates/base.html:526
+#: templates/base.html:536
 msgid "QUEST COMPLETATA!"
 msgstr "QUEST COMPLETED!"
 
-#: templates/base.html:527
+#: templates/base.html:537
 msgid "TI DIAMO IL BENTORNATO!"
 msgstr "WELCOME BACK!"
 
-#: templates/base.html:529
+#: templates/base.html:539
 msgid "Ciao!"
 msgstr "Hello!"
 
-#: templates/base.html:530
+#: templates/base.html:540
 #, python-format
 msgid "Ciao %(username)s!"
 msgstr "Hello %(username)s!"
@@ -1125,8 +1125,8 @@ msgstr "Competition %(id)s"
 #: templates/components/_history_matches_tab.html:183
 #: templates/components/_index_campionato_cards.html:71
 #: templates/components/_separated_dashboard_content.html:638
-#: templates/components/_unified_cards.html:167
-#: templates/components/_unified_cards.html:194 templates/gara_detail.html:7
+#: templates/components/_unified_cards.html:189
+#: templates/components/_unified_cards.html:216 templates/gara_detail.html:7
 msgid "Dettagli"
 msgstr "Details"
 
@@ -1187,7 +1187,7 @@ msgstr "Completed"
 msgid "Parimerito per il %(pos)s° posto"
 msgstr "Tie for %(pos)s place"
 
-#: templates/admin/campionato_detail.html:201
+#: templates/admin/campionato_detail.html:208
 #: templates/components/_detailed_classification.html:23
 #: templates/components/_ssr_section.html:28
 #: templates/gamification/leaderboards.html:122 templates/gara_detail.html:252
@@ -1200,7 +1200,7 @@ msgstr "Player"
 msgid "Punti SSR"
 msgstr "SSR Points"
 
-#: templates/admin/campionato_detail.html:134
+#: templates/admin/campionato_detail.html:141
 #: templates/components/_ssr_section.html:61
 #: templates/gamification/admin/level_config.html:36
 #: templates/gamification/admin/level_config.html:168
@@ -1719,8 +1719,8 @@ msgstr "place"
 msgid "Click per scambiare con match occupante"
 msgstr "Click to swap with occupying match"
 
-#: templates/components/_gara_matches.html:49
-#: templates/components/_gara_matches.html:73
+#: templates/components/_gara_matches.html:57
+#: templates/components/_gara_matches.html:88
 #: templates/components/_match_header.html:13 templates/gara_detail.html:788
 msgid "Tavolo"
 msgstr "Table"
@@ -1824,8 +1824,8 @@ msgstr "TBD"
 msgid "Turno %(current)s/%(total)s"
 msgstr "Round %(current)s/%(total)s"
 
-#: templates/components/_gara_cards.html:77
-#: templates/components/_unified_cards.html:123 templates/index.html:75
+#: templates/components/_gara_cards.html:101
+#: templates/components/_unified_cards.html:145 templates/index.html:75
 msgid "Podio"
 msgstr "Podium"
 
@@ -2004,55 +2004,52 @@ msgstr ""
 "Are you sure you want to completely reset this trio match? All results "
 "will be deleted."
 
-#: templates/admin/campionato_detail.html:26
-msgid "Termina Campionato"
-msgstr "Terminate Championship"
-
 #: templates/admin/campionato_detail.html:27
 msgid "Passa alla fase playoff"
 msgstr "Proceed to playoff phase"
 
-#: templates/admin/campionato_detail.html:378
-msgid "Tutte le gare sono concluse. Passare alla fase playoff? Potrai poi avviare i playoff e invitare i qualificati."
-msgstr "All competitions are finished. Proceed to the playoff phase? You can then start the playoffs and invite the qualified players."
+#: templates/admin/campionato_detail.html:31
+msgid "Termina Campionato"
+msgstr "Terminate Championship"
 
-#: templates/admin/campionato_detail.html:50
+#: templates/admin/campionato_detail.html:56
 msgid "Campionato terminato"
 msgstr "Championship terminated"
 
-#: templates/admin/campionato_detail.html:52
+#: templates/admin/campionato_detail.html:58
 msgid "Playoff in corso"
 msgstr "Playoffs in progress"
 
-#: templates/admin/campionato_detail.html:52
+#: templates/admin/campionato_detail.html:58
 msgid "Playoff in attesa di avvio"
 msgstr "Playoffs awaiting start"
 
-#: templates/admin/campionato_detail.html:61
+#: templates/admin/campionato_detail.html:67
 #: templates/components/_history_campionati_tab.html:91
 #: templates/components/_index_campionato_cards.html:113
 #: templates/components/_separated_dashboard_content.html:611
 msgid "Playoff"
 msgstr "Playoffs"
 
-#: templates/admin/campionato_detail.html:85
+#: templates/admin/campionato_detail.html:92
 msgid "Disattivare questa configurazione?"
 msgstr "Deactivate this configuration?"
 
-#: templates/admin/campionato_detail.html:92
+#: templates/admin/campionato_detail.html:99
 msgid "Posizioni"
 msgstr "Positions"
 
-#: templates/admin/campionato_detail.html:92
+#: templates/admin/campionato_detail.html:99
 msgid "Max partecipanti"
 msgstr "Max participants"
 
-#: templates/admin/campionato_detail.html:94
+#: templates/admin/campionato_detail.html:101
 msgid "Min. gare giocate"
 msgstr "Min. competitions played"
 
-#: templates/admin/campionato_detail.html:103
-#: templates/admin/campionato_detail.html:152
+#: templates/admin/campionato_detail.html:110
+#: templates/admin/campionato_detail.html:159
+#: templates/admin/campionato_detail.html:308
 #: templates/gamification/admin/achievement_form.html:25
 #: templates/gamification/admin/feature_create.html:26
 #: templates/gamification/admin/feature_detail.html:29
@@ -2063,51 +2060,56 @@ msgstr "Min. competitions played"
 msgid "Nome"
 msgstr "Name"
 
-#: templates/admin/campionato_detail.html:107
-#: templates/admin/campionato_detail.html:155
+#: templates/admin/campionato_detail.html:114
+#: templates/admin/campionato_detail.html:162
+#: templates/admin/campionato_detail.html:311
 msgid "Da pos."
 msgstr "From pos."
 
-#: templates/admin/campionato_detail.html:111
-#: templates/admin/campionato_detail.html:158
+#: templates/admin/campionato_detail.html:118
+#: templates/admin/campionato_detail.html:165
+#: templates/admin/campionato_detail.html:314
 msgid "A pos."
 msgstr "To pos."
 
-#: templates/admin/campionato_detail.html:115
-#: templates/admin/campionato_detail.html:161
+#: templates/admin/campionato_detail.html:122
+#: templates/admin/campionato_detail.html:168
+#: templates/admin/campionato_detail.html:317
 #: templates/gamification/admin/streaks.html:24
 msgid "Max"
 msgstr "Max"
 
-#: templates/admin/campionato_detail.html:119
+#: templates/admin/campionato_detail.html:126
 msgid "Min gare"
 msgstr "Min competitions"
 
-#: templates/admin/campionato_detail.html:125
+#: templates/admin/campionato_detail.html:132
 msgid "Distance"
 msgstr "Distance"
 
-#: templates/admin/campionato_detail.html:126
-#: templates/admin/campionato_detail.html:130
+#: templates/admin/campionato_detail.html:133
+#: templates/admin/campionato_detail.html:137
 msgid "Eredita"
 msgstr "Inherit"
 
-#: templates/admin/campionato_detail.html:129
+#: templates/admin/campionato_detail.html:136
 msgid "Turni"
 msgstr "Rounds"
 
-#: templates/admin/campionato_detail.html:145
+#: templates/admin/campionato_detail.html:152
+#: templates/admin/campionato_detail.html:301
 msgid "Aggiungi configurazione"
 msgstr "Add configuration"
 
-#: templates/admin/campionato_detail.html:165
+#: templates/admin/campionato_detail.html:172
+#: templates/admin/campionato_detail.html:321
 #: templates/components/_gara_inscriptions.html:28
 #: templates/gamification/admin/level_config.html:215
 #: templates/gamification/admin/streak_config.html:268
 msgid "Aggiungi"
 msgstr "Add"
 
-#: templates/admin/campionato_detail.html:177
+#: templates/admin/campionato_detail.html:184
 msgid ""
 "Avviare i playoff? Le configurazioni verranno bloccate e i giocatori "
 "qualificati riceveranno un invito."
@@ -2115,25 +2117,25 @@ msgstr ""
 "Start playoffs? Configurations will be locked and qualified players will "
 "receive an invitation."
 
-#: templates/admin/campionato_detail.html:178
+#: templates/admin/campionato_detail.html:185
 msgid "Avvia Playoff"
 msgstr "Start Playoffs"
 
-#: templates/admin/campionato_detail.html:189
+#: templates/admin/campionato_detail.html:196
 msgid "confermati"
 msgstr "confirmed"
 
-#: templates/admin/campionato_detail.html:191
+#: templates/admin/campionato_detail.html:198
 msgid "in attesa"
 msgstr "pending"
 
-#: templates/admin/campionato_detail.html:202
+#: templates/admin/campionato_detail.html:209
 msgid "Posizione"
 msgstr "Position"
 
-#: templates/admin/campionato_detail.html:203
-#: templates/components/_gara_matches.html:48
-#: templates/components/_gara_matches.html:72
+#: templates/admin/campionato_detail.html:210
+#: templates/components/_gara_matches.html:56
+#: templates/components/_gara_matches.html:87
 #: templates/components/_history_filters.html:81
 #: templates/components/_history_filters.html:96
 #: templates/components/_multi_set_score_display.html:64
@@ -2145,58 +2147,66 @@ msgstr "Position"
 msgid "Stato"
 msgstr "Status"
 
-#: templates/admin/campionato_detail.html:204
+#: templates/admin/campionato_detail.html:211
 #: templates/gamification/admin/xp_management.html:36
 #: templates/gamification/admin/xp_management.html:87
 #: templates/player/playoff_invitation.html:19
 msgid "Motivo"
 msgstr "Reason"
 
-#: templates/admin/campionato_detail.html:215
+#: templates/admin/campionato_detail.html:222
 #: templates/components/_match_result_row.html:161
 #: templates/components/_multi_set_score_display.html:92
 msgid "In attesa"
 msgstr "Pending"
 
-#: templates/admin/campionato_detail.html:217
+#: templates/admin/campionato_detail.html:224
 #: templates/components/_unified_match_score.html:83
 #: templates/components/_unified_match_score.html:105 utils/status_ui.py:172
 msgid "Confermato"
 msgstr "Confirmed"
 
-#: templates/admin/campionato_detail.html:219 utils/status_ui.py:173
+#: templates/admin/campionato_detail.html:226 utils/status_ui.py:173
 msgid "Rifiutato"
 msgstr "Declined"
 
-#: templates/admin/campionato_detail.html:221
+#: templates/admin/campionato_detail.html:228
 msgid "Scaduto"
 msgstr "Expired"
 
-#: templates/admin/campionato_detail.html:232
+#: templates/admin/campionato_detail.html:239
 msgid "Rimuovere questo giocatore?"
 msgstr "Remove this player?"
 
-#: templates/admin/campionato_detail.html:250
+#: templates/admin/campionato_detail.html:257
 msgid "Aggiungi giocatore..."
 msgstr "Add player..."
 
-#: templates/admin/campionato_detail.html:268
+#: templates/admin/campionato_detail.html:275
 msgid "Creare la gara playoff e iscrivere i giocatori confermati?"
 msgstr "Create the playoff competition and register confirmed players?"
 
-#: templates/admin/campionato_detail.html:269
+#: templates/admin/campionato_detail.html:276
 msgid "Crea Gara Playoff"
 msgstr "Create Playoff Competition"
 
-#: templates/admin/campionato_detail.html:276
+#: templates/admin/campionato_detail.html:283
 msgid "Vai alla gara playoff"
 msgstr "Go to playoff competition"
 
-#: templates/admin/campionato_detail.html:286
+#: templates/admin/campionato_detail.html:293
 msgid "Nessuna configurazione playoff attiva."
 msgstr "No active playoff configuration."
 
-#: templates/admin/campionato_detail.html:335
+#: templates/admin/campionato_detail.html:378
+msgid ""
+"Tutte le gare sono concluse. Passare alla fase playoff? Potrai poi "
+"avviare i playoff e invitare i qualificati."
+msgstr ""
+"All competitions are finished. Proceed to the playoff phase? You can then"
+" start the playoffs and invite the qualified players."
+
+#: templates/admin/campionato_detail.html:380
 msgid ""
 "Sei sicuro di voler terminare il campionato? Le gare non completate "
 "verranno eliminate."
@@ -2204,7 +2214,7 @@ msgstr ""
 "Are you sure you want to terminate the championship? Non-completed "
 "competitions will be removed."
 
-#: templates/admin/campionato_detail.html:337
+#: templates/admin/campionato_detail.html:383
 msgid ""
 "Attenzione: alcuni playoff hanno un requisito minimo gare non "
 "raggiungibile. Vuoi terminare comunque?"
@@ -2508,7 +2518,7 @@ msgid "Indietro"
 msgstr "Back"
 
 #: templates/admin/campionato_wizard_step2.html:170
-#: templates/components/_unified_cards.html:285
+#: templates/components/_unified_cards.html:307
 msgid "Crea Campionato"
 msgstr "Create Championship"
 
@@ -2773,7 +2783,7 @@ msgstr "New registrations"
 #: templates/components/_admin_campionato_cards.html:72
 #: templates/components/_campionato_garas.html:80
 #: templates/components/_campionato_garas.html:178
-#: templates/components/_gara_cards.html:154
+#: templates/components/_gara_cards.html:178
 #: templates/components/_soft_delete_modal.html:70
 #: templates/gamification/admin/quests.html:83
 msgid "Elimina"
@@ -3001,6 +3011,56 @@ msgstr "No directors available"
 msgid "Aggiungi co‑direttore"
 msgstr "Add co-director"
 
+#: templates/components/_gara_cards.html:39
+#: templates/components/_nearby_gare.html:40
+#: templates/components/_unified_cards.html:109
+msgid "Iscrizioni aperte"
+msgstr "Open registrations"
+
+#: templates/components/_gara_cards.html:44
+#: templates/components/_unified_cards.html:114
+msgid "Aperte dal:"
+msgstr "Open since:"
+
+#: templates/components/_gara_cards.html:50
+#: templates/components/_gara_management.html:75
+#: templates/components/_index_campionato_cards.html:53
+#: templates/components/_unified_cards.html:120
+msgid "Scade:"
+msgstr "Expires:"
+
+#: templates/components/_gara_cards.html:55
+#: templates/components/_gara_info.html:28
+msgid "Iscritti:"
+msgstr "Registered:"
+
+#: templates/components/_gara_cards.html:58
+msgid "Lista d'attesa:"
+msgstr "Waitlist:"
+
+#: templates/components/_gara_cards.html:64
+#: templates/components/_unified_cards.html:126
+msgid "Iscrizioni non ancora aperte"
+msgstr "Registrations not yet open"
+
+#: templates/components/_gara_cards.html:69
+#: templates/components/_unified_cards.html:130
+msgid "Apriranno il:"
+msgstr "Will open on:"
+
+#: templates/components/_gara_cards.html:75
+#: templates/components/_unified_cards.html:136
+msgid "Chiuderanno il:"
+msgstr "Will close on:"
+
+#: templates/components/_gara_cards.html:80
+msgid "In preparazione"
+msgstr "In preparation"
+
+#: templates/components/_gara_cards.html:83
+msgid "Le iscrizioni apriranno a breve"
+msgstr "Registrations will open soon"
+
 #: templates/components/_gara_edit_form.html:260
 msgid "Posizioni per cui richiedere spareggio in caso di parimerito"
 msgstr "Positions requiring tiebreaker in case of tie"
@@ -3041,42 +3101,6 @@ msgid ""
 "senza\n"
 "                    limite"
 msgstr "no limit"
-
-#: templates/components/_gara_info.html:28
-msgid "Iscritti:"
-msgstr "Registered:"
-
-#: templates/components/_gara_cards.html:44
-#: templates/components/_unified_cards.html:114
-msgid "Aperte dal:"
-msgstr "Open since:"
-
-#: templates/components/_gara_cards.html:58
-msgid "Lista d'attesa:"
-msgstr "Waitlist:"
-
-#: templates/components/_gara_cards.html:64
-#: templates/components/_unified_cards.html:126
-msgid "Iscrizioni non ancora aperte"
-msgstr "Registrations not yet open"
-
-#: templates/components/_gara_cards.html:69
-#: templates/components/_unified_cards.html:130
-msgid "Apriranno il:"
-msgstr "Will open on:"
-
-#: templates/components/_gara_cards.html:75
-#: templates/components/_unified_cards.html:136
-msgid "Chiuderanno il:"
-msgstr "Will close on:"
-
-#: templates/components/_gara_cards.html:80
-msgid "In preparazione"
-msgstr "In preparation"
-
-#: templates/components/_gara_cards.html:83
-msgid "Le iscrizioni apriranno a breve"
-msgstr "Registrations will open soon"
 
 #: templates/components/_gara_info.html:37
 #: templates/components/_round_management.html:28
@@ -3181,12 +3205,6 @@ msgstr "Close Registrations"
 #, python-format
 msgid "Servono %(min)d iscritti (%(current)d attuali)"
 msgstr "Need %(min)d registered (%(current)d current)"
-
-#: templates/components/_gara_management.html:75
-#: templates/components/_index_campionato_cards.html:53
-#: templates/components/_unified_cards.html:114
-msgid "Scade:"
-msgstr "Expires:"
 
 #: templates/components/_gara_management.html:85
 msgid "Iscrizioni scadute!"
@@ -3317,8 +3335,8 @@ msgstr ""
 
 #: templates/components/_gara_management.html:284
 #: templates/components/_soft_delete_modal.html:102
-#: templates/components/_unified_cards.html:258
-#: templates/components/_unified_cards.html:265
+#: templates/components/_unified_cards.html:280
+#: templates/components/_unified_cards.html:287
 msgid "Elimina Gara"
 msgstr "Delete Competition"
 
@@ -3330,8 +3348,8 @@ msgstr "Delete Competition"
 msgid "Partite"
 msgstr "Matches"
 
-#: templates/components/_gara_matches.html:41
-#: templates/components/_gara_matches.html:65
+#: templates/components/_gara_matches.html:44
+#: templates/components/_gara_matches.html:75
 #: templates/components/_match_cards_mobile.html:44
 #: templates/components/_match_cards_mobile.html:55
 #: templates/components/_round_management.html:51
@@ -3339,13 +3357,13 @@ msgstr "Matches"
 msgid "Turno %(num)s"
 msgstr "Round %(num)s"
 
-#: templates/components/_gara_matches.html:46
-#: templates/components/_gara_matches.html:70
+#: templates/components/_gara_matches.html:54
+#: templates/components/_gara_matches.html:85
 msgid "Giocatori"
 msgstr "Players"
 
-#: templates/components/_gara_matches.html:47
-#: templates/components/_gara_matches.html:71
+#: templates/components/_gara_matches.html:55
+#: templates/components/_gara_matches.html:86
 #: templates/components/_history_filters.html:65
 #: templates/components/_match_card.html:171
 #: templates/components/_match_card.html:177
@@ -3353,8 +3371,8 @@ msgstr "Players"
 msgid "Risultato"
 msgstr "Result"
 
-#: templates/components/_gara_matches.html:50
-#: templates/components/_gara_matches.html:74
+#: templates/components/_gara_matches.html:58
+#: templates/components/_gara_matches.html:89
 #: templates/gamification/admin/achievements.html:28
 #: templates/gamification/admin/features.html:28
 #: templates/gamification/admin/level_config.html:97
@@ -3582,7 +3600,7 @@ msgstr "Starts:"
 #: templates/components/_index_campionato_cards.html:80
 #: templates/components/_index_registration_info.html:24
 #: templates/components/_nearby_gare.html:43
-#: templates/components/_unified_cards.html:226
+#: templates/components/_unified_cards.html:248
 msgid "Iscriviti"
 msgstr "Register"
 
@@ -3883,11 +3901,6 @@ msgstr "Set your availability at venues to see nearby competitions"
 msgid "Imposta disponibilità"
 msgstr "Set availability"
 
-#: templates/components/_nearby_gare.html:40
-#: templates/components/_unified_cards.html:109
-msgid "Iscrizioni aperte"
-msgstr "Open registrations"
-
 #: templates/components/_nearby_gare.html:41
 msgid "fino al"
 msgstr "up to"
@@ -3928,7 +3941,7 @@ msgid "Sei iscritto a questa gara"
 msgstr "You are registered for this competition"
 
 #: templates/components/_player_inscription_info.html:13
-#: templates/components/_unified_cards.html:232
+#: templates/components/_unified_cards.html:254
 msgid "In lista d'attesa"
 msgstr "In waitlist"
 
@@ -4180,8 +4193,8 @@ msgid "Questa azione non elimina permanentemente i dati."
 msgstr "This action does not permanently delete data."
 
 #: templates/components/_soft_delete_modal.html:97
-#: templates/components/_unified_cards.html:246
-#: templates/components/_unified_cards.html:250
+#: templates/components/_unified_cards.html:268
+#: templates/components/_unified_cards.html:272
 msgid "Elimina Campionato"
 msgstr "Delete Championship"
 
@@ -4335,23 +4348,23 @@ msgstr "Date to be determined"
 msgid "Massimo raggiunto"
 msgstr "Maximum reached"
 
-#: templates/components/_unified_cards.html:222
+#: templates/components/_unified_cards.html:244
 msgid "Lista d'attesa"
 msgstr "Waitlist"
 
-#: templates/components/_unified_cards.html:262
+#: templates/components/_unified_cards.html:284
 msgid "Sei SICURO di voler eliminare definitivamente questa gara?"
 msgstr "Are you SURE you want to permanently delete this competition?"
 
-#: templates/components/_unified_cards.html:279
+#: templates/components/_unified_cards.html:301
 msgid "Nessuna Competizione"
 msgstr "No Competitions"
 
-#: templates/components/_unified_cards.html:280
+#: templates/components/_unified_cards.html:302
 msgid "Non ci sono ancora campionati o gare da mostrare."
 msgstr "No championships or competitions to show yet."
 
-#: templates/components/_unified_cards.html:290
+#: templates/components/_unified_cards.html:312
 msgid "Crea Gara"
 msgstr "Create Competition"
 
@@ -6551,365 +6564,4 @@ msgstr "Rejected"
 #: utils/status_ui.py:216
 msgid "Sconosciuto"
 msgstr "Unknown"
-
-#~ msgid "Campionati Biliardo"
-#~ msgstr "Billiard Championships"
-
-#~ msgid "Home - Campionati Biliardo"
-#~ msgstr "Home - Billiard Championships"
-
-#~ msgid "(vince chi vince %(distance)s rack)"
-#~ msgstr "(first to win %(distance)s racks)"
-
-#~ msgid ""
-#~ "Il tuo account non è ancora "
-#~ "verificato. Finché non confermi la tua"
-#~ " email, non puoi iscriverti alle gare"
-#~ " né proporre partite."
-#~ msgstr ""
-
-#~ msgid "Reinvia email di verifica"
-#~ msgstr ""
-
-#~ msgid "Campionati Pubblici"
-#~ msgstr "Public Championships"
-
-#~ msgid "Campionati Attivi"
-#~ msgstr "Active Championships"
-
-#~ msgid "Non Attivo"
-#~ msgstr "Inactive"
-
-#~ msgid "Campionati (%(count)s)"
-#~ msgstr "Championships (%(count)s)"
-
-#~ msgid "Gare Standalone (%(count)s)"
-#~ msgstr "Standalone Competitions (%(count)s)"
-
-#~ msgid "{editor}: Editing failed"
-#~ msgstr "{editor}: Editing failed"
-
-#~ msgid "{editor}: Editing failed: {e}"
-#~ msgstr "{editor}: Editing failed: {e}"
-
-#~ msgid "{text} {deprecated_message}"
-#~ msgstr "{text} {deprecated_message}"
-
-#~ msgid "Options"
-#~ msgstr "Options"
-
-#~ msgid "Got unexpected extra argument ({args})"
-#~ msgid_plural "Got unexpected extra arguments ({args})"
-#~ msgstr[0] "Got unexpected extra argument ({args})"
-#~ msgstr[1] "Got unexpected extra arguments ({args})"
-
-#~ msgid "DeprecationWarning: The command {name!r} is deprecated.{extra_message}"
-#~ msgstr "DeprecationWarning: The command {name!r} is deprecated.{extra_message}"
-
-#~ msgid "Aborted!"
-#~ msgstr "Aborted!"
-
-#~ msgid "Commands"
-#~ msgstr "Commands"
-
-#~ msgid "Missing command."
-#~ msgstr "Missing command."
-
-#~ msgid "No such command {name!r}."
-#~ msgstr "No such command {name!r}."
-
-#~ msgid "Value must be an iterable."
-#~ msgstr "Value must be an iterable."
-
-#~ msgid "Takes {nargs} values but 1 was given."
-#~ msgid_plural "Takes {nargs} values but {len} were given."
-#~ msgstr[0] "Takes {nargs} values but 1 was given."
-#~ msgstr[1] "Takes {nargs} values but {len} were given."
-
-#~ msgid ""
-#~ "DeprecationWarning: The {param_type} {name!r} "
-#~ "is deprecated.{extra_message}"
-#~ msgstr ""
-#~ "DeprecationWarning: The {param_type} {name!r} "
-#~ "is deprecated.{extra_message}"
-
-#~ msgid "env var: {var}"
-#~ msgstr "env var: {var}"
-
-#~ msgid "default: {default}"
-#~ msgstr "default: {default}"
-
-#~ msgid "required"
-#~ msgstr "required"
-
-#~ msgid "(dynamic)"
-#~ msgstr "(dynamic)"
-
-#~ msgid "%(prog)s, version %(version)s"
-#~ msgstr "%(prog)s, version %(version)s"
-
-#~ msgid "Show the version and exit."
-#~ msgstr "Show the version and exit."
-
-#~ msgid "Show this message and exit."
-#~ msgstr "Show this message and exit."
-
-#~ msgid "Error: {message}"
-#~ msgstr "Error: {message}"
-
-#~ msgid "Try '{command} {option}' for help."
-#~ msgstr "Try '{command} {option}' for help."
-
-#~ msgid "Invalid value: {message}"
-#~ msgstr "Invalid value: {message}"
-
-#~ msgid "Invalid value for {param_hint}: {message}"
-#~ msgstr "Invalid value for {param_hint}: {message}"
-
-#~ msgid "Missing argument"
-#~ msgstr "Missing argument"
-
-#~ msgid "Missing option"
-#~ msgstr "Missing option"
-
-#~ msgid "Missing parameter"
-#~ msgstr "Missing parameter"
-
-#~ msgid "Missing {param_type}"
-#~ msgstr "Missing {param_type}"
-
-#~ msgid "Missing parameter: {param_name}"
-#~ msgstr "Missing parameter: {param_name}"
-
-#~ msgid "No such option: {name}"
-#~ msgstr "No such option: {name}"
-
-#~ msgid "Did you mean {possibility}?"
-#~ msgid_plural "(Possible options: {possibilities})"
-#~ msgstr[0] "(Possible options: {possibilities})"
-#~ msgstr[1] "(Possible options: {possibilities})"
-
-#~ msgid "unknown error"
-#~ msgstr "unknown error"
-
-#~ msgid "Could not open file {filename!r}: {message}"
-#~ msgstr "Could not open file {filename!r}: {message}"
-
-#~ msgid "Argument {name!r} takes {nargs} values."
-#~ msgstr "Argument {name!r} takes {nargs} values."
-
-#~ msgid "Option {name!r} does not take a value."
-#~ msgstr "Option {name!r} does not take a value."
-
-#~ msgid "Option {name!r} requires an argument."
-#~ msgid_plural "Option {name!r} requires {nargs} arguments."
-#~ msgstr[0] "Option {name!r} requires an argument."
-#~ msgstr[1] "Option {name!r} requires {nargs} arguments."
-
-#~ msgid "Shell completion is not supported for Bash versions older than 4.4."
-#~ msgstr "Shell completion is not supported for Bash versions older than 4.4."
-
-#~ msgid "Couldn't detect Bash version, shell completion is not supported."
-#~ msgstr "Couldn't detect Bash version, shell completion is not supported."
-
-#~ msgid "Repeat for confirmation"
-#~ msgstr "Repeat for confirmation"
-
-#~ msgid "Error: The value you entered was invalid."
-#~ msgstr "Error: The value you entered was invalid."
-
-#~ msgid "Error: {e.message}"
-#~ msgstr "Error: {e.message}"
-
-#~ msgid "Error: The two entered values do not match."
-#~ msgstr "Error: The two entered values do not match."
-
-#~ msgid "Error: invalid input"
-#~ msgstr "Error: invalid input"
-
-#~ msgid "Press any key to continue..."
-#~ msgstr "Press any key to continue..."
-
-#~ msgid ""
-#~ "Choose from:\n"
-#~ "\t{choices}"
-#~ msgstr ""
-#~ "Choose from:\n"
-#~ "\t{choices}"
-
-#~ msgid "{value!r} is not {choice}."
-#~ msgid_plural "{value!r} is not one of {choices}."
-#~ msgstr[0] "{value!r} is not {choice}."
-#~ msgstr[1] "{value!r} is not one of {choices}."
-
-#~ msgid "{value!r} does not match the format {format}."
-#~ msgid_plural "{value!r} does not match the formats {formats}."
-#~ msgstr[0] "{value!r} does not match the format {format}."
-#~ msgstr[1] "{value!r} does not match the formats {formats}."
-
-#~ msgid "{value!r} is not a valid {number_type}."
-#~ msgstr "{value!r} is not a valid {number_type}."
-
-#~ msgid "{value} is not in the range {range}."
-#~ msgstr "{value} is not in the range {range}."
-
-#~ msgid "{value!r} is not a valid boolean. Recognized values: {states}"
-#~ msgstr "{value!r} is not a valid boolean. Recognized values: {states}"
-
-#~ msgid "{value!r} is not a valid UUID."
-#~ msgstr "{value!r} is not a valid UUID."
-
-#~ msgid "file"
-#~ msgstr "file"
-
-#~ msgid "directory"
-#~ msgstr "directory"
-
-#~ msgid "path"
-#~ msgstr "path"
-
-#~ msgid "{name} {filename!r} does not exist."
-#~ msgstr "{name} {filename!r} does not exist."
-
-#~ msgid "{name} {filename!r} is a file."
-#~ msgstr "{name} {filename!r} is a file."
-
-#~ msgid "{name} {filename!r} is a directory."
-#~ msgstr "{name} {filename!r} is a directory."
-
-#~ msgid "{name} {filename!r} is not readable."
-#~ msgstr "{name} {filename!r} is not readable."
-
-#~ msgid "{name} {filename!r} is not writable."
-#~ msgstr "{name} {filename!r} is not writable."
-
-#~ msgid "{name} {filename!r} is not executable."
-#~ msgstr "{name} {filename!r} is not executable."
-
-#~ msgid "{len_type} values are required, but {len_value} was given."
-#~ msgid_plural "{len_type} values are required, but {len_value} were given."
-#~ msgstr[0] "{len_type} values are required, but {len_value} was given."
-#~ msgstr[1] "{len_type} values are required, but {len_value} were given."
-
-#~ msgid "This field is required."
-#~ msgstr "This field is required."
-
-#~ msgid "File does not have an approved extension: {extensions}"
-#~ msgstr "File does not have an approved extension: {extensions}"
-
-#~ msgid "File does not have an approved extension."
-#~ msgstr "File does not have an approved extension."
-
-#~ msgid "Invalid field name '%s'."
-#~ msgstr "Invalid field name '%s'."
-
-#~ msgid "Field must be equal to %(other_name)s."
-#~ msgstr "Field must be equal to %(other_name)s."
-
-#~ msgid "Field must be at least %(min)d character long."
-#~ msgid_plural "Field must be at least %(min)d characters long."
-#~ msgstr[0] "Field must be at least %(min)d character long."
-#~ msgstr[1] "Field must be at least %(min)d characters long."
-
-#~ msgid "Field cannot be longer than %(max)d character."
-#~ msgid_plural "Field cannot be longer than %(max)d characters."
-#~ msgstr[0] "Field cannot be longer than %(max)d character."
-#~ msgstr[1] "Field cannot be longer than %(max)d characters."
-
-#~ msgid "Field must be exactly %(max)d character long."
-#~ msgid_plural "Field must be exactly %(max)d characters long."
-#~ msgstr[0] "Field must be exactly %(max)d character long."
-#~ msgstr[1] "Field must be exactly %(max)d characters long."
-
-#~ msgid "Field must be between %(min)d and %(max)d characters long."
-#~ msgstr "Field must be between %(min)d and %(max)d characters long."
-
-#~ msgid "Number must be at least %(min)s."
-#~ msgstr "Number must be at least %(min)s."
-
-#~ msgid "Number must be at most %(max)s."
-#~ msgstr "Number must be at most %(max)s."
-
-#~ msgid "Number must be between %(min)s and %(max)s."
-#~ msgstr "Number must be between %(min)s and %(max)s."
-
-#~ msgid "Invalid input."
-#~ msgstr "Invalid input."
-
-#~ msgid "Invalid email address."
-#~ msgstr "Invalid email address."
-
-#~ msgid "Invalid IP address."
-#~ msgstr "Invalid IP address."
-
-#~ msgid "Invalid Mac address."
-#~ msgstr "Invalid Mac address."
-
-#~ msgid "Invalid URL."
-#~ msgstr "Invalid URL."
-
-#~ msgid "Invalid UUID."
-#~ msgstr "Invalid UUID."
-
-#~ msgid "Invalid value, must be one of: %(values)s."
-#~ msgstr "Invalid value, must be one of: %(values)s."
-
-#~ msgid "Invalid value, can't be any of: %(values)s."
-#~ msgstr "Invalid value, can't be any of: %(values)s."
-
-#~ msgid "This field cannot be edited."
-#~ msgstr "This field cannot be edited."
-
-#~ msgid "This field is disabled and cannot have a value."
-#~ msgstr "This field is disabled and cannot have a value."
-
-#~ msgid "Invalid CSRF Token."
-#~ msgstr "Invalid CSRF Token."
-
-#~ msgid "CSRF token missing."
-#~ msgstr "CSRF token missing."
-
-#~ msgid "CSRF failed."
-#~ msgstr "CSRF failed."
-
-#~ msgid "CSRF token expired."
-#~ msgstr "CSRF token expired."
-
-#~ msgid "Invalid Choice: could not coerce."
-#~ msgstr "Invalid Choice: could not coerce."
-
-#~ msgid "Choices cannot be None."
-#~ msgstr "Choices cannot be None."
-
-#~ msgid "Not a valid choice."
-#~ msgstr "Not a valid choice."
-
-#~ msgid "Invalid choice(s): one or more data inputs could not be coerced."
-#~ msgstr "Invalid choice(s): one or more data inputs could not be coerced."
-
-#~ msgid "'%(value)s' is not a valid choice for this field."
-#~ msgid_plural "'%(value)s' are not valid choices for this field."
-#~ msgstr[0] "'%(value)s' is not a valid choice for this field."
-#~ msgstr[1] "'%(value)s' are not valid choices for this field."
-
-#~ msgid "Not a valid datetime value."
-#~ msgstr "Not a valid datetime value."
-
-#~ msgid "Not a valid date value."
-#~ msgstr "Not a valid date value."
-
-#~ msgid "Not a valid time value."
-#~ msgstr "Not a valid time value."
-
-#~ msgid "Not a valid week value."
-#~ msgstr "Not a valid week value."
-
-#~ msgid "Not a valid integer value."
-#~ msgstr "Not a valid integer value."
-
-#~ msgid "Not a valid decimal value."
-#~ msgstr "Not a valid decimal value."
-
-#~ msgid "Not a valid float value."
-#~ msgstr "Not a valid float value."
 
