@@ -5,7 +5,7 @@ import uuid
 from datetime import date
 
 from models import Campionato
-from models.base import db, utc_now
+from models.base import utc_now
 from models.competition.models import Gara
 from models.status_enum import TournamentStatus, GaraStatus
 from models.campionato.services import TournamentService
@@ -183,6 +183,127 @@ class TestComputeStatusTerminated:
         db_session.commit()
 
         assert c.get_status() == TournamentStatus.IN_PROGRESS.value
+
+
+def _make_user(db_session, idx):
+    from models import User
+    from models.user.role_enum import UserRole
+
+    uid = str(uuid.uuid4())[:6]
+    u = User(
+        username=f"p{idx}_{uid}",
+        email=f"p{idx}_{uid}@test.local",
+        role=UserRole.PLAYER.value,
+    )
+    u.set_password("x")
+    db_session.add(u)
+    db_session.flush()
+    return u
+
+
+def _add_completed_match(db_session, gara, round_number, p1, p2):
+    from models.match.models import Match
+    from models.status_enum import MatchStatus
+
+    m = Match(
+        gara_id=gara.id,
+        round_number=round_number,
+        player1_id=p1.id,
+        player2_id=p2.id,
+        status=MatchStatus.COMPLETED.value,
+        winner_id=p1.id,
+        player1_score=5,
+        player2_score=0,
+    )
+    db_session.add(m)
+    db_session.flush()
+    return m
+
+
+@pytest.mark.unit
+class TestIsReadyForPlayoffTransition:
+    """Bug 14: il bottone 'Termina Campionato' diventa 'Passa alla fase
+    playoff' quando tutte le gare sono di fatto concluse e c'è un playoff."""
+
+    def test_all_completed_with_playoff_is_ready(self, db_session):
+        c = _make_campionato(db_session)
+        _make_gara(db_session, c, 1, GaraStatus.COMPLETED.value)
+        _make_gara(db_session, c, 2, GaraStatus.COMPLETED.value)
+        _add_playoff_config(db_session, c)
+        db_session.commit()
+
+        assert c.all_gare_concluded() is True
+        assert c.is_ready_for_playoff_transition() is True
+
+    def test_all_completed_without_playoff_not_ready(self, db_session):
+        c = _make_campionato(db_session)
+        _make_gara(db_session, c, 1, GaraStatus.COMPLETED.value)
+        db_session.commit()
+
+        assert c.all_gare_concluded() is True
+        assert c.is_ready_for_playoff_transition() is False
+
+    def test_gara_still_playing_not_ready(self, db_session):
+        c = _make_campionato(db_session)
+        _make_gara(db_session, c, 1, GaraStatus.COMPLETED.value)
+        _make_gara(db_session, c, 2, GaraStatus.PLAYING.value)
+        _add_playoff_config(db_session, c)
+        db_session.commit()
+
+        assert c.all_gare_concluded() is False
+        assert c.is_ready_for_playoff_transition() is False
+
+    def test_already_terminated_not_ready(self, db_session):
+        c = _make_campionato(db_session)
+        _make_gara(db_session, c, 1, GaraStatus.COMPLETED.value)
+        _add_playoff_config(db_session, c)
+        c.terminated_at = utc_now()
+        db_session.commit()
+
+        assert c.is_ready_for_playoff_transition() is False
+
+    def test_no_gare_not_ready(self, db_session):
+        c = _make_campionato(db_session)
+        _add_playoff_config(db_session, c)
+        db_session.commit()
+
+        assert c.all_gare_concluded() is False
+        assert c.is_ready_for_playoff_transition() is False
+
+    def test_playing_but_tournament_completed_is_ready(self, db_session):
+        """Caso bug 8: gara PLAYING ma tutti i match dell'ultimo turno
+        completati (stato derivato TOURNAMENT_COMPLETED) → conta come
+        conclusa, il bottone diventa 'Passa alla fase playoff'."""
+        c = _make_campionato(db_session)
+        g = _make_gara(db_session, c, 1, GaraStatus.PLAYING.value)
+        g.rounds_count = 1
+        g.current_round = 1
+        p1 = _make_user(db_session, 1)
+        p2 = _make_user(db_session, 2)
+        _add_completed_match(db_session, g, 1, p1, p2)
+        _add_playoff_config(db_session, c)
+        db_session.commit()
+
+        assert g.get_real_status() == "campionato_completed"
+        assert c.all_gare_concluded() is True
+        assert c.is_ready_for_playoff_transition() is True
+
+    def test_playing_round_completed_not_ready(self, db_session):
+        """Gara PLAYING con turno finito ma altri turni da giocare
+        (ROUND_COMPLETED) NON conta come conclusa."""
+        c = _make_campionato(db_session)
+        g = _make_gara(db_session, c, 1, GaraStatus.PLAYING.value)
+        g.rounds_count = 2
+        g.current_round = 1
+        p1 = _make_user(db_session, 1)
+        p2 = _make_user(db_session, 2)
+        _add_completed_match(db_session, g, 1, p1, p2)
+        _add_playoff_config(db_session, c)
+        db_session.commit()
+
+        assert g.get_real_status() == "round_completed"
+        assert c.all_gare_concluded() is False
+        assert c.is_ready_for_playoff_transition() is False
 
 
 @pytest.mark.unit

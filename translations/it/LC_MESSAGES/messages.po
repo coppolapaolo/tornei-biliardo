@@ -1942,6 +1942,14 @@ msgstr ""
 msgid "Termina Campionato"
 msgstr ""
 
+#: templates/admin/campionato_detail.html:27
+msgid "Passa alla fase playoff"
+msgstr ""
+
+#: templates/admin/campionato_detail.html:378
+msgid "Tutte le gare sono concluse. Passare alla fase playoff? Potrai poi avviare i playoff e invitare i qualificati."
+msgstr ""
+
 #: templates/admin/campionato_detail.html:50
 msgid "Campionato terminato"
 msgstr ""

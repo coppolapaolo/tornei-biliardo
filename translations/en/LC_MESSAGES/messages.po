@@ -2008,6 +2008,14 @@ msgstr ""
 msgid "Termina Campionato"
 msgstr "Terminate Championship"
 
+#: templates/admin/campionato_detail.html:27
+msgid "Passa alla fase playoff"
+msgstr "Proceed to playoff phase"
+
+#: templates/admin/campionato_detail.html:378
+msgid "Tutte le gare sono concluse. Passare alla fase playoff? Potrai poi avviare i playoff e invitare i qualificati."
+msgstr "All competitions are finished. Proceed to the playoff phase? You can then start the playoffs and invite the qualified players."
+
 #: templates/admin/campionato_detail.html:50
 msgid "Campionato terminato"
 msgstr "Championship terminated"
