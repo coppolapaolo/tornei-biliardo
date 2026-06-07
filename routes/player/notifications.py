@@ -10,7 +10,6 @@ from models import db, User
 
 from . import player_bp
 
-
 # ============ NOTIFICATIONS ============
 
 
@@ -18,25 +17,24 @@ from . import player_bp
 @login_required
 def notifications():
     """Mostra le notifiche dell'utente (accessibile a tutti gli utenti autenticati)"""
-    from models.notification.models import (
-        Notification,
-        NotificationPreference,
-        NotificationType,
-    )
+    from models.notification.models import Notification
     from models.notification.services import NotificationService
 
     # Mark PENDING notifications as SENT (via service layer)
     NotificationService.mark_pending_as_sent(current_user.id)
 
-    # B24: Auto-delete read notifications older than the user's preference
-    # before listing, so the user lands on a clean view.
+    # Bug 16: ad ogni apertura cancella TUTTE le notifiche scadute rispetto
+    # alla finestra di auto-cancellazione globale (default 30 giorni se non
+    # configurata), così l'utente atterra su una vista pulita.
     try:
-        NotificationService.auto_delete_by_user_preferences(current_user.id)
+        NotificationService.auto_delete_for_user(current_user.id)
     except Exception:
         # Auto-delete is a best-effort cleanup: never block the listing.
         import logging
+
         logging.getLogger(__name__).warning(
-            "auto_delete_by_user_preferences failed for user %s", current_user.id,
+            "auto_delete_for_user failed for user %s",
+            current_user.id,
             exc_info=True,
         )
 
@@ -47,12 +45,9 @@ def notifications():
         .all()
     )
 
-    # Get user's global auto-delete preference
-    # Use SYSTEM_ANNOUNCEMENT type as global setting
-    preference = NotificationPreference.get_user_preference(
-        current_user.id, NotificationType.SYSTEM_ANNOUNCEMENT
-    )
-    auto_delete_days = preference.auto_delete_days if preference else None
+    # Finestra di auto-cancellazione globale (default 30 se mai configurata,
+    # None se disattivata esplicitamente) — pre-popola il form.
+    auto_delete_days = NotificationService.get_global_auto_delete_days(current_user.id)
 
     return render_template(
         "player/notifications.html",
@@ -118,7 +113,6 @@ def delete_selected_notifications():
 def update_auto_delete():
     """Aggiorna impostazione globale auto-cancellazione notifiche"""
     from models.notification.services import NotificationService
-    from models.notification.models import NotificationType
 
     is_enabled = "auto_delete_enabled" in request.form
     days = request.form.get("auto_delete_days")
@@ -144,12 +138,8 @@ def update_auto_delete():
                 flash("Il numero di giorni deve essere tra 1 e 365.", "warning")
                 return redirect(url_for("player.notifications"))
 
-            # Set global auto-delete using SYSTEM_ANNOUNCEMENT as global setting
-            NotificationService.set_user_preference(
-                user_id=current_user.id,
-                notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
-                auto_delete_days=days_int,
-            )
+            # Set global auto-delete window
+            NotificationService.set_global_auto_delete_days(current_user.id, days_int)
 
             message = (
                 "Auto-cancellazione attivata: le notifiche lette verranno "
@@ -166,12 +156,8 @@ def update_auto_delete():
                 )
             flash("Numero di giorni non valido.", "warning")
     else:
-        # Disable auto-delete
-        NotificationService.set_user_preference(
-            user_id=current_user.id,
-            notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
-            auto_delete_days=None,
-        )
+        # Disable auto-delete (persiste esplicitamente None)
+        NotificationService.set_global_auto_delete_days(current_user.id, None)
         message = "Auto-cancellazione disattivata."
         if is_ajax:
             return {"success": True, "message": message}, 200
