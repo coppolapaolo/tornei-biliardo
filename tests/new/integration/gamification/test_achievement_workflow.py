@@ -174,26 +174,39 @@ class TestAchievementWorkflowTournamentBased:
         THEN achievement is unlocked
         """
         # Arrange
+        from datetime import date
+        from models.competition.models import Gara, Inscription
+
         seed_achievements(db_session)
         player = isolated_players[0]
+
+        # La metrica tournament_participation conta le iscrizioni *attive* reali:
+        # creiamo una gara + iscrizione attiva (non più mock di inscription_count).
+        gara = Gara(
+            name="Debut Gara",
+            number=1,
+            date=date.today(),
+            distance=5,
+            discipline="palla_9",
+            matchmaking_strategy="amalfi",
+            status="inscription",
+        )
+        db_session.add(gara)
+        db_session.flush()
+        db_session.add(Inscription(gara_id=gara.id, user_id=player.id))
+        db_session.flush()
 
         # Act: First tournament inscription (use correct event signature)
         event = InscriptionCreatedEvent(
             inscription_id=1,
-            gara_id=100,
+            gara_id=gara.id,
             gara_name="Test Tournament",
             user_id=player.id,
             username=player.username,
             inscription_status="confirmed",
         )
-        # Metrica partecipazione tornei = inscription_count (nessuna Inscription
-        # reale nel test).
-        with patch(
-            "models.user.services.UserStatsService.get_user_stats",
-            return_value={"inscription_count": 1},
-        ):
-            EventBus.publish(event)
-            db_session.flush()
+        EventBus.publish(event)
+        db_session.flush()
 
         # Assert
         debut = Achievement.query.filter_by(slug="tournament_debut").first()

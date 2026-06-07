@@ -189,8 +189,7 @@ class AvailabilityService:
             db.session.query(BilliardHall.latitude, BilliardHall.longitude)
             .filter(
                 BilliardHall.is_active.is_(True),
-                db.func.lower(db.func.trim(BilliardHall.city))
-                == city.strip().lower(),
+                db.func.lower(db.func.trim(BilliardHall.city)) == city.strip().lower(),
                 BilliardHall.latitude.isnot(None),
                 BilliardHall.longitude.isnot(None),
             )
@@ -211,9 +210,7 @@ class AvailabilityService:
         from models.individual_match.models import IndividualMatch
 
         rows = (
-            db.session.query(
-                IndividualMatch.player1_id, IndividualMatch.player2_id
-            )
+            db.session.query(IndividualMatch.player1_id, IndividualMatch.player2_id)
             .filter(IndividualMatch.location == location)
             .all()
         )
@@ -226,7 +223,22 @@ class AvailabilityService:
                 user_ids.add(player2_id)
         if exclude_user_id:
             user_ids.discard(exclude_user_id)
-        return list(user_ids)
+        if not user_ids:
+            return []
+
+        # La query sopra seleziona solo colonne id di IndividualMatch, quindi il
+        # filtro soft-delete a livello di sessione del modello User NON si
+        # applica: escludiamo esplicitamente gli account anonimizzati/cancellati
+        # così non ricevono notifiche di proposta.
+        from models.user.models import User
+
+        active_ids = {
+            uid
+            for (uid,) in db.session.query(User.id)
+            .filter(User.id.in_(user_ids), User.deleted_at.is_(None))
+            .all()
+        }
+        return list(active_ids)
 
     @staticmethod
     @transactional(domain="individual_match")

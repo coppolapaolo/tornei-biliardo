@@ -193,7 +193,12 @@ def leaderboards():
     active_tab = request.args.get("type", "local")
     if active_tab not in ("local", "contribution"):
         active_tab = "local"
-    limit = min(int(request.args.get("limit", 50)), 100)
+    # Parse difensivo: un ?limit non numerico non deve generare un 500.
+    try:
+        limit = int(request.args.get("limit", 50))
+    except (TypeError, ValueError):
+        limit = 50
+    limit = max(1, min(limit, 100))
 
     from models.gamification.community_leaderboard_service import (
         CommunityLeaderboardService,

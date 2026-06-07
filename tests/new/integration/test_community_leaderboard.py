@@ -55,6 +55,16 @@ class TestLeaderboardPage:
         # tab locale invita l'anonimo ad accedere
         assert "Accedi per vedere la classifica della tua zona" in body
 
+    def test_non_numeric_limit_does_not_500(self, app):
+        # Regressione: un ?limit non numerico non deve generare un 500
+        # (int('abc') → ValueError). Parse difensivo con fallback al default.
+        client = app.test_client()
+        resp = client.get("/gamification/leaderboards?limit=abc")
+        assert resp.status_code == 200
+        # anche valori fuori range o negativi sono tollerati
+        assert client.get("/gamification/leaderboards?limit=-5").status_code == 200
+        assert client.get("/gamification/leaderboards?limit=99999").status_code == 200
+
     def test_logged_in_local_board_lists_zone(self, app):
         viewer = _user(home_city="Napoli", total_xp=100)
         _user(home_city="Napoli", total_xp=500)

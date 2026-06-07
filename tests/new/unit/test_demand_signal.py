@@ -146,6 +146,38 @@ def test_rising_edge_notifies_director_once(db_session):
     assert len(_director_notifications(director.id)) == 1
 
 
+def test_rising_edge_notifies_when_threshold_jumped(db_session):
+    """Regressione: se il conteggio SALTA la soglia esatta (segnali già attivi +
+    un nuovo create), il director va comunque avvisato. Con ``== soglia`` veniva
+    perso; ora ``>= soglia`` (con cooldown anti-spam) lo cattura.
+    """
+    _napoli_venue()
+    director = _user(role=UserRole.DIRECTOR, home_city="Napoli", radius=30)
+
+    # Inseriamo DEMAND_THRESHOLD segnali ATTIVI direttamente, senza passare per
+    # create_signal → nessun fronte di salita valutato: il director non è ancora
+    # stato avvisato benché la zona sia già a soglia.
+    for _ in range(DEMAND_THRESHOLD):
+        p = _user()
+        db.session.add(
+            DemandSignal(
+                user_id=p.id,
+                latitude=NAP_LAT,
+                longitude=NAP_LNG,
+                status=DemandSignalStatus.ACTIVE,
+                expires_at=utc_now() + timedelta(days=10),
+            )
+        )
+    db.session.commit()
+    assert _director_notifications(director.id) == []
+
+    # Un nuovo create porta il conteggio a THRESHOLD+1 (salta la soglia esatta):
+    # con >= il director viene avvisato comunque.
+    p_new = _user()
+    DemandSignalService.create_signal(p_new.id, NAP_LAT, NAP_LNG)
+    assert len(_director_notifications(director.id)) == 1
+
+
 def test_director_outside_radius_not_notified(db_session):
     _napoli_venue()
     # Director con raggio piccolo: i segnali (~1.1 km via +0.01 lat) cadono fuori
@@ -240,6 +272,7 @@ def test_evaluate_zone_for_new_director_silent_below_threshold(db_session):
 
 def test_promotion_triggers_demand_reeval(db_session):
     from models.user.permission_service import UserPermissionService
+    from models import User
 
     _napoli_venue()
     admin = _user(role=UserRole.ADMIN)
@@ -247,9 +280,17 @@ def test_promotion_triggers_demand_reeval(db_session):
         DemandSignalService.create_signal(_user().id, NAP_LAT, NAP_LNG)
 
     candidate = _user(home_city="Napoli")
-    UserPermissionService.promote_to_director(candidate.id, admin.id)
+    cand_id = candidate.id
+    UserPermissionService.promote_to_director(cand_id, admin.id)
 
-    assert len(_director_notifications(candidate.id)) == 1
+    # La re-eval (variante NON @transactional, eseguita nella stessa transazione
+    # di promozione) ha notificato il neo-director...
+    assert len(_director_notifications(cand_id)) == 1
+    # ...e soprattutto il cambio di ruolo è PERSISTITO. Regressione del nested
+    # @transactional: con la versione decorata chiamata dentro la promozione, il
+    # savepoint annidato poteva non persistere su SQLite (vedi
+    # models/transaction/CLAUDE.md).
+    assert db.session.get(User, cand_id).role == UserRole.DIRECTOR.value
 
 
 # ── segnale-admin per zona senza director (ADR-036 open item 2) ──────────────

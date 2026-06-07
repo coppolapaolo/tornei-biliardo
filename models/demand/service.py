@@ -127,8 +127,8 @@ class DemandSignalService:
 
     @staticmethod
     def _notify_directors_rising_edge(new_signal: DemandSignal) -> bool:
-        """Notifica i director la cui zona raggiunge ESATTAMENTE la soglia con
-        questo nuovo segnale (crossing), nel rispetto del cooldown.
+        """Notifica i director la cui zona raggiunge (o supera) la soglia con
+        questo nuovo segnale, nel rispetto del cooldown anti-nag.
 
         Ritorna ``True`` se almeno un director **copre** il punto del segnale
         (a prescindere dall'invio), così il chiamante sa se la zona ha un
@@ -160,8 +160,12 @@ class DemandSignalService:
 
             covered = True
             count_after = DemandSignalService.count_active_within(d_lat, d_lng, radius)
-            # Fronte di salita: notifica solo al crossing esatto della soglia.
-            if count_after != DEMAND_THRESHOLD:
+            # Soglia raggiunta o superata: notifica quando la zona è "calda".
+            # Usiamo >= (non == esatto) perché il conteggio può *saltare* la
+            # soglia (creazioni concorrenti, ricalcolo dopo scadenze/consumi):
+            # con == esatto il director non verrebbe MAI avvisato in quei casi.
+            # Lo spam è già evitato dal cooldown (signal_notified_at) sotto.
+            if count_after < DEMAND_THRESHOLD:
                 continue
             # Cooldown anti-nag.
             if director.signal_notified_at and (
@@ -175,12 +179,24 @@ class DemandSignalService:
         return covered
 
     @staticmethod
+    @transactional(domain="demand")
     def evaluate_zone_for_new_director(director_id: int) -> bool:
         """Re-eval alla promozione player→director (ADR-036 open item 1).
 
-        Se la zona del neo-director ha già ≥ soglia richieste attive, invia una
-        notifica una-tantum (rispetta il cooldown). Pensata per essere chiamata
-        *dentro* la transazione di promozione. Ritorna True se ha notificato.
+        Wrapper transazionale per chiamate *standalone* (es. test). Quando la
+        valutazione avviene già dentro una transazione (la promozione in
+        ``UserPermissionService``), usare invece ``evaluate_zone_unmanaged``
+        per non innescare un ``@transactional`` annidato (anti-pattern: su
+        SQLite il savepoint annidato può non persistere — vedi
+        ``models/transaction/CLAUDE.md``).
+        """
+        return DemandSignalService.evaluate_zone_unmanaged(director_id)
+
+    @staticmethod
+    def evaluate_zone_unmanaged(director_id: int) -> bool:
+        """Come ``evaluate_zone_for_new_director`` ma **senza** ``@transactional``:
+        esegue le scritture (notifica + ``signal_notified_at``) nella
+        transazione del chiamante. Ritorna True se ha notificato.
         """
         from models.user.models import User
 

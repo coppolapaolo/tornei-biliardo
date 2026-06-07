@@ -73,9 +73,15 @@ class AchievementMetrics:
 
     @staticmethod
     def _tournament_participation(user_id: int) -> int:
-        from models.user.services import UserStatsService
+        # Conta solo le iscrizioni *attive*: un'iscrizione ritirata o in lista
+        # d'attesa non è partecipazione reale e non deve sbloccare gli
+        # achievement tournament_debut/tournament_regular. (Lo stat condiviso
+        # ``inscription_count`` resta "registrazioni" per altri consumatori.)
+        from models.competition.models import Inscription
 
-        return int(UserStatsService.get_user_stats(user_id).get("inscription_count", 0))
+        return Inscription.query.filter_by(
+            user_id=user_id, is_withdrawn=False, is_waitlist=False
+        ).count()
 
     @staticmethod
     def _tournament_wins(user_id: int) -> int:

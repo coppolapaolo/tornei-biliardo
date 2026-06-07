@@ -48,9 +48,7 @@ def _proposal(proposer_id: int, *, accepted_by_id=None, status=ProposalStatus.PE
 
 
 class TestCountableMetrics:
-    def test_match_wins_and_participation_from_stats(
-        self, db_session, isolated_players
-    ):
+    def test_match_wins_from_stats(self, db_session, isolated_players):
         uid = isolated_players[0].id
         with patch(
             "models.user.services.UserStatsService.get_user_stats",
@@ -59,12 +57,42 @@ class TestCountableMetrics:
             assert (
                 AchievementMetrics.current_value(uid, "match_wins", {"count": 5}) == 7
             )
-            assert (
-                AchievementMetrics.current_value(
-                    uid, "tournament_participation", {"count": 10}
-                )
-                == 3
+
+    def test_tournament_participation_excludes_withdrawn_and_waitlist(
+        self, db_session, isolated_players
+    ):
+        # Regressione: un'iscrizione ritirata o in waitlist NON è partecipazione
+        # reale e non deve contare per tournament_debut/regular.
+        from models.competition.models import Gara, Inscription
+
+        uid = isolated_players[0].id
+        gara = Gara(
+            name="participation gara",
+            number=1,
+            date=date.today(),
+            distance=5,
+            discipline="palla_9",
+            matchmaking_strategy="amalfi",
+            status="playing",
+        )
+        db_session.add(gara)
+        db_session.flush()
+
+        db_session.add(Inscription(gara_id=gara.id, user_id=uid))  # attiva → conta
+        db_session.add(
+            Inscription(gara_id=gara.id, user_id=uid, is_withdrawn=True)
+        )  # ritirata → non conta
+        db_session.add(
+            Inscription(gara_id=gara.id, user_id=uid, is_waitlist=True)
+        )  # waitlist → non conta
+        db_session.commit()
+
+        assert (
+            AchievementMetrics.current_value(
+                uid, "tournament_participation", {"count": 10}
             )
+            == 1
+        )
 
     def test_tournament_placements_from_xp_ledger(self, db_session, isolated_players):
         uid = isolated_players[0].id

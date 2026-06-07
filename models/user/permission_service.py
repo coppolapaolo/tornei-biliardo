@@ -393,7 +393,12 @@ class UserPermissionService:
         try:
             from models.demand.service import DemandSignalService
 
-            DemandSignalService.evaluate_zone_for_new_director(director_id)
+            # Variante NON @transactional: la valutazione gira nella
+            # transazione di promozione già aperta. Usare la versione
+            # decorata qui creerebbe un @transactional annidato (savepoint
+            # che su SQLite può non persistere — vedi
+            # models/transaction/CLAUDE.md).
+            DemandSignalService.evaluate_zone_unmanaged(director_id)
         except Exception:
             import logging
 
