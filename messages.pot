@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-07 07:29+0000\n"
+"POT-Creation-Date: 2026-06-07 08:19+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -48,47 +48,57 @@ msgstr ""
 msgid "Vista Pubblica"
 msgstr ""
 
-#: models/demand/service.py:231
+#: models/demand/service.py:233
 #, python-format
 msgid ""
 "%(count)s giocatori vorrebbero una gara a %(city)s, una zona senza un "
 "director. Valuta di reclutarne o promuoverne uno."
 msgstr ""
 
-#: models/demand/service.py:238
+#: models/demand/service.py:240
 #, python-format
 msgid ""
 "%(count)s giocatori vorrebbero una gara in una zona senza un director. "
 "Valuta di reclutarne o promuoverne uno."
 msgstr ""
 
-#: models/demand/service.py:246
+#: models/demand/service.py:248
 msgid "Domanda in una zona senza director"
 msgstr ""
 
-#: models/demand/service.py:271
+#: models/demand/service.py:273
 msgid "C'è domanda nella tua zona!"
 msgstr ""
 
-#: models/demand/service.py:273
+#: models/demand/service.py:275
 #, python-format
 msgid ""
 "%(count)s giocatori vorrebbero una gara vicino a te. Potrebbe essere il "
 "momento di organizzarne una."
 msgstr ""
 
-#: models/demand/service.py:332
+#: models/demand/service.py:334
 msgid "Una gara è stata aperta vicino a te!"
 msgstr ""
 
-#: models/demand/service.py:334
+#: models/demand/service.py:336
 msgid ""
 "La gara che aspettavi nella tua zona è stata pubblicata: dai un'occhiata "
 "e iscriviti."
 msgstr ""
 
-#: models/demand/service.py:340
+#: models/demand/service.py:342
 msgid "Vedi la gara"
+msgstr ""
+
+#: models/demand/service.py:390
+msgid "La tua richiesta sta per scadere"
+msgstr ""
+
+#: models/demand/service.py:392
+msgid ""
+"La tua richiesta di una gara nella tua zona sta per scadere. Confermala "
+"se ti interessa ancora."
 msgstr ""
 
 #: models/gamification/frontend_bridge.py:134
@@ -468,6 +478,14 @@ msgstr ""
 
 #: routes/demand.py:47
 msgid "Fatto! Ti avviseremo se apre una gara nella tua zona."
+msgstr ""
+
+#: routes/demand.py:63 routes/demand.py:64
+msgid "Richiesta non trovata o non rinnovabile."
+msgstr ""
+
+#: routes/demand.py:67
+msgid "Richiesta riconfermata: resterà attiva ancora a lungo."
 msgstr ""
 
 #: routes/onboarding.py:50

@@ -42,6 +42,9 @@ class DemandSignal(BaseModel):
         db.String(20), nullable=False, default=DemandSignalStatus.ACTIVE, index=True
     )
     expires_at = db.Column(db.DateTime, nullable=False)
+    # Prompt di riconferma pre-scadenza inviato (ADR-036 open item 3): evita
+    # re-invii; azzerato quando la richiesta viene rinnovata.
+    reminded_at = db.Column(db.DateTime, nullable=True)
     consumed_by_gara_id = db.Column(
         db.Integer,
         db.ForeignKey("gara.id", ondelete="SET NULL"),

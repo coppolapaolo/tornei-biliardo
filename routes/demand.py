@@ -49,3 +49,23 @@ def create_signal():
         return ajax_success(message=msg)
     flash(msg, "success")
     return redirect(url_for("dashboard.dashboard"))
+
+
+@demand_bp.route("/signal/<int:signal_id>/refresh", methods=["POST"])
+@login_required
+def refresh_signal(signal_id):
+    """Rinnova (riconferma) un segnale di domanda prima della scadenza."""
+    ok = DemandSignalService.refresh_signal(
+        signal_id=signal_id, user_id=current_user.id
+    )
+    if not ok:
+        if _wants_json():
+            return ajax_error(_("Richiesta non trovata o non rinnovabile."))
+        flash(_("Richiesta non trovata o non rinnovabile."), "warning")
+        return redirect(url_for("dashboard.dashboard"))
+
+    msg = _("Richiesta riconfermata: resterà attiva ancora a lungo.")
+    if _wants_json():
+        return ajax_success(message=msg)
+    flash(msg, "success")
+    return redirect(url_for("dashboard.dashboard"))

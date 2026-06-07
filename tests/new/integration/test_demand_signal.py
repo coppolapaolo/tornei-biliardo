@@ -121,3 +121,29 @@ class TestDemandConsumptionOnGaraCreated:
         for p in players:
             sigs = DemandSignal.query.filter_by(user_id=p.id).all()
             assert all(s.status == DemandSignalStatus.CONSUMED for s in sigs)
+
+
+@pytest.mark.integration
+class TestDemandRefreshRoute:
+    def test_refresh_signal_via_post(self, app):
+        from datetime import timedelta
+        from models.base import utc_now
+
+        user = _user()
+        signal = DemandSignal(
+            user_id=user.id,
+            latitude=NAP_LAT,
+            longitude=NAP_LNG,
+            status=DemandSignalStatus.ACTIVE,
+            expires_at=utc_now() + timedelta(days=2),
+        )
+        db.session.add(signal)
+        db.session.commit()
+        sid, old_exp = signal.id, signal.expires_at
+
+        client = app.test_client()
+        _login(client, user)
+        resp = client.post(f"/demand/signal/{sid}/refresh", json={})
+        assert resp.status_code == 200
+        assert resp.get_json()["success"] is True
+        assert db.session.get(DemandSignal, sid).expires_at > old_exp

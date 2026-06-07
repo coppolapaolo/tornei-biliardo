@@ -102,10 +102,15 @@ dev/test l'allowlist è pass-through.
 2. ~~**Segnale-admin** per zone senza director~~ — **FATTO**:
    `_maybe_notify_admins_no_director` su crossing soglia quando nessun director
    copre il punto (`NotificationType.DEMAND_ZONE_NO_DIRECTOR`).
-3. **Auto-refresh + prompt di riconferma** prima della scadenza per utenti
-   attivi (richiede lifecycle/scheduled task) — *ancora aperto*.
+3. **Prompt di riconferma + scadenza** — **FATTO** (parziale):
+   `expire_due_signals` (→ EXPIRED), `send_expiry_reminders` (prompt una-tantum
+   entro 7 gg, `reminded_at`, `NotificationType.DEMAND_SIGNAL_EXPIRING`),
+   `refresh_signal` (riconferma estende di 60 gg) + route
+   `POST /demand/signal/<id>/refresh` + script `scripts/process_demand_signals.py`.
+   *Resta aperto*: l'**auto-refresh per utenti attivi** richiede un campo di
+   ultima-attività utente (oggi assente) → da fare con activity-tracking.
 4. **Tarature**: soglia (6), raggio default (30 km), cooldown (7 gg), scadenza
-   (60 gg) — affinare sui dati reali.
+   (60 gg), finestra promemoria (7 gg) — affinare sui dati reali.
 
 ## Note implementative
 - `models/demand/` (`models.py` `DemandSignal`, `service.py`

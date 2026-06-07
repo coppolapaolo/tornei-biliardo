@@ -51,6 +51,9 @@ class NotificationType(Enum):
     DEMAND_ZONE_NO_DIRECTOR = (
         "demand_zone_no_director"  # Admin: domanda in zona senza director
     )
+    DEMAND_SIGNAL_EXPIRING = (
+        "demand_signal_expiring"  # Player: la tua richiesta sta per scadere
+    )
 
     # Gamification
     ACHIEVEMENT_UNLOCKED = "achievement_unlocked"  # Achievement earned

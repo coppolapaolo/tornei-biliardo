@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-07 07:29+0000\n"
+"POT-Creation-Date: 2026-06-07 08:19+0000\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -53,7 +53,7 @@ msgstr "Player Dashboard"
 msgid "Vista Pubblica"
 msgstr "Public View"
 
-#: models/demand/service.py:231
+#: models/demand/service.py:233
 #, python-format
 msgid ""
 "%(count)s giocatori vorrebbero una gara a %(city)s, una zona senza un "
@@ -62,7 +62,7 @@ msgstr ""
 "%(count)s players would like a tournament in %(city)s, an area without a "
 "director. Consider recruiting or promoting one."
 
-#: models/demand/service.py:238
+#: models/demand/service.py:240
 #, python-format
 msgid ""
 "%(count)s giocatori vorrebbero una gara in una zona senza un director. "
@@ -71,15 +71,15 @@ msgstr ""
 "%(count)s players would like a tournament in an area without a director. "
 "Consider recruiting or promoting one."
 
-#: models/demand/service.py:246
+#: models/demand/service.py:248
 msgid "Domanda in una zona senza director"
 msgstr "Demand in an area without a director"
 
-#: models/demand/service.py:271
+#: models/demand/service.py:273
 msgid "C'è domanda nella tua zona!"
 msgstr "There's demand in your area!"
 
-#: models/demand/service.py:273
+#: models/demand/service.py:275
 #, python-format
 msgid ""
 "%(count)s giocatori vorrebbero una gara vicino a te. Potrebbe essere il "
@@ -88,11 +88,11 @@ msgstr ""
 "%(count)s players would like a tournament near you. It might be a good time "
 "to organize one."
 
-#: models/demand/service.py:332
+#: models/demand/service.py:334
 msgid "Una gara è stata aperta vicino a te!"
 msgstr "A tournament has opened near you!"
 
-#: models/demand/service.py:334
+#: models/demand/service.py:336
 msgid ""
 "La gara che aspettavi nella tua zona è stata pubblicata: dai un'occhiata e "
 "iscriviti."
@@ -100,9 +100,21 @@ msgstr ""
 "The tournament you were waiting for in your area has been published: take a "
 "look and sign up."
 
-#: models/demand/service.py:340
+#: models/demand/service.py:342
 msgid "Vedi la gara"
 msgstr "View the tournament"
+
+#: models/demand/service.py:390
+msgid "La tua richiesta sta per scadere"
+msgstr "Your request is about to expire"
+
+#: models/demand/service.py:392
+msgid ""
+"La tua richiesta di una gara nella tua zona sta per scadere. Confermala se "
+"ti interessa ancora."
+msgstr ""
+"Your request for a tournament in your area is about to expire. Confirm it if"
+" you are still interested."
 
 #: models/gamification/frontend_bridge.py:134
 msgid "Hai guadagnato XP"
@@ -499,6 +511,14 @@ msgstr "Registration completed successfully."
 #: routes/demand.py:47
 msgid "Fatto! Ti avviseremo se apre una gara nella tua zona."
 msgstr "Done! We'll let you know if a tournament opens in your area."
+
+#: routes/demand.py:63 routes/demand.py:64
+msgid "Richiesta non trovata o non rinnovabile."
+msgstr "Request not found or cannot be renewed."
+
+#: routes/demand.py:67
+msgid "Richiesta riconfermata: resterà attiva ancora a lungo."
+msgstr "Request reconfirmed: it will stay active for a while longer."
 
 #: routes/onboarding.py:50
 msgid "Tutto pronto! Buon divertimento."

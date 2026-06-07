@@ -274,3 +274,74 @@ def test_no_admin_signal_when_director_covers(db_session):
 
     # Il director copre la zona → nessun segnale-admin.
     assert _admin_notifications(admin.id) == []
+
+
+# ── ciclo di vita scadenza (ADR-036 open item 3) ─────────────────────────────
+
+
+def _make_signal(user_id, expires_in_days, status=None, reminded=False):
+    from datetime import timedelta as td
+
+    s = DemandSignal(
+        user_id=user_id,
+        latitude=NAP_LAT,
+        longitude=NAP_LNG,
+        status=status or DemandSignalStatus.ACTIVE,
+        expires_at=utc_now() + td(days=expires_in_days),
+        reminded_at=(utc_now() if reminded else None),
+    )
+    db.session.add(s)
+    db.session.commit()
+    return s
+
+
+def test_expire_due_signals(db_session):
+    u = _user()
+    past = _make_signal(u.id, expires_in_days=-1)  # scaduto
+    future = _make_signal(u.id, expires_in_days=10)  # valido
+
+    n = DemandSignalService.expire_due_signals()
+    assert n == 1
+    assert db.session.get(DemandSignal, past.id).status == DemandSignalStatus.EXPIRED
+    assert db.session.get(DemandSignal, future.id).status == DemandSignalStatus.ACTIVE
+
+
+def test_send_expiry_reminders_once(db_session):
+    from models.notification.models import Notification, NotificationType
+
+    u = _user()
+    soon = _make_signal(u.id, expires_in_days=3)  # entro la finestra (7gg)
+    _make_signal(u.id, expires_in_days=30)  # fuori finestra
+    _make_signal(u.id, expires_in_days=2, reminded=True)  # già avvisato
+
+    n = DemandSignalService.send_expiry_reminders(within_days=7)
+    assert n == 1
+    assert db.session.get(DemandSignal, soon.id).reminded_at is not None
+    notifs = [
+        x
+        for x in Notification.query.filter_by(user_id=u.id).all()
+        if x.notification_type == NotificationType.DEMAND_SIGNAL_EXPIRING
+    ]
+    assert len(notifs) == 1
+
+    # Idempotente: una seconda esecuzione non re-invia.
+    assert DemandSignalService.send_expiry_reminders(within_days=7) == 0
+
+
+def test_refresh_signal_extends_and_clears_reminder(db_session):
+    u = _user()
+    s = _make_signal(u.id, expires_in_days=2, reminded=True)
+    old_exp = s.expires_at
+
+    ok = DemandSignalService.refresh_signal(s.id, u.id)
+    assert ok is True
+    refreshed = db.session.get(DemandSignal, s.id)
+    assert refreshed.expires_at > old_exp
+    assert refreshed.reminded_at is None
+
+
+def test_refresh_signal_rejects_non_owner(db_session):
+    u = _user()
+    other = _user()
+    s = _make_signal(u.id, expires_in_days=2)
+    assert DemandSignalService.refresh_signal(s.id, other.id) is False

@@ -56,6 +56,7 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # Segnale-domanda → director (ADR-036): maturity-gated, admin/director-only
     # in prod nel beta; promozione ai player col maturity-gate quando validato.
     "demand.create_signal": {"director"},
+    "demand.refresh_signal": {"director"},
     # Player-side dashboard at /player/ (the "back to dashboard" target from
     # several profile/list pages — also reached by the dashboard router).
     "player.dashboard": {"player", "director"},

@@ -268,11 +268,12 @@ ritiro board XP globale) + ADR + implementazione (§11-bis).
 
 ### Open items per-ADR — chiusure successive
 - **ADR-036**: re-eval alla promozione (1) e segnale-admin zone senza director
-  (2) **FATTI** (`evaluate_zone_for_new_director` agganciato a
-  `process_director_request`/`promote_to_director`;
-  `_maybe_notify_admins_no_director` +
-  `NotificationType.DEMAND_ZONE_NO_DIRECTOR`). Restano: auto-refresh/prompt
-  scadenza (3), tarature (4).
+  (2) **FATTI**. Ciclo di vita scadenza (3) **FATTO**: `expire_due_signals`,
+  `send_expiry_reminders` (prompt + `reminded_at` +
+  `DEMAND_SIGNAL_EXPIRING`), `refresh_signal` + route + script
+  `scripts/process_demand_signals.py` (migrazione
+  `20260607_demand_signal_reminded`). Resta: auto-refresh per utenti *attivi*
+  (serve activity-tracking utente) + tarature (4).
 - **ADR-037**: `gare_organized` via `DirectorAssignment` (4) **FATTO**. Restano:
   leghe (1), tarature (2), performance/materializzazione (3).
 
