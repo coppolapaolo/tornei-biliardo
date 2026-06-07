@@ -283,12 +283,42 @@ ritiro board XP globale) + ADR + implementazione (§11-bis).
   materializzazione quando serve). Leghe (1) e materializzazione piena (3)
   **RIMANDATE** finché le KPI non mostrano il superamento delle soglie.
 
-### Aperto / prossimi (design già in V3, codice non iniziato)
-- *(nessuno tra gli item principali §11-bis/§10-ter/§7. Restano gli open items
-  per-ADR sopra e il maturity-gate ADR-028 di rollout ai player.)*
-- **Leaderboard locale/contributo**.
+### Aperto / prossimi
+Tutti gli item principali di design (§7 onboarding, §10-ter segnale-domanda,
+§11-bis leaderboard) e gli open item per-ADR (ADR-035/036/037) sono **FATTI**.
+Restano:
+- **Esecuzione test manuali** gamification in browser (gate umano) — vedi
+  sezione "Hardening test" sotto.
 - **Maturity-gate ADR-028**: promozione ai player a blocchi (gamification +
-  availability/discovery) quando validati — *non senza via dello stakeholder*.
+  match individuali + rating + segnale-domanda) quando validati — *non senza
+  via esplicito dello stakeholder*.
+- Rimandati esplicitamente: **leghe** (ADR-037) e **materializzazione piena**
+  delle classifiche (finché le KPI Performance non mostrano il superamento
+  soglie).
+
+### Hardening test pre-apertura (2026-06-07)
+Obiettivo: nessuna area aperta ai player senza test verdi. Esito per area:
+- **Match individuali**: nuova suite route player
+  (`tests/new/integration/test_individual_match_proposal_routes.py`): proposte
+  (lista/dettaglio/creazione/accettazione/annullo/rifiuto), discovery, ciclo di
+  vita (start/rack/remove/reject/confirm/cancel/forfeit/complete/rematch).
+  Copertura `matches.py` 19%→63%, `proposals.py` 21%→66%.
+  - **Bug trovato+corretto**: `decline_proposal` chiamava un metodo inesistente
+    (`MatchProposalService.reject_invitation`) → 500; ora `reject_proposal`.
+  - **Fix UX**: route `/confirm` ora riconosce `VALIDATED` come concluso
+    (prima diceva "in attesa" a match validato).
+- **Rating**: da 0 a suite dedicata (`tests/new/unit/test_rating_service.py`):
+  `rating_service` 35%→77%, `handicap_service` 24%→47%.
+- **Catena gamification**: sbloccati i 9 test integration skippati (XP +
+  achievement workflow) — le skip erano obsolete (refactor metric-driven +
+  anti-invasività). `test_xp_workflow`/`test_achievement_workflow` ora end-to-end.
+- **Report test manuali**: `GAMIFICATION_V3_MANUAL_TEST_REPORT.md` (fillable,
+  esiti+firma) — il gate umano rimasto prima dell'apertura.
+
+Stato suite a fine sessione: **unit 1013 / integration 383** verdi, pyright 0
+errori. Skip integration 19→10 (rimossi i 9 gamification). Nota: flake
+pre-esistente `test_inscription_blocked_after_gara_start` (DetachedInstance,
+transitorio, non legato a queste modifiche).
 
 ## Convenzioni
 Vedi `CLAUDE.md` (transactional, utc_now, Distance VO/ADR-027, ADR-028 endpoint

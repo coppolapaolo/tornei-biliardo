@@ -1,7 +1,12 @@
 # Gamification V3 — Stato & Ripresa (entry point dopo /clear)
 
-**Data**: 2026-06-06 · **Branch**: `claude/gamification-system-review-beIB0`
-**Stato**: Fasi 1, 2, 3 **completate**, tutto committato e pushato, working tree pulito.
+**Data**: 2026-06-07 · **Branch**: `claude/gamification-system-review-beIB0`
+**Stato**: Fasi 1-3 + ADR-035/036/037 (incl. open item) + **hardening test
+pre-apertura** completati; tutto committato e pushato, working tree pulito.
+Suite: **unit 1013 / integration 383** verdi (`-n 4`), pyright 0 errori.
+**Gate rimasto**: esecuzione test manuali gamification in browser
+(`GAMIFICATION_V3_MANUAL_TEST_REPORT.md`) prima dell'apertura ai player
+(maturity-gate ADR-028, non senza via esplicito).
 
 Questo è il punto d'ingresso rapido per riprendere. Per il dettaglio:
 - `docs/reference/GAMIFICATION_V3_HANDOFF.md` — piano + esito Fase 1/2/3 (con ancore).
@@ -12,7 +17,7 @@ Questo è il punto d'ingresso rapido per riprendere. Per il dettaglio:
   coperti dai test automatici. **Da eseguire in browser prima della promozione
   ai player.**
 
-## Cosa è FATTO (verde: pyright 0 errori; unit 940 ok; integration 319 ok `-n 4`)
+## Cosa è FATTO (verde: pyright 0 errori; unit 1013 ok; integration 383 ok `-n 4`)
 
 **Fase 1** (commit `368afcc`, `fd372d9`, `0b92775`):
 - Fix `STREAK_LONGEST` leaderboard (score + calculated_at).
