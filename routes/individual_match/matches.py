@@ -24,6 +24,7 @@ def match_list():
     try:
         matches = IndividualMatchService.get_user_matches(current_user.id)
         from flask import render_template
+
         return render_template("individual_match/matches.html", matches=matches)
     except Exception as e:
         flash(f"Error loading matches: {str(e)}", "danger")
@@ -43,6 +44,7 @@ def match_detail(match_id):
             return redirect(url_for("individual_match.match_list"))
 
         from flask import render_template
+
         return render_template("individual_match/match_detail.html", match=match)
 
     except Exception as e:
@@ -59,9 +61,10 @@ def start_match(match_id):
 
         # Emit SSE event for real-time sync
         from routes.sse import emit_individual_match_event
-        emit_individual_match_event(match_id, "match_started", {
-            "started_by": current_user.id
-        })
+
+        emit_individual_match_event(
+            match_id, "match_started", {"started_by": current_user.id}
+        )
 
         if request.is_json:
             return jsonify({"success": True, "message": "Match started successfully"})
@@ -94,17 +97,22 @@ def add_rack(match_id):
         # Emit SSE event for real-time sync
         from routes.sse import emit_individual_match_event
         from models.base import db
+
         match = IndividualMatch.query.get(match_id)
         db.session.refresh(match)  # Force fresh state after @transactional commit
-        emit_individual_match_event(match_id, "rack_updated", {
-            "action": "added",
-            "rack_number": rack.rack_number,
-            "winner_id": int(data["winner_id"]),
-            "player1_score": match.player1_score,
-            "player2_score": match.player2_score,
-            "is_ready_for_validation": match.is_ready_for_validation(),
-            "added_by": current_user.id,
-        })
+        emit_individual_match_event(
+            match_id,
+            "rack_updated",
+            {
+                "action": "added",
+                "rack_number": rack.rack_number,
+                "winner_id": int(data["winner_id"]),
+                "player1_score": match.player1_score,
+                "player2_score": match.player2_score,
+                "is_ready_for_validation": match.is_ready_for_validation(),
+                "added_by": current_user.id,
+            },
+        )
 
         if request.is_json:
             return jsonify(
@@ -145,16 +153,21 @@ def remove_rack(match_id):
         # Emit SSE event for real-time sync
         from routes.sse import emit_individual_match_event
         from models.base import db
+
         match = IndividualMatch.query.get(match_id)
         db.session.refresh(match)  # Force fresh state after @transactional commit
-        emit_individual_match_event(match_id, "rack_updated", {
-            "action": "removed",
-            "player_id": int(data["player_id"]),
-            "player1_score": match.player1_score,
-            "player2_score": match.player2_score,
-            "is_ready_for_validation": match.is_ready_for_validation(),
-            "removed_by": current_user.id,
-        })
+        emit_individual_match_event(
+            match_id,
+            "rack_updated",
+            {
+                "action": "removed",
+                "player_id": int(data["player_id"]),
+                "player1_score": match.player1_score,
+                "player2_score": match.player2_score,
+                "is_ready_for_validation": match.is_ready_for_validation(),
+                "removed_by": current_user.id,
+            },
+        )
 
         if request.is_json:
             return jsonify(
@@ -187,33 +200,47 @@ def confirm_result(match_id):
             match_id=match_id, user_id=current_user.id
         )
 
+        # La conferma bilaterale porta il match a VALIDATED (flusso nuovo) o a
+        # COMPLETED (legacy): entrambi sono lo stato "concluso". Prima si
+        # controllava solo "completed" → dopo la 2ª conferma il match era
+        # validato ma la route riportava "in attesa" (incongruenza UX).
+        from models.status_enum import MatchStatus
+
+        done = match.status.value in (
+            MatchStatus.COMPLETED.value,
+            MatchStatus.VALIDATED.value,
+        )
+
         # Emit SSE event for real-time sync
         from routes.sse import emit_individual_match_event
-        event_type = "match_completed" if match.status.value == "completed" else "result_confirmed"
-        emit_individual_match_event(match_id, event_type, {
-            "confirmed_by": current_user.id,
-            "player1_confirmed": match.player1_confirmed,
-            "player2_confirmed": match.player2_confirmed,
-            "completed": match.status.value == "completed",
-            "winner_id": match.winner_id,
-        })
+
+        event_type = "match_completed" if done else "result_confirmed"
+        emit_individual_match_event(
+            match_id,
+            event_type,
+            {
+                "confirmed_by": current_user.id,
+                "player1_confirmed": match.player1_confirmed,
+                "player2_confirmed": match.player2_confirmed,
+                "completed": done,
+                "winner_id": match.winner_id,
+            },
+        )
 
         if request.is_json:
             return jsonify(
                 {
                     "success": True,
-                    "completed": match.status.value == "completed",
+                    "completed": done,
                     "player1_confirmed": match.player1_confirmed,
                     "player2_confirmed": match.player2_confirmed,
                     "message": (
-                        "Match completato!"
-                        if match.status.value == "completed"
-                        else "Risultato confermato!"
+                        "Match completato!" if done else "Risultato confermato!"
                     ),
                 }
             )
         else:
-            if match.status.value == "completed":
+            if done:
                 flash("Match completato con successo!", "success")
             else:
                 flash("Risultato confermato! In attesa dell'altro giocatore.", "info")
@@ -239,13 +266,18 @@ def reject_result(match_id):
 
         # Emit SSE event for real-time sync
         from routes.sse import emit_individual_match_event
-        emit_individual_match_event(match_id, "rack_updated", {
-            "action": "rejected",
-            "player1_score": match.player1_score,
-            "player2_score": match.player2_score,
-            "is_ready_for_validation": match.is_ready_for_validation(),
-            "rejected_by": current_user.id,
-        })
+
+        emit_individual_match_event(
+            match_id,
+            "rack_updated",
+            {
+                "action": "rejected",
+                "player1_score": match.player1_score,
+                "player2_score": match.player2_score,
+                "is_ready_for_validation": match.is_ready_for_validation(),
+                "rejected_by": current_user.id,
+            },
+        )
 
         if request.is_json:
             return jsonify(
@@ -339,10 +371,10 @@ def update_match_times(match_id):
         ended_at_str = data.get("ended_at")
 
         if not started_at_str and not ended_at_str:
-            return jsonify({
-                "success": False,
-                "error": "Specificare almeno un orario"
-            }), 400
+            return (
+                jsonify({"success": False, "error": "Specificare almeno un orario"}),
+                400,
+            )
 
         # Parse ISO datetime strings
         started_at = None
@@ -356,14 +388,13 @@ def update_match_times(match_id):
             match_id=match_id,
             started_at=started_at,
             ended_at=ended_at,
-            user_id=current_user.id
+            user_id=current_user.id,
         )
 
         if request.is_json:
-            return jsonify({
-                "success": True,
-                "message": "Orari aggiornati con successo"
-            })
+            return jsonify(
+                {"success": True, "message": "Orari aggiornati con successo"}
+            )
         else:
             flash("Orari aggiornati con successo!", "success")
             return redirect(url_for("individual_match.match_detail", match_id=match_id))
@@ -390,19 +421,26 @@ def forfeit_match(match_id):
 
         # Emit SSE event for real-time sync
         from routes.sse import emit_individual_match_event
-        emit_individual_match_event(match_id, "match_forfeited", {
-            "forfeited_by": current_user.id,
-            "winner_id": match.winner_id,
-            "player1_score": match.player1_score,
-            "player2_score": match.player2_score,
-        })
+
+        emit_individual_match_event(
+            match_id,
+            "match_forfeited",
+            {
+                "forfeited_by": current_user.id,
+                "winner_id": match.winner_id,
+                "player1_score": match.player1_score,
+                "player2_score": match.player2_score,
+            },
+        )
 
         if request.is_json:
-            return jsonify({
-                "success": True,
-                "winner_id": match.winner_id,
-                "message": _("Forfait dichiarato")
-            })
+            return jsonify(
+                {
+                    "success": True,
+                    "winner_id": match.winner_id,
+                    "message": _("Forfait dichiarato"),
+                }
+            )
         else:
             flash(_("Forfait dichiarato. Match terminato."), "warning")
             return redirect(url_for("individual_match.match_detail", match_id=match_id))
@@ -436,7 +474,9 @@ def rematch(match_id):
         return redirect(url_for("individual_match.match_detail", match_id=match_id))
 
     # Determine opponent
-    opponent_id = match.player2_id if current_user.id == match.player1_id else match.player1_id
+    opponent_id = (
+        match.player2_id if current_user.id == match.player1_id else match.player1_id
+    )
 
     # Build pre-fill parameters
     params = {

@@ -275,15 +275,16 @@ class TestMatchLifecycleRoutes:
             )
         assert db.session.get(IndividualMatch, mid).is_ready_for_validation() is True
 
-        assert _post(c1, f"/match/matches/{mid}/confirm", json={}).status_code == 200
+        # 1ª conferma: ancora in attesa dell'altro giocatore.
+        r1 = _post(c1, f"/match/matches/{mid}/confirm", json={})
+        assert r1.status_code == 200 and r1.get_json()["completed"] is False
+        # 2ª conferma: bilaterale → match concluso (VALIDATED). La route ora
+        # riporta completed=True (prima diceva False perché controllava solo
+        # status=="completed" mentre il flusso produce VALIDATED).
         resp = _post(c2, f"/match/matches/{mid}/confirm", json={})
         assert resp.status_code == 200
-        # Stato finale reale: conferma bilaterale → VALIDATED, vincitore = p1.
-        # NB: la route riporta "completed=False" perché controlla
-        # status=="completed" mentre il flusso bilaterale produce VALIDATED →
-        # incongruenza UX da rivedere PRIMA di aprire la feature ai player
-        # (il messaggio resta "in attesa dell'altro giocatore" anche a match
-        # validato). Qui asseriamo lo stato di dominio corretto.
+        assert resp.get_json()["completed"] is True
+
         from models.status_enum import MatchStatus
 
         final = db.session.get(IndividualMatch, mid)
