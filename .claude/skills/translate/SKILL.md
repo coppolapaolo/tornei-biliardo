@@ -20,7 +20,7 @@ pybabel extract -F babel.cfg --ignore-dirs 'venv .* _* node_modules' -o messages
 **IMPORTANTE**: `--ignore-dirs` è obbligatorio. Senza, `pybabel` scansiona
 anche `venv/` ed estrae migliaia di stringhe di librerie terze (click,
 networkx, ecc.); `update` poi le riattiva generando **duplicati** che fanno
-fallire `msgfmt`. Babel non supporta esclusioni in `babel.cfg`, quindi vanno
+fallire la compilazione. Babel non supporta esclusioni in `babel.cfg`, quindi vanno
 passate qui. (`.* _*` sono i default di Babel da preservare.)
 
 ### 2. Update catalogs
@@ -49,16 +49,24 @@ Per le stringhe **fuzzy**:
 ### 4. Compile
 
 ```bash
-pybabel compile -d translations
+pybabel compile -d translations --statistics
 ```
+
+`--statistics` compila **e** stampa il conteggio per catalogo, così
+compilazione e report sono un'unica operazione.
+
+**Usa sempre `pybabel compile`, mai GNU `msgfmt`, per compilare/verificare.**
+I due compiler hanno semantiche diverse sulle entry plurali con `msgstr`
+vuoto: `msgfmt` le scarta, `pybabel` le mantiene (col `msgid` come fallback).
+Mischiare i due fa sembrare il `.mo` "disallineato" dal `.po` quando in realtà
+è corretto. Per validare la coerenza `.mo`/`.po` usa lo stesso compiler della
+toolchain (`pybabel`).
 
 ### 5. Report
 
-Mostra statistiche finali:
-```bash
-msgfmt --statistics translations/en/LC_MESSAGES/messages.po
-msgfmt --statistics translations/it/LC_MESSAGES/messages.po
-```
+Riporta le statistiche già stampate dallo step 4 (messaggi tradotti per
+catalogo: EN dovrebbe essere 100%, IT volutamente basso perché i `msgstr`
+sono vuoti by-design).
 
 ## Regole
 
@@ -67,4 +75,4 @@ msgfmt --statistics translations/it/LC_MESSAGES/messages.po
 - **Placeholder**: preservare `%(name)s` e simili senza modificarli.
 - **Plural forms**: usare `ngettext` dove appropriato (già gestito da pybabel).
 - **Non modificare** le entry già tradotte (msgstr non vuoto e non fuzzy) a meno che l'utente non lo chieda esplicitamente.
-- Dopo aver scritto le traduzioni, **sempre** compilare e verificare con `msgfmt --statistics`.
+- Dopo aver scritto le traduzioni, **sempre** compilare e verificare con `pybabel compile -d translations --statistics` (mai GNU `msgfmt`: semantica diversa sui plurali, vedi step 4).
