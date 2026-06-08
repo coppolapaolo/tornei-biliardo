@@ -198,26 +198,6 @@ class UserStatsService:
             .subquery()
         )
 
-        # Subquery for match counts per user (as player1 or player2)
-        match_subq = (
-            db.session.query(
-                db.case(
-                    (Match.player1_id.isnot(None), Match.player1_id),
-                    else_=Match.player2_id,
-                ).label("user_id"),
-                func.count(Match.id).label("total_matches"),
-                func.sum(
-                    db.case(
-                        (Match.winner_id == Match.player1_id, 1),
-                        else_=0,
-                    )
-                ).label("won_as_p1"),
-            )
-            .filter(Match.status == MatchStatus.COMPLETED.value)
-            .group_by("user_id")
-            .subquery()
-        )
-
         # Separate subquery for player2 matches
         match_subq_p2 = (
             db.session.query(
