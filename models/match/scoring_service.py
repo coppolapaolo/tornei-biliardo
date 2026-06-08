@@ -389,23 +389,31 @@ class ScoringService:
         exact_racks = not match.is_multi_set and not distance.is_race_to_racks
 
         if forfeit_player == 1:
-            # Player 1 forfeits (loser): normalizza il suo score a int valido,
-            # poi deriva quello del vincitore.
-            match.player1_score = match.player1_score or 0
+            # Player 1 forfeits (loser).
             if exact_racks:
-                # max(0, ...): clamp difensivo se i dati sono incoerenti
-                # (perdente con più rack del totale).
-                match.player2_score = max(0, distance.racks - match.player1_score)
-            elif (match.player2_score or 0) < winning_score:
-                match.player2_score = winning_score
+                # Clampa il perdente a [0, racks] e deriva il vincitore come
+                # differenza: mantiene p1+p2 == racks anche con record legacy
+                # incoerenti (None, negativi, o score > racks).
+                match.player1_score = min(
+                    max(match.player1_score or 0, 0), distance.racks
+                )
+                match.player2_score = distance.racks - match.player1_score
+            else:
+                # Race-to: il perdente tiene i rack già vinti (normalizzati a int).
+                match.player1_score = match.player1_score or 0
+                if (match.player2_score or 0) < winning_score:
+                    match.player2_score = winning_score
         else:
-            # Player 2 forfeits (loser): normalizza il suo score, poi deriva
-            # quello del vincitore.
-            match.player2_score = match.player2_score or 0
+            # Player 2 forfeits (loser).
             if exact_racks:
-                match.player1_score = max(0, distance.racks - match.player2_score)
-            elif (match.player1_score or 0) < winning_score:
-                match.player1_score = winning_score
+                match.player2_score = min(
+                    max(match.player2_score or 0, 0), distance.racks
+                )
+                match.player1_score = distance.racks - match.player2_score
+            else:
+                match.player2_score = match.player2_score or 0
+                if (match.player1_score or 0) < winning_score:
+                    match.player1_score = winning_score
 
     @staticmethod
     def _validate_rack_addition(match: Match, winner_id: int) -> None:
