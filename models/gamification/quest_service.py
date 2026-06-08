@@ -556,7 +556,10 @@ class QuestService:
                     ),
                 )
             elif participation:
-                progress_percentage = 100.0
+                # target_progress legacy = 0: 100% solo se la participation è
+                # già completata, altrimenti 0% (mostrare 100% sarebbe
+                # incoerente con is_completed e fuorviante per UI/API).
+                progress_percentage = 100.0 if participation.is_completed else 0.0
             else:
                 progress_percentage = 0.0
 
@@ -714,7 +717,7 @@ class QuestService:
                 (
                     min(100.0, p.current_progress / p.target_progress * 100)
                     if p.target_progress
-                    else 100.0
+                    else (100.0 if p.is_completed else 0.0)
                 )
                 for p in participations
             )

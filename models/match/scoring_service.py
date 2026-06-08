@@ -386,14 +386,21 @@ class ScoringService:
         if forfeit_player == 1:
             # Player 1 forfeits - keep their score, winner = player 2
             if exact_racks:
-                match.player2_score = distance.racks - match.player1_score
+                # `or 0`: lo score può essere None su record legacy (colonna non
+                # NOT NULL). max(0, ...): clamp difensivo se i dati sono
+                # incoerenti (perdente con più rack del totale).
+                match.player2_score = max(
+                    0, distance.racks - (match.player1_score or 0)
+                )
             elif match.player2_score < winning_score:
                 match.player2_score = winning_score
             # Keep match.player1_score as-is (racks already won)
         else:
             # Player 2 forfeits - keep their score, winner = player 1
             if exact_racks:
-                match.player1_score = distance.racks - match.player2_score
+                match.player1_score = max(
+                    0, distance.racks - (match.player2_score or 0)
+                )
             elif match.player1_score < winning_score:
                 match.player1_score = winning_score
             # Keep match.player2_score as-is (racks already won)

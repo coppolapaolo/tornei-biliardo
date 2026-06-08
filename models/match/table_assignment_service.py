@@ -135,10 +135,20 @@ class TableAssignmentService:
             TableAssignmentService.get_occupied_tables(gara_id).keys()
         )
 
-        # Restituisci i tavoli configurati non occupati PRESERVANDO l'ordine di
-        # get_available_tables: list(set - set) perdeva l'ordine rendendo
-        # l'assegnazione dipendente dall'hash (non deterministica tra run).
-        return [t for t in all_tables if t not in occupied_tables]
+        # Tavoli configurati non occupati, PRESERVANDO l'ordine di
+        # get_available_tables e DEDUPLICANDO: la sorgente legacy
+        # (available_tables / table_names da JSON o input utente) può contenere
+        # duplicati; senza dedup lo stesso tavolo finirebbe due volte e
+        # verrebbe assegnato a due match nello stesso giro (viola "1 tavolo = 1
+        # match PLAYING"). list(set - set) deduplicava ma perdeva l'ordine.
+        free_tables: list[str] = []
+        seen: set[str] = set()
+        for t in all_tables:
+            if t in occupied_tables or t in seen:
+                continue
+            seen.add(t)
+            free_tables.append(t)
+        return free_tables
 
     @staticmethod
     @transactional(domain="match")
