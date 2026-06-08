@@ -166,6 +166,17 @@
 </div>
 
 <script>
+// Escape HTML per prevenire stored XSS: le description delle challenge sono
+// testo libero inserito dai director e vengono interpolate in innerHTML.
+function escapeHtml(value) {
+    return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Inizializza il sistema di gestione challenge quando si apre il modal
     $('#challengeManagementModal').on('show.bs.modal', function() {
@@ -279,7 +290,7 @@ function displayActiveChallenges(challenges) {
                     <div class="d-flex align-items-center">
                         ${challengeImage}
                         <div>
-                            <small class="text-muted">${challenge.challenge_description}</small>
+                            <small class="text-muted">${escapeHtml(challenge.challenge_description)}</small>
                         </div>
                     </div>
                 </td>
@@ -329,7 +340,7 @@ function populateChallengeSelect(challenges) {
                 <div class="d-flex align-items-center">
                     ${challengeImage}
                     <div class="flex-grow-1">
-                        <small class="text-muted">${challenge.description.substring(0, 80)}${challenge.description.length > 80 ? '...' : ''}</small>
+                        <small class="text-muted">${escapeHtml(challenge.description.substring(0, 80))}${challenge.description.length > 80 ? '...' : ''}</small>
                     </div>
                 </div>
             </div>

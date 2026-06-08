@@ -126,15 +126,19 @@ class TableAssignmentService:
         if not gara:
             return []
 
-        all_tables = set(gara.get_available_tables())
+        all_tables = gara.get_available_tables()
         if not all_tables:
             return []
 
         # Find tables currently assigned to PLAYING matches
-        occupied_tables = set(TableAssignmentService.get_occupied_tables(gara_id).keys())
+        occupied_tables = set(
+            TableAssignmentService.get_occupied_tables(gara_id).keys()
+        )
 
-        # Return tables that are configured but not occupied
-        return list(all_tables - occupied_tables)
+        # Restituisci i tavoli configurati non occupati PRESERVANDO l'ordine di
+        # get_available_tables: list(set - set) perdeva l'ordine rendendo
+        # l'assegnazione dipendente dall'hash (non deterministica tra run).
+        return [t for t in all_tables if t not in occupied_tables]
 
     @staticmethod
     @transactional(domain="match")
@@ -291,32 +295,61 @@ class TableAssignmentService:
         assigned_count = 0
         table_index = 0
 
+        # Precompute una sola volta i giocatori occupati (in match PLAYING) ed
+        # aggiornalo in memoria man mano che assegniamo: sostituisce ~2N query
+        # _is_player_busy nel loop (hot path di release_and_reassign_table) con
+        # una sola query. I match in attesa sono PENDING, quindi l'esclusione
+        # del match stesso era un no-op; assegnare un match lo porta a PLAYING e
+        # rende i suoi giocatori occupati per i match successivi (come prima via
+        # autoflush).
+        busy_players = TableAssignmentService._get_busy_player_ids(gara_id)
+
         for waiting_match in pending_matches:
             if table_index >= len(free_tables):
                 break  # No more free tables
 
-            # Check if both players are free
-            player1_busy = TableAssignmentService._is_player_busy(
-                gara_id, waiting_match.player1_id, exclude_match_id=waiting_match.id
-            )
-            player2_busy = TableAssignmentService._is_player_busy(
-                gara_id, waiting_match.player2_id, exclude_match_id=waiting_match.id
-            )
+            p1 = waiting_match.player1_id
+            p2 = waiting_match.player2_id
 
-            if not player1_busy and not player2_busy:
+            if p1 not in busy_players and p2 not in busy_players:
                 # Both players are free - assign table
                 waiting_match.table_assignment = free_tables[table_index]
                 waiting_match.status = MatchStatus.PLAYING.value
                 db.session.add(waiting_match)
+                if p1:
+                    busy_players.add(p1)
+                if p2:
+                    busy_players.add(p2)
                 assigned_count += 1
                 table_index += 1
 
         return assigned_count
 
     @staticmethod
+    def _get_busy_player_ids(gara_id: int) -> set[int]:
+        """Set dei player_id attualmente impegnati in match PLAYING della gara.
+
+        Una sola query, usata per evitare l'N+1 di ``_is_player_busy`` quando si
+        assegnano i tavoli a molti match in attesa.
+        """
+        rows = (
+            db.session.query(Match.player1_id, Match.player2_id)
+            .filter_by(gara_id=gara_id, status=MatchStatus.PLAYING.value)
+            .all()
+        )
+        busy: set[int] = set()
+        for p1, p2 in rows:
+            if p1:
+                busy.add(p1)
+            if p2:
+                busy.add(p2)
+        return busy
+
+    @staticmethod
     @transactional(domain="match")
     def release_and_reassign_table(match_id: int) -> Optional[Match]:
-        """Release table from completed match and reassign free tables to waiting matches.
+        """Release table from completed match and reassign free tables to
+        waiting matches.
 
         This method uses a "pull" strategy:
         1. Removes the table from the completed match
@@ -333,14 +366,16 @@ class TableAssignmentService:
             match_id: ID of the completed match
 
         Returns:
-            The first match that received a table (now PLAYING), or None if no eligible match
+            The first match that received a table (now PLAYING), or None if
+            no eligible match
         """
         completed_match = db.session.get(Match, match_id)
         if not completed_match:
             raise ValueError(f"Match {match_id} not found")
 
-        # Accept both COMPLETED (admin validation) and VALIDATED (bilateral player confirmation)
-        if completed_match.status not in [MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value]:
+        # Accept both COMPLETED (admin validation) and VALIDATED (bilateral
+        # player confirmation) — predicato typo-safe (CLAUDE.md)
+        if not MatchStatus.is_finished(completed_match.status):
             raise ValueError("Can only release tables from completed matches")
 
         # Store gara_id before potentially clearing table
@@ -379,7 +414,8 @@ class TableAssignmentService:
 
         Business Rules:
         - Validates round locking before allowing reassignment
-        - If new_table is occupied by another PLAYING match → other match loses table (eviction)
+        - If new_table is occupied by another PLAYING match → other match
+          loses table (eviction)
         - If new_table is free → simple assignment
         - If new_table is None → removes table assignment (only if no racks played)
         - A table can only host ONE playing match at a time (physical constraint)
@@ -423,6 +459,7 @@ class TableAssignmentService:
             )
             if player1_busy or player2_busy:
                 from models.user.models import User
+
                 if player1_busy:
                     player = db.session.get(User, match.player1_id)
                 else:
@@ -434,7 +471,12 @@ class TableAssignmentService:
         if new_table is None:
             # Business Rule: Cannot remove table if match has racks (only swap allowed)
             if has_racks:
-                return False, "Non puoi rimuovere il tavolo: la partita è già iniziata. Puoi solo scambiarlo.", None
+                return (
+                    False,
+                    "Non puoi rimuovere il tavolo: la partita è già "
+                    "iniziata. Puoi solo scambiarlo.",
+                    None,
+                )
 
             match.table_assignment = None
             # Reset started_at since match hasn't really started without racks
@@ -463,7 +505,9 @@ class TableAssignmentService:
 
         if occupying_match:
             # Check if occupying match has racks played
-            occupying_has_racks = (occupying_match.player1_score or 0) + (occupying_match.player2_score or 0) > 0
+            occupying_has_racks = (occupying_match.player1_score or 0) + (
+                occupying_match.player2_score or 0
+            ) > 0
 
             # Automatic swap/eviction with occupying match
             swapped = False
@@ -471,7 +515,9 @@ class TableAssignmentService:
                 # Swap tables between matches
                 occupying_match.table_assignment = old_table
                 # Ensure occupying match status is correct if it now has a table
-                if (occupying_match.status or MatchStatus.PENDING.value) != MatchStatus.PLAYING.value:
+                if (
+                    occupying_match.status or MatchStatus.PENDING.value
+                ) != MatchStatus.PLAYING.value:
                     try:
                         MatchService.to_playing(occupying_match.id)
                     except Exception:
@@ -481,17 +527,24 @@ class TableAssignmentService:
                 # No old_table to swap - would evict occupying match
                 # Business Rule: Cannot evict a match that has started (has racks)
                 if occupying_has_racks:
-                    return False, (
-                        f"Il tavolo '{new_table}' è occupato da una partita già iniziata. "
-                        f"Per scambiare, il tuo match deve già avere un tavolo assegnato."
-                    ), None
+                    return (
+                        False,
+                        (
+                            f"Il tavolo '{new_table}' è occupato da una "
+                            "partita già iniziata. Per scambiare, il tuo "
+                            "match deve già avere un tavolo assegnato."
+                        ),
+                        None,
+                    )
 
                 occupying_match.table_assignment = None
                 occupying_match.started_at = None  # Reset since no racks
                 # Eviction: caller is reassigning a specific table; don't
                 # let the evicted match grab another free table behind the
                 # caller's back. The director can manually reassign later.
-                RackService.reset_match_complete(occupying_match.id, auto_assign_table=False)
+                RackService.reset_match_complete(
+                    occupying_match.id, auto_assign_table=False
+                )
 
             match.table_assignment = new_table
             if (match.status or MatchStatus.PENDING.value) != MatchStatus.PLAYING.value:

@@ -457,32 +457,27 @@ class AdvancedRoundManager:
         )
 
         for round_num in range(affected_round, max_round + 1):
-            try:
-                # Delete existing classification for this round
-                RoundClassification.query.filter_by(
-                    gara_id=gara_id, round_number=round_num
-                ).delete()
+            # Rimuovi la classifica esistente del round prima di ricalcolare: il
+            # recalc fa upsert dai Match ma NON elimina i giocatori che dopo il
+            # reset non hanno più match qualificati, quindi la delete preventiva
+            # pulisce le righe stale.
+            RoundClassification.query.filter_by(
+                gara_id=gara_id, round_number=round_num
+            ).delete()
 
-                # Recalculate classification
-                classification = RoundClassificationService.get_round_standings(
-                    gara_id, round_num
-                )
-
-                # Save new classification
-                for i, player_data in enumerate(classification, 1):
-                    new_classification = RoundClassification(
-                        gara_id=gara_id,
-                        round_number=round_num,
-                        user_id=player_data["user_id"],
-                        position=i,
-                        matches_won=player_data.get("matches_won", 0),
-                        rack_difference=player_data.get("rack_difference", 0),
-                        points=player_data.get("points", 0),
-                    )
-                    db.session.add(new_classification)
-
-            except Exception as e:
-                print(f"Error recalculating classification for round {round_num}: {e}")
+            # Ricalcola dai risultati dei match. NB: la vecchia implementazione
+            # chiamava get_round_standings (che riquery la RoundClassification
+            # appena SVUOTATA → sempre vuota) e trattava gli oggetti ORM come
+            # dict (player_data["user_id"]) → TypeError ingoiato dal bare except,
+            # lasciando la gara senza classifica. Il metodo canonico aggrega
+            # invece dai Match e fa create/update idempotente.
+            #
+            # Nessun try/except: un errore deve propagarsi al @transactional del
+            # chiamante (reset_match_with_validation) e fare rollback, invece di
+            # committare le delete e segnalare comunque "successo".
+            RoundClassificationService.calculate_and_save_round_classification(
+                gara_id, round_num
+            )
 
     @staticmethod
     def _update_round_progression_after_reset(

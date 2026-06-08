@@ -37,7 +37,7 @@
                                     <td>
                                         <form method="POST" action="{{ url_for('main.reset_database_confirm') }}" 
                                               style="display: inline-block;"
-                                              onsubmit="return confirmReset('{{ reset_data.name }}')">
+                                              onsubmit='return confirmReset({{ reset_data.name|tojson }})'>
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                             <input type="hidden" name="reset_type" value="{{ reset_id }}">
                                             <input type="hidden" name="password" id="password-{{ reset_id }}">

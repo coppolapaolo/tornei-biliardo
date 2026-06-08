@@ -122,7 +122,9 @@ class MatchService:
 
         gara = match.gara
         if not gara:
-            raise ValueError("Match senza gara associata non supportato per update_times")
+            raise ValueError(
+                "Match senza gara associata non supportato per update_times"
+            )
 
         gara_date = gara.date
         gara_time = gara.time or datetime_time(0, 0)
@@ -380,6 +382,22 @@ class MatchService:
                             "admin_id": admin_id,
                         }
                     )
+                else:
+                    # Tipo di correzione sconosciuto: senza questo ramo la
+                    # correzione veniva silenziosamente saltata e overall_success
+                    # restava True (l'admin credeva di aver applicato la modifica).
+                    error_msg = (
+                        f"Match {match_id}: tipo di correzione sconosciuto "
+                        f"'{correction_type}', nessuna modifica applicata"
+                    )
+                    errors.append(error_msg)
+                    results.append(
+                        {
+                            "match_id": match_id,
+                            "success": False,
+                            "error": error_msg,
+                        }
+                    )
 
             except Exception as e:
                 error_msg = str(e)
@@ -421,18 +439,14 @@ class MatchService:
     # SIMPLIFIED UX - Delegates to ScoringService
     # ---------------------------------------
     @staticmethod
-    def add_rack_for_player(
-        match_id: int, user_id: int, winner_id: int
-    ) -> Rack:
+    def add_rack_for_player(match_id: int, user_id: int, winner_id: int) -> Rack:
         """Add a rack won by specified player (delegates to ScoringService)."""
         from .scoring_service import ScoringService
 
         return ScoringService.add_rack_for_player(match_id, user_id, winner_id)
 
     @staticmethod
-    def remove_rack_for_player(
-        match_id: int, user_id: int, player_id: int
-    ) -> None:
+    def remove_rack_for_player(match_id: int, user_id: int, player_id: int) -> None:
         """Remove last rack won by specified player (delegates to ScoringService)."""
         from .scoring_service import ScoringService
 
@@ -470,6 +484,7 @@ class MatchService:
         # Se il match è completato, libera e riassegna il tavolo
         if is_completed and match.table_assignment:
             from models.match.table_assignment_service import TableAssignmentService
+
             TableAssignmentService.release_and_reassign_table(match.id)
             # Sincronizza l'oggetto match locale
             match.table_assignment = None
@@ -543,7 +558,10 @@ class MatchService:
         # Check if match is already complete
         match_winning_sets = match.match_distance or 1
         if match.distance_config.is_race_to_sets:
-            if match.player1_score >= match_winning_sets or match.player2_score >= match_winning_sets:
+            if (
+                match.player1_score >= match_winning_sets
+                or match.player2_score >= match_winning_sets
+            ):
                 raise ValueError("Match già completato")
         else:
             total_sets = match.player1_score + match.player2_score
@@ -598,7 +616,8 @@ class MatchService:
             The newly created SetRack
 
         Raises:
-            ValueError: If match not found, not multi-set, no active set, or winner invalid
+            ValueError: If match not found, not multi-set, no active set, or
+                winner invalid
         """
         match = db.session.get(Match, match_id)
         if not match:

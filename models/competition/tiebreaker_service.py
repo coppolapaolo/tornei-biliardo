@@ -18,6 +18,7 @@ from models.transaction.manager import transactional
 @dataclass
 class TiedPosition:
     """Represents a tie at a specific position."""
+
     position: int
     player_ids: List[int]
     matches_won: int
@@ -52,15 +53,19 @@ class TiebreakerService:
 
         # Get final round classification - use max(Match.round_number) to handle
         # Random strategy where all rounds are created at startup
-        final_round = db.session.query(func.max(Match.round_number)).filter(
-            Match.gara_id == gara_id
-        ).scalar() or gara.current_round
+        final_round = (
+            db.session.query(func.max(Match.round_number))
+            .filter(Match.gara_id == gara_id)
+            .scalar()
+            or gara.current_round
+        )
         if final_round == 0:
             return []
 
         classifications = (
-            RoundClassification.query
-            .filter_by(gara_id=gara_id, round_number=final_round)
+            RoundClassification.query.filter_by(
+                gara_id=gara_id, round_number=final_round
+            )
             .order_by(RoundClassification.position)
             .all()
         )
@@ -85,13 +90,17 @@ class TiebreakerService:
             if len(player_ids) > 1:
                 position = position_map[key]
                 # Only include if any tied position is <= tiebreaker_until_position
-                if position <= gara.tiebreaker_until_position:
-                    ties.append(TiedPosition(
-                        position=position,
-                        player_ids=player_ids,
-                        matches_won=key[0],
-                        rack_difference=key[1]
-                    ))
+                # (`or 3`: guardia NULL coerente con gli altri siti — un record
+                # legacy con tiebreaker_until_position=NULL darebbe int <= None)
+                if position <= (gara.tiebreaker_until_position or 3):
+                    ties.append(
+                        TiedPosition(
+                            position=position,
+                            player_ids=player_ids,
+                            matches_won=key[0],
+                            rack_difference=key[1],
+                        )
+                    )
 
         # Sort by position
         ties.sort(key=lambda t: t.position)
@@ -131,7 +140,7 @@ class TiebreakerService:
             "until_position": gara.tiebreaker_until_position,
             "mode": gara.tiebreaker_mode,
             "challenge_id": gara.tiebreaker_challenge_id,
-            "challenge": None
+            "challenge": None,
         }
 
         if gara.tiebreaker_challenge:
@@ -145,10 +154,7 @@ class TiebreakerService:
     @staticmethod
     @transactional(domain="competition")
     def create_playoff_match(
-        gara_id: int,
-        player1_id: int,
-        player2_id: int,
-        for_position: int
+        gara_id: int, player1_id: int, player2_id: int, for_position: int
     ):
         """Create a playoff match for tiebreaker.
 
@@ -192,9 +198,7 @@ class TiebreakerService:
     @staticmethod
     @transactional(domain="competition")
     def create_challenge_tiebreaker(
-        gara_id: int,
-        player_ids: List[int],
-        for_position: int
+        gara_id: int, player_ids: List[int], for_position: int
     ) -> List:
         """Create challenge attempts for all tied players.
 
@@ -226,7 +230,7 @@ class TiebreakerService:
                 user_id=player_id,
                 gara_id=gara_id,
                 round_number=gara.rounds_count + 1,  # Tiebreaker "round"
-                completed=False
+                completed=False,
             )
             db.session.add(attempt)
             attempts.append(attempt)
@@ -263,14 +267,12 @@ class TiebreakerService:
         # Check for existing tiebreaker matches
         tiebreaker_round = gara.rounds_count + 1
         tiebreaker_matches = Match.query.filter_by(
-            gara_id=gara_id,
-            round_number=tiebreaker_round
+            gara_id=gara_id, round_number=tiebreaker_round
         ).all()
 
         # Check for existing tiebreaker challenge attempts
         tiebreaker_attempts = ChallengeAttempt.query.filter_by(
-            gara_id=gara_id,
-            round_number=tiebreaker_round
+            gara_id=gara_id, round_number=tiebreaker_round
         ).all()
 
         # Calculate resolution status (VALIDATED also counts as finished)
@@ -286,7 +288,7 @@ class TiebreakerService:
                     "position": t.position,
                     "player_ids": t.player_ids,
                     "matches_won": t.matches_won,
-                    "rack_difference": t.rack_difference
+                    "rack_difference": t.rack_difference,
                 }
                 for t in ties
             ],
@@ -297,7 +299,7 @@ class TiebreakerService:
                     "player1_id": m.player1_id,
                     "player2_id": m.player2_id,
                     "status": m.status,
-                    "winner_id": m.winner_id
+                    "winner_id": m.winner_id,
                 }
                 for m in tiebreaker_matches
             ],
@@ -306,13 +308,13 @@ class TiebreakerService:
                     "id": a.id,
                     "user_id": a.user_id,
                     "completed": a.completed,
-                    "score": a.score
+                    "score": a.score,
                 }
                 for a in tiebreaker_attempts
             ],
             "resolved": (
-                (len(ties) == 0) or
-                (len(tiebreaker_matches) > 0 and all_matches_completed) or
-                (len(tiebreaker_attempts) > 0 and all_attempts_completed)
-            )
+                (len(ties) == 0)
+                or (len(tiebreaker_matches) > 0 and all_matches_completed)
+                or (len(tiebreaker_attempts) > 0 and all_attempts_completed)
+            ),
         }

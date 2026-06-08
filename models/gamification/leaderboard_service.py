@@ -18,7 +18,7 @@ from models.gamification.models import (
     StreakTracker,
     LeaderboardEntry,
     LeaderboardType,
-    StreakType
+    StreakType,
 )
 from models.gamification.xp_config import LEADERBOARD_CACHE_TTL
 
@@ -30,18 +30,16 @@ class LeaderboardService:
 
     @staticmethod
     def get_leaderboard(
-        leaderboard_type: LeaderboardType,
-        limit: int = 50,
-        force_refresh: bool = False
+        leaderboard_type: LeaderboardType, limit: int = 50, force_refresh: bool = False
     ) -> List[Dict[str, Any]]:
         """
         Get leaderboard rankings.
-        
+
         Args:
             leaderboard_type: Type of leaderboard to retrieve
             limit: Max number of entries
             force_refresh: Force recalculation ignoring cache
-            
+
         Returns:
             List of dicts with rank, user, score, etc.
         """
@@ -51,8 +49,7 @@ class LeaderboardService:
 
         # Query cached entries
         entries = (
-            LeaderboardEntry.query
-            .filter_by(leaderboard_type=leaderboard_type)
+            LeaderboardEntry.query.filter_by(leaderboard_type=leaderboard_type)
             .order_by(LeaderboardEntry.rank)
             .limit(limit)
             .all()
@@ -61,32 +58,33 @@ class LeaderboardService:
         # Transform to rich objects with user data
         results = []
         for entry in entries:
-            results.append({
-                "rank": entry.rank,
-                "user": entry.user,
-                "score": entry.score,
-                "trend": 0,  # Placeholder for trend (up/down)
-                "metadata": {}  # Placeholder for extra data
-            })
-            
+            results.append(
+                {
+                    "rank": entry.rank,
+                    "user": entry.user,
+                    "score": entry.score,
+                    "trend": 0,  # Placeholder for trend (up/down)
+                    "metadata": {},  # Placeholder for extra data
+                }
+            )
+
         return results
 
     @staticmethod
     def _is_cache_stale(leaderboard_type: LeaderboardType) -> bool:
         """Check if leaderboard cache needs refresh."""
         last_entry = (
-            LeaderboardEntry.query
-            .filter_by(leaderboard_type=leaderboard_type)
+            LeaderboardEntry.query.filter_by(leaderboard_type=leaderboard_type)
             .order_by(desc(LeaderboardEntry.calculated_at))
             .first()
         )
-        
+
         if not last_entry:
             return True
-            
+
         ttl = LEADERBOARD_CACHE_TTL.get(leaderboard_type.name, 3600)
         age = (utc_now() - last_entry.calculated_at).total_seconds()
-        
+
         return age > ttl
 
     @staticmethod
@@ -113,7 +111,9 @@ class LeaderboardService:
         # Save to DB — transaction managed by @transactional decorator
         if new_entries:
             db.session.add_all(new_entries)
-            logger.info(f"Updated {leaderboard_type.value} with {len(new_entries)} entries")
+            logger.info(
+                f"Updated {leaderboard_type.value} with {len(new_entries)} entries"
+            )
 
     @staticmethod
     def _calculate_xp_all_time() -> List[LeaderboardEntry]:
@@ -124,16 +124,18 @@ class LeaderboardService:
             .limit(100)
             .all()
         )
-        
+
         entries = []
         for rank, user_level in enumerate(results, 1):
-            entries.append(LeaderboardEntry(
-                leaderboard_type=LeaderboardType.XP_ALL_TIME,
-                user_id=user_level.user_id,
-                rank=rank,
-                score=user_level.total_xp,
-                calculated_at=utc_now()
-            ))
+            entries.append(
+                LeaderboardEntry(
+                    leaderboard_type=LeaderboardType.XP_ALL_TIME,
+                    user_id=user_level.user_id,
+                    rank=rank,
+                    score=user_level.total_xp,
+                    calculated_at=utc_now(),
+                )
+            )
         return entries
 
     @staticmethod
@@ -146,16 +148,18 @@ class LeaderboardService:
             .limit(100)
             .all()
         )
-        
+
         entries = []
         for rank, user_level in enumerate(results, 1):
-            entries.append(LeaderboardEntry(
-                leaderboard_type=LeaderboardType.LEVEL_HIGHEST,
-                user_id=user_level.user_id,
-                rank=rank,
-                score=user_level.current_level,
-                calculated_at=utc_now()
-            ))
+            entries.append(
+                LeaderboardEntry(
+                    leaderboard_type=LeaderboardType.LEVEL_HIGHEST,
+                    user_id=user_level.user_id,
+                    rank=rank,
+                    score=user_level.current_level,
+                    calculated_at=utc_now(),
+                )
+            )
         return entries
 
     @staticmethod
@@ -169,18 +173,20 @@ class LeaderboardService:
             .limit(100)
             .all()
         )
-        
+
         entries = []
         for rank, streak in enumerate(results, 1):
             # Only count significant streaks (>0)
             if streak.current_streak > 0:
-                entries.append(LeaderboardEntry(
-                    leaderboard_type=LeaderboardType.STREAK_CURRENT,
-                    user_id=streak.user_id,
-                    rank=rank,
-                    score=streak.current_streak,
-                    calculated_at=utc_now()
-                ))
+                entries.append(
+                    LeaderboardEntry(
+                        leaderboard_type=LeaderboardType.STREAK_CURRENT,
+                        user_id=streak.user_id,
+                        rank=rank,
+                        score=streak.current_streak,
+                        calculated_at=utc_now(),
+                    )
+                )
         return entries
 
     @staticmethod
@@ -193,22 +199,26 @@ class LeaderboardService:
             .limit(100)
             .all()
         )
-        
+
         entries = []
         for rank, streak in enumerate(results, 1):
             if streak.longest_streak > 0:
-                entries.append(LeaderboardEntry(
-                    leaderboard_type=LeaderboardType.STREAK_LONGEST,
-                    user_id=streak.user_id,
-                    rank=rank,
-                ))
+                entries.append(
+                    LeaderboardEntry(
+                        leaderboard_type=LeaderboardType.STREAK_LONGEST,
+                        user_id=streak.user_id,
+                        rank=rank,
+                        score=streak.longest_streak,
+                        calculated_at=utc_now(),
+                    )
+                )
         return entries
 
     @staticmethod
     def _calculate_elo_rating() -> List[LeaderboardEntry]:
         """Calculate Elo Rating Ranking."""
         from models.rating.models import PlayerRating, RatingSystem
-        
+
         results = (
             db.session.query(PlayerRating)
             .filter_by(rating_system=RatingSystem.ELO)
@@ -216,14 +226,16 @@ class LeaderboardService:
             .limit(100)
             .all()
         )
-        
+
         entries = []
         for rank, pr in enumerate(results, 1):
-            entries.append(LeaderboardEntry(
-                leaderboard_type=LeaderboardType.ELO_RATING,
-                user_id=pr.user_id,
-                rank=rank,
-                score=pr.rating_value,
-                calculated_at=utc_now()
-            ))
+            entries.append(
+                LeaderboardEntry(
+                    leaderboard_type=LeaderboardType.ELO_RATING,
+                    user_id=pr.user_id,
+                    rank=rank,
+                    score=pr.rating_value,
+                    calculated_at=utc_now(),
+                )
+            )
         return entries
