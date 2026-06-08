@@ -374,15 +374,27 @@ class ScoringService:
 
         The forfeiting player keeps their current score (racks already won).
         The winner receives at least the winning score (distance).
+
+        In modalità "esatto numero di rack" (single-set, is_race_to_racks=False)
+        il punteggio del vincitore è `racks - punteggio_perdente`: i rack non
+        giocati vanno al vincitore, così l'invariante p1+p2 == racks resta valida
+        (altrimenti winner=racks totali + rack del perdente → somma incoerente).
         """
+        distance = match.distance_config
+        exact_racks = not match.is_multi_set and not distance.is_race_to_racks
+
         if forfeit_player == 1:
-            # Player 1 forfeits - keep their score, ensure player 2 has winning score
-            if match.player2_score < winning_score:
+            # Player 1 forfeits - keep their score, winner = player 2
+            if exact_racks:
+                match.player2_score = distance.racks - match.player1_score
+            elif match.player2_score < winning_score:
                 match.player2_score = winning_score
             # Keep match.player1_score as-is (racks already won)
         else:
-            # Player 2 forfeits - keep their score, ensure player 1 has winning score
-            if match.player1_score < winning_score:
+            # Player 2 forfeits - keep their score, winner = player 1
+            if exact_racks:
+                match.player1_score = distance.racks - match.player2_score
+            elif match.player1_score < winning_score:
                 match.player1_score = winning_score
             # Keep match.player2_score as-is (racks already won)
 

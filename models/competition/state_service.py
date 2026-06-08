@@ -94,9 +94,15 @@ class StateService:
         from models.match.models import Match
         from models.status_enum import MatchStatus
 
-        pending_matches = Match.query.filter_by(gara_id=gara.id).filter(
-            Match.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value])  # type: ignore[attr-defined]
-        ).first()
+        pending_matches = (
+            Match.query.filter_by(gara_id=gara.id)
+            .filter(
+                Match.status.in_(  # type: ignore[attr-defined]
+                    [MatchStatus.PENDING.value, MatchStatus.PLAYING.value]
+                )
+            )
+            .first()
+        )
 
         if pending_matches:
             raise InvalidTransitionError("Match ancora in corso")
@@ -120,15 +126,23 @@ class StateService:
     @transactional(domain="competition")
     def complete(gara: Gara) -> Gara:
         """playing|awaiting_ssr → completed"""
-        StateService._require_one_of(gara, [GaraStatus.PLAYING, GaraStatus.AWAITING_SSR])
+        StateService._require_one_of(
+            gara, [GaraStatus.PLAYING, GaraStatus.AWAITING_SSR]
+        )
 
         # Check for pending or in-progress matches
         from models.match.models import Match
         from models.status_enum import MatchStatus
 
-        pending_matches = Match.query.filter_by(gara_id=gara.id).filter(
-            Match.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value])  # type: ignore[attr-defined]
-        ).first()
+        pending_matches = (
+            Match.query.filter_by(gara_id=gara.id)
+            .filter(
+                Match.status.in_(  # type: ignore[attr-defined]
+                    [MatchStatus.PENDING.value, MatchStatus.PLAYING.value]
+                )
+            )
+            .first()
+        )
 
         if pending_matches:
             raise InvalidTransitionError("Match ancora in corso")
@@ -148,8 +162,9 @@ class StateService:
         final_standings = None
 
         final_round_class = (
-            RoundClassification.query
-            .filter_by(gara_id=gara.id, round_number=gara.current_round)
+            RoundClassification.query.filter_by(
+                gara_id=gara.id, round_number=gara.current_round
+            )
             .order_by(RoundClassification.position.asc())
             .all()
         )
@@ -161,6 +176,24 @@ class StateService:
             if winner_classification.user:
                 winner_name = winner_classification.user.username
 
+            # Non designare un vincitore "torneo" se il 1° posto è in uno
+            # spareggio SSR ancora irrisolto. Le route gara chiamano
+            # detect_tiebreakers prima di complete(); il path campionato
+            # (terminate_campionato → complete) bypassa quel gate, e premieremmo
+            # con XP/achievement "vittoria torneo" un vincitore non ancora
+            # determinato. detect_tiebreakers ritorna solo i gruppi irrisolti.
+            if getattr(gara, "tiebreaker_enabled", False) and winner_id is not None:
+                from models.competition.spareggio_service import SpareggioService
+
+                unresolved = SpareggioService.detect_tiebreakers(gara.id)
+                winner_in_unresolved_tie = any(
+                    any(p.get("user_id") == winner_id for p in grp["players"])
+                    for grp in unresolved
+                )
+                if winner_in_unresolved_tie:
+                    winner_id = None
+                    winner_name = None
+
             # Build final standings
             final_standings = [
                 {
@@ -168,16 +201,14 @@ class StateService:
                     "user_id": rc.user_id,
                     "username": rc.user.username if rc.user else None,
                     "matches_won": rc.matches_won,
-                    "rack_difference": rc.rack_difference
+                    "rack_difference": rc.rack_difference,
                 }
                 for rc in final_round_class
             ]
 
         # Count participants
         total_participants = Inscription.query.filter_by(
-            gara_id=gara.id,
-            is_withdrawn=False,
-            is_waitlist=False
+            gara_id=gara.id, is_withdrawn=False, is_waitlist=False
         ).count()
 
         gara_name = gara.name or f"Gara {gara.number}"
@@ -189,7 +220,7 @@ class StateService:
             winner_name=winner_name,
             final_standings=final_standings,
             total_participants=total_participants,
-            total_rounds=gara.current_round
+            total_rounds=gara.current_round,
         )
         EventBus.publish(event)
 

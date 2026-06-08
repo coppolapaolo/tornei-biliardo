@@ -71,7 +71,7 @@ class QuestService:
         end_date: datetime,
         requirements: Dict[str, Any],
         xp_reward: Optional[int] = None,
-        badge_icon: Optional[str] = None
+        badge_icon: Optional[str] = None,
     ) -> Quest:
         """
         Create a new quest.
@@ -124,12 +124,14 @@ class QuestService:
             xp_reward=xp_reward,
             badge_icon=badge_icon,
             participant_count=0,
-            completion_count=0
+            completion_count=0,
         )
         db.session.add(quest)
         db.session.flush()
 
-        logger.info(f"Created quest '{name}' (type: {quest_type.value}, status: {status.value})")
+        logger.info(
+            f"Created quest '{name}' (type: {quest_type.value}, status: {status.value})"
+        )
         return quest
 
     @staticmethod
@@ -150,9 +152,11 @@ class QuestService:
         expired = 0
 
         # Activate upcoming quests
-        upcoming_quests = Quest.query.filter_by(status=QuestStatus.UPCOMING).filter(
-            Quest.start_date <= now
-        ).all()
+        upcoming_quests = (
+            Quest.query.filter_by(status=QuestStatus.UPCOMING)
+            .filter(Quest.start_date <= now)
+            .all()
+        )
 
         for quest in upcoming_quests:
             if now <= quest.end_date:
@@ -165,9 +169,11 @@ class QuestService:
                 logger.info(f"Quest '{quest.name}' expired (missed activation window)")
 
         # Expire active quests
-        active_quests = Quest.query.filter_by(status=QuestStatus.ACTIVE).filter(
-            Quest.end_date < now
-        ).all()
+        active_quests = (
+            Quest.query.filter_by(status=QuestStatus.ACTIVE)
+            .filter(Quest.end_date < now)
+            .all()
+        )
 
         for quest in active_quests:
             quest.status = QuestStatus.EXPIRED
@@ -274,10 +280,13 @@ class QuestService:
             raise ValueError(f"Quest {quest_id} not found")
 
         if quest.status != QuestStatus.ACTIVE:
-            raise ValueError(f"Quest '{quest.name}' is not active (status: {quest.status.value})")
+            raise ValueError(
+                f"Quest '{quest.name}' is not active (status: {quest.status.value})"
+            )
 
         # Skip gamification for admin users
         from models.user.models import User
+
         user = db.session.get(User, user_id)
         if user and user.is_admin:
             logger.debug(f"Skipping quest join for admin user {user_id}")
@@ -285,16 +294,17 @@ class QuestService:
 
         # Check existing participation
         existing = QuestParticipation.query.filter_by(
-            user_id=user_id,
-            quest_id=quest_id
+            user_id=user_id, quest_id=quest_id
         ).first()
 
         if existing:
             return existing, False
 
-        # Parse requirements to get target
+        # Parse requirements to get target. `or 100` (non solo default su chiave
+        # assente): un target falsy (0) renderebbe target_progress=0 e farebbe
+        # crashare i calcoli di percentuale con ZeroDivisionError.
         requirements = json.loads(quest.requirements)
-        target = requirements.get("target", 100)
+        target = requirements.get("target") or 100
 
         participation = QuestParticipation(
             user_id=user_id,
@@ -302,7 +312,7 @@ class QuestService:
             current_progress=0,
             target_progress=target,
             is_completed=False,
-            xp_awarded=0
+            xp_awarded=0,
         )
         db.session.add(participation)
 
@@ -315,9 +325,7 @@ class QuestService:
     @staticmethod
     @transactional(domain="gamification")
     def update_progress(
-        user_id: int,
-        quest_id: int,
-        progress_increment: int = 1
+        user_id: int, quest_id: int, progress_increment: int = 1
     ) -> Tuple[QuestParticipation, bool]:
         """
         Update player's progress on a quest.
@@ -334,8 +342,7 @@ class QuestService:
             ValueError: If not participating in quest
         """
         participation = QuestParticipation.query.filter_by(
-            user_id=user_id,
-            quest_id=quest_id
+            user_id=user_id, quest_id=quest_id
         ).first()
 
         if participation is None:
@@ -343,6 +350,7 @@ class QuestService:
 
         # Skip gamification for admin users
         from models.user.models import User
+
         user = db.session.get(User, user_id)
         if user and user.is_admin:
             logger.debug(f"Skipping quest progress update for admin user {user_id}")
@@ -390,24 +398,27 @@ class QuestService:
             xp_amount=quest.xp_reward,
             transaction_type=XPTransactionType.CHALLENGE_COMPLETION,
             reason=f"Completed quest: {quest.name}",
-            related_entities={"quest_id": quest.id, "quest_name": quest.name}
+            related_entities={"quest_id": quest.id, "quest_name": quest.name},
         )
 
         # Calculate completion percentage for event
         completion_percentage = (
             (quest.completion_count / quest.participant_count * 100)
-            if quest.participant_count > 0 else 0.0
+            if quest.participant_count > 0
+            else 0.0
         )
 
         # Emit event
-        EventBus.publish(QuestCompletedEvent(
-            user_id=participation.user_id,
-            quest_id=quest.id,
-            quest_name=quest.name,
-            quest_type=quest.quest_type.value,
-            xp_awarded=quest.xp_reward,
-            completion_percentage=completion_percentage
-        ))
+        EventBus.publish(
+            QuestCompletedEvent(
+                user_id=participation.user_id,
+                quest_id=quest.id,
+                quest_name=quest.name,
+                quest_type=quest.quest_type.value,
+                xp_awarded=quest.xp_reward,
+                completion_percentage=completion_percentage,
+            )
+        )
 
         logger.info(
             f"User {participation.user_id} completed quest '{quest.name}' "
@@ -419,9 +430,7 @@ class QuestService:
     @staticmethod
     @transactional(domain="gamification")
     def record_activity_for_quests(
-        user_id: int,
-        activity_type: str,
-        activity_count: int = 1
+        user_id: int, activity_type: str, activity_count: int = 1
     ) -> List[Tuple[Quest, bool]]:
         """
         Record activity that may progress multiple quests.
@@ -450,6 +459,7 @@ class QuestService:
         """
         # Skip gamification for admin users
         from models.user.models import User
+
         user = db.session.get(User, user_id)
         if user and user.is_admin:
             logger.debug(f"Skipping quest progress for admin user {user_id}")
@@ -469,8 +479,7 @@ class QuestService:
 
             # Get or create participation
             participation = QuestParticipation.query.filter_by(
-                user_id=user_id,
-                quest_id=quest.id
+                user_id=user_id, quest_id=quest.id
             ).first()
 
             if participation is None:
@@ -495,9 +504,7 @@ class QuestService:
 
     @staticmethod
     def get_user_quests(
-        user_id: int,
-        include_completed: bool = True,
-        active_only: bool = False
+        user_id: int, include_completed: bool = True, active_only: bool = False
     ) -> List[Dict[str, Any]]:
         """
         Get quests for a user with participation status.
@@ -529,8 +536,7 @@ class QuestService:
         results = []
         for quest in quests:
             participation = QuestParticipation.query.filter_by(
-                user_id=user_id,
-                quest_id=quest.id
+                user_id=user_id, quest_id=quest.id
             ).first()
 
             is_participating = participation is not None
@@ -539,21 +545,30 @@ class QuestService:
             if not include_completed and is_completed:
                 continue
 
-            # Calculate progress
-            if participation:
-                progress_percentage = min(100.0, (
-                    participation.current_progress / participation.target_progress * 100
-                ))
+            # Calculate progress (guardia: target_progress legacy può essere 0)
+            if participation and participation.target_progress:
+                progress_percentage = min(
+                    100.0,
+                    (
+                        participation.current_progress
+                        / participation.target_progress
+                        * 100
+                    ),
+                )
+            elif participation:
+                progress_percentage = 100.0
             else:
                 progress_percentage = 0.0
 
-            results.append({
-                "quest": quest,
-                "participation": participation,
-                "is_participating": is_participating,
-                "is_completed": is_completed,
-                "progress_percentage": round(progress_percentage, 1)
-            })
+            results.append(
+                {
+                    "quest": quest,
+                    "participation": participation,
+                    "is_participating": is_participating,
+                    "is_completed": is_completed,
+                    "progress_percentage": round(progress_percentage, 1),
+                }
+            )
 
         return results
 
@@ -589,32 +604,32 @@ class QuestService:
         quests_by_type = {}
         for quest_type in QuestType:
             type_participations = [
-                p for p in participations
-                if p.quest.quest_type == quest_type
+                p for p in participations if p.quest.quest_type == quest_type
             ]
             quests_by_type[quest_type.value] = {
                 "participated": len(type_participations),
-                "completed": sum(1 for p in type_participations if p.is_completed)
+                "completed": sum(1 for p in type_participations if p.is_completed),
             }
 
         # Recent completions
-        recent_completions = QuestParticipation.query.filter_by(
-            user_id=user_id,
-            is_completed=True
-        ).order_by(
-            QuestParticipation.completed_at.desc()
-        ).limit(5).all()
+        recent_completions = (
+            QuestParticipation.query.filter_by(user_id=user_id, is_completed=True)
+            .order_by(QuestParticipation.completed_at.desc())
+            .limit(5)
+            .all()
+        )
 
         return {
             "total_participated": total_participated,
             "total_completed": total_completed,
             "completion_rate": (
                 (total_completed / total_participated * 100)
-                if total_participated > 0 else 0.0
+                if total_participated > 0
+                else 0.0
             ),
             "total_xp_earned": total_xp_earned,
             "quests_by_type": quests_by_type,
-            "recent_completions": [p.quest for p in recent_completions]
+            "recent_completions": [p.quest for p in recent_completions],
         }
 
     @staticmethod
@@ -640,24 +655,31 @@ class QuestService:
                 ...
             ]
         """
-        participations = QuestParticipation.query.filter_by(
-            quest_id=quest_id
-        ).order_by(
-            QuestParticipation.is_completed.desc(),
-            QuestParticipation.current_progress.desc(),
-            QuestParticipation.created_at.asc()
-        ).limit(limit).all()
+        participations = (
+            QuestParticipation.query.filter_by(quest_id=quest_id)
+            .order_by(
+                QuestParticipation.is_completed.desc(),
+                QuestParticipation.current_progress.desc(),
+                QuestParticipation.created_at.asc(),
+            )
+            .limit(limit)
+            .all()
+        )
 
         results = []
         for rank, participation in enumerate(participations, 1):
-            results.append({
-                "rank": rank,
-                "user_id": participation.user_id,
-                "username": participation.user.username if participation.user else "Unknown",
-                "progress": participation.current_progress,
-                "target": participation.target_progress,
-                "is_completed": participation.is_completed
-            })
+            results.append(
+                {
+                    "rank": rank,
+                    "user_id": participation.user_id,
+                    "username": (
+                        participation.user.username if participation.user else "Unknown"
+                    ),
+                    "progress": participation.current_progress,
+                    "target": participation.target_progress,
+                    "is_completed": participation.is_completed,
+                }
+            )
 
         return results
 
@@ -689,7 +711,11 @@ class QuestService:
         average_progress = 0.0
         if participations:
             total_progress_percentage = sum(
-                min(100.0, p.current_progress / p.target_progress * 100)
+                (
+                    min(100.0, p.current_progress / p.target_progress * 100)
+                    if p.target_progress
+                    else 100.0
+                )
                 for p in participations
             )
             average_progress = total_progress_percentage / len(participations)
@@ -704,9 +730,10 @@ class QuestService:
             "completion_count": quest.completion_count,
             "completion_rate": (
                 (quest.completion_count / quest.participant_count * 100)
-                if quest.participant_count > 0 else 0.0
+                if quest.participant_count > 0
+                else 0.0
             ),
             "average_progress": round(average_progress, 1),
             "time_remaining": time_remaining,
-            "is_expired": is_expired
+            "is_expired": is_expired,
         }

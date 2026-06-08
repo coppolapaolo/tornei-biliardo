@@ -704,10 +704,12 @@ class InscriptionService:
         if not gara:
             return False
 
-        # Conta le iscrizioni attive (escludi lista d'attesa)
+        # Conta le iscrizioni attive (escludi lista d'attesa E ritirati, coerente
+        # con la definizione canonica di "iscrizione attiva": is_withdrawn=False,
+        # is_waitlist=False — vedi models/CLAUDE.md "Filtering Active Inscriptions")
         active_inscriptions = (
             db.session.query(Inscription)
-            .filter_by(gara_id=gara_id, is_waitlist=False)
+            .filter_by(gara_id=gara_id, is_withdrawn=False, is_waitlist=False)
             .count()
         )
 

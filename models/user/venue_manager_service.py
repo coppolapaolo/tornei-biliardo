@@ -6,7 +6,7 @@ following Task 1.3 decomposition patterns.
 """
 
 from typing import Optional, List
-from models.base import db
+from models.base import db, utc_now
 from models.user.models import User, VenueManagerRequest, VenueManagement
 from models.user.role_enum import UserRole
 from models.status_enum import VenueManagerRequestStatus
@@ -173,6 +173,7 @@ class VenueManagerService:
         if approve:
             request.status = VenueManagerRequestStatus.APPROVED.value
             request.processed_by_id = admin_user.id
+            request.processed_at = utc_now()
             request.notes = notes
 
             # Create venue management relationship upon approval
@@ -200,6 +201,7 @@ class VenueManagerService:
         else:
             request.status = VenueManagerRequestStatus.REJECTED.value
             request.processed_by_id = admin_user.id
+            request.processed_at = utc_now()
             request.notes = notes
 
             # Publish event for venue manager request rejected
