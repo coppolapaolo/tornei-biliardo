@@ -379,31 +379,41 @@ class ScoringService:
         il punteggio del vincitore è `racks - punteggio_perdente`: i rack non
         giocati vanno al vincitore, così l'invariante p1+p2 == racks resta valida
         (altrimenti winner=racks totali + rack del perdente → somma incoerente).
+
+        Lo score del perdente viene SEMPRE normalizzato a int (mai None): un
+        record legacy con score NULL romperebbe le stringhe punteggio ("None-6")
+        e la classificazione, che somma player*_score direttamente senza `or 0`
+        (models/classification/models.py).
         """
         distance = match.distance_config
         exact_racks = not match.is_multi_set and not distance.is_race_to_racks
 
         if forfeit_player == 1:
-            # Player 1 forfeits - keep their score, winner = player 2
+            # Player 1 forfeits (loser).
             if exact_racks:
-                # `or 0`: lo score può essere None su record legacy (colonna non
-                # NOT NULL). max(0, ...): clamp difensivo se i dati sono
-                # incoerenti (perdente con più rack del totale).
-                match.player2_score = max(
-                    0, distance.racks - (match.player1_score or 0)
+                # Clampa il perdente a [0, racks] e deriva il vincitore come
+                # differenza: mantiene p1+p2 == racks anche con record legacy
+                # incoerenti (None, negativi, o score > racks).
+                match.player1_score = min(
+                    max(match.player1_score or 0, 0), distance.racks
                 )
-            elif match.player2_score < winning_score:
-                match.player2_score = winning_score
-            # Keep match.player1_score as-is (racks already won)
+                match.player2_score = distance.racks - match.player1_score
+            else:
+                # Race-to: il perdente tiene i rack già vinti (normalizzati a int).
+                match.player1_score = match.player1_score or 0
+                if (match.player2_score or 0) < winning_score:
+                    match.player2_score = winning_score
         else:
-            # Player 2 forfeits - keep their score, winner = player 1
+            # Player 2 forfeits (loser).
             if exact_racks:
-                match.player1_score = max(
-                    0, distance.racks - (match.player2_score or 0)
+                match.player2_score = min(
+                    max(match.player2_score or 0, 0), distance.racks
                 )
-            elif match.player1_score < winning_score:
-                match.player1_score = winning_score
-            # Keep match.player2_score as-is (racks already won)
+                match.player1_score = distance.racks - match.player2_score
+            else:
+                match.player2_score = match.player2_score or 0
+                if (match.player1_score or 0) < winning_score:
+                    match.player1_score = winning_score
 
     @staticmethod
     def _validate_rack_addition(match: Match, winner_id: int) -> None:
