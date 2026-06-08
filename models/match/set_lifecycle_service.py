@@ -51,7 +51,10 @@ class SetLifecycleService:
             match_id=match.id,
             set_number=match.current_set_number,
             distance=distance,
-            is_race_to=True,
+            # Modalità rack-per-set: rispetta l'override del match (ADR-027),
+            # non hardcodare race-to. In modalità "esatto numero di rack" il
+            # set va giocato fino in fondo, non chiuso al primo a `distance`.
+            is_race_to=match.effective_is_race_to,
         )
 
         db.session.add(new_set)
@@ -77,7 +80,9 @@ class SetLifecycleService:
         ).first()
 
     @staticmethod
-    def complete_set(match: "Match", set_number: int, winner_id: int) -> None:  # pyright: ignore[reportUnusedParameter]
+    def complete_set(
+        match: "Match", set_number: int, winner_id: int
+    ) -> None:  # pyright: ignore[reportUnusedParameter]
         """Complete a set and check if match is finished.
 
         Updates match scores (sets won) and either completes the match
@@ -101,16 +106,36 @@ class SetLifecycleService:
         else:
             raise ValueError("Winner must be one of the match players")
 
-        if match.player1_score >= match.match_distance:
-            match.winner_id = match.player1_id
-            from .state_service import MatchStateService
-            MatchStateService.to_completed(match.id)
-        elif match.player2_score >= match.match_distance:
-            match.winner_id = match.player2_id
-            from .state_service import MatchStateService
-            MatchStateService.to_completed(match.id)
+        # ADR-027: leggi la configurazione effettiva (override match ∨ default
+        # gara) tramite il Distance VO, non `match.match_distance` grezzo.
+        from .state_service import MatchStateService
+
+        distance = match.distance_config
+
+        if distance.is_race_to_sets:
+            # Race-to-N-set: vince chi raggiunge per primo la soglia di set.
+            winning_sets = distance.get_winning_sets()
+            if match.player1_score >= winning_sets:
+                match.winner_id = match.player1_id
+                MatchStateService.to_completed(match.id)
+            elif match.player2_score >= winning_sets:
+                match.winner_id = match.player2_id
+                MatchStateService.to_completed(match.id)
+            else:
+                match.current_set_number += 1
         else:
-            match.current_set_number += 1
+            # Esatto numero di set: si giocano TUTTI i set, poi vince chi ne ha
+            # vinti di più. Non chiudere al raggiungimento della soglia.
+            total_sets = match.player1_score + match.player2_score
+            if total_sets >= distance.get_winning_sets():
+                if match.player1_score > match.player2_score:
+                    match.winner_id = match.player1_id
+                elif match.player2_score > match.player1_score:
+                    match.winner_id = match.player2_id
+                # else: parità di set (numero pari) → nessun vincitore
+                MatchStateService.to_completed(match.id)
+            else:
+                match.current_set_number += 1
 
 
 __all__ = ["SetLifecycleService"]
