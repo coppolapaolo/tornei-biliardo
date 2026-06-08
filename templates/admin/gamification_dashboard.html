@@ -84,7 +84,7 @@
                         </td>
                         <td>
                             <button class="btn btn-sm btn-outline-primary"
-                                onclick="viewFeatureJSON('{{ feature.code }}', {{ feature.rules|tojson }})">
+                                onclick='viewFeatureJSON({{ feature.code|tojson }}, {{ feature.rules|tojson }})'>
                                 <i class="fas fa-code"></i> JSON
                             </button>
                         </td>

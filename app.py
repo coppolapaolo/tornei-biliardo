@@ -42,6 +42,7 @@ def create_app(config_name=None):
     if dsn:
         import sentry_sdk
         from sentry_sdk.integrations.flask import FlaskIntegration
+
         sentry_sdk.init(
             dsn=dsn,
             integrations=[FlaskIntegration()],
@@ -53,26 +54,29 @@ def create_app(config_name=None):
     if config_name == "development":
         logging.basicConfig(
             level=logging.INFO,
-            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+            format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         )
         # Abilita logging per i nostri moduli
-        logging.getLogger(
-            'models.match.table_assignment_service'
-        ).setLevel(logging.INFO)
-        logging.getLogger('routes.admin.match').setLevel(logging.INFO)
+        logging.getLogger("models.match.table_assignment_service").setLevel(
+            logging.INFO
+        )
+        logging.getLogger("routes.admin.match").setLevel(logging.INFO)
 
     # Inizializza estensioni
     db.init_app(app)
     from models.base import mail
+
     if mail:
         mail.init_app(app)
 
     # CSRF protection
     from flask_wtf.csrf import CSRFProtect
+
     csrf = CSRFProtect(app)  # noqa: F841
 
     # Rate limiting
     from utils.rate_limiter import limiter
+
     limiter.init_app(app)
 
     register_soft_delete_filters(SASession)
@@ -148,7 +152,7 @@ def create_app(config_name=None):
             from models.notification.models import Notification, NotificationStatus
 
             # Check if already computed during this request
-            if not hasattr(g, 'unread_notifications_count'):
+            if not hasattr(g, "unread_notifications_count"):
                 g.unread_notifications_count = Notification.query.filter_by(
                     user_id=current_user.id, status=NotificationStatus.PENDING
                 ).count()
@@ -176,9 +180,11 @@ def create_app(config_name=None):
         stats = None
         if current_user.is_authenticated:
             from flask import g
-            if not hasattr(g, '_gamification_progress'):
+
+            if not hasattr(g, "_gamification_progress"):
                 try:
                     from models.gamification.level_service import LevelService
+
                     g._gamification_progress = LevelService.get_level_progress(
                         current_user.id
                     )
@@ -269,13 +275,17 @@ def create_app(config_name=None):
     from models.gamification import (  # noqa: F401, F811
         event_handlers as _gamification_eh,
     )
+
     # Register rating event handlers
     from models.rating import event_handlers as _rating_eh  # noqa: F401, F811
+
     # Register gamification notification handlers
     # Creates notifications for level ups, achievements, streaks, quests
     from models.gamification import notification_handlers  # noqa: F401
+
     # Register SSE bridge - routes domain events to SSE for real-time updates
     from routes import sse_bridge  # noqa: F401
+
     # Register gamification frontend bridge - pipes events to flash messages for UI
     from models.gamification import frontend_bridge  # noqa: F401
 
@@ -286,6 +296,7 @@ def create_app(config_name=None):
             create_admin_if_not_exists()
             # Seed gamification achievements (idempotent)
             from models.gamification.achievement_seeds import seed_achievements
+
             created, skipped = seed_achievements(db.session)
             if created > 0:
                 app.logger.info(f"Gamification: seeded {created} achievements")
@@ -313,11 +324,16 @@ def create_app(config_name=None):
     @app.route("/health")
     def health():
         from sqlalchemy import text
+
         try:
             db.session.execute(text("SELECT 1"))
             return jsonify(status="healthy", version=app.config["VERSION"]), 200
         except Exception as e:
-            return jsonify(status="unhealthy", error=str(e)), 503
+            # Non esporre str(e) nel JSON: /health è pubblico (probe anonimo) e
+            # l'eccezione DB rivelerebbe path file/dettagli driver. Logga lato
+            # server, restituisci un messaggio generico.
+            app.logger.error(f"Health check failed: {e}")
+            return jsonify(status="unhealthy"), 503
 
     # Custom error pages
     from flask_wtf.csrf import CSRFError
