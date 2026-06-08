@@ -60,6 +60,11 @@ class TestForfeitExactModeNullScore:
         ScoringService._apply_forfeit_scores(match, forfeit_player=1, winning_score=6)
         assert match.player2_score == 6
         assert match.player2_score >= 0
+        # Lo score del perdente NON deve restare None (romperebbe le stringhe
+        # punteggio e la classificazione che somma player*_score senza `or 0`).
+        assert match.player1_score == 0
+        # Invariante p1 + p2 == racks
+        assert match.player1_score + match.player2_score == 6
 
 
 class TestFreeTablesDedup:
