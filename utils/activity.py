@@ -34,6 +34,21 @@ def touch_user_activity(
 
     try:
         user.last_active_at = now
+        # NOTA: commit manuale *intenzionale*, eccezione documentata alla regola
+        # "niente db.session.commit() a mano / usa @transactional".
+        # Perché NON @transactional qui:
+        #   1) È un effetto collaterale "best-effort" dentro un hook
+        #      before_request: se fallisce NON deve far fallire la richiesta.
+        #      @transactional ri-solleva l'eccezione (manager.py: `raise` dopo il
+        #      rollback) → un intoppo sul timestamp diventerebbe un 500 sulla
+        #      pagina. Qui invece l'errore viene ingoiato di proposito.
+        #   2) C'è una sola sessione per richiesta: @transactional farebbe
+        #      comunque commit() sulla stessa sessione, quindi non isolerebbe il
+        #      commit dallo stato in sospeso — non risolverebbe nulla.
+        # Sicurezza: questo è l'ULTIMO before_request e i precedenti
+        # (enforce_endpoint_allowlist / enforce_onboarding) sono read-only, quindi
+        # alla commit non c'è altro stato applicativo in sospeso. Se in futuro si
+        # aggiunge un before_request che SCRIVE prima di questo, va rivalutato.
         db.session.commit()
         return True
     except Exception:
