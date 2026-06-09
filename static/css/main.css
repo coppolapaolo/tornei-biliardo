@@ -111,3 +111,34 @@
         font-size: 1.2rem;
     }
 }
+
+/* Live "in diretta" pulsing dot (homepage live section) */
+.live-dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-right: 6px;
+    border-radius: 50%;
+    background-color: #dc3545;
+    vertical-align: middle;
+    box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+    animation: live-pulse 1.5s infinite;
+}
+
+.live-dot-sm {
+    width: 8px;
+    height: 8px;
+    margin-right: 4px;
+    background-color: #fff;
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+}
+
+@keyframes live-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.6); }
+    70% { box-shadow: 0 0 0 8px rgba(220, 53, 69, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .live-dot { animation: none; }
+}
