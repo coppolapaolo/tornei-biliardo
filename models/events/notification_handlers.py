@@ -230,19 +230,40 @@ class NotificationEventHandlers:
         event: VenueManagerRequestProcessedEvent,
     ) -> None:
         """Handle venue manager request processed by notifying the requester."""
+        contact_admin = " Per maggiori informazioni, contatta l'amministratore."
         try:
             if event.status == "approved":
                 title = f"Richiesta Gestore '{event.venue_name}' Approvata"
-                message = f"Congratulazioni! La tua richiesta di gestire la sede '{event.venue_name}' è stata approvata."
+                message = (
+                    f"Congratulazioni! La tua richiesta di gestire la sede "
+                    f"'{event.venue_name}' è stata approvata."
+                )
                 if event.notes:
                     message += f" Note: {event.notes}"
                 priority = NotificationPriority.HIGH
-            else:  # rejected
-                title = f"Richiesta Gestore '{event.venue_name}' Rifiutata"
-                message = f"La tua richiesta di gestire la sede '{event.venue_name}' è stata rifiutata."
+            elif event.status == "revoked":
+                # Revoca di una gestione già attiva (non un rifiuto di richiesta):
+                # VenueManagerService.revoke_venue_manager pubblica
+                # status="revoked". Prima cadeva nell'else "rejected" → messaggio
+                # fuorviante "richiesta ... rifiutata".
+                title = f"Gestione Sede '{event.venue_name}' Revocata"
+                message = (
+                    f"La gestione della sede '{event.venue_name}' ti è stata "
+                    f"revocata."
+                )
                 if event.notes:
                     message += f" Motivo: {event.notes}"
-                message += " Per maggiori informazioni, contatta l'amministratore."
+                message += contact_admin
+                priority = NotificationPriority.NORMAL
+            else:  # rejected
+                title = f"Richiesta Gestore '{event.venue_name}' Rifiutata"
+                message = (
+                    f"La tua richiesta di gestire la sede '{event.venue_name}' "
+                    f"è stata rifiutata."
+                )
+                if event.notes:
+                    message += f" Motivo: {event.notes}"
+                message += contact_admin
                 priority = NotificationPriority.NORMAL
 
             NotificationService.create_notification(
@@ -260,7 +281,8 @@ class NotificationEventHandlers:
                 },
             )
             logger.info(
-                f"Sent venue manager request {event.status} notification to user {event.user_id}"
+                f"Sent venue manager request {event.status} notification "
+                f"to user {event.user_id}"
             )
         except Exception as e:
             logger.error(
