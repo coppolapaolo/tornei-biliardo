@@ -221,35 +221,39 @@ class MemoryCacheBackend(CacheBackend):
             return len(keys_to_remove)
 
     def _evict_entries(self) -> None:
-        """Evict entries based on strategy."""
-        if self.strategy == CacheStrategy.LRU:
-            # Remove least recently used (first item)
-            self._cache.popitem(last=False)
-        elif self.strategy == CacheStrategy.LFU:
+        """Evict entries based on strategy.
+
+        Garantisce la rimozione di almeno un'entry quando la cache è piena
+        (altrimenti L2 crescerebbe oltre max_size). `evictions` viene
+        incrementato del numero REALE di entry rimosse, non sempre di 1.
+        """
+        removed = 0
+
+        if self.strategy == CacheStrategy.LFU:
             # Remove least frequently used
-            min_access_key = min(
-                self._cache.keys(), key=lambda k: self._cache[k].access_count
-            )
-            del self._cache[min_access_key]
-        elif self.strategy == CacheStrategy.FIFO:
-            # Remove first in, first out
-            self._cache.popitem(last=False)
-        elif self.strategy == CacheStrategy.TTL:
-            # Remove expired entries first, then oldest
+            if self._cache:
+                min_access_key = min(
+                    self._cache.keys(), key=lambda k: self._cache[k].access_count
+                )
+                del self._cache[min_access_key]
+                removed = 1
+        elif self.strategy in (CacheStrategy.TTL, CacheStrategy.HYBRID):
+            # Rimuovi prima le entry scadute. HYBRID combina TTL con LRU come
+            # fallback (prima il difetto: nessun ramo HYBRID → nessuna
+            # rimozione, ma evictions incrementato → L2 illimitata).
             expired_keys = [
                 key for key, entry in self._cache.items() if entry.is_expired
             ]
-            if expired_keys:
-                for key in expired_keys:
-                    del self._cache[key]
-            else:
-                # Remove oldest if no expired entries
-                oldest_key = min(
-                    self._cache.keys(), key=lambda k: self._cache[k].created_at
-                )
-                del self._cache[oldest_key]
+            for key in expired_keys:
+                del self._cache[key]
+            removed = len(expired_keys)
 
-        self._stats.evictions += 1
+        # LRU / FIFO, e fallback per TTL/HYBRID senza scadute: rimuovi l'oldest.
+        if removed == 0 and self._cache:
+            self._cache.popitem(last=False)
+            removed = 1
+
+        self._stats.evictions += removed
 
     def _update_stats(self) -> None:
         """Update cache statistics."""
@@ -295,8 +299,18 @@ class HierarchicalCacheManager:
         """Add cache invalidation rule."""
         self._invalidation_rules[pattern] = tags
 
-    def get(self, key: str, levels: Optional[List[CacheLevel]] = None) -> Optional[Any]:
-        """Get value from cache hierarchy."""
+    def get(
+        self,
+        key: str,
+        levels: Optional[List[CacheLevel]] = None,
+        default: Any = None,
+    ) -> Any:
+        """Get value from cache hierarchy.
+
+        Ritorna ``default`` (None di norma) su miss. Per distinguere un valore
+        memorizzato ``None`` da un miss, passare un sentinel come ``default``
+        (vedi il decorator ``cached``).
+        """
         if levels is None:
             levels = list(self._levels.keys())
 
@@ -315,7 +329,7 @@ class HierarchicalCacheManager:
                 return entry.value
 
         logger.debug(f"Cache miss for key {key}")
-        return None
+        return default
 
     def set(
         self,
@@ -426,6 +440,9 @@ class HierarchicalCacheManager:
                 backend.set(entry)
 
 
+# Sentinel per distinguere un valore memorizzato None da un cache miss.
+_CACHE_MISS = object()
+
 # Global cache manager instance
 cache_manager = HierarchicalCacheManager()
 
@@ -458,9 +475,12 @@ def cached(
             else:
                 key = _generate_default_key(func.__name__, args, kwargs)
 
-            # Try to get from cache
-            cached_value = cache_manager.get(key, levels)
-            if cached_value is not None:
+            # Try to get from cache. Sentinel per distinguere un valore
+            # memorizzato None da un miss: senza, le funzioni cache-ate che
+            # ritornano None (es. get_player_ranking) venivano rieseguite ogni
+            # volta perché get() ritornava None sia per hit-None sia per miss.
+            cached_value = cache_manager.get(key, levels, default=_CACHE_MISS)
+            if cached_value is not _CACHE_MISS:
                 return cached_value
 
             # Execute function and cache result
@@ -531,10 +551,25 @@ def gara_cache_key(*args, **kwargs) -> str:
     return f"gara:{gara_id}"
 
 
+def gara_round_cache_key(*args, **kwargs) -> str:
+    """Generate cache key per dati di gara specifici di un turno.
+
+    Include round_number: usare il generator "gara" (solo gara_id) per funzioni
+    con round_number farebbe collidere tutti i turni sulla stessa chiave
+    (get_round_standings restituiva la classifica del primo turno cache-ato).
+    """
+    gara_id = kwargs.get("gara_id") or (args[0] if args else "unknown")
+    round_number = kwargs.get("round_number")
+    if round_number is None and len(args) > 1:
+        round_number = args[1]
+    return f"gara:{gara_id}:round:{round_number}"
+
+
 # Register key generators
 cache_manager.register_key_generator("campionato", campionato_cache_key)
 cache_manager.register_key_generator("user", user_cache_key)
 cache_manager.register_key_generator("gara", gara_cache_key)
+cache_manager.register_key_generator("gara_round", gara_round_cache_key)
 
 # Register invalidation rules
 cache_manager.add_invalidation_rule("campionato_*", ["campionato"])

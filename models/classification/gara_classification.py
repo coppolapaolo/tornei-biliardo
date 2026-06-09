@@ -23,7 +23,11 @@ class RoundClassificationService:
     """Service for managing round-by-round classifications with caching."""
 
     @staticmethod
-    @cached(ttl_seconds=900, tags=["classification", "gara"], key_generator="gara")
+    @cached(
+        ttl_seconds=900,
+        tags=["classification", "gara"],
+        key_generator="gara_round",
+    )
     def get_round_standings(
         gara_id: int, round_number: int
     ) -> List[RoundClassification]:
