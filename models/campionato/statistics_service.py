@@ -71,9 +71,6 @@ class TournamentStatisticsService:
         from models.competition.models import Gara, Inscription
         from sqlalchemy import func, distinct
 
-        # Trova tutte le gare del campionato
-        gare = db.session.query(Gara).filter_by(campionato_id=campionato_id).all()
-
         # Giocatori unici che hanno mai partecipato al campionato
         unique_players_query = (
             db.session.query(distinct(Inscription.user_id))
@@ -138,30 +135,48 @@ class TournamentStatisticsService:
             Dizionario user_id -> dati aggregati del giocatore
         """
         from models.classification.models import RoundClassification, GaraClassification
+        from sqlalchemy import tuple_
+        from sqlalchemy.orm import joinedload
 
         player_totals: Dict[int, Dict[str, Any]] = {}
+        if not garas:
+            return player_totals
 
-        for gara in garas:
-            # Ottieni la classifica finale di questa gara (ultimo turno)
-            final_round = gara.rounds_count
-            classifications = (
-                db.session.query(RoundClassification)
-                .filter_by(gara_id=gara.id, round_number=final_round)
-                .order_by(RoundClassification.position)
+        # N+1 fix (hot path homepage anonima): invece di una query
+        # RoundClassification + un lazy-load user PER OGNI gara, batcha tutto in
+        # un'unica query sulle coppie (gara_id, round-finale) con user eager.
+        final_round_by_gara = {g.id: g.rounds_count for g in garas}
+        rc_rows = (
+            db.session.query(RoundClassification)
+            .filter(
+                tuple_(
+                    RoundClassification.gara_id, RoundClassification.round_number
+                ).in_(list(final_round_by_gara.items()))
+            )
+            .options(joinedload(RoundClassification.user))
+            .order_by(RoundClassification.position)
+            .all()
+        )
+        rc_by_gara: Dict[int, List[Any]] = {}
+        for rc in rc_rows:
+            rc_by_gara.setdefault(rc.gara_id, []).append(rc)
+
+        # SSR (Random): un'unica query GaraClassification per tutte le gare.
+        ssr_by_gara: Dict[int, Dict[int, int]] = {}
+        if campionato_type == MatchmakingStrategy.RANDOM.value:
+            gc_rows = (
+                db.session.query(GaraClassification)
+                .filter(GaraClassification.gara_id.in_(final_round_by_gara.keys()))
                 .all()
             )
-
-            # Per Random campionati, ottieni anche i punteggi SSR da GaraClassification
-            gara_ssr_scores: Dict[int, int] = {}
-            if campionato_type == MatchmakingStrategy.RANDOM.value:
-                gara_classifications = (
-                    db.session.query(GaraClassification)
-                    .filter_by(gara_id=gara.id)
-                    .all()
+            for gc in gc_rows:
+                ssr_by_gara.setdefault(gc.gara_id, {})[gc.user_id] = (
+                    gc.spot_shot_wins or 0
                 )
-                gara_ssr_scores = {
-                    gc.user_id: gc.spot_shot_wins or 0 for gc in gara_classifications
-                }
+
+        for gara in garas:
+            classifications = rc_by_gara.get(gara.id, [])
+            gara_ssr_scores = ssr_by_gara.get(gara.id, {})
 
             for classification in classifications:
                 user_id = classification.user_id
@@ -206,14 +221,8 @@ class TournamentStatisticsService:
                 10: 1,
             }
             for gara in garas:
-                final_round = gara.rounds_count
-                classifications = (
-                    db.session.query(RoundClassification)
-                    .filter_by(gara_id=gara.id, round_number=final_round)
-                    .order_by(RoundClassification.position)
-                    .all()
-                )
-                for classification in classifications:
+                # Riusa i dati già batch-caricati sopra (niente nuove query).
+                for classification in rc_by_gara.get(gara.id, []):
                     user_id = classification.user_id
                     if user_id in player_totals:
                         points = position_points.get(classification.position, 0)
@@ -266,7 +275,7 @@ class TournamentStatisticsService:
 
     @read_only(domain="campionato")
     def calculate_general_classification(self, campionato_id: int) -> List[tuple]:
-        """Calcola la classifica generale del campionato basata su tutte le gare completate.
+        """Classifica generale del campionato su tutte le gare completate.
 
         Include il calcolo del trend (previous_position) confrontando la classifica
         attuale con quella calcolata escludendo l'ultima gara completata.
@@ -279,7 +288,7 @@ class TournamentStatisticsService:
         if not campionato:
             return []
 
-        # Trova tutte le gare completate del campionato (incluse quelle "playing" ma finite)
+        # Tutte le gare completate del campionato (incl. "playing" ma finite)
         all_garas = (
             db.session.query(Gara)
             .filter_by(campionato_id=campionato_id)
@@ -329,7 +338,7 @@ class TournamentStatisticsService:
         result = []
         for position, user_id in current_ranking:
             data = player_totals[user_id]
-            # Aggiungi previous_position solo se il giocatore era nella classifica precedente
+            # previous_position solo se il giocatore era in classifica prima
             data["previous_position"] = previous_positions.get(user_id)
             result.append((position, data))
 
