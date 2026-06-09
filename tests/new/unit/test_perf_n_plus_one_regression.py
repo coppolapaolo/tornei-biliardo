@@ -11,7 +11,7 @@
 from __future__ import annotations
 
 import uuid
-from datetime import date, time
+from datetime import date, time, timedelta
 
 import pytest
 from sqlalchemy import event
@@ -37,7 +37,8 @@ class _QueryCounter:
         event.remove(db.engine, "before_cursor_execute", self._cb)
 
     def _cb(self, conn, cursor, statement, params, context, executemany):
-        if statement.lstrip().upper().startswith("SELECT"):
+        head = statement.lstrip().upper()
+        if head.startswith("SELECT") or head.startswith("WITH"):
             self.count += 1
 
 
@@ -58,7 +59,7 @@ def _make_campionato(suffix, n_gare, n_players=3):
         gara = Gara(
             number=gi + 1,
             name=f"G{gi}_{suffix}",
-            date=date(2026, 1, 1 + gi),
+            date=date(2026, 1, 1) + timedelta(days=gi),
             time=time(18, 0),
             discipline="palla_8",
             distance=5,

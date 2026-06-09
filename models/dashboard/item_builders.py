@@ -56,9 +56,10 @@ def build_unified_items(
         try:
             # N+1 fix: usa la relationship già eager-loaded (joinedload(gare) in
             # campionatos_q/managed_campionatos_q) invece di ri-interrogare Gara
-            # per ogni campionato. `campionato.gare` e la query esplicita
-            # restituiscono lo stesso set (nessun auto-filter soft-delete su Gara,
-            # è solo per User), quindi è behavior-preserving.
+            # per ogni campionato. Il filtro soft-delete unificato
+            # (models/soft_delete/filter.py) usa include_aliases=True, quindi
+            # esclude le soft-deleted sia dalla query esplicita sia dalla
+            # relationship joinedload → stesso set, behavior-preserving.
             gare_list = campionato.gare or []
             future_dates = [
                 g.date for g in gare_list if g.date and g.date >= date_cls.today()
