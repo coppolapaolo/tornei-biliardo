@@ -2478,7 +2478,7 @@ msgid ""
 "Ereditato da gare e partite."
 msgstr ""
 "Matches are played with handicap and do not update ratings (Elo/Fargo). "
-"Inherited by gare and matches."
+"Inherited by competitions and matches."
 
 #: templates/admin/campionato_wizard_step2.html:179
 #: templates/player/profile.html:37

@@ -42,33 +42,32 @@ def recalculate_elo(commit=False):
         # 1. Reset all ratings
         logger.info("Resetting existing Elo ratings...")
 
+        # Il reset avviene SEMPRE nella sessione (anche in dry-run): così il
+        # replay successivo è significativo. Senza azzerare anche la history,
+        # l'idempotenza di process_match_result skipperebbe i match già
+        # processati lasciando i rating a zero. In dry-run il rollback finale
+        # annulla tutto; solo con --commit si persiste.
+        from models.rating.models import MatchRatingHistory
+
         # Reset User model fields
         users = User.query.all()
         for user in users:
             # None = "non ancora valutato" (ricalcolo da capo)
             user.elo_rating = None
-            if commit:
-                db.session.add(user)
+            db.session.add(user)
 
-        # Delete PlayerRating entries for ELO + la history (altrimenti
-        # l'idempotenza di process_match_result farebbe skippare tutti i match
-        # già processati, lasciando i rating a zero/default).
-        from models.rating.models import MatchRatingHistory
-
-        if commit:
-            db.session.query(PlayerRating).filter_by(
-                rating_system=RatingSystem.ELO
-            ).delete()
-            db.session.query(MatchRatingHistory).filter_by(
-                rating_system=RatingSystem.ELO
-            ).delete()
-            db.session.commit()
-            logger.info("Ratings + history reset.")
-        else:
-            logger.info(
-                "[Dry Run] Would delete all ELO PlayerRatings + "
-                "MatchRatingHistory and reset User.elo_rating"
-            )
+        # Delete PlayerRating entries for ELO + la history
+        db.session.query(PlayerRating).filter_by(
+            rating_system=RatingSystem.ELO
+        ).delete()
+        db.session.query(MatchRatingHistory).filter_by(
+            rating_system=RatingSystem.ELO
+        ).delete()
+        db.session.flush()
+        logger.info(
+            "Ratings + history reset (%s)."
+            % ("commit pending" if commit else "dry-run, sarà rollbackato")
+        )
 
         # 2. Get all completed matches sorted by date
         matches = (

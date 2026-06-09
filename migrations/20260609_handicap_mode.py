@@ -50,7 +50,29 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db"):
     else:
         print("  ⏭️  gara.has_handicap già esistente")
 
-    # match.has_handicap esiste già: NON la tocchiamo.
+    # ── Backfill match.has_handicap legacy: 0 → NULL ────────────────────
+    # La colonna match.has_handicap esiste già (vecchio sistema handicap di
+    # distanza, mai popolato): tutte le righe storiche hanno 0 (default app
+    # precedente). Con 0 = "esplicitamente niente handicap" quei match NON
+    # erediterebbero da gara/campionato → impostare l'handicap a livello gara
+    # (es. gara 19, che ha già match) non fermerebbe l'aggiornamento rating.
+    # Portiamo a NULL (= eredita) solo le righe SENZA handicap di distanza
+    # esplicito (player1/2_handicap=0 e nessuna handicap_rule), per non
+    # toccare eventuali match realmente configurati con handicap di distanza.
+    cursor.execute(
+        """
+        UPDATE match
+        SET has_handicap = NULL
+        WHERE has_handicap = 0
+          AND COALESCE(player1_handicap, 0) = 0
+          AND COALESCE(player2_handicap, 0) = 0
+          AND handicap_rule_id IS NULL
+        """
+    )
+    if cursor.rowcount:
+        print(f"  ✓ Backfill match.has_handicap 0→NULL su {cursor.rowcount} righe")
+    else:
+        print("  ⏭️  Nessuna riga match da backfillare")
 
     conn.commit()
     conn.close()
