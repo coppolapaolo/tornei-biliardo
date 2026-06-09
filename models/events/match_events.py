@@ -45,9 +45,11 @@ class MatchProposalCreatedEvent(DomainEvent):
             "target_username": self.target_username,
             "location_id": self.location_id,
             "location_name": self.location_name,
-            "scheduled_time": self.scheduled_time.isoformat() if self.scheduled_time else None,
+            "scheduled_time": (
+                self.scheduled_time.isoformat() if self.scheduled_time else None
+            ),
             "notes": self.notes,
-            "is_public": self.is_public
+            "is_public": self.is_public,
         }
 
 
@@ -82,7 +84,9 @@ class MatchAcceptedEvent(DomainEvent):
             "accepter_name": self.accepter_name,
             "location_id": self.location_id,
             "location_name": self.location_name,
-            "scheduled_time": self.scheduled_time.isoformat() if self.scheduled_time else None
+            "scheduled_time": (
+                self.scheduled_time.isoformat() if self.scheduled_time else None
+            ),
         }
 
 
@@ -142,6 +146,28 @@ class MatchCompletedEvent(DomainEvent):
 
 
 @dataclass
+class MatchReopenedEvent(DomainEvent):
+    """Pubblicato quando un match completato viene riaperto/resettato.
+
+    Permette al rating handler di annullare (revert) i delta Elo applicati per
+    quel match, mantenendo `match_rating_history` coerente. Idempotente lato
+    handler: se non c'è history da annullare è un no-op.
+    """
+
+    match_id: int
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.domain = "match"
+
+    def get_event_type(self) -> str:
+        return "match.reopened"
+
+    def _get_event_data(self) -> Dict[str, Any]:
+        return {"match_id": self.match_id}
+
+
+@dataclass
 class IndividualMatchCreatedEvent(DomainEvent):
     """Event published when an individual match is created from a proposal."""
 
@@ -172,5 +198,7 @@ class IndividualMatchCreatedEvent(DomainEvent):
             "player2_name": self.player2_name,
             "location_id": self.location_id,
             "location_name": self.location_name,
-            "scheduled_time": self.scheduled_time.isoformat() if self.scheduled_time else None
+            "scheduled_time": (
+                self.scheduled_time.isoformat() if self.scheduled_time else None
+            ),
         }

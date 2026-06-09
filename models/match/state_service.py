@@ -63,7 +63,15 @@ class MatchStateService:
                 f"Transizione non ammessa: {match.status!r} → playing"
             )
 
+        was_completed = match.status == MatchStatus.COMPLETED.value
+
         match.status = MatchStatus.PLAYING.value
+
+        # Riapertura da completed: annulla i delta di rating applicati (revert).
+        # Punto centrale che copre tutti i flussi che riaprono via to_playing
+        # (rimozione rack, replace-all-racks, ecc.). No-op se non c'era history.
+        if was_completed:
+            MatchStateService.emit_reopened_event(match)
 
         # Auto-set started_at if not already manually set
         if match.started_at is None:
@@ -175,7 +183,9 @@ class MatchStateService:
         if match.is_trio and match.trio_match is not None:
             player_ids = [pid for pid in match.trio_match.player_ids if pid is not None]
         else:
-            player_ids = [pid for pid in (match.player1_id, match.player2_id) if pid is not None]
+            player_ids = [
+                pid for pid in (match.player1_id, match.player2_id) if pid is not None
+            ]
 
         event = MatchCompletedEvent(
             match_id=match.id,
@@ -190,6 +200,21 @@ class MatchStateService:
             player_ids=player_ids,
         )
         EventBus.publish(event)
+
+    @staticmethod
+    def emit_reopened_event(match: Match) -> None:
+        """Emit MatchReopenedEvent quando un match viene riaperto/resettato.
+
+        Il rating handler annulla (revert) i delta Elo applicati per il match.
+        No-op lato handler se non c'era history (es. bye, match mai processato).
+        """
+        if match.is_bye or not match.player1_id or not match.player2_id:
+            return
+
+        from models.events.match_events import MatchReopenedEvent
+        from models.events.base import EventBus
+
+        EventBus.publish(MatchReopenedEvent(match_id=match.id))
 
     @staticmethod
     def _update_classification_if_needed(match: Match) -> None:
@@ -225,9 +250,7 @@ class MatchStateService:
 
         # Recalculate overall classification
         # For Random, this aggregates all rounds and sorts by racks_won
-        RoundClassification.calculate_classification_after_round(
-            gara.id, highest_round
-        )
+        RoundClassification.calculate_classification_after_round(gara.id, highest_round)
 
 
 __all__ = ["MatchStateService"]

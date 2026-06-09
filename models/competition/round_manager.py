@@ -291,7 +291,16 @@ class AdvancedRoundManager:
             )
 
         # Delete all matches in the round
+        from models.match.state_service import MatchStateService
+
         for match in round_matches:
+            # Annulla i delta di rating PRIMA di eliminare il match (le righe
+            # match_rating_history cascano col match, ma l'Elo applicato no).
+            # Di norma è un no-op: cancel_round richiede match senza risultati,
+            # quindi già resettati → history già annullata al reset. Difensivo
+            # per i casi in cui un match rated finisse qui senza reset.
+            MatchStateService.emit_reopened_event(match)
+
             # Delete associated racks first (bulk delete via query)
             from models.match.models import Rack
 

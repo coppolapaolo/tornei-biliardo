@@ -165,11 +165,7 @@ class RatingService:
                     "min_rating": min(values),
                     "max_rating": max(values),
                     "recent_updates": len(
-                        [
-                            r
-                            for r in ratings
-                            if (utc_now() - r.last_updated).days <= 30
-                        ]
+                        [r for r in ratings if (utc_now() - r.last_updated).days <= 30]
                     ),
                 }
             else:
@@ -208,7 +204,7 @@ class RatingService:
         for system in RatingSystem:
             top_players = (
                 PlayerRating.query.filter_by(rating_system=system, verified=True)
-                .order_by(PlayerRating.rating_value.desc())  # type: ignore[attr-defined]
+                .order_by(PlayerRating.rating_value.desc())  # type: ignore[attr-defined] # noqa: E501
                 .limit(20)
                 .all()
             )
