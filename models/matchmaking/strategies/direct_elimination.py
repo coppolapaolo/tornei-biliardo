@@ -151,20 +151,26 @@ class DirectEliminationStrategy(BaseStrategy):
     ) -> List[Pairing]:
         """Generate pairings for subsequent rounds based on previous round winners."""
         from ...match.models import Match
+        from models.status_enum import MatchStatus
 
-        # Get winners from previous round
+        # Get winners from previous round. Considera FINITI sia 'completed' sia
+        # 'validated' (la conferma bilaterale porta i match a 'validated'):
+        # filtrare solo 'completed' escludeva i validati dal numeratore ma non
+        # dal totale, bloccando la generazione del turno successivo.
         previous_round = round_number - 1
-        previous_matches = Match.query.filter_by(
-            gara_id=gara.id, round_number=previous_round, status="completed"
+        previous_matches = Match.query.filter(
+            Match.gara_id == gara.id,
+            Match.round_number == previous_round,
+            Match.status.in_(MatchStatus.finished_values()),
         ).all()
 
-        # Check if all previous matches are completed
+        # Check if all previous matches are finished
         total_previous_matches = Match.query.filter_by(
             gara_id=gara.id, round_number=previous_round
         ).count()
 
         if len(previous_matches) != total_previous_matches:
-            # Not all previous matches completed
+            # Not all previous matches finished yet
             return []
 
         # Get winners
