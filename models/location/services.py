@@ -27,7 +27,7 @@ class LocationService:
 
         Args:
             location: Name of the venue.
-            tables_input: Table configuration string (single number or comma-separated list).
+            tables_input: Table config string (single number or comma list).
             added_by_id: ID of the user creating the venue.
 
         Returns:
@@ -57,18 +57,24 @@ class LocationService:
             return (location, None, None)
 
         number_of_tables = len(parsed_tables)
-        is_explicit_list = "," in tables_input.strip() or not tables_input.strip().isdigit()
+        is_explicit_list = (
+            "," in tables_input.strip() or not tables_input.strip().isdigit()
+        )
 
         try:
+            # is_active/verified/table_names passati al create così da essere
+            # committati ATOMICAMENTE: se mutati dopo il ritorno (transaction
+            # già chiusa) resterebbero pendenti e, in caso di early-return a
+            # monte (es. validate_strategy fallisce nella route), verrebbero
+            # scartati al teardown lasciando un venue ATTIVO non verificato.
             new_venue = LocationService.create_billiard_hall(
                 name=location,
                 added_by_id=added_by_id,
                 number_of_tables=number_of_tables,
+                is_active=False,
+                verified=False,
+                table_names=parsed_tables if is_explicit_list else None,
             )
-            if is_explicit_list:
-                new_venue.set_table_names(parsed_tables)
-            new_venue.is_active = False
-            new_venue.verified = False
 
             msg = (
                 f"Nuovo luogo '{location}' aggiunto come disattivato. "
@@ -95,8 +101,17 @@ class LocationService:
         hourly_rate: Optional[float] = None,
         added_by_id: Optional[int] = None,
         business_hours: Optional[str] = None,
+        is_active: bool = True,
+        verified: bool = False,
+        table_names: Optional[List[str]] = None,
     ) -> BilliardHall:
-        """Create a new billiard hall."""
+        """Create a new billiard hall.
+
+        ``is_active``/``verified``/``table_names`` vanno passati QUI così da
+        essere persistiti nello stesso commit di ``@transactional``: mutarli
+        dopo il ritorno (a transaction già chiusa) lascia le modifiche pendenti
+        e a rischio di scarto al teardown (cfr. bug find_or_create_venue).
+        """
 
         hall = BilliardHall(
             name=name,
@@ -111,6 +126,8 @@ class LocationService:
             hourly_rate=hourly_rate,
             added_by_id=added_by_id,
         )
+        hall.is_active = is_active
+        hall.verified = verified
 
         if business_hours:
             hall.business_hours = business_hours
@@ -120,6 +137,9 @@ class LocationService:
 
         if amenities:
             hall.set_amenities(amenities)
+
+        if table_names:
+            hall.set_table_names(table_names)
 
         db.session.add(hall)
 
@@ -484,9 +504,7 @@ class LocationService:
 
     @staticmethod
     @transactional(domain="location")
-    def update_venue_table_numbers(
-        venue_id: int, table_numbers: str
-    ) -> BilliardHall:
+    def update_venue_table_numbers(venue_id: int, table_numbers: str) -> BilliardHall:
         """Update venue table numbers stored in amenities."""
         venue = db.session.get(BilliardHall, venue_id)
         if not venue:
@@ -513,9 +531,7 @@ class LocationService:
 
         current_amenities = venue.get_amenities()
         # Remove existing photo entries
-        current_amenities = [
-            a for a in current_amenities if not a.startswith("Foto:")
-        ]
+        current_amenities = [a for a in current_amenities if not a.startswith("Foto:")]
         current_amenities.append(f"Foto: {photo_db_path}")
         venue.set_amenities(current_amenities)
         return venue
