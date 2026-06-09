@@ -119,65 +119,64 @@ class RoundRobinStrategy(BaseStrategy):
             print(f"Error generating Round Robin pairings: {e}")
             return []
 
+    # Sentinella "giocatore fantasma" per il caso dispari: chi viene accoppiato
+    # con essa in un dato turno riposa (bye). None è sicuro perché gli id reali
+    # sono interi positivi.
+    _BYE_SENTINEL = None
+
     def _generate_round_robin_schedule(
         self, player_ids: List[int]
     ) -> List[List[Tuple[int, ...]]]:
-        """Generate complete Round Robin schedule using the classic polygon method."""
+        """Generate complete Round Robin schedule using the classic polygon method.
+
+        Per N dispari si aggiunge un "giocatore fantasma" (`_BYE_SENTINEL`) per
+        rendere il numero pari: si applica lo stesso metodo del poligono del
+        caso pari (fissa il primo, ruota gli altri) e chi è accoppiato col
+        fantasma in quel turno riposa. Così la GEOMETRIA degli accoppiamenti
+        ruota davvero ad ogni turno, garantendo che ogni coppia si incontri
+        esattamente una volta e che ogni giocatore abbia esattamente un bye.
+
+        (Bug pregresso: il vecchio ramo dispari ricalcolava gli attivi
+        dall'ordine fisso e accoppiava sempre simmetricamente, senza ruotare —
+        coppie ripetute e coppie mai giocate.)
+        """
         n = len(player_ids)
 
         if n < 2:
             return []
 
-        # For odd players, a modified approach ensures every player gets
-        # exactly one bye
+        # Round robin a giro (circle method). Con N dispari il fantasma occupa
+        # un posto e produce il bye; la lunghezza diventa pari e si ruotano gli
+        # altri tenendo fisso il primo elemento.
+        players: List[int] = player_ids[:]
         if n % 2 == 1:
-            schedule = []
+            players.append(self._BYE_SENTINEL)  # type: ignore[arg-type]
 
-            # Each player gets exactly one bye - rotate which player sits out
-            for round_num in range(n):
-                round_pairings = []
+        size = len(players)  # sempre pari
+        rounds = size - 1  # == n se dispari, n-1 se pari
 
-                # Player who sits out this round
-                bye_player = player_ids[round_num]
-                round_pairings.append((bye_player,))
+        schedule: List[List[Tuple[int, ...]]] = []
+        for _ in range(rounds):
+            round_pairings: List[Tuple[int, ...]] = []
 
-                # Remaining players for this round
-                active_players = [p for p in player_ids if p != bye_player]
+            for i in range(size // 2):
+                player1 = players[i]
+                player2 = players[size - 1 - i]
 
-                # Pair the remaining 4 players (which is even)
-                for i in range(len(active_players) // 2):
-                    p1 = active_players[i]
-                    p2 = active_players[-(i + 1)]  # From the end
-                    round_pairings.append((p1, p2))
-
-                schedule.append(round_pairings)
-
-        else:
-            # For even players, use standard polygon method
-            players = player_ids[:]
-            schedule = []
-
-            # Classic polygon method: fix one player, rotate others
-            for round_num in range(n - 1):
-                round_pairings = []
-
-                # Pair players symmetrically
-                for i in range(n // 2):
-                    p1_idx = i
-                    p2_idx = n - 1 - i
-
-                    player1 = players[p1_idx]
-                    player2 = players[p2_idx]
+                if player1 is self._BYE_SENTINEL:
+                    round_pairings.append((player2,))
+                elif player2 is self._BYE_SENTINEL:
+                    round_pairings.append((player1,))
+                else:
                     round_pairings.append((player1, player2))
 
-                schedule.append(round_pairings)
+            schedule.append(round_pairings)
 
-                # Rotate: keep first player fixed, rotate all others
-                if n > 2:
-                    first = players[0]
-                    rest = players[1:]
-                    # Standard rotation: last becomes second, others shift right
-                    players = [first] + [rest[-1]] + rest[:-1]
+            # Ruota: tieni fisso il primo, sposta gli altri di una posizione.
+            if size > 2:
+                first = players[0]
+                rest = players[1:]
+                players = [first] + [rest[-1]] + rest[:-1]
 
         return schedule
 
