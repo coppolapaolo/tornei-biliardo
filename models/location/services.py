@@ -451,7 +451,9 @@ class LocationService:
         # deterministico (evita di attribuire il match a una sala arbitraria
         # con nomi sovrapposti, es. 'Roma Nord'/'Roma Sud').
         hall = (
-            BilliardHall.query.filter(BilliardHall.name == location_name).first()
+            BilliardHall.query.filter(BilliardHall.name == location_name)
+            .order_by(BilliardHall.id)
+            .first()
             or BilliardHall.query.filter(BilliardHall.name.ilike(f"%{location_name}%"))
             .order_by(BilliardHall.id)
             .first()
