@@ -28,12 +28,10 @@ def test_status_ui_unknown_fallbacks_are_translatable(app):
 def test_campionato_classification_single_cache_layer():
     """update_campionato_classification non ha piu' il doppio layer di cache.
 
-    Verifica che il sorgente non importi/usi piu' optimized_query nel modulo
-    (il layer interno serviva dati stale perche' il suo tag non veniva
-    invalidato da invalidate_campionato_cache).
+    Il modulo non deve piu' importare/esporre optimized_query (il layer interno
+    serviva dati stale perche' il suo tag non veniva invalidato da
+    invalidate_campionato_cache).
     """
-    import inspect
     from models.classification import campionato_classification as mod
 
-    src = inspect.getsource(mod)
-    assert "optimized_query" not in src
+    assert not hasattr(mod, "optimized_query")

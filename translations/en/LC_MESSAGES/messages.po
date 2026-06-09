@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-10 00:50+0200\n"
+"POT-Creation-Date: 2026-06-09 22:48+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -34,22 +34,22 @@ msgstr ""
 "Competition certified by tiebreaker: cancel the tiebreaker first to "
 "cancel the round"
 
-#: models/dashboard/dashboard_service.py:130
+#: models/dashboard/dashboard_service.py:129
 #: templates/components/_unified_dashboard_header.html:7
 msgid "Dashboard Amministratore"
 msgstr "Admin Dashboard"
 
-#: models/dashboard/dashboard_service.py:283
+#: models/dashboard/dashboard_service.py:282
 #: templates/components/_unified_dashboard_header.html:9
 msgid "Dashboard Direttore"
 msgstr "Director Dashboard"
 
-#: models/dashboard/dashboard_service.py:415
+#: models/dashboard/dashboard_service.py:411
 #: templates/components/_unified_dashboard_header.html:11
 msgid "Dashboard Giocatore"
 msgstr "Player Dashboard"
 
-#: models/dashboard/dashboard_service.py:477
+#: models/dashboard/dashboard_service.py:473
 msgid "Vista Pubblica"
 msgstr "Public View"
 
@@ -694,29 +694,29 @@ msgstr "Invalid level value"
 msgid "Configurazione Streak"
 msgstr "Streak Configuration"
 
-#: routes/gamification/dashboard.py:60 routes/gamification/dashboard.py:151
-#: routes/gamification/dashboard.py:258 routes/gamification/dashboard.py:298
+#: routes/gamification/dashboard.py:55 routes/gamification/dashboard.py:147
+#: routes/gamification/dashboard.py:257 routes/gamification/dashboard.py:297
 msgid "Gli amministratori non partecipano alla gamification."
 msgstr "Administrators do not participate in gamification."
 
-#: routes/gamification/dashboard.py:97
+#: routes/gamification/dashboard.py:93
 msgid "Dashboard Gamification"
 msgstr "Gamification Dashboard"
 
-#: routes/gamification/dashboard.py:178
+#: routes/gamification/dashboard.py:175
 msgid "I Tuoi Achievement"
 msgstr "Your Achievements"
 
-#: routes/gamification/dashboard.py:236
+#: routes/gamification/dashboard.py:235
 #: templates/components/_player_campionato_classifications.html:6
 msgid "Classifiche"
 msgstr "Leaderboards"
 
-#: routes/gamification/dashboard.py:276
+#: routes/gamification/dashboard.py:275
 msgid "Quest Settimanali/Mensili"
 msgstr "Weekly/Monthly Quests"
 
-#: routes/gamification/dashboard.py:313
+#: routes/gamification/dashboard.py:312
 msgid "Le Tue Streak"
 msgstr "Your Streaks"
 
@@ -1187,8 +1187,8 @@ msgid "In attesa di punteggi"
 msgstr "Awaiting scores"
 
 #: templates/components/_ssr_section.html:14 templates/gara_detail.html:231
-#: templates/individual_match/match_detail.html:133 utils/status_ui.py:126
-#: utils/status_ui.py:144
+#: templates/individual_match/match_detail.html:133 utils/status_ui.py:120
+#: utils/status_ui.py:138
 msgid "Completato"
 msgstr "Completed"
 
@@ -2121,11 +2121,11 @@ msgstr "Pending"
 
 #: templates/admin/campionato_detail.html:224
 #: templates/components/_unified_match_score.html:83
-#: templates/components/_unified_match_score.html:105 utils/status_ui.py:179
+#: templates/components/_unified_match_score.html:105 utils/status_ui.py:172
 msgid "Confermato"
 msgstr "Confirmed"
 
-#: templates/admin/campionato_detail.html:226 utils/status_ui.py:180
+#: templates/admin/campionato_detail.html:226 utils/status_ui.py:173
 msgid "Rifiutato"
 msgstr "Declined"
 
@@ -3615,7 +3615,7 @@ msgstr "Finished competitions"
 #: templates/components/_match_result_row.html:119
 #: templates/gamification/admin/quests.html:49
 #: templates/gamification/quests.html:48 templates/gamification/quests.html:152
-#: utils/status_ui.py:94
+#: utils/status_ui.py:91
 msgid "Completata"
 msgstr "Completed"
 
@@ -3916,15 +3916,15 @@ msgstr "Error updating timing"
 
 #: templates/components/_match_card.html:24
 #: templates/components/_match_result_row.html:100
-#: templates/components/_match_result_row.html:103 utils/status_ui.py:142
-#: utils/status_ui.py:178
+#: templates/components/_match_result_row.html:103 utils/status_ui.py:136
+#: utils/status_ui.py:171
 msgid "In Attesa"
 msgstr "Pending"
 
 #: templates/components/_match_card.html:26
 #: templates/components/_match_result_row.html:108
-#: templates/components/_match_result_row.html:111 utils/status_ui.py:92
-#: utils/status_ui.py:125 utils/status_ui.py:143
+#: templates/components/_match_result_row.html:111 utils/status_ui.py:89
+#: utils/status_ui.py:119 utils/status_ui.py:137
 msgid "In Corso"
 msgstr "In Progress"
 
@@ -6656,533 +6656,47 @@ msgstr "Registrations Closed"
 msgid "Pronta per Iniziare"
 msgstr "Ready to Start"
 
-#: utils/status_ui.py:83
+#: utils/status_ui.py:81
 msgid "Turno Completato"
 msgstr "Round Completed"
 
-#: utils/status_ui.py:87
+#: utils/status_ui.py:84
 msgid "Gara Completata"
 msgstr "Competition Completed"
 
-#: utils/status_ui.py:90 utils/status_ui.py:120
+#: utils/status_ui.py:87 utils/status_ui.py:117
 msgid "Setup"
 msgstr "Setup"
 
-#: utils/status_ui.py:91 utils/status_ui.py:123
+#: utils/status_ui.py:88 utils/status_ui.py:118
 msgid "Iscrizioni Aperte"
 msgstr "Open Registrations"
 
-#: utils/status_ui.py:93
+#: utils/status_ui.py:90
 msgid "Spareggi"
 msgstr "Tiebreakers"
 
-#: utils/status_ui.py:96 utils/status_ui.py:130 utils/status_ui.py:148
-#: utils/status_ui.py:166 utils/status_ui.py:184 utils/status_ui.py:223
-msgid "Sconosciuto"
-msgstr "Unknown"
-
-#: utils/status_ui.py:127
+#: utils/status_ui.py:121
 msgid "Terminato"
 msgstr "Terminated"
 
-#: utils/status_ui.py:145
+#: utils/status_ui.py:139
 msgid "Validato"
 msgstr "Validated"
 
-#: utils/status_ui.py:160
+#: utils/status_ui.py:154
 msgid "In Valutazione"
 msgstr "Under Review"
 
-#: utils/status_ui.py:161
+#: utils/status_ui.py:155
 msgid "Approvata"
 msgstr "Approved"
 
-#: utils/status_ui.py:162
+#: utils/status_ui.py:156
 msgid "Respinta"
 msgstr "Rejected"
 
-#: venv/lib/python3.11/site-packages/click/_termui_impl.py:613
-#, python-brace-format
-msgid "{editor}: Editing failed"
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/_termui_impl.py:617
-#, python-brace-format
-msgid "{editor}: Editing failed: {e}"
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/core.py:1114
-#: venv/lib/python3.11/site-packages/click/core.py:1151
-#, python-brace-format
-msgid "{text} {deprecated_message}"
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/core.py:1170
-#, fuzzy
-msgid "Options"
-msgstr "Reason"
-
-#: venv/lib/python3.11/site-packages/click/core.py:1245
-#, python-brace-format
-msgid "Got unexpected extra argument ({args})"
-msgid_plural "Got unexpected extra arguments ({args})"
-msgstr[0] ""
-msgstr[1] ""
-
-#: venv/lib/python3.11/site-packages/click/core.py:1264
-#, python-brace-format
-msgid "DeprecationWarning: The command {name!r} is deprecated.{extra_message}"
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/core.py:1448
-msgid "Aborted!"
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/core.py:1822
-msgid "Commands"
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/core.py:1853
-msgid "Missing command."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/core.py:1931
-#, python-brace-format
-msgid "No such command {name!r}."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/core.py:2355
-msgid "Value must be an iterable."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/core.py:2378
-#, python-brace-format
-msgid "Takes {nargs} values but 1 was given."
-msgid_plural "Takes {nargs} values but {len} were given."
-msgstr[0] ""
-msgstr[1] ""
-
-#: venv/lib/python3.11/site-packages/click/core.py:2567
-#, python-brace-format
-msgid ""
-"DeprecationWarning: The {param_type} {name!r} is "
-"deprecated.{extra_message}"
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/core.py:3015
-#, python-brace-format
-msgid "env var: {var}"
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/core.py:3018
-#, fuzzy, python-brace-format
-msgid "default: {default}"
-msgstr "Competition Defaults"
-
-#: venv/lib/python3.11/site-packages/click/core.py:3022
-msgid "required"
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/core.py:3082
-msgid "(dynamic)"
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/decorators.py:465
-#, python-format
-msgid "%(prog)s, version %(version)s"
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/decorators.py:522
-msgid "Show the version and exit."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/decorators.py:548
-msgid "Show this message and exit."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/exceptions.py:50
-#: venv/lib/python3.11/site-packages/click/exceptions.py:89
-#, python-brace-format
-msgid "Error: {message}"
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/exceptions.py:81
-#, python-brace-format
-msgid "Try '{command} {option}' for help."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/exceptions.py:130
-#, python-brace-format
-msgid "Invalid value: {message}"
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/exceptions.py:132
-#, python-brace-format
-msgid "Invalid value for {param_hint}: {message}"
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/exceptions.py:190
-#, fuzzy
-msgid "Missing argument"
-msgstr "Engagement"
-
-#: venv/lib/python3.11/site-packages/click/exceptions.py:192
-msgid "Missing option"
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/exceptions.py:194
-msgid "Missing parameter"
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/exceptions.py:196
-#, python-brace-format
-msgid "Missing {param_type}"
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/exceptions.py:203
-#, python-brace-format
-msgid "Missing parameter: {param_name}"
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/exceptions.py:223
-#, python-brace-format
-msgid "No such option: {name}"
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/exceptions.py:235
-#, python-brace-format
-msgid "Did you mean {possibility}?"
-msgid_plural "(Possible options: {possibilities})"
-msgstr[0] ""
-msgstr[1] ""
-
-#: venv/lib/python3.11/site-packages/click/exceptions.py:282
-msgid "unknown error"
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/exceptions.py:289
-#, python-brace-format
-msgid "Could not open file {filename!r}: {message}"
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/parser.py:199
-#, python-brace-format
-msgid "Argument {name!r} takes {nargs} values."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/parser.py:381
-#, python-brace-format
-msgid "Option {name!r} does not take a value."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/parser.py:444
-#, python-brace-format
-msgid "Option {name!r} requires an argument."
-msgid_plural "Option {name!r} requires {nargs} arguments."
-msgstr[0] ""
-msgstr[1] ""
-
-#: venv/lib/python3.11/site-packages/click/shell_completion.py:332
-msgid "Shell completion is not supported for Bash versions older than 4.4."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/shell_completion.py:339
-msgid "Couldn't detect Bash version, shell completion is not supported."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/termui.py:165
-msgid "Repeat for confirmation"
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/termui.py:181
-msgid "Error: The value you entered was invalid."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/termui.py:183
-#, python-brace-format
-msgid "Error: {e.message}"
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/termui.py:194
-msgid "Error: The two entered values do not match."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/termui.py:253
-msgid "Error: invalid input"
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/termui.py:872
-msgid "Press any key to continue..."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/types.py:332
-#, python-brace-format
-msgid ""
-"Choose from:\n"
-"\t{choices}"
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/types.py:369
-#, python-brace-format
-msgid "{value!r} is not {choice}."
-msgid_plural "{value!r} is not one of {choices}."
-msgstr[0] ""
-msgstr[1] ""
-
-#: venv/lib/python3.11/site-packages/click/types.py:460
-#, python-brace-format
-msgid "{value!r} does not match the format {format}."
-msgid_plural "{value!r} does not match the formats {formats}."
-msgstr[0] ""
-msgstr[1] ""
-
-#: venv/lib/python3.11/site-packages/click/types.py:482
-#, python-brace-format
-msgid "{value!r} is not a valid {number_type}."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/types.py:538
-#, python-brace-format
-msgid "{value} is not in the range {range}."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/types.py:719
-#, python-brace-format
-msgid "{value!r} is not a valid boolean. Recognized values: {states}"
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/types.py:747
-#, python-brace-format
-msgid "{value!r} is not a valid UUID."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/types.py:937
-#, fuzzy
-msgid "file"
-msgstr "End"
-
-#: venv/lib/python3.11/site-packages/click/types.py:939
-#, fuzzy
-msgid "directory"
-msgstr "Director"
-
-#: venv/lib/python3.11/site-packages/click/types.py:941
-#, fuzzy
-msgid "path"
-msgstr "Match"
-
-#: venv/lib/python3.11/site-packages/click/types.py:988
-#, python-brace-format
-msgid "{name} {filename!r} does not exist."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/types.py:997
-#, python-brace-format
-msgid "{name} {filename!r} is a file."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/types.py:1005
-#, python-brace-format
-msgid "{name} {filename!r} is a directory."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/types.py:1014
-#, python-brace-format
-msgid "{name} {filename!r} is not readable."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/types.py:1023
-#, python-brace-format
-msgid "{name} {filename!r} is not writable."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/types.py:1032
-#, python-brace-format
-msgid "{name} {filename!r} is not executable."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/click/types.py:1099
-#, python-brace-format
-msgid "{len_type} values are required, but {len_value} was given."
-msgid_plural "{len_type} values are required, but {len_value} were given."
-msgstr[0] ""
-msgstr[1] ""
-
-#: venv/lib/python3.11/site-packages/flask_wtf/file.py:55
-#: venv/lib/python3.11/site-packages/wtforms/validators.py:293
-#: venv/lib/python3.11/site-packages/wtforms/validators.py:323
-msgid "This field is required."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/flask_wtf/file.py:94
-#, python-brace-format
-msgid "File does not have an approved extension: {extensions}"
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/flask_wtf/file.py:101
-msgid "File does not have an approved extension."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/wtforms/validators.py:86
-#, python-format
-msgid "Invalid field name '%s'."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/wtforms/validators.py:99
-#, python-format
-msgid "Field must be equal to %(other_name)s."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/wtforms/validators.py:146
-#, python-format
-msgid "Field must be at least %(min)d character long."
-msgid_plural "Field must be at least %(min)d characters long."
-msgstr[0] ""
-msgstr[1] ""
-
-#: venv/lib/python3.11/site-packages/wtforms/validators.py:152
-#, python-format
-msgid "Field cannot be longer than %(max)d character."
-msgid_plural "Field cannot be longer than %(max)d characters."
-msgstr[0] ""
-msgstr[1] ""
-
-#: venv/lib/python3.11/site-packages/wtforms/validators.py:158
-#, python-format
-msgid "Field must be exactly %(max)d character long."
-msgid_plural "Field must be exactly %(max)d characters long."
-msgstr[0] ""
-msgstr[1] ""
-
-#: venv/lib/python3.11/site-packages/wtforms/validators.py:164
-#, python-format
-msgid "Field must be between %(min)d and %(max)d characters long."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/wtforms/validators.py:216
-#, python-format
-msgid "Number must be at least %(min)s."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/wtforms/validators.py:219
-#, python-format
-msgid "Number must be at most %(max)s."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/wtforms/validators.py:222
-#, python-format
-msgid "Number must be between %(min)s and %(max)s."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/wtforms/validators.py:358
-#, fuzzy
-msgid "Invalid input."
-msgstr "Validate result"
-
-#: venv/lib/python3.11/site-packages/wtforms/validators.py:422
-msgid "Invalid email address."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/wtforms/validators.py:460
-msgid "Invalid IP address."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/wtforms/validators.py:503
-msgid "Invalid Mac address."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/wtforms/validators.py:540
-msgid "Invalid URL."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/wtforms/validators.py:561
-msgid "Invalid UUID."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/wtforms/validators.py:595
-#, python-format
-msgid "Invalid value, must be one of: %(values)s."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/wtforms/validators.py:631
-#, python-format
-msgid "Invalid value, can't be any of: %(values)s."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/wtforms/validators.py:700
-msgid "This field cannot be edited."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/wtforms/validators.py:716
-msgid "This field is disabled and cannot have a value."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/wtforms/csrf/core.py:96
-msgid "Invalid CSRF Token."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/wtforms/csrf/session.py:64
-msgid "CSRF token missing."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/wtforms/csrf/session.py:72
-msgid "CSRF failed."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/wtforms/csrf/session.py:77
-msgid "CSRF token expired."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/wtforms/fields/choices.py:142
-msgid "Invalid Choice: could not coerce."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/wtforms/fields/choices.py:149
-#: venv/lib/python3.11/site-packages/wtforms/fields/choices.py:203
-msgid "Choices cannot be None."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/wtforms/fields/choices.py:155
-msgid "Not a valid choice."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/wtforms/fields/choices.py:194
-msgid "Invalid choice(s): one or more data inputs could not be coerced."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/wtforms/fields/choices.py:212
-#, python-format
-msgid "'%(value)s' is not a valid choice for this field."
-msgid_plural "'%(value)s' are not valid choices for this field."
-msgstr[0] ""
-msgstr[1] ""
-
-#: venv/lib/python3.11/site-packages/wtforms/fields/datetime.py:52
-msgid "Not a valid datetime value."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/wtforms/fields/datetime.py:78
-msgid "Not a valid date value."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/wtforms/fields/datetime.py:104
-msgid "Not a valid time value."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/wtforms/fields/datetime.py:149
-msgid "Not a valid week value."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/wtforms/fields/numeric.py:82
-#: venv/lib/python3.11/site-packages/wtforms/fields/numeric.py:92
-msgid "Not a valid integer value."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/wtforms/fields/numeric.py:168
-msgid "Not a valid decimal value."
-msgstr ""
-
-#: venv/lib/python3.11/site-packages/wtforms/fields/numeric.py:197
-msgid "Not a valid float value."
-msgstr ""
+#: utils/status_ui.py:216
+msgid "Sconosciuto"
+msgstr "Unknown"
 
