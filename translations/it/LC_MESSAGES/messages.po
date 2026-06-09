@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-09 14:05+0000\n"
+"POT-Creation-Date: 2026-06-09 22:29+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -823,6 +823,10 @@ msgstr ""
 msgid "Solo i match completati permettono di giocarne un altro."
 msgstr ""
 
+#: routes/player/challenges.py:94
+msgid "Non hai accesso a questa challenge"
+msgstr ""
+
 #: routes/player/exports.py:489
 msgid ""
 "Un export è già in corso o è stato generato di recente. Controlla le "
@@ -861,6 +865,10 @@ msgstr ""
 
 #: routes/player/exports.py:546
 msgid "Il file di export è scaduto. Richiedi un nuovo export."
+msgstr ""
+
+#: routes/player/matches.py:116
+msgid "Puoi ritirare solo te stesso da questo trio"
 msgstr ""
 
 #: routes/player/playoff.py:39 routes/player/playoff.py:62
@@ -3469,10 +3477,6 @@ msgstr ""
 #: templates/gamification/quests.html:48 templates/gamification/quests.html:152
 #: utils/status_ui.py:91
 msgid "Completata"
-msgstr ""
-
-#: templates/components/_index_archive.html:107
-msgid "Vedi tutte le gare concluse"
 msgstr ""
 
 #: templates/components/_index_campionato_cards.html:29

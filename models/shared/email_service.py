@@ -8,6 +8,7 @@ import logging
 import threading
 from flask import current_app
 from flask_mail import Message
+from markupsafe import escape
 
 from ..base import mail
 from ..user.models import User
@@ -28,12 +29,16 @@ class EmailService:
     def _get_sender() -> str:
         DEFAULT = "Campionato Biliardo <noreply@campionato.local>"
         try:
-            return current_app.config.get("MAIL_DEFAULT_SENDER") or os.environ.get("MAIL_DEFAULT_SENDER") or DEFAULT
+            return (
+                current_app.config.get("MAIL_DEFAULT_SENDER")
+                or os.environ.get("MAIL_DEFAULT_SENDER")
+                or DEFAULT
+            )
         except ImportError:
             return os.environ.get("MAIL_DEFAULT_SENDER") or DEFAULT
         except RuntimeError:
-             # Outside application context
-             return os.environ.get("MAIL_DEFAULT_SENDER") or DEFAULT
+            # Outside application context
+            return os.environ.get("MAIL_DEFAULT_SENDER") or DEFAULT
 
     @staticmethod
     def send_email(to_email: str, subject: str, html_content: str) -> bool:
@@ -60,7 +65,7 @@ class EmailService:
                 subject=subject,
                 sender=EmailService._get_sender(),
                 recipients=[to_email],
-                html=html_content
+                html=html_content,
             )
 
             def _send(app, msg):  # type: ignore[no-untyped-def]
@@ -82,33 +87,38 @@ class EmailService:
     def send_verification_email(user: User, token: UserToken, base_url: str) -> bool:
         """Send verification email to user."""
         verification_url = f"{base_url}/auth/verify-email/{token.token}"
-        
+
         subject = "Verifica il tuo account - Campionato Biliardo"
+        # XSS fix: lo username è dato utente non vincolato e finisce in HTML.
+        # Va escapato (markupsafe) per non iniettare markup nell'email.
+        safe_username = escape(user.username)
         html_content = f"""
-        <h1>Benvenuto {user.username}!</h1>
+        <h1>Benvenuto {safe_username}!</h1>
         <p>Grazie per esserti registrato al Campionato Biliardo.</p>
         <p>Per favore, verifica la tua email cliccando sul link sottostante:</p>
         <p><a href="{verification_url}">Verifica Email</a></p>
         <p>Se non hai richiesto questa registrazione, puoi ignorare questa email.</p>
         <p>Il link scadrà tra 24 ore.</p>
         """
-        
+
         return EmailService.send_email(user.email, subject, html_content)
 
     @staticmethod
     def send_password_reset_email(user: User, token: UserToken, base_url: str) -> bool:
         """Send password reset email to user."""
         reset_url = f"{base_url}/auth/reset-password/{token.token}"
-        
+
         subject = "Reset Password - Campionato Biliardo"
+        safe_username = escape(user.username)  # XSS: escape dato utente in HTML
         html_content = f"""
         <h1>Reset Password</h1>
-        <p>Ciao {user.username},</p>
-        <p>Abbiamo ricevuto una richiesta di reset della password per il tuo account.</p>
+        <p>Ciao {safe_username},</p>
+        <p>Abbiamo ricevuto una richiesta di reset della password
+        per il tuo account.</p>
         <p>Clicca sul link sottostante per impostare una nuova password:</p>
         <p><a href="{reset_url}">Resetta Password</a></p>
         <p>Se non hai richiesto il reset, ignora questa email.</p>
         <p>Il link scadrà tra 24 ore.</p>
         """
-        
+
         return EmailService.send_email(user.email, subject, html_content)
