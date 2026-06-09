@@ -5,11 +5,10 @@ This module tests the EventBus, DomainEvent classes, and event handlers
 to ensure proper domain decoupling and notification generation.
 """
 
-import pytest
 from unittest.mock import patch, MagicMock
 from datetime import datetime
 
-from models.events.base import EventBus, DomainEvent
+from models.events.base import EventBus
 from models.events.user_events import (
     DirectorRequestCreatedEvent,
     DirectorRequestProcessedEvent,
@@ -75,13 +74,19 @@ class TestEventBus:
     """Test EventBus functionality."""
 
     def setup_method(self):
-        """Clear event handlers before each test."""
+        """Snapshot e azzera gli handler per testare l'EventBus isolato."""
+        # NON usare clear_handlers() senza ripristino: cancellerebbe gli
+        # handler reali dell'app (rating/notification/gamification) per tutti
+        # i test successivi dello stesso worker xdist. Vedi CLAUDE.md.
+        self._original_handlers = {
+            k: list(v) for k, v in EventBus._handlers.items()
+        }
         EventBus.clear_handlers()
         EventBus.enable()
 
     def teardown_method(self):
-        """Clean up after each test."""
-        EventBus.clear_handlers()
+        """Ripristina gli handler reali dell'app (non lasciare il bus vuoto)."""
+        EventBus._handlers = self._original_handlers
         EventBus.enable()
 
     def test_handler_registration(self):
@@ -299,7 +304,7 @@ class TestEventBus:
         assert handler_calls == ["ok"]
 
     def test_sentry_not_available_skips_capture(self):
-        """When _sentry_available=False, no Sentry API is invoked even on handler failure."""
+        """_sentry_available=False: no Sentry API invoked even on failure."""
 
         def failing_handler(event):
             raise RuntimeError("boom")
@@ -371,13 +376,19 @@ class TestNotificationEventHandlers:
 
     def setup_method(self):
         """Setup for each test."""
+        # Snapshot e ripristino: non lasciare il bus vuoto per i test
+        # successivi dello stesso worker (vedi CLAUDE.md / TestEventBus).
+        self._original_handlers = {
+            k: list(v) for k, v in EventBus._handlers.items()
+        }
         EventBus.clear_handlers()
         # Re-register handlers
         NotificationEventHandlers.register_all_handlers()
 
     def teardown_method(self):
-        """Clean up after each test."""
-        EventBus.clear_handlers()
+        """Ripristina gli handler reali dell'app."""
+        EventBus._handlers = self._original_handlers
+        EventBus.enable()
 
     @patch(
         "models.events.notification_handlers.NotificationService.create_notification"
