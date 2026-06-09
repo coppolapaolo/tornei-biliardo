@@ -89,6 +89,7 @@ class RatingService:
             new_rating=rating_value,
             verified=False,
             external_id=external_id,
+            confidence=confidence,
         )
 
     @staticmethod
@@ -271,6 +272,7 @@ class RatingService:
         verified: bool = False,
         verified_by_id: Optional[int] = None,
         external_id: Optional[str] = None,
+        confidence: Optional[float] = None,
     ) -> PlayerRating:
         """Update or create a player's rating."""
 
@@ -283,6 +285,8 @@ class RatingService:
                 rating.verified_by_id = verified_by_id
             if external_id:
                 rating.external_id = external_id
+            if confidence is not None:
+                rating.confidence = confidence
         else:
             rating = PlayerRating(
                 user_id=user_id,
@@ -291,6 +295,7 @@ class RatingService:
                 verified=verified,
                 verified_by_id=verified_by_id,
                 external_id=external_id,
+                confidence=confidence,
             )
             db.session.add(rating)
 

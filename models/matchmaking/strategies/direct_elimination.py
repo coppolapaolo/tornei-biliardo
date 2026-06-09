@@ -37,10 +37,15 @@ class DirectEliminationStrategy(BaseStrategy):
         warnings = []
 
         try:
-            # Get active inscriptions
+            # Get active inscriptions. Escludi anche i waitlist per coerenza
+            # con _generate_first_round_pairings: contarli gonfiava player_count
+            # e quindi required_rounds (errore di validazione spurio).
             inscriptions = list(getattr(gara, "inscriptions", []))
             active_inscriptions = [
-                i for i in inscriptions if not getattr(i, "is_withdrawn", False)
+                i
+                for i in inscriptions
+                if not getattr(i, "is_withdrawn", False)
+                and not getattr(i, "is_waitlist", False)
             ]
             player_count = len(active_inscriptions)
 
@@ -99,7 +104,8 @@ class DirectEliminationStrategy(BaseStrategy):
         # Get active players
         inscriptions = list(gara.inscriptions)  # type: ignore[arg-type]
         active_inscriptions = [
-            i for i in inscriptions
+            i
+            for i in inscriptions
             if not getattr(i, "is_withdrawn", False)
             and not getattr(i, "is_waitlist", False)
         ]
@@ -235,6 +241,7 @@ class DirectEliminationStrategy(BaseStrategy):
         """Calculate number of byes needed."""
         bracket_size = self.get_bracket_size(player_count)
         return bracket_size - player_count
+
 
 class DirectEliminationPairingStrategy(DirectEliminationStrategy):
     """Alias for compatibility with existing strategy registry."""

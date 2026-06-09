@@ -593,6 +593,9 @@ class ProposalService:
             proposal_id=proposal_id, invited_user_id=interested_player_id
         )
         db.session.add(invitation)
+        # flush per assegnare la PK: senza, invitation.id e' None nel return
+        # (accedere a .id su un oggetto pending non scatena autoflush).
+        db.session.flush()
 
         return {
             "success": True,

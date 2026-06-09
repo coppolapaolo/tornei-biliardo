@@ -45,7 +45,7 @@ class ScoreAggregator:
             .filter(
                 Match.gara_id == gara_id,
                 Match.round_number <= up_to_round,
-                Match.status.in_(["completed", "validated"]),
+                Match.status.in_(MatchStatus.finished_values()),
             )
             .all()
         )

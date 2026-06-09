@@ -441,10 +441,21 @@ class LocationService:
     def record_match_at_location(user_id: int, location_name: str) -> None:
         """Record that a user played a match at a location."""
 
-        # Find billiard hall by name (fuzzy matching)
-        hall = BilliardHall.query.filter(
-            BilliardHall.name.ilike(f"%{location_name}%")
-        ).first()
+        # Guard input vuoto/spazi: f"%{name}%" diventerebbe "%%" e matcherebbe
+        # una sala arbitraria.
+        location_name = (location_name or "").strip()
+        if not location_name:
+            return
+
+        # Preferisci il match esatto; fallback su substring con ORDER BY
+        # deterministico (evita di attribuire il match a una sala arbitraria
+        # con nomi sovrapposti, es. 'Roma Nord'/'Roma Sud').
+        hall = (
+            BilliardHall.query.filter(BilliardHall.name == location_name).first()
+            or BilliardHall.query.filter(BilliardHall.name.ilike(f"%{location_name}%"))
+            .order_by(BilliardHall.id)
+            .first()
+        )
 
         if not hall:
             return

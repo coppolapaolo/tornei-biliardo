@@ -5,6 +5,7 @@ Purpose: Handicap calculation and rule management services
 
 from __future__ import annotations
 
+import logging
 from typing import List, Optional, Dict, Any
 
 from ..base import db
@@ -18,6 +19,8 @@ from .models import (
     CategoryLevel,
     RatingSystem,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class HandicapService:
@@ -314,7 +317,8 @@ class HandicapService:
                 fargo_rating = data.get("fargo_rating")
                 external_id = data.get("fargo_id")
 
-                if user_id and fargo_rating:
+                # is not None (non falsy): non saltare user_id==0/fargo==0.
+                if user_id is not None and fargo_rating is not None:
                     RatingService.update_player_rating(
                         user_id=user_id,
                         rating_system=RatingSystem.FARGO,
@@ -325,8 +329,11 @@ class HandicapService:
                     imported_count += 1
 
             except Exception as e:
-                print(
-                    f"Failed to import Fargo rating for user {data.get('user_id')}: {e}"
+                # logger, non print: in produzione lo stdout va perso.
+                logger.warning(
+                    "Failed to import Fargo rating for user %s: %s",
+                    data.get("user_id"),
+                    e,
                 )
 
         return imported_count
