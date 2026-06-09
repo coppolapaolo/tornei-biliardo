@@ -2,6 +2,7 @@
 """Match operations and rack management routes."""
 
 from flask import request, jsonify
+from flask_babel import _
 from flask_login import login_required, current_user
 
 from models import db, Match
@@ -112,7 +113,7 @@ def forfeit_trio(match_id):
         requested_player_id = request.form.get("player_id", type=int)
         if requested_player_id and requested_player_id != current_user.id:
             return (
-                jsonify({"error": "Puoi ritirare solo te stesso da questo trio"}),
+                jsonify({"error": _("Puoi ritirare solo te stesso da questo trio")}),
                 403,
             )
         forfeiting_player_id = current_user.id

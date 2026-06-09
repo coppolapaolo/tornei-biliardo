@@ -2,6 +2,7 @@
 """Challenge system routes for players."""
 
 from flask import render_template, request, jsonify
+from flask_babel import _
 from flask_login import login_required, current_user
 from werkzeug.exceptions import abort
 
@@ -90,7 +91,7 @@ def record_challenge_attempt(gara_challenge_id):
                 jsonify(
                     {
                         "success": False,
-                        "error": "Non hai accesso a questa challenge",
+                        "error": _("Non hai accesso a questa challenge"),
                     }
                 ),
                 403,
