@@ -143,31 +143,21 @@ class MetricsService:
 
         cutoff = utc_now() - timedelta(days=days)
 
-        active_ids = set()
-        for (pid,) in (
-            db.session.query(Match.player1_id)
-            .filter(
-                Match.updated_at >= cutoff,
-                Match.status == MatchStatus.COMPLETED.value,
-                Match.player1_id.isnot(None),
-            )
-            .distinct()
-            .all()
-        ):
-            active_ids.add(pid)
-        for (pid,) in (
-            db.session.query(Match.player2_id)
-            .filter(
-                Match.updated_at >= cutoff,
-                Match.status == MatchStatus.COMPLETED.value,
-                Match.player2_id.isnot(None),
-            )
-            .distinct()
-            .all()
-        ):
-            active_ids.add(pid)
-
-        return len(active_ids)
+        # Conteggio in DB tramite UNION (dedup automatica) + COUNT(*): la
+        # union deduplica gli id sull'insieme player1 ∪ player2, così non
+        # materializziamo tutti gli id in Python (DAU/WAU/MAU è hot path).
+        p1 = db.session.query(Match.player1_id.label("uid")).filter(
+            Match.updated_at >= cutoff,
+            Match.status == MatchStatus.COMPLETED.value,
+            Match.player1_id.isnot(None),
+        )
+        p2 = db.session.query(Match.player2_id.label("uid")).filter(
+            Match.updated_at >= cutoff,
+            Match.status == MatchStatus.COMPLETED.value,
+            Match.player2_id.isnot(None),
+        )
+        union_subquery = p1.union(p2).subquery()
+        return db.session.query(func.count()).select_from(union_subquery).scalar() or 0
 
     @staticmethod
     def get_dau() -> int:
