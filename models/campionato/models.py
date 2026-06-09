@@ -61,6 +61,11 @@ class Campionato(db.Model):
         db.String(50), nullable=False, default="classic"
     )  # DEPRECATED: automatic from campionato_type
 
+    # Handicap mode (ereditato da gare/match). Se True i match si giocano con
+    # handicap e NON aggiornano i rating (Elo/Fargo). Radice della catena di
+    # ereditarietà has_handicap: Campionato → Gara (nullable) → Match (nullable).
+    has_handicap = db.Column(db.Boolean, default=False, nullable=False)
+
     # Status e date
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=utc_now)

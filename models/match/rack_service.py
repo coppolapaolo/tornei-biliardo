@@ -124,6 +124,13 @@ class RackService:
         if match.is_bye:
             raise ValueError("Non puoi resettare una partita bye!")
 
+        # Match riaperto: annulla i delta di rating applicati (revert).
+        # No-op se non c'era history. Va emesso PRIMA del reset trio (che fa
+        # early-return) per coprire anche i trio match.
+        from .state_service import MatchStateService
+
+        MatchStateService.emit_reopened_event(match)
+
         # Handle Trio matches separately via TrioScoringService
         if match.is_trio and match.trio_match:
             from .trio_scoring_service import TrioScoringService
@@ -187,6 +194,7 @@ class RackService:
         # a table (e.g. table removal via reassign_table(None)).
         if auto_assign_table and match.status == MatchStatus.PENDING.value:
             from .table_assignment_service import TableAssignmentService
+
             db.session.flush()
             TableAssignmentService.assign_available_tables(match.gara_id)
 
@@ -234,7 +242,8 @@ class RackService:
         if should_clear_winner:
             match.winner_id = None
             match.reset_confirmations()
-            # Se era completed, rimettilo in playing
+            # Se era completed, rimettilo in playing (to_playing emette il
+            # revert dei rating centralmente).
             if match.status == MatchStatus.COMPLETED.value:
                 from .match_service import MatchService
 

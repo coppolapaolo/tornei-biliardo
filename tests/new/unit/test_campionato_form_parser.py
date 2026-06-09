@@ -30,6 +30,7 @@ class TestParseDefaultSettings:
             "default_rounds_count": 4,
             "default_odd_policy": "trio",
             "default_anti_rematch": True,
+            "has_handicap": False,
         }
 
     def test_empty_form_uses_safe_defaults(self):
@@ -40,6 +41,7 @@ class TestParseDefaultSettings:
             "default_rounds_count": 3,
             "default_odd_policy": "bye",
             "default_anti_rematch": False,
+            "has_handicap": False,
         }
 
     def test_invalid_numeric_inputs_fall_back(self):

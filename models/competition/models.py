@@ -57,8 +57,7 @@ class Gara(SoftDeleteMixin, db.Model):
     # RESOLVED: See docs/_archive/2025-12-architectural-decisions-pre-adr.md ADR-002.
     # Decision: Keep FK in Gara (natural direction, efficient queries).
     campionato_id = db.Column(
-        db.Integer, db.ForeignKey("campionato.id", ondelete="CASCADE"),
-        nullable=True
+        db.Integer, db.ForeignKey("campionato.id", ondelete="CASCADE"), nullable=True
     )
 
     # Director FK per standalone competitions
@@ -108,6 +107,10 @@ class Gara(SoftDeleteMixin, db.Model):
     is_race_to_sets = db.Column(
         db.Boolean, default=True, nullable=True
     )  # Race-to vs exact sets
+
+    # Handicap mode: NULL = eredita dal campionato (vedi effective_has_handicap).
+    # I match di una gara con handicap non aggiornano i rating (Elo/Fargo).
+    has_handicap = db.Column(db.Boolean, nullable=True)
 
     # Date iscrizioni
     inscription_start = db.Column(db.DateTime)
@@ -159,8 +162,9 @@ class Gara(SoftDeleteMixin, db.Model):
 
     # Playoff configuration (if this gara is a playoff)
     playoff_config_id = db.Column(
-        db.Integer, db.ForeignKey("playoff_configuration.id", ondelete="SET NULL"),
-        nullable=True
+        db.Integer,
+        db.ForeignKey("playoff_configuration.id", ondelete="SET NULL"),
+        nullable=True,
     )  # If set, this gara is a playoff tournament
 
     # Relazioni
@@ -184,12 +188,9 @@ class Gara(SoftDeleteMixin, db.Model):
     tiebreaker_challenge = db.relationship(
         "Challenge", foreign_keys=[tiebreaker_challenge_id]
     )
-    billiard_hall = db.relationship(
-        "BilliardHall", foreign_keys=[billiard_hall_id]
-    )
+    billiard_hall = db.relationship("BilliardHall", foreign_keys=[billiard_hall_id])
     playoff_config = db.relationship(
-        "PlayoffConfiguration", foreign_keys=[playoff_config_id],
-        back_populates="gara"
+        "PlayoffConfiguration", foreign_keys=[playoff_config_id], back_populates="gara"
     )
 
     @property
@@ -226,6 +227,7 @@ class Gara(SoftDeleteMixin, db.Model):
         if not self.location:
             return None
         from models.location.models import BilliardHall
+
         return BilliardHall.query.filter_by(name=self.location).first()
 
     @property
@@ -295,6 +297,19 @@ class Gara(SoftDeleteMixin, db.Model):
         """Check if this is a standalone competition."""
         return self.campionato_id is None
 
+    @property
+    def effective_has_handicap(self) -> bool:
+        """Handicap mode effettivo: override gara → campionato → False.
+
+        NULL su `has_handicap` significa "eredita dal campionato". Per gare
+        standalone (campionato_id NULL) il fallback è False.
+        """
+        if self.has_handicap is not None:
+            return self.has_handicap
+        if self.campionato is not None:
+            return bool(self.campionato.has_handicap)
+        return False
+
     # RESOLVED: See docs/_archive/2025-12-architectural-decisions-pre-adr.md ADR-002.
     # Decision: Keep bidirectional - Gara has FK, Campionato has property.
     def get_display_name(self):
@@ -337,8 +352,7 @@ class Gara(SoftDeleteMixin, db.Model):
         # Must have matches in current round AND all must be finished
         # Note: VALIDATED (bilateral player confirmation) also counts as finished
         return bool(current_round_matches) and all(
-            MatchStatus.is_finished(m.status)
-            for m in current_round_matches
+            MatchStatus.is_finished(m.status) for m in current_round_matches
         )
 
     def can_inscribe(self):
@@ -598,7 +612,7 @@ class Gara(SoftDeleteMixin, db.Model):
                 is_race_to_racks=self.is_race_to,
                 is_multi_set=False,
                 sets=1,
-                is_race_to_sets=True
+                is_race_to_sets=True,
             )
         else:
             # Multi-set configuration (Phase 6: Frontend Integration)
@@ -608,9 +622,7 @@ class Gara(SoftDeleteMixin, db.Model):
                 is_multi_set=True,
                 sets=self.match_distance if self.match_distance else 1,
                 is_race_to_sets=(
-                    self.is_race_to_sets
-                    if self.is_race_to_sets is not None
-                    else True
+                    self.is_race_to_sets if self.is_race_to_sets is not None else True
                 ),
             )
 

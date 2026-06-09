@@ -11,7 +11,7 @@ from typing import Optional, TYPE_CHECKING
 from enum import Enum
 
 
-from ..base import db, BaseModel, TimestampMixin, utc_now
+from ..base import db, BaseModel, utc_now
 
 if TYPE_CHECKING:
     pass
@@ -67,7 +67,7 @@ class PlayerCategory(BaseModel):
         return (
             cls.query.filter_by(user_id=user_id, is_active=True)
             .filter(
-                db.or_(cls.expires_at.is_(None), cls.expires_at > utc_now())  # type: ignore[attr-defined]
+                db.or_(cls.expires_at.is_(None), cls.expires_at > utc_now())  # type: ignore[attr-defined] # noqa: E501
             )
             .first()
         )
@@ -159,7 +159,69 @@ class PlayerRating(BaseModel):
                 return CategoryLevel.D
 
     def __repr__(self) -> str:
-        return f"<PlayerRating {self.user_id}: {self.rating_system.value}={self.rating_value}>"
+        return (
+            f"<PlayerRating {self.user_id}: "
+            f"{self.rating_system.value}={self.rating_value}>"
+        )
+
+
+class MatchRatingHistory(BaseModel):
+    """Registro dei delta di rating applicati per ogni match.
+
+    Due scopi:
+    1. **Idempotenza**: un match contribuisce al rating ESATTAMENTE una volta.
+       Se esiste già un record per (match_id, rating_system) il ricalcolo è un
+       no-op — protegge da MatchCompletedEvent ri-emessi (reset→ricompletamento)
+       e da recalc_elo lanciato su match già processati.
+    2. **Revert**: quando un match viene riaperto/resettato si ripristina
+       `old_rating` e si decrementa `games_played`, poi si eliminano i record.
+
+    Nota (Elo è path-dependent): il revert per-match è esatto se il match è
+    l'ultimo processato per quei giocatori; altrimenti i rating successivi
+    restano approssimati finché non si rilancia `recalc_elo` (ricostruzione
+    autorevole). Vedi docstring di RatingCalculationService.
+    """
+
+    __tablename__ = "match_rating_history"
+
+    id = db.Column(db.Integer, primary_key=True)
+    match_id = db.Column(
+        db.Integer, db.ForeignKey("match.id", ondelete="CASCADE"), nullable=False
+    )
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
+    )
+    rating_system = db.Column(db.Enum(RatingSystem), nullable=False)
+
+    old_rating = db.Column(db.Integer, nullable=False)
+    new_rating = db.Column(db.Integer, nullable=False)
+    delta = db.Column(db.Integer, nullable=False)
+    games_increment = db.Column(db.Integer, nullable=False, default=1)
+
+    user = db.relationship("User", foreign_keys=[user_id])
+
+    __table_args__ = (
+        db.UniqueConstraint(
+            "match_id",
+            "user_id",
+            "rating_system",
+            name="uq_match_user_rating_system",
+        ),
+    )
+
+    @classmethod
+    def exists_for_match(cls, match_id: int, rating_system: RatingSystem) -> bool:
+        """True se esiste già almeno un record per quel match/sistema."""
+        return (
+            cls.query.filter_by(match_id=match_id, rating_system=rating_system).first()
+            is not None
+        )
+
+    def __repr__(self) -> str:
+        return (
+            f"<MatchRatingHistory match={self.match_id} user={self.user_id} "
+            f"{self.rating_system.value} {self.old_rating}->{self.new_rating}>"
+        )
 
 
 class HandicapRule(BaseModel):
@@ -255,7 +317,10 @@ class CategoryHandicapRule(BaseModel):
     )
 
     def __repr__(self) -> str:
-        return f"<CategoryHandicapRule {self.higher_category.value} vs {self.lower_category.value}: +{self.handicap_value}>"
+        return (
+            f"<CategoryHandicapRule {self.higher_category.value} vs "
+            f"{self.lower_category.value}: +{self.handicap_value}>"
+        )
 
 
 class RatingHandicapRule(BaseModel):
@@ -291,4 +356,7 @@ class RatingHandicapRule(BaseModel):
     )
 
     def __repr__(self) -> str:
-        return f"<RatingHandicapRule {self.rating_system.value}: {self.points_per_handicap} pts/handicap>"
+        return (
+            f"<RatingHandicapRule {self.rating_system.value}: "
+            f"{self.points_per_handicap} pts/handicap>"
+        )

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-09 22:29+0200\n"
+"POT-Creation-Date: 2026-06-09 22:48+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -1053,7 +1053,7 @@ msgstr "Confirm"
 #: templates/admin/campionato_wizard_step2.html:14 templates/base.html:512
 #: templates/components/_admin_new_campionato_modal.html:28
 #: templates/components/_campionato_create_modal.html:27
-#: templates/components/_campionato_edit_form.html:192
+#: templates/components/_campionato_edit_form.html:204
 #: templates/components/_new_campionato_modal.html:30
 #: templates/components/_soft_delete_modal.html:66
 #: templates/gamification/admin/achievement_form.html:119
@@ -1273,10 +1273,19 @@ msgstr "Free"
 msgid "Anti-reincontro:"
 msgstr "Anti-rematch:"
 
-#: templates/gara_detail.html:365
+#: templates/admin/gara_create_standalone.html:276
+#: templates/components/_gara_edit_form.html:100
+#: templates/components/_gara_edit_form.html:102
+#: templates/components/_new_gara_modal.html:288
+#: templates/components/_new_gara_modal.html:289 templates/gara_detail.html:365
 msgid "Sì"
 msgstr "Yes"
 
+#: templates/admin/gara_create_standalone.html:275
+#: templates/components/_gara_edit_form.html:100
+#: templates/components/_gara_edit_form.html:103
+#: templates/components/_new_gara_modal.html:288
+#: templates/components/_new_gara_modal.html:290
 #: templates/gamification/admin/streak_config.html:79
 #: templates/gara_detail.html:365
 msgid "No"
@@ -2227,19 +2236,19 @@ msgid "Obiettivo indicativo. Il direttore potra' aggiungere o cancellare gare."
 msgstr "Indicative target. The director can add or remove competitions."
 
 #: templates/admin/campionato_wizard_step1.html:66
-#: templates/admin/gara_create_standalone.html:301
+#: templates/admin/gara_create_standalone.html:310
 #: templates/components/_campionato_edit_form.html:65
 msgid "Sistema di Classifica"
 msgstr "Ranking System"
 
 #: templates/admin/campionato_wizard_step1.html:68
-#: templates/admin/gara_create_standalone.html:306
+#: templates/admin/gara_create_standalone.html:315
 #: templates/components/_campionato_edit_form.html:68
 msgid "Vittorie (match vinti → diff rack)"
 msgstr "Wins (matches won → rack diff)"
 
 #: templates/admin/campionato_wizard_step1.html:69
-#: templates/admin/gara_create_standalone.html:309
+#: templates/admin/gara_create_standalone.html:318
 #: templates/components/_campionato_edit_form.html:71
 msgid "Rack Totali (rack accumulati)"
 msgstr "Total Racks (accumulated racks)"
@@ -2462,12 +2471,29 @@ msgstr "Anti-Rematch"
 msgid "Evita accoppiamenti ripetuti tra gli stessi giocatori nella stessa gara"
 msgstr "Avoids repeated pairings between the same players in the same competition"
 
-#: templates/admin/campionato_wizard_step2.html:167
+#: templates/admin/campionato_wizard_step2.html:168
+#: templates/admin/gara_create_standalone.html:273
+#: templates/components/_campionato_edit_form.html:188
+#: templates/components/_gara_edit_form.html:97
+#: templates/components/_new_gara_modal.html:286
+msgid "Gioco con handicap"
+msgstr "Handicap mode"
+
+#: templates/admin/campionato_wizard_step2.html:169
+#: templates/components/_campionato_edit_form.html:191
+msgid ""
+"I match si giocano con handicap e non aggiornano i rating (Elo/Fargo). "
+"Ereditato da gare e partite."
+msgstr ""
+"Matches are played with handicap and do not update ratings (Elo/Fargo). "
+"Inherited by competitions and matches."
+
+#: templates/admin/campionato_wizard_step2.html:179
 #: templates/player/profile.html:37
 msgid "Indietro"
 msgstr "Back"
 
-#: templates/admin/campionato_wizard_step2.html:170
+#: templates/admin/campionato_wizard_step2.html:182
 #: templates/components/_unified_cards.html:307
 msgid "Crea Campionato"
 msgstr "Create Championship"
@@ -2487,33 +2513,39 @@ msgstr ""
 "\n"
 "This action is IRREVERSIBLE!"
 
-#: templates/admin/gara_create_standalone.html:324
-#: templates/components/_gara_edit_form.html:245
+#: templates/admin/gara_create_standalone.html:278
+#: templates/components/_gara_edit_form.html:105
+#: templates/components/_new_gara_modal.html:292
+msgid "I match con handicap non aggiornano i rating (Elo/Fargo)."
+msgstr "Handicap matches do not update ratings (Elo/Fargo)."
+
+#: templates/admin/gara_create_standalone.html:333
+#: templates/components/_gara_edit_form.html:257
 msgid "Abilita spareggio (SSR) per parimerito"
 msgstr "Enable tiebreaker (SSR) for ties"
 
-#: templates/admin/gara_create_standalone.html:328
-#: templates/components/_gara_edit_form.html:248
+#: templates/admin/gara_create_standalone.html:337
+#: templates/components/_gara_edit_form.html:260
 msgid "Richiede Spot Shot Rally per risolvere parimerito nelle prime posizioni"
 msgstr "Requires Spot Shot Rally to resolve ties in the top positions"
 
-#: templates/admin/gara_create_standalone.html:332
-#: templates/components/_gara_edit_form.html:253
+#: templates/admin/gara_create_standalone.html:341
+#: templates/components/_gara_edit_form.html:265
 msgid "Spareggio fino alla posizione"
 msgstr "Tiebreaker up to position"
 
-#: templates/admin/gara_create_standalone.html:334
-#: templates/components/_gara_edit_form.html:255
+#: templates/admin/gara_create_standalone.html:343
+#: templates/components/_gara_edit_form.html:267
 msgid "Solo 1° posto"
 msgstr "1st place only"
 
-#: templates/admin/gara_create_standalone.html:335
-#: templates/components/_gara_edit_form.html:256
+#: templates/admin/gara_create_standalone.html:344
+#: templates/components/_gara_edit_form.html:268
 msgid "Fino al 2° posto"
 msgstr "Up to 2nd place"
 
-#: templates/admin/gara_create_standalone.html:336
-#: templates/components/_gara_edit_form.html:257
+#: templates/admin/gara_create_standalone.html:345
+#: templates/components/_gara_edit_form.html:269
 msgid "Fino al 3° posto"
 msgstr "Up to 3rd place"
 
@@ -2841,11 +2873,11 @@ msgstr ""
 "The player receives a bye but must complete a challenge to earn extra "
 "points."
 
-#: templates/components/_campionato_edit_form.html:186
+#: templates/components/_campionato_edit_form.html:198
 msgid "Attenzione:"
 msgstr "Warning:"
 
-#: templates/components/_campionato_edit_form.html:186
+#: templates/components/_campionato_edit_form.html:198
 msgid ""
 "Una volta che una gara del campionato avra' delle iscrizioni, non sara' "
 "piu' possibile modificare le impostazioni del campionato."
@@ -2853,7 +2885,7 @@ msgstr ""
 "Once a championship competition has registrations, it will no longer be "
 "possible to modify championship settings."
 
-#: templates/components/_campionato_edit_form.html:195
+#: templates/components/_campionato_edit_form.html:207
 msgid "Salva Modifiche"
 msgstr "Save Changes"
 
@@ -3019,7 +3051,12 @@ msgstr "Registrations will open soon"
 msgid "Podio"
 msgstr "Podium"
 
-#: templates/components/_gara_edit_form.html:260
+#: templates/components/_gara_edit_form.html:100
+#: templates/components/_new_gara_modal.html:288
+msgid "Eredita dal campionato"
+msgstr "Inherit from championship"
+
+#: templates/components/_gara_edit_form.html:272
 msgid "Posizioni per cui richiedere spareggio in caso di parimerito"
 msgstr "Positions requiring tiebreaker in case of tie"
 
