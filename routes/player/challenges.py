@@ -10,7 +10,6 @@ from utils.route_helpers import safe_json_error
 
 from . import player_bp
 
-
 # ====================================================================
 # CHALLENGE SYSTEM ROUTES
 # ====================================================================
@@ -77,21 +76,25 @@ def record_challenge_attempt(gara_challenge_id):
         if not gara_challenge:
             return jsonify({"success": False, "error": "Challenge non trovata"}), 404
 
-        # Verify user has access to this challenge's gara
-        if gara_challenge.gara.campionato:
-            inscription = Inscription.query.filter_by(
-                user_id=current_user.id, gara_id=gara_challenge.gara_id
-            ).first()
-            if not inscription:
-                return (
-                    jsonify(
-                        {
-                            "success": False,
-                            "error": "Non hai accesso a questa challenge",
-                        }
-                    ),
-                    403,
-                )
+        # Verify user has access to this challenge's gara.
+        # Authz fix: l'iscrizione è per-gara (Inscription.gara_id) e vale sia
+        # per gare di campionato sia standalone. Prima il controllo era
+        # annidato in `if gara.campionato`, saltando del tutto l'autorizzazione
+        # per le gare standalone (campionato_id=None): qualunque utente loggato
+        # poteva registrare tentativi con score arbitrario.
+        inscription = Inscription.query.filter_by(
+            user_id=current_user.id, gara_id=gara_challenge.gara_id
+        ).first()
+        if not inscription:
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "error": "Non hai accesso a questa challenge",
+                    }
+                ),
+                403,
+            )
 
         # Validate that we have either score or passed
         if "score" not in data and "passed" not in data:
