@@ -33,8 +33,22 @@ class FeatureTracker:
             ...
     """
 
-    # Session-level tracking to count unique users per day
+    # Fallback per contesti SENZA request (cron/CLI): set di classe, limitato
+    # alle chiavi "...:default" (feature × data), quindi bounded. In contesto
+    # request il dedup vive in g (_tracked_set) ed è GC'd a fine request: senza
+    # questo accumulava una chiave per-request (uuid) → memory leak monotono.
     _session_tracked: set[str] = set()
+
+    @classmethod
+    def _tracked_set(cls) -> set[str]:
+        """Set di dedup unici-per-sessione, request-scoped quando possibile."""
+        if has_request_context():
+            tracked = getattr(g, "_kpi_tracked", None)
+            if tracked is None:
+                tracked = set()
+                g._kpi_tracked = tracked
+            return tracked
+        return cls._session_tracked
 
     @classmethod
     def track(
@@ -65,14 +79,15 @@ class FeatureTracker:
             for_date = date.today()
 
         session_key = cls._get_session_key(feature, for_date)
-        is_unique = session_key not in cls._session_tracked
+        tracked = cls._tracked_set()
+        is_unique = session_key not in tracked
 
         record = KpiFeatureUsage.get_or_create(feature, for_date)
         record.usage_count += 1
 
         if is_unique:
             record.unique_users += 1
-            cls._session_tracked.add(session_key)
+            tracked.add(session_key)
 
     @classmethod
     def track_batch(cls, features: list[FeatureName]) -> None:

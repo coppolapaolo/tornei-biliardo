@@ -118,6 +118,19 @@ def public_campionatos_list():
     if raw_query:
         query = query.filter(Campionato.name.ilike(f"%{raw_query}%"))
 
+    # Eager-load playoff config + tournament: il filtro per status sotto chiama
+    # get_status() per ogni campionato, che per i terminated li consulta via
+    # relationship (altrimenti N+1).
+    if status_filter != "all":
+        from sqlalchemy.orm import joinedload
+        from models.playoff.models import PlayoffConfiguration
+
+        query = query.options(
+            joinedload(Campionato.playoff_configurations).joinedload(
+                PlayoffConfiguration.playoff_campionato
+            )
+        )
+
     campionatos = query.order_by(Campionato.created_at.desc()).all()
 
     if status_filter != "all":

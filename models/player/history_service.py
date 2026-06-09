@@ -406,23 +406,23 @@ class PlayerHistoryService:
     @staticmethod
     def _calculate_gara_stats(gare: List[Gara], user_id: int) -> GaraStats:
         """Calculate aggregated stats for gare history."""
-        from models.classification.models import RoundClassification
-
         total = len(gare)
         first_places = 0
         podiums = 0
         total_matches = 0
 
         for gara in gare:
-            # Get user's final position in this gara
-            final_classification = (
-                db.session.query(RoundClassification)
-                .filter(
-                    RoundClassification.gara_id == gara.id,
-                    RoundClassification.user_id == user_id,
-                    RoundClassification.round_number == gara.current_round,
-                )
-                .first()
+            # Usa la relationship gia' eager-loaded in get_gara_history
+            # (joinedload(Gara.round_classifications)) invece di una query
+            # RoundClassification per gara (N+1): la classifica finale del
+            # giocatore e' la sua riga al round corrente.
+            final_classification = next(
+                (
+                    rc
+                    for rc in gara.round_classifications
+                    if rc.user_id == user_id and rc.round_number == gara.current_round
+                ),
+                None,
             )
 
             if final_classification:

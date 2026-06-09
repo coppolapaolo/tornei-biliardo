@@ -856,14 +856,30 @@ class PlayoffService:
     @staticmethod
     def get_user_playoff_history(user_id: int) -> List[Dict[str, Any]]:
         """Get user's playoff participation history."""
-        qualifications = PlayoffQualification.query.filter_by(user_id=user_id).all()
+        from sqlalchemy.orm import joinedload
+
+        # Eager-load configuration + campionato per evitare 2 lazy-load per riga
+        # (N+1) sull'accesso a configuration.campionato.name / .name.
+        qualifications = (
+            PlayoffQualification.query.filter_by(user_id=user_id)
+            .options(
+                joinedload(PlayoffQualification.configuration).joinedload(
+                    PlayoffConfiguration.campionato
+                )
+            )
+            .all()
+        )
 
         history = []
         for qualification in qualifications:
+            config = qualification.configuration
+            # campionato puo' essere None (record orfano / campionato rimosso):
+            # non far esplodere l'intera pagina history su un None-deref.
+            campionato = config.campionato if config else None
             history.append(
                 {
-                    "campionato_name": qualification.configuration.campionato.name,
-                    "playoff_name": qualification.configuration.name,
+                    "campionato_name": campionato.name if campionato else None,
+                    "playoff_name": config.name if config else None,
                     "qualifying_position": qualification.qualifying_position,
                     "status": qualification.status.value,
                     "qualified_at": qualification.created_at,

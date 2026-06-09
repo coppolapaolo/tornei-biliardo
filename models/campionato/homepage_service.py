@@ -62,8 +62,18 @@ class HomepageService:
             None if there is nothing public to show.
         """
         garas = HomepageService._public_garas()
+        # Eager-load playoff config + tournament: get_status() (per ogni
+        # campionato terminated) li consulta via relationship, altrimenti N+1.
+        from sqlalchemy.orm import joinedload
+        from models.playoff.models import PlayoffConfiguration
+
         campionati = (
             Campionato.query.filter_by(is_deleted=False)
+            .options(
+                joinedload(Campionato.playoff_configurations).joinedload(
+                    PlayoffConfiguration.playoff_campionato
+                )
+            )
             .order_by(Campionato.created_at.desc())
             .all()
         )
