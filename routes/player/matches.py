@@ -2,6 +2,7 @@
 """Match operations and rack management routes."""
 
 from flask import request, jsonify
+from flask_babel import _
 from flask_login import login_required, current_user
 
 from models import db, Match
@@ -11,7 +12,6 @@ from utils import match_player_required, trio_player_required
 from utils.route_helpers import safe_json_error
 
 from . import player_bp
-
 
 # ============ TRIO MATCH RACK OPERATIONS ============
 
@@ -82,7 +82,9 @@ def confirm_trio_result(match_id):
         trio_id = match.trio_match.id
 
         # Use player-specific confirmation (requires all 3 to confirm)
-        result = TrioMatchService.confirm_trio_result_by_player(trio_id, current_user.id)
+        result = TrioMatchService.confirm_trio_result_by_player(
+            trio_id, current_user.id
+        )
         return jsonify(result)
 
     except ValueError as ve:
@@ -104,14 +106,22 @@ def forfeit_trio(match_id):
 
         trio_id = match.trio_match.id
 
-        # Get forfeiting player from request
-        forfeiting_player_id = request.form.get("player_id", type=int)
-        if not forfeiting_player_id:
-            # Default to current user if not specified
-            forfeiting_player_id = current_user.id
+        # IDOR fix: un giocatore può forfeitare SOLO se stesso. La route player
+        # è per l'auto-forfeit; il forfeit per conto di altri ha la sua route
+        # admin (routes/admin/competition/matches.py). Se la form indica un
+        # player_id diverso da current_user → 403, altrimenti si forfeita sé.
+        requested_player_id = request.form.get("player_id", type=int)
+        if requested_player_id and requested_player_id != current_user.id:
+            return (
+                jsonify({"error": _("Puoi ritirare solo te stesso da questo trio")}),
+                403,
+            )
+        forfeiting_player_id = current_user.id
 
         # Use the service layer
-        result = TrioMatchService.forfeit_trio(trio_id, forfeiting_player_id, current_user.id)
+        result = TrioMatchService.forfeit_trio(
+            trio_id, forfeiting_player_id, current_user.id
+        )
         return jsonify(result)
 
     except ValueError as ve:
@@ -392,7 +402,10 @@ def forfeit_match(match_id):
                 "success": True,
                 "status": match.status,
                 "winner_id": match.winner_id,
-                "message": f"Forfait dichiarato. {match.winner.username} vince per forfait.",
+                "message": (
+                    f"Forfait dichiarato. {match.winner.username} "
+                    f"vince per forfait."
+                ),
             }
         )
 

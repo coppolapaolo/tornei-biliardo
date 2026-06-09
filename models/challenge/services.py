@@ -307,7 +307,32 @@ class ChallengeService:
         round_number: int,
         challenge_id: Optional[int] = None,
     ) -> ChallengeAttempt:
-        """Create a challenge attempt to replace X in campionato."""
+        """Create a challenge attempt to replace X in campionato.
+
+        Authz: l'utente deve avere DAVVERO un bye in (gara_id, round_number).
+        Il bye è materializzato da round-creation come un Match(is_bye=True,
+        player1_id=user_id). Senza questa verifica un qualsiasi utente loggato
+        potrebbe fabbricare un bye (e quindi una vittoria in classifica) per
+        una gara/turno a cui non ha titolo (IDOR a livello service).
+        """
+        from ..match.models import Match
+        from ..exceptions import PermissionDeniedError
+
+        has_bye = (
+            db.session.query(Match.id)
+            .filter_by(
+                gara_id=gara_id,
+                round_number=round_number,
+                player1_id=user_id,
+                is_bye=True,
+            )
+            .first()
+            is not None
+        )
+        if not has_bye:
+            raise PermissionDeniedError(
+                "Nessun bye da sostituire per questo utente in questo turno"
+            )
 
         final_challenge_id: int
         if challenge_id is None:
@@ -408,10 +433,16 @@ class ChallengeService:
                 winner_id=attempt.user_id,
             )
             db.session.add(match)
+            db.session.flush()  # rende match.gara accessibile (effective_distance)
 
-        # Set match scores based on challenge performance
-        # Use raw score as rack equivalent (simplified, no invented scaling)
-        match.player1_score = max(1, attempt.score or 0)  # At least 1 for the win
+        # Il bye da X-replacement vale come un bye normale ai fini della
+        # classifica: il punteggio del vincitore è la distanza del round
+        # (ADR-027: effective_distance), NON lo score grezzo della challenge.
+        # Quest'ultimo ha scala arbitraria (es. 0-15) scollegata da
+        # gara.distance e gonfierebbe i rack in classifica rispetto agli altri
+        # bye (che valgono round_distance). Lo score della challenge resta
+        # registrato sul ChallengeAttempt.
+        match.player1_score = match.effective_distance
         match.player2_score = 0  # X gets 0
 
     @staticmethod
