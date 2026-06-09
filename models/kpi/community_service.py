@@ -27,6 +27,9 @@ class CommunityService:
         - Volume: Number of Garas managed
         - Saturation: Avg (Inscriptions / Max Participants) * 100
         """
+        from collections import defaultdict
+        from sqlalchemy.orm import selectinload
+
         from ..user.models import User, DirectorAssignment
         from ..competition.models import Gara
 
@@ -38,28 +41,40 @@ class CommunityService:
             if g.director_id:
                 director_ids.add(g.director_id)
 
+        # Batch-load anziche' query per-director nel loop (era N+1):
+        # - tutti i director in una sola query (era User.query.get per id);
+        # - le assignment gia' caricate in `assignments`, raggruppate per
+        #   utente/tipo (erano 2 filter_by per director);
+        # - le gare con director_id diretto raggruppate (era 1 filter_by each).
+        directors_by_id = {
+            u.id: u for u in User.query.filter(User.id.in_(director_ids)).all()
+        }
+        camp_assign_by_user: Dict[int, list] = defaultdict(list)
+        gara_assign_by_user: Dict[int, list] = defaultdict(list)
+        for a in assignments:
+            if a.entity_type == "campionato":
+                camp_assign_by_user[a.user_id].append(a)
+            elif a.entity_type == "gara":
+                gara_assign_by_user[a.user_id].append(a)
+        direct_garas_by_director: Dict[int, list] = defaultdict(list)
+        for g in garas_with_directors:
+            if g.director_id:
+                direct_garas_by_director[g.director_id].append(g)
+
         results = []
 
         for d_id in director_ids:
-            director = User.query.get(d_id)
+            director = directors_by_id.get(d_id)
             if not director:
                 continue
 
-            managed_garas = Gara.query.filter_by(director_id=d_id).all()
+            managed_garas = list(direct_garas_by_director.get(d_id, []))
 
-            camp_assignments = DirectorAssignment.query.filter_by(
-                user_id=d_id, entity_type="campionato"
-            ).all()
-
-            for ca in camp_assignments:
+            for ca in camp_assign_by_user.get(d_id, []):
                 if ca.campionato:
                     managed_garas.extend(ca.campionato.gare)
 
-            gara_assignments = DirectorAssignment.query.filter_by(
-                user_id=d_id, entity_type="gara"
-            ).all()
-
-            for ga in gara_assignments:
+            for ga in gara_assign_by_user.get(d_id, []):
                 if ga.gara and ga.gara not in managed_garas:
                     managed_garas.append(ga.gara)
 
@@ -72,8 +87,6 @@ class CommunityService:
             # `managed_garas` was assembled from multiple sources with lazy
             # relationships, so each g.inscriptions access would fire its own
             # SELECT otherwise.
-            from sqlalchemy.orm import selectinload
-
             gara_ids = [g.id for g in managed_garas]
             managed_garas = (
                 Gara.query.filter(Gara.id.in_(gara_ids))
@@ -125,7 +138,8 @@ class CommunityService:
         mau = MetricsService.get_mau()
         stickiness = round((dau / mau * 100), 1) if mau > 0 else 0.0
 
-        # 2. Real Churn: Users active last month (30-60d ago) but NOT active this month (0-30d)
+        # 2. Real Churn: utenti attivi il mese scorso (30-60g fa) ma NON
+        #    attivi questo mese (0-30g)
         today = utc_now()
         thirty_days_ago = today - timedelta(days=30)
         sixty_days_ago = today - timedelta(days=60)

@@ -280,6 +280,48 @@ class LocationService:
         return available_players
 
     @staticmethod
+    def _batch_location_statistics(halls: List[BilliardHall]) -> Dict[int, Dict]:
+        """Statistiche per un set di sale in 2 query (evita N+1).
+
+        Restituisce {hall_id -> stats dict} con la stessa forma di
+        get_location_statistics, ma calcolata in blocco invece di una
+        coppia di count per sala.
+        """
+        from ..individual_match.models import IndividualMatch
+        from sqlalchemy import func
+
+        if not halls:
+            return {}
+
+        hall_ids = [h.id for h in halls]
+        hall_names = [h.name for h in halls]
+        active_counts = dict(
+            db.session.query(UserLocationAvailability.billiard_hall_id, func.count())
+            .filter(
+                UserLocationAvailability.billiard_hall_id.in_(hall_ids),
+                UserLocationAvailability.is_available.is_(True),
+            )
+            .group_by(UserLocationAvailability.billiard_hall_id)
+            .all()
+        )
+        match_counts = dict(
+            db.session.query(IndividualMatch.location, func.count())
+            .filter(IndividualMatch.location.in_(hall_names))
+            .group_by(IndividualMatch.location)
+            .all()
+        )
+        return {
+            h.id: {
+                "billiard_hall": h,
+                "active_users_count": active_counts.get(h.id, 0),
+                "total_matches_played": match_counts.get(h.name, 0),
+                "table_types": h.get_table_types(),
+                "amenities": h.get_amenities(),
+            }
+            for h in halls
+        }
+
+    @staticmethod
     def get_location_statistics(billiard_hall_id: int) -> Dict[str, Any]:
         """Get statistics for a billiard hall."""
 
@@ -332,6 +374,12 @@ class LocationService:
             else user_hall_ids
         )
 
+        # Statistiche di tutte le sale in 2 query (era get_location_statistics
+        # per sala dentro il loop → N+1).
+        stats_by_hall = LocationService._batch_location_statistics(
+            [loc["billiard_hall"] for loc in user_locations]
+        )
+
         for location_data in user_locations:
             hall = location_data["billiard_hall"]
 
@@ -372,7 +420,7 @@ class LocationService:
                     "suitability_score": score,
                     "is_common_location": hall.id in common_hall_ids,
                     "user_matches_played": matches_played,
-                    "statistics": LocationService.get_location_statistics(hall.id),
+                    "statistics": stats_by_hall.get(hall.id),
                 }
             )
 
