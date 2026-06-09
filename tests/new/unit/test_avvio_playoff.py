@@ -672,3 +672,114 @@ class TestPlayoffNotifications:
             ).all()
             assert len(notifs) == 1, f"Player {p.username} should have 1 notification"
             assert "Elite" in notifs[0].title
+
+
+# ── Replacement flow (code review 2026-06-09, HIGH correttezza) ──────
+
+
+class TestPlayoffReplacement:
+    """Regression sul flusso di sostituzione qualificati.
+
+    Bug A (services.py:189) — find_replacement_player filtrava lo status con
+    `.value` ('confirmed'/'pending'), ma la colonna Enum persiste il NOME del
+    membro: le query non matchavano mai → current_players vuoto → veniva
+    sempre creata una qualificazione DUPLICATA per il primo qualificato
+    (già pending/confirmed) invece del vero sostituto in coda.
+
+    Bug B (models.py:404) — decline_participation()/expire_qualification()
+    chiamavano self.configuration._find_replacement() protetto da hasattr,
+    ma PlayoffConfiguration non definisce quel metodo: guardia sempre False
+    → decline non cercava mai un sostituto. Ora il servizio
+    (decline_qualification) invoca find_replacement_player esplicitamente.
+    """
+
+    def _setup(self, db_session):
+        c = _make_campionato(db_session, terminated=True)
+        cfg = _make_config(db_session, c, max_p=4, pos_to=4)
+        gara = _make_gara(db_session, c)
+        players = []
+        for i in range(4):
+            p = _make_user(db_session)
+            _make_classification(db_session, c, p, i + 1)
+            _make_inscription(db_session, p, gara)
+            players.append(p)
+        db_session.flush()
+        return c, cfg, players
+
+    def _add_qual(
+        self, db_session, cfg, user, position, status=QualificationStatus.PENDING
+    ):
+        q = PlayoffQualification(
+            configuration_id=cfg.id,
+            user_id=user.id,
+            qualifying_position=position,
+            qualification_reason="test",
+            status=status,
+        )
+        db_session.add(q)
+        db_session.flush()
+        return q
+
+    def test_find_replacement_picks_open_slot_not_duplicate(self, db_session):
+        c, cfg, players = self._setup(db_session)
+        # players 0,1,2 qualificati (PENDING); players[3] (pos 4) è lo slot aperto.
+        self._add_qual(db_session, cfg, players[0], 1)
+        self._add_qual(db_session, cfg, players[1], 2)
+        self._add_qual(db_session, cfg, players[2], 3)
+        db_session.commit()
+
+        replacement = PlayoffService.find_replacement_player(cfg.id)
+
+        # Prima del fix: current_players vuoto → pescava players[0] (duplicato).
+        assert replacement is not None
+        assert replacement.user_id == players[3].id
+        all_quals = PlayoffQualification.query.filter_by(configuration_id=cfg.id).all()
+        user_ids = [q.user_id for q in all_quals]
+        assert len(user_ids) == len(set(user_ids)), "nessuna qualificazione duplicata"
+
+    def test_find_replacement_none_when_all_already_qualified(self, db_session):
+        c, cfg, players = self._setup(db_session)
+        for i, p in enumerate(players):
+            self._add_qual(db_session, cfg, p, i + 1)
+        db_session.commit()
+
+        replacement = PlayoffService.find_replacement_player(cfg.id)
+
+        assert replacement is None
+        all_quals = PlayoffQualification.query.filter_by(configuration_id=cfg.id).all()
+        assert len(all_quals) == 4, "nessun duplicato creato"
+
+    def test_declined_player_not_repicked(self, db_session):
+        c, cfg, players = self._setup(db_session)
+        # players[0] ha DECLINED; 1,2,3 PENDING. Nessuno slot libero.
+        self._add_qual(
+            db_session, cfg, players[0], 1, status=QualificationStatus.DECLINED
+        )
+        self._add_qual(db_session, cfg, players[1], 2)
+        self._add_qual(db_session, cfg, players[2], 3)
+        self._add_qual(db_session, cfg, players[3], 4)
+        db_session.commit()
+
+        replacement = PlayoffService.find_replacement_player(cfg.id)
+
+        # Il declinante non va re-invitato; nessun altro candidato → None.
+        assert replacement is None
+
+    def test_decline_qualification_triggers_replacement(self, db_session):
+        c, cfg, players = self._setup(db_session)
+        # Slot aperto: players[0] (pos 1) NON ha qualificazione; 1,2,3 PENDING.
+        q1 = self._add_qual(db_session, cfg, players[1], 2)
+        self._add_qual(db_session, cfg, players[2], 3)
+        self._add_qual(db_session, cfg, players[3], 4)
+        db_session.commit()
+
+        # players[1] declina → il servizio deve trovare il sostituto players[0].
+        PlayoffService.decline_qualification(q1.id, players[1].id)
+
+        updated = db.session.get(PlayoffQualification, q1.id)
+        assert updated.status == QualificationStatus.DECLINED
+        # Prima del fix: decline_participation() ritornava None → nessun sostituto.
+        repl = PlayoffQualification.query.filter_by(
+            configuration_id=cfg.id, user_id=players[0].id
+        ).first()
+        assert repl is not None, "il sostituto players[0] deve essere qualificato"
