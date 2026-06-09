@@ -51,6 +51,7 @@ class TournamentService(TournamentStatisticsService):
             "default_rounds_count",
             "default_odd_policy",
             "default_anti_rematch",
+            "has_handicap",
             # Deprecated but kept for compatibility
             "without_x",
             "final_playoffs",
@@ -108,6 +109,7 @@ class TournamentService(TournamentStatisticsService):
         default_odd_policy: str = "bye",
         default_anti_rematch: bool = True,
         default_classification_system: str = "WINS",
+        has_handicap: bool = False,
         # Deprecated but kept for compatibility
         without_x: bool = False,
         final_playoffs: bool = False,
@@ -134,6 +136,7 @@ class TournamentService(TournamentStatisticsService):
             default_odd_policy=default_odd_policy,
             default_anti_rematch=default_anti_rematch,
             default_classification_system=default_classification_system,
+            has_handicap=has_handicap,
             # Deprecated fields
             without_x=without_x,
             final_playoffs=final_playoffs,
@@ -580,6 +583,7 @@ class TournamentService(TournamentStatisticsService):
             from models.classification.campionato_classification import (
                 ClassificationService,
             )
+
             ClassificationService.update_campionato_classification(campionato_id)
         except Exception:
             pass

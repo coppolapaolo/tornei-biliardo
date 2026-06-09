@@ -76,4 +76,6 @@ class CampionatoFormParser:
             "default_rounds_count": default_rounds_count,
             "default_odd_policy": default_odd_policy,
             "default_anti_rematch": "default_anti_rematch" in form,
+            # Handicap mode del campionato (ereditato da gare/match). Checkbox.
+            "has_handicap": "has_handicap" in form,
         }
