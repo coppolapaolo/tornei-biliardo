@@ -250,6 +250,10 @@ class TransactionManager:
                             f"Failed to rollback to savepoint {transaction_id}: "
                             f"{rollback_error}"
                         )
+                    # Re-raise: un commit fallito NON deve essere spacciato per
+                    # successo. Senza questo il chiamante riceve un ritorno OK
+                    # mentre il DB ha annullato i dati (perdita dati silenziosa).
+                    raise
             elif is_pseudo_nested:
                 # For pseudo-nested (autobegin), release savepoint AND commit parent
                 # NOTE: First commit() releases the savepoint, second commits the
@@ -278,6 +282,8 @@ class TransactionManager:
                             f"Failed to rollback pseudo-nested transaction "
                             f"{transaction_id}: {rollback_error}"
                         )
+                    # Re-raise: vedi nota nel ramo nested (no successo fittizio).
+                    raise
             else:
                 try:
                     db.session.commit()
@@ -286,6 +292,10 @@ class TransactionManager:
                     logger.warning(
                         f"Failed to commit transaction {transaction_id}: {e}"
                     )
+                    # Re-raise: un commit fallito (IntegrityError, DB locked, …)
+                    # NON deve tornare come successo al chiamante. L'except
+                    # esterno fa il rollback e propaga. Vedi nota ramo nested.
+                    raise
 
             context.status = TransactionStatus.COMMITTED
 
@@ -295,7 +305,8 @@ class TransactionManager:
 
             try:
                 if is_true_nested or is_pseudo_nested:
-                    db.session.rollback()  # Rollback to savepoint (and parent for pseudo)
+                    # Rollback to savepoint (and parent for pseudo-nested)
+                    db.session.rollback()
                     logger.warning(
                         f"{'Nested' if is_true_nested else 'Pseudo-nested'} "
                         f"transaction {transaction_id} rolled back: {str(e)}"
