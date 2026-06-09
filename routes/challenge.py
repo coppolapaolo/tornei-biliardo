@@ -223,8 +223,9 @@ def _parse_complete_attempt_payload(data):
       come PASSATO un tentativo pass/fail in realtà fallito.
 
     Lo score viene coerciato a int (None se assente/non numerico). `passed`
-    è True/False solo su valori espliciti; None se assente (challenge
-    numeriche: `passed` non si applica).
+    è True/False solo su valori esplicitamente riconosciuti; None se assente
+    o non riconosciuto (challenge numeriche, placeholder "" di un <select>,
+    payload spurio): in questi casi NON si registra un fallimento implicito.
     """
     raw_score = data.get("score")
     try:
@@ -238,7 +239,14 @@ def _parse_complete_attempt_payload(data):
     elif raw_passed is None:
         passed = None
     else:
-        passed = str(raw_passed).strip().lower() in ("true", "1", "yes", "on")
+        token = str(raw_passed).strip().lower()
+        if token in ("true", "1", "yes", "on"):
+            passed = True
+        elif token in ("false", "0", "no", "off"):
+            passed = False
+        else:
+            # Valore non riconosciuto (es. "" del placeholder): non fornito.
+            passed = None
 
     return score, passed, data.get("notes")
 

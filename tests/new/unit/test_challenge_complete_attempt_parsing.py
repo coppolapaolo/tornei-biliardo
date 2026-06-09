@@ -51,6 +51,20 @@ def test_passed_zero_string_is_false():
 
 
 @pytest.mark.unit
+def test_passed_empty_string_is_none_not_false():
+    # Follow-up Copilot (PR #14): il placeholder "" di un <select> NON deve
+    # registrare un fallimento implicito. Valore non riconosciuto → None.
+    _, passed, _ = _parse_complete_attempt_payload(MultiDict([("passed", "")]))
+    assert passed is None
+
+
+@pytest.mark.unit
+def test_passed_unrecognized_string_is_none():
+    _, passed, _ = _parse_complete_attempt_payload({"passed": "maybe"})
+    assert passed is None
+
+
+@pytest.mark.unit
 def test_score_string_coerced_to_int():
     score, _, _ = _parse_complete_attempt_payload(MultiDict([("score", "7")]))
     assert score == 7
