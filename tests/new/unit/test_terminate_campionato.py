@@ -220,6 +220,88 @@ def _add_completed_match(db_session, gara, round_number, p1, p2):
     return m
 
 
+def _add_playing_match(db_session, gara, round_number, p1, p2):
+    from models.match.models import Match
+    from models.status_enum import MatchStatus
+
+    m = Match(
+        gara_id=gara.id,
+        round_number=round_number,
+        player1_id=p1.id,
+        player2_id=p2.id,
+        status=MatchStatus.PLAYING.value,
+    )
+    db_session.add(m)
+    db_session.flush()
+    return m
+
+
+@pytest.mark.unit
+class TestTerminatePreservesPlayedGare:
+    """Regression: terminate_campionato non deve MAI soft-eliminare una gara
+    con risultati reali (match conclusi) — perderemmo dati di classifica.
+
+    Bug (code review 2026-06-09, HIGH correttezza) —
+    `models/campionato/tournament_service.py:567`. La logica decideva via
+    stato derivato: una gara PLAYING a metà round (alcuni match completati,
+    altri in corso) ha derived='playing' (non terminale) → finiva nel
+    fallback `gara.soft_delete()` perdendo i match già giocati. Idem per le
+    gare AWAITING_SSR. Il criterio corretto è oggettivo: se esiste almeno un
+    match concluso la gara non va eliminata.
+    """
+
+    def test_playing_mid_round_with_results_not_soft_deleted(self, db_session):
+        """Gara PLAYING con un match concluso + uno in corso: dati preservati."""
+        service = TournamentService()
+        c = _make_campionato(db_session)
+        g = _make_gara(db_session, c, 1, GaraStatus.PLAYING.value)
+        g.rounds_count = 2
+        g.current_round = 1
+        p1 = _make_user(db_session, 1)
+        p2 = _make_user(db_session, 2)
+        p3 = _make_user(db_session, 3)
+        p4 = _make_user(db_session, 4)
+        _add_completed_match(db_session, g, 1, p1, p2)
+        _add_playing_match(db_session, g, 1, p3, p4)
+        db_session.commit()
+
+        result = service.terminate_campionato(c.id)
+        assert result is True
+
+        g_ref = db_session.get(Gara, g.id)
+        # Prima del fix: soft-eliminata (deleted_at != None) → dati persi.
+        assert g_ref.deleted_at is None, "gara con match conclusi non va eliminata"
+
+    def test_round_completed_gara_preserved(self, db_session):
+        """Gara ROUND_COMPLETED (round 1 di 2 giocato): preservata, non eliminata."""
+        service = TournamentService()
+        c = _make_campionato(db_session)
+        g = _make_gara(db_session, c, 1, GaraStatus.PLAYING.value)
+        g.rounds_count = 2
+        g.current_round = 1
+        p1 = _make_user(db_session, 1)
+        p2 = _make_user(db_session, 2)
+        _add_completed_match(db_session, g, 1, p1, p2)
+        db_session.commit()
+
+        service.terminate_campionato(c.id)
+
+        g_ref = db_session.get(Gara, g.id)
+        assert g_ref.deleted_at is None
+
+    def test_never_played_gara_still_soft_deleted(self, db_session):
+        """Gara mai giocata (nessun match) resta soft-eliminata come prima."""
+        service = TournamentService()
+        c = _make_campionato(db_session)
+        g = _make_gara(db_session, c, 1, GaraStatus.INSCRIPTION.value)
+        db_session.commit()
+
+        service.terminate_campionato(c.id)
+
+        g_ref = db_session.get(Gara, g.id)
+        assert g_ref.deleted_at is not None
+
+
 @pytest.mark.unit
 class TestIsReadyForPlayoffTransition:
     """Bug 14: il bottone 'Termina Campionato' diventa 'Passa alla fase
