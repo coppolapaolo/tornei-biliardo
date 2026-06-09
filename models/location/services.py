@@ -264,10 +264,17 @@ class LocationService:
             if exclude_user_id and availability.user_id == exclude_user_id:
                 continue
 
+            # Il filtro soft-delete unificato (app.py) esclude gli utenti
+            # anonimizzati: la relationship .user si risolve a None per loro.
+            # Saltali per non esporre account cancellati ne' inserire None.
+            user = availability.user
+            if user is None:
+                continue
+
             if availability.is_available_at(proposed_datetime):
                 available_players.append(
                     {
-                        "user": availability.user,
+                        "user": user,
                         "availability": availability,
                         "matches_played_here": availability.matches_played_here,
                         "last_played_at": availability.last_played_at,

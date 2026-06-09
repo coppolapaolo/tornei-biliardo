@@ -1,15 +1,24 @@
 """
 Module: utils/encryption.py
 Purpose: Data encryption/decryption utilities for user privacy compliance
-Requirements: SPECIFICHE.md - Personal information must be encrypted with server-side key
+Requirements: SPECIFICHE.md - Personal information must be encrypted with a
+              server-side key
 """
 
 import os
 import base64
+import logging
 from typing import Optional
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+
+logger = logging.getLogger(__name__)
+
+# Salt di default storico: NON cambiarlo o i dati PII gia' cifrati in
+# produzione (email/phone) diventano indecifrabili. Override possibile via
+# ENCRYPTION_SALT per nuovi deployment.
+_DEFAULT_SALT = b"campionati-biliardo-salt"
 
 
 class EncryptionManager:
@@ -35,16 +44,27 @@ class EncryptionManager:
         key_string = os.environ.get("ENCRYPTION_KEY")
 
         if not key_string:
-            # For development, generate a default key
-            # In production, this should be set in server configuration
+            # Fail-fast in produzione: cifrare PII con una chiave nota nel
+            # sorgente equivale a non cifrare. In dev/test si usa un default
+            # con warning esplicito.
+            if os.environ.get("FLASK_ENV") == "production":
+                raise RuntimeError(
+                    "ENCRYPTION_KEY non impostata in produzione: i dati PII "
+                    "verrebbero cifrati con una chiave pubblica nota. "
+                    "Configura ENCRYPTION_KEY nell'ambiente."
+                )
             key_string = "default-development-key-change-in-production"
-            print(
-                "WARNING: Using default encryption key. Set ENCRYPTION_KEY environment variable in production."
+            logger.warning(
+                "Using default encryption key. Set ENCRYPTION_KEY environment "
+                "variable in production."
             )
 
         # Derive encryption key from the key string
         key_bytes = key_string.encode()
-        salt = b"campionati-biliardo-salt"  # Should be random in production
+        # Salt configurabile (default = valore storico per retro-compatibilita'
+        # con i dati gia' cifrati).
+        salt_env = os.environ.get("ENCRYPTION_SALT")
+        salt = salt_env.encode() if salt_env else _DEFAULT_SALT
 
         kdf = PBKDF2HMAC(
             algorithm=hashes.SHA256(),
@@ -81,7 +101,7 @@ class EncryptionManager:
             return decrypted_bytes.decode()
         except Exception as e:
             # Log error and return empty string for corrupted data
-            print(f"Decryption failed: {e}")
+            logger.warning("Decryption failed: %s", e)
             return ""
 
 
