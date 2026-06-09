@@ -407,8 +407,10 @@ class NotificationService:
 
             cutoff_date = utc_now() - timedelta(days=preference.auto_delete_days)
 
-            # Delete old notifications of this type for this user
-            old_notifications = Notification.query.filter(
+            # Bulk DELETE invece di SELECT .all() + db.session.delete per riga:
+            # un solo statement per preferenza, niente materializzazione in
+            # memoria. Ritorna il numero di righe eliminate.
+            deleted = Notification.query.filter(
                 and_(
                     Notification.user_id == preference.user_id,
                     Notification.notification_type == preference.notification_type,
@@ -421,11 +423,8 @@ class NotificationService:
                         ]
                     ),
                 )
-            ).all()
-
-            for notification in old_notifications:
-                db.session.delete(notification)
-                total_deleted += 1
+            ).delete(synchronize_session=False)
+            total_deleted += deleted
 
         return total_deleted
 
