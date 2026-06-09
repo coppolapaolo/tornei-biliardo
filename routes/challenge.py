@@ -213,6 +213,36 @@ def attempt_detail(attempt_id):
     return render_template("player/challenge_attempt_detail.html", attempt=attempt)
 
 
+def _parse_complete_attempt_payload(data):
+    """Estrae (score, passed, notes) dal payload di completamento tentativo.
+
+    Funziona sia con un dict semplice (body JSON) sia con un MultiDict
+    (request.form). NON usa il kwarg `type=` di MultiDict.get:
+    - su un dict JSON `dict.get("score", type=int)` solleva TypeError → 500;
+    - `MultiDict.get("passed", type=bool)` fa bool("false") == True, segnando
+      come PASSATO un tentativo pass/fail in realtà fallito.
+
+    Lo score viene coerciato a int (None se assente/non numerico). `passed`
+    è True/False solo su valori espliciti; None se assente (challenge
+    numeriche: `passed` non si applica).
+    """
+    raw_score = data.get("score")
+    try:
+        score = int(raw_score) if raw_score not in (None, "") else None
+    except (TypeError, ValueError):
+        score = None
+
+    raw_passed = data.get("passed")
+    if isinstance(raw_passed, bool):
+        passed = raw_passed
+    elif raw_passed is None:
+        passed = None
+    else:
+        passed = str(raw_passed).strip().lower() in ("true", "1", "yes", "on")
+
+    return score, passed, data.get("notes")
+
+
 @challenge_bp.route("/attempt/<int:attempt_id>/complete", methods=["POST"])
 @login_required
 def complete_attempt(attempt_id):
@@ -225,12 +255,13 @@ def complete_attempt(attempt_id):
             return jsonify({"success": False, "error": "Access denied"}), 403
 
         data = request.get_json() if request.is_json else request.form
+        score, passed, notes = _parse_complete_attempt_payload(data)
 
         completed_attempt = ChallengeService.complete_challenge_attempt(
             attempt_id=attempt_id,
-            score=data.get("score", type=int),
-            passed=data.get("passed", type=bool),
-            notes=data.get("notes"),
+            score=score,
+            passed=passed,
+            notes=notes,
         )
 
         if request.is_json:
@@ -384,7 +415,8 @@ def complete_x_replacement(attempt_id):
             attempt_id=attempt_id, score=int(data["score"]), notes=data.get("notes")
         )
 
-        # Get gara_id for redirect (prefer GaraByeChallenge, fall back to deprecated field)
+        # Get gara_id for redirect (prefer GaraByeChallenge, fall back to
+        # deprecated field)
         redirect_gara_id = bye_challenge.gara_id if bye_challenge else attempt.gara_id
 
         if request.is_json:
@@ -444,6 +476,7 @@ def edit_challenge(challenge_id):
                 if challenge.image_filename:
                     delete_challenge_image(challenge.image_filename)
                 from utils.image_paths import ImagePathManager
+
                 new_image_path = ImagePathManager.get_challenge_db_path(image_filename)
 
     description = data["description"]
