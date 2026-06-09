@@ -99,3 +99,108 @@ def test_multi_set_clear_winner(db_session):
     m.player2_score = 1
     m._check_multi_set_completion()
     assert m.winner_id == 1
+
+
+# -------------------------------------------- playoff notify invited_at
+@pytest.mark.unit
+def test_notify_qualified_players_does_not_reprocess_invited(db_session):
+    """Chiamate ripetute non ri-processano i pending gia' invitati."""
+    from models.campionato.models import Campionato
+    from models.playoff.models import (
+        PlayoffConfiguration,
+        PlayoffQualification,
+        PlayoffType,
+        QualificationStatus,
+    )
+    from models.playoff.services import PlayoffService
+
+    suffix = uuid.uuid4().hex[:8]
+    camp = Campionato(name=f"C {suffix}", campionato_type="amalfi")
+    db.session.add(camp)
+    db.session.flush()
+    config = PlayoffConfiguration(
+        campionato_id=camp.id,
+        name="Elite",
+        playoff_type=PlayoffType.TOP_N,
+        max_participants=4,
+    )
+    db.session.add(config)
+    db.session.flush()
+    for i in range(2):
+        u = _make_user(suffix, i)
+        db.session.add(
+            PlayoffQualification(
+                configuration_id=config.id,
+                user_id=u.id,
+                qualifying_position=i + 1,
+                qualification_reason="test",
+                status=QualificationStatus.PENDING,
+            )
+        )
+    db.session.commit()
+
+    first = PlayoffService.notify_qualified_players(config.id)
+    assert first == 2  # entrambi invitati
+    # invited_at ora valorizzato → seconda chiamata non li ri-processa
+    second = PlayoffService.notify_qualified_players(config.id)
+    assert second == 0
+
+
+# -------------------------------------- dashboard challenge progress merge
+@pytest.mark.unit
+def test_challenge_progress_merges_across_gare(db_session):
+    """player_challenge_progress unisce le challenge di TUTTE le gare iscritte."""
+    from datetime import date, time
+    from models.campionato.models import Campionato
+    from models.competition.models import Gara, Inscription
+    from models.challenge.models import Challenge
+    from models.competition.gara_challenge import GaraChallenge
+    from models.dashboard.section_builders import DashboardSectionBuilder
+    from models.status_enum import GaraStatus
+
+    suffix = uuid.uuid4().hex[:8]
+    user = _make_user(suffix, 0)
+    camp = Campionato(name=f"C {suffix}", campionato_type="amalfi")
+    db.session.add(camp)
+    db.session.flush()
+
+    for gi in range(2):
+        gara = Gara(
+            number=gi + 1,
+            name=f"G{gi}_{suffix}",
+            date=date(2026, 1, 1 + gi),
+            time=time(18, 0),
+            discipline="palla_8",
+            distance=5,
+            rounds_count=1,
+            current_round=1,
+            min_participants=2,
+            max_participants=10,
+            matchmaking_strategy="amalfi",
+            status=GaraStatus.PLAYING.value,
+            campionato_id=camp.id,
+        )
+        db.session.add(gara)
+        db.session.flush()
+        ch = Challenge(
+            description=f"Ch{gi}_{suffix}", image_path="/x.jpg", pass_fail_only=False
+        )
+        db.session.add(ch)
+        db.session.flush()
+        db.session.add(
+            GaraChallenge(
+                gara_id=gara.id,
+                challenge_id=ch.id,
+                round_number=1,
+                max_attempts=3,
+                added_by_id=user.id,
+            )
+        )
+        db.session.add(Inscription(user_id=user.id, gara_id=gara.id))
+    db.session.commit()
+
+    result = DashboardSectionBuilder.build_challenge_sections(user.id, None)
+    progress = result["player_challenge_progress"].get(user.id)
+    assert progress is not None
+    # Senza il fix sopravviveva solo l'ultima gara (1 challenge); ora 2.
+    assert len(progress["challenges"]) == 2
