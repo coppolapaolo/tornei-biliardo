@@ -408,10 +408,16 @@ class ChallengeService:
                 winner_id=attempt.user_id,
             )
             db.session.add(match)
+            db.session.flush()  # rende match.gara accessibile (effective_distance)
 
-        # Set match scores based on challenge performance
-        # Use raw score as rack equivalent (simplified, no invented scaling)
-        match.player1_score = max(1, attempt.score or 0)  # At least 1 for the win
+        # Il bye da X-replacement vale come un bye normale ai fini della
+        # classifica: il punteggio del vincitore è la distanza del round
+        # (ADR-027: effective_distance), NON lo score grezzo della challenge.
+        # Quest'ultimo ha scala arbitraria (es. 0-15) scollegata da
+        # gara.distance e gonfierebbe i rack in classifica rispetto agli altri
+        # bye (che valgono round_distance). Lo score della challenge resta
+        # registrato sul ChallengeAttempt.
+        match.player1_score = match.effective_distance
         match.player2_score = 0  # X gets 0
 
     @staticmethod
