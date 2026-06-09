@@ -15,7 +15,8 @@ Decorator Categories:
     - Role-based: admin_required, director_required, player_only
     - Entity ownership: inscription_owner_required, challenge_attempt_player_required
     - Match participation: match_player_required, trio_player_required
-    - Management: campionato_manager_required, gara_manager_required, venue_manager_required
+    - Management: campionato_manager_required, gara_manager_required,
+      venue_manager_required
 """
 
 from functools import wraps
@@ -148,7 +149,8 @@ def trio_manager_required(f):
         trio = TrioMatch.query.get_or_404(trio_id)
         gara_id = trio.match.gara_id
 
-        # Use gara-level permission check which handles both standalone and campionato garas
+        # Use gara-level permission check which handles both standalone and
+        # campionato garas
         if not PermissionChecker.can_manage_competition(current_user, gara_id):
             abort(403)
 
@@ -184,6 +186,9 @@ def player_required(f):
 
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return redirect(url_for("auth.login"))
+
         from models import Inscription  # Local import to avoid circular dependency
 
         gara_id = kwargs.get("gara_id")
@@ -209,6 +214,9 @@ def match_player_required(f):
 
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return redirect(url_for("auth.login"))
+
         from models import Match  # Local import to avoid circular dependency
 
         match_id = kwargs.get("match_id")
@@ -234,6 +242,9 @@ def trio_player_required(f):
 
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return redirect(url_for("auth.login"))
+
         from models import Match  # Local import to avoid circular dependency
 
         match_id = kwargs.get("match_id")
@@ -264,6 +275,9 @@ def inscription_owner_required(f):
 
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return redirect(url_for("auth.login"))
+
         from models import Inscription  # Local import to avoid circular dependency
 
         inscription_id = kwargs.get("inscription_id")
@@ -301,7 +315,8 @@ def challenge_player_required(f):
             abort(404)
 
         # For now, allow all authenticated players to access challenges
-        # This could be extended to check if user is enrolled in a gara that uses this challenge
+        # This could be extended to check if the user is enrolled in a gara
+        # that uses this challenge
         return f(*args, **kwargs)
 
     return decorated_function
@@ -312,6 +327,9 @@ def challenge_attempt_player_required(f):
 
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return redirect(url_for("auth.login"))
+
         from models import ChallengeAttempt  # Local import to avoid circular dependency
 
         attempt_id = kwargs.get("attempt_id")
@@ -337,6 +355,9 @@ def individual_match_player_required(f):
 
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return redirect(url_for("auth.login"))
+
         from models import IndividualMatch  # Local import to avoid circular dependency
 
         match_id = kwargs.get("match_id")
@@ -394,24 +415,28 @@ class UserPermissions:
         """Check if director management UI should be shown."""
         if not current_user.is_authenticated:
             return False
-            
+
         # Check standard role
         if current_user.is_director:
-             return True
-             
+            return True
+
         # Check gamification features that enable management UIs
         if hasattr(current_user, "can_access"):
-             # If user can create championship OR manage availability, show management UI
-             if current_user.can_access("create_campionato") or current_user.can_access("manage_availability"):
-                 return True
-                 
+            # If user can create championship OR manage availability, show management UI
+            if current_user.can_access("create_campionato") or current_user.can_access(
+                "manage_availability"
+            ):
+                return True
+
         return False
 
     @staticmethod
     def get_default_dashboard():
         """Get the default dashboard route for current user."""
         if current_user.is_authenticated:
-            return "dashboard.dashboard" if current_user.is_admin else "player.dashboard"
+            return (
+                "dashboard.dashboard" if current_user.is_admin else "player.dashboard"
+            )
         return "main.index"
 
 
