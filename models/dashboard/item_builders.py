@@ -54,11 +54,12 @@ def build_unified_items(
     for campionato in campionati:
         next_date = None
         try:
-            gare_list = (
-                db.session.query(Gara)
-                .filter(Gara.campionato_id == campionato.id)
-                .all()
-            )
+            # N+1 fix: usa la relationship già eager-loaded (joinedload(gare) in
+            # campionatos_q/managed_campionatos_q) invece di ri-interrogare Gara
+            # per ogni campionato. `campionato.gare` e la query esplicita
+            # restituiscono lo stesso set (nessun auto-filter soft-delete su Gara,
+            # è solo per User), quindi è behavior-preserving.
+            gare_list = campionato.gare or []
             future_dates = [
                 g.date for g in gare_list if g.date and g.date >= date_cls.today()
             ]
@@ -81,9 +82,7 @@ def build_unified_items(
             can_view_details = True
 
         if next_date:
-            sort_key = (
-                f"{next_date.strftime('%Y-%m-%d')}_campionato_{campionato.id}"
-            )
+            sort_key = f"{next_date.strftime('%Y-%m-%d')}_campionato_{campionato.id}"
         else:
             sort_key = f"9999-99-99_campionato_{campionato.id}"
 
