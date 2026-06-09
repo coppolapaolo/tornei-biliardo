@@ -213,6 +213,28 @@ def attempt_detail(attempt_id):
     return render_template("player/challenge_attempt_detail.html", attempt=attempt)
 
 
+def _payload_int(data, key, *, required=False):
+    """Estrae un int da un payload dict (JSON) o MultiDict (form).
+
+    NON usa il kwarg `type=` di MultiDict.get: su un dict JSON
+    `dict.get(key, type=int)` solleva TypeError (non catturato da
+    `except ValueError`) → 500. Ritorna None se il valore è assente o non
+    numerico; se `required=True` solleva ValueError (mappata a 400 dalle route)
+    quando manca o non è convertibile.
+    """
+    raw = data.get(key)
+    if raw in (None, ""):
+        if required:
+            raise ValueError(f"Missing required field: {key}")
+        return None
+    try:
+        return int(raw)
+    except (TypeError, ValueError):
+        if required:
+            raise ValueError(f"Invalid integer for field: {key}")
+        return None
+
+
 def _parse_complete_attempt_payload(data):
     """Estrae (score, passed, notes) dal payload di completamento tentativo.
 
@@ -372,7 +394,7 @@ def create_x_replacement(gara_id, round_number):
             user_id=current_user.id,
             gara_id=gara_id,
             round_number=round_number,
-            challenge_id=data.get("challenge_id", type=int),
+            challenge_id=_payload_int(data, "challenge_id"),
         )
 
         if request.is_json:
@@ -420,7 +442,9 @@ def complete_x_replacement(attempt_id):
         data = request.get_json() if request.is_json else request.form
 
         completed_attempt = ChallengeService.complete_x_replacement_attempt(
-            attempt_id=attempt_id, score=int(data["score"]), notes=data.get("notes")
+            attempt_id=attempt_id,
+            score=_payload_int(data, "score", required=True),
+            notes=data.get("notes"),
         )
 
         # Get gara_id for redirect (prefer GaraByeChallenge, fall back to
