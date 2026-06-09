@@ -101,12 +101,8 @@
     </div>
     {% endfor %}
 </div>
-{% if (completed_garas_total or 0) > (archive_garas|length) %}
-<div class="text-center">
-    <a href="{{ url_for('main.public_garas_list') }}" class="btn btn-link btn-sm">
-        {{ _("Vedi tutte le gare concluse") }}
-    </a>
-</div>
-{% endif %}
+{# Nessun link "vedi tutte": /garas è solo standalone e non filtra per
+   stato, mentre questo archivio include anche gare di campionati. Le gare
+   concluse dei campionati restano raggiungibili dal dettaglio campionato. #}
 {% endif %}
 {% endif %}

@@ -1716,7 +1716,7 @@ msgid "Campionati in corso"
 msgstr ""
 
 #: templates/index.html:20
-#, fuzzy, python-format
+#, python-format
 msgid "%(count)s campionato"
 msgid_plural "%(count)s campionati"
 msgstr[0] ""
@@ -3580,7 +3580,7 @@ msgid "Da definire"
 msgstr ""
 
 #: templates/components/_index_live.html:35
-#, fuzzy, python-format
+#, python-format
 msgid "%(num)s iscritto"
 msgid_plural "%(num)s iscritti"
 msgstr[0] ""

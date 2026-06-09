@@ -69,10 +69,14 @@ class HomepageService:
         )
 
         # --- Gare partitioning -------------------------------------------------
+        live_gara_objs = [g for g in garas if g.status in _LIVE_GARA_STATUSES]
+        # Match ai tavoli per TUTTE le gare live in un'unica query (evita N+1).
+        matches_by_gara = HomepageService._live_matches_by_gara(
+            [g.id for g in live_gara_objs]
+        )
         live_garas = [
-            HomepageService._build_live_gara(g)
-            for g in garas
-            if g.status in _LIVE_GARA_STATUSES
+            HomepageService._build_live_gara(g, matches_by_gara.get(g.id, []))
+            for g in live_gara_objs
         ]
         open_garas = [
             HomepageService._build_open_gara(g) for g in garas if g.can_inscribe()
@@ -134,7 +138,6 @@ class HomepageService:
             "archive_garas": archive_garas,
             "archive_campionati": archive_campionati[:HOMEPAGE_ARCHIVE_LIMIT],
             "archive_campionati_total": archive_campionati_total,
-            "completed_garas_total": len(completed_garas),
         }
 
     # ──────────────────────────────────────────────────────────────────────
@@ -180,16 +183,32 @@ class HomepageService:
         return 1 if gara.status == GaraStatus.PLAYING.value else 0
 
     @staticmethod
-    def _build_live_gara(gara: Gara) -> Dict[str, Any]:
-        """Dati per una card di gara in diretta, inclusi i match ai tavoli."""
-        live_matches = (
-            Match.query.filter_by(gara_id=gara.id, status=MatchStatus.PLAYING.value)
+    def _live_matches_by_gara(gara_ids: List[int]) -> Dict[int, List[Match]]:
+        """Match attualmente ai tavoli per le gare indicate, in un'unica query
+        (evita il pattern N+1 quando più gare sono live insieme).
+
+        Raggruppa per gara_id preservando l'ordine (tavolo, id); il taglio a
+        HOMEPAGE_LIVE_MATCHES_PER_GARA avviene per-gara in `_build_live_gara`.
+        """
+        if not gara_ids:
+            return {}
+        rows = (
+            Match.query.filter(Match.gara_id.in_(gara_ids))
+            .filter(Match.status == MatchStatus.PLAYING.value)
             .filter(Match.is_bye.is_(False))
             .filter(Match.table_assignment.isnot(None))
-            .order_by(Match.table_assignment, Match.id)
-            .limit(HOMEPAGE_LIVE_MATCHES_PER_GARA)
+            .order_by(Match.gara_id, Match.table_assignment, Match.id)
             .all()
         )
+        grouped: Dict[int, List[Match]] = {}
+        for m in rows:
+            grouped.setdefault(m.gara_id, []).append(m)
+        return grouped
+
+    @staticmethod
+    def _build_live_gara(gara: Gara, live_matches: List[Match]) -> Dict[str, Any]:
+        """Dati per una card di gara in diretta, inclusi i match ai tavoli
+        (già pre-caricati e raggruppati da `_live_matches_by_gara`)."""
         return {
             "gara": gara,
             "campionato": gara.campionato if gara.campionato_id else None,
@@ -197,7 +216,8 @@ class HomepageService:
             "rounds_count": gara.rounds_count,
             "active_count": gara.get_active_inscriptions_count(),
             "live_matches": [
-                HomepageService._build_live_match(m) for m in live_matches
+                HomepageService._build_live_match(m)
+                for m in live_matches[:HOMEPAGE_LIVE_MATCHES_PER_GARA]
             ],
         }
 
