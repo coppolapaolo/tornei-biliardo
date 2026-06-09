@@ -286,8 +286,19 @@ class PlayerHistoryService:
                     player_r = 0
                 racks_won += player_r
                 racks_lost += trio_racks_lost(player_r, distance)
+            elif m.is_multi_set:
+                # Multi-set: player*_score sono i SET vinti, non i rack. I rack
+                # reali vivono nei record Set: sommali per non inquinare i
+                # totali rack con conteggi di set.
+                for s in m.sets:
+                    if m.player1_id == user_id:
+                        racks_won += s.player1_racks or 0
+                        racks_lost += s.player2_racks or 0
+                    else:
+                        racks_won += s.player2_racks or 0
+                        racks_lost += s.player1_racks or 0
             else:
-                # Regular 2-player match
+                # Regular single-set match: player*_score sono i rack.
                 if m.player1_id == user_id:
                     racks_won += m.player1_score or 0
                     racks_lost += m.player2_score or 0
@@ -458,12 +469,9 @@ class PlayerHistoryService:
         )
 
         # Query campionati
-        query = (
-            db.session.query(Campionato)
-            .filter(
-                Campionato.id.in_(campionato_ids_with_participation),
-                Campionato.is_deleted == False,  # noqa: E712
-            )
+        query = db.session.query(Campionato).filter(
+            Campionato.id.in_(campionato_ids_with_participation),
+            Campionato.is_deleted == False,  # noqa: E712
         )
 
         if filters and filters.campionato_status == "active":
