@@ -114,22 +114,20 @@ def public_campionatos_list():
     # is_deleted=False include i terminated come archivio storico
     # (vedi ADR-030 §"Scope"). is_active=False (terminated) appare
     # sotto filtro status="terminati".
-    query = Campionato.query.filter_by(is_deleted=False)
+    # Eager-load playoff config + tournament SEMPRE: get_status() viene chiamato
+    # sia dal filtro per status sotto, sia dal template (badge status_badge_class
+    # / status_text per OGNI campionato), e per i terminated consulta queste
+    # relationship → senza eager-load resterebbe N+1 anche con status=all.
+    from sqlalchemy.orm import joinedload
+    from models.playoff.models import PlayoffConfiguration
+
+    query = Campionato.query.filter_by(is_deleted=False).options(
+        joinedload(Campionato.playoff_configurations).joinedload(
+            PlayoffConfiguration.playoff_campionato
+        )
+    )
     if raw_query:
         query = query.filter(Campionato.name.ilike(f"%{raw_query}%"))
-
-    # Eager-load playoff config + tournament: il filtro per status sotto chiama
-    # get_status() per ogni campionato, che per i terminated li consulta via
-    # relationship (altrimenti N+1).
-    if status_filter != "all":
-        from sqlalchemy.orm import joinedload
-        from models.playoff.models import PlayoffConfiguration
-
-        query = query.options(
-            joinedload(Campionato.playoff_configurations).joinedload(
-                PlayoffConfiguration.playoff_campionato
-            )
-        )
 
     campionatos = query.order_by(Campionato.created_at.desc()).all()
 
