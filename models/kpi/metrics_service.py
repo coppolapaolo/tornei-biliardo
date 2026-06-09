@@ -131,38 +131,43 @@ class MetricsService:
 
     @staticmethod
     def get_active_users_count(days: int) -> int:
-        """Get count of users active in last N days (based on match activity)."""
+        """Get count of DISTINCT users active in last N days (match activity).
+
+        Conta gli utenti distinti sull'UNIONE di player1/player2: un utente che
+        nel periodo compare sia come player1 sia come player2 va contato una
+        sola volta. (Prima si sommavano due COUNT(DISTINCT) per-colonna →
+        doppio conteggio, con DAU/WAU/MAU gonfiati e stickiness dau/mau
+        potenzialmente > 100%.)
+        """
         from ..match.models import Match
 
         cutoff = utc_now() - timedelta(days=days)
 
-        active_p1 = (
-            db.session.query(func.count(func.distinct(Match.player1_id)))
+        active_ids = set()
+        for (pid,) in (
+            db.session.query(Match.player1_id)
             .filter(
-                and_(
-                    Match.updated_at >= cutoff,
-                    Match.status == MatchStatus.COMPLETED.value,
-                    Match.player1_id.isnot(None),
-                )
+                Match.updated_at >= cutoff,
+                Match.status == MatchStatus.COMPLETED.value,
+                Match.player1_id.isnot(None),
             )
-            .scalar()
-            or 0
-        )
-
-        active_p2 = (
-            db.session.query(func.count(func.distinct(Match.player2_id)))
+            .distinct()
+            .all()
+        ):
+            active_ids.add(pid)
+        for (pid,) in (
+            db.session.query(Match.player2_id)
             .filter(
-                and_(
-                    Match.updated_at >= cutoff,
-                    Match.status == MatchStatus.COMPLETED.value,
-                    Match.player2_id.isnot(None),
-                )
+                Match.updated_at >= cutoff,
+                Match.status == MatchStatus.COMPLETED.value,
+                Match.player2_id.isnot(None),
             )
-            .scalar()
-            or 0
-        )
+            .distinct()
+            .all()
+        ):
+            active_ids.add(pid)
 
-        return active_p1 + active_p2
+        return len(active_ids)
 
     @staticmethod
     def get_dau() -> int:
