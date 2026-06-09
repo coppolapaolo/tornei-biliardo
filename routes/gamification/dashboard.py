@@ -1,5 +1,8 @@
 # routes/gamification/dashboard.py
-"""User-facing gamification routes: dashboard, achievements, quests, streaks, leaderboards."""
+"""User-facing gamification routes.
+
+Dashboard, achievements, quests, streaks, leaderboards.
+"""
 
 from flask import render_template, jsonify, request, flash, redirect, url_for, abort
 from flask_login import login_required, current_user
@@ -11,13 +14,15 @@ from models.gamification.streak_service import StreakService
 from models.gamification.quest_service import QuestService
 from models.gamification.unlock_progress_service import UnlockProgressService
 from models.gamification.models import (
-    AchievementCategory, AchievementDifficulty, StreakType, Quest,
-    QuestStatus
+    AchievementCategory,
+    AchievementDifficulty,
+    StreakType,
+    Quest,
+    QuestStatus,
 )
 from models.kpi import track_achievement_view, track_leaderboard_view
 
 from . import gamification_bp
-
 
 # ============================================
 # Test & Dashboard Routes
@@ -63,14 +68,11 @@ def dashboard():
 
     # Get recent achievements (last 5 unlocked)
     all_unlocked = AchievementService.get_user_achievements(
-        current_user.id,
-        unlocked_only=True
+        current_user.id, unlocked_only=True
     )
     # Sort by unlock date and take last 5
     recent_achievements = sorted(
-        all_unlocked,
-        key=lambda x: x.get("unlocked_at") or "",
-        reverse=True
+        all_unlocked, key=lambda x: x.get("unlocked_at") or "", reverse=True
     )[:5]
 
     # Get current streaks
@@ -80,7 +82,9 @@ def dashboard():
     active_quests = QuestService.get_user_quests(current_user.id, active_only=True)
 
     # Get locked features progress for "what's next" section
-    locked_features = UnlockProgressService.get_locked_features_progress(current_user.id)
+    locked_features = UnlockProgressService.get_locked_features_progress(
+        current_user.id
+    )
 
     return render_template(
         "gamification/dashboard.html",
@@ -90,7 +94,7 @@ def dashboard():
         streaks=streaks,
         active_quests=active_quests,
         locked_features=locked_features,
-        page_title=_("Dashboard Gamification")
+        page_title=_("Dashboard Gamification"),
     )
 
 
@@ -149,8 +153,7 @@ def achievements():
 
     # Get all user achievements grouped by category
     user_achievements = AchievementService.get_user_achievements(
-        current_user.id,
-        unlocked_only=False
+        current_user.id, unlocked_only=False
     )
 
     # Get achievement stats (total, unlocked, by category)
@@ -172,7 +175,7 @@ def achievements():
         summary=summary,
         categories=AchievementCategory,
         difficulties=AchievementDifficulty,
-        page_title=_("I Tuoi Achievement")
+        page_title=_("I Tuoi Achievement"),
     )
 
 
@@ -193,37 +196,35 @@ def leaderboards():
     """
     # Get leaderboard type from query param (default: xp)
     leaderboard_type_str = request.args.get("type", "xp")
-    limit = min(int(request.args.get("limit", 20)), 100)
+    # type=int evita 500 su input non numerico (route pubblica): valori non
+    # validi ricadono sul default 20 invece di sollevare ValueError.
+    limit_raw = request.args.get("limit", 20, type=int)
+    limit = min(limit_raw if limit_raw and limit_raw > 0 else 20, 100)
 
     from models.gamification.leaderboard_service import LeaderboardService
     from models.gamification.models import LeaderboardType
 
-    # Map string type to enum
-    type_map = {
-        "xp": LeaderboardType.XP_ALL_TIME,
-        "level": LeaderboardType.LEVEL_HIGHEST,
-        "streak": LeaderboardType.STREAK_CURRENT,
-        "elo": LeaderboardType.ELO_RATING
-    }
-    
-    # Get all leaderboards for the view to allow switching without reload (or just active one)
-    # Ideally for HTMX we'd fetch only one. For now fetch all 3 major ones.
-    
-    xp_leaderboard = LeaderboardService.get_leaderboard(LeaderboardType.XP_ALL_TIME, limit)
-    level_leaderboard = LeaderboardService.get_leaderboard(LeaderboardType.LEVEL_HIGHEST, limit)
-    streak_leaderboard = LeaderboardService.get_leaderboard(LeaderboardType.STREAK_CURRENT, limit)
-    
+    # Carica tutte le classifiche principali così la view può cambiare tab
+    # senza ricaricare la pagina.
+    xp_leaderboard = LeaderboardService.get_leaderboard(
+        LeaderboardType.XP_ALL_TIME, limit
+    )
+    level_leaderboard = LeaderboardService.get_leaderboard(
+        LeaderboardType.LEVEL_HIGHEST, limit
+    )
+    streak_leaderboard = LeaderboardService.get_leaderboard(
+        LeaderboardType.STREAK_CURRENT, limit
+    )
+
     from models.gamification.ui_helpers import GamificationUIHelper
+
     elo_leaderboard = []
     if GamificationUIHelper.can_view_ratings(current_user):
-        elo_leaderboard = LeaderboardService.get_leaderboard(LeaderboardType.ELO_RATING, limit)
+        elo_leaderboard = LeaderboardService.get_leaderboard(
+            LeaderboardType.ELO_RATING, limit
+        )
 
     track_leaderboard_view()  # KPI tracking
-    
-    # Check if we should render partial (for tabs)
-    if request.headers.get("HX-Request"):
-        template_name = f"gamification/partials/leaderboard_{leaderboard_type_str}.html"
-        # Since we don't have partials yet, stick to full render or create logic later
 
     return render_template(
         "gamification/leaderboards.html",
@@ -232,7 +233,7 @@ def leaderboards():
         streak_leaderboard=streak_leaderboard,
         elo_leaderboard=elo_leaderboard,
         active_tab=leaderboard_type_str,
-        page_title=_("Classifiche")
+        page_title=_("Classifiche"),
     )
 
 
@@ -272,7 +273,7 @@ def quests():
         active_quests=active_quests,
         completed_quests=completed_quests,
         upcoming_quests=upcoming_quests,
-        page_title=_("Quest Settimanali/Mensili")
+        page_title=_("Quest Settimanali/Mensili"),
     )
 
 
@@ -309,7 +310,7 @@ def streaks():
         streaks=user_streaks,
         primary_streak=primary_streak,
         streak_types=StreakType,
-        page_title=_("Le Tue Streak")
+        page_title=_("Le Tue Streak"),
     )
 
 
@@ -327,7 +328,7 @@ def api_achievements():
 
     achievements = AchievementService.get_user_achievements(
         current_user.id,
-        unlocked_only=request.args.get("unlocked_only", "false").lower() == "true"
+        unlocked_only=request.args.get("unlocked_only", "false").lower() == "true",
     )
     return jsonify(achievements)
 
@@ -355,12 +356,14 @@ def api_quests():
     result = []
     for q in quests:
         quest = q.get("quest")
-        result.append({
-            "id": quest.id if quest else None,
-            "name": quest.name if quest else None,
-            "description": quest.description if quest else None,
-            "is_participating": q.get("is_participating"),
-            "is_completed": q.get("is_completed"),
-            "progress_percentage": q.get("progress_percentage")
-        })
+        result.append(
+            {
+                "id": quest.id if quest else None,
+                "name": quest.name if quest else None,
+                "description": quest.description if quest else None,
+                "is_participating": q.get("is_participating"),
+                "is_completed": q.get("is_completed"),
+                "progress_percentage": q.get("progress_percentage"),
+            }
+        )
     return jsonify(result)
