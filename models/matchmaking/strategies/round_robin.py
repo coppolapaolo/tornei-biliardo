@@ -6,7 +6,7 @@ Requirements: SPECIFICHE.md - Round Robin campionato format
 
 from __future__ import annotations
 
-from typing import Sequence, List, Tuple, Dict, Any, TYPE_CHECKING
+from typing import Sequence, List, Optional, Tuple, Dict, Any, TYPE_CHECKING
 
 from .base import Pairing, BaseStrategy
 
@@ -122,7 +122,7 @@ class RoundRobinStrategy(BaseStrategy):
     # Sentinella "giocatore fantasma" per il caso dispari: chi viene accoppiato
     # con essa in un dato turno riposa (bye). None è sicuro perché gli id reali
     # sono interi positivi.
-    _BYE_SENTINEL = None
+    _BYE_SENTINEL: Optional[int] = None
 
     def _generate_round_robin_schedule(
         self, player_ids: List[int]
@@ -145,12 +145,12 @@ class RoundRobinStrategy(BaseStrategy):
         if n < 2:
             return []
 
-        # Round robin a giro (circle method). Con N dispari il fantasma occupa
-        # un posto e produce il bye; la lunghezza diventa pari e si ruotano gli
-        # altri tenendo fisso il primo elemento.
-        players: List[int] = player_ids[:]
+        # Round robin a giro (circle method). Con N dispari il fantasma (la
+        # sentinella None) occupa un posto e produce il bye; la lunghezza
+        # diventa pari e si ruotano gli altri tenendo fisso il primo elemento.
+        players: List[Optional[int]] = list(player_ids)
         if n % 2 == 1:
-            players.append(self._BYE_SENTINEL)  # type: ignore[arg-type]
+            players.append(self._BYE_SENTINEL)
 
         size = len(players)  # sempre pari
         rounds = size - 1  # == n se dispari, n-1 se pari
@@ -160,15 +160,14 @@ class RoundRobinStrategy(BaseStrategy):
             round_pairings: List[Tuple[int, ...]] = []
 
             for i in range(size // 2):
-                player1 = players[i]
-                player2 = players[size - 1 - i]
-
-                if player1 is self._BYE_SENTINEL:
-                    round_pairings.append((player2,))
-                elif player2 is self._BYE_SENTINEL:
-                    round_pairings.append((player1,))
-                else:
-                    round_pairings.append((player1, player2))
+                # Filtra la sentinella: se uno dei due slot è il fantasma,
+                # l'altro giocatore riposa (tupla a 1 → bye); altrimenti coppia.
+                pair = tuple(
+                    p
+                    for p in (players[i], players[size - 1 - i])
+                    if p is not self._BYE_SENTINEL
+                )
+                round_pairings.append(pair)
 
             schedule.append(round_pairings)
 
