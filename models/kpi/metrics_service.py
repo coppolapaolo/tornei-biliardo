@@ -84,22 +84,18 @@ class MetricsService:
         if total_users == 0:
             return 0.0
 
-        users_with_matches = (
-            db.session.query(func.count(func.distinct(Match.player1_id)))
-            .filter(Match.status == MatchStatus.COMPLETED.value)
-            .scalar()
-            or 0
+        # Giocatori distinti via UNION delle due posizioni: un utente che gioca
+        # sia come player1 sia come player2 NON va contato due volte (la vecchia
+        # somma dei due distinct() gonfiava il numeratore).
+        p1 = db.session.query(Match.player1_id).filter(
+            Match.status == MatchStatus.COMPLETED.value,
+            Match.player1_id.isnot(None),
         )
-
-        users_with_matches_p2 = (
-            db.session.query(func.count(func.distinct(Match.player2_id)))
-            .filter(Match.status == MatchStatus.COMPLETED.value)
-            .scalar()
-            or 0
+        p2 = db.session.query(Match.player2_id).filter(
+            Match.status == MatchStatus.COMPLETED.value,
+            Match.player2_id.isnot(None),
         )
-
-        # Approximate unique players (not perfect but fast)
-        unique_players = min(users_with_matches + users_with_matches_p2, total_users)
+        unique_players = min(p1.union(p2).count(), total_users)
         return round((unique_players / total_users) * 100, 1)
 
     @staticmethod
@@ -185,7 +181,8 @@ class MetricsService:
 
     @staticmethod
     def get_retention_rate(days: int) -> float:
-        """Get retention rate: % of users who returned after N days from registration."""
+        """Get retention rate: % of users who returned after N days from
+        registration."""
         from ..user.models import User
         from ..match.models import Match
 

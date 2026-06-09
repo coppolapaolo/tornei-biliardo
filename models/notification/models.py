@@ -1,7 +1,8 @@
 """
 Module: models/notification/models.py
 Purpose: Notification domain models for user notifications
-Requirements: SPECIFICHE.md - Notification system for match proposals and campionato updates
+Requirements: SPECIFICHE.md - Notification system for match proposals and
+              campionato updates
 Data Structures: Notification, NotificationPreference
 """
 
@@ -13,7 +14,7 @@ from typing import Any, Dict, Optional, TYPE_CHECKING
 from enum import Enum
 
 
-from ..base import db, BaseModel, TimestampMixin, utc_now
+from ..base import db, BaseModel, utc_now
 
 if TYPE_CHECKING:
     pass
@@ -118,7 +119,9 @@ class Notification(BaseModel):
 
     # i18n support: store template key + params instead of pre-translated strings
     # This enables proper language switching at display time
-    template_key = db.Column(db.String(100), nullable=True)  # e.g., "achievement.unlocked"
+    template_key = db.Column(
+        db.String(100), nullable=True
+    )  # e.g., "achievement.unlocked"
     template_params = db.Column(db.Text, nullable=True)  # JSON params for template
 
     # Relationships
@@ -215,18 +218,25 @@ class Notification(BaseModel):
             )
 
             template = NOTIFICATION_TEMPLATES.get(self.template_key, {})
-            params = self.get_template_params().copy()  # Copy to avoid mutating original
+            params = (
+                self.get_template_params().copy()
+            )  # Copy to avoid mutating original
 
             # Translate special keys that need runtime translation
             if "difficulty_key" in params:
                 difficulty_key = params.pop("difficulty_key")
-                # DIFFICULTY_LABELS values are lazy_gettext, convert to string for current locale
-                params["difficulty"] = str(DIFFICULTY_LABELS.get(difficulty_key, difficulty_key))
+                # DIFFICULTY_LABELS values are lazy_gettext, convert to string
+                # for current locale
+                params["difficulty"] = str(
+                    DIFFICULTY_LABELS.get(difficulty_key, difficulty_key)
+                )
 
             if "type_key" in params:
                 type_key = params.pop("type_key")
                 # Try streak types first, then quest types
-                label = STREAK_TYPE_LABELS.get(type_key) or QUEST_TYPE_LABELS.get(type_key, type_key)
+                label = STREAK_TYPE_LABELS.get(type_key) or QUEST_TYPE_LABELS.get(
+                    type_key, type_key
+                )
                 params["type"] = str(label)
 
             # Translate template strings and substitute params
@@ -236,16 +246,27 @@ class Notification(BaseModel):
 
             try:
                 return {
-                    "title": _(title_template) % params if params else _(title_template),
-                    "message": _(message_template) % params if params else _(message_template),
-                    "action_text": _(action_template) % params if params and action_template else _(action_template) if action_template else "",
+                    "title": (
+                        _(title_template) % params if params else _(title_template)
+                    ),
+                    "message": (
+                        _(message_template) % params if params else _(message_template)
+                    ),
+                    "action_text": (
+                        _(action_template) % params
+                        if params and action_template
+                        else _(action_template) if action_template else ""
+                    ),
                 }
             except (KeyError, TypeError):
-                # Fallback if param substitution fails
+                # Substituzione fallita (param mancante o tipo errato): usa i
+                # campi statici gia' renderizzati alla creazione invece del
+                # template grezzo, per non mostrare placeholder tipo %(name)s.
                 return {
-                    "title": _(title_template),
-                    "message": _(message_template),
-                    "action_text": _(action_template) if action_template else "",
+                    "title": self.title or _(title_template),
+                    "message": self.message or _(message_template),
+                    "action_text": self.action_text
+                    or (_(action_template) if action_template else ""),
                 }
 
         # Fallback to static fields (backward compatibility)
@@ -342,9 +363,7 @@ class NotificationPreference(BaseModel):
         if not self.max_per_day:
             return False
 
-        today_start = utc_now().replace(
-            hour=0, minute=0, second=0, microsecond=0
-        )
+        today_start = utc_now().replace(hour=0, minute=0, second=0, microsecond=0)
         today_count = Notification.query.filter(
             Notification.user_id == self.user_id,
             Notification.notification_type == self.notification_type,
@@ -378,7 +397,10 @@ class NotificationPreference(BaseModel):
         )
 
     def __repr__(self) -> str:
-        return f"<NotificationPreference {self.user_id}: {self.notification_type.value}={self.enabled}>"
+        return (
+            f"<NotificationPreference {self.user_id}: "
+            f"{self.notification_type.value}={self.enabled}>"
+        )
 
 
 class NotificationTemplate(BaseModel):

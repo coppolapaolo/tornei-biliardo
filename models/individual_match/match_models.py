@@ -597,11 +597,15 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
         if not self._is_multi_set_complete():
             return
 
-        # Determine winner
+        # Determine winner. In modalita' exact-sets (is_race_to_sets=False) il
+        # completamento puo' scattare in parita' (es. 1-1 con match_distance=2):
+        # un tie NON e' una vittoria di player2, quindi nessun vincitore.
         if self.player1_score > self.player2_score:
             self.winner_id = self.player1_id
-        else:
+        elif self.player2_score > self.player1_score:
             self.winner_id = self.player2_id
+        else:
+            self.winner_id = None
 
         # Note: We don't auto-complete the match status here.
         # The match uses bilateral confirmation flow via is_ready_for_validation().
@@ -815,7 +819,10 @@ class IndividualSet(BaseModel):
         )
 
     def __repr__(self) -> str:
-        return f"<IndividualSet {self.match_id}-{self.set_number}: {self.player1_racks}-{self.player2_racks}>"
+        return (
+            f"<IndividualSet {self.match_id}-{self.set_number}: "
+            f"{self.player1_racks}-{self.player2_racks}>"
+        )
 
 
 class IndividualRack(BaseModel):

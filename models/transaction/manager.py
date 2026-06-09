@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from enum import Enum
 import logging
 import time
-from threading import local
+from threading import local, Lock
 
 from ..base import db
 from sqlalchemy import text
@@ -124,6 +124,11 @@ class TransactionManager:
         self._transaction_stack: List[TransactionContext] = []
         self._metrics_history: List[TransactionMetrics] = []
         self._next_transaction_id = 1
+        # current_transaction e' thread-local, ma _next_transaction_id e
+        # _metrics_history sono condivisi sull'istanza globale: in un server
+        # WSGI multithread (PythonAnywhere) le mutazioni concorrenti darebbero
+        # ID duplicati o una lista metriche corrotta. Proteggi con un lock.
+        self._state_lock = Lock()
 
     @property
     def current_transaction(self) -> Optional[TransactionContext]:
@@ -137,8 +142,9 @@ class TransactionManager:
 
     def generate_transaction_id(self) -> str:
         """Generate unique transaction ID."""
-        transaction_id = f"tx_{self._next_transaction_id:06d}"
-        self._next_transaction_id += 1
+        with self._state_lock:
+            transaction_id = f"tx_{self._next_transaction_id:06d}"
+            self._next_transaction_id += 1
         return transaction_id
 
     @contextmanager
@@ -328,13 +334,14 @@ class TransactionManager:
             # Restore parent context
             self.current_transaction = parent_context
 
-            # Record metrics
+            # Record metrics (lista condivisa: protetta dal lock per evitare
+            # append/troncamento concorrenti corrotti)
             metrics = context.to_metrics()
-            self._metrics_history.append(metrics)
-
-            # Limit metrics history
-            if len(self._metrics_history) > 1000:
-                self._metrics_history = self._metrics_history[-500:]  # Keep last 500
+            with self._state_lock:
+                self._metrics_history.append(metrics)
+                # Limit metrics history
+                if len(self._metrics_history) > 1000:
+                    self._metrics_history = self._metrics_history[-500:]
 
             logger.debug(
                 f"Transaction {transaction_id} completed in {metrics.duration_ms:.2f}ms"

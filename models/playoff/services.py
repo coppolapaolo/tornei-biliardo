@@ -121,18 +121,25 @@ class PlayoffService:
     @staticmethod
     @transactional(domain="playoff")
     def notify_qualified_players(configuration_id: int) -> int:
-        """Send notifications to qualified players."""
+        """Send notifications to qualified players non ancora invitati.
+
+        Usa invited_at (campo attivo) come marcatore: notified_at e' deprecato
+        e non viene mai popolato dal flusso di invito (start_playoff /
+        _send_playoff_invitations usano invited_at). Filtrando su notified_at
+        questo metodo ri-processava TUTTI i pending — anche i gia' invitati —
+        ad ogni chiamata (es. dopo un decline+replacement).
+        """
         qualifications = PlayoffQualification.query.filter_by(
             configuration_id=configuration_id,
             status=QualificationStatus.PENDING,
-            notified_at=None,
+            invited_at=None,
         ).all()
 
-        # In a real implementation, this would send actual notifications
-        # For now, just mark as notified
+        # In a real implementation, this would send actual notifications.
+        # For now, just mark as invited.
         count = 0
         for qualification in qualifications:
-            qualification.notified_at = utc_now()
+            qualification.invited_at = utc_now()
             count += 1
 
         return count

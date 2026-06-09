@@ -8,7 +8,7 @@ from datetime import date, datetime
 from typing import Optional, List, Tuple, Any, Dict
 
 from flask_sqlalchemy.pagination import Pagination
-from sqlalchemy import or_, and_
+from sqlalchemy import or_, and_, func
 from sqlalchemy.orm import joinedload, selectinload
 
 from models.base import db
@@ -237,11 +237,29 @@ class PlayerHistoryService:
                 )
             )
 
-        # Date range filter
+        # Date range filter. I match standalone hanno gara_id NULL → Gara.date
+        # NULL (outerjoin): `NULL >= date` e' NULL/falsy e li escluderebbe da
+        # qualsiasi filtro data. Fallback su Match.created_at per quelli.
         if filters.date_from:
-            query = query.filter(Gara.date >= filters.date_from)
+            query = query.filter(
+                or_(
+                    Gara.date >= filters.date_from,
+                    and_(
+                        Gara.date.is_(None),
+                        func.date(Match.created_at) >= filters.date_from,
+                    ),
+                )
+            )
         if filters.date_to:
-            query = query.filter(Gara.date <= filters.date_to)
+            query = query.filter(
+                or_(
+                    Gara.date <= filters.date_to,
+                    and_(
+                        Gara.date.is_(None),
+                        func.date(Match.created_at) <= filters.date_to,
+                    ),
+                )
+            )
 
         # Result filter
         if filters.result == "won":
