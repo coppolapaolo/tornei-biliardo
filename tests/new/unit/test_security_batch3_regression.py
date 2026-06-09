@@ -74,6 +74,7 @@ def test_participation_decorators_check_authentication(app):
     a current_user.id → AttributeError → 500.
     """
     from utils.permissions import (
+        player_required,
         match_player_required,
         inscription_owner_required,
         challenge_attempt_player_required,
@@ -82,6 +83,7 @@ def test_participation_decorators_check_authentication(app):
     )
 
     decorators = [
+        (player_required, {"gara_id": 123}),
         (match_player_required, {"match_id": 123}),
         (inscription_owner_required, {"inscription_id": 123}),
         (challenge_attempt_player_required, {"attempt_id": 123}),
