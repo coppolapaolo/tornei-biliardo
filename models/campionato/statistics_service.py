@@ -368,20 +368,19 @@ def compute_campionato_status(campionato: Campionato) -> str:
             hasattr(campionato, "has_playoff_configurations")
             and campionato.has_playoff_configurations()
         ):
-            # TERMINATED until all playoffs completed, then COMPLETED
-            from models.playoff.models import PlayoffTournament, PlayoffConfiguration
-
-            active_configs = PlayoffConfiguration.query.filter_by(
-                campionato_id=campionato.id, is_active=True
-            ).all()
+            # TERMINATED until all playoffs completed, then COMPLETED.
+            # Usa le relationship (playoff_configurations + playoff_campionato
+            # scalar) invece di query fresche per-config: identico semanticamente
+            # (filter_by(is_active=True) ≡ list-comp; .first() ≡ scalar uselist),
+            # ma eager-loadabile dai chiamanti su lista (homepage) → no N+1.
+            active_configs = [
+                cfg
+                for cfg in getattr(campionato, "playoff_configurations", [])
+                if cfg.is_active
+            ]
             if active_configs:
                 all_completed = all(
-                    (
-                        t := PlayoffTournament.query.filter_by(
-                            configuration_id=cfg.id
-                        ).first()
-                    )
-                    is not None
+                    (t := cfg.playoff_campionato) is not None
                     and t.status == "completed"
                     for cfg in active_configs
                 )

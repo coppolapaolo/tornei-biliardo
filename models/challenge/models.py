@@ -38,11 +38,12 @@ Modifiche Recenti (Settembre 2025):
 
 from __future__ import annotations
 
+import statistics
 from typing import Any, Dict, Optional, TYPE_CHECKING
 
 from sqlalchemy import desc
 
-from ..base import db, BaseModel, TimestampMixin, utc_now
+from ..base import db, BaseModel, utc_now
 
 if TYPE_CHECKING:
     pass
@@ -124,12 +125,12 @@ class Challenge(BaseModel):
         - Per sfide numeriche: pass_rate è None (non applicabile)
         - Per sfide pass/fail: pass_rate calcolato da campo 'passed'
         """
-        attempts_query = self.attempts.filter_by(completed=True)
+        # attempts e' lazy='dynamic': materializza UNA volta e deriva tutto in
+        # memoria invece di rieseguire la SELECT per count/distinct/passed.
+        attempts = self.attempts.filter_by(completed=True).all()
 
-        total_attempts = attempts_query.count()
-        unique_players = (
-            attempts_query.with_entities(ChallengeAttempt.user_id).distinct().count()
-        )
+        total_attempts = len(attempts)
+        unique_players = len({attempt.user_id for attempt in attempts})
 
         if total_attempts == 0:
             return {
@@ -143,9 +144,11 @@ class Challenge(BaseModel):
             }
 
         # Calculate statistics
-        scores = [attempt.score for attempt in attempts_query.all()]
+        scores = [attempt.score for attempt in attempts]
         average_score = sum(scores) / len(scores)
-        median_score = sorted(scores)[len(scores) // 2]
+        # statistics.median media i due valori centrali per N pari (sorted()[
+        # len//2] restituiva erroneamente il valore superiore-centrale).
+        median_score = statistics.median(scores)
         max_score_achieved = max(scores)
         perfect_score_count = sum(1 for score in scores if score == max_score_achieved)
 
@@ -154,9 +157,7 @@ class Challenge(BaseModel):
             # Solo per sfide pass/fail esplicite: calcola percentuale di superamento
             # Utilizza il campo 'passed' che è esplicitamente impostato per queste sfide
             pass_rate = (
-                sum(1 for attempt in attempts_query if attempt.passed)
-                / total_attempts
-                * 100
+                sum(1 for attempt in attempts if attempt.passed) / total_attempts * 100
             )
         else:
             # Per sfide numeriche: pass_rate non è applicabile/significativo
@@ -296,9 +297,15 @@ class ChallengeAttempt(BaseModel):
 
     # Dettagli del Tentativo
     score = db.Column(db.Integer, nullable=True)  # Punteggio: None se non completato
-    passed = db.Column(db.Boolean, nullable=True)  # Solo per sfide pass/fail, None per numeriche
-    completed = db.Column(db.Boolean, nullable=False, default=False)  # Stato completamento
-    attempted_at = db.Column(db.DateTime, nullable=False, default=utc_now)  # Timestamp tentativo
+    passed = db.Column(
+        db.Boolean, nullable=True
+    )  # Solo per sfide pass/fail, None per numeriche
+    completed = db.Column(
+        db.Boolean, nullable=False, default=False
+    )  # Stato completamento
+    attempted_at = db.Column(
+        db.DateTime, nullable=False, default=utc_now
+    )  # Timestamp tentativo
 
     # Note opzionali sul tentativo (condizioni particolari, osservazioni)
     notes = db.Column(db.Text, nullable=True)
@@ -335,7 +342,8 @@ class ChallengeAttempt(BaseModel):
             passed: Risultato pass/fail (richiesto solo per sfide pass/fail)
 
         Business Logic Post-Refactor:
-        - Sfide pass/fail: imposta 'passed' esplicitamente, score = 1/0 per rappresentazione
+        - Sfide pass/fail: imposta 'passed' esplicitamente, score = 1/0
+          per rappresentazione
         - Sfide numeriche: registra solo score, 'passed' rimane None (non applicabile)
         - Rimossa logica automatica di determinazione pass/fail al 70%
 
@@ -415,4 +423,6 @@ class ChallengeFavorite(BaseModel):
 
     def __repr__(self) -> str:
         """Rappresentazione stringa per debugging e logging sistema preferiti."""
-        return f"<ChallengeFavorite User#{self.user_id} -> Challenge#{self.challenge_id}>"
+        return (
+            f"<ChallengeFavorite User#{self.user_id} -> Challenge#{self.challenge_id}>"
+        )
