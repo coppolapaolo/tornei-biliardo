@@ -30,8 +30,9 @@ from models.events.base import EventBus
 from models.events.competition_events import (
     DirectorAssignmentAddedEvent,
     DirectorAssignmentRemovedEvent,
-    CompetitionCreatedEvent
+    CompetitionCreatedEvent,
 )
+
 
 class GaraService:
     """Operazioni di business su Gara (creazione, query, validazione, transizioni)."""
@@ -219,9 +220,11 @@ class GaraService:
         actual_creator_id = creator_id or director_id
         if actual_creator_id:
             from models.user.models import User
+
             user = db.session.get(User, actual_creator_id)
             if user:
                 from datetime import datetime
+
                 event = CompetitionCreatedEvent(
                     gara_id=gara.id,
                     name=gara.name,
@@ -234,7 +237,7 @@ class GaraService:
                     max_participants=gara.max_participants,
                     registration_deadline=gara.inscription_end,
                     is_campionato=gara.campionato_id is not None,
-                    campionato_id=gara.campionato_id
+                    campionato_id=gara.campionato_id,
                 )
                 EventBus.publish(event)
 
@@ -468,9 +471,9 @@ class GaraService:
             end_dt = None
 
         if start_dt and end_dt and end_dt < start_dt:
-            errors[
-                "inscription_end"
-            ] = "La data di fine iscrizioni deve essere >= della data di inizio"
+            errors["inscription_end"] = (
+                "La data di fine iscrizioni deve essere >= della data di inizio"
+            )
 
         # rounds_count (opzionale): >= 1
         rounds_raw = data.get("rounds_count")
@@ -601,7 +604,7 @@ class GaraService:
             entity_name=gara_name,
             user_id=user_id,
             username=user.username,
-            assigned_by_id=assigned_by_id
+            assigned_by_id=assigned_by_id,
         )
         EventBus.publish(event)
 
@@ -647,7 +650,7 @@ class GaraService:
             entity_name=gara_name,
             user_id=user_id,
             username=user.username,
-            removed_by_id=director_assoc.assigned_by_id  # chi ha aggiunto
+            removed_by_id=director_assoc.assigned_by_id,  # chi ha aggiunto
         )
         EventBus.publish(event)
 
@@ -749,10 +752,7 @@ class GaraService:
     @staticmethod
     @transactional(domain="competition")
     def soft_delete_gara(
-        gara_id: int,
-        deleted_by_id: int,
-        cascade_option: str,
-        reason: str = ""
+        gara_id: int, deleted_by_id: int, cascade_option: str, reason: str = ""
     ) -> None:
         """Soft delete a gara with cascade options.
 

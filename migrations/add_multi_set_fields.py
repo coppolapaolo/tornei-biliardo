@@ -115,12 +115,16 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
         if required_fields.issubset(proposal_cols):
             print("   ✓ match_proposal table: All fields present")
         else:
-            print(f"   ✗ match_proposal table: Missing {required_fields - proposal_cols}")
+            print(
+                f"   ✗ match_proposal table: Missing {required_fields - proposal_cols}"
+            )
 
         if required_fields.issubset(match_cols):
             print("   ✓ individual_match table: All fields present")
         else:
-            print(f"   ✗ individual_match table: Missing {required_fields - match_cols}")
+            print(
+                f"   ✗ individual_match table: Missing {required_fields - match_cols}"
+            )
 
     except sqlite3.OperationalError as e:
         if "duplicate column name" in str(e).lower():
@@ -254,8 +258,12 @@ if __name__ == "__main__":
         else:
             print(f"❌ Unknown command: {sys.argv[1]}")
             print("\nUsage:")
-            print("  python migrations/add_multi_set_fields.py              # SQLite (dev)")
-            print("  python migrations/add_multi_set_fields.py postgresql   # PostgreSQL (prod)")
+            print(
+                "  python migrations/add_multi_set_fields.py              # SQLite (dev)"
+            )
+            print(
+                "  python migrations/add_multi_set_fields.py postgresql   # PostgreSQL (prod)"
+            )
             print("  python migrations/add_multi_set_fields.py downgrade    # Rollback")
             sys.exit(1)
     else:

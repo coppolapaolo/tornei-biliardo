@@ -40,7 +40,9 @@ class BilliardHall(BaseModel):
     name = db.Column(db.String(255), nullable=False)
     address = db.Column(db.Text, nullable=True)
     city = db.Column(db.String(100), nullable=True)
-    province = db.Column(db.String(2), nullable=True)  # Italian province code (e.g., "RM", "MI")
+    province = db.Column(
+        db.String(2), nullable=True
+    )  # Italian province code (e.g., "RM", "MI")
     postal_code = db.Column(db.String(20), nullable=True)
     country = db.Column(db.String(100), nullable=False, default="Italy")
 

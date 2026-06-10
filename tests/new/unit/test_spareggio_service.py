@@ -70,7 +70,9 @@ class TestSpareggioServiceDetection:
         mock_gara.tiebreaker_enabled = True
         mock_gara.tiebreaker_until_position = 3
         mock_db.session.get.return_value = mock_gara
-        mock_db.session.query.return_value.filter_by.return_value.order_by.return_value.all.return_value = []
+        mock_db.session.query.return_value.filter_by.return_value.order_by.return_value.all.return_value = (
+            []
+        )
 
         result = SpareggioService.detect_tiebreakers(1)
         assert result == []
@@ -109,7 +111,9 @@ class TestSpareggioServiceDetection:
 
         # Each position has unique (wins, rack) = no ties
         mock_db.session.query.return_value.filter_by.return_value.order_by.return_value.all.return_value = [
-            mock_class1, mock_class2, mock_class3
+            mock_class1,
+            mock_class2,
+            mock_class3,
         ]
         # Mock GaraClassification query to return empty (no existing SSR scores)
         mock_db.session.query.return_value.filter.return_value.all.return_value = []
@@ -149,7 +153,9 @@ class TestSpareggioServiceDetection:
         mock_class3.user = MagicMock(display_name="Player 3")
 
         mock_db.session.query.return_value.filter_by.return_value.order_by.return_value.all.return_value = [
-            mock_class1, mock_class2, mock_class3
+            mock_class1,
+            mock_class2,
+            mock_class3,
         ]
         # No existing GaraClassification entries
         mock_db.session.query.return_value.filter.return_value.all.return_value = []
@@ -199,7 +205,10 @@ class TestSpareggioServiceDetection:
         mock_class4.user = MagicMock(display_name="Player 4")
 
         mock_db.session.query.return_value.filter_by.return_value.order_by.return_value.all.return_value = [
-            mock_class1, mock_class2, mock_class3, mock_class4
+            mock_class1,
+            mock_class2,
+            mock_class3,
+            mock_class4,
         ]
         mock_db.session.query.return_value.filter.return_value.all.return_value = []
 
@@ -264,9 +273,7 @@ class TestSpareggioServiceRandomStrategyRound:
         SpareggioService.detect_tiebreakers(1)
 
         # Verify filter_by was called with round_number=3 (not 2)
-        mock_query.filter_by.assert_called_with(
-            gara_id=1, round_number=3
-        )
+        mock_query.filter_by.assert_called_with(gara_id=1, round_number=3)
 
     @patch("models.competition.spareggio_service.db")
     @patch("models.competition.spareggio_service.Match")
@@ -293,9 +300,7 @@ class TestSpareggioServiceRandomStrategyRound:
 
         SpareggioService.get_all_ssr_groups(1)
 
-        mock_query.filter_by.assert_called_with(
-            gara_id=1, round_number=3
-        )
+        mock_query.filter_by.assert_called_with(gara_id=1, round_number=3)
 
     @patch("models.competition.spareggio_service.db")
     @patch("models.competition.spareggio_service.Match")
@@ -323,6 +328,4 @@ class TestSpareggioServiceRandomStrategyRound:
         SpareggioService.detect_tiebreakers(1)
 
         # Should fall back to rounds_count=3 (since current_round=0 is falsy)
-        mock_query.filter_by.assert_called_with(
-            gara_id=1, round_number=3
-        )
+        mock_query.filter_by.assert_called_with(gara_id=1, round_number=3)

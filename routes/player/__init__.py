@@ -9,6 +9,7 @@ This package contains all player-related routes decomposed into logical modules:
 - notifications: Notifications, venue manager requests
 - challenges: Challenge system integration
 """
+
 from flask import Blueprint
 
 player_bp = Blueprint("player", __name__)

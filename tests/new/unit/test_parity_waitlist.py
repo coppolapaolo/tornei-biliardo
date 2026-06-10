@@ -330,9 +330,7 @@ class TestParityAndCapacityWaitlistInteraction:
         InscriptionService.inscribe_user(user_id=players[1].id, gara_id=gara.id)
 
         # Terzo giocatore: 2 → 3 dispari, va in waitlist PARITY (non CAPACITY)
-        third = InscriptionService.inscribe_user(
-            user_id=players[2].id, gara_id=gara.id
-        )
+        third = InscriptionService.inscribe_user(user_id=players[2].id, gara_id=gara.id)
 
         assert third.is_waitlist is True
         assert third.waitlist_reason == WaitlistReason.PARITY.value
@@ -351,9 +349,7 @@ class TestParityAndCapacityWaitlistInteraction:
         # Quinto giocatore: 4 → 5, ora max raggiunto E dispari
         # Prima si applica parità (waitlist PARITY), ma siamo anche al max
         # Il comportamento dovrebbe essere: va in waitlist CAPACITY (max raggiunto)
-        fifth = InscriptionService.inscribe_user(
-            user_id=players[4].id, gara_id=gara.id
-        )
+        fifth = InscriptionService.inscribe_user(user_id=players[4].id, gara_id=gara.id)
 
         assert fifth.is_waitlist is True
         # Con max raggiunto, la ragione è CAPACITY

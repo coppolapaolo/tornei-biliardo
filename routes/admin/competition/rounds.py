@@ -548,9 +548,7 @@ def amalfi_start_round(gara_id, round_number):
             ).all()
             # VALIDATED conta come "match finito" (post-COMPLETED, admin-confirmed).
             finished = (MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value)
-            incomplete_prev = [
-                m for m in prev_matches if m.status not in finished
-            ]
+            incomplete_prev = [m for m in prev_matches if m.status not in finished]
             if incomplete_prev:
                 return jsonify(
                     {
@@ -646,9 +644,7 @@ def start_round_generic(gara_id, round_number):
             ).all()
             # VALIDATED conta come "match finito" (post-COMPLETED, admin-confirmed).
             finished = (MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value)
-            incomplete_prev = [
-                m for m in prev_matches if m.status not in finished
-            ]
+            incomplete_prev = [m for m in prev_matches if m.status not in finished]
             if incomplete_prev:
                 return jsonify(
                     {

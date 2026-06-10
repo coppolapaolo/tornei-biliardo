@@ -15,7 +15,6 @@ from app import create_app
 from routes.admin.competition import competition_bp
 import routes.admin.competition
 
-
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 

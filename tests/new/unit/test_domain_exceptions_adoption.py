@@ -73,8 +73,11 @@ class TestVenueManagerServiceExceptions:
     @pytest.fixture
     def player(self, app, db_session):
         with app.app_context():
-            u = User(username="vm_player", email="vm_player@example.com",
-                     role=UserRole.PLAYER.value)
+            u = User(
+                username="vm_player",
+                email="vm_player@example.com",
+                role=UserRole.PLAYER.value,
+            )
             u.set_password("secure123")
             db.session.add(u)
             db.session.commit()

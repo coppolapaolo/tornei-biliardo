@@ -9,7 +9,6 @@ should appear in the UI. The validation button should show when:
 
 from unittest.mock import MagicMock, PropertyMock
 
-
 # --- is_at_distance tests ---
 
 

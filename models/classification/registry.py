@@ -55,7 +55,9 @@ class ClassificationStrategyRegistry:
                 f"Strategy not found: {name}. Available: {available}"
             ) from None
 
-    def get_for_scope(self, scope: "ClassificationScope") -> List["ClassificationStrategy"]:
+    def get_for_scope(
+        self, scope: "ClassificationScope"
+    ) -> List["ClassificationStrategy"]:
         """Get all strategies for a given scope.
 
         Args:

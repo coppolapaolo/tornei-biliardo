@@ -36,9 +36,7 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db"):
         )
     """
 
-    cursor.execute(
-        f"SELECT COUNT(*) FROM trio_match WHERE {target_predicate}"
-    )
+    cursor.execute(f"SELECT COUNT(*) FROM trio_match WHERE {target_predicate}")
     target_count = cursor.fetchone()[0]
 
     if target_count == 0:
@@ -46,15 +44,13 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db"):
         conn.close()
         return
 
-    cursor.execute(
-        f"""
+    cursor.execute(f"""
         UPDATE trio_match
         SET current_player1_id = player1_id,
             current_player2_id = player2_id,
             waiting_player_id = player3_id
         WHERE {target_predicate}
-        """
-    )
+        """)
     conn.commit()
     print(f"  ✓ Backfilled {target_count} walkover trio row(s)")
     conn.close()

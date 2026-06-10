@@ -14,7 +14,6 @@ from utils.route_helpers import handle_service_action
 
 from . import player_bp
 
-
 # ============ HELPER FUNCTIONS ============
 
 

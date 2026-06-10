@@ -94,10 +94,13 @@ def upgrade(cursor) -> None:
         attempt_id, gara_id, round_number, user_id, completed = attempt
 
         # Check if already migrated (shouldn't happen, but be safe)
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT id FROM gara_bye_challenge
             WHERE challenge_attempt_id = ?
-        """, (attempt_id,))
+        """,
+            (attempt_id,),
+        )
 
         if cursor.fetchone():
             continue
@@ -105,33 +108,39 @@ def upgrade(cursor) -> None:
         # Find corresponding bye match if exists
         match_id = None
         if round_number:
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT id FROM match
                 WHERE gara_id = ? AND round_number = ? AND player1_id = ? AND is_bye = 1
                 LIMIT 1
-            """, (gara_id, round_number, user_id))
+            """,
+                (gara_id, round_number, user_id),
+            )
             match_row = cursor.fetchone()
             if match_row:
                 match_id = match_row[0]
 
         # Create GaraByeChallenge record
         now = utc_now().isoformat()
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO gara_bye_challenge
             (gara_id, challenge_attempt_id, round_number, user_id, match_id,
              is_completed, completed_at, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            gara_id,
-            attempt_id,
-            round_number or 1,  # Default to round 1 if not specified
-            user_id,
-            match_id,
-            1 if completed else 0,
-            now if completed else None,
-            now,
-            now
-        ))
+        """,
+            (
+                gara_id,
+                attempt_id,
+                round_number or 1,  # Default to round 1 if not specified
+                user_id,
+                match_id,
+                1 if completed else 0,
+                now if completed else None,
+                now,
+                now,
+            ),
+        )
 
         migrated_count += 1
 
@@ -182,7 +191,7 @@ if __name__ == "__main__":
     db_path = os.path.join(
         os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
         "instance",
-        "billiard_campionato.db"
+        "billiard_campionato.db",
     )
 
     if len(sys.argv) > 1:

@@ -99,12 +99,11 @@ class TestStartFirstRoundForfeit:
         matches = _round_matches(db_session, gara.id, 1)
         assert len(matches) == 2
         forfeit_match = next(
-            m for m in matches
-            if forfeiter in (m.player1_id, m.player2_id)
+            m for m in matches if forfeiter in (m.player1_id, m.player2_id)
         )
-        assert forfeit_match.status == "completed", (
-            "Forfeiter's match was left as pending — forfeit_user_ids not routed"
-        )
+        assert (
+            forfeit_match.status == "completed"
+        ), "Forfeiter's match was left as pending — forfeit_user_ids not routed"
         assert forfeit_match.is_walkover is True
         assert forfeit_match.winner_id != forfeiter
         # Non-forfeit match is unchanged: pending
@@ -115,9 +114,7 @@ class TestStartFirstRoundForfeit:
         self, db_session, isolated_players
     ):
         """Non-random branch: 3 iscritti, odd_policy=trio, 1 forfeit → 1 match 2p pending tra survivors, no TrioMatch row."""
-        gara = _make_gara(
-            db_session, min_participants=3, odd_number_policy="trio"
-        )
+        gara = _make_gara(db_session, min_participants=3, odd_number_policy="trio")
         p0, p1, p2 = (p.id for p in isolated_players[:3])
         _inscribe(db_session, gara.id, p0, is_forfeit=True)
         _inscribe(db_session, gara.id, p1)
@@ -136,9 +133,7 @@ class TestStartFirstRoundForfeit:
 
     def test_trio_two_forfeit_creates_walkover(self, db_session, isolated_players):
         """Non-random branch: 3 iscritti, odd_policy=trio, 2 forfeit → trio walkover completato, winner = survivor."""
-        gara = _make_gara(
-            db_session, min_participants=3, odd_number_policy="trio"
-        )
+        gara = _make_gara(db_session, min_participants=3, odd_number_policy="trio")
         p0, p1, p2 = (p.id for p in isolated_players[:3])
         _inscribe(db_session, gara.id, p0, is_forfeit=True)
         _inscribe(db_session, gara.id, p1, is_forfeit=True)
@@ -177,9 +172,9 @@ class TestStartFirstRoundForfeit:
             assert len(matches) >= 1, f"Round {round_number} has no matches"
             for m in matches:
                 if m.player2_id is not None and not m.is_bye:
-                    assert m.status == "completed", (
-                        f"Round {round_number}: forfeit match left as pending"
-                    )
+                    assert (
+                        m.status == "completed"
+                    ), f"Round {round_number}: forfeit match left as pending"
                     assert m.winner_id == p1
                     assert m.is_walkover is True
 

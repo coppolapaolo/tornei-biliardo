@@ -19,9 +19,9 @@ def format_date_local(value) -> Markup:
 
     # Formatta direttamente in Python con formato italiano
     if isinstance(value, datetime):
-        formatted = value.strftime('%d/%m/%Y')
+        formatted = value.strftime("%d/%m/%Y")
     elif isinstance(value, date):
-        formatted = value.strftime('%d/%m/%Y')
+        formatted = value.strftime("%d/%m/%Y")
     else:
         formatted = str(value)
 
@@ -64,17 +64,17 @@ def format_datetime_local(value) -> Markup:
         italian_time = utc_dt.astimezone(italian_tz)
 
         # Format for display
-        formatted = italian_time.strftime('%d/%m/%Y, %H:%M')
-        iso_utc = utc_dt.strftime('%Y-%m-%dT%H:%M:%SZ')
+        formatted = italian_time.strftime("%d/%m/%Y, %H:%M")
+        iso_utc = utc_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
 
         # Output <time> element with ISO datetime for potential JS enhancement
         return Markup(
             f'<time datetime="{iso_utc}" class="datetime-local">'
-            f'{escape(formatted)}</time>'
+            f"{escape(formatted)}</time>"
         )
     elif isinstance(value, date):
         # Just a date, no timezone conversion needed
-        formatted = value.strftime('%d/%m/%Y')
+        formatted = value.strftime("%d/%m/%Y")
         return Markup(escape(formatted))
     else:
         # Fallback for string values
@@ -98,9 +98,9 @@ def format_time_local(value) -> Markup:
         else:
             utc_dt = value.astimezone(ZoneInfo("UTC"))
         italian_time = utc_dt.astimezone(ZoneInfo("Europe/Rome"))
-        time_str = italian_time.strftime('%H:%M')
+        time_str = italian_time.strftime("%H:%M")
     elif isinstance(value, time):
-        time_str = value.strftime('%H:%M')
+        time_str = value.strftime("%H:%M")
     else:
         time_str = str(value)
 
@@ -153,11 +153,11 @@ def format_distance(distance_obj) -> Markup:
         return Markup(_("N/A"))
 
     # Se ha una property distance_config, usala
-    if hasattr(distance_obj, 'distance_config'):
+    if hasattr(distance_obj, "distance_config"):
         distance_obj = distance_obj.distance_config
 
     # Usa il metodo to_display_string() se disponibile
-    if hasattr(distance_obj, 'to_display_string'):
+    if hasattr(distance_obj, "to_display_string"):
         return Markup(escape(distance_obj.to_display_string()))
 
     return Markup(_("N/A"))
@@ -187,13 +187,13 @@ def format_score(score_obj) -> Markup:
         return Markup("0-0")
 
     # Se ha property rack_score o match_score, usala
-    if hasattr(score_obj, 'rack_score'):
+    if hasattr(score_obj, "rack_score"):
         score_obj = score_obj.rack_score
-    elif hasattr(score_obj, 'match_score'):
+    elif hasattr(score_obj, "match_score"):
         score_obj = score_obj.match_score
 
     # Usa il metodo to_display_string() se disponibile
-    if hasattr(score_obj, 'to_display_string'):
+    if hasattr(score_obj, "to_display_string"):
         return Markup(escape(score_obj.to_display_string()))
 
     return Markup(_("N/A"))
@@ -217,12 +217,12 @@ def format_distance_short(gara_or_distance) -> Markup:
         return Markup(_("N/A"))
 
     # Ottieni Distance object
-    if hasattr(gara_or_distance, 'distance_config'):
+    if hasattr(gara_or_distance, "distance_config"):
         distance = gara_or_distance.distance_config
     else:
         distance = gara_or_distance
 
-    if hasattr(distance, 'racks') and hasattr(distance, 'is_race_to_racks'):
+    if hasattr(distance, "racks") and hasattr(distance, "is_race_to_racks"):
         prefix = "BO" if distance.is_race_to_racks else "X"
         return Markup(f"{prefix}{distance.racks}")
 
@@ -241,7 +241,7 @@ def gara_display_name(gara) -> Markup:
     if not gara:
         return Markup(_("N/A"))
 
-    name = gara.name or _("Gara %(id)s") % {'id': gara.id}
+    name = gara.name or _("Gara %(id)s") % {"id": gara.id}
     return Markup(escape(name))
 
 
@@ -279,6 +279,7 @@ def player_name_with_forfeit(user, gara_id=None, is_forfeit=False) -> Markup:
     if gara_id:
         try:
             from models.competition.withdraw_policy_service import WithdrawPolicyService
+
             is_forfeit_db = WithdrawPolicyService.is_player_forfeit(gara_id, user.id)
 
             if is_forfeit_db:

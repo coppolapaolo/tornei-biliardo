@@ -284,7 +284,7 @@ class Set(BaseModel):
             is_race_to_racks=self.is_race_to,
             is_multi_set=False,
             sets=1,
-            is_race_to_sets=True
+            is_race_to_sets=True,
         )
 
     @property
@@ -301,7 +301,7 @@ class Set(BaseModel):
         return RackScore(
             distance=self.distance_config,
             player1_racks=self.player1_racks,
-            player2_racks=self.player2_racks
+            player2_racks=self.player2_racks,
         )
 
     def get_score_summary(self) -> Dict[str, Any]:

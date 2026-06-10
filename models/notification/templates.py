@@ -34,106 +34,87 @@ NOTIFICATION_TEMPLATES = {
         "message": "Hai ottenuto '%(name)s' (%(difficulty)s)! +%(xp)d XP",
         "action_text": "Visualizza Achievement",
     },
-
     # Level up
     "gamification.level_up": {
         "title": "Livello %(level)d Raggiunto!",
         "message": "Congratulazioni! Hai raggiunto il livello %(level)d!%(unlocks)s",
         "action_text": "Visualizza Progressi",
     },
-
     # Streak milestone
     "gamification.streak_milestone": {
         "title": "Streak di %(weeks)d Settimane!",
         "message": "Incredibile! Hai mantenuto il tuo streak di %(type)s per %(weeks)d settimane consecutive!%(freeze)s +%(xp)d XP",
         "action_text": "Visualizza Streak",
     },
-
     # Quest completed
     "gamification.quest_completed": {
         "title": "Quest Completata!",
         "message": "Hai completato la quest %(type)s '%(name)s'! +%(xp)d XP",
         "action_text": "Visualizza Quests",
     },
-
     # Match Notifications
     # ===================
-
     "match.proposal_received": {
         "title": "Nuova Proposta di Partita",
         "message": "%(proposer)s ti ha invitato a giocare presso %(location)s",
         "action_text": "Visualizza Proposta",
     },
-
     "match.proposal_accepted": {
         "title": "Proposta Accettata!",
         "message": "%(accepter)s ha accettato la tua proposta di partita",
         "action_text": "Visualizza Dettagli",
     },
-
     "match.proposal_declined": {
         "title": "Proposta Rifiutata",
         "message": "%(decliner)s ha rifiutato la tua proposta di partita",
         "action_text": "Visualizza",
     },
-
     # Tournament Notifications
     # ========================
-
     "tournament.inscription_confirmed": {
         "title": "Iscrizione Confermata",
         "message": "Sei iscritto a '%(tournament_name)s'",
         "action_text": "Visualizza Gara",
     },
-
     "tournament.starting_soon": {
         "title": "Gara in Partenza",
         "message": "La gara '%(tournament_name)s' inizia tra poco!",
         "action_text": "Vai alla Gara",
     },
-
     "tournament.match_ready": {
         "title": "Partita Pronta",
         "message": "La tua partita contro %(opponent)s è pronta al tavolo %(table)s",
         "action_text": "Visualizza Partita",
     },
-
     "tournament.round_completed": {
         "title": "Round Completato",
         "message": "Il round %(round)d di '%(tournament_name)s' è terminato",
         "action_text": "Visualizza Classifica",
     },
-
     # Director/Admin Notifications
     # ============================
-
     "admin.director_request": {
         "title": "Nuova Richiesta Direttore",
         "message": "%(username)s ha richiesto di diventare direttore",
         "action_text": "Gestisci Richiesta",
     },
-
     "admin.venue_manager_request": {
         "title": "Nuova Richiesta Gestore Sala",
         "message": "%(username)s ha richiesto di gestire '%(venue_name)s'",
         "action_text": "Gestisci Richiesta",
     },
-
     # User Notifications
     # ==================
-
     "user.director_approved": {
         "title": "Richiesta Approvata!",
         "message": "Sei stato promosso a Direttore. Ora puoi creare e gestire tornei.",
         "action_text": "Inizia",
     },
-
     "user.director_rejected": {
         "title": "Richiesta Non Approvata",
         "message": "La tua richiesta di diventare direttore non è stata approvata.%(notes)s",
         "action_text": "Dettagli",
     },
-
     "user.venue_manager_approved": {
         "title": "Richiesta Approvata!",
         "message": "Sei stato nominato gestore di '%(venue_name)s'",

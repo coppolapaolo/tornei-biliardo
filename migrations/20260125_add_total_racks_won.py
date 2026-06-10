@@ -31,7 +31,10 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
             )
             print("   Column added successfully.")
         except sqlite3.OperationalError as e:
-            if "duplicate column" in str(e).lower() or "already exists" in str(e).lower():
+            if (
+                "duplicate column" in str(e).lower()
+                or "already exists" in str(e).lower()
+            ):
                 print("   Column 'total_racks_won' already exists, skipping.")
             else:
                 raise

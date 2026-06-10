@@ -148,6 +148,7 @@ class TestAdminRoutesSmokeTests:
             from routes.admin.competition import competition_bp
             from routes.admin.match import match_bp
             from routes.admin.user import user_bp
+
             # from routes.admin.dashboard import dashboard_bp # Removed - admin dashboard deprecated
 
             # Verify blueprints are properly initialized

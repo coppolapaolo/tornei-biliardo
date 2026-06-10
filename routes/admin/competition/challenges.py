@@ -24,7 +24,6 @@ from utils.route_helpers import get_or_ajax_404, safe_json_error
 
 from . import competition_bp
 
-
 # ────────────────────────────────────────────────────────────────────────────────
 # CHALLENGE MANAGEMENT (Random Tournaments only)
 # ────────────────────────────────────────────────────────────────────────────────

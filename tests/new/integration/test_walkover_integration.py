@@ -165,11 +165,11 @@ class TestWalkoverXPFiltering:
 
         # Survivor received MATCH_WIN XP, forfeiters received zero.
         survivor_txns = (
-            db_session.query(XPTransaction)
-            .filter(XPTransaction.user_id == p1.id)
-            .all()
+            db_session.query(XPTransaction).filter(XPTransaction.user_id == p1.id).all()
         )
-        assert any(t.transaction_type == XPTransactionType.MATCH_WIN for t in survivor_txns)
+        assert any(
+            t.transaction_type == XPTransactionType.MATCH_WIN for t in survivor_txns
+        )
         assert _xp_for_user(db_session, p0.id) == 0
         assert _xp_for_user(db_session, p2.id) == 0
 

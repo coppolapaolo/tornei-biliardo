@@ -28,9 +28,7 @@ def get_quick_login_users(limit=16, max_directors=4):
 
     try:
         admin = (
-            User.query.filter_by(role=UserRole.ADMIN.value)
-            .order_by(User.id)
-            .first()
+            User.query.filter_by(role=UserRole.ADMIN.value).order_by(User.id).first()
         )
         directors = (
             User.query.filter_by(role=UserRole.DIRECTOR.value)

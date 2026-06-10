@@ -42,7 +42,9 @@ class UserPrivacySetting(BaseModel):
 
     # Relationship
     user = db.relationship(
-        "User", foreign_keys=[user_id], backref=db.backref("privacy_setting", uselist=False)
+        "User",
+        foreign_keys=[user_id],
+        backref=db.backref("privacy_setting", uselist=False),
     )
 
     @classmethod
@@ -60,6 +62,7 @@ class UserPrivacySetting(BaseModel):
         setting = cls.query.filter_by(user_id=user_id).first()
         if not setting:
             from sqlalchemy.exc import IntegrityError
+
             # Use a savepoint to protect the outer transaction from the IntegrityError
             try:
                 with db.session.begin_nested():

@@ -10,9 +10,7 @@ resolves it. If completely tied, returns None.
 from typing import Optional, List, Tuple, Dict
 
 
-def determine_trio_winner(
-    active_racks: list, player_ids: List[int]
-) -> Optional[int]:
+def determine_trio_winner(active_racks: list, player_ids: List[int]) -> Optional[int]:
     """Determine trio winner using Condorcet/Schulze method.
 
     Args:
@@ -126,9 +124,7 @@ def _schulze_resolve(
     best_min_strength = None
 
     for i, pi in enumerate(player_ids):
-        min_strength = min(
-            strength[i][j] for j in range(n) if j != i
-        )
+        min_strength = min(strength[i][j] for j in range(n) if j != i)
         if best_min_strength is None or min_strength > best_min_strength:
             best_min_strength = min_strength
             best_player = pi
@@ -139,9 +135,7 @@ def _schulze_resolve(
     return best_player
 
 
-def _pairwise_winner(
-    active_racks: list, p1: int, p2: int
-) -> Optional[int]:
+def _pairwise_winner(active_racks: list, p1: int, p2: int) -> Optional[int]:
     """Direct pairwise comparison for 2-player case (forfeit scenario)."""
     p1_wins = 0
     p2_wins = 0

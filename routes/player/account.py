@@ -10,7 +10,6 @@ from utils import player_only
 
 from . import player_bp
 
-
 # ============ ACCOUNT DELETION ============
 
 

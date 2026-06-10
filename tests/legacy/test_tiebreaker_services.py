@@ -308,9 +308,7 @@ class TestTiebreakerService:
                     mock_rally_attempt_class.return_value = mock_rally_attempt
 
                     with patch("models.tiebreaker.services.datetime") as mock_datetime:
-                        mock_utc_now.return_value = datetime(
-                            2023, 1, 1, 12, 0, 0
-                        )
+                        mock_utc_now.return_value = datetime(2023, 1, 1, 12, 0, 0)
 
                         result = TiebreakerService.record_rally_attempt(
                             tiebreaker_id=1,

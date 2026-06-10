@@ -13,14 +13,49 @@ from pathlib import Path
 
 # Legacy Defaults (from models.gamification.config_models)
 DEFAULT_LEVEL_UNLOCKS = [
-    (5, 'match_proposals', 'Proposte Partita', 'Sblocca la possibilità di inviare e ricevere proposte di partita'),
-    (10, 'tournament_creation', 'Creazione Tornei', 'Sblocca la creazione di tornei amichevoli'),
-    (15, 'priority_invites', 'Inviti Prioritari', 'I tuoi inviti appaiono in cima alla lista'),
-    (20, 'custom_badge_display', 'Bacheca Personalizzata', 'Scegli quali badge mostrare nel profilo'),
-    (25, 'venue_suggestion', 'Suggerisci Location', 'Proponi nuove sale da biliardo'),
-    (30, 'challenge_creation', 'Crea Sfide', 'Crea sfide personalizzate per la community'),
-    (40, 'director_fast_track', 'Director Fast Track', 'Accesso prioritario al corso direttori'),
-    (50, 'legend_status', 'Status Leggenda', 'Icona speciale e riconoscimento nella community'),
+    (
+        5,
+        "match_proposals",
+        "Proposte Partita",
+        "Sblocca la possibilità di inviare e ricevere proposte di partita",
+    ),
+    (
+        10,
+        "tournament_creation",
+        "Creazione Tornei",
+        "Sblocca la creazione di tornei amichevoli",
+    ),
+    (
+        15,
+        "priority_invites",
+        "Inviti Prioritari",
+        "I tuoi inviti appaiono in cima alla lista",
+    ),
+    (
+        20,
+        "custom_badge_display",
+        "Bacheca Personalizzata",
+        "Scegli quali badge mostrare nel profilo",
+    ),
+    (25, "venue_suggestion", "Suggerisci Location", "Proponi nuove sale da biliardo"),
+    (
+        30,
+        "challenge_creation",
+        "Crea Sfide",
+        "Crea sfide personalizzate per la community",
+    ),
+    (
+        40,
+        "director_fast_track",
+        "Director Fast Track",
+        "Accesso prioritario al corso direttori",
+    ),
+    (
+        50,
+        "legend_status",
+        "Status Leggenda",
+        "Icona speciale e riconoscimento nella community",
+    ),
 ]
 
 # New Complex Rules
@@ -33,10 +68,15 @@ COMPLEX_FEATURES = [
             {
                 "description": "Played at least 1 match",
                 "conditions": [
-                    {"type": "METRIC", "metric": "total_matches", "operator": "gte", "value": 1}
-                ]
+                    {
+                        "type": "METRIC",
+                        "metric": "total_matches",
+                        "operator": "gte",
+                        "value": 1,
+                    }
+                ],
             }
-        ]
+        ],
     },
     {
         "code": "view_global_stats",
@@ -44,13 +84,10 @@ COMPLEX_FEATURES = [
         "rules": [
             {
                 "description": "Level 1 (always unlocked)",
-                "conditions": [
-                    {"type": "LEVEL", "operator": "gte", "value": 1}
-                ]
+                "conditions": [{"type": "LEVEL", "operator": "gte", "value": 1}],
             }
-        ]
+        ],
     },
-    
     # === MATCHMAKING ===
     {
         "code": "create_match_direct",
@@ -59,11 +96,21 @@ COMPLEX_FEATURES = [
             {
                 "description": "5+ matches AND 1+ score inserted",
                 "conditions": [
-                    {"type": "METRIC", "metric": "total_matches", "operator": "gte", "value": 5},
-                    {"type": "METRIC", "metric": "scores_inserted", "operator": "gte", "value": 1}
-                ]
+                    {
+                        "type": "METRIC",
+                        "metric": "total_matches",
+                        "operator": "gte",
+                        "value": 5,
+                    },
+                    {
+                        "type": "METRIC",
+                        "metric": "scores_inserted",
+                        "operator": "gte",
+                        "value": 1,
+                    },
+                ],
             }
-        ]
+        ],
     },
     {
         "code": "create_match_community",
@@ -72,10 +119,15 @@ COMPLEX_FEATURES = [
             {
                 "description": "15+ total matches",
                 "conditions": [
-                    {"type": "METRIC", "metric": "total_matches", "operator": "gte", "value": 15}
-                ]
+                    {
+                        "type": "METRIC",
+                        "metric": "total_matches",
+                        "operator": "gte",
+                        "value": 15,
+                    }
+                ],
             }
-        ]
+        ],
     },
     {
         "code": "manage_availability",
@@ -84,19 +136,32 @@ COMPLEX_FEATURES = [
             # OR logic: 3 rule sets
             {
                 "description": "Venue Manager Role",
-                "conditions": [{"type": "ROLE", "value": "VENUE_MANAGER"}]
+                "conditions": [{"type": "ROLE", "value": "VENUE_MANAGER"}],
             },
             {
                 "description": "20+ matches in location",
-                "conditions": [{"type": "METRIC", "metric": "matches_in_location", "operator": "gte", "value": 20}]
+                "conditions": [
+                    {
+                        "type": "METRIC",
+                        "metric": "matches_in_location",
+                        "operator": "gte",
+                        "value": 20,
+                    }
+                ],
             },
             {
                 "description": "5+ tournaments in location",
-                "conditions": [{"type": "METRIC", "metric": "tournaments_in_location", "operator": "gte", "value": 5}]
-            }
-        ]
+                "conditions": [
+                    {
+                        "type": "METRIC",
+                        "metric": "tournaments_in_location",
+                        "operator": "gte",
+                        "value": 5,
+                    }
+                ],
+            },
+        ],
     },
-    
     # === VENUE MANAGEMENT ===
     {
         "code": "request_venue_manager",
@@ -106,10 +171,15 @@ COMPLEX_FEATURES = [
                 "description": "Level 5 AND 50+ matches in location",
                 "conditions": [
                     {"type": "LEVEL", "operator": "gte", "value": 5},
-                    {"type": "METRIC", "metric": "matches_in_location", "operator": "gte", "value": 50}
-                ]
+                    {
+                        "type": "METRIC",
+                        "metric": "matches_in_location",
+                        "operator": "gte",
+                        "value": 50,
+                    },
+                ],
             }
-        ]
+        ],
     },
     {
         "code": "venue_dashboard",
@@ -117,11 +187,10 @@ COMPLEX_FEATURES = [
         "rules": [
             {
                 "description": "Venue Manager Role",
-                "conditions": [{"type": "ROLE", "value": "VENUE_MANAGER"}]
+                "conditions": [{"type": "ROLE", "value": "VENUE_MANAGER"}],
             }
-        ]
+        ],
     },
-    
     # === COMPETITION DIRECTOR ===
     {
         "code": "request_director",
@@ -131,10 +200,15 @@ COMPLEX_FEATURES = [
                 "description": "Level 3 AND 1+ tournament played",
                 "conditions": [
                     {"type": "LEVEL", "operator": "gte", "value": 3},
-                    {"type": "METRIC", "metric": "tournaments_played", "operator": "gte", "value": 1}
-                ]
+                    {
+                        "type": "METRIC",
+                        "metric": "tournaments_played",
+                        "operator": "gte",
+                        "value": 1,
+                    },
+                ],
             }
-        ]
+        ],
     },
     {
         "code": "create_gara",
@@ -142,9 +216,9 @@ COMPLEX_FEATURES = [
         "rules": [
             {
                 "description": "Director Role",
-                "conditions": [{"type": "ROLE", "value": "DIRECTOR"}]
+                "conditions": [{"type": "ROLE", "value": "DIRECTOR"}],
             }
-        ]
+        ],
     },
     {
         "code": "create_campionato",
@@ -154,18 +228,20 @@ COMPLEX_FEATURES = [
                 "description": "Director + 3 tournaments organized",
                 "conditions": [
                     {"type": "ROLE", "value": "DIRECTOR"},
-                    {"type": "METRIC", "metric": "tournaments_organized", "operator": "gte", "value": 3}
-                ]
+                    {
+                        "type": "METRIC",
+                        "metric": "tournaments_organized",
+                        "operator": "gte",
+                        "value": 3,
+                    },
+                ],
             },
             {
                 "description": "Legend Level (50+)",
-                "conditions": [
-                    {"type": "LEVEL", "operator": "gte", "value": 50}
-                ]
-            }
-        ]
+                "conditions": [{"type": "LEVEL", "operator": "gte", "value": 50}],
+            },
+        ],
     },
-    
     # === CHALLENGES (DRILLS) ===
     {
         "code": "do_challenge",
@@ -174,13 +250,20 @@ COMPLEX_FEATURES = [
             # OR logic
             {
                 "description": "Level 5+",
-                "conditions": [{"type": "LEVEL", "operator": "gte", "value": 5}]
+                "conditions": [{"type": "LEVEL", "operator": "gte", "value": 5}],
             },
             {
                 "description": "Completed 1+ tournament drill",
-                "conditions": [{"type": "METRIC", "metric": "tournament_drills_completed", "operator": "gte", "value": 1}]
-            }
-        ]
+                "conditions": [
+                    {
+                        "type": "METRIC",
+                        "metric": "tournament_drills_completed",
+                        "operator": "gte",
+                        "value": 1,
+                    }
+                ],
+            },
+        ],
     },
     {
         "code": "create_challenge",
@@ -190,12 +273,18 @@ COMPLEX_FEATURES = [
                 "description": "Level 5 AND 5+ challenges completed",
                 "conditions": [
                     {"type": "LEVEL", "operator": "gte", "value": 5},
-                    {"type": "METRIC", "metric": "challenges_completed", "operator": "gte", "value": 5}
-                ]
+                    {
+                        "type": "METRIC",
+                        "metric": "challenges_completed",
+                        "operator": "gte",
+                        "value": 5,
+                    },
+                ],
             }
-        ]
-    }
+        ],
+    },
 ]
+
 
 def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
     """Run data migration for SQLite."""
@@ -222,22 +311,19 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
             # Create Rule: Level >= X
             rule_set = {
                 "description": f"Requires Level {level}",
-                "conditions": [
-                    {
-                        "type": "LEVEL",
-                        "operator": "gte",
-                        "value": level
-                    }
-                ]
+                "conditions": [{"type": "LEVEL", "operator": "gte", "value": level}],
             }
             rules_json = json.dumps([rule_set])
-            
+
             # Insert or Ignore
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT OR IGNORE INTO feature_config (code, name, description, rules, is_active, created_at, updated_at)
                 VALUES (?, ?, ?, ?, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-            """, (code, name, description, rules_json))
-            
+            """,
+                (code, name, description, rules_json),
+            )
+
         print(f"   Processed {len(DEFAULT_LEVEL_UNLOCKS)} legacy level rules.")
 
         # 2. Migrate Complex Features
@@ -246,15 +332,18 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
             name = cf["name"]
             rules_json = json.dumps(cf["rules"])
             description = "Complex rule migrated from system defaults"
-            
+
             # Upsert (Replace if exists)
             # Note: REPLACE INTO deletes and re-inserts, effectively updating but resetting creation time.
             # For migration purposes this is acceptable.
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT OR REPLACE INTO feature_config (code, name, description, rules, is_active, created_at, updated_at)
                 VALUES (?, ?, ?, ?, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-            """, (code, name, description, rules_json))
-            
+            """,
+                (code, name, description, rules_json),
+            )
+
         print(f"   Processed {len(COMPLEX_FEATURES)} complex rules.")
 
         conn.commit()

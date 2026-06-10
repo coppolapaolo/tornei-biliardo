@@ -19,7 +19,9 @@ class UserToken(BaseModel):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     token = db.Column(db.String(100), unique=True, nullable=False, index=True)
-    token_type = db.Column(db.String(20), nullable=False)  # 'verification', 'password_reset'
+    token_type = db.Column(
+        db.String(20), nullable=False
+    )  # 'verification', 'password_reset'
     created_at = db.Column(db.DateTime, default=utc_now)
     expires_at = db.Column(db.DateTime, nullable=False)
     is_used = db.Column(db.Boolean, default=False)

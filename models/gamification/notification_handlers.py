@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 class GamificationNotificationHandlers:
     """
     Event handlers for gamification notifications.
-    
+
     Creates notifications when:
     - User levels up (with feature unlocks)
     - User unlocks achievement
@@ -49,25 +49,25 @@ class GamificationNotificationHandlers:
         EventBus.register_handler(
             LevelUpEvent,
             GamificationNotificationHandlers.handle_level_up_notification,
-            priority=5  # Lower priority than gamification logic (priority 10)
+            priority=5,  # Lower priority than gamification logic (priority 10)
         )
-        
+
         EventBus.register_handler(
             AchievementUnlockedEvent,
             GamificationNotificationHandlers.handle_achievement_unlocked_notification,
-            priority=5
+            priority=5,
         )
-        
+
         EventBus.register_handler(
             StreakMilestoneEvent,
             GamificationNotificationHandlers.handle_streak_milestone_notification,
-            priority=5
+            priority=5,
         )
-        
+
         EventBus.register_handler(
             QuestCompletedEvent,
             GamificationNotificationHandlers.handle_quest_completed_notification,
-            priority=5
+            priority=5,
         )
 
         logger.info("Registered all gamification notification handlers")
@@ -91,13 +91,15 @@ class GamificationNotificationHandlers:
             unlocks_text = ""
             if event.unlocks:
                 unlock_descriptions = [u["description"] for u in event.unlocks]
-                unlocks_text = " " + _("Hai sbloccato: ") + ", ".join(unlock_descriptions)
+                unlocks_text = (
+                    " " + _("Hai sbloccato: ") + ", ".join(unlock_descriptions)
+                )
 
             title = _("Livello %(level)d Raggiunto!", level=event.new_level)
             message = _(
                 "Congratulazioni! Hai raggiunto il livello %(level)d!%(unlocks)s",
                 level=event.new_level,
-                unlocks=unlocks_text
+                unlocks=unlocks_text,
             )
 
             # Template params for dynamic i18n at display time
@@ -116,7 +118,7 @@ class GamificationNotificationHandlers:
                     "old_level": event.old_level,
                     "new_level": event.new_level,
                     "total_xp": event.total_xp,
-                    "unlocks": event.unlocks
+                    "unlocks": event.unlocks,
                 },
                 action_url="/gamification/dashboard",
                 action_text=_("Visualizza Progressi"),
@@ -124,13 +126,17 @@ class GamificationNotificationHandlers:
                 template_params=template_params,
             )
 
-            logger.info(f"Sent level up notification to user {event.user_id} (level {event.new_level})")
+            logger.info(
+                f"Sent level up notification to user {event.user_id} (level {event.new_level})"
+            )
 
         except Exception as e:
             logger.error(f"Error sending level up notification: {e}", exc_info=True)
 
     @staticmethod
-    def handle_achievement_unlocked_notification(event: AchievementUnlockedEvent) -> None:
+    def handle_achievement_unlocked_notification(
+        event: AchievementUnlockedEvent,
+    ) -> None:
         """
         Send notification on achievement unlock.
 
@@ -156,7 +162,7 @@ class GamificationNotificationHandlers:
                 "Hai ottenuto '%(name)s' (%(difficulty)s)! +%(xp)d XP",
                 name=event.achievement_name,
                 difficulty=difficulty_label,
-                xp=event.xp_awarded
+                xp=event.xp_awarded,
             )
 
             # Template params for dynamic i18n at display time
@@ -178,7 +184,7 @@ class GamificationNotificationHandlers:
                     "achievement_slug": event.achievement_slug,
                     "category": event.achievement_category,
                     "difficulty": event.achievement_difficulty,
-                    "xp_awarded": event.xp_awarded
+                    "xp_awarded": event.xp_awarded,
                 },
                 action_url="/gamification/achievements",
                 action_text=_("Visualizza Achievement"),
@@ -186,7 +192,9 @@ class GamificationNotificationHandlers:
                 template_params=template_params,
             )
 
-            logger.info(f"Sent achievement notification to user {event.user_id} ({event.achievement_slug})")
+            logger.info(
+                f"Sent achievement notification to user {event.user_id} ({event.achievement_slug})"
+            )
 
         except Exception as e:
             logger.error(f"Error sending achievement notification: {e}", exc_info=True)
@@ -218,8 +226,7 @@ class GamificationNotificationHandlers:
             freeze_text = ""
             if event.freeze_earned > 0:
                 freeze_text = " " + _(
-                    "Hai guadagnato %(count)d freeze!",
-                    count=event.freeze_earned
+                    "Hai guadagnato %(count)d freeze!", count=event.freeze_earned
                 )
 
             title = _("Streak di %(weeks)d Settimane!", weeks=event.milestone)
@@ -228,7 +235,7 @@ class GamificationNotificationHandlers:
                 type=streak_type_display,
                 weeks=event.milestone,
                 freeze=freeze_text,
-                xp=event.xp_bonus
+                xp=event.xp_bonus,
             )
 
             # Template params for dynamic i18n at display time
@@ -251,7 +258,7 @@ class GamificationNotificationHandlers:
                     "milestone": event.milestone,
                     "current_streak": event.current_streak,
                     "freeze_earned": event.freeze_earned,
-                    "xp_bonus": event.xp_bonus
+                    "xp_bonus": event.xp_bonus,
                 },
                 action_url="/gamification/dashboard",
                 action_text=_("Visualizza Streak"),
@@ -259,10 +266,14 @@ class GamificationNotificationHandlers:
                 template_params=template_params,
             )
 
-            logger.info(f"Sent streak milestone notification to user {event.user_id} ({event.milestone} weeks)")
+            logger.info(
+                f"Sent streak milestone notification to user {event.user_id} ({event.milestone} weeks)"
+            )
 
         except Exception as e:
-            logger.error(f"Error sending streak milestone notification: {e}", exc_info=True)
+            logger.error(
+                f"Error sending streak milestone notification: {e}", exc_info=True
+            )
 
     @staticmethod
     def handle_quest_completed_notification(event: QuestCompletedEvent) -> None:
@@ -290,7 +301,7 @@ class GamificationNotificationHandlers:
                 "Hai completato la quest %(type)s '%(name)s'! +%(xp)d XP",
                 type=quest_type_display,
                 name=event.quest_name,
-                xp=event.xp_awarded
+                xp=event.xp_awarded,
             )
 
             # Template params for dynamic i18n at display time
@@ -312,7 +323,7 @@ class GamificationNotificationHandlers:
                     "quest_name": event.quest_name,
                     "quest_type": event.quest_type,
                     "xp_awarded": event.xp_awarded,
-                    "completion_percentage": event.completion_percentage
+                    "completion_percentage": event.completion_percentage,
                 },
                 action_url="/gamification/quests",
                 action_text=_("Visualizza Quests"),
@@ -320,10 +331,14 @@ class GamificationNotificationHandlers:
                 template_params=template_params,
             )
 
-            logger.info(f"Sent quest completed notification to user {event.user_id} ({event.quest_name})")
+            logger.info(
+                f"Sent quest completed notification to user {event.user_id} ({event.quest_name})"
+            )
 
         except Exception as e:
-            logger.error(f"Error sending quest completed notification: {e}", exc_info=True)
+            logger.error(
+                f"Error sending quest completed notification: {e}", exc_info=True
+            )
 
 
 # Auto-register handlers when module is imported

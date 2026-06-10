@@ -12,7 +12,6 @@ from utils import player_only, player_required
 from . import player_bp
 from models.base import utc_now
 
-
 # ============ REDIRECTS (legacy compatibility) ============
 
 

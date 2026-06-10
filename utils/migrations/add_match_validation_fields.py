@@ -20,30 +20,22 @@ with app.app_context():
     # Add columns to match table
     print("Adding validation fields to match...")
     try:
-        db.session.execute(
-            """
+        db.session.execute("""
             ALTER TABLE match
             ADD COLUMN IF NOT EXISTS player1_confirmed BOOLEAN DEFAULT FALSE NOT NULL
-            """
-        )
-        db.session.execute(
-            """
+            """)
+        db.session.execute("""
             ALTER TABLE match
             ADD COLUMN IF NOT EXISTS player2_confirmed BOOLEAN DEFAULT FALSE NOT NULL
-            """
-        )
-        db.session.execute(
-            """
+            """)
+        db.session.execute("""
             ALTER TABLE match
             ADD COLUMN IF NOT EXISTS player1_confirmed_at DATETIME
-            """
-        )
-        db.session.execute(
-            """
+            """)
+        db.session.execute("""
             ALTER TABLE match
             ADD COLUMN IF NOT EXISTS player2_confirmed_at DATETIME
-            """
-        )
+            """)
         print("✓ Validation fields added to match")
     except Exception as e:
         print(f"Note: {e} (may already exist)")
@@ -51,36 +43,26 @@ with app.app_context():
     # Add columns to rack table
     print("Adding operation log fields to rack...")
     try:
-        db.session.execute(
-            """
+        db.session.execute("""
             ALTER TABLE rack
             ADD COLUMN IF NOT EXISTS added_by_id INTEGER
-            """
-        )
-        db.session.execute(
-            """
+            """)
+        db.session.execute("""
             ALTER TABLE rack
             ADD COLUMN IF NOT EXISTS added_at DATETIME
-            """
-        )
-        db.session.execute(
-            """
+            """)
+        db.session.execute("""
             ALTER TABLE rack
             ADD COLUMN IF NOT EXISTS removed_by_id INTEGER
-            """
-        )
-        db.session.execute(
-            """
+            """)
+        db.session.execute("""
             ALTER TABLE rack
             ADD COLUMN IF NOT EXISTS removed_at DATETIME
-            """
-        )
-        db.session.execute(
-            """
+            """)
+        db.session.execute("""
             ALTER TABLE rack
             ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE NOT NULL
-            """
-        )
+            """)
         print("✓ Operation log fields added to rack")
     except Exception as e:
         print(f"Note: {e} (may already exist)")

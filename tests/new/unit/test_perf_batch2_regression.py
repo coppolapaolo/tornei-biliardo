@@ -45,15 +45,15 @@ def _make_user(suffix, i):
 
 def _make_numeric_challenge(suffix, scores):
     """Challenge numerica con un tentativo completato per ogni score."""
-    ch = Challenge(description=f"Ch {suffix}", image_path="/x.jpg", pass_fail_only=False)
+    ch = Challenge(
+        description=f"Ch {suffix}", image_path="/x.jpg", pass_fail_only=False
+    )
     db.session.add(ch)
     db.session.flush()
     for i, sc in enumerate(scores):
         u = _make_user(suffix, i)
         db.session.add(
-            ChallengeAttempt(
-                challenge_id=ch.id, user_id=u.id, score=sc, completed=True
-            )
+            ChallengeAttempt(challenge_id=ch.id, user_id=u.id, score=sc, completed=True)
         )
     db.session.flush()
     return ch
@@ -91,9 +91,9 @@ def test_get_statistics_not_n_plus_one(db_session):
     with _QueryCounter() as qc5:
         ch5.get_statistics()
 
-    assert qc5.count == qc2.count, (
-        f"N+1: {qc2.count} query con 2 tentativi vs {qc5.count} con 5"
-    )
+    assert (
+        qc5.count == qc2.count
+    ), f"N+1: {qc2.count} query con 2 tentativi vs {qc5.count} con 5"
 
 
 @pytest.mark.unit
@@ -124,9 +124,22 @@ def test_playoff_history_handles_none_campionato(db_session, monkeypatch):
     monkeypatch.setattr(
         playoff_services.PlayoffQualification,
         "query",
-        type("Q", (), {"filter_by": staticmethod(lambda **k: type(
-            "R", (), {"options": lambda self, *a: self,
-                      "all": lambda self: [_Qual()]})())})(),
+        type(
+            "Q",
+            (),
+            {
+                "filter_by": staticmethod(
+                    lambda **k: type(
+                        "R",
+                        (),
+                        {
+                            "options": lambda self, *a: self,
+                            "all": lambda self: [_Qual()],
+                        },
+                    )()
+                )
+            },
+        )(),
     )
 
     history = PlayoffService.get_user_playoff_history(user.id)

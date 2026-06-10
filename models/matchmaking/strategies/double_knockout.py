@@ -63,8 +63,7 @@ class DoubleKnockoutStrategy(BaseStrategy):
     def preview(self, gara: object, round_number: int) -> Sequence[Pairing]:
         """Preview pairings for a specific round without side effects."""
         return self._generate_round_pairings(
-            gara,  # type: ignore[arg-type]
-            round_number
+            gara, round_number  # type: ignore[arg-type]
         )
 
     def _generate_pairings(
@@ -73,8 +72,7 @@ class DoubleKnockoutStrategy(BaseStrategy):
         """Generate Double Knockout pairings for the round."""
         gara = processed_data["gara"]
         return self._generate_round_pairings(
-            gara,  # type: ignore[arg-type]
-            round_number
+            gara, round_number  # type: ignore[arg-type]
         )
 
     def _generate_round_pairings(
@@ -162,7 +160,8 @@ class DoubleKnockoutStrategy(BaseStrategy):
         # Get all players
         inscriptions = list(gara.inscriptions)  # type: ignore[arg-type]
         active_inscriptions = [
-            i for i in inscriptions
+            i
+            for i in inscriptions
             if not getattr(i, "is_withdrawn", False)
             and not getattr(i, "is_waitlist", False)
         ]

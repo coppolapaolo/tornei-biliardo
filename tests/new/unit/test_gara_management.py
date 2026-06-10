@@ -111,7 +111,9 @@ class TestGaraModel:
         db_session.commit()
 
         # Test winning score calculation via distance_config value object
-        assert race_to_gara.distance_config.get_winning_racks() == 7  # Race-to-7 (first to 7)
+        assert (
+            race_to_gara.distance_config.get_winning_racks() == 7
+        )  # Race-to-7 (first to 7)
         assert exact_gara.distance_config.get_winning_racks() == 7  # Exactly 7
 
     def test_gara_withdraw_policies(self, db_session):

@@ -50,9 +50,10 @@ class AmalfiChallengeByeService:
             # Find the corresponding bye match for this user and round
             bye_match = Match.query.filter_by(
                 gara_id=attempt.gara_challenge.gara_id,
-                round_number=attempt.round_when_attempted or attempt.gara_challenge.round_number,
+                round_number=attempt.round_when_attempted
+                or attempt.gara_challenge.round_number,
                 player1_id=attempt.user_id,
-                is_bye=True
+                is_bye=True,
             ).first()
 
             if not bye_match:
@@ -96,9 +97,10 @@ class AmalfiChallengeByeService:
             # Check if there's a corresponding bye match
             bye_match = Match.query.filter_by(
                 gara_id=attempt.gara_challenge.gara_id,
-                round_number=attempt.round_when_attempted or attempt.gara_challenge.round_number,
+                round_number=attempt.round_when_attempted
+                or attempt.gara_challenge.round_number,
                 player1_id=attempt.user_id,
-                is_bye=True
+                is_bye=True,
             ).first()
 
             return bye_match is not None
@@ -107,7 +109,9 @@ class AmalfiChallengeByeService:
             return False
 
     @staticmethod
-    def get_challenge_bye_score(gara_id: int, round_number: int, user_id: int) -> Optional[int]:
+    def get_challenge_bye_score(
+        gara_id: int, round_number: int, user_id: int
+    ) -> Optional[int]:
         """Get the challenge score for a bye replacement if available.
 
         Args:
@@ -119,22 +123,26 @@ class AmalfiChallengeByeService:
             Optional[int]: Challenge score if found, None otherwise
         """
         try:
-            from models.competition.gara_challenge import GaraChallengeAttempt, GaraChallenge
+            from models.competition.gara_challenge import (
+                GaraChallengeAttempt,
+                GaraChallenge,
+            )
 
             # Find completed challenge attempt for this user/round
             attempt = (
-                GaraChallengeAttempt.query
-                .join(GaraChallenge)
+                GaraChallengeAttempt.query.join(GaraChallenge)
                 .filter(
                     GaraChallenge.gara_id == gara_id,
                     GaraChallengeAttempt.user_id == user_id,
                     GaraChallengeAttempt.round_when_attempted == round_number,
-                    GaraChallengeAttempt.completed == True
+                    GaraChallengeAttempt.completed == True,
                 )
                 .first()
             )
 
-            if attempt and AmalfiChallengeByeService.is_challenge_bye_replacement(attempt.id):
+            if attempt and AmalfiChallengeByeService.is_challenge_bye_replacement(
+                attempt.id
+            ):
                 return attempt.score
 
             return None

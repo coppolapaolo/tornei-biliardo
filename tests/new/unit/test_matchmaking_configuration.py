@@ -25,15 +25,15 @@ class TestStrategyConstraints:
         for strategy in MatchmakingStrategy:
             constraints = STRATEGY_CONSTRAINTS.get(strategy)
             assert constraints is not None, f"Missing constraints for {strategy}"
-            assert "compatible_classification_systems" in constraints, (
-                f"Missing compatible_classification_systems for {strategy}"
-            )
+            assert (
+                "compatible_classification_systems" in constraints
+            ), f"Missing compatible_classification_systems for {strategy}"
             assert isinstance(
                 constraints["compatible_classification_systems"], list
             ), f"compatible_classification_systems must be a list for {strategy}"
-            assert len(constraints["compatible_classification_systems"]) > 0, (
-                f"compatible_classification_systems cannot be empty for {strategy}"
-            )
+            assert (
+                len(constraints["compatible_classification_systems"]) > 0
+            ), f"compatible_classification_systems cannot be empty for {strategy}"
 
     def test_classification_systems_are_valid_values(self):
         """Classification systems must be WINS, RACK, or POSITION."""
@@ -41,9 +41,9 @@ class TestStrategyConstraints:
 
         for strategy, constraints in STRATEGY_CONSTRAINTS.items():
             for system in constraints["compatible_classification_systems"]:
-                assert system in valid_systems, (
-                    f"Invalid classification system '{system}' for {strategy}"
-                )
+                assert (
+                    system in valid_systems
+                ), f"Invalid classification system '{system}' for {strategy}"
 
 
 @pytest.mark.unit
@@ -113,9 +113,9 @@ class TestGetClassificationCompatibilityMap:
         for system, strategies in compat_map.items():
             assert isinstance(strategies, list), f"{system} value is not a list"
             for strategy in strategies:
-                assert isinstance(strategy, str), (
-                    f"Strategy '{strategy}' for {system} is not a string"
-                )
+                assert isinstance(
+                    strategy, str
+                ), f"Strategy '{strategy}' for {system} is not a string"
 
     def test_map_is_inverse_of_constraints(self):
         """Map should be the inverse of STRATEGY_CONSTRAINTS."""
@@ -124,9 +124,9 @@ class TestGetClassificationCompatibilityMap:
         # Verify inverse relationship
         for strategy, constraints in STRATEGY_CONSTRAINTS.items():
             for system in constraints["compatible_classification_systems"]:
-                assert strategy.value in compat_map.get(system, []), (
-                    f"{strategy.value} should be in {system} but isn't"
-                )
+                assert strategy.value in compat_map.get(
+                    system, []
+                ), f"{strategy.value} should be in {system} but isn't"
 
     def test_map_usable_for_json_serialization(self):
         """Map should be JSON-serializable for template use.

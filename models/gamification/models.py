@@ -17,13 +17,14 @@ from enum import Enum
 
 from ..base import db, BaseModel, TimestampMixin, utc_now
 
-
 # ========================================
 # Enums
 # ========================================
 
+
 class XPTransactionType(Enum):
     """Types of XP transactions for audit trail."""
+
     MATCH_WIN = "match_win"
     MATCH_LOSS = "match_loss"
     TOURNAMENT_INSCRIPTION = "tournament_inscription"
@@ -41,6 +42,7 @@ class XPTransactionType(Enum):
 
 class AchievementCategory(Enum):
     """Achievement categorization for UI organization."""
+
     MATCH = "match"
     TOURNAMENT = "tournament"
     SOCIAL = "social"
@@ -52,23 +54,26 @@ class AchievementCategory(Enum):
 
 class AchievementDifficulty(Enum):
     """Achievement rarity levels affecting XP rewards."""
-    COMMON = "common"        # 50%+ of players earn
-    UNCOMMON = "uncommon"    # 25-50%
-    RARE = "rare"            # 10-25%
-    EPIC = "epic"            # 5-10%
+
+    COMMON = "common"  # 50%+ of players earn
+    UNCOMMON = "uncommon"  # 25-50%
+    RARE = "rare"  # 10-25%
+    EPIC = "epic"  # 5-10%
     LEGENDARY = "legendary"  # <5%
 
 
 class StreakType(Enum):
     """Types of weekly streak tracking."""
-    WEEKLY_ACTIVITY = "weekly_activity"        # Any activity 1x/week
-    WEEKLY_MATCH = "weekly_match"              # At least 1 match/week
-    WEEKLY_TOURNAMENT = "weekly_tournament"    # At least 1 tournament/week
-    WEEKLY_DRILL = "weekly_drill"              # At least 1 drill (Challenge)/week
+
+    WEEKLY_ACTIVITY = "weekly_activity"  # Any activity 1x/week
+    WEEKLY_MATCH = "weekly_match"  # At least 1 match/week
+    WEEKLY_TOURNAMENT = "weekly_tournament"  # At least 1 tournament/week
+    WEEKLY_DRILL = "weekly_drill"  # At least 1 drill (Challenge)/week
 
 
 class LeaderboardType(Enum):
     """Types of leaderboards with different time periods."""
+
     XP_ALL_TIME = "xp_all_time"
     XP_WEEKLY = "xp_weekly"
     XP_MONTHLY = "xp_monthly"
@@ -81,6 +86,7 @@ class LeaderboardType(Enum):
 
 class QuestType(Enum):
     """Quest duration types."""
+
     WEEKLY = "weekly"
     MONTHLY = "monthly"
     SPECIAL_EVENT = "special_event"
@@ -88,6 +94,7 @@ class QuestType(Enum):
 
 class QuestStatus(Enum):
     """Quest lifecycle status."""
+
     UPCOMING = "upcoming"
     ACTIVE = "active"
     COMPLETED = "completed"
@@ -98,24 +105,26 @@ class QuestStatus(Enum):
 # Core XP & Level Models
 # ========================================
 
+
 class UserLevel(BaseModel):
     """
     Player XP and level progression tracking.
-    
+
     Tracks current level, XP in current level, and lifetime total XP.
     Levels unlock features at thresholds (e.g., tournament creation at level 10).
     """
+
     __tablename__ = "user_level"
 
     user_id = db.Column(
         db.Integer,
         db.ForeignKey("user.id", ondelete="CASCADE"),
         primary_key=True,
-        nullable=False
+        nullable=False,
     )
     current_level = db.Column(db.Integer, nullable=False, default=1)
     current_xp = db.Column(db.Integer, nullable=False, default=0)  # XP in current level
-    total_xp = db.Column(db.Integer, nullable=False, default=0)    # Lifetime XP
+    total_xp = db.Column(db.Integer, nullable=False, default=0)  # Lifetime XP
     highest_level_reached = db.Column(db.Integer, nullable=False, default=1)
 
     # Relationships
@@ -134,17 +143,16 @@ class UserLevel(BaseModel):
 class XPTransaction(db.Model, TimestampMixin):
     """
     Audit log for all XP awards.
-    
+
     Tracks every XP gain/loss with reason, type, and level changes.
     Used for analytics and debugging XP economy.
     """
+
     __tablename__ = "xp_transaction"
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(
-        db.Integer,
-        db.ForeignKey("user.id", ondelete="CASCADE"),
-        nullable=False
+        db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
     )
 
     # Transaction Details
@@ -157,7 +165,9 @@ class XPTransaction(db.Model, TimestampMixin):
     level_after = db.Column(db.Integer, nullable=False)
 
     # Related Entities (JSON)
-    related_entities = db.Column(db.Text, nullable=True)  # {"match_id": 123, "gara_id": 456}
+    related_entities = db.Column(
+        db.Text, nullable=True
+    )  # {"match_id": 123, "gara_id": 456}
 
     # Relationships
     user = db.relationship("User", foreign_keys=[user_id])
@@ -176,13 +186,15 @@ class XPTransaction(db.Model, TimestampMixin):
 # Achievement Models
 # ========================================
 
+
 class Achievement(BaseModel):
     """
     Predefined achievements with requirements and rewards.
-    
+
     Achievements are configured once and tracked per-user in UserAchievement.
     Requirements stored as JSON for flexibility (e.g., {"type": "match_wins", "count": 50}).
     """
+
     __tablename__ = "achievement"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -196,12 +208,16 @@ class Achievement(BaseModel):
     difficulty = db.Column(
         db.Enum(AchievementDifficulty),
         nullable=False,
-        default=AchievementDifficulty.COMMON
+        default=AchievementDifficulty.COMMON,
     )
 
     # Requirements (JSON flexible criteria)
-    requirements = db.Column(db.Text, nullable=False)  # {"type": "match_wins", "count": 50}
-    is_progressive = db.Column(db.Boolean, default=False)  # Track progress (e.g., 50/100)
+    requirements = db.Column(
+        db.Text, nullable=False
+    )  # {"type": "match_wins", "count": 50}
+    is_progressive = db.Column(
+        db.Boolean, default=False
+    )  # Track progress (e.g., 50/100)
 
     # Rewards
     xp_reward = db.Column(db.Integer, nullable=False, default=0)
@@ -212,9 +228,7 @@ class Achievement(BaseModel):
 
     # Relationships
     earned_by = db.relationship(
-        "UserAchievement",
-        cascade="all, delete-orphan",
-        back_populates="achievement"
+        "UserAchievement", cascade="all, delete-orphan", back_populates="achievement"
     )
 
     def __repr__(self) -> str:
@@ -224,22 +238,19 @@ class Achievement(BaseModel):
 class UserAchievement(db.Model, TimestampMixin):
     """
     Player progress on specific achievement.
-    
+
     Junction table tracking user's progress toward achievement completion.
     Supports progressive achievements with progress tracking.
     """
+
     __tablename__ = "user_achievement"
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(
-        db.Integer,
-        db.ForeignKey("user.id", ondelete="CASCADE"),
-        nullable=False
+        db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
     )
     achievement_id = db.Column(
-        db.Integer,
-        db.ForeignKey("achievement.id", ondelete="CASCADE"),
-        nullable=False
+        db.Integer, db.ForeignKey("achievement.id", ondelete="CASCADE"), nullable=False
     )
 
     # Progress Tracking
@@ -253,9 +264,7 @@ class UserAchievement(db.Model, TimestampMixin):
     # Relationships
     user = db.relationship("User", foreign_keys=[user_id])
     achievement = db.relationship(
-        "Achievement",
-        foreign_keys=[achievement_id],
-        back_populates="earned_by"
+        "Achievement", foreign_keys=[achievement_id], back_populates="earned_by"
     )
 
     # Constraints
@@ -271,31 +280,39 @@ class UserAchievement(db.Model, TimestampMixin):
 # Streak Tracking (WEEKLY)
 # ========================================
 
+
 class StreakTracker(db.Model, TimestampMixin):
     """
     Weekly streak tracking with freeze mechanics.
-    
+
     Tracks activity streaks in WEEKS (not days) using ISO week numbers.
     Supports freeze mechanics earned at milestones (4/12/52 weeks).
     """
+
     __tablename__ = "streak_tracker"
 
     user_id = db.Column(
-        db.Integer,
-        db.ForeignKey("user.id", ondelete="CASCADE"),
-        primary_key=True
+        db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), primary_key=True
     )
     streak_type = db.Column(db.Enum(StreakType), primary_key=True)
 
     # Streak Data (WEEKS, not days)
-    current_streak = db.Column(db.Integer, nullable=False, default=0)  # Consecutive weeks
+    current_streak = db.Column(
+        db.Integer, nullable=False, default=0
+    )  # Consecutive weeks
     longest_streak = db.Column(db.Integer, nullable=False, default=0)  # Longest weeks
     last_activity_week = db.Column(db.Integer, nullable=True)  # ISO week number (1-53)
-    last_activity_year = db.Column(db.Integer, nullable=True)  # Year for year transitions
+    last_activity_year = db.Column(
+        db.Integer, nullable=True
+    )  # Year for year transitions
 
     # Freeze Mechanics
-    freeze_count = db.Column(db.Integer, nullable=False, default=0)  # Available freezes (max 3)
-    total_freeze_earned = db.Column(db.Integer, nullable=False, default=0)  # Lifetime count
+    freeze_count = db.Column(
+        db.Integer, nullable=False, default=0
+    )  # Available freezes (max 3)
+    total_freeze_earned = db.Column(
+        db.Integer, nullable=False, default=0
+    )  # Lifetime count
     last_freeze_earned_at = db.Column(db.Date, nullable=True)
     last_freeze_used_at = db.Column(db.Date, nullable=True)
 
@@ -321,26 +338,28 @@ class StreakTracker(db.Model, TimestampMixin):
 # Leaderboard Models
 # ========================================
 
+
 class LeaderboardEntry(db.Model, TimestampMixin):
     """
     Cached leaderboard rankings (materialized view pattern).
-    
+
     Pre-calculated leaderboard entries with TTL-based invalidation.
     Optimizes expensive queries for multiple leaderboard types.
     """
+
     __tablename__ = "leaderboard_entry"
 
     id = db.Column(db.Integer, primary_key=True)
     leaderboard_type = db.Column(db.Enum(LeaderboardType), nullable=False)
     user_id = db.Column(
-        db.Integer,
-        db.ForeignKey("user.id", ondelete="CASCADE"),
-        nullable=False
+        db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
     )
 
     # Ranking
     rank = db.Column(db.Integer, nullable=False)
-    score = db.Column(db.Float, nullable=False)  # Generic score (XP, level, streak, win rate)
+    score = db.Column(
+        db.Float, nullable=False
+    )  # Generic score (XP, level, streak, win rate)
 
     # Period (for temporal leaderboards)
     period_start = db.Column(db.Date, nullable=True)
@@ -367,13 +386,15 @@ class LeaderboardEntry(db.Model, TimestampMixin):
 # Quest System (Weekly/Monthly Goals)
 # ========================================
 
+
 class Quest(BaseModel):
     """
     Weekly/monthly goals with objectives and rewards.
-    
+
     Admin-created challenges for community engagement.
     NOT to be confused with Challenge (drill/training) domain.
     """
+
     __tablename__ = "quest"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -382,14 +403,18 @@ class Quest(BaseModel):
 
     # Type & Status
     quest_type = db.Column(db.Enum(QuestType), nullable=False)
-    status = db.Column(db.Enum(QuestStatus), nullable=False, default=QuestStatus.UPCOMING)
+    status = db.Column(
+        db.Enum(QuestStatus), nullable=False, default=QuestStatus.UPCOMING
+    )
 
     # Timing
     start_date = db.Column(db.DateTime, nullable=False)
     end_date = db.Column(db.DateTime, nullable=False)
 
     # Requirements (JSON flexible)
-    requirements = db.Column(db.Text, nullable=False)  # {"type": "matches_played", "target": 10}
+    requirements = db.Column(
+        db.Text, nullable=False
+    )  # {"type": "matches_played", "target": 10}
 
     # Rewards
     xp_reward = db.Column(db.Integer, nullable=False, default=150)
@@ -401,9 +426,7 @@ class Quest(BaseModel):
 
     # Relationships
     participations = db.relationship(
-        "QuestParticipation",
-        back_populates="quest",
-        cascade="all, delete-orphan"
+        "QuestParticipation", back_populates="quest", cascade="all, delete-orphan"
     )
 
     def __repr__(self) -> str:
@@ -413,26 +436,25 @@ class Quest(BaseModel):
 class QuestParticipation(db.Model, TimestampMixin):
     """
     Player progress on specific quest.
-    
+
     Tracks individual player's progress toward quest completion.
     """
+
     __tablename__ = "quest_participation"
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(
-        db.Integer,
-        db.ForeignKey("user.id", ondelete="CASCADE"),
-        nullable=False
+        db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
     )
     quest_id = db.Column(
-        db.Integer,
-        db.ForeignKey("quest.id", ondelete="CASCADE"),
-        nullable=False
+        db.Integer, db.ForeignKey("quest.id", ondelete="CASCADE"), nullable=False
     )
 
     # Progress
     current_progress = db.Column(db.Integer, nullable=False, default=0)
-    target_progress = db.Column(db.Integer, nullable=False)  # Copied from quest requirements
+    target_progress = db.Column(
+        db.Integer, nullable=False
+    )  # Copied from quest requirements
 
     # Completion
     is_completed = db.Column(db.Boolean, nullable=False, default=False)
@@ -441,12 +463,12 @@ class QuestParticipation(db.Model, TimestampMixin):
 
     # Relationships
     user = db.relationship("User", foreign_keys=[user_id])
-    quest = db.relationship("Quest", foreign_keys=[quest_id], back_populates="participations")
+    quest = db.relationship(
+        "Quest", foreign_keys=[quest_id], back_populates="participations"
+    )
 
     # Constraints
-    __table_args__ = (
-        db.UniqueConstraint("user_id", "quest_id", name="uq_user_quest"),
-    )
+    __table_args__ = (db.UniqueConstraint("user_id", "quest_id", name="uq_user_quest"),)
 
     def __repr__(self) -> str:
         return f"<QuestParticipation user_id={self.user_id} quest_id={self.quest_id} progress={self.current_progress}/{self.target_progress}>"

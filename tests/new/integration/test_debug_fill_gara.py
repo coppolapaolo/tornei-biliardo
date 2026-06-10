@@ -62,6 +62,7 @@ class TestDebugFillGara:
 
         # Iscrivi i primi 2 manualmente: dovrebbe colmare fino a 4
         from models.competition.inscription_service import InscriptionService
+
         InscriptionService.inscribe_user(players[0].id, gara.id)
         InscriptionService.inscribe_user(players[1].id, gara.id)
 
@@ -71,15 +72,16 @@ class TestDebugFillGara:
         active = Inscription.query.filter_by(
             gara_id=gara.id, is_waitlist=False, is_withdrawn=False
         ).count()
-        assert active == 4, (
-            f"Atteso 4 (min), trovato {active}. Fill deve fermarsi al minimo."
-        )
+        assert (
+            active == 4
+        ), f"Atteso 4 (min), trovato {active}. Fill deve fermarsi al minimo."
 
     def test_fill_gara_no_op_when_min_already_reached(self, client, db_session):
         players = _make_players(db_session, count=5)
         gara = _make_open_gara(db_session, min_p=3, max_p=10)
 
         from models.competition.inscription_service import InscriptionService
+
         for p in players[:3]:
             InscriptionService.inscribe_user(p.id, gara.id)
 
@@ -110,6 +112,7 @@ class TestDebugFillGara:
         gara = _make_open_gara(db_session, min_p=2, max_p=3)
 
         from models.competition.inscription_service import InscriptionService
+
         for p in players[:3]:
             InscriptionService.inscribe_user(p.id, gara.id)
 

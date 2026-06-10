@@ -59,29 +59,43 @@ def _setup_random_pregenerated_gara(db_session, num_players: int = 4):
     # Round 1 - 2 match PLAYING con tavolo
     matches = [
         Match(
-            gara_id=gara.id, round_number=1,
-            player1_id=players[0].id, player2_id=players[1].id,
-            status=MatchStatus.PLAYING.value, table_assignment="1",
-            match_distance=5, is_race_to=True,
+            gara_id=gara.id,
+            round_number=1,
+            player1_id=players[0].id,
+            player2_id=players[1].id,
+            status=MatchStatus.PLAYING.value,
+            table_assignment="1",
+            match_distance=5,
+            is_race_to=True,
         ),
         Match(
-            gara_id=gara.id, round_number=1,
-            player1_id=players[2].id, player2_id=players[3].id,
-            status=MatchStatus.PLAYING.value, table_assignment="2",
-            match_distance=5, is_race_to=True,
+            gara_id=gara.id,
+            round_number=1,
+            player1_id=players[2].id,
+            player2_id=players[3].id,
+            status=MatchStatus.PLAYING.value,
+            table_assignment="2",
+            match_distance=5,
+            is_race_to=True,
         ),
         # Round 2 - 2 match PENDING senza tavolo (rotazione)
         Match(
-            gara_id=gara.id, round_number=2,
-            player1_id=players[0].id, player2_id=players[2].id,
+            gara_id=gara.id,
+            round_number=2,
+            player1_id=players[0].id,
+            player2_id=players[2].id,
             status=MatchStatus.PENDING.value,
-            match_distance=5, is_race_to=True,
+            match_distance=5,
+            is_race_to=True,
         ),
         Match(
-            gara_id=gara.id, round_number=2,
-            player1_id=players[1].id, player2_id=players[3].id,
+            gara_id=gara.id,
+            round_number=2,
+            player1_id=players[1].id,
+            player2_id=players[3].id,
             status=MatchStatus.PENDING.value,
-            match_distance=5, is_race_to=True,
+            match_distance=5,
+            is_race_to=True,
         ),
     ]
     db_session.add_all(matches)
@@ -93,9 +107,7 @@ def _setup_random_pregenerated_gara(db_session, num_players: int = 4):
 def test_complete_next_match_completes_one(client, db_session):
     gara = _setup_random_pregenerated_gara(db_session)
 
-    resp = client.get(
-        f"/debug/complete_next_match/{gara.id}", follow_redirects=False
-    )
+    resp = client.get(f"/debug/complete_next_match/{gara.id}", follow_redirects=False)
     assert resp.status_code in (302, 303)
 
     # Complete Match pesca da TUTTI i round attivi (bug 12), quindi il match
@@ -103,13 +115,15 @@ def test_complete_next_match_completes_one(client, db_session):
     completed_total = Match.query.filter_by(
         gara_id=gara.id, status=MatchStatus.COMPLETED.value
     ).count()
-    pending_total = Match.query.filter_by(gara_id=gara.id).filter(
-        Match.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value])
-    ).count()
-
-    assert completed_total == 1, (
-        f"Atteso 1 completato, trovati {completed_total}"
+    pending_total = (
+        Match.query.filter_by(gara_id=gara.id)
+        .filter(
+            Match.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value])
+        )
+        .count()
     )
+
+    assert completed_total == 1, f"Atteso 1 completato, trovati {completed_total}"
     assert pending_total == 3, f"Atteso 3 ancora aperti, trovati {pending_total}"
 
 
@@ -127,9 +141,11 @@ def test_complete_round_advances_to_next_active_round(client, db_session):
         f"/debug/complete_current_round/{gara.id}", follow_redirects=False
     )
     assert resp1.status_code in (302, 303)
-    r1_done = Match.query.filter_by(
-        gara_id=gara.id, round_number=1
-    ).filter(Match.status == MatchStatus.COMPLETED.value).count()
+    r1_done = (
+        Match.query.filter_by(gara_id=gara.id, round_number=1)
+        .filter(Match.status == MatchStatus.COMPLETED.value)
+        .count()
+    )
     assert r1_done == 2
 
     # Secondo click: deve completare round 2 (non dire "nessun match")
@@ -137,13 +153,13 @@ def test_complete_round_advances_to_next_active_round(client, db_session):
         f"/debug/complete_current_round/{gara.id}", follow_redirects=False
     )
     assert resp2.status_code in (302, 303)
-    r2_done = Match.query.filter_by(
-        gara_id=gara.id, round_number=2
-    ).filter(
-        Match.status.in_(
-            [MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value]
+    r2_done = (
+        Match.query.filter_by(gara_id=gara.id, round_number=2)
+        .filter(
+            Match.status.in_([MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value])
         )
-    ).count()
+        .count()
+    )
     assert r2_done == 2, f"Atteso 2 match round 2 completati, trovati {r2_done}"
 
 
@@ -155,9 +171,7 @@ def test_complete_next_match_picks_from_any_round(client, db_session):
 
     # Forza la simulazione che current_round resti a 1 ma round 2 abbia
     # match PLAYING attivi: completa direttamente i 2 match di round 1.
-    r1_matches = Match.query.filter_by(
-        gara_id=gara.id, round_number=1
-    ).all()
+    r1_matches = Match.query.filter_by(gara_id=gara.id, round_number=1).all()
     for m in r1_matches:
         m.status = MatchStatus.COMPLETED.value
         m.player1_score = 5
@@ -168,26 +182,23 @@ def test_complete_next_match_picks_from_any_round(client, db_session):
     # Promuovi i match di round 2 a PLAYING con tavolo, mantenendo
     # current_round=1 (caso "tipico" random: i match successivi sono
     # gia' pronti ma current_round non si e' avanzato)
-    r2_matches = Match.query.filter_by(
-        gara_id=gara.id, round_number=2
-    ).all()
+    r2_matches = Match.query.filter_by(gara_id=gara.id, round_number=2).all()
     for i, m in enumerate(r2_matches):
         m.status = MatchStatus.PLAYING.value
         m.table_assignment = str(i + 1)
     db_session.commit()
 
-    resp = client.get(
-        f"/debug/complete_next_match/{gara.id}", follow_redirects=False
-    )
+    resp = client.get(f"/debug/complete_next_match/{gara.id}", follow_redirects=False)
     assert resp.status_code in (302, 303)
 
     r2_completed = Match.query.filter_by(
-        gara_id=gara.id, round_number=2,
+        gara_id=gara.id,
+        round_number=2,
         status=MatchStatus.COMPLETED.value,
     ).count()
-    assert r2_completed == 1, (
-        f"Atteso 1 match round 2 completato, trovati {r2_completed}"
-    )
+    assert (
+        r2_completed == 1
+    ), f"Atteso 1 match round 2 completato, trovati {r2_completed}"
 
 
 @pytest.mark.integration
@@ -204,17 +215,15 @@ def test_complete_next_match_ignores_matches_without_table(client, db_session):
         m.table_assignment = None
     db_session.commit()
 
-    resp = client.get(
-        f"/debug/complete_next_match/{gara.id}", follow_redirects=False
-    )
+    resp = client.get(f"/debug/complete_next_match/{gara.id}", follow_redirects=False)
     assert resp.status_code in (302, 303)
 
     completed = Match.query.filter_by(
         gara_id=gara.id, status=MatchStatus.COMPLETED.value
     ).count()
-    assert completed == 0, (
-        f"Nessun match ha tavolo: atteso 0 completati, trovati {completed}"
-    )
+    assert (
+        completed == 0
+    ), f"Nessun match ha tavolo: atteso 0 completati, trovati {completed}"
 
 
 @pytest.mark.integration

@@ -289,9 +289,14 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
         tables = [row[0] for row in cursor.fetchall()]
 
         expected_tables = [
-            'achievement', 'leaderboard_entry', 'quest',
-            'quest_participation', 'streak_tracker',
-            'user_achievement', 'user_level', 'xp_transaction'
+            "achievement",
+            "leaderboard_entry",
+            "quest",
+            "quest_participation",
+            "streak_tracker",
+            "user_achievement",
+            "user_level",
+            "xp_transaction",
         ]
 
         for table in expected_tables:
@@ -321,10 +326,14 @@ def downgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
 
     try:
         tables = [
-            'quest_participation', 'quest',
-            'leaderboard_entry', 'streak_tracker',
-            'user_achievement', 'achievement',
-            'xp_transaction', 'user_level'
+            "quest_participation",
+            "quest",
+            "leaderboard_entry",
+            "streak_tracker",
+            "user_achievement",
+            "achievement",
+            "xp_transaction",
+            "user_level",
         ]
 
         for table in tables:
@@ -356,7 +365,9 @@ if __name__ == "__main__":
         else:
             print(f"Unknown command: {sys.argv[1]}")
             print("\nUsage:")
-            print("  python migrations/add_gamification_tables.py           # Apply migration")
+            print(
+                "  python migrations/add_gamification_tables.py           # Apply migration"
+            )
             print("  python migrations/add_gamification_tables.py downgrade # Rollback")
             sys.exit(1)
     else:

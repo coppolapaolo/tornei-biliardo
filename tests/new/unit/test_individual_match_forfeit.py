@@ -70,9 +70,7 @@ class TestIndividualMatchForfeitModel:
         assert match.winner_id == player1.id
         assert match.status == MatchStatus.COMPLETED
 
-    def test_forfeit_keeps_current_scores(
-        self, app, db_session, isolated_players
-    ):
+    def test_forfeit_keeps_current_scores(self, app, db_session, isolated_players):
         """Forfeit should keep the forfeiting player's score (racks already won)."""
         player1, player2 = isolated_players[:2]
 
@@ -128,9 +126,7 @@ class TestIndividualMatchForfeitModel:
         assert match.player2_score == 5
         assert match.winner_id == player2.id
 
-    def test_forfeit_sets_ended_at(
-        self, app, db_session, isolated_players
-    ):
+    def test_forfeit_sets_ended_at(self, app, db_session, isolated_players):
         """Forfeit should set ended_at timestamp."""
         player1, player2 = isolated_players[:2]
 
@@ -152,9 +148,7 @@ class TestIndividualMatchForfeitModel:
 
         assert match.ended_at is not None
 
-    def test_forfeit_fails_for_non_player(
-        self, app, db_session, isolated_players
-    ):
+    def test_forfeit_fails_for_non_player(self, app, db_session, isolated_players):
         """Forfeit should raise ValueError for users not in the match."""
         player1, player2, other_user = isolated_players[:3]
 
@@ -173,9 +167,7 @@ class TestIndividualMatchForfeitModel:
         with pytest.raises(ValueError, match="User is not a player"):
             match.forfeit_match(other_user.id)
 
-    def test_forfeit_fails_for_completed_match(
-        self, app, db_session, isolated_players
-    ):
+    def test_forfeit_fails_for_completed_match(self, app, db_session, isolated_players):
         """Forfeit should raise ValueError for already completed matches."""
         player1, player2 = isolated_players[:2]
 
@@ -195,9 +187,7 @@ class TestIndividualMatchForfeitModel:
         with pytest.raises(ValueError, match="Can only forfeit"):
             match.forfeit_match(player1.id)
 
-    def test_forfeit_fails_for_cancelled_match(
-        self, app, db_session, isolated_players
-    ):
+    def test_forfeit_fails_for_cancelled_match(self, app, db_session, isolated_players):
         """Forfeit should raise ValueError for cancelled matches."""
         player1, player2 = isolated_players[:2]
 
@@ -216,9 +206,7 @@ class TestIndividualMatchForfeitModel:
         with pytest.raises(ValueError, match="Can only forfeit"):
             match.forfeit_match(player1.id)
 
-    def test_forfeit_works_for_scheduled_match(
-        self, app, db_session, isolated_players
-    ):
+    def test_forfeit_works_for_scheduled_match(self, app, db_session, isolated_players):
         """Forfeit should work for SCHEDULED matches (before they start)."""
         player1, player2 = isolated_players[:2]
 
@@ -250,7 +238,9 @@ class TestIndividualMatchForfeitService:
         self, app, db_session, isolated_players
     ):
         """Service should return the updated match after forfeit."""
-        from models.individual_match.match_lifecycle_service import MatchLifecycleService
+        from models.individual_match.match_lifecycle_service import (
+            MatchLifecycleService,
+        )
 
         player1, player2 = isolated_players[:2]
 

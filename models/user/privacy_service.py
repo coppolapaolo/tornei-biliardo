@@ -83,19 +83,21 @@ class PrivacyService:
 
         # Check if user is now sharing any gaming data (for achievement)
         # Gaming data fields (excluding personal contact info)
-        is_sharing_gaming_data = any([
-            settings.show_statistics,
-            settings.show_recent_matches,
-            settings.show_classifications,
-            settings.show_challenge_stats,
-        ])
+        is_sharing_gaming_data = any(
+            [
+                settings.show_statistics,
+                settings.show_recent_matches,
+                settings.show_classifications,
+                settings.show_challenge_stats,
+            ]
+        )
 
         if is_sharing_gaming_data:
             # Award "open_player" achievement if not already unlocked
             from models.gamification.achievement_service import AchievementService
+
             AchievementService.check_and_award_achievement(
-                user_id=user_id,
-                achievement_slug="open_player"
+                user_id=user_id, achievement_slug="open_player"
             )
 
         return settings
@@ -191,9 +193,7 @@ class PrivacyService:
         Returns:
             True if match was unhidden, False if it wasn't hidden
         """
-        hidden = HiddenMatch.query.filter_by(
-            user_id=user_id, match_id=match_id
-        ).first()
+        hidden = HiddenMatch.query.filter_by(user_id=user_id, match_id=match_id).first()
         if hidden:
             db.session.delete(hidden)
             return True
@@ -347,9 +347,10 @@ class PrivacyService:
         Returns:
             True if match is hidden
         """
-        return HiddenMatch.query.filter_by(
-            user_id=user_id, match_id=match_id
-        ).first() is not None
+        return (
+            HiddenMatch.query.filter_by(user_id=user_id, match_id=match_id).first()
+            is not None
+        )
 
     @staticmethod
     def is_inscription_hidden(user_id: int, inscription_id: int) -> bool:
@@ -362,9 +363,12 @@ class PrivacyService:
         Returns:
             True if inscription is hidden
         """
-        return HiddenInscription.query.filter_by(
-            user_id=user_id, inscription_id=inscription_id
-        ).first() is not None
+        return (
+            HiddenInscription.query.filter_by(
+                user_id=user_id, inscription_id=inscription_id
+            ).first()
+            is not None
+        )
 
     @staticmethod
     def is_campionato_hidden(user_id: int, campionato_id: int) -> bool:
@@ -377,9 +381,12 @@ class PrivacyService:
         Returns:
             True if campionato is hidden
         """
-        return HiddenCampionato.query.filter_by(
-            user_id=user_id, campionato_id=campionato_id
-        ).first() is not None
+        return (
+            HiddenCampionato.query.filter_by(
+                user_id=user_id, campionato_id=campionato_id
+            ).first()
+            is not None
+        )
 
     @staticmethod
     def filter_visible_matches(
@@ -466,7 +473,10 @@ class PrivacyService:
                 continue
 
             # Skip if inscription belongs to hidden campionato
-            if inscription.gara and inscription.gara.campionato_id in hidden_campionato_ids:
+            if (
+                inscription.gara
+                and inscription.gara.campionato_id in hidden_campionato_ids
+            ):
                 continue
 
             visible.append(inscription)

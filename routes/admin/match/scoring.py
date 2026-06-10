@@ -45,12 +45,16 @@ def add_rack_result(match_id):
         # Emit SSE event for gara detail page polling
         match = db.session.get(Match, match_id)
         if match and match.gara_id:
-            emit_gara_event(match.gara_id, "match_updated", {
-                "match_id": match_id,
-                "player1_score": match.player1_score,
-                "player2_score": match.player2_score,
-                "winner_id": winner_id,
-            })
+            emit_gara_event(
+                match.gara_id,
+                "match_updated",
+                {
+                    "match_id": match_id,
+                    "player1_score": match.player1_score,
+                    "player2_score": match.player2_score,
+                    "winner_id": winner_id,
+                },
+            )
 
         return jsonify(result)
     except ValueError as ve:
@@ -108,31 +112,36 @@ def validate_match(match_id):
 
         # Emit SSE event for gara detail page polling (no DB writes)
         if result["gara_id"]:
-            emit_gara_event(result["gara_id"], "match_completed", {
-                "match_id": match_id,
-                "winner_id": result["winner_id"],
-                "player1_score": result["player1_score"],
-                "player2_score": result["player2_score"],
-            })
+            emit_gara_event(
+                result["gara_id"],
+                "match_completed",
+                {
+                    "match_id": match_id,
+                    "winner_id": result["winner_id"],
+                    "player1_score": result["player1_score"],
+                    "player2_score": result["player2_score"],
+                },
+            )
 
         track_match_played()  # KPI tracking
         flash("Risultato validato e partita completata!")
-        return jsonify({
-            "success": True,
-            "message": "Risultato validato con successo",
-            "match_completed": True
-        })
+        return jsonify(
+            {
+                "success": True,
+                "message": "Risultato validato con successo",
+                "match_completed": True,
+            }
+        )
 
     except ValueError as ve:
-        return jsonify({
-            "success": False,
-            "error": str(ve)
-        }), 400
+        return jsonify({"success": False, "error": str(ve)}), 400
     except Exception as e:
-        return jsonify({
-            "success": False,
-            "error": f"Errore durante la validazione: {str(e)}"
-        }), 500
+        return (
+            jsonify(
+                {"success": False, "error": f"Errore durante la validazione: {str(e)}"}
+            ),
+            500,
+        )
 
 
 @match_bp.route("/<int:match_id>/reset", methods=["POST"])
@@ -200,11 +209,15 @@ def remove_rack_admin(rack_id):
             # Emit SSE event for gara detail page polling
             match = db.session.get(Match, match_id)
             if match:
-                emit_gara_event(gara_id, "match_updated", {
-                    "match_id": match_id,
-                    "player1_score": match.player1_score,
-                    "player2_score": match.player2_score,
-                })
+                emit_gara_event(
+                    gara_id,
+                    "match_updated",
+                    {
+                        "match_id": match_id,
+                        "player1_score": match.player1_score,
+                        "player2_score": match.player2_score,
+                    },
+                )
 
         return jsonify(result)
 

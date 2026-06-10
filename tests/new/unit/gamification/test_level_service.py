@@ -18,7 +18,9 @@ from models.gamification.models import UserLevel, XPTransaction, XPTransactionTy
 class TestLevelServiceXPAward:
     """Test XP award functionality."""
 
-    def test_award_xp_creates_user_level_if_not_exists(self, db_session, isolated_players):
+    def test_award_xp_creates_user_level_if_not_exists(
+        self, db_session, isolated_players
+    ):
         """First XP award should create UserLevel record."""
         player = isolated_players[0]
         xp_amount = 50
@@ -27,7 +29,7 @@ class TestLevelServiceXPAward:
         user_level, did_level_up = LevelService.award_xp(
             user_id=player.id,
             xp_amount=xp_amount,
-            transaction_type=XPTransactionType.MATCH_WIN
+            transaction_type=XPTransactionType.MATCH_WIN,
         )
 
         # Assertions
@@ -46,14 +48,14 @@ class TestLevelServiceXPAward:
         LevelService.award_xp(
             user_id=player.id,
             xp_amount=50,
-            transaction_type=XPTransactionType.MATCH_WIN
+            transaction_type=XPTransactionType.MATCH_WIN,
         )
 
         # Second award
         user_level, did_level_up = LevelService.award_xp(
             user_id=player.id,
             xp_amount=30,
-            transaction_type=XPTransactionType.STREAK_BONUS
+            transaction_type=XPTransactionType.STREAK_BONUS,
         )
 
         # Assertions
@@ -70,7 +72,7 @@ class TestLevelServiceXPAward:
             user_id=player.id,
             xp_amount=xp_amount,
             transaction_type=XPTransactionType.MATCH_WIN,
-            reason="Test match win"
+            reason="Test match win",
         )
 
         # Check transaction exists
@@ -84,7 +86,9 @@ class TestLevelServiceXPAward:
 class TestLevelServiceLevelUp:
     """Test level up detection and progression."""
 
-    def test_level_up_triggers_when_xp_reaches_threshold(self, db_session, isolated_players):
+    def test_level_up_triggers_when_xp_reaches_threshold(
+        self, db_session, isolated_players
+    ):
         """Should level up when XP reaches next level threshold."""
         player = isolated_players[0]
 
@@ -93,7 +97,7 @@ class TestLevelServiceLevelUp:
         user_level, did_level_up = LevelService.award_xp(
             user_id=player.id,
             xp_amount=xp_for_level_2,
-            transaction_type=XPTransactionType.TOURNAMENT_WIN
+            transaction_type=XPTransactionType.TOURNAMENT_WIN,
         )
 
         # Should be level 2 now
@@ -109,7 +113,7 @@ class TestLevelServiceLevelUp:
         user_level, did_level_up = LevelService.award_xp(
             user_id=player.id,
             xp_amount=xp_for_level_5 + 100,  # Extra buffer
-            transaction_type=XPTransactionType.TOURNAMENT_WIN
+            transaction_type=XPTransactionType.TOURNAMENT_WIN,
         )
 
         # Should be at least level 3 (exact level depends on XP curve)
@@ -126,7 +130,7 @@ class TestLevelServiceLevelUp:
         user_level, _ = LevelService.award_xp(
             user_id=player.id,
             xp_amount=xp_for_level_2 + 17,
-            transaction_type=XPTransactionType.TOURNAMENT_WIN
+            transaction_type=XPTransactionType.TOURNAMENT_WIN,
         )
 
         # Level 2 with 17 XP overflow
@@ -138,31 +142,34 @@ class TestLevelServiceLevelUp:
 class TestLevelServiceUnlocks:
     """Test feature unlock eligibility."""
 
-    def test_check_unlock_eligibility_returns_false_below_threshold(self, db_session, isolated_players):
+    def test_check_unlock_eligibility_returns_false_below_threshold(
+        self, db_session, isolated_players
+    ):
         """Should return False when below unlock level."""
         from models.gamification.unlock_engine import UnlockEngine
-        
+
         player = isolated_players[0]
 
         # Award some XP (stays at level 1)
         LevelService.award_xp(
             user_id=player.id,
             xp_amount=50,
-            transaction_type=XPTransactionType.MATCH_WIN
+            transaction_type=XPTransactionType.MATCH_WIN,
         )
 
         # Check unlock for tournament_creation (level 10 required)
         is_eligible = UnlockEngine.check_eligibility(
-            user_id=player.id,
-            feature_code="tournament_creation"
+            user_id=player.id, feature_code="tournament_creation"
         )
 
         assert is_eligible is False
 
-    def test_check_unlock_eligibility_returns_true_at_threshold(self, db_session, isolated_players):
+    def test_check_unlock_eligibility_returns_true_at_threshold(
+        self, db_session, isolated_players
+    ):
         """Should return True when at or above unlock level."""
         from models.gamification.unlock_engine import UnlockEngine
-        
+
         player = isolated_players[0]
 
         # Award enough XP to reach level 10+
@@ -172,13 +179,12 @@ class TestLevelServiceUnlocks:
         LevelService.award_xp(
             user_id=player.id,
             xp_amount=xp_for_level_10 + 100,  # Extra buffer
-            transaction_type=XPTransactionType.ADMIN_ADJUSTMENT
+            transaction_type=XPTransactionType.ADMIN_ADJUSTMENT,
         )
 
         # Check unlock for tournament_creation (level 10)
         is_eligible = UnlockEngine.check_eligibility(
-            user_id=player.id,
-            feature_code="tournament_creation"
+            user_id=player.id, feature_code="tournament_creation"
         )
 
         assert is_eligible is True
@@ -187,7 +193,9 @@ class TestLevelServiceUnlocks:
 class TestLevelServiceUIHelpers:
     """Test UI helper methods."""
 
-    def test_get_level_progress_returns_progress_info(self, db_session, isolated_players):
+    def test_get_level_progress_returns_progress_info(
+        self, db_session, isolated_players
+    ):
         """Should return complete display data for UI."""
         player = isolated_players[0]
 
@@ -195,7 +203,7 @@ class TestLevelServiceUIHelpers:
         LevelService.award_xp(
             user_id=player.id,
             xp_amount=50,
-            transaction_type=XPTransactionType.MATCH_WIN
+            transaction_type=XPTransactionType.MATCH_WIN,
         )
 
         # Get progress data (correct method name)

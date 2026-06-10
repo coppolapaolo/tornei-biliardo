@@ -119,9 +119,7 @@ class TestGDPRExport:
     @pytest.mark.skip(
         reason="Background thread causes SQLite savepoint issues in parallel testing"
     )
-    def test_request_export_starts_background_task(
-        self, client, app, player_with_data
-    ):
+    def test_request_export_starts_background_task(self, client, app, player_with_data):
         """Test that export request starts a background task."""
         with app.app_context():
             # Login as the player
@@ -167,9 +165,7 @@ class TestGDPRExport:
 
             assert response.status_code == 403
 
-    def test_download_nonexistent_file_redirects(
-        self, client, app, player_with_data
-    ):
+    def test_download_nonexistent_file_redirects(self, client, app, player_with_data):
         """Test that downloading a nonexistent file shows warning."""
         with app.app_context():
             # Login as the player

@@ -25,7 +25,7 @@ class TestGaraMultiSetProperty:
             discipline=Discipline.EIGHT_BALL.value,
             distance=7,
             is_race_to=True,
-            is_multi_set=False
+            is_multi_set=False,
         )
 
         distance = gara.distance_config
@@ -46,7 +46,7 @@ class TestGaraMultiSetProperty:
             discipline=Discipline.NINE_BALL.value,
             distance=5,
             is_race_to=False,
-            is_multi_set=False
+            is_multi_set=False,
         )
 
         distance = gara.distance_config
@@ -68,7 +68,7 @@ class TestGaraMultiSetProperty:
             is_race_to=True,  # Race-to racks
             is_multi_set=True,
             match_distance=3,  # Sets to play (Race-to-3)
-            is_race_to_sets=True  # Race-to sets
+            is_race_to_sets=True,  # Race-to sets
         )
 
         distance = gara.distance_config
@@ -93,7 +93,7 @@ class TestGaraMultiSetProperty:
             is_race_to=True,
             is_multi_set=True,
             match_distance=4,  # Play exactly 4 sets
-            is_race_to_sets=False  # Exact sets
+            is_race_to_sets=False,  # Exact sets
         )
 
         distance = gara.distance_config
@@ -115,7 +115,7 @@ class TestGaraMultiSetProperty:
             is_race_to=True,
             is_multi_set=True,
             match_distance=None,  # Should default to 1
-            is_race_to_sets=None  # Should default to True
+            is_race_to_sets=None,  # Should default to True
         )
 
         distance = gara.distance_config
@@ -131,7 +131,7 @@ class TestGaraMultiSetProperty:
             date=utc_now().date(),
             discipline=Discipline.EIGHT_BALL.value,
             distance=7,
-            is_race_to=True
+            is_race_to=True,
             # No is_multi_set, match_distance, is_race_to_sets
         )
 
@@ -157,7 +157,7 @@ class TestMatchProposalMultiSetProperty:
             discipline=Discipline.EIGHT_BALL.value,
             distance=7,
             is_race_to=True,
-            is_multi_set=False
+            is_multi_set=False,
         )
 
         distance = proposal.distance_config
@@ -180,7 +180,7 @@ class TestMatchProposalMultiSetProperty:
             is_race_to=True,
             is_multi_set=True,
             match_distance=3,
-            is_race_to_sets=True
+            is_race_to_sets=True,
         )
 
         distance = proposal.distance_config
@@ -198,7 +198,7 @@ class TestMatchProposalMultiSetProperty:
             location="Test Hall",
             scheduled_at=utc_now(),
             expires_at=utc_now() + timedelta(days=1),
-            distance=None
+            distance=None,
         )
 
         assert proposal.distance_config is None
@@ -217,7 +217,7 @@ class TestIndividualMatchMultiSetProperty:
             discipline=Discipline.EIGHT_BALL.value,
             distance=7,
             is_race_to=True,
-            is_multi_set=False
+            is_multi_set=False,
         )
 
         distance = match.distance_config
@@ -238,7 +238,7 @@ class TestIndividualMatchMultiSetProperty:
             is_race_to=True,
             is_multi_set=True,
             match_distance=5,
-            is_race_to_sets=True
+            is_race_to_sets=True,
         )
 
         distance = match.distance_config
@@ -263,7 +263,7 @@ class TestMatchProposalAcceptCopiesMultiSet:
             discipline=Discipline.EIGHT_BALL.value,
             distance=7,
             is_race_to=True,
-            is_multi_set=False
+            is_multi_set=False,
         )
 
         # Note: This test can't actually call accept() without DB setup
@@ -288,7 +288,7 @@ class TestMatchProposalAcceptCopiesMultiSet:
             is_race_to=True,
             is_multi_set=True,
             match_distance=3,
-            is_race_to_sets=True
+            is_race_to_sets=True,
         )
 
         # Verify multi-set fields are set correctly

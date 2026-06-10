@@ -60,16 +60,25 @@ def test_complete_round_completes_trio_matches(client, db_session):
     db_session.commit()
 
     normal_match = Match(
-        gara_id=gara.id, round_number=1,
-        player1_id=players[0].id, player2_id=players[1].id,
-        status=MatchStatus.PLAYING.value, table_assignment="1",
-        match_distance=5, is_race_to=True,
+        gara_id=gara.id,
+        round_number=1,
+        player1_id=players[0].id,
+        player2_id=players[1].id,
+        status=MatchStatus.PLAYING.value,
+        table_assignment="1",
+        match_distance=5,
+        is_race_to=True,
     )
     trio_match = Match(
-        gara_id=gara.id, round_number=1,
-        player1_id=players[2].id, player2_id=players[3].id,
-        status=MatchStatus.PLAYING.value, table_assignment="2",
-        is_trio=True, match_distance=5, is_race_to=True,
+        gara_id=gara.id,
+        round_number=1,
+        player1_id=players[2].id,
+        player2_id=players[3].id,
+        status=MatchStatus.PLAYING.value,
+        table_assignment="2",
+        is_trio=True,
+        match_distance=5,
+        is_race_to=True,
     )
     db_session.add_all([normal_match, trio_match])
     db_session.flush()

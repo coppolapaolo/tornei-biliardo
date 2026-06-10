@@ -82,10 +82,9 @@ class UnlockProgressService:
                 if not condition_progress["is_met"]:
                     all_conditions_met = False
 
-            rule_sets_progress.append({
-                "is_met": all_conditions_met,
-                "conditions": conditions_progress
-            })
+            rule_sets_progress.append(
+                {"is_met": all_conditions_met, "conditions": conditions_progress}
+            )
 
         # Determine next action from first unmet condition
         next_action = None
@@ -106,7 +105,7 @@ class UnlockProgressService:
             "is_unlocked": is_unlocked,
             "is_active": feature.is_active,
             "rule_sets": rule_sets_progress,
-            "next_action": next_action
+            "next_action": next_action,
         }
 
     @staticmethod
@@ -127,7 +126,7 @@ class UnlockProgressService:
                 "is_met": is_met,
                 "current_value": current,
                 "required_value": required,
-                "operator": operator
+                "operator": operator,
             }
 
         elif cond_type == "METRIC":
@@ -158,7 +157,7 @@ class UnlockProgressService:
                 "is_met": is_met,
                 "current_value": current,
                 "required_value": required,
-                "operator": operator
+                "operator": operator,
             }
 
         elif cond_type == "ROLE":
@@ -177,14 +176,14 @@ class UnlockProgressService:
             role_labels = {
                 "ADMIN": "Admin",
                 "DIRECTOR": "Director",
-                "VENUE_MANAGER": "Gestore Sala"
+                "VENUE_MANAGER": "Gestore Sala",
             }
 
             return {
                 "type": "ROLE",
                 "description": f"Ruolo: {role_labels.get(target_role, target_role)}",
                 "is_met": is_met,
-                "required_value": target_role
+                "required_value": target_role,
             }
 
         elif cond_type == "ACHIEVEMENT":
@@ -196,13 +195,13 @@ class UnlockProgressService:
                 "type": "ACHIEVEMENT",
                 "description": f"Achievement: {slug}",
                 "is_met": is_met,
-                "required_value": slug
+                "required_value": slug,
             }
 
         return {
             "type": cond_type,
             "description": f"Condizione sconosciuta: {cond_type}",
-            "is_met": False
+            "is_met": False,
         }
 
     @staticmethod
@@ -264,8 +263,7 @@ class UnlockProgressService:
 
     @staticmethod
     def get_all_features_progress(
-        user_id: int,
-        include_unlocked: bool = True
+        user_id: int, include_unlocked: bool = True
     ) -> List[Dict[str, Any]]:
         """
         Get progress for all gated features.
@@ -281,9 +279,7 @@ class UnlockProgressService:
         result = []
 
         for feature in features:
-            progress = UnlockProgressService.get_feature_progress(
-                user_id, feature.code
-            )
+            progress = UnlockProgressService.get_feature_progress(user_id, feature.code)
             if include_unlocked or not progress.get("is_unlocked", False):
                 result.append(progress)
 

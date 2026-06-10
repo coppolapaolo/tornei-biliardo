@@ -62,8 +62,14 @@ def index():
         "days": days,
         "date_range": date_range,
         "is_custom": is_custom,
-        "start_date": date_range.start.strftime("%Y-%m-%d") if date_range and date_range.start else "",
-        "end_date": date_range.end.strftime("%Y-%m-%d") if date_range and date_range.end else "",
+        "start_date": (
+            date_range.start.strftime("%Y-%m-%d")
+            if date_range and date_range.start
+            else ""
+        ),
+        "end_date": (
+            date_range.end.strftime("%Y-%m-%d") if date_range and date_range.end else ""
+        ),
     }
 
     if tab == "overview":

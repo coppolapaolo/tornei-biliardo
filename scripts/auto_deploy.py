@@ -29,11 +29,7 @@ def run_command(cmd: list, cwd: Path = None) -> tuple:
     """Run command and return (success, output)."""
     try:
         result = subprocess.run(
-            cmd,
-            cwd=cwd or PROJECT_DIR,
-            capture_output=True,
-            text=True,
-            timeout=60
+            cmd, cwd=cwd or PROJECT_DIR, capture_output=True, text=True, timeout=60
         )
         output = result.stdout + result.stderr
         return result.returncode == 0, output.strip()
@@ -71,8 +67,16 @@ def deps_in_sync() -> bool:
         return True
 
     success, output = run_command(
-        [sys.executable, "-m", "pip", "install", "--dry-run", "-q",
-         "-r", str(requirements)],
+        [
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "--dry-run",
+            "-q",
+            "-r",
+            str(requirements),
+        ],
     )
     # pip --dry-run outputs "Would install ..." if something is missing
     return success and "Would install" not in output

@@ -13,7 +13,6 @@ from utils.route_helpers import safe_json_error
 
 from . import competition_bp
 
-
 # ============ GESTIONE TRII ============
 
 
@@ -76,7 +75,9 @@ def trio_forfeit(trio_id):
         if not forfeiting_player_id:
             return jsonify({"error": "Player ID richiesto"}), 400
 
-        result = TrioMatchService.forfeit_trio(trio_id, forfeiting_player_id, current_user.id)
+        result = TrioMatchService.forfeit_trio(
+            trio_id, forfeiting_player_id, current_user.id
+        )
         return jsonify(result)
 
     except ValueError as ve:

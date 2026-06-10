@@ -35,7 +35,7 @@ class TestVenueManagerServiceTDD:
                 name="Test Billiard Hall",
                 address="123 Test Street",
                 city="Test City",
-                postal_code="12345"
+                postal_code="12345",
             )
             db.session.add(venue)
             db.session.commit()
@@ -53,7 +53,7 @@ class TestVenueManagerServiceTDD:
             user = User(
                 username="venue_user",
                 email="venue@example.com",
-                role=UserRole.PLAYER.value
+                role=UserRole.PLAYER.value,
             )
             user.set_password("secure123")
             db.session.add(user)
@@ -73,7 +73,7 @@ class TestVenueManagerServiceTDD:
             admin = User(
                 username="test_venue_admin",
                 email="test_venue_admin@example.com",
-                role=UserRole.ADMIN.value
+                role=UserRole.ADMIN.value,
             )
             admin.set_password("secure123")
             db.session.add(admin)
@@ -83,14 +83,16 @@ class TestVenueManagerServiceTDD:
 
             # Note: No cleanup - let test isolation handle it via db rollback
 
-    def test_create_venue_manager_request_functionality(self, app, test_user, test_venue):
+    def test_create_venue_manager_request_functionality(
+        self, app, test_user, test_venue
+    ):
         """Test VenueManagerService.create_venue_manager_request() basic functionality."""
         with app.app_context():
             # Test successful request creation
             request = VenueManagerService.create_venue_manager_request(
                 user_id=test_user.id,
                 venue_id=test_venue.id,
-                notes="I want to manage this venue for community events"
+                notes="I want to manage this venue for community events",
             )
 
             assert request is not None
@@ -104,9 +106,7 @@ class TestVenueManagerServiceTDD:
         with app.app_context():
             with pytest.raises(ValueError, match="User not found"):
                 VenueManagerService.create_venue_manager_request(
-                    user_id=99999,
-                    venue_id=test_venue.id,
-                    notes="Test motivation"
+                    user_id=99999, venue_id=test_venue.id, notes="Test motivation"
                 )
 
     def test_create_venue_manager_request_venue_not_found(self, app, test_user):
@@ -114,56 +114,56 @@ class TestVenueManagerServiceTDD:
         with app.app_context():
             with pytest.raises(ValueError, match="Venue not found"):
                 VenueManagerService.create_venue_manager_request(
-                    user_id=test_user.id,
-                    venue_id=99999,
-                    notes="Test motivation"
+                    user_id=test_user.id, venue_id=99999, notes="Test motivation"
                 )
 
-    def test_create_venue_manager_request_duplicate_pending(self, app, test_user, test_venue):
+    def test_create_venue_manager_request_duplicate_pending(
+        self, app, test_user, test_venue
+    ):
         """Test VenueManagerService.create_venue_manager_request() prevents duplicate pending requests."""
         with app.app_context():
             # Create first request
             VenueManagerService.create_venue_manager_request(
-                user_id=test_user.id,
-                venue_id=test_venue.id,
-                notes="First request"
+                user_id=test_user.id, venue_id=test_venue.id, notes="First request"
             )
 
             # Attempt to create duplicate request
-            with pytest.raises(ValueError, match="Pending request already exists for this venue"):
+            with pytest.raises(
+                ValueError, match="Pending request already exists for this venue"
+            ):
                 VenueManagerService.create_venue_manager_request(
                     user_id=test_user.id,
                     venue_id=test_venue.id,
-                    notes="Duplicate request"
+                    notes="Duplicate request",
                 )
 
-    def test_create_venue_manager_request_empty_motivation(self, app, test_user, test_venue):
+    def test_create_venue_manager_request_empty_motivation(
+        self, app, test_user, test_venue
+    ):
         """Test VenueManagerService.create_venue_manager_request() validates motivation."""
         with app.app_context():
             # Test empty motivation
             with pytest.raises(ValueError, match="Notes are required"):
                 VenueManagerService.create_venue_manager_request(
-                    user_id=test_user.id,
-                    venue_id=test_venue.id,
-                    notes=""
+                    user_id=test_user.id, venue_id=test_venue.id, notes=""
                 )
 
             # Test whitespace-only motivation
             with pytest.raises(ValueError, match="Notes are required"):
                 VenueManagerService.create_venue_manager_request(
-                    user_id=test_user.id,
-                    venue_id=test_venue.id,
-                    notes="   "
+                    user_id=test_user.id, venue_id=test_venue.id, notes="   "
                 )
 
-    def test_process_venue_manager_request_approve(self, app, test_user, test_venue, test_admin):
+    def test_process_venue_manager_request_approve(
+        self, app, test_user, test_venue, test_admin
+    ):
         """Test VenueManagerService.process_venue_manager_request() approval functionality."""
         with app.app_context():
             # Create request
             request = VenueManagerService.create_venue_manager_request(
                 user_id=test_user.id,
                 venue_id=test_venue.id,
-                notes="I want to manage this venue"
+                notes="I want to manage this venue",
             )
 
             # Process request - approve
@@ -171,7 +171,7 @@ class TestVenueManagerServiceTDD:
                 request_id=request.id,
                 admin_user=test_admin,
                 approve=True,
-                notes="Approved for community leadership"
+                notes="Approved for community leadership",
             )
 
             assert processed_request.status == "approved"
@@ -184,14 +184,16 @@ class TestVenueManagerServiceTDD:
             ).first()
             assert venue_management is not None
 
-    def test_process_venue_manager_request_reject(self, app, test_user, test_venue, test_admin):
+    def test_process_venue_manager_request_reject(
+        self, app, test_user, test_venue, test_admin
+    ):
         """Test VenueManagerService.process_venue_manager_request() rejection functionality."""
         with app.app_context():
             # Create request
             request = VenueManagerService.create_venue_manager_request(
                 user_id=test_user.id,
                 venue_id=test_venue.id,
-                notes="I want to manage this venue"
+                notes="I want to manage this venue",
             )
 
             # Process request - reject
@@ -199,7 +201,7 @@ class TestVenueManagerServiceTDD:
                 request_id=request.id,
                 admin_user=test_admin,
                 approve=False,
-                notes="Insufficient experience"
+                notes="Insufficient experience",
             )
 
             assert processed_request.status == "rejected"
@@ -219,25 +221,26 @@ class TestVenueManagerServiceTDD:
             request = VenueManagerService.create_venue_manager_request(
                 user_id=test_user.id,
                 venue_id=test_venue.id,
-                notes="I want to manage this venue"
+                notes="I want to manage this venue",
             )
 
             # Create non-admin user
             director = User(
                 username="director_user",
                 email="director@example.com",
-                role=UserRole.DIRECTOR.value
+                role=UserRole.DIRECTOR.value,
             )
             director.set_password("secure123")
             db.session.add(director)
             db.session.commit()
 
             # Attempt to process with non-admin
-            with pytest.raises(ValueError, match="Only administrators can process venue manager requests"):
+            with pytest.raises(
+                ValueError,
+                match="Only administrators can process venue manager requests",
+            ):
                 VenueManagerService.process_venue_manager_request(
-                    request_id=request.id,
-                    admin_user=director,
-                    approve=True
+                    request_id=request.id, admin_user=director, approve=True
                 )
 
             # Note: Cleanup handled by test isolation
@@ -247,36 +250,34 @@ class TestVenueManagerServiceTDD:
         with app.app_context():
             with pytest.raises(ValueError, match="Request not found"):
                 VenueManagerService.process_venue_manager_request(
-                    request_id=99999,
-                    admin_user=test_admin,
-                    approve=True
+                    request_id=99999, admin_user=test_admin, approve=True
                 )
 
-    def test_process_venue_manager_request_not_pending(self, app, test_user, test_venue, test_admin):
+    def test_process_venue_manager_request_not_pending(
+        self, app, test_user, test_venue, test_admin
+    ):
         """Test VenueManagerService.process_venue_manager_request() requires pending status."""
         with app.app_context():
             # Create and process request
             request = VenueManagerService.create_venue_manager_request(
                 user_id=test_user.id,
                 venue_id=test_venue.id,
-                notes="I want to manage this venue"
+                notes="I want to manage this venue",
             )
 
             VenueManagerService.process_venue_manager_request(
-                request_id=request.id,
-                admin_user=test_admin,
-                approve=True
+                request_id=request.id, admin_user=test_admin, approve=True
             )
 
             # Attempt to process again
             with pytest.raises(ValueError, match="Request is not pending"):
                 VenueManagerService.process_venue_manager_request(
-                    request_id=request.id,
-                    admin_user=test_admin,
-                    approve=False
+                    request_id=request.id, admin_user=test_admin, approve=False
                 )
 
-    def test_get_pending_venue_manager_requests(self, app, test_user, test_venue, test_admin):
+    def test_get_pending_venue_manager_requests(
+        self, app, test_user, test_venue, test_admin
+    ):
         """Test VenueManagerService.get_pending_venue_manager_requests() functionality."""
         with app.app_context():
             # Initially no pending requests
@@ -287,7 +288,7 @@ class TestVenueManagerServiceTDD:
             VenueManagerService.create_venue_manager_request(
                 user_id=test_user.id,
                 venue_id=test_venue.id,
-                notes="I want to manage this venue"
+                notes="I want to manage this venue",
             )
 
             # Check pending requests
@@ -295,22 +296,28 @@ class TestVenueManagerServiceTDD:
             assert len(pending) == initial_count + 1
             assert pending[-1].status == "pending"
 
-    def test_get_venue_manager_requests_by_user(self, app, test_user, test_venue, test_admin):
+    def test_get_venue_manager_requests_by_user(
+        self, app, test_user, test_venue, test_admin
+    ):
         """Test VenueManagerService.get_venue_manager_requests_by_user() functionality."""
         with app.app_context():
             # Initially no requests for user
-            user_requests = VenueManagerService.get_venue_manager_requests_by_user(test_user.id)
+            user_requests = VenueManagerService.get_venue_manager_requests_by_user(
+                test_user.id
+            )
             assert len(user_requests) == 0
 
             # Create request
             VenueManagerService.create_venue_manager_request(
                 user_id=test_user.id,
                 venue_id=test_venue.id,
-                notes="I want to manage this venue"
+                notes="I want to manage this venue",
             )
 
             # Check user requests
-            user_requests = VenueManagerService.get_venue_manager_requests_by_user(test_user.id)
+            user_requests = VenueManagerService.get_venue_manager_requests_by_user(
+                test_user.id
+            )
             assert len(user_requests) == 1
             assert user_requests[0].user_id == test_user.id
 
@@ -318,42 +325,52 @@ class TestVenueManagerServiceTDD:
         """Test VenueManagerService.get_venue_manager_requests_by_venue() functionality."""
         with app.app_context():
             # Initially no requests for venue
-            venue_requests = VenueManagerService.get_venue_manager_requests_by_venue(test_venue.id)
+            venue_requests = VenueManagerService.get_venue_manager_requests_by_venue(
+                test_venue.id
+            )
             assert len(venue_requests) == 0
 
             # Create request
             VenueManagerService.create_venue_manager_request(
                 user_id=test_user.id,
                 venue_id=test_venue.id,
-                notes="I want to manage this venue"
+                notes="I want to manage this venue",
             )
 
             # Check venue requests
-            venue_requests = VenueManagerService.get_venue_manager_requests_by_venue(test_venue.id)
+            venue_requests = VenueManagerService.get_venue_manager_requests_by_venue(
+                test_venue.id
+            )
             assert len(venue_requests) == 1
             assert venue_requests[0].venue_id == test_venue.id
 
-    def test_is_venue_manager_specific_venue(self, app, test_user, test_venue, test_admin):
+    def test_is_venue_manager_specific_venue(
+        self, app, test_user, test_venue, test_admin
+    ):
         """Test VenueManagerService.is_venue_manager() for specific venue."""
         with app.app_context():
             # Initially not a venue manager
-            assert VenueManagerService.is_venue_manager(test_user.id, test_venue.id) is False
+            assert (
+                VenueManagerService.is_venue_manager(test_user.id, test_venue.id)
+                is False
+            )
 
             # Create and approve request
             request = VenueManagerService.create_venue_manager_request(
                 user_id=test_user.id,
                 venue_id=test_venue.id,
-                notes="I want to manage this venue"
+                notes="I want to manage this venue",
             )
 
             VenueManagerService.process_venue_manager_request(
-                request_id=request.id,
-                admin_user=test_admin,
-                approve=True
+                request_id=request.id, admin_user=test_admin, approve=True
             )
 
             # Now should be venue manager
-            assert VenueManagerService.is_venue_manager(test_user.id, test_venue.id) is True
+            assert (
+                VenueManagerService.is_venue_manager(test_user.id, test_venue.id)
+                is True
+            )
 
     def test_is_venue_manager_any_venue(self, app, test_user, test_venue, test_admin):
         """Test VenueManagerService.is_venue_manager() for any venue."""
@@ -365,13 +382,11 @@ class TestVenueManagerServiceTDD:
             request = VenueManagerService.create_venue_manager_request(
                 user_id=test_user.id,
                 venue_id=test_venue.id,
-                notes="I want to manage this venue"
+                notes="I want to manage this venue",
             )
 
             VenueManagerService.process_venue_manager_request(
-                request_id=request.id,
-                admin_user=test_admin,
-                approve=True
+                request_id=request.id, admin_user=test_admin, approve=True
             )
 
             # Now should be venue manager
@@ -388,13 +403,11 @@ class TestVenueManagerServiceTDD:
             request = VenueManagerService.create_venue_manager_request(
                 user_id=test_user.id,
                 venue_id=test_venue.id,
-                notes="I want to manage this venue"
+                notes="I want to manage this venue",
             )
 
             VenueManagerService.process_venue_manager_request(
-                request_id=request.id,
-                admin_user=test_admin,
-                approve=True
+                request_id=request.id, admin_user=test_admin, approve=True
             )
 
             # Check managed venues
@@ -409,27 +422,29 @@ class TestVenueManagerServiceTDD:
             request = VenueManagerService.create_venue_manager_request(
                 user_id=test_user.id,
                 venue_id=test_venue.id,
-                notes="I want to manage this venue"
+                notes="I want to manage this venue",
             )
 
             VenueManagerService.process_venue_manager_request(
-                request_id=request.id,
-                admin_user=test_admin,
-                approve=True
+                request_id=request.id, admin_user=test_admin, approve=True
             )
 
             # Verify management assignment exists
-            assert VenueManagerService.is_venue_manager(test_user.id, test_venue.id) is True
+            assert (
+                VenueManagerService.is_venue_manager(test_user.id, test_venue.id)
+                is True
+            )
 
             # Remove venue manager
             result = VenueManagerService.remove_venue_manager(
-                user_id=test_user.id,
-                venue_id=test_venue.id,
-                admin_user=test_admin
+                user_id=test_user.id, venue_id=test_venue.id, admin_user=test_admin
             )
 
             assert result is True
-            assert VenueManagerService.is_venue_manager(test_user.id, test_venue.id) is False
+            assert (
+                VenueManagerService.is_venue_manager(test_user.id, test_venue.id)
+                is False
+            )
 
     def test_remove_venue_manager_non_admin(self, app, test_user, test_venue):
         """Test VenueManagerService.remove_venue_manager() requires admin user."""
@@ -438,28 +453,30 @@ class TestVenueManagerServiceTDD:
             director = User(
                 username="director_user",
                 email="director@example.com",
-                role=UserRole.DIRECTOR.value
+                role=UserRole.DIRECTOR.value,
             )
             director.set_password("secure123")
             db.session.add(director)
             db.session.commit()
 
             # Attempt to remove with non-admin
-            with pytest.raises(ValueError, match="Only administrators can remove venue managers"):
+            with pytest.raises(
+                ValueError, match="Only administrators can remove venue managers"
+            ):
                 VenueManagerService.remove_venue_manager(
-                    user_id=test_user.id,
-                    venue_id=test_venue.id,
-                    admin_user=director
+                    user_id=test_user.id, venue_id=test_venue.id, admin_user=director
                 )
 
             # Note: Cleanup handled by test isolation
 
-    def test_remove_venue_manager_not_found(self, app, test_user, test_venue, test_admin):
+    def test_remove_venue_manager_not_found(
+        self, app, test_user, test_venue, test_admin
+    ):
         """Test VenueManagerService.remove_venue_manager() with non-existent assignment."""
         with app.app_context():
-            with pytest.raises(ValueError, match="Venue management assignment not found"):
+            with pytest.raises(
+                ValueError, match="Venue management assignment not found"
+            ):
                 VenueManagerService.remove_venue_manager(
-                    user_id=test_user.id,
-                    venue_id=test_venue.id,
-                    admin_user=test_admin
+                    user_id=test_user.id, venue_id=test_venue.id, admin_user=test_admin
                 )

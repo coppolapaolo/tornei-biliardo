@@ -185,7 +185,10 @@ class TestParticipantLimitsWaitlistTDD:
 
         # This should create waitlist entry (waitlist functionality is implemented)
         waitlist_inscription = Inscription(
-            user_id=waitlist_player.id, gara_id=gara.id, is_waitlist=True, waitlist_position=1
+            user_id=waitlist_player.id,
+            gara_id=gara.id,
+            is_waitlist=True,
+            waitlist_position=1,
         )
         db_session.add(waitlist_inscription)
         db_session.commit()

@@ -28,9 +28,7 @@ class KpiNotificationService:
         return [admin.id for admin in admins]
 
     @staticmethod
-    def notify_milestone(
-        milestone_type: MilestoneType, value: int
-    ) -> List[int]:
+    def notify_milestone(milestone_type: MilestoneType, value: int) -> List[int]:
         """
         Send milestone notification to all admins.
 
@@ -60,8 +58,7 @@ class KpiNotificationService:
         elif milestone_type == MilestoneType.GARE_COMPLETED:
             title = _("Milestone: %(value)s gare completate!", value=value)
             message = _(
-                "Sono state completate %(value)s gare. "
-                "Ottimo lavoro!",
+                "Sono state completate %(value)s gare. " "Ottimo lavoro!",
                 value=value,
             )
         else:
@@ -164,9 +161,7 @@ class KpiNotificationService:
         return notified_ids
 
     @staticmethod
-    def notify_milestones_batch(
-        milestones: List[Tuple[MilestoneType, int]]
-    ) -> int:
+    def notify_milestones_batch(milestones: List[Tuple[MilestoneType, int]]) -> int:
         """
         Send notifications for multiple milestones.
 

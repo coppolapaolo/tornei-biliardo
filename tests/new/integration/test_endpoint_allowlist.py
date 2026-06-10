@@ -10,6 +10,7 @@ Endpoints registered in Flask but absent from both sets are treated as
 "admin-only by design" (the matrix is intentionally a starting subset);
 they are reported via warning, not asserted.
 """
+
 from __future__ import annotations
 
 import warnings

@@ -25,12 +25,13 @@ from models.gamification.models import XPTransactionType
 class XPGainedEvent(DomainEvent):
     """
     Event emitted when user gains XP.
-    
+
     Used for:
     - Analytics tracking
     - Real-time UI updates
     - Third-party integrations
     """
+
     user_id: int
     xp_amount: int
     transaction_type: XPTransactionType
@@ -62,16 +63,19 @@ class XPGainedEvent(DomainEvent):
 class LevelUpEvent(DomainEvent):
     """
     Event emitted when user levels up.
-    
+
     Used for:
     - Notification creation (celebrate level up!)
     - Feature unlock checks
     - Analytics tracking
     """
+
     user_id: int
     old_level: int
     new_level: int
-    unlocks: List[Dict[str, str]]  # [{"feature": "tournament_creation", "description": "..."}]
+    unlocks: List[
+        Dict[str, str]
+    ]  # [{"feature": "tournament_creation", "description": "..."}]
     total_xp: int
 
     @property
@@ -95,12 +99,13 @@ class LevelUpEvent(DomainEvent):
 class AchievementUnlockedEvent(DomainEvent):
     """
     Event emitted when user unlocks an achievement.
-    
+
     Used for:
     - Notification creation (celebrate achievement!)
     - XP award (achievement.xp_reward)
     - Social sharing (future)
     """
+
     user_id: int
     achievement_id: int
     achievement_slug: str
@@ -132,14 +137,15 @@ class AchievementUnlockedEvent(DomainEvent):
 class StreakMilestoneEvent(DomainEvent):
     """
     Event emitted when user reaches a weekly streak milestone.
-    
+
     Milestones: 4 weeks (1 month), 12 weeks (3 months), 52 weeks (1 year)
-    
+
     Used for:
     - Notification creation (celebrate milestone!)
     - Freeze award (if applicable)
     - XP bonus award
     """
+
     user_id: int
     streak_type: str  # "weekly_activity", "weekly_match", etc.
     milestone: int  # 4, 12, 52 (weeks)
@@ -169,11 +175,12 @@ class StreakMilestoneEvent(DomainEvent):
 class StreakBrokenEvent(DomainEvent):
     """
     Event emitted when streak is broken (missed 2+ weeks).
-    
+
     Used for:
     - Analytics (track streak loss)
     - Encouragement notifications (future)
     """
+
     user_id: int
     streak_type: str
     streak_length: int  # How many weeks were lost
@@ -199,11 +206,12 @@ class StreakBrokenEvent(DomainEvent):
 class StreakFreezeUsedEvent(DomainEvent):
     """
     Event emitted when freeze is used to save a streak.
-    
+
     Used for:
     - Analytics (track freeze usage)
     - UI updates (show freeze count)
     """
+
     user_id: int
     streak_type: str
     current_streak: int
@@ -229,12 +237,13 @@ class StreakFreezeUsedEvent(DomainEvent):
 class QuestCompletedEvent(DomainEvent):
     """
     Event emitted when user completes a quest.
-    
+
     Used for:
     - Notification creation (celebrate quest completion!)
     - XP award
     - Quest statistics update
     """
+
     user_id: int
     quest_id: int
     quest_name: str

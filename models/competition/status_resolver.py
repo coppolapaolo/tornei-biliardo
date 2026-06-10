@@ -45,17 +45,19 @@ class GaraStatusResolver:
         finished_statuses = [MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value]
 
         # Check if ALL matches across ALL rounds are completed
-        all_matches_completed = all(
-            m.status in finished_statuses for m in matches_list
-        )
+        all_matches_completed = all(m.status in finished_statuses for m in matches_list)
         rounds_with_matches = set(
             m.round_number for m in matches_list if hasattr(m, "round_number")
         )
         rounds_count = getattr(gara, "rounds_count", 0) or 0
         all_rounds_have_matches = (
-            len(rounds_with_matches) == rounds_count
-            and max(rounds_with_matches) == rounds_count
-        ) if rounds_with_matches else False
+            (
+                len(rounds_with_matches) == rounds_count
+                and max(rounds_with_matches) == rounds_count
+            )
+            if rounds_with_matches
+            else False
+        )
 
         if all_matches_completed and all_rounds_have_matches:
             return ProvaDerivedStatus.TOURNAMENT_COMPLETED.value

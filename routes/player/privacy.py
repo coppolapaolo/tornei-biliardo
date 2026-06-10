@@ -9,7 +9,6 @@ from utils import player_only
 
 from . import player_bp
 
-
 # ============ PRIVACY SETTINGS ============
 
 

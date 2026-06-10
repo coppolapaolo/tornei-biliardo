@@ -101,7 +101,9 @@ def emit_event(scope: EventScope, scope_id: int, event_type: str, data: dict) ->
     """
     scope_key = scope.value if isinstance(scope, EventScope) else scope
     if scope_key not in _events:
-        raise ValueError(f"Invalid scope: {scope_key}. Must be one of: {list(_events.keys())}")
+        raise ValueError(
+            f"Invalid scope: {scope_key}. Must be one of: {list(_events.keys())}"
+        )
 
     with _events_lock:
         now = time.time()

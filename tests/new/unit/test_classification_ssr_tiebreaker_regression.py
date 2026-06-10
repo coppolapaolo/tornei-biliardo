@@ -35,6 +35,7 @@ def random_gara_with_tied_players(db_session):
     Expected: player_a should be ranked 1st due to SSR tiebreaker
     """
     import uuid
+
     suffix = uuid.uuid4().hex[:8]
 
     # Create users
@@ -188,8 +189,9 @@ class TestSSRTiebreakerRegression:
 
         # THEN: Get the new classifications
         classifications = (
-            RoundClassification.query
-            .filter_by(gara_id=gara.id, round_number=gara.current_round)
+            RoundClassification.query.filter_by(
+                gara_id=gara.id, round_number=gara.current_round
+            )
             .order_by(RoundClassification.position)
             .all()
         )
@@ -223,9 +225,7 @@ class TestSSRTiebreakerRegression:
         )
 
         # THEN: Should complete without error
-        classifications = (
-            RoundClassification.query
-            .filter_by(gara_id=gara.id, round_number=gara.current_round)
-            .all()
-        )
+        classifications = RoundClassification.query.filter_by(
+            gara_id=gara.id, round_number=gara.current_round
+        ).all()
         assert len(classifications) >= 1  # At least some classification exists

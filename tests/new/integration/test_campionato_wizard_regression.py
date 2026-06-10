@@ -50,11 +50,13 @@ class TestCampionatoWizardRouteRegression:
         response = client.get("/admin/campionato/wizard")
 
         # Should not return 500
-        assert response.status_code == 200, (
-            f"Wizard should render successfully, got {response.status_code}"
-        )
+        assert (
+            response.status_code == 200
+        ), f"Wizard should render successfully, got {response.status_code}"
 
-    def test_wizard_contains_classification_compatibility_json(self, client, db_session):
+    def test_wizard_contains_classification_compatibility_json(
+        self, client, db_session
+    ):
         """Wizard page should contain classification_compatibility as JSON.
 
         The JavaScript needs this data to enable/disable matchmaking options
@@ -89,11 +91,13 @@ class TestCampionatoWizardRouteRegression:
         assert 'value="random"' in html, "Random option not found"
 
         # Should NOT have the broken data-systems attribute
-        assert "matchmaking_systems" not in html, (
-            "Broken matchmaking_systems reference still in template"
-        )
+        assert (
+            "matchmaking_systems" not in html
+        ), "Broken matchmaking_systems reference still in template"
 
-    @pytest.mark.skip(reason="Session isolation issue with Flask-Login in test environment")
+    @pytest.mark.skip(
+        reason="Session isolation issue with Flask-Login in test environment"
+    )
     def test_wizard_requires_authentication(self, app):
         """Wizard should redirect unauthenticated users to login."""
         # Use fresh client without any session state

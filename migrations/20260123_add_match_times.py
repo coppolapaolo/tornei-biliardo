@@ -41,7 +41,9 @@ def upgrade_sqlite(db_path: str):
     if "completed_at" in indiv_columns and "ended_at" not in indiv_columns:
         cursor.execute("ALTER TABLE individual_match ADD COLUMN ended_at DATETIME")
         cursor.execute("UPDATE individual_match SET ended_at = completed_at")
-        print("  Added ended_at column to individual_match and copied data from completed_at")
+        print(
+            "  Added ended_at column to individual_match and copied data from completed_at"
+        )
     elif "ended_at" not in indiv_columns:
         # completed_at doesn't exist either, just add ended_at
         cursor.execute("ALTER TABLE individual_match ADD COLUMN ended_at DATETIME")

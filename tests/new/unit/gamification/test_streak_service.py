@@ -78,8 +78,7 @@ class TestStreakRecording:
         player = isolated_players[0]
 
         tracker, result = StreakService.record_activity(
-            user_id=player.id,
-            streak_type=StreakType.WEEKLY_ACTIVITY
+            user_id=player.id, streak_type=StreakType.WEEKLY_ACTIVITY
         )
 
         assert tracker is not None
@@ -95,17 +94,13 @@ class TestStreakRecording:
 
         # First activity
         tracker, _ = StreakService.record_activity(
-            user_id=player.id,
-            streak_type=StreakType.WEEKLY_MATCH,
-            activity_date=today
+            user_id=player.id, streak_type=StreakType.WEEKLY_MATCH, activity_date=today
         )
         initial_streak = tracker.current_streak
 
         # Second activity same week
         tracker, result = StreakService.record_activity(
-            user_id=player.id,
-            streak_type=StreakType.WEEKLY_MATCH,
-            activity_date=today
+            user_id=player.id, streak_type=StreakType.WEEKLY_MATCH, activity_date=today
         )
 
         assert tracker.current_streak == initial_streak
@@ -117,13 +112,10 @@ class TestStreakRecording:
 
         # Mock week 10 activity
         with patch.object(
-            StreakService,
-            'get_current_iso_week',
-            return_value=(10, 2024)
+            StreakService, "get_current_iso_week", return_value=(10, 2024)
         ):
             tracker, _ = StreakService.record_activity(
-                user_id=player.id,
-                streak_type=StreakType.WEEKLY_ACTIVITY
+                user_id=player.id, streak_type=StreakType.WEEKLY_ACTIVITY
             )
 
         # Update tracker to simulate week 10
@@ -133,13 +125,10 @@ class TestStreakRecording:
 
         # Mock week 11 activity
         with patch.object(
-            StreakService,
-            'get_current_iso_week',
-            return_value=(11, 2024)
+            StreakService, "get_current_iso_week", return_value=(11, 2024)
         ):
             tracker, result = StreakService.record_activity(
-                user_id=player.id,
-                streak_type=StreakType.WEEKLY_ACTIVITY
+                user_id=player.id, streak_type=StreakType.WEEKLY_ACTIVITY
             )
 
         assert tracker.current_streak == 2
@@ -151,13 +140,10 @@ class TestStreakRecording:
 
         # Start streak
         with patch.object(
-            StreakService,
-            'get_current_iso_week',
-            return_value=(10, 2024)
+            StreakService, "get_current_iso_week", return_value=(10, 2024)
         ):
             tracker, _ = StreakService.record_activity(
-                user_id=player.id,
-                streak_type=StreakType.WEEKLY_ACTIVITY
+                user_id=player.id, streak_type=StreakType.WEEKLY_ACTIVITY
             )
 
         tracker.last_activity_week = 10
@@ -166,13 +152,10 @@ class TestStreakRecording:
 
         # Week 11
         with patch.object(
-            StreakService,
-            'get_current_iso_week',
-            return_value=(11, 2024)
+            StreakService, "get_current_iso_week", return_value=(11, 2024)
         ):
             tracker, _ = StreakService.record_activity(
-                user_id=player.id,
-                streak_type=StreakType.WEEKLY_ACTIVITY
+                user_id=player.id, streak_type=StreakType.WEEKLY_ACTIVITY
             )
 
         assert tracker.longest_streak == 2
@@ -187,23 +170,17 @@ class TestFreezeUsage:
 
         # Create a 2-week streak (avoiding the 4-week milestone which grants freeze)
         with patch.object(
-            StreakService,
-            'get_current_iso_week',
-            return_value=(10, 2024)
+            StreakService, "get_current_iso_week", return_value=(10, 2024)
         ):
             tracker, _ = StreakService.record_activity(
-                user_id=player.id,
-                streak_type=StreakType.WEEKLY_MATCH
+                user_id=player.id, streak_type=StreakType.WEEKLY_MATCH
             )
 
         with patch.object(
-            StreakService,
-            'get_current_iso_week',
-            return_value=(11, 2024)
+            StreakService, "get_current_iso_week", return_value=(11, 2024)
         ):
             tracker, _ = StreakService.record_activity(
-                user_id=player.id,
-                streak_type=StreakType.WEEKLY_MATCH
+                user_id=player.id, streak_type=StreakType.WEEKLY_MATCH
             )
 
         assert tracker.current_streak == 2
@@ -211,34 +188,30 @@ class TestFreezeUsage:
 
         # Grant 1 freeze using admin method
         StreakService.admin_grant_freeze(
-            user_id=player.id,
-            streak_type=StreakType.WEEKLY_MATCH,
-            freeze_count=1
+            user_id=player.id, streak_type=StreakType.WEEKLY_MATCH, freeze_count=1
         )
 
         # Verify freeze was granted
         info = StreakService.get_streak_info(
-            user_id=player.id,
-            streak_type=StreakType.WEEKLY_MATCH
+            user_id=player.id, streak_type=StreakType.WEEKLY_MATCH
         )
         assert info["freeze_count"] == 1
 
         # Activity in week 13 (missed week 12) - should use freeze
         with patch.object(
-            StreakService,
-            'get_current_iso_week',
-            return_value=(13, 2024)
+            StreakService, "get_current_iso_week", return_value=(13, 2024)
         ):
             tracker, result = StreakService.record_activity(
-                user_id=player.id,
-                streak_type=StreakType.WEEKLY_MATCH
+                user_id=player.id, streak_type=StreakType.WEEKLY_MATCH
             )
 
         assert result["action"] == "freeze_used"
         assert tracker.current_streak == 3  # Streak continued (2 + 1)
         assert tracker.freeze_count == 0  # Freeze consumed
 
-    def test_miss_one_week_breaks_streak_without_freeze(self, db_session, isolated_players):
+    def test_miss_one_week_breaks_streak_without_freeze(
+        self, db_session, isolated_players
+    ):
         """Missing 1 week without freeze should break streak."""
         player = isolated_players[0]
 
@@ -251,27 +224,26 @@ class TestFreezeUsage:
             freeze_count=0,
             total_freeze_earned=0,
             last_activity_week=10,
-            last_activity_year=2024
+            last_activity_year=2024,
         )
         db_session.add(tracker)
         db_session.flush()
 
         # Activity in week 12 (missed week 11)
         with patch.object(
-            StreakService,
-            'get_current_iso_week',
-            return_value=(12, 2024)
+            StreakService, "get_current_iso_week", return_value=(12, 2024)
         ):
             tracker, result = StreakService.record_activity(
-                user_id=player.id,
-                streak_type=StreakType.WEEKLY_MATCH
+                user_id=player.id, streak_type=StreakType.WEEKLY_MATCH
             )
 
         assert result["action"] == "broken"
         assert tracker.current_streak == 1  # Reset to 1
         assert tracker.longest_streak == 5  # Preserved
 
-    def test_miss_two_weeks_breaks_streak_even_with_freeze(self, db_session, isolated_players):
+    def test_miss_two_weeks_breaks_streak_even_with_freeze(
+        self, db_session, isolated_players
+    ):
         """Missing 2+ weeks should break streak even with freeze."""
         player = isolated_players[0]
 
@@ -284,20 +256,17 @@ class TestFreezeUsage:
             freeze_count=3,
             total_freeze_earned=3,
             last_activity_week=10,
-            last_activity_year=2024
+            last_activity_year=2024,
         )
         db_session.add(tracker)
         db_session.flush()
 
         # Activity in week 14 (missed weeks 11, 12, 13)
         with patch.object(
-            StreakService,
-            'get_current_iso_week',
-            return_value=(14, 2024)
+            StreakService, "get_current_iso_week", return_value=(14, 2024)
         ):
             tracker, result = StreakService.record_activity(
-                user_id=player.id,
-                streak_type=StreakType.WEEKLY_ACTIVITY
+                user_id=player.id, streak_type=StreakType.WEEKLY_ACTIVITY
             )
 
         assert result["action"] == "broken"
@@ -322,20 +291,17 @@ class TestMilestoneRewards:
             total_freeze_earned=0,
             last_activity_week=10,
             last_activity_year=2024,
-            milestone_4_reached=False
+            milestone_4_reached=False,
         )
         db_session.add(tracker)
         db_session.flush()
 
         # Activity in week 11 (reaches 4-week milestone)
         with patch.object(
-            StreakService,
-            'get_current_iso_week',
-            return_value=(11, 2024)
+            StreakService, "get_current_iso_week", return_value=(11, 2024)
         ):
             tracker, result = StreakService.record_activity(
-                user_id=player.id,
-                streak_type=StreakType.WEEKLY_ACTIVITY
+                user_id=player.id, streak_type=StreakType.WEEKLY_ACTIVITY
             )
 
         assert tracker.current_streak == 4
@@ -361,20 +327,17 @@ class TestMilestoneRewards:
             last_activity_year=2023,
             milestone_4_reached=True,
             milestone_12_reached=True,
-            milestone_52_reached=False
+            milestone_52_reached=False,
         )
         db_session.add(tracker)
         db_session.flush()
 
         # Activity in week 1 of 2024 (reaches 52-week milestone)
         with patch.object(
-            StreakService,
-            'get_current_iso_week',
-            return_value=(1, 2024)
+            StreakService, "get_current_iso_week", return_value=(1, 2024)
         ):
             tracker, result = StreakService.record_activity(
-                user_id=player.id,
-                streak_type=StreakType.WEEKLY_ACTIVITY
+                user_id=player.id, streak_type=StreakType.WEEKLY_ACTIVITY
             )
 
         assert tracker.current_streak == 52
@@ -396,20 +359,17 @@ class TestMilestoneRewards:
             total_freeze_earned=MAX_FREEZE_COUNT,
             last_activity_week=10,
             last_activity_year=2024,
-            milestone_4_reached=False
+            milestone_4_reached=False,
         )
         db_session.add(tracker)
         db_session.flush()
 
         # Activity in week 11 (would earn freeze at 4-week milestone)
         with patch.object(
-            StreakService,
-            'get_current_iso_week',
-            return_value=(11, 2024)
+            StreakService, "get_current_iso_week", return_value=(11, 2024)
         ):
             tracker, result = StreakService.record_activity(
-                user_id=player.id,
-                streak_type=StreakType.WEEKLY_ACTIVITY
+                user_id=player.id, streak_type=StreakType.WEEKLY_ACTIVITY
             )
 
         assert tracker.freeze_count == MAX_FREEZE_COUNT  # Still at max
@@ -424,8 +384,7 @@ class TestStreakInfo:
         player = isolated_players[0]
 
         info = StreakService.get_streak_info(
-            user_id=player.id,
-            streak_type=StreakType.WEEKLY_MATCH
+            user_id=player.id, streak_type=StreakType.WEEKLY_MATCH
         )
 
         assert info["current_streak"] == 0
@@ -448,14 +407,13 @@ class TestStreakInfo:
             last_activity_week=20,
             last_activity_year=2024,
             milestone_4_reached=True,
-            milestone_12_reached=False
+            milestone_12_reached=False,
         )
         db_session.add(tracker)
         db_session.flush()
 
         info = StreakService.get_streak_info(
-            user_id=player.id,
-            streak_type=StreakType.WEEKLY_ACTIVITY
+            user_id=player.id, streak_type=StreakType.WEEKLY_ACTIVITY
         )
 
         assert info["current_streak"] == 8
@@ -475,7 +433,7 @@ class TestStreakInfo:
             current_streak=5,
             longest_streak=5,
             freeze_count=1,
-            total_freeze_earned=1
+            total_freeze_earned=1,
         )
         db_session.add(tracker)
         db_session.flush()
@@ -500,7 +458,7 @@ class TestAdminFreezeGrant:
             user_id=player.id,
             streak_type=StreakType.WEEKLY_ACTIVITY,
             freeze_count=2,
-            reason="Test grant"
+            reason="Test grant",
         )
 
         assert success is True
@@ -518,7 +476,7 @@ class TestAdminFreezeGrant:
             current_streak=0,
             longest_streak=0,
             freeze_count=MAX_FREEZE_COUNT - 1,
-            total_freeze_earned=MAX_FREEZE_COUNT - 1
+            total_freeze_earned=MAX_FREEZE_COUNT - 1,
         )
         db_session.add(tracker)
         db_session.flush()
@@ -528,7 +486,7 @@ class TestAdminFreezeGrant:
             user_id=player.id,
             streak_type=StreakType.WEEKLY_ACTIVITY,
             freeze_count=2,
-            reason="Test grant"
+            reason="Test grant",
         )
 
         assert success is True
@@ -545,7 +503,7 @@ class TestAdminFreezeGrant:
             current_streak=0,
             longest_streak=0,
             freeze_count=MAX_FREEZE_COUNT,
-            total_freeze_earned=MAX_FREEZE_COUNT
+            total_freeze_earned=MAX_FREEZE_COUNT,
         )
         db_session.add(tracker)
         db_session.flush()
@@ -554,7 +512,7 @@ class TestAdminFreezeGrant:
             user_id=player.id,
             streak_type=StreakType.WEEKLY_ACTIVITY,
             freeze_count=1,
-            reason="Test grant"
+            reason="Test grant",
         )
 
         assert success is False

@@ -48,8 +48,7 @@ def gara_detail(gara_id):
         # Check iscrizione (solo per non-admin)
         if not current_user.is_admin:
             user_inscription = Inscription.query.filter_by(
-                gara_id=gara_id,
-                user_id=current_user.id
+                gara_id=gara_id, user_id=current_user.id
             ).first()
 
     # Carica dati in base al contesto utente
@@ -60,7 +59,9 @@ def gara_detail(gara_id):
             .order_by(Match.round_number, Match.id)
             .all()
         )
-        all_matches = matches  # Needed for _round_management.html round completion check
+        all_matches = (
+            matches  # Needed for _round_management.html round completion check
+        )
 
     elif user_inscription:
         # PLAYER VIEW: Solo le sue partite
@@ -69,7 +70,7 @@ def gara_detail(gara_id):
             .filter(
                 db.or_(
                     Match.player1_id == current_user.id,
-                    Match.player2_id == current_user.id
+                    Match.player2_id == current_user.id,
                 )
             )
             .order_by(Match.round_number, Match.id)
@@ -114,16 +115,16 @@ def gara_detail(gara_id):
         active_count = gara.get_active_inscriptions_count()
         if gara.max_participants is None or active_count < gara.max_participants:
             # Escludi utenti già iscritti (attivi o in waitlist)
-            inscribed_user_ids = [
-                i.user_id for i in inscriptions if not i.is_withdrawn
-            ]
+            inscribed_user_ids = [i.user_id for i in inscriptions if not i.is_withdrawn]
             # Escludi anche admin (non possono partecipare)
             from models.user.role_enum import UserRole
+
             available_users = (
-                User.query
-                .filter(User.deleted_at.is_(None))
+                User.query.filter(User.deleted_at.is_(None))
                 .filter(User.role != UserRole.ADMIN.value)
-                .filter(~User.id.in_(inscribed_user_ids) if inscribed_user_ids else True)
+                .filter(
+                    ~User.id.in_(inscribed_user_ids) if inscribed_user_ids else True
+                )
                 .order_by(User.username)
                 .all()
             )
@@ -216,10 +217,13 @@ def gara_detail(gara_id):
     # Check if SSR has been applied (positions adjusted for tiebreakers)
     # If so, skip recalculation to preserve SSR-corrected positions
     # Just check if any SSR score exists, regardless of gara status
-    ssr_has_been_applied = GaraClassification.query.filter(
-        GaraClassification.gara_id == gara_id,
-        GaraClassification.spot_shot_wins.isnot(None)
-    ).first() is not None
+    ssr_has_been_applied = (
+        GaraClassification.query.filter(
+            GaraClassification.gara_id == gara_id,
+            GaraClassification.spot_shot_wins.isnot(None),
+        ).first()
+        is not None
+    )
 
     if gara.current_round > 0:
         # For Random strategy: show overall classification if ANY matches are completed
@@ -233,9 +237,13 @@ def gara_detail(gara_id):
             if completed_count > 0:
                 # Usa il numero massimo di turni (query dal database) per la classifica complessiva
                 from sqlalchemy import func
-                max_round = db.session.query(func.max(Match.round_number)).filter(
-                    Match.gara_id == gara_id
-                ).scalar() or gara.current_round
+
+                max_round = (
+                    db.session.query(func.max(Match.round_number))
+                    .filter(Match.gara_id == gara_id)
+                    .scalar()
+                    or gara.current_round
+                )
 
                 # Skip recalculation if SSR has been applied to preserve corrected positions
                 if not ssr_has_been_applied:
@@ -268,8 +276,7 @@ def gara_detail(gara_id):
                     MatchStatus.VALIDATED.value,
                 )
                 return all(
-                    match.status in finished or match.is_bye
-                    for match in round_matches
+                    match.status in finished or match.is_bye for match in round_matches
                 )
 
             # Cerca la classificazione del turno completato più recente
@@ -344,9 +351,7 @@ def gara_detail(gara_id):
         occupied_tables = TableAssignmentService.get_occupied_tables(gara.id)
 
     # Get forfeit user IDs for visual indication
-    forfeit_user_ids = set(
-        insc.user_id for insc in inscriptions if insc.is_forfeit
-    )
+    forfeit_user_ids = set(insc.user_id for insc in inscriptions if insc.is_forfeit)
 
     # SSR (Spot Shot Rally) data for tiebreaker display
     ssr_groups = []
@@ -355,39 +360,45 @@ def gara_detail(gara_id):
     has_unresolved_tiebreakers = False
 
     # Only load SSR data if competition is in final stages or has SSR data
-    if gara.status in [GaraStatus.PLAYING.value, GaraStatus.AWAITING_SSR.value, GaraStatus.COMPLETED.value]:
+    if gara.status in [
+        GaraStatus.PLAYING.value,
+        GaraStatus.AWAITING_SSR.value,
+        GaraStatus.COMPLETED.value,
+    ]:
         # Get all SSR groups (resolved and unresolved)
         ssr_groups = SpareggioService.get_all_ssr_groups(gara_id)
 
         # Check if there's any SSR data to display (0 is a valid score)
         has_ssr_data = any(
-            any(p['current_ssr_score'] is not None for p in group['players'])
+            any(p["current_ssr_score"] is not None for p in group["players"])
             for group in ssr_groups
         )
 
         # Check for unresolved tiebreakers
-        has_unresolved_tiebreakers = SpareggioService.has_unresolved_tiebreakers(gara_id)
+        has_unresolved_tiebreakers = SpareggioService.has_unresolved_tiebreakers(
+            gara_id
+        )
 
         # Can edit SSR if user can manage and gara is in appropriate state
         can_edit_ssr = user_can_manage and gara.status in [
             GaraStatus.PLAYING.value,
-            GaraStatus.AWAITING_SSR.value
+            GaraStatus.AWAITING_SSR.value,
         ]
 
     # Build SSR scores map for classification display (0 is a valid score)
     ssr_scores_map = {}
     for group in ssr_groups:
-        for player in group['players']:
-            if player['current_ssr_score'] is not None:
-                ssr_scores_map[player['user_id']] = player['current_ssr_score']
+        for player in group["players"]:
+            if player["current_ssr_score"] is not None:
+                ssr_scores_map[player["user_id"]] = player["current_ssr_score"]
 
     # Pre-compute template flags that were previously {% set %} in the template
     is_ssr_phase = gara.status == GaraStatus.AWAITING_SSR.value
     show_ssr_section = is_ssr_phase or (ssr_groups and has_ssr_data)
     is_gara_ending = (
-        (gara.get_real_status() == "campionato_completed" and not has_unresolved_tiebreakers)
-        or (has_ssr_data and not has_unresolved_tiebreakers)
-    )
+        gara.get_real_status() == "campionato_completed"
+        and not has_unresolved_tiebreakers
+    ) or (has_ssr_data and not has_unresolved_tiebreakers)
     has_scores = bool(
         current_round_classification
         and (

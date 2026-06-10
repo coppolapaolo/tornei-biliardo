@@ -271,12 +271,12 @@ class PermissionChecker:
             or not user.is_authenticated
         ):
             return False
-            
+
         # Use ABAC system (Gamification V2)
         # This evaluates: Role (Director/Admin) OR Level (Legend) OR Metrics (Veteran)
         if hasattr(user, "can_access"):
-             return user.can_access("create_campionato")
-             
+            return user.can_access("create_campionato")
+
         # Fallback if method missing
         return user.is_admin or user.is_director
 
@@ -549,7 +549,10 @@ class PermissionChecker:
 
 # Re-export for backward compatibility
 from .role_decorators import RoleRequirement  # noqa: E402, F401
-from .permission_helpers import user_can, get_user_permissions_summary  # noqa: E402, F401
+from .permission_helpers import (
+    user_can,
+    get_user_permissions_summary,
+)  # noqa: E402, F401
 
 __all__ = [
     "PermissionChecker",

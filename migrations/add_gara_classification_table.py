@@ -302,10 +302,18 @@ if __name__ == "__main__":
         else:
             print(f"❌ Unknown command: {sys.argv[1]}")
             print("\nUsage:")
-            print("  python migrations/add_gara_classification_table.py                    # SQLite (dev)")
-            print("  python migrations/add_gara_classification_table.py postgresql         # PostgreSQL (prod)")
-            print("  python migrations/add_gara_classification_table.py downgrade          # Rollback SQLite")
-            print("  python migrations/add_gara_classification_table.py downgrade-postgresql  # Rollback PostgreSQL")
+            print(
+                "  python migrations/add_gara_classification_table.py                    # SQLite (dev)"
+            )
+            print(
+                "  python migrations/add_gara_classification_table.py postgresql         # PostgreSQL (prod)"
+            )
+            print(
+                "  python migrations/add_gara_classification_table.py downgrade          # Rollback SQLite"
+            )
+            print(
+                "  python migrations/add_gara_classification_table.py downgrade-postgresql  # Rollback PostgreSQL"
+            )
             sys.exit(1)
     else:
         # Default: SQLite migration

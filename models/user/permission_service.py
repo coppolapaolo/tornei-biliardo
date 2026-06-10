@@ -168,9 +168,13 @@ class UserPermissionService:
                 request_id=director_request.id,
                 user_id=user.id,
                 username=user.username,
-                status=DirectorRequestStatus.APPROVED.value if approve else DirectorRequestStatus.REJECTED.value,
+                status=(
+                    DirectorRequestStatus.APPROVED.value
+                    if approve
+                    else DirectorRequestStatus.REJECTED.value
+                ),
                 processed_by_id=admin_user.id,
-                notes=notes
+                notes=notes,
             )
             EventBus.publish(event)
 

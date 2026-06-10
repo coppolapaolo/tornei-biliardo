@@ -72,7 +72,9 @@ def create_gara_standalone():
             # Venue handling
             location_input = request.form.get("location", "").strip()
             tables_input = request.form.get("available_tables", "").strip()
-            location, billiard_hall_id = _handle_venue_creation(location_input, tables_input)
+            location, billiard_hall_id = _handle_venue_creation(
+                location_input, tables_input
+            )
 
             # Validate strategy configuration
             errors = GaraFormParser.validate_strategy(data)
@@ -361,13 +363,13 @@ def soft_delete_gara(gara_id):
             gara_id=gara_id,
             deleted_by_id=current_user.id,
             cascade_option=cascade_option,
-            reason=reason
+            reason=reason,
         )
 
         if cascade_option == "keep_matches":
             flash(
                 f"{gara_name} eliminata. I match sono stati mantenuti come match individuali.",
-                "success"
+                "success",
             )
         else:
             flash(f"{gara_name} eliminata con successo!", "success")

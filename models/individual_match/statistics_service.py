@@ -37,7 +37,9 @@ class IndividualMatchStatisticsService:
 
         if status_filter:
             target_status = (
-                status_filter.value if hasattr(status_filter, "value") else status_filter
+                status_filter.value
+                if hasattr(status_filter, "value")
+                else status_filter
             )
             query = query.filter(IndividualMatch.status == target_status)
 
@@ -161,7 +163,9 @@ class IndividualMatchStatisticsService:
             for m in all_matches
             if m.status in [MatchStatus.SCHEDULED, MatchStatus.IN_PROGRESS]
         ]
-        completed_matches = [m for m in all_matches if m.status == MatchStatus.COMPLETED]
+        completed_matches = [
+            m for m in all_matches if m.status == MatchStatus.COMPLETED
+        ]
         recent_matches = completed_matches[:5]
 
         return {
@@ -260,10 +264,12 @@ class IndividualMatchStatisticsService:
                     IndividualMatch.player1_id == user_id,
                     IndividualMatch.player2_id == user_id,
                 ),
-                IndividualMatch.status.in_([
-                    MatchStatus.COMPLETED.value,
-                    MatchStatus.VALIDATED.value,
-                ]),
+                IndividualMatch.status.in_(
+                    [
+                        MatchStatus.COMPLETED.value,
+                        MatchStatus.VALIDATED.value,
+                    ]
+                ),
             )
             .distinct()
             .all()
@@ -285,10 +291,12 @@ class IndividualMatchStatisticsService:
                     Match.player1_id == user_id,
                     Match.player2_id == user_id,
                 ),
-                Match.status.in_([
-                    MatchStatus.COMPLETED.value,
-                    MatchStatus.VALIDATED.value,
-                ]),
+                Match.status.in_(
+                    [
+                        MatchStatus.COMPLETED.value,
+                        MatchStatus.VALIDATED.value,
+                    ]
+                ),
             )
             .distinct()
             .all()

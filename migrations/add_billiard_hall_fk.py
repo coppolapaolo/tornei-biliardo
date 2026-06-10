@@ -157,8 +157,12 @@ if __name__ == "__main__":
         else:
             print(f"❌ Unknown command: {sys.argv[1]}")
             print("\nUsage:")
-            print("  python migrations/add_billiard_hall_fk.py              # SQLite (dev)")
-            print("  python migrations/add_billiard_hall_fk.py postgresql   # PostgreSQL (prod)")
+            print(
+                "  python migrations/add_billiard_hall_fk.py              # SQLite (dev)"
+            )
+            print(
+                "  python migrations/add_billiard_hall_fk.py postgresql   # PostgreSQL (prod)"
+            )
             print("  python migrations/add_billiard_hall_fk.py downgrade    # Rollback")
             sys.exit(1)
     else:

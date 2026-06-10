@@ -39,7 +39,8 @@ class RoundRobinStrategy(BaseStrategy):
             # Get active inscriptions
             inscriptions = getattr(gara, "inscriptions", [])
             active_inscriptions = [
-                i for i in inscriptions
+                i
+                for i in inscriptions
                 if not getattr(i, "is_withdrawn", False)
                 and not getattr(i, "is_waitlist", False)
             ]
@@ -47,8 +48,10 @@ class RoundRobinStrategy(BaseStrategy):
 
             # Calculate required rounds
             required_rounds = (
-                player_count - 1 if player_count % 2 == 0 else player_count
-            ) if player_count > 0 else 0
+                (player_count - 1 if player_count % 2 == 0 else player_count)
+                if player_count > 0
+                else 0
+            )
 
             # Check if gara has rounds_count and validate
             if hasattr(gara, "rounds_count"):
@@ -83,7 +86,8 @@ class RoundRobinStrategy(BaseStrategy):
             # Get active players
             inscriptions = getattr(gara, "inscriptions", [])
             active_inscriptions = [
-                i for i in inscriptions
+                i
+                for i in inscriptions
                 if not i.is_withdrawn and not getattr(i, "is_waitlist", False)
             ]
             player_ids = [i.user_id for i in active_inscriptions]
@@ -182,7 +186,6 @@ class RoundRobinStrategy(BaseStrategy):
     def get_matches_per_player(self, player_count: int) -> int:
         """Calculate matches per player in Round Robin."""
         return max(0, player_count - 1)
-
 
 
 class RoundRobinPairingStrategy(RoundRobinStrategy):

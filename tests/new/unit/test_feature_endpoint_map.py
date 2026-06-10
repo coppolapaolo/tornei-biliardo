@@ -4,6 +4,7 @@ Verifica che ``feature_visible_to_user`` rispetti la matrice
 ``ENDPOINT_ROLES`` quando una feature è mappata a un endpoint, e che
 features non mappate (UI-only) restino sempre proponibili.
 """
+
 from __future__ import annotations
 
 import pytest
@@ -113,8 +114,6 @@ def test_all_mapped_endpoints_actually_exist(app):
     with app.app_context():
         all_endpoints = {r.endpoint for r in app.url_map.iter_rules()}
         missing = [
-            ep
-            for ep in FEATURE_PRIMARY_ENDPOINT.values()
-            if ep not in all_endpoints
+            ep for ep in FEATURE_PRIMARY_ENDPOINT.values() if ep not in all_endpoints
         ]
         assert not missing, f"Endpoint mappati inesistenti: {missing}"

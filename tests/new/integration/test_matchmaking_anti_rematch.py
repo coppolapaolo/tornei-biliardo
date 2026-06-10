@@ -106,7 +106,9 @@ class TestAntiRematchBug:
         # Apri iscrizioni e avvia primo turno
         inscription_start = utc_now() - timedelta(hours=1)
         inscription_end = utc_now() + timedelta(hours=1)
-        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        InscriptionService.open_inscriptions(
+            gara.id, inscription_start, inscription_end
+        )
         RoundService.start_first_round(gara.id)
 
         # Traccia tutti i pairing attraverso i turni
@@ -143,9 +145,9 @@ class TestAntiRematchBug:
 
             # Verifica: nessun rematch con turni precedenti
             rematches = all_pairings.intersection(round_pairings)
-            assert len(rematches) == 0, (
-                f"Trovati rematches nel turno {round_num}: {rematches}"
-            )
+            assert (
+                len(rematches) == 0
+            ), f"Trovati rematches nel turno {round_num}: {rematches}"
 
             # Aggiungi i pairing di questo turno al set totale
             all_pairings.update(round_pairings)
@@ -195,7 +197,9 @@ class TestAntiRematchBug:
         # Avvia la gara
         inscription_start = utc_now() - timedelta(hours=1)
         inscription_end = utc_now() + timedelta(hours=1)
-        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        InscriptionService.open_inscriptions(
+            gara.id, inscription_start, inscription_end
+        )
         RoundService.start_first_round(gara.id)
 
         # Con 4 giocatori e 2 turni:
