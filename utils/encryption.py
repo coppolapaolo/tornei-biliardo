@@ -106,9 +106,14 @@ class EncryptionManager:
             encrypted_bytes = base64.urlsafe_b64decode(encrypted_data.encode())
             decrypted_bytes = self._cipher_suite.decrypt(encrypted_bytes)
             return decrypted_bytes.decode()
-        except Exception as e:
-            # Log error and return empty string for corrupted data
-            logger.warning("Decryption failed: %s", e)
+        except Exception:
+            # Degrado garbato (campo vuoto, il sito resta su) ma allarme vero:
+            # a livello ERROR l'evento arriva a GlitchTip via sentry_sdk.
+            # Una chiave sbagliata qui significa email/telefoni illeggibili
+            # in silenzio (decisione 2026-06-10, batch 8).
+            logger.error(
+                "Decryption failed (chiave errata o dato corrotto)", exc_info=True
+            )
             return ""
 
 

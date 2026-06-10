@@ -7,6 +7,9 @@ from flask import (
     flash,
     jsonify,
 )
+import logging
+
+from flask_babel import gettext as _
 from flask_login import current_user
 from datetime import datetime
 
@@ -15,6 +18,8 @@ from models.individual_match.services import IndividualMatchService
 from models.user.permissions import RoleRequirement
 
 from . import individual_match_bp
+
+logger = logging.getLogger(__name__)
 
 
 @individual_match_bp.route("/matches")
@@ -27,7 +32,8 @@ def match_list():
 
         return render_template("individual_match/matches.html", matches=matches)
     except Exception as e:
-        flash(f"Error loading matches: {str(e)}", "danger")
+        logger.error("Error loading matches: %s", e, exc_info=True)
+        flash(_("Errore interno del server"), "danger")
         return redirect(url_for("individual_match.dashboard"))
 
 
@@ -40,7 +46,7 @@ def match_detail(match_id):
 
         # Verify user is part of this match
         if current_user.id not in (match.player1_id, match.player2_id):
-            flash("Access denied to this match.", "danger")
+            flash(_("Accesso negato a questo match."), "danger")
             return redirect(url_for("individual_match.match_list"))
 
         from flask import render_template
@@ -48,7 +54,8 @@ def match_detail(match_id):
         return render_template("individual_match/match_detail.html", match=match)
 
     except Exception as e:
-        flash(f"Error loading match: {str(e)}", "danger")
+        logger.error("Error loading match: %s", e, exc_info=True)
+        flash(_("Errore interno del server"), "danger")
         return redirect(url_for("individual_match.match_list"))
 
 
@@ -69,7 +76,7 @@ def start_match(match_id):
         if request.is_json:
             return jsonify({"success": True, "message": "Match started successfully"})
         else:
-            flash("Match started successfully!", "success")
+            flash(_("Match avviato con successo!"), "success")
             return redirect(url_for("individual_match.match_detail", match_id=match_id))
 
     except ValueError as e:
@@ -130,7 +137,7 @@ def add_rack(match_id):
                 }
             )
         else:
-            flash("Rack aggiunto!", "success")
+            flash(_("Rack aggiunto!"), "success")
             return redirect(url_for("individual_match.match_detail", match_id=match_id))
 
     except ValueError as e:
@@ -189,7 +196,7 @@ def remove_rack(match_id):
                 }
             )
         else:
-            flash("Rack rimosso!", "success")
+            flash(_("Rack rimosso!"), "success")
             return redirect(url_for("individual_match.match_detail", match_id=match_id))
 
     except ValueError as e:
@@ -248,9 +255,11 @@ def confirm_result(match_id):
             )
         else:
             if fully_confirmed:
-                flash("Match completato con successo!", "success")
+                flash(_("Match completato con successo!"), "success")
             else:
-                flash("Risultato confermato! In attesa dell'altro giocatore.", "info")
+                flash(
+                    _("Risultato confermato! In attesa dell'altro giocatore."), "info"
+                )
             return redirect(url_for("individual_match.match_detail", match_id=match_id))
 
     except ValueError as e:
@@ -296,7 +305,7 @@ def reject_result(match_id):
                 }
             )
         else:
-            flash("Risultato rifiutato. Ultimo rack rimosso.", "warning")
+            flash(_("Risultato rifiutato. Ultimo rack rimosso."), "warning")
             return redirect(url_for("individual_match.match_detail", match_id=match_id))
 
     except ValueError as e:
@@ -335,7 +344,7 @@ def complete_match(match_id):
                 }
             )
         else:
-            flash("Match completed successfully!", "success")
+            flash(_("Match completato con successo!"), "success")
             return redirect(url_for("individual_match.match_detail", match_id=match_id))
 
     except ValueError as e:
@@ -357,7 +366,7 @@ def cancel_match(match_id):
         if request.is_json:
             return jsonify({"success": True, "message": "Match cancelled successfully"})
         else:
-            flash("Match cancelled successfully!", "success")
+            flash(_("Match annullato con successo!"), "success")
             return redirect(url_for("individual_match.match_list"))
 
     except ValueError as e:
@@ -407,7 +416,7 @@ def update_match_times(match_id):
                 {"success": True, "message": "Orari aggiornati con successo"}
             )
         else:
-            flash("Orari aggiornati con successo!", "success")
+            flash(_("Orari aggiornati con successo!"), "success")
             return redirect(url_for("individual_match.match_detail", match_id=match_id))
 
     except ValueError as e:
@@ -423,7 +432,6 @@ def update_match_times(match_id):
 @RoleRequirement.player_or_director_required
 def forfeit_match(match_id):
     """Forfeit an individual match - current user loses, opponent wins."""
-    from flask_babel import _
 
     try:
         match = IndividualMatchService.forfeit_match(
@@ -470,7 +478,6 @@ def forfeit_match(match_id):
 def rematch(match_id):
     """Nuovo match con lo stesso avversario: redirect a create_proposal
     con i parametri precompilati."""
-    from flask_babel import _
     from models.base import utc_now
 
     match = IndividualMatch.query.get_or_404(match_id)

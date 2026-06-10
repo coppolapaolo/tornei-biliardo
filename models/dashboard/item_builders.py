@@ -13,6 +13,7 @@ from models.campionato.models import Campionato
 from models.user.models import DirectorAssignment, User
 from models.competition.models import Gara
 from models.status_enum import GaraStatus
+from models.user.role_enum import UserRole
 
 from .view_models import (
     _role_truthy,
@@ -24,7 +25,7 @@ from .view_models import (
 def build_unified_items(
     campionati: List[Campionato],
     standalone_garas: List[Gara],
-    user_role: str = "player",
+    user_role: str = UserRole.PLAYER.value,
     user_id: Optional[int] = None,
 ) -> List[UnifiedDashboardItem]:
     """
@@ -38,7 +39,7 @@ def build_unified_items(
 
     # Batch-load director assignments for this user to avoid N+1 queries
     user_assignments: dict[str, set[int]] = {"campionato": set(), "gara": set()}
-    if user_role == "director" and user_id:
+    if user_role == UserRole.DIRECTOR.value and user_id:
         assignments = (
             db.session.query(
                 DirectorAssignment.entity_type, DirectorAssignment.entity_id
@@ -71,15 +72,15 @@ def build_unified_items(
         can_manage = False
         can_view_details = True
 
-        if user_role == "admin":
+        if user_role == UserRole.ADMIN.value:
             can_manage = True
-        elif user_role == "director" and user_id:
+        elif user_role == UserRole.DIRECTOR.value and user_id:
             is_co_director = campionato.id in user_assignments["campionato"]
             can_manage = is_co_director
             can_view_details = is_co_director
-        elif user_role == "player":
+        elif user_role == UserRole.PLAYER.value:
             can_view_details = True
-        elif user_role == "guest":
+        elif user_role == UserRole.GUEST.value:
             can_view_details = True
 
         if next_date:
@@ -108,18 +109,18 @@ def build_unified_items(
         can_manage = False
         can_view_details = True
 
-        if user_role == "admin":
+        if user_role == UserRole.ADMIN.value:
             can_manage = True
-        elif user_role == "director" and user_id:
+        elif user_role == UserRole.DIRECTOR.value and user_id:
             is_main_director = (
                 hasattr(gara, "director_id") and gara.director_id == user_id
             )
             is_co_director = gara.id in user_assignments["gara"]
             can_manage = is_main_director or is_co_director
             can_view_details = True
-        elif user_role == "player":
+        elif user_role == UserRole.PLAYER.value:
             can_view_details = True
-        elif user_role == "guest":
+        elif user_role == UserRole.GUEST.value:
             can_view_details = gara.status == GaraStatus.INSCRIPTION.value
 
         gara_date = getattr(gara, "date", None)

@@ -57,6 +57,7 @@ python migrations/runner.py --mark-all-applied  # Init existing DB
 # Deploy to PythonAnywhere (manual)
 cd /home/paolocoppola/mysite
 git pull origin main
+# ATTENZIONE: migrations SOLO con web app Disabled (tab Web)!
 python migrations/runner.py
 # Web app auto-reloads on push via GitHub Actions
 ```
@@ -66,9 +67,27 @@ python migrations/runner.py
 - Reloads PythonAnywhere web app on push to main
 - Git pull and migrations must be run manually or via scheduled task
 
-**PythonAnywhere Scheduled Task** (optional, daily on free tier):
-- Setup: Tasks → set time → `/home/paolocoppola/mysite/venv/bin/python /home/paolocoppola/mysite/scripts/auto_deploy.py`
-- Runs git pull, pip install, migrations, and reloads the app once per day
+**PythonAnywhere Scheduled Tasks** (daily):
+- `scripts/auto_deploy.py`: git pull, pip install, migrations e reload. Le
+  migrations girano SOLO se pendenti e con la web app disabilitata via API
+  (Disable → migrate → Enable; token da `$API_TOKEN`). Senza token si ferma
+  con istruzioni manuali.
+- `scripts/backup_db.py`: backup giornaliero del DB (rotazione 7 copie in
+  `backups/`).
+
+**⚠️ SQLite su PythonAnywhere (incidente 2026-06-10)**: lo storage è NFS con
+lock inaffidabili — due processi che SCRIVONO insieme (console + web app)
+possono corrompere il DB ("database disk image is malformed"). Regola: ogni
+script/comando console che scrive sul DB di produzione va eseguito con la
+web app su **Disabled** (riabilitare subito dopo).
+
+**Variabili d'ambiente richieste in produzione** (nel WSGI file
+`/var/www/www_torneibiliardo_it_wsgi.py`): `FLASK_ENV=production` e
+`ENCRYPTION_KEY` (fail-fast all'avvio se assente; la chiave cifra i PII —
+rotazione con `scripts/rotate_encryption_key.py`, procedura nel docstring).
+Gli script da console che toccano PII vanno lanciati con
+`ENCRYPTION_KEY='...' python scripts/...` (la console non eredita le env
+del WSGI).
 
 ---
 
@@ -513,6 +532,8 @@ pytest tests/new/unit/ -n auto && pytest tests/new/integration/ -n 4
 | `match.status in ["completed", "validated"]` (letterale raw) | `MatchStatus.is_finished(match.status)` / `is_active(...)` (typo-safe) |
 | `raise ValueError(...)` per not-found / conflitto / permesso | Solleva la sottoclasse da `models.exceptions` (`NotFoundError`/`ConflictError`/`PermissionDeniedError`) → route mappano a 404/409/403 |
 | Parsing form duplicato tra create / wizard / edit | Unica fonte `GaraFormParser` / `CampionatoFormParser` (vedi `routes/CLAUDE.md`) |
+| `user.role == "director"` (o `"admin"`/`"player"`/`"guest"` letterali) | `UserRole.DIRECTOR.value` ecc. da `models/user/role_enum.py` — mai letterali per valori di dominio |
+| Co-direttore con `role != director` | `GaraService`/`TournamentService.add_director` lo rifiutano (`ValidationError`): i co-direttori sono sempre `role=director` |
 
 ---
 

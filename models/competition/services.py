@@ -151,7 +151,8 @@ class GaraService:
                 gara_time=gara_time,
             )
 
-        # Validazione time - obbligatorio (defaults to 20:00 if missing for backward compatibility/tests)
+        # Validazione time - obbligatorio (default 20:00 se assente, per
+        # retro-compatibilita'/test)
         if "time" not in kwargs or kwargs["time"] is None:
             from datetime import time as time_type
 
@@ -199,7 +200,8 @@ class GaraService:
         classification_errors, classification_warnings = validate_gara(gara)
         if classification_errors:
             raise ValueError(
-                f"Configurazione classificazione non valida: {', '.join(classification_errors)}"
+                "Configurazione classificazione non valida: "
+                f"{', '.join(classification_errors)}"
             )
         # Warnings vengono loggati ma non bloccano
         if classification_warnings:
@@ -296,7 +298,8 @@ class GaraService:
         classification_errors, classification_warnings = validate_gara(gara)
         if classification_errors:
             raise ValueError(
-                f"Configurazione classificazione non valida: {', '.join(classification_errors)}"
+                "Configurazione classificazione non valida: "
+                f"{', '.join(classification_errors)}"
             )
         # Warnings vengono loggati ma non bloccano
         if classification_warnings:
@@ -500,7 +503,8 @@ class GaraService:
                     errors["rounds_count"] = (
                         f"Con anti-rematch attivo e {max_p_val} partecipanti massimi, "
                         f"puoi avere al massimo {max_rounds} turni "
-                        f"(ogni giocatore può incontrare al massimo {max_rounds} avversari unici)"
+                        f"(ogni giocatore può incontrare al massimo "
+                        f"{max_rounds} avversari unici)"
                     )
             except (TypeError, ValueError):
                 pass  # max_p validation already handled above
@@ -564,14 +568,23 @@ class GaraService:
             True se aggiunto con successo, False se già esistente
 
         Raises:
-            ValueError se l'utente è admin
+            ValidationError se l'utente non ha ruolo direttore (o è admin)
         """
+        from models.exceptions import ValidationError
         from models.user.models import User, DirectorAssignment
+        from models.user.role_enum import UserRole
 
-        # Verifica che l'utente non sia admin
         user = db.session.get(User, user_id)
         if user and user.is_admin:
-            raise ValueError("Gli admin non possono essere direttori di gara")
+            raise ValidationError("Gli admin non possono essere direttori di gara")
+
+        # Solo utenti con ruolo director: la UI offre solo quelli, ma il
+        # service non lo imponeva (un POST manuale poteva promuovere un
+        # player a gestore). Allineato il 2026-06-10 (decisione batch 8).
+        if not user or user.role != UserRole.DIRECTOR.value:
+            raise ValidationError(
+                "Solo gli utenti con ruolo direttore possono essere co-direttori"
+            )
 
         # Controlla se già esiste
         existing = (
@@ -842,12 +855,12 @@ class GaraService:
             affected_domains=["competition", "notification"],
         )
 
-    # Note: InscriptionService and RoundService have been extracted as separate services.
-    # New code should import them directly.
+    # Note: InscriptionService and RoundService have been extracted as
+    # separate services. New code should import them directly.
 
 
-from models.competition.inscription_service import InscriptionService
-from models.competition.round_service import RoundService  # noqa: F811
+from models.competition.inscription_service import InscriptionService  # noqa: E402
+from models.competition.round_service import RoundService  # noqa: E402,F811
 
 __all__ = [
     "GaraService",

@@ -372,7 +372,7 @@ def admin_grant_xp():
             related_entities={"admin_id": current_user.id},
         ),
         redirect_url=url_for("gamification.admin_xp_management"),
-        success_message=f"Concessi {xp_amount} XP all'utente.",
+        success_message=_("Concessi %(n)s XP all'utente.", n=xp_amount),
     )
 
 
@@ -450,7 +450,7 @@ def admin_grant_freeze():
             freeze_count=freeze_count,
         ),
         redirect_url=url_for("gamification.admin_streaks"),
-        success_message=f"Concessi {freeze_count} freeze all'utente.",
+        success_message=_("Concessi %(n)s freeze all'utente.", n=freeze_count),
     )
 
 
