@@ -46,7 +46,9 @@ def create_app(config_name=None):
         sentry_sdk.init(
             dsn=dsn,
             integrations=[FlaskIntegration()],
-            traces_sample_rate=0.1,
+            # Solo error event: le transaction di performance consumano la
+            # quota GlitchTip Free (1000 eventi/mese) in poche ore.
+            traces_sample_rate=0.0,
             environment=config_name,
         )
 
