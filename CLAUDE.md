@@ -89,6 +89,14 @@ Gli script da console che toccano PII vanno lanciati con
 `ENCRYPTION_KEY='...' python scripts/...` (la console non eredita le env
 del WSGI).
 
+**Monitoring (GlitchTip)**: DSN in `GLITCHTIP_DSN` (WSGI). In `app.py`
+`traces_sample_rate` deve restare **0.0**: le transaction di performance
+contano nella quota GlitchTip Free (1000 eventi/mese) — con 0.1 la quota si
+è esaurita in un giorno e il throttling scartava anche gli error event
+(sintomo: retry `SSLEOFError ... /api/<id>/envelope/` nell'error log PA,
+2026-06-10). Nota: ogni reload della web app ha una finestra di ~30s di
+`502-backend` mentre l'app riparte — è normale, non un crash.
+
 ---
 
 ## Project Overview
