@@ -101,61 +101,23 @@ class PlayerHistoryService:
         Returns:
             Tuple of (pagination object, aggregated stats for filtered matches)
         """
-        # Base query - completed matches where user participated
-        # Use outerjoin for Gara to include standalone matches (gara_id = NULL)
-        # outerjoin TrioMatch too: trio matches have user as one of the 3 players
-        query = (
-            db.session.query(Match)
-            .outerjoin(Gara, Gara.id == Match.gara_id)
-            .outerjoin(Campionato, Campionato.id == Gara.campionato_id)
-            .outerjoin(TrioMatch, Match.id == TrioMatch.match_id)
-            .filter(
-                Match.status == MatchStatus.COMPLETED.value,
-                Match.is_bye == False,  # noqa: E712
-                or_(
-                    # Regular matches (not trio)
-                    and_(
-                        Match.is_trio == False,  # noqa: E712
-                        or_(
-                            Match.player1_id == user_id,
-                            Match.player2_id == user_id,
-                        ),
-                    ),
-                    # Trio matches - check all 3 player positions
-                    and_(
-                        Match.is_trio == True,  # noqa: E712
-                        or_(
-                            TrioMatch.player1_id == user_id,
-                            TrioMatch.player2_id == user_id,
-                            TrioMatch.player3_id == user_id,
-                        ),
-                    ),
-                ),
-            )
-            .options(
-                joinedload(Match.player1),
-                joinedload(Match.player2),
-                joinedload(Match.gara).joinedload(Gara.campionato),
-                joinedload(Match.trio_match),
-                # I match multi-set leggono i rack reali dai Set (vedi
-                # _calculate_match_stats): pre-carica la collection per
-                # evitare un lazy-load N+1 per ogni match.
-                selectinload(Match.sets),
-            )
-        )
-
-        # Apply filters
-        query = PlayerHistoryService._apply_match_filters(query, user_id, filters)
-
-        # Order by date descending
-        query = query.order_by(Gara.date.desc().nullslast(), Match.created_at.desc())
-
         # Calculate stats BEFORE pagination (on filtered results)
+        query = PlayerHistoryService._build_match_history_query(user_id, filters)
         stats = PlayerHistoryService._calculate_match_stats(query.all(), user_id)
 
         # Re-run query for pagination (SQLAlchemy pagination needs fresh query)
-        # Use outerjoin for Gara to include standalone matches (gara_id = NULL)
-        # Also outerjoin TrioMatch to include trio matches
+        query = PlayerHistoryService._build_match_history_query(user_id, filters)
+        pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+
+        return pagination, stats
+
+    @staticmethod
+    def _build_match_history_query(user_id: int, filters: HistoryFilters) -> Any:
+        """Build the filtered+ordered query for completed matches of a user.
+
+        Use outerjoin for Gara to include standalone matches (gara_id = NULL);
+        outerjoin TrioMatch too: trio matches have user as one of the 3 players.
+        """
         query = (
             db.session.query(Match)
             .outerjoin(Gara, Gara.id == Match.gara_id)
@@ -196,11 +158,7 @@ class PlayerHistoryService:
             )
         )
         query = PlayerHistoryService._apply_match_filters(query, user_id, filters)
-        query = query.order_by(Gara.date.desc().nullslast(), Match.created_at.desc())
-
-        pagination = query.paginate(page=page, per_page=per_page, error_out=False)
-
-        return pagination, stats
+        return query.order_by(Gara.date.desc().nullslast(), Match.created_at.desc())
 
     @staticmethod
     def _apply_match_filters(query: Any, user_id: int, filters: HistoryFilters) -> Any:
@@ -222,17 +180,33 @@ class PlayerHistoryService:
         if filters.venue:
             query = query.filter(Gara.location.ilike(f"%{filters.venue}%"))
 
-        # Opponent filter
+        # Opponent filter. Nei trio l'avversario puo' comparire solo su
+        # TrioMatch.player1/2/3_id (Match.player1/2_id tengono 2 dei 3
+        # giocatori): la query base garantisce gia' che user_id partecipi,
+        # qui basta verificare la presenza dell'avversario nel trio.
         if filters.opponent_id:
             query = query.filter(
                 or_(
                     and_(
-                        Match.player1_id == user_id,
-                        Match.player2_id == filters.opponent_id,
+                        Match.is_trio == False,  # noqa: E712
+                        or_(
+                            and_(
+                                Match.player1_id == user_id,
+                                Match.player2_id == filters.opponent_id,
+                            ),
+                            and_(
+                                Match.player2_id == user_id,
+                                Match.player1_id == filters.opponent_id,
+                            ),
+                        ),
                     ),
                     and_(
-                        Match.player2_id == user_id,
-                        Match.player1_id == filters.opponent_id,
+                        Match.is_trio == True,  # noqa: E712
+                        or_(
+                            TrioMatch.player1_id == filters.opponent_id,
+                            TrioMatch.player2_id == filters.opponent_id,
+                            TrioMatch.player3_id == filters.opponent_id,
+                        ),
                     ),
                 )
             )

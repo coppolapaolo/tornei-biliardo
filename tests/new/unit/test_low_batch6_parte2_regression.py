@@ -1,8 +1,40 @@
 """Regression (review 2026-06-09, batch 6 parte 2): LOW nits correttezza."""
 
-from datetime import datetime, time
+import uuid
+from datetime import date, datetime, time
 
 import pytest
+
+from models.base import db
+from models.user.models import User
+
+
+def _make_user(suffix):
+    u = User(username=f"b6p2_{suffix}", email=f"b6p2_{suffix}@t.com", role="player")
+    u.set_password("x")
+    db.session.add(u)
+    db.session.flush()
+    return u
+
+
+def _make_gara(**kwargs):
+    from models.competition.models import Gara
+
+    defaults = {
+        "name": f"Gara b6p2 {uuid.uuid4().hex[:6]}",
+        "number": db.session.query(Gara).count() + 1,
+        "date": date.today(),
+        "distance": 5,
+        "discipline": "palla_9",
+        "matchmaking_strategy": "random",
+        "status": "playing",
+        "is_race_to": True,
+    }
+    defaults.update(kwargs)
+    gara = Gara(**defaults)
+    db.session.add(gara)
+    db.session.flush()
+    return gara
 
 
 @pytest.mark.unit
@@ -48,3 +80,51 @@ class TestQuietHoursLocalTime:
             notification_models, "utc_now", lambda: datetime(2026, 1, 15, 20, 0)
         )
         assert self._preference().is_in_quiet_hours() is False
+
+
+@pytest.mark.unit
+def test_opponent_filter_includes_trio_matches(db_session):
+    """Il filtro opponent della history include anche i trio match.
+
+    Bug: il filtro confrontava solo Match.player1/2_id → i trio match
+    giocati contro quell'avversario (TrioMatch.player1/2/3_id) sparivano
+    dalla history filtrata.
+    """
+    from models.match.models import Match, TrioMatch
+    from models.player.history_service import HistoryFilters, PlayerHistoryService
+    from models.status_enum import MatchStatus
+
+    suffix = uuid.uuid4().hex[:8]
+    user = _make_user(f"a_{suffix}")
+    opponent = _make_user(f"b_{suffix}")
+    third = _make_user(f"c_{suffix}")
+    gara = _make_gara(odd_number_policy="trio")
+
+    # L'avversario filtrato e' il TERZO giocatore del trio: compare solo in
+    # TrioMatch.player3_id, NON su Match.player1/2_id (caso che il vecchio
+    # filtro escludeva).
+    match = Match(
+        gara_id=gara.id,
+        round_number=1,
+        player1_id=user.id,
+        player2_id=third.id,
+        is_trio=True,
+        status=MatchStatus.COMPLETED.value,
+    )
+    db.session.add(match)
+    db.session.flush()
+    trio = TrioMatch(
+        match_id=match.id,
+        player1_id=user.id,
+        player2_id=third.id,
+        player3_id=opponent.id,
+    )
+    db.session.add(trio)
+    db.session.commit()
+
+    pagination, stats = PlayerHistoryService.get_match_history(
+        user.id, HistoryFilters(opponent_id=opponent.id)
+    )
+
+    assert stats.total_matches == 1
+    assert [m.id for m in pagination.items] == [match.id]
