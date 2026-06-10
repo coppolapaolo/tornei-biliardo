@@ -304,7 +304,7 @@ def edit_venue(venue_id):
         if hourly_rate:
             update_kwargs["hourly_rate"] = float(hourly_rate)
 
-        # Note: is_active and verified are now handled via AJAX toggle, not form submission
+        # Note: is_active e verified sono gestiti via toggle AJAX, non dal form
 
         # Handle table types and amenities
         table_types_str = request.form.get("table_types", "")
@@ -430,7 +430,7 @@ def update_table_numbers(venue_id):
 @venue_manager_required
 def upload_photo(venue_id):
     """Carica foto per la sala biliardo"""
-    venue = db.get_or_404(BilliardHall, venue_id)
+    db.get_or_404(BilliardHall, venue_id)  # 404 se la venue non esiste
 
     if "photo" not in request.files:
         flash("Nessuna foto selezionata", "error")
@@ -444,7 +444,8 @@ def upload_photo(venue_id):
     if file and _allowed_file(file.filename):
         try:
             filename = secure_filename(
-                f"venue_{venue_id}_{utc_now().strftime('%Y%m%d_%H%M%S')}_{file.filename}"
+                f"venue_{venue_id}_{utc_now().strftime('%Y%m%d_%H%M%S')}"
+                f"_{file.filename}"
             )
 
             # Use centralized image path management
@@ -475,7 +476,7 @@ def upload_photo(venue_id):
 @venue_bp.route("/venues/names")
 @admin_required
 def venue_names_api():
-    """API endpoint per ottenere nomi delle venue (per integrare con datalist location esistenti)"""
+    """API per i nomi delle venue (per la datalist delle location esistenti)."""
     venues = (
         BilliardHall.query.filter_by(is_active=True).order_by(BilliardHall.name).all()
     )

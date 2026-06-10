@@ -9,7 +9,7 @@ from datetime import date, time, timedelta
 
 import pytest
 
-from models import Challenge, db
+from models import Challenge
 from models.base import utc_now
 from models.competition.gara_challenge import GaraChallenge
 from models.competition.models import Gara

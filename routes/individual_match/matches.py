@@ -468,7 +468,8 @@ def forfeit_match(match_id):
 @individual_match_bp.route("/matches/<int:match_id>/rematch")
 @RoleRequirement.player_or_director_required
 def rematch(match_id):
-    """Start a new match with the same opponent - redirects to create_proposal with pre-filled values."""
+    """Nuovo match con lo stesso avversario: redirect a create_proposal
+    con i parametri precompilati."""
     from flask_babel import _
     from models.base import utc_now
 
