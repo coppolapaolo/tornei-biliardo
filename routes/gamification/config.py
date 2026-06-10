@@ -92,7 +92,9 @@ def admin_update_xp_config():
             key=key, value=value, updated_by_id=current_user.id
         ),
         redirect_url=url_for("gamification.admin_xp_config"),
-        success_message=f"XP rate '{key}' aggiornato a {value}",
+        success_message=_(
+            "XP rate '%(key)s' aggiornato a %(value)s", key=key, value=value
+        ),
     )
 
 
@@ -141,7 +143,9 @@ def admin_update_level_curve():
             key=key, value=value, updated_by_id=current_user.id
         ),
         redirect_url=url_for("gamification.admin_level_curve_config"),
-        success_message=f"Parametro '{key}' aggiornato a {value}",
+        success_message=_(
+            "Parametro '%(key)s' aggiornato a %(value)s", key=key, value=value
+        ),
     )
 
 
@@ -169,7 +173,7 @@ def admin_add_level_unlock():
             description=description,
         ),
         redirect_url=url_for("gamification.admin_level_curve_config"),
-        success_message=f"Level unlock per livello {level} aggiunto",
+        success_message=_("Level unlock per livello %(level)s aggiunto", level=level),
     )
 
 
@@ -275,7 +279,7 @@ def admin_add_streak_milestone():
             is_recurring=is_recurring,
         ),
         redirect_url=url_for("gamification.admin_streak_config"),
-        success_message=f"Milestone {weeks} settimane aggiunto",
+        success_message=_("Milestone %(weeks)s settimane aggiunto", weeks=weeks),
     )
 
 

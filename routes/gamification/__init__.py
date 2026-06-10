@@ -33,7 +33,7 @@ from flask import Blueprint
 gamification_bp = Blueprint("gamification", __name__, url_prefix="/gamification")
 
 # Import all route modules to register their routes with the blueprint
-from . import (
+from . import (  # noqa: E402,F401
     dashboard,
     admin,
     config,

@@ -122,7 +122,7 @@ def admin_feature_preview(code: str):
 
     Returns JSON with stats about eligible users.
     """
-    feature = get_or_ajax_404(FeatureConfig, code, "Feature")
+    get_or_ajax_404(FeatureConfig, code, "Feature")  # 404 se non esiste
 
     # Get all active users
     users = User.query.filter(User.deleted_at.is_(None)).all()
