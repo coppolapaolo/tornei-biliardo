@@ -1,3 +1,6 @@
 [flake8]
 max-line-length = 88
 extend-ignore = E203, W503
+# venv e asset di plugin (.agent) non sono codice del progetto: senza exclude
+# il bare `flake8` documentato in CLAUDE.md li scansiona e annega il gate.
+extend-exclude = venv, .venv, .agent, .claude, node_modules, instance
