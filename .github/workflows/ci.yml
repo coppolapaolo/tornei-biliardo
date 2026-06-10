@@ -8,7 +8,9 @@ on:
 
 env:
   PYTHONANYWHERE_USERNAME: paolocoppola
-  PYTHONANYWHERE_DOMAIN: paolocoppola.pythonanywhere.com
+  # domain_name della webapp reale (custom domain, vedi /var/www/www_torneibiliardo_it_wsgi.py):
+  # con il dominio sbagliato l'API risponde 404 e il reload da CI non ha mai effetto.
+  PYTHONANYWHERE_DOMAIN: www.torneibiliardo.it
   PROJECT_PATH: /home/paolocoppola/mysite
 
 jobs:
