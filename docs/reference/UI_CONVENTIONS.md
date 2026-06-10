@@ -520,6 +520,37 @@ Per impostazioni ON/OFF usare Bootstrap form-switch:
 
 ---
 
+### L'azionabile va prima ⭐
+
+**L'interfaccia (specialmente mobile) mostra prima le cose che servono in
+quel momento e sposta dopo tutto il resto.** Su mobile non c'è spazio per
+"tutto in vista": l'ordine delle sezioni È la gerarchia. Cosa è azionabile
+dipende dalla **fase** e dal **ruolo**:
+
+| Vista | Fase | Azionabile (in alto) | Il resto (dopo, eventualmente collassato) |
+|-------|------|----------------------|-------------------------------------------|
+| admin/gara | iscrizioni | Gestione (apri/avvia) | Partite (non esistono ancora) |
+| admin/gara | gioco | Partite (risultati da inserire), Gestione Turni | Gestione collassata, Direttori, Info/Iscritti |
+| admin/gara | SSR fase A | SSR (inserire punteggi) | Classifica, Gestione collassata |
+| admin/gara | SSR fase B | Classifica finale, Termina Gara | SSR riepilogo, Direttori |
+
+**Pattern implementativi:**
+
+1. **Riordino solo visivo con flex `order-*`** quando il componente non è
+   duplicabile (contiene `id=` o `<script>`): wrapper `d-flex flex-column`
+   e classi `order-N order-md-M` sui figli — il DOM resta unico, mobile e
+   desktop hanno ordini diversi. Vedi `gara_detail.html` (fase di gioco).
+2. **Duplicazione mobile/desktop** (`d-md-none` + `d-none d-md-block`) solo
+   per componenti SENZA `id`/`<script>` (la doppia inclusione duplicherebbe
+   gli id e rieseguirebbe gli script).
+3. **Collassato di default** ciò che resta utile ma non serve ora
+   (es. Gestione in fase di gioco, Info Gara, Iscritti).
+4. **Dentro una lista, l'elemento azionabile più urgente va primo**: turni
+   attivi in ordine crescente (il più basso ha risultati da inserire),
+   vedi `_match_cards_mobile.html`.
+
+---
+
 ### Header e Titoli Pagina
 
 #### ❌ DA EVITARE: Titolo e bottoni affiancati
@@ -1010,6 +1041,8 @@ Quando sono presenti punteggi SSR, i badge sono ordinati:
 | 2026-01-22 | Input SSR min-width 80px | Aumentato da 70px a 80px per facilitare inserimento su mobile |
 | 2026-01-22 | Modal fullscreen mobile | Aggiunto `modal-fullscreen-sm-down` a 5 modali director: Quick Result, Table Assignment, SSR, Open Inscriptions, Modify Dates |
 | 2026-01-24 | Sezione Mobile-First Design | Linee guida complete DO/DON'T per interfacce mobile-first: header layout, azioni distruttive, tabelle responsive, touch target, statistiche, form, navigazione |
+| 2026-06-10 | Principio "l'azionabile va prima" (mobile) | Decisione utente da test manuale: l'interfaccia mostra prima ciò che serve in quel momento. Applicato in gara_detail.html fase gioco (Partite→Turni→Gestione collassata→Direttori via flex order-*) e turni attivi crescenti in _match_cards_mobile.html |
+| 2026-06-10 | fa-8-ball per "Ai tavoli adesso" | Card "In diretta ora": era fa-table-tennis-paddle-ball (racchetta ping pong!) — allineata alla convenzione biliardo |
 
 ---
 

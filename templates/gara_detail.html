@@ -30,6 +30,13 @@
    is_ssr_phase, show_ssr_section, is_gara_ending, has_scores,
    ssr_needs_input, ssr_ready_to_terminate #}
 
+{# Mobile "azionabile prima" (rilievo test manuale 2026-06-10): in fase di
+   gioco l'azionabile sono le partite, non Gestione/Direttori. Su mobile le
+   sezioni vengono riordinate con flex order-* (Partite -> Turni -> Gestione
+   collassata -> Direttori); il desktop resta invariato via order-md-*. #}
+{% set playing_admin = user_can_manage and gara.status == GaraStatus.PLAYING.value
+   and not is_ssr_phase and not is_gara_ending %}
+
 {# ============================================================== #}
 {# MOBILE SSR LAYOUT - Phase A: Unresolved tiebreakers #}
 {# Order: 1. SSR (enter scores) 2. Classification 3. Management #}
@@ -133,6 +140,12 @@
     <div class="d-none d-md-block">
       {% include "components/_gara_management.html" %}
     </div>
+    {# FASE DI GIOCO: su mobile la Gestione e' collassata dopo le partite
+       (sectionGestioneMobile), qui resta la copia desktop #}
+    {% elif playing_admin %}
+    <div class="d-none d-md-block">
+      {% include "components/_gara_management.html" %}
+    </div>
     {% else %}
     {% include "components/_gara_management.html" %}
     {% endif %}
@@ -146,11 +159,14 @@
   </div>
 </div>
 
+{# Wrapper flex: in fase di gioco le sezioni sotto vengono riordinate su
+   mobile con le classi order-* (vedi playing_admin in alto) #}
+<div class="{% if playing_admin %}d-flex flex-column{% endif %}">
 {# Sezioni Admin/Director (solo se può gestire) - DESKTOP or non-SSR mobile #}
 {% if user_can_manage %}
 {# Directors: on desktop always here, on mobile SSR phase moved to bottom #}
 {% if not is_ssr_phase %}
-<div class="row mb-4">
+<div class="row mb-4{% if playing_admin %} order-4 order-md-1{% endif %}" id="sectionDirettori">
   <div class="col-12">
     {% include "components/_gara_directors.html" %}
   </div>
@@ -165,15 +181,41 @@
 {% endif %}
 
 <!-- Gestione Turni Section -->
-<div class="row mb-4">
+<div class="row mb-4{% if playing_admin %} order-2 order-md-2{% endif %}" id="sectionTurni">
   <div class="col-12">
     {% include "components/_round_management.html" %}
   </div>
 </div>
+
+{# MOBILE (fase di gioco): Gestione collassata dopo l'azionabile. La copia
+   desktop resta nella sidebar in alto (d-none d-md-block); _gara_management
+   non contiene id/script, quindi la doppia inclusione e' sicura. #}
+{% if playing_admin %}
+<div class="d-md-none order-3 mb-4" id="sectionGestioneMobile">
+  <div class="card">
+    <div class="card-header py-2 d-flex justify-content-between align-items-center" role="button"
+      data-bs-toggle="collapse" data-bs-target="#mobilePlayingManagement" aria-expanded="false"
+      aria-controls="mobilePlayingManagement" style="cursor: pointer;">
+      <h5 class="mb-0"><i class="fas fa-cog"></i> {{ _('Gestione') }}</h5>
+      <div>
+        {{ status_badge(gara, 'gara') }}
+        <i class="fas fa-chevron-down collapse-icon ms-2"></i>
+      </div>
+    </div>
+    <div id="mobilePlayingManagement" class="collapse">
+      {# headerless: il titolo "Gestione" + status badge sono gia' nell'header
+         del collapse qui sopra (rilievo Copilot PR #36) #}
+      {% with management_headerless = True %}
+      {% include "components/_gara_management.html" %}
+      {% endwith %}
+    </div>
+  </div>
+</div>
+{% endif %}
 {% endif %}
 
 {# Sezione Partite - adattiva #}
-<div class="row">
+<div class="row{% if playing_admin %} order-1 order-md-3{% endif %}" id="sectionPartite">
   <div class="col-md-8">
     {# === MOBILE: Show Classification FIRST when gara is ending (SSR phase or completed) === #}
     {# Skip if already shown above for SSR phase with user_can_manage #}
@@ -494,6 +536,8 @@
     </div>
     {% endif %}
   </div>
+</div>
+{# Chiusura wrapper flex "azionabile prima" (vedi apertura sopra Sezioni Admin) #}
 </div>
 </div>
 
