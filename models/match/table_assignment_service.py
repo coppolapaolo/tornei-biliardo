@@ -9,7 +9,10 @@ Business Rules:
 2. Matches without tables remain in PENDING state
 3. When a match completes, its table can be reassigned to waiting matches
 4. Table assignment respects venue's available tables (by name)
-5. Only matches from the same round can use freed tables
+5. Freed tables can start matches only up to the round immediately after
+   the current one (lowest round with unfinished matches): activating
+   matches 2+ rounds ahead spreads players across rounds and deadlocks
+   tables (rilievo test manuale 2026-06-10, strategia random)
 
 Author: TDD Implementation - Table Management
 Created: 2025-10-07
@@ -18,6 +21,8 @@ Created: 2025-10-07
 from __future__ import annotations
 
 from typing import Optional, List, Tuple
+
+from sqlalchemy import func
 
 from models.base import db, transactional
 from models.match.models import Match
@@ -289,6 +294,23 @@ class TableAssignmentService:
         if not free_tables:
             return 0
 
+        # Turno corrente = il piu' basso con match non conclusi: i tavoli
+        # liberi possono attivare match solo fino al turno corrente+1.
+        # Con i turni pre-generati (es. strategia random) il pull senza cap
+        # avviava match 2+ turni avanti, spalmando i giocatori su piu' turni
+        # e lasciando tavoli inutilizzabili (business rule 5 nel docstring).
+        current_round = (
+            db.session.query(func.min(Match.round_number))
+            .filter(
+                Match.gara_id == gara_id,
+                Match.status.notin_(MatchStatus.finished_values()),
+                Match.is_bye == False,  # noqa: E712
+            )
+            .scalar()
+        )
+        if current_round is None:
+            return 0
+
         # Get pending matches without table (exclude bye matches)
         # Order by round_number, then match.id for consistent assignment
         pending_matches = (
@@ -298,6 +320,7 @@ class TableAssignmentService:
                 status=MatchStatus.PENDING.value,
             )
             .filter(Match.is_bye == False)  # noqa: E712
+            .filter(Match.round_number <= current_round + 1)
             .order_by(Match.round_number, Match.id)
             .all()
         )
