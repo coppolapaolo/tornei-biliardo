@@ -359,10 +359,20 @@ def toggle_venue_status(venue_id):
 
     data = request.get_json()
     field = data.get("field") if data else None
-    value = data.get("value") if data else None
+    raw_value = data.get("value") if data else None
 
     if field not in ["is_active", "verified"]:
         return jsonify({"success": False, "message": "Campo non valido"}), 400
+
+    # Coercizione esplicita a bool: la colonna e' Boolean e una stringa
+    # ('false') o None passati cosi' com'erano finivano in TypeError al
+    # commit (500) o NULL nel campo.
+    if isinstance(raw_value, bool):
+        value = raw_value
+    elif isinstance(raw_value, str):
+        value = raw_value.strip().lower() in ("true", "1", "on", "yes")
+    else:
+        return jsonify({"success": False, "message": "Valore non valido"}), 400
 
     try:
         if field == "is_active":

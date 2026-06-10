@@ -412,3 +412,41 @@ class TestRematchPreservesFormat:
 
         multi_radio = re.search(r'<input[^>]*id="formatMulti"[^>]*>', html)
         assert multi_radio and "checked" in multi_radio.group(0)
+
+
+class TestToggleVenueStatusCoercion:
+    """Bug 7: value senza coercizione bool — 'false' (stringa truthy)
+    ATTIVAVA la sala, None finiva NULL nel campo."""
+
+    @pytest.fixture
+    def active_venue(self, db_session):
+        from models.location.models import BilliardHall
+
+        hall = BilliardHall(name=f"B7 Sala {uuid.uuid4().hex[:8]}", is_active=True)
+        db_session.add(hall)
+        db_session.commit()
+        return hall
+
+    def test_string_false_deactivates(self, client, db_session, active_venue):
+        from models.location.models import BilliardHall
+
+        admin = _make_user(db_session, "admin")
+        _login(client, admin)
+
+        response = client.post(
+            f"/admin/venues/{active_venue.id}/toggle",
+            json={"field": "is_active", "value": "false"},
+        )
+
+        assert response.status_code == 200
+        db_session.expire_all()
+        assert db_session.get(BilliardHall, active_venue.id).is_active is False
+
+    def test_missing_value_is_400(self, client, db_session, active_venue):
+        admin = _make_user(db_session, "admin")
+        _login(client, admin)
+        response = client.post(
+            f"/admin/venues/{active_venue.id}/toggle",
+            json={"field": "is_active"},
+        )
+        assert response.status_code == 400
