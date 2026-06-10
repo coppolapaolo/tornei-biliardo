@@ -6,13 +6,16 @@ che userebbe la chiave globale del processo).
 
 Procedura consigliata in produzione (PythonAnywhere):
 
+    # 0a. DISABILITA la web app (tab Web -> Disable): su PythonAnywhere il
+    #     locking SQLite su NFS e' inaffidabile e due writer concorrenti
+    #     (console + web app) possono corrompere il DB (incidente 2026-06-10).
     cd ~/mysite
-    python scripts/backup_db.py                      # 0. backup del DB!
+    python scripts/backup_db.py                      # 0b. backup del DB!
     python scripts/rotate_encryption_key.py --generate   # 1. genera una chiave
     python scripts/rotate_encryption_key.py --new-key 'LA-CHIAVE'           # 2. dry-run
     python scripts/rotate_encryption_key.py --new-key 'LA-CHIAVE' --commit  # 3. applica
     # 4. aggiorna ENCRYPTION_KEY nel WSGI file con la chiave nuova
-    # 5. Reload della web app dal tab Web
+    # 5. riabilita la web app (Enable) e fai Reload dal tab Web
     # 6. d'ora in poi gli script da console che toccano PII vanno lanciati con
     #    ENCRYPTION_KEY='LA-CHIAVE' python scripts/...
 
