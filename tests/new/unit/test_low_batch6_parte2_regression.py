@@ -128,3 +128,21 @@ def test_opponent_filter_includes_trio_matches(db_session):
 
     assert stats.total_matches == 1
     assert [m.id for m in pagination.items] == [match.id]
+
+
+@pytest.mark.unit
+def test_playoff_not_found_raises_notfounderror(db_session):
+    """I not-found del PlayoffService sollevano NotFoundError (→404).
+
+    Bug: ValueError generico → le route API mappavano a 400 invece di 404.
+    NotFoundError sottoclassa ValueError, quindi gli except esistenti
+    continuano a funzionare.
+    """
+    from models.exceptions import NotFoundError
+    from models.playoff.services import PlayoffService
+
+    with pytest.raises(NotFoundError):
+        PlayoffService.update_configuration(999999)
+
+    with pytest.raises(NotFoundError):
+        PlayoffService.admin_remove_player(999999, "admin")
