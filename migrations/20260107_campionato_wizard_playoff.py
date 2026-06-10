@@ -104,7 +104,9 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
     print("📋 Migrating 'playoff_configuration' table...")
 
     # Check if table exists
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='playoff_configuration'")
+    cursor.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='playoff_configuration'"
+    )
     if cursor.fetchone():
         playoff_config_columns = [
             ("positions_from", "INTEGER"),
@@ -113,7 +115,9 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
 
         for col_name, col_def in playoff_config_columns:
             try:
-                cursor.execute(f"ALTER TABLE playoff_configuration ADD COLUMN {col_name} {col_def}")
+                cursor.execute(
+                    f"ALTER TABLE playoff_configuration ADD COLUMN {col_name} {col_def}"
+                )
                 print(f"   ✓ Added column: {col_name}")
             except sqlite3.OperationalError as e:
                 if "duplicate column name" in str(e).lower():
@@ -130,7 +134,9 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
     # =========================================================================
     print("📋 Migrating 'playoff_qualification' table...")
 
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='playoff_qualification'")
+    cursor.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='playoff_qualification'"
+    )
     if cursor.fetchone():
         playoff_qual_columns = [
             ("invited_at", "DATETIME"),
@@ -139,7 +145,9 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
 
         for col_name, col_def in playoff_qual_columns:
             try:
-                cursor.execute(f"ALTER TABLE playoff_qualification ADD COLUMN {col_name} {col_def}")
+                cursor.execute(
+                    f"ALTER TABLE playoff_qualification ADD COLUMN {col_name} {col_def}"
+                )
                 print(f"   ✓ Added column: {col_name}")
             except sqlite3.OperationalError as e:
                 if "duplicate column name" in str(e).lower():
@@ -176,8 +184,14 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
     # Verify campionato columns
     cursor.execute("PRAGMA table_info(campionato)")
     campionato_cols = {row[1] for row in cursor.fetchall()}
-    expected_campionato = ["planned_gare_count", "default_venue_id", "default_entry_fee",
-                          "default_rounds_count", "default_odd_policy", "default_anti_rematch"]
+    expected_campionato = [
+        "planned_gare_count",
+        "default_venue_id",
+        "default_entry_fee",
+        "default_rounds_count",
+        "default_odd_policy",
+        "default_anti_rematch",
+    ]
     for col in expected_campionato:
         status = "✓" if col in campionato_cols else "✗"
         print(f"   {status} campionato.{col}")
@@ -283,7 +297,9 @@ def downgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
     print()
     print("   New columns added by this migration:")
     print("   - campionato: planned_gare_count, default_venue_id, default_entry_fee,")
-    print("                 default_rounds_count, default_odd_policy, default_anti_rematch")
+    print(
+        "                 default_rounds_count, default_odd_policy, default_anti_rematch"
+    )
     print("   - gara: playoff_config_id")
     print("   - playoff_configuration: positions_from, positions_to")
     print("   - playoff_qualification: invited_at, expires_at")
@@ -311,9 +327,15 @@ if __name__ == "__main__":
             print(f"❌ Unknown command: {sys.argv[1]}")
             print()
             print("Usage:")
-            print("  python migrations/20260107_campionato_wizard_playoff.py              # SQLite (dev)")
-            print("  python migrations/20260107_campionato_wizard_playoff.py postgresql   # PostgreSQL (prod)")
-            print("  python migrations/20260107_campionato_wizard_playoff.py downgrade    # Rollback info")
+            print(
+                "  python migrations/20260107_campionato_wizard_playoff.py              # SQLite (dev)"
+            )
+            print(
+                "  python migrations/20260107_campionato_wizard_playoff.py postgresql   # PostgreSQL (prod)"
+            )
+            print(
+                "  python migrations/20260107_campionato_wizard_playoff.py downgrade    # Rollback info"
+            )
             sys.exit(1)
     else:
         upgrade_sqlite()

@@ -50,58 +50,58 @@ class NotificationEventHandlers:
         EventBus.register_handler(
             DirectorRequestCreatedEvent,
             NotificationEventHandlers.handle_director_request_created,
-            priority=10
+            priority=10,
         )
         EventBus.register_handler(
             DirectorRequestProcessedEvent,
             NotificationEventHandlers.handle_director_request_processed,
-            priority=10
+            priority=10,
         )
         EventBus.register_handler(
             VenueManagerRequestCreatedEvent,
             NotificationEventHandlers.handle_venue_manager_request_created,
-            priority=10
+            priority=10,
         )
         EventBus.register_handler(
             VenueManagerRequestProcessedEvent,
             NotificationEventHandlers.handle_venue_manager_request_processed,
-            priority=10
+            priority=10,
         )
 
         # Match domain handlers
         EventBus.register_handler(
             MatchProposalCreatedEvent,
             NotificationEventHandlers.handle_match_proposal_created,
-            priority=10
+            priority=10,
         )
         EventBus.register_handler(
             MatchAcceptedEvent,
             NotificationEventHandlers.handle_match_accepted,
-            priority=10
+            priority=10,
         )
 
         # Competition domain handlers
         EventBus.register_handler(
             CompetitionRegistrationOpenedEvent,
             NotificationEventHandlers.handle_competition_registration_opened,
-            priority=10
+            priority=10,
         )
         EventBus.register_handler(
             DirectorAssignmentAddedEvent,
             NotificationEventHandlers.handle_director_assignment_added,
-            priority=10
+            priority=10,
         )
         EventBus.register_handler(
             DirectorAssignmentRemovedEvent,
             NotificationEventHandlers.handle_director_assignment_removed,
-            priority=10
+            priority=10,
         )
 
         # Availability domain handlers
         EventBus.register_handler(
             AvailabilityNotificationEvent,
             NotificationEventHandlers.handle_availability_notification,
-            priority=10
+            priority=10,
         )
 
         logger.info("Registered all notification event handlers")
@@ -123,14 +123,18 @@ class NotificationEventHandlers:
                     related_entities={
                         "request_id": event.request_id,
                         "user_id": event.user_id,
-                        "username": event.username
+                        "username": event.username,
                     },
                     action_url="/admin/director_requests",
-                    action_text="Gestisci Richiesta"
+                    action_text="Gestisci Richiesta",
                 )
-            logger.info(f"Sent director request notifications for request {event.request_id}")
+            logger.info(
+                f"Sent director request notifications for request {event.request_id}"
+            )
         except Exception as e:
-            logger.error(f"Error handling director request created event: {e}", exc_info=True)
+            logger.error(
+                f"Error handling director request created event: {e}", exc_info=True
+            )
 
     @staticmethod
     def handle_director_request_processed(event: DirectorRequestProcessedEvent) -> None:
@@ -161,18 +165,28 @@ class NotificationEventHandlers:
                 related_entities={
                     "request_id": event.request_id,
                     "status": event.status,
-                    "processed_by_id": event.processed_by_id
-                }
+                    "processed_by_id": event.processed_by_id,
+                },
             )
-            logger.info(f"Sent director request {event.status} notification to user {event.user_id}")
+            logger.info(
+                f"Sent director request {event.status} notification to user {event.user_id}"
+            )
         except Exception as e:
-            logger.error(f"Error handling director request processed event: {e}", exc_info=True)
+            logger.error(
+                f"Error handling director request processed event: {e}", exc_info=True
+            )
 
     @staticmethod
-    def handle_venue_manager_request_created(event: VenueManagerRequestCreatedEvent) -> None:
+    def handle_venue_manager_request_created(
+        event: VenueManagerRequestCreatedEvent,
+    ) -> None:
         """Handle venue manager request created by notifying admins."""
         try:
-            priority = NotificationPriority.HIGH if event.is_contested else NotificationPriority.NORMAL
+            priority = (
+                NotificationPriority.HIGH
+                if event.is_contested
+                else NotificationPriority.NORMAL
+            )
             title = "Nuova Richiesta Gestore"
             if event.is_contested:
                 title += " (CONTESA)"
@@ -197,17 +211,24 @@ class NotificationEventHandlers:
                         "username": event.username,
                         "venue_id": event.venue_id,
                         "venue_name": event.venue_name,
-                        "is_contested": event.is_contested
+                        "is_contested": event.is_contested,
                     },
                     action_url="/admin/manager-requests",
-                    action_text="Gestisci Richiesta"
+                    action_text="Gestisci Richiesta",
                 )
-            logger.info(f"Sent venue manager request notifications for request {event.request_id}")
+            logger.info(
+                f"Sent venue manager request notifications for request {event.request_id}"
+            )
         except Exception as e:
-            logger.error(f"Error handling venue manager request created event: {e}", exc_info=True)
+            logger.error(
+                f"Error handling venue manager request created event: {e}",
+                exc_info=True,
+            )
 
     @staticmethod
-    def handle_venue_manager_request_processed(event: VenueManagerRequestProcessedEvent) -> None:
+    def handle_venue_manager_request_processed(
+        event: VenueManagerRequestProcessedEvent,
+    ) -> None:
         """Handle venue manager request processed by notifying the requester."""
         try:
             if event.status == "approved":
@@ -235,12 +256,17 @@ class NotificationEventHandlers:
                     "venue_id": event.venue_id,
                     "venue_name": event.venue_name,
                     "status": event.status,
-                    "processed_by_id": event.processed_by_id
-                }
+                    "processed_by_id": event.processed_by_id,
+                },
             )
-            logger.info(f"Sent venue manager request {event.status} notification to user {event.user_id}")
+            logger.info(
+                f"Sent venue manager request {event.status} notification to user {event.user_id}"
+            )
         except Exception as e:
-            logger.error(f"Error handling venue manager request processed event: {e}", exc_info=True)
+            logger.error(
+                f"Error handling venue manager request processed event: {e}",
+                exc_info=True,
+            )
 
     # Match domain notification handlers
 
@@ -252,8 +278,14 @@ class NotificationEventHandlers:
             return
 
         try:
-            location_text = f" presso {event.location_name}" if event.location_name else ""
-            time_text = f" il {event.scheduled_time.strftime('%d/%m/%Y alle %H:%M')}" if event.scheduled_time else ""
+            location_text = (
+                f" presso {event.location_name}" if event.location_name else ""
+            )
+            time_text = (
+                f" il {event.scheduled_time.strftime('%d/%m/%Y alle %H:%M')}"
+                if event.scheduled_time
+                else ""
+            )
 
             message = f"{event.proposer_name} ti ha proposto una partita{location_text}{time_text}."
             if event.notes:
@@ -270,21 +302,31 @@ class NotificationEventHandlers:
                     "proposer_id": event.proposer_id,
                     "proposer_name": event.proposer_name,
                     "location_id": event.location_id,
-                    "location_name": event.location_name
+                    "location_name": event.location_name,
                 },
                 action_url=f"/player/proposals/{event.proposal_id}",
-                action_text="Visualizza Proposta"
+                action_text="Visualizza Proposta",
             )
-            logger.info(f"Sent match proposal notification to user {event.target_user_id}")
+            logger.info(
+                f"Sent match proposal notification to user {event.target_user_id}"
+            )
         except Exception as e:
-            logger.error(f"Error handling match proposal created event: {e}", exc_info=True)
+            logger.error(
+                f"Error handling match proposal created event: {e}", exc_info=True
+            )
 
     @staticmethod
     def handle_match_accepted(event: MatchAcceptedEvent) -> None:
         """Handle match accepted by notifying the proposer."""
         try:
-            location_text = f" presso {event.location_name}" if event.location_name else ""
-            time_text = f" per il {event.scheduled_time.strftime('%d/%m/%Y alle %H:%M')}" if event.scheduled_time else ""
+            location_text = (
+                f" presso {event.location_name}" if event.location_name else ""
+            )
+            time_text = (
+                f" per il {event.scheduled_time.strftime('%d/%m/%Y alle %H:%M')}"
+                if event.scheduled_time
+                else ""
+            )
 
             message = f"{event.accepter_name} ha accettato la tua proposta di partita{location_text}{time_text}."
 
@@ -300,10 +342,10 @@ class NotificationEventHandlers:
                     "accepter_id": event.accepter_id,
                     "accepter_name": event.accepter_name,
                     "location_id": event.location_id,
-                    "location_name": event.location_name
+                    "location_name": event.location_name,
                 },
                 action_url=f"/player/matches/{event.match_id}",
-                action_text="Visualizza Partita"
+                action_text="Visualizza Partita",
             )
             logger.info(f"Sent match accepted notification to user {event.proposer_id}")
         except Exception as e:
@@ -312,15 +354,23 @@ class NotificationEventHandlers:
     # Competition domain notification handlers
 
     @staticmethod
-    def handle_competition_registration_opened(event: CompetitionRegistrationOpenedEvent) -> None:
+    def handle_competition_registration_opened(
+        event: CompetitionRegistrationOpenedEvent,
+    ) -> None:
         """Handle competition registration opened by notifying eligible users."""
         if not event.eligible_user_ids:
             # No specific users to notify
             return
 
         try:
-            location_text = f" presso {event.location_name}" if event.location_name else ""
-            time_text = f" il {event.scheduled_time.strftime('%d/%m/%Y alle %H:%M')}" if event.scheduled_time else ""
+            location_text = (
+                f" presso {event.location_name}" if event.location_name else ""
+            )
+            time_text = (
+                f" il {event.scheduled_time.strftime('%d/%m/%Y alle %H:%M')}"
+                if event.scheduled_time
+                else ""
+            )
             deadline_text = ""
             if event.registration_deadline:
                 deadline_text = f" Scadenza iscrizioni: {event.registration_deadline.strftime('%d/%m/%Y alle %H:%M')}."
@@ -339,26 +389,27 @@ class NotificationEventHandlers:
                         "gara_id": event.gara_id,
                         "name": event.name,
                         "location_id": event.location_id,
-                        "location_name": event.location_name
+                        "location_name": event.location_name,
                     },
                     action_url=f"/gara/{event.gara_id}",
-                    action_text="Iscriviti Ora"
+                    action_text="Iscriviti Ora",
                 )
-            logger.info(f"Sent competition registration notifications for gara {event.gara_id}")
+            logger.info(
+                f"Sent competition registration notifications for gara {event.gara_id}"
+            )
         except Exception as e:
-            logger.error(f"Error handling competition registration opened event: {e}", exc_info=True)
+            logger.error(
+                f"Error handling competition registration opened event: {e}",
+                exc_info=True,
+            )
 
     # Competition domain notification handlers (continued)
 
     @staticmethod
-    def handle_director_assignment_added(
-        event: DirectorAssignmentAddedEvent
-    ) -> None:
+    def handle_director_assignment_added(event: DirectorAssignmentAddedEvent) -> None:
         """Handle director assignment added by notifying the director."""
         try:
-            entity_label = (
-                "gara" if event.entity_type == "gara" else "campionato"
-            )
+            entity_label = "gara" if event.entity_type == "gara" else "campionato"
             title = "Nominato co-direttore"
             message = (
                 f"Sei stato nominato co-direttore "
@@ -384,10 +435,10 @@ class NotificationEventHandlers:
                     "entity_type": event.entity_type,
                     "entity_id": event.entity_id,
                     "entity_name": event.entity_name,
-                    "assigned_by_id": event.assigned_by_id
+                    "assigned_by_id": event.assigned_by_id,
                 },
                 action_url=action_url,
-                action_text=action_text
+                action_text=action_text,
             )
             logger.info(
                 f"Sent director assignment added notification "
@@ -395,19 +446,16 @@ class NotificationEventHandlers:
             )
         except Exception as e:
             logger.error(
-                f"Error handling director assignment added event: {e}",
-                exc_info=True
+                f"Error handling director assignment added event: {e}", exc_info=True
             )
 
     @staticmethod
     def handle_director_assignment_removed(
-        event: DirectorAssignmentRemovedEvent
+        event: DirectorAssignmentRemovedEvent,
     ) -> None:
         """Handle director assignment removed by notifying the director."""
         try:
-            entity_label = (
-                "gara" if event.entity_type == "gara" else "campionato"
-            )
+            entity_label = "gara" if event.entity_type == "gara" else "campionato"
             title = "Rimosso da co-direttore"
             message = (
                 f"Sei stato rimosso dal ruolo di co-direttore "
@@ -433,10 +481,10 @@ class NotificationEventHandlers:
                     "entity_type": event.entity_type,
                     "entity_id": event.entity_id,
                     "entity_name": event.entity_name,
-                    "removed_by_id": event.removed_by_id
+                    "removed_by_id": event.removed_by_id,
                 },
                 action_url=action_url,
-                action_text=action_text
+                action_text=action_text,
             )
             logger.info(
                 f"Sent director assignment removed notification "
@@ -444,8 +492,7 @@ class NotificationEventHandlers:
             )
         except Exception as e:
             logger.error(
-                f"Error handling director assignment removed event: {e}",
-                exc_info=True
+                f"Error handling director assignment removed event: {e}", exc_info=True
             )
 
     # Availability domain notification handlers
@@ -464,11 +511,15 @@ class NotificationEventHandlers:
                     priority=NotificationPriority.NORMAL,
                     related_entities=event.notification_context,
                     action_url=f"/player/availability/{event.location_id}",
-                    action_text="Visualizza Disponibilità"
+                    action_text="Visualizza Disponibilità",
                 )
-            logger.info(f"Sent availability notifications for location {event.location_id}")
+            logger.info(
+                f"Sent availability notifications for location {event.location_id}"
+            )
         except Exception as e:
-            logger.error(f"Error handling availability notification event: {e}", exc_info=True)
+            logger.error(
+                f"Error handling availability notification event: {e}", exc_info=True
+            )
 
 
 # Auto-register handlers when module is imported

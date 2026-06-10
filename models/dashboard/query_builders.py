@@ -88,6 +88,7 @@ def standalone_available_for_user(
     # player dashboard. INSCRIPTION/PLAYING/AWAITING_SSR are always shown
     # regardless of date.
     from datetime import date as _date
+
     today = _date.today()
     q = standalone_q().filter(
         or_(

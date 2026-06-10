@@ -92,9 +92,10 @@ class TestTrioQuickResultValidation:
             TrioScoringService.set_result_direct(trio.id, 5, 0, 0)
 
         # THEN: Error message explains the issue
-        assert "totale dei rack" in str(exc_info.value).lower() or "total" in str(
-            exc_info.value
-        ).lower()
+        assert (
+            "totale dei rack" in str(exc_info.value).lower()
+            or "total" in str(exc_info.value).lower()
+        )
         assert "6" in str(exc_info.value)  # Expected total for distance 5 trio
 
     def test_trio_set_result_succeeds_with_valid_total(self, db_session):
@@ -168,16 +169,21 @@ class TestTrioQuickResultScoreDistribution:
         )
 
         match = Match(
-            gara_id=gara.id, round_number=1,
-            player1_id=user1.id, player2_id=user2.id,
-            is_trio=True, status=MatchStatus.PLAYING.value,
+            gara_id=gara.id,
+            round_number=1,
+            player1_id=user1.id,
+            player2_id=user2.id,
+            is_trio=True,
+            status=MatchStatus.PLAYING.value,
         )
         db_session.add(match)
         db_session.flush()
 
         trio = TrioMatch(
             match_id=match.id,
-            player1_id=user1.id, player2_id=user2.id, player3_id=user3.id,
+            player1_id=user1.id,
+            player2_id=user2.id,
+            player3_id=user3.id,
         )
         db_session.add(trio)
         db_session.flush()
@@ -204,16 +210,21 @@ class TestTrioQuickResultScoreDistribution:
         )
 
         match = Match(
-            gara_id=gara.id, round_number=1,
-            player1_id=user1.id, player2_id=user2.id,
-            is_trio=True, status=MatchStatus.PLAYING.value,
+            gara_id=gara.id,
+            round_number=1,
+            player1_id=user1.id,
+            player2_id=user2.id,
+            is_trio=True,
+            status=MatchStatus.PLAYING.value,
         )
         db_session.add(match)
         db_session.flush()
 
         trio = TrioMatch(
             match_id=match.id,
-            player1_id=user1.id, player2_id=user2.id, player3_id=user3.id,
+            player1_id=user1.id,
+            player2_id=user2.id,
+            player3_id=user3.id,
         )
         db_session.add(trio)
         db_session.flush()
@@ -236,16 +247,21 @@ class TestTrioQuickResultScoreDistribution:
         )
 
         match = Match(
-            gara_id=gara.id, round_number=1,
-            player1_id=user1.id, player2_id=user2.id,
-            is_trio=True, status=MatchStatus.PLAYING.value,
+            gara_id=gara.id,
+            round_number=1,
+            player1_id=user1.id,
+            player2_id=user2.id,
+            is_trio=True,
+            status=MatchStatus.PLAYING.value,
         )
         db_session.add(match)
         db_session.flush()
 
         trio = TrioMatch(
             match_id=match.id,
-            player1_id=user1.id, player2_id=user2.id, player3_id=user3.id,
+            player1_id=user1.id,
+            player2_id=user2.id,
+            player3_id=user3.id,
         )
         db_session.add(trio)
         db_session.flush()
@@ -270,16 +286,21 @@ class TestTrioQuickResultScoreDistribution:
         )
 
         match = Match(
-            gara_id=gara.id, round_number=1,
-            player1_id=user1.id, player2_id=user2.id,
-            is_trio=True, status=MatchStatus.PLAYING.value,
+            gara_id=gara.id,
+            round_number=1,
+            player1_id=user1.id,
+            player2_id=user2.id,
+            is_trio=True,
+            status=MatchStatus.PLAYING.value,
         )
         db_session.add(match)
         db_session.flush()
 
         trio = TrioMatch(
             match_id=match.id,
-            player1_id=user1.id, player2_id=user2.id, player3_id=user3.id,
+            player1_id=user1.id,
+            player2_id=user2.id,
+            player3_id=user3.id,
         )
         db_session.add(trio)
         db_session.flush()
@@ -495,9 +516,9 @@ class TestQuickResultNonCleanWin:
         match = db_session.get(Match, match.id)
 
         # THEN: Match should be completed with player1 as winner
-        assert match.status == MatchStatus.COMPLETED.value, (
-            f"Match should be COMPLETED but is {match.status}"
-        )
+        assert (
+            match.status == MatchStatus.COMPLETED.value
+        ), f"Match should be COMPLETED but is {match.status}"
         assert match.winner_id == user1.id
         assert match.player1_score == 5
         assert match.player2_score == 2

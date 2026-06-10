@@ -23,7 +23,6 @@ Each achievement has:
 
 from models.gamification.models import AchievementCategory, AchievementDifficulty
 
-
 PREDEFINED_ACHIEVEMENTS = [
     # ========================================
     # Match Achievements
@@ -88,7 +87,6 @@ PREDEFINED_ACHIEVEMENTS = [
         "is_progressive": False,
         "xp_reward": 300,
     },
-
     # ========================================
     # Tournament Achievements
     # ========================================
@@ -142,7 +140,6 @@ PREDEFINED_ACHIEVEMENTS = [
         "is_progressive": True,
         "xp_reward": 1500,
     },
-
     # ========================================
     # Social Achievements
     # ========================================
@@ -196,7 +193,6 @@ PREDEFINED_ACHIEVEMENTS = [
         "is_progressive": True,
         "xp_reward": 500,
     },
-
     # ========================================
     # Skill Achievements
     # ========================================
@@ -240,7 +236,6 @@ PREDEFINED_ACHIEVEMENTS = [
         "is_progressive": False,
         "xp_reward": 600,
     },
-
     # ========================================
     # Consistency Achievements (Weekly Streaks)
     # ========================================
@@ -274,7 +269,6 @@ PREDEFINED_ACHIEVEMENTS = [
         "is_progressive": False,
         "xp_reward": 2000,
     },
-
     # ========================================
     # Exploration Achievements
     # ========================================
@@ -318,7 +312,6 @@ PREDEFINED_ACHIEVEMENTS = [
         "is_progressive": True,
         "xp_reward": 500,
     },
-
     # ========================================
     # Director Eligibility Achievement
     # ========================================
@@ -333,7 +326,6 @@ PREDEFINED_ACHIEVEMENTS = [
         "xp_reward": 200,
         "is_hidden": False,
     },
-
     # ========================================
     # Milestone Achievements
     # ========================================
@@ -373,34 +365,34 @@ PREDEFINED_ACHIEVEMENTS = [
 def seed_achievements(db_session):
     """
     Seed predefined achievements into database.
-    
+
     Creates Achievement records for all predefined achievements.
     Skips achievements that already exist (idempotent).
-    
+
     Args:
         db_session: SQLAlchemy session
-        
+
     Returns:
         Tuple of (created_count, skipped_count)
     """
     from models.gamification.models import Achievement
-    
+
     created_count = 0
     skipped_count = 0
-    
+
     for achievement_data in PREDEFINED_ACHIEVEMENTS:
         # Check if achievement already exists
         existing = Achievement.query.filter_by(slug=achievement_data["slug"]).first()
-        
+
         if existing:
             skipped_count += 1
             continue
-        
+
         # Create new achievement
         achievement = Achievement(**achievement_data)
         db_session.add(achievement)
         created_count += 1
-    
+
     db_session.commit()
-    
+
     return created_count, skipped_count

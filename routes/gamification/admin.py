@@ -13,13 +13,19 @@ from models.gamification.quest_service import QuestService
 from models.gamification.achievement_service import AchievementService
 from models.gamification.streak_service import StreakService
 from models.gamification.models import (
-    UserLevel, Achievement, UserAchievement, StreakTracker,
-    AchievementCategory, AchievementDifficulty, StreakType,
-    Quest, QuestStatus, XPTransactionType
+    UserLevel,
+    Achievement,
+    UserAchievement,
+    StreakTracker,
+    AchievementCategory,
+    AchievementDifficulty,
+    StreakType,
+    Quest,
+    QuestStatus,
+    XPTransactionType,
 )
 
 from . import gamification_bp
-
 
 # ============================================
 # Admin Dashboard
@@ -41,10 +47,14 @@ def admin_dashboard():
     from sqlalchemy import func
 
     # Get level distribution
-    level_stats = db.session.query(
-        UserLevel.current_level,
-        func.count(UserLevel.user_id).label("count")
-    ).group_by(UserLevel.current_level).order_by(UserLevel.current_level).all()
+    level_stats = (
+        db.session.query(
+            UserLevel.current_level, func.count(UserLevel.user_id).label("count")
+        )
+        .group_by(UserLevel.current_level)
+        .order_by(UserLevel.current_level)
+        .all()
+    )
 
     # Get total XP distributed
     total_xp = db.session.query(func.sum(UserLevel.total_xp)).scalar() or 0
@@ -59,9 +69,7 @@ def admin_dashboard():
     ).count()
 
     # Get top XP users
-    top_users = UserLevel.query.order_by(
-        UserLevel.total_xp.desc()
-    ).limit(10).all()
+    top_users = UserLevel.query.order_by(UserLevel.total_xp.desc()).limit(10).all()
 
     return render_template(
         "gamification/admin/dashboard.html",
@@ -71,7 +79,7 @@ def admin_dashboard():
         total_achievements=total_achievements,
         total_unlocks=total_unlocks,
         top_users=top_users,
-        page_title=_("Admin Gamification")
+        page_title=_("Admin Gamification"),
     )
 
 
@@ -85,15 +93,15 @@ def admin_dashboard():
 def admin_quests():
     """List all quests for management."""
     page = request.args.get("page", 1, type=int)
-    pagination = Quest.query.order_by(
-        Quest.start_date.desc()
-    ).paginate(page=page, per_page=20, error_out=False)
+    pagination = Quest.query.order_by(Quest.start_date.desc()).paginate(
+        page=page, per_page=20, error_out=False
+    )
     return render_template(
         "gamification/admin/quests.html",
         quests=pagination.items,
         pagination=pagination,
         quest_statuses=QuestStatus,
-        page_title=_("Gestione Quest")
+        page_title=_("Gestione Quest"),
     )
 
 
@@ -119,7 +127,9 @@ def admin_create_quest():
             flash(_("Il nome della quest è obbligatorio"), "error")
             return redirect(url_for("gamification.admin_create_quest"))
 
-        start_date = datetime.fromisoformat(start_date_str) if start_date_str else utc_now()
+        start_date = (
+            datetime.fromisoformat(start_date_str) if start_date_str else utc_now()
+        )
 
         if end_date_str:
             end_date = datetime.fromisoformat(end_date_str)
@@ -147,7 +157,7 @@ def admin_create_quest():
     return render_template(
         "gamification/admin/quest_form.html",
         quest=None,
-        page_title=_("Crea Nuova Quest")
+        page_title=_("Crea Nuova Quest"),
     )
 
 
@@ -204,19 +214,22 @@ def admin_achievements():
     unlock_stats = dict(
         db.session.query(
             UserAchievement.achievement_id,
-            func.count(UserAchievement.id).label("count")
-        ).filter(
-            UserAchievement.unlocked_at.isnot(None)
-        ).group_by(UserAchievement.achievement_id).all()
+            func.count(UserAchievement.id).label("count"),
+        )
+        .filter(UserAchievement.unlocked_at.isnot(None))
+        .group_by(UserAchievement.achievement_id)
+        .all()
     )
 
     # Combine data
     achievement_data = []
     for achievement in pagination.items:
-        achievement_data.append({
-            "achievement": achievement,
-            "unlock_count": unlock_stats.get(achievement.id, 0)
-        })
+        achievement_data.append(
+            {
+                "achievement": achievement,
+                "unlock_count": unlock_stats.get(achievement.id, 0),
+            }
+        )
 
     return render_template(
         "gamification/admin/achievements.html",
@@ -224,7 +237,7 @@ def admin_achievements():
         pagination=pagination,
         categories=AchievementCategory,
         difficulties=AchievementDifficulty,
-        page_title=_("Gestione Achievement")
+        page_title=_("Gestione Achievement"),
     )
 
 
@@ -268,11 +281,13 @@ def admin_create_achievement():
         achievement=None,
         categories=AchievementCategory,
         difficulties=AchievementDifficulty,
-        page_title=_("Crea Nuovo Achievement")
+        page_title=_("Crea Nuovo Achievement"),
     )
 
 
-@gamification_bp.route("/admin/achievements/<int:achievement_id>/toggle_hidden", methods=["POST"])
+@gamification_bp.route(
+    "/admin/achievements/<int:achievement_id>/toggle_hidden", methods=["POST"]
+)
 @admin_required
 def admin_toggle_achievement_hidden(achievement_id: int):
     """Toggle hidden status of an achievement."""
@@ -298,9 +313,9 @@ def admin_xp_management():
     page = request.args.get("page", 1, type=int)
 
     # Paginate recent transactions
-    pagination = XPTransaction.query.order_by(
-        XPTransaction.created_at.desc()
-    ).paginate(page=page, per_page=20, error_out=False)
+    pagination = XPTransaction.query.order_by(XPTransaction.created_at.desc()).paginate(
+        page=page, per_page=20, error_out=False
+    )
 
     # Get users for dropdown
     users = User.query.filter(User.deleted_at.is_(None)).order_by(User.username).all()
@@ -311,7 +326,7 @@ def admin_xp_management():
         pagination=pagination,
         users=users,
         xp_types=XPTransactionType,
-        page_title=_("Gestione XP")
+        page_title=_("Gestione XP"),
     )
 
 
@@ -369,26 +384,31 @@ def admin_streaks():
     from sqlalchemy import func
 
     # Get streak distribution
-    streak_stats = db.session.query(
-        StreakTracker.streak_type,
-        func.avg(StreakTracker.current_streak).label("avg_streak"),
-        func.max(StreakTracker.current_streak).label("max_streak"),
-        func.sum(StreakTracker.freeze_count).label("total_freezes")
-    ).group_by(StreakTracker.streak_type).all()
+    streak_stats = (
+        db.session.query(
+            StreakTracker.streak_type,
+            func.avg(StreakTracker.current_streak).label("avg_streak"),
+            func.max(StreakTracker.current_streak).label("max_streak"),
+            func.sum(StreakTracker.freeze_count).label("total_freezes"),
+        )
+        .group_by(StreakTracker.streak_type)
+        .all()
+    )
 
     # Get top streakers
-    top_streakers = StreakTracker.query.filter_by(
-        streak_type=StreakType.WEEKLY_ACTIVITY
-    ).order_by(
-        StreakTracker.current_streak.desc()
-    ).limit(20).all()
+    top_streakers = (
+        StreakTracker.query.filter_by(streak_type=StreakType.WEEKLY_ACTIVITY)
+        .order_by(StreakTracker.current_streak.desc())
+        .limit(20)
+        .all()
+    )
 
     return render_template(
         "gamification/admin/streaks.html",
         streak_stats=streak_stats,
         top_streakers=top_streakers,
         streak_types=StreakType,
-        page_title=_("Gestione Streak")
+        page_title=_("Gestione Streak"),
     )
 
 
@@ -432,12 +452,13 @@ def admin_api_user_search():
     if len(query) < 2:
         return jsonify([])
 
-    users = User.query.filter(
-        User.username.ilike(f"%{query}%"),  # type: ignore[union-attr]
-        User.deleted_at.is_(None)
-    ).limit(10).all()
+    users = (
+        User.query.filter(
+            User.username.ilike(f"%{query}%"),  # type: ignore[union-attr]
+            User.deleted_at.is_(None),
+        )
+        .limit(10)
+        .all()
+    )
 
-    return jsonify([
-        {"id": u.id, "username": u.username}
-        for u in users
-    ])
+    return jsonify([{"id": u.id, "username": u.username} for u in users])

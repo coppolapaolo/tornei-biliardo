@@ -92,14 +92,16 @@ def search_players():
     # Filter by feature access (consistent with menu visibility and opponent list)
     eligible_users = [u for u in users if u.can_access("create_match_direct")][:limit]
 
-    return jsonify([
-        {
-            "id": u.id,
-            "username": u.username,
-            "avatar_url": u.avatar_url if hasattr(u, "avatar_url") else None,
-        }
-        for u in eligible_users
-    ])
+    return jsonify(
+        [
+            {
+                "id": u.id,
+                "username": u.username,
+                "avatar_url": u.avatar_url if hasattr(u, "avatar_url") else None,
+            }
+            for u in eligible_users
+        ]
+    )
 
 
 @individual_match_bp.route("/players/opponents")
@@ -119,13 +121,15 @@ def get_opponents():
 
     opponents = IndividualMatchStatisticsService.get_eligible_opponents(current_user.id)
 
-    return jsonify([
-        {
-            "id": u.id,
-            "username": u.username,
-        }
-        for u in opponents
-    ])
+    return jsonify(
+        [
+            {
+                "id": u.id,
+                "username": u.username,
+            }
+            for u in opponents
+        ]
+    )
 
 
 @individual_match_bp.route("/proposals/create", methods=["GET", "POST"])
@@ -137,9 +141,11 @@ def create_proposal():
         from models.user.models import User
         from models.base import db
 
-        verified_venues = BilliardHall.query.filter_by(
-            is_active=True, verified=True
-        ).order_by(BilliardHall.name).all()
+        verified_venues = (
+            BilliardHall.query.filter_by(is_active=True, verified=True)
+            .order_by(BilliardHall.name)
+            .all()
+        )
 
         # Check for rematch parameters
         rematch_opponent = None
@@ -240,9 +246,11 @@ def create_proposal():
             "match_distance": match_distance,
             "break_rule": data.get("break_rule", "alternate"),
             "description": data.get("description"),
-            "invited_user_ids": [
-                int(uid) for uid in data.getlist("invited_user_ids")
-            ] if hasattr(data, 'getlist') else data.get("invited_user_ids", []),
+            "invited_user_ids": (
+                [int(uid) for uid in data.getlist("invited_user_ids")]
+                if hasattr(data, "getlist")
+                else data.get("invited_user_ids", [])
+            ),
         }
 
         proposal = MatchProposalService.create_proposal(**proposal_data)
@@ -338,9 +346,7 @@ def decline_proposal(proposal_id):
         MatchProposalService.reject_invitation(current_user.id, proposal_id)
 
         if request.is_json:
-            return jsonify(
-                {"success": True, "message": "Proposta rifiutata"}
-            )
+            return jsonify({"success": True, "message": "Proposta rifiutata"})
         else:
             flash("Proposta rifiutata.", "info")
             return redirect(url_for("individual_match.proposal_list"))

@@ -22,6 +22,7 @@ class TestIndividualMatchForfeitRoute:
     def player1(self, app):
         """Create first player."""
         import uuid
+
         with app.app_context():
             unique_id = uuid.uuid4().hex[:8]
             user = User(
@@ -38,6 +39,7 @@ class TestIndividualMatchForfeitRoute:
     def player2(self, app):
         """Create second player."""
         import uuid
+
         with app.app_context():
             unique_id = uuid.uuid4().hex[:8]
             user = User(
@@ -54,6 +56,7 @@ class TestIndividualMatchForfeitRoute:
     def other_player(self, app):
         """Create third player (not in match)."""
         import uuid
+
         with app.app_context():
             unique_id = uuid.uuid4().hex[:8]
             user = User(

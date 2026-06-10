@@ -35,6 +35,7 @@ class TrioMatchService:
 
         # Aggiungi rack e gestisci rotazione
         from models.match.trio_scoring_service import TrioScoringService
+
         TrioScoringService.add_rack_win(trio.id, winner_id)
 
         # Prepara risposta con nuovo stato
@@ -83,11 +84,15 @@ class TrioMatchService:
 
         # Emit gara event for directors watching gara detail page
         if trio.match and trio.match.gara_id:
-            emit_gara_event(trio.match.gara_id, "match_updated", {
-                "match_id": trio.match.id,
-                "trio_id": trio_id,
-                "event": "rack_added",
-            })
+            emit_gara_event(
+                trio.match.gara_id,
+                "match_updated",
+                {
+                    "match_id": trio.match.id,
+                    "trio_id": trio_id,
+                    "event": "rack_added",
+                },
+            )
 
         return result
 
@@ -109,6 +114,7 @@ class TrioMatchService:
 
         # Use TrioScoringService for reset
         from models.match.trio_scoring_service import TrioScoringService
+
         TrioScoringService.reset(trio.id)
 
     @staticmethod
@@ -127,6 +133,7 @@ class TrioMatchService:
 
         # Remove last rack via service
         from models.match.trio_scoring_service import TrioScoringService
+
         removed_rack = TrioScoringService.remove_last_rack(trio.id, removed_by_id)
         if not removed_rack:
             raise ValueError("Nessun rack da rimuovere")
@@ -166,7 +173,9 @@ class TrioMatchService:
                 "current_players": current_players,
                 "waiting_player": waiting_player,
                 "scores": scores,
-                "last_rack_winner_id": trio.last_rack.winner_id if trio.last_rack else None,
+                "last_rack_winner_id": (
+                    trio.last_rack.winner_id if trio.last_rack else None
+                ),
             },
         }
 
@@ -177,11 +186,15 @@ class TrioMatchService:
 
         # Emit gara event for directors watching gara detail page
         if trio.match and trio.match.gara_id:
-            emit_gara_event(trio.match.gara_id, "match_updated", {
-                "match_id": trio.match.id,
-                "trio_id": trio_id,
-                "event": "rack_removed",
-            })
+            emit_gara_event(
+                trio.match.gara_id,
+                "match_updated",
+                {
+                    "match_id": trio.match.id,
+                    "trio_id": trio_id,
+                    "event": "rack_removed",
+                },
+            )
 
         return result
 
@@ -207,16 +220,24 @@ class TrioMatchService:
         # Emit SSE for real-time updates
         from routes.sse import emit_trio_event, emit_gara_event
 
-        emit_trio_event(trio_id, "result_confirmed", {
-            "is_completed": result["is_completed"],
-            "validated_by_admin": True,
-        })
+        emit_trio_event(
+            trio_id,
+            "result_confirmed",
+            {
+                "is_completed": result["is_completed"],
+                "validated_by_admin": True,
+            },
+        )
 
         if trio.match and trio.match.gara_id:
-            emit_gara_event(trio.match.gara_id, "match_completed", {
-                "match_id": trio.match.id,
-                "trio_id": trio_id,
-            })
+            emit_gara_event(
+                trio.match.gara_id,
+                "match_completed",
+                {
+                    "match_id": trio.match.id,
+                    "trio_id": trio_id,
+                },
+            )
 
         return {
             "success": True,
@@ -250,17 +271,25 @@ class TrioMatchService:
         # Emit SSE for real-time updates
         from routes.sse import emit_trio_event, emit_gara_event
 
-        emit_trio_event(trio_id, "player_confirmed", {
-            "user_id": user_id,
-            "confirmations": result["confirmations"],
-            "is_completed": result["is_completed"],
-        })
+        emit_trio_event(
+            trio_id,
+            "player_confirmed",
+            {
+                "user_id": user_id,
+                "confirmations": result["confirmations"],
+                "is_completed": result["is_completed"],
+            },
+        )
 
         if result["is_completed"] and trio.match and trio.match.gara_id:
-            emit_gara_event(trio.match.gara_id, "match_completed", {
-                "match_id": trio.match.id,
-                "trio_id": trio_id,
-            })
+            emit_gara_event(
+                trio.match.gara_id,
+                "match_completed",
+                {
+                    "match_id": trio.match.id,
+                    "trio_id": trio_id,
+                },
+            )
 
         return result
 
@@ -352,7 +381,10 @@ class TrioMatchService:
 
         # Use TrioScoringService for direct result setting
         from models.match.trio_scoring_service import TrioScoringService
-        TrioScoringService.set_result_direct(trio.id, player1_racks, player2_racks, player3_racks)
+
+        TrioScoringService.set_result_direct(
+            trio.id, player1_racks, player2_racks, player3_racks
+        )
 
         return {
             "success": True,

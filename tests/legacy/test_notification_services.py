@@ -165,9 +165,7 @@ class TestNotificationService:
             "action_text": "Test Action",
         }
         mock_template.default_priority = NotificationPriority.NORMAL
-        mock_template.get_expiry_datetime.return_value = utc_now() + timedelta(
-            hours=24
-        )
+        mock_template.get_expiry_datetime.return_value = utc_now() + timedelta(hours=24)
 
         with patch(
             "models.notification.services.NotificationTemplate"

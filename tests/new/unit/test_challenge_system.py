@@ -263,7 +263,7 @@ class TestChallengeService:
                 challenge_id=test_challenge.id,
                 description="Updated description",
                 pass_fail_only=not original_pass_fail,
-                is_active=False
+                is_active=False,
             )
 
             # Verify updates
@@ -274,8 +274,7 @@ class TestChallengeService:
 
             # Verify partial update (only description)
             partial_update = ChallengeService.update_challenge(
-                challenge_id=test_challenge.id,
-                description="Partially updated"
+                challenge_id=test_challenge.id, description="Partially updated"
             )
             assert partial_update.description == "Partially updated"
             assert partial_update.is_active is False  # Should remain unchanged

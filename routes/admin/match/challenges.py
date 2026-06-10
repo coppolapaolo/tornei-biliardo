@@ -145,8 +145,7 @@ def record_challenge_attempts():
             {
                 "success": True,
                 "message": (
-                    f"{len(recorded_attempts)} tentativo/i "
-                    "registrato/i con successo"
+                    f"{len(recorded_attempts)} tentativo/i " "registrato/i con successo"
                 ),
                 "recorded_count": len(recorded_attempts),
             }

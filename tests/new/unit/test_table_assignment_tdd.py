@@ -87,7 +87,7 @@ class TestTableAssignmentTDD:
             match = Match(
                 gara_id=gara_with_venue.id,
                 round_number=1,
-                player1_id=players[i * 2].id,      # 0, 2, 4, 6, 8
+                player1_id=players[i * 2].id,  # 0, 2, 4, 6, 8
                 player2_id=players[i * 2 + 1].id,  # 1, 3, 5, 7, 9
                 status=MatchStatus.PENDING.value,
                 table_assignment=None,  # No table assigned yet
@@ -338,7 +338,12 @@ class TestTableAssignmentTDD:
         - With pull strategy, BOTH freed tables should be used
         """
         # Setup: Create 4 players (A, B, C, D)
-        player_a, player_b, player_c, player_d = players[0], players[1], players[2], players[3]
+        player_a, player_b, player_c, player_d = (
+            players[0],
+            players[1],
+            players[2],
+            players[3],
+        )
 
         # Limit available tables to 2
         gara_with_venue.set_available_tables(["Tavolo A", "Tavolo B"])
@@ -423,4 +428,3 @@ class TestTableAssignmentTDD:
         # Verify both tables are in use
         assigned_tables = {match3.table_assignment, match4.table_assignment}
         assert assigned_tables == {"Tavolo A", "Tavolo B"}
-

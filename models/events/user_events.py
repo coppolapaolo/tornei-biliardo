@@ -34,7 +34,7 @@ class UserRegisteredEvent(DomainEvent):
             "user_id": self.user_id,
             "username": self.username,
             "email": self.email,
-            "role": self.role
+            "role": self.role,
         }
 
 
@@ -59,7 +59,7 @@ class DirectorRequestCreatedEvent(DomainEvent):
             "request_id": self.request_id,
             "user_id": self.user_id,
             "username": self.username,
-            "admin_user_ids": self.admin_user_ids
+            "admin_user_ids": self.admin_user_ids,
         }
 
 
@@ -88,7 +88,7 @@ class DirectorRequestProcessedEvent(DomainEvent):
             "username": self.username,
             "status": self.status,
             "processed_by_id": self.processed_by_id,
-            "notes": self.notes
+            "notes": self.notes,
         }
 
 
@@ -121,7 +121,7 @@ class VenueManagerRequestCreatedEvent(DomainEvent):
             "venue_name": self.venue_name,
             "motivation": self.motivation,
             "admin_user_ids": self.admin_user_ids,
-            "is_contested": self.is_contested
+            "is_contested": self.is_contested,
         }
 
 
@@ -154,5 +154,5 @@ class VenueManagerRequestProcessedEvent(DomainEvent):
             "venue_name": self.venue_name,
             "status": self.status,
             "processed_by_id": self.processed_by_id,
-            "notes": self.notes
+            "notes": self.notes,
         }

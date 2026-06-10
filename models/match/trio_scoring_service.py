@@ -108,9 +108,7 @@ class TrioScoringService:
 
     @staticmethod
     @transactional(domain="match")
-    def remove_last_rack(
-        trio_id: int, removed_by_id: int
-    ) -> Optional["TrioRack"]:
+    def remove_last_rack(trio_id: int, removed_by_id: int) -> Optional["TrioRack"]:
         """Remove the last rack (undo).
 
         Soft-deletes the most recent active rack.
@@ -206,7 +204,11 @@ class TrioScoringService:
 
         # Validate per-player maximum (each player plays 2 racks per round)
         max_per_player = 2 * config.num_rounds
-        for label, racks in [("P1", player1_racks), ("P2", player2_racks), ("P3", player3_racks)]:
+        for label, racks in [
+            ("P1", player1_racks),
+            ("P2", player2_racks),
+            ("P3", player3_racks),
+        ]:
             if racks > max_per_player:
                 raise ValueError(
                     f"{label} non può vincere più di {max_per_player} rack "
@@ -282,9 +284,7 @@ class TrioScoringService:
         if len(top_players) == 1:
             trio.winner_id = top_players[0]
         else:
-            trio.winner_id = determine_trio_winner(
-                trio.active_racks, trio.player_ids
-            )
+            trio.winner_id = determine_trio_winner(trio.active_racks, trio.player_ids)
 
         # Update associated match and complete via service (emits SSE)
         match_obj = db.session.get(Match, trio.match_id)
@@ -351,6 +351,7 @@ class TrioScoringService:
             # B32: if match has no table, try to auto-assign a free one.
             if match_obj.status == MatchStatus.PENDING.value:
                 from .table_assignment_service import TableAssignmentService
+
                 db.session.flush()
                 TableAssignmentService.assign_available_tables(match_obj.gara_id)
 
@@ -396,9 +397,7 @@ class TrioScoringService:
         db.session.flush()
 
         # Determine winner using Condorcet/Schulze pairwise comparison
-        trio.winner_id = determine_trio_winner(
-            trio.active_racks, trio.player_ids
-        )
+        trio.winner_id = determine_trio_winner(trio.active_racks, trio.player_ids)
 
         # Enter awaiting confirmation state (don't complete yet)
         trio.awaiting_confirmation = True

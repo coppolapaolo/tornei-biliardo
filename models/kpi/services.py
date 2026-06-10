@@ -65,12 +65,12 @@ class DateRange:
         elif self.end is None:
             return f"Dal {self.start.strftime('%d/%m/%Y')}"
         else:
-            return f"{self.start.strftime('%d/%m/%Y')} - {self.end.strftime('%d/%m/%Y')}"
+            return (
+                f"{self.start.strftime('%d/%m/%Y')} - {self.end.strftime('%d/%m/%Y')}"
+            )
 
 
-def _build_date_filters(
-    date_column: Any, date_range: Optional[DateRange]
-) -> List[Any]:
+def _build_date_filters(date_column: Any, date_range: Optional[DateRange]) -> List[Any]:
     """Build SQLAlchemy filter conditions for date range."""
     filters = []
     if date_range:

@@ -72,9 +72,7 @@ class RoundCancellationService:
 
         # Cancella TUTTI i match della gara
         # Questo è necessario specialmente per la strategia 'random' che pre-genera tutto
-        matches = (
-            db.session.query(Match).filter_by(gara_id=gara_id).all()
-        )
+        matches = db.session.query(Match).filter_by(gara_id=gara_id).all()
 
         # Prima cancella i TrioMatch associati
         for match in matches:

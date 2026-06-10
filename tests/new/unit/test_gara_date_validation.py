@@ -17,7 +17,9 @@ from models.campionato.services import TournamentService
 class TestGaraDateValidationPastDate:
     """Test validazione date nel passato."""
 
-    def test_create_gara_with_past_date_raises_error(self, db_session, isolated_director_user):
+    def test_create_gara_with_past_date_raises_error(
+        self, db_session, isolated_director_user
+    ):
         """Creare una gara con data nel passato solleva ValueError."""
         yesterday = date.today() - timedelta(days=1)
 
@@ -93,7 +95,9 @@ class TestGaraSequentialDateValidation:
                 campionato_id=campionato.id,
             )
 
-    def test_gara2_same_day_later_time_is_valid(self, db_session, campionato_with_gara1):
+    def test_gara2_same_day_later_time_is_valid(
+        self, db_session, campionato_with_gara1
+    ):
         """Gara 2 stesso giorno con ora successiva è valido."""
         campionato, _ = campionato_with_gara1
 
@@ -227,7 +231,9 @@ class TestGaraSequentialDateValidation:
 class TestStandaloneGaraNoSequentialValidation:
     """Test che le gare standalone NON hanno validazione sequenziale."""
 
-    def test_standalone_gara_ignores_sequential_validation(self, db_session, isolated_director_user):
+    def test_standalone_gara_ignores_sequential_validation(
+        self, db_session, isolated_director_user
+    ):
         """Le gare standalone non richiedono validazione sequenziale."""
         today = date.today()
 

@@ -20,9 +20,7 @@ def upgrade_sqlite(db_path: str):
     ]
     conn = sqlite3.connect(db_path)
     for idx_name, table, column in indexes:
-        conn.execute(
-            f"CREATE INDEX IF NOT EXISTS {idx_name} ON {table} ({column})"
-        )
+        conn.execute(f"CREATE INDEX IF NOT EXISTS {idx_name} ON {table} ({column})")
     conn.commit()
     conn.close()
     print(f"  Created {len(indexes)} FK indexes")

@@ -37,7 +37,9 @@ def playoff_confirm(qualification_id):
 
     if qual.status != QualificationStatus.PENDING:
         flash(_("Questa qualificazione non è più in attesa di risposta."), "info")
-        return redirect(url_for("player.playoff_invitation", qualification_id=qualification_id))
+        return redirect(
+            url_for("player.playoff_invitation", qualification_id=qualification_id)
+        )
 
     try:
         PlayoffService.confirm_qualification(qualification_id, current_user.id)
@@ -45,7 +47,9 @@ def playoff_confirm(qualification_id):
     except ValueError as ve:
         flash(str(ve), "error")
 
-    return redirect(url_for("player.playoff_invitation", qualification_id=qualification_id))
+    return redirect(
+        url_for("player.playoff_invitation", qualification_id=qualification_id)
+    )
 
 
 @player_bp.route("/playoff/decline/<int:qualification_id>", methods=["POST"])
@@ -60,7 +64,9 @@ def playoff_decline(qualification_id):
 
     if qual.status != QualificationStatus.PENDING:
         flash(_("Questa qualificazione non è più in attesa di risposta."), "info")
-        return redirect(url_for("player.playoff_invitation", qualification_id=qualification_id))
+        return redirect(
+            url_for("player.playoff_invitation", qualification_id=qualification_id)
+        )
 
     try:
         PlayoffService.decline_qualification(qualification_id, current_user.id)

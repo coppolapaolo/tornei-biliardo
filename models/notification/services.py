@@ -22,7 +22,6 @@ from .models import (
     NotificationStatus,
 )
 
-
 _PENDING_SSE_KEY = "_pending_notification_sse"
 
 

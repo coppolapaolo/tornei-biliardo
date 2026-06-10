@@ -27,8 +27,10 @@ from models.gamification.events import (
     QuestCompletedEvent,
 )
 
+
 class GamificationEventType:
     """Enum for frontend event types."""
+
     XP = "xp"
     LEVEL_UP = "levelup"
     ACHIEVEMENT = "achievement"
@@ -37,14 +39,15 @@ class GamificationEventType:
     QUEST = "quest"
     WELCOME = "welcome"
 
+
 logger = logging.getLogger(__name__)
 
 
 class GamificationFrontendBridge:
     """
     Bridge that translates domain events into frontend flash messages.
-    
-    These messages are consumed by base.html and passed to 
+
+    These messages are consumed by base.html and passed to
     gamification.js via showGamificationEvent().
     """
 
@@ -54,46 +57,45 @@ class GamificationFrontendBridge:
         EventBus.register_handler(
             XPGainedEvent,
             GamificationFrontendBridge.handle_xp_gained,
-            priority=0  # Low priority, UI only
+            priority=0,  # Low priority, UI only
         )
-        
+
         EventBus.register_handler(
-            LevelUpEvent,
-            GamificationFrontendBridge.handle_level_up,
-            priority=0
+            LevelUpEvent, GamificationFrontendBridge.handle_level_up, priority=0
         )
-        
+
         EventBus.register_handler(
             AchievementUnlockedEvent,
             GamificationFrontendBridge.handle_achievement_unlocked,
-            priority=0
+            priority=0,
         )
-        
+
         EventBus.register_handler(
             StreakMilestoneEvent,
             GamificationFrontendBridge.handle_streak_milestone,
-            priority=0
+            priority=0,
         )
-        
+
         # B4: do NOT register a frontend handler for StreakBrokenEvent — the
         # toast is non-actionable (user can't "undo" a broken streak), so it
         # adds noise without value. The event is still emitted by the service
         # layer for analytics/notifications.
 
-
         EventBus.register_handler(
             QuestCompletedEvent,
             GamificationFrontendBridge.handle_quest_completed,
-            priority=0
+            priority=0,
         )
 
         logger.info("Registered gamification frontend bridge handlers")
 
     @staticmethod
-    def _flash_gamification_event(event_type: str, data: Dict[str, Any], user_id: int) -> None:
+    def _flash_gamification_event(
+        event_type: str, data: Dict[str, Any], user_id: int
+    ) -> None:
         """
         Helper to flash event if suitable for current context.
-        
+
         Only flashes if:
         1. We are in a Flask request context
         2. There is a logged-in user
@@ -101,10 +103,10 @@ class GamificationFrontendBridge:
         """
         if not has_request_context():
             return
-            
+
         if not current_user.is_authenticated:
             return
-            
+
         if current_user.id != user_id:
             # Event is for another user, don't show animation to this user
             return
@@ -112,12 +114,9 @@ class GamificationFrontendBridge:
         if current_user.is_admin:
             # Admin users don't see gamification animations
             return
-            
+
         try:
-            payload = {
-                "type": event_type,
-                "data": data
-            }
+            payload = {"type": event_type, "data": data}
             # Use 'gamification_event' category to separate from normal alerts
             flash(json.dumps(payload), category="gamification_event")
             logger.debug(f"Flashed gamification event: {event_type}")
@@ -144,12 +143,7 @@ class GamificationFrontendBridge:
                 reason = _("Per aver sbloccato un achievement")
 
         GamificationFrontendBridge._flash_gamification_event(
-            "xp",
-            {
-                "amount": event.xp_amount,
-                "reason": reason
-            },
-            event.user_id
+            "xp", {"amount": event.xp_amount, "reason": reason}, event.user_id
         )
 
     @staticmethod
@@ -173,7 +167,7 @@ class GamificationFrontendBridge:
                 "title": _("Livello %(level)d raggiunto!", level=event.new_level),
                 "subtitle": subtitle,
             },
-            event.user_id
+            event.user_id,
         )
 
     @staticmethod
@@ -188,9 +182,9 @@ class GamificationFrontendBridge:
                 "name": event.achievement_name,
                 "description": description,
                 "rarity": event.achievement_difficulty.lower(),
-                "icon": "🏆"
+                "icon": "🏆",
             },
-            event.user_id
+            event.user_id,
         )
 
     @staticmethod
@@ -198,9 +192,15 @@ class GamificationFrontendBridge:
         """Send streak milestone event to frontend."""
         # B21: human-readable narrative — "filotto" used in pool jargon.
         if event.streak_type == "WEEKLY_MATCH":
-            message = _("Hai giocato per %(weeks)d settimane consecutive!", weeks=event.current_streak)
+            message = _(
+                "Hai giocato per %(weeks)d settimane consecutive!",
+                weeks=event.current_streak,
+            )
         else:
-            message = _("Sei attivo da %(weeks)d settimane consecutive!", weeks=event.current_streak)
+            message = _(
+                "Sei attivo da %(weeks)d settimane consecutive!",
+                weeks=event.current_streak,
+            )
         if event.freeze_earned > 0:
             message = message + " " + _("Hai guadagnato un congelatore!")
 
@@ -212,7 +212,7 @@ class GamificationFrontendBridge:
                 "hasFreeze": event.freeze_earned > 0,
                 "message": message,
             },
-            event.user_id
+            event.user_id,
         )
 
     @staticmethod
@@ -223,9 +223,12 @@ class GamificationFrontendBridge:
         GamificationFrontendBridge._flash_gamification_event(
             "streak_lost",
             {
-                "message": _("Hai perso una serie di %(weeks)d settimane.", weeks=event.streak_length)
+                "message": _(
+                    "Hai perso una serie di %(weeks)d settimane.",
+                    weeks=event.streak_length,
+                )
             },
-            event.user_id
+            event.user_id,
         )
 
     @staticmethod
@@ -235,11 +238,14 @@ class GamificationFrontendBridge:
             "quest",
             {
                 "name": event.quest_name,
-                "description": _("Quest completata: %(name)s — +%(xp)d XP", name=event.quest_name, xp=event.xp_awarded),
+                "description": _(
+                    "Quest completata: %(name)s — +%(xp)d XP",
+                    name=event.quest_name,
+                    xp=event.xp_awarded,
+                ),
             },
-            event.user_id
+            event.user_id,
         )
-
 
     # B10: per-feature narrative copy for nudge toasts. The DB stores the
     # English code/name; we translate at toast-emission time so the user sees
@@ -289,6 +295,7 @@ class GamificationFrontendBridge:
         # ADR-028 alignment: don't promote a feature whose primary endpoint
         # is hidden by the production allowlist for the current user.
         from models.gamification.feature_endpoint_map import feature_visible_to_user
+
         if not feature_visible_to_user(feature_config.code, current_user):
             return
 
@@ -304,9 +311,9 @@ class GamificationFrontendBridge:
                 "code": feature_config.code,
                 "name": name,
                 "description": description,
-                "badge": feature_config.badge_slug
+                "badge": feature_config.badge_slug,
             },
-            user_id
+            user_id,
         )
 
     @staticmethod
@@ -319,6 +326,7 @@ class GamificationFrontendBridge:
         # in the allowlist — celebrating an unlock the user can't act on
         # would be misleading.
         from models.gamification.feature_endpoint_map import feature_visible_to_user
+
         if not feature_visible_to_user(feature_config.code, current_user):
             return
 
@@ -333,10 +341,11 @@ class GamificationFrontendBridge:
                 "code": feature_config.code,
                 "name": name,
                 "description": description,
-                "icon": "🔓"
+                "icon": "🔓",
             },
-            user_id
+            user_id,
         )
+
 
 def _get_achievement_description(event: AchievementUnlockedEvent) -> str:
     """B21: prefer the achievement.description from DB (semantic, i18n-ready)
@@ -352,7 +361,9 @@ def _get_achievement_description(event: AchievementUnlockedEvent) -> str:
             return f"{achievement.description} — +{event.xp_awarded} XP"
     except Exception:
         # Avoid breaking the toast pipeline if DB access fails for any reason
-        logger.debug("Could not fetch achievement description; using fallback", exc_info=True)
+        logger.debug(
+            "Could not fetch achievement description; using fallback", exc_info=True
+        )
 
     return _(
         "+%(xp)d XP — %(category)s",
@@ -377,10 +388,7 @@ def flash_gamification_event(event_type: str, data: Dict[str, Any]) -> None:
         return
 
     try:
-        payload = {
-            "type": event_type,
-            "data": data
-        }
+        payload = {"type": event_type, "data": data}
         flash(json.dumps(payload), category="gamification_event")
         logger.debug(f"Manually flashed gamification event: {event_type}")
     except Exception as e:

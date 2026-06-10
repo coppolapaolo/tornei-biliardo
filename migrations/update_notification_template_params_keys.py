@@ -108,7 +108,7 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
             if modified:
                 cursor.execute(
                     "UPDATE notification SET template_params = ? WHERE id = ?",
-                    (json.dumps(params), notif_id)
+                    (json.dumps(params), notif_id),
                 )
                 updated_count += 1
 

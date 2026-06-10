@@ -105,7 +105,12 @@ class TestRackSystemValidation:
 
     @pytest.mark.parametrize(
         "odd_handling",
-        [OddHandling.NO, OddHandling.TRIO, OddHandling.BYE_CHALLENGE, OddHandling.BYE_N_RACK],
+        [
+            OddHandling.NO,
+            OddHandling.TRIO,
+            OddHandling.BYE_CHALLENGE,
+            OddHandling.BYE_N_RACK,
+        ],
     )
     def test_rack_valid_odd_handling(self, odd_handling):
         """RACK + gestione dispari valida."""
@@ -120,7 +125,14 @@ class TestRackSystemValidation:
         )
         assert errors == []
 
-    @pytest.mark.parametrize("matchmaking", [MatchmakingStrategy.RANDOM, MatchmakingStrategy.AMALFI, MatchmakingStrategy.ROUND_ROBIN])
+    @pytest.mark.parametrize(
+        "matchmaking",
+        [
+            MatchmakingStrategy.RANDOM,
+            MatchmakingStrategy.AMALFI,
+            MatchmakingStrategy.ROUND_ROBIN,
+        ],
+    )
     def test_rack_valid_matchmaking(self, matchmaking):
         """RACK + matchmaking valido (Random/Amalfi/RR)."""
         errors, warnings = validate_gara_configuration(
@@ -344,7 +356,9 @@ class TestPositionSystemValidation:
         )
         assert len(errors) == 1
 
-    @pytest.mark.parametrize("matchmaking", [MatchmakingStrategy.ELIMINATION, MatchmakingStrategy.DOUBLE_KO])
+    @pytest.mark.parametrize(
+        "matchmaking", [MatchmakingStrategy.ELIMINATION, MatchmakingStrategy.DOUBLE_KO]
+    )
     def test_position_valid_matchmaking(self, matchmaking):
         """POSITION + matchmaking valido (Eliminazione/Doppio KO)."""
         errors, warnings = validate_gara_configuration(
@@ -647,7 +661,9 @@ class TestGaraServiceValidationIntegration:
         db_session.commit()
         return director
 
-    def test_create_gara_warns_on_race_to_with_inferred_rack(self, app, db_session, director):
+    def test_create_gara_warns_on_race_to_with_inferred_rack(
+        self, app, db_session, director
+    ):
         """create_gara() logga warning per RACK + Race to N (non blocca)."""
         from models.competition.services import GaraService
         from datetime import date, time, timedelta
@@ -706,7 +722,9 @@ class TestGaraServiceValidationIntegration:
         assert gara.id is not None
         assert gara.matchmaking_strategy == "direct_elimination"
 
-    def test_create_gara_rejects_elimination_with_exactly_even(self, app, db_session, director):
+    def test_create_gara_rejects_elimination_with_exactly_even(
+        self, app, db_session, director
+    ):
         """create_gara() rifiuta Eliminazione + Exactly N pari."""
         from models.competition.services import GaraService
         from datetime import date, time, timedelta
@@ -767,7 +785,9 @@ class TestGaraServiceValidationIntegration:
 
         # Può essere "trio" o "match a tre" a seconda del validatore
         error_msg = str(exc_info.value).lower()
-        assert "trio" in error_msg or "match a tre" in error_msg or "distanz" in error_msg
+        assert (
+            "trio" in error_msg or "match a tre" in error_msg or "distanz" in error_msg
+        )
 
 
 # =============================================================================

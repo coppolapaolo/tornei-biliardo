@@ -101,10 +101,14 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
             """)
             print("Added 'current_set_number' column to individual_match table")
         else:
-            print("Column 'current_set_number' already exists in individual_match table")
+            print(
+                "Column 'current_set_number' already exists in individual_match table"
+            )
     except sqlite3.OperationalError as e:
         if "duplicate column name" in str(e).lower():
-            print("Column 'current_set_number' already exists in individual_match table")
+            print(
+                "Column 'current_set_number' already exists in individual_match table"
+            )
         else:
             raise
 
@@ -130,7 +134,9 @@ def downgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
     # Note: SQLite doesn't support DROP COLUMN easily
     # The individual_set_id and current_set_number columns will remain
 
-    print("Note: individual_set_id and current_set_number columns remain in their tables")
+    print(
+        "Note: individual_set_id and current_set_number columns remain in their tables"
+    )
 
     conn.commit()
     conn.close()

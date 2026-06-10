@@ -21,10 +21,10 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
             db_path = alt_path
             db_file = Path(db_path)
         else:
-             print(f"Database not found at {db_path} or instance/tornei_biliardo.db")
-             # Proceeding anyway as it might be created later or we want to test connections, 
-             # but standard runner checks logic often happens outside.
-             
+            print(f"Database not found at {db_path} or instance/tornei_biliardo.db")
+            # Proceeding anyway as it might be created later or we want to test connections,
+            # but standard runner checks logic often happens outside.
+
     if not db_file.exists():
         print(f"Database not found: {db_path}")
         return
@@ -38,9 +38,14 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
         # 1. Add is_verified to user table
         print("   Adding 'is_verified' column to user table...")
         try:
-            cursor.execute("ALTER TABLE user ADD COLUMN is_verified BOOLEAN DEFAULT 0 NOT NULL")
+            cursor.execute(
+                "ALTER TABLE user ADD COLUMN is_verified BOOLEAN DEFAULT 0 NOT NULL"
+            )
         except sqlite3.OperationalError as e:
-            if "duplicate column" in str(e).lower() or "already exists" in str(e).lower():
+            if (
+                "duplicate column" in str(e).lower()
+                or "already exists" in str(e).lower()
+            ):
                 print("   Column 'is_verified' already exists, skipping.")
             else:
                 raise
@@ -81,16 +86,16 @@ def downgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
     """Rollback migration."""
     # Note: SQLite doesn't support DROP COLUMN easily before recent versions
     # We will primarily drop the new table.
-    
+
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    
+
     print("Rolling back user verification migration...")
-    
+
     cursor.execute("DROP TABLE IF EXISTS user_token")
     # Dropping is_verified column is hard in SQLite, skipping for simple rollback
     print("   Dropped user_token table. (is_verified column remains)")
-    
+
     conn.commit()
     conn.close()
 

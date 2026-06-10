@@ -74,9 +74,7 @@ class TestUseCaseGuestViewCampionato:
 
         return {"campionato": campionato, "gara": gara, "director": director_user}
 
-    def test_guest_can_view_campionato_info(
-        self, db_session, campionato_with_gare
-    ):
+    def test_guest_can_view_campionato_info(self, db_session, campionato_with_gare):
         """Test guest can see campionato information without login.
 
         UC5: Guest views campionato information without logging in.
@@ -100,13 +98,9 @@ class TestUseCaseGuestViewCampionato:
                 break
 
         # Campionato should be visible
-        assert found_campionato is True, (
-            "Guest should see campionato in public view"
-        )
+        assert found_campionato is True, "Guest should see campionato in public view"
 
-    def test_guest_cannot_inscribe_to_gara(
-        self, db_session, campionato_with_gare
-    ):
+    def test_guest_cannot_inscribe_to_gara(self, db_session, campionato_with_gare):
         """Test guest cannot inscribe to gara.
 
         UC5: Guest can only view, not participate.
@@ -181,7 +175,9 @@ class TestUseCaseGuestViewResults:
         # Setup inscriptions - keep window open during inscription
         inscription_start = utc_now() - timedelta(hours=1)
         inscription_end = utc_now() + timedelta(hours=1)
-        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        InscriptionService.open_inscriptions(
+            gara.id, inscription_start, inscription_end
+        )
 
         for player in players_6:
             InscriptionService.inscribe_user(player.id, gara.id)
@@ -205,9 +201,7 @@ class TestUseCaseGuestViewResults:
 
         return gara
 
-    def test_guest_can_view_completed_gara_results(
-        self, completed_gara
-    ):
+    def test_guest_can_view_completed_gara_results(self, completed_gara):
         """Test guest can view results of completed gara.
 
         UC5: Guest sees results of finished garas.
@@ -219,7 +213,9 @@ class TestUseCaseGuestViewResults:
         classifications = RoundClassification.query.filter_by(
             gara_id=completed_gara.id
         ).all()
-        assert len(classifications) > 0, "Classification should exist after gara completion"
+        assert (
+            len(classifications) > 0
+        ), "Classification should exist after gara completion"
 
         # Get guest dashboard
         vm = DashboardService.for_guest()
@@ -250,8 +246,12 @@ class TestUseCaseGuestViewResults:
         if match.is_bye:
             return
 
-        winner_id = match.player1_id if random.choice([True, False]) else match.player2_id
-        loser_id = match.player2_id if winner_id == match.player1_id else match.player1_id
+        winner_id = (
+            match.player1_id if random.choice([True, False]) else match.player2_id
+        )
+        loser_id = (
+            match.player2_id if winner_id == match.player1_id else match.player1_id
+        )
 
         winning_racks = match.match_distance
         loser_racks = random.randint(0, winning_racks - 1)
@@ -350,7 +350,9 @@ class TestUseCaseGuestLiveScores:
         # Setup inscriptions - keep window open during inscription
         inscription_start = utc_now() - timedelta(hours=1)
         inscription_end = utc_now() + timedelta(hours=1)
-        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        InscriptionService.open_inscriptions(
+            gara.id, inscription_start, inscription_end
+        )
 
         for player in players_6:
             InscriptionService.inscribe_user(player.id, gara.id)
@@ -360,9 +362,7 @@ class TestUseCaseGuestLiveScores:
 
         return gara
 
-    def test_guest_can_view_live_gara(
-        self, playing_gara
-    ):
+    def test_guest_can_view_live_gara(self, playing_gara):
         """Test guest can see gara that is currently playing.
 
         UC5: Guest sees live match scores (gara in PLAYING status).
@@ -385,17 +385,13 @@ class TestUseCaseGuestLiveScores:
         # filters gare. The key test is that guest view is accessible and shows
         # the expected structure.
 
-    def test_guest_can_view_match_scores_in_progress(
-        self, db_session, playing_gara
-    ):
+    def test_guest_can_view_match_scores_in_progress(self, db_session, playing_gara):
         """Test guest can see match scores that are in progress.
 
         UC5: Guest views live/real-time match scores.
         """
         # Get matches from playing gara
-        matches = Match.query.filter_by(
-            gara_id=playing_gara.id, round_number=1
-        ).all()
+        matches = Match.query.filter_by(gara_id=playing_gara.id, round_number=1).all()
 
         assert len(matches) > 0, "Should have matches to view"
 

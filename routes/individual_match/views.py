@@ -56,9 +56,11 @@ def manage_availability():
     """Manage player availability for match proposals."""
     from models.location.models import BilliardHall
 
-    verified_venues = BilliardHall.query.filter_by(
-        is_active=True, verified=True
-    ).order_by(BilliardHall.name).all()
+    verified_venues = (
+        BilliardHall.query.filter_by(is_active=True, verified=True)
+        .order_by(BilliardHall.name)
+        .all()
+    )
 
     if request.method == "GET":
         availability_data = IndividualMatchService.get_user_availability(

@@ -172,11 +172,10 @@ class PairingStrategy(ABC):
             - May trigger notifications and other cross-domain operations
         """
         # Default implementation for compatibility: call propose if it exists
-        if hasattr(self, 'propose'):
+        if hasattr(self, "propose"):
             return self.propose(gara, round_number)  # type: ignore
         else:
             raise NotImplementedError("Subclasses must implement create_round")
-
 
 
 class BaseStrategy(PairingStrategy):
@@ -293,9 +292,7 @@ class BaseStrategy(PairingStrategy):
         # Apply side effects
         self._apply_side_effects(enhanced_pairings, gara, round_number)
 
-
         return enhanced_pairings
-
 
     # Template method hooks for strategy customization
 
@@ -356,8 +353,8 @@ class BaseStrategy(PairingStrategy):
         """Get active inscriptions for the gara."""
         inscriptions = getattr(gara, "inscriptions", [])
         return [
-            i for i in inscriptions
+            i
+            for i in inscriptions
             if not getattr(i, "is_withdrawn", False)
             and not getattr(i, "is_waitlist", False)
         ]
-

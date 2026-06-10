@@ -155,7 +155,7 @@ class TestUseCaseCampionatoWorkflow:
             "admin": admin,
             "director": director,
             "co_director": co_director,
-            "players": players
+            "players": players,
         }
 
     @pytest.mark.skip(reason="Intermittent infinite loop - SQLite concurrency issue")
@@ -440,7 +440,9 @@ class TestUseCaseCampionatoWorkflow:
         # Open inscriptions with short window
         inscription_start = utc_now() - timedelta(hours=1)
         inscription_end = utc_now() + timedelta(minutes=1)
-        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        InscriptionService.open_inscriptions(
+            gara.id, inscription_start, inscription_end
+        )
 
         # Simulate inscription expiry
         gara.inscription_end = utc_now() - timedelta(minutes=1)
@@ -471,7 +473,9 @@ class TestUseCaseCampionatoWorkflow:
         # Open inscriptions and start
         inscription_start = utc_now() - timedelta(hours=1)
         inscription_end = utc_now() + timedelta(hours=1)
-        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        InscriptionService.open_inscriptions(
+            gara.id, inscription_start, inscription_end
+        )
         RoundService.start_first_round(gara.id)
 
         # Complete all rounds
@@ -845,7 +849,9 @@ class TestUseCaseCampionatoVariants:
         """Complete a full gara with simplified logic."""
         inscription_start = utc_now() - timedelta(hours=1)
         inscription_end = utc_now() + timedelta(hours=1)
-        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        InscriptionService.open_inscriptions(
+            gara.id, inscription_start, inscription_end
+        )
         RoundService.start_first_round(gara.id)
 
         for round_num in range(1, gara.rounds_count + 1):

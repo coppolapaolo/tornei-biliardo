@@ -51,7 +51,9 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
         print("Making match.gara_id nullable (requires table recreation)...")
 
         # Get current table schema
-        cursor.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='match'")
+        cursor.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name='match'"
+        )
         original_sql = cursor.fetchone()[0]
 
         # Create backup table

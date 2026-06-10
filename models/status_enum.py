@@ -226,6 +226,7 @@ class Discipline(_StrEnum):
 
 class WithdrawPolicy(_StrEnum):
     """Policy for handling player withdrawals/forfeits."""
+
     FORFEIT = "Forfeit"
     EXCLUDE = "Exclude"
 

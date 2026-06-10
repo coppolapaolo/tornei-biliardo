@@ -183,28 +183,61 @@ class TestFinalizeClassificationWinsOrdering:
 
         for p in (winner, runner):
             db_session.add(
-                Inscription(gara_id=gara.id, user_id=p.id, is_withdrawn=False,
-                            is_forfeit=False, is_waitlist=False)
+                Inscription(
+                    gara_id=gara.id,
+                    user_id=p.id,
+                    is_withdrawn=False,
+                    is_forfeit=False,
+                    is_waitlist=False,
+                )
             )
         db_session.flush()
 
         # RoundClassification del round finale: winner 2 vittorie/diff +2,
         # runner 1 vittoria/diff +8. In WINS deve vincere chi ha più vittorie.
-        db_session.add_all([
-            RoundClassification(gara_id=gara.id, round_number=1, user_id=winner.id,
-                                position=2, matches_won=2, rack_difference=2),
-            RoundClassification(gara_id=gara.id, round_number=1, user_id=runner.id,
-                                position=1, matches_won=1, rack_difference=8),
-        ])
+        db_session.add_all(
+            [
+                RoundClassification(
+                    gara_id=gara.id,
+                    round_number=1,
+                    user_id=winner.id,
+                    position=2,
+                    matches_won=2,
+                    rack_difference=2,
+                ),
+                RoundClassification(
+                    gara_id=gara.id,
+                    round_number=1,
+                    user_id=runner.id,
+                    position=1,
+                    matches_won=1,
+                    rack_difference=8,
+                ),
+            ]
+        )
         # GaraClassification con SSR (non decisivo qui: differiscono già su wins)
-        db_session.add_all([
-            GaraClassification(gara_id=gara.id, user_id=winner.id, position=2,
-                               racks_won=12, rack_difference=2, matches_won=2,
-                               spot_shot_wins=0),
-            GaraClassification(gara_id=gara.id, user_id=runner.id, position=1,
-                               racks_won=14, rack_difference=8, matches_won=1,
-                               spot_shot_wins=1),
-        ])
+        db_session.add_all(
+            [
+                GaraClassification(
+                    gara_id=gara.id,
+                    user_id=winner.id,
+                    position=2,
+                    racks_won=12,
+                    rack_difference=2,
+                    matches_won=2,
+                    spot_shot_wins=0,
+                ),
+                GaraClassification(
+                    gara_id=gara.id,
+                    user_id=runner.id,
+                    position=1,
+                    racks_won=14,
+                    rack_difference=8,
+                    matches_won=1,
+                    spot_shot_wins=1,
+                ),
+            ]
+        )
         db_session.flush()
         return gara, winner, runner
 
@@ -240,18 +273,31 @@ class TestCompleteSetExactMode:
         db_session.flush()
 
         gara = Gara(
-            number=1, name=f"Gara MS {suffix}", date=date(2026, 1, 1),
-            time=time(18, 0), discipline="palla_8", distance=5, rounds_count=1,
-            current_round=1, min_participants=2, max_participants=10,
-            matchmaking_strategy="amalfi", status=GaraStatus.PLAYING.value,
+            number=1,
+            name=f"Gara MS {suffix}",
+            date=date(2026, 1, 1),
+            time=time(18, 0),
+            discipline="palla_8",
+            distance=5,
+            rounds_count=1,
+            current_round=1,
+            min_participants=2,
+            max_participants=10,
+            matchmaking_strategy="amalfi",
+            status=GaraStatus.PLAYING.value,
         )
         db_session.add(gara)
         db_session.flush()
 
         match = Match(
-            gara_id=gara.id, round_number=1, player1_id=p1.id, player2_id=p2.id,
-            is_multi_set=True, match_distance=match_distance,
-            is_race_to_sets=is_race_to_sets, current_set_number=1,
+            gara_id=gara.id,
+            round_number=1,
+            player1_id=p1.id,
+            player2_id=p2.id,
+            is_multi_set=True,
+            match_distance=match_distance,
+            is_race_to_sets=is_race_to_sets,
+            current_set_number=1,
             status=MatchStatus.PLAYING.value,
         )
         db_session.add(match)
@@ -321,10 +367,18 @@ class TestRecalculateAffectedClassifications:
         db_session.flush()
 
         gara = Gara(
-            number=1, name=f"Gara RC {suffix}", date=date(2026, 1, 1),
-            time=time(18, 0), discipline="palla_8", distance=5, rounds_count=1,
-            current_round=1, min_participants=2, max_participants=10,
-            matchmaking_strategy="amalfi", classification_system="WINS",
+            number=1,
+            name=f"Gara RC {suffix}",
+            date=date(2026, 1, 1),
+            time=time(18, 0),
+            discipline="palla_8",
+            distance=5,
+            rounds_count=1,
+            current_round=1,
+            min_participants=2,
+            max_participants=10,
+            matchmaking_strategy="amalfi",
+            classification_system="WINS",
             status=GaraStatus.PLAYING.value,
         )
         db_session.add(gara)
@@ -332,14 +386,26 @@ class TestRecalculateAffectedClassifications:
 
         # Un match concluso: p1 batte p2 5-3
         db_session.add(
-            Match(gara_id=gara.id, round_number=1, player1_id=p1.id,
-                  player2_id=p2.id, player1_score=5, player2_score=3,
-                  status=MatchStatus.COMPLETED.value)
+            Match(
+                gara_id=gara.id,
+                round_number=1,
+                player1_id=p1.id,
+                player2_id=p2.id,
+                player1_score=5,
+                player2_score=3,
+                status=MatchStatus.COMPLETED.value,
+            )
         )
         # RoundClassification stale pre-esistente (verrà cancellata e ricreata)
         db_session.add(
-            RoundClassification(gara_id=gara.id, round_number=1, user_id=p1.id,
-                                position=1, matches_won=0, rack_difference=0)
+            RoundClassification(
+                gara_id=gara.id,
+                round_number=1,
+                user_id=p1.id,
+                position=1,
+                matches_won=0,
+                rack_difference=0,
+            )
         )
         db_session.flush()
 

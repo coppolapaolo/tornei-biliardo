@@ -173,9 +173,7 @@ class RandomAntiRematchStrategy(BaseStrategy):
             return None  # oltre N-1 round servono reincontri
         return self._circle_method(list(player_ids), n_rounds)
 
-    def _circle_method(
-        self, players: List[int], n_rounds: int
-    ) -> List[List[Pairing]]:
+    def _circle_method(self, players: List[int], n_rounds: int) -> List[List[Pairing]]:
         """Berger tables / circle method. Richiede `len(players)` pari.
 
         Shuffle iniziale via `self._rng` per casualità deterministica (stesso
@@ -285,12 +283,15 @@ class RandomAntiRematchStrategy(BaseStrategy):
 
             for relaxation in (target_max, target_max + 1, target_max + 2):
                 candidates: List[
-                    Tuple[int, Tuple[int, ...], List[Tuple[int, int]], List[Tuple[int, int]]]
+                    Tuple[
+                        int,
+                        Tuple[int, ...],
+                        List[Tuple[int, int]],
+                        List[Tuple[int, int]],
+                    ]
                 ] = []
                 for trio in combinations(ordered_players, 3):
-                    if any(
-                        trio_counts.get(p, 0) + 1 > relaxation for p in trio
-                    ):
+                    if any(trio_counts.get(p, 0) + 1 > relaxation for p in trio):
                         continue
                     trio_pairs = [
                         tuple(sorted([trio[i], trio[j]]))
@@ -318,9 +319,7 @@ class RandomAntiRematchStrategy(BaseStrategy):
                     if time.monotonic() > deadline:
                         return
                     round_pairings: List[Pairing] = [
-                        Pairing(
-                            players=tuple(trio), round_number=round_idx + 1
-                        )
+                        Pairing(players=tuple(trio), round_number=round_idx + 1)
                     ]
                     for p1, p2 in pairs:
                         round_pairings.append(

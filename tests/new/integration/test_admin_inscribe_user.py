@@ -151,8 +151,11 @@ class TestAdminInscribeUser:
 
         # Check that inscription was successful (flash message in page)
         html = response.data.decode("utf-8")
-        assert "iscritto" in html.lower() or "successo" in html.lower() or "aggiunt" in html.lower(), \
-            f"Inscription may have failed. Page content includes: {html[:500]}"
+        assert (
+            "iscritto" in html.lower()
+            or "successo" in html.lower()
+            or "aggiunt" in html.lower()
+        ), f"Inscription may have failed. Page content includes: {html[:500]}"
 
         # Expire the session to force a fresh query from the database
         db_session.expire_all()

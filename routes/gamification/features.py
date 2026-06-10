@@ -24,7 +24,7 @@ def admin_features():
     return render_template(
         "gamification/admin/features.html",
         features=features,
-        page_title=_("Gestione Feature Gating")
+        page_title=_("Gestione Feature Gating"),
     )
 
 
@@ -81,7 +81,7 @@ def admin_feature_detail(code: str):
         condition_types=condition_types,
         operators=operators,
         roles=roles,
-        page_title=f"Feature: {feature.name}"
+        page_title=f"Feature: {feature.name}",
     )
 
 
@@ -128,12 +128,14 @@ def admin_feature_preview(code: str):
     users = User.query.filter(User.deleted_at.is_(None)).all()
     eligible = [u for u in users if u.can_access(code)]
 
-    return jsonify({
-        "total_users": len(users),
-        "eligible_users": len(eligible),
-        "percentage": round(len(eligible) / len(users) * 100, 1) if users else 0,
-        "eligible_usernames": [u.username for u in eligible[:20]]  # First 20
-    })
+    return jsonify(
+        {
+            "total_users": len(users),
+            "eligible_users": len(eligible),
+            "percentage": round(len(eligible) / len(users) * 100, 1) if users else 0,
+            "eligible_usernames": [u.username for u in eligible[:20]],  # First 20
+        }
+    )
 
 
 @gamification_bp.route("/admin/features/create", methods=["GET", "POST"])
@@ -142,8 +144,7 @@ def admin_create_feature():
     """Create a new feature configuration."""
     if request.method == "GET":
         return render_template(
-            "gamification/admin/feature_create.html",
-            page_title=_("Nuova Feature")
+            "gamification/admin/feature_create.html", page_title=_("Nuova Feature")
         )
 
     code = request.form.get("code", "").strip().lower().replace(" ", "_")

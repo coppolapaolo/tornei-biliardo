@@ -143,7 +143,10 @@ class TestDirectorRequestService:
 
         # Grant the required "Aspirante Direttore" achievement
         from models.gamification.models import Achievement, UserAchievement
-        from models.gamification.models import AchievementCategory, AchievementDifficulty
+        from models.gamification.models import (
+            AchievementCategory,
+            AchievementDifficulty,
+        )
 
         # Create or get the achievement
         achievement = Achievement.query.filter_by(slug="aspiring_director").first()

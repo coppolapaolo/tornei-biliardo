@@ -165,4 +165,3 @@ class TestUniqueConstraintsTOCTOU:
                 ProposalService.accept_proposal(
                     user_id=second_accepter.id, proposal_id=proposal.id
                 )
-

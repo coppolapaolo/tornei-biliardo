@@ -170,7 +170,9 @@ def downgrade_postgresql(connection_string: str) -> None:
 
     try:
         cursor.execute("ALTER TABLE gara DROP COLUMN IF EXISTS classification_system")
-        cursor.execute("ALTER TABLE campionato DROP COLUMN IF EXISTS default_classification_system")
+        cursor.execute(
+            "ALTER TABLE campionato DROP COLUMN IF EXISTS default_classification_system"
+        )
 
         conn.commit()
         print("✅ Rollback completed successfully!")

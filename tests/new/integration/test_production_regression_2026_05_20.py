@@ -13,6 +13,7 @@ I 12 match reali (con i punteggi) sono in `SCENARIO_2026_05_20`. Setup tramite
 coi punteggi reali — utile per testare la classifica/SSR indipendentemente dal
 fix anti-rematch.
 """
+
 import pytest
 import uuid
 from datetime import date, timedelta
@@ -27,7 +28,6 @@ from models.match.services import RackService
 from models.match.scoring_service import ScoringService
 from models.match.models import Rack
 from models.base import utc_now, db
-
 
 # (round, p1, p2, p1_score, p2_score)
 SCENARIO_2026_05_20: List[Tuple[int, str, str, int, int]] = [
@@ -129,6 +129,7 @@ def _inscribe_all(gara: Gara, players: List[User]) -> None:
 # Bug 1 — Random anti-rematch
 # ────────────────────────────────────────────────────────────────────────
 
+
 @pytest.mark.integration
 def test_regression_random_4_rounds_no_rematches(
     director: User, players_by_name: Dict[str, User], db_session
@@ -142,9 +143,7 @@ def test_regression_random_4_rounds_no_rematches(
     # Raccoglie tutti i pair generati
     pairs: List[frozenset] = []
     for round_num in range(1, 5):
-        matches = Match.query.filter_by(
-            gara_id=gara.id, round_number=round_num
-        ).all()
+        matches = Match.query.filter_by(gara_id=gara.id, round_number=round_num).all()
         for m in matches:
             if m.is_bye or m.is_trio or m.player2_id is None:
                 continue
@@ -168,9 +167,7 @@ def test_random_full_schedule_at_least_n_minus_1_rounds(
 
     pairs: List[frozenset] = []
     for round_num in range(1, 6):
-        for m in Match.query.filter_by(
-            gara_id=gara.id, round_number=round_num
-        ).all():
+        for m in Match.query.filter_by(gara_id=gara.id, round_number=round_num).all():
             if m.is_bye or m.is_trio or m.player2_id is None:
                 continue
             pairs.append(frozenset([m.player1_id, m.player2_id]))
@@ -183,6 +180,7 @@ def test_random_full_schedule_at_least_n_minus_1_rounds(
 # ────────────────────────────────────────────────────────────────────────
 # Bug 2 — Player path validation in modalità "rack esatti"
 # ────────────────────────────────────────────────────────────────────────
+
 
 @pytest.mark.integration
 def test_player_path_rejects_exceeding_total_in_exact_mode(
@@ -213,9 +211,7 @@ def test_player_path_rejects_exceeding_total_in_exact_mode(
 
     # Il 5° rack DEVE essere rifiutato
     with pytest.raises(ValueError, match="limite|rack totali"):
-        ScoringService.add_rack_for_player(
-            match.id, match.player1_id, match.player1_id
-        )
+        ScoringService.add_rack_for_player(match.id, match.player1_id, match.player1_id)
 
     # Lo score resta 2-2 (nessun rack persistito post-rollback)
     fresh = db.session.get(Match, match.id)
@@ -254,10 +250,18 @@ def test_player_path_respects_round_override_adr_027(
     )
     assert match_t3 is not None
     # Porta a 2-2
-    ScoringService.add_rack_for_player(match_t3.id, match_t3.player1_id, match_t3.player1_id)
-    ScoringService.add_rack_for_player(match_t3.id, match_t3.player2_id, match_t3.player2_id)
-    ScoringService.add_rack_for_player(match_t3.id, match_t3.player1_id, match_t3.player1_id)
-    ScoringService.add_rack_for_player(match_t3.id, match_t3.player2_id, match_t3.player2_id)
+    ScoringService.add_rack_for_player(
+        match_t3.id, match_t3.player1_id, match_t3.player1_id
+    )
+    ScoringService.add_rack_for_player(
+        match_t3.id, match_t3.player2_id, match_t3.player2_id
+    )
+    ScoringService.add_rack_for_player(
+        match_t3.id, match_t3.player1_id, match_t3.player1_id
+    )
+    ScoringService.add_rack_for_player(
+        match_t3.id, match_t3.player2_id, match_t3.player2_id
+    )
 
     with pytest.raises(ValueError):
         ScoringService.add_rack_for_player(
@@ -269,8 +273,11 @@ def test_player_path_respects_round_override_adr_027(
 # Bug 4 — Classification system rispettato
 # ────────────────────────────────────────────────────────────────────────
 
+
 def _setup_scenario_with_results(
-    director: User, players_by_name: Dict[str, User], classification_system: str,
+    director: User,
+    players_by_name: Dict[str, User],
+    classification_system: str,
     tiebreaker_enabled: bool = False,
 ) -> Gara:
     """Bypassa matchmaking: crea direttamente i 12 match coi punteggi reali.
@@ -305,8 +312,9 @@ def _setup_scenario_with_results(
             player2_score=p2_score,
             status="completed",
             winner_id=(
-                p1.id if p1_score > p2_score else
-                (p2.id if p2_score > p1_score else None)
+                p1.id
+                if p1_score > p2_score
+                else (p2.id if p2_score > p1_score else None)
             ),
         )
         db.session.add(match)
@@ -378,6 +386,7 @@ def test_classification_rack_paolo_pietro_tied_ssr_visible(
 # ────────────────────────────────────────────────────────────────────────
 # Bug 3 — Wizard standalone persists classification_system
 # ────────────────────────────────────────────────────────────────────────
+
 
 @pytest.mark.integration
 def test_wizard_standalone_persists_classification_system(app, db_session):

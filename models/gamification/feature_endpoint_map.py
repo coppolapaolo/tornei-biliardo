@@ -18,25 +18,23 @@ Features UI-only (``legend_status``, ``priority_invites``,
 ``custom_badge_display``) non vanno mappate: non hanno un endpoint reale
 e non sono soggette ad ADR-028.
 """
-from __future__ import annotations
 
+from __future__ import annotations
 
 FEATURE_PRIMARY_ENDPOINT: dict[str, str] = {
     # Match individuali (modulo individual_match)
-    "create_match_direct":   "individual_match.dashboard",
+    "create_match_direct": "individual_match.dashboard",
     "create_match_community": "individual_match.dashboard",
-    "manage_availability":   "individual_match.manage_availability",
-    "match_proposals":       "individual_match.proposal_list",
-
+    "manage_availability": "individual_match.manage_availability",
+    "match_proposals": "individual_match.proposal_list",
     # Tornei e gare
-    "create_campionato":     "admin.campionato.create_campionato",
-    "create_gara":           "admin.competition.create_gara_standalone",
-    "tournament_creation":   "admin.competition.create_gara_standalone",
-
+    "create_campionato": "admin.campionato.create_campionato",
+    "create_gara": "admin.competition.create_gara_standalone",
+    "tournament_creation": "admin.competition.create_gara_standalone",
     # Challenge
-    "do_challenge":          "challenge.challenge_catalog",
-    "create_challenge":      "challenge.challenge_catalog",
-    "challenge_creation":    "challenge.challenge_catalog",
+    "do_challenge": "challenge.challenge_catalog",
+    "create_challenge": "challenge.challenge_catalog",
+    "challenge_creation": "challenge.challenge_catalog",
 }
 
 
@@ -52,4 +50,5 @@ def feature_visible_to_user(feature_code: str, user) -> bool:
     if endpoint is None:
         return True
     from utils.feature_flags import is_endpoint_visible
+
     return is_endpoint_visible(endpoint, user)

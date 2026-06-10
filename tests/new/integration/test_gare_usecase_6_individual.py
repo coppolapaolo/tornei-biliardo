@@ -235,9 +235,7 @@ class TestUseCaseIndividualMatchCancellation:
         db_session.refresh(proposal)
         assert proposal.status == ProposalStatus.CANCELLED
 
-    def test_proposal_expiration_check(
-        self, player1: User, player2: User, db_session
-    ):
+    def test_proposal_expiration_check(self, player1: User, player2: User, db_session):
         """Test proposal correctly identifies expired status."""
         # Create proposal with past expiration
         proposal = IndividualMatchService.create_direct_proposal(
@@ -277,9 +275,7 @@ class TestUseCaseOpenProposal:
         db_session.commit()
         return player
 
-    def test_player_can_create_open_proposal(
-        self, player1: User, db_session
-    ):
+    def test_player_can_create_open_proposal(self, player1: User, db_session):
         """Test player can create open proposal for any opponent.
 
         UC6 variant: Open proposal visible to community.
@@ -302,7 +298,5 @@ class TestUseCaseOpenProposal:
         assert proposal.status == ProposalStatus.PENDING
 
         # Open proposals should have no invitations
-        invitations = ProposalInvitation.query.filter_by(
-            proposal_id=proposal.id
-        ).all()
+        invitations = ProposalInvitation.query.filter_by(proposal_id=proposal.id).all()
         assert len(invitations) == 0

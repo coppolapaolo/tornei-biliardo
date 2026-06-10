@@ -160,7 +160,9 @@ def promote_director(user_id):
     from flask_login import current_user
 
     return handle_service_action(
-        action=lambda: UserPermissionService.promote_to_director(user_id, current_user.id),
+        action=lambda: UserPermissionService.promote_to_director(
+            user_id, current_user.id
+        ),
         redirect_url=url_for("admin.user.user_detail", user_id=user_id),
         success_message="Utente promosso a direttore di gara.",
         error_prefix=None,

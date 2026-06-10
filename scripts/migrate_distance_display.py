@@ -12,26 +12,24 @@ from pathlib import Path
 PATTERNS = [
     # Pattern 1: Standard if/else block (multi-line)
     (
-        r'{%\s+if\s+(\w+)\.best_of\s+%}\s*'
-        r'Al meglio di\s+{{\s*\1\.distance\s*}}\s*'
-        r'{%\s+else\s+%}\s*'
-        r'{{\s*\1\.distance\s*}}\s+rack esatti\s*'
-        r'{%\s+endif\s+%}',
-        r'{{ \1.distance_config|format_distance }}'
+        r"{%\s+if\s+(\w+)\.best_of\s+%}\s*"
+        r"Al meglio di\s+{{\s*\1\.distance\s*}}\s*"
+        r"{%\s+else\s+%}\s*"
+        r"{{\s*\1\.distance\s*}}\s+rack esatti\s*"
+        r"{%\s+endif\s+%}",
+        r"{{ \1.distance_config|format_distance }}",
     ),
-
     # Pattern 2: Inline ternary (single line with set)
     (
-        r'{%\s+set\s+distance_label\s+=\s+\(\(\'Al meglio di \'\s+~\s+(\w+)\.distance\)\s+if\s+\1\.best_of\s+else\s+\(\1\.distance\s+~\s+\' rack esatti\'\)\)\s+%}',
-        r'{% set distance_label = \1.distance_config|format_distance %}'
+        r"{%\s+set\s+distance_label\s+=\s+\(\(\'Al meglio di \'\s+~\s+(\w+)\.distance\)\s+if\s+\1\.best_of\s+else\s+\(\1\.distance\s+~\s+\' rack esatti\'\)\)\s+%}",
+        r"{% set distance_label = \1.distance_config|format_distance %}",
     ),
-
     # Pattern 3: Parenthesized inline version
     (
-        r'\(Al meglio di\s+{{\s*(\w+)\.distance\s*}}\)\s*'
-        r'{%\s+else\s+%}\s*'
-        r'\({{\s*\1\.distance\s*}}\s+rack esatti\)',
-        r'({{ \1.distance_config|format_distance }})'
+        r"\(Al meglio di\s+{{\s*(\w+)\.distance\s*}}\)\s*"
+        r"{%\s+else\s+%}\s*"
+        r"\({{\s*\1\.distance\s*}}\s+rack esatti\)",
+        r"({{ \1.distance_config|format_distance }})",
     ),
 ]
 
@@ -51,7 +49,9 @@ def migrate_file(filepath: Path, dry_run: bool = True) -> tuple[bool, int]:
     total_replacements = 0
 
     for pattern, replacement in PATTERNS:
-        content, count = re.subn(pattern, replacement, content, flags=re.MULTILINE | re.DOTALL)
+        content, count = re.subn(
+            pattern, replacement, content, flags=re.MULTILINE | re.DOTALL
+        )
         total_replacements += count
 
     if content != original_content:
@@ -123,7 +123,9 @@ def main():
 
     if dry_run:
         print()
-        print("To apply changes, run: python scripts/migrate_distance_display.py --apply")
+        print(
+            "To apply changes, run: python scripts/migrate_distance_display.py --apply"
+        )
 
 
 if __name__ == "__main__":

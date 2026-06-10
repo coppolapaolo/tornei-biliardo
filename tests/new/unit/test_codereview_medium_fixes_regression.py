@@ -27,9 +27,17 @@ def _user(suffix, name, role="player"):
 
 def _gara(suffix, **overrides):
     base = dict(
-        number=1, name=f"Gara {suffix}", date=date(2026, 1, 1), time=time(18, 0),
-        discipline="palla_8", distance=5, rounds_count=1, current_round=1,
-        min_participants=2, max_participants=10, matchmaking_strategy="amalfi",
+        number=1,
+        name=f"Gara {suffix}",
+        date=date(2026, 1, 1),
+        time=time(18, 0),
+        discipline="palla_8",
+        distance=5,
+        rounds_count=1,
+        current_round=1,
+        min_participants=2,
+        max_participants=10,
+        matchmaking_strategy="amalfi",
         status=GaraStatus.PLAYING.value,
     )
     base.update(overrides)
@@ -53,15 +61,24 @@ class TestForfeitExactModeInvariant:
         db_session.flush()
 
         for p in (p1, p2):
-            db_session.add(Inscription(gara_id=gara.id, user_id=p.id,
-                                       is_withdrawn=False, is_waitlist=False))
+            db_session.add(
+                Inscription(
+                    gara_id=gara.id, user_id=p.id, is_withdrawn=False, is_waitlist=False
+                )
+            )
         db_session.flush()
 
         # Match single-set, modalità ESATTO 6 rack (is_race_to=False).
         # p1 ha già vinto 2 rack, poi abbandona.
         match = Match(
-            gara_id=gara.id, round_number=1, player1_id=p1.id, player2_id=p2.id,
-            player1_score=2, player2_score=0, match_distance=6, is_race_to=False,
+            gara_id=gara.id,
+            round_number=1,
+            player1_id=p1.id,
+            player2_id=p2.id,
+            player1_score=2,
+            player2_score=0,
+            match_distance=6,
+            is_race_to=False,
             status=MatchStatus.PLAYING.value,
         )
         db_session.add(match)
@@ -94,8 +111,13 @@ class TestBatchCorrectionUnknownType:
         db_session.flush()
 
         match = Match(
-            gara_id=gara.id, round_number=1, player1_id=p1.id, player2_id=p2.id,
-            player1_score=3, player2_score=1, status=MatchStatus.COMPLETED.value,
+            gara_id=gara.id,
+            round_number=1,
+            player1_id=p1.id,
+            player2_id=p2.id,
+            player1_score=3,
+            player2_score=1,
+            status=MatchStatus.COMPLETED.value,
             winner_id=p1.id,
         )
         db_session.add(match)
@@ -103,12 +125,14 @@ class TestBatchCorrectionUnknownType:
 
         result = MatchService.apply_batch_corrections(
             gara_id=gara.id,
-            corrections=[{
-                "match_id": match.id,
-                "correction_type": "tipo_inesistente",  # sconosciuto
-                "new_winner_score": 5,
-                "new_loser_score": 1,
-            }],
+            corrections=[
+                {
+                    "match_id": match.id,
+                    "correction_type": "tipo_inesistente",  # sconosciuto
+                    "new_winner_score": 5,
+                    "new_loser_score": 1,
+                }
+            ],
             admin_id=admin.id,
         )
 
@@ -133,14 +157,28 @@ class TestCanStartExcludesWithdrawn:
         db_session.flush()
 
         # 2 attivi + 1 ritirato = 2 attivi reali < min 3 → non può partire
-        db_session.add_all([
-            Inscription(gara_id=gara.id, user_id=players[0].id,
-                        is_withdrawn=False, is_waitlist=False),
-            Inscription(gara_id=gara.id, user_id=players[1].id,
-                        is_withdrawn=False, is_waitlist=False),
-            Inscription(gara_id=gara.id, user_id=players[2].id,
-                        is_withdrawn=True, is_waitlist=False),
-        ])
+        db_session.add_all(
+            [
+                Inscription(
+                    gara_id=gara.id,
+                    user_id=players[0].id,
+                    is_withdrawn=False,
+                    is_waitlist=False,
+                ),
+                Inscription(
+                    gara_id=gara.id,
+                    user_id=players[1].id,
+                    is_withdrawn=False,
+                    is_waitlist=False,
+                ),
+                Inscription(
+                    gara_id=gara.id,
+                    user_id=players[2].id,
+                    is_withdrawn=True,
+                    is_waitlist=False,
+                ),
+            ]
+        )
         db_session.flush()
 
         # Prima del fix: contava anche il ritirato (3) → True erroneamente
@@ -172,7 +210,10 @@ class TestQuestZeroTargetNoCrash:
     def test_get_quest_statistics_with_zero_target(self, db_session):
         from models.gamification.quest_service import QuestService
         from models.gamification.models import (
-            Quest, QuestParticipation, QuestType, QuestStatus,
+            Quest,
+            QuestParticipation,
+            QuestType,
+            QuestStatus,
         )
         from models.base import utc_now
 
@@ -182,8 +223,12 @@ class TestQuestZeroTargetNoCrash:
         db_session.flush()
 
         quest = Quest(
-            name=f"Quest {suffix}", description="x", quest_type=QuestType.WEEKLY,
-            status=QuestStatus.ACTIVE, start_date=utc_now(), end_date=utc_now(),
+            name=f"Quest {suffix}",
+            description="x",
+            quest_type=QuestType.WEEKLY,
+            status=QuestStatus.ACTIVE,
+            start_date=utc_now(),
+            end_date=utc_now(),
             requirements=json.dumps({"type": "matches_played", "target": 0}),
             xp_reward=10,
         )
@@ -191,10 +236,16 @@ class TestQuestZeroTargetNoCrash:
         db_session.flush()
 
         # Partecipazione legacy con target_progress=0
-        db_session.add(QuestParticipation(
-            user_id=user.id, quest_id=quest.id, current_progress=0,
-            target_progress=0, is_completed=False, xp_awarded=0,
-        ))
+        db_session.add(
+            QuestParticipation(
+                user_id=user.id,
+                quest_id=quest.id,
+                current_progress=0,
+                target_progress=0,
+                is_completed=False,
+                xp_awarded=0,
+            )
+        )
         db_session.flush()
 
         # Prima del fix: ZeroDivisionError nel calcolo della percentuale
@@ -224,7 +275,8 @@ class TestVenueRequestProcessedAt:
         from models.status_enum import VenueManagerRequestStatus
 
         req = VenueManagerRequest(
-            user_id=applicant.id, venue_id=venue.id,
+            user_id=applicant.id,
+            venue_id=venue.id,
             status=VenueManagerRequestStatus.PENDING.value,
         )
         db_session.add(req)

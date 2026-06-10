@@ -26,6 +26,7 @@ venue_bp = Blueprint("venue", __name__)
 def venues_list():
     """Lista delle sale biliardo - vista role-based (Content Negotiation Pattern)"""
     from flask_login import current_user
+
     # VenueManagerRequestService functionality is now in VenueManagerService
 
     # Admin sees all venues, players only see active ones
@@ -34,9 +35,11 @@ def venues_list():
             BilliardHall.is_active.desc(), BilliardHall.name
         ).all()
     else:
-        venues = BilliardHall.query.filter_by(is_active=True).order_by(
-            BilliardHall.name
-        ).all()
+        venues = (
+            BilliardHall.query.filter_by(is_active=True)
+            .order_by(BilliardHall.name)
+            .all()
+        )
 
     if current_user.is_admin:
         # Vista completa admin con statistiche, manager e richieste
@@ -65,8 +68,8 @@ def venues_list():
 
             # Get pending requests for this venue
 
-            pending_requests = (
-                VenueManagerService.get_venue_manager_requests_by_venue(venue.id)
+            pending_requests = VenueManagerService.get_venue_manager_requests_by_venue(
+                venue.id
             )
 
             # Check if current user is manager of this venue
@@ -95,9 +98,12 @@ def venues_list():
             has_pending_request_for_venue = False
             if not current_user.is_admin:
                 # Check if user has pending request for this venue
-                user_requests = VenueManagerService.get_venue_manager_requests_by_user(current_user.id)
+                user_requests = VenueManagerService.get_venue_manager_requests_by_user(
+                    current_user.id
+                )
                 has_pending_request_for_venue = any(
-                    req.venue_id == venue.id and req.status == "pending" for req in user_requests
+                    req.venue_id == venue.id and req.status == "pending"
+                    for req in user_requests
                 )
 
             venues_with_managers.append(
@@ -113,7 +119,9 @@ def venues_list():
         # Check if user has pending venue manager requests
         has_pending_requests = False
         if not current_user.is_admin:
-            user_requests = VenueManagerService.get_venue_manager_requests_by_user(current_user.id)
+            user_requests = VenueManagerService.get_venue_manager_requests_by_user(
+                current_user.id
+            )
             has_pending_requests = any(req.status == "pending" for req in user_requests)
 
         return render_template(
@@ -187,7 +195,9 @@ def venue_detail(venue_id):
         # Check if user has pending requests
         has_pending_requests = False
         if not current_user.is_admin:
-            user_requests = VenueManagerService.get_venue_manager_requests_by_user(current_user.id)
+            user_requests = VenueManagerService.get_venue_manager_requests_by_user(
+                current_user.id
+            )
             has_pending_requests = any(req.status == "pending" for req in user_requests)
 
         return render_template(

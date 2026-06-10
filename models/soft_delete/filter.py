@@ -34,6 +34,7 @@ def _create_not_deleted_clause(model_class: Type[Any]) -> Callable[[Type[Any]], 
     Returns:
         Callable that returns SQL expression for deleted_at IS NULL
     """
+
     def clause(cls: Type[Any]) -> Any:
         if hasattr(cls, "deleted_at"):
             return cls.deleted_at.is_(None)
@@ -44,8 +45,7 @@ def _create_not_deleted_clause(model_class: Type[Any]) -> Callable[[Type[Any]], 
 
 
 def register_soft_delete_filters(
-    db_session_class: Any,
-    models: List[Type[Any]] | None = None
+    db_session_class: Any, models: List[Type[Any]] | None = None
 ) -> None:
     """Register soft delete filters for multiple models.
 
@@ -101,6 +101,6 @@ def register_soft_delete_filters(
                     with_loader_criteria(
                         model_class,
                         _create_not_deleted_clause(model_class),
-                        include_aliases=True
+                        include_aliases=True,
                     )
                 )

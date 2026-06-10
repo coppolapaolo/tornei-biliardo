@@ -30,7 +30,9 @@ from models.events.base import EventBus
 class TestStreakWorkflowComplete:
     """Test complete streak workflows."""
 
-    def test_complete_4_week_streak_earns_freeze_and_xp(self, db_session, isolated_players):
+    def test_complete_4_week_streak_earns_freeze_and_xp(
+        self, db_session, isolated_players
+    ):
         """
         GIVEN a new user
         WHEN they maintain activity for 4 consecutive weeks
@@ -41,21 +43,19 @@ class TestStreakWorkflowComplete:
 
         # Capture events
         original_publish = EventBus.publish
+
         def mock_publish(event):
             events_published.append(event)
             return original_publish(event)
 
-        with patch.object(EventBus, 'publish', side_effect=mock_publish):
+        with patch.object(EventBus, "publish", side_effect=mock_publish):
             # Simulate 4 weeks of activity
             for week in range(10, 14):  # Weeks 10, 11, 12, 13
                 with patch.object(
-                    StreakService,
-                    'get_current_iso_week',
-                    return_value=(week, 2024)
+                    StreakService, "get_current_iso_week", return_value=(week, 2024)
                 ):
                     tracker, result = StreakService.record_activity(
-                        user_id=player.id,
-                        streak_type=StreakType.WEEKLY_ACTIVITY
+                        user_id=player.id, streak_type=StreakType.WEEKLY_ACTIVITY
                     )
 
         # Verify final state
@@ -71,12 +71,13 @@ class TestStreakWorkflowComplete:
 
         # Verify milestone event was published
         milestone_events = [
-            e for e in events_published
-            if hasattr(e, 'milestone') and e.milestone == 4
+            e for e in events_published if hasattr(e, "milestone") and e.milestone == 4
         ]
         assert len(milestone_events) == 1
 
-    def test_freeze_saves_streak_when_missing_one_week(self, db_session, isolated_players):
+    def test_freeze_saves_streak_when_missing_one_week(
+        self, db_session, isolated_players
+    ):
         """
         GIVEN a user with a streak and 1 freeze
         WHEN they miss exactly 1 week
@@ -86,41 +87,30 @@ class TestStreakWorkflowComplete:
 
         # Build 2-week streak
         with patch.object(
-            StreakService,
-            'get_current_iso_week',
-            return_value=(10, 2024)
+            StreakService, "get_current_iso_week", return_value=(10, 2024)
         ):
             StreakService.record_activity(
-                user_id=player.id,
-                streak_type=StreakType.WEEKLY_ACTIVITY
+                user_id=player.id, streak_type=StreakType.WEEKLY_ACTIVITY
             )
 
         with patch.object(
-            StreakService,
-            'get_current_iso_week',
-            return_value=(11, 2024)
+            StreakService, "get_current_iso_week", return_value=(11, 2024)
         ):
             StreakService.record_activity(
-                user_id=player.id,
-                streak_type=StreakType.WEEKLY_ACTIVITY
+                user_id=player.id, streak_type=StreakType.WEEKLY_ACTIVITY
             )
 
         # Grant a freeze
         StreakService.admin_grant_freeze(
-            user_id=player.id,
-            streak_type=StreakType.WEEKLY_ACTIVITY,
-            freeze_count=1
+            user_id=player.id, streak_type=StreakType.WEEKLY_ACTIVITY, freeze_count=1
         )
 
         # Miss week 12, return in week 13
         with patch.object(
-            StreakService,
-            'get_current_iso_week',
-            return_value=(13, 2024)
+            StreakService, "get_current_iso_week", return_value=(13, 2024)
         ):
             tracker, result = StreakService.record_activity(
-                user_id=player.id,
-                streak_type=StreakType.WEEKLY_ACTIVITY
+                user_id=player.id, streak_type=StreakType.WEEKLY_ACTIVITY
             )
 
         # Streak should continue
@@ -139,39 +129,30 @@ class TestStreakWorkflowComplete:
         # Build 5-week streak
         for week in range(10, 15):  # Weeks 10-14
             with patch.object(
-                StreakService,
-                'get_current_iso_week',
-                return_value=(week, 2024)
+                StreakService, "get_current_iso_week", return_value=(week, 2024)
             ):
                 StreakService.record_activity(
-                    user_id=player.id,
-                    streak_type=StreakType.WEEKLY_MATCH
+                    user_id=player.id, streak_type=StreakType.WEEKLY_MATCH
                 )
 
         # Grant multiple freezes
         StreakService.admin_grant_freeze(
-            user_id=player.id,
-            streak_type=StreakType.WEEKLY_MATCH,
-            freeze_count=3
+            user_id=player.id, streak_type=StreakType.WEEKLY_MATCH, freeze_count=3
         )
 
         # Verify streak before break
         info_before = StreakService.get_streak_info(
-            user_id=player.id,
-            streak_type=StreakType.WEEKLY_MATCH
+            user_id=player.id, streak_type=StreakType.WEEKLY_MATCH
         )
         assert info_before["current_streak"] == 5
         assert info_before["freeze_count"] == 3
 
         # Miss weeks 15 and 16, return in week 17 (missed 2 weeks)
         with patch.object(
-            StreakService,
-            'get_current_iso_week',
-            return_value=(17, 2024)
+            StreakService, "get_current_iso_week", return_value=(17, 2024)
         ):
             tracker, result = StreakService.record_activity(
-                user_id=player.id,
-                streak_type=StreakType.WEEKLY_MATCH
+                user_id=player.id, streak_type=StreakType.WEEKLY_MATCH
             )
 
         # Streak should break
@@ -190,24 +171,18 @@ class TestStreakWorkflowComplete:
 
         # Activity in week 52 of 2023
         with patch.object(
-            StreakService,
-            'get_current_iso_week',
-            return_value=(52, 2023)
+            StreakService, "get_current_iso_week", return_value=(52, 2023)
         ):
             StreakService.record_activity(
-                user_id=player.id,
-                streak_type=StreakType.WEEKLY_ACTIVITY
+                user_id=player.id, streak_type=StreakType.WEEKLY_ACTIVITY
             )
 
         # Activity in week 1 of 2024 (consecutive)
         with patch.object(
-            StreakService,
-            'get_current_iso_week',
-            return_value=(1, 2024)
+            StreakService, "get_current_iso_week", return_value=(1, 2024)
         ):
             tracker, result = StreakService.record_activity(
-                user_id=player.id,
-                streak_type=StreakType.WEEKLY_ACTIVITY
+                user_id=player.id, streak_type=StreakType.WEEKLY_ACTIVITY
             )
 
         # Streak should continue
@@ -230,39 +205,29 @@ class TestMultipleStreakTypes:
 
         # Record activity for both types in week 10
         with patch.object(
-            StreakService,
-            'get_current_iso_week',
-            return_value=(10, 2024)
+            StreakService, "get_current_iso_week", return_value=(10, 2024)
         ):
             StreakService.record_activity(
-                user_id=player.id,
-                streak_type=StreakType.WEEKLY_MATCH
+                user_id=player.id, streak_type=StreakType.WEEKLY_MATCH
             )
             StreakService.record_activity(
-                user_id=player.id,
-                streak_type=StreakType.WEEKLY_DRILL
+                user_id=player.id, streak_type=StreakType.WEEKLY_DRILL
             )
 
         # Week 11: only record MATCH activity
         with patch.object(
-            StreakService,
-            'get_current_iso_week',
-            return_value=(11, 2024)
+            StreakService, "get_current_iso_week", return_value=(11, 2024)
         ):
             match_tracker, _ = StreakService.record_activity(
-                user_id=player.id,
-                streak_type=StreakType.WEEKLY_MATCH
+                user_id=player.id, streak_type=StreakType.WEEKLY_MATCH
             )
 
         # Week 12: record DRILL (missed week 11)
         with patch.object(
-            StreakService,
-            'get_current_iso_week',
-            return_value=(12, 2024)
+            StreakService, "get_current_iso_week", return_value=(12, 2024)
         ):
             drill_tracker, drill_result = StreakService.record_activity(
-                user_id=player.id,
-                streak_type=StreakType.WEEKLY_DRILL
+                user_id=player.id, streak_type=StreakType.WEEKLY_DRILL
             )
 
         # MATCH streak continued (2 weeks)
@@ -287,19 +252,15 @@ class TestStreakWithXPIntegration:
         # Simulate 4 weeks
         for week in range(10, 14):
             with patch.object(
-                StreakService,
-                'get_current_iso_week',
-                return_value=(week, 2024)
+                StreakService, "get_current_iso_week", return_value=(week, 2024)
             ):
                 StreakService.record_activity(
-                    user_id=player.id,
-                    streak_type=StreakType.WEEKLY_ACTIVITY
+                    user_id=player.id, streak_type=StreakType.WEEKLY_ACTIVITY
                 )
 
         # Check XP transaction was created
         streak_transactions = XPTransaction.query.filter_by(
-            user_id=player.id,
-            transaction_type=XPTransactionType.STREAK_BONUS
+            user_id=player.id, transaction_type=XPTransactionType.STREAK_BONUS
         ).all()
 
         assert len(streak_transactions) >= 1
@@ -325,18 +286,14 @@ class TestStreakInfoRetrieval:
 
         # Create different streak states
         with patch.object(
-            StreakService,
-            'get_current_iso_week',
-            return_value=(10, 2024)
+            StreakService, "get_current_iso_week", return_value=(10, 2024)
         ):
             # Activity for match and drill
             StreakService.record_activity(
-                user_id=player.id,
-                streak_type=StreakType.WEEKLY_MATCH
+                user_id=player.id, streak_type=StreakType.WEEKLY_MATCH
             )
             StreakService.record_activity(
-                user_id=player.id,
-                streak_type=StreakType.WEEKLY_DRILL
+                user_id=player.id, streak_type=StreakType.WEEKLY_DRILL
             )
 
         # Get all streaks

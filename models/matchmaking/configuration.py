@@ -245,10 +245,7 @@ class StrategyConfiguration:
             return errors
 
         # Ensure first-round seeding policy is supported by chosen strategy
-        if (
-            self.first_round_policy.value
-            not in constraints["first_round_policies"]
-        ):
+        if self.first_round_policy.value not in constraints["first_round_policies"]:
             errors.append(
                 f"{self.strategy.value} non supporta la policy di "
                 f"primo turno {self.first_round_policy.value}"
@@ -270,19 +267,13 @@ class StrategyConfiguration:
                 errors.append("Match a tre supportati solo per distanze da 2 a 7")
 
         # Ensure anti-rematch requirements are met for strategy integrity
-        if not self.anti_rematch_enabled and constraints.get(
-            "anti_rematch_required"
-        ):
-            errors.append(
-                f"{self.strategy.value} richiede anti-rematch abilitato"
-            )
+        if not self.anti_rematch_enabled and constraints.get("anti_rematch_required"):
+            errors.append(f"{self.strategy.value} richiede anti-rematch abilitato")
 
         # Verify round count matches strategy requirements for optimal
         # tournament flow
         if constraints["fixed_rounds"] and num_players:
-            required_rounds = calculate_rounds_for_strategy(
-                self.strategy, num_players
-            )
+            required_rounds = calculate_rounds_for_strategy(self.strategy, num_players)
             if self.rounds_count and self.rounds_count != required_rounds:
                 errors.append(
                     f"{self.strategy.value} con {num_players} giocatori "

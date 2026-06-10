@@ -118,9 +118,7 @@ class TestAchievementIsolation:
 class TestWalkoverDetectionErrorsPropagate:
     """A1 — Walkover detection failures must raise (caught by EventBus)."""
 
-    def test_walkover_detection_failure_propagates(
-        self, db_session, isolated_players
-    ):
+    def test_walkover_detection_failure_propagates(self, db_session, isolated_players):
         gara = _make_gara(db_session)
         winner_id = isolated_players[0].id
         loser_id = isolated_players[1].id
@@ -191,9 +189,7 @@ class TestTrioPlayerIds:
         assert p2 in streak_calls, "trio p3 missing from streak recording"
         assert p2 in quest_calls, "trio p3 missing from quest recording"
 
-    def test_player_ids_absent_falls_back_to_pair(
-        self, db_session, isolated_players
-    ):
+    def test_player_ids_absent_falls_back_to_pair(self, db_session, isolated_players):
         """Backward-compat: events without player_ids still cover the 2-player case."""
         gara = _make_gara(db_session)
         p0, p1 = (isolated_players[i].id for i in range(2))

@@ -101,15 +101,14 @@ class PlayoffConfiguration(BaseModel):
         "PlayoffTournament", back_populates="configuration", uselist=False
     )
     # The playoff gara (linked from Gara.playoff_config_id)
-    gara = db.relationship(
-        "Gara", back_populates="playoff_config", uselist=False
-    )
+    gara = db.relationship("Gara", back_populates="playoff_config", uselist=False)
 
     def has_qualifications(self) -> bool:
         """Check if qualifications have been generated for this config."""
-        return PlayoffQualification.query.filter_by(
-            configuration_id=self.id
-        ).first() is not None
+        return (
+            PlayoffQualification.query.filter_by(configuration_id=self.id).first()
+            is not None
+        )
 
     def get_gara_params(self) -> Dict[str, Any]:
         """Return gara creation parameters, falling back to campionato defaults.
@@ -133,15 +132,18 @@ class PlayoffConfiguration(BaseModel):
 
         # Resolve each param: explicit override or campionato default
         params["discipline"] = (
-            self.discipline if self.discipline is not None
+            self.discipline
+            if self.discipline is not None
             else (default_gara.discipline if default_gara else "palla_9")
         )
         params["distance"] = (
-            self.distance if self.distance is not None
+            self.distance
+            if self.distance is not None
             else (default_gara.distance if default_gara else 5)
         )
         params["rounds_count"] = (
-            self.rounds_count if self.rounds_count is not None
+            self.rounds_count
+            if self.rounds_count is not None
             else (default_gara.rounds_count if default_gara else 1)
         )
         if self.strategy_type is not None:

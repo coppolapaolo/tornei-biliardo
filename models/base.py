@@ -25,6 +25,7 @@ def utc_now() -> datetime:
     """
     return datetime.now(timezone.utc).replace(tzinfo=None)
 
+
 # Initialize SQLAlchemy instance FIRST (before importing transactional)
 # This is required because transaction/manager.py imports db
 db = SQLAlchemy()
@@ -32,10 +33,12 @@ db = SQLAlchemy()
 # Initialize Flask-Mail
 try:
     from flask_mail import Mail
+
     mail = Mail()
 except ImportError:
     mail = None
     import logging
+
     logging.warning("Flask-Mail not installed. Email features will be disabled.")
 
 # Import transactional decorator - now db is available when transaction/manager imports it
@@ -45,6 +48,7 @@ except ImportError as e:
     # Fallback if transaction manager is not available
     # WARNING: This fallback is a no-op! Transactions won't be managed!
     import logging
+
     logging.warning(
         f"Failed to import transactional from transaction.manager: {e}. "
         "Using no-op fallback - database transactions will NOT be managed!"
@@ -53,6 +57,7 @@ except ImportError as e:
     def transactional(domain=None):
         def decorator(func):
             return func
+
         return decorator
 
 
@@ -244,6 +249,7 @@ def get_or_create(model_class, **kwargs):
         return instance, False
     else:
         from sqlalchemy.exc import IntegrityError
+
         # Use a savepoint to protect the outer transaction from the IntegrityError
         try:
             with db.session.begin_nested():

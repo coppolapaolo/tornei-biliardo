@@ -21,6 +21,7 @@ from models.base import utc_now
 def get_db_path() -> str:
     """Get database path from environment or default."""
     import os
+
     return os.environ.get("DATABASE_PATH", "instance/billiard_campionato.db")
 
 
@@ -61,14 +62,13 @@ def run_migration(migration_path: Path, db_path: str) -> bool:
     try:
         # Load migration module
         spec = importlib.util.spec_from_file_location(
-            migration_path.stem,
-            migration_path
+            migration_path.stem, migration_path
         )
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
 
         # Run SQLite upgrade
-        if hasattr(module, 'upgrade_sqlite'):
+        if hasattr(module, "upgrade_sqlite"):
             module.upgrade_sqlite(db_path)
             return True
         else:
@@ -89,7 +89,7 @@ def record_migration(conn: sqlite3.Connection, migration_name: str) -> None:
     """Record a migration as applied."""
     conn.execute(
         "INSERT OR IGNORE INTO migrations_history (migration_name, applied_at) VALUES (?, ?)",
-        (migration_name, utc_now().isoformat())
+        (migration_name, utc_now().isoformat()),
     )
     conn.commit()
 
@@ -108,7 +108,9 @@ def show_status(conn: sqlite3.Connection) -> None:
         print(f"  {status}: {name}")
 
     print("-" * 50)
-    print(f"Total: {len(all_migrations)} | Applied: {len(applied)} | Pending: {len(all_migrations) - len(applied)}")
+    print(
+        f"Total: {len(all_migrations)} | Applied: {len(applied)} | Pending: {len(all_migrations) - len(applied)}"
+    )
 
 
 def mark_all_applied(conn: sqlite3.Connection) -> None:

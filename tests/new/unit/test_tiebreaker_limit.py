@@ -4,6 +4,7 @@ import pytest
 from unittest.mock import MagicMock, patch
 from models.competition.spareggio_service import SpareggioService
 
+
 @patch("models.competition.spareggio_service.db")
 def test_detect_tiebreakers_respects_limit(mock_db):
     """Should only detect tiebreakers within the specified limit."""
@@ -43,20 +44,23 @@ def test_detect_tiebreakers_respects_limit(mock_db):
     mock_class4.rack_difference = 15
 
     mock_db.session.query.return_value.filter_by.return_value.order_by.return_value.all.return_value = [
-        mock_class1, mock_class2, mock_class3, mock_class4
+        mock_class1,
+        mock_class2,
+        mock_class3,
+        mock_class4,
     ]
     mock_db.session.query.return_value.filter.return_value.all.return_value = []
 
     # Detect tiebreakers with limit = 2
     result = SpareggioService.detect_tiebreakers(1)
-    
+
     # Position 3 tie should be ignored because limit is 2
     assert len(result) == 0
 
     # Change limit to 3
     mock_gara.tiebreaker_until_position = 3
     result = SpareggioService.detect_tiebreakers(1)
-    
+
     # Now it should detect the tie at position 3
     assert len(result) == 1
     assert result[0]["position"] == 3

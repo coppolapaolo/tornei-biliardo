@@ -78,9 +78,7 @@ class TestEventBus:
         # NON usare clear_handlers() senza ripristino: cancellerebbe gli
         # handler reali dell'app (rating/notification/gamification) per tutti
         # i test successivi dello stesso worker xdist. Vedi CLAUDE.md.
-        self._original_handlers = {
-            k: list(v) for k, v in EventBus._handlers.items()
-        }
+        self._original_handlers = {k: list(v) for k, v in EventBus._handlers.items()}
         EventBus.clear_handlers()
         EventBus.enable()
 
@@ -378,9 +376,7 @@ class TestNotificationEventHandlers:
         """Setup for each test."""
         # Snapshot e ripristino: non lasciare il bus vuoto per i test
         # successivi dello stesso worker (vedi CLAUDE.md / TestEventBus).
-        self._original_handlers = {
-            k: list(v) for k, v in EventBus._handlers.items()
-        }
+        self._original_handlers = {k: list(v) for k, v in EventBus._handlers.items()}
         EventBus.clear_handlers()
         # Re-register handlers
         NotificationEventHandlers.register_all_handlers()

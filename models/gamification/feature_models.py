@@ -12,19 +12,21 @@ import json
 
 from ..base import db, BaseModel, TimestampMixin
 
+
 class FeatureConfig(BaseModel):
     """
     Configuration for a system feature that requires unlocking.
-    
+
     Stores the "Gatekeeper" rules in a JSON format to allow flexible AND/OR logic
     without requiring schema migrations for every new condition type.
     """
+
     __tablename__ = "feature_config"
 
     code = db.Column(db.String(50), primary_key=True)  # e.g., "create_match_direct"
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=True)
-    
+
     # The Rules Engine Configuration
     # List of RuleSets (OR logic). Each RuleSet is a list of Conditions (AND logic).
     # [
@@ -32,15 +34,17 @@ class FeatureConfig(BaseModel):
     #     "description": "Level 5 requirement",
     #     "conditions": [{"type": "LEVEL", "operator": "gte", "value": 5}]
     #   },
-    #   { "description": "Admin Override", ... } 
+    #   { "description": "Admin Override", ... }
     # ]
     rules = db.Column(db.Text, nullable=False, default="[]")
-    
+
     is_active = db.Column(db.Boolean, default=True)
-    
+
     # UI Metadata
-    badge_slug = db.Column(db.String(100), nullable=True)  # Associated badge to show in UI
-    
+    badge_slug = db.Column(
+        db.String(100), nullable=True
+    )  # Associated badge to show in UI
+
     def get_rules(self) -> List[Dict[str, Any]]:
         """Return parsed JSON rules."""
         if not self.rules:
@@ -61,27 +65,26 @@ class FeatureConfig(BaseModel):
 class UserFeatureUsage(db.Model, TimestampMixin):
     """
     Tracks accurate usage of features by users.
-    
+
     Used primarily for the "Nudge" system: if a user has unlocked a feature
     but hasn't used it yet, we nudge them.
     """
+
     __tablename__ = "user_feature_usage"
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(
-        db.Integer,
-        db.ForeignKey("user.id", ondelete="CASCADE"),
-        nullable=False
+        db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
     )
     feature_code = db.Column(
         db.String(50),
         db.ForeignKey("feature_config.code", ondelete="CASCADE"),
-        nullable=False
+        nullable=False,
     )
-    
+
     usage_count = db.Column(db.Integer, default=0)
     last_used_at = db.Column(db.DateTime, nullable=True)
-    
+
     # Relationships
     user = db.relationship("User", foreign_keys=[user_id], backref="feature_usages")
     feature = db.relationship("FeatureConfig", foreign_keys=[feature_code])

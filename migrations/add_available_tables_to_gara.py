@@ -123,8 +123,12 @@ if __name__ == "__main__":
         else:
             print(f"Unknown command: {sys.argv[1]}")
             print("\nUsage:")
-            print("  python migrations/add_available_tables_to_gara.py              # SQLite (dev)")
-            print("  python migrations/add_available_tables_to_gara.py postgresql   # PostgreSQL (prod)")
+            print(
+                "  python migrations/add_available_tables_to_gara.py              # SQLite (dev)"
+            )
+            print(
+                "  python migrations/add_available_tables_to_gara.py postgresql   # PostgreSQL (prod)"
+            )
             sys.exit(1)
     else:
         # Default: SQLite migration

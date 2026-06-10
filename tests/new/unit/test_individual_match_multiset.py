@@ -479,9 +479,7 @@ class TestIndividualSetModel:
 class TestGetCurrentSet:
     """Tests for get_current_set() method."""
 
-    def test_returns_none_for_single_set_match(
-        self, app, db_session, isolated_players
-    ):
+    def test_returns_none_for_single_set_match(self, app, db_session, isolated_players):
         """get_current_set should return None for single-set matches."""
         player1, player2 = isolated_players[:2]
 
@@ -525,9 +523,7 @@ class TestGetCurrentSet:
         assert current.set_number == 1
         assert current.status == "playing"
 
-    def test_returns_none_when_no_active_set(
-        self, app, db_session, isolated_players
-    ):
+    def test_returns_none_when_no_active_set(self, app, db_session, isolated_players):
         """get_current_set should return None when current set is completed."""
         player1, player2 = isolated_players[:2]
 

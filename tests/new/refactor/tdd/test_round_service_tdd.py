@@ -108,9 +108,7 @@ class TestRoundServiceTDD:
 
         # Aggiungi iscrizioni
         for player in players:
-            inscription = Inscription(
-                user_id=player.id, gara_id=gara.id
-            )
+            inscription = Inscription(user_id=player.id, gara_id=gara.id)
             db_session.add(inscription)
         db_session.commit()
 
@@ -154,7 +152,6 @@ class TestRoundServiceTDD:
 
         # Il risultato dipende dalla strategia ma dovrebbe restituire informazioni sui match
         assert result is not None
-
 
     def test_create_round_with_strategy_creates_matches_for_random_strategy(
         self, isolated_director_user, db_session

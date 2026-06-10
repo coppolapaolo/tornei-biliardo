@@ -110,8 +110,11 @@ def downgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
         columns = cursor.fetchall()
 
         # Filter out the new columns
-        old_columns = [col[1] for col in columns
-                       if col[1] not in ("template_key", "template_params")]
+        old_columns = [
+            col[1]
+            for col in columns
+            if col[1] not in ("template_key", "template_params")
+        ]
 
         if len(old_columns) == len(columns):
             print("   Columns don't exist - nothing to rollback")

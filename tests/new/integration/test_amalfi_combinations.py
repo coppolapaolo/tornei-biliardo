@@ -16,7 +16,11 @@ from models.competition.services import GaraService
 from models.competition.inscription_service import InscriptionService
 from models.competition.round_service import RoundService
 from models.match.services import MatchService, RackService
-from models.classification.models import RoundClassification, PlayerEncounter, Classification
+from models.classification.models import (
+    RoundClassification,
+    PlayerEncounter,
+    Classification,
+)
 from models.campionato.models import Campionato
 from models.base import db, utc_now
 
@@ -93,7 +97,9 @@ def _complete_round_matches(gara_id: int, round_number: int):
     """Complete all matches in a round with deterministic scores."""
     matches = (
         Match.query.filter_by(gara_id=gara_id, round_number=round_number)
-        .filter(Match.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value]))
+        .filter(
+            Match.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value])
+        )
         .all()
     )
     for match in matches:
@@ -106,6 +112,7 @@ def _complete_round_matches(gara_id: int, round_number: int):
         match.status = MatchStatus.COMPLETED.value
 
         from models.classification.encounter_service import PlayerEncounterService
+
         PlayerEncounterService.record_match_encounters(match)
 
     db.session.flush()
@@ -126,6 +133,7 @@ def _run_full_tournament(gara: Gara):
 # 3.1 First Round Policy: Rating
 # =============================================================================
 
+
 @pytest.mark.integration
 class TestFirstRoundPolicyRating:
     """Test first_round_policy='rating' with Amalfi."""
@@ -134,11 +142,14 @@ class TestFirstRoundPolicyRating:
         """Players are ordered by fargo_rating descending for round 1."""
         director = _create_director(db_session)
         players = _create_players(
-            db_session, 6,
+            db_session,
+            6,
             fargo_rating=[700, 500, 600, 400, 800, 300],
         )
         gara = _create_amalfi_gara(
-            director.id, players, db_session,
+            director.id,
+            players,
+            db_session,
             first_round_policy="rating",
         )
 
@@ -173,7 +184,9 @@ class TestFirstRoundPolicyRating:
         db_session.commit()
 
         gara = _create_amalfi_gara(
-            director.id, players, db_session,
+            director.id,
+            players,
+            db_session,
             first_round_policy="rating",
             rounds_count=2,
         )
@@ -186,19 +199,21 @@ class TestFirstRoundPolicyRating:
         """Complete tournament with rating seeding works end to end."""
         director = _create_director(db_session)
         players = _create_players(
-            db_session, 6,
+            db_session,
+            6,
             fargo_rating=[700, 500, 600, 400, 800, 300],
         )
         gara = _create_amalfi_gara(
-            director.id, players, db_session,
+            director.id,
+            players,
+            db_session,
             first_round_policy="rating",
         )
         _run_full_tournament(gara)
 
         # Final classification should exist
         final_class = (
-            RoundClassification.query
-            .filter_by(gara_id=gara.id, round_number=3)
+            RoundClassification.query.filter_by(gara_id=gara.id, round_number=3)
             .order_by(RoundClassification.position)
             .all()
         )
@@ -210,6 +225,7 @@ class TestFirstRoundPolicyRating:
 # 3.1 First Round Policy: Classification
 # =============================================================================
 
+
 @pytest.mark.integration
 class TestFirstRoundPolicyClassification:
     """Test first_round_policy='classification' with Amalfi."""
@@ -219,7 +235,9 @@ class TestFirstRoundPolicyClassification:
         director = _create_director(db_session)
         players = _create_players(db_session, 6)
         gara = _create_amalfi_gara(
-            director.id, players, db_session,
+            director.id,
+            players,
+            db_session,
             first_round_policy="classification",
         )
         # Should not raise — falls back to random
@@ -255,7 +273,9 @@ class TestFirstRoundPolicyClassification:
 
         # Create gara IN the campionato with classification policy
         gara = _create_amalfi_gara(
-            director.id, players, db_session,
+            director.id,
+            players,
+            db_session,
             campionato_id=campionato.id,
             first_round_policy="classification",
         )
@@ -298,7 +318,9 @@ class TestFirstRoundPolicyClassification:
         db_session.commit()
 
         gara = _create_amalfi_gara(
-            director.id, players, db_session,
+            director.id,
+            players,
+            db_session,
             campionato_id=campionato.id,
             first_round_policy="classification",
         )
@@ -322,7 +344,9 @@ class TestFirstRoundPolicyClassification:
 
         # No Classification records — first gara
         gara = _create_amalfi_gara(
-            director.id, players, db_session,
+            director.id,
+            players,
+            db_session,
             campionato_id=campionato.id,
             first_round_policy="classification",
         )
@@ -335,6 +359,7 @@ class TestFirstRoundPolicyClassification:
 # =============================================================================
 # 3.2 Odd Players (5, 7) with Bye
 # =============================================================================
+
 
 @pytest.mark.integration
 class TestAmalfiOddPlayers:
@@ -410,6 +435,7 @@ class TestAmalfiOddPlayers:
 # 3.3 More Rounds (4-5)
 # =============================================================================
 
+
 @pytest.mark.integration
 class TestAmalfiManyRounds:
     """Test Amalfi with 4-5 rounds."""
@@ -419,7 +445,10 @@ class TestAmalfiManyRounds:
         director = _create_director(db_session)
         players = _create_players(db_session, 8)
         gara = _create_amalfi_gara(
-            director.id, players, db_session, rounds_count=4,
+            director.id,
+            players,
+            db_session,
+            rounds_count=4,
         )
         _run_full_tournament(gara)
 
@@ -440,7 +469,10 @@ class TestAmalfiManyRounds:
         director = _create_director(db_session)
         players = _create_players(db_session, 6)
         gara = _create_amalfi_gara(
-            director.id, players, db_session, rounds_count=5,
+            director.id,
+            players,
+            db_session,
+            rounds_count=5,
         )
         _run_full_tournament(gara)
 
@@ -454,6 +486,7 @@ class TestAmalfiManyRounds:
 # 3.4 Anti-rematch edge case: more rounds than unique pairings
 # =============================================================================
 
+
 @pytest.mark.integration
 class TestAntiRematchExhaustion:
     """Test behavior when rounds exceed unique pairings."""
@@ -464,7 +497,10 @@ class TestAntiRematchExhaustion:
         director = _create_director(db_session)
         players = _create_players(db_session, 4)
         gara = _create_amalfi_gara(
-            director.id, players, db_session, rounds_count=4,
+            director.id,
+            players,
+            db_session,
+            rounds_count=4,
         )
         # Should not crash even though round 4 forces rematches
         _run_full_tournament(gara)
@@ -477,6 +513,7 @@ class TestAntiRematchExhaustion:
 # 3.5 Rack mode: exact number (is_race_to=False)
 # =============================================================================
 
+
 @pytest.mark.integration
 class TestAmalfiExactRackMode:
     """Test Amalfi with is_race_to=False (exact number of racks)."""
@@ -486,8 +523,11 @@ class TestAmalfiExactRackMode:
         director = _create_director(db_session)
         players = _create_players(db_session, 6)
         gara = _create_amalfi_gara(
-            director.id, players, db_session,
-            is_race_to=False, distance=5,
+            director.id,
+            players,
+            db_session,
+            is_race_to=False,
+            distance=5,
         )
         _run_full_tournament(gara)
 
@@ -501,8 +541,12 @@ class TestAmalfiExactRackMode:
         director = _create_director(db_session)
         players = _create_players(db_session, 4)
         gara = _create_amalfi_gara(
-            director.id, players, db_session,
-            is_race_to=False, distance=4, rounds_count=2,
+            director.id,
+            players,
+            db_session,
+            is_race_to=False,
+            distance=4,
+            rounds_count=2,
         )
         _run_full_tournament(gara)
 
@@ -516,6 +560,7 @@ class TestAmalfiExactRackMode:
 # 3.7 SSR Tiebreaker Detection
 # =============================================================================
 
+
 @pytest.mark.integration
 class TestAmalfiSSR:
     """Test SSR tiebreaker detection after Amalfi tournament."""
@@ -527,8 +572,12 @@ class TestAmalfiSSR:
         director = _create_director(db_session)
         players = _create_players(db_session, 4)
         gara = _create_amalfi_gara(
-            director.id, players, db_session, rounds_count=2,
-            tiebreaker_enabled=True, tiebreaker_until_position=3,
+            director.id,
+            players,
+            db_session,
+            rounds_count=2,
+            tiebreaker_enabled=True,
+            tiebreaker_until_position=3,
         )
 
         _run_full_tournament(gara)
@@ -546,8 +595,12 @@ class TestAmalfiSSR:
         director = _create_director(db_session)
         players = _create_players(db_session, 4)
         gara = _create_amalfi_gara(
-            director.id, players, db_session, rounds_count=2,
-            tiebreaker_enabled=True, tiebreaker_until_position=1,
+            director.id,
+            players,
+            db_session,
+            rounds_count=2,
+            tiebreaker_enabled=True,
+            tiebreaker_until_position=1,
         )
         _run_full_tournament(gara)
 
@@ -562,6 +615,7 @@ class TestAmalfiSSR:
 # 3.8 Odd Policies: bye_with_challenge, trio fallback, waitlist
 # =============================================================================
 
+
 @pytest.mark.integration
 class TestAmalfiOddPolicies:
     """Test Amalfi with different odd number policies."""
@@ -571,14 +625,14 @@ class TestAmalfiOddPolicies:
         director = _create_director(db_session)
         players = _create_players(db_session, 5)
         gara = _create_amalfi_gara(
-            director.id, players, db_session,
+            director.id,
+            players,
+            db_session,
             odd_number_policy="bye_with_challenge",
         )
         RoundService.start_first_round(gara.id)
 
-        byes = Match.query.filter_by(
-            gara_id=gara.id, round_number=1, is_bye=True
-        ).all()
+        byes = Match.query.filter_by(gara_id=gara.id, round_number=1, is_bye=True).all()
         regular = Match.query.filter_by(
             gara_id=gara.id, round_number=1, is_bye=False
         ).all()
@@ -610,7 +664,9 @@ class TestAmalfiOddPolicies:
 
         # Create gara with bye_with_challenge
         gara = _create_amalfi_gara(
-            director.id, players, db_session,
+            director.id,
+            players,
+            db_session,
             odd_number_policy="bye_with_challenge",
         )
 
@@ -642,9 +698,7 @@ class TestAmalfiOddPolicies:
         )
 
         # Update bye match with challenge score
-        updated = AmalfiChallengeByeService.update_bye_match_from_challenge(
-            attempt.id
-        )
+        updated = AmalfiChallengeByeService.update_bye_match_from_challenge(attempt.id)
         assert updated is True
 
         # Verify bye match now has the challenge score
@@ -657,8 +711,11 @@ class TestAmalfiOddPolicies:
         director = _create_director(db_session)
         players = _create_players(db_session, 5)
         gara = _create_amalfi_gara(
-            director.id, players, db_session,
-            odd_number_policy="trio", distance=4,
+            director.id,
+            players,
+            db_session,
+            odd_number_policy="trio",
+            distance=4,
         )
         RoundService.start_first_round(gara.id)
 
@@ -668,9 +725,7 @@ class TestAmalfiOddPolicies:
         regular = Match.query.filter_by(
             gara_id=gara.id, round_number=1, is_bye=False, is_trio=False
         ).all()
-        byes = Match.query.filter_by(
-            gara_id=gara.id, round_number=1, is_bye=True
-        ).all()
+        byes = Match.query.filter_by(gara_id=gara.id, round_number=1, is_bye=True).all()
 
         assert len(trios) == 1, f"Expected 1 trio, got {len(trios)}"
         assert len(regular) == 1, f"Expected 1 regular match, got {len(regular)}"
@@ -679,15 +734,29 @@ class TestAmalfiOddPolicies:
         # Verify trio has 3 players via TrioMatch
         trio_match = trios[0].trio_match
         assert trio_match is not None
-        assert len(set([trio_match.player1_id, trio_match.player2_id, trio_match.player3_id])) == 3
+        assert (
+            len(
+                set(
+                    [
+                        trio_match.player1_id,
+                        trio_match.player2_id,
+                        trio_match.player3_id,
+                    ]
+                )
+            )
+            == 3
+        )
 
     def test_trio_no_repeat_across_rounds(self, db_session):
         """Amalfi trio: player shouldn't be in trio twice if others available."""
         director = _create_director(db_session)
         players = _create_players(db_session, 7)
         gara = _create_amalfi_gara(
-            director.id, players, db_session,
-            odd_number_policy="trio", distance=4,
+            director.id,
+            players,
+            db_session,
+            odd_number_policy="trio",
+            distance=4,
             rounds_count=2,
         )
 
@@ -695,6 +764,7 @@ class TestAmalfiOddPolicies:
 
         # Get R1 trio players
         from models.match.models import TrioMatch
+
         r1_trio = (
             TrioMatch.query.join(Match)
             .filter(Match.gara_id == gara.id, Match.round_number == 1)
@@ -715,15 +785,16 @@ class TestAmalfiOddPolicies:
 
         # At most 1 player should overlap (7 players, 3 per trio, 4 non-trio)
         overlap = r1_trio_players & r2_trio_players
-        assert len(overlap) <= 1, \
-            f"Too many repeat trio players: {overlap}"
+        assert len(overlap) <= 1, f"Too many repeat trio players: {overlap}"
 
     def test_waitlist_policy_even_count_no_waitlist(self, db_session):
         """Waitlist policy with even players: no one excluded."""
         director = _create_director(db_session)
         players = _create_players(db_session, 6)
         gara = _create_amalfi_gara(
-            director.id, players, db_session,
+            director.id,
+            players,
+            db_session,
             odd_number_policy="no",
         )
         RoundService.start_first_round(gara.id)
@@ -742,6 +813,7 @@ class TestAmalfiOddPolicies:
 # 3.6 Multi-set (documented gap)
 # =============================================================================
 
+
 @pytest.mark.integration
 class TestAmalfiMultiSet:
     """Multi-set with Amalfi strategy."""
@@ -751,7 +823,9 @@ class TestAmalfiMultiSet:
         director = _create_director(db_session)
         players = _create_players(db_session, 4)
         gara = _create_amalfi_gara(
-            director.id, players, db_session,
+            director.id,
+            players,
+            db_session,
             rounds_count=2,
         )
         gara.is_multi_set = True
@@ -771,7 +845,10 @@ class TestAmalfiMultiSet:
         director = _create_director(db_session)
         players = _create_players(db_session, 4)
         gara = _create_amalfi_gara(
-            director.id, players, db_session, rounds_count=2,
+            director.id,
+            players,
+            db_session,
+            rounds_count=2,
         )
         RoundService.start_first_round(gara.id)
 

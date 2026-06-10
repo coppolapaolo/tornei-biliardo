@@ -95,20 +95,28 @@ def test_start_playoff_finds_qualified_after_terminate(db_session):
     # 2 match completed: player1 batte player2 (5-0), player3 batte player4 (5-0)
     matches = [
         Match(
-            gara_id=gara.id, round_number=1,
-            player1_id=players[0].id, player2_id=players[1].id,
+            gara_id=gara.id,
+            round_number=1,
+            player1_id=players[0].id,
+            player2_id=players[1].id,
             status=MatchStatus.COMPLETED.value,
-            player1_score=5, player2_score=0,
+            player1_score=5,
+            player2_score=0,
             winner_id=players[0].id,
-            match_distance=5, is_race_to=True,
+            match_distance=5,
+            is_race_to=True,
         ),
         Match(
-            gara_id=gara.id, round_number=1,
-            player1_id=players[2].id, player2_id=players[3].id,
+            gara_id=gara.id,
+            round_number=1,
+            player1_id=players[2].id,
+            player2_id=players[3].id,
             status=MatchStatus.COMPLETED.value,
-            player1_score=5, player2_score=0,
+            player1_score=5,
+            player2_score=0,
             winner_id=players[2].id,
-            match_distance=5, is_race_to=True,
+            match_distance=5,
+            is_race_to=True,
         ),
     ]
     db_session.add_all(matches)
@@ -142,13 +150,9 @@ def test_start_playoff_finds_qualified_after_terminate(db_session):
     results = PlayoffService.start_playoff(campionato.id)
     assert "Test Top 3" in results
     quals = results["Test Top 3"]
-    assert len(quals) == 3, (
-        f"Atteso 3 qualificati per top 3, trovati {len(quals)}"
-    )
+    assert len(quals) == 3, f"Atteso 3 qualificati per top 3, trovati {len(quals)}"
 
-    persisted = PlayoffQualification.query.filter_by(
-        configuration_id=config.id
-    ).all()
+    persisted = PlayoffQualification.query.filter_by(configuration_id=config.id).all()
     assert len(persisted) == 3
     positions = sorted(q.qualifying_position for q in persisted)
     assert positions == [1, 2, 3]

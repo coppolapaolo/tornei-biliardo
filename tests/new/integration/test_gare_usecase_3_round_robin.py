@@ -76,9 +76,7 @@ class TestUseCaseRoundRobin:
         db_session.commit()
         return players
 
-    def test_round_robin_gara_creation(
-        self, director_user: User, db_session
-    ):
+    def test_round_robin_gara_creation(self, director_user: User, db_session):
         """Test creating Round-robin gara with correct parameters.
 
         UC3: Round-robin strategy, min 6, max 12 players, multi-set scoring.
@@ -142,7 +140,9 @@ class TestUseCaseRoundRobin:
         # Open inscriptions and inscribe players
         inscription_start = utc_now() - timedelta(hours=1)
         inscription_end = utc_now() + timedelta(hours=1)
-        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        InscriptionService.open_inscriptions(
+            gara.id, inscription_start, inscription_end
+        )
 
         for player in players_6:
             InscriptionService.inscribe_user(player.id, gara.id)
@@ -155,7 +155,9 @@ class TestUseCaseRoundRobin:
 
         # With 6 players: should have 3 matches
         non_bye_matches = [m for m in round1_matches if not m.is_bye]
-        assert len(non_bye_matches) == 3, f"Expected 3 matches, got {len(non_bye_matches)}"
+        assert (
+            len(non_bye_matches) == 3
+        ), f"Expected 3 matches, got {len(non_bye_matches)}"
 
         # Verify each player plays exactly once in round 1
         player_ids = {p.id for p in players_6}
@@ -201,7 +203,9 @@ class TestUseCaseRoundRobin:
         # Setup
         inscription_start = utc_now() - timedelta(hours=1)
         inscription_end = utc_now() + timedelta(hours=1)
-        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        InscriptionService.open_inscriptions(
+            gara.id, inscription_start, inscription_end
+        )
 
         for player in players_6:
             InscriptionService.inscribe_user(player.id, gara.id)
@@ -219,9 +223,11 @@ class TestUseCaseRoundRobin:
         RoundClassification.calculate_classification_after_round(gara.id, 1)
 
         # Check classification exists and is ordered
-        classifications = RoundClassification.query.filter_by(
-            gara_id=gara.id, round_number=1
-        ).order_by(RoundClassification.position).all()
+        classifications = (
+            RoundClassification.query.filter_by(gara_id=gara.id, round_number=1)
+            .order_by(RoundClassification.position)
+            .all()
+        )
 
         assert len(classifications) == 6
 
@@ -234,9 +240,9 @@ class TestUseCaseRoundRobin:
             if current.matches_won > next_cls.matches_won:
                 continue  # Valid: more wins
             elif current.matches_won == next_cls.matches_won:
-                assert current.rack_difference >= next_cls.rack_difference, (
-                    f"Position {current.position} should have better or equal rack diff"
-                )
+                assert (
+                    current.rack_difference >= next_cls.rack_difference
+                ), f"Position {current.position} should have better or equal rack diff"
             else:
                 pytest.fail(
                     f"Position {current.position} has fewer wins than {next_cls.position}"
@@ -254,8 +260,12 @@ class TestUseCaseRoundRobin:
         if match.is_bye:
             return
 
-        winner_id = match.player1_id if random.choice([True, False]) else match.player2_id
-        loser_id = match.player2_id if winner_id == match.player1_id else match.player1_id
+        winner_id = (
+            match.player1_id if random.choice([True, False]) else match.player2_id
+        )
+        loser_id = (
+            match.player2_id if winner_id == match.player1_id else match.player1_id
+        )
 
         winning_racks = match.match_distance
         loser_racks = random.randint(0, winning_racks - 1)

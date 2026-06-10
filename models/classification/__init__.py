@@ -17,7 +17,12 @@ Created: 2025-08-06
 Updated: 2025-12-28
 """
 
-from .models import Classification, RoundClassification, GaraClassification, PlayerEncounter
+from .models import (
+    Classification,
+    RoundClassification,
+    GaraClassification,
+    PlayerEncounter,
+)
 
 # Strategy pattern components
 from .strategies.base import (

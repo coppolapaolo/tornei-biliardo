@@ -51,7 +51,9 @@ def create_backup(db_path: Path = DB_PATH, backup_dir: Path = BACKUP_DIR) -> Pat
     return backup_path
 
 
-def rotate_backups(backup_dir: Path = BACKUP_DIR, max_backups: int = MAX_BACKUPS) -> int:
+def rotate_backups(
+    backup_dir: Path = BACKUP_DIR, max_backups: int = MAX_BACKUPS
+) -> int:
     """Remove oldest backups keeping only max_backups most recent.
 
     Returns the number of deleted backup files.

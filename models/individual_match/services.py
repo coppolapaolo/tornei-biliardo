@@ -268,14 +268,18 @@ class IndividualMatchService:
         proposal_id: int, inviter_id: int, invitee_id: int
     ) -> ProposalInvitation:
         """Create an invitation for a specific player to join a match proposal."""
-        return ProposalService.invite_player_to_match(proposal_id, inviter_id, invitee_id)
+        return ProposalService.invite_player_to_match(
+            proposal_id, inviter_id, invitee_id
+        )
 
     @staticmethod
     def respond_to_invitation(
         invitation_id: int, invitee_id: int, response: str
     ) -> bool:
         """Respond to a match invitation."""
-        return ProposalService.respond_to_invitation(invitation_id, invitee_id, response)
+        return ProposalService.respond_to_invitation(
+            invitation_id, invitee_id, response
+        )
 
     @staticmethod
     def get_user_proposals(
@@ -369,12 +373,15 @@ class IndividualMatchService:
         # Permission check: proposer or admin
         if user_id:
             from ..user.models import User
+
             user = db.session.get(User, user_id)
             proposal = match.proposal
             is_proposer = proposal and proposal.proposer_id == user_id
             is_admin = user and user.is_admin
             if not (is_proposer or is_admin):
-                raise ValueError("Solo il proponente o un admin può modificare gli orari")
+                raise ValueError(
+                    "Solo il proponente o un admin può modificare gli orari"
+                )
 
         if started_at is not None:
             match.started_at = started_at
@@ -411,7 +418,9 @@ class IndividualMatchService:
         match_id: int, winner_id: int, user_id: int
     ) -> IndividualMatch:
         """Complete an individual match - alias for complete_match."""
-        return MatchLifecycleService.complete_individual_match(match_id, winner_id, user_id)
+        return MatchLifecycleService.complete_individual_match(
+            match_id, winner_id, user_id
+        )
 
     @staticmethod
     def cancel_match(
@@ -457,7 +466,9 @@ class IndividualMatchService:
     ) -> None:
         """Remove last rack won by specified player (new simplified UX)."""
         # No @transactional here - IndividualRackService.remove_rack_for_player has it
-        return IndividualRackService.remove_rack_for_player(match_id, user_id, player_id)
+        return IndividualRackService.remove_rack_for_player(
+            match_id, user_id, player_id
+        )
 
     @staticmethod
     def submit_rack_result(
@@ -507,7 +518,9 @@ class IndividualMatchService:
 
         No @transactional: delegates to IndividualRackService which owns the transaction.
         """
-        return IndividualRackService._add_rack_result_original(match_id, winner_id, user_id)
+        return IndividualRackService._add_rack_result_original(
+            match_id, winner_id, user_id
+        )
 
     @staticmethod
     def confirm_rack_result(rack_id: int, confirming_player_id: int) -> Dict[str, Any]:
@@ -525,7 +538,9 @@ class IndividualMatchService:
 
         No @transactional: delegates to IndividualRackService which owns the transaction.
         """
-        return IndividualRackService.dispute_rack_result(rack_id, disputing_player_id, reason)
+        return IndividualRackService.dispute_rack_result(
+            rack_id, disputing_player_id, reason
+        )
 
     @staticmethod
     def resolve_rack_dispute(

@@ -40,6 +40,7 @@ def app():
 
     # Disable rate limiter
     from utils.rate_limiter import limiter
+
     limiter.enabled = False
 
     ctx = flask_app.app_context()

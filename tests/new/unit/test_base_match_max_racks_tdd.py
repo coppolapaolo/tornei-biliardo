@@ -156,9 +156,7 @@ class TestIndividualMatchCannotAddRackAtMax:
 
         # When/Then: Adding rack should raise ValueError
         with pytest.raises(ValueError, match="Cannot add rack"):
-            sample_individual_match.add_rack_result(
-                sample_individual_match.player1_id
-            )
+            sample_individual_match.add_rack_result(sample_individual_match.player1_id)
 
     def test_add_rack_result_succeeds_when_not_at_max(
         self, db_session, sample_individual_match

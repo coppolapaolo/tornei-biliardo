@@ -64,29 +64,43 @@ def test_complete_round_reassigns_tables_to_next_round(client, db_session):
 
     # Turno 1: 2 match PLAYING con tavolo
     m1_r1 = Match(
-        gara_id=gara.id, round_number=1,
-        player1_id=players[0].id, player2_id=players[1].id,
-        status=MatchStatus.PLAYING.value, table_assignment="1",
-        match_distance=5, is_race_to=True,
+        gara_id=gara.id,
+        round_number=1,
+        player1_id=players[0].id,
+        player2_id=players[1].id,
+        status=MatchStatus.PLAYING.value,
+        table_assignment="1",
+        match_distance=5,
+        is_race_to=True,
     )
     m2_r1 = Match(
-        gara_id=gara.id, round_number=1,
-        player1_id=players[2].id, player2_id=players[3].id,
-        status=MatchStatus.PLAYING.value, table_assignment="2",
-        match_distance=5, is_race_to=True,
+        gara_id=gara.id,
+        round_number=1,
+        player1_id=players[2].id,
+        player2_id=players[3].id,
+        status=MatchStatus.PLAYING.value,
+        table_assignment="2",
+        match_distance=5,
+        is_race_to=True,
     )
     # Turno 2: 2 match PENDING senza tavolo (rotazione opponents)
     m1_r2 = Match(
-        gara_id=gara.id, round_number=2,
-        player1_id=players[0].id, player2_id=players[2].id,
+        gara_id=gara.id,
+        round_number=2,
+        player1_id=players[0].id,
+        player2_id=players[2].id,
         status=MatchStatus.PENDING.value,
-        match_distance=5, is_race_to=True,
+        match_distance=5,
+        is_race_to=True,
     )
     m2_r2 = Match(
-        gara_id=gara.id, round_number=2,
-        player1_id=players[1].id, player2_id=players[3].id,
+        gara_id=gara.id,
+        round_number=2,
+        player1_id=players[1].id,
+        player2_id=players[3].id,
         status=MatchStatus.PENDING.value,
-        match_distance=5, is_race_to=True,
+        match_distance=5,
+        is_race_to=True,
     )
     db_session.add_all([m1_r1, m2_r1, m1_r2, m2_r2])
     db_session.commit()
@@ -102,14 +116,14 @@ def test_complete_round_reassigns_tables_to_next_round(client, db_session):
 
     # Turno 1: completato, tavoli rilasciati
     assert all(m.status == MatchStatus.COMPLETED.value for m in r1_matches)
-    assert all(m.table_assignment is None for m in r1_matches), (
-        "Tavoli del turno 1 devono essere rilasciati"
-    )
+    assert all(
+        m.table_assignment is None for m in r1_matches
+    ), "Tavoli del turno 1 devono essere rilasciati"
 
     # Turno 2: i 2 match hanno ricevuto i 2 tavoli, status PLAYING
     r2_with_table = [m for m in r2_matches if m.table_assignment is not None]
-    assert len(r2_with_table) == 2, (
-        f"Atteso 2 match turno 2 con tavolo, trovati {len(r2_with_table)}"
-    )
+    assert (
+        len(r2_with_table) == 2
+    ), f"Atteso 2 match turno 2 con tavolo, trovati {len(r2_with_table)}"
     assert all(m.status == MatchStatus.PLAYING.value for m in r2_with_table)
     assert {m.table_assignment for m in r2_with_table} == {"1", "2"}

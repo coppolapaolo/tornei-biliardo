@@ -30,7 +30,9 @@ def _p2i(players: List[int]) -> Dict[int, int]:
 class TestSwapAnchorIfNeeded:
     """Step 2: swap anchor for fair trio rotation."""
 
-    def test_swap_when_anchor_has_too_many_trios(self, strategy: AmalfiStrategy) -> None:
+    def test_swap_when_anchor_has_too_many_trios(
+        self, strategy: AmalfiStrategy
+    ) -> None:
         """Scenario: Salto gives anchor P with trio_count=2, min=0.
         Step 2 finds Q with count=0 and swaps."""
         anchor = 10
@@ -59,9 +61,7 @@ class TestSwapAnchorIfNeeded:
         # 20 is at index 1 (pos 2), 50 is at index 4 (pos 5)
         p2i = _p2i([10, 20, 30, 40, 50])
 
-        new_anchor, _ = strategy._swap_anchor_if_needed(
-            anchor, pairs, trio_counts, p2i
-        )
+        new_anchor, _ = strategy._swap_anchor_if_needed(anchor, pairs, trio_counts, p2i)
 
         # Should pick player 50 (index 4) over player 20 (index 1)
         assert new_anchor == 50
@@ -80,9 +80,7 @@ class TestSwapAnchorIfNeeded:
         assert new_anchor == 10
         assert new_pairs == pairs
 
-    def test_no_swap_when_anchor_already_at_min(
-        self, strategy: AmalfiStrategy
-    ) -> None:
+    def test_no_swap_when_anchor_already_at_min(self, strategy: AmalfiStrategy) -> None:
         """Anchor has count=0, others have count >= 0. No swap needed."""
         anchor = 10
         pairs: List[Tuple[int, int]] = [(20, 30)]
@@ -145,8 +143,10 @@ class TestSelectTrioCompanions:
         trio_counts = {10: 0, 20: 0, 30: 0, 40: 0, 50: 0}
         # 10-20 already played (rematch in trio if 20 chosen)
         encounter_matrix: Dict[Tuple[int, int], bool] = {
-            (10, 20): True, (20, 10): True,
-            (10, 30): True, (30, 10): True,
+            (10, 20): True,
+            (20, 10): True,
+            (10, 30): True,
+            (30, 10): True,
         }
         p2i = _p2i([10, 20, 30, 40, 50])
 
@@ -169,9 +169,12 @@ class TestSelectTrioCompanions:
         # 10-20 and 10-30 already played (full rematch if (20,30) chosen)
         # But no rematches for any other combos
         encounter_matrix: Dict[Tuple[int, int], bool] = {
-            (10, 20): True, (20, 10): True,
-            (10, 30): True, (30, 10): True,
-            (20, 30): True, (30, 20): True,
+            (10, 20): True,
+            (20, 10): True,
+            (10, 30): True,
+            (30, 10): True,
+            (20, 30): True,
+            (30, 20): True,
         }
         p2i = _p2i([10, 20, 30, 40, 50, 60, 70])
 
@@ -192,7 +195,8 @@ class TestSelectTrioCompanions:
         trio_counts = {10: 0, 20: 0, 30: 1, 40: 0, 50: 1}
         # 30 and 50 (the orphans if 20 and 40 chosen) already played
         encounter_matrix: Dict[Tuple[int, int], bool] = {
-            (30, 50): True, (50, 30): True,
+            (30, 50): True,
+            (50, 30): True,
         }
         p2i = _p2i([10, 20, 30, 40, 50])
 
@@ -274,7 +278,7 @@ class TestSelectTrioCompanions:
         all_players = [10, 20, 30, 40, 50]
         encounter_matrix: Dict[Tuple[int, int], bool] = {}
         for i, a in enumerate(all_players):
-            for b in all_players[i + 1:]:
+            for b in all_players[i + 1 :]:
                 encounter_matrix[(a, b)] = True
                 encounter_matrix[(b, a)] = True
         p2i = _p2i(all_players)
@@ -366,9 +370,7 @@ class TestAmalfiPairingTrioIntegration:
         assert len(trios[0].players) == 3
         assert len(pairs) == 2
         # No BYE in output
-        assert all(
-            strategy.BYE_PLAYER_ID not in p.players for p in result
-        )
+        assert all(strategy.BYE_PLAYER_ID not in p.players for p in result)
         # All 7 players accounted for
         all_players = set()
         for p in result:
@@ -483,7 +485,7 @@ class TestAmalfiPairingTrioIntegration:
         # All pairs have played each other
         enc: Dict[Tuple[int, int], bool] = {}
         for i, a in enumerate(players):
-            for b in players[i + 1:]:
+            for b in players[i + 1 :]:
                 enc[(a, b)] = True
                 enc[(b, a)] = True
 
@@ -529,9 +531,7 @@ class TestAmalfiPairingTrioIntegration:
                 encounter_matrix=dict(encounter_matrix),
             )
 
-            result = strategy._amalfi_pairing(
-                classifica, round_num, 5, mock_gara
-            )
+            result = strategy._amalfi_pairing(classifica, round_num, 5, mock_gara)
 
             # Extract trio and update counts + encounters
             for pairing in result:
@@ -579,9 +579,7 @@ class TestAmalfiPairingTrioIntegration:
         # and they should end up in different salto pairs.
         trio_counts = {1: 1, 2: 0, 3: 1, 4: 0, 5: 1, 6: 1, 7: 1}
 
-        self._patch_db_methods(
-            strategy, monkeypatch, trio_counts=trio_counts
-        )
+        self._patch_db_methods(strategy, monkeypatch, trio_counts=trio_counts)
 
         result = strategy._amalfi_pairing(classifica, 1, 5, mock_gara)
 

@@ -21,9 +21,7 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
     cursor = conn.cursor()
 
     try:
-        cursor.execute(
-            "ALTER TABLE billiard_hall ADD COLUMN province VARCHAR(2) NULL"
-        )
+        cursor.execute("ALTER TABLE billiard_hall ADD COLUMN province VARCHAR(2) NULL")
         conn.commit()
         print("  Added 'province' column to billiard_hall table")
     except sqlite3.OperationalError as e:

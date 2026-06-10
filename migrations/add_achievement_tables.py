@@ -133,12 +133,12 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
         """)
         tables = [row[0] for row in cursor.fetchall()]
 
-        if 'achievement' in tables:
+        if "achievement" in tables:
             print("   ✓ achievement table created")
         else:
             print("   ✗ achievement table missing")
 
-        if 'user_achievement' in tables:
+        if "user_achievement" in tables:
             print("   ✓ user_achievement table created")
         else:
             print("   ✗ user_achievement table missing")
@@ -331,9 +331,15 @@ if __name__ == "__main__":
         else:
             print(f"❌ Unknown command: {sys.argv[1]}")
             print("\nUsage:")
-            print("  python migrations/add_achievement_tables.py              # SQLite (dev)")
-            print("  python migrations/add_achievement_tables.py postgresql   # PostgreSQL (prod)")
-            print("  python migrations/add_achievement_tables.py downgrade    # Rollback")
+            print(
+                "  python migrations/add_achievement_tables.py              # SQLite (dev)"
+            )
+            print(
+                "  python migrations/add_achievement_tables.py postgresql   # PostgreSQL (prod)"
+            )
+            print(
+                "  python migrations/add_achievement_tables.py downgrade    # Rollback"
+            )
             sys.exit(1)
     else:
         # Default: SQLite migration

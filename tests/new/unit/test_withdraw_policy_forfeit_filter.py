@@ -41,9 +41,7 @@ class TestGetForfeitInscriptionsWaitlistFilter:
         """Waitlist+forfeit combo must not appear in forfeit set."""
         gara = _make_gara(db_session)
         active, waitlisted = (p.id for p in isolated_players[:2])
-        db_session.add(
-            Inscription(gara_id=gara.id, user_id=active, is_forfeit=True)
-        )
+        db_session.add(Inscription(gara_id=gara.id, user_id=active, is_forfeit=True))
         db_session.add(
             Inscription(
                 gara_id=gara.id,
@@ -69,9 +67,7 @@ class TestGetForfeitInscriptionsWaitlistFilter:
         """Sanity: active non-waitlist forfeit inscriptions still returned."""
         gara = _make_gara(db_session)
         active = isolated_players[0].id
-        db_session.add(
-            Inscription(gara_id=gara.id, user_id=active, is_forfeit=True)
-        )
+        db_session.add(Inscription(gara_id=gara.id, user_id=active, is_forfeit=True))
         db_session.commit()
 
         result = WithdrawPolicyService.get_forfeit_inscriptions(gara.id)
@@ -126,9 +122,7 @@ class TestGetForfeitUserIds:
 
     def test_empty_when_no_forfeit(self, db_session, isolated_players):
         gara = _make_gara(db_session)
-        db_session.add(
-            Inscription(gara_id=gara.id, user_id=isolated_players[0].id)
-        )
+        db_session.add(Inscription(gara_id=gara.id, user_id=isolated_players[0].id))
         db_session.commit()
 
         assert WithdrawPolicyService.get_forfeit_user_ids(gara.id) == set()
@@ -137,9 +131,7 @@ class TestGetForfeitUserIds:
         """Helper must honor the same waitlist exclusion as get_forfeit_inscriptions."""
         gara = _make_gara(db_session)
         active, waitlisted = (p.id for p in isolated_players[:2])
-        db_session.add(
-            Inscription(gara_id=gara.id, user_id=active, is_forfeit=True)
-        )
+        db_session.add(Inscription(gara_id=gara.id, user_id=active, is_forfeit=True))
         db_session.add(
             Inscription(
                 gara_id=gara.id,

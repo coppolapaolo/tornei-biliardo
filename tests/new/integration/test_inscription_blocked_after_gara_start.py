@@ -71,9 +71,7 @@ class TestInscriptionBlockedAfterGaraStart:
         gara = _make_gara_in_status(db_session, GaraStatus.PLAYING.value)
         client, user = logged_in_client(role="player")
 
-        resp = client.post(
-            f"/player/gara/{gara.id}/inscribe", follow_redirects=False
-        )
+        resp = client.post(f"/player/gara/{gara.id}/inscribe", follow_redirects=False)
 
         # Route fa redirect (302) verso index/dashboard quando rifiuta.
         assert resp.status_code in (302, 303)
@@ -81,9 +79,9 @@ class TestInscriptionBlockedAfterGaraStart:
         inscription = Inscription.query.filter_by(
             user_id=user.id, gara_id=gara.id
         ).first()
-        assert inscription is None, (
-            "Nessuna iscrizione deve essere creata quando la gara è PLAYING"
-        )
+        assert (
+            inscription is None
+        ), "Nessuna iscrizione deve essere creata quando la gara è PLAYING"
 
     def test_route_blocks_inscription_when_gara_is_completed(
         self, logged_in_client, db_session
@@ -94,9 +92,7 @@ class TestInscriptionBlockedAfterGaraStart:
         gara = _make_gara_in_status(db_session, GaraStatus.COMPLETED.value)
         client, user = logged_in_client(role="player")
 
-        resp = client.post(
-            f"/player/gara/{gara.id}/inscribe", follow_redirects=False
-        )
+        resp = client.post(f"/player/gara/{gara.id}/inscribe", follow_redirects=False)
 
         assert resp.status_code in (302, 303)
         assert (
@@ -114,9 +110,7 @@ class TestInscriptionBlockedAfterGaraStart:
         gara = _make_gara_in_status(db_session, GaraStatus.SETUP.value)
         client, user = logged_in_client(role="player")
 
-        resp = client.post(
-            f"/player/gara/{gara.id}/inscribe", follow_redirects=False
-        )
+        resp = client.post(f"/player/gara/{gara.id}/inscribe", follow_redirects=False)
 
         assert resp.status_code in (302, 303)
         assert (

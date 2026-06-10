@@ -38,8 +38,8 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
                 )
             """,
             "columns": "id, match_id, rack_number, winner_id, reported_by_id, "
-                      "confirmed_by_player, validated_by_admin, admin_note, created_at, "
-                      "added_by_id, added_at, removed_by_id, removed_at, is_deleted"
+            "confirmed_by_player, validated_by_admin, admin_note, created_at, "
+            "added_by_id, added_at, removed_by_id, removed_at, is_deleted",
         },
         {
             "name": "match_result",
@@ -54,7 +54,7 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
                     created_at DATETIME
                 )
             """,
-            "columns": "id, match_id, user_id, player1_score, player2_score, winner_id, created_at"
+            "columns": "id, match_id, user_id, player1_score, player2_score, winner_id, created_at",
         },
         {
             "name": "trio_match",
@@ -77,8 +77,8 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
                 )
             """,
             "columns": "id, match_id, player1_id, player2_id, player3_id, "
-                      "current_player1_id, current_player2_id, waiting_player_id, "
-                      "player1_racks, player2_racks, player3_racks, is_completed, winner_id, created_at"
+            "current_player1_id, current_player2_id, waiting_player_id, "
+            "player1_racks, player2_racks, player3_racks, is_completed, winner_id, created_at",
         },
         {
             "name": "set",
@@ -105,9 +105,9 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
                 )
             """,
             "columns": "id, match_id, set_number, distance, is_race_to, player1_racks, "
-                      "player2_racks, status, winner_id, started_at, completed_at, "
-                      "discipline, is_multi_discipline, discipline_rotation, "
-                      "discipline_assignment, created_at, updated_at"
+            "player2_racks, status, winner_id, started_at, completed_at, "
+            "discipline, is_multi_discipline, discipline_rotation, "
+            "discipline_assignment, created_at, updated_at",
         },
         {
             "name": "tiebreaker",
@@ -130,8 +130,8 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
                 )
             """,
             "columns": "id, match_id, campionato_id, gara_id, tiebreaker_type, status, "
-                      "player1_id, player2_id, winner_id, created_at, started_at, "
-                      "completed_at, configuration, notes"
+            "player1_id, player2_id, winner_id, created_at, started_at, "
+            "completed_at, configuration, notes",
         },
         {
             "name": "hidden_match",
@@ -146,7 +146,7 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
                     CONSTRAINT uq_hidden_match_user_match UNIQUE (user_id, match_id)
                 )
             """,
-            "columns": "id, user_id, match_id, hidden_at, created_at, updated_at"
+            "columns": "id, user_id, match_id, hidden_at, created_at, updated_at",
         },
         {
             "name": "gara_bye_challenge",
@@ -166,8 +166,8 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
                 )
             """,
             "columns": "id, gara_id, challenge_attempt_id, round_number, user_id, "
-                      "match_id, is_completed, completed_at, created_at, updated_at"
-        }
+            "match_id, is_completed, completed_at, created_at, updated_at",
+        },
     ]
 
     for table_info in tables_to_fix:
@@ -175,7 +175,9 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
         print(f"Fixing table: {table_name}")
 
         # Check if table exists and has the broken FK
-        cursor.execute(f"SELECT sql FROM sqlite_master WHERE type='table' AND name='{table_name}'")
+        cursor.execute(
+            f"SELECT sql FROM sqlite_master WHERE type='table' AND name='{table_name}'"
+        )
         result = cursor.fetchone()
         if not result:
             print(f"  Table {table_name} does not exist, skipping")
@@ -188,7 +190,9 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
 
         try:
             # Rename to backup
-            cursor.execute(f'ALTER TABLE "{table_name}" RENAME TO "{table_name}_backup"')
+            cursor.execute(
+                f'ALTER TABLE "{table_name}" RENAME TO "{table_name}_backup"'
+            )
             print(f"  Renamed {table_name} to {table_name}_backup")
 
             # Create new table with correct FK
@@ -197,10 +201,10 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
 
             # Copy data
             columns = table_info["columns"]
-            cursor.execute(f'''
+            cursor.execute(f"""
                 INSERT INTO "{table_name}" ({columns})
                 SELECT {columns} FROM "{table_name}_backup"
-            ''')
+            """)
             row_count = cursor.rowcount
             print(f"  Copied {row_count} rows")
 
@@ -213,7 +217,9 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
             # Try to recover by renaming backup back
             try:
                 cursor.execute(f'DROP TABLE IF EXISTS "{table_name}"')
-                cursor.execute(f'ALTER TABLE "{table_name}_backup" RENAME TO "{table_name}"')
+                cursor.execute(
+                    f'ALTER TABLE "{table_name}_backup" RENAME TO "{table_name}"'
+                )
                 print(f"  Recovered {table_name} from backup")
             except sqlite3.Error:
                 pass
@@ -221,15 +227,21 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
 
     # Re-create indexes for hidden_match
     try:
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_hidden_match_user_id ON hidden_match(user_id)")
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_hidden_match_match_id ON hidden_match(match_id)")
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_hidden_match_user_id ON hidden_match(user_id)"
+        )
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_hidden_match_match_id ON hidden_match(match_id)"
+        )
         print("Re-created indexes for hidden_match")
     except sqlite3.Error as e:
         print(f"Warning: Could not create indexes: {e}")
 
     # Re-create index for gara_bye_challenge
     try:
-        cursor.execute("CREATE INDEX IF NOT EXISTS ix_gara_bye_challenge_gara_id ON gara_bye_challenge(gara_id)")
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS ix_gara_bye_challenge_gara_id ON gara_bye_challenge(gara_id)"
+        )
         print("Re-created index for gara_bye_challenge")
     except sqlite3.Error as e:
         print(f"Warning: Could not create index: {e}")
