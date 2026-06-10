@@ -362,7 +362,7 @@ class NotificationPreference(BaseModel):
         )
 
         if self.quiet_hours_start <= self.quiet_hours_end:
-            # Normal case: 22:00 - 08:00
+            # Normal case: e.g. 13:00 - 15:00 (same day)
             return self.quiet_hours_start <= now <= self.quiet_hours_end
         else:
             # Overnight case: 22:00 - 08:00 (crosses midnight)
