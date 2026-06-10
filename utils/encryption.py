@@ -21,6 +21,26 @@ logger = logging.getLogger(__name__)
 _DEFAULT_SALT = b"campionati-biliardo-salt"
 
 
+def derive_cipher(key_string: str, salt: Optional[bytes] = None) -> Fernet:
+    """Deriva il cipher Fernet da una key string (PBKDF2-SHA256, 100k iter).
+
+    Stessa derivazione usata dall'EncryptionManager: serve anche allo script
+    di rotazione chiave (scripts/rotate_encryption_key.py), che deve poter
+    costruire cipher per chiavi diverse da quella in ENCRYPTION_KEY.
+    """
+    if salt is None:
+        salt_env = os.environ.get("ENCRYPTION_SALT")
+        salt = salt_env.encode() if salt_env else _DEFAULT_SALT
+
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=salt,
+        iterations=100000,
+    )
+    return Fernet(base64.urlsafe_b64encode(kdf.derive(key_string.encode())))
+
+
 class EncryptionManager:
     """Handles encryption/decryption of sensitive user data."""
 
@@ -59,22 +79,9 @@ class EncryptionManager:
                 "variable in production."
             )
 
-        # Derive encryption key from the key string
-        key_bytes = key_string.encode()
         # Salt configurabile (default = valore storico per retro-compatibilita'
         # con i dati gia' cifrati).
-        salt_env = os.environ.get("ENCRYPTION_SALT")
-        salt = salt_env.encode() if salt_env else _DEFAULT_SALT
-
-        kdf = PBKDF2HMAC(
-            algorithm=hashes.SHA256(),
-            length=32,
-            salt=salt,
-            iterations=100000,
-        )
-
-        key = base64.urlsafe_b64encode(kdf.derive(key_bytes))
-        EncryptionManager._cipher_suite = Fernet(key)
+        EncryptionManager._cipher_suite = derive_cipher(key_string)
 
     def encrypt(self, data: str) -> str:
         """Encrypt a string value."""
