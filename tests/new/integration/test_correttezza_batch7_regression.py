@@ -156,3 +156,41 @@ class TestRecordChallengeAttemptRoutes:
         )
 
         assert response.status_code == 403
+
+
+class TestConfirmResultBilateral:
+    """Bug 2: confirm_result confrontava lo status col letterale "completed".
+
+    Dopo la conferma bilaterale lo status e' VALIDATED: la route rispondeva
+    completed=False e "In attesa dell'altro giocatore" anche a match chiuso.
+    """
+
+    def test_second_confirmation_reports_completed(self, client, db_session):
+        from models.individual_match.models import IndividualMatch
+        from models.status_enum import MatchStatus
+
+        p1 = _make_user(db_session, "player")
+        p2 = _make_user(db_session, "player")
+        match = IndividualMatch(
+            player1_id=p1.id,
+            player2_id=p2.id,
+            location="Test Hall",
+            scheduled_at=utc_now() - timedelta(hours=2),
+            status=MatchStatus.IN_PROGRESS,  # conferme avvengono a match attivo
+            distance=5,
+            is_race_to=True,
+            player1_score=5,
+            player2_score=2,
+            player1_confirmed=True,  # p1 ha gia' confermato
+        )
+        db_session.add(match)
+        db_session.commit()
+
+        _login(client, p2)
+        response = client.post(f"/match/matches/{match.id}/confirm", json={})
+
+        assert response.status_code == 200
+        payload = response.get_json()
+        assert payload["success"] is True
+        # Seconda conferma = match chiuso: la route deve dirlo.
+        assert payload["completed"] is True

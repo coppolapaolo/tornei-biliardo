@@ -201,13 +201,15 @@ def confirm_result(match_id):
         )
 
         # Emit SSE event for real-time sync
+        from models.status_enum import MatchStatus
         from routes.sse import emit_individual_match_event
 
-        event_type = (
-            "match_completed"
-            if match.status.value == "completed"
-            else "result_confirmed"
-        )
+        # La conferma bilaterale porta lo status a VALIDATED (mai "completed"):
+        # il confronto col letterale "completed" lasciava completed=False e
+        # "In attesa dell'altro giocatore" anche a match appena chiuso.
+        fully_confirmed = match.status.value == MatchStatus.VALIDATED.value
+
+        event_type = "match_completed" if fully_confirmed else "result_confirmed"
         emit_individual_match_event(
             match_id,
             event_type,
@@ -215,7 +217,7 @@ def confirm_result(match_id):
                 "confirmed_by": current_user.id,
                 "player1_confirmed": match.player1_confirmed,
                 "player2_confirmed": match.player2_confirmed,
-                "completed": match.status.value == "completed",
+                "completed": fully_confirmed,
                 "winner_id": match.winner_id,
             },
         )
@@ -224,18 +226,18 @@ def confirm_result(match_id):
             return jsonify(
                 {
                     "success": True,
-                    "completed": match.status.value == "completed",
+                    "completed": fully_confirmed,
                     "player1_confirmed": match.player1_confirmed,
                     "player2_confirmed": match.player2_confirmed,
                     "message": (
                         "Match completato!"
-                        if match.status.value == "completed"
+                        if fully_confirmed
                         else "Risultato confermato!"
                     ),
                 }
             )
         else:
-            if match.status.value == "completed":
+            if fully_confirmed:
                 flash("Match completato con successo!", "success")
             else:
                 flash("Risultato confermato! In attesa dell'altro giocatore.", "info")
