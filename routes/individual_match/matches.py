@@ -88,10 +88,15 @@ def add_rack(match_id):
     try:
         data = request.get_json() if request.is_json else request.form
 
+        # data.get + guard: data["winner_id"] mancante era KeyError → 500.
+        if data.get("winner_id") is None:
+            raise ValueError("Campo winner_id mancante")
+        winner_id = int(data["winner_id"])
+
         rack = IndividualMatchService.add_rack_for_player(
             match_id=match_id,
             user_id=current_user.id,
-            winner_id=int(data["winner_id"]),
+            winner_id=winner_id,
         )
 
         # Emit SSE event for real-time sync
@@ -106,7 +111,7 @@ def add_rack(match_id):
             {
                 "action": "added",
                 "rack_number": rack.rack_number,
-                "winner_id": int(data["winner_id"]),
+                "winner_id": winner_id,
                 "player1_score": match.player1_score,
                 "player2_score": match.player2_score,
                 "is_ready_for_validation": match.is_ready_for_validation(),
@@ -144,10 +149,15 @@ def remove_rack(match_id):
     try:
         data = request.get_json() if request.is_json else request.form
 
+        # data.get + guard: data["player_id"] mancante era KeyError → 500.
+        if data.get("player_id") is None:
+            raise ValueError("Campo player_id mancante")
+        player_id = int(data["player_id"])
+
         IndividualMatchService.remove_rack_for_player(
             match_id=match_id,
             user_id=current_user.id,
-            player_id=int(data["player_id"]),
+            player_id=player_id,
         )
 
         # Emit SSE event for real-time sync
@@ -161,7 +171,7 @@ def remove_rack(match_id):
             "rack_updated",
             {
                 "action": "removed",
-                "player_id": int(data["player_id"]),
+                "player_id": player_id,
                 "player1_score": match.player1_score,
                 "player2_score": match.player2_score,
                 "is_ready_for_validation": match.is_ready_for_validation(),
@@ -304,6 +314,10 @@ def complete_match(match_id):
     """Complete an individual match - legacy route for backward compatibility."""
     try:
         data = request.get_json() if request.is_json else request.form
+
+        # data.get + guard: data["winner_id"] mancante era KeyError → 500.
+        if data.get("winner_id") is None:
+            raise ValueError("Campo winner_id mancante")
 
         match = IndividualMatchService.complete_match(
             match_id=match_id,

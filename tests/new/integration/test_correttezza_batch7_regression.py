@@ -288,3 +288,59 @@ class TestGamificationAdminFormParsing:
             data={"user_id": str(admin_user.id), "xp_amount": "ten"},
         )
         assert response.status_code == 302
+
+
+class TestIndividualMatchMissingFields:
+    """Bug 5: data["campo"] con indicizzazione diretta → KeyError → 500."""
+
+    @pytest.fixture
+    def in_progress_match(self, db_session):
+        from models.individual_match.models import IndividualMatch
+        from models.status_enum import MatchStatus
+
+        p1 = _make_user(db_session, "player")
+        p2 = _make_user(db_session, "player")
+        match = IndividualMatch(
+            player1_id=p1.id,
+            player2_id=p2.id,
+            location="Test Hall",
+            scheduled_at=utc_now() - timedelta(hours=1),
+            status=MatchStatus.IN_PROGRESS,
+            distance=5,
+            is_race_to=True,
+            player1_score=1,
+            player2_score=0,
+        )
+        db_session.add(match)
+        db_session.commit()
+        return match, p1, p2
+
+    def test_add_rack_without_winner_id_is_400(
+        self, client, db_session, in_progress_match
+    ):
+        match, p1, _ = in_progress_match
+        _login(client, p1)
+        response = client.post(f"/match/matches/{match.id}/racks/add", json={})
+        assert response.status_code == 400
+
+    def test_remove_rack_without_player_id_is_400(
+        self, client, db_session, in_progress_match
+    ):
+        match, p1, _ = in_progress_match
+        _login(client, p1)
+        response = client.post(f"/match/matches/{match.id}/racks/remove", json={})
+        assert response.status_code == 400
+
+    def test_complete_match_without_winner_id_is_400(
+        self, client, db_session, in_progress_match
+    ):
+        match, p1, _ = in_progress_match
+        _login(client, p1)
+        response = client.post(f"/match/matches/{match.id}/complete", json={})
+        assert response.status_code == 400
+
+    def test_create_proposal_without_scheduled_at_is_400(self, client, db_session):
+        p1 = _make_user(db_session, "player")
+        _login(client, p1)
+        response = client.post("/match/proposals/create", json={"location": "Hall"})
+        assert response.status_code == 400

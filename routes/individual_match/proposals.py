@@ -180,10 +180,12 @@ def create_proposal():
     try:
         data = request.get_json() if request.is_json else request.form
 
-        # Parse scheduled time
-        scheduled_at = datetime.fromisoformat(
-            data["scheduled_at"].replace("Z", "+00:00")
-        )
+        # Parse scheduled time. data.get + guard: l'indicizzazione diretta
+        # sollevava KeyError (non coperto da except ValueError) → 500.
+        scheduled_at_str = data.get("scheduled_at")
+        if not scheduled_at_str:
+            raise ValueError("Campo scheduled_at mancante")
+        scheduled_at = datetime.fromisoformat(scheduled_at_str.replace("Z", "+00:00"))
 
         # Calculate expiration (default 1 hour before match)
         expires_hours = int(data.get("expires_hours", 1))
