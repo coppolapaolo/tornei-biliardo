@@ -4,17 +4,33 @@ from flask import (
     request,
     jsonify,
 )
-from flask_login import login_required
+from flask_login import current_user, login_required
 
-from utils import match_manager_required
 from utils.route_helpers import safe_json_error
 
 from . import match_bp
 
 
+def _forbidden_unless_gara_manager(gara_id):
+    """403 JSON se current_user non gestisce la gara della challenge.
+
+    Queste route non hanno match_id/gara_id nell'URL (il payload porta
+    gara_challenge_id): l'autorizzazione va derivata dalla gara. Il vecchio
+    @match_manager_required leggeva match_id dai kwargs e abortiva SEMPRE
+    con 400.
+    """
+    from models.user.permissions import PermissionChecker
+
+    if not PermissionChecker.can_manage_competition(current_user, gara_id):
+        return (
+            jsonify({"success": False, "error": "Permesso negato per questa gara"}),
+            403,
+        )
+    return None
+
+
 @match_bp.route("/record_challenge_attempt", methods=["POST"])
 @login_required
-@match_manager_required
 def record_challenge_attempt():
     """Record a single challenge attempt during match (AJAX endpoint)."""
     try:
@@ -48,6 +64,10 @@ def record_challenge_attempt():
         gara_challenge = GaraChallenge.query.get(data["gara_challenge_id"])
         if not gara_challenge:
             return jsonify({"success": False, "error": "Challenge non trovata"}), 404
+
+        forbidden = _forbidden_unless_gara_manager(gara_challenge.gara_id)
+        if forbidden:
+            return forbidden
 
         # Verify it's a Random tournament
         if gara_challenge.gara.matchmaking_strategy != "random":
@@ -88,7 +108,6 @@ def record_challenge_attempt():
 
 @match_bp.route("/record_challenge_attempts", methods=["POST"])
 @login_required
-@match_manager_required
 def record_challenge_attempts():
     """Record multiple challenge attempts at once (AJAX endpoint)."""
     try:
@@ -133,7 +152,20 @@ def record_challenge_attempts():
                     400,
                 )
 
+        from models.competition.gara_challenge import GaraChallenge
         from models.competition.gara_challenge_service import GaraChallengeService
+
+        # Authorization: l'utente deve gestire la gara di OGNI challenge
+        for gc_id in {a["gara_challenge_id"] for a in attempts_data}:
+            gara_challenge = GaraChallenge.query.get(gc_id)
+            if not gara_challenge:
+                return (
+                    jsonify({"success": False, "error": "Challenge non trovata"}),
+                    404,
+                )
+            forbidden = _forbidden_unless_gara_manager(gara_challenge.gara_id)
+            if forbidden:
+                return forbidden
 
         # Record all attempts
         recorded_attempts = GaraChallengeService.record_multiple_attempts(
