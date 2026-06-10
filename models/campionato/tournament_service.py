@@ -222,7 +222,7 @@ class TournamentService(TournamentStatisticsService):
             raise ValueError("User not found")
 
         if user.role == UserRole.ADMIN.value:
-            raise ValueError("Gli admin non vanno assegnati come direttori.")
+            raise ValidationError("Gli admin non vanno assegnati come direttori.")
 
         # Solo utenti con ruolo director (stessa regola di GaraService: la UI
         # offre solo direttori, il service deve imporlo).

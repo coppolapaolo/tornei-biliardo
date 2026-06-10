@@ -715,7 +715,7 @@ msgid "Valore livello non valido"
 msgstr "Invalid level value"
 
 #: routes/gamification/config.py:176
-#, fuzzy, python-format
+#, python-format
 msgid "Level unlock per livello %(level)s aggiunto"
 msgstr "Level unlock for level %(level)s added"
 
@@ -725,7 +725,7 @@ msgid "Configurazione Streak"
 msgstr "Streak Configuration"
 
 #: routes/gamification/config.py:282
-#, fuzzy, python-format
+#, python-format
 msgid "Milestone %(weeks)s settimane aggiunto"
 msgstr "%(weeks)s-week milestone added"
 
