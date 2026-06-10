@@ -246,3 +246,45 @@ class TestAddRackReportedBy:
         assert response.status_code == 200
         rack = db_session.query(Rack).filter_by(match_id=match.id).one()
         assert rack.reported_by_id == director.id
+
+
+class TestGamificationAdminFormParsing:
+    """Bug 4: parsing form non protetto (int/fromisoformat/Enum[...]) → 500."""
+
+    @pytest.fixture
+    def admin_user(self, db_session):
+        return _make_user(db_session, "admin")
+
+    def test_create_quest_invalid_type_redirects(self, client, db_session, admin_user):
+        _login(client, admin_user)
+        response = client.post(
+            "/gamification/admin/quests/create",
+            data={"name": "Q", "quest_type": "foobar"},
+        )
+        assert response.status_code == 302  # redirect con flash, non 500
+
+    def test_create_quest_invalid_date_redirects(self, client, db_session, admin_user):
+        _login(client, admin_user)
+        response = client.post(
+            "/gamification/admin/quests/create",
+            data={"name": "Q", "start_date": "2026-13-99"},
+        )
+        assert response.status_code == 302
+
+    def test_grant_freeze_invalid_streak_type_redirects(
+        self, client, db_session, admin_user
+    ):
+        _login(client, admin_user)
+        response = client.post(
+            "/gamification/admin/streaks/grant_freeze",
+            data={"user_id": str(admin_user.id), "streak_type": "BOGUS"},
+        )
+        assert response.status_code == 302
+
+    def test_grant_xp_non_numeric_redirects(self, client, db_session, admin_user):
+        _login(client, admin_user)
+        response = client.post(
+            "/gamification/admin/xp/grant",
+            data={"user_id": str(admin_user.id), "xp_amount": "ten"},
+        )
+        assert response.status_code == 302
