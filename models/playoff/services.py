@@ -11,6 +11,7 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
 
 from ..base import db, utc_now
+from ..exceptions import NotFoundError
 from .models import (
     PlayoffConfiguration,
     PlayoffQualification,
@@ -187,7 +188,7 @@ class PlayoffService:
         """Find the next eligible player for playoff replacement."""
         configuration = db.session.get(PlayoffConfiguration, configuration_id)
         if configuration is None:
-            raise ValueError("Configurazione playoff non trovata")
+            raise NotFoundError("Configurazione playoff non trovata")
 
         # Get current qualified/confirmed players (querying directly,
         # not via relationship)
@@ -257,7 +258,7 @@ class PlayoffService:
         """Create the actual playoff campionato."""
         configuration = db.session.get(PlayoffConfiguration, configuration_id)
         if configuration is None:
-            raise ValueError("Configurazione playoff non trovata")
+            raise NotFoundError("Configurazione playoff non trovata")
 
         # Check if campionato already exists
         if configuration.playoff_campionato is not None:
@@ -287,7 +288,7 @@ class PlayoffService:
         """Start registration for a playoff campionato."""
         campionato = db.session.get(PlayoffTournament, campionato_id)
         if campionato is None:
-            raise ValueError("Campionato playoff non trovato")
+            raise NotFoundError("Campionato playoff non trovato")
         campionato.start_registration()
 
         return campionato
@@ -352,7 +353,7 @@ class PlayoffService:
         """Check if playoff is ready to start and create campionato if needed."""
         configuration = db.session.get(PlayoffConfiguration, configuration_id)
         if configuration is None:
-            raise ValueError("Configurazione playoff non trovata")
+            raise NotFoundError("Configurazione playoff non trovata")
 
         confirmed_count = PlayoffQualification.query.filter_by(
             configuration_id=configuration_id,
@@ -382,7 +383,7 @@ class PlayoffService:
         """Complete a playoff campionato."""
         campionato = db.session.get(PlayoffTournament, campionato_id)
         if campionato is None:
-            raise ValueError("Campionato playoff non trovato")
+            raise NotFoundError("Campionato playoff non trovato")
         campionato.complete_campionato(winner_id)
 
         return campionato
@@ -395,7 +396,7 @@ class PlayoffService:
         """Update a playoff configuration. Blocked if qualifications exist."""
         config = db.session.get(PlayoffConfiguration, config_id)
         if config is None:
-            raise ValueError("Configurazione playoff non trovata")
+            raise NotFoundError("Configurazione playoff non trovata")
         if config.has_qualifications():
             raise ValueError("Non modificabile dopo avvio playoff")
 
@@ -475,7 +476,7 @@ class PlayoffService:
         """Deactivate a playoff configuration. Blocked if qualifications exist."""
         config = db.session.get(PlayoffConfiguration, config_id)
         if config is None:
-            raise ValueError("Configurazione playoff non trovata")
+            raise NotFoundError("Configurazione playoff non trovata")
         if config.has_qualifications():
             raise ValueError("Non modificabile dopo avvio playoff")
 
@@ -501,7 +502,7 @@ class PlayoffService:
 
         campionato = db.session.get(Campionato, campionato_id)
         if campionato is None:
-            raise ValueError("Campionato non trovato")
+            raise NotFoundError("Campionato non trovato")
 
         if campionato.get_status() != TournamentStatus.TERMINATED.value:
             raise ValueError(
@@ -684,7 +685,7 @@ class PlayoffService:
 
         config = db.session.get(PlayoffConfiguration, configuration_id)
         if config is None:
-            raise ValueError("Configurazione playoff non trovata")
+            raise NotFoundError("Configurazione playoff non trovata")
 
         # Already has gara?
         if config.gara is not None:
@@ -794,7 +795,7 @@ class PlayoffService:
 
         config = db.session.get(PlayoffConfiguration, configuration_id)
         if config is None:
-            raise ValueError("Configurazione playoff non trovata")
+            raise NotFoundError("Configurazione playoff non trovata")
 
         # Block if gara already created
         if config.gara is not None:
@@ -846,7 +847,7 @@ class PlayoffService:
         """Remove a player from a playoff config. Sets status to DECLINED."""
         qual = db.session.get(PlayoffQualification, qualification_id)
         if qual is None:
-            raise ValueError("Qualificazione non trovata")
+            raise NotFoundError("Qualificazione non trovata")
 
         config = qual.configuration
         if config.gara is not None:

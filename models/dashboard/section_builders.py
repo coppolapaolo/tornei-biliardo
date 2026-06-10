@@ -132,22 +132,7 @@ class DashboardSectionBuilder:
             .all()
         )
 
-        # Calculate match opportunities (open proposals in user's locations)
-        from ..individual_match.models import PlayerAvailability
-
-        user_locations = {
-            av.location
-            for av in db.session.query(PlayerAvailability)
-            .filter_by(user_id=user_id, is_available=True)
-            .all()
-        }
-
-        # Also include locations where user has played before
-        played_locations = {match.location for match in recent_individual_matches}
-
-        user_locations.union(played_locations)
-
-        # Get opportunities - open proposals in eligible locations
+        # Get opportunities - open proposals
         opportunities = proposals.get("available", [])
 
         return {

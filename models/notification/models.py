@@ -349,10 +349,20 @@ class NotificationPreference(BaseModel):
         if not self.quiet_hours_start or not self.quiet_hours_end:
             return False
 
-        now = utc_now().time()
+        # Le quiet hours sono impostate dall'utente in ora locale italiana:
+        # converti il naive-UTC di utc_now() in Europe/Rome (DST incluso)
+        # prima del confronto, come fa format_datetime_local per il display.
+        from zoneinfo import ZoneInfo
+
+        now = (
+            utc_now()
+            .replace(tzinfo=ZoneInfo("UTC"))
+            .astimezone(ZoneInfo("Europe/Rome"))
+            .time()
+        )
 
         if self.quiet_hours_start <= self.quiet_hours_end:
-            # Normal case: 22:00 - 08:00
+            # Normal case: e.g. 13:00 - 15:00 (same day)
             return self.quiet_hours_start <= now <= self.quiet_hours_end
         else:
             # Overnight case: 22:00 - 08:00 (crosses midnight)
