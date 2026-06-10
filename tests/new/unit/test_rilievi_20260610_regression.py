@@ -7,6 +7,9 @@
    assign_available_tables avviava match anche 2+ turni avanti, spalmando i
    giocatori su troppi turni e lasciando tavoli inutilizzabili. Regola: si
    attiva solo fino al turno immediatamente successivo a quello corrente.
+3. Vista mobile admin/gara: i turni attivi erano in ordine inverso (turno 3
+   in alto col turno 2 ancora da refertare). L'azionabile va prima: ordine
+   crescente come nella vista desktop (_gara_matches.html).
 """
 
 from datetime import date
@@ -124,12 +127,22 @@ class TestNextRoundOnlyTableAssignment:
         p = players
         # Turno 1: un match ai tavoli, uno concluso
         self._match(
-            db_session, gara, 1, p[0], p[1],
-            status=MatchStatus.PLAYING.value, table_assignment="Tavolo A",
+            db_session,
+            gara,
+            1,
+            p[0],
+            p[1],
+            status=MatchStatus.PLAYING.value,
+            table_assignment="Tavolo A",
         )
         self._match(
-            db_session, gara, 1, p[2], p[3],
-            status=MatchStatus.COMPLETED.value, winner_id=p[2].id,
+            db_session,
+            gara,
+            1,
+            p[2],
+            p[3],
+            status=MatchStatus.COMPLETED.value,
+            winner_id=p[2].id,
         )
         # Turno 2: bloccato (p0 e' ai tavoli nel turno 1)
         blocked = self._match(db_session, gara, 2, p[0], p[4])
@@ -147,8 +160,13 @@ class TestNextRoundOnlyTableAssignment:
         """Il turno immediatamente successivo invece puo' partire subito."""
         p = players
         self._match(
-            db_session, gara, 1, p[0], p[1],
-            status=MatchStatus.PLAYING.value, table_assignment="Tavolo A",
+            db_session,
+            gara,
+            1,
+            p[0],
+            p[1],
+            status=MatchStatus.PLAYING.value,
+            table_assignment="Tavolo A",
         )
         next_round = self._match(db_session, gara, 2, p[2], p[3])
         too_far = self._match(db_session, gara, 3, p[4], p[5])
@@ -165,13 +183,23 @@ class TestNextRoundOnlyTableAssignment:
         torna eleggibile (corrente+1)."""
         p = players
         self._match(
-            db_session, gara, 1, p[0], p[1],
-            status=MatchStatus.COMPLETED.value, winner_id=p[0].id,
+            db_session,
+            gara,
+            1,
+            p[0],
+            p[1],
+            status=MatchStatus.COMPLETED.value,
+            winner_id=p[0].id,
         )
         # Turno 2: uno ai tavoli, uno bloccato (p0 occupato)
         self._match(
-            db_session, gara, 2, p[0], p[5],
-            status=MatchStatus.PLAYING.value, table_assignment="Tavolo A",
+            db_session,
+            gara,
+            2,
+            p[0],
+            p[5],
+            status=MatchStatus.PLAYING.value,
+            table_assignment="Tavolo A",
         )
         self._match(db_session, gara, 2, p[0], p[4])
         eligible = self._match(db_session, gara, 3, p[2], p[3])
@@ -180,3 +208,66 @@ class TestNextRoundOnlyTableAssignment:
 
         assert assigned == 1
         assert db_session.get(Match, eligible.id).status == MatchStatus.PLAYING.value
+
+
+@pytest.mark.unit
+class TestMobileRoundOrderingRegression:
+    """Rilievo 3: in mobile i turni attivi vanno in ordine crescente
+    (azionabile prima), come nella vista desktop."""
+
+    def test_active_rounds_ascending_in_mobile_cards(self, db_session, app):
+        p = []
+        for i in range(4):
+            user = User(
+                username=f"mobile_p{i}",
+                email=f"mobile_p{i}@test.com",
+                password_hash="test",
+            )
+            db_session.add(user)
+            p.append(user)
+        gara = Gara(
+            number=1,
+            name="Gara Ordine Mobile",
+            date=date.today(),
+            discipline=Discipline.EIGHT_BALL.value,
+            distance=5,
+            matchmaking_strategy="random",
+            status=GaraStatus.PLAYING.value,
+            current_round=2,
+            rounds_count=3,
+            min_participants=4,
+        )
+        db_session.add(gara)
+        db_session.commit()
+
+        matches = []
+        # Turno 1 concluso; turno 2 con risultati da inserire; turno 3 ai tavoli
+        for round_number, status in (
+            (1, MatchStatus.COMPLETED.value),
+            (2, MatchStatus.PLAYING.value),
+            (3, MatchStatus.PLAYING.value),
+        ):
+            match = Match(
+                gara_id=gara.id,
+                round_number=round_number,
+                player1_id=p[0].id,
+                player2_id=p[1].id,
+                status=status,
+            )
+            db_session.add(match)
+            matches.append(match)
+        db_session.commit()
+
+        with app.test_request_context("/"):
+            html = render_template(
+                "components/_match_cards_mobile.html",
+                gara=gara,
+                matches=matches,
+                all_matches=matches,
+                user_can_manage=False,
+                user_inscription=None,
+            )
+
+        turno2 = html.index("Turno 2")
+        turno3 = html.index("Turno 3")
+        assert turno2 < turno3, "il turno azionabile piu' basso va mostrato prima"
