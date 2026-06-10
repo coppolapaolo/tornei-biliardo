@@ -96,16 +96,20 @@ class RoundClassificationService:
 
 
 def visible_user_ids_for_gara(gara_id: int) -> set[int]:
-    # iscritti non ritirati
-    active = {
+    # Iscritti ATTIVI (non ritirati, non in waitlist): il vecchio filtro
+    # contraddiceva il proprio commento includendoli tutti.
+    candidate_ids = {
         ins.user_id
-        for ins in db.session.query(Inscription).filter_by(gara_id=gara_id).all()
+        for ins in db.session.query(Inscription)
+        .filter_by(gara_id=gara_id, is_withdrawn=False, is_waitlist=False)
+        .all()
     }
-    # utenti soft-deleted
-    deleted = {
-        u.id for u in db.session.query(User).filter(User.deleted_at.isnot(None)).all()
-    }
-    return active - deleted
+    if not candidate_ids:
+        return set()
+    # User.query esclude automaticamente i soft-deleted (filtro unificato).
+    # La vecchia `filter(User.deleted_at.isnot(None))` era resa vuota proprio da
+    # quel filtro, quindi non escludeva nulla.
+    return {u.id for u in User.query.filter(User.id.in_(candidate_ids)).all()}
 
 
 class StrategyBasedClassificationService:

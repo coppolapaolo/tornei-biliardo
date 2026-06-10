@@ -29,7 +29,6 @@ from utils import player_only
 
 from . import player_bp
 
-
 # ============ PROFILE EXPORT ============
 
 
@@ -213,8 +212,17 @@ def _collect_user_data(user_id: int) -> Dict[str, Any]:
     # 2. Privacy settings
     try:
         privacy = PrivacyService.get_privacy_settings(user_id)
-        # Ensure it's not detached/expired
-        db.session.refresh(privacy)
+        # refresh isolato: un suo fallimento (es. lock SQLite transitorio nel
+        # thread di export) NON deve far ricadere sul fallback all-False, che
+        # falserebbe l'export GDPR. Si usano comunque i valori reali caricati.
+        try:
+            db.session.refresh(privacy)
+        except Exception as refresh_err:
+            current_app.logger.warning(
+                "Privacy refresh failed for user %s, using loaded values: %s",
+                user_id,
+                refresh_err,
+            )
         privacy_data = {
             "show_email": privacy.show_email,
             "show_phone": privacy.show_phone,
@@ -224,7 +232,9 @@ def _collect_user_data(user_id: int) -> Dict[str, Any]:
             "show_challenge_stats": privacy.show_challenge_stats,
         }
     except Exception as e:
-        current_app.logger.warning(f"Could not fetch privacy settings for user {user_id}, using defaults: {e}")
+        current_app.logger.warning(
+            f"Could not fetch privacy settings for user {user_id}, using defaults: {e}"
+        )
         privacy_data = {
             "show_email": False,
             "show_phone": False,
@@ -245,7 +255,9 @@ def _collect_user_data(user_id: int) -> Dict[str, Any]:
                 if insc.gara and insc.gara.campionato
                 else None
             ),
-            "date": serialize_date(insc.gara.date) if insc.gara and insc.gara.date else None,
+            "date": (
+                serialize_date(insc.gara.date) if insc.gara and insc.gara.date else None
+            ),
             "is_withdrawn": insc.is_withdrawn,
             "is_waitlist": insc.is_waitlist,
             "created_at": serialize_date(insc.created_at) if insc.created_at else None,
@@ -266,20 +278,30 @@ def _collect_user_data(user_id: int) -> Dict[str, Any]:
                 if match.gara and match.gara.campionato
                 else None
             ),
-            "date": serialize_date(match.gara.date) if match.gara and match.gara.date else None,
+            "date": (
+                serialize_date(match.gara.date)
+                if match.gara and match.gara.date
+                else None
+            ),
             "opponent": (
                 match.player2.username
                 if match.player1_id == user_id and match.player2
                 else (match.player1.username if match.player1 else None)
             ),
             "my_score": (
-                match.player1_score if match.player1_id == user_id else match.player2_score
+                match.player1_score
+                if match.player1_id == user_id
+                else match.player2_score
             ),
             "opponent_score": (
-                match.player2_score if match.player1_id == user_id else match.player1_score
+                match.player2_score
+                if match.player1_id == user_id
+                else match.player1_score
             ),
             "result": (
-                "win" if match.winner_id == user_id else "loss" if match.winner_id else "pending"
+                "win"
+                if match.winner_id == user_id
+                else "loss" if match.winner_id else "pending"
             ),
             "round_number": match.round_number,
             "status": match.status,
@@ -314,7 +336,9 @@ def _collect_user_data(user_id: int) -> Dict[str, Any]:
             ),
             "score": attempt.score,
             "passed": attempt.passed,
-            "attempted_at": serialize_date(attempt.created_at) if attempt.created_at else None,
+            "attempted_at": (
+                serialize_date(attempt.created_at) if attempt.created_at else None
+            ),
         }
         for attempt in challenge_attempts
     ]
@@ -366,7 +390,9 @@ def _collect_user_data(user_id: int) -> Dict[str, Any]:
     )
     gamification_data["xp_transactions"] = [
         {
-            "transaction_type": tx.transaction_type.value if tx.transaction_type else None,
+            "transaction_type": (
+                tx.transaction_type.value if tx.transaction_type else None
+            ),
             "xp_amount": tx.xp_amount,
             "reason": tx.reason,
             "level_before": tx.level_before,
@@ -430,7 +456,10 @@ def _generate_gdpr_export(
 
             # Send notification (using pre-translated strings)
             from models.notification.services import NotificationService
-            from models.notification.models import NotificationType, NotificationPriority
+            from models.notification.models import (
+                NotificationType,
+                NotificationPriority,
+            )
 
             NotificationService.create_notification(
                 user_id=user_id,
@@ -448,15 +477,23 @@ def _generate_gdpr_export(
             emit_user_event(
                 user_id,
                 "gdpr_export_ready",
-                {"filename": filename, "download_url": f"/player/gdpr-export/download/{filename}"},
+                {
+                    "filename": filename,
+                    "download_url": f"/player/gdpr-export/download/{filename}",
+                },
             )
 
         except Exception as e:
             # Log error and notify user of failure
-            current_app.logger.error(f"GDPR export failed for user {user_id}: {e}", exc_info=True)
+            current_app.logger.error(
+                f"GDPR export failed for user {user_id}: {e}", exc_info=True
+            )
             try:
                 from models.notification.services import NotificationService
-                from models.notification.models import NotificationType, NotificationPriority
+                from models.notification.models import (
+                    NotificationType,
+                    NotificationPriority,
+                )
 
                 NotificationService.create_notification(
                     user_id=user_id,
@@ -486,7 +523,9 @@ def request_gdpr_export():
         mtime = datetime.fromtimestamp(file.stat().st_mtime)
         if utc_now() - mtime < timedelta(minutes=5):
             flash(
-                _("Un export è già in corso o è stato generato di recente. Controlla le notifiche."),
+                _(
+                    "Un export è già in corso o è stato generato di recente. Controlla le notifiche."
+                ),
                 "warning",
             )
             return redirect(url_for("player.privacy_settings"))
@@ -495,10 +534,14 @@ def request_gdpr_export():
     # (Flask-Babel requires request context, unavailable in background threads)
     i18n_strings = {
         "success_title": _("Export GDPR Pronto"),
-        "success_message": _("Il tuo archivio dati è pronto per il download. Il link scadrà tra 24 ore."),
+        "success_message": _(
+            "Il tuo archivio dati è pronto per il download. Il link scadrà tra 24 ore."
+        ),
         "success_action": _("Scarica"),
         "error_title": _("Errore Export GDPR"),
-        "error_message": _("Si è verificato un errore durante la generazione dell'archivio. Riprova più tardi."),
+        "error_message": _(
+            "Si è verificato un errore durante la generazione dell'archivio. Riprova più tardi."
+        ),
     }
 
     # Start background export

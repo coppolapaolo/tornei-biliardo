@@ -12,7 +12,7 @@ import logging
 
 from flask import g, has_request_context
 
-from ..base import transactional
+from ..base import transactional, utc_now
 from .models import KpiFeatureUsage
 from .enums import FeatureName
 
@@ -76,7 +76,9 @@ class FeatureTracker:
         for_date: Optional[date] = None,
     ) -> None:
         if for_date is None:
-            for_date = date.today()
+            # utc_now().date() (non date.today() locale): coerente con le query
+            # metriche che aggregano per data UTC (func.date(updated_at)).
+            for_date = utc_now().date()
 
         session_key = cls._get_session_key(feature, for_date)
         tracked = cls._tracked_set()

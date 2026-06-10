@@ -34,10 +34,10 @@ class EmailService:
                 or os.environ.get("MAIL_DEFAULT_SENDER")
                 or DEFAULT
             )
-        except ImportError:
-            return os.environ.get("MAIL_DEFAULT_SENDER") or DEFAULT
         except RuntimeError:
-            # Outside application context
+            # Fuori dall'application context current_app (LocalProxy) solleva
+            # RuntimeError. config.get/os.environ.get non sollevano mai
+            # ImportError → quel ramo era dead code, rimosso.
             return os.environ.get("MAIL_DEFAULT_SENDER") or DEFAULT
 
     @staticmethod
