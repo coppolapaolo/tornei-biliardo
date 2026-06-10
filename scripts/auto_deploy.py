@@ -139,6 +139,13 @@ def count_pending_migrations() -> Optional[int]:
     migrations_runner = PROJECT_DIR / "migrations" / "runner.py"
     if not migrations_runner.exists():
         return 0
+    # Se il DB non esiste, niente migrations (come run_pending_migrations):
+    # invocare --status connetterebbe a sqlite creando un file vuoto.
+    db_path = Path(os.environ.get("DATABASE_PATH", "instance/billiard_campionato.db"))
+    if not db_path.is_absolute():
+        db_path = PROJECT_DIR / db_path
+    if not db_path.exists():
+        return 0
     success, output = run_command([sys.executable, str(migrations_runner), "--status"])
     if not success:
         return None
@@ -149,7 +156,10 @@ def webapp_api(action: str) -> tuple:
     """POST all'API PythonAnywhere per la webapp: disable / enable / reload."""
     token = os.environ.get("API_TOKEN") or os.environ.get("PYTHONANYWHERE_API_TOKEN")
     if not token:
-        return False, f"{action}: token API non disponibile ($API_TOKEN)"
+        return False, (
+            f"{action}: token API non disponibile "
+            "($API_TOKEN o $PYTHONANYWHERE_API_TOKEN)"
+        )
 
     url = (
         f"https://www.pythonanywhere.com/api/v0/user/{PA_USERNAME}"
@@ -182,10 +192,17 @@ def run_migrations_safely() -> tuple:
             "Disable, `python migrations/runner.py`, tab Web -> Enable + Reload."
         )
     try:
-        return run_migrations()
+        success, output = run_migrations()
     finally:
+        # L'enable gira anche se run_migrations solleva un'eccezione.
         ok_enable, msg_enable = webapp_api("enable")
         print(f"Enable web app: {msg_enable}")
+    if not ok_enable:
+        return False, (
+            f"web app NON riabilitata dopo le migrations ({msg_enable}): "
+            "riabilitala subito dal tab Web (Enable)!"
+        )
+    return success, output
 
 
 def reload_webapp() -> tuple:

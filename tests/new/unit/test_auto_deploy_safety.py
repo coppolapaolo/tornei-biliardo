@@ -87,3 +87,19 @@ def test_enable_runs_even_if_migrations_fail(monkeypatch):
         auto_deploy.run_migrations_safely()
 
     assert calls == ["disable", "migrate", "enable"]
+
+
+@pytest.mark.unit
+def test_enable_failure_is_an_error(monkeypatch):
+    """Enable fallito dopo migrations OK = deploy fallito (app resta giu')."""
+
+    def api(action):
+        return (True, "ok") if action == "disable" else (False, "HTTP 500")
+
+    monkeypatch.setattr(auto_deploy, "webapp_api", api)
+    monkeypatch.setattr(auto_deploy, "run_migrations", lambda: (True, "ok"))
+
+    success, msg = auto_deploy.run_migrations_safely()
+
+    assert success is False
+    assert "NON riabilitata" in msg
