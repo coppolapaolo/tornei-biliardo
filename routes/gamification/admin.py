@@ -117,33 +117,40 @@ def admin_create_quest():
         description = request.form.get("description", "").strip()
         quest_type = request.form.get("quest_type", "weekly")
         requirement_type = request.form.get("requirement_type", "matches_played")
-        requirement_target = int(request.form.get("requirement_target", 10))
-        xp_reward = int(request.form.get("xp_reward", 100))
-
-        start_date_str = request.form.get("start_date")
-        end_date_str = request.form.get("end_date")
 
         if not name:
             flash(_("Il nome della quest è obbligatorio"), "error")
             return redirect(url_for("gamification.admin_create_quest"))
 
-        start_date = (
-            datetime.fromisoformat(start_date_str) if start_date_str else utc_now()
-        )
+        # int()/fromisoformat/QuestType[...] sollevano ValueError/KeyError su
+        # input invalido: senza guardia il parsing esplode in 500 PRIMA di
+        # handle_service_action.
+        try:
+            requirement_target = int(request.form.get("requirement_target", 10))
+            xp_reward = int(request.form.get("xp_reward", 100))
+            quest_type_enum = QuestType[quest_type.upper()]
 
-        if end_date_str:
-            end_date = datetime.fromisoformat(end_date_str)
-        else:
-            if quest_type == "weekly":
-                end_date = start_date + timedelta(days=7)
+            start_date_str = request.form.get("start_date")
+            end_date_str = request.form.get("end_date")
+            start_date = (
+                datetime.fromisoformat(start_date_str) if start_date_str else utc_now()
+            )
+            if end_date_str:
+                end_date = datetime.fromisoformat(end_date_str)
             else:
-                end_date = start_date + timedelta(days=30)
+                if quest_type == "weekly":
+                    end_date = start_date + timedelta(days=7)
+                else:
+                    end_date = start_date + timedelta(days=30)
+        except (ValueError, KeyError):
+            flash(_("Dati del form non validi"), "error")
+            return redirect(url_for("gamification.admin_create_quest"))
 
         return handle_service_action(
             action=lambda: QuestService.create_quest(
                 name=name,
                 description=description,
-                quest_type=QuestType[quest_type.upper()],
+                quest_type=quest_type_enum,
                 start_date=start_date,
                 end_date=end_date,
                 requirements={"type": requirement_type, "target": requirement_target},
@@ -252,11 +259,15 @@ def admin_create_achievement():
         category = request.form.get("category", "match")
         difficulty = request.form.get("difficulty", "common")
         icon_path = request.form.get("icon_path", "").strip() or None
-        xp_reward = int(request.form.get("xp_reward", 50))
         is_hidden = request.form.get("is_hidden") == "on"
         is_progressive = request.form.get("is_progressive") == "on"
         requirement_type = request.form.get("requirement_type", "match_wins")
-        requirement_value = int(request.form.get("requirement_value", 1))
+        try:
+            xp_reward = int(request.form.get("xp_reward", 50))
+            requirement_value = int(request.form.get("requirement_value", 1))
+        except ValueError:
+            flash(_("Dati del form non validi"), "error")
+            return redirect(url_for("gamification.admin_create_achievement"))
 
         return handle_service_action(
             action=lambda: AchievementService.create_achievement(
@@ -336,8 +347,12 @@ def admin_grant_xp():
     """Grant XP to a user (admin tool)."""
     from models.gamification.models import XPTransactionType
 
-    user_id = int(request.form.get("user_id", 0))
-    xp_amount = int(request.form.get("xp_amount", 0))
+    try:
+        user_id = int(request.form.get("user_id", 0))
+        xp_amount = int(request.form.get("xp_amount", 0))
+    except ValueError:
+        flash(_("Dati del form non validi"), "error")
+        return redirect(url_for("gamification.admin_xp_management"))
     reason = request.form.get("reason", "Admin grant").strip()
 
     if user_id <= 0:
@@ -416,15 +431,17 @@ def admin_streaks():
 @admin_required
 def admin_grant_freeze():
     """Grant a freeze token to a user."""
-    user_id = int(request.form.get("user_id", 0))
-    streak_type_str = request.form.get("streak_type", "WEEKLY_ACTIVITY")
-    freeze_count = int(request.form.get("freeze_count", 1))
+    try:
+        user_id = int(request.form.get("user_id", 0))
+        freeze_count = int(request.form.get("freeze_count", 1))
+        streak_type = StreakType[request.form.get("streak_type", "WEEKLY_ACTIVITY")]
+    except (ValueError, KeyError):
+        flash(_("Dati del form non validi"), "error")
+        return redirect(url_for("gamification.admin_streaks"))
 
     if user_id <= 0:
         flash(_("Seleziona un utente valido"), "error")
         return redirect(url_for("gamification.admin_streaks"))
-
-    streak_type = StreakType[streak_type_str]
 
     return handle_service_action(
         action=lambda: StreakService.admin_grant_freeze(

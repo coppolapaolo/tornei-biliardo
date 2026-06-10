@@ -160,6 +160,8 @@ def create_proposal():
                 "billiard_hall_id": request.args.get("billiard_hall_id", ""),
                 "location": request.args.get("location", ""),
                 "discipline": request.args.get("discipline", "palla_8"),
+                "match_format": request.args.get("match_format", "single"),
+                "set_distance": request.args.get("set_distance", "5"),
                 "distance": request.args.get("distance", "5"),
                 "is_race_to": request.args.get("is_race_to", "true"),
                 "break_rule": request.args.get("break_rule", "alternate"),
@@ -180,10 +182,12 @@ def create_proposal():
     try:
         data = request.get_json() if request.is_json else request.form
 
-        # Parse scheduled time
-        scheduled_at = datetime.fromisoformat(
-            data["scheduled_at"].replace("Z", "+00:00")
-        )
+        # Parse scheduled time. data.get + guard: l'indicizzazione diretta
+        # sollevava KeyError (non coperto da except ValueError) → 500.
+        scheduled_at_str = data.get("scheduled_at")
+        if not scheduled_at_str:
+            raise ValueError("Campo scheduled_at mancante")
+        scheduled_at = datetime.fromisoformat(scheduled_at_str.replace("Z", "+00:00"))
 
         # Calculate expiration (default 1 hour before match)
         expires_hours = int(data.get("expires_hours", 1))

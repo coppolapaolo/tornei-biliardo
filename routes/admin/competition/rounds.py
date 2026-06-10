@@ -2,6 +2,7 @@
 """Round management routes for competitions."""
 
 from flask import (
+    abort,
     render_template,
     request,
     redirect,
@@ -41,12 +42,16 @@ from . import competition_bp  # noqa: E402  (deferred import to avoid circular)
 @gara_manager_required
 def start_first_round(gara_id):
     """Avvia primo turno della gara (o tutti i turni per strategia Random)"""
-    try:
-        gara = db.session.get(Gara, gara_id)
+    gara = db.session.get(Gara, gara_id)
+    if gara is None:
+        # Guard esplicito PRIMA del service: il pattern `gara and ...` a valle
+        # mascherava il None e mostrava comunque il flash di successo.
+        abort(404)
 
+    try:
         RoundService.start_first_round(gara_id)
 
-        if gara and gara.matchmaking_strategy == "random":
+        if gara.matchmaking_strategy == "random":
             flash("Gara avviata! Tutti i turni sono stati creati.", "success")
         else:
             flash("Primo turno avviato!", "success")

@@ -88,10 +88,15 @@ def add_rack(match_id):
     try:
         data = request.get_json() if request.is_json else request.form
 
+        # data.get + guard: data["winner_id"] mancante era KeyError → 500.
+        if data.get("winner_id") is None:
+            raise ValueError("Campo winner_id mancante")
+        winner_id = int(data["winner_id"])
+
         rack = IndividualMatchService.add_rack_for_player(
             match_id=match_id,
             user_id=current_user.id,
-            winner_id=int(data["winner_id"]),
+            winner_id=winner_id,
         )
 
         # Emit SSE event for real-time sync
@@ -106,7 +111,7 @@ def add_rack(match_id):
             {
                 "action": "added",
                 "rack_number": rack.rack_number,
-                "winner_id": int(data["winner_id"]),
+                "winner_id": winner_id,
                 "player1_score": match.player1_score,
                 "player2_score": match.player2_score,
                 "is_ready_for_validation": match.is_ready_for_validation(),
@@ -144,10 +149,15 @@ def remove_rack(match_id):
     try:
         data = request.get_json() if request.is_json else request.form
 
+        # data.get + guard: data["player_id"] mancante era KeyError → 500.
+        if data.get("player_id") is None:
+            raise ValueError("Campo player_id mancante")
+        player_id = int(data["player_id"])
+
         IndividualMatchService.remove_rack_for_player(
             match_id=match_id,
             user_id=current_user.id,
-            player_id=int(data["player_id"]),
+            player_id=player_id,
         )
 
         # Emit SSE event for real-time sync
@@ -161,7 +171,7 @@ def remove_rack(match_id):
             "rack_updated",
             {
                 "action": "removed",
-                "player_id": int(data["player_id"]),
+                "player_id": player_id,
                 "player1_score": match.player1_score,
                 "player2_score": match.player2_score,
                 "is_ready_for_validation": match.is_ready_for_validation(),
@@ -201,13 +211,15 @@ def confirm_result(match_id):
         )
 
         # Emit SSE event for real-time sync
+        from models.status_enum import MatchStatus
         from routes.sse import emit_individual_match_event
 
-        event_type = (
-            "match_completed"
-            if match.status.value == "completed"
-            else "result_confirmed"
-        )
+        # La conferma bilaterale porta lo status a VALIDATED (mai "completed"):
+        # il confronto col letterale "completed" lasciava completed=False e
+        # "In attesa dell'altro giocatore" anche a match appena chiuso.
+        fully_confirmed = match.status.value == MatchStatus.VALIDATED.value
+
+        event_type = "match_completed" if fully_confirmed else "result_confirmed"
         emit_individual_match_event(
             match_id,
             event_type,
@@ -215,7 +227,7 @@ def confirm_result(match_id):
                 "confirmed_by": current_user.id,
                 "player1_confirmed": match.player1_confirmed,
                 "player2_confirmed": match.player2_confirmed,
-                "completed": match.status.value == "completed",
+                "completed": fully_confirmed,
                 "winner_id": match.winner_id,
             },
         )
@@ -224,18 +236,18 @@ def confirm_result(match_id):
             return jsonify(
                 {
                     "success": True,
-                    "completed": match.status.value == "completed",
+                    "completed": fully_confirmed,
                     "player1_confirmed": match.player1_confirmed,
                     "player2_confirmed": match.player2_confirmed,
                     "message": (
                         "Match completato!"
-                        if match.status.value == "completed"
+                        if fully_confirmed
                         else "Risultato confermato!"
                     ),
                 }
             )
         else:
-            if match.status.value == "completed":
+            if fully_confirmed:
                 flash("Match completato con successo!", "success")
             else:
                 flash("Risultato confermato! In attesa dell'altro giocatore.", "info")
@@ -302,6 +314,10 @@ def complete_match(match_id):
     """Complete an individual match - legacy route for backward compatibility."""
     try:
         data = request.get_json() if request.is_json else request.form
+
+        # data.get + guard: data["winner_id"] mancante era KeyError → 500.
+        if data.get("winner_id") is None:
+            raise ValueError("Campo winner_id mancante")
 
         match = IndividualMatchService.complete_match(
             match_id=match_id,
@@ -452,7 +468,8 @@ def forfeit_match(match_id):
 @individual_match_bp.route("/matches/<int:match_id>/rematch")
 @RoleRequirement.player_or_director_required
 def rematch(match_id):
-    """Start a new match with the same opponent - redirects to create_proposal with pre-filled values."""
+    """Nuovo match con lo stesso avversario: redirect a create_proposal
+    con i parametri precompilati."""
     from flask_babel import _
     from models.base import utc_now
 
@@ -488,9 +505,19 @@ def rematch(match_id):
     if match.billiard_hall_id:
         params["billiard_hall_id"] = match.billiard_hall_id
 
+    # match_format: senza, create_proposal assume "single" e il rematch di
+    # un multi-set/free diventava un single race-to-5.
+    if match.distance is None:
+        params["match_format"] = "free"
+    elif getattr(match, "is_multi_set", False):
+        params["match_format"] = "multi"
+    else:
+        params["match_format"] = "single"
+
     # Multi-set parameters if present
     if getattr(match, "is_multi_set", False):
         params["is_multi_set"] = "true"
+        params["set_distance"] = match.distance or 5  # rack per set
         if getattr(match, "match_distance", None):
             params["match_distance"] = match.match_distance
         if getattr(match, "is_race_to_sets", None) is not None:
