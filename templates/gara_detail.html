@@ -203,7 +203,11 @@
       </div>
     </div>
     <div id="mobilePlayingManagement" class="collapse">
+      {# headerless: il titolo "Gestione" + status badge sono gia' nell'header
+         del collapse qui sopra (rilievo Copilot PR #36) #}
+      {% with management_headerless = True %}
       {% include "components/_gara_management.html" %}
+      {% endwith %}
     </div>
   </div>
 </div>

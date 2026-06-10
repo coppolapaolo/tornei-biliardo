@@ -80,6 +80,10 @@ def test_playing_phase_mobile_order_actionable_first(admin_client, db_session):
     assert "order-2" in _classes_of(html, "sectionTurni")
     gestione = _classes_of(html, "sectionGestioneMobile")
     assert "order-3" in gestione and "d-md-none" in gestione
+    # Niente header "Gestione" duplicato: dentro il collapse mobile il
+    # componente e' incluso headerless (restano l'header desktop e quello
+    # del collapse stesso) — rilievo Copilot PR #36
+    assert html.count('fa-cog"></i> Gestione') == 2
     assert "order-4" in _classes_of(html, "sectionDirettori")
     # Desktop invariato: ordine ripristinato dalle classi order-md-*
     assert "order-md-1" in _classes_of(html, "sectionDirettori")

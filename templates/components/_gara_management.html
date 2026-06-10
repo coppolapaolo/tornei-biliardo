@@ -40,11 +40,16 @@
 {% endmacro %}
 <div>
     <!-- Gestione Stato Gara -->
-    <div class="card">
+    {# management_headerless: sopprime card+header quando il componente e'
+       incluso in un contenitore che ha gia' titolo "Gestione" e status badge
+       (collapse mobile in gara_detail.html, fase di gioco) #}
+    <div class="{% if not management_headerless %}card{% endif %}">
+        {% if not management_headerless %}
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5><i class="fas fa-cog"></i> {{ _('Gestione') }}</h5>
             {{ status_badge(gara, 'gara') }}
         </div>
+        {% endif %}
         <div class="card-body">
             {% if gara.status == 'setup' %}
             {{ challenge_button(gara) }}
