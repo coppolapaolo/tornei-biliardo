@@ -411,6 +411,12 @@ L'infrastruttura i18n display-time esiste ed è funzionante: models/notification
 
 ## Da ri-verificare a mano (verificatore interrotto da rate-limit)
 
+> **CHIUSO 2026-06-10**: triage completato (3 agenti + verifica manuale).
+> Esiti: 13 confermati e fixati (batch 7 PR #33, batch 8 PR #34), 4 falsi
+> positivi, 1 gia' risolto. Con i batch 1-8 (PR #22-#34) TUTTI i finding di
+> questo report risultano processati. Dettagli nel post-mortem in memoria
+> di sessione e nei body delle PR.
+
 Questi finding provengono dai finder ma NON sono stati verificati. Trattali come *candidati*, non come bug confermati.
 
 ### Severità: HIGH (5)
