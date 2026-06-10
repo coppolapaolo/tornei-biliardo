@@ -13,6 +13,7 @@ from models.match.models import Match
 from sqlalchemy.exc import IntegrityError
 
 from models.base import db, utc_now
+from models.exceptions import ValidationError
 from .models import Campionato
 from ..user.role_enum import UserRole
 from ..transaction.manager import (
@@ -222,6 +223,13 @@ class TournamentService(TournamentStatisticsService):
 
         if user.role == UserRole.ADMIN.value:
             raise ValueError("Gli admin non vanno assegnati come direttori.")
+
+        # Solo utenti con ruolo director (stessa regola di GaraService: la UI
+        # offre solo direttori, il service deve imporlo).
+        if user.role != UserRole.DIRECTOR.value:
+            raise ValidationError(
+                "Solo gli utenti con ruolo direttore possono essere co-direttori"
+            )
 
         existing = DirectorAssignment.query.filter_by(
             entity_type="campionato", entity_id=campionato_id, user_id=user_id

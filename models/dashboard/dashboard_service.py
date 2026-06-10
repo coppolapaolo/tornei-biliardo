@@ -13,6 +13,7 @@ from flask_babel import gettext as _
 from sqlalchemy.orm import joinedload
 
 from models.base import db
+from models.user.role_enum import UserRole
 from models.campionato.models import Campionato
 from models.user.models import DirectorAssignment
 from models.competition.models import Gara, Inscription
@@ -463,7 +464,7 @@ class DashboardService:
         )
 
         unified_items = build_unified_items(
-            campionati, standalone_garas, user_role="guest", user_id=None
+            campionati, standalone_garas, user_role=UserRole.GUEST.value, user_id=None
         )
 
         guest_caps = CapabilityVM(

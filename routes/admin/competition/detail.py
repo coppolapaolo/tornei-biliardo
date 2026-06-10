@@ -156,8 +156,10 @@ def gara_detail(gara_id):
         excluded_director_ids = set(assigned_director_ids) | set(inherited_director_ids)
 
         # Get available users for director selection
+        from models.user.role_enum import UserRole
+
         query = (
-            User.query.filter(User.role == "director")
+            User.query.filter(User.role == UserRole.DIRECTOR.value)
             .filter(User.deleted_at.is_(None))
             .filter(User.id != current_user.id)
         )
@@ -235,7 +237,8 @@ def gara_detail(gara_id):
             ).count()
 
             if completed_count > 0:
-                # Usa il numero massimo di turni (query dal database) per la classifica complessiva
+                # Usa il numero massimo di turni (query dal database)
+                # per la classifica complessiva
                 from sqlalchemy import func
 
                 max_round = (
@@ -245,7 +248,8 @@ def gara_detail(gara_id):
                     or gara.current_round
                 )
 
-                # Skip recalculation if SSR has been applied to preserve corrected positions
+                # Skip recalculation if SSR has been applied (preserva
+                # le posizioni corrette)
                 if not ssr_has_been_applied:
                     RoundClassification.calculate_classification_after_round(
                         gara_id, max_round
@@ -282,7 +286,8 @@ def gara_detail(gara_id):
             # Cerca la classificazione del turno completato più recente
             for round_num in range(gara.current_round, 0, -1):
                 if is_round_completed(round_num):
-                    # Skip recalculation if SSR has been applied to preserve corrected positions
+                    # Skip recalculation if SSR has been applied (preserva
+                    # le posizioni corrette)
                     if not ssr_has_been_applied:
                         # SEMPRE ricalcola la classificazione per garantire dati
                         # aggiornati. Necessario perché i risultati potrebbero essere

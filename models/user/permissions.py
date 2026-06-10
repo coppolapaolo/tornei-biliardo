@@ -42,8 +42,9 @@ class PermissionChecker:
         if user.is_admin:
             return True
 
-        # Users with DirectorAssignment can manage assigned campionati
-        # This includes directors AND players who were added as co-directors
+        # Users with DirectorAssignment can manage assigned campionati.
+        # NB: i co-direttori hanno SEMPRE role=director — lo impongono
+        # GaraService/TournamentService.add_director (decisione 2026-06-10).
         try:
             from .models import DirectorAssignment
             from models.base import db
@@ -85,8 +86,9 @@ class PermissionChecker:
         if user.is_admin:
             return True
 
-        # Users with DirectorAssignment can manage their assigned competitions
-        # This includes directors AND players who were added as co-directors
+        # Users with DirectorAssignment can manage their assigned competitions.
+        # NB: i co-direttori hanno SEMPRE role=director — lo impongono
+        # GaraService/TournamentService.add_director (decisione 2026-06-10).
         try:
             # Import here to avoid circular imports during transition
             from models import Gara, db
@@ -549,7 +551,7 @@ class PermissionChecker:
 
 # Re-export for backward compatibility
 from .role_decorators import RoleRequirement  # noqa: E402, F401
-from .permission_helpers import (
+from .permission_helpers import (  # noqa: E402
     user_can,
     get_user_permissions_summary,
 )  # noqa: E402, F401
