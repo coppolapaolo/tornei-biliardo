@@ -344,3 +344,71 @@ class TestIndividualMatchMissingFields:
         _login(client, p1)
         response = client.post("/match/proposals/create", json={"location": "Hall"})
         assert response.status_code == 400
+
+
+class TestRematchPreservesFormat:
+    """Bug 6: rematch non passava match_format → multi-set/free diventava
+    sempre single race-to-5."""
+
+    def _completed_match(self, db_session, **extra):
+        from models.individual_match.models import IndividualMatch
+        from models.status_enum import MatchStatus
+
+        p1 = _make_user(db_session, "player")
+        p2 = _make_user(db_session, "player")
+        match = IndividualMatch(
+            player1_id=p1.id,
+            player2_id=p2.id,
+            location="Test Hall",
+            scheduled_at=utc_now() - timedelta(hours=3),
+            status=MatchStatus.VALIDATED,
+            winner_id=p1.id,
+            **extra,
+        )
+        db_session.add(match)
+        db_session.commit()
+        return match, p1
+
+    def test_rematch_multi_set_passes_format(self, client, db_session):
+        match, p1 = self._completed_match(
+            db_session,
+            distance=4,  # rack per set
+            is_race_to=True,
+            is_multi_set=True,
+            match_distance=3,
+            player1_score=3,
+            player2_score=1,
+        )
+        _login(client, p1)
+        response = client.get(f"/match/matches/{match.id}/rematch")
+        assert response.status_code == 302
+        assert "match_format=multi" in response.location
+        assert "set_distance=4" in response.location
+
+    def test_rematch_free_format_passes_format(self, client, db_session):
+        match, p1 = self._completed_match(
+            db_session,
+            distance=None,  # free format
+            is_race_to=True,
+            player1_score=3,
+            player2_score=2,
+        )
+        _login(client, p1)
+        response = client.get(f"/match/matches/{match.id}/rematch")
+        assert response.status_code == 302
+        assert "match_format=free" in response.location
+
+    def test_create_proposal_prefills_multi_format(self, client, db_session):
+        p1 = _make_user(db_session, "player")
+        _login(client, p1)
+        response = client.get(
+            "/match/proposals/create?rematch=true&match_format=multi"
+            "&set_distance=4&match_distance=3"
+        )
+        assert response.status_code == 200
+        html = response.get_data(as_text=True)
+        # Il radio multi deve essere preselezionato
+        import re
+
+        multi_radio = re.search(r'<input[^>]*id="formatMulti"[^>]*>', html)
+        assert multi_radio and "checked" in multi_radio.group(0)

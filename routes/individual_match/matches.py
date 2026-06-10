@@ -504,9 +504,19 @@ def rematch(match_id):
     if match.billiard_hall_id:
         params["billiard_hall_id"] = match.billiard_hall_id
 
+    # match_format: senza, create_proposal assume "single" e il rematch di
+    # un multi-set/free diventava un single race-to-5.
+    if match.distance is None:
+        params["match_format"] = "free"
+    elif getattr(match, "is_multi_set", False):
+        params["match_format"] = "multi"
+    else:
+        params["match_format"] = "single"
+
     # Multi-set parameters if present
     if getattr(match, "is_multi_set", False):
         params["is_multi_set"] = "true"
+        params["set_distance"] = match.distance or 5  # rack per set
         if getattr(match, "match_distance", None):
             params["match_distance"] = match.match_distance
         if getattr(match, "is_race_to_sets", None) is not None:

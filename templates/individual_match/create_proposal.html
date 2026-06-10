@@ -115,18 +115,20 @@
                                         <!-- Match Format Selection -->
                                         <div class="mb-3">
                                             <label class="form-label">{{ _("Tipo Partita") }}</label>
+                                            {# Preseleziona il formato dal rematch (default: single) #}
+                                            {% set selected_format = rematch_params.match_format if rematch_params and rematch_params.match_format else 'single' %}
                                             <div class="btn-group w-100 mb-2" role="group">
-                                                <input type="radio" class="btn-check" name="match_format" id="formatSingle" value="single" checked>
+                                                <input type="radio" class="btn-check" name="match_format" id="formatSingle" value="single" {% if selected_format == 'single' %}checked{% endif %}>
                                                 <label class="btn btn-outline-primary" for="formatSingle">
                                                     <i class="fas fa-dice-one"></i> {{ _("Set Singolo") }}
                                                 </label>
 
-                                                <input type="radio" class="btn-check" name="match_format" id="formatMulti" value="multi">
+                                                <input type="radio" class="btn-check" name="match_format" id="formatMulti" value="multi" {% if selected_format == 'multi' %}checked{% endif %}>
                                                 <label class="btn btn-outline-primary" for="formatMulti">
                                                     <i class="fas fa-layer-group"></i> {{ _("Multi-Set") }}
                                                 </label>
 
-                                                <input type="radio" class="btn-check" name="match_format" id="formatFree" value="free">
+                                                <input type="radio" class="btn-check" name="match_format" id="formatFree" value="free" {% if selected_format == 'free' %}checked{% endif %}>
                                                 <label class="btn btn-outline-primary" for="formatFree">
                                                     <i class="fas fa-infinity"></i> {{ _("Libero") }}
                                                 </label>
@@ -173,14 +175,14 @@
                                             <div class="mb-3">
                                                 <label for="match_distance" class="form-label">{{ _("Numero di Set") }} *</label>
                                                 <input type="number" class="form-control" id="match_distance" name="match_distance"
-                                                    min="1" max="11" value="3">
+                                                    min="1" max="11" value="{{ rematch_params.match_distance if rematch_params and rematch_params.match_distance else '3' }}">
                                                 <div class="form-text">{{ _("Numero di set da vincere") }}</div>
                                             </div>
 
                                             <div class="mb-3">
                                                 <label for="set_distance" class="form-label">{{ _("Rack per Set") }} *</label>
                                                 <input type="number" class="form-control" id="set_distance" name="set_distance"
-                                                    min="1" max="25" value="5">
+                                                    min="1" max="25" value="{{ rematch_params.set_distance if rematch_params and rematch_params.set_distance else '5' }}">
                                                 <div class="form-text">{{ _("Numero di rack per vincere ogni set") }}</div>
                                             </div>
                                         </div>
@@ -466,6 +468,13 @@
     // Initialize format explanation and player invitations visibility
     document.addEventListener('DOMContentLoaded', function () {
         updateFormatExplanation();
+
+        // Allinea le sezioni di config al formato preselezionato (rematch
+        // multi/free): senza, resterebbe visibile la config "single".
+        const checkedFormat = document.querySelector('input[name="match_format"]:checked');
+        if (checkedFormat) {
+            checkedFormat.dispatchEvent(new Event('change'));
+        }
 
         // Check for rematch opponent (pre-selected from previous match)
         {% if rematch_opponent %}

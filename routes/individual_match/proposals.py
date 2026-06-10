@@ -160,6 +160,8 @@ def create_proposal():
                 "billiard_hall_id": request.args.get("billiard_hall_id", ""),
                 "location": request.args.get("location", ""),
                 "discipline": request.args.get("discipline", "palla_8"),
+                "match_format": request.args.get("match_format", "single"),
+                "set_distance": request.args.get("set_distance", "5"),
                 "distance": request.args.get("distance", "5"),
                 "is_race_to": request.args.get("is_race_to", "true"),
                 "break_rule": request.args.get("break_rule", "alternate"),
