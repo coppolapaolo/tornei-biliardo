@@ -450,3 +450,13 @@ class TestToggleVenueStatusCoercion:
             json={"field": "is_active"},
         )
         assert response.status_code == 400
+
+
+class TestStartFirstRoundMissingGara:
+    """Bug 8: start_first_round su gara inesistente flashava successo."""
+
+    def test_nonexistent_gara_is_404(self, client, db_session):
+        admin = _make_user(db_session, "admin")
+        _login(client, admin)
+        response = client.post("/admin/gara/999999/start_first_round")
+        assert response.status_code == 404
