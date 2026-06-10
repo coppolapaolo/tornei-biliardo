@@ -41,20 +41,39 @@ def _decrypt_with(key, stored):
     return derive_cipher(key).decrypt(token).decode()
 
 
+def _encrypt_with(key, plaintext):
+    from utils.encryption import derive_cipher
+
+    return base64.urlsafe_b64encode(
+        derive_cipher(key).encrypt(plaintext.encode())
+    ).decode()
+
+
+def _set_raw_pii(user_id, email_raw, phone_raw):
+    """Scrive i valori raw direttamente, bypassando EncryptedString: rende il
+    test indipendente dalla chiave del manager globale (che potrebbe non
+    essere OLD_KEY se l'ambiente imposta ENCRYPTION_KEY)."""
+    db.session.execute(
+        text('UPDATE "user" SET email = :e, phone = :p WHERE id = :id'),
+        {"e": email_raw, "p": phone_raw, "id": user_id},
+    )
+    db.session.commit()
+
+
 @pytest.mark.unit
 def test_rotate_reencrypts_email_and_phone(db_session):
     """email/phone cifrati con la chiave vecchia diventano leggibili solo
     con la nuova; i plaintext sono preservati."""
     from scripts.rotate_encryption_key import rotate_user_pii
 
-    email = f"rot_{uuid.uuid4().hex[:8]}@t.com"
-    user = _make_user(email, "+39 333 1234567")
-    db.session.commit()
+    from cryptography.fernet import InvalidToken
 
-    # Nel test env il manager globale usa la chiave di default (= OLD_KEY):
-    # il valore raw deve decifrarsi con OLD_KEY prima della rotazione.
-    raw_email, _ = _raw_pii(user.id)
-    assert _decrypt_with(OLD_KEY, raw_email) == email
+    email = f"rot_{uuid.uuid4().hex[:8]}@t.com"
+    phone = "+39 333 1234567"
+    user = _make_user(email, phone)
+    db.session.commit()
+    # Cifra esplicitamente con OLD_KEY per rendere il test deterministico.
+    _set_raw_pii(user.id, _encrypt_with(OLD_KEY, email), _encrypt_with(OLD_KEY, phone))
 
     report = rotate_user_pii(db.session, OLD_KEY, NEW_KEY, commit=True)
 
@@ -63,8 +82,8 @@ def test_rotate_reencrypts_email_and_phone(db_session):
 
     raw_email, raw_phone = _raw_pii(user.id)
     assert _decrypt_with(NEW_KEY, raw_email) == email
-    assert _decrypt_with(NEW_KEY, raw_phone) == "+39 333 1234567"
-    with pytest.raises(Exception):
+    assert _decrypt_with(NEW_KEY, raw_phone) == phone
+    with pytest.raises(InvalidToken):
         _decrypt_with(OLD_KEY, raw_email)
 
 
@@ -76,6 +95,7 @@ def test_rotate_is_idempotent_and_dry_run_safe(db_session):
     email = f"rot_{uuid.uuid4().hex[:8]}@t.com"
     user = _make_user(email, None)
     db.session.commit()
+    _set_raw_pii(user.id, _encrypt_with(OLD_KEY, email), None)
     raw_before, _ = _raw_pii(user.id)
 
     # Dry-run: nessuna scrittura.

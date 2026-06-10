@@ -73,6 +73,9 @@ def rotate_user_pii(
         "undecryptable": [],
     }
 
+    # .all() volutamente: snapshot completo prima degli UPDATE. Iterare il
+    # cursore in streaming mentre si scrive sulla stessa connessione SQLite
+    # e' fragile, e la tabella user e' piccola (centinaia di righe).
     rows = session.execute(text('SELECT id, email, phone FROM "user"')).all()
     for row in rows:
         for column in _PII_COLUMNS:
