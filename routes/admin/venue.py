@@ -369,9 +369,13 @@ def toggle_venue_status(venue_id):
     # commit (500) o NULL nel campo.
     if isinstance(raw_value, bool):
         value = raw_value
-    elif isinstance(raw_value, str):
-        value = raw_value.strip().lower() in ("true", "1", "on", "yes")
+    elif isinstance(raw_value, str) and raw_value.strip().lower() in ("true", "1"):
+        value = True
+    elif isinstance(raw_value, str) and raw_value.strip().lower() in ("false", "0"):
+        value = False
     else:
+        # Solo true/false espliciti: una stringa qualsiasi ("maybe") NON deve
+        # diventare False e disattivare la sala.
         return jsonify({"success": False, "message": "Valore non valido"}), 400
 
     try:

@@ -451,6 +451,20 @@ class TestToggleVenueStatusCoercion:
         )
         assert response.status_code == 400
 
+    def test_unrecognized_string_is_400(self, client, db_session, active_venue):
+        """Una stringa qualsiasi non deve diventare False (rilievo Copilot #33)."""
+        from models.location.models import BilliardHall
+
+        admin = _make_user(db_session, "admin")
+        _login(client, admin)
+        response = client.post(
+            f"/admin/venues/{active_venue.id}/toggle",
+            json={"field": "is_active", "value": "maybe"},
+        )
+        assert response.status_code == 400
+        db_session.expire_all()
+        assert db_session.get(BilliardHall, active_venue.id).is_active is True
+
 
 class TestStartFirstRoundMissingGara:
     """Bug 8: start_first_round su gara inesistente flashava successo."""
