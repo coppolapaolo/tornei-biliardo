@@ -194,3 +194,55 @@ class TestConfirmResultBilateral:
         assert payload["success"] is True
         # Seconda conferma = match chiuso: la route deve dirlo.
         assert payload["completed"] is True
+
+
+class TestAddRackReportedBy:
+    """Bug 3: add_rack_result registrava reported_by_id=1 hardcoded."""
+
+    def test_rack_attributed_to_current_user(self, client, db_session):
+        from models.match.models import Match, Rack
+        from models.status_enum import MatchStatus
+
+        # Il primo utente del DB di test prende id=1: crea prima i player
+        # cosi' il director NON ha id=1 e l'hardcoded non passa per caso.
+        p1 = _make_user(db_session, "player")
+        p2 = _make_user(db_session, "player")
+        director = _make_user(db_session, "director")
+        assert director.id != 1
+
+        gara = Gara(
+            name=f"B7 Rack {uuid.uuid4().hex[:8]}",
+            number=1,
+            date=date.today() + timedelta(days=7),
+            time=time(18, 0),
+            discipline="palla_8",
+            distance=5,
+            rounds_count=3,
+            min_participants=2,
+            max_participants=10,
+            matchmaking_strategy="random",
+            director_id=director.id,
+            status=GaraStatus.PLAYING.value,
+            inscription_start=utc_now() - timedelta(days=1),
+            inscription_end=utc_now() - timedelta(hours=1),
+        )
+        db_session.add(gara)
+        db_session.flush()
+        match = Match(
+            gara_id=gara.id,
+            round_number=1,
+            player1_id=p1.id,
+            player2_id=p2.id,
+            status=MatchStatus.PLAYING.value,
+        )
+        db_session.add(match)
+        db_session.commit()
+
+        _login(client, director)
+        response = client.post(
+            f"/admin/match/{match.id}/add_rack", data={"winner_id": p1.id}
+        )
+
+        assert response.status_code == 200
+        rack = db_session.query(Rack).filter_by(match_id=match.id).one()
+        assert rack.reported_by_id == director.id

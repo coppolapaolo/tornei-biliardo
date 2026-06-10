@@ -7,7 +7,7 @@ from flask import (
     flash,
     jsonify,
 )
-from flask_login import login_required
+from flask_login import current_user, login_required
 
 from models import (
     Match,
@@ -38,7 +38,7 @@ def add_rack_result(match_id):
         result = RackService.add_rack_with_score_update(
             match_id=match_id,
             winner_id=winner_id,
-            reported_by_id=1,  # Admin user ID
+            reported_by_id=current_user.id,
             validated_by_admin=True,  # Admin validation immediate
         )
 
