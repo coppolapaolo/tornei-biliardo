@@ -309,6 +309,35 @@ def edit_gara(gara_id):
     )
 
 
+@competition_bp.route("/<int:gara_id>/tables-config", methods=["POST"])
+@login_required
+@gara_manager_required
+def update_tables_config(gara_id):
+    """Salva i tavoli della gara (in ordine di pregio) e il flag di
+    assegnazione in base alla classifica (solo strategia random).
+
+    Disponibile solo tra apertura iscrizioni e avvio gara (lo stato è
+    validato da GaraService.update_tables_config).
+    """
+    db.get_or_404(Gara, gara_id)
+
+    tables_input = request.form.get("available_tables", "").strip()
+    tables = Gara.parse_tables_input(tables_input) if tables_input else []
+    assign_by_ranking = "assign_tables_by_ranking" in request.form
+
+    try:
+        GaraService.update_tables_config(
+            gara_id=gara_id,
+            tables=tables,
+            assign_tables_by_ranking=assign_by_ranking,
+        )
+        flash(_("Configurazione tavoli salvata!"), "success")
+    except ValueError as e:
+        flash(str(e), "error")
+
+    return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+
 @competition_bp.route("/<int:gara_id>/delete", methods=["POST"])
 @login_required
 @gara_manager_required
@@ -368,7 +397,8 @@ def soft_delete_gara(gara_id):
 
         if cascade_option == "keep_matches":
             flash(
-                f"{gara_name} eliminata. I match sono stati mantenuti come match individuali.",
+                f"{gara_name} eliminata. I match sono stati mantenuti "
+                "come match individuali.",
                 "success",
             )
         else:

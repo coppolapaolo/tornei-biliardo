@@ -109,6 +109,7 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "admin.competition.create_gara_standalone": {"director"},
     "admin.competition.create_gara": {"director"},
     "admin.competition.edit_gara": {"director"},
+    "admin.competition.update_tables_config": {"director"},
     "admin.competition.cancel_gara": {"director"},
     "admin.competition.delete_gara": {"director"},
     "admin.competition.soft_delete_gara": {"director"},

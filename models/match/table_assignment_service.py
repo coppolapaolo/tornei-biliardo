@@ -13,6 +13,12 @@ Business Rules:
    the current one (lowest round with unfinished matches): activating
    matches 2+ rounds ahead spreads players across rounds and deadlocks
    tables (rilievo test manuale 2026-06-10, strategia random)
+6. Ranked mode (gara.assign_tables_by_ranking, solo strategia random):
+   i tavoli sono elencati in ordine di pregio. Dal secondo turno in poi
+   nessun match parte finché TUTTE le partite del turno precedente non
+   sono terminate; poi, a classifica provvisoria aggiornata, il primo
+   tavolo libero della lista va al match in attesa con il giocatore
+   meglio piazzato, e così via.
 
 Author: TDD Implementation - Table Management
 Created: 2025-10-07
@@ -288,11 +294,21 @@ class TableAssignmentService:
         Returns:
             Number of matches that received table assignments
         """
+        from models.competition.models import Gara
 
         # Get all currently free tables
         free_tables = TableAssignmentService._get_free_tables(gara_id)
         if not free_tables:
             return 0
+
+        # Ranked mode (business rule 6): tavoli in ordine di pregio assegnati
+        # in base alla classifica provvisoria, a ondate per turno.
+        gara = db.session.get(Gara, gara_id)
+        ranked_mode = (
+            gara is not None
+            and gara.assign_tables_by_ranking
+            and gara.matchmaking_strategy == "random"
+        )
 
         # Turno corrente = il piu' basso con match non conclusi: i tavoli
         # liberi possono attivare match solo fino al turno corrente+1.
@@ -311,6 +327,11 @@ class TableAssignmentService:
         if current_round is None:
             return 0
 
+        # In ranked mode il turno successivo NON parte in anticipo: si attende
+        # che tutte le partite del turno corrente siano terminate (a quel punto
+        # current_round avanza da solo e l'ondata successiva viene assegnata).
+        max_eligible_round = current_round if ranked_mode else current_round + 1
+
         # Get pending matches without table (exclude bye matches)
         # Order by round_number, then match.id for consistent assignment
         pending_matches = (
@@ -320,10 +341,27 @@ class TableAssignmentService:
                 status=MatchStatus.PENDING.value,
             )
             .filter(Match.is_bye == False)  # noqa: E712
-            .filter(Match.round_number <= current_round + 1)
+            .filter(Match.round_number <= max_eligible_round)
             .order_by(Match.round_number, Match.id)
             .all()
         )
+
+        # Ranked mode dal secondo turno: ordina i match in attesa per posizione
+        # del miglior giocatore in classifica, cosi' il primo tavolo libero
+        # della lista (il piu' pregiato) va al match col giocatore piu' in alto.
+        if ranked_mode and current_round >= 2 and pending_matches:
+            positions = TableAssignmentService._classification_positions(gara_id)
+            unranked = len(positions) + 1
+            pending_matches.sort(
+                key=lambda m: (
+                    m.round_number,
+                    min(
+                        positions.get(m.player1_id, unranked),
+                        positions.get(m.player2_id, unranked),
+                    ),
+                    m.id,
+                )
+            )
 
         assigned_count = 0
         table_index = 0
@@ -357,6 +395,35 @@ class TableAssignmentService:
                 table_index += 1
 
         return assigned_count
+
+    @staticmethod
+    def _classification_positions(gara_id: int) -> dict[int, int]:
+        """Posizioni della classifica provvisoria AGGIORNATA della gara.
+
+        Ricalcola la classifica prima di leggerla: al completamento dell'ultimo
+        match di un turno questo metodo viene raggiunto (via
+        release_and_reassign_table) PRIMA che MatchStateService aggiorni la
+        classifica, quindi senza ricalcolo l'ordinamento dell'ondata successiva
+        userebbe una classifica priva dell'ultimo risultato. Per la strategia
+        random la classifica al round piu' alto aggrega tutti i match conclusi
+        (classifica complessiva), come in detail.py / state_service.
+        """
+        from models.classification.models import RoundClassification
+
+        highest_round = (
+            db.session.query(func.max(Match.round_number))
+            .filter(Match.gara_id == gara_id)
+            .scalar()
+        ) or 1
+
+        RoundClassification.calculate_classification_after_round(gara_id, highest_round)
+
+        rows = (
+            db.session.query(RoundClassification.user_id, RoundClassification.position)
+            .filter_by(gara_id=gara_id, round_number=highest_round)
+            .all()
+        )
+        return {user_id: position for user_id, position in rows}
 
     @staticmethod
     def _get_busy_player_ids(gara_id: int) -> set[int]:
