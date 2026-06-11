@@ -21,6 +21,22 @@ from sqlalchemy.orm import Session as SASession  # noqa: E402
 from models.soft_delete import register_soft_delete_filters  # noqa: E402
 
 
+def glitchtip_before_send(event, hint):
+    """Filtra gli eventi prima dell'invio a GlitchTip.
+
+    Scarta `OSError: write error`: lo solleva uwsgi quando il client chiude
+    la connessione prima che la risposta sia scritta (tipico della prima
+    richiesta dopo un reload della web app). È rumore benigno che
+    consumerebbe la quota GlitchTip Free (1000 eventi/mese).
+    """
+    exc_info = hint.get("exc_info")
+    if exc_info:
+        exc = exc_info[1]
+        if isinstance(exc, OSError) and "write error" in str(exc):
+            return None
+    return event
+
+
 def create_app(config_name=None):
     """Factory per creare l'app Flask"""
 
@@ -50,6 +66,7 @@ def create_app(config_name=None):
             # quota GlitchTip Free (1000 eventi/mese) in poche ore.
             traces_sample_rate=0.0,
             environment=config_name,
+            before_send=glitchtip_before_send,
         )
 
     # Configura logging per debug
