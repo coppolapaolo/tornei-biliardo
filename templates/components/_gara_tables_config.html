@@ -14,8 +14,13 @@
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="mb-3">
                 <label for="available_tables" class="form-label">{{ _('Tavoli da usare (in ordine)') }}</label>
+                {# Prefill SOLO con la lista specifica della gara: se available_tables
+                   è vuoto NON mostrare il fallback della sala, altrimenti un submit
+                   senza modifiche lo persisterebbe perdendo il fallback dinamico
+                   (stesso pattern di _gara_edit_form.html, rilievo Copilot PR #37) #}
                 <input type="text" class="form-control" id="available_tables" name="available_tables"
-                    value="{{ gara.get_available_tables()|join(', ') }}" placeholder="{{ _('es: 2, 3, 5') }}">
+                    value="{% if gara.available_tables %}{{ gara.get_available_tables()|join(', ') }}{% endif %}"
+                    placeholder="{{ _('es: 2, 3, 5') }}">
                 <small class="text-muted">
                     {{ _("Elenco separato da virgole: l'assegnazione automatica userà solo questi tavoli, nell'ordine indicato. Lascia vuoto per usare tutti i tavoli della sala.") }}
                 </small>

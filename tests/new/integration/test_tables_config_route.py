@@ -45,6 +45,35 @@ class TestTablesConfigRoute:
         assert "assign_tables_by_ranking" in html  # checkbox (strategia random)
         assert f"/admin/gara/{gara.id}/tables-config" in html
 
+    def test_form_not_prefilled_with_venue_fallback(self, logged_in_client, db_session):
+        """Se available_tables è vuoto il campo NON va precompilato con i
+        tavoli della sala: un submit senza modifiche congelerebbe la lista
+        perdendo il fallback dinamico (rilievo Copilot PR #37)."""
+        from models import BilliardHall
+
+        client, _ = logged_in_client(role="admin")
+        venue = BilliardHall(
+            name="Sala Prefill Test",
+            number_of_tables=2,
+            is_active=True,
+            verified=True,
+        )
+        venue.set_table_names(["Alpha", "Beta"])
+        db_session.add(venue)
+        db_session.commit()
+
+        gara = self._make_gara(db_session)
+        gara.billiard_hall_id = venue.id
+        db_session.commit()
+        assert gara.get_available_tables() == ["Alpha", "Beta"]  # fallback attivo
+
+        response = client.get(f"/admin/gara/{gara.id}")
+
+        assert response.status_code == 200
+        html = response.get_data(as_text=True)
+        assert 'id="sectionTavoli"' in html
+        assert 'value="Alpha, Beta"' not in html
+
     def test_admin_saves_tables_and_flag(self, logged_in_client, db_session):
         client, _ = logged_in_client(role="admin")
         gara = self._make_gara(db_session)
