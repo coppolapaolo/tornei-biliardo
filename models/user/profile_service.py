@@ -121,8 +121,6 @@ class UserProfileService:
         )
         user.set_password(password)
 
-        user.set_password(password)
-
         # New users are not verified by default — even admin must verify
         # (kept consistent for predictability in the auth/recovery flow).
         user.is_verified = False
