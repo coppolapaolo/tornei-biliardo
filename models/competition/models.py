@@ -81,6 +81,11 @@ class Gara(SoftDeleteMixin, db.Model):
     # Available tables for this gara - JSON list: '["2", "3", "5"]'
     # If set, overrides venue's tables. If None, uses venue's tables.
     available_tables = db.Column(db.Text, nullable=True)
+    # Se True (effettivo solo con strategia random): dal secondo turno i tavoli
+    # vengono assegnati "a ondate" — si attende la fine di tutte le partite del
+    # turno precedente, poi il primo tavolo della lista (ordine di pregio) va
+    # al match con il giocatore meglio piazzato in classifica provvisoria.
+    assign_tables_by_ranking = db.Column(db.Boolean, nullable=False, default=False)
     description = db.Column(db.Text)  # Descrizione opzionale
     rounds_count = db.Column(
         db.Integer, nullable=False, default=DEFAULT_ROUNDS_COUNT

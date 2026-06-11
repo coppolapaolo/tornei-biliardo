@@ -180,6 +180,16 @@
 </div>
 {% endif %}
 
+{# Tavoli della gara: editabile tra apertura iscrizioni e avvio,
+   sola lettura durante il gioco (il componente gestisce gli stati) #}
+{% if gara.status in [GaraStatus.INSCRIPTION.value, GaraStatus.PLAYING.value] %}
+<div class="row mb-4{% if playing_admin %} order-5 order-md-1{% endif %}" id="sectionTavoli">
+  <div class="col-12">
+    {% include "components/_gara_tables_config.html" %}
+  </div>
+</div>
+{% endif %}
+
 <!-- Gestione Turni Section -->
 <div class="row mb-4{% if playing_admin %} order-2 order-md-2{% endif %}" id="sectionTurni">
   <div class="col-12">

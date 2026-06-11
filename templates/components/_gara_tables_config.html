@@ -1,0 +1,63 @@
+{# templates/components/_gara_tables_config.html #}
+{# Sezione tavoli della gara (solo admin/director, vedi gara_detail.html).
+   Editabile tra apertura iscrizioni e avvio gara: il direttore elenca i
+   tavoli da usare in ordine di pregio; con strategia random può attivare
+   l'assegnazione in base alla classifica provvisoria. Dopo l'avvio la
+   sezione diventa di sola lettura. #}
+{% if gara.status == GaraStatus.INSCRIPTION.value %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-table"></i> {{ _('Tavoli della gara') }}</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('admin.competition.update_tables_config', gara_id=gara.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="mb-3">
+                <label for="available_tables" class="form-label">{{ _('Tavoli da usare (in ordine)') }}</label>
+                <input type="text" class="form-control" id="available_tables" name="available_tables"
+                    value="{{ gara.get_available_tables()|join(', ') }}" placeholder="{{ _('es: 2, 3, 5') }}">
+                <small class="text-muted">
+                    {{ _("Elenco separato da virgole: l'assegnazione automatica userà solo questi tavoli, nell'ordine indicato. Lascia vuoto per usare tutti i tavoli della sala.") }}
+                </small>
+            </div>
+            {% if gara.matchmaking_strategy == 'random' %}
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="assign_tables_by_ranking"
+                    name="assign_tables_by_ranking" {% if gara.assign_tables_by_ranking %}checked{% endif %}>
+                <label class="form-check-label" for="assign_tables_by_ranking">
+                    {{ _('Assegna tavoli in base alla classifica') }}
+                </label>
+                <small class="text-muted d-block">
+                    {{ _("Dal secondo turno in poi attende la fine di tutte le partite del turno precedente, poi assegna il primo tavolo della lista al match con il giocatore meglio piazzato in classifica provvisoria, e così via.") }}
+                </small>
+            </div>
+            {% endif %}
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> {{ _('Salva tavoli') }}
+            </button>
+        </form>
+    </div>
+</div>
+{% elif gara.status == GaraStatus.PLAYING.value and gara.get_available_tables() %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-table"></i> {{ _('Tavoli della gara') }}</h5>
+    </div>
+    <div class="card-body">
+        <p class="mb-1">
+            <strong>{{ _('Tavoli in uso (in ordine):') }}</strong>
+            {{ gara.get_available_tables()|join(', ') }}
+        </p>
+        {% if gara.matchmaking_strategy == 'random' %}
+        <p class="mb-0">
+            <strong>{{ _('Assegnazione in base alla classifica:') }}</strong>
+            {% if gara.assign_tables_by_ranking %}
+            <span class="text-success">{{ _('Abilitata') }}</span>
+            {% else %}
+            <span class="text-muted">{{ _('Disabilitata') }}</span>
+            {% endif %}
+        </p>
+        {% endif %}
+    </div>
+</div>
+{% endif %}

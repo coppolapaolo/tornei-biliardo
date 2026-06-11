@@ -313,6 +313,36 @@ class GaraService:
 
     @staticmethod
     @transactional(domain="competition")
+    def update_tables_config(
+        gara_id: int,
+        tables: list[str],
+        assign_tables_by_ranking: bool,
+    ) -> Gara:
+        """Configura tavoli (in ordine di pregio) e flag assegnazione per classifica.
+
+        A differenza di update_gara (bloccata appena esistono iscrizioni), questa
+        configurazione è pensata proprio per la fase di iscrizione: il direttore
+        sceglie quali tavoli usare quando sa quanti giocatori partecipano.
+        Consentita SOLO tra apertura iscrizioni e avvio della gara.
+        """
+        from models.exceptions import NotFoundError, ConflictError
+
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            raise NotFoundError(f"Gara {gara_id} non trovata")
+
+        if gara.status != GaraStatus.INSCRIPTION.value:
+            raise ConflictError(
+                "I tavoli si configurano tra l'apertura delle iscrizioni "
+                "e l'avvio della gara"
+            )
+
+        gara.set_available_tables(tables)
+        gara.assign_tables_by_ranking = assign_tables_by_ranking
+        return gara
+
+    @staticmethod
+    @transactional(domain="competition")
     def delete_gara(gara_id: int) -> None:
         """Cancella una gara se possibile."""
         gara = db.session.get(Gara, gara_id)
