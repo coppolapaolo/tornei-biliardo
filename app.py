@@ -384,4 +384,6 @@ def create_app(config_name=None):
 if __name__ == "__main__":
     app = create_app()
     debug_mode = app.config.get("DEBUG_MODE", False)
-    app.run(debug=debug_mode)
+    # Porta 5001: la 5000 su macOS è occupata dal ricevitore AirPlay
+    # (ControlCenter), che risponde 403 quando il dev server è giù
+    app.run(debug=debug_mode, port=int(os.environ.get("PORT", "5001")))
