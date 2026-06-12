@@ -28,12 +28,21 @@ def glitchtip_before_send(event, hint):
     la connessione prima che la risposta sia scritta (tipico della prima
     richiesta dopo un reload della web app). È rumore benigno che
     consumerebbe la quota GlitchTip Free (1000 eventi/mese).
+
+    L'errore arriva per due canali distinti: come eccezione (hint con
+    `exc_info`) e come record di log catturato dalla logging integration
+    (evento message-only, senza `exc_info` — issue GlitchTip 5295144).
+    Vanno scartati entrambi.
     """
     exc_info = hint.get("exc_info")
     if exc_info:
         exc = exc_info[1]
         if isinstance(exc, OSError) and "write error" in str(exc):
             return None
+    logentry = event.get("logentry") or {}
+    message = logentry.get("message") or event.get("message") or ""
+    if "OSError: write error" in message:
+        return None
     return event
 
 
