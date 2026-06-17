@@ -60,6 +60,10 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "player.edit_profile": {"player", "director"},
     "player.change_password": {"player", "director"},
     "player.request_verification_email": {"player", "director"},
+    # Solo i player possono richiedere la promozione a director (il form è
+    # mostrato unicamente a current_user.role == 'player'). Senza questa
+    # entry il POST era admin-only in prod → 404 per il player (ADR-028).
+    "player.request_director": {"player"},
     "player.delete_account": {"player", "director"},
     # Notifications
     "player.notifications": {"player", "director"},
