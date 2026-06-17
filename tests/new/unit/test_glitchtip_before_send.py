@@ -39,3 +39,26 @@ def test_mantiene_eccezioni_diverse():
 def test_mantiene_eventi_senza_exc_info():
     event = {"event_id": "abc"}
     assert glitchtip_before_send(event, {}) is event
+
+
+def test_scarta_oserror_write_error_da_logging():
+    # L'OSError di uwsgi arriva anche via logging integration: evento
+    # message-only (logentry), hint senza exc_info (issue 5295144).
+    event = {
+        "event_id": "abc",
+        "logentry": {"message": "OSError: write error", "params": []},
+    }
+    assert glitchtip_before_send(event, {"log_record": object()}) is None
+
+
+def test_scarta_oserror_write_error_message_top_level():
+    event = {"event_id": "abc", "message": "OSError: write error"}
+    assert glitchtip_before_send(event, {}) is None
+
+
+def test_mantiene_altri_messaggi_di_log():
+    event = {
+        "event_id": "abc",
+        "logentry": {"message": "Errore inatteso nel matchmaking", "params": []},
+    }
+    assert glitchtip_before_send(event, {"log_record": object()}) is event

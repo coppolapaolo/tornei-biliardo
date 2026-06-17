@@ -28,12 +28,21 @@ def glitchtip_before_send(event, hint):
     la connessione prima che la risposta sia scritta (tipico della prima
     richiesta dopo un reload della web app). È rumore benigno che
     consumerebbe la quota GlitchTip Free (1000 eventi/mese).
+
+    L'errore arriva per due canali distinti: come eccezione (hint con
+    `exc_info`) e come record di log catturato dalla logging integration
+    (evento message-only, senza `exc_info` — issue GlitchTip 5295144).
+    Vanno scartati entrambi.
     """
     exc_info = hint.get("exc_info")
     if exc_info:
         exc = exc_info[1]
         if isinstance(exc, OSError) and "write error" in str(exc):
             return None
+    logentry = event.get("logentry") or {}
+    message = logentry.get("message") or event.get("message") or ""
+    if "OSError: write error" in message:
+        return None
     return event
 
 
@@ -384,4 +393,6 @@ def create_app(config_name=None):
 if __name__ == "__main__":
     app = create_app()
     debug_mode = app.config.get("DEBUG_MODE", False)
-    app.run(debug=debug_mode)
+    # Porta 5001: la 5000 su macOS è occupata dal ricevitore AirPlay
+    # (ControlCenter), che risponde 403 quando il dev server è giù
+    app.run(debug=debug_mode, port=int(os.environ.get("PORT", "5001")))

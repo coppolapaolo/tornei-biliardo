@@ -67,6 +67,29 @@ python migrations/runner.py
 - Reloads PythonAnywhere web app on push to main
 - Git pull and migrations must be run manually or via scheduled task
 
+**⚠️ Branch protection su `main` (dal 2026-06)**: `main` è protetto e
+`enforce_admins=true` — **niente push diretti su `main`, neanche da admin**.
+Ogni modifica passa da una PR e il merge è bloccato finché lo status check
+`test-and-typecheck` (unit test + pyright) non è verde. Workflow obbligatorio:
+
+```bash
+git checkout -b claude/descrizione   # branch di lavoro
+# ... commit ...
+git push -u origin claude/descrizione
+gh pr create                          # apri la PR
+# attendi che la CI sia verde, poi merge → il push su main fa scattare il deploy
+```
+
+Un `git push origin main` diretto viene rifiutato (`protected branch hook
+declined`). L'auto-deploy (reload PythonAnywhere) parte normalmente al merge,
+ma solo su codice che ha passato la CI. Il gate è solo `test-and-typecheck`:
+gli altri job (`check-migrations`, `deploy`, `skip-deploy-notification`) girano
+solo sull'evento `push` a `main`, **non** sulle PR, quindi non vanno mai
+richiesti come status check (resterebbero in pending all'infinito). Per un
+hotfix urgente con CI rotta serve togliere temporaneamente la protezione
+(`gh api -X DELETE repos/coppolapaolo/tornei-biliardo/branches/main/protection`,
+poi riapplicarla).
+
 **PythonAnywhere Scheduled Tasks** (daily):
 - `scripts/auto_deploy.py`: git pull, pip install, migrations e reload. Le
   migrations girano SOLO se pendenti e con la web app disabilitata via API

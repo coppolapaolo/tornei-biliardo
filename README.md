@@ -46,7 +46,7 @@ pip install -r requirements-dev.txt
 python app.py
 ```
 
-**🌐 App disponibile su**: `http://localhost:5000`
+**🌐 App disponibile su**: `http://localhost:5001`
 
 **🌐 App produzione**: https://www.torneibiliardo.it
 
