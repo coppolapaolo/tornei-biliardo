@@ -15,11 +15,24 @@ from __future__ import annotations
 
 import warnings
 
-from utils.feature_flags import ENDPOINT_ROLES, INFRASTRUCTURE_ALLOWLIST
+from utils.feature_flags import (
+    ENDPOINT_ROLES,
+    INFRASTRUCTURE_ALLOWLIST,
+    is_endpoint_visible,
+)
 
 
 def _flask_endpoints(app) -> set[str]:
     return {rule.endpoint for rule in app.url_map.iter_rules()}
+
+
+class _FakeUser:
+    """Minimal user stand-in for is_endpoint_visible (no DB needed)."""
+
+    def __init__(self, *, is_authenticated=True, is_director=False, is_admin=False):
+        self.is_authenticated = is_authenticated
+        self.is_director = is_director
+        self.is_admin = is_admin
 
 
 def test_endpoint_roles_names_are_real(app):
@@ -42,6 +55,25 @@ def test_infrastructure_allowlist_names_are_real(app):
         f"INFRASTRUCTURE_ALLOWLIST contains names that are NOT registered "
         f"Flask endpoints: {sorted(bogus)}"
     )
+
+
+def test_request_director_visible_to_player_in_production(app, monkeypatch):
+    """Regression: il POST player.request_director deve essere raggiungibile
+    dai player in produzione. Senza la entry in ENDPOINT_ROLES era admin-only
+    by default → 404 per il player che invia la richiesta (ADR-028)."""
+    with app.test_request_context():
+        # Forza il path "produzione" (in test l'allowlist è pass-through).
+        monkeypatch.setitem(app.config, "TESTING", False)
+        monkeypatch.setitem(app.config, "DEBUG_MODE", False)
+
+        player = _FakeUser()
+        director = _FakeUser(is_director=True)
+
+        # Il player vede l'endpoint (può inviare la richiesta)...
+        assert is_endpoint_visible("player.request_director", player)
+        # ...mentre un director no: ha senso solo per chi non è ancora director,
+        # coerente con la condizione del template (role == 'player').
+        assert not is_endpoint_visible("player.request_director", director)
 
 
 def test_report_unclassified_endpoints(app):
