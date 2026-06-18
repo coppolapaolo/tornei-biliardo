@@ -11,8 +11,8 @@ Usage:
     python scripts/diagnose_elo.py --user-id 42   # dettaglio di un giocatore
 
 Su PythonAnywhere è read-only, quindi NON serve disabilitare la web app.
-Se gli username risultassero offuscati serve `ENCRYPTION_KEY='...'` davanti al
-comando, ma lo script funziona comunque mostrando gli id.
+Identifica i giocatori solo tramite `id`: non legge gli `username` (PII
+cifrati), così gira pulito anche senza `ENCRYPTION_KEY` in console.
 """
 
 import sys
@@ -50,13 +50,6 @@ def _player_ids(match):
         t = match.trio_match
         return [t.player1_id, t.player2_id, t.player3_id]
     return [match.player1_id, match.player2_id]
-
-
-def _safe_username(user):
-    try:
-        return user.username
-    except Exception:
-        return f"<id {user.id}>"
 
 
 def diagnose(user_id=None):
@@ -117,7 +110,7 @@ def diagnose(user_id=None):
             tot = eligible_total.get(u.id, 0)
             val = eligible_validated.get(u.id, 0)
             print(
-                f"    id={u.id:<5} {_safe_username(u):<20} "
+                f"    id={u.id:<5} "
                 f"eleggibili={tot:<3} di cui validated(saltati)={val}"
             )
         if len(victims) > 30:
@@ -131,7 +124,7 @@ def diagnose(user_id=None):
                 print(f"Utente id={user_id} non trovato.")
             else:
                 print("=" * 60)
-                print(f"DETTAGLIO GIOCATORE id={u.id} ({_safe_username(u)})")
+                print(f"DETTAGLIO GIOCATORE id={u.id}")
                 print("=" * 60)
                 print(f"  elo_rating attuale: {u.elo_rating!r}")
                 mine = [m for m in finished if user_id in _player_ids(m)]

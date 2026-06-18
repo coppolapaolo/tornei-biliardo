@@ -28,6 +28,22 @@ logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger(__name__)
 
 
+def matches_to_process():
+    """Match conclusi da riprocessare, in ordine cronologico.
+
+    Include SIA `completed` SIA `validated` (`MatchStatus.finished_values()`):
+    `validated` è lo stato finale normale dopo la conferma bilaterale dei due
+    giocatori, quindi va riprocessato come `completed`. Filtrare solo su
+    `completed` faceva sì che il backfill — che prima azzera tutti gli ELO —
+    lasciasse a NULL i giocatori i cui match erano già stati validati.
+    """
+    return (
+        Match.query.filter(Match.status.in_(MatchStatus.finished_values()))
+        .order_by(Match.ended_at.asc(), Match.id.asc())
+        .all()
+    )
+
+
 def recalculate_elo(commit=False):
     app = create_app()
 
@@ -69,14 +85,10 @@ def recalculate_elo(commit=False):
             % ("commit pending" if commit else "dry-run, sarà rollbackato")
         )
 
-        # 2. Get all completed matches sorted by date
-        matches = (
-            Match.query.filter_by(status=MatchStatus.COMPLETED.value)
-            .order_by(Match.ended_at.asc(), Match.id.asc())
-            .all()
-        )
+        # 2. Get all finished matches (completed + validated) sorted by date
+        matches = matches_to_process()
 
-        logger.info(f"Found {len(matches)} completed matches to process.")
+        logger.info(f"Found {len(matches)} finished matches to process.")
 
         processed_count = 0
 
