@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-24 14:07+0200\n"
+"POT-Creation-Date: 2026-06-24 15:03+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -559,23 +559,31 @@ msgstr ""
 msgid "Utente eliminato (anonimizzato) con successo."
 msgstr ""
 
-#: routes/admin/user.py:207
+#: routes/admin/user.py:209
+msgid "Seleziona sia l'account sorgente sia quello destinazione."
+msgstr ""
+
+#: routes/admin/user.py:215
+msgid "Account uniti con successo."
+msgstr ""
+
+#: routes/admin/user.py:229
 msgid "Email verificata manualmente."
 msgstr ""
 
-#: routes/admin/user.py:222
+#: routes/admin/user.py:244
 msgid "Impossibile reinviare: utente già verificato o invio fallito."
 msgstr ""
 
-#: routes/admin/user.py:228
+#: routes/admin/user.py:250
 msgid "Email di verifica reinviata."
 msgstr ""
 
-#: routes/admin/user.py:245
+#: routes/admin/user.py:267
 msgid "Le password non corrispondono"
 msgstr ""
 
-#: routes/admin/user.py:255
+#: routes/admin/user.py:277
 msgid "Password impostata con successo"
 msgstr ""
 
@@ -819,7 +827,7 @@ msgstr ""
 msgid "Metrica"
 msgstr ""
 
-#: routes/gamification/features.py:57 templates/admin/users_list.html:53
+#: routes/gamification/features.py:57 templates/admin/users_list.html:109
 #: templates/player/profile.html:102
 msgid "Ruolo"
 msgstr ""
@@ -832,8 +840,8 @@ msgstr ""
 msgid "Achievement"
 msgstr ""
 
-#: routes/gamification/features.py:72 templates/admin/users_list.html:31
-#: templates/admin/users_list.html:86
+#: routes/gamification/features.py:72 templates/admin/users_list.html:87
+#: templates/admin/users_list.html:142
 msgid "Admin"
 msgstr ""
 
@@ -1238,7 +1246,7 @@ msgstr ""
 msgid "Gara %(id)s"
 msgstr ""
 
-#: templates/admin/users_list.html:146
+#: templates/admin/users_list.html:202
 #: templates/components/_history_campionati_tab.html:105
 #: templates/components/_history_gare_tab.html:116
 #: templates/components/_history_matches_tab.html:183
@@ -1310,7 +1318,7 @@ msgid "Parimerito per il %(pos)s° posto"
 msgstr ""
 
 #: templates/admin/campionato_detail.html:208
-#: templates/admin/users_list.html:33 templates/admin/users_list.html:90
+#: templates/admin/users_list.html:89 templates/admin/users_list.html:146
 #: templates/components/_detailed_classification.html:23
 #: templates/components/_ssr_section.html:28
 #: templates/gamification/leaderboards.html:122 templates/gara_detail.html:304
@@ -1387,7 +1395,7 @@ msgid "Anti-reincontro:"
 msgstr ""
 
 #: templates/admin/gara_create_standalone.html:276
-#: templates/admin/users_list.html:95
+#: templates/admin/users_list.html:151
 #: templates/components/_gara_edit_form.html:100
 #: templates/components/_gara_edit_form.html:102
 #: templates/components/_new_gara_modal.html:288
@@ -1396,7 +1404,7 @@ msgid "Sì"
 msgstr ""
 
 #: templates/admin/gara_create_standalone.html:275
-#: templates/admin/users_list.html:97
+#: templates/admin/users_list.html:153
 #: templates/components/_gara_edit_form.html:100
 #: templates/components/_gara_edit_form.html:103
 #: templates/components/_new_gara_modal.html:288
@@ -2401,7 +2409,7 @@ msgid "Classifica:"
 msgstr ""
 
 #: templates/admin/campionato_wizard_step2.html:50
-#: templates/admin/users_list.html:61
+#: templates/admin/users_list.html:117
 #: templates/components/_classification_mobile.html:47
 #: templates/components/_classification_mobile.html:90
 #: templates/components/_detailed_classification.html:25
@@ -2825,47 +2833,81 @@ msgstr ""
 msgid "Torna alla Dashboard"
 msgstr ""
 
-#: templates/admin/users_list.html:20
-msgid "Tutti gli Utenti"
+#: templates/admin/users_list.html:22
+msgid "Unisci utenti (merge)"
 msgstr ""
 
-#: templates/admin/users_list.html:26
-msgid "Cerca per username o email..."
+#: templates/admin/users_list.html:28
+msgid ""
+"Unisce l'account SORGENTE in quello DESTINAZIONE: tutte le partite, "
+"iscrizioni, XP e statistiche passano alla destinazione, poi la sorgente "
+"viene anonimizzata. ELO e classifiche vengono ricalcolati. L'operazione "
+"non è reversibile."
 msgstr ""
 
-#: templates/admin/users_list.html:27
-msgid "Cerca utenti"
-msgstr ""
-
-#: templates/admin/users_list.html:29
-msgid "Filtra per ruolo"
-msgstr ""
-
-#: templates/admin/users_list.html:30
-msgid "Tutti i ruoli"
-msgstr ""
-
-#: templates/admin/users_list.html:32 templates/admin/users_list.html:88
-msgid "Direttore di gara"
+#: templates/admin/users_list.html:31
+msgid ""
+"Confermi l'unione? La sorgente verrà anonimizzata e l'azione non è "
+"reversibile."
 msgstr ""
 
 #: templates/admin/users_list.html:36
+msgid "Sorgente (account vecchio, sarà anonimizzato)"
+msgstr ""
+
+#: templates/admin/users_list.html:39 templates/admin/users_list.html:52
+msgid "Seleziona..."
+msgstr ""
+
+#: templates/admin/users_list.html:49
+msgid "Destinazione (account da tenere)"
+msgstr ""
+
+#: templates/admin/users_list.html:62
+msgid "Unisci"
+msgstr ""
+
+#: templates/admin/users_list.html:76
+msgid "Tutti gli Utenti"
+msgstr ""
+
+#: templates/admin/users_list.html:82
+msgid "Cerca per username o email..."
+msgstr ""
+
+#: templates/admin/users_list.html:83
+msgid "Cerca utenti"
+msgstr ""
+
+#: templates/admin/users_list.html:85
+msgid "Filtra per ruolo"
+msgstr ""
+
+#: templates/admin/users_list.html:86
+msgid "Tutti i ruoli"
+msgstr ""
+
+#: templates/admin/users_list.html:88 templates/admin/users_list.html:144
+msgid "Direttore di gara"
+msgstr ""
+
+#: templates/admin/users_list.html:92
 msgid "Filtra per verifica"
 msgstr ""
 
-#: templates/admin/users_list.html:37
+#: templates/admin/users_list.html:93
 msgid "Verifica: tutti"
 msgstr ""
 
-#: templates/admin/users_list.html:38
+#: templates/admin/users_list.html:94
 msgid "Verificati"
 msgstr ""
 
-#: templates/admin/users_list.html:39
+#: templates/admin/users_list.html:95
 msgid "Non verificati"
 msgstr ""
 
-#: templates/admin/users_list.html:50
+#: templates/admin/users_list.html:106
 #: templates/gamification/admin/dashboard.html:154
 #: templates/gamification/admin/streaks.html:59
 #: templates/gamification/admin/streaks.html:96
@@ -2875,41 +2917,42 @@ msgstr ""
 msgid "Utente"
 msgstr ""
 
-#: templates/admin/users_list.html:51 templates/player/profile.html:96
+#: templates/admin/users_list.html:107 templates/player/profile.html:96
 msgid "Email"
 msgstr ""
 
-#: templates/admin/users_list.html:52 templates/player/profile.html:99
+#: templates/admin/users_list.html:108 templates/player/profile.html:99
 msgid "Telefono"
 msgstr ""
 
-#: templates/admin/users_list.html:54
+#: templates/admin/users_list.html:110
 msgid "Verificato"
 msgstr ""
 
-#: templates/admin/users_list.html:55
+#: templates/admin/users_list.html:111
 msgid "ELO"
 msgstr ""
 
-#: templates/admin/users_list.html:56
+#: templates/admin/users_list.html:112
 msgid "Fargo"
 msgstr ""
 
-#: templates/admin/users_list.html:57
+#: templates/admin/users_list.html:113
 #: templates/gamification/achievements.html:10
 #: templates/gamification/quests.html:10 templates/gamification/streaks.html:10
 msgid "Gamification"
 msgstr ""
 
-#: templates/admin/users_list.html:58
+#: templates/admin/users_list.html:114
 msgid "Richiesta"
 msgstr ""
 
-#: templates/admin/users_list.html:59
+#: templates/admin/users_list.html:115
 msgid "Iscrizioni"
 msgstr ""
 
-#: templates/admin/users_list.html:60 templates/components/_gara_matches.html:7
+#: templates/admin/users_list.html:116
+#: templates/components/_gara_matches.html:7
 #: templates/components/_history_matches_tab.html:14
 #: templates/components/_history_matches_tab.html:67
 #: templates/components/_match_cards_mobile.html:9
@@ -2917,11 +2960,11 @@ msgstr ""
 msgid "Partite"
 msgstr ""
 
-#: templates/admin/users_list.html:62 templates/player/profile.html:101
+#: templates/admin/users_list.html:118 templates/player/profile.html:101
 msgid "Registrato"
 msgstr ""
 
-#: templates/admin/users_list.html:63
+#: templates/admin/users_list.html:119
 #: templates/components/_gara_matches.html:58
 #: templates/components/_gara_matches.html:89
 #: templates/gamification/admin/achievements.html:28
@@ -2935,61 +2978,61 @@ msgstr ""
 msgid "Azioni"
 msgstr ""
 
-#: templates/admin/users_list.html:108
+#: templates/admin/users_list.html:164
 msgid "Bypass completo delle regole gamification"
 msgstr ""
 
-#: templates/admin/users_list.html:109
+#: templates/admin/users_list.html:165
 msgid "Override"
 msgstr ""
 
-#: templates/admin/users_list.html:113
+#: templates/admin/users_list.html:169
 msgid "Normale"
 msgstr ""
 
-#: templates/admin/users_list.html:122 templates/components/_gara_info.html:52
+#: templates/admin/users_list.html:178 templates/components/_gara_info.html:52
 msgid "Nessuna"
 msgstr ""
 
-#: templates/admin/users_list.html:151
+#: templates/admin/users_list.html:207
 msgid "Rimuovere il ruolo director a questo utente?"
 msgstr ""
 
-#: templates/admin/users_list.html:154
+#: templates/admin/users_list.html:210
 msgid "Rimuovi director"
 msgstr ""
 
-#: templates/admin/users_list.html:164
+#: templates/admin/users_list.html:220
 msgid "Segna email come verificata"
 msgstr ""
 
-#: templates/admin/users_list.html:165
+#: templates/admin/users_list.html:221
 msgid "Verifica"
 msgstr ""
 
-#: templates/admin/users_list.html:172
+#: templates/admin/users_list.html:228
 msgid "Reinvia email di verifica"
 msgstr ""
 
-#: templates/admin/users_list.html:179
+#: templates/admin/users_list.html:235
 msgid ""
 "Eliminare definitivamente questo utente? I dati personali verranno "
 "anonimizzati e l'azione non è reversibile."
 msgstr ""
 
-#: templates/admin/users_list.html:182
+#: templates/admin/users_list.html:238
 msgid "Elimina (anonimizza) utente"
 msgstr ""
 
-#: templates/admin/users_list.html:195
+#: templates/admin/users_list.html:251
 msgid "Nessun utente corrisponde ai filtri."
 msgstr ""
 
-#: templates/admin/users_list.html:199
+#: templates/admin/users_list.html:255
 msgid "Nessun Utente"
 msgstr ""
 
-#: templates/admin/users_list.html:200
+#: templates/admin/users_list.html:256
 msgid "Non ci sono ancora utenti registrati."
 msgstr ""
 

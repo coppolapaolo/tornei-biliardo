@@ -13,6 +13,62 @@
     </div>
 </div>
 
+{% if current_user.is_admin and users %}
+<div class="card mb-4 border-warning">
+    <div class="card-header bg-warning-subtle">
+        <button class="btn btn-link text-decoration-none p-0 fw-bold" type="button"
+                data-bs-toggle="collapse" data-bs-target="#mergeUsersPanel"
+                aria-expanded="false" aria-controls="mergeUsersPanel">
+            <i class="fas fa-code-merge"></i> {{ _("Unisci utenti (merge)") }}
+        </button>
+    </div>
+    <div id="mergeUsersPanel" class="collapse">
+        <div class="card-body">
+            <p class="text-muted small mb-3">
+                {{ _("Unisce l'account SORGENTE in quello DESTINAZIONE: tutte le partite, iscrizioni, XP e statistiche passano alla destinazione, poi la sorgente viene anonimizzata. ELO e classifiche vengono ricalcolati. L'operazione non è reversibile.") }}
+            </p>
+            <form action="{{ url_for('admin.user.merge_users') }}" method="POST"
+                  onsubmit='return confirmSubmit(this, {{ _("Confermi l'unione? La sorgente verrà anonimizzata e l'azione non è reversibile.")|tojson }})'>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-5">
+                        <label class="form-label" for="mergeSource">
+                            {{ _("Sorgente (account vecchio, sarà anonimizzato)") }}
+                        </label>
+                        <select class="form-select" id="mergeSource" name="source_id" required>
+                            <option value="">{{ _("Seleziona...") }}</option>
+                            {% for ud in users %}
+                            {% if not ud[0].is_admin and not ud[0].is_deleted %}
+                            <option value="{{ ud[0].id }}">{{ ud[0].username }}{% if ud[0].email %} ({{ ud[0].email }}){% endif %}</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label" for="mergeTarget">
+                            {{ _("Destinazione (account da tenere)") }}
+                        </label>
+                        <select class="form-select" id="mergeTarget" name="target_id" required>
+                            <option value="">{{ _("Seleziona...") }}</option>
+                            {% for ud in users %}
+                            {% if not ud[0].is_admin and not ud[0].is_deleted %}
+                            <option value="{{ ud[0].id }}">{{ ud[0].username }}{% if ud[0].email %} ({{ ud[0].email }}){% endif %}</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-warning w-100">
+                            <i class="fas fa-code-merge"></i> {{ _("Unisci") }}
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <div class="card">
     <div class="card-header">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">

@@ -17,9 +17,8 @@ import logging
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import create_app  # noqa: E402
-from models import db, User  # noqa: E402
+from models import db  # noqa: E402
 from models.match.models import Match  # noqa: E402
-from models.rating.models import PlayerRating, RatingSystem  # noqa: E402
 from models.status_enum import MatchStatus  # noqa: E402
 from models.rating.calculation_service import RatingCalculationService  # noqa: E402
 
@@ -55,68 +54,15 @@ def recalculate_elo(commit=False):
         else:
             logger.info("DRY RUN: No changes will be saved.")
 
-        # 1. Reset all ratings
-        logger.info("Resetting existing Elo ratings...")
-
-        # Il reset avviene SEMPRE nella sessione (anche in dry-run): così il
-        # replay successivo è significativo. Senza azzerare anche la history,
-        # l'idempotenza di process_match_result skipperebbe i match già
-        # processati lasciando i rating a zero. In dry-run il rollback finale
-        # annulla tutto; solo con --commit si persiste.
-        from models.rating.models import MatchRatingHistory
-
-        # Reset User model fields
-        users = User.query.all()
-        for user in users:
-            # None = "non ancora valutato" (ricalcolo da capo)
-            user.elo_rating = None
-            db.session.add(user)
-
-        # Delete PlayerRating entries for ELO + la history
-        db.session.query(PlayerRating).filter_by(
-            rating_system=RatingSystem.ELO
-        ).delete()
-        db.session.query(MatchRatingHistory).filter_by(
-            rating_system=RatingSystem.ELO
-        ).delete()
-        db.session.flush()
-        logger.info(
-            "Ratings + history reset (%s)."
-            % ("commit pending" if commit else "dry-run, sarà rollbackato")
-        )
-
-        # 2. Get all finished matches (completed + validated) sorted by date
-        matches = matches_to_process()
-
-        logger.info(f"Found {len(matches)} finished matches to process.")
-
-        processed_count = 0
-
-        skipped_count = 0
-        for match in matches:
-            try:
-                # Coerente con RatingEventHandlers: walkover e match con
-                # handicap (effective_has_handicap, ereditato da gara/campionato)
-                # NON contribuiscono al rating.
-                if match.is_walkover or match.effective_has_handicap:
-                    skipped_count += 1
-                    continue
-
-                # RatingCalculationService handles Trio and Standard. Fetches
-                # current rating from DB; avendo azzerato i rating + history,
-                # riparte dal default 1200 e riprocessa in ordine cronologico.
-                RatingCalculationService.process_match_result(match)
-                processed_count += 1
-
-                if processed_count % 10 == 0:
-                    logger.info(f"Processed {processed_count} matches...")
-
-            except Exception as e:
-                logger.error(f"Error processing match {match.id}: {e}")
+        # Reset + replay is done by the pure service method (no commit/I/O), so
+        # the same logic is reused by the user-merge flow. The reset happens in
+        # the session even in dry-run, so the replay is meaningful; the final
+        # rollback undoes everything. Only --commit persists.
+        result = RatingCalculationService.recalculate_all_elo()
 
         logger.info(
-            f"Processed {processed_count} total matches "
-            f"({skipped_count} skipped: walkover/handicap)."
+            f"Processed {result['processed']} of {result['total']} finished "
+            f"matches ({result['skipped']} skipped: walkover/handicap)."
         )
 
         if commit:

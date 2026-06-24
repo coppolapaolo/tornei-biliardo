@@ -69,6 +69,56 @@ class RatingCalculationService:
             RatingCalculationService._process_standard_match(match)
 
     @staticmethod
+    def recalculate_all_elo() -> dict:
+        """Reset and replay ALL ELO ratings from finished matches.
+
+        Pure/in-transaction: no app context, no commit, no I/O. The caller is
+        responsible for the transaction boundary (``@transactional``) and for
+        committing/rolling back.
+
+        Resets ``User.elo_rating`` (→ None), deletes ELO ``PlayerRating`` and
+        ``MatchRatingHistory`` rows, then replays every finished match
+        (``completed`` + ``validated``) in chronological order, skipping
+        walkover and handicap matches (coherent with the rating event policy).
+
+        Returns:
+            dict: counters ``{processed, skipped, total}``.
+        """
+        from models.user.models import User
+        from models.status_enum import MatchStatus
+
+        # 1. Reset User.elo_rating (None = "not yet rated").
+        for user in User.query.all():
+            user.elo_rating = None
+            db.session.add(user)
+
+        # 2. Drop ELO PlayerRating + history so the replay starts from default.
+        db.session.query(PlayerRating).filter_by(
+            rating_system=RatingSystem.ELO
+        ).delete()
+        db.session.query(MatchRatingHistory).filter_by(
+            rating_system=RatingSystem.ELO
+        ).delete()
+        db.session.flush()
+
+        # 3. Replay finished matches chronologically.
+        matches = (
+            Match.query.filter(Match.status.in_(MatchStatus.finished_values()))
+            .order_by(Match.ended_at.asc(), Match.id.asc())
+            .all()
+        )
+        processed = 0
+        skipped = 0
+        for match in matches:
+            if match.is_walkover or match.effective_has_handicap:
+                skipped += 1
+                continue
+            RatingCalculationService.process_match_result(match)
+            processed += 1
+
+        return {"processed": processed, "skipped": skipped, "total": len(matches)}
+
+    @staticmethod
     def revert_match_result(match: Match) -> None:
         """Annulla i delta di rating applicati per questo match.
 
