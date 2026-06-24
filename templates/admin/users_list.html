@@ -264,7 +264,8 @@
         const colIndex = Array.from(header.parentNode.children).indexOf(header);
         const sortType = header.dataset.sort || 'text';
         header.style.cursor = 'pointer';
-        let asc = true;
+        // Parte da false: il primo click (asc = !asc) ordina crescente.
+        let asc = false;
 
         header.addEventListener('click', function () {
             asc = !asc;

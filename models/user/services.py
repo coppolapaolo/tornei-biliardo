@@ -149,7 +149,10 @@ class UserService:
     def resend_verification_email(user_id: int) -> bool:
         """Resend the verification email for an existing (unverified) user.
 
-        Returns False if the user is not found or already verified.
+        Returns False if the user is already verified or sending fails.
+
+        Raises:
+            ValueError: if the user does not exist.
         """
         user = db.session.get(User, user_id)
         if not user:

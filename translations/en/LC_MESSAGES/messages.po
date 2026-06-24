@@ -276,7 +276,7 @@ msgstr "Milestone: %(value)s matches!"
 #: models/kpi/notifications.py:54
 #, python-format
 msgid "Sono stati giocati %(value)s match sulla piattaforma. La community cresce!"
-msgstr "%(value)s matches have been played on the platform. The community is growing!"
+msgstr ""
 "%(value)s matches have been played on the platform. The community is "
 "growing!"
 
@@ -3064,6 +3064,8 @@ msgid ""
 "Eliminare definitivamente questo utente? I dati personali verranno "
 "anonimizzati e l'azione non è reversibile."
 msgstr ""
+"Permanently delete this user? Personal data will be anonymized and this "
+"action cannot be undone."
 
 #: templates/admin/users_list.html:182
 msgid "Elimina (anonimizza) utente"
