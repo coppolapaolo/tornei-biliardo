@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-11 18:56+0000\n"
+"POT-Creation-Date: 2026-06-24 14:07+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -555,11 +555,27 @@ msgstr ""
 msgid "Milestone raggiunta: %(value)s gare completate!"
 msgstr ""
 
-#: routes/admin/user.py:195
+#: routes/admin/user.py:193
+msgid "Utente eliminato (anonimizzato) con successo."
+msgstr ""
+
+#: routes/admin/user.py:207
+msgid "Email verificata manualmente."
+msgstr ""
+
+#: routes/admin/user.py:222
+msgid "Impossibile reinviare: utente già verificato o invio fallito."
+msgstr ""
+
+#: routes/admin/user.py:228
+msgid "Email di verifica reinviata."
+msgstr ""
+
+#: routes/admin/user.py:245
 msgid "Le password non corrispondono"
 msgstr ""
 
-#: routes/admin/user.py:205
+#: routes/admin/user.py:255
 msgid "Password impostata con successo"
 msgstr ""
 
@@ -803,7 +819,8 @@ msgstr ""
 msgid "Metrica"
 msgstr ""
 
-#: routes/gamification/features.py:57 templates/player/profile.html:102
+#: routes/gamification/features.py:57 templates/admin/users_list.html:53
+#: templates/player/profile.html:102
 msgid "Ruolo"
 msgstr ""
 
@@ -815,7 +832,8 @@ msgstr ""
 msgid "Achievement"
 msgstr ""
 
-#: routes/gamification/features.py:72
+#: routes/gamification/features.py:72 templates/admin/users_list.html:31
+#: templates/admin/users_list.html:86
 msgid "Admin"
 msgstr ""
 
@@ -1220,6 +1238,7 @@ msgstr ""
 msgid "Gara %(id)s"
 msgstr ""
 
+#: templates/admin/users_list.html:146
 #: templates/components/_history_campionati_tab.html:105
 #: templates/components/_history_gare_tab.html:116
 #: templates/components/_history_matches_tab.html:183
@@ -1291,6 +1310,7 @@ msgid "Parimerito per il %(pos)s° posto"
 msgstr ""
 
 #: templates/admin/campionato_detail.html:208
+#: templates/admin/users_list.html:33 templates/admin/users_list.html:90
 #: templates/components/_detailed_classification.html:23
 #: templates/components/_ssr_section.html:28
 #: templates/gamification/leaderboards.html:122 templates/gara_detail.html:304
@@ -1367,6 +1387,7 @@ msgid "Anti-reincontro:"
 msgstr ""
 
 #: templates/admin/gara_create_standalone.html:276
+#: templates/admin/users_list.html:95
 #: templates/components/_gara_edit_form.html:100
 #: templates/components/_gara_edit_form.html:102
 #: templates/components/_new_gara_modal.html:288
@@ -1375,6 +1396,7 @@ msgid "Sì"
 msgstr ""
 
 #: templates/admin/gara_create_standalone.html:275
+#: templates/admin/users_list.html:97
 #: templates/components/_gara_edit_form.html:100
 #: templates/components/_gara_edit_form.html:103
 #: templates/components/_new_gara_modal.html:288
@@ -2379,6 +2401,7 @@ msgid "Classifica:"
 msgstr ""
 
 #: templates/admin/campionato_wizard_step2.html:50
+#: templates/admin/users_list.html:61
 #: templates/components/_classification_mobile.html:47
 #: templates/components/_classification_mobile.html:90
 #: templates/components/_detailed_classification.html:25
@@ -2788,6 +2811,188 @@ msgstr ""
 msgid "Nuove registrazioni"
 msgstr ""
 
+#: templates/admin/users_list.html:4
+msgid "Gestione Utenti - Admin"
+msgstr ""
+
+#: templates/admin/users_list.html:8
+msgid "Gestione Utenti"
+msgstr ""
+
+#: templates/admin/users_list.html:11 templates/components/_gara_header.html:28
+#: templates/player/notifications.html:276 templates/player/profile.html:29
+#: templates/public/campionato_detail.html:18
+msgid "Torna alla Dashboard"
+msgstr ""
+
+#: templates/admin/users_list.html:20
+msgid "Tutti gli Utenti"
+msgstr ""
+
+#: templates/admin/users_list.html:26
+msgid "Cerca per username o email..."
+msgstr ""
+
+#: templates/admin/users_list.html:27
+msgid "Cerca utenti"
+msgstr ""
+
+#: templates/admin/users_list.html:29
+msgid "Filtra per ruolo"
+msgstr ""
+
+#: templates/admin/users_list.html:30
+msgid "Tutti i ruoli"
+msgstr ""
+
+#: templates/admin/users_list.html:32 templates/admin/users_list.html:88
+msgid "Direttore di gara"
+msgstr ""
+
+#: templates/admin/users_list.html:36
+msgid "Filtra per verifica"
+msgstr ""
+
+#: templates/admin/users_list.html:37
+msgid "Verifica: tutti"
+msgstr ""
+
+#: templates/admin/users_list.html:38
+msgid "Verificati"
+msgstr ""
+
+#: templates/admin/users_list.html:39
+msgid "Non verificati"
+msgstr ""
+
+#: templates/admin/users_list.html:50
+#: templates/gamification/admin/dashboard.html:154
+#: templates/gamification/admin/streaks.html:59
+#: templates/gamification/admin/streaks.html:96
+#: templates/gamification/admin/xp_management.html:22
+#: templates/gamification/admin/xp_management.html:57
+#: templates/gamification/admin/xp_management.html:84
+msgid "Utente"
+msgstr ""
+
+#: templates/admin/users_list.html:51 templates/player/profile.html:96
+msgid "Email"
+msgstr ""
+
+#: templates/admin/users_list.html:52 templates/player/profile.html:99
+msgid "Telefono"
+msgstr ""
+
+#: templates/admin/users_list.html:54
+msgid "Verificato"
+msgstr ""
+
+#: templates/admin/users_list.html:55
+msgid "ELO"
+msgstr ""
+
+#: templates/admin/users_list.html:56
+msgid "Fargo"
+msgstr ""
+
+#: templates/admin/users_list.html:57
+#: templates/gamification/achievements.html:10
+#: templates/gamification/quests.html:10 templates/gamification/streaks.html:10
+msgid "Gamification"
+msgstr ""
+
+#: templates/admin/users_list.html:58
+msgid "Richiesta"
+msgstr ""
+
+#: templates/admin/users_list.html:59
+msgid "Iscrizioni"
+msgstr ""
+
+#: templates/admin/users_list.html:60 templates/components/_gara_matches.html:7
+#: templates/components/_history_matches_tab.html:14
+#: templates/components/_history_matches_tab.html:67
+#: templates/components/_match_cards_mobile.html:9
+#: templates/gamification/achievements.html:63 templates/player/history.html:27
+msgid "Partite"
+msgstr ""
+
+#: templates/admin/users_list.html:62 templates/player/profile.html:101
+msgid "Registrato"
+msgstr ""
+
+#: templates/admin/users_list.html:63
+#: templates/components/_gara_matches.html:58
+#: templates/components/_gara_matches.html:89
+#: templates/gamification/admin/achievements.html:28
+#: templates/gamification/admin/features.html:28
+#: templates/gamification/admin/level_config.html:97
+#: templates/gamification/admin/quests.html:28
+#: templates/gamification/admin/streak_config.html:60
+#: templates/gamification/admin/xp_config.html:29
+#: templates/individual_match/match_detail.html:143
+#: templates/public/garas_list.html:15
+msgid "Azioni"
+msgstr ""
+
+#: templates/admin/users_list.html:108
+msgid "Bypass completo delle regole gamification"
+msgstr ""
+
+#: templates/admin/users_list.html:109
+msgid "Override"
+msgstr ""
+
+#: templates/admin/users_list.html:113
+msgid "Normale"
+msgstr ""
+
+#: templates/admin/users_list.html:122 templates/components/_gara_info.html:52
+msgid "Nessuna"
+msgstr ""
+
+#: templates/admin/users_list.html:151
+msgid "Rimuovere il ruolo director a questo utente?"
+msgstr ""
+
+#: templates/admin/users_list.html:154
+msgid "Rimuovi director"
+msgstr ""
+
+#: templates/admin/users_list.html:164
+msgid "Segna email come verificata"
+msgstr ""
+
+#: templates/admin/users_list.html:165
+msgid "Verifica"
+msgstr ""
+
+#: templates/admin/users_list.html:172
+msgid "Reinvia email di verifica"
+msgstr ""
+
+#: templates/admin/users_list.html:179
+msgid ""
+"Eliminare definitivamente questo utente? I dati personali verranno "
+"anonimizzati e l'azione non è reversibile."
+msgstr ""
+
+#: templates/admin/users_list.html:182
+msgid "Elimina (anonimizza) utente"
+msgstr ""
+
+#: templates/admin/users_list.html:195
+msgid "Nessun utente corrisponde ai filtri."
+msgstr ""
+
+#: templates/admin/users_list.html:199
+msgid "Nessun Utente"
+msgstr ""
+
+#: templates/admin/users_list.html:200
+msgid "Non ci sono ancora utenti registrati."
+msgstr ""
+
 #: templates/components/_admin_campionato_cards.html:72
 #: templates/components/_campionato_garas.html:80
 #: templates/components/_campionato_garas.html:178
@@ -3089,12 +3294,6 @@ msgstr ""
 msgid "Torna al Campionato"
 msgstr ""
 
-#: templates/components/_gara_header.html:28
-#: templates/player/notifications.html:276 templates/player/profile.html:29
-#: templates/public/campionato_detail.html:18
-msgid "Torna alla Dashboard"
-msgstr ""
-
 #: templates/components/_gara_header.html:34
 msgid "Modifica Gara"
 msgstr ""
@@ -3137,10 +3336,6 @@ msgstr ""
 
 #: templates/components/_gara_info.html:50
 msgid "attive"
-msgstr ""
-
-#: templates/components/_gara_info.html:52
-msgid "Nessuna"
 msgstr ""
 
 #: templates/components/_gara_info.html:78
@@ -3343,14 +3538,6 @@ msgstr ""
 msgid "Elimina Gara"
 msgstr ""
 
-#: templates/components/_gara_matches.html:7
-#: templates/components/_history_matches_tab.html:14
-#: templates/components/_history_matches_tab.html:67
-#: templates/components/_match_cards_mobile.html:9
-#: templates/gamification/achievements.html:63 templates/player/history.html:27
-msgid "Partite"
-msgstr ""
-
 #: templates/components/_gara_matches.html:44
 #: templates/components/_gara_matches.html:75
 #: templates/components/_match_cards_mobile.html:47
@@ -3374,21 +3561,8 @@ msgstr ""
 msgid "Risultato"
 msgstr ""
 
-#: templates/components/_gara_matches.html:58
-#: templates/components/_gara_matches.html:89
-#: templates/gamification/admin/achievements.html:28
-#: templates/gamification/admin/features.html:28
-#: templates/gamification/admin/level_config.html:97
-#: templates/gamification/admin/quests.html:28
-#: templates/gamification/admin/streak_config.html:60
-#: templates/gamification/admin/xp_config.html:29
-#: templates/individual_match/match_detail.html:143
-#: templates/public/garas_list.html:15
-msgid "Azioni"
-msgstr ""
-
 #: templates/components/_gara_tables_config.html:10
-#: templates/components/_gara_tables_config.html:44
+#: templates/components/_gara_tables_config.html:49
 msgid "Tavoli della gara"
 msgstr ""
 
@@ -3396,45 +3570,45 @@ msgstr ""
 msgid "Tavoli da usare (in ordine)"
 msgstr ""
 
-#: templates/components/_gara_tables_config.html:18
+#: templates/components/_gara_tables_config.html:23
 msgid "es: 2, 3, 5"
 msgstr ""
 
-#: templates/components/_gara_tables_config.html:20
+#: templates/components/_gara_tables_config.html:25
 msgid ""
 "Elenco separato da virgole: l'assegnazione automatica userà solo questi "
 "tavoli, nell'ordine indicato. Lascia vuoto per usare tutti i tavoli della"
 " sala."
 msgstr ""
 
-#: templates/components/_gara_tables_config.html:28
+#: templates/components/_gara_tables_config.html:33
 msgid "Assegna tavoli in base alla classifica"
 msgstr ""
 
-#: templates/components/_gara_tables_config.html:31
+#: templates/components/_gara_tables_config.html:36
 msgid ""
 "Dal secondo turno in poi attende la fine di tutte le partite del turno "
 "precedente, poi assegna il primo tavolo della lista al match con il "
 "giocatore meglio piazzato in classifica provvisoria, e così via."
 msgstr ""
 
-#: templates/components/_gara_tables_config.html:36
+#: templates/components/_gara_tables_config.html:41
 msgid "Salva tavoli"
 msgstr ""
 
-#: templates/components/_gara_tables_config.html:48
+#: templates/components/_gara_tables_config.html:53
 msgid "Tavoli in uso (in ordine):"
 msgstr ""
 
-#: templates/components/_gara_tables_config.html:53
+#: templates/components/_gara_tables_config.html:58
 msgid "Assegnazione in base alla classifica:"
 msgstr ""
 
-#: templates/components/_gara_tables_config.html:55
+#: templates/components/_gara_tables_config.html:60
 msgid "Abilitata"
 msgstr ""
 
-#: templates/components/_gara_tables_config.html:57
+#: templates/components/_gara_tables_config.html:62
 msgid "Disabilitata"
 msgstr ""
 
@@ -4790,11 +4964,6 @@ msgid ""
 "gessati la stecca."
 msgstr ""
 
-#: templates/gamification/achievements.html:10
-#: templates/gamification/quests.html:10 templates/gamification/streaks.html:10
-msgid "Gamification"
-msgstr ""
-
 #: templates/gamification/achievements.html:15
 msgid "Tutti i tuoi achievement e progressi"
 msgstr ""
@@ -5414,15 +5583,6 @@ msgstr ""
 
 #: templates/gamification/admin/dashboard.html:146
 msgid "Top 10 Utenti XP"
-msgstr ""
-
-#: templates/gamification/admin/dashboard.html:154
-#: templates/gamification/admin/streaks.html:59
-#: templates/gamification/admin/streaks.html:96
-#: templates/gamification/admin/xp_management.html:22
-#: templates/gamification/admin/xp_management.html:57
-#: templates/gamification/admin/xp_management.html:84
-msgid "Utente"
 msgstr ""
 
 #: templates/gamification/admin/dashboard.html:171
@@ -6542,20 +6702,8 @@ msgstr ""
 msgid "Username"
 msgstr ""
 
-#: templates/player/profile.html:96
-msgid "Email"
-msgstr ""
-
-#: templates/player/profile.html:99
-msgid "Telefono"
-msgstr ""
-
 #: templates/player/profile.html:99
 msgid "Non specificato"
-msgstr ""
-
-#: templates/player/profile.html:101
-msgid "Registrato"
 msgstr ""
 
 #: templates/player/profile.html:126

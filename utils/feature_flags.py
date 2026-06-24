@@ -189,6 +189,11 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # User listing (so a director can find players to enroll manually)
     "admin.user.users_list": {"director"},
     "admin.user.user_detail": {"director"},
+    # User management actions: admin-only (explicit empty set = documents the
+    # decision; admin bypasses the matrix). Directors must NOT see these buttons.
+    "admin.user.anonymize_user": set(),
+    "admin.user.verify_user_email": set(),
+    "admin.user.resend_verification": set(),
     # Gamification: director-only at the moment. Player and anonymous viewers
     # do NOT see gamification UI/toasts/notifications in production until the
     # feature stabilises. Admin bypasses the matrix as usual.
