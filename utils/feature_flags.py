@@ -194,6 +194,7 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "admin.user.anonymize_user": set(),
     "admin.user.verify_user_email": set(),
     "admin.user.resend_verification": set(),
+    "admin.user.merge_users": set(),
     # Gamification: director-only at the moment. Player and anonymous viewers
     # do NOT see gamification UI/toasts/notifications in production until the
     # feature stabilises. Admin bypasses the matrix as usual.

@@ -195,6 +195,28 @@ def anonymize_user(user_id: int):
     )
 
 
+@user_bp.route("/users/merge", methods=["POST"])
+@admin_required
+def merge_users():
+    """Unisce l'account sorgente nell'account destinazione (admin-only)."""
+    from flask_login import current_user
+    from flask_babel import _
+
+    try:
+        source_id = int(request.form.get("source_id", ""))
+        target_id = int(request.form.get("target_id", ""))
+    except (TypeError, ValueError):
+        flash(_("Seleziona sia l'account sorgente sia quello destinazione."), "error")
+        return redirect(url_for("admin.user.users_list"))
+
+    return handle_service_action(
+        action=lambda: UserService.merge_users(source_id, target_id, current_user.id),
+        redirect_url=url_for("admin.user.users_list"),
+        success_message=_("Account uniti con successo."),
+        error_prefix=None,
+    )
+
+
 @user_bp.route("/user/<int:user_id>/verify-email", methods=["POST"])
 @admin_required
 def verify_user_email(user_id: int):

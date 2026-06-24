@@ -160,6 +160,15 @@ class UserService:
         return UserProfileService.request_verification_email(user)
 
     @staticmethod
+    def merge_users(
+        source_id: int, target_id: int, performed_by_id: int
+    ) -> Dict[str, Any]:
+        """Delegate to UserMergeService to merge source into target."""
+        from .merge_service import UserMergeService
+
+        return UserMergeService.merge_users(source_id, target_id, performed_by_id)
+
+    @staticmethod
     def get_user_stats(user_id: int) -> Dict[str, Any]:
         """Delegate to UserStatsService for user statistics."""
         return UserStatsService.get_user_stats(user_id)
