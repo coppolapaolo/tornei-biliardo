@@ -41,7 +41,7 @@ from .venue_manager_service import VenueManagerService  # noqa: F401
 
 class UserServiceCore:
     """
-    Enhanced service class for user-related business operations with transaction management.
+    Enhanced service class for user-related operations with transaction management.
 
     This class encapsulates all business logic related to user management,
     including creation, role management, and user operations with proper
@@ -53,7 +53,7 @@ class UserService:
     """Service facade for user management operations.
 
     **REFACTORED**: Task 1.3 UserService Decomposition - Facade Pattern Implementation
-    This class now delegates to specialized services while maintaining backward compatibility:
+    This class now delegates to specialized services while keeping back-compat:
     - UserProfileService: User CRUD and authentication
     - UserPermissionService: Roles and director requests
     - UserStatsService: Statistics and analytics
@@ -110,7 +110,8 @@ class UserService:
         - Role change execution
         - Notification sending
 
-        All functionality now handled by UserPermissionService.demote_director_to_player()
+        All functionality now handled by
+        UserPermissionService.demote_director_to_player()
         """
 
     @staticmethod
@@ -133,6 +134,27 @@ class UserService:
 
         user.soft_delete()
         # Transaction will be committed by decorator
+
+    @staticmethod
+    def anonymize_user(user_id: int, performed_by_id: Optional[int] = None) -> None:
+        """Delegate to UserProfileService for GDPR anonymization (PII scrub)."""
+        return UserProfileService.anonymize_user(user_id, performed_by_id)
+
+    @staticmethod
+    def set_email_verified(user_id: int) -> User:
+        """Delegate to UserProfileService to mark a user's email as verified."""
+        return UserProfileService.set_email_verified(user_id)
+
+    @staticmethod
+    def resend_verification_email(user_id: int) -> bool:
+        """Resend the verification email for an existing (unverified) user.
+
+        Returns False if the user is not found or already verified.
+        """
+        user = db.session.get(User, user_id)
+        if not user:
+            raise ValueError("Utente non trovato")
+        return UserProfileService.request_verification_email(user)
 
     @staticmethod
     def get_user_stats(user_id: int) -> Dict[str, Any]:
@@ -357,7 +379,7 @@ class UserService:
 
         Args:
             request_id: ID of request to approve
-            approved_by: User who approved the request (optional for backward compatibility)
+            approved_by: User who approved the request (optional, for back-compat)
 
         Returns:
             DirectorRequest: Approved request
@@ -371,7 +393,7 @@ class UserService:
             # Process the request using DirectorRequestService
             return DirectorRequestService.process_request(request_id, approved_by, True)
         else:
-            # This is for backward compatibility with tests that don't provide approved_by
+            # Backward compatibility with tests that don't provide approved_by.
             # Create a mock admin user for testing
             mock_admin = User(
                 username="mock_admin", email="mock_admin@example.com", role="admin"
@@ -451,34 +473,24 @@ class VenueManagementService:
     @staticmethod
     def assign_venue_manager(user_id: int, venue_id: int, assigned_by: User):
         """Delegate to VenueManagerService for venue manager assignment."""
-        from .venue_manager_service import VenueManagerService
-
         return VenueManagerService.assign_venue_manager(user_id, venue_id, assigned_by)
 
     @staticmethod
     def revoke_venue_manager(assignment_id: int, revoked_by: User):
         """Delegate to VenueManagerService for venue manager revocation."""
-        from .venue_manager_service import VenueManagerService
-
         return VenueManagerService.revoke_venue_manager(assignment_id, revoked_by)
 
     @staticmethod
     def get_venue_assignments(venue_id: int):
         """Delegate to VenueManagerService for venue assignments."""
-        from .venue_manager_service import VenueManagerService
-
         return VenueManagerService.get_venue_assignments(venue_id)
 
     @staticmethod
     def get_venue_manager(venue_id: int):
         """Delegate to VenueManagerService for venue manager lookup."""
-        from .venue_manager_service import VenueManagerService
-
         return VenueManagerService.get_venue_manager(venue_id)
 
     @staticmethod
     def get_user_venues(user_id: int):
         """Delegate to VenueManagerService for user managed venues."""
-        from .venue_manager_service import VenueManagerService
-
         return VenueManagerService.get_managed_venues(user_id)

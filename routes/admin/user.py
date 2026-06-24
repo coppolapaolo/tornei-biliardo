@@ -180,6 +180,56 @@ def toggle_gamification_override(user_id):
     )
 
 
+@user_bp.route("/user/<int:user_id>/anonymize", methods=["POST"])
+@admin_required
+def anonymize_user(user_id: int):
+    """Anonimizza (soft-delete GDPR con scrub PII) un utente."""
+    from flask_login import current_user
+    from flask_babel import _
+
+    return handle_service_action(
+        action=lambda: UserService.anonymize_user(user_id, current_user.id),
+        redirect_url=url_for("admin.user.users_list"),
+        success_message=_("Utente eliminato (anonimizzato) con successo."),
+        error_prefix=None,
+    )
+
+
+@user_bp.route("/user/<int:user_id>/verify-email", methods=["POST"])
+@admin_required
+def verify_user_email(user_id: int):
+    """Segna manualmente come verificata l'email di un utente."""
+    from flask_babel import _
+
+    return handle_service_action(
+        action=lambda: UserService.set_email_verified(user_id),
+        redirect_url=url_for("admin.user.users_list"),
+        success_message=_("Email verificata manualmente."),
+        error_prefix=None,
+    )
+
+
+@user_bp.route("/user/<int:user_id>/resend-verification", methods=["POST"])
+@admin_required
+def resend_verification(user_id: int):
+    """Reinvia l'email di verifica a un utente non verificato."""
+    from flask_babel import _
+
+    def action():
+        sent = UserService.resend_verification_email(user_id)
+        if not sent:
+            raise ValueError(
+                _("Impossibile reinviare: utente già verificato o invio fallito.")
+            )
+
+    return handle_service_action(
+        action=action,
+        redirect_url=url_for("admin.user.users_list"),
+        success_message=_("Email di verifica reinviata."),
+        error_prefix=None,
+    )
+
+
 @user_bp.route("/user/<int:user_id>/set-password", methods=["POST"])
 @admin_required
 def set_user_password(user_id: int):
