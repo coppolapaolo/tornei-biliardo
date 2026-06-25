@@ -4,6 +4,28 @@ import uuid
 from importlib import import_module
 
 
+@pytest.fixture(scope="session", autouse=True)
+def _fast_password_hashing():
+    """Velocizza i test sostituendo l'hashing PBKDF2 di default (~600k iter)
+    con una variante a 1 iterazione. Solo per i test: la produzione continua
+    a usare il default Werkzeug. `check_password_hash` legge le iterazioni
+    dall'hash salvato, quindi gli utenti creati nei test si autenticano
+    correttamente. Vedi issue #47.
+
+    Patcha il nome `generate_password_hash` nel namespace di
+    `models.user.models`, unico call-site reale (tutto passa da
+    `User.set_password`).
+    """
+    import models.user.models as um
+
+    orig = um.generate_password_hash
+    um.generate_password_hash = lambda pw, **kw: orig(pw, method="pbkdf2:sha256:1")
+    try:
+        yield
+    finally:
+        um.generate_password_hash = orig
+
+
 @pytest.fixture(scope="session")
 def app():
     os.environ.setdefault("FLASK_ENV", "testing")
