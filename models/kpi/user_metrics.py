@@ -1,7 +1,8 @@
 """
 User Metric Service - Centralized Provider for Gamification Metrics
 
-This service aggregates various user statistics from different domains (Match, Tournament, etc.)
+This service aggregates various user statistics from different domains
+(Match, Tournament, etc.)
 to provide a unified interface for the Gamification Rule Engine.
 
 It allows the Rule Engine to ask questions like:
@@ -27,7 +28,10 @@ class UserMetricService:
 
     @staticmethod
     def get_metric(
-        user_id: int, metric_name: str, context: Optional[Dict[str, Any]] = None
+        user_id: int,
+        metric_name: str,
+        context: Optional[Dict[str, Any]] = None,
+        cache: Optional[Dict[Any, Any]] = None,
     ) -> Any:
         """
         Get value for a specific metric.
@@ -36,14 +40,35 @@ class UserMetricService:
             user_id: ID of the user
             metric_name: Name of the metric (e.g., 'total_matches')
             context: Optional context filter (e.g., {'location_id': 5})
+            cache: Optional memoization dict. Quando fornito, il valore viene
+                cachato per (user_id, metric_name, context) e riusato. DA USARE
+                SOLO da path di SOLA LETTURA dove le metriche sono stabili (es.
+                il render della dashboard "cosa posso sbloccare", issue #9). I
+                flussi che mutano le metriche (completamento match → check
+                achievement) NON devono passare la cache, altrimenti
+                servirebbero valori stale e assegnerebbero award sbagliati.
 
         Returns:
             The metric value (usually int, bool, or float)
         """
+        if cache is not None:
+            key = (user_id, metric_name, UserMetricService._context_key(context))
+            if key in cache:
+                return cache[key]
+
         handler = getattr(UserMetricService, f"_get_{metric_name}", None)
-        if handler:
-            return handler(user_id, context)
-        return 0
+        value = handler(user_id, context) if handler else 0
+
+        if cache is not None:
+            cache[key] = value
+        return value
+
+    @staticmethod
+    def _context_key(context: Optional[Dict[str, Any]]) -> Any:
+        """Chiave hashable per il context (per la memoizzazione opt-in)."""
+        if not context:
+            return None
+        return tuple(sorted(context.items()))
 
     @staticmethod
     def _get_total_matches(

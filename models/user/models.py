@@ -331,7 +331,10 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
         return AchievementService.has_achievement(self.id, achievement_slug)
 
     def can_access(
-        self, feature_code: str, context: Dict[str, Any] | None = None
+        self,
+        feature_code: str,
+        context: Dict[str, Any] | None = None,
+        cache: Dict[Any, Any] | None = None,
     ) -> bool:
         """
         Check if user can access a specific feature based on gamification rules.
@@ -339,6 +342,8 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
         Args:
             feature_code: Code of the feature to check (e.g., 'create_match')
             context: Optional context for rule evaluation (e.g., location_id)
+            cache: Optional memoization dict per le metriche, da passare SOLO
+                dai path di sola lettura (vedi UnlockProgressService, issue #9).
 
         Returns:
             True if feature is unlocked or overridden, False otherwise.
@@ -351,7 +356,9 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
 
         from models.gamification.unlock_engine import UnlockEngine
 
-        return UnlockEngine.check_eligibility(self.id, feature_code, context)
+        return UnlockEngine.check_eligibility(
+            self.id, feature_code, context, cache=cache
+        )
 
     # debug ─────────────────────────────────────────────────────────────────────
     def __repr__(self) -> str:  # pragma: no cover

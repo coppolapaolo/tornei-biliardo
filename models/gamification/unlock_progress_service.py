@@ -11,7 +11,7 @@ Used for the user-facing "progression visible" dashboard.
 """
 
 from __future__ import annotations
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 from models.base import db
 from models.gamification.feature_models import FeatureConfig
@@ -24,13 +24,19 @@ class UnlockProgressService:
     """Service to calculate user progress toward feature unlocks."""
 
     @staticmethod
-    def get_feature_progress(user_id: int, feature_code: str) -> Dict[str, Any]:
+    def get_feature_progress(
+        user_id: int,
+        feature_code: str,
+        cache: Optional[Dict[Any, Any]] = None,
+    ) -> Dict[str, Any]:
         """
         Get user's progress toward unlocking a feature.
 
         Args:
             user_id: User ID to check progress for
             feature_code: Feature code to check
+            cache: Optional memoization dict per le metriche (read-only). Vedi
+                get_all_features_progress e UserMetricService.get_metric (#9).
 
         Returns:
             Dictionary with progress information:
@@ -64,7 +70,7 @@ class UnlockProgressService:
         if not user:
             return {"error": "User not found", "feature_code": feature_code}
 
-        is_unlocked = user.can_access(feature_code)
+        is_unlocked = user.can_access(feature_code, cache=cache)
 
         # Analyze each rule set
         rules = feature.get_rules()
@@ -76,7 +82,7 @@ class UnlockProgressService:
 
             for cond in rule_set.get("conditions", []):
                 condition_progress = UnlockProgressService._evaluate_condition(
-                    user_id, cond
+                    user_id, cond, cache=cache
                 )
                 conditions_progress.append(condition_progress)
                 if not condition_progress["is_met"]:
@@ -109,7 +115,11 @@ class UnlockProgressService:
         }
 
     @staticmethod
-    def _evaluate_condition(user_id: int, condition: Dict[str, Any]) -> Dict[str, Any]:
+    def _evaluate_condition(
+        user_id: int,
+        condition: Dict[str, Any],
+        cache: Optional[Dict[Any, Any]] = None,
+    ) -> Dict[str, Any]:
         """Evaluate a single condition and return progress details."""
         cond_type = condition.get("type", "").upper()
 
@@ -133,7 +143,7 @@ class UnlockProgressService:
             metric_name = condition.get("metric", "")
             required = int(condition.get("value", 0))
             operator = condition.get("operator", "gte")
-            current = UserMetricService.get_metric(user_id, metric_name)
+            current = UserMetricService.get_metric(user_id, metric_name, cache=cache)
             is_met = UnlockProgressService._compare(current, operator, required)
 
             # Human-readable metric names
@@ -278,8 +288,17 @@ class UnlockProgressService:
         features = FeatureConfig.query.filter_by(is_active=True).all()
         result = []
 
+        # Cache delle metriche condivisa per l'intero render: le feature
+        # condividono le stesse metriche (es. total_matches), e ogni metrica
+        # veniva ricalcolata sia in can_access sia in _evaluate_condition. La
+        # cache e' locale a questa chiamata di sola lettura, quindi non puo'
+        # servire valori stale ai flussi di mutazione. Elimina l'N+1 (#9).
+        metric_cache: Dict[Any, Any] = {}
+
         for feature in features:
-            progress = UnlockProgressService.get_feature_progress(user_id, feature.code)
+            progress = UnlockProgressService.get_feature_progress(
+                user_id, feature.code, cache=metric_cache
+            )
             if include_unlocked or not progress.get("is_unlocked", False):
                 result.append(progress)
 
