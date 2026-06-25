@@ -7,9 +7,11 @@ validation guards (self / admin / non-admin performer).
 """
 
 import uuid
+import warnings
 from datetime import date, time, timedelta
 
 import pytest
+from sqlalchemy.exc import SAWarning
 
 from models import db
 from models.base import utc_now
@@ -19,6 +21,7 @@ from models.user.services import UserService
 from models.exceptions import ConflictError, ValidationError
 from models.competition.models import Gara
 from models.match.models import Match
+from models.classification.models import GaraClassification, RoundClassification
 from models.status_enum import GaraStatus, MatchStatus
 from models.gamification.models import UserLevel, XPTransaction, XPTransactionType
 
@@ -163,6 +166,94 @@ def test_merge_head_to_head_aborts_and_rolls_back(app, db_session):
     assert src is not None
     assert src.deleted_at is None
     assert src.email is not None
+
+
+def test_merge_no_sawarning_on_classification_recalc(app, db_session):
+    """Regression #46: il ricalcolo classifiche nel merge non deve emettere
+    la SAWarning "Identity map already had an identity ... replacing it".
+
+    Lo scenario riproduce la causa: source e target hanno righe
+    GaraClassification/RoundClassification in una gara conclusa. Il merge le
+    riattribuisce a target e poi ricostruisce le classifiche con DELETE+INSERT;
+    SQLite riusa i rowid liberati, quindi senza il fix gli oggetti caricati in
+    identity-map collidono con gli INSERT freschi e SQLAlchemy avvisa.
+    """
+    admin = _user("admin")
+    source = _user()
+    target = _user()
+    third = _user()
+    gara = _gara(admin.id)
+    gara.current_round = 1
+    db.session.flush()
+
+    # Match concluso source vs third: dopo il merge diventa target vs third e
+    # alimenta il ricalcolo (l'aggregator legge i match finished con punteggi).
+    db.session.add(
+        Match(
+            gara_id=gara.id,
+            round_number=1,
+            player1_id=source.id,
+            player2_id=third.id,
+            player1_score=5,
+            player2_score=2,
+            winner_id=source.id,
+            status=MatchStatus.VALIDATED.value,
+            ended_at=utc_now(),
+        )
+    )
+
+    # Righe di classifica pre-esistenti (di source e third): restano in
+    # identity-map e vengono cancellate+reinserite dal ricalcolo.
+    for user, pos, won, lost in [(source, 1, 5, 2), (third, 2, 2, 5)]:
+        db.session.add(
+            RoundClassification(
+                gara_id=gara.id,
+                round_number=1,
+                user_id=user.id,
+                position=pos,
+                matches_won=1 if pos == 1 else 0,
+                rack_difference=won - lost,
+            )
+        )
+        db.session.add(
+            GaraClassification(
+                gara_id=gara.id,
+                user_id=user.id,
+                position=pos,
+                matches_won=1 if pos == 1 else 0,
+                racks_won=won,
+                racks_lost=lost,
+                rack_difference=won - lost,
+            )
+        )
+    db.session.commit()
+
+    source_id = source.id
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        UserService.merge_users(source_id, target.id, admin.id)
+
+    identity_warnings = [
+        w
+        for w in caught
+        if issubclass(w.category, SAWarning)
+        and "Identity map already had an identity" in str(w.message)
+    ]
+    assert not identity_warnings, (
+        "Il ricalcolo classifiche ha emesso SAWarning identity-map: "
+        f"{[str(w.message) for w in identity_warnings]}"
+    )
+
+    # Le classifiche post-merge devono restare coerenti: target eredita la
+    # posizione vincente, source sparisce dalle classifiche.
+    gc_target = GaraClassification.query.filter_by(
+        gara_id=gara.id, user_id=target.id
+    ).one()
+    assert gc_target.position == 1
+    assert (
+        GaraClassification.query.filter_by(gara_id=gara.id, user_id=source_id).count()
+        == 0
+    )
 
 
 def test_merge_rejects_self(app, db_session):
