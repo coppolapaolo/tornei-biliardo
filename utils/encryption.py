@@ -7,6 +7,8 @@ Requirements: SPECIFICHE.md - Personal information must be encrypted with a
 
 import os
 import base64
+import hmac
+import hashlib
 import logging
 from typing import Optional
 from cryptography.fernet import Fernet
@@ -19,6 +21,61 @@ logger = logging.getLogger(__name__)
 # produzione (email/phone) diventano indecifrabili. Override possibile via
 # ENCRYPTION_SALT per nuovi deployment.
 _DEFAULT_SALT = b"campionati-biliardo-salt"
+
+# Chiave di sviluppo: NON sicura, usata solo se ENCRYPTION_KEY non e' impostata
+# in dev/test. In produzione la sua assenza e' fail-fast (vedi _resolve_key_string).
+_DEV_KEY_STRING = "default-development-key-change-in-production"
+
+# Domain separation per l'HMAC dell'email: garantisce che la chiave usata per
+# l'email_hash sia indipendente da quella del cipher Fernet, pur derivando
+# dalla stessa ENCRYPTION_KEY.
+_EMAIL_HASH_INFO = b"email-hash-v1"
+
+
+def _resolve_key_string() -> str:
+    """Risolve la key string per cifratura/hash.
+
+    Fail-fast in produzione se ENCRYPTION_KEY non e' impostata (cifrare/hashare
+    PII con una chiave nota nel sorgente equivale a non proteggerli). In
+    dev/test ripiega su una chiave di sviluppo con warning.
+    """
+    key_string = os.environ.get("ENCRYPTION_KEY")
+    if not key_string:
+        if os.environ.get("FLASK_ENV") == "production":
+            raise RuntimeError(
+                "ENCRYPTION_KEY non impostata in produzione: i dati PII "
+                "verrebbero cifrati/hashati con una chiave pubblica nota. "
+                "Configura ENCRYPTION_KEY nell'ambiente."
+            )
+        key_string = _DEV_KEY_STRING
+        logger.warning(
+            "Using default encryption key. Set ENCRYPTION_KEY environment "
+            "variable in production."
+        )
+    return key_string
+
+
+def compute_email_hash(email: Optional[str]) -> Optional[str]:
+    """HMAC-SHA256 deterministico dell'email normalizzata (lowercase + strip).
+
+    Serve a cercare un utente per email in SQL senza decifrare l'intero
+    insieme (l'email cifrata con Fernet non e' filtrabile, vedi issue #8).
+    L'hash non e' reversibile: la privacy resta preservata. La chiave HMAC e'
+    derivata da ENCRYPTION_KEY con domain separation, quindi indipendente dal
+    cipher Fernet.
+
+    Ritorna None per email vuote/None (es. utenti anonimizzati), coerente con
+    la colonna nullable.
+    """
+    if not email:
+        return None
+    normalized = email.strip().lower()
+    if not normalized:
+        return None
+    key = hashlib.sha256(
+        _EMAIL_HASH_INFO + b":" + _resolve_key_string().encode()
+    ).digest()
+    return hmac.new(key, normalized.encode(), hashlib.sha256).hexdigest()
 
 
 def derive_cipher(key_string: str, salt: Optional[bytes] = None) -> Fernet:
@@ -60,24 +117,8 @@ class EncryptionManager:
 
     def _initialize_cipher(self) -> None:
         """Initialize encryption cipher from server configuration."""
-        # Get encryption key from environment or config
-        key_string = os.environ.get("ENCRYPTION_KEY")
-
-        if not key_string:
-            # Fail-fast in produzione: cifrare PII con una chiave nota nel
-            # sorgente equivale a non cifrare. In dev/test si usa un default
-            # con warning esplicito.
-            if os.environ.get("FLASK_ENV") == "production":
-                raise RuntimeError(
-                    "ENCRYPTION_KEY non impostata in produzione: i dati PII "
-                    "verrebbero cifrati con una chiave pubblica nota. "
-                    "Configura ENCRYPTION_KEY nell'ambiente."
-                )
-            key_string = "default-development-key-change-in-production"
-            logger.warning(
-                "Using default encryption key. Set ENCRYPTION_KEY environment "
-                "variable in production."
-            )
+        # Get encryption key from environment or config (fail-fast in prod).
+        key_string = _resolve_key_string()
 
         # Salt configurabile (default = valore storico per retro-compatibilita'
         # con i dati gia' cifrati).

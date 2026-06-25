@@ -419,21 +419,19 @@ class UserProfileService:
             Optional[User]: User instance if found, None otherwise
 
         Implementation Notes:
-            - Handles encrypted email fields by loading all users in memory
-            - Case-insensitive matching (converts to lowercase)
-            - Strips whitespace from input
-            - Less efficient than username lookup due to encryption
+            - Lookup O(1) su email_hash (HMAC deterministico), non piu' O(N)
+              con decifratura di tutti gli utenti (issue #8)
+            - Normalizzazione (lowercase + strip) dentro compute_email_hash
             - Returns None for empty/None email
         """
         if not email:
             return None
-        # For encrypted fields, we need to retrieve all users and filter in Python
-        email_normalized = email.strip().lower()
-        users = User.query.all()
-        for user in users:
-            if user.email and user.email.lower() == email_normalized:
-                return user
-        return None
+        from utils.encryption import compute_email_hash
+
+        email_hash = compute_email_hash(email)
+        if not email_hash:
+            return None
+        return User.query.filter(User.email_hash == email_hash).first()
 
     @staticmethod
     @read_only(domain="user")
