@@ -309,25 +309,55 @@ class UserMergeService:
             ClassificationService,
         )
 
+        # Raccogliamo SOLO gli ID con query a colonne, mai oggetti ORM interi:
+        # subito dopo le classifiche vengono ricostruite con DELETE+INSERT e
+        # SQLite riusa i rowid appena liberati. Un GaraClassification/
+        # RoundClassification caricato come oggetto resterebbe in identity-map
+        # con un id che l'INSERT fresco riassegna → SAWarning "Identity map
+        # already had an identity ... replacing it" (issue #46). I dati finali
+        # sono corretti, ma il warning sporca il monitoraggio.
         gara_ids: Set[int] = set()
-        for m in Match.query.filter(
-            or_(Match.player1_id == target_id, Match.player2_id == target_id)
-        ).all():
-            if m.gara_id:
-                gara_ids.add(m.gara_id)
-        for ins in Inscription.query.filter(Inscription.user_id == target_id).all():
-            gara_ids.add(ins.gara_id)
-        for rc in RoundClassification.query.filter(
-            RoundClassification.user_id == target_id
-        ).all():
-            gara_ids.add(rc.gara_id)
-        for gc in GaraClassification.query.filter(
-            GaraClassification.user_id == target_id
-        ).all():
-            gara_ids.add(gc.gara_id)
+        gara_ids.update(
+            row[0]
+            for row in db.session.query(Match.gara_id)
+            .filter(
+                or_(Match.player1_id == target_id, Match.player2_id == target_id),
+                Match.gara_id.isnot(None),
+            )
+            .distinct()
+        )
+        gara_ids.update(
+            row[0]
+            for row in db.session.query(Inscription.gara_id)
+            .filter(Inscription.user_id == target_id)
+            .distinct()
+        )
+        gara_ids.update(
+            row[0]
+            for row in db.session.query(RoundClassification.gara_id)
+            .filter(RoundClassification.user_id == target_id)
+            .distinct()
+        )
+        gara_ids.update(
+            row[0]
+            for row in db.session.query(GaraClassification.gara_id)
+            .filter(GaraClassification.user_id == target_id)
+            .distinct()
+        )
+
+        campionato_ids: Set[int] = {
+            row[0]
+            for row in db.session.query(Classification.campionato_id)
+            .filter(Classification.user_id == target_id)
+            .distinct()
+        }
+
+        # Rete di sicurezza: scarica dalla sessione eventuali oggetti residui
+        # (es. caricati dai passi precedenti del merge) prima del ciclo di
+        # DELETE+INSERT, così l'identity-map non collide con i rowid riusati.
+        db.session.expire_all()
 
         service = StrategyBasedClassificationService()
-        campionato_ids: Set[int] = set()
         for gara_id in gara_ids:
             gara = db.session.get(Gara, gara_id)
             if gara is None:
@@ -337,9 +367,13 @@ class UserMergeService:
 
             rounds = sorted(
                 {
-                    m.round_number
-                    for m in Match.query.filter(Match.gara_id == gara_id).all()
-                    if m.round_number is not None
+                    row[0]
+                    for row in db.session.query(Match.round_number)
+                    .filter(
+                        Match.gara_id == gara_id,
+                        Match.round_number.isnot(None),
+                    )
+                    .distinct()
                 }
             )
             for round_number in rounds:
@@ -347,12 +381,7 @@ class UserMergeService:
             if rounds:
                 service.calculate_gara_classification(gara_id)
 
-        for cid in {
-            c.campionato_id
-            for c in Classification.query.filter(
-                Classification.user_id == target_id
-            ).all()
-        } | campionato_ids:
+        for cid in campionato_ids:
             ClassificationService.update_campionato_classification(cid)
 
     @staticmethod
