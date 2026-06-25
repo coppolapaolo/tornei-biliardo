@@ -12,10 +12,12 @@ from __future__ import annotations
 from typing import Any, Dict, List, TYPE_CHECKING
 
 from flask_login import UserMixin
+from sqlalchemy.orm import validates
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from ..base import db, BaseModel  # BaseModel for timestamps, utc_now
 from ..fields import EncryptedString  # Encrypted field types
+from utils.encryption import compute_email_hash
 
 if TYPE_CHECKING:
     from ..location.models import BilliardHall
@@ -41,6 +43,11 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
     email = db.Column(
         EncryptedString(200), unique=True, nullable=True
     )  # Encrypted personal data
+    # HMAC deterministico dell'email normalizzata: l'email cifrata (Fernet, non
+    # deterministica) non e' filtrabile in SQL, quindi la lookup per email
+    # passava per un O(N) che decifrava tutti gli utenti. email_hash permette un
+    # lookup indicizzato O(1). Tenuto in sync da @validates("email"). Vedi #8.
+    email_hash = db.Column(db.String(64), nullable=True, index=True)
     password_hash = db.Column(db.String(120), nullable=False)
 
     # Verification status
@@ -111,6 +118,17 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
 
     def check_password(self, password: str) -> bool:
         return check_password_hash(self.password_hash, password)
+
+    @validates("email")
+    def _sync_email_hash(self, key: str, value: Any) -> Any:
+        """Mantiene email_hash sincronizzato a ogni assegnazione di email.
+
+        Scatta su costruttore, update e anonymize() (email=None → hash=None).
+        I validator NON scattano al load dall' DB, quindi le righe esistenti
+        conservano l'hash gia' persistito (popolato dalla migration).
+        """
+        self.email_hash = compute_email_hash(value)
+        return value
 
     # ───────────────────
     # Role shortcuts

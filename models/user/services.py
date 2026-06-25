@@ -289,13 +289,16 @@ class UserService:
         Returns:
             User if found, None otherwise
         """
-        # For encrypted fields, we need to retrieve all users and filter in Python
-        email_normalized = email.strip().lower()
-        users = User.query.all()
-        for user in users:
-            if user.email and user.email.lower() == email_normalized:
-                return user
-        return None
+        # L'email cifrata non e' filtrabile in SQL: usiamo email_hash (HMAC
+        # deterministico) per un lookup indicizzato O(1). Vedi issue #8.
+        from utils.encryption import compute_email_hash
+
+        if not email:
+            return None
+        email_hash = compute_email_hash(email)
+        if not email_hash:
+            return None
+        return User.query.filter(User.email_hash == email_hash).first()
 
     @staticmethod
     def get_all_users() -> List[User]:
