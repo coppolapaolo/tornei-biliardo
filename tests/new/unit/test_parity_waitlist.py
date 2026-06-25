@@ -9,12 +9,11 @@ Regole da docs/reference/CLASSIFICATION_SYSTEM.md sezione 3.5:
 """
 
 import pytest
-from datetime import date, time, datetime, timedelta
+from datetime import date, time, timedelta
 
 from models.base import db, utc_now
 from models.competition.models import Gara, Inscription, WaitlistReason
 from models.competition.inscription_service import InscriptionService
-from models.competition.services import GaraService
 from models.user.models import User
 
 
@@ -293,6 +292,76 @@ class TestParityWaitlistUninscription:
 
         # Dovrebbero rimanere 2 attivi
         assert len(remaining) == 2
+        assert all(not r.is_waitlist for r in remaining)
+
+
+class TestParityWaitlistAdminUninscription:
+    """Test rimozione da parte di admin/direttore con opzione NO (issue #45)."""
+
+    def test_admin_remove_making_count_odd_moves_last_to_waitlist(
+        self, app, db_session, gara_with_no_policy, director, players
+    ):
+        """Il direttore rimuove un attivo: count pari→dispari, l'ultimo
+        iscritto va in waitlist parità (ripristina la parità)."""
+        # Iscrivi 4 giocatori → tutti attivi, nessuno in waitlist.
+        inscriptions = []
+        for i in range(4):
+            inscriptions.append(
+                InscriptionService.inscribe_user(
+                    user_id=players[i].id, gara_id=gara_with_no_policy.id
+                )
+            )
+        for ins in inscriptions:
+            db_session.expire(ins)
+            assert db_session.get(Inscription, ins.id).is_waitlist is False
+
+        # Il direttore rimuove il primo (4 pari → 3 dispari).
+        InscriptionService.admin_uninscribe_user(
+            user_id=players[0].id,
+            gara_id=gara_with_no_policy.id,
+            admin_user_id=director.id,
+        )
+
+        remaining = (
+            db_session.query(Inscription)
+            .filter_by(gara_id=gara_with_no_policy.id)
+            .all()
+        )
+        active = [r for r in remaining if not r.is_waitlist]
+        waitlisted = [r for r in remaining if r.is_waitlist]
+
+        # 2 attivi + 1 in waitlist parità (numero dispari non ammesso).
+        assert len(active) == 2
+        assert len(waitlisted) == 1
+        assert waitlisted[0].waitlist_reason == WaitlistReason.PARITY.value
+        # È l'ultimo iscritto (player 3) a finire in waitlist.
+        assert waitlisted[0].user_id == players[3].id
+
+    def test_admin_remove_keeping_count_even_is_normal(
+        self, app, db_session, gara_with_no_policy, director, players
+    ):
+        """Rimozione che lascia il count pari: nessuno va in waitlist."""
+        # 2 attivi (pari) + il terzo in waitlist parità.
+        for i in range(3):
+            InscriptionService.inscribe_user(
+                user_id=players[i].id, gara_id=gara_with_no_policy.id
+            )
+
+        # Il direttore rimuove un attivo (2 → 1 dispari): promuove il terzo
+        # dalla waitlist parità (1 → 2 pari), niente nuovi waitlist.
+        InscriptionService.admin_uninscribe_user(
+            user_id=players[0].id,
+            gara_id=gara_with_no_policy.id,
+            admin_user_id=director.id,
+        )
+
+        remaining = (
+            db_session.query(Inscription)
+            .filter_by(gara_id=gara_with_no_policy.id)
+            .all()
+        )
+        active = [r for r in remaining if not r.is_waitlist]
+        assert len(active) == 2
         assert all(not r.is_waitlist for r in remaining)
 
 

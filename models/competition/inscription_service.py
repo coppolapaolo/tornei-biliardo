@@ -521,6 +521,9 @@ class InscriptionService:
 
             # Rimuovi l'iscrizione
             db.session.delete(inscription)
+            # Flush così la riga rimossa non conta più nelle query sottostanti
+            # (conteggio attivi per la parità).
+            db.session.flush()
 
             # Se l'utente era attivo (non in lista d'attesa),
             # promuovi il primo della lista d'attesa
@@ -580,6 +583,24 @@ class InscriptionService:
                             f"notification for user "
                             f"{first_waitlist.user_id}: {e}"
                         )
+
+                # Nessuno da promuovere: se la gara non ammette numeri dispari
+                # (odd_number_policy="no") e la rimozione ha reso il numero di
+                # iscritti attivi dispari, l'ultimo iscritto va in waitlist
+                # parità così da ripristinare la parità. Stessa logica di
+                # `uninscribe_user` (Caso 2). Vedi issue #45.
+                elif gara.odd_number_policy == "no":
+                    active_count = (
+                        db.session.query(Inscription)
+                        .filter_by(
+                            gara_id=gara_id,
+                            is_waitlist=False,
+                            is_withdrawn=False,
+                        )
+                        .count()
+                    )
+                    if active_count % 2 == 1:
+                        InscriptionService._demote_last_to_parity_waitlist(gara_id)
 
             # Transaction managed by @transactional decorator
             return True
