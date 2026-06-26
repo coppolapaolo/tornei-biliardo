@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Admin Overview - Match Individuali{% endblock %}
+{% block title %}{{ _("Admin Overview") }} - {{ _("Match Individuali") }}{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
@@ -8,13 +8,13 @@
         <div class="col-md-12">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard.dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Admin Match Individuali</li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard.dashboard') }}">{{ _("Dashboard") }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ _("Admin Match Individuali") }}</li>
                 </ol>
             </nav>
 
-            <h1><i class="fas fa-shield-halved"></i> Admin Overview - Match Individuali</h1>
-            <p class="text-muted">Panoramica di tutti i match individuali e proposte.</p>
+            <h1><i class="fas fa-shield-halved"></i> {{ _("Admin Overview") }} - {{ _("Match Individuali") }}</h1>
+            <p class="text-muted">{{ _("Panoramica di tutti i match individuali e proposte.") }}</p>
         </div>
     </div>
 
@@ -23,29 +23,29 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
-                    <h5><i class="fas fa-gamepad"></i> Stato Match</h5>
+                    <h5><i class="fas fa-gamepad"></i> {{ _("Stato Match") }}</h5>
                 </div>
                 <div class="card-body">
                     <div class="row text-center">
                         <div class="col">
                             <h4 class="text-warning">{{ status_counts.get('scheduled', 0) }}</h4>
-                            <small class="text-muted">Programmati</small>
+                            <small class="text-muted">{{ _("Programmati") }}</small>
                         </div>
                         <div class="col">
                             <h4 class="text-primary">{{ status_counts.get('in_progress', 0) }}</h4>
-                            <small class="text-muted">In Corso</small>
+                            <small class="text-muted">{{ _("In Corso") }}</small>
                         </div>
                         <div class="col">
                             <h4 class="text-success">{{ status_counts.get('completed', 0) }}</h4>
-                            <small class="text-muted">Completati</small>
+                            <small class="text-muted">{{ _("Completati") }}</small>
                         </div>
                         <div class="col">
                             <h4 class="text-info">{{ status_counts.get('validated', 0) }}</h4>
-                            <small class="text-muted">Validati</small>
+                            <small class="text-muted">{{ _("Validati") }}</small>
                         </div>
                         <div class="col">
                             <h4 class="text-danger">{{ status_counts.get('cancelled', 0) }}</h4>
-                            <small class="text-muted">Annullati</small>
+                            <small class="text-muted">{{ _("Annullati") }}</small>
                         </div>
                     </div>
                 </div>
@@ -55,25 +55,25 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
-                    <h5><i class="fas fa-envelope"></i> Stato Proposte</h5>
+                    <h5><i class="fas fa-envelope"></i> {{ _("Stato Proposte") }}</h5>
                 </div>
                 <div class="card-body">
                     <div class="row text-center">
                         <div class="col">
                             <h4 class="text-warning">{{ proposal_counts.get('pending', 0) }}</h4>
-                            <small class="text-muted">In Attesa</small>
+                            <small class="text-muted">{{ _("In Attesa") }}</small>
                         </div>
                         <div class="col">
                             <h4 class="text-success">{{ proposal_counts.get('accepted', 0) }}</h4>
-                            <small class="text-muted">Accettate</small>
+                            <small class="text-muted">{{ _("Accettate") }}</small>
                         </div>
                         <div class="col">
                             <h4 class="text-secondary">{{ proposal_counts.get('expired', 0) }}</h4>
-                            <small class="text-muted">Scadute</small>
+                            <small class="text-muted">{{ _("Scadute") }}</small>
                         </div>
                         <div class="col">
                             <h4 class="text-danger">{{ proposal_counts.get('cancelled', 0) }}</h4>
-                            <small class="text-muted">Annullate</small>
+                            <small class="text-muted">{{ _("Annullate") }}</small>
                         </div>
                     </div>
                 </div>
@@ -87,7 +87,7 @@
             <div class="card">
                 <div class="card-body text-center">
                     <h2 class="text-info">{{ total_users_with_availability or 0 }}</h2>
-                    <p class="text-muted mb-0">Giocatori con disponibilità</p>
+                    <p class="text-muted mb-0">{{ _("Giocatori con disponibilità") }}</p>
                 </div>
             </div>
         </div>
@@ -95,7 +95,7 @@
             <div class="card">
                 <div class="card-body text-center">
                     <h2 class="text-primary">{{ active_locations|length }}</h2>
-                    <p class="text-muted mb-0">Località attive</p>
+                    <p class="text-muted mb-0">{{ _("Località attive") }}</p>
                 </div>
             </div>
         </div>
@@ -103,7 +103,7 @@
             <div class="card">
                 <div class="card-body text-center">
                     <h2 class="text-success">{{ recent_matches|length }}</h2>
-                    <p class="text-muted mb-0">Match recenti (ultimi 10)</p>
+                    <p class="text-muted mb-0">{{ _("Match recenti (ultimi 10)") }}</p>
                 </div>
             </div>
         </div>
@@ -115,21 +115,21 @@
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header">
-                    <h5><i class="fas fa-history"></i> Match Recenti</h5>
+                    <h5><i class="fas fa-history"></i> {{ _("Match Recenti") }}</h5>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-sm table-hover">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
-                                    <th>Giocatore 1</th>
-                                    <th>Giocatore 2</th>
-                                    <th>Punteggio</th>
-                                    <th>Disciplina</th>
-                                    <th>Stato</th>
-                                    <th>Data</th>
-                                    <th>Azioni</th>
+                                    <th>{{ _("ID") }}</th>
+                                    <th>{{ _("Giocatore 1") }}</th>
+                                    <th>{{ _("Giocatore 2") }}</th>
+                                    <th>{{ _("Punteggio") }}</th>
+                                    <th>{{ _("Disciplina") }}</th>
+                                    <th>{{ _("Stato") }}</th>
+                                    <th>{{ _("Data") }}</th>
+                                    <th>{{ _("Azioni") }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -180,7 +180,7 @@
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header">
-                    <h5><i class="fas fa-map-marker-alt"></i> Località Attive</h5>
+                    <h5><i class="fas fa-map-marker-alt"></i> {{ _("Località Attive") }}</h5>
                 </div>
                 <div class="card-body">
                     <div class="d-flex flex-wrap gap-2">

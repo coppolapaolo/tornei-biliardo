@@ -57,26 +57,32 @@ def test_unmapped_feature_is_always_proponibile(app, production_mode):
 def test_mapped_feature_hidden_when_endpoint_not_allowlisted(app, production_mode):
     """Feature mappata a endpoint non in ENDPOINT_ROLES → suppressa per non-admin.
 
-    Caso reale: ``individual_match.dashboard`` non è (ancora) in allowlist;
-    senza questo filtro la gamification proporrebbe a un director un nudge
-    che il navbar nasconde e l'URL diretto restituisce 404.
+    Caso reale: ``do_challenge`` mappa a ``challenge.challenge_catalog``, non
+    ancora in allowlist (feature challenge admin-only in prod). Senza questo
+    filtro la gamification proporrebbe a un director un nudge che il navbar
+    nasconde e l'URL diretto restituisce 404.
     """
     with app.app_context():
         director = FakeUser(is_authenticated=True, is_director=True)
         player = FakeUser(is_authenticated=True, is_player=True)
         anon = FakeUser()
 
-        assert feature_visible_to_user("create_match_direct", director) is False
-        assert feature_visible_to_user("create_match_direct", player) is False
-        assert feature_visible_to_user("create_match_direct", anon) is False
+        assert feature_visible_to_user("do_challenge", director) is False
+        assert feature_visible_to_user("do_challenge", player) is False
+        assert feature_visible_to_user("do_challenge", anon) is False
 
 
 def test_mapped_feature_visible_when_endpoint_allowlisted(app, production_mode):
     """Feature mappata a endpoint che il ruolo VEDE → proponibile."""
     with app.app_context():
         director = FakeUser(is_authenticated=True, is_director=True)
+        player = FakeUser(is_authenticated=True, is_player=True)
         # admin.competition.create_gara_standalone è in matrice per "director"
         assert feature_visible_to_user("create_gara", director) is True
+        # create_match_direct → individual_match.dashboard, ora abilitato per
+        # player e director (ADR-028: feature match individuali attivata).
+        assert feature_visible_to_user("create_match_direct", director) is True
+        assert feature_visible_to_user("create_match_direct", player) is True
 
 
 def test_admin_sees_every_mapped_feature(app, production_mode):

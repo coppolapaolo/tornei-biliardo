@@ -211,6 +211,40 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "gamification.api_user_stats": {"director"},
     "gamification.api_achievements": {"director"},
     "gamification.api_streaks": {"director"},
+    # === Match individuali (casual matches) — ADR-028 ===
+    # Feature sbloccata per player/director (la visibilità del menu è inoltre
+    # gated dal gate gamification can_access('create_match_direct')). La
+    # vera autorizzazione resta nei decoratori @RoleRequirement.
+    "individual_match.dashboard": {"player", "director"},
+    "individual_match.user_statistics": {"player", "director"},
+    "individual_match.match_list": {"player", "director"},
+    "individual_match.match_detail": {"player", "director"},
+    "individual_match.proposal_list": {"player", "director"},
+    "individual_match.proposal_detail": {"player", "director"},
+    "individual_match.create_proposal": {"player", "director"},
+    "individual_match.search_players": {"player", "director"},
+    "individual_match.get_opponents": {"player", "director"},
+    "individual_match.accept_proposal": {"player", "director"},
+    "individual_match.cancel_proposal": {"player", "director"},
+    "individual_match.decline_proposal": {"player", "director"},
+    "individual_match.start_match": {"player", "director"},
+    "individual_match.add_rack": {"player", "director"},
+    "individual_match.remove_rack": {"player", "director"},
+    "individual_match.confirm_result": {"player", "director"},
+    "individual_match.reject_result": {"player", "director"},
+    "individual_match.complete_match": {"player", "director"},
+    "individual_match.cancel_match": {"player", "director"},
+    "individual_match.update_match_times": {"player", "director"},
+    "individual_match.forfeit_match": {"player", "director"},
+    "individual_match.rematch": {"player", "director"},
+    # Availability: visibile a player/director. La visibilità del menu è
+    # comunque gated dal gate gamification 'manage_availability' (venue
+    # manager / veterano di sala). Il modello PlayerAvailability resta
+    # deprecato (migrazione futura a UserLocationAvailability).
+    "individual_match.manage_availability": {"player", "director"},
+    "individual_match.remove_availability": {"player", "director"},
+    # Admin overview: solo admin (@admin_required).
+    "individual_match.admin_overview": set(),
 }
 
 
@@ -229,10 +263,13 @@ INFRASTRUCTURE_ALLOWLIST: set[str] = {
     "sse.poll_match",
     "sse.poll_trio",
     "sse.poll_user",
+    # Real-time sync per i match individuali (match_detail polling)
+    "sse.poll_individual_match",
     # Legacy SSE streams kept for backward compat (ADR-021)
     "sse.gara_stream",
     "sse.user_stream",
     "sse.trio_stream",
+    "sse.individual_match_stream",
 }
 
 

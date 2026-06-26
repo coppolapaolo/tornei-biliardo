@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Crea Proposta di Match - Campionato Biliardo{% endblock %}
+{% block title %}{{ _("Crea Proposta di Match") }} - {{ _("Campionato Biliardo") }}{% endblock %}
 
 {% block head_extra %}
 <!-- TomSelect for autocomplete player selection -->
@@ -13,9 +13,9 @@
         <div class="col-md-12">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('individual_match.dashboard') }}">Match
-                            Individuali</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Crea Proposta</li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('individual_match.dashboard') }}">{{ _("Match
+                            Individuali") }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ _("Crea Proposta") }}</li>
                 </ol>
             </nav>
 
@@ -46,18 +46,18 @@
                                 <div class="row">
                                     <!-- Basic Information -->
                                     <div class="col-md-6">
-                                        <h5>Informazioni Base</h5>
+                                        <h5>{{ _("Informazioni Base") }}</h5>
 
                                         <div class="mb-3">
-                                            <label for="proposal_type" class="form-label">Tipo di Proposta</label>
+                                            <label for="proposal_type" class="form-label">{{ _("Tipo di Proposta") }}</label>
                                             <select class="form-select" id="proposal_type" name="proposal_type"
                                                 required>
-                                                <option value="direct">Invito Diretto</option>
-                                                <option value="open">Invito Aperto alla Community</option>
+                                                <option value="direct">{{ _("Invito Diretto") }}</option>
+                                                <option value="open">{{ _("Invito Aperto alla Community") }}</option>
                                             </select>
                                             <div class="form-text">
-                                                <strong>Diretto:</strong> Inviti giocatori specifici<br>
-                                                <strong>Aperto:</strong> Visibile a tutta la community
+                                                <strong>{{ _("Diretto:") }}</strong> {{ _("Inviti giocatori specifici") }}<br>
+                                                <strong>{{ _("Aperto:") }}</strong> {{ _("Visibile a tutta la community") }}
                                             </div>
                                         </div>
 
@@ -71,28 +71,28 @@
                                                 {% if verified_venues %}
                                                 {% for venue in verified_venues %}
                                                 <option value="{{ venue.name }}">
-                                                    {{ venue.name }} - {{ venue.city or 'Città non specificata' }}
+                                                    {{ venue.name }} - {{ venue.city or _('Città non specificata') }}
                                                 </option>
                                                 {% endfor %}
                                                 {% endif %}
                                             </datalist>
-                                            <div class="form-text">Seleziona una sala esistente o scrivine una nuova
+                                            <div class="form-text">{{ _("Seleziona una sala esistente o scrivine una nuova") }}
                                             </div>
                                         </div>
 
                                         <div class="mb-3">
-                                            <label for="scheduled_at" class="form-label">Data e Ora *</label>
+                                            <label for="scheduled_at" class="form-label">{{ _("Data e Ora") }} *</label>
                                             <input type="datetime-local" class="form-control" id="scheduled_at"
                                                 name="scheduled_at" required
                                                 value="{{ rematch_params.scheduled_at if rematch_params else '' }}">
-                                            <div class="form-text">Quando vorresti giocare</div>
+                                            <div class="form-text">{{ _("Quando vorresti giocare") }}</div>
                                         </div>
 
                                     </div>
 
                                     <!-- Game Settings -->
                                     <div class="col-md-6">
-                                        <h5>Impostazioni di Gioco</h5>
+                                        <h5>{{ _("Impostazioni di Gioco") }}</h5>
 
                                         <div class="mb-3">
                                             <label for="discipline" class="form-label">{{ _("Disciplina") }} *</label>
@@ -232,40 +232,34 @@
 
                                 <!-- Description -->
                                 <div class="mb-3">
-                                    <label for="description" class="form-label">Descrizione (opzionale)</label>
+                                    <label for="description" class="form-label">{{ _("Descrizione (opzionale)") }}</label>
                                     <textarea class="form-control" id="description" name="description" rows="3"
-                                        placeholder="Aggiungi dettagli sul match, livello richiesto, note speciali..."></textarea>
+                                        placeholder="{{ _('Aggiungi dettagli sul match, livello richiesto, note speciali...') }}"></textarea>
                                 </div>
 
                                 <!-- Expiration -->
                                 <div class="mb-3">
-                                    <label for="expires_hours" class="form-label">Scade tra (ore)</label>
+                                    <label for="expires_hours" class="form-label">{{ _("Scade tra (ore)") }}</label>
                                     <select class="form-select" id="expires_hours" name="expires_hours">
                                         {% set selected_expires = rematch_params.expires_hours if rematch_params else
                                         '1' %}
-                                        <option value="0" {% if selected_expires=='0' %}selected{% endif %}>Mai (Match
-                                            immediato)</option>
-                                        <option value="1" {% if selected_expires=='1' %}selected{% endif %}>1 ora prima
-                                            del match</option>
-                                        <option value="2" {% if selected_expires=='2' %}selected{% endif %}>2 ore prima
-                                            del match</option>
-                                        <option value="6" {% if selected_expires=='6' %}selected{% endif %}>6 ore prima
-                                            del match</option>
-                                        <option value="24" {% if selected_expires=='24' %}selected{% endif %}>24 ore
-                                            prima del match</option>
-                                        <option value="48" {% if selected_expires=='48' %}selected{% endif %}>48 ore
-                                            prima del match</option>
+                                        <option value="0" {% if selected_expires=='0' %}selected{% endif %}>{{ _("Mai (Match immediato)") }}</option>
+                                        <option value="1" {% if selected_expires=='1' %}selected{% endif %}>{{ _("1 ora prima del match") }}</option>
+                                        <option value="2" {% if selected_expires=='2' %}selected{% endif %}>{{ _("2 ore prima del match") }}</option>
+                                        <option value="6" {% if selected_expires=='6' %}selected{% endif %}>{{ _("6 ore prima del match") }}</option>
+                                        <option value="24" {% if selected_expires=='24' %}selected{% endif %}>{{ _("24 ore prima del match") }}</option>
+                                        <option value="48" {% if selected_expires=='48' %}selected{% endif %}>{{ _("48 ore prima del match") }}</option>
                                     </select>
-                                    <div class="form-text">Quando la proposta scade automaticamente</div>
+                                    <div class="form-text">{{ _("Quando la proposta scade automaticamente") }}</div>
                                 </div>
 
                                 <!-- Submit -->
                                 <div class="text-center">
                                     <button type="button" class="btn btn-secondary me-2" onclick="history.back()">
-                                        <i class="fas fa-arrow-left"></i> Annulla
+                                        <i class="fas fa-arrow-left"></i> {{ _("Annulla") }}
                                     </button>
                                     <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-paper-plane"></i> Crea Proposta
+                                        <i class="fas fa-paper-plane"></i> {{ _("Crea Proposta") }}
                                     </button>
                                 </div>
                             </form>
@@ -275,26 +269,26 @@
                     <!-- Help Card -->
                     <div class="card mt-4">
                         <div class="card-header">
-                            <h5><i class="fas fa-question-circle"></i> Come funziona?</h5>
+                            <h5><i class="fas fa-question-circle"></i> {{ _("Come funziona?") }}</h5>
                         </div>
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-6">
-                                    <h6><i class="fas fa-user-friends"></i> Invito Diretto</h6>
+                                    <h6><i class="fas fa-user-friends"></i> {{ _("Invito Diretto") }}</h6>
                                     <ul class="small text-muted">
-                                        <li>Inviti giocatori specifici per username</li>
-                                        <li>Ricevono una notifica della tua proposta</li>
-                                        <li>Il primo che accetta gioca con te</li>
-                                        <li>Perfetto per sfidare amici o rivali</li>
+                                        <li>{{ _("Inviti giocatori specifici per username") }}</li>
+                                        <li>{{ _("Ricevono una notifica della tua proposta") }}</li>
+                                        <li>{{ _("Il primo che accetta gioca con te") }}</li>
+                                        <li>{{ _("Perfetto per sfidare amici o rivali") }}</li>
                                     </ul>
                                 </div>
                                 <div class="col-md-6">
-                                    <h6><i class="fas fa-globe"></i> Invito Aperto</h6>
+                                    <h6><i class="fas fa-globe"></i> {{ _("Invito Aperto") }}</h6>
                                     <ul class="small text-muted">
-                                        <li>Visibile a tutta la community</li>
-                                        <li>Chiunque può accettare la tua proposta</li>
-                                        <li>Ideale per trovare nuovi avversari</li>
-                                        <li>Amplia la tua cerchia di giocatori</li>
+                                        <li>{{ _("Visibile a tutta la community") }}</li>
+                                        <li>{{ _("Chiunque può accettare la tua proposta") }}</li>
+                                        <li>{{ _("Ideale per trovare nuovi avversari") }}</li>
+                                        <li>{{ _("Amplia la tua cerchia di giocatori") }}</li>
                                     </ul>
                                 </div>
                             </div>

@@ -383,6 +383,13 @@ class IndividualMatchService:
                     "Solo il proponente o un admin può modificare gli orari"
                 )
 
+        # Coerenza temporale: end non può precedere start (considerando i
+        # valori già presenti quando se ne aggiorna uno solo).
+        new_started = started_at if started_at is not None else match.started_at
+        new_ended = ended_at if ended_at is not None else match.ended_at
+        if new_started and new_ended and new_ended < new_started:
+            raise ValueError("L'orario di fine non può precedere quello di inizio")
+
         if started_at is not None:
             match.started_at = started_at
 
@@ -480,7 +487,7 @@ class IndividualMatchService:
     ) -> IndividualRack:
         """Submit result for a rack - legacy method for backward compatibility.
 
-        No @transactional: delegates to IndividualRackService which owns the transaction.
+        No @transactional: IndividualRackService owns the transaction.
         """
         return IndividualRackService.submit_rack_result(
             match_id, user_id, winner_id, rack_number, notes
@@ -498,7 +505,7 @@ class IndividualMatchService:
     ) -> IndividualRack:
         """Add a rack result with flexible parameters for test compatibility.
 
-        No @transactional: delegates to IndividualRackService which owns the transaction.
+        No @transactional: IndividualRackService owns the transaction.
         """
         return IndividualRackService.add_rack_result(
             match_id=match_id,
@@ -516,7 +523,7 @@ class IndividualMatchService:
     ) -> IndividualRack:
         """Original add_rack_result implementation.
 
-        No @transactional: delegates to IndividualRackService which owns the transaction.
+        No @transactional: IndividualRackService owns the transaction.
         """
         return IndividualRackService._add_rack_result_original(
             match_id, winner_id, user_id
@@ -526,7 +533,7 @@ class IndividualMatchService:
     def confirm_rack_result(rack_id: int, confirming_player_id: int) -> Dict[str, Any]:
         """Confirm a rack result.
 
-        No @transactional: delegates to IndividualRackService which owns the transaction.
+        No @transactional: IndividualRackService owns the transaction.
         """
         return IndividualRackService.confirm_rack_result(rack_id, confirming_player_id)
 
@@ -536,7 +543,7 @@ class IndividualMatchService:
     ) -> Dict[str, Any]:
         """Dispute a rack result.
 
-        No @transactional: delegates to IndividualRackService which owns the transaction.
+        No @transactional: IndividualRackService owns the transaction.
         """
         return IndividualRackService.dispute_rack_result(
             rack_id, disputing_player_id, reason
@@ -548,13 +555,13 @@ class IndividualMatchService:
     ) -> Dict[str, Any]:
         """Resolve a rack result dispute.
 
-        No @transactional: delegates to IndividualRackService which owns the transaction.
+        No @transactional: IndividualRackService owns the transaction.
         """
         return IndividualRackService.resolve_rack_dispute(
             rack_id, admin_user_id, resolution, reason
         )
 
-    # ========== Statistics Methods (delegate to IndividualMatchStatisticsService) ==========
+    # ========== Statistics Methods (delegate to statistics service) ==========
 
     @staticmethod
     def get_user_dashboard_data(user_id: int) -> Dict[str, Any]:
@@ -583,7 +590,7 @@ class IndividualMatchService:
         """Get individual match statistics for a user."""
         return IndividualMatchStatisticsService.get_user_statistics(user_id)
 
-    # ========== Availability Methods (kept here for now - could be extracted later) ==========
+    # ========== Availability Methods (could be extracted later) ==========
 
     @staticmethod
     @transactional(domain="individual_match")
@@ -592,8 +599,9 @@ class IndividualMatchService:
     ) -> None:
         """Update user's availability settings.
 
-        Note: This method APPENDS new availability records without deleting
-        existing ones. Use set_player_availability for a full replacement.
+        Upsert per (user_id, location): aggiorna la riga esistente se presente,
+        altrimenti la crea. In precedenza faceva solo APPEND, accumulando
+        duplicati per la stessa località a ogni salvataggio.
 
         Args:
             user_id: The user ID
@@ -604,14 +612,23 @@ class IndividualMatchService:
                 - is_available: bool (optional, default True)
         """
         for data in availability_data:
-            availability = PlayerAvailability(
-                user_id=user_id,
-                location=data["location"],
-                preferred_days=data.get("preferred_days"),
-                preferred_times=data.get("preferred_times"),
-                is_available=data.get("is_available", True),
-            )
-            db.session.add(availability)
+            location = data["location"]
+            availability = PlayerAvailability.query.filter_by(
+                user_id=user_id, location=location
+            ).first()
+            if availability:
+                availability.preferred_days = data.get("preferred_days")
+                availability.preferred_times = data.get("preferred_times")
+                availability.is_available = data.get("is_available", True)
+            else:
+                availability = PlayerAvailability(
+                    user_id=user_id,
+                    location=location,
+                    preferred_days=data.get("preferred_days"),
+                    preferred_times=data.get("preferred_times"),
+                    is_available=data.get("is_available", True),
+                )
+                db.session.add(availability)
 
     @staticmethod
     @transactional(domain="individual_match")
@@ -647,6 +664,19 @@ class IndividualMatchService:
     def get_player_availability(user_id: int) -> List[PlayerAvailability]:
         """Get all availability settings for a player."""
         return PlayerAvailability.query.filter_by(user_id=user_id).all()
+
+    @staticmethod
+    @transactional(domain="individual_match")
+    def remove_user_availability(availability_id: int, user_id: int) -> None:
+        """Remove a player availability record (owner only).
+
+        Raises ValueError if the record does not exist or does not belong to
+        the requesting user.
+        """
+        record = db.session.get(PlayerAvailability, availability_id)
+        if record is None or record.user_id != user_id:
+            raise ValueError("Disponibilità non trovata")
+        db.session.delete(record)
 
     @staticmethod
     def get_eligible_players_for_location(

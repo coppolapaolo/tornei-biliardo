@@ -109,6 +109,26 @@ def manage_availability():
             )
 
 
+@individual_match_bp.route(
+    "/availability/<int:availability_id>/remove", methods=["POST"]
+)
+@RoleRequirement.player_or_director_required
+def remove_availability(availability_id):
+    """Remove one of the current user's availability records."""
+    try:
+        IndividualMatchService.remove_user_availability(
+            availability_id, current_user.id
+        )
+        if request.is_json:
+            return jsonify({"success": True})
+        flash(_("Disponibilità rimossa."), "success")
+    except ValueError as e:
+        if request.is_json:
+            return jsonify({"success": False, "error": str(e)}), 400
+        flash(str(e), "danger")
+    return redirect(url_for("individual_match.manage_availability"))
+
+
 # Admin routes
 @individual_match_bp.route("/admin/overview")
 @admin_required

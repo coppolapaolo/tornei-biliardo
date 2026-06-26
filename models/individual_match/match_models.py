@@ -387,6 +387,12 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
         if self.status != MatchStatus.IN_PROGRESS:
             raise ValueError("Match is not in progress")
 
+        # Data-integrity guard (C1): the winner MUST be one of the two players.
+        # Without this, a player could close a match declaring an arbitrary
+        # winner_id, corrupting stats/ELO downstream.
+        if winner_id not in (self.player1_id, self.player2_id):
+            raise ValueError("Winner must be one of the match players")
+
         self.status = MatchStatus.COMPLETED
         self.ended_at = utc_now()
         self.winner_id = winner_id
@@ -420,22 +426,29 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
         if self.status not in [MatchStatus.SCHEDULED, MatchStatus.IN_PROGRESS]:
             raise ValueError("Can only forfeit scheduled or in-progress matches")
 
+        # Winning threshold (C2): for multi-set matches player*_score counts
+        # SETS won, so the winner must reach get_winning_sets() (= match_distance),
+        # not get_winning_racks() (racks-per-set). For single-set it's racks.
+        winning_score = None
+        if self.distance_config:
+            winning_score = (
+                self.distance_config.get_winning_sets()
+                if self.is_multi_set
+                else self.distance_config.get_winning_racks()
+            )
+
         # Determine winner (opponent of forfeiting player)
         if user_id == self.player1_id:
             self.winner_id = self.player2_id
             # Ensure winner has at least the winning score (if distance is set)
-            if self.distance_config:
-                winning_score = self.distance_config.get_winning_racks()
-                if self.player2_score < winning_score:
-                    self.player2_score = winning_score
-            # Keep player1_score as-is (racks already won)
+            if winning_score is not None and self.player2_score < winning_score:
+                self.player2_score = winning_score
+            # Keep player1_score as-is (racks/sets already won)
         else:
             self.winner_id = self.player1_id
-            if self.distance_config:
-                winning_score = self.distance_config.get_winning_racks()
-                if self.player1_score < winning_score:
-                    self.player1_score = winning_score
-            # Keep player2_score as-is (racks already won)
+            if winning_score is not None and self.player1_score < winning_score:
+                self.player1_score = winning_score
+            # Keep player2_score as-is (racks/sets already won)
 
         # Complete the match
         self.status = MatchStatus.COMPLETED
