@@ -27,6 +27,8 @@ class XPTransactionType(Enum):
 
     MATCH_WIN = "match_win"
     MATCH_LOSS = "match_loss"
+    CASUAL_MATCH_WIN = "casual_match_win"  # Match individuale (ridotto vs torneo)
+    CASUAL_MATCH_LOSS = "casual_match_loss"
     TOURNAMENT_INSCRIPTION = "tournament_inscription"
     TOURNAMENT_COMPLETION = "tournament_completion"
     TOURNAMENT_PODIUM = "tournament_podium"
@@ -137,7 +139,10 @@ class UserLevel(BaseModel):
     )
 
     def __repr__(self) -> str:
-        return f"<UserLevel user_id={self.user_id} level={self.current_level} xp={self.total_xp}>"
+        return (
+            f"<UserLevel user_id={self.user_id} "
+            f"level={self.current_level} xp={self.total_xp}>"
+        )
 
 
 class XPTransaction(db.Model, TimestampMixin):
@@ -179,7 +184,10 @@ class XPTransaction(db.Model, TimestampMixin):
     )
 
     def __repr__(self) -> str:
-        return f"<XPTransaction user_id={self.user_id} type={self.transaction_type.value} amount={self.xp_amount}>"
+        return (
+            f"<XPTransaction user_id={self.user_id} "
+            f"type={self.transaction_type.value} amount={self.xp_amount}>"
+        )
 
 
 # ========================================
@@ -192,7 +200,8 @@ class Achievement(BaseModel):
     Predefined achievements with requirements and rewards.
 
     Achievements are configured once and tracked per-user in UserAchievement.
-    Requirements stored as JSON for flexibility (e.g., {"type": "match_wins", "count": 50}).
+    Requirements stored as JSON for flexibility
+    (e.g., {"type": "match_wins", "count": 50}).
     """
 
     __tablename__ = "achievement"
@@ -273,7 +282,10 @@ class UserAchievement(db.Model, TimestampMixin):
     )
 
     def __repr__(self) -> str:
-        return f"<UserAchievement user_id={self.user_id} achievement_id={self.achievement_id} unlocked={self.is_unlocked}>"
+        return (
+            f"<UserAchievement user_id={self.user_id} "
+            f"achievement_id={self.achievement_id} unlocked={self.is_unlocked}>"
+        )
 
 
 # ========================================
@@ -331,7 +343,10 @@ class StreakTracker(db.Model, TimestampMixin):
     )
 
     def __repr__(self) -> str:
-        return f"<StreakTracker user_id={self.user_id} type={self.streak_type.value} current={self.current_streak}>"
+        return (
+            f"<StreakTracker user_id={self.user_id} "
+            f"type={self.streak_type.value} current={self.current_streak}>"
+        )
 
 
 # ========================================
@@ -379,7 +394,10 @@ class LeaderboardEntry(db.Model, TimestampMixin):
     )
 
     def __repr__(self) -> str:
-        return f"<LeaderboardEntry type={self.leaderboard_type.value} rank={self.rank} user_id={self.user_id}>"
+        return (
+            f"<LeaderboardEntry type={self.leaderboard_type.value} "
+            f"rank={self.rank} user_id={self.user_id}>"
+        )
 
 
 # ========================================
@@ -471,4 +489,8 @@ class QuestParticipation(db.Model, TimestampMixin):
     __table_args__ = (db.UniqueConstraint("user_id", "quest_id", name="uq_user_quest"),)
 
     def __repr__(self) -> str:
-        return f"<QuestParticipation user_id={self.user_id} quest_id={self.quest_id} progress={self.current_progress}/{self.target_progress}>"
+        return (
+            f"<QuestParticipation user_id={self.user_id} "
+            f"quest_id={self.quest_id} "
+            f"progress={self.current_progress}/{self.target_progress}>"
+        )

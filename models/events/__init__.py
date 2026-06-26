@@ -31,6 +31,7 @@ from .match_events import (
     MatchCompletedEvent,
     MatchReopenedEvent,
     IndividualMatchCreatedEvent,
+    IndividualMatchCompletedEvent,
 )
 from .competition_events import (
     CompetitionCreatedEvent,
@@ -63,6 +64,7 @@ __all__ = [
     "MatchCompletedEvent",
     "MatchReopenedEvent",
     "IndividualMatchCreatedEvent",
+    "IndividualMatchCompletedEvent",
     # Competition domain events
     "CompetitionCreatedEvent",
     "CompetitionRegistrationOpenedEvent",

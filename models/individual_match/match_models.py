@@ -295,6 +295,39 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
         if hasattr(self, "ended_at"):
             self.ended_at = utc_now()
 
+        # Emetti l'evento SOLO qui: questo metodo scatta unicamente dalla
+        # conferma bilaterale (confirm_result). Forfait e complete_match
+        # impostano COMPLETED senza passare di qui → casual gated, mai forfait.
+        self._emit_individual_match_completed_event()
+
+    def _emit_individual_match_completed_event(self) -> None:
+        """Pubblica IndividualMatchCompletedEvent dopo la validazione bilaterale.
+
+        Evento dedicato (NON MatchCompletedEvent): i consumer di quest'ultimo
+        leggono la tabella `match`, mentre i casual vivono su `individual_match`.
+        Vedi docstring dell'evento in models/events/match_events.py.
+        """
+        from models.events.match_events import IndividualMatchCompletedEvent
+        from models.events.base import EventBus
+
+        player1_name = self.player1.username if self.player1 else "Player 1"
+        player2_name = self.player2.username if self.player2 else "Player 2"
+        winner_name = None
+        if self.winner_id and self.winner:
+            winner_name = self.winner.username
+
+        event = IndividualMatchCompletedEvent(
+            match_id=self.id,
+            player1_id=self.player1_id,
+            player1_name=player1_name,
+            player2_id=self.player2_id,
+            player2_name=player2_name,
+            winner_id=self.winner_id,
+            winner_name=winner_name,
+            score=f"{self.player1_score}-{self.player2_score}",
+        )
+        EventBus.publish(event)
+
     @property
     def location_display(self) -> str:
         """Get display name for location.
