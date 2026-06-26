@@ -192,6 +192,11 @@ class ProposalService:
 
             if eligible_user_ids:
                 scheduled_str = scheduled_at.strftime("%d/%m/%Y alle %H:%M")
+                # Suffisso località tradotto a parte: pybabel non estrae le
+                # chiamate _() annidate negli argomenti di un altro _().
+                loc_suffix = (
+                    " " + _("a %(loc)s", loc=location_text) if location_text else ""
+                )
                 NotificationFactory.create_bulk_notification(
                     user_ids=eligible_user_ids,
                     notification_type=NotificationType.MATCH_PROPOSAL,
@@ -199,7 +204,7 @@ class ProposalService:
                     message=_(
                         "%(username)s propone un match aperto%(location)s il %(date)s",
                         username=proposer_name,
-                        location=f" a {location_text}" if location_text else "",
+                        location=loc_suffix,
                         date=scheduled_str,
                     ),
                     priority=NotificationPriority.NORMAL,
@@ -446,6 +451,9 @@ class ProposalService:
             accepter_name = accepter.username if accepter else _("Un giocatore")
             location_text = proposal.location_display or ""
 
+            loc_suffix = (
+                " " + _("a %(loc)s", loc=location_text) if location_text else ""
+            )
             NotificationFactory.create_bulk_notification(
                 user_ids=[proposal.proposer_id],
                 notification_type=NotificationType.MATCH_ACCEPTED,
@@ -453,7 +461,7 @@ class ProposalService:
                 message=_(
                     "%(player)s ha accettato la tua proposta di match%(location)s",
                     player=accepter_name,
-                    location=f" a {location_text}" if location_text else "",
+                    location=loc_suffix,
                 ),
                 priority=NotificationPriority.HIGH,
                 action_url=f"/match/matches/{individual_match.id}",
@@ -511,13 +519,17 @@ class ProposalService:
             # Notify proposer that their proposal expired
             try:
                 location_text = proposal.location or ""
+                loc_suffix = (
+                    " " + _("a %(loc)s", loc=location_text) if location_text else ""
+                )
                 NotificationFactory.create_bulk_notification(
                     user_ids=[proposal.proposer_id],
                     notification_type=NotificationType.MATCH_DECLINED,
                     title=_("Proposta scaduta"),
                     message=_(
-                        "La tua proposta di match%(location)s è scaduta senza accettazioni.",
-                        location=f" a {location_text}" if location_text else "",
+                        "La tua proposta di match%(location)s è scaduta "
+                        "senza accettazioni.",
+                        location=loc_suffix,
                     ),
                     priority=NotificationPriority.NORMAL,
                     action_url=f"/match/proposals/{proposal.id}",
@@ -552,13 +564,17 @@ class ProposalService:
             # Notify proposer that their proposal expired
             try:
                 location_text = proposal.location or ""
+                loc_suffix = (
+                    " " + _("a %(loc)s", loc=location_text) if location_text else ""
+                )
                 NotificationFactory.create_bulk_notification(
                     user_ids=[proposal.proposer_id],
                     notification_type=NotificationType.MATCH_DECLINED,
                     title=_("Proposta scaduta"),
                     message=_(
-                        "La tua proposta di match%(location)s è scaduta senza accettazioni.",
-                        location=f" a {location_text}" if location_text else "",
+                        "La tua proposta di match%(location)s è scaduta "
+                        "senza accettazioni.",
+                        location=loc_suffix,
                     ),
                     priority=NotificationPriority.NORMAL,
                     action_url=f"/match/proposals/{proposal.id}",
@@ -609,6 +625,8 @@ class ProposalService:
         proposal_id: int, proposer_id: int, accepted_player_id: int
     ) -> Dict[str, Any]:
         """Accept an interest expressed for an open invitation."""
+        from flask_babel import _
+
         proposal = db.session.get(MatchProposal, proposal_id)
         if not proposal:
             raise ValueError(f"Proposal {proposal_id} not found")
@@ -641,8 +659,12 @@ class ProposalService:
                 NotificationFactory.create_bulk_notification(
                     user_ids=invited_user_ids,
                     notification_type=NotificationType.MATCH_DECLINED,
-                    title="Proposta Match Conclusa",
-                    message=f"La proposta di match '{proposal_title}' è stata accettata da un altro giocatore.",
+                    title=_("Proposta Match Conclusa"),
+                    message=_(
+                        "La proposta di match '%(title)s' è stata accettata "
+                        "da un altro giocatore.",
+                        title=proposal_title,
+                    ),
                     priority=NotificationPriority.NORMAL,
                     continue_on_error=True,
                 )

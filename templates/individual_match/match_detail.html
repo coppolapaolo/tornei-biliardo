@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Match {{ match.discipline|discipline_display }} - Campionato Biliardo{% endblock %}
+{% block title %}{{ _("Match") }} {{ match.discipline|discipline_display }} - {{ _("Campionato Biliardo") }}{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
@@ -8,9 +8,8 @@
         <div class="col-md-12">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('individual_match.dashboard') }}">Match
-                            Individuali</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Match Dettagli</li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('individual_match.dashboard') }}">{{ _("Match Individuali") }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ _("Match Dettagli") }}</li>
                 </ol>
             </nav>
         </div>

@@ -64,3 +64,33 @@ def test_dashboard_recent_includes_validated(app, db_session, isolated_players):
     data = Stats.get_user_dashboard_data(me.id)
     assert len(data["recent_matches"]) == 1
     assert data["statistics"]["total_matches"] == 1
+
+
+def test_statistics_secondary_panels_populated(app, db_session, isolated_players):
+    """I pannelli by_discipline / head_to_head / trend / monthly devono essere
+    popolati quando ci sono match (prima erano sempre vuoti: dati mai forniti)."""
+    me, opp = isolated_players[:2]
+    _match(db_session, me.id, opp.id, MatchStatus.VALIDATED, me.id, 5, 2)
+    _match(db_session, opp.id, me.id, MatchStatus.VALIDATED, me.id, 1, 5)
+    _match(db_session, me.id, opp.id, MatchStatus.COMPLETED, opp.id, 0, 5)
+
+    stats = Stats.get_user_statistics(me.id)
+
+    # by_discipline: tutti palla_8 → 1 riga, 3 match, 2 vinti
+    assert len(stats["by_discipline"]) == 1
+    d = stats["by_discipline"][0]
+    assert d["total_matches"] == 3 and d["wins"] == 2 and d["losses"] == 1
+
+    # head_to_head: un solo avversario, 3 match, 2-1
+    assert len(stats["head_to_head"]) == 1
+    h = stats["head_to_head"][0]
+    assert h["opponent_username"] == opp.username
+    assert h["total_matches"] == 3 and h["wins"] == 2 and h["losses"] == 1
+
+    # trend
+    assert len(stats["recent_matches"]) == 3
+    assert stats["recent_wins"] == 2 and stats["recent_losses"] == 1
+
+    # monthly_activity: almeno un mese con i match
+    assert len(stats["monthly_activity"]) >= 1
+    assert sum(mo["total_matches"] for mo in stats["monthly_activity"]) == 3
