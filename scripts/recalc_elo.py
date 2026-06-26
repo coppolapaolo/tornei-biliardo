@@ -65,6 +65,15 @@ def recalculate_elo(commit=False):
             f"matches ({result['skipped']} skipped: walkover/handicap)."
         )
 
+        # Dual ELO: ricalcola anche il pool globale (tornei + casual VALIDATED),
+        # fuso cronologicamente. Non tocca l'ELO competitivo né User.elo_rating.
+        global_result = RatingCalculationService.recalculate_all_elo_global()
+        logger.info(
+            f"ELO_GLOBAL: processed {global_result['processed']} of "
+            f"{global_result['total']} match ({global_result['skipped']} "
+            f"skipped: walkover/handicap)."
+        )
+
         if commit:
             db.session.commit()
             logger.info("Successfully committed changes.")

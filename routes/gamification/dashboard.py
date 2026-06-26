@@ -219,9 +219,15 @@ def leaderboards():
     from models.gamification.ui_helpers import GamificationUIHelper
 
     elo_leaderboard = []
+    elo_global_leaderboard = []
     if GamificationUIHelper.can_view_ratings(current_user):
         elo_leaderboard = LeaderboardService.get_leaderboard(
             LeaderboardType.ELO_RATING, limit
+        )
+        # Dual ELO: classifica globale (tornei + casual), display-only. Il
+        # toggle UI alterna le due; l'ordinamento è sempre lato server.
+        elo_global_leaderboard = LeaderboardService.get_leaderboard(
+            LeaderboardType.ELO_GLOBAL_RATING, limit
         )
 
     track_leaderboard_view()  # KPI tracking
@@ -232,6 +238,7 @@ def leaderboards():
         level_leaderboard=level_leaderboard,
         streak_leaderboard=streak_leaderboard,
         elo_leaderboard=elo_leaderboard,
+        elo_global_leaderboard=elo_global_leaderboard,
         active_tab=leaderboard_type_str,
         page_title=_("Classifiche"),
     )

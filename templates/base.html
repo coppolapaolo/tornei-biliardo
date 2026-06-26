@@ -121,8 +121,51 @@
             }
         };
 
+        // Dual ELO: alterna competitivo <-> globale su tutta l'interfaccia.
+        // Cambia SOLO cosa viene mostrato; categoria/handicap/seeding e il
+        // ranking ufficiale restano sul valore competitivo lato server.
+        window.EloToggle = {
+            KEY: 'eloMode',
+            LABELS: {
+                competitive: {{ _("competitivo")|tojson }},
+                global: {{ _("globale (tornei + casual)")|tojson }}
+            },
+            getMode: function () {
+                return localStorage.getItem(this.KEY) === 'global' ? 'global' : 'competitive';
+            },
+            apply: function (mode) {
+                mode = (mode === 'global') ? 'global' : 'competitive';
+                var attr = (mode === 'global') ? 'data-elo-global' : 'data-elo-competitive';
+                // 1) Valori singoli (profilo, card, ...)
+                document.querySelectorAll('.elo-value').forEach(function (el) {
+                    var val = el.getAttribute(attr);
+                    if (val !== null) el.textContent = val;
+                });
+                // 2) Etichetta modalità attiva
+                document.querySelectorAll('.elo-mode-label').forEach(function (el) {
+                    el.textContent = '(' + window.EloToggle.LABELS[mode] + ')';
+                });
+                // 3) Leaderboard dual-pool: mostra la classifica del pool attivo
+                document.querySelectorAll('[data-elo-pool]').forEach(function (el) {
+                    el.classList.toggle('d-none', el.getAttribute('data-elo-pool') !== mode);
+                });
+            },
+            toggle: function () {
+                var next = (this.getMode() === 'global') ? 'competitive' : 'global';
+                localStorage.setItem(this.KEY, next);
+                this.apply(next);
+            }
+        };
+
         // Auto-converti tutti gli orari UTC in pagina
         document.addEventListener('DOMContentLoaded', function () {
+            // Dual ELO: applica la modalità salvata e attiva il click-to-toggle
+            window.EloToggle.apply(window.EloToggle.getMode());
+            document.addEventListener('click', function (e) {
+                var el = e.target.closest('.elo-value');
+                if (el) { e.preventDefault(); window.EloToggle.toggle(); }
+            });
+
             // Cerca tutti gli elementi con data-utc
             document.querySelectorAll('[data-utc]').forEach(function (element) {
                 const utcTime = element.getAttribute('data-utc');

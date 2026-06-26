@@ -1,0 +1,22 @@
+{#
+  Macro dual-ELO: mostra un valore ELO cliccabile che alterna
+  competitivo <-> globale. Lo swap è gestito da window.EloToggle (base.html),
+  che applica a TUTTI gli `.elo-value` la modalità salvata in localStorage.
+
+  Il toggle cambia SOLO il numero mostrato: categoria/handicap/seeding e
+  l'ordinamento delle classifiche restano sempre sul valore competitivo.
+
+  Parametri:
+    competitive  - int, ELO competitivo (solo tornei). Default 1200 se None.
+    global_value - int, ELO globale (tornei + casual). Default = competitive.
+    show_label   - bool, mostra un'etichetta testuale della modalità attiva.
+#}
+{% macro elo_display(competitive, global_value, show_label=false) %}
+{%- set comp = competitive if competitive is not none else 1200 -%}
+{%- set glob = global_value if global_value is not none else comp -%}
+<span class="elo-value" role="button" tabindex="0"
+      data-elo-competitive="{{ comp }}"
+      data-elo-global="{{ glob }}"
+      title="{{ _('Clicca per alternare ELO competitivo / globale (tornei + casual)') }}"
+      style="cursor: pointer;">{{ comp }}</span><i class="fas fa-arrows-rotate fa-2xs text-muted ms-1" aria-hidden="true"></i>{% if show_label %} <small class="elo-mode-label text-muted"></small>{% endif %}
+{% endmacro %}

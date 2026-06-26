@@ -20,6 +20,9 @@ from models.gamification.models import XPTransactionType
 XP_RATES: Dict[XPTransactionType, int] = {
     XPTransactionType.MATCH_WIN: 50,
     XPTransactionType.MATCH_LOSS: 20,
+    # Match individuali/casual: XP ridotto vs torneo (anti-farming, gated a VALIDATED)
+    XPTransactionType.CASUAL_MATCH_WIN: 20,
+    XPTransactionType.CASUAL_MATCH_LOSS: 5,
     XPTransactionType.TOURNAMENT_INSCRIPTION: 25,
     XPTransactionType.TOURNAMENT_COMPLETION: 100,
     XPTransactionType.TOURNAMENT_PODIUM: 200,  # Top 3

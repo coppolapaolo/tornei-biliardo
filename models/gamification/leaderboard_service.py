@@ -107,6 +107,8 @@ class LeaderboardService:
             new_entries = LeaderboardService._calculate_streak_longest()
         elif leaderboard_type == LeaderboardType.ELO_RATING:
             new_entries = LeaderboardService._calculate_elo_rating()
+        elif leaderboard_type == LeaderboardType.ELO_GLOBAL_RATING:
+            new_entries = LeaderboardService._calculate_elo_global_rating()
 
         # Save to DB — transaction managed by @transactional decorator
         if new_entries:
@@ -232,6 +234,36 @@ class LeaderboardService:
             entries.append(
                 LeaderboardEntry(
                     leaderboard_type=LeaderboardType.ELO_RATING,
+                    user_id=pr.user_id,
+                    rank=rank,
+                    score=pr.rating_value,
+                    calculated_at=utc_now(),
+                )
+            )
+        return entries
+
+    @staticmethod
+    def _calculate_elo_global_rating() -> List[LeaderboardEntry]:
+        """Classifica ELO globale (dual ELO: tornei + casual VALIDATED).
+
+        Ranking distinto e display-only: NON pilota categoria/handicap. Il
+        ranking ufficiale resta quello competitivo (_calculate_elo_rating).
+        """
+        from models.rating.models import PlayerRating, RatingSystem
+
+        results = (
+            db.session.query(PlayerRating)
+            .filter_by(rating_system=RatingSystem.ELO_GLOBAL)
+            .order_by(desc(PlayerRating.rating_value))
+            .limit(100)
+            .all()
+        )
+
+        entries = []
+        for rank, pr in enumerate(results, 1):
+            entries.append(
+                LeaderboardEntry(
+                    leaderboard_type=LeaderboardType.ELO_GLOBAL_RATING,
                     user_id=pr.user_id,
                     rank=rank,
                     score=pr.rating_value,
