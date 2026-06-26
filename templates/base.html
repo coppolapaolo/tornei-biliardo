@@ -222,8 +222,10 @@
                     </li>
                     {% endif %}
 
-                    {# Individual Matches - requires create_match_direct feature (ABAC) AND production allowlist (ADR-028) #}
-                    {% if current_user.can_access('create_match_direct') and feature_visible('individual_match.dashboard') %}
+                    {# Individual Matches - requires create_match_direct feature (ABAC) AND production allowlist (ADR-028).
+                       Nascosto agli admin: l'admin non è un giocatore, la sua UI non espone funzioni di gioco
+                       (la supervisione passa da individual_match.admin_overview, admin-only). #}
+                    {% if not current_user.is_admin and current_user.can_access('create_match_direct') and feature_visible('individual_match.dashboard') %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('individual_match.dashboard') }}">
                             <i class="fas fa-shield-halved"></i> {{ _('Match Individuali') }}

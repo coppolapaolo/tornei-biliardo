@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Gestisci Disponibilità - Campionato Biliardo{% endblock %}
+{% block title %}{{ _("Gestisci Disponibilità") }} - {{ _("Campionato Biliardo") }}{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
@@ -8,8 +8,8 @@
         <div class="col-md-12">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('individual_match.dashboard') }}">Match Individuali</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Disponibilità</li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('individual_match.dashboard') }}">{{ _("Match Individuali") }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ _("Disponibilità") }}</li>
                 </ol>
             </nav>
 
@@ -17,14 +17,14 @@
                 <div class="col-md-10">
                     <div class="card">
                         <div class="card-header">
-                            <h4><i class="fas fa-calendar-alt"></i> Gestisci la tua Disponibilità</h4>
-                            <small class="text-muted">Indica dove sei disponibile a giocare per ricevere proposte di match</small>
+                            <h4><i class="fas fa-calendar-alt"></i> {{ _("Gestisci la tua Disponibilità") }}</h4>
+                            <small class="text-muted">{{ _("Indica dove sei disponibile a giocare per ricevere proposte di match") }}</small>
                         </div>
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-8">
                                     <!-- Current Availability -->
-                                    <h5>Le tue Località Preferite</h5>
+                                    <h5>{{ _("Le tue Località Preferite") }}</h5>
 
                                     <div id="currentAvailability">
                                         {% if availability_records and availability_records|length %}
@@ -39,22 +39,22 @@
                                                             <i class="fas fa-calendar"></i>
                                                             {% set days = record.preferred_days|default('')|string %}
                                                             {% if days %}
-                                                            Giorni: {{ days }}
+                                                            {{ _("Giorni:") }} {{ days }}
                                                             {% endif %}
                                                             {% endif %}
                                                             {% if record.preferred_times %}
-                                                            <br><i class="fas fa-clock"></i> Orari: {{ record.preferred_times }}
+                                                            <br><i class="fas fa-clock"></i> {{ _("Orari:") }} {{ record.preferred_times }}
                                                             {% endif %}
                                                         </p>
                                                     </div>
                                                     <div class="col-md-4 text-end">
                                                         <span class="badge bg-{{ 'success' if record.is_available else 'secondary' }}">
-                                                            {{ 'Disponibile' if record.is_available else 'Non disponibile' }}
+                                                            {{ _('Disponibile') if record.is_available else _('Non disponibile') }}
                                                         </span>
                                                         <br>
                                                         <button type="button" class="btn btn-outline-danger btn-sm mt-1"
                                                                 onclick='removeAvailability({{ record.id }})'>
-                                                            <i class="fas fa-trash"></i> Rimuovi
+                                                            <i class="fas fa-trash"></i> {{ _("Rimuovi") }}
                                                         </button>
                                                     </div>
                                                 </div>
@@ -64,40 +64,40 @@
                                         {% else %}
                                         <div class="alert alert-info" id="noAvailabilityAlert">
                                             <i class="fas fa-info-circle"></i>
-                                            Non hai ancora impostato nessuna disponibilità. Aggiungi la tua prima località qui sotto!
+                                            {{ _("Non hai ancora impostato nessuna disponibilità. Aggiungi la tua prima località qui sotto!") }}
                                         </div>
                                         {% endif %}
                                     </div>
 
                                     <!-- Add New Availability -->
                                     <hr>
-                                    <h5>Aggiungi Nuova Località</h5>
+                                    <h5>{{ _("Aggiungi Nuova Località") }}</h5>
 
                                     <div class="card bg-light">
                                         <div class="card-body">
                                             <div class="row">
                                                 <div class="col-md-6">
                                                     <div class="mb-3">
-                                                        <label for="location" class="form-label">Luogo *</label>
+                                                        <label for="location" class="form-label">{{ _("Luogo") }} *</label>
                                                         <input type="text" class="form-control" id="location"
-                                                               placeholder="Es: Bar Sport, Sala Biliardi Centro"
+                                                               placeholder="{{ _('Es: Bar Sport, Sala Biliardi Centro') }}"
                                                                list="venue-suggestions" autocomplete="off" required>
                                                         <datalist id="venue-suggestions">
                                                             {% if verified_venues %}
                                                             {% for venue in verified_venues %}
                                                             <option value="{{ venue.name }}">
-                                                                {{ venue.name }} - {{ venue.city or 'Città non specificata' }}
+                                                                {{ venue.name }} - {{ venue.city or _('Città non specificata') }}
                                                             </option>
                                                             {% endfor %}
                                                             {% endif %}
                                                         </datalist>
-                                                        <div class="form-text">Seleziona una sala esistente o scrivine una nuova</div>
+                                                        <div class="form-text">{{ _("Seleziona una sala esistente o scrivine una nuova") }}</div>
                                                     </div>
 
                                                     <div class="mb-3">
-                                                        <label class="form-label">Giorni Preferiti</label>
+                                                        <label class="form-label">{{ _("Giorni Preferiti") }}</label>
                                                         <div class="d-flex flex-wrap gap-2">
-                                                            {% for day, name in [('1', 'Lun'), ('2', 'Mar'), ('3', 'Mer'), ('4', 'Gio'), ('5', 'Ven'), ('6', 'Sab'), ('0', 'Dom')] %}
+                                                            {% for day, name in [('1', _('Lun')), ('2', _('Mar')), ('3', _('Mer')), ('4', _('Gio')), ('5', _('Ven')), ('6', _('Sab')), ('0', _('Dom'))] %}
                                                             <div class="form-check">
                                                                 <input class="form-check-input" type="checkbox" id="day_{{ day }}" value="{{ day }}">
                                                                 <label class="form-check-label" for="day_{{ day }}">{{ name }}</label>
@@ -109,17 +109,17 @@
 
                                                 <div class="col-md-6">
                                                     <div class="mb-3">
-                                                        <label for="preferred_times" class="form-label">Orari Preferiti</label>
+                                                        <label for="preferred_times" class="form-label">{{ _("Orari Preferiti") }}</label>
                                                         <input type="text" class="form-control" id="preferred_times"
-                                                               placeholder="Es: 18:00-22:00" value="18:00-22:00">
-                                                        <div class="form-text">Fascia oraria in cui sei disponibile</div>
+                                                               placeholder="{{ _('Es: 18:00-22:00') }}" value="18:00-22:00">
+                                                        <div class="form-text">{{ _("Fascia oraria in cui sei disponibile") }}</div>
                                                     </div>
 
                                                     <div class="mb-3">
                                                         <div class="form-check form-switch">
                                                             <input class="form-check-input" type="checkbox" id="is_available" checked>
                                                             <label class="form-check-label" for="is_available">
-                                                                Attualmente disponibile
+                                                                {{ _("Attualmente disponibile") }}
                                                             </label>
                                                         </div>
                                                     </div>
@@ -128,7 +128,7 @@
 
                                             <div class="text-center">
                                                 <button type="button" class="btn btn-primary" onclick="addAvailability()">
-                                                    <i class="fas fa-plus"></i> Aggiungi Località
+                                                    <i class="fas fa-plus"></i> {{ _("Aggiungi Località") }}
                                                 </button>
                                             </div>
                                         </div>
@@ -140,15 +140,15 @@
                                     <!-- Help -->
                                     <div class="card">
                                         <div class="card-header">
-                                            <h6><i class="fas fa-question-circle"></i> Come Funziona?</h6>
+                                            <h6><i class="fas fa-question-circle"></i> {{ _("Come Funziona?") }}</h6>
                                         </div>
                                         <div class="card-body">
                                             <ul class="small text-muted">
-                                                <li>Aggiungi le località dove giochi abitualmente</li>
-                                                <li>Indica i tuoi giorni e orari preferiti</li>
-                                                <li>Altri giocatori vedranno le tue disponibilità</li>
-                                                <li>Riceverai proposte di match nelle tue località</li>
-                                                <li>Puoi attivare/disattivare le disponibilità</li>
+                                                <li>{{ _("Aggiungi le località dove giochi abitualmente") }}</li>
+                                                <li>{{ _("Indica i tuoi giorni e orari preferiti") }}</li>
+                                                <li>{{ _("Altri giocatori vedranno le tue disponibilità") }}</li>
+                                                <li>{{ _("Riceverai proposte di match nelle tue località") }}</li>
+                                                <li>{{ _("Puoi attivare/disattivare le disponibilità") }}</li>
                                             </ul>
                                         </div>
                                     </div>
@@ -157,7 +157,7 @@
                                     {% if available_locations and available_locations|length %}
                                     <div class="card mt-3">
                                         <div class="card-header">
-                                            <h6><i class="fas fa-check-circle"></i> Località Attive</h6>
+                                            <h6><i class="fas fa-check-circle"></i> {{ _("Località Attive") }}</h6>
                                         </div>
                                         <div class="card-body">
                                             {% for loc in available_locations %}
@@ -196,7 +196,7 @@ function addAvailability() {
     const preferredDays = getSelectedDays();
 
     if (!locationInput) {
-        showError('Inserisci una località');
+        showError({{ _("Inserisci una località")|tojson }});
         return;
     }
 
@@ -218,27 +218,44 @@ function addAvailability() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showSuccess('Disponibilità aggiunta!');
+            showSuccess({{ _("Disponibilità aggiunta!")|tojson }});
             setTimeout(() => window.location.reload(), 1000);
         } else {
-            showError('Errore: ' + data.error);
+            showError({{ _("Errore:")|tojson }} + ' ' + data.error);
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showError('Errore durante il salvataggio');
+        showError({{ _("Errore durante il salvataggio")|tojson }});
     });
 }
 
-// Remove availability
+// Remove availability (persisted server-side)
 function removeAvailability(id) {
-    showConfirm('Sei sicuro di voler rimuovere questa disponibilità?', () => {
-        // For now, just remove from UI - backend should implement DELETE
-        const item = document.querySelector(`[data-id="${id}"]`);
-        if (item) {
-            item.remove();
-            showSuccess('Disponibilità rimossa!');
-        }
+    showConfirm({{ _("Sei sicuro di voler rimuovere questa disponibilità?")|tojson }}, () => {
+        fetch(`/match/availability/${id}/remove`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken()
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const item = document.querySelector(`[data-id="${id}"]`);
+                if (item) {
+                    item.remove();
+                }
+                showSuccess({{ _("Disponibilità rimossa!")|tojson }});
+            } else {
+                showError({{ _("Errore:")|tojson }} + ' ' + (data.error || ''));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showError({{ _("Errore durante la rimozione")|tojson }});
+        });
     });
 }
 </script>

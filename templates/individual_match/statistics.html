@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Statistiche Match Individuali - Campionato Biliardo{% endblock %}
+{% block title %}{{ _("Statistiche Match Individuali") }} - {{ _("Campionato Biliardo") }}{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
@@ -8,19 +8,19 @@
         <div class="col-md-12">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('individual_match.dashboard') }}">Match Individuali</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Statistiche</li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('individual_match.dashboard') }}">{{ _("Match Individuali") }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ _("Statistiche") }}</li>
                 </ol>
             </nav>
 
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
-                    <h1><i class="fas fa-chart-line"></i> Le tue Statistiche</h1>
-                    <p class="text-muted">Analisi completa delle tue performance nei match individuali.</p>
+                    <h1><i class="fas fa-chart-line"></i> {{ _("Le tue Statistiche") }}</h1>
+                    <p class="text-muted">{{ _("Analisi completa delle tue performance nei match individuali.") }}</p>
                 </div>
                 <div>
                     <a href="{{ url_for('individual_match.match_list') }}" class="btn btn-outline-primary">
-                        <i class="fas fa-list"></i> Vedi Match
+                        <i class="fas fa-list"></i> {{ _("Vedi Match") }}
                     </a>
                 </div>
             </div>
@@ -32,33 +32,33 @@
         <div class="col-md-12 mb-4">
             <div class="card">
                 <div class="card-header">
-                    <h5><i class="fas fa-trophy"></i> Statistiche Generali</h5>
+                    <h5><i class="fas fa-trophy"></i> {{ _("Statistiche Generali") }}</h5>
                 </div>
                 <div class="card-body">
                     <div class="row text-center">
                         <div class="col-md-2">
                             <h2 class="display-6 text-primary">{{ statistics.total_matches or 0 }}</h2>
-                            <small class="text-muted">Match Totali</small>
+                            <small class="text-muted">{{ _("Match Totali") }}</small>
                         </div>
                         <div class="col-md-2">
                             <h2 class="display-6 text-success">{{ statistics.won_matches or 0 }}</h2>
-                            <small class="text-muted">Vittorie</small>
+                            <small class="text-muted">{{ _("Vittorie") }}</small>
                         </div>
                         <div class="col-md-2">
                             <h2 class="display-6 text-danger">{{ statistics.lost_matches or 0 }}</h2>
-                            <small class="text-muted">Sconfitte</small>
+                            <small class="text-muted">{{ _("Sconfitte") }}</small>
                         </div>
                         <div class="col-md-2">
                             <h2 class="display-6 text-info">{{ "%.1f"|format(statistics.win_percentage or 0) }}%</h2>
-                            <small class="text-muted">% Vittorie</small>
+                            <small class="text-muted">{{ _("Perc. Vinte") }}</small>
                         </div>
                         <div class="col-md-2">
                             <h2 class="display-6 text-warning">{{ statistics.total_racks_won or 0 }}</h2>
-                            <small class="text-muted">Rack Vinti</small>
+                            <small class="text-muted">{{ _("Rack Vinti") }}</small>
                         </div>
                         <div class="col-md-2">
                             <h2 class="display-6 text-secondary">{{ "%.1f"|format(statistics.rack_win_percentage or 0) }}%</h2>
-                            <small class="text-muted">% Rack Vinti</small>
+                            <small class="text-muted">{{ _("Perc. Rack Vinti") }}</small>
                         </div>
                     </div>
                 </div>
@@ -69,7 +69,7 @@
         <div class="col-md-6 mb-4">
             <div class="card h-100">
                 <div class="card-header">
-                    <h5><i class="fas fa-8-ball"></i> Performance per Disciplina</h5>
+                    <h5><i class="fas fa-8-ball"></i> {{ _("Performance per Disciplina") }}</h5>
                 </div>
                 <div class="card-body">
                     {% if statistics.by_discipline and statistics.by_discipline|length %}
@@ -77,9 +77,9 @@
                         <table class="table table-sm">
                             <thead>
                                 <tr>
-                                    <th>Disciplina</th>
-                                    <th class="text-center">Match</th>
-                                    <th class="text-center">V-S</th>
+                                    <th>{{ _("Disciplina") }}</th>
+                                    <th class="text-center">{{ _("Match") }}</th>
+                                    <th class="text-center">{{ _("V-S") }}</th>
                                     <th class="text-center">%</th>
                                 </tr>
                             </thead>
@@ -106,7 +106,7 @@
                     {% else %}
                     <div class="text-center py-4">
                         <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
-                        <p class="text-muted">Nessuna statistica disponibile ancora.<br>Gioca qualche match per vedere i dati!</p>
+                        <p class="text-muted">{{ _("Nessuna statistica disponibile ancora.") }}<br>{{ _("Gioca qualche match per vedere i dati!") }}</p>
                     </div>
                     {% endif %}
                 </div>
@@ -117,16 +117,16 @@
         <div class="col-md-6 mb-4">
             <div class="card h-100">
                 <div class="card-header">
-                    <h5><i class="fas fa-chart-area"></i> Trend Recente</h5>
+                    <h5><i class="fas fa-chart-area"></i> {{ _("Trend Recente") }}</h5>
                 </div>
                 <div class="card-body">
                     {% if statistics.recent_matches and statistics.recent_matches|length %}
                     <div class="mb-3">
-                        <small class="text-muted">Ultimi 10 match:</small>
+                        <small class="text-muted">{{ _("Ultimi 10 match:") }}</small>
                         <div class="mt-2">
                             {% for match in statistics.recent_matches[-10:] %}
                             <span class="badge bg-{{ 'success' if match.won else 'danger' }} me-1 mb-1">
-                                {{ 'W' if match.won else 'L' }}
+                                {{ _('W') if match.won else _('L') }}
                             </span>
                             {% endfor %}
                         </div>
@@ -135,25 +135,25 @@
                     <div class="row">
                         <div class="col-6">
                             <h4 class="text-success">{{ statistics.recent_wins or 0 }}</h4>
-                            <small class="text-muted">Vittorie recenti</small>
+                            <small class="text-muted">{{ _("Vittorie recenti") }}</small>
                         </div>
                         <div class="col-6">
                             <h4 class="text-danger">{{ statistics.recent_losses or 0 }}</h4>
-                            <small class="text-muted">Sconfitte recenti</small>
+                            <small class="text-muted">{{ _("Sconfitte recenti") }}</small>
                         </div>
                     </div>
 
                     {% if statistics.current_streak %}
                     <div class="alert alert-{{ 'success' if statistics.current_streak_type == 'win' else 'danger' }} mt-3">
                         <i class="fas fa-fire"></i>
-                        <strong>Striscia attuale:</strong>
-                        {{ statistics.current_streak }} {{ 'vittorie' if statistics.current_streak_type == 'win' else 'sconfitte' }} consecutive
+                        <strong>{{ _("Striscia attuale:") }}</strong>
+                        {{ statistics.current_streak }} {{ _('vittorie') if statistics.current_streak_type == 'win' else _('sconfitte') }} {{ _("consecutive") }}
                     </div>
                     {% endif %}
                     {% else %}
                     <div class="text-center py-4">
                         <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
-                        <p class="text-muted">Gioca alcuni match per vedere il tuo trend di performance!</p>
+                        <p class="text-muted">{{ _("Gioca alcuni match per vedere il tuo trend di performance!") }}</p>
                     </div>
                     {% endif %}
                 </div>
@@ -164,7 +164,7 @@
         <div class="col-md-6 mb-4">
             <div class="card h-100">
                 <div class="card-header">
-                    <h5><i class="fas fa-users"></i> Record Testa a Testa</h5>
+                    <h5><i class="fas fa-users"></i> {{ _("Record Testa a Testa") }}</h5>
                 </div>
                 <div class="card-body">
                     {% if statistics.head_to_head and statistics.head_to_head|length %}
@@ -172,9 +172,9 @@
                         <table class="table table-sm">
                             <thead>
                                 <tr>
-                                    <th>Avversario</th>
-                                    <th class="text-center">Match</th>
-                                    <th class="text-center">Record</th>
+                                    <th>{{ _("Avversario") }}</th>
+                                    <th class="text-center">{{ _("Match") }}</th>
+                                    <th class="text-center">{{ _("Record") }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -193,12 +193,12 @@
                         </table>
                     </div>
                     {% if statistics.head_to_head|length > 5 %}
-                    <small class="text-muted">E altri {{ statistics.head_to_head|length - 5 }} avversari...</small>
+                    <small class="text-muted">{{ _("E altri %(n)s avversari...", n=statistics.head_to_head|length - 5) }}</small>
                     {% endif %}
                     {% else %}
                     <div class="text-center py-4">
                         <i class="fas fa-handshake fa-3x text-muted mb-3"></i>
-                        <p class="text-muted">Nessun record testa a testa ancora.<br>Gioca contro diversi avversari!</p>
+                        <p class="text-muted">{{ _("Nessun record testa a testa ancora.") }}<br>{{ _("Gioca contro diversi avversari!") }}</p>
                     </div>
                     {% endif %}
                 </div>
@@ -209,7 +209,7 @@
         <div class="col-md-6 mb-4">
             <div class="card h-100">
                 <div class="card-header">
-                    <h5><i class="fas fa-calendar"></i> Attività Mensile</h5>
+                    <h5><i class="fas fa-calendar"></i> {{ _("Attività Mensile") }}</h5>
                 </div>
                 <div class="card-body">
                     {% if statistics.monthly_activity and statistics.monthly_activity|length %}
@@ -217,9 +217,9 @@
                         <table class="table table-sm">
                             <thead>
                                 <tr>
-                                    <th>Mese</th>
-                                    <th class="text-center">Match</th>
-                                    <th class="text-center">Vittorie</th>
+                                    <th>{{ _("Mese") }}</th>
+                                    <th class="text-center">{{ _("Match") }}</th>
+                                    <th class="text-center">{{ _("Vittorie") }}</th>
                                     <th class="text-center">%</th>
                                 </tr>
                             </thead>
@@ -240,7 +240,7 @@
                     {% else %}
                     <div class="text-center py-4">
                         <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
-                        <p class="text-muted">Nessuna attività mensile da mostrare.</p>
+                        <p class="text-muted">{{ _("Nessuna attività mensile da mostrare.") }}</p>
                     </div>
                     {% endif %}
                 </div>
@@ -251,7 +251,7 @@
         <div class="col-md-12 mb-4">
             <div class="card">
                 <div class="card-header">
-                    <h5><i class="fas fa-medal"></i> Traguardi</h5>
+                    <h5><i class="fas fa-medal"></i> {{ _("Traguardi") }}</h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -270,29 +270,29 @@
                         <div class="col-md-3 mb-3">
                             <div class="text-center">
                                 <i class="fas fa-trophy fa-2x text-muted mb-2"></i>
-                                <h6>Prima Vittoria</h6>
-                                <small class="text-muted">Vinci il tuo primo match</small>
+                                <h6>{{ _("Prima Vittoria") }}</h6>
+                                <small class="text-muted">{{ _("Vinci il tuo primo match") }}</small>
                             </div>
                         </div>
                         <div class="col-md-3 mb-3">
                             <div class="text-center">
                                 <i class="fas fa-fire fa-2x text-muted mb-2"></i>
-                                <h6>Striscia di 3</h6>
-                                <small class="text-muted">Vinci 3 match consecutivi</small>
+                                <h6>{{ _("Striscia di 3") }}</h6>
+                                <small class="text-muted">{{ _("Vinci 3 match consecutivi") }}</small>
                             </div>
                         </div>
                         <div class="col-md-3 mb-3">
                             <div class="text-center">
                                 <i class="fas fa-8-ball fa-2x text-muted mb-2"></i>
-                                <h6>Versatile</h6>
-                                <small class="text-muted">Gioca 3 discipline diverse</small>
+                                <h6>{{ _("Versatile") }}</h6>
+                                <small class="text-muted">{{ _("Gioca 3 discipline diverse") }}</small>
                             </div>
                         </div>
                         <div class="col-md-3 mb-3">
                             <div class="text-center">
                                 <i class="fas fa-users fa-2x text-muted mb-2"></i>
-                                <h6>Socievole</h6>
-                                <small class="text-muted">Gioca contro 5 avversari diversi</small>
+                                <h6>{{ _("Socievole") }}</h6>
+                                <small class="text-muted">{{ _("Gioca contro 5 avversari diversi") }}</small>
                             </div>
                         </div>
                         {% endif %}
@@ -307,10 +307,10 @@
         <div class="col-md-12">
             <div class="text-center">
                 <a href="{{ url_for('individual_match.dashboard') }}" class="btn btn-outline-secondary me-2">
-                    <i class="fas fa-arrow-left"></i> Torna alla Dashboard
+                    <i class="fas fa-arrow-left"></i> {{ _("Torna alla Dashboard") }}
                 </a>
                 <a href="{{ url_for('individual_match.create_proposal') }}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Crea Nuova Proposta
+                    <i class="fas fa-plus"></i> {{ _("Crea Nuova Proposta") }}
                 </a>
             </div>
         </div>
@@ -337,7 +337,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const badges = document.querySelectorAll('.badge');
     badges.forEach(badge => {
         if (badge.textContent.includes('%')) {
-            badge.setAttribute('title', 'Percentuale di vittorie in questa disciplina');
+            badge.setAttribute('title', {{ _("Percentuale di vittorie in questa disciplina")|tojson }});
             badge.setAttribute('data-bs-toggle', 'tooltip');
         }
     });

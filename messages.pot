@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-24 15:03+0200\n"
+"POT-Creation-Date: 2026-06-26 15:20+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -237,6 +237,7 @@ msgid "%(player)s ha accettato la tua proposta di match%(location)s"
 msgstr ""
 
 #: models/individual_match/proposal_service.py:460
+#: templates/individual_match/proposal_detail.html:150
 msgid "Vai al match"
 msgstr ""
 
@@ -375,7 +376,7 @@ msgstr ""
 msgid "Che piacere rivederti!"
 msgstr ""
 
-#: routes/auth.py:40 templates/base.html:538
+#: routes/auth.py:40 templates/base.html:540
 msgid "Tutto pronto per giocare?"
 msgstr ""
 
@@ -595,7 +596,7 @@ msgstr ""
 msgid "Configurazione tavoli salvata!"
 msgstr ""
 
-#: routes/gamification/admin.py:82 templates/base.html:238
+#: routes/gamification/admin.py:82 templates/base.html:240
 #: templates/base_navbar_section.html:39
 #: templates/gamification/admin/dashboard.html:5
 msgid "Admin Gamification"
@@ -875,7 +876,7 @@ msgstr ""
 #: routes/individual_match/proposals.py:36
 #: routes/individual_match/proposals.py:64
 #: routes/individual_match/proposals.py:369 routes/individual_match/views.py:34
-#: routes/individual_match/views.py:122
+#: routes/individual_match/views.py:142
 msgid "Errore interno del server"
 msgstr ""
 
@@ -954,11 +955,15 @@ msgstr ""
 msgid "Disponibilità aggiornata con successo!"
 msgstr ""
 
-#: routes/individual_match/views.py:133
+#: routes/individual_match/views.py:124
+msgid "Disponibilità rimossa."
+msgstr ""
+
+#: routes/individual_match/views.py:153
 msgid "Risorsa non trovata."
 msgstr ""
 
-#: routes/individual_match/views.py:143
+#: routes/individual_match/views.py:163
 msgid "Accesso negato."
 msgstr ""
 
@@ -1101,75 +1106,85 @@ msgstr ""
 msgid "Apri menu"
 msgstr ""
 
-#: templates/admin/kpi.html:51 templates/base.html:203 templates/base.html:309
-#: templates/base_navbar_section.html:6 templates/player/history.html:17
+#: templates/admin/kpi.html:51 templates/base.html:203 templates/base.html:311
+#: templates/base_navbar_section.html:6
+#: templates/individual_match/admin_overview.html:11
+#: templates/individual_match/proposals.html:330
+#: templates/player/history.html:17
 msgid "Dashboard"
 msgstr ""
 
-#: templates/base.html:211 templates/base.html:328
+#: templates/base.html:211 templates/base.html:330
 #: templates/base_navbar_section.html:13
 msgid "Sale Biliardo"
 msgstr ""
 
-#: templates/base.html:229 templates/base_navbar_section.html:30
+#: templates/base.html:231 templates/base_navbar_section.html:30
+#: templates/individual_match/admin_overview.html:3
+#: templates/individual_match/admin_overview.html:16
+#: templates/individual_match/availability.html:11
+#: templates/individual_match/dashboard.html:3
+#: templates/individual_match/dashboard.html:9
+#: templates/individual_match/proposal_detail.html:11
+#: templates/individual_match/statistics.html:11
 msgid "Match Individuali"
 msgstr ""
 
-#: templates/base.html:243 templates/base.html:323
+#: templates/base.html:245 templates/base.html:325
 #: templates/base_navbar_section.html:44
 #: templates/gamification/admin/dashboard.html:113
 msgid "Utenti"
 msgstr ""
 
-#: templates/base.html:256 templates/base_navbar_section.html:57
+#: templates/base.html:258 templates/base_navbar_section.html:57
 msgid "Reset DB"
 msgstr ""
 
-#: templates/base.html:297
+#: templates/base.html:299
 msgid "Notifiche"
 msgstr ""
 
-#: templates/base.html:302
+#: templates/base.html:304
 msgid "Le mie Richieste Gestore"
 msgstr ""
 
-#: templates/base.html:313 templates/player/profile.html:6
+#: templates/base.html:315 templates/player/profile.html:6
 #: templates/player/profile.html:19
 msgid "Il mio Profilo"
 msgstr ""
 
-#: templates/base.html:338
+#: templates/base.html:340
 msgid "Richieste Gestore Sala"
 msgstr ""
 
-#: templates/base.html:343
+#: templates/base.html:345
 msgid "Richieste Director"
 msgstr ""
 
-#: templates/base.html:352 templates/player/profile.html:131
+#: templates/base.html:354 templates/player/profile.html:131
 msgid "Elimina Account"
 msgstr ""
 
-#: templates/base.html:360
+#: templates/base.html:362
 msgid "Logout"
 msgstr ""
 
-#: templates/base.html:366
+#: templates/base.html:368
 msgid "Login"
 msgstr ""
 
-#: templates/base.html:369
+#: templates/base.html:371
 #: templates/components/_index_registration_info.html:18
 msgid "Registrati"
 msgstr ""
 
-#: templates/base.html:507 templates/base.html:513
+#: templates/base.html:509 templates/base.html:515
 msgid "Conferma"
 msgstr ""
 
 #: templates/admin/campionato_wizard_step1.html:14
 #: templates/admin/campionato_wizard_step1.html:184
-#: templates/admin/campionato_wizard_step2.html:14 templates/base.html:512
+#: templates/admin/campionato_wizard_step2.html:14 templates/base.html:514
 #: templates/components/_admin_new_campionato_modal.html:28
 #: templates/components/_campionato_create_modal.html:27
 #: templates/components/_campionato_edit_form.html:204
@@ -1182,55 +1197,58 @@ msgstr ""
 #: templates/gamification/admin/streak_config.html:145
 #: templates/gamification/admin/streak_config.html:267
 #: templates/gara_detail.html:687 templates/gara_detail.html:733
-#: templates/gara_detail.html:766 templates/player/privacy_settings.html:86
+#: templates/gara_detail.html:766
+#: templates/individual_match/create_proposal.html:259
+#: templates/individual_match/proposals.html:216
+#: templates/player/privacy_settings.html:86
 msgid "Annulla"
 msgstr ""
 
-#: templates/base.html:528
+#: templates/base.html:530
 msgid "XP OTTENUTI"
 msgstr ""
 
-#: templates/base.html:529
+#: templates/base.html:531
 msgid "LEVEL UP!"
 msgstr ""
 
-#: templates/base.html:530
+#: templates/base.html:532
 msgid "Nuovo livello raggiunto!"
 msgstr ""
 
-#: templates/base.html:531
+#: templates/base.html:533
 msgid "NUOVO TRAGUARDO!"
 msgstr ""
 
-#: templates/base.html:532
+#: templates/base.html:534
 msgid "STREAK!"
 msgstr ""
 
-#: templates/base.html:533
+#: templates/base.html:535
 msgid "Freeze attivo"
 msgstr ""
 
-#: templates/base.html:534
+#: templates/base.html:536
 msgid "STREAK PERSA"
 msgstr ""
 
-#: templates/base.html:535
+#: templates/base.html:537
 msgid "Non mollare, riprovare!"
 msgstr ""
 
-#: templates/base.html:536
+#: templates/base.html:538
 msgid "QUEST COMPLETATA!"
 msgstr ""
 
-#: templates/base.html:537
+#: templates/base.html:539
 msgid "TI DIAMO IL BENTORNATO!"
 msgstr ""
 
-#: templates/base.html:539
+#: templates/base.html:541
 msgid "Ciao!"
 msgstr ""
 
-#: templates/base.html:540
+#: templates/base.html:542
 #, python-format
 msgid "Ciao %(username)s!"
 msgstr ""
@@ -1257,6 +1275,7 @@ msgstr ""
 #: templates/components/_separated_dashboard_content.html:638
 #: templates/components/_unified_cards.html:189
 #: templates/components/_unified_cards.html:216 templates/gara_detail.html:7
+#: templates/individual_match/matches.html:156
 msgid "Dettagli"
 msgstr ""
 
@@ -1363,6 +1382,7 @@ msgid "Tipo:"
 msgstr ""
 
 #: templates/components/_gara_info.html:17 templates/gara_detail.html:410
+#: templates/individual_match/proposal_detail.html:72
 msgid "Luogo:"
 msgstr ""
 
@@ -1502,6 +1522,10 @@ msgstr ""
 
 #: templates/components/_multi_set_score_display.html:115
 #: templates/gara_detail.html:601 templates/gara_detail.html:604
+#: templates/individual_match/proposal_detail.html:87
+#: templates/individual_match/proposals.html:95
+#: templates/individual_match/proposals.html:181
+#: templates/individual_match/proposals.html:271
 msgid "rack"
 msgstr ""
 
@@ -1509,6 +1533,11 @@ msgstr ""
 #: templates/gara_detail.html:604
 #: templates/individual_match/match_detail.html:107
 #: templates/individual_match/match_detail.html:110
+#: templates/individual_match/matches.html:126
+#: templates/individual_match/proposal_detail.html:87
+#: templates/individual_match/proposals.html:95
+#: templates/individual_match/proposals.html:181
+#: templates/individual_match/proposals.html:271
 msgid "Esattamente"
 msgstr ""
 
@@ -1536,10 +1565,12 @@ msgid "Distanza %(d)s"
 msgstr ""
 
 #: templates/gara_detail.html:632 templates/gara_detail.html:651
+#: templates/individual_match/admin_overview.html:126
 msgid "Giocatore 1"
 msgstr ""
 
 #: templates/gara_detail.html:636 templates/gara_detail.html:655
+#: templates/individual_match/admin_overview.html:127
 msgid "Giocatore 2"
 msgstr ""
 
@@ -1695,12 +1726,16 @@ msgstr ""
 #: templates/components/_match_admin_controls.html:223
 #: templates/components/_match_admin_controls.html:265
 #: templates/gara_detail.html:813 templates/gara_detail.html:828
+#: templates/individual_match/availability.html:224
+#: templates/individual_match/availability.html:252
 #: templates/individual_match/match_detail.html:255
 #: templates/individual_match/match_detail.html:281
 #: templates/individual_match/match_detail.html:312
 #: templates/individual_match/match_detail.html:339
 #: templates/individual_match/match_detail.html:365
 #: templates/individual_match/match_detail.html:404
+#: templates/individual_match/proposal_detail.html:214
+#: templates/individual_match/proposals.html:377
 #: templates/match_detail.html:212 templates/match_detail.html:244
 #: templates/match_detail.html:280 templates/match_detail.html:313
 #: templates/match_detail.html:339 templates/match_detail.html:364
@@ -1887,7 +1922,9 @@ msgstr[1] ""
 msgid "Vedi tutti"
 msgstr ""
 
-#: templates/admin/kpi.html:746 templates/match_detail.html:3
+#: templates/admin/kpi.html:746 templates/individual_match/statistics.html:81
+#: templates/individual_match/statistics.html:176
+#: templates/individual_match/statistics.html:221 templates/match_detail.html:3
 msgid "Match"
 msgstr ""
 
@@ -2175,6 +2212,7 @@ msgstr ""
 #: templates/components/_multi_set_score_display.html:64
 #: templates/gamification/admin/features.html:26
 #: templates/gamification/admin/quests.html:23
+#: templates/individual_match/admin_overview.html:130
 #: templates/public/campionato_detail.html:100
 #: templates/public/campionatos_list.html:18
 #: templates/public/garas_list.html:13
@@ -2191,6 +2229,7 @@ msgstr ""
 #: templates/admin/campionato_detail.html:222
 #: templates/components/_match_result_row.html:161
 #: templates/components/_multi_set_score_display.html:92
+#: templates/individual_match/proposal_detail.html:44
 msgid "In attesa"
 msgstr ""
 
@@ -2416,6 +2455,9 @@ msgstr ""
 #: templates/components/_history_filters.html:69
 #: templates/components/_history_matches_tab.html:22
 #: templates/components/_player_statistics.html:25
+#: templates/individual_match/dashboard.html:205
+#: templates/individual_match/statistics.html:45
+#: templates/individual_match/statistics.html:222
 msgid "Vittorie"
 msgstr ""
 
@@ -2828,6 +2870,7 @@ msgid "Gestione Utenti"
 msgstr ""
 
 #: templates/admin/users_list.html:11 templates/components/_gara_header.html:28
+#: templates/individual_match/statistics.html:310
 #: templates/player/notifications.html:276 templates/player/profile.html:29
 #: templates/public/campionato_detail.html:18
 msgid "Torna alla Dashboard"
@@ -2973,6 +3016,7 @@ msgstr ""
 #: templates/gamification/admin/quests.html:28
 #: templates/gamification/admin/streak_config.html:60
 #: templates/gamification/admin/xp_config.html:29
+#: templates/individual_match/admin_overview.html:132
 #: templates/individual_match/match_detail.html:143
 #: templates/public/garas_list.html:15
 msgid "Azioni"
@@ -3250,6 +3294,7 @@ msgid "Direttore campionato"
 msgstr ""
 
 #: templates/components/_directors_management.html:29
+#: templates/individual_match/availability.html:57
 msgid "Rimuovi"
 msgstr ""
 
@@ -3277,6 +3322,7 @@ msgstr ""
 #: templates/components/_gara_management.html:80
 #: templates/components/_index_campionato_cards.html:53
 #: templates/components/_unified_cards.html:120
+#: templates/individual_match/proposal_detail.html:116
 msgid "Scade:"
 msgstr ""
 
@@ -3720,8 +3766,10 @@ msgid "Filtri"
 msgstr ""
 
 #: templates/components/_history_filters.html:22
+#: templates/individual_match/admin_overview.html:129
 #: templates/individual_match/create_proposal.html:98
 #: templates/individual_match/match_detail.html:99
+#: templates/individual_match/statistics.html:80
 #: templates/public/campionato_detail.html:99
 #: templates/public/garas_list.html:10
 msgid "Disciplina"
@@ -3742,6 +3790,7 @@ msgstr ""
 
 #: templates/components/_history_filters.html:51
 #: templates/components/_player_recent_matches.html:17
+#: templates/individual_match/statistics.html:175
 msgid "Avversario"
 msgstr ""
 
@@ -3756,6 +3805,8 @@ msgstr ""
 #: templates/components/_history_filters.html:72
 #: templates/components/_history_matches_tab.html:30
 #: templates/components/_player_statistics.html:43
+#: templates/individual_match/dashboard.html:209
+#: templates/individual_match/statistics.html:49
 msgid "Sconfitte"
 msgstr ""
 
@@ -3813,6 +3864,15 @@ msgstr ""
 #: templates/components/_unified_rack_input.html:134
 #: templates/individual_match/match_detail.html:107
 #: templates/individual_match/match_detail.html:110
+#: templates/individual_match/matches.html:126
+#: templates/individual_match/proposal_detail.html:84
+#: templates/individual_match/proposal_detail.html:87
+#: templates/individual_match/proposals.html:93
+#: templates/individual_match/proposals.html:95
+#: templates/individual_match/proposals.html:179
+#: templates/individual_match/proposals.html:181
+#: templates/individual_match/proposals.html:269
+#: templates/individual_match/proposals.html:271
 msgid "Al"
 msgstr ""
 
@@ -3826,6 +3886,7 @@ msgid "Win Rate"
 msgstr ""
 
 #: templates/components/_history_matches_tab.html:46
+#: templates/individual_match/statistics.html:57
 msgid "Rack Vinti"
 msgstr ""
 
@@ -4019,6 +4080,7 @@ msgid "Segui la diretta"
 msgstr ""
 
 #: templates/components/_index_open_inscriptions.html:26
+#: templates/individual_match/proposal_detail.html:54
 msgid "Aperta"
 msgstr ""
 
@@ -4192,14 +4254,16 @@ msgstr ""
 
 #: templates/components/_match_card.html:24
 #: templates/components/_match_result_row.html:100
-#: templates/components/_match_result_row.html:103 utils/status_ui.py:142
+#: templates/components/_match_result_row.html:103
+#: templates/individual_match/admin_overview.html:64 utils/status_ui.py:142
 #: utils/status_ui.py:178
 msgid "In Attesa"
 msgstr ""
 
 #: templates/components/_match_card.html:26
 #: templates/components/_match_result_row.html:108
-#: templates/components/_match_result_row.html:111 utils/status_ui.py:92
+#: templates/components/_match_result_row.html:111
+#: templates/individual_match/admin_overview.html:36 utils/status_ui.py:92
 #: utils/status_ui.py:125 utils/status_ui.py:143
 msgid "In Corso"
 msgstr ""
@@ -4256,6 +4320,7 @@ msgid "set vinti"
 msgstr ""
 
 #: templates/components/_multi_set_score_display.html:88
+#: templates/individual_match/matches.html:42
 #: templates/public/campionatos_list.html:21
 msgid "In corso"
 msgstr ""
@@ -4412,6 +4477,8 @@ msgid "Le mie Statistiche"
 msgstr ""
 
 #: templates/components/_player_statistics.html:5
+#: templates/individual_match/dashboard.html:185
+#: templates/individual_match/statistics.html:12
 #: templates/public/campionato_detail.html:62
 msgid "Statistiche"
 msgstr ""
@@ -4785,6 +4852,10 @@ msgstr ""
 #: templates/components/_unified_match_score.html:79
 #: templates/components/_unified_match_score.html:101
 #: templates/individual_match/match_detail.html:107
+#: templates/individual_match/proposal_detail.html:84
+#: templates/individual_match/proposals.html:93
+#: templates/individual_match/proposals.html:179
+#: templates/individual_match/proposals.html:269
 msgid "set"
 msgstr ""
 
@@ -4902,11 +4973,16 @@ msgstr ""
 
 #: templates/components/_unified_rack_input.html:283
 #: templates/components/_unified_rack_input.html:300
+#: templates/individual_match/dashboard.html:52
+#: templates/individual_match/proposal_detail.html:179
+#: templates/individual_match/proposals.html:114
 msgid "Accetta"
 msgstr ""
 
 #: templates/components/_unified_rack_input.html:288
 #: templates/components/_unified_rack_input.html:305
+#: templates/individual_match/proposal_detail.html:183
+#: templates/individual_match/proposals.html:119
 msgid "Rifiuta"
 msgstr ""
 
@@ -5045,6 +5121,7 @@ msgstr ""
 
 #: templates/gamification/achievements.html:75
 #: templates/gamification/streaks.html:87
+#: templates/individual_match/statistics.html:254
 msgid "Traguardi"
 msgstr ""
 
@@ -5094,6 +5171,7 @@ msgstr ""
 #: templates/gamification/admin/streaks.html:98
 #: templates/gamification/dashboard.html:80
 #: templates/gamification/streaks.html:81
+#: templates/individual_match/statistics.html:177
 msgid "Record"
 msgstr ""
 
@@ -5265,6 +5343,8 @@ msgid "Quest in Arrivo"
 msgstr ""
 
 #: templates/gamification/quests.html:128
+#: templates/individual_match/dashboard.html:96
+#: templates/individual_match/matches.html:146
 msgid "Inizia"
 msgstr ""
 
@@ -5986,6 +6066,8 @@ msgid "Partecipanti"
 msgstr ""
 
 #: templates/gamification/admin/quests.html:26
+#: templates/individual_match/admin_overview.html:40
+#: templates/individual_match/matches.html:43
 #: templates/public/campionatos_list.html:22
 msgid "Completati"
 msgstr ""
@@ -5995,6 +6077,7 @@ msgid "XP Reward"
 msgstr ""
 
 #: templates/gamification/admin/quests.html:47
+#: templates/individual_match/proposal_detail.html:48
 msgid "Scaduta"
 msgstr ""
 
@@ -6229,6 +6312,7 @@ msgid "Transazioni Recenti"
 msgstr ""
 
 #: templates/gamification/admin/xp_management.html:83
+#: templates/individual_match/admin_overview.html:131
 #: templates/public/campionato_detail.html:98
 #: templates/public/garas_list.html:11
 msgid "Data"
@@ -6244,6 +6328,281 @@ msgstr ""
 
 #: templates/gamification/admin/xp_management.html:136
 msgid "Sei sicuro di voler resettare il livello di questo utente?"
+msgstr ""
+
+#: templates/individual_match/admin_overview.html:3
+#: templates/individual_match/admin_overview.html:16
+msgid "Admin Overview"
+msgstr ""
+
+#: templates/individual_match/admin_overview.html:12
+msgid "Admin Match Individuali"
+msgstr ""
+
+#: templates/individual_match/admin_overview.html:17
+msgid "Panoramica di tutti i match individuali e proposte."
+msgstr ""
+
+#: templates/individual_match/admin_overview.html:26
+msgid "Stato Match"
+msgstr ""
+
+#: templates/individual_match/admin_overview.html:32
+#: templates/individual_match/matches.html:41
+msgid "Programmati"
+msgstr ""
+
+#: templates/individual_match/admin_overview.html:44
+msgid "Validati"
+msgstr ""
+
+#: templates/individual_match/admin_overview.html:48
+#: templates/individual_match/matches.html:44
+msgid "Annullati"
+msgstr ""
+
+#: templates/individual_match/admin_overview.html:58
+msgid "Stato Proposte"
+msgstr ""
+
+#: templates/individual_match/admin_overview.html:68
+#: templates/individual_match/proposals.html:350
+msgid "Accettate"
+msgstr ""
+
+#: templates/individual_match/admin_overview.html:72
+msgid "Scadute"
+msgstr ""
+
+#: templates/individual_match/admin_overview.html:76
+msgid "Annullate"
+msgstr ""
+
+#: templates/individual_match/admin_overview.html:90
+msgid "Giocatori con disponibilità"
+msgstr ""
+
+#: templates/individual_match/admin_overview.html:98
+msgid "Località attive"
+msgstr ""
+
+#: templates/individual_match/admin_overview.html:106
+msgid "Match recenti (ultimi 10)"
+msgstr ""
+
+#: templates/individual_match/admin_overview.html:118
+#: templates/individual_match/dashboard.html:111
+msgid "Match Recenti"
+msgstr ""
+
+#: templates/individual_match/admin_overview.html:125
+msgid "ID"
+msgstr ""
+
+#: templates/individual_match/admin_overview.html:128
+msgid "Punteggio"
+msgstr ""
+
+#: templates/individual_match/admin_overview.html:183
+#: templates/individual_match/availability.html:160
+msgid "Località Attive"
+msgstr ""
+
+#: templates/individual_match/availability.html:3
+#: templates/individual_match/dashboard.html:182
+msgid "Gestisci Disponibilità"
+msgstr ""
+
+#: templates/individual_match/availability.html:3
+#: templates/individual_match/create_proposal.html:3
+#: templates/individual_match/dashboard.html:3
+#: templates/individual_match/matches.html:3
+#: templates/individual_match/proposal_detail.html:3
+#: templates/individual_match/proposals.html:3
+#: templates/individual_match/statistics.html:3
+msgid "Campionato Biliardo"
+msgstr ""
+
+#: templates/individual_match/availability.html:12
+msgid "Disponibilità"
+msgstr ""
+
+#: templates/individual_match/availability.html:20
+msgid "Gestisci la tua Disponibilità"
+msgstr ""
+
+#: templates/individual_match/availability.html:21
+msgid "Indica dove sei disponibile a giocare per ricevere proposte di match"
+msgstr ""
+
+#: templates/individual_match/availability.html:27
+msgid "Le tue Località Preferite"
+msgstr ""
+
+#: templates/individual_match/availability.html:42
+msgid "Giorni:"
+msgstr ""
+
+#: templates/individual_match/availability.html:46
+msgid "Orari:"
+msgstr ""
+
+#: templates/individual_match/availability.html:52
+msgid "Disponibile"
+msgstr ""
+
+#: templates/individual_match/availability.html:52
+msgid "Non disponibile"
+msgstr ""
+
+#: templates/individual_match/availability.html:67
+msgid ""
+"Non hai ancora impostato nessuna disponibilità. Aggiungi la tua prima "
+"località qui sotto!"
+msgstr ""
+
+#: templates/individual_match/availability.html:74
+msgid "Aggiungi Nuova Località"
+msgstr ""
+
+#: templates/individual_match/availability.html:81
+#: templates/individual_match/create_proposal.html:65
+#: templates/individual_match/match_detail.html:114
+#: templates/player/playoff_invitation.html:24
+#: templates/public/garas_list.html:12
+msgid "Luogo"
+msgstr ""
+
+#: templates/individual_match/availability.html:83
+#: templates/individual_match/create_proposal.html:67
+msgid "Es: Bar Sport, Sala Biliardi Centro"
+msgstr ""
+
+#: templates/individual_match/availability.html:89
+#: templates/individual_match/create_proposal.html:74
+msgid "Città non specificata"
+msgstr ""
+
+#: templates/individual_match/availability.html:94
+#: templates/individual_match/create_proposal.html:79
+msgid "Seleziona una sala esistente o scrivine una nuova"
+msgstr ""
+
+#: templates/individual_match/availability.html:98
+msgid "Giorni Preferiti"
+msgstr ""
+
+#: templates/individual_match/availability.html:100
+msgid "Lun"
+msgstr ""
+
+#: templates/individual_match/availability.html:100
+msgid "Mar"
+msgstr ""
+
+#: templates/individual_match/availability.html:100
+msgid "Mer"
+msgstr ""
+
+#: templates/individual_match/availability.html:100
+msgid "Gio"
+msgstr ""
+
+#: templates/individual_match/availability.html:100
+msgid "Ven"
+msgstr ""
+
+#: templates/individual_match/availability.html:100
+msgid "Sab"
+msgstr ""
+
+#: templates/individual_match/availability.html:100
+msgid "Dom"
+msgstr ""
+
+#: templates/individual_match/availability.html:112
+msgid "Orari Preferiti"
+msgstr ""
+
+#: templates/individual_match/availability.html:114
+msgid "Es: 18:00-22:00"
+msgstr ""
+
+#: templates/individual_match/availability.html:115
+msgid "Fascia oraria in cui sei disponibile"
+msgstr ""
+
+#: templates/individual_match/availability.html:122
+msgid "Attualmente disponibile"
+msgstr ""
+
+#: templates/individual_match/availability.html:131
+msgid "Aggiungi Località"
+msgstr ""
+
+#: templates/individual_match/availability.html:143
+msgid "Come Funziona?"
+msgstr ""
+
+#: templates/individual_match/availability.html:147
+msgid "Aggiungi le località dove giochi abitualmente"
+msgstr ""
+
+#: templates/individual_match/availability.html:148
+msgid "Indica i tuoi giorni e orari preferiti"
+msgstr ""
+
+#: templates/individual_match/availability.html:149
+msgid "Altri giocatori vedranno le tue disponibilità"
+msgstr ""
+
+#: templates/individual_match/availability.html:150
+msgid "Riceverai proposte di match nelle tue località"
+msgstr ""
+
+#: templates/individual_match/availability.html:151
+msgid "Puoi attivare/disattivare le disponibilità"
+msgstr ""
+
+#: templates/individual_match/availability.html:199
+msgid "Inserisci una località"
+msgstr ""
+
+#: templates/individual_match/availability.html:221
+msgid "Disponibilità aggiunta!"
+msgstr ""
+
+#: templates/individual_match/availability.html:229
+msgid "Errore durante il salvataggio"
+msgstr ""
+
+#: templates/individual_match/availability.html:235
+msgid "Sei sicuro di voler rimuovere questa disponibilità?"
+msgstr ""
+
+#: templates/individual_match/availability.html:250
+msgid "Disponibilità rimossa!"
+msgstr ""
+
+#: templates/individual_match/availability.html:257
+msgid "Errore durante la rimozione"
+msgstr ""
+
+#: templates/individual_match/create_proposal.html:3
+msgid "Crea Proposta di Match"
+msgstr ""
+
+#: templates/individual_match/create_proposal.html:16
+#: templates/individual_match/matches.html:11
+#: templates/individual_match/proposals.html:11
+msgid ""
+"Match\n"
+"                            Individuali"
+msgstr ""
+
+#: templates/individual_match/create_proposal.html:18
+#: templates/individual_match/create_proposal.html:262
+msgid "Crea Proposta"
 msgstr ""
 
 #: templates/individual_match/create_proposal.html:26
@@ -6264,15 +6623,51 @@ msgid ""
 "                                            proposta"
 msgstr ""
 
-#: templates/individual_match/create_proposal.html:65
-#: templates/individual_match/match_detail.html:114
-#: templates/player/playoff_invitation.html:24
-#: templates/public/garas_list.html:12
-msgid "Luogo"
+#: templates/individual_match/create_proposal.html:49
+msgid "Informazioni Base"
 msgstr ""
 
-#: templates/individual_match/create_proposal.html:67
-msgid "Es: Bar Sport, Sala Biliardi Centro"
+#: templates/individual_match/create_proposal.html:52
+msgid "Tipo di Proposta"
+msgstr ""
+
+#: templates/individual_match/create_proposal.html:55
+#: templates/individual_match/create_proposal.html:277
+msgid "Invito Diretto"
+msgstr ""
+
+#: templates/individual_match/create_proposal.html:56
+msgid "Invito Aperto alla Community"
+msgstr ""
+
+#: templates/individual_match/create_proposal.html:59
+msgid "Diretto:"
+msgstr ""
+
+#: templates/individual_match/create_proposal.html:59
+msgid "Inviti giocatori specifici"
+msgstr ""
+
+#: templates/individual_match/create_proposal.html:60
+msgid "Aperto:"
+msgstr ""
+
+#: templates/individual_match/create_proposal.html:60
+#: templates/individual_match/create_proposal.html:288
+#: templates/individual_match/proposal_detail.html:30
+msgid "Visibile a tutta la community"
+msgstr ""
+
+#: templates/individual_match/create_proposal.html:84
+msgid "Data e Ora"
+msgstr ""
+
+#: templates/individual_match/create_proposal.html:88
+msgid "Quando vorresti giocare"
+msgstr ""
+
+#: templates/individual_match/create_proposal.html:95
+msgid "Impostazioni di Gioco"
 msgstr ""
 
 #: templates/individual_match/create_proposal.html:117
@@ -6287,6 +6682,10 @@ msgstr ""
 #: templates/individual_match/create_proposal.html:133
 #: templates/individual_match/create_proposal.html:139
 #: templates/individual_match/match_detail.html:105
+#: templates/individual_match/proposal_detail.html:82
+#: templates/individual_match/proposals.html:91
+#: templates/individual_match/proposals.html:177
+#: templates/individual_match/proposals.html:267
 msgid "Libero"
 msgstr ""
 
@@ -6303,6 +6702,7 @@ msgid "Senza limite, termini quando vuoi"
 msgstr ""
 
 #: templates/individual_match/create_proposal.html:146
+#: templates/individual_match/proposal_detail.html:80
 msgid "Distanza"
 msgstr ""
 
@@ -6367,7 +6767,7 @@ msgid "Giocatori da invitare"
 msgstr ""
 
 #: templates/individual_match/create_proposal.html:225
-#: templates/individual_match/create_proposal.html:340
+#: templates/individual_match/create_proposal.html:334
 msgid "Seleziona giocatori..."
 msgstr ""
 
@@ -6375,30 +6775,213 @@ msgstr ""
 msgid "Digita per cercare tra i giocatori con cui hai già giocato"
 msgstr ""
 
-#: templates/individual_match/create_proposal.html:317
+#: templates/individual_match/create_proposal.html:235
+msgid "Descrizione (opzionale)"
+msgstr ""
+
+#: templates/individual_match/create_proposal.html:237
+msgid "Aggiungi dettagli sul match, livello richiesto, note speciali..."
+msgstr ""
+
+#: templates/individual_match/create_proposal.html:242
+msgid "Scade tra (ore)"
+msgstr ""
+
+#: templates/individual_match/create_proposal.html:246
+msgid "Mai (Match immediato)"
+msgstr ""
+
+#: templates/individual_match/create_proposal.html:247
+msgid "1 ora prima del match"
+msgstr ""
+
+#: templates/individual_match/create_proposal.html:248
+msgid "2 ore prima del match"
+msgstr ""
+
+#: templates/individual_match/create_proposal.html:249
+msgid "6 ore prima del match"
+msgstr ""
+
+#: templates/individual_match/create_proposal.html:250
+msgid "24 ore prima del match"
+msgstr ""
+
+#: templates/individual_match/create_proposal.html:251
+msgid "48 ore prima del match"
+msgstr ""
+
+#: templates/individual_match/create_proposal.html:253
+msgid "Quando la proposta scade automaticamente"
+msgstr ""
+
+#: templates/individual_match/create_proposal.html:272
+msgid "Come funziona?"
+msgstr ""
+
+#: templates/individual_match/create_proposal.html:279
+msgid "Inviti giocatori specifici per username"
+msgstr ""
+
+#: templates/individual_match/create_proposal.html:280
+msgid "Ricevono una notifica della tua proposta"
+msgstr ""
+
+#: templates/individual_match/create_proposal.html:281
+msgid "Il primo che accetta gioca con te"
+msgstr ""
+
+#: templates/individual_match/create_proposal.html:282
+msgid "Perfetto per sfidare amici o rivali"
+msgstr ""
+
+#: templates/individual_match/create_proposal.html:286
+msgid "Invito Aperto"
+msgstr ""
+
+#: templates/individual_match/create_proposal.html:289
+msgid "Chiunque può accettare la tua proposta"
+msgstr ""
+
+#: templates/individual_match/create_proposal.html:290
+msgid "Ideale per trovare nuovi avversari"
+msgstr ""
+
+#: templates/individual_match/create_proposal.html:291
+msgid "Amplia la tua cerchia di giocatori"
+msgstr ""
+
+#: templates/individual_match/create_proposal.html:311
 msgid "Devi selezionare almeno un giocatore per un invito diretto"
 msgstr ""
 
-#: templates/individual_match/create_proposal.html:318
+#: templates/individual_match/create_proposal.html:312
 msgid "Sei sicuro di voler creare questa proposta di match?"
 msgstr ""
 
-#: templates/individual_match/create_proposal.html:319
+#: templates/individual_match/create_proposal.html:313
 #, python-brace-format
 msgid "Al {distance} (chi arriva prima a {distance} vince)"
 msgstr ""
 
-#: templates/individual_match/create_proposal.html:320
+#: templates/individual_match/create_proposal.html:314
 #, python-brace-format
 msgid "Esattamente {distance} rack (vincitore per somma punti)"
 msgstr ""
 
-#: templates/individual_match/create_proposal.html:321
+#: templates/individual_match/create_proposal.html:315
 msgid "Non hai ancora giocato con nessuno. Crea prima una proposta aperta!"
 msgstr ""
 
-#: templates/individual_match/create_proposal.html:322
+#: templates/individual_match/create_proposal.html:316
 msgid "Caricamento giocatori..."
+msgstr ""
+
+#: templates/individual_match/dashboard.html:10
+msgid ""
+"Gestisci le tue proposte di match e gioca contro altri membri della "
+"community."
+msgstr ""
+
+#: templates/individual_match/dashboard.html:21
+#: templates/individual_match/proposals.html:3
+#: templates/individual_match/proposals.html:19
+msgid "Proposte di Match"
+msgstr ""
+
+#: templates/individual_match/dashboard.html:23
+#: templates/individual_match/matches.html:24
+#: templates/individual_match/proposals.html:24
+#: templates/individual_match/proposals.html:324
+msgid "Nuova Proposta"
+msgstr ""
+
+#: templates/individual_match/dashboard.html:34
+msgid "(Proposta da te)"
+msgstr ""
+
+#: templates/individual_match/dashboard.html:36
+#: templates/individual_match/proposals.html:223
+msgid "da"
+msgstr ""
+
+#: templates/individual_match/dashboard.html:63
+msgid "Vedi Tutte le Proposte"
+msgstr ""
+
+#: templates/individual_match/dashboard.html:75
+msgid "Match in Corso"
+msgstr ""
+
+#: templates/individual_match/dashboard.html:86
+#: templates/individual_match/dashboard.html:122
+msgid "vs"
+msgstr ""
+
+#: templates/individual_match/dashboard.html:96
+#: templates/individual_match/matches.html:151
+msgid "Continua"
+msgstr ""
+
+#: templates/individual_match/dashboard.html:130
+msgid "Vinto"
+msgstr ""
+
+#: templates/individual_match/dashboard.html:132
+msgid "Perso"
+msgstr ""
+
+#: templates/individual_match/dashboard.html:141
+msgid "Vedi Tutti i Match"
+msgstr ""
+
+#: templates/individual_match/dashboard.html:153
+#: templates/individual_match/matches.html:190
+msgid "Nessun match ancora"
+msgstr ""
+
+#: templates/individual_match/dashboard.html:154
+#: templates/individual_match/matches.html:191
+msgid ""
+"Inizia creando una proposta di match per giocare con altri membri della "
+"community!"
+msgstr ""
+
+#: templates/individual_match/dashboard.html:156
+#: templates/individual_match/matches.html:193
+msgid "Crea la tua prima proposta"
+msgstr ""
+
+#: templates/individual_match/dashboard.html:168
+#: templates/individual_match/proposals.html:319
+msgid "Azioni Rapide"
+msgstr ""
+
+#: templates/individual_match/dashboard.html:173
+msgid "Nuova Proposta di Match"
+msgstr ""
+
+#: templates/individual_match/dashboard.html:176
+msgid "Tutte le Proposte"
+msgstr ""
+
+#: templates/individual_match/dashboard.html:179
+msgid "Tutti i Match"
+msgstr ""
+
+#: templates/individual_match/dashboard.html:195
+#: templates/individual_match/statistics.html:18
+msgid "Le tue Statistiche"
+msgstr ""
+
+#: templates/individual_match/dashboard.html:201
+#: templates/individual_match/statistics.html:41
+msgid "Match Totali"
+msgstr ""
+
+#: templates/individual_match/dashboard.html:213
+#: templates/individual_match/statistics.html:53
+msgid "Perc. Vinte"
 msgstr ""
 
 #: templates/individual_match/match_detail.html:53
@@ -6422,10 +7005,18 @@ msgid "Formato"
 msgstr ""
 
 #: templates/individual_match/match_detail.html:108
+#: templates/individual_match/proposal_detail.html:85
+#: templates/individual_match/proposals.html:93
+#: templates/individual_match/proposals.html:179
+#: templates/individual_match/proposals.html:269
 msgid "ogni set al"
 msgstr ""
 
 #: templates/individual_match/match_detail.html:108
+#: templates/individual_match/proposal_detail.html:85
+#: templates/individual_match/proposals.html:93
+#: templates/individual_match/proposals.html:179
+#: templates/individual_match/proposals.html:269
 msgid "ogni set esattamente"
 msgstr ""
 
@@ -6485,6 +7076,414 @@ msgstr ""
 
 #: templates/individual_match/match_detail.html:362
 msgid "Forfait dichiarato."
+msgstr ""
+
+#: templates/individual_match/matches.html:3
+#: templates/individual_match/matches.html:13
+#: templates/individual_match/matches.html:19
+#: templates/individual_match/proposals.html:327
+msgid "I Miei Match"
+msgstr ""
+
+#: templates/individual_match/matches.html:20
+msgid "Tutti i tuoi match individuali, passati e presenti."
+msgstr ""
+
+#: templates/individual_match/matches.html:40
+msgid "Tutti gli stati"
+msgstr ""
+
+#: templates/individual_match/matches.html:49
+msgid "Tutte le discipline"
+msgstr ""
+
+#: templates/individual_match/matches.html:58
+msgid "Tutti gli avversari"
+msgstr ""
+
+#: templates/individual_match/matches.html:68
+msgid "Pulisci Filtri"
+msgstr ""
+
+#: templates/individual_match/matches.html:105
+msgid "VS"
+msgstr ""
+
+#: templates/individual_match/matches.html:134
+msgid "Hai Vinto!"
+msgstr ""
+
+#: templates/individual_match/matches.html:136
+msgid "Hai Perso"
+msgstr ""
+
+#: templates/individual_match/matches.html:164
+msgid "Completato il"
+msgstr ""
+
+#: templates/individual_match/matches.html:166
+msgid "Iniziato il"
+msgstr ""
+
+#: templates/individual_match/matches.html:178
+msgid "Nessun match trovato"
+msgstr ""
+
+#: templates/individual_match/matches.html:179
+msgid "Prova a modificare i filtri per vedere più risultati."
+msgstr ""
+
+#: templates/individual_match/proposal_detail.html:3
+msgid "Dettagli Proposta"
+msgstr ""
+
+#: templates/individual_match/proposal_detail.html:12
+#: templates/individual_match/proposals.html:13
+msgid "Proposte"
+msgstr ""
+
+#: templates/individual_match/proposal_detail.html:13
+msgid "Dettaglio"
+msgstr ""
+
+#: templates/individual_match/proposal_detail.html:25
+msgid "Proposta Diretta"
+msgstr ""
+
+#: templates/individual_match/proposal_detail.html:25
+msgid "Rivolta specificamente a te"
+msgstr ""
+
+#: templates/individual_match/proposal_detail.html:30
+msgid "Proposta Aperta"
+msgstr ""
+
+#: templates/individual_match/proposal_detail.html:38
+msgid "La tua proposta"
+msgstr ""
+
+#: templates/individual_match/proposal_detail.html:40
+msgid "Proposta di"
+msgstr ""
+
+#: templates/individual_match/proposal_detail.html:46
+msgid "Accettata"
+msgstr ""
+
+#: templates/individual_match/proposal_detail.html:50
+msgid "Annullata"
+msgstr ""
+
+#: templates/individual_match/proposal_detail.html:54
+msgid "Diretta"
+msgstr ""
+
+#: templates/individual_match/proposal_detail.html:57
+msgid "Creata"
+msgstr ""
+
+#: templates/individual_match/proposal_detail.html:63
+msgid "Disciplina non specificata"
+msgstr ""
+
+#: templates/individual_match/proposal_detail.html:68
+msgid "Dettagli Match"
+msgstr ""
+
+#: templates/individual_match/proposal_detail.html:76
+msgid "Data/Ora:"
+msgstr ""
+
+#: templates/individual_match/proposal_detail.html:99
+#: templates/player/profile.html:91 templates/public/campionato_detail.html:33
+msgid "Informazioni"
+msgstr ""
+
+#: templates/individual_match/proposal_detail.html:103
+msgid "Proposta da:"
+msgstr ""
+
+#: templates/individual_match/proposal_detail.html:108
+msgid "Accettata da:"
+msgstr ""
+
+#: templates/individual_match/proposal_detail.html:124
+msgid "Note"
+msgstr ""
+
+#: templates/individual_match/proposal_detail.html:132
+msgid "Giocatori Invitati"
+msgstr ""
+
+#: templates/individual_match/proposal_detail.html:148
+msgid "Match creato!"
+msgstr ""
+
+#: templates/individual_match/proposal_detail.html:160
+msgid "Torna alle proposte"
+msgstr ""
+
+#: templates/individual_match/proposal_detail.html:170
+#: templates/individual_match/proposals.html:215
+msgid "Sei sicuro di voler annullare questa proposta?"
+msgstr ""
+
+#: templates/individual_match/proposal_detail.html:171
+msgid "Annulla proposta"
+msgstr ""
+
+#: templates/individual_match/proposal_detail.html:199
+#: templates/individual_match/proposals.html:364
+msgid "Sei sicuro di voler rifiutare questa proposta?"
+msgstr ""
+
+#: templates/individual_match/proposal_detail.html:209
+#: templates/individual_match/proposals.html:374
+msgid "Proposta rifiutata"
+msgstr ""
+
+#: templates/individual_match/proposal_detail.html:219
+#: templates/individual_match/proposals.html:382
+msgid "Errore durante il rifiuto della proposta"
+msgstr ""
+
+#: templates/individual_match/proposals.html:20
+msgid "Gestisci le tue proposte e rispondi agli inviti degli altri giocatori."
+msgstr ""
+
+#: templates/individual_match/proposals.html:38
+msgid "Ricevute"
+msgstr ""
+
+#: templates/individual_match/proposals.html:47
+#: templates/individual_match/proposals.html:346
+msgid "Inviate"
+msgstr ""
+
+#: templates/individual_match/proposals.html:56
+msgid "Community"
+msgstr ""
+
+#: templates/individual_match/proposals.html:73
+msgid "ti ha invitato"
+msgstr ""
+
+#: templates/individual_match/proposals.html:124
+#: templates/individual_match/proposals.html:221
+msgid "Accettato!"
+msgstr ""
+
+#: templates/individual_match/proposals.html:125
+msgid "Il match è stato creato"
+msgstr ""
+
+#: templates/individual_match/proposals.html:136
+msgid "Nessuna proposta ricevuta"
+msgstr ""
+
+#: templates/individual_match/proposals.html:137
+msgid "Quando altri giocatori ti inviteranno, le loro proposte appariranno qui."
+msgstr ""
+
+#: templates/individual_match/proposals.html:151
+msgid "Hai invitato"
+msgstr ""
+
+#: templates/individual_match/proposals.html:158
+msgid "la community"
+msgstr ""
+
+#: templates/individual_match/proposals.html:195
+msgid "Risposte agli inviti:"
+msgstr ""
+
+#: templates/individual_match/proposals.html:235
+msgid "Nessuna proposta inviata"
+msgstr ""
+
+#: templates/individual_match/proposals.html:236
+msgid "Le tue proposte di match appariranno qui."
+msgstr ""
+
+#: templates/individual_match/proposals.html:238
+msgid "Crea la prima proposta"
+msgstr ""
+
+#: templates/individual_match/proposals.html:252
+msgid "cerca un avversario"
+msgstr ""
+
+#: templates/individual_match/proposals.html:253
+msgid "Aperto"
+msgstr ""
+
+#: templates/individual_match/proposals.html:289
+msgid "Accetta Sfida"
+msgstr ""
+
+#: templates/individual_match/proposals.html:294
+msgid "Non più disponibile"
+msgstr ""
+
+#: templates/individual_match/proposals.html:306
+msgid "Nessuna proposta aperta"
+msgstr ""
+
+#: templates/individual_match/proposals.html:307
+msgid "Al momento non ci sono proposte aperte dalla community."
+msgstr ""
+
+#: templates/individual_match/proposals.html:340
+msgid "Statistiche Proposte"
+msgstr ""
+
+#: templates/individual_match/statistics.html:3
+msgid "Statistiche Match Individuali"
+msgstr ""
+
+#: templates/individual_match/statistics.html:19
+msgid "Analisi completa delle tue performance nei match individuali."
+msgstr ""
+
+#: templates/individual_match/statistics.html:23
+msgid "Vedi Match"
+msgstr ""
+
+#: templates/individual_match/statistics.html:35
+msgid "Statistiche Generali"
+msgstr ""
+
+#: templates/individual_match/statistics.html:61
+msgid "Perc. Rack Vinti"
+msgstr ""
+
+#: templates/individual_match/statistics.html:72
+msgid "Performance per Disciplina"
+msgstr ""
+
+#: templates/individual_match/statistics.html:82
+msgid "V-S"
+msgstr ""
+
+#: templates/individual_match/statistics.html:109
+msgid "Nessuna statistica disponibile ancora."
+msgstr ""
+
+#: templates/individual_match/statistics.html:109
+msgid "Gioca qualche match per vedere i dati!"
+msgstr ""
+
+#: templates/individual_match/statistics.html:120
+msgid "Trend Recente"
+msgstr ""
+
+#: templates/individual_match/statistics.html:125
+msgid "Ultimi 10 match:"
+msgstr ""
+
+#: templates/individual_match/statistics.html:129
+msgid "W"
+msgstr ""
+
+#: templates/individual_match/statistics.html:129
+msgid "L"
+msgstr ""
+
+#: templates/individual_match/statistics.html:138
+msgid "Vittorie recenti"
+msgstr ""
+
+#: templates/individual_match/statistics.html:142
+msgid "Sconfitte recenti"
+msgstr ""
+
+#: templates/individual_match/statistics.html:149
+msgid "Striscia attuale:"
+msgstr ""
+
+#: templates/individual_match/statistics.html:150
+msgid "vittorie"
+msgstr ""
+
+#: templates/individual_match/statistics.html:150
+msgid "sconfitte"
+msgstr ""
+
+#: templates/individual_match/statistics.html:150
+msgid "consecutive"
+msgstr ""
+
+#: templates/individual_match/statistics.html:156
+msgid "Gioca alcuni match per vedere il tuo trend di performance!"
+msgstr ""
+
+#: templates/individual_match/statistics.html:167
+msgid "Record Testa a Testa"
+msgstr ""
+
+#: templates/individual_match/statistics.html:196
+#, python-format
+msgid "E altri %(n)s avversari..."
+msgstr ""
+
+#: templates/individual_match/statistics.html:201
+msgid "Nessun record testa a testa ancora."
+msgstr ""
+
+#: templates/individual_match/statistics.html:201
+msgid "Gioca contro diversi avversari!"
+msgstr ""
+
+#: templates/individual_match/statistics.html:212
+msgid "Attività Mensile"
+msgstr ""
+
+#: templates/individual_match/statistics.html:220
+msgid "Mese"
+msgstr ""
+
+#: templates/individual_match/statistics.html:243
+msgid "Nessuna attività mensile da mostrare."
+msgstr ""
+
+#: templates/individual_match/statistics.html:273
+msgid "Prima Vittoria"
+msgstr ""
+
+#: templates/individual_match/statistics.html:274
+msgid "Vinci il tuo primo match"
+msgstr ""
+
+#: templates/individual_match/statistics.html:280
+msgid "Striscia di 3"
+msgstr ""
+
+#: templates/individual_match/statistics.html:281
+msgid "Vinci 3 match consecutivi"
+msgstr ""
+
+#: templates/individual_match/statistics.html:287
+msgid "Versatile"
+msgstr ""
+
+#: templates/individual_match/statistics.html:288
+msgid "Gioca 3 discipline diverse"
+msgstr ""
+
+#: templates/individual_match/statistics.html:294
+msgid "Socievole"
+msgstr ""
+
+#: templates/individual_match/statistics.html:295
+msgid "Gioca contro 5 avversari diversi"
+msgstr ""
+
+#: templates/individual_match/statistics.html:313
+msgid "Crea Nuova Proposta"
+msgstr ""
+
+#: templates/individual_match/statistics.html:340
+msgid "Percentuale di vittorie in questa disciplina"
 msgstr ""
 
 #: templates/player/history.html:4 templates/player/history.html:9
@@ -6735,10 +7734,6 @@ msgstr ""
 
 #: templates/player/profile.html:77
 msgid "L'utente ha scelto di mantenere privati i propri dati di gioco."
-msgstr ""
-
-#: templates/player/profile.html:91 templates/public/campionato_detail.html:33
-msgid "Informazioni"
 msgstr ""
 
 #: templates/player/profile.html:94
