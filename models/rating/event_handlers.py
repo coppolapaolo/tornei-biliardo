@@ -4,6 +4,7 @@ Listens to domain events to trigger rating updates.
 """
 
 from models.events import MatchCompletedEvent, MatchReopenedEvent
+from models.events.match_events import IndividualMatchCompletedEvent
 from models.rating.calculation_service import RatingCalculationService
 from models.base import db
 import logging
@@ -53,6 +54,37 @@ class RatingEventHandlers:
         except Exception as e:
             logger.error(
                 f"Error updating ratings for match {match.id}: {str(e)}", exc_info=True
+            )
+
+    @staticmethod
+    def handle_individual_match_completed(
+        event: IndividualMatchCompletedEvent,
+    ) -> None:
+        """Match individuale/casual VALIDATO → aggiorna SOLO il pool ELO_GLOBAL.
+
+        Il casual non tocca l'ELO competitivo. Niente walkover/handicap qui: il
+        forfait non emette questo evento (solo VALIDATED). I pareggi (winner_id
+        None) non aggiornano il rating.
+        """
+        from models.individual_match.models import IndividualMatch
+
+        im = db.session.get(IndividualMatch, event.match_id)
+        if not im:
+            logger.warning(
+                f"IndividualMatch {event.match_id} not found for rating update"
+            )
+            return
+
+        if not im.winner_id:
+            logger.info(f"Skipping ELO_GLOBAL for casual {im.id} without winner (tie)")
+            return
+
+        try:
+            RatingCalculationService.process_individual_match_result(im)
+        except Exception as e:
+            logger.error(
+                f"Error updating ELO_GLOBAL for casual {im.id}: {str(e)}",
+                exc_info=True,
             )
 
     @staticmethod

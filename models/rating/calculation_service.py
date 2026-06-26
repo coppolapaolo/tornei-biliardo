@@ -43,30 +43,67 @@ class RatingCalculationService:
         return int(round(current_rating + delta))
 
     @staticmethod
-    def process_match_result(match: Match) -> None:
+    def process_match_result(match: Match, systems=None) -> None:
         """
-        Process the result of a completed match and update ratings.
+        Process the result of a completed (tournament) match and update ratings.
 
-        Idempotente: se esiste già history per questo match (sistema ELO) il
-        calcolo è un no-op. Protegge da MatchCompletedEvent ri-emessi
-        (reset→ricompletamento) e da recalc_elo su match già processati.
+        Dual pool: di default aggiorna SIA ELO (competitivo) SIA ELO_GLOBAL
+        (tornei + casual). I match di torneo contano in entrambi i pool; il
+        pool globale è solo-display e NON tocca categoria/handicap/User.elo_rating.
+
+        Idempotente PER POOL: se esiste già history per (match, sistema) quel
+        pool è un no-op. Protegge da MatchCompletedEvent ri-emessi
+        (reset→ricompletamento) e da recalc su match già processati.
+
+        `systems` permette ai recalc di limitarsi a un singolo pool (il recalc
+        globale, path-dependent, fonde con i casual e gira separato).
 
         NB: il caller (RatingEventHandlers / recalc) è responsabile di NON
         chiamare questo metodo per i match con handicap (effective_has_handicap)
         e per i walkover — qui non rileggiamo quei flag per non duplicare la
         policy, ma l'idempotenza resta una rete di sicurezza.
         """
-        if MatchRatingHistory.exists_for_match(match.id, RatingSystem.ELO):
+        if systems is None:
+            systems = [RatingSystem.ELO, RatingSystem.ELO_GLOBAL]
+
+        for system in systems:
+            if MatchRatingHistory.exists_for_match(match.id, system):
+                logger.info(
+                    f"Match {match.id} già processato per {system.value}, skip "
+                    f"(idempotenza)."
+                )
+                continue
+
+            if match.is_trio and match.trio_match:
+                RatingCalculationService._process_trio_match(
+                    match.trio_match, match.id, system
+                )
+            else:
+                RatingCalculationService._process_standard_match(match, system)
+
+    @staticmethod
+    def process_individual_match_result(individual_match) -> None:
+        """Aggiorna SOLO il pool ELO_GLOBAL per un match individuale VALIDATO.
+
+        I casual non toccano l'ELO competitivo (riservato ai tornei arbitrati).
+        Idempotente per (individual_match, ELO_GLOBAL): protegge da eventi
+        ri-emessi (es. reject→re-conferma) e dal recalc globale.
+        """
+        system = RatingSystem.ELO_GLOBAL
+        if MatchRatingHistory.exists_for_individual_match(individual_match.id, system):
             logger.info(
-                f"Match {match.id} già processato per il rating ELO, skip "
-                f"(idempotenza)."
+                f"Casual {individual_match.id} già processato per "
+                f"{system.value}, skip (idempotenza)."
             )
             return
 
-        if match.is_trio and match.trio_match:
-            RatingCalculationService._process_trio_match(match.trio_match, match.id)
-        else:
-            RatingCalculationService._process_standard_match(match)
+        RatingCalculationService._process_two_player(
+            individual_match.player1_id,
+            individual_match.player2_id,
+            individual_match.winner_id,
+            system,
+            individual_match_id=individual_match.id,
+        )
 
     @staticmethod
     def recalculate_all_elo() -> dict:
@@ -113,10 +150,79 @@ class RatingCalculationService:
             if match.is_walkover or match.effective_has_handicap:
                 skipped += 1
                 continue
-            RatingCalculationService.process_match_result(match)
+            # Solo pool competitivo: il pool globale è path-dependent e va
+            # ricalcolato fondendo i casual (recalculate_all_elo_global).
+            RatingCalculationService.process_match_result(
+                match, systems=[RatingSystem.ELO]
+            )
             processed += 1
 
         return {"processed": processed, "skipped": skipped, "total": len(matches)}
+
+    @staticmethod
+    def recalculate_all_elo_global() -> dict:
+        """Reset e replay del pool ELO_GLOBAL (tornei + casual VALIDATED).
+
+        ELO è path-dependent: i match di torneo e i casual vanno fusi in UN
+        unico ordine cronologico (``ended_at``, poi ``id``). Resetta SOLO il
+        pool ELO_GLOBAL: NON tocca ``User.elo_rating`` né il pool competitivo.
+
+        Pure/in-transaction come ``recalculate_all_elo``: il caller gestisce la
+        transazione.
+
+        Returns:
+            dict: counters ``{processed, skipped, total}``.
+        """
+        from models.status_enum import MatchStatus
+        from models.individual_match.models import IndividualMatch
+
+        # 1. Drop SOLO il pool globale (PlayerRating + history).
+        db.session.query(PlayerRating).filter_by(
+            rating_system=RatingSystem.ELO_GLOBAL
+        ).delete()
+        db.session.query(MatchRatingHistory).filter_by(
+            rating_system=RatingSystem.ELO_GLOBAL
+        ).delete()
+        db.session.flush()
+
+        # 2. Carica torneo (finished) + casual (VALIDATED), entrambi con un
+        #    marcatore di sorgente, e fondili per ordine cronologico.
+        tournament = [
+            ("match", m)
+            for m in Match.query.filter(
+                Match.status.in_(MatchStatus.finished_values())
+            ).all()
+        ]
+        casual = [
+            ("individual", im)
+            for im in IndividualMatch.query.filter(
+                IndividualMatch.status == MatchStatus.VALIDATED
+            ).all()
+        ]
+
+        def _sort_key(item):
+            _kind, obj = item
+            # ended_at può essere None su dati vecchi: spingili in coda con un
+            # sentinel alto ma deterministico, poi ordina per id.
+            return (obj.ended_at is None, obj.ended_at, obj.id)
+
+        merged = sorted(tournament + casual, key=_sort_key)
+
+        processed = 0
+        skipped = 0
+        for kind, obj in merged:
+            if kind == "match":
+                if obj.is_walkover or obj.effective_has_handicap:
+                    skipped += 1
+                    continue
+                RatingCalculationService.process_match_result(
+                    obj, systems=[RatingSystem.ELO_GLOBAL]
+                )
+            else:  # individual (casual) — forfait già esclusi (solo VALIDATED)
+                RatingCalculationService.process_individual_match_result(obj)
+            processed += 1
+
+        return {"processed": processed, "skipped": skipped, "total": len(merged)}
 
     @staticmethod
     def revert_match_result(match: Match) -> None:
@@ -157,27 +263,49 @@ class RatingCalculationService:
         )
 
     @staticmethod
-    def _process_standard_match(match: Match) -> None:
-        """Handle standard 1v1 match."""
-        if not match.player1_id or not match.player2_id:
+    def _process_standard_match(
+        match: Match, rating_system: RatingSystem = RatingSystem.ELO
+    ) -> None:
+        """Handle standard 1v1 (tournament) match per il pool indicato."""
+        RatingCalculationService._process_two_player(
+            match.player1_id,
+            match.player2_id,
+            match.winner_id,
+            rating_system,
+            match_id=match.id,
+        )
+
+    @staticmethod
+    def _process_two_player(
+        player1_id: Optional[int],
+        player2_id: Optional[int],
+        winner_id: Optional[int],
+        rating_system: RatingSystem,
+        match_id: Optional[int] = None,
+        individual_match_id: Optional[int] = None,
+    ) -> None:
+        """Core Elo 1v1, pool-agnostico e sorgente-agnostico (torneo o casual)."""
+        source = match_id if match_id is not None else individual_match_id
+        if not player1_id or not player2_id:
             logger.warning(
-                f"Standard match {match.id} missing players, skipping rating update."
+                f"Match {source} missing players, skipping rating update "
+                f"({rating_system.value})."
             )
             return
 
         # Get current ratings (default to 1200 if not set)
-        p1_rating_obj = PlayerRating.get_user_rating(match.player1_id, RatingSystem.ELO)
-        p2_rating_obj = PlayerRating.get_user_rating(match.player2_id, RatingSystem.ELO)
+        p1_rating_obj = PlayerRating.get_user_rating(player1_id, rating_system)
+        p2_rating_obj = PlayerRating.get_user_rating(player2_id, rating_system)
 
         r1 = p1_rating_obj.rating_value if p1_rating_obj else 1200
         r2 = p2_rating_obj.rating_value if p2_rating_obj else 1200
 
         # Determine actual scores
         # 1 = Win, 0 = Loss, 0.5 = Draw (if winner_id is None)
-        if match.winner_id == match.player1_id:
+        if winner_id == player1_id:
             s1 = 1.0
             s2 = 0.0
-        elif match.winner_id == match.player2_id:
+        elif winner_id == player2_id:
             s1 = 0.0
             s2 = 1.0
         else:
@@ -194,19 +322,35 @@ class RatingCalculationService:
 
         # Update Database (+ history per idempotenza/revert)
         RatingCalculationService._update_player_rating_db(
-            match.player1_id, r1, new_r1, p1_rating_obj, match.id
+            player1_id,
+            r1,
+            new_r1,
+            p1_rating_obj,
+            rating_system,
+            match_id,
+            individual_match_id,
         )
         RatingCalculationService._update_player_rating_db(
-            match.player2_id, r2, new_r2, p2_rating_obj, match.id
+            player2_id,
+            r2,
+            new_r2,
+            p2_rating_obj,
+            rating_system,
+            match_id,
+            individual_match_id,
         )
 
         logger.info(
-            f"Updated ratings for Match {match.id}: "
+            f"Updated {rating_system.value} for match {source}: "
             f"P1 {r1}->{new_r1}, P2 {r2}->{new_r2}"
         )
 
     @staticmethod
-    def _process_trio_match(trio: TrioMatch, match_id: int) -> None:
+    def _process_trio_match(
+        trio: TrioMatch,
+        match_id: int,
+        rating_system: RatingSystem = RatingSystem.ELO,
+    ) -> None:
         """
         Handle Trio match.
         Logic:
@@ -227,7 +371,7 @@ class RatingCalculationService:
         ratings = {}
         rating_objs = {}
         for pid in player_ids:
-            obj = PlayerRating.get_user_rating(pid, RatingSystem.ELO)
+            obj = PlayerRating.get_user_rating(pid, rating_system)
             rating_objs[pid] = obj
             ratings[pid] = obj.rating_value if obj else 1200
 
@@ -274,7 +418,7 @@ class RatingCalculationService:
         # Apply updates (+ history per idempotenza/revert)
         for pid, new_r in updates.items():
             RatingCalculationService._update_player_rating_db(
-                pid, ratings[pid], new_r, rating_objs.get(pid), match_id
+                pid, ratings[pid], new_r, rating_objs.get(pid), rating_system, match_id
             )
 
     @staticmethod
@@ -283,27 +427,35 @@ class RatingCalculationService:
         old_val: int,
         new_val: int,
         exist_obj: Optional[PlayerRating],
-        match_id: int,
+        rating_system: RatingSystem,
+        match_id: Optional[int] = None,
+        individual_match_id: Optional[int] = None,
     ) -> None:
-        """Helper to save rating to DB, sync User, and record history."""
-        # Update/Create PlayerRating
+        """Salva il rating, registra la history e (solo ELO competitivo) sincronizza
+        User.elo_rating.
+
+        Vincolo display-only: per ELO_GLOBAL NON si scrive `User.elo_rating`, che
+        resta la fonte autorevole del solo pool competitivo (categoria/handicap).
+        """
+        # Update/Create PlayerRating per il pool indicato
         if exist_obj:
             exist_obj.update_rating(new_val)
         else:
             new_rating = PlayerRating(
                 user_id=user_id,
-                rating_system=RatingSystem.ELO,
+                rating_system=rating_system,
                 rating_value=new_val,
                 games_played=1,
             )
             db.session.add(new_rating)
 
-        # Record history per idempotenza + revert
+        # Record history per idempotenza + revert (sorgente polimorfa)
         db.session.add(
             MatchRatingHistory(
                 match_id=match_id,
+                individual_match_id=individual_match_id,
                 user_id=user_id,
-                rating_system=RatingSystem.ELO,
+                rating_system=rating_system,
                 old_rating=old_val,
                 new_rating=new_val,
                 delta=new_val - old_val,
@@ -311,10 +463,11 @@ class RatingCalculationService:
             )
         )
 
-        # Sync to User model for easier access
-        from models.user.models import User
+        # Sync su User SOLO per l'ELO competitivo (display-only per ELO_GLOBAL)
+        if rating_system == RatingSystem.ELO:
+            from models.user.models import User
 
-        user = db.session.get(User, user_id)
-        if user:
-            user.elo_rating = new_val
-            db.session.add(user)
+            user = db.session.get(User, user_id)
+            if user:
+                user.elo_rating = new_val
+                db.session.add(user)

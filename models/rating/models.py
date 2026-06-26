@@ -30,7 +30,8 @@ class RatingSystem(Enum):
     """Supported rating systems."""
 
     FARGO = "fargo"
-    ELO = "elo"
+    ELO = "elo"  # Competitivo: SOLO match di torneo. Pilota categoria/handicap.
+    ELO_GLOBAL = "elo_global"  # Tornei + casual VALIDATED. SOLO display (dual ELO).
     INTERNAL = "internal"  # Club internal rating
 
 
@@ -185,8 +186,16 @@ class MatchRatingHistory(BaseModel):
     __tablename__ = "match_rating_history"
 
     id = db.Column(db.Integer, primary_key=True)
+    # Sorgente polimorfa: ESATTAMENTE uno tra match_id / individual_match_id.
+    # I match di torneo usano match_id; i casual (dual ELO, pool ELO_GLOBAL)
+    # usano individual_match_id. Vedi ADR/dual-ELO.
     match_id = db.Column(
-        db.Integer, db.ForeignKey("match.id", ondelete="CASCADE"), nullable=False
+        db.Integer, db.ForeignKey("match.id", ondelete="CASCADE"), nullable=True
+    )
+    individual_match_id = db.Column(
+        db.Integer,
+        db.ForeignKey("individual_match.id", ondelete="CASCADE"),
+        nullable=True,
     )
     user_id = db.Column(
         db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
@@ -200,26 +209,55 @@ class MatchRatingHistory(BaseModel):
 
     user = db.relationship("User", foreign_keys=[user_id])
 
+    # Indici unici parziali: idempotenza per-sorgente senza che le righe con
+    # l'altra sorgente NULL collidano tra loro.
     __table_args__ = (
-        db.UniqueConstraint(
+        db.Index(
+            "uq_match_user_rating_system",
             "match_id",
             "user_id",
             "rating_system",
-            name="uq_match_user_rating_system",
+            unique=True,
+            sqlite_where=db.text("match_id IS NOT NULL"),
+        ),
+        db.Index(
+            "uq_individual_match_user_rating_system",
+            "individual_match_id",
+            "user_id",
+            "rating_system",
+            unique=True,
+            sqlite_where=db.text("individual_match_id IS NOT NULL"),
         ),
     )
 
     @classmethod
     def exists_for_match(cls, match_id: int, rating_system: RatingSystem) -> bool:
-        """True se esiste già almeno un record per quel match/sistema."""
+        """True se esiste già almeno un record per quel match torneo/sistema."""
         return (
             cls.query.filter_by(match_id=match_id, rating_system=rating_system).first()
             is not None
         )
 
-    def __repr__(self) -> str:
+    @classmethod
+    def exists_for_individual_match(
+        cls, individual_match_id: int, rating_system: RatingSystem
+    ) -> bool:
+        """True se esiste già almeno un record per quel match individuale/sistema."""
         return (
-            f"<MatchRatingHistory match={self.match_id} user={self.user_id} "
+            cls.query.filter_by(
+                individual_match_id=individual_match_id, rating_system=rating_system
+            ).first()
+            is not None
+        )
+
+    def __repr__(self) -> str:
+        source = (
+            f"match={self.match_id}"
+            if self.match_id is not None
+            else f"individual_match={self.individual_match_id}"
+        )
+        return (
+            f"<MatchRatingHistory {source} user={self.user_id} "
             f"{self.rating_system.value} {self.old_rating}->{self.new_rating}>"
         )
 

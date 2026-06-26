@@ -95,7 +95,13 @@ def test_process_is_idempotent(db_session):
     assert elo1_after_first > 1200
     assert elo2_after_first < 1200
     assert games1 == 1
-    assert MatchRatingHistory.query.filter_by(match_id=match.id).count() == 2
+    # Dual pool: un match torneo crea 2 record ELO + 2 ELO_GLOBAL.
+    assert (
+        MatchRatingHistory.query.filter_by(
+            match_id=match.id, rating_system=RatingSystem.ELO
+        ).count()
+        == 2
+    )
 
     # Seconda chiamata (es. MatchCompletedEvent ri-emesso): NO-OP.
     RatingCalculationService.process_match_result(match)
@@ -103,7 +109,12 @@ def test_process_is_idempotent(db_session):
     assert _elo(p1.id) == elo1_after_first
     assert _elo(p2.id) == elo2_after_first
     assert PlayerRating.get_user_rating(p1.id, RatingSystem.ELO).games_played == 1
-    assert MatchRatingHistory.query.filter_by(match_id=match.id).count() == 2
+    assert (
+        MatchRatingHistory.query.filter_by(
+            match_id=match.id, rating_system=RatingSystem.ELO
+        ).count()
+        == 2
+    )
 
 
 @pytest.mark.unit
@@ -206,12 +217,14 @@ def test_to_playing_reopen_triggers_revert(db_session):
 
     RatingCalculationService.process_match_result(match)
     db.session.flush()
-    assert MatchRatingHistory.query.filter_by(match_id=match.id).count() == 2
+    # Dual pool: 2 ELO + 2 ELO_GLOBAL per il match torneo.
+    assert MatchRatingHistory.query.filter_by(match_id=match.id).count() == 4
 
     # Riapertura: completed → playing.
     MatchStateService.to_playing(match.id)
     db.session.flush()
 
+    # Il revert su riapertura azzera ENTRAMBI i pool.
     assert MatchRatingHistory.query.filter_by(match_id=match.id).count() == 0
     assert _elo(p1.id) == 1200
     assert _elo(p2.id) == 1200
