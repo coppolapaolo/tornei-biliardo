@@ -1,6 +1,6 @@
 """
 Module: models/individual_match/statistics_service.py
-Purpose: Statistics and query service for individual matches (extracted from IndividualMatchService)
+Purpose: Statistics and query service for individual matches
 Sprint 13: IndividualMatchService decomposition
 """
 
@@ -36,20 +36,27 @@ class IndividualMatchStatisticsService:
         )
 
         if status_filter:
-            target_status = (
-                status_filter.value
-                if hasattr(status_filter, "value")
-                else status_filter
-            )
-            query = query.filter(IndividualMatch.status == target_status)
+            if isinstance(status_filter, (list, tuple, set)):
+                values = [s.value if hasattr(s, "value") else s for s in status_filter]
+                query = query.filter(IndividualMatch.status.in_(values))
+            else:
+                target_status = (
+                    status_filter.value
+                    if hasattr(status_filter, "value")
+                    else status_filter
+                )
+                query = query.filter(IndividualMatch.status == target_status)
 
         return query.order_by(IndividualMatch.scheduled_at.desc()).all()
 
     @staticmethod
     def get_user_statistics(user_id: int) -> Dict[str, Any]:
         """Get individual match statistics for a user."""
+        # Conta i match conclusi: COMPLETED (forfait/legacy) E VALIDATED
+        # (conferma bilaterale, il flusso normale). Contare solo COMPLETED
+        # escludeva la maggioranza dei match finiti dalle statistiche.
         matches = IndividualMatchStatisticsService.get_user_matches(
-            user_id, MatchStatus.COMPLETED
+            user_id, [MatchStatus.COMPLETED, MatchStatus.VALIDATED]
         )
 
         total_matches = len(matches)
@@ -164,7 +171,9 @@ class IndividualMatchStatisticsService:
             if m.status in [MatchStatus.SCHEDULED, MatchStatus.IN_PROGRESS]
         ]
         completed_matches = [
-            m for m in all_matches if m.status == MatchStatus.COMPLETED
+            m
+            for m in all_matches
+            if m.status in (MatchStatus.COMPLETED, MatchStatus.VALIDATED)
         ]
         recent_matches = completed_matches[:5]
 
@@ -208,7 +217,7 @@ class IndividualMatchStatisticsService:
                     IndividualMatch.player1_id == user_id,
                     IndividualMatch.player2_id == user_id,
                 ),
-                IndividualMatch.status == MatchStatus.COMPLETED.value,
+                IndividualMatch.status.in_(MatchStatus.finished_values()),
             )
             .group_by(opponent_id_expr)
             .order_by(func.count().desc())
