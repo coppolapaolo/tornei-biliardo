@@ -175,7 +175,22 @@
         <!-- Elo Tab -->
         {% if can_view_ratings %}
         <div class="tab-pane fade {% if active_tab == 'elo' %}show active{% endif %}" id="elo" role="tabpanel">
-            {{ render_leaderboard(elo_leaderboard, 'Elo Rating', 'Punti Elo', 'fas fa-chart-line') }}
+            <div class="d-flex justify-content-end mb-3">
+                <button type="button" class="btn btn-outline-secondary btn-sm"
+                    onclick="window.EloToggle.toggle();" title="{{ _('Alterna classifica competitiva / globale') }}">
+                    <i class="fas fa-arrows-rotate me-1"></i>{{ _('Competitivo') }} / {{ _('Globale') }}
+                    <span class="elo-mode-label fw-bold ms-1"></span>
+                </button>
+            </div>
+            {# Due classifiche distinte: il toggle mostra quella del pool attivo.
+               L'ordinamento è sempre server-side (la top-N globale è un altro
+               insieme di player, non riordinabile lato client). #}
+            <div data-elo-pool="competitive">
+                {{ render_leaderboard(elo_leaderboard, 'Elo Rating (competitivo)', 'Punti Elo', 'fas fa-chart-line') }}
+            </div>
+            <div data-elo-pool="global" class="d-none">
+                {{ render_leaderboard(elo_global_leaderboard, 'Elo Globale (tornei + casual)', 'Punti Elo', 'fas fa-chart-line') }}
+            </div>
         </div>
         {% endif %}
 

@@ -84,6 +84,7 @@ class LeaderboardType(Enum):
     STREAK_LONGEST = "streak_longest"
     WIN_RATE_30_DAYS = "win_rate_30_days"
     ELO_RATING = "elo_rating"
+    ELO_GLOBAL_RATING = "elo_global"  # Dual ELO: tornei + casual (display)
 
 
 class QuestType(Enum):

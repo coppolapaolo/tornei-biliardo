@@ -155,6 +155,20 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
     def is_player(self) -> bool:
         return self.role == UserRole.PLAYER.value
 
+    @property
+    def elo_global_rating(self):
+        """ELO globale (tornei + casual, dual ELO) — SOLO display.
+
+        A differenza di `elo_rating` (competitivo, colonna sincronizzata e fonte
+        autorevole per categoria/handicap), il pool globale vive solo in
+        PlayerRating(ELO_GLOBAL). Query on-demand: ok per il profilo singolo;
+        per liste/leaderboard caricare in bulk lato route.
+        """
+        from models.rating.models import PlayerRating, RatingSystem
+
+        obj = PlayerRating.get_user_rating(self.id, RatingSystem.ELO_GLOBAL)
+        return obj.rating_value if obj else None
+
     # Flask-Login integration: utente attivo solo se non soft-deleted
     @property
     def is_active(self) -> bool:  # type: ignore[override]

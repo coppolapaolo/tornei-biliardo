@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-26 16:41+0200\n"
+"POT-Creation-Date: 2026-06-26 22:02+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -393,7 +393,7 @@ msgstr ""
 msgid "Che piacere rivederti!"
 msgstr ""
 
-#: routes/auth.py:40 templates/base.html:540
+#: routes/auth.py:40 templates/base.html:583
 msgid "Tutto pronto per giocare?"
 msgstr ""
 
@@ -613,7 +613,7 @@ msgstr ""
 msgid "Configurazione tavoli salvata!"
 msgstr ""
 
-#: routes/gamification/admin.py:82 templates/base.html:240
+#: routes/gamification/admin.py:82 templates/base.html:283
 #: templates/base_navbar_section.html:39
 #: templates/gamification/admin/dashboard.html:5
 msgid "Admin Gamification"
@@ -759,7 +759,7 @@ msgid "Milestone %(weeks)s settimane aggiunto"
 msgstr ""
 
 #: routes/gamification/dashboard.py:60 routes/gamification/dashboard.py:151
-#: routes/gamification/dashboard.py:258 routes/gamification/dashboard.py:298
+#: routes/gamification/dashboard.py:265 routes/gamification/dashboard.py:305
 msgid "Gli amministratori non partecipano alla gamification."
 msgstr ""
 
@@ -771,16 +771,16 @@ msgstr ""
 msgid "I Tuoi Achievement"
 msgstr ""
 
-#: routes/gamification/dashboard.py:236
+#: routes/gamification/dashboard.py:243
 #: templates/components/_player_campionato_classifications.html:6
 msgid "Classifiche"
 msgstr ""
 
-#: routes/gamification/dashboard.py:276
+#: routes/gamification/dashboard.py:283
 msgid "Quest Settimanali/Mensili"
 msgstr ""
 
-#: routes/gamification/dashboard.py:313
+#: routes/gamification/dashboard.py:320
 msgid "Le Tue Streak"
 msgstr ""
 
@@ -829,7 +829,7 @@ msgstr ""
 msgid "Drill completati in gara"
 msgstr ""
 
-#: routes/gamification/features.py:55 templates/base.html:181
+#: routes/gamification/features.py:55 templates/base.html:224
 #: templates/gamification/admin/dashboard.html:112
 #: templates/gamification/admin/dashboard.html:155
 #: templates/gamification/admin/feature_create.html:63
@@ -1115,15 +1115,23 @@ msgstr ""
 msgid "Errore durante l'invio: %(detail)s"
 msgstr ""
 
-#: templates/base.html:166
+#: templates/base.html:130
+msgid "competitivo"
+msgstr ""
+
+#: templates/base.html:131
+msgid "globale (tornei + casual)"
+msgstr ""
+
+#: templates/base.html:209
 msgid "Tornei Biliardo"
 msgstr ""
 
-#: templates/base.html:193
+#: templates/base.html:236
 msgid "Apri menu"
 msgstr ""
 
-#: templates/admin/kpi.html:51 templates/base.html:203 templates/base.html:311
+#: templates/admin/kpi.html:51 templates/base.html:246 templates/base.html:354
 #: templates/base_navbar_section.html:6
 #: templates/individual_match/admin_overview.html:11
 #: templates/individual_match/proposals.html:330
@@ -1131,12 +1139,12 @@ msgstr ""
 msgid "Dashboard"
 msgstr ""
 
-#: templates/base.html:211 templates/base.html:330
+#: templates/base.html:254 templates/base.html:373
 #: templates/base_navbar_section.html:13
 msgid "Sale Biliardo"
 msgstr ""
 
-#: templates/base.html:231 templates/base_navbar_section.html:30
+#: templates/base.html:274 templates/base_navbar_section.html:30
 #: templates/individual_match/admin_overview.html:3
 #: templates/individual_match/admin_overview.html:16
 #: templates/individual_match/availability.html:11
@@ -1148,61 +1156,61 @@ msgstr ""
 msgid "Match Individuali"
 msgstr ""
 
-#: templates/base.html:245 templates/base.html:325
+#: templates/base.html:288 templates/base.html:368
 #: templates/base_navbar_section.html:44
 #: templates/gamification/admin/dashboard.html:113
 msgid "Utenti"
 msgstr ""
 
-#: templates/base.html:258 templates/base_navbar_section.html:57
+#: templates/base.html:301 templates/base_navbar_section.html:57
 msgid "Reset DB"
 msgstr ""
 
-#: templates/base.html:299
+#: templates/base.html:342
 msgid "Notifiche"
 msgstr ""
 
-#: templates/base.html:304
+#: templates/base.html:347
 msgid "Le mie Richieste Gestore"
 msgstr ""
 
-#: templates/base.html:315 templates/player/profile.html:6
+#: templates/base.html:358 templates/player/profile.html:6
 #: templates/player/profile.html:19
 msgid "Il mio Profilo"
 msgstr ""
 
-#: templates/base.html:340
+#: templates/base.html:383
 msgid "Richieste Gestore Sala"
 msgstr ""
 
-#: templates/base.html:345
+#: templates/base.html:388
 msgid "Richieste Director"
 msgstr ""
 
-#: templates/base.html:354 templates/player/profile.html:131
+#: templates/base.html:397 templates/player/profile.html:131
 msgid "Elimina Account"
 msgstr ""
 
-#: templates/base.html:362
+#: templates/base.html:405
 msgid "Logout"
 msgstr ""
 
-#: templates/base.html:368
+#: templates/base.html:411
 msgid "Login"
 msgstr ""
 
-#: templates/base.html:371
+#: templates/base.html:414
 #: templates/components/_index_registration_info.html:18
 msgid "Registrati"
 msgstr ""
 
-#: templates/base.html:509 templates/base.html:515
+#: templates/base.html:552 templates/base.html:558
 msgid "Conferma"
 msgstr ""
 
 #: templates/admin/campionato_wizard_step1.html:14
 #: templates/admin/campionato_wizard_step1.html:184
-#: templates/admin/campionato_wizard_step2.html:14 templates/base.html:514
+#: templates/admin/campionato_wizard_step2.html:14 templates/base.html:557
 #: templates/components/_admin_new_campionato_modal.html:28
 #: templates/components/_campionato_create_modal.html:27
 #: templates/components/_campionato_edit_form.html:204
@@ -1222,51 +1230,51 @@ msgstr ""
 msgid "Annulla"
 msgstr ""
 
-#: templates/base.html:530
+#: templates/base.html:573
 msgid "XP OTTENUTI"
 msgstr ""
 
-#: templates/base.html:531
+#: templates/base.html:574
 msgid "LEVEL UP!"
 msgstr ""
 
-#: templates/base.html:532
+#: templates/base.html:575
 msgid "Nuovo livello raggiunto!"
 msgstr ""
 
-#: templates/base.html:533
+#: templates/base.html:576
 msgid "NUOVO TRAGUARDO!"
 msgstr ""
 
-#: templates/base.html:534
+#: templates/base.html:577
 msgid "STREAK!"
 msgstr ""
 
-#: templates/base.html:535
+#: templates/base.html:578
 msgid "Freeze attivo"
 msgstr ""
 
-#: templates/base.html:536
+#: templates/base.html:579
 msgid "STREAK PERSA"
 msgstr ""
 
-#: templates/base.html:537
+#: templates/base.html:580
 msgid "Non mollare, riprovare!"
 msgstr ""
 
-#: templates/base.html:538
+#: templates/base.html:581
 msgid "QUEST COMPLETATA!"
 msgstr ""
 
-#: templates/base.html:539
+#: templates/base.html:582
 msgid "TI DIAMO IL BENTORNATO!"
 msgstr ""
 
-#: templates/base.html:541
+#: templates/base.html:584
 msgid "Ciao!"
 msgstr ""
 
-#: templates/base.html:542
+#: templates/base.html:585
 #, python-format
 msgid "Ciao %(username)s!"
 msgstr ""
@@ -3325,6 +3333,10 @@ msgstr ""
 msgid "Aggiungi co‑direttore"
 msgstr ""
 
+#: templates/components/_elo_display.html:20
+msgid "Clicca per alternare ELO competitivo / globale (tornei + casual)"
+msgstr ""
+
 #: templates/components/_gara_cards.html:39
 #: templates/components/_index_open_inscriptions.html:7
 #: templates/components/_nearby_gare.html:40
@@ -4446,18 +4458,18 @@ msgstr ""
 msgid "Cambia password"
 msgstr ""
 
-#: templates/components/_player_ratings.html:4
+#: templates/components/_player_ratings.html:5
 msgid "Rating"
 msgstr ""
 
-#: templates/components/_player_ratings.html:6
+#: templates/components/_player_ratings.html:7
 msgid "Lv. 6+"
 msgstr ""
 
-#: templates/components/_player_ratings.html:25
+#: templates/components/_player_ratings.html:26
 msgid ""
-"I rating vengono aggiornati automaticamente al termine di ogni partita "
-"ufficiale."
+"L'Elo competitivo si aggiorna a fine partita ufficiale. Clicca il valore "
+"per vedere l'Elo globale (include i match individuali)."
 msgstr ""
 
 #: templates/components/_player_recent_matches.html:5
@@ -5326,6 +5338,18 @@ msgstr ""
 
 #: templates/gamification/leaderboards.html:155
 msgid "Gioca qualche partita per apparire qui!"
+msgstr ""
+
+#: templates/gamification/leaderboards.html:180
+msgid "Alterna classifica competitiva / globale"
+msgstr ""
+
+#: templates/gamification/leaderboards.html:181
+msgid "Competitivo"
+msgstr ""
+
+#: templates/gamification/leaderboards.html:181
+msgid "Globale"
 msgstr ""
 
 #: templates/gamification/admin/dashboard.html:56
