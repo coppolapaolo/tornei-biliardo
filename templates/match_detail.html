@@ -13,6 +13,17 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
 
 {% block content %}
 <div class="container-fluid">
+    {# "L'azionabile va prima" (UI_CONVENTIONS): a punteggio definitivo la
+       prossima azione probabile e' uscire dal match, quindi su mobile il
+       pulsante di ritorno sale in cima (su desktop e' gia' nell'header sotto).
+       Doppia inclusione sicura: _match_navigation non ha id/script e le due
+       copie sono mutuamente esclusive per viewport. #}
+    {% if score_is_final %}
+    <div class="d-md-none mb-3" id="matchNavTop">
+        {% include "components/_match_navigation.html" %}
+    </div>
+    {% endif %}
+
     {# Match Header - hidden on mobile (card already shows all info) #}
     <div class="d-none d-md-flex justify-content-between align-items-center mb-4">
         <div>
@@ -178,7 +189,10 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
             {% endif %}
 
             <!-- Actions / Navigation -->
-            {% include "components/_match_navigation.html" %}
+            {# A punteggio definitivo la copia mobile e' gia' in cima alla pagina #}
+            <div id="matchNavSidebar" class="{% if score_is_final %}d-none d-md-block{% endif %}">
+                {% include "components/_match_navigation.html" %}
+            </div>
         </div>
     </div>
 </div>

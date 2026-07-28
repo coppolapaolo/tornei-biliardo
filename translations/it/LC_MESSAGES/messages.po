@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-07-28 14:37+0200\n"
+"POT-Creation-Date: 2026-07-28 15:21+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -967,7 +967,7 @@ msgstr ""
 msgid "Orari aggiornati con successo!"
 msgstr ""
 
-#: routes/individual_match/matches.py:460 templates/match_detail.html:438
+#: routes/individual_match/matches.py:460 templates/match_detail.html:452
 msgid "Forfait dichiarato"
 msgstr ""
 
@@ -1253,8 +1253,8 @@ msgstr ""
 #: templates/gamification/admin/quest_form.html:87
 #: templates/gamification/admin/streak_config.html:145
 #: templates/gamification/admin/streak_config.html:267
-#: templates/gara_detail.html:687 templates/gara_detail.html:733
-#: templates/gara_detail.html:766
+#: templates/gara_detail.html:711 templates/gara_detail.html:757
+#: templates/gara_detail.html:790
 #: templates/individual_match/create_proposal.html:259
 #: templates/individual_match/proposals.html:216
 #: templates/player/privacy_settings.html:86
@@ -1361,34 +1361,35 @@ msgstr ""
 #: templates/components/_gara_management.html:49
 #: templates/components/_separated_dashboard_content.html:633
 #: templates/gamification/admin/dashboard.html:49
-#: templates/gara_detail.html:117 templates/gara_detail.html:209
+#: templates/gara_detail.html:104 templates/gara_detail.html:139
+#: templates/gara_detail.html:233
 msgid "Gestione"
 msgstr ""
 
 #: templates/components/_gara_management.html:262
-#: templates/gara_detail.html:126
+#: templates/gara_detail.html:148
 msgid "Fase Spareggio (SSR)"
 msgstr ""
 
-#: templates/gara_detail.html:129
+#: templates/gara_detail.html:151
 msgid "Inserisci i punteggi SSR nella sezione sopra"
 msgstr ""
 
-#: templates/components/_ssr_section.html:9 templates/gara_detail.html:278
+#: templates/components/_ssr_section.html:9 templates/gara_detail.html:302
 msgid "Spot Shot Rally (SSR)"
 msgstr ""
 
-#: templates/components/_ssr_section.html:12 templates/gara_detail.html:281
+#: templates/components/_ssr_section.html:12 templates/gara_detail.html:305
 msgid "In attesa di punteggi"
 msgstr ""
 
-#: templates/components/_ssr_section.html:14 templates/gara_detail.html:283
+#: templates/components/_ssr_section.html:14 templates/gara_detail.html:307
 #: templates/individual_match/match_detail.html:132 utils/status_ui.py:126
 #: utils/status_ui.py:144
 msgid "Completato"
 msgstr ""
 
-#: templates/components/_ssr_section.html:22 templates/gara_detail.html:296
+#: templates/components/_ssr_section.html:22 templates/gara_detail.html:320
 #, python-format
 msgid "Parimerito per il %(pos)s° posto"
 msgstr ""
@@ -1397,13 +1398,13 @@ msgstr ""
 #: templates/admin/users_list.html:89 templates/admin/users_list.html:146
 #: templates/components/_detailed_classification.html:23
 #: templates/components/_ssr_section.html:28
-#: templates/gamification/leaderboards.html:122 templates/gara_detail.html:304
+#: templates/gamification/leaderboards.html:122 templates/gara_detail.html:328
 msgid "Giocatore"
 msgstr ""
 
 #: templates/components/_index_campionato_cards.html:164
-#: templates/components/_ssr_section.html:29 templates/gara_detail.html:305
-#: templates/gara_detail.html:842
+#: templates/components/_ssr_section.html:29 templates/gara_detail.html:329
+#: templates/gara_detail.html:866
 msgid "Punti SSR"
 msgstr ""
 
@@ -1413,61 +1414,61 @@ msgstr ""
 #: templates/gamification/admin/level_config.html:168
 #: templates/gamification/admin/streak_config.html:28
 #: templates/gamification/admin/streak_config.html:146
-#: templates/gara_detail.html:334 templates/player/privacy_settings.html:83
+#: templates/gara_detail.html:358 templates/player/privacy_settings.html:83
 msgid "Salva"
 msgstr ""
 
-#: templates/gara_detail.html:345
+#: templates/gara_detail.html:369
 msgid "Nessun parimerito da risolvere."
 msgstr ""
 
-#: templates/components/_gara_info.html:5 templates/gara_detail.html:397
+#: templates/components/_gara_info.html:5 templates/gara_detail.html:421
 msgid "Informazioni Gara"
 msgstr ""
 
-#: templates/components/_gara_info.html:10 templates/gara_detail.html:405
+#: templates/components/_gara_info.html:10 templates/gara_detail.html:429
 msgid "Data:"
 msgstr ""
 
-#: templates/components/_gara_info.html:12 templates/gara_detail.html:407
+#: templates/components/_gara_info.html:12 templates/gara_detail.html:431
 msgid "Turni:"
 msgstr ""
 
 #: templates/components/_index_campionato_cards.html:103
-#: templates/gara_detail.html:408 templates/public/campionato_detail.html:38
+#: templates/gara_detail.html:432 templates/public/campionato_detail.html:38
 msgid "Tipo:"
 msgstr ""
 
-#: templates/components/_gara_info.html:17 templates/gara_detail.html:410
+#: templates/components/_gara_info.html:17 templates/gara_detail.html:434
 #: templates/individual_match/proposal_detail.html:72
 msgid "Luogo:"
 msgstr ""
 
-#: templates/components/_gara_info.html:19 templates/gara_detail.html:412
+#: templates/components/_gara_info.html:19 templates/gara_detail.html:436
 msgid "Partecipanti:"
 msgstr ""
 
-#: templates/gara_detail.html:412
+#: templates/gara_detail.html:436
 msgid "min"
 msgstr ""
 
-#: templates/gara_detail.html:413
+#: templates/gara_detail.html:437
 msgid "max"
 msgstr ""
 
 #: templates/components/_gara_info.html:22
-#: templates/components/_unified_cards.html:86 templates/gara_detail.html:414
+#: templates/components/_unified_cards.html:86 templates/gara_detail.html:438
 msgid "Quota:"
 msgstr ""
 
 #: templates/components/_gara_info.html:26
-#: templates/components/_unified_cards.html:88 templates/gara_detail.html:415
+#: templates/components/_unified_cards.html:88 templates/gara_detail.html:439
 msgid "Gratuita"
 msgstr ""
 
 #: templates/components/_gara_info.html:35
 #: templates/components/_round_management.html:26
-#: templates/gara_detail.html:416
+#: templates/gara_detail.html:440
 msgid "Anti-reincontro:"
 msgstr ""
 
@@ -1476,7 +1477,7 @@ msgstr ""
 #: templates/components/_gara_edit_form.html:100
 #: templates/components/_gara_edit_form.html:102
 #: templates/components/_new_gara_modal.html:288
-#: templates/components/_new_gara_modal.html:289 templates/gara_detail.html:417
+#: templates/components/_new_gara_modal.html:289 templates/gara_detail.html:441
 msgid "Sì"
 msgstr ""
 
@@ -1487,33 +1488,33 @@ msgstr ""
 #: templates/components/_new_gara_modal.html:288
 #: templates/components/_new_gara_modal.html:290
 #: templates/gamification/admin/streak_config.html:79
-#: templates/gara_detail.html:417
+#: templates/gara_detail.html:441
 msgid "No"
 msgstr ""
 
-#: templates/gara_detail.html:418
+#: templates/gara_detail.html:442
 msgid "Num. dispari:"
 msgstr ""
 
-#: templates/components/_gara_info.html:87 templates/gara_detail.html:421
+#: templates/components/_gara_info.html:87 templates/gara_detail.html:445
 msgid "Descrizione:"
 msgstr ""
 
 #: templates/components/_gara_inscriptions.html:5
 #: templates/components/_index_open_inscriptions.html:37
-#: templates/gara_detail.html:435
+#: templates/gara_detail.html:459
 msgid "Iscritti"
 msgstr ""
 
 #: templates/components/_gara_inscriptions.html:22
 #: templates/gamification/admin/xp_management.html:24
 #: templates/gamification/admin/xp_management.html:59
-#: templates/gara_detail.html:455
+#: templates/gara_detail.html:479
 msgid "Seleziona utente..."
 msgstr ""
 
 #: templates/components/_gara_inscriptions.html:27
-#: templates/gara_detail.html:460
+#: templates/gara_detail.html:484
 msgid "Aggiungi iscritto"
 msgstr ""
 
@@ -1523,62 +1524,62 @@ msgstr ""
 #: templates/components/_match_result_row.html:32
 #: templates/components/_match_result_row.html:58
 #: templates/components/_match_result_row.html:71
-#: templates/gara_detail.html:479
+#: templates/gara_detail.html:503
 msgid "Forfait"
 msgstr ""
 
-#: templates/gara_detail.html:485
+#: templates/gara_detail.html:509
 #, python-format
 msgid "Sei sicuro di voler disiscrivere %(username)s?"
 msgstr ""
 
 #: templates/components/_gara_inscriptions.html:61
-#: templates/gara_detail.html:487
+#: templates/gara_detail.html:511
 msgid "Disiscrive utente"
 msgstr ""
 
-#: templates/gara_detail.html:499
+#: templates/gara_detail.html:523
 msgid "Lista Attesa"
 msgstr ""
 
 #: templates/components/_gara_inscriptions.html:90
-#: templates/gara_detail.html:510
+#: templates/gara_detail.html:534
 #, python-format
 msgid "Sei sicuro di voler rimuovere %(username)s dalla lista d'attesa?"
 msgstr ""
 
 #: templates/components/_gara_inscriptions.html:93
-#: templates/gara_detail.html:512
+#: templates/gara_detail.html:536
 msgid "Rimuove dalla lista d'attesa"
 msgstr ""
 
 #: templates/components/_gara_inscriptions.html:102
-#: templates/gara_detail.html:522
+#: templates/gara_detail.html:546
 msgid "Nessun iscritto"
 msgstr ""
 
-#: templates/gara_detail.html:536
+#: templates/gara_detail.html:560
 msgid "Direttori di Gara"
 msgstr ""
 
-#: templates/gara_detail.html:588
+#: templates/gara_detail.html:612
 msgid "Imposta Risultato Rapido"
 msgstr ""
 
-#: templates/gara_detail.html:598
+#: templates/gara_detail.html:622
 msgid "Modalità:"
 msgstr ""
 
-#: templates/gara_detail.html:600
+#: templates/gara_detail.html:624
 msgid "Race to"
 msgstr ""
 
-#: templates/gara_detail.html:601
+#: templates/gara_detail.html:625
 msgid "vince chi vince"
 msgstr ""
 
 #: templates/components/_multi_set_score_display.html:115
-#: templates/gara_detail.html:601 templates/gara_detail.html:604
+#: templates/gara_detail.html:625 templates/gara_detail.html:628
 #: templates/individual_match/proposal_detail.html:87
 #: templates/individual_match/proposals.html:95
 #: templates/individual_match/proposals.html:181
@@ -1587,7 +1588,7 @@ msgid "rack"
 msgstr ""
 
 #: templates/components/_multi_set_score_display.html:27
-#: templates/gara_detail.html:604
+#: templates/gara_detail.html:628
 #: templates/individual_match/match_detail.html:106
 #: templates/individual_match/match_detail.html:109
 #: templates/individual_match/matches.html:126
@@ -1598,55 +1599,55 @@ msgstr ""
 msgid "Esattamente"
 msgstr ""
 
-#: templates/gara_detail.html:605
+#: templates/gara_detail.html:629
 msgid "somma rack ="
 msgstr ""
 
-#: templates/gara_detail.html:615
+#: templates/gara_detail.html:639
 msgid "Trio (Round-Robin):"
 msgstr ""
 
-#: templates/gara_detail.html:617
+#: templates/gara_detail.html:641
 #, python-format
 msgid "%(gironi)s gironi, max %(max_racks)s rack per giocatore"
 msgstr ""
 
-#: templates/gara_detail.html:620
+#: templates/gara_detail.html:644
 #, python-format
 msgid "Bonus: +%(bonus)s rack equamente distribuiti"
 msgstr ""
 
-#: templates/gara_detail.html:624
+#: templates/gara_detail.html:648
 #, python-format
 msgid "Distanza %(d)s"
 msgstr ""
 
-#: templates/gara_detail.html:632 templates/gara_detail.html:651
+#: templates/gara_detail.html:656 templates/gara_detail.html:675
 #: templates/individual_match/admin_overview.html:126
 msgid "Giocatore 1"
 msgstr ""
 
-#: templates/gara_detail.html:636 templates/gara_detail.html:655
+#: templates/gara_detail.html:660 templates/gara_detail.html:679
 #: templates/individual_match/admin_overview.html:127
 msgid "Giocatore 2"
 msgstr ""
 
-#: templates/gara_detail.html:659
+#: templates/gara_detail.html:683
 msgid "Giocatore 3"
 msgstr ""
 
-#: templates/gara_detail.html:673
+#: templates/gara_detail.html:697
 msgid "Tempi partita (opzionale)"
 msgstr ""
 
 #: templates/components/_match_admin_controls.html:128
-#: templates/gara_detail.html:677
+#: templates/gara_detail.html:701
 #: templates/individual_match/match_detail.html:183
 msgid "Inizio"
 msgstr ""
 
 #: templates/components/_match_admin_controls.html:133
-#: templates/gara_detail.html:681
+#: templates/gara_detail.html:705
 #: templates/individual_match/match_detail.html:188
 msgid "Fine"
 msgstr ""
@@ -1654,27 +1655,27 @@ msgstr ""
 #: templates/components/_match_admin_controls.html:42
 #: templates/components/_match_admin_controls.html:64
 #: templates/components/_match_admin_controls.html:79
-#: templates/gara_detail.html:689
+#: templates/gara_detail.html:713
 msgid "Imposta Risultato"
 msgstr ""
 
-#: templates/gara_detail.html:703
+#: templates/gara_detail.html:727
 msgid "Assegna Tavolo"
 msgstr ""
 
-#: templates/gara_detail.html:717
+#: templates/gara_detail.html:741
 msgid "Tavolo attuale:"
 msgstr ""
 
-#: templates/gara_detail.html:728
+#: templates/gara_detail.html:752
 msgid "Rimuovi Tavolo"
 msgstr ""
 
-#: templates/gara_detail.html:746
+#: templates/gara_detail.html:770
 msgid "Risolvi Spareggi"
 msgstr ""
 
-#: templates/gara_detail.html:753
+#: templates/gara_detail.html:777
 #, python-format
 msgid ""
 "Ci sono parimerito nelle prime %(pos)s posizioni. Inserire il punteggio "
@@ -1682,46 +1683,46 @@ msgid ""
 "          (SSR) per ogni giocatore."
 msgstr ""
 
-#: templates/gara_detail.html:755
+#: templates/gara_detail.html:779
 msgid "Punteggi più alti = posizione migliore"
 msgstr ""
 
-#: templates/gara_detail.html:769
+#: templates/gara_detail.html:793
 msgid "Conferma e Termina Gara"
 msgstr ""
 
-#: templates/gara_detail.html:800
+#: templates/gara_detail.html:824
 msgid ""
 "Sei sicuro di voler avviare la gara? Tutti i turni verranno creati "
 "contemporaneamente e le iscrizioni chiuse definitivamente."
 msgstr ""
 
-#: templates/gara_detail.html:801
+#: templates/gara_detail.html:825
 msgid ""
 "Sei sicuro di voler avviare il primo turno? Le iscrizioni verranno chiuse"
 " definitivamente."
 msgstr ""
 
-#: templates/gara_detail.html:802
+#: templates/gara_detail.html:826
 msgid ""
 "Calcolo dello schedule in corso… Per gare con trio (giocatori dispari) il"
 " calcolo può richiedere qualche secondo."
 msgstr ""
 
-#: templates/gara_detail.html:803
+#: templates/gara_detail.html:827
 msgid ""
 "Sei sicuro di voler cancellare l'avvio del primo turno? Tutte le partite "
 "del primo turno verranno eliminate e la gara tornerà allo stato di "
 "iscrizioni."
 msgstr ""
 
-#: templates/gara_detail.html:804
+#: templates/gara_detail.html:828
 msgid ""
 "Sei sicuro di voler cancellare l'avvio del turno corrente? Tutte le "
 "partite del turno verranno eliminate e si tornerà al turno precedente."
 msgstr ""
 
-#: templates/gara_detail.html:805
+#: templates/gara_detail.html:829
 msgid ""
 "Sei sicuro di voler terminare la gara?\n"
 "\n"
@@ -1729,7 +1730,7 @@ msgid ""
 " modificarli."
 msgstr ""
 
-#: templates/gara_detail.html:806
+#: templates/gara_detail.html:830
 #, python-format
 msgid ""
 "Avviare la fase di spareggio (SSR)?\n"
@@ -1738,7 +1739,7 @@ msgid ""
 " posizioni."
 msgstr ""
 
-#: templates/gara_detail.html:807
+#: templates/gara_detail.html:831
 msgid ""
 "Annullare la fase di spareggio (SSR)?\n"
 "\n"
@@ -1746,11 +1747,11 @@ msgid ""
 " così potrai correggere i risultati."
 msgstr ""
 
-#: templates/gara_detail.html:808
+#: templates/gara_detail.html:832
 msgid "Errore durante l'annullamento della fase SSR"
 msgstr ""
 
-#: templates/gara_detail.html:809
+#: templates/gara_detail.html:833
 msgid ""
 "Sei sicuro di voler resettare l'ultimo turno?\n"
 "\n"
@@ -1760,7 +1761,7 @@ msgid ""
 "Questa azione è IRREVERSIBILE!"
 msgstr ""
 
-#: templates/gara_detail.html:810
+#: templates/gara_detail.html:834
 #, python-brace-format
 msgid ""
 "Sei SICURO di voler eliminare la Gara {number}?\n"
@@ -1768,7 +1769,7 @@ msgid ""
 "Questa azione è IRREVERSIBILE!"
 msgstr ""
 
-#: templates/gara_detail.html:811
+#: templates/gara_detail.html:835
 #, python-brace-format
 msgid ""
 "Sei SICURO di voler cancellare la Gara {number}?\n"
@@ -1777,16 +1778,16 @@ msgid ""
 "Questa azione è IRREVERSIBILE!"
 msgstr ""
 
-#: templates/gara_detail.html:812 templates/gara_detail.html:1777
+#: templates/gara_detail.html:836 templates/gara_detail.html:1801
 msgid "Sei sicuro di voler resettare questa partita?"
 msgstr ""
 
-#: templates/gara_detail.html:813 templates/gara_detail.html:1801
+#: templates/gara_detail.html:837 templates/gara_detail.html:1825
 msgid "Sei sicuro di voler resettare questo trio?"
 msgstr ""
 
-#: templates/gara_detail.html:814 templates/gara_detail.html:1829
-#: templates/match_detail.html:630
+#: templates/gara_detail.html:838 templates/gara_detail.html:1853
+#: templates/match_detail.html:644
 msgid ""
 "Confermi di voler validare questo risultato? Il tavolo verrà liberato e "
 "assegnato alla prossima partita in attesa."
@@ -1794,7 +1795,7 @@ msgstr ""
 
 #: templates/components/_match_admin_controls.html:223
 #: templates/components/_match_admin_controls.html:265
-#: templates/gara_detail.html:815 templates/gara_detail.html:830
+#: templates/gara_detail.html:839 templates/gara_detail.html:854
 #: templates/individual_match/availability.html:224
 #: templates/individual_match/availability.html:252
 #: templates/individual_match/match_detail.html:254
@@ -1805,168 +1806,168 @@ msgstr ""
 #: templates/individual_match/match_detail.html:403
 #: templates/individual_match/proposal_detail.html:214
 #: templates/individual_match/proposals.html:377
-#: templates/match_detail.html:212 templates/match_detail.html:244
-#: templates/match_detail.html:280 templates/match_detail.html:313
-#: templates/match_detail.html:339 templates/match_detail.html:364
-#: templates/match_detail.html:389 templates/match_detail.html:414
-#: templates/match_detail.html:441 templates/match_detail.html:469
-#: templates/match_detail.html:495 templates/match_detail.html:520
-#: templates/match_detail.html:570 templates/match_detail.html:619
-#: templates/match_detail.html:642
+#: templates/match_detail.html:226 templates/match_detail.html:258
+#: templates/match_detail.html:294 templates/match_detail.html:327
+#: templates/match_detail.html:353 templates/match_detail.html:378
+#: templates/match_detail.html:403 templates/match_detail.html:428
+#: templates/match_detail.html:455 templates/match_detail.html:483
+#: templates/match_detail.html:509 templates/match_detail.html:534
+#: templates/match_detail.html:584 templates/match_detail.html:633
+#: templates/match_detail.html:656
 msgid "Errore:"
 msgstr ""
 
-#: templates/gara_detail.html:816
+#: templates/gara_detail.html:840
 msgid "Errore durante la cancellazione:"
 msgstr ""
 
-#: templates/gara_detail.html:817
+#: templates/gara_detail.html:841
 msgid "Errore durante la terminazione:"
 msgstr ""
 
-#: templates/gara_detail.html:818
+#: templates/gara_detail.html:842
 msgid "Errore durante la terminazione della gara"
 msgstr ""
 
-#: templates/gara_detail.html:819
+#: templates/gara_detail.html:843
 msgid "Errore durante l'avvio della fase SSR"
 msgstr ""
 
-#: templates/gara_detail.html:820
+#: templates/gara_detail.html:844
 msgid "Errore durante il salvataggio dei punteggi"
 msgstr ""
 
-#: templates/gara_detail.html:821
+#: templates/gara_detail.html:845
 msgid "Errore durante il reset:"
 msgstr ""
 
-#: templates/gara_detail.html:822
+#: templates/gara_detail.html:846
 msgid "Errore durante l'eliminazione della gara: "
 msgstr ""
 
-#: templates/gara_detail.html:823
+#: templates/gara_detail.html:847
 msgid "Errore di rete durante l'eliminazione"
 msgstr ""
 
-#: templates/gara_detail.html:824
+#: templates/gara_detail.html:848
 msgid "Errore di rete durante l'avvio del turno"
 msgstr ""
 
-#: templates/gara_detail.html:825
+#: templates/gara_detail.html:849
 msgid "Errore durante l'avvio del turno:"
 msgstr ""
 
-#: templates/gara_detail.html:826
+#: templates/gara_detail.html:850
 msgid "Errore di rete durante la creazione del turno"
 msgstr ""
 
 #: templates/components/_match_admin_controls.html:228
-#: templates/gara_detail.html:827
+#: templates/gara_detail.html:851
 msgid "Errore durante l'impostazione del risultato"
 msgstr ""
 
-#: templates/gara_detail.html:828 templates/match_detail.html:596
-#: templates/match_detail.html:601 templates/match_detail.html:619
-#: templates/match_detail.html:624
+#: templates/gara_detail.html:852 templates/match_detail.html:610
+#: templates/match_detail.html:615 templates/match_detail.html:633
+#: templates/match_detail.html:638
 msgid "Errore durante il reset"
 msgstr ""
 
-#: templates/gara_detail.html:829
+#: templates/gara_detail.html:853
 msgid "Errore durante il reset del trio"
 msgstr ""
 
-#: templates/gara_detail.html:831 templates/match_detail.html:647
+#: templates/gara_detail.html:855 templates/match_detail.html:661
 msgid "Errore durante la validazione"
 msgstr ""
 
-#: templates/gara_detail.html:832
+#: templates/gara_detail.html:856
 msgid "Errore di rete durante l'operazione sul tavolo"
 msgstr ""
 
-#: templates/gara_detail.html:833
+#: templates/gara_detail.html:857
 msgid "Tutti i punteggi devono essere numeri interi non negativi"
 msgstr ""
 
-#: templates/gara_detail.html:834
+#: templates/gara_detail.html:858
 msgid "I punteggi devono essere tutti diversi per risolvere il parimerito"
 msgstr ""
 
-#: templates/gara_detail.html:835
+#: templates/gara_detail.html:859
 msgid "I punteggi devono essere numeri interi non negativi"
 msgstr ""
 
-#: templates/gara_detail.html:836
+#: templates/gara_detail.html:860
 msgid "I punteggi devono essere diversi all'interno del gruppo"
 msgstr ""
 
-#: templates/gara_detail.html:837
+#: templates/gara_detail.html:861
 msgid "Usa 'Avvia SSR' per inserire i punteggi degli spareggi"
 msgstr ""
 
 #: templates/components/_match_admin_controls.html:223
 #: templates/components/_match_admin_controls.html:265
-#: templates/gara_detail.html:838
+#: templates/gara_detail.html:862
 #: templates/individual_match/match_detail.html:403
-#: templates/match_detail.html:212 templates/match_detail.html:244
-#: templates/match_detail.html:280 templates/match_detail.html:313
-#: templates/match_detail.html:339 templates/match_detail.html:469
-#: templates/match_detail.html:570
+#: templates/match_detail.html:226 templates/match_detail.html:258
+#: templates/match_detail.html:294 templates/match_detail.html:327
+#: templates/match_detail.html:353 templates/match_detail.html:483
+#: templates/match_detail.html:584
 msgid "Errore sconosciuto"
 msgstr ""
 
-#: templates/gara_detail.html:839 templates/match_detail.html:642
+#: templates/gara_detail.html:863 templates/match_detail.html:656
 msgid "Impossibile validare il risultato"
 msgstr ""
 
-#: templates/gara_detail.html:840
+#: templates/gara_detail.html:864
 msgid "Pari merito per il"
 msgstr ""
 
-#: templates/gara_detail.html:841
+#: templates/gara_detail.html:865
 msgid "posto"
 msgstr ""
 
-#: templates/gara_detail.html:843
+#: templates/gara_detail.html:867
 msgid "Click per scambiare con match occupante"
 msgstr ""
 
 #: templates/components/_gara_matches.html:57
 #: templates/components/_gara_matches.html:88
-#: templates/components/_match_header.html:13 templates/gara_detail.html:844
+#: templates/components/_match_header.html:13 templates/gara_detail.html:868
 msgid "Tavolo"
 msgstr ""
 
-#: templates/gara_detail.html:1513
+#: templates/gara_detail.html:1537
 msgid ""
 "Sei sicuro di voler chiudere le iscrizioni? La gara tornerà allo stato di"
 " setup."
 msgstr ""
 
-#: templates/gara_detail.html:1645
+#: templates/gara_detail.html:1669
 msgid "I rack non possono essere negativi."
 msgstr ""
 
-#: templates/gara_detail.html:1647
+#: templates/gara_detail.html:1671
 #, python-format
 msgid "Nessun giocatore può avere più di %(d)s rack."
 msgstr ""
 
-#: templates/gara_detail.html:1651
+#: templates/gara_detail.html:1675
 #, python-format
 msgid "Somma rack troppo alta: massimo %(d)s."
 msgstr ""
 
-#: templates/gara_detail.html:1653
+#: templates/gara_detail.html:1677
 #, python-format
 msgid "Risultato incompleto: uno dei due deve raggiungere %(d)s."
 msgstr ""
 
-#: templates/gara_detail.html:1658
+#: templates/gara_detail.html:1682
 #, python-format
 msgid "Somma rack troppo alta: il totale esatto è %(d)s."
 msgstr ""
 
-#: templates/gara_detail.html:1660
+#: templates/gara_detail.html:1684
 #, python-format
 msgid "Risultato incompleto: la somma deve essere esattamente %(d)s."
 msgstr ""
@@ -2007,8 +2008,8 @@ msgstr ""
 #: templates/components/_multi_set_score_display.html:14
 #: templates/components/_unified_match_score.html:19
 #: templates/components/_unified_rack_input.html:36
-#: templates/match_detail.html:10 templates/match_detail.html:55
-#: templates/match_detail.html:85 templates/match_detail.html:135
+#: templates/match_detail.html:10 templates/match_detail.html:66
+#: templates/match_detail.html:96 templates/match_detail.html:146
 msgid "Bye"
 msgstr ""
 
@@ -2024,124 +2025,124 @@ msgstr ""
 #: templates/components/_match_result_row.html:18
 #: templates/components/_player_recent_matches.html:55
 #: templates/components/_user_recent_matches_table.html:44
-#: templates/match_detail.html:22
+#: templates/match_detail.html:33
 msgid "Trio"
 msgstr ""
 
-#: templates/match_detail.html:65
+#: templates/components/_match_navigation.html:6 templates/match_detail.html:76
 msgid "Torna alla Gara"
 msgstr ""
 
 #: templates/components/_match_navigation.html:17
-#: templates/match_detail.html:69
+#: templates/match_detail.html:80
 msgid "Torna allo Storico"
 msgstr ""
 
-#: templates/match_detail.html:149
+#: templates/match_detail.html:160
 msgid "Challenge Disponibili"
 msgstr ""
 
-#: templates/match_detail.html:152
+#: templates/match_detail.html:163
 msgid ""
 "Le challenge sono prove tecniche che puoi completare durante il\n"
 "                        match."
 msgstr ""
 
-#: templates/match_detail.html:218
+#: templates/match_detail.html:232
 msgid "Errore durante l'aggiunta del rack al trio"
 msgstr ""
 
 #: templates/individual_match/match_detail.html:286
-#: templates/match_detail.html:250 templates/match_detail.html:370
-#: templates/match_detail.html:501
+#: templates/match_detail.html:264 templates/match_detail.html:384
+#: templates/match_detail.html:515
 msgid "Errore durante la rimozione del rack"
 msgstr ""
 
-#: templates/match_detail.html:286
+#: templates/match_detail.html:300
 msgid "Errore durante la conferma del risultato"
 msgstr ""
 
-#: templates/match_detail.html:292
+#: templates/match_detail.html:306
 msgid "Sei sicuro di voler dichiarare forfait per questo giocatore?"
 msgstr ""
 
-#: templates/match_detail.html:318
+#: templates/match_detail.html:332
 msgid "Errore durante la registrazione del forfait"
 msgstr ""
 
 #: templates/individual_match/match_detail.html:260
-#: templates/match_detail.html:345
+#: templates/match_detail.html:359
 msgid "Errore durante l'aggiunta del rack"
 msgstr ""
 
-#: templates/match_detail.html:364 templates/match_detail.html:495
+#: templates/match_detail.html:378 templates/match_detail.html:509
 msgid "Impossibile rimuovere il rack"
 msgstr ""
 
-#: templates/match_detail.html:389
+#: templates/match_detail.html:403
 msgid "Impossibile confermare il risultato"
 msgstr ""
 
 #: templates/individual_match/match_detail.html:317
-#: templates/match_detail.html:395
+#: templates/match_detail.html:409
 msgid "Errore durante la conferma"
 msgstr ""
 
-#: templates/match_detail.html:401
+#: templates/match_detail.html:415
 msgid "Sei sicuro di voler rifiutare il risultato? L'ultimo rack verrà rimosso."
 msgstr ""
 
-#: templates/match_detail.html:414
+#: templates/match_detail.html:428
 msgid "Impossibile rifiutare il risultato"
 msgstr ""
 
 #: templates/individual_match/match_detail.html:344
-#: templates/match_detail.html:420
+#: templates/match_detail.html:434
 msgid "Errore durante il rifiuto"
 msgstr ""
 
-#: templates/match_detail.html:427
+#: templates/match_detail.html:441
 msgid ""
 "Sei sicuro di voler dichiarare forfait? Questo comporterà la tua uscita "
 "dalla gara secondo la policy impostata."
 msgstr ""
 
-#: templates/match_detail.html:441
+#: templates/match_detail.html:455
 msgid "Impossibile dichiarare forfait"
 msgstr ""
 
 #: templates/individual_match/match_detail.html:369
-#: templates/match_detail.html:447
+#: templates/match_detail.html:461
 msgid "Errore durante la dichiarazione di forfait"
 msgstr ""
 
-#: templates/match_detail.html:475
+#: templates/match_detail.html:489
 msgid "Errore durante l'aggiunta del rack al set"
 msgstr ""
 
-#: templates/match_detail.html:481
+#: templates/match_detail.html:495
 msgid "Rimuovere l'ultimo rack dal set?"
 msgstr ""
 
-#: templates/match_detail.html:520
+#: templates/match_detail.html:534
 msgid "Impossibile iniziare il nuovo set"
 msgstr ""
 
-#: templates/match_detail.html:526
+#: templates/match_detail.html:540
 msgid "Errore durante l'avvio del nuovo set"
 msgstr ""
 
-#: templates/match_detail.html:577
+#: templates/match_detail.html:591
 msgid "Errore durante l'aggiornamento"
 msgstr ""
 
-#: templates/match_detail.html:585
+#: templates/match_detail.html:599
 msgid ""
 "Sei sicuro di voler resettare completamente questa partita? Tutti i "
 "risultati verranno cancellati."
 msgstr ""
 
-#: templates/match_detail.html:607
+#: templates/match_detail.html:621
 msgid ""
 "Sei sicuro di voler resettare completamente questa partita trio? Tutti i "
 "risultati verranno cancellati."
@@ -2940,6 +2941,7 @@ msgid "Gestione Utenti"
 msgstr ""
 
 #: templates/admin/users_list.html:11 templates/components/_gara_header.html:28
+#: templates/components/_match_navigation.html:11
 #: templates/individual_match/statistics.html:310
 #: templates/player/notifications.html:276 templates/player/profile.html:29
 #: templates/public/campionato_detail.html:18

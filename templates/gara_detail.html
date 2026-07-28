@@ -90,6 +90,28 @@
 </div>
 {% endif %}
 
+{# ============================================================== #}
+{# MOBILE - Strategie sequenziali (Amalfi) a turno finito #}
+{# L'azionabile e' avviare il turno successivo / lo spareggio SSR / #}
+{# terminare: Gestione va in cima e gia' aperta (niente collapse). #}
+{# La copia desktop resta nella sidebar; il collapse mobile piu' in #}
+{# basso viene soppresso, quindi su mobile la card e' una sola. #}
+{# ============================================================== #}
+{% if round_action_ready %}
+<div class="d-md-none mb-3" id="sectionGestioneMobileAperta">
+  <div class="card">
+    <div class="card-header py-2 d-flex justify-content-between align-items-center">
+      <h5 class="mb-0"><i class="fas fa-cog"></i> {{ _('Gestione') }}</h5>
+      {{ status_badge(gara, 'gara') }}
+    </div>
+    {# headerless: titolo e status badge sono gia' nell'header qui sopra #}
+    {% with management_headerless = True %}
+    {% include "components/_gara_management.html" %}
+    {% endwith %}
+  </div>
+</div>
+{% endif %}
+
 {# Row principale: Sidebar + Info (ordine invertito su mobile) #}
 <div class="row mb-4">
   {# MOBILE: Sidebar FIRST (order-1), Info HIDDEN (moved to bottom) #}
@@ -199,8 +221,10 @@
 
 {# MOBILE (fase di gioco): Gestione collassata dopo l'azionabile. La copia
    desktop resta nella sidebar in alto (d-none d-md-block); _gara_management
-   non contiene id/script, quindi la doppia inclusione e' sicura. #}
-{% if playing_admin %}
+   non contiene id/script, quindi la doppia inclusione e' sicura.
+   A turno finito (round_action_ready) Gestione e' invece gia' in cima e
+   aperta: qui non va ripetuta, altrimenti su mobile comparirebbe due volte. #}
+{% if playing_admin and not round_action_ready %}
 <div class="d-md-none order-3 mb-4" id="sectionGestioneMobile">
   <div class="card">
     <div class="card-header py-2 d-flex justify-content-between align-items-center" role="button"
