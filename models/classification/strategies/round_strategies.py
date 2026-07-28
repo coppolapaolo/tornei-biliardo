@@ -7,12 +7,29 @@ Dependencies: typing, .base
 
 from typing import Sequence, Dict, Any, Optional, Tuple
 
+from ..seeding_service import NO_SEEDING_POSITION
 from .base import (
     ClassificationStrategy,
     ClassificationScope,
     ClassificationResult,
     PlayerScore,
 )
+
+
+def _previous_position(score: PlayerScore) -> int:
+    """Posizione del turno precedente, o sentinella per chi non ne ha una.
+
+    Check esplicito su None invece di `or`: la posizione è 1-based, ma un
+    eventuale 0 sarebbe falsy e verrebbe scambiato per "nessuna posizione".
+    La sentinella è la stessa del calcolo persistito
+    (`NO_SEEDING_POSITION`), così i due percorsi ordinano identicamente chi
+    manca dal turno precedente.
+    """
+    return (
+        NO_SEEDING_POSITION
+        if score.previous_position is None
+        else score.previous_position
+    )
 
 
 class AmalfiRoundClassificationStrategy(ClassificationStrategy):
@@ -37,7 +54,7 @@ class AmalfiRoundClassificationStrategy(ClassificationStrategy):
         return (
             -score.matches_won,  # Primary: matches won DESC
             -score.rack_difference,  # Secondary: rack diff DESC
-            score.previous_position or 999,  # Tertiary: previous position ASC
+            _previous_position(score),  # Tertiary: previous position ASC
             score.player_id,  # Stability: player ID
         )
 
@@ -84,7 +101,9 @@ class RandomRoundClassificationStrategy(ClassificationStrategy):
 
     Ranking criteria (in priority order):
     1. Total racks won (descending) - more racks = higher rank
-    2. Rack difference (descending) - better differential = higher rank
+    2. Spot Shot Rally score (descending) - official tiebreak on equal racks
+    3. Rack difference (descending) - better differential = higher rank
+    4. Previous round position (ascending) - advantage to leader in ties
 
     Different from Amalfi: prioritizes total scoring over wins.
     A player with more racks but fewer match wins ranks higher.
@@ -92,15 +111,25 @@ class RandomRoundClassificationStrategy(ClassificationStrategy):
 
     name = "random_round"
     display_name = "Random Round"
-    description = "Total racks won, then rack difference"
+    description = (
+        "Total racks won, then spot shot score, then rack difference, "
+        "then previous position"
+    )
     scope = ClassificationScope.ROUND
 
     def get_sort_key(self, score: PlayerScore) -> Tuple[Any, ...]:
-        """Get sort key: racks_won DESC, rack_diff DESC, prev_pos ASC."""
+        """Sort key: racks_won DESC, SSR DESC, rack_diff DESC, prev_pos ASC.
+
+        Lo SSR precede la differenza rack: nelle gare a rack è il tiebreak
+        ufficiale fra chi ha lo stesso totale. Vale -1 per chi non ha inserito
+        un punteggio (vedi `_enrich_with_spot_shot`), 0 quando la strategia è
+        usata fuori dalle gare RACK — dove il criterio è quindi neutro.
+        """
         return (
             -score.racks_won,  # Primary: racks won DESC
-            -score.rack_difference,  # Secondary: rack diff DESC
-            score.previous_position or 999,  # Tertiary: previous position ASC
+            -score.spot_shot_wins,  # Secondary: SSR (tiebreak ufficiale)
+            -score.rack_difference,  # Tertiary: rack diff DESC
+            _previous_position(score),  # Quaternary: previous position ASC
             score.player_id,  # Stability
         )
 
@@ -143,13 +172,13 @@ class RandomRoundClassificationStrategy(ClassificationStrategy):
 class RoundRobinRoundClassificationStrategy(ClassificationStrategy):
     """Round-robin classification strategy.
 
-    Same as Amalfi: matches won, then rack difference.
+    Same as Amalfi: matches won, then rack difference, then previous position.
     May incorporate head-to-head tiebreaker in future.
     """
 
     name = "round_robin_round"
     display_name = "Round Robin Round"
-    description = "Matches won, then rack difference"
+    description = "Matches won, then rack difference, then previous position"
     scope = ClassificationScope.ROUND
 
     def get_sort_key(self, score: PlayerScore) -> Tuple[Any, ...]:
@@ -157,7 +186,7 @@ class RoundRobinRoundClassificationStrategy(ClassificationStrategy):
         return (
             -score.matches_won,
             -score.rack_difference,
-            score.previous_position or 999,
+            _previous_position(score),
             score.player_id,
         )
 

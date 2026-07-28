@@ -104,284 +104,56 @@ class RoundClassification(db.Model):
     )
 
     @staticmethod
-    @transactional(domain="classification")
     def calculate_classification_after_round(gara_id, round_number):
         """
         Calculate classification after a specific round.
 
         .. deprecated::
-            Use StrategyBasedClassificationService.calculate_round_classification()
-            instead. This method is preserved for backward compatibility.
+            Adattatore di compatibilità: l'implementazione è una sola, in
+            `StrategyBasedClassificationService.calculate_round_classification`.
+            Il codice nuovo usi direttamente quel servizio.
 
-        This method aggregates match results up to the specified round
-        and creates/updates RoundClassification entries for all players.
+        Questo metodo è stato per anni la seconda implementazione parallela del
+        calcolo, e la divergenza costava bug: B14 (semantica di
+        `rack_difference` nelle gare RACK) e il tiebreak SSR vivevano solo qui,
+        il rispetto di ADR-027 sulla distanza dei trii e la gestione del
+        walkover trio solo nell'altra. Ora entrambe le porte d'ingresso
+        chiamano lo stesso codice — l'equivalenza è fissata da
+        `tests/new/unit/test_classification_calculators_equivalence.py`.
 
-        For Random strategy: classification is based on total racks won
-        For other strategies: classification is based on matches won,
-        then rack difference
+        Non è `@transactional`: lo è già il servizio sottostante, e annidare i
+        decoratori provoca rollback (vedi CLAUDE.md).
 
         Args:
             gara_id: ID of the gara
             round_number: Round number to calculate classification for
 
         Returns:
-            List of (player_id, stats) tuples sorted by classification
+            List of (player_id, stats) tuples sorted by classification.
+            `rack_difference` è sempre la differenza vera (vinti - persi),
+            anche nelle gare RACK: la conversione B14 riguarda solo il valore
+            persistito in colonna.
         """
-        from models.match.models import Match
-        from models.competition.models import Gara
-
-        # Import locale: seeding_service importa questo modulo (RoundClassification)
-        from models.classification.seeding_service import NO_SEEDING_POSITION
-
-        # Get gara to determine matchmaking strategy
-        gara = db.session.get(Gara, gara_id)
-        if not gara:
-            raise ValueError(f"Gara {gara_id} not found")
-
-        # Get all finished matches up to this round (including bye matches).
-        # Include both 'completed' (admin) and 'validated' (bilateral
-        # player confirmation).
-        completed_matches = (
-            db.session.query(Match)
-            .filter(
-                Match.gara_id == gara_id,
-                Match.round_number <= round_number,
-                Match.status.in_(  # type: ignore[union-attr]
-                    ["completed", "validated"]
-                ),
-            )
-            .all()
+        from models.classification.gara_classification import (
+            StrategyBasedClassificationService,
         )
 
-        # Calculate stats per player
-        player_stats = {}
-        for match in completed_matches:
-            # Handle bye matches separately
-            if match.is_bye:
-                # Initialize bye player if not seen
-                if match.player1_id not in player_stats:
-                    player_stats[match.player1_id] = {
-                        "matches_won": 0,
-                        "rack_won": 0,
-                        "rack_lost": 0,
-                    }
-                # Bye player gets automatic win
-                player_stats[match.player1_id]["matches_won"] += 1
-                player_stats[match.player1_id]["rack_won"] += match.player1_score or 0
-                # No rack_lost for bye matches
-            elif match.is_trio and match.trio_match:
-                # Handle trio matches using round-robin format (ADR-005)
-                # Bonus racks added to equalize with normal matches
-                trio = match.trio_match
-                player_ids = [trio.player1_id, trio.player2_id, trio.player3_id]
-                racks = [trio.player1_racks, trio.player2_racks, trio.player3_racks]
+        result = StrategyBasedClassificationService().calculate_round_classification(
+            gara_id, round_number
+        )
 
-                # Calculate bonus racks (1 if distance is odd, 0 otherwise)
-                distance = gara.distance
-                bonus_racks = distance % 2  # 1 for distance 3,5; 0 for distance 2,4
-
-                # Initialize all three players if not seen
-                for pid in player_ids:
-                    if pid and pid not in player_stats:
-                        player_stats[pid] = {
-                            "matches_won": 0,
-                            "rack_won": 0,
-                            "rack_lost": 0,
-                        }
-
-                # Process each player
-                winner_id = match.winner_id
-                for i, pid in enumerate(player_ids):
-                    if not pid:
-                        continue
-
-                    player_racks = racks[i]
-                    from models.match.trio_config import trio_racks_lost
-
-                    opponent_racks = trio_racks_lost(player_racks, distance)
-
-                    # Add bonus racks to each player (equalization)
-                    player_stats[pid]["rack_won"] += player_racks + bonus_racks
-                    player_stats[pid]["rack_lost"] += opponent_racks
-
-                    # Winner exists: winner gets match_won
-                    # No winner (tie): no one gets match_won
-                    if winner_id and pid == winner_id:
-                        player_stats[pid]["matches_won"] += 1
-            else:
-                # Handle regular matches
-                # Initialize players if not seen
-                if match.player1_id not in player_stats:
-                    player_stats[match.player1_id] = {
-                        "matches_won": 0,
-                        "rack_won": 0,
-                        "rack_lost": 0,
-                    }
-                if match.player2_id not in player_stats:
-                    player_stats[match.player2_id] = {
-                        "matches_won": 0,
-                        "rack_won": 0,
-                        "rack_lost": 0,
-                    }
-
-                # Update stats based on match result
-                # FIX: Handle ties correctly - neither player wins
-                if match.player1_score > match.player2_score:
-                    player_stats[match.player1_id]["matches_won"] += 1
-                elif match.player2_score > match.player1_score:
-                    player_stats[match.player2_id]["matches_won"] += 1
-                # else: tie - neither player gets a win
-
-                # Calculate rack stats
-                # FIX: Handle multi-set matches by summing racks from all sets
-                if match.is_multi_set:
-                    # Multi-set: player1_score/player2_score are SETS won, not racks
-                    # We need to sum racks from all sets
-                    for set_obj in match.sets:
-                        player_stats[match.player1_id][
-                            "rack_won"
-                        ] += set_obj.player1_racks
-                        player_stats[match.player1_id][
-                            "rack_lost"
-                        ] += set_obj.player2_racks
-                        player_stats[match.player2_id][
-                            "rack_won"
-                        ] += set_obj.player2_racks
-                        player_stats[match.player2_id][
-                            "rack_lost"
-                        ] += set_obj.player1_racks
-                else:
-                    # Single-set: player1_score/player2_score are racks won
-                    player_stats[match.player1_id]["rack_won"] += match.player1_score
-                    player_stats[match.player1_id]["rack_lost"] += match.player2_score
-                    player_stats[match.player2_id]["rack_won"] += match.player2_score
-                    player_stats[match.player2_id]["rack_lost"] += match.player1_score
-
-        # Calculate rack difference
-        for player_id, stats in player_stats.items():
-            stats["rack_difference"] = stats["rack_won"] - stats["rack_lost"]
-
-        # B14 / Bug 4: la chiave di classifica dipende da `classification_system`
-        # (WINS/RACK), NON dal `matchmaking_strategy`. Storicamente il codice
-        # usava matchmaking_strategy come proxy, ma una gara random+WINS o
-        # amalfi+RACK rompevano l'invariante (label "Diff. Rack" mostrava
-        # in realtà rack_won totali). Allineato ai sort key di
-        # `gara_strategies.py` (PR #3 ADR-B14).
-        is_rack_system = (gara.classification_system or "WINS").upper() == "RACK"
-
-        # Load SSR scores from GaraClassification if available (for tiebreaking)
-        ssr_scores: dict[int, int] = {}
-        if is_rack_system:
-            existing_gara_class = (
-                db.session.query(GaraClassification).filter_by(gara_id=gara_id).all()
+        return [
+            (
+                entry.player_id,
+                {
+                    "matches_won": entry.score.matches_won,
+                    "rack_won": entry.score.racks_won,
+                    "rack_lost": entry.score.racks_lost,
+                    "rack_difference": entry.score.rack_difference,
+                },
             )
-            for gc in existing_gara_class:
-                if gc.spot_shot_wins is not None:
-                    ssr_scores[gc.user_id] = gc.spot_shot_wins
-
-        # Posizioni del turno precedente: sono il criterio di parimerito prima
-        # dell'user_id. Al turno 1 il "precedente" è il turno 0, cioè la
-        # classifica di partenza salvata da SeedingService (sorteggio, rating,
-        # classifica campionato o ordine di iscrizione a seconda della
-        # configurazione). Così il metodo scelto per il primo accoppiamento
-        # decide anche i parimerito dei turni successivi, a cascata.
-        # Una singola query invece di una per giocatore (era un N+1).
-        previous_positions: dict[int, int] = {
-            rc.user_id: rc.position
-            for rc in db.session.query(RoundClassification)
-            .filter_by(gara_id=gara_id, round_number=round_number - 1)
-            .all()
-        }
-
-        def previous_position_of(player_id: int) -> int:
-            """Posizione precedente, o sentinella per chi non ne ha una.
-
-            Chi manca dal turno precedente (gare pre-esistenti senza turno 0,
-            iscritti aggiunti a gara avviata) ordina dopo chi ce l'ha, e tra
-            loro resta il fallback storico sull'user_id.
-            """
-            return previous_positions.get(player_id, NO_SEEDING_POSITION)
-
-        # Sort players by classification criteria based on classification_system
-        if is_rack_system:
-            # RACK system: order by total racks won, then SSR score,
-            # then rack difference. SSR score of -1 means not entered
-            # (sorts last among same racks).
-            sorted_players = sorted(
-                player_stats.items(),
-                key=lambda x: (
-                    -x[1]["rack_won"],  # Primary: total racks won
-                    -ssr_scores.get(x[0], -1),  # Secondary: SSR score (tiebreaker)
-                    -x[1]["rack_difference"],  # Tertiary: rack difference
-                    previous_position_of(x[0]),  # Quaternary: posizione precedente
-                    x[0],  # Quinary: player ID for stability
-                ),
-            )
-        else:
-            # WINS / POSITION system: order by matches won,
-            # then rack difference.
-            sorted_players = sorted(
-                player_stats.items(),
-                key=lambda x: (
-                    -x[1]["matches_won"],  # Primary: matches won
-                    -x[1]["rack_difference"],  # Secondary: rack difference
-                    previous_position_of(x[0]),  # Tertiary: posizione precedente
-                    x[0],  # Quaternary: player ID for stability
-                ),
-            )
-
-        # Create/update round classifications
-        for position, (player_id, stats) in enumerate(sorted_players, 1):
-            previous_position = previous_positions.get(player_id)
-
-            # Create or update classification
-            classification = (
-                db.session.query(RoundClassification)
-                .filter_by(
-                    gara_id=gara_id,
-                    round_number=round_number,
-                    user_id=player_id,
-                )
-                .first()
-            )
-
-            if classification:
-                # Update existing
-                classification.position = position
-                classification.matches_won = stats["matches_won"]
-                # B14: il valore mostrato dalla UI nella colonna
-                # "Rack Totali" (sistema RACK) o "Diff. Rack" (sistema WINS)
-                # dipende da classification_system, NON da matchmaking_strategy.
-                # Il template usa la stessa chiave `is_rack_only` per scegliere
-                # la label, quindi va in cortocircuito col valore qui salvato.
-                if is_rack_system:
-                    classification.rack_difference = stats[
-                        "rack_won"
-                    ]  # Store total racks won
-                else:
-                    classification.rack_difference = stats[
-                        "rack_difference"
-                    ]  # Store actual rack difference (won - lost)
-                classification.previous_position = previous_position
-            else:
-                # Create new — vedi commento sopra per la logica is_rack_system.
-                classification = RoundClassification(
-                    gara_id=gara_id,
-                    round_number=round_number,
-                    user_id=player_id,
-                    position=position,
-                    matches_won=stats["matches_won"],
-                    rack_difference=(
-                        stats["rack_won"]
-                        if is_rack_system
-                        else stats["rack_difference"]
-                    ),
-                    previous_position=previous_position,
-                )
-                db.session.add(classification)
-
-        # Transaction managed by @transactional decorator
-        return sorted_players
+            for entry in result.entries
+        ]
 
     def __repr__(self):
         return (

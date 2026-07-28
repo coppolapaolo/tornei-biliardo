@@ -3,6 +3,7 @@ Module: models/classification/gara_classification.py
 Purpose: Gara-level classification services (round, final, strategy-based)
 """
 
+from dataclasses import replace
 from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import joinedload
 from models.base import db
@@ -188,6 +189,7 @@ class StrategyBasedClassificationService:
 
         # Aggregate scores from matches
         scores = self._aggregator.aggregate_round_scores(gara_id, round_number)
+        scores = self._enrich_with_spot_shot(gara, scores)
 
         # Get previous classification if exists. Per il turno 1 il precedente è
         # il turno 0, cioè la classifica di partenza (SeedingService): serve
@@ -254,6 +256,34 @@ class StrategyBasedClassificationService:
         self._save_gara_classification(gara_id, result)
 
         return result
+
+    @staticmethod
+    def _enrich_with_spot_shot(gara, scores: List[PlayerScore]) -> List[PlayerScore]:
+        """Popola `spot_shot_wins` per le gare RACK, dove lo SSR è tiebreak.
+
+        Nelle gare a rack due giocatori con lo stesso totale rack sono separati
+        dal punteggio Spot Shot Rally prima ancora della differenza rack.
+
+        Convenzione (ereditata dal calcolo storico): chi NON ha inserito un
+        punteggio vale -1, così ordina dopo chi ha inserito 0. Il default 0 di
+        `PlayerScore` significherebbe "ha tirato e ha fatto zero", che è un
+        risultato migliore di "non ha tirato".
+        """
+        if (getattr(gara, "classification_system", None) or "WINS").upper() != "RACK":
+            return list(scores)
+
+        ssr_by_player = {
+            gc.user_id: gc.spot_shot_wins
+            for gc in db.session.query(GaraClassification)
+            .filter_by(gara_id=gara.id)
+            .all()
+            if gc.spot_shot_wins is not None
+        }
+
+        return [
+            replace(score, spot_shot_wins=ssr_by_player.get(score.player_id, -1))
+            for score in scores
+        ]
 
     def _load_previous_classification(
         self,
@@ -333,27 +363,40 @@ class StrategyBasedClassificationService:
             (gara.classification_system or "WINS").upper() == "RACK" if gara else False
         )
 
-        # Delete existing classifications for this round
-        db.session.query(RoundClassification).filter_by(
-            gara_id=gara_id, round_number=round_number
-        ).delete()
+        # Upsert invece di DELETE+INSERT: riscrivere le righe cambia i rowid,
+        # e SQLite li riusa subito. Un oggetto già in identity-map si ritrova
+        # allora con un id riassegnato → SAWarning "Identity map already had an
+        # identity ... replacing it" (issue #46), che merge_service aggirava con
+        # `expire_all()`. Aggiornare in loco elimina il problema alla radice.
+        existing_by_user = {
+            rc.user_id: rc
+            for rc in db.session.query(RoundClassification)
+            .filter_by(gara_id=gara_id, round_number=round_number)
+            .all()
+        }
 
-        # Create new classifications
         for entry in result.entries:
-            classification = RoundClassification(
-                gara_id=gara_id,
-                round_number=round_number,
-                user_id=entry.player_id,
-                position=entry.position,
-                matches_won=entry.score.matches_won,
-                rack_difference=(
-                    entry.score.racks_won
-                    if is_rack_system
-                    else entry.score.rack_difference
-                ),
-                previous_position=entry.score.previous_position,
+            rack_value = (
+                entry.score.racks_won if is_rack_system else entry.score.rack_difference
             )
-            db.session.add(classification)
+            classification = existing_by_user.pop(entry.player_id, None)
+
+            if classification is None:
+                classification = RoundClassification(
+                    gara_id=gara_id,
+                    round_number=round_number,
+                    user_id=entry.player_id,
+                )
+                db.session.add(classification)
+
+            classification.position = entry.position
+            classification.matches_won = entry.score.matches_won
+            classification.rack_difference = rack_value
+            classification.previous_position = entry.score.previous_position
+
+        # Righe stale: giocatori che dopo un reset non hanno più match validi
+        for orphan in existing_by_user.values():
+            db.session.delete(orphan)
 
     def _save_gara_classification(
         self,

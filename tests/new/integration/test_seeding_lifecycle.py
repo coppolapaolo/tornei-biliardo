@@ -219,6 +219,42 @@ class TestSeedingLifecycle:
         assert gara.status == GaraStatus.INSCRIPTION.value
         assert SeedingService.get_seeding(gara.id) == []
 
+    def test_back_to_inscription_clears_initial_order(
+        self, director_user, players_8, db_session
+    ):
+        """Anche l'"Ordine sorteggio" mostrato al giocatore sparisce.
+
+        Lasciarlo valorizzato esibirebbe in pagina un ordine che non
+        corrisponde più ad alcun seeding fino al riavvio della gara.
+        """
+        gara = self._started_gara(director_user, players_8)
+        assert all(
+            i.initial_order is not None
+            for i in Inscription.query.filter_by(gara_id=gara.id).all()
+        )
+
+        RoundService.cancel_current_round_startup(gara.id)
+        db_session.flush()
+
+        assert all(
+            i.initial_order is None
+            for i in Inscription.query.filter_by(gara_id=gara.id).all()
+        )
+
+    def test_cancel_first_round_startup_clears_initial_order(
+        self, director_user, players_8, db_session
+    ):
+        """Stessa pulizia anche dall'annullamento avvio gara."""
+        gara = self._started_gara(director_user, players_8)
+
+        RoundService.cancel_first_round_startup(gara.id)
+        db_session.flush()
+
+        assert all(
+            i.initial_order is None
+            for i in Inscription.query.filter_by(gara_id=gara.id).all()
+        )
+
     def test_restart_after_inscription_draws_again(
         self, director_user, players_8, db_session
     ):

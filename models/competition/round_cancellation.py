@@ -58,6 +58,14 @@ class RoundCancellationService:
             GaraChallengeClassification,
         )
 
+        # Il seeding va rimosso tramite il servizio, che azzera anche
+        # `Inscription.initial_order` ("Ordine sorteggio" mostrato al
+        # giocatore): la delete grezza qui sotto toglierebbe solo il turno 0
+        # lasciando in pagina un ordine che non corrisponde più a nulla.
+        from models.classification.seeding_service import SeedingService
+
+        SeedingService.clear_seeding(gara_id)
+
         RoundClassification.query.filter_by(gara_id=gara_id).delete()
         GaraClassification.query.filter_by(gara_id=gara_id).delete()
 

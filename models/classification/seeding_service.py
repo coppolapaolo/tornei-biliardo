@@ -93,7 +93,19 @@ class SeedingService:
 
     @staticmethod
     def clear_seeding(gara_id: int) -> int:
-        """Elimina la classifica di partenza. Ritorna il numero di righe."""
+        """Elimina la classifica di partenza. Ritorna il numero di righe.
+
+        Azzera anche `Inscription.initial_order`: è la proiezione del seeding
+        mostrata al giocatore, e sopravviverle significherebbe esibire un
+        "Ordine sorteggio" che non corrisponde più a nulla finché la gara non
+        viene riavviata.
+        """
+        from models.competition.models import Inscription
+
+        db.session.query(Inscription).filter_by(gara_id=gara_id).update(
+            {"initial_order": None}, synchronize_session=False
+        )
+
         return (
             db.session.query(RoundClassification)
             .filter_by(gara_id=gara_id, round_number=SEEDING_ROUND)
