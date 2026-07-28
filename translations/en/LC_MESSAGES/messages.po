@@ -30,20 +30,20 @@ msgstr ""
 msgid ""
 "Gara in fase di spareggio (SSR): concludi lo spareggio prima di "
 "modificare i risultati"
-msgstr msgstr "Competition in tiebreaker phase (SSR): finish the tiebreaker before modifying results"
+msgstr "Competition in tiebreaker phase (SSR): finish the tiebreaker before modifying results"
 
 #: models/competition/round_manager.py:157
 msgid "La gara è già completata"
-msgstr msgstr "The competition is already completed"
+msgstr "The competition is already completed"
 
 #: models/competition/round_manager.py:159
 msgid "La gara è ancora in fase di iscrizione"
-msgstr msgstr "The competition is still in the registration phase"
+msgstr "The competition is still in the registration phase"
 
 #: models/competition/round_manager.py:160
 #, python-format
 msgid "La gara non è in corso (stato: %(status)s)"
-msgstr msgstr "The competition is not in progress (status: %(status)s)"
+msgstr "The competition is not in progress (status: %(status)s)"
 
 #: models/competition/round_manager.py:279
 msgid ""
@@ -315,9 +315,7 @@ msgstr "Milestone: %(value)s matches!"
 msgid "Sono stati giocati %(value)s match sulla piattaforma. La community cresce!"
 msgstr ""
 "%(value)s matches have been played on the platform. The community is "
-"growing!%(value)s matches have been played on the platform. The community"
-" is growing!%(value)s matches have been played on the platform. The "
-"community is growing!"
+"growing!"
 
 #: models/kpi/notifications.py:59
 #, python-format
@@ -4612,7 +4610,7 @@ msgstr "Lv. 6+"
 msgid ""
 "L'Elo competitivo si aggiorna a fine partita ufficiale. Clicca il valore "
 "per vedere l'Elo globale (include i match individuali)."
-msgstr msgstr "Competitive Elo updates at the end of an official match. Click the value to see the global Elo (includes individual matches)."
+msgstr "Competitive Elo updates at the end of an official match. Click the value to see the global Elo (includes individual matches)."
 
 #: templates/components/_player_recent_matches.html:5
 msgid "Storico Partite Recenti"
