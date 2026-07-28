@@ -5,7 +5,7 @@ Purpose: Advanced round management with locking and state control
 
 from __future__ import annotations
 
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Optional, Tuple
 from enum import Enum
 
 from flask_babel import lazy_gettext as _
@@ -98,13 +98,9 @@ class AdvancedRoundManager:
             return False, "Gara non trovata"
 
         # Check gara status first for better error messages
-        if gara.status != GaraStatus.PLAYING.value:
-            if gara.status == GaraStatus.COMPLETED.value:
-                return False, "La gara è già completata"
-            elif gara.status == GaraStatus.INSCRIPTION.value:
-                return False, "La gara è ancora in fase di iscrizione"
-            else:
-                return False, f"La gara non è in corso (stato: {gara.status})"
+        blocked_reason = AdvancedRoundManager._status_blocks_modification(gara)
+        if blocked_reason:
+            return False, blocked_reason
 
         lock_status = AdvancedRoundManager.get_round_lock_status(
             match.gara_id, match.round_number
@@ -132,6 +128,36 @@ class AdvancedRoundManager:
             )
 
         return True, ""
+
+    @staticmethod
+    def _status_blocks_modification(gara: Gara) -> Optional[str]:
+        """Motivo per cui lo stato della gara vieta di toccare i match, o None.
+
+        Unica fonte per `can_modify_match` (reset singolo) e `cancel_round`
+        (cancellazione turno): finché il controllo viveva solo nel primo,
+        durante lo spareggio il director non poteva resettare un match ma
+        poteva cancellare il turno che lo conteneva — e `cancel_round`
+        funzionava perfino a gara conclusa.
+
+        `AWAITING_SSR` ha un messaggio dedicato: ADR-026 tratta lo spareggio
+        come certificazione dei risultati. La via d'uscita è concludere lo
+        spareggio (Termina Gara), non riaprire la gara — non esiste una
+        transizione `awaiting_ssr → playing`.
+        """
+        if gara.status == GaraStatus.PLAYING.value:
+            return None
+        if gara.status == GaraStatus.AWAITING_SSR.value:
+            return str(
+                _(
+                    "Gara in fase di spareggio (SSR): concludi lo spareggio "
+                    "prima di modificare i risultati"
+                )
+            )
+        if gara.status == GaraStatus.COMPLETED.value:
+            return str(_("La gara è già completata"))
+        if gara.status == GaraStatus.INSCRIPTION.value:
+            return str(_("La gara è ancora in fase di iscrizione"))
+        return str(_("La gara non è in corso (stato: %(status)s)", status=gara.status))
 
     @staticmethod
     def _gara_has_active_tiebreaker(gara_id: int) -> bool:
@@ -233,6 +259,13 @@ class AdvancedRoundManager:
         gara = db.session.get(Gara, gara_id)
         if not gara:
             return False, "Gara non trovata"
+
+        # Stesso gate di stato di can_modify_match: cancellare un turno è una
+        # modifica dei risultati a tutti gli effetti, e senza questo controllo
+        # era la scorciatoia per aggirare il blocco sul reset single-match.
+        blocked_reason = AdvancedRoundManager._status_blocks_modification(gara)
+        if blocked_reason:
+            return False, blocked_reason
 
         # ADR-026: uno spareggio attivo certifica la gara. cancel_round
         # cancellerebbe tutti i match del round — incoerente con il blocco
@@ -337,6 +370,12 @@ class AdvancedRoundManager:
         gara = db.session.get(Gara, gara_id)
         if not gara:
             return False, "Gara non trovata", {}
+
+        # Senza questo controllo il bulk falliva comunque, ma un match alla
+        # volta: il director leggeva "N errori" invece del motivo reale.
+        blocked_reason = AdvancedRoundManager._status_blocks_modification(gara)
+        if blocked_reason:
+            return False, blocked_reason, {"reset_count": 0, "error_count": 0}
 
         # Get all completed matches in the round
         completed_matches = Match.query.filter_by(

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-26 22:02+0200\n"
+"POT-Creation-Date: 2026-07-28 14:11+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: models/competition/round_manager.py:128
+#: models/competition/round_manager.py:124
 msgid ""
 "Gara certificata da spareggio: annulla prima lo spareggio per modificare "
 "i match"
@@ -26,7 +26,26 @@ msgstr ""
 "Competition certified by tiebreaker: cancel the tiebreaker first to "
 "modify the matches"
 
-#: models/competition/round_manager.py:246
+#: models/competition/round_manager.py:152
+msgid ""
+"Gara in fase di spareggio (SSR): concludi lo spareggio prima di "
+"modificare i risultati"
+msgstr msgstr "Competition in tiebreaker phase (SSR): finish the tiebreaker before modifying results"
+
+#: models/competition/round_manager.py:157
+msgid "La gara è già completata"
+msgstr msgstr "The competition is already completed"
+
+#: models/competition/round_manager.py:159
+msgid "La gara è ancora in fase di iscrizione"
+msgstr msgstr "The competition is still in the registration phase"
+
+#: models/competition/round_manager.py:160
+#, python-format
+msgid "La gara non è in corso (stato: %(status)s)"
+msgstr msgstr "The competition is not in progress (status: %(status)s)"
+
+#: models/competition/round_manager.py:279
 msgid ""
 "Gara certificata da spareggio: annulla prima lo spareggio per cancellare "
 "il turno"
@@ -294,10 +313,11 @@ msgstr "Milestone: %(value)s matches!"
 #: models/kpi/notifications.py:54
 #, python-format
 msgid "Sono stati giocati %(value)s match sulla piattaforma. La community cresce!"
-msgstr "%(value)s matches have been played on the platform. The community is growing!"
+msgstr ""
 "%(value)s matches have been played on the platform. The community is "
 "growing!%(value)s matches have been played on the platform. The community"
-" is growing!"
+" is growing!%(value)s matches have been played on the platform. The "
+"community is growing!"
 
 #: models/kpi/notifications.py:59
 #, python-format
@@ -3410,7 +3430,7 @@ msgstr "Pos."
 msgid "Spot Shot Rally - punteggio spareggio"
 msgstr "Spot Shot Rally - tiebreaker score"
 
-#: templates/components/_detailed_classification.html:83
+#: templates/components/_detailed_classification.html:86
 msgid "Punteggio Spot Shot Rally"
 msgstr "Spot Shot Rally Score"
 
@@ -4592,7 +4612,7 @@ msgstr "Lv. 6+"
 msgid ""
 "L'Elo competitivo si aggiorna a fine partita ufficiale. Clicca il valore "
 "per vedere l'Elo globale (include i match individuali)."
-msgstr ""
+msgstr msgstr "Competitive Elo updates at the end of an official match. Click the value to see the global Elo (includes individual matches)."
 
 #: templates/components/_player_recent_matches.html:5
 msgid "Storico Partite Recenti"

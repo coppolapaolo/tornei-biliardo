@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-26 22:02+0200\n"
+"POT-Creation-Date: 2026-07-28 14:11+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -18,13 +18,32 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: models/competition/round_manager.py:128
+#: models/competition/round_manager.py:124
 msgid ""
 "Gara certificata da spareggio: annulla prima lo spareggio per modificare "
 "i match"
 msgstr ""
 
-#: models/competition/round_manager.py:246
+#: models/competition/round_manager.py:152
+msgid ""
+"Gara in fase di spareggio (SSR): concludi lo spareggio prima di "
+"modificare i risultati"
+msgstr ""
+
+#: models/competition/round_manager.py:157
+msgid "La gara è già completata"
+msgstr ""
+
+#: models/competition/round_manager.py:159
+msgid "La gara è ancora in fase di iscrizione"
+msgstr ""
+
+#: models/competition/round_manager.py:160
+#, python-format
+msgid "La gara non è in corso (stato: %(status)s)"
+msgstr ""
+
+#: models/competition/round_manager.py:279
 msgid ""
 "Gara certificata da spareggio: annulla prima lo spareggio per cancellare "
 "il turno"
@@ -3309,7 +3328,7 @@ msgstr ""
 msgid "Spot Shot Rally - punteggio spareggio"
 msgstr ""
 
-#: templates/components/_detailed_classification.html:83
+#: templates/components/_detailed_classification.html:86
 msgid "Punteggio Spot Shot Rally"
 msgstr ""
 
