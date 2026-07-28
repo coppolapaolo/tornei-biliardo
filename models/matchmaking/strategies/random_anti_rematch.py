@@ -30,7 +30,7 @@ _TRIO_SEARCH_DEADLINE_MS = 8000
 
 
 class RandomAntiRematchStrategy(BaseStrategy):
-    """Random pairing strategy that prevents rematches and ensures fair trio distribution.
+    """Random pairing strategy preventing rematches, with fair trio distribution.
 
     Features:
     - Weighted NetworkX matching: non-rematch edges (weight=100) beat rematch edges
@@ -54,6 +54,9 @@ class RandomAntiRematchStrategy(BaseStrategy):
     max_players = None
     supports_byes = True
     requires_classification = False
+    # L'ordine di partenza è il sorteggio stesso: si legge dagli accoppiamenti
+    # del primo turno, senza consumare l'RNG deterministico dello schedule.
+    persists_seeding = True
 
     # NetworkX edge weights. Ratio 100:1 guarantees that any non-rematch pair
     # outweighs up to 99 rematch pairs combined — safe for realistic tournaments.
@@ -488,7 +491,8 @@ class RandomAntiRematchStrategy(BaseStrategy):
         Priority order:
         1. Even player count → False (trio impossible).
         2. gara.odd_number_policy explicitly set → use that value.
-        3. No explicit policy → delegate to StrategyBehaviorConfig.get_default_odd_policy
+        3. No explicit policy → delegate to
+           StrategyBehaviorConfig.get_default_odd_policy
            (considers gara.distance and ADR-005 constraints).
         4. No gara or distance available → False (safe default).
         """

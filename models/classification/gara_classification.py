@@ -189,9 +189,11 @@ class StrategyBasedClassificationService:
         # Aggregate scores from matches
         scores = self._aggregator.aggregate_round_scores(gara_id, round_number)
 
-        # Get previous classification if exists
+        # Get previous classification if exists. Per il turno 1 il precedente è
+        # il turno 0, cioè la classifica di partenza (SeedingService): serve
+        # come criterio di parimerito già dal primo turno.
         previous = None
-        if round_number > 1:
+        if round_number >= 1:
             previous = self._load_previous_classification(gara_id, round_number - 1)
 
         # Calculate using strategy

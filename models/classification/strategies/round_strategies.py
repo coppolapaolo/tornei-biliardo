@@ -51,7 +51,8 @@ class AmalfiRoundClassificationStrategy(ClassificationStrategy):
 
         Args:
             scores: Player scores for this round (cumulative up to round)
-            previous_classification: Classification from previous round (for tiebreaking)
+            previous_classification: Classification from previous round
+                (for tiebreaking)
             context: Optional context with round_number, gara_id
 
         Returns:
@@ -95,10 +96,11 @@ class RandomRoundClassificationStrategy(ClassificationStrategy):
     scope = ClassificationScope.ROUND
 
     def get_sort_key(self, score: PlayerScore) -> Tuple[Any, ...]:
-        """Get sort key: racks_won DESC, rack_diff DESC."""
+        """Get sort key: racks_won DESC, rack_diff DESC, prev_pos ASC."""
         return (
             -score.racks_won,  # Primary: racks won DESC
             -score.rack_difference,  # Secondary: rack diff DESC
+            score.previous_position or 999,  # Tertiary: previous position ASC
             score.player_id,  # Stability
         )
 
@@ -112,14 +114,16 @@ class RandomRoundClassificationStrategy(ClassificationStrategy):
 
         Args:
             scores: Player scores for this round
-            previous_classification: Not used for Random strategy
+            previous_classification: Classifica del turno precedente (turno 0 =
+                classifica di partenza), usata per i parimerito
             context: Optional context with round_number, gara_id
 
         Returns:
             ClassificationResult with ordered entries
         """
         # Sort by Random criteria
-        sorted_scores = sorted(scores, key=self.get_sort_key)
+        enriched_scores = self._enrich_with_previous(scores, previous_classification)
+        sorted_scores = sorted(enriched_scores, key=self.get_sort_key)
 
         # Build entries with tie detection
         entries, has_ties = self._build_entries_with_ties(sorted_scores)
@@ -149,10 +153,11 @@ class RoundRobinRoundClassificationStrategy(ClassificationStrategy):
     scope = ClassificationScope.ROUND
 
     def get_sort_key(self, score: PlayerScore) -> Tuple[Any, ...]:
-        """Get sort key: matches_won DESC, rack_diff DESC."""
+        """Get sort key: matches_won DESC, rack_diff DESC, prev_pos ASC."""
         return (
             -score.matches_won,
             -score.rack_difference,
+            score.previous_position or 999,
             score.player_id,
         )
 
@@ -163,7 +168,8 @@ class RoundRobinRoundClassificationStrategy(ClassificationStrategy):
         context: Optional[Dict[str, Any]] = None,
     ) -> ClassificationResult:
         """Calculate Round Robin classification."""
-        sorted_scores = sorted(scores, key=self.get_sort_key)
+        enriched_scores = self._enrich_with_previous(scores, previous_classification)
+        sorted_scores = sorted(enriched_scores, key=self.get_sort_key)
         entries, has_ties = self._build_entries_with_ties(sorted_scores)
 
         return ClassificationResult(

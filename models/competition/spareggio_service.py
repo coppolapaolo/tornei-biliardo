@@ -544,10 +544,18 @@ class SpareggioService:
         # Expire all to ensure we get fresh data from DB
         db.session.expire_all()
 
-        # Get all round classifications
+        # Get all round classifications.
+        # `order_by(position)` non è cosmetico: il sort qui sotto è stabile e
+        # non ha criteri oltre lo SSR, quindi i parimerito che lo SSR non
+        # risolve (o le gare con tiebreaker disabilitato) ereditano l'ordine di
+        # questa lista. Senza order_by sarebbe l'ordine di rowid, cioè le
+        # posizioni di quando le righe furono create la prima volta, e il
+        # parimerito risolto per posizione di partenza andrebbe perso proprio
+        # nella classifica finale.
         round_classifications = (
             db.session.query(RoundClassification)
             .filter_by(gara_id=gara_id, round_number=final_round)
+            .order_by(RoundClassification.position)
             .all()
         )
 

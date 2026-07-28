@@ -25,6 +25,9 @@ class RoundRobinStrategy(BaseStrategy):
     max_players = 16
     supports_byes = True
     requires_classification = False
+    # Lo schedule è deterministico a partire dall'ordine di iscrizione: quello
+    # è l'ordine di partenza, letto dagli accoppiamenti del primo turno.
+    persists_seeding = True
 
     def __init__(self):
         super().__init__()
@@ -125,7 +128,8 @@ class RoundRobinStrategy(BaseStrategy):
         if n < 2:
             return []
 
-        # For odd players, we need a modified approach to ensure all players get exactly one bye
+        # For odd players, a modified approach ensures every player gets
+        # exactly one bye
         if n % 2 == 1:
             schedule = []
 

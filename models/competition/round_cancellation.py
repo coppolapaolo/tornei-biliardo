@@ -1,6 +1,7 @@
 """
 Module: models/competition/round_cancellation.py
-Purpose: Round cancellation logic (cancel_first_round_startup, cancel_current_round_startup)
+Purpose: Round cancellation logic (cancel_first_round_startup,
+    cancel_current_round_startup)
 """
 
 from __future__ import annotations
@@ -18,8 +19,10 @@ class RoundCancellationService:
     def cancel_first_round_startup(gara_id: int) -> Gara:
         """Cancella l'avvio del primo turno se non sono stati inseriti risultati.
 
-        Riporta la gara allo stato 'inscription' e rimuove tutte le partite del primo turno.
-        Utilizzabile solo se il primo turno è stato avviato ma nessun risultato è stato inserito.
+        Riporta la gara allo stato 'inscription' e rimuove tutte le partite del
+        primo turno.
+        Utilizzabile solo se il primo turno è stato avviato ma nessun risultato
+        è stato inserito.
         """
         from models.match.models import Match, TrioMatch
 
@@ -71,7 +74,7 @@ class RoundCancellationService:
             ).delete(synchronize_session=False)
 
         # Cancella TUTTI i match della gara
-        # Questo è necessario specialmente per la strategia 'random' che pre-genera tutto
+        # Necessario specialmente per la strategia 'random', che pre-genera tutto
         matches = db.session.query(Match).filter_by(gara_id=gara_id).all()
 
         # Prima cancella i TrioMatch associati
@@ -179,6 +182,14 @@ class RoundCancellationService:
         # Se torniamo al turno 0, riporta allo stato inscription
         if gara.current_round == 0:
             gara.status = GaraStatus.INSCRIPTION.value
+
+            # La classifica di partenza vale solo a gara avviata: se restasse,
+            # un cambio di iscritti prima del riavvio lascerebbe un seeding
+            # stantio (ritirati presenti, nuovi assenti) a pilotare il primo
+            # accoppiamento. Al riavvio se ne genera uno nuovo.
+            from models.classification.seeding_service import SeedingService
+
+            SeedingService.clear_seeding(gara_id)
 
         db.session.add(gara)
         return gara

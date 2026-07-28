@@ -130,6 +130,9 @@ class RoundClassification(db.Model):
         from models.match.models import Match
         from models.competition.models import Gara
 
+        # Import locale: seeding_service importa questo modulo (RoundClassification)
+        from models.classification.seeding_service import NO_SEEDING_POSITION
+
         # Get gara to determine matchmaking strategy
         gara = db.session.get(Gara, gara_id)
         if not gara:
@@ -276,6 +279,29 @@ class RoundClassification(db.Model):
                 if gc.spot_shot_wins is not None:
                     ssr_scores[gc.user_id] = gc.spot_shot_wins
 
+        # Posizioni del turno precedente: sono il criterio di parimerito prima
+        # dell'user_id. Al turno 1 il "precedente" è il turno 0, cioè la
+        # classifica di partenza salvata da SeedingService (sorteggio, rating,
+        # classifica campionato o ordine di iscrizione a seconda della
+        # configurazione). Così il metodo scelto per il primo accoppiamento
+        # decide anche i parimerito dei turni successivi, a cascata.
+        # Una singola query invece di una per giocatore (era un N+1).
+        previous_positions: dict[int, int] = {
+            rc.user_id: rc.position
+            for rc in db.session.query(RoundClassification)
+            .filter_by(gara_id=gara_id, round_number=round_number - 1)
+            .all()
+        }
+
+        def previous_position_of(player_id: int) -> int:
+            """Posizione precedente, o sentinella per chi non ne ha una.
+
+            Chi manca dal turno precedente (gare pre-esistenti senza turno 0,
+            iscritti aggiunti a gara avviata) ordina dopo chi ce l'ha, e tra
+            loro resta il fallback storico sull'user_id.
+            """
+            return previous_positions.get(player_id, NO_SEEDING_POSITION)
+
         # Sort players by classification criteria based on classification_system
         if is_rack_system:
             # RACK system: order by total racks won, then SSR score,
@@ -287,7 +313,8 @@ class RoundClassification(db.Model):
                     -x[1]["rack_won"],  # Primary: total racks won
                     -ssr_scores.get(x[0], -1),  # Secondary: SSR score (tiebreaker)
                     -x[1]["rack_difference"],  # Tertiary: rack difference
-                    x[0],  # Quaternary: player ID for stability
+                    previous_position_of(x[0]),  # Quaternary: posizione precedente
+                    x[0],  # Quinary: player ID for stability
                 ),
             )
         else:
@@ -298,25 +325,14 @@ class RoundClassification(db.Model):
                 key=lambda x: (
                     -x[1]["matches_won"],  # Primary: matches won
                     -x[1]["rack_difference"],  # Secondary: rack difference
-                    x[0],  # Tertiary: player ID for stability
+                    previous_position_of(x[0]),  # Tertiary: posizione precedente
+                    x[0],  # Quaternary: player ID for stability
                 ),
             )
 
         # Create/update round classifications
         for position, (player_id, stats) in enumerate(sorted_players, 1):
-            # Get previous position if exists
-            previous_classification = (
-                db.session.query(RoundClassification)
-                .filter_by(
-                    gara_id=gara_id,
-                    round_number=round_number - 1,
-                    user_id=player_id,
-                )
-                .first()
-            )
-            previous_position = (
-                previous_classification.position if previous_classification else None
-            )
+            previous_position = previous_positions.get(player_id)
 
             # Create or update classification
             classification = (
