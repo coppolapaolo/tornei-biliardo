@@ -46,7 +46,7 @@
               {% if not is_rack_only %}
                 <span class="badge bg-success me-1" title="{{ _('Vittorie') }}">{{ entry.matches_won }}</span>
               {% endif %}
-              <span class="badge bg-secondary" title="{% if is_rack_only %}{{ _('Rack Totali') }}{% else %}{{ _('Diff. Rack') }}{% endif %}">{{ entry.rack_difference }}</span>
+              <span class="badge bg-secondary" title="{% if is_rack_only %}{{ _('Rack Totali') }}{% else %}{{ _('Diff. Rack') }}{% endif %}">{{ entry.ranking_rack_value }}</span>
             </td>
           </tr>
           {% endfor %}
@@ -89,7 +89,7 @@
             {% if not is_rack_only %}
               <span class="badge bg-success me-1" title="{{ _('Vittorie') }}">{{ entry.matches_won }}</span>
             {% endif %}
-            <span class="badge bg-secondary" title="{% if is_rack_only %}{{ _('Rack Totali') }}{% else %}{{ _('Diff. Rack') }}{% endif %}">{{ entry.rack_difference }}</span>
+            <span class="badge bg-secondary" title="{% if is_rack_only %}{{ _('Rack Totali') }}{% else %}{{ _('Diff. Rack') }}{% endif %}">{{ entry.ranking_rack_value }}</span>
           </div>
         </div>
         <div class="small text-muted mt-1 ms-4">

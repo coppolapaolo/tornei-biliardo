@@ -73,12 +73,16 @@ class TiebreakerService:
         if not classifications:
             return []
 
-        # Group by (matches_won, rack_difference) to find ties
+        # Group by (matches_won, valore rack di classifica) to find ties.
+        # `ranking_rack_value` è il criterio della gara — rack totali se il
+        # sistema è RACK, differenza altrove — coerente con
+        # `SpareggioService._group_by_classification`. Usare sempre la
+        # differenza inventerebbe parimerito inesistenti nelle gare a rack.
         groups: Dict[Tuple[int, int], List[int]] = {}
         position_map: Dict[Tuple[int, int], int] = {}
 
         for c in classifications:
-            key = (c.matches_won, c.rack_difference)
+            key = (c.matches_won, c.ranking_rack_value)
             if key not in groups:
                 groups[key] = []
                 position_map[key] = c.position

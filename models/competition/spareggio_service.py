@@ -55,9 +55,13 @@ class SpareggioService:
             gara_id=gara.id, round_number=final_round
         )
         if classification_system == "RACK":
-            classifications = query.order_by(
-                RoundClassification.rack_difference.desc()
-            ).all()
+            # `ranking_rack_value` in SQL: `racks_won` con fallback su
+            # `rack_difference` per le righe scritte prima della separazione
+            # delle due colonne (migration 20260728).
+            rack_total = func.coalesce(
+                RoundClassification.racks_won, RoundClassification.rack_difference
+            )
+            classifications = query.order_by(rack_total.desc()).all()
         else:
             classifications = query.order_by(
                 RoundClassification.matches_won.desc(),
@@ -69,7 +73,7 @@ class SpareggioService:
 
         def classification_key(c):
             if classification_system == "RACK":
-                return c.rack_difference
+                return c.ranking_rack_value
             return (c.matches_won, c.rack_difference)
 
         groups_by_key: Dict = {}
@@ -418,9 +422,8 @@ class SpareggioService:
                     user_id=user_id,
                     position=round_class.position,
                     matches_won=round_class.matches_won,
-                    # For Random, this is total racks
-                    racks_won=round_class.rack_difference,
-                    rack_difference=round_class.rack_difference,
+                    racks_won=round_class.ranking_rack_value,
+                    rack_difference=round_class.rack_difference or 0,
                 )
                 db.session.add(gara_class)
 
@@ -508,8 +511,8 @@ class SpareggioService:
                     user_id=user_id,
                     position=round_class.position,
                     matches_won=round_class.matches_won,
-                    racks_won=round_class.rack_difference,
-                    rack_difference=round_class.rack_difference,
+                    racks_won=round_class.ranking_rack_value,
+                    rack_difference=round_class.rack_difference or 0,
                 )
                 db.session.add(gara_class)
 
@@ -581,7 +584,12 @@ class SpareggioService:
             player_data.append(
                 {
                     "user_id": rc.user_id,
-                    "rack_totali": rc.rack_difference,
+                    # Criterio di classifica della gara: totale rack se RACK,
+                    # differenza altrove. La scelta è dentro
+                    # `ranking_rack_value`, unico punto che conosce la
+                    # configurazione.
+                    "rack_totali": rc.ranking_rack_value,
+                    "rack_difference": rc.rack_difference or 0,
                     "ssr_score": ssr_score,
                     "matches_won": rc.matches_won,
                 }
@@ -591,10 +599,7 @@ class SpareggioService:
         # con _group_by_classification (che definisce quali giocatori sono a
         # pari merito). Lo SSR è il tiebreaker DECISIVO entro gruppi a pari
         # merito, quindi va sempre per ultimo.
-        # - RACK: (rack_totali DESC, ssr_score DESC). Per il sistema RACK
-        #   `rack_difference` salva i rack totali vinti (vedi
-        #   calculate_classification_after_round), quindi rack_totali è già
-        #   la chiave primaria.
+        # - RACK: (rack totali DESC, ssr_score DESC)
         # - WINS / POSITION (default): (matches_won DESC, rack_difference DESC,
         #   ssr_score DESC). Senza matches_won il vincitore reale per vittorie
         #   veniva scavalcato (bug high).
@@ -617,7 +622,7 @@ class SpareggioService:
                     gara_id=gara_id,
                     user_id=data["user_id"],
                     racks_won=data["rack_totali"],
-                    rack_difference=data["rack_totali"],
+                    rack_difference=data["rack_difference"],
                     matches_won=data["matches_won"],
                 )
                 db.session.add(gara_class)

@@ -79,7 +79,15 @@ class RoundClassification(db.Model):
     # Classification data
     position = db.Column(db.Integer, nullable=False)
     matches_won = db.Column(db.Integer, default=0)
-    rack_difference = db.Column(db.Integer, default=0)  # rack_vinti - rack_persi
+    # SEMPRE la differenza vera (rack vinti - rack persi), in ogni gara.
+    rack_difference = db.Column(db.Integer, default=0)
+    # SEMPRE il totale dei rack vinti. È il criterio di classifica delle gare
+    # RACK, che prima veniva stipato dentro `rack_difference` facendone cambiare
+    # significato a seconda di `gara.classification_system` — un'ambiguità che è
+    # costata bug ogni volta che si aggiungeva un punto di scrittura.
+    # NULL solo sulle righe scritte prima della separazione (vedi migration
+    # 20260728): usare `ranking_rack_value`, che gestisce il fallback.
+    racks_won = db.Column(db.Integer)
     previous_position = db.Column(db.Integer)  # posizione turno precedente
 
     # Metadata
@@ -102,6 +110,31 @@ class RoundClassification(db.Model):
             "gara_id", "round_number", "user_id", name="unique_round_classification"
         ),
     )
+
+    @property
+    def is_rack_ranking(self) -> bool:
+        """True se la gara classifica per rack totali invece che per vittorie."""
+        gara = self.gara
+        if gara is None:
+            return False
+        return (gara.classification_system or "WINS").upper() == "RACK"
+
+    @property
+    def ranking_rack_value(self) -> int:
+        """Il numero di rack da mostrare in classifica per questa gara.
+
+        Totale rack nelle gare RACK, differenza altrove. Unico punto in cui la
+        scelta dipende dalla configurazione: le due colonne, prese da sole,
+        hanno un significato fisso.
+
+        Fallback per le righe pre-separazione, dove `racks_won` è NULL e il
+        totale si trovava dentro `rack_difference`.
+        """
+        if not self.is_rack_ranking:
+            return self.rack_difference or 0
+        if self.racks_won is not None:
+            return self.racks_won
+        return self.rack_difference or 0
 
     @staticmethod
     def calculate_classification_after_round(gara_id, round_number):

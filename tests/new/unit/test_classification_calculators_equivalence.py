@@ -131,7 +131,13 @@ def _match(db_session, gara, p1, p2, s1, s2, round_number=1, is_bye=False):
 def _snapshot(db_session, gara_id: int, round_number: int) -> List[Tuple]:
     """Stato persistito della classifica, confrontabile fra i due calcolatori."""
     return [
-        (rc.position, rc.user_id, rc.matches_won, rc.rack_difference)
+        (
+            rc.position,
+            rc.user_id,
+            rc.matches_won,
+            rc.rack_difference,
+            rc.racks_won,
+        )
         for rc in db_session.query(RoundClassification)
         .filter_by(gara_id=gara_id, round_number=round_number)
         .order_by(RoundClassification.position)
@@ -161,8 +167,8 @@ def _run_both(db_session, build_scenario) -> Tuple[List[Tuple], List[Tuple]]:
     # classifica (posizione, vittorie, valore rack) e la corrispondenza
     # posizionale, non gli id.
     return (
-        [(pos, mw, rd) for pos, _uid, mw, rd in legacy],
-        [(pos, mw, rd) for pos, _uid, mw, rd in strategy],
+        [(pos, mw, rd, rw) for pos, _uid, mw, rd, rw in legacy],
+        [(pos, mw, rd, rw) for pos, _uid, mw, rd, rw in strategy],
     )
 
 
@@ -190,7 +196,7 @@ class TestCalculatorsEquivalence:
 
         legacy, strategy = _run_both(db_session, build)
         assert legacy == strategy
-        assert all(matches_won == 0 for _pos, matches_won, _rd in legacy)
+        assert all(matches_won == 0 for _pos, matches_won, _rd, _rw in legacy)
 
     def test_bye_match(self, db_session):
         def build():
@@ -213,8 +219,10 @@ class TestCalculatorsEquivalence:
 
         legacy, strategy = _run_both(db_session, build)
         assert legacy == strategy
-        # RACK: la colonna contiene i rack TOTALI, quindi mai negativa
-        assert all(rack_value >= 0 for _pos, _mw, rack_value in legacy)
+        # Le due colonne non si sovrascrivono più: il totale è sempre >= 0,
+        # la differenza può essere negativa e resta disponibile.
+        assert all(racks_won >= 0 for _pos, _mw, _rd, racks_won in legacy)
+        assert any(rack_diff < 0 for _pos, _mw, rack_diff, _rw in legacy)
 
     def test_rack_system_ssr_tiebreak(self, db_session):
         """Lo SSR separa due giocatori con lo stesso totale rack.
@@ -358,10 +366,12 @@ class TestCalculatorsEquivalence:
         db_session.flush()
 
         legacy = [
-            (p, mw, rd) for p, _u, mw, rd in _snapshot(db_session, gara_legacy.id, 2)
+            (p, mw, rd, rw)
+            for p, _u, mw, rd, rw in _snapshot(db_session, gara_legacy.id, 2)
         ]
         strategy = [
-            (p, mw, rd) for p, _u, mw, rd in _snapshot(db_session, gara_strategy.id, 2)
+            (p, mw, rd, rw)
+            for p, _u, mw, rd, rw in _snapshot(db_session, gara_strategy.id, 2)
         ]
         assert legacy == strategy
 
@@ -386,5 +396,7 @@ class TestCalculatorsEquivalence:
         service.calculate_round_classification(gara.id, 1)
         db_session.flush()
 
-        remaining = {uid for _pos, uid, _mw, _rd in _snapshot(db_session, gara.id, 1)}
+        remaining = {
+            uid for _pos, uid, _mw, _rd, _rw in _snapshot(db_session, gara.id, 1)
+        }
         assert remaining == {a.id, b.id}

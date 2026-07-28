@@ -316,7 +316,14 @@ class StrategyBasedClassificationService:
             score = PlayerScore(
                 player_id=rc.user_id,
                 matches_won=rc.matches_won,
-                rack_difference=rc.rack_difference,
+                rack_difference=rc.rack_difference or 0,
+                # `ranking_rack_value` copre le righe pre-separazione, dove
+                # `racks_won` è NULL e il totale stava in `rack_difference`.
+                racks_won=(
+                    rc.racks_won
+                    if rc.racks_won is not None
+                    else (rc.ranking_rack_value if rc.is_rack_ranking else 0)
+                ),
                 previous_position=rc.previous_position,
             )
             entries.append(
@@ -349,20 +356,12 @@ class StrategyBasedClassificationService:
             round_number: Round number
             result: ClassificationResult to save
         """
-        from models.competition.models import Gara
-
-        # B14: nelle gare RACK la colonna `rack_difference` conserva i rack
-        # TOTALI vinti, non la differenza — è la convenzione che template
-        # (`is_rack_only`) e SpareggioService danno per scontata. Il fix B14 era
-        # stato applicato solo a `calculate_classification_after_round`: qui si
-        # salvava sempre la differenza vera, quindi un ricalcolo per questa via
-        # (fusione di due utenti) cambiava silenziosamente il significato della
-        # colonna e falsava classifica e spareggio delle gare RACK.
-        gara = db.session.get(Gara, gara_id)
-        is_rack_system = (
-            (gara.classification_system or "WINS").upper() == "RACK" if gara else False
-        )
-
+        # Ogni colonna ha un significato fisso: `rack_difference` è sempre la
+        # differenza, `racks_won` sempre il totale. Chi legge sceglie quale
+        # guardare (`RoundClassification.ranking_rack_value`). Prima il totale
+        # veniva stipato dentro `rack_difference` nelle sole gare RACK, e ogni
+        # nuovo punto di scrittura era un candidato a sbagliare la conversione.
+        #
         # Upsert invece di DELETE+INSERT: riscrivere le righe cambia i rowid,
         # e SQLite li riusa subito. Un oggetto già in identity-map si ritrova
         # allora con un id riassegnato → SAWarning "Identity map already had an
@@ -376,9 +375,6 @@ class StrategyBasedClassificationService:
         }
 
         for entry in result.entries:
-            rack_value = (
-                entry.score.racks_won if is_rack_system else entry.score.rack_difference
-            )
             classification = existing_by_user.pop(entry.player_id, None)
 
             if classification is None:
@@ -391,7 +387,8 @@ class StrategyBasedClassificationService:
 
             classification.position = entry.position
             classification.matches_won = entry.score.matches_won
-            classification.rack_difference = rack_value
+            classification.rack_difference = entry.score.rack_difference
+            classification.racks_won = entry.score.racks_won
             classification.previous_position = entry.score.previous_position
 
         # Righe stale: giocatori che dopo un reset non hanno più match validi

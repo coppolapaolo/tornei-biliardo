@@ -1,18 +1,19 @@
-"""Regression B14: il campo `RoundClassification.rack_difference` cambia
-significato in base a `gara.classification_system`, NON a `matchmaking_strategy`.
+"""Il valore rack di classifica dipende da `classification_system` (ex B14).
 
-Storicamente (pre-B14):
-- `matchmaking_strategy == "random"` → salvava `racks_won` totali
-- altrimenti → salvava la vera differenza (won - lost)
+Storia del difetto. In origine la colonna `RoundClassification.rack_difference`
+cambiava significato in base a `gara.classification_system`: differenza vera
+nelle gare WINS, totale dei rack in quelle RACK. Il bug B14 nasceva proprio da
+lì — la scelta era fatta su `matchmaking_strategy` invece che su
+`classification_system`, così una gara `random`+WINS mostrava sotto l'etichetta
+"Diff. Rack" un numero che erano i rack totali (produzione 2026-05-20).
 
-Conseguenza: una gara `random` + `classification_system=WINS` mostrava
-nel template "Diff. Rack" un numero che era in realtà i rack vinti totali
-(vedi scenario produzione 2026-05-20, screenshot utente: PAOLO/PIETRO
-mostravano "+11" che era racks_won, non la diff reale +4).
+Oggi le due grandezze stanno in due colonne distinte con significato fisso
+(`rack_difference` e `racks_won`, migration 20260728) e la scelta di quale
+mostrare vive in un unico posto, `RoundClassification.ranking_rack_value`.
 
-Fix (PR successiva alla #3): la condizione usa `classification_system`,
-coerente con `is_rack_only` nei template e con i sort key di
-`gara_strategies.py`.
+Questi test restano a presidio del comportamento osservabile: quale numero
+finisce in classifica per ciascun sistema, da entrambe le porte d'ingresso del
+calcolo.
 """
 
 from __future__ import annotations
@@ -113,7 +114,7 @@ def _setup_two_player_gara(db_session, matchmaking: str, classification: str) ->
 
 @pytest.mark.unit
 class TestB14FieldMeaningRegression:
-    """Il campo rack_difference riflette classification_system, non matchmaking."""
+    """Il valore in classifica segue classification_system, non matchmaking."""
 
     def test_random_with_wins_system_stores_true_rack_difference(self, db_session):
         """matchmaking=random + classification_system=WINS:
@@ -134,9 +135,11 @@ class TestB14FieldMeaningRegression:
         )
         assert rc_a is not None
         # player_a: rack_won=11, rack_lost=7 → diff=+4
-        assert rc_a.rack_difference == 4, (
-            f"Per classification_system=WINS deve essere la vera differenza (+4), "
-            f"non racks_won (11). Got: {rc_a.rack_difference}"
+        assert rc_a.rack_difference == 4
+        assert rc_a.racks_won == 11
+        assert rc_a.ranking_rack_value == 4, (
+            f"Per classification_system=WINS la classifica usa la differenza "
+            f"(+4), non i rack totali (11). Got: {rc_a.ranking_rack_value}"
         )
 
     def test_random_with_rack_system_stores_total_racks_won(self, db_session):
@@ -156,10 +159,13 @@ class TestB14FieldMeaningRegression:
             .first()
         )
         assert rc_a is not None
-        # player_a: racks_won=11 → il campo deve essere 11 (label "Rack Totali")
-        assert rc_a.rack_difference == 11, (
-            f"Per classification_system=RACK deve essere racks_won (11). "
-            f"Got: {rc_a.rack_difference}"
+        # Le due grandezze convivono senza sovrascriversi...
+        assert rc_a.racks_won == 11
+        assert rc_a.rack_difference == 4
+        # ...e la classifica RACK usa il totale (label "Rack Totali")
+        assert rc_a.ranking_rack_value == 11, (
+            f"Per classification_system=RACK la classifica usa i rack totali "
+            f"(11). Got: {rc_a.ranking_rack_value}"
         )
 
     def test_amalfi_with_rack_system_stores_total_racks_won(self, db_session):
@@ -179,9 +185,10 @@ class TestB14FieldMeaningRegression:
             .first()
         )
         assert rc_a is not None
-        assert rc_a.rack_difference == 11, (
-            f"Amalfi+RACK deve salvare racks_won (11), non diff (+4). "
-            f"Got: {rc_a.rack_difference}"
+        assert rc_a.racks_won == 11
+        assert rc_a.ranking_rack_value == 11, (
+            f"Amalfi+RACK deve classificare sui rack totali (11). "
+            f"Got: {rc_a.ranking_rack_value}"
         )
 
     def test_amalfi_with_wins_system_stores_true_rack_difference(self, db_session):
@@ -201,6 +208,7 @@ class TestB14FieldMeaningRegression:
         )
         assert rc_a is not None
         assert rc_a.rack_difference == 4
+        assert rc_a.ranking_rack_value == 4
 
 
 @pytest.mark.unit
@@ -231,9 +239,10 @@ class TestB14AppliesToStrategyPathToo:
             .first()
         )
         assert rc_a is not None
-        assert rc_a.rack_difference == 11, (
-            f"Il percorso a strategie deve rispettare B14 come quello legacy: "
-            f"racks_won (11), non diff (+4). Got: {rc_a.rack_difference}"
+        assert rc_a.racks_won == 11
+        assert rc_a.ranking_rack_value == 11, (
+            f"Il percorso a strategie deve classificare sui rack totali come "
+            f"quello legacy (11). Got: {rc_a.ranking_rack_value}"
         )
 
     def test_strategy_path_wins_system_stores_true_difference(self, db_session):
@@ -254,6 +263,7 @@ class TestB14AppliesToStrategyPathToo:
         )
         assert rc_a is not None
         assert rc_a.rack_difference == 4
+        assert rc_a.ranking_rack_value == 4
 
     def test_both_paths_agree_on_rack_system(self, db_session):
         """I due calcolatori devono produrre lo stesso valore in colonna."""
@@ -279,7 +289,7 @@ class TestB14AppliesToStrategyPathToo:
                 db_session.query(RoundClassification)
                 .filter_by(gara_id=gara.id, user_id=gara._test_player_a_id)
                 .first()
-                .rack_difference
+                .ranking_rack_value
             )
 
         assert _value(gara_legacy) == _value(gara_strategy)
