@@ -16,7 +16,6 @@ Organizzazione:
 
 import pytest
 from datetime import datetime, date, time, timedelta
-from sqlalchemy.exc import IntegrityError
 
 from models.base import db, utc_now
 from models.competition.services import (
@@ -524,8 +523,23 @@ class TestGaraServiceCharacterization:
     # ===== GESTIONE DIRETTORI =====
 
     def test_director_management_characterization(self):
-        """Caratterizza la gestione direttori."""
+        """Caratterizza la gestione direttori.
+
+        I co-direttori devono avere `role=director`: la restrizione è stata
+        introdotta il 2026-06-10 (senza, un POST manuale poteva promuovere un
+        player a gestore) e questo test caratterizzava ancora il comportamento
+        precedente, in cui un player veniva accettato.
+        """
         tomorrow = date.today() + timedelta(days=1)
+
+        co_director = User(
+            username="co_director_test",
+            email="co_director@test.com",
+            role=UserRole.DIRECTOR.value,
+        )
+        co_director.set_password("password123")
+        db.session.add(co_director)
+        db.session.commit()
 
         gara = GaraService.create_gara(
             number=1,
@@ -537,14 +551,12 @@ class TestGaraServiceCharacterization:
         )
 
         # Aggiunta co-direttore
-        success = GaraService.add_director(
-            gara.id, self.player_user.id, self.admin_user.id
-        )
+        success = GaraService.add_director(gara.id, co_director.id, self.admin_user.id)
         assert success is True
 
         # Seconda aggiunta stesso utente
         duplicate = GaraService.add_director(
-            gara.id, self.player_user.id, self.admin_user.id
+            gara.id, co_director.id, self.admin_user.id
         )
         assert duplicate is False
 
@@ -552,12 +564,16 @@ class TestGaraServiceCharacterization:
         with pytest.raises(ValueError, match="admin non possono essere direttori"):
             GaraService.add_director(gara.id, self.admin_user.id, self.admin_user.id)
 
+        # Un player non può essere co-direttore
+        with pytest.raises(ValueError, match="ruolo direttore"):
+            GaraService.add_director(gara.id, self.player_user.id, self.admin_user.id)
+
         # Rimozione co-direttore
-        removed = GaraService.remove_director(gara.id, self.player_user.id)
+        removed = GaraService.remove_director(gara.id, co_director.id)
         assert removed is True
 
         # Rimozione utente non direttore
-        not_removed = GaraService.remove_director(gara.id, self.player_user.id)
+        not_removed = GaraService.remove_director(gara.id, co_director.id)
         assert not_removed is False
 
     def test_get_director_garas_characterization(self):

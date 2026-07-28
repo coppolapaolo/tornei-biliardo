@@ -34,6 +34,7 @@ from .strategies.base import (
 )
 from .registry import get_classification_registry, ClassificationStrategyRegistry
 from .score_aggregator import ScoreAggregator
+from .seeding_service import SeedingService, SEEDING_ROUND, NO_SEEDING_POSITION
 from .tiebreaker_resolver import TiebreakerResolver, TiebreakerContext
 
 # Services
@@ -63,6 +64,9 @@ __all__ = [
     "ClassificationStrategyRegistry",
     # Support classes
     "ScoreAggregator",
+    "SeedingService",
+    "SEEDING_ROUND",
+    "NO_SEEDING_POSITION",
     "TiebreakerResolver",
     "TiebreakerContext",
     # Services

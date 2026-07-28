@@ -122,20 +122,6 @@ contano nella quota GlitchTip Free (1000 eventi/mese) — con 0.1 la quota si
 
 ---
 
-## Project Overview
-
-Flask-based **community platform for American Pool enthusiasts** focused on tournament organization and match management.
-
-**Core Features:**
-- Tournament (campionati) and competition (gare) organization
-- Individual match proposals and community meetups
-- Flexible matchmaking strategies (Amalfi, Round-Robin, Elimination, Random)
-- Player statistics and challenge system
-- Gamification system (XP, levels, achievements, streaks, quests)
-- Guest access for public tournament viewing
-
----
-
 ## Things to Remember
 
 Before writing any code:
@@ -263,60 +249,16 @@ L'unico posto autorizzato a leggere `self.gara.distance`/`is_race_to` sono i
 fallback dentro `Match.effective_*` (per restituire il default della gara
 quando non c'è override). Vedi `docs/adr/ADR-027-round-level-configuration-enforcement.md`.
 
-### 7. Translated Strings in JavaScript (CRITICAL)
-When embedding translated strings in JavaScript, **ALWAYS use `|tojson`** filter. This prevents syntax errors from apostrophes and special characters in Italian text.
+### 7-8. Stringhe tradotte e attributi `onclick` nei template (CRITICAL)
 
-```javascript
-// ❌ WRONG - Apostrophe in "l'avvio" breaks JS string
-alert('{{ _("Errore durante l'avvio del turno") }}');
-// Generates: alert('Errore durante l'avvio del turno');  // SYNTAX ERROR!
+`|tojson` è obbligatorio per ogni stringa tradotta incorporata in JavaScript:
+gli apostrofi italiani (`l'avvio`, `l'errore`) altrimenti rompono la stringa JS
+e bloccano *tutto* il JavaScript della pagina. Gli attributi `onclick` che lo
+usano vogliono apici singoli, e i placeholder `%(nome)s` non vanno usati in
+stringhe interpolate da JavaScript.
 
-// ✅ CORRECT - |tojson escapes and adds proper quotes
-alert({{ _("Errore durante l'avvio del turno")|tojson }});
-// Generates: alert("Errore durante l'avvio del turno");  // Works!
-
-// For concatenation with variables:
-alert({{ _("Errore:")|tojson }} + ' ' + errorMessage);
-```
-
-**Why this matters**: Italian text often contains apostrophes (`l'avvio`, `l'errore`, `l'iscrizione`). Without `|tojson`, these break JavaScript strings and cause silent failures that block ALL JavaScript on the page.
-
-#### Python-style Placeholders in JS Strings (AVOID)
-**NEVER use `%(name)s` placeholders** in translated strings that will be interpolated by JavaScript. Flask-Babel attempts to substitute these at render time, causing `KeyError` if no value is provided.
-
-```javascript
-// ❌ WRONG - Flask-Babel tries to substitute %(count)s → KeyError
-const i18n = {
-    confirmDelete: {{ _("Elimina %(count)s elementi?")|tojson }}
-};
-const msg = i18n.confirmDelete.replace('%(count)s', count);
-
-// ✅ CORRECT - Use JS-style placeholder, bypass Flask-Babel for this string
-const i18n = {
-    confirmDeleteTemplate: "Elimina {count} elementi?"  // Not translated, or use ngettext
-};
-const msg = i18n.confirmDeleteTemplate.replace('{count}', count);
-
-// ✅ ALTERNATIVE - Pass the value at render time (if value is known)
-const msg = {{ _("Elimina %(count)s elementi?", count=items|length)|tojson }};
-```
-
-**Rule**: If JavaScript will do the interpolation, don't use `%(...)s` placeholders in `_()`.
-
-### 8. Onclick Attributes with tojson (CRITICAL)
-When using `|tojson` in HTML onclick attributes, **use single quotes for the attribute**:
-
-```html
-{# ❌ WRONG - tojson produces "..." which breaks double-quoted attribute #}
-<span onclick="myFunc({{ player_name|tojson }})">
-{# Renders as: onclick="myFunc("John")" - BROKEN HTML! #}
-
-{# ✅ CORRECT - single quotes for attribute, tojson produces double quotes inside #}
-<span onclick='myFunc({{ player_name|tojson }})'>
-{# Renders as: onclick='myFunc("John")' - Valid HTML #}
-```
-
-**Why**: `|tojson` always produces JSON strings with double quotes. Using single quotes for the onclick attribute avoids quote conflicts.
+Regole complete con esempi corretti/sbagliati: **`templates/CLAUDE.md`**, che si
+carica da solo quando si lavora sotto `templates/`.
 
 ### 9. Sequential Date Validation for Campionato Gare
 Gare within a campionato must have dates in chronological order by `number`:
@@ -440,70 +382,16 @@ DB columns, test, eccezioni storiche come `Match`).
 
 ---
 
-## Architecture
+## Database
 
-### Application Structure
-- **Flask Application Factory Pattern**: `create_app()` in `app.py`
-- **Domain-Driven Design**: Organized by business domains
-- **Service Layer Pattern**: Business logic with `@transactional` decorator
-- **Strategy Pattern**: Configurable matchmaking algorithms
-- **Event-Driven Architecture**: Domain events for loose coupling
-
-### Key Domains (`models/`)
-
-| Domain | Purpose | Key Files |
-|--------|---------|-----------|
-| **user/** | Users, roles, permissions | User, DirectorAssignment, VenueManagement |
-| **competition/** | Gara, Inscription, round management | Gara, GaraService |
-| **match/** | Match, Set, Rack, scoring | Match, multi-set support |
-| **matchmaking/** | Pairing strategies | Amalfi, Round-Robin, Elimination, Random |
-| **gamification/** | XP, levels, achievements, streaks | LevelService, StreakService |
-| **notification/** | Event-driven notifications | NotificationFactory |
-| **individual_match/** | Casual match proposals | MatchProposal, PlayerAvailability |
-| **events/** | Domain event system | DomainEvent, EventBus |
-
-### Database
 - **Development**: SQLite (`instance/billiard_campionato.db`)
-- **Production**: SQLite on PythonAnywhere (`/home/paolocoppola/mysite/instance/billiard_campionato.db`)
-- **ORM**: SQLAlchemy with Flask-SQLAlchemy
+- **Production**: SQLite su PythonAnywhere
+  (`/home/paolocoppola/mysite/instance/billiard_campionato.db`)
 
----
-
-## Common Patterns
-
-### Event System
-```python
-from models.events.base import DomainEvent, EventType
-
-# Emit event
-DomainEvent.emit(
-    event_type=EventType.INSCRIPTION_CREATED,
-    entity_id=inscription.id,
-    actor_id=user_id
-)
-```
-
-### Matchmaking Strategies
-```python
-from models.matchmaking.service import MatchmakingService
-from models.matchmaking.config import MatchmakingStrategy
-
-service = MatchmakingService(gara_id=gara.id, strategy=MatchmakingStrategy.AMALFI)
-matches = service.create_next_round()
-```
-
-**Note**: Both the Random Anti-Rematch strategy and the Amalfi strategy (caso pari, vedi ADR-029) usano `networkx` per maximum (cardinality / weighted) matching sul grafo anti-rematch. Don't reimplement graph algorithms — use `nx` (already in requirements.txt).
-
-### Multi-Set Matches
-```python
-# Single match - distance = winning racks threshold
-gara.distance = 5  # Race to 5 racks
-
-# Multi-set match - match_distance = winning sets threshold
-match.is_multi_set = True
-match.match_distance = 3  # First to win 3 sets
-set.distance = 5  # Each set is race to 5 racks
-```
+**Matchmaking**: sia la strategia Random Anti-Rematch sia Amalfi (caso pari, vedi
+ADR-029) usano `networkx` per il maximum (cardinality / weighted) matching sul
+grafo anti-rematch. Non reimplementare algoritmi su grafi — usa `nx`, è già in
+`requirements.txt`.
 
 ---
 
@@ -590,22 +478,10 @@ pytest tests/new/unit/ -n auto && pytest tests/new/integration/ -n 4
 
 ## Debugging Tips
 
-### @transactional Not Persisting Data
-If data changes in memory but doesn't persist to DB, check if the decorator is actually applied:
-
-```python
-# Check if decorator is applied
-from models.competition.state_service import StateService
-func = StateService.some_method
-print(f'Has __wrapped__: {hasattr(func, "__wrapped__")}')  # False = no decorator!
-
-# Compare imports (circular import detection)
-from models.base import transactional as base_t
-from models.transaction.manager import transactional as manager_t
-print(f'Same: {base_t is manager_t}')  # False = circular import problem!
-```
-
-See `docs/adr/ADR-012-transactional-circular-import-fix.md` for a detailed case study.
+Dati che cambiano in memoria ma non finiscono su DB: quasi sempre il decoratore
+`@transactional` non è applicato davvero (o è quello sbagliato, per import
+circolare). Diagnosi passo-passo in **`models/transaction/CLAUDE.md`** e
+casistica completa in `docs/adr/ADR-012-transactional-circular-import-fix.md`.
 
 ---
 
@@ -617,7 +493,3 @@ See `docs/adr/ADR-012-transactional-circular-import-fix.md` for a detailed case 
 - Gamification system is event-driven and decoupled from core domains
 
 ---
-
-## Audit Status
-
-Codebase audit completed (Dec 2025): 0 FAIL, 0 WARNING. Details in `docs/_archive/2025-12-audit-refactoring-plan.md`.

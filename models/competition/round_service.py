@@ -114,6 +114,14 @@ class RoundService:
 
                 pairings = strategy.create_round(gara, round_num)
 
+                # Classifica di partenza: il sorteggio del primo turno.
+                if round_num == 1:
+                    from models.classification.seeding_service import SeedingService
+
+                    SeedingService.persist_first_round_seeding(
+                        gara_id, strategy, pairings
+                    )
+
                 # ADR-027: propaga override per turno.
                 overrides = resolve_round_overrides(gara, round_num)
                 create_matches_from_pairings(
@@ -154,6 +162,13 @@ class RoundService:
                 raise ValueError(f"Strategia {registry_name} non trovata nel registry")
 
             pairings = strategy.create_round(gara, 1)
+
+            # Classifica di partenza: Amalfi l'ha già salvata durante il
+            # pairing (le serve come input), le altre la derivano dagli
+            # accoppiamenti appena generati.
+            from models.classification.seeding_service import SeedingService
+
+            SeedingService.persist_first_round_seeding(gara_id, strategy, pairings)
 
             # ADR-027: propaga override per turno (anche per il primo round).
             overrides = resolve_round_overrides(gara, 1)

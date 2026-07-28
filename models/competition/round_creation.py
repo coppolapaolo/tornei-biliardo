@@ -372,6 +372,12 @@ class RoundCreationService:
         # Genera gli abbinamenti usando l'interfaccia della strategia
         pairings = strategy.create_round(gara, round_number)
 
+        # Materializza la classifica di partenza (turno 0) al primo turno.
+        if round_number == 1:
+            from models.classification.seeding_service import SeedingService
+
+            SeedingService.persist_first_round_seeding(gara_id, strategy, pairings)
+
         # Get forfeit players for this gara to handle completed matches
         from models.competition.withdraw_policy_service import WithdrawPolicyService
 

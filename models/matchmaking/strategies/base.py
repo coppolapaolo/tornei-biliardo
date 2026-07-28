@@ -135,6 +135,22 @@ class PairingStrategy(ABC):
     max_players: Optional[int] = None
     supports_byes: bool = True
     requires_classification: bool = False
+    # True se la strategia ha un ordine di partenza significativo da salvare
+    # come classifica di turno 0 (vedi SeedingService). Le strategie a
+    # tabellone (eliminazione diretta) non usano una classifica di turno,
+    # quindi restano a False.
+    persists_seeding: bool = False
+
+    def get_seeding_order(self, gara: object) -> Optional[List[int]]:
+        """Ordine di partenza dei giocatori, se la strategia ne definisce uno.
+
+        Serve alle strategie in cui il seeding *precede* gli accoppiamenti
+        (Amalfi accoppia proprio per prossimità in classifica). Le strategie in
+        cui è il sorteggio a produrre gli accoppiamenti restituiscono None: lì
+        l'ordine di partenza si deriva a posteriori dagli accoppiamenti del
+        primo turno (`SeedingService.order_from_pairings`).
+        """
+        return None
 
     @abstractmethod
     def validate(self, gara: object) -> ValidationResult:

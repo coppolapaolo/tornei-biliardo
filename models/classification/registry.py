@@ -115,10 +115,15 @@ def _bootstrap_registry(registry: ClassificationStrategyRegistry) -> None:
     from .strategies.round_strategies import (
         AmalfiRoundClassificationStrategy,
         RandomRoundClassificationStrategy,
+        RoundRobinRoundClassificationStrategy,
     )
 
     registry.register(AmalfiRoundClassificationStrategy())
     registry.register(RandomRoundClassificationStrategy())
+    # `get_strategy_for_gara` la richiede per le gare round robin, ma non era
+    # mai stata registrata: il KeyError non emergeva perché in produzione il
+    # calcolo passava dall'implementazione parallela, che non usa il registry.
+    registry.register(RoundRobinRoundClassificationStrategy())
 
     # Gara strategies
     from .strategies.gara_strategies import (
