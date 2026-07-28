@@ -319,6 +319,20 @@ class StrategyBasedClassificationService:
             round_number: Round number
             result: ClassificationResult to save
         """
+        from models.competition.models import Gara
+
+        # B14: nelle gare RACK la colonna `rack_difference` conserva i rack
+        # TOTALI vinti, non la differenza — è la convenzione che template
+        # (`is_rack_only`) e SpareggioService danno per scontata. Il fix B14 era
+        # stato applicato solo a `calculate_classification_after_round`: qui si
+        # salvava sempre la differenza vera, quindi un ricalcolo per questa via
+        # (fusione di due utenti) cambiava silenziosamente il significato della
+        # colonna e falsava classifica e spareggio delle gare RACK.
+        gara = db.session.get(Gara, gara_id)
+        is_rack_system = (
+            (gara.classification_system or "WINS").upper() == "RACK" if gara else False
+        )
+
         # Delete existing classifications for this round
         db.session.query(RoundClassification).filter_by(
             gara_id=gara_id, round_number=round_number
@@ -332,7 +346,11 @@ class StrategyBasedClassificationService:
                 user_id=entry.player_id,
                 position=entry.position,
                 matches_won=entry.score.matches_won,
-                rack_difference=entry.score.rack_difference,
+                rack_difference=(
+                    entry.score.racks_won
+                    if is_rack_system
+                    else entry.score.rack_difference
+                ),
                 previous_position=entry.score.previous_position,
             )
             db.session.add(classification)

@@ -201,3 +201,85 @@ class TestB14FieldMeaningRegression:
         )
         assert rc_a is not None
         assert rc_a.rack_difference == 4
+
+
+@pytest.mark.unit
+class TestB14AppliesToStrategyPathToo:
+    """Il fix B14 vale anche per il percorso a strategie.
+
+    `StrategyBasedClassificationService` è il secondo calcolatore di classifica
+    di turno (lo usa la fusione di due utenti). Salvava sempre la differenza
+    vera, ignorando `classification_system`: ricalcolare una gara RACK per quella
+    via cambiava il significato della colonna sotto ai template e a
+    SpareggioService.
+    """
+
+    def test_strategy_path_rack_system_stores_total_racks_won(self, db_session):
+        from models.classification.gara_classification import (
+            StrategyBasedClassificationService,
+        )
+
+        gara = _setup_two_player_gara(
+            db_session, matchmaking="random", classification="RACK"
+        )
+        StrategyBasedClassificationService().calculate_round_classification(gara.id, 1)
+        db_session.flush()
+
+        rc_a = (
+            db_session.query(RoundClassification)
+            .filter_by(gara_id=gara.id, user_id=gara._test_player_a_id)
+            .first()
+        )
+        assert rc_a is not None
+        assert rc_a.rack_difference == 11, (
+            f"Il percorso a strategie deve rispettare B14 come quello legacy: "
+            f"racks_won (11), non diff (+4). Got: {rc_a.rack_difference}"
+        )
+
+    def test_strategy_path_wins_system_stores_true_difference(self, db_session):
+        from models.classification.gara_classification import (
+            StrategyBasedClassificationService,
+        )
+
+        gara = _setup_two_player_gara(
+            db_session, matchmaking="amalfi", classification="WINS"
+        )
+        StrategyBasedClassificationService().calculate_round_classification(gara.id, 1)
+        db_session.flush()
+
+        rc_a = (
+            db_session.query(RoundClassification)
+            .filter_by(gara_id=gara.id, user_id=gara._test_player_a_id)
+            .first()
+        )
+        assert rc_a is not None
+        assert rc_a.rack_difference == 4
+
+    def test_both_paths_agree_on_rack_system(self, db_session):
+        """I due calcolatori devono produrre lo stesso valore in colonna."""
+        from models.classification.gara_classification import (
+            StrategyBasedClassificationService,
+        )
+
+        gara_legacy = _setup_two_player_gara(
+            db_session, matchmaking="random", classification="RACK"
+        )
+        gara_strategy = _setup_two_player_gara(
+            db_session, matchmaking="random", classification="RACK"
+        )
+
+        RoundClassification.calculate_classification_after_round(gara_legacy.id, 1)
+        StrategyBasedClassificationService().calculate_round_classification(
+            gara_strategy.id, 1
+        )
+        db_session.flush()
+
+        def _value(gara):
+            return (
+                db_session.query(RoundClassification)
+                .filter_by(gara_id=gara.id, user_id=gara._test_player_a_id)
+                .first()
+                .rack_difference
+            )
+
+        assert _value(gara_legacy) == _value(gara_strategy)
