@@ -393,34 +393,31 @@ class PlayoffQualification(BaseModel):
         self.status = QualificationStatus.CONFIRMED
         self.responded_at = utc_now()
 
-    def decline_participation(self) -> Optional["PlayoffQualification"]:
-        """Decline participation and trigger replacement process."""
+    def decline_participation(self) -> None:
+        """Decline participation (solo cambio status).
+
+        La ricerca del sostituto è responsabilità del service layer
+        (PlayoffService.find_replacement_player), non del modello: prima qui
+        si chiamava self.configuration._find_replacement() protetto da hasattr,
+        ma PlayoffConfiguration NON definisce quel metodo → guardia sempre
+        False → nessun sostituto veniva mai cercato sul decline.
+        """
         if self.status != QualificationStatus.PENDING:
             raise ValueError("Can only decline pending qualifications")
 
         self.status = QualificationStatus.DECLINED
         self.responded_at = utc_now()
 
-        # Find next eligible player for replacement
-        return (
-            self.configuration._find_replacement()
-            if hasattr(self.configuration, "_find_replacement")
-            else None
-        )
+    def expire_qualification(self) -> None:
+        """Mark qualification as expired (solo cambio status).
 
-    def expire_qualification(self) -> Optional["PlayoffQualification"]:
-        """Mark qualification as expired and find replacement."""
+        Come decline_participation, la ricerca del sostituto è del service
+        layer (vedi PlayoffService.expire_old_qualifications).
+        """
         if self.status != QualificationStatus.PENDING:
-            return None
+            return
 
         self.status = QualificationStatus.EXPIRED
-
-        # Find replacement
-        return (
-            self.configuration._find_replacement()
-            if hasattr(self.configuration, "_find_replacement")
-            else None
-        )
 
     def __repr__(self) -> str:
         return (

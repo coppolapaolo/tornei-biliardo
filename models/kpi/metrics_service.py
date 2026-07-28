@@ -131,38 +131,33 @@ class MetricsService:
 
     @staticmethod
     def get_active_users_count(days: int) -> int:
-        """Get count of users active in last N days (based on match activity)."""
+        """Get count of DISTINCT users active in last N days (match activity).
+
+        Conta gli utenti distinti sull'UNIONE di player1/player2: un utente che
+        nel periodo compare sia come player1 sia come player2 va contato una
+        sola volta. (Prima si sommavano due COUNT(DISTINCT) per-colonna →
+        doppio conteggio, con DAU/WAU/MAU gonfiati e stickiness dau/mau
+        potenzialmente > 100%.)
+        """
         from ..match.models import Match
 
         cutoff = utc_now() - timedelta(days=days)
 
-        active_p1 = (
-            db.session.query(func.count(func.distinct(Match.player1_id)))
-            .filter(
-                and_(
-                    Match.updated_at >= cutoff,
-                    Match.status == MatchStatus.COMPLETED.value,
-                    Match.player1_id.isnot(None),
-                )
-            )
-            .scalar()
-            or 0
+        # Conteggio in DB tramite UNION (dedup automatica) + COUNT(*): la
+        # union deduplica gli id sull'insieme player1 ∪ player2, così non
+        # materializziamo tutti gli id in Python (DAU/WAU/MAU è hot path).
+        p1 = db.session.query(Match.player1_id.label("uid")).filter(
+            Match.updated_at >= cutoff,
+            Match.status == MatchStatus.COMPLETED.value,
+            Match.player1_id.isnot(None),
         )
-
-        active_p2 = (
-            db.session.query(func.count(func.distinct(Match.player2_id)))
-            .filter(
-                and_(
-                    Match.updated_at >= cutoff,
-                    Match.status == MatchStatus.COMPLETED.value,
-                    Match.player2_id.isnot(None),
-                )
-            )
-            .scalar()
-            or 0
+        p2 = db.session.query(Match.player2_id.label("uid")).filter(
+            Match.updated_at >= cutoff,
+            Match.status == MatchStatus.COMPLETED.value,
+            Match.player2_id.isnot(None),
         )
-
-        return active_p1 + active_p2
+        union_subquery = p1.union(p2).subquery()
+        return db.session.query(func.count()).select_from(union_subquery).scalar() or 0
 
     @staticmethod
     def get_dau() -> int:

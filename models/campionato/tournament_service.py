@@ -558,31 +558,38 @@ class TournamentService(TournamentStatisticsService):
         if campionato.terminated_at:
             return False
 
-        from models.status_enum import GaraStatus, ProvaDerivedStatus
+        from models.status_enum import GaraStatus, MatchStatus
         from models.competition.state_service import StateService
 
         for gara in campionato.gare:
             if gara.is_deleted or gara.status == GaraStatus.COMPLETED.value:
                 continue
-            # Gare di fatto concluse (tutti i match completati ma status=PLAYING):
-            # promuovile a COMPLETED invece di soft-eliminarle, altrimenti la
-            # classifica del campionato e i playoff non hanno dati.
-            try:
-                derived = gara.get_real_status()
-            except Exception:
-                derived = gara.status
-            terminal_states = (
-                ProvaDerivedStatus.TOURNAMENT_COMPLETED.value,
-                ProvaDerivedStatus.ROUND_COMPLETED.value,
+            # Una gara con risultati reali (almeno un match concluso) NON va
+            # MAI soft-eliminata alla terminazione: perderemmo i dati di
+            # classifica già giocati. La completiamo per consolidarli; se non è
+            # completabile (match ancora attivi) la lasciamo nello stato
+            # corrente, ma mai eliminata. Solo le gare mai giocate (setup/
+            # iscrizione/playing senza risultati) vengono soft-eliminate.
+            #
+            # NB: decidiamo su un fatto oggettivo (esiste un match concluso?),
+            # non sullo stato derivato: una gara PLAYING a metà round o
+            # AWAITING_SSR ha risultati reali pur non essendo "terminale".
+            has_played_matches = (
+                db.session.query(Match.id)
+                .filter(
+                    Match.gara_id == gara.id,
+                    Match.status.in_(MatchStatus.finished_values()),
+                )
+                .first()
+                is not None
             )
-            if derived in terminal_states:
+            if has_played_matches:
                 try:
                     StateService.complete(gara)
-                    continue
                 except Exception:
-                    # Fallback: se la transizione non e' lecita la trattiamo
-                    # come gara non completabile e procediamo al soft-delete.
+                    # Match ancora attivi → non completabile, ma i dati restano.
                     pass
+                continue
             gara.soft_delete("Campionato terminato")
 
         # Aggiorna la classifica del campionato in modo che start_playoff

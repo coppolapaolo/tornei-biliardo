@@ -118,7 +118,10 @@ class NotificationEventHandlers:
                     user_id=admin_id,
                     notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
                     title="Nuova Richiesta Direttore",
-                    message=f"L'utente {event.username} ha richiesto di diventare direttore.",
+                    message=(
+                        f"L'utente {event.username} ha richiesto di "
+                        f"diventare direttore."
+                    ),
                     priority=NotificationPriority.HIGH,
                     related_entities={
                         "request_id": event.request_id,
@@ -144,7 +147,10 @@ class NotificationEventHandlers:
 
             if event.status == DirectorRequestStatus.APPROVED.value:
                 title = "Richiesta Direttore Approvata"
-                message = f"Congratulazioni! La tua richiesta di diventare direttore è stata approvata."
+                message = (
+                    "Congratulazioni! La tua richiesta di diventare "
+                    "direttore è stata approvata."
+                )
                 if event.notes:
                     message += f" Note: {event.notes}"
                 priority = NotificationPriority.HIGH
@@ -169,7 +175,8 @@ class NotificationEventHandlers:
                 },
             )
             logger.info(
-                f"Sent director request {event.status} notification to user {event.user_id}"
+                f"Sent director request {event.status} notification "
+                f"to user {event.user_id}"
             )
         except Exception as e:
             logger.error(
@@ -191,11 +198,17 @@ class NotificationEventHandlers:
             if event.is_contested:
                 title += " (CONTESA)"
 
-            message = f"L'utente {event.username} ha richiesto di gestire la sede '{event.venue_name}'. "
+            message = (
+                f"L'utente {event.username} ha richiesto di gestire la sede "
+                f"'{event.venue_name}'. "
+            )
             message += f"Motivazione: {event.motivation}"
 
             if event.is_contested:
-                message += " ATTENZIONE: Questa richiesta è contesa da altri gestori esistenti."
+                message += (
+                    " ATTENZIONE: Questa richiesta è contesa da altri "
+                    "gestori esistenti."
+                )
 
             # Notify all admins about the new venue manager request
             for admin_id in event.admin_user_ids:
@@ -217,7 +230,8 @@ class NotificationEventHandlers:
                     action_text="Gestisci Richiesta",
                 )
             logger.info(
-                f"Sent venue manager request notifications for request {event.request_id}"
+                f"Sent venue manager request notifications for request "
+                f"{event.request_id}"
             )
         except Exception as e:
             logger.error(
@@ -230,19 +244,40 @@ class NotificationEventHandlers:
         event: VenueManagerRequestProcessedEvent,
     ) -> None:
         """Handle venue manager request processed by notifying the requester."""
+        contact_admin = " Per maggiori informazioni, contatta l'amministratore."
         try:
             if event.status == "approved":
                 title = f"Richiesta Gestore '{event.venue_name}' Approvata"
-                message = f"Congratulazioni! La tua richiesta di gestire la sede '{event.venue_name}' è stata approvata."
+                message = (
+                    f"Congratulazioni! La tua richiesta di gestire la sede "
+                    f"'{event.venue_name}' è stata approvata."
+                )
                 if event.notes:
                     message += f" Note: {event.notes}"
                 priority = NotificationPriority.HIGH
-            else:  # rejected
-                title = f"Richiesta Gestore '{event.venue_name}' Rifiutata"
-                message = f"La tua richiesta di gestire la sede '{event.venue_name}' è stata rifiutata."
+            elif event.status == "revoked":
+                # Revoca di una gestione già attiva (non un rifiuto di richiesta):
+                # VenueManagerService.revoke_venue_manager pubblica
+                # status="revoked". Prima cadeva nell'else "rejected" → messaggio
+                # fuorviante "richiesta ... rifiutata".
+                title = f"Gestione Sede '{event.venue_name}' Revocata"
+                message = (
+                    f"La gestione della sede '{event.venue_name}' ti è stata "
+                    f"revocata."
+                )
                 if event.notes:
                     message += f" Motivo: {event.notes}"
-                message += " Per maggiori informazioni, contatta l'amministratore."
+                message += contact_admin
+                priority = NotificationPriority.NORMAL
+            else:  # rejected
+                title = f"Richiesta Gestore '{event.venue_name}' Rifiutata"
+                message = (
+                    f"La tua richiesta di gestire la sede '{event.venue_name}' "
+                    f"è stata rifiutata."
+                )
+                if event.notes:
+                    message += f" Motivo: {event.notes}"
+                message += contact_admin
                 priority = NotificationPriority.NORMAL
 
             NotificationService.create_notification(
@@ -260,7 +295,8 @@ class NotificationEventHandlers:
                 },
             )
             logger.info(
-                f"Sent venue manager request {event.status} notification to user {event.user_id}"
+                f"Sent venue manager request {event.status} notification "
+                f"to user {event.user_id}"
             )
         except Exception as e:
             logger.error(
@@ -287,7 +323,10 @@ class NotificationEventHandlers:
                 else ""
             )
 
-            message = f"{event.proposer_name} ti ha proposto una partita{location_text}{time_text}."
+            message = (
+                f"{event.proposer_name} ti ha proposto una "
+                f"partita{location_text}{time_text}."
+            )
             if event.notes:
                 message += f" Note: {event.notes}"
 
@@ -328,7 +367,10 @@ class NotificationEventHandlers:
                 else ""
             )
 
-            message = f"{event.accepter_name} ha accettato la tua proposta di partita{location_text}{time_text}."
+            message = (
+                f"{event.accepter_name} ha accettato la tua proposta di "
+                f"partita{location_text}{time_text}."
+            )
 
             NotificationService.create_notification(
                 user_id=event.proposer_id,
@@ -373,9 +415,13 @@ class NotificationEventHandlers:
             )
             deadline_text = ""
             if event.registration_deadline:
-                deadline_text = f" Scadenza iscrizioni: {event.registration_deadline.strftime('%d/%m/%Y alle %H:%M')}."
+                deadline = event.registration_deadline.strftime("%d/%m/%Y alle %H:%M")
+                deadline_text = f" Scadenza iscrizioni: {deadline}."
 
-            message = f"Le iscrizioni per '{event.name}'{location_text}{time_text} sono ora aperte!{deadline_text}"
+            message = (
+                f"Le iscrizioni per '{event.name}'{location_text}{time_text} "
+                f"sono ora aperte!{deadline_text}"
+            )
 
             # Notify eligible users
             for user_id in event.eligible_user_ids:

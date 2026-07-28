@@ -172,7 +172,15 @@ class PlayoffService:
             id=qualification_id, user_id=user_id
         ).first_or_404()
 
-        replacement = qualification.decline_participation()
+        qualification.decline_participation()
+
+        # Cerca il sostituto a livello servizio (flusso documentato:
+        # decline → invita il prossimo idoneo). Il modello non lo fa più:
+        # prima decline_participation() chiamava un metodo inesistente su
+        # PlayoffConfiguration via hasattr (sempre False) → nessun sostituto.
+        replacement = PlayoffService.find_replacement_player(
+            qualification.configuration_id
+        )
 
         # Notify replacement if found
         if replacement:
@@ -190,18 +198,20 @@ class PlayoffService:
         if configuration is None:
             raise NotFoundError("Configurazione playoff non trovata")
 
-        # Get current qualified/confirmed players (querying directly,
-        # not via relationship)
-        confirmed_qualifications = PlayoffQualification.query.filter_by(
-            configuration_id=configuration_id,
-            status=QualificationStatus.CONFIRMED.value,
+        # Giocatori che hanno GIÀ una qualificazione per questo playoff (qualsiasi
+        # status): un sostituto è per definizione un giocatore SENZA
+        # qualificazione esistente. Così non duplichiamo chi è già
+        # pending/confirmed né re-invitiamo chi ha declinato/è scaduto/sostituito.
+        #
+        # NB: le query precedenti filtravano lo status con `.value`
+        # ('confirmed'/'pending'), ma la colonna db.Enum(QualificationStatus)
+        # persiste il NOME del membro ('CONFIRMED'/'PENDING') → non matchavano
+        # mai → current_players vuoto → veniva creato un duplicato del primo
+        # qualificato invece del vero sostituto in coda.
+        existing_qualifications = PlayoffQualification.query.filter_by(
+            configuration_id=configuration_id
         ).all()
-        pending_qualifications = PlayoffQualification.query.filter_by(
-            configuration_id=configuration_id, status=QualificationStatus.PENDING.value
-        ).all()
-        current_qualifications = confirmed_qualifications + pending_qualifications
-
-        current_players = {q.user_id for q in current_qualifications}
+        current_players = {q.user_id for q in existing_qualifications}
 
         # Re-evaluate qualifications to find next eligible
         all_qualified = configuration.evaluate_qualifications()

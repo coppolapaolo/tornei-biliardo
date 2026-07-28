@@ -83,13 +83,21 @@ class HandicapService:
         # Add rating rules
         if rating_rules:
             for rating_rule_data in rating_rules:
+                # Nomi campi allineati al modello RatingHandicapRule
+                # (min_difference / max_difference / points_per_handicap /
+                # max_handicap), come fa create_standard_handicap_rule. Prima
+                # si usavano kwargs inesistenti (rating_difference_threshold,
+                # handicap_per_point) → TypeError ad ogni creazione con
+                # rating_rules. min_difference/points_per_handicap hanno
+                # default NOT NULL nel modello (50/100): usali se assenti.
                 rating_rule = RatingHandicapRule(
                     rule_id=rule.id,
                     rating_system=RatingSystem(rating_rule_data["rating_system"]),
-                    rating_difference_threshold=rating_rule_data[
-                        "rating_difference_threshold"
-                    ],
-                    handicap_per_point=rating_rule_data["handicap_per_point"],
+                    min_difference=rating_rule_data.get("min_difference", 50),
+                    max_difference=rating_rule_data.get("max_difference"),
+                    points_per_handicap=rating_rule_data.get(
+                        "points_per_handicap", 100
+                    ),
                     max_handicap=rating_rule_data.get("max_handicap"),
                 )
                 db.session.add(rating_rule)
@@ -150,7 +158,10 @@ class HandicapService:
                 "player2_handicap": handicap,
                 "handicap": handicap,
                 "method": "category",
-                "explanation": f"Player 2 ({cat2.value}) gets +{handicap} vs Player 1 ({cat1.value})",
+                "explanation": (
+                    f"Player 2 ({cat2.value}) gets +{handicap} "
+                    f"vs Player 1 ({cat1.value})"
+                ),
             }
         else:
             # Player 2 is higher category
@@ -160,7 +171,10 @@ class HandicapService:
                 "player2_handicap": 0,
                 "handicap": handicap,
                 "method": "category",
-                "explanation": f"Player 1 ({cat1.value}) gets +{handicap} vs Player 2 ({cat2.value})",
+                "explanation": (
+                    f"Player 1 ({cat1.value}) gets +{handicap} "
+                    f"vs Player 2 ({cat2.value})"
+                ),
             }
 
     @staticmethod
@@ -185,7 +199,9 @@ class HandicapService:
                         "player2_handicap": 0,
                         "handicap": 0,
                         "method": "same_rating",
-                        "explanation": f"Both players have same {rating_system.value} rating",
+                        "explanation": (
+                            f"Both players have same {rating_system.value} rating"
+                        ),
                     }
 
                 if rating1.rating_value > rating2.rating_value:
@@ -198,7 +214,10 @@ class HandicapService:
                         "player2_handicap": handicap,
                         "handicap": handicap,
                         "method": f"rating_{rating_system.value}",
-                        "explanation": f"Player 2 ({rating2.rating_value}) gets +{handicap} vs Player 1 ({rating1.rating_value})",
+                        "explanation": (
+                            f"Player 2 ({rating2.rating_value}) gets "
+                            f"+{handicap} vs Player 1 ({rating1.rating_value})"
+                        ),
                     }
                 else:
                     # Player 2 has higher rating
@@ -210,7 +229,10 @@ class HandicapService:
                         "player2_handicap": 0,
                         "handicap": handicap,
                         "method": f"rating_{rating_system.value}",
-                        "explanation": f"Player 1 ({rating1.rating_value}) gets +{handicap} vs Player 2 ({rating2.rating_value})",
+                        "explanation": (
+                            f"Player 1 ({rating1.rating_value}) gets "
+                            f"+{handicap} vs Player 2 ({rating2.rating_value})"
+                        ),
                     }
 
         # No ratings available
@@ -365,7 +387,10 @@ class HandicapService:
                     RatingService.assign_player_category(
                         user_id=user_id,
                         category=category,
-                        reason=f"Auto-assigned from {rating_system.value} rating ({rating.rating_value})",
+                        reason=(
+                            f"Auto-assigned from {rating_system.value} "
+                            f"rating ({rating.rating_value})"
+                        ),
                     )
                     assigned_count += 1
                     break
