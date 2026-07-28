@@ -16,7 +16,9 @@ from models.status_enum import (
     GaraStatus,
     MatchStatus,
     Discipline,
+    ProvaDerivedStatus,
 )
+from models.matchmaking.configuration import MatchmakingStrategy
 from models.classification.models import RoundClassification, GaraClassification
 from models.competition.spareggio_service import SpareggioService
 
@@ -414,6 +416,25 @@ def gara_detail(gara_id):
     ssr_needs_input = is_ssr_phase and has_unresolved_tiebreakers
     ssr_ready_to_terminate = is_ssr_phase and not has_unresolved_tiebreakers
 
+    # "L'azionabile va prima" (UI_CONVENTIONS): con le strategie sequenziali
+    # (Amalfi & co., non Random) a turno finito l'azione probabile e' avviare il
+    # turno successivo / lo spareggio SSR / terminare la gara — tutti pulsanti
+    # che vivono in Gestione. Su mobile Gestione risale quindi in cima e gia'
+    # aperta, invece di restare collassata sotto le partite.
+    # `is_gara_ending` e' escluso perche' in quel caso Gestione e' gia' in cima
+    # e aperta nella sidebar (che su mobile e' order-1).
+    round_action_ready = (
+        user_can_manage
+        and gara.status == GaraStatus.PLAYING.value
+        and gara.matchmaking_strategy != MatchmakingStrategy.RANDOM.value
+        and not is_gara_ending
+        and gara.get_real_status()
+        in (
+            ProvaDerivedStatus.ROUND_COMPLETED.value,
+            ProvaDerivedStatus.TOURNAMENT_COMPLETED.value,
+        )
+    )
+
     return render_template(
         "gara_detail.html",
         gara=gara,
@@ -451,4 +472,5 @@ def gara_detail(gara_id):
         has_scores=has_scores,
         ssr_needs_input=ssr_needs_input,
         ssr_ready_to_terminate=ssr_ready_to_terminate,
+        round_action_ready=round_action_ready,
     )

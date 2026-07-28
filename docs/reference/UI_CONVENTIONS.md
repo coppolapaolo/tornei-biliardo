@@ -530,9 +530,12 @@ dipende dalla **fase** e dal **ruolo**:
 | Vista | Fase | Azionabile (in alto) | Il resto (dopo, eventualmente collassato) |
 |-------|------|----------------------|-------------------------------------------|
 | admin/gara | iscrizioni | Gestione (apri/avvia) | Partite (non esistono ancora) |
-| admin/gara | gioco | Partite (risultati da inserire), Gestione Turni | Gestione collassata, Direttori, Info/Iscritti |
+| admin/gara | gioco, turno in corso | Partite (risultati da inserire), Gestione Turni | Gestione collassata, Direttori, Info/Iscritti |
+| admin/gara | gioco, turno finito (Amalfi) | Gestione **aperta** (Avvia Turno N+1 / Avvia Spareggio SSR / Termina Gara) | Partite, Gestione Turni, Direttori |
 | admin/gara | SSR fase A | SSR (inserire punteggi) | Classifica, Gestione collassata |
 | admin/gara | SSR fase B | Classifica finale, Termina Gara | SSR riepilogo, Direttori |
+| admin/match | punteggio in corso | Punteggio (aggiungi/togli rack) | Ritorno a fondo pagina |
+| admin/match | punteggio definitivo (rack massimi raggiunti o match chiuso) | Ritorno (alla Gara per chi gestisce, alla Dashboard per chi gioca) | Punteggio, storico rack, info |
 
 **Pattern implementativi:**
 
@@ -548,6 +551,20 @@ dipende dalla **fase** e dal **ruolo**:
 4. **Dentro una lista, l'elemento azionabile più urgente va primo**: turni
    attivi in ordine crescente (il più basso ha risultati da inserire),
    vedi `_match_cards_mobile.html`.
+5. **Aperto, non solo in alto**: quando l'azione è *una sola e probabile*,
+   il collapse è un tap di troppo — la sezione va renderizzata già espansa
+   (`round_action_ready` in `gara_detail.html`). Il collapse resta per ciò
+   che è "utile ma non ora".
+6. **Le condizioni di visibilità delle copie devono essere mutuamente
+   esclusive**: chi promuove una sezione in alto deve sopprimere la copia
+   che sta più in basso, altrimenti su mobile compare due volte (vedi
+   `round_action_ready` che esclude `is_gara_ending`, dove la Gestione è già
+   in cima nella sidebar `order-1`).
+
+**Flag lato route** (pre-calcolati in `routes/`, non `{% set %}` nel template):
+`playing_admin`, `ssr_needs_input`, `ssr_ready_to_terminate`,
+`round_action_ready` (`admin/competition/detail.py`), `score_is_final`
+(`admin/match/detail.py`).
 
 ---
 
@@ -1043,6 +1060,7 @@ Quando sono presenti punteggi SSR, i badge sono ordinati:
 | 2026-01-24 | Sezione Mobile-First Design | Linee guida complete DO/DON'T per interfacce mobile-first: header layout, azioni distruttive, tabelle responsive, touch target, statistiche, form, navigazione |
 | 2026-06-10 | Principio "l'azionabile va prima" (mobile) | Decisione utente da test manuale: l'interfaccia mostra prima ciò che serve in quel momento. Applicato in gara_detail.html fase gioco (Partite→Turni→Gestione collassata→Direttori via flex order-*) e turni attivi crescenti in _match_cards_mobile.html |
 | 2026-06-10 | fa-8-ball per "Ai tavoli adesso" | Card "In diretta ora": era fa-table-tennis-paddle-ball (racchetta ping pong!) — allineata alla convenzione biliardo |
+| 2026-07-28 | "L'azionabile va prima" esteso a admin/match e al turno finito Amalfi | Decisione utente: a punteggio definitivo il pulsante di ritorno sale in cima su mobile (`score_is_final`); a turno Amalfi finito la Gestione sale in cima **già aperta** con Avvia Turno/SSR/Termina (`round_action_ready`). Regressioni in `tests/new/integration/test_rilievi_20260728_mobile_azionabile.py` |
 
 ---
 
