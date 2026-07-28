@@ -112,6 +112,30 @@ class StateService:
         return gara
 
     @staticmethod
+    @transactional(domain="competition")
+    def cancel_ssr(gara: Gara) -> Gara:
+        """awaiting_ssr → playing
+
+        Contropartita di `start_ssr`: senza di essa lo spareggio era un vicolo
+        cieco, perché durante `awaiting_ssr` il reset dei match è bloccato
+        (ADR-026) e l'unica uscita era terminare la gara. Un punteggio
+        sbagliato scoperto in fase di spareggio non era più correggibile.
+
+        I punteggi SSR vengono azzerati: tornando a `playing` i match sono di
+        nuovo modificabili, quindi la classifica — e chi è a pari merito — può
+        cambiare. Riavviare l'SSR ricalcola i gruppi da capo.
+        """
+        StateService._require(gara, GaraStatus.AWAITING_SSR)
+
+        from models.competition.spareggio_service import SpareggioService
+
+        SpareggioService.clear_ssr_scores(gara.id)
+
+        gara.status = GaraStatus.PLAYING.value
+        db.session.add(gara)
+        return gara
+
+    @staticmethod
     def _require_one_of(gara: Gara, expected: list[GaraStatus]) -> None:
         """Validate that gara is in one of the expected states."""
         current_status = gara.status or GaraStatus.SETUP.value

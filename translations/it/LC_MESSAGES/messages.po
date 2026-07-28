@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-26 22:02+0200\n"
+"POT-Creation-Date: 2026-07-28 14:37+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -18,13 +18,32 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: models/competition/round_manager.py:128
+#: models/competition/round_manager.py:124
 msgid ""
 "Gara certificata da spareggio: annulla prima lo spareggio per modificare "
 "i match"
 msgstr ""
 
-#: models/competition/round_manager.py:246
+#: models/competition/round_manager.py:152
+msgid ""
+"Gara in fase di spareggio (SSR): concludi lo spareggio prima di "
+"modificare i risultati"
+msgstr ""
+
+#: models/competition/round_manager.py:157
+msgid "La gara è già completata"
+msgstr ""
+
+#: models/competition/round_manager.py:159
+msgid "La gara è ancora in fase di iscrizione"
+msgstr ""
+
+#: models/competition/round_manager.py:160
+#, python-format
+msgid "La gara non è in corso (stato: %(status)s)"
+msgstr ""
+
+#: models/competition/round_manager.py:279
 msgid ""
 "Gara certificata da spareggio: annulla prima lo spareggio per cancellare "
 "il turno"
@@ -614,6 +633,25 @@ msgstr ""
 msgid "Configurazione tavoli salvata!"
 msgstr ""
 
+#: routes/admin/competition/rounds.py:294
+msgid "La gara non è in fase di spareggio!"
+msgstr ""
+
+#: routes/admin/competition/rounds.py:303
+msgid ""
+"Spareggio annullato: i punteggi SSR sono stati azzerati e puoi modificare"
+" di nuovo i risultati."
+msgstr ""
+
+#: routes/admin/competition/rounds.py:321 routes/individual_match/matches.py:36
+#: routes/individual_match/matches.py:58
+#: routes/individual_match/proposals.py:36
+#: routes/individual_match/proposals.py:64
+#: routes/individual_match/proposals.py:369 routes/individual_match/views.py:34
+#: routes/individual_match/views.py:142
+msgid "Errore interno del server"
+msgstr ""
+
 #: routes/gamification/admin.py:82 templates/base.html:283
 #: templates/base_navbar_section.html:39
 #: templates/gamification/admin/dashboard.html:5
@@ -888,14 +926,6 @@ msgstr ""
 
 #: routes/gamification/features.py:163
 msgid "Feature creata con successo"
-msgstr ""
-
-#: routes/individual_match/matches.py:36 routes/individual_match/matches.py:58
-#: routes/individual_match/proposals.py:36
-#: routes/individual_match/proposals.py:64
-#: routes/individual_match/proposals.py:369 routes/individual_match/views.py:34
-#: routes/individual_match/views.py:142
-msgid "Errore interno del server"
 msgstr ""
 
 #: routes/individual_match/matches.py:49 routes/individual_match/matches.py:487
@@ -1373,7 +1403,7 @@ msgstr ""
 
 #: templates/components/_index_campionato_cards.html:164
 #: templates/components/_ssr_section.html:29 templates/gara_detail.html:305
-#: templates/gara_detail.html:840
+#: templates/gara_detail.html:842
 msgid "Punti SSR"
 msgstr ""
 
@@ -1710,6 +1740,18 @@ msgstr ""
 
 #: templates/gara_detail.html:807
 msgid ""
+"Annullare la fase di spareggio (SSR)?\n"
+"\n"
+"I punteggi SSR già inseriti verranno azzerati e la gara tornerà in gioco,"
+" così potrai correggere i risultati."
+msgstr ""
+
+#: templates/gara_detail.html:808
+msgid "Errore durante l'annullamento della fase SSR"
+msgstr ""
+
+#: templates/gara_detail.html:809
+msgid ""
 "Sei sicuro di voler resettare l'ultimo turno?\n"
 "\n"
 "Tutti i risultati del turno verranno azzerati e i match torneranno in "
@@ -1718,7 +1760,7 @@ msgid ""
 "Questa azione è IRREVERSIBILE!"
 msgstr ""
 
-#: templates/gara_detail.html:808
+#: templates/gara_detail.html:810
 #, python-brace-format
 msgid ""
 "Sei SICURO di voler eliminare la Gara {number}?\n"
@@ -1726,7 +1768,7 @@ msgid ""
 "Questa azione è IRREVERSIBILE!"
 msgstr ""
 
-#: templates/gara_detail.html:809
+#: templates/gara_detail.html:811
 #, python-brace-format
 msgid ""
 "Sei SICURO di voler cancellare la Gara {number}?\n"
@@ -1735,15 +1777,15 @@ msgid ""
 "Questa azione è IRREVERSIBILE!"
 msgstr ""
 
-#: templates/gara_detail.html:810 templates/gara_detail.html:1750
+#: templates/gara_detail.html:812 templates/gara_detail.html:1777
 msgid "Sei sicuro di voler resettare questa partita?"
 msgstr ""
 
-#: templates/gara_detail.html:811 templates/gara_detail.html:1774
+#: templates/gara_detail.html:813 templates/gara_detail.html:1801
 msgid "Sei sicuro di voler resettare questo trio?"
 msgstr ""
 
-#: templates/gara_detail.html:812 templates/gara_detail.html:1802
+#: templates/gara_detail.html:814 templates/gara_detail.html:1829
 #: templates/match_detail.html:630
 msgid ""
 "Confermi di voler validare questo risultato? Il tavolo verrà liberato e "
@@ -1752,7 +1794,7 @@ msgstr ""
 
 #: templates/components/_match_admin_controls.html:223
 #: templates/components/_match_admin_controls.html:265
-#: templates/gara_detail.html:813 templates/gara_detail.html:828
+#: templates/gara_detail.html:815 templates/gara_detail.html:830
 #: templates/individual_match/availability.html:224
 #: templates/individual_match/availability.html:252
 #: templates/individual_match/match_detail.html:254
@@ -1774,96 +1816,96 @@ msgstr ""
 msgid "Errore:"
 msgstr ""
 
-#: templates/gara_detail.html:814
+#: templates/gara_detail.html:816
 msgid "Errore durante la cancellazione:"
 msgstr ""
 
-#: templates/gara_detail.html:815
+#: templates/gara_detail.html:817
 msgid "Errore durante la terminazione:"
 msgstr ""
 
-#: templates/gara_detail.html:816
+#: templates/gara_detail.html:818
 msgid "Errore durante la terminazione della gara"
 msgstr ""
 
-#: templates/gara_detail.html:817
+#: templates/gara_detail.html:819
 msgid "Errore durante l'avvio della fase SSR"
 msgstr ""
 
-#: templates/gara_detail.html:818
+#: templates/gara_detail.html:820
 msgid "Errore durante il salvataggio dei punteggi"
 msgstr ""
 
-#: templates/gara_detail.html:819
+#: templates/gara_detail.html:821
 msgid "Errore durante il reset:"
 msgstr ""
 
-#: templates/gara_detail.html:820
+#: templates/gara_detail.html:822
 msgid "Errore durante l'eliminazione della gara: "
 msgstr ""
 
-#: templates/gara_detail.html:821
+#: templates/gara_detail.html:823
 msgid "Errore di rete durante l'eliminazione"
 msgstr ""
 
-#: templates/gara_detail.html:822
+#: templates/gara_detail.html:824
 msgid "Errore di rete durante l'avvio del turno"
 msgstr ""
 
-#: templates/gara_detail.html:823
+#: templates/gara_detail.html:825
 msgid "Errore durante l'avvio del turno:"
 msgstr ""
 
-#: templates/gara_detail.html:824
+#: templates/gara_detail.html:826
 msgid "Errore di rete durante la creazione del turno"
 msgstr ""
 
 #: templates/components/_match_admin_controls.html:228
-#: templates/gara_detail.html:825
+#: templates/gara_detail.html:827
 msgid "Errore durante l'impostazione del risultato"
 msgstr ""
 
-#: templates/gara_detail.html:826 templates/match_detail.html:596
+#: templates/gara_detail.html:828 templates/match_detail.html:596
 #: templates/match_detail.html:601 templates/match_detail.html:619
 #: templates/match_detail.html:624
 msgid "Errore durante il reset"
 msgstr ""
 
-#: templates/gara_detail.html:827
+#: templates/gara_detail.html:829
 msgid "Errore durante il reset del trio"
 msgstr ""
 
-#: templates/gara_detail.html:829 templates/match_detail.html:647
+#: templates/gara_detail.html:831 templates/match_detail.html:647
 msgid "Errore durante la validazione"
 msgstr ""
 
-#: templates/gara_detail.html:830
+#: templates/gara_detail.html:832
 msgid "Errore di rete durante l'operazione sul tavolo"
 msgstr ""
 
-#: templates/gara_detail.html:831
+#: templates/gara_detail.html:833
 msgid "Tutti i punteggi devono essere numeri interi non negativi"
 msgstr ""
 
-#: templates/gara_detail.html:832
+#: templates/gara_detail.html:834
 msgid "I punteggi devono essere tutti diversi per risolvere il parimerito"
 msgstr ""
 
-#: templates/gara_detail.html:833
+#: templates/gara_detail.html:835
 msgid "I punteggi devono essere numeri interi non negativi"
 msgstr ""
 
-#: templates/gara_detail.html:834
+#: templates/gara_detail.html:836
 msgid "I punteggi devono essere diversi all'interno del gruppo"
 msgstr ""
 
-#: templates/gara_detail.html:835
+#: templates/gara_detail.html:837
 msgid "Usa 'Avvia SSR' per inserire i punteggi degli spareggi"
 msgstr ""
 
 #: templates/components/_match_admin_controls.html:223
 #: templates/components/_match_admin_controls.html:265
-#: templates/gara_detail.html:836
+#: templates/gara_detail.html:838
 #: templates/individual_match/match_detail.html:403
 #: templates/match_detail.html:212 templates/match_detail.html:244
 #: templates/match_detail.html:280 templates/match_detail.html:313
@@ -1872,59 +1914,59 @@ msgstr ""
 msgid "Errore sconosciuto"
 msgstr ""
 
-#: templates/gara_detail.html:837 templates/match_detail.html:642
+#: templates/gara_detail.html:839 templates/match_detail.html:642
 msgid "Impossibile validare il risultato"
 msgstr ""
 
-#: templates/gara_detail.html:838
+#: templates/gara_detail.html:840
 msgid "Pari merito per il"
 msgstr ""
 
-#: templates/gara_detail.html:839
+#: templates/gara_detail.html:841
 msgid "posto"
 msgstr ""
 
-#: templates/gara_detail.html:841
+#: templates/gara_detail.html:843
 msgid "Click per scambiare con match occupante"
 msgstr ""
 
 #: templates/components/_gara_matches.html:57
 #: templates/components/_gara_matches.html:88
-#: templates/components/_match_header.html:13 templates/gara_detail.html:842
+#: templates/components/_match_header.html:13 templates/gara_detail.html:844
 msgid "Tavolo"
 msgstr ""
 
-#: templates/gara_detail.html:1486
+#: templates/gara_detail.html:1513
 msgid ""
 "Sei sicuro di voler chiudere le iscrizioni? La gara tornerà allo stato di"
 " setup."
 msgstr ""
 
-#: templates/gara_detail.html:1618
+#: templates/gara_detail.html:1645
 msgid "I rack non possono essere negativi."
 msgstr ""
 
-#: templates/gara_detail.html:1620
+#: templates/gara_detail.html:1647
 #, python-format
 msgid "Nessun giocatore può avere più di %(d)s rack."
 msgstr ""
 
-#: templates/gara_detail.html:1624
+#: templates/gara_detail.html:1651
 #, python-format
 msgid "Somma rack troppo alta: massimo %(d)s."
 msgstr ""
 
-#: templates/gara_detail.html:1626
+#: templates/gara_detail.html:1653
 #, python-format
 msgid "Risultato incompleto: uno dei due deve raggiungere %(d)s."
 msgstr ""
 
-#: templates/gara_detail.html:1631
+#: templates/gara_detail.html:1658
 #, python-format
 msgid "Somma rack troppo alta: il totale esatto è %(d)s."
 msgstr ""
 
-#: templates/gara_detail.html:1633
+#: templates/gara_detail.html:1660
 #, python-format
 msgid "Risultato incompleto: la somma deve essere esattamente %(d)s."
 msgstr ""
@@ -3309,7 +3351,7 @@ msgstr ""
 msgid "Spot Shot Rally - punteggio spareggio"
 msgstr ""
 
-#: templates/components/_detailed_classification.html:83
+#: templates/components/_detailed_classification.html:86
 msgid "Punteggio Spot Shot Rally"
 msgstr ""
 
@@ -3652,7 +3694,17 @@ msgid ""
 "                        modifiche"
 msgstr ""
 
-#: templates/components/_gara_management.html:289
+#: templates/components/_gara_management.html:287
+msgid "Annulla Spareggio (SSR)"
+msgstr ""
+
+#: templates/components/_gara_management.html:290
+msgid ""
+"Riporta la gara in gioco per correggere i risultati. I punteggi SSR "
+"inseriti verranno azzerati."
+msgstr ""
+
+#: templates/components/_gara_management.html:298
 #: templates/components/_soft_delete_modal.html:102
 #: templates/components/_unified_cards.html:280
 #: templates/components/_unified_cards.html:287

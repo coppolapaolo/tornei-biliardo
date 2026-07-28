@@ -804,6 +804,8 @@
       "confirmCancelCurrentRound": {{ _("Sei sicuro di voler cancellare l'avvio del turno corrente? Tutte le partite del turno verranno eliminate e si tornerà al turno precedente.") | tojson }},
       "confirmTerminate": {{ _("Sei sicuro di voler terminare la gara?\n\nDopo la conferma, i risultati saranno definitivi e non sarà più possibile modificarli.") | tojson }},
       "confirmStartSsr": {{ _("Avviare la fase di spareggio (SSR)?\n\nDovrai inserire i punteggi per risolvere i parimerito nelle prime %(pos)s posizioni.", pos=gara.tiebreaker_until_position or 3) | tojson }},
+      "confirmCancelSsr": {{ _("Annullare la fase di spareggio (SSR)?\n\nI punteggi SSR già inseriti verranno azzerati e la gara tornerà in gioco, così potrai correggere i risultati.") | tojson }},
+      "errorSsrCancel": {{ _("Errore durante l'annullamento della fase SSR") | tojson }},
       "confirmResetRound": {{ _("Sei sicuro di voler resettare l'ultimo turno?\n\nTutti i risultati del turno verranno azzerati e i match torneranno in stato 'In Attesa'.\n\nQuesta azione è IRREVERSIBILE!") | tojson }},
       "confirmDeleteGara": {{ _("Sei SICURO di voler eliminare la Gara {number}?\n\nQuesta azione è IRREVERSIBILE!") | tojson }},
       "confirmCancelGara": {{ _("Sei SICURO di voler cancellare la Gara {number}?\n\nTutti i player iscritti riceveranno una notifica della cancellazione.\nQuesta azione è IRREVERSIBILE!") | tojson }},
@@ -985,6 +987,31 @@
         showError(GARA_CONFIG.i18n.errorSsrStart);
         restore();
       });
+    });
+  }
+
+  function cancelSsr(garaId, btn) {
+    showConfirm(GARA_CONFIG.i18n.confirmCancelSsr, () => {
+      const restore = withLoading(btn);
+      fetch(`/admin/gara/${garaId}/cancel_ssr`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': csrfToken()}
+      }).then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            location.reload();
+          } else {
+            showError(GARA_CONFIG.i18n.errorTitle + ' ' + (data.error || data.message));
+            restore();
+          }
+        }).catch(error => {
+          console.error('Fetch error:', error);
+          showError(GARA_CONFIG.i18n.errorSsrCancel);
+          restore();
+        });
     });
   }
 

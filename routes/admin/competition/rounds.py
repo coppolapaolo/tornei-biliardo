@@ -10,6 +10,7 @@ from flask import (
     flash,
     jsonify,
 )
+from flask_babel import _
 from flask_login import login_required
 
 from models import (
@@ -268,6 +269,56 @@ def start_ssr(gara_id):
             return safe_json_error(e, "starting SSR")
         logger.error(f"Error starting SSR: {e}", exc_info=True)
         flash("Errore interno del server", "error")
+
+    return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+
+@competition_bp.route("/<int:gara_id>/cancel_ssr", methods=["POST"])
+@login_required
+@gara_manager_required
+def cancel_ssr(gara_id):
+    """Annulla la fase SSR e riporta la gara in gioco.
+
+    Transition: awaiting_ssr → playing
+
+    Senza questa via di ritorno lo spareggio era un vicolo cieco: durante
+    `awaiting_ssr` il reset dei match è bloccato, quindi un risultato
+    sbagliato scoperto a spareggio avviato non era più correggibile.
+    """
+    from models.competition.state_service import StateService
+
+    gara = Gara.query.get_or_404(gara_id)
+    is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
+
+    if gara.status != GaraStatus.AWAITING_SSR.value:
+        message = _("La gara non è in fase di spareggio!")
+        if is_ajax:
+            return jsonify({"success": False, "error": str(message)}), 400
+        flash(str(message), "error")
+        return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+    try:
+        StateService.cancel_ssr(gara)
+        message = _(
+            "Spareggio annullato: i punteggi SSR sono stati azzerati e "
+            "puoi modificare di nuovo i risultati."
+        )
+        if is_ajax:
+            return jsonify(
+                {
+                    "success": True,
+                    "message": str(message),
+                    "redirect": url_for(
+                        "admin.competition.gara_detail", gara_id=gara_id
+                    ),
+                }
+            )
+        flash(str(message), "success")
+    except Exception as e:
+        if is_ajax:
+            return safe_json_error(e, "cancelling SSR")
+        logger.error(f"Error cancelling SSR: {e}", exc_info=True)
+        flash(str(_("Errore interno del server")), "error")
 
     return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
