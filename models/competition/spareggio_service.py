@@ -523,6 +523,29 @@ class SpareggioService:
         return True, f"Punteggi SSR per posizione {group_position} salvati"
 
     @staticmethod
+    def clear_ssr_scores(gara_id: int) -> int:
+        """Azzera i punteggi di spareggio di una gara. Restituisce le righe toccate.
+
+        Serve all'annullamento della fase SSR: tornando a `playing` il director
+        può modificare i match, quindi la classifica — e con essa chi è a pari
+        merito — può cambiare. Punteggi sopravvissuti si riferirebbero a una
+        classifica che non esiste più, e `finalize_classification` li userebbe
+        senza modo di accorgersene.
+
+        Le righe `GaraClassification` non vengono cancellate: contengono anche
+        posizione e statistiche, che il prossimo ricalcolo riscrive.
+
+        Senza `@transactional`: è sempre chiamato dentro un contesto
+        transazionale (`StateService.cancel_ssr`), e annidare i decoratori
+        provoca rollback del savepoint esterno.
+        """
+        rows = db.session.query(GaraClassification).filter_by(gara_id=gara_id).all()
+        for row in rows:
+            row.spot_shot_wins = 0
+            row.tiebreaker_resolved = False
+        return len(rows)
+
+    @staticmethod
     @transactional(domain="competition")
     def finalize_classification(gara_id: int) -> Tuple[bool, str]:
         """

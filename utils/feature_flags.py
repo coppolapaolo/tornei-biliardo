@@ -146,6 +146,7 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "admin.competition.check_match_modification": {"director"},
     # SSR (spareggi) — risoluzione parimerito a fine gara
     "admin.competition.start_ssr": {"director"},
+    "admin.competition.cancel_ssr": {"director"},
     "admin.competition.save_ssr_group": {"director"},
     "admin.competition.save_ssr_scores": {"director"},
     # Challenge management (per gare Random con drill-based scoring)
