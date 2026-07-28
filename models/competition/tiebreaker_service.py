@@ -73,19 +73,35 @@ class TiebreakerService:
         if not classifications:
             return []
 
-        # Group by (matches_won, valore rack di classifica) to find ties.
-        # `ranking_rack_value` è il criterio della gara — rack totali se il
-        # sistema è RACK, differenza altrove — coerente con
-        # `SpareggioService._group_by_classification`. Usare sempre la
-        # differenza inventerebbe parimerito inesistenti nelle gare a rack.
+        # Chiave di parimerito IDENTICA a `SpareggioService._group_by_classification`:
+        # i due servizi rispondono alla stessa domanda ("chi è a pari merito?") e
+        # devono farlo allo stesso modo.
+        #
+        # - RACK: solo i rack totali. `matches_won` NON è un criterio di
+        #   classifica in questo sistema, quindi includerlo nella chiave
+        #   spezzerebbe un ex-aequo reale (stessi rack, vittorie diverse) e lo
+        #   spareggio non scatterebbe.
+        # - WINS / POSITION: (vittorie, differenza rack), entrambi criteri.
+        is_rack_system = (gara.classification_system or "WINS").upper() == "RACK"
+
+        def tie_key(c) -> Tuple[int, int]:
+            if is_rack_system:
+                return (0, c.ranking_rack_value)
+            return (c.matches_won, c.rack_difference or 0)
+
         groups: Dict[Tuple[int, int], List[int]] = {}
         position_map: Dict[Tuple[int, int], int] = {}
+        stats_map: Dict[Tuple[int, int], Tuple[int, int]] = {}
 
         for c in classifications:
-            key = (c.matches_won, c.ranking_rack_value)
+            key = tie_key(c)
             if key not in groups:
                 groups[key] = []
                 position_map[key] = c.position
+                # Valori riportati nel TiedPosition: quelli reali del primo
+                # giocatore del gruppo, non la chiave (che in RACK azzera
+                # deliberatamente le vittorie).
+                stats_map[key] = (c.matches_won, c.ranking_rack_value)
             groups[key].append(c.user_id)
 
         # Find ties within tiebreaker_until_position
@@ -97,12 +113,13 @@ class TiebreakerService:
                 # (`or 3`: guardia NULL coerente con gli altri siti — un record
                 # legacy con tiebreaker_until_position=NULL darebbe int <= None)
                 if position <= (gara.tiebreaker_until_position or 3):
+                    matches_won, rack_value = stats_map[key]
                     ties.append(
                         TiedPosition(
                             position=position,
                             player_ids=player_ids,
-                            matches_won=key[0],
-                            rack_difference=key[1],
+                            matches_won=matches_won,
+                            rack_difference=rack_value,
                         )
                     )
 

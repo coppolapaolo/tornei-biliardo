@@ -83,6 +83,11 @@ class SeedingService:
                 position=len(seeding) + 1,
                 matches_won=0,
                 rack_difference=0,
+                # Esplicito, non NULL: `racks_won` NULL significa "riga scritta
+                # prima della separazione delle colonne" e fa scattare il
+                # fallback di `ranking_rack_value`. Una riga nuova non deve
+                # dipendere da quel fallback.
+                racks_won=0,
             )
             db.session.add(row)
             seeding.append(row)
