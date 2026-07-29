@@ -65,6 +65,26 @@ def test_ignora_subscript_che_non_sono_environ(tmp_path):
 
 
 @pytest.mark.unit
+def test_ignora_environ_di_oggetti_diversi_da_os(tmp_path):
+    """Regressione (rilievo Copilot su PR #72).
+
+    Il controllo si fermava a `.attr == "environ"`, quindi bastava che un
+    oggetto qualsiasi esponesse quell'attributo perché le sue chiavi
+    finissero applicate come variabili d'ambiente reali del processo.
+    """
+    wsgi = _write(
+        tmp_path,
+        "import os\n"
+        "from werkzeug.test import EnvironBuilder as builder\n"
+        "builder.environ['NON_E_UNA_ENV'] = 'no'\n"
+        "request.environ['NEPPURE_QUESTA'] = 'no'\n"
+        "os.environ['VERA'] = 'si'\n",
+    )
+
+    assert auto_deploy.read_wsgi_env(wsgi) == {"VERA": "si"}
+
+
+@pytest.mark.unit
 def test_file_mancante_o_illeggibile_non_solleva(tmp_path):
     """Fuori da PythonAnywhere il file non esiste: deve degradare, non esplodere."""
     assert auto_deploy.read_wsgi_env(tmp_path / "inesistente.py") == {}
