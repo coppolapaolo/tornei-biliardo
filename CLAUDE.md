@@ -94,7 +94,12 @@ poi riapplicarla).
 - `scripts/auto_deploy.py`: git pull, pip install, migrations e reload. Le
   migrations girano SOLO se pendenti e con la web app disabilitata via API
   (Disable → migrate → Enable; token da `$API_TOKEN`). Senza token si ferma
-  con istruzioni manuali.
+  con istruzioni manuali. **Legge le env di produzione dal file WSGI**
+  (`read_wsgi_env`, parsing AST senza eseguirlo): il task è un processo
+  separato e non le eredita, e senza `ENCRYPTION_KEY` una migration sui PII
+  non solleva — fallisce la decifratura, il backfill resta vuoto e la
+  migration risulta comunque applicata (incidente 2026-06-25, vedi sotto). Se
+  ci sono migrations pendenti e la chiave non è ricavabile, il deploy si ferma.
 - `scripts/backup_db.py`: backup giornaliero del DB (rotazione 7 copie in
   `backups/`).
 
@@ -106,11 +111,26 @@ web app su **Disabled** (riabilitare subito dopo).
 
 **Variabili d'ambiente richieste in produzione** (nel WSGI file
 `/var/www/www_torneibiliardo_it_wsgi.py`): `FLASK_ENV=production` e
-`ENCRYPTION_KEY` (fail-fast all'avvio se assente; la chiave cifra i PII —
-rotazione con `scripts/rotate_encryption_key.py`, procedura nel docstring).
-Gli script da console che toccano PII vanno lanciati con
-`ENCRYPTION_KEY='...' python scripts/...` (la console non eredita le env
-del WSGI).
+`ENCRYPTION_KEY` (la chiave cifra i PII — rotazione con
+`scripts/rotate_encryption_key.py`, procedura nel docstring). Il fail-fast
+scatta al **primo uso** della cifratura, non all'avvio: `_resolve_key_string`
+è invocata da `EncryptionManager._initialize_cipher`, che parte all'import di
+`utils.encryption` (singleton eager). Gli script da console che toccano PII
+vanno lanciati con `ENCRYPTION_KEY='...' python scripts/...` (la console non
+eredita le env del WSGI; `auto_deploy.py` se le legge da solo, vedi sopra).
+
+**⚠️ Migration sui PII senza chiave (incidente 2026-06-25)**: il fail-fast
+richiede `FLASK_ENV=production`. In console/task quella variabile non c'è,
+quindi la mancanza di `ENCRYPTION_KEY` degrada in silenzio sulla chiave di
+sviluppo. `20260625_add_email_hash` è girata così dallo scheduled task: la
+decifratura falliva su ogni riga, il guard interno saltava (giustamente, per
+non scrivere hash sbagliati) e il risultato è stato **0 hash su 37 utenti**,
+con la migration marcata come applicata e quindi mai ritentata. Effetto:
+recupero password muto per cinque settimane — `request_password_reset`
+ritorna `True` anche a utente non trovato, per non esporre l'enumerazione
+degli account, quindi nessun errore da nessuna parte. Diagnosi:
+`SELECT COUNT(*) FROM user WHERE email IS NOT NULL AND email != '' AND
+(email_hash IS NULL OR email_hash = '') AND deleted_at IS NULL`.
 
 **Monitoring (GlitchTip)**: DSN in `GLITCHTIP_DSN` (WSGI). In `app.py`
 `traces_sample_rate` deve restare **0.0**: le transaction di performance

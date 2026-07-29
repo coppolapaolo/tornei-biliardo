@@ -2,9 +2,23 @@
 """Auto-deploy script for PythonAnywhere scheduled task.
 
 This script:
+0. Legge le env di produzione dal file WSGI
 1. Pulls latest code from GitHub
 2. Runs pending database migrations — SOLO con la web app disabilitata
 3. Reloads the web app
+
+Il task gira in un processo separato che il file WSGI non esegue mai, quindi
+NON eredita le sue variabili d'ambiente (ENCRYPTION_KEY, FLASK_ENV, ...): le
+legge da li' e le applica, cosi' il runner delle migrations — che e' un
+subprocess e eredita os.environ — vede la stessa configurazione della web app.
+Il file WSGI resta la fonte unica: nessuna chiave duplicata, nessun rischio
+che le due divergano.
+
+Senza ENCRYPTION_KEY una migration sui PII non fallisce, il che e' peggio:
+`decrypt_data` non decifra, il guard salta la riga e il backfill resta vuoto
+mentre la migration viene marcata come applicata (incidente 2026-06-25,
+`20260625_add_email_hash`: 0 hash su 37 utenti). Per questo, se ci sono
+migrations pendenti e la chiave non e' disponibile, il deploy si ferma.
 
 Le migrations scrivono sul DB SQLite mentre la web app scrive anche lei:
 su PythonAnywhere (storage NFS, lock inaffidabili) due writer concorrenti
@@ -25,13 +39,14 @@ Or run manually via Bash console:
     cd /home/paolocoppola/mysite && python scripts/auto_deploy.py
 """
 
+import ast
 import os
 import re
 import subprocess
 import sys
 import urllib.request
 from pathlib import Path
-from typing import Optional
+from typing import Dict, Optional
 
 # Configuration
 PROJECT_DIR = Path(__file__).parent.parent
@@ -39,6 +54,11 @@ REMOTE = "origin"
 BRANCH = "main"
 PA_USERNAME = "paolocoppola"
 PA_DOMAIN = "www.torneibiliardo.it"  # domain_name della webapp (vedi WSGI file)
+
+# Il file WSGI e' la fonte unica delle env di produzione (ENCRYPTION_KEY,
+# FLASK_ENV, credenziali mail...). Questo script NON le eredita: gira in un
+# processo separato che il file WSGI non esegue mai.
+WSGI_FILE = Path("/var/www") / f"{PA_DOMAIN.replace('.', '_')}_wsgi.py"
 
 
 def run_command(cmd: list, cwd: Path = None) -> tuple:
@@ -110,6 +130,63 @@ def install_dependencies() -> tuple:
         [sys.executable, "-m", "pip", "install", "-q", "-r", str(requirements)],
     )
     return success, output
+
+
+def read_wsgi_env(wsgi_path: Path) -> Dict[str, str]:
+    """Estrae gli `os.environ[...] = "..."` dal file WSGI senza eseguirlo.
+
+    Parsing via AST invece che regex o exec: il file WSGI importa l'app Flask,
+    quindi eseguirlo qui avvierebbe una seconda istanza applicativa; una regex
+    invece si romperebbe sul quoting o sull'indentazione. L'AST legge solo le
+    assegnazioni con valore costante e ignora tutto il resto.
+
+    Ritorna {} se il file manca, non e' leggibile o non e' parsabile: sta a chi
+    chiama decidere se in quel contesto sia un errore fatale.
+    """
+    try:
+        tree = ast.parse(wsgi_path.read_text(encoding="utf-8"))
+    except (OSError, SyntaxError, ValueError):
+        return {}
+
+    env: Dict[str, str] = {}
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Assign):
+            continue
+        for target in node.targets:
+            if not (
+                isinstance(target, ast.Subscript)
+                and isinstance(target.value, ast.Attribute)
+                and target.value.attr == "environ"
+            ):
+                continue
+            key_node = target.slice
+            if isinstance(key_node, ast.Index):  # Python < 3.9
+                key_node = key_node.value  # type: ignore[attr-defined]
+            try:
+                name = ast.literal_eval(key_node)
+                value = ast.literal_eval(node.value)
+            except (ValueError, TypeError, SyntaxError):
+                continue  # valore non costante (es. os.path.join(...)): ignora
+            if isinstance(name, str) and isinstance(value, str):
+                env[name] = value
+    return env
+
+
+def load_wsgi_env() -> Dict[str, str]:
+    """Porta le env del WSGI nel processo corrente e nei suoi subprocess.
+
+    Il runner delle migrations e' un subprocess e eredita `os.environ`, quindi
+    questo passo e' sufficiente perche' veda la stessa configurazione della web
+    app. `setdefault` e non assegnazione diretta: una variabile gia' presente
+    nell'ambiente vince, cosi' resta possibile forzarne una da riga di comando
+    per un singolo run.
+
+    Ritorna le variabili LETTE dal WSGI (non quelle effettivamente applicate).
+    """
+    env = read_wsgi_env(WSGI_FILE)
+    for name, value in env.items():
+        os.environ.setdefault(name, value)
+    return env
 
 
 def run_migrations() -> tuple:
@@ -210,8 +287,7 @@ def reload_webapp() -> tuple:
     print("Reloading web app...")
 
     # On PythonAnywhere, touching the WSGI file reloads the app
-    # Custom domain: www.torneibiliardo.it
-    wsgi_file = Path("/var/www/www_torneibiliardo_it_wsgi.py")
+    wsgi_file = WSGI_FILE
 
     if wsgi_file.exists():
         try:
@@ -228,6 +304,30 @@ def main():
     print("Auto-Deploy Script")
     print("=" * 60)
     print(f"Project: {PROJECT_DIR}")
+    print()
+
+    # Step 0: env di produzione dal file WSGI. Va fatto PRIMA di qualunque
+    # invocazione del runner delle migrations (anche `--status`, che importa i
+    # modelli): senza, il processo ripiega sui default di sviluppo.
+    wsgi_env = load_wsgi_env()
+    if wsgi_env:
+        # Solo i NOMI: i valori sono segreti (SECRET_KEY, MAIL_PASSWORD, ...).
+        print(f"Env dal WSGI: {', '.join(sorted(wsgi_env))}")
+    else:
+        print(f"Env dal WSGI: nessuna letta da {WSGI_FILE}")
+
+    # Con FLASK_ENV=production e senza chiave, il primo import dei modelli
+    # solleverebbe (fail-fast in utils/encryption.py): meglio dirlo qui che
+    # lasciare uno stack trace a meta' deploy.
+    if os.environ.get("FLASK_ENV") == "production" and not os.environ.get(
+        "ENCRYPTION_KEY"
+    ):
+        print(
+            "ERROR: FLASK_ENV=production ma ENCRYPTION_KEY non disponibile. "
+            "Ogni import dei modelli fallirebbe. Deploy interrotto."
+        )
+        sys.exit(1)
+
     print()
 
     # Step 1: Git pull
@@ -264,6 +364,21 @@ def main():
     else:
         if pending is None:
             print("WARNING: stato migrations non determinabile, assumo pendenti")
+        # Una migration che tocca PII (decrypt/compute_email_hash) con la
+        # chiave di sviluppo NON solleva: la decifratura fallisce, il guard
+        # salta la riga e il backfill resta vuoto lasciando la migration
+        # marcata come applicata. E' successo il 2026-06-25 con
+        # 20260625_add_email_hash: 0 hash su 37 utenti, recupero password muto
+        # per cinque settimane. Meglio un deploy fermo di un guasto invisibile.
+        if not os.environ.get("ENCRYPTION_KEY"):
+            print(
+                "ERROR: migrations pendenti ma ENCRYPTION_KEY non disponibile "
+                f"(non letta da {WSGI_FILE}). Una migration sui PII fallirebbe "
+                "in silenzio. Deploy interrotto. Procedura manuale: tab Web -> "
+                "Disable, `ENCRYPTION_KEY='...' python migrations/runner.py`, "
+                "tab Web -> Enable."
+            )
+            sys.exit(1)
         success, output = run_migrations_safely()
         print(f"Migrations: {output}")
         if not success:
