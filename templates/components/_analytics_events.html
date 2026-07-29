@@ -1,0 +1,25 @@
+{# Google Analytics 4 - eventi custom accodati da utils/analytics.py::track_event.
+
+   Va incluso DOPO che base.html ha valorizzato `all_messages` (riga con
+   get_flashed_messages): i messaggi flash si consumano alla prima lettura,
+   quindi non si puo' richiamare get_flashed_messages una seconda volta.
+
+   Il payload e' JSON prodotto da json.dumps lato server, per questo `|safe`
+   e' corretto qui - stesso pattern del bridge gamification piu' sotto. #}
+{% if config.GA_MEASUREMENT_ID and all_messages %}
+<script>
+    (function () {
+        if (typeof gtag !== 'function') { return; }
+        {% for category, message in all_messages %}
+        {% if category == 'analytics_event' %}
+        try {
+            var analyticsEvent = {{ message | safe }};
+            gtag('event', analyticsEvent.name, analyticsEvent.params || {});
+        } catch (e) {
+            console.error('Errore invio evento analytics:', e);
+        }
+        {% endif %}
+        {% endfor %}
+    })();
+</script>
+{% endif %}

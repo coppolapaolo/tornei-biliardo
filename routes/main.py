@@ -24,6 +24,18 @@ def index():
     return render_template("index.html", **data)
 
 
+@main_bp.route("/privacy")
+def privacy_policy():
+    """Informativa privacy e cookie - pagina pubblica.
+
+    Necessaria perché il sito usa uno strumento di analisi del traffico
+    (Google Analytics). Il template legge da sé `config.GA_MEASUREMENT_ID`
+    per mostrare la sezione sui cookie analitici solo quando il tracking è
+    effettivamente attivo.
+    """
+    return render_template("privacy.html")
+
+
 @main_bp.route("/reset")
 def reset_database():
     """Reset completo del database - SOLO in modalità debug"""

@@ -46,6 +46,9 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "main.public_campionatos_list": {"anonimo", "player", "director"},
     "main.gara_detail_public": {"anonimo", "player", "director"},
     "main.campionato_detail_public": {"anonimo", "player", "director"},
+    # Informativa privacy/cookie: deve essere raggiungibile da chiunque,
+    # utenti non registrati inclusi (link nel footer di base.html).
+    "main.privacy_policy": {"anonimo", "player", "director"},
     "admin.competition.gara_detail": {"anonimo", "player", "director"},
     "i18n.set_language": {"anonimo", "player", "director"},
     # === Logged-in (player or director) ===

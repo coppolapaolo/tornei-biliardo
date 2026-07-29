@@ -195,6 +195,9 @@
         });
     </script>
 
+    {# Google Analytics 4 (no-op se GA_MEASUREMENT_ID non e' configurato) #}
+    {% include "components/_analytics.html" %}
+
     {# Block for page-specific CSS/scripts in head #}
     {% block head_extra %}{% endblock %}
 </head>
@@ -544,6 +547,18 @@
     </footer>
     {% endif %}
 
+    {# Footer pubblico: raggiungibilita' dell'informativa privacy/cookie, che
+       deve essere accessibile da ogni pagina del sito. #}
+    <footer class="mt-5 py-3 border-top">
+        <div class="container text-center text-muted small">
+            <span>{{ config.APP_NAME }}</span>
+            {% if feature_visible('main.privacy_policy') %}
+            <span class="mx-2">&middot;</span>
+            <a href="{{ url_for('main.privacy_policy') }}" class="text-muted">{{ _('Privacy e Cookie') }}</a>
+            {% endif %}
+        </div>
+    </footer>
+
     <!-- Confirm Modal for notifications.js -->
     <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -620,6 +635,9 @@
         </div>
     </div>
     {% endif %}
+
+    {# Analytics: eventi custom accodati lato server (dopo il redirect del POST) #}
+    {% include "components/_analytics_events.html" %}
 
     <!-- Gamification Bridge: Consumes events from Flask flash and triggers JS animations -->
     <script>

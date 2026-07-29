@@ -6,6 +6,7 @@ from flask_login import login_user, logout_user, login_required
 from flask_babel import gettext as _
 from models.user.services import UserService
 from models.user.profile_service import UserProfileService
+from utils.analytics import AnalyticsEvent, track_event
 from utils.rate_limiter import limiter
 
 auth_bp = Blueprint("auth", __name__)
@@ -102,6 +103,11 @@ def register():
                 password=password,
                 phone=phone if phone else None,
             )
+
+            # Analytics: tracciato qui e non con un onclick sul bottone, così
+            # nel conteggio finiscono solo le registrazioni davvero riuscite
+            # (nessun dato personale viene inviato a Google).
+            track_event(AnalyticsEvent.USER_REGISTERED)
 
             # Standard practice: don't auto-login on register; flash and send to
             # login page so the user goes through the verify-email flow first.
