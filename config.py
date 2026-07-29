@@ -1,6 +1,34 @@
 # config.py - Configurazioni dell'applicazione
 import os
 
+_BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+def _compute_asset_version() -> str:
+    """Cache-buster derivato dal file statico modificato più di recente.
+
+    I CSS/JS sono referenziati come `?v=<questo valore>` e in produzione sono
+    serviti con cache lunga: serve quindi un valore che cambi da sé a ogni
+    modifica di un asset, altrimenti i browser resterebbero con file vecchi
+    in cache per un anno. `VERSION` non va bene perché è scritta a mano e
+    nessuno si ricorderebbe di incrementarla dopo un ritocco al CSS.
+
+    Si guardano solo `static/css` e `static/js`: `static/uploads` contiene le
+    immagini caricate dagli utenti, non è codice e cresce senza limiti.
+    Ritorna "0" se le cartelle non esistono (il caching resta corretto: il
+    valore è comunque stabile).
+    """
+    latest = 0.0
+    for folder in ("css", "js"):
+        base = os.path.join(_BASE_DIR, "static", folder)
+        for root, _dirs, files in os.walk(base):
+            for name in files:
+                try:
+                    latest = max(latest, os.path.getmtime(os.path.join(root, name)))
+                except OSError:
+                    continue
+    return str(int(latest))
+
 
 class Config:
     """Configurazione base"""
@@ -48,6 +76,9 @@ class Config:
     APP_NAME = "Campionato Biliardo"
     VERSION = "1.0.0"
 
+    # Cache-buster per CSS/JS (vedi _compute_asset_version).
+    ASSET_VERSION = _compute_asset_version()
+
     # Upload configurations
     UPLOAD_BASE_PATH = "static/uploads"
     CHALLENGE_UPLOAD_FOLDER = "challenges"
@@ -81,6 +112,13 @@ class ProductionConfig(Config):
     # Secure session cookies
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_SAMESITE = "Lax"
+
+    # Cache lunga sui file statici: ogni richiesta a /static/ occupa un worker
+    # Python (Flask li serve tramite Werkzeug), e su PythonAnywhere i worker
+    # sono pochi. Col default `no-cache` il browser rivalida tutti i 7-8 file
+    # a ogni pagina. È sicuro perché gli URL portano `?v=ASSET_VERSION`, che
+    # cambia da sé quando un asset viene modificato.
+    SEND_FILE_MAX_AGE_DEFAULT = 31536000  # 1 anno
 
     # In produzione, la password admin DEVE venire dalla variabile d'ambiente
     # Nessun fallback - se non settata, l'app deve fallire
