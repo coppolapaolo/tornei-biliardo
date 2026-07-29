@@ -1,6 +1,39 @@
 # config.py - Configurazioni dell'applicazione
 import os
 
+_BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+def _compute_asset_version() -> str:
+    """Cache-buster derivato dal file statico modificato più di recente.
+
+    I CSS/JS sono referenziati come `?v=<questo valore>` e in produzione sono
+    serviti con cache lunga: serve quindi un valore che cambi da sé a ogni
+    modifica di un asset, altrimenti i browser resterebbero con file vecchi
+    in cache per un anno. `VERSION` non va bene perché è scritta a mano e
+    nessuno si ricorderebbe di incrementarla dopo un ritocco al CSS.
+
+    Si guardano solo `static/css` e `static/js`: `static/uploads` contiene le
+    immagini caricate dagli utenti, non è codice e cresce senza limiti.
+    Ritorna "0" se le cartelle non esistono (il caching resta corretto: il
+    valore è comunque stabile).
+
+    Si usa `st_mtime_ns` e non `getmtime()`: quest'ultimo andrebbe troncato ai
+    secondi, e due modifiche allo stesso asset nello stesso secondo
+    produrrebbero lo stesso cache-buster — con cache di un anno gli utenti
+    resterebbero sul file vecchio senza modo di accorgersene.
+    """
+    latest = 0
+    for folder in ("css", "js"):
+        base = os.path.join(_BASE_DIR, "static", folder)
+        for root, _dirs, files in os.walk(base):
+            for name in files:
+                try:
+                    latest = max(latest, os.stat(os.path.join(root, name)).st_mtime_ns)
+                except OSError:
+                    continue
+    return str(latest)
+
 
 class Config:
     """Configurazione base"""
@@ -48,6 +81,9 @@ class Config:
     APP_NAME = "Campionato Biliardo"
     VERSION = "1.0.0"
 
+    # Cache-buster per CSS/JS (vedi _compute_asset_version).
+    ASSET_VERSION = _compute_asset_version()
+
     # Upload configurations
     UPLOAD_BASE_PATH = "static/uploads"
     CHALLENGE_UPLOAD_FOLDER = "challenges"
@@ -81,6 +117,12 @@ class ProductionConfig(Config):
     # Secure session cookies
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_SAMESITE = "Lax"
+
+    # NB: la cache lunga sugli asset NON si imposta qui con
+    # SEND_FILE_MAX_AGE_DEFAULT, perché quello varrebbe per tutto /static/,
+    # incluse le cartelle i cui file sono referenziati senza cache-buster
+    # (img/, uploads/): resterebbero bloccati nei browser per un anno.
+    # La policy è in app.py, applicata solo ai prefissi versionati.
 
     # In produzione, la password admin DEVE venire dalla variabile d'ambiente
     # Nessun fallback - se non settata, l'app deve fallire
