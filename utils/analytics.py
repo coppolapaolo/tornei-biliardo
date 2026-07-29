@@ -69,6 +69,9 @@ def track_event(name: str, **params: Any) -> None:
         payload: Dict[str, Any] = {"name": name, "params": params}
         flash(json.dumps(payload), category=ANALYTICS_FLASH_CATEGORY)
         logger.debug("Analytics event accodato: %s", name)
-    except Exception as e:
-        # Il tracking non deve mai far fallire l'azione dell'utente.
-        logger.error("Errore nell'accodare l'evento analytics %s: %s", name, e)
+    except Exception:
+        # Il tracking non deve mai far fallire l'azione dell'utente. Si usa
+        # logger.exception per conservare lo stacktrace: un no-op silenzioso
+        # senza traccia sarebbe indiagnosticabile (payload non serializzabile,
+        # sessione piena, ...).
+        logger.exception("Errore nell'accodare l'evento analytics %s", name)

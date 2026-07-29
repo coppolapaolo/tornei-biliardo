@@ -428,7 +428,10 @@
 
         {% if all_messages %}
         {% for category, message in all_messages %}
-        {% if category != 'gamification_event' %}
+        {# Le categorie "di trasporto" (payload JSON per JS) non sono messaggi
+           per l'utente: renderizzarle qui mostrerebbe il JSON grezzo dentro un
+           alert. Sono consumate piu' sotto dai rispettivi bridge. #}
+        {% if category not in ['gamification_event', 'analytics_event'] %}
         {% if category == 'error' %}
         {% set alert_class = 'alert-danger' %}
         {% elif category == 'success' %}

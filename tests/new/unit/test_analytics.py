@@ -91,6 +91,58 @@ class TestTrackEvent:
         assert set(event.keys()) == {"name", "params"}
 
 
+class TestAnalyticsFlashNonVisibileAllUtente:
+    """Regressione (rilievo Copilot su PR #73).
+
+    `analytics_event` è una categoria "di trasporto": il messaggio è un payload
+    JSON per JavaScript, non un testo per l'utente. Il loop degli alert in
+    base.html renderizzava ogni categoria tranne `gamification_event`, quindi
+    dopo una registrazione l'utente si vedeva un alert azzurro con dentro
+    `{"name": "user_registered", ...}`.
+
+    La suite non l'aveva intercettato perché in TESTING GA_MEASUREMENT_ID è
+    None, quindi track_event è no-op e il flash non veniva mai creato: qui il
+    flash viene iniettato a mano nella sessione per riprodurre lo scenario.
+    """
+
+    PAYLOAD = json.dumps({"name": "user_registered", "params": {}})
+
+    def _inject_flash(self, client):
+        with client.session_transaction() as session:
+            session["_flashes"] = [(ANALYTICS_FLASH_CATEGORY, self.PAYLOAD)]
+
+    def test_payload_json_non_finisce_in_un_alert(self, client):
+        self._inject_flash(client)
+
+        html = client.get("/privacy").get_data(as_text=True)
+
+        assert "alert-info" not in html
+        assert "user_registered" not in html
+
+    def test_payload_json_non_in_alert_neppure_con_ga_attivo(
+        self, app, client, monkeypatch
+    ):
+        monkeypatch.setitem(app.config, "GA_MEASUREMENT_ID", GA_TEST_ID)
+        self._inject_flash(client)
+
+        html = client.get("/privacy").get_data(as_text=True)
+
+        # L'evento deve raggiungere gtag...
+        assert "gtag('event', analyticsEvent.name" in html
+        # ...ma non essere mostrato come notifica all'utente.
+        assert "alert-info" not in html
+
+    def test_i_flash_normali_restano_visibili(self, client):
+        """La correzione non deve nascondere i messaggi veri."""
+        with client.session_transaction() as session:
+            session["_flashes"] = [("success", "Operazione riuscita")]
+
+        html = client.get("/privacy").get_data(as_text=True)
+
+        assert "alert-success" in html
+        assert "Operazione riuscita" in html
+
+
 class TestPrivacyPolicyEndpoint:
     """ADR-028: senza entry nella matrice la pagina sarebbe admin-only in prod."""
 
