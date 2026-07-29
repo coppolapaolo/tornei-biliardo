@@ -38,9 +38,14 @@ window.Polling = (function() {
         var lastTimestamp = Date.now() / 1000;
         var timerId = null;
         var running = false;
+        // Una sola richiesta per volta: poll() e' invocata sia dal timer sia
+        // dal ritorno in primo piano, e due fetch concorrenti partirebbero
+        // con lo stesso `lastTimestamp` — stessi eventi elaborati due volte,
+        // e `lastTimestamp` aggiornato fuori ordine dalla risposta piu' lenta.
+        var inFlight = false;
 
         function poll() {
-            if (!running) return;
+            if (!running || inFlight) return;
 
             // Scheda in secondo piano: non consumare un worker per una pagina
             // che nessuno sta guardando. Su PythonAnywhere i worker sono
@@ -50,6 +55,7 @@ window.Polling = (function() {
             // funzione live durante le gare e' identica a prima.
             if (document.hidden) return;
 
+            inFlight = true;
             fetch(url + '?since=' + lastTimestamp)
                 .then(function(response) {
                     if (!response.ok) throw new Error('Poll failed: ' + response.status);
@@ -61,7 +67,8 @@ window.Polling = (function() {
                         result.events.forEach(onEvent);
                     }
                 })
-                .catch(onError);
+                .catch(onError)
+                .then(function() { inFlight = false; });
         }
 
         // Al ritorno in primo piano non si aspetta il prossimo tick: si

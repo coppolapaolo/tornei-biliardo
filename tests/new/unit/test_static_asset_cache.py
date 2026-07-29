@@ -72,6 +72,16 @@ class TestCacheHeaders:
     def test_produzione_usa_cache_lunga(self):
         assert ProductionConfig.SEND_FILE_MAX_AGE_DEFAULT == 31536000
 
+    def test_gli_upload_restano_fuori_dalla_cache_lunga(self, client):
+        """Rilievo Copilot su PR #75: gli URL degli upload non hanno
+        cache-buster, quindi un file sovrascritto a parità di nome resterebbe
+        vecchio nei browser fino alla scadenza della cache."""
+        response = client.get("/static/uploads/inesistente.jpg")
+
+        # Il file non esiste (404), ma l'header viene comunque applicato:
+        # è quello che conta, perché la policy non dipende dal contenuto.
+        assert response.headers.get("Cache-Control") == "public, max-age=3600"
+
     @pytest.mark.parametrize("asset", ["css/main.css", "js/polling.js"])
     def test_asset_serviti_con_cache_buster_nel_template(self, client, asset):
         """Se un asset perde il `?v=`, la cache di un anno diventa una trappola:

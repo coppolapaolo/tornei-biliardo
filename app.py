@@ -348,6 +348,18 @@ def create_app(config_name=None):
             )
         return response
 
+    # Gli upload restano fuori dalla cache lunga di SEND_FILE_MAX_AGE_DEFAULT:
+    # a differenza di CSS e JS i loro URL non hanno un cache-buster, quindi un
+    # file sovrascritto a parita' di nome resterebbe vecchio nei browser fino
+    # alla scadenza. Oggi i nomi generati sono univoci (uuid per le challenge,
+    # venue_<id>_<timestamp> per i locali), ma quel vincolo e' implicito e
+    # nessuno lo ricorderebbe cambiando lo schema di naming.
+    @app.after_request
+    def set_uploads_cache_policy(response):
+        if request.path.startswith("/static/uploads/"):
+            response.headers["Cache-Control"] = "public, max-age=3600"
+        return response
+
     # Health check endpoint
     @app.route("/health")
     def health():

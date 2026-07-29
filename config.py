@@ -17,17 +17,22 @@ def _compute_asset_version() -> str:
     immagini caricate dagli utenti, non è codice e cresce senza limiti.
     Ritorna "0" se le cartelle non esistono (il caching resta corretto: il
     valore è comunque stabile).
+
+    Si usa `st_mtime_ns` e non `getmtime()`: quest'ultimo andrebbe troncato ai
+    secondi, e due modifiche allo stesso asset nello stesso secondo
+    produrrebbero lo stesso cache-buster — con cache di un anno gli utenti
+    resterebbero sul file vecchio senza modo di accorgersene.
     """
-    latest = 0.0
+    latest = 0
     for folder in ("css", "js"):
         base = os.path.join(_BASE_DIR, "static", folder)
         for root, _dirs, files in os.walk(base):
             for name in files:
                 try:
-                    latest = max(latest, os.path.getmtime(os.path.join(root, name)))
+                    latest = max(latest, os.stat(os.path.join(root, name)).st_mtime_ns)
                 except OSError:
                     continue
-    return str(int(latest))
+    return str(latest)
 
 
 class Config:
