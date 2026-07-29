@@ -118,12 +118,11 @@ class ProductionConfig(Config):
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_SAMESITE = "Lax"
 
-    # Cache lunga sui file statici: ogni richiesta a /static/ occupa un worker
-    # Python (Flask li serve tramite Werkzeug), e su PythonAnywhere i worker
-    # sono pochi. Col default `no-cache` il browser rivalida tutti i 7-8 file
-    # a ogni pagina. È sicuro perché gli URL portano `?v=ASSET_VERSION`, che
-    # cambia da sé quando un asset viene modificato.
-    SEND_FILE_MAX_AGE_DEFAULT = 31536000  # 1 anno
+    # NB: la cache lunga sugli asset NON si imposta qui con
+    # SEND_FILE_MAX_AGE_DEFAULT, perché quello varrebbe per tutto /static/,
+    # incluse le cartelle i cui file sono referenziati senza cache-buster
+    # (img/, uploads/): resterebbero bloccati nei browser per un anno.
+    # La policy è in app.py, applicata solo ai prefissi versionati.
 
     # In produzione, la password admin DEVE venire dalla variabile d'ambiente
     # Nessun fallback - se non settata, l'app deve fallire

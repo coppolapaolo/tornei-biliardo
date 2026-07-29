@@ -69,18 +69,26 @@ class TestAssetVersion:
 class TestCacheHeaders:
     """La cache lunga va attiva in produzione, non nei test."""
 
-    def test_produzione_usa_cache_lunga(self):
-        assert ProductionConfig.SEND_FILE_MAX_AGE_DEFAULT == 31536000
+    CACHE_LUNGA = "public, max-age=31536000, immutable"
 
-    def test_gli_upload_restano_fuori_dalla_cache_lunga(self, client):
-        """Rilievo Copilot su PR #75: gli URL degli upload non hanno
-        cache-buster, quindi un file sovrascritto a parità di nome resterebbe
-        vecchio nei browser fino alla scadenza della cache."""
-        response = client.get("/static/uploads/inesistente.jpg")
+    @pytest.mark.parametrize("path", ["/static/css/main.css", "/static/js/polling.js"])
+    def test_css_e_js_hanno_cache_lunga(self, client, path):
+        assert client.get(path).headers.get("Cache-Control") == self.CACHE_LUNGA
 
-        # Il file non esiste (404), ma l'header viene comunque applicato:
-        # è quello che conta, perché la policy non dipende dal contenuto.
-        assert response.headers.get("Cache-Control") == "public, max-age=3600"
+    @pytest.mark.parametrize(
+        "path",
+        ["/static/img/chalk1.png", "/static/uploads/venues/foto.jpg"],
+    )
+    def test_asset_senza_cache_buster_non_hanno_cache_lunga(self, client, path):
+        """Rilievo Copilot su PR #75: questi percorsi sono referenziati senza
+        `?v=` (es. /static/img/chalk1.png da gamification.js), quindi una
+        cache lunga li renderebbe non aggiornabili per un anno."""
+        assert client.get(path).headers.get("Cache-Control") != self.CACHE_LUNGA
+
+    def test_la_cache_non_e_impostata_globalmente_in_config(self):
+        """Se SEND_FILE_MAX_AGE_DEFAULT tornasse in ProductionConfig varrebbe
+        per tutto /static/, reintroducendo esattamente il problema."""
+        assert getattr(ProductionConfig, "SEND_FILE_MAX_AGE_DEFAULT", None) is None
 
     @pytest.mark.parametrize("asset", ["css/main.css", "js/polling.js"])
     def test_asset_serviti_con_cache_buster_nel_template(self, client, asset):

@@ -348,16 +348,22 @@ def create_app(config_name=None):
             )
         return response
 
-    # Gli upload restano fuori dalla cache lunga di SEND_FILE_MAX_AGE_DEFAULT:
-    # a differenza di CSS e JS i loro URL non hanno un cache-buster, quindi un
-    # file sovrascritto a parita' di nome resterebbe vecchio nei browser fino
-    # alla scadenza. Oggi i nomi generati sono univoci (uuid per le challenge,
-    # venue_<id>_<timestamp> per i locali), ma quel vincolo e' implicito e
-    # nessuno lo ricorderebbe cambiando lo schema di naming.
+    # Cache lunga SOLO sugli asset che portano un cache-buster nell'URL: sono
+    # CSS e JS, referenziati in base.html come `?v=ASSET_VERSION`. Modificarli
+    # cambia l'URL, quindi la cache si invalida da se e un anno e' sicuro.
+    #
+    # Il resto di /static/ resta sul default conservativo di Flask. `img/` e
+    # `uploads/` sono referenziati a percorso fisso (es. /static/img/chalk1.png
+    # da gamification.js): con una cache lunga un aggiornamento non
+    # raggiungerebbe piu i browser, e non ci sarebbe modo di forzarlo.
+    #
+    # E una whitelist e non una blacklist di proposito: una cartella nuova
+    # sotto static/ e al sicuro per default, invece di ereditare in silenzio
+    # una cache che non le si addice.
     @app.after_request
-    def set_uploads_cache_policy(response):
-        if request.path.startswith("/static/uploads/"):
-            response.headers["Cache-Control"] = "public, max-age=3600"
+    def set_static_cache_policy(response):
+        if request.path.startswith(("/static/css/", "/static/js/")):
+            response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
         return response
 
     # Health check endpoint
