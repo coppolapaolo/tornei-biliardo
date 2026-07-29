@@ -153,10 +153,16 @@ def read_wsgi_env(wsgi_path: Path) -> Dict[str, str]:
         if not isinstance(node, ast.Assign):
             continue
         for target in node.targets:
+            # Serve `os.environ[...]` per intero: fermarsi a `.attr ==
+            # "environ"` accetterebbe qualunque oggetto con quell'attributo
+            # (es. una libreria WSGI che espone un proprio `environ`) e ne
+            # applicherebbe le chiavi come variabili d'ambiente reali.
             if not (
                 isinstance(target, ast.Subscript)
                 and isinstance(target.value, ast.Attribute)
                 and target.value.attr == "environ"
+                and isinstance(target.value.value, ast.Name)
+                and target.value.value.id == "os"
             ):
                 continue
             key_node = target.slice
