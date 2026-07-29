@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-07-28 15:21+0200\n"
+"POT-Creation-Date: 2026-07-29 14:25+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -425,15 +425,15 @@ msgstr "%(enrolled_by)s registered you for %(gara_name)s on %(gara_date)s"
 msgid "Iscrizione a Gara"
 msgstr "Competition Enrollment"
 
-#: routes/auth.py:39
+#: routes/auth.py:40
 msgid "Che piacere rivederti!"
 msgstr "Nice to see you again!"
 
-#: routes/auth.py:40 templates/base.html:583
+#: routes/auth.py:41 templates/base.html:598
 msgid "Tutto pronto per giocare?"
 msgstr "Ready to play?"
 
-#: routes/auth.py:67
+#: routes/auth.py:68
 msgid ""
 "Il tuo account non è ancora verificato. Senza email confermata non potrai"
 " recuperare la password se la dimentichi."
@@ -441,23 +441,23 @@ msgstr ""
 "Your account is not yet verified. Without a confirmed email you will not "
 "be able to recover your password if you forget it."
 
-#: routes/auth.py:75
+#: routes/auth.py:76
 msgid "Vai al profilo per verificare l'email"
 msgstr "Go to your profile to verify your email"
 
-#: routes/auth.py:82
+#: routes/auth.py:83
 msgid "Username o password errati."
 msgstr "Wrong username or password."
 
-#: routes/auth.py:111
+#: routes/auth.py:117
 msgid "Registrazione completata! Controlla la tua email per verificare l'account."
 msgstr "Registration complete! Check your email to verify the account."
 
-#: routes/auth.py:122
+#: routes/auth.py:128
 msgid "Ti diamo il benvenuto!"
 msgstr "Welcome aboard!"
 
-#: routes/auth.py:123
+#: routes/auth.py:129
 msgid "Registrazione completata con successo."
 msgstr "Registration completed successfully."
 
@@ -643,11 +643,23 @@ msgstr "Passwords do not match"
 msgid "Password impostata con successo"
 msgstr "Password set successfully"
 
-#: routes/admin/competition/crud.py:177
+#: routes/admin/competition/crud.py:99
+#, python-format
+msgid "Gara singola '%(name)s' creata con successo!"
+msgstr "Standalone competition '%(name)s' created successfully!"
+
+
+#: routes/admin/competition/crud.py:182
 msgid "Non è possibile creare gare in un campionato terminato."
 msgstr "Cannot create competitions in a terminated championship."
 
-#: routes/admin/competition/crud.py:334
+#: routes/admin/competition/crud.py:241
+#, python-format
+msgid "Gara %(number)d creata con successo!"
+msgstr "Competition %(number)d created successfully!"
+
+
+#: routes/admin/competition/crud.py:340
 msgid "Configurazione tavoli salvata!"
 msgstr "Table configuration saved!"
 
@@ -672,7 +684,7 @@ msgstr ""
 msgid "Errore interno del server"
 msgstr "Internal server error"
 
-#: routes/gamification/admin.py:82 templates/base.html:283
+#: routes/gamification/admin.py:82 templates/base.html:286
 #: templates/base_navbar_section.html:39
 #: templates/gamification/admin/dashboard.html:5
 msgid "Admin Gamification"
@@ -888,7 +900,7 @@ msgstr "Competitions with drills played"
 msgid "Drill completati in gara"
 msgstr "Drills completed in competition"
 
-#: routes/gamification/features.py:55 templates/base.html:224
+#: routes/gamification/features.py:55 templates/base.html:227
 #: templates/gamification/admin/dashboard.html:112
 #: templates/gamification/admin/dashboard.html:155
 #: templates/gamification/admin/feature_create.html:63
@@ -1039,6 +1051,33 @@ msgstr "Access denied."
 msgid "Non hai accesso a questa challenge"
 msgstr "You don't have access to this challenge"
 
+#: routes/player/competitions.py:55
+msgid "Le iscrizioni non sono disponibili."
+msgstr "Enrollment is not available."
+
+
+#: routes/player/competitions.py:63
+msgid "Sei già iscritto a questa gara."
+msgstr "You are already enrolled in this competition."
+
+
+#: routes/player/competitions.py:83
+#, python-format
+msgid "Aggiunto alla lista d'attesa per %(gara)s (posizione %(position)d)!"
+msgstr "Added to the waiting list for %(gara)s (position %(position)d)!"
+
+
+#: routes/player/competitions.py:90
+#, python-format
+msgid "Iscrizione a %(gara)s completata!"
+msgstr "Enrollment in %(gara)s completed!"
+
+
+#: routes/player/competitions.py:92
+msgid "Errore durante l'iscrizione."
+msgstr "Error during enrollment."
+
+
 #: routes/player/exports.py:527
 msgid ""
 "Un export è già in corso o è stato generato di recente. Controlla le "
@@ -1178,15 +1217,15 @@ msgstr "competitive"
 msgid "globale (tornei + casual)"
 msgstr "global (tournaments + casual)"
 
-#: templates/base.html:209
+#: templates/base.html:212
 msgid "Tornei Biliardo"
 msgstr "Billiard Championships"
 
-#: templates/base.html:236
+#: templates/base.html:239
 msgid "Apri menu"
 msgstr "Open menu"
 
-#: templates/admin/kpi.html:51 templates/base.html:246 templates/base.html:354
+#: templates/admin/kpi.html:51 templates/base.html:249 templates/base.html:357
 #: templates/base_navbar_section.html:6
 #: templates/individual_match/admin_overview.html:11
 #: templates/individual_match/proposals.html:330
@@ -1194,12 +1233,12 @@ msgstr "Open menu"
 msgid "Dashboard"
 msgstr "Dashboard"
 
-#: templates/base.html:254 templates/base.html:373
+#: templates/base.html:257 templates/base.html:376
 #: templates/base_navbar_section.html:13
 msgid "Sale Biliardo"
 msgstr "Billiard Halls"
 
-#: templates/base.html:274 templates/base_navbar_section.html:30
+#: templates/base.html:277 templates/base_navbar_section.html:30
 #: templates/individual_match/admin_overview.html:3
 #: templates/individual_match/admin_overview.html:16
 #: templates/individual_match/availability.html:11
@@ -1211,61 +1250,66 @@ msgstr "Billiard Halls"
 msgid "Match Individuali"
 msgstr "Individual Matches"
 
-#: templates/base.html:288 templates/base.html:368
+#: templates/base.html:291 templates/base.html:371
 #: templates/base_navbar_section.html:44
 #: templates/gamification/admin/dashboard.html:113
 msgid "Utenti"
 msgstr "Users"
 
-#: templates/base.html:301 templates/base_navbar_section.html:57
+#: templates/base.html:304 templates/base_navbar_section.html:57
 msgid "Reset DB"
 msgstr "Reset DB"
 
-#: templates/base.html:342
+#: templates/base.html:345
 msgid "Notifiche"
 msgstr "Notifications"
 
-#: templates/base.html:347
+#: templates/base.html:350
 msgid "Le mie Richieste Gestore"
 msgstr "My Venue Manager Requests"
 
-#: templates/base.html:358 templates/player/profile.html:6
+#: templates/base.html:361 templates/player/profile.html:6
 #: templates/player/profile.html:19
 msgid "Il mio Profilo"
 msgstr "My Profile"
 
-#: templates/base.html:383
+#: templates/base.html:386
 msgid "Richieste Gestore Sala"
 msgstr "Venue Manager Requests"
 
-#: templates/base.html:388
+#: templates/base.html:391
 msgid "Richieste Director"
 msgstr "Director Requests"
 
-#: templates/base.html:397 templates/player/profile.html:131
+#: templates/base.html:400 templates/player/profile.html:131
 msgid "Elimina Account"
 msgstr "Delete Account"
 
-#: templates/base.html:405
+#: templates/base.html:408
 msgid "Logout"
 msgstr "Logout"
 
-#: templates/base.html:411
+#: templates/base.html:414
 msgid "Login"
 msgstr "Login"
 
-#: templates/base.html:414
+#: templates/base.html:417
 #: templates/components/_index_registration_info.html:18
 msgid "Registrati"
 msgstr "Register"
 
-#: templates/base.html:552 templates/base.html:558
+#: templates/base.html:557 templates/privacy.html:3
+msgid "Privacy e Cookie"
+msgstr "Privacy and Cookies"
+
+
+#: templates/base.html:567 templates/base.html:573
 msgid "Conferma"
 msgstr "Confirm"
 
 #: templates/admin/campionato_wizard_step1.html:14
 #: templates/admin/campionato_wizard_step1.html:184
-#: templates/admin/campionato_wizard_step2.html:14 templates/base.html:557
+#: templates/admin/campionato_wizard_step2.html:14 templates/base.html:572
 #: templates/components/_admin_new_campionato_modal.html:28
 #: templates/components/_campionato_create_modal.html:27
 #: templates/components/_campionato_edit_form.html:204
@@ -1285,51 +1329,51 @@ msgstr "Confirm"
 msgid "Annulla"
 msgstr "Cancel"
 
-#: templates/base.html:573
+#: templates/base.html:588
 msgid "XP OTTENUTI"
 msgstr "XP EARNED"
 
-#: templates/base.html:574
+#: templates/base.html:589
 msgid "LEVEL UP!"
 msgstr "LEVEL UP!"
 
-#: templates/base.html:575
+#: templates/base.html:590
 msgid "Nuovo livello raggiunto!"
 msgstr "New level reached!"
 
-#: templates/base.html:576
+#: templates/base.html:591
 msgid "NUOVO TRAGUARDO!"
 msgstr "NEW MILESTONE!"
 
-#: templates/base.html:577
+#: templates/base.html:592
 msgid "STREAK!"
 msgstr "STREAK!"
 
-#: templates/base.html:578
+#: templates/base.html:593
 msgid "Freeze attivo"
 msgstr "Freeze active"
 
-#: templates/base.html:579
+#: templates/base.html:594
 msgid "STREAK PERSA"
 msgstr "STREAK LOST"
 
-#: templates/base.html:580
+#: templates/base.html:595
 msgid "Non mollare, riprovare!"
 msgstr "Don't give up, try again!"
 
-#: templates/base.html:581
+#: templates/base.html:596
 msgid "QUEST COMPLETATA!"
 msgstr "QUEST COMPLETED!"
 
-#: templates/base.html:582
+#: templates/base.html:597
 msgid "TI DIAMO IL BENTORNATO!"
 msgstr "WELCOME BACK!"
 
-#: templates/base.html:584
+#: templates/base.html:599
 msgid "Ciao!"
 msgstr "Hello!"
 
-#: templates/base.html:585
+#: templates/base.html:600
 #, python-format
 msgid "Ciao %(username)s!"
 msgstr "Hello %(username)s!"
@@ -2221,6 +2265,111 @@ msgid ""
 msgstr ""
 "Are you sure you want to completely reset this trio match? All results "
 "will be deleted."
+
+#: templates/privacy.html:8
+msgid "Informativa Privacy e Cookie"
+msgstr "Privacy and Cookie Policy"
+
+
+#: templates/privacy.html:11
+msgid "Titolare del trattamento"
+msgstr "Data controller"
+
+
+#: templates/privacy.html:13
+#, python-format
+msgid ""
+"Titolare del trattamento dei dati è il gestore di %(site)s. Per qualsiasi"
+" richiesta relativa ai tuoi dati puoi scrivere a %(email)s."
+msgstr "The data controller is the operator of %(site)s. For any request regarding your data you can write to %(email)s."
+
+
+#: templates/privacy.html:18
+msgid "Quali dati raccogliamo"
+msgstr "What data we collect"
+
+
+#: templates/privacy.html:20
+msgid ""
+"Per creare un account raccogliamo username, indirizzo email e password "
+"(conservata solo in forma cifrata). Durante l'uso della piattaforma "
+"vengono registrati i dati sportivi che generi: iscrizioni alle gare, "
+"risultati delle partite, statistiche e classifiche."
+msgstr "To create an account we collect your username, email address and password (stored only in encrypted form). While you use the platform we record the sporting data you generate: competition enrollments, match results, statistics and rankings."
+
+
+#: templates/privacy.html:23
+msgid ""
+"I dati personali identificativi sono conservati cifrati nel database. La "
+"cancellazione dell'account avviene tramite anonimizzazione: i risultati "
+"sportivi restano nelle classifiche storiche, ma non sono più "
+"riconducibili a te."
+msgstr "Personally identifying data is stored encrypted in the database. Account deletion is performed through anonymisation: your sporting results remain in the historical rankings, but they can no longer be traced back to you."
+
+
+#: templates/privacy.html:28
+msgid "Cookie tecnici"
+msgstr "Technical cookies"
+
+
+#: templates/privacy.html:30
+msgid ""
+"Il sito usa cookie tecnici necessari al funzionamento: mantenimento della"
+" sessione di login, protezione dei moduli contro gli invii fraudolenti "
+"(CSRF) e memorizzazione della lingua scelta. Questi cookie non richiedono"
+" consenso perché senza di essi il sito non può funzionare."
+msgstr "The site uses technical cookies that are necessary for it to work: keeping your login session, protecting forms against fraudulent submissions (CSRF) and remembering your chosen language. These cookies do not require consent because without them the site cannot function."
+
+
+#: templates/privacy.html:36
+msgid "Cookie analitici (Google Analytics)"
+msgstr "Analytics cookies (Google Analytics)"
+
+
+#: templates/privacy.html:38
+msgid ""
+"Usiamo Google Analytics 4 per capire come viene utilizzato il sito: "
+"quante persone lo visitano, quali pagine consultano, da quale dispositivo"
+" e da quale fonte arrivano. Lo scopo è esclusivamente migliorare la "
+"piattaforma."
+msgstr "We use Google Analytics 4 to understand how the site is used: how many people visit it, which pages they view, from which device and from which source they arrive. The sole purpose is to improve the platform."
+
+
+#: templates/privacy.html:41
+msgid ""
+"Google Analytics 4 non registra il tuo indirizzo IP completo e non lo usa"
+" per identificarti. Non inviamo a Google il tuo nome, la tua email o "
+"altri dati che permettano di risalire alla tua identità."
+msgstr "Google Analytics 4 does not record your full IP address and does not use it to identify you. We do not send Google your name, your email or any other data that could reveal your identity."
+
+
+#: templates/privacy.html:44
+msgid ""
+"Puoi disattivare la raccolta installando il componente aggiuntivo "
+"ufficiale per la disattivazione di Google Analytics, disponibile su "
+"tools.google.com/dlpage/gaoptout, oppure attivando l'opzione Do Not Track"
+" del tuo browser."
+msgstr "You can opt out by installing the official Google Analytics opt-out browser add-on, available at tools.google.com/dlpage/gaoptout, or by enabling the Do Not Track option in your browser."
+
+
+#: templates/privacy.html:50
+msgid "I tuoi diritti"
+msgstr "Your rights"
+
+
+#: templates/privacy.html:52
+msgid ""
+"Puoi in qualsiasi momento accedere ai tuoi dati, correggerli, chiederne "
+"la cancellazione o opporti al trattamento. La maggior parte delle "
+"operazioni è disponibile direttamente dalle impostazioni del tuo profilo;"
+" per le altre puoi contattarci all'indirizzo indicato sopra."
+msgstr "You can at any time access your data, correct it, request its deletion or object to its processing. Most of these operations are available directly from your profile settings; for the others you can contact us at the address indicated above."
+
+
+#: templates/privacy.html:57
+msgid "Ultimo aggiornamento: luglio 2026."
+msgstr "Last updated: July 2026."
+
 
 #: templates/admin/campionato_detail.html:27
 msgid "Passa alla fase playoff"

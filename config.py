@@ -39,6 +39,11 @@ class Config:
     # Error tracking (GlitchTip/Sentry)
     GLITCHTIP_DSN = os.environ.get("GLITCHTIP_DSN")
 
+    # Google Analytics 4 (ID misurazione, formato "G-XXXXXXXXXX").
+    # Non impostato = nessuno snippet renderizzato: in sviluppo e nei test il
+    # traffico locale non finisce nelle statistiche di produzione.
+    GA_MEASUREMENT_ID = os.environ.get("GA_MEASUREMENT_ID")
+
     # App Info
     APP_NAME = "Campionato Biliardo"
     VERSION = "1.0.0"
@@ -87,6 +92,7 @@ class TestingConfig(Config):
 
     TESTING = True
     GLITCHTIP_DSN = None
+    GA_MEASUREMENT_ID = None
     WTF_CSRF_ENABLED = False
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
     SQLALCHEMY_SESSION_OPTIONS = {"expire_on_commit": False}

@@ -2,12 +2,14 @@
 """Competition-related routes: inscriptions, unsubscriptions, history."""
 
 from flask import render_template, request, redirect, url_for, flash
+from flask_babel import _
 from flask_login import login_required, current_user
 
 from models import db, Gara, Inscription, Match
 from models.status_enum import GaraStatus
 from models.kpi import track_gara_inscription
 from utils import player_only, player_required
+from utils.analytics import AnalyticsEvent, track_event
 
 from . import player_bp
 from models.base import utc_now
@@ -50,7 +52,7 @@ def inscribe_to_gara(gara_id):
         or now < gara.inscription_start
         or now > gara.inscription_end
     ):
-        flash("Le iscrizioni non sono disponibili.")
+        flash(_("Le iscrizioni non sono disponibili."))
         return redirect(url_for("main.index"))
 
     # Verifica che non sia già iscritto
@@ -58,7 +60,7 @@ def inscribe_to_gara(gara_id):
         user_id=current_user.id, gara_id=gara_id
     ).first()
     if existing:
-        flash("Sei già iscritto a questa gara.")
+        flash(_("Sei già iscritto a questa gara."))
         return redirect(url_for("player.dashboard"))
 
     # Usa il service per gestire automaticamente la logica waitlist
@@ -70,15 +72,24 @@ def inscribe_to_gara(gara_id):
 
     if inscription:
         track_gara_inscription()  # KPI tracking
+        track_event(
+            AnalyticsEvent.GARA_INSCRIPTION,
+            gara_id=gara_id,
+            waitlist=inscription.is_waitlist,
+        )
         if inscription.is_waitlist:
             flash(
-                f"Aggiunto alla lista d'attesa per {gara.name} "
-                f"(posizione {inscription.waitlist_position})!"
+                _(
+                    "Aggiunto alla lista d'attesa per %(gara)s "
+                    "(posizione %(position)d)!",
+                    gara=gara.name,
+                    position=inscription.waitlist_position,
+                )
             )
         else:
-            flash(f"Iscrizione a {gara.name} completata!")
+            flash(_("Iscrizione a %(gara)s completata!", gara=gara.name))
     else:
-        flash("Errore durante l'iscrizione.", "error")
+        flash(_("Errore durante l'iscrizione."), "error")
     # Redirect alla dashboard appropriata
     return redirect(url_for("dashboard.dashboard"))
 

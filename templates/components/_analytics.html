@@ -1,0 +1,19 @@
+{# Google Analytics 4 - snippet base (va nel <head>).
+
+   Renderizzato solo se GA_MEASUREMENT_ID e' configurato via variabile
+   d'ambiente: in sviluppo e nei test non esiste, quindi nessuna richiesta
+   parte e il traffico locale non inquina le statistiche di produzione.
+   Stesso principio del fail-safe di GLITCHTIP_DSN in app.py.
+
+   Gli admin sono esclusi dal tracking: le visite di chi gestisce il sito
+   falserebbero i numeri (coerente con l'esclusione admin gia' applicata dal
+   bridge gamification). #}
+{% if config.GA_MEASUREMENT_ID and not (current_user.is_authenticated and current_user.is_admin) %}
+<script async src="https://www.googletagmanager.com/gtag/js?id={{ config.GA_MEASUREMENT_ID }}"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', {{ config.GA_MEASUREMENT_ID | tojson }});
+</script>
+{% endif %}

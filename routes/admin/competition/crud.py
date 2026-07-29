@@ -25,6 +25,7 @@ from utils import (
     admin_required,
     director_or_admin_required,
 )
+from utils.analytics import AnalyticsEvent, track_event
 from models.competition.services import GaraService
 from models.matchmaking.configuration import get_available_strategies
 from models.location.models import BilliardHall
@@ -93,7 +94,11 @@ def create_gara_standalone():
             )
 
             track_gara_create()
-            flash(f"Gara singola '{name}' creata con successo!", "success")
+            track_event(AnalyticsEvent.GARA_CREATED, gara_id=gara.id, standalone=True)
+            flash(
+                _("Gara singola '%(name)s' creata con successo!", name=name),
+                "success",
+            )
             return redirect(url_for("admin.competition.gara_detail", gara_id=gara.id))
 
         except ValueError as e:
@@ -232,7 +237,8 @@ def create_gara():
             **data,
         )
 
-        flash(f"Gara {number} creata con successo!")
+        track_event(AnalyticsEvent.GARA_CREATED, gara_id=gara.id, standalone=False)
+        flash(_("Gara %(number)d creata con successo!", number=number))
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara.id))
     except ValueError as e:
         flash(str(e), "error")
