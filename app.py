@@ -329,18 +329,41 @@ def create_app(config_name=None):
             if created > 0:
                 app.logger.info(f"Gamification: seeded {created} achievements")
 
+    # Domini necessari a Google Analytics 4. Aggiunti alla CSP solo quando il
+    # tracking e' effettivamente configurato: una policy piu' larga del
+    # necessario e' superficie di attacco gratuita.
+    # Senza questi domini il browser blocca gtag.js e le chiamate di raccolta,
+    # e GA resta a zero visite senza alcun errore visibile lato server.
+    _GA_SCRIPT_SRC = "https://www.googletagmanager.com"
+    _GA_IMG_SRC = "https://www.googletagmanager.com https://*.google-analytics.com"
+    _GA_CONNECT_SRC = (
+        "https://*.google-analytics.com "
+        "https://*.analytics.google.com "
+        "https://*.googletagmanager.com"
+    )
+
     # Security headers
     @app.after_request
     def set_security_headers(response):
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-Content-Type-Options"] = "nosniff"
+
+        ga_enabled = bool(app.config.get("GA_MEASUREMENT_ID"))
+        script_src = "'self' 'unsafe-inline' cdn.jsdelivr.net code.jquery.com"
+        img_src = "'self' data:"
+        connect_src = "'self'"
+        if ga_enabled:
+            script_src += f" {_GA_SCRIPT_SRC}"
+            img_src += f" {_GA_IMG_SRC}"
+            connect_src += f" {_GA_CONNECT_SRC}"
+
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' cdn.jsdelivr.net code.jquery.com; "
+            f"script-src {script_src}; "
             "style-src 'self' 'unsafe-inline' cdn.jsdelivr.net cdnjs.cloudflare.com; "
             "font-src cdnjs.cloudflare.com cdn.jsdelivr.net; "
-            "img-src 'self' data:; "
-            "connect-src 'self'"
+            f"img-src {img_src}; "
+            f"connect-src {connect_src}"
         )
         if not app.debug:
             response.headers["Strict-Transport-Security"] = (
