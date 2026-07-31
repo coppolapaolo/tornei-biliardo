@@ -307,14 +307,22 @@ class UserStatsService:
             - Includes matches where user was either player1 or player2
             - Includes trio matches where user was any of the 3 players
         """
+        from models.competition.models import Gara
         from models.match.models import Match, TrioMatch
         from models.status_enum import MatchStatus
 
         # Use outerjoin to include trio matches
         # For regular matches: check player1_id or player2_id
         # For trio matches: check TrioMatch.player1_id/player2_id/player3_id
+        #
+        # Il join (inner) su Gara scarta i match la cui gara non è
+        # raggiungibile: gara_id NULL (il FK è ON DELETE SET NULL) oppure gara
+        # soft-deleted, che `register_soft_delete_filters` aggiunge qui come
+        # `AND gara.deleted_at IS NULL` e che renderebbe `match.gara` None nei
+        # template (500 su /admin/user/<id>, incidente TORNEI-BILIARDO-5G).
         matches = (
-            Match.query.outerjoin(TrioMatch, Match.id == TrioMatch.match_id)
+            Match.query.join(Gara, Match.gara_id == Gara.id)
+            .outerjoin(TrioMatch, Match.id == TrioMatch.match_id)
             .filter(
                 db.or_(
                     # Regular matches (not trio)

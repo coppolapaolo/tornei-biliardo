@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-07-29 14:25+0200\n"
+"POT-Creation-Date: 2026-07-31 15:35+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -429,7 +429,7 @@ msgstr "Competition Enrollment"
 msgid "Che piacere rivederti!"
 msgstr "Nice to see you again!"
 
-#: routes/auth.py:41 templates/base.html:598
+#: routes/auth.py:41 templates/base.html:601
 msgid "Tutto pronto per giocare?"
 msgstr "Ready to play?"
 
@@ -648,7 +648,6 @@ msgstr "Password set successfully"
 msgid "Gara singola '%(name)s' creata con successo!"
 msgstr "Standalone competition '%(name)s' created successfully!"
 
-
 #: routes/admin/competition/crud.py:182
 msgid "Non è possibile creare gare in un campionato terminato."
 msgstr "Cannot create competitions in a terminated championship."
@@ -657,7 +656,6 @@ msgstr "Cannot create competitions in a terminated championship."
 #, python-format
 msgid "Gara %(number)d creata con successo!"
 msgstr "Competition %(number)d created successfully!"
-
 
 #: routes/admin/competition/crud.py:340
 msgid "Configurazione tavoli salvata!"
@@ -1055,28 +1053,23 @@ msgstr "You don't have access to this challenge"
 msgid "Le iscrizioni non sono disponibili."
 msgstr "Enrollment is not available."
 
-
 #: routes/player/competitions.py:63
 msgid "Sei già iscritto a questa gara."
 msgstr "You are already enrolled in this competition."
-
 
 #: routes/player/competitions.py:83
 #, python-format
 msgid "Aggiunto alla lista d'attesa per %(gara)s (posizione %(position)d)!"
 msgstr "Added to the waiting list for %(gara)s (position %(position)d)!"
 
-
 #: routes/player/competitions.py:90
 #, python-format
 msgid "Iscrizione a %(gara)s completata!"
 msgstr "Enrollment in %(gara)s completed!"
 
-
 #: routes/player/competitions.py:92
 msgid "Errore durante l'iscrizione."
 msgstr "Error during enrollment."
-
 
 #: routes/player/exports.py:527
 msgid ""
@@ -1298,18 +1291,17 @@ msgstr "Login"
 msgid "Registrati"
 msgstr "Register"
 
-#: templates/base.html:557 templates/privacy.html:3
+#: templates/base.html:560 templates/privacy.html:3
 msgid "Privacy e Cookie"
 msgstr "Privacy and Cookies"
 
-
-#: templates/base.html:567 templates/base.html:573
+#: templates/base.html:570 templates/base.html:576
 msgid "Conferma"
 msgstr "Confirm"
 
 #: templates/admin/campionato_wizard_step1.html:14
 #: templates/admin/campionato_wizard_step1.html:184
-#: templates/admin/campionato_wizard_step2.html:14 templates/base.html:572
+#: templates/admin/campionato_wizard_step2.html:14 templates/base.html:575
 #: templates/components/_admin_new_campionato_modal.html:28
 #: templates/components/_campionato_create_modal.html:27
 #: templates/components/_campionato_edit_form.html:204
@@ -1329,51 +1321,51 @@ msgstr "Confirm"
 msgid "Annulla"
 msgstr "Cancel"
 
-#: templates/base.html:588
+#: templates/base.html:591
 msgid "XP OTTENUTI"
 msgstr "XP EARNED"
 
-#: templates/base.html:589
+#: templates/base.html:592
 msgid "LEVEL UP!"
 msgstr "LEVEL UP!"
 
-#: templates/base.html:590
+#: templates/base.html:593
 msgid "Nuovo livello raggiunto!"
 msgstr "New level reached!"
 
-#: templates/base.html:591
+#: templates/base.html:594
 msgid "NUOVO TRAGUARDO!"
 msgstr "NEW MILESTONE!"
 
-#: templates/base.html:592
+#: templates/base.html:595
 msgid "STREAK!"
 msgstr "STREAK!"
 
-#: templates/base.html:593
+#: templates/base.html:596
 msgid "Freeze attivo"
 msgstr "Freeze active"
 
-#: templates/base.html:594
+#: templates/base.html:597
 msgid "STREAK PERSA"
 msgstr "STREAK LOST"
 
-#: templates/base.html:595
+#: templates/base.html:598
 msgid "Non mollare, riprovare!"
 msgstr "Don't give up, try again!"
 
-#: templates/base.html:596
+#: templates/base.html:599
 msgid "QUEST COMPLETATA!"
 msgstr "QUEST COMPLETED!"
 
-#: templates/base.html:597
+#: templates/base.html:600
 msgid "TI DIAMO IL BENTORNATO!"
 msgstr "WELCOME BACK!"
 
-#: templates/base.html:599
+#: templates/base.html:602
 msgid "Ciao!"
 msgstr "Hello!"
 
-#: templates/base.html:600
+#: templates/base.html:603
 #, python-format
 msgid "Ciao %(username)s!"
 msgstr "Hello %(username)s!"
@@ -2118,6 +2110,8 @@ msgstr "Match"
 #: templates/components/_multi_set_score_display.html:14
 #: templates/components/_unified_match_score.html:19
 #: templates/components/_unified_rack_input.html:36
+#: templates/components/_user_recent_matches_table.html:32
+#: templates/components/_user_recent_matches_table.html:73
 #: templates/match_detail.html:10 templates/match_detail.html:66
 #: templates/match_detail.html:96 templates/match_detail.html:146
 msgid "Bye"
@@ -2126,6 +2120,7 @@ msgstr "Bye"
 #: templates/components/_player_recent_matches.html:15
 #: templates/components/_player_recent_matches.html:34
 #: templates/components/_player_recent_matches.html:147
+#: templates/components/_user_recent_matches_table.html:14
 #: templates/match_detail.html:12
 msgid "Gara"
 msgstr "Competition"
@@ -2134,7 +2129,7 @@ msgstr "Competition"
 #: templates/components/_match_card.html:32
 #: templates/components/_match_result_row.html:18
 #: templates/components/_player_recent_matches.html:55
-#: templates/components/_user_recent_matches_table.html:44
+#: templates/components/_user_recent_matches_table.html:47
 #: templates/match_detail.html:33
 msgid "Trio"
 msgstr "Trio"
@@ -2270,24 +2265,22 @@ msgstr ""
 msgid "Informativa Privacy e Cookie"
 msgstr "Privacy and Cookie Policy"
 
-
 #: templates/privacy.html:11
 msgid "Titolare del trattamento"
 msgstr "Data controller"
-
 
 #: templates/privacy.html:13
 #, python-format
 msgid ""
 "Titolare del trattamento dei dati è il gestore di %(site)s. Per qualsiasi"
 " richiesta relativa ai tuoi dati puoi scrivere a %(email)s."
-msgstr "The data controller is the operator of %(site)s. For any request regarding your data you can write to %(email)s."
-
+msgstr ""
+"The data controller is the operator of %(site)s. For any request "
+"regarding your data you can write to %(email)s."
 
 #: templates/privacy.html:18
 msgid "Quali dati raccogliamo"
 msgstr "What data we collect"
-
 
 #: templates/privacy.html:20
 msgid ""
@@ -2295,8 +2288,11 @@ msgid ""
 "(conservata solo in forma cifrata). Durante l'uso della piattaforma "
 "vengono registrati i dati sportivi che generi: iscrizioni alle gare, "
 "risultati delle partite, statistiche e classifiche."
-msgstr "To create an account we collect your username, email address and password (stored only in encrypted form). While you use the platform we record the sporting data you generate: competition enrollments, match results, statistics and rankings."
-
+msgstr ""
+"To create an account we collect your username, email address and password"
+" (stored only in encrypted form). While you use the platform we record "
+"the sporting data you generate: competition enrollments, match results, "
+"statistics and rankings."
 
 #: templates/privacy.html:23
 msgid ""
@@ -2304,13 +2300,15 @@ msgid ""
 "cancellazione dell'account avviene tramite anonimizzazione: i risultati "
 "sportivi restano nelle classifiche storiche, ma non sono più "
 "riconducibili a te."
-msgstr "Personally identifying data is stored encrypted in the database. Account deletion is performed through anonymisation: your sporting results remain in the historical rankings, but they can no longer be traced back to you."
-
+msgstr ""
+"Personally identifying data is stored encrypted in the database. Account "
+"deletion is performed through anonymisation: your sporting results remain"
+" in the historical rankings, but they can no longer be traced back to "
+"you."
 
 #: templates/privacy.html:28
 msgid "Cookie tecnici"
 msgstr "Technical cookies"
-
 
 #: templates/privacy.html:30
 msgid ""
@@ -2318,13 +2316,15 @@ msgid ""
 " sessione di login, protezione dei moduli contro gli invii fraudolenti "
 "(CSRF) e memorizzazione della lingua scelta. Questi cookie non richiedono"
 " consenso perché senza di essi il sito non può funzionare."
-msgstr "The site uses technical cookies that are necessary for it to work: keeping your login session, protecting forms against fraudulent submissions (CSRF) and remembering your chosen language. These cookies do not require consent because without them the site cannot function."
-
+msgstr ""
+"The site uses technical cookies that are necessary for it to work: "
+"keeping your login session, protecting forms against fraudulent "
+"submissions (CSRF) and remembering your chosen language. These cookies do"
+" not require consent because without them the site cannot function."
 
 #: templates/privacy.html:36
 msgid "Cookie analitici (Google Analytics)"
 msgstr "Analytics cookies (Google Analytics)"
-
 
 #: templates/privacy.html:38
 msgid ""
@@ -2332,16 +2332,20 @@ msgid ""
 "quante persone lo visitano, quali pagine consultano, da quale dispositivo"
 " e da quale fonte arrivano. Lo scopo è esclusivamente migliorare la "
 "piattaforma."
-msgstr "We use Google Analytics 4 to understand how the site is used: how many people visit it, which pages they view, from which device and from which source they arrive. The sole purpose is to improve the platform."
-
+msgstr ""
+"We use Google Analytics 4 to understand how the site is used: how many "
+"people visit it, which pages they view, from which device and from which "
+"source they arrive. The sole purpose is to improve the platform."
 
 #: templates/privacy.html:41
 msgid ""
 "Google Analytics 4 non registra il tuo indirizzo IP completo e non lo usa"
 " per identificarti. Non inviamo a Google il tuo nome, la tua email o "
 "altri dati che permettano di risalire alla tua identità."
-msgstr "Google Analytics 4 does not record your full IP address and does not use it to identify you. We do not send Google your name, your email or any other data that could reveal your identity."
-
+msgstr ""
+"Google Analytics 4 does not record your full IP address and does not use "
+"it to identify you. We do not send Google your name, your email or any "
+"other data that could reveal your identity."
 
 #: templates/privacy.html:44
 msgid ""
@@ -2349,13 +2353,14 @@ msgid ""
 "ufficiale per la disattivazione di Google Analytics, disponibile su "
 "tools.google.com/dlpage/gaoptout, oppure attivando l'opzione Do Not Track"
 " del tuo browser."
-msgstr "You can opt out by installing the official Google Analytics opt-out browser add-on, available at tools.google.com/dlpage/gaoptout, or by enabling the Do Not Track option in your browser."
-
+msgstr ""
+"You can opt out by installing the official Google Analytics opt-out "
+"browser add-on, available at tools.google.com/dlpage/gaoptout, or by "
+"enabling the Do Not Track option in your browser."
 
 #: templates/privacy.html:50
 msgid "I tuoi diritti"
 msgstr "Your rights"
-
 
 #: templates/privacy.html:52
 msgid ""
@@ -2363,13 +2368,15 @@ msgid ""
 "la cancellazione o opporti al trattamento. La maggior parte delle "
 "operazioni è disponibile direttamente dalle impostazioni del tuo profilo;"
 " per le altre puoi contattarci all'indirizzo indicato sopra."
-msgstr "You can at any time access your data, correct it, request its deletion or object to its processing. Most of these operations are available directly from your profile settings; for the others you can contact us at the address indicated above."
-
+msgstr ""
+"You can at any time access your data, correct it, request its deletion or"
+" object to its processing. Most of these operations are available "
+"directly from your profile settings; for the others you can contact us at"
+" the address indicated above."
 
 #: templates/privacy.html:57
 msgid "Ultimo aggiornamento: luglio 2026."
 msgstr "Last updated: July 2026."
-
 
 #: templates/admin/campionato_detail.html:27
 msgid "Passa alla fase playoff"
@@ -4004,6 +4011,7 @@ msgstr "Players"
 #: templates/components/_match_card.html:171
 #: templates/components/_match_card.html:177
 #: templates/components/_player_recent_matches.html:18
+#: templates/components/_user_recent_matches_table.html:17
 msgid "Risultato"
 msgstr "Result"
 
@@ -4152,6 +4160,7 @@ msgstr "Search venue..."
 
 #: templates/components/_history_filters.html:51
 #: templates/components/_player_recent_matches.html:17
+#: templates/components/_user_recent_matches_table.html:16
 #: templates/individual_match/statistics.html:175
 msgid "Avversario"
 msgstr "Opponent"
@@ -4187,6 +4196,7 @@ msgstr "Concluded"
 #: templates/components/_history_filters.html:128
 #: templates/components/_index_upcoming.html:16
 #: templates/components/_player_recent_matches.html:14
+#: templates/components/_user_recent_matches_table.html:13
 msgid "Campionato"
 msgstr "Championship"
 
@@ -4650,6 +4660,7 @@ msgstr "Go to Match"
 
 #: templates/components/_match_header.html:6
 #: templates/components/_player_recent_matches.html:16
+#: templates/components/_user_recent_matches_table.html:15
 #: templates/public/garas_list.html:14
 msgid "Turno"
 msgstr "Round"
@@ -4813,29 +4824,31 @@ msgid "Storico Partite Recenti"
 msgstr "Recent Match History"
 
 #: templates/components/_player_recent_matches.html:5
+#: templates/components/_user_recent_matches_table.html:5
 msgid "Partite Recenti"
 msgstr "Recent Matches"
 
 #: templates/components/_player_recent_matches.html:19
+#: templates/components/_user_recent_matches_table.html:18
 msgid "Esito"
 msgstr "Outcome"
 
 #: templates/components/_player_recent_matches.html:83
 #: templates/components/_player_recent_matches.html:90
-#: templates/components/_user_recent_matches_table.html:74
-#: templates/components/_user_recent_matches_table.html:81
+#: templates/components/_user_recent_matches_table.html:77
+#: templates/components/_user_recent_matches_table.html:84
 msgid "Vittoria"
 msgstr "Win"
 
 #: templates/components/_player_recent_matches.html:85
-#: templates/components/_user_recent_matches_table.html:76
+#: templates/components/_user_recent_matches_table.html:79
 msgid "Pareggio"
 msgstr "Draw"
 
 #: templates/components/_player_recent_matches.html:87
 #: templates/components/_player_recent_matches.html:92
-#: templates/components/_user_recent_matches_table.html:78
-#: templates/components/_user_recent_matches_table.html:83
+#: templates/components/_user_recent_matches_table.html:81
+#: templates/components/_user_recent_matches_table.html:86
 msgid "Sconfitta"
 msgstr "Loss"
 
@@ -5366,6 +5379,10 @@ msgstr "Standings by Championship"
 #: templates/components/_user_info_card.html:44
 msgid "Override Attivo"
 msgstr "Override Active"
+
+#: templates/components/_user_recent_matches_table.html:95
+msgid "Nessuna partita giocata"
+msgstr "No matches played"
 
 #: templates/errors/400.html:3
 msgid "Sessione scaduta"
