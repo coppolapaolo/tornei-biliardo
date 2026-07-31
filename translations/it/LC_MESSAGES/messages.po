@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-07-29 14:25+0200\n"
+"POT-Creation-Date: 2026-07-31 15:35+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -413,7 +413,7 @@ msgstr ""
 msgid "Che piacere rivederti!"
 msgstr ""
 
-#: routes/auth.py:41 templates/base.html:598
+#: routes/auth.py:41 templates/base.html:601
 msgid "Tutto pronto per giocare?"
 msgstr ""
 
@@ -1267,17 +1267,17 @@ msgstr ""
 msgid "Registrati"
 msgstr ""
 
-#: templates/base.html:557 templates/privacy.html:3
+#: templates/base.html:560 templates/privacy.html:3
 msgid "Privacy e Cookie"
 msgstr ""
 
-#: templates/base.html:567 templates/base.html:573
+#: templates/base.html:570 templates/base.html:576
 msgid "Conferma"
 msgstr ""
 
 #: templates/admin/campionato_wizard_step1.html:14
 #: templates/admin/campionato_wizard_step1.html:184
-#: templates/admin/campionato_wizard_step2.html:14 templates/base.html:572
+#: templates/admin/campionato_wizard_step2.html:14 templates/base.html:575
 #: templates/components/_admin_new_campionato_modal.html:28
 #: templates/components/_campionato_create_modal.html:27
 #: templates/components/_campionato_edit_form.html:204
@@ -1297,51 +1297,51 @@ msgstr ""
 msgid "Annulla"
 msgstr ""
 
-#: templates/base.html:588
+#: templates/base.html:591
 msgid "XP OTTENUTI"
 msgstr ""
 
-#: templates/base.html:589
+#: templates/base.html:592
 msgid "LEVEL UP!"
 msgstr ""
 
-#: templates/base.html:590
+#: templates/base.html:593
 msgid "Nuovo livello raggiunto!"
 msgstr ""
 
-#: templates/base.html:591
+#: templates/base.html:594
 msgid "NUOVO TRAGUARDO!"
 msgstr ""
 
-#: templates/base.html:592
+#: templates/base.html:595
 msgid "STREAK!"
 msgstr ""
 
-#: templates/base.html:593
+#: templates/base.html:596
 msgid "Freeze attivo"
 msgstr ""
 
-#: templates/base.html:594
+#: templates/base.html:597
 msgid "STREAK PERSA"
 msgstr ""
 
-#: templates/base.html:595
+#: templates/base.html:598
 msgid "Non mollare, riprovare!"
 msgstr ""
 
-#: templates/base.html:596
+#: templates/base.html:599
 msgid "QUEST COMPLETATA!"
 msgstr ""
 
-#: templates/base.html:597
+#: templates/base.html:600
 msgid "TI DIAMO IL BENTORNATO!"
 msgstr ""
 
-#: templates/base.html:599
+#: templates/base.html:602
 msgid "Ciao!"
 msgstr ""
 
-#: templates/base.html:600
+#: templates/base.html:603
 #, python-format
 msgid "Ciao %(username)s!"
 msgstr ""
@@ -2044,6 +2044,8 @@ msgstr ""
 #: templates/components/_multi_set_score_display.html:14
 #: templates/components/_unified_match_score.html:19
 #: templates/components/_unified_rack_input.html:36
+#: templates/components/_user_recent_matches_table.html:32
+#: templates/components/_user_recent_matches_table.html:73
 #: templates/match_detail.html:10 templates/match_detail.html:66
 #: templates/match_detail.html:96 templates/match_detail.html:146
 msgid "Bye"
@@ -2052,6 +2054,7 @@ msgstr ""
 #: templates/components/_player_recent_matches.html:15
 #: templates/components/_player_recent_matches.html:34
 #: templates/components/_player_recent_matches.html:147
+#: templates/components/_user_recent_matches_table.html:14
 #: templates/match_detail.html:12
 msgid "Gara"
 msgstr ""
@@ -2060,7 +2063,7 @@ msgstr ""
 #: templates/components/_match_card.html:32
 #: templates/components/_match_result_row.html:18
 #: templates/components/_player_recent_matches.html:55
-#: templates/components/_user_recent_matches_table.html:44
+#: templates/components/_user_recent_matches_table.html:47
 #: templates/match_detail.html:33
 msgid "Trio"
 msgstr ""
@@ -3859,6 +3862,7 @@ msgstr ""
 #: templates/components/_match_card.html:171
 #: templates/components/_match_card.html:177
 #: templates/components/_player_recent_matches.html:18
+#: templates/components/_user_recent_matches_table.html:17
 msgid "Risultato"
 msgstr ""
 
@@ -4002,6 +4006,7 @@ msgstr ""
 
 #: templates/components/_history_filters.html:51
 #: templates/components/_player_recent_matches.html:17
+#: templates/components/_user_recent_matches_table.html:16
 #: templates/individual_match/statistics.html:175
 msgid "Avversario"
 msgstr ""
@@ -4037,6 +4042,7 @@ msgstr ""
 #: templates/components/_history_filters.html:128
 #: templates/components/_index_upcoming.html:16
 #: templates/components/_player_recent_matches.html:14
+#: templates/components/_user_recent_matches_table.html:13
 msgid "Campionato"
 msgstr ""
 
@@ -4500,6 +4506,7 @@ msgstr ""
 
 #: templates/components/_match_header.html:6
 #: templates/components/_player_recent_matches.html:16
+#: templates/components/_user_recent_matches_table.html:15
 #: templates/public/garas_list.html:14
 msgid "Turno"
 msgstr ""
@@ -4658,29 +4665,31 @@ msgid "Storico Partite Recenti"
 msgstr ""
 
 #: templates/components/_player_recent_matches.html:5
+#: templates/components/_user_recent_matches_table.html:5
 msgid "Partite Recenti"
 msgstr ""
 
 #: templates/components/_player_recent_matches.html:19
+#: templates/components/_user_recent_matches_table.html:18
 msgid "Esito"
 msgstr ""
 
 #: templates/components/_player_recent_matches.html:83
 #: templates/components/_player_recent_matches.html:90
-#: templates/components/_user_recent_matches_table.html:74
-#: templates/components/_user_recent_matches_table.html:81
+#: templates/components/_user_recent_matches_table.html:77
+#: templates/components/_user_recent_matches_table.html:84
 msgid "Vittoria"
 msgstr ""
 
 #: templates/components/_player_recent_matches.html:85
-#: templates/components/_user_recent_matches_table.html:76
+#: templates/components/_user_recent_matches_table.html:79
 msgid "Pareggio"
 msgstr ""
 
 #: templates/components/_player_recent_matches.html:87
 #: templates/components/_player_recent_matches.html:92
-#: templates/components/_user_recent_matches_table.html:78
-#: templates/components/_user_recent_matches_table.html:83
+#: templates/components/_user_recent_matches_table.html:81
+#: templates/components/_user_recent_matches_table.html:86
 msgid "Sconfitta"
 msgstr ""
 
@@ -5208,6 +5217,10 @@ msgstr ""
 
 #: templates/components/_user_info_card.html:44
 msgid "Override Attivo"
+msgstr ""
+
+#: templates/components/_user_recent_matches_table.html:95
+msgid "Nessuna partita giocata"
 msgstr ""
 
 #: templates/errors/400.html:3

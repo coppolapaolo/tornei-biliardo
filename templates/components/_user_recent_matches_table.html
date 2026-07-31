@@ -2,7 +2,7 @@
 <!-- Partite Recenti -->
 <div class="card mb-4">
     <div class="card-header">
-        <h5><i class="fas fa-shield-halved"></i> Partite Recenti</h5>
+        <h5><i class="fas fa-shield-halved"></i> {{ _('Partite Recenti') }}</h5>
     </div>
     <div class="card-body">
         {% if matches %}
@@ -10,23 +10,26 @@
             <table class="table table-sm">
                 <thead>
                     <tr>
-                        <th>Campionato</th>
-                        <th>Gara</th>
-                        <th>Turno</th>
-                        <th>Avversario</th>
-                        <th>Risultato</th>
-                        <th>Esito</th>
+                        <th>{{ _('Campionato') }}</th>
+                        <th>{{ _('Gara') }}</th>
+                        <th>{{ _('Turno') }}</th>
+                        <th>{{ _('Avversario') }}</th>
+                        <th>{{ _('Risultato') }}</th>
+                        <th>{{ _('Esito') }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for match in matches %}
                     <tr>
-                        <td>{{ match.gara.campionato.name }}</td>
-                        <td>{{ match.gara.number }}</td>
+                        {# gara può essere None: soft-deleted (with_loader_criteria la
+                           smaterializza) o gara_id NULL (ON DELETE SET NULL). Senza
+                           guard è un 500 — incidente TORNEI-BILIARDO-5G del 2026-07-04. #}
+                        <td>{{ match.gara.campionato.name if match.gara and match.gara.campionato else '—' }}</td>
+                        <td>{{ match.gara.number if match.gara else '—' }}</td>
                         <td>{{ match.round_number }}</td>
                         <td>
                             {% if match.is_bye %}
-                            <em class="text-muted">Bye</em>
+                            <em class="text-muted">{{ _('Bye') }}</em>
                             {% elif match.is_trio and match.trio_match %}
                             {# Trio match: show all 3 players except current user #}
                             {% set trio = match.trio_match %}
@@ -67,7 +70,7 @@
                         </td>
                         <td>
                             {% if match.is_bye %}
-                            <span class="badge bg-info">Bye</span>
+                            <span class="badge bg-info">{{ _('Bye') }}</span>
                             {% elif match.is_trio and match.trio_match %}
                             {# Trio match: check if user won #}
                             {% if match.winner_id == user.id %}
@@ -89,7 +92,7 @@
             </table>
         </div>
         {% else %}
-        <p class="text-muted">Nessuna partita giocata</p>
+        <p class="text-muted">{{ _('Nessuna partita giocata') }}</p>
         {% endif %}
     </div>
 </div>
