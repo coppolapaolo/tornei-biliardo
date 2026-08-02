@@ -408,10 +408,13 @@ class SpareggioService:
         )
         if not SpareggioService.scores_resolve_group(score_values, needed):
             if needed <= 1:
+                # Stesso testo del check lato client (gara_detail.html,
+                # `errorSsrGroupDuplicates`): l'utente può incontrare l'uno o
+                # l'altro a seconda di dove scatta la validazione.
                 return (
                     False,
-                    "Serve un solo vincitore: il punteggio più alto non può "
-                    "essere condiviso",
+                    "Serve un vincitore netto: il punteggio più alto del "
+                    "gruppo non può essere condiviso",
                 )
             return (
                 False,
