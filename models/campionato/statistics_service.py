@@ -401,6 +401,16 @@ def compute_campionato_status(campionato: Campionato) -> str:
     if any(v == GaraStatus.INSCRIPTION.value for v in values):
         return TournamentStatus.REGISTRATION_OPEN.value
     if all(v == GaraStatus.COMPLETED.value for v in values):
+        # "Tutte le gare esistenti sono completate" non basta: nel mezzo di un
+        # campionato, fra la fine di una prova e la creazione della successiva
+        # la condizione è vera e il campionato risultava "Completato" — dato
+        # fuorviante, e per giunta transitorio (issue #60). Finché restano
+        # prove da creare rispetto a quelle pianificate il campionato è
+        # ancora in corso; il completamento "vero" passa da
+        # `terminate_campionato` (ramo `terminated_at` sopra).
+        planned = getattr(campionato, "planned_gare_count", 0) or 0
+        if len(gare) < planned:
+            return TournamentStatus.IN_PROGRESS.value
         return TournamentStatus.COMPLETED.value
 
     return TournamentStatus.SETUP.value

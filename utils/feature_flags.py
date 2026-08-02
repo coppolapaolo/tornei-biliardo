@@ -113,6 +113,29 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "admin.campionato.wizard_create": {"director"},
     "admin.campionato.wizard_step2": {"director"},
     "admin.campionato.wizard_cancel": {"director"},
+    # Ciclo di vita del campionato. Erano assenti dalla matrice, quindi
+    # admin-only in produzione: il director vedeva i pulsanti (i template non
+    # li gating-avano) ma il POST rispondeva 404 — sintomo segnalato come
+    # "Passa alla fase playoff → 404 su /admin/campionato/<id>/terminate"
+    # (issue #59). L'autorizzazione vera resta @campionato_manager_required.
+    "admin.campionato.terminate_campionato": {"director"},
+    "admin.campionato.delete_campionato": {"director"},
+    "admin.campionato.toggle_campionato_active": {"director"},
+    "admin.campionato.add_director": {"director"},
+    "admin.campionato.remove_director": {"director"},
+    # Fase playoff: è il seguito diretto di terminate_campionato, quindi va
+    # promossa nello stesso blocco (ADR-028, "promote whole feature areas").
+    "admin.campionato.start_playoff": {"director"},
+    "admin.campionato.create_playoff_gara": {"director"},
+    "admin.campionato.update_playoff_min": {"director"},
+    "admin.campionato.playoff_add_config": {"director"},
+    "admin.campionato.playoff_edit_config": {"director"},
+    "admin.campionato.playoff_deactivate_config": {"director"},
+    "admin.campionato.playoff_add_player": {"director"},
+    "admin.campionato.playoff_remove_player": {"director"},
+    # Soft delete del campionato: admin-only (@admin_required). Set esplicito
+    # per documentare la decisione, non per inerzia.
+    "admin.campionato.soft_delete_campionato": set(),
     "admin.competition.create_gara_standalone": {"director"},
     "admin.competition.create_gara": {"director"},
     "admin.competition.edit_gara": {"director"},

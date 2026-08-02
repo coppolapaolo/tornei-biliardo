@@ -559,11 +559,14 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
         const buttons = document.querySelectorAll('button[onclick^="addRackWin"]');
         buttons.forEach(btn => btn.disabled = true);
 
-        // Determina l'URL corretto in base ai permessi utente
-        {% if current_user.is_admin %}
-        const url = `/admin/match/{{ match.id }}/add_rack`;
-        {% elif current_user.is_director %}
-        // Director usa l'endpoint admin se può gestire questa gara
+        // L'endpoint dipende dai permessi SU QUESTA GARA, non dal ruolo
+        // globale: un director che gioca in una gara altrui non è un manager
+        // del match, e l'endpoint admin gli rispondeva errore (issue #66).
+        // Coerente con removeRack (sempre player) e con la scelta del blocco
+        // player più in alto nella pagina: chi gioca usa il flusso player.
+        {% if user_is_player %}
+        const url = `/player/match/{{ match.id }}/racks/add`;
+        {% elif user_can_manage %}
         const url = `/admin/match/{{ match.id }}/add_rack`;
         {% else %}
         const url = `/player/match/{{ match.id }}/racks/add`;

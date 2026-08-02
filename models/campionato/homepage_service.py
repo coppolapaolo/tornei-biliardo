@@ -186,11 +186,12 @@ class HomepageService:
 
     @staticmethod
     def _display_round(gara: Gara) -> int:
-        """Turno da mostrare: current_round, oppure 1 se la gara è in gioco
-        ma current_round è ancora 0 (edge case di avvio)."""
-        if gara.current_round and gara.current_round > 0:
-            return gara.current_round
-        return 1 if gara.status == GaraStatus.PLAYING.value else 0
+        """Turno da mostrare, delegato a `Gara.display_round`.
+
+        Prima leggeva `current_round`, che con i turni pre-generati resta
+        indietro rispetto al turno effettivamente in gioco (issue #62).
+        """
+        return gara.display_round
 
     @staticmethod
     def _live_matches_by_gara(gara_ids: List[int]) -> Dict[int, List[Match]]:

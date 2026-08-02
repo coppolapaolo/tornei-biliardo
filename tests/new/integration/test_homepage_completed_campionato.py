@@ -54,14 +54,23 @@ def _guest_render(app, endpoint_path, query_string=""):
         return app.full_dispatch_request()
 
 
-def _make_campionato(name_prefix: str, director_id: int) -> Campionato:
-    """Helper to build a campionato with a unique name."""
+def _make_campionato(
+    name_prefix: str, director_id: int, planned_gare_count: int = 1
+) -> Campionato:
+    """Helper to build a campionato with a unique name.
+
+    Pianifica UNA sola gara: col default del modello (10) un campionato le
+    cui gare esistenti sono tutte COMPLETED resta IN_PROGRESS, perché ne
+    mancano ancora da creare (issue #60). Questi test verificano la
+    partizione per stato derivato, non la pianificazione.
+    """
     suffix = uuid.uuid4().hex[:6]
     return TournamentService().create_campionato_with_director(
         name=f"{name_prefix}_{suffix}",
         creator_user_id=director_id,
         campionato_type="Amalfi",
         is_active=True,
+        planned_gare_count=planned_gare_count,
     )
 
 
