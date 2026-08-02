@@ -80,6 +80,10 @@ class HomepageService:
 
         # --- Gare partitioning -------------------------------------------------
         live_gara_objs = [g for g in garas if g.status in _LIVE_GARA_STATUSES]
+        # `display_round` scorre `gara.matches` (relationship lazy): senza
+        # eager-load sarebbe una query per gara live. Popolata qui in un'unica
+        # selectin sulle sole gare live — le altre card non leggono il turno.
+        HomepageService._preload_matches(live_gara_objs)
         # Match ai tavoli per TUTTE le gare live in un'unica query (evita N+1).
         matches_by_gara = HomepageService._live_matches_by_gara(
             [g.id for g in live_gara_objs]
@@ -185,12 +189,32 @@ class HomepageService:
     # ──────────────────────────────────────────────────────────────────────
 
     @staticmethod
+    def _preload_matches(garas: List[Gara]) -> None:
+        """Popola `Gara.matches` per le gare indicate con un'unica query.
+
+        `selectinload` su istanze già in identity map riempie la collection
+        senza toccarne gli altri attributi. Serve a `display_round`, che
+        altrimenti farebbe un lazy-load per gara.
+        """
+        if not garas:
+            return
+        from sqlalchemy.orm import selectinload
+
+        Gara.query.options(selectinload(Gara.matches)).filter(
+            Gara.id.in_([g.id for g in garas])
+        ).all()
+
+    @staticmethod
     def _display_round(gara: Gara) -> int:
-        """Turno da mostrare: current_round, oppure 1 se la gara è in gioco
-        ma current_round è ancora 0 (edge case di avvio)."""
-        if gara.current_round and gara.current_round > 0:
-            return gara.current_round
-        return 1 if gara.status == GaraStatus.PLAYING.value else 0
+        """Turno da mostrare, delegato a `Gara.display_round`.
+
+        Prima leggeva `current_round`, che con i turni pre-generati resta
+        indietro rispetto al turno effettivamente in gioco (issue #62).
+
+        Il chiamante deve aver già caricato `gara.matches` (vedi
+        `_preload_matches`): la property li scorre.
+        """
+        return gara.display_round
 
     @staticmethod
     def _live_matches_by_gara(gara_ids: List[int]) -> Dict[int, List[Match]]:

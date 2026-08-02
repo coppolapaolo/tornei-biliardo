@@ -337,6 +337,7 @@
                       {% if can_edit_ssr %}
                       <input type="number" class="form-control form-control-sm text-center ssr-group-input"
                         data-user-id="{{ player.user_id }}" data-group-position="{{ group.position }}"
+                        data-needs-distinct-top="{{ group.needs_distinct_top }}"
                         value="{{ player.current_ssr_score if player.current_ssr_score is not none else '' }}" min="0"
                         style="width: 80px; display: inline-block;">
                       {% else %}
@@ -857,7 +858,7 @@
       "errorSsrScoreFormat": {{ _("Tutti i punteggi devono essere numeri interi non negativi") | tojson }},
       "errorSsrDuplicates": {{ _("I punteggi devono essere tutti diversi per risolvere il parimerito") | tojson }},
       "errorSsrGroupScores": {{ _("I punteggi devono essere numeri interi non negativi") | tojson }},
-      "errorSsrGroupDuplicates": {{ _("I punteggi devono essere diversi all'interno del gruppo") | tojson }},
+      "errorSsrGroupDuplicates": {{ _("Serve un vincitore netto: il punteggio più alto del gruppo non può essere condiviso") | tojson }},
       "infoSsrStart": {{ _("Usa 'Avvia SSR' per inserire i punteggi degli spareggi") | tojson }},
       "infoUnknown": {{ _("Errore sconosciuto") | tojson }},
       "infoValidateImpossible": {{ _("Impossibile validare il risultato") | tojson }},
@@ -1210,11 +1211,18 @@
       return;
     }
 
-    // Check for duplicates within this group
+    // Non tutti i punteggi devono differire: vanno separati solo i posti
+    // realmente contesi (issue #63). Quanti sono lo dice il server con
+    // data-needs-distinct-top; in assenza si ricade sul vecchio "tutti diversi".
     const scoreValues = Object.values(scores);
-    if (new Set(scoreValues).size !== scoreValues.length) {
-      showError(GARA_CONFIG.i18n.errorSsrGroupDuplicates);
-      return;
+    const declaredTop = inputs.length ? parseInt(inputs[0].dataset.needsDistinctTop, 10) : NaN;
+    const distinctTop = isNaN(declaredTop) ? scoreValues.length - 1 : declaredTop;
+    const ordered = scoreValues.slice().sort((a, b) => b - a);
+    for (let i = 0; i < Math.min(distinctTop, ordered.length - 1); i++) {
+      if (ordered[i] <= ordered[i + 1]) {
+        showError(GARA_CONFIG.i18n.errorSsrGroupDuplicates);
+        return;
+      }
     }
 
     // Submit scores for this group

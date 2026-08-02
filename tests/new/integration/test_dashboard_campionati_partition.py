@@ -52,13 +52,24 @@ def _make_standalone_gara(director_id: int, number: int, status: str) -> Gara:
     return gara
 
 
-def _make_campionato(name_prefix: str, director_id: int) -> Campionato:
+def _make_campionato(
+    name_prefix: str, director_id: int, planned_gare_count: int = 1
+) -> Campionato:
+    """Campionato di test con UNA gara pianificata.
+
+    Il default del modello è 10: con quello, un campionato le cui gare
+    esistenti sono tutte COMPLETED resta IN_PROGRESS perché ne mancano
+    ancora 9 da creare (issue #60). Qui interessa la partizione per stato
+    derivato, non la pianificazione, quindi pianifichiamo esattamente le
+    gare che i test creano.
+    """
     suffix = uuid.uuid4().hex[:6]
     return TournamentService().create_campionato_with_director(
         name=f"{name_prefix}_{suffix}",
         creator_user_id=director_id,
         campionato_type="Amalfi",
         is_active=True,
+        planned_gare_count=planned_gare_count,
     )
 
 

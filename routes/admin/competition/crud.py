@@ -11,7 +11,7 @@ from flask import (
     jsonify,
 )
 from flask_login import login_required, current_user
-from flask_babel import _
+from flask_babel import _, ngettext
 
 from models import (
     db,
@@ -239,6 +239,37 @@ def create_gara():
 
         track_event(AnalyticsEvent.GARA_CREATED, gara_id=gara.id, standalone=False)
         flash(_("Gara %(number)d creata con successo!", number=number))
+
+        # "Auto-copia iscritti": il flag pilotava solo il precompilamento dei
+        # campi lato client, nessuno copiava le iscrizioni (issue #58).
+        if request.form.get("copy_from_previous"):
+            from models.competition.inscription_service import InscriptionService
+
+            previous = InscriptionService.find_previous_gara_in_campionato(gara)
+            if previous is None:
+                flash(
+                    _("Nessuna gara precedente da cui copiare gli iscritti."),
+                    "warning",
+                )
+            else:
+                copied = InscriptionService.copy_inscriptions_from_gara(
+                    previous.id, gara.id
+                )
+                if copied:
+                    flash(
+                        ngettext(
+                            "%(num)d iscritto copiato dalla gara precedente.",
+                            "%(num)d iscritti copiati dalla gara precedente.",
+                            copied,
+                        ),
+                        "success",
+                    )
+                else:
+                    flash(
+                        _("Nessun iscritto da copiare dalla gara precedente."),
+                        "warning",
+                    )
+
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara.id))
     except ValueError as e:
         flash(str(e), "error")

@@ -22,10 +22,59 @@ class TiebreakerGroup(TypedDict):
     position: int  # Starting position (1, 2, or 3)
     rack_totali: int  # Shared rack count
     players: List[Dict]  # List of {user_id, username, current_ssr_score}
+    # Quanti punteggi in cima al gruppo devono essere strettamente separati
+    # perché lo spareggio sia risolto (vedi positions_to_discriminate).
+    needs_distinct_top: int
 
 
 class SpareggioService:
     """Service for detecting and resolving tiebreakers in top 3 positions."""
+
+    # ------------------------------------------------------------------
+    # Regola di risoluzione di un gruppo di parimerito
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def positions_to_discriminate(
+        group_size: int, group_position: int, tiebreaker_limit: int
+    ) -> int:
+        """Quanti punteggi SSR in cima al gruppo devono essere distinti.
+
+        Lo spareggio serve a decidere le posizioni fino a
+        ``tiebreaker_until_position``: sotto quella soglia il parimerito è
+        legittimo e non va forzato. Un gruppo che parte dalla posizione ``p``
+        con ``n`` giocatori occupa le posizioni ``p .. p+n-1``, di cui solo
+        ``tiebreaker_limit - p + 1`` sono contese; per separarle basta che i
+        primi ``k`` punteggi siano strettamente decrescenti (il ``k+1``-esimo
+        incluso, altrimenti la ``k``-esima posizione resterebbe ambigua).
+
+        Esempio dell'issue #63: gruppo di 4 alla posizione 3 con limite 3 →
+        k = 1. Basta un vincitore netto; gli altri tre possono restare a pari
+        punteggio, anche tutti a 0.
+        """
+        if group_size < 2:
+            return 0
+        contested = tiebreaker_limit - group_position + 1
+        return max(0, min(group_size - 1, contested))
+
+    @staticmethod
+    def scores_resolve_group(
+        scores: List[Optional[int]], needs_distinct_top: int
+    ) -> bool:
+        """True se i punteggi separano i primi ``needs_distinct_top`` posti.
+
+        Richiede che ogni giocatore abbia un punteggio (0 è valido, ``None``
+        significa "non inserito") e che i primi ``needs_distinct_top``
+        punteggi in ordine decrescente siano strettamente maggiori del
+        successivo. I pari merito oltre quella soglia sono ammessi.
+        """
+        if any(s is None for s in scores):
+            return False
+        ordered = sorted((s for s in scores if s is not None), reverse=True)
+        return all(
+            ordered[i] > ordered[i + 1]
+            for i in range(min(needs_distinct_top, len(ordered) - 1))
+        )
 
     @staticmethod
     def _group_by_classification(gara: Gara) -> Tuple[List, Dict]:
@@ -174,13 +223,15 @@ class SpareggioService:
                             }
                         )
 
-                    # Check if this tiebreaker is already resolved
-                    # All players must have a score AND all scores must be different
-                    # 0 is a valid score, None means not entered
+                    # Il gruppo è risolto quando tutti hanno un punteggio (0 è
+                    # valido, None = non inserito) e i punteggi separano le
+                    # sole posizioni contese. I pari merito oltre
+                    # tiebreaker_until_position sono legittimi (issue #63).
+                    needed = SpareggioService.positions_to_discriminate(
+                        len(group), current_position, tiebreaker_limit
+                    )
                     scores = [p["current_ssr_score"] for p in players]
-                    all_scores_entered = all(s is not None for s in scores)
-                    all_scores_different = len(scores) == len(set(scores))
-                    is_resolved = all_scores_entered and all_scores_different
+                    is_resolved = SpareggioService.scores_resolve_group(scores, needed)
 
                     if not is_resolved:
                         tiebreaker_groups.append(
@@ -188,6 +239,7 @@ class SpareggioService:
                                 "position": current_position,
                                 "rack_totali": rack_count,
                                 "players": players,
+                                "needs_distinct_top": needed,
                             }
                         )
 
@@ -288,6 +340,11 @@ class SpareggioService:
                         "position": current_position,
                         "rack_totali": rack_count,
                         "players": players,
+                        "needs_distinct_top": (
+                            SpareggioService.positions_to_discriminate(
+                                len(group), current_position, tiebreaker_limit
+                            )
+                        ),
                     }
                 )
 
@@ -304,21 +361,35 @@ class SpareggioService:
         """
         Check if a single tiebreaker group is resolved.
 
-        A group is resolved when all SSR scores are different (0 is valid).
+        Risolto = tutti hanno un punteggio (0 è valido) e i primi
+        ``needs_distinct_top`` sono strettamente separati. Sotto la soglia
+        dello spareggio i pari merito sono ammessi (issue #63).
         """
         scores = [p["current_ssr_score"] for p in group["players"]]
-        return len(scores) == len(set(scores))
+        needed = group.get("needs_distinct_top", len(scores) - 1)
+        return SpareggioService.scores_resolve_group(scores, needed)
 
     @staticmethod
-    def validate_ssr_scores_for_group(scores: Dict[int, int]) -> Tuple[bool, str]:
+    def validate_ssr_scores_for_group(
+        scores: Dict[int, int], needs_distinct_top: Optional[int] = None
+    ) -> Tuple[bool, str]:
         """
         Validate SSR scores for a SINGLE tiebreaker group.
 
         Scores must be unique only within this group - different groups
         can have overlapping scores.
 
+        Non tutti i punteggi devono essere diversi: vanno separati solo i
+        ``needs_distinct_top`` posti realmente contesi (vedi
+        ``positions_to_discriminate``). Chi resta fuori dalle posizioni
+        oggetto di spareggio può chiudere a pari punteggio — richiederlo
+        costringeva il director a inventare punti (issue #63). Con
+        ``needs_distinct_top=None`` si mantiene il comportamento storico
+        "tutti diversi".
+
         Args:
             scores: Dict mapping user_id to SSR score for players in ONE group
+            needs_distinct_top: quanti punteggi in cima devono essere distinti
 
         Returns:
             Tuple of (is_valid, error_message)
@@ -331,10 +402,25 @@ class SpareggioService:
             if not isinstance(score, int) or score < 0:
                 return False, "I punteggi devono essere numeri interi non negativi"
 
-        # Check all scores are different within the group
-        score_values = list(scores.values())
-        if len(score_values) != len(set(score_values)):
-            return False, "I punteggi devono essere diversi all'interno del gruppo"
+        score_values: List[Optional[int]] = list(scores.values())
+        needed = (
+            len(score_values) - 1 if needs_distinct_top is None else needs_distinct_top
+        )
+        if not SpareggioService.scores_resolve_group(score_values, needed):
+            if needed <= 1:
+                # Stesso testo del check lato client (gara_detail.html,
+                # `errorSsrGroupDuplicates`): l'utente può incontrare l'uno o
+                # l'altro a seconda di dove scatta la validazione.
+                return (
+                    False,
+                    "Serve un vincitore netto: il punteggio più alto del "
+                    "gruppo non può essere condiviso",
+                )
+            return (
+                False,
+                f"I primi {needed} punteggi devono essere diversi fra loro "
+                f"e più alti degli altri",
+            )
 
         return True, ""
 
@@ -454,11 +540,6 @@ class SpareggioService:
         """
         from models.competition.models import Gara
 
-        # Validate scores for this group
-        is_valid, error = SpareggioService.validate_ssr_scores_for_group(scores)
-        if not is_valid:
-            return False, error
-
         gara = db.session.get(Gara, gara_id)
         if not gara:
             return False, "Gara non trovata"
@@ -476,6 +557,15 @@ class SpareggioService:
                 False,
                 f"Gruppo di parimerito alla posizione {group_position} non trovato",
             )
+
+        # Validazione dopo la risoluzione del gruppo: quanti punteggi devono
+        # essere separati dipende da quante posizioni del gruppo cadono entro
+        # tiebreaker_until_position (issue #63).
+        is_valid, error = SpareggioService.validate_ssr_scores_for_group(
+            scores, target_group.get("needs_distinct_top")
+        )
+        if not is_valid:
+            return False, error
 
         # Verify all user_ids in scores belong to this group
         group_user_ids = {p["user_id"] for p in target_group["players"]}

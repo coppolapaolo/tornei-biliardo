@@ -341,6 +341,39 @@ class Gara(SoftDeleteMixin, db.Model):
 
         return get_status_badge(self)
 
+    @property
+    def display_round(self) -> int:
+        """Turno da mostrare all'utente ("Turno corrente: N / M").
+
+        `current_round` è la progressione *stretta*: avanza solo quando tutti
+        i match del turno N sono conclusi. Le strategie che pre-generano i
+        turni (random, round robin) creano i match di tutti i turni all'avvio
+        e lasciano `current_round` indietro finché il turno precedente non è
+        chiuso del tutto — la gara intanto sta già giocando i turni
+        successivi, e il riquadro pubblico mostrava "Turno corrente: 1 / 3" a
+        gara al terzo turno (issue #62).
+
+        Il turno da mostrare è il più basso con match ancora aperti; se sono
+        tutti conclusi è il più alto con match (gara finita). Senza match si
+        ricade su `current_round`, e su 1 per una gara PLAYING che non ha
+        ancora match (edge case di avvio).
+        """
+        rounds = [
+            m.round_number
+            for m in (getattr(self, "matches", []) or [])
+            if getattr(m, "round_number", None)
+        ]
+        if rounds:
+            open_rounds = [
+                m.round_number
+                for m in self.matches
+                if m.round_number and not MatchStatus.is_finished(m.status)
+            ]
+            return min(open_rounds) if open_rounds else max(rounds)
+        if self.current_round and self.current_round > 0:
+            return self.current_round
+        return 1 if self.status == GaraStatus.PLAYING.value else 0
+
     def can_start_new_round(self):
         """Verifica se si può iniziare un nuovo round"""
         if self.status != GaraStatus.PLAYING.value:

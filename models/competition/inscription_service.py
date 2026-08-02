@@ -607,6 +607,65 @@ class InscriptionService:
         return False
 
     @staticmethod
+    def find_previous_gara_in_campionato(gara: "Gara") -> Optional["Gara"]:
+        """Gara del campionato che precede ``gara`` per ``number``.
+
+        None per le gare standalone e per la prima gara del campionato.
+        """
+        from models.competition.models import Gara
+
+        if not gara.campionato_id:
+            return None
+        return (
+            db.session.query(Gara)
+            .filter(
+                Gara.campionato_id == gara.campionato_id,
+                Gara.number < gara.number,
+                Gara.deleted_at.is_(None),
+            )
+            .order_by(Gara.number.desc())
+            .first()
+        )
+
+    @staticmethod
+    def copy_inscriptions_from_gara(source_gara_id: int, target_gara_id: int) -> int:
+        """Copia gli iscritti attivi di una gara su un'altra. Ritorna quanti.
+
+        Usata dall'opzione "auto-copia iscritti" alla creazione di una gara di
+        campionato (issue #58): il flag esisteva solo lato client, dove
+        precompilava i *parametri* della gara, e nessuno copiava le iscrizioni.
+
+        Copia solo le iscrizioni attive (non ritirate, non in lista d'attesa):
+        chi si era ritirato dalla prova precedente non viene riportato. Ogni
+        giocatore passa da ``inscribe_user``, quindi capienza e policy sui
+        numeri dispari della gara di destinazione sono rispettate (chi eccede
+        finisce in lista d'attesa) e gli eventi di dominio sono emessi come per
+        un'iscrizione manuale del director.
+
+        Senza ``@transactional``: ogni ``inscribe_user`` porta il proprio (i
+        decoratori annidati provocano rollback del savepoint esterno).
+        """
+        source_inscriptions = (
+            db.session.query(Inscription)
+            .filter_by(gara_id=source_gara_id, is_withdrawn=False, is_waitlist=False)
+            .order_by(Inscription.initial_order, Inscription.id)
+            .all()
+        )
+
+        copied = 0
+        for inscription in source_inscriptions:
+            try:
+                if InscriptionService.inscribe_user(
+                    inscription.user_id, target_gara_id
+                ):
+                    copied += 1
+            except (PermissionDeniedError, ConflictError):
+                # Un singolo giocatore non copiabile (es. account passato ad
+                # admin) non deve far fallire la copia degli altri.
+                continue
+        return copied
+
+    @staticmethod
     @transactional(domain="competition")
     def open_inscriptions(
         gara_id: int, inscription_start: datetime, inscription_end: datetime
