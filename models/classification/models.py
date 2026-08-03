@@ -137,6 +137,44 @@ class RoundClassification(db.Model):
         return self.rack_difference or 0
 
     @staticmethod
+    def ordered_for_display(gara_id: int, round_number: int):
+        """Classifica di un turno, con i parimerito in ordine di estrazione.
+
+        `order_by(position)` da solo non basta più da quando i parimerito
+        condividono la posizione (issue #67): fra due righe a pari `position`
+        l'ordine sarebbe quello di inserimento delle righe, non quello che il
+        giocatore riconosce. Il tie-break è `Inscription.initial_order`, cioè
+        l'"Ordine sorteggio", con `user_id` come ultima ancora per non
+        dipendere dal DB quando anche quello manca.
+
+        Outer join: un giocatore senza iscrizione (dato storico) resta in
+        classifica invece di sparire, e ordina in fondo al suo gruppo.
+        """
+        from models.competition.models import Inscription
+
+        return (
+            db.session.query(RoundClassification)
+            .outerjoin(
+                Inscription,
+                db.and_(
+                    Inscription.gara_id == RoundClassification.gara_id,
+                    Inscription.user_id == RoundClassification.user_id,
+                ),
+            )
+            .filter(
+                RoundClassification.gara_id == gara_id,
+                RoundClassification.round_number == round_number,
+            )
+            .order_by(
+                RoundClassification.position,
+                Inscription.initial_order.is_(None),
+                Inscription.initial_order,
+                RoundClassification.user_id,
+            )
+            .all()
+        )
+
+    @staticmethod
     def calculate_classification_after_round(gara_id, round_number):
         """
         Calculate classification after a specific round.

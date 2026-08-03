@@ -257,12 +257,11 @@ def gara_detail(gara_id):
                         gara_id, max_round
                     )
 
-                classification = (
-                    RoundClassification.query.filter_by(
-                        gara_id=gara_id, round_number=max_round
-                    )
-                    .order_by(RoundClassification.position)
-                    .all()
+                # `ordered_for_display`, non `order_by(position)`: i parimerito
+                # condividono la posizione (#67) e vanno elencati in ordine di
+                # estrazione.
+                classification = RoundClassification.ordered_for_display(
+                    gara_id, max_round
                 )
                 if classification:
                     current_round_classification = classification
@@ -298,13 +297,10 @@ def gara_detail(gara_id):
                             gara_id, round_num
                         )
 
-                    # Carica la classificazione
-                    classification = (
-                        RoundClassification.query.filter_by(
-                            gara_id=gara_id, round_number=round_num
-                        )
-                        .order_by(RoundClassification.position)
-                        .all()
+                    # Carica la classificazione (parimerito in ordine di
+                    # estrazione, vedi sopra)
+                    classification = RoundClassification.ordered_for_display(
+                        gara_id, round_num
                     )
 
                     if classification:

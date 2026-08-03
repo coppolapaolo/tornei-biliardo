@@ -94,7 +94,7 @@
         </div>
         <div class="small text-muted mt-1 ms-4">
           {% if entry.previous_position %}
-          {{ _('Pos. Prec:') }} {{ entry.previous_position }}°
+          {{ _('Pos. Turno Prec:') }} {{ entry.previous_position }}°
           {% set movimento = entry.previous_position - entry.position %}
           {% if movimento > 0 %}
           <span class="text-success"><i class="fas fa-arrow-up"></i> +{{ movimento }}</span>
@@ -104,7 +104,7 @@
           <span class="text-muted">=</span>
           {% endif %}
           {% else %}
-          {{ _('Pos. Prec:') }} — <span class="text-muted">=</span>
+          {{ _('Pos. Turno Prec:') }} — <span class="text-muted">=</span>
           {% endif %}
         </div>
       </div>

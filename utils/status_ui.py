@@ -70,6 +70,14 @@ class StatusPresenter:
 
         mapping: Dict[str, Tuple[str, str]] = {
             # Derived/UI
+            # Senza questa entry una gara in INSCRIPTION con apertura futura
+            # (real status `inscription_not_yet_open`) cadeva sul fallback e
+            # mostrava "Sconosciuto" in homepage, riquadro di gestione ed
+            # elenco gare del campionato (issue #65).
+            ProvaDerivedStatus.INSCRIPTION_NOT_YET_OPEN.value: (
+                "bg-secondary",
+                _("Iscrizioni Programmate"),
+            ),
             ProvaDerivedStatus.INSCRIPTION_CLOSED.value: (
                 "bg-secondary",
                 _("Iscrizioni Chiuse"),
