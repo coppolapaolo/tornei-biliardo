@@ -179,6 +179,16 @@ class StateService:
         from models.events.base import EventBus
         from models.classification.models import RoundClassification
         from models.competition.models import Inscription
+        from models.competition.spareggio_service import SpareggioService
+
+        # Posizioni finali con i parimerito a pari posizione. Fuori dallo
+        # spareggio questo passaggio non avveniva: `finalize_classification`
+        # è invocata solo dopo i punteggi SSR, e un parimerito fuori dalle
+        # posizioni contese non genera spareggio (issue #63), quindi restava
+        # con le posizioni progressive del calcolo per turno (issue #67).
+        # `apply_final_positions` non è `@transactional`: siamo già dentro la
+        # transazione di questo metodo.
+        SpareggioService.apply_final_positions(gara.id)
 
         # Get winner from final round classification
         winner_id = None

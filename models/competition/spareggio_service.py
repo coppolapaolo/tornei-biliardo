@@ -695,6 +695,23 @@ class SpareggioService:
         Returns:
             Tuple of (success, message)
         """
+        return SpareggioService.apply_final_positions(gara_id)
+
+    @staticmethod
+    def apply_final_positions(gara_id: int) -> Tuple[bool, str]:
+        """Riscrive le posizioni finali della gara (parimerito inclusi).
+
+        Stessa logica di `finalize_classification` ma **senza**
+        `@transactional`, per poter essere invocata da chi è già dentro una
+        transazione (`StateService.complete`) senza annidare i decoratori e
+        provocare il rollback del savepoint esterno (vedi CLAUDE.md).
+
+        Va chiamata anche quando la gara si conclude **senza** spareggio: i
+        parimerito fuori dalle posizioni contese non generano SSR (issue #63),
+        quindi senza questo passaggio conserverebbero le posizioni progressive
+        scritte dal calcolo per turno (issue #67). Senza punteggi SSR la
+        chiave di merito degrada naturalmente ai soli punti.
+        """
         from models.competition.models import Gara
 
         gara = db.session.get(Gara, gara_id)
