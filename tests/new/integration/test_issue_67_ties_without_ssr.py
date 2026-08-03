@@ -126,21 +126,43 @@ class TestTiesWithoutSsr:
 
         StateService.complete(gara)
 
-        rows = (
-            db_session.query(RoundClassification)
-            .filter_by(gara_id=gara.id, round_number=1)
-            .all()
-        )
+        # L'ordine va letto da ciò che il codice produce, non ricostruito nel
+        # test: `ordered_for_display` è la query che alimenta la vista.
+        rows = RoundClassification.ordered_for_display(gara.id, 1)
         by_user = {r.user_id: r for r in rows}
 
         # Stessa posizione...
         assert by_user[players[0].id].position == by_user[players[1].id].position == 1
-        # ...ma l'ordine di estrazione decide chi compare prima.
-        ordered = sorted(rows, key=lambda r: (r.position, r.id))
-        draw = {players[0].id: 7, players[1].id: 4}
-        first_listed = min(rows, key=lambda r: draw[r.user_id]).user_id
-        assert first_listed == players[1].id
-        assert len(ordered) == 2
+        # ...ma chi è stato estratto prima (initial_order 4) è elencato prima.
+        assert [r.user_id for r in rows] == [players[1].id, players[0].id]
+
+    def test_ordering_helper_puts_earlier_draw_first_within_a_tie_group(
+        self, db_session, isolated_director_user
+    ):
+        """Il tie-break di elencazione vale dentro ogni gruppo di parimerito,
+        senza mescolare gruppi con punteggi diversi."""
+        players = _make_players(db_session, 4)
+        gara = _make_completed_gara(
+            db_session,
+            isolated_director_user,
+            players,
+            racks=[5, 5, 2, 2],
+            # Dentro ogni coppia il secondo giocatore è estratto prima.
+            draw_order=[8, 3, 9, 1],
+        )
+        db_session.commit()
+
+        StateService.complete(gara)
+
+        rows = RoundClassification.ordered_for_display(gara.id, 1)
+
+        assert [r.position for r in rows] == [1, 1, 3, 3]
+        assert [r.user_id for r in rows] == [
+            players[1].id,  # 5 rack, estratto 3°
+            players[0].id,  # 5 rack, estratto 8°
+            players[3].id,  # 2 rack, estratto 1°
+            players[2].id,  # 2 rack, estratto 9°
+        ]
 
     def test_all_distinct_scores_keep_progressive_positions(
         self, db_session, isolated_director_user

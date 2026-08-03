@@ -195,12 +195,13 @@ class StateService:
         winner_name = None
         final_standings = None
 
-        final_round_class = (
-            RoundClassification.query.filter_by(
-                gara_id=gara.id, round_number=gara.current_round
-            )
-            .order_by(RoundClassification.position.asc())
-            .all()
+        # Stesso turno su cui `apply_final_positions` ha appena scritto: con la
+        # strategia Random i turni sono creati tutti all'avvio e
+        # `gara.current_round` può restare indietro, quindi leggere da lì
+        # significherebbe prendere vincitore e standings da un turno
+        # intermedio. L'ordinamento tiene conto dei parimerito (#67).
+        final_round_class = RoundClassification.ordered_for_display(
+            gara.id, SpareggioService.effective_final_round(gara)
         )
 
         if final_round_class:

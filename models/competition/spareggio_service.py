@@ -698,6 +698,16 @@ class SpareggioService:
         return SpareggioService.apply_final_positions(gara_id)
 
     @staticmethod
+    def effective_final_round(gara: Gara) -> int:
+        """Turno finale effettivo della gara (API pubblica).
+
+        Chi legge la classifica finale deve usare lo stesso turno su cui
+        `apply_final_positions` scrive: con la strategia Random tutti i turni
+        sono creati all'avvio e `gara.current_round` può restare indietro.
+        """
+        return SpareggioService._get_effective_final_round(gara)
+
+    @staticmethod
     def apply_final_positions(gara_id: int) -> Tuple[bool, str]:
         """Riscrive le posizioni finali della gara (parimerito inclusi).
 
