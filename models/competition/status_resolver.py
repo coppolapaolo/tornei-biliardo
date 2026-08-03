@@ -99,9 +99,12 @@ class GaraStatusResolver:
 STATUS_BADGE_MAP: dict[str, dict[str, str]] = {
     GaraStatus.SETUP.value: {"class": "bg-warning", "text": "Setup"},
     GaraStatus.INSCRIPTION.value: {"class": "bg-info", "text": "Iscrizioni Aperte"},
+    # Stessa etichetta usata da StatusPresenter.gara: le due mappe coprono
+    # punti diversi della UI e mostrare due nomi per lo stesso stato confonde
+    # (issue #65).
     ProvaDerivedStatus.INSCRIPTION_NOT_YET_OPEN.value: {
         "class": "bg-secondary",
-        "text": "Iscrizioni Non Ancora Aperte",
+        "text": "Iscrizioni Programmate",
     },
     ProvaDerivedStatus.INSCRIPTION_CLOSED.value: {
         "class": "bg-secondary",

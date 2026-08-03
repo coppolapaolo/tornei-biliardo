@@ -34,8 +34,13 @@
                             {% if ssr_scores_map %}
                             <th width="10%" title="{{ _('Spot Shot Rally - punteggio spareggio') }}">SSR</th>
                             {% endif %}
-                            <th width="{% if ssr_scores_map %}10{% else %}15{% endif %}%">Pos. Prec.</th>
-                            <th width="{% if ssr_scores_map %}15{% else %}20{% endif %}%">Movimento</th>
+                            {# "Turno" esplicito: qui la posizione precedente è
+                               quella del turno prima DENTRO questa gara, non
+                               quella della prova precedente del campionato
+                               (che è la colonna omonima della classifica
+                               generale). Issue #68. #}
+                            <th width="{% if ssr_scores_map %}10{% else %}15{% endif %}%">{{ _('Pos. Turno Prec.') }}</th>
+                            <th width="{% if ssr_scores_map %}15{% else %}20{% endif %}%">{{ _('Movimento') }}</th>
                         </tr>
                     </thead>
                     <tbody>

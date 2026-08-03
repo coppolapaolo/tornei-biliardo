@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-02 14:38+0000\n"
+"POT-Creation-Date: 2026-08-03 12:22+0000\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -1459,8 +1459,8 @@ msgid "In attesa di punteggi"
 msgstr "Awaiting scores"
 
 #: templates/components/_ssr_section.html:14 templates/gara_detail.html:307
-#: templates/individual_match/match_detail.html:132 utils/status_ui.py:126
-#: utils/status_ui.py:144
+#: templates/individual_match/match_detail.html:132 utils/status_ui.py:134
+#: utils/status_ui.py:152
 msgid "Completato"
 msgstr "Completed"
 
@@ -2557,11 +2557,11 @@ msgstr "Pending"
 
 #: templates/admin/campionato_detail.html:224
 #: templates/components/_unified_match_score.html:83
-#: templates/components/_unified_match_score.html:105 utils/status_ui.py:179
+#: templates/components/_unified_match_score.html:105 utils/status_ui.py:187
 msgid "Confermato"
 msgstr "Confirmed"
 
-#: templates/admin/campionato_detail.html:226 utils/status_ui.py:180
+#: templates/admin/campionato_detail.html:226 utils/status_ui.py:188
 msgid "Rifiutato"
 msgstr "Declined"
 
@@ -3603,8 +3603,8 @@ msgstr "Show all (%(count)s)"
 
 #: templates/components/_classification_mobile.html:97
 #: templates/components/_classification_mobile.html:107
-msgid "Pos. Prec:"
-msgstr "Prev. Pos:"
+msgid "Pos. Turno Prec:"
+msgstr "Prev. Round Pos:"
 
 #: templates/components/_current_matches_dashboard.html:27
 #: templates/components/_match_score.html:31
@@ -3636,7 +3636,15 @@ msgstr "Pos."
 msgid "Spot Shot Rally - punteggio spareggio"
 msgstr "Spot Shot Rally - tiebreaker score"
 
-#: templates/components/_detailed_classification.html:86
+#: templates/components/_detailed_classification.html:42
+msgid "Pos. Turno Prec."
+msgstr "Prev. Round Pos."
+
+#: templates/components/_detailed_classification.html:43
+msgid "Movimento"
+msgstr "Movement"
+
+#: templates/components/_detailed_classification.html:91
 msgid "Punteggio Spot Shot Rally"
 msgstr "Spot Shot Rally Score"
 
@@ -4343,7 +4351,7 @@ msgstr "Finished competitions"
 #: templates/components/_match_result_row.html:119
 #: templates/gamification/admin/quests.html:49
 #: templates/gamification/quests.html:48 templates/gamification/quests.html:152
-#: utils/status_ui.py:94
+#: utils/status_ui.py:102
 msgid "Completata"
 msgstr "Completed"
 
@@ -4646,16 +4654,16 @@ msgstr "Error updating timing"
 #: templates/components/_match_card.html:24
 #: templates/components/_match_result_row.html:100
 #: templates/components/_match_result_row.html:103
-#: templates/individual_match/admin_overview.html:64 utils/status_ui.py:142
-#: utils/status_ui.py:178
+#: templates/individual_match/admin_overview.html:64 utils/status_ui.py:150
+#: utils/status_ui.py:186
 msgid "In Attesa"
 msgstr "Pending"
 
 #: templates/components/_match_card.html:26
 #: templates/components/_match_result_row.html:108
 #: templates/components/_match_result_row.html:111
-#: templates/individual_match/admin_overview.html:36 utils/status_ui.py:92
-#: utils/status_ui.py:125 utils/status_ui.py:143
+#: templates/individual_match/admin_overview.html:36 utils/status_ui.py:100
+#: utils/status_ui.py:133 utils/status_ui.py:151
 msgid "In Corso"
 msgstr "In Progress"
 
@@ -8302,56 +8310,60 @@ msgstr "Past competitions"
 msgid "N/A"
 msgstr "N/A"
 
-#: utils/status_ui.py:75
+#: utils/status_ui.py:79
+msgid "Iscrizioni Programmate"
+msgstr "Scheduled Registrations"
+
+#: utils/status_ui.py:83
 msgid "Iscrizioni Chiuse"
 msgstr "Registrations Closed"
 
-#: utils/status_ui.py:79
+#: utils/status_ui.py:87
 msgid "Pronta per Iniziare"
 msgstr "Ready to Start"
 
-#: utils/status_ui.py:83
+#: utils/status_ui.py:91
 msgid "Turno Completato"
 msgstr "Round Completed"
 
-#: utils/status_ui.py:87
+#: utils/status_ui.py:95
 msgid "Gara Completata"
 msgstr "Competition Completed"
 
-#: utils/status_ui.py:90 utils/status_ui.py:120
+#: utils/status_ui.py:98 utils/status_ui.py:128
 msgid "Setup"
 msgstr "Setup"
 
-#: utils/status_ui.py:91 utils/status_ui.py:123
+#: utils/status_ui.py:99 utils/status_ui.py:131
 msgid "Iscrizioni Aperte"
 msgstr "Open Registrations"
 
-#: utils/status_ui.py:93
+#: utils/status_ui.py:101
 msgid "Spareggi"
 msgstr "Tiebreakers"
 
-#: utils/status_ui.py:96 utils/status_ui.py:130 utils/status_ui.py:148
-#: utils/status_ui.py:166 utils/status_ui.py:184 utils/status_ui.py:223
+#: utils/status_ui.py:104 utils/status_ui.py:138 utils/status_ui.py:156
+#: utils/status_ui.py:174 utils/status_ui.py:192 utils/status_ui.py:231
 msgid "Sconosciuto"
 msgstr "Unknown"
 
-#: utils/status_ui.py:127
+#: utils/status_ui.py:135
 msgid "Terminato"
 msgstr "Terminated"
 
-#: utils/status_ui.py:145
+#: utils/status_ui.py:153
 msgid "Validato"
 msgstr "Validated"
 
-#: utils/status_ui.py:160
+#: utils/status_ui.py:168
 msgid "In Valutazione"
 msgstr "Under Review"
 
-#: utils/status_ui.py:161
+#: utils/status_ui.py:169
 msgid "Approvata"
 msgstr "Approved"
 
-#: utils/status_ui.py:162
+#: utils/status_ui.py:170
 msgid "Respinta"
 msgstr "Rejected"
 

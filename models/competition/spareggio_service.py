@@ -5,7 +5,7 @@ Purpose: Handle spot shot rally (SSR) tiebreakers for top 3 positions
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, TypedDict
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Tuple, TypedDict
 from sqlalchemy import func
 from models.base import db
 from models.classification.models import RoundClassification, GaraClassification
@@ -56,6 +56,52 @@ class SpareggioService:
             return 0
         contested = tiebreaker_limit - group_position + 1
         return max(0, min(group_size - 1, contested))
+
+    @staticmethod
+    def draw_order_map(gara_id: int) -> Dict[int, int]:
+        """Mappa user_id -> ordine di estrazione (1-based).
+
+        `Inscription.initial_order` è la proiezione della classifica di
+        partenza (turno 0) mostrata al giocatore come "Ordine sorteggio": è il
+        criterio con cui elencare i parimerito nella classifica finale
+        (issue #67). Chi ne è privo (iscritto dopo l'avvio) ordina in fondo.
+        """
+        from models.competition.models import Inscription
+
+        rows = (
+            db.session.query(Inscription.user_id, Inscription.initial_order)
+            .filter(Inscription.gara_id == gara_id)
+            .all()
+        )
+        return {user_id: order for user_id, order in rows if order is not None}
+
+    @staticmethod
+    def assign_shared_positions(
+        ordered: List[Dict], merit_key
+    ) -> List[Tuple[int, Dict]]:
+        """Assegna le posizioni "competition ranking" a una lista già ordinata.
+
+        Chi condivide la chiave di merito condivide la posizione, e la
+        posizione successiva salta di tanti quanti sono i parimerito
+        (1, 2, 2, 4). Prima le posizioni erano sempre progressive: due
+        giocatori con gli stessi punti, che nessuno spareggio doveva
+        separare, comparivano come 7° e 8° (issue #67).
+        """
+        result: List[Tuple[int, Dict]] = []
+        position = 1
+        index = 0
+        while index < len(ordered):
+            key = merit_key(ordered[index])
+            group = [ordered[index]]
+            probe = index + 1
+            while probe < len(ordered) and merit_key(ordered[probe]) == key:
+                group.append(ordered[probe])
+                probe += 1
+            for item in group:
+                result.append((position, item))
+            position += len(group)
+            index = probe
+        return result
 
     @staticmethod
     def scores_resolve_group(
@@ -708,7 +754,7 @@ class SpareggioService:
                 }
             )
 
-        # La chiave di ordinamento dipende dal classification_system, coerente
+        # La chiave di MERITO dipende dal classification_system, coerente
         # con _group_by_classification (che definisce quali giocatori sono a
         # pari merito). Lo SSR è il tiebreaker DECISIVO entro gruppi a pari
         # merito, quindi va sempre per ultimo.
@@ -718,16 +764,34 @@ class SpareggioService:
         #   veniva scavalcato (bug high).
         # -1 (SSR non inserito) ordina per ultimo a pari chiave primaria.
         classification_system = (gara.classification_system or "WINS").upper()
-        if classification_system == "RACK":
-            player_data.sort(key=lambda x: (-x["rack_totali"], -x["ssr_score"]))
-        else:
-            player_data.sort(
-                key=lambda x: (-x["matches_won"], -x["rack_totali"], -x["ssr_score"])
+        merit_key: Callable[[Dict], Tuple[int, ...]] = (
+            (lambda x: (-x["rack_totali"], -x["ssr_score"]))
+            if classification_system == "RACK"
+            else (lambda x: (-x["matches_won"], -x["rack_totali"], -x["ssr_score"]))
+        )
+
+        # A pari merito l'ordine di ELENCAZIONE è quello di estrazione, non la
+        # posizione di partenza né il rowid: è l'unico criterio che il
+        # giocatore vede e riconosce ("Ordine sorteggio"). Resta fuori dalla
+        # chiave di merito, quindi non separa le posizioni (issue #67).
+        draw_order = SpareggioService.draw_order_map(gara_id)
+        no_draw_order = 10**6
+        player_data.sort(
+            key=lambda x: (
+                merit_key(x),
+                draw_order.get(x["user_id"], no_draw_order),
+                x["user_id"],
             )
+        )
 
         # Update/create GaraClassification and RoundClassification with
-        # correct positions
-        for position, data in enumerate(player_data, 1):
+        # correct positions. Chi condivide la chiave di merito condivide la
+        # posizione (1, 2, 2, 4): prima erano sempre progressive e due
+        # giocatori a pari punti, che nessuno spareggio doveva separare,
+        # comparivano come 7° e 8° (issue #67).
+        for position, data in SpareggioService.assign_shared_positions(
+            player_data, merit_key
+        ):
             gara_class = existing_gara_class.get(data["user_id"])
 
             if not gara_class:
