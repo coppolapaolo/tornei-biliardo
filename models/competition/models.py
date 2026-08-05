@@ -315,13 +315,53 @@ class Gara(SoftDeleteMixin, db.Model):
             return bool(self.campionato.has_handicap)
         return False
 
+    @property
+    def display_name(self) -> str:
+        """Come si chiama questa gara per chi la legge.
+
+        Il nome scelto dal direttore se c'è, altrimenti "Gara <numero>". È il
+        campo che porta l'identità pubblica della prova (locandine, post), e
+        quando il direttore lo compila è lui a decidere come va letta: per
+        questo il numero non viene anteposto, sarebbe l'applicazione che si
+        sovrappone alla sua scelta — e su un nome come "2ª prova" produrrebbe
+        anche una ripetizione.
+
+        Unica fonte per il titolo di una gara: prima la formattazione era
+        ripetuta nei template con tre regole diverse (nome con fallback / solo
+        numero / nome senza fallback), e le gare di campionato finivano per
+        mostrare "Gara 2" ignorando il nome impostato (issue #56), mentre
+        altrove il nome mancante lasciava il vuoto invece di "Gara N"
+        (issue #57).
+        """
+        name = (self.name or "").strip()
+        if name:
+            return name
+
+        # Il fallback è testo dell'interfaccia e va tradotto: i template che
+        # lo producevano a mano usavano `_('Gara %(id)s')`, e restituire qui
+        # una stringa italiana fissa sarebbe una regressione per la locale EN.
+        # Import locale come in `models/notification/models.py`: fuori da un
+        # contesto applicativo (script, migration) gettext solleva, e lì il
+        # testo grezzo va benissimo.
+        try:
+            from flask_babel import gettext
+
+            return gettext("Gara %(number)s", number=self.number)
+        except (RuntimeError, ImportError):
+            return f"Gara {self.number}"
+
     # RESOLVED: See docs/_archive/2025-12-architectural-decisions-pre-adr.md ADR-002.
     # Decision: Keep bidirectional - Gara has FK, Campionato has property.
     def get_display_name(self):
-        """Get display name including campionato/standalone info."""
+        """Nome della gara qualificato dal contesto (campionato o standalone).
+
+        Diverso da `display_name`, che è il titolo nudo: questo lo colloca.
+        Usa `display_name` come base, così una gara senza nome non produce
+        più "None - Campionato X".
+        """
         if self.is_standalone:
-            return f"{self.name} (Standalone)"
-        return f"{self.name} - {self.campionato.name}"
+            return f"{self.display_name} (Standalone)"
+        return f"{self.display_name} - {self.campionato.name}"
 
     def get_real_status(self):
         """Restituisce lo status reale, considerando anche round e iscrizioni.

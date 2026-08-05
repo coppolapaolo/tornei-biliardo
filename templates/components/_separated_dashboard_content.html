@@ -28,7 +28,7 @@
                   Turno {{ match.round_number }}
                 </h6>
                 <small class="text-muted">
-                  {{ match.gara.name or ('Gara ' ~ match.gara.number) }}
+                  {{ match.gara.display_name }}
                   {% if match.gara.campionato %}
                     <br>{{ match.gara.campionato.name }}
                   {% endif %}
@@ -176,7 +176,7 @@
           {% set _void = active_garas.append({
             'type': 'gara',
             'id': gara.id,
-            'name': gara.name or ('Gara ' ~ gara.number),
+            'name': gara.display_name,
             'entity': gara,
             'next_prova_date': gara.date,
             'campionato_name': item.entity.name,
@@ -198,7 +198,7 @@
     {% set _void = completed_tail.append({
       'type': 'gara',
       'id': gara.id,
-      'name': gara.name or ('Gara ' ~ gara.number),
+      'name': gara.display_name,
       'entity': gara,
       'next_prova_date': gara.date,
       'campionato_name': none,

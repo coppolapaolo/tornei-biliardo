@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-05 16:45+0000\n"
+"POT-Creation-Date: 2026-08-05 18:28+0000\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -17,6 +17,11 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
+
+#: models/competition/models.py:349
+#, python-format
+msgid "Gara %(number)s"
+msgstr "Competition %(number)s"
 
 #: models/competition/round_manager.py:124
 msgid ""
@@ -1382,12 +1387,6 @@ msgstr "Hello %(username)s!"
 #, python-format
 msgid "Gestione Gara %(id)s - Admin"
 msgstr "Competition %(id)s Management - Admin"
-
-#: templates/components/_gara_header.html:4 templates/gara_detail.html:7
-#: templates/gara_detail.html:9 utils/jinja.py:244
-#, python-format
-msgid "Gara %(id)s"
-msgstr "Competition %(id)s"
 
 #: templates/admin/users_list.html:202
 #: templates/components/_history_campionati_tab.html:105
@@ -3186,7 +3185,7 @@ msgstr "User Management - Admin"
 msgid "Gestione Utenti"
 msgstr "User Management"
 
-#: templates/admin/users_list.html:11 templates/components/_gara_header.html:28
+#: templates/admin/users_list.html:11 templates/components/_gara_header.html:27
 #: templates/components/_match_navigation.html:11
 #: templates/individual_match/statistics.html:310
 #: templates/player/notifications.html:276 templates/player/profile.html:29
@@ -3630,16 +3629,12 @@ msgstr "Inherit from championship"
 msgid "Posizioni per cui richiedere spareggio in caso di parimerito"
 msgstr "Positions requiring tiebreaker in case of tie"
 
-#: templates/components/_gara_header.html:5
-msgid "Gara Standalone"
-msgstr "Standalone Competition"
-
-#: templates/components/_gara_header.html:18
-#: templates/components/_gara_header.html:23
+#: templates/components/_gara_header.html:17
+#: templates/components/_gara_header.html:22
 msgid "Torna al Campionato"
 msgstr "Back to Championship"
 
-#: templates/components/_gara_header.html:34
+#: templates/components/_gara_header.html:33
 msgid "Modifica Gara"
 msgstr "Edit Competition"
 
@@ -8237,7 +8232,7 @@ msgstr "Past competitions"
 
 #: utils/jinja.py:18 utils/jinja.py:50 utils/jinja.py:91 utils/jinja.py:121
 #: utils/jinja.py:153 utils/jinja.py:163 utils/jinja.py:199 utils/jinja.py:217
-#: utils/jinja.py:229 utils/jinja.py:242
+#: utils/jinja.py:229 utils/jinja.py:246
 msgid "N/A"
 msgstr "N/A"
 

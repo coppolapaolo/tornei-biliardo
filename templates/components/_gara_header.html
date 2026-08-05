@@ -1,8 +1,7 @@
 <!-- Gara Header Component -->
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h1>{% if gara.campionato_id %}{{ _('Gara %(id)s', id=gara.number) }}{% if gara.name %} - {{ gara.name }}{%
-            endif %}{% else %}{{ gara.name or _('Gara Standalone') }}{% endif %}</h1>
+        <h1>{{ gara.display_name }}</h1>
         <p class="text-muted mb-0">
             {{ gara.date|date_local }} - {{ gara.discipline|discipline_display }} -
             {{ gara.distance_config|format_distance }}
