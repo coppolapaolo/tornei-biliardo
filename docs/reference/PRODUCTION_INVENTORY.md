@@ -443,6 +443,7 @@ Per costruire la production allowlist, scorri ogni area in Sezione 1 e marca esp
 | `/garas` | GET | `main.public_garas_list` | None (public) | UI page | Lista gare standalone pubbliche |
 | `/gara/<int:gara_id>` | GET | `main.gara_detail_public` | None (public) | UI page | Dettaglio gara (redirect a unified view) |
 | `/public/gara/<int:gara_id>` | GET | `main.gara_detail_public` | None (public) | UI page | Dettaglio gara (deprecated, redirects) |
+| `/g/<token>` | GET | `main.gara_invite` | None (public) | Redirect | Link pubblico di iscrizione a una gara (issue #61): iscrive l'utente autenticato e reindirizza al dettaglio gara; l'anonimo passa da login/registrazione |
 
 **Debug Routes (only if DEBUG_MODE):**
 

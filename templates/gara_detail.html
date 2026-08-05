@@ -186,6 +186,14 @@
 <div class="{% if playing_admin %}d-flex flex-column{% endif %}">
 {# Sezioni Admin/Director (solo se può gestire) - DESKTOP or non-SSR mobile #}
 {% if user_can_manage %}
+{# Link pubblico da condividere: ha senso finché ci si può iscrivere #}
+{% if gara.status in [GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value] %}
+<div class="row" id="sectionLinkPubblico">
+  <div class="col-12">
+    {% include "components/_gara_public_link.html" %}
+  </div>
+</div>
+{% endif %}
 {# Directors: on desktop always here, on mobile SSR phase moved to bottom #}
 {% if not is_ssr_phase %}
 <div class="row mb-4{% if playing_admin %} order-4 order-md-1{% endif %}" id="sectionDirettori">

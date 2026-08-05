@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{# 404 dedicata al link pubblico di iscrizione (issue #61).
+   Chi arriva qui ha in mano un link preso da una locandina o da un post e non
+   sa nulla del sito: il 404 generico ("controlla l'URL") lo lascia a
+   chiedersi se ha sbagliato a digitare. Qui gli si dice che il link non porta
+   più a nessuna gara e gli si offre l'elenco di quelle aperte. #}
+
+{% block title %}{{ _('Link non valido') }}{% endblock %}
+
+{% block content %}
+<div class="text-center mt-5 mb-5">
+    <div style="font-size: 5rem; margin-bottom: 0.5rem;">
+        🎱
+    </div>
+    <h2 class="mt-2">{{ _('Questo link non porta a nessuna gara') }}</h2>
+    <p class="text-muted mt-3 fs-5">
+        {{ _('Il link di iscrizione che hai seguito non è valido: la gara potrebbe essere stata rimossa, oppure l\'indirizzo è stato copiato in modo incompleto.') }}
+    </p>
+    <hr class="w-25 mx-auto my-4">
+    <p class="text-muted">
+        {{ _('Controlla che l\'indirizzo sia completo, oppure cerca la gara fra quelle aperte.') }}
+    </p>
+    <div class="d-flex gap-2 justify-content-center flex-wrap mt-3">
+        <a href="{{ url_for('main.public_garas_list') }}" class="btn btn-primary btn-lg">
+            <i class="fas fa-list"></i> {{ _('Vedi le gare') }}
+        </a>
+        <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary btn-lg">
+            <i class="fas fa-home"></i> {{ _('Torna al tavolo') }}
+        </a>
+    </div>
+</div>
+{% endblock %}

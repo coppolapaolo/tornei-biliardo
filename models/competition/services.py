@@ -259,6 +259,26 @@ class GaraService:
 
     @staticmethod
     @transactional(domain="competition")
+    def ensure_public_token(gara_id: int) -> Optional[str]:
+        """Token del link pubblico della gara, generandolo se manca.
+
+        Le gare nuove lo ricevono dal default della colonna e quelle vecchie
+        dal backfill della migration `20260805_add_gara_public_token`. Questo
+        resta come rete: su un database dove la migration non è ancora girata
+        il direttore vedrebbe altrimenti una gara senza link, senza capire
+        perché.
+        """
+        from .models import generate_public_token
+
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            return None
+        if not gara.public_token:
+            gara.public_token = generate_public_token()
+        return gara.public_token
+
+    @staticmethod
+    @transactional(domain="competition")
     def update_gara(gara_id: int, **kwargs) -> Gara:
         """Aggiorna una gara con i campi forniti."""
         gara = db.session.get(Gara, gara_id)

@@ -268,9 +268,12 @@ def register_status_filters(app) -> None:
         format_datetime_local,
         format_time_local,
         format_discipline,
+        parse_json,
     )
 
     app.jinja_env.filters["date_local"] = format_date_local
     app.jinja_env.filters["datetime_local"] = format_datetime_local
     app.jinja_env.filters["time_local"] = format_time_local
     app.jinja_env.filters["discipline_display"] = format_discipline
+    # Payload JSON dei flash "di trasporto" (vedi utils/page_modal.py)
+    app.jinja_env.filters["fromjson"] = parse_json
