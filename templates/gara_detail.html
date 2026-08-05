@@ -4,9 +4,9 @@
 {% if user_can_manage %}
 {{ _('Gestione Gara %(id)s - Admin', id=gara.number) }}
 {% elif user_inscription %}
-{{ gara.name or _('Gara %(id)s', id=gara.number) }} - {{ _('Dettagli') }}
+{{ gara.display_name }} - {{ _('Dettagli') }}
 {% else %}
-{{ gara.name or _('Gara %(id)s', id=gara.number) }} - {{ _('Dettaglio Pubblico') }}
+{{ gara.display_name }} - {{ _('Dettaglio Pubblico') }}
 {% endif %}
 {% endblock %}
 

@@ -230,19 +230,22 @@ def format_distance_short(gara_or_distance) -> Markup:
 
 
 def gara_display_name(gara) -> Markup:
-    """Restituisce il nome della gara oppure 'Gara N' se il nome non c'e'.
+    """Titolo della gara: il nome se c'è, altrimenti 'Gara <numero>'.
+
+    Delega a `Gara.display_name`, unica fonte per il titolo (issue #56/#57).
+    Il fallback usava `gara.id`, cioè la chiave del database: su una gara
+    senza nome mostrava "Gara 47" al posto della prova numero 2.
 
     Args:
         gara: Gara model
 
     Returns:
-        Markup: Formatted gara name with details
+        Markup: il titolo, escaped
     """
     if not gara:
         return Markup(_("N/A"))
 
-    name = gara.name or _("Gara %(id)s") % {"id": gara.id}
-    return Markup(escape(name))
+    return Markup(escape(gara.display_name))
 
 
 def player_name_with_forfeit(user, gara_id=None, is_forfeit=False) -> Markup:

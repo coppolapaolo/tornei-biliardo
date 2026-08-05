@@ -108,9 +108,9 @@
                                 <small class="text-muted">
                                     {% if match.gara %}
                                         {% if match.gara.campionato %}
-                                            {{ match.gara.campionato.name }} - {{ match.gara.name or ('Gara ' ~ match.gara.number) }}
+                                            {{ match.gara.campionato.name }} - {{ match.gara.display_name }}
                                         {% else %}
-                                            {{ match.gara.name or 'Gara Singola' }}
+                                            {{ match.gara.display_name }}
                                         {% endif %}
                                     {% else %}
                                         {{ _('Match Individuale') }}

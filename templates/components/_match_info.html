@@ -8,7 +8,7 @@
             {% if match.gara.campionato %}
             <p><strong>Campionato:</strong> {{ match.gara.campionato.name }}</p>
             {% endif %}
-            <p><strong>Gara:</strong> {{ match.gara.name or match.gara.number }}</p>
+            <p><strong>Gara:</strong> {{ match.gara.display_name }}</p>
             <p><strong>Turno:</strong> {{ match.round_number }}/{{ match.gara.rounds_count }}</p>
             <p><strong>Disciplina:</strong> {{ (match.discipline or match.gara.discipline)|discipline_display }}</p>
             <p><strong>Data:</strong> {{ match.gara.date|date_local }}</p>

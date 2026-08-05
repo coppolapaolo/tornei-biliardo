@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-05 16:45+0000\n"
+"POT-Creation-Date: 2026-08-05 18:28+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,6 +16,11 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
+
+#: models/competition/models.py:349
+#, python-format
+msgid "Gara %(number)s"
+msgstr ""
 
 #: models/competition/round_manager.py:124
 msgid ""
@@ -1356,12 +1361,6 @@ msgstr ""
 #: templates/gara_detail.html:5
 #, python-format
 msgid "Gestione Gara %(id)s - Admin"
-msgstr ""
-
-#: templates/components/_gara_header.html:4 templates/gara_detail.html:7
-#: templates/gara_detail.html:9 utils/jinja.py:244
-#, python-format
-msgid "Gara %(id)s"
 msgstr ""
 
 #: templates/admin/users_list.html:202
@@ -3064,7 +3063,7 @@ msgstr ""
 msgid "Gestione Utenti"
 msgstr ""
 
-#: templates/admin/users_list.html:11 templates/components/_gara_header.html:28
+#: templates/admin/users_list.html:11 templates/components/_gara_header.html:27
 #: templates/components/_match_navigation.html:11
 #: templates/individual_match/statistics.html:310
 #: templates/player/notifications.html:276 templates/player/profile.html:29
@@ -3495,16 +3494,12 @@ msgstr ""
 msgid "Posizioni per cui richiedere spareggio in caso di parimerito"
 msgstr ""
 
-#: templates/components/_gara_header.html:5
-msgid "Gara Standalone"
-msgstr ""
-
-#: templates/components/_gara_header.html:18
-#: templates/components/_gara_header.html:23
+#: templates/components/_gara_header.html:17
+#: templates/components/_gara_header.html:22
 msgid "Torna al Campionato"
 msgstr ""
 
-#: templates/components/_gara_header.html:34
+#: templates/components/_gara_header.html:33
 msgid "Modifica Gara"
 msgstr ""
 
@@ -8043,7 +8038,7 @@ msgstr ""
 
 #: utils/jinja.py:18 utils/jinja.py:50 utils/jinja.py:91 utils/jinja.py:121
 #: utils/jinja.py:153 utils/jinja.py:163 utils/jinja.py:199 utils/jinja.py:217
-#: utils/jinja.py:229 utils/jinja.py:242
+#: utils/jinja.py:229 utils/jinja.py:246
 msgid "N/A"
 msgstr ""
 
