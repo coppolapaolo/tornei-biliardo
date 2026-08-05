@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-05 19:20+0000\n"
+"POT-Creation-Date: 2026-08-05 19:41+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -447,25 +447,35 @@ msgstr ""
 msgid "Registrazione completata con successo."
 msgstr ""
 
-#: routes/main.py:286
+#: routes/main.py:289
 #, python-format
 msgid "Iscrizioni dal %(start)s al %(end)s."
 msgstr ""
 
-#: routes/main.py:293
+#: routes/main.py:295
+#, python-format
+msgid "Iscrizioni aperte fino al %(end)s."
+msgstr ""
+
+#: routes/main.py:300
+#, python-format
+msgid "Iscrizioni aperte dal %(start)s."
+msgstr ""
+
+#: routes/main.py:306
 msgid "Sei iscritto!"
 msgstr ""
 
-#: routes/main.py:294
+#: routes/main.py:307
 #, python-format
 msgid "Iscrizione a %(gara)s completata."
 msgstr ""
 
-#: routes/main.py:300
+#: routes/main.py:313 routes/main.py:333
 msgid "Sei in lista d'attesa"
 msgstr ""
 
-#: routes/main.py:302
+#: routes/main.py:315
 #, python-format
 msgid ""
 "%(gara)s ha già raggiunto il numero massimo di iscritti: sei in lista "
@@ -473,76 +483,83 @@ msgid ""
 "automaticamente."
 msgstr ""
 
-#: routes/main.py:313
+#: routes/main.py:326
 msgid "Sei già iscritto"
 msgstr ""
 
-#: routes/main.py:314
+#: routes/main.py:327
 #, python-format
 msgid "Risulti iscritto a %(gara)s."
 msgstr ""
 
-#: routes/main.py:320
+#: routes/main.py:335
+#, python-format
+msgid ""
+"Sei in lista d'attesa per %(gara)s, in posizione %(position)s. Se si "
+"libera un posto entri automaticamente."
+msgstr ""
+
+#: routes/main.py:345
 msgid "Puoi iscriverti"
 msgstr ""
 
-#: routes/main.py:322
+#: routes/main.py:347
 #, python-format
 msgid "Le iscrizioni a %(gara)s sono aperte: premi «Iscriviti» per confermare."
 msgstr ""
 
-#: routes/main.py:332 templates/components/_unified_cards.html:126
+#: routes/main.py:357 templates/components/_unified_cards.html:126
 msgid "Iscrizioni non ancora aperte"
 msgstr ""
 
-#: routes/main.py:334
+#: routes/main.py:359
 #, python-format
 msgid "Le iscrizioni a %(gara)s non sono ancora aperte."
 msgstr ""
 
-#: routes/main.py:343
+#: routes/main.py:368
 msgid "Iscrizioni chiuse"
 msgstr ""
 
-#: routes/main.py:344
+#: routes/main.py:369
 #, python-format
 msgid "Le iscrizioni a %(gara)s sono chiuse."
 msgstr ""
 
-#: routes/main.py:351
+#: routes/main.py:376
 msgid "Gara già iniziata"
 msgstr ""
 
-#: routes/main.py:353
+#: routes/main.py:378
 #, python-format
 msgid ""
 "%(gara)s è già iniziata: non è più possibile iscriversi, ma puoi seguire "
 "i risultati da questa pagina."
 msgstr ""
 
-#: routes/main.py:362
+#: routes/main.py:387
 msgid "Gara conclusa"
 msgstr ""
 
-#: routes/main.py:364
+#: routes/main.py:389
 #, python-format
 msgid "%(gara)s è conclusa: qui trovi la classifica finale."
 msgstr ""
 
-#: routes/main.py:372
+#: routes/main.py:397
 msgid "Gara annullata"
 msgstr ""
 
-#: routes/main.py:373
+#: routes/main.py:398
 #, python-format
 msgid "%(gara)s è stata annullata."
 msgstr ""
 
-#: routes/main.py:379
+#: routes/main.py:404
 msgid "Iscrizione non riuscita"
 msgstr ""
 
-#: routes/main.py:381
+#: routes/main.py:406
 #, python-format
 msgid ""
 "Non è stato possibile iscriverti a %(gara)s. Riprova dal pulsante "

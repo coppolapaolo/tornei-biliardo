@@ -27,6 +27,7 @@ class InviteOutcome(str, Enum):
     INSCRIBED = "inscribed"  # iscritto adesso, seguendo il link
     WAITLISTED = "waitlisted"  # iscritto adesso, ma in lista d'attesa
     ALREADY_INSCRIBED = "already_inscribed"  # era già iscritto
+    ALREADY_WAITLISTED = "already_waitlisted"  # era già in lista d'attesa
     CONFIRM_NEEDED = "confirm_needed"  # può iscriversi, decide lui col pulsante
     NOT_OPEN_YET = "not_open_yet"  # iscrizioni non ancora aperte
     CLOSED = "closed"  # iscrizioni chiuse
@@ -79,12 +80,16 @@ class GaraInviteService:
         if existing is not None and not existing.is_withdrawn:
             # Prima di ogni altro controllo: a chi è già iscritto va detto che
             # è iscritto, anche se nel frattempo le iscrizioni si sono chiuse.
-            return InviteResult(
-                InviteOutcome.ALREADY_INSCRIBED,
-                waitlist_position=(
-                    existing.waitlist_position if existing.is_waitlist else None
-                ),
-            )
+            # Chi è in lista d'attesa NON è iscritto e basta: riaprire il link
+            # e leggere "sei già iscritto" gli farebbe credere di avere un
+            # posto. Esito distinto, così il messaggio riporta la posizione
+            # esattamente come quando ci è finito.
+            if existing.is_waitlist:
+                return InviteResult(
+                    InviteOutcome.ALREADY_WAITLISTED,
+                    waitlist_position=existing.waitlist_position,
+                )
+            return InviteResult(InviteOutcome.ALREADY_INSCRIBED)
 
         if not GaraInviteService.is_eligible(gara, user):
             return InviteResult(InviteOutcome.NOT_ELIGIBLE)

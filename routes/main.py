@@ -280,12 +280,25 @@ def gara_invite(token):
     result = GaraInviteService.evaluate(gara, current_user, auto_inscribe=auto_inscribe)
 
     gara_name = gara.display_name
+    # Le due date vanno trattate una per una: `format_datetime_local_text`
+    # rende "N/A" su None, e una finestra con una sola data impostata
+    # diventerebbe "Iscrizioni dal N/A al 12/09" — peggio che tacere.
     inscription_window = None
-    if gara.inscription_start or gara.inscription_end:
+    if gara.inscription_start and gara.inscription_end:
         inscription_window = _(
             "Iscrizioni dal %(start)s al %(end)s.",
             start=format_datetime_local_text(gara.inscription_start),
             end=format_datetime_local_text(gara.inscription_end),
+        )
+    elif gara.inscription_end:
+        inscription_window = _(
+            "Iscrizioni aperte fino al %(end)s.",
+            end=format_datetime_local_text(gara.inscription_end),
+        )
+    elif gara.inscription_start:
+        inscription_window = _(
+            "Iscrizioni aperte dal %(start)s.",
+            start=format_datetime_local_text(gara.inscription_start),
         )
 
     if result.outcome == InviteOutcome.INSCRIBED:
@@ -314,6 +327,18 @@ def gara_invite(token):
             body=_("Risulti iscritto a %(gara)s.", gara=gara_name),
             variant="success",
             icon="fa-circle-check",
+        )
+    elif result.outcome == InviteOutcome.ALREADY_WAITLISTED:
+        flash_page_modal(
+            title=_("Sei in lista d'attesa"),
+            body=_(
+                "Sei in lista d'attesa per %(gara)s, in posizione "
+                "%(position)s. Se si libera un posto entri automaticamente.",
+                gara=gara_name,
+                position=result.waitlist_position,
+            ),
+            variant="warning",
+            icon="fa-hourglass-half",
         )
     elif result.outcome == InviteOutcome.CONFIRM_NEEDED:
         flash_page_modal(

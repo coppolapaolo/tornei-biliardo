@@ -241,6 +241,117 @@ class TestAnonymousVisitor:
 
 
 @pytest.mark.integration
+class TestWaitlistIsNotConfusedWithInscription:
+    """Chi è in lista d'attesa non ha un posto, e non gli si dice che ce l'ha.
+
+    Riaprire il link e leggere "sei già iscritto" farebbe credere il
+    contrario (rilievo review PR #83).
+    """
+
+    def test_revisiting_the_link_from_the_waiting_list_says_waiting_list(
+        self, client, db_session
+    ):
+        director = _user(UserRole.DIRECTOR.value)
+        gara = _gara(director, max_participants=1)
+        first, second = _user(), _user()
+
+        # follow_redirects ovunque: le dialog vanno consumate, altrimenti
+        # quella della visita precedente resta nel flash e sporca l'asserzione.
+        _login(client, first)
+        client.get(f"/g/{gara.public_token}", follow_redirects=True)
+
+        _login(client, second)
+        client.get(f"/g/{gara.public_token}", follow_redirects=True)
+        page = client.get(f"/g/{gara.public_token}", follow_redirects=True)
+
+        inscription = Inscription.query.filter_by(
+            user_id=second.id, gara_id=gara.id
+        ).first()
+        assert inscription is not None and inscription.is_waitlist
+
+        # Jinja escapa l'apostrofo (`d&#39;attesa`): confronto sul prefisso.
+        body = page.get_data(as_text=True)
+        assert "Sei in lista d" in body
+        assert "in posizione" in body
+        assert "Sei già iscritto" not in body
+
+
+@pytest.mark.integration
+class TestPartialInscriptionWindow:
+    """Con una sola data impostata la dialog non deve dire "dal N/A"."""
+
+    def test_only_the_end_date_is_shown_without_a_fake_start(self, client, db_session):
+        director = _user(UserRole.DIRECTOR.value)
+        now = utc_now()
+        gara = _gara(
+            director,
+            inscription_start=None,
+            inscription_end=now - timedelta(days=1),
+        )
+        player = _user()
+        _login(client, player)
+
+        page = client.get(f"/g/{gara.public_token}", follow_redirects=True)
+
+        body = page.get_data(as_text=True)
+        assert "Iscrizioni chiuse" in body
+        assert "Iscrizioni aperte fino al" in body
+        # Niente finestra a due estremi con un estremo inventato.
+        assert "Iscrizioni dal" not in body
+
+
+@pytest.mark.integration
+class TestTokenIsStableUnderConcurrentGeneration:
+    """Un link già copiato non deve smettere di funzionare.
+
+    `ensure_public_token` scrive con un UPDATE condizionato: se un'altra
+    richiesta ha già assegnato il token, quello resta (rilievo review PR #83).
+    """
+
+    def test_a_token_assigned_meanwhile_is_not_overwritten(self, db_session):
+        director = _user(UserRole.DIRECTOR.value)
+        gara = _gara(director)
+        gara_id = gara.id
+
+        # Stato di partenza: gara senza token (DB precedente alla migration).
+        db.session.query(Gara).filter(Gara.id == gara_id).update(
+            {Gara.public_token: None}, synchronize_session=False
+        )
+        db.session.commit()
+        db.session.expire_all()
+
+        # Carica in sessione mentre il token è ancora vuoto: da qui in poi
+        # l'istanza in memoria dice None.
+        db.session.get(Gara, gara_id)
+
+        # Un'altra richiesta assegna il token. `synchronize_session=False`
+        # lascia l'istanza in memoria com'era: è esattamente la lettura
+        # stantia su cui si gioca la corsa.
+        db.session.query(Gara).filter(Gara.id == gara_id).update(
+            {Gara.public_token: "gia-scritto"}, synchronize_session=False
+        )
+
+        assert GaraService.ensure_public_token(gara_id) == "gia-scritto"
+
+        db.session.expire_all()
+        assert db.session.get(Gara, gara_id).public_token == "gia-scritto"
+
+    def test_a_missing_token_is_generated(self, db_session):
+        director = _user(UserRole.DIRECTOR.value)
+        gara = _gara(director)
+        db.session.query(Gara).filter(Gara.id == gara.id).update(
+            {Gara.public_token: None}, synchronize_session=False
+        )
+        db.session.commit()
+        db.session.expire_all()
+
+        token = GaraService.ensure_public_token(gara.id)
+
+        assert token
+        assert db.session.get(Gara, gara.id).public_token == token
+
+
+@pytest.mark.integration
 class TestNextIsNotAnOpenRedirect:
     def test_login_ignores_an_external_destination(self, client, db_session):
         """`next` arriva dall'URL, quindi da chiunque: fuori dal sito non va."""

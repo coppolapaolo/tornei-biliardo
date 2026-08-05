@@ -267,14 +267,30 @@ class GaraService:
         resta come rete: su un database dove la migration non è ancora girata
         il direttore vedrebbe altrimenti una gara senza link, senza capire
         perché.
+
+        Il primo che scrive vince: l'UPDATE è condizionato a un token ancora
+        vuoto, così due richieste concorrenti non ne generano due diversi
+        lasciando valido solo l'ultimo — un link già copiato da una locandina
+        non deve smettere di funzionare perché qualcun altro ha riaperto la
+        pagina.
         """
         from .models import generate_public_token
 
         gara = db.session.get(Gara, gara_id)
         if not gara:
             return None
-        if not gara.public_token:
-            gara.public_token = generate_public_token()
+        if gara.public_token:
+            return gara.public_token
+
+        db.session.query(Gara).filter(
+            Gara.id == gara_id,
+            db.or_(Gara.public_token.is_(None), Gara.public_token == ""),
+        ).update(
+            {Gara.public_token: generate_public_token()},
+            synchronize_session=False,
+        )
+        # Rileggi: se ha vinto un'altra richiesta il token buono è il suo.
+        db.session.expire(gara, ["public_token"])
         return gara.public_token
 
     @staticmethod
