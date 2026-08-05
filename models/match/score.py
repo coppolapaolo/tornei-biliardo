@@ -58,9 +58,7 @@ class RackScore:
         if self.player3_racks is not None and self.player3_racks < 0:
             raise ValueError("Player 3 rack count cannot be negative")
         if self.distance.is_multi_set:
-            raise ValueError(
-                "RackScore requires single-set Distance configuration"
-            )
+            raise ValueError("RackScore requires single-set Distance configuration")
 
     def add_rack_win(self, player_number: int) -> None:
         """Record a rack win for the specified player.
@@ -126,13 +124,9 @@ class RackScore:
 
         if self.player3_racks is not None:
             # Trio match - highest score wins
-            max_score = max(
-                self.player1_racks, self.player2_racks, self.player3_racks
-            )
+            max_score = max(self.player1_racks, self.player2_racks, self.player3_racks)
             # Check for tie
-            scores = [
-                self.player1_racks, self.player2_racks, self.player3_racks
-            ]
+            scores = [self.player1_racks, self.player2_racks, self.player3_racks]
             if scores.count(max_score) > 1:
                 return None  # Tie
 
@@ -166,10 +160,7 @@ class RackScore:
             Examples: "4-2", "3-3-1" (trio)
         """
         if self.player3_racks is not None:
-            return (
-                f"{self.player1_racks}-{self.player2_racks}"
-                f"-{self.player3_racks}"
-            )
+            return f"{self.player1_racks}-{self.player2_racks}" f"-{self.player3_racks}"
         else:
             return f"{self.player1_racks}-{self.player2_racks}"
 
@@ -196,9 +187,7 @@ class MatchScore:
         if self.player1_sets < 0 or self.player2_sets < 0:
             raise ValueError("Set counts cannot be negative")
         if not self.distance.is_multi_set:
-            raise ValueError(
-                "MatchScore requires multi-set Distance configuration"
-            )
+            raise ValueError("MatchScore requires multi-set Distance configuration")
 
     def add_set_win(self, player_number: int) -> None:
         """Record a set win for the specified player.
@@ -230,8 +219,7 @@ class MatchScore:
         if self.distance.is_race_to_sets:
             # Race-to: First to winning_sets
             return (
-                self.player1_sets >= winning_sets
-                or self.player2_sets >= winning_sets
+                self.player1_sets >= winning_sets or self.player2_sets >= winning_sets
             )
         else:
             # Exact: All sets must be played

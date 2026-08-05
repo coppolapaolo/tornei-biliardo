@@ -21,6 +21,12 @@ from datetime import datetime
 
 from models.base import db, utc_now
 from models.status_enum import GaraStatus
+from models.exceptions import (
+    NotFoundError,
+    ConflictError,
+    ValidationError,
+    PermissionDeniedError,
+)
 from .models import Inscription
 from models.transaction.manager import transactional
 
@@ -73,7 +79,7 @@ class InscriptionService:
 
         # Playoff gare: inscription reserved to qualified players only
         if gara.is_playoff and not _bypass_playoff_check:
-            raise ValueError(
+            raise PermissionDeniedError(
                 "Gara playoff — iscrizione riservata ai qualificati"
             )
 
@@ -83,7 +89,7 @@ class InscriptionService:
 
         # Validazione: Admin non può partecipare ai tornei
         if user.role == UserRole.ADMIN.value:
-            raise ValueError("Admin non può partecipare ai tornei")
+            raise PermissionDeniedError("Admin non può partecipare ai tornei")
 
         # Validazione: Verifica periodo di iscrizione
         # IMPORTANT: Use UTC for all datetime comparisons
@@ -91,9 +97,9 @@ class InscriptionService:
         now = utc_now()
         if gara.inscription_start and gara.inscription_end:
             if now < gara.inscription_start:
-                raise ValueError("Iscrizioni non ancora aperte")
+                raise ConflictError("Iscrizioni non ancora aperte")
             if now > gara.inscription_end:
-                raise ValueError("Iscrizioni chiuse")
+                raise ConflictError("Iscrizioni chiuse")
 
         # Conta iscrizioni attive (non in waitlist)
         active_count = (
@@ -183,7 +189,7 @@ class InscriptionService:
             user_id=user_id,
             username=user.username,
             inscription_status=inscription_status,
-            waitlist_position=waitlist_position
+            waitlist_position=waitlist_position,
         )
         EventBus.publish(event)
 
@@ -439,10 +445,9 @@ class InscriptionService:
             insc.waitlist_position = i
 
         # Invia notifica
-        gara_display = gara.name or f'Gara {gara.number}'
+        gara_display = gara.name or f"Gara {gara.number}"
         msg = (
-            f"Sei stato promosso dalla lista d'attesa "
-            f"per la gara '{gara_display}'"
+            f"Sei stato promosso dalla lista d'attesa " f"per la gara '{gara_display}'"
         )
         try:
             NotificationFactory.create_account_update_notification(
@@ -451,19 +456,14 @@ class InscriptionService:
                 message=msg,
                 priority=NotificationPriority.HIGH,
                 update_type="waitlist_promotion",
-                related_entities={
-                    "gara_id": gara.id,
-                    "gara_name": gara.name
-                }
+                related_entities={"gara_id": gara.id, "gara_name": gara.name},
             )
         except Exception as e:
             print(f"DEBUG: Error creating promotion notification: {e}")
 
     @staticmethod
     @transactional(domain="competition")
-    def admin_uninscribe_user(
-        user_id: int, gara_id: int, admin_user_id: int
-    ) -> bool:
+    def admin_uninscribe_user(user_id: int, gara_id: int, admin_user_id: int) -> bool:
         """Disiscrive un utente dalla gara da parte di admin/direttore.
 
         Invia notifica all'utente discritto e promuove il primo della
@@ -484,13 +484,9 @@ class InscriptionService:
             gara = db.session.get(Gara, gara_id)
             admin_user = db.session.get(User, admin_user_id)
 
-            was_active = (
-                not inscription.is_waitlist and not inscription.is_withdrawn
-            )
+            was_active = not inscription.is_waitlist and not inscription.is_withdrawn
             gara_name = gara.name or f"Gara {gara.number}"
-            admin_role = (
-                "admin" if admin_user.is_admin else "direttore di gara"
-            )
+            admin_role = "admin" if admin_user.is_admin else "direttore di gara"
 
             # Invia notifica all'utente discritto
             try:
@@ -521,24 +517,20 @@ class InscriptionService:
                     f"{user_id}: {notification_result}"
                 )
             except Exception as e:
-                print(
-                    f"DEBUG: Error creating notification "
-                    f"for user {user_id}: {e}"
-                )
+                print(f"DEBUG: Error creating notification " f"for user {user_id}: {e}")
 
             # Rimuovi l'iscrizione
             db.session.delete(inscription)
+            # Flush così la riga rimossa non conta più nelle query sottostanti
+            # (conteggio attivi per la parità).
+            db.session.flush()
 
             # Se l'utente era attivo (non in lista d'attesa),
             # promuovi il primo della lista d'attesa
             if was_active:
                 first_waitlist = (
                     db.session.query(Inscription)
-                    .filter_by(
-                        gara_id=gara_id,
-                        is_waitlist=True,
-                        is_withdrawn=False
-                    )
+                    .filter_by(gara_id=gara_id, is_waitlist=True, is_withdrawn=False)
                     .order_by(Inscription.waitlist_position.asc())
                     .first()
                 )
@@ -553,9 +545,7 @@ class InscriptionService:
                     remaining_waitlist = (
                         db.session.query(Inscription)
                         .filter_by(
-                            gara_id=gara_id,
-                            is_waitlist=True,
-                            is_withdrawn=False
+                            gara_id=gara_id, is_waitlist=True, is_withdrawn=False
                         )
                         .order_by(Inscription.waitlist_position.asc())
                         .all()
@@ -566,20 +556,15 @@ class InscriptionService:
 
                     # Invia notifica al promosso
                     try:
-                        from models.notification.factory import (
-                            NotificationFactory
-                        )
-                        from models.notification.models import (
-                            NotificationPriority
-                        )
+                        from models.notification.factory import NotificationFactory
+                        from models.notification.models import NotificationPriority
 
                         promo_msg = (
                             f"Sei stato promosso dalla lista d'attesa "
                             f"per {gara_name}"
                         )
                         notification_result = (
-                            NotificationFactory
-                            .create_tournament_notification(
+                            NotificationFactory.create_tournament_notification(
                                 user_ids=[first_waitlist.user_id],
                                 tournament_name=gara_name,
                                 message_template=promo_msg,
@@ -599,9 +584,86 @@ class InscriptionService:
                             f"{first_waitlist.user_id}: {e}"
                         )
 
+                # Nessuno da promuovere: se la gara non ammette numeri dispari
+                # (odd_number_policy="no") e la rimozione ha reso il numero di
+                # iscritti attivi dispari, l'ultimo iscritto va in waitlist
+                # parità così da ripristinare la parità. Stessa logica di
+                # `uninscribe_user` (Caso 2). Vedi issue #45.
+                elif gara.odd_number_policy == "no":
+                    active_count = (
+                        db.session.query(Inscription)
+                        .filter_by(
+                            gara_id=gara_id,
+                            is_waitlist=False,
+                            is_withdrawn=False,
+                        )
+                        .count()
+                    )
+                    if active_count % 2 == 1:
+                        InscriptionService._demote_last_to_parity_waitlist(gara_id)
+
             # Transaction managed by @transactional decorator
             return True
         return False
+
+    @staticmethod
+    def find_previous_gara_in_campionato(gara: "Gara") -> Optional["Gara"]:
+        """Gara del campionato che precede ``gara`` per ``number``.
+
+        None per le gare standalone e per la prima gara del campionato.
+        """
+        from models.competition.models import Gara
+
+        if not gara.campionato_id:
+            return None
+        return (
+            db.session.query(Gara)
+            .filter(
+                Gara.campionato_id == gara.campionato_id,
+                Gara.number < gara.number,
+                Gara.deleted_at.is_(None),
+            )
+            .order_by(Gara.number.desc())
+            .first()
+        )
+
+    @staticmethod
+    def copy_inscriptions_from_gara(source_gara_id: int, target_gara_id: int) -> int:
+        """Copia gli iscritti attivi di una gara su un'altra. Ritorna quanti.
+
+        Usata dall'opzione "auto-copia iscritti" alla creazione di una gara di
+        campionato (issue #58): il flag esisteva solo lato client, dove
+        precompilava i *parametri* della gara, e nessuno copiava le iscrizioni.
+
+        Copia solo le iscrizioni attive (non ritirate, non in lista d'attesa):
+        chi si era ritirato dalla prova precedente non viene riportato. Ogni
+        giocatore passa da ``inscribe_user``, quindi capienza e policy sui
+        numeri dispari della gara di destinazione sono rispettate (chi eccede
+        finisce in lista d'attesa) e gli eventi di dominio sono emessi come per
+        un'iscrizione manuale del director.
+
+        Senza ``@transactional``: ogni ``inscribe_user`` porta il proprio (i
+        decoratori annidati provocano rollback del savepoint esterno).
+        """
+        source_inscriptions = (
+            db.session.query(Inscription)
+            .filter_by(gara_id=source_gara_id, is_withdrawn=False, is_waitlist=False)
+            .order_by(Inscription.initial_order, Inscription.id)
+            .all()
+        )
+
+        copied = 0
+        for inscription in source_inscriptions:
+            try:
+                if InscriptionService.inscribe_user(
+                    inscription.user_id, target_gara_id
+                ):
+                    copied += 1
+            except (PermissionDeniedError, ConflictError):
+                # Un singolo giocatore non copiabile (es. account passato ad
+                # admin) non deve far fallire la copia degli altri.
+                continue
+        return copied
 
     @staticmethod
     @transactional(domain="competition")
@@ -613,19 +675,20 @@ class InscriptionService:
         from models.competition.state_service import StateService
 
         if inscription_start > inscription_end:
-            raise ValueError(
+            raise ValidationError(
                 "La data di inizio deve essere precedente alla data di fine!"
             )
 
         gara = db.session.get(Gara, gara_id)
         if not gara:
-            raise ValueError(f"Gara {gara_id} non trovata")
+            raise NotFoundError(f"Gara {gara_id} non trovata")
 
         # Valida che la data di fine iscrizioni non superi la data della gara
         adjusted = False
         if gara.date and gara.time:
             # Converti date in datetime per confronto
             from datetime import datetime as dt
+
             gara_datetime = dt.combine(gara.date, gara.time)
 
             if inscription_end > gara_datetime:
@@ -662,21 +725,21 @@ class InscriptionService:
 
         gara = db.session.get(Gara, gara_id)
         if not gara:
-            raise ValueError(f"Gara {gara_id} non trovata")
+            raise NotFoundError(f"Gara {gara_id} non trovata")
 
         if not gara.can_modify_inscription_dates():
-            raise ValueError(
+            raise ConflictError(
                 "Impossibile modificare le date: il primo turno è già stato avviato!"
             )
 
         if inscription_start > inscription_end:
-            raise ValueError(
+            raise ValidationError(
                 "La data di inizio deve essere precedente alla data di fine!"
             )
 
         # Verifica che la fine iscrizioni non sia dopo la data della gara
         if gara.date and inscription_end.date() > gara.date:
-            raise ValueError(
+            raise ValidationError(
                 "Le iscrizioni non possono terminare dopo la data della gara!"
             )
 
@@ -721,10 +784,12 @@ class InscriptionService:
         if not gara:
             return False
 
-        # Conta le iscrizioni attive (escludi lista d'attesa)
+        # Conta le iscrizioni attive (escludi lista d'attesa E ritirati, coerente
+        # con la definizione canonica di "iscrizione attiva": is_withdrawn=False,
+        # is_waitlist=False — vedi models/CLAUDE.md "Filtering Active Inscriptions")
         active_inscriptions = (
             db.session.query(Inscription)
-            .filter_by(gara_id=gara_id, is_waitlist=False)
+            .filter_by(gara_id=gara_id, is_withdrawn=False, is_waitlist=False)
             .count()
         )
 

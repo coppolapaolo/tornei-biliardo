@@ -249,9 +249,7 @@ class TestCancelRoundIgnoresBye:
         )
         assert remaining == 2
 
-    def test_cancel_round_bye_plus_walkover_blocked(
-        self, db_session, isolated_players
-    ):
+    def test_cancel_round_bye_plus_walkover_blocked(self, db_session, isolated_players):
         """AC3b: 1 bye + 1 walkover 2-player → cancel_round bloccato dal walkover.
 
         Il walkover è azione umana (forfeit), NON artefatto algoritmico:

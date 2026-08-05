@@ -85,13 +85,16 @@ class TestTerminateCampionatoRoute:
         refreshed = db_session.get(Campionato, c.id)
         assert refreshed.terminated_at is not None
 
-    def test_terminate_already_terminated(self, client, db_session, isolated_director_user):
+    def test_terminate_already_terminated(
+        self, client, db_session, isolated_director_user
+    ):
         director = isolated_director_user
         director.set_password("test123")
         db_session.commit()
 
         c = _setup_campionato_with_director(db_session, director)
         from models.base import utc_now
+
         c.terminated_at = utc_now()
         db_session.commit()
 
@@ -102,7 +105,9 @@ class TestTerminateCampionatoRoute:
             follow_redirects=True,
         )
         assert response.status_code == 200
-        assert b"terminato" in response.data.lower() or b"already" in response.data.lower()
+        assert (
+            b"terminato" in response.data.lower() or b"already" in response.data.lower()
+        )
 
     def test_terminate_forbidden_for_player(self, client, db_session):
         uid = str(uuid.uuid4())[:8]
@@ -127,7 +132,9 @@ class TestTerminateCampionatoRoute:
         # Should be blocked — either 403 or redirect with error
         assert response.status_code in [200, 302, 403]
 
-    def test_status_terminated_with_playoff(self, client, db_session, isolated_director_user):
+    def test_status_terminated_with_playoff(
+        self, client, db_session, isolated_director_user
+    ):
         director = isolated_director_user
         director.set_password("test123")
         db_session.commit()
@@ -212,7 +219,9 @@ class TestUpdatePlayoffMinRoute:
         refreshed = db_session.get(PlayoffConfiguration, cfg.id)
         assert refreshed.min_garas_played == 3
 
-    def test_update_min_then_terminate(self, client, db_session, isolated_director_user):
+    def test_update_min_then_terminate(
+        self, client, db_session, isolated_director_user
+    ):
         """Full flow: update infeasible min_garas_played, then terminate."""
         director = isolated_director_user
         director.set_password("test123")

@@ -8,8 +8,8 @@ from datetime import date, datetime
 from typing import Optional, List, Tuple, Any, Dict
 
 from flask_sqlalchemy.pagination import Pagination
-from sqlalchemy import or_, and_
-from sqlalchemy.orm import joinedload
+from sqlalchemy import or_, and_, func
+from sqlalchemy.orm import joinedload, selectinload
 
 from models.base import db
 from models.match.models import Match, TrioMatch
@@ -101,57 +101,23 @@ class PlayerHistoryService:
         Returns:
             Tuple of (pagination object, aggregated stats for filtered matches)
         """
-        # Base query - completed matches where user participated
-        # Use outerjoin for Gara to include standalone matches (gara_id = NULL)
-        # outerjoin TrioMatch too: trio matches have user as one of the 3 players
-        query = (
-            db.session.query(Match)
-            .outerjoin(Gara, Gara.id == Match.gara_id)
-            .outerjoin(Campionato, Campionato.id == Gara.campionato_id)
-            .outerjoin(TrioMatch, Match.id == TrioMatch.match_id)
-            .filter(
-                Match.status == MatchStatus.COMPLETED.value,
-                Match.is_bye == False,  # noqa: E712
-                or_(
-                    # Regular matches (not trio)
-                    and_(
-                        Match.is_trio == False,  # noqa: E712
-                        or_(
-                            Match.player1_id == user_id,
-                            Match.player2_id == user_id,
-                        ),
-                    ),
-                    # Trio matches - check all 3 player positions
-                    and_(
-                        Match.is_trio == True,  # noqa: E712
-                        or_(
-                            TrioMatch.player1_id == user_id,
-                            TrioMatch.player2_id == user_id,
-                            TrioMatch.player3_id == user_id,
-                        ),
-                    ),
-                ),
-            )
-            .options(
-                joinedload(Match.player1),
-                joinedload(Match.player2),
-                joinedload(Match.gara).joinedload(Gara.campionato),
-                joinedload(Match.trio_match),
-            )
-        )
-
-        # Apply filters
-        query = PlayerHistoryService._apply_match_filters(query, user_id, filters)
-
-        # Order by date descending
-        query = query.order_by(Gara.date.desc().nullslast(), Match.created_at.desc())
-
         # Calculate stats BEFORE pagination (on filtered results)
+        query = PlayerHistoryService._build_match_history_query(user_id, filters)
         stats = PlayerHistoryService._calculate_match_stats(query.all(), user_id)
 
         # Re-run query for pagination (SQLAlchemy pagination needs fresh query)
-        # Use outerjoin for Gara to include standalone matches (gara_id = NULL)
-        # Also outerjoin TrioMatch to include trio matches
+        query = PlayerHistoryService._build_match_history_query(user_id, filters)
+        pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+
+        return pagination, stats
+
+    @staticmethod
+    def _build_match_history_query(user_id: int, filters: HistoryFilters) -> Any:
+        """Build the filtered+ordered query for completed matches of a user.
+
+        Use outerjoin for Gara to include standalone matches (gara_id = NULL);
+        outerjoin TrioMatch too: trio matches have user as one of the 3 players.
+        """
         query = (
             db.session.query(Match)
             .outerjoin(Gara, Gara.id == Match.gara_id)
@@ -185,14 +151,14 @@ class PlayerHistoryService:
                 joinedload(Match.player2),
                 joinedload(Match.gara).joinedload(Gara.campionato),
                 joinedload(Match.trio_match),
+                # I match multi-set leggono i rack reali dai Set (vedi
+                # _calculate_match_stats): pre-carica la collection per
+                # evitare un lazy-load N+1 per ogni match.
+                selectinload(Match.sets),
             )
         )
         query = PlayerHistoryService._apply_match_filters(query, user_id, filters)
-        query = query.order_by(Gara.date.desc().nullslast(), Match.created_at.desc())
-
-        pagination = query.paginate(page=page, per_page=per_page, error_out=False)
-
-        return pagination, stats
+        return query.order_by(Gara.date.desc().nullslast(), Match.created_at.desc())
 
     @staticmethod
     def _apply_match_filters(query: Any, user_id: int, filters: HistoryFilters) -> Any:
@@ -214,26 +180,60 @@ class PlayerHistoryService:
         if filters.venue:
             query = query.filter(Gara.location.ilike(f"%{filters.venue}%"))
 
-        # Opponent filter
+        # Opponent filter. Nei trio l'avversario puo' comparire solo su
+        # TrioMatch.player1/2/3_id (Match.player1/2_id tengono 2 dei 3
+        # giocatori): la query base garantisce gia' che user_id partecipi,
+        # qui basta verificare la presenza dell'avversario nel trio.
         if filters.opponent_id:
             query = query.filter(
                 or_(
                     and_(
-                        Match.player1_id == user_id,
-                        Match.player2_id == filters.opponent_id,
+                        Match.is_trio == False,  # noqa: E712
+                        or_(
+                            and_(
+                                Match.player1_id == user_id,
+                                Match.player2_id == filters.opponent_id,
+                            ),
+                            and_(
+                                Match.player2_id == user_id,
+                                Match.player1_id == filters.opponent_id,
+                            ),
+                        ),
                     ),
                     and_(
-                        Match.player2_id == user_id,
-                        Match.player1_id == filters.opponent_id,
+                        Match.is_trio == True,  # noqa: E712
+                        or_(
+                            TrioMatch.player1_id == filters.opponent_id,
+                            TrioMatch.player2_id == filters.opponent_id,
+                            TrioMatch.player3_id == filters.opponent_id,
+                        ),
                     ),
                 )
             )
 
-        # Date range filter
+        # Date range filter. I match standalone hanno gara_id NULL → Gara.date
+        # NULL (outerjoin): `NULL >= date` e' NULL/falsy e li escluderebbe da
+        # qualsiasi filtro data. Fallback su Match.created_at per quelli.
         if filters.date_from:
-            query = query.filter(Gara.date >= filters.date_from)
+            query = query.filter(
+                or_(
+                    Gara.date >= filters.date_from,
+                    and_(
+                        Gara.date.is_(None),
+                        func.date(Match.created_at) >= filters.date_from,
+                    ),
+                )
+            )
         if filters.date_to:
-            query = query.filter(Gara.date <= filters.date_to)
+            query = query.filter(
+                or_(
+                    Gara.date <= filters.date_to,
+                    and_(
+                        Gara.date.is_(None),
+                        func.date(Match.created_at) <= filters.date_to,
+                    ),
+                )
+            )
 
         # Result filter
         if filters.result == "won":
@@ -286,8 +286,19 @@ class PlayerHistoryService:
                     player_r = 0
                 racks_won += player_r
                 racks_lost += trio_racks_lost(player_r, distance)
+            elif m.is_multi_set:
+                # Multi-set: player*_score sono i SET vinti, non i rack. I rack
+                # reali vivono nei record Set: sommali per non inquinare i
+                # totali rack con conteggi di set.
+                for s in m.sets:
+                    if m.player1_id == user_id:
+                        racks_won += s.player1_racks or 0
+                        racks_lost += s.player2_racks or 0
+                    else:
+                        racks_won += s.player2_racks or 0
+                        racks_lost += s.player1_racks or 0
             else:
-                # Regular 2-player match
+                # Regular single-set match: player*_score sono i rack.
                 if m.player1_id == user_id:
                     racks_won += m.player1_score or 0
                     racks_lost += m.player2_score or 0
@@ -387,23 +398,23 @@ class PlayerHistoryService:
     @staticmethod
     def _calculate_gara_stats(gare: List[Gara], user_id: int) -> GaraStats:
         """Calculate aggregated stats for gare history."""
-        from models.classification.models import RoundClassification
-
         total = len(gare)
         first_places = 0
         podiums = 0
         total_matches = 0
 
         for gara in gare:
-            # Get user's final position in this gara
-            final_classification = (
-                db.session.query(RoundClassification)
-                .filter(
-                    RoundClassification.gara_id == gara.id,
-                    RoundClassification.user_id == user_id,
-                    RoundClassification.round_number == gara.current_round,
-                )
-                .first()
+            # Usa la relationship gia' eager-loaded in get_gara_history
+            # (joinedload(Gara.round_classifications)) invece di una query
+            # RoundClassification per gara (N+1): la classifica finale del
+            # giocatore e' la sua riga al round corrente.
+            final_classification = next(
+                (
+                    rc
+                    for rc in gara.round_classifications
+                    if rc.user_id == user_id and rc.round_number == gara.current_round
+                ),
+                None,
             )
 
             if final_classification:
@@ -458,12 +469,9 @@ class PlayerHistoryService:
         )
 
         # Query campionati
-        query = (
-            db.session.query(Campionato)
-            .filter(
-                Campionato.id.in_(campionato_ids_with_participation),
-                Campionato.is_deleted == False,  # noqa: E712
-            )
+        query = db.session.query(Campionato).filter(
+            Campionato.id.in_(campionato_ids_with_participation),
+            Campionato.is_deleted == False,  # noqa: E712
         )
 
         if filters and filters.campionato_status == "active":

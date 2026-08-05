@@ -33,19 +33,18 @@ def start_next_set(match_id):
         match = get_or_ajax_404(Match, match_id, "Match")
 
         if not match.is_multi_set:
-            return jsonify({
-                "success": False,
-                "error": "Match non è multi-set"
-            }), 400
+            return jsonify({"success": False, "error": "Match non è multi-set"}), 400
 
         # Start next set
         new_set = MatchService.start_next_set(match_id)
 
-        return jsonify({
-            "success": True,
-            "set_number": new_set.set_number,
-            "message": f"Set {new_set.set_number} iniziato"
-        })
+        return jsonify(
+            {
+                "success": True,
+                "set_number": new_set.set_number,
+                "message": f"Set {new_set.set_number} iniziato",
+            }
+        )
 
     except ValueError as ve:
         return jsonify({"success": False, "error": str(ve)}), 400
@@ -74,34 +73,43 @@ def add_set_rack(match_id):
         match = get_or_ajax_404(Match, match_id, "Match")
 
         if not match.is_multi_set:
-            return jsonify({
-                "success": False,
-                "error": "Match non è multi-set"
-            }), 400
+            return jsonify({"success": False, "error": "Match non è multi-set"}), 400
 
         # Add rack to current set
         rack = MatchService.add_rack_to_current_set(match_id, winner_id)
 
         # Get updated set state
         current_set = match.get_current_set()
-        set_score = f"{current_set.player1_racks}-{current_set.player2_racks}" if current_set else "0-0"
+        set_score = (
+            f"{current_set.player1_racks}-{current_set.player2_racks}"
+            if current_set
+            else "0-0"
+        )
 
         # Emit SSE event for gara detail page polling
         if match.gara_id:
-            emit_gara_event(match.gara_id, "match_updated", {
-                "match_id": match_id,
-                "player1_score": match.player1_score,
-                "player2_score": match.player2_score,
-                "set_score": set_score,
-            })
+            emit_gara_event(
+                match.gara_id,
+                "match_updated",
+                {
+                    "match_id": match_id,
+                    "player1_score": match.player1_score,
+                    "player2_score": match.player2_score,
+                    "set_score": set_score,
+                },
+            )
 
-        return jsonify({
-            "success": True,
-            "rack_number": rack.rack_number,
-            "set_score": set_score,
-            "set_completed": current_set.status == "completed" if current_set else False,
-            "match_completed": match.status == "completed"
-        })
+        return jsonify(
+            {
+                "success": True,
+                "rack_number": rack.rack_number,
+                "set_score": set_score,
+                "set_completed": (
+                    current_set.status == "completed" if current_set else False
+                ),
+                "match_completed": match.status == "completed",
+            }
+        )
 
     except ValueError as ve:
         return jsonify({"success": False, "error": str(ve)}), 400
@@ -128,31 +136,33 @@ def remove_set_rack(match_id):
         match = get_or_ajax_404(Match, match_id, "Match")
 
         if not match.is_multi_set:
-            return jsonify({
-                "success": False,
-                "error": "Match non è multi-set"
-            }), 400
+            return jsonify({"success": False, "error": "Match non è multi-set"}), 400
 
         # Remove last rack from current set
         MatchService.remove_rack_from_current_set(match_id)
 
         # Get updated set state
         current_set = match.get_current_set()
-        set_score = f"{current_set.player1_racks}-{current_set.player2_racks}" if current_set else "0-0"
+        set_score = (
+            f"{current_set.player1_racks}-{current_set.player2_racks}"
+            if current_set
+            else "0-0"
+        )
 
         # Emit SSE event for gara detail page polling
         if match.gara_id:
-            emit_gara_event(match.gara_id, "match_updated", {
-                "match_id": match_id,
-                "player1_score": match.player1_score,
-                "player2_score": match.player2_score,
-                "set_score": set_score,
-            })
+            emit_gara_event(
+                match.gara_id,
+                "match_updated",
+                {
+                    "match_id": match_id,
+                    "player1_score": match.player1_score,
+                    "player2_score": match.player2_score,
+                    "set_score": set_score,
+                },
+            )
 
-        return jsonify({
-            "success": True,
-            "set_score": set_score
-        })
+        return jsonify({"success": True, "set_score": set_score})
 
     except ValueError as ve:
         return jsonify({"success": False, "error": str(ve)}), 400

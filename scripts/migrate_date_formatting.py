@@ -18,24 +18,19 @@ import re
 from pathlib import Path
 from typing import List, Tuple
 
-
 # Pattern di sostituzione (regex, replacement)
 REPLACEMENTS: List[Tuple[str, str]] = [
     # Data e ora con testo (es. "alle")
     (r"\.strftime\(['\"]%d/%m/%Y alle %H:%M['\"]\)", "|datetime_local"),
-
     # Data e ora completa
     (r"\.strftime\(['\"]%d/%m/%Y %H:%M['\"]\)", "|datetime_local"),
     (r"\.strftime\(['\"]%Y-%m-%d %H:%M['\"]\)", "|datetime_local"),
-
     # Data e ora breve (solo giorno/mese e ora)
     (r"\.strftime\(['\"]%d/%m %H:%M['\"]\)", "|datetime_local"),
-
     # Solo data
     (r"\.strftime\(['\"]%d/%m/%Y['\"]\)", "|date_local"),
     (r"\.strftime\(['\"]%Y-%m-%d['\"]\)", "|date_local"),
     (r"\.strftime\(['\"]%d/%m['\"]\)", "|date_local"),
-
     # Solo ora
     (r"\.strftime\(['\"]%H:%M['\"]\)", "|time_local"),
 ]
@@ -48,7 +43,7 @@ def migrate_file(filepath: Path, dry_run: bool = False) -> Tuple[int, List[str]]
     Returns:
         Tuple di (numero_sostituzioni, lista_modifiche)
     """
-    content = filepath.read_text(encoding='utf-8')
+    content = filepath.read_text(encoding="utf-8")
     original_content = content
     changes = []
 
@@ -61,7 +56,7 @@ def migrate_file(filepath: Path, dry_run: bool = False) -> Tuple[int, List[str]]
     num_changes = len(changes)
 
     if num_changes > 0 and not dry_run:
-        filepath.write_text(content, encoding='utf-8')
+        filepath.write_text(content, encoding="utf-8")
 
     return num_changes, changes
 
@@ -76,14 +71,12 @@ def main():
         description="Migra formati data nei template da strftime a filtri locali"
     )
     parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Mostra le modifiche senza applicarle"
+        "--dry-run", action="store_true", help="Mostra le modifiche senza applicarle"
     )
     parser.add_argument(
         "--file",
         type=str,
-        help="Migra solo un file specifico (path relativo da templates/)"
+        help="Migra solo un file specifico (path relativo da templates/)",
     )
 
     args = parser.parse_args()
@@ -139,7 +132,9 @@ def main():
     elif total_changes > 0:
         print("\n✅ Migrazione completata con successo!")
     else:
-        print("\n✨ Nessuna modifica necessaria - tutti i template sono già aggiornati!")
+        print(
+            "\n✨ Nessuna modifica necessaria - tutti i template sono già aggiornati!"
+        )
 
     return 0
 

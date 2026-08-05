@@ -232,6 +232,7 @@ const config = {{ some_dict|tojson }};
 
 ## Do Not
 
+- **Do not include twice a component containing `id=` or `<script>`** - duplicate ids break `getElementById` (targets the hidden copy) and scripts run twice. For mobile/desktop reordering use flex `order-*` on a single DOM (see "L'azionabile va prima" in `docs/reference/UI_CONVENTIONS.md`); duplication (`d-md-none` + `d-none d-md-block`) only for id/script-free components (check first!)
 - **Do not embed strings in JS without `|tojson`** - Italian apostrophes break JS strings
 - **Do not use double quotes for onclick with `|tojson`** - JSON produces double quotes internally
 - **Do not use `%(name)s` for JS interpolation** - Flask-Babel tries to substitute at render time

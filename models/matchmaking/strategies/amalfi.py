@@ -1,7 +1,7 @@
 from __future__ import annotations
 import random
 from itertools import combinations
-from typing import Optional, Sequence, Dict, Any, List, Tuple, TYPE_CHECKING
+from typing import Optional, Sequence, Dict, Any, List, Tuple, TYPE_CHECKING, cast
 
 from .base import BaseStrategy, Pairing
 from models import db
@@ -31,6 +31,7 @@ class AmalfiStrategy(BaseStrategy):
     max_players = None
     supports_byes = True
     requires_classification = True
+    persists_seeding = True
     name = "amalfi"
 
     def __init__(self) -> None:
@@ -110,55 +111,50 @@ class AmalfiStrategy(BaseStrategy):
     def _get_first_round_classification(
         self, gara: Gara
     ) -> List["RoundClassification"]:
-        """Ottieni la classifica per il primo round."""
-        policy = getattr(gara, "first_round_policy", FirstRoundPolicy.RANDOM.value)
+        """Ottieni la classifica di partenza (turno 0) per il primo round.
 
-        if policy == FirstRoundPolicy.RANDOM.value:
-            return self._create_random_classification(gara)
-        elif policy == FirstRoundPolicy.CLASSIFICATION.value:
-            return self._create_campionato_classification(gara)
-        elif policy == FirstRoundPolicy.RATING.value:
-            return self._create_rating_classification(gara)
-        else:
-            # Unknown policy, fallback to random
-            return self._create_random_classification(gara)
+        La classifica viene persistita: è il seeding del torneo, e i turni
+        successivi la usano come criterio di parimerito risalendo la catena
+        di `previous_position`. `ensure_seeding` è idempotente, quindi
+        riavviare un primo turno annullato non rimescola il sorteggio.
+        """
+        from models.classification.seeding_service import SeedingService
 
-    def _create_random_classification(self, gara: Gara) -> List["RoundClassification"]:
-        """Crea una classifica casuale per il primo round."""
-        from models.classification.models import RoundClassification
+        existing = SeedingService.get_seeding(gara.id)
+        if existing:
+            return existing
 
+        return SeedingService.ensure_seeding(gara.id, self.get_seeding_order(gara))
+
+    def get_seeding_order(self, gara: object) -> List[int]:
+        """Ordine di partenza dei giocatori secondo la `first_round_policy`."""
+        gara_typed = cast("Gara", gara)
+        policy = getattr(
+            gara_typed, "first_round_policy", FirstRoundPolicy.RANDOM.value
+        )
+
+        if policy == FirstRoundPolicy.CLASSIFICATION.value:
+            return self._campionato_seeding_order(gara_typed)
+        if policy == FirstRoundPolicy.RATING.value:
+            return self._rating_seeding_order(gara_typed)
+        # RANDOM ed eventuali policy sconosciute: sorteggio
+        return self._random_seeding_order(gara_typed)
+
+    def _random_seeding_order(self, gara: Gara) -> List[int]:
+        """Sorteggio casuale dell'ordine di partenza."""
         inscriptions = self._get_active_inscriptions(gara)
         if len(inscriptions) < self.min_players:
             raise ValueError(f"Servono almeno {self.min_players} iscritti")
 
-        # Random shuffle dei giocatori
         players = [insc.user_id for insc in inscriptions]
         random.shuffle(players)
+        return players
 
-        # Crea oggetti RoundClassification "virtuali" per il round 0
-        classification = []
-        for i, player_id in enumerate(players):
-            round_class = RoundClassification(
-                gara_id=gara.id,
-                round_number=0,  # Round virtuale per il primo round
-                user_id=player_id,
-                position=i + 1,
-                matches_won=0,
-                rack_difference=0,
-            )
-            classification.append(round_class)
-
-        return classification
-
-    def _create_campionato_classification(
-        self, gara: Gara
-    ) -> List["RoundClassification"]:
-        """Crea classifica basata sulla classifica del campionato."""
-        from models.classification.models import RoundClassification
-
+    def _campionato_seeding_order(self, gara: Gara) -> List[int]:
+        """Ordine di partenza basato sulla classifica del campionato."""
         # Se gara standalone, fallback a random
         if not gara.campionato_id:
-            return self._create_random_classification(gara)
+            return self._random_seeding_order(gara)
 
         # Ottieni iscritti della gara
         inscriptions = self._get_active_inscriptions(gara)
@@ -179,51 +175,25 @@ class AmalfiStrategy(BaseStrategy):
 
         # Se non c'è classifica campionato (prima gara), fallback a random
         if not campionato_classification:
-            return self._create_random_classification(gara)
+            return self._random_seeding_order(gara)
 
-        # Crea RoundClassification basata sulla classifica campionato
-        classification = []
-        classified_players = set()
-
-        # Prima: giocatori classificati nel campionato
-        for i, camp_class in enumerate(campionato_classification):
-            if camp_class.user_id in inscribed_players:
-                round_class = RoundClassification(
-                    gara_id=gara.id,
-                    round_number=0,
-                    user_id=camp_class.user_id,
-                    position=i + 1,
-                    matches_won=0,
-                    rack_difference=0,
-                )
-                classification.append(round_class)
-                classified_players.add(camp_class.user_id)
+        # Prima: giocatori classificati nel campionato (la query filtra già
+        # sugli iscritti, quindi le posizioni restano contigue)
+        order = [camp_class.user_id for camp_class in campionato_classification]
 
         # Poi: giocatori non classificati (casuali alla fine)
-        unclassified_players = list(inscribed_players - classified_players)
+        unclassified_players = list(inscribed_players - set(order))
         random.shuffle(unclassified_players)
+        order.extend(unclassified_players)
 
-        for player_id in unclassified_players:
-            round_class = RoundClassification(
-                gara_id=gara.id,
-                round_number=0,
-                user_id=player_id,
-                position=len(classification) + 1,
-                matches_won=0,
-                rack_difference=0,
-            )
-            classification.append(round_class)
+        return order
 
-        return classification
-
-    def _create_rating_classification(self, gara: Gara) -> List["RoundClassification"]:
-        """Crea classifica basata sui rating dei giocatori.
+    def _rating_seeding_order(self, gara: Gara) -> List[int]:
+        """Ordine di partenza basato sui rating dei giocatori.
 
         Usa fargo_rating dal modello User (rating primario).
         Se non disponibile, usa elo_rating come fallback.
         """
-        from models.classification.models import RoundClassification
-
         inscriptions = self._get_active_inscriptions(gara)
         if len(inscriptions) < self.min_players:
             raise ValueError(f"Servono almeno {self.min_players} iscritti")
@@ -245,24 +215,9 @@ class AmalfiStrategy(BaseStrategy):
                 player_ratings[user.id] = 0  # Default per giocatori senza rating
 
         # Ordina giocatori per rating (decrescente), poi per user_id per stabilità
-        sorted_players = sorted(
+        return sorted(
             inscribed_players, key=lambda pid: (-player_ratings.get(pid, 0), pid)
         )
-
-        # Crea RoundClassification basata sui rating
-        classification = []
-        for i, player_id in enumerate(sorted_players):
-            round_class = RoundClassification(
-                gara_id=gara.id,
-                round_number=0,
-                user_id=player_id,
-                position=i + 1,
-                matches_won=0,
-                rack_difference=0,
-            )
-            classification.append(round_class)
-
-        return classification
 
     def _amalfi_pairing(
         self,

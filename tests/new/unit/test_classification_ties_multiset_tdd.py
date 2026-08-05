@@ -100,8 +100,7 @@ class TestClassificationTieHandlingTDD:
 
         # Calculate classification
         results = RoundClassification.calculate_classification_after_round(
-            gara_id=gara.id,
-            round_number=1
+            gara_id=gara.id, round_number=1
         )
 
         # Verify neither player has a match win
@@ -110,8 +109,12 @@ class TestClassificationTieHandlingTDD:
         # Results are (player_id, stats_dict) tuples
         # Both players should have matches_won = 0
         for player_id, stats in results:
-            assert stats["matches_won"] == 0, f"Player {player_id} should have 0 wins on tie"
-            assert stats["rack_difference"] == 0, f"Player {player_id} should have 0 rack diff on tie"
+            assert (
+                stats["matches_won"] == 0
+            ), f"Player {player_id} should have 0 wins on tie"
+            assert (
+                stats["rack_difference"] == 0
+            ), f"Player {player_id} should have 0 rack diff on tie"
 
     def test_winner_gets_match_win(self, db_session):
         """Test that clear winners get match win credit."""
@@ -183,17 +186,12 @@ class TestClassificationTieHandlingTDD:
 
         # Calculate classification
         results = RoundClassification.calculate_classification_after_round(
-            gara_id=gara.id,
-            round_number=1
+            gara_id=gara.id, round_number=1
         )
 
         # Find player1's result - results are (player_id, stats_dict) tuples
-        player1_result = next(
-            (r for r in results if r[0] == player1.id), None
-        )
-        player2_result = next(
-            (r for r in results if r[0] == player2.id), None
-        )
+        player1_result = next((r for r in results if r[0] == player1.id), None)
+        player2_result = next((r for r in results if r[0] == player2.id), None)
 
         assert player1_result is not None
         assert player2_result is not None
@@ -335,17 +333,12 @@ class TestMultiSetClassificationTDD:
 
         # Calculate classification
         results = RoundClassification.calculate_classification_after_round(
-            gara_id=gara.id,
-            round_number=1
+            gara_id=gara.id, round_number=1
         )
 
         # Find results - results are (player_id, stats_dict) tuples
-        player1_result = next(
-            (r for r in results if r[0] == player1.id), None
-        )
-        player2_result = next(
-            (r for r in results if r[0] == player2.id), None
-        )
+        player1_result = next((r for r in results if r[0] == player1.id), None)
+        player2_result = next((r for r in results if r[0] == player2.id), None)
 
         assert player1_result is not None
         assert player2_result is not None
@@ -360,8 +353,12 @@ class TestMultiSetClassificationTDD:
         # Rack difference should be from actual racks, not sets
         # player1: 14 racks won, 10 racks lost -> diff = +4
         # player2: 10 racks won, 14 racks lost -> diff = -4
-        assert stats_p1["rack_difference"] == 4, f"Player1 rack diff should be +4, got {stats_p1['rack_difference']}"
-        assert stats_p2["rack_difference"] == -4, f"Player2 rack diff should be -4, got {stats_p2['rack_difference']}"
+        assert (
+            stats_p1["rack_difference"] == 4
+        ), f"Player1 rack diff should be +4, got {stats_p1['rack_difference']}"
+        assert (
+            stats_p2["rack_difference"] == -4
+        ), f"Player2 rack diff should be -4, got {stats_p2['rack_difference']}"
 
     def test_single_set_uses_match_scores(self, db_session):
         """Test that single-set matches use player scores directly."""
@@ -434,17 +431,12 @@ class TestMultiSetClassificationTDD:
 
         # Calculate classification
         results = RoundClassification.calculate_classification_after_round(
-            gara_id=gara.id,
-            round_number=1
+            gara_id=gara.id, round_number=1
         )
 
         # Find results - results are (player_id, stats_dict) tuples
-        player1_result = next(
-            (r for r in results if r[0] == player1.id), None
-        )
-        player2_result = next(
-            (r for r in results if r[0] == player2.id), None
-        )
+        player1_result = next((r for r in results if r[0] == player1.id), None)
+        player2_result = next((r for r in results if r[0] == player2.id), None)
 
         assert player1_result is not None
         assert player2_result is not None
@@ -453,8 +445,12 @@ class TestMultiSetClassificationTDD:
         _, stats_p2 = player2_result
 
         # Single-set uses match scores directly
-        assert stats_p1["rack_difference"] == 3, f"Player1 rack diff should be +3 (5-2), got {stats_p1['rack_difference']}"
-        assert stats_p2["rack_difference"] == -3, f"Player2 rack diff should be -3 (2-5), got {stats_p2['rack_difference']}"
+        assert (
+            stats_p1["rack_difference"] == 3
+        ), f"Player1 rack diff should be +3 (5-2), got {stats_p1['rack_difference']}"
+        assert (
+            stats_p2["rack_difference"] == -3
+        ), f"Player2 rack diff should be -3 (2-5), got {stats_p2['rack_difference']}"
 
 
 @pytest.mark.unit
@@ -535,7 +531,9 @@ class TestCrownDisplayOnTiesTDD:
         # Verify winner_id is None
         db_session.refresh(match)
         assert match.winner_id is None, "Tied match should have winner_id = None"
-        assert match.status == MatchStatus.COMPLETED.value, "Match should still be completed"
+        assert (
+            match.status == MatchStatus.COMPLETED.value
+        ), "Match should still be completed"
 
     def test_clear_winner_has_winner_id(self, db_session):
         """Test that matches with clear winners have correct winner_id."""
@@ -782,7 +780,9 @@ class TestTiebreakerServiceTDD:
         ties = TiebreakerService.detect_ties(gara.id)
 
         # Tie at position 3 should be ignored (beyond position 2)
-        assert len(ties) == 0, f"No ties should be detected (beyond position limit), got {len(ties)}"
+        assert (
+            len(ties) == 0
+        ), f"No ties should be detected (beyond position limit), got {len(ties)}"
 
     def test_tiebreaker_disabled_returns_empty(self, db_session):
         """Test that disabled tiebreaker returns no ties."""

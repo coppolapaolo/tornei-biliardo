@@ -56,9 +56,11 @@ def verify_all_gare(fix_mode: bool = False) -> tuple[int, int, int]:
             invalid += 1
             invalid_gare.append((gara, errors, warnings))
             print(f"❌ Gara {gara.id}: {gara.name or f'Gara #{gara.number}'}")
-            print(f"   Config: strategy={gara.matchmaking_strategy}, "
-                  f"odd={gara.odd_number_policy}, "
-                  f"class={gara.classification_system}")
+            print(
+                f"   Config: strategy={gara.matchmaking_strategy}, "
+                f"odd={gara.odd_number_policy}, "
+                f"class={gara.classification_system}"
+            )
             for error in errors:
                 print(f"   ERROR: {error}")
             if warnings:

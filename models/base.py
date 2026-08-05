@@ -25,6 +25,7 @@ def utc_now() -> datetime:
     """
     return datetime.now(timezone.utc).replace(tzinfo=None)
 
+
 # Initialize SQLAlchemy instance FIRST (before importing transactional)
 # This is required because transaction/manager.py imports db
 db = SQLAlchemy()
@@ -32,10 +33,12 @@ db = SQLAlchemy()
 # Initialize Flask-Mail
 try:
     from flask_mail import Mail
+
     mail = Mail()
 except ImportError:
     mail = None
     import logging
+
     logging.warning("Flask-Mail not installed. Email features will be disabled.")
 
 # Import transactional decorator - now db is available when transaction/manager imports it
@@ -45,6 +48,7 @@ except ImportError as e:
     # Fallback if transaction manager is not available
     # WARNING: This fallback is a no-op! Transactions won't be managed!
     import logging
+
     logging.warning(
         f"Failed to import transactional from transaction.manager: {e}. "
         "Using no-op fallback - database transactions will NOT be managed!"
@@ -53,6 +57,7 @@ except ImportError as e:
     def transactional(domain=None):
         def decorator(func):
             return func
+
         return decorator
 
 
@@ -64,54 +69,6 @@ def _set_sqlite_pragma(dbapi_connection, connection_record):
         cursor.execute("PRAGMA foreign_keys=ON")
         cursor.execute("PRAGMA journal_mode=WAL")
         cursor.close()
-
-
-class UtilityMixin:
-    """
-    Mixin that provides common utility methods for models.
-
-    Includes database operations and convenience methods without
-    adding any additional database columns.
-    """
-
-    @transactional(domain="base")
-    def save(self):
-        """Save the model instance to database"""
-        db.session.add(self)
-        return self
-
-    @transactional(domain="base")
-    def delete(self):
-        """Delete the model instance from database"""
-        db.session.delete(self)
-
-    def to_dict(self):
-        """Convert model instance to dictionary"""
-        result = {}
-        # Only process if the model has a __table__ attribute (i.e., inherits from db.Model)
-        table = getattr(self, "__table__", None)
-        if table is not None:
-            for column in table.columns:
-                value = getattr(self, column.name)
-                if isinstance(value, datetime):
-                    value = value.isoformat()
-                result[column.name] = value
-        return result
-
-    @classmethod
-    def find_by_id(cls, id):
-        """Find model instance by ID"""
-        return db.session.get(cls, id)
-
-    @classmethod
-    def find_all(cls):
-        """Find all instances of the model"""
-        return db.session.query(cls).all()
-
-    def refresh(self):
-        """Refresh model instance from database"""
-        db.session.refresh(self)
-        return self
 
 
 class TimestampMixin:
@@ -275,31 +232,6 @@ class BaseModel(db.Model):
         return db.session.query(cls).all()
 
 
-class SimpleModel(UtilityMixin, db.Model):
-    """
-    Simple base model with only utility methods, no timestamps.
-
-    Use this for models that need utility methods but not timestamp tracking.
-    Good for: User, simple lookup tables, etc.
-    """
-
-    __abstract__ = True
-
-
-class TimestampedModel(TimestampMixin, UtilityMixin, db.Model):
-    """
-    Alternative to BaseModel with same functionality but different name.
-
-    Use this when you want to be explicit about timestamp inclusion.
-    """
-
-    __abstract__ = True
-
-
-# Utility functions for common database operations
-
-
-@transactional(domain="base")
 def get_or_create(model_class, **kwargs):
     """
     Get existing instance or create new one if it doesn't exist.
@@ -317,6 +249,7 @@ def get_or_create(model_class, **kwargs):
         return instance, False
     else:
         from sqlalchemy.exc import IntegrityError
+
         # Use a savepoint to protect the outer transaction from the IntegrityError
         try:
             with db.session.begin_nested():
@@ -349,7 +282,6 @@ def bulk_create(model_class, instances_data):
 
     db.session.add_all(instances)
     return instances
-
 
 
 # Database initialization helpers

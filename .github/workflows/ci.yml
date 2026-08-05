@@ -8,7 +8,9 @@ on:
 
 env:
   PYTHONANYWHERE_USERNAME: paolocoppola
-  PYTHONANYWHERE_DOMAIN: paolocoppola.pythonanywhere.com
+  # domain_name della webapp reale (custom domain, vedi /var/www/www_torneibiliardo_it_wsgi.py):
+  # con il dominio sbagliato l'API risponde 404 e il reload da CI non ha mai effetto.
+  PYTHONANYWHERE_DOMAIN: www.torneibiliardo.it
   PROJECT_PATH: /home/paolocoppola/mysite
 
 jobs:
@@ -16,10 +18,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.11"
           cache: "pip"
@@ -44,7 +46,7 @@ jobs:
       has_new_migrations: ${{ steps.check.outputs.has_migrations }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 2
 

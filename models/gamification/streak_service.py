@@ -81,10 +81,7 @@ class StreakService:
         return iso_calendar.week, iso_calendar.year
 
     @staticmethod
-    def weeks_between(
-        week1: int, year1: int,
-        week2: int, year2: int
-    ) -> int:
+    def weeks_between(week1: int, year1: int, week2: int, year2: int) -> int:
         """
         Calculate weeks between two ISO week/year pairs.
 
@@ -131,9 +128,7 @@ class StreakService:
     @staticmethod
     @transactional(domain="gamification")
     def record_activity(
-        user_id: int,
-        streak_type: StreakType,
-        activity_date: Optional[date] = None
+        user_id: int, streak_type: StreakType, activity_date: Optional[date] = None
     ) -> Tuple[StreakTracker, Dict[str, Any]]:
         """
         Record weekly activity and update streak.
@@ -176,6 +171,7 @@ class StreakService:
         """
         # Skip gamification for admin users
         from models.user.models import User
+
         user = db.session.get(User, user_id)
         if user and user.is_admin:
             logger.debug(f"Skipping streak record for admin user {user_id}")
@@ -185,8 +181,7 @@ class StreakService:
 
         # Get or create streak tracker
         tracker = StreakTracker.query.filter_by(
-            user_id=user_id,
-            streak_type=streak_type
+            user_id=user_id, streak_type=streak_type
         ).first()
 
         if tracker is None:
@@ -196,7 +191,7 @@ class StreakService:
                 current_streak=0,
                 longest_streak=0,
                 freeze_count=0,
-                total_freeze_earned=0  # Explicit init before flush
+                total_freeze_earned=0,  # Explicit init before flush
             )
             db.session.add(tracker)
             db.session.flush()
@@ -229,7 +224,7 @@ class StreakService:
             tracker.last_activity_week,
             tracker.last_activity_year,
             current_week,
-            current_year
+            current_year,
         )
 
         # Case 2: Same week - already counted
@@ -285,12 +280,14 @@ class StreakService:
                 result["longest_streak"] = tracker.longest_streak
 
                 # Emit freeze used event
-                EventBus.publish(StreakFreezeUsedEvent(
-                    user_id=user_id,
-                    streak_type=streak_type.value,
-                    current_streak=tracker.current_streak,
-                    freezes_remaining=tracker.freeze_count
-                ))
+                EventBus.publish(
+                    StreakFreezeUsedEvent(
+                        user_id=user_id,
+                        streak_type=streak_type.value,
+                        current_streak=tracker.current_streak,
+                        freezes_remaining=tracker.freeze_count,
+                    )
+                )
 
                 # Check for milestones (streak still continued)
                 milestone_result = StreakService._check_milestone_rewards(tracker)
@@ -316,12 +313,14 @@ class StreakService:
         result["longest_streak"] = tracker.longest_streak
 
         # Emit streak broken event
-        EventBus.publish(StreakBrokenEvent(
-            user_id=user_id,
-            streak_type=streak_type.value,
-            streak_length=old_streak,
-            no_freeze_available=tracker.freeze_count == 0
-        ))
+        EventBus.publish(
+            StreakBrokenEvent(
+                user_id=user_id,
+                streak_type=streak_type.value,
+                streak_length=old_streak,
+                no_freeze_available=tracker.freeze_count == 0,
+            )
+        )
 
         logger.info(
             f"User {user_id} {streak_type.value} streak broken after "
@@ -355,19 +354,21 @@ class StreakService:
             tracker.milestone_4_reached = True
             freeze_earned = min(
                 FREEZE_MILESTONES_WEEKLY[4]["freezes"],
-                MAX_FREEZE_COUNT - tracker.freeze_count
+                MAX_FREEZE_COUNT - tracker.freeze_count,
             )
             tracker.freeze_count += freeze_earned
             tracker.total_freeze_earned += freeze_earned
             tracker.last_freeze_earned_at = date.today()
 
             # Award XP bonus
-            xp_bonus = ConfigService.get_xp_rate(XPTransactionType.STREAK_BONUS) * 4  # 30 * 4 = 120 XP
+            xp_bonus = (
+                ConfigService.get_xp_rate(XPTransactionType.STREAK_BONUS) * 4
+            )  # 30 * 4 = 120 XP
             LevelService.award_xp(
                 user_id=tracker.user_id,
                 xp_amount=xp_bonus,
                 transaction_type=XPTransactionType.STREAK_BONUS,
-                reason=f"4-week streak milestone ({tracker.streak_type.value})"
+                reason=f"4-week streak milestone ({tracker.streak_type.value})",
             )
 
             result = {
@@ -377,14 +378,16 @@ class StreakService:
             }
 
             # Emit milestone event
-            EventBus.publish(StreakMilestoneEvent(
-                user_id=tracker.user_id,
-                streak_type=tracker.streak_type.value,
-                milestone=4,
-                current_streak=current_streak,
-                freeze_earned=freeze_earned,
-                xp_bonus=xp_bonus
-            ))
+            EventBus.publish(
+                StreakMilestoneEvent(
+                    user_id=tracker.user_id,
+                    streak_type=tracker.streak_type.value,
+                    milestone=4,
+                    current_streak=current_streak,
+                    freeze_earned=freeze_earned,
+                    xp_bonus=xp_bonus,
+                )
+            )
 
             logger.info(
                 f"User {tracker.user_id} reached 4-week milestone, "
@@ -396,18 +399,20 @@ class StreakService:
             tracker.milestone_12_reached = True
             freeze_earned = min(
                 FREEZE_MILESTONES_WEEKLY[12]["freezes"],
-                MAX_FREEZE_COUNT - tracker.freeze_count
+                MAX_FREEZE_COUNT - tracker.freeze_count,
             )
             tracker.freeze_count += freeze_earned
             tracker.total_freeze_earned += freeze_earned
             tracker.last_freeze_earned_at = date.today()
 
-            xp_bonus = ConfigService.get_xp_rate(XPTransactionType.STREAK_BONUS) * 12  # 30 * 12 = 360 XP
+            xp_bonus = (
+                ConfigService.get_xp_rate(XPTransactionType.STREAK_BONUS) * 12
+            )  # 30 * 12 = 360 XP
             LevelService.award_xp(
                 user_id=tracker.user_id,
                 xp_amount=xp_bonus,
                 transaction_type=XPTransactionType.STREAK_BONUS,
-                reason=f"12-week streak milestone ({tracker.streak_type.value})"
+                reason=f"12-week streak milestone ({tracker.streak_type.value})",
             )
 
             result = {
@@ -416,20 +421,22 @@ class StreakService:
                 "xp_bonus": xp_bonus,
             }
 
-            EventBus.publish(StreakMilestoneEvent(
-                user_id=tracker.user_id,
-                streak_type=tracker.streak_type.value,
-                milestone=12,
-                current_streak=current_streak,
-                freeze_earned=freeze_earned,
-                xp_bonus=xp_bonus
-            ))
+            EventBus.publish(
+                StreakMilestoneEvent(
+                    user_id=tracker.user_id,
+                    streak_type=tracker.streak_type.value,
+                    milestone=12,
+                    current_streak=current_streak,
+                    freeze_earned=freeze_earned,
+                    xp_bonus=xp_bonus,
+                )
+            )
 
         # Check recurring 12-week milestones (24, 36, 48, 60, etc.)
         if current_streak > 12 and current_streak % 12 == 0:
             freeze_earned = min(
                 FREEZE_MILESTONES_WEEKLY[12]["freezes"],
-                MAX_FREEZE_COUNT - tracker.freeze_count
+                MAX_FREEZE_COUNT - tracker.freeze_count,
             )
             if freeze_earned > 0:
                 tracker.freeze_count += freeze_earned
@@ -441,7 +448,7 @@ class StreakService:
                 user_id=tracker.user_id,
                 xp_amount=xp_bonus,
                 transaction_type=XPTransactionType.STREAK_BONUS,
-                reason=f"{current_streak}-week streak milestone ({tracker.streak_type.value})"
+                reason=f"{current_streak}-week streak milestone ({tracker.streak_type.value})",
             )
 
             result = {
@@ -450,32 +457,36 @@ class StreakService:
                 "xp_bonus": xp_bonus,
             }
 
-            EventBus.publish(StreakMilestoneEvent(
-                user_id=tracker.user_id,
-                streak_type=tracker.streak_type.value,
-                milestone=current_streak,
-                current_streak=current_streak,
-                freeze_earned=freeze_earned,
-                xp_bonus=xp_bonus
-            ))
+            EventBus.publish(
+                StreakMilestoneEvent(
+                    user_id=tracker.user_id,
+                    streak_type=tracker.streak_type.value,
+                    milestone=current_streak,
+                    current_streak=current_streak,
+                    freeze_earned=freeze_earned,
+                    xp_bonus=xp_bonus,
+                )
+            )
 
         # Check 52-week milestone (one-time)
         if current_streak >= 52 and not tracker.milestone_52_reached:
             tracker.milestone_52_reached = True
             freeze_earned = min(
                 FREEZE_MILESTONES_WEEKLY[52]["freezes"],
-                MAX_FREEZE_COUNT - tracker.freeze_count
+                MAX_FREEZE_COUNT - tracker.freeze_count,
             )
             tracker.freeze_count += freeze_earned
             tracker.total_freeze_earned += freeze_earned
             tracker.last_freeze_earned_at = date.today()
 
-            xp_bonus = ConfigService.get_xp_rate(XPTransactionType.STREAK_BONUS) * 52  # 30 * 52 = 1560 XP
+            xp_bonus = (
+                ConfigService.get_xp_rate(XPTransactionType.STREAK_BONUS) * 52
+            )  # 30 * 52 = 1560 XP
             LevelService.award_xp(
                 user_id=tracker.user_id,
                 xp_amount=xp_bonus,
                 transaction_type=XPTransactionType.STREAK_BONUS,
-                reason=f"52-week streak milestone ({tracker.streak_type.value})"
+                reason=f"52-week streak milestone ({tracker.streak_type.value})",
             )
 
             result = {
@@ -484,14 +495,16 @@ class StreakService:
                 "xp_bonus": xp_bonus,
             }
 
-            EventBus.publish(StreakMilestoneEvent(
-                user_id=tracker.user_id,
-                streak_type=tracker.streak_type.value,
-                milestone=52,
-                current_streak=current_streak,
-                freeze_earned=freeze_earned,
-                xp_bonus=xp_bonus
-            ))
+            EventBus.publish(
+                StreakMilestoneEvent(
+                    user_id=tracker.user_id,
+                    streak_type=tracker.streak_type.value,
+                    milestone=52,
+                    current_streak=current_streak,
+                    freeze_earned=freeze_earned,
+                    xp_bonus=xp_bonus,
+                )
+            )
 
             logger.info(
                 f"User {tracker.user_id} reached 52-week milestone! "
@@ -501,10 +514,7 @@ class StreakService:
         return result
 
     @staticmethod
-    def get_streak_info(
-        user_id: int,
-        streak_type: StreakType
-    ) -> Dict[str, Any]:
+    def get_streak_info(user_id: int, streak_type: StreakType) -> Dict[str, Any]:
         """
         Get streak information for display.
 
@@ -527,8 +537,7 @@ class StreakService:
             }
         """
         tracker = StreakTracker.query.filter_by(
-            user_id=user_id,
-            streak_type=streak_type
+            user_id=user_id, streak_type=streak_type
         ).first()
 
         if tracker is None:
@@ -541,7 +550,7 @@ class StreakService:
                 "is_at_risk": False,
                 "weeks_until_break": 0,
                 "next_milestone": 4,
-                "milestones_reached": []
+                "milestones_reached": [],
             }
 
         current_week, current_year = StreakService.get_current_iso_week()
@@ -553,7 +562,7 @@ class StreakService:
                 tracker.last_activity_week,
                 tracker.last_activity_year,
                 current_week,
-                current_year
+                current_year,
             )
 
         # Determine risk status
@@ -589,7 +598,7 @@ class StreakService:
             "is_at_risk": is_at_risk,
             "weeks_until_break": weeks_until_break,
             "next_milestone": next_milestone,
-            "milestones_reached": milestones_reached
+            "milestones_reached": milestones_reached,
         }
 
     @staticmethod
@@ -614,8 +623,7 @@ class StreakService:
         result = {}
         for streak_type in StreakType:
             result[streak_type.value] = StreakService.get_streak_info(
-                user_id=user_id,
-                streak_type=streak_type
+                user_id=user_id, streak_type=streak_type
             )
         return result
 
@@ -625,7 +633,7 @@ class StreakService:
         user_id: int,
         streak_type: StreakType,
         freeze_count: int = 1,
-        reason: str = "Admin grant"
+        reason: str = "Admin grant",
     ) -> Tuple[StreakTracker, bool]:
         """
         Admin method to manually grant freezes.
@@ -640,8 +648,7 @@ class StreakService:
             Tuple of (StreakTracker, success: bool)
         """
         tracker = StreakTracker.query.filter_by(
-            user_id=user_id,
-            streak_type=streak_type
+            user_id=user_id, streak_type=streak_type
         ).first()
 
         if tracker is None:
@@ -651,7 +658,7 @@ class StreakService:
                 current_streak=0,
                 longest_streak=0,
                 freeze_count=0,
-                total_freeze_earned=0  # Explicit init before flush
+                total_freeze_earned=0,  # Explicit init before flush
             )
             db.session.add(tracker)
             db.session.flush()  # Apply defaults before arithmetic

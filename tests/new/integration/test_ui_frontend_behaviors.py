@@ -115,7 +115,9 @@ class TestUIFrontendBehaviors:
 
         inscription_start = utc_now() - timedelta(hours=1)
         inscription_end = utc_now() + timedelta(hours=1)
-        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        InscriptionService.open_inscriptions(
+            gara.id, inscription_start, inscription_end
+        )
         RoundService.start_first_round(gara.id)
 
         # Step 3: Verify initial UI state - only Round 1 has edit buttons
@@ -220,7 +222,9 @@ class TestUIFrontendBehaviors:
 
         inscription_start = utc_now() - timedelta(hours=1)
         inscription_end = utc_now() + timedelta(hours=1)
-        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        InscriptionService.open_inscriptions(
+            gara.id, inscription_start, inscription_end
+        )
         RoundService.start_first_round(gara.id)
 
         # Step 3: Verify table assignment logic
@@ -320,7 +324,9 @@ class TestUIFrontendBehaviors:
 
         inscription_start = utc_now() - timedelta(hours=1)
         inscription_end = utc_now() + timedelta(hours=1)
-        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        InscriptionService.open_inscriptions(
+            gara.id, inscription_start, inscription_end
+        )
         RoundService.start_first_round(gara.id)
 
         # Step 4: Player accesses dashboard and sees first round match

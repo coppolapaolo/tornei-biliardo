@@ -13,6 +13,7 @@ from flask_babel import gettext as _
 from sqlalchemy.orm import joinedload
 
 from models.base import db
+from models.user.role_enum import UserRole
 from models.campionato.models import Campionato
 from models.user.models import DirectorAssignment
 from models.competition.models import Gara, Inscription
@@ -50,10 +51,12 @@ DASHBOARD_COMPLETED_LIMIT = 2
 # Gare section. Older completed gare live behind /garas archive.
 DASHBOARD_STANDALONE_COMPLETED_LIMIT = 2
 
-_TERMINAL_TOURNAMENT_STATUSES = frozenset({
-    TournamentStatus.COMPLETED.value,
-    TournamentStatus.TERMINATED.value,
-})
+_TERMINAL_TOURNAMENT_STATUSES = frozenset(
+    {
+        TournamentStatus.COMPLETED.value,
+        TournamentStatus.TERMINATED.value,
+    }
+)
 
 
 def _partition_campionato_items(unified_items):
@@ -83,9 +86,8 @@ def _standalone_completed_tail(standalones):
     nulls last), qui ribaltiamo per la sezione "coda recente".
     """
     from datetime import date as _date_cls
-    completed = [
-        g for g in standalones if g.status == GaraStatus.COMPLETED.value
-    ]
+
+    completed = [g for g in standalones if g.status == GaraStatus.COMPLETED.value]
     completed.sort(
         key=lambda g: g.date or _date_cls.min,
         reverse=True,
@@ -210,8 +212,8 @@ class DashboardService:
             .all()
         )
 
-        individual_sections = (
-            DashboardSectionBuilder.build_individual_match_sections(user_id)
+        individual_sections = DashboardSectionBuilder.build_individual_match_sections(
+            user_id
         )
 
         sa_available = standalone_available_for_user(
@@ -366,8 +368,8 @@ class DashboardService:
             .all()
         )
 
-        individual_sections = (
-            DashboardSectionBuilder.build_individual_match_sections(user_id)
+        individual_sections = DashboardSectionBuilder.build_individual_match_sections(
+            user_id
         )
 
         sa_available = standalone_available_for_user(user_id)
@@ -394,7 +396,10 @@ class DashboardService:
             user_id, selected
         )
 
-        all_standalone_garas = standalone_q().all()
+        # Riusa standalones_all (riga ~332): standalone_q() e' deterministica
+        # (filtro/ordine fissi) ed eseguita sulla stessa session nello stesso
+        # request, quindi un secondo .all() restituirebbe dati identici.
+        all_standalone_garas = standalones_all
         unified_items = build_unified_items(
             campionati, all_standalone_garas, user_role="player", user_id=user_id
         )
@@ -459,7 +464,7 @@ class DashboardService:
         )
 
         unified_items = build_unified_items(
-            campionati, standalone_garas, user_role="guest", user_id=None
+            campionati, standalone_garas, user_role=UserRole.GUEST.value, user_id=None
         )
 
         guest_caps = CapabilityVM(

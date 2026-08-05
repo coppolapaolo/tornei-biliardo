@@ -73,7 +73,10 @@ class NotificationFactory:
                 notifications.append(notification)
                 logger.debug(f"Created admin notification for user {admin_id}: {title}")
             except Exception as e:
-                logger.error(f"Failed to create admin notification for user {admin_id}: {e}", exc_info=True)
+                logger.error(
+                    f"Failed to create admin notification for user {admin_id}: {e}",
+                    exc_info=True,
+                )
                 notifications.append(None)
 
         return notifications
@@ -126,17 +129,26 @@ class NotificationFactory:
                 logger.debug(f"Created notification for user {user_id}: {title}")
             except Exception as e:
                 failed_count += 1
-                logger.error(f"Failed to create notification for user {user_id}: {e}", exc_info=True)
+                logger.error(
+                    f"Failed to create notification for user {user_id}: {e}",
+                    exc_info=True,
+                )
                 notifications.append(None)
 
                 if not continue_on_error:
-                    logger.error(f"Stopping bulk notification creation after error for user {user_id}")
+                    logger.error(
+                        f"Stopping bulk notification creation after error for user {user_id}"
+                    )
                     break
 
         if failed_count > 0:
-            logger.warning(f"Bulk notification completed with {failed_count} failures out of {len(user_ids)} users")
+            logger.warning(
+                f"Bulk notification completed with {failed_count} failures out of {len(user_ids)} users"
+            )
         else:
-            logger.info(f"Successfully created notifications for all {len(user_ids)} users")
+            logger.info(
+                f"Successfully created notifications for all {len(user_ids)} users"
+            )
 
         return notifications
 
@@ -170,7 +182,11 @@ class NotificationFactory:
             title="Aggiornamento Gara",
             message=message,
             priority=priority,
-            related_entities={"tournament_id": tournament_id, "tournament_name": tournament_name} if tournament_id else None,
+            related_entities=(
+                {"tournament_id": tournament_id, "tournament_name": tournament_name}
+                if tournament_id
+                else None
+            ),
             action_url=action_url,
             action_text="Visualizza Gara" if action_url else None,
         )
@@ -219,7 +235,9 @@ class NotificationFactory:
         title = title_map.get(match_type, "Aggiornamento Partita")
 
         # Build message
-        players_text = " vs ".join(player_names) if len(player_names) > 1 else player_names[0]
+        players_text = (
+            " vs ".join(player_names) if len(player_names) > 1 else player_names[0]
+        )
         location_text = f" presso {location_name}" if location_name else ""
         time_text = f" il {scheduled_time}" if scheduled_time else ""
 
@@ -255,7 +273,10 @@ class NotificationFactory:
                 action_text=action_text,
             )
         except Exception as e:
-            logger.error(f"Failed to create match notification for user {user_id}: {e}", exc_info=True)
+            logger.error(
+                f"Failed to create match notification for user {user_id}: {e}",
+                exc_info=True,
+            )
             return None
 
     @staticmethod
@@ -295,7 +316,10 @@ class NotificationFactory:
                 related_entities=entities,
             )
         except Exception as e:
-            logger.error(f"Failed to create account update notification for user {user_id}: {e}", exc_info=True)
+            logger.error(
+                f"Failed to create account update notification for user {user_id}: {e}",
+                exc_info=True,
+            )
             return None
 
     @staticmethod
@@ -375,12 +399,14 @@ class NotificationFactory:
         except Exception as e:
             logger.error(
                 f"Failed to create gara inscription notification for user {user_id}: {e}",
-                exc_info=True
+                exc_info=True,
             )
             return None
 
     @staticmethod
-    def get_notification_stats(notifications: List[Optional[Notification]]) -> Dict[str, Union[int, float]]:
+    def get_notification_stats(
+        notifications: List[Optional[Notification]],
+    ) -> Dict[str, Union[int, float]]:
         """
         Get statistics from a list of notification creation results.
 
@@ -397,5 +423,7 @@ class NotificationFactory:
             "total": len(notifications),
             "successful": successful,
             "failed": failed,
-            "success_rate": (successful / len(notifications) * 100) if notifications else 0,
+            "success_rate": (
+                (successful / len(notifications) * 100) if notifications else 0
+            ),
         }

@@ -94,14 +94,44 @@ class StateService:
         from models.match.models import Match
         from models.status_enum import MatchStatus
 
-        pending_matches = Match.query.filter_by(gara_id=gara.id).filter(
-            Match.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value])  # type: ignore[attr-defined]
-        ).first()
+        pending_matches = (
+            Match.query.filter_by(gara_id=gara.id)
+            .filter(
+                Match.status.in_(  # type: ignore[attr-defined]
+                    [MatchStatus.PENDING.value, MatchStatus.PLAYING.value]
+                )
+            )
+            .first()
+        )
 
         if pending_matches:
             raise InvalidTransitionError("Match ancora in corso")
 
         gara.status = GaraStatus.AWAITING_SSR.value
+        db.session.add(gara)
+        return gara
+
+    @staticmethod
+    @transactional(domain="competition")
+    def cancel_ssr(gara: Gara) -> Gara:
+        """awaiting_ssr → playing
+
+        Contropartita di `start_ssr`: senza di essa lo spareggio era un vicolo
+        cieco, perché durante `awaiting_ssr` il reset dei match è bloccato
+        (ADR-026) e l'unica uscita era terminare la gara. Un punteggio
+        sbagliato scoperto in fase di spareggio non era più correggibile.
+
+        I punteggi SSR vengono azzerati: tornando a `playing` i match sono di
+        nuovo modificabili, quindi la classifica — e chi è a pari merito — può
+        cambiare. Riavviare l'SSR ricalcola i gruppi da capo.
+        """
+        StateService._require(gara, GaraStatus.AWAITING_SSR)
+
+        from models.competition.spareggio_service import SpareggioService
+
+        SpareggioService.clear_ssr_scores(gara.id)
+
+        gara.status = GaraStatus.PLAYING.value
         db.session.add(gara)
         return gara
 
@@ -120,15 +150,23 @@ class StateService:
     @transactional(domain="competition")
     def complete(gara: Gara) -> Gara:
         """playing|awaiting_ssr → completed"""
-        StateService._require_one_of(gara, [GaraStatus.PLAYING, GaraStatus.AWAITING_SSR])
+        StateService._require_one_of(
+            gara, [GaraStatus.PLAYING, GaraStatus.AWAITING_SSR]
+        )
 
         # Check for pending or in-progress matches
         from models.match.models import Match
         from models.status_enum import MatchStatus
 
-        pending_matches = Match.query.filter_by(gara_id=gara.id).filter(
-            Match.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value])  # type: ignore[attr-defined]
-        ).first()
+        pending_matches = (
+            Match.query.filter_by(gara_id=gara.id)
+            .filter(
+                Match.status.in_(  # type: ignore[attr-defined]
+                    [MatchStatus.PENDING.value, MatchStatus.PLAYING.value]
+                )
+            )
+            .first()
+        )
 
         if pending_matches:
             raise InvalidTransitionError("Match ancora in corso")
@@ -141,17 +179,29 @@ class StateService:
         from models.events.base import EventBus
         from models.classification.models import RoundClassification
         from models.competition.models import Inscription
+        from models.competition.spareggio_service import SpareggioService
+
+        # Posizioni finali con i parimerito a pari posizione. Fuori dallo
+        # spareggio questo passaggio non avveniva: `finalize_classification`
+        # è invocata solo dopo i punteggi SSR, e un parimerito fuori dalle
+        # posizioni contese non genera spareggio (issue #63), quindi restava
+        # con le posizioni progressive del calcolo per turno (issue #67).
+        # `apply_final_positions` non è `@transactional`: siamo già dentro la
+        # transazione di questo metodo.
+        SpareggioService.apply_final_positions(gara.id)
 
         # Get winner from final round classification
         winner_id = None
         winner_name = None
         final_standings = None
 
-        final_round_class = (
-            RoundClassification.query
-            .filter_by(gara_id=gara.id, round_number=gara.current_round)
-            .order_by(RoundClassification.position.asc())
-            .all()
+        # Stesso turno su cui `apply_final_positions` ha appena scritto: con la
+        # strategia Random i turni sono creati tutti all'avvio e
+        # `gara.current_round` può restare indietro, quindi leggere da lì
+        # significherebbe prendere vincitore e standings da un turno
+        # intermedio. L'ordinamento tiene conto dei parimerito (#67).
+        final_round_class = RoundClassification.ordered_for_display(
+            gara.id, SpareggioService.effective_final_round(gara)
         )
 
         if final_round_class:
@@ -161,6 +211,24 @@ class StateService:
             if winner_classification.user:
                 winner_name = winner_classification.user.username
 
+            # Non designare un vincitore "torneo" se il 1° posto è in uno
+            # spareggio SSR ancora irrisolto. Le route gara chiamano
+            # detect_tiebreakers prima di complete(); il path campionato
+            # (terminate_campionato → complete) bypassa quel gate, e premieremmo
+            # con XP/achievement "vittoria torneo" un vincitore non ancora
+            # determinato. detect_tiebreakers ritorna solo i gruppi irrisolti.
+            if getattr(gara, "tiebreaker_enabled", False) and winner_id is not None:
+                from models.competition.spareggio_service import SpareggioService
+
+                unresolved = SpareggioService.detect_tiebreakers(gara.id)
+                winner_in_unresolved_tie = any(
+                    any(p.get("user_id") == winner_id for p in grp["players"])
+                    for grp in unresolved
+                )
+                if winner_in_unresolved_tie:
+                    winner_id = None
+                    winner_name = None
+
             # Build final standings
             final_standings = [
                 {
@@ -168,16 +236,14 @@ class StateService:
                     "user_id": rc.user_id,
                     "username": rc.user.username if rc.user else None,
                     "matches_won": rc.matches_won,
-                    "rack_difference": rc.rack_difference
+                    "rack_difference": rc.rack_difference,
                 }
                 for rc in final_round_class
             ]
 
         # Count participants
         total_participants = Inscription.query.filter_by(
-            gara_id=gara.id,
-            is_withdrawn=False,
-            is_waitlist=False
+            gara_id=gara.id, is_withdrawn=False, is_waitlist=False
         ).count()
 
         gara_name = gara.name or f"Gara {gara.number}"
@@ -189,7 +255,7 @@ class StateService:
             winner_name=winner_name,
             final_standings=final_standings,
             total_participants=total_participants,
-            total_rounds=gara.current_round
+            total_rounds=gara.current_round,
         )
         EventBus.publish(event)
 

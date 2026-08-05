@@ -74,8 +74,10 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
         if rows:
             print("\n📊 Sample waitlist inscriptions:")
             for row in rows:
-                print(f"   Inscription {row[0]} (user={row[1]}, gara={row[2]}): "
-                      f"reason={row[4] or 'NULL'}")
+                print(
+                    f"   Inscription {row[0]} (user={row[1]}, gara={row[2]}): "
+                    f"reason={row[4] or 'NULL'}"
+                )
         else:
             print("\n📊 No waitlist inscriptions found")
 

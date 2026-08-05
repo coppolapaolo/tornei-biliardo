@@ -40,7 +40,7 @@ class TestUserProfileServiceTDD:
                 username="test_player",
                 email="test@example.com",
                 password="secure123",
-                role="player"
+                role="player",
             )
 
             # Assert: user was created properly
@@ -76,7 +76,7 @@ class TestUserProfileServiceTDD:
                 email="phone@example.com",
                 password="secure123",
                 role="player",
-                phone="+39 123 456 7890"
+                phone="+39 123 456 7890",
             )
 
             # Assert: phone was stored properly
@@ -101,19 +101,27 @@ class TestUserProfileServiceTDD:
 
             # Test missing username
             with pytest.raises(ValueError, match="Username is required"):
-                UserProfileService.create_user("", "test@example.com", "secure123", "player")
+                UserProfileService.create_user(
+                    "", "test@example.com", "secure123", "player"
+                )
 
             # Test missing email
             with pytest.raises(ValueError, match="Email is required"):
                 UserProfileService.create_user("test", "", "secure123", "player")
 
             # Test short password
-            with pytest.raises(ValueError, match="Password must be at least 6 characters"):
-                UserProfileService.create_user("test", "test@example.com", "123", "player")
+            with pytest.raises(
+                ValueError, match="Password must be at least 6 characters"
+            ):
+                UserProfileService.create_user(
+                    "test", "test@example.com", "123", "player"
+                )
 
             # Test invalid role
             with pytest.raises(ValueError, match="Invalid role"):
-                UserProfileService.create_user("test", "test@example.com", "secure123", "invalid")
+                UserProfileService.create_user(
+                    "test", "test@example.com", "secure123", "invalid"
+                )
 
     def test_create_user_prevents_duplicate_email(self, app, db_session):
         """
@@ -131,16 +139,18 @@ class TestUserProfileServiceTDD:
                 username="user1",
                 email="test@example.com",
                 password="secure123",
-                role="player"
+                role="player",
             )
 
             # Attempt duplicate email (case insensitive)
-            with pytest.raises(ValueError, match="Email 'TEST@EXAMPLE.COM' already exists"):
+            with pytest.raises(
+                ValueError, match="Email 'TEST@EXAMPLE.COM' already exists"
+            ):
                 UserProfileService.create_user(
                     username="user2",
                     email="TEST@EXAMPLE.COM",
                     password="secure123",
-                    role="player"
+                    role="player",
                 )
 
             # Cleanup
@@ -163,7 +173,7 @@ class TestUserProfileServiceTDD:
                 username="admin1",
                 email="admin1@example.com",
                 password="secure123",
-                role="admin"
+                role="admin",
             )
 
             # Attempt to create second admin
@@ -172,7 +182,7 @@ class TestUserProfileServiceTDD:
                     username="admin2",
                     email="admin2@example.com",
                     password="secure123",
-                    role="admin"
+                    role="admin",
                 )
 
             # Cleanup
@@ -197,7 +207,7 @@ class TestUserProfileServiceTDD:
                 username="update_test",
                 email="original@example.com",
                 password="secure123",
-                role="player"
+                role="player",
             )
 
             # Act: update user fields
@@ -205,7 +215,7 @@ class TestUserProfileServiceTDD:
                 user_id=user.id,
                 username="updated_username",
                 email="updated@example.com",
-                phone="+39 987 654 3210"
+                phone="+39 987 654 3210",
             )
 
             # Assert: fields were updated
@@ -235,10 +245,16 @@ class TestUserProfileServiceTDD:
 
             # Create two users
             user1 = UserProfileService.create_user(
-                username="user1", email="user1@example.com", password="secure123", role="player"
+                username="user1",
+                email="user1@example.com",
+                password="secure123",
+                role="player",
             )
             user2 = UserProfileService.create_user(
-                username="user2", email="user2@example.com", password="secure123", role="player"
+                username="user2",
+                email="user2@example.com",
+                password="secure123",
+                role="player",
             )
 
             # Attempt to update user2 to user1's username
@@ -266,12 +282,14 @@ class TestUserProfileServiceTDD:
                 username="test_admin",
                 email="admin@example.com",
                 password="secure123",
-                role="admin"
+                role="admin",
             )
 
             # Attempt to update admin user
             with pytest.raises(ValueError, match="Cannot modify administrator user"):
-                UserProfileService.update_user(user_id=admin.id, username="modified_admin")
+                UserProfileService.update_user(
+                    user_id=admin.id, username="modified_admin"
+                )
 
             # Cleanup
             db.session.delete(admin)
@@ -309,14 +327,12 @@ class TestUserProfileServiceTDD:
                 username="password_test",
                 email="password@example.com",
                 password="oldpass123",
-                role="player"
+                role="player",
             )
 
             # Act: change password
             result = UserProfileService.change_password(
-                user_id=user.id,
-                old_password="oldpass123",
-                new_password="newpass456"
+                user_id=user.id, old_password="oldpass123", new_password="newpass456"
             )
 
             # Assert: password was changed
@@ -347,14 +363,12 @@ class TestUserProfileServiceTDD:
                 username="password_validate",
                 email="validate@example.com",
                 password="correctpass",
-                role="player"
+                role="player",
             )
 
             # Act: attempt change with wrong old password
             result = UserProfileService.change_password(
-                user_id=user.id,
-                old_password="wrongpass",
-                new_password="newpass456"
+                user_id=user.id, old_password="wrongpass", new_password="newpass456"
             )
 
             # Assert: password change failed
@@ -383,15 +397,15 @@ class TestUserProfileServiceTDD:
                 username="password_length",
                 email="length@example.com",
                 password="oldpass123",
-                role="player"
+                role="player",
             )
 
             # Act & Assert: attempt change with short password
-            with pytest.raises(ValueError, match="New password must be at least 6 characters"):
+            with pytest.raises(
+                ValueError, match="New password must be at least 6 characters"
+            ):
                 UserProfileService.change_password(
-                    user_id=user.id,
-                    old_password="oldpass123",
-                    new_password="123"
+                    user_id=user.id, old_password="oldpass123", new_password="123"
                 )
 
             # Cleanup
@@ -413,15 +427,17 @@ class TestUserProfileServiceTDD:
                 username="admin_password",
                 email="adminpass@example.com",
                 password="adminpass123",
-                role="admin"
+                role="admin",
             )
 
             # Attempt to change admin password
-            with pytest.raises(ValueError, match="Cannot change password for administrator user"):
+            with pytest.raises(
+                ValueError, match="Cannot change password for administrator user"
+            ):
                 UserProfileService.change_password(
                     user_id=admin.id,
                     old_password="adminpass123",
-                    new_password="newadminpass"
+                    new_password="newadminpass",
                 )
 
             # Cleanup
@@ -445,7 +461,7 @@ class TestUserProfileServiceTDD:
                 username="delete_test",
                 email="delete@example.com",
                 password="secure123",
-                role="player"
+                role="player",
             )
 
             user_id = user.id
@@ -478,7 +494,7 @@ class TestUserProfileServiceTDD:
                 username="admin_delete",
                 email="admindelete@example.com",
                 password="secure123",
-                role="admin"
+                role="admin",
             )
 
             # Attempt to delete admin user
@@ -506,7 +522,7 @@ class TestUserProfileServiceTDD:
                 username="email_find",
                 email="findemail@example.com",
                 password="secure123",
-                role="player"
+                role="player",
             )
 
             # Test finding existing user by email
@@ -543,10 +559,16 @@ class TestUserProfileServiceTDD:
 
             # Create test users
             user1 = UserProfileService.create_user(
-                username="all_user1", email="all1@example.com", password="secure123", role="player"
+                username="all_user1",
+                email="all1@example.com",
+                password="secure123",
+                role="player",
             )
             user2 = UserProfileService.create_user(
-                username="all_user2", email="all2@example.com", password="secure123", role="director"
+                username="all_user2",
+                email="all2@example.com",
+                password="secure123",
+                role="director",
             )
 
             # Test getting all users
@@ -575,13 +597,22 @@ class TestUserProfileServiceTDD:
 
             # Create users with different roles
             player1 = UserProfileService.create_user(
-                username="role_player1", email="rp1@example.com", password="secure123", role="player"
+                username="role_player1",
+                email="rp1@example.com",
+                password="secure123",
+                role="player",
             )
             player2 = UserProfileService.create_user(
-                username="role_player2", email="rp2@example.com", password="secure123", role="player"
+                username="role_player2",
+                email="rp2@example.com",
+                password="secure123",
+                role="player",
             )
             director = UserProfileService.create_user(
-                username="role_director", email="rd@example.com", password="secure123", role="director"
+                username="role_director",
+                email="rd@example.com",
+                password="secure123",
+                role="director",
             )
 
             # Test getting users by role
@@ -622,7 +653,7 @@ class TestUserProfileServiceTDD:
                 username="detail_user",
                 email="detail@example.com",
                 password="secure123",
-                role="player"
+                role="player",
             )
 
             # Act: get user detail data
@@ -681,7 +712,7 @@ class TestUserProfileServiceTDD:
                 username="transaction_test",
                 email="transaction@example.com",
                 password="secure123",
-                role="player"
+                role="player",
             )
 
             # Should be immediately available (transaction committed)
@@ -711,7 +742,7 @@ class TestUserProfileServiceTDD:
                     username="",  # Invalid username should fail
                     email="test@example.com",
                     password="secure123",
-                    role="player"
+                    role="player",
                 )
 
             # Verify no user was created with that email

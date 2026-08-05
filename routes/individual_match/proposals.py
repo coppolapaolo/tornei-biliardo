@@ -8,6 +8,9 @@ from flask import (
     flash,
     jsonify,
 )
+import logging
+
+from flask_babel import gettext as _
 from flask_login import current_user
 from datetime import datetime, timedelta
 
@@ -18,6 +21,8 @@ from utils.route_helpers import safe_json_error
 
 from . import individual_match_bp
 
+logger = logging.getLogger(__name__)
+
 
 @individual_match_bp.route("/proposals")
 @RoleRequirement.player_or_director_required
@@ -27,7 +32,8 @@ def proposal_list():
         proposals_data = MatchProposalService.get_user_proposals(current_user.id)
         return render_template("individual_match/proposals.html", **proposals_data)
     except Exception as e:
-        flash(f"Error loading proposals: {str(e)}", "danger")
+        logger.error("Error loading proposals: %s", e, exc_info=True)
+        flash(_("Errore interno del server"), "danger")
         return redirect(url_for("individual_match.dashboard"))
 
 
@@ -47,14 +53,15 @@ def proposal_detail(proposal_id):
         )
 
         if not has_access:
-            flash("Access denied to this proposal.", "danger")
+            flash(_("Accesso negato a questa proposta."), "danger")
             return redirect(url_for("individual_match.proposal_list"))
 
         return render_template(
             "individual_match/proposal_detail.html", proposal=proposal
         )
     except Exception as e:
-        flash(f"Error loading proposal: {str(e)}", "danger")
+        logger.error("Error loading proposal: %s", e, exc_info=True)
+        flash(_("Errore interno del server"), "danger")
         return redirect(url_for("individual_match.proposal_list"))
 
 
@@ -160,6 +167,8 @@ def create_proposal():
                 "billiard_hall_id": request.args.get("billiard_hall_id", ""),
                 "location": request.args.get("location", ""),
                 "discipline": request.args.get("discipline", "palla_8"),
+                "match_format": request.args.get("match_format", "single"),
+                "set_distance": request.args.get("set_distance", "5"),
                 "distance": request.args.get("distance", "5"),
                 "is_race_to": request.args.get("is_race_to", "true"),
                 "break_rule": request.args.get("break_rule", "alternate"),
@@ -180,10 +189,12 @@ def create_proposal():
     try:
         data = request.get_json() if request.is_json else request.form
 
-        # Parse scheduled time
-        scheduled_at = datetime.fromisoformat(
-            data["scheduled_at"].replace("Z", "+00:00")
-        )
+        # Parse scheduled time. data.get + guard: l'indicizzazione diretta
+        # sollevava KeyError (non coperto da except ValueError) → 500.
+        scheduled_at_str = data.get("scheduled_at")
+        if not scheduled_at_str:
+            raise ValueError("Campo scheduled_at mancante")
+        scheduled_at = datetime.fromisoformat(scheduled_at_str.replace("Z", "+00:00"))
 
         # Calculate expiration (default 1 hour before match)
         expires_hours = int(data.get("expires_hours", 1))
@@ -264,7 +275,7 @@ def create_proposal():
                 }
             )
         else:
-            flash("Match proposal created successfully!", "success")
+            flash(_("Proposta di match creata con successo!"), "success")
             return redirect(
                 url_for("individual_match.proposal_detail", proposal_id=proposal.id)
             )
@@ -296,7 +307,7 @@ def accept_proposal(proposal_id):
                 }
             )
         else:
-            flash("Proposal accepted successfully!", "success")
+            flash(_("Proposta accettata con successo!"), "success")
             return redirect(
                 url_for("individual_match.match_detail", match_id=individual_match.id)
             )
@@ -324,7 +335,7 @@ def cancel_proposal(proposal_id):
                 {"success": True, "message": "Proposal cancelled successfully"}
             )
         else:
-            flash("Proposal cancelled successfully!", "success")
+            flash(_("Proposta annullata con successo!"), "success")
             return redirect(url_for("individual_match.proposal_list"))
 
     except ValueError as e:
@@ -351,14 +362,14 @@ def decline_proposal(proposal_id):
         if request.is_json:
             return jsonify({"success": True, "message": "Proposta rifiutata"})
         else:
-            flash("Proposta rifiutata.", "info")
+            flash(_("Proposta rifiutata."), "info")
             return redirect(url_for("individual_match.proposal_list"))
 
     except Exception as e:
         if request.is_json:
             return safe_json_error(e, "declining proposal")
         else:
-            flash("Errore interno del server", "danger")
+            flash(_("Errore interno del server"), "danger")
             return redirect(
                 url_for("individual_match.proposal_detail", proposal_id=proposal_id)
             )

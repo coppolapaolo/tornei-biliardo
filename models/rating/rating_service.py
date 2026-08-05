@@ -89,6 +89,7 @@ class RatingService:
             new_rating=rating_value,
             verified=False,
             external_id=external_id,
+            confidence=confidence,
         )
 
     @staticmethod
@@ -165,11 +166,7 @@ class RatingService:
                     "min_rating": min(values),
                     "max_rating": max(values),
                     "recent_updates": len(
-                        [
-                            r
-                            for r in ratings
-                            if (utc_now() - r.last_updated).days <= 30
-                        ]
+                        [r for r in ratings if (utc_now() - r.last_updated).days <= 30]
                     ),
                 }
             else:
@@ -208,7 +205,7 @@ class RatingService:
         for system in RatingSystem:
             top_players = (
                 PlayerRating.query.filter_by(rating_system=system, verified=True)
-                .order_by(PlayerRating.rating_value.desc())  # type: ignore[attr-defined]
+                .order_by(PlayerRating.rating_value.desc())  # type: ignore[attr-defined] # noqa: E501
                 .limit(20)
                 .all()
             )
@@ -284,6 +281,7 @@ class RatingService:
         verified: bool = False,
         verified_by_id: Optional[int] = None,
         external_id: Optional[str] = None,
+        confidence: Optional[float] = None,
     ) -> PlayerRating:
         """Update or create a player's rating."""
 
@@ -296,6 +294,8 @@ class RatingService:
                 rating.verified_by_id = verified_by_id
             if external_id:
                 rating.external_id = external_id
+            if confidence is not None:
+                rating.confidence = confidence
         else:
             rating = PlayerRating(
                 user_id=user_id,
@@ -304,6 +304,7 @@ class RatingService:
                 verified=verified,
                 verified_by_id=verified_by_id,
                 external_id=external_id,
+                confidence=confidence,
             )
             db.session.add(rating)
 

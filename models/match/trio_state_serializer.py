@@ -59,7 +59,9 @@ class TrioStateSerializer:
                 "racks_per_round": config.racks_per_round,
                 "total_racks_played": trio.total_racks_played,
                 "total_racks_needed": config.total_played_racks,
-                "next_rack": next_rack if next_rack <= config.total_played_racks else None,
+                "next_rack": (
+                    next_rack if next_rack <= config.total_played_racks else None
+                ),
             },
             "config": {
                 "distance": config.distance,

@@ -41,8 +41,8 @@ class MatchValidationService:
         if not match:
             raise ValueError(f"Match {match_id} non trovato")
 
-        # Check match is not already completed
-        if match.status in [MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value]:
+        # Check match is not already completed (predicato typo-safe, CLAUDE.md)
+        if MatchStatus.is_finished(match.status):
             raise ValueError("Il match è già stato completato")
 
         # Check distance is reached (works for both 1v1 and trio)
@@ -74,9 +74,7 @@ class MatchValidationService:
 
             from .table_assignment_service import TableAssignmentService
 
-            waiting_match = TableAssignmentService.release_and_reassign_table(
-                match_id
-            )
+            waiting_match = TableAssignmentService.release_and_reassign_table(match_id)
 
             if waiting_match and waiting_match.status != MatchStatus.PLAYING.value:
                 try:

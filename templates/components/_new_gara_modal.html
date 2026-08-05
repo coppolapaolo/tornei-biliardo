@@ -282,6 +282,17 @@
                         </div>
 
                         <hr class="my-3">
+                        <div class="mb-3">
+                            <label for="create_has_handicap" class="form-label">{{ _("Gioco con handicap") }}</label>
+                            <select class="form-select" id="create_has_handicap" name="has_handicap">
+                                <option value="" selected>{{ _("Eredita dal campionato") }} ({{ _("Sì") if campionato and campionato.has_handicap else _("No") }})</option>
+                                <option value="true">{{ _("Sì") }}</option>
+                                <option value="false">{{ _("No") }}</option>
+                            </select>
+                            <small class="text-muted">{{ _("I match con handicap non aggiornano i rating (Elo/Fargo).") }}</small>
+                        </div>
+
+                        <hr class="my-3">
                         <h6 class="text-primary mb-3"><i class="fas fa-balance-scale"></i> Spareggio (SSR)</h6>
                         <div class="row">
                             <div class="col-md-6">

@@ -51,7 +51,9 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
             WHERE type='table' AND name='user_privacy_setting'
         """)
         if not cursor.fetchone():
-            print("   Table 'user_privacy_setting' doesn't exist yet - skipping migration")
+            print(
+                "   Table 'user_privacy_setting' doesn't exist yet - skipping migration"
+            )
             return
 
         # 1. Create new table with correct defaults (0 = False)
@@ -92,7 +94,9 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
 
         # 4. Rename new table
         print("   Renaming new table...")
-        cursor.execute("ALTER TABLE user_privacy_setting_new RENAME TO user_privacy_setting")
+        cursor.execute(
+            "ALTER TABLE user_privacy_setting_new RENAME TO user_privacy_setting"
+        )
 
         # 5. Recreate index
         print("   Recreating index...")
@@ -171,7 +175,9 @@ def downgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
         """)
 
         cursor.execute("DROP TABLE user_privacy_setting")
-        cursor.execute("ALTER TABLE user_privacy_setting_old RENAME TO user_privacy_setting")
+        cursor.execute(
+            "ALTER TABLE user_privacy_setting_old RENAME TO user_privacy_setting"
+        )
         cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_privacy_user_id
             ON user_privacy_setting(user_id)

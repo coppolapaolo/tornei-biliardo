@@ -24,7 +24,7 @@ class GaraStatusResolver:
             gara: A Gara instance (or duck-typed object with status, matches, etc.)
 
         Returns:
-            The resolved status string (may be a GaraStatus or ProvaDerivedStatus value).
+            The resolved status string (GaraStatus or ProvaDerivedStatus value).
         """
         status = getattr(gara, "status", None)
 
@@ -45,17 +45,19 @@ class GaraStatusResolver:
         finished_statuses = [MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value]
 
         # Check if ALL matches across ALL rounds are completed
-        all_matches_completed = all(
-            m.status in finished_statuses for m in matches_list
-        )
+        all_matches_completed = all(m.status in finished_statuses for m in matches_list)
         rounds_with_matches = set(
             m.round_number for m in matches_list if hasattr(m, "round_number")
         )
         rounds_count = getattr(gara, "rounds_count", 0) or 0
         all_rounds_have_matches = (
-            len(rounds_with_matches) == rounds_count
-            and max(rounds_with_matches) == rounds_count
-        ) if rounds_with_matches else False
+            (
+                len(rounds_with_matches) == rounds_count
+                and max(rounds_with_matches) == rounds_count
+            )
+            if rounds_with_matches
+            else False
+        )
 
         if all_matches_completed and all_rounds_have_matches:
             return ProvaDerivedStatus.TOURNAMENT_COMPLETED.value
@@ -83,8 +85,12 @@ class GaraStatusResolver:
     @staticmethod
     def _resolve_inscription(gara: Any) -> str:
         """Resolve status for a gara in INSCRIPTION state."""
+        now = utc_now()
+        inscription_start = getattr(gara, "inscription_start", None)
+        if inscription_start and now < inscription_start:
+            return ProvaDerivedStatus.INSCRIPTION_NOT_YET_OPEN.value
         inscription_end = getattr(gara, "inscription_end", None)
-        if inscription_end and utc_now() > inscription_end:
+        if inscription_end and now > inscription_end:
             return ProvaDerivedStatus.INSCRIPTION_CLOSED.value
         return GaraStatus.INSCRIPTION.value
 
@@ -93,6 +99,13 @@ class GaraStatusResolver:
 STATUS_BADGE_MAP: dict[str, dict[str, str]] = {
     GaraStatus.SETUP.value: {"class": "bg-warning", "text": "Setup"},
     GaraStatus.INSCRIPTION.value: {"class": "bg-info", "text": "Iscrizioni Aperte"},
+    # Stessa etichetta usata da StatusPresenter.gara: le due mappe coprono
+    # punti diversi della UI e mostrare due nomi per lo stesso stato confonde
+    # (issue #65).
+    ProvaDerivedStatus.INSCRIPTION_NOT_YET_OPEN.value: {
+        "class": "bg-secondary",
+        "text": "Iscrizioni Programmate",
+    },
     ProvaDerivedStatus.INSCRIPTION_CLOSED.value: {
         "class": "bg-secondary",
         "text": "Iscrizioni Chiuse",

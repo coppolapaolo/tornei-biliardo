@@ -4,9 +4,9 @@
 {% if user_can_manage %}
 {{ _('Gestione Gara %(id)s - Admin', id=gara.number) }}
 {% elif user_inscription %}
-{{ gara.name or _('Gara %(id)s', id=gara.number) }} - {{ _('Dettagli') }}
+{{ gara.display_name }} - {{ _('Dettagli') }}
 {% else %}
-{{ gara.name or _('Gara %(id)s', id=gara.number) }} - {{ _('Dettaglio Pubblico') }}
+{{ gara.display_name }} - {{ _('Dettaglio Pubblico') }}
 {% endif %}
 {% endblock %}
 
@@ -29,6 +29,13 @@
 {# Phase flags are pre-computed in the route handler (detail.py) and passed as template variables:
    is_ssr_phase, show_ssr_section, is_gara_ending, has_scores,
    ssr_needs_input, ssr_ready_to_terminate #}
+
+{# Mobile "azionabile prima" (rilievo test manuale 2026-06-10): in fase di
+   gioco l'azionabile sono le partite, non Gestione/Direttori. Su mobile le
+   sezioni vengono riordinate con flex order-* (Partite -> Turni -> Gestione
+   collassata -> Direttori); il desktop resta invariato via order-md-*. #}
+{% set playing_admin = user_can_manage and gara.status == GaraStatus.PLAYING.value
+   and not is_ssr_phase and not is_gara_ending %}
 
 {# ============================================================== #}
 {# MOBILE SSR LAYOUT - Phase A: Unresolved tiebreakers #}
@@ -83,6 +90,28 @@
 </div>
 {% endif %}
 
+{# ============================================================== #}
+{# MOBILE - Strategie sequenziali (Amalfi) a turno finito #}
+{# L'azionabile e' avviare il turno successivo / lo spareggio SSR / #}
+{# terminare: Gestione va in cima e gia' aperta (niente collapse). #}
+{# La copia desktop resta nella sidebar; il collapse mobile piu' in #}
+{# basso viene soppresso, quindi su mobile la card e' una sola. #}
+{# ============================================================== #}
+{% if round_action_ready %}
+<div class="d-md-none mb-3" id="sectionGestioneMobileAperta">
+  <div class="card">
+    <div class="card-header py-2 d-flex justify-content-between align-items-center">
+      <h5 class="mb-0"><i class="fas fa-cog"></i> {{ _('Gestione') }}</h5>
+      {{ status_badge(gara, 'gara') }}
+    </div>
+    {# headerless: titolo e status badge sono gia' nell'header qui sopra #}
+    {% with management_headerless = True %}
+    {% include "components/_gara_management.html" %}
+    {% endwith %}
+  </div>
+</div>
+{% endif %}
+
 {# Row principale: Sidebar + Info (ordine invertito su mobile) #}
 <div class="row mb-4">
   {# MOBILE: Sidebar FIRST (order-1), Info HIDDEN (moved to bottom) #}
@@ -133,6 +162,12 @@
     <div class="d-none d-md-block">
       {% include "components/_gara_management.html" %}
     </div>
+    {# FASE DI GIOCO: su mobile la Gestione e' collassata dopo le partite
+       (sectionGestioneMobile), qui resta la copia desktop #}
+    {% elif playing_admin %}
+    <div class="d-none d-md-block">
+      {% include "components/_gara_management.html" %}
+    </div>
     {% else %}
     {% include "components/_gara_management.html" %}
     {% endif %}
@@ -146,11 +181,14 @@
   </div>
 </div>
 
+{# Wrapper flex: in fase di gioco le sezioni sotto vengono riordinate su
+   mobile con le classi order-* (vedi playing_admin in alto) #}
+<div class="{% if playing_admin %}d-flex flex-column{% endif %}">
 {# Sezioni Admin/Director (solo se può gestire) - DESKTOP or non-SSR mobile #}
 {% if user_can_manage %}
 {# Directors: on desktop always here, on mobile SSR phase moved to bottom #}
 {% if not is_ssr_phase %}
-<div class="row mb-4">
+<div class="row mb-4{% if playing_admin %} order-4 order-md-1{% endif %}" id="sectionDirettori">
   <div class="col-12">
     {% include "components/_gara_directors.html" %}
   </div>
@@ -164,16 +202,54 @@
 </div>
 {% endif %}
 
-<!-- Gestione Turni Section -->
-<div class="row mb-4">
+{# Tavoli della gara: editabile tra apertura iscrizioni e avvio,
+   sola lettura durante il gioco (il componente gestisce gli stati) #}
+{% if gara.status in [GaraStatus.INSCRIPTION.value, GaraStatus.PLAYING.value] %}
+<div class="row mb-4{% if playing_admin %} order-5 order-md-1{% endif %}" id="sectionTavoli">
   <div class="col-12">
-    {% include "components/_round_management.html" %}
+    {% include "components/_gara_tables_config.html" %}
   </div>
 </div>
 {% endif %}
 
+<!-- Gestione Turni Section -->
+<div class="row mb-4{% if playing_admin %} order-2 order-md-2{% endif %}" id="sectionTurni">
+  <div class="col-12">
+    {% include "components/_round_management.html" %}
+  </div>
+</div>
+
+{# MOBILE (fase di gioco): Gestione collassata dopo l'azionabile. La copia
+   desktop resta nella sidebar in alto (d-none d-md-block); _gara_management
+   non contiene id/script, quindi la doppia inclusione e' sicura.
+   A turno finito (round_action_ready) Gestione e' invece gia' in cima e
+   aperta: qui non va ripetuta, altrimenti su mobile comparirebbe due volte. #}
+{% if playing_admin and not round_action_ready %}
+<div class="d-md-none order-3 mb-4" id="sectionGestioneMobile">
+  <div class="card">
+    <div class="card-header py-2 d-flex justify-content-between align-items-center" role="button"
+      data-bs-toggle="collapse" data-bs-target="#mobilePlayingManagement" aria-expanded="false"
+      aria-controls="mobilePlayingManagement" style="cursor: pointer;">
+      <h5 class="mb-0"><i class="fas fa-cog"></i> {{ _('Gestione') }}</h5>
+      <div>
+        {{ status_badge(gara, 'gara') }}
+        <i class="fas fa-chevron-down collapse-icon ms-2"></i>
+      </div>
+    </div>
+    <div id="mobilePlayingManagement" class="collapse">
+      {# headerless: il titolo "Gestione" + status badge sono gia' nell'header
+         del collapse qui sopra (rilievo Copilot PR #36) #}
+      {% with management_headerless = True %}
+      {% include "components/_gara_management.html" %}
+      {% endwith %}
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endif %}
+
 {# Sezione Partite - adattiva #}
-<div class="row">
+<div class="row{% if playing_admin %} order-1 order-md-3{% endif %}" id="sectionPartite">
   <div class="col-md-8">
     {# === MOBILE: Show Classification FIRST when gara is ending (SSR phase or completed) === #}
     {# Skip if already shown above for SSR phase with user_can_manage #}
@@ -261,6 +337,7 @@
                       {% if can_edit_ssr %}
                       <input type="number" class="form-control form-control-sm text-center ssr-group-input"
                         data-user-id="{{ player.user_id }}" data-group-position="{{ group.position }}"
+                        data-needs-distinct-top="{{ group.needs_distinct_top }}"
                         value="{{ player.current_ssr_score if player.current_ssr_score is not none else '' }}" min="0"
                         style="width: 80px; display: inline-block;">
                       {% else %}
@@ -494,6 +571,8 @@
     </div>
     {% endif %}
   </div>
+</div>
+{# Chiusura wrapper flex "azionabile prima" (vedi apertura sopra Sezioni Admin) #}
 </div>
 </div>
 
@@ -750,6 +829,8 @@
       "confirmCancelCurrentRound": {{ _("Sei sicuro di voler cancellare l'avvio del turno corrente? Tutte le partite del turno verranno eliminate e si tornerà al turno precedente.") | tojson }},
       "confirmTerminate": {{ _("Sei sicuro di voler terminare la gara?\n\nDopo la conferma, i risultati saranno definitivi e non sarà più possibile modificarli.") | tojson }},
       "confirmStartSsr": {{ _("Avviare la fase di spareggio (SSR)?\n\nDovrai inserire i punteggi per risolvere i parimerito nelle prime %(pos)s posizioni.", pos=gara.tiebreaker_until_position or 3) | tojson }},
+      "confirmCancelSsr": {{ _("Annullare la fase di spareggio (SSR)?\n\nI punteggi SSR già inseriti verranno azzerati e la gara tornerà in gioco, così potrai correggere i risultati.") | tojson }},
+      "errorSsrCancel": {{ _("Errore durante l'annullamento della fase SSR") | tojson }},
       "confirmResetRound": {{ _("Sei sicuro di voler resettare l'ultimo turno?\n\nTutti i risultati del turno verranno azzerati e i match torneranno in stato 'In Attesa'.\n\nQuesta azione è IRREVERSIBILE!") | tojson }},
       "confirmDeleteGara": {{ _("Sei SICURO di voler eliminare la Gara {number}?\n\nQuesta azione è IRREVERSIBILE!") | tojson }},
       "confirmCancelGara": {{ _("Sei SICURO di voler cancellare la Gara {number}?\n\nTutti i player iscritti riceveranno una notifica della cancellazione.\nQuesta azione è IRREVERSIBILE!") | tojson }},
@@ -777,7 +858,7 @@
       "errorSsrScoreFormat": {{ _("Tutti i punteggi devono essere numeri interi non negativi") | tojson }},
       "errorSsrDuplicates": {{ _("I punteggi devono essere tutti diversi per risolvere il parimerito") | tojson }},
       "errorSsrGroupScores": {{ _("I punteggi devono essere numeri interi non negativi") | tojson }},
-      "errorSsrGroupDuplicates": {{ _("I punteggi devono essere diversi all'interno del gruppo") | tojson }},
+      "errorSsrGroupDuplicates": {{ _("Serve un vincitore netto: il punteggio più alto del gruppo non può essere condiviso") | tojson }},
       "infoSsrStart": {{ _("Usa 'Avvia SSR' per inserire i punteggi degli spareggi") | tojson }},
       "infoUnknown": {{ _("Errore sconosciuto") | tojson }},
       "infoValidateImpossible": {{ _("Impossibile validare il risultato") | tojson }},
@@ -931,6 +1012,31 @@
         showError(GARA_CONFIG.i18n.errorSsrStart);
         restore();
       });
+    });
+  }
+
+  function cancelSsr(garaId, btn) {
+    showConfirm(GARA_CONFIG.i18n.confirmCancelSsr, () => {
+      const restore = withLoading(btn);
+      fetch(`/admin/gara/${garaId}/cancel_ssr`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': csrfToken()}
+      }).then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            location.reload();
+          } else {
+            showError(GARA_CONFIG.i18n.errorTitle + ' ' + (data.error || data.message));
+            restore();
+          }
+        }).catch(error => {
+          console.error('Fetch error:', error);
+          showError(GARA_CONFIG.i18n.errorSsrCancel);
+          restore();
+        });
     });
   }
 
@@ -1105,11 +1211,18 @@
       return;
     }
 
-    // Check for duplicates within this group
+    // Non tutti i punteggi devono differire: vanno separati solo i posti
+    // realmente contesi (issue #63). Quanti sono lo dice il server con
+    // data-needs-distinct-top; in assenza si ricade sul vecchio "tutti diversi".
     const scoreValues = Object.values(scores);
-    if (new Set(scoreValues).size !== scoreValues.length) {
-      showError(GARA_CONFIG.i18n.errorSsrGroupDuplicates);
-      return;
+    const declaredTop = inputs.length ? parseInt(inputs[0].dataset.needsDistinctTop, 10) : NaN;
+    const distinctTop = isNaN(declaredTop) ? scoreValues.length - 1 : declaredTop;
+    const ordered = scoreValues.slice().sort((a, b) => b - a);
+    for (let i = 0; i < Math.min(distinctTop, ordered.length - 1); i++) {
+      if (ordered[i] <= ordered[i + 1]) {
+        showError(GARA_CONFIG.i18n.errorSsrGroupDuplicates);
+        return;
+      }
     }
 
     // Submit scores for this group

@@ -11,7 +11,6 @@ from models.gamification.config_service import GamificationConfigService
 
 from . import gamification_bp
 
-
 # ============================================
 # Gamification Configuration Dashboard
 # ============================================
@@ -30,7 +29,9 @@ def admin_config_dashboard():
     - Streak Milestones: Streak reward configuration
     """
     from models.gamification.config_models import (
-        GamificationConfig, LevelUnlock, StreakMilestone
+        GamificationConfig,
+        LevelUnlock,
+        StreakMilestone,
     )
 
     # Get config grouped by category
@@ -51,7 +52,7 @@ def admin_config_dashboard():
         streak_config=streak_config,
         level_unlocks=level_unlocks,
         streak_milestones=streak_milestones,
-        page_title=_("Configurazione Gamification")
+        page_title=_("Configurazione Gamification"),
     )
 
 
@@ -71,7 +72,7 @@ def admin_xp_config():
     return render_template(
         "gamification/admin/xp_config.html",
         configs=configs,
-        page_title=_("Configurazione XP")
+        page_title=_("Configurazione XP"),
     )
 
 
@@ -91,7 +92,9 @@ def admin_update_xp_config():
             key=key, value=value, updated_by_id=current_user.id
         ),
         redirect_url=url_for("gamification.admin_xp_config"),
-        success_message=f"XP rate '{key}' aggiornato a {value}",
+        success_message=_(
+            "XP rate '%(key)s' aggiornato a %(value)s", key=key, value=value
+        ),
     )
 
 
@@ -116,7 +119,7 @@ def admin_level_curve_config():
         "gamification/admin/level_config.html",
         level_params=level_params,
         level_unlocks=level_unlocks,
-        page_title=_("Configurazione Livelli")
+        page_title=_("Configurazione Livelli"),
     )
 
 
@@ -140,7 +143,9 @@ def admin_update_level_curve():
             key=key, value=value, updated_by_id=current_user.id
         ),
         redirect_url=url_for("gamification.admin_level_curve_config"),
-        success_message=f"Parametro '{key}' aggiornato a {value}",
+        success_message=_(
+            "Parametro '%(key)s' aggiornato a %(value)s", key=key, value=value
+        ),
     )
 
 
@@ -154,7 +159,9 @@ def admin_add_level_unlock():
         flash(_("Valore livello non valido"), "error")
         return redirect(url_for("gamification.admin_level_curve_config"))
 
-    feature_code = request.form.get("feature_code", "").strip().lower().replace(" ", "_")
+    feature_code = (
+        request.form.get("feature_code", "").strip().lower().replace(" ", "_")
+    )
     feature_name = request.form.get("feature_name", "").strip()
     description = request.form.get("description", "").strip()
 
@@ -166,11 +173,13 @@ def admin_add_level_unlock():
             description=description,
         ),
         redirect_url=url_for("gamification.admin_level_curve_config"),
-        success_message=f"Level unlock per livello {level} aggiunto",
+        success_message=_("Level unlock per livello %(level)s aggiunto", level=level),
     )
 
 
-@gamification_bp.route("/admin/config/levels/unlock/<int:unlock_id>/edit", methods=["POST"])
+@gamification_bp.route(
+    "/admin/config/levels/unlock/<int:unlock_id>/edit", methods=["POST"]
+)
 @admin_required
 def admin_edit_level_unlock(unlock_id: int):
     """Edit an existing level unlock."""
@@ -190,7 +199,9 @@ def admin_edit_level_unlock(unlock_id: int):
     )
 
 
-@gamification_bp.route("/admin/config/levels/unlock/<int:unlock_id>/delete", methods=["POST"])
+@gamification_bp.route(
+    "/admin/config/levels/unlock/<int:unlock_id>/delete", methods=["POST"]
+)
 @admin_required
 def admin_delete_level_unlock(unlock_id: int):
     """Delete a level unlock."""
@@ -222,7 +233,7 @@ def admin_streak_config():
         "gamification/admin/streak_config.html",
         streak_config=streak_config,
         milestones=milestones,
-        page_title=_("Configurazione Streak")
+        page_title=_("Configurazione Streak"),
     )
 
 
@@ -268,11 +279,13 @@ def admin_add_streak_milestone():
             is_recurring=is_recurring,
         ),
         redirect_url=url_for("gamification.admin_streak_config"),
-        success_message=f"Milestone {weeks} settimane aggiunto",
+        success_message=_("Milestone %(weeks)s settimane aggiunto", weeks=weeks),
     )
 
 
-@gamification_bp.route("/admin/config/streaks/milestone/<int:milestone_id>/edit", methods=["POST"])
+@gamification_bp.route(
+    "/admin/config/streaks/milestone/<int:milestone_id>/edit", methods=["POST"]
+)
 @admin_required
 def admin_edit_streak_milestone(milestone_id: int):
     """Edit an existing streak milestone."""
@@ -299,7 +312,9 @@ def admin_edit_streak_milestone(milestone_id: int):
     )
 
 
-@gamification_bp.route("/admin/config/streaks/milestone/<int:milestone_id>/delete", methods=["POST"])
+@gamification_bp.route(
+    "/admin/config/streaks/milestone/<int:milestone_id>/delete", methods=["POST"]
+)
 @admin_required
 def admin_delete_streak_milestone(milestone_id: int):
     """Delete a streak milestone."""

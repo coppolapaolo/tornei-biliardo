@@ -101,9 +101,9 @@ class TestGeoProximity:
         far_player = _make_user()
         out_player = _make_user()
 
-        near = _make_venue(lat=45.0, lng=9.0)      # 0 km
-        far = _make_venue(lat=45.05, lng=9.0)       # ~5.5 km
-        outside = _make_venue(lat=46.0, lng=9.0)    # ~111 km
+        near = _make_venue(lat=45.0, lng=9.0)  # 0 km
+        far = _make_venue(lat=45.05, lng=9.0)  # ~5.5 km
+        outside = _make_venue(lat=46.0, lng=9.0)  # ~111 km
         near_name, far_name, out_name = near.name, far.name, outside.name
 
         AvailabilityService.set_venue_availability(near_player.id, near.id)
@@ -119,7 +119,7 @@ class TestGeoProximity:
 
         # Restrict to the results region (past the venue filter dropdown, which
         # lists every venue name regardless of proximity).
-        results = body[body.index("Filtra"):]
+        results = body[body.index("Filtra") :]
         assert near_name in results
         assert far_name in results
         assert out_name not in results  # beyond 20 km → not a result card

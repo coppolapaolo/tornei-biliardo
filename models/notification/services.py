@@ -9,6 +9,8 @@ from __future__ import annotations
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
 
+from sqlalchemy import event as sa_event
+
 from ..base import db, utc_now
 from ..transaction.manager import transactional
 from .models import (
@@ -20,9 +22,50 @@ from .models import (
     NotificationStatus,
 )
 
+_PENDING_SSE_KEY = "_pending_notification_sse"
+
+
+def _emit_unread_after_commit(user_id: int, unread_count: int) -> None:
+    """Accoda l'evento SSE del badge non-letti, da emettere DOPO il commit.
+
+    Emetterlo prima del commit (come faceva create_notification) significa che,
+    se la transazione fa rollback, il client riceve un contatore incrementato
+    che non corrisponde allo stato persistito. Qui l'emit viene accodato in
+    session.info e drenato dai listener after_commit/after_rollback registrati
+    UNA sola volta a livello modulo (registrarli per-chiamata e rimuoverli dal
+    dispatch romperebbe il commit con "deque mutated during iteration").
+    """
+    db.session.info.setdefault(_PENDING_SSE_KEY, []).append(
+        (user_id, {"unread_count": unread_count})
+    )
+
+
+def _flush_pending_sse(session: Any) -> None:
+    """after_commit: emette gli eventi SSE accodati durante la transazione."""
+    pending = session.info.pop(_PENDING_SSE_KEY, None)
+    if not pending:
+        return
+    from routes.sse import emit_user_event
+
+    for user_id, payload in pending:
+        emit_user_event(user_id, "notification", payload)
+
+
+def _discard_pending_sse(session: Any) -> None:
+    """after_rollback: scarta gli eventi accodati (niente badge fantasma)."""
+    session.info.pop(_PENDING_SSE_KEY, None)
+
+
+sa_event.listen(db.session, "after_commit", _flush_pending_sse)
+sa_event.listen(db.session, "after_rollback", _discard_pending_sse)
+
 
 class NotificationService:
     """Service for notification management and delivery."""
+
+    # Default global auto-delete window (giorni) applicato quando l'utente
+    # non ha mai configurato la preferenza. Vedi bug 16 docs/debug20260528.md.
+    DEFAULT_AUTO_DELETE_DAYS = 30
 
     @staticmethod
     @transactional(domain="notification")
@@ -80,11 +123,8 @@ class NotificationService:
 
         db.session.add(notification)
 
-        # Emit SSE event for real-time badge update
-        # Import here to avoid circular imports
-        from routes.sse import emit_user_event
-
-        # Count unread notifications (PENDING or SENT status)
+        # Count unread notifications (PENDING or SENT status). L'autoflush
+        # include la notifica appena aggiunta; il valore e' corretto post-commit.
         new_count = (
             Notification.query.filter_by(user_id=user_id)
             .filter(
@@ -94,7 +134,9 @@ class NotificationService:
             )
             .count()
         )
-        emit_user_event(user_id, "notification", {"unread_count": new_count})
+        # Emit SSE solo dopo il commit: se la transazione fa rollback il client
+        # non deve vedere un badge incrementato fantasma.
+        _emit_unread_after_commit(user_id, new_count)
 
         return notification
 
@@ -226,11 +268,9 @@ class NotificationService:
         Called when the user views the notifications page.
         Returns the number of notifications updated.
         """
-        notifications = (
-            Notification.query.filter_by(
-                user_id=user_id, status=NotificationStatus.PENDING
-            ).all()
-        )
+        notifications = Notification.query.filter_by(
+            user_id=user_id, status=NotificationStatus.PENDING
+        ).all()
 
         count = 0
         for notification in notifications:
@@ -391,7 +431,9 @@ class NotificationService:
         total_deleted = 0
 
         query = NotificationPreference.query.filter(
-            NotificationPreference.auto_delete_days.isnot(None)  # type: ignore[attr-defined]
+            NotificationPreference.auto_delete_days.isnot(  # type: ignore[attr-defined]
+                None
+            )
         )
         if user_id is not None:
             query = query.filter(NotificationPreference.user_id == user_id)
@@ -403,8 +445,10 @@ class NotificationService:
 
             cutoff_date = utc_now() - timedelta(days=preference.auto_delete_days)
 
-            # Delete old notifications of this type for this user
-            old_notifications = Notification.query.filter(
+            # Bulk DELETE invece di SELECT .all() + db.session.delete per riga:
+            # un solo statement per preferenza, niente materializzazione in
+            # memoria. Ritorna il numero di righe eliminate.
+            deleted = Notification.query.filter(
                 and_(
                     Notification.user_id == preference.user_id,
                     Notification.notification_type == preference.notification_type,
@@ -417,13 +461,91 @@ class NotificationService:
                         ]
                     ),
                 )
-            ).all()
-
-            for notification in old_notifications:
-                db.session.delete(notification)
-                total_deleted += 1
+            ).delete(synchronize_session=False)
+            total_deleted += deleted
 
         return total_deleted
+
+    @staticmethod
+    def get_global_auto_delete_days(user_id: int) -> Optional[int]:
+        """Finestra di auto-cancellazione globale (giorni) dell'utente.
+
+        Convenzione (bug 16):
+        - nessuna preferenza configurata → DEFAULT (30 giorni, attivo);
+        - preferenza con `auto_delete_days = N` → N giorni;
+        - preferenza con `auto_delete_days = None` → disattivata esplicitamente.
+
+        La preferenza globale è memorizzata sulla riga `SYSTEM_ANNOUNCEMENT`.
+        """
+        preference = NotificationPreference.get_user_preference(
+            user_id, NotificationType.SYSTEM_ANNOUNCEMENT
+        )
+        if preference is None:
+            return NotificationService.DEFAULT_AUTO_DELETE_DAYS
+        return preference.auto_delete_days
+
+    @staticmethod
+    @transactional(domain="notification")
+    def set_global_auto_delete_days(
+        user_id: int, days: Optional[int]
+    ) -> NotificationPreference:
+        """Imposta la finestra globale di auto-cancellazione (giorni).
+
+        `days=None` disattiva esplicitamente l'auto-cancellazione. A
+        differenza di `set_user_preference`, scrive sempre il valore (anche
+        None), così la disattivazione persiste su una preferenza esistente.
+        """
+        preference = NotificationPreference.get_user_preference(
+            user_id, NotificationType.SYSTEM_ANNOUNCEMENT
+        )
+        if preference is None:
+            preference = NotificationPreference(
+                user_id=user_id,
+                notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
+                enabled=True,
+            )
+            db.session.add(preference)
+        preference.auto_delete_days = days
+        return preference
+
+    @staticmethod
+    @transactional(domain="notification")
+    def auto_delete_for_user(user_id: int, default_days: Optional[int] = None) -> int:
+        """Cancella TUTTE le notifiche scadute dell'utente (qualsiasi tipo).
+
+        "Scadute" = lette/dismissed/expired più vecchie della finestra di
+        auto-cancellazione globale (vedi `get_global_auto_delete_days`).
+        Se l'utente non ha mai configurato nulla si applica il default
+        (30 giorni); se l'ha disattivata esplicitamente non cancella nulla.
+
+        A differenza di `auto_delete_by_user_preferences` (per-tipo), qui la
+        finestra globale si applica a tutti i tipi di notifica (bug 16:
+        "cancella tutte quelle scadute").
+        """
+        days = NotificationService.get_global_auto_delete_days(user_id)
+        if days is None:
+            days = default_days
+        if not days or days <= 0:
+            return 0
+
+        cutoff_date = utc_now() - timedelta(days=days)
+        old_notifications = Notification.query.filter(
+            Notification.user_id == user_id,
+            Notification.created_at <= cutoff_date,
+            Notification.status.in_(  # type: ignore[attr-defined]
+                [
+                    NotificationStatus.READ,
+                    NotificationStatus.DISMISSED,
+                    NotificationStatus.EXPIRED,
+                ]
+            ),
+        ).all()
+
+        count = len(old_notifications)
+        for notification in old_notifications:
+            db.session.delete(notification)
+
+        return count
 
     # Specific notification creators for common use cases
 
@@ -504,7 +626,10 @@ class NotificationService:
             {
                 "type": NotificationType.MATCH_PROPOSAL,
                 "title": "New Match Proposal",
-                "message": "{proposer_name} has proposed a match at {location} on {scheduled_time}",
+                "message": (
+                    "{proposer_name} has proposed a match at {location} "
+                    "on {scheduled_time}"
+                ),
                 "action_text": "View Proposal",
                 "action_url": "/player/proposals/{proposal_id}",
                 "expires_hours": 48,
@@ -512,7 +637,10 @@ class NotificationService:
             {
                 "type": NotificationType.MATCH_ACCEPTED,
                 "title": "Match Accepted!",
-                "message": "{accepter_name} has accepted your match proposal for {location} on {scheduled_time}",
+                "message": (
+                    "{accepter_name} has accepted your match proposal for "
+                    "{location} on {scheduled_time}"
+                ),
                 "action_text": "View Match",
                 "action_url": "/player/matches/{match_id}",
                 "expires_hours": 24,
@@ -528,7 +656,10 @@ class NotificationService:
             {
                 "type": NotificationType.PLAYOFF_INVITATION,
                 "title": "Playoff Invitation",
-                "message": "You've qualified for {playoff_name} in {campionato_name}! Please respond by {deadline}",
+                "message": (
+                    "You've qualified for {playoff_name} in {campionato_name}! "
+                    "Please respond by {deadline}"
+                ),
                 "action_text": "Respond",
                 "action_url": "/playoffs/respond",
                 "priority": NotificationPriority.HIGH,

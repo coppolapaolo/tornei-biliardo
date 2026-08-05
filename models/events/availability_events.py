@@ -42,8 +42,10 @@ class PlayerAvailabilityCreatedEvent(DomainEvent):
             "location_id": self.location_id,
             "location_name": self.location_name,
             "available_from": self.available_from.isoformat(),
-            "available_until": self.available_until.isoformat() if self.available_until else None,
-            "notes": self.notes
+            "available_until": (
+                self.available_until.isoformat() if self.available_until else None
+            ),
+            "notes": self.notes,
         }
 
 
@@ -74,5 +76,5 @@ class AvailabilityNotificationEvent(DomainEvent):
             "available_username": self.available_username,
             "notification_user_ids": self.notification_user_ids,
             "notification_message": self.notification_message,
-            "notification_context": self.notification_context
+            "notification_context": self.notification_context,
         }

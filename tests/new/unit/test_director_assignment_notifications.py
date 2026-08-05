@@ -32,7 +32,7 @@ class TestDirectorAssignmentNotifications:
             distance=5,
             is_race_to=True,
             status=GaraStatus.SETUP.value,
-            withdraw_policy=WithdrawPolicy.EXCLUDE.value
+            withdraw_policy=WithdrawPolicy.EXCLUDE.value,
         )
         db_session.add(gara)
         db_session.commit()
@@ -41,16 +41,14 @@ class TestDirectorAssignmentNotifications:
         result = GaraService.add_director(
             gara_id=gara.id,
             user_id=isolated_director_user.id,
-            assigned_by_id=isolated_admin_user.id
+            assigned_by_id=isolated_admin_user.id,
         )
         db_session.commit()
 
         assert result is True
 
         # Verifica notifica
-        notif = Notification.query.filter_by(
-            user_id=isolated_director_user.id
-        ).first()
+        notif = Notification.query.filter_by(user_id=isolated_director_user.id).first()
         assert notif is not None
         assert "Nominato co-direttore" in notif.title
         assert "Test Gara" in notif.message
@@ -71,7 +69,7 @@ class TestDirectorAssignmentNotifications:
             distance=7,
             is_race_to=True,
             status=GaraStatus.SETUP.value,
-            withdraw_policy=WithdrawPolicy.EXCLUDE.value
+            withdraw_policy=WithdrawPolicy.EXCLUDE.value,
         )
         db_session.add(gara)
         db_session.commit()
@@ -80,23 +78,24 @@ class TestDirectorAssignmentNotifications:
         GaraService.add_director(
             gara_id=gara.id,
             user_id=isolated_director_user.id,
-            assigned_by_id=isolated_admin_user.id
+            assigned_by_id=isolated_admin_user.id,
         )
         db_session.commit()
 
         # Poi rimuovi
         result = GaraService.remove_director(
-            gara_id=gara.id,
-            user_id=isolated_director_user.id
+            gara_id=gara.id, user_id=isolated_director_user.id
         )
         db_session.commit()
 
         assert result is True
 
         # Verifica notifiche (dovrebbero essere 2: aggiunta + rimozione)
-        notifs = Notification.query.filter_by(
-            user_id=isolated_director_user.id
-        ).order_by(Notification.created_at).all()
+        notifs = (
+            Notification.query.filter_by(user_id=isolated_director_user.id)
+            .order_by(Notification.created_at)
+            .all()
+        )
         assert len(notifs) == 2
 
         # Prima notifica: aggiunta
@@ -113,8 +112,7 @@ class TestDirectorAssignmentNotifications:
         # Crea campionato
         service = TournamentService()
         campionato = service.create_campionato(
-            name="Test Campionato",
-            campionato_type="Amalfi"
+            name="Test Campionato", campionato_type="Amalfi"
         )
         db_session.commit()
 
@@ -122,16 +120,14 @@ class TestDirectorAssignmentNotifications:
         result = service.add_director(
             campionato_id=campionato.id,
             user_id=isolated_director_user.id,
-            assigned_by_id=isolated_admin_user.id
+            assigned_by_id=isolated_admin_user.id,
         )
         db_session.commit()
 
         assert result is True
 
         # Verifica notifica
-        notif = Notification.query.filter_by(
-            user_id=isolated_director_user.id
-        ).first()
+        notif = Notification.query.filter_by(user_id=isolated_director_user.id).first()
         assert notif is not None
         assert "Nominato co-direttore" in notif.title
         assert "Test Campionato" in notif.message
@@ -144,8 +140,7 @@ class TestDirectorAssignmentNotifications:
         # Crea campionato
         service = TournamentService()
         campionato = service.create_campionato(
-            name="Test Campionato Remove",
-            campionato_type="Amalfi"
+            name="Test Campionato Remove", campionato_type="Amalfi"
         )
         db_session.commit()
 
@@ -153,23 +148,24 @@ class TestDirectorAssignmentNotifications:
         service.add_director(
             campionato_id=campionato.id,
             user_id=isolated_director_user.id,
-            assigned_by_id=isolated_admin_user.id
+            assigned_by_id=isolated_admin_user.id,
         )
         db_session.commit()
 
         # Poi rimuovi
         result = service.remove_director(
-            campionato_id=campionato.id,
-            user_id=isolated_director_user.id
+            campionato_id=campionato.id, user_id=isolated_director_user.id
         )
         db_session.commit()
 
         assert result is True
 
         # Verifica notifiche
-        notifs = Notification.query.filter_by(
-            user_id=isolated_director_user.id
-        ).order_by(Notification.created_at).all()
+        notifs = (
+            Notification.query.filter_by(user_id=isolated_director_user.id)
+            .order_by(Notification.created_at)
+            .all()
+        )
         assert len(notifs) == 2
 
         # Seconda notifica: rimozione

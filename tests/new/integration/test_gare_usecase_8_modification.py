@@ -85,7 +85,9 @@ class TestUseCaseMatchReset:
         # Open inscriptions and inscribe players
         inscription_start = utc_now() - timedelta(hours=1)
         inscription_end = utc_now() + timedelta(hours=1)
-        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        InscriptionService.open_inscriptions(
+            gara.id, inscription_start, inscription_end
+        )
 
         for player in players_6:
             InscriptionService.inscribe_user(player.id, gara.id)
@@ -167,9 +169,13 @@ class TestUseCaseMatchReset:
         # Complete with different result (swap winner)
         db_session.refresh(match)
         new_winner_id = (
-            match.player2_id if original_winner == match.player1_id else match.player1_id
+            match.player2_id
+            if original_winner == match.player1_id
+            else match.player1_id
         )
-        loser_id = match.player1_id if new_winner_id == match.player2_id else match.player2_id
+        loser_id = (
+            match.player1_id if new_winner_id == match.player2_id else match.player2_id
+        )
 
         # Add racks for new winner
         for rack_num in range(1, match.match_distance + 1):
@@ -208,8 +214,12 @@ class TestUseCaseMatchReset:
         if match.is_bye:
             return
 
-        winner_id = match.player1_id if random.choice([True, False]) else match.player2_id
-        loser_id = match.player2_id if winner_id == match.player1_id else match.player1_id
+        winner_id = (
+            match.player1_id if random.choice([True, False]) else match.player2_id
+        )
+        loser_id = (
+            match.player2_id if winner_id == match.player1_id else match.player1_id
+        )
 
         winning_racks = match.match_distance
         loser_racks = random.randint(0, winning_racks - 1)
@@ -309,7 +319,9 @@ class TestUseCaseRoundLocking:
         # Open inscriptions and inscribe players
         inscription_start = utc_now() - timedelta(hours=1)
         inscription_end = utc_now() + timedelta(hours=1)
-        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        InscriptionService.open_inscriptions(
+            gara.id, inscription_start, inscription_end
+        )
 
         for player in players_6:
             InscriptionService.inscribe_user(player.id, gara.id)
@@ -338,9 +350,7 @@ class TestUseCaseRoundLocking:
 
         return gara
 
-    def test_round_has_lock_status(
-        self, gara_with_two_rounds: Gara, db_session
-    ):
+    def test_round_has_lock_status(self, gara_with_two_rounds: Gara, db_session):
         """Test round lock status can be queried.
 
         UC8: System can check round lock status.
@@ -365,9 +375,7 @@ class TestUseCaseRoundLocking:
             assert isinstance(can_modify, bool)
             assert isinstance(reason, str)
 
-    def test_round_lock_status_detection(
-        self, gara_with_two_rounds: Gara, db_session
-    ):
+    def test_round_lock_status_detection(self, gara_with_two_rounds: Gara, db_session):
         """Test round lock status is correctly detected.
 
         UC8: System correctly identifies locked vs unlocked rounds.
@@ -398,8 +406,12 @@ class TestUseCaseRoundLocking:
         if match.is_bye:
             return
 
-        winner_id = match.player1_id if random.choice([True, False]) else match.player2_id
-        loser_id = match.player2_id if winner_id == match.player1_id else match.player1_id
+        winner_id = (
+            match.player1_id if random.choice([True, False]) else match.player2_id
+        )
+        loser_id = (
+            match.player2_id if winner_id == match.player1_id else match.player1_id
+        )
 
         winning_racks = match.match_distance
         loser_racks = random.randint(0, winning_racks - 1)
@@ -503,7 +515,9 @@ class TestUseCaseRoundCancellation:
         # Setup inscriptions
         inscription_start = utc_now() - timedelta(hours=1)
         inscription_end = utc_now() + timedelta(hours=1)
-        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        InscriptionService.open_inscriptions(
+            gara.id, inscription_start, inscription_end
+        )
 
         for player in players_6:
             InscriptionService.inscribe_user(player.id, gara.id)
@@ -547,8 +561,12 @@ class TestUseCaseRoundCancellation:
         if match.is_bye:
             return
 
-        winner_id = match.player1_id if random.choice([True, False]) else match.player2_id
-        loser_id = match.player2_id if winner_id == match.player1_id else match.player1_id
+        winner_id = (
+            match.player1_id if random.choice([True, False]) else match.player2_id
+        )
+        loser_id = (
+            match.player2_id if winner_id == match.player1_id else match.player1_id
+        )
 
         winning_racks = match.match_distance
         loser_racks = random.randint(0, winning_racks - 1)

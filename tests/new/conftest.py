@@ -4,6 +4,28 @@ import uuid
 from importlib import import_module
 
 
+@pytest.fixture(scope="session", autouse=True)
+def _fast_password_hashing():
+    """Velocizza i test sostituendo l'hashing PBKDF2 di default (~600k iter)
+    con una variante a 1 iterazione. Solo per i test: la produzione continua
+    a usare il default Werkzeug. `check_password_hash` legge le iterazioni
+    dall'hash salvato, quindi gli utenti creati nei test si autenticano
+    correttamente. Vedi issue #47.
+
+    Patcha il nome `generate_password_hash` nel namespace di
+    `models.user.models`, unico call-site reale (tutto passa da
+    `User.set_password`).
+    """
+    import models.user.models as um
+
+    orig = um.generate_password_hash
+    um.generate_password_hash = lambda pw, **kw: orig(pw, method="pbkdf2:sha256:1")
+    try:
+        yield
+    finally:
+        um.generate_password_hash = orig
+
+
 @pytest.fixture(scope="session")
 def app():
     os.environ.setdefault("FLASK_ENV", "testing")
@@ -37,6 +59,7 @@ def app():
 
     # Disable rate limiter in tests to avoid 429 errors from rapid login calls
     from utils.rate_limiter import limiter
+
     limiter.enabled = False
 
     ctx = flask_app.app_context()
@@ -75,6 +98,7 @@ def db_session(app):
 
     # Clear in-memory caches to prevent stale data between tests
     from models.caching import cache_manager
+
     cache_manager.clear_all()
 
     # Use test_request_context for setup (drop/create tables)
@@ -94,10 +118,22 @@ def db_session(app):
         # Clear any remaining session state
         db.session.remove()
 
+        # Flask-Login caches the logged-in user on the app context `g`
+        # (`g._login_user`). The session-scoped `app` fixture keeps a single
+        # app context pushed for the whole suite, so that cache survives
+        # across tests: a User logged in by one test stays referenced by the
+        # next, detached after this fixture's db.session.remove()/drop_all,
+        # causing DetachedInstanceError when a sibling test's request reads
+        # current_user. Clear it before and after each test.
+        from flask import g
+
+        g.pop("_login_user", None)
+
         try:
             yield db.session
         finally:
             # Clean up after test
+            g.pop("_login_user", None)
             try:
                 db.session.rollback()
             except Exception:
@@ -109,47 +145,66 @@ def _populate_test_features(db):
     """Populate feature_config table with test data."""
     import json
     from models.gamification.feature_models import FeatureConfig
-    
+
     # Add essential features for tests
     test_features = [
         {
             "code": "tournament_creation",
             "name": "Creazione Tornei",
             "description": "Test feature",
-            "rules": json.dumps([{
-                "description": "Level 10",
-                "conditions": [{"type": "LEVEL", "operator": "gte", "value": 10}]
-            }])
+            "rules": json.dumps(
+                [
+                    {
+                        "description": "Level 10",
+                        "conditions": [
+                            {"type": "LEVEL", "operator": "gte", "value": 10}
+                        ],
+                    }
+                ]
+            ),
         },
         {
             "code": "create_campionato",
             "name": "Create Championship",
             "description": "Test feature",
-            "rules": json.dumps([{
-                "description": "Director role",
-                "conditions": [{"type": "ROLE", "value": "DIRECTOR"}]
-            }])
+            "rules": json.dumps(
+                [
+                    {
+                        "description": "Director role",
+                        "conditions": [{"type": "ROLE", "value": "DIRECTOR"}],
+                    }
+                ]
+            ),
         },
         {
             "code": "create_match_direct",
             "name": "Create Direct Match",
             "description": "Test feature",
-            "rules": json.dumps([{
-                "description": "5+ matches",
-                "conditions": [
-                    {"type": "METRIC", "metric": "total_matches", "operator": "gte", "value": 5}
+            "rules": json.dumps(
+                [
+                    {
+                        "description": "5+ matches",
+                        "conditions": [
+                            {
+                                "type": "METRIC",
+                                "metric": "total_matches",
+                                "operator": "gte",
+                                "value": 5,
+                            }
+                        ],
+                    }
                 ]
-            }])
-        }
+            ),
+        },
     ]
-    
+
     for feature_data in test_features:
         feature = FeatureConfig(**feature_data, is_active=True)
         db.session.add(feature)
-    
+
     try:
         db.session.commit()
-    except:
+    except Exception:
         db.session.rollback()
 
 
@@ -219,7 +274,7 @@ def clean_session():
     def _clean():
         try:
             db.session.rollback()
-        except:
+        except Exception:
             pass
         db.session.expunge_all()
 
@@ -237,8 +292,6 @@ def logged_in_client(app, db_session):
             response = client.get('/some/protected/route')
     """
     from models import User
-    from models.user.role_enum import UserRole
-    from flask_login import login_user
 
     def _create_logged_in_client(role="player", username_prefix="test"):
         unique_id = str(uuid.uuid4())[:8]
@@ -263,11 +316,13 @@ def logged_in_client(app, db_session):
 
         # Refresh user from current session to avoid DetachedInstanceError
         from models import db
+
         user = db.session.get(User, user_id)
 
         return client, user
 
     return _create_logged_in_client
+
 
 # def pytest_runtest_logstart(nodeid, location):
 #     print(f"\n>>> STARTING {nodeid}\n", flush=True)

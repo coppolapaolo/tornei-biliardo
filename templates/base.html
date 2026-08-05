@@ -10,12 +10,12 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <!-- Design tokens (CSS custom properties) -->
-    <link href="{{ url_for('static', filename='css/variables.css') }}?v={{ config.VERSION }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/variables.css') }}?v={{ config.ASSET_VERSION }}" rel="stylesheet">
     <!-- Gamification Animations CSS -->
-    <link href="{{ url_for('static', filename='css/gamification.css') }}?v={{ config.VERSION }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/gamification.css') }}?v={{ config.ASSET_VERSION }}" rel="stylesheet">
 
     <!-- App styles (table assignment, layout) -->
-    <link href="{{ url_for('static', filename='css/main.css') }}?v={{ config.VERSION }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/main.css') }}?v={{ config.ASSET_VERSION }}" rel="stylesheet">
 
     {% if debug_info.debug_mode %}
     <style>
@@ -121,8 +121,51 @@
             }
         };
 
+        // Dual ELO: alterna competitivo <-> globale su tutta l'interfaccia.
+        // Cambia SOLO cosa viene mostrato; categoria/handicap/seeding e il
+        // ranking ufficiale restano sul valore competitivo lato server.
+        window.EloToggle = {
+            KEY: 'eloMode',
+            LABELS: {
+                competitive: {{ _("competitivo")|tojson }},
+                global: {{ _("globale (tornei + casual)")|tojson }}
+            },
+            getMode: function () {
+                return localStorage.getItem(this.KEY) === 'global' ? 'global' : 'competitive';
+            },
+            apply: function (mode) {
+                mode = (mode === 'global') ? 'global' : 'competitive';
+                var attr = (mode === 'global') ? 'data-elo-global' : 'data-elo-competitive';
+                // 1) Valori singoli (profilo, card, ...)
+                document.querySelectorAll('.elo-value').forEach(function (el) {
+                    var val = el.getAttribute(attr);
+                    if (val !== null) el.textContent = val;
+                });
+                // 2) Etichetta modalità attiva
+                document.querySelectorAll('.elo-mode-label').forEach(function (el) {
+                    el.textContent = '(' + window.EloToggle.LABELS[mode] + ')';
+                });
+                // 3) Leaderboard dual-pool: mostra la classifica del pool attivo
+                document.querySelectorAll('[data-elo-pool]').forEach(function (el) {
+                    el.classList.toggle('d-none', el.getAttribute('data-elo-pool') !== mode);
+                });
+            },
+            toggle: function () {
+                var next = (this.getMode() === 'global') ? 'competitive' : 'global';
+                localStorage.setItem(this.KEY, next);
+                this.apply(next);
+            }
+        };
+
         // Auto-converti tutti gli orari UTC in pagina
         document.addEventListener('DOMContentLoaded', function () {
+            // Dual ELO: applica la modalità salvata e attiva il click-to-toggle
+            window.EloToggle.apply(window.EloToggle.getMode());
+            document.addEventListener('click', function (e) {
+                var el = e.target.closest('.elo-value');
+                if (el) { e.preventDefault(); window.EloToggle.toggle(); }
+            });
+
             // Cerca tutti gli elementi con data-utc
             document.querySelectorAll('[data-utc]').forEach(function (element) {
                 const utcTime = element.getAttribute('data-utc');
@@ -151,6 +194,9 @@
             });
         });
     </script>
+
+    {# Google Analytics 4 (no-op se GA_MEASUREMENT_ID non e' configurato) #}
+    {% include "components/_analytics.html" %}
 
     {# Block for page-specific CSS/scripts in head #}
     {% block head_extra %}{% endblock %}
@@ -232,8 +278,10 @@
                     </li>
                     {% endif %}
 
-                    {# Individual Matches - requires create_match_direct feature (ABAC) AND production allowlist (ADR-028) #}
-                    {% if current_user.can_access('create_match_direct') and feature_visible('individual_match.dashboard') %}
+                    {# Individual Matches - requires create_match_direct feature (ABAC) AND production allowlist (ADR-028).
+                       Nascosto agli admin: l'admin non è un giocatore, la sua UI non espone funzioni di gioco
+                       (la supervisione passa da individual_match.admin_overview, admin-only). #}
+                    {% if not current_user.is_admin and current_user.can_access('create_match_direct') and feature_visible('individual_match.dashboard') %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('individual_match.dashboard') }}">
                             <i class="fas fa-shield-halved"></i> {{ _('Match Individuali') }}
@@ -390,7 +438,10 @@
 
         {% if all_messages %}
         {% for category, message in all_messages %}
-        {% if category != 'gamification_event' %}
+        {# Le categorie "di trasporto" (payload JSON per JS) non sono messaggi
+           per l'utente: renderizzarle qui mostrerebbe il JSON grezzo dentro un
+           alert. Sono consumate piu' sotto dai rispettivi bridge. #}
+        {% if category not in ['gamification_event', 'analytics_event'] %}
         {% if category == 'error' %}
         {% set alert_class = 'alert-danger' %}
         {% elif category == 'success' %}
@@ -446,7 +497,7 @@
                         {% if debug_info.database_stats %}
                         Users: <span class="debug-value">{{ debug_info.database_stats.users }}</span> |
                         Campionati: <span class="debug-value">{{ debug_info.database_stats.campionati }}</span> |
-                        Provas: <span class="debug-value">{{ debug_info.database_stats.provas }}</span> |
+                        Gare: <span class="debug-value">{{ debug_info.database_stats.gare }}</span> |
                         Inscriptions: <span class="debug-value">{{ debug_info.database_stats.inscriptions }}</span> |
                         Matches: <span class="debug-value">{{ debug_info.database_stats.matches }}</span>
                         {% else %}
@@ -455,29 +506,26 @@
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <!-- NUOVO: Quick Login Actions (PUNTO 8) -->
                     <div class="debug-item">
-                        <strong>Quick Actions:</strong><br>
+                        <strong>Database:</strong><br>
                         <a href="{{ url_for('main.reset_database') }}" class="text-warning">Reset DB</a> |
-                        <a href="#" onclick="saveCurrentReset(); return false;" class="text-success">Save Reset</a>
+                        <a href="#" data-bs-toggle="modal" data-bs-target="#saveResetModal" class="text-success">Save Reset</a>
                     </div>
                     <div class="debug-item">
                         <strong>Quick Login:</strong><br>
-                        <a href="{{ url_for('main.quick_login', username='admin') }}"
-                            class="btn btn-danger quick-login-btn">
-                            Admin
-                        </a>
-                        <a href="{{ url_for('main.quick_login', username='mario') }}"
-                            class="btn btn-primary quick-login-btn">
-                            Mario
-                        </a>
-                        <a href="{{ url_for('main.quick_login', username='pino') }}"
-                            class="btn btn-secondary quick-login-btn">
-                            Pino
-                        </a>
+                        {% for u in debug_info.quick_login_users %}
+                            {% if u.is_admin %}{% set btn_class = 'btn-danger' %}
+                            {% elif u.is_director %}{% set btn_class = 'btn-warning' %}
+                            {% else %}{% set btn_class = 'btn-primary' %}
+                            {% endif %}
+                            <a href="{{ url_for('main.quick_login', username=u.username) }}"
+                                class="btn {{ btn_class }} quick-login-btn">
+                                {{ u.username }}
+                            </a>
+                        {% endfor %}
                     </div>
                     <div class="debug-item">
-                        <strong>Quick Actions:</strong><br>
+                        <strong>Test Fixtures:</strong><br>
                         <a href="{{ url_for('main.debug_create_player') }}" class="btn btn-success quick-login-btn">
                             + Player
                         </a>
@@ -486,10 +534,23 @@
                             class="btn btn-warning quick-login-btn">
                             Fill Gara
                         </a>
+                        <a href="{{ url_for('main.debug_inscribe_next_player', gara_id=gara.id) }}"
+                            class="btn btn-success quick-login-btn">
+                            + Iscrivi
+                        </a>
                         <a href="{{ url_for('main.debug_complete_current_round', gara_id=gara.id) }}"
                             class="btn btn-info quick-login-btn"
                             onclick="return confirmLink(this, 'Completare i match in corso del turno attuale con risultati random?')">
                             Complete Round
+                        </a>
+                        <a href="{{ url_for('main.debug_complete_next_match', gara_id=gara.id) }}"
+                            class="btn btn-info quick-login-btn">
+                            Complete Match
+                        </a>
+                        <a href="{{ url_for('main.debug_complete_gara', gara_id=gara.id) }}"
+                            class="btn btn-danger quick-login-btn"
+                            onclick="return confirmLink(this, 'Completare l intera gara con risultati random fino alla fine?')">
+                            Complete Gara
                         </a>
                         {% endif %}
                     </div>
@@ -498,6 +559,18 @@
         </div>
     </footer>
     {% endif %}
+
+    {# Footer pubblico: raggiungibilita' dell'informativa privacy/cookie, che
+       deve essere accessibile da ogni pagina del sito. #}
+    <footer class="mt-5 py-3 border-top">
+        <div class="container text-center text-muted small">
+            <span>{{ config.APP_NAME }}</span>
+            {% if feature_visible('main.privacy_policy') %}
+            <span class="mx-2">&middot;</span>
+            <a href="{{ url_for('main.privacy_policy') }}" class="text-muted">{{ _('Privacy e Cookie') }}</a>
+            {% endif %}
+        </div>
+    </footer>
 
     <!-- Confirm Modal for notifications.js -->
     <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
@@ -519,7 +592,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <!-- Notifications System (Toast, Confirm Modal, Validation) -->
-    <script src="{{ url_for('static', filename='js/notifications.js') }}?v={{ config.VERSION }}"></script>
+    <script src="{{ url_for('static', filename='js/notifications.js') }}?v={{ config.ASSET_VERSION }}"></script>
 
     <!-- Gamification i18n Configuration -->
     <script type="application/json" id="gamification-config">
@@ -543,44 +616,41 @@
     </script>
 
     <!-- Gamification Animations JS -->
-    <script src="{{ url_for('static', filename='js/gamification.js') }}?v={{ config.VERSION }}"></script>
+    <script src="{{ url_for('static', filename='js/gamification.js') }}?v={{ config.ASSET_VERSION }}"></script>
     <!-- Polling utility for real-time updates (replaces SSE) -->
-    <script src="{{ url_for('static', filename='js/polling.js') }}?v={{ config.VERSION }}"></script>
+    <script src="{{ url_for('static', filename='js/polling.js') }}?v={{ config.ASSET_VERSION }}"></script>
 
     {% if debug_info.debug_mode %}
-    <script>
-        function saveCurrentReset() {
-            const name = prompt("Nome per lo snapshot del database corrente:");
-            if (!name) {
-                return;
-            }
-
-            const description = prompt("Descrizione (opzionale):");
-
-            // Crea un form nascosto e lo invia
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '{{ url_for("main.save_reset_snapshot") }}';
-
-            const nameInput = document.createElement('input');
-            nameInput.type = 'hidden';
-            nameInput.name = 'name';
-            nameInput.value = name;
-            form.appendChild(nameInput);
-
-            if (description) {
-                const descInput = document.createElement('input');
-                descInput.type = 'hidden';
-                descInput.name = 'description';
-                descInput.value = description;
-                form.appendChild(descInput);
-            }
-
-            document.body.appendChild(form);
-            form.submit();
-        }
-    </script>
+    <div class="modal fade" id="saveResetModal" tabindex="-1" aria-labelledby="saveResetModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <form method="POST" action="{{ url_for('main.save_reset_snapshot') }}">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="saveResetModalLabel">Save Reset Snapshot</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="saveResetName" class="form-label">Nome snapshot</label>
+                            <input type="text" class="form-control" id="saveResetName" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="saveResetDescription" class="form-label">Descrizione (opzionale)</label>
+                            <input type="text" class="form-control" id="saveResetDescription" name="description">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                        <button type="submit" class="btn btn-success">Salva</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
     {% endif %}
+
+    {# Analytics: eventi custom accodati lato server (dopo il redirect del POST) #}
+    {% include "components/_analytics_events.html" %}
 
     <!-- Gamification Bridge: Consumes events from Flask flash and triggers JS animations -->
     <script>

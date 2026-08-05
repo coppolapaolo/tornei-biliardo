@@ -50,7 +50,7 @@ class TestQuestLifecycleWorkflow:
             quest_type=QuestType.WEEKLY,
             start_date=now - timedelta(hours=1),
             end_date=now + timedelta(days=6),
-            requirements={"type": "matches_played", "target": 5}
+            requirements={"type": "matches_played", "target": 5},
         )
 
         assert quest.status == QuestStatus.ACTIVE
@@ -121,12 +121,12 @@ class TestQuestLifecycleWorkflow:
             quest_type=QuestType.WEEKLY,
             start_date=now + timedelta(days=1),
             end_date=now + timedelta(days=8),
-            requirements={"type": "matches_played", "target": 3}
+            requirements={"type": "matches_played", "target": 3},
         )
         assert upcoming_quest.status == QuestStatus.UPCOMING
 
         # Create quest that should be active now
-        with patch('models.gamification.quest_service.datetime') as mock_dt:
+        with patch("models.gamification.quest_service.datetime") as mock_dt:
             # Set creation time to past so quest is created as upcoming
             past_time = now - timedelta(days=2)
             mock_dt.utcnow.return_value = past_time
@@ -138,7 +138,7 @@ class TestQuestLifecycleWorkflow:
                 quest_type=QuestType.WEEKLY,
                 start_date=now - timedelta(hours=2),
                 end_date=now + timedelta(days=5),
-                requirements={"type": "matches_won", "target": 2}
+                requirements={"type": "matches_won", "target": 2},
             )
 
         # When created in past, status would be UPCOMING
@@ -153,7 +153,7 @@ class TestQuestLifecycleWorkflow:
             db_session.flush()
 
         # Create quest that has already ended
-        with patch('models.gamification.quest_service.datetime') as mock_dt:
+        with patch("models.gamification.quest_service.datetime") as mock_dt:
             mock_dt.utcnow.return_value = now - timedelta(days=10)
 
             expired_quest = QuestService.create_quest(
@@ -162,7 +162,7 @@ class TestQuestLifecycleWorkflow:
                 quest_type=QuestType.WEEKLY,
                 start_date=now - timedelta(days=9),
                 end_date=now - timedelta(days=2),
-                requirements={"type": "matches_played", "target": 5}
+                requirements={"type": "matches_played", "target": 5},
             )
 
         # Run status update
@@ -188,6 +188,7 @@ class TestAutoJoinQuestWorkflow:
 
         # Capture events
         original_publish = EventBus.publish
+
         def mock_publish(event):
             events_published.append(event)
             return original_publish(event)
@@ -201,22 +202,19 @@ class TestAutoJoinQuestWorkflow:
             quest_type=QuestType.WEEKLY,
             start_date=now - timedelta(hours=1),
             end_date=now + timedelta(days=6),
-            requirements={"type": "matches_played", "target": 3}
+            requirements={"type": "matches_played", "target": 3},
         )
 
         # Verify player hasn't joined yet
         participation = QuestParticipation.query.filter_by(
-            user_id=player.id,
-            quest_id=quest.id
+            user_id=player.id, quest_id=quest.id
         ).first()
         assert participation is None
 
-        with patch.object(EventBus, 'publish', side_effect=mock_publish):
+        with patch.object(EventBus, "publish", side_effect=mock_publish):
             # Record activity - should auto-join
             results = QuestService.record_activity_for_quests(
-                user_id=player.id,
-                activity_type="matches_played",
-                activity_count=1
+                user_id=player.id, activity_type="matches_played", activity_count=1
             )
 
         # Verify auto-join happened
@@ -227,18 +225,15 @@ class TestAutoJoinQuestWorkflow:
 
         # Verify participation created with progress
         participation = QuestParticipation.query.filter_by(
-            user_id=player.id,
-            quest_id=quest.id
+            user_id=player.id, quest_id=quest.id
         ).first()
         assert participation is not None
         assert participation.current_progress == 1
 
         # Record 2 more activities to complete
-        with patch.object(EventBus, 'publish', side_effect=mock_publish):
+        with patch.object(EventBus, "publish", side_effect=mock_publish):
             results = QuestService.record_activity_for_quests(
-                user_id=player.id,
-                activity_type="matches_played",
-                activity_count=2
+                user_id=player.id, activity_type="matches_played", activity_count=2
             )
 
         # Should be completed now
@@ -247,8 +242,9 @@ class TestAutoJoinQuestWorkflow:
 
         # Verify completion event was published
         completion_events = [
-            e for e in events_published
-            if hasattr(e, 'quest_id') and e.quest_id == quest.id
+            e
+            for e in events_published
+            if hasattr(e, "quest_id") and e.quest_id == quest.id
         ]
         assert len(completion_events) >= 1
 
@@ -268,7 +264,7 @@ class TestAutoJoinQuestWorkflow:
             quest_type=QuestType.WEEKLY,
             start_date=now - timedelta(hours=1),
             end_date=now + timedelta(days=6),
-            requirements={"type": "matches_played", "target": 5}
+            requirements={"type": "matches_played", "target": 5},
         )
 
         # Create quest for matches_won
@@ -278,14 +274,12 @@ class TestAutoJoinQuestWorkflow:
             quest_type=QuestType.WEEKLY,
             start_date=now - timedelta(hours=1),
             end_date=now + timedelta(days=6),
-            requirements={"type": "matches_won", "target": 3}
+            requirements={"type": "matches_won", "target": 3},
         )
 
         # Record matches_played activity
         results = QuestService.record_activity_for_quests(
-            user_id=player.id,
-            activity_type="matches_played",
-            activity_count=2
+            user_id=player.id, activity_type="matches_played", activity_count=2
         )
 
         # Only matches_quest should be affected
@@ -294,16 +288,13 @@ class TestAutoJoinQuestWorkflow:
 
         # Verify wins_quest not joined
         wins_participation = QuestParticipation.query.filter_by(
-            user_id=player.id,
-            quest_id=wins_quest.id
+            user_id=player.id, quest_id=wins_quest.id
         ).first()
         assert wins_participation is None
 
         # Now record wins activity
         results = QuestService.record_activity_for_quests(
-            user_id=player.id,
-            activity_type="matches_won",
-            activity_count=1
+            user_id=player.id, activity_type="matches_won", activity_count=1
         )
 
         # Only wins_quest affected
@@ -331,7 +322,7 @@ class TestQuestXPIntegration:
             start_date=now - timedelta(hours=1),
             end_date=now + timedelta(days=6),
             requirements={"type": "matches_played", "target": 1},
-            xp_reward=100
+            xp_reward=100,
         )
 
         # Create monthly quest with higher reward
@@ -342,7 +333,7 @@ class TestQuestXPIntegration:
             start_date=now - timedelta(hours=1),
             end_date=now + timedelta(days=29),
             requirements={"type": "tournaments_joined", "target": 1},
-            xp_reward=300
+            xp_reward=300,
         )
 
         # Complete weekly quest
@@ -368,7 +359,8 @@ class TestQuestXPIntegration:
         # Verify XP transactions
         transactions = XPTransaction.query.filter_by(user_id=player.id).all()
         quest_transactions = [
-            t for t in transactions
+            t
+            for t in transactions
             if t.transaction_type == XPTransactionType.CHALLENGE_COMPLETION
         ]
         assert len(quest_transactions) >= 2
@@ -394,7 +386,7 @@ class TestQuestStatisticsAndLeaderboard:
             quest_type=QuestType.WEEKLY,
             start_date=now - timedelta(hours=1),
             end_date=now + timedelta(days=6),
-            requirements={"type": "racks_won", "target": 10}
+            requirements={"type": "racks_won", "target": 10},
         )
 
         # Player 1: completes quest
@@ -439,7 +431,7 @@ class TestQuestStatisticsAndLeaderboard:
             start_date=now - timedelta(hours=1),
             end_date=now + timedelta(days=6),
             requirements={"type": "matches_played", "target": 1},
-            xp_reward=100
+            xp_reward=100,
         )
         QuestService.join_quest(player.id, weekly.id)
         QuestService.update_progress(player.id, weekly.id, progress_increment=1)
@@ -451,7 +443,7 @@ class TestQuestStatisticsAndLeaderboard:
             quest_type=QuestType.MONTHLY,
             start_date=now - timedelta(hours=1),
             end_date=now + timedelta(days=29),
-            requirements={"type": "matches_played", "target": 10}
+            requirements={"type": "matches_played", "target": 10},
         )
         QuestService.join_quest(player.id, monthly.id)
         QuestService.update_progress(player.id, monthly.id, progress_increment=5)
@@ -490,7 +482,7 @@ class TestQuestQueryMethods:
             quest_type=QuestType.WEEKLY,
             start_date=now - timedelta(hours=1),
             end_date=now + timedelta(days=6),
-            requirements={"type": "matches_played", "target": 10}
+            requirements={"type": "matches_played", "target": 10},
         )
 
         # Join and make progress
@@ -499,18 +491,13 @@ class TestQuestQueryMethods:
 
         # Get user quests
         user_quests = QuestService.get_user_quests(
-            player.id,
-            include_completed=True,
-            active_only=True
+            player.id, include_completed=True, active_only=True
         )
 
         assert len(user_quests) >= 1
 
         # Find our quest
-        quest_info = next(
-            (q for q in user_quests if q["quest"].id == quest.id),
-            None
-        )
+        quest_info = next((q for q in user_quests if q["quest"].id == quest.id), None)
         assert quest_info is not None
         assert quest_info["is_participating"] is True
         assert quest_info["is_completed"] is False
@@ -531,7 +518,7 @@ class TestQuestQueryMethods:
             quest_type=QuestType.WEEKLY,
             start_date=now - timedelta(hours=1),
             end_date=now + timedelta(days=6),
-            requirements={"type": "matches_played", "target": 5}
+            requirements={"type": "matches_played", "target": 5},
         )
 
         # Create upcoming quest
@@ -541,7 +528,7 @@ class TestQuestQueryMethods:
             quest_type=QuestType.WEEKLY,
             start_date=now + timedelta(days=1),
             end_date=now + timedelta(days=8),
-            requirements={"type": "matches_played", "target": 5}
+            requirements={"type": "matches_played", "target": 5},
         )
 
         # Get active quests
@@ -575,7 +562,7 @@ class TestQuestSpecialEventWorkflow:
             end_date=now + timedelta(days=2),  # Short window
             requirements={"type": "tournament_matches", "target": 3},
             xp_reward=500,  # Higher reward for special events
-            badge_icon="tournament_hero.png"
+            badge_icon="tournament_hero.png",
         )
 
         assert event_quest.quest_type == QuestType.SPECIAL_EVENT
@@ -583,21 +570,15 @@ class TestQuestSpecialEventWorkflow:
         assert event_quest.badge_icon == "tournament_hero.png"
 
         # Both players participate
-        QuestService.record_activity_for_quests(
-            player1.id, "tournament_matches", 2
-        )
-        QuestService.record_activity_for_quests(
-            player2.id, "tournament_matches", 3
-        )
+        QuestService.record_activity_for_quests(player1.id, "tournament_matches", 2)
+        QuestService.record_activity_for_quests(player2.id, "tournament_matches", 3)
 
         # Check completion status
         p1_participation = QuestParticipation.query.filter_by(
-            user_id=player1.id,
-            quest_id=event_quest.id
+            user_id=player1.id, quest_id=event_quest.id
         ).first()
         p2_participation = QuestParticipation.query.filter_by(
-            user_id=player2.id,
-            quest_id=event_quest.id
+            user_id=player2.id, quest_id=event_quest.id
         ).first()
 
         assert p1_participation.is_completed is False
@@ -631,7 +612,7 @@ class TestQuestEdgeCases:
             quest_type=QuestType.WEEKLY,
             start_date=now + timedelta(days=1),
             end_date=now + timedelta(days=8),
-            requirements={"type": "matches_played", "target": 5}
+            requirements={"type": "matches_played", "target": 5},
         )
 
         with pytest.raises(ValueError, match="not active"):
@@ -652,7 +633,7 @@ class TestQuestEdgeCases:
             quest_type=QuestType.WEEKLY,
             start_date=now - timedelta(hours=1),
             end_date=now + timedelta(days=6),
-            requirements={"type": "matches_played", "target": 5}
+            requirements={"type": "matches_played", "target": 5},
         )
 
         # First join
@@ -681,7 +662,7 @@ class TestQuestEdgeCases:
             quest_type=QuestType.WEEKLY,
             start_date=now - timedelta(hours=1),
             end_date=now + timedelta(days=6),
-            requirements={"type": "matches_played", "target": 2}
+            requirements={"type": "matches_played", "target": 2},
         )
 
         # Join and complete

@@ -291,9 +291,7 @@ class TestProvaService:
             ) as mock_reopen_setup:
                 # Mock utc_now to be before start_date
                 with patch("models.competition.services.datetime") as mock_datetime:
-                    mock_utc_now.return_value = datetime(
-                        2022, 12, 15
-                    )  # Before start
+                    mock_utc_now.return_value = datetime(2022, 12, 15)  # Before start
                     mock_datetime.side_effect = lambda *args, **kw: datetime(
                         *args, **kw
                     )

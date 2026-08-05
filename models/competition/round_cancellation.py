@@ -1,6 +1,7 @@
 """
 Module: models/competition/round_cancellation.py
-Purpose: Round cancellation logic (cancel_first_round_startup, cancel_current_round_startup)
+Purpose: Round cancellation logic (cancel_first_round_startup,
+    cancel_current_round_startup)
 """
 
 from __future__ import annotations
@@ -18,8 +19,10 @@ class RoundCancellationService:
     def cancel_first_round_startup(gara_id: int) -> Gara:
         """Cancella l'avvio del primo turno se non sono stati inseriti risultati.
 
-        Riporta la gara allo stato 'inscription' e rimuove tutte le partite del primo turno.
-        Utilizzabile solo se il primo turno è stato avviato ma nessun risultato è stato inserito.
+        Riporta la gara allo stato 'inscription' e rimuove tutte le partite del
+        primo turno.
+        Utilizzabile solo se il primo turno è stato avviato ma nessun risultato
+        è stato inserito.
         """
         from models.match.models import Match, TrioMatch
 
@@ -55,6 +58,14 @@ class RoundCancellationService:
             GaraChallengeClassification,
         )
 
+        # Il seeding va rimosso tramite il servizio, che azzera anche
+        # `Inscription.initial_order` ("Ordine sorteggio" mostrato al
+        # giocatore): la delete grezza qui sotto toglierebbe solo il turno 0
+        # lasciando in pagina un ordine che non corrisponde più a nulla.
+        from models.classification.seeding_service import SeedingService
+
+        SeedingService.clear_seeding(gara_id)
+
         RoundClassification.query.filter_by(gara_id=gara_id).delete()
         GaraClassification.query.filter_by(gara_id=gara_id).delete()
 
@@ -71,10 +82,8 @@ class RoundCancellationService:
             ).delete(synchronize_session=False)
 
         # Cancella TUTTI i match della gara
-        # Questo è necessario specialmente per la strategia 'random' che pre-genera tutto
-        matches = (
-            db.session.query(Match).filter_by(gara_id=gara_id).all()
-        )
+        # Necessario specialmente per la strategia 'random', che pre-genera tutto
+        matches = db.session.query(Match).filter_by(gara_id=gara_id).all()
 
         # Prima cancella i TrioMatch associati
         for match in matches:
@@ -181,6 +190,14 @@ class RoundCancellationService:
         # Se torniamo al turno 0, riporta allo stato inscription
         if gara.current_round == 0:
             gara.status = GaraStatus.INSCRIPTION.value
+
+            # La classifica di partenza vale solo a gara avviata: se restasse,
+            # un cambio di iscritti prima del riavvio lascerebbe un seeding
+            # stantio (ritirati presenti, nuovi assenti) a pilotare il primo
+            # accoppiamento. Al riavvio se ne genera uno nuovo.
+            from models.classification.seeding_service import SeedingService
+
+            SeedingService.clear_seeding(gara_id)
 
         db.session.add(gara)
         return gara

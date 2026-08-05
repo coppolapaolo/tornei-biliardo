@@ -63,11 +63,13 @@ class GaraFormParser:
         # ── Basic fields ─────────────────────────────────────────
         camp = self.campionato
         default_rounds = (
-            camp.default_rounds_count if camp and camp.default_rounds_count
+            camp.default_rounds_count
+            if camp and camp.default_rounds_count
             else DEFAULT_ROUNDS_COUNT
         )
         default_fee = (
-            camp.default_entry_fee if camp and camp.default_entry_fee is not None
+            camp.default_entry_fee
+            if camp and camp.default_entry_fee is not None
             else DEFAULT_ENTRY_FEE
         )
 
@@ -94,6 +96,17 @@ class GaraFormParser:
         data["match_distance"] = int(md) if md else None
         data["is_race_to_sets"] = "is_race_to_sets" in request.form
 
+        # ── Handicap mode (tri-state: eredita/sì/no) ─────────────
+        # Select con valori "" (eredita dal campionato) / "true" / "false".
+        # Per gare standalone "" equivale a NULL → False.
+        raw_handicap = request.form.get("has_handicap", "")
+        if raw_handicap == "true":
+            data["has_handicap"] = True
+        elif raw_handicap == "false":
+            data["has_handicap"] = False
+        else:
+            data["has_handicap"] = None  # eredita dal campionato
+
         # ── Strategy ─────────────────────────────────────────────
         if camp:
             data["matchmaking_strategy"] = camp.campionato_type
@@ -114,9 +127,7 @@ class GaraFormParser:
             data["first_round_policy"] = request.form.get(
                 "first_round_policy", "random"
             )
-            data["classification_system"] = (
-                camp.default_classification_system or "WINS"
-            )
+            data["classification_system"] = camp.default_classification_system or "WINS"
         else:
             data["matchmaking_strategy"] = request.form.get(
                 "matchmaking_strategy", "amalfi"
@@ -124,9 +135,7 @@ class GaraFormParser:
             data["first_round_policy"] = request.form.get(
                 "first_round_policy", "random"
             )
-            data["odd_number_policy"] = request.form.get(
-                "odd_number_policy", "bye"
-            )
+            data["odd_number_policy"] = request.form.get("odd_number_policy", "bye")
             data["anti_rematch_enabled"] = (
                 request.form.get("anti_rematch_enabled") == "on"
             )
@@ -145,7 +154,7 @@ class GaraFormParser:
 
     @staticmethod
     def validate_strategy(data: Dict[str, Any]) -> List[str]:
-        """Validate strategy configuration. Returns list of error strings (empty = OK)."""
+        """Validate strategy config. Returns error strings (empty = OK)."""
         try:
             cfg = StrategyConfiguration(
                 strategy=MatchmakingStrategy(data["matchmaking_strategy"]),

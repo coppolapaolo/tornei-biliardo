@@ -12,10 +12,12 @@ from __future__ import annotations
 from typing import Any, Dict, List, TYPE_CHECKING
 
 from flask_login import UserMixin
+from sqlalchemy.orm import validates
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from ..base import db, BaseModel  # BaseModel for timestamps, utc_now
 from ..fields import EncryptedString  # Encrypted field types
+from utils.encryption import compute_email_hash
 
 if TYPE_CHECKING:
     from ..location.models import BilliardHall
@@ -25,13 +27,13 @@ if TYPE_CHECKING:  # Avoid runtime circular imports
     from ..match.models import Match
     from ..campionato.models import Campionato
 
-from models.base import TimestampMixin, SoftDeleteMixin, utc_now
+from models.base import SoftDeleteMixin, utc_now
 
 
 # ────────────────────────────────────────────────────────────────────────────────
 # USER
 # ────────────────────────────────────────────────────────────────────────────────
-class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
+class User(UserMixin, BaseModel, SoftDeleteMixin):
     """Core user entity with role-based permissions and rich statistics."""
 
     __tablename__ = "user"
@@ -41,6 +43,11 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
     email = db.Column(
         EncryptedString(200), unique=True, nullable=True
     )  # Encrypted personal data
+    # HMAC deterministico dell'email normalizzata: l'email cifrata (Fernet, non
+    # deterministica) non e' filtrabile in SQL, quindi la lookup per email
+    # passava per un O(N) che decifrava tutti gli utenti. email_hash permette un
+    # lookup indicizzato O(1). Tenuto in sync da @validates("email"). Vedi #8.
+    email_hash = db.Column(db.String(64), nullable=True, index=True)
     password_hash = db.Column(db.String(120), nullable=False)
 
     # Verification status
@@ -135,6 +142,17 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
     def check_password(self, password: str) -> bool:
         return check_password_hash(self.password_hash, password)
 
+    @validates("email")
+    def _sync_email_hash(self, key: str, value: Any) -> Any:
+        """Mantiene email_hash sincronizzato a ogni assegnazione di email.
+
+        Scatta su costruttore, update e anonymize() (email=None → hash=None).
+        I validator NON scattano al load dall' DB, quindi le righe esistenti
+        conservano l'hash gia' persistito (popolato dalla migration).
+        """
+        self.email_hash = compute_email_hash(value)
+        return value
+
     # ───────────────────
     # Role shortcuts
     # ───────────────────
@@ -159,6 +177,20 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
     @property
     def is_player(self) -> bool:
         return self.role == UserRole.PLAYER.value
+
+    @property
+    def elo_global_rating(self):
+        """ELO globale (tornei + casual, dual ELO) — SOLO display.
+
+        A differenza di `elo_rating` (competitivo, colonna sincronizzata e fonte
+        autorevole per categoria/handicap), il pool globale vive solo in
+        PlayerRating(ELO_GLOBAL). Query on-demand: ok per il profilo singolo;
+        per liste/leaderboard caricare in bulk lato route.
+        """
+        from models.rating.models import PlayerRating, RatingSystem
+
+        obj = PlayerRating.get_user_rating(self.id, RatingSystem.ELO_GLOBAL)
+        return obj.rating_value if obj else None
 
     # Flask-Login integration: utente attivo solo se non soft-deleted
     @property
@@ -252,7 +284,7 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
             return []
 
         return BilliardHall.query.filter(
-            BilliardHall.id.in_(venue_ids), BilliardHall.is_active is True
+            BilliardHall.id.in_(venue_ids), BilliardHall.is_active.is_(True)
         ).all()
 
     # ───────────────────
@@ -280,12 +312,13 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
             Gara,
         )
         from ..match.models import Match
+        from ..status_enum import GaraStatus, MatchStatus
 
         total_inscriptions = Inscription.query.filter_by(user_id=self.id).count()
 
         matches: List["Match"] = Match.query.filter(
             db.or_(Match.player1_id == self.id, Match.player2_id == self.id),
-            Match.status == "completed",
+            Match.status == MatchStatus.COMPLETED.value,
         ).all()
 
         total_matches = len(matches)
@@ -298,7 +331,8 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
         tournaments_played = (
             Inscription.query.filter_by(user_id=self.id)
             .join(Gara)
-            .filter(Gara.status == "completed")  # Solo gare completate
+            # Solo gare completate
+            .filter(Gara.status == GaraStatus.COMPLETED.value)
             .with_entities(Gara.campionato_id)
             .distinct()
             .count()
@@ -308,7 +342,8 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
         provas_played = (
             Inscription.query.filter_by(user_id=self.id)
             .join(Gara)
-            .filter(Gara.status == "completed")  # Solo gare completate
+            # Solo gare completate
+            .filter(Gara.status == GaraStatus.COMPLETED.value)
             .count()
         )
 
@@ -361,7 +396,10 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
         return AchievementService.has_achievement(self.id, achievement_slug)
 
     def can_access(
-        self, feature_code: str, context: Dict[str, Any] | None = None
+        self,
+        feature_code: str,
+        context: Dict[str, Any] | None = None,
+        cache: Dict[Any, Any] | None = None,
     ) -> bool:
         """
         Check if user can access a specific feature based on gamification rules.
@@ -369,6 +407,8 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
         Args:
             feature_code: Code of the feature to check (e.g., 'create_match')
             context: Optional context for rule evaluation (e.g., location_id)
+            cache: Optional memoization dict per le metriche, da passare SOLO
+                dai path di sola lettura (vedi UnlockProgressService, issue #9).
 
         Returns:
             True if feature is unlocked or overridden, False otherwise.
@@ -381,7 +421,9 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
 
         from models.gamification.unlock_engine import UnlockEngine
 
-        return UnlockEngine.check_eligibility(self.id, feature_code, context)
+        return UnlockEngine.check_eligibility(
+            self.id, feature_code, context, cache=cache
+        )
 
     # debug ─────────────────────────────────────────────────────────────────────
     def __repr__(self) -> str:  # pragma: no cover

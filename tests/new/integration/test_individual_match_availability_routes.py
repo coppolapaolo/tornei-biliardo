@@ -118,9 +118,7 @@ class TestAvailabilitySurfaceRoutes:
         """An omitted is_available (unchecked checkbox) must mean NOT available."""
         self._login(client, player)
         # No is_available key in the body == checkbox left unchecked
-        client.post(
-            "/match/availability/venue", data={"venue_id": str(venue.id)}
-        )
+        client.post("/match/availability/venue", data={"venue_id": str(venue.id)})
         rec = UserLocationAvailability.query.filter_by(
             user_id=player.id, billiard_hall_id=venue.id
         ).first()

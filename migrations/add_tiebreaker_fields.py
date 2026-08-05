@@ -72,7 +72,7 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
             "tiebreaker_enabled",
             "tiebreaker_until_position",
             "tiebreaker_mode",
-            "tiebreaker_challenge_id"
+            "tiebreaker_challenge_id",
         }
 
         if required_fields.issubset(gara_cols):
@@ -181,9 +181,15 @@ if __name__ == "__main__":
         else:
             print(f"❌ Unknown command: {sys.argv[1]}")
             print("\nUsage:")
-            print("  python migrations/add_tiebreaker_fields.py              # SQLite (dev)")
-            print("  python migrations/add_tiebreaker_fields.py postgresql   # PostgreSQL (prod)")
-            print("  python migrations/add_tiebreaker_fields.py downgrade    # Rollback")
+            print(
+                "  python migrations/add_tiebreaker_fields.py              # SQLite (dev)"
+            )
+            print(
+                "  python migrations/add_tiebreaker_fields.py postgresql   # PostgreSQL (prod)"
+            )
+            print(
+                "  python migrations/add_tiebreaker_fields.py downgrade    # Rollback"
+            )
             sys.exit(1)
     else:
         # Default: SQLite migration

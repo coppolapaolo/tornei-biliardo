@@ -61,16 +61,14 @@ def clamp_radius(
 
 
 def city_centroid(
-    coords: Iterable[Tuple[Optional[float], Optional[float]]]
+    coords: Iterable[Tuple[Optional[float], Optional[float]]],
 ) -> Optional[Tuple[float, float]]:
     """Average of the given (lat, lng) points, ignoring None pairs.
 
     Used as a network-free fallback origin: the centroid of the known venue
     coordinates in the user's home city. Returns None if no usable point.
     """
-    points = [
-        (la, ln) for la, ln in coords if la is not None and ln is not None
-    ]
+    points = [(la, ln) for la, ln in coords if la is not None and ln is not None]
     if not points:
         return None
     n = len(points)

@@ -21,7 +21,6 @@ from pathlib import Path
 from datetime import datetime
 from models.base import utc_now
 
-
 # Default values from xp_config.py for initial seeding
 DEFAULT_XP_RATES = [
     ("xp_match_win", 50, "XP awarded for winning a match", "xp_rates"),
@@ -36,7 +35,12 @@ DEFAULT_XP_RATES = [
 
 DEFAULT_LEVEL_PARAMS = [
     ("level_base_xp", 100, "Base XP for level 1", "level_curve"),
-    ("level_power", 150, "Level curve power (divided by 100, so 150 = 1.5)", "level_curve"),
+    (
+        "level_power",
+        150,
+        "Level curve power (divided by 100, so 150 = 1.5)",
+        "level_curve",
+    ),
 ]
 
 DEFAULT_STREAK_CONFIG = [
@@ -45,20 +49,40 @@ DEFAULT_STREAK_CONFIG = [
 
 DEFAULT_LEVEL_UNLOCKS = [
     (5, "match_proposals", "Proposte Match", "Puoi proporre match individuali"),
-    (10, "tournament_creation", "Creazione Tornei", "Accesso all'assistente creazione tornei"),
+    (
+        10,
+        "tournament_creation",
+        "Creazione Tornei",
+        "Accesso all'assistente creazione tornei",
+    ),
     (15, "priority_invites", "Inviti Prioritari", "Ricevi inviti prioritari ai tornei"),
-    (20, "custom_badge_display", "Badge Personalizzati", "Puoi scegliere quali badge mostrare"),
+    (
+        20,
+        "custom_badge_display",
+        "Badge Personalizzati",
+        "Puoi scegliere quali badge mostrare",
+    ),
     (25, "venue_suggestion", "Suggerimenti Venue", "Puoi suggerire nuove venue"),
-    (30, "challenge_creation", "Creazione Challenge", "Puoi creare challenge per altri"),
-    (40, "director_fast_track", "Direttore Fast-Track", "Richiesta direttore auto-approvata"),
+    (
+        30,
+        "challenge_creation",
+        "Creazione Challenge",
+        "Puoi creare challenge per altri",
+    ),
+    (
+        40,
+        "director_fast_track",
+        "Direttore Fast-Track",
+        "Richiesta direttore auto-approvata",
+    ),
     (50, "legend_status", "Status Leggenda", "Accesso alla Hall of Fame"),
 ]
 
 DEFAULT_STREAK_MILESTONES = [
     # (weeks, freeze_tokens, xp_bonus_multiplier, is_recurring)
-    (4, 1, 1, False),    # Prima milestone: 1 freeze token
-    (12, 1, 1, True),    # Milestone trimestrale: 1 freeze (ricorrente)
-    (52, 2, 1, False),   # Milestone annuale: 2 freeze tokens
+    (4, 1, 1, False),  # Prima milestone: 1 freeze token
+    (12, 1, 1, True),  # Milestone trimestrale: 1 freeze (ricorrente)
+    (52, 2, 1, False),  # Milestone annuale: 2 freeze tokens
 ]
 
 
@@ -166,7 +190,7 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
         """)
         tables = [row[0] for row in cursor.fetchall()]
 
-        expected_tables = ['gamification_config', 'level_unlock', 'streak_milestone']
+        expected_tables = ["gamification_config", "level_unlock", "streak_milestone"]
 
         for table in expected_tables:
             if table in tables:
@@ -197,42 +221,57 @@ def seed_initial_data(cursor: sqlite3.Cursor) -> None:
     # Seed XP rates
     print("      Seeding XP rates...")
     for key, value, description, category in DEFAULT_XP_RATES:
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT OR IGNORE INTO gamification_config (key, value, description, category, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?)
-        """, (key, value, description, category, now, now))
+        """,
+            (key, value, description, category, now, now),
+        )
 
     # Seed level curve params
     print("      Seeding level curve parameters...")
     for key, value, description, category in DEFAULT_LEVEL_PARAMS:
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT OR IGNORE INTO gamification_config (key, value, description, category, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?)
-        """, (key, value, description, category, now, now))
+        """,
+            (key, value, description, category, now, now),
+        )
 
     # Seed streak config
     print("      Seeding streak configuration...")
     for key, value, description, category in DEFAULT_STREAK_CONFIG:
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT OR IGNORE INTO gamification_config (key, value, description, category, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?)
-        """, (key, value, description, category, now, now))
+        """,
+            (key, value, description, category, now, now),
+        )
 
     # Seed level unlocks
     print("      Seeding level unlocks...")
     for level, feature_code, feature_name, description in DEFAULT_LEVEL_UNLOCKS:
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT OR IGNORE INTO level_unlock (level, feature_code, feature_name, description, is_active, created_at, updated_at)
             VALUES (?, ?, ?, ?, 1, ?, ?)
-        """, (level, feature_code, feature_name, description, now, now))
+        """,
+            (level, feature_code, feature_name, description, now, now),
+        )
 
     # Seed streak milestones
     print("      Seeding streak milestones...")
     for weeks, freeze_tokens, xp_multiplier, is_recurring in DEFAULT_STREAK_MILESTONES:
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT OR IGNORE INTO streak_milestone (weeks, freeze_tokens, xp_bonus_multiplier, is_recurring, is_active, created_at, updated_at)
             VALUES (?, ?, ?, ?, 1, ?, ?)
-        """, (weeks, freeze_tokens, xp_multiplier, is_recurring, now, now))
+        """,
+            (weeks, freeze_tokens, xp_multiplier, is_recurring, now, now),
+        )
 
     print("      Seed data complete!")
 
@@ -245,7 +284,7 @@ def downgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
     print(f"Rolling back gamification config tables from: {db_path}")
 
     try:
-        tables = ['streak_milestone', 'level_unlock', 'gamification_config']
+        tables = ["streak_milestone", "level_unlock", "gamification_config"]
 
         for table in tables:
             cursor.execute(f"DROP TABLE IF EXISTS {table}")
@@ -276,8 +315,12 @@ if __name__ == "__main__":
         else:
             print(f"Unknown command: {sys.argv[1]}")
             print("\nUsage:")
-            print("  python migrations/add_gamification_config_tables.py           # Apply migration")
-            print("  python migrations/add_gamification_config_tables.py downgrade # Rollback")
+            print(
+                "  python migrations/add_gamification_config_tables.py           # Apply migration"
+            )
+            print(
+                "  python migrations/add_gamification_config_tables.py downgrade # Rollback"
+            )
             sys.exit(1)
     else:
         upgrade_sqlite()

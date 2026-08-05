@@ -52,13 +52,24 @@ def _make_standalone_gara(director_id: int, number: int, status: str) -> Gara:
     return gara
 
 
-def _make_campionato(name_prefix: str, director_id: int) -> Campionato:
+def _make_campionato(
+    name_prefix: str, director_id: int, planned_gare_count: int = 1
+) -> Campionato:
+    """Campionato di test con UNA gara pianificata.
+
+    Il default del modello è 10: con quello, un campionato le cui gare
+    esistenti sono tutte COMPLETED resta IN_PROGRESS perché ne mancano
+    ancora 9 da creare (issue #60). Qui interessa la partizione per stato
+    derivato, non la pianificazione, quindi pianifichiamo esattamente le
+    gare che i test creano.
+    """
     suffix = uuid.uuid4().hex[:6]
     return TournamentService().create_campionato_with_director(
         name=f"{name_prefix}_{suffix}",
         creator_user_id=director_id,
         campionato_type="Amalfi",
         is_active=True,
+        planned_gare_count=planned_gare_count,
     )
 
 
@@ -98,9 +109,7 @@ class TestPlayerDashboardCampionatiPartition:
         self, db_session, isolated_director_user, isolated_players
     ):
         campionato = _make_campionato("Done", isolated_director_user.id)
-        _add_completed_gara(
-            db_session, campionato.id, 1, isolated_director_user.id
-        )
+        _add_completed_gara(db_session, campionato.id, 1, isolated_director_user.id)
 
         # Sanity
         assert campionato.get_status() == TournamentStatus.COMPLETED.value
@@ -109,9 +118,7 @@ class TestPlayerDashboardCampionatiPartition:
         vm = DashboardService.for_player(isolated_players[0].id)
 
         active_ids = [it.id for it in (vm.campionati_active_items or [])]
-        completed_ids = [
-            it.id for it in (vm.campionati_completed_shown_items or [])
-        ]
+        completed_ids = [it.id for it in (vm.campionati_completed_shown_items or [])]
         assert campionato.id not in active_ids
         assert campionato.id in completed_ids
         assert vm.campionati_completed_total == 1
@@ -154,16 +161,12 @@ class TestDirectorDashboardCampionatiPartition:
         self, db_session, isolated_director_user
     ):
         campionato = _make_campionato("Old", isolated_director_user.id)
-        _add_completed_gara(
-            db_session, campionato.id, 1, isolated_director_user.id
-        )
+        _add_completed_gara(db_session, campionato.id, 1, isolated_director_user.id)
 
         vm = DashboardService.for_director(isolated_director_user.id)
 
         active_ids = [it.id for it in (vm.campionati_active_items or [])]
-        completed_ids = [
-            it.id for it in (vm.campionati_completed_shown_items or [])
-        ]
+        completed_ids = [it.id for it in (vm.campionati_completed_shown_items or [])]
         assert campionato.id not in active_ids
         assert campionato.id in completed_ids
 
@@ -262,9 +265,7 @@ class TestDashboardSetupVisibility:
         db_session.commit()
 
         vm = DashboardService.for_player(isolated_players[0].id)
-        gara_ids = [
-            it.id for it in (vm.unified_items or []) if it.type == "gara"
-        ]
+        gara_ids = [it.id for it in (vm.unified_items or []) if it.type == "gara"]
         assert zombie.id not in gara_ids
 
     def test_player_sees_future_setup(
@@ -277,14 +278,10 @@ class TestDashboardSetupVisibility:
         db_session.commit()
 
         vm = DashboardService.for_player(isolated_players[0].id)
-        gara_ids = [
-            it.id for it in (vm.unified_items or []) if it.type == "gara"
-        ]
+        gara_ids = [it.id for it in (vm.unified_items or []) if it.type == "gara"]
         assert future.id in gara_ids
 
-    def test_director_owner_sees_zombie_setup(
-        self, db_session, isolated_director_user
-    ):
+    def test_director_owner_sees_zombie_setup(self, db_session, isolated_director_user):
         """Il director proprietario vede la sua zombie SETUP per poterla
         gestire (cancellarla o aggiornare la data)."""
         zombie = _make_standalone_gara(
@@ -294,9 +291,7 @@ class TestDashboardSetupVisibility:
         db_session.commit()
 
         vm = DashboardService.for_director(isolated_director_user.id)
-        gara_ids = [
-            it.id for it in (vm.unified_items or []) if it.type == "gara"
-        ]
+        gara_ids = [it.id for it in (vm.unified_items or []) if it.type == "gara"]
         assert zombie.id in gara_ids
 
     def test_director_non_owner_does_not_see_zombie_setup(
@@ -316,7 +311,5 @@ class TestDashboardSetupVisibility:
         db_session.commit()
 
         vm = DashboardService.for_director(other.id)
-        gara_ids = [
-            it.id for it in (vm.unified_items or []) if it.type == "gara"
-        ]
+        gara_ids = [it.id for it in (vm.unified_items or []) if it.type == "gara"]
         assert zombie.id not in gara_ids

@@ -11,12 +11,14 @@ from sqlalchemy import func
 
 from models.base import db
 from models.match.models import Match
+from models.status_enum import MatchStatus
 from models.transaction.manager import transactional
 
 
 @dataclass
 class TiedPosition:
     """Represents a tie at a specific position."""
+
     position: int
     player_ids: List[int]
     matches_won: int
@@ -51,15 +53,19 @@ class TiebreakerService:
 
         # Get final round classification - use max(Match.round_number) to handle
         # Random strategy where all rounds are created at startup
-        final_round = db.session.query(func.max(Match.round_number)).filter(
-            Match.gara_id == gara_id
-        ).scalar() or gara.current_round
+        final_round = (
+            db.session.query(func.max(Match.round_number))
+            .filter(Match.gara_id == gara_id)
+            .scalar()
+            or gara.current_round
+        )
         if final_round == 0:
             return []
 
         classifications = (
-            RoundClassification.query
-            .filter_by(gara_id=gara_id, round_number=final_round)
+            RoundClassification.query.filter_by(
+                gara_id=gara_id, round_number=final_round
+            )
             .order_by(RoundClassification.position)
             .all()
         )
@@ -67,15 +73,35 @@ class TiebreakerService:
         if not classifications:
             return []
 
-        # Group by (matches_won, rack_difference) to find ties
+        # Chiave di parimerito IDENTICA a `SpareggioService._group_by_classification`:
+        # i due servizi rispondono alla stessa domanda ("chi è a pari merito?") e
+        # devono farlo allo stesso modo.
+        #
+        # - RACK: solo i rack totali. `matches_won` NON è un criterio di
+        #   classifica in questo sistema, quindi includerlo nella chiave
+        #   spezzerebbe un ex-aequo reale (stessi rack, vittorie diverse) e lo
+        #   spareggio non scatterebbe.
+        # - WINS / POSITION: (vittorie, differenza rack), entrambi criteri.
+        is_rack_system = (gara.classification_system or "WINS").upper() == "RACK"
+
+        def tie_key(c) -> Tuple[int, int]:
+            if is_rack_system:
+                return (0, c.ranking_rack_value)
+            return (c.matches_won, c.rack_difference or 0)
+
         groups: Dict[Tuple[int, int], List[int]] = {}
         position_map: Dict[Tuple[int, int], int] = {}
+        stats_map: Dict[Tuple[int, int], Tuple[int, int]] = {}
 
         for c in classifications:
-            key = (c.matches_won, c.rack_difference)
+            key = tie_key(c)
             if key not in groups:
                 groups[key] = []
                 position_map[key] = c.position
+                # Valori riportati nel TiedPosition: quelli reali del primo
+                # giocatore del gruppo, non la chiave (che in RACK azzera
+                # deliberatamente le vittorie).
+                stats_map[key] = (c.matches_won, c.ranking_rack_value)
             groups[key].append(c.user_id)
 
         # Find ties within tiebreaker_until_position
@@ -84,13 +110,18 @@ class TiebreakerService:
             if len(player_ids) > 1:
                 position = position_map[key]
                 # Only include if any tied position is <= tiebreaker_until_position
-                if position <= gara.tiebreaker_until_position:
-                    ties.append(TiedPosition(
-                        position=position,
-                        player_ids=player_ids,
-                        matches_won=key[0],
-                        rack_difference=key[1]
-                    ))
+                # (`or 3`: guardia NULL coerente con gli altri siti — un record
+                # legacy con tiebreaker_until_position=NULL darebbe int <= None)
+                if position <= (gara.tiebreaker_until_position or 3):
+                    matches_won, rack_value = stats_map[key]
+                    ties.append(
+                        TiedPosition(
+                            position=position,
+                            player_ids=player_ids,
+                            matches_won=matches_won,
+                            rack_difference=rack_value,
+                        )
+                    )
 
         # Sort by position
         ties.sort(key=lambda t: t.position)
@@ -130,7 +161,7 @@ class TiebreakerService:
             "until_position": gara.tiebreaker_until_position,
             "mode": gara.tiebreaker_mode,
             "challenge_id": gara.tiebreaker_challenge_id,
-            "challenge": None
+            "challenge": None,
         }
 
         if gara.tiebreaker_challenge:
@@ -144,10 +175,7 @@ class TiebreakerService:
     @staticmethod
     @transactional(domain="competition")
     def create_playoff_match(
-        gara_id: int,
-        player1_id: int,
-        player2_id: int,
-        for_position: int
+        gara_id: int, player1_id: int, player2_id: int, for_position: int
     ):
         """Create a playoff match for tiebreaker.
 
@@ -191,9 +219,7 @@ class TiebreakerService:
     @staticmethod
     @transactional(domain="competition")
     def create_challenge_tiebreaker(
-        gara_id: int,
-        player_ids: List[int],
-        for_position: int
+        gara_id: int, player_ids: List[int], for_position: int
     ) -> List:
         """Create challenge attempts for all tied players.
 
@@ -225,7 +251,7 @@ class TiebreakerService:
                 user_id=player_id,
                 gara_id=gara_id,
                 round_number=gara.rounds_count + 1,  # Tiebreaker "round"
-                completed=False
+                completed=False,
             )
             db.session.add(attempt)
             attempts.append(attempt)
@@ -262,19 +288,17 @@ class TiebreakerService:
         # Check for existing tiebreaker matches
         tiebreaker_round = gara.rounds_count + 1
         tiebreaker_matches = Match.query.filter_by(
-            gara_id=gara_id,
-            round_number=tiebreaker_round
+            gara_id=gara_id, round_number=tiebreaker_round
         ).all()
 
         # Check for existing tiebreaker challenge attempts
         tiebreaker_attempts = ChallengeAttempt.query.filter_by(
-            gara_id=gara_id,
-            round_number=tiebreaker_round
+            gara_id=gara_id, round_number=tiebreaker_round
         ).all()
 
         # Calculate resolution status (VALIDATED also counts as finished)
         all_matches_completed = all(
-            m.status in ["completed", "validated"] for m in tiebreaker_matches
+            MatchStatus.is_finished(m.status) for m in tiebreaker_matches
         )
         all_attempts_completed = all(a.completed for a in tiebreaker_attempts)
 
@@ -285,7 +309,7 @@ class TiebreakerService:
                     "position": t.position,
                     "player_ids": t.player_ids,
                     "matches_won": t.matches_won,
-                    "rack_difference": t.rack_difference
+                    "rack_difference": t.rack_difference,
                 }
                 for t in ties
             ],
@@ -296,7 +320,7 @@ class TiebreakerService:
                     "player1_id": m.player1_id,
                     "player2_id": m.player2_id,
                     "status": m.status,
-                    "winner_id": m.winner_id
+                    "winner_id": m.winner_id,
                 }
                 for m in tiebreaker_matches
             ],
@@ -305,13 +329,13 @@ class TiebreakerService:
                     "id": a.id,
                     "user_id": a.user_id,
                     "completed": a.completed,
-                    "score": a.score
+                    "score": a.score,
                 }
                 for a in tiebreaker_attempts
             ],
             "resolved": (
-                (len(ties) == 0) or
-                (len(tiebreaker_matches) > 0 and all_matches_completed) or
-                (len(tiebreaker_attempts) > 0 and all_attempts_completed)
-            )
+                (len(ties) == 0)
+                or (len(tiebreaker_matches) > 0 and all_matches_completed)
+                or (len(tiebreaker_attempts) > 0 and all_attempts_completed)
+            ),
         }

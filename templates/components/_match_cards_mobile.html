@@ -16,11 +16,11 @@
     {% for round_num in range(1, gara.rounds_count + 1) %}
       {% set round_matches = display_matches | selectattr("round_number", "equalto", round_num) | list %}
       {% if round_matches %}
-        {% set has_playing = round_matches | selectattr("status", "equalto", "playing") | list | length > 0 %}
-        {% set has_pending = round_matches | selectattr("status", "equalto", "pending") | list | length > 0 %}
+        {% set has_playing = round_matches | selectattr("status", "equalto", MatchStatus.PLAYING.value) | list | length > 0 %}
+        {% set has_pending = round_matches | selectattr("status", "equalto", MatchStatus.PENDING.value) | list | length > 0 %}
         {# Count both 'completed' and 'validated' as finished #}
-        {% set completed_count = round_matches | selectattr("status", "equalto", "completed") | list | length %}
-        {% set validated_count = round_matches | selectattr("status", "equalto", "validated") | list | length %}
+        {% set completed_count = round_matches | selectattr("status", "equalto", MatchStatus.COMPLETED.value) | list | length %}
+        {% set validated_count = round_matches | selectattr("status", "equalto", MatchStatus.VALIDATED.value) | list | length %}
         {% set all_finished = (completed_count + validated_count) == round_matches | length %}
 
         {% if has_playing or has_pending %}
@@ -31,10 +31,13 @@
       {% endif %}
     {% endfor %}
 
-    {# B16: Order depends on gara status. In-progress gara → most recent first
-       (current round on top, useful for director); completed gara → chronological. #}
-    {% set is_gara_finished = gara.status == 'completed' %}
-    {% set ordered_active = active_rounds if is_gara_finished else (active_rounds | reverse | list) %}
+    {# Turni attivi in ordine crescente (come _gara_matches.html): il turno
+       azionabile piu' basso — risultati da inserire — va in alto. Il reverse
+       (B16) assumeva un solo turno attivo, ma con i turni pre-generati
+       (strategia random) metteva in cima il turno piu' lontano.
+       Turni conclusi: gara in corso → piu' recente prima; conclusa → cronologico. #}
+    {% set is_gara_finished = gara.status == GaraStatus.COMPLETED.value %}
+    {% set ordered_active = active_rounds %}
     {% set ordered_completed = completed_rounds if is_gara_finished else (completed_rounds | reverse | list) %}
 
     {# Display active rounds first #}

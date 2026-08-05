@@ -39,7 +39,9 @@ class TestClassificationDisplay:
         # Use get() for proper session attachment (avoids DetachedInstanceError)
         return db_session.get(User, admin.id)
 
-    @pytest.mark.skip(reason="Session isolation issue: DetachedInstanceError in GamificationFrontendBridge")
+    @pytest.mark.skip(
+        reason="Session isolation issue: DetachedInstanceError in GamificationFrontendBridge"
+    )
     def test_classification_only_shown_for_completed_rounds(self, app, admin_user):
         """
         Test che la classificazione venga mostrata solo per i turni completati,
@@ -281,7 +283,9 @@ class TestClassificationDisplay:
             else:
                 assert False, "No round classification found"
 
-    @pytest.mark.skip(reason="Session isolation issue: DetachedInstanceError when run after other tests")
+    @pytest.mark.skip(
+        reason="Session isolation issue: DetachedInstanceError when run after other tests"
+    )
     def test_no_classification_shown_when_no_rounds_completed(self, app, admin_user):
         """
         Test che nessuna classificazione venga mostrata se non ci sono turni completati.
@@ -347,7 +351,9 @@ class TestClassificationDisplay:
                 "Classifica dopo Turno" not in html_content
             ), "Should not show any classification when no rounds are completed"
 
-    @pytest.mark.skip(reason="Session isolation issue: DetachedInstanceError when run after other tests")
+    @pytest.mark.skip(
+        reason="Session isolation issue: DetachedInstanceError when run after other tests"
+    )
     def test_classification_recalculated_when_missing(self, app, admin_user):
         """
         Test che la classificazione venga ricalcolata automaticamente se mancante dal database.
@@ -456,7 +462,9 @@ class TestClassificationDisplay:
                 classifications_after > 0
             ), "Classifications should have been auto-created"
 
-    @pytest.mark.skip(reason="Session isolation issue: DetachedInstanceError when run after other tests")
+    @pytest.mark.skip(
+        reason="Session isolation issue: DetachedInstanceError when run after other tests"
+    )
     def test_classification_updated_after_match_modification(self, app, admin_user):
         """
         Test che la classificazione venga aggiornata automaticamente quando i risultati dei match vengono modificati.
@@ -564,7 +572,9 @@ class TestClassificationDisplay:
                 # We can't easily test the exact positions without parsing HTML,
                 # but we can verify that the calculation was triggered
 
-    @pytest.mark.skip(reason="Session isolation issue: DetachedInstanceError in GamificationFrontendBridge")
+    @pytest.mark.skip(
+        reason="Session isolation issue: DetachedInstanceError in GamificationFrontendBridge"
+    )
     def test_classification_not_shown_when_zero_scores(self, app, admin_user):
         """
         Test che la classificazione NON venga mostrata quando tutti i giocatori
@@ -626,6 +636,7 @@ class TestClassificationDisplay:
 
             # Use get() instead of refresh() for session isolation
             from models.competition.models import Gara
+
             gara = db.session.get(Gara, gara_id)
 
             # 4. Create classification records manually with ALL ZERO scores
@@ -677,7 +688,9 @@ class TestClassificationDisplay:
                 and '<i class="fas fa-list-ol"></i> Classifica' not in html_content
             ), "Classification card should not appear when all scores are zero"
 
-    @pytest.mark.skip(reason="Session isolation issue: DetachedInstanceError in GamificationFrontendBridge")
+    @pytest.mark.skip(
+        reason="Session isolation issue: DetachedInstanceError in GamificationFrontendBridge"
+    )
     def test_classification_shown_when_at_least_one_score(self, app, admin_user):
         """
         Test che la classificazione VENGA mostrata quando almeno un giocatore
@@ -753,6 +766,7 @@ class TestClassificationDisplay:
             # Update round progression - use get() instead of refresh()
             RoundService.update_round_progression(gara_id)
             from models.competition.models import Gara
+
             gara = db.session.get(Gara, gara_id)
 
             # 5. Create classification with at least one non-zero entry
@@ -766,7 +780,9 @@ class TestClassificationDisplay:
                         round_number=1,
                         user_id=player.id,
                         position=i + 1,
-                        matches_won=1 if i < 3 else 0,  # First 3 players won their matches
+                        matches_won=(
+                            1 if i < 3 else 0
+                        ),  # First 3 players won their matches
                         rack_difference=3 if i < 3 else -3,
                     )
                     db.session.add(classification)
@@ -779,7 +795,10 @@ class TestClassificationDisplay:
             html_content = response.data.decode("utf-8")
 
             # Should show classification (at least one player has scores)
-            has_desktop_classification = "Classifica dopo Turno" in html_content or "Classifica Complessiva" in html_content
+            has_desktop_classification = (
+                "Classifica dopo Turno" in html_content
+                or "Classifica Complessiva" in html_content
+            )
             has_mobile_classification = '<option value="compact">' in html_content
 
             assert (

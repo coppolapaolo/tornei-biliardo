@@ -35,7 +35,7 @@ class CampionatoCreatedEvent(DomainEvent):
             "campionato_id": self.campionato_id,
             "name": self.name,
             "creator_id": self.creator_id,
-            "campionato_type": self.campionato_type
+            "campionato_type": self.campionato_type,
         }
 
 
@@ -82,7 +82,7 @@ class CompetitionCreatedEvent(DomainEvent):
                 else None
             ),
             "is_campionato": self.is_campionato,
-            "campionato_id": self.campionato_id
+            "campionato_id": self.campionato_id,
         }
 
 
@@ -119,7 +119,7 @@ class CompetitionRegistrationOpenedEvent(DomainEvent):
                 if self.registration_deadline
                 else None
             ),
-            "eligible_user_ids": self.eligible_user_ids
+            "eligible_user_ids": self.eligible_user_ids,
         }
 
 
@@ -152,7 +152,7 @@ class CompetitionStartedEvent(DomainEvent):
             "round_number": self.round_number,
             "strategy": self.strategy,
             "location_id": self.location_id,
-            "location_name": self.location_name
+            "location_name": self.location_name,
         }
 
 
@@ -187,7 +187,7 @@ class CompetitionCompletedEvent(DomainEvent):
             "total_participants": self.total_participants,
             "total_rounds": self.total_rounds,
             "location_id": self.location_id,
-            "location_name": self.location_name
+            "location_name": self.location_name,
         }
 
 
@@ -222,7 +222,7 @@ class InscriptionCreatedEvent(DomainEvent):
             "inscription_status": self.inscription_status,
             "waitlist_position": self.waitlist_position,
             "location_id": self.location_id,
-            "location_name": self.location_name
+            "location_name": self.location_name,
         }
 
 
@@ -251,7 +251,7 @@ class DirectorAssignmentAddedEvent(DomainEvent):
             "entity_name": self.entity_name,
             "user_id": self.user_id,
             "username": self.username,
-            "assigned_by_id": self.assigned_by_id
+            "assigned_by_id": self.assigned_by_id,
         }
 
 
@@ -280,5 +280,5 @@ class DirectorAssignmentRemovedEvent(DomainEvent):
             "entity_name": self.entity_name,
             "user_id": self.user_id,
             "username": self.username,
-            "removed_by_id": self.removed_by_id
+            "removed_by_id": self.removed_by_id,
         }

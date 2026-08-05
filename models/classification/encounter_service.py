@@ -125,9 +125,7 @@ class PlayerEncounterService:
 
     @staticmethod
     @cached(ttl_seconds=600, tags=["encounter", "gara"], key_generator="gara")
-    def get_trio_counts(
-        gara_id: int, exclude_walkover: bool = True
-    ) -> Dict[int, int]:
+    def get_trio_counts(gara_id: int, exclude_walkover: bool = True) -> Dict[int, int]:
         """Count contested trio matches per player in a gara.
 
         Cached 10 min with same invalidation scheme as encounter_matrix.

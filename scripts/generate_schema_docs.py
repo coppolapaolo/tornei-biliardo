@@ -83,7 +83,6 @@ DOMAIN_GROUPS = {
         "proposal_invitation",
         "individual_match",
         "individual_rack",
-        "player_availability",
     ],
     "Rating & Handicap": [
         "player_category",
@@ -209,7 +208,9 @@ def format_table_markdown(table) -> str:
     fk_details = []
     for fk in table.foreign_keys:
         on_delete = fk.ondelete if fk.ondelete else "NO ACTION"
-        fk_details.append(f"- `{fk.parent.name}` → `{fk.target_fullname}` (ON DELETE {on_delete})")
+        fk_details.append(
+            f"- `{fk.parent.name}` → `{fk.target_fullname}` (ON DELETE {on_delete})"
+        )
 
     if fk_details:
         lines.append("")
@@ -237,7 +238,9 @@ def generate_schema_docs():
         output_lines.append("# Database Schema Reference")
         output_lines.append("")
         output_lines.append("> **Auto-generated** from SQLAlchemy models.")
-        output_lines.append(f"> Last updated: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}")
+        output_lines.append(
+            f"> Last updated: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}"
+        )
         output_lines.append(">")
         output_lines.append("> To regenerate: `python scripts/generate_schema_docs.py`")
         output_lines.append("")

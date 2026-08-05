@@ -437,7 +437,8 @@ class AchievementService:
                 if complete_campionati_count >= min_campionati:
                     logger.debug(
                         f"User {user_id} eligible for director: "
-                        f"{complete_campionati_count} complete campionati >= {min_campionati}"
+                        f"{complete_campionati_count} complete campionati "
+                        f">= {min_campionati}"
                     )
                     return True
 
@@ -509,12 +510,17 @@ class AchievementService:
 
         achievements = query.all()
 
+        # Prefetch di tutte le UserAchievement dell'utente in un dict per evitare
+        # un N+1 (una query per achievement nel loop sottostante).
+        user_achievements = {
+            ua.achievement_id: ua
+            for ua in UserAchievement.query.filter_by(user_id=user_id).all()
+        }
+
         result = []
         for achievement in achievements:
-            # Get user progress
-            user_achievement = UserAchievement.query.filter_by(
-                user_id=user_id, achievement_id=achievement.id
-            ).first()
+            # Get user progress (dal prefetch, niente query nel loop)
+            user_achievement = user_achievements.get(achievement.id)
 
             is_unlocked = user_achievement.is_unlocked if user_achievement else False
             current_progress = (

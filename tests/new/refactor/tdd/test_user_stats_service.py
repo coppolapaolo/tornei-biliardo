@@ -35,16 +35,14 @@ class TestUserStatsServiceTDD:
             user = User(
                 username="stats_user",
                 email="stats@example.com",
-                role=UserRole.PLAYER.value
+                role=UserRole.PLAYER.value,
             )
             user.set_password("secure123")
             db.session.add(user)
             db.session.flush()
 
             # Create test campionato
-            campionato = Campionato(
-                name="Test Championship"
-            )
+            campionato = Campionato(name="Test Championship")
             db.session.add(campionato)
             db.session.flush()
 
@@ -56,7 +54,7 @@ class TestUserStatsServiceTDD:
                 discipline="palla 8",
                 distance=5,
                 status=GaraStatus.COMPLETED.value,
-                campionato_id=campionato.id
+                campionato_id=campionato.id,
             )
             db.session.add(gara)
             db.session.flush()
@@ -69,7 +67,7 @@ class TestUserStatsServiceTDD:
             opponent = User(
                 username="opponent_user",
                 email="opponent@example.com",
-                role=UserRole.PLAYER.value
+                role=UserRole.PLAYER.value,
             )
             opponent.set_password("secure123")
             db.session.add(opponent)
@@ -82,7 +80,7 @@ class TestUserStatsServiceTDD:
                 gara_id=gara.id,
                 round_number=1,
                 status=MatchStatus.COMPLETED.value,
-                winner_id=user.id
+                winner_id=user.id,
             )
             match2 = Match(
                 player1_id=user.id,
@@ -90,7 +88,7 @@ class TestUserStatsServiceTDD:
                 gara_id=gara.id,
                 round_number=2,
                 status=MatchStatus.COMPLETED.value,
-                winner_id=user.id
+                winner_id=user.id,
             )
             match3 = Match(
                 player1_id=user.id,
@@ -98,7 +96,7 @@ class TestUserStatsServiceTDD:
                 gara_id=gara.id,
                 round_number=3,
                 status=MatchStatus.COMPLETED.value,
-                winner_id=opponent.id
+                winner_id=opponent.id,
             )
 
             db.session.add_all([match1, match2, match3])
@@ -110,20 +108,20 @@ class TestUserStatsServiceTDD:
                 position=2,
                 total_matches_won=2,
                 total_point_difference=15,
-                gare_played=1
+                gare_played=1,
             )
             db.session.add(classification)
 
             db.session.commit()
 
             yield {
-                'user': user,
-                'opponent': opponent,
-                'campionato': campionato,
-                'gara': gara,
-                'inscription': inscription,
-                'matches': [match1, match2, match3],
-                'classification': classification
+                "user": user,
+                "opponent": opponent,
+                "campionato": campionato,
+                "gara": gara,
+                "inscription": inscription,
+                "matches": [match1, match2, match3],
+                "classification": classification,
             }
 
             # Cleanup
@@ -150,7 +148,7 @@ class TestUserStatsServiceTDD:
         with app.app_context():
             from models.user.stats_service import UserStatsService
 
-            user = test_user_with_stats_data['user']
+            user = test_user_with_stats_data["user"]
 
             # Act: get user statistics
             stats = UserStatsService.get_user_stats(user_id=user.id)
@@ -186,7 +184,7 @@ class TestUserStatsServiceTDD:
             user = User(
                 username="empty_stats_user",
                 email="empty@example.com",
-                role=UserRole.PLAYER.value
+                role=UserRole.PLAYER.value,
             )
             user.set_password("secure123")
             db.session.add(user)
@@ -240,7 +238,7 @@ class TestUserStatsServiceTDD:
             assert isinstance(users_with_stats, list)
 
             # Find our test user in the results
-            test_user = test_user_with_stats_data['user']
+            test_user = test_user_with_stats_data["user"]
             user_found = False
             for row in users_with_stats:
                 user, inscription_count, total_matches, matches_won = row
@@ -276,9 +274,7 @@ class TestUserStatsServiceTDD:
 
             # Create explicit admin user
             admin = User(
-                username="test_admin",
-                email="admin@test.com",
-                role=UserRole.ADMIN.value
+                username="test_admin", email="admin@test.com", role=UserRole.ADMIN.value
             )
             admin.set_password("admin123")
             db.session.add(admin)
@@ -287,7 +283,7 @@ class TestUserStatsServiceTDD:
             player = User(
                 username="test_player",
                 email="player@test.com",
-                role=UserRole.PLAYER.value
+                role=UserRole.PLAYER.value,
             )
             player.set_password("player123")
             db.session.add(player)
@@ -299,16 +295,28 @@ class TestUserStatsServiceTDD:
 
             # Assert: admin is not in results
             user_ids = [row[0].id for row in users_with_stats]
-            assert admin.id not in user_ids, "Admin user should be excluded from users list"
+            assert (
+                admin.id not in user_ids
+            ), "Admin user should be excluded from users list"
 
             # Assert: player IS in results
-            assert player.id in user_ids, "Regular player should be included in users list"
+            assert (
+                player.id in user_ids
+            ), "Regular player should be included in users list"
 
             # Assert: no users with admin role in results
-            admin_users = [row[0] for row in users_with_stats if row[0].role == UserRole.ADMIN.value]
-            assert len(admin_users) == 0, "No admin users should appear in user management list"
+            admin_users = [
+                row[0]
+                for row in users_with_stats
+                if row[0].role == UserRole.ADMIN.value
+            ]
+            assert (
+                len(admin_users) == 0
+            ), "No admin users should appear in user management list"
 
-    def test_get_user_statistics_detailed_calculation(self, app, test_user_with_stats_data):
+    def test_get_user_statistics_detailed_calculation(
+        self, app, test_user_with_stats_data
+    ):
         """
         RED: Test UserStatsService.get_user_statistics() detailed statistics calculation.
 
@@ -321,7 +329,7 @@ class TestUserStatsServiceTDD:
         with app.app_context():
             from models.user.stats_service import UserStatsService
 
-            user = test_user_with_stats_data['user']
+            user = test_user_with_stats_data["user"]
 
             # Act: get detailed user statistics
             stats = UserStatsService.get_user_statistics(user_id=user.id)
@@ -356,7 +364,7 @@ class TestUserStatsServiceTDD:
         with app.app_context():
             from models.user.stats_service import UserStatsService
 
-            user = test_user_with_stats_data['user']
+            user = test_user_with_stats_data["user"]
 
             # Act: get user matches (default limit)
             matches = UserStatsService.get_user_matches(user_id=user.id)
@@ -371,7 +379,9 @@ class TestUserStatsServiceTDD:
                 assert match.status == MatchStatus.COMPLETED.value
 
             # Test with custom limit
-            limited_matches = UserStatsService.get_user_matches(user_id=user.id, limit=2)
+            limited_matches = UserStatsService.get_user_matches(
+                user_id=user.id, limit=2
+            )
             assert len(limited_matches) == 2
 
     def test_get_user_matches_empty_data(self, app, db_session):
@@ -389,7 +399,7 @@ class TestUserStatsServiceTDD:
             user = User(
                 username="no_matches_user",
                 email="nomatches@example.com",
-                role=UserRole.PLAYER.value
+                role=UserRole.PLAYER.value,
             )
             user.set_password("secure123")
             db.session.add(user)
@@ -406,7 +416,9 @@ class TestUserStatsServiceTDD:
             db.session.delete(user)
             db.session.commit()
 
-    def test_get_user_classifications_functionality(self, app, test_user_with_stats_data):
+    def test_get_user_classifications_functionality(
+        self, app, test_user_with_stats_data
+    ):
         """
         RED: Test UserStatsService.get_user_classifications() classification retrieval.
 
@@ -418,7 +430,7 @@ class TestUserStatsServiceTDD:
         with app.app_context():
             from models.user.stats_service import UserStatsService
 
-            user = test_user_with_stats_data['user']
+            user = test_user_with_stats_data["user"]
 
             # Act: get user classifications
             classifications = UserStatsService.get_user_classifications(user_id=user.id)
@@ -447,7 +459,7 @@ class TestUserStatsServiceTDD:
             user = User(
                 username="no_class_user",
                 email="noclass@example.com",
-                role=UserRole.PLAYER.value
+                role=UserRole.PLAYER.value,
             )
             user.set_password("secure123")
             db.session.add(user)
@@ -476,7 +488,7 @@ class TestUserStatsServiceTDD:
         with app.app_context():
             from models.user.stats_service import UserStatsService
 
-            user = test_user_with_stats_data['user']
+            user = test_user_with_stats_data["user"]
 
             # Act: get stats through service
             service_stats = UserStatsService.get_user_stats(user_id=user.id)
@@ -486,17 +498,25 @@ class TestUserStatsServiceTDD:
                 model_stats = user.get_statistics()
                 # If both methods exist, they should return equivalent data
                 # This ensures service extraction maintains compatibility
-                assert service_stats["total_matches"] == model_stats.get("total_matches", service_stats["total_matches"])
+                assert service_stats["total_matches"] == model_stats.get(
+                    "total_matches", service_stats["total_matches"]
+                )
             except AttributeError:
                 # If model method doesn't exist, service should provide the functionality
                 pass
 
             # Verify service provides expected interface
             assert isinstance(service_stats, dict)
-            assert all(key in service_stats for key in [
-                "total_matches", "won_matches", "win_percentage",
-                "inscription_count", "lost_matches"
-            ])
+            assert all(
+                key in service_stats
+                for key in [
+                    "total_matches",
+                    "won_matches",
+                    "win_percentage",
+                    "inscription_count",
+                    "lost_matches",
+                ]
+            )
 
     def test_statistics_calculation_accuracy(self, app, db_session):
         """
@@ -514,7 +534,7 @@ class TestUserStatsServiceTDD:
             user = User(
                 username="calc_user",
                 email="calc@example.com",
-                role=UserRole.PLAYER.value
+                role=UserRole.PLAYER.value,
             )
             user.set_password("secure123")
             db.session.add(user)
@@ -524,7 +544,7 @@ class TestUserStatsServiceTDD:
             opponent = User(
                 username="calc_opponent",
                 email="opponent@example.com",
-                role=UserRole.PLAYER.value
+                role=UserRole.PLAYER.value,
             )
             opponent.set_password("secure123")
             db.session.add(opponent)
@@ -537,7 +557,7 @@ class TestUserStatsServiceTDD:
                 date=date.today(),
                 discipline="palla 8",
                 distance=5,
-                status=GaraStatus.COMPLETED.value
+                status=GaraStatus.COMPLETED.value,
             )
             db.session.add(gara)
             db.session.flush()
@@ -549,7 +569,7 @@ class TestUserStatsServiceTDD:
                 gara_id=gara.id,
                 round_number=1,
                 status=MatchStatus.COMPLETED.value,
-                winner_id=user.id  # Win
+                winner_id=user.id,  # Win
             )
             match2 = Match(
                 player1_id=user.id,
@@ -557,7 +577,7 @@ class TestUserStatsServiceTDD:
                 gara_id=gara.id,
                 round_number=2,
                 status=MatchStatus.COMPLETED.value,
-                winner_id=opponent.id  # Loss
+                winner_id=opponent.id,  # Loss
             )
             match3 = Match(
                 player1_id=user.id,
@@ -565,7 +585,7 @@ class TestUserStatsServiceTDD:
                 gara_id=gara.id,
                 round_number=3,
                 status=MatchStatus.COMPLETED.value,
-                winner_id=opponent.id  # Loss
+                winner_id=opponent.id,  # Loss
             )
 
             db.session.add_all([match1, match2, match3])
@@ -609,7 +629,9 @@ class TestUserStatsServiceTDD:
             assert isinstance(users_with_stats, list)
             if users_with_stats:
                 row = users_with_stats[0]
-                assert len(row) == 4  # (User, inscription_count, total_matches, matches_won)
+                assert (
+                    len(row) == 4
+                )  # (User, inscription_count, total_matches, matches_won)
                 user, inscription_count, total_matches, matches_won = row
                 assert isinstance(user, User)
                 assert isinstance(inscription_count, int)
@@ -628,7 +650,7 @@ class TestUserStatsServiceTDD:
         with app.app_context():
             from models.user.stats_service import UserStatsService
 
-            user = test_user_with_stats_data['user']
+            user = test_user_with_stats_data["user"]
 
             # Get statistics from both methods
             basic_stats = UserStatsService.get_user_stats(user_id=user.id)
@@ -664,7 +686,7 @@ class TestUserStatsServiceTDD:
 
             from models.user.stats_service import UserStatsService
 
-            user = test_user_with_stats_data['user']
+            user = test_user_with_stats_data["user"]
 
             # All these operations should be read-only
             stats = UserStatsService.get_user_stats(user_id=user.id)
@@ -695,8 +717,8 @@ class TestUserStatsServiceTDD:
             # Test various error scenarios
             test_cases = [
                 (99999, "User not found"),  # Non-existent user
-                (None, "User not found"),   # None user ID
-                (-1, "User not found"),     # Invalid user ID
+                (None, "User not found"),  # None user ID
+                (-1, "User not found"),  # Invalid user ID
             ]
 
             for user_id, expected_message in test_cases:
@@ -711,5 +733,7 @@ class TestUserStatsServiceTDD:
                 assert matches == []
 
                 # get_user_classifications returns empty list for non-existent users, doesn't raise
-                classifications = UserStatsService.get_user_classifications(user_id=user_id)
+                classifications = UserStatsService.get_user_classifications(
+                    user_id=user_id
+                )
                 assert classifications == []

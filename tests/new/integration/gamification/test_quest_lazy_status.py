@@ -18,8 +18,12 @@ from models.gamification.quest_service import QuestService
 from models.gamification.models import Quest, QuestType, QuestStatus
 
 
-def _make_quest(*, start_offset_days: float, end_offset_days: float,
-                stored_status: QuestStatus = QuestStatus.UPCOMING) -> Quest:
+def _make_quest(
+    *,
+    start_offset_days: float,
+    end_offset_days: float,
+    stored_status: QuestStatus = QuestStatus.UPCOMING
+) -> Quest:
     """Crea una quest con finestra relativa a ora e status DB esplicito.
 
     stored_status simula il valore "congelato" in DB (di norma UPCOMING perché
@@ -50,7 +54,8 @@ class TestEffectiveStatus:
     def test_current_window_is_active_even_if_db_says_upcoming(self, db_session):
         """Caso centrale: finestra corrente ma status DB congelato a UPCOMING."""
         quest = _make_quest(
-            start_offset_days=-1, end_offset_days=6,
+            start_offset_days=-1,
+            end_offset_days=6,
             stored_status=QuestStatus.UPCOMING,
         )
         assert quest.effective_status == QuestStatus.ACTIVE
@@ -59,7 +64,8 @@ class TestEffectiveStatus:
     def test_past_window_is_expired_even_if_db_says_active(self, db_session):
         """Finestra scaduta ma status DB ancora ACTIVE (cron mai girato)."""
         quest = _make_quest(
-            start_offset_days=-10, end_offset_days=-3,
+            start_offset_days=-10,
+            end_offset_days=-3,
             stored_status=QuestStatus.ACTIVE,
         )
         assert quest.effective_status == QuestStatus.EXPIRED
@@ -68,7 +74,8 @@ class TestEffectiveStatus:
     def test_admin_expired_override_wins_over_temporal(self, db_session):
         """Override admin EXPIRED vince anche su finestra temporalmente attiva."""
         quest = _make_quest(
-            start_offset_days=-1, end_offset_days=6,
+            start_offset_days=-1,
+            end_offset_days=6,
             stored_status=QuestStatus.EXPIRED,
         )
         assert quest.effective_status == QuestStatus.EXPIRED
@@ -76,7 +83,8 @@ class TestEffectiveStatus:
 
     def test_completed_override_is_respected(self, db_session):
         quest = _make_quest(
-            start_offset_days=-1, end_offset_days=6,
+            start_offset_days=-1,
+            end_offset_days=6,
             stored_status=QuestStatus.COMPLETED,
         )
         assert quest.effective_status == QuestStatus.COMPLETED
@@ -94,7 +102,8 @@ class TestGetUserQuestsActiveOnly:
         active_now = _make_quest(start_offset_days=-1, end_offset_days=6)
         _future = _make_quest(start_offset_days=3, end_offset_days=10)
         _past = _make_quest(
-            start_offset_days=-10, end_offset_days=-2,
+            start_offset_days=-10,
+            end_offset_days=-2,
             stored_status=QuestStatus.ACTIVE,
         )
 

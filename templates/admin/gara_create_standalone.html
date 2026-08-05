@@ -269,6 +269,15 @@
                                         </div>
                                     </div>
 
+                                    <div class="mb-3">
+                                        <label for="has_handicap" class="form-label small">{{ _("Gioco con handicap") }}</label>
+                                        <select class="form-select form-select-sm" id="has_handicap" name="has_handicap">
+                                            <option value="false" selected>{{ _("No") }}</option>
+                                            <option value="true">{{ _("Sì") }}</option>
+                                        </select>
+                                        <small class="text-muted">{{ _("I match con handicap non aggiornano i rating (Elo/Fargo).") }}</small>
+                                    </div>
+
                                     <div class="row" id="strategy_config_section">
                                         <div class="col-sm-6 mb-2">
                                             <label for="first_round_policy" class="form-label small">Primo Turno</label>

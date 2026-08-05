@@ -1,6 +1,6 @@
 """
 Module: models/individual_match/statistics_service.py
-Purpose: Statistics and query service for individual matches (extracted from IndividualMatchService)
+Purpose: Statistics and query service for individual matches
 Sprint 13: IndividualMatchService decomposition
 """
 
@@ -36,18 +36,27 @@ class IndividualMatchStatisticsService:
         )
 
         if status_filter:
-            target_status = (
-                status_filter.value if hasattr(status_filter, "value") else status_filter
-            )
-            query = query.filter(IndividualMatch.status == target_status)
+            if isinstance(status_filter, (list, tuple, set)):
+                values = [s.value if hasattr(s, "value") else s for s in status_filter]
+                query = query.filter(IndividualMatch.status.in_(values))
+            else:
+                target_status = (
+                    status_filter.value
+                    if hasattr(status_filter, "value")
+                    else status_filter
+                )
+                query = query.filter(IndividualMatch.status == target_status)
 
         return query.order_by(IndividualMatch.scheduled_at.desc()).all()
 
     @staticmethod
     def get_user_statistics(user_id: int) -> Dict[str, Any]:
         """Get individual match statistics for a user."""
+        # Conta i match conclusi: COMPLETED (forfait/legacy) E VALIDATED
+        # (conferma bilaterale, il flusso normale). Contare solo COMPLETED
+        # escludeva la maggioranza dei match finiti dalle statistiche.
         matches = IndividualMatchStatisticsService.get_user_matches(
-            user_id, MatchStatus.COMPLETED
+            user_id, [MatchStatus.COMPLETED, MatchStatus.VALIDATED]
         )
 
         total_matches = len(matches)
@@ -69,6 +78,100 @@ class IndividualMatchStatisticsService:
             if match.winner_id == user_id:
                 locations_played[loc]["wins"] += 1
 
+        # Breakdown per disciplina (pannello "Performance per Disciplina")
+        by_discipline_map: Dict[str, Dict[str, Any]] = {}
+        for m in matches:
+            disc = m.discipline or "palla_8"
+            entry = by_discipline_map.setdefault(
+                disc,
+                {"discipline": disc, "total_matches": 0, "wins": 0, "losses": 0},
+            )
+            entry["total_matches"] += 1
+            if m.winner_id == user_id:
+                entry["wins"] += 1
+            else:
+                entry["losses"] += 1
+        for entry in by_discipline_map.values():
+            entry["win_percentage"] = (
+                entry["wins"] / entry["total_matches"] * 100
+                if entry["total_matches"]
+                else 0
+            )
+        by_discipline = sorted(
+            by_discipline_map.values(),
+            key=lambda e: e["total_matches"],
+            reverse=True,
+        )
+
+        # Record testa a testa per avversario (pannello "Head-to-Head")
+        h2h_map: Dict[int, Dict[str, Any]] = {}
+        for m in matches:
+            opp_id = m.player2_id if m.player1_id == user_id else m.player1_id
+            entry = h2h_map.get(opp_id)
+            if entry is None:
+                opp = db.session.get(User, opp_id)
+                entry = h2h_map[opp_id] = {
+                    "opponent_username": opp.username if opp else "?",
+                    "total_matches": 0,
+                    "wins": 0,
+                    "losses": 0,
+                }
+            entry["total_matches"] += 1
+            if m.winner_id == user_id:
+                entry["wins"] += 1
+            else:
+                entry["losses"] += 1
+        head_to_head = sorted(
+            h2h_map.values(), key=lambda e: e["total_matches"], reverse=True
+        )
+
+        # Trend recente: matches è ordinato DESC (più recente prima).
+        # recent_matches in ordine cronologico ASC, così [-10:] nel template
+        # sono i 10 più recenti.
+        chrono = list(reversed(matches))
+        recent_matches = [{"won": m.winner_id == user_id} for m in chrono]
+        last10 = recent_matches[-10:]
+        recent_wins = sum(1 for r in last10 if r["won"])
+        recent_losses = len(last10) - recent_wins
+
+        # Striscia attuale (dai match più recenti)
+        current_streak = 0
+        current_streak_type = None
+        for m in matches:  # DESC
+            won = m.winner_id == user_id
+            t = "win" if won else "loss"
+            if current_streak_type is None:
+                current_streak_type, current_streak = t, 1
+            elif t == current_streak_type:
+                current_streak += 1
+            else:
+                break
+
+        # Attività mensile (pannello "Attività Mensile")
+        monthly_map: Dict[str, Dict[str, Any]] = {}
+        for m in chrono:  # ASC
+            dt = m.scheduled_at or m.created_at
+            if not dt:
+                continue
+            key = dt.strftime("%Y-%m")
+            entry = monthly_map.get(key)
+            if entry is None:
+                entry = monthly_map[key] = {
+                    "month_name": dt.strftime("%b %Y"),
+                    "total_matches": 0,
+                    "wins": 0,
+                }
+            entry["total_matches"] += 1
+            if m.winner_id == user_id:
+                entry["wins"] += 1
+        for entry in monthly_map.values():
+            entry["win_percentage"] = (
+                entry["wins"] / entry["total_matches"] * 100
+                if entry["total_matches"]
+                else 0
+            )
+        monthly_activity = list(monthly_map.values())
+
         return {
             "total_matches": total_matches,
             "won_matches": won_matches,
@@ -84,6 +187,14 @@ class IndividualMatchStatisticsService:
                 else 0
             ),
             "locations_played": locations_played,
+            "by_discipline": by_discipline,
+            "head_to_head": head_to_head,
+            "recent_matches": recent_matches,
+            "recent_wins": recent_wins,
+            "recent_losses": recent_losses,
+            "current_streak": current_streak,
+            "current_streak_type": current_streak_type,
+            "monthly_activity": monthly_activity,
         }
 
     @staticmethod
@@ -170,7 +281,11 @@ class IndividualMatchStatisticsService:
             for m in all_matches
             if m.status in [MatchStatus.SCHEDULED, MatchStatus.IN_PROGRESS]
         ]
-        completed_matches = [m for m in all_matches if m.status == MatchStatus.COMPLETED]
+        completed_matches = [
+            m
+            for m in all_matches
+            if m.status in (MatchStatus.COMPLETED, MatchStatus.VALIDATED)
+        ]
         recent_matches = completed_matches[:5]
 
         return {
@@ -213,7 +328,7 @@ class IndividualMatchStatisticsService:
                     IndividualMatch.player1_id == user_id,
                     IndividualMatch.player2_id == user_id,
                 ),
-                IndividualMatch.status == MatchStatus.COMPLETED.value,
+                IndividualMatch.status.in_(MatchStatus.finished_values()),
             )
             .group_by(opponent_id_expr)
             .order_by(func.count().desc())
@@ -269,10 +384,12 @@ class IndividualMatchStatisticsService:
                     IndividualMatch.player1_id == user_id,
                     IndividualMatch.player2_id == user_id,
                 ),
-                IndividualMatch.status.in_([
-                    MatchStatus.COMPLETED.value,
-                    MatchStatus.VALIDATED.value,
-                ]),
+                IndividualMatch.status.in_(
+                    [
+                        MatchStatus.COMPLETED.value,
+                        MatchStatus.VALIDATED.value,
+                    ]
+                ),
             )
             .distinct()
             .all()
@@ -294,10 +411,12 @@ class IndividualMatchStatisticsService:
                     Match.player1_id == user_id,
                     Match.player2_id == user_id,
                 ),
-                Match.status.in_([
-                    MatchStatus.COMPLETED.value,
-                    MatchStatus.VALIDATED.value,
-                ]),
+                Match.status.in_(
+                    [
+                        MatchStatus.COMPLETED.value,
+                        MatchStatus.VALIDATED.value,
+                    ]
+                ),
             )
             .distinct()
             .all()

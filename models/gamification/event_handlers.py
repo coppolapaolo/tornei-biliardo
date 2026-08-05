@@ -19,7 +19,10 @@ import logging
 from typing import Optional
 
 from models.events.base import EventBus
-from models.events.match_events import MatchCompletedEvent
+from models.events.match_events import (
+    MatchCompletedEvent,
+    IndividualMatchCompletedEvent,
+)
 from models.events.competition_events import (
     InscriptionCreatedEvent,
     CompetitionCompletedEvent,
@@ -52,6 +55,11 @@ class GamificationEventHandlers:
         EventBus.register_handler(
             MatchCompletedEvent,
             GamificationEventHandlers.handle_match_completed_for_xp,
+            priority=10,
+        )
+        EventBus.register_handler(
+            IndividualMatchCompletedEvent,
+            GamificationEventHandlers.handle_individual_match_completed_for_xp,
             priority=10,
         )
 
@@ -196,7 +204,8 @@ class GamificationEventHandlers:
                         )
                     except Exception as streak_error:
                         logger.warning(
-                            f"Error recording streak for user {player_id}: {streak_error}"
+                            f"Error recording streak for user "
+                            f"{player_id}: {streak_error}"
                         )
 
             # Update quest progress for all participants (skip forfeiters)
@@ -212,7 +221,8 @@ class GamificationEventHandlers:
                         )
                     except Exception as quest_error:
                         logger.warning(
-                            f"Error updating quest progress for user {player_id}: {quest_error}"
+                            f"Error updating quest progress for user "
+                            f"{player_id}: {quest_error}"
                         )
 
             # Winner gets "matches_won" quest progress (skip if winner is a forfeit)
@@ -225,12 +235,130 @@ class GamificationEventHandlers:
                     )
                 except Exception as quest_error:
                     logger.warning(
-                        f"Error updating matches_won quest for user {event.winner_id}: {quest_error}"
+                        f"Error updating matches_won quest for user "
+                        f"{event.winner_id}: {quest_error}"
                     )
 
         except Exception as e:
             logger.error(
                 f"Error handling match completed event for XP: {e}", exc_info=True
+            )
+
+    @staticmethod
+    def handle_individual_match_completed_for_xp(
+        event: IndividualMatchCompletedEvent,
+    ) -> None:
+        """Award XP per un match individuale/casual VALIDATO.
+
+        Versione "gated" di handle_match_completed_for_xp:
+        - XP RIDOTTO (CASUAL_MATCH_WIN/LOSS, 20/5 vs 50/20 torneo).
+        - Nessun walkover-lookup: l'evento è emesso SOLO alla validazione
+          bilaterale (mai forfait), quindi non esistono forfeiters da escludere.
+        - Streak/quest/achievement-vittorie identici al torneo: il rischio
+          farming è mitigato dalla conferma bilaterale.
+
+        Tie free-format (`winner_id=None`): nessun XP/achievement (coerente col
+        torneo, che salta i match senza vincitore).
+
+        Args:
+            event: IndividualMatchCompletedEvent (sempre 1v1, senza gara).
+        """
+        if not event.winner_id:
+            logger.info(
+                f"Casual match {event.match_id} validato senza vincitore (pari) "
+                f"- nessun XP assegnato"
+            )
+            return
+
+        try:
+            loser_id: Optional[int] = None
+            if event.player1_id and event.player2_id:
+                loser_id = (
+                    event.player2_id
+                    if event.player1_id == event.winner_id
+                    else event.player1_id
+                )
+
+            # XP vincitore (ridotto)
+            LevelService.award_xp(
+                user_id=event.winner_id,
+                xp_amount=ConfigService.get_xp_rate(XPTransactionType.CASUAL_MATCH_WIN),
+                transaction_type=XPTransactionType.CASUAL_MATCH_WIN,
+                reason=f"Won casual match {event.match_id}",
+                related_entities={"individual_match_id": event.match_id},
+            )
+
+            # XP partecipazione perdente (ridotto)
+            if loser_id:
+                LevelService.award_xp(
+                    user_id=loser_id,
+                    xp_amount=ConfigService.get_xp_rate(
+                        XPTransactionType.CASUAL_MATCH_LOSS
+                    ),
+                    transaction_type=XPTransactionType.CASUAL_MATCH_LOSS,
+                    reason=f"Participated in casual match {event.match_id}",
+                    related_entities={"individual_match_id": event.match_id},
+                )
+
+            # Achievement: riconcilia entrambi i giocatori. Metric-driven → una
+            # sola chiamata copre vittorie, serie e avversari unici (come nel
+            # torneo). Isolata per-utente: un errore non blocca gli altri.
+            for player_id in (event.player1_id, event.player2_id):
+                if player_id:
+                    try:
+                        AchievementService.reconcile_achievements(player_id)
+                    except Exception as ach_error:
+                        logger.warning(
+                            f"Error reconciling achievements for user "
+                            f"{player_id}: {ach_error}"
+                        )
+
+            # Streak settimanali per entrambi
+            for player_id in (event.player1_id, event.player2_id):
+                if player_id:
+                    try:
+                        StreakService.record_activity(
+                            user_id=player_id, streak_type=StreakType.WEEKLY_MATCH
+                        )
+                        StreakService.record_activity(
+                            user_id=player_id, streak_type=StreakType.WEEKLY_ACTIVITY
+                        )
+                    except Exception as streak_error:
+                        logger.warning(
+                            f"Error recording streak for user {player_id}: "
+                            f"{streak_error}"
+                        )
+
+            # Quest progress per entrambi (matches_played) + vincitore (matches_won)
+            for player_id in (event.player1_id, event.player2_id):
+                if player_id:
+                    try:
+                        QuestService.record_activity_for_quests(
+                            user_id=player_id,
+                            activity_type="matches_played",
+                            activity_count=1,
+                        )
+                    except Exception as quest_error:
+                        logger.warning(
+                            f"Error updating quest progress for user {player_id}: "
+                            f"{quest_error}"
+                        )
+            try:
+                QuestService.record_activity_for_quests(
+                    user_id=event.winner_id,
+                    activity_type="matches_won",
+                    activity_count=1,
+                )
+            except Exception as quest_error:
+                logger.warning(
+                    f"Error updating matches_won quest for user "
+                    f"{event.winner_id}: {quest_error}"
+                )
+
+        except Exception as e:
+            logger.error(
+                f"Error handling individual match completed event for XP: {e}",
+                exc_info=True,
             )
 
     # ========================================
@@ -294,7 +422,8 @@ class GamificationEventHandlers:
                 )
             except Exception as quest_error:
                 logger.warning(
-                    f"Error updating quest progress for user {event.user_id}: {quest_error}"
+                    f"Error updating quest progress for user "
+                    f"{event.user_id}: {quest_error}"
                 )
 
         except Exception as e:
@@ -405,7 +534,8 @@ class GamificationEventHandlers:
                     )
                 except Exception as ach_error:
                     logger.warning(
-                        f"Error checking aspiring_director achievement for user {participant_id}: {ach_error}"
+                        f"Error checking aspiring_director achievement "
+                        f"for user {participant_id}: {ach_error}"
                     )
 
             # Update quest progress for all participants
@@ -419,7 +549,8 @@ class GamificationEventHandlers:
                     )
                 except Exception as quest_error:
                     logger.warning(
-                        f"Error updating quest progress for user {participant_id}: {quest_error}"
+                        f"Error updating quest progress for user "
+                        f"{participant_id}: {quest_error}"
                     )
 
         except Exception as e:

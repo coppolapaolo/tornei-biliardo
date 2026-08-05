@@ -20,41 +20,36 @@ from models.gamification.feature_models import FeatureConfig
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("migration")
 
+
 def migrate_level_unlocks():
     app = create_app()
     with app.app_context():
         logger.info("Starting migration of Level Unlocks to Feature Configs...")
-        
+
         # 1. Get existing unlocks from DB or Defaults
         # We prefer Defaults as the source of truth for the *code* mapping
         # unless DB has custom overrides.
-        
+
         # Let's use the explicit DEFAULT_LEVEL_UNLOCKS list as a base
         # (level, code, name, description)
-        
+
         processed_codes = set()
-        
+
         for level, code, name, description in DEFAULT_LEVEL_UNLOCKS:
             if code in processed_codes:
                 continue
-                
+
             logger.info(f"Migrating {code} (Level {level})...")
-            
+
             # Create Rule: Level >= X
             rule_set = {
                 "description": f"Requires Level {level}",
-                "conditions": [
-                    {
-                        "type": "LEVEL",
-                        "operator": "gte",
-                        "value": level
-                    }
-                ]
+                "conditions": [{"type": "LEVEL", "operator": "gte", "value": level}],
             }
-            
+
             # Serialize rules
             rules_json = json.dumps([rule_set])
-            
+
             # Check if FeatureConfig exists
             feature = db.session.get(FeatureConfig, code)
             if not feature:
@@ -63,7 +58,7 @@ def migrate_level_unlocks():
                     name=name,
                     description=description,
                     rules=rules_json,
-                    is_active=True
+                    is_active=True,
                 )
                 db.session.add(feature)
                 logger.info(f"Created FeatureConfig for {code}")
@@ -71,12 +66,12 @@ def migrate_level_unlocks():
                 # Update rules only if they seem empty or legacy?
                 # For safety, let's not overwrite if already exists to avoid destroying custom admin configs.
                 logger.info(f"FeatureConfig {code} already exists. Skipping overwrite.")
-            
+
             processed_codes.add(code)
-            
+
         # 2. Add New Complex Features definitions (from feature_definitions.md)
         # These might not be in the old system.
-        
+
         complex_features = [
             {
                 "code": "create_match_direct",
@@ -84,11 +79,21 @@ def migrate_level_unlocks():
                 "rules": [
                     {
                         "conditions": [
-                             {"type": "METRIC", "metric": "total_matches", "operator": "gte", "value": 5},
-                             {"type": "METRIC", "metric": "scores_inserted", "operator": "gte", "value": 1}
+                            {
+                                "type": "METRIC",
+                                "metric": "total_matches",
+                                "operator": "gte",
+                                "value": 5,
+                            },
+                            {
+                                "type": "METRIC",
+                                "metric": "scores_inserted",
+                                "operator": "gte",
+                                "value": 1,
+                            },
                         ]
                     }
-                ]
+                ],
             },
             {
                 "code": "create_match_community",
@@ -96,10 +101,15 @@ def migrate_level_unlocks():
                 "rules": [
                     {
                         "conditions": [
-                             {"type": "METRIC", "metric": "total_matches", "operator": "gte", "value": 15}
+                            {
+                                "type": "METRIC",
+                                "metric": "total_matches",
+                                "operator": "gte",
+                                "value": 15,
+                            }
                         ]
                     }
-                ]
+                ],
             },
             {
                 "code": "manage_availability",
@@ -107,9 +117,27 @@ def migrate_level_unlocks():
                 "rules": [
                     # OR logic: 3 sets
                     {"conditions": [{"type": "ROLE", "value": "VENUE_MANAGER"}]},
-                    {"conditions": [{"type": "METRIC", "metric": "matches_in_location", "operator": "gte", "value": 20}]},
-                    {"conditions": [{"type": "METRIC", "metric": "tournaments_in_location", "operator": "gte", "value": 5}]}
-                ]
+                    {
+                        "conditions": [
+                            {
+                                "type": "METRIC",
+                                "metric": "matches_in_location",
+                                "operator": "gte",
+                                "value": 20,
+                            }
+                        ]
+                    },
+                    {
+                        "conditions": [
+                            {
+                                "type": "METRIC",
+                                "metric": "tournaments_in_location",
+                                "operator": "gte",
+                                "value": 5,
+                            }
+                        ]
+                    },
+                ],
             },
             {
                 "code": "create_campionato",
@@ -117,26 +145,31 @@ def migrate_level_unlocks():
                 "rules": [
                     {
                         "conditions": [
-                             {"type": "ROLE", "value": "DIRECTOR"},
-                             {"type": "METRIC", "metric": "tournaments_organized", "operator": "gte", "value": 3}
+                            {"type": "ROLE", "value": "DIRECTOR"},
+                            {
+                                "type": "METRIC",
+                                "metric": "tournaments_organized",
+                                "operator": "gte",
+                                "value": 3,
+                            },
                         ]
                     }
-                ]
-            }
+                ],
+            },
         ]
-        
+
         for cf in complex_features:
             code = cf["code"]
             feature = db.session.get(FeatureConfig, code)
             rules_json = json.dumps(cf["rules"])
-            
+
             if not feature:
                 feature = FeatureConfig(
                     code=code,
                     name=cf["name"],
                     description="Complex rule migrated from system defaults",
                     rules=rules_json,
-                    is_active=True
+                    is_active=True,
                 )
                 db.session.add(feature)
                 logger.info(f"Created Complex FeatureConfig for {code}")
@@ -147,6 +180,7 @@ def migrate_level_unlocks():
 
         db.session.commit()
         logger.info("Migration completed successfully.")
+
 
 if __name__ == "__main__":
     migrate_level_unlocks()

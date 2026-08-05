@@ -97,10 +97,21 @@ def calculate_handicap():
     try:
         data = request.get_json() if request.is_json else request.form
 
+        # data può essere un dict (JSON) o un MultiDict (form). Non usare il
+        # kwarg type= di MultiDict.get (su dict JSON solleva TypeError → 500);
+        # e KeyError su campo mancante non è catturato da except ValueError.
+        try:
+            player1_id = int(data["player1_id"])
+            player2_id = int(data["player2_id"])
+        except (KeyError, TypeError) as exc:
+            raise ValueError("player1_id e player2_id sono obbligatori") from exc
+        raw_rule = data.get("rule_id")
+        rule_id = int(raw_rule) if raw_rule not in (None, "") else None
+
         handicap_info = HandicapService.calculate_handicap(
-            player1_id=int(data["player1_id"]),
-            player2_id=int(data["player2_id"]),
-            rule_id=data.get("rule_id", type=int),
+            player1_id=player1_id,
+            player2_id=player2_id,
+            rule_id=rule_id,
         )
 
         if request.is_json:

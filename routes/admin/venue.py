@@ -36,6 +36,7 @@ def _parse_float(raw):
 def venues_list():
     """Lista delle sale biliardo - vista role-based (Content Negotiation Pattern)"""
     from flask_login import current_user
+
     # VenueManagerRequestService functionality is now in VenueManagerService
 
     # Admin sees all venues, players only see active ones
@@ -44,9 +45,11 @@ def venues_list():
             BilliardHall.is_active.desc(), BilliardHall.name
         ).all()
     else:
-        venues = BilliardHall.query.filter_by(is_active=True).order_by(
-            BilliardHall.name
-        ).all()
+        venues = (
+            BilliardHall.query.filter_by(is_active=True)
+            .order_by(BilliardHall.name)
+            .all()
+        )
 
     if current_user.is_admin:
         # Vista completa admin con statistiche, manager e richieste
@@ -75,8 +78,8 @@ def venues_list():
 
             # Get pending requests for this venue
 
-            pending_requests = (
-                VenueManagerService.get_venue_manager_requests_by_venue(venue.id)
+            pending_requests = VenueManagerService.get_venue_manager_requests_by_venue(
+                venue.id
             )
 
             # Check if current user is manager of this venue
@@ -105,9 +108,12 @@ def venues_list():
             has_pending_request_for_venue = False
             if not current_user.is_admin:
                 # Check if user has pending request for this venue
-                user_requests = VenueManagerService.get_venue_manager_requests_by_user(current_user.id)
+                user_requests = VenueManagerService.get_venue_manager_requests_by_user(
+                    current_user.id
+                )
                 has_pending_request_for_venue = any(
-                    req.venue_id == venue.id and req.status == "pending" for req in user_requests
+                    req.venue_id == venue.id and req.status == "pending"
+                    for req in user_requests
                 )
 
             venues_with_managers.append(
@@ -123,7 +129,9 @@ def venues_list():
         # Check if user has pending venue manager requests
         has_pending_requests = False
         if not current_user.is_admin:
-            user_requests = VenueManagerService.get_venue_manager_requests_by_user(current_user.id)
+            user_requests = VenueManagerService.get_venue_manager_requests_by_user(
+                current_user.id
+            )
             has_pending_requests = any(req.status == "pending" for req in user_requests)
 
         return render_template(
@@ -197,7 +205,9 @@ def venue_detail(venue_id):
         # Check if user has pending requests
         has_pending_requests = False
         if not current_user.is_admin:
-            user_requests = VenueManagerService.get_venue_manager_requests_by_user(current_user.id)
+            user_requests = VenueManagerService.get_venue_manager_requests_by_user(
+                current_user.id
+            )
             has_pending_requests = any(req.status == "pending" for req in user_requests)
 
         return render_template(
@@ -314,7 +324,7 @@ def edit_venue(venue_id):
             if raw is not None:
                 update_kwargs[coord] = _parse_float(raw)
 
-        # Note: is_active and verified are now handled via AJAX toggle, not form submission
+        # Note: is_active e verified sono gestiti via toggle AJAX, non dal form
 
         # Handle table types and amenities
         table_types_str = request.form.get("table_types", "")
@@ -369,10 +379,24 @@ def toggle_venue_status(venue_id):
 
     data = request.get_json()
     field = data.get("field") if data else None
-    value = data.get("value") if data else None
+    raw_value = data.get("value") if data else None
 
     if field not in ["is_active", "verified"]:
         return jsonify({"success": False, "message": "Campo non valido"}), 400
+
+    # Coercizione esplicita a bool: la colonna e' Boolean e una stringa
+    # ('false') o None passati cosi' com'erano finivano in TypeError al
+    # commit (500) o NULL nel campo.
+    if isinstance(raw_value, bool):
+        value = raw_value
+    elif isinstance(raw_value, str) and raw_value.strip().lower() in ("true", "1"):
+        value = True
+    elif isinstance(raw_value, str) and raw_value.strip().lower() in ("false", "0"):
+        value = False
+    else:
+        # Solo true/false espliciti: una stringa qualsiasi ("maybe") NON deve
+        # diventare False e disattivare la sala.
+        return jsonify({"success": False, "message": "Valore non valido"}), 400
 
     try:
         if field == "is_active":
@@ -430,7 +454,7 @@ def update_table_numbers(venue_id):
 @venue_manager_required
 def upload_photo(venue_id):
     """Carica foto per la sala biliardo"""
-    venue = db.get_or_404(BilliardHall, venue_id)
+    db.get_or_404(BilliardHall, venue_id)  # 404 se la venue non esiste
 
     if "photo" not in request.files:
         flash("Nessuna foto selezionata", "error")
@@ -444,7 +468,8 @@ def upload_photo(venue_id):
     if file and _allowed_file(file.filename):
         try:
             filename = secure_filename(
-                f"venue_{venue_id}_{utc_now().strftime('%Y%m%d_%H%M%S')}_{file.filename}"
+                f"venue_{venue_id}_{utc_now().strftime('%Y%m%d_%H%M%S')}"
+                f"_{file.filename}"
             )
 
             # Use centralized image path management
@@ -475,7 +500,7 @@ def upload_photo(venue_id):
 @venue_bp.route("/venues/names")
 @admin_required
 def venue_names_api():
-    """API endpoint per ottenere nomi delle venue (per integrare con datalist location esistenti)"""
+    """API per i nomi delle venue (per la datalist delle location esistenti)."""
     venues = (
         BilliardHall.query.filter_by(is_active=True).order_by(BilliardHall.name).all()
     )

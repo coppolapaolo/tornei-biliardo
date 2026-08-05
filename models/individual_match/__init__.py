@@ -15,8 +15,10 @@ from .models import (
     MatchStatus,
     InvitationStatus,
 )
+
 # Facade services (backward compatible)
 from .services import IndividualMatchService, MatchProposalService
+
 # Specialized services (Sprint 13)
 from .proposal_service import ProposalService
 from .match_lifecycle_service import MatchLifecycleService

@@ -11,6 +11,7 @@ from typing import Dict, List, Any, Optional
 from sqlalchemy import func, and_, or_
 
 from ..base import db, utc_now
+from ..status_enum import GaraStatus, MatchStatus
 from .models import KpiFeatureUsage
 from .enums import FeatureName
 from .services import MetricWithTrend, DateRange, _build_date_filters, _calculate_trend
@@ -49,7 +50,9 @@ class MetricsService:
         return _calculate_trend(current, previous)
 
     @staticmethod
-    def get_daily_registrations(date_range: Optional[DateRange]) -> List[Dict[str, Any]]:
+    def get_daily_registrations(
+        date_range: Optional[DateRange],
+    ) -> List[Dict[str, Any]]:
         """Get daily registration counts for charting."""
         from ..user.models import User
 
@@ -81,22 +84,18 @@ class MetricsService:
         if total_users == 0:
             return 0.0
 
-        users_with_matches = (
-            db.session.query(func.count(func.distinct(Match.player1_id)))
-            .filter(Match.status == "completed")
-            .scalar()
-            or 0
+        # Giocatori distinti via UNION delle due posizioni: un utente che gioca
+        # sia come player1 sia come player2 NON va contato due volte (la vecchia
+        # somma dei due distinct() gonfiava il numeratore).
+        p1 = db.session.query(Match.player1_id).filter(
+            Match.status == MatchStatus.COMPLETED.value,
+            Match.player1_id.isnot(None),
         )
-
-        users_with_matches_p2 = (
-            db.session.query(func.count(func.distinct(Match.player2_id)))
-            .filter(Match.status == "completed")
-            .scalar()
-            or 0
+        p2 = db.session.query(Match.player2_id).filter(
+            Match.status == MatchStatus.COMPLETED.value,
+            Match.player2_id.isnot(None),
         )
-
-        # Approximate unique players (not perfect but fast)
-        unique_players = min(users_with_matches + users_with_matches_p2, total_users)
+        unique_players = min(p1.union(p2).count(), total_users)
         return round((unique_players / total_users) * 100, 1)
 
     @staticmethod
@@ -132,38 +131,33 @@ class MetricsService:
 
     @staticmethod
     def get_active_users_count(days: int) -> int:
-        """Get count of users active in last N days (based on match activity)."""
+        """Get count of DISTINCT users active in last N days (match activity).
+
+        Conta gli utenti distinti sull'UNIONE di player1/player2: un utente che
+        nel periodo compare sia come player1 sia come player2 va contato una
+        sola volta. (Prima si sommavano due COUNT(DISTINCT) per-colonna →
+        doppio conteggio, con DAU/WAU/MAU gonfiati e stickiness dau/mau
+        potenzialmente > 100%.)
+        """
         from ..match.models import Match
 
         cutoff = utc_now() - timedelta(days=days)
 
-        active_p1 = (
-            db.session.query(func.count(func.distinct(Match.player1_id)))
-            .filter(
-                and_(
-                    Match.updated_at >= cutoff,
-                    Match.status == "completed",
-                    Match.player1_id.isnot(None),
-                )
-            )
-            .scalar()
-            or 0
+        # Conteggio in DB tramite UNION (dedup automatica) + COUNT(*): la
+        # union deduplica gli id sull'insieme player1 ∪ player2, così non
+        # materializziamo tutti gli id in Python (DAU/WAU/MAU è hot path).
+        p1 = db.session.query(Match.player1_id.label("uid")).filter(
+            Match.updated_at >= cutoff,
+            Match.status == MatchStatus.COMPLETED.value,
+            Match.player1_id.isnot(None),
         )
-
-        active_p2 = (
-            db.session.query(func.count(func.distinct(Match.player2_id)))
-            .filter(
-                and_(
-                    Match.updated_at >= cutoff,
-                    Match.status == "completed",
-                    Match.player2_id.isnot(None),
-                )
-            )
-            .scalar()
-            or 0
+        p2 = db.session.query(Match.player2_id.label("uid")).filter(
+            Match.updated_at >= cutoff,
+            Match.status == MatchStatus.COMPLETED.value,
+            Match.player2_id.isnot(None),
         )
-
-        return active_p1 + active_p2
+        union_subquery = p1.union(p2).subquery()
+        return db.session.query(func.count()).select_from(union_subquery).scalar() or 0
 
     @staticmethod
     def get_dau() -> int:
@@ -182,7 +176,8 @@ class MetricsService:
 
     @staticmethod
     def get_retention_rate(days: int) -> float:
-        """Get retention rate: % of users who returned after N days from registration."""
+        """Get retention rate: % of users who returned after N days from
+        registration."""
         from ..user.models import User
         from ..match.models import Match
 
@@ -207,7 +202,7 @@ class MetricsService:
                 and_(
                     or_(Match.player1_id == user.id, Match.player2_id == user.id),
                     Match.updated_at >= activity_after,
-                    Match.status == "completed",
+                    Match.status == MatchStatus.COMPLETED.value,
                 )
             ).first()
             if has_activity:
@@ -222,14 +217,14 @@ class MetricsService:
         """Get total completed matches."""
         from ..match.models import Match
 
-        return Match.query.filter_by(status="completed").count()
+        return Match.query.filter_by(status=MatchStatus.COMPLETED.value).count()
 
     @staticmethod
     def get_matches_in_period(date_range: Optional[DateRange]) -> int:
         """Get matches completed in date range."""
         from ..match.models import Match
 
-        filters = [Match.status == "completed"]
+        filters = [Match.status == MatchStatus.COMPLETED.value]
         filters.extend(_build_date_filters(func.date(Match.updated_at), date_range))
         return Match.query.filter(and_(*filters)).count()
 
@@ -249,7 +244,7 @@ class MetricsService:
         """Get daily match counts for charting."""
         from ..match.models import Match
 
-        filters = [Match.status == "completed"]
+        filters = [Match.status == MatchStatus.COMPLETED.value]
         filters.extend(_build_date_filters(func.date(Match.updated_at), date_range))
 
         results = (
@@ -270,14 +265,14 @@ class MetricsService:
         """Get count of currently active gare (status = playing)."""
         from ..competition.models import Gara
 
-        return Gara.query.filter_by(status="playing").count()
+        return Gara.query.filter_by(status=GaraStatus.PLAYING.value).count()
 
     @staticmethod
     def get_completed_gare_count(date_range: Optional[DateRange] = None) -> int:
         """Get count of completed gare."""
         from ..competition.models import Gara
 
-        filters = [Gara.status == "completed"]
+        filters = [Gara.status == GaraStatus.COMPLETED.value]
         filters.extend(_build_date_filters(Gara.date, date_range))
         return Gara.query.filter(and_(*filters)).count()
 
@@ -331,7 +326,9 @@ class MetricsService:
             query = query.filter(and_(*filters))
         current_usage = query.group_by(KpiFeatureUsage.feature_name).all()
 
-        usage_map = {r.feature_name: (r.usage or 0, r.unique or 0) for r in current_usage}
+        usage_map = {
+            r.feature_name: (r.usage or 0, r.unique or 0) for r in current_usage
+        }
 
         prev_map: Dict[str, int] = {}
         if date_range and date_range.is_bounded:
@@ -361,9 +358,11 @@ class MetricsService:
                     "unique_users": unique,
                     "trend_percent": trend.trend_percent,
                     "trend_direction": trend.trend_direction,
-                    "percentage": round((current / total_usage * 100), 1)
-                    if total_usage > 0
-                    else 0,
+                    "percentage": (
+                        round((current / total_usage * 100), 1)
+                        if total_usage > 0
+                        else 0
+                    ),
                 }
             )
 

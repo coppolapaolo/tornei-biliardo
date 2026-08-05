@@ -8,6 +8,9 @@ from flask import (
     flash,
     jsonify,
 )
+import logging
+
+from flask_babel import gettext as _
 from flask_login import current_user
 
 from models.individual_match.services import IndividualMatchService
@@ -15,6 +18,8 @@ from models.user.permissions import RoleRequirement
 from utils import admin_required
 
 from . import individual_match_bp
+
+logger = logging.getLogger(__name__)
 
 
 @individual_match_bp.route("/")
@@ -25,7 +30,8 @@ def dashboard():
         user_data = IndividualMatchService.get_user_dashboard_data(current_user.id)
         return render_template("individual_match/dashboard.html", **user_data)
     except Exception as e:
-        flash(f"Error loading dashboard: {str(e)}", "danger")
+        logger.error("Error loading dashboard: %s", e, exc_info=True)
+        flash(_("Errore interno del server"), "danger")
         return redirect(url_for("dashboard.dashboard"))
 
 
@@ -63,7 +69,8 @@ def admin_overview():
         overview_data = IndividualMatchService.get_admin_overview()
         return render_template("individual_match/admin_overview.html", **overview_data)
     except Exception as e:
-        flash(f"Error loading admin overview: {str(e)}", "danger")
+        logger.error("Error loading admin overview: %s", e, exc_info=True)
+        flash(_("Errore interno del server"), "danger")
         return redirect(url_for("dashboard.dashboard"))
 
 
@@ -74,7 +81,7 @@ def individual_match_not_found(error):
     if request.is_json:
         return jsonify({"success": False, "error": "Resource not found"}), 404
     else:
-        flash("Resource not found.", "danger")
+        flash(_("Risorsa non trovata."), "danger")
         return redirect(url_for("individual_match.dashboard"))
 
 
@@ -84,5 +91,5 @@ def individual_match_access_denied(error):
     if request.is_json:
         return jsonify({"success": False, "error": "Access denied"}), 403
     else:
-        flash("Access denied.", "danger")
+        flash(_("Accesso negato."), "danger")
         return redirect(url_for("individual_match.dashboard"))

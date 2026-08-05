@@ -57,8 +57,7 @@ class Gara(SoftDeleteMixin, db.Model):
     # RESOLVED: See docs/_archive/2025-12-architectural-decisions-pre-adr.md ADR-002.
     # Decision: Keep FK in Gara (natural direction, efficient queries).
     campionato_id = db.Column(
-        db.Integer, db.ForeignKey("campionato.id", ondelete="CASCADE"),
-        nullable=True
+        db.Integer, db.ForeignKey("campionato.id", ondelete="CASCADE"), nullable=True
     )
 
     # Director FK per standalone competitions
@@ -73,13 +72,20 @@ class Gara(SoftDeleteMixin, db.Model):
 
     # Location - FK to BilliardHall (nullable for backward compatibility)
     billiard_hall_id = db.Column(
-        db.Integer, db.ForeignKey("billiard_hall.id", ondelete="SET NULL"), nullable=True
+        db.Integer,
+        db.ForeignKey("billiard_hall.id", ondelete="SET NULL"),
+        nullable=True,
     )
     # Legacy: string-based location (kept for backward compatibility and display cache)
     location = db.Column(db.String(200))
     # Available tables for this gara - JSON list: '["2", "3", "5"]'
     # If set, overrides venue's tables. If None, uses venue's tables.
     available_tables = db.Column(db.Text, nullable=True)
+    # Se True (effettivo solo con strategia random): dal secondo turno i tavoli
+    # vengono assegnati "a ondate" — si attende la fine di tutte le partite del
+    # turno precedente, poi il primo tavolo della lista (ordine di pregio) va
+    # al match con il giocatore meglio piazzato in classifica provvisoria.
+    assign_tables_by_ranking = db.Column(db.Boolean, nullable=False, default=False)
     description = db.Column(db.Text)  # Descrizione opzionale
     rounds_count = db.Column(
         db.Integer, nullable=False, default=DEFAULT_ROUNDS_COUNT
@@ -103,7 +109,13 @@ class Gara(SoftDeleteMixin, db.Model):
     # Multi-set configuration (Phase 6: Frontend Integration)
     is_multi_set = db.Column(db.Boolean, default=False, nullable=False)
     match_distance = db.Column(db.Integer, nullable=True)  # Number of sets
-    is_race_to_sets = db.Column(db.Boolean, default=True, nullable=True)  # Race-to vs exact sets
+    is_race_to_sets = db.Column(
+        db.Boolean, default=True, nullable=True
+    )  # Race-to vs exact sets
+
+    # Handicap mode: NULL = eredita dal campionato (vedi effective_has_handicap).
+    # I match di una gara con handicap non aggiornano i rating (Elo/Fargo).
+    has_handicap = db.Column(db.Boolean, nullable=True)
 
     # Date iscrizioni
     inscription_start = db.Column(db.DateTime)
@@ -119,7 +131,7 @@ class Gara(SoftDeleteMixin, db.Model):
         db.String(10), nullable=False, default=DEFAULT_WITHDRAW_POLICY
     )
 
-    # Classification system: RACK (rack totali), WINS (vittorie+diff), POSITION (bracket)
+    # Classification: RACK (rack totali), WINS (vittorie+diff), POSITION (bracket)
     # See docs/CLASSIFICATION_SYSTEM.md for constraints per system
     classification_system = db.Column(
         db.String(10), nullable=False, default="WINS"
@@ -155,8 +167,9 @@ class Gara(SoftDeleteMixin, db.Model):
 
     # Playoff configuration (if this gara is a playoff)
     playoff_config_id = db.Column(
-        db.Integer, db.ForeignKey("playoff_configuration.id", ondelete="SET NULL"),
-        nullable=True
+        db.Integer,
+        db.ForeignKey("playoff_configuration.id", ondelete="SET NULL"),
+        nullable=True,
     )  # If set, this gara is a playoff tournament
 
     # Relazioni
@@ -180,12 +193,9 @@ class Gara(SoftDeleteMixin, db.Model):
     tiebreaker_challenge = db.relationship(
         "Challenge", foreign_keys=[tiebreaker_challenge_id]
     )
-    billiard_hall = db.relationship(
-        "BilliardHall", foreign_keys=[billiard_hall_id]
-    )
+    billiard_hall = db.relationship("BilliardHall", foreign_keys=[billiard_hall_id])
     playoff_config = db.relationship(
-        "PlayoffConfiguration", foreign_keys=[playoff_config_id],
-        back_populates="gara"
+        "PlayoffConfiguration", foreign_keys=[playoff_config_id], back_populates="gara"
     )
 
     @property
@@ -222,6 +232,7 @@ class Gara(SoftDeleteMixin, db.Model):
         if not self.location:
             return None
         from models.location.models import BilliardHall
+
         return BilliardHall.query.filter_by(name=self.location).first()
 
     @property
@@ -284,19 +295,73 @@ class Gara(SoftDeleteMixin, db.Model):
             self.available_tables = None
 
     # Property per identificare se è standalone
-    # RESOLVED: See docs/_archive/2025-12-architectural-decisions-pre-adr.md ADR-002 - keep bidirectional
+    # RESOLVED: ADR-002 (docs/_archive/2025-12-architectural-decisions-pre-adr.md)
+    # — keep bidirectional
     @property
     def is_standalone(self):
         """Check if this is a standalone competition."""
         return self.campionato_id is None
 
+    @property
+    def effective_has_handicap(self) -> bool:
+        """Handicap mode effettivo: override gara → campionato → False.
+
+        NULL su `has_handicap` significa "eredita dal campionato". Per gare
+        standalone (campionato_id NULL) il fallback è False.
+        """
+        if self.has_handicap is not None:
+            return self.has_handicap
+        if self.campionato is not None:
+            return bool(self.campionato.has_handicap)
+        return False
+
+    @property
+    def display_name(self) -> str:
+        """Come si chiama questa gara per chi la legge.
+
+        Il nome scelto dal direttore se c'è, altrimenti "Gara <numero>". È il
+        campo che porta l'identità pubblica della prova (locandine, post), e
+        quando il direttore lo compila è lui a decidere come va letta: per
+        questo il numero non viene anteposto, sarebbe l'applicazione che si
+        sovrappone alla sua scelta — e su un nome come "2ª prova" produrrebbe
+        anche una ripetizione.
+
+        Unica fonte per il titolo di una gara: prima la formattazione era
+        ripetuta nei template con tre regole diverse (nome con fallback / solo
+        numero / nome senza fallback), e le gare di campionato finivano per
+        mostrare "Gara 2" ignorando il nome impostato (issue #56), mentre
+        altrove il nome mancante lasciava il vuoto invece di "Gara N"
+        (issue #57).
+        """
+        name = (self.name or "").strip()
+        if name:
+            return name
+
+        # Il fallback è testo dell'interfaccia e va tradotto: i template che
+        # lo producevano a mano usavano `_('Gara %(id)s')`, e restituire qui
+        # una stringa italiana fissa sarebbe una regressione per la locale EN.
+        # Import locale come in `models/notification/models.py`: fuori da un
+        # contesto applicativo (script, migration) gettext solleva, e lì il
+        # testo grezzo va benissimo.
+        try:
+            from flask_babel import gettext
+
+            return gettext("Gara %(number)s", number=self.number)
+        except (RuntimeError, ImportError):
+            return f"Gara {self.number}"
+
     # RESOLVED: See docs/_archive/2025-12-architectural-decisions-pre-adr.md ADR-002.
     # Decision: Keep bidirectional - Gara has FK, Campionato has property.
     def get_display_name(self):
-        """Get display name including campionato/standalone info."""
+        """Nome della gara qualificato dal contesto (campionato o standalone).
+
+        Diverso da `display_name`, che è il titolo nudo: questo lo colloca.
+        Usa `display_name` come base, così una gara senza nome non produce
+        più "None - Campionato X".
+        """
         if self.is_standalone:
-            return f"{self.name} (Standalone)"
-        return f"{self.name} - {self.campionato.name}"
+            return f"{self.display_name} (Standalone)"
+        return f"{self.display_name} - {self.campionato.name}"
 
     def get_real_status(self):
         """Restituisce lo status reale, considerando anche round e iscrizioni.
@@ -316,6 +381,39 @@ class Gara(SoftDeleteMixin, db.Model):
 
         return get_status_badge(self)
 
+    @property
+    def display_round(self) -> int:
+        """Turno da mostrare all'utente ("Turno corrente: N / M").
+
+        `current_round` è la progressione *stretta*: avanza solo quando tutti
+        i match del turno N sono conclusi. Le strategie che pre-generano i
+        turni (random, round robin) creano i match di tutti i turni all'avvio
+        e lasciano `current_round` indietro finché il turno precedente non è
+        chiuso del tutto — la gara intanto sta già giocando i turni
+        successivi, e il riquadro pubblico mostrava "Turno corrente: 1 / 3" a
+        gara al terzo turno (issue #62).
+
+        Il turno da mostrare è il più basso con match ancora aperti; se sono
+        tutti conclusi è il più alto con match (gara finita). Senza match si
+        ricade su `current_round`, e su 1 per una gara PLAYING che non ha
+        ancora match (edge case di avvio).
+        """
+        rounds = [
+            m.round_number
+            for m in (getattr(self, "matches", []) or [])
+            if getattr(m, "round_number", None)
+        ]
+        if rounds:
+            open_rounds = [
+                m.round_number
+                for m in self.matches
+                if m.round_number and not MatchStatus.is_finished(m.status)
+            ]
+            return min(open_rounds) if open_rounds else max(rounds)
+        if self.current_round and self.current_round > 0:
+            return self.current_round
+        return 1 if self.status == GaraStatus.PLAYING.value else 0
+
     def can_start_new_round(self):
         """Verifica se si può iniziare un nuovo round"""
         if self.status != GaraStatus.PLAYING.value:
@@ -332,15 +430,17 @@ class Gara(SoftDeleteMixin, db.Model):
         # Must have matches in current round AND all must be finished
         # Note: VALIDATED (bilateral player confirmation) also counts as finished
         return bool(current_round_matches) and all(
-            m.status in [MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value]
-            for m in current_round_matches
+            MatchStatus.is_finished(m.status) for m in current_round_matches
         )
 
     def can_inscribe(self):
         """Verifica se si possono fare iscrizioni"""
         if self.status != GaraStatus.INSCRIPTION.value:
             return False
-        if self.inscription_end and utc_now() > self.inscription_end:
+        now = utc_now()
+        if self.inscription_start and now < self.inscription_start:
+            return False
+        if self.inscription_end and now > self.inscription_end:
             return False
         return True
 
@@ -590,7 +690,7 @@ class Gara(SoftDeleteMixin, db.Model):
                 is_race_to_racks=self.is_race_to,
                 is_multi_set=False,
                 sets=1,
-                is_race_to_sets=True
+                is_race_to_sets=True,
             )
         else:
             # Multi-set configuration (Phase 6: Frontend Integration)
@@ -599,7 +699,9 @@ class Gara(SoftDeleteMixin, db.Model):
                 is_race_to_racks=self.is_race_to,
                 is_multi_set=True,
                 sets=self.match_distance if self.match_distance else 1,
-                is_race_to_sets=self.is_race_to_sets if self.is_race_to_sets is not None else True
+                is_race_to_sets=(
+                    self.is_race_to_sets if self.is_race_to_sets is not None else True
+                ),
             )
 
     def copy_settings_from(self, source_gara):
@@ -624,7 +726,8 @@ class Gara(SoftDeleteMixin, db.Model):
 
     def get_podium(self):
         """
-        Restituisce il podio (top positions) della classifica finale in base a tiebreaker_until_position.
+        Restituisce il podio (top positions) della classifica finale in base
+        a tiebreaker_until_position.
 
         Returns:
             List[dict]: Lista di dizionari con 'position', 'user', 'username'
@@ -697,7 +800,7 @@ class Inscription(db.Model):
     # Lista d'attesa
     is_waitlist = db.Column(db.Boolean, default=False, nullable=False)
     waitlist_position = db.Column(db.Integer, nullable=True)
-    # Reason for waitlist: 'capacity' (max exceeded) or 'parity' (odd count with NO policy)
+    # Reason: 'capacity' (max exceeded) or 'parity' (odd count w/ NO policy)
     waitlist_reason = db.Column(db.String(20), nullable=True)
 
     @classmethod

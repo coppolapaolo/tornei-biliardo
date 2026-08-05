@@ -38,10 +38,24 @@ window.Polling = (function() {
         var lastTimestamp = Date.now() / 1000;
         var timerId = null;
         var running = false;
+        // Una sola richiesta per volta: poll() e' invocata sia dal timer sia
+        // dal ritorno in primo piano, e due fetch concorrenti partirebbero
+        // con lo stesso `lastTimestamp` — stessi eventi elaborati due volte,
+        // e `lastTimestamp` aggiornato fuori ordine dalla risposta piu' lenta.
+        var inFlight = false;
 
         function poll() {
-            if (!running) return;
+            if (!running || inFlight) return;
 
+            // Scheda in secondo piano: non consumare un worker per una pagina
+            // che nessuno sta guardando. Su PythonAnywhere i worker sono
+            // pochi e queste richieste competono con quelle vere.
+            // `lastTimestamp` resta indietro apposta: al ritorno in primo
+            // piano il primo poll recupera tutti gli eventi persi, quindi la
+            // funzione live durante le gare e' identica a prima.
+            if (document.hidden) return;
+
+            inFlight = true;
             fetch(url + '?since=' + lastTimestamp)
                 .then(function(response) {
                     if (!response.ok) throw new Error('Poll failed: ' + response.status);
@@ -53,13 +67,22 @@ window.Polling = (function() {
                         result.events.forEach(onEvent);
                     }
                 })
-                .catch(onError);
+                .catch(onError)
+                .then(function() { inFlight = false; });
+        }
+
+        // Al ritorno in primo piano non si aspetta il prossimo tick: si
+        // recupera subito, cosi' chi torna sulla pagina vede i punteggi
+        // aggiornati immediatamente invece che dopo qualche secondo.
+        function onVisibilityChange() {
+            if (running && !document.hidden) poll();
         }
 
         return {
             start: function() {
                 if (running) return;
                 running = true;
+                document.addEventListener('visibilitychange', onVisibilityChange);
                 // Initial poll after short delay
                 setTimeout(poll, 500);
                 // Then poll at regular intervals
@@ -67,6 +90,7 @@ window.Polling = (function() {
             },
             stop: function() {
                 running = false;
+                document.removeEventListener('visibilitychange', onVisibilityChange);
                 if (timerId) {
                     clearInterval(timerId);
                     timerId = null;

@@ -2,7 +2,7 @@
 
 import pytest
 import uuid
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 from models import User, Notification
 from models.user.role_enum import UserRole
@@ -622,3 +622,97 @@ class TestNotificationService:
         assert mock_emit.call_count == 2
         second_call = mock_emit.call_args_list[1]
         assert second_call[0][2]["unread_count"] == 2
+
+
+@pytest.mark.unit
+class TestGlobalAutoDelete:
+    """Bug 16: auto-cancellazione globale notifiche (default 30 giorni,
+    applicata a TUTTI i tipi, pulizia all'apertura della pagina)."""
+
+    def _user(self, db_session):
+        uid = str(uuid.uuid4())[:8]
+        u = User(
+            username=f"u_{uid}",
+            email=f"{uid}@test.com",
+            role=UserRole.PLAYER.value,
+        )
+        u.set_password("x")
+        db_session.add(u)
+        db_session.commit()
+        return u
+
+    def _read_notif(self, db_session, user, ntype, days_old, status=None):
+        from models.base import utc_now
+        from datetime import timedelta
+
+        n = Notification(
+            user_id=user.id,
+            title="t",
+            message="m",
+            notification_type=ntype,
+            status=status or NotificationStatus.READ,
+        )
+        db_session.add(n)
+        db_session.flush()
+        n.created_at = utc_now() - timedelta(days=days_old)
+        db_session.commit()
+        return n
+
+    def test_default_is_30_when_unconfigured(self, db_session):
+        user = self._user(db_session)
+        assert NotificationService.get_global_auto_delete_days(user.id) == 30
+
+    def test_set_then_get_days(self, db_session):
+        user = self._user(db_session)
+        NotificationService.set_global_auto_delete_days(user.id, 7)
+        assert NotificationService.get_global_auto_delete_days(user.id) == 7
+
+    def test_disable_persists_none_on_existing_pref(self, db_session):
+        """Disattivazione deve persistere None anche su preferenza esistente."""
+        user = self._user(db_session)
+        NotificationService.set_global_auto_delete_days(user.id, 7)
+        NotificationService.set_global_auto_delete_days(user.id, None)
+        assert NotificationService.get_global_auto_delete_days(user.id) is None
+
+    def test_auto_delete_default_removes_old_any_type(self, db_session):
+        """Col default 30gg cancella le scadute di QUALSIASI tipo, non solo
+        SYSTEM_ANNOUNCEMENT, e tiene quelle recenti."""
+        user = self._user(db_session)
+        old = self._read_notif(
+            db_session, user, NotificationType.PLAYOFF_INVITATION, 40
+        )
+        recent = self._read_notif(db_session, user, NotificationType.MATCH_PROPOSAL, 5)
+
+        deleted = NotificationService.auto_delete_for_user(user.id)
+
+        assert deleted == 1
+        assert db_session.get(Notification, old.id) is None
+        assert db_session.get(Notification, recent.id) is not None
+
+    def test_auto_delete_disabled_keeps_all(self, db_session):
+        user = self._user(db_session)
+        NotificationService.set_global_auto_delete_days(user.id, None)
+        old = self._read_notif(
+            db_session, user, NotificationType.PLAYOFF_INVITATION, 100
+        )
+
+        deleted = NotificationService.auto_delete_for_user(user.id)
+
+        assert deleted == 0
+        assert db_session.get(Notification, old.id) is not None
+
+    def test_auto_delete_keeps_unread(self, db_session):
+        """Le non lette (PENDING) non vengono mai cancellate, anche se vecchie."""
+        user = self._user(db_session)
+        old_unread = self._read_notif(
+            db_session,
+            user,
+            NotificationType.SYSTEM_ANNOUNCEMENT,
+            100,
+            status=NotificationStatus.PENDING,
+        )
+
+        deleted = NotificationService.auto_delete_for_user(user.id)
+
+        assert deleted == 0
+        assert db_session.get(Notification, old_unread.id) is not None

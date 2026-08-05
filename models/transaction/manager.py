@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from enum import Enum
 import logging
 import time
-from threading import local
+from threading import local, Lock
 
 from ..base import db
 from sqlalchemy import text
@@ -124,6 +124,11 @@ class TransactionManager:
         self._transaction_stack: List[TransactionContext] = []
         self._metrics_history: List[TransactionMetrics] = []
         self._next_transaction_id = 1
+        # current_transaction e' thread-local, ma _next_transaction_id e
+        # _metrics_history sono condivisi sull'istanza globale: in un server
+        # WSGI multithread (PythonAnywhere) le mutazioni concorrenti darebbero
+        # ID duplicati o una lista metriche corrotta. Proteggi con un lock.
+        self._state_lock = Lock()
 
     @property
     def current_transaction(self) -> Optional[TransactionContext]:
@@ -137,8 +142,9 @@ class TransactionManager:
 
     def generate_transaction_id(self) -> str:
         """Generate unique transaction ID."""
-        transaction_id = f"tx_{self._next_transaction_id:06d}"
-        self._next_transaction_id += 1
+        with self._state_lock:
+            transaction_id = f"tx_{self._next_transaction_id:06d}"
+            self._next_transaction_id += 1
         return transaction_id
 
     @contextmanager
@@ -250,6 +256,10 @@ class TransactionManager:
                             f"Failed to rollback to savepoint {transaction_id}: "
                             f"{rollback_error}"
                         )
+                    # Re-raise: un commit fallito NON deve essere spacciato per
+                    # successo. Senza questo il chiamante riceve un ritorno OK
+                    # mentre il DB ha annullato i dati (perdita dati silenziosa).
+                    raise
             elif is_pseudo_nested:
                 # For pseudo-nested (autobegin), release savepoint AND commit parent
                 # NOTE: First commit() releases the savepoint, second commits the
@@ -278,6 +288,8 @@ class TransactionManager:
                             f"Failed to rollback pseudo-nested transaction "
                             f"{transaction_id}: {rollback_error}"
                         )
+                    # Re-raise: vedi nota nel ramo nested (no successo fittizio).
+                    raise
             else:
                 try:
                     db.session.commit()
@@ -286,6 +298,10 @@ class TransactionManager:
                     logger.warning(
                         f"Failed to commit transaction {transaction_id}: {e}"
                     )
+                    # Re-raise: un commit fallito (IntegrityError, DB locked, …)
+                    # NON deve tornare come successo al chiamante. L'except
+                    # esterno fa il rollback e propaga. Vedi nota ramo nested.
+                    raise
 
             context.status = TransactionStatus.COMMITTED
 
@@ -295,7 +311,8 @@ class TransactionManager:
 
             try:
                 if is_true_nested or is_pseudo_nested:
-                    db.session.rollback()  # Rollback to savepoint (and parent for pseudo)
+                    # Rollback to savepoint (and parent for pseudo-nested)
+                    db.session.rollback()
                     logger.warning(
                         f"{'Nested' if is_true_nested else 'Pseudo-nested'} "
                         f"transaction {transaction_id} rolled back: {str(e)}"
@@ -317,13 +334,14 @@ class TransactionManager:
             # Restore parent context
             self.current_transaction = parent_context
 
-            # Record metrics
+            # Record metrics (lista condivisa: protetta dal lock per evitare
+            # append/troncamento concorrenti corrotti)
             metrics = context.to_metrics()
-            self._metrics_history.append(metrics)
-
-            # Limit metrics history
-            if len(self._metrics_history) > 1000:
-                self._metrics_history = self._metrics_history[-500:]  # Keep last 500
+            with self._state_lock:
+                self._metrics_history.append(metrics)
+                # Limit metrics history
+                if len(self._metrics_history) > 1000:
+                    self._metrics_history = self._metrics_history[-500:]
 
             logger.debug(
                 f"Transaction {transaction_id} completed in {metrics.duration_ms:.2f}ms"
@@ -467,33 +485,3 @@ def serializable(domain: Optional[str] = None):
     return transactional(
         isolation_level=TransactionIsolationLevel.SERIALIZABLE, domain=domain
     )
-
-
-class DomainService:
-    """Enhanced base class for domain services with transaction support."""
-
-    def __init__(self, domain_name: str):
-        self.domain_name = domain_name
-
-    def _track_domain_access(self):
-        """Track domain access in current transaction."""
-        transaction_manager.track_domain_access(self.domain_name)
-
-    def _execute_with_tracking(self, operation: Callable[[], T]) -> T:
-        """Execute operation with domain tracking."""
-        self._track_domain_access()
-        transaction_manager.track_query_execution()
-        return operation()
-
-    @contextmanager
-    def domain_transaction(
-        self,
-        isolation_level: Optional[TransactionIsolationLevel] = None,
-        read_only: bool = False,
-    ):
-        """Start transaction with automatic domain tracking."""
-        with transaction_manager.transaction(
-            isolation_level=isolation_level, read_only=read_only
-        ) as context:
-            self._track_domain_access()
-            yield context

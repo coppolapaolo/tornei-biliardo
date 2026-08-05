@@ -63,8 +63,8 @@
 
                         <!-- Sistema di Classifica -->
                         <div class="mb-4">
-                            <label for="classification_system" class="form-label">{{ _("Sistema di Classifica") }} *</label>
-                            <select class="form-select form-select-lg" id="classification_system" name="classification_system" required>
+                            <label for="default_classification_system" class="form-label">{{ _("Sistema di Classifica") }} *</label>
+                            <select class="form-select form-select-lg" id="default_classification_system" name="default_classification_system" required>
                                 <option value="WINS" selected>{{ _("Vittorie (match vinti → diff rack)") }}</option>
                                 <option value="RACK">{{ _("Rack Totali (rack accumulati)") }}</option>
                                 <option value="POSITION" disabled>{{ _("Posizione Bracket (coming soon)") }}</option>
@@ -198,7 +198,7 @@
 {{ super() }}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const classificationSelect = document.getElementById('classification_system');
+    const classificationSelect = document.getElementById('default_classification_system');
     const typeSelect = document.getElementById('campionato_type');
 
     // Classification descriptions

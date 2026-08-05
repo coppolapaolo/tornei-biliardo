@@ -23,11 +23,11 @@ import pytest
 from models import Campionato, Gara
 from models.campionato.homepage_service import (
     HomepageService,
-    HOMEPAGE_COMPLETED_LIMIT,
+    HOMEPAGE_ARCHIVE_LIMIT,
 )
 from models.campionato.services import TournamentService
 from models.competition.services import GaraService
-from models.status_enum import GaraStatus, TournamentStatus
+from models.status_enum import GaraStatus, MatchStatus, TournamentStatus
 
 
 def _guest_render(app, endpoint_path, query_string=""):
@@ -47,20 +47,30 @@ def _guest_render(app, endpoint_path, query_string=""):
     with app.test_request_context(url):
         # Force anonymous: Flask-Login reads session, which is empty here
         from flask import g
+
         g._login_user = AnonymousUserMixin()
         # Dispatch through the app: matches the URL and runs the view
         # function with the normal middleware/before_request chain.
         return app.full_dispatch_request()
 
 
-def _make_campionato(name_prefix: str, director_id: int) -> Campionato:
-    """Helper to build a campionato with a unique name."""
+def _make_campionato(
+    name_prefix: str, director_id: int, planned_gare_count: int = 1
+) -> Campionato:
+    """Helper to build a campionato with a unique name.
+
+    Pianifica UNA sola gara: col default del modello (10) un campionato le
+    cui gare esistenti sono tutte COMPLETED resta IN_PROGRESS, perché ne
+    mancano ancora da creare (issue #60). Questi test verificano la
+    partizione per stato derivato, non la pianificazione.
+    """
     suffix = uuid.uuid4().hex[:6]
     return TournamentService().create_campionato_with_director(
         name=f"{name_prefix}_{suffix}",
         creator_user_id=director_id,
         campionato_type="Amalfi",
         is_active=True,
+        planned_gare_count=planned_gare_count,
     )
 
 
@@ -103,9 +113,8 @@ class TestHomepageCompletedCampionato:
     def test_completed_campionato_does_not_count_as_active(
         self, db_session, isolated_director_user
     ):
-        """A campionato with all gare COMPLETED must not increase
-        `active_count`. It may still appear in `tournaments_data` as part
-        of the "recent completed" tail."""
+        """A campionato with all gare COMPLETED must not appear among the
+        active campionati. It belongs to the archive section instead."""
         campionato = _make_campionato("Old", isolated_director_user.id)
         _add_completed_gara(db_session, campionato.id, 1, isolated_director_user.id)
 
@@ -115,18 +124,20 @@ class TestHomepageCompletedCampionato:
 
         data = HomepageService.get_homepage_data()
         assert data is not None
-        assert data["active_count"] == 0
-        assert data["completed_total"] == 1
-        assert data["completed_shown"] == 1
-        # Tail: campionato is rendered, but the section header reads "0 attivi"
-        assert any(
-            d["campionato"].id == campionato.id for d in data["tournaments_data"]
+        # Not active...
+        assert data["active_campionati_count"] == 0
+        assert not any(
+            d["campionato"].id == campionato.id for d in data["active_campionati"]
         )
+        # ...but present in the archive tail.
+        assert data["archive_campionati_total"] == 1
+        assert any(c.id == campionato.id for c in data["archive_campionati"])
 
     def test_in_progress_campionato_counts_as_active(
         self, db_session, isolated_director_user
     ):
-        """A campionato with at least one PLAYING gara counts as active."""
+        """A campionato with at least one PLAYING gara counts as active and
+        its gara surfaces in the live section."""
         campionato = _make_campionato("Live", isolated_director_user.id)
         gara = _add_completed_gara(
             db_session, campionato.id, 1, isolated_director_user.id
@@ -136,25 +147,26 @@ class TestHomepageCompletedCampionato:
 
         data = HomepageService.get_homepage_data()
         assert data is not None
-        assert data["active_count"] == 1
-        assert data["completed_total"] == 0
+        assert data["active_campionati_count"] == 1
+        assert data["archive_campionati_total"] == 0
+        # The PLAYING gara is shown as live.
+        assert any(c["gara"].id == gara.id for c in data["live_garas"])
 
-    def test_completed_tail_caps_at_homepage_limit(
+    def test_completed_tail_caps_at_archive_limit(
         self, db_session, isolated_director_user
     ):
-        """When there are more than HOMEPAGE_COMPLETED_LIMIT completed
+        """When there are more than HOMEPAGE_ARCHIVE_LIMIT completed
         campionati, only the most recent are shown; the rest live behind
         the /campionatos page."""
-        extra = HOMEPAGE_COMPLETED_LIMIT + 2
+        extra = HOMEPAGE_ARCHIVE_LIMIT + 2
         for i in range(extra):
             c = _make_campionato(f"Done{i}", isolated_director_user.id)
             _add_completed_gara(db_session, c.id, 1, isolated_director_user.id)
 
         data = HomepageService.get_homepage_data()
         assert data is not None
-        assert data["completed_total"] == extra
-        assert data["completed_shown"] == HOMEPAGE_COMPLETED_LIMIT
-        assert len(data["tournaments_data"]) == HOMEPAGE_COMPLETED_LIMIT
+        assert data["archive_campionati_total"] == extra
+        assert len(data["archive_campionati"]) == HOMEPAGE_ARCHIVE_LIMIT
 
     def test_guest_homepage_renders_with_completed_only(
         self, app, db_session, isolated_director_user
@@ -172,9 +184,8 @@ class TestHomepageCompletedCampionato:
         response = _guest_render(app, "/")
         assert response.status_code == 200, response.data[:200]
         body = response.get_data(as_text=True)
-        # New section header (count = 0 active, explicit "attivi")
-        assert "0 attivi" in body
-        # Campionato name still visible (in the "recent completed" tail)
+        # Completed campionato shown under the archive section, not as active.
+        assert "Archivio" in body
         assert campionato.name in body
 
     def test_homepage_setup_with_future_date_visible_to_guest(
@@ -208,10 +219,9 @@ class TestHomepageCompletedCampionato:
 
         data = HomepageService.get_homepage_data()
         assert data is not None
-        standalone_ids = [g.id for g in data["standalone_garas"]]
-        assert future_gara.id in standalone_ids
-        # Conta come "attiva" (non completata)
-        assert data["standalone_active_count"] >= 1
+        # SETUP con data futura → sezione "In arrivo"
+        upcoming_ids = [g.id for g in data["upcoming_garas"]]
+        assert future_gara.id in upcoming_ids
 
     def test_homepage_setup_with_past_date_hidden_from_guest(
         self, app, db_session, isolated_director_user
@@ -243,8 +253,13 @@ class TestHomepageCompletedCampionato:
         data = HomepageService.get_homepage_data()
         # data può essere None se nessun campionato/gara visibile
         if data is not None:
-            standalone_ids = [g.id for g in data["standalone_garas"]]
-            assert zombie_gara.id not in standalone_ids
+            all_gara_ids = (
+                [g.id for g in data["upcoming_garas"]]
+                + [c["gara"].id for c in data["live_garas"]]
+                + [c["gara"].id for c in data["open_garas"]]
+                + [g.id for g in data["archive_garas"]]
+            )
+            assert zombie_gara.id not in all_gara_ids
 
     def test_garas_list_setup_future_visible_setup_past_hidden(
         self, app, db_session, isolated_director_user
@@ -296,12 +311,11 @@ class TestHomepageCompletedCampionato:
         assert future.name in body
         assert zombie.name not in body
 
-    def test_homepage_standalone_active_count_excludes_completed(
+    def test_homepage_open_and_completed_garas_partitioned(
         self, db_session, isolated_director_user
     ):
-        """Regression 2026-05-14: `standalone_active_count` deve contare
-        solo le gare standalone NON completate, non `len(standalone_garas)`
-        che include la coda completati.
+        """Una gara standalone con iscrizioni aperte va nella sezione
+        "Iscrizioni aperte"; una completata va in archivio. Non si mescolano.
         """
         # Una gara standalone in stato INSCRIPTION (attiva)
         active_gara = GaraService.create_gara(
@@ -346,9 +360,113 @@ class TestHomepageCompletedCampionato:
 
         data = HomepageService.get_homepage_data()
         assert data is not None
-        # len(standalone_garas) sarebbe 2, ma active = 1
-        assert data["standalone_active_count"] == 1
-        assert len(data["standalone_garas"]) == 2
+        open_ids = [c["gara"].id for c in data["open_garas"]]
+        archive_ids = [g.id for g in data["archive_garas"]]
+        assert active_gara.id in open_ids
+        assert completed_gara.id in archive_ids
+        # Niente sovrapposizione tra le due sezioni
+        assert active_gara.id not in archive_ids
+        assert completed_gara.id not in open_ids
+
+
+@pytest.mark.integration
+class TestHomepageActionableSections:
+    """La home guest mostra subito le info azionabili: posti/scadenza nelle
+    card iscrizioni e i match ai tavoli nella sezione "In diretta ora"."""
+
+    def _standalone_gara(self, director_id, **overrides):
+        params = dict(
+            campionato_id=None,
+            number=1,
+            name="Open Gara",
+            date=date.today() + timedelta(days=2),
+            location="Sala Test",
+            description="",
+            rounds_count=1,
+            min_participants=2,
+            max_participants=4,
+            entry_fee=0.0,
+            discipline="palla_9",
+            distance=5,
+            is_race_to=True,
+            director_id=director_id,
+            matchmaking_strategy="amalfi",
+        )
+        params.update(overrides)
+        return GaraService.create_gara(**params)
+
+    def test_open_card_shows_inscriptions_count_and_deadline(
+        self, app, db_session, isolated_director_user, isolated_players
+    ):
+        """Senza entrare nel dettaglio, il guest vede iscritti, posti rimasti
+        e scadenza iscrizioni direttamente sulla card."""
+        from models.base import utc_now
+        from models.competition.models import Inscription
+
+        deadline = utc_now() + timedelta(days=3)
+        gara = self._standalone_gara(
+            isolated_director_user.id, name="Coppa Aperta", max_participants=4
+        )
+        gara.status = GaraStatus.INSCRIPTION.value
+        gara.inscription_end = deadline
+        # Iscrivo 2 giocatori → 2/4, 2 posti rimasti
+        for player in isolated_players[:2]:
+            db_session.add(Inscription(user_id=player.id, gara_id=gara.id))
+        db_session.commit()
+
+        # Dati del service
+        data = HomepageService.get_homepage_data()
+        assert data is not None
+        card = next(c for c in data["open_garas"] if c["gara"].id == gara.id)
+        assert card["active_count"] == 2
+        assert card["max_participants"] == 4
+        assert card["spots_remaining"] == 2
+        assert card["inscription_end"] is not None
+
+        # Rendering: le info compaiono in pagina
+        body = _guest_render(app, "/").get_data(as_text=True)
+        assert "Coppa Aperta" in body
+        assert "Iscrizioni aperte" in body
+        assert "2/4" in body
+        assert "Scadenza iscrizioni" in body
+
+    def test_live_section_shows_match_at_table(
+        self, app, db_session, isolated_director_user, isolated_players
+    ):
+        """La sezione live mostra i match attualmente ai tavoli con nomi e
+        punteggio."""
+        from models.match.models import Match
+
+        gara = self._standalone_gara(isolated_director_user.id, name="Gara Live")
+        gara.status = GaraStatus.PLAYING.value
+        gara.current_round = 1
+        p1, p2 = isolated_players[0], isolated_players[1]
+        match = Match(
+            gara_id=gara.id,
+            round_number=1,
+            player1_id=p1.id,
+            player2_id=p2.id,
+            status=MatchStatus.PLAYING.value,
+            table_assignment="A",
+            player1_score=3,
+            player2_score=2,
+        )
+        db_session.add(match)
+        db_session.commit()
+
+        data = HomepageService.get_homepage_data()
+        assert data is not None
+        card = next(c for c in data["live_garas"] if c["gara"].id == gara.id)
+        assert len(card["live_matches"]) == 1
+        lm = card["live_matches"][0]
+        assert lm["table"] == "A"
+        assert lm["player1"] == p1.username
+        assert lm["player1_score"] == 3
+
+        body = _guest_render(app, "/").get_data(as_text=True)
+        assert "In diretta ora" in body
+        assert p1.username in body
+        assert p2.username in body
 
 
 @pytest.mark.integration
@@ -374,9 +492,7 @@ class TestPublicCampionatosListFilters:
         assert done.name in body
         assert live.name not in body
 
-    def test_search_filters_by_name(
-        self, app, db_session, isolated_director_user
-    ):
+    def test_search_filters_by_name(self, app, db_session, isolated_director_user):
         a = _make_campionato("AlphaSearch", isolated_director_user.id)
         b = _make_campionato("BetaSearch", isolated_director_user.id)
 

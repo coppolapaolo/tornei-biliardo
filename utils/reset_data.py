@@ -64,14 +64,19 @@ def _reset_database_core() -> Dict[str, object]:
                 .first()
             )
             admin = existing or UserService.create_user(
-                username=username, email=email, password=password, role=UserRole.ADMIN.value
+                username=username,
+                email=email,
+                password=password,
+                role=UserRole.ADMIN.value,
             )
 
         # Create the specific users requested: mario and pino
         mario = UserService.create_user(
             "mario", "mario@pippo.it", "mario123", role="player"
         )
-        pino = UserService.create_user("pino", "pino@pippo.it", "pino123", role="player")
+        pino = UserService.create_user(
+            "pino", "pino@pippo.it", "pino123", role="player"
+        )
 
         maxdir = UserService.create_user(
             "max", "max@campionati.com", "123456", role="director"

@@ -12,7 +12,6 @@ from pathlib import Path
 
 import pytest
 
-
 MIGRATION_PATH = (
     Path(__file__).resolve().parents[3]
     / "migrations"
@@ -32,8 +31,7 @@ def _load_migration_module():
 
 def _setup_schema(conn: sqlite3.Connection) -> None:
     """Minimal trio_match + trio_rack schema sufficient for the migration."""
-    conn.executescript(
-        """
+    conn.executescript("""
         CREATE TABLE trio_match (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             player1_id INTEGER NOT NULL,
@@ -50,8 +48,7 @@ def _setup_schema(conn: sqlite3.Connection) -> None:
             trio_match_id INTEGER NOT NULL,
             is_deleted INTEGER NOT NULL DEFAULT 0
         );
-        """
-    )
+        """)
     conn.commit()
 
 
@@ -77,8 +74,12 @@ def _insert_trio(
         ) VALUES (?, ?, ?, ?, ?, ?, ?)
         """,
         (
-            p1, p2, p3,
-            current_p1, current_p2, waiting,
+            p1,
+            p2,
+            p3,
+            current_p1,
+            current_p2,
+            waiting,
             is_completed,
         ),
     )
@@ -129,8 +130,14 @@ class TestBackfillWalkoverTrioMatchup:
         """Trio with racks played must NOT be rewritten (admin could have progressed the matchup)."""
         conn = sqlite3.connect(tmp_db)
         trio_id = _insert_trio(
-            conn, p1=1, p2=2, p3=3, active_racks=2,
-            current_p1=2, current_p2=3, waiting=1,
+            conn,
+            p1=1,
+            p2=2,
+            p3=3,
+            active_racks=2,
+            current_p1=2,
+            current_p2=3,
+            waiting=1,
         )
         conn.close()
 
@@ -164,8 +171,13 @@ class TestBackfillWalkoverTrioMatchup:
         """Idempotent: a second pass must not overwrite populated rows."""
         conn = sqlite3.connect(tmp_db)
         trio_id = _insert_trio(
-            conn, p1=1, p2=2, p3=3,
-            current_p1=99, current_p2=99, waiting=99,  # sentinel values
+            conn,
+            p1=1,
+            p2=2,
+            p3=3,
+            current_p1=99,
+            current_p2=99,
+            waiting=99,  # sentinel values
         )
         conn.close()
 
@@ -182,9 +194,7 @@ class TestBackfillWalkoverTrioMatchup:
     def test_backfills_trio_with_only_soft_deleted_racks(self, tmp_db):
         """Racks that are all soft-deleted still count as zero live racks."""
         conn = sqlite3.connect(tmp_db)
-        trio_id = _insert_trio(
-            conn, p1=7, p2=8, p3=9, active_racks=0, deleted_racks=3
-        )
+        trio_id = _insert_trio(conn, p1=7, p2=8, p3=9, active_racks=0, deleted_racks=3)
         conn.close()
 
         _load_migration_module().upgrade_sqlite(tmp_db)

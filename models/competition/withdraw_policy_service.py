@@ -5,7 +5,6 @@ This service centralizes the logic for handling player forfeits based on
 the competition's withdraw_policy setting.
 """
 
-
 from models.base import db, utc_now
 from models.transaction.manager import transactional
 from .models import Gara, Inscription, WithdrawPolicy
@@ -48,7 +47,9 @@ class WithdrawPolicyService:
             .first()
         )
         if not inscription:
-            raise ValueError(f"User {user_id} not inscribed or already withdrawn from gara {gara_id}")
+            raise ValueError(
+                f"User {user_id} not inscribed or already withdrawn from gara {gara_id}"
+            )
 
         # Complete ALL pending/playing matches for this player in this gara
         # (The match that triggered the forfeit is already completed)
@@ -59,13 +60,12 @@ class WithdrawPolicyService:
             db.session.query(Match)
             .filter(
                 Match.gara_id == gara_id,
-                Match.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value]),
-                or_(
-                    Match.player1_id == user_id,
-                    Match.player2_id == user_id
+                Match.status.in_(
+                    [MatchStatus.PENDING.value, MatchStatus.PLAYING.value]
                 ),
+                or_(Match.player1_id == user_id, Match.player2_id == user_id),
                 Match.is_bye == False,  # Skip bye matches
-                Match.is_trio == False  # Skip trio matches (handled separately)
+                Match.is_trio == False,  # Skip trio matches (handled separately)
             )
             .all()
         )
@@ -77,9 +77,11 @@ class WithdrawPolicyService:
             .join(TrioMatch, Match.id == TrioMatch.match_id)
             .filter(
                 Match.gara_id == gara_id,
-                Match.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value]),
+                Match.status.in_(
+                    [MatchStatus.PENDING.value, MatchStatus.PLAYING.value]
+                ),
                 Match.is_trio == True,
-                TrioMatch.player3_id == user_id
+                TrioMatch.player3_id == user_id,
             )
             .all()
         )
@@ -90,12 +92,11 @@ class WithdrawPolicyService:
             db.session.query(Match)
             .filter(
                 Match.gara_id == gara_id,
-                Match.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value]),
+                Match.status.in_(
+                    [MatchStatus.PENDING.value, MatchStatus.PLAYING.value]
+                ),
                 Match.is_trio == True,
-                or_(
-                    Match.player1_id == user_id,
-                    Match.player2_id == user_id
-                )
+                or_(Match.player1_id == user_id, Match.player2_id == user_id),
             )
             .all()
         )
@@ -119,7 +120,9 @@ class WithdrawPolicyService:
 
         # Handle trio matches (all of them - player3, player1, or player2)
         # Combine unique trio matches from both queries
-        all_trio_matches = set(pending_trio_matches_as_player3 + pending_trio_matches_as_player12)
+        all_trio_matches = set(
+            pending_trio_matches_as_player3 + pending_trio_matches_as_player12
+        )
         for match in all_trio_matches:
             trio = match.trio_match
             if trio and not trio.is_completed:
@@ -162,10 +165,7 @@ class WithdrawPolicyService:
         return (
             db.session.query(Inscription)
             .filter_by(
-                gara_id=gara_id,
-                is_withdrawn=False,
-                is_waitlist=False,
-                is_forfeit=True
+                gara_id=gara_id, is_withdrawn=False, is_waitlist=False, is_forfeit=True
             )
             .all()
         )
@@ -189,10 +189,7 @@ class WithdrawPolicyService:
         inscription = (
             db.session.query(Inscription)
             .filter_by(
-                user_id=user_id,
-                gara_id=gara_id,
-                is_withdrawn=False,
-                is_forfeit=True
+                user_id=user_id, gara_id=gara_id, is_withdrawn=False, is_forfeit=True
             )
             .first()
         )

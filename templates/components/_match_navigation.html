@@ -3,12 +3,12 @@
     {% if match.gara_id and (current_user.is_admin or current_user.is_director) %}
         <a href="{{ url_for('admin.competition.gara_detail', gara_id=match.gara_id) }}"
            class="btn btn-outline-secondary w-100">
-            <i class="fas fa-arrow-left"></i> Torna alla Gara
+            <i class="fas fa-arrow-left"></i> {{ _('Torna alla Gara') }}
         </a>
     {% elif match.gara_id %}
         <a href="{{ url_for('player.dashboard') }}"
            class="btn btn-outline-secondary w-100">
-            <i class="fas fa-arrow-left"></i> Torna alla Dashboard
+            <i class="fas fa-arrow-left"></i> {{ _('Torna alla Dashboard') }}
         </a>
     {% else %}
         {# Standalone match - go to history #}

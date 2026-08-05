@@ -50,7 +50,7 @@ python migrations/runner.py --status  # Verifica stato
 ```bash
 # Avvia server di sviluppo
 python app.py
-# → http://localhost:5000
+# → http://localhost:5001
 
 # Credenziali dev: admin / admin123
 ```

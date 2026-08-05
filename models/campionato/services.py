@@ -9,4 +9,8 @@ Original 1025 LOC split into:
 from .tournament_service import TournamentService
 from .statistics_service import TournamentStatisticsService, compute_campionato_status
 
-__all__ = ["TournamentService", "TournamentStatisticsService", "compute_campionato_status"]
+__all__ = [
+    "TournamentService",
+    "TournamentStatisticsService",
+    "compute_campionato_status",
+]

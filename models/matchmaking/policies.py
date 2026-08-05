@@ -23,13 +23,12 @@ class OddResolution(Enum):
         BYE: Traditional bye - one player sits out the round
         TRIO: Three-player match format to keep all players active
     """
+
     BYE = "bye"
     TRIO = "trio"
 
 
-def decide_trio_or_bye(
-    *, campionato_without_x: bool, can_trio: bool
-) -> OddResolution:
+def decide_trio_or_bye(*, campionato_without_x: bool, can_trio: bool) -> OddResolution:
     """Determine optimal resolution for odd player count.
 
     Business Logic:

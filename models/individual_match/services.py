@@ -155,7 +155,6 @@ class MatchProposalService:
         return ProposalService.cancel_proposal(user_id, proposal_id)
 
     @staticmethod
-    @transactional(domain="individual_match")
     def expire_proposals() -> int:
         """Mark expired proposals as expired. Returns count of expired proposals."""
         return ProposalService.expire_old_proposals()
@@ -174,7 +173,6 @@ class IndividualMatchService:
     # ========== Proposal Methods (delegate to ProposalService) ==========
 
     @staticmethod
-    @transactional(domain="individual_match")
     def create_direct_proposal(
         proposer_id: int,
         invited_user_ids: List[int],
@@ -204,7 +202,6 @@ class IndividualMatchService:
         )
 
     @staticmethod
-    @transactional(domain="individual_match")
     def create_open_proposal(
         proposer_id: int,
         location: str,
@@ -263,20 +260,22 @@ class IndividualMatchService:
         )
 
     @staticmethod
-    @transactional(domain="individual_match")
     def invite_player_to_match(
         proposal_id: int, inviter_id: int, invitee_id: int
     ) -> ProposalInvitation:
         """Create an invitation for a specific player to join a match proposal."""
-        return ProposalService.invite_player_to_match(proposal_id, inviter_id, invitee_id)
+        return ProposalService.invite_player_to_match(
+            proposal_id, inviter_id, invitee_id
+        )
 
     @staticmethod
-    @transactional(domain="individual_match")
     def respond_to_invitation(
         invitation_id: int, invitee_id: int, response: str
     ) -> bool:
         """Respond to a match invitation."""
-        return ProposalService.respond_to_invitation(invitation_id, invitee_id, response)
+        return ProposalService.respond_to_invitation(
+            invitation_id, invitee_id, response
+        )
 
     @staticmethod
     def get_user_proposals(
@@ -286,37 +285,31 @@ class IndividualMatchService:
         return ProposalService.get_user_proposals(user_id, include_expired)
 
     @staticmethod
-    @transactional(domain="individual_match")
     def accept_proposal(user_id: int, proposal_id: int) -> IndividualMatch:
         """Accept a match proposal."""
         return ProposalService.accept_proposal(user_id, proposal_id)
 
     @staticmethod
-    @transactional(domain="individual_match")
     def reject_invitation(user_id: int, proposal_id: int) -> None:
         """Reject a direct invitation."""
         return ProposalService.reject_invitation(user_id, proposal_id)
 
     @staticmethod
-    @transactional(domain="individual_match")
     def cancel_proposal(user_id: int, proposal_id: int) -> None:
         """Cancel a match proposal."""
         return ProposalService.cancel_proposal(user_id, proposal_id)
 
     @staticmethod
-    @transactional(domain="individual_match")
     def expire_old_proposals() -> int:
         """Expire proposals that have passed their expiration time."""
         return ProposalService.expire_old_proposals()
 
     @staticmethod
-    @transactional(domain="individual_match")
     def _expire_pending_proposals() -> int:
         """Mark expired pending proposals as expired."""
         return ProposalService._expire_pending_proposals()
 
     @staticmethod
-    @transactional(domain="individual_match")
     def express_interest_in_open_invitation(
         proposal_id: int, interested_player_id: int, message: Optional[str] = None
     ) -> Dict[str, Any]:
@@ -326,7 +319,6 @@ class IndividualMatchService:
         )
 
     @staticmethod
-    @transactional(domain="individual_match")
     def accept_interest_for_open_invitation(
         proposal_id: int, proposer_id: int, accepted_player_id: int
     ) -> Dict[str, Any]:
@@ -336,7 +328,6 @@ class IndividualMatchService:
         )
 
     @staticmethod
-    @transactional(domain="individual_match")
     def create_individual_match_from_accepted_invitation(
         invitation_id: int,
     ) -> IndividualMatch:
@@ -378,12 +369,22 @@ class IndividualMatchService:
         # Permission check: proposer or admin
         if user_id:
             from ..user.models import User
+
             user = db.session.get(User, user_id)
             proposal = match.proposal
             is_proposer = proposal and proposal.proposer_id == user_id
             is_admin = user and user.is_admin
             if not (is_proposer or is_admin):
-                raise ValueError("Solo il proponente o un admin può modificare gli orari")
+                raise ValueError(
+                    "Solo il proponente o un admin può modificare gli orari"
+                )
+
+        # Coerenza temporale: end non può precedere start (considerando i
+        # valori già presenti quando se ne aggiorna uno solo).
+        new_started = started_at if started_at is not None else match.started_at
+        new_ended = ended_at if ended_at is not None else match.ended_at
+        if new_started and new_ended and new_ended < new_started:
+            raise ValueError("L'orario di fine non può precedere quello di inizio")
 
         if started_at is not None:
             match.started_at = started_at
@@ -396,39 +397,35 @@ class IndividualMatchService:
     # ========== Match Lifecycle Methods (delegate to MatchLifecycleService) ==========
 
     @staticmethod
-    @transactional(domain="individual_match")
     def start_match(match_id: int, user_id: int) -> IndividualMatch:
         """Start an individual match (must be one of the players)."""
         return MatchLifecycleService.start_match(match_id, user_id)
 
     @staticmethod
-    @transactional(domain="individual_match")
     def confirm_match_result(match_id: int, user_id: int) -> IndividualMatch:
         """Confirm match result by a player (new UX)."""
         return MatchLifecycleService.confirm_match_result(match_id, user_id)
 
     @staticmethod
-    @transactional(domain="individual_match")
     def reject_match_result(match_id: int, user_id: int) -> IndividualMatch:
         """Reject match result - removes last rack (new UX)."""
         return MatchLifecycleService.reject_match_result(match_id, user_id)
 
     @staticmethod
-    @transactional(domain="individual_match")
     def complete_match(match_id: int, winner_id: int, user_id: int) -> IndividualMatch:
         """Complete a match - legacy method for backward compatibility."""
         return MatchLifecycleService.complete_match(match_id, winner_id, user_id)
 
     @staticmethod
-    @transactional(domain="individual_match")
     def complete_individual_match(
         match_id: int, winner_id: int, user_id: int
     ) -> IndividualMatch:
         """Complete an individual match - alias for complete_match."""
-        return MatchLifecycleService.complete_individual_match(match_id, winner_id, user_id)
+        return MatchLifecycleService.complete_individual_match(
+            match_id, winner_id, user_id
+        )
 
     @staticmethod
-    @transactional(domain="individual_match")
     def cancel_match(
         match_id: int, user_id: int, reason: Optional[str] = None
     ) -> IndividualMatch:
@@ -472,7 +469,9 @@ class IndividualMatchService:
     ) -> None:
         """Remove last rack won by specified player (new simplified UX)."""
         # No @transactional here - IndividualRackService.remove_rack_for_player has it
-        return IndividualRackService.remove_rack_for_player(match_id, user_id, player_id)
+        return IndividualRackService.remove_rack_for_player(
+            match_id, user_id, player_id
+        )
 
     @staticmethod
     def submit_rack_result(
@@ -484,7 +483,7 @@ class IndividualMatchService:
     ) -> IndividualRack:
         """Submit result for a rack - legacy method for backward compatibility.
 
-        No @transactional: delegates to IndividualRackService which owns the transaction.
+        No @transactional: IndividualRackService owns the transaction.
         """
         return IndividualRackService.submit_rack_result(
             match_id, user_id, winner_id, rack_number, notes
@@ -502,7 +501,7 @@ class IndividualMatchService:
     ) -> IndividualRack:
         """Add a rack result with flexible parameters for test compatibility.
 
-        No @transactional: delegates to IndividualRackService which owns the transaction.
+        No @transactional: IndividualRackService owns the transaction.
         """
         return IndividualRackService.add_rack_result(
             match_id=match_id,
@@ -520,15 +519,17 @@ class IndividualMatchService:
     ) -> IndividualRack:
         """Original add_rack_result implementation.
 
-        No @transactional: delegates to IndividualRackService which owns the transaction.
+        No @transactional: IndividualRackService owns the transaction.
         """
-        return IndividualRackService._add_rack_result_original(match_id, winner_id, user_id)
+        return IndividualRackService._add_rack_result_original(
+            match_id, winner_id, user_id
+        )
 
     @staticmethod
     def confirm_rack_result(rack_id: int, confirming_player_id: int) -> Dict[str, Any]:
         """Confirm a rack result.
 
-        No @transactional: delegates to IndividualRackService which owns the transaction.
+        No @transactional: IndividualRackService owns the transaction.
         """
         return IndividualRackService.confirm_rack_result(rack_id, confirming_player_id)
 
@@ -538,9 +539,11 @@ class IndividualMatchService:
     ) -> Dict[str, Any]:
         """Dispute a rack result.
 
-        No @transactional: delegates to IndividualRackService which owns the transaction.
+        No @transactional: IndividualRackService owns the transaction.
         """
-        return IndividualRackService.dispute_rack_result(rack_id, disputing_player_id, reason)
+        return IndividualRackService.dispute_rack_result(
+            rack_id, disputing_player_id, reason
+        )
 
     @staticmethod
     def resolve_rack_dispute(
@@ -548,13 +551,13 @@ class IndividualMatchService:
     ) -> Dict[str, Any]:
         """Resolve a rack result dispute.
 
-        No @transactional: delegates to IndividualRackService which owns the transaction.
+        No @transactional: IndividualRackService owns the transaction.
         """
         return IndividualRackService.resolve_rack_dispute(
             rack_id, admin_user_id, resolution, reason
         )
 
-    # ========== Statistics Methods (delegate to IndividualMatchStatisticsService) ==========
+    # ========== Statistics Methods (delegate to statistics service) ==========
 
     @staticmethod
     def get_user_dashboard_data(user_id: int) -> Dict[str, Any]:

@@ -27,7 +27,7 @@ class LocationService:
 
         Args:
             location: Name of the venue.
-            tables_input: Table configuration string (single number or comma-separated list).
+            tables_input: Table config string (single number or comma list).
             added_by_id: ID of the user creating the venue.
 
         Returns:
@@ -57,18 +57,24 @@ class LocationService:
             return (location, None, None)
 
         number_of_tables = len(parsed_tables)
-        is_explicit_list = "," in tables_input.strip() or not tables_input.strip().isdigit()
+        is_explicit_list = (
+            "," in tables_input.strip() or not tables_input.strip().isdigit()
+        )
 
         try:
+            # is_active/verified/table_names passati al create così da essere
+            # committati ATOMICAMENTE: se mutati dopo il ritorno (transaction
+            # già chiusa) resterebbero pendenti e, in caso di early-return a
+            # monte (es. validate_strategy fallisce nella route), verrebbero
+            # scartati al teardown lasciando un venue ATTIVO non verificato.
             new_venue = LocationService.create_billiard_hall(
                 name=location,
                 added_by_id=added_by_id,
                 number_of_tables=number_of_tables,
+                is_active=False,
+                verified=False,
+                table_names=parsed_tables if is_explicit_list else None,
             )
-            if is_explicit_list:
-                new_venue.set_table_names(parsed_tables)
-            new_venue.is_active = False
-            new_venue.verified = False
 
             msg = (
                 f"Nuovo luogo '{location}' aggiunto come disattivato. "
@@ -97,8 +103,17 @@ class LocationService:
         business_hours: Optional[str] = None,
         latitude: Optional[float] = None,
         longitude: Optional[float] = None,
+        is_active: bool = True,
+        verified: bool = False,
+        table_names: Optional[List[str]] = None,
     ) -> BilliardHall:
-        """Create a new billiard hall."""
+        """Create a new billiard hall.
+
+        ``is_active``/``verified``/``table_names`` vanno passati QUI così da
+        essere persistiti nello stesso commit di ``@transactional``: mutarli
+        dopo il ritorno (a transaction già chiusa) lascia le modifiche pendenti
+        e a rischio di scarto al teardown (cfr. bug find_or_create_venue).
+        """
 
         hall = BilliardHall(
             name=name,
@@ -115,6 +130,8 @@ class LocationService:
             latitude=latitude,
             longitude=longitude,
         )
+        hall.is_active = is_active
+        hall.verified = verified
 
         if business_hours:
             hall.business_hours = business_hours
@@ -124,6 +141,9 @@ class LocationService:
 
         if amenities:
             hall.set_amenities(amenities)
+
+        if table_names:
+            hall.set_table_names(table_names)
 
         db.session.add(hall)
 
@@ -248,10 +268,17 @@ class LocationService:
             if exclude_user_id and availability.user_id == exclude_user_id:
                 continue
 
+            # Il filtro soft-delete unificato (app.py) esclude gli utenti
+            # anonimizzati: la relationship .user si risolve a None per loro.
+            # Saltali per non esporre account cancellati ne' inserire None.
+            user = availability.user
+            if user is None:
+                continue
+
             if availability.is_available_at(proposed_datetime):
                 available_players.append(
                     {
-                        "user": availability.user,
+                        "user": user,
                         "availability": availability,
                         "matches_played_here": availability.matches_played_here,
                         "last_played_at": availability.last_played_at,
@@ -262,6 +289,48 @@ class LocationService:
         available_players.sort(key=lambda x: x["matches_played_here"], reverse=True)
 
         return available_players
+
+    @staticmethod
+    def _batch_location_statistics(halls: List[BilliardHall]) -> Dict[int, Dict]:
+        """Statistiche per un set di sale in 2 query (evita N+1).
+
+        Restituisce {hall_id -> stats dict} con la stessa forma di
+        get_location_statistics, ma calcolata in blocco invece di una
+        coppia di count per sala.
+        """
+        from ..individual_match.models import IndividualMatch
+        from sqlalchemy import func
+
+        if not halls:
+            return {}
+
+        hall_ids = [h.id for h in halls]
+        hall_names = [h.name for h in halls]
+        active_counts = dict(
+            db.session.query(UserLocationAvailability.billiard_hall_id, func.count())
+            .filter(
+                UserLocationAvailability.billiard_hall_id.in_(hall_ids),
+                UserLocationAvailability.is_available.is_(True),
+            )
+            .group_by(UserLocationAvailability.billiard_hall_id)
+            .all()
+        )
+        match_counts = dict(
+            db.session.query(IndividualMatch.location, func.count())
+            .filter(IndividualMatch.location.in_(hall_names))
+            .group_by(IndividualMatch.location)
+            .all()
+        )
+        return {
+            h.id: {
+                "billiard_hall": h,
+                "active_users_count": active_counts.get(h.id, 0),
+                "total_matches_played": match_counts.get(h.name, 0),
+                "table_types": h.get_table_types(),
+                "amenities": h.get_amenities(),
+            }
+            for h in halls
+        }
 
     @staticmethod
     def get_location_statistics(billiard_hall_id: int) -> Dict[str, Any]:
@@ -316,6 +385,12 @@ class LocationService:
             else user_hall_ids
         )
 
+        # Statistiche di tutte le sale in 2 query (era get_location_statistics
+        # per sala dentro il loop → N+1).
+        stats_by_hall = LocationService._batch_location_statistics(
+            [loc["billiard_hall"] for loc in user_locations]
+        )
+
         for location_data in user_locations:
             hall = location_data["billiard_hall"]
 
@@ -356,7 +431,7 @@ class LocationService:
                     "suitability_score": score,
                     "is_common_location": hall.id in common_hall_ids,
                     "user_matches_played": matches_played,
-                    "statistics": LocationService.get_location_statistics(hall.id),
+                    "statistics": stats_by_hall.get(hall.id),
                 }
             )
 
@@ -370,10 +445,23 @@ class LocationService:
     def record_match_at_location(user_id: int, location_name: str) -> None:
         """Record that a user played a match at a location."""
 
-        # Find billiard hall by name (fuzzy matching)
-        hall = BilliardHall.query.filter(
-            BilliardHall.name.ilike(f"%{location_name}%")
-        ).first()
+        # Guard input vuoto/spazi: f"%{name}%" diventerebbe "%%" e matcherebbe
+        # una sala arbitraria.
+        location_name = (location_name or "").strip()
+        if not location_name:
+            return
+
+        # Preferisci il match esatto; fallback su substring con ORDER BY
+        # deterministico (evita di attribuire il match a una sala arbitraria
+        # con nomi sovrapposti, es. 'Roma Nord'/'Roma Sud').
+        hall = (
+            BilliardHall.query.filter(BilliardHall.name == location_name)
+            .order_by(BilliardHall.id)
+            .first()
+            or BilliardHall.query.filter(BilliardHall.name.ilike(f"%{location_name}%"))
+            .order_by(BilliardHall.id)
+            .first()
+        )
 
         if not hall:
             return
@@ -490,9 +578,7 @@ class LocationService:
 
     @staticmethod
     @transactional(domain="location")
-    def update_venue_table_numbers(
-        venue_id: int, table_numbers: str
-    ) -> BilliardHall:
+    def update_venue_table_numbers(venue_id: int, table_numbers: str) -> BilliardHall:
         """Update venue table numbers stored in amenities."""
         venue = db.session.get(BilliardHall, venue_id)
         if not venue:
@@ -519,9 +605,7 @@ class LocationService:
 
         current_amenities = venue.get_amenities()
         # Remove existing photo entries
-        current_amenities = [
-            a for a in current_amenities if not a.startswith("Foto:")
-        ]
+        current_amenities = [a for a in current_amenities if not a.startswith("Foto:")]
         current_amenities.append(f"Foto: {photo_db_path}")
         venue.set_amenities(current_amenities)
         return venue

@@ -121,8 +121,6 @@ class UserProfileService:
         )
         user.set_password(password)
 
-        user.set_password(password)
-
         # New users are not verified by default — even admin must verify
         # (kept consistent for predictability in the auth/recovery flow).
         user.is_verified = False
@@ -318,6 +316,53 @@ class UserProfileService:
         user.soft_delete()
 
     @staticmethod
+    @transactional(domain="user")
+    def anonymize_user(user_id: int, performed_by_id: Optional[int] = None) -> None:
+        """Anonymize a user (GDPR soft delete with PII scrub).
+
+        Unlike :meth:`soft_delete_user` (which only sets ``deleted_at``), this
+        scrubs PII via :meth:`User.anonymize` (username → technical, email/phone
+        → NULL, password invalidated).
+
+        Args:
+            user_id: ID of user to anonymize
+            performed_by_id: ID of the admin performing the action (to block
+                self-anonymization)
+
+        Raises:
+            ValueError: If user not found, admin target, or self-target
+        """
+        user = db.session.get(User, user_id)
+        if not user:
+            raise ValueError("Utente non trovato")
+        if user.role == UserRole.ADMIN.value:
+            raise ValueError("Impossibile eliminare un utente amministratore")
+        if performed_by_id is not None and performed_by_id == user_id:
+            raise ValueError("Non puoi eliminare il tuo stesso account")
+
+        user.anonymize()
+
+    @staticmethod
+    @transactional(domain="user")
+    def set_email_verified(user_id: int) -> User:
+        """Mark a user's email as verified (manual admin action).
+
+        Args:
+            user_id: ID of user to verify
+
+        Returns:
+            User: The updated user
+
+        Raises:
+            ValueError: If user not found
+        """
+        user = db.session.get(User, user_id)
+        if not user:
+            raise ValueError("Utente non trovato")
+        user.is_verified = True
+        return user
+
+    @staticmethod
     @read_only(domain="user")
     def authenticate_user(username: str, password: str) -> Optional[User]:
         """Authenticate user credentials for login.
@@ -374,21 +419,19 @@ class UserProfileService:
             Optional[User]: User instance if found, None otherwise
 
         Implementation Notes:
-            - Handles encrypted email fields by loading all users in memory
-            - Case-insensitive matching (converts to lowercase)
-            - Strips whitespace from input
-            - Less efficient than username lookup due to encryption
+            - Lookup O(1) su email_hash (HMAC deterministico), non piu' O(N)
+              con decifratura di tutti gli utenti (issue #8)
+            - Normalizzazione (lowercase + strip) dentro compute_email_hash
             - Returns None for empty/None email
         """
         if not email:
             return None
-        # For encrypted fields, we need to retrieve all users and filter in Python
-        email_normalized = email.strip().lower()
-        users = User.query.all()
-        for user in users:
-            if user.email and user.email.lower() == email_normalized:
-                return user
-        return None
+        from utils.encryption import compute_email_hash
+
+        email_hash = compute_email_hash(email)
+        if not email_hash:
+            return None
+        return User.query.filter(User.email_hash == email_hash).first()
 
     @staticmethod
     @read_only(domain="user")

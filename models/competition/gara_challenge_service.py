@@ -263,13 +263,9 @@ class GaraChallengeService:
         # Update classification once after all attempts
         if attempts_data:
             first_attempt = attempts_data[0]
-            gara_challenge = GaraChallenge.query.get(
-                first_attempt["gara_challenge_id"]
-            )
+            gara_challenge = GaraChallenge.query.get(first_attempt["gara_challenge_id"])
             if gara_challenge:
-                GaraChallengeService.update_gara_classification(
-                    gara_challenge.gara_id
-                )
+                GaraChallengeService.update_gara_classification(gara_challenge.gara_id)
 
         return recorded_attempts
 

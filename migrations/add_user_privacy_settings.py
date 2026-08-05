@@ -133,7 +133,9 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
 
         conn.commit()
         print("Migration completed successfully!")
-        print("   Created tables: user_privacy_setting, hidden_match, hidden_inscription, hidden_campionato")
+        print(
+            "   Created tables: user_privacy_setting, hidden_match, hidden_inscription, hidden_campionato"
+        )
 
     except sqlite3.OperationalError as e:
         if "already exists" in str(e).lower():

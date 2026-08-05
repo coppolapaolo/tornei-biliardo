@@ -36,8 +36,7 @@ class GeoMatchingService:
         """
         # Get all BilliardHalls where user has availability
         availabilities = UserLocationAvailability.query.filter_by(
-            user_id=user_id,
-            is_available=True
+            user_id=user_id, is_available=True
         ).all()
 
         provinces = set()
@@ -49,9 +48,7 @@ class GeoMatchingService:
 
     @staticmethod
     def get_gare_in_provinces(
-        provinces: Set[str],
-        status: Optional[str] = None,
-        limit: int = 20
+        provinces: Set[str], status: Optional[str] = None, limit: int = 20
     ) -> List[Gara]:
         """
         Find gare in specified provinces.
@@ -69,11 +66,8 @@ class GeoMatchingService:
 
         # Query gare with billiard_hall in provinces
         query = Gara.query.join(
-            BilliardHall,
-            Gara.billiard_hall_id == BilliardHall.id
-        ).filter(
-            BilliardHall.province.in_([p.upper() for p in provinces])
-        )
+            BilliardHall, Gara.billiard_hall_id == BilliardHall.id
+        ).filter(BilliardHall.province.in_([p.upper() for p in provinces]))
 
         if status:
             query = query.filter(Gara.status == status)
@@ -85,9 +79,7 @@ class GeoMatchingService:
 
     @staticmethod
     def get_nearby_gare_for_user(
-        user_id: int,
-        status: Optional[str] = None,
-        limit: int = 10
+        user_id: int, status: Optional[str] = None, limit: int = 10
     ) -> List[Gara]:
         """
         Get gare near a user based on their availability locations.
@@ -124,22 +116,22 @@ class GeoMatchingService:
         now = utc_now()
 
         # Query gare in inscription period
-        query = Gara.query.join(
-            BilliardHall,
-            Gara.billiard_hall_id == BilliardHall.id
-        ).filter(
-            BilliardHall.province.in_([p.upper() for p in provinces]),
-            Gara.status == GaraStatus.INSCRIPTION.value,
-            Gara.inscription_start <= now,
-            Gara.inscription_end >= now
-        ).order_by(Gara.date.asc())
+        query = (
+            Gara.query.join(BilliardHall, Gara.billiard_hall_id == BilliardHall.id)
+            .filter(
+                BilliardHall.province.in_([p.upper() for p in provinces]),
+                Gara.status == GaraStatus.INSCRIPTION.value,
+                Gara.inscription_start <= now,
+                Gara.inscription_end >= now,
+            )
+            .order_by(Gara.date.asc())
+        )
 
         return query.limit(limit).all()
 
     @staticmethod
     def get_players_in_province(
-        province: str,
-        exclude_user_id: Optional[int] = None
+        province: str, exclude_user_id: Optional[int] = None
     ) -> List["User"]:
         """
         Find players who have availability in a specific province.
@@ -153,16 +145,19 @@ class GeoMatchingService:
         """
         from models.user.models import User
 
-        query = User.query.join(
-            UserLocationAvailability,
-            User.id == UserLocationAvailability.user_id
-        ).join(
-            BilliardHall,
-            UserLocationAvailability.billiard_hall_id == BilliardHall.id
-        ).filter(
-            BilliardHall.province == province.upper(),
-            UserLocationAvailability.is_available.is_(True),
-            User.deleted_at.is_(None)
+        query = (
+            User.query.join(
+                UserLocationAvailability, User.id == UserLocationAvailability.user_id
+            )
+            .join(
+                BilliardHall,
+                UserLocationAvailability.billiard_hall_id == BilliardHall.id,
+            )
+            .filter(
+                BilliardHall.province == province.upper(),
+                UserLocationAvailability.is_available.is_(True),
+                User.deleted_at.is_(None),
+            )
         )
 
         if exclude_user_id:
@@ -172,8 +167,7 @@ class GeoMatchingService:
 
     @staticmethod
     def get_venues_in_province(
-        province: str,
-        verified_only: bool = False
+        province: str, verified_only: bool = False
     ) -> List[BilliardHall]:
         """
         Get billiard halls in a specific province.
@@ -186,8 +180,7 @@ class GeoMatchingService:
             List of BilliardHall objects in province
         """
         query = BilliardHall.query.filter(
-            BilliardHall.province == province.upper(),
-            BilliardHall.is_active.is_(True)
+            BilliardHall.province == province.upper(), BilliardHall.is_active.is_(True)
         )
 
         if verified_only:
@@ -198,34 +191,113 @@ class GeoMatchingService:
 
 # Italian province codes for reference/validation
 ITALIAN_PROVINCES = {
-    "AG": "Agrigento", "AL": "Alessandria", "AN": "Ancona", "AO": "Aosta",
-    "AR": "Arezzo", "AP": "Ascoli Piceno", "AT": "Asti", "AV": "Avellino",
-    "BA": "Bari", "BT": "Barletta-Andria-Trani", "BL": "Belluno", "BN": "Benevento",
-    "BG": "Bergamo", "BI": "Biella", "BO": "Bologna", "BZ": "Bolzano",
-    "BS": "Brescia", "BR": "Brindisi", "CA": "Cagliari", "CL": "Caltanissetta",
-    "CB": "Campobasso", "CE": "Caserta", "CT": "Catania", "CZ": "Catanzaro",
-    "CH": "Chieti", "CO": "Como", "CS": "Cosenza", "CR": "Cremona",
-    "KR": "Crotone", "CN": "Cuneo", "EN": "Enna", "FM": "Fermo",
-    "FE": "Ferrara", "FI": "Firenze", "FG": "Foggia", "FC": "Forlì-Cesena",
-    "FR": "Frosinone", "GE": "Genova", "GO": "Gorizia", "GR": "Grosseto",
-    "IM": "Imperia", "IS": "Isernia", "SP": "La Spezia", "AQ": "L'Aquila",
-    "LT": "Latina", "LE": "Lecce", "LC": "Lecco", "LI": "Livorno",
-    "LO": "Lodi", "LU": "Lucca", "MC": "Macerata", "MN": "Mantova",
-    "MS": "Massa-Carrara", "MT": "Matera", "ME": "Messina", "MI": "Milano",
-    "MO": "Modena", "MB": "Monza e Brianza", "NA": "Napoli", "NO": "Novara",
-    "NU": "Nuoro", "OR": "Oristano", "PD": "Padova", "PA": "Palermo",
-    "PR": "Parma", "PV": "Pavia", "PG": "Perugia", "PU": "Pesaro e Urbino",
-    "PE": "Pescara", "PC": "Piacenza", "PI": "Pisa", "PT": "Pistoia",
-    "PN": "Pordenone", "PZ": "Potenza", "PO": "Prato", "RG": "Ragusa",
-    "RA": "Ravenna", "RC": "Reggio Calabria", "RE": "Reggio Emilia",
-    "RI": "Rieti", "RN": "Rimini", "RM": "Roma", "RO": "Rovigo",
-    "SA": "Salerno", "SS": "Sassari", "SV": "Savona", "SI": "Siena",
-    "SR": "Siracusa", "SO": "Sondrio", "SU": "Sud Sardegna", "TA": "Taranto",
-    "TE": "Teramo", "TR": "Terni", "TO": "Torino", "TP": "Trapani",
-    "TN": "Trento", "TV": "Treviso", "TS": "Trieste", "UD": "Udine",
-    "VA": "Varese", "VE": "Venezia", "VB": "Verbano-Cusio-Ossola",
-    "VC": "Vercelli", "VR": "Verona", "VV": "Vibo Valentia", "VI": "Vicenza",
-    "VT": "Viterbo"
+    "AG": "Agrigento",
+    "AL": "Alessandria",
+    "AN": "Ancona",
+    "AO": "Aosta",
+    "AR": "Arezzo",
+    "AP": "Ascoli Piceno",
+    "AT": "Asti",
+    "AV": "Avellino",
+    "BA": "Bari",
+    "BT": "Barletta-Andria-Trani",
+    "BL": "Belluno",
+    "BN": "Benevento",
+    "BG": "Bergamo",
+    "BI": "Biella",
+    "BO": "Bologna",
+    "BZ": "Bolzano",
+    "BS": "Brescia",
+    "BR": "Brindisi",
+    "CA": "Cagliari",
+    "CL": "Caltanissetta",
+    "CB": "Campobasso",
+    "CE": "Caserta",
+    "CT": "Catania",
+    "CZ": "Catanzaro",
+    "CH": "Chieti",
+    "CO": "Como",
+    "CS": "Cosenza",
+    "CR": "Cremona",
+    "KR": "Crotone",
+    "CN": "Cuneo",
+    "EN": "Enna",
+    "FM": "Fermo",
+    "FE": "Ferrara",
+    "FI": "Firenze",
+    "FG": "Foggia",
+    "FC": "Forlì-Cesena",
+    "FR": "Frosinone",
+    "GE": "Genova",
+    "GO": "Gorizia",
+    "GR": "Grosseto",
+    "IM": "Imperia",
+    "IS": "Isernia",
+    "SP": "La Spezia",
+    "AQ": "L'Aquila",
+    "LT": "Latina",
+    "LE": "Lecce",
+    "LC": "Lecco",
+    "LI": "Livorno",
+    "LO": "Lodi",
+    "LU": "Lucca",
+    "MC": "Macerata",
+    "MN": "Mantova",
+    "MS": "Massa-Carrara",
+    "MT": "Matera",
+    "ME": "Messina",
+    "MI": "Milano",
+    "MO": "Modena",
+    "MB": "Monza e Brianza",
+    "NA": "Napoli",
+    "NO": "Novara",
+    "NU": "Nuoro",
+    "OR": "Oristano",
+    "PD": "Padova",
+    "PA": "Palermo",
+    "PR": "Parma",
+    "PV": "Pavia",
+    "PG": "Perugia",
+    "PU": "Pesaro e Urbino",
+    "PE": "Pescara",
+    "PC": "Piacenza",
+    "PI": "Pisa",
+    "PT": "Pistoia",
+    "PN": "Pordenone",
+    "PZ": "Potenza",
+    "PO": "Prato",
+    "RG": "Ragusa",
+    "RA": "Ravenna",
+    "RC": "Reggio Calabria",
+    "RE": "Reggio Emilia",
+    "RI": "Rieti",
+    "RN": "Rimini",
+    "RM": "Roma",
+    "RO": "Rovigo",
+    "SA": "Salerno",
+    "SS": "Sassari",
+    "SV": "Savona",
+    "SI": "Siena",
+    "SR": "Siracusa",
+    "SO": "Sondrio",
+    "SU": "Sud Sardegna",
+    "TA": "Taranto",
+    "TE": "Teramo",
+    "TR": "Terni",
+    "TO": "Torino",
+    "TP": "Trapani",
+    "TN": "Trento",
+    "TV": "Treviso",
+    "TS": "Trieste",
+    "UD": "Udine",
+    "VA": "Varese",
+    "VE": "Venezia",
+    "VB": "Verbano-Cusio-Ossola",
+    "VC": "Vercelli",
+    "VR": "Verona",
+    "VV": "Vibo Valentia",
+    "VI": "Vicenza",
+    "VT": "Viterbo",
 }
 
 

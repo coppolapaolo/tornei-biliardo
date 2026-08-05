@@ -10,7 +10,7 @@ from typing import List, Optional, Dict, Any, TYPE_CHECKING
 from datetime import datetime
 
 if TYPE_CHECKING:
-    from models.orchestration.service import OperationResult
+    from models.shared.operation_result import OperationResult
 
 from models.base import db, utc_now
 from models.status_enum import MatchStatus
@@ -74,7 +74,6 @@ class MatchService:
     # Delegates to MatchStateService
     # -----------------------------
     @staticmethod
-    @transactional(domain="match")
     def to_playing(match_id: int) -> Match:
         """pending/completed → playing (delegates to MatchStateService)."""
         from .state_service import MatchStateService
@@ -82,7 +81,6 @@ class MatchService:
         return MatchStateService.to_playing(match_id)
 
     @staticmethod
-    @transactional(domain="match")
     def to_completed(match_id: int) -> Match:
         """playing → completed (delegates to MatchStateService)."""
         from .state_service import MatchStateService
@@ -124,7 +122,9 @@ class MatchService:
 
         gara = match.gara
         if not gara:
-            raise ValueError("Match senza gara associata non supportato per update_times")
+            raise ValueError(
+                "Match senza gara associata non supportato per update_times"
+            )
 
         gara_date = gara.date
         gara_time = gara.time or datetime_time(0, 0)
@@ -192,7 +192,7 @@ class MatchService:
         Returns:
             OperationResult indicating success or failure
         """
-        from models.orchestration.service import OperationResult, OperationType
+        from models.shared.operation_result import OperationResult, OperationType
         from .rack_service import RackService
 
         match = db.session.get(Match, match_id)
@@ -271,7 +271,7 @@ class MatchService:
         Returns:
             OperationResult indicating success or failure
         """
-        from models.orchestration.service import OperationResult, OperationType
+        from models.shared.operation_result import OperationResult, OperationType
 
         match = db.session.get(Match, match_id)
         if not match:
@@ -319,7 +319,7 @@ class MatchService:
         Returns:
             OperationResult with batch correction results
         """
-        from models.orchestration.service import OperationResult, OperationType
+        from models.shared.operation_result import OperationResult, OperationType
         from .rack_service import RackService
 
         results = []
@@ -382,6 +382,22 @@ class MatchService:
                             "admin_id": admin_id,
                         }
                     )
+                else:
+                    # Tipo di correzione sconosciuto: senza questo ramo la
+                    # correzione veniva silenziosamente saltata e overall_success
+                    # restava True (l'admin credeva di aver applicato la modifica).
+                    error_msg = (
+                        f"Match {match_id}: tipo di correzione sconosciuto "
+                        f"'{correction_type}', nessuna modifica applicata"
+                    )
+                    errors.append(error_msg)
+                    results.append(
+                        {
+                            "match_id": match_id,
+                            "success": False,
+                            "error": error_msg,
+                        }
+                    )
 
             except Exception as e:
                 error_msg = str(e)
@@ -423,20 +439,14 @@ class MatchService:
     # SIMPLIFIED UX - Delegates to ScoringService
     # ---------------------------------------
     @staticmethod
-    @transactional(domain="match")
-    def add_rack_for_player(
-        match_id: int, user_id: int, winner_id: int
-    ) -> Rack:
+    def add_rack_for_player(match_id: int, user_id: int, winner_id: int) -> Rack:
         """Add a rack won by specified player (delegates to ScoringService)."""
         from .scoring_service import ScoringService
 
         return ScoringService.add_rack_for_player(match_id, user_id, winner_id)
 
     @staticmethod
-    @transactional(domain="match")
-    def remove_rack_for_player(
-        match_id: int, user_id: int, player_id: int
-    ) -> None:
+    def remove_rack_for_player(match_id: int, user_id: int, player_id: int) -> None:
         """Remove last rack won by specified player (delegates to ScoringService)."""
         from .scoring_service import ScoringService
 
@@ -474,6 +484,7 @@ class MatchService:
         # Se il match è completato, libera e riassegna il tavolo
         if is_completed and match.table_assignment:
             from models.match.table_assignment_service import TableAssignmentService
+
             TableAssignmentService.release_and_reassign_table(match.id)
             # Sincronizza l'oggetto match locale
             match.table_assignment = None
@@ -509,7 +520,6 @@ class MatchService:
         return match
 
     @staticmethod
-    @transactional(domain="match")
     def forfeit_match(match_id: int, user_id: int) -> Match:
         """Forfeit match (delegates to ScoringService)."""
         from .scoring_service import ScoringService
@@ -548,7 +558,10 @@ class MatchService:
         # Check if match is already complete
         match_winning_sets = match.match_distance or 1
         if match.distance_config.is_race_to_sets:
-            if match.player1_score >= match_winning_sets or match.player2_score >= match_winning_sets:
+            if (
+                match.player1_score >= match_winning_sets
+                or match.player2_score >= match_winning_sets
+            ):
                 raise ValueError("Match già completato")
         else:
             total_sets = match.player1_score + match.player2_score
@@ -557,7 +570,7 @@ class MatchService:
 
         # Check if current set is complete or doesn't exist
         current_set = match.get_current_set()
-        if current_set and current_set.status == "playing":
+        if current_set and current_set.status == MatchStatus.PLAYING.value:
             raise ValueError(f"Set {current_set.set_number} ancora in corso")
 
         # Determine next set number
@@ -603,7 +616,8 @@ class MatchService:
             The newly created SetRack
 
         Raises:
-            ValueError: If match not found, not multi-set, no active set, or winner invalid
+            ValueError: If match not found, not multi-set, no active set, or
+                winner invalid
         """
         match = db.session.get(Match, match_id)
         if not match:
@@ -616,7 +630,7 @@ class MatchService:
         if not current_set:
             raise ValueError("Nessun set attivo. Inizia un nuovo set.")
 
-        if current_set.status != "playing":
+        if current_set.status != MatchStatus.PLAYING.value:
             raise ValueError(f"Set {current_set.set_number} non è in corso")
 
         # Use Set's add_rack_result method which handles score updates and completion
@@ -668,7 +682,7 @@ class MatchService:
             current_set.player2_racks = max(0, current_set.player2_racks - 1)
 
         # If set was completed, reopen it
-        if current_set.status == "completed":
+        if current_set.status == MatchStatus.COMPLETED.value:
             current_set.status = "playing"
             current_set.winner_id = None
             current_set.completed_at = None

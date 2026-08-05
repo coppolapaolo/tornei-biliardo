@@ -70,6 +70,14 @@ class StatusPresenter:
 
         mapping: Dict[str, Tuple[str, str]] = {
             # Derived/UI
+            # Senza questa entry una gara in INSCRIPTION con apertura futura
+            # (real status `inscription_not_yet_open`) cadeva sul fallback e
+            # mostrava "Sconosciuto" in homepage, riquadro di gestione ed
+            # elenco gare del campionato (issue #65).
+            ProvaDerivedStatus.INSCRIPTION_NOT_YET_OPEN.value: (
+                "bg-secondary",
+                _("Iscrizioni Programmate"),
+            ),
             ProvaDerivedStatus.INSCRIPTION_CLOSED.value: (
                 "bg-secondary",
                 _("Iscrizioni Chiuse"),
@@ -78,7 +86,10 @@ class StatusPresenter:
                 "bg-primary",
                 _("Pronta per Iniziare"),
             ),
-            ProvaDerivedStatus.ROUND_COMPLETED.value: ("bg-info", _("Turno Completato")),
+            ProvaDerivedStatus.ROUND_COMPLETED.value: (
+                "bg-info",
+                _("Turno Completato"),
+            ),
             ProvaDerivedStatus.TOURNAMENT_COMPLETED.value: (
                 "bg-dark",
                 _("Gara Completata"),
@@ -90,7 +101,7 @@ class StatusPresenter:
             GaraStatus.AWAITING_SSR.value: ("bg-warning", _("Spareggi")),
             GaraStatus.COMPLETED.value: ("bg-dark", _("Completata")),
         }
-        return mapping.get(s, ("bg-secondary", "Sconosciuto"))
+        return mapping.get(s, ("bg-secondary", _("Sconosciuto")))
 
     # ------------------- CAMPIONATO -------------------
     @staticmethod
@@ -115,13 +126,16 @@ class StatusPresenter:
 
         mapping: Dict[str, Tuple[str, str]] = {
             TournamentStatus.SETUP.value: ("bg-warning", _("Setup")),
-            TournamentStatus.REGISTRATION_OPEN.value: ("bg-info", _("Iscrizioni Aperte")),
+            TournamentStatus.REGISTRATION_OPEN.value: (
+                "bg-info",
+                _("Iscrizioni Aperte"),
+            ),
             TournamentStatus.IN_PROGRESS.value: ("bg-primary", _("In Corso")),
             TournamentStatus.COMPLETED.value: ("bg-success", _("Completato")),
             TournamentStatus.TERMINATED.value: ("bg-dark", _("Terminato")),
         }
         return mapping.get(
-            s or TournamentStatus.SETUP.value, ("bg-secondary", "Sconosciuto")
+            s or TournamentStatus.SETUP.value, ("bg-secondary", _("Sconosciuto"))
         )
 
     # --------------------- MATCH ---------------------
@@ -139,7 +153,7 @@ class StatusPresenter:
             MatchStatus.VALIDATED.value: ("bg-dark", _("Validato")),
         }
         return mapping.get(
-            s or MatchStatus.PENDING.value, ("bg-secondary", "Sconosciuto")
+            s or MatchStatus.PENDING.value, ("bg-secondary", _("Sconosciuto"))
         )
 
     # -------------- DIRECTOR REQUEST -----------------
@@ -156,7 +170,8 @@ class StatusPresenter:
             DirectorRequestStatus.REJECTED.value: ("bg-danger", _("Respinta")),
         }
         return mapping.get(
-            s or DirectorRequestStatus.PENDING.value, ("bg-secondary", "Sconosciuto")
+            s or DirectorRequestStatus.PENDING.value,
+            ("bg-secondary", _("Sconosciuto")),
         )
 
     # ---------------------- PLAYOFF -------------------
@@ -174,7 +189,7 @@ class StatusPresenter:
         }
         return mapping.get(
             s or PlayoffConfirmationStatus.PENDING.value,
-            ("bg-secondary", "Sconosciuto"),
+            ("bg-secondary", _("Sconosciuto")),
         )
 
 

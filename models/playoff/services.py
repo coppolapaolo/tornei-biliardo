@@ -11,6 +11,7 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
 
 from ..base import db, utc_now
+from ..exceptions import NotFoundError
 from .models import (
     PlayoffConfiguration,
     PlayoffQualification,
@@ -121,18 +122,25 @@ class PlayoffService:
     @staticmethod
     @transactional(domain="playoff")
     def notify_qualified_players(configuration_id: int) -> int:
-        """Send notifications to qualified players."""
+        """Send notifications to qualified players non ancora invitati.
+
+        Usa invited_at (campo attivo) come marcatore: notified_at e' deprecato
+        e non viene mai popolato dal flusso di invito (start_playoff /
+        _send_playoff_invitations usano invited_at). Filtrando su notified_at
+        questo metodo ri-processava TUTTI i pending — anche i gia' invitati —
+        ad ogni chiamata (es. dopo un decline+replacement).
+        """
         qualifications = PlayoffQualification.query.filter_by(
             configuration_id=configuration_id,
             status=QualificationStatus.PENDING,
-            notified_at=None,
+            invited_at=None,
         ).all()
 
-        # In a real implementation, this would send actual notifications
-        # For now, just mark as notified
+        # In a real implementation, this would send actual notifications.
+        # For now, just mark as invited.
         count = 0
         for qualification in qualifications:
-            qualification.notified_at = utc_now()
+            qualification.invited_at = utc_now()
             count += 1
 
         return count
@@ -164,7 +172,15 @@ class PlayoffService:
             id=qualification_id, user_id=user_id
         ).first_or_404()
 
-        replacement = qualification.decline_participation()
+        qualification.decline_participation()
+
+        # Cerca il sostituto a livello servizio (flusso documentato:
+        # decline → invita il prossimo idoneo). Il modello non lo fa più:
+        # prima decline_participation() chiamava un metodo inesistente su
+        # PlayoffConfiguration via hasattr (sempre False) → nessun sostituto.
+        replacement = PlayoffService.find_replacement_player(
+            qualification.configuration_id
+        )
 
         # Notify replacement if found
         if replacement:
@@ -180,19 +196,22 @@ class PlayoffService:
         """Find the next eligible player for playoff replacement."""
         configuration = db.session.get(PlayoffConfiguration, configuration_id)
         if configuration is None:
-            raise ValueError("Configurazione playoff non trovata")
+            raise NotFoundError("Configurazione playoff non trovata")
 
-        # Get current qualified/confirmed players by querying directly instead of using relationship
-        confirmed_qualifications = PlayoffQualification.query.filter_by(
-            configuration_id=configuration_id,
-            status=QualificationStatus.CONFIRMED.value,
+        # Giocatori che hanno GIÀ una qualificazione per questo playoff (qualsiasi
+        # status): un sostituto è per definizione un giocatore SENZA
+        # qualificazione esistente. Così non duplichiamo chi è già
+        # pending/confirmed né re-invitiamo chi ha declinato/è scaduto/sostituito.
+        #
+        # NB: le query precedenti filtravano lo status con `.value`
+        # ('confirmed'/'pending'), ma la colonna db.Enum(QualificationStatus)
+        # persiste il NOME del membro ('CONFIRMED'/'PENDING') → non matchavano
+        # mai → current_players vuoto → veniva creato un duplicato del primo
+        # qualificato invece del vero sostituto in coda.
+        existing_qualifications = PlayoffQualification.query.filter_by(
+            configuration_id=configuration_id
         ).all()
-        pending_qualifications = PlayoffQualification.query.filter_by(
-            configuration_id=configuration_id, status=QualificationStatus.PENDING.value
-        ).all()
-        current_qualifications = confirmed_qualifications + pending_qualifications
-
-        current_players = {q.user_id for q in current_qualifications}
+        current_players = {q.user_id for q in existing_qualifications}
 
         # Re-evaluate qualifications to find next eligible
         all_qualified = configuration.evaluate_qualifications()
@@ -204,7 +223,9 @@ class PlayoffService:
                     configuration_id=configuration_id,
                     user_id=player_data["user_id"],
                     qualifying_position=player_data["position"],
-                    qualification_reason=f"Replacement - {player_data['qualification_reason']}",
+                    qualification_reason=(
+                        f"Replacement - {player_data['qualification_reason']}"
+                    ),
                 )
                 db.session.add(replacement)
                 return replacement
@@ -247,7 +268,7 @@ class PlayoffService:
         """Create the actual playoff campionato."""
         configuration = db.session.get(PlayoffConfiguration, configuration_id)
         if configuration is None:
-            raise ValueError("Configurazione playoff non trovata")
+            raise NotFoundError("Configurazione playoff non trovata")
 
         # Check if campionato already exists
         if configuration.playoff_campionato is not None:
@@ -277,7 +298,7 @@ class PlayoffService:
         """Start registration for a playoff campionato."""
         campionato = db.session.get(PlayoffTournament, campionato_id)
         if campionato is None:
-            raise ValueError("Campionato playoff non trovato")
+            raise NotFoundError("Campionato playoff non trovato")
         campionato.start_registration()
 
         return campionato
@@ -298,7 +319,9 @@ class PlayoffService:
         }
 
         for config in configurations:
-            total_q = PlayoffQualification.query.filter_by(configuration_id=config.id).count()
+            total_q = PlayoffQualification.query.filter_by(
+                configuration_id=config.id
+            ).count()
             confirmed_q = PlayoffQualification.query.filter_by(
                 configuration_id=config.id, status=QualificationStatus.CONFIRMED
             ).count()
@@ -340,7 +363,7 @@ class PlayoffService:
         """Check if playoff is ready to start and create campionato if needed."""
         configuration = db.session.get(PlayoffConfiguration, configuration_id)
         if configuration is None:
-            raise ValueError("Configurazione playoff non trovata")
+            raise NotFoundError("Configurazione playoff non trovata")
 
         confirmed_count = PlayoffQualification.query.filter_by(
             configuration_id=configuration_id,
@@ -370,7 +393,7 @@ class PlayoffService:
         """Complete a playoff campionato."""
         campionato = db.session.get(PlayoffTournament, campionato_id)
         if campionato is None:
-            raise ValueError("Campionato playoff non trovato")
+            raise NotFoundError("Campionato playoff non trovato")
         campionato.complete_campionato(winner_id)
 
         return campionato
@@ -383,15 +406,25 @@ class PlayoffService:
         """Update a playoff configuration. Blocked if qualifications exist."""
         config = db.session.get(PlayoffConfiguration, config_id)
         if config is None:
-            raise ValueError("Configurazione playoff non trovata")
+            raise NotFoundError("Configurazione playoff non trovata")
         if config.has_qualifications():
             raise ValueError("Non modificabile dopo avvio playoff")
 
         allowed = {
-            "name", "positions_from", "positions_to", "max_participants",
-            "min_garas_played", "location", "scheduled_date", "entry_fee",
-            "response_deadline", "discipline", "distance", "rounds_count",
-            "strategy_type", "odd_number_policy",
+            "name",
+            "positions_from",
+            "positions_to",
+            "max_participants",
+            "min_garas_played",
+            "location",
+            "scheduled_date",
+            "entry_fee",
+            "response_deadline",
+            "discipline",
+            "distance",
+            "rounds_count",
+            "strategy_type",
+            "odd_number_policy",
         }
         for key, value in fields.items():
             if key in allowed:
@@ -410,7 +443,10 @@ class PlayoffService:
         min_garas_played: Optional[int] = None,
         **kwargs: Any,
     ) -> PlayoffConfiguration:
-        """Add a new playoff configuration. Blocked if any config already has qualifications."""
+        """Add a new playoff configuration.
+
+        Blocked if any config already has qualifications.
+        """
         existing_configs = PlayoffConfiguration.query.filter_by(
             campionato_id=campionato_id, is_active=True
         ).all()
@@ -428,8 +464,16 @@ class PlayoffService:
             positions_to=positions_to,
         )
         # Optional gara params
-        for key in ("discipline", "distance", "rounds_count", "strategy_type",
-                     "odd_number_policy", "location", "scheduled_date", "entry_fee"):
+        for key in (
+            "discipline",
+            "distance",
+            "rounds_count",
+            "strategy_type",
+            "odd_number_policy",
+            "location",
+            "scheduled_date",
+            "entry_fee",
+        ):
             if key in kwargs:
                 setattr(config, key, kwargs[key])
 
@@ -442,7 +486,7 @@ class PlayoffService:
         """Deactivate a playoff configuration. Blocked if qualifications exist."""
         config = db.session.get(PlayoffConfiguration, config_id)
         if config is None:
-            raise ValueError("Configurazione playoff non trovata")
+            raise NotFoundError("Configurazione playoff non trovata")
         if config.has_qualifications():
             raise ValueError("Non modificabile dopo avvio playoff")
 
@@ -453,10 +497,13 @@ class PlayoffService:
 
     @staticmethod
     @transactional(domain="playoff")
-    def start_playoff(campionato_id: int) -> Dict[str, List[PlayoffQualification]]:
-        """Start playoffs: generate qualifications from classification for all active configs.
+    def start_playoff(
+        campionato_id: int,
+    ) -> Dict[str, List[PlayoffQualification]]:
+        """Start playoffs: generate qualifications from classification.
 
-        Sets response_deadline (default 7 days) and sends notifications.
+        Iterates over all active configs of the campionato. Sets
+        response_deadline (default 7 days) and sends notifications.
         Returns dict of config_name → list of new qualifications.
         """
         from ..campionato.models import Campionato
@@ -465,10 +512,12 @@ class PlayoffService:
 
         campionato = db.session.get(Campionato, campionato_id)
         if campionato is None:
-            raise ValueError("Campionato non trovato")
+            raise NotFoundError("Campionato non trovato")
 
         if campionato.get_status() != TournamentStatus.TERMINATED.value:
-            raise ValueError("Il campionato deve essere terminato per avviare i playoff")
+            raise ValueError(
+                "Il campionato deve essere terminato per avviare i playoff"
+            )
 
         configs = PlayoffConfiguration.query.filter_by(
             campionato_id=campionato_id, is_active=True
@@ -480,6 +529,22 @@ class PlayoffService:
         # Pre-flight: check ALL configs before any creation
         if any(c.has_qualifications() for c in configs):
             raise ValueError("Playoff già avviati per questo campionato")
+
+        # Make sure Classification records are up-to-date: la UI calcola la
+        # classifica on-the-fly via calculate_general_classification, ma
+        # qui leggiamo dai Classification persistiti per congelare i dati.
+        try:
+            from ..classification.campionato_classification import (
+                ClassificationService,
+            )
+
+            ClassificationService.update_campionato_classification(campionato_id)
+        except Exception:
+            logger.warning(
+                "Impossibile aggiornare la classifica campionato %d "
+                "prima di start_playoff",
+                campionato_id,
+            )
 
         # Get the frozen classification
         classifications = (
@@ -510,7 +575,9 @@ class PlayoffService:
                                     configuration_id=config.id,
                                     user_id=cls.user_id,
                                     qualifying_position=cls.position,
-                                    qualification_reason=f"Posizione {cls.position} in classifica",
+                                    qualification_reason=(
+                                        f"Posizione {cls.position} in classifica"
+                                    ),
                                     invited_at=now,
                                     expires_at=config.response_deadline,
                                 )
@@ -536,7 +603,9 @@ class PlayoffService:
                                 configuration_id=config.id,
                                 user_id=cls.user_id,
                                 qualifying_position=cls.position,
-                                qualification_reason=f"Rimpiazzo — posizione {cls.position}",
+                                qualification_reason=(
+                                    f"Rimpiazzo — posizione {cls.position}"
+                                ),
                                 invited_at=now,
                                 expires_at=config.response_deadline,
                             )
@@ -556,7 +625,9 @@ class PlayoffService:
         # Notify all qualified players via NotificationFactory
         db.session.flush()
         for config in configs:
-            PlayoffService._send_playoff_invitations(config, results.get(config.name, []))
+            PlayoffService._send_playoff_invitations(
+                config, results.get(config.name, [])
+            )
 
         return results
 
@@ -565,51 +636,66 @@ class PlayoffService:
         config: PlayoffConfiguration,
         qualifications: List[PlayoffQualification],
     ) -> None:
-        """Send in-app notifications to qualified players."""
-        from ..notification.factory import NotificationFactory
+        """Send in-app notifications to qualified players.
+
+        Una notifica PER qualifica, con deep-link alla pagina di invito
+        (`/player/playoff/invitation/<id>`) dove il giocatore conferma o
+        rifiuta la partecipazione (bug 15). Non si può usare una bulk
+        notification: l'`action_url` deve contenere la qualification_id
+        specifica di ciascun giocatore.
+        """
+        import logging
+        from ..notification.services import NotificationService
         from ..notification.models import NotificationType, NotificationPriority
 
         if not qualifications:
             return
 
-        user_ids = [q.user_id for q in qualifications]
         campionato_name = config.campionato.name if config.campionato else ""
 
-        NotificationFactory.create_bulk_notification(
-            user_ids=user_ids,
-            notification_type=NotificationType.PLAYOFF_INVITATION,
-            title=f"Invito Playoff — {config.name}",
-            message=(
-                f"Sei stato qualificato per {config.name} "
-                f"del campionato {campionato_name}. "
-                f"Conferma o rifiuta la partecipazione."
-            ),
-            priority=NotificationPriority.HIGH,
-            related_entities={
-                "campionato_id": config.campionato_id,
-                "configuration_id": config.id,
-                "configuration_name": config.name,
-            },
-            continue_on_error=True,
-        )
+        for qual in qualifications:
+            try:
+                NotificationService.create_notification(
+                    user_id=qual.user_id,
+                    notification_type=NotificationType.PLAYOFF_INVITATION,
+                    title=f"Invito Playoff — {config.name}",
+                    message=(
+                        f"Sei stato qualificato per {config.name} "
+                        f"del campionato {campionato_name}. "
+                        f"Conferma o rifiuta la partecipazione."
+                    ),
+                    priority=NotificationPriority.HIGH,
+                    action_url=f"/player/playoff/invitation/{qual.id}",
+                    action_text="Conferma o rifiuta",
+                    related_entities={
+                        "campionato_id": config.campionato_id,
+                        "configuration_id": config.id,
+                        "configuration_name": config.name,
+                        "qualification_id": qual.id,
+                    },
+                    expires_at=getattr(qual, "expires_at", None),
+                )
+            except Exception:
+                logging.getLogger(__name__).exception(
+                    "Invio invito playoff fallito per qualification %s", qual.id
+                )
 
     # ── Creazione gara playoff ───────────────────────────────────
 
     @staticmethod
     @transactional(domain="playoff")
-    def create_playoff_gara(configuration_id: int) -> "Gara":  # type: ignore[name-defined]
-        """Create the actual Gara for a playoff config and inscribe confirmed players.
+    def create_playoff_gara(configuration_id: int):
+        """Create the playoff Gara for a config and inscribe confirmed players.
 
-        Returns the created Gara.
+        Returns the created Gara instance.
         """
         from ..competition.services import GaraService
         from ..competition.inscription_service import InscriptionService
-        from ..competition.models import Gara
         from datetime import date as date_type, time as time_type
 
         config = db.session.get(PlayoffConfiguration, configuration_id)
         if config is None:
-            raise ValueError("Configurazione playoff non trovata")
+            raise NotFoundError("Configurazione playoff non trovata")
 
         # Already has gara?
         if config.gara is not None:
@@ -622,15 +708,18 @@ class PlayoffService:
         gara_date: Any
         gara_time: Any
         if config.scheduled_date:
-            candidate = config.scheduled_date.date() if isinstance(config.scheduled_date, datetime) else config.scheduled_date
+            sched = config.scheduled_date
+            is_dt = isinstance(sched, datetime)
+            candidate = sched.date() if is_dt else sched
             gara_date = max(candidate, date_type.today())
-            gara_time = config.scheduled_date.time() if isinstance(config.scheduled_date, datetime) else time_type(20, 0)
+            gara_time = sched.time() if is_dt else time_type(20, 0)
         else:
             gara_date = date_type.today()
             gara_time = time_type(20, 0)
 
         # Next gara number: after all existing gare in campionato
         from ..competition.models import Gara as GaraModel
+
         max_number = (
             db.session.query(db.func.max(GaraModel.number))
             .filter_by(campionato_id=config.campionato_id)
@@ -648,16 +737,29 @@ class PlayoffService:
             rounds_count=params.get("rounds_count", 1),
             max_participants=config.max_participants,
             playoff_config_id=config.id,
-            **{k: v for k, v in params.items()
-               if k in ("location", "entry_fee", "matchmaking_strategy", "odd_number_policy")
-               and v is not None},
+            **{
+                k: v
+                for k, v in params.items()
+                if v is not None
+                and k
+                in (
+                    "location",
+                    "entry_fee",
+                    "matchmaking_strategy",
+                    "odd_number_policy",
+                )
+            },
         )
 
         # Inscribe all confirmed players
-        confirmed = PlayoffQualification.query.filter_by(
-            configuration_id=configuration_id,
-            status=QualificationStatus.CONFIRMED,
-        ).order_by(PlayoffQualification.qualifying_position).all()
+        confirmed = (
+            PlayoffQualification.query.filter_by(
+                configuration_id=configuration_id,
+                status=QualificationStatus.CONFIRMED,
+            )
+            .order_by(PlayoffQualification.qualifying_position)
+            .all()
+        )
 
         for qual in confirmed:
             InscriptionService.inscribe_user(
@@ -695,12 +797,15 @@ class PlayoffService:
     def admin_add_player(
         configuration_id: int, user_id: int, admin_username: str
     ) -> PlayoffQualification:
-        """Manually add a player to a playoff config. Admin override — no position/min_garas check."""
+        """Manually add a player to a playoff config.
+
+        Admin override — bypasses position and min_garas checks.
+        """
         from ..competition.models import Inscription, Gara
 
         config = db.session.get(PlayoffConfiguration, configuration_id)
         if config is None:
-            raise ValueError("Configurazione playoff non trovata")
+            raise NotFoundError("Configurazione playoff non trovata")
 
         # Block if gara already created
         if config.gara is not None:
@@ -727,6 +832,7 @@ class PlayoffService:
 
         # Determine position from classification if available
         from ..classification.models import Classification
+
         cls = Classification.query.filter_by(
             campionato_id=config.campionato_id, user_id=user_id
         ).first()
@@ -751,7 +857,7 @@ class PlayoffService:
         """Remove a player from a playoff config. Sets status to DECLINED."""
         qual = db.session.get(PlayoffQualification, qualification_id)
         if qual is None:
-            raise ValueError("Qualificazione non trovata")
+            raise NotFoundError("Qualificazione non trovata")
 
         config = qual.configuration
         if config.gara is not None:
@@ -759,21 +865,39 @@ class PlayoffService:
 
         qual.status = QualificationStatus.DECLINED
         original_reason = qual.qualification_reason
-        qual.qualification_reason = f"Rimosso da {admin_username} (era: {original_reason})"
+        qual.qualification_reason = (
+            f"Rimosso da {admin_username} (era: {original_reason})"
+        )
         qual.responded_at = utc_now()
         return qual
 
     @staticmethod
     def get_user_playoff_history(user_id: int) -> List[Dict[str, Any]]:
         """Get user's playoff participation history."""
-        qualifications = PlayoffQualification.query.filter_by(user_id=user_id).all()
+        from sqlalchemy.orm import joinedload
+
+        # Eager-load configuration + campionato per evitare 2 lazy-load per riga
+        # (N+1) sull'accesso a configuration.campionato.name / .name.
+        qualifications = (
+            PlayoffQualification.query.filter_by(user_id=user_id)
+            .options(
+                joinedload(PlayoffQualification.configuration).joinedload(
+                    PlayoffConfiguration.campionato
+                )
+            )
+            .all()
+        )
 
         history = []
         for qualification in qualifications:
+            config = qualification.configuration
+            # campionato puo' essere None (record orfano / campionato rimosso):
+            # non far esplodere l'intera pagina history su un None-deref.
+            campionato = config.campionato if config else None
             history.append(
                 {
-                    "campionato_name": qualification.configuration.campionato.name,
-                    "playoff_name": qualification.configuration.name,
+                    "campionato_name": campionato.name if campionato else None,
+                    "playoff_name": config.name if config else None,
                     "qualifying_position": qualification.qualifying_position,
                     "status": qualification.status.value,
                     "qualified_at": qualification.created_at,

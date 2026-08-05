@@ -30,13 +30,25 @@ __all__ = [
     "RatingService",
 ]
 
+
 def register_rating_handlers():
     """Register domain event handlers."""
-    from models.events import EventBus, MatchCompletedEvent
+    from models.events import EventBus, MatchCompletedEvent, MatchReopenedEvent
+    from models.events.match_events import IndividualMatchCompletedEvent
     from .event_handlers import RatingEventHandlers
-    
+
     # EventBus.subscribe is a decorator, use register_handler for direct registration
-    EventBus.register_handler(MatchCompletedEvent, RatingEventHandlers.handle_match_completed)
+    EventBus.register_handler(
+        MatchCompletedEvent, RatingEventHandlers.handle_match_completed
+    )
+    EventBus.register_handler(
+        IndividualMatchCompletedEvent,
+        RatingEventHandlers.handle_individual_match_completed,
+    )
+    EventBus.register_handler(
+        MatchReopenedEvent, RatingEventHandlers.handle_match_reopened
+    )
+
 
 # Auto-register when module is imported
 register_rating_handlers()

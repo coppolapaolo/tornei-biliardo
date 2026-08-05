@@ -144,7 +144,9 @@ class TestUseCaseRandomStrategy:
         # Open inscriptions and inscribe players
         inscription_start = utc_now() - timedelta(hours=1)
         inscription_end = utc_now() + timedelta(hours=1)
-        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        InscriptionService.open_inscriptions(
+            gara.id, inscription_start, inscription_end
+        )
 
         for player in players_8:
             InscriptionService.inscribe_user(player.id, gara.id)
@@ -154,13 +156,17 @@ class TestUseCaseRandomStrategy:
 
         # Check matches created for ALL rounds
         for round_num in range(1, 4):
-            matches = Match.query.filter_by(gara_id=gara.id, round_number=round_num).all()
+            matches = Match.query.filter_by(
+                gara_id=gara.id, round_number=round_num
+            ).all()
             assert len(matches) == 4, f"Round {round_num} should have 4 matches"
 
         # Verify no rematch across rounds
         pairings_per_round = []
         for round_num in range(1, 4):
-            matches = Match.query.filter_by(gara_id=gara.id, round_number=round_num).all()
+            matches = Match.query.filter_by(
+                gara_id=gara.id, round_number=round_num
+            ).all()
             pairings = set()
             for match in matches:
                 pairing = frozenset([match.player1_id, match.player2_id])
@@ -204,7 +210,9 @@ class TestUseCaseRandomStrategy:
         # Open inscriptions and inscribe 9 players
         inscription_start = utc_now() - timedelta(hours=1)
         inscription_end = utc_now() + timedelta(hours=1)
-        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        InscriptionService.open_inscriptions(
+            gara.id, inscription_start, inscription_end
+        )
 
         for player in players_9:
             InscriptionService.inscribe_user(player.id, gara.id)
@@ -262,7 +270,9 @@ class TestUseCaseRandomStrategy:
         # Setup and start
         inscription_start = utc_now() - timedelta(hours=1)
         inscription_end = utc_now() + timedelta(hours=1)
-        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        InscriptionService.open_inscriptions(
+            gara.id, inscription_start, inscription_end
+        )
 
         for player in players_8:
             InscriptionService.inscribe_user(player.id, gara.id)
@@ -272,7 +282,9 @@ class TestUseCaseRandomStrategy:
         # Collect all pairings
         all_pairings = []
         for round_num in range(1, 4):
-            matches = Match.query.filter_by(gara_id=gara.id, round_number=round_num).all()
+            matches = Match.query.filter_by(
+                gara_id=gara.id, round_number=round_num
+            ).all()
             for match in matches:
                 pairing = tuple(sorted([match.player1_id, match.player2_id]))
                 all_pairings.append(pairing)
@@ -350,7 +362,9 @@ class TestUseCaseRandomChallenge:
         # Setup inscriptions
         inscription_start = utc_now() - timedelta(hours=1)
         inscription_end = utc_now() + timedelta(hours=1)
-        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        InscriptionService.open_inscriptions(
+            gara.id, inscription_start, inscription_end
+        )
 
         for player in players_6:
             InscriptionService.inscribe_user(player.id, gara.id)
@@ -435,7 +449,9 @@ class TestUseCaseRandomClassification:
         # Setup
         inscription_start = utc_now() - timedelta(hours=1)
         inscription_end = utc_now() + timedelta(hours=1)
-        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        InscriptionService.open_inscriptions(
+            gara.id, inscription_start, inscription_end
+        )
 
         for player in players_6:
             InscriptionService.inscribe_user(player.id, gara.id)
@@ -451,9 +467,11 @@ class TestUseCaseRandomClassification:
         RoundClassification.calculate_classification_after_round(gara.id, 1)
 
         # Check classification exists
-        classifications = RoundClassification.query.filter_by(
-            gara_id=gara.id, round_number=1
-        ).order_by(RoundClassification.position).all()
+        classifications = (
+            RoundClassification.query.filter_by(gara_id=gara.id, round_number=1)
+            .order_by(RoundClassification.position)
+            .all()
+        )
 
         assert len(classifications) == 6
 
@@ -462,9 +480,9 @@ class TestUseCaseRandomClassification:
             current = classifications[i]
             next_cls = classifications[i + 1]
             # Position should be sequential
-            assert current.position < next_cls.position, (
-                f"Position {current.position} should be less than {next_cls.position}"
-            )
+            assert (
+                current.position < next_cls.position
+            ), f"Position {current.position} should be less than {next_cls.position}"
 
     def _complete_match_simple(self, match: Match, db_session) -> None:
         """Complete a match with random-ish results.
@@ -478,8 +496,12 @@ class TestUseCaseRandomClassification:
         if match.is_bye:
             return
 
-        winner_id = match.player1_id if random.choice([True, False]) else match.player2_id
-        loser_id = match.player2_id if winner_id == match.player1_id else match.player1_id
+        winner_id = (
+            match.player1_id if random.choice([True, False]) else match.player2_id
+        )
+        loser_id = (
+            match.player2_id if winner_id == match.player1_id else match.player1_id
+        )
 
         winning_racks = match.match_distance
         loser_racks = random.randint(0, winning_racks - 1)

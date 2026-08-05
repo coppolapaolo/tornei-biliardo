@@ -215,7 +215,7 @@ Tests organized by platform domains supporting community growth:
 - **Model Validation**: Field constraints and relationships
 - **Business Rules**: Domain-specific validation logic
 - **Data Integrity**: Foreign key relationships and cascades
-- **Performance**: Query optimization and N+1 detection
+- **Performance**: Query optimization (caching via `optimized_query`, eager loading via `bulk_load_relationships`)
 
 ### Service Layer Testing
 - **Transaction Management**: Rollback and commit behavior

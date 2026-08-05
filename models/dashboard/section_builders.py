@@ -67,12 +67,15 @@ class DashboardSectionBuilder:
             .all()
         )
 
-        # Partite attive (solo in attesa e in corso, NO completate - quelle vanno nello storico)
+        # Partite attive (solo in attesa e in corso, NO completate - quelle
+        # vanno nello storico)
         my_upcoming = (
             db.session.query(TournamentMatch)
             .join(Gara, Gara.id == TournamentMatch.gara_id)
             .filter(
-                TournamentMatch.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value]),  # type: ignore[attr-defined]
+                TournamentMatch.status.in_(  # type: ignore[attr-defined]
+                    [MatchStatus.PENDING.value, MatchStatus.PLAYING.value]
+                ),
                 _user_is_match_participant(user_id),
             )
             .order_by(
@@ -87,7 +90,7 @@ class DashboardSectionBuilder:
             .join(Gara, Gara.id == TournamentMatch.gara_id)
             .filter(
                 Gara.campionato_id == selected.id,
-                TournamentMatch.status == "completed",  # type: ignore[operator]
+                TournamentMatch.status == MatchStatus.COMPLETED.value,
                 _user_is_match_participant(user_id),
             )
             .order_by(
@@ -156,7 +159,7 @@ class DashboardSectionBuilder:
             .join(Inscription, Inscription.gara_id == Gara.id)
             .filter(
                 Inscription.user_id == user_id,
-                Inscription.is_withdrawn == False,
+                Inscription.is_withdrawn == False,  # noqa: E712
             )
             .all()
         )
@@ -168,7 +171,8 @@ class DashboardSectionBuilder:
                 for gara in inscribed_garas
                 if gara.campionato_id == selected_campionato.id
             ]
-            # If user is inscribed in campionato garas, use those; otherwise use all inscribed garas
+            # If user is inscribed in campionato garas, use those; otherwise
+            # use all inscribed garas
             target_garas = campionato_garas if campionato_garas else inscribed_garas
         else:
             # No selected campionato, use all inscribed garas
@@ -180,19 +184,36 @@ class DashboardSectionBuilder:
                 db.session.query(GaraChallenge)
                 .filter(
                     GaraChallenge.gara_id == gara.id,
-                    GaraChallenge.is_active == True,
+                    GaraChallenge.is_active == True,  # noqa: E712
                 )
                 .options(joinedload(GaraChallenge.challenge))  # type: ignore[arg-type]
                 .all()
             )
             available_challenges.extend(gara_challenges)
 
-            # Get player progress for this gara
+            # Get player progress for this gara. NON sovrascrivere la chiave
+            # user_id ad ogni iterazione (così sopravviveva solo l'ultima gara
+            # mentre available_challenges aggrega TUTTE): unisci le liste
+            # `challenges` e somma gli aggregati su tutte le gare target.
             progress = GaraChallengeService.get_user_gara_challenge_progress(
                 gara.id, user_id
             )
-            if progress:
-                player_challenge_progress[user_id] = progress
+            if progress and progress.get("challenges"):
+                merged = player_challenge_progress.setdefault(
+                    user_id,
+                    {
+                        "challenges": [],
+                        "total_best_score": 0,
+                        "total_all_attempts": 0,
+                        "challenges_attempted": 0,
+                    },
+                )
+                merged["challenges"].extend(progress["challenges"])
+                merged["total_best_score"] += progress.get("total_best_score", 0)
+                merged["total_all_attempts"] += progress.get("total_all_attempts", 0)
+                merged["challenges_attempted"] += progress.get(
+                    "challenges_attempted", 0
+                )
 
         return {
             "available_challenges": available_challenges,
@@ -209,9 +230,6 @@ class DashboardSectionBuilder:
             progress = LevelService.get_level_progress(user_id)
             streaks = StreakService.get_all_streaks(user_id)
 
-            return {
-                "progress": progress,
-                "streaks": streaks
-            }
+            return {"progress": progress, "streaks": streaks}
         except Exception:
             return {}

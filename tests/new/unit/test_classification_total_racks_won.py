@@ -35,6 +35,7 @@ def random_campionato_with_matches(db_session):
     - player_b: racks_won=3, rack_difference=-2
     """
     import uuid
+
     suffix = uuid.uuid4().hex[:8]
 
     # Create users
@@ -158,20 +159,20 @@ class TestTotalRacksWonRegression:
         class_b = next(c for c in classifications if c.user_id == player_b_id)
 
         # Verify total_racks_won is saved correctly
-        assert class_a.total_racks_won == 5, (
-            f"Player A should have 5 racks won, got {class_a.total_racks_won}"
-        )
-        assert class_b.total_racks_won == 3, (
-            f"Player B should have 3 racks won, got {class_b.total_racks_won}"
-        )
+        assert (
+            class_a.total_racks_won == 5
+        ), f"Player A should have 5 racks won, got {class_a.total_racks_won}"
+        assert (
+            class_b.total_racks_won == 3
+        ), f"Player B should have 3 racks won, got {class_b.total_racks_won}"
 
         # Verify total_point_difference (rack_difference) is also correct
-        assert class_a.total_point_difference == 2, (
-            f"Player A should have +2 rack_diff, got {class_a.total_point_difference}"
-        )
-        assert class_b.total_point_difference == -2, (
-            f"Player B should have -2 rack_diff, got {class_b.total_point_difference}"
-        )
+        assert (
+            class_a.total_point_difference == 2
+        ), f"Player A should have +2 rack_diff, got {class_a.total_point_difference}"
+        assert (
+            class_b.total_point_difference == -2
+        ), f"Player B should have -2 rack_diff, got {class_b.total_point_difference}"
 
         # Verify positions (sorted by racks_won for random strategy)
         assert class_a.position < class_b.position, (
@@ -187,6 +188,7 @@ class TestTotalRacksWonRegression:
         """
         # Create a classification with total_racks_won
         import uuid
+
         suffix = uuid.uuid4().hex[:8]
 
         user = User(

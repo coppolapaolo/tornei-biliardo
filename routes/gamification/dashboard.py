@@ -1,5 +1,8 @@
 # routes/gamification/dashboard.py
-"""User-facing gamification routes: dashboard, achievements, quests, streaks, leaderboards."""
+"""User-facing gamification routes.
+
+Dashboard, achievements, quests, streaks, leaderboards.
+"""
 
 from flask import render_template, jsonify, request, flash, redirect, url_for, abort
 from flask_login import login_required, current_user

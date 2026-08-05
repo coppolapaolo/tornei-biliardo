@@ -63,8 +63,7 @@ class DoubleKnockoutStrategy(BaseStrategy):
     def preview(self, gara: object, round_number: int) -> Sequence[Pairing]:
         """Preview pairings for a specific round without side effects."""
         return self._generate_round_pairings(
-            gara,  # type: ignore[arg-type]
-            round_number
+            gara, round_number  # type: ignore[arg-type]
         )
 
     def _generate_pairings(
@@ -73,8 +72,7 @@ class DoubleKnockoutStrategy(BaseStrategy):
         """Generate Double Knockout pairings for the round."""
         gara = processed_data["gara"]
         return self._generate_round_pairings(
-            gara,  # type: ignore[arg-type]
-            round_number
+            gara, round_number  # type: ignore[arg-type]
         )
 
     def _generate_round_pairings(
@@ -103,18 +101,15 @@ class DoubleKnockoutStrategy(BaseStrategy):
     ) -> List[Pairing]:
         """Generate pairings for subsequent rounds with winners and losers brackets."""
         from ...match.models import Match
+        from models.status_enum import MatchStatus
 
-        # Get all completed matches up to previous round
-        # Use text() to create a raw SQL expression for the comparison to avoid
-        # mocking issues
-        from sqlalchemy import text
-
-        all_matches = (
-            Match.query.filter_by(gara_id=gara.id, status="completed")
-            .filter(text("round_number < :round_number"))
-            .params(round_number=round_number)
-            .all()
-        )
+        # Get all finished matches up to previous round (completed OR validated:
+        # la conferma bilaterale porta i match a 'validated', non solo 'completed').
+        all_matches = Match.query.filter(
+            Match.gara_id == gara.id,
+            Match.round_number < round_number,
+            Match.status.in_(MatchStatus.finished_values()),
+        ).all()
 
         # Track player status: active, eliminated_once, eliminated_twice
         player_status = self._calculate_player_status(gara, all_matches)
@@ -162,7 +157,8 @@ class DoubleKnockoutStrategy(BaseStrategy):
         # Get all players
         inscriptions = list(gara.inscriptions)  # type: ignore[arg-type]
         active_inscriptions = [
-            i for i in inscriptions
+            i
+            for i in inscriptions
             if not getattr(i, "is_withdrawn", False)
             and not getattr(i, "is_waitlist", False)
         ]
@@ -189,6 +185,67 @@ class DoubleKnockoutStrategy(BaseStrategy):
                         player_status[loser_id] = "eliminated_twice"
 
         return player_status
+
+    def _losses_before_round(self, gara: "Gara", round_number: int) -> Dict[int, int]:
+        """Sconfitte per giocatore accumulate nei round STRETTAMENTE precedenti.
+
+        Usato per derivare l'appartenenza al bracket (winners vs losers): un
+        giocatore con 0 sconfitte è ancora nel winners bracket.
+        """
+        from ...match.models import Match
+        from models.status_enum import MatchStatus
+
+        matches = Match.query.filter(
+            Match.gara_id == gara.id,
+            Match.round_number < round_number,
+            Match.status.in_(MatchStatus.finished_values()),
+        ).all()
+
+        losses: Dict[int, int] = {}
+        for match in matches:
+            if match.winner_id and not match.is_bye:
+                if match.player1_id == match.winner_id:
+                    loser_id = match.player2_id
+                else:
+                    loser_id = match.player1_id
+                if loser_id is not None:
+                    losses[loser_id] = losses.get(loser_id, 0) + 1
+        return losses
+
+    def _split_bracket_matches(self, gara: "Gara", round_number: int):
+        """(winners_matches, losers_matches) per i match finiti del round dato.
+
+        Match NON ha colonna `notes`: la distinzione winners/losers bracket
+        non può essere persistita su un tag (il vecchio
+        `filter(Match.notes == 'losers_bracket')` sollevava AttributeError e
+        non era mai valorizzato). La deriviamo dallo storico sconfitte: un
+        match è winners bracket se ENTRAMBI i giocatori vi sono entrati
+        imbattuti, altrimenti losers bracket.
+        """
+        from ...match.models import Match
+        from models.status_enum import MatchStatus
+
+        losses_before = self._losses_before_round(gara, round_number)
+        round_matches = Match.query.filter(
+            Match.gara_id == gara.id,
+            Match.round_number == round_number,
+            Match.status.in_(MatchStatus.finished_values()),
+        ).all()
+
+        winners_matches: List = []
+        losers_matches: List = []
+        for match in round_matches:
+            participant_ids = [
+                pid for pid in (match.player1_id, match.player2_id) if pid is not None
+            ]
+            entered_with_loss = any(
+                losses_before.get(pid, 0) > 0 for pid in participant_ids
+            )
+            if entered_with_loss:
+                losers_matches.append(match)
+            else:
+                winners_matches.append(match)
+        return winners_matches, losers_matches
 
     def _determine_bracket_phase(
         self, gara: "Gara", round_number: int, player_status: Dict[int, str]
@@ -235,16 +292,11 @@ class DoubleKnockoutStrategy(BaseStrategy):
         if len(active_players) < 2:
             return []
 
-        # Get winners from previous winners bracket matches
-        from ...match.models import Match
-
-        previous_winners_matches = (
-            Match.query.filter_by(
-                gara_id=gara.id, round_number=round_number - 1, status="completed"
-            )
-            .filter(Match.notes != "losers_bracket")
-            .all()
-        )  # Assuming we mark losers bracket matches
+        # Get winners from previous winners bracket matches (bracket derivato
+        # dallo storico sconfitte, non da un tag Match.notes inesistente).
+        previous_winners_matches, _ = self._split_bracket_matches(
+            gara, round_number - 1
+        )
 
         winners = []
         for match in previous_winners_matches:
@@ -337,16 +389,8 @@ class DoubleKnockoutStrategy(BaseStrategy):
         self, gara: "Gara", round_number: int
     ) -> List[int]:
         """Get players who just lost in winners bracket."""
-        from ...match.models import Match
-
-        # Look at recent winners bracket matches
-        recent_matches = (
-            Match.query.filter_by(
-                gara_id=gara.id, round_number=round_number - 1, status="completed"
-            )
-            .filter(Match.notes != "losers_bracket")
-            .all()
-        )
+        # Match del winners bracket del round precedente (derivati dallo storico).
+        recent_matches, _ = self._split_bracket_matches(gara, round_number - 1)
 
         losers = []
         for match in recent_matches:
@@ -362,16 +406,8 @@ class DoubleKnockoutStrategy(BaseStrategy):
         self, gara: "Gara", round_number: int
     ) -> List[int]:
         """Get players who survived previous losers bracket round."""
-        from ...match.models import Match
-
-        # Look for losers bracket matches from previous round
-        previous_losers_matches = (
-            Match.query.filter_by(
-                gara_id=gara.id, round_number=round_number - 1, status="completed"
-            )
-            .filter(Match.notes == "losers_bracket")
-            .all()
-        )
+        # Match del losers bracket del round precedente (derivati dallo storico).
+        _, previous_losers_matches = self._split_bracket_matches(gara, round_number - 1)
 
         survivors = []
         for match in previous_losers_matches:

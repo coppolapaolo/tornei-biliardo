@@ -92,7 +92,9 @@ class GamificationConfigService:
         """
         key = f"xp_{transaction_type.value}"
         default_tuple = DEFAULT_XP_RATES.get(key, (50, ""))
-        default = default_tuple[0] if isinstance(default_tuple, tuple) else default_tuple
+        default = (
+            default_tuple[0] if isinstance(default_tuple, tuple) else default_tuple
+        )
         return cls._get_config(key, default)
 
     @classmethod
@@ -104,9 +106,13 @@ class GamificationConfigService:
             Tuple of (base_xp, power) for level calculation
             Formula: xp_for_level = base_xp * (level ** power)
         """
-        base = cls._get_config("level_base_xp", DEFAULT_LEVEL_PARAMS["level_base_xp"][0])
+        base = cls._get_config(
+            "level_base_xp", DEFAULT_LEVEL_PARAMS["level_base_xp"][0]
+        )
         # Power is stored as int * 100 (e.g., 150 = 1.5)
-        power_int = cls._get_config("level_power", DEFAULT_LEVEL_PARAMS["level_power"][0])
+        power_int = cls._get_config(
+            "level_power", DEFAULT_LEVEL_PARAMS["level_power"][0]
+        )
         power = power_int / 100.0
         return base, power
 
@@ -114,8 +120,7 @@ class GamificationConfigService:
     def get_max_freeze_count(cls) -> int:
         """Get maximum freeze tokens a user can hold."""
         return cls._get_config(
-            "max_freeze_count",
-            DEFAULT_STREAK_CONFIG["max_freeze_count"][0]
+            "max_freeze_count", DEFAULT_STREAK_CONFIG["max_freeze_count"][0]
         )
 
     @classmethod
@@ -137,9 +142,11 @@ class GamificationConfigService:
                 return cls._cache[cache_key]
 
         try:
-            unlocks = LevelUnlock.query.filter_by(is_active=True).order_by(
-                LevelUnlock.level
-            ).all()
+            unlocks = (
+                LevelUnlock.query.filter_by(is_active=True)
+                .order_by(LevelUnlock.level)
+                .all()
+            )
             # If DB is empty, use defaults (for tests or initial setup)
             if not unlocks:
                 # Create mock objects for fallback
@@ -179,7 +186,7 @@ class GamificationConfigService:
                 feature_code=feature_code,
                 feature_name=feature_name,
                 description=description,
-                is_active=True
+                is_active=True,
             )
             result.append(unlock)
         return result
@@ -257,9 +264,11 @@ class GamificationConfigService:
                 return cls._cache[cache_key]
 
         try:
-            milestones = StreakMilestone.query.filter_by(is_active=True).order_by(
-                StreakMilestone.weeks
-            ).all()
+            milestones = (
+                StreakMilestone.query.filter_by(is_active=True)
+                .order_by(StreakMilestone.weeks)
+                .all()
+            )
             if milestones:
                 # Pre-load all attributes while still in session context
                 # to prevent DetachedInstanceError when accessed later
@@ -367,7 +376,7 @@ class GamificationConfigService:
         if level <= 1:
             return 0
         base, power = cls.get_level_curve_params()
-        return int(base * (level ** power))
+        return int(base * (level**power))
 
     @classmethod
     def get_xp_for_next_level(cls, current_level: int) -> int:
@@ -380,7 +389,9 @@ class GamificationConfigService:
         Returns:
             XP required to level up
         """
-        return cls.get_xp_for_level(current_level + 1) - cls.get_xp_for_level(current_level)
+        return cls.get_xp_for_level(current_level + 1) - cls.get_xp_for_level(
+            current_level
+        )
 
     @classmethod
     def get_level_from_total_xp(cls, total_xp: int) -> int:
@@ -413,7 +424,7 @@ class GamificationConfigService:
         if unlock:
             return {
                 "feature": unlock.feature_code,
-                "description": unlock.description or ""
+                "description": unlock.description or "",
             }
         return None
 
@@ -430,7 +441,7 @@ class GamificationConfigService:
         for unlock in unlocks:
             result[unlock.level] = {
                 "feature": unlock.feature_code,
-                "description": unlock.description or ""
+                "description": unlock.description or "",
             }
         return result
 
@@ -440,7 +451,9 @@ class GamificationConfigService:
 
     @classmethod
     @transactional(domain="gamification")
-    def update_config(cls, key: str, value: int, updated_by_id: int) -> GamificationConfig:
+    def update_config(
+        cls, key: str, value: int, updated_by_id: int
+    ) -> GamificationConfig:
         """Update a configuration value. Invalidates cache.
 
         Raises:

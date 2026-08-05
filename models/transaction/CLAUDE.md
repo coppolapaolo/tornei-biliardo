@@ -16,7 +16,7 @@ Advanced transaction management infrastructure ensuring data consistency across 
 ## Quick Reference
 
 ```python
-from models.transaction.manager import transactional, read_only, DomainService
+from models.transaction.manager import transactional, read_only
 
 # Basic usage - auto commit on success, rollback on exception
 @transactional
@@ -87,20 +87,20 @@ def critical_update():
 
 ---
 
-## DomainService Base Class
+## Domain Services (plain classes)
 
-Base class for domain services with transaction support:
+> **Nota (2026-06):** la base `DomainService` (con `_track_domain_access`/
+> `_execute_with_tracking`) è stata **rimossa**: alimentava solo le metriche di
+> tracking del manager, che non hanno consumatori in produzione (cfr. F1.3/F1.4
+> del technical-debt review). I servizi sono ora classi semplici; il tracking di
+> dominio si dichiara col solo argomento `domain=` del decoratore.
 
 ```python
-from models.transaction.manager import DomainService, transactional
+from models.transaction.manager import transactional
 
-class GaraService(DomainService):
-    def __init__(self):
-        super().__init__("competition")
-
+class GaraService:
     @transactional(domain="competition")
     def create_gara(self, **kwargs):
-        self._track_domain_access()  # Optional: explicit tracking
         gara = Gara(**kwargs)
         db.session.add(gara)
         return gara

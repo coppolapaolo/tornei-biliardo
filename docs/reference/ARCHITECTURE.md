@@ -28,12 +28,12 @@ app.py → create_app(config_name)
 
 ### 2. Domain-Driven Design
 
-Il dominio è organizzato in **27 bounded context** sotto `models/`:
+Il dominio è organizzato in **25 bounded context** sotto `models/`:
 
 ```
                     ┌─────────────────────────────┐
-                    │       ORCHESTRATION          │
-                    │    DomainOrchestrator        │
+                    │       EVENT BUS (pub/sub)    │
+                    │   coordinamento cross-dominio │
                     └──────────┬──────────────────┘
                                │
           ┌────────────────────┼───────────────────────┐
@@ -50,8 +50,8 @@ Il dominio è organizzato in **27 bounded context** sotto `models/`:
           │                  ↓
     ┌─────┴──────┐   ┌──────────────┐   ┌──────────────┐
     │CLASSIFICATION│  │   SCORING    │   │  TIEBREAKER  │
-    │  Strategies │  │  Strategies  │   │  Config      │
-    │  Registry   │  │  Policies    │   │  Match       │
+    │  Strategies │  │ ScoringService│   │  Config      │
+    │  Registry   │  │ (match domain)│   │  Match       │
     └────────────┘  └──────────────┘   └──────────────┘
 
     ┌────────────┐   ┌──────────────┐   ┌──────────────┐

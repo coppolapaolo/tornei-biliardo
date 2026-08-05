@@ -32,8 +32,16 @@ def open_inscriptions(gara_id):
     """Apri iscrizioni per una gara"""
 
     def action():
-        start_key = "inscription_start_utc" if "inscription_start_utc" in request.form else "inscription_start"
-        end_key = "inscription_end_utc" if "inscription_end_utc" in request.form else "inscription_end"
+        start_key = (
+            "inscription_start_utc"
+            if "inscription_start_utc" in request.form
+            else "inscription_start"
+        )
+        end_key = (
+            "inscription_end_utc"
+            if "inscription_end_utc" in request.form
+            else "inscription_end"
+        )
         start_str = request.form.get(start_key)
         end_str = request.form.get(end_key)
         if not start_str or not end_str:
@@ -44,7 +52,9 @@ def open_inscriptions(gara_id):
         inscription_end = parse_date_string(end_str)
         if not inscription_end:
             raise ValueError(f"Formato data non valido: {end_str}")
-        InscriptionService.open_inscriptions(gara_id, inscription_start, inscription_end)
+        InscriptionService.open_inscriptions(
+            gara_id, inscription_start, inscription_end
+        )
 
     return handle_service_action(
         action=action,
@@ -149,7 +159,9 @@ def admin_inscribe_user(gara_id):
 
         if inscription:
             # Formatta la data per la notifica
-            gara_date_str = gara.date.strftime("%d/%m/%Y") if gara.date else "data da definire"
+            gara_date_str = (
+                gara.date.strftime("%d/%m/%Y") if gara.date else "data da definire"
+            )
             gara_name = gara.name or f"Gara {gara.number}"
 
             # Crea notifica per l'utente iscritto

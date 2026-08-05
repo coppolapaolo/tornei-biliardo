@@ -135,6 +135,22 @@ class PairingStrategy(ABC):
     max_players: Optional[int] = None
     supports_byes: bool = True
     requires_classification: bool = False
+    # True se la strategia ha un ordine di partenza significativo da salvare
+    # come classifica di turno 0 (vedi SeedingService). Le strategie a
+    # tabellone (eliminazione diretta) non usano una classifica di turno,
+    # quindi restano a False.
+    persists_seeding: bool = False
+
+    def get_seeding_order(self, gara: object) -> Optional[List[int]]:
+        """Ordine di partenza dei giocatori, se la strategia ne definisce uno.
+
+        Serve alle strategie in cui il seeding *precede* gli accoppiamenti
+        (Amalfi accoppia proprio per prossimità in classifica). Le strategie in
+        cui è il sorteggio a produrre gli accoppiamenti restituiscono None: lì
+        l'ordine di partenza si deriva a posteriori dagli accoppiamenti del
+        primo turno (`SeedingService.order_from_pairings`).
+        """
+        return None
 
     @abstractmethod
     def validate(self, gara: object) -> ValidationResult:
@@ -172,11 +188,10 @@ class PairingStrategy(ABC):
             - May trigger notifications and other cross-domain operations
         """
         # Default implementation for compatibility: call propose if it exists
-        if hasattr(self, 'propose'):
+        if hasattr(self, "propose"):
             return self.propose(gara, round_number)  # type: ignore
         else:
             raise NotImplementedError("Subclasses must implement create_round")
-
 
 
 class BaseStrategy(PairingStrategy):
@@ -293,9 +308,7 @@ class BaseStrategy(PairingStrategy):
         # Apply side effects
         self._apply_side_effects(enhanced_pairings, gara, round_number)
 
-
         return enhanced_pairings
-
 
     # Template method hooks for strategy customization
 
@@ -356,8 +369,8 @@ class BaseStrategy(PairingStrategy):
         """Get active inscriptions for the gara."""
         inscriptions = getattr(gara, "inscriptions", [])
         return [
-            i for i in inscriptions
+            i
+            for i in inscriptions
             if not getattr(i, "is_withdrawn", False)
             and not getattr(i, "is_waitlist", False)
         ]
-

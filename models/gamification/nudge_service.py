@@ -24,8 +24,9 @@ from models.gamification.feature_endpoint_map import feature_visible_to_user
 
 logger = logging.getLogger(__name__)
 
+
 class NudgeService:
-    
+
     # Features that are always available (base features) - don't show nudges for these
     EXCLUDED_FROM_NUDGE = {
         "view_global_stats",
@@ -33,7 +34,7 @@ class NudgeService:
         "view_challenges",
         # Add other base features here
     }
-    
+
     @staticmethod
     def check_login_nudges(user_id: int) -> None:
         """
@@ -42,21 +43,21 @@ class NudgeService:
         """
         # Find all active, potentially restricted features
         features = FeatureConfig.query.filter_by(is_active=True).all()
-        
+
         pending_nudge: Optional[FeatureConfig] = None
-        
+
         for feature in features:
             # Skip base features that shouldn't show nudges
             if feature.code in NudgeService.EXCLUDED_FROM_NUDGE:
                 continue
-            
+
             # Check if user has already used it
             usage = UserFeatureUsage.query.filter_by(
                 user_id=user_id, feature_code=feature.code
             ).first()
-            
+
             if usage and usage.usage_count > 0:
-                continue # Already used, skip
+                continue  # Already used, skip
 
             # ADR-028 alignment: skip features whose primary endpoint isn't
             # visible to this user in the current environment. Otherwise the
@@ -71,11 +72,13 @@ class NudgeService:
                 # Prioritize logic could go here (e.g. random or importance)
                 pending_nudge = feature
                 break
-        
+
         if pending_nudge:
             # Trigger Nudge Event
             GamificationFrontendBridge.handle_nudge_event(user_id, pending_nudge)
-            logger.info(f"Triggered nudge for user {user_id} feature {pending_nudge.code}")
+            logger.info(
+                f"Triggered nudge for user {user_id} feature {pending_nudge.code}"
+            )
 
     @staticmethod
     def mark_feature_used(user_id: int, feature_code: str) -> None:
@@ -86,11 +89,17 @@ class NudgeService:
         usage = UserFeatureUsage.query.filter_by(
             user_id=user_id, feature_code=feature_code
         ).first()
-        
+
         if not usage:
-            usage = UserFeatureUsage(user_id=user_id, feature_code=feature_code)
+            # Inizializza usage_count esplicitamente: il default=0 della colonna
+            # vale solo all'INSERT, ma qui incrementiamo PRIMA del flush, quindi
+            # l'attributo sarebbe None → TypeError. Stesso pattern di
+            # achievement_service.py (current_progress=0).
+            usage = UserFeatureUsage(
+                user_id=user_id, feature_code=feature_code, usage_count=0
+            )
             db.session.add(usage)
-        
+
         usage.usage_count += 1
         usage.last_used_at = utc_now()
         # db.session.commit() should be handled by caller/request lifecycle

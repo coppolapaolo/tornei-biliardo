@@ -75,7 +75,9 @@ class RefactorProgressDetector:
 
         baseline = 177  # Original baseline from documentation analysis
         effective_baseline = baseline - 8  # 8 commits intentionally excluded
-        progress = max(0, (effective_baseline - total_commits) / effective_baseline * 100)
+        progress = max(
+            0, (effective_baseline - total_commits) / effective_baseline * 100
+        )
 
         return {
             "total_commits": total_commits,
@@ -242,9 +244,13 @@ class RefactorProgressDetector:
         # Transaction migration
         tx_data = self.detect_transaction_migration()
         print(f"📊 Transaction Migration: {tx_data['progress_percent']:.1f}%")
-        print(f"   Direct commits: {tx_data['total_commits']}/{tx_data['effective_baseline']}")
-        if tx_data['excluded_commits'] > 0:
-            print(f"   Excluded commits: {tx_data['excluded_commits']} (intentionally preserved)")
+        print(
+            f"   Direct commits: {tx_data['total_commits']}/{tx_data['effective_baseline']}"
+        )
+        if tx_data["excluded_commits"] > 0:
+            print(
+                f"   Excluded commits: {tx_data['excluded_commits']} (intentionally preserved)"
+            )
         print(f"   Files remaining: {tx_data['files_remaining']}")
         if tx_data["files_detail"]:
             print("   Top files:")

@@ -37,7 +37,7 @@
                         {% for inscription in camp_inscriptions %}
                             <li>
                                 <small>
-                                    Gara {{ inscription.gara.number }} -
+                                    {{ inscription.gara.display_name }} -
                                     {{ inscription.gara.date|date_local }}
                                     {{ status_badge(inscription.gara, 'gara') }}
                                     {{ position_badge(inscription.gara) }}
@@ -55,7 +55,7 @@
                     {% for inscription in standalone_inscriptions %}
                         <li>
                             <small>
-                                {{ inscription.gara.name or ('Gara ' ~ inscription.gara.number) }} -
+                                {{ inscription.gara.display_name }} -
                                 {{ inscription.gara.date|date_local }}
                                 {{ status_badge(inscription.gara, 'gara') }}
                                 {{ position_badge(inscription.gara) }}

@@ -1,0 +1,96 @@
+{# templates/components/_index_open_inscriptions.html #}
+{# Sezione "Iscrizioni aperte": tutte le info azionabili (posti rimasti e
+   scadenza) visibili subito, senza dover entrare nel dettaglio. #}
+{% if open_garas %}
+<div class="d-flex justify-content-between align-items-center mb-3 mt-5">
+    <h2 class="mb-0"><i class="fas fa-user-plus text-success"></i>
+        {{ _("Iscrizioni aperte") }}
+    </h2>
+    <a href="{{ url_for('main.public_garas_list') }}" class="btn btn-outline-success btn-sm">
+        <i class="fas fa-list"></i> {{ _("Tutte le gare") }}
+    </a>
+</div>
+
+<div class="row">
+    {% for card in open_garas %}
+    {% set gara = card.gara %}
+    <div class="col-md-6 col-lg-4 mb-3">
+        <div class="card h-100 border-success">
+            <div class="card-header bg-success bg-opacity-10 d-flex justify-content-between align-items-start">
+                <div>
+                    <h6 class="card-title mb-0">{{ gara.name }}</h6>
+                    {% if card.campionato %}
+                    <small class="text-muted">{{ card.campionato.name }}</small>
+                    {% endif %}
+                </div>
+                <span class="badge bg-success">{{ _("Aperta") }}</span>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled small mb-2">
+                    <li><i class="fas fa-calendar"></i> {{ gara.date|date_local }}</li>
+                    <li><i class="fas fa-map-marker-alt"></i> {{ gara.location or _("Da definire") }}</li>
+                    <li><i class="fas fa-8-ball"></i> {{ gara.discipline|discipline_display }}</li>
+                </ul>
+
+                {# Iscritti / capienza #}
+                <div class="d-flex justify-content-between align-items-center small mb-1">
+                    <span><i class="fas fa-users"></i> {{ _("Iscritti") }}</span>
+                    <strong>
+                        {{ card.active_count }}{% if card.max_participants %}/{{ card.max_participants }}{% endif %}
+                    </strong>
+                </div>
+                {% if card.max_participants %}
+                {% set pct = (card.active_count / card.max_participants * 100) if card.max_participants else 0 %}
+                <div class="progress mb-2" style="height: 6px;">
+                    <div class="progress-bar bg-success" role="progressbar"
+                         style="width: {{ pct if pct < 100 else 100 }}%;"
+                         aria-valuenow="{{ card.active_count }}" aria-valuemin="0"
+                         aria-valuemax="{{ card.max_participants }}"></div>
+                </div>
+                {% if card.is_full %}
+                <p class="small text-warning mb-2">
+                    <i class="fas fa-clock"></i> {{ _("Posti esauriti — iscrizione in lista d'attesa") }}
+                </p>
+                {% else %}
+                <p class="small text-success mb-2">
+                    <i class="fas fa-check-circle"></i>
+                    {{ ngettext("%(num)s posto disponibile", "%(num)s posti disponibili", card.spots_remaining, num=card.spots_remaining) }}
+                </p>
+                {% endif %}
+                {% endif %}
+
+                {# Scadenza iscrizioni #}
+                {% if card.inscription_end %}
+                <p class="small text-muted mb-0">
+                    <i class="fas fa-hourglass-end"></i> {{ _("Scadenza iscrizioni:") }}
+                    <span data-utc="{{ card.inscription_end.isoformat() }}">{{ card.inscription_end|datetime_local }}</span>
+                </p>
+                {% endif %}
+            </div>
+            <div class="card-footer">
+                {% if current_user.is_authenticated and gara.can_inscribe() and not gara.is_user_inscribed(current_user.id) %}
+                <form method="POST" action="{{ url_for('player.inscribe_to_gara', gara_id=gara.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-success btn-sm w-100">
+                        {% if card.is_full %}
+                        <i class="fas fa-clock"></i> {{ _("Mettiti in lista d'attesa") }}
+                        {% else %}
+                        <i class="fas fa-user-plus"></i> {{ _("Iscriviti") }}
+                        {% endif %}
+                    </button>
+                </form>
+                {% elif not current_user.is_authenticated %}
+                <a href="{{ url_for('auth.login') }}" class="btn btn-success btn-sm w-100">
+                    <i class="fas fa-sign-in-alt"></i> {{ _("Accedi per iscriverti") }}
+                </a>
+                {% else %}
+                <a href="{{ url_for('main.gara_detail_public', gara_id=gara.id) }}" class="btn btn-outline-success btn-sm w-100">
+                    <i class="fas fa-eye"></i> {{ _("Dettagli") }}
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}

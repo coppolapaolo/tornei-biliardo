@@ -11,7 +11,7 @@ from enum import Enum
 
 from sqlalchemy import func
 
-from ..base import db, BaseModel, TimestampMixin, utc_now
+from ..base import db, BaseModel, utc_now
 from ..status_enum import MatchStatus
 from ..match.base_match import BaseMatchMixin
 
@@ -295,6 +295,39 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
         if hasattr(self, "ended_at"):
             self.ended_at = utc_now()
 
+        # Emetti l'evento SOLO qui: questo metodo scatta unicamente dalla
+        # conferma bilaterale (confirm_result). Forfait e complete_match
+        # impostano COMPLETED senza passare di qui → casual gated, mai forfait.
+        self._emit_individual_match_completed_event()
+
+    def _emit_individual_match_completed_event(self) -> None:
+        """Pubblica IndividualMatchCompletedEvent dopo la validazione bilaterale.
+
+        Evento dedicato (NON MatchCompletedEvent): i consumer di quest'ultimo
+        leggono la tabella `match`, mentre i casual vivono su `individual_match`.
+        Vedi docstring dell'evento in models/events/match_events.py.
+        """
+        from models.events.match_events import IndividualMatchCompletedEvent
+        from models.events.base import EventBus
+
+        player1_name = self.player1.username if self.player1 else "Player 1"
+        player2_name = self.player2.username if self.player2 else "Player 2"
+        winner_name = None
+        if self.winner_id and self.winner:
+            winner_name = self.winner.username
+
+        event = IndividualMatchCompletedEvent(
+            match_id=self.id,
+            player1_id=self.player1_id,
+            player1_name=player1_name,
+            player2_id=self.player2_id,
+            player2_name=player2_name,
+            winner_id=self.winner_id,
+            winner_name=winner_name,
+            score=f"{self.player1_score}-{self.player2_score}",
+        )
+        EventBus.publish(event)
+
     @property
     def location_display(self) -> str:
         """Get display name for location.
@@ -387,6 +420,12 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
         if self.status != MatchStatus.IN_PROGRESS:
             raise ValueError("Match is not in progress")
 
+        # Data-integrity guard (C1): the winner MUST be one of the two players.
+        # Without this, a player could close a match declaring an arbitrary
+        # winner_id, corrupting stats/ELO downstream.
+        if winner_id not in (self.player1_id, self.player2_id):
+            raise ValueError("Winner must be one of the match players")
+
         self.status = MatchStatus.COMPLETED
         self.ended_at = utc_now()
         self.winner_id = winner_id
@@ -420,22 +459,29 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
         if self.status not in [MatchStatus.SCHEDULED, MatchStatus.IN_PROGRESS]:
             raise ValueError("Can only forfeit scheduled or in-progress matches")
 
+        # Winning threshold (C2): for multi-set matches player*_score counts
+        # SETS won, so the winner must reach get_winning_sets() (= match_distance),
+        # not get_winning_racks() (racks-per-set). For single-set it's racks.
+        winning_score = None
+        if self.distance_config:
+            winning_score = (
+                self.distance_config.get_winning_sets()
+                if self.is_multi_set
+                else self.distance_config.get_winning_racks()
+            )
+
         # Determine winner (opponent of forfeiting player)
         if user_id == self.player1_id:
             self.winner_id = self.player2_id
             # Ensure winner has at least the winning score (if distance is set)
-            if self.distance_config:
-                winning_score = self.distance_config.get_winning_racks()
-                if self.player2_score < winning_score:
-                    self.player2_score = winning_score
-            # Keep player1_score as-is (racks already won)
+            if winning_score is not None and self.player2_score < winning_score:
+                self.player2_score = winning_score
+            # Keep player1_score as-is (racks/sets already won)
         else:
             self.winner_id = self.player1_id
-            if self.distance_config:
-                winning_score = self.distance_config.get_winning_racks()
-                if self.player1_score < winning_score:
-                    self.player1_score = winning_score
-            # Keep player2_score as-is (racks already won)
+            if winning_score is not None and self.player1_score < winning_score:
+                self.player1_score = winning_score
+            # Keep player2_score as-is (racks/sets already won)
 
         # Complete the match
         self.status = MatchStatus.COMPLETED
@@ -506,7 +552,7 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
 
         # Find the set that is currently playing, or the last completed set
         for s in self.sets:  # type: ignore
-            if s.status == "playing":
+            if s.status == MatchStatus.PLAYING.value:
                 return s
 
         # No playing set - return None (need to start next set)
@@ -550,7 +596,7 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
 
         # Check that current set is completed
         current_set = self.get_current_set()
-        if current_set and current_set.status == "playing":
+        if current_set and current_set.status == MatchStatus.PLAYING.value:
             raise ValueError(f"Set {current_set.set_number} is still in progress")
 
         # Check if match is already complete
@@ -597,11 +643,15 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
         if not self._is_multi_set_complete():
             return
 
-        # Determine winner
+        # Determine winner. In modalita' exact-sets (is_race_to_sets=False) il
+        # completamento puo' scattare in parita' (es. 1-1 con match_distance=2):
+        # un tie NON e' una vittoria di player2, quindi nessun vincitore.
         if self.player1_score > self.player2_score:
             self.winner_id = self.player1_id
-        else:
+        elif self.player2_score > self.player1_score:
             self.winner_id = self.player2_id
+        else:
+            self.winner_id = None
 
         # Note: We don't auto-complete the match status here.
         # The match uses bilateral confirmation flow via is_ready_for_validation().
@@ -669,7 +719,7 @@ class IndividualSet(BaseModel):
 
     def start_set(self) -> None:
         """Start the set."""
-        if self.status != "pending":
+        if self.status != MatchStatus.PENDING.value:
             raise ValueError("Set can only be started from pending status")
 
         self.status = "playing"
@@ -681,7 +731,7 @@ class IndividualSet(BaseModel):
         rack_number: Optional[int] = None,
     ) -> "IndividualRack":
         """Add a rack result to this set."""
-        if self.status != "playing":
+        if self.status != MatchStatus.PLAYING.value:
             raise ValueError("Cannot add rack result to non-playing set")
 
         if winner_id not in [self.match.player1_id, self.match.player2_id]:
@@ -754,7 +804,7 @@ class IndividualSet(BaseModel):
 
     def is_completed(self) -> bool:
         """Check if set is completed."""
-        return self.status == "completed"
+        return self.status == MatchStatus.COMPLETED.value
 
     def remove_last_rack(self, user_id: int) -> Optional["IndividualRack"]:
         """Remove the last rack from this set (soft delete).
@@ -787,7 +837,7 @@ class IndividualSet(BaseModel):
             self.player2_racks = max(0, self.player2_racks - 1)
 
         # If set was completed, reopen it
-        if self.status == "completed":
+        if self.status == MatchStatus.COMPLETED.value:
             self.status = "playing"
             self.completed_at = None
 
@@ -815,7 +865,10 @@ class IndividualSet(BaseModel):
         )
 
     def __repr__(self) -> str:
-        return f"<IndividualSet {self.match_id}-{self.set_number}: {self.player1_racks}-{self.player2_racks}>"
+        return (
+            f"<IndividualSet {self.match_id}-{self.set_number}: "
+            f"{self.player1_racks}-{self.player2_racks}>"
+        )
 
 
 class IndividualRack(BaseModel):

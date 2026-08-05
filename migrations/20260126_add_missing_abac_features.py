@@ -17,7 +17,6 @@ import json
 import logging
 from pathlib import Path
 
-
 # Missing Features from Original Plan
 MISSING_FEATURES = [
     {
@@ -28,10 +27,15 @@ MISSING_FEATURES = [
             {
                 "description": "Played at least 1 match",
                 "conditions": [
-                    {"type": "METRIC", "metric": "total_matches", "operator": "gte", "value": 1}
-                ]
+                    {
+                        "type": "METRIC",
+                        "metric": "total_matches",
+                        "operator": "gte",
+                        "value": 1,
+                    }
+                ],
             }
-        ]
+        ],
     },
     {
         "code": "view_global_stats",
@@ -40,11 +44,9 @@ MISSING_FEATURES = [
         "rules": [
             {
                 "description": "Level 1 (always unlocked for authenticated users)",
-                "conditions": [
-                    {"type": "LEVEL", "operator": "gte", "value": 1}
-                ]
+                "conditions": [{"type": "LEVEL", "operator": "gte", "value": 1}],
             }
-        ]
+        ],
     },
     {
         "code": "request_venue_manager",
@@ -55,10 +57,15 @@ MISSING_FEATURES = [
                 "description": "Level 5 AND 50+ matches in location",
                 "conditions": [
                     {"type": "LEVEL", "operator": "gte", "value": 5},
-                    {"type": "METRIC", "metric": "matches_in_location", "operator": "gte", "value": 50}
-                ]
+                    {
+                        "type": "METRIC",
+                        "metric": "matches_in_location",
+                        "operator": "gte",
+                        "value": 50,
+                    },
+                ],
             }
-        ]
+        ],
     },
     {
         "code": "venue_dashboard",
@@ -67,9 +74,9 @@ MISSING_FEATURES = [
         "rules": [
             {
                 "description": "Venue Manager Role",
-                "conditions": [{"type": "ROLE", "value": "VENUE_MANAGER"}]
+                "conditions": [{"type": "ROLE", "value": "VENUE_MANAGER"}],
             }
-        ]
+        ],
     },
     {
         "code": "request_director",
@@ -80,10 +87,15 @@ MISSING_FEATURES = [
                 "description": "Level 3 AND 1+ tournament played",
                 "conditions": [
                     {"type": "LEVEL", "operator": "gte", "value": 3},
-                    {"type": "METRIC", "metric": "tournaments_played", "operator": "gte", "value": 1}
-                ]
+                    {
+                        "type": "METRIC",
+                        "metric": "tournaments_played",
+                        "operator": "gte",
+                        "value": 1,
+                    },
+                ],
             }
-        ]
+        ],
     },
     {
         "code": "create_gara",
@@ -92,9 +104,9 @@ MISSING_FEATURES = [
         "rules": [
             {
                 "description": "Director Role",
-                "conditions": [{"type": "ROLE", "value": "DIRECTOR"}]
+                "conditions": [{"type": "ROLE", "value": "DIRECTOR"}],
             }
-        ]
+        ],
     },
     {
         "code": "do_challenge",
@@ -103,13 +115,20 @@ MISSING_FEATURES = [
         "rules": [
             {
                 "description": "Level 5+",
-                "conditions": [{"type": "LEVEL", "operator": "gte", "value": 5}]
+                "conditions": [{"type": "LEVEL", "operator": "gte", "value": 5}],
             },
             {
                 "description": "Completed 1+ tournament drill",
-                "conditions": [{"type": "METRIC", "metric": "tournament_drills_completed", "operator": "gte", "value": 1}]
-            }
-        ]
+                "conditions": [
+                    {
+                        "type": "METRIC",
+                        "metric": "tournament_drills_completed",
+                        "operator": "gte",
+                        "value": 1,
+                    }
+                ],
+            },
+        ],
     },
     {
         "code": "create_challenge",
@@ -120,11 +139,16 @@ MISSING_FEATURES = [
                 "description": "Level 5 AND 5+ challenges completed",
                 "conditions": [
                     {"type": "LEVEL", "operator": "gte", "value": 5},
-                    {"type": "METRIC", "metric": "challenges_completed", "operator": "gte", "value": 5}
-                ]
+                    {
+                        "type": "METRIC",
+                        "metric": "challenges_completed",
+                        "operator": "gte",
+                        "value": 5,
+                    },
+                ],
             }
-        ]
-    }
+        ],
+    },
 ]
 
 
@@ -154,13 +178,16 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
             name = feature["name"]
             description = feature.get("description", "")
             rules_json = json.dumps(feature["rules"])
-            
+
             # Use INSERT OR REPLACE to update if exists
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT OR REPLACE INTO feature_config (code, name, description, rules, is_active, created_at, updated_at)
                 VALUES (?, ?, ?, ?, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-            """, (code, name, description, rules_json))
-            
+            """,
+                (code, name, description, rules_json),
+            )
+
         print(f"   Processed {len(MISSING_FEATURES)} missing features.")
 
         conn.commit()

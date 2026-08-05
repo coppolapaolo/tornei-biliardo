@@ -40,8 +40,7 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db"):
         return
 
     cursor.execute(
-        "UPDATE achievement SET description = ? "
-        "WHERE slug = ? AND description = ?",
+        "UPDATE achievement SET description = ? " "WHERE slug = ? AND description = ?",
         (_NEW, _SLUG, _OLD),
     )
     print(f"  ✓ Descrizione 'perfectionist' aggiornata su {cursor.rowcount} riga/e")

@@ -5,7 +5,7 @@ Purpose: Advanced round management with locking and state control
 
 from __future__ import annotations
 
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Optional, Tuple
 from enum import Enum
 
 from flask_babel import lazy_gettext as _
@@ -98,13 +98,9 @@ class AdvancedRoundManager:
             return False, "Gara non trovata"
 
         # Check gara status first for better error messages
-        if gara.status != GaraStatus.PLAYING.value:
-            if gara.status == GaraStatus.COMPLETED.value:
-                return False, "La gara è già completata"
-            elif gara.status == GaraStatus.INSCRIPTION.value:
-                return False, "La gara è ancora in fase di iscrizione"
-            else:
-                return False, f"La gara non è in corso (stato: {gara.status})"
+        blocked_reason = AdvancedRoundManager._status_blocks_modification(gara)
+        if blocked_reason:
+            return False, blocked_reason
 
         lock_status = AdvancedRoundManager.get_round_lock_status(
             match.gara_id, match.round_number
@@ -132,6 +128,36 @@ class AdvancedRoundManager:
             )
 
         return True, ""
+
+    @staticmethod
+    def _status_blocks_modification(gara: Gara) -> Optional[str]:
+        """Motivo per cui lo stato della gara vieta di toccare i match, o None.
+
+        Unica fonte per `can_modify_match` (reset singolo) e `cancel_round`
+        (cancellazione turno): finché il controllo viveva solo nel primo,
+        durante lo spareggio il director non poteva resettare un match ma
+        poteva cancellare il turno che lo conteneva — e `cancel_round`
+        funzionava perfino a gara conclusa.
+
+        `AWAITING_SSR` ha un messaggio dedicato: ADR-026 tratta lo spareggio
+        come certificazione dei risultati. La via d'uscita è concludere lo
+        spareggio (Termina Gara), non riaprire la gara — non esiste una
+        transizione `awaiting_ssr → playing`.
+        """
+        if gara.status == GaraStatus.PLAYING.value:
+            return None
+        if gara.status == GaraStatus.AWAITING_SSR.value:
+            return str(
+                _(
+                    "Gara in fase di spareggio (SSR): concludi lo spareggio "
+                    "prima di modificare i risultati"
+                )
+            )
+        if gara.status == GaraStatus.COMPLETED.value:
+            return str(_("La gara è già completata"))
+        if gara.status == GaraStatus.INSCRIPTION.value:
+            return str(_("La gara è ancora in fase di iscrizione"))
+        return str(_("La gara non è in corso (stato: %(status)s)", status=gara.status))
 
     @staticmethod
     def _gara_has_active_tiebreaker(gara_id: int) -> bool:
@@ -234,6 +260,13 @@ class AdvancedRoundManager:
         if not gara:
             return False, "Gara non trovata"
 
+        # Stesso gate di stato di can_modify_match: cancellare un turno è una
+        # modifica dei risultati a tutti gli effetti, e senza questo controllo
+        # era la scorciatoia per aggirare il blocco sul reset single-match.
+        blocked_reason = AdvancedRoundManager._status_blocks_modification(gara)
+        if blocked_reason:
+            return False, blocked_reason
+
         # ADR-026: uno spareggio attivo certifica la gara. cancel_round
         # cancellerebbe tutti i match del round — incoerente con il blocco
         # del reset single-match. Il director deve annullare lo spareggio
@@ -291,7 +324,16 @@ class AdvancedRoundManager:
             )
 
         # Delete all matches in the round
+        from models.match.state_service import MatchStateService
+
         for match in round_matches:
+            # Annulla i delta di rating PRIMA di eliminare il match (le righe
+            # match_rating_history cascano col match, ma l'Elo applicato no).
+            # Di norma è un no-op: cancel_round richiede match senza risultati,
+            # quindi già resettati → history già annullata al reset. Difensivo
+            # per i casi in cui un match rated finisse qui senza reset.
+            MatchStateService.emit_reopened_event(match)
+
             # Delete associated racks first (bulk delete via query)
             from models.match.models import Rack
 
@@ -328,6 +370,12 @@ class AdvancedRoundManager:
         gara = db.session.get(Gara, gara_id)
         if not gara:
             return False, "Gara non trovata", {}
+
+        # Senza questo controllo il bulk falliva comunque, ma un match alla
+        # volta: il director leggeva "N errori" invece del motivo reale.
+        blocked_reason = AdvancedRoundManager._status_blocks_modification(gara)
+        if blocked_reason:
+            return False, blocked_reason, {"reset_count": 0, "error_count": 0}
 
         # Get all completed matches in the round
         completed_matches = Match.query.filter_by(
@@ -457,32 +505,27 @@ class AdvancedRoundManager:
         )
 
         for round_num in range(affected_round, max_round + 1):
-            try:
-                # Delete existing classification for this round
-                RoundClassification.query.filter_by(
-                    gara_id=gara_id, round_number=round_num
-                ).delete()
+            # Rimuovi la classifica esistente del round prima di ricalcolare: il
+            # recalc fa upsert dai Match ma NON elimina i giocatori che dopo il
+            # reset non hanno più match qualificati, quindi la delete preventiva
+            # pulisce le righe stale.
+            RoundClassification.query.filter_by(
+                gara_id=gara_id, round_number=round_num
+            ).delete()
 
-                # Recalculate classification
-                classification = RoundClassificationService.get_round_standings(
-                    gara_id, round_num
-                )
-
-                # Save new classification
-                for i, player_data in enumerate(classification, 1):
-                    new_classification = RoundClassification(
-                        gara_id=gara_id,
-                        round_number=round_num,
-                        user_id=player_data["user_id"],
-                        position=i,
-                        matches_won=player_data.get("matches_won", 0),
-                        rack_difference=player_data.get("rack_difference", 0),
-                        points=player_data.get("points", 0),
-                    )
-                    db.session.add(new_classification)
-
-            except Exception as e:
-                print(f"Error recalculating classification for round {round_num}: {e}")
+            # Ricalcola dai risultati dei match. NB: la vecchia implementazione
+            # chiamava get_round_standings (che riquery la RoundClassification
+            # appena SVUOTATA → sempre vuota) e trattava gli oggetti ORM come
+            # dict (player_data["user_id"]) → TypeError ingoiato dal bare except,
+            # lasciando la gara senza classifica. Il metodo canonico aggrega
+            # invece dai Match e fa create/update idempotente.
+            #
+            # Nessun try/except: un errore deve propagarsi al @transactional del
+            # chiamante (reset_match_with_validation) e fare rollback, invece di
+            # committare le delete e segnalare comunque "successo".
+            RoundClassificationService.calculate_and_save_round_classification(
+                gara_id, round_num
+            )
 
     @staticmethod
     def _update_round_progression_after_reset(

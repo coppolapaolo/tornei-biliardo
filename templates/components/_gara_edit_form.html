@@ -93,6 +93,18 @@
                 </div>
             </div>
 
+            <div class="mb-3">
+                <label for="has_handicap" class="form-label">{{ _("Gioco con handicap") }}</label>
+                <select class="form-select" id="has_handicap" name="has_handicap">
+                    {% if gara.campionato %}
+                    <option value="" {% if gara.has_handicap is none %}selected{% endif %}>{{ _("Eredita dal campionato") }} ({{ _("Sì") if gara.campionato.has_handicap else _("No") }})</option>
+                    {% endif %}
+                    <option value="true" {% if gara.has_handicap is true %}selected{% endif %}>{{ _("Sì") }}</option>
+                    <option value="false" {% if gara.has_handicap is false %}selected{% endif %}>{{ _("No") }}</option>
+                </select>
+                <small class="form-text text-muted d-block">{{ _("I match con handicap non aggiornano i rating (Elo/Fargo).") }}</small>
+            </div>
+
             <div class="row" id="strategy_config_section">
                 <div class="col-md-6">
                     <div class="mb-3">

@@ -82,9 +82,17 @@ class TestUserPermissionServiceTDD:
             from models.user.permission_service import UserPermissionService
 
             # Create test users
-            player = User(username="promote_player", email="player@example.com", role=UserRole.PLAYER.value)
+            player = User(
+                username="promote_player",
+                email="player@example.com",
+                role=UserRole.PLAYER.value,
+            )
             player.set_password("secure123")
-            admin = User(username="promote_admin", email="admin@example.com", role=UserRole.ADMIN.value)
+            admin = User(
+                username="promote_admin",
+                email="admin@example.com",
+                role=UserRole.ADMIN.value,
+            )
             admin.set_password("secure123")
 
             db.session.add_all([player, admin])
@@ -92,8 +100,7 @@ class TestUserPermissionServiceTDD:
 
             # Act: promote player to director
             result = UserPermissionService.promote_to_director(
-                user_id=player.id,
-                promoted_by_id=admin.id
+                user_id=player.id, promoted_by_id=admin.id
             )
 
             # Assert: promotion was successful
@@ -124,11 +131,23 @@ class TestUserPermissionServiceTDD:
             from models.user.permission_service import UserPermissionService
 
             # Create users with different roles
-            director = User(username="existing_director", email="director@example.com", role=UserRole.DIRECTOR.value)
+            director = User(
+                username="existing_director",
+                email="director@example.com",
+                role=UserRole.DIRECTOR.value,
+            )
             director.set_password("secure123")
-            admin = User(username="existing_admin", email="admin@example.com", role=UserRole.ADMIN.value)
+            admin = User(
+                username="existing_admin",
+                email="admin@example.com",
+                role=UserRole.ADMIN.value,
+            )
             admin.set_password("secure123")
-            promoter = User(username="promoter", email="promoter@example.com", role=UserRole.ADMIN.value)
+            promoter = User(
+                username="promoter",
+                email="promoter@example.com",
+                role=UserRole.ADMIN.value,
+            )
             promoter.set_password("secure123")
 
             db.session.add_all([director, admin, promoter])
@@ -137,15 +156,13 @@ class TestUserPermissionServiceTDD:
             # Test promoting existing director
             with pytest.raises(ValueError, match="User is already a director"):
                 UserPermissionService.promote_to_director(
-                    user_id=director.id,
-                    promoted_by_id=promoter.id
+                    user_id=director.id, promoted_by_id=promoter.id
                 )
 
             # Test promoting existing admin
             with pytest.raises(ValueError, match="Cannot promote admin user"):
                 UserPermissionService.promote_to_director(
-                    user_id=admin.id,
-                    promoted_by_id=promoter.id
+                    user_id=admin.id, promoted_by_id=promoter.id
                 )
 
             # Cleanup
@@ -165,7 +182,11 @@ class TestUserPermissionServiceTDD:
             from models.user.permission_service import UserPermissionService
 
             # Create admin for promotion
-            admin = User(username="promote_admin", email="admin@example.com", role=UserRole.ADMIN.value)
+            admin = User(
+                username="promote_admin",
+                email="admin@example.com",
+                role=UserRole.ADMIN.value,
+            )
             admin.set_password("secure123")
             db.session.add(admin)
             db.session.commit()
@@ -173,8 +194,7 @@ class TestUserPermissionServiceTDD:
             # Attempt to promote non-existent user
             with pytest.raises(ValueError, match="User not found"):
                 UserPermissionService.promote_to_director(
-                    user_id=99999,
-                    promoted_by_id=admin.id
+                    user_id=99999, promoted_by_id=admin.id
                 )
 
             # Cleanup
@@ -197,22 +217,31 @@ class TestUserPermissionServiceTDD:
             from models.user.permission_service import UserPermissionService
 
             # Create test users
-            director = User(username="demote_director", email="director@example.com", role=UserRole.DIRECTOR.value)
+            director = User(
+                username="demote_director",
+                email="director@example.com",
+                role=UserRole.DIRECTOR.value,
+            )
             director.set_password("secure123")
-            admin = User(username="demote_admin", email="admin@example.com", role=UserRole.ADMIN.value)
+            admin = User(
+                username="demote_admin",
+                email="admin@example.com",
+                role=UserRole.ADMIN.value,
+            )
             admin.set_password("secure123")
 
             db.session.add_all([director, admin])
             db.session.commit()
 
             # Mock notification service to avoid dependencies
-            with patch("models.notification.services.NotificationService.create_notification") as mock_notification:
+            with patch(
+                "models.notification.services.NotificationService.create_notification"
+            ) as mock_notification:
                 mock_notification.return_value = {"success": True}
 
                 # Act: demote director to player
                 result = UserPermissionService.demote_director_to_player(
-                    user_id=director.id,
-                    demoted_by_id=admin.id
+                    user_id=director.id, demoted_by_id=admin.id
                 )
 
                 # Assert: demotion was successful
@@ -242,19 +271,28 @@ class TestUserPermissionServiceTDD:
             from models.user.permission_service import UserPermissionService
 
             # Create test users
-            director = User(username="demote_director", email="director@example.com", role=UserRole.DIRECTOR.value)
+            director = User(
+                username="demote_director",
+                email="director@example.com",
+                role=UserRole.DIRECTOR.value,
+            )
             director.set_password("secure123")
-            player = User(username="demote_player", email="player@example.com", role=UserRole.PLAYER.value)
+            player = User(
+                username="demote_player",
+                email="player@example.com",
+                role=UserRole.PLAYER.value,
+            )
             player.set_password("secure123")
 
             db.session.add_all([director, player])
             db.session.commit()
 
             # Attempt demotion by non-admin
-            with pytest.raises(ValueError, match="Only administrators can demote users"):
+            with pytest.raises(
+                ValueError, match="Only administrators can demote users"
+            ):
                 UserPermissionService.demote_director_to_player(
-                    user_id=director.id,
-                    demoted_by_id=player.id
+                    user_id=director.id, demoted_by_id=player.id
                 )
 
             # Cleanup
@@ -274,11 +312,23 @@ class TestUserPermissionServiceTDD:
             from models.user.permission_service import UserPermissionService
 
             # Create test users
-            player = User(username="demote_player", email="player@example.com", role=UserRole.PLAYER.value)
+            player = User(
+                username="demote_player",
+                email="player@example.com",
+                role=UserRole.PLAYER.value,
+            )
             player.set_password("secure123")
-            admin1 = User(username="demote_admin1", email="admin1@example.com", role=UserRole.ADMIN.value)
+            admin1 = User(
+                username="demote_admin1",
+                email="admin1@example.com",
+                role=UserRole.ADMIN.value,
+            )
             admin1.set_password("secure123")
-            admin2 = User(username="demote_admin2", email="admin2@example.com", role=UserRole.ADMIN.value)
+            admin2 = User(
+                username="demote_admin2",
+                email="admin2@example.com",
+                role=UserRole.ADMIN.value,
+            )
             admin2.set_password("secure123")
 
             db.session.add_all([player, admin1, admin2])
@@ -287,15 +337,13 @@ class TestUserPermissionServiceTDD:
             # Test demoting non-director
             with pytest.raises(ValueError, match="User is not a director"):
                 UserPermissionService.demote_director_to_player(
-                    user_id=player.id,
-                    demoted_by_id=admin1.id
+                    user_id=player.id, demoted_by_id=admin1.id
                 )
 
             # Test demoting admin
             with pytest.raises(ValueError, match="User is not a director"):
                 UserPermissionService.demote_director_to_player(
-                    user_id=admin2.id,
-                    demoted_by_id=admin1.id
+                    user_id=admin2.id, demoted_by_id=admin1.id
                 )
 
             # Cleanup
@@ -317,11 +365,23 @@ class TestUserPermissionServiceTDD:
             from models.user.permission_service import UserPermissionService
 
             # Create test users with different roles
-            admin = User(username="panel_admin", email="admin@example.com", role=UserRole.ADMIN.value)
+            admin = User(
+                username="panel_admin",
+                email="admin@example.com",
+                role=UserRole.ADMIN.value,
+            )
             admin.set_password("secure123")
-            director = User(username="panel_director", email="director@example.com", role=UserRole.DIRECTOR.value)
+            director = User(
+                username="panel_director",
+                email="director@example.com",
+                role=UserRole.DIRECTOR.value,
+            )
             director.set_password("secure123")
-            player = User(username="panel_player", email="player@example.com", role=UserRole.PLAYER.value)
+            player = User(
+                username="panel_player",
+                email="player@example.com",
+                role=UserRole.PLAYER.value,
+            )
             player.set_password("secure123")
 
             db.session.add_all([admin, director, player])
@@ -370,7 +430,11 @@ class TestUserPermissionServiceTDD:
             from models.user.permission_service import UserPermissionService
 
             # Create test player
-            player = User(username="request_player", email="request@example.com", role=UserRole.PLAYER.value)
+            player = User(
+                username="request_player",
+                email="request@example.com",
+                role=UserRole.PLAYER.value,
+            )
             player.set_password("secure123")
             db.session.add(player)
             db.session.commit()
@@ -411,9 +475,17 @@ class TestUserPermissionServiceTDD:
             from models.user.permission_service import UserPermissionService
 
             # Create users with different roles
-            director = User(username="request_director", email="director@example.com", role=UserRole.DIRECTOR.value)
+            director = User(
+                username="request_director",
+                email="director@example.com",
+                role=UserRole.DIRECTOR.value,
+            )
             director.set_password("secure123")
-            admin = User(username="request_admin", email="admin@example.com", role=UserRole.ADMIN.value)
+            admin = User(
+                username="request_admin",
+                email="admin@example.com",
+                role=UserRole.ADMIN.value,
+            )
             admin.set_password("secure123")
 
             db.session.add_all([director, admin])
@@ -421,22 +493,20 @@ class TestUserPermissionServiceTDD:
 
             # Test request by existing director
             with pytest.raises(ValueError, match="User is already director or admin"):
-                UserPermissionService.request_director_promotion(
-                    user_id=director.id
-                )
+                UserPermissionService.request_director_promotion(user_id=director.id)
 
             # Test request by existing admin
             with pytest.raises(ValueError, match="User is already director or admin"):
-                UserPermissionService.request_director_promotion(
-                    user_id=admin.id
-                )
+                UserPermissionService.request_director_promotion(user_id=admin.id)
 
             # Cleanup
             db.session.delete(director)
             db.session.delete(admin)
             db.session.commit()
 
-    def test_request_director_promotion_prevents_duplicate_requests(self, app, db_session):
+    def test_request_director_promotion_prevents_duplicate_requests(
+        self, app, db_session
+    ):
         """
         RED: Test UserPermissionService.request_director_promotion() duplicate validation.
 
@@ -448,7 +518,11 @@ class TestUserPermissionServiceTDD:
             from models.user.permission_service import UserPermissionService
 
             # Create test player
-            player = User(username="duplicate_player", email="duplicate@example.com", role=UserRole.PLAYER.value)
+            player = User(
+                username="duplicate_player",
+                email="duplicate@example.com",
+                role=UserRole.PLAYER.value,
+            )
             player.set_password("secure123")
             db.session.add(player)
             db.session.commit()
@@ -462,10 +536,10 @@ class TestUserPermissionServiceTDD:
             )
 
             # Attempt duplicate request
-            with pytest.raises(ValueError, match="User already has a pending director request"):
-                UserPermissionService.request_director_promotion(
-                    user_id=player.id
-                )
+            with pytest.raises(
+                ValueError, match="User already has a pending director request"
+            ):
+                UserPermissionService.request_director_promotion(user_id=player.id)
 
             # Cleanup
             db.session.delete(first_request)
@@ -487,9 +561,17 @@ class TestUserPermissionServiceTDD:
             initial_count = len(UserPermissionService.get_director_requests())
 
             # Create test users and requests
-            player1 = User(username="requests_player1", email="rp1@example.com", role=UserRole.PLAYER.value)
+            player1 = User(
+                username="requests_player1",
+                email="rp1@example.com",
+                role=UserRole.PLAYER.value,
+            )
             player1.set_password("secure123")
-            player2 = User(username="requests_player2", email="rp2@example.com", role=UserRole.PLAYER.value)
+            player2 = User(
+                username="requests_player2",
+                email="rp2@example.com",
+                role=UserRole.PLAYER.value,
+            )
             player2.set_password("secure123")
 
             db.session.add_all([player1, player2])
@@ -535,9 +617,17 @@ class TestUserPermissionServiceTDD:
             from models.user.permission_service import UserPermissionService
 
             # Create test users
-            player = User(username="approve_player", email="approve@example.com", role=UserRole.PLAYER.value)
+            player = User(
+                username="approve_player",
+                email="approve@example.com",
+                role=UserRole.PLAYER.value,
+            )
             player.set_password("secure123")
-            admin = User(username="approve_admin", email="admin@example.com", role=UserRole.ADMIN.value)
+            admin = User(
+                username="approve_admin",
+                email="admin@example.com",
+                role=UserRole.ADMIN.value,
+            )
             admin.set_password("secure123")
 
             db.session.add_all([player, admin])
@@ -552,14 +642,14 @@ class TestUserPermissionServiceTDD:
             )
 
             # Mock notification service
-            with patch("models.notification.services.NotificationService.create_notification") as mock_notification:
+            with patch(
+                "models.notification.services.NotificationService.create_notification"
+            ) as mock_notification:
                 mock_notification.return_value = {"success": True}
 
                 # Act: approve request
                 approved_request = UserPermissionService.process_director_request(
-                    request_id=pending_request.id,
-                    admin_user=admin,
-                    approve=True
+                    request_id=pending_request.id, admin_user=admin, approve=True
                 )
 
                 # Assert: request was approved
@@ -592,9 +682,17 @@ class TestUserPermissionServiceTDD:
             from models.user.permission_service import UserPermissionService
 
             # Create test player and admin
-            player = User(username="compat_player", email="compat@example.com", role=UserRole.PLAYER.value)
+            player = User(
+                username="compat_player",
+                email="compat@example.com",
+                role=UserRole.PLAYER.value,
+            )
             player.set_password("secure123")
-            admin = User(username="compat_admin", email="compat_admin@example.com", role=UserRole.ADMIN.value)
+            admin = User(
+                username="compat_admin",
+                email="compat_admin@example.com",
+                role=UserRole.ADMIN.value,
+            )
             admin.set_password("secure123")
             db.session.add_all([player, admin])
             db.session.commit()
@@ -608,7 +706,9 @@ class TestUserPermissionServiceTDD:
             )
 
             # Mock notification service
-            with patch("models.notification.services.NotificationService.create_notification") as mock_notification:
+            with patch(
+                "models.notification.services.NotificationService.create_notification"
+            ) as mock_notification:
                 mock_notification.return_value = {"success": True}
 
                 # Act: approve request with admin user and approve=True
@@ -616,7 +716,7 @@ class TestUserPermissionServiceTDD:
                     request_id=pending_request.id,
                     admin_user=admin,
                     approve=True,
-                    notes="Approved for compatibility test"
+                    notes="Approved for compatibility test",
                 )
 
                 # Assert: request was approved
@@ -642,9 +742,17 @@ class TestUserPermissionServiceTDD:
             from models.user.permission_service import UserPermissionService
 
             # Create test player and admin
-            player = User(username="reject_player", email="reject@example.com", role=UserRole.PLAYER.value)
+            player = User(
+                username="reject_player",
+                email="reject@example.com",
+                role=UserRole.PLAYER.value,
+            )
             player.set_password("secure123")
-            admin = User(username="reject_admin", email="reject_admin@example.com", role=UserRole.ADMIN.value)
+            admin = User(
+                username="reject_admin",
+                email="reject_admin@example.com",
+                role=UserRole.ADMIN.value,
+            )
             admin.set_password("secure123")
             db.session.add_all([player, admin])
             db.session.commit()
@@ -658,14 +766,14 @@ class TestUserPermissionServiceTDD:
             )
 
             # Mock notification service
-            with patch("models.notification.services.NotificationService.create_notification") as mock_notification:
+            with patch(
+                "models.notification.services.NotificationService.create_notification"
+            ) as mock_notification:
                 mock_notification.return_value = {"success": True}
 
                 # Act: reject request
                 rejected_request = UserPermissionService.process_director_request(
-                    request_id=pending_request.id,
-                    admin_user=admin,
-                    approve=False
+                    request_id=pending_request.id, admin_user=admin, approve=False
                 )
 
                 # Assert: request was rejected
@@ -704,9 +812,17 @@ class TestDirectorRequestServiceTDD:
             from models.user.services import DirectorRequestService
 
             # Create test users
-            player = User(username="process_player", email="process@example.com", role=UserRole.PLAYER.value)
+            player = User(
+                username="process_player",
+                email="process@example.com",
+                role=UserRole.PLAYER.value,
+            )
             player.set_password("secure123")
-            admin = User(username="process_admin", email="admin@example.com", role=UserRole.ADMIN.value)
+            admin = User(
+                username="process_admin",
+                email="admin@example.com",
+                role=UserRole.ADMIN.value,
+            )
             admin.set_password("secure123")
 
             db.session.add_all([player, admin])
@@ -714,21 +830,20 @@ class TestDirectorRequestServiceTDD:
 
             # Create pending request
             pending_request = DirectorRequest(
-                user_id=player.id,
-                notes="Process test request"
+                user_id=player.id, notes="Process test request"
             )
             db.session.add(pending_request)
             db.session.commit()
 
             # Mock notification service
-            with patch("models.notification.services.NotificationService.create_notification") as mock_notification:
+            with patch(
+                "models.notification.services.NotificationService.create_notification"
+            ) as mock_notification:
                 mock_notification.return_value = {"success": True}
 
                 # Act: process request (approve)
                 processed_request = DirectorRequestService.process_request(
-                    request_id=pending_request.id,
-                    admin_user=admin,
-                    approve=True
+                    request_id=pending_request.id, admin_user=admin, approve=True
                 )
 
                 # Assert: request was processed and user promoted
@@ -762,9 +877,17 @@ class TestDirectorRequestServiceTDD:
             from models.user.services import DirectorRequestService
 
             # Create test users
-            player = User(username="reject_process_player", email="reject@example.com", role=UserRole.PLAYER.value)
+            player = User(
+                username="reject_process_player",
+                email="reject@example.com",
+                role=UserRole.PLAYER.value,
+            )
             player.set_password("secure123")
-            admin = User(username="reject_process_admin", email="admin@example.com", role=UserRole.ADMIN.value)
+            admin = User(
+                username="reject_process_admin",
+                email="admin@example.com",
+                role=UserRole.ADMIN.value,
+            )
             admin.set_password("secure123")
 
             db.session.add_all([player, admin])
@@ -772,21 +895,20 @@ class TestDirectorRequestServiceTDD:
 
             # Create pending request
             pending_request = DirectorRequest(
-                user_id=player.id,
-                notes="Reject process test request"
+                user_id=player.id, notes="Reject process test request"
             )
             db.session.add(pending_request)
             db.session.commit()
 
             # Mock notification service
-            with patch("models.notification.services.NotificationService.create_notification") as mock_notification:
+            with patch(
+                "models.notification.services.NotificationService.create_notification"
+            ) as mock_notification:
                 mock_notification.return_value = {"success": True}
 
                 # Act: process request (reject)
                 processed_request = DirectorRequestService.process_request(
-                    request_id=pending_request.id,
-                    admin_user=admin,
-                    approve=False
+                    request_id=pending_request.id, admin_user=admin, approve=False
                 )
 
                 # Assert: request was rejected
@@ -818,9 +940,17 @@ class TestDirectorRequestServiceTDD:
             from models.user.services import DirectorRequestService
 
             # Create test users
-            player = User(username="perm_player", email="perm@example.com", role=UserRole.PLAYER.value)
+            player = User(
+                username="perm_player",
+                email="perm@example.com",
+                role=UserRole.PLAYER.value,
+            )
             player.set_password("secure123")
-            director = User(username="perm_director", email="director@example.com", role=UserRole.DIRECTOR.value)
+            director = User(
+                username="perm_director",
+                email="director@example.com",
+                role=UserRole.DIRECTOR.value,
+            )
             director.set_password("secure123")
 
             db.session.add_all([player, director])
@@ -828,18 +958,19 @@ class TestDirectorRequestServiceTDD:
 
             # Create pending request
             pending_request = DirectorRequest(
-                user_id=player.id,
-                notes="Permission test request"
+                user_id=player.id, notes="Permission test request"
             )
             db.session.add(pending_request)
             db.session.commit()
 
             # Attempt processing by non-admin
-            with pytest.raises(ValueError, match="Only administrators can process director requests"):
+            with pytest.raises(
+                ValueError, match="Only administrators can process director requests"
+            ):
                 DirectorRequestService.process_request(
                     request_id=pending_request.id,
                     admin_user=director,  # Director, not admin
-                    approve=True
+                    approve=True,
                 )
 
             # Cleanup
@@ -859,7 +990,11 @@ class TestDirectorRequestServiceTDD:
             from models.user.services import DirectorRequestService
 
             # Create admin user
-            admin = User(username="error_admin", email="admin@example.com", role=UserRole.ADMIN.value)
+            admin = User(
+                username="error_admin",
+                email="admin@example.com",
+                role=UserRole.ADMIN.value,
+            )
             admin.set_password("secure123")
             db.session.add(admin)
             db.session.commit()
@@ -867,9 +1002,7 @@ class TestDirectorRequestServiceTDD:
             # Attempt to process non-existent request
             with pytest.raises(ValueError, match="Director request not found"):
                 DirectorRequestService.process_request(
-                    request_id=99999,
-                    admin_user=admin,
-                    approve=True
+                    request_id=99999, admin_user=admin, approve=True
                 )
 
             # Cleanup
@@ -889,7 +1022,11 @@ class TestDirectorRequestServiceTDD:
             from models.user.permission_service import UserPermissionService
 
             # Create test player
-            player = User(username="transaction_player", email="transaction@example.com", role=UserRole.PLAYER.value)
+            player = User(
+                username="transaction_player",
+                email="transaction@example.com",
+                role=UserRole.PLAYER.value,
+            )
             player.set_password("secure123")
             db.session.add(player)
             db.session.commit()
@@ -898,7 +1035,7 @@ class TestDirectorRequestServiceTDD:
             with pytest.raises(ValueError):
                 UserPermissionService.promote_to_director(
                     user_id=99999,  # Non-existent user should fail
-                    promoted_by_id=player.id
+                    promoted_by_id=player.id,
                 )
 
             # Verify player role unchanged after failed operation
@@ -930,7 +1067,11 @@ class TestDirectorRequestServiceTDD:
             # - Player must have 'aspiring_director' achievement to request promotion
 
             # Create test users to verify these rules are enforced
-            player = User(username="rules_player", email="rules@example.com", role=UserRole.PLAYER.value)
+            player = User(
+                username="rules_player",
+                email="rules@example.com",
+                role=UserRole.PLAYER.value,
+            )
             player.set_password("secure123")
             db.session.add(player)
             db.session.commit()

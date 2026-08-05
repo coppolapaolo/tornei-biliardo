@@ -30,6 +30,7 @@ class GamificationConfig(db.Model, TimestampMixin):
     - "streak": Streak-related configuration
     - "general": Other general settings
     """
+
     __tablename__ = "gamification_config"
 
     key = db.Column(db.String(50), primary_key=True)
@@ -56,6 +57,7 @@ class LevelUnlock(db.Model, TimestampMixin):
     - Level 10: tournament_creation
     - Level 40: director_fast_track
     """
+
     __tablename__ = "level_unlock"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -81,6 +83,7 @@ class StreakMilestone(db.Model, TimestampMixin):
     - 12 weeks: 1 freeze token (recurring)
     - 52 weeks: 2 freeze tokens
     """
+
     __tablename__ = "streak_milestone"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -98,6 +101,11 @@ class StreakMilestone(db.Model, TimestampMixin):
 DEFAULT_XP_RATES = {
     "xp_match_win": (50, "XP awarded for winning a match"),
     "xp_match_loss": (20, "XP awarded for losing a match"),
+    # Match individuali/casual: XP ridotto vs torneo (anti-farming, gated a
+    # VALIDATED). Senza queste entry get_xp_rate ricadrebbe sul default
+    # generico (50), pagando il casual come una vittoria di torneo.
+    "xp_casual_match_win": (20, "XP awarded for winning a casual match"),
+    "xp_casual_match_loss": (5, "XP awarded for losing a casual match"),
     "xp_tournament_inscription": (25, "XP for registering to a tournament"),
     "xp_tournament_completion": (100, "XP for completing a tournament"),
     "xp_tournament_podium": (200, "Bonus XP for top 3 finish"),
@@ -119,12 +127,32 @@ DEFAULT_STREAK_CONFIG = {
 
 DEFAULT_LEVEL_UNLOCKS = [
     (5, "match_proposals", "Proposte Match", "Puoi proporre match individuali"),
-    (10, "tournament_creation", "Creazione Tornei", "Accesso all'assistente creazione tornei"),
+    (
+        10,
+        "tournament_creation",
+        "Creazione Tornei",
+        "Accesso all'assistente creazione tornei",
+    ),
     (15, "priority_invites", "Inviti Prioritari", "Ricevi inviti prioritari ai tornei"),
-    (20, "custom_badge_display", "Badge Personalizzati", "Puoi scegliere quali badge mostrare"),
+    (
+        20,
+        "custom_badge_display",
+        "Badge Personalizzati",
+        "Puoi scegliere quali badge mostrare",
+    ),
     (25, "venue_suggestion", "Suggerimenti Venue", "Puoi suggerire nuove venue"),
-    (30, "challenge_creation", "Creazione Challenge", "Puoi creare challenge per altri"),
-    (40, "director_fast_track", "Direttore Fast-Track", "Richiesta direttore auto-approvata"),
+    (
+        30,
+        "challenge_creation",
+        "Creazione Challenge",
+        "Puoi creare challenge per altri",
+    ),
+    (
+        40,
+        "director_fast_track",
+        "Direttore Fast-Track",
+        "Richiesta direttore auto-approvata",
+    ),
     (50, "legend_status", "Status Leggenda", "Accesso alla Hall of Fame"),
 ]
 

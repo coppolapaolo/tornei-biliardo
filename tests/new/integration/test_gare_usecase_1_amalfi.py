@@ -79,9 +79,7 @@ class TestUseCaseAmalfiWorkflow:
         db_session.commit()
         return players
 
-    def test_amalfi_gara_creation_with_3_rounds(
-        self, director_user: User, db_session
-    ):
+    def test_amalfi_gara_creation_with_3_rounds(self, director_user: User, db_session):
         """Test creating Amalfi gara with correct parameters.
 
         UC1: Admin/director creates gara with 3 rounds, Amalfi strategy,
@@ -148,7 +146,9 @@ class TestUseCaseAmalfiWorkflow:
         # Open inscriptions
         inscription_start = utc_now() - timedelta(hours=1)
         inscription_end = utc_now() + timedelta(days=5)
-        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        InscriptionService.open_inscriptions(
+            gara.id, inscription_start, inscription_end
+        )
 
         # Inscribe all 11 players
         inscriptions = []
@@ -196,7 +196,9 @@ class TestUseCaseAmalfiWorkflow:
         # Open inscriptions and inscribe players
         inscription_start = utc_now() - timedelta(hours=1)
         inscription_end = utc_now() + timedelta(hours=1)
-        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        InscriptionService.open_inscriptions(
+            gara.id, inscription_start, inscription_end
+        )
 
         for player in players_8:
             InscriptionService.inscribe_user(player.id, gara.id)
@@ -248,7 +250,9 @@ class TestUseCaseAmalfiWorkflow:
         # Setup and start
         inscription_start = utc_now() - timedelta(hours=1)
         inscription_end = utc_now() + timedelta(hours=1)
-        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        InscriptionService.open_inscriptions(
+            gara.id, inscription_start, inscription_end
+        )
 
         for player in players_8:
             InscriptionService.inscribe_user(player.id, gara.id)
@@ -325,7 +329,9 @@ class TestUseCaseAmalfiWorkflow:
         # Setup
         inscription_start = utc_now() - timedelta(hours=1)
         inscription_end = utc_now() + timedelta(hours=1)
-        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        InscriptionService.open_inscriptions(
+            gara.id, inscription_start, inscription_end
+        )
 
         for player in players_8:
             InscriptionService.inscribe_user(player.id, gara.id)
@@ -341,9 +347,11 @@ class TestUseCaseAmalfiWorkflow:
         RoundClassification.calculate_classification_after_round(gara.id, 1)
 
         # Check classification exists and is ordered
-        classifications = RoundClassification.query.filter_by(
-            gara_id=gara.id, round_number=1
-        ).order_by(RoundClassification.position).all()
+        classifications = (
+            RoundClassification.query.filter_by(gara_id=gara.id, round_number=1)
+            .order_by(RoundClassification.position)
+            .all()
+        )
 
         assert len(classifications) == 8
 
@@ -353,9 +361,9 @@ class TestUseCaseAmalfiWorkflow:
             next_cls = classifications[i + 1]
 
             # Primary: matches won (descending)
-            assert current.matches_won >= next_cls.matches_won, (
-                f"Position {current.position} has fewer wins than position {next_cls.position}"
-            )
+            assert (
+                current.matches_won >= next_cls.matches_won
+            ), f"Position {current.position} has fewer wins than position {next_cls.position}"
 
     def _complete_match_simple(self, match: Match, db_session) -> None:
         """Complete a match with random-ish results."""
@@ -364,8 +372,12 @@ class TestUseCaseAmalfiWorkflow:
         if match.is_bye:
             return
 
-        winner_id = match.player1_id if random.choice([True, False]) else match.player2_id
-        loser_id = match.player2_id if winner_id == match.player1_id else match.player1_id
+        winner_id = (
+            match.player1_id if random.choice([True, False]) else match.player2_id
+        )
+        loser_id = (
+            match.player2_id if winner_id == match.player1_id else match.player1_id
+        )
 
         # For race-to-N, winner needs exactly N racks
         winning_racks = match.match_distance
@@ -481,7 +493,9 @@ class TestUseCaseAmalfiChallenge:
         # Setup inscriptions
         inscription_start = utc_now() - timedelta(hours=1)
         inscription_end = utc_now() + timedelta(hours=1)
-        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        InscriptionService.open_inscriptions(
+            gara.id, inscription_start, inscription_end
+        )
 
         for player in players_6:
             InscriptionService.inscribe_user(player.id, gara.id)

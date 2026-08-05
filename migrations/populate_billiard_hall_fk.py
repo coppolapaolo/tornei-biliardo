@@ -108,7 +108,9 @@ def populate_fk_sqlite(
                     (venue_id, location),
                 )
                 matched += cursor.rowcount
-                print(f"   ✓ Matched '{location}' → ID {venue_id} ({cursor.rowcount} records)")
+                print(
+                    f"   ✓ Matched '{location}' → ID {venue_id} ({cursor.rowcount} records)"
+                )
             else:
                 unmatched += count
                 unmatched_locations.append((table, location, count))
@@ -262,9 +264,15 @@ if __name__ == "__main__":
         else:
             print(f"❌ Unknown command: {sys.argv[1]}")
             print("\nUsage:")
-            print("  python migrations/populate_billiard_hall_fk.py           # SQLite (dev)")
-            print("  python migrations/populate_billiard_hall_fk.py postgresql # PostgreSQL (prod)")
-            print("  python migrations/populate_billiard_hall_fk.py verify     # Check status")
+            print(
+                "  python migrations/populate_billiard_hall_fk.py           # SQLite (dev)"
+            )
+            print(
+                "  python migrations/populate_billiard_hall_fk.py postgresql # PostgreSQL (prod)"
+            )
+            print(
+                "  python migrations/populate_billiard_hall_fk.py verify     # Check status"
+            )
             sys.exit(1)
     else:
         # Default: SQLite migration

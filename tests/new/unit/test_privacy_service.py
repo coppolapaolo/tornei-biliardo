@@ -118,7 +118,9 @@ def test_inscription(db_session, test_player, test_gara):
 class TestPrivacyServiceSettings:
     """Tests for privacy settings CRUD operations."""
 
-    def test_get_privacy_settings_creates_default_when_missing(self, db_session, test_player):
+    def test_get_privacy_settings_creates_default_when_missing(
+        self, db_session, test_player
+    ):
         """Should create default settings with all fields private (GDPR compliance)."""
         settings = PrivacyService.get_privacy_settings(test_player.id)
 
@@ -181,7 +183,9 @@ class TestPrivacyServiceSettings:
         assert updated is not None
         assert updated.show_email is True
 
-    def test_update_privacy_settings_awards_open_player_achievement(self, db_session, test_player):
+    def test_update_privacy_settings_awards_open_player_achievement(
+        self, db_session, test_player
+    ):
         """Should award 'open_player' achievement when user shares gaming data."""
         from models.gamification.models import Achievement, UserAchievement
         from models.gamification.achievement_seeds import seed_achievements
@@ -194,8 +198,7 @@ class TestPrivacyServiceSettings:
         assert achievement is not None, "open_player achievement should exist in seeds"
 
         user_achievement = UserAchievement.query.filter_by(
-            user_id=test_player.id,
-            achievement_id=achievement.id
+            user_id=test_player.id, achievement_id=achievement.id
         ).first()
         assert user_achievement is None, "User should not have achievement initially"
 
@@ -207,8 +210,7 @@ class TestPrivacyServiceSettings:
 
         # Achievement should be awarded
         user_achievement = UserAchievement.query.filter_by(
-            user_id=test_player.id,
-            achievement_id=achievement.id
+            user_id=test_player.id, achievement_id=achievement.id
         ).first()
         assert user_achievement is not None, "User should have open_player achievement"
         assert user_achievement.is_unlocked is True
@@ -233,8 +235,7 @@ class TestPrivacyServiceSettings:
         # Achievement should NOT be awarded (only contact info, not gaming data)
         achievement = Achievement.query.filter_by(slug="open_player").first()
         user_achievement = UserAchievement.query.filter_by(
-            user_id=test_player.id,
-            achievement_id=achievement.id
+            user_id=test_player.id, achievement_id=achievement.id
         ).first()
         # Either no record, or not unlocked
         assert user_achievement is None or user_achievement.is_unlocked is False
@@ -267,7 +268,9 @@ class TestPrivacyServiceHideMatch:
         assert result is not None
         assert result.id == existing.id
 
-    def test_hide_match_not_participant_raises_error(self, db_session, test_player, test_gara):
+    def test_hide_match_not_participant_raises_error(
+        self, db_session, test_player, test_gara
+    ):
         """Should raise ValueError if user is not a participant in the match."""
         from models import User, Match
         from models.user.role_enum import UserRole
@@ -298,7 +301,9 @@ class TestPrivacyServiceHideMatch:
         db_session.add(other_match)
         db_session.commit()
 
-        with pytest.raises(ValueError, match="Only match participants can hide a match"):
+        with pytest.raises(
+            ValueError, match="Only match participants can hide a match"
+        ):
             PrivacyService.hide_match(test_player.id, other_match.id)
 
     def test_show_match_success(self, db_session, test_player, test_match):
@@ -337,7 +342,9 @@ class TestPrivacyServiceHideInscription:
         ).first()
         assert hidden is not None
 
-    def test_hide_inscription_not_owner_raises_error(self, db_session, test_player, test_gara):
+    def test_hide_inscription_not_owner_raises_error(
+        self, db_session, test_player, test_gara
+    ):
         """Should raise ValueError if user doesn't own the inscription."""
         from models import User, Inscription
         from models.user.role_enum import UserRole
@@ -359,13 +366,17 @@ class TestPrivacyServiceHideInscription:
         db_session.add(other_inscription)
         db_session.commit()
 
-        with pytest.raises(ValueError, match="Only the inscribed user can hide an inscription"):
+        with pytest.raises(
+            ValueError, match="Only the inscribed user can hide an inscription"
+        ):
             PrivacyService.hide_inscription(test_player.id, other_inscription.id)
 
     def test_show_inscription_success(self, db_session, test_player, test_inscription):
         """Should unhide a previously hidden inscription."""
         db_session.add(
-            HiddenInscription(user_id=test_player.id, inscription_id=test_inscription.id)
+            HiddenInscription(
+                user_id=test_player.id, inscription_id=test_inscription.id
+            )
         )
         db_session.commit()
 
@@ -475,7 +486,9 @@ class TestPrivacyServiceFiltering:
     ):
         """Owner should see all their inscriptions including hidden ones."""
         db_session.add(
-            HiddenInscription(user_id=test_player.id, inscription_id=test_inscription.id)
+            HiddenInscription(
+                user_id=test_player.id, inscription_id=test_inscription.id
+            )
         )
         db_session.commit()
 
@@ -493,7 +506,9 @@ class TestPrivacyServiceFiltering:
     ):
         """Other users should not see hidden inscriptions."""
         db_session.add(
-            HiddenInscription(user_id=test_player.id, inscription_id=test_inscription.id)
+            HiddenInscription(
+                user_id=test_player.id, inscription_id=test_inscription.id
+            )
         )
         db_session.commit()
 
@@ -511,14 +526,22 @@ class TestPrivacyServiceHelpers:
     """Tests for helper methods."""
 
     def test_get_hidden_ids_returns_all_hidden_elements(
-        self, db_session, test_player, test_match, test_inscription, test_campionato, test_gara
+        self,
+        db_session,
+        test_player,
+        test_match,
+        test_inscription,
+        test_campionato,
+        test_gara,
     ):
         """Should return dict with all hidden IDs."""
         test_gara.campionato_id = test_campionato.id
 
         db_session.add(HiddenMatch(user_id=test_player.id, match_id=test_match.id))
         db_session.add(
-            HiddenInscription(user_id=test_player.id, inscription_id=test_inscription.id)
+            HiddenInscription(
+                user_id=test_player.id, inscription_id=test_inscription.id
+            )
         )
         db_session.add(
             HiddenCampionato(user_id=test_player.id, campionato_id=test_campionato.id)
@@ -546,11 +569,16 @@ class TestPrivacyServiceHelpers:
     ):
         """Should correctly identify hidden vs visible inscriptions."""
         db_session.add(
-            HiddenInscription(user_id=test_player.id, inscription_id=test_inscription.id)
+            HiddenInscription(
+                user_id=test_player.id, inscription_id=test_inscription.id
+            )
         )
         db_session.commit()
 
-        assert PrivacyService.is_inscription_hidden(test_player.id, test_inscription.id) is True
+        assert (
+            PrivacyService.is_inscription_hidden(test_player.id, test_inscription.id)
+            is True
+        )
         assert PrivacyService.is_inscription_hidden(test_player.id, 99999) is False
 
     def test_is_campionato_hidden_returns_correct_status(
@@ -562,5 +590,8 @@ class TestPrivacyServiceHelpers:
         )
         db_session.commit()
 
-        assert PrivacyService.is_campionato_hidden(test_player.id, test_campionato.id) is True
+        assert (
+            PrivacyService.is_campionato_hidden(test_player.id, test_campionato.id)
+            is True
+        )
         assert PrivacyService.is_campionato_hidden(test_player.id, 99999) is False

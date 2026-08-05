@@ -91,9 +91,7 @@ def validate_gara_configuration(
     # Validazione Trio (indipendente dal sistema)
     if odd_handling == OddHandling.TRIO:
         if distance < 2 or distance > 7:
-            errors.append(
-                f"Trio richiede distanza tra 2 e 7, specificata: {distance}"
-            )
+            errors.append(f"Trio richiede distanza tra 2 e 7, specificata: {distance}")
 
     # Validazioni per sistema
     if classification_system == ClassificationSystem.RACK:
@@ -102,11 +100,23 @@ def validate_gara_configuration(
         )
     elif classification_system == ClassificationSystem.WINS:
         _validate_wins_system(
-            distance_type, distance, multi_set, odd_handling, matchmaking, errors, warnings
+            distance_type,
+            distance,
+            multi_set,
+            odd_handling,
+            matchmaking,
+            errors,
+            warnings,
         )
     elif classification_system == ClassificationSystem.POSITION:
         _validate_position_system(
-            distance_type, distance, odd_handling, forfeit_policy, matchmaking, errors, warnings
+            distance_type,
+            distance,
+            odd_handling,
+            forfeit_policy,
+            matchmaking,
+            errors,
+            warnings,
         )
 
     return errors, warnings
@@ -254,7 +264,9 @@ _CLASSIFICATION_SYSTEM_MAP = {
 }
 
 
-def _infer_classification_system(matchmaking: MatchmakingStrategy) -> ClassificationSystem:
+def _infer_classification_system(
+    matchmaking: MatchmakingStrategy,
+) -> ClassificationSystem:
     """
     Inferisce il sistema di classificazione dal matchmaking.
 

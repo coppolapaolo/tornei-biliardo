@@ -62,6 +62,7 @@ class ProvaDerivedStatus(_StrEnum):
     ma non vanno salvati nel DB.
     """
 
+    INSCRIPTION_NOT_YET_OPEN = "inscription_not_yet_open"
     INSCRIPTION_CLOSED = "inscription_closed"
     READY_TO_START = "ready_to_start"
     ROUND_COMPLETED = "round_completed"
@@ -107,6 +108,30 @@ class MatchStatus(_StrEnum):
     COMPLETED = "completed"
     VALIDATED = "validated"  # optional/admin only
     CANCELLED = "cancelled"
+
+    @classmethod
+    def finished_values(cls) -> Tuple[str, ...]:
+        """Status values that count as 'finished' (completed or validated)."""
+        return (cls.COMPLETED.value, cls.VALIDATED.value)
+
+    @classmethod
+    def is_finished(cls, status: str) -> bool:
+        """True if the status string represents a finished match.
+
+        Prefer this over raw ``status in ["completed", "validated"]`` checks:
+        a typo'd enum member raises at import, a typo'd string fails silently.
+        """
+        return status in cls.finished_values()
+
+    @classmethod
+    def active_values(cls) -> Tuple[str, ...]:
+        """Status values that count as 'in progress' (playing or in_progress)."""
+        return (cls.PLAYING.value, cls.IN_PROGRESS.value)
+
+    @classmethod
+    def is_active(cls, status: str) -> bool:
+        """True if the status string represents a match in progress."""
+        return status in cls.active_values()
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -184,7 +209,7 @@ class Discipline(_StrEnum):
 
     @classmethod
     def get_choices(cls) -> list[tuple[str, str]]:
-        """Restituisce le scelte per form/template come lista di tuple (value, label)."""
+        """Restituisce le scelte form/template come lista di tuple (value, label)."""
         return [(discipline.value, discipline.display_name) for discipline in cls]
 
     @classmethod
@@ -201,6 +226,7 @@ class Discipline(_StrEnum):
 
 class WithdrawPolicy(_StrEnum):
     """Policy for handling player withdrawals/forfeits."""
+
     FORFEIT = "Forfeit"
     EXCLUDE = "Exclude"
 

@@ -157,9 +157,7 @@ class GaraByeChallenge(BaseModel):
         ).first()
 
     @classmethod
-    def get_for_round(
-        cls, gara_id: int, round_number: int
-    ) -> list["GaraByeChallenge"]:
+    def get_for_round(cls, gara_id: int, round_number: int) -> list["GaraByeChallenge"]:
         """Get all bye challenges for a specific round.
 
         Args:
@@ -169,9 +167,7 @@ class GaraByeChallenge(BaseModel):
         Returns:
             List of GaraByeChallenge for this round
         """
-        return cls.query.filter_by(
-            gara_id=gara_id, round_number=round_number
-        ).all()
+        return cls.query.filter_by(gara_id=gara_id, round_number=round_number).all()
 
     def __repr__(self) -> str:
         status = "completed" if self.is_completed else "pending"

@@ -6,7 +6,7 @@ MatchLifecycleService.forfeit_match() service method.
 """
 
 import pytest
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from models.individual_match.models import IndividualMatch
 from models.status_enum import MatchStatus
@@ -70,9 +70,7 @@ class TestIndividualMatchForfeitModel:
         assert match.winner_id == player1.id
         assert match.status == MatchStatus.COMPLETED
 
-    def test_forfeit_keeps_current_scores(
-        self, app, db_session, isolated_players
-    ):
+    def test_forfeit_keeps_current_scores(self, app, db_session, isolated_players):
         """Forfeit should keep the forfeiting player's score (racks already won)."""
         player1, player2 = isolated_players[:2]
 
@@ -128,9 +126,7 @@ class TestIndividualMatchForfeitModel:
         assert match.player2_score == 5
         assert match.winner_id == player2.id
 
-    def test_forfeit_sets_ended_at(
-        self, app, db_session, isolated_players
-    ):
+    def test_forfeit_sets_ended_at(self, app, db_session, isolated_players):
         """Forfeit should set ended_at timestamp."""
         player1, player2 = isolated_players[:2]
 
@@ -152,9 +148,7 @@ class TestIndividualMatchForfeitModel:
 
         assert match.ended_at is not None
 
-    def test_forfeit_fails_for_non_player(
-        self, app, db_session, isolated_players
-    ):
+    def test_forfeit_fails_for_non_player(self, app, db_session, isolated_players):
         """Forfeit should raise ValueError for users not in the match."""
         player1, player2, other_user = isolated_players[:3]
 
@@ -173,9 +167,7 @@ class TestIndividualMatchForfeitModel:
         with pytest.raises(ValueError, match="User is not a player"):
             match.forfeit_match(other_user.id)
 
-    def test_forfeit_fails_for_completed_match(
-        self, app, db_session, isolated_players
-    ):
+    def test_forfeit_fails_for_completed_match(self, app, db_session, isolated_players):
         """Forfeit should raise ValueError for already completed matches."""
         player1, player2 = isolated_players[:2]
 
@@ -195,9 +187,7 @@ class TestIndividualMatchForfeitModel:
         with pytest.raises(ValueError, match="Can only forfeit"):
             match.forfeit_match(player1.id)
 
-    def test_forfeit_fails_for_cancelled_match(
-        self, app, db_session, isolated_players
-    ):
+    def test_forfeit_fails_for_cancelled_match(self, app, db_session, isolated_players):
         """Forfeit should raise ValueError for cancelled matches."""
         player1, player2 = isolated_players[:2]
 
@@ -216,9 +206,7 @@ class TestIndividualMatchForfeitModel:
         with pytest.raises(ValueError, match="Can only forfeit"):
             match.forfeit_match(player1.id)
 
-    def test_forfeit_works_for_scheduled_match(
-        self, app, db_session, isolated_players
-    ):
+    def test_forfeit_works_for_scheduled_match(self, app, db_session, isolated_players):
         """Forfeit should work for SCHEDULED matches (before they start)."""
         player1, player2 = isolated_players[:2]
 
@@ -243,6 +231,89 @@ class TestIndividualMatchForfeitModel:
         assert match.player2_score == 5
 
 
+class TestIndividualMatchForfeitMultiSet:
+    """Regression (C2): forfeit on multi-set matches must award winning SETS,
+    not racks-per-set. player1_score/player2_score are SETS won when
+    is_multi_set=True."""
+
+    def test_forfeit_multiset_awards_winning_sets_not_racks(
+        self, app, db_session, isolated_players
+    ):
+        """Multi-set 'al 3 set, ogni set al 5 rack': il vincitore per forfait
+        deve arrivare a 3 (set per vincere), non a 5 (rack per set)."""
+        player1, player2 = isolated_players[:2]
+
+        match = IndividualMatch(
+            player1_id=player1.id,
+            player2_id=player2.id,
+            location="Test Hall",
+            scheduled_at=utc_now() + timedelta(hours=1),
+            status=MatchStatus.IN_PROGRESS,
+            distance=5,  # rack per set
+            is_race_to=True,
+            is_multi_set=True,
+            match_distance=3,  # set per vincere il match
+            player1_score=1,  # set vinti
+            player2_score=0,  # set vinti
+        )
+        db_session.add(match)
+        db_session.commit()
+
+        # Player 2 forfeits → player 1 wins
+        match.forfeit_match(player2.id)
+
+        assert match.winner_id == player1.id
+        # Deve ricevere i SET per vincere (3), non i rack per set (5)
+        assert match.player1_score == 3
+        assert match.player2_score == 0  # invariato
+
+
+class TestIndividualMatchCompleteValidation:
+    """Regression (C1): complete_match must reject a winner_id that is not one
+    of the two match players (data-integrity hole)."""
+
+    def test_complete_match_rejects_non_player_winner(
+        self, app, db_session, isolated_players
+    ):
+        player1, player2, outsider = isolated_players[:3]
+
+        match = IndividualMatch(
+            player1_id=player1.id,
+            player2_id=player2.id,
+            location="Test Hall",
+            scheduled_at=utc_now() + timedelta(hours=1),
+            status=MatchStatus.IN_PROGRESS,
+            distance=5,
+            is_race_to=True,
+        )
+        db_session.add(match)
+        db_session.commit()
+
+        with pytest.raises(ValueError, match="Winner must be one of"):
+            match.complete_match(outsider.id)
+
+    def test_complete_match_accepts_valid_player_winner(
+        self, app, db_session, isolated_players
+    ):
+        player1, player2 = isolated_players[:2]
+
+        match = IndividualMatch(
+            player1_id=player1.id,
+            player2_id=player2.id,
+            location="Test Hall",
+            scheduled_at=utc_now() + timedelta(hours=1),
+            status=MatchStatus.IN_PROGRESS,
+            distance=5,
+            is_race_to=True,
+        )
+        db_session.add(match)
+        db_session.commit()
+
+        match.complete_match(player1.id)
+        assert match.winner_id == player1.id
+        assert match.status == MatchStatus.COMPLETED
+
+
 class TestIndividualMatchForfeitService:
     """Unit tests for MatchLifecycleService.forfeit_match() service method."""
 
@@ -250,7 +321,9 @@ class TestIndividualMatchForfeitService:
         self, app, db_session, isolated_players
     ):
         """Service should return the updated match after forfeit."""
-        from models.individual_match.match_lifecycle_service import MatchLifecycleService
+        from models.individual_match.match_lifecycle_service import (
+            MatchLifecycleService,
+        )
 
         player1, player2 = isolated_players[:2]
 

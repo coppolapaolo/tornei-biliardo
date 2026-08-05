@@ -11,7 +11,7 @@ from flask import (
     jsonify,
 )
 from flask_login import login_required, current_user
-from flask_babel import _
+from flask_babel import _, ngettext
 
 from models import (
     db,
@@ -25,6 +25,7 @@ from utils import (
     admin_required,
     director_or_admin_required,
 )
+from utils.analytics import AnalyticsEvent, track_event
 from models.competition.services import GaraService
 from models.matchmaking.configuration import get_available_strategies
 from models.location.models import BilliardHall
@@ -72,7 +73,9 @@ def create_gara_standalone():
             # Venue handling
             location_input = request.form.get("location", "").strip()
             tables_input = request.form.get("available_tables", "").strip()
-            location, billiard_hall_id = _handle_venue_creation(location_input, tables_input)
+            location, billiard_hall_id = _handle_venue_creation(
+                location_input, tables_input
+            )
 
             # Validate strategy configuration
             errors = GaraFormParser.validate_strategy(data)
@@ -91,7 +94,11 @@ def create_gara_standalone():
             )
 
             track_gara_create()
-            flash(f"Gara singola '{name}' creata con successo!", "success")
+            track_event(AnalyticsEvent.GARA_CREATED, gara_id=gara.id, standalone=True)
+            flash(
+                _("Gara singola '%(name)s' creata con successo!", name=name),
+                "success",
+            )
             return redirect(url_for("admin.competition.gara_detail", gara_id=gara.id))
 
         except ValueError as e:
@@ -230,7 +237,39 @@ def create_gara():
             **data,
         )
 
-        flash(f"Gara {number} creata con successo!")
+        track_event(AnalyticsEvent.GARA_CREATED, gara_id=gara.id, standalone=False)
+        flash(_("Gara %(number)d creata con successo!", number=number))
+
+        # "Auto-copia iscritti": il flag pilotava solo il precompilamento dei
+        # campi lato client, nessuno copiava le iscrizioni (issue #58).
+        if request.form.get("copy_from_previous"):
+            from models.competition.inscription_service import InscriptionService
+
+            previous = InscriptionService.find_previous_gara_in_campionato(gara)
+            if previous is None:
+                flash(
+                    _("Nessuna gara precedente da cui copiare gli iscritti."),
+                    "warning",
+                )
+            else:
+                copied = InscriptionService.copy_inscriptions_from_gara(
+                    previous.id, gara.id
+                )
+                if copied:
+                    flash(
+                        ngettext(
+                            "%(num)d iscritto copiato dalla gara precedente.",
+                            "%(num)d iscritti copiati dalla gara precedente.",
+                            copied,
+                        ),
+                        "success",
+                    )
+                else:
+                    flash(
+                        _("Nessun iscritto da copiare dalla gara precedente."),
+                        "warning",
+                    )
+
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara.id))
     except ValueError as e:
         flash(str(e), "error")
@@ -251,79 +290,34 @@ def edit_gara(gara_id):
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
     if request.method == "POST":
-        # Handle venue auto-creation for location - returns tuple (location_str, billiard_hall_id)
+        from .form_parser import GaraFormParser
+
+        # Venue auto-creation -> (location_str, billiard_hall_id)
         location = request.form.get("location", "").strip()
         tables_input = request.form.get("available_tables", "").strip()
 
         location, billiard_hall_id = _handle_venue_creation(location, tables_input)
 
-        # Parse tables for gara-specific configuration
-        available_tables = Gara.parse_tables_input(tables_input) if tables_input else []
-
         try:
-            max_participants = request.form.get("max_participants")
-            max_participants = int(max_participants) if max_participants else None
+            # Single source of truth for form↔model mapping: reuse the same parser
+            # as create (and wizard). A campionato gara inherits its strategy and
+            # classification system from the campionato; a standalone gara reads
+            # them from the form. Hand-rolling the parsing here is what caused the
+            # silent loss of `classification_system` (regression F9.2 / F7.5).
+            parser = GaraFormParser(campionato=gara.campionato)
+            data = parser.parse()
 
-            exact_number = "exact_number" in request.form
-            is_race_to = not exact_number
-
-            # Multi-set configuration (Phase 6: Frontend Integration)
-            is_multi_set = "is_multi_set" in request.form
-            match_distance = request.form.get("match_distance")
-            match_distance = int(match_distance) if match_distance else None
-            is_race_to_sets = "is_race_to_sets" in request.form
-
-            # Estratti i parametri di configurazione matchmaking
-            matchmaking_strategy = request.form.get(
-                "matchmaking_strategy", gara.matchmaking_strategy
-            )
-            first_round_policy = request.form.get(
-                "first_round_policy", gara.first_round_policy
-            )
-            odd_number_policy = request.form.get(
-                "odd_number_policy", gara.odd_number_policy
-            )
-            anti_rematch_enabled = request.form.get("anti_rematch_enabled") == "on"
-
-            # SSR (Spot Shot Rally) tiebreaker configuration
-            tiebreaker_enabled = request.form.get("tiebreaker_enabled") == "on"
-            tiebreaker_until_position = int(request.form.get("tiebreaker_until_position", 3))
-
-            # Estrai il campo time
-            time_str = request.form.get("time", "20:00")
+            errors = GaraFormParser.validate_strategy(data)
+            if errors:
+                flash(f"Configurazione non valida: {', '.join(errors)}", "error")
+                return redirect(url_for("admin.competition.edit_gara", gara_id=gara_id))
 
             GaraService.update_gara(
                 gara_id=gara_id,
                 name=request.form.get("name", gara.name),
-                date_str=request.form["date"],
-                time_str=time_str,
                 billiard_hall_id=billiard_hall_id,  # FK to BilliardHall
                 location=location,  # String for backward compat/display cache
-                description=request.form.get("description", ""),
-                rounds_count=int(request.form.get("rounds_count", 3)),
-                min_participants=int(request.form.get("min_participants", 2)),
-                max_participants=max_participants,
-                entry_fee=float(request.form.get("entry_fee", 0.0)),
-                discipline=request.form["discipline"],
-                distance=int(request.form["distance"]),
-                is_race_to=is_race_to,
-                withdraw_policy=request.form.get(
-                    "withdraw_policy", WithdrawPolicy.EXCLUDE.value
-                ),
-                # Aggiunti i parametri di configurazione matchmaking
-                matchmaking_strategy=matchmaking_strategy,
-                first_round_policy=first_round_policy,
-                odd_number_policy=odd_number_policy,
-                anti_rematch_enabled=anti_rematch_enabled,
-                # Phase 6: Multi-set configuration
-                is_multi_set=is_multi_set,
-                match_distance=match_distance,
-                is_race_to_sets=is_race_to_sets,
-                # SSR (Spot Shot Rally) tiebreaker configuration
-                tiebreaker_enabled=tiebreaker_enabled,
-                tiebreaker_until_position=tiebreaker_until_position,
-                # Operational settings (tables, location)
-                available_tables=available_tables,
+                **data,
             )
 
             flash("Gara aggiornata con successo!")
@@ -350,6 +344,35 @@ def edit_gara(gara_id):
         verified_venues=verified_venues,
         discipline_choices=Discipline.get_choices(),
     )
+
+
+@competition_bp.route("/<int:gara_id>/tables-config", methods=["POST"])
+@login_required
+@gara_manager_required
+def update_tables_config(gara_id):
+    """Salva i tavoli della gara (in ordine di pregio) e il flag di
+    assegnazione in base alla classifica (solo strategia random).
+
+    Disponibile solo tra apertura iscrizioni e avvio gara (lo stato è
+    validato da GaraService.update_tables_config).
+    """
+    db.get_or_404(Gara, gara_id)
+
+    tables_input = request.form.get("available_tables", "").strip()
+    tables = Gara.parse_tables_input(tables_input) if tables_input else []
+    assign_by_ranking = "assign_tables_by_ranking" in request.form
+
+    try:
+        GaraService.update_tables_config(
+            gara_id=gara_id,
+            tables=tables,
+            assign_tables_by_ranking=assign_by_ranking,
+        )
+        flash(_("Configurazione tavoli salvata!"), "success")
+    except ValueError as e:
+        flash(str(e), "error")
+
+    return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
 
 @competition_bp.route("/<int:gara_id>/delete", methods=["POST"])
@@ -406,13 +429,14 @@ def soft_delete_gara(gara_id):
             gara_id=gara_id,
             deleted_by_id=current_user.id,
             cascade_option=cascade_option,
-            reason=reason
+            reason=reason,
         )
 
         if cascade_option == "keep_matches":
             flash(
-                f"{gara_name} eliminata. I match sono stati mantenuti come match individuali.",
-                "success"
+                f"{gara_name} eliminata. I match sono stati mantenuti "
+                "come match individuali.",
+                "success",
             )
         else:
             flash(f"{gara_name} eliminata con successo!", "success")

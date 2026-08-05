@@ -15,6 +15,7 @@ from models import (
 )
 from utils import match_manager_required
 from models.match.services import MatchService
+from models.status_enum import MatchStatus
 from routes.sse import emit_gara_event
 from utils.route_helpers import safe_json_error
 
@@ -126,6 +127,16 @@ def match_detail(match_id):
             match.id
         )
 
+    # "L'azionabile va prima" (UI_CONVENTIONS): a punteggio definitivo - rack
+    # massimi raggiunti, o match gia' chiuso - la prossima azione probabile e'
+    # uscire dal match (torna alla gara / alla dashboard), quindi su mobile il
+    # pulsante di ritorno sale in cima alla pagina.
+    # Nei match multi-set player*_score conta i set, non i rack: li si considera
+    # definitivi solo a match chiuso (is_at_distance ragiona sui rack).
+    score_is_final = MatchStatus.is_finished(match.status) or (
+        not match.is_multi_set and match.is_at_distance
+    )
+
     return render_template(
         "match_detail.html",
         match=match,
@@ -137,6 +148,7 @@ def match_detail(match_id):
         player1_is_forfeit=player1_is_forfeit,
         player2_is_forfeit=player2_is_forfeit,
         match_can_modify=match_can_modify,
+        score_is_final=score_is_final,
     )
 
 

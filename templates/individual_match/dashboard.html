@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}Match Individuali - Campionato Biliardo{% endblock %}
+{% block title %}{{ _("Match Individuali") }} - {{ _("Campionato Biliardo") }}{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
     <div class="row">
         <div class="col-md-12">
-            <h1><i class="fas fa-shield-halved"></i> Match Individuali</h1>
-            <p class="text-muted">Gestisci le tue proposte di match e gioca contro altri membri della community.</p>
+            <h1><i class="fas fa-shield-halved"></i> {{ _("Match Individuali") }}</h1>
+            <p class="text-muted">{{ _("Gestisci le tue proposte di match e gioca contro altri membri della community.") }}</p>
         </div>
     </div>
 
@@ -18,9 +18,9 @@
             {% if proposals and (proposals.received_proposals or proposals.sent_proposals or proposals.open_proposals) %}
             <div class="card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="fas fa-envelope"></i> Proposte di Match</h5>
+                    <h5 class="mb-0"><i class="fas fa-envelope"></i> {{ _("Proposte di Match") }}</h5>
                     <a href="{{ url_for('individual_match.create_proposal') }}" class="btn btn-primary btn-sm">
-                        <i class="fas fa-plus"></i> Nuova Proposta
+                        <i class="fas fa-plus"></i> {{ _("Nuova Proposta") }}
                     </a>
                 </div>
                 <div class="card-body">
@@ -31,9 +31,9 @@
                                 <div>
                                     <strong>{{ proposal.discipline|discipline_display }}</strong>
                                     {% if proposal.proposer_id == current_user.id %}
-                                    <small class="text-muted">(Proposta da te)</small>
+                                    <small class="text-muted">{{ _("(Proposta da te)") }}</small>
                                     {% else %}
-                                    <small class="text-muted">da {{ proposal.proposer.username }}</small>
+                                    <small class="text-muted">{{ _("da") }} {{ proposal.proposer.username }}</small>
                                     {% endif %}
                                     <br>
                                     <small class="text-muted">
@@ -49,7 +49,7 @@
                                     <br>
                                     <form method="POST" action="{{ url_for('individual_match.accept_proposal', proposal_id=proposal.id) }}" class="d-inline">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                        <button type="submit" class="btn btn-success btn-sm mt-1">Accetta</button>
+                                        <button type="submit" class="btn btn-success btn-sm mt-1">{{ _("Accetta") }}</button>
                                     </form>
                                     {% endif %}
                                 </div>
@@ -60,7 +60,7 @@
                     {% if (proposals.received_proposals|length + proposals.sent_proposals|length + proposals.open_proposals|length) > 5 %}
                     <div class="text-center">
                         <a href="{{ url_for('individual_match.proposal_list') }}" class="btn btn-outline-primary btn-sm">
-                            <i class="fas fa-list"></i> Vedi Tutte le Proposte
+                            <i class="fas fa-list"></i> {{ _("Vedi Tutte le Proposte") }}
                         </a>
                     </div>
                     {% endif %}
@@ -72,7 +72,7 @@
             {% if active_matches and active_matches|length %}
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-play"></i> Match in Corso</h5>
+                    <h5 class="mb-0"><i class="fas fa-play"></i> {{ _("Match in Corso") }}</h5>
                 </div>
                 <div class="card-body">
                     {% for match in active_matches %}
@@ -83,7 +83,7 @@
                                     <strong>{{ match.discipline|discipline_display }}</strong>
                                     <br>
                                     <small class="text-muted">
-                                        vs {% if match.player1_id == current_user.id %}{{ match.player2.username }}{% else %}{{ match.player1.username }}{% endif %}
+                                        {{ _("vs") }} {% if match.player1_id == current_user.id %}{{ match.player2.username }}{% else %}{{ match.player1.username }}{% endif %}
                                         <br><i class="fas fa-map-marker-alt"></i> {{ match.location_display }}
                                     </small>
                                 </div>
@@ -93,7 +93,7 @@
                                     <br>
                                     {% endif %}
                                     <a href="{{ url_for('individual_match.match_detail', match_id=match.id) }}" class="btn btn-primary btn-sm">
-                                        {% if match.status.value == 'scheduled' %}Inizia{% else %}Continua{% endif %}
+                                        {% if match.status.value == 'scheduled' %}{{ _("Inizia") }}{% else %}{{ _("Continua") }}{% endif %}
                                     </a>
                                 </div>
                             </div>
@@ -108,7 +108,7 @@
             {% if recent_matches and recent_matches|length %}
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-history"></i> Match Recenti</h5>
+                    <h5 class="mb-0"><i class="fas fa-history"></i> {{ _("Match Recenti") }}</h5>
                 </div>
                 <div class="card-body">
                     {% for match in recent_matches[:3] %}
@@ -119,7 +119,7 @@
                                     <strong>{{ match.discipline|discipline_display }}</strong>
                                     <br>
                                     <small class="text-muted">
-                                        vs {% if match.player1_id == current_user.id %}{{ match.player2.username }}{% else %}{{ match.player1.username }}{% endif %}
+                                        {{ _("vs") }} {% if match.player1_id == current_user.id %}{{ match.player2.username }}{% else %}{{ match.player1.username }}{% endif %}
                                         – {{ match.ended_at|date_local if match.ended_at }}
                                     </small>
                                 </div>
@@ -127,9 +127,9 @@
                                     <span class="badge bg-info">{{ match.player1_score }} - {{ match.player2_score }}</span>
                                     <br>
                                     {% if match.winner_id == current_user.id %}
-                                    <span class="badge bg-success">Vinto</span>
+                                    <span class="badge bg-success">{{ _("Vinto") }}</span>
                                     {% elif match.winner_id %}
-                                    <span class="badge bg-danger">Perso</span>
+                                    <span class="badge bg-danger">{{ _("Perso") }}</span>
                                     {% endif %}
                                 </div>
                             </div>
@@ -138,7 +138,7 @@
                     {% endfor %}
                     <div class="text-center">
                         <a href="{{ url_for('individual_match.match_list') }}" class="btn btn-outline-primary btn-sm">
-                            <i class="fas fa-list"></i> Vedi Tutti i Match
+                            <i class="fas fa-list"></i> {{ _("Vedi Tutti i Match") }}
                         </a>
                     </div>
                 </div>
@@ -150,10 +150,10 @@
             <div class="card">
                 <div class="card-body text-center py-5">
                     <i class="fas fa-shield-halved fa-3x text-muted mb-3"></i>
-                    <h4>Nessun match ancora</h4>
-                    <p class="text-muted">Inizia creando una proposta di match per giocare con altri membri della community!</p>
+                    <h4>{{ _("Nessun match ancora") }}</h4>
+                    <p class="text-muted">{{ _("Inizia creando una proposta di match per giocare con altri membri della community!") }}</p>
                     <a href="{{ url_for('individual_match.create_proposal') }}" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Crea la tua prima proposta
+                        <i class="fas fa-plus"></i> {{ _("Crea la tua prima proposta") }}
                     </a>
                 </div>
             </div>
@@ -165,24 +165,24 @@
             <!-- Quick Actions -->
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-bolt"></i> Azioni Rapide</h5>
+                    <h5 class="mb-0"><i class="fas fa-bolt"></i> {{ _("Azioni Rapide") }}</h5>
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
                         <a href="{{ url_for('individual_match.create_proposal') }}" class="btn btn-primary">
-                            <i class="fas fa-plus"></i> Nuova Proposta di Match
+                            <i class="fas fa-plus"></i> {{ _("Nuova Proposta di Match") }}
                         </a>
                         <a href="{{ url_for('individual_match.proposal_list') }}" class="btn btn-outline-secondary">
-                            <i class="fas fa-envelope"></i> Tutte le Proposte
+                            <i class="fas fa-envelope"></i> {{ _("Tutte le Proposte") }}
                         </a>
                         <a href="{{ url_for('individual_match.match_list') }}" class="btn btn-outline-secondary">
-                            <i class="fas fa-list"></i> Tutti i Match
+                            <i class="fas fa-list"></i> {{ _("Tutti i Match") }}
                         </a>
                         <a href="{{ url_for('individual_match.manage_availability') }}" class="btn btn-outline-info">
-                            <i class="fas fa-calendar"></i> Gestisci Disponibilità
+                            <i class="fas fa-calendar"></i> {{ _("Gestisci Disponibilità") }}
                         </a>
                         <a href="{{ url_for('individual_match.user_statistics') }}" class="btn btn-outline-success">
-                            <i class="fas fa-chart-line"></i> Statistiche
+                            <i class="fas fa-chart-line"></i> {{ _("Statistiche") }}
                         </a>
                     </div>
                 </div>
@@ -192,25 +192,25 @@
             {% if statistics %}
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-chart-line"></i> Le tue Statistiche</h5>
+                    <h5 class="mb-0"><i class="fas fa-chart-line"></i> {{ _("Le tue Statistiche") }}</h5>
                 </div>
                 <div class="card-body">
                     <div class="row text-center">
                         <div class="col-6">
                             <h4 class="text-primary">{{ statistics.total_matches or 0 }}</h4>
-                            <small class="text-muted">Match Totali</small>
+                            <small class="text-muted">{{ _("Match Totali") }}</small>
                         </div>
                         <div class="col-6">
                             <h4 class="text-success">{{ statistics.wins or 0 }}</h4>
-                            <small class="text-muted">Vittorie</small>
+                            <small class="text-muted">{{ _("Vittorie") }}</small>
                         </div>
                         <div class="col-6">
                             <h4 class="text-danger">{{ statistics.losses or 0 }}</h4>
-                            <small class="text-muted">Sconfitte</small>
+                            <small class="text-muted">{{ _("Sconfitte") }}</small>
                         </div>
                         <div class="col-6">
                             <h4 class="text-info">{{ "%.1f"|format(statistics.win_percentage or 0) }}%</h4>
-                            <small class="text-muted">% Vittorie</small>
+                            <small class="text-muted">{{ _("Perc. Vinte") }}</small>
                         </div>
                     </div>
                 </div>

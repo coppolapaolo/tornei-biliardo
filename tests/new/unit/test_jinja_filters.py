@@ -32,7 +32,7 @@ class TestFormatDistanceFilter:
             is_race_to_racks=True,
             is_multi_set=True,
             sets=3,
-            is_race_to_sets=True
+            is_race_to_sets=True,
         )
         result = format_distance(distance)
         expected = "Al 3 set, ogni set al 5 rack"
@@ -40,6 +40,7 @@ class TestFormatDistanceFilter:
 
     def test_format_distance_with_model_property(self):
         """Format distance from model with distance_config property."""
+
         # Mock model with distance_config
         class MockGara:
             @property
@@ -58,6 +59,7 @@ class TestFormatDistanceFilter:
     def test_format_distance_escapes_html(self):
         """Verify HTML escaping in output."""
         from markupsafe import Markup
+
         distance = Distance(racks=7, is_race_to_racks=True)
         result = format_distance(distance)
         assert isinstance(result, Markup)
@@ -69,11 +71,7 @@ class TestFormatScoreFilter:
     def test_format_score_rack_score_two_player(self):
         """Format two-player rack score."""
         distance = Distance(racks=7, is_race_to_racks=True)
-        score = RackScore(
-            distance=distance,
-            player1_racks=4,
-            player2_racks=2
-        )
+        score = RackScore(distance=distance, player1_racks=4, player2_racks=2)
         result = format_score(score)
         assert str(result) == "4-2"
 
@@ -81,42 +79,27 @@ class TestFormatScoreFilter:
         """Format trio rack score."""
         distance = Distance(racks=5, is_race_to_racks=True)
         score = RackScore(
-            distance=distance,
-            player1_racks=2,
-            player2_racks=2,
-            player3_racks=1
+            distance=distance, player1_racks=2, player2_racks=2, player3_racks=1
         )
         result = format_score(score)
         assert str(result) == "2-2-1"
 
     def test_format_score_match_score(self):
         """Format match score (sets)."""
-        distance = Distance(
-            racks=5,
-            is_multi_set=True,
-            sets=3,
-            is_race_to_racks=True
-        )
-        score = MatchScore(
-            distance=distance,
-            player1_sets=2,
-            player2_sets=1
-        )
+        distance = Distance(racks=5, is_multi_set=True, sets=3, is_race_to_racks=True)
+        score = MatchScore(distance=distance, player1_sets=2, player2_sets=1)
         result = format_score(score)
         assert str(result) == "2-1"
 
     def test_format_score_with_model_property(self):
         """Format score from model with rack_score property."""
+
         # Mock model
         class MockMatch:
             @property
             def rack_score(self):
                 distance = Distance(racks=7, is_race_to_racks=True)
-                return RackScore(
-                    distance=distance,
-                    player1_racks=3,
-                    player2_racks=2
-                )
+                return RackScore(distance=distance, player1_racks=3, player2_racks=2)
 
         match = MockMatch()
         result = format_score(match)
@@ -130,6 +113,7 @@ class TestFormatScoreFilter:
     def test_format_score_escapes_html(self):
         """Verify HTML escaping in output."""
         from markupsafe import Markup
+
         distance = Distance(racks=7, is_race_to_racks=True)
         score = RackScore(distance=distance, player1_racks=4, player2_racks=2)
         result = format_score(score)
@@ -153,6 +137,7 @@ class TestFormatDistanceShortFilter:
 
     def test_format_distance_short_with_model(self):
         """Format short distance from model."""
+
         class MockGara:
             @property
             def distance_config(self):
@@ -170,6 +155,7 @@ class TestFormatDistanceShortFilter:
     def test_format_distance_short_escapes_html(self):
         """Verify HTML escaping in output."""
         from markupsafe import Markup
+
         distance = Distance(racks=7, is_race_to_racks=True)
         result = format_distance_short(distance)
         assert isinstance(result, Markup)
@@ -181,11 +167,7 @@ class TestFiltersIntegration:
     def test_single_set_match_complete_flow(self):
         """Test complete flow for single-set match display."""
         distance = Distance(racks=7, is_race_to_racks=True)
-        score = RackScore(
-            distance=distance,
-            player1_racks=4,
-            player2_racks=3
-        )
+        score = RackScore(distance=distance, player1_racks=4, player2_racks=3)
 
         # Format both
         dist_str = format_distance(distance)
@@ -203,13 +185,9 @@ class TestFiltersIntegration:
             is_race_to_racks=True,
             is_multi_set=True,
             sets=3,
-            is_race_to_sets=True
+            is_race_to_sets=True,
         )
-        match_score = MatchScore(
-            distance=distance,
-            player1_sets=2,
-            player2_sets=0
-        )
+        match_score = MatchScore(distance=distance, player1_sets=2, player2_sets=0)
 
         dist_str = format_distance(distance)
         score_str = format_score(match_score)

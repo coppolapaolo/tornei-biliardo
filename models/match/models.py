@@ -26,7 +26,8 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
     )
     round_number = db.Column(
         db.Integer, nullable=False
-    )  # 1, 2, 3. See docs/_archive/2025-12-architectural-decisions-pre-adr.md ADR-003 (YAGNI).
+    )  # 1, 2, 3. See ADR-003 (YAGNI) in docs/_archive/
+    # 2025-12-architectural-decisions-pre-adr.md
 
     player1_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     player2_id = db.Column(db.Integer, db.ForeignKey("user.id"))
@@ -79,7 +80,9 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
     )  # e.g., "A", "B", "sala rossa"
 
     # Handicap system
-    has_handicap = db.Column(db.Boolean, default=False)
+    # NULL = eredita da gara (→ campionato). Vedi effective_has_handicap.
+    # Un match con handicap effettivo NON aggiorna i rating (Elo/Fargo).
+    has_handicap = db.Column(db.Boolean, nullable=True, default=None)
     player1_handicap = db.Column(
         db.Integer, default=0
     )  # Starting advantage for player1
@@ -260,6 +263,21 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
         if self.gara is not None:
             return getattr(self.gara, "is_race_to_sets", True)
         return True
+
+    @property
+    def effective_has_handicap(self) -> bool:
+        """Handicap mode effettivo: override match → gara → campionato → False.
+
+        NULL su `has_handicap` significa "eredita dalla gara" (che a sua volta
+        eredita dal campionato). Per match standalone (gara NULL) il fallback è
+        False. Un match con handicap effettivo NON deve aggiornare i rating
+        (Elo/Fargo): vedi RatingEventHandlers.handle_match_completed.
+        """
+        if self.has_handicap is not None:
+            return self.has_handicap
+        if self.gara is not None:
+            return self.gara.effective_has_handicap
+        return False
 
     @property
     def rack_score(self):

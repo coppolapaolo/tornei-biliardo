@@ -51,20 +51,25 @@ class Campionato(db.Model):
 
     # DEPRECATED - To be removed in future migration
     # Use default_odd_policy instead of without_x
-    without_x = db.Column(db.Boolean, default=False)  # DEPRECATED: use default_odd_policy
+    # DEPRECATED: use default_odd_policy
+    without_x = db.Column(db.Boolean, default=False)
     # Playoff configuration now in PlayoffConfiguration model
-    final_playoffs = db.Column(db.Boolean, default=True)  # DEPRECATED: use PlayoffConfiguration
+    # DEPRECATED: use PlayoffConfiguration
+    final_playoffs = db.Column(db.Boolean, default=True)
     # Scoring is now automatic based on campionato_type
     scoring_policy = db.Column(
         db.String(50), nullable=False, default="classic"
     )  # DEPRECATED: automatic from campionato_type
 
+    # Handicap mode (ereditato da gare/match). Se True i match si giocano con
+    # handicap e NON aggiornano i rating (Elo/Fargo). Radice della catena di
+    # ereditarietà has_handicap: Campionato → Gara (nullable) → Match (nullable).
+    has_handicap = db.Column(db.Boolean, default=False, nullable=False)
+
     # Status e date
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=utc_now)
-    updated_at = db.Column(
-        db.DateTime, default=utc_now, onupdate=utc_now
-    )
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     # Termination (manual close before all gare completed)
     terminated_at = db.Column(db.DateTime, nullable=True)
@@ -192,6 +197,48 @@ class Campionato(db.Model):
             and self.has_playoff_configurations()
         )
 
+    def all_gare_concluded(self) -> bool:
+        """True se tutte le gare attive sono di fatto concluse.
+
+        Una gara è considerata conclusa se ha `status == COMPLETED` oppure
+        se il suo stato derivato è `TOURNAMENT_COMPLETED` (tutti i match
+        dell'ultimo turno completati ma status ancora PLAYING, non promosso
+        — cfr. bug 8 `terminate_campionato`). `ROUND_COMPLETED` NON conta:
+        indica un turno finito con altri turni ancora da giocare.
+
+        Ritorna False se non ci sono gare attive.
+        """
+        from models.status_enum import GaraStatus, ProvaDerivedStatus
+
+        gare = [g for g in (getattr(self, "gare", []) or []) if not g.is_deleted]
+        if not gare:
+            return False
+        for gara in gare:
+            if gara.status == GaraStatus.COMPLETED.value:
+                continue
+            try:
+                derived = gara.get_real_status()
+            except Exception:
+                derived = None
+            if derived == ProvaDerivedStatus.TOURNAMENT_COMPLETED.value:
+                continue
+            return False
+        return True
+
+    def is_ready_for_playoff_transition(self) -> bool:
+        """True quando il bottone 'Termina Campionato' va presentato come
+        'Passa alla fase playoff' (bug 14): campionato non ancora terminato,
+        con playoff configurati e tutte le gare di fatto concluse.
+
+        L'azione sottostante resta `terminate_campionato`: è il passo che
+        sblocca il successivo 'Avvia Playoff'. Cambia solo il framing UX.
+        """
+        return (
+            not self.terminated_at
+            and self.has_playoff_configurations()
+            and self.all_gare_concluded()
+        )
+
     def generate_playoff_qualifications(self) -> dict:
         """Generate playoff qualifications for all configurations."""
         if not self.can_generate_playoffs():
@@ -266,20 +313,20 @@ class Campionato(db.Model):
             return {
                 "type": "amalfi",
                 "ordering": ["wins", "rack_difference", "ssr", "previous_order"],
-                "description": "Vittorie → Differenza rack → SSR → Ordine precedente"
+                "description": "Vittorie → Differenza rack → SSR → Ordine precedente",
             }
         elif self.campionato_type == MatchmakingStrategy.RANDOM.value:
             return {
                 "type": "random",
                 "ordering": ["racks_won", "ssr", "previous_order"],
-                "description": "Rack vinti → SSR → Ordine precedente"
+                "description": "Rack vinti → SSR → Ordine precedente",
             }
         else:
             # Default fallback for other strategies
             return {
                 "type": "default",
                 "ordering": ["wins", "rack_difference", "previous_order"],
-                "description": "Vittorie → Differenza rack → Ordine precedente"
+                "description": "Vittorie → Differenza rack → Ordine precedente",
             }
 
     def get_scoring_policy_name(self) -> str:

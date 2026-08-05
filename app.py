@@ -21,13 +21,38 @@ load_dotenv(".envrc")  # Load environment variables from .env file
 from config import config  # noqa: E402
 from models import db, User  # noqa: E402
 from utils import create_admin_if_not_exists, UserPermissions  # noqa: E402
-from utils.database_utils import get_database_stats  # noqa: E402
+from utils.database_utils import get_database_stats, get_quick_login_users  # noqa: E402
 from models.gamification.ui_helpers import GamificationUIHelper  # noqa: E402
 
 from utils.status_ui import register_status_filters  # noqa: E402
 
 from sqlalchemy.orm import Session as SASession  # noqa: E402
 from models.soft_delete import register_soft_delete_filters  # noqa: E402
+
+
+def glitchtip_before_send(event, hint):
+    """Filtra gli eventi prima dell'invio a GlitchTip.
+
+    Scarta `OSError: write error`: lo solleva uwsgi quando il client chiude
+    la connessione prima che la risposta sia scritta (tipico della prima
+    richiesta dopo un reload della web app). È rumore benigno che
+    consumerebbe la quota GlitchTip Free (1000 eventi/mese).
+
+    L'errore arriva per due canali distinti: come eccezione (hint con
+    `exc_info`) e come record di log catturato dalla logging integration
+    (evento message-only, senza `exc_info` — issue GlitchTip 5295144).
+    Vanno scartati entrambi.
+    """
+    exc_info = hint.get("exc_info")
+    if exc_info:
+        exc = exc_info[1]
+        if isinstance(exc, OSError) and "write error" in str(exc):
+            return None
+    logentry = event.get("logentry") or {}
+    message = logentry.get("message") or event.get("message") or ""
+    if "OSError: write error" in message:
+        return None
+    return event
 
 
 def create_app(config_name=None):
@@ -55,8 +80,11 @@ def create_app(config_name=None):
         sentry_sdk.init(
             dsn=dsn,
             integrations=[FlaskIntegration()],
-            traces_sample_rate=0.1,
+            # Solo error event: le transaction di performance consumano la
+            # quota GlitchTip Free (1000 eventi/mese) in poche ore.
+            traces_sample_rate=0.0,
             environment=config_name,
+            before_send=glitchtip_before_send,
         )
 
     # Configura logging per debug
@@ -145,6 +173,7 @@ def create_app(config_name=None):
                 "database_stats": (
                     get_database_stats() if current_user.is_authenticated else {}
                 ),
+                "quick_login_users": get_quick_login_users(),
             }
         return {"debug_info": debug_info}
 
@@ -345,23 +374,64 @@ def create_app(config_name=None):
             if quests_created > 0:
                 app.logger.info(f"Gamification: seeded {quests_created} weekly quests")
 
+    # Domini necessari a Google Analytics 4. Aggiunti alla CSP solo quando il
+    # tracking e' effettivamente configurato: una policy piu' larga del
+    # necessario e' superficie di attacco gratuita.
+    # Senza questi domini il browser blocca gtag.js e le chiamate di raccolta,
+    # e GA resta a zero visite senza alcun errore visibile lato server.
+    _GA_SCRIPT_SRC = "https://www.googletagmanager.com"
+    _GA_IMG_SRC = "https://www.googletagmanager.com https://*.google-analytics.com"
+    _GA_CONNECT_SRC = (
+        "https://*.google-analytics.com "
+        "https://*.analytics.google.com "
+        "https://*.googletagmanager.com"
+    )
+
     # Security headers
     @app.after_request
     def set_security_headers(response):
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-Content-Type-Options"] = "nosniff"
+
+        ga_enabled = bool(app.config.get("GA_MEASUREMENT_ID"))
+        script_src = "'self' 'unsafe-inline' cdn.jsdelivr.net code.jquery.com"
+        img_src = "'self' data:"
+        connect_src = "'self'"
+        if ga_enabled:
+            script_src += f" {_GA_SCRIPT_SRC}"
+            img_src += f" {_GA_IMG_SRC}"
+            connect_src += f" {_GA_CONNECT_SRC}"
+
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' cdn.jsdelivr.net code.jquery.com; "
+            f"script-src {script_src}; "
             "style-src 'self' 'unsafe-inline' cdn.jsdelivr.net cdnjs.cloudflare.com; "
             "font-src cdnjs.cloudflare.com cdn.jsdelivr.net; "
-            "img-src 'self' data:; "
-            "connect-src 'self'"
+            f"img-src {img_src}; "
+            f"connect-src {connect_src}"
         )
         if not app.debug:
             response.headers["Strict-Transport-Security"] = (
                 "max-age=31536000; includeSubDomains"
             )
+        return response
+
+    # Cache lunga SOLO sugli asset che portano un cache-buster nell'URL: sono
+    # CSS e JS, referenziati in base.html come `?v=ASSET_VERSION`. Modificarli
+    # cambia l'URL, quindi la cache si invalida da se e un anno e' sicuro.
+    #
+    # Il resto di /static/ resta sul default conservativo di Flask. `img/` e
+    # `uploads/` sono referenziati a percorso fisso (es. /static/img/chalk1.png
+    # da gamification.js): con una cache lunga un aggiornamento non
+    # raggiungerebbe piu i browser, e non ci sarebbe modo di forzarlo.
+    #
+    # E una whitelist e non una blacklist di proposito: una cartella nuova
+    # sotto static/ e al sicuro per default, invece di ereditare in silenzio
+    # una cache che non le si addice.
+    @app.after_request
+    def set_static_cache_policy(response):
+        if request.path.startswith(("/static/css/", "/static/js/")):
+            response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
         return response
 
     # Health check endpoint
@@ -373,7 +443,11 @@ def create_app(config_name=None):
             db.session.execute(text("SELECT 1"))
             return jsonify(status="healthy", version=app.config["VERSION"]), 200
         except Exception as e:
-            return jsonify(status="unhealthy", error=str(e)), 503
+            # Non esporre str(e) nel JSON: /health è pubblico (probe anonimo) e
+            # l'eccezione DB rivelerebbe path file/dettagli driver. Logga lato
+            # server, restituisci un messaggio generico.
+            app.logger.error(f"Health check failed: {e}")
+            return jsonify(status="unhealthy"), 503
 
     # Custom error pages
     from flask_wtf.csrf import CSRFError
@@ -405,4 +479,6 @@ def create_app(config_name=None):
 if __name__ == "__main__":
     app = create_app()
     debug_mode = app.config.get("DEBUG_MODE", False)
-    app.run(debug=debug_mode)
+    # Porta 5001: la 5000 su macOS è occupata dal ricevitore AirPlay
+    # (ControlCenter), che risponde 403 quando il dev server è giù
+    app.run(debug=debug_mode, port=int(os.environ.get("PORT", "5001")))

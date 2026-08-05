@@ -23,7 +23,6 @@ from sqlalchemy.engine.row import Row
 from ..base import db, utc_now
 from .models import User, DirectorRequest
 from ..transaction.manager import (
-    DomainService,
     transactional,
     read_only,
 )
@@ -40,24 +39,21 @@ from .stats_service import UserStatsService  # noqa: F401
 from .venue_manager_service import VenueManagerService  # noqa: F401
 
 
-class UserServiceCore(DomainService):
+class UserServiceCore:
     """
-    Enhanced service class for user-related business operations with transaction management.
+    Enhanced service class for user-related operations with transaction management.
 
     This class encapsulates all business logic related to user management,
     including creation, role management, and user operations with proper
-    transaction boundaries and domain tracking.
+    transaction boundaries.
     """
-
-    def __init__(self):
-        super().__init__("user")
 
 
 class UserService:
     """Service facade for user management operations.
 
     **REFACTORED**: Task 1.3 UserService Decomposition - Facade Pattern Implementation
-    This class now delegates to specialized services while maintaining backward compatibility:
+    This class now delegates to specialized services while keeping back-compat:
     - UserProfileService: User CRUD and authentication
     - UserPermissionService: Roles and director requests
     - UserStatsService: Statistics and analytics
@@ -114,9 +110,9 @@ class UserService:
         - Role change execution
         - Notification sending
 
-        All functionality now handled by UserPermissionService.demote_director_to_player()
+        All functionality now handled by
+        UserPermissionService.demote_director_to_player()
         """
-
 
     @staticmethod
     @transactional(domain="user")
@@ -138,6 +134,39 @@ class UserService:
 
         user.soft_delete()
         # Transaction will be committed by decorator
+
+    @staticmethod
+    def anonymize_user(user_id: int, performed_by_id: Optional[int] = None) -> None:
+        """Delegate to UserProfileService for GDPR anonymization (PII scrub)."""
+        return UserProfileService.anonymize_user(user_id, performed_by_id)
+
+    @staticmethod
+    def set_email_verified(user_id: int) -> User:
+        """Delegate to UserProfileService to mark a user's email as verified."""
+        return UserProfileService.set_email_verified(user_id)
+
+    @staticmethod
+    def resend_verification_email(user_id: int) -> bool:
+        """Resend the verification email for an existing (unverified) user.
+
+        Returns False if the user is already verified or sending fails.
+
+        Raises:
+            ValueError: if the user does not exist.
+        """
+        user = db.session.get(User, user_id)
+        if not user:
+            raise ValueError("Utente non trovato")
+        return UserProfileService.request_verification_email(user)
+
+    @staticmethod
+    def merge_users(
+        source_id: int, target_id: int, performed_by_id: int
+    ) -> Dict[str, Any]:
+        """Delegate to UserMergeService to merge source into target."""
+        from .merge_service import UserMergeService
+
+        return UserMergeService.merge_users(source_id, target_id, performed_by_id)
 
     @staticmethod
     def get_user_stats(user_id: int) -> Dict[str, Any]:
@@ -228,9 +257,7 @@ class UserService:
         username_normalized = username.strip()
 
         # Find user by username (case sensitive)
-        user = User.query.filter(
-            User.username == username_normalized
-        ).first()
+        user = User.query.filter(User.username == username_normalized).first()
 
         # Check if user exists and password is correct
         if user and user.check_password(password):
@@ -249,9 +276,7 @@ class UserService:
         Returns:
             User if found, None otherwise
         """
-        return User.query.filter(
-            User.username == username.strip()
-        ).first()
+        return User.query.filter(User.username == username.strip()).first()
 
     @staticmethod
     def get_user_by_email(email: str) -> Optional[User]:
@@ -264,13 +289,16 @@ class UserService:
         Returns:
             User if found, None otherwise
         """
-        # For encrypted fields, we need to retrieve all users and filter in Python
-        email_normalized = email.strip().lower()
-        users = User.query.all()
-        for user in users:
-            if user.email and user.email.lower() == email_normalized:
-                return user
-        return None
+        # L'email cifrata non e' filtrabile in SQL: usiamo email_hash (HMAC
+        # deterministico) per un lookup indicizzato O(1). Vedi issue #8.
+        from utils.encryption import compute_email_hash
+
+        if not email:
+            return None
+        email_hash = compute_email_hash(email)
+        if not email_hash:
+            return None
+        return User.query.filter(User.email_hash == email_hash).first()
 
     @staticmethod
     def get_all_users() -> List[User]:
@@ -315,7 +343,6 @@ class UserService:
     ) -> DirectorRequest:
         """Delegate to UserPermissionService for director promotion requests."""
         return UserPermissionService.request_director_promotion(user_id, notes)
-
 
     @staticmethod
     def get_director_requests() -> List[DirectorRequest]:
@@ -367,7 +394,7 @@ class UserService:
 
         Args:
             request_id: ID of request to approve
-            approved_by: User who approved the request (optional for backward compatibility)
+            approved_by: User who approved the request (optional, for back-compat)
 
         Returns:
             DirectorRequest: Approved request
@@ -381,7 +408,7 @@ class UserService:
             # Process the request using DirectorRequestService
             return DirectorRequestService.process_request(request_id, approved_by, True)
         else:
-            # This is for backward compatibility with tests that don't provide approved_by
+            # Backward compatibility with tests that don't provide approved_by.
             # Create a mock admin user for testing
             mock_admin = User(
                 username="mock_admin", email="mock_admin@example.com", role="admin"
@@ -422,9 +449,13 @@ class DirectorRequestService:
     """REMOVED: Functionality moved to UserPermissionService in permission_service.py"""
 
     @staticmethod
-    def process_request(request_id: int, admin_user: User, approve: bool) -> DirectorRequest:
+    def process_request(
+        request_id: int, admin_user: User, approve: bool
+    ) -> DirectorRequest:
         """Delegate to UserPermissionService."""
-        return UserPermissionService.process_director_request(request_id, admin_user, approve)
+        return UserPermissionService.process_director_request(
+            request_id, admin_user, approve
+        )
 
 
 class UserDeletionService:
@@ -457,29 +488,24 @@ class VenueManagementService:
     @staticmethod
     def assign_venue_manager(user_id: int, venue_id: int, assigned_by: User):
         """Delegate to VenueManagerService for venue manager assignment."""
-        from .venue_manager_service import VenueManagerService
         return VenueManagerService.assign_venue_manager(user_id, venue_id, assigned_by)
 
     @staticmethod
     def revoke_venue_manager(assignment_id: int, revoked_by: User):
         """Delegate to VenueManagerService for venue manager revocation."""
-        from .venue_manager_service import VenueManagerService
         return VenueManagerService.revoke_venue_manager(assignment_id, revoked_by)
 
     @staticmethod
     def get_venue_assignments(venue_id: int):
         """Delegate to VenueManagerService for venue assignments."""
-        from .venue_manager_service import VenueManagerService
         return VenueManagerService.get_venue_assignments(venue_id)
 
     @staticmethod
     def get_venue_manager(venue_id: int):
         """Delegate to VenueManagerService for venue manager lookup."""
-        from .venue_manager_service import VenueManagerService
         return VenueManagerService.get_venue_manager(venue_id)
 
     @staticmethod
     def get_user_venues(user_id: int):
         """Delegate to VenueManagerService for user managed venues."""
-        from .venue_manager_service import VenueManagerService
         return VenueManagerService.get_managed_venues(user_id)

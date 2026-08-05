@@ -7,6 +7,7 @@ from models.user.profile_service import UserProfileService
 from models.user.models import User
 from models.user.role_enum import UserRole
 
+
 @pytest.mark.unit
 class TestCaseSensitiveUsername:
     """Test case-sensitive username behavior in services."""
@@ -16,12 +17,10 @@ class TestCaseSensitiveUsername:
         unique_id = str(uuid.uuid4())[:8]
         username = f"CaseUser_{unique_id}"
         password = "password123"
-        
+
         # Create user via service to ensure consistency
         UserProfileService.create_user(
-            username=username,
-            email=f"case_{unique_id}@example.com",
-            password=password
+            username=username, email=f"case_{unique_id}@example.com", password=password
         )
         db_session.commit()
 
@@ -42,11 +41,11 @@ class TestCaseSensitiveUsername:
         """Test that finding users by username is case-sensitive."""
         unique_id = str(uuid.uuid4())[:8]
         username = f"FindMe_{unique_id}"
-        
+
         UserProfileService.create_user(
             username=username,
             email=f"find_{unique_id}@example.com",
-            password="password123"
+            password="password123",
         )
         db_session.commit()
 
@@ -62,11 +61,11 @@ class TestCaseSensitiveUsername:
         """Test that user creation uniqueness is now case-sensitive."""
         unique_id = str(uuid.uuid4())[:8]
         username = f"Unique_{unique_id}"
-        
+
         UserProfileService.create_user(
             username=username,
             email=f"u1_{unique_id}@example.com",
-            password="password123"
+            password="password123",
         )
         db_session.commit()
 
@@ -76,14 +75,16 @@ class TestCaseSensitiveUsername:
             UserProfileService.create_user(
                 username=username.lower(),
                 email=f"u2_{unique_id}@example.com",
-                password="password123"
+                password="password123",
             )
             db_session.commit()
             # If we reached here, it means service allowed it AND DB allowed it
             assert True
         except ValueError as e:
             # If service still blocks it case-insensitively, this would be an error
-            pytest.fail(f"Should allow registration of '{username.lower()}' even if '{username}' exists: {e}")
+            pytest.fail(
+                f"Should allow registration of '{username.lower()}' even if '{username}' exists: {e}"
+            )
         except Exception as e:
             # DB level error (e.g. UniqueConstraint in SQLite if not careful)
             # SQLite unique constraints on VARCHAR are case-sensitive by default.
@@ -98,18 +99,18 @@ class TestCaseSensitiveUsername:
                 UserProfileService.create_user(
                     username=variant,
                     email=f"{variant}_{uuid.uuid4().hex[:4]}@example.com",
-                    password="password123"
+                    password="password123",
                 )
-        
+
         # Test update_user
         unique_id = str(uuid.uuid4())[:8]
         user = UserProfileService.create_user(
             username=f"normaluser_{unique_id}",
             email=f"normal_{unique_id}@example.com",
-            password="password123"
+            password="password123",
         )
         db_session.commit()
-        
+
         for variant in variants:
             with pytest.raises(ValueError, match="riservato al sistema"):
                 UserProfileService.update_user(user.id, username=variant)

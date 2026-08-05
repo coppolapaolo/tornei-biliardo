@@ -208,9 +208,7 @@ class TestFreeFormatValidation:
 class TestFreeFormatCompletion:
     """Tests for completing free format matches."""
 
-    def test_winner_determined_by_higher_score(
-        self, app, db_session, isolated_players
-    ):
+    def test_winner_determined_by_higher_score(self, app, db_session, isolated_players):
         """Winner should be the player with more racks."""
         player1, player2 = isolated_players[:2]
 
@@ -242,9 +240,7 @@ class TestFreeFormatCompletion:
         assert match.status == MatchStatus.VALIDATED
         assert match.winner_id == player1.id
 
-    def test_player2_wins_when_higher_score(
-        self, app, db_session, isolated_players
-    ):
+    def test_player2_wins_when_higher_score(self, app, db_session, isolated_players):
         """Player 2 should win when they have higher score."""
         player1, player2 = isolated_players[:2]
 

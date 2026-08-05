@@ -13,13 +13,19 @@ from models.gamification.quest_service import QuestService
 from models.gamification.achievement_service import AchievementService
 from models.gamification.streak_service import StreakService
 from models.gamification.models import (
-    UserLevel, Achievement, UserAchievement, StreakTracker,
-    AchievementCategory, AchievementDifficulty, StreakType,
-    Quest, QuestStatus, XPTransactionType
+    UserLevel,
+    Achievement,
+    UserAchievement,
+    StreakTracker,
+    AchievementCategory,
+    AchievementDifficulty,
+    StreakType,
+    Quest,
+    QuestStatus,
+    XPTransactionType,
 )
 
 from . import gamification_bp
-
 
 # ============================================
 # Admin Dashboard
@@ -41,10 +47,14 @@ def admin_dashboard():
     from sqlalchemy import func
 
     # Get level distribution
-    level_stats = db.session.query(
-        UserLevel.current_level,
-        func.count(UserLevel.user_id).label("count")
-    ).group_by(UserLevel.current_level).order_by(UserLevel.current_level).all()
+    level_stats = (
+        db.session.query(
+            UserLevel.current_level, func.count(UserLevel.user_id).label("count")
+        )
+        .group_by(UserLevel.current_level)
+        .order_by(UserLevel.current_level)
+        .all()
+    )
 
     # Get total XP distributed
     total_xp = db.session.query(func.sum(UserLevel.total_xp)).scalar() or 0
@@ -59,9 +69,7 @@ def admin_dashboard():
     ).count()
 
     # Get top XP users
-    top_users = UserLevel.query.order_by(
-        UserLevel.total_xp.desc()
-    ).limit(10).all()
+    top_users = UserLevel.query.order_by(UserLevel.total_xp.desc()).limit(10).all()
 
     return render_template(
         "gamification/admin/dashboard.html",
@@ -71,7 +79,7 @@ def admin_dashboard():
         total_achievements=total_achievements,
         total_unlocks=total_unlocks,
         top_users=top_users,
-        page_title=_("Admin Gamification")
+        page_title=_("Admin Gamification"),
     )
 
 
@@ -85,15 +93,15 @@ def admin_dashboard():
 def admin_quests():
     """List all quests for management."""
     page = request.args.get("page", 1, type=int)
-    pagination = Quest.query.order_by(
-        Quest.start_date.desc()
-    ).paginate(page=page, per_page=20, error_out=False)
+    pagination = Quest.query.order_by(Quest.start_date.desc()).paginate(
+        page=page, per_page=20, error_out=False
+    )
     return render_template(
         "gamification/admin/quests.html",
         quests=pagination.items,
         pagination=pagination,
         quest_statuses=QuestStatus,
-        page_title=_("Gestione Quest")
+        page_title=_("Gestione Quest"),
     )
 
 
@@ -109,31 +117,40 @@ def admin_create_quest():
         description = request.form.get("description", "").strip()
         quest_type = request.form.get("quest_type", "weekly")
         requirement_type = request.form.get("requirement_type", "matches_played")
-        requirement_target = int(request.form.get("requirement_target", 10))
-        xp_reward = int(request.form.get("xp_reward", 100))
-
-        start_date_str = request.form.get("start_date")
-        end_date_str = request.form.get("end_date")
 
         if not name:
             flash(_("Il nome della quest è obbligatorio"), "error")
             return redirect(url_for("gamification.admin_create_quest"))
 
-        start_date = datetime.fromisoformat(start_date_str) if start_date_str else utc_now()
+        # int()/fromisoformat/QuestType[...] sollevano ValueError/KeyError su
+        # input invalido: senza guardia il parsing esplode in 500 PRIMA di
+        # handle_service_action.
+        try:
+            requirement_target = int(request.form.get("requirement_target", 10))
+            xp_reward = int(request.form.get("xp_reward", 100))
+            quest_type_enum = QuestType[quest_type.upper()]
 
-        if end_date_str:
-            end_date = datetime.fromisoformat(end_date_str)
-        else:
-            if quest_type == "weekly":
-                end_date = start_date + timedelta(days=7)
+            start_date_str = request.form.get("start_date")
+            end_date_str = request.form.get("end_date")
+            start_date = (
+                datetime.fromisoformat(start_date_str) if start_date_str else utc_now()
+            )
+            if end_date_str:
+                end_date = datetime.fromisoformat(end_date_str)
             else:
-                end_date = start_date + timedelta(days=30)
+                if quest_type == "weekly":
+                    end_date = start_date + timedelta(days=7)
+                else:
+                    end_date = start_date + timedelta(days=30)
+        except (ValueError, KeyError):
+            flash(_("Dati del form non validi"), "error")
+            return redirect(url_for("gamification.admin_create_quest"))
 
         return handle_service_action(
             action=lambda: QuestService.create_quest(
                 name=name,
                 description=description,
-                quest_type=QuestType[quest_type.upper()],
+                quest_type=quest_type_enum,
                 start_date=start_date,
                 end_date=end_date,
                 requirements={"type": requirement_type, "target": requirement_target},
@@ -147,7 +164,7 @@ def admin_create_quest():
     return render_template(
         "gamification/admin/quest_form.html",
         quest=None,
-        page_title=_("Crea Nuova Quest")
+        page_title=_("Crea Nuova Quest"),
     )
 
 
@@ -204,19 +221,22 @@ def admin_achievements():
     unlock_stats = dict(
         db.session.query(
             UserAchievement.achievement_id,
-            func.count(UserAchievement.id).label("count")
-        ).filter(
-            UserAchievement.unlocked_at.isnot(None)
-        ).group_by(UserAchievement.achievement_id).all()
+            func.count(UserAchievement.id).label("count"),
+        )
+        .filter(UserAchievement.unlocked_at.isnot(None))
+        .group_by(UserAchievement.achievement_id)
+        .all()
     )
 
     # Combine data
     achievement_data = []
     for achievement in pagination.items:
-        achievement_data.append({
-            "achievement": achievement,
-            "unlock_count": unlock_stats.get(achievement.id, 0)
-        })
+        achievement_data.append(
+            {
+                "achievement": achievement,
+                "unlock_count": unlock_stats.get(achievement.id, 0),
+            }
+        )
 
     return render_template(
         "gamification/admin/achievements.html",
@@ -224,7 +244,7 @@ def admin_achievements():
         pagination=pagination,
         categories=AchievementCategory,
         difficulties=AchievementDifficulty,
-        page_title=_("Gestione Achievement")
+        page_title=_("Gestione Achievement"),
     )
 
 
@@ -239,11 +259,15 @@ def admin_create_achievement():
         category = request.form.get("category", "match")
         difficulty = request.form.get("difficulty", "common")
         icon_path = request.form.get("icon_path", "").strip() or None
-        xp_reward = int(request.form.get("xp_reward", 50))
         is_hidden = request.form.get("is_hidden") == "on"
         is_progressive = request.form.get("is_progressive") == "on"
         requirement_type = request.form.get("requirement_type", "match_wins")
-        requirement_value = int(request.form.get("requirement_value", 1))
+        try:
+            xp_reward = int(request.form.get("xp_reward", 50))
+            requirement_value = int(request.form.get("requirement_value", 1))
+        except ValueError:
+            flash(_("Dati del form non validi"), "error")
+            return redirect(url_for("gamification.admin_create_achievement"))
 
         return handle_service_action(
             action=lambda: AchievementService.create_achievement(
@@ -268,11 +292,13 @@ def admin_create_achievement():
         achievement=None,
         categories=AchievementCategory,
         difficulties=AchievementDifficulty,
-        page_title=_("Crea Nuovo Achievement")
+        page_title=_("Crea Nuovo Achievement"),
     )
 
 
-@gamification_bp.route("/admin/achievements/<int:achievement_id>/toggle_hidden", methods=["POST"])
+@gamification_bp.route(
+    "/admin/achievements/<int:achievement_id>/toggle_hidden", methods=["POST"]
+)
 @admin_required
 def admin_toggle_achievement_hidden(achievement_id: int):
     """Toggle hidden status of an achievement."""
@@ -298,9 +324,9 @@ def admin_xp_management():
     page = request.args.get("page", 1, type=int)
 
     # Paginate recent transactions
-    pagination = XPTransaction.query.order_by(
-        XPTransaction.created_at.desc()
-    ).paginate(page=page, per_page=20, error_out=False)
+    pagination = XPTransaction.query.order_by(XPTransaction.created_at.desc()).paginate(
+        page=page, per_page=20, error_out=False
+    )
 
     # Get users for dropdown
     users = User.query.filter(User.deleted_at.is_(None)).order_by(User.username).all()
@@ -311,7 +337,7 @@ def admin_xp_management():
         pagination=pagination,
         users=users,
         xp_types=XPTransactionType,
-        page_title=_("Gestione XP")
+        page_title=_("Gestione XP"),
     )
 
 
@@ -321,8 +347,12 @@ def admin_grant_xp():
     """Grant XP to a user (admin tool)."""
     from models.gamification.models import XPTransactionType
 
-    user_id = int(request.form.get("user_id", 0))
-    xp_amount = int(request.form.get("xp_amount", 0))
+    try:
+        user_id = int(request.form.get("user_id", 0))
+        xp_amount = int(request.form.get("xp_amount", 0))
+    except ValueError:
+        flash(_("Dati del form non validi"), "error")
+        return redirect(url_for("gamification.admin_xp_management"))
     reason = request.form.get("reason", "Admin grant").strip()
 
     if user_id <= 0:
@@ -342,7 +372,7 @@ def admin_grant_xp():
             related_entities={"admin_id": current_user.id},
         ),
         redirect_url=url_for("gamification.admin_xp_management"),
-        success_message=f"Concessi {xp_amount} XP all'utente.",
+        success_message=_("Concessi %(n)s XP all'utente.", n=xp_amount),
     )
 
 
@@ -369,26 +399,31 @@ def admin_streaks():
     from sqlalchemy import func
 
     # Get streak distribution
-    streak_stats = db.session.query(
-        StreakTracker.streak_type,
-        func.avg(StreakTracker.current_streak).label("avg_streak"),
-        func.max(StreakTracker.current_streak).label("max_streak"),
-        func.sum(StreakTracker.freeze_count).label("total_freezes")
-    ).group_by(StreakTracker.streak_type).all()
+    streak_stats = (
+        db.session.query(
+            StreakTracker.streak_type,
+            func.avg(StreakTracker.current_streak).label("avg_streak"),
+            func.max(StreakTracker.current_streak).label("max_streak"),
+            func.sum(StreakTracker.freeze_count).label("total_freezes"),
+        )
+        .group_by(StreakTracker.streak_type)
+        .all()
+    )
 
     # Get top streakers
-    top_streakers = StreakTracker.query.filter_by(
-        streak_type=StreakType.WEEKLY_ACTIVITY
-    ).order_by(
-        StreakTracker.current_streak.desc()
-    ).limit(20).all()
+    top_streakers = (
+        StreakTracker.query.filter_by(streak_type=StreakType.WEEKLY_ACTIVITY)
+        .order_by(StreakTracker.current_streak.desc())
+        .limit(20)
+        .all()
+    )
 
     return render_template(
         "gamification/admin/streaks.html",
         streak_stats=streak_stats,
         top_streakers=top_streakers,
         streak_types=StreakType,
-        page_title=_("Gestione Streak")
+        page_title=_("Gestione Streak"),
     )
 
 
@@ -396,15 +431,17 @@ def admin_streaks():
 @admin_required
 def admin_grant_freeze():
     """Grant a freeze token to a user."""
-    user_id = int(request.form.get("user_id", 0))
-    streak_type_str = request.form.get("streak_type", "WEEKLY_ACTIVITY")
-    freeze_count = int(request.form.get("freeze_count", 1))
+    try:
+        user_id = int(request.form.get("user_id", 0))
+        freeze_count = int(request.form.get("freeze_count", 1))
+        streak_type = StreakType[request.form.get("streak_type", "WEEKLY_ACTIVITY")]
+    except (ValueError, KeyError):
+        flash(_("Dati del form non validi"), "error")
+        return redirect(url_for("gamification.admin_streaks"))
 
     if user_id <= 0:
         flash(_("Seleziona un utente valido"), "error")
         return redirect(url_for("gamification.admin_streaks"))
-
-    streak_type = StreakType[streak_type_str]
 
     return handle_service_action(
         action=lambda: StreakService.admin_grant_freeze(
@@ -413,7 +450,7 @@ def admin_grant_freeze():
             freeze_count=freeze_count,
         ),
         redirect_url=url_for("gamification.admin_streaks"),
-        success_message=f"Concessi {freeze_count} freeze all'utente.",
+        success_message=_("Concessi %(n)s freeze all'utente.", n=freeze_count),
     )
 
 
@@ -432,12 +469,13 @@ def admin_api_user_search():
     if len(query) < 2:
         return jsonify([])
 
-    users = User.query.filter(
-        User.username.ilike(f"%{query}%"),  # type: ignore[union-attr]
-        User.deleted_at.is_(None)
-    ).limit(10).all()
+    users = (
+        User.query.filter(
+            User.username.ilike(f"%{query}%"),  # type: ignore[union-attr]
+            User.deleted_at.is_(None),
+        )
+        .limit(10)
+        .all()
+    )
 
-    return jsonify([
-        {"id": u.id, "username": u.username}
-        for u in users
-    ])
+    return jsonify([{"id": u.id, "username": u.username} for u in users])

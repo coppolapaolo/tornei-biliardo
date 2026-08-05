@@ -13,7 +13,7 @@
                     {% for inscription in campionato_inscriptions %}
                         <li>
                             <small>
-                                Gara {{ inscription.gara.number }} - 
+                                {{ inscription.gara.display_name }} -
                                 {{ inscription.gara.date|date_local }}
                                 {{ status_badge(inscription.gara, 'gara') }}
                             </small>

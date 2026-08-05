@@ -1,7 +1,8 @@
 """
 Module: models/notification/models.py
 Purpose: Notification domain models for user notifications
-Requirements: SPECIFICHE.md - Notification system for match proposals and campionato updates
+Requirements: SPECIFICHE.md - Notification system for match proposals and
+              campionato updates
 Data Structures: Notification, NotificationPreference
 """
 
@@ -13,7 +14,7 @@ from typing import Any, Dict, Optional, TYPE_CHECKING
 from enum import Enum
 
 
-from ..base import db, BaseModel, TimestampMixin, utc_now
+from ..base import db, BaseModel, utc_now
 
 if TYPE_CHECKING:
     pass
@@ -234,7 +235,8 @@ class Notification(BaseModel):
             # Translate special keys that need runtime translation
             if "difficulty_key" in params:
                 difficulty_key = params.pop("difficulty_key")
-                # DIFFICULTY_LABELS values are lazy_gettext, convert to string for current locale
+                # DIFFICULTY_LABELS values are lazy_gettext, convert to string
+                # for current locale
                 params["difficulty"] = str(
                     DIFFICULTY_LABELS.get(difficulty_key, difficulty_key)
                 )
@@ -267,11 +269,14 @@ class Notification(BaseModel):
                     ),
                 }
             except (KeyError, TypeError):
-                # Fallback if param substitution fails
+                # Substituzione fallita (param mancante o tipo errato): usa i
+                # campi statici gia' renderizzati alla creazione invece del
+                # template grezzo, per non mostrare placeholder tipo %(name)s.
                 return {
-                    "title": _(title_template),
-                    "message": _(message_template),
-                    "action_text": _(action_template) if action_template else "",
+                    "title": self.title or _(title_template),
+                    "message": self.message or _(message_template),
+                    "action_text": self.action_text
+                    or (_(action_template) if action_template else ""),
                 }
 
         # Fallback to static fields (backward compatibility)
@@ -354,10 +359,20 @@ class NotificationPreference(BaseModel):
         if not self.quiet_hours_start or not self.quiet_hours_end:
             return False
 
-        now = utc_now().time()
+        # Le quiet hours sono impostate dall'utente in ora locale italiana:
+        # converti il naive-UTC di utc_now() in Europe/Rome (DST incluso)
+        # prima del confronto, come fa format_datetime_local per il display.
+        from zoneinfo import ZoneInfo
+
+        now = (
+            utc_now()
+            .replace(tzinfo=ZoneInfo("UTC"))
+            .astimezone(ZoneInfo("Europe/Rome"))
+            .time()
+        )
 
         if self.quiet_hours_start <= self.quiet_hours_end:
-            # Normal case: 22:00 - 08:00
+            # Normal case: e.g. 13:00 - 15:00 (same day)
             return self.quiet_hours_start <= now <= self.quiet_hours_end
         else:
             # Overnight case: 22:00 - 08:00 (crosses midnight)
@@ -402,7 +417,10 @@ class NotificationPreference(BaseModel):
         )
 
     def __repr__(self) -> str:
-        return f"<NotificationPreference {self.user_id}: {self.notification_type.value}={self.enabled}>"
+        return (
+            f"<NotificationPreference {self.user_id}: "
+            f"{self.notification_type.value}={self.enabled}>"
+        )
 
 
 class NotificationTemplate(BaseModel):

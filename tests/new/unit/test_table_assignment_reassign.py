@@ -382,9 +382,7 @@ class TestTableAssignmentReassign:
 
     def test_match_not_found_returns_error(self, db_session):
         """Test that reassigning non-existent match returns error."""
-        success, message, swapped_id = TableAssignmentService.reassign_table(
-            99999, "1"
-        )
+        success, message, swapped_id = TableAssignmentService.reassign_table(99999, "1")
 
         assert success is False
         assert "non trovato" in message

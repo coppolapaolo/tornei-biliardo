@@ -22,9 +22,15 @@
         </a>
         {% endif %}
         {% if not campionato.terminated_at %}
+        {% if campionato.is_ready_for_playoff_transition() %}
+        <button type="button" class="btn btn-success" id="btn-terminate-campionato">
+            <i class="fas fa-trophy"></i> {{ _("Passa alla fase playoff") }}
+        </button>
+        {% else %}
         <button type="button" class="btn btn-danger" id="btn-terminate-campionato">
             <i class="fas fa-stop-circle"></i> {{ _("Termina Campionato") }}
         </button>
+        {% endif %}
         {% endif %}
     </div>
 </div>
@@ -55,16 +61,17 @@
 </div>
 {% endif %}
 
-{% if campionato.terminated_at and campionato.has_playoff_configurations() %}
+{% if campionato.terminated_at %}
 <div class="card mb-4">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="mb-0"><i class="fas fa-medal"></i> {{ _("Playoff") }}</h5>
     </div>
     <div class="card-body">
 
+        {# playoff_started: avvio già fatto, lock UI di modifica config #}
+        {% set playoff_started = playoff_status and playoff_status.total_qualified > 0 %}
+
         {% if playoff_status and playoff_status.has_playoffs %}
-            {# Check if any config has qualifications (= playoff started) #}
-            {% set playoff_started = playoff_status.total_qualified > 0 %}
 
             {% if not playoff_started %}
             {# ── PRE-AVVIO: config management ── #}
@@ -284,6 +291,41 @@
 
         {% else %}
             <p class="text-muted">{{ _("Nessuna configurazione playoff attiva.") }}</p>
+
+            {# Permetti di aggiungere comunque una nuova configurazione,
+               sia che non sia mai stata creata, sia dopo cancellazione.
+               Bottone visibile solo se i playoff non sono ancora stati avviati. #}
+            {% if not playoff_started %}
+            <div class="mt-3">
+                <button class="btn btn-sm btn-outline-success" data-bs-toggle="collapse" data-bs-target="#add-playoff-config-empty">
+                    <i class="fas fa-plus"></i> {{ _("Aggiungi configurazione") }}
+                </button>
+                <div id="add-playoff-config-empty" class="collapse mt-2">
+                    <form method="POST" action='{{ url_for("admin.campionato.playoff_add_config", campionato_id=campionato.id) }}'>
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="row g-2">
+                            <div class="col-md-3">
+                                <input type="text" name="name" class="form-control form-control-sm" placeholder="{{ _('Nome') }}" required>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="number" name="positions_from" class="form-control form-control-sm" placeholder="{{ _('Da pos.') }}" min="1" required>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="number" name="positions_to" class="form-control form-control-sm" placeholder="{{ _('A pos.') }}" min="1" required>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="number" name="max_participants" class="form-control form-control-sm" placeholder="{{ _('Max') }}" min="2" required>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-sm btn-success">
+                                    <i class="fas fa-plus"></i> {{ _("Aggiungi") }}
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
         {% endif %}
     </div>
 </div>
@@ -332,7 +374,11 @@
     const btnTerminate = document.getElementById('btn-terminate-campionato');
     if (btnTerminate) {
         btnTerminate.addEventListener('click', function() {
+            {% if campionato.is_ready_for_playoff_transition() %}
+            let msg = {{ _("Tutte le gare sono concluse. Passare alla fase playoff? Potrai poi avviare i playoff e invitare i qualificati.")|tojson }};
+            {% else %}
             let msg = {{ _("Sei sicuro di voler terminare il campionato? Le gare non completate verranno eliminate.")|tojson }};
+            {% endif %}
             {% if playoff_feasibility and not playoff_feasibility.feasible %}
             msg = {{ _("Attenzione: alcuni playoff hanno un requisito minimo gare non raggiungibile. Vuoi terminare comunque?")|tojson }}
                 + "\n\n" + msg;

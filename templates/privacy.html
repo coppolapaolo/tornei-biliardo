@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Privacy e Cookie') }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <h1 class="mb-4">{{ _('Informativa Privacy e Cookie') }}</h1>
+
+        <section class="mb-4">
+            <h2 class="h5">{{ _('Titolare del trattamento') }}</h2>
+            <p class="text-muted">
+                {{ _('Titolare del trattamento dei dati è il gestore di %(site)s. Per qualsiasi richiesta relativa ai tuoi dati puoi scrivere a %(email)s.', site=config.APP_NAME, email='privacy@torneibiliardo.it') }}
+            </p>
+        </section>
+
+        <section class="mb-4">
+            <h2 class="h5">{{ _('Quali dati raccogliamo') }}</h2>
+            <p class="text-muted">
+                {{ _('Per creare un account raccogliamo username, indirizzo email e password (conservata solo in forma cifrata). Durante l\'uso della piattaforma vengono registrati i dati sportivi che generi: iscrizioni alle gare, risultati delle partite, statistiche e classifiche.') }}
+            </p>
+            <p class="text-muted">
+                {{ _('I dati personali identificativi sono conservati cifrati nel database. La cancellazione dell\'account avviene tramite anonimizzazione: i risultati sportivi restano nelle classifiche storiche, ma non sono più riconducibili a te.') }}
+            </p>
+        </section>
+
+        <section class="mb-4">
+            <h2 class="h5">{{ _('Cookie tecnici') }}</h2>
+            <p class="text-muted">
+                {{ _('Il sito usa cookie tecnici necessari al funzionamento: mantenimento della sessione di login, protezione dei moduli contro gli invii fraudolenti (CSRF) e memorizzazione della lingua scelta. Questi cookie non richiedono consenso perché senza di essi il sito non può funzionare.') }}
+            </p>
+        </section>
+
+        {% if config.GA_MEASUREMENT_ID %}
+        <section class="mb-4">
+            <h2 class="h5">{{ _('Cookie analitici (Google Analytics)') }}</h2>
+            <p class="text-muted">
+                {{ _('Usiamo Google Analytics 4 per capire come viene utilizzato il sito: quante persone lo visitano, quali pagine consultano, da quale dispositivo e da quale fonte arrivano. Lo scopo è esclusivamente migliorare la piattaforma.') }}
+            </p>
+            <p class="text-muted">
+                {{ _('Google Analytics 4 non registra il tuo indirizzo IP completo e non lo usa per identificarti. Non inviamo a Google il tuo nome, la tua email o altri dati che permettano di risalire alla tua identità.') }}
+            </p>
+            <p class="text-muted">
+                {{ _('Puoi disattivare la raccolta installando il componente aggiuntivo ufficiale per la disattivazione di Google Analytics, disponibile su tools.google.com/dlpage/gaoptout, oppure attivando l\'opzione Do Not Track del tuo browser.') }}
+            </p>
+        </section>
+        {% endif %}
+
+        <section class="mb-4">
+            <h2 class="h5">{{ _('I tuoi diritti') }}</h2>
+            <p class="text-muted">
+                {{ _('Puoi in qualsiasi momento accedere ai tuoi dati, correggerli, chiederne la cancellazione o opporti al trattamento. La maggior parte delle operazioni è disponibile direttamente dalle impostazioni del tuo profilo; per le altre puoi contattarci all\'indirizzo indicato sopra.') }}
+            </p>
+        </section>
+
+        <p class="text-muted small">
+            {{ _('Ultimo aggiornamento: luglio 2026.') }}
+        </p>
+    </div>
+</div>
+{% endblock %}

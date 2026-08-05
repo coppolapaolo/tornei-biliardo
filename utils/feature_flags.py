@@ -46,6 +46,9 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "main.public_campionatos_list": {"anonimo", "player", "director"},
     "main.gara_detail_public": {"anonimo", "player", "director"},
     "main.campionato_detail_public": {"anonimo", "player", "director"},
+    # Informativa privacy/cookie: deve essere raggiungibile da chiunque,
+    # utenti non registrati inclusi (link nel footer di base.html).
+    "main.privacy_policy": {"anonimo", "player", "director"},
     "admin.competition.gara_detail": {"anonimo", "player", "director"},
     "i18n.set_language": {"anonimo", "player", "director"},
     # === Logged-in (player or director) ===
@@ -66,6 +69,11 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "player.edit_profile": {"player", "director"},
     "player.change_password": {"player", "director"},
     "player.request_verification_email": {"player", "director"},
+    # Solo i player possono richiedere la promozione a director (il form è
+    # mostrato unicamente a current_user.role == 'player'). Senza questa
+    # entry il POST era admin-only in prod → 404 per il player (ADR-028).
+    "player.request_director": {"player"},
+    "player.delete_account": {"player", "director"},
     # Notifications
     "player.notifications": {"player", "director"},
     "player.mark_notification_read": {"player", "director"},
@@ -99,6 +107,10 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "player.remove_trio_rack": {"player", "director"},
     "player.confirm_trio_result": {"player", "director"},
     "player.forfeit_trio": {"player", "director"},
+    # Playoff invitation: confirm/decline participation (bug 15)
+    "player.playoff_invitation": {"player", "director"},
+    "player.playoff_confirm": {"player", "director"},
+    "player.playoff_decline": {"player", "director"},
     # === Director only: campionato/gara creation and management ===
     "admin.campionato.create_campionato": {"director"},
     "admin.campionato.edit_campionato": {"director"},
@@ -107,9 +119,33 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "admin.campionato.wizard_create": {"director"},
     "admin.campionato.wizard_step2": {"director"},
     "admin.campionato.wizard_cancel": {"director"},
+    # Ciclo di vita del campionato. Erano assenti dalla matrice, quindi
+    # admin-only in produzione: il director vedeva i pulsanti (i template non
+    # li gating-avano) ma il POST rispondeva 404 — sintomo segnalato come
+    # "Passa alla fase playoff → 404 su /admin/campionato/<id>/terminate"
+    # (issue #59). L'autorizzazione vera resta @campionato_manager_required.
+    "admin.campionato.terminate_campionato": {"director"},
+    "admin.campionato.delete_campionato": {"director"},
+    "admin.campionato.toggle_campionato_active": {"director"},
+    "admin.campionato.add_director": {"director"},
+    "admin.campionato.remove_director": {"director"},
+    # Fase playoff: è il seguito diretto di terminate_campionato, quindi va
+    # promossa nello stesso blocco (ADR-028, "promote whole feature areas").
+    "admin.campionato.start_playoff": {"director"},
+    "admin.campionato.create_playoff_gara": {"director"},
+    "admin.campionato.update_playoff_min": {"director"},
+    "admin.campionato.playoff_add_config": {"director"},
+    "admin.campionato.playoff_edit_config": {"director"},
+    "admin.campionato.playoff_deactivate_config": {"director"},
+    "admin.campionato.playoff_add_player": {"director"},
+    "admin.campionato.playoff_remove_player": {"director"},
+    # Soft delete del campionato: admin-only (@admin_required). Set esplicito
+    # per documentare la decisione, non per inerzia.
+    "admin.campionato.soft_delete_campionato": set(),
     "admin.competition.create_gara_standalone": {"director"},
     "admin.competition.create_gara": {"director"},
     "admin.competition.edit_gara": {"director"},
+    "admin.competition.update_tables_config": {"director"},
     "admin.competition.cancel_gara": {"director"},
     "admin.competition.delete_gara": {"director"},
     "admin.competition.soft_delete_gara": {"director"},
@@ -142,6 +178,7 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "admin.competition.check_match_modification": {"director"},
     # SSR (spareggi) — risoluzione parimerito a fine gara
     "admin.competition.start_ssr": {"director"},
+    "admin.competition.cancel_ssr": {"director"},
     "admin.competition.save_ssr_group": {"director"},
     "admin.competition.save_ssr_scores": {"director"},
     # Challenge management (per gare Random con drill-based scoring)
@@ -185,6 +222,12 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # User listing (so a director can find players to enroll manually)
     "admin.user.users_list": {"director"},
     "admin.user.user_detail": {"director"},
+    # User management actions: admin-only (explicit empty set = documents the
+    # decision; admin bypasses the matrix). Directors must NOT see these buttons.
+    "admin.user.anonymize_user": set(),
+    "admin.user.verify_user_email": set(),
+    "admin.user.resend_verification": set(),
+    "admin.user.merge_users": set(),
     # Gamification: director-only at the moment. Player and anonymous viewers
     # do NOT see gamification UI/toasts/notifications in production until the
     # feature stabilises. Admin bypasses the matrix as usual.
@@ -201,6 +244,44 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "gamification.api_user_stats": {"director"},
     "gamification.api_achievements": {"director"},
     "gamification.api_streaks": {"director"},
+    # === Match individuali (casual matches) — ADR-028 ===
+    # Feature sbloccata per player/director (la visibilità del menu è inoltre
+    # gated dal gate gamification can_access('create_match_direct')). La
+    # vera autorizzazione resta nei decoratori @RoleRequirement.
+    "individual_match.dashboard": {"player", "director"},
+    "individual_match.user_statistics": {"player", "director"},
+    "individual_match.match_list": {"player", "director"},
+    "individual_match.match_detail": {"player", "director"},
+    "individual_match.proposal_list": {"player", "director"},
+    "individual_match.proposal_detail": {"player", "director"},
+    "individual_match.create_proposal": {"player", "director"},
+    "individual_match.search_players": {"player", "director"},
+    "individual_match.get_opponents": {"player", "director"},
+    "individual_match.accept_proposal": {"player", "director"},
+    "individual_match.cancel_proposal": {"player", "director"},
+    "individual_match.decline_proposal": {"player", "director"},
+    "individual_match.start_match": {"player", "director"},
+    "individual_match.add_rack": {"player", "director"},
+    "individual_match.remove_rack": {"player", "director"},
+    "individual_match.confirm_result": {"player", "director"},
+    "individual_match.reject_result": {"player", "director"},
+    "individual_match.complete_match": {"player", "director"},
+    "individual_match.cancel_match": {"player", "director"},
+    "individual_match.update_match_times": {"player", "director"},
+    "individual_match.forfeit_match": {"player", "director"},
+    "individual_match.rematch": {"player", "director"},
+    # Availability: visibile a player/director. La visibilità del menu è
+    # comunque gated dal gate gamification 'manage_availability' (venue
+    # manager / veterano di sala). Superficie consolidata su sala
+    # (UserLocationAvailability) — ADR-032/033: il vecchio modello a testo
+    # libero PlayerAvailability è stato rimosso.
+    "individual_match.manage_availability": {"player", "director"},
+    "individual_match.set_venue_availability": {"player", "director"},
+    "individual_match.remove_venue_availability": {"player", "director"},
+    "individual_match.discover_players": {"player", "director"},
+    "individual_match.request_availability_match": {"player", "director"},
+    # Admin overview: solo admin (@admin_required).
+    "individual_match.admin_overview": set(),
 }
 
 
@@ -219,10 +300,13 @@ INFRASTRUCTURE_ALLOWLIST: set[str] = {
     "sse.poll_match",
     "sse.poll_trio",
     "sse.poll_user",
+    # Real-time sync per i match individuali (match_detail polling)
+    "sse.poll_individual_match",
     # Legacy SSE streams kept for backward compat (ADR-021)
     "sse.gara_stream",
     "sse.user_stream",
     "sse.trio_stream",
+    "sse.individual_match_stream",
 }
 
 

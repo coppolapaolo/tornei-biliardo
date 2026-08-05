@@ -16,7 +16,7 @@ from __future__ import annotations
 from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from models.orchestration.service import OperationResult
+    from models.shared.operation_result import OperationResult
 from datetime import date, datetime
 
 from models.base import db, utc_now
@@ -30,8 +30,9 @@ from models.events.base import EventBus
 from models.events.competition_events import (
     DirectorAssignmentAddedEvent,
     DirectorAssignmentRemovedEvent,
-    CompetitionCreatedEvent
+    CompetitionCreatedEvent,
 )
+
 
 class GaraService:
     """Operazioni di business su Gara (creazione, query, validazione, transizioni)."""
@@ -150,7 +151,8 @@ class GaraService:
                 gara_time=gara_time,
             )
 
-        # Validazione time - obbligatorio (defaults to 20:00 if missing for backward compatibility/tests)
+        # Validazione time - obbligatorio (default 20:00 se assente, per
+        # retro-compatibilita'/test)
         if "time" not in kwargs or kwargs["time"] is None:
             from datetime import time as time_type
 
@@ -198,7 +200,8 @@ class GaraService:
         classification_errors, classification_warnings = validate_gara(gara)
         if classification_errors:
             raise ValueError(
-                f"Configurazione classificazione non valida: {', '.join(classification_errors)}"
+                "Configurazione classificazione non valida: "
+                f"{', '.join(classification_errors)}"
             )
         # Warnings vengono loggati ma non bloccano
         if classification_warnings:
@@ -219,9 +222,11 @@ class GaraService:
         actual_creator_id = creator_id or director_id
         if actual_creator_id:
             from models.user.models import User
+
             user = db.session.get(User, actual_creator_id)
             if user:
                 from datetime import datetime
+
                 event = CompetitionCreatedEvent(
                     gara_id=gara.id,
                     name=gara.name,
@@ -234,7 +239,7 @@ class GaraService:
                     max_participants=gara.max_participants,
                     registration_deadline=gara.inscription_end,
                     is_campionato=gara.campionato_id is not None,
-                    campionato_id=gara.campionato_id
+                    campionato_id=gara.campionato_id,
                 )
                 EventBus.publish(event)
 
@@ -293,7 +298,8 @@ class GaraService:
         classification_errors, classification_warnings = validate_gara(gara)
         if classification_errors:
             raise ValueError(
-                f"Configurazione classificazione non valida: {', '.join(classification_errors)}"
+                "Configurazione classificazione non valida: "
+                f"{', '.join(classification_errors)}"
             )
         # Warnings vengono loggati ma non bloccano
         if classification_warnings:
@@ -303,6 +309,36 @@ class GaraService:
             for warning in classification_warnings:
                 logger.warning(f"Gara config warning (update): {warning}")
 
+        return gara
+
+    @staticmethod
+    @transactional(domain="competition")
+    def update_tables_config(
+        gara_id: int,
+        tables: list[str],
+        assign_tables_by_ranking: bool,
+    ) -> Gara:
+        """Configura tavoli (in ordine di pregio) e flag assegnazione per classifica.
+
+        A differenza di update_gara (bloccata appena esistono iscrizioni), questa
+        configurazione è pensata proprio per la fase di iscrizione: il direttore
+        sceglie quali tavoli usare quando sa quanti giocatori partecipano.
+        Consentita SOLO tra apertura iscrizioni e avvio della gara.
+        """
+        from models.exceptions import NotFoundError, ConflictError
+
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            raise NotFoundError(f"Gara {gara_id} non trovata")
+
+        if gara.status != GaraStatus.INSCRIPTION.value:
+            raise ConflictError(
+                "I tavoli si configurano tra l'apertura delle iscrizioni "
+                "e l'avvio della gara"
+            )
+
+        gara.set_available_tables(tables)
+        gara.assign_tables_by_ranking = assign_tables_by_ranking
         return gara
 
     @staticmethod
@@ -468,9 +504,9 @@ class GaraService:
             end_dt = None
 
         if start_dt and end_dt and end_dt < start_dt:
-            errors[
-                "inscription_end"
-            ] = "La data di fine iscrizioni deve essere >= della data di inizio"
+            errors["inscription_end"] = (
+                "La data di fine iscrizioni deve essere >= della data di inizio"
+            )
 
         # rounds_count (opzionale): >= 1
         rounds_raw = data.get("rounds_count")
@@ -497,7 +533,8 @@ class GaraService:
                     errors["rounds_count"] = (
                         f"Con anti-rematch attivo e {max_p_val} partecipanti massimi, "
                         f"puoi avere al massimo {max_rounds} turni "
-                        f"(ogni giocatore può incontrare al massimo {max_rounds} avversari unici)"
+                        f"(ogni giocatore può incontrare al massimo "
+                        f"{max_rounds} avversari unici)"
                     )
             except (TypeError, ValueError):
                 pass  # max_p validation already handled above
@@ -561,14 +598,23 @@ class GaraService:
             True se aggiunto con successo, False se già esistente
 
         Raises:
-            ValueError se l'utente è admin
+            ValidationError se l'utente non ha ruolo direttore (o è admin)
         """
+        from models.exceptions import ValidationError
         from models.user.models import User, DirectorAssignment
+        from models.user.role_enum import UserRole
 
-        # Verifica che l'utente non sia admin
         user = db.session.get(User, user_id)
         if user and user.is_admin:
-            raise ValueError("Gli admin non possono essere direttori di gara")
+            raise ValidationError("Gli admin non possono essere direttori di gara")
+
+        # Solo utenti con ruolo director: la UI offre solo quelli, ma il
+        # service non lo imponeva (un POST manuale poteva promuovere un
+        # player a gestore). Allineato il 2026-06-10 (decisione batch 8).
+        if not user or user.role != UserRole.DIRECTOR.value:
+            raise ValidationError(
+                "Solo gli utenti con ruolo direttore possono essere co-direttori"
+            )
 
         # Controlla se già esiste
         existing = (
@@ -601,7 +647,7 @@ class GaraService:
             entity_name=gara_name,
             user_id=user_id,
             username=user.username,
-            assigned_by_id=assigned_by_id
+            assigned_by_id=assigned_by_id,
         )
         EventBus.publish(event)
 
@@ -647,7 +693,7 @@ class GaraService:
             entity_name=gara_name,
             user_id=user_id,
             username=user.username,
-            removed_by_id=director_assoc.assigned_by_id  # chi ha aggiunto
+            removed_by_id=director_assoc.assigned_by_id,  # chi ha aggiunto
         )
         EventBus.publish(event)
 
@@ -672,7 +718,7 @@ class GaraService:
         """
         from models.match.models import Match
         from models.classification.models import RoundClassification
-        from models.orchestration.service import OperationResult, OperationType
+        from models.shared.operation_result import OperationResult, OperationType
 
         gara = db.session.get(Gara, gara_id)
         if not gara:
@@ -749,10 +795,7 @@ class GaraService:
     @staticmethod
     @transactional(domain="competition")
     def soft_delete_gara(
-        gara_id: int,
-        deleted_by_id: int,
-        cascade_option: str,
-        reason: str = ""
+        gara_id: int, deleted_by_id: int, cascade_option: str, reason: str = ""
     ) -> None:
         """Soft delete a gara with cascade options.
 
@@ -809,7 +852,7 @@ class GaraService:
         Returns:
             OperationResult with success status and details
         """
-        from models.orchestration.service import OperationResult, OperationType
+        from models.shared.operation_result import OperationResult, OperationType
 
         gara = db.session.get(Gara, gara_id)
         if not gara:
@@ -842,12 +885,12 @@ class GaraService:
             affected_domains=["competition", "notification"],
         )
 
-    # Note: InscriptionService and RoundService have been extracted as separate services.
-    # New code should import them directly.
+    # Note: InscriptionService and RoundService have been extracted as
+    # separate services. New code should import them directly.
 
 
-from models.competition.inscription_service import InscriptionService
-from models.competition.round_service import RoundService  # noqa: F811
+from models.competition.inscription_service import InscriptionService  # noqa: E402
+from models.competition.round_service import RoundService  # noqa: E402,F811
 
 __all__ = [
     "GaraService",

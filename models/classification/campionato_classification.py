@@ -7,8 +7,8 @@ from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import joinedload, selectinload
 from models.base import db
 from .models import Classification
+from ..status_enum import MatchStatus
 from ..caching import cached, cache_invalidate, cache_manager
-from ..optimization import optimized_query
 from ..transaction import transactional
 
 from .registry import get_classification_registry
@@ -51,8 +51,9 @@ class ClassificationService:
         for gara in gare:
             # Include both 'completed' and 'validated' as finished matches
             completed_matches = [
-                m for m in gara.matches
-                if m.status in ["completed", "validated"] and not m.is_bye
+                m
+                for m in gara.matches
+                if MatchStatus.is_finished(m.status) and not m.is_bye
             ]
             for match in completed_matches:
                 if match.player1_id:
@@ -69,7 +70,6 @@ class ClassificationService:
         tags=["classification", "campionato"],
         key_generator="campionato",
     )
-    @optimized_query(cache_ttl=300, cache_tags=["campionato_classification"])
     def update_campionato_classification(campionato_id: int) -> List[Classification]:
         """
         Update overall campionato classification based on all completed provas.

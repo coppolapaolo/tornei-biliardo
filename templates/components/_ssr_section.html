@@ -39,6 +39,7 @@
                      class="form-control form-control-sm text-center ssr-group-input"
                      data-user-id="{{ player.user_id }}"
                      data-group-position="{{ group.position }}"
+                     data-needs-distinct-top="{{ group.needs_distinct_top }}"
                      value="{{ player.current_ssr_score if player.current_ssr_score is not none else '' }}"
                      min="0"
                      style="width: 80px; display: inline-block;">

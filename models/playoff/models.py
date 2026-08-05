@@ -1,7 +1,8 @@
 """
 Module: models/playoff/models.py
 Purpose: Playoff domain models for campionato playoffs system
-Requirements: SPECIFICHE.md - Playoff system with qualification criteria and special campionati
+Requirements: SPECIFICHE.md - Playoff system with qualification criteria
+              and special campionati
 Data Structures: PlayoffConfiguration, PlayoffQualification, PlayoffTournament
 """
 
@@ -12,7 +13,7 @@ from typing import Any, Dict, List, Optional, TYPE_CHECKING
 from enum import Enum
 
 
-from ..base import db, BaseModel, TimestampMixin, utc_now
+from ..base import db, BaseModel, utc_now
 from ..transaction import transactional
 
 if TYPE_CHECKING:
@@ -57,10 +58,12 @@ class PlayoffConfiguration(BaseModel):
 
     # Qualification criteria
     max_participants = db.Column(db.Integer, nullable=False)
-    min_garas_played = db.Column(db.Integer, nullable=True)  # Minimum provas to qualify
-    # Simplified position-based criteria (preferred over JSON for simple cases)
-    positions_from = db.Column(db.Integer, nullable=True)  # Starting position (e.g., 1 for Elite)
-    positions_to = db.Column(db.Integer, nullable=True)  # Ending position (e.g., 6 for Top 6)
+    # Minimum provas to qualify
+    min_garas_played = db.Column(db.Integer, nullable=True)
+    # Simplified position-based criteria (preferred over JSON)
+    # e.g. 1 for Elite, 6 for Top 6
+    positions_from = db.Column(db.Integer, nullable=True)
+    positions_to = db.Column(db.Integer, nullable=True)
     # Legacy JSON criteria for complex cases
     qualification_criteria = db.Column(
         db.Text, nullable=True
@@ -98,15 +101,14 @@ class PlayoffConfiguration(BaseModel):
         "PlayoffTournament", back_populates="configuration", uselist=False
     )
     # The playoff gara (linked from Gara.playoff_config_id)
-    gara = db.relationship(
-        "Gara", back_populates="playoff_config", uselist=False
-    )
+    gara = db.relationship("Gara", back_populates="playoff_config", uselist=False)
 
     def has_qualifications(self) -> bool:
         """Check if qualifications have been generated for this config."""
-        return PlayoffQualification.query.filter_by(
-            configuration_id=self.id
-        ).first() is not None
+        return (
+            PlayoffQualification.query.filter_by(configuration_id=self.id).first()
+            is not None
+        )
 
     def get_gara_params(self) -> Dict[str, Any]:
         """Return gara creation parameters, falling back to campionato defaults.
@@ -130,15 +132,18 @@ class PlayoffConfiguration(BaseModel):
 
         # Resolve each param: explicit override or campionato default
         params["discipline"] = (
-            self.discipline if self.discipline is not None
+            self.discipline
+            if self.discipline is not None
             else (default_gara.discipline if default_gara else "palla_9")
         )
         params["distance"] = (
-            self.distance if self.distance is not None
+            self.distance
+            if self.distance is not None
             else (default_gara.distance if default_gara else 5)
         )
         params["rounds_count"] = (
-            self.rounds_count if self.rounds_count is not None
+            self.rounds_count
+            if self.rounds_count is not None
             else (default_gara.rounds_count if default_gara else 1)
         )
         if self.strategy_type is not None:
@@ -147,7 +152,11 @@ class PlayoffConfiguration(BaseModel):
             params["matchmaking_strategy"] = default_gara.matchmaking_strategy
         if self.odd_number_policy is not None:
             params["odd_number_policy"] = self.odd_number_policy
-        elif default_gara and hasattr(default_gara, "odd_number_policy") and default_gara.odd_number_policy:
+        elif (
+            default_gara
+            and hasattr(default_gara, "odd_number_policy")
+            and default_gara.odd_number_policy
+        ):
             params["odd_number_policy"] = default_gara.odd_number_policy
 
         # Additional fields from config
@@ -234,7 +243,10 @@ class PlayoffConfiguration(BaseModel):
                         {
                             "user_id": classification.user_id,
                             "position": classification.position,
-                            "qualification_reason": f"Position {classification.position} (excluding top {exclude_top})",
+                            "qualification_reason": (
+                                f"Position {classification.position} "
+                                f"(excluding top {exclude_top})"
+                            ),
                         }
                     )
 
@@ -253,23 +265,26 @@ class PlayoffConfiguration(BaseModel):
         return qualified_players[: self.max_participants]
 
     def _meets_minimum_requirements(self, user_id: int) -> bool:
-        """Check if user meets minimum requirements for playoff."""
+        """Check if user meets minimum requirements for playoff.
+
+        Usa `Classification.gare_played` (popolato da
+        `ClassificationService._count_gare_played` che conta le gare con
+        almeno un match completed/validated). Filtrare per
+        `Gara.status == "completed"` non e' affidabile perche' una gara
+        puo' essere di fatto conclusa pur restando in PLAYING finche' il
+        director non la chiude formalmente.
+        """
         if not self.min_garas_played:
             return True
 
-        from ..competition.models import Inscription, Gara
+        from ..classification.models import Classification
 
-        gare_played = (
-            Inscription.query.join(Gara)
-            .filter(
-                Inscription.user_id == user_id,
-                Gara.campionato_id == self.campionato_id,
-                Gara.status == "completed",
-            )
-            .count()
-        )
-
-        return gare_played >= self.min_garas_played
+        classification = Classification.query.filter_by(
+            campionato_id=self.campionato_id, user_id=user_id
+        ).first()
+        if not classification:
+            return False
+        return (classification.gare_played or 0) >= self.min_garas_played
 
     def _evaluate_custom_criteria(
         self, classification: "Classification", criteria: Dict[str, Any]
@@ -349,8 +364,10 @@ class PlayoffQualification(BaseModel):
         default=QualificationStatus.PENDING,
     )
     # Invitation timing (individual per invitation for batch management)
-    invited_at = db.Column(db.DateTime, nullable=True)  # When invitation was sent
-    expires_at = db.Column(db.DateTime, nullable=True)  # Individual deadline for this invitation
+    # When invitation was sent
+    invited_at = db.Column(db.DateTime, nullable=True)
+    # Individual deadline for this invitation
+    expires_at = db.Column(db.DateTime, nullable=True)
     responded_at = db.Column(db.DateTime, nullable=True)  # When player responded
     # Legacy field (kept for compatibility)
     notified_at = db.Column(db.DateTime, nullable=True)  # Deprecated: use invited_at
@@ -376,37 +393,37 @@ class PlayoffQualification(BaseModel):
         self.status = QualificationStatus.CONFIRMED
         self.responded_at = utc_now()
 
-    def decline_participation(self) -> Optional["PlayoffQualification"]:
-        """Decline participation and trigger replacement process."""
+    def decline_participation(self) -> None:
+        """Decline participation (solo cambio status).
+
+        La ricerca del sostituto è responsabilità del service layer
+        (PlayoffService.find_replacement_player), non del modello: prima qui
+        si chiamava self.configuration._find_replacement() protetto da hasattr,
+        ma PlayoffConfiguration NON definisce quel metodo → guardia sempre
+        False → nessun sostituto veniva mai cercato sul decline.
+        """
         if self.status != QualificationStatus.PENDING:
             raise ValueError("Can only decline pending qualifications")
 
         self.status = QualificationStatus.DECLINED
         self.responded_at = utc_now()
 
-        # Find next eligible player for replacement
-        return (
-            self.configuration._find_replacement()
-            if hasattr(self.configuration, "_find_replacement")
-            else None
-        )
+    def expire_qualification(self) -> None:
+        """Mark qualification as expired (solo cambio status).
 
-    def expire_qualification(self) -> Optional["PlayoffQualification"]:
-        """Mark qualification as expired and find replacement."""
+        Come decline_participation, la ricerca del sostituto è del service
+        layer (vedi PlayoffService.expire_old_qualifications).
+        """
         if self.status != QualificationStatus.PENDING:
-            return None
+            return
 
         self.status = QualificationStatus.EXPIRED
 
-        # Find replacement
-        return (
-            self.configuration._find_replacement()
-            if hasattr(self.configuration, "_find_replacement")
-            else None
-        )
-
     def __repr__(self) -> str:
-        return f"<PlayoffQualification {self.user_id} -> {self.configuration.name}: {self.status.value}>"
+        return (
+            f"<PlayoffQualification {self.user_id} -> "
+            f"{self.configuration.name}: {self.status.value}>"
+        )
 
 
 class PlayoffTournament(BaseModel):

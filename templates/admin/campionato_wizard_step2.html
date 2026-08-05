@@ -47,9 +47,9 @@
                     </div>
                     <div class="col-6 col-md-3">
                         <strong>{{ _("Classifica:") }}</strong><br>
-                        {% if wizard_data.classification_system == 'WINS' %}{{ _("Vittorie") }}
-                        {% elif wizard_data.classification_system == 'RACK' %}{{ _("Rack Totali") }}
-                        {% else %}{{ wizard_data.classification_system }}{% endif %}
+                        {% if wizard_data.default_classification_system == 'WINS' %}{{ _("Vittorie") }}
+                        {% elif wizard_data.default_classification_system == 'RACK' %}{{ _("Rack Totali") }}
+                        {% else %}{{ wizard_data.default_classification_system }}{% endif %}
                     </div>
                     <div class="col-6 col-md-3">
                         <strong>{{ _("Strategia:") }}</strong><br>{{ wizard_data.campionato_type|capitalize }}
@@ -142,7 +142,7 @@
                                 <div id="policy-description-trio" class="alert alert-info py-2 mb-0 small d-none">
                                     <i class="fas fa-users"></i>
                                     {{ _("I tre giocatori piu' bassi giocano un match a 3.") }}
-                                    <br><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> {{ _("Solo per distanze 2-5.") }}</small>
+                                    <br><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> {{ _("Solo per distanze 2-7.") }}</small>
                                 </div>
                             </div>
                         </div>
@@ -155,6 +155,18 @@
                                 <label class="form-check-label" for="default_anti_rematch">
                                     <strong>{{ _("Anti-Rematch") }}</strong>
                                     <br><small class="text-muted">{{ _("Evita accoppiamenti ripetuti tra gli stessi giocatori nella stessa gara") }}</small>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Handicap mode -->
+                        <div class="mb-4">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="has_handicap"
+                                       name="has_handicap">
+                                <label class="form-check-label" for="has_handicap">
+                                    <strong>{{ _("Gioco con handicap") }}</strong>
+                                    <br><small class="text-muted">{{ _("I match si giocano con handicap e non aggiornano i rating (Elo/Fargo). Ereditato da gare e partite.") }}</small>
                                 </label>
                             </div>
                         </div>

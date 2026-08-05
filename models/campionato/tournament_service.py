@@ -13,6 +13,7 @@ from models.match.models import Match
 from sqlalchemy.exc import IntegrityError
 
 from models.base import db, utc_now
+from models.exceptions import ValidationError
 from .models import Campionato
 from ..user.role_enum import UserRole
 from ..transaction.manager import (
@@ -34,14 +35,9 @@ class TournamentService(TournamentStatisticsService):
     Inherits statistics/classification methods from TournamentStatisticsService.
     """
 
-    def __init__(self):
-        super().__init__()
-
     @transactional(domain="campionato")
     def create_campionato(self, name: str, **kwargs: Any) -> Campionato:
         """Crea e persiste un campionato (API compatibile con test esistenti)."""
-        # Track domain access
-        self._track_domain_access()
 
         # Filter valid kwargs for Campionato model
         valid_campionato_fields = {
@@ -56,6 +52,7 @@ class TournamentService(TournamentStatisticsService):
             "default_rounds_count",
             "default_odd_policy",
             "default_anti_rematch",
+            "has_handicap",
             # Deprecated but kept for compatibility
             "without_x",
             "final_playoffs",
@@ -68,9 +65,7 @@ class TournamentService(TournamentStatisticsService):
         # Extract director_id if present for separate handling
         director_id = kwargs.get("director_id")
 
-        campionato = self._execute_with_tracking(
-            lambda: Campionato(name=name, **filtered_kwargs)
-        )
+        campionato = Campionato(name=name, **filtered_kwargs)
         db.session.add(campionato)
         db.session.flush()  # Flush to ensure ID is assigned
 
@@ -92,7 +87,7 @@ class TournamentService(TournamentStatisticsService):
                 campionato_id=campionato.id,
                 name=campionato.name,
                 creator_id=director_id,
-                campionato_type=campionato.campionato_type or "amalfi"
+                campionato_type=campionato.campionato_type or "amalfi",
             )
             EventBus.publish(event)
 
@@ -115,55 +110,49 @@ class TournamentService(TournamentStatisticsService):
         default_odd_policy: str = "bye",
         default_anti_rematch: bool = True,
         default_classification_system: str = "WINS",
+        has_handicap: bool = False,
         # Deprecated but kept for compatibility
         without_x: bool = False,
         final_playoffs: bool = False,
         scoring_policy: str = "classic",
     ) -> Campionato:
         """Crea campionato e assegna automaticamente il direttore se necessario."""
-        # Track domain access
-        self._track_domain_access()
 
         # Import locale per evitare import circolari
         from models.user.models import User, DirectorAssignment
 
-        user = self._execute_with_tracking(
-            lambda: db.session.get(User, creator_user_id)
-        )
+        user = db.session.get(User, creator_user_id)
         if not user:
             raise ValueError("User not found")
 
-        campionato = self._execute_with_tracking(
-            lambda: Campionato(
-                name=name,
-                campionato_type=campionato_type,
-                challenge_mode=challenge_mode,
-                is_active=is_active,
-                planned_gare_count=planned_gare_count,
-                default_venue_id=default_venue_id,
-                default_entry_fee=default_entry_fee,
-                default_rounds_count=default_rounds_count,
-                default_odd_policy=default_odd_policy,
-                default_anti_rematch=default_anti_rematch,
-                default_classification_system=default_classification_system,
-                # Deprecated fields
-                without_x=without_x,
-                final_playoffs=final_playoffs,
-                scoring_policy=scoring_policy,
-            )
+        campionato = Campionato(
+            name=name,
+            campionato_type=campionato_type,
+            challenge_mode=challenge_mode,
+            is_active=is_active,
+            planned_gare_count=planned_gare_count,
+            default_venue_id=default_venue_id,
+            default_entry_fee=default_entry_fee,
+            default_rounds_count=default_rounds_count,
+            default_odd_policy=default_odd_policy,
+            default_anti_rematch=default_anti_rematch,
+            default_classification_system=default_classification_system,
+            has_handicap=has_handicap,
+            # Deprecated fields
+            without_x=without_x,
+            final_playoffs=final_playoffs,
+            scoring_policy=scoring_policy,
         )
         db.session.add(campionato)
         db.session.flush()  # Per ottenere l'ID senza commit completo
 
         # Se l'utente è un direttore (non admin), assegnalo automaticamente
         if user.is_director and not user.is_admin:
-            assignment = self._execute_with_tracking(
-                lambda: DirectorAssignment(
-                    entity_type="campionato",
-                    entity_id=campionato.id,
-                    user_id=creator_user_id,
-                    assigned_by_id=creator_user_id,
-                )
+            assignment = DirectorAssignment(
+                entity_type="campionato",
+                entity_id=campionato.id,
+                user_id=creator_user_id,
+                assigned_by_id=creator_user_id,
             )
             db.session.add(assignment)
 
@@ -172,7 +161,7 @@ class TournamentService(TournamentStatisticsService):
             campionato_id=campionato.id,
             name=campionato.name,
             creator_id=creator_user_id,
-            campionato_type=campionato.campionato_type or "amalfi"
+            campionato_type=campionato.campionato_type or "amalfi",
         )
         EventBus.publish(event)
 
@@ -181,18 +170,15 @@ class TournamentService(TournamentStatisticsService):
     @transactional(domain="campionato")
     def update_campionato(self, campionato_id: int, **kwargs: Any) -> Campionato:
         """Aggiorna un campionato con i campi forniti."""
-        # Track domain access
-        self._track_domain_access()
 
-        campionato = self._execute_with_tracking(
-            lambda: db.session.get(Campionato, campionato_id)
-        )
+        campionato = db.session.get(Campionato, campionato_id)
         if not campionato:
             raise ValueError("Campionato not found")
 
         if not campionato.can_be_modified():
             raise ValueError(
-                "Impossibile modificare il campionato: alcune gare hanno già delle iscrizioni!"
+                "Impossibile modificare il campionato: "
+                "alcune gare hanno già delle iscrizioni!"
             )
 
         # Aggiorna solo i campi forniti
@@ -206,12 +192,8 @@ class TournamentService(TournamentStatisticsService):
     @transactional(domain="campionato")
     def toggle_active_status(self, campionato_id: int) -> Campionato:
         """Attiva/disattiva un campionato."""
-        # Track domain access
-        self._track_domain_access()
 
-        campionato = self._execute_with_tracking(
-            lambda: db.session.get(Campionato, campionato_id)
-        )
+        campionato = db.session.get(Campionato, campionato_id)
         if not campionato:
             raise ValueError("Campionato not found")
 
@@ -231,49 +213,48 @@ class TournamentService(TournamentStatisticsService):
         Raises:
             ValueError se l'utente è admin
         """
-        # Track domain access
-        self._track_domain_access()
 
         # Import locale per evitare import circolari
         from models.user.models import User, DirectorAssignment
 
-        user = self._execute_with_tracking(lambda: db.session.get(User, user_id))
+        user = db.session.get(User, user_id)
         if not user:
             raise ValueError("User not found")
 
         if user.role == UserRole.ADMIN.value:
-            raise ValueError("Gli admin non vanno assegnati come direttori.")
+            raise ValidationError("Gli admin non vanno assegnati come direttori.")
 
-        existing = self._execute_with_tracking(
-            lambda: DirectorAssignment.query.filter_by(
-                entity_type="campionato", entity_id=campionato_id, user_id=user_id
-            ).first()
-        )
+        # Solo utenti con ruolo director (stessa regola di GaraService: la UI
+        # offre solo direttori, il service deve imporlo).
+        if user.role != UserRole.DIRECTOR.value:
+            raise ValidationError(
+                "Solo gli utenti con ruolo direttore possono essere co-direttori"
+            )
+
+        existing = DirectorAssignment.query.filter_by(
+            entity_type="campionato", entity_id=campionato_id, user_id=user_id
+        ).first()
 
         if existing:
             return False  # Già esistente
 
-        assignment = self._execute_with_tracking(
-            lambda: DirectorAssignment(
-                entity_type="campionato",
-                entity_id=campionato_id,
-                user_id=user_id,
-                assigned_by_id=assigned_by_id,
-            )
+        assignment = DirectorAssignment(
+            entity_type="campionato",
+            entity_id=campionato_id,
+            user_id=user_id,
+            assigned_by_id=assigned_by_id,
         )
         db.session.add(assignment)
 
         # Pubblica evento per notifica (pattern event-driven)
-        campionato = self._execute_with_tracking(
-            lambda: db.session.get(Campionato, campionato_id)
-        )
+        campionato = db.session.get(Campionato, campionato_id)
         event = DirectorAssignmentAddedEvent(
             entity_type="campionato",
             entity_id=campionato_id,
             entity_name=campionato.name,
             user_id=user_id,
             username=user.username,
-            assigned_by_id=assigned_by_id
+            assigned_by_id=assigned_by_id,
         )
         EventBus.publish(event)
 
@@ -286,28 +267,20 @@ class TournamentService(TournamentStatisticsService):
         Returns:
             True se rimosso con successo, False se non trovato
         """
-        # Track domain access
-        self._track_domain_access()
 
         # Import locale per evitare import circolari
         from models.user.models import DirectorAssignment, User
 
-        assignment = self._execute_with_tracking(
-            lambda: DirectorAssignment.query.filter_by(
-                entity_type="campionato", entity_id=campionato_id, user_id=user_id
-            ).first()
-        )
+        assignment = DirectorAssignment.query.filter_by(
+            entity_type="campionato", entity_id=campionato_id, user_id=user_id
+        ).first()
 
         if not assignment:
             return False
 
         # Recupera dati per evento prima di eliminare
-        user = self._execute_with_tracking(
-            lambda: db.session.get(User, user_id)
-        )
-        campionato = self._execute_with_tracking(
-            lambda: db.session.get(Campionato, campionato_id)
-        )
+        user = db.session.get(User, user_id)
+        campionato = db.session.get(Campionato, campionato_id)
 
         # Elimina associazione
         db.session.delete(assignment)
@@ -319,7 +292,7 @@ class TournamentService(TournamentStatisticsService):
             entity_name=campionato.name,
             user_id=user_id,
             username=user.username,
-            removed_by_id=assignment.assigned_by_id
+            removed_by_id=assignment.assigned_by_id,
         )
         EventBus.publish(event)
 
@@ -328,24 +301,16 @@ class TournamentService(TournamentStatisticsService):
     @read_only(domain="campionato")
     def get_active_campionatos(self) -> List[Campionato]:
         """Restituisce i campionati attivi (non soft-deleted)."""
-        # Track domain access
-        self._track_domain_access()
 
-        return self._execute_with_tracking(
-            lambda: Campionato.get_active_campionatos().all()
-        )
+        return Campionato.get_active_campionatos().all()
 
     @transactional(domain="campionato")
     def delete_campionato(self, campionato_id: int) -> None:
         """
         Cancella un campionato rispettando le regole di dominio e garantendo atomicità.
         """
-        # Track domain access
-        self._track_domain_access()
 
-        campionato = self._execute_with_tracking(
-            lambda: db.session.get(Campionato, campionato_id)
-        )
+        campionato = db.session.get(Campionato, campionato_id)
         if not campionato:
             raise ValueError("Campionato not found")
 
@@ -380,15 +345,11 @@ class TournamentService(TournamentStatisticsService):
         campionato_id: int,
         deleted_by_id: int,
         cascade_option: str = "delete_all",
-        reason: Optional[str] = None
+        reason: Optional[str] = None,
     ) -> bool:
         """Soft delete campionato with cascade options."""
-        # Track domain access
-        self._track_domain_access()
 
-        campionato = self._execute_with_tracking(
-            lambda: db.session.get(Campionato, campionato_id)
-        )
+        campionato = db.session.get(Campionato, campionato_id)
         if not campionato:
             raise ValueError("Campionato not found")
 
@@ -401,8 +362,7 @@ class TournamentService(TournamentStatisticsService):
             gara_ids = [g.id for g in campionato.gare]
             if gara_ids:
                 Match.query.filter(Match.gara_id.in_(gara_ids)).update(
-                    {"gara_id": None},
-                    synchronize_session="fetch"
+                    {"gara_id": None}, synchronize_session="fetch"
                 )
 
         # Soft delete all garas in the campionato
@@ -422,12 +382,8 @@ class TournamentService(TournamentStatisticsService):
         Restore a soft-deleted campionato.
         Returns True if successful, False if not deleted.
         """
-        # Track domain access
-        self._track_domain_access()
 
-        campionato = self._execute_with_tracking(
-            lambda: db.session.get(Campionato, campionato_id)
-        )
+        campionato = db.session.get(Campionato, campionato_id)
         if not campionato:
             raise ValueError("Campionato not found")
 
@@ -440,12 +396,8 @@ class TournamentService(TournamentStatisticsService):
     @read_only(domain="campionato")
     def get_deleted_campionatos(self) -> List[Campionato]:
         """Get all soft-deleted campionati."""
-        # Track domain access
-        self._track_domain_access()
 
-        return self._execute_with_tracking(
-            lambda: Campionato.get_deleted_campionatos().all()
-        )
+        return Campionato.get_deleted_campionatos().all()
 
     @transactional(domain="campionato")
     def permanently_delete_campionato(self, campionato_id: int) -> None:
@@ -453,12 +405,8 @@ class TournamentService(TournamentStatisticsService):
         Permanently delete a campionato (hard delete).
         Only allowed if no matches have been played.
         """
-        # Track domain access
-        self._track_domain_access()
 
-        campionato = self._execute_with_tracking(
-            lambda: db.session.get(Campionato, campionato_id)
-        )
+        campionato = db.session.get(Campionato, campionato_id)
         if not campionato:
             raise ValueError("Campionato not found")
 
@@ -482,21 +430,14 @@ class TournamentService(TournamentStatisticsService):
         from models.user.models import User
         from sqlalchemy import not_
 
-        # Track domain access
-        self._track_domain_access()
-
-        campionato = self._execute_with_tracking(
-            lambda: db.session.get(Campionato, campionato_id)
-        )
+        campionato = db.session.get(Campionato, campionato_id)
         if not campionato:
             raise ValueError("Campionato not found")
 
-        gare = self._execute_with_tracking(
-            lambda: (
-                Gara.query.filter_by(campionato_id=campionato_id)
-                .order_by(Gara.number)
-                .all()
-            )
+        gare = (
+            Gara.query.filter_by(campionato_id=campionato_id)
+            .order_by(Gara.number)
+            .all()
         )
 
         # ID dei direttori già assegnati a questo campionato
@@ -513,13 +454,11 @@ class TournamentService(TournamentStatisticsService):
         ]
 
         # Solo utenti role='director' che non sono già assegnati
-        candidate_directors = self._execute_with_tracking(
-            lambda: (
-                User.query.filter_by(role="director")
-                .filter(not_(User.id.in_(assigned_ids)))
-                .order_by(User.username)
-                .all()
-            )
+        candidate_directors = (
+            User.query.filter_by(role="director")
+            .filter(not_(User.id.in_(assigned_ids)))
+            .order_by(User.username)
+            .all()
         )
 
         return {
@@ -536,12 +475,7 @@ class TournamentService(TournamentStatisticsService):
         from models.user.models import User
         from sqlalchemy import not_
 
-        # Track domain access
-        self._track_domain_access()
-
-        campionato = self._execute_with_tracking(
-            lambda: db.session.get(Campionato, campionato_id)
-        )
+        campionato = db.session.get(Campionato, campionato_id)
         if not campionato:
             raise ValueError("Campionato not found")
 
@@ -559,13 +493,11 @@ class TournamentService(TournamentStatisticsService):
         ]
 
         # Solo utenti role='director' che non sono già assegnati
-        candidate_directors = self._execute_with_tracking(
-            lambda: (
-                User.query.filter_by(role="director")
-                .filter(not_(User.id.in_(assigned_ids)))
-                .order_by(User.username)
-                .all()
-            )
+        candidate_directors = (
+            User.query.filter_by(role="director")
+            .filter(not_(User.id.in_(assigned_ids)))
+            .order_by(User.username)
+            .all()
         )
 
         return candidate_directors
@@ -575,12 +507,8 @@ class TournamentService(TournamentStatisticsService):
         """
         Calculate derived status information for a campionato.
         """
-        # Track domain access
-        self._track_domain_access()
 
-        campionato = self._execute_with_tracking(
-            lambda: db.session.get(Campionato, campionato_id)
-        )
+        campionato = db.session.get(Campionato, campionato_id)
         if not campionato:
             raise ValueError("Campionato not found")
 
@@ -621,11 +549,8 @@ class TournamentService(TournamentStatisticsService):
         Raises:
             ValueError: se campionato non trovato o soft-deleted
         """
-        self._track_domain_access()
 
-        campionato = self._execute_with_tracking(
-            lambda: db.session.get(Campionato, campionato_id)
-        )
+        campionato = db.session.get(Campionato, campionato_id)
         if not campionato:
             raise ValueError("Campionato not found")
         if campionato.is_deleted:
@@ -633,11 +558,50 @@ class TournamentService(TournamentStatisticsService):
         if campionato.terminated_at:
             return False
 
-        from models.status_enum import GaraStatus
+        from models.status_enum import GaraStatus, MatchStatus
+        from models.competition.state_service import StateService
 
         for gara in campionato.gare:
-            if not gara.is_deleted and gara.status != GaraStatus.COMPLETED.value:
-                gara.soft_delete("Campionato terminato")
+            if gara.is_deleted or gara.status == GaraStatus.COMPLETED.value:
+                continue
+            # Una gara con risultati reali (almeno un match concluso) NON va
+            # MAI soft-eliminata alla terminazione: perderemmo i dati di
+            # classifica già giocati. La completiamo per consolidarli; se non è
+            # completabile (match ancora attivi) la lasciamo nello stato
+            # corrente, ma mai eliminata. Solo le gare mai giocate (setup/
+            # iscrizione/playing senza risultati) vengono soft-eliminate.
+            #
+            # NB: decidiamo su un fatto oggettivo (esiste un match concluso?),
+            # non sullo stato derivato: una gara PLAYING a metà round o
+            # AWAITING_SSR ha risultati reali pur non essendo "terminale".
+            has_played_matches = (
+                db.session.query(Match.id)
+                .filter(
+                    Match.gara_id == gara.id,
+                    Match.status.in_(MatchStatus.finished_values()),
+                )
+                .first()
+                is not None
+            )
+            if has_played_matches:
+                try:
+                    StateService.complete(gara)
+                except Exception:
+                    # Match ancora attivi → non completabile, ma i dati restano.
+                    pass
+                continue
+            gara.soft_delete("Campionato terminato")
+
+        # Aggiorna la classifica del campionato in modo che start_playoff
+        # trovi i Classification records popolati.
+        try:
+            from models.classification.campionato_classification import (
+                ClassificationService,
+            )
+
+            ClassificationService.update_campionato_classification(campionato_id)
+        except Exception:
+            pass
 
         campionato.terminated_at = utc_now()
         campionato.updated_at = utc_now()
@@ -654,18 +618,16 @@ class TournamentService(TournamentStatisticsService):
         Returns:
             {"feasible": bool, "configs": [...], "completed_count": int}
         """
-        self._track_domain_access()
 
-        campionato = self._execute_with_tracking(
-            lambda: db.session.get(Campionato, campionato_id)
-        )
+        campionato = db.session.get(Campionato, campionato_id)
         if not campionato:
             raise ValueError("Campionato not found")
 
         from models.status_enum import GaraStatus
 
         completed_count = sum(
-            1 for g in campionato.gare
+            1
+            for g in campionato.gare
             if not g.is_deleted and g.status == GaraStatus.COMPLETED.value
         )
 
@@ -679,12 +641,14 @@ class TournamentService(TournamentStatisticsService):
             feasible = completed_count >= min_req
             if not feasible:
                 all_feasible = False
-            configs_info.append({
-                "id": config.id,
-                "name": config.name,
-                "min_garas_played": min_req,
-                "feasible": feasible,
-            })
+            configs_info.append(
+                {
+                    "id": config.id,
+                    "name": config.name,
+                    "min_garas_played": min_req,
+                    "feasible": feasible,
+                }
+            )
 
         return {
             "feasible": all_feasible,
@@ -697,13 +661,10 @@ class TournamentService(TournamentStatisticsService):
         self, campionato_id: int, config_id: int, new_min: int
     ) -> None:
         """Aggiorna min_garas_played di una PlayoffConfiguration."""
-        self._track_domain_access()
 
         from models.playoff.models import PlayoffConfiguration
 
-        config = self._execute_with_tracking(
-            lambda: db.session.get(PlayoffConfiguration, config_id)
-        )
+        config = db.session.get(PlayoffConfiguration, config_id)
         if not config:
             raise ValueError("PlayoffConfiguration not found")
         if config.campionato_id != campionato_id:
@@ -715,7 +676,6 @@ class TournamentService(TournamentStatisticsService):
 
         Delegates to PlayoffService.start_playoff().
         """
-        self._track_domain_access()
         from models.playoff.services import PlayoffService
 
         return PlayoffService.start_playoff(campionato_id)

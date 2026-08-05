@@ -63,9 +63,13 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db"):
             "SELECT user_id, location, is_available, preferred_days, "
             "preferred_times FROM player_availability"
         )
-        for user_id, location, is_available, preferred_days, preferred_times in (
-            cursor.fetchall()
-        ):
+        for (
+            user_id,
+            location,
+            is_available,
+            preferred_days,
+            preferred_times,
+        ) in cursor.fetchall():
             cursor.execute(
                 "SELECT id FROM billiard_hall "
                 "WHERE lower(trim(name)) = lower(trim(?)) LIMIT 1",
@@ -116,6 +120,5 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db"):
     conn.commit()
     conn.close()
     print(
-        f"  ✓ player_availability rimossa "
-        f"(migrati {migrated}, scartati {skipped})"
+        f"  ✓ player_availability rimossa " f"(migrati {migrated}, scartati {skipped})"
     )

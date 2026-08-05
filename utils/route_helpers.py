@@ -13,13 +13,16 @@ from typing import Any, Callable, Optional
 from flask import abort, flash, jsonify, make_response, redirect, request
 
 from models.base import db
+from models.exceptions import http_status_for_exception
 
 logger = logging.getLogger(__name__)
 
 _GENERIC_ERROR = "Errore interno del server"
 
 
-def get_or_ajax_404(model_class: type, entity_id: int, entity_name: str = "Risorsa") -> Any:
+def get_or_ajax_404(
+    model_class: type, entity_id: int, entity_name: str = "Risorsa"
+) -> Any:
     """Fetch an entity by PK or abort with a JSON 404 response (for AJAX routes).
 
     Usage:
@@ -27,9 +30,12 @@ def get_or_ajax_404(model_class: type, entity_id: int, entity_name: str = "Risor
     """
     entity = db.session.get(model_class, entity_id)
     if entity is None:
-        abort(make_response(
-            jsonify({"success": False, "error": f"{entity_name} non trovato/a"}), 404
-        ))
+        abort(
+            make_response(
+                jsonify({"success": False, "error": f"{entity_name} non trovato/a"}),
+                404,
+            )
+        )
     return entity
 
 
@@ -39,7 +45,9 @@ def is_ajax_request() -> bool:
 
 
 def ajax_success(
-    message: Optional[str] = None, data: Optional[dict[str, Any]] = None, status: int = 200
+    message: Optional[str] = None,
+    data: Optional[dict[str, Any]] = None,
+    status: int = 200,
 ) -> tuple[Any, int]:
     """Return a standard JSON success response for AJAX requests."""
     response: dict[str, Any] = {"success": True}
@@ -93,7 +101,7 @@ def handle_ajax_service_action(
     except (ValueError, PermissionError) as e:
         msg = f"{error_prefix}: {e}" if error_prefix else str(e)
         if is_json:
-            return ajax_error(msg)
+            return ajax_error(msg, status=http_status_for_exception(e))
         flash(msg, "error")
     except Exception as e:
         logger.error("Unexpected error in AJAX service action: %s", e, exc_info=True)

@@ -1,9 +1,10 @@
 # routes/main.py - AGGIORNATO per correggere import path
+from typing import Optional
+
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import current_user, logout_user
 from models import db, Campionato, Gara, User
 from config import Config
-
 
 main_bp = Blueprint("main", __name__)
 
@@ -21,6 +22,18 @@ def index():
         return render_template("no_campionato.html")
 
     return render_template("index.html", **data)
+
+
+@main_bp.route("/privacy")
+def privacy_policy():
+    """Informativa privacy e cookie - pagina pubblica.
+
+    Necessaria perché il sito usa uno strumento di analisi del traffico
+    (Google Analytics). Il template legge da sé `config.GA_MEASUREMENT_ID`
+    per mostrare la sezione sui cookie analitici solo quando il tracking è
+    effettivamente attivo.
+    """
+    return render_template("privacy.html")
 
 
 @main_bp.route("/reset")
@@ -113,7 +126,18 @@ def public_campionatos_list():
     # is_deleted=False include i terminated come archivio storico
     # (vedi ADR-030 §"Scope"). is_active=False (terminated) appare
     # sotto filtro status="terminati".
-    query = Campionato.query.filter_by(is_deleted=False)
+    # Eager-load playoff config + tournament SEMPRE: get_status() viene chiamato
+    # sia dal filtro per status sotto, sia dal template (badge status_badge_class
+    # / status_text per OGNI campionato), e per i terminated consulta queste
+    # relationship → senza eager-load resterebbe N+1 anche con status=all.
+    from sqlalchemy.orm import joinedload
+    from models.playoff.models import PlayoffConfiguration
+
+    query = Campionato.query.filter_by(is_deleted=False).options(
+        joinedload(Campionato.playoff_configurations).joinedload(
+            PlayoffConfiguration.playoff_campionato
+        )
+    )
     if raw_query:
         query = query.filter(Campionato.name.ilike(f"%{raw_query}%"))
 
@@ -221,7 +245,7 @@ def gara_detail_public(gara_id):
     La vista unificata in admin.competition.gara_detail si adatta
     automaticamente in base ai permessi dell'utente (anche per guest).
     """
-    return redirect(url_for('admin.competition.gara_detail', gara_id=gara_id))
+    return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
 
 @main_bp.route("/reset/save", methods=["POST"])
@@ -275,78 +299,86 @@ def debug_create_player():
         email=f"{username}@debug.local",
         role="player",
         password="123456",  # Il servizio si occupa dell'hashing
-        send_verification_email=False  # Skip email for debug users
+        send_verification_email=False,  # Skip email for debug users
     )
 
     flash(f"Player '{username}' creato con successo! Password: 123456", "success")
     return redirect(request.referrer or url_for("dashboard.dashboard"))
 
 
+def _available_quick_login_players(gara_id: int):
+    """Quick-login players (role=PLAYER) non già iscritti alla gara,
+    in ordine quick-login (admin/director esclusi)."""
+    from models.competition.models import Inscription
+    from utils.database_utils import get_quick_login_users
+    from models.user.role_enum import UserRole
+
+    inscribed_ids = {
+        i.user_id for i in Inscription.query.filter_by(gara_id=gara_id).all()
+    }
+    return [
+        u
+        for u in get_quick_login_users(limit=32)
+        if u.role == UserRole.PLAYER.value and u.id not in inscribed_ids
+    ]
+
+
+def _current_active_inscriptions(gara_id: int) -> int:
+    from models.competition.models import Inscription
+
+    return Inscription.query.filter_by(
+        gara_id=gara_id, is_waitlist=False, is_withdrawn=False
+    ).count()
+
+
 @main_bp.route("/debug/fill_gara/<int:gara_id>")
 def debug_fill_gara(gara_id):
-    """Iscrive tutti i player*, mario e pino a una gara (debug only)."""
+    """Riempi la gara fino al MIN partecipanti pescando dai quick-login."""
     if not Config.DEBUG_MODE:
         return "Funzione non disponibile in produzione", 403
 
-    from models.user.models import User
-    from models.competition.models import Inscription
-    from sqlalchemy import or_
-
     gara = Gara.query.get_or_404(gara_id)
+    current_active = _current_active_inscriptions(gara_id)
 
-    # Conta iscritti attuali
-    current_inscriptions = Inscription.query.filter_by(gara_id=gara_id).count()
-
-    # Trova giocatori player*, mario e pino esistenti non iscritti
-    existing_player_ids = db.session.query(Inscription.user_id).filter_by(
-        gara_id=gara_id
-    )
-    available_players = (
-        User.query.filter(User.role == "player")
-        .filter(or_(
-            User.username.like("player%"),  # Utenti player*
-            User.username.in_(["mario", "pino"])  # mario e pino
-        ))
-        .filter(User.deleted_at.is_(None))
-        .filter(~User.id.in_(existing_player_ids))
-        .all()
-    )
-
-    if not available_players:
+    min_required = gara.min_participants or 0
+    if min_required <= 0:
         flash(
-            f"Nessun player*, mario o pino disponibile da iscrivere. "
-            f"Iscritti attuali: {current_inscriptions}",
+            "min_participants non impostato per questa gara: nulla da fare.",
             "info",
         )
         return redirect(request.referrer or url_for("dashboard.dashboard"))
 
-    # Se c'è un limite max_participants, rispettalo
-    if gara.max_participants and gara.max_participants > 0:
-        slots_available = gara.max_participants - current_inscriptions
-        if slots_available <= 0:
-            flash(
-                f"La gara ha già raggiunto il massimo di "
-                f"{gara.max_participants} iscritti",
-                "info",
-            )
-            return redirect(request.referrer or url_for("dashboard.dashboard"))
-        players_to_add = available_players[:slots_available]
-    else:
-        # Nessun limite: iscrivi tutti i player disponibili
-        players_to_add = available_players
+    slots_needed = max(0, min_required - current_active)
+    if slots_needed == 0:
+        flash(
+            f"Minimo già raggiunto ({current_active}/{min_required}).",
+            "info",
+        )
+        return redirect(request.referrer or url_for("dashboard.dashboard"))
 
-    # Iscrive i giocatori alla gara usando il servizio
+    # Rispetta anche il limite massimo, se più stringente
+    if gara.max_participants and gara.max_participants > 0:
+        slots_needed = min(slots_needed, gara.max_participants - current_active)
+
+    candidates = _available_quick_login_players(gara_id)
+    if not candidates:
+        flash(
+            "Nessun giocatore quick-login disponibile da iscrivere.",
+            "info",
+        )
+        return redirect(request.referrer or url_for("dashboard.dashboard"))
+
     from models.competition.inscription_service import InscriptionService
 
     new_inscriptions = 0
-    for player in players_to_add:
+    for player in candidates[:slots_needed]:
         inscription = InscriptionService.inscribe_user(player.id, gara_id)
         if inscription:
             new_inscriptions += 1
 
     flash(
-        f"Aggiunti {new_inscriptions} iscritti alla gara. "
-        f"Totale: {current_inscriptions + new_inscriptions}",
+        f"Aggiunti {new_inscriptions} iscritti dai quick-login. "
+        f"Totale attivi: {current_active + new_inscriptions}/{min_required}",
         "success",
     )
     return redirect(
@@ -354,16 +386,247 @@ def debug_fill_gara(gara_id):
     )
 
 
-@main_bp.route("/debug/complete_current_round/<int:gara_id>")
-def debug_complete_current_round(gara_id):
-    """Completa i match del turno attuale con risultati random (debug only)."""
+@main_bp.route("/debug/inscribe_next_player/<int:gara_id>")
+def debug_inscribe_next_player(gara_id):
+    """Iscrive il prossimo quick-login player non ancora iscritto."""
     if not Config.DEBUG_MODE:
         return "Funzione non disponibile in produzione", 403
 
-    from models.match.models import Match
+    gara = Gara.query.get_or_404(gara_id)
+    current_active = _current_active_inscriptions(gara_id)
+
+    if gara.max_participants and current_active >= gara.max_participants:
+        flash(
+            f"Massimo raggiunto ({current_active}/{gara.max_participants}).",
+            "info",
+        )
+        return redirect(
+            request.referrer
+            or url_for("admin.competition.gara_detail", gara_id=gara_id)
+        )
+
+    candidates = _available_quick_login_players(gara_id)
+    if not candidates:
+        flash(
+            "Nessun giocatore quick-login disponibile da iscrivere.",
+            "info",
+        )
+        return redirect(
+            request.referrer
+            or url_for("admin.competition.gara_detail", gara_id=gara_id)
+        )
+
+    from models.competition.inscription_service import InscriptionService
+
+    player = candidates[0]
+    inscription = InscriptionService.inscribe_user(player.id, gara_id)
+
+    if inscription:
+        flash(
+            f"Iscritto '{player.username}'. "
+            f"Totale attivi: {current_active + 1}"
+            f"{'/' + str(gara.max_participants) if gara.max_participants else ''}",
+            "success",
+        )
+    else:
+        flash(f"Iscrizione di '{player.username}' fallita.", "warning")
+
+    return redirect(
+        request.referrer or url_for("admin.competition.gara_detail", gara_id=gara_id)
+    )
+
+
+def _debug_random_score_trio(match) -> bool:
+    """Assegna un risultato random al TrioMatch associato a `match`.
+
+    Distribuisce `total_played_racks` vittorie tra i 3 player rispettando
+    il vincolo `max_per_player = 2 * num_rounds`. Chiama
+    `TrioScoringService.set_result_direct` che si occupa di creare i
+    TrioRack sintetici, calcolare il winner e completare il match.
+    """
+    import random
+    from models.match.trio_scoring_service import TrioScoringService
+
+    trio = match.trio_match
+    if trio is None:
+        return False
+
+    config = trio.trio_config
+    total = config.total_played_racks
+    max_per = 2 * config.num_rounds
+    pids = [trio.player1_id, trio.player2_id, trio.player3_id]
+
+    def _distribute():
+        counts = {pid: 0 for pid in pids}
+        for _ in range(total):
+            eligible = [pid for pid, c in counts.items() if c < max_per]
+            if not eligible:
+                return None
+            counts[random.choice(eligible)] += 1
+        return counts
+
+    # Genera una distribuzione con un vincitore NETTO (top unico). Un pareggio
+    # in testa lascerebbe winner_id=None (set_result_direct ripiega su Schulze
+    # sui rack sintetici, che può restituire pareggio), rendendo il trio
+    # incompleto ai fini di classifica/playoff — inutile per il debug footer
+    # che deve far progredire la gara. I pareggi sono ~1/4 dei casi: rigenerare
+    # converge immediatamente (P(100 pareggi consecutivi) ~ 0).
+    counts = None
+    for _ in range(100):
+        candidate = _distribute()
+        if candidate is None:
+            return False
+        top = max(candidate.values())
+        if list(candidate.values()).count(top) == 1:
+            counts = candidate
+            break
+    if counts is None:
+        return False
+
+    TrioScoringService.set_result_direct(
+        trio.id,
+        counts[trio.player1_id],
+        counts[trio.player2_id],
+        counts[trio.player3_id],
+    )
+    return True
+
+
+def _debug_random_score_match(match) -> bool:
+    """Assegna un risultato random a `match` (skip bye). True se completato.
+
+    ADR-027: usa match.effective_* / match.distance_config per rispettare
+    gli override RoundConfiguration. Per i match trio delega a
+    `_debug_random_score_trio` che usa `TrioScoringService.set_result_direct`.
+    """
     from models.status_enum import MatchStatus
     from models.classification.encounter_service import PlayerEncounterService
     import random
+
+    if match.is_bye:
+        return False
+    if match.is_trio:
+        return _debug_random_score_trio(match)
+
+    if match.effective_is_race_to:
+        winning_score = match.distance_config.get_winning_racks()
+        loser_score = random.randint(0, winning_score - 1)
+        if random.choice([True, False]):
+            match.player1_score = winning_score
+            match.player2_score = loser_score
+            match.winner_id = match.player1_id
+        else:
+            match.player1_score = loser_score
+            match.player2_score = winning_score
+            match.winner_id = match.player2_id
+    else:
+        total = match.effective_distance
+        p1 = random.randint(0, total)
+        p2 = total - p1
+        if p1 > p2:
+            match.winner_id = match.player1_id
+        elif p2 > p1:
+            match.winner_id = match.player2_id
+        else:
+            match.winner_id = random.choice([match.player1_id, match.player2_id])
+        match.player1_score = p1
+        match.player2_score = p2
+
+    match.status = MatchStatus.COMPLETED.value
+    PlayerEncounterService.record_match_encounters(match)
+    return True
+
+
+def _debug_release_tables_and_reassign(matches, gara_id: int) -> int:
+    """Rilascia table_assignment dei match completed e richiama il pull.
+
+    Ritorna il numero di tavoli riassegnati ai match pending (anche dei
+    turni successivi, grazie al sorting (round_number, id) di
+    assign_available_tables).
+    """
+    from models.match.table_assignment_service import TableAssignmentService
+
+    for m in matches:
+        if m.table_assignment:
+            m.table_assignment = None
+            db.session.add(m)
+    return TableAssignmentService.assign_available_tables(gara_id)
+
+
+def _debug_incomplete_matches_in_round(gara_id: int, round_number: int):
+    from models.match.models import Match
+    from models.status_enum import MatchStatus
+
+    return (
+        Match.query.filter_by(gara_id=gara_id, round_number=round_number)
+        .filter(
+            Match.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value])
+        )
+        .all()
+    )
+
+
+def _debug_all_incomplete_matches(gara_id: int):
+    """Tutti i match della gara in stato PENDING o PLAYING, ordinati per
+    round e poi id. Necessario per strategie pre-generate (es. random)
+    dove `gara.current_round` resta indietro rispetto al primo round che
+    ha ancora match attivi.
+    """
+    from models.match.models import Match
+    from models.status_enum import MatchStatus
+
+    return (
+        Match.query.filter_by(gara_id=gara_id)
+        .filter(
+            Match.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value])
+        )
+        .order_by(Match.round_number, Match.id)
+        .all()
+    )
+
+
+def _debug_completable_matches(gara_id: int):
+    """Match completabili da 'Complete Match': solo quelli con tavolo
+    assegnato e in corso (PLAYING).
+
+    Un match senza tavolo è PENDING (in attesa che un tavolo si liberi) e
+    non è ancora "al tavolo": completarlo salterebbe la fase di gioco reale.
+    In questo dominio `table_assignment` e stato PLAYING sono accoppiati
+    (vedi TableAssignmentService.assign_available_tables), ma filtriamo su
+    entrambi per esplicitare l'intento (bug 13 docs/debug20260528.md).
+    """
+    from models.match.models import Match
+    from models.status_enum import MatchStatus
+
+    return (
+        Match.query.filter_by(gara_id=gara_id, status=MatchStatus.PLAYING.value)
+        .filter(Match.is_bye == False)  # noqa: E712
+        .filter(Match.table_assignment.isnot(None))
+        .order_by(Match.round_number, Match.id)
+        .all()
+    )
+
+
+def _debug_first_active_round(gara_id: int) -> Optional[int]:
+    """Primo round_number con almeno un match non completato.
+
+    Per gare random/round_robin che pre-generano tutti i turni,
+    `gara.current_round` resta al valore raggiunto dalla progressione
+    "stretta" (= tutti i match del turno N completati). Le debug action
+    devono invece operare sul primo turno con match attivi, anche se
+    `current_round` non è stato avanzato.
+    """
+    matches = _debug_all_incomplete_matches(gara_id)
+    if not matches:
+        return None
+    return matches[0].round_number
+
+
+@main_bp.route("/debug/complete_current_round/<int:gara_id>")
+def debug_complete_current_round(gara_id):
+    """Completa i match del primo round attivo con risultati random."""
+    if not Config.DEBUG_MODE:
+        return "Funzione non disponibile in produzione", 403
 
     gara = Gara.query.get_or_404(gara_id)
 
@@ -374,75 +637,155 @@ def debug_complete_current_round(gara_id):
             or url_for("admin.competition.gara_detail", gara_id=gara_id)
         )
 
-    # Trova tutti i match non completati del turno attuale (PENDING o PLAYING)
-    incomplete_matches = (
-        Match.query.filter_by(gara_id=gara_id, round_number=gara.current_round)
-        .filter(
-            Match.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value])
-        )
-        .all()
-    )
-
-    if not incomplete_matches:
-        flash("Nessun match da completare nel turno attuale!", "info")
+    # Per strategie pre-generate (random), `gara.current_round` può non
+    # avanzare anche se il turno è di fatto concluso: usa il primo turno
+    # con match attivi.
+    target_round = _debug_first_active_round(gara_id)
+    if target_round is None:
+        flash("Nessun match da completare nella gara!", "info")
         return redirect(
             request.referrer
             or url_for("admin.competition.gara_detail", gara_id=gara_id)
         )
 
-    completed_count = 0
-    for match in incomplete_matches:
-        # Skip se è un bye match (già completato)
-        if match.is_bye:
-            continue
+    incomplete_matches = _debug_incomplete_matches_in_round(gara_id, target_round)
 
-        # Genera risultati random basati sulla modalità gara
-        if gara.is_race_to:
-            # Race to N: vincitore deve arrivare a get_winning_racks()
-            winning_score = gara.distance_config.get_winning_racks()
-            loser_score = random.randint(0, winning_score - 1)
+    completed_count = sum(1 for m in incomplete_matches if _debug_random_score_match(m))
 
-            # Random winner
-            if random.choice([True, False]):
-                match.player1_score = winning_score
-                match.player2_score = loser_score
-                match.winner_id = match.player1_id
-            else:
-                match.player1_score = loser_score
-                match.player2_score = winning_score
-                match.winner_id = match.player2_id
-        else:
-            # N rack esatti - la somma deve essere gara.distance
-            total_score = gara.distance
-            player1_score = random.randint(0, total_score)
-            player2_score = total_score - player1_score
-
-            # Il vincitore è chi ha più punti
-            if player1_score > player2_score:
-                match.winner_id = match.player1_id
-            elif player2_score > player1_score:
-                match.winner_id = match.player2_id
-            else:
-                # Pareggio - forza una vittoria random
-                match.winner_id = random.choice([match.player1_id, match.player2_id])
-
-            match.player1_score = player1_score
-            match.player2_score = player2_score
-
-        match.status = MatchStatus.COMPLETED.value
-        completed_count += 1
-
-        # Record encounter for anti-rematch logic
-        PlayerEncounterService.record_match_encounters(match)
-
-    # Flask handles transaction commit automatically
-    # Dopo aver completato i match, controlla se ci sono turni da aggiornare
     from models.competition.round_service import RoundService
 
     RoundService.update_round_progression(gara_id)
+    assigned = _debug_release_tables_and_reassign(incomplete_matches, gara_id)
 
     flash(
-        f"Completati {completed_count} match del turno attuale con risultati random!",
+        f"Completati {completed_count} match del turno {target_round} "
+        f"({assigned} tavoli riassegnati ai turni successivi).",
+        "success",
+    )
+    return redirect(
+        request.referrer or url_for("admin.competition.gara_detail", gara_id=gara_id)
+    )
+
+
+@main_bp.route("/debug/complete_next_match/<int:gara_id>")
+def debug_complete_next_match(gara_id):
+    """Completa UN match con tavolo assegnato e in corso (PLAYING).
+
+    Cerca in tutti i round, non solo `gara.current_round`: per strategie
+    pre-generate (random) molti match dei turni successivi sono già
+    PLAYING quando il current_round non si è ancora avanzato. Esclude i
+    match PENDING senza tavolo: non sono ancora "al tavolo" (bug 13).
+    """
+    if not Config.DEBUG_MODE:
+        return "Funzione non disponibile in produzione", 403
+
+    import random
+
+    gara = Gara.query.get_or_404(gara_id)
+    if gara.current_round == 0:
+        flash("La gara non è ancora iniziata!", "warning")
+        return redirect(
+            request.referrer
+            or url_for("admin.competition.gara_detail", gara_id=gara_id)
+        )
+
+    candidates = _debug_completable_matches(gara_id)
+    if not candidates:
+        flash(
+            "Nessun match con tavolo assegnato e in corso da completare!",
+            "info",
+        )
+        return redirect(
+            request.referrer
+            or url_for("admin.competition.gara_detail", gara_id=gara_id)
+        )
+
+    chosen = random.choice(candidates)
+    _debug_random_score_match(chosen)
+
+    from models.competition.round_service import RoundService
+
+    RoundService.update_round_progression(gara_id)
+    assigned = _debug_release_tables_and_reassign([chosen], gara_id)
+
+    flash(
+        f"Completato 1 match (#{chosen.id}) del turno {chosen.round_number} "
+        f"({assigned} tavoli riassegnati).",
+        "success",
+    )
+    return redirect(
+        request.referrer or url_for("admin.competition.gara_detail", gara_id=gara_id)
+    )
+
+
+@main_bp.route("/debug/complete_gara/<int:gara_id>")
+def debug_complete_gara(gara_id):
+    """Completa l intera gara: cicla su match pending/playing fino a fine gara.
+
+    Per ogni iterazione:
+    1. completa tutti i match del current_round
+    2. update_round_progression avanza il current_round
+    3. assign_available_tables assegna tavoli ai pending (sorting per round)
+    4. start_next_round per strategie che generano on-demand (es. Amalfi)
+    """
+    if not Config.DEBUG_MODE:
+        return "Funzione non disponibile in produzione", 403
+
+    from models.competition.round_service import RoundService
+    from models.status_enum import GaraStatus
+
+    gara = Gara.query.get_or_404(gara_id)
+    if gara.current_round == 0:
+        flash("La gara non è ancora iniziata!", "warning")
+        return redirect(
+            request.referrer
+            or url_for("admin.competition.gara_detail", gara_id=gara_id)
+        )
+
+    total_completed = 0
+    total_rounds_advanced = 0
+    safety_iter = 0
+    MAX_ITER = (gara.rounds_count or 1) + 5
+
+    while safety_iter < MAX_ITER:
+        safety_iter += 1
+        db.session.refresh(gara)
+
+        if gara.status == GaraStatus.COMPLETED.value:
+            break
+
+        # Per strategie pre-generate (random) usa il primo round con match
+        # attivi, non `gara.current_round` (che resta indietro se i match
+        # del round corrente sono tutti completi ma quelli successivi no).
+        target_round = _debug_first_active_round(gara_id)
+        if target_round is not None:
+            incomplete = _debug_incomplete_matches_in_round(gara_id, target_round)
+            for m in incomplete:
+                if _debug_random_score_match(m):
+                    total_completed += 1
+            RoundService.update_round_progression(gara_id)
+            _debug_release_tables_and_reassign(incomplete, gara_id)
+            continue
+
+        # Nessun match attivo: o la gara è finita, o siamo su una strategia
+        # on-demand (es. Amalfi) e dobbiamo generare il prossimo turno.
+        if gara.current_round >= (gara.rounds_count or 0):
+            break
+        next_round = gara.current_round + 1
+        try:
+            RoundService.start_next_round(gara_id, next_round)
+            total_rounds_advanced += 1
+        except Exception as e:
+            flash(
+                f"Stop al turno {gara.current_round}: "
+                f"impossibile avviare il turno {next_round} ({e}).",
+                "warning",
+            )
+            break
+
+    flash(
+        f"Complete gara: {total_completed} match completati, "
+        f"{total_rounds_advanced} turni avanzati.",
         "success",
     )
     return redirect(

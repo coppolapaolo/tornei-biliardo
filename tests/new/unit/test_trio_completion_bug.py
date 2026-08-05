@@ -68,7 +68,9 @@ class TestTrioCompletionAtCorrectRack:
         - Rack 2: P0 vs P2, P1 waits
         - Rack 3: P1 vs P2, P0 waits
         """
-        trio, players = self._create_trio_setup(db_session, isolated_players, distance=3)
+        trio, players = self._create_trio_setup(
+            db_session, isolated_players, distance=3
+        )
         config = trio.trio_config
 
         # Verify config
@@ -103,7 +105,9 @@ class TestTrioCompletionAtCorrectRack:
         db_session.commit()
         trio = db_session.get(TrioMatch, trio.id)
         assert trio.is_completed, "Should complete after confirmation"
-        assert not trio.awaiting_confirmation, "Should no longer be awaiting confirmation"
+        assert (
+            not trio.awaiting_confirmation
+        ), "Should no longer be awaiting confirmation"
 
     def test_distance_4_completes_at_rack_6(self, db_session, isolated_players):
         """Distance 4: 2 rounds (6 racks) + 0 bonus.
@@ -113,7 +117,9 @@ class TestTrioCompletionAtCorrectRack:
         - Rack 1: P0 vs P1, Rack 2: P0 vs P2, Rack 3: P1 vs P2
         - Rack 4: P0 vs P1, Rack 5: P0 vs P2, Rack 6: P1 vs P2
         """
-        trio, players = self._create_trio_setup(db_session, isolated_players, distance=4)
+        trio, players = self._create_trio_setup(
+            db_session, isolated_players, distance=4
+        )
         config = trio.trio_config
 
         # Verify config
@@ -153,7 +159,9 @@ class TestTrioCompletionAtCorrectRack:
         Should complete at rack 6, not rack 5.
         This is the bug from the user report.
         """
-        trio, players = self._create_trio_setup(db_session, isolated_players, distance=5)
+        trio, players = self._create_trio_setup(
+            db_session, isolated_players, distance=5
+        )
         config = trio.trio_config
 
         # Verify config
@@ -170,7 +178,9 @@ class TestTrioCompletionAtCorrectRack:
             TrioScoringService.add_rack_win(trio.id, winner_id)
             db_session.commit()
             trio = db_session.get(TrioMatch, trio.id)
-            assert trio.total_racks_played == i + 1, f"Expected {i+1} racks, got {trio.total_racks_played}"
+            assert (
+                trio.total_racks_played == i + 1
+            ), f"Expected {i+1} racks, got {trio.total_racks_played}"
             assert not trio.is_completed, f"Should not complete at rack {i + 1}"
 
         # Add rack 6 - SHOULD enter awaiting_confirmation

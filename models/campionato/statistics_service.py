@@ -11,20 +11,14 @@ from typing import List, Dict, Any
 
 from models.base import db
 from models.match.models import Match
-from models.status_enum import TournamentStatus, GaraStatus
+from models.status_enum import TournamentStatus, GaraStatus, MatchStatus
 from models.matchmaking.configuration import MatchmakingStrategy
 from .models import Campionato
-from ..transaction.manager import (
-    DomainService,
-    read_only,
-)
+from ..transaction.manager import read_only
 
 
-class TournamentStatisticsService(DomainService):
+class TournamentStatisticsService:
     """Statistics and classification operations for Campionati."""
-
-    def __init__(self):
-        super().__init__("campionato")
 
     @read_only(domain="campionato")
     def get_campionato_statistics(self, campionato_id: int) -> Dict[str, Any]:
@@ -39,36 +33,23 @@ class TournamentStatisticsService(DomainService):
         """
         from models.competition.models import Gara, Inscription
 
-        # Track domain access
-        self._track_domain_access()
-
-        campionato = self._execute_with_tracking(
-            lambda: db.session.get(Campionato, campionato_id)
-        )
+        campionato = db.session.get(Campionato, campionato_id)
         if not campionato:
             raise ValueError("Campionato not found")
 
         # Get all provas for this campionato
-        gare = self._execute_with_tracking(
-            lambda: Gara.query.filter_by(campionato_id=campionato_id).all()
-        )
+        gare = Gara.query.filter_by(campionato_id=campionato_id).all()
         gara_ids = [p.id for p in gare]
 
         # Calculate statistics
         total_garas = len(gare)
-        total_inscriptions = self._execute_with_tracking(
-            lambda: (
-                Inscription.query.filter(Inscription.gara_id.in_(gara_ids)).count()
-                if gara_ids
-                else 0
-            )
+        total_inscriptions = (
+            Inscription.query.filter(Inscription.gara_id.in_(gara_ids)).count()
+            if gara_ids
+            else 0
         )
-        total_matches = self._execute_with_tracking(
-            lambda: (
-                Match.query.filter(Match.gara_id.in_(gara_ids)).count()
-                if gara_ids
-                else 0
-            )
+        total_matches = (
+            Match.query.filter(Match.gara_id.in_(gara_ids)).count() if gara_ids else 0
         )
 
         # Status distribution
@@ -90,9 +71,6 @@ class TournamentStatisticsService(DomainService):
         from models.competition.models import Gara, Inscription
         from sqlalchemy import func, distinct
 
-        # Trova tutte le gare del campionato
-        gare = db.session.query(Gara).filter_by(campionato_id=campionato_id).all()
-
         # Giocatori unici che hanno mai partecipato al campionato
         unique_players_query = (
             db.session.query(distinct(Inscription.user_id))
@@ -107,7 +85,8 @@ class TournamentStatisticsService(DomainService):
             .join(Gara, Inscription.gara_id == Gara.id)
             .filter(
                 Gara.campionato_id == campionato_id,
-                Gara.status == "inscription",  # Solo gare con iscrizioni aperte
+                # Solo gare con iscrizioni aperte
+                Gara.status == GaraStatus.INSCRIPTION.value,
             )
         )
         currently_inscribed_players = active_inscriptions_query.count()
@@ -118,7 +97,7 @@ class TournamentStatisticsService(DomainService):
             .join(Gara, Match.gara_id == Gara.id)
             .filter(
                 Gara.campionato_id == campionato_id,
-                Match.status == "completed",  # type: ignore[attr-defined]
+                Match.status == MatchStatus.COMPLETED.value,
             )
         )
         total_completed_matches = completed_matches_query.scalar() or 0
@@ -129,7 +108,7 @@ class TournamentStatisticsService(DomainService):
             .join(Gara, Match.gara_id == Gara.id)
             .filter(
                 Gara.campionato_id == campionato_id,
-                Match.status == "completed",  # type: ignore[attr-defined]
+                Match.status == MatchStatus.COMPLETED.value,
             )
         )
         total_racks_played = rack_sum_query.scalar() or 0
@@ -156,31 +135,48 @@ class TournamentStatisticsService(DomainService):
             Dizionario user_id -> dati aggregati del giocatore
         """
         from models.classification.models import RoundClassification, GaraClassification
+        from sqlalchemy import tuple_
+        from sqlalchemy.orm import joinedload
 
         player_totals: Dict[int, Dict[str, Any]] = {}
+        if not garas:
+            return player_totals
 
-        for gara in garas:
-            # Ottieni la classifica finale di questa gara (ultimo turno)
-            final_round = gara.rounds_count
-            classifications = (
-                db.session.query(RoundClassification)
-                .filter_by(gara_id=gara.id, round_number=final_round)
-                .order_by(RoundClassification.position)
+        # N+1 fix (hot path homepage anonima): invece di una query
+        # RoundClassification + un lazy-load user PER OGNI gara, batcha tutto in
+        # un'unica query sulle coppie (gara_id, round-finale) con user eager.
+        final_round_by_gara = {g.id: g.rounds_count for g in garas}
+        rc_rows = (
+            db.session.query(RoundClassification)
+            .filter(
+                tuple_(
+                    RoundClassification.gara_id, RoundClassification.round_number
+                ).in_(list(final_round_by_gara.items()))
+            )
+            .options(joinedload(RoundClassification.user))
+            .order_by(RoundClassification.position)
+            .all()
+        )
+        rc_by_gara: Dict[int, List[Any]] = {}
+        for rc in rc_rows:
+            rc_by_gara.setdefault(rc.gara_id, []).append(rc)
+
+        # SSR (Random): un'unica query GaraClassification per tutte le gare.
+        ssr_by_gara: Dict[int, Dict[int, int]] = {}
+        if campionato_type == MatchmakingStrategy.RANDOM.value:
+            gc_rows = (
+                db.session.query(GaraClassification)
+                .filter(GaraClassification.gara_id.in_(final_round_by_gara.keys()))
                 .all()
             )
-
-            # Per Random campionati, ottieni anche i punteggi SSR da GaraClassification
-            gara_ssr_scores: Dict[int, int] = {}
-            if campionato_type == MatchmakingStrategy.RANDOM.value:
-                gara_classifications = (
-                    db.session.query(GaraClassification)
-                    .filter_by(gara_id=gara.id)
-                    .all()
+            for gc in gc_rows:
+                ssr_by_gara.setdefault(gc.gara_id, {})[gc.user_id] = (
+                    gc.spot_shot_wins or 0
                 )
-                gara_ssr_scores = {
-                    gc.user_id: gc.spot_shot_wins or 0
-                    for gc in gara_classifications
-                }
+
+        for gara in garas:
+            classifications = rc_by_gara.get(gara.id, [])
+            gara_ssr_scores = ssr_by_gara.get(gara.id, {})
 
             for classification in classifications:
                 user_id = classification.user_id
@@ -202,8 +198,8 @@ class TournamentStatisticsService(DomainService):
                     classification.rack_difference or 0
                 )
                 # Aggiungi punteggio SSR per campionati Random
-                player_totals[user_id]["total_spot_shot_wins"] += (
-                    gara_ssr_scores.get(user_id, 0)
+                player_totals[user_id]["total_spot_shot_wins"] += gara_ssr_scores.get(
+                    user_id, 0
                 )
                 player_totals[user_id]["participations"] += 1
 
@@ -213,17 +209,20 @@ class TournamentStatisticsService(DomainService):
             MatchmakingStrategy.RANDOM.value,
         ]:
             position_points = {
-                1: 10, 2: 7, 3: 5, 4: 4, 5: 3, 6: 2, 7: 2, 8: 1, 9: 1, 10: 1
+                1: 10,
+                2: 7,
+                3: 5,
+                4: 4,
+                5: 3,
+                6: 2,
+                7: 2,
+                8: 1,
+                9: 1,
+                10: 1,
             }
             for gara in garas:
-                final_round = gara.rounds_count
-                classifications = (
-                    db.session.query(RoundClassification)
-                    .filter_by(gara_id=gara.id, round_number=final_round)
-                    .order_by(RoundClassification.position)
-                    .all()
-                )
-                for classification in classifications:
+                # Riusa i dati già batch-caricati sopra (niente nuove query).
+                for classification in rc_by_gara.get(gara.id, []):
                     user_id = classification.user_id
                     if user_id in player_totals:
                         points = position_points.get(classification.position, 0)
@@ -276,7 +275,7 @@ class TournamentStatisticsService(DomainService):
 
     @read_only(domain="campionato")
     def calculate_general_classification(self, campionato_id: int) -> List[tuple]:
-        """Calcola la classifica generale del campionato basata su tutte le gare completate.
+        """Classifica generale del campionato su tutte le gare completate.
 
         Include il calcolo del trend (previous_position) confrontando la classifica
         attuale con quella calcolata escludendo l'ultima gara completata.
@@ -289,11 +288,13 @@ class TournamentStatisticsService(DomainService):
         if not campionato:
             return []
 
-        # Trova tutte le gare completate del campionato (incluse quelle "playing" ma finite)
+        # Tutte le gare completate del campionato (incl. "playing" ma finite)
         all_garas = (
             db.session.query(Gara)
             .filter_by(campionato_id=campionato_id)
-            .filter(Gara.status.in_(["completed", "playing"]))
+            .filter(
+                Gara.status.in_([GaraStatus.COMPLETED.value, GaraStatus.PLAYING.value])
+            )
             .order_by(Gara.number)
             .all()
         )
@@ -301,9 +302,12 @@ class TournamentStatisticsService(DomainService):
         # Filtra le gare che sono realmente completate
         completed_garas = []
         for gara in all_garas:
-            if gara.status == "completed":
+            if gara.status == GaraStatus.COMPLETED.value:
                 completed_garas.append(gara)
-            elif gara.status == "playing" and gara.current_round > gara.rounds_count:
+            elif (
+                gara.status == GaraStatus.PLAYING.value
+                and gara.current_round > gara.rounds_count
+            ):
                 # Gara con tutti i round completati
                 completed_garas.append(gara)
 
@@ -334,7 +338,7 @@ class TournamentStatisticsService(DomainService):
         result = []
         for position, user_id in current_ranking:
             data = player_totals[user_id]
-            # Aggiungi previous_position solo se il giocatore era nella classifica precedente
+            # previous_position solo se il giocatore era in classifica prima
             data["previous_position"] = previous_positions.get(user_id)
             result.append((position, data))
 
@@ -360,16 +364,24 @@ def compute_campionato_status(campionato: Campionato) -> str:
     Ritorna la stringa dello stato (compat con UI/template esistenti).
     """
     if getattr(campionato, "terminated_at", None):
-        if hasattr(campionato, "has_playoff_configurations") and campionato.has_playoff_configurations():
-            # TERMINATED until all playoffs completed, then COMPLETED
-            from models.playoff.models import PlayoffTournament, PlayoffConfiguration
-            active_configs = PlayoffConfiguration.query.filter_by(
-                campionato_id=campionato.id, is_active=True
-            ).all()
+        if (
+            hasattr(campionato, "has_playoff_configurations")
+            and campionato.has_playoff_configurations()
+        ):
+            # TERMINATED until all playoffs completed, then COMPLETED.
+            # Usa le relationship (playoff_configurations + playoff_campionato
+            # scalar) invece di query fresche per-config: identico semanticamente
+            # (filter_by(is_active=True) ≡ list-comp; .first() ≡ scalar uselist),
+            # ma eager-loadabile dai chiamanti su lista (homepage) → no N+1.
+            active_configs = [
+                cfg
+                for cfg in getattr(campionato, "playoff_configurations", [])
+                if cfg.is_active
+            ]
             if active_configs:
                 all_completed = all(
-                    (t := PlayoffTournament.query.filter_by(configuration_id=cfg.id).first())
-                    is not None and t.status == "completed"
+                    (t := cfg.playoff_campionato) is not None
+                    and t.status == "completed"
                     for cfg in active_configs
                 )
                 if all_completed:
@@ -389,6 +401,16 @@ def compute_campionato_status(campionato: Campionato) -> str:
     if any(v == GaraStatus.INSCRIPTION.value for v in values):
         return TournamentStatus.REGISTRATION_OPEN.value
     if all(v == GaraStatus.COMPLETED.value for v in values):
+        # "Tutte le gare esistenti sono completate" non basta: nel mezzo di un
+        # campionato, fra la fine di una prova e la creazione della successiva
+        # la condizione è vera e il campionato risultava "Completato" — dato
+        # fuorviante, e per giunta transitorio (issue #60). Finché restano
+        # prove da creare rispetto a quelle pianificate il campionato è
+        # ancora in corso; il completamento "vero" passa da
+        # `terminate_campionato` (ramo `terminated_at` sopra).
+        planned = getattr(campionato, "planned_gare_count", 0) or 0
+        if len(gare) < planned:
+            return TournamentStatus.IN_PROGRESS.value
         return TournamentStatus.COMPLETED.value
 
     return TournamentStatus.SETUP.value
@@ -399,10 +421,12 @@ def compute_campionato_status(campionato: Campionato) -> str:
 # -----------------------------
 
 
-_TERMINAL_TOURNAMENT_STATUSES = frozenset({
-    TournamentStatus.COMPLETED.value,
-    TournamentStatus.TERMINATED.value,
-})
+_TERMINAL_TOURNAMENT_STATUSES = frozenset(
+    {
+        TournamentStatus.COMPLETED.value,
+        TournamentStatus.TERMINATED.value,
+    }
+)
 
 
 def partition_campionati_by_status(

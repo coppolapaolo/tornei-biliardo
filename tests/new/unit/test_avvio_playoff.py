@@ -1,17 +1,20 @@
-"""Unit tests for playoff start (Spec 2) — config management, qualifications, player management."""
+"""Unit tests for playoff start: config, qualifications, player management."""
 
 import pytest
 import uuid
-from datetime import date, timedelta
+from datetime import date
 
 from models import Campionato
 from models.base import db, utc_now
 from models.competition.models import Gara, Inscription
 from models.classification.models import Classification
-from models.status_enum import TournamentStatus, GaraStatus
+from models.status_enum import GaraStatus
 from models.playoff.models import (
-    PlayoffConfiguration, PlayoffQualification, PlayoffTournament,
-    PlayoffType, QualificationStatus,
+    PlayoffConfiguration,
+    PlayoffQualification,
+    PlayoffTournament,
+    PlayoffType,
+    QualificationStatus,
 )
 from models.playoff.services import PlayoffService
 from models.user.models import User
@@ -44,20 +47,34 @@ def _make_gara(db_session, campionato, number=1, status=GaraStatus.COMPLETED.val
     day = ((number - 1) % 28) + 1
     month = ((number - 1) // 28) % 12 + 1
     g = Gara(
-        campionato_id=campionato.id, number=number, name=f"Gara {number}",
-        date=date(2026, month, day), discipline="nine_ball",
-        status=status, rounds_count=3, current_round=1, distance=5,
+        campionato_id=campionato.id,
+        number=number,
+        name=f"Gara {number}",
+        date=date(2026, month, day),
+        discipline="nine_ball",
+        status=status,
+        rounds_count=3,
+        current_round=1,
+        distance=5,
     )
     db_session.add(g)
     db_session.flush()
     return g
 
 
-def _make_config(db_session, campionato, name="Elite", pos_from=1, pos_to=6, max_p=6, min_garas=0):
+def _make_config(
+    db_session, campionato, name="Elite", pos_from=1, pos_to=6, max_p=6, min_garas=0
+):
     cfg = PlayoffConfiguration(
-        campionato_id=campionato.id, name=name, playoff_type=PlayoffType.TOP_N,
-        max_participants=max_p, positions_from=pos_from, positions_to=pos_to,
-        is_active=True, auto_generate=True, min_garas_played=min_garas,
+        campionato_id=campionato.id,
+        name=name,
+        playoff_type=PlayoffType.TOP_N,
+        max_participants=max_p,
+        positions_from=pos_from,
+        positions_to=pos_to,
+        is_active=True,
+        auto_generate=True,
+        min_garas_played=min_garas,
     )
     db_session.add(cfg)
     db_session.flush()
@@ -66,9 +83,12 @@ def _make_config(db_session, campionato, name="Elite", pos_from=1, pos_to=6, max
 
 def _make_classification(db_session, campionato, user, position, gare_played=5):
     cls = Classification(
-        campionato_id=campionato.id, user_id=user.id,
-        position=position, total_matches_won=10 - position,
-        total_point_difference=20 - position, gare_played=gare_played,
+        campionato_id=campionato.id,
+        user_id=user.id,
+        position=position,
+        total_matches_won=10 - position,
+        total_point_difference=20 - position,
+        gare_played=gare_played,
     )
     db_session.add(cls)
     db_session.flush()
@@ -91,7 +111,9 @@ class TestConfigManagement:
         cfg = _make_config(db_session, c)
         db_session.commit()
 
-        PlayoffService.update_configuration(cfg.id, name="New Name", positions_to=8, max_participants=8)
+        PlayoffService.update_configuration(
+            cfg.id, name="New Name", positions_to=8, max_participants=8
+        )
         updated = db.session.get(PlayoffConfiguration, cfg.id)
         assert updated.name == "New Name"
         assert updated.positions_to == 8
@@ -117,7 +139,11 @@ class TestConfigManagement:
         db_session.commit()
 
         cfg = PlayoffService.add_configuration(
-            c.id, "Consolazione", positions_from=9, positions_to=16, max_participants=8,
+            c.id,
+            "Consolazione",
+            positions_from=9,
+            positions_to=16,
+            max_participants=8,
         )
         assert cfg.id is not None
         assert cfg.name == "Consolazione"
@@ -172,6 +198,27 @@ class TestStartPlayoff:
         assert all(q.status == QualificationStatus.PENDING for q in quals)
         assert all(q.invited_at is not None for q in quals)
 
+    def test_start_playoff_sends_invitation_with_deeplink(self, db_session):
+        """Bug 15: ogni qualificato riceve una notifica con action_url che
+        deep-linka alla propria pagina di invito (dove conferma/rifiuta),
+        e qualification_id nelle related_entities."""
+        from models.notification.models import Notification, NotificationType
+
+        c, cfg, players = self._setup_campionato(db_session)
+        PlayoffService.start_playoff(c.id)
+
+        quals = PlayoffQualification.query.filter_by(configuration_id=cfg.id).all()
+        assert len(quals) == 6
+        for qual in quals:
+            notif = Notification.query.filter_by(
+                user_id=qual.user_id,
+                notification_type=NotificationType.PLAYOFF_INVITATION,
+            ).first()
+            assert notif is not None, f"Nessuna notifica per user {qual.user_id}"
+            assert notif.action_url == f"/player/playoff/invitation/{qual.id}"
+            assert notif.action_text
+            assert notif.get_related_entities().get("qualification_id") == qual.id
+
     def test_start_playoff_not_terminated(self, db_session):
         c = _make_campionato(db_session, terminated=False)
         _make_config(db_session, c)
@@ -189,7 +236,7 @@ class TestStartPlayoff:
 
     def test_start_playoff_no_active_configs(self, db_session):
         c = _make_campionato(db_session, terminated=True)
-        # Add a config then deactivate it, so campionato has playoff_configs but none active
+        # Add a config then deactivate it: campionato has configs but none active
         cfg = _make_config(db_session, c)
         cfg.is_active = False
         db_session.commit()
@@ -199,7 +246,7 @@ class TestStartPlayoff:
 
     def test_min_garas_excludes_player(self, db_session):
         c = _make_campionato(db_session, terminated=True)
-        cfg = _make_config(db_session, c, min_garas=3)
+        _make_config(db_session, c, min_garas=3)
         gara = _make_gara(db_session, c)
         players = []
         for i in range(8):
@@ -209,7 +256,12 @@ class TestStartPlayoff:
             _make_inscription(db_session, p, gara)
             # Create actual inscriptions matching gare_played for min_garas check
             for j in range(gare_played):
-                extra_gara = _make_gara(db_session, c, number=10 + i * 10 + j, status=GaraStatus.COMPLETED.value)
+                extra_gara = _make_gara(
+                    db_session,
+                    c,
+                    number=10 + i * 10 + j,
+                    status=GaraStatus.COMPLETED.value,
+                )
                 _make_inscription(db_session, p, extra_gara)
             players.append(p)
         db_session.commit()
@@ -486,7 +538,7 @@ class TestGetGaraParams:
     def test_inherits_from_campionato(self, db_session):
         c = _make_campionato(db_session)
         cfg = _make_config(db_session, c)
-        gara = _make_gara(db_session, c)  # nine_ball, distance=5
+        _make_gara(db_session, c)  # nine_ball, distance=5
         db_session.commit()
 
         params = cfg.get_gara_params()
@@ -553,7 +605,9 @@ class TestTerminatedToCompleted:
 
         # Complete the playoff tournament
         tournament = PlayoffTournament.query.filter_by(configuration_id=cfg.id).first()
-        PlayoffService.complete_playoff_campionato(tournament.id, winner_id=players[0].id)
+        PlayoffService.complete_playoff_campionato(
+            tournament.id, winner_id=players[0].id
+        )
 
         # Now should be COMPLETED
         assert c.get_status() == "completed"
@@ -562,7 +616,7 @@ class TestTerminatedToCompleted:
         """With 2 playoff configs, if only 1 is completed, stay TERMINATED."""
         c = _make_campionato(db_session, terminated=True)
         cfg1 = _make_config(db_session, c, name="Elite", pos_from=1, pos_to=3, max_p=3)
-        cfg2 = _make_config(db_session, c, name="Academy", pos_from=4, pos_to=6, max_p=3)
+        _make_config(db_session, c, name="Academy", pos_from=4, pos_to=6, max_p=3)
         gara = _make_gara(db_session, c)
         players = []
         for i in range(6):
@@ -598,7 +652,7 @@ class TestPlayoffNotifications:
         from models.notification.models import Notification, NotificationType
 
         c = _make_campionato(db_session, terminated=True)
-        cfg = _make_config(db_session, c)
+        _make_config(db_session, c)
         gara = _make_gara(db_session, c)
         players = []
         for i in range(6):
@@ -618,3 +672,114 @@ class TestPlayoffNotifications:
             ).all()
             assert len(notifs) == 1, f"Player {p.username} should have 1 notification"
             assert "Elite" in notifs[0].title
+
+
+# ── Replacement flow (code review 2026-06-09, HIGH correttezza) ──────
+
+
+class TestPlayoffReplacement:
+    """Regression sul flusso di sostituzione qualificati.
+
+    Bug A (services.py:189) — find_replacement_player filtrava lo status con
+    `.value` ('confirmed'/'pending'), ma la colonna Enum persiste il NOME del
+    membro: le query non matchavano mai → current_players vuoto → veniva
+    sempre creata una qualificazione DUPLICATA per il primo qualificato
+    (già pending/confirmed) invece del vero sostituto in coda.
+
+    Bug B (models.py:404) — decline_participation()/expire_qualification()
+    chiamavano self.configuration._find_replacement() protetto da hasattr,
+    ma PlayoffConfiguration non definisce quel metodo: guardia sempre False
+    → decline non cercava mai un sostituto. Ora il servizio
+    (decline_qualification) invoca find_replacement_player esplicitamente.
+    """
+
+    def _setup(self, db_session):
+        c = _make_campionato(db_session, terminated=True)
+        cfg = _make_config(db_session, c, max_p=4, pos_to=4)
+        gara = _make_gara(db_session, c)
+        players = []
+        for i in range(4):
+            p = _make_user(db_session)
+            _make_classification(db_session, c, p, i + 1)
+            _make_inscription(db_session, p, gara)
+            players.append(p)
+        db_session.flush()
+        return c, cfg, players
+
+    def _add_qual(
+        self, db_session, cfg, user, position, status=QualificationStatus.PENDING
+    ):
+        q = PlayoffQualification(
+            configuration_id=cfg.id,
+            user_id=user.id,
+            qualifying_position=position,
+            qualification_reason="test",
+            status=status,
+        )
+        db_session.add(q)
+        db_session.flush()
+        return q
+
+    def test_find_replacement_picks_open_slot_not_duplicate(self, db_session):
+        c, cfg, players = self._setup(db_session)
+        # players 0,1,2 qualificati (PENDING); players[3] (pos 4) è lo slot aperto.
+        self._add_qual(db_session, cfg, players[0], 1)
+        self._add_qual(db_session, cfg, players[1], 2)
+        self._add_qual(db_session, cfg, players[2], 3)
+        db_session.commit()
+
+        replacement = PlayoffService.find_replacement_player(cfg.id)
+
+        # Prima del fix: current_players vuoto → pescava players[0] (duplicato).
+        assert replacement is not None
+        assert replacement.user_id == players[3].id
+        all_quals = PlayoffQualification.query.filter_by(configuration_id=cfg.id).all()
+        user_ids = [q.user_id for q in all_quals]
+        assert len(user_ids) == len(set(user_ids)), "nessuna qualificazione duplicata"
+
+    def test_find_replacement_none_when_all_already_qualified(self, db_session):
+        c, cfg, players = self._setup(db_session)
+        for i, p in enumerate(players):
+            self._add_qual(db_session, cfg, p, i + 1)
+        db_session.commit()
+
+        replacement = PlayoffService.find_replacement_player(cfg.id)
+
+        assert replacement is None
+        all_quals = PlayoffQualification.query.filter_by(configuration_id=cfg.id).all()
+        assert len(all_quals) == 4, "nessun duplicato creato"
+
+    def test_declined_player_not_repicked(self, db_session):
+        c, cfg, players = self._setup(db_session)
+        # players[0] ha DECLINED; 1,2,3 PENDING. Nessuno slot libero.
+        self._add_qual(
+            db_session, cfg, players[0], 1, status=QualificationStatus.DECLINED
+        )
+        self._add_qual(db_session, cfg, players[1], 2)
+        self._add_qual(db_session, cfg, players[2], 3)
+        self._add_qual(db_session, cfg, players[3], 4)
+        db_session.commit()
+
+        replacement = PlayoffService.find_replacement_player(cfg.id)
+
+        # Il declinante non va re-invitato; nessun altro candidato → None.
+        assert replacement is None
+
+    def test_decline_qualification_triggers_replacement(self, db_session):
+        c, cfg, players = self._setup(db_session)
+        # Slot aperto: players[0] (pos 1) NON ha qualificazione; 1,2,3 PENDING.
+        q1 = self._add_qual(db_session, cfg, players[1], 2)
+        self._add_qual(db_session, cfg, players[2], 3)
+        self._add_qual(db_session, cfg, players[3], 4)
+        db_session.commit()
+
+        # players[1] declina → il servizio deve trovare il sostituto players[0].
+        PlayoffService.decline_qualification(q1.id, players[1].id)
+
+        updated = db.session.get(PlayoffQualification, q1.id)
+        assert updated.status == QualificationStatus.DECLINED
+        # Prima del fix: decline_participation() ritornava None → nessun sostituto.
+        repl = PlayoffQualification.query.filter_by(
+            configuration_id=cfg.id, user_id=players[0].id
+        ).first()
+        assert repl is not None, "il sostituto players[0] deve essere qualificato"

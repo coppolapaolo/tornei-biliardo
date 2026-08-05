@@ -37,10 +37,15 @@ class DirectEliminationStrategy(BaseStrategy):
         warnings = []
 
         try:
-            # Get active inscriptions
+            # Get active inscriptions. Escludi anche i waitlist per coerenza
+            # con _generate_first_round_pairings: contarli gonfiava player_count
+            # e quindi required_rounds (errore di validazione spurio).
             inscriptions = list(getattr(gara, "inscriptions", []))
             active_inscriptions = [
-                i for i in inscriptions if not getattr(i, "is_withdrawn", False)
+                i
+                for i in inscriptions
+                if not getattr(i, "is_withdrawn", False)
+                and not getattr(i, "is_waitlist", False)
             ]
             player_count = len(active_inscriptions)
 
@@ -99,7 +104,8 @@ class DirectEliminationStrategy(BaseStrategy):
         # Get active players
         inscriptions = list(gara.inscriptions)  # type: ignore[arg-type]
         active_inscriptions = [
-            i for i in inscriptions
+            i
+            for i in inscriptions
             if not getattr(i, "is_withdrawn", False)
             and not getattr(i, "is_waitlist", False)
         ]
@@ -145,20 +151,26 @@ class DirectEliminationStrategy(BaseStrategy):
     ) -> List[Pairing]:
         """Generate pairings for subsequent rounds based on previous round winners."""
         from ...match.models import Match
+        from models.status_enum import MatchStatus
 
-        # Get winners from previous round
+        # Get winners from previous round. Considera FINITI sia 'completed' sia
+        # 'validated' (la conferma bilaterale porta i match a 'validated'):
+        # filtrare solo 'completed' escludeva i validati dal numeratore ma non
+        # dal totale, bloccando la generazione del turno successivo.
         previous_round = round_number - 1
-        previous_matches = Match.query.filter_by(
-            gara_id=gara.id, round_number=previous_round, status="completed"
+        previous_matches = Match.query.filter(
+            Match.gara_id == gara.id,
+            Match.round_number == previous_round,
+            Match.status.in_(MatchStatus.finished_values()),
         ).all()
 
-        # Check if all previous matches are completed
+        # Check if all previous matches are finished
         total_previous_matches = Match.query.filter_by(
             gara_id=gara.id, round_number=previous_round
         ).count()
 
         if len(previous_matches) != total_previous_matches:
-            # Not all previous matches completed
+            # Not all previous matches finished yet
             return []
 
         # Get winners
@@ -235,6 +247,7 @@ class DirectEliminationStrategy(BaseStrategy):
         """Calculate number of byes needed."""
         bracket_size = self.get_bracket_size(player_count)
         return bracket_size - player_count
+
 
 class DirectEliminationPairingStrategy(DirectEliminationStrategy):
     """Alias for compatibility with existing strategy registry."""

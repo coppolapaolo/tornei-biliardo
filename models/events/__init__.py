@@ -29,7 +29,9 @@ from .match_events import (
     MatchProposalCreatedEvent,
     MatchAcceptedEvent,
     MatchCompletedEvent,
+    MatchReopenedEvent,
     IndividualMatchCreatedEvent,
+    IndividualMatchCompletedEvent,
 )
 from .competition_events import (
     CompetitionCreatedEvent,
@@ -44,7 +46,7 @@ from .availability_events import (
 )
 
 # Import notification handlers to auto-register them
-from . import notification_handlers
+from . import notification_handlers  # noqa: F401
 
 __all__ = [
     # Core event system
@@ -60,7 +62,9 @@ __all__ = [
     "MatchProposalCreatedEvent",
     "MatchAcceptedEvent",
     "MatchCompletedEvent",
+    "MatchReopenedEvent",
     "IndividualMatchCreatedEvent",
+    "IndividualMatchCompletedEvent",
     # Competition domain events
     "CompetitionCreatedEvent",
     "CompetitionRegistrationOpenedEvent",

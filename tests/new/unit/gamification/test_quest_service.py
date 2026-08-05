@@ -40,7 +40,7 @@ class TestQuestCreation:
             quest_type=QuestType.WEEKLY,
             start_date=future_start,
             end_date=future_end,
-            requirements={"type": "matches_played", "target": 5}
+            requirements={"type": "matches_played", "target": 5},
         )
 
         assert quest is not None
@@ -58,7 +58,7 @@ class TestQuestCreation:
             quest_type=QuestType.WEEKLY,
             start_date=past_start,
             end_date=future_end,
-            requirements={"type": "matches_won", "target": 3}
+            requirements={"type": "matches_won", "target": 3},
         )
 
         assert quest.status == QuestStatus.ACTIVE
@@ -74,7 +74,7 @@ class TestQuestCreation:
             quest_type=QuestType.MONTHLY,
             start_date=past_start,
             end_date=past_end,
-            requirements={"type": "tournaments_played", "target": 2}
+            requirements={"type": "tournaments_played", "target": 2},
         )
 
         assert quest.status == QuestStatus.EXPIRED
@@ -87,7 +87,7 @@ class TestQuestCreation:
             quest_type=QuestType.WEEKLY,
             start_date=utc_now() - timedelta(days=1),
             end_date=utc_now() + timedelta(days=6),
-            requirements={"type": "matches_played", "target": 5}
+            requirements={"type": "matches_played", "target": 5},
         )
 
         assert quest.xp_reward == QUEST_XP_REWARDS["WEEKLY"]  # 150
@@ -101,7 +101,7 @@ class TestQuestCreation:
             start_date=utc_now() - timedelta(days=1),
             end_date=utc_now() + timedelta(days=6),
             requirements={"type": "matches_played", "target": 10},
-            xp_reward=500
+            xp_reward=500,
         )
 
         assert quest.xp_reward == 500
@@ -110,7 +110,9 @@ class TestQuestCreation:
 class TestQuestLifecycle:
     """Test quest lifecycle management."""
 
-    def test_update_quest_statuses_activates_upcoming(self, db_session, isolated_players):
+    def test_update_quest_statuses_activates_upcoming(
+        self, db_session, isolated_players
+    ):
         """Should activate quests that have started."""
         # Create a quest that should be active now
         quest = Quest(
@@ -123,7 +125,7 @@ class TestQuestLifecycle:
             requirements='{"type": "matches_played", "target": 5}',
             xp_reward=150,
             participant_count=0,
-            completion_count=0
+            completion_count=0,
         )
         db_session.add(quest)
         db_session.flush()
@@ -145,7 +147,7 @@ class TestQuestLifecycle:
             requirements='{"type": "matches_played", "target": 5}',
             xp_reward=150,
             participant_count=0,
-            completion_count=0
+            completion_count=0,
         )
         db_session.add(quest)
         db_session.flush()
@@ -169,12 +171,11 @@ class TestQuestParticipation:
             quest_type=QuestType.WEEKLY,
             start_date=utc_now() - timedelta(days=1),
             end_date=utc_now() + timedelta(days=6),
-            requirements={"type": "matches_played", "target": 10}
+            requirements={"type": "matches_played", "target": 10},
         )
 
         participation, is_new = QuestService.join_quest(
-            user_id=player.id,
-            quest_id=quest.id
+            user_id=player.id, quest_id=quest.id
         )
 
         assert is_new is True
@@ -184,7 +185,9 @@ class TestQuestParticipation:
         assert participation.target_progress == 10
         assert quest.participant_count == 1
 
-    def test_join_quest_returns_existing_participation(self, db_session, isolated_players):
+    def test_join_quest_returns_existing_participation(
+        self, db_session, isolated_players
+    ):
         """Joining same quest twice should return existing participation."""
         player = isolated_players[0]
 
@@ -194,19 +197,17 @@ class TestQuestParticipation:
             quest_type=QuestType.WEEKLY,
             start_date=utc_now() - timedelta(days=1),
             end_date=utc_now() + timedelta(days=6),
-            requirements={"type": "matches_played", "target": 5}
+            requirements={"type": "matches_played", "target": 5},
         )
 
         # First join
         first_participation, first_is_new = QuestService.join_quest(
-            user_id=player.id,
-            quest_id=quest.id
+            user_id=player.id, quest_id=quest.id
         )
 
         # Second join
         second_participation, second_is_new = QuestService.join_quest(
-            user_id=player.id,
-            quest_id=quest.id
+            user_id=player.id, quest_id=quest.id
         )
 
         assert first_is_new is True
@@ -223,7 +224,7 @@ class TestQuestParticipation:
             quest_type=QuestType.WEEKLY,
             start_date=utc_now() - timedelta(days=10),
             end_date=utc_now() - timedelta(days=3),
-            requirements={"type": "matches_played", "target": 5}
+            requirements={"type": "matches_played", "target": 5},
         )
 
         with pytest.raises(ValueError, match="not active"):
@@ -243,21 +244,21 @@ class TestQuestProgress:
             quest_type=QuestType.WEEKLY,
             start_date=utc_now() - timedelta(days=1),
             end_date=utc_now() + timedelta(days=6),
-            requirements={"type": "matches_played", "target": 10}
+            requirements={"type": "matches_played", "target": 10},
         )
 
         QuestService.join_quest(user_id=player.id, quest_id=quest.id)
 
         participation, completed = QuestService.update_progress(
-            user_id=player.id,
-            quest_id=quest.id,
-            progress_increment=3
+            user_id=player.id, quest_id=quest.id, progress_increment=3
         )
 
         assert participation.current_progress == 3
         assert completed is False
 
-    def test_update_progress_completes_quest_at_target(self, db_session, isolated_players):
+    def test_update_progress_completes_quest_at_target(
+        self, db_session, isolated_players
+    ):
         """Quest should complete when progress reaches target."""
         player = isolated_players[0]
 
@@ -267,16 +268,14 @@ class TestQuestProgress:
             quest_type=QuestType.WEEKLY,
             start_date=utc_now() - timedelta(days=1),
             end_date=utc_now() + timedelta(days=6),
-            requirements={"type": "matches_played", "target": 5}
+            requirements={"type": "matches_played", "target": 5},
         )
 
         QuestService.join_quest(user_id=player.id, quest_id=quest.id)
 
         # Progress to completion
         participation, completed = QuestService.update_progress(
-            user_id=player.id,
-            quest_id=quest.id,
-            progress_increment=5
+            user_id=player.id, quest_id=quest.id, progress_increment=5
         )
 
         assert participation.is_completed is True
@@ -295,15 +294,13 @@ class TestQuestProgress:
             start_date=utc_now() - timedelta(days=1),
             end_date=utc_now() + timedelta(days=6),
             requirements={"type": "matches_played", "target": 1},
-            xp_reward=200
+            xp_reward=200,
         )
 
         QuestService.join_quest(user_id=player.id, quest_id=quest.id)
 
         participation, _ = QuestService.update_progress(
-            user_id=player.id,
-            quest_id=quest.id,
-            progress_increment=1
+            user_id=player.id, quest_id=quest.id, progress_increment=1
         )
 
         assert participation.xp_awarded == 200
@@ -317,7 +314,9 @@ class TestQuestProgress:
 class TestActivityBasedProgress:
     """Test activity-based quest progress."""
 
-    def test_record_activity_updates_matching_quests(self, db_session, isolated_players):
+    def test_record_activity_updates_matching_quests(
+        self, db_session, isolated_players
+    ):
         """Recording activity should update quests with matching type."""
         player = isolated_players[0]
 
@@ -328,7 +327,7 @@ class TestActivityBasedProgress:
             quest_type=QuestType.WEEKLY,
             start_date=utc_now() - timedelta(days=1),
             end_date=utc_now() + timedelta(days=6),
-            requirements={"type": "matches_played", "target": 5}
+            requirements={"type": "matches_played", "target": 5},
         )
 
         wins_quest = QuestService.create_quest(
@@ -337,14 +336,12 @@ class TestActivityBasedProgress:
             quest_type=QuestType.WEEKLY,
             start_date=utc_now() - timedelta(days=1),
             end_date=utc_now() + timedelta(days=6),
-            requirements={"type": "matches_won", "target": 3}
+            requirements={"type": "matches_won", "target": 3},
         )
 
         # Record "matches_played" activity
         results = QuestService.record_activity_for_quests(
-            user_id=player.id,
-            activity_type="matches_played",
-            activity_count=2
+            user_id=player.id, activity_type="matches_played", activity_count=2
         )
 
         # Should only affect matches_quest
@@ -354,8 +351,7 @@ class TestActivityBasedProgress:
 
         # Check progress
         participation = QuestParticipation.query.filter_by(
-            user_id=player.id,
-            quest_id=matches_quest.id
+            user_id=player.id, quest_id=matches_quest.id
         ).first()
         assert participation.current_progress == 2
 
@@ -369,22 +365,19 @@ class TestActivityBasedProgress:
             quest_type=QuestType.WEEKLY,
             start_date=utc_now() - timedelta(days=1),
             end_date=utc_now() + timedelta(days=6),
-            requirements={"type": "matches_played", "target": 5}
+            requirements={"type": "matches_played", "target": 5},
         )
 
         # Record activity without explicitly joining
         results = QuestService.record_activity_for_quests(
-            user_id=player.id,
-            activity_type="matches_played",
-            activity_count=1
+            user_id=player.id, activity_type="matches_played", activity_count=1
         )
 
         assert len(results) == 1
 
         # Verify auto-joined
         participation = QuestParticipation.query.filter_by(
-            user_id=player.id,
-            quest_id=quest.id
+            user_id=player.id, quest_id=quest.id
         ).first()
         assert participation is not None
         assert participation.current_progress == 1
@@ -399,13 +392,13 @@ class TestActivityBasedProgress:
             quest_type=QuestType.WEEKLY,
             start_date=utc_now() - timedelta(days=1),
             end_date=utc_now() + timedelta(days=6),
-            requirements={"type": "matches_played", "target": 2}
+            requirements={"type": "matches_played", "target": 2},
         )
 
         results = QuestService.record_activity_for_quests(
             user_id=player.id,
             activity_type="matches_played",
-            activity_count=3  # More than target
+            activity_count=3,  # More than target
         )
 
         assert len(results) == 1
@@ -416,7 +409,9 @@ class TestActivityBasedProgress:
 class TestQuestQueries:
     """Test quest query methods."""
 
-    def test_get_user_quests_returns_all_with_progress(self, db_session, isolated_players):
+    def test_get_user_quests_returns_all_with_progress(
+        self, db_session, isolated_players
+    ):
         """Should return all quests with user's participation status."""
         player = isolated_players[0]
 
@@ -426,7 +421,7 @@ class TestQuestQueries:
             quest_type=QuestType.WEEKLY,
             start_date=utc_now() - timedelta(days=1),
             end_date=utc_now() + timedelta(days=6),
-            requirements={"type": "matches_played", "target": 10}
+            requirements={"type": "matches_played", "target": 10},
         )
 
         quest2 = QuestService.create_quest(
@@ -435,7 +430,7 @@ class TestQuestQueries:
             quest_type=QuestType.MONTHLY,
             start_date=utc_now() - timedelta(days=1),
             end_date=utc_now() + timedelta(days=29),
-            requirements={"type": "matches_won", "target": 20}
+            requirements={"type": "matches_won", "target": 20},
         )
 
         # Join only quest1
@@ -466,14 +461,12 @@ class TestQuestQueries:
             start_date=utc_now() - timedelta(days=1),
             end_date=utc_now() + timedelta(days=6),
             requirements={"type": "matches_played", "target": 1},
-            xp_reward=100
+            xp_reward=100,
         )
 
         QuestService.join_quest(user_id=player.id, quest_id=quest.id)
         QuestService.update_progress(
-            user_id=player.id,
-            quest_id=quest.id,
-            progress_increment=1
+            user_id=player.id, quest_id=quest.id, progress_increment=1
         )
 
         stats = QuestService.get_user_quest_stats(user_id=player.id)
@@ -484,7 +477,9 @@ class TestQuestQueries:
         assert stats["total_xp_earned"] == 100
         assert stats["quests_by_type"]["weekly"]["completed"] == 1
 
-    def test_get_quest_leaderboard_ordered_correctly(self, db_session, isolated_players):
+    def test_get_quest_leaderboard_ordered_correctly(
+        self, db_session, isolated_players
+    ):
         """Leaderboard should order by completion, then progress."""
         player1 = isolated_players[0]
         player2 = isolated_players[1]
@@ -495,23 +490,19 @@ class TestQuestQueries:
             quest_type=QuestType.WEEKLY,
             start_date=utc_now() - timedelta(days=1),
             end_date=utc_now() + timedelta(days=6),
-            requirements={"type": "matches_played", "target": 10}
+            requirements={"type": "matches_played", "target": 10},
         )
 
         # Player 1: 3 progress
         QuestService.join_quest(user_id=player1.id, quest_id=quest.id)
         QuestService.update_progress(
-            user_id=player1.id,
-            quest_id=quest.id,
-            progress_increment=3
+            user_id=player1.id, quest_id=quest.id, progress_increment=3
         )
 
         # Player 2: 7 progress
         QuestService.join_quest(user_id=player2.id, quest_id=quest.id)
         QuestService.update_progress(
-            user_id=player2.id,
-            quest_id=quest.id,
-            progress_increment=7
+            user_id=player2.id, quest_id=quest.id, progress_increment=7
         )
 
         leaderboard = QuestService.get_quest_leaderboard(quest_id=quest.id)

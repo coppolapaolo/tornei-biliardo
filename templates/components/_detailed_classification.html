@@ -34,8 +34,13 @@
                             {% if ssr_scores_map %}
                             <th width="10%" title="{{ _('Spot Shot Rally - punteggio spareggio') }}">SSR</th>
                             {% endif %}
-                            <th width="{% if ssr_scores_map %}10{% else %}15{% endif %}%">Pos. Prec.</th>
-                            <th width="{% if ssr_scores_map %}15{% else %}20{% endif %}%">Movimento</th>
+                            {# "Turno" esplicito: qui la posizione precedente è
+                               quella del turno prima DENTRO questa gara, non
+                               quella della prova precedente del campionato
+                               (che è la colonna omonima della classifica
+                               generale). Issue #68. #}
+                            <th width="{% if ssr_scores_map %}10{% else %}15{% endif %}%">{{ _('Pos. Turno Prec.') }}</th>
+                            <th width="{% if ssr_scores_map %}15{% else %}20{% endif %}%">{{ _('Movimento') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -62,15 +67,18 @@
                                 </td>
                                 {% endif %}
                                 <td>
+                                    {# `ranking_rack_value`: rack totali nelle gare RACK,
+                                       differenza altrove. La scelta sta nel modello. #}
+                                    {% set rack_value = player_class.ranking_rack_value %}
                                     {% if is_rack_only %}
                                         {# RACK system: show total racks won without +/- signs #}
-                                        <span class="badge bg-primary">{{ player_class.rack_difference }}</span>
+                                        <span class="badge bg-primary">{{ rack_value }}</span>
                                     {% else %}
                                         {# WINS / POSITION: show rack difference with +/- signs #}
-                                        {% if player_class.rack_difference > 0 %}
-                                            <span class="text-success">+{{ player_class.rack_difference }}</span>
-                                        {% elif player_class.rack_difference < 0 %}
-                                            <span class="text-danger">{{ player_class.rack_difference }}</span>
+                                        {% if rack_value > 0 %}
+                                            <span class="text-success">+{{ rack_value }}</span>
+                                        {% elif rack_value < 0 %}
+                                            <span class="text-danger">{{ rack_value }}</span>
                                         {% else %}
                                             <span class="text-muted">0</span>
                                         {% endif %}
