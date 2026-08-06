@@ -53,7 +53,7 @@ StreakService.record_activity(
 # Check achievement
 AchievementService.check_and_award_achievement(
     user_id=user.id,
-    achievement_code="first_blood"
+    achievement_slug="first_blood"
 )
 ```
 
@@ -244,16 +244,17 @@ def get_all_streaks(user_id: int) -> Dict[str, Dict[str, Any]]:
 ```python
 def check_and_award_achievement(
     user_id: int,
-    achievement_code: str,
-    progress_increment: int = 0
-) -> Optional[UserAchievement]:
-    """Check and award achievement if eligible.
+    achievement_slug: str,
+    force_check: bool = False
+) -> Tuple[Optional[UserAchievement], bool]:
+    """Re-evaluate an achievement and award it if now eligible.
 
-    For simple achievements: checks if already unlocked
-    For progress achievements: increments progress
+    Metric-driven: l'idoneità è calcolata sulla fonte di verità
+    (AchievementMetrics per i tipi "conta N"; logica booleana per win_rate/
+    level/streak/...). Idempotente — nessun contatore incrementale.
 
     Returns:
-        UserAchievement if just unlocked, None otherwise
+        (UserAchievement | None, was_newly_unlocked)
     """
 
 def get_achievement_progress(
@@ -545,7 +546,8 @@ models/gamification/
 ├── models.py                # All model classes and enums
 ├── xp_config.py             # XP rates, level curve, constants
 ├── level_service.py         # XP and level management
-├── achievement_service.py   # Achievement logic
+├── achievement_service.py   # Achievement logic (eligibility metric-driven)
+├── achievement_metrics.py   # Fonte di verità metriche "conta N"
 ├── achievement_seeds.py     # Default achievement definitions
 ├── streak_service.py        # Weekly streak tracking
 ├── quest_service.py         # Quest management

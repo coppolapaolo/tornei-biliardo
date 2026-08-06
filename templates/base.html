@@ -225,12 +225,22 @@
             <div class="d-flex align-items-center ms-auto me-3">
                 <a href="{{ url_for('gamification.dashboard') }}" class="text-decoration-none"
                     title="{{ _('Livello') }} {{ gamification_context.progress.current_level }}">
-                    <div
-                        class="badge bg-light text-primary border border-primary d-flex align-items-center gap-2 py-1 px-2 rounded-pill">
-                        <i class="fas fa-trophy text-warning"></i>
-                        <span class="fw-bold">{{ gamification_context.progress.current_level }}</span>
-                        <span class="small text-muted d-none d-sm-inline">{{ gamification_context.progress.current_xp }}
-                            XP</span>
+                    {# §11-quater: badge "vivo" — anello di progresso (auto-referenziale)
+                       + pulse su XP / glow su level-up via static/js/gamification.js.
+                       I data-* alimentano il count-up XP e l'anello senza ricalcoli lato JS. #}
+                    <div id="gami-badge"
+                        class="gami-badge badge bg-light text-primary border border-primary d-flex align-items-center gap-2 py-1 px-2 rounded-pill"
+                        data-level="{{ gamification_context.progress.current_level }}"
+                        data-current-xp="{{ gamification_context.progress.current_xp }}"
+                        data-xp-next="{{ gamification_context.progress.xp_for_next_level }}"
+                        data-progress="{{ gamification_context.progress.progress_percentage }}">
+                        <span class="gami-badge-ring"
+                            style="--gami-progress: {{ gamification_context.progress.progress_percentage }}">
+                            <i class="fas fa-trophy text-warning"></i>
+                        </span>
+                        <span class="fw-bold" id="gami-badge-level">{{ gamification_context.progress.current_level }}</span>
+                        <span class="small text-muted d-none d-sm-inline"><span
+                                id="gami-badge-xp">{{ gamification_context.progress.current_xp }}</span> XP</span>
                     </div>
                 </a>
             </div>

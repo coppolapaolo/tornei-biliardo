@@ -5,7 +5,6 @@ This package contains all player-related routes decomposed into logical modules:
 - profile: User profile, privacy settings, account management
 - competitions: Gara inscriptions, history
 - matches: Match operations, rack management
-- proposals: Individual match proposals, availability system
 - notifications: Notifications, venue manager requests
 - challenges: Challenge system integration
 """
@@ -22,7 +21,6 @@ from . import (
     exports,
     competitions,
     matches,
-    proposals,
     notifications,
     challenges,
     geo,

@@ -149,11 +149,15 @@ class GamificationFrontendBridge:
     @staticmethod
     def handle_level_up(event: LevelUpEvent) -> None:
         """Send level up event to frontend."""
-        # B21: include total XP and unlocks summary so the toast is self-contained.
+        # B21: include total XP and unlocks summary so the toast is
+        # self-contained. ADR-031: i LevelUnlock sono *feedback/ricompense* di
+        # livello, non i gate reali (quelli sono FeatureConfig/ABAC, con codici
+        # distinti). Evitiamo quindi "funzioni sbloccate", che sovra-prometteva
+        # accesso a capacità non necessariamente concesse dal livello.
         unlock_count = len(event.unlocks) if event.unlocks else 0
         if unlock_count > 0:
             subtitle = _(
-                "Hai accumulato %(xp)d XP totali — %(n)d nuove funzioni sbloccate!",
+                "Hai accumulato %(xp)d XP totali — %(n)d nuove ricompense di livello!",
                 xp=event.total_xp,
                 n=unlock_count,
             )
@@ -237,10 +241,10 @@ class GamificationFrontendBridge:
         GamificationFrontendBridge._flash_gamification_event(
             "quest",
             {
-                "name": event.quest_name,
+                "name": _(event.quest_name),
                 "description": _(
                     "Quest completata: %(name)s — +%(xp)d XP",
-                    name=event.quest_name,
+                    name=_(event.quest_name),
                     xp=event.xp_awarded,
                 ),
             },
@@ -254,7 +258,10 @@ class GamificationFrontendBridge:
     _NUDGE_COPY: Dict[str, Dict[str, str]] = {
         "view_other_profiles": {
             "name": "Scopri gli altri giocatori",
-            "description": "Ora puoi sbirciare i profili degli altri. Vai alla classifica per cominciare!",
+            "description": (
+                "Ora puoi sbirciare i profili degli altri. "
+                "Vai alla classifica per cominciare!"
+            ),
         },
         "view_global_stats": {
             "name": "Statistiche globali",
@@ -266,11 +273,16 @@ class GamificationFrontendBridge:
         },
         "create_match_community": {
             "name": "Proponi una partita aperta",
-            "description": "Lancia una proposta alla community e aspetta che qualcuno si faccia avanti.",
+            "description": (
+                "Lancia una proposta alla community e aspetta che "
+                "qualcuno si faccia avanti."
+            ),
         },
         "manage_availability": {
             "name": "Imposta la tua disponibilità",
-            "description": "Fai sapere quando sei libero così altri possono proporti partite.",
+            "description": (
+                "Fai sapere quando sei libero così altri " "possono proporti partite."
+            ),
         },
         "create_gara": {
             "name": "Organizza una gara",
@@ -282,7 +294,10 @@ class GamificationFrontendBridge:
         },
         "do_challenge": {
             "name": "Prova le sfide",
-            "description": "Allenati con drill mirati: ogni completamento conta per la classifica.",
+            "description": (
+                "Allenati con drill mirati: "
+                "ogni completamento conta per la classifica."
+            ),
         },
     }
 
@@ -345,6 +360,34 @@ class GamificationFrontendBridge:
             },
             user_id,
         )
+
+
+def _i18n_nudge_anchor() -> None:
+    """Ancora di estrazione i18n per ``_NUDGE_COPY`` — **mai chiamata**.
+
+    Le copy dei nudge vengono tradotte a emission-time con ``_(copy["name"])`` /
+    ``_(copy["description"])``: passando una *variabile* a ``_()``, pybabel non
+    riesce a estrarle staticamente, quindi senza questa ancora resterebbero in
+    italiano anche in EN. Qui ripetiamo i literal (identici ai valori
+    concatenati in ``_NUDGE_COPY``) dentro ``_()`` solo perché l'estrazione
+    statica li includa nel catalogo. Non viene mai eseguita.
+    """
+    _("Scopri gli altri giocatori")
+    _("Ora puoi sbirciare i profili degli altri. Vai alla classifica per cominciare!")
+    _("Statistiche globali")
+    _("Confronta le tue performance con quelle della community.")
+    _("Crea una partita diretta")
+    _("Sfida un avversario specifico — proponi luogo e data.")
+    _("Proponi una partita aperta")
+    _("Lancia una proposta alla community e aspetta che qualcuno si faccia avanti.")
+    _("Imposta la tua disponibilità")
+    _("Fai sapere quando sei libero così altri possono proporti partite.")
+    _("Organizza una gara")
+    _("Sei pronto: puoi creare la tua prima gara standalone.")
+    _("Organizza un campionato")
+    _("Crea una serie di gare e gestisci una stagione completa.")
+    _("Prova le sfide")
+    _("Allenati con drill mirati: ogni completamento conta per la classifica.")
 
 
 def _get_achievement_description(event: AchievementUnlockedEvent) -> str:

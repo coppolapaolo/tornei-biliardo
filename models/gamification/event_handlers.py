@@ -33,7 +33,9 @@ from models.gamification.level_service import LevelService
 from models.gamification.achievement_service import AchievementService
 from models.gamification.streak_service import StreakService
 from models.gamification.quest_service import QuestService
-from models.gamification.xp_config import XP_RATES
+from models.gamification.config_service import (
+    GamificationConfigService as ConfigService,
+)
 from models.gamification.models import XPTransactionType, StreakType
 
 logger = logging.getLogger(__name__)
@@ -146,54 +148,47 @@ class GamificationEventHandlers:
 
             # Award winner XP (skip if winner is a forfeit — covers trio 3/3 walkover)
             if event.winner_id not in forfeit_ids:
+                win_xp = ConfigService.get_xp_rate(XPTransactionType.MATCH_WIN)
                 LevelService.award_xp(
                     user_id=event.winner_id,
-                    xp_amount=XP_RATES[XPTransactionType.MATCH_WIN],
+                    xp_amount=win_xp,
                     transaction_type=XPTransactionType.MATCH_WIN,
                     reason=f"Won match {event.match_id}",
                     related_entities={"match_id": event.match_id},
                 )
                 logger.info(
-                    f"Awarded {XP_RATES[XPTransactionType.MATCH_WIN]} XP "
-                    f"to user {event.winner_id} for match win"
+                    f"Awarded {win_xp} XP to user {event.winner_id} for match win"
                 )
 
             # Award loser participation XP (skip if loser is a forfeit)
             if loser_id and loser_id not in forfeit_ids:
+                loss_xp = ConfigService.get_xp_rate(XPTransactionType.MATCH_LOSS)
                 LevelService.award_xp(
                     user_id=loser_id,
-                    xp_amount=XP_RATES[XPTransactionType.MATCH_LOSS],
+                    xp_amount=loss_xp,
                     transaction_type=XPTransactionType.MATCH_LOSS,
                     reason=f"Participated in match {event.match_id}",
                     related_entities={"match_id": event.match_id},
                 )
                 logger.info(
-                    f"Awarded {XP_RATES[XPTransactionType.MATCH_LOSS]} XP "
-                    f"to user {loser_id} for match participation"
+                    f"Awarded {loss_xp} XP to user {loser_id} for match participation"
                 )
-
-            # Check match-related achievements for winner (skip if winner is a forfeit).
-            # Each call isolated: failure in one must not block the others.
-            if event.winner_id not in forfeit_ids:
-                winner_achievements = [
-                    ("first_blood", {}),
-                    ("veteran_player", {"progress_increment": 1}),
-                    ("century_club", {"progress_increment": 1}),
-                    ("match_marathon", {"progress_increment": 1}),
-                ]
-                for code, kwargs in winner_achievements:
-                    try:
-                        AchievementService.check_and_award_achievement(
-                            event.winner_id, code, **kwargs
-                        )
-                    except Exception as ach_error:
-                        logger.warning(
-                            f"Error checking achievement '{code}' for "
-                            f"user {event.winner_id}: {ach_error}"
-                        )
 
             # Iterate the full participant roster so trio p3 is not skipped.
             all_player_ids = event.get_all_player_ids()
+
+            # Achievement: riconcilia ogni partecipante non forfait. Metric-driven
+            # → un'unica chiamata copre vittorie (first_blood/veteran/...),
+            # serie di vittorie e avversari unici. Isolata per-utente: un errore
+            # non blocca gli altri né gli effetti collaterali sotto.
+            for player_id in all_player_ids:
+                if player_id and player_id not in forfeit_ids:
+                    try:
+                        AchievementService.reconcile_achievements(player_id)
+                    except Exception as ach_error:
+                        logger.warning(
+                            f"Error reconciling achievements for user {player_id}: {ach_error}"
+                        )
 
             # Record weekly streaks for all participants (skip forfeiters)
             # WEEKLY_MATCH: At least 1 match per week
@@ -287,7 +282,7 @@ class GamificationEventHandlers:
             # XP vincitore (ridotto)
             LevelService.award_xp(
                 user_id=event.winner_id,
-                xp_amount=XP_RATES[XPTransactionType.CASUAL_MATCH_WIN],
+                xp_amount=ConfigService.get_xp_rate(XPTransactionType.CASUAL_MATCH_WIN),
                 transaction_type=XPTransactionType.CASUAL_MATCH_WIN,
                 reason=f"Won casual match {event.match_id}",
                 related_entities={"individual_match_id": event.match_id},
@@ -297,29 +292,26 @@ class GamificationEventHandlers:
             if loser_id:
                 LevelService.award_xp(
                     user_id=loser_id,
-                    xp_amount=XP_RATES[XPTransactionType.CASUAL_MATCH_LOSS],
+                    xp_amount=ConfigService.get_xp_rate(
+                        XPTransactionType.CASUAL_MATCH_LOSS
+                    ),
                     transaction_type=XPTransactionType.CASUAL_MATCH_LOSS,
                     reason=f"Participated in casual match {event.match_id}",
                     related_entities={"individual_match_id": event.match_id},
                 )
 
-            # Achievement conteggio-vittorie per il vincitore (ognuno isolato)
-            winner_achievements = [
-                ("first_blood", {}),
-                ("veteran_player", {"progress_increment": 1}),
-                ("century_club", {"progress_increment": 1}),
-                ("match_marathon", {"progress_increment": 1}),
-            ]
-            for code, kwargs in winner_achievements:
-                try:
-                    AchievementService.check_and_award_achievement(
-                        event.winner_id, code, **kwargs
-                    )
-                except Exception as ach_error:
-                    logger.warning(
-                        f"Error checking achievement '{code}' for user "
-                        f"{event.winner_id}: {ach_error}"
-                    )
+            # Achievement: riconcilia entrambi i giocatori. Metric-driven → una
+            # sola chiamata copre vittorie, serie e avversari unici (come nel
+            # torneo). Isolata per-utente: un errore non blocca gli altri.
+            for player_id in (event.player1_id, event.player2_id):
+                if player_id:
+                    try:
+                        AchievementService.reconcile_achievements(player_id)
+                    except Exception as ach_error:
+                        logger.warning(
+                            f"Error reconciling achievements for user "
+                            f"{player_id}: {ach_error}"
+                        )
 
             # Streak settimanali per entrambi
             for player_id in (event.player1_id, event.player2_id):
@@ -384,25 +376,27 @@ class GamificationEventHandlers:
             event: InscriptionCreatedEvent with user_id, gara_id
         """
         try:
+            inscription_xp = ConfigService.get_xp_rate(
+                XPTransactionType.TOURNAMENT_INSCRIPTION
+            )
             LevelService.award_xp(
                 user_id=event.user_id,
-                xp_amount=XP_RATES[XPTransactionType.TOURNAMENT_INSCRIPTION],
+                xp_amount=inscription_xp,
                 transaction_type=XPTransactionType.TOURNAMENT_INSCRIPTION,
                 reason=f"Registered for tournament {event.gara_id}",
                 related_entities={"gara_id": event.gara_id},
             )
             logger.info(
-                f"Awarded {XP_RATES[XPTransactionType.TOURNAMENT_INSCRIPTION]} "
-                f"XP to user {event.user_id} for tournament inscription"
+                f"Awarded {inscription_xp} XP to user {event.user_id} for tournament inscription"
             )
 
-            # Check tournament participation achievements
-            AchievementService.check_and_award_achievement(
-                event.user_id, "tournament_debut"
-            )
-            AchievementService.check_and_award_achievement(
-                event.user_id, "tournament_regular", progress_increment=1
-            )
+            # Achievement: riconcilia (tournament_participation + strategie provate)
+            try:
+                AchievementService.reconcile_achievements(event.user_id)
+            except Exception as ach_error:
+                logger.warning(
+                    f"Error reconciling achievements for user {event.user_id}: {ach_error}"
+                )
 
             # Record weekly streaks
             # WEEKLY_TOURNAMENT: At least 1 tournament registration per week
@@ -463,37 +457,40 @@ class GamificationEventHandlers:
                 ]
 
             # Award all participants completion XP
+            completion_xp = ConfigService.get_xp_rate(
+                XPTransactionType.TOURNAMENT_COMPLETION
+            )
             for participant_id in participant_ids:
                 LevelService.award_xp(
                     user_id=participant_id,
-                    xp_amount=XP_RATES[XPTransactionType.TOURNAMENT_COMPLETION],
+                    xp_amount=completion_xp,
                     transaction_type=XPTransactionType.TOURNAMENT_COMPLETION,
                     reason=f"Completed tournament {event.gara_id}",
                     related_entities={"gara_id": event.gara_id},
                 )
 
             logger.info(
-                f"Awarded {XP_RATES[XPTransactionType.TOURNAMENT_COMPLETION]} XP "
-                f"to {len(participant_ids)} participants for "
-                f"tournament {event.gara_id} completion"
+                f"Awarded {completion_xp} XP "
+                f"to {len(participant_ids)} participants for tournament {event.gara_id} completion"
             )
 
             # Bonus for winner
             if event.winner_id:
+                win_xp = ConfigService.get_xp_rate(XPTransactionType.TOURNAMENT_WIN)
                 LevelService.award_xp(
                     user_id=event.winner_id,
-                    xp_amount=XP_RATES[XPTransactionType.TOURNAMENT_WIN],
+                    xp_amount=win_xp,
                     transaction_type=XPTransactionType.TOURNAMENT_WIN,
                     reason=f"Won tournament {event.gara_id}",
                     related_entities={"gara_id": event.gara_id, "position": 1},
                 )
-                logger.info(
-                    f"Awarded {XP_RATES[XPTransactionType.TOURNAMENT_WIN]} "
-                    f"XP to winner {event.winner_id}"
-                )
+                logger.info(f"Awarded {win_xp} XP to winner {event.winner_id}")
 
             # Bonus for podium (top 3, excluding winner who already got bonus)
             if event.final_standings and len(event.final_standings) >= 2:
+                podium_xp = ConfigService.get_xp_rate(
+                    XPTransactionType.TOURNAMENT_PODIUM
+                )
                 # Get top 3 (positions 1, 2, 3)
                 podium = [
                     s
@@ -508,7 +505,7 @@ class GamificationEventHandlers:
                     if user_id:
                         LevelService.award_xp(
                             user_id=user_id,
-                            xp_amount=XP_RATES[XPTransactionType.TOURNAMENT_PODIUM],
+                            xp_amount=podium_xp,
                             transaction_type=XPTransactionType.TOURNAMENT_PODIUM,
                             reason=f"Finished {position} in tournament {event.gara_id}",
                             related_entities={
@@ -519,11 +516,18 @@ class GamificationEventHandlers:
 
                 logger.info(f"Awarded podium bonuses to {len(podium)} players")
 
-            # Check tournament completion achievements
+            # Achievement: riconcilia lo stato di ogni partecipante. I premi di
+            # piazzamento (TOURNAMENT_WIN/PODIUM) sono già a ledger sopra, quindi
+            # champion/podium_finish/tournament_dominator si sbloccano qui.
+            # `aspiring_director` (director_eligibility) è escluso dalla
+            # riconciliazione (costoso) e va controllato a parte.
             for participant_id in participant_ids:
-                # Everyone who completes gets checked (they all finished the tournament)
-                # Check "Aspirante Direttore" achievement (director eligibility)
-                # This requires 10+ completed gare OR 1+ complete campionato
+                try:
+                    AchievementService.reconcile_achievements(participant_id)
+                except Exception as ach_error:
+                    logger.warning(
+                        f"Error reconciling achievements for user {participant_id}: {ach_error}"
+                    )
                 try:
                     AchievementService.check_and_award_achievement(
                         participant_id, "aspiring_director"
@@ -533,24 +537,6 @@ class GamificationEventHandlers:
                         f"Error checking aspiring_director achievement "
                         f"for user {participant_id}: {ach_error}"
                     )
-
-            # Check winner achievement
-            if event.winner_id:
-                AchievementService.check_and_award_achievement(
-                    event.winner_id, "champion"
-                )
-                AchievementService.check_and_award_achievement(
-                    event.winner_id, "tournament_dominator", progress_increment=1
-                )
-
-            # Check podium achievements (top 3)
-            if event.final_standings and len(event.final_standings) >= 3:
-                for standing in event.final_standings[:3]:
-                    user_id = standing.get("user_id")
-                    if user_id:
-                        AchievementService.check_and_award_achievement(
-                            user_id, "podium_finish"
-                        )
 
             # Update quest progress for all participants
             # "tournaments_completed": Finished a tournament
@@ -576,16 +562,16 @@ class GamificationEventHandlers:
     def handle_competition_created_for_xp(event: CompetitionCreatedEvent) -> None:
         """Award XP for creating a competition (Gara)."""
         try:
+            gara_xp = ConfigService.get_xp_rate(XPTransactionType.GARA_CREATION)
             LevelService.award_xp(
                 user_id=event.creator_id,
-                xp_amount=XP_RATES[XPTransactionType.GARA_CREATION],
+                xp_amount=gara_xp,
                 transaction_type=XPTransactionType.GARA_CREATION,
                 reason=f"Created competition {event.name}",
                 related_entities={"gara_id": event.gara_id},
             )
             logger.info(
-                f"Awarded {XP_RATES[XPTransactionType.GARA_CREATION]} XP "
-                f"to user {event.creator_id} for creating Gara"
+                f"Awarded {gara_xp} XP to user {event.creator_id} for creating Gara"
             )
         except Exception as e:
             logger.error(
@@ -596,16 +582,18 @@ class GamificationEventHandlers:
     def handle_campionato_created_for_xp(event: CampionatoCreatedEvent) -> None:
         """Award XP for creating a Campionato."""
         try:
+            campionato_xp = ConfigService.get_xp_rate(
+                XPTransactionType.CAMPIONATO_CREATION
+            )
             LevelService.award_xp(
                 user_id=event.creator_id,
-                xp_amount=XP_RATES[XPTransactionType.CAMPIONATO_CREATION],
+                xp_amount=campionato_xp,
                 transaction_type=XPTransactionType.CAMPIONATO_CREATION,
                 reason=f"Created campionato {event.name}",
                 related_entities={"campionato_id": event.campionato_id},
             )
             logger.info(
-                f"Awarded {XP_RATES[XPTransactionType.CAMPIONATO_CREATION]} "
-                f"XP to user {event.creator_id} for creating Campionato"
+                f"Awarded {campionato_xp} XP to user {event.creator_id} for creating Campionato"
             )
         except Exception as e:
             logger.error(

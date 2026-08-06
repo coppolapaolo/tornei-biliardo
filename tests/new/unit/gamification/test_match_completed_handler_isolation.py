@@ -74,9 +74,16 @@ def _make_completed_match(db_session, gara, winner_id, loser_id) -> Match:
 
 @pytest.mark.unit
 class TestAchievementIsolation:
-    """A2 — One achievement raising must not cancel the other three."""
+    """A2 — un errore nella riconciliazione achievement non deve bloccare gli
+    effetti collaterali (streak/quest) né gli altri partecipanti.
 
-    def test_first_blood_failure_does_not_block_other_achievements(
+    Con il modello metric-driven l'handler chiama
+    `AchievementService.reconcile_achievements(player_id)` per ogni partecipante
+    (isolato in try/except); la riconciliazione a sua volta isola ogni singolo
+    achievement. Qui verifichiamo l'isolamento a livello di handler.
+    """
+
+    def test_reconcile_failure_does_not_block_streak_and_quest(
         self, db_session, isolated_players
     ):
         gara = _make_gara(db_session)
@@ -90,28 +97,37 @@ class TestAchievementIsolation:
             player2_id=loser_id,
             player1_name="W",
             player2_name="L",
+            player_ids=[winner_id, loser_id],
             gara_id=gara.id,
         )
 
-        calls: List[str] = []
+        reconciled: List[int] = []
+        streak_calls: List[int] = []
+        quest_calls: List[int] = []
 
-        def fake_check(user_id, code, **kwargs):
-            calls.append(code)
-            if code == "first_blood":
-                raise RuntimeError("boom")
+        def boom(user_id):
+            reconciled.append(user_id)
+            raise RuntimeError("boom")
 
         with patch(
-            "models.gamification.event_handlers.AchievementService.check_and_award_achievement",
-            side_effect=fake_check,
+            "models.gamification.event_handlers.AchievementService.reconcile_achievements",
+            side_effect=boom,
+        ), patch(
+            "models.gamification.event_handlers.StreakService.record_activity",
+            side_effect=lambda user_id, streak_type: streak_calls.append(user_id),
+        ), patch(
+            "models.gamification.event_handlers.QuestService.record_activity_for_quests",
+            side_effect=lambda user_id, activity_type, activity_count: quest_calls.append(
+                user_id
+            ),
         ):
             GamificationEventHandlers.handle_match_completed_for_xp(event)
 
-        assert "first_blood" in calls, "first_blood was not attempted"
-        for expected in ("veteran_player", "century_club", "match_marathon"):
-            assert expected in calls, (
-                f"{expected} skipped after first_blood failed — achievements "
-                f"are not isolated"
-            )
+        # Entrambi i partecipanti sono stati riconciliati (loop non interrotto
+        # dal primo errore) e streak/quest sono comunque avvenuti.
+        assert set(reconciled) >= {winner_id, loser_id}
+        assert winner_id in streak_calls and loser_id in streak_calls
+        assert winner_id in quest_calls
 
 
 @pytest.mark.unit

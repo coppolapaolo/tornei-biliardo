@@ -66,7 +66,6 @@ from .individual_match.models import (
     ProposalInvitation,
     IndividualMatch,
     IndividualRack,
-    PlayerAvailability,
     ProposalType,
     ProposalStatus,
     MatchStatus,
@@ -101,6 +100,7 @@ from .location.models import (
     UserLocationAvailability,
     DayOfWeek,
 )
+from .demand.models import DemandSignal, DemandSignalStatus
 from .tiebreaker.models import (
     Tiebreaker,
     SpotShot,
@@ -198,7 +198,6 @@ __all__ = [
     "ProposalInvitation",
     "IndividualMatch",
     "IndividualRack",
-    "PlayerAvailability",
     "ProposalType",
     "ProposalStatus",
     "MatchStatus",
@@ -227,6 +226,8 @@ __all__ = [
     # Location domain models (Phase 3)
     "BilliardHall",
     "UserLocationAvailability",
+    "DemandSignal",
+    "DemandSignalStatus",
     "DayOfWeek",
     # Tiebreaker domain models (Phase 4)
     "Tiebreaker",

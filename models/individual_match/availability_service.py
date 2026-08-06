@@ -1,6 +1,10 @@
 """
 Module: models/individual_match/availability_service.py
-Purpose: Service layer for player availability and match request management
+Purpose: Service layer for player availability (venue-based) and match requests
+
+ADR-033: la disponibilità è solo per sala (UserLocationAvailability /
+BilliardHall). Il vecchio modello a testo libero (PlayerAvailability) è stato
+rimosso.
 """
 
 from __future__ import annotations
@@ -10,52 +14,22 @@ from datetime import datetime
 from typing import List, Optional, Dict, Any
 
 from models.base import db, transactional, utc_now
-from models.individual_match.models import (
-    PlayerAvailability,
-    MatchProposal,
-)
+from models.individual_match.models import MatchProposal
 from models.location.models import BilliardHall, UserLocationAvailability
 from models.user.models import User
 from models.notification.factory import NotificationFactory
 from models.notification.models import NotificationType, NotificationPriority
 
 
+def _format_time_range(start, end) -> Optional[str]:
+    """Format a (start, end) time pair back to 'HH:MM-HH:MM', or None."""
+    if start and end:
+        return f"{start.strftime('%H:%M')}-{end.strftime('%H:%M')}"
+    return None
+
+
 class AvailabilityService:
     """Service for managing player availability and match requests."""
-
-    @staticmethod
-    @transactional(domain="individual_match")
-    def set_player_availability(
-        user_id: int,
-        location: str,
-        is_available: bool = True,
-        preferred_days: Optional[List[int]] = None,
-        preferred_times: Optional[str] = None,
-    ) -> PlayerAvailability:
-        """Set player availability preferences for a location."""
-        # Check for existing availability
-        existing = PlayerAvailability.query.filter_by(
-            user_id=user_id, location=location
-        ).first()
-
-        if existing:
-            existing.is_available = is_available
-            existing.preferred_days = (
-                json.dumps(preferred_days) if preferred_days else None
-            )
-            existing.preferred_times = preferred_times
-            existing.updated_at = utc_now()
-        else:
-            existing = PlayerAvailability(
-                user_id=user_id,
-                location=location,
-                is_available=is_available,
-                preferred_days=json.dumps(preferred_days) if preferred_days else None,
-                preferred_times=preferred_times,
-            )
-            db.session.add(existing)
-
-        return existing
 
     @staticmethod
     @transactional(domain="individual_match")
@@ -109,47 +83,6 @@ class AvailabilityService:
         return existing
 
     @staticmethod
-    def get_available_players_at_location(
-        location: str, exclude_user_id: Optional[int] = None
-    ) -> List[Dict[str, Any]]:
-        """Get players available at a specific location."""
-        query = (
-            db.session.query(PlayerAvailability, User)
-            .join(User, PlayerAvailability.user_id == User.id)
-            .filter(
-                PlayerAvailability.location == location,
-                PlayerAvailability.is_available == True,
-            )
-        )
-
-        if exclude_user_id:
-            query = query.filter(User.id != exclude_user_id)
-
-        results = query.all()
-
-        players = []
-        for availability, user in results:
-            preferred_days = None
-            if availability.preferred_days:
-                try:
-                    preferred_days = json.loads(availability.preferred_days)
-                except (json.JSONDecodeError, TypeError):
-                    preferred_days = None
-
-            players.append(
-                {
-                    "user_id": user.id,
-                    "username": user.username,
-                    "location": availability.location,
-                    "preferred_days": preferred_days,
-                    "preferred_times": availability.preferred_times,
-                    "updated_at": availability.updated_at,
-                }
-            )
-
-        return players
-
-    @staticmethod
     def get_available_players_at_venue(
         billiard_hall_id: int, exclude_user_id: Optional[int] = None
     ) -> List[Dict[str, Any]]:
@@ -163,7 +96,7 @@ class AvailabilityService:
             )
             .filter(
                 UserLocationAvailability.billiard_hall_id == billiard_hall_id,
-                UserLocationAvailability.is_available == True,
+                UserLocationAvailability.is_available.is_(True),
             )
         )
 
@@ -181,10 +114,9 @@ class AvailabilityService:
                 except (json.JSONDecodeError, TypeError):
                     available_days = None
 
-            # Format preferred times back to string format
-            preferred_times_str = None
-            if availability.preferred_time_start and availability.preferred_time_end:
-                preferred_times_str = f"{availability.preferred_time_start.strftime('%H:%M')}-{availability.preferred_time_end.strftime('%H:%M')}"
+            preferred_times_str = _format_time_range(
+                availability.preferred_time_start, availability.preferred_time_end
+            )
 
             players.append(
                 {
@@ -201,44 +133,128 @@ class AvailabilityService:
         return players
 
     @staticmethod
-    @transactional(domain="individual_match")
-    def notify_players_of_availability(
-        user_id: int, location: str, message: Optional[str] = None
-    ) -> int:
-        """Notify players who have played at this location about availability."""
-        # Find users who have played at this location before
-        from models.individual_match.models import IndividualMatch
+    def get_venues_with_available_players(
+        exclude_user_id: Optional[int] = None,
+    ) -> List[Dict[str, Any]]:
+        """Active venues that have at least one available player.
 
-        # Get users who have played individual matches at this location
-        played_at_location = (
-            db.session.query(User)
+        Each item: venue_id, venue_name, city, latitude, longitude, players.
+        Used by the discovery page; proximity ranking is applied by the caller
+        (ADR-034) using ``utils.geo`` on this already-small working set.
+        """
+        venues = (
+            db.session.query(BilliardHall)
             .join(
-                IndividualMatch,
-                db.or_(
-                    IndividualMatch.player1_id == User.id,
-                    IndividualMatch.player2_id == User.id,
-                ),
+                UserLocationAvailability,
+                UserLocationAvailability.billiard_hall_id == BilliardHall.id,
             )
             .filter(
-                IndividualMatch.location == location,
-                User.id != user_id,  # Exclude the user posting availability
-                User.deleted_at.is_(None),  # Only active users
+                UserLocationAvailability.is_available.is_(True),
+                BilliardHall.is_active.is_(True),
             )
             .distinct()
             .all()
         )
 
-        # Create notification for each user
-        notifications_sent = 0
-        requesting_user = db.session.get(User, user_id)
+        result = []
+        for venue in venues:
+            players = AvailabilityService.get_available_players_at_venue(
+                billiard_hall_id=venue.id, exclude_user_id=exclude_user_id
+            )
+            if players:
+                result.append(
+                    {
+                        "venue_id": venue.id,
+                        "venue_name": venue.name,
+                        "city": venue.city,
+                        "latitude": venue.latitude,
+                        "longitude": venue.longitude,
+                        "players": players,
+                    }
+                )
+        return result
 
-        default_message = (
-            f"{requesting_user.username} è disponibile a giocare presso {location}"
+    @staticmethod
+    def city_centroid_for(city: str):
+        """Approximate origin = centroid of known venue coords in a city.
+
+        Network-free fallback (ADR-034) when the user has no GPS fix but has a
+        self-declared home city. Returns (lat, lng) or None.
+        """
+        from utils.geo import city_centroid
+
+        if not city:
+            return None
+        rows = (
+            db.session.query(BilliardHall.latitude, BilliardHall.longitude)
+            .filter(
+                BilliardHall.is_active.is_(True),
+                db.func.lower(db.func.trim(BilliardHall.city)) == city.strip().lower(),
+                BilliardHall.latitude.isnot(None),
+                BilliardHall.longitude.isnot(None),
+            )
+            .all()
         )
+        return city_centroid(rows)
+
+    @staticmethod
+    def get_players_who_played_at_location(
+        location: str, exclude_user_id: Optional[int] = None
+    ) -> List[int]:
+        """Return ids of users who have played an individual match at a location.
+
+        Used to pick eligible recipients for open proposals / availability
+        notifications when the proposal carries a free-text ``location`` rather
+        than a venue FK (ADR-033: there is no more location-based availability).
+        """
+        from models.individual_match.models import IndividualMatch
+
+        rows = (
+            db.session.query(IndividualMatch.player1_id, IndividualMatch.player2_id)
+            .filter(IndividualMatch.location == location)
+            .all()
+        )
+
+        user_ids = set()
+        for player1_id, player2_id in rows:
+            if player1_id:
+                user_ids.add(player1_id)
+            if player2_id:
+                user_ids.add(player2_id)
+        if exclude_user_id:
+            user_ids.discard(exclude_user_id)
+        if not user_ids:
+            return []
+
+        # La query sopra seleziona solo colonne id di IndividualMatch, quindi il
+        # filtro soft-delete a livello di sessione del modello User NON si
+        # applica: escludiamo esplicitamente gli account anonimizzati/cancellati
+        # così non ricevono notifiche di proposta.
+        from models.user.models import User
+
+        active_ids = {
+            uid
+            for (uid,) in db.session.query(User.id)
+            .filter(User.id.in_(user_ids), User.deleted_at.is_(None))
+            .all()
+        }
+        return list(active_ids)
+
+    @staticmethod
+    @transactional(domain="individual_match")
+    def notify_players_of_availability(
+        user_id: int, location: str, message: Optional[str] = None
+    ) -> int:
+        """Notify players who have played at this location about availability."""
+        user_ids = AvailabilityService.get_players_who_played_at_location(
+            location, exclude_user_id=user_id
+        )
+
+        requesting_user = db.session.get(User, user_id)
+        requester_name = requesting_user.username if requesting_user else "Un giocatore"
+        default_message = f"{requester_name} è disponibile a giocare presso {location}"
         notification_message = message or default_message
 
-        # Use NotificationFactory for bulk notification with error handling
-        user_ids = [user.id for user in played_at_location]
         notifications = NotificationFactory.create_bulk_notification(
             user_ids=user_ids,
             notification_type=NotificationType.MATCH_PROPOSAL,
@@ -248,49 +264,21 @@ class AvailabilityService:
             continue_on_error=True,
         )
 
-        # Count successful notifications
         stats = NotificationFactory.get_notification_stats(notifications)
-        notifications_sent = int(stats["successful"])
-
-        return notifications_sent
+        return int(stats["successful"])
 
     @staticmethod
     def get_user_availability_preferences(user_id: int) -> Dict[str, Any]:
-        """Get all availability preferences for a user."""
-        # Get location-based availability
-        location_availabilities = PlayerAvailability.query.filter_by(
-            user_id=user_id, is_available=True
-        ).all()
-
-        # Get venue-based availability
+        """Get all (venue-based) availability preferences for a user."""
         venue_availabilities = (
             db.session.query(UserLocationAvailability, BilliardHall)
             .join(BilliardHall)
             .filter(
                 UserLocationAvailability.user_id == user_id,
-                UserLocationAvailability.is_available == True,
+                UserLocationAvailability.is_available.is_(True),
             )
             .all()
         )
-
-        locations = []
-        for availability in location_availabilities:
-            preferred_days = None
-            if availability.preferred_days:
-                try:
-                    preferred_days = json.loads(availability.preferred_days)
-                except (json.JSONDecodeError, TypeError):
-                    preferred_days = None
-
-            locations.append(
-                {
-                    "id": availability.id,
-                    "location": availability.location,
-                    "preferred_days": preferred_days,
-                    "preferred_times": availability.preferred_times,
-                    "type": "location",
-                }
-            )
 
         venues = []
         for availability, venue in venue_availabilities:
@@ -301,10 +289,9 @@ class AvailabilityService:
                 except (json.JSONDecodeError, TypeError):
                     available_days = None
 
-            # Format preferred times back to string format
-            preferred_times_str = None
-            if availability.preferred_time_start and availability.preferred_time_end:
-                preferred_times_str = f"{availability.preferred_time_start.strftime('%H:%M')}-{availability.preferred_time_end.strftime('%H:%M')}"
+            preferred_times_str = _format_time_range(
+                availability.preferred_time_start, availability.preferred_time_end
+            )
 
             venues.append(
                 {
@@ -317,7 +304,23 @@ class AvailabilityService:
                 }
             )
 
-        return {"locations": locations, "venues": venues}
+        return {"venues": venues}
+
+    @staticmethod
+    @transactional(domain="individual_match")
+    def remove_venue_availability(user_id: int, availability_id: int) -> bool:
+        """Delete a venue-based availability record owned by the user.
+
+        Returns True if a record was deleted, False if not found or not owned
+        by the user (callers should treat False as a 404).
+        """
+        availability = UserLocationAvailability.query.filter_by(
+            id=availability_id, user_id=user_id
+        ).first()
+        if availability is None:
+            return False
+        db.session.delete(availability)
+        return True
 
     @staticmethod
     @transactional(domain="individual_match")

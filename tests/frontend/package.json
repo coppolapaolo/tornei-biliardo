@@ -1,0 +1,12 @@
+{
+  "name": "tornei-biliardo-frontend-tests",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Headless (jsdom) automation for gamification frontend logic — automatable subset of the V3 manual test report.",
+  "scripts": {
+    "test": "node test_gamification_badge.cjs"
+  },
+  "devDependencies": {
+    "jsdom": "^29.0.0"
+  }
+}

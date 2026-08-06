@@ -23,6 +23,20 @@ Each achievement has:
 
 from models.gamification.models import AchievementCategory, AchievementDifficulty
 
+# Achievement seminati con is_active=False perché non ottenibili (il service li
+# esclude; is_hidden NON li nasconde davvero, mostra "???").
+#
+# **Ora vuoto**: tutti gli achievement hanno una sorgente dati reale e sono
+# ottenibili (metric-driven). Storico delle riattivazioni sui DB esistenti:
+#   - 20260605: disattivati 12 non ottenibili;
+#   - 20260606: riattivati i 4 social/avversari (metriche reali);
+#   - 20260607: riattivati gli ultimi 8 (serie vittorie, categoria giocatore,
+#     drill completati/perfetti, strategie provate) ora cablati.
+# Mantenuto come punto di estensione esplicito per achievement futuri non ancora
+# cablati: aggiungere lo slug qui + migrazione di disattivazione.
+UNOBTAINABLE_ACHIEVEMENT_SLUGS: frozenset[str] = frozenset()
+
+
 PREDEFINED_ACHIEVEMENTS = [
     # ========================================
     # Match Achievements
@@ -295,7 +309,7 @@ PREDEFINED_ACHIEVEMENTS = [
     {
         "slug": "perfectionist",
         "name": "Perfezionista",
-        "description": "Ottieni perfect score su 5 drill diversi",
+        "description": "Supera 5 drill pass/fail diversi",
         "category": AchievementCategory.SKILL,
         "difficulty": AchievementDifficulty.UNCOMMON,
         "requirements": '{"type": "perfect_challenges", "count": 5}',
@@ -388,8 +402,11 @@ def seed_achievements(db_session):
             skipped_count += 1
             continue
 
-        # Create new achievement
+        # Create new achievement. I non ottenibili nascono disattivati così il
+        # service li esclude (vedi UNOBTAINABLE_ACHIEVEMENT_SLUGS).
         achievement = Achievement(**achievement_data)
+        if achievement_data["slug"] in UNOBTAINABLE_ACHIEVEMENT_SLUGS:
+            achievement.is_active = False
         db_session.add(achievement)
         created_count += 1
 

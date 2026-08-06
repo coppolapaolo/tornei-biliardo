@@ -1,5 +1,14 @@
 # app.py - Clean application factory pattern
-from flask import Flask, abort, render_template, request, session, jsonify
+from flask import (
+    Flask,
+    abort,
+    render_template,
+    request,
+    session,
+    jsonify,
+    redirect,
+    url_for,
+)
 from flask_babel import Babel
 from flask_login import LoginManager, current_user
 import os
@@ -244,6 +253,31 @@ def create_app(config_name=None):
         if not is_endpoint_visible(request.endpoint, current_user):
             abort(404)
 
+    # Onboarding obbligatorio (ADR-035): finché non completato, ogni utente
+    # autenticato non-admin viene reindirizzato alla pagina dedicata. Attivo in
+    # dev/prod, disattivato nei test (config ONBOARDING_ENFORCED). La decisione
+    # è in utils.onboarding (funzione pura, testata in isolamento).
+    from utils.onboarding import needs_onboarding_redirect, ONBOARDING_ENDPOINT
+
+    @app.before_request
+    def enforce_onboarding():
+        if not app.config.get("ONBOARDING_ENFORCED", True):
+            return None
+        if needs_onboarding_redirect(current_user, request.endpoint):
+            return redirect(url_for(ONBOARDING_ENDPOINT))
+
+    # Tracciamento attività utente (ADR-036): touch throttled di last_active_at,
+    # usato per l'auto-refresh dei segnali-domanda. Skip nei test per non
+    # interferire con l'isolamento della suite (commit per-richiesta).
+    from utils.activity import touch_user_activity
+
+    @app.before_request
+    def track_user_activity():
+        if app.config.get("TESTING", False):
+            return None
+        touch_user_activity(current_user)
+        return None
+
     @app.context_processor
     def inject_endpoint_visibility():
         def feature_visible(endpoint: str) -> bool:
@@ -311,6 +345,9 @@ def create_app(config_name=None):
     # Creates notifications for level ups, achievements, streaks, quests
     from models.gamification import notification_handlers  # noqa: F401
 
+    # Register demand-signal handlers (ADR-036): consume signals on gara created
+    from models.demand import event_handlers as _demand_eh  # noqa: F401, F811
+
     # Register SSE bridge - routes domain events to SSE for real-time updates
     from routes import sse_bridge  # noqa: F401
 
@@ -328,6 +365,14 @@ def create_app(config_name=None):
             created, skipped = seed_achievements(db.session)
             if created > 0:
                 app.logger.info(f"Gamification: seeded {created} achievements")
+            # Seed quest personali della settimana corrente (idempotente).
+            # L'avvio dell'app si ripete ~quotidianamente: ogni nuova settimana
+            # ISO ottiene così le proprie quest, senza scheduler.
+            from models.gamification.quest_seeds import seed_weekly_quests
+
+            quests_created = seed_weekly_quests(db.session)
+            if quests_created > 0:
+                app.logger.info(f"Gamification: seeded {quests_created} weekly quests")
 
     # Domini necessari a Google Analytics 4. Aggiunti alla CSP solo quando il
     # tracking e' effettivamente configurato: una policy piu' larga del

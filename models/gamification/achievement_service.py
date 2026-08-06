@@ -25,9 +25,33 @@ from models.gamification.models import (
 from models.gamification.events import AchievementUnlockedEvent
 from models.gamification.level_service import LevelService
 from models.gamification.models import XPTransactionType
+from models.gamification.achievement_metrics import AchievementMetrics
 from models.events.base import EventBus
 
 logger = logging.getLogger(__name__)
+
+
+# Requisiti senza alcuna sorgente dati: resterebbero non ottenibili. Ora vuoto —
+# tutti i tipi hanno un calcolo reale (metriche conteggiabili in
+# AchievementMetrics o rami booleani in _check_requirements). Mantenuto come
+# punto di estensione esplicito per eventuali requisiti futuri non ancora cablati.
+_UNTRACKED_REQUIREMENT_TYPES: frozenset[str] = frozenset()
+
+# Sentinella per distinguere "metric_value non fornito" da "None" (None è
+# significativo: requisito non conteggiabile). Usata per riusare il valore già
+# calcolato ed evitare di interrogare due volte AchievementMetrics per achievement.
+_METRIC_UNSET = object()
+
+
+# Requisiti con trigger dedicato o costosi da valutare: esclusi dalla
+# riconciliazione di massa (`reconcile_achievements`) e gestiti dal loro handler
+# specifico. `director_eligibility` itera i campionati (caro) → valutato solo a
+# fine gara.
+_RECONCILE_EXCLUDED_TYPES = frozenset(
+    {
+        "director_eligibility",
+    }
+)
 
 
 class AchievementService:
@@ -44,48 +68,30 @@ class AchievementService:
     @staticmethod
     @transactional(domain="gamification")
     def check_and_award_achievement(
-        user_id: int,
-        achievement_slug: str,
-        progress_increment: int = 1,
-        force_check: bool = False,
+        user_id: int, achievement_slug: str, force_check: bool = False
     ) -> Tuple[Optional[UserAchievement], bool]:
         """
-        Check if user meets requirements and award achievement if eligible.
+        Re-evaluate a single achievement for a user and award it if now eligible.
 
-        For progressive achievements:
-        - Increments current_progress by progress_increment
-        - Checks if total progress meets requirements
-        - Awards if requirements met
+        L'idoneità è sempre calcolata sulla **fonte di verità** (statistiche/
+        ledger/conteggi reali via `_check_requirements`), non su un contatore
+        incrementale: la chiamata è quindi idempotente e auto-correttiva. Per
+        gli achievement "conta N", `current_progress` viene riallineato al
+        valore reale della metrica solo a scopo di display.
 
-        For non-progressive achievements:
-        - Checks current stats against requirements
-        - Awards if requirements met
+        Per rivalutare in blocco gli achievement di un utente (uso tipico negli
+        event handler) preferire `reconcile_achievements`.
 
         Args:
             user_id: User ID
             achievement_slug: Achievement slug (e.g., "first_blood")
-            progress_increment: Amount to increment progress (for progressive)
-            force_check: Force requirement check even if already unlocked
+            force_check: Re-check requirements anche se già sbloccato
 
         Returns:
             Tuple of (UserAchievement or None, was_newly_unlocked: bool)
 
         Emits:
             AchievementUnlockedEvent if newly unlocked
-
-        Example:
-            # Progressive achievement (veteran_player: 50 wins)
-            user_achievement, unlocked = AchievementService.check_and_award_achievement(
-                user_id=42,
-                achievement_slug="veteran_player",
-                progress_increment=1  # Each win increments by 1
-            )
-
-            # Non-progressive achievement (first_blood: 1 win)
-            user_achievement, unlocked = AchievementService.check_and_award_achievement(
-                user_id=42,
-                achievement_slug="first_blood"
-            )
         """
         # Skip gamification for admin users
         from models.user.models import User
@@ -95,14 +101,66 @@ class AchievementService:
             logger.debug(f"Skipping achievement check for admin user {user_id}")
             return None, False
 
-        # Get achievement
         achievement = Achievement.query.filter_by(slug=achievement_slug).first()
-
         if not achievement or not achievement.is_active:
             logger.warning(f"Achievement {achievement_slug} not found or inactive")
             return None, False
 
-        # Get or create UserAchievement
+        return AchievementService._evaluate_and_award(
+            user_id, achievement, force_check=force_check
+        )
+
+    @staticmethod
+    @transactional(domain="gamification")
+    def reconcile_achievements(user_id: int) -> List[str]:
+        """Rivaluta in blocco gli achievement attivi 'a basso costo' dell'utente.
+
+        Punto d'ingresso unico per gli event handler: invece di elencare slug a
+        mano, si "riconcilia" lo stato dai dati reali (metric-driven). Sblocca
+        quelli diventati idonei. Esclude i requisiti con trigger dedicato/costoso
+        (`_RECONCILE_EXCLUDED_TYPES`, es. director_eligibility). Ogni achievement
+        è isolato: un errore su uno non blocca gli altri.
+
+        Returns:
+            La lista degli slug appena sbloccati.
+        """
+        from models.user.models import User
+
+        user = db.session.get(User, user_id)
+        if user and user.is_admin:
+            return []
+
+        newly_unlocked: List[str] = []
+        for achievement in Achievement.query.filter_by(is_active=True).all():
+            try:
+                requirement_type = json.loads(achievement.requirements).get("type")
+            except (ValueError, TypeError):
+                continue
+            if requirement_type in _RECONCILE_EXCLUDED_TYPES:
+                continue
+            try:
+                _, unlocked = AchievementService._evaluate_and_award(
+                    user_id, achievement
+                )
+                if unlocked:
+                    newly_unlocked.append(achievement.slug)
+            except Exception as exc:  # isolamento per-achievement
+                logger.warning(
+                    f"reconcile: errore su '{achievement.slug}' "
+                    f"per user {user_id}: {exc}"
+                )
+        return newly_unlocked
+
+    @staticmethod
+    def _evaluate_and_award(
+        user_id: int, achievement: Achievement, force_check: bool = False
+    ) -> Tuple[Optional[UserAchievement], bool]:
+        """Core (non transazionale) di valutazione+assegnazione di un achievement.
+
+        Assume utente non-admin e achievement attivo (verificati dai chiamanti).
+        Opera sulla sessione corrente: il commit è del decoratore @transactional
+        del chiamante (`check_and_award_achievement` / `reconcile_achievements`).
+        """
         user_achievement = UserAchievement.query.filter_by(
             user_id=user_id, achievement_id=achievement.id
         ).first()
@@ -119,38 +177,36 @@ class AchievementService:
         if user_achievement.is_unlocked and not force_check:
             return user_achievement, False
 
-        # Parse requirements
         requirements = json.loads(achievement.requirements)
         requirement_type = requirements.get("type")
 
-        # Update progress for progressive achievements
-        if achievement.is_progressive:
-            user_achievement.current_progress += progress_increment
+        # Allinea current_progress al valore reale della metrica (display only:
+        # l'idoneità è valutata sulla fonte di verità, non sul contatore). Per i
+        # tipi non conteggiabili (booleani/stub) current_progress resta com'è.
+        metric_value = AchievementMetrics.current_value(
+            user_id, requirement_type, requirements
+        )
+        if metric_value is not None:
+            target = requirements.get("count", 1)
+            user_achievement.current_progress = min(metric_value, target)
 
-        # Check if requirements met
+        # Check if requirements met (single source of truth). Riusa il
+        # metric_value già calcolato sopra per non interrogare due volte
+        # AchievementMetrics per lo stesso achievement (perf reconcile, ADR-037).
         is_eligible = AchievementService._check_requirements(
             user_id=user_id,
             requirement_type=requirement_type,
             requirements=requirements,
-            current_progress=(
-                user_achievement.current_progress
-                if achievement.is_progressive
-                else None
-            ),
+            metric_value=metric_value,
         )
 
-        if not is_eligible:
-            return user_achievement, False
-
-        # Already unlocked
-        if user_achievement.is_unlocked:
+        if not is_eligible or user_achievement.is_unlocked:
             return user_achievement, False
 
         # Award achievement!
         user_achievement.is_unlocked = True
         user_achievement.unlocked_at = utc_now()
 
-        # Award XP bonus
         if achievement.xp_reward > 0:
             LevelService.award_xp(
                 user_id=user_id,
@@ -163,7 +219,6 @@ class AchievementService:
                 },
             )
 
-        # Emit event
         EventBus.publish(
             AchievementUnlockedEvent(
                 user_id=user_id,
@@ -188,169 +243,69 @@ class AchievementService:
         user_id: int,
         requirement_type: str,
         requirements: Dict[str, Any],
-        current_progress: Optional[int] = None,
+        metric_value: Any = _METRIC_UNSET,
     ) -> bool:
         """
-        Check if user meets achievement requirements.
+        Check if a user currently meets an achievement's requirements.
 
-        Requirement types:
-        - match_wins: Total match wins >= count
-        - tournament_participation: Total tournaments >= count
-        - tournament_podium: Top 3 finishes >= count
-        - tournament_wins: Tournament wins >= count
-        - win_rate: Win percentage >= percentage (with min_matches)
-        - level_reached: Current level >= level
-        - weekly_streak: Current streak >= weeks
-        - challenges_completed: Challenges completed >= count
-        - unique_opponents: Unique opponents played >= count
+        Modello unico: gli achievement "conta N" derivano il valore corrente
+        dalla fonte di verità (`AchievementMetrics`) e lo confrontano col
+        target — niente contatori incrementali. I requisiti booleani/a soglia
+        (win_rate, level_reached, weekly_streak, gaming_data_shared,
+        director_eligibility) hanno logica dedicata. I tipi senza sorgente dati
+        (`_UNTRACKED_REQUIREMENT_TYPES`) restano non ottenibili.
 
         Args:
             user_id: User ID
             requirement_type: Type of requirement
             requirements: Full requirements dict
-            current_progress: Current progress (for progressive achievements)
 
         Returns:
             True if requirements are met
         """
-        if requirement_type == "match_wins":
-            required_count = requirements["count"]
-            if current_progress is not None:
-                # Progressive achievement - use tracked progress
-                return current_progress >= required_count
-            else:
-                # Non-progressive - query actual stats
-                from models.user.services import UserStatsService
+        # 1) Metriche conteggiabili: idoneità = valore reale >= target.
+        # Riusa il valore se già calcolato dal chiamante (evita doppia query).
+        if metric_value is _METRIC_UNSET:
+            metric_value = AchievementMetrics.current_value(
+                user_id, requirement_type, requirements
+            )
+        if metric_value is not None:
+            return metric_value >= requirements.get("count", 1)
 
-                stats = UserStatsService.get_user_stats(user_id)
-                return stats.get("won_matches", 0) >= required_count
-
-        elif requirement_type == "tournament_participation":
-            required_count = requirements["count"]
-            if current_progress is not None:
-                return current_progress >= required_count
-            else:
-                from models.user.services import UserStatsService
-
-                stats = UserStatsService.get_user_stats(user_id)
-                return stats.get("tournaments_played", 0) >= required_count
-
-        elif requirement_type == "tournament_podium":
-            # Check classification for top 3 finishes
-            required_count = requirements["count"]
-            # For now, use simplified check (would need Classification query)
-            if current_progress is not None:
-                return current_progress >= required_count
-            return False
-
-        elif requirement_type == "tournament_wins":
-            required_count = requirements["count"]
-            if current_progress is not None:
-                return current_progress >= required_count
-            return False
-
-        elif requirement_type == "win_rate":
-            required_percentage = requirements["percentage"]
-            min_matches = requirements["min_matches"]
-
+        # 2) Requisiti booleani / a soglia con logica dedicata.
+        if requirement_type == "win_rate":
             from models.user.services import UserStatsService
 
             stats = UserStatsService.get_user_stats(user_id)
             total_matches = stats.get("total_matches", 0)
             win_percentage = stats.get("win_percentage", 0)
-
             return (
-                total_matches >= min_matches and win_percentage >= required_percentage
+                total_matches >= requirements["min_matches"]
+                and win_percentage >= requirements["percentage"]
             )
 
-        elif requirement_type == "level_reached":
-            required_level = requirements["level"]
+        if requirement_type == "level_reached":
             from models.gamification.models import UserLevel
 
             user_level = db.session.get(UserLevel, user_id)
             current_level = user_level.current_level if user_level else 1
-            return current_level >= required_level
+            return current_level >= requirements["level"]
 
-        elif requirement_type == "weekly_streak":
-            required_weeks = requirements["weeks"]
+        if requirement_type == "weekly_streak":
             from models.gamification.models import StreakTracker, StreakType
 
             streak = StreakTracker.query.filter_by(
                 user_id=user_id, streak_type=StreakType.WEEKLY_ACTIVITY
             ).first()
             current_streak = streak.current_streak if streak else 0
-            return current_streak >= required_weeks
+            return current_streak >= requirements["weeks"]
 
-        elif requirement_type == "challenges_completed":
-            required_count = requirements["count"]
-            if current_progress is not None:
-                return current_progress >= required_count
-            return False
-
-        elif requirement_type == "win_streak":
-            # Check current win streak (would need separate tracking)
-            required_count = requirements["count"]
-            # Placeholder - would need win streak tracking
-            return False
-
-        elif requirement_type == "unique_opponents":
-            required_count = requirements["count"]
-            # Placeholder - would need opponent tracking
-            if current_progress is not None:
-                return current_progress >= required_count
-            return False
-
-        elif requirement_type == "director_eligibility":
-            # Check if user has enough experience to become a director
-            # Requirements: 10+ gare participations OR 1+ complete campionato
-            min_gare = requirements.get("min_gare", 10)
-            min_campionati = requirements.get("min_campionati_completi", 1)
-
-            return AchievementService._check_director_eligibility(
-                user_id=user_id, min_gare=min_gare, min_campionati=min_campionati
-            )
-
-        elif requirement_type == "category_reached":
-            # Check if user has reached a specific player category
-            # Would need player category tracking - placeholder for now
-            return False
-
-        elif requirement_type == "strategies_tried":
-            # Check if user has played with multiple matchmaking strategies
-            required_count = requirements.get("count", 5)
-            if current_progress is not None:
-                return current_progress >= required_count
-            return False
-
-        elif requirement_type == "perfect_challenges":
-            # Check perfect score on challenges
-            required_count = requirements.get("count", 5)
-            if current_progress is not None:
-                return current_progress >= required_count
-            return False
-
-        elif requirement_type == "match_proposals_created":
-            # Social: match proposals created
-            required_count = requirements.get("count", 5)
-            if current_progress is not None:
-                return current_progress >= required_count
-            return False
-
-        elif requirement_type == "match_proposals_accepted":
-            # Social: invitations accepted
-            required_count = requirements.get("count", 10)
-            if current_progress is not None:
-                return current_progress >= required_count
-            return False
-
-        elif requirement_type == "gaming_data_shared":
-            # Check if user has shared at least one gaming data type publicly
+        if requirement_type == "gaming_data_shared":
             from models.user.privacy_models import UserPrivacySetting
 
             settings = UserPrivacySetting.query.filter_by(user_id=user_id).first()
             if not settings:
                 return False
-
             # Gaming data fields (excluding personal contact info)
             return any(
                 [
@@ -361,9 +316,34 @@ class AchievementService:
                 ]
             )
 
-        else:
-            logger.warning(f"Unknown requirement type: {requirement_type}")
+        if requirement_type == "director_eligibility":
+            return AchievementService._check_director_eligibility(
+                user_id=user_id,
+                min_gare=requirements.get("min_gare", 10),
+                min_campionati=requirements.get("min_campionati_completi", 1),
+            )
+
+        if requirement_type == "category_reached":
+            # "Raggiungi la categoria X" = categoria attuale pari o superiore
+            # (A migliore di B di C di D). Ordine: A=1 … D=4.
+            from models.rating.models import PlayerCategory
+
+            order = {"A": 1, "B": 2, "C": 3, "D": 4}
+            target = order.get(str(requirements.get("category", "B")).upper())
+            if target is None:
+                return False
+            current = PlayerCategory.get_user_current_category(user_id)
+            if current is None:
+                return False
+            current_rank = order.get(current.category.value.upper())
+            return current_rank is not None and current_rank <= target
+
+        # 3) Tipi privi di tracking → non ottenibili (achievement disattivati).
+        if requirement_type in _UNTRACKED_REQUIREMENT_TYPES:
             return False
+
+        logger.warning(f"Unknown requirement type: {requirement_type}")
+        return False
 
     @staticmethod
     def _check_director_eligibility(
@@ -552,9 +532,20 @@ class AchievementService:
             if unlocked_only and not is_unlocked:
                 continue
 
-            # Calculate progress percentage
-            if achievement.is_progressive:
-                requirements = json.loads(achievement.requirements)
+            # Progress: per le metriche conteggiabili usa il valore reale
+            # (display auto-correttivo, indipendente dal contatore salvato).
+            requirements = json.loads(achievement.requirements)
+            requirement_type = requirements.get("type")
+            metric_value = AchievementMetrics.current_value(
+                user_id, requirement_type, requirements
+            )
+            if metric_value is not None:
+                target = requirements.get("count", 1)
+                current_progress = min(metric_value, target)
+                progress_percentage = (
+                    min(100.0, metric_value / target * 100) if target else 0.0
+                )
+            elif achievement.is_progressive:
                 target = requirements.get("count", 100)
                 progress_percentage = min(100.0, (current_progress / target * 100))
             else:

@@ -123,26 +123,28 @@ class TestGamificationE2EWorkflows:
         assert was_unlocked is False
 
     def test_progressive_achievement_tracking(self, db_session):
-        """Test progressive achievement progress tracking."""
-        # Get "veteran_player" (50 wins, progressive)
+        """Progressive achievement metric-driven: il progresso = dato reale."""
+        from unittest.mock import patch
+
+        # "veteran_player" (50 wins, progressive)
         veteran = Achievement.query.filter_by(slug="veteran_player").first()
         assert veteran is not None
         assert veteran.is_progressive is True
 
-        # Increment progress multiple times
-        for i in range(5):
+        # 5 vittorie reali → progresso 5, non sbloccato (serve 50).
+        with patch(
+            "models.user.services.UserStatsService.get_user_stats",
+            return_value={"won_matches": 5},
+        ):
             AchievementService.check_and_award_achievement(
-                user_id=self.player1.id,
-                achievement_slug="veteran_player",
-                progress_increment=1,
+                user_id=self.player1.id, achievement_slug="veteran_player"
             )
 
-        # Check progress
         user_ach = UserAchievement.query.filter_by(
             user_id=self.player1.id, achievement_id=veteran.id
         ).first()
         assert user_ach is not None
-        assert user_ach.current_progress == 5
+        assert user_ach.current_progress == 5  # riflette le vittorie reali
         assert user_ach.is_unlocked is False  # Need 50 wins
 
     def test_streak_recording_and_continuation(self, db_session):
@@ -185,16 +187,18 @@ class TestGamificationE2EWorkflows:
         assert len(all_streaks) == 2
 
     def test_get_all_user_achievements(self, db_session):
-        """Test retrieving user achievement status."""
-        # Start progress on a progressive achievement
-        AchievementService.check_and_award_achievement(
-            user_id=self.player1.id,
-            achievement_slug="veteran_player",
-            progress_increment=10,
-        )
+        """get_user_achievements riflette il progresso reale (metric-driven)."""
+        from unittest.mock import patch
 
-        # Get all achievements for user
-        achievements = AchievementService.get_user_achievements(self.player1.id)
+        with patch(
+            "models.user.services.UserStatsService.get_user_stats",
+            return_value={"won_matches": 10},
+        ):
+            AchievementService.check_and_award_achievement(
+                user_id=self.player1.id, achievement_slug="veteran_player"
+            )
+            # get_user_achievements calcola il progresso live: dentro il patch.
+            achievements = AchievementService.get_user_achievements(self.player1.id)
 
         # Should have at least one achievement with progress
         in_progress = [a for a in achievements if a.get("current_progress", 0) > 0]

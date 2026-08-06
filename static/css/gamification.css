@@ -557,3 +557,88 @@
         transform: translate(-50%, -50%) scale(0.8);
     }
 }
+
+/* ========================================
+   Navbar Badge "vivo" (§11-quater)
+   Feedback sobrio e auto-referenziale: anello di progresso verso il livello
+   successivo + pulse su guadagno XP + glow su level-up. Sostituisce il toast
+   per i micro-eventi (la maggioranza), lasciando il toast ai momenti forti.
+   ======================================== */
+
+.gami-badge {
+    transition: box-shadow 0.3s ease;
+}
+
+/* Anello di progresso attorno al trofeo: conic-gradient riempito fino a
+   --gami-progress (0-100, senza unità), con "buco" interno per fare l'anello. */
+.gami-badge-ring {
+    --gami-ring-size: 22px;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--gami-ring-size);
+    height: var(--gami-ring-size);
+    border-radius: 50%;
+    background: conic-gradient(
+        var(--gami-ring-color, #f59e0b) calc(var(--gami-progress, 0) * 1%),
+        var(--gami-ring-track, rgba(0, 0, 0, 0.12)) 0
+    );
+    transition: background 0.6s ease;
+}
+
+.gami-badge-ring::before {
+    content: "";
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    /* combacia con lo sfondo della pill (.bg-light) così l'anello "galleggia" */
+    background: var(--bs-light, #f8f9fa);
+}
+
+.gami-badge-ring > i {
+    position: relative;
+    z-index: 1;
+    font-size: 11px;
+}
+
+/* Pulse: micro guadagno XP (e tick discreti). */
+.gami-badge.badge-pulse {
+    animation: gamiBadgePulse 0.6s ease-out;
+}
+
+@keyframes gamiBadgePulse {
+    0% { transform: scale(1); }
+    35% { transform: scale(1.12); }
+    100% { transform: scale(1); }
+}
+
+/* Glow dorato: level-up (l'unico momento forte sul badge). */
+.gami-badge.badge-levelup {
+    animation: gamiBadgeLevelup 1.2s ease-out;
+}
+
+@keyframes gamiBadgeLevelup {
+    0% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); }
+    30% {
+        box-shadow: 0 0 14px 3px rgba(251, 191, 36, 0.85);
+        transform: scale(1.15);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(251, 191, 36, 0);
+        transform: scale(1);
+    }
+}
+
+/* Accessibilità: niente animazioni con prefers-reduced-motion → solo il valore
+   aggiornato (il count-up XP è già disattivato lato JS). */
+@media (prefers-reduced-motion: reduce) {
+    .gami-badge.badge-pulse,
+    .gami-badge.badge-levelup {
+        animation: none;
+    }
+    .gami-badge,
+    .gami-badge-ring {
+        transition: none;
+    }
+}

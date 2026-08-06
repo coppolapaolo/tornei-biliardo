@@ -25,10 +25,9 @@ Known limitations (documented):
   ``freeze_count`` is reset to 0 on rebuild. ``current_streak`` reflects the run
   up to the last recorded activity (not decayed to "now"); the live service
   corrects it on the next activity.
-- A few achievement ``requirement_type`` values are unimplemented placeholders in
-  ``_check_requirements`` (e.g. ``win_streak``, ``unique_opponents``,
-  ``category_reached``): those achievements won't auto-unlock on rebuild unless
-  already unlocked (existing unlocks are preserved).
+- Achievement eligibility is metric-driven (``AchievementMetrics``): every
+  ``requirement_type`` now derives its value from the domain source of truth, so
+  the rebuild is self-correcting. Existing unlocks are always preserved.
 - ``WEEKLY_DRILL`` streaks are not rebuilt (challenge activity is not derived
   here) and are left untouched.
 """
@@ -142,8 +141,10 @@ class GamificationRecalcService:
         """Re-evaluate achievement eligibility; unlock newly-qualifying ones.
 
         Existing unlocks are preserved. No XP is awarded and no event is emitted
-        (the unlock XP, if any, is already in the reassigned ledger). Progressive
-        achievements use their tracked ``current_progress``.
+        (the unlock XP, if any, is already in the reassigned ledger). Eligibility
+        is metric-driven: ``_check_requirements`` derives the current value from
+        the domain source of truth (``AchievementMetrics``), so no progress
+        counter is threaded in from here.
         """
         newly_unlocked = 0
         for ach in Achievement.query.filter_by(is_active=True).all():
@@ -164,13 +165,11 @@ class GamificationRecalcService:
             except (ValueError, TypeError):
                 continue
             requirement_type = requirements.get("type")
-            current_progress = ua.current_progress if ach.is_progressive else None
 
             if AchievementService._check_requirements(
                 user_id=user_id,
                 requirement_type=requirement_type,
                 requirements=requirements,
-                current_progress=current_progress,
             ):
                 ua.is_unlocked = True
                 ua.unlocked_at = utc_now()

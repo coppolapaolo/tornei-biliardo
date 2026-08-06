@@ -22,6 +22,9 @@ pytest tests/new/unit/test_specific.py -v -n auto
 # Debug single test (no parallel, with output)
 pytest tests/new/unit/test_file.py::test_name -v -s
 
+# Frontend headless tests (jsdom, Node — gamification badge/anti-invasività)
+cd tests/frontend && npm install && npm test   # run after editing static/js/gamification.js
+
 # Type check (MANDATORY before commits)
 pyright
 
@@ -102,6 +105,19 @@ poi riapplicarla).
   ci sono migrations pendenti e la chiave non è ricavabile, il deploy si ferma.
 - `scripts/backup_db.py`: backup giornaliero del DB (rotazione 7 copie in
   `backups/`).
+- `scripts/daily_jobs.py`: **punto d'ingresso unico dei lavori di dominio
+  giornalieri** (oggi: ciclo di vita dei segnali-domanda). Gli slot scheduled
+  task su PythonAnywhere sono limitati, quindi un nuovo job quotidiano si
+  aggiunge alla mappa `JOBS` dello script — **non** come nuovo task, e **non**
+  dentro `auto_deploy`/`backup_db` (il primo esce prima del tempo quando non ci
+  sono modifiche, il secondo non deve dipendere dal codice applicativo). Ogni
+  job è isolato; exit code ≠ 0 se almeno uno fallisce. `python
+  scripts/daily_jobs.py <nome>` per lanciarne uno solo.
+
+> ⚠️ `scripts/send_match_reminders.py` (ogni 15 min) **non risulta registrato**:
+> compare solo come TODO in un handoff archiviato di gennaio. Se è così i
+> promemoria dei match non partono. Cadenza diversa dal giornaliero, quindi
+> serve uno slot suo — da verificare nel pannello PythonAnywhere.
 
 **⚠️ SQLite su PythonAnywhere (incidente 2026-06-10)**: lo storage è NFS con
 lock inaffidabili — due processi che SCRIVONO insieme (console + web app)

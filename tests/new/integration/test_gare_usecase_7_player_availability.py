@@ -14,7 +14,6 @@ import uuid
 from models import User
 from models.user.role_enum import UserRole
 from models.individual_match.models import (
-    PlayerAvailability,
     MatchProposal,
     ProposalType,
     ProposalStatus,

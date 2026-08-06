@@ -448,6 +448,36 @@ class Quest(BaseModel):
         "QuestParticipation", back_populates="quest", cascade="all, delete-orphan"
     )
 
+    @property
+    def effective_status(self) -> "QuestStatus":
+        """Status calcolato dalle date a runtime (niente cron necessario).
+
+        `update_quest_statuses()` non è mai chiamato in produzione: il campo
+        `status` precalcolato resta congelato sul valore di creazione (di norma
+        UPCOMING). Questa property deriva lo stato reale da
+        `start_date`/`end_date` con `utc_now()` alla lettura.
+
+        Gli stati terminali/override impostati dall'admin
+        (COMPLETED, EXPIRED) hanno la precedenza sul default temporale: in
+        produzione l'unico modo per cui `status` vale COMPLETED/EXPIRED è
+        un'azione admin (i flussi automatici non girano), quindi vanno
+        rispettati come override manuali.
+        """
+        if self.status in (QuestStatus.COMPLETED, QuestStatus.EXPIRED):
+            return self.status
+
+        now = utc_now()
+        if now < self.start_date:
+            return QuestStatus.UPCOMING
+        if now <= self.end_date:
+            return QuestStatus.ACTIVE
+        return QuestStatus.EXPIRED
+
+    @property
+    def is_currently_active(self) -> bool:
+        """True se la quest è attiva ORA secondo le date (o override admin)."""
+        return self.effective_status == QuestStatus.ACTIVE
+
     def __repr__(self) -> str:
         return f"<Quest id={self.id} name={self.name} type={self.quest_type.value}>"
 
