@@ -20,8 +20,10 @@ _SCRIPT = os.path.join(_REPO_ROOT, "scripts", "daily_jobs.py")
 def _load_runner():
     """Carica lo script come modulo (non è un package importabile)."""
     spec = importlib.util.spec_from_file_location("daily_jobs", _SCRIPT)
+    assert (
+        spec is not None and spec.loader is not None
+    ), f"script non caricabile: {_SCRIPT}"
     module = importlib.util.module_from_spec(spec)
-    assert spec.loader is not None
     spec.loader.exec_module(module)
     return module
 

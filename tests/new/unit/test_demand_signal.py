@@ -178,16 +178,6 @@ def test_rising_edge_notifies_when_threshold_jumped(db_session):
     assert len(_director_notifications(director.id)) == 1
 
 
-def _admin_zone_notifications(admin_id):
-    from models.notification.models import Notification, NotificationType
-
-    return [
-        n
-        for n in Notification.query.filter_by(user_id=admin_id).all()
-        if n.notification_type == NotificationType.DEMAND_ZONE_NO_DIRECTOR
-    ]
-
-
 def test_admins_notified_when_threshold_jumped_in_zone_without_director(db_session):
     """Regressione (gemella di quella sul director): l'avviso agli admin per una
     zona senza director usava ``== soglia``, quindi un conteggio che SALTA il
@@ -210,11 +200,11 @@ def test_admins_notified_when_threshold_jumped_in_zone_without_director(db_sessi
             )
         )
     db.session.commit()
-    assert _admin_zone_notifications(admin.id) == []
+    assert _admin_notifications(admin.id) == []
 
     # Il nuovo segnale porta il conteggio a THRESHOLD+1, saltando la soglia.
     DemandSignalService.create_signal(_user().id, NAP_LAT, NAP_LNG)
-    assert len(_admin_zone_notifications(admin.id)) == 1
+    assert len(_admin_notifications(admin.id)) == 1
 
 
 def test_admins_not_notified_twice_for_same_zone_within_cooldown(db_session):
@@ -228,7 +218,7 @@ def test_admins_not_notified_twice_for_same_zone_within_cooldown(db_session):
     for _ in range(DEMAND_THRESHOLD + 3):
         DemandSignalService.create_signal(_user().id, NAP_LAT, NAP_LNG)
 
-    assert len(_admin_zone_notifications(admin.id)) == 1
+    assert len(_admin_notifications(admin.id)) == 1
 
 
 def test_admins_notified_separately_for_distinct_zones_without_city(db_session):
@@ -243,12 +233,12 @@ def test_admins_notified_separately_for_distinct_zones_without_city(db_session):
     # Nessuno di questi utenti ha home_city → i segnali nascono con city=None.
     for _ in range(DEMAND_THRESHOLD):
         DemandSignalService.create_signal(_user().id, NAP_LAT, NAP_LNG)
-    assert len(_admin_zone_notifications(admin.id)) == 1
+    assert len(_admin_notifications(admin.id)) == 1
 
     for _ in range(DEMAND_THRESHOLD):
         DemandSignalService.create_signal(_user().id, far_lat, NAP_LNG)
     assert (
-        len(_admin_zone_notifications(admin.id)) == 2
+        len(_admin_notifications(admin.id)) == 2
     ), "una seconda zona senza città deve avere un avviso suo"
 
 
