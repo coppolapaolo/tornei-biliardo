@@ -39,8 +39,14 @@ import os
 import sys
 import traceback
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+_HERE = os.path.dirname(os.path.abspath(__file__))
+# Radice del progetto (per `app`, `models`) e cartella scripts (per
+# `prod_env`): serve entrambe anche quando il file viene caricato per
+# path invece che eseguito, come fanno i test.
+sys.path.insert(0, os.path.dirname(_HERE))
+sys.path.insert(0, _HERE)
 
+from prod_env import bootstrap_or_exit  # noqa: E402
 from app import create_app  # noqa: E402
 
 
@@ -79,9 +85,12 @@ def main() -> int:
 
     selected = requested or list(JOBS)
 
-    # Default a "production": lo scheduled task è un processo separato e non
-    # eredita FLASK_ENV dal file WSGI; senza questo create_app ricadrebbe su
-    # "development", cioè DB e settings sbagliati.
+    # Lo scheduled task è un processo separato: non eredita né FLASK_ENV né
+    # SECRET_KEY/ENCRYPTION_KEY dal file WSGI. Senza il bootstrap, create_app
+    # in production solleverebbe su SECRET_KEY e il task fallirebbe ogni
+    # giorno; con il solo default a "development" girerebbe invece sul DB
+    # sbagliato, che è peggio.
+    bootstrap_or_exit()
     app = create_app(os.environ.get("FLASK_ENV", "production"))
 
     failed = []

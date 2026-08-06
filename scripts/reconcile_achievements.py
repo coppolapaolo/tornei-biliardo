@@ -21,8 +21,14 @@ import logging
 import os
 import sys
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+_HERE = os.path.dirname(os.path.abspath(__file__))
+# Radice del progetto (per `app`, `models`) e cartella scripts (per
+# `prod_env`): serve entrambe anche quando il file viene caricato per
+# path invece che eseguito, come fanno i test.
+sys.path.insert(0, os.path.dirname(_HERE))
+sys.path.insert(0, _HERE)
 
+from prod_env import bootstrap_or_exit  # noqa: E402
 from app import create_app  # noqa: E402
 from models import db, User  # noqa: E402
 from models.gamification.achievement_service import AchievementService  # noqa: E402
@@ -66,6 +72,11 @@ def main() -> int:
     )
     args = parser.parse_args()
 
+    # Console: non eredita le env dal file WSGI. ENCRYPTION_KEY è fra i
+    # requisiti perché lo script legge gli utenti (email cifrata): con la
+    # chiave di sviluppo la decifratura fallisce in silenzio e la
+    # riconciliazione girerebbe su dati vuoti (incidente 2026-06-25).
+    bootstrap_or_exit(("SECRET_KEY", "ENCRYPTION_KEY"))
     app = create_app(os.environ.get("FLASK_ENV", "production"))
     with app.app_context():
         if args.dry_run:
