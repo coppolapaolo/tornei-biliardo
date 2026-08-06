@@ -178,6 +178,59 @@ def test_rising_edge_notifies_when_threshold_jumped(db_session):
     assert len(_director_notifications(director.id)) == 1
 
 
+def _admin_zone_notifications(admin_id):
+    from models.notification.models import Notification, NotificationType
+
+    return [
+        n
+        for n in Notification.query.filter_by(user_id=admin_id).all()
+        if n.notification_type == NotificationType.DEMAND_ZONE_NO_DIRECTOR
+    ]
+
+
+def test_admins_notified_when_threshold_jumped_in_zone_without_director(db_session):
+    """Regressione (gemella di quella sul director): l'avviso agli admin per una
+    zona senza director usava ``== soglia``, quindi un conteggio che SALTA il
+    valore esatto non lo faceva partire mai. Ora ``>= soglia``.
+    """
+    _napoli_venue()
+    admin = _user(role=UserRole.ADMIN)
+
+    # Segnali attivi inseriti a mano: nessun fronte di salita valutato.
+    for _ in range(DEMAND_THRESHOLD):
+        p = _user()
+        db.session.add(
+            DemandSignal(
+                user_id=p.id,
+                latitude=NAP_LAT,
+                longitude=NAP_LNG,
+                city="Napoli",
+                status=DemandSignalStatus.ACTIVE,
+                expires_at=utc_now() + timedelta(days=10),
+            )
+        )
+    db.session.commit()
+    assert _admin_zone_notifications(admin.id) == []
+
+    # Il nuovo segnale porta il conteggio a THRESHOLD+1, saltando la soglia.
+    DemandSignalService.create_signal(_user().id, NAP_LAT, NAP_LNG)
+    assert len(_admin_zone_notifications(admin.id)) == 1
+
+
+def test_admins_not_notified_twice_for_same_zone_within_cooldown(db_session):
+    """L'anti-spam non è più implicito nel crossing: con ``>=`` ogni nuovo
+    segnale oltre soglia rifarebbe scattare l'avviso, quindi il cooldown per
+    zona deve tenere. Un solo avviso, non uno per segnale.
+    """
+    _napoli_venue()
+    admin = _user(role=UserRole.ADMIN)
+
+    for _ in range(DEMAND_THRESHOLD + 3):
+        DemandSignalService.create_signal(_user().id, NAP_LAT, NAP_LNG)
+
+    assert len(_admin_zone_notifications(admin.id)) == 1
+
+
 def test_director_outside_radius_not_notified(db_session):
     _napoli_venue()
     # Director con raggio piccolo: i segnali (~1.1 km via +0.01 lat) cadono fuori

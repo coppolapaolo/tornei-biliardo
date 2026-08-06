@@ -227,12 +227,18 @@ class DemandSignalService:
     @staticmethod
     def _maybe_notify_admins_no_director(new_signal: DemandSignal) -> bool:
         """Avvisa gli admin se la domanda locale tocca la soglia in una zona
-        senza director (ADR-036 open item 2). Crossing-only per limitare lo spam.
+        senza director (ADR-036 open item 2).
+
+        Soglia con ``>=``, non uguaglianza esatta: se due segnali arrivano a
+        breve distanza il conteggio può **saltare** il valore soglia (5 → 7) e
+        con ``==`` l'avviso non sarebbe partito mai. L'anti-spam non è più
+        implicito nel crossing ma esplicito, via cooldown per zona — stesso
+        criterio usato per la notifica al director.
         """
         count = DemandSignalService.count_active_within(
             new_signal.latitude, new_signal.longitude, DEFAULT_DIRECTOR_RADIUS_KM
         )
-        if count != DEMAND_THRESHOLD:
+        if count < DEMAND_THRESHOLD:
             return False
 
         from models.user.models import User
@@ -240,13 +246,16 @@ class DemandSignalService:
         from models.notification.factory import NotificationFactory
         from models.notification.models import NotificationType, NotificationPriority
 
+        zone = (new_signal.city or "").strip()
+        if DemandSignalService._admins_notified_for_zone_recently(zone):
+            return False
+
         admin_ids = [
             u.id for u in User.query.filter(User.role == UserRole.ADMIN.value).all()
         ]
         if not admin_ids:
             return False
 
-        zone = (new_signal.city or "").strip()
         if zone:
             message = _(
                 "%(count)s giocatori vorrebbero una gara a %(city)s, una zona "
@@ -267,8 +276,28 @@ class DemandSignalService:
             title=_("Domanda in una zona senza director"),
             message=message,
             priority=NotificationPriority.NORMAL,
+            related_entities={"zone": zone, "count": count},
         )
         return True
+
+    @staticmethod
+    def _admins_notified_for_zone_recently(zone: str) -> bool:
+        """True se gli admin sono già stati avvisati per ``zone`` nel cooldown.
+
+        Sostituisce il vecchio anti-spam implicito (``count == soglia``), che
+        deduplicava solo per effetto collaterale e perdeva l'avviso quando il
+        conteggio saltava la soglia. La zona è confrontata sul JSON di
+        ``related_entities``: le notifiche nella finestra sono poche (solo
+        admin), quindi il filtro in Python è più che sufficiente.
+        """
+        from models.notification.models import Notification, NotificationType
+
+        cutoff = utc_now() - timedelta(days=DEMAND_COOLDOWN_DAYS)
+        recent = Notification.query.filter(
+            Notification.notification_type == NotificationType.DEMAND_ZONE_NO_DIRECTOR,
+            Notification.created_at >= cutoff,
+        ).all()
+        return any(n.get_related_entities().get("zone") == zone for n in recent)
 
     @staticmethod
     def _director_origin(director) -> Optional[Tuple[float, float]]:
