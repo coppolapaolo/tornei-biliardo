@@ -22,13 +22,16 @@ venue_bp = Blueprint("venue", __name__)
 
 
 def _parse_float(raw):
-    """Parse a form value to float, or None if empty/invalid."""
+    """Parse a form value to float; None se vuoto.
+
+    Un valore **malformato** solleva `ValueError`, non torna None: restituire
+    None equivarrebbe ad "azzera la coordinata", quindi un refuso nel campo
+    lat/lng cancellerebbe in silenzio la posizione della sala invece di
+    segnalare l'errore (coerente con hourly_rate/number_of_tables).
+    """
     if raw in (None, ""):
         return None
-    try:
-        return float(raw)
-    except (TypeError, ValueError):
-        return None
+    return float(raw)
 
 
 @venue_bp.route("/venues")
@@ -309,20 +312,26 @@ def edit_venue(venue_id):
             if value:
                 update_kwargs[field] = value
 
-        # Numeric fields
-        number_of_tables = request.form.get("number_of_tables")
-        if number_of_tables:
-            update_kwargs["number_of_tables"] = int(number_of_tables)
+        # Numeric fields. Il parsing sta dentro il try perché un valore
+        # malformato deve diventare un messaggio d'errore, non un 500.
+        try:
+            number_of_tables = request.form.get("number_of_tables")
+            if number_of_tables:
+                update_kwargs["number_of_tables"] = int(number_of_tables)
 
-        hourly_rate = request.form.get("hourly_rate")
-        if hourly_rate:
-            update_kwargs["hourly_rate"] = float(hourly_rate)
+            hourly_rate = request.form.get("hourly_rate")
+            if hourly_rate:
+                update_kwargs["hourly_rate"] = float(hourly_rate)
 
-        # Geo coordinates (ADR-034): empty string clears, valid float sets.
-        for coord in ("latitude", "longitude"):
-            raw = request.form.get(coord)
-            if raw is not None:
-                update_kwargs[coord] = _parse_float(raw)
+            # Geo coordinates (ADR-034): stringa vuota azzera, float valido
+            # imposta, valore malformato è un errore (non azzera in silenzio).
+            for coord in ("latitude", "longitude"):
+                raw = request.form.get(coord)
+                if raw is not None:
+                    update_kwargs[coord] = _parse_float(raw)
+        except ValueError:
+            flash("Valore numerico non valido (tavoli, tariffa o coordinate).", "error")
+            return render_template("admin/venue_form.html", venue=venue)
 
         # Note: is_active e verified sono gestiti via toggle AJAX, non dal form
 
