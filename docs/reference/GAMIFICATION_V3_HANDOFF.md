@@ -272,7 +272,7 @@ ritiro board XP globale) + ADR + implementazione (§11-bis).
   `User.last_active_at` (touch throttled `utils.activity`, skip test) →
   `process_expiring_signals` auto-rinnova gli attivi e fa il prompt agli
   inattivi; `expire_due_signals`, `refresh_signal` + route, script
-  `scripts/process_demand_signals.py` (migrazioni `20260607_demand_signal_reminded`,
+  `scripts/daily_jobs.py` (job `demand`) (migrazioni `20260607_demand_signal_reminded`,
   `20260607_user_last_active`). **Tutti gli open item ADR-036 chiusi** (resta
   solo la taratura numerica, costanti documentate).
 - **ADR-037**: `gare_organized` via `DirectorAssignment` (4) **FATTO**. Tarature
