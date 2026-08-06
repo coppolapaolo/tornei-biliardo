@@ -114,6 +114,18 @@ poi riapplicarla).
   job è isolato; exit code ≠ 0 se almeno uno fallisce. `python
   scripts/daily_jobs.py <nome>` per lanciarne uno solo.
 
+**Env di produzione negli script da console/task**: console e scheduled task
+sono processi separati e **non ereditano** le variabili dal file WSGI, quindi
+`create_app("production")` fallirebbe subito su `SECRET_KEY`. Gli script che
+avviano l'app chiamano `bootstrap_or_exit()` da `scripts/prod_env.py`, che le
+legge dal WSGI (riusa `read_wsgi_env` di `auto_deploy`, parsing AST senza
+eseguirlo) e, se manca qualcosa, esce dicendo cosa e da dove dovrebbe arrivare.
+Un valore passato a mano sulla riga di comando resta prioritario. Uno script
+nuovo che fa `create_app` va agganciato lì — chiedendo anche `ENCRYPTION_KEY`
+se tocca i PII, altrimenti la decifratura degrada in silenzio sulla chiave di
+sviluppo (incidente 2026-06-25). `auto_deploy.py` resta autonomo di proposito:
+è il punto d'ingresso del deploy e non importa nulla dal progetto.
+
 > ⚠️ `scripts/send_match_reminders.py` (ogni 15 min) **non risulta registrato**:
 > compare solo come TODO in un handoff archiviato di gennaio. Se è così i
 > promemoria dei match non partono. Cadenza diversa dal giornaliero, quindi
