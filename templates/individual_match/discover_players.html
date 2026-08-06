@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _("Trova Giocatori") }} - Campionato Biliardo{% endblock %}
+
+{% macro request_form(player, place) %}
+  {% set collapse_id = "request-%s"|format(player.user_id) %}
+  <div class="d-flex justify-content-between align-items-center">
+    <h6 class="mb-0"><i class="fas fa-user me-1"></i>{{ player.username }}</h6>
+    <button class="btn btn-sm btn-outline-success" type="button" data-bs-toggle="collapse"
+            data-bs-target="#{{ collapse_id }}">
+      <i class="fas fa-paper-plane me-1"></i>{{ _("Richiedi match") }}
+    </button>
+  </div>
+  <div class="small text-muted mt-1">
+    {% if player.preferred_times %}<i class="fas fa-clock me-1"></i>{{ player.preferred_times }}{% endif %}
+  </div>
+  <div class="collapse mt-2" id="{{ collapse_id }}">
+    <form method="POST" action="{{ url_for('individual_match.request_availability_match', target_user_id=player.user_id) }}" class="row g-2">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="location" value="{{ place }}">
+      <div class="col-md-4">
+        <label class="form-label small">{{ _("Data") }}</label>
+        <input type="date" class="form-control form-control-sm" name="proposed_date">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small">{{ _("Ora") }}</label>
+        <input type="time" class="form-control form-control-sm" name="proposed_time">
+      </div>
+      <div class="col-md-5">
+        <label class="form-label small">{{ _("Messaggio") }}</label>
+        <input type="text" class="form-control form-control-sm" name="message" placeholder="{{ _('Facoltativo') }}">
+      </div>
+      <div class="col-12 text-end">
+        <button type="submit" class="btn btn-sm btn-success">
+          <i class="fas fa-paper-plane me-1"></i>{{ _("Invia richiesta") }}
+        </button>
+      </div>
+    </form>
+  </div>
+{% endmacro %}
+
+{% block content %}
+<div class="container-fluid">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{{ url_for('individual_match.dashboard') }}">{{ _("Match Individuali") }}</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('individual_match.manage_availability') }}">{{ _("Disponibilità") }}</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ _("Trova giocatori") }}</li>
+    </ol>
+  </nav>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <h4 class="mb-1"><i class="fas fa-search me-2"></i>{{ _("Trova giocatori disponibili") }}</h4>
+      <small class="text-muted">{{ _("Scopri chi è disponibile nelle sale e invia una richiesta di match") }}</small>
+
+      {# ---- Proximity + venue filter ---- #}
+      <div class="card my-3">
+        <div class="card-body">
+          <div class="row g-2 align-items-end">
+            <div class="col-md-4">
+              <label for="radius_km" class="form-label">{{ _("Raggio (km)") }}</label>
+              <input type="number" class="form-control" id="radius_km" name="radius_km"
+                     min="1" max="100" value="{{ radius_km }}">
+            </div>
+            <div class="col-md-4 d-grid">
+              <button type="button" class="btn btn-primary" onclick="findNearMe()">
+                <i class="fas fa-location-crosshairs me-1"></i>{{ _("Vicino a me") }}
+              </button>
+            </div>
+            <div class="col-md-4 d-grid">
+              <a href="{{ url_for('individual_match.discover_players') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-list me-1"></i>{{ _("Mostra tutte") }}
+              </a>
+            </div>
+          </div>
+          <div id="geo-status" class="small text-muted mt-2"></div>
+
+          <hr>
+          <form method="GET" action="{{ url_for('individual_match.discover_players') }}" class="row g-2 align-items-end">
+            <div class="col-md-9">
+              <label for="venue_id" class="form-label">{{ _("Oppure filtra per sala") }}</label>
+              <select class="form-select" id="venue_id" name="venue_id">
+                <option value="">{{ _("Tutte le sale") }}</option>
+                {% for venue in active_venues %}
+                <option value="{{ venue.id }}" {% if venue_filter == venue.id %}selected{% endif %}>{{ venue.name }}{% if venue.city %} — {{ venue.city }}{% endif %}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-3 d-grid">
+              <button type="submit" class="btn btn-outline-primary"><i class="fas fa-filter me-1"></i>{{ _("Filtra") }}</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      {% if proximity_active %}
+      <div class="alert alert-info py-2">
+        <i class="fas fa-location-dot me-1"></i>
+        {% if proximity_origin == 'gps' %}
+          {{ _("Risultati ordinati per distanza dalla tua posizione, entro %(r)s km", r=radius_km) }}
+        {% else %}
+          {{ _("Posizione non disponibile: uso la tua città, entro %(r)s km", r=radius_km) }}
+        {% endif %}
+      </div>
+      {% endif %}
+
+      {# ---- Open proposals near you ---- #}
+      {% if near_proposals %}
+      <div class="card mb-3">
+        <div class="card-header"><i class="fas fa-bullhorn me-1"></i>{{ _("Proposte aperte vicino a te") }}</div>
+        <ul class="list-group list-group-flush">
+          {% for item in near_proposals %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span>
+              <i class="fas fa-map-marker-alt me-1"></i>{{ item.proposal.location_display }}
+              <span class="text-muted small ms-2">{{ item.proposal.scheduled_at|datetime_local }}</span>
+            </span>
+            <span class="badge bg-info text-dark">{{ _("a %(d)s km", d=item.distance_km) }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      {# ---- Venue results ---- #}
+      {% if not venue_groups and not placeless_groups %}
+      <div class="alert alert-info">
+        <i class="fas fa-info-circle me-1"></i>{{ _("Nessun giocatore disponibile trovato. Prova ad aumentare il raggio o a cambiare i filtri.") }}
+      </div>
+      {% endif %}
+
+      {% for group in venue_groups %}
+      <div class="card mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span>
+            <i class="fas fa-map-marker-alt me-1"></i>{{ group.name }}
+            {% if group.distance_km is not none %}<span class="badge bg-info text-dark ms-2">{{ _("a %(d)s km", d=group.distance_km) }}</span>{% endif %}
+          </span>
+          <span class="badge bg-secondary">{{ group.players|length }} {{ _("giocatori") }}</span>
+        </div>
+        <div class="card-body">
+          {% for player in group.players %}
+          <div class="border rounded p-3 mb-2">
+            {{ request_form(player, group.name) }}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+
+      {# ---- Venues without coordinates (proximity mode) ---- #}
+      {% if placeless_groups %}
+      <h6 class="text-muted mt-4"><i class="fas fa-location-slash me-1"></i>{{ _("Sale senza posizione") }}</h6>
+      <p class="small text-muted">{{ _("Queste sale non hanno coordinate, quindi non possono essere ordinate per distanza.") }}</p>
+      {% for group in placeless_groups %}
+      <div class="card mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span><i class="fas fa-map-marker-alt me-1"></i>{{ group.name }}</span>
+          <span class="badge bg-secondary">{{ group.players|length }} {{ _("giocatori") }}</span>
+        </div>
+        <div class="card-body">
+          {% for player in group.players %}
+          <div class="border rounded p-3 mb-2">
+            {{ request_form(player, group.name) }}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function findNearMe() {
+  var radius = document.getElementById('radius_km').value || 20;
+  var status = document.getElementById('geo-status');
+  var base = {{ url_for('individual_match.discover_players')|tojson }};
+  if (!navigator.geolocation) {
+    status.textContent = {{ _("Geolocalizzazione non supportata dal browser.")|tojson }};
+    return;
+  }
+  status.textContent = {{ _("Rilevamento della posizione…")|tojson }};
+  navigator.geolocation.getCurrentPosition(function (pos) {
+    var u = new URL(base, window.location.origin);
+    u.searchParams.set('near_lat', pos.coords.latitude);
+    u.searchParams.set('near_lng', pos.coords.longitude);
+    u.searchParams.set('radius_km', radius);
+    window.location = u.toString();
+  }, function () {
+    var hasCity = {{ has_home_city|tojson }};
+    if (hasCity) {
+      var u = new URL(base, window.location.origin);
+      u.searchParams.set('radius_km', radius);
+      window.location = u.toString();
+    } else {
+      status.textContent = {{ _("Posizione non disponibile. Imposta una città nel profilo o filtra per sala.")|tojson }};
+    }
+  });
+}
+</script>
+{% endblock %}

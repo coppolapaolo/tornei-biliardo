@@ -101,12 +101,19 @@ class StreakMilestone(db.Model, TimestampMixin):
 DEFAULT_XP_RATES = {
     "xp_match_win": (50, "XP awarded for winning a match"),
     "xp_match_loss": (20, "XP awarded for losing a match"),
+    # Match individuali/casual: XP ridotto vs torneo (anti-farming, gated a
+    # VALIDATED). Senza queste entry get_xp_rate ricadrebbe sul default
+    # generico (50), pagando il casual come una vittoria di torneo.
+    "xp_casual_match_win": (20, "XP awarded for winning a casual match"),
+    "xp_casual_match_loss": (5, "XP awarded for losing a casual match"),
     "xp_tournament_inscription": (25, "XP for registering to a tournament"),
     "xp_tournament_completion": (100, "XP for completing a tournament"),
     "xp_tournament_podium": (200, "Bonus XP for top 3 finish"),
     "xp_tournament_win": (500, "Bonus XP for winning a tournament"),
     "xp_streak_bonus": (30, "XP per week of streak"),
     "xp_challenge_completion": (150, "XP for completing a challenge"),
+    "xp_gara_creation": (100, "XP for creating a standalone gara"),
+    "xp_campionato_creation": (200, "XP for creating a campionato"),
 }
 
 DEFAULT_LEVEL_PARAMS = {

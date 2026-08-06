@@ -83,7 +83,6 @@ DOMAIN_GROUPS = {
         "proposal_invitation",
         "individual_match",
         "individual_rack",
-        "player_availability",
     ],
     "Rating & Handicap": [
         "player_category",

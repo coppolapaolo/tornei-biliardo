@@ -186,60 +186,44 @@ def achievements():
 
 @gamification_bp.route("/leaderboards")
 def leaderboards():
+    """Classifiche locale + contributo (ADR-037, §11-bis).
+
+    Sostituisce il board XP globale con due tab:
+    - **La tua zona**: giocatori della propria ``home_city`` (+ città vicine),
+      per XP totale (vincibile). Richiede login + home_city.
+    - **Contributo**: top contributori community-wide (engagement generato).
     """
-    Leaderboards - public route, no login required.
+    active_tab = request.args.get("type", "local")
+    if active_tab not in ("local", "contribution"):
+        active_tab = "local"
+    # Parse difensivo: un ?limit non numerico non deve generare un 500.
+    try:
+        limit = int(request.args.get("limit", 50))
+    except (TypeError, ValueError):
+        limit = 50
+    limit = max(1, min(limit, 100))
 
-    Displays:
-    - XP leaderboard (all-time top 20)
-    - Level leaderboard (highest levels)
-    - Streak leaderboard (longest current streaks)
-    """
-    # Get leaderboard type from query param (default: xp)
-    leaderboard_type_str = request.args.get("type", "xp")
-    # type=int evita 500 su input non numerico (route pubblica): valori non
-    # validi ricadono sul default 20 invece di sollevare ValueError.
-    limit_raw = request.args.get("limit", 20, type=int)
-    limit = min(limit_raw if limit_raw and limit_raw > 0 else 20, 100)
-
-    from models.gamification.leaderboard_service import LeaderboardService
-    from models.gamification.models import LeaderboardType
-
-    # Carica tutte le classifiche principali così la view può cambiare tab
-    # senza ricaricare la pagina.
-    xp_leaderboard = LeaderboardService.get_leaderboard(
-        LeaderboardType.XP_ALL_TIME, limit
-    )
-    level_leaderboard = LeaderboardService.get_leaderboard(
-        LeaderboardType.LEVEL_HIGHEST, limit
-    )
-    streak_leaderboard = LeaderboardService.get_leaderboard(
-        LeaderboardType.STREAK_CURRENT, limit
+    from models.gamification.community_leaderboard_service import (
+        CommunityLeaderboardService,
     )
 
-    from models.gamification.ui_helpers import GamificationUIHelper
-
-    elo_leaderboard = []
-    elo_global_leaderboard = []
-    if GamificationUIHelper.can_view_ratings(current_user):
-        elo_leaderboard = LeaderboardService.get_leaderboard(
-            LeaderboardType.ELO_RATING, limit
+    local_board = None
+    if current_user.is_authenticated:
+        local_board = CommunityLeaderboardService.get_local_leaderboard(
+            current_user.id, limit=limit
         )
-        # Dual ELO: classifica globale (tornei + casual), display-only. Il
-        # toggle UI alterna le due; l'ordinamento è sempre lato server.
-        elo_global_leaderboard = LeaderboardService.get_leaderboard(
-            LeaderboardType.ELO_GLOBAL_RATING, limit
-        )
+
+    contribution_board = CommunityLeaderboardService.get_contribution_leaderboard(
+        limit=limit
+    )
 
     track_leaderboard_view()  # KPI tracking
 
     return render_template(
         "gamification/leaderboards.html",
-        xp_leaderboard=xp_leaderboard,
-        level_leaderboard=level_leaderboard,
-        streak_leaderboard=streak_leaderboard,
-        elo_leaderboard=elo_leaderboard,
-        elo_global_leaderboard=elo_global_leaderboard,
-        active_tab=leaderboard_type_str,
+        local_board=local_board,
+        contribution_board=contribution_board,
+        active_tab=active_tab,
         page_title=_("Classifiche"),
     )
 

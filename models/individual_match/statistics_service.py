@@ -13,9 +13,9 @@ from ..base import db
 from .models import (
     MatchProposal,
     IndividualMatch,
-    PlayerAvailability,
     ProposalStatus,
 )
+from ..location.models import BilliardHall, UserLocationAvailability
 from ..status_enum import MatchStatus
 from ..user.models import User
 
@@ -216,9 +216,13 @@ class IndividualMatchStatisticsService:
             count = MatchProposal.query.filter_by(status=status).count()
             proposal_counts[status.value] = count
 
-        active_locations = (
-            db.session.query(PlayerAvailability.location)
-            .filter_by(is_available=True)
+        active_venues = (
+            db.session.query(BilliardHall.name)
+            .join(
+                UserLocationAvailability,
+                UserLocationAvailability.billiard_hall_id == BilliardHall.id,
+            )
+            .filter(UserLocationAvailability.is_available.is_(True))
             .distinct()
             .all()
         )
@@ -227,30 +231,35 @@ class IndividualMatchStatisticsService:
             "status_counts": status_counts,
             "recent_matches": recent_matches,
             "proposal_counts": proposal_counts,
-            "active_locations": [loc[0] for loc in active_locations],
-            "total_users_with_availability": PlayerAvailability.query.with_entities(
-                PlayerAvailability.user_id
-            )
-            .distinct()
-            .count(),
+            "active_locations": [name for (name,) in active_venues],
+            "total_users_with_availability": (
+                UserLocationAvailability.query.with_entities(
+                    UserLocationAvailability.user_id
+                )
+                .distinct()
+                .count()
+            ),
         }
 
     @staticmethod
     def get_user_availability(user_id: int) -> Dict[str, Any]:
-        """Get user's availability settings and schedule."""
-        availability_records = PlayerAvailability.query.filter_by(user_id=user_id).all()
+        """Get user's (venue-based) availability settings and schedule."""
+        availability_records = UserLocationAvailability.query.filter_by(
+            user_id=user_id
+        ).all()
 
-        by_location = {}
+        by_venue: Dict[str, Any] = {}
         for record in availability_records:
-            if record.location not in by_location:
-                by_location[record.location] = []
-            by_location[record.location].append(record)
+            name = record.billiard_hall.name if record.billiard_hall else None
+            by_venue.setdefault(name, []).append(record)
 
         return {
             "availability_records": availability_records,
-            "by_location": by_location,
-            "available_locations": [
-                r.location for r in availability_records if r.is_available
+            "by_venue": by_venue,
+            "available_venues": [
+                (r.billiard_hall.name if r.billiard_hall else None)
+                for r in availability_records
+                if r.is_available
             ],
         }
 

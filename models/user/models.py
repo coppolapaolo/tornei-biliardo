@@ -64,6 +64,29 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
     # per utenti cancellati
     previous_username = db.Column(db.String(80), nullable=True)
 
+    # Città "home" auto-dichiarata (livello città) usata come fallback per la
+    # discovery di prossimità quando il GPS del browser non è disponibile
+    # (ADR-034). Opt-in; mai coordinate precise dell'utente.
+    home_city = db.Column(db.String(100), nullable=True)
+
+    # Onboarding obbligatorio (una volta sola) — ADR-035. Default False per
+    # tutti, inclusi gli account esistenti (backfill): ognuno esegue
+    # l'onboarding al primo login successivo al rilascio.
+    onboarding_completed = db.Column(db.Boolean, default=False, nullable=False)
+    # Interessi dichiarati nell'onboarding: CSV di token da un set chiuso
+    # ("drill", "match", "tornei"). Opt-in, usato per personalizzare landing.
+    onboarding_interests = db.Column(db.String(100), nullable=True)
+
+    # Segnale-domanda → director (ADR-036). Raggio (km) della zona del director
+    # per il conteggio delle richieste di domanda; regolabile dal director.
+    signal_radius_km = db.Column(db.Integer, default=30, nullable=False)
+    # Cooldown anti-nag: ultimo invio di notifica "soglia domanda raggiunta".
+    signal_notified_at = db.Column(db.DateTime, nullable=True)
+    # Ultimo accesso "attivo" (touch throttled per richiesta autenticata) —
+    # usato per l'auto-refresh dei segnali-domanda (ADR-036). Opt-out di privacy
+    # non necessario: è un timestamp grezzo, non una posizione.
+    last_active_at = db.Column(db.DateTime, nullable=True)
+
     # Gamification Override
     gamification_override = db.Column(db.Boolean, default=False, nullable=False)
 
@@ -173,6 +196,16 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
     @property
     def is_active(self) -> bool:  # type: ignore[override]
         return not self.is_deleted
+
+    # ───────────────────
+    # Onboarding (ADR-035)
+    # ───────────────────
+    @property
+    def interests_list(self) -> list[str]:
+        """Interessi dichiarati nell'onboarding come lista (CSV → list)."""
+        if not self.onboarding_interests:
+            return []
+        return [t for t in self.onboarding_interests.split(",") if t]
 
     # Operazioni di anonimizzazione (PII → NULL, username tecnico)
     def anonymize(self) -> None:

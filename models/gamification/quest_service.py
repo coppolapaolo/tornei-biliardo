@@ -527,11 +527,14 @@ class QuestService:
                 ...
             ]
         """
-        query = Quest.query
+        # `active_only` filtra sullo stato EFFETTIVO (derivato dalle date a
+        # read-time), non sul campo `status` precalcolato: update_quest_statuses
+        # non gira in produzione, quindi una quest temporalmente attiva potrebbe
+        # avere ancora status=UPCOMING in DB. Il filtro è in Python perché
+        # effective_status è una property (non esprimibile in SQL).
+        quests = Quest.query.order_by(Quest.end_date.asc()).all()
         if active_only:
-            query = query.filter_by(status=QuestStatus.ACTIVE)
-
-        quests = query.order_by(Quest.end_date.asc()).all()
+            quests = [q for q in quests if q.is_currently_active]
 
         results = []
         for quest in quests:

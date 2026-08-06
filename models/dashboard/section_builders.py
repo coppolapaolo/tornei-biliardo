@@ -132,7 +132,8 @@ class DashboardSectionBuilder:
             .all()
         )
 
-        # Get opportunities - open proposals
+        # Match opportunities: open proposals already filtered by eligibility
+        # in ProposalService.get_user_proposals (venue/played-based, ADR-033).
         opportunities = proposals.get("available", [])
 
         return {

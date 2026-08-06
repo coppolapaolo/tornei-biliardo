@@ -370,10 +370,15 @@ def edit_profile():
         username = (request.form.get("username") or "").strip()
         email = (request.form.get("email") or "").strip()
         phone = (request.form.get("phone") or "").strip() or None
+        home_city = (request.form.get("home_city") or "").strip() or None
 
         try:
             user = UserService.update_user(
-                current_user.id, username=username, email=email, phone=phone
+                current_user.id,
+                username=username,
+                email=email,
+                phone=phone,
+                home_city=home_city,
             )
             # If the email changed, update_user revoked is_verified and queued
             # a verification token. Send the email AFTER the transaction commits

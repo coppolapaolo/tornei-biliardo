@@ -22,6 +22,9 @@ pytest tests/new/unit/test_specific.py -v -n auto
 # Debug single test (no parallel, with output)
 pytest tests/new/unit/test_file.py::test_name -v -s
 
+# Frontend headless tests (jsdom, Node — gamification badge/anti-invasività)
+cd tests/frontend && npm install && npm test   # run after editing static/js/gamification.js
+
 # Type check (MANDATORY before commits)
 pyright
 

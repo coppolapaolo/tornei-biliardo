@@ -95,6 +95,11 @@ class Config:
     BABEL_DEFAULT_LOCALE = "it"
     BABEL_TRANSLATION_DIRECTORIES = "translations"
 
+    # Onboarding obbligatorio (ADR-035): quando True, gli utenti non-admin con
+    # onboarding non completato vengono reindirizzati alla pagina dedicata.
+    # Attivo in dev e prod; disattivato nei test (vedi TestingConfig).
+    ONBOARDING_ENFORCED = True
+
 
 class DevelopmentConfig(Config):
     """Configurazione per sviluppo"""
@@ -136,6 +141,10 @@ class TestingConfig(Config):
     GLITCHTIP_DSN = None
     GA_MEASUREMENT_ID = None
     WTF_CSRF_ENABLED = False
+    # L'enforcement onboarding è opt-in nei test: la maggior parte usa utenti
+    # con onboarding_completed=False e finirebbe reindirizzata. I test dedicati
+    # (ADR-035) lo riattivano localmente con app.config["ONBOARDING_ENFORCED"].
+    ONBOARDING_ENFORCED = False
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
     SQLALCHEMY_SESSION_OPTIONS = {"expire_on_commit": False}
     ADMIN_USERNAME = "admin"

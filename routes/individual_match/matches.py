@@ -221,10 +221,11 @@ def confirm_result(match_id):
         from models.status_enum import MatchStatus
         from routes.sse import emit_individual_match_event
 
-        # La conferma bilaterale porta lo status a VALIDATED (mai "completed"):
-        # il confronto col letterale "completed" lasciava completed=False e
-        # "In attesa dell'altro giocatore" anche a match appena chiuso.
-        fully_confirmed = match.status.value == MatchStatus.VALIDATED.value
+        # La conferma bilaterale porta il match a VALIDATED (flusso nuovo) o a
+        # COMPLETED (legacy): entrambi sono lo stato "concluso". Prima si
+        # confrontava col letterale "completed" → dopo la 2ª conferma il match
+        # era validato ma la route riportava "in attesa" (incongruenza UX).
+        fully_confirmed = MatchStatus.is_finished(match.status.value)
 
         event_type = "match_completed" if fully_confirmed else "result_confirmed"
         emit_individual_match_event(

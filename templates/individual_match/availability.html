@@ -1,262 +1,139 @@
 {% extends "base.html" %}
 
-{% block title %}{{ _("Gestisci Disponibilità") }} - {{ _("Campionato Biliardo") }}{% endblock %}
+{% block title %}{{ _("Gestisci Disponibilità") }} - Campionato Biliardo{% endblock %}
+
+{% set day_names = {0: _("Dom"), 1: _("Lun"), 2: _("Mar"), 3: _("Mer"), 4: _("Gio"), 5: _("Ven"), 6: _("Sab")} %}
+{% set weekdays = [(1, _("Lun")), (2, _("Mar")), (3, _("Mer")), (4, _("Gio")), (5, _("Ven")), (6, _("Sab")), (0, _("Dom"))] %}
+
+{% macro day_badges(days) %}
+  {% if days %}{% for d in days %}<span class="badge bg-light text-dark border me-1">{{ day_names.get(d|int, d) }}</span>{% endfor %}{% endif %}
+{% endmacro %}
+
+{% macro schedule_fields(days_field) %}
+  <div class="mb-3">
+    <label class="form-label">{{ _("Giorni Preferiti") }}</label>
+    <div class="d-flex flex-wrap gap-2">
+      {% for value, label in weekdays %}
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" id="{{ days_field }}_{{ value }}" name="{{ days_field }}" value="{{ value }}">
+        <label class="form-check-label" for="{{ days_field }}_{{ value }}">{{ label }}</label>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">{{ _("Orari Preferiti") }}</label>
+    <input type="text" class="form-control" name="preferred_times" placeholder="{{ _('Es: 18:00-22:00') }}" value="18:00-22:00">
+    <div class="form-text">{{ _("Fascia oraria in cui sei disponibile") }}</div>
+  </div>
+  <div class="form-check form-switch mb-3">
+    <input class="form-check-input" type="checkbox" name="is_available" value="true" checked>
+    <label class="form-check-label">{{ _("Attualmente disponibile") }}</label>
+  </div>
+{% endmacro %}
 
 {% block content %}
 <div class="container-fluid">
-    <div class="row">
-        <div class="col-md-12">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('individual_match.dashboard') }}">{{ _("Match Individuali") }}</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">{{ _("Disponibilità") }}</li>
-                </ol>
-            </nav>
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{{ url_for('individual_match.dashboard') }}">{{ _("Match Individuali") }}</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ _("Disponibilità") }}</li>
+    </ol>
+  </nav>
 
-            <div class="row justify-content-center">
-                <div class="col-md-10">
-                    <div class="card">
-                        <div class="card-header">
-                            <h4><i class="fas fa-calendar-alt"></i> {{ _("Gestisci la tua Disponibilità") }}</h4>
-                            <small class="text-muted">{{ _("Indica dove sei disponibile a giocare per ricevere proposte di match") }}</small>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-8">
-                                    <!-- Current Availability -->
-                                    <h5>{{ _("Le tue Località Preferite") }}</h5>
-
-                                    <div id="currentAvailability">
-                                        {% if availability_records and availability_records|length %}
-                                        {% for record in availability_records %}
-                                        <div class="card mb-3 availability-item" data-id="{{ record.id }}">
-                                            <div class="card-body">
-                                                <div class="row align-items-center">
-                                                    <div class="col-md-8">
-                                                        <h6><i class="fas fa-map-marker-alt"></i> {{ record.location }}</h6>
-                                                        <p class="mb-1">
-                                                            {% if record.preferred_days %}
-                                                            <i class="fas fa-calendar"></i>
-                                                            {% set days = record.preferred_days|default('')|string %}
-                                                            {% if days %}
-                                                            {{ _("Giorni:") }} {{ days }}
-                                                            {% endif %}
-                                                            {% endif %}
-                                                            {% if record.preferred_times %}
-                                                            <br><i class="fas fa-clock"></i> {{ _("Orari:") }} {{ record.preferred_times }}
-                                                            {% endif %}
-                                                        </p>
-                                                    </div>
-                                                    <div class="col-md-4 text-end">
-                                                        <span class="badge bg-{{ 'success' if record.is_available else 'secondary' }}">
-                                                            {{ _('Disponibile') if record.is_available else _('Non disponibile') }}
-                                                        </span>
-                                                        <br>
-                                                        <button type="button" class="btn btn-outline-danger btn-sm mt-1"
-                                                                onclick='removeAvailability({{ record.id }})'>
-                                                            <i class="fas fa-trash"></i> {{ _("Rimuovi") }}
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        {% endfor %}
-                                        {% else %}
-                                        <div class="alert alert-info" id="noAvailabilityAlert">
-                                            <i class="fas fa-info-circle"></i>
-                                            {{ _("Non hai ancora impostato nessuna disponibilità. Aggiungi la tua prima località qui sotto!") }}
-                                        </div>
-                                        {% endif %}
-                                    </div>
-
-                                    <!-- Add New Availability -->
-                                    <hr>
-                                    <h5>{{ _("Aggiungi Nuova Località") }}</h5>
-
-                                    <div class="card bg-light">
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <div class="mb-3">
-                                                        <label for="location" class="form-label">{{ _("Luogo") }} *</label>
-                                                        <input type="text" class="form-control" id="location"
-                                                               placeholder="{{ _('Es: Bar Sport, Sala Biliardi Centro') }}"
-                                                               list="venue-suggestions" autocomplete="off" required>
-                                                        <datalist id="venue-suggestions">
-                                                            {% if verified_venues %}
-                                                            {% for venue in verified_venues %}
-                                                            <option value="{{ venue.name }}">
-                                                                {{ venue.name }} - {{ venue.city or _('Città non specificata') }}
-                                                            </option>
-                                                            {% endfor %}
-                                                            {% endif %}
-                                                        </datalist>
-                                                        <div class="form-text">{{ _("Seleziona una sala esistente o scrivine una nuova") }}</div>
-                                                    </div>
-
-                                                    <div class="mb-3">
-                                                        <label class="form-label">{{ _("Giorni Preferiti") }}</label>
-                                                        <div class="d-flex flex-wrap gap-2">
-                                                            {% for day, name in [('1', _('Lun')), ('2', _('Mar')), ('3', _('Mer')), ('4', _('Gio')), ('5', _('Ven')), ('6', _('Sab')), ('0', _('Dom'))] %}
-                                                            <div class="form-check">
-                                                                <input class="form-check-input" type="checkbox" id="day_{{ day }}" value="{{ day }}">
-                                                                <label class="form-check-label" for="day_{{ day }}">{{ name }}</label>
-                                                            </div>
-                                                            {% endfor %}
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <div class="col-md-6">
-                                                    <div class="mb-3">
-                                                        <label for="preferred_times" class="form-label">{{ _("Orari Preferiti") }}</label>
-                                                        <input type="text" class="form-control" id="preferred_times"
-                                                               placeholder="{{ _('Es: 18:00-22:00') }}" value="18:00-22:00">
-                                                        <div class="form-text">{{ _("Fascia oraria in cui sei disponibile") }}</div>
-                                                    </div>
-
-                                                    <div class="mb-3">
-                                                        <div class="form-check form-switch">
-                                                            <input class="form-check-input" type="checkbox" id="is_available" checked>
-                                                            <label class="form-check-label" for="is_available">
-                                                                {{ _("Attualmente disponibile") }}
-                                                            </label>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="text-center">
-                                                <button type="button" class="btn btn-primary" onclick="addAvailability()">
-                                                    <i class="fas fa-plus"></i> {{ _("Aggiungi Località") }}
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Sidebar with help -->
-                                <div class="col-md-4">
-                                    <!-- Help -->
-                                    <div class="card">
-                                        <div class="card-header">
-                                            <h6><i class="fas fa-question-circle"></i> {{ _("Come Funziona?") }}</h6>
-                                        </div>
-                                        <div class="card-body">
-                                            <ul class="small text-muted">
-                                                <li>{{ _("Aggiungi le località dove giochi abitualmente") }}</li>
-                                                <li>{{ _("Indica i tuoi giorni e orari preferiti") }}</li>
-                                                <li>{{ _("Altri giocatori vedranno le tue disponibilità") }}</li>
-                                                <li>{{ _("Riceverai proposte di match nelle tue località") }}</li>
-                                                <li>{{ _("Puoi attivare/disattivare le disponibilità") }}</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-
-                                    <!-- Available Locations Summary -->
-                                    {% if available_locations and available_locations|length %}
-                                    <div class="card mt-3">
-                                        <div class="card-header">
-                                            <h6><i class="fas fa-check-circle"></i> {{ _("Località Attive") }}</h6>
-                                        </div>
-                                        <div class="card-body">
-                                            {% for loc in available_locations %}
-                                            <span class="badge bg-success me-1 mb-1">{{ loc }}</span>
-                                            {% endfor %}
-                                        </div>
-                                    </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h4 class="mb-1"><i class="fas fa-calendar-alt me-2"></i>{{ _("Gestisci la tua Disponibilità") }}</h4>
+          <small class="text-muted">{{ _("Indica dove sei disponibile a giocare per ricevere proposte di match") }}</small>
         </div>
+        <a href="{{ url_for('individual_match.discover_players') }}" class="btn btn-outline-primary">
+          <i class="fas fa-search me-1"></i>{{ _("Trova giocatori") }}
+        </a>
+      </div>
+
+      <div class="row">
+        <div class="col-lg-8">
+          {# ---- Current availability (venues + locations) ---- #}
+          <div class="card mb-4">
+            <div class="card-header">
+              <h6 class="mb-0"><i class="fas fa-list-check me-2"></i>{{ _("Le tue disponibilità") }}</h6>
+            </div>
+            <div class="card-body">
+              {% if not venues %}
+              <div class="alert alert-info mb-0">
+                <i class="fas fa-info-circle me-1"></i>
+                {{ _("Non hai ancora impostato nessuna disponibilità. Aggiungi una sala qui sotto!") }}
+              </div>
+              {% endif %}
+
+              {% for venue in venues %}
+              <div class="d-flex justify-content-between align-items-start border rounded p-3 mb-2">
+                <div>
+                  <h6 class="mb-1"><i class="fas fa-building me-1 text-primary"></i>{{ venue.venue_name }}
+                    <span class="badge bg-primary ms-1">{{ _("Sala") }}</span>
+                  </h6>
+                  <div class="small text-muted">
+                    {{ day_badges(venue.available_days) }}
+                    {% if venue.preferred_times %}<br><i class="fas fa-clock me-1"></i>{{ venue.preferred_times }}{% endif %}
+                  </div>
+                </div>
+                <form method="POST" action="{{ url_for('individual_match.remove_venue_availability', availability_id=venue.id) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="btn btn-outline-danger btn-sm" title="{{ _('Rimuovi') }}">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </form>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          {# ---- Add venue availability ---- #}
+          <div class="card mb-4">
+            <div class="card-header">
+              <h6 class="mb-0"><i class="fas fa-building me-2"></i>{{ _("Aggiungi una sala") }}</h6>
+            </div>
+            <div class="card-body">
+              <form method="POST" action="{{ url_for('individual_match.set_venue_availability') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-3">
+                  <label for="venue_id" class="form-label">{{ _("Sala") }} *</label>
+                  <select class="form-select" id="venue_id" name="venue_id" required>
+                    <option value="">{{ _("Seleziona una sala…") }}</option>
+                    {% for venue in active_venues %}
+                    <option value="{{ venue.id }}">{{ venue.name }}{% if venue.city %} — {{ venue.city }}{% endif %}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                {{ schedule_fields("available_days") }}
+                <button type="submit" class="btn btn-primary">
+                  <i class="fas fa-plus me-1"></i>{{ _("Aggiungi sala") }}
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        {# ---- Sidebar help ---- #}
+        <div class="col-lg-4">
+          <div class="card">
+            <div class="card-header">
+              <h6 class="mb-0"><i class="fas fa-question-circle me-2"></i>{{ _("Come Funziona?") }}</h6>
+            </div>
+            <div class="card-body">
+              <ul class="small text-muted mb-0">
+                <li>{{ _("Aggiungi le sale dove giochi abitualmente") }}</li>
+                <li>{{ _("Indica i tuoi giorni e orari preferiti") }}</li>
+                <li>{{ _("Altri giocatori vedranno le tue disponibilità") }}</li>
+                <li>{{ _("Riceverai proposte di match nelle tue zone") }}</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 </div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-// Get selected days as JSON string
-function getSelectedDays() {
-    const days = [];
-    document.querySelectorAll('input[id^="day_"]:checked').forEach(cb => {
-        days.push(cb.value);
-    });
-    return JSON.stringify(days);
-}
-
-// Add new availability
-function addAvailability() {
-    const locationInput = document.getElementById('location').value.trim();
-    const preferredTimes = document.getElementById('preferred_times').value.trim();
-    const isAvailable = document.getElementById('is_available').checked;
-    const preferredDays = getSelectedDays();
-
-    if (!locationInput) {
-        showError({{ _("Inserisci una località")|tojson }});
-        return;
-    }
-
-    // Send to server
-    fetch('{{ url_for("individual_match.manage_availability") }}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        'X-CSRFToken': csrfToken()},
-        body: JSON.stringify({
-            availability: [{
-                location: locationInput,
-                preferred_days: preferredDays,
-                preferred_times: preferredTimes,
-                is_available: isAvailable
-            }]
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showSuccess({{ _("Disponibilità aggiunta!")|tojson }});
-            setTimeout(() => window.location.reload(), 1000);
-        } else {
-            showError({{ _("Errore:")|tojson }} + ' ' + data.error);
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showError({{ _("Errore durante il salvataggio")|tojson }});
-    });
-}
-
-// Remove availability (persisted server-side)
-function removeAvailability(id) {
-    showConfirm({{ _("Sei sicuro di voler rimuovere questa disponibilità?")|tojson }}, () => {
-        fetch(`/match/availability/${id}/remove`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken()
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const item = document.querySelector(`[data-id="${id}"]`);
-                if (item) {
-                    item.remove();
-                }
-                showSuccess({{ _("Disponibilità rimossa!")|tojson }});
-            } else {
-                showError({{ _("Errore:")|tojson }} + ' ' + (data.error || ''));
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showError({{ _("Errore durante la rimozione")|tojson }});
-        });
-    });
-}
-</script>
 {% endblock %}

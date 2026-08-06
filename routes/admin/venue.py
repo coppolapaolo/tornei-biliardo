@@ -21,6 +21,16 @@ from models.base import db, utc_now
 venue_bp = Blueprint("venue", __name__)
 
 
+def _parse_float(raw):
+    """Parse a form value to float, or None if empty/invalid."""
+    if raw in (None, ""):
+        return None
+    try:
+        return float(raw)
+    except (TypeError, ValueError):
+        return None
+
+
 @venue_bp.route("/venues")
 @login_required
 def venues_list():
@@ -225,6 +235,8 @@ def create_venue():
         number_of_tables = request.form.get("number_of_tables")
         business_hours = request.form.get("business_hours")
         hourly_rate = request.form.get("hourly_rate")
+        latitude = _parse_float(request.form.get("latitude"))
+        longitude = _parse_float(request.form.get("longitude"))
 
         # Validate required fields
         if not name:
@@ -256,6 +268,8 @@ def create_venue():
                 amenities=amenities if amenities else None,
                 hourly_rate=float(hourly_rate) if hourly_rate else None,
                 business_hours=business_hours if business_hours else None,
+                latitude=latitude,
+                longitude=longitude,
             )
 
             flash("Sala biliardo creata con successo!", "success")
@@ -303,6 +317,12 @@ def edit_venue(venue_id):
         hourly_rate = request.form.get("hourly_rate")
         if hourly_rate:
             update_kwargs["hourly_rate"] = float(hourly_rate)
+
+        # Geo coordinates (ADR-034): empty string clears, valid float sets.
+        for coord in ("latitude", "longitude"):
+            raw = request.form.get(coord)
+            if raw is not None:
+                update_kwargs[coord] = _parse_float(raw)
 
         # Note: is_active e verified sono gestiti via toggle AJAX, non dal form
 

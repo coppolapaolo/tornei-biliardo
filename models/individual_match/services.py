@@ -12,11 +12,8 @@ This module now acts as a FACADE, delegating to:
 
 from __future__ import annotations
 
-from typing import List, Optional, Dict, Any, TYPE_CHECKING
+from typing import List, Optional, Dict, Any
 from datetime import datetime, date
-
-if TYPE_CHECKING:
-    from ..user.models import User
 
 from ..base import db
 from ..transaction.manager import transactional
@@ -25,7 +22,6 @@ from .models import (
     ProposalInvitation,
     IndividualMatch,
     IndividualRack,
-    PlayerAvailability,
     ProposalType,
     ProposalStatus,
 )
@@ -590,116 +586,11 @@ class IndividualMatchService:
         """Get individual match statistics for a user."""
         return IndividualMatchStatisticsService.get_user_statistics(user_id)
 
-    # ========== Availability Methods (could be extracted later) ==========
-
-    @staticmethod
-    @transactional(domain="individual_match")
-    def update_user_availability(
-        user_id: int, availability_data: List[Dict[str, Any]]
-    ) -> None:
-        """Update user's availability settings.
-
-        Upsert per (user_id, location): aggiorna la riga esistente se presente,
-        altrimenti la crea. In precedenza faceva solo APPEND, accumulando
-        duplicati per la stessa località a ogni salvataggio.
-
-        Args:
-            user_id: The user ID
-            availability_data: List of dicts with keys:
-                - location: string (required)
-                - preferred_days: string (optional, JSON array of day numbers)
-                - preferred_times: string (optional, e.g. "18:00-22:00")
-                - is_available: bool (optional, default True)
-        """
-        for data in availability_data:
-            location = data["location"]
-            availability = PlayerAvailability.query.filter_by(
-                user_id=user_id, location=location
-            ).first()
-            if availability:
-                availability.preferred_days = data.get("preferred_days")
-                availability.preferred_times = data.get("preferred_times")
-                availability.is_available = data.get("is_available", True)
-            else:
-                availability = PlayerAvailability(
-                    user_id=user_id,
-                    location=location,
-                    preferred_days=data.get("preferred_days"),
-                    preferred_times=data.get("preferred_times"),
-                    is_available=data.get("is_available", True),
-                )
-                db.session.add(availability)
-
-    @staticmethod
-    @transactional(domain="individual_match")
-    def set_player_availability(
-        user_id: int,
-        location: str,
-        is_available: bool = True,
-        preferred_days: Optional[str] = None,
-        preferred_times: Optional[str] = None,
-    ) -> PlayerAvailability:
-        """Set player availability for a location."""
-        availability = PlayerAvailability.query.filter_by(
-            user_id=user_id, location=location
-        ).first()
-
-        if availability:
-            availability.is_available = is_available
-            availability.preferred_days = preferred_days
-            availability.preferred_times = preferred_times
-        else:
-            availability = PlayerAvailability(
-                user_id=user_id,
-                location=location,
-                is_available=is_available,
-                preferred_days=preferred_days,
-                preferred_times=preferred_times,
-            )
-            db.session.add(availability)
-
-        return availability
-
-    @staticmethod
-    def get_player_availability(user_id: int) -> List[PlayerAvailability]:
-        """Get all availability settings for a player."""
-        return PlayerAvailability.query.filter_by(user_id=user_id).all()
-
-    @staticmethod
-    @transactional(domain="individual_match")
-    def remove_user_availability(availability_id: int, user_id: int) -> None:
-        """Remove a player availability record (owner only).
-
-        Raises ValueError if the record does not exist or does not belong to
-        the requesting user.
-        """
-        record = db.session.get(PlayerAvailability, availability_id)
-        if record is None or record.user_id != user_id:
-            raise ValueError("Disponibilità non trovata")
-        db.session.delete(record)
-
-    @staticmethod
-    def get_eligible_players_for_location(
-        location: str, exclude_user_id: Optional[int] = None
-    ) -> List[User]:
-        """Get players available for matches at a specific location."""
-        from ..user.models import User
-
-        available_users = User.query.join(PlayerAvailability).filter(
-            PlayerAvailability.location == location,
-            PlayerAvailability.is_available.is_(True),
-        )
-
-        experienced_users = User.query.join(
-            db.or_(
-                IndividualMatch.player1_id == User.id,
-                IndividualMatch.player2_id == User.id,
-            )
-        ).filter(IndividualMatch.location == location)
-
-        all_users = available_users.union(experienced_users)
-
-        if exclude_user_id:
-            all_users = all_users.filter(User.id != exclude_user_id)
-
-        return all_users.all()
+    # ========== Availability Methods ==========
+    #
+    # Availability (location string + venue FK) and player discovery are owned
+    # by AvailabilityService (models/individual_match/availability_service.py),
+    # the single source of truth also consumed by ProposalService. The legacy
+    # write-side duplicates that used to live here were removed when the
+    # availability surface was consolidated into the individual_match blueprint
+    # (see docs/adr/ADR-032-availability-surface-consolidation.md).

@@ -46,6 +46,16 @@ class NotificationType(Enum):
     ACCOUNT_UPDATE = "account_update"  # Account-related updates
     ADMIN_ACTION_REQUIRED = "admin_action_required"  # Action required by admin
 
+    # Demand signal → director (ADR-036)
+    DEMAND_THRESHOLD_REACHED = "demand_threshold_reached"  # Director: domanda ≥ soglia
+    DEMAND_GARA_NEARBY = "demand_gara_nearby"  # Player: gara aperta nella tua zona
+    DEMAND_ZONE_NO_DIRECTOR = (
+        "demand_zone_no_director"  # Admin: domanda in zona senza director
+    )
+    DEMAND_SIGNAL_EXPIRING = (
+        "demand_signal_expiring"  # Player: la tua richiesta sta per scadere
+    )
+
     # Gamification
     ACHIEVEMENT_UNLOCKED = "achievement_unlocked"  # Achievement earned
     LEVEL_UP = "level_up"  # Level up with unlocks

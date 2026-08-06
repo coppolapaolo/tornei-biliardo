@@ -10,7 +10,7 @@ Defines the gamification economy:
 All values are tunable based on community engagement metrics.
 """
 
-from typing import Dict, Optional
+from typing import Dict
 from models.gamification.models import XPTransactionType
 
 # ========================================
@@ -98,83 +98,15 @@ def get_level_from_total_xp(total_xp: int) -> int:
 
 
 # ========================================
-# Feature Unlocks
+# Feature Unlocks (level-up FEEDBACK)
 # ========================================
-
-LEVEL_UNLOCKS: Dict[int, Dict[str, str]] = {
-    5: {
-        "feature": "match_proposals",
-        "description": "Puoi proporre partite individuali",
-    },
-    6: {
-        "feature": "view_ratings",
-        "description": "Puoi visualizzare i rating Elo dei giocatori",
-    },
-    10: {
-        "feature": "tournament_creation",
-        "description": "Puoi creare tornei standalone",
-    },
-    15: {
-        "feature": "priority_invites",
-        "description": "Ricevi notifiche prioritarie per nuovi tornei",
-    },
-    20: {
-        "feature": "custom_badge_display",
-        "description": "Personalizza la visualizzazione dei badge",
-    },
-    25: {"feature": "venue_suggestion", "description": "Puoi suggerire nuove sedi"},
-    30: {
-        "feature": "challenge_creation",
-        "description": "Puoi creare challenge personalizzate",
-    },
-    40: {
-        "feature": "director_fast_track",
-        "description": "Richiesta direttore approvata automaticamente",
-    },
-    50: {
-        "feature": "legend_status",
-        "description": "Stato Leggenda con icona speciale",
-    },
-}
-
-
-def get_next_unlock(current_level: int) -> Optional[Dict[str, any]]:
-    """
-    Get the next feature unlock above current level.
-
-    Args:
-        current_level: Player's current level
-
-    Returns:
-        Dict with level, feature, and description, or None if no more unlocks
-    """
-    next_unlock_level = None
-    for level in sorted(LEVEL_UNLOCKS.keys()):
-        if level > current_level:
-            next_unlock_level = level
-            break
-
-    if next_unlock_level is None:
-        return None
-
-    return {"level": next_unlock_level, **LEVEL_UNLOCKS[next_unlock_level]}
-
-
-def is_feature_unlocked(current_level: int, feature: str) -> bool:
-    """
-    Check if feature is unlocked at current level.
-
-    Args:
-        current_level: Player's current level
-        feature: Feature identifier (e.g., "tournament_creation")
-
-    Returns:
-        True if feature is unlocked
-    """
-    for level, unlock_info in LEVEL_UNLOCKS.items():
-        if unlock_info["feature"] == feature:
-            return current_level >= level
-    return False
+#
+# Gli "sblocchi per livello" sono **feedback/celebrazione** (ADR-031: i livelli
+# sono feedback, non barriera; il gating reale è FeatureConfig/ABAC). La fonte
+# unica è `LevelUnlock` (DB) via `GamificationConfigService`, con seed in
+# `config_models.DEFAULT_LEVEL_UNLOCKS`. Il vecchio dict hardcoded `LEVEL_UNLOCKS`
+# e le funzioni `get_next_unlock`/`is_feature_unlocked` qui erano duplicati morti
+# (runtime già su ConfigService) e sono stati rimossi per avere una sola fonte.
 
 
 # ========================================

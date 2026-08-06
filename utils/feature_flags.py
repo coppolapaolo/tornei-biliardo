@@ -54,6 +54,12 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # === Logged-in (player or director) ===
     "auth.logout": {"player", "director"},
     "dashboard.dashboard": {"player", "director"},
+    # Onboarding obbligatorio (ADR-035): reachable by ogni utente loggato.
+    "onboarding.onboarding": {"player", "director"},
+    # Segnale-domanda → director (ADR-036): maturity-gated, admin/director-only
+    # in prod nel beta; promozione ai player col maturity-gate quando validato.
+    "demand.create_signal": {"director"},
+    "demand.refresh_signal": {"director"},
     # Player-side dashboard at /player/ (the "back to dashboard" target from
     # several profile/list pages — also reached by the dashboard router).
     "player.dashboard": {"player", "director"},
@@ -266,10 +272,14 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "individual_match.rematch": {"player", "director"},
     # Availability: visibile a player/director. La visibilità del menu è
     # comunque gated dal gate gamification 'manage_availability' (venue
-    # manager / veterano di sala). Il modello PlayerAvailability resta
-    # deprecato (migrazione futura a UserLocationAvailability).
+    # manager / veterano di sala). Superficie consolidata su sala
+    # (UserLocationAvailability) — ADR-032/033: il vecchio modello a testo
+    # libero PlayerAvailability è stato rimosso.
     "individual_match.manage_availability": {"player", "director"},
-    "individual_match.remove_availability": {"player", "director"},
+    "individual_match.set_venue_availability": {"player", "director"},
+    "individual_match.remove_venue_availability": {"player", "director"},
+    "individual_match.discover_players": {"player", "director"},
+    "individual_match.request_availability_match": {"player", "director"},
     # Admin overview: solo admin (@admin_required).
     "individual_match.admin_overview": set(),
 }

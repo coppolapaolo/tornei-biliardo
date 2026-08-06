@@ -11,7 +11,7 @@ Tests:
 import pytest
 from datetime import datetime
 from models.gamification.level_service import LevelService
-from models.gamification.xp_config import XP_RATES, get_xp_for_level, LEVEL_UNLOCKS
+from models.gamification.xp_config import XP_RATES, get_xp_for_level
 from models.gamification.models import UserLevel, XPTransaction, XPTransactionType
 
 

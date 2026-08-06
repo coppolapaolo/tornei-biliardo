@@ -261,6 +261,15 @@ class RatingService:
 
         db.session.add(new_category)
 
+        # Gamification: raggiungere una categoria può sbloccare achievement
+        # (category_climber, elite_player). Cross-dominio con errori isolati.
+        try:
+            from models.gamification.achievement_service import AchievementService
+
+            AchievementService.reconcile_achievements(user_id)
+        except Exception:
+            pass
+
         return new_category
 
     @staticmethod

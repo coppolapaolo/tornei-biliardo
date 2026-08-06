@@ -354,7 +354,10 @@ def cancel_proposal(proposal_id):
 def decline_proposal(proposal_id):
     """Decline a direct match proposal invitation."""
     try:
-        MatchProposalService.reject_invitation(current_user.id, proposal_id)
+        # NB: reject_proposal(proposal_id, user_id) — gestisce sia il rifiuto di
+        # un invito pendente sia la "dis-accettazione". (Era erroneamente
+        # MatchProposalService.reject_invitation, inesistente → 500.)
+        MatchProposalService.reject_proposal(proposal_id, current_user.id)
 
         if request.is_json:
             return jsonify({"success": True, "message": "Proposta rifiutata"})
