@@ -106,7 +106,14 @@ class TestTokenGeneration:
 
 @pytest.mark.integration
 class TestAuthenticatedVisitor:
-    def test_following_the_link_inscribes_the_player(self, client, db_session):
+    def test_following_the_link_does_not_inscribe_by_itself(self, client, db_session):
+        """Il link è pubblico: aprirlo non deve iscrivere nessuno.
+
+        Chi lo conosce potrebbe incorporarlo altrove (`<img src="...">`) e
+        iscrivere a sua insaputa chi passa di lì con la sessione aperta,
+        sottraendo un posto a qualcun altro. L'iscrizione resta la POST
+        protetta da CSRF, a un click di distanza.
+        """
         director = _user(UserRole.DIRECTOR.value)
         gara = _gara(director)
         player = _user()
@@ -118,10 +125,10 @@ class TestAuthenticatedVisitor:
         assert f"/admin/gara/{gara.id}" in response.headers["Location"]
         assert (
             Inscription.query.filter_by(user_id=player.id, gara_id=gara.id).first()
-            is not None
-        )
+            is None
+        ), "il link ha iscritto il giocatore senza che confermasse"
 
-    def test_the_landing_page_confirms_with_a_dialog(self, client, db_session):
+    def test_the_landing_page_invites_to_confirm(self, client, db_session):
         director = _user(UserRole.DIRECTOR.value)
         gara = _gara(director)
         player = _user()
@@ -130,23 +137,26 @@ class TestAuthenticatedVisitor:
         page = client.get(f"/g/{gara.public_token}", follow_redirects=True)
 
         body = page.get_data(as_text=True)
-        assert "Sei iscritto!" in body
+        assert "Puoi iscriverti" in body
         assert "data-page-modal" in body
+        # E il pulsante che serve per farlo davvero.
+        assert f"/player/gara/{gara.id}/inscribe" in body
 
-    def test_visiting_twice_does_not_duplicate_the_inscription(
-        self, client, db_session
-    ):
+    def test_confirming_inscribes_and_revisiting_says_so(self, client, db_session):
+        """Il percorso intero: apro il link, confermo, riapro il link."""
         director = _user(UserRole.DIRECTOR.value)
         gara = _gara(director)
         player = _user()
         _login(client, player)
 
         client.get(f"/g/{gara.public_token}")
-        page = client.get(f"/g/{gara.public_token}", follow_redirects=True)
+        client.post(f"/player/gara/{gara.id}/inscribe", follow_redirects=True)
 
         assert (
             Inscription.query.filter_by(user_id=player.id, gara_id=gara.id).count() == 1
         )
+
+        page = client.get(f"/g/{gara.public_token}", follow_redirects=True)
         assert "Sei già iscritto" in page.get_data(as_text=True)
 
     def test_the_director_of_the_gara_is_not_inscribed_by_their_own_link(
@@ -257,11 +267,12 @@ class TestWaitlistIsNotConfusedWithInscription:
 
         # follow_redirects ovunque: le dialog vanno consumate, altrimenti
         # quella della visita precedente resta nel flash e sporca l'asserzione.
+        # L'iscrizione passa dal pulsante (POST), non dall'apertura del link.
         _login(client, first)
-        client.get(f"/g/{gara.public_token}", follow_redirects=True)
+        client.post(f"/player/gara/{gara.id}/inscribe", follow_redirects=True)
 
         _login(client, second)
-        client.get(f"/g/{gara.public_token}", follow_redirects=True)
+        client.post(f"/player/gara/{gara.id}/inscribe", follow_redirects=True)
         page = client.get(f"/g/{gara.public_token}", follow_redirects=True)
 
         inscription = Inscription.query.filter_by(

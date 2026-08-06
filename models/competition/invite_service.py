@@ -17,15 +17,12 @@ from enum import Enum
 from typing import Optional
 
 from models.base import utc_now
-from models.exceptions import ConflictError, PermissionDeniedError
 from models.status_enum import GaraStatus
 
 
 class InviteOutcome(str, Enum):
     """Esito della visita a un link pubblico di iscrizione."""
 
-    INSCRIBED = "inscribed"  # iscritto adesso, seguendo il link
-    WAITLISTED = "waitlisted"  # iscritto adesso, ma in lista d'attesa
     ALREADY_INSCRIBED = "already_inscribed"  # era già iscritto
     ALREADY_WAITLISTED = "already_waitlisted"  # era già in lista d'attesa
     CONFIRM_NEEDED = "confirm_needed"  # può iscriversi, decide lui col pulsante
@@ -59,16 +56,25 @@ class GaraInviteService:
     """Decide l'esito di una visita al link pubblico di una gara."""
 
     @staticmethod
-    def evaluate(gara, user, *, auto_inscribe: bool) -> InviteResult:
+    def evaluate(gara, user) -> InviteResult:
         """Cosa deve succedere a `user` che apre il link di `gara`.
+
+        **Non iscrive mai.** L'issue chiedeva che chi segue il link si
+        trovasse già iscritto all'arrivo, ma quel link vive su una locandina o
+        un post: è pubblico per costruzione. Iscrivere durante una GET
+        significa che chiunque lo conosca può incorporarlo altrove come
+        `<img src="...">` e iscrivere a sua insaputa chi passa di lì con la
+        sessione aperta — e un'iscrizione non voluta non è un fastidio
+        estetico, occupa un posto e può spingere qualcun altro in lista
+        d'attesa. Il token casuale rende il link non indovinabile, ma non
+        cambia nulla qui: chi lo incorpora è proprio chi lo ha ricevuto.
+
+        L'iscrizione resta la POST protetta da CSRF che era, a un click di
+        distanza: chi può iscriversi riceve `CONFIRM_NEEDED` e il pulsante.
 
         Args:
             gara: la gara puntata dal token (già risolta e non cancellata).
             user: utente autenticato.
-            auto_inscribe: True quando l'utente arriva direttamente dal link
-                (l'issue chiede che sia già iscritto all'arrivo). False quando
-                torna dal login: lì l'iscrizione deve restare un gesto suo, un
-                click sul pulsante, non l'effetto collaterale di un login.
 
         Returns:
             InviteResult: nessuna eccezione esce da qui — ogni caso è un
@@ -108,10 +114,7 @@ class GaraInviteService:
         if gara.inscription_end and now > gara.inscription_end:
             return InviteResult(InviteOutcome.CLOSED)
 
-        if not auto_inscribe:
-            return InviteResult(InviteOutcome.CONFIRM_NEEDED)
-
-        return GaraInviteService._inscribe(gara, user)
+        return InviteResult(InviteOutcome.CONFIRM_NEEDED)
 
     @staticmethod
     def is_eligible(gara, user) -> bool:
@@ -149,26 +152,3 @@ class GaraInviteService:
         if gara.inscription_end and now > gara.inscription_end:
             return False
         return True
-
-    @staticmethod
-    def _inscribe(gara, user) -> InviteResult:
-        from models.competition.inscription_service import InscriptionService
-
-        try:
-            inscription = InscriptionService.inscribe_user(
-                user_id=user.id, gara_id=gara.id
-            )
-        except (ConflictError, PermissionDeniedError):
-            # Il servizio rivalida le stesse condizioni con la propria
-            # sensibilità: se le vede diversamente (finestra chiusa un istante
-            # fa) l'utente vede "non è stato possibile", non un 500.
-            return InviteResult(InviteOutcome.ERROR)
-
-        if inscription is None:
-            return InviteResult(InviteOutcome.ERROR)
-        if inscription.is_waitlist:
-            return InviteResult(
-                InviteOutcome.WAITLISTED,
-                waitlist_position=inscription.waitlist_position,
-            )
-        return InviteResult(InviteOutcome.INSCRIBED)

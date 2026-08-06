@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-05 19:41+0000\n"
+"POT-Creation-Date: 2026-08-06 15:04+0000\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -466,96 +466,75 @@ msgstr "Welcome aboard!"
 msgid "Registrazione completata con successo."
 msgstr "Registration completed successfully."
 
-#: routes/main.py:289
+#: routes/main.py:287
 #, python-format
 msgid "Iscrizioni dal %(start)s al %(end)s."
 msgstr "Registration open from %(start)s to %(end)s."
 
-#: routes/main.py:295
+#: routes/main.py:293
 #, python-format
 msgid "Iscrizioni aperte fino al %(end)s."
 msgstr "Registration open until %(end)s."
 
-
-#: routes/main.py:300
+#: routes/main.py:298
 #, python-format
 msgid "Iscrizioni aperte dal %(start)s."
 msgstr "Registration open from %(start)s."
 
-
-#: routes/main.py:306
-msgid "Sei iscritto!"
-msgstr "You're registered!"
-
-#: routes/main.py:307
-#, python-format
-msgid "Iscrizione a %(gara)s completata."
-msgstr "Registration for %(gara)s completed."
-
-#: routes/main.py:313 routes/main.py:333
-msgid "Sei in lista d'attesa"
-msgstr "You're on the waiting list"
-
-#: routes/main.py:315
-#, python-format
-msgid ""
-"%(gara)s ha già raggiunto il numero massimo di iscritti: sei in lista "
-"d'attesa in posizione %(position)s. Se si libera un posto entri "
-"automaticamente."
-msgstr ""
-"%(gara)s has already reached its maximum number of participants: you are "
-"number %(position)s on the waiting list. If a place frees up, you're "
-"moved in automatically."
-
-#: routes/main.py:326
+#: routes/main.py:304
 msgid "Sei già iscritto"
 msgstr "You're already registered"
 
-#: routes/main.py:327
+#: routes/main.py:305
 #, python-format
 msgid "Risulti iscritto a %(gara)s."
 msgstr "You are registered for %(gara)s."
 
-#: routes/main.py:335
+#: routes/main.py:311
+msgid "Sei in lista d'attesa"
+msgstr "You're on the waiting list"
+
+#: routes/main.py:313
 #, python-format
 msgid ""
 "Sei in lista d'attesa per %(gara)s, in posizione %(position)s. Se si "
 "libera un posto entri automaticamente."
-msgstr "You're on the waiting list for %(gara)s, in position %(position)s. If a place frees up, you're moved in automatically."
+msgstr ""
+"You're on the waiting list for %(gara)s, in position %(position)s. If a "
+"place frees up, you're moved in automatically."
 
-
-#: routes/main.py:345
+#: routes/main.py:323
 msgid "Puoi iscriverti"
 msgstr "You can register"
 
-#: routes/main.py:347
+#: routes/main.py:325
 #, python-format
 msgid "Le iscrizioni a %(gara)s sono aperte: premi «Iscriviti» per confermare."
 msgstr "Registration for %(gara)s is open: press “Register” to confirm."
 
-#: routes/main.py:357 templates/components/_unified_cards.html:126
+#: routes/main.py:335 templates/components/_unified_cards.html:126
 msgid "Iscrizioni non ancora aperte"
 msgstr "Registration not open yet"
 
-#: routes/main.py:359
+#: routes/main.py:337
 #, python-format
 msgid "Le iscrizioni a %(gara)s non sono ancora aperte."
 msgstr "Registration for %(gara)s is not open yet."
 
-#: routes/main.py:368
+#: routes/main.py:346
 msgid "Iscrizioni chiuse"
 msgstr "Registration closed"
 
-#: routes/main.py:369
+#: routes/main.py:347
 #, python-format
 msgid "Le iscrizioni a %(gara)s sono chiuse."
 msgstr "Registration for %(gara)s is closed."
 
-#: routes/main.py:376
+#: routes/main.py:354
 msgid "Gara già iniziata"
 msgstr "Competition already started"
 
-#: routes/main.py:378
+#: routes/main.py:356
 #, python-format
 msgid ""
 "%(gara)s è già iniziata: non è più possibile iscriversi, ma puoi seguire "
@@ -564,29 +543,29 @@ msgstr ""
 "%(gara)s has already started: you can no longer register, but you can "
 "follow the results from this page."
 
-#: routes/main.py:387
+#: routes/main.py:365
 msgid "Gara conclusa"
 msgstr "Competition finished"
 
-#: routes/main.py:389
+#: routes/main.py:367
 #, python-format
 msgid "%(gara)s è conclusa: qui trovi la classifica finale."
 msgstr "%(gara)s is over: here are the final standings."
 
-#: routes/main.py:397
+#: routes/main.py:375
 msgid "Gara annullata"
 msgstr "Competition cancelled"
 
-#: routes/main.py:398
+#: routes/main.py:376
 #, python-format
 msgid "%(gara)s è stata annullata."
 msgstr "%(gara)s has been cancelled."
 
-#: routes/main.py:404
+#: routes/main.py:382
 msgid "Iscrizione non riuscita"
 msgstr "Registration failed"
 
-#: routes/main.py:406
+#: routes/main.py:384
 #, python-format
 msgid ""
 "Non è stato possibile iscriverti a %(gara)s. Riprova dal pulsante "

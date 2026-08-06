@@ -242,11 +242,15 @@ def gara_invite(token):
     """Link pubblico di iscrizione a una gara (issue #61).
 
     È l'indirizzo che il direttore stampa su una locandina o incolla in un
-    post: chi lo segue arriva sulla pagina della gara e — se può — ci si
-    trova già iscritto. Chi non è autenticato passa da login/registrazione e
-    torna qui, ma senza iscrizione automatica: dopo un login l'utente non si
-    aspetta di aver firmato qualcosa, quindi l'ultimo passo resta un click
-    suo sul pulsante di iscrizione.
+    post: chi lo segue arriva sulla pagina della gara con l'iscrizione in
+    evidenza e conferma con un click. Chi non è autenticato passa da
+    login/registrazione e torna qui, allo stesso punto.
+
+    L'iscrizione non avviene aprendo il link. Quell'indirizzo è pubblico per
+    costruzione, quindi chiunque lo conosca potrebbe incorporarlo altrove
+    (`<img src="...">`) e iscrivere a sua insaputa chi passa di lì con la
+    sessione aperta, sottraendo un posto a qualcun altro; il token casuale
+    protegge dall'indovinarlo, non da questo. Resta la POST protetta da CSRF.
 
     Ogni altro caso (gara inesistente, iscrizioni non ancora aperte o già
     chiuse, gara in corso o conclusa) risponde con una dialog che dice cosa
@@ -267,17 +271,11 @@ def gara_invite(token):
         return render_template("public/invite_not_found.html"), 404
 
     if not current_user.is_authenticated:
-        # `confirm=1` sul ritorno: distingue "arrivo dal link" (iscrivi) da
-        # "torno dal login" (mostra il pulsante).
         return redirect(
-            url_for(
-                "auth.login",
-                next=url_for("main.gara_invite", token=token, confirm=1),
-            )
+            url_for("auth.login", next=url_for("main.gara_invite", token=token))
         )
 
-    auto_inscribe = request.args.get("confirm") != "1"
-    result = GaraInviteService.evaluate(gara, current_user, auto_inscribe=auto_inscribe)
+    result = GaraInviteService.evaluate(gara, current_user)
 
     gara_name = gara.display_name
     # Le due date vanno trattate una per una: `format_datetime_local_text`
@@ -301,27 +299,7 @@ def gara_invite(token):
             start=format_datetime_local_text(gara.inscription_start),
         )
 
-    if result.outcome == InviteOutcome.INSCRIBED:
-        flash_page_modal(
-            title=_("Sei iscritto!"),
-            body=_("Iscrizione a %(gara)s completata.", gara=gara_name),
-            variant="success",
-            icon="fa-circle-check",
-        )
-    elif result.outcome == InviteOutcome.WAITLISTED:
-        flash_page_modal(
-            title=_("Sei in lista d'attesa"),
-            body=_(
-                "%(gara)s ha già raggiunto il numero massimo di iscritti: "
-                "sei in lista d'attesa in posizione %(position)s. Se si "
-                "libera un posto entri automaticamente.",
-                gara=gara_name,
-                position=result.waitlist_position,
-            ),
-            variant="warning",
-            icon="fa-hourglass-half",
-        )
-    elif result.outcome == InviteOutcome.ALREADY_INSCRIBED:
+    if result.outcome == InviteOutcome.ALREADY_INSCRIBED:
         flash_page_modal(
             title=_("Sei già iscritto"),
             body=_("Risulti iscritto a %(gara)s.", gara=gara_name),
