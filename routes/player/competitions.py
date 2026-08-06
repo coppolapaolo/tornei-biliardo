@@ -12,7 +12,6 @@ from utils import player_only, player_required
 from utils.analytics import AnalyticsEvent, track_event
 
 from . import player_bp
-from models.base import utc_now
 
 # ============ REDIRECTS (legacy compatibility) ============
 
@@ -43,17 +42,22 @@ def gara_detail(gara_id):
 @player_only
 def inscribe_to_gara(gara_id):
     """Iscriviti a una gara"""
+    from models.competition.invite_service import GaraInviteService
+    from utils.safe_redirect import safe_next_url
+
     gara = Gara.query.get_or_404(gara_id)
 
-    # Verifica che le iscrizioni siano aperte
-    now = utc_now()
-    if (
-        gara.status != GaraStatus.INSCRIPTION.value
-        or now < gara.inscription_start
-        or now > gara.inscription_end
-    ):
+    # Dove tornare dopo l'iscrizione: il pulsante sulla pagina della gara lo
+    # valorizza, così chi si iscrive da lì ci resta invece di essere spedito
+    # in dashboard senza sapere se ha funzionato.
+    next_url = safe_next_url(request.form.get("next"))
+
+    # Verifica che le iscrizioni siano aperte. Stessa lettura della finestra
+    # usata dal link pubblico e dal pulsante (GaraInviteService): criteri
+    # diversi qui e nel template fanno comparire un pulsante che poi rifiuta.
+    if not GaraInviteService.inscription_open(gara):
         flash(_("Le iscrizioni non sono disponibili."))
-        return redirect(url_for("main.index"))
+        return redirect(next_url or url_for("main.index"))
 
     # Verifica che non sia già iscritto
     existing = Inscription.query.filter_by(
@@ -61,7 +65,7 @@ def inscribe_to_gara(gara_id):
     ).first()
     if existing:
         flash(_("Sei già iscritto a questa gara."))
-        return redirect(url_for("player.dashboard"))
+        return redirect(next_url or url_for("player.dashboard"))
 
     # Usa il service per gestire automaticamente la logica waitlist
     from models.competition.inscription_service import InscriptionService
@@ -82,16 +86,16 @@ def inscribe_to_gara(gara_id):
                 _(
                     "Aggiunto alla lista d'attesa per %(gara)s "
                     "(posizione %(position)d)!",
-                    gara=gara.name,
+                    gara=gara.display_name,
                     position=inscription.waitlist_position,
                 )
             )
         else:
-            flash(_("Iscrizione a %(gara)s completata!", gara=gara.name))
+            flash(_("Iscrizione a %(gara)s completata!", gara=gara.display_name))
     else:
         flash(_("Errore durante l'iscrizione."), "error")
     # Redirect alla dashboard appropriata
-    return redirect(url_for("dashboard.dashboard"))
+    return redirect(next_url or url_for("dashboard.dashboard"))
 
 
 # ============ UNSUBSCRIPTION ============

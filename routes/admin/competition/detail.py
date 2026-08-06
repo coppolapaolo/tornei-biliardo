@@ -3,6 +3,7 @@
 
 from flask import (
     render_template,
+    url_for,
 )
 from flask_login import current_user
 
@@ -431,9 +432,35 @@ def gara_detail(gara_id):
         )
     )
 
+    # Iscrizione dalla pagina della gara (issue #61). Il pulsante mancava:
+    # ci si poteva iscrivere solo dalle card di homepage e liste, quindi chi
+    # arrivava qui da un link diretto non aveva alcun modo di iscriversi.
+    from models.competition.invite_service import GaraInviteService
+
+    inscription_open = GaraInviteService.inscription_open(gara)
+    can_inscribe_now = (
+        inscription_open
+        and user_inscription is None
+        and GaraInviteService.is_eligible(gara, current_user)
+    )
+    # Guest: non può iscriversi ora, ma deve sapere che potrebbe accedendo.
+    show_login_to_inscribe = inscription_open and not current_user.is_authenticated
+
+    # Link pubblico da condividere: solo per chi gestisce la gara.
+    public_invite_url = None
+    if user_can_manage:
+        from models.competition.services import GaraService
+
+        token = gara.public_token or GaraService.ensure_public_token(gara_id)
+        if token:
+            public_invite_url = url_for("main.gara_invite", token=token, _external=True)
+
     return render_template(
         "gara_detail.html",
         gara=gara,
+        can_inscribe_now=can_inscribe_now,
+        show_login_to_inscribe=show_login_to_inscribe,
+        public_invite_url=public_invite_url,
         user_can_manage=user_can_manage,
         user_inscription=user_inscription,
         inscriptions=inscriptions,

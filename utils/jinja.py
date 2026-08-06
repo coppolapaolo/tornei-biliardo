@@ -28,6 +28,54 @@ def format_date_local(value) -> Markup:
     return Markup(escape(formatted))
 
 
+def parse_json(value):
+    """Deserializza un payload JSON arrivato in un flash message.
+
+    I flash "di trasporto" (gamification, dialog modali) viaggiano come
+    stringa JSON perché la sessione va serializzata. Il bridge JavaScript li
+    passa a `JSON.parse`; questo filtro fa lo stesso lato Jinja, per i
+    payload che diventano HTML invece che animazioni.
+
+    Un payload illeggibile non deve rompere la pagina: restituisce None e il
+    componente chiamante lo salta.
+    """
+    import json as _json
+
+    if isinstance(value, dict):
+        return value
+    try:
+        return _json.loads(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def format_datetime_local_text(value) -> str:
+    """Data e ora locali (Italia) come testo semplice, senza markup.
+
+    Serve dove il risultato non finisce in una pagina ma dentro un messaggio
+    costruito in Python (flash, dialog, notifiche): lì il `<time>` di
+    `format_datetime_local` verrebbe mostrato come tag grezzo o, peggio,
+    escapato a mano.
+    """
+    if not value:
+        return str(_("N/A"))
+
+    if isinstance(value, datetime):
+        from zoneinfo import ZoneInfo
+
+        if value.tzinfo is None:
+            utc_dt = value.replace(tzinfo=ZoneInfo("UTC"))
+        else:
+            utc_dt = value.astimezone(ZoneInfo("UTC"))
+        italian_time = utc_dt.astimezone(ZoneInfo("Europe/Rome"))
+        return italian_time.strftime("%d/%m/%Y, %H:%M")
+
+    if isinstance(value, date):
+        return value.strftime("%d/%m/%Y")
+
+    return str(value)
+
+
 def format_datetime_local(value) -> Markup:
     """Formatta data e ora per la visualizzazione locale (Italia).
 

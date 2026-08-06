@@ -45,6 +45,9 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "main.public_garas_list": {"anonimo", "player", "director"},
     "main.public_campionatos_list": {"anonimo", "player", "director"},
     "main.gara_detail_public": {"anonimo", "player", "director"},
+    # Link pubblico di iscrizione (issue #61): nasce per essere seguito da
+    # chi non ha ancora un account, quindi "anonimo" non è opzionale.
+    "main.gara_invite": {"anonimo", "player", "director"},
     "main.campionato_detail_public": {"anonimo", "player", "director"},
     # Informativa privacy/cookie: deve essere raggiungibile da chiunque,
     # utenti non registrati inclusi (link nel footer di base.html).

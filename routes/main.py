@@ -237,6 +237,165 @@ def public_garas_list():
     )
 
 
+@main_bp.route("/g/<token>")
+def gara_invite(token):
+    """Link pubblico di iscrizione a una gara (issue #61).
+
+    È l'indirizzo che il direttore stampa su una locandina o incolla in un
+    post: chi lo segue arriva sulla pagina della gara con l'iscrizione in
+    evidenza e conferma con un click. Chi non è autenticato passa da
+    login/registrazione e torna qui, allo stesso punto.
+
+    L'iscrizione non avviene aprendo il link. Quell'indirizzo è pubblico per
+    costruzione, quindi chiunque lo conosca potrebbe incorporarlo altrove
+    (`<img src="...">`) e iscrivere a sua insaputa chi passa di lì con la
+    sessione aperta, sottraendo un posto a qualcun altro; il token casuale
+    protegge dall'indovinarlo, non da questo. Resta la POST protetta da CSRF.
+
+    Ogni altro caso (gara inesistente, iscrizioni non ancora aperte o già
+    chiuse, gara in corso o conclusa) risponde con una dialog che dice cosa
+    sta succedendo: chi arriva da una locandina non ha altro contesto.
+    """
+    from flask_babel import gettext as _
+    from models.competition.invite_service import (
+        GaraInviteService,
+        InviteOutcome,
+    )
+    from utils.jinja import format_datetime_local_text
+    from utils.page_modal import flash_page_modal
+
+    gara = Gara.query.filter_by(public_token=token).first()
+    if gara is None:
+        # Il token non dice se la gara non è mai esistita o è stata
+        # cancellata, e va bene così: la pagina non deve fare da oracolo.
+        return render_template("public/invite_not_found.html"), 404
+
+    if not current_user.is_authenticated:
+        return redirect(
+            url_for("auth.login", next=url_for("main.gara_invite", token=token))
+        )
+
+    result = GaraInviteService.evaluate(gara, current_user)
+
+    gara_name = gara.display_name
+    # Le due date vanno trattate una per una: `format_datetime_local_text`
+    # rende "N/A" su None, e una finestra con una sola data impostata
+    # diventerebbe "Iscrizioni dal N/A al 12/09" — peggio che tacere.
+    inscription_window = None
+    if gara.inscription_start and gara.inscription_end:
+        inscription_window = _(
+            "Iscrizioni dal %(start)s al %(end)s.",
+            start=format_datetime_local_text(gara.inscription_start),
+            end=format_datetime_local_text(gara.inscription_end),
+        )
+    elif gara.inscription_end:
+        inscription_window = _(
+            "Iscrizioni aperte fino al %(end)s.",
+            end=format_datetime_local_text(gara.inscription_end),
+        )
+    elif gara.inscription_start:
+        inscription_window = _(
+            "Iscrizioni aperte dal %(start)s.",
+            start=format_datetime_local_text(gara.inscription_start),
+        )
+
+    if result.outcome == InviteOutcome.ALREADY_INSCRIBED:
+        flash_page_modal(
+            title=_("Sei già iscritto"),
+            body=_("Risulti iscritto a %(gara)s.", gara=gara_name),
+            variant="success",
+            icon="fa-circle-check",
+        )
+    elif result.outcome == InviteOutcome.ALREADY_WAITLISTED:
+        flash_page_modal(
+            title=_("Sei in lista d'attesa"),
+            body=_(
+                "Sei in lista d'attesa per %(gara)s, in posizione "
+                "%(position)s. Se si libera un posto entri automaticamente.",
+                gara=gara_name,
+                position=result.waitlist_position,
+            ),
+            variant="warning",
+            icon="fa-hourglass-half",
+        )
+    elif result.outcome == InviteOutcome.CONFIRM_NEEDED:
+        flash_page_modal(
+            title=_("Puoi iscriverti"),
+            body=_(
+                "Le iscrizioni a %(gara)s sono aperte: premi «Iscriviti» "
+                "per confermare.",
+                gara=gara_name,
+            ),
+            variant="info",
+            icon="fa-user-plus",
+            detail=inscription_window,
+        )
+    elif result.outcome == InviteOutcome.NOT_OPEN_YET:
+        flash_page_modal(
+            title=_("Iscrizioni non ancora aperte"),
+            body=_(
+                "Le iscrizioni a %(gara)s non sono ancora aperte.",
+                gara=gara_name,
+            ),
+            variant="info",
+            icon="fa-clock",
+            detail=inscription_window,
+        )
+    elif result.outcome == InviteOutcome.CLOSED:
+        flash_page_modal(
+            title=_("Iscrizioni chiuse"),
+            body=_("Le iscrizioni a %(gara)s sono chiuse.", gara=gara_name),
+            variant="warning",
+            icon="fa-lock",
+            detail=inscription_window,
+        )
+    elif result.outcome == InviteOutcome.IN_PROGRESS:
+        flash_page_modal(
+            title=_("Gara già iniziata"),
+            body=_(
+                "%(gara)s è già iniziata: non è più possibile iscriversi, "
+                "ma puoi seguire i risultati da questa pagina.",
+                gara=gara_name,
+            ),
+            variant="info",
+            icon="fa-play",
+        )
+    elif result.outcome == InviteOutcome.COMPLETED:
+        flash_page_modal(
+            title=_("Gara conclusa"),
+            body=_(
+                "%(gara)s è conclusa: qui trovi la classifica finale.",
+                gara=gara_name,
+            ),
+            variant="info",
+            icon="fa-flag-checkered",
+        )
+    elif result.outcome == InviteOutcome.CANCELLED:
+        flash_page_modal(
+            title=_("Gara annullata"),
+            body=_("%(gara)s è stata annullata.", gara=gara_name),
+            variant="danger",
+            icon="fa-ban",
+        )
+    elif result.outcome == InviteOutcome.ERROR:
+        flash_page_modal(
+            title=_("Iscrizione non riuscita"),
+            body=_(
+                "Non è stato possibile iscriverti a %(gara)s. Riprova dal "
+                "pulsante «Iscriviti».",
+                gara=gara_name,
+            ),
+            variant="danger",
+            icon="fa-triangle-exclamation",
+        )
+    # InviteOutcome.NOT_ELIGIBLE: admin, direttore della gara o playoff.
+    # Nessuna dialog — la pagina che si apre gli dice già tutto quello che
+    # può fare, e un avviso "non puoi iscriverti" al direttore che apre il
+    # proprio link sarebbe rumore.
+
+    return redirect(url_for("admin.competition.gara_detail", gara_id=gara.id))
+
+
 @main_bp.route("/gara/<int:gara_id>")
 @main_bp.route("/public/gara/<int:gara_id>")
 def gara_detail_public(gara_id):

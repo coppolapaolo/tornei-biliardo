@@ -1,0 +1,51 @@
+{# templates/components/_gara_public_link.html #}
+{# Link pubblico di iscrizione alla gara (issue #61): l'indirizzo che il
+   direttore mette su locandine, post e QR code. Visibile solo a chi gestisce
+   la gara — la route lo valorizza appunto solo in quel caso. #}
+
+{% if public_invite_url %}
+<div class="card mb-4">
+  <div class="card-header">
+    <h5 class="mb-0"><i class="fas fa-share-nodes"></i> {{ _('Link pubblico di iscrizione') }}</h5>
+  </div>
+  <div class="card-body">
+    <p class="text-muted small">
+      {{ _('Condividi questo indirizzo su locandine, post o QR code: chi lo apre arriva su questa gara e si iscrive.') }}
+    </p>
+    <div class="input-group">
+      <input type="text" class="form-control" id="garaPublicLink" value="{{ public_invite_url }}" readonly
+        aria-label="{{ _('Link pubblico di iscrizione') }}">
+      <button class="btn btn-outline-primary" type="button" id="garaPublicLinkCopy"
+        data-copied-label="{{ _('Copiato!') }}">
+        <i class="fas fa-copy"></i> {{ _('Copia') }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const input = document.getElementById('garaPublicLink');
+    const button = document.getElementById('garaPublicLinkCopy');
+    if (!input || !button) return;
+
+    button.addEventListener('click', function () {
+      // select() + setSelectionRange: su iOS il primo da solo non basta, e
+      // serve comunque come fallback visibile se la clipboard API non c'è
+      // (contesto non sicuro: l'utente vede il testo selezionato e copia).
+      input.select();
+      input.setSelectionRange(0, input.value.length);
+
+      const done = function () {
+        const original = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-check"></i> ' + button.dataset.copiedLabel;
+        setTimeout(function () { button.innerHTML = original; }, 2000);
+      };
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(input.value).then(done).catch(function () { });
+      }
+    });
+  })();
+</script>
+{% endif %}

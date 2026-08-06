@@ -8,6 +8,7 @@ from models.user.services import UserService
 from models.user.profile_service import UserProfileService
 from utils.analytics import AnalyticsEvent, track_event
 from utils.rate_limiter import limiter
+from utils.safe_redirect import safe_next_url
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -16,6 +17,12 @@ auth_bp = Blueprint("auth", __name__)
 @limiter.limit("10/minute", methods=["POST"])
 def login():
     """Pagina di login"""
+    # `next`: dove tornare dopo il login. Serve a chi arriva su una pagina
+    # riservata (o su un link pubblico di iscrizione, issue #61) prima di
+    # autenticarsi — senza, dopo il login finirebbe sulla dashboard e
+    # dovrebbe ritrovarsi il link da solo.
+    next_url = safe_next_url(request.form.get("next") or request.args.get("next"))
+
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
@@ -78,17 +85,22 @@ def login():
                 )
                 flash(msg, "warning")
 
-            return redirect(url_for("dashboard.dashboard"))
+            return redirect(next_url or url_for("dashboard.dashboard"))
         else:
             flash(_("Username o password errati."), "error")
 
-    return render_template("login.html")
+    return render_template("login.html", next_url=next_url)
 
 
 @auth_bp.route("/register", methods=["GET", "POST"])
 @limiter.limit("5/minute", methods=["POST"])
 def register():
     """Pagina di registrazione"""
+    # `next` attraversa anche la registrazione: chi segue un link di
+    # iscrizione senza avere un account passa da qui prima del login, e la
+    # destinazione va conservata lungo tutto il percorso.
+    next_url = safe_next_url(request.form.get("next") or request.args.get("next"))
+
     if request.method == "POST":
         username = request.form["username"]
         email = request.form["email"]
@@ -131,13 +143,13 @@ def register():
             }
             flash(json.dumps(welcome_payload), category="gamification_event")
 
-            return redirect(url_for("auth.login"))
+            return redirect(url_for("auth.login", next=next_url))
 
         except ValueError as e:
             flash(str(e))
-            return render_template("register.html")
+            return render_template("register.html", next_url=next_url)
 
-    return render_template("register.html")
+    return render_template("register.html", next_url=next_url)
 
 
 @auth_bp.route("/logout", methods=["GET", "POST"])

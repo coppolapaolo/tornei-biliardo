@@ -18,5 +18,24 @@
                 {{ _(gara.get_status_badge_info()['text']) }}
             </span>
         </p>
+
+        {# Iscrizione dalla pagina della gara (issue #61): è qui che atterra
+           chi segue il link pubblico, e senza questo pulsante non avrebbe
+           alcun modo di iscriversi da qui. #}
+        {% if can_inscribe_now %}
+        <form method="POST" action="{{ url_for('player.inscribe_to_gara', gara_id=gara.id) }}" class="d-grid">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="next" value="{{ request.path }}">
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-user-plus"></i> {{ _('Iscriviti') }}
+            </button>
+        </form>
+        {% elif show_login_to_inscribe %}
+        <div class="d-grid">
+            <a href="{{ url_for('auth.login', next=request.path) }}" class="btn btn-success">
+                <i class="fas fa-user-plus"></i> {{ _('Accedi per iscriverti') }}
+            </a>
+        </div>
+        {% endif %}
     </div>
 </div>

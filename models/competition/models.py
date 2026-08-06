@@ -21,9 +21,24 @@ from models.competition.constants import (
 )
 from typing import TYPE_CHECKING, Optional, List
 import json
+import secrets
 
 if TYPE_CHECKING:
     pass
+
+# Byte di entropia del token del link pubblico di iscrizione (issue #61).
+# 6 byte → 8 caratteri url-safe, ~4.7e13 combinazioni: abbastanza corto da
+# stare su una locandina, abbastanza largo da non essere enumerabile.
+PUBLIC_TOKEN_BYTES = 6
+
+
+def generate_public_token() -> str:
+    """Token casuale per il link pubblico di una gara.
+
+    Non derivato dall'id: l'id è sequenziale, quindi un link costruito su di
+    esso è indovinabile (e la gara accanto è a un carattere di distanza).
+    """
+    return secrets.token_urlsafe(PUBLIC_TOKEN_BYTES)
 
 
 class WaitlistReason(str, Enum):
@@ -67,6 +82,13 @@ class Gara(SoftDeleteMixin, db.Model):
     # Decision: Keep on Gara, add validation for standalone gare.
     number = db.Column(db.Integer, nullable=False)  # 1-10
     name = db.Column(db.String(100))
+
+    # Token del link pubblico di iscrizione (issue #61): /g/<public_token>.
+    # Nullable perché le gare create prima della migration lo ricevono dal
+    # backfill (o pigramente, vedi GaraService.ensure_public_token).
+    public_token = db.Column(
+        db.String(32), unique=True, nullable=True, default=generate_public_token
+    )
     date = db.Column(db.Date, nullable=False)
     time = db.Column(db.Time, nullable=True)  # Ora della gara
 

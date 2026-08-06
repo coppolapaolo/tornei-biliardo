@@ -441,7 +441,7 @@
         {# Le categorie "di trasporto" (payload JSON per JS) non sono messaggi
            per l'utente: renderizzarle qui mostrerebbe il JSON grezzo dentro un
            alert. Sono consumate piu' sotto dai rispettivi bridge. #}
-        {% if category not in ['gamification_event', 'analytics_event'] %}
+        {% if category not in ['gamification_event', 'analytics_event', 'page_modal'] %}
         {% if category == 'error' %}
         {% set alert_class = 'alert-danger' %}
         {% elif category == 'success' %}
@@ -651,6 +651,11 @@
 
     {# Analytics: eventi custom accodati lato server (dopo il redirect del POST) #}
     {% include "components/_analytics_events.html" %}
+
+    {# Dialog modali programmate dal server (utils/page_modal.py) #}
+    {% set page_modals = all_messages | selectattr('0', 'equalto', 'page_modal')
+    | map(attribute='1') | map('fromjson') | select | list %}
+    {% include "components/_page_modal.html" %}
 
     <!-- Gamification Bridge: Consumes events from Flask flash and triggers JS animations -->
     <script>
