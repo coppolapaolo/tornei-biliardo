@@ -22,7 +22,10 @@ from models.demand.service import DemandSignalService
 
 
 def main():
-    app = create_app()
+    # Default a "production": lo scheduled task di PythonAnywhere è un processo
+    # separato che NON eredita FLASK_ENV dal file WSGI, e create_app() senza
+    # argomenti ricadrebbe su "development" (DB e settings sbagliati).
+    app = create_app(os.environ.get("FLASK_ENV", "production"))
     with app.app_context():
         result = DemandSignalService.process_expiring_signals()
         expired = DemandSignalService.expire_due_signals()

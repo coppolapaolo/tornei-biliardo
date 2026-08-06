@@ -432,11 +432,26 @@ class GamificationBadge {
      * Micro guadagno XP → count-up + pulse, nessun toast (scala d'intensità).
      * Il valore renderizzato (data-current-xp) è già quello nuovo: animiamo
      * dal valore precedente (nuovo - amount) a quello corrente.
+     *
+     * Più eventi XP possono arrivare nella stessa risposta (XP partita + bonus
+     * serie + XP missione): `target` è già il totale finale per tutti, quindi
+     * ricalcolare `target - delta` a ogni chiamata farebbe *tornare indietro*
+     * il contatore per poi risalire. Il punto di partenza si fissa una volta
+     * sola e le chiamate successive accumulano il delta.
      */
     addXP(amount) {
         if (!this.available) return;
         const target = parseInt(this.el.dataset.currentXp || '0', 10);
         const delta = parseInt(amount, 10) || 0;
+
+        if (this._xpAnimated) {
+            // Già animato in questa pagina: il valore mostrato è già quello
+            // finale. Solo il pulse, niente count-up all'indietro.
+            this._pulse('badge-pulse');
+            this._refreshRing();
+            return;
+        }
+        this._xpAnimated = true;
         this._countUp(Math.max(0, target - delta), target);
         this._pulse('badge-pulse');
         this._refreshRing();
@@ -527,10 +542,18 @@ function cappedToastAllowed() {
 }
 
 // Global function to trigger gamification notifications
-function showGamificationEvent(type, data) {
+function getGamificationToast() {
     if (!gamificationToast) {
         gamificationToast = new GamificationToast();
     }
+    return gamificationToast;
+}
+
+// Global function to trigger gamification notifications
+function showGamificationEvent(type, data) {
+    // Il toast si istanzia solo quando serve davvero: gli eventi 'xp' sono
+    // badge-only (§11) e sono i più frequenti — su una pagina di soli XP non
+    // c'è motivo di costruire il container dei toast.
     const badge = getGamificationBadge();
 
     switch (type) {
@@ -541,12 +564,12 @@ function showGamificationEvent(type, data) {
         case 'levelup':
             // Momento forte: glow del badge + l'unico toast celebrativo giustificato.
             badge.levelUp(data.level);
-            gamificationToast.showLevelUp(data.level, data.title);
+            getGamificationToast().showLevelUp(data.level, data.title);
             break;
         case 'achievement':
             badge.pulse();
             if (cappedToastAllowed()) {
-                gamificationToast.showAchievement(
+                getGamificationToast().showAchievement(
                     data.name,
                     data.description,
                     data.rarity,
@@ -557,27 +580,27 @@ function showGamificationEvent(type, data) {
         case 'streak':
             badge.pulse();
             if (cappedToastAllowed()) {
-                gamificationToast.showStreak(data.count, data.type, data.hasFreeze);
+                getGamificationToast().showStreak(data.count, data.type, data.hasFreeze);
             }
             break;
         case 'quest':
             badge.pulse();
             if (cappedToastAllowed()) {
-                gamificationToast.showQuest(data.name, data.description);
+                getGamificationToast().showQuest(data.name, data.description);
             }
             break;
         case 'streak_lost':
-            gamificationToast.showStreakLost(data.message);
+            getGamificationToast().showStreakLost(data.message);
             break;
         case 'welcome':
-            gamificationToast.showWelcome(data.username, data.title, data.subtitle);
+            getGamificationToast().showWelcome(data.username, data.title, data.subtitle);
             break;
         case 'nudge':
             // Scoperta funzioni (obiettivo #3): resta un toast azionabile.
-            gamificationToast.showNudge(data.code, data.name, data.description);
+            getGamificationToast().showNudge(data.code, data.name, data.description);
             break;
         case 'unlock':
-            gamificationToast.showUnlock(data.code, data.name, data.description);
+            getGamificationToast().showUnlock(data.code, data.name, data.description);
             break;
     }
 }
