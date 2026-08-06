@@ -112,7 +112,7 @@ dev/test l'allowlist è pass-through.
      `NotificationType.DEMAND_SIGNAL_EXPIRING`).
    - `expire_due_signals` (→ EXPIRED), `refresh_signal` (riconferma manuale,
      route `POST /demand/signal/<id>/refresh`), `send_expiry_reminders`
-     (prompt-only primitivo). Script `scripts/process_demand_signals.py`
+     (prompt-only primitivo). Script `scripts/daily_jobs.py` (job `demand`)
      (auto-refresh + prompt + expiry).
 4. **Tarature**: soglia (6), raggio default (30 km), cooldown (7 gg), scadenza
    (60 gg), finestra promemoria (7 gg), finestra "attivo" (30 gg), throttle

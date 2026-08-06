@@ -178,6 +178,83 @@ def test_rising_edge_notifies_when_threshold_jumped(db_session):
     assert len(_director_notifications(director.id)) == 1
 
 
+def test_admins_notified_when_threshold_jumped_in_zone_without_director(db_session):
+    """Regressione (gemella di quella sul director): l'avviso agli admin per una
+    zona senza director usava ``== soglia``, quindi un conteggio che SALTA il
+    valore esatto non lo faceva partire mai. Ora ``>= soglia``.
+    """
+    _napoli_venue()
+    admin = _user(role=UserRole.ADMIN)
+
+    # Segnali attivi inseriti a mano: nessun fronte di salita valutato.
+    for _ in range(DEMAND_THRESHOLD):
+        p = _user()
+        db.session.add(
+            DemandSignal(
+                user_id=p.id,
+                latitude=NAP_LAT,
+                longitude=NAP_LNG,
+                city="Napoli",
+                status=DemandSignalStatus.ACTIVE,
+                expires_at=utc_now() + timedelta(days=10),
+            )
+        )
+    db.session.commit()
+    assert _admin_notifications(admin.id) == []
+
+    # Il nuovo segnale porta il conteggio a THRESHOLD+1, saltando la soglia.
+    DemandSignalService.create_signal(_user().id, NAP_LAT, NAP_LNG)
+    assert len(_admin_notifications(admin.id)) == 1
+
+
+def test_admins_not_notified_twice_for_same_zone_within_cooldown(db_session):
+    """L'anti-spam non è più implicito nel crossing: con ``>=`` ogni nuovo
+    segnale oltre soglia rifarebbe scattare l'avviso, quindi il cooldown per
+    zona deve tenere. Un solo avviso, non uno per segnale.
+    """
+    _napoli_venue()
+    admin = _user(role=UserRole.ADMIN)
+
+    for _ in range(DEMAND_THRESHOLD + 3):
+        DemandSignalService.create_signal(_user().id, NAP_LAT, NAP_LNG)
+
+    assert len(_admin_notifications(admin.id)) == 1
+
+
+def test_admins_notified_separately_for_distinct_zones_without_city(db_session):
+    """Il cooldown non deve collassare le zone **senza città** in un'unica
+    chiave: `city` è None per chi non l'ha impostata nel profilo (segnale da
+    GPS), e con chiave vuota il primo avviso ne sopprimerebbe ogni altro per
+    tutto il cooldown, ovunque nel mondo.
+    """
+    admin = _user(role=UserRole.ADMIN)
+    far_lat = NAP_LAT + 5.0  # ~550 km: zona diversa, nessuna sovrapposizione
+
+    # Nessuno di questi utenti ha home_city → i segnali nascono con city=None.
+    for _ in range(DEMAND_THRESHOLD):
+        DemandSignalService.create_signal(_user().id, NAP_LAT, NAP_LNG)
+    assert len(_admin_notifications(admin.id)) == 1
+
+    for _ in range(DEMAND_THRESHOLD):
+        DemandSignalService.create_signal(_user().id, far_lat, NAP_LNG)
+    assert (
+        len(_admin_notifications(admin.id)) == 2
+    ), "una seconda zona senza città deve avere un avviso suo"
+
+
+def test_zone_dedup_key_is_case_insensitive_on_city(db_session):
+    """`Napoli` e `napoli` sono la stessa zona: la chiave va normalizzata,
+    altrimenti il cooldown non aggancia e l'avviso si ripete.
+    """
+    from models.demand.models import DemandSignal
+
+    a = DemandSignal(user_id=1, latitude=NAP_LAT, longitude=NAP_LNG, city="Napoli")
+    b = DemandSignal(user_id=2, latitude=NAP_LAT, longitude=NAP_LNG, city=" napoli ")
+    assert DemandSignalService._zone_dedup_key(
+        a
+    ) == DemandSignalService._zone_dedup_key(b)
+
+
 def test_director_outside_radius_not_notified(db_session):
     _napoli_venue()
     # Director con raggio piccolo: i segnali (~1.1 km via +0.01 lat) cadono fuori

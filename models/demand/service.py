@@ -227,12 +227,18 @@ class DemandSignalService:
     @staticmethod
     def _maybe_notify_admins_no_director(new_signal: DemandSignal) -> bool:
         """Avvisa gli admin se la domanda locale tocca la soglia in una zona
-        senza director (ADR-036 open item 2). Crossing-only per limitare lo spam.
+        senza director (ADR-036 open item 2).
+
+        Soglia con ``>=``, non uguaglianza esatta: se due segnali arrivano a
+        breve distanza il conteggio può **saltare** il valore soglia (5 → 7) e
+        con ``==`` l'avviso non sarebbe partito mai. L'anti-spam non è più
+        implicito nel crossing ma esplicito, via cooldown per zona — stesso
+        criterio usato per la notifica al director.
         """
         count = DemandSignalService.count_active_within(
             new_signal.latitude, new_signal.longitude, DEFAULT_DIRECTOR_RADIUS_KM
         )
-        if count != DEMAND_THRESHOLD:
+        if count < DEMAND_THRESHOLD:
             return False
 
         from models.user.models import User
@@ -240,13 +246,17 @@ class DemandSignalService:
         from models.notification.factory import NotificationFactory
         from models.notification.models import NotificationType, NotificationPriority
 
+        zone = (new_signal.city or "").strip()
+        zone_key = DemandSignalService._zone_dedup_key(new_signal)
+        if DemandSignalService._admins_notified_for_zone_recently(zone_key):
+            return False
+
         admin_ids = [
             u.id for u in User.query.filter(User.role == UserRole.ADMIN.value).all()
         ]
         if not admin_ids:
             return False
 
-        zone = (new_signal.city or "").strip()
         if zone:
             message = _(
                 "%(count)s giocatori vorrebbero una gara a %(city)s, una zona "
@@ -267,8 +277,49 @@ class DemandSignalService:
             title=_("Domanda in una zona senza director"),
             message=message,
             priority=NotificationPriority.NORMAL,
+            related_entities={"zone": zone, "zone_key": zone_key, "count": count},
         )
         return True
+
+    @staticmethod
+    def _zone_dedup_key(signal: DemandSignal) -> str:
+        """Chiave stabile con cui deduplicare gli avvisi agli admin.
+
+        NON si può usare la sola ``city``: è ``None`` per chi non ha impostato
+        la città nel profilo (il segnale nasce dal GPS), e una chiave vuota
+        collasserebbe **tutte** le zone senza città in un unico secchiello — il
+        primo avviso ne sopprimerebbe ogni altro per l'intero cooldown.
+
+        Con la città si usa quella, normalizzata (``Napoli``/``napoli`` sono la
+        stessa zona). Senza, si ripiega su un riquadro di coordinate arrotondato
+        a 0.1° (~11 km): più fine del raggio di ricerca, quindi due gruppi
+        vicini possono generare due avvisi invece di uno — preferibile
+        all'opposto, perché un avviso in più si ignora mentre uno mancante non
+        si recupera.
+        """
+        city = (signal.city or "").strip()
+        if city:
+            return f"city:{city.casefold()}"
+        return f"geo:{signal.latitude:.1f},{signal.longitude:.1f}"
+
+    @staticmethod
+    def _admins_notified_for_zone_recently(zone_key: str) -> bool:
+        """True se gli admin sono già stati avvisati per ``zone_key`` nel cooldown.
+
+        Sostituisce il vecchio anti-spam implicito (``count == soglia``), che
+        deduplicava solo per effetto collaterale e perdeva l'avviso quando il
+        conteggio saltava la soglia. La chiave è confrontata sul JSON di
+        ``related_entities``: le notifiche nella finestra sono poche (solo
+        admin), quindi il filtro in Python è più che sufficiente.
+        """
+        from models.notification.models import Notification, NotificationType
+
+        cutoff = utc_now() - timedelta(days=DEMAND_COOLDOWN_DAYS)
+        recent = Notification.query.filter(
+            Notification.notification_type == NotificationType.DEMAND_ZONE_NO_DIRECTOR,
+            Notification.created_at >= cutoff,
+        ).all()
+        return any(n.get_related_entities().get("zone_key") == zone_key for n in recent)
 
     @staticmethod
     def _director_origin(director) -> Optional[Tuple[float, float]]:
