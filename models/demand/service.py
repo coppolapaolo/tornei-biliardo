@@ -247,7 +247,8 @@ class DemandSignalService:
         from models.notification.models import NotificationType, NotificationPriority
 
         zone = (new_signal.city or "").strip()
-        if DemandSignalService._admins_notified_for_zone_recently(zone):
+        zone_key = DemandSignalService._zone_dedup_key(new_signal)
+        if DemandSignalService._admins_notified_for_zone_recently(zone_key):
             return False
 
         admin_ids = [
@@ -276,17 +277,38 @@ class DemandSignalService:
             title=_("Domanda in una zona senza director"),
             message=message,
             priority=NotificationPriority.NORMAL,
-            related_entities={"zone": zone, "count": count},
+            related_entities={"zone": zone, "zone_key": zone_key, "count": count},
         )
         return True
 
     @staticmethod
-    def _admins_notified_for_zone_recently(zone: str) -> bool:
-        """True se gli admin sono già stati avvisati per ``zone`` nel cooldown.
+    def _zone_dedup_key(signal: DemandSignal) -> str:
+        """Chiave stabile con cui deduplicare gli avvisi agli admin.
+
+        NON si può usare la sola ``city``: è ``None`` per chi non ha impostato
+        la città nel profilo (il segnale nasce dal GPS), e una chiave vuota
+        collasserebbe **tutte** le zone senza città in un unico secchiello — il
+        primo avviso ne sopprimerebbe ogni altro per l'intero cooldown.
+
+        Con la città si usa quella, normalizzata (``Napoli``/``napoli`` sono la
+        stessa zona). Senza, si ripiega su un riquadro di coordinate arrotondato
+        a 0.1° (~11 km): più fine del raggio di ricerca, quindi due gruppi
+        vicini possono generare due avvisi invece di uno — preferibile
+        all'opposto, perché un avviso in più si ignora mentre uno mancante non
+        si recupera.
+        """
+        city = (signal.city or "").strip()
+        if city:
+            return f"city:{city.casefold()}"
+        return f"geo:{signal.latitude:.1f},{signal.longitude:.1f}"
+
+    @staticmethod
+    def _admins_notified_for_zone_recently(zone_key: str) -> bool:
+        """True se gli admin sono già stati avvisati per ``zone_key`` nel cooldown.
 
         Sostituisce il vecchio anti-spam implicito (``count == soglia``), che
         deduplicava solo per effetto collaterale e perdeva l'avviso quando il
-        conteggio saltava la soglia. La zona è confrontata sul JSON di
+        conteggio saltava la soglia. La chiave è confrontata sul JSON di
         ``related_entities``: le notifiche nella finestra sono poche (solo
         admin), quindi il filtro in Python è più che sufficiente.
         """
@@ -297,7 +319,7 @@ class DemandSignalService:
             Notification.notification_type == NotificationType.DEMAND_ZONE_NO_DIRECTOR,
             Notification.created_at >= cutoff,
         ).all()
-        return any(n.get_related_entities().get("zone") == zone for n in recent)
+        return any(n.get_related_entities().get("zone_key") == zone_key for n in recent)
 
     @staticmethod
     def _director_origin(director) -> Optional[Tuple[float, float]]:
