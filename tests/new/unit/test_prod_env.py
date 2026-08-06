@@ -19,7 +19,7 @@ import scripts.prod_env as prod_env
 @pytest.fixture(autouse=True)
 def clean_env():
     """Isola le variabili toccate dai test."""
-    names = ("SECRET_KEY", "ENCRYPTION_KEY", "FLASK_ENV")
+    names = ("SECRET_KEY", "ENCRYPTION_KEY", "ADMIN_PASSWORD", "FLASK_ENV")
     saved = {n: os.environ.get(n) for n in names}
     for n in names:
         os.environ.pop(n, None)
@@ -80,6 +80,42 @@ def test_bootstrap_succeeds_silently_when_env_complete():
     os.environ["SECRET_KEY"] = "presente"
     with patch.object(prod_env, "read_wsgi_env", return_value={}):
         prod_env.bootstrap_or_exit(("SECRET_KEY",))  # non solleva
+
+
+def test_admin_password_is_required_by_default():
+    """Regressione: `create_app` in produzione chiama `create_admin_if_not_exists`,
+    che senza ADMIN_PASSWORD solleva un RuntimeError opaco (config.py non le dà
+    fallback in produzione). Se non è fra i required, il bootstrap la lascia
+    passare e l'utente vede di nuovo un traceback invece del messaggio utile.
+    """
+    assert "ADMIN_PASSWORD" in prod_env.PRODUCTION_REQUIRED
+
+    os.environ["SECRET_KEY"] = "presente"
+    with patch.object(prod_env, "read_wsgi_env", return_value={}):
+        with pytest.raises(SystemExit) as exc:
+            prod_env.bootstrap_or_exit()
+    assert "ADMIN_PASSWORD" in str(exc.value)
+
+
+def test_bootstrap_does_not_block_outside_production():
+    """Con FLASK_ENV=development le variabili hanno dei default in config.py:
+    fermare lo script sarebbe un falso negativo.
+    """
+    os.environ["FLASK_ENV"] = "development"
+    with patch.object(prod_env, "read_wsgi_env", return_value={}):
+        prod_env.bootstrap_or_exit(("SECRET_KEY",))  # non solleva
+
+
+def test_flask_env_from_wsgi_decides_whether_to_block():
+    """FLASK_ENV è essa stessa una variabile del file WSGI: il controllo va
+    fatto dopo il caricamento, altrimenti si deciderebbe su un ambiente
+    incompleto e in produzione non si bloccherebbe mai.
+    """
+    with patch.object(
+        prod_env, "read_wsgi_env", return_value={"FLASK_ENV": "production"}
+    ):
+        with pytest.raises(SystemExit):
+            prod_env.bootstrap_or_exit(("SECRET_KEY",))
 
 
 def test_read_wsgi_env_is_shared_with_auto_deploy():

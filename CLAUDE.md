@@ -168,6 +168,17 @@ contano nella quota GlitchTip Free (1000 eventi/mese) — con 0.1 la quota si
 2026-06-10). Nota: ogni reload della web app ha una finestra di ~30s di
 `502-backend` mentre l'app riparte — è normale, non un crash.
 
+Sempre in `app.py`, `auto_enabling_integrations` deve restare **False** con le
+integrazioni dichiarate a mano (`FlaskIntegration`, `SqlalchemyIntegration`):
+di default `sentry_sdk.init` importa ~40 moduli di integrazione per scoprire
+quali pacchetti ci sono, e su PythonAnywhere quel giro vede anche i pacchetti
+di sistema. `pymongo` trascina un `pyOpenSSL` incompatibile con la
+`cryptography` installata, quindi ogni script da console o scheduled task
+moriva in `create_app` su `AttributeError: module 'lib' has no attribute
+'X509_V_FLAG_NOTIFY_POLICY'` (la web app no: set di pacchetti diverso). Le due
+integrazioni dichiarate sono le stesse che si attivavano prima — l'insieme
+attivo non cambia.
+
 ---
 
 ## Things to Remember

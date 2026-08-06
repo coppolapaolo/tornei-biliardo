@@ -28,7 +28,7 @@ _HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(_HERE))
 sys.path.insert(0, _HERE)
 
-from prod_env import bootstrap_or_exit  # noqa: E402
+from prod_env import PRODUCTION_REQUIRED, bootstrap_or_exit  # noqa: E402
 from app import create_app  # noqa: E402
 from models import db, User  # noqa: E402
 from models.gamification.achievement_service import AchievementService  # noqa: E402
@@ -76,7 +76,7 @@ def main() -> int:
     # requisiti perché lo script legge gli utenti (email cifrata): con la
     # chiave di sviluppo la decifratura fallisce in silenzio e la
     # riconciliazione girerebbe su dati vuoti (incidente 2026-06-25).
-    bootstrap_or_exit(("SECRET_KEY", "ENCRYPTION_KEY"))
+    bootstrap_or_exit(PRODUCTION_REQUIRED + ("ENCRYPTION_KEY",))
     app = create_app(os.environ.get("FLASK_ENV", "production"))
     with app.app_context():
         if args.dry_run:
