@@ -40,11 +40,17 @@ import sys
 import traceback
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
-# Radice del progetto (per `app`, `models`) e cartella scripts (per
-# `prod_env`): serve entrambe anche quando il file viene caricato per
-# path invece che eseguito, come fanno i test.
-sys.path.insert(0, os.path.dirname(_HERE))
+# Servono entrambe: la radice del progetto (per `app`, `models`) e la cartella
+# scripts (per `prod_env`), anche quando il file viene caricato per path invece
+# che eseguito, come fanno i test.
+#
+# L'ordine non è indifferente: la radice va inserita per ultima così da restare
+# davanti a `scripts/` in sys.path. Eseguendo `python scripts/<file>.py` è
+# Python stesso a mettere `scripts/` in testa, e senza questa precedenza un
+# futuro `scripts/config.py` o simile oscurerebbe il modulo omonimo del
+# progetto (oggi nessuna collisione, ma il guasto sarebbe silenzioso).
 sys.path.insert(0, _HERE)
+sys.path.insert(0, os.path.dirname(_HERE))
 
 from prod_env import bootstrap_or_exit  # noqa: E402
 from app import create_app  # noqa: E402

@@ -17,11 +17,15 @@ e deve restare autonomo, senza import verso il resto del progetto.
 from __future__ import annotations
 
 import os
+import sys
 from typing import Iterable, List, Tuple
 
 try:  # importato come package (test: ``import scripts.prod_env``)
     from scripts.auto_deploy import WSGI_FILE, read_wsgi_env
-except ImportError:  # eseguito come script: ``scripts/`` è già sys.path[0]
+except ModuleNotFoundError:  # eseguito come script: ``scripts/`` è su sys.path
+    # Volutamente NON ``ImportError``: quello catturerebbe anche un import
+    # fallito *dentro* auto_deploy (dipendenza mancante, refuso su un nome),
+    # ritentando da un percorso diverso e mascherando l'errore vero.
     from auto_deploy import WSGI_FILE, read_wsgi_env
 
 
@@ -85,7 +89,12 @@ def bootstrap_or_exit(required: Iterable[str] = PRODUCTION_REQUIRED) -> None:
     """
     loaded, missing = load_production_env(required)
     if loaded:
-        print(f"Env di produzione lette da {WSGI_FILE}: {', '.join(loaded)}")
+        # Diagnostica su stderr: stdout resta pulito per gli script il cui
+        # output può essere letto o messo in pipe (il riepilogo dei job).
+        print(
+            f"Env di produzione lette da {WSGI_FILE}: {', '.join(loaded)}",
+            file=sys.stderr,
+        )
 
     if missing and targets_production():
         raise SystemExit(
