@@ -6,13 +6,16 @@ Sprint 13: IndividualMatchService decomposition
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+import logging
+from datetime import timedelta
 from typing import Optional, List, Set
 
 from ..base import db, utc_now
 from ..transaction.manager import transactional
 from ..status_enum import MatchStatus
 from .models import IndividualMatch
+
+logger = logging.getLogger(__name__)
 
 
 class MatchLifecycleService:
@@ -180,8 +183,8 @@ class MatchLifecycleService:
         ).all()
 
         already_reminded = MatchLifecycleService._already_reminded_match_ids(
-            [match.id for match in upcoming_matches],
-            since=now - timedelta(hours=hours_before, minutes=window_minutes),
+            upcoming_matches,
+            stale_after=timedelta(hours=hours_before, minutes=window_minutes),
         )
 
         reminded_match_ids: List[int] = []
@@ -217,19 +220,30 @@ class MatchLifecycleService:
                 )
                 reminded_match_ids.append(match.id)
             except Exception:
-                # Log but don't fail on notification errors
-                pass
+                # Un match che non riesce non deve fermare gli altri, ma il
+                # commento diceva "log" senza loggare: in uno scheduled task
+                # l'errore spariva e il job risultava riuscito a vuoto.
+                logger.exception("Invio promemoria fallito per il match %s", match.id)
 
         return reminded_match_ids
 
     @staticmethod
-    def _already_reminded_match_ids(match_ids: List[int], since: datetime) -> Set[int]:
-        """Match fra i ``match_ids`` che hanno già ricevuto un promemoria.
+    def _already_reminded_match_ids(
+        matches: List["IndividualMatch"], stale_after: timedelta
+    ) -> Set[int]:
+        """Match fra i ``matches`` che hanno già ricevuto un promemoria valido.
 
-        Il filtro temporale non è un'ottimizzazione ma parte della semantica:
-        un promemoria più vecchio di ``since`` non può riferirsi a un match
-        ancora da giocare, quindi appartiene a una programmazione precedente e
-        non deve bloccare l'avviso di quella nuova (match riprogrammato).
+        La soglia è calcolata **per match**, non globalmente: un promemoria
+        conta solo se creato dopo ``scheduled_at - stale_after``, cioè dentro
+        la finestra in cui poteva riferirsi all'orario attuale dell'incontro.
+
+        Serve per le riprogrammazioni ravvicinate. Con una soglia globale
+        (``now - stale_after``) bastava spostare il match poco dopo l'invio del
+        primo promemoria perché quel record, ancora recente, bloccasse il nuovo
+        avviso: il giocatore restava con in mano l'orario vecchio e nessuna
+        correzione. Ancorandola a ``scheduled_at`` il promemoria del vecchio
+        orario risulta troppo vecchio per la nuova programmazione, e il match
+        viene riavvisato.
 
         Nota: un utente che ha disattivato le notifiche MATCH_REMINDER non ne
         ha nessuna da trovare, quindi il suo match risulta "non avvisato" e il
@@ -239,21 +253,27 @@ class MatchLifecycleService:
         """
         from ..notification.models import Notification, NotificationType
 
-        if not match_ids:
+        if not matches:
             return set()
 
-        urls = {
-            f"{MatchLifecycleService.REMINDER_URL_PREFIX}{match_id}": match_id
-            for match_id in match_ids
+        by_url = {
+            f"{MatchLifecycleService.REMINDER_URL_PREFIX}{match.id}": match
+            for match in matches
         }
         rows = (
-            db.session.query(Notification.action_url)
+            db.session.query(Notification.action_url, Notification.created_at)
             .filter(
                 Notification.notification_type == NotificationType.MATCH_REMINDER,
-                Notification.action_url.in_(list(urls)),
-                Notification.created_at >= since,
+                Notification.action_url.in_(list(by_url)),
             )
-            .distinct()
             .all()
         )
-        return {urls[row[0]] for row in rows if row[0] in urls}
+
+        reminded: Set[int] = set()
+        for action_url, created_at in rows:
+            match = by_url.get(action_url)
+            if match is None or created_at is None:
+                continue
+            if created_at >= match.scheduled_at - stale_after:
+                reminded.add(match.id)
+        return reminded

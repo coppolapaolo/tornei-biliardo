@@ -124,6 +124,35 @@ def test_old_reminder_does_not_block_a_rescheduled_match(db_session, players):
     assert len(_reminders_for(match)) == 4
 
 
+def test_reminder_is_resent_when_the_match_is_rescheduled_soon_after(
+    db_session, players
+):
+    """Riprogrammazione **ravvicinata**: il vecchio promemoria non deve zittire
+    quello nuovo.
+
+    Caso distinto da quello sopra, dove il promemoria era di un giorno prima.
+    Qui è di appena 40 minuti fa, quindi con una soglia globale
+    (``now - stale_after``) risulterebbe ancora valido e il match verrebbe
+    saltato: il giocatore resterebbe con l'orario vecchio e nessuna correzione.
+    La soglia ancorata a ``scheduled_at`` lo classifica invece come superato.
+    """
+    match = _make_match(db_session, players, utc_now() + timedelta(hours=2, minutes=30))
+    assert MatchLifecycleService.send_match_reminders() == [match.id]
+
+    # Il promemoria è recente (40 minuti), ma si riferisce all'orario vecchio.
+    for notification in _reminders_for(match):
+        notification.created_at = utc_now() - timedelta(minutes=40)
+
+    # Match spostato in avanti, ma ancora dentro la finestra di questo giro.
+    match.scheduled_at = utc_now() + timedelta(hours=2, minutes=50)
+    db_session.commit()
+
+    assert MatchLifecycleService.send_match_reminders() == [
+        match.id
+    ], "il nuovo orario deve produrre un nuovo promemoria"
+    assert len(_reminders_for(match)) == 4
+
+
 def test_non_scheduled_matches_are_skipped(db_session, players):
     """Un match già iniziato o annullato non ha bisogno di promemoria."""
     match = _make_match(db_session, players, utc_now() + timedelta(hours=2, minutes=30))
