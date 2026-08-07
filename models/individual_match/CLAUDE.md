@@ -54,9 +54,9 @@ match = IndividualMatchService.accept_proposal(user_id=invitee.id, proposal_id=p
 # Get frequent opponents for suggestions
 opponents = IndividualMatchStatisticsService.get_frequent_opponents(user_id, limit=5)
 
-# Send reminders for upcoming matches (call via scheduled task)
+# Send reminders for upcoming matches (call via scheduled task, hourly)
 from models.individual_match.match_lifecycle_service import MatchLifecycleService
-reminded_ids = MatchLifecycleService.send_match_reminders(hours_before=2, window_minutes=15)
+reminded_ids = MatchLifecycleService.send_match_reminders(hours_before=2, window_minutes=60)
 ```
 
 ---
@@ -148,7 +148,7 @@ Single rack result within a match.
 |-------|------|------------|
 | Proposal expired | MATCH_DECLINED | Proposer |
 | Open proposal created | MATCH_PROPOSAL | Eligible players in location |
-| Match in 2 hours | MATCH_REMINDER | Both players |
+| Match imminente (2-3 ore prima) | MATCH_REMINDER | Both players |
 | Direct invitation | MATCH_PROPOSAL | Invited player |
 | Proposal accepted | MATCH_ACCEPTED | Proposer |
 
@@ -157,7 +157,8 @@ Single rack result within a match.
 ## Scheduled Tasks
 
 ```bash
-# Match reminders (run every 15 minutes)
+# Match reminders (run hourly: gli scheduled task di PythonAnywhere non
+# scendono sotto l'ora, e la finestra di ricerca è allineata a quella cadenza)
 python scripts/send_match_reminders.py
 
 # Proposal expiration (run hourly)

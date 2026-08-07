@@ -6,8 +6,8 @@ Sprint 13: IndividualMatchService decomposition
 
 from __future__ import annotations
 
-from datetime import timedelta
-from typing import Optional, List
+from datetime import datetime, timedelta
+from typing import Optional, List, Set
 
 from ..base import db, utc_now
 from ..transaction.manager import transactional
@@ -130,23 +130,42 @@ class MatchLifecycleService:
         match.forfeit_match(user_id)
         return match
 
+    #: Prefisso dell'``action_url`` dei promemoria, usato anche per ritrovarli
+    #: in fase di deduplica: è l'unico legame match↔notifica che esiste anche
+    #: sulle notifiche create prima che venisse aggiunto ``related_entities``.
+    REMINDER_URL_PREFIX = "/match/matches/"
+
     @staticmethod
     def send_match_reminders(
-        hours_before: int = 2, window_minutes: int = 15
+        hours_before: int = 2, window_minutes: int = 60
     ) -> List[int]:
         """Send reminder notifications for upcoming matches.
 
         Finds matches scheduled within a time window and sends reminders
-        to both players. Designed to be called periodically (e.g., every 15 min).
+        to both players. Designed to be called hourly (see
+        ``scripts/send_match_reminders.py``).
+
+        La finestra di default è di **60 minuti** perché gli scheduled task di
+        PythonAnywhere non scendono sotto la cadenza oraria: con i 15 minuti
+        originali il task avrebbe coperto un quarto d'ora su sessanta e tre
+        promemoria su quattro non sarebbero mai partiti. Il prezzo è che il
+        promemoria arriva fra ``hours_before`` e ``hours_before + 1`` ore prima
+        del match invece che a un orario esatto — per questo il testo non
+        promette più "fra due ore" ma riporta l'orario dell'incontro.
+
+        Un match già avvisato non viene riavvisato: le esecuzioni sono
+        idempotenti anche quando le finestre si sovrappongono, cosa che
+        succede appena lo scheduler parte con qualche minuto di ritardo.
 
         Args:
             hours_before: Hours before match to send reminder (default 2)
-            window_minutes: Time window in minutes to check (default 15)
+            window_minutes: Time window in minutes to check (default 60)
 
         Returns:
             List of match IDs that received reminders
         """
         from flask_babel import _
+        from utils.jinja import format_datetime_local_text
         from ..notification.factory import NotificationFactory
         from ..notification.models import NotificationType, NotificationPriority
 
@@ -160,28 +179,39 @@ class MatchLifecycleService:
             IndividualMatch.status == MatchStatus.SCHEDULED.value,
         ).all()
 
+        already_reminded = MatchLifecycleService._already_reminded_match_ids(
+            [match.id for match in upcoming_matches],
+            since=now - timedelta(hours=hours_before, minutes=window_minutes),
+        )
+
         reminded_match_ids: List[int] = []
 
         for match in upcoming_matches:
+            if match.id in already_reminded:
+                continue
+
             # Get both player IDs
             player_ids = [match.player1_id, match.player2_id]
 
-            # Format time for message
-            time_str = match.scheduled_at.strftime("%H:%M")
+            # `scheduled_at` è UTC (convenzione di progetto): stampato grezzo
+            # annuncerebbe un orario sbagliato di una o due ore a seconda
+            # dell'ora legale.
+            when = format_datetime_local_text(match.scheduled_at)
             location_text = match.location or ""
 
             try:
                 NotificationFactory.create_bulk_notification(
                     user_ids=player_ids,
                     notification_type=NotificationType.MATCH_REMINDER,
-                    title=_("Match tra 2 ore"),
+                    title=_("Promemoria match"),
                     message=_(
-                        "Il tuo match è programmato per le %(time)s%(location)s",
-                        time=time_str,
+                        "Il tuo match è programmato per il %(when)s%(location)s",
+                        when=when,
                         location=f" presso {location_text}" if location_text else "",
                     ),
                     priority=NotificationPriority.HIGH,
-                    action_url=f"/match/matches/{match.id}",
+                    related_entities={"individual_match_id": match.id},
+                    action_url=f"{MatchLifecycleService.REMINDER_URL_PREFIX}{match.id}",
                     action_text=_("Visualizza"),
                     continue_on_error=True,
                 )
@@ -191,3 +221,39 @@ class MatchLifecycleService:
                 pass
 
         return reminded_match_ids
+
+    @staticmethod
+    def _already_reminded_match_ids(match_ids: List[int], since: datetime) -> Set[int]:
+        """Match fra i ``match_ids`` che hanno già ricevuto un promemoria.
+
+        Il filtro temporale non è un'ottimizzazione ma parte della semantica:
+        un promemoria più vecchio di ``since`` non può riferirsi a un match
+        ancora da giocare, quindi appartiene a una programmazione precedente e
+        non deve bloccare l'avviso di quella nuova (match riprogrammato).
+
+        Nota: un utente che ha disattivato le notifiche MATCH_REMINDER non ne
+        ha nessuna da trovare, quindi il suo match risulta "non avvisato" e il
+        giro dopo ci riprova — a vuoto, perché la preferenza lo blocca di
+        nuovo. Nessun effetto visibile, e il caso opposto (dedurre l'invio da
+        un record che non esiste) costerebbe una tabella di stato in più.
+        """
+        from ..notification.models import Notification, NotificationType
+
+        if not match_ids:
+            return set()
+
+        urls = {
+            f"{MatchLifecycleService.REMINDER_URL_PREFIX}{match_id}": match_id
+            for match_id in match_ids
+        }
+        rows = (
+            db.session.query(Notification.action_url)
+            .filter(
+                Notification.notification_type == NotificationType.MATCH_REMINDER,
+                Notification.action_url.in_(list(urls)),
+                Notification.created_at >= since,
+            )
+            .distinct()
+            .all()
+        )
+        return {urls[row[0]] for row in rows if row[0] in urls}
