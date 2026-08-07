@@ -114,6 +114,18 @@ poi riapplicarla).
   job è isolato; exit code ≠ 0 se almeno uno fallisce. `python
   scripts/daily_jobs.py <nome>` per lanciarne uno solo.
 
+**Env di produzione negli script da console/task**: console e scheduled task
+sono processi separati e **non ereditano** le variabili dal file WSGI, quindi
+`create_app("production")` fallirebbe subito su `SECRET_KEY`. Gli script che
+avviano l'app chiamano `bootstrap_or_exit()` da `scripts/prod_env.py`, che le
+legge dal WSGI (riusa `read_wsgi_env` di `auto_deploy`, parsing AST senza
+eseguirlo) e, se manca qualcosa, esce dicendo cosa e da dove dovrebbe arrivare.
+Un valore passato a mano sulla riga di comando resta prioritario. Uno script
+nuovo che fa `create_app` va agganciato lì — chiedendo anche `ENCRYPTION_KEY`
+se tocca i PII, altrimenti la decifratura degrada in silenzio sulla chiave di
+sviluppo (incidente 2026-06-25). `auto_deploy.py` resta autonomo di proposito:
+è il punto d'ingresso del deploy e non importa nulla dal progetto.
+
 > ⚠️ `scripts/send_match_reminders.py` (ogni 15 min) **non risulta registrato**:
 > compare solo come TODO in un handoff archiviato di gennaio. Se è così i
 > promemoria dei match non partono. Cadenza diversa dal giornaliero, quindi
@@ -155,6 +167,17 @@ contano nella quota GlitchTip Free (1000 eventi/mese) — con 0.1 la quota si
 (sintomo: retry `SSLEOFError ... /api/<id>/envelope/` nell'error log PA,
 2026-06-10). Nota: ogni reload della web app ha una finestra di ~30s di
 `502-backend` mentre l'app riparte — è normale, non un crash.
+
+Sempre in `app.py`, `auto_enabling_integrations` deve restare **False** con le
+integrazioni dichiarate a mano (`FlaskIntegration`, `SqlalchemyIntegration`):
+di default `sentry_sdk.init` importa ~40 moduli di integrazione per scoprire
+quali pacchetti ci sono, e su PythonAnywhere quel giro vede anche i pacchetti
+di sistema. `pymongo` trascina un `pyOpenSSL` incompatibile con la
+`cryptography` installata, quindi ogni script da console o scheduled task
+moriva in `create_app` su `AttributeError: module 'lib' has no attribute
+'X509_V_FLAG_NOTIFY_POLICY'` (la web app no: set di pacchetti diverso). Le due
+integrazioni dichiarate sono le stesse che si attivavano prima — l'insieme
+attivo non cambia.
 
 ---
 

@@ -9,9 +9,10 @@ JavaScript frontend display.
 """
 
 from __future__ import annotations
+import functools
 import json
 import logging
-from typing import Dict, Any
+from typing import Any, Callable, Dict, TypeVar
 
 from flask import flash, has_request_context
 from flask_babel import gettext as _
@@ -41,6 +42,34 @@ class GamificationEventType:
 
 
 logger = logging.getLogger(__name__)
+
+_Handler = TypeVar("_Handler", bound=Callable[..., None])
+
+
+def _only_in_request(handler: _Handler) -> _Handler:
+    """No-op per gli handler del bridge fuori da una richiesta HTTP.
+
+    Il bridge esiste solo per accodare flash message alla risposta corrente:
+    senza richiesta non c'è nessuno a cui mostrarli. Il controllo va **prima**
+    del corpo dell'handler, non dentro ``_flash_gamification_event``: gli
+    handler compongono le stringhe con ``_()`` e ``gettext`` risolve la lingua
+    leggendo ``session``, che fuori dal contesto solleva
+    ``RuntimeError: Working outside of request context``.
+
+    Emerso lanciando ``scripts/reconcile_achievements.py`` in produzione: ogni
+    level-up stampava un traceback. Il lavoro andava comunque a termine (i
+    gestori di EventBus sono isolati), ma lo stesso vale per qualunque script
+    da console o scheduled task che assegni XP, dove l'errore è puro rumore
+    che nasconde i problemi veri.
+    """
+
+    @functools.wraps(handler)
+    def wrapper(*args: Any, **kwargs: Any) -> None:
+        if not has_request_context():
+            return None
+        return handler(*args, **kwargs)
+
+    return wrapper  # type: ignore[return-value]
 
 
 class GamificationFrontendBridge:
@@ -124,6 +153,7 @@ class GamificationFrontendBridge:
             logger.error(f"Error flashing gamification event: {e}")
 
     @staticmethod
+    @_only_in_request
     def handle_xp_gained(event: XPGainedEvent) -> None:
         """Send XP gain event to frontend."""
         # Only flash significant XP gains to avoid spam (e.g., > 0)
@@ -147,6 +177,7 @@ class GamificationFrontendBridge:
         )
 
     @staticmethod
+    @_only_in_request
     def handle_level_up(event: LevelUpEvent) -> None:
         """Send level up event to frontend."""
         # B21: include total XP and unlocks summary so the toast is
@@ -175,6 +206,7 @@ class GamificationFrontendBridge:
         )
 
     @staticmethod
+    @_only_in_request
     def handle_achievement_unlocked(event: AchievementUnlockedEvent) -> None:
         """Send achievement event to frontend."""
         # B21: prefer the semantic achievement description (already i18n) when
@@ -192,6 +224,7 @@ class GamificationFrontendBridge:
         )
 
     @staticmethod
+    @_only_in_request
     def handle_streak_milestone(event: StreakMilestoneEvent) -> None:
         """Send streak milestone event to frontend."""
         # B21: human-readable narrative — "filotto" used in pool jargon.
@@ -220,6 +253,7 @@ class GamificationFrontendBridge:
         )
 
     @staticmethod
+    @_only_in_request
     def handle_streak_broken(event: StreakBrokenEvent) -> None:
         """Send streak lost event to frontend."""
         # B21 + B4: kept for back-compat but message i18n'd; B4 will remove
@@ -236,6 +270,7 @@ class GamificationFrontendBridge:
         )
 
     @staticmethod
+    @_only_in_request
     def handle_quest_completed(event: QuestCompletedEvent) -> None:
         """Send quest completion event to frontend."""
         GamificationFrontendBridge._flash_gamification_event(
@@ -302,6 +337,7 @@ class GamificationFrontendBridge:
     }
 
     @staticmethod
+    @_only_in_request
     def handle_nudge_event(user_id: int, feature_config: Any) -> None:
         """
         Send nudge event to frontend.
@@ -332,6 +368,7 @@ class GamificationFrontendBridge:
         )
 
     @staticmethod
+    @_only_in_request
     def handle_feature_unlock_event(user_id: int, feature_config: Any) -> None:
         """
         Send feature unlock event to frontend.

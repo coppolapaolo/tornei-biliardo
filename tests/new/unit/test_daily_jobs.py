@@ -30,9 +30,16 @@ def _load_runner():
 
 @pytest.fixture
 def runner(app):
-    """Runner con `create_app` sostituito dall'app di test."""
+    """Runner con `create_app` sostituito dall'app di test.
+
+    Anche `bootstrap_or_exit` è neutralizzato: qui interessa l'orchestrazione
+    dei job, non il caricamento delle env di produzione (che non esistono in
+    test e ha i suoi test in `test_prod_env.py`).
+    """
     module = _load_runner()
-    with patch.object(module, "create_app", return_value=app):
+    with patch.object(module, "create_app", return_value=app), patch.object(
+        module, "bootstrap_or_exit"
+    ):
         yield module
 
 

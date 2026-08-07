@@ -76,10 +76,21 @@ def create_app(config_name=None):
     if dsn:
         import sentry_sdk
         from sentry_sdk.integrations.flask import FlaskIntegration
+        from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
         sentry_sdk.init(
             dsn=dsn,
-            integrations=[FlaskIntegration()],
+            # Integrazioni dichiarate a mano, auto-discovery spenta: di suo
+            # sentry importa ~40 moduli di integrazione per scoprire quali
+            # pacchetti siano installati. Su PythonAnywhere quel giro tocca
+            # anche i pacchetti di sistema, e pymongo trascina un pyOpenSSL
+            # incompatibile con la cryptography installata: da console (dove
+            # quei pacchetti sono visibili) create_app moriva su
+            # `AttributeError: module 'lib' has no attribute
+            # 'X509_V_FLAG_NOTIFY_POLICY'`. Qui servono solo queste due, che
+            # erano già le uniche ad attivarsi davvero.
+            integrations=[FlaskIntegration(), SqlalchemyIntegration()],
+            auto_enabling_integrations=False,
             # Solo error event: le transaction di performance consumano la
             # quota GlitchTip Free (1000 eventi/mese) in poche ore.
             traces_sample_rate=0.0,

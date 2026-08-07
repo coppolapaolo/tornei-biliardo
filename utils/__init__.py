@@ -196,9 +196,22 @@ def create_admin_if_not_exists():
     email = (cfg.get("ADMIN_EMAIL") or "").strip() or None
 
     if require_pwd and (not username or not password):
+        # Nomina solo ciò che manca davvero: in produzione ADMIN_USERNAME ha
+        # un default ("admin", config.py) e l'unica che può mancare è la
+        # password — dirle entrambe manda a cercare un problema inesistente.
+        mancanti = " e ".join(
+            name
+            for name, value in (
+                ("ADMIN_USERNAME", username),
+                ("ADMIN_PASSWORD", password),
+            )
+            if not value
+        )
         raise RuntimeError(
-            "Admin bootstrap richiede ADMIN_USERNAME"
-            "e ADMIN_PASSWORD in configurazione."
+            f"Admin bootstrap richiede {mancanti} in configurazione. "
+            "In produzione arriva dalle env var omonime, che vivono nel file "
+            "WSGI: da console o scheduled task usa scripts/prod_env.py, "
+            "che le carica da lì."
         )
 
     existing_admin = (
