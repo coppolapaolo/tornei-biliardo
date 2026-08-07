@@ -126,10 +126,14 @@ se tocca i PII, altrimenti la decifratura degrada in silenzio sulla chiave di
 sviluppo (incidente 2026-06-25). `auto_deploy.py` resta autonomo di proposito:
 è il punto d'ingresso del deploy e non importa nulla dal progetto.
 
-> ⚠️ `scripts/send_match_reminders.py` (ogni 15 min) **non risulta registrato**:
-> compare solo come TODO in un handoff archiviato di gennaio. Se è così i
-> promemoria dei match non partono. Cadenza diversa dal giornaliero, quindi
-> serve uno slot suo — da verificare nel pannello PythonAnywhere.
+> ⚠️ `scripts/send_match_reminders.py` **non è registrato** (verificato nel
+> pannello PythonAnywhere): i promemoria dei match non partono da gennaio.
+> Cadenza oraria, quindi serve uno slot suo — non è accorpabile a
+> `daily_jobs.py`. Lo script era nato presupponendo di girare ogni 15 minuti,
+> ma gli scheduled task di PythonAnywhere non scendono sotto l'ora: finestra e
+> cadenza sono ora entrambe orarie, così il promemoria arriva fra le 2 e le 3
+> ore prima del match. Da registrare come
+> `cd /home/paolocoppola/mysite && python scripts/send_match_reminders.py`.
 
 **⚠️ SQLite su PythonAnywhere (incidente 2026-06-10)**: lo storage è NFS con
 lock inaffidabili — due processi che SCRIVONO insieme (console + web app)

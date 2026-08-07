@@ -13,8 +13,8 @@ Perché non appoggiarsi a un task già esistente:
 - ``auto_deploy.py`` è uno script di deploy: esce prima del tempo quando non ci
   sono modifiche e si ferma apposta se non ricava la chiave di cifratura. Un
   lavoro periodico verrebbe saltato in silenzio in tutti quei casi.
-- ``send_match_reminders.py`` gira ogni 15 minuti: cadenza diversa, non
-  accorpabile al giornaliero.
+- ``send_match_reminders.py`` gira ogni ora: cadenza diversa, non accorpabile
+  al giornaliero.
 
 Ogni job è **isolato**: se uno solleva, gli altri girano lo stesso e l'errore
 finisce nel riepilogo. L'uscita è diversa da zero se almeno un job è fallito,
