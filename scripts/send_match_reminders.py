@@ -51,7 +51,10 @@ def main() -> int:
         if reminded_ids:
             print(f"Sent reminders for {len(reminded_ids)} matches: {reminded_ids}")
         else:
-            print("No matches found in reminder window")
+            # Nessun match nella finestra, oppure nessun giocatore
+            # raggiungibile: `send_match_reminders` conta solo i match per cui
+            # è uscita almeno una notifica.
+            print("No reminders sent")
 
     return 0
 

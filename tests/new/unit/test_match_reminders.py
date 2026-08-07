@@ -181,6 +181,42 @@ def test_message_shows_italian_time_not_utc(db_session, players):
     assert expected in message, f"atteso l'orario locale {expected} in {message!r}"
 
 
+def test_match_is_not_counted_when_no_notification_goes_out(db_session, players):
+    """Se entrambi hanno disattivato il promemoria, il match non va contato.
+
+    `create_notification` restituisce `None` (senza sollevare) quando la
+    preferenza blocca l'invio: contando comunque il match, il riepilogo dello
+    scheduled task avrebbe annunciato promemoria mai partiti.
+    """
+    from models.notification.services import NotificationService
+
+    for player in players:
+        NotificationService.set_user_preference(
+            user_id=player.id,
+            notification_type=NotificationType.MATCH_REMINDER,
+            enabled=False,
+        )
+    match = _make_match(db_session, players, utc_now() + timedelta(hours=2, minutes=30))
+
+    assert MatchLifecycleService.send_match_reminders() == []
+    assert _reminders_for(match) == []
+
+
+def test_match_is_counted_when_only_one_player_is_reachable(db_session, players):
+    """Basta un giocatore raggiunto perché il promemoria conti come inviato."""
+    from models.notification.services import NotificationService
+
+    NotificationService.set_user_preference(
+        user_id=players[0].id,
+        notification_type=NotificationType.MATCH_REMINDER,
+        enabled=False,
+    )
+    match = _make_match(db_session, players, utc_now() + timedelta(hours=2, minutes=30))
+
+    assert MatchLifecycleService.send_match_reminders() == [match.id]
+    assert len(_reminders_for(match)) == 1
+
+
 def test_reminder_links_back_to_the_match(db_session, players):
     """`related_entities` lega la notifica al match, non solo via URL."""
     match = _make_match(db_session, players, utc_now() + timedelta(hours=2, minutes=30))

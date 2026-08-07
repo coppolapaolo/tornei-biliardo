@@ -165,7 +165,12 @@ class MatchLifecycleService:
             window_minutes: Time window in minutes to check (default 60)
 
         Returns:
-            List of match IDs that received reminders
+            ID dei match per cui è partito **almeno un** promemoria. Un match
+            in cui entrambi i giocatori hanno la notifica disattivata (o sono
+            in quiet hours: ``create_notification`` restituisce ``None`` senza
+            sollevare) non compare, così il conteggio stampato dallo scheduled
+            task dice quanti avvisi sono davvero usciti e non quanti match
+            erano nella finestra.
         """
         from flask_babel import _
         from utils.jinja import format_datetime_local_text
@@ -203,7 +208,7 @@ class MatchLifecycleService:
             location_text = match.location or ""
 
             try:
-                NotificationFactory.create_bulk_notification(
+                created = NotificationFactory.create_bulk_notification(
                     user_ids=player_ids,
                     notification_type=NotificationType.MATCH_REMINDER,
                     title=_("Promemoria match"),
@@ -218,7 +223,11 @@ class MatchLifecycleService:
                     action_text=_("Visualizza"),
                     continue_on_error=True,
                 )
-                reminded_match_ids.append(match.id)
+                # `create_bulk_notification` mette None in lista sia per un
+                # errore sia per una preferenza che blocca l'invio: se sono
+                # tutti None non è uscito niente e il match non va contato.
+                if any(notification is not None for notification in created):
+                    reminded_match_ids.append(match.id)
             except Exception:
                 # Un match che non riesce non deve fermare gli altri, ma il
                 # commento diceva "log" senza loggare: in uno scheduled task
