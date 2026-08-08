@@ -97,9 +97,19 @@
                 <div class="card-body">
                     <form id="startAttemptForm" method="POST">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        {# Contesto gara: il form fa POST su window.location.href con
+                           FormData, e la route legge request.form — la query string
+                           da sola non arriverebbe mai al servizio, e il tentativo
+                           risulterebbe slegato dalla gara senza alcun errore. #}
+                        {% if request.args.get('gara_id') %}
+                        <input type="hidden" name="gara_id" value="{{ request.args.get('gara_id') }}">
+                        {% endif %}
+                        {% if request.args.get('round_number') %}
+                        <input type="hidden" name="round_number" value="{{ request.args.get('round_number') }}">
+                        {% endif %}
                         <div class="alert alert-info">
                             <i class="fas fa-info-circle"></i>
-                            <strong>Istruzioni:</strong> 
+                            <strong>{{ _('Istruzioni:') }}</strong>
                             {{ challenge.description }}
                         </div>
 
