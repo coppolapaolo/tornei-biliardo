@@ -11,7 +11,7 @@
       {{ _('Match individuali proposti') }}
       <span class="c7-num ms-1" style="font-size:13px;color:var(--c7-ink-muted)">{{ vm.match_opportunities|length }}</span>
     </h2>
-    <a href="{{ url_for('player.match_proposals') }}" style="font-size:12px">{{ _('Vedi tutti') }}</a>
+    <a href="{{ url_for('individual_match.proposal_list') }}" style="font-size:12px">{{ _('Vedi tutti') }}</a>
   </div>
 
   <div class="c7-grid" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">
@@ -32,7 +32,7 @@
         {% else %} · {{ _('gratis') }}{% endif %}
       </div>
 
-      <form method="POST" action="{{ url_for('player.accept_match_proposal', proposal_id=proposal.id) }}">
+      <form method="POST" action="{{ url_for('individual_match.accept_proposal', proposal_id=proposal.id) }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="btn btn-primary btn-sm w-100">
           <i class="fas fa-handshake"></i>{{ _('Partecipa') }}
@@ -43,7 +43,7 @@
   </div>
 
   <div class="mt-3">
-    <a href="{{ url_for('player.create_match_proposal') }}" class="btn btn-secondary btn-sm">
+    <a href="{{ url_for('individual_match.create_proposal') }}" class="btn btn-secondary btn-sm">
       <i class="fas fa-plus"></i>{{ _('Proponi un match') }}
     </a>
   </div>
