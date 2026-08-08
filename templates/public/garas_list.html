@@ -1,18 +1,18 @@
 {% extends "base.html" %}
-{% block title %}{{ _("Gare Standalone Pubbliche") }}{% endblock %}
+{% block title %}{{ _("Gare aperte a tutti") }}{% endblock %}
 
 {% macro garas_table(garas) %}
-<div class="table-responsive">
-    <table class="table table-striped">
+<div class="c7-table-wrap table-responsive">
+    <table class="table">
         <thead>
             <tr>
-                <th>{{ _("Nome") }}</th>
+                <th>{{ _("Gara") }}</th>
                 <th>{{ _("Disciplina") }}</th>
                 <th>{{ _("Data") }}</th>
-                <th>{{ _("Luogo") }}</th>
+                <th>{{ _("Sala") }}</th>
                 <th>{{ _("Stato") }}</th>
                 <th>{{ _("Turno") }}</th>
-                <th>{{ _("Azioni") }}</th>
+                <th class="c7-cell-actions"></th>
             </tr>
         </thead>
         <tbody>
@@ -21,27 +21,22 @@
                 <td>
                     <strong>{{ gara.name }}</strong>
                     {% if gara.description %}
-                    <br><small class="text-muted">{{ gara.description[:50] }}...</small>
+                    <div class="text-muted" style="font-size: 12px; font-weight: 600;">{{ gara.description[:60] }}…</div>
                     {% endif %}
                 </td>
                 <td>
                     {{ gara.discipline|discipline_display }}
-                    <br><small class="text-muted">
-                        {{ gara.distance_config|format_distance }}
-                    </small>
+                    <div class="text-muted" style="font-size: 12px; font-weight: 600;">{{ gara.distance_config|format_distance }}</div>
                 </td>
-                <td>{{ gara.date|date_local }}</td>
-                <td>{{ gara.location or "-" }}</td>
+                <td><span class="c7-num">{{ gara.date|date_local }}</span></td>
+                <td>{{ gara.location or "—" }}</td>
                 <td>
                     {% set badge_info = gara.get_status_badge_info() %}
                     <span class="badge {{ badge_info.class }}">{{ badge_info.text }}</span>
                 </td>
-                <td>{{ gara.current_round }}/{{ gara.rounds_count }}</td>
-                <td>
-                    <a href="{{ url_for('main.gara_detail_public', gara_id=gara.id) }}"
-                       class="btn btn-primary btn-sm">
-                        <i class="fas fa-eye"></i> {{ _("Visualizza") }}
-                    </a>
+                <td><span class="c7-num">{{ gara.current_round }}/{{ gara.rounds_count }}</span></td>
+                <td class="c7-cell-actions">
+                    <a href="{{ url_for('main.gara_detail_public', gara_id=gara.id) }}" class="btn btn-secondary btn-sm">{{ _("Apri") }}</a>
                 </td>
             </tr>
             {% endfor %}
@@ -51,36 +46,32 @@
 {% endmacro %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-12">
-            <h2><i class="fas fa-trophy"></i> {{ _("Gare Standalone") }}</h2>
-            <p class="text-muted">{{ _("Lista pubblica delle gare standalone - nessuna registrazione richiesta per visualizzare") }}</p>
-
-            {# B5: active section first, completed below in a distinct, dimmer block #}
-            <h4 class="mt-4"><i class="fas fa-play-circle text-primary"></i> {{ _("Attive e prossime") }}</h4>
-            {% if active_garas %}
-                {{ garas_table(active_garas) }}
-            {% else %}
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle"></i>
-                    {{ _("Nessuna gara attiva al momento.") }}
-                </div>
-            {% endif %}
-
-            {% if completed_garas %}
-                <h4 class="mt-5 text-muted"><i class="fas fa-flag-checkered"></i> {{ _("Gare passate") }}</h4>
-                <div class="opacity-75">
-                    {{ garas_table(completed_garas) }}
-                </div>
-            {% endif %}
-
-            <div class="mt-4">
-                <a href="{{ url_for('main.index') }}" class="btn btn-secondary">
-                    <i class="fas fa-home"></i> {{ _("Torna alla Home") }}
-                </a>
-            </div>
-        </div>
+<header class="c7-head" style="padding-left: 0; padding-right: 0;">
+    <a class="c7-head__back" href="{{ url_for('main.index') }}" aria-label="{{ _('Torna alla home') }}"><i class="fas fa-arrow-left"></i></a>
+    <div class="c7-head__title">
+        <h1>{{ _("Gare") }}</h1>
+        <div class="c7-head__sub">{{ _("Lista pubblica: si consulta senza registrarsi.") }}</div>
     </div>
-</div>
+</header>
+
+{# B5: prima le attive, poi le concluse in un blocco distinto e più tenue #}
+<section class="c7-stack">
+    <h2 style="margin: 0;">{{ _("Attive e prossime") }}</h2>
+    {% if active_garas %}
+        {{ garas_table(active_garas) }}
+    {% else %}
+        <div class="c7-empty">
+            <div class="c7-empty__ico"><i class="fas fa-calendar"></i></div>
+            <h3 class="c7-empty__title">{{ _("Nessuna gara in programma") }}</h3>
+            <p class="c7-empty__text">{{ _("Non ci sono gare attive in questo momento.") }}</p>
+        </div>
+    {% endif %}
+</section>
+
+{% if completed_garas %}
+<section class="c7-stack" style="margin-top: 32px;">
+    <h2 style="margin: 0; color: var(--c7-ink-muted);">{{ _("Gare passate") }}</h2>
+    {{ garas_table(completed_garas) }}
+</section>
+{% endif %}
 {% endblock %}

@@ -1,221 +1,171 @@
 {% extends "base.html" %}
 
-{% block title %}{{ _("Nuovo Campionato - Step 1") }} - Admin{% endblock %}
+{% block title %}{{ _("Nuovo Campionato") }}{% endblock %}
+{% block page_title %}{{ _("Nuovo Campionato") }}{% endblock %}
+{% block page_sub %}{{ _("Passo 1 di 2 · configurazione") }}{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('admin.campionato.wizard_cancel') }}" class="btn btn-secondary btn-sm d-none d-lg-inline-flex">
+  <i class="fas fa-xmark"></i> {{ _("Annulla") }}
+</a>
+{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1>{{ _("Nuovo Campionato") }}</h1>
-            <p class="text-muted mb-0">{{ _("Wizard di creazione") }}</p>
-        </div>
-        <div>
-            <a href="{{ url_for('admin.campionato.wizard_cancel') }}" class="btn btn-outline-secondary">
-                <i class="fas fa-times"></i> {{ _("Annulla") }}
-            </a>
-        </div>
+<div style="max-width:720px">
+
+  {# Avanzamento: due segmenti #}
+  <div class="d-flex gap-2 mb-4">
+    <div style="flex:1;height:5px;border-radius:999px;background:var(--c7-accent)"></div>
+    <div style="flex:1;height:5px;border-radius:999px;background:var(--c7-line)"></div>
+  </div>
+
+  <form action="{{ url_for('admin.campionato.wizard_step2') }}" method="POST" class="c7-stack" style="gap:16px">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <div class="c7-card">
+      <div class="mb-3">
+        <label for="name" class="form-label">{{ _("Nome del campionato") }}</label>
+        <input type="text" class="form-control" id="name" name="name"
+               placeholder="{{ _('es. Campionato Invernale 2026') }}" required>
+        <div class="form-text">{{ _("Includi l'anno per distinguerlo facilmente") }}</div>
+      </div>
+
+      <div>
+        <label for="planned_gare_count" class="form-label">{{ _("Gare pianificate") }}</label>
+        <input type="number" class="form-control" id="planned_gare_count" name="planned_gare_count"
+               value="10" min="1" max="52" style="max-width:160px">
+        <div class="form-text">{{ _("Obiettivo indicativo: potrai aggiungere o togliere gare.") }}</div>
+      </div>
     </div>
 
-    <!-- Stepper Progress -->
-    <div class="row justify-content-center mb-4">
-        <div class="col-md-8">
-            <div class="d-flex justify-content-between align-items-center">
-                <div class="text-center flex-fill">
-                    <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center"
-                         style="width: 40px; height: 40px; font-weight: bold;">1</div>
-                    <div class="mt-2"><strong>{{ _("Configurazione") }}</strong></div>
-                </div>
-                <div class="flex-fill" style="height: 2px; background: #dee2e6;"></div>
-                <div class="text-center flex-fill">
-                    <div class="rounded-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center"
-                         style="width: 40px; height: 40px; font-weight: bold;">2</div>
-                    <div class="mt-2 text-muted">{{ _("Default Gare") }}</div>
-                </div>
-            </div>
+    <div class="c7-card">
+      <label for="default_classification_system" class="form-label">{{ _("Sistema di classifica") }}</label>
+      <select class="form-select" id="default_classification_system" name="default_classification_system" required>
+        <option value="WINS" selected>{{ _("Vittorie — match vinti, poi differenza rack") }}</option>
+        <option value="RACK">{{ _("Rack totali — ogni rack conta") }}</option>
+        <option value="POSITION" disabled>{{ _("Posizione bracket — in arrivo") }}</option>
+      </select>
+      <div class="mt-3">
+        <div id="class-description-WINS" class="c7-flash c7-flash--info">
+          <span class="c7-flash__ico"><i class="fas fa-trophy"></i></span>
+          <div class="c7-flash__body"><div class="c7-flash__text">{{ _("Ordina per vittorie, poi differenza rack. Ideale quando vincere il match è prioritario.") }}</div></div>
         </div>
+        <div id="class-description-RACK" class="c7-flash c7-flash--info d-none">
+          <span class="c7-flash__ico"><i class="fas fa-layer-group"></i></span>
+          <div class="c7-flash__body"><div class="c7-flash__text">{{ _("Ordina per rack totali vinti. Ideale quando ogni rack conta.") }}</div></div>
+        </div>
+        <div id="class-description-POSITION" class="c7-flash c7-flash--info d-none">
+          <span class="c7-flash__ico"><i class="fas fa-sitemap"></i></span>
+          <div class="c7-flash__body"><div class="c7-flash__text">{{ _("Punti per posizione nel bracket. Solo eliminazione diretta o doppio KO.") }}</div></div>
+        </div>
+      </div>
     </div>
 
-    <!-- Form Step 1 -->
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="fas fa-trophy"></i> {{ _("Step 1: Configurazione Base") }}</h5>
-                </div>
-                <div class="card-body">
-                    <form action="{{ url_for('admin.campionato.wizard_step2') }}" method="POST">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <!-- Nome -->
-                        <div class="mb-4">
-                            <label for="name" class="form-label">{{ _("Nome Campionato") }} *</label>
-                            <input type="text" class="form-control form-control-lg" id="name" name="name"
-                                   placeholder="{{ _('es. Campionato Invernale 2026') }}" required>
-                            <small class="text-muted">{{ _("Includi l'anno nel nome per distinguerlo facilmente") }}</small>
-                        </div>
-
-                        <!-- Numero Gare Pianificate -->
-                        <div class="mb-4">
-                            <label for="planned_gare_count" class="form-label">{{ _("Numero Gare Pianificate") }}</label>
-                            <input type="number" class="form-control" id="planned_gare_count" name="planned_gare_count"
-                                   value="10" min="1" max="52">
-                            <small class="text-muted">{{ _("Obiettivo indicativo. Il direttore potra' aggiungere o cancellare gare.") }}</small>
-                        </div>
-
-                        <!-- Sistema di Classifica -->
-                        <div class="mb-4">
-                            <label for="default_classification_system" class="form-label">{{ _("Sistema di Classifica") }} *</label>
-                            <select class="form-select form-select-lg" id="default_classification_system" name="default_classification_system" required>
-                                <option value="WINS" selected>{{ _("Vittorie (match vinti → diff rack)") }}</option>
-                                <option value="RACK">{{ _("Rack Totali (rack accumulati)") }}</option>
-                                <option value="POSITION" disabled>{{ _("Posizione Bracket (coming soon)") }}</option>
-                            </select>
-                            <div class="mt-2">
-                                <div id="class-description-WINS" class="alert alert-info py-2 mb-0 small">
-                                    <i class="fas fa-trophy"></i>
-                                    {{ _("Ordina per vittorie, poi differenza rack. Ideale per tornei dove vincere il match è prioritario.") }}
-                                </div>
-                                <div id="class-description-RACK" class="alert alert-info py-2 mb-0 small d-none">
-                                    <i class="fas fa-layer-group"></i>
-                                    {{ _("Ordina per rack totali vinti. Ideale per tornei dove ogni rack conta.") }}
-                                </div>
-                                <div id="class-description-POSITION" class="alert alert-info py-2 mb-0 small d-none">
-                                    <i class="fas fa-sitemap"></i>
-                                    {{ _("Punti per posizione nel bracket. Solo per eliminazione diretta o doppio KO.") }}
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Tipo Campionato (Matchmaking) -->
-                        <div class="mb-4">
-                            <label for="campionato_type" class="form-label">{{ _("Strategia Abbinamento") }} *</label>
-                            <select class="form-select form-select-lg" id="campionato_type" name="campionato_type" required>
-                                {% for value, label in matchmaking_strategies %}
-                                <option value="{{ value }}">{{ label }}</option>
-                                {% endfor %}
-                            </select>
-                            <div class="mt-2">
-                                <div id="type-description-amalfi" class="alert alert-info py-2 mb-0 small">
-                                    <i class="fas fa-chess"></i>
-                                    <strong>Amalfi:</strong> {{ _("Accoppiamenti basati sulla classifica. Evita reincontri.") }}
-                                </div>
-                                <div id="type-description-random" class="alert alert-info py-2 mb-0 small d-none">
-                                    <i class="fas fa-random"></i>
-                                    <strong>Random:</strong> {{ _("Accoppiamenti casuali con anti-rematch.") }}
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Challenge Mode -->
-                        <div class="mb-4">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="challenge_mode" name="challenge_mode">
-                                <label class="form-check-label" for="challenge_mode">
-                                    <strong>{{ _("Challenge Mode") }}</strong>
-                                </label>
-                            </div>
-                            <small class="text-muted">{{ _("Abilita sfide individuali tra giocatori durante il campionato") }}</small>
-                        </div>
-
-                        <hr class="my-4">
-
-                        <!-- Playoff Configuration -->
-                        <h5 class="mb-3"><i class="fas fa-medal"></i> {{ _("Playoff Finali") }}</h5>
-                        <p class="text-muted small mb-3">{{ _("I playoff sono gare speciali alla fine del campionato. I giocatori qualificati riceveranno un invito.") }}</p>
-
-                        <!-- Playoff Elite -->
-                        <div class="card mb-3">
-                            <div class="card-body py-3">
-                                <div class="row align-items-center">
-                                    <div class="col-auto">
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" id="playoff_elite_enabled"
-                                                   name="playoff_elite_enabled" checked>
-                                        </div>
-                                    </div>
-                                    <div class="col">
-                                        <label for="playoff_elite_enabled" class="form-label mb-0">
-                                            <strong><i class="fas fa-crown text-warning"></i> {{ _("Playoff Elite") }}</strong>
-                                            <br><small class="text-muted">{{ _("Per i primi classificati") }}</small>
-                                        </label>
-                                    </div>
-                                    <div class="col-auto">
-                                        <div class="input-group input-group-sm" style="width: 130px;">
-                                            <span class="input-group-text">{{ _("Top") }}</span>
-                                            <input type="number" class="form-control" id="playoff_elite_participants"
-                                                   name="playoff_elite_participants" value="6" min="2" max="16">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Playoff Academy -->
-                        <div class="card mb-3">
-                            <div class="card-body py-3">
-                                <div class="row align-items-center">
-                                    <div class="col-auto">
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" id="playoff_academy_enabled"
-                                                   name="playoff_academy_enabled" checked>
-                                        </div>
-                                    </div>
-                                    <div class="col">
-                                        <label for="playoff_academy_enabled" class="form-label mb-0">
-                                            <strong><i class="fas fa-graduation-cap text-info"></i> {{ _("Playoff Academy") }}</strong>
-                                            <br><small class="text-muted">{{ _("Per i classificati successivi") }}</small>
-                                        </label>
-                                    </div>
-                                    <div class="col-auto">
-                                        <div class="input-group input-group-sm" style="width: 130px;">
-                                            <span class="input-group-text">{{ _("N.") }}</span>
-                                            <input type="number" class="form-control" id="playoff_academy_participants"
-                                                   name="playoff_academy_participants" value="6" min="2" max="16">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <hr class="my-4">
-
-                        <!-- Navigation -->
-                        <div class="d-flex justify-content-between">
-                            <a href="{{ url_for('admin.campionato.wizard_cancel') }}" class="btn btn-outline-secondary">
-                                <i class="fas fa-times"></i> {{ _("Annulla") }}
-                            </a>
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                {{ _("Avanti") }} <i class="fas fa-arrow-right"></i>
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+    <div class="c7-card">
+      <label for="campionato_type" class="form-label">{{ _("Strategia di abbinamento") }}</label>
+      <select class="form-select" id="campionato_type" name="campionato_type" required>
+        {% for value, label in matchmaking_strategies %}
+        <option value="{{ value }}">{{ label }}</option>
+        {% endfor %}
+      </select>
+      <div class="mt-3">
+        <div id="type-description-amalfi" class="c7-flash c7-flash--info">
+          <span class="c7-flash__ico"><i class="fas fa-chess"></i></span>
+          <div class="c7-flash__body">
+            <div class="c7-flash__title">Amalfi</div>
+            <div class="c7-flash__text">{{ _("Abbinamenti dalla classifica, evita i reincontri.") }}</div>
+          </div>
         </div>
+        <div id="type-description-random" class="c7-flash c7-flash--info d-none">
+          <span class="c7-flash__ico"><i class="fas fa-shuffle"></i></span>
+          <div class="c7-flash__body">
+            <div class="c7-flash__title">Random</div>
+            <div class="c7-flash__text">{{ _("Abbinamenti casuali con anti-rematch.") }}</div>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <label class="c7-card d-flex align-items-center gap-3" style="cursor:pointer">
+      <span class="flex-fill">
+        <span class="c7-choice__title d-block">{{ _("Challenge mode") }}</span>
+        <span class="c7-choice__desc d-block">{{ _("Sfide individuali tra giocatori durante il campionato") }}</span>
+      </span>
+      <span class="form-check form-switch m-0">
+        <input class="form-check-input m-0" type="checkbox" role="switch" id="challenge_mode" name="challenge_mode">
+      </span>
+    </label>
+
+    <div class="c7-card">
+      <h3 class="mb-1">{{ _("Playoff finali") }}</h3>
+      <p class="mb-3" style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
+        {{ _("Gare speciali a fine campionato: i qualificati ricevono un invito.") }}
+      </p>
+
+      <div class="c7-card mb-3" style="background:var(--c7-bg)">
+        <div class="d-flex align-items-center gap-3">
+          <i class="fas fa-crown" style="font-size:15px;color:var(--c7-warn)"></i>
+          <label for="playoff_elite_enabled" class="flex-fill mb-0" style="cursor:pointer">
+            <span class="c7-choice__title d-block">{{ _("Playoff Elite") }}</span>
+            <span class="c7-choice__desc d-block">{{ _("Per i primi classificati") }}</span>
+          </label>
+          <div class="d-flex align-items-center gap-2" style="background:var(--c7-card);border-radius:var(--c7-r-chip);padding:0 12px;height:44px">
+            <span class="c7-kicker">{{ _("Top") }}</span>
+            <input type="number" class="form-control p-0" id="playoff_elite_participants" name="playoff_elite_participants"
+                   value="6" min="2" max="16"
+                   style="width:44px;height:40px;background:transparent;font-family:var(--c7-font-mono);text-align:center">
+          </div>
+          <span class="form-check form-switch m-0">
+            <input class="form-check-input m-0" type="checkbox" role="switch" id="playoff_elite_enabled" name="playoff_elite_enabled" checked>
+          </span>
+        </div>
+      </div>
+
+      <div class="c7-card" style="background:var(--c7-bg)">
+        <div class="d-flex align-items-center gap-3">
+          <i class="fas fa-graduation-cap" style="font-size:15px;color:var(--c7-accent)"></i>
+          <label for="playoff_academy_enabled" class="flex-fill mb-0" style="cursor:pointer">
+            <span class="c7-choice__title d-block">{{ _("Playoff Academy") }}</span>
+            <span class="c7-choice__desc d-block">{{ _("Per i classificati successivi") }}</span>
+          </label>
+          <div class="d-flex align-items-center gap-2" style="background:var(--c7-card);border-radius:var(--c7-r-chip);padding:0 12px;height:44px">
+            <span class="c7-kicker">{{ _("N.") }}</span>
+            <input type="number" class="form-control p-0" id="playoff_academy_participants" name="playoff_academy_participants"
+                   value="6" min="2" max="16"
+                   style="width:44px;height:40px;background:transparent;font-family:var(--c7-font-mono);text-align:center">
+          </div>
+          <span class="form-check form-switch m-0">
+            <input class="form-check-input m-0" type="checkbox" role="switch" id="playoff_academy_enabled" name="playoff_academy_enabled" checked>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex gap-2 justify-content-end">
+      <a href="{{ url_for('admin.campionato.wizard_cancel') }}" class="btn btn-secondary">{{ _("Annulla") }}</a>
+      <button type="submit" class="btn btn-primary">{{ _("Avanti") }} <i class="fas fa-arrow-right"></i></button>
+    </div>
+  </form>
 </div>
+{% endblock %}
 
 {% block scripts %}
-{{ super() }}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const classificationSelect = document.getElementById('default_classification_system');
     const typeSelect = document.getElementById('campionato_type');
 
-    // Classification descriptions
     const classDescWINS = document.getElementById('class-description-WINS');
     const classDescRACK = document.getElementById('class-description-RACK');
     const classDescPOSITION = document.getElementById('class-description-POSITION');
 
-    // Matchmaking descriptions
     const descAmalfi = document.getElementById('type-description-amalfi');
     const descRandom = document.getElementById('type-description-random');
 
-    // Playoff checkboxes
     const playoffEliteCheckbox = document.getElementById('playoff_elite_enabled');
     const playoffAcademyCheckbox = document.getElementById('playoff_academy_enabled');
-    const playoffAcademyCard = playoffAcademyCheckbox.closest('.card');
+    const playoffAcademyCard = playoffAcademyCheckbox.closest('.c7-card');
 
-    // Compatibility matrix: derived from backend (single source of truth)
+    // Matrice di compatibilità: derivata dal backend (unica fonte di verità)
     const validMatchmaking = {{ classification_compatibility|tojson }};
 
     function updateClassificationDescription() {
@@ -229,13 +179,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const system = classificationSelect.value;
         const validStrategies = validMatchmaking[system] || ['amalfi', 'random'];
 
-        // Enable/disable matchmaking options based on classification system
         Array.from(typeSelect.options).forEach(option => {
             if (option.value) {
                 const isValid = validStrategies.includes(option.value);
                 option.disabled = !isValid;
                 if (option.disabled && option.selected) {
-                    // Select first valid option
                     typeSelect.value = validStrategies[0] || 'amalfi';
                 }
             }
@@ -250,7 +198,6 @@ document.addEventListener('DOMContentLoaded', function() {
         descRandom.classList.toggle('d-none', type !== 'random');
     }
 
-    // Event listeners
     classificationSelect.addEventListener('change', function() {
         updateClassificationDescription();
         updateMatchmakingOptions();
@@ -258,27 +205,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
     typeSelect.addEventListener('change', updateTypeDescription);
 
-    // Playoff Elite → Academy dependency
+    // Academy esiste solo se esiste Elite
     function updatePlayoffAcademyState() {
         const eliteEnabled = playoffEliteCheckbox.checked;
-        // Academy only exists if Elite exists
         if (!eliteEnabled) {
             playoffAcademyCheckbox.checked = false;
             playoffAcademyCheckbox.disabled = true;
-            playoffAcademyCard.classList.add('opacity-50');
+            playoffAcademyCard.style.opacity = '.5';
         } else {
             playoffAcademyCheckbox.disabled = false;
-            playoffAcademyCard.classList.remove('opacity-50');
+            playoffAcademyCard.style.opacity = '1';
         }
     }
 
     playoffEliteCheckbox.addEventListener('change', updatePlayoffAcademyState);
 
-    // Initial state
     updateClassificationDescription();
     updateMatchmakingOptions();
     updatePlayoffAcademyState();
 });
 </script>
-{% endblock %}
 {% endblock %}

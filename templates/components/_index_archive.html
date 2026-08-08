@@ -1,108 +1,66 @@
-{# templates/components/_index_archive.html #}
-{# Sezione "Archivio": campionati e gare concluse (coda recente). #}
+{# templates/components/_index_archive.html — 7c #}
+{# "Archivio": campionati e gare concluse (coda recente). #}
 {% if archive_campionati or archive_garas %}
-<div class="d-flex justify-content-between align-items-center mb-3 mt-5">
-    <h2 class="mb-0"><i class="fas fa-box-archive text-muted"></i>
-        {{ _("Archivio") }}
-    </h2>
-</div>
+<section class="c7-stack" style="margin-top: 34px;">
+    <h2 style="margin: 0; color: var(--c7-ink-muted);">{{ _("Archivio") }}</h2>
 
-{# Campionati conclusi #}
-{% if archive_campionati %}
-<h6 class="text-muted mb-2"><i class="fas fa-trophy"></i> {{ _("Campionati conclusi") }}</h6>
-<div class="row mb-3">
-    {% for campionato in archive_campionati %}
-    <div class="col-md-6 col-lg-4 mb-3">
-        <div class="card h-100 border-secondary">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h6 class="card-title mb-0">{{ campionato.name }}</h6>
+    {% if archive_campionati %}
+    <div class="c7-kicker">{{ _("Campionati conclusi") }}</div>
+    <div class="c7-grid" style="grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));">
+        {% for campionato in archive_campionati %}
+        <article class="c7-card c7-card--locked" style="display: flex; flex-direction: column;">
+            <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;">
+                <h3 style="margin: 0; font-size: 15px;">{{ campionato.name }}</h3>
                 <span class="badge {{ campionato | status_badge_class }}">{{ campionato | status_text }}</span>
             </div>
-            <div class="card-footer">
-                <a href="{{ url_for('main.campionato_detail_public', campionato_id=campionato.id) }}"
-                   class="btn btn-outline-secondary btn-sm w-100">
-                    <i class="fas fa-eye"></i> {{ _("Risultati") }}
-                </a>
-            </div>
-        </div>
+            <a href="{{ url_for('main.campionato_detail_public', campionato_id=campionato.id) }}" class="btn btn-secondary btn-sm w-100" style="margin-top: 14px;">{{ _("Risultati") }}</a>
+        </article>
+        {% endfor %}
     </div>
-    {% endfor %}
-</div>
-{% if (archive_campionati_total or 0) > (archive_campionati|length) %}
-<div class="text-center mb-3">
-    <a href="{{ url_for('main.public_campionatos_list', status='completati') }}" class="btn btn-link btn-sm">
-        {{ _("Vedi tutti i campionati conclusi") }}
-    </a>
-</div>
-{% endif %}
-{% endif %}
+    {% if (archive_campionati_total or 0) > (archive_campionati|length) %}
+    <a href="{{ url_for('main.public_campionatos_list', status='completati') }}" class="btn btn-link">{{ _("Vedi tutti i campionati conclusi") }}</a>
+    {% endif %}
+    {% endif %}
 
-{# Gare concluse (con podio) #}
-{% if archive_garas %}
-<h6 class="text-muted mb-2"><i class="fas fa-bullseye"></i> {{ _("Gare concluse") }}</h6>
-<div class="row">
-    {% for gara in archive_garas %}
-    <div class="col-md-6 col-lg-4 mb-3">
-        <div class="card h-100 border-secondary">
-            <div class="card-header d-flex justify-content-between align-items-start">
-                <div>
-                    <h6 class="card-title mb-0">{{ gara.name }}</h6>
-                    {% if gara.campionato %}
-                    <small class="text-muted">{{ gara.campionato.name }}</small>
-                    {% endif %}
+    {% if archive_garas %}
+    <div class="c7-kicker" style="margin-top: 8px;">{{ _("Gare concluse") }}</div>
+    <div class="c7-grid" style="grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));">
+        {% for gara in archive_garas %}
+        <article class="c7-card c7-card--locked" style="display: flex; flex-direction: column;">
+            <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;">
+                <div style="min-width: 0;">
+                    {% if gara.campionato %}<div class="c7-kicker">{{ gara.campionato.name }}</div>{% endif %}
+                    <h3 style="margin: 4px 0 0; font-size: 15px;">{{ gara.name }}</h3>
                 </div>
-                <span class="badge bg-success">{{ _("Completata") }}</span>
+                <span class="c7-state c7-state--ok">{{ _("Conclusa") }}</span>
             </div>
-            <div class="card-body">
-                <ul class="list-unstyled small mb-2">
-                    <li><i class="fas fa-calendar"></i> {{ gara.date|date_local }}</li>
-                    <li><i class="fas fa-8-ball"></i> {{ gara.discipline|discipline_display }}</li>
-                </ul>
-                {% set podium = gara.get_podium() %}
-                {% if podium %}
-                <div class="podium-display border-top pt-2 mt-2">
-                    <small class="text-muted d-block mb-1"><i class="fas fa-trophy"></i> {{ _("Podio") }}</small>
-                    <div class="d-flex justify-content-center align-items-end gap-1">
-                        {% if podium|length >= 2 %}
-                        <div class="text-center" style="order: 1;">
-                            <div class="bg-secondary bg-opacity-25 rounded px-2 py-1">
-                                <small class="d-block">🥈</small>
-                                <small class="fw-bold text-truncate d-block" style="max-width: 60px; font-size: 0.7rem;">{{ podium[1].username }}</small>
-                            </div>
-                        </div>
-                        {% endif %}
-                        {% if podium|length >= 1 %}
-                        <div class="text-center" style="order: 0;">
-                            <div class="bg-warning bg-opacity-25 rounded px-2 py-1">
-                                <small class="d-block">🥇</small>
-                                <small class="fw-bold text-truncate d-block" style="max-width: 60px; font-size: 0.7rem;">{{ podium[0].username }}</small>
-                            </div>
-                        </div>
-                        {% endif %}
-                        {% if podium|length >= 3 %}
-                        <div class="text-center" style="order: 2;">
-                            <div class="bg-warning bg-opacity-10 rounded px-2 py-1">
-                                <small class="d-block">🥉</small>
-                                <small class="fw-bold text-truncate d-block" style="max-width: 60px; font-size: 0.7rem;">{{ podium[2].username }}</small>
-                            </div>
-                        </div>
-                        {% endif %}
+
+            <div style="margin-top: 8px; font-size: 12px; font-weight: 700;">
+                <span class="c7-num">{{ gara.date|date_local }}</span>
+                <span class="c7-sep">·</span> {{ gara.discipline|discipline_display }}
+            </div>
+
+            {% set podium = gara.get_podium() %}
+            {% if podium %}
+            <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--c7-line-soft);">
+                <div class="c7-kicker">{{ _("Podio") }}</div>
+                <div style="display: flex; flex-direction: column; gap: 5px; margin-top: 7px;">
+                    {% for p in podium[:3] %}
+                    <div style="display: flex; align-items: center; gap: 10px; font-size: 13px;">
+                        <span class="c7-num" style="width: 16px; color: {% if loop.index == 1 %}var(--c7-accent){% else %}var(--c7-ink-faint){% endif %};">{{ loop.index }}</span>
+                        <strong style="min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ p.username }}</strong>
                     </div>
+                    {% endfor %}
                 </div>
-                {% endif %}
             </div>
-            <div class="card-footer">
-                <a href="{{ url_for('main.gara_detail_public', gara_id=gara.id) }}"
-                   class="btn btn-outline-secondary btn-sm w-100">
-                    <i class="fas fa-eye"></i> {{ _("Risultati") }}
-                </a>
-            </div>
-        </div>
+            {% endif %}
+
+            <a href="{{ url_for('main.gara_detail_public', gara_id=gara.id) }}" class="btn btn-secondary btn-sm w-100" style="margin-top: 14px;">{{ _("Risultati") }}</a>
+        </article>
+        {% endfor %}
     </div>
-    {% endfor %}
-</div>
-{# Nessun link "vedi tutte": /garas è solo standalone e non filtra per
-   stato, mentre questo archivio include anche gare di campionati. Le gare
-   concluse dei campionati restano raggiungibili dal dettaglio campionato. #}
-{% endif %}
+    {# Nessun link "vedi tutte": /garas è solo standalone e non filtra per
+       stato, mentre questo archivio include anche gare di campionati. #}
+    {% endif %}
+</section>
 {% endif %}

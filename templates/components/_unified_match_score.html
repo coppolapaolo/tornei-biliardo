@@ -1,120 +1,89 @@
 {#
-Unified Match Score Display Component
+Punteggio partita — 7c
 
-Works for both Tournament Match and IndividualMatch with consistent styling.
+Funziona sia per Match di gara sia per IndividualMatch.
 
-Parameters:
-- match: Match or IndividualMatch object
-- show_confirmation_badges: bool (default True) - show confirmation badges
-- is_trio: bool (default False) - use trio 3-column layout
-- player1_name: string (optional) - override player1 display name
-- player2_name: string (optional) - override player2 display name
-- winner_id: int (optional) - override winner detection
-- can_view_ratings: bool (optional) - show ELO ratings
+Parametri:
+- match: Match o IndividualMatch
+- show_confirmation_badges: bool (default True)
+- is_trio: bool (default False)
+- player1_name / player2_name: string (opzionali)
+- winner_id: int (opzionale)
+- can_view_ratings: bool (opzionale)
 #}
 
 {% set show_badges = show_confirmation_badges|default(True) %}
 {% set trio_mode = is_trio|default(False) %}
 {% set p1_name = player1_name|default(match.player1.username) %}
-{% set p2_name = player2_name|default(match.player2.username if match.player2 else _('Bye')) %}
+{% set p2_name = player2_name|default(match.player2.username if match.player2 else _('X a tavolino')) %}
 {% set match_winner = winner_id|default(match.winner_id) %}
 
-{# Determine status for styling - works for both Match and IndividualMatch #}
 {% set is_completed = match.status.value in ['completed', 'validated'] if match.status is defined else (match.status in ['completed', 'validated']) %}
 {% set is_in_progress = match.status.value == 'in_progress' if match.status is defined else (match.status == 'in_progress') %}
 
-{# === TRIO MATCH - 3 player score layout === #}
+{# === TRIO: tre punteggi === #}
 {% if trio_mode and match.trio_match is defined and match.trio_match %}
 {% set trio = match.trio_match %}
 {% set config = trio.trio_config %}
-<div class="row text-center mb-4">
-    <div class="col-4">
-        <h5 class="mb-2">{{ trio.player1.username }}</h5>
-        <h1 class="display-4 {% if trio.winner_id == trio.player1_id %}text-success{% elif is_completed %}text-danger{% else %}text-primary{% endif %}">
-            {{ trio.player1_racks }}
-        </h1>
+<div class="c7-card c7-card--accent" style="padding: 22px 18px;">
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; text-align: center;">
+        <div>
+            <div style="font-size: 13px; font-weight: 800;">{{ trio.player1.username }}</div>
+            <div class="c7-num-xl" style="margin-top: 6px; {% if trio.winner_id == trio.player1_id %}color: var(--c7-accent-bright);{% endif %}">{{ trio.player1_racks }}</div>
+        </div>
+        <div>
+            <div style="font-size: 13px; font-weight: 800;">{{ trio.player2.username }}</div>
+            <div class="c7-num-xl" style="margin-top: 6px; {% if trio.winner_id == trio.player2_id %}color: var(--c7-accent-bright);{% endif %}">{{ trio.player2_racks }}</div>
+        </div>
+        <div>
+            <div style="font-size: 13px; font-weight: 800;">{{ trio.player3.username }}</div>
+            <div class="c7-num-xl" style="margin-top: 6px; {% if trio.winner_id == trio.player3_id %}color: var(--c7-accent-bright);{% endif %}">{{ trio.player3_racks }}</div>
+        </div>
     </div>
-    <div class="col-4">
-        <h5 class="mb-2">{{ trio.player2.username }}</h5>
-        <h1 class="display-4 {% if trio.winner_id == trio.player2_id %}text-success{% elif is_completed %}text-danger{% else %}text-primary{% endif %}">
-            {{ trio.player2_racks }}
-        </h1>
+    <div class="c7-kicker" style="margin-top: 16px; text-align: center;">
+        {% if config.num_rounds == 1 %}{{ _('1 girone all\'italiana') }}{% else %}{{ _('%(n)s gironi all\'italiana', n=config.num_rounds) }}{% endif %}
+        {% if config.bonus_racks > 0 %}+ {{ config.bonus_racks }} bonus{% endif %}
+        <span class="c7-sep">·</span> {{ _('vince chi fa più rack') }}
     </div>
-    <div class="col-4">
-        <h5 class="mb-2">{{ trio.player3.username }}</h5>
-        <h1 class="display-4 {% if trio.winner_id == trio.player3_id %}text-success{% elif is_completed %}text-danger{% else %}text-primary{% endif %}">
-            {{ trio.player3_racks }}
-        </h1>
-    </div>
-</div>
-<div class="text-center mb-3">
-    <small class="text-muted">
-        {% if config.num_rounds == 1 %}
-            {{ _('1 girone all\'italiana') }}
-        {% else %}
-            {{ _('%(n)s gironi all\'italiana', n=config.num_rounds) }}
-        {% endif %}
-        {% if config.bonus_racks > 0 %}
-            + {{ config.bonus_racks }} bonus
-        {% endif %}
-        &mdash; {{ _('vince chi ha piu rack') }}
-    </small>
 </div>
 
-{# === REGULAR MATCH - 2 player score layout === #}
+{# === PARTITA NORMALE: due punteggi === #}
 {% else %}
-{# Determine if this is a multi-set match for display purposes #}
 {% set is_multi_set = match.is_multi_set is defined and match.is_multi_set %}
-<div class="row text-center">
-    <div class="col-5">
-        {# Player name ABOVE score #}
-        <h3>{{ p1_name }}</h3>
-        {% if can_view_ratings is defined and can_view_ratings and match.player1.elo_rating %}
-        <span class="badge bg-warning text-dark small">{{ match.player1.elo_rating }}</span>
-        {% endif %}
-        <h1 class="display-4 {% if match_winner == match.player1_id %}text-success{% elif is_completed %}text-danger{% else %}text-primary{% endif %}">
-            {{ match.player1_score or 0 }}
-        </h1>
-        {% if is_multi_set %}
-        <small class="text-muted">{{ _('set') }}</small>
-        {% endif %}
-        {% if show_badges %}
-            {% if match.player1_confirmed is defined and match.player1_confirmed %}
-            <span class="badge bg-success"><i class="fas fa-check"></i> {{ _('Confermato') }}</span>
+<div class="c7-card c7-card--accent" style="padding: 22px 18px;">
+    <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: center; text-align: center;">
+        <div>
+            <div style="font-size: 15px; font-weight: 800;">{{ p1_name }}</div>
+            {% if can_view_ratings is defined and can_view_ratings and match.player1.elo_rating %}
+            <div class="c7-num" style="font-size: 11px; color: var(--c7-accent-dim);">ELO {{ match.player1.elo_rating }}</div>
             {% endif %}
-        {% endif %}
-    </div>
-    {# Center VS - distance info already in _match_header.html #}
-    <div class="col-2 d-flex align-items-center justify-content-center">
-        <span class="text-muted fs-5">VS</span>
-    </div>
-    <div class="col-5">
-        {# Player name ABOVE score #}
-        <h3>{{ p2_name }}</h3>
-        {% if can_view_ratings is defined and can_view_ratings and match.player2 and match.player2.elo_rating %}
-        <span class="badge bg-warning text-dark small">{{ match.player2.elo_rating }}</span>
-        {% endif %}
-        <h1 class="display-4 {% if match_winner == match.player2_id %}text-success{% elif is_completed %}text-danger{% else %}text-primary{% endif %}">
-            {{ match.player2_score or 0 }}
-        </h1>
-        {% if is_multi_set %}
-        <small class="text-muted">{{ _('set') }}</small>
-        {% endif %}
-        {% if show_badges %}
-            {% if match.player2_confirmed is defined and match.player2_confirmed %}
-            <span class="badge bg-success"><i class="fas fa-check"></i> {{ _('Confermato') }}</span>
+            <div class="c7-num-xl" style="font-size: 46px; margin-top: 4px; {% if match_winner == match.player1_id %}color: var(--c7-accent-bright);{% endif %}">{{ match.player1_score or 0 }}</div>
+            {% if is_multi_set %}<div class="c7-kicker">{{ _('set') }}</div>{% endif %}
+            {% if show_badges and match.player1_confirmed is defined and match.player1_confirmed %}
+            <div class="c7-state c7-state--ok" style="margin-top: 6px;">{{ _('Confermato') }}</div>
             {% endif %}
-        {% endif %}
+        </div>
+        <span style="font-size: 11px; font-weight: 800; letter-spacing: .1em; color: var(--c7-accent-dim);">VS</span>
+        <div>
+            <div style="font-size: 15px; font-weight: 800;">{{ p2_name }}</div>
+            {% if can_view_ratings is defined and can_view_ratings and match.player2 and match.player2.elo_rating %}
+            <div class="c7-num" style="font-size: 11px; color: var(--c7-accent-dim);">ELO {{ match.player2.elo_rating }}</div>
+            {% endif %}
+            <div class="c7-num-xl" style="font-size: 46px; margin-top: 4px; {% if match_winner == match.player2_id %}color: var(--c7-accent-bright);{% endif %}">{{ match.player2_score or 0 }}</div>
+            {% if is_multi_set %}<div class="c7-kicker">{{ _('set') }}</div>{% endif %}
+            {% if show_badges and match.player2_confirmed is defined and match.player2_confirmed %}
+            <div class="c7-state c7-state--ok" style="margin-top: 6px;">{{ _('Confermato') }}</div>
+            {% endif %}
+        </div>
     </div>
 </div>
 
-{# Winner announcement #}
 {% if is_completed and match_winner %}
-<div class="alert alert-success text-center mt-3">
-    <i class="fas fa-trophy"></i>
-    <strong>
-        {% if match_winner == match.player1_id %}{{ p1_name }}{% else %}{{ p2_name }}{% endif %}
-    </strong> {{ _('ha vinto il match!') }}
+<div class="c7-flash c7-flash--success" style="margin-top: 12px;">
+    <span class="c7-flash__ico"><i class="fas fa-trophy"></i></span>
+    <span class="c7-flash__body">
+        <span class="c7-flash__title">{% if match_winner == match.player1_id %}{{ p1_name }}{% else %}{{ p2_name }}{% endif %} {{ _('ha vinto') }}</span>
+    </span>
 </div>
 {% endif %}
 {% endif %}

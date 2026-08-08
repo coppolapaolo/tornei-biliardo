@@ -1,137 +1,107 @@
-<!-- templates/player/profile.html - Profilo giocatore (personale o pubblico) -->
+<!-- templates/player/profile.html — 7c. Profilo giocatore (personale o pubblico) -->
 {% extends "base.html" %}
 
 {% block title %}
-{% if is_own_profile %}
-{{ _("Il mio Profilo") }} - {{ user.username }}
-{% else %}
-{{ _("Profilo di") }} {{ user.username }}
-{% endif %}
+{% if is_own_profile %}{{ _("Il mio profilo") }} - {{ user.username }}{% else %}{{ _("Profilo di") }} {{ user.username }}{% endif %}
 {% endblock %}
 
 {% block content %}
-{# Header mobile-first: stack on mobile, row on desktop #}
-<div class="d-flex flex-column flex-md-row justify-content-md-between align-items-md-center mb-4">
-    <div class="mb-3 mb-md-0">
-        <h1>
-            <i class="fas fa-user"></i>
-            {% if is_own_profile %}
-            {{ _("Il mio Profilo") }}
-            {% else %}
-            {{ _("Profilo di") }} {{ user.username }}
-            {% endif %}
-        </h1>
-        <p class="text-muted mb-0">{{ user.username }}</p>
+<header class="c7-head" style="padding-left: 0; padding-right: 0;">
+    {% if not is_own_profile %}
+    <a class="c7-head__back" href="{{ request.referrer or url_for('main.index') }}" aria-label="{{ _('Indietro') }}"><i class="fas fa-arrow-left"></i></a>
+    {% endif %}
+    <div class="c7-head__title" style="display: flex; align-items: center; gap: 12px;">
+        <span class="c7-avatar c7-avatar--lg">{{ user.username[:2]|upper }}</span>
+        <span>
+            <h1>{{ user.username }}</h1>
+            <div class="c7-head__sub">
+                {% if is_own_profile %}{{ _("Il mio profilo") }}{% else %}{{ _("Profilo pubblico") }}{% endif %}
+            </div>
+        </span>
     </div>
-    <div class="d-flex flex-wrap gap-2">
-        {% if is_own_profile %}
-        <a href="{{ url_for('player.dashboard') }}" class="btn btn-outline-secondary btn-sm">
-            <i class="fas fa-arrow-left"></i> {{ _("Torna alla Dashboard") }}
-        </a>
-        <a href="{{ url_for('player.history') }}" class="btn btn-outline-primary btn-sm">
-            <i class="fas fa-history"></i> {{ _("Storico Completo") }}
-        </a>
-        {# Elimina Account moved to danger zone at bottom of page #}
-        {% else %}
-        <a href="{{ request.referrer or url_for('main.index') }}" class="btn btn-outline-secondary btn-sm">
-            <i class="fas fa-arrow-left"></i> {{ _("Indietro") }}
-        </a>
-        {% endif %}
-    </div>
-</div>
+    {% if is_own_profile %}
+    <a href="{{ url_for('player.history') }}" class="btn btn-secondary btn-sm">{{ _("Storico") }}</a>
+    {% endif %}
+</header>
 
-<div class="row">
-    <div class="col-md-8">
-        {# Ratings - visibili solo se can_view_ratings è true e (privacy.show_statistics o profilo proprio/admin) #}
+<div class="c7-cols">
+    <div class="c7-stack">
+        {# Ratings: solo se can_view_ratings e (privacy.show_statistics o profilo proprio/admin) #}
         {% if can_view_ratings and (is_own_profile or is_admin or privacy.show_statistics) %}
         {% include "components/_player_ratings.html" %}
         {% endif %}
 
-        {# Statistiche - visibili solo se privacy.show_statistics o profilo proprio/admin #}
         {% if is_own_profile or is_admin or privacy.show_statistics %}
         {% include "components/_player_statistics.html" %}
         {% endif %}
 
-        {# Challenge stats - visibili solo se privacy.show_challenge_stats o profilo proprio/admin #}
         {% if is_own_profile or is_admin or privacy.show_challenge_stats %}
         {% include "components/_player_challenge_statistics.html" %}
         {% endif %}
 
-        {# Partite recenti - visibili solo se privacy.show_recent_matches o profilo proprio/admin #}
         {% if is_own_profile or is_admin or privacy.show_recent_matches %}
         {% include "components/_player_recent_matches.html" %}
         {% endif %}
 
-        {# Classifiche - visibili solo se privacy.show_classifications o profilo proprio/admin #}
         {% if is_own_profile or is_admin or privacy.show_classifications %}
         {% include "components/_player_campionato_classifications.html" %}
         {% endif %}
 
-        {# Messaggio se tutto nascosto per visitatori #}
+        {# Tutto nascosto per i visitatori #}
         {% if not is_own_profile and not is_admin %}
         {% if not privacy.show_statistics and not privacy.show_challenge_stats and not privacy.show_recent_matches and
         not privacy.show_classifications %}
-        <div class="alert alert-secondary text-center">
-            <i class="fas fa-user-shield fa-2x mb-2"></i>
-            <h5>{{ _("Profilo Privato") }}</h5>
-            <p class="mb-0">{{ _("L'utente ha scelto di mantenere privati i propri dati di gioco.") }}</p>
+        <div class="c7-empty">
+            <div class="c7-empty__ico"><i class="fas fa-user-shield"></i></div>
+            <h2 class="c7-empty__title">{{ _("Profilo privato") }}</h2>
+            <p class="c7-empty__text">{{ _("Questo giocatore ha scelto di tenere riservati i propri dati di gioco.") }}</p>
         </div>
         {% endif %}
         {% endif %}
     </div>
 
-    <div class="col-md-4">
-        {# Info personali - componente gia esistente, ma solo per profilo proprio #}
+    <div class="c7-stack">
         {% if is_own_profile %}
         {% include "components/_player_personal_info.html" %}
         {% else %}
-        {# Card info pubblica per altri utenti #}
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5><i class="fas fa-id-card"></i> {{ _("Informazioni") }}</h5>
-            </div>
-            <div class="card-body">
-                <p><strong>{{ _("Username") }}:</strong> {{ user.username }}</p>
+        <section class="c7-card">
+            <div class="c7-kicker">{{ _("Informazioni") }}</div>
+            <dl style="display: grid; grid-template-columns: auto 1fr; gap: 10px 18px; margin: 14px 0 0; font-size: 13px;">
+                <dt class="text-muted" style="font-weight: 700;">{{ _("Nome utente") }}</dt>
+                <dd style="margin: 0; text-align: right;">{{ user.username }}</dd>
                 {% if is_admin or privacy.show_email %}
-                <p><strong>{{ _("Email") }}:</strong> {{ user.email }}</p>
+                <dt class="text-muted" style="font-weight: 700;">Email</dt>
+                <dd style="margin: 0; text-align: right;">{{ user.email }}</dd>
                 {% endif %}
                 {% if is_admin or privacy.show_phone %}
-                <p><strong>{{ _("Telefono") }}:</strong> {{ user.phone or _('Non specificato') }}</p>
+                <dt class="text-muted" style="font-weight: 700;">{{ _("Telefono") }}</dt>
+                <dd style="margin: 0; text-align: right;">{{ user.phone or _('Non indicato') }}</dd>
                 {% endif %}
-                <p><strong>{{ _("Registrato") }}:</strong> {{ user.created_at|date_local }}</p>
-                <p><strong>{{ _("Ruolo") }}:</strong>
-                    {% if user.is_admin %}
-                    <span class="badge bg-danger">Admin</span>
-                    {% elif user.is_director %}
-                    <span class="badge bg-primary">Director</span>
-                    {% else %}
-                    <span class="badge bg-secondary">Player</span>
-                    {% endif %}
-                </p>
-            </div>
-        </div>
+                <dt class="text-muted" style="font-weight: 700;">{{ _("Iscritto dal") }}</dt>
+                <dd class="c7-num" style="margin: 0; text-align: right;">{{ user.created_at|date_local }}</dd>
+                <dt class="text-muted" style="font-weight: 700;">{{ _("Ruolo") }}</dt>
+                <dd style="margin: 0; text-align: right;">
+                    {% if user.is_admin %}<span class="c7-state c7-state--accent">{{ _("Amministratore") }}</span>
+                    {% elif user.is_director %}<span class="c7-state c7-state--info">{{ _("Direttore di gara") }}</span>
+                    {% else %}<span class="c7-state c7-state--muted">{{ _("Giocatore") }}</span>{% endif %}
+                </dd>
+            </dl>
+        </section>
         {% endif %}
 
-        {# Iscrizioni - solo per profilo proprio #}
         {% if is_own_profile %}
         {% include "components/_player_inscriptions.html" %}
         {% endif %}
     </div>
 </div>
 
-{# Danger Zone - Azioni distruttive in fondo alla pagina #}
+{# Azioni irreversibili, in fondo #}
 {% if is_own_profile %}
-<div class="card border-danger mt-4">
-    <div class="card-header bg-danger text-white">
-        <h6 class="mb-0"><i class="fas fa-exclamation-triangle"></i> {{ _("Zona Pericolosa") }}</h6>
-    </div>
-    <div class="card-body">
-        <p class="text-muted small mb-3">{{ _("Queste azioni sono irreversibili.") }}</p>
-        <a href="{{ url_for('player.delete_account') }}" class="btn btn-outline-danger btn-sm">
-            <i class="fas fa-trash"></i> {{ _("Elimina Account") }}
-        </a>
-    </div>
-</div>
+<section class="c7-card c7-card--err" style="margin-top: 24px;">
+    <div class="c7-kicker" style="color: var(--c7-err-ink);">{{ _("Azioni irreversibili") }}</div>
+    <p style="margin: 8px 0 14px; font-size: 13px;">{{ _("Eliminando l'account perdi storico, iscrizioni e statistiche. Non si torna indietro.") }}</p>
+    <a href="{{ url_for('player.delete_account') }}" class="btn btn-danger btn-sm">{{ _("Elimina l'account") }}</a>
+</section>
 {% endif %}
 
 {% if is_own_profile %}

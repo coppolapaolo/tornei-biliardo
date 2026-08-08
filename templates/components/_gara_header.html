@@ -1,38 +1,32 @@
-<!-- Gara Header Component -->
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1>{{ gara.display_name }}</h1>
-        <p class="text-muted mb-0">
-            {{ gara.date|date_local }} - {{ gara.discipline|discipline_display }} -
-            {{ gara.distance_config|format_distance }}
-            {% if gara.location %} - {{ gara.location }}{% endif %}
-        </p>
-    </div>
-    <div class="d-flex align-items-center gap-2 gap-md-3 gap-lg-4">
-        {% if current_user.is_authenticated %}
-        {% if gara.campionato_id %}
-        {% if current_user.can_manage_competition(gara.id) %}
-        <a href="{{ url_for('admin.campionato.campionato_detail', campionato_id=gara.campionato_id) }}"
-            class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left"></i> {{ _('Torna al Campionato') }}
-        </a>
-        {% else %}
-        <a href="{{ url_for('main.campionato_detail_public', campionato_id=gara.campionato_id) }}"
-            class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left"></i> {{ _('Torna al Campionato') }}
-        </a>
-        {% endif %}
-        {% else %}
-        <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left"></i> {{ _('Torna alla Dashboard') }}
-        </a>
-        {% endif %}
+<!-- Testata gara — 7c -->
+<header class="c7-head" style="padding-left: 0; padding-right: 0;">
+    {% if current_user.is_authenticated %}
+    {% if gara.campionato_id %}
+    {% if current_user.can_manage_competition(gara.id) %}
+    <a class="c7-head__back" href="{{ url_for('admin.campionato.campionato_detail', campionato_id=gara.campionato_id) }}" aria-label="{{ _('Torna al campionato') }}"><i class="fas fa-arrow-left"></i></a>
+    {% else %}
+    <a class="c7-head__back" href="{{ url_for('main.campionato_detail_public', campionato_id=gara.campionato_id) }}" aria-label="{{ _('Torna al campionato') }}"><i class="fas fa-arrow-left"></i></a>
+    {% endif %}
+    {% else %}
+    <a class="c7-head__back" href="{{ url_for('dashboard.dashboard') }}" aria-label="{{ _('Torna alla dashboard') }}"><i class="fas fa-arrow-left"></i></a>
+    {% endif %}
+    {% endif %}
 
-        {% if gara.can_be_modified() and current_user.can_manage_competition(gara.id) %}
-        <a href="{{ url_for('admin.competition.edit_gara', gara_id=gara.id) }}" class="btn btn-warning">
-            <i class="fas fa-edit"></i> {{ _('Modifica Gara') }}
-        </a>
-        {% endif %}
-        {% endif %}
+    <div class="c7-head__title">
+        <h1>{{ gara.display_name }}</h1>
+        <div class="c7-head__sub">
+            <span class="c7-num">{{ gara.date|date_local }}</span>
+            <span class="c7-sep">·</span> {{ gara.discipline|discipline_display }}
+            <span class="c7-sep">·</span> {{ gara.distance_config|format_distance }}
+            {% if gara.location %}<span class="c7-sep">·</span> {{ gara.location }}{% endif %}
+        </div>
     </div>
-</div>
+
+    {% if current_user.is_authenticated %}
+    {% if gara.can_be_modified() and current_user.can_manage_competition(gara.id) %}
+    <a href="{{ url_for('admin.competition.edit_gara', gara_id=gara.id) }}" class="btn btn-secondary btn-sm">
+        <i class="fas fa-pen"></i> {{ _('Modifica') }}
+    </a>
+    {% endif %}
+    {% endif %}
+</header>

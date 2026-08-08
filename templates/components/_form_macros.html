@@ -1,0 +1,168 @@
+{# templates/components/_form_macros.html — Design System 7c
+   Macro per i form. Riducono il lavoro su tutte le pagine di creazione e
+   modifica: campo, scelta a card, stepper, interruttore, avviso.
+
+   Uso:
+     {% from "components/_form_macros.html" import field, choice, stepper, toggle, notice %}
+#}
+
+{# ---------------------------------------------------------------------------
+   Campo di testo / data / numero.
+   errors: lista di stringhe (es. form.campo.errors di WTForms)
+   hint:   conseguenza, non sintassi ("Gli iscritti riceveranno una notifica")
+   --------------------------------------------------------------------------- #}
+{% macro field(name, label, value='', type='text', hint='', errors=None, placeholder='', required=False, readonly=False, attrs='') %}
+<div class="mb-3">
+    <label class="form-label" for="f-{{ name }}">{{ label }}</label>
+    <input type="{{ type }}"
+           class="form-control{{ ' is-invalid' if errors }}"
+           id="f-{{ name }}" name="{{ name }}"
+           value="{{ value if value is not none else '' }}"
+           placeholder="{{ placeholder }}"
+           {% if required %}required{% endif %}
+           {% if readonly %}readonly{% endif %}
+           {{ attrs | safe }}>
+    {% if errors %}
+        {% for e in errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+    {% elif hint %}
+        <div class="form-text">{{ hint }}</div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{# ---------------------------------------------------------------------------
+   Campo di testo lungo.
+   --------------------------------------------------------------------------- #}
+{% macro textarea(name, label, value='', hint='', placeholder='', rows=4) %}
+<div class="mb-3">
+    <label class="form-label" for="f-{{ name }}">{{ label }}</label>
+    <textarea class="form-control" id="f-{{ name }}" name="{{ name }}" rows="{{ rows }}"
+              placeholder="{{ placeholder }}">{{ value or '' }}</textarea>
+    {% if hint %}<div class="form-text">{{ hint }}</div>{% endif %}
+</div>
+{% endmacro %}
+
+{# ---------------------------------------------------------------------------
+   Scelta a poche opzioni: card selezionabili al posto di <select>.
+   options: lista di dict { value, title, desc, icon, locked }
+   --------------------------------------------------------------------------- #}
+{% macro choice(name, label, options, selected=None, hint='') %}
+<div class="mb-3">
+    {% if label %}<div class="form-label">{{ label }}</div>{% endif %}
+    <div class="c7-stack">
+        {% for o in options %}
+        <label class="c7-choice{{ ' is-selected' if o.value == selected }}{{ ' is-locked' if o.locked }}">
+            <input type="radio" name="{{ name }}" value="{{ o.value }}" class="d-none"
+                   {% if o.value == selected %}checked{% endif %}
+                   {% if o.locked %}disabled{% endif %}>
+            {% if o.icon %}<i class="fas {{ o.icon }}" style="font-size:14px;width:18px"></i>{% endif %}
+            <span class="flex-fill">
+                <span class="c7-choice__title d-block">{{ o.title }}</span>
+                {% if o.desc %}<span class="c7-choice__desc d-block">{{ o.desc }}</span>{% endif %}
+            </span>
+            {% if o.value == selected %}<i class="fas fa-circle-check" style="font-size:15px"></i>{% endif %}
+        </label>
+        {% endfor %}
+    </div>
+    {% if hint %}<div class="form-text">{{ hint }}</div>{% endif %}
+</div>
+{% endmacro %}
+
+{# ---------------------------------------------------------------------------
+   Stepper numerico. hint traduce il numero in parole: "si vince a 5 rack".
+   Richiede lo snippet JS in fondo a questo file (incluso una sola volta).
+   --------------------------------------------------------------------------- #}
+{% macro stepper(name, label, value=5, min=1, max=99, hint='') %}
+<div class="mb-3">
+    {% if label %}<div class="form-label">{{ label }}</div>{% endif %}
+    <div class="c7-stepper" data-stepper data-min="{{ min }}" data-max="{{ max }}">
+        <div class="c7-stepper__row">
+            <button type="button" data-step="-1" aria-label="{{ _('Diminuisci') }}"><i class="fas fa-minus"></i></button>
+            <div class="flex-fill">
+                <div class="c7-stepper__value" data-stepper-display>{{ value }}</div>
+                {% if hint %}<div class="c7-stepper__hint" data-stepper-hint>{{ hint }}</div>{% endif %}
+            </div>
+            <button type="button" data-step="1" aria-label="{{ _('Aumenta') }}"><i class="fas fa-plus"></i></button>
+        </div>
+        <input type="hidden" name="{{ name }}" value="{{ value }}" data-stepper-input>
+    </div>
+</div>
+{% endmacro %}
+
+{# ---------------------------------------------------------------------------
+   Interruttore con descrizione.
+   --------------------------------------------------------------------------- #}
+{% macro toggle(name, title, desc='', checked=False) %}
+<label class="c7-card d-flex align-items-center gap-3 mb-3">
+    <span class="flex-fill">
+        <span class="c7-choice__title d-block">{{ title }}</span>
+        {% if desc %}<span class="c7-choice__desc d-block">{{ desc }}</span>{% endif %}
+    </span>
+    <span class="form-check form-switch m-0">
+        <input class="form-check-input m-0" type="checkbox" role="switch"
+               name="{{ name }}" value="1" {% if checked %}checked{% endif %}>
+    </span>
+</label>
+{% endmacro %}
+
+{# ---------------------------------------------------------------------------
+   Avviso in testa a un form (es. "4 giocatori gia' iscritti").
+   tone: info | warning | error | success
+   --------------------------------------------------------------------------- #}
+{% macro notice(title, text='', tone='info', icon='fa-circle-info') %}
+<div class="c7-flash c7-flash--{{ tone }} mb-3">
+    <span class="c7-flash__ico"><i class="fas {{ icon }}"></i></span>
+    <div class="c7-flash__body">
+        <div class="c7-flash__title">{{ title }}</div>
+        {% if text %}<div class="c7-flash__text">{{ text }}</div>{% endif %}
+    </div>
+</div>
+{% endmacro %}
+
+{# ---------------------------------------------------------------------------
+   Campo ereditato e bloccato (mostrato, non nascosto).
+   --------------------------------------------------------------------------- #}
+{% macro inherited(label, value, source='') %}
+<div class="mb-3">
+    <div class="form-label">{{ label }}</div>
+    <div class="c7-card c7-card--locked d-flex align-items-center gap-2"
+         style="height:56px;padding:0 16px;font-size:15px;font-weight:700">
+        <i class="fas fa-lock" style="font-size:12px"></i>{{ value }}
+        {% if source %}<span class="ms-auto" style="font-size:11px;color:var(--c7-ink-faint)">{{ source }}</span>{% endif %}
+    </div>
+</div>
+{% endmacro %}
+
+{# ---------------------------------------------------------------------------
+   Comportamento dello stepper e delle scelte a card.
+   Includere una sola volta per pagina: {{ form_macros_scripts() }}
+   --------------------------------------------------------------------------- #}
+{% macro form_macros_scripts() %}
+<script>
+(function () {
+    document.querySelectorAll('[data-stepper]').forEach(function (box) {
+        var input = box.querySelector('[data-stepper-input]');
+        var display = box.querySelector('[data-stepper-display]');
+        var min = parseInt(box.dataset.min, 10);
+        var max = parseInt(box.dataset.max, 10);
+        box.querySelectorAll('[data-step]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var next = parseInt(input.value, 10) + parseInt(btn.dataset.step, 10);
+                if (next < min || next > max) return;
+                input.value = next;
+                display.textContent = next;
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+        });
+    });
+
+    document.querySelectorAll('.c7-choice input[type="radio"]').forEach(function (radio) {
+        radio.addEventListener('change', function () {
+            document.querySelectorAll('input[name="' + radio.name + '"]').forEach(function (r) {
+                r.closest('.c7-choice').classList.toggle('is-selected', r.checked);
+            });
+        });
+    });
+})();
+</script>
+{% endmacro %}

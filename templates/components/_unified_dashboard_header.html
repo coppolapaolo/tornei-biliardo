@@ -1,41 +1,38 @@
-{# templates/components/_unified_dashboard_header.html #}
-<!-- Unified Dashboard Header -->
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <div>
-    <h2 class="h5 mb-0">
-      {% if current_user.is_admin %}
-      <i class="fas fa-user-shield"></i> {{ _('Dashboard Amministratore') }}
-      {% elif current_user.is_director %}
-      <i class="fas fa-briefcase"></i> {{ _('Dashboard Direttore') }}
-      {% else %}
-      <i class="fas fa-user"></i> {{ _('Dashboard Giocatore') }}
-      {% endif %}
-    </h2>
+{# templates/components/_unified_dashboard_header.html — Design System 7c
+   Riga di intestazione della dashboard: titolo + azioni primarie.
+   Contratto invariato: incluso da dashboard/admin|director|player.html.
+   Le capability (vm.caps) e gli endpoint sono gli stessi di prima. #}
+<div class="d-flex align-items-center gap-3 flex-wrap mb-4">
+  <div class="flex-fill">
+    <div class="c7-kicker">
+      {% if current_user.is_admin %}{{ _('Amministratore') }}
+      {% elif current_user.is_director %}{{ _('Direttore di gara') }}
+      {% else %}{{ _('Giocatore') }}{% endif %}
+    </div>
+    <h1 class="mt-1 mb-0" style="font-size:24px">
+      {{ _('Ciao') }} {{ current_user.username }}
+    </h1>
   </div>
 
-  <div class="d-flex gap-2">
-    {% if current_user.is_admin or (vm.caps and vm.caps.can_create_campionato) %}
-    {# Shows primary create action #}
-    {% if vm.caps and vm.caps.can_create_campionato %}
-    <button type="button" class="btn btn-sm btn-success shadow-sm" data-bs-toggle="modal"
-      data-bs-target="#newTournamentModal">
-      <i class="fas fa-plus-circle me-1"></i> {{ _('Nuovo Campionato') }}
-    </button>
-    {% endif %}
+  <div class="d-flex gap-2 flex-wrap">
+    {% if vm.caps and vm.caps.can_create_standalone %}
+    <a class="btn btn-secondary btn-sm" href="{{ url_for('admin.competition.create_gara_standalone') }}">
+      <i class="fas fa-plus"></i>{{ _('Nuova Gara') }}
+    </a>
     {% endif %}
 
-    {% if vm.caps and vm.caps.can_create_standalone %}
-    <a class="btn btn-success" href="{{ url_for('admin.competition.create_gara_standalone') }}">
-      <i class="fas fa-plus"></i> {{ _('Nuova Gara') }}
-    </a>
+    {% if vm.caps and vm.caps.can_create_campionato %}
+    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newTournamentModal">
+      <i class="fas fa-wand-magic-sparkles"></i>{{ _('Nuovo Campionato') }}
+    </button>
     {% endif %}
 
     {% if current_user.is_player and not current_user.is_director and not current_user.is_admin %}
-    {% if vm.caps and vm.caps.can_create_match_proposal %}
-    <a class="btn btn-outline-primary" href="{{ url_for('individual_match.create_proposal') }}">
-      <i class="fas fa-plus-circle"></i> {{ _('Crea Match') }}
-    </a>
-    {% endif %}
+      {% if vm.caps and vm.caps.can_create_match_proposal %}
+      <a class="btn btn-secondary btn-sm" href="{{ url_for('player.create_match_proposal') }}">
+        <i class="fas fa-plus"></i>{{ _('Crea Match') }}
+      </a>
+      {% endif %}
     {% endif %}
   </div>
 </div>

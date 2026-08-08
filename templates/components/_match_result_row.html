@@ -1,4 +1,4 @@
-{# templates/components/_match_result_row.html #}
+{# templates/components/_match_result_row.html — 7c #}
 {# Helper: check if match is finished (completed or validated) #}
 {% set is_finished = match.status in ['completed', 'validated'] %}
 {# Crown shows when match is finished and has a winner #}
@@ -8,84 +8,66 @@
 {% set p1_forfeit = forfeit_user_ids is defined and match.player1_id in forfeit_user_ids %}
 {% set p2_forfeit = forfeit_user_ids is defined and match.player2_id in forfeit_user_ids %}
 
-{# === TRIO MATCH === #}
+{# === MATCH TRIO === #}
 {% if match.is_trio and match.trio_match %}
 {% set trio = match.trio_match %}
 {% set p3_wins = is_finished and match.winner_id == trio.player3_id %}
 {% set p3_forfeit = forfeit_user_ids is defined and trio.player3_id in forfeit_user_ids %}
-<tr class="table-info">
+<tr>
     <td colspan="3">
-        <span class="badge bg-primary me-2"><i class="fas fa-users"></i> {{ _('Trio') }}</span>
-        {# Player 1 #}
-        <strong class="{% if p1_forfeit %}text-muted text-decoration-line-through{% endif %}">{{ trio.player1.username }}</strong>
-        {% if p1_wins %}<i class="fas fa-crown text-warning ms-1"></i>{% endif %}
-        {% if p1_forfeit %}<i class="fas fa-ban text-secondary ms-1" title="{{ _('Forfait') }}"></i>{% endif %}
-        <span class="text-muted mx-2">•</span>
-        {# Player 2 #}
-        <strong class="{% if p2_forfeit %}text-muted text-decoration-line-through{% endif %}">{{ trio.player2.username }}</strong>
-        {% if p2_wins %}<i class="fas fa-crown text-warning ms-1"></i>{% endif %}
-        {% if p2_forfeit %}<i class="fas fa-ban text-secondary ms-1" title="{{ _('Forfait') }}"></i>{% endif %}
-        <span class="text-muted mx-2">•</span>
-        {# Player 3 #}
-        <strong class="{% if p3_forfeit %}text-muted text-decoration-line-through{% endif %}">{{ trio.player3.username }}</strong>
-        {% if p3_wins %}<i class="fas fa-crown text-warning ms-1"></i>{% endif %}
-        {% if p3_forfeit %}<i class="fas fa-ban text-secondary ms-1" title="{{ _('Forfait') }}"></i>{% endif %}
+        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <span class="c7-state c7-state--accent">{{ _('Trio') }}</span>
+            <strong {% if p1_forfeit %}style="color: var(--c7-ink-faint); text-decoration: line-through;"{% endif %}>{{ trio.player1.username }}</strong>
+            {% if p1_wins %}<i class="fas fa-crown" style="color: var(--c7-warn);"></i>{% endif %}
+            {% if p1_forfeit %}<i class="fas fa-ban" style="color: var(--c7-ink-faint);" title="{{ _('Forfait') }}"></i>{% endif %}
+            <span class="c7-sep">·</span>
+            <strong {% if p2_forfeit %}style="color: var(--c7-ink-faint); text-decoration: line-through;"{% endif %}>{{ trio.player2.username }}</strong>
+            {% if p2_wins %}<i class="fas fa-crown" style="color: var(--c7-warn);"></i>{% endif %}
+            {% if p2_forfeit %}<i class="fas fa-ban" style="color: var(--c7-ink-faint);" title="{{ _('Forfait') }}"></i>{% endif %}
+            <span class="c7-sep">·</span>
+            <strong {% if p3_forfeit %}style="color: var(--c7-ink-faint); text-decoration: line-through;"{% endif %}>{{ trio.player3.username }}</strong>
+            {% if p3_wins %}<i class="fas fa-crown" style="color: var(--c7-warn);"></i>{% endif %}
+            {% if p3_forfeit %}<i class="fas fa-ban" style="color: var(--c7-ink-faint);" title="{{ _('Forfait') }}"></i>{% endif %}
+        </div>
     </td>
     <td>
-        {# Trio score: show all three player scores #}
         {% if is_finished %}
-        <span class="badge bg-info">
-            {{ trio.player1_racks }}-{{ trio.player2_racks }}-{{ trio.player3_racks }}
-        </span>
+        <span class="c7-num">{{ trio.player1_racks }}-{{ trio.player2_racks }}-{{ trio.player3_racks }}</span>
         {% elif trio.player1_racks > 0 or trio.player2_racks > 0 or trio.player3_racks > 0 %}
-        <span class="badge bg-warning">
-            {{ trio.player1_racks }}-{{ trio.player2_racks }}-{{ trio.player3_racks }}
-        </span>
+        <span class="c7-num" style="color: var(--c7-warn-ink);">{{ trio.player1_racks }}-{{ trio.player2_racks }}-{{ trio.player3_racks }}</span>
         {% else %}
-        <span class="text-muted">-</span>
+        <span style="color: var(--c7-ink-faint);">—</span>
         {% endif %}
     </td>
 
-{# === REGULAR MATCH (2 players or bye) === #}
+{# === MATCH NORMALE (2 giocatori o X a tavolino) === #}
 {% else %}
 <tr>
     <td>
-        <strong class="{% if p1_forfeit %}text-muted text-decoration-line-through{% endif %}">{{ match.player1.username }}</strong>
-        {% if p1_wins %}
-        <i class="fas fa-crown text-warning ms-1"></i>
-        {% endif %}
-        {% if p1_forfeit %}
-        <i class="fas fa-ban text-secondary ms-1" title="{{ _('Forfait') }}"></i>
-        {% endif %}
+        <strong {% if p1_forfeit %}style="color: var(--c7-ink-faint); text-decoration: line-through;"{% endif %}>{{ match.player1.username }}</strong>
+        {% if p1_wins %}<i class="fas fa-crown" style="color: var(--c7-warn);"></i>{% endif %}
+        {% if p1_forfeit %}<i class="fas fa-ban" style="color: var(--c7-ink-faint);" title="{{ _('Forfait') }}"></i>{% endif %}
     </td>
-    <td class="text-center">vs</td>
+    <td class="text-center" style="color: var(--c7-ink-faint); font-size: 12px;">vs</td>
     <td>
         {% if match.is_bye %}
-        <em class="text-muted">{{ _('Bye') }}</em>
+        <span style="color: var(--c7-ink-muted);">{{ _('X a tavolino') }}</span>
         {% else %}
-        <strong class="{% if p2_forfeit %}text-muted text-decoration-line-through{% endif %}">{{ match.player2.username }}</strong>
-        {% if p2_wins %}
-        <i class="fas fa-crown text-warning ms-1"></i>
-        {% endif %}
-        {% if p2_forfeit %}
-        <i class="fas fa-ban text-secondary ms-1" title="{{ _('Forfait') }}"></i>
-        {% endif %}
+        <strong {% if p2_forfeit %}style="color: var(--c7-ink-faint); text-decoration: line-through;"{% endif %}>{{ match.player2.username }}</strong>
+        {% if p2_wins %}<i class="fas fa-crown" style="color: var(--c7-warn);"></i>{% endif %}
+        {% if p2_forfeit %}<i class="fas fa-ban" style="color: var(--c7-ink-faint);" title="{{ _('Forfait') }}"></i>{% endif %}
         {% endif %}
     </td>
     <td>
         {% if match.is_bye %}
-        {# Match bye: non ha un vero risultato, mostra semplicemente "-" #}
-        <span class="text-muted">-</span>
+        {# X a tavolino: non ha un vero risultato #}
+        <span style="color: var(--c7-ink-faint);">—</span>
         {% elif is_finished %}
-        <span class="badge bg-info">
-            {{ match.player1_score }} - {{ match.player2_score }}
-        </span>
+        <span class="c7-num">{{ match.player1_score }}–{{ match.player2_score }}</span>
         {% elif match.player1_score > 0 or match.player2_score > 0 %}
-        <span class="badge bg-warning">
-            {{ match.player1_score }} - {{ match.player2_score }}
-        </span>
+        <span class="c7-num" style="color: var(--c7-warn-ink);">{{ match.player1_score }}–{{ match.player2_score }}</span>
         {% else %}
-        <span class="text-muted">-</span>
+        <span style="color: var(--c7-ink-faint);">—</span>
         {% endif %}
     </td>
 {% endif %}
@@ -93,140 +75,109 @@
         {# Determina se è una partita del giocatore corrente #}
         {% set is_my_match = user_inscription and current_user.is_authenticated and (match.player1_id == current_user.id or match.player2_id == current_user.id) %}
         {% if match.is_bye %}
-        <span class="badge bg-info">{{ _('Bye') }}</span>
+        <span class="c7-state c7-state--info">{{ _('A tavolino') }}</span>
         {% elif match.status == 'pending' %}
             {% if is_my_match and not match.is_bye %}
-            <a href="{{ url_for('admin.match.match_detail', match_id=match.id) }}" class="badge bg-warning text-decoration-none">
-                <i class="fas fa-play me-1"></i>{{ _('In Attesa') }}
-            </a>
+            <a href="{{ url_for('admin.match.match_detail', match_id=match.id) }}" class="c7-state c7-state--warn">{{ _('Da giocare') }}</a>
             {% else %}
-            <span class="badge bg-warning">{{ _('In Attesa') }}</span>
+            <span class="c7-state c7-state--warn">{{ _('Da giocare') }}</span>
             {% endif %}
         {% elif match.status == 'playing' %}
             {% if is_my_match and not match.is_bye %}
-            <a href="{{ url_for('admin.match.match_detail', match_id=match.id) }}" class="badge bg-primary text-decoration-none">
-                <i class="fas fa-play me-1"></i>{{ _('In Corso') }}
-            </a>
+            <a href="{{ url_for('admin.match.match_detail', match_id=match.id) }}" class="c7-state c7-state--accent">{{ _('In corso') }}</a>
             {% else %}
-            <span class="badge bg-primary">{{ _('In Corso') }}</span>
+            <span class="c7-state c7-state--accent">{{ _('In corso') }}</span>
             {% endif %}
         {% elif is_finished %}
             {% if is_my_match and not match.is_bye %}
-            <a href="{{ url_for('admin.match.match_detail', match_id=match.id) }}" class="badge bg-success text-decoration-none">
-                <i class="fas fa-eye me-1"></i>{{ _('Completata') }}
-            </a>
+            <a href="{{ url_for('admin.match.match_detail', match_id=match.id) }}" class="c7-state c7-state--ok">{{ _('Conclusa') }}</a>
             {% else %}
-            <span class="badge bg-success">{{ _('Completata') }}</span>
+            <span class="c7-state c7-state--ok">{{ _('Conclusa') }}</span>
             {% endif %}
         {% endif %}
     </td>
     <td>
         {% if match.is_bye %}
-        {# Match bye: non richiede tavolo #}
-        <span class="text-muted">-</span>
+        <span style="color: var(--c7-ink-faint);">—</span>
         {% elif is_finished %}
-        {# Partite completate/validate: nessun tavolo (già liberato) #}
-        <span class="text-muted">-</span>
+        {# Partite concluse: nessun tavolo (già liberato) #}
+        <span style="color: var(--c7-ink-faint);">—</span>
         {% elif user_can_manage and available_tables %}
-        {# Admin/Director view: Badge cliccabile per apertura modal #}
-        {# Build player display string based on match type #}
+        {# Vista direttore di gara / admin: badge cliccabile che apre il modale #}
         {% if match.is_trio and match.trio_match %}
             {% set player_display = match.trio_match.player1.username ~ ' • ' ~ match.trio_match.player2.username ~ ' • ' ~ match.trio_match.player3.username %}
         {% else %}
-            {% set player_display = match.player1.username ~ ' vs ' ~ (match.player2.username if not match.is_bye else _('Bye')) %}
+            {% set player_display = match.player1.username ~ ' vs ' ~ (match.player2.username if not match.is_bye else _('X a tavolino')) %}
         {% endif %}
         {% if match.table_assignment %}
-        <span class="badge bg-primary cursor-pointer" data-bs-toggle="modal" data-bs-target="#tableAssignmentModal"
+        <button type="button" class="c7-state c7-state--accent" style="border: 0; cursor: pointer;" data-bs-toggle="modal" data-bs-target="#tableAssignmentModal"
             onclick='openTableAssignment({{ match.id }}, {{ match.table_assignment|tojson }}, {{ player_display|tojson }}, "")'>
-            <i class="fas fa-table"></i>
             {{ _('Tavolo %(id)s', id=match.table_assignment) }}
-        </span>
+        </button>
         {% else %}
-        <span class="badge bg-warning cursor-pointer" data-bs-toggle="modal" data-bs-target="#tableAssignmentModal"
+        <button type="button" class="c7-state c7-state--warn" style="border: 0; cursor: pointer;" data-bs-toggle="modal" data-bs-target="#tableAssignmentModal"
             onclick='openTableAssignment({{ match.id }}, null, {{ player_display|tojson }}, "")'>
-            <i class="fas fa-plus-circle"></i>
             {{ _('Assegna') }}
-        </span>
+        </button>
         {% endif %}
         {% else %}
-        {# Player/Guest view: Badge statico read-only #}
+        {# Vista giocatore / ospite: sola lettura #}
         {% if match.table_assignment %}
-        <span class="badge bg-secondary">
-            <i class="fas fa-table"></i>
-            {{ match.table_assignment }}
-        </span>
+        <span class="c7-num">{{ _('Tavolo') }} {{ match.table_assignment }}</span>
         {% else %}
-        <span class="text-muted small">
-            <i class="fas fa-hourglass-half"></i>
-            {{ _('In attesa') }}
-        </span>
+        <span class="text-muted" style="font-size: 12px;">{{ _('In attesa') }}</span>
         {% endif %}
         {% endif %}
     </td>
     {% if user_can_manage %}
-    <td>
-        {# Show actions if: match is not bye, can be modified, and either has table OR is finished OR is at distance #}
+    <td class="c7-cell-actions">
+        {# Azioni se: non è X a tavolino, è modificabile, e ha tavolo OPPURE è conclusa OPPURE è a distanza #}
         {% if not match.is_bye and match_can_modify.get(match.id, True) and (match.table_assignment or is_finished or match.is_at_distance) %}
-        <div class="btn-group btn-group-sm" role="group">
-            <!-- Imposta Risultato Rapido -->
             {% if not is_finished %}
                 {% if match.is_trio and match.trio_match %}
-                {# Trio: chiama openQuickResultTrio con 3 giocatori #}
                 {% set trio = match.trio_match %}
-                <button class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#quickResultModal"
+                <button class="c7-iconbtn" title="{{ _('Risultato rapido') }}" data-bs-toggle="modal" data-bs-target="#quickResultModal"
                     onclick='openQuickResultTrio({{ match.id }}, {{ trio.id }}, {{ trio.player1.username|tojson }}, {{ trio.player2.username|tojson }}, {{ trio.player3.username|tojson }}, {{ trio.player1_racks }}, {{ trio.player2_racks }}, {{ trio.player3_racks }}, {{ (match.started_at.strftime("%H:%M") if match.started_at else "")|tojson }})'>
-                    <i class="fas fa-tachometer-alt"></i>
+                    <i class="fas fa-bolt"></i>
                 </button>
                 {% else %}
-                {# Match normale: chiama openQuickResult con 2 giocatori #}
-                <button class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#quickResultModal"
+                <button class="c7-iconbtn" title="{{ _('Risultato rapido') }}" data-bs-toggle="modal" data-bs-target="#quickResultModal"
                     onclick='openQuickResult({{ match.id }}, {{ match.player1.username|tojson }}, {{ match.player2.username|tojson }}, {{ match.player1_score }}, {{ match.player2_score }}, {{ (match.started_at.strftime("%H:%M") if match.started_at else "")|tojson }}, {{ match.effective_distance }}, {{ "true" if match.effective_is_race_to else "false" }})'>
-                    <i class="fas fa-tachometer-alt"></i>
+                    <i class="fas fa-bolt"></i>
                 </button>
                 {% endif %}
+
+                <a href="{{ url_for('admin.match.match_detail', match_id=match.id) }}" class="c7-iconbtn" title="{{ _('Apri la partita') }}">
+                    <i class="fas fa-pen"></i>
+                </a>
             {% endif %}
 
-            <!-- Vai al Dettaglio (solo se non completato) -->
-            {% if not is_finished %}
-            <a href="{{ url_for('admin.match.match_detail', match_id=match.id) }}" class="btn btn-outline-primary">
-                <i class="fas fa-edit"></i>
-            </a>
-            {% endif %}
-
-            <!-- Valida Risultato (only when distance reached but not yet validated/completed and not player-validated) -->
+            {# Valida: distanza raggiunta ma non ancora validata #}
             {% if match.is_at_distance and not match.validated_by_admin and not is_finished and not match.is_player_validated %}
-            <button class="btn btn-outline-success" onclick="validateMatchQuick({{ match.id }}, this)" title="{{ _('Valida Risultato') }}">
-                <i class="fas fa-check-circle"></i>
+            <button class="c7-iconbtn" style="background: var(--c7-ok-bg); color: var(--c7-ok-ink);" onclick="validateMatchQuick({{ match.id }}, this)" title="{{ _('Valida il risultato') }}">
+                <i class="fas fa-check"></i>
             </button>
             {% endif %}
 
-            <!-- Reset Match -->
             {% set has_scores = (match.player1_score > 0 or match.player2_score > 0) %}
             {% if match.is_trio and match.trio_match %}
                 {% set has_scores = (match.trio_match.player1_racks > 0 or match.trio_match.player2_racks > 0 or match.trio_match.player3_racks > 0) %}
             {% endif %}
             {% if is_finished or has_scores %}
                 {% if match.is_trio and match.trio_match %}
-                {# Trio: call resetTrioQuick with trio ID #}
-                <button class="btn btn-outline-danger" onclick="resetTrioQuick({{ match.trio_match.id }}, this)">
+                <button class="c7-iconbtn" style="background: var(--c7-err-bg); color: var(--c7-err-ink);" onclick="resetTrioQuick({{ match.trio_match.id }}, this)" title="{{ _('Azzera il risultato') }}">
                     <i class="fas fa-undo"></i>
                 </button>
                 {% else %}
-                {# Normal match: call resetMatchQuick with match ID #}
-                <button class="btn btn-outline-danger" onclick="resetMatchQuick({{ match.id }}, this)">
+                <button class="c7-iconbtn" style="background: var(--c7-err-bg); color: var(--c7-err-ink);" onclick="resetMatchQuick({{ match.id }}, this)" title="{{ _('Azzera il risultato') }}">
                     <i class="fas fa-undo"></i>
                 </button>
                 {% endif %}
             {% endif %}
-        </div>
         {% elif not match.is_bye and not match_can_modify.get(match.id, True) %}
-        <span class="text-muted small">
-            <i class="fas fa-lock"></i> {{ _('Bloccato') }}
-        </span>
+        <span class="text-muted" style="font-size: 12px;"><i class="fas fa-lock"></i> {{ _('Bloccato') }}</span>
         {% elif not match.is_bye and not match.table_assignment and not is_finished and not match.is_at_distance %}
-        <span class="text-muted small">
-            <i class="fas fa-clock"></i> {{ _('Assegna tavolo') }}
-        </span>
+        <span class="text-muted" style="font-size: 12px;">{{ _('Assegna un tavolo') }}</span>
         {% endif %}
     </td>
     {% endif %}

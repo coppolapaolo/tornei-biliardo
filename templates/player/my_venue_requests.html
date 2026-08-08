@@ -1,115 +1,86 @@
-<!-- templates/player/my_venue_requests.html - Le mie richieste gestore sala -->
+<!-- templates/player/my_venue_requests.html — 7c -->
 {% extends "base.html" %}
 
-{% block title %}Le mie Richieste Gestore Sala{% endblock %}
+{% block title %}{{ _("Le mie richieste") }}{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1><i class="fas fa-hand-paper"></i> Le mie Richieste Gestore Sala</h1>
-    <a href="{{ url_for('admin.venue.venues_list') }}" class="btn btn-outline-secondary">
-        <i class="fas fa-arrow-left"></i> Torna alle Sale
-    </a>
-</div>
-
-<div class="card">
-    <div class="card-header">
-        <h5><i class="fas fa-list"></i> Tutte le mie Richieste ({{ requests|length }})</h5>
+<header class="c7-head" style="padding-left: 0; padding-right: 0;">
+    <a class="c7-head__back" href="{{ url_for('admin.venue.venues_list') }}" aria-label="{{ _('Torna alle sale') }}"><i class="fas fa-arrow-left"></i></a>
+    <div class="c7-head__title">
+        <h1>{{ _("Richieste di gestione sala") }}</h1>
+        <div class="c7-head__sub">{{ _("%(n)s richieste inviate", n=requests|length) }}</div>
     </div>
-    <div class="card-body">
-        {% if requests %}
-            <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Sala</th>
-                            <th>Data Richiesta</th>
-                            <th>Stato</th>
-                            <th>Processata</th>
-                            <th>Note</th>
-                            <th>Azioni</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for request in requests %}
-                            <tr>
-                                <td>
-                                    <strong>{{ request.venue.name }}</strong>
-                                    {% if request.is_contested %}
-                                        <br><span class="badge bg-warning text-dark">
-                                            <i class="fas fa-exclamation-triangle"></i> Contenzioso
-                                        </span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <small class="text-muted">{{ request.requested_at|datetime_local }}</small>
-                                </td>
-                                <td>
-                                    {% if request.status == "pending" %}
-                                        <span class="badge bg-warning">
-                                            <i class="fas fa-clock"></i> In Attesa
-                                        </span>
-                                    {% elif request.status == "approved" %}
-                                        <span class="badge bg-success">
-                                            <i class="fas fa-check"></i> Approvata
-                                        </span>
-                                    {% elif request.status == "rejected" %}
-                                        <span class="badge bg-danger">
-                                            <i class="fas fa-times"></i> Rifiutata
-                                        </span>
-                                    {% elif request.status == "cancelled" %}
-                                        <span class="badge bg-secondary">
-                                            <i class="fas fa-ban"></i> Annullata
-                                        </span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if request.processed_at %}
-                                        <small class="text-muted">{{ request.processed_at|datetime_local }}</small>
-                                        {% if request.processed_by %}
-                                            <br><small class="text-muted">da {{ request.processed_by.username }}</small>
-                                        {% endif %}
-                                    {% else %}
-                                        <span class="text-muted">-</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if request.notes %}
-                                        <em>"{{ request.notes }}"</em>
-                                    {% else %}
-                                        <span class="text-muted">-</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if request.status == "pending" %}
-                                        <form method="POST"
-                                              action="{{ url_for('player.cancel_venue_manager_request', request_id=request.id) }}"
-                                              style="display: inline;"
-                                              onsubmit="return confirmSubmit(this, 'Sei sicuro di voler annullare questa richiesta?')">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Annulla">
-                                                <i class="fas fa-ban"></i> Annulla
-                                            </button>
-                                        </form>
-                                    {% else %}
-                                        <span class="text-muted">-</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% else %}
-            <div class="text-center text-muted py-5">
-                <i class="fas fa-hand-paper fa-3x mb-3"></i>
-                <h4>Nessuna richiesta</h4>
-                <p>Non hai ancora fatto richieste per diventare gestore di sala.</p>
-                <a href="{{ url_for('admin.venue.venues_list') }}" class="btn btn-primary">
-                    <i class="fas fa-building"></i> Vai alle Sale Biliardo
-                </a>
-            </div>
-        {% endif %}
+</header>
+
+{% if requests %}
+<div class="c7-table-wrap table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>{{ _("Sala") }}</th>
+                <th>{{ _("Inviata") }}</th>
+                <th>{{ _("Stato") }}</th>
+                <th>{{ _("Esito") }}</th>
+                <th>{{ _("Note") }}</th>
+                <th class="c7-cell-actions"></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for request in requests %}
+            <tr>
+                <td>
+                    <strong>{{ request.venue.name }}</strong>
+                    {% if request.is_contested %}
+                    <div style="margin-top: 4px;"><span class="c7-state c7-state--warn">{{ _("Contesa") }}</span></div>
+                    {% endif %}
+                </td>
+                <td class="text-muted"><span class="c7-num">{{ request.requested_at|datetime_local }}</span></td>
+                <td>
+                    {% if request.status == "pending" %}
+                    <span class="c7-state c7-state--warn">{{ _("In attesa") }}</span>
+                    {% elif request.status == "approved" %}
+                    <span class="c7-state c7-state--ok">{{ _("Approvata") }}</span>
+                    {% elif request.status == "rejected" %}
+                    <span class="c7-state c7-state--err">{{ _("Rifiutata") }}</span>
+                    {% elif request.status == "cancelled" %}
+                    <span class="c7-state c7-state--muted">{{ _("Annullata") }}</span>
+                    {% endif %}
+                </td>
+                <td class="text-muted">
+                    {% if request.processed_at %}
+                    <span class="c7-num">{{ request.processed_at|datetime_local }}</span>
+                    {% if request.processed_by %}<div style="font-size: 12px;">{{ _("da") }} {{ request.processed_by.username }}</div>{% endif %}
+                    {% else %}
+                    <span style="color: var(--c7-ink-faint);">—</span>
+                    {% endif %}
+                </td>
+                <td class="text-muted" style="font-weight: 600;">
+                    {% if request.notes %}{{ request.notes }}{% else %}<span style="color: var(--c7-ink-faint);">—</span>{% endif %}
+                </td>
+                <td class="c7-cell-actions">
+                    {% if request.status == "pending" %}
+                    <form method="POST" action="{{ url_for('player.cancel_venue_manager_request', request_id=request.id) }}"
+                          onsubmit="return confirmSubmit(this, {{ _('Confermi di voler annullare questa richiesta?')|tojson }})">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-danger btn-sm">{{ _("Annulla") }}</button>
+                    </form>
+                    {% else %}
+                    <span style="color: var(--c7-ink-faint);">—</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="c7-empty">
+    <div class="c7-empty__ico"><i class="fas fa-hand-paper"></i></div>
+    <h2 class="c7-empty__title">{{ _("Nessuna richiesta") }}</h2>
+    <p class="c7-empty__text">{{ _("Non hai ancora chiesto di gestire una sala.") }}</p>
+    <div class="c7-empty__actions">
+        <a href="{{ url_for('admin.venue.venues_list') }}" class="btn btn-primary">{{ _("Vai alle sale") }}</a>
     </div>
 </div>
-
+{% endif %}
 {% endblock %}

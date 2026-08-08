@@ -2,87 +2,71 @@
 {% block title %}{{ _('Campionati') }}{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-12">
-            <h2><i class="fas fa-trophy"></i> {{ _('Campionati') }}</h2>
-            <p class="text-muted">{{ _('Lista pubblica dei campionati - nessuna registrazione richiesta per visualizzare') }}</p>
-
-            <form method="get" class="row g-2 align-items-end mb-4">
-                <div class="col-md-5">
-                    <label for="q" class="form-label small text-muted mb-1">{{ _('Cerca') }}</label>
-                    <input type="text" class="form-control form-control-sm" id="q" name="q"
-                           value="{{ search_query }}" placeholder="{{ _('Nome campionato...') }}">
-                </div>
-                <div class="col-md-4">
-                    <label for="status" class="form-label small text-muted mb-1">{{ _('Stato') }}</label>
-                    <select class="form-select form-select-sm" id="status" name="status">
-                        <option value="all" {% if status_filter == 'all' %}selected{% endif %}>{{ _('Tutti') }}</option>
-                        <option value="in_corso" {% if status_filter == 'in_corso' %}selected{% endif %}>{{ _('In corso') }}</option>
-                        <option value="completati" {% if status_filter == 'completati' %}selected{% endif %}>{{ _('Completati') }}</option>
-                        <option value="terminati" {% if status_filter == 'terminati' %}selected{% endif %}>{{ _('Terminati') }}</option>
-                    </select>
-                </div>
-                <div class="col-md-3 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary btn-sm">
-                        <i class="fas fa-filter"></i> {{ _('Filtra') }}
-                    </button>
-                    {% if search_query or status_filter != 'all' %}
-                    <a href="{{ url_for('main.public_campionatos_list') }}" class="btn btn-outline-secondary btn-sm">
-                        {{ _('Reset') }}
-                    </a>
-                    {% endif %}
-                </div>
-            </form>
-
-            {% if campionatos %}
-                <p class="text-muted small">
-                    {{ ngettext('%(num)s campionato trovato', '%(num)s campionati trovati', campionatos|length, num=campionatos|length) }}
-                </p>
-                <div class="row">
-                    {% for campionato in campionatos %}
-                    <div class="col-md-6 col-lg-4 mb-4">
-                        <div class="card h-100">
-                            <div class="card-header">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <h5 class="card-title mb-1">{{ campionato.name }}</h5>
-                                    <span class="badge {{ campionato | status_badge_class }}">{{ campionato | status_text }}</span>
-                                </div>
-                                <span class="badge bg-secondary">{{ campionato.campionato_type }}</span>
-                            </div>
-                            <div class="card-body">
-                                <ul class="list-unstyled small mb-0">
-                                    <li><i class="fas fa-calendar"></i> {{ _('Creato') }}: {{ campionato.created_at|date_local }}</li>
-                                    <li><i class="fas fa-flag-checkered"></i> {{ _('Gare totali:') }} {{ campionato.gare|length }}</li>
-                                </ul>
-                            </div>
-                            <div class="card-footer">
-                                <a href="{{ url_for('main.campionato_detail_public', campionato_id=campionato.id) }}"
-                                   class="btn btn-primary btn-sm">
-                                    <i class="fas fa-eye"></i> {{ _('Visualizza Dettagli') }}
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle"></i>
-                    {% if search_query or status_filter != 'all' %}
-                        {{ _('Nessun campionato corrisponde ai filtri selezionati.') }}
-                    {% else %}
-                        {{ _('Nessun campionato disponibile al momento.') }}
-                    {% endif %}
-                </div>
-            {% endif %}
-
-            <div class="mt-4">
-                <a href="{{ url_for('main.index') }}" class="btn btn-secondary">
-                    <i class="fas fa-home"></i> {{ _('Torna alla Home') }}
-                </a>
-            </div>
-        </div>
+<header class="c7-head" style="padding-left: 0; padding-right: 0;">
+    <a class="c7-head__back" href="{{ url_for('main.index') }}" aria-label="{{ _('Torna alla home') }}"><i class="fas fa-arrow-left"></i></a>
+    <div class="c7-head__title">
+        <h1>{{ _('Campionati') }}</h1>
+        <div class="c7-head__sub">{{ _('Lista pubblica: si consulta senza registrarsi.') }}</div>
     </div>
+</header>
+
+<form method="get" class="c7-card" style="display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 20px;">
+    <div>
+        <label for="q" class="form-label">{{ _('Cerca') }}</label>
+        <input type="text" class="form-control" id="q" name="q" value="{{ search_query }}" placeholder="{{ _('Nome del campionato') }}">
+    </div>
+    <div>
+        <label for="status" class="form-label">{{ _('Stato') }}</label>
+        <select class="form-select" id="status" name="status">
+            <option value="all" {% if status_filter == 'all' %}selected{% endif %}>{{ _('Tutti') }}</option>
+            <option value="in_corso" {% if status_filter == 'in_corso' %}selected{% endif %}>{{ _('In corso') }}</option>
+            <option value="completati" {% if status_filter == 'completati' %}selected{% endif %}>{{ _('Completati') }}</option>
+            <option value="terminati" {% if status_filter == 'terminati' %}selected{% endif %}>{{ _('Terminati') }}</option>
+        </select>
+    </div>
+    <div style="display: flex; gap: 10px;">
+        <button type="submit" class="btn btn-primary" style="flex: 1;">{{ _('Filtra') }}</button>
+        {% if search_query or status_filter != 'all' %}
+        <a href="{{ url_for('main.public_campionatos_list') }}" class="btn btn-secondary">{{ _('Azzera') }}</a>
+        {% endif %}
+    </div>
+</form>
+
+{% if campionatos %}
+<p class="c7-kicker" style="margin-bottom: 12px;">
+    {{ ngettext('%(num)s campionato', '%(num)s campionati', campionatos|length, num=campionatos|length) }}
+</p>
+<div class="c7-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
+    {% for campionato in campionatos %}
+    <article class="c7-card" style="display: flex; flex-direction: column;">
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;">
+            <div style="min-width: 0;">
+                <div class="c7-kicker">{{ campionato.campionato_type }}</div>
+                <h3 style="margin: 5px 0 0;">{{ campionato.name }}</h3>
+            </div>
+            <span class="badge {{ campionato | status_badge_class }}">{{ campionato | status_text }}</span>
+        </div>
+
+        <hr class="c7-divider">
+
+        <dl style="display: grid; grid-template-columns: auto 1fr; gap: 8px 14px; margin: 0; font-size: 13px;">
+            <dt class="text-muted" style="font-weight: 700;">{{ _('Creato') }}</dt>
+            <dd class="c7-num" style="margin: 0; text-align: right;">{{ campionato.created_at|date_local }}</dd>
+            <dt class="text-muted" style="font-weight: 700;">{{ _('Gare') }}</dt>
+            <dd class="c7-num" style="margin: 0; text-align: right;">{{ campionato.gare|length }}</dd>
+        </dl>
+
+        <a href="{{ url_for('main.campionato_detail_public', campionato_id=campionato.id) }}" class="btn btn-secondary w-100" style="margin-top: auto; margin-top: 16px;">{{ _('Apri') }}</a>
+    </article>
+    {% endfor %}
 </div>
+{% else %}
+<div class="c7-empty">
+    <div class="c7-empty__ico"><i class="fas fa-trophy"></i></div>
+    <h2 class="c7-empty__title">{{ _('Nessun campionato') }}</h2>
+    <p class="c7-empty__text">
+        {% if search_query or status_filter != 'all' %}{{ _('Nessun campionato corrisponde ai filtri.') }}{% else %}{{ _('Non ci sono campionati pubblicati al momento.') }}{% endif %}
+    </p>
+</div>
+{% endif %}
 {% endblock %}

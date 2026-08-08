@@ -3,25 +3,17 @@
 {% block title %}400 - {{ _('Sessione scaduta') }}{% endblock %}
 
 {% block content %}
-<div class="text-center mt-5 mb-5">
-    <div style="font-size: 5rem; margin-bottom: 0.5rem;">
-        🎱
+<div style="max-width: 520px; margin: 8vh auto 0;">
+  <div class="c7-empty">
+    <div class="c7-empty__ico c7-empty__ico--warn"><i class="fas fa-hourglass-end"></i></div>
+    <div class="c7-num-xl" style="margin-top: 14px; color: var(--c7-ink-faint);">400</div>
+    <h1 class="c7-empty__title">{{ _('Sessione scaduta') }}</h1>
+    <p class="c7-empty__text">{{ _('La pagina era aperta da troppo tempo e la sessione è scaduta.') }}</p>
+    <p class="c7-empty__text" style="margin-top: 10px; color: var(--c7-ink-faint);">{{ _('Torna indietro, ricarica e reinvia il modulo.') }}</p>
+    <div class="c7-empty__actions">
+      <a href="javascript:history.back()" class="btn btn-primary">{{ _('Torna indietro') }}</a>
+      <a href="{{ url_for('main.index') }}" class="btn btn-secondary">{{ _('Vai alla home') }}</a>
     </div>
-    <h1 class="display-1 fw-bold text-muted" style="letter-spacing: -4px;">400</h1>
-    <h2 class="mt-2">{{ _('Sessione scaduta!') }}</h2>
-    <p class="text-muted mt-3 fs-5">
-        {{ _('La pagina era aperta da troppo tempo e la sessione è scaduta. Torna indietro e ricarica la pagina per riprovare.') }}
-    </p>
-    <hr class="w-25 mx-auto my-4">
-    <p class="text-muted fst-italic">
-        <i class="fas fa-lightbulb text-warning"></i>
-        {{ _('Consiglio: non lasciare il modulo aperto troppo a lungo prima di inviare!') }}
-    </p>
-    <a href="javascript:history.back()" class="btn btn-outline-secondary btn-lg mt-3 me-2">
-        <i class="fas fa-arrow-left"></i> {{ _('Torna indietro') }}
-    </a>
-    <a href="{{ url_for('main.index') }}" class="btn btn-primary btn-lg mt-3">
-        <i class="fas fa-home"></i> {{ _('Torna al tavolo') }}
-    </a>
+  </div>
 </div>
 {% endblock %}

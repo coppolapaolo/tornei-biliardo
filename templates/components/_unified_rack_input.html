@@ -1,27 +1,14 @@
 {#
-Unified Rack Input Component
+Segnapunti da tavolo — 7c
 
-Controls for adding/removing racks and confirming results.
-Works for both Tournament Match and IndividualMatch.
+Controlli per aggiungere/togliere rack e confermare il risultato.
+Funziona sia per Match di gara sia per IndividualMatch.
 
-Parameters:
-- match: Match or IndividualMatch object
-- api_format: 'form' (tournament) or 'json' (individual) - determines request format
-- add_rack_js_func: string - JS function name for adding rack (e.g., 'addRackWin' or 'addRack')
-- remove_rack_js_func: string - JS function name for removing rack (e.g., 'removeRack')
-- confirm_js_func: string - JS function name for confirming result
-- reject_js_func: string (optional) - JS function name for rejecting result
-- forfeit_js_func: string (optional) - JS function name for forfeit
-- show_forfeit: bool (default False) - show forfeit button
-- require_table_assignment: bool (default False) - require table assignment before play
-- player1_name: string (optional) - override player1 display name
-- player2_name: string (optional) - override player2 display name
-- user_is_player: bool (optional) - current user is a player in match
-- user_can_manage: bool (optional) - current user can manage match (admin/director)
-
-Multi-set specific parameters:
-- current_set: Set object (optional) - the current active set for multi-set matches
-- start_next_set_js_func: string (optional) - JS function name for starting next set
+Parametri:
+- match, api_format, add_rack_js_func, remove_rack_js_func, confirm_js_func,
+  reject_js_func, forfeit_js_func, show_forfeit, require_table_assignment,
+  player1_name, player2_name, user_is_player, user_can_manage
+- multi-set: current_set, start_next_set_js_func
 #}
 
 {% set format = api_format|default('json') %}
@@ -33,25 +20,21 @@ Multi-set specific parameters:
 {% set show_forfeit_btn = show_forfeit|default(False) %}
 {% set need_table = require_table_assignment|default(False) %}
 {% set p1_name = player1_name|default(match.player1.username) %}
-{% set p2_name = player2_name|default(match.player2.username if match.player2 else _('Bye')) %}
+{% set p2_name = player2_name|default(match.player2.username if match.player2 else _('X a tavolino')) %}
 {% set start_set_func = start_next_set_js_func|default('startNextSet') %}
 
-{# Determine match state - works for both Match (string status) and IndividualMatch (enum status) #}
-{# Tournament matches use 'playing', Individual matches use 'in_progress' #}
+{# Stato partita — Match usa 'playing', IndividualMatch usa 'in_progress' #}
 {% set status_str = match.status.value|default(match.status) %}
 {% set is_in_progress = status_str in ['in_progress', 'playing'] %}
 {% set is_completed_not_validated = status_str == 'completed' %}
 
-{# Detect multi-set and free format #}
 {% set is_multi_set = match.is_multi_set is defined and match.is_multi_set %}
 {% set is_free_format = match.distance is none %}
 
-{# Multi-set specific: get current set and calculate set-level state #}
 {% if is_multi_set %}
     {% set active_set = current_set if current_set is defined else none %}
     {% set match_winning_sets = match.match_distance %}
 
-    {# Check if match is complete (someone won enough sets) #}
     {% if match.distance_config is defined and match.distance_config and match.distance_config.is_race_to_sets %}
         {% set match_complete_by_sets = (match.player1_score >= match_winning_sets or match.player2_score >= match_winning_sets) %}
     {% else %}
@@ -59,7 +42,6 @@ Multi-set specific parameters:
         {% set match_complete_by_sets = (total_sets >= match_winning_sets) %}
     {% endif %}
 
-    {# Check if current set is complete #}
     {% if active_set %}
         {% if active_set.is_race_to %}
             {% set set_completed = (active_set.player1_racks >= active_set.distance or active_set.player2_racks >= active_set.distance) %}
@@ -72,14 +54,11 @@ Multi-set specific parameters:
     {% endif %}
 {% endif %}
 
-{# Calculate if match has reached winning threshold #}
 {% if is_free_format %}
-    {# Free format: never automatically at distance, players end manually #}
     {% set winning_score = none %}
     {% set is_race_to = true %}
     {% set match_at_distance = false %}
 {% elif is_multi_set %}
-    {# Multi-set: check if enough sets won #}
     {% set winning_score = match.match_distance %}
     {% set is_race_to = match.is_race_to_sets if match.is_race_to_sets is defined else true %}
     {% if is_race_to %}
@@ -89,7 +68,6 @@ Multi-set specific parameters:
         {% set match_at_distance = (total_sets >= winning_score) %}
     {% endif %}
 {% elif match.distance_config is defined and match.distance_config %}
-    {# Tournament Match with distance_config #}
     {% set winning_score = match.effective_distance if match.effective_distance is defined else match.distance_config.get_winning_racks() %}
     {% set is_race_to = match.distance_config.is_race_to_racks %}
     {% if is_race_to %}
@@ -99,7 +77,6 @@ Multi-set specific parameters:
         {% set match_at_distance = (total_racks >= winning_score) %}
     {% endif %}
 {% else %}
-    {# IndividualMatch with distance #}
     {% set winning_score = match.distance %}
     {% set is_race_to = match.is_race_to %}
     {% if is_race_to %}
@@ -110,253 +87,168 @@ Multi-set specific parameters:
     {% endif %}
 {% endif %}
 
-{# Check if current user has confirmed #}
 {% set current_user_confirmed = (current_user.id == match.player1_id and match.player1_confirmed) or (current_user.id == match.player2_id and match.player2_confirmed) %}
 {% set opponent_confirmed = (current_user.id == match.player1_id and match.player2_confirmed) or (current_user.id == match.player2_id and match.player1_confirmed) %}
 {% set opponent_name = p2_name if current_user.id == match.player1_id else p1_name %}
 
-{# Check if can add racks - considers table assignment if required #}
 {% set can_add = (not match_at_distance) %}
 {% if need_table and match.table_assignment is defined and not match.table_assignment %}
     {% set can_add = False %}
 {% endif %}
 
-{# Show controls only if match is in progress (not completed/validated) #}
-{# Completed matches (auto-validated by admin) don't need player confirmation #}
 {% if is_in_progress %}
-<div class="card mb-4">
-    <div class="card-header">
-        <h5>
-            <i class="fas fa-calculator"></i> {{ _('Gestione Punteggio') }}
-            {% if is_multi_set and active_set %}
-                <span class="badge bg-primary ms-2">
-                    <i class="fas fa-layer-group"></i>
-                    {{ _('Set') }} {{ active_set.set_number }} - {{ _('Al') }} {{ active_set.distance }}
-                </span>
-            {% endif %}
-        </h5>
-    </div>
-    <div class="card-body">
-        {# ═══════════════════════════════════════════════════════════════════════════
-           MULTI-SET MATCH CONTROLS
-           ═══════════════════════════════════════════════════════════════════════════ #}
-        {% if is_multi_set %}
-            {# No current set - need to start first set #}
-            {% if not active_set and not match_complete_by_sets %}
-            <div class="text-center">
-                <p class="text-muted">{{ _('Nessun set in corso.') }}</p>
-                <button class="btn btn-primary btn-lg" onclick="{{ start_set_func }}(this)" {% if need_table and match.table_assignment is defined and not match.table_assignment %}disabled{% endif %}>
-                    <i class="fas fa-play"></i> {{ _('Inizia Set 1') }}
-                </button>
-            </div>
-
-            {# Current set active and not complete - show rack controls #}
-            {% elif active_set and not set_completed and not current_user_confirmed %}
-            {# Compact horizontal layout - always side-by-side #}
-            <div class="row g-2 mb-2">
-                <div class="col-6">
-                    <button class="btn btn-success w-100 py-2" onclick="{{ add_rack }}({{ match.player1_id }}, this)" {% if need_table and match.table_assignment is defined and not match.table_assignment %}disabled{% endif %}>
-                        <i class="fas fa-plus"></i> {{ p1_name }}
-                    </button>
-                </div>
-                <div class="col-6">
-                    <button class="btn btn-success w-100 py-2" onclick="{{ add_rack }}({{ match.player2_id }}, this)" {% if need_table and match.table_assignment is defined and not match.table_assignment %}disabled{% endif %}>
-                        <i class="fas fa-plus"></i> {{ p2_name }}
-                    </button>
-                </div>
-            </div>
-            <div class="row g-2">
-                <div class="col-6">
-                    <button class="btn btn-outline-danger btn-sm w-100" onclick="{{ remove_rack }}({{ match.player1_id }}, this)" {% if active_set.player1_racks == 0 %}disabled{% endif %}>
-                        <i class="fas fa-minus"></i> {{ p1_name }}
-                    </button>
-                </div>
-                <div class="col-6">
-                    <button class="btn btn-outline-danger btn-sm w-100" onclick="{{ remove_rack }}({{ match.player2_id }}, this)" {% if active_set.player2_racks == 0 %}disabled{% endif %}>
-                        <i class="fas fa-minus"></i> {{ p2_name }}
-                    </button>
-                </div>
-            </div>
-
-            {# Current set score display #}
-            <div class="text-center mt-3">
-                <span class="badge bg-secondary fs-6">
-                    {{ active_set.player1_racks }} - {{ active_set.player2_racks }}
-                </span>
-            </div>
-
-            {# Set completed but match not complete - show "Start Next Set" #}
-            {% elif active_set and set_completed and not match_complete_by_sets %}
-            <div class="mt-3">
-                <div class="alert alert-info mb-2">
-                    <i class="fas fa-check-circle"></i>
-                    {{ _('Set') }} {{ active_set.set_number }} {{ _('completato!') }}
-                    {% if active_set.winner_id == match.player1_id %}
-                        <strong>{{ p1_name }}</strong>
-                    {% else %}
-                        <strong>{{ p2_name }}</strong>
-                    {% endif %}
-                    {{ _('ha vinto il set.') }}
-                </div>
-                <button class="btn btn-primary w-100 btn-lg" onclick="{{ start_set_func }}(this)">
-                    <i class="fas fa-forward"></i> {{ _('Inizia Set') }} {{ active_set.set_number + 1 }}
-                </button>
-            </div>
-
-            {# Match completed (all sets played) #}
-            {% elif match_complete_by_sets %}
-            <div class="mt-3">
-                <div class="alert alert-success mb-2">
-                    <i class="fas fa-trophy"></i>
-                    {{ _('Match completato!') }}
-                    {% if match.player1_score > match.player2_score %}
-                        <strong>{{ p1_name }}</strong>
-                    {% else %}
-                        <strong>{{ p2_name }}</strong>
-                    {% endif %}
-                    {{ _('ha vinto') }} {{ match.player1_score }} - {{ match.player2_score }}
-                </div>
-                {% if not current_user_confirmed %}
-                <button class="btn btn-success w-100 btn-lg" onclick="{{ confirm_func }}(this)">
-                    <i class="fas fa-check"></i> {{ _('Accetta risultato') }}
-                </button>
-                {% else %}
-                <div class="alert alert-info">
-                    <i class="fas fa-check-circle"></i>
-                    {{ _('Hai confermato il risultato. In attesa dell\'altro giocatore.') }}
-                </div>
-                {% endif %}
-            </div>
-            {% endif %}
-
-            {# Table assignment warning for multi-set #}
-            {% if need_table and match.table_assignment is defined and not match.table_assignment %}
-            <div class="mt-2">
-                <div class="alert alert-warning text-center">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    {{ _('Assegnare un tavolo prima di iniziare la partita') }}
-                </div>
-            </div>
-            {% endif %}
-
-            {# Forfeit button for multi-set #}
-            {% if show_forfeit_btn and not match_complete_by_sets and not (match.is_bye is defined and match.is_bye) %}
-            <div class="mt-3">
-                <button class="btn btn-outline-secondary w-100" onclick="{{ forfeit_func }}(this)">
-                    <i class="fas fa-flag"></i> {{ _('Dichiara forfait') }}
-                </button>
-            </div>
-            {% endif %}
-
-        {# ═══════════════════════════════════════════════════════════════════════════
-           SINGLE-SET MATCH CONTROLS (original logic)
-           ═══════════════════════════════════════════════════════════════════════════ #}
-        {% else %}
-            {# ─────────────────────────────────────────────────────────────────────────
-               CONFIRMATION SECTION - shown FIRST when match at distance
-               ───────────────────────────────────────────────────────────────────────── #}
-            {% if match_at_distance %}
-            <div class="alert alert-warning text-center mb-3">
-                <i class="fas fa-flag-checkered"></i> {{ _('Match pronto per la validazione') }}
-            </div>
-
-            {% if current_user_confirmed and opponent_confirmed %}
-            {# Both confirmed - match should complete (shouldn't reach here normally) #}
-            <div class="alert alert-success text-center mb-3">
-                <i class="fas fa-check-circle"></i> {{ _('Entrambi i giocatori hanno confermato!') }}
-            </div>
-            {% elif current_user_confirmed %}
-            {# Current user confirmed, waiting for opponent #}
-            <div class="alert alert-info text-center mb-3">
-                <i class="fas fa-check-circle me-2"></i> {{ _('Hai confermato il risultato.') }}
-                <br><i class="fas fa-hourglass-half me-1"></i> {{ _('In attesa di') }} {{ opponent_name }}...
-            </div>
-            {% elif opponent_confirmed %}
-            {# Opponent confirmed, current user needs to confirm or reject #}
-            <p class="text-center mb-3">
-                <i class="fas fa-check-circle text-success me-1"></i> {{ opponent_name }} {{ _('ha confermato il risultato.') }}
-                <br>{{ _('Conferma o rifiuta per finalizzare il match.') }}
-            </p>
-            <div class="row g-2 mb-3">
-                <div class="col-6">
-                    <button class="btn btn-success w-100 py-2" onclick="{{ confirm_func }}(this)">
-                        <i class="fas fa-check"></i> {{ _('Accetta') }}
-                    </button>
-                </div>
-                <div class="col-6">
-                    <button class="btn btn-danger w-100 py-2" onclick="{{ reject_func }}(this)">
-                        <i class="fas fa-times"></i> {{ _('Rifiuta') }}
-                    </button>
-                </div>
-            </div>
-            {% else %}
-            {# Neither confirmed - show confirmation buttons #}
-            <p class="text-center mb-3">
-                {{ _('Il match ha raggiunto la distanza. Conferma il risultato finale.') }}
-            </p>
-            <div class="row g-2 mb-3">
-                <div class="col-6">
-                    <button class="btn btn-success w-100 py-2" onclick="{{ confirm_func }}(this)">
-                        <i class="fas fa-check"></i> {{ _('Accetta') }}
-                    </button>
-                </div>
-                <div class="col-6">
-                    <button class="btn btn-danger w-100 py-2" onclick="{{ reject_func }}(this)">
-                        <i class="fas fa-times"></i> {{ _('Rifiuta') }}
-                    </button>
-                </div>
-            </div>
-            {% endif %}
-            {% endif %}
-
-            {# ─────────────────────────────────────────────────────────────────────────
-               RACK ADD/REMOVE CONTROLS - shown below confirmation section
-               ───────────────────────────────────────────────────────────────────────── #}
-            {% if is_in_progress and not current_user_confirmed %}
-            {# Compact horizontal layout - always side-by-side #}
-            <div class="row g-2 mb-2">
-                <div class="col-6">
-                    <button class="btn btn-success w-100 py-2" onclick="{{ add_rack }}({{ match.player1_id }}, this)" {% if not can_add %}disabled{% endif %}>
-                        <i class="fas fa-plus"></i> {{ p1_name }}
-                    </button>
-                </div>
-                <div class="col-6">
-                    <button class="btn btn-success w-100 py-2" onclick="{{ add_rack }}({{ match.player2_id }}, this)" {% if not can_add %}disabled{% endif %}>
-                        <i class="fas fa-plus"></i> {{ p2_name }}
-                    </button>
-                </div>
-            </div>
-            <div class="row g-2">
-                <div class="col-6">
-                    <button class="btn btn-outline-danger btn-sm w-100" onclick="{{ remove_rack }}({{ match.player1_id }}, this)" {% if match.player1_score == 0 %}disabled{% endif %}>
-                        <i class="fas fa-minus"></i> {{ p1_name }}
-                    </button>
-                </div>
-                <div class="col-6">
-                    <button class="btn btn-outline-danger btn-sm w-100" onclick="{{ remove_rack }}({{ match.player2_id }}, this)" {% if match.player2_score == 0 %}disabled{% endif %}>
-                        <i class="fas fa-minus"></i> {{ p2_name }}
-                    </button>
-                </div>
-            </div>
-            {% endif %}
-
-            {# Table assignment warning - only for in-progress matches #}
-            {% if is_in_progress and need_table and match.table_assignment is defined and not match.table_assignment %}
-            <div class="alert alert-warning text-center mt-3">
-                <i class="fas fa-exclamation-triangle"></i>
-                {{ _('Assegnare un tavolo prima di iniziare la partita') }}
-            </div>
-            {% endif %}
-
-            {# Forfeit button - only for in-progress matches #}
-            {% if is_in_progress and show_forfeit_btn and not match_at_distance %}
-            <div class="mt-3">
-                <button class="btn btn-outline-secondary w-100" onclick="{{ forfeit_func }}(this)">
-                    <i class="fas fa-flag"></i> {{ _('Dichiara forfait') }}
-                </button>
-            </div>
-            {% endif %}
+<section class="c7-stack" style="margin-top: 18px;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <h3 style="margin: 0;">{{ _('Segnapunti') }}</h3>
+        {% if is_multi_set and active_set %}
+        <span class="c7-state c7-state--accent" style="margin-left: auto;">{{ _('Set') }} {{ active_set.set_number }} <span class="c7-sep">·</span> {{ _('al') }} {{ active_set.distance }}</span>
         {% endif %}
     </div>
-</div>
+
+    {# ══════════ MULTI-SET ══════════ #}
+    {% if is_multi_set %}
+        {% if not active_set and not match_complete_by_sets %}
+        <div class="c7-empty">
+            <div class="c7-empty__ico"><i class="fas fa-play"></i></div>
+            <h3 class="c7-empty__title">{{ _('Nessun set in corso') }}</h3>
+            <div class="c7-empty__actions">
+                <button class="btn btn-primary btn-lg" onclick="{{ start_set_func }}(this)" {% if need_table and match.table_assignment is defined and not match.table_assignment %}disabled{% endif %}>{{ _('Inizia il set 1') }}</button>
+            </div>
+        </div>
+
+        {% elif active_set and not set_completed and not current_user_confirmed %}
+        <div class="c7-card" style="padding: 18px;">
+            <div class="c7-kicker" style="text-align: center;">{{ _('Chi ha vinto il rack?') }}</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
+                <button class="btn btn-primary btn-lg" style="height: 84px; flex-direction: column; gap: 2px;" onclick="{{ add_rack }}({{ match.player1_id }}, this)" {% if need_table and match.table_assignment is defined and not match.table_assignment %}disabled{% endif %}>
+                    <span class="c7-num-lg">{{ active_set.player1_racks }}</span>
+                    <span style="font-size: 12px; font-weight: 700; opacity: .8;">{{ p1_name }}</span>
+                </button>
+                <button class="btn btn-primary btn-lg" style="height: 84px; flex-direction: column; gap: 2px;" onclick="{{ add_rack }}({{ match.player2_id }}, this)" {% if need_table and match.table_assignment is defined and not match.table_assignment %}disabled{% endif %}>
+                    <span class="c7-num-lg">{{ active_set.player2_racks }}</span>
+                    <span style="font-size: 12px; font-weight: 700; opacity: .8;">{{ p2_name }}</span>
+                </button>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px;">
+                <button class="btn btn-secondary btn-sm" onclick="{{ remove_rack }}({{ match.player1_id }}, this)" {% if active_set.player1_racks == 0 %}disabled{% endif %}>−1 {{ p1_name }}</button>
+                <button class="btn btn-secondary btn-sm" onclick="{{ remove_rack }}({{ match.player2_id }}, this)" {% if active_set.player2_racks == 0 %}disabled{% endif %}>−1 {{ p2_name }}</button>
+            </div>
+        </div>
+
+        {% elif active_set and set_completed and not match_complete_by_sets %}
+        <div class="c7-flash c7-flash--info">
+            <span class="c7-flash__ico"><i class="fas fa-check"></i></span>
+            <span class="c7-flash__body">
+                <span class="c7-flash__title">{{ _('Set') }} {{ active_set.set_number }} {{ _('concluso') }}</span>
+                <span class="c7-flash__text">{% if active_set.winner_id == match.player1_id %}{{ p1_name }}{% else %}{{ p2_name }}{% endif %} {{ _('ha vinto il set.') }}</span>
+            </span>
+        </div>
+        <button class="btn btn-primary btn-lg w-100" onclick="{{ start_set_func }}(this)">{{ _('Inizia il set') }} {{ active_set.set_number + 1 }}</button>
+
+        {% elif match_complete_by_sets %}
+        <div class="c7-flash c7-flash--success">
+            <span class="c7-flash__ico"><i class="fas fa-trophy"></i></span>
+            <span class="c7-flash__body">
+                <span class="c7-flash__title">{{ _('Partita conclusa') }}</span>
+                <span class="c7-flash__text">{% if match.player1_score > match.player2_score %}{{ p1_name }}{% else %}{{ p2_name }}{% endif %} {{ _('vince') }} {{ match.player1_score }}–{{ match.player2_score }}.</span>
+            </span>
+        </div>
+        {% if not current_user_confirmed %}
+        <button class="btn btn-success btn-lg w-100" onclick="{{ confirm_func }}(this)">{{ _('Accetta il risultato') }}</button>
+        {% else %}
+        <div class="c7-flash c7-flash--info">
+            <span class="c7-flash__ico"><i class="fas fa-hourglass-half"></i></span>
+            <span class="c7-flash__body">{{ _('Hai confermato. Manca la conferma dell\'avversario.') }}</span>
+        </div>
+        {% endif %}
+        {% endif %}
+
+        {% if need_table and match.table_assignment is defined and not match.table_assignment %}
+        <div class="c7-flash c7-flash--warning">
+            <span class="c7-flash__ico"><i class="fas fa-exclamation"></i></span>
+            <span class="c7-flash__body">{{ _('Serve un tavolo assegnato prima di iniziare.') }}</span>
+        </div>
+        {% endif %}
+
+        {% if show_forfeit_btn and not match_complete_by_sets and not (match.is_bye is defined and match.is_bye) %}
+        <button class="btn btn-secondary w-100" onclick="{{ forfeit_func }}(this)">{{ _('Dichiara forfait') }}</button>
+        {% endif %}
+
+    {# ══════════ SET UNICO ══════════ #}
+    {% else %}
+        {% if match_at_distance %}
+        <div class="c7-flash c7-flash--warning">
+            <span class="c7-flash__ico"><i class="fas fa-flag-checkered"></i></span>
+            <span class="c7-flash__body">
+                <span class="c7-flash__title">{{ _('Distanza raggiunta') }}</span>
+                <span class="c7-flash__text">{{ _('Il risultato è pronto per la conferma.') }}</span>
+            </span>
+        </div>
+
+        {% if current_user_confirmed and opponent_confirmed %}
+        <div class="c7-flash c7-flash--success">
+            <span class="c7-flash__ico"><i class="fas fa-check"></i></span>
+            <span class="c7-flash__body">{{ _('Entrambi i giocatori hanno confermato.') }}</span>
+        </div>
+        {% elif current_user_confirmed %}
+        <div class="c7-flash c7-flash--info">
+            <span class="c7-flash__ico"><i class="fas fa-hourglass-half"></i></span>
+            <span class="c7-flash__body">
+                <span class="c7-flash__title">{{ _('Hai confermato') }}</span>
+                <span class="c7-flash__text">{{ _('In attesa di') }} {{ opponent_name }}.</span>
+            </span>
+        </div>
+        {% elif opponent_confirmed %}
+        <div class="c7-flash c7-flash--info">
+            <span class="c7-flash__ico"><i class="fas fa-check"></i></span>
+            <span class="c7-flash__body">
+                <span class="c7-flash__title">{{ opponent_name }} {{ _('ha confermato') }}</span>
+                <span class="c7-flash__text">{{ _('Conferma o rifiuta per chiudere la partita.') }}</span>
+            </span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <button class="btn btn-success" onclick="{{ confirm_func }}(this)">{{ _('Accetta') }}</button>
+            <button class="btn btn-danger" onclick="{{ reject_func }}(this)">{{ _('Rifiuta') }}</button>
+        </div>
+        {% else %}
+        <p class="text-muted" style="margin: 0; text-align: center;">{{ _('Conferma il risultato finale.') }}</p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <button class="btn btn-success" onclick="{{ confirm_func }}(this)">{{ _('Accetta') }}</button>
+            <button class="btn btn-danger" onclick="{{ reject_func }}(this)">{{ _('Rifiuta') }}</button>
+        </div>
+        {% endif %}
+        {% endif %}
+
+        {% if is_in_progress and not current_user_confirmed %}
+        <div class="c7-card" style="padding: 18px;">
+            <div class="c7-kicker" style="text-align: center;">{{ _('Chi ha vinto il rack?') }}</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
+                <button class="btn btn-primary btn-lg" style="height: 84px; flex-direction: column; gap: 2px;" onclick="{{ add_rack }}({{ match.player1_id }}, this)" {% if not can_add %}disabled{% endif %}>
+                    <span class="c7-num-lg">{{ match.player1_score }}</span>
+                    <span style="font-size: 12px; font-weight: 700; opacity: .8;">{{ p1_name }}</span>
+                </button>
+                <button class="btn btn-primary btn-lg" style="height: 84px; flex-direction: column; gap: 2px;" onclick="{{ add_rack }}({{ match.player2_id }}, this)" {% if not can_add %}disabled{% endif %}>
+                    <span class="c7-num-lg">{{ match.player2_score }}</span>
+                    <span style="font-size: 12px; font-weight: 700; opacity: .8;">{{ p2_name }}</span>
+                </button>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px;">
+                <button class="btn btn-secondary btn-sm" onclick="{{ remove_rack }}({{ match.player1_id }}, this)" {% if match.player1_score == 0 %}disabled{% endif %}>−1 {{ p1_name }}</button>
+                <button class="btn btn-secondary btn-sm" onclick="{{ remove_rack }}({{ match.player2_id }}, this)" {% if match.player2_score == 0 %}disabled{% endif %}>−1 {{ p2_name }}</button>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if is_in_progress and need_table and match.table_assignment is defined and not match.table_assignment %}
+        <div class="c7-flash c7-flash--warning">
+            <span class="c7-flash__ico"><i class="fas fa-exclamation"></i></span>
+            <span class="c7-flash__body">{{ _('Serve un tavolo assegnato prima di iniziare.') }}</span>
+        </div>
+        {% endif %}
+
+        {% if is_in_progress and show_forfeit_btn and not match_at_distance %}
+        <button class="btn btn-secondary w-100" onclick="{{ forfeit_func }}(this)">{{ _('Dichiara forfait') }}</button>
+        {% endif %}
+    {% endif %}
+</section>
 {% endif %}

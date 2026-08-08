@@ -1,19 +1,16 @@
-<!-- Match Header Component -->
-<div class="card-header">
-    <div class="d-flex justify-content-between align-items-center">
-        <small>
-        {% if match.gara %}
-            {{ match.gara|gara_display_name }} - {{ _('Turno') }} {{ match.round_number }} -
-            {{ (match.discipline or match.gara.discipline)|discipline_display }} -
-        {% else %}
-            {{ _('Match Individuale') }} -
-            {{ match.discipline|discipline_display if match.discipline else '' }} -
-        {% endif %}
-        {{ match.distance_config|format_distance }}
-        {% if match.table_assignment %}- {{ _('Tavolo') }} {{ match.table_assignment }}{% endif %}
-        </small>
-        <div>
-            <span class="badge {{ match | status_badge_class }}">{{ match | status_text }}</span>
-        </div>
+<!-- Testata partita — 7c -->
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px;">
+    <div class="text-muted" style="font-size: 12px; font-weight: 700;">
+    {% if match.gara %}
+        {{ match.gara|gara_display_name }}
+        <span class="c7-sep">·</span> {{ _('Turno') }} <span class="c7-num">{{ match.round_number }}</span>
+        <span class="c7-sep">·</span> {{ (match.discipline or match.gara.discipline)|discipline_display }}
+    {% else %}
+        {{ _('Match individuale') }}
+        {% if match.discipline %}<span class="c7-sep">·</span> {{ match.discipline|discipline_display }}{% endif %}
+    {% endif %}
+        <span class="c7-sep">·</span> {{ match.distance_config|format_distance }}
+        {% if match.table_assignment %}<span class="c7-sep">·</span> {{ _('Tavolo') }} <span class="c7-num">{{ match.table_assignment }}</span>{% endif %}
     </div>
+    <span class="badge {{ match | status_badge_class }}">{{ match | status_text }}</span>
 </div>

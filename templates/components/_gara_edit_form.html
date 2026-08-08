@@ -1,343 +1,308 @@
-<!-- Gara Edit Form Component -->
-<form action="{{ url_for('admin.competition.edit_gara', gara_id=gara.id) }}" method="POST">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <div class="card">
-        <div class="card-header">
-            <h5><i class="fas fa-edit"></i> Modifica Informazioni Gara</h5>
-        </div>
-        <div class="card-body">
-            <!-- Prima riga: Info base -->
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label for="name" class="form-label">Nome {% if not gara.is_standalone %}(opzionale){% endif
-                            %}</label>
-                        <input type="text" class="form-control" name="name" value="{{ gara.name or '' }}"
-                            placeholder="es: Prima Gara, Semifinale..." {% if gara.is_standalone %}required{% endif %}>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="mb-3">
-                        <label for="date" class="form-label">Data</label>
-                        <input type="date" class="form-control" name="date"
-                            value="{{ gara.date.isoformat() if gara.date else '' }}" required>
-                    </div>
-                </div>
-                <div class="col-md-2">
-                    <div class="mb-3">
-                        <label for="time" class="form-label">Ora</label>
-                        <input type="time" class="form-control" name="time"
-                            value="{{ gara.time.strftime('%H:%M') if gara.time else '20:00' }}">
-                    </div>
-                </div>
-            </div>
-        </div>
+{# templates/components/_gara_edit_form.html — Design System 7c
+   Modifica gara. Nomi dei campi, id, opzioni e endpoint invariati: il JS di
+   admin/gara_edit.html continua a trovare matchmaking_strategy,
+   first_round_policy, odd_number_policy, anti_rematch_enabled,
+   classification_system, trio_warning, strategy_description. #}
+<form action="{{ url_for('admin.competition.edit_gara', gara_id=gara.id) }}" method="POST" class="c7-stack" style="gap:16px">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  {# Avviso in testa: quanti iscritti ci sono gia'. #}
+  {% set iscritti = gara.get_active_inscriptions_count() %}
+  {% if iscritti > 0 %}
+  <div class="c7-flash c7-flash--warning">
+    <span class="c7-flash__ico"><i class="fas fa-exclamation"></i></span>
+    <div class="c7-flash__body">
+      <div class="c7-flash__title">
+        {{ ngettext('%(num)d giocatore già iscritto', '%(num)d giocatori già iscritti', iscritti, num=iscritti) }}
+      </div>
+      <div class="c7-flash__text">
+        {{ _('Una volta avviato il primo turno la gara non sarà più modificabile. Cambiando data o sala gli iscritti ricevono una notifica.') }}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  {# ---------------- Informazioni ---------------- #}
+  <div class="c7-card">
+    <h3 class="mb-3">{{ _('Informazioni') }}</h3>
+
+    <div class="mb-3">
+      <label for="name" class="form-label">{{ _('Nome') }}{% if not gara.is_standalone %} · {{ _('opzionale') }}{% endif %}</label>
+      <input type="text" class="form-control" id="name" name="name" value="{{ gara.name or '' }}"
+             placeholder="{{ _('es. Semifinale, Gara di Ferragosto…') }}" {% if gara.is_standalone %}required{% endif %}>
     </div>
 
-    <div class="card mt-3">
-        <div class="card-body">
-            <h5 class="card-title">Strategia di Abbinamento</h5>
+    <div class="d-flex gap-3 flex-wrap">
+      <div class="flex-fill" style="min-width:180px">
+        <label for="date" class="form-label">{{ _('Data') }}</label>
+        <input type="date" class="form-control" id="date" name="date"
+               value="{{ gara.date.isoformat() if gara.date else '' }}" required>
+        {% if iscritti > 0 %}
+        <div class="form-text"><i class="fas fa-bell" style="font-size:10px"></i> {{ _('Gli iscritti riceveranno una notifica') }}</div>
+        {% endif %}
+      </div>
+      <div style="width:140px">
+        <label for="time" class="form-label">{{ _('Ora') }}</label>
+        <input type="time" class="form-control" id="time" name="time"
+               value="{{ gara.time.strftime('%H:%M') if gara.time else '20:00' }}">
+      </div>
+    </div>
+  </div>
 
-            <!-- Sistema di Classifica -->
-            <div class="mb-3">
-                <label for="classification_system" class="form-label">Sistema di Classifica</label>
-                {% if gara.campionato_id %}
-                {# Gara in campionato: mostra readonly #}
-                {% set campionato_default = gara.campionato.default_classification_system or 'WINS' %}
-                {% set gara_system = gara.classification_system or 'WINS' %}
-                {% set is_inherited = (gara_system == campionato_default) or (gara_system == 'RACKS' and campionato_default == 'RACK') %}
-                <input type="text" class="form-control" value="{% if gara_system == 'WINS' %}Vittorie{% elif gara_system in ['RACK', 'RACKS'] %}Rack Totali{% else %}{{ gara_system }}{% endif %}" readonly disabled>
-                <input type="hidden" name="classification_system" value="{{ gara_system }}">
-                {% if is_inherited %}
-                <small class="form-text text-muted">Ereditato dal campionato</small>
-                {% else %}
-                <small class="form-text text-warning">
-                    <i class="fas fa-exclamation-triangle"></i> Diverso dal campionato
-                    (default: {% if campionato_default == 'WINS' %}Vittorie{% elif campionato_default == 'RACK' %}Rack Totali{% else %}{{ campionato_default }}{% endif %})
-                </small>
-                {% endif %}
-                {% else %}
-                {# Gara standalone: select editabile #}
-                <select class="form-select" id="classification_system" name="classification_system">
-                    <option value="WINS" {% if (gara.classification_system or 'WINS') == 'WINS' %}selected{% endif %}>Vittorie (match vinti → diff rack)</option>
-                    <option value="RACK" {% if gara.classification_system == 'RACK' %}selected{% endif %}>Rack Totali (rack accumulati)</option>
-                </select>
-                {% endif %}
-            </div>
+  {# ---------------- Strategia di abbinamento ---------------- #}
+  <div class="c7-card">
+    <h3 class="mb-3">{{ _('Strategia di abbinamento') }}</h3>
 
-            <div class="mb-3">
-                <label for="matchmaking_strategy" class="form-label">Tipo di Competizione</label>
-                <select class="form-select" id="matchmaking_strategy" name="matchmaking_strategy" required>
-                    {% for strategy_key, strategy_info in available_strategies.items() %}
-                    <option value="{{ strategy_key }}" {% if strategy_key==(gara.matchmaking_strategy or 'amalfi' )
-                        %}selected{% endif %} data-description="{{ strategy_info.description }}">
-                        {{ strategy_info.display_name }}
-                    </option>
-                    {% endfor %}
-                </select>
-                <small id="strategy_description" class="form-text text-muted"></small>
-            </div>
-
-            <div class="mb-3" id="anti_rematch_section">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="anti_rematch_enabled"
-                        name="anti_rematch_enabled" {% if gara.anti_rematch_enabled %}checked{% endif %}>
-                    <label class="form-check-label" for="anti_rematch_enabled">
-                        Evita reincontri tra giocatori
-                    </label>
-                    <small class="form-text text-muted d-block">Dipende dal tipo di competizione selezionato</small>
-                </div>
-                <div id="anti_rematch_warning" class="alert alert-warning py-2 mt-2 small" style="display: none;">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <span id="anti_rematch_warning_text"></span>
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <label for="has_handicap" class="form-label">{{ _("Gioco con handicap") }}</label>
-                <select class="form-select" id="has_handicap" name="has_handicap">
-                    {% if gara.campionato %}
-                    <option value="" {% if gara.has_handicap is none %}selected{% endif %}>{{ _("Eredita dal campionato") }} ({{ _("Sì") if gara.campionato.has_handicap else _("No") }})</option>
-                    {% endif %}
-                    <option value="true" {% if gara.has_handicap is true %}selected{% endif %}>{{ _("Sì") }}</option>
-                    <option value="false" {% if gara.has_handicap is false %}selected{% endif %}>{{ _("No") }}</option>
-                </select>
-                <small class="form-text text-muted d-block">{{ _("I match con handicap non aggiornano i rating (Elo/Fargo).") }}</small>
-            </div>
-
-            <div class="row" id="strategy_config_section">
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label for="first_round_policy" class="form-label">Primo Abbinamento</label>
-                        <select class="form-select" id="first_round_policy" name="first_round_policy">
-                            <option value="random" {% if (gara.first_round_policy or 'random' )=='random' %}selected{%
-                                endif %}>Casuale</option>
-                            <option value="rating" {% if gara.first_round_policy=='rating' %}selected{% endif %}>Basato
-                                su Rating</option>
-                            <option value="classification" {% if gara.first_round_policy=='classification' %}selected{%
-                                endif %}>Basato su Classifica</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label for="odd_number_policy" class="form-label">Gestione Giocatori Dispari</label>
-                        <select class="form-select" id="odd_number_policy" name="odd_number_policy">
-                            <option value="no" {% if gara.odd_number_policy=='no' %}selected{% endif %}>Lista Attesa (solo pari)</option>
-                            <option value="bye" {% if (gara.odd_number_policy or 'bye' )=='bye' %}selected{% endif %}>X (vinto a tavolino)</option>
-                            <option value="bye_with_challenge" {% if gara.odd_number_policy=='bye_with_challenge' %}selected{% endif %}>X con Challenge</option>
-                            <option value="trio" {% if gara.odd_number_policy=='trio' %}selected{% endif %}>Match a 3</option>
-                        </select>
-                        <small id="trio_warning" class="form-text text-warning" style="display: none;">
-                            <i class="fas fa-exclamation-triangle"></i> Il Trio è disponibile solo per distanze da 2 a 7
-                        </small>
-                    </div>
-                </div>
-            </div>
+    <div class="mb-3">
+      <label for="classification_system" class="form-label">{{ _('Sistema di classifica') }}</label>
+      {% if gara.campionato_id %}
+        {% set campionato_default = gara.campionato.default_classification_system or 'WINS' %}
+        {% set gara_system = gara.classification_system or 'WINS' %}
+        {% set is_inherited = (gara_system == campionato_default) or (gara_system == 'RACKS' and campionato_default == 'RACK') %}
+        <div class="c7-card c7-card--locked d-flex align-items-center gap-2"
+             style="height:56px;padding:0 16px;font-size:15px;font-weight:700">
+          <i class="fas fa-lock" style="font-size:12px"></i>
+          {% if gara_system == 'WINS' %}{{ _('Vittorie') }}
+          {% elif gara_system in ['RACK', 'RACKS'] %}{{ _('Rack totali') }}
+          {% else %}{{ gara_system }}{% endif %}
+          <span class="ms-auto" style="font-size:11px;color:var(--c7-ink-faint)">{{ _('dal campionato') }}</span>
         </div>
+        <input type="hidden" name="classification_system" value="{{ gara_system }}">
+        {% if not is_inherited %}
+        <div class="form-text" style="color:var(--c7-warn-ink)">
+          <i class="fas fa-triangle-exclamation" style="font-size:10px"></i>
+          {{ _('Diverso dal campionato') }} ({{ _('default') }}:
+          {% if campionato_default == 'WINS' %}{{ _('Vittorie') }}
+          {% elif campionato_default == 'RACK' %}{{ _('Rack totali') }}
+          {% else %}{{ campionato_default }}{% endif %})
+        </div>
+        {% endif %}
+      {% else %}
+        <select class="form-select" id="classification_system" name="classification_system">
+          <option value="WINS" {% if (gara.classification_system or 'WINS') == 'WINS' %}selected{% endif %}>{{ _('Vittorie — match vinti, poi differenza rack') }}</option>
+          <option value="RACK" {% if gara.classification_system == 'RACK' %}selected{% endif %}>{{ _('Rack totali — ogni rack conta') }}</option>
+        </select>
+      {% endif %}
     </div>
 
-    <div class="card mt-3">
-        <div class="card-body">
-            <h5 class="card-title">Impostazioni di Gioco</h5>
-
-            <!-- Seconda riga: Luogo e partecipanti -->
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="mb-3">
-                        <label for="location" class="form-label">Luogo</label>
-                        <input type="text" class="form-control" name="location" value="{{ gara.location or '' }}"
-                            placeholder="es: Circolo Biliardo Centro" list="venue-suggestions" autocomplete="off">
-                        <datalist id="venue-suggestions">
-                            <!-- Venue verificate -->
-                            {% if verified_venues %}
-                            {% for venue in verified_venues %}
-                            <option value="{{ venue.name }}">{{ venue.name }} - {{ venue.city or 'Città non specificata'
-                                }}</option>
-                            {% endfor %}
-                            {% endif %}
-                        </datalist>
-                        <small class="text-muted">
-                            <i class="fas fa-info-circle"></i>
-                            Seleziona da sale verificate o inserisci nuovo nome
-                        </small>
-                    </div>
-                </div>
-                <div class="col-md-2">
-                    <div class="mb-3">
-                        <label for="available_tables" class="form-label">Tavoli</label>
-                        <input type="text" class="form-control" name="available_tables"
-                            value="{% if gara.available_tables %}{{ gara.get_available_tables()|join(', ') }}{% elif gara.venue and gara.venue.number_of_tables %}{{ gara.venue.number_of_tables }}{% endif %}"
-                            placeholder="es: 3 o 2,3,5">
-                        <small class="text-muted">Numero o elenco separato da virgole</small>
-                    </div>
-                </div>
-                <div class="col-md-2">
-                    <div class="mb-3">
-                        <label for="min_participants" class="form-label">Min Iscritti</label>
-                        <input type="number" class="form-control" name="min_participants" min="2" max="32"
-                            value="{{ gara.min_participants }}" required>
-                    </div>
-                </div>
-                <div class="col-md-2">
-                    <div class="mb-3">
-                        <label for="max_participants" class="form-label">Max Iscritti</label>
-                        <input type="number" class="form-control" name="max_participants" min="2" max="64"
-                            value="{{ gara.max_participants or '' }}" placeholder="Illimitato">
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="mb-3">
-                        <label class="form-label">Gestione ritiri</label>
-                        <select class="form-select" name="withdraw_policy" required>
-                            <option value="{{ WithdrawPolicy.EXCLUDE.value }}" {{ 'selected' if
-                                gara.withdraw_policy==WithdrawPolicy.EXCLUDE.value else '' }}>Exclude (X/Trio)</option>
-                            <option value="{{ WithdrawPolicy.FORFEIT.value }}" {{ 'selected' if
-                                gara.withdraw_policy==WithdrawPolicy.FORFEIT.value else '' }}>Forfeit (vittoria
-                                avversario)</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="col-md-2">
-                    <div class="mb-3">
-                        <label for="entry_fee" class="form-label">Quota €</label>
-                        <input type="number" class="form-control" name="entry_fee" min="0" step="0.50"
-                            value="{{ gara.entry_fee }}" required>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Terza riga: Game settings -->
-            <div class="row">
-                <div class="col-md-3">
-                    <div class="mb-3">
-                        <label for="discipline" class="form-label">Disciplina</label>
-                        <select class="form-select" name="discipline" required>
-                            <option value="">Seleziona disciplina...</option>
-                            {% for value, label in discipline_choices %}
-                            <option value="{{ value }}" {{ ' selected' if gara.discipline==value else '' }}>{{ label }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="mb-3">
+      <label for="matchmaking_strategy" class="form-label">{{ _('Tipo di competizione') }}</label>
+      <select class="form-select" id="matchmaking_strategy" name="matchmaking_strategy" required>
+        {% for strategy_key, strategy_info in available_strategies.items() %}
+        <option value="{{ strategy_key }}" {% if strategy_key == (gara.matchmaking_strategy or 'amalfi') %}selected{% endif %}
+                data-description="{{ strategy_info.description }}">{{ strategy_info.display_name }}</option>
+        {% endfor %}
+      </select>
+      <div id="strategy_description" class="form-text"></div>
     </div>
 
-    <!-- Distance Configurator Component (Phase 6: Multi-Set Support) -->
-    {% with distance=gara.distance, is_race_to=gara.is_race_to, is_multi_set=gara.is_multi_set,
-    match_distance=gara.match_distance, is_race_to_sets=gara.is_race_to_sets %}
+    <div class="mb-3" id="anti_rematch_section">
+      <label class="c7-card d-flex align-items-center gap-3 mb-0" style="background:var(--c7-bg);cursor:pointer">
+        <span class="flex-fill">
+          <span class="c7-choice__title d-block">{{ _('Anti-rematch') }}</span>
+          <span class="c7-choice__desc d-block">{{ _('Evita di riabbinare gli stessi giocatori. Dipende dal tipo di competizione.') }}</span>
+        </span>
+        <span class="form-check form-switch m-0">
+          <input class="form-check-input m-0" type="checkbox" role="switch"
+                 id="anti_rematch_enabled" name="anti_rematch_enabled"
+                 {% if gara.anti_rematch_enabled %}checked{% endif %}>
+        </span>
+      </label>
+      <div id="anti_rematch_warning" class="c7-flash c7-flash--warning mt-2" style="display:none">
+        <span class="c7-flash__ico"><i class="fas fa-exclamation"></i></span>
+        <div class="c7-flash__body"><div class="c7-flash__text" id="anti_rematch_warning_text"></div></div>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="has_handicap" class="form-label">{{ _("Gioco con handicap") }}</label>
+      <select class="form-select" id="has_handicap" name="has_handicap">
+        {% if gara.campionato %}
+        <option value="" {% if gara.has_handicap is none %}selected{% endif %}>
+          {{ _("Eredita dal campionato") }} ({{ _("Sì") if gara.campionato.has_handicap else _("No") }})
+        </option>
+        {% endif %}
+        <option value="true" {% if gara.has_handicap is true %}selected{% endif %}>{{ _("Sì") }}</option>
+        <option value="false" {% if gara.has_handicap is false %}selected{% endif %}>{{ _("No") }}</option>
+      </select>
+      <div class="form-text">{{ _("I match con handicap non aggiornano i rating (Elo/Fargo).") }}</div>
+    </div>
+
+    <div class="d-flex gap-3 flex-wrap" id="strategy_config_section">
+      <div class="flex-fill" style="min-width:200px">
+        <label for="first_round_policy" class="form-label">{{ _('Primo abbinamento') }}</label>
+        <select class="form-select" id="first_round_policy" name="first_round_policy">
+          <option value="random" {% if (gara.first_round_policy or 'random') == 'random' %}selected{% endif %}>{{ _('Casuale') }}</option>
+          <option value="rating" {% if gara.first_round_policy == 'rating' %}selected{% endif %}>{{ _('Basato su rating') }}</option>
+          <option value="classification" {% if gara.first_round_policy == 'classification' %}selected{% endif %}>{{ _('Basato su classifica') }}</option>
+        </select>
+      </div>
+      <div class="flex-fill" style="min-width:200px">
+        <label for="odd_number_policy" class="form-label">{{ _('Giocatori dispari') }}</label>
+        <select class="form-select" id="odd_number_policy" name="odd_number_policy">
+          <option value="no" {% if gara.odd_number_policy == 'no' %}selected{% endif %}>{{ _("Lista d'attesa — solo pari") }}</option>
+          <option value="bye" {% if (gara.odd_number_policy or 'bye') == 'bye' %}selected{% endif %}>{{ _('X — vinto a tavolino') }}</option>
+          <option value="bye_with_challenge" {% if gara.odd_number_policy == 'bye_with_challenge' %}selected{% endif %}>{{ _('X con challenge') }}</option>
+          <option value="trio" {% if gara.odd_number_policy == 'trio' %}selected{% endif %}>{{ _('Match a 3') }}</option>
+        </select>
+        <div id="trio_warning" class="form-text" style="display:none;color:var(--c7-err-ink)">
+          <i class="fas fa-circle-exclamation" style="font-size:10px"></i>
+          {{ _('Il match a 3 vale solo per distanze da 2 a 7') }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# ---------------- Impostazioni di gioco ---------------- #}
+  <div class="c7-card">
+    <h3 class="mb-3">{{ _('Impostazioni di gioco') }}</h3>
+
+    <div class="mb-3">
+      <label for="location" class="form-label">{{ _('Sala') }}</label>
+      <input type="text" class="form-control" id="location" name="location" value="{{ gara.location or '' }}"
+             placeholder="{{ _('es. Biliardo Centrale') }}" list="venue-suggestions" autocomplete="off">
+      <datalist id="venue-suggestions">
+        {% if verified_venues %}{% for venue in verified_venues %}
+        <option value="{{ venue.name }}">{{ venue.name }} - {{ venue.city or _('Città non specificata') }}</option>
+        {% endfor %}{% endif %}
+      </datalist>
+      <div class="form-text">{{ _('Scegli una sala verificata o scrivi un nuovo nome') }}</div>
+    </div>
+
+    <div class="d-flex gap-3 flex-wrap">
+      <div class="flex-fill" style="min-width:150px">
+        <label for="available_tables" class="form-label">{{ _('Tavoli') }}</label>
+        <input type="text" class="form-control" id="available_tables" name="available_tables"
+               value="{% if gara.available_tables %}{{ gara.get_available_tables()|join(', ') }}{% elif gara.venue and gara.venue.number_of_tables %}{{ gara.venue.number_of_tables }}{% endif %}"
+               placeholder="{{ _('es. 3 oppure 2,3,5') }}">
+        <div class="form-text">{{ _('Numero o elenco separato da virgole') }}</div>
+      </div>
+      <div style="width:150px">
+        <label for="entry_fee" class="form-label">{{ _('Quota €') }}</label>
+        <input type="number" class="form-control" id="entry_fee" name="entry_fee" min="0" step="0.50"
+               value="{{ gara.entry_fee }}" required>
+      </div>
+    </div>
+
+    <div class="d-flex gap-3 flex-wrap mt-3">
+      <div style="width:150px">
+        <label for="min_participants" class="form-label">{{ _('Min iscritti') }}</label>
+        <input type="number" class="form-control" id="min_participants" name="min_participants" min="2" max="32"
+               value="{{ gara.min_participants }}" required>
+      </div>
+      <div style="width:150px">
+        <label for="max_participants" class="form-label">{{ _('Max iscritti') }}</label>
+        <input type="number" class="form-control" id="max_participants" name="max_participants" min="2" max="64"
+               value="{{ gara.max_participants or '' }}" placeholder="{{ _('Illimitato') }}">
+      </div>
+      <div class="flex-fill" style="min-width:200px">
+        <label for="withdraw_policy" class="form-label">{{ _('Gestione ritiri') }}</label>
+        <select class="form-select" id="withdraw_policy" name="withdraw_policy" required>
+          <option value="{{ WithdrawPolicy.EXCLUDE.value }}" {{ 'selected' if gara.withdraw_policy == WithdrawPolicy.EXCLUDE.value else '' }}>
+            {{ _('Escludi — X o match a 3') }}
+          </option>
+          <option value="{{ WithdrawPolicy.FORFEIT.value }}" {{ 'selected' if gara.withdraw_policy == WithdrawPolicy.FORFEIT.value else '' }}>
+            {{ _("Forfait — vittoria all'avversario") }}
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <div class="mt-3" style="max-width:280px">
+      <label for="discipline" class="form-label">{{ _('Disciplina') }}</label>
+      <select class="form-select" id="discipline" name="discipline" required>
+        <option value="">{{ _('Seleziona disciplina…') }}</option>
+        {% for value, label in discipline_choices %}
+        <option value="{{ value }}" {{ ' selected' if gara.discipline == value else '' }}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  {# Distanza: componente condiviso (multi-set incluso) #}
+  {% with distance=gara.distance, is_race_to=gara.is_race_to, is_multi_set=gara.is_multi_set,
+          match_distance=gara.match_distance, is_race_to_sets=gara.is_race_to_sets %}
     {% include "components/_distance_configurator.html" %}
-    {% endwith %}
+  {% endwith %}
 
-    <div class="card mt-3">
-        <div class="card-body">
-            <h5 class="card-title">Impostazioni Torneo</h5>
-            <div class="row">
-                <div class="col-md-2">
-                    <div class="mb-3">
-                        <label for="rounds_count" class="form-label">Turni</label>
-                        <input type="number" class="form-control" name="rounds_count" min="1" max="10"
-                            value="{{ gara.rounds_count }}" required>
-                    </div>
-                </div>
-            </div>
+  {# ---------------- Turni e spareggi ---------------- #}
+  <div class="c7-card">
+    <h3 class="mb-3">{{ _('Turni e spareggi') }}</h3>
 
-            <!-- SSR (Spot Shot Rally) Configuration -->
-            <div class="border rounded p-3 mb-3 bg-light">
-                <h6 class="mb-3"><i class="fas fa-balance-scale text-warning"></i> Configurazione Spareggio (SSR)</h6>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="tiebreaker_enabled"
-                                name="tiebreaker_enabled" {% if gara.tiebreaker_enabled %}checked{% endif %}>
-                            <label class="form-check-label" for="tiebreaker_enabled">
-                                {{ _('Abilita spareggio (SSR) per parimerito') }}
-                            </label>
-                            <small class="form-text text-muted d-block">
-                                {{ _('Richiede Spot Shot Rally per risolvere parimerito nelle prime posizioni') }}
-                            </small>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="tiebreaker_until_position" class="form-label">{{ _('Spareggio fino alla posizione') }}</label>
-                        <select class="form-select" name="tiebreaker_until_position" id="tiebreaker_until_position">
-                            <option value="1" {% if gara.tiebreaker_until_position == 1 %}selected{% endif %}>{{ _('Solo 1° posto') }}</option>
-                            <option value="2" {% if gara.tiebreaker_until_position == 2 %}selected{% endif %}>{{ _('Fino al 2° posto') }}</option>
-                            <option value="3" {% if gara.tiebreaker_until_position == 3 or not gara.tiebreaker_until_position %}selected{% endif %}>{{ _('Fino al 3° posto') }}</option>
-                        </select>
-                        <small class="form-text text-muted">
-                            {{ _('Posizioni per cui richiedere spareggio in caso di parimerito') }}
-                        </small>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Descrizione -->
-            <div class="mb-3">
-                <label for="description" class="form-label">Descrizione (opzionale)</label>
-                <textarea class="form-control" name="description" rows="3"
-                    placeholder="Descrizione della competizione...">{{ gara.description or '' }}</textarea>
-            </div>
-
-            <div class="alert alert-warning">
-                <i class="fas fa-exclamation-triangle"></i>
-                <strong>Attenzione:</strong> Una volta che ci saranno iscrizioni a questa gara,
-                non sarà più possibile modificarla.
-            </div>
-
-            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                <a href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}" class="btn btn-secondary">
-                    <i class="fas fa-times"></i> Annulla
-                </a>
-                <button type="submit" class="btn btn-success">
-                    <i class="fas fa-save"></i> Salva Modifiche
-                </button>
-            </div>
-        </div>
+    <div class="mb-3" style="width:150px">
+      <label for="rounds_count" class="form-label">{{ _('Turni') }}</label>
+      <input type="number" class="form-control" id="rounds_count" name="rounds_count" min="1" max="10"
+             value="{{ gara.rounds_count }}" required>
     </div>
+
+    <div style="background:var(--c7-bg);border-radius:var(--c7-r-field);padding:16px">
+      <div class="c7-kicker mb-3">{{ _('Spareggio SSR') }}</div>
+
+      <label class="d-flex align-items-center gap-3 mb-3" style="cursor:pointer">
+        <span class="flex-fill">
+          <span class="c7-choice__title d-block">{{ _('Abilita spareggio per i parimerito') }}</span>
+          <span class="c7-choice__desc d-block">{{ _('Richiede Spot Shot Rally per risolvere i parimerito nelle prime posizioni') }}</span>
+        </span>
+        <span class="form-check form-switch m-0">
+          <input class="form-check-input m-0" type="checkbox" role="switch"
+                 id="tiebreaker_enabled" name="tiebreaker_enabled" {% if gara.tiebreaker_enabled %}checked{% endif %}>
+        </span>
+      </label>
+
+      <label for="tiebreaker_until_position" class="form-label">{{ _('Spareggio fino alla posizione') }}</label>
+      <select class="form-select" name="tiebreaker_until_position" id="tiebreaker_until_position" style="background:var(--c7-card)">
+        <option value="1" {% if gara.tiebreaker_until_position == 1 %}selected{% endif %}>{{ _('Solo 1° posto') }}</option>
+        <option value="2" {% if gara.tiebreaker_until_position == 2 %}selected{% endif %}>{{ _('Fino al 2° posto') }}</option>
+        <option value="3" {% if gara.tiebreaker_until_position == 3 or not gara.tiebreaker_until_position %}selected{% endif %}>{{ _('Fino al 3° posto') }}</option>
+      </select>
+    </div>
+
+    <div class="mt-3">
+      <label for="description" class="form-label">{{ _('Descrizione') }} · {{ _('opzionale') }}</label>
+      <textarea class="form-control" id="description" name="description" rows="3"
+                placeholder="{{ _('Note per gli iscritti: ritrovo, parcheggio, premi…') }}">{{ gara.description or '' }}</textarea>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2 justify-content-end">
+    <a href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}" class="btn btn-secondary">{{ _('Annulla') }}</a>
+    <button type="submit" class="btn btn-primary">
+      <i class="fas fa-floppy-disk"></i> {{ _('Salva modifiche') }}
+    </button>
+  </div>
 </form>
 
 {% if debug_info.debug_mode %}
-<div class="mt-4">
-    <div class="alert alert-dark">
-        <h6><i class="fas fa-bug"></i> DEBUG - Edit Gara</h6>
-        <small>
-            Gara ID: {{ gara.id }}<br>
-            Can be modified: {{ gara.can_be_modified() }}<br>
-            Current values: Distance={{ gara.distance }}, Is_Race_To={{ gara.is_race_to }}, Rounds={{ gara.rounds_count
-            }}
-        </small>
-    </div>
+<div class="c7-card mt-4" style="background:var(--c7-ink);color:var(--c7-on-ink)">
+  <div class="c7-kicker" style="color:var(--c7-on-ink-muted)">DEBUG · EDIT GARA</div>
+  <div class="mt-2" style="font-family:var(--c7-font-mono);font-size:12px;line-height:1.7">
+    Gara ID: {{ gara.id }}<br>
+    Can be modified: {{ gara.can_be_modified() }}<br>
+    Distance={{ gara.distance }} · Is_Race_To={{ gara.is_race_to }} · Rounds={{ gara.rounds_count }}
+  </div>
 </div>
 {% endif %}
 
-<!-- JavaScript for Anti-Rematch Validation -->
 <script>
+    // Validazione anti-rematch: con N giocatori al massimo N-1 turni.
     document.addEventListener('DOMContentLoaded', function () {
         const roundsCountInput = document.querySelector('input[name="rounds_count"]');
-
-        // Anti-rematch validation elements
         const antiRematchCheck = document.getElementById('anti_rematch_enabled');
         const maxParticipantsInput = document.querySelector('input[name="max_participants"]');
         const antiRematchWarning = document.getElementById('anti_rematch_warning');
         const antiRematchWarningText = document.getElementById('anti_rematch_warning_text');
         const form = document.querySelector('form');
 
-        // Anti-rematch validation: with N players, max N-1 rounds possible
         function validateAntiRematchConstraint() {
             const antiRematchEnabled = antiRematchCheck && antiRematchCheck.checked;
             const maxParticipants = maxParticipantsInput ? parseInt(maxParticipantsInput.value) : NaN;
             const roundsCount = roundsCountInput ? parseInt(roundsCountInput.value) : NaN;
 
-            // Validation only applies when anti-rematch is enabled AND max_participants is set
             if (antiRematchEnabled && !isNaN(maxParticipants) && maxParticipants > 0 && !isNaN(roundsCount)) {
                 const maxRounds = maxParticipants - 1;
                 if (roundsCount > maxRounds) {
                     if (antiRematchWarning && antiRematchWarningText) {
-                        antiRematchWarning.style.display = 'block';
+                        antiRematchWarning.style.display = 'flex';
                         antiRematchWarningText.textContent =
                             `Con anti-rematch attivo e ${maxParticipants} partecipanti massimi, ` +
                             `puoi avere al massimo ${maxRounds} turni ` +
@@ -352,25 +317,22 @@
             return true;
         }
 
-        // Hook up anti-rematch validation to relevant fields
         if (antiRematchCheck) antiRematchCheck.addEventListener('change', validateAntiRematchConstraint);
         if (maxParticipantsInput) maxParticipantsInput.addEventListener('input', validateAntiRematchConstraint);
         if (roundsCountInput) roundsCountInput.addEventListener('input', validateAntiRematchConstraint);
 
-        // Prevent form submission if constraint is violated
         if (form) {
-            form.addEventListener('submit', function(e) {
+            form.addEventListener('submit', function (e) {
                 if (!validateAntiRematchConstraint()) {
                     e.preventDefault();
-                    // Scroll to the warning
                     if (antiRematchWarning) {
-                        antiRematchWarning.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        const top = antiRematchWarning.getBoundingClientRect().top + window.pageYOffset - 120;
+                        window.scrollTo({ top: top, behavior: 'smooth' });
                     }
                 }
             });
         }
 
-        // Initial validation on page load
         validateAntiRematchConstraint();
     });
 </script>

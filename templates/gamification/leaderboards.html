@@ -2,152 +2,84 @@
 {% block title %}{{ page_title }} - Campionato Biliardo{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <!-- Header -->
-    <div class="row mb-5 text-center">
-        <div class="col-12">
-            <h1 class="display-4 fw-bold text-gradient">
-                <i class="fas fa-trophy text-warning me-3"></i>{{ page_title }}
-            </h1>
-            <p class="lead text-muted">{{ _('La tua zona e chi fa crescere la community') }}</p>
-        </div>
+<header class="c7-head" style="padding-left: 0; padding-right: 0;">
+    <div class="c7-head__title">
+        <h1>{{ page_title }}</h1>
+        <div class="c7-head__sub">{{ _('La tua zona e chi fa crescere la community') }}</div>
     </div>
+</header>
 
-    <!-- Navigation Tabs -->
-    <ul class="nav nav-pills justify-content-center mb-5" id="leaderboardTabs" role="tablist">
-        <li class="nav-item mx-2" role="presentation">
-            <button class="nav-link rounded-pill px-4 py-2 {% if active_tab == 'local' %}active{% endif %}"
-                id="local-tab" data-bs-toggle="tab" data-bs-target="#local" type="button" role="tab">
-                <i class="fas fa-map-marker-alt me-2"></i>{{ _('La tua zona') }}
-            </button>
-        </li>
-        <li class="nav-item mx-2" role="presentation">
-            <button class="nav-link rounded-pill px-4 py-2 {% if active_tab == 'contribution' %}active{% endif %}"
-                id="contribution-tab" data-bs-toggle="tab" data-bs-target="#contribution" type="button" role="tab">
-                <i class="fas fa-hands-helping me-2"></i>{{ _('Contributo') }}
-            </button>
-        </li>
-    </ul>
+<nav class="nav nav-tabs" id="leaderboardTabs" role="tablist" style="margin-bottom: 20px;">
+    <button class="nav-link {% if active_tab == 'local' %}active{% endif %}" id="local-tab" data-bs-toggle="tab" data-bs-target="#local" type="button" role="tab">
+        {{ _('La tua zona') }}
+    </button>
+    <button class="nav-link {% if active_tab == 'contribution' %}active{% endif %}" id="contribution-tab" data-bs-toggle="tab" data-bs-target="#contribution" type="button" role="tab">
+        {{ _('Contributo') }}
+    </button>
+</nav>
 
-    <div class="tab-content" id="leaderboardTabsContent">
+<div class="tab-content" id="leaderboardTabsContent">
 
-        <!-- MACRO: simple ranked list (rank, player, score) -->
-        {% macro render_board(entries, unit_label, icon_class, empty_msg) %}
-        {% if entries %}
-        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="ps-4" style="width: 80px;">#</th>
-                            <th>{{ _('Giocatore') }}</th>
-                            <th class="text-end pe-4">{{ unit_label }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for entry in entries %}
-                        <tr class="{% if entry.is_viewer %}table-active-highlight{% endif %}">
-                            <td class="ps-4 fw-bold text-muted">
-                                {% if entry.rank == 1 %}<i class="fas fa-crown text-warning"></i>
-                                {% else %}{{ entry.rank }}{% endif %}
-                            </td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <i class="fas fa-user-circle fa-lg text-muted me-3"></i>
-                                    <span class="fw-bold">{{ entry.user.username }}</span>
-                                    {% if entry.is_viewer %}
-                                    <span class="badge bg-primary ms-2">{{ _('Tu') }}</span>
-                                    {% endif %}
-                                </div>
-                            </td>
-                            <td class="text-end pe-4 fw-bold font-monospace fs-5">{{ entry.score|int }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+    {# Classifica semplice: posizione, giocatore, punteggio #}
+    {% macro render_board(entries, unit_label, empty_title, empty_msg) %}
+    {% if entries %}
+    <div class="c7-card" style="padding: 6px 0;">
+        {% for entry in entries %}
+        <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; {% if not loop.last %}border-bottom: 1px solid var(--c7-line-soft);{% endif %} {% if entry.is_viewer %}background: var(--c7-accent-tint);{% endif %}">
+            <span class="c7-num" style="width: 28px; text-align: center; color: {% if entry.rank <= 3 %}var(--c7-accent){% else %}var(--c7-ink-faint){% endif %};">{{ entry.rank }}</span>
+            <span class="c7-avatar">{{ entry.user.username[:2]|upper }}</span>
+            <strong style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ entry.user.username }}</strong>
+            {% if entry.is_viewer %}<span class="c7-state c7-state--accent">{{ _('Tu') }}</span>{% endif %}
+            <span class="c7-num" style="font-size: 17px;">{{ entry.score|int }}</span>
+        </div>
+        {% endfor %}
+        <div class="c7-kicker" style="padding: 10px 16px 6px; text-align: right;">{{ unit_label }}</div>
+    </div>
+    {% else %}
+    <div class="c7-empty">
+        <div class="c7-empty__ico"><i class="fas fa-list-ol"></i></div>
+        <h3 class="c7-empty__title">{{ empty_title }}</h3>
+        <p class="c7-empty__text">{{ empty_msg }}</p>
+    </div>
+    {% endif %}
+    {% endmacro %}
+
+    <div class="tab-pane fade {% if active_tab == 'local' %}show active{% endif %}" id="local" role="tabpanel">
+        {% if not current_user.is_authenticated %}
+        <div class="c7-empty">
+            <div class="c7-empty__ico"><i class="fas fa-lock"></i></div>
+            <h3 class="c7-empty__title">{{ _('Accedi per vedere la tua zona') }}</h3>
+            <p class="c7-empty__text">{{ _('La classifica locale confronta i giocatori della tua città.') }}</p>
+        </div>
+        {% elif local_board and not local_board.available %}
+        <div class="c7-empty">
+            <div class="c7-empty__ico"><i class="fas fa-map-marker-alt"></i></div>
+            <h3 class="c7-empty__title">{{ _('Dicci dove giochi') }}</h3>
+            <p class="c7-empty__text">{{ _('Imposta la città nel profilo per vedere la classifica della tua zona.') }}</p>
+            <div class="c7-empty__actions">
+                <a href="{{ url_for('player.edit_profile') }}" class="btn btn-primary">{{ _('Vai al profilo') }}</a>
             </div>
         </div>
         {% else %}
-        <div class="text-center py-5">
-            <div class="mb-3"><i class="{{ icon_class }} fa-4x text-muted opacity-50"></i></div>
-            <h4 class="text-muted">{{ _('Nessun dato disponibile') }}</h4>
-            <p class="text-muted">{{ empty_msg }}</p>
-        </div>
+        {% if local_board and local_board.zone_label %}
+        <p class="c7-kicker" style="margin-bottom: 12px;">
+            {{ local_board.zone_label }}{% if local_board.viewer_rank %} <span class="c7-sep">·</span> {{ _('sei %(rank)s°', rank=local_board.viewer_rank) }}{% endif %}
+        </p>
         {% endif %}
-        {% endmacro %}
-
-        <!-- LOCAL Tab -->
-        <div class="tab-pane fade {% if active_tab == 'local' %}show active{% endif %}" id="local" role="tabpanel">
-            {% if not current_user.is_authenticated %}
-            <div class="text-center py-5">
-                <div class="mb-3"><i class="fas fa-map-marker-alt fa-4x text-muted opacity-50"></i></div>
-                <h4 class="text-muted">{{ _('Accedi per vedere la classifica della tua zona') }}</h4>
-            </div>
-            {% elif local_board and not local_board.available %}
-            <div class="text-center py-5">
-                <div class="mb-3"><i class="fas fa-city fa-4x text-muted opacity-50"></i></div>
-                <h4 class="text-muted">{{ _('Imposta la tua città per vedere la classifica locale') }}</h4>
-                <a href="{{ url_for('player.edit_profile') }}" class="btn btn-primary mt-2">
-                    <i class="fas fa-user-edit me-2"></i>{{ _('Vai al profilo') }}
-                </a>
-            </div>
-            {% else %}
-            {% if local_board and local_board.zone_label %}
-            <p class="text-center text-muted mb-4">
-                <i class="fas fa-map-marker-alt me-1"></i>
-                {{ _('Zona: %(city)s', city=local_board.zone_label) }}
-                {% if local_board.viewer_rank %}
-                · {{ _('Sei %(rank)s°', rank=local_board.viewer_rank) }}
-                {% endif %}
-            </p>
-            {% endif %}
-            {{ render_board(local_board.entries if local_board else [], _('XP'),
-               'fas fa-map-marker-alt',
-               _('Gioca qualche partita per apparire nella classifica della tua zona!')) }}
-            {% endif %}
-        </div>
-
-        <!-- CONTRIBUTION Tab -->
-        <div class="tab-pane fade {% if active_tab == 'contribution' %}show active{% endif %}" id="contribution"
-            role="tabpanel">
-            <p class="text-center text-muted mb-4">
-                {{ _('Drill creati per altri, gare organizzate e proposte accettate.') }}
-            </p>
-            {{ render_board(contribution_board, _('Contributo'),
-               'fas fa-hands-helping',
-               _('Crea drill, organizza gare o proponi match per far crescere la community!')) }}
-        </div>
-
+        {{ render_board(local_board.entries if local_board else [], _('XP'),
+           _('Classifica ancora vuota'),
+           _('Gioca qualche partita per comparire nella classifica della tua zona.')) }}
+        {% endif %}
     </div>
+
+    <div class="tab-pane fade {% if active_tab == 'contribution' %}show active{% endif %}" id="contribution" role="tabpanel">
+        <p class="text-muted" style="margin: 0 0 14px; font-size: 13px;">
+            {{ _('Challenge create per gli altri, gare organizzate e proposte accettate.') }}
+        </p>
+        {{ render_board(contribution_board, _('Punti contributo'),
+           _('Nessun contributo registrato'),
+           _('Crea challenge, organizza gare o proponi match: la community cresce così.')) }}
+    </div>
+
 </div>
-
-<style>
-    .text-gradient {
-        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-
-    .table-active-highlight {
-        background-color: rgba(59, 130, 246, 0.1) !important;
-        border-left: 4px solid #3b82f6;
-    }
-
-    .nav-pills .nav-link {
-        color: #64748b;
-        background-color: #f1f5f9;
-        font-weight: 600;
-        transition: all 0.2s;
-    }
-
-    .nav-pills .nav-link.active {
-        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-        box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.5);
-    }
-
-    .nav-pills .nav-link:hover:not(.active) {
-        background-color: #e2e8f0;
-        transform: translateY(-2px);
-    }
-</style>
 {% endblock %}

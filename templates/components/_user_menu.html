@@ -1,0 +1,55 @@
+{# templates/components/_user_menu.html — Design System 7c
+   Menu utente condiviso: usato dalla card utente in sidebar (>= lg) e
+   dall'avatar in testata (< lg). Sostituisce il dropdown della vecchia navbar.
+   Tutte le guardie feature_visible / ABAC sono invariate. #}
+<ul class="dropdown-menu dropdown-menu-end">
+    <li>
+        <a class="dropdown-item" href="{{ url_for('player.notifications') }}">
+            <i class="fas fa-bell"></i>{{ _('Notifiche') }}
+            <span class="badge bg-danger ms-auto notification-badge"{% if unread_notifications_count == 0 %} style="display:none"{% endif %}>{{ unread_notifications_count }}</span>
+        </a>
+    </li>
+    {% if can_view_profile %}
+    <li>
+        <a class="dropdown-item" href="{{ url_for('player.profile') }}">
+            <i class="fas fa-id-card"></i>{{ _('Il mio Profilo') }}
+        </a>
+    </li>
+    {% endif %}
+    {% if not current_user.is_admin and feature_visible('player.my_venue_requests') %}
+    <li>
+        <a class="dropdown-item" href="{{ url_for('player.my_venue_requests') }}">
+            <i class="fas fa-hand-paper"></i>{{ _('Le mie Richieste Gestore') }}
+        </a>
+    </li>
+    {% endif %}
+    {% if not current_user.is_admin and gamification_context and gamification_context.progress and feature_visible('gamification.dashboard') %}
+    <li>
+        <a class="dropdown-item" href="{{ url_for('gamification.dashboard') }}">
+            <i class="fas fa-medal"></i>{{ _('Livello e traguardi') }}
+            <span class="c7-num ms-auto">Lv {{ gamification_context.progress.current_level }}</span>
+        </a>
+    </li>
+    {% endif %}
+
+    <li><hr class="dropdown-divider"></li>
+
+    <li>
+        <a class="dropdown-item" href="{{ url_for('i18n.set_language', language='en' if get_locale() == 'it' else 'it') }}">
+            <i class="fas fa-globe"></i>{{ 'English' if get_locale() == 'it' else 'Italiano' }}
+        </a>
+    </li>
+
+    {% if can_delete_account and feature_visible('player.delete_account') %}
+    <li>
+        <a class="dropdown-item text-danger" href="{{ url_for('player.delete_account') }}">
+            <i class="fas fa-trash"></i>{{ _('Elimina Account') }}
+        </a>
+    </li>
+    {% endif %}
+    <li>
+        <a class="dropdown-item" href="{{ url_for('auth.logout') }}">
+            <i class="fas fa-right-from-bracket"></i>{{ _('Logout') }}
+        </a>
+    </li>
+</ul>
