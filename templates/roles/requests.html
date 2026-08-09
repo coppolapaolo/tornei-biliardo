@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _("Richieste di ruolo") }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">
+        <i class="fas fa-inbox"></i> {{ _("Richieste di ruolo") }}
+    </h2>
+
+    {% if requests %}
+    <div class="alert alert-secondary small">
+        <i class="fas fa-info-circle"></i>
+        {{ _("Basta una sola approvazione: chi approva per primo concede il ruolo e la richiesta si chiude per gli altri.") }}
+    </div>
+
+    <div class="list-group">
+        {% for req in requests %}
+        <div class="list-group-item">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                <div>
+                    <h6 class="mb-1">{{ req.user.username }}</h6>
+                    <small class="text-muted">
+                        {{ _("Richiesto il") }} {{ req.requested_at|datetime_local }}
+                        &middot;
+                        {{ _("Destinatari:") }} {{ req.recipients|length }}
+                    </small>
+                    {% if req.notes %}
+                    <p class="mb-0 mt-2">{{ req.notes }}</p>
+                    {% endif %}
+                </div>
+                <div class="d-flex gap-2">
+                    <form method="POST"
+                        action="{{ url_for('roles.process_role_request', request_id=req.id) }}"
+                        onsubmit='return confirmSubmit(this, {{ _("Approvare la richiesta e concedere il ruolo?")|tojson }})'>
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="decision" value="approve">
+                        <button type="submit" class="btn btn-success btn-sm">
+                            <i class="fas fa-check"></i> {{ _("Approva") }}
+                        </button>
+                    </form>
+                    <form method="POST"
+                        action="{{ url_for('roles.process_role_request', request_id=req.id) }}"
+                        onsubmit='return confirmSubmit(this, {{ _("Rifiutare la richiesta?")|tojson }})'>
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="decision" value="reject">
+                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                            <i class="fas fa-times"></i> {{ _("Rifiuta") }}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-light border">
+        {{ _("Nessuna richiesta in attesa.") }}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -34,6 +34,7 @@ from .user.models import (
     VenueManagerRequest,
     VenueManagement,
 )
+from .user.role_grant import RoleGrant, RoleRequest, RoleRequestRecipient
 from .user.privacy_models import (
     UserPrivacySetting,
     HiddenMatch,
@@ -151,6 +152,10 @@ __all__ = [
     "DirectorRequest",
     "VenueManagerRequest",
     "VenueManagement",
+    # Ruoli concedibili e delega (ADR-038)
+    "RoleGrant",
+    "RoleRequest",
+    "RoleRequestRecipient",
     # User privacy models
     "UserPrivacySetting",
     "HiddenMatch",

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _("Titolari del ruolo") }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-1">
+        <i class="fas fa-user-shield"></i> {{ _("Titolari del ruolo") }}
+    </h2>
+    <p class="text-muted">
+        {{ _("Con la propagazione il ruolo si diffonde senza passare da admin: qui si legge da dove arriva ciascun titolare.") }}
+    </p>
+
+    {% if grants %}
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>{{ _("Utente") }}</th>
+                    <th>{{ _("Concesso da") }}</th>
+                    <th>{{ _("Data") }}</th>
+                    <th>{{ _("Stato") }}</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for grant in grants %}
+                <tr>
+                    <td>{{ grant.user.username if grant.user else '—' }}</td>
+                    <td>{{ grant.granted_by.username if grant.granted_by else '—' }}</td>
+                    <td>{{ grant.granted_at|datetime_local }}</td>
+                    <td>
+                        {% if grant.is_active %}
+                        <span class="badge bg-success">{{ _("Attivo") }}</span>
+                        {% else %}
+                        <span class="badge bg-secondary">
+                            {{ _("Revocato il") }} {{ grant.revoked_at|datetime_local }}
+                            {% if grant.revoked_by %}({{ grant.revoked_by.username }}){% endif %}
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        {% if grant.is_active and grant.user %}
+                        <form method="POST"
+                            action="{{ url_for('roles.revoke_role', role=role.value, user_id=grant.user.id) }}"
+                            onsubmit='return confirmSubmit(this, {{ _("Revocare il ruolo? Gli esami creati e le certificazioni rilasciate restano validi.")|tojson }})'>
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="next"
+                                value="{{ url_for('roles.role_holders', role=role.value) }}">
+                            <button type="submit" class="btn btn-outline-danger btn-sm">
+                                <i class="fas fa-user-minus"></i> {{ _("Revoca") }}
+                            </button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-light border">
+        {{ _("Nessun titolare: il ruolo non è ancora stato concesso a nessuno.") }}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -175,6 +175,21 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
         return assignment is not None
 
     @property
+    def is_examiner(self) -> bool:
+        """True se l'utente può creare esami e certificarli (ADR-038).
+
+        Ruolo **ortogonale**: non guarda ``role`` ma la tabella ``role_grant``,
+        esattamente come ``is_venue_manager`` guarda ``venue_management``. Un
+        player che diventa esaminatore resta player.
+        """
+        if self.is_admin:
+            return True
+        from .role_enum import GrantableRole
+        from .role_grant_service import RoleGrantService
+
+        return RoleGrantService.has_role(self.id, GrantableRole.EXAMINER)
+
+    @property
     def is_player(self) -> bool:
         return self.role == UserRole.PLAYER.value
 

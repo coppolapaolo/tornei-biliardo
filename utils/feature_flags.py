@@ -5,7 +5,15 @@ allowed to see them in production. In development (DEBUG_MODE=true) this
 module is pass-through: every endpoint is visible regardless of role.
 Admins always bypass the matrix.
 
-Roles: "anonimo" (not logged in), "player", "director". Admin = bypass.
+Roles: "anonimo" (not logged in), "player", "director", "examiner".
+Admin = bypass.
+
+A user holds a **set** of roles, not one: the primary role ("anonimo" /
+"player" / "director") comes from ``user.role``, while "examiner" is an
+orthogonal grant (ADR-038) that adds to it. An endpoint is visible when the
+user's role set intersects the endpoint's allowed set — a rule that matters
+because an examiner who is not also a director would otherwise fall back to
+"player" and lose visibility in production.
 
 Endpoint not present in ``ENDPOINT_ROLES`` and not in
 ``INFRASTRUCTURE_ALLOWLIST`` is visible only to admins. To expose a new
@@ -18,7 +26,7 @@ from __future__ import annotations
 
 from flask import current_app
 
-Role = str  # "anonimo" | "player" | "director"
+Role = str  # "anonimo" | "player" | "director" | "examiner"
 
 
 # ---------------------------------------------------------------------------
@@ -285,6 +293,20 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "individual_match.request_availability_match": {"player", "director"},
     # Admin overview: solo admin (@admin_required).
     "individual_match.admin_overview": set(),
+    # === Ruoli concedibili e delega (ADR-038) ===
+    # La richiesta la fa chi il ruolo non ce l'ha ancora: player o director.
+    # Il gate di progressione (can_access('request_examiner')) è verificato
+    # dalla route e dal service, non da qui — questo layer è solo visibilità.
+    "roles.request_role_form": {"player", "director"},
+    "roles.request_role": {"player", "director"},
+    # Coda e concessione: chi il ruolo ce l'ha (admin bypassa la matrice).
+    "roles.role_requests": {"examiner"},
+    "roles.process_role_request": {"examiner"},
+    "roles.grant_role": {"examiner"},
+    # Audit della catena e revoca: solo admin (US-A3), entry esplicita per
+    # documentare la scelta invece di lasciarla all'omissione.
+    "roles.role_holders": set(),
+    "roles.revoke_role": set(),
 }
 
 
@@ -329,17 +351,24 @@ def _is_production() -> bool:
     return not current_app.config.get("DEBUG_MODE", False)
 
 
-def _user_role(user) -> Role:
-    """Role string for the current user, used to look up the matrix.
+def _user_roles(user) -> set[Role]:
+    """Role **set** for the current user, used to look up the matrix.
+
+    The primary role (``user.role``) contributes exactly one entry; grantable
+    roles (ADR-038) add to it. Returning a set rather than a single string is
+    what keeps an examiner-who-is-not-a-director from being flattened to
+    ``"player"`` and losing access to the examiner endpoints in production.
 
     Admins are handled by the bypass branch in ``is_endpoint_visible`` and
     must not reach this function.
     """
     if not user.is_authenticated:
-        return "anonimo"
-    if getattr(user, "is_director", False):
-        return "director"
-    return "player"
+        return {"anonimo"}
+
+    roles: set[Role] = {"director" if getattr(user, "is_director", False) else "player"}
+    if getattr(user, "is_examiner", False):
+        roles.add("examiner")
+    return roles
 
 
 def is_endpoint_visible(endpoint: str | None, user) -> bool:
@@ -350,7 +379,7 @@ def is_endpoint_visible(endpoint: str | None, user) -> bool:
     2. Pass-through in dev/test (``_is_production()`` is False).
     3. ``endpoint in INFRASTRUCTURE_ALLOWLIST``: True for every role.
     4. Admin user: True (global bypass).
-    5. ``user`` role is in ``ENDPOINT_ROLES[endpoint]``: True.
+    5. ``user``'s role set intersects ``ENDPOINT_ROLES[endpoint]``: True.
     6. Otherwise: False.
 
     Endpoints absent from ``ENDPOINT_ROLES`` (and not in infrastructure)
@@ -364,4 +393,4 @@ def is_endpoint_visible(endpoint: str | None, user) -> bool:
         return True
     if user.is_authenticated and getattr(user, "is_admin", False):
         return True
-    return _user_role(user) in ENDPOINT_ROLES.get(endpoint, set())
+    return bool(_user_roles(user) & ENDPOINT_ROLES.get(endpoint, set()))

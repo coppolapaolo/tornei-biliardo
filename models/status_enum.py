@@ -23,6 +23,8 @@ __all__ = [
     "MatchStatus",
     "DirectorRequestStatus",
     "VenueManagerRequestStatus",
+    "RoleRequestStatus",
+    "RoleRequestRecipientStatus",
     "PlayoffConfirmationStatus",
     "Discipline",
     "WithdrawPolicy",
@@ -155,6 +157,32 @@ class VenueManagerRequestStatus(_StrEnum):
     APPROVED = "approved"
     REJECTED = "rejected"
     CANCELLED = "cancelled"
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# ROLE REQUEST (meccanismo generico di delega dei ruoli concedibili, ADR-038)
+# Persistito: `role_request.status` → {pending, approved, rejected}
+# Fonte: models/user/role_grant.py (RoleRequest)
+# ──────────────────────────────────────────────────────────────────────────────
+class RoleRequestStatus(_StrEnum):
+    PENDING = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# ROLE REQUEST RECIPIENT
+# Persistito: `role_request_recipient.status`
+# → {pending, approved, rejected, closed}
+# `closed` = un altro destinatario ha approvato per primo: la richiesta si
+# chiude senza che questo destinatario si sia espresso (US-A2).
+# Fonte: models/user/role_grant.py (RoleRequestRecipient)
+# ──────────────────────────────────────────────────────────────────────────────
+class RoleRequestRecipientStatus(_StrEnum):
+    PENDING = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+    CLOSED = "closed"
 
 
 # ──────────────────────────────────────────────────────────────────────────────

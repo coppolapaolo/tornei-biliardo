@@ -22,6 +22,9 @@ from .models import (
     VenueManagerRequest,
     VenueManagement,
 )
+from .role_enum import UserRole, GrantableRole
+from .role_grant import RoleGrant, RoleRequest, RoleRequestRecipient
+from .role_grant_service import RoleGrantService, GrantPolicy, GRANT_POLICY
 from .permissions import PermissionChecker, RoleRequirement
 from .services import (
     UserService,
@@ -46,6 +49,15 @@ __all__ = [
     "DirectorRequest",
     "VenueManagerRequest",
     "VenueManagement",
+    # Ruoli concedibili e delega (ADR-038)
+    "UserRole",
+    "GrantableRole",
+    "RoleGrant",
+    "RoleRequest",
+    "RoleRequestRecipient",
+    "RoleGrantService",
+    "GrantPolicy",
+    "GRANT_POLICY",
     # Privacy models
     "UserPrivacySetting",
     "HiddenMatch",
@@ -82,6 +94,9 @@ def get_user_models():
         "DirectorRequest": DirectorRequest,
         "VenueManagerRequest": VenueManagerRequest,
         "VenueManagement": VenueManagement,
+        "RoleGrant": RoleGrant,
+        "RoleRequest": RoleRequest,
+        "RoleRequestRecipient": RoleRequestRecipient,
         "UserPrivacySetting": UserPrivacySetting,
         "HiddenMatch": HiddenMatch,
         "HiddenInscription": HiddenInscription,
@@ -103,6 +118,7 @@ def get_user_services():
         "VenueManagerService": VenueManagerService,
         "VenueManagementService": VenueManagementService,
         "PrivacyService": PrivacyService,
+        "RoleGrantService": RoleGrantService,
     }
 
 

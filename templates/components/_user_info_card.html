@@ -36,6 +36,36 @@
         {% endif %}
         </p>
 
+        {# Ruolo concedibile: Esaminatore (ADR-038). Ortogonale al ruolo
+           primario qui sopra — un esaminatore resta player o director. #}
+        {% if current_user.is_admin and not user.is_admin %}
+        <p><strong>{{ _("Esaminatore:") }}</strong>
+            {% if user.is_examiner %}
+            <span class="badge bg-info text-dark">
+                <i class="fas fa-user-graduate"></i> {{ _("Sì") }}
+            </span>
+            <form action="{{ url_for('roles.revoke_role', role='examiner', user_id=user.id) }}" method="POST"
+                style="display: inline; margin-left: 10px;"
+                onsubmit='return confirmSubmit(this, {{ _("Revocare il ruolo di Esaminatore? Gli esami creati e le certificazioni rilasciate restano validi.")|tojson }})'>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-outline-danger btn-sm">
+                    <i class="fas fa-user-minus"></i> {{ _("Revoca ruolo") }}
+                </button>
+            </form>
+            {% else %}
+            <span class="badge bg-light text-muted">{{ _("No") }}</span>
+            <form action="{{ url_for('roles.grant_role', role='examiner', user_id=user.id) }}" method="POST"
+                style="display: inline; margin-left: 10px;"
+                onsubmit='return confirmSubmit(this, {{ _("Promuovere a Esaminatore?")|tojson }})'>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-outline-success btn-sm">
+                    <i class="fas fa-user-plus"></i> {{ _("Promuovi a Esaminatore") }}
+                </button>
+            </form>
+            {% endif %}
+        </p>
+        {% endif %}
+
         {# Gamification Override (Admin Only) #}
         {% if current_user.is_admin %}
         <p><strong>Gamification:</strong>

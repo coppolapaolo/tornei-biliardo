@@ -7,6 +7,7 @@ import pytest
 from utils.feature_flags import (
     ENDPOINT_ROLES,
     INFRASTRUCTURE_ALLOWLIST,
+    _user_roles,
     is_endpoint_visible,
 )
 
@@ -20,11 +21,13 @@ class FakeUser:
         is_admin: bool = False,
         is_director: bool = False,
         is_player: bool = False,
+        is_examiner: bool = False,
     ):
         self.is_authenticated = is_authenticated
         self.is_admin = is_admin
         self.is_director = is_director
         self.is_player = is_player
+        self.is_examiner = is_examiner
 
 
 @pytest.fixture
@@ -271,6 +274,53 @@ def test_polymorphic_endpoint_for_all_roles(app, production_mode):
         assert is_endpoint_visible(ep, anon) is True
         assert is_endpoint_visible(ep, player) is True
         assert is_endpoint_visible(ep, director) is True
+
+
+def test_user_roles_is_a_set_not_a_single_role(app, production_mode):
+    """Il ruolo primario e i ruoli concedibili coesistono (ADR-038).
+
+    Regressione: con un solo ruolo string-valued, un esaminatore che non è
+    anche director ricadeva in "player" e perdeva ogni endpoint dichiarato
+    per {"examiner"} in produzione.
+    """
+    with app.app_context():
+        anon = FakeUser()
+        player = FakeUser(is_authenticated=True, is_player=True)
+        examiner = FakeUser(is_authenticated=True, is_player=True, is_examiner=True)
+        director_examiner = FakeUser(
+            is_authenticated=True, is_director=True, is_examiner=True
+        )
+
+        assert _user_roles(anon) == {"anonimo"}
+        assert _user_roles(player) == {"player"}
+        assert _user_roles(examiner) == {"player", "examiner"}
+        assert _user_roles(director_examiner) == {"director", "examiner"}
+
+
+def test_examiner_not_degraded_to_player(app, production_mode):
+    """L'esaminatore vede la coda dei ruoli; un player normale no."""
+    with app.app_context():
+        player = FakeUser(is_authenticated=True, is_player=True)
+        examiner = FakeUser(is_authenticated=True, is_player=True, is_examiner=True)
+
+        for endpoint in ("roles.role_requests", "roles.process_role_request"):
+            assert is_endpoint_visible(endpoint, player) is False, endpoint
+            assert is_endpoint_visible(endpoint, examiner) is True, endpoint
+
+        # E non perde per strada gli endpoint del suo ruolo primario.
+        assert is_endpoint_visible("dashboard.dashboard", examiner) is True
+        assert is_endpoint_visible("player.profile", examiner) is True
+
+
+def test_role_audit_endpoints_are_admin_only(app, production_mode):
+    """US-A3: la catena delle deleghe e la revoca restano ad admin."""
+    with app.app_context():
+        examiner = FakeUser(is_authenticated=True, is_player=True, is_examiner=True)
+        admin = FakeUser(is_authenticated=True, is_admin=True)
+
+        for endpoint in ("roles.role_holders", "roles.revoke_role"):
+            assert is_endpoint_visible(endpoint, examiner) is False, endpoint
+            assert is_endpoint_visible(endpoint, admin) is True, endpoint
 
 
 def test_logged_in_user_blocked_from_anonymous_only(app, production_mode):

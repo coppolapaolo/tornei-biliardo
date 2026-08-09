@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _("Richiedi un ruolo") }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-graduate"></i>
+                        {{ _("Chiedi di diventare Esaminatore") }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if pending_request %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-hourglass-half"></i>
+                        {{ _("Hai già una richiesta in attesa, inviata il") }}
+                        {{ pending_request.requested_at|datetime_local }}.
+                    </div>
+                    {% else %}
+                    <p class="text-muted">
+                        {{ _("Un esaminatore compone gli esami e ne certifica di persona l'esito. Scegli a chi indirizzare la richiesta: basta che uno solo approvi.") }}
+                    </p>
+
+                    <form method="POST"
+                        action="{{ url_for('roles.request_role', role=role.value) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">{{ _("Destinatari") }}</label>
+                            {% if recipients %}
+                            <p class="text-muted small">
+                                {{ _("Non selezionarne nessuno per inviare la richiesta a tutti.") }}
+                            </p>
+                            {% for recipient in recipients %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="recipient_ids"
+                                    value="{{ recipient.id }}" id="recipient-{{ recipient.id }}">
+                                <label class="form-check-label" for="recipient-{{ recipient.id }}">
+                                    {{ recipient.username }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <div class="alert alert-warning mb-0">
+                                {{ _("Non c'è ancora nessun destinatario disponibile.") }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">{{ _("Note (facoltative)") }}</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" {% if not recipients %}disabled{% endif %}>
+                            <i class="fas fa-paper-plane"></i> {{ _("Invia richiesta") }}
+                        </button>
+                        <a href="{{ url_for('challenge.challenge_catalog') }}" class="btn btn-outline-secondary">
+                            {{ _("Annulla") }}
+                        </a>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

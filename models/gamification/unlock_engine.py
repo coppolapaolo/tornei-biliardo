@@ -175,6 +175,9 @@ class UnlockEngine:
             return user.is_director or user.is_admin
         elif target_role == "VENUE_MANAGER":
             return user.is_venue_manager or user.is_admin
+        elif target_role == "EXAMINER":
+            # is_examiner include già il bypass admin (ADR-038)
+            return user.is_examiner
 
         return False
 
