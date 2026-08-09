@@ -66,6 +66,37 @@ fatta.**
    approvarle in blocco.
 4. **Pulizia di `main.css` e `variables.css`** — solo a verifica completata.
 
+## Rilievi aperti dal giro visivo
+
+Visti ma non ancora affrontati, in ordine di dubbio:
+
+- **Bottoni verdi nel catalogo challenge.** "Nuova challenge" e "Crea la
+  prima" sono verde pieno, mentre in dashboard il bottone primario è
+  inchiostro. Nella palette il verde è il semantico "ok", non un colore
+  d'azione: **da decidere con il committente** se è voluto o va riportato
+  al primario.
+- **Card "Unisci utenti (merge)" in `/admin/users`.** Fondo giallo con
+  sotto una striscia vuota: sembra un accordion o un alert malformato. Da
+  guardare da vicino.
+- **`public/garas_list.html` su mobile.** È una tabella a sei colonne
+  dentro `c7-table-wrap`: i nomi delle gare vanno a capo su ogni parola.
+  Il pacchetto ha `_match_cards_mobile` e `_classification_mobile` proprio
+  per questo caso: valutare una resa a card sotto i 992px.
+
+## Ambiente di lavoro locale
+
+- L'app di sviluppo gira su **porta 5001**, non 5000 (`python app.py`).
+- Per entrare senza password: `/debug/login/<username>` — utenti utili
+  `admin`, `pa` (direttore), `player1`.
+- La migration `20260607_onboarding` mette `onboarding_completed = 0` a
+  **tutti** gli utenti esistenti, che quindi vengono dirottati sulla
+  schermata di benvenuto a ogni pagina finché non la completano. In locale
+  sono stati sbloccati con un UPDATE. **In produzione è già applicata**:
+  gli utenti registrati vedranno l'onboarding al prossimo accesso.
+- Il CSS è servito con `?v=ASSET_VERSION`: dopo averlo modificato serve un
+  ricaricamento forzato del browser, altrimenti si guarda la versione
+  vecchia e si crede che il fix non funzioni.
+
 ## Lavori in parallelo
 
 Due branch procedono su altre macchine: tornei a eliminazione diretta /
