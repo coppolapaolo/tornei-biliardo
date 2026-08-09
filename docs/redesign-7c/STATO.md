@@ -35,16 +35,28 @@ compila ogni template e verifica ogni `url_for` letterale.
 **Giro pagine** — 38 pagine visitate nei tre ruoli via test client:
 **zero errori server**. Le tre pagine admin riparate rispondono 200.
 
+**Giro visivo** (`c2dd915`, `28960e1`) — fatto in mobile **e** in desktop.
+Dodici template convertiti disegnavano una seconda testata dentro
+`content`: ora riempiono `page_title` / `page_sub` / `page_actions` /
+`page_back`. Aggiunta la pagina 403, che non esisteva. Corretti i difetti
+di testo nelle streak.
+
+**Il desktop era stato trascurato dall'handoff.** Due difetti che sul
+mobile non si vedono: nessun `max-width`, quindi su monitor larghi filtri
+e tabelle si stiravano per l'intera finestra; e le utility `bg-*` di
+Bootstrap non erano ridefinite, quindi le pagine non convertite mostravano
+riquadri a tinta piena in mezzo alla palette. Entrambi risolti nel tema —
+la seconda correzione vale per tutte le pagine non ancora convertite.
+**Regola: ogni pagina va guardata in entrambe le viste prima di dirla
+fatta.**
+
 ## Da fare
 
-1. **Giro visivo nel browser** — il controllo automatico trova il rotto,
-   non il brutto. È il punto 2 dell'ordine di lavoro del `README.md` e va
-   fatto prima di riscrivere qualsiasi template.
-2. **`gara_detail.html` (85 KB) e `match_detail.html` (30 KB)** — punto 1
+1. **`gara_detail.html` (85 KB) e `match_detail.html` (30 KB)** — punto 1
    della lista "da rifare a mano". A sezioni, verificando nel browser.
-3. **Gamification giocatore**, poi **flusso challenge**, poi **pannelli
+2. **Gamification giocatore**, poi **flusso challenge**, poi **pannelli
    admin di gamification**.
-4. **Traduzioni EN — deciso: alla fine del redesign.** Oggi ci sono 76
+3. **Traduzioni EN — deciso: alla fine del redesign.** Oggi ci sono 76
    stringhe nuove senza traduzione e 346 fuzzy, che sono accoppiamenti
    automatici sbagliati ("amministrazione" → *Registrations*, "Persone" →
    *Lost*). Non fanno danno: `pybabel` scarta le fuzzy dal `.mo` e
@@ -52,7 +64,7 @@ compila ogni template e verifica ogni `url_for` letterale.
    cambierà altri testi, quindi tradurre prima significherebbe ritradurre.
    A conversione finita: `/translate`, poi riscrivere le fuzzy invece di
    approvarle in blocco.
-5. **Pulizia di `main.css` e `variables.css`** — solo a verifica completata.
+4. **Pulizia di `main.css` e `variables.css`** — solo a verifica completata.
 
 ## Lavori in parallelo
 
