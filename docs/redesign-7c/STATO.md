@@ -140,6 +140,14 @@ all'invariante invece che alla stringa esatta. `tests/new/integration/`:
 
 1. **`match_detail.html` (30 KB)** — l'altra meta' del punto 1 della lista
    "da rifare a mano". Stesso metodo: a sezioni, verificando nel browser.
+   Da dove si parte, visto dall'esterno: 685 righe, una sola `row` con
+   `col-md-8` / `col-md-4`, la testata desktop e' un `d-none d-md-flex` a
+   riga 28 (quindi c'e' ancora una testata dentro `content`, da spostare nei
+   blocchi `page_*`), e la navigazione fra partite e' inclusa due volte
+   (`#matchNavTop` su mobile, `#matchNavSidebar` su desktop). La doppia
+   inclusione **e' legittima**: `_match_navigation.html` non contiene ne'
+   `id` ne' `<script>` — verificato, e' la condizione posta da
+   `templates/CLAUDE.md`. Tutti i componenti inclusi sono gia' 7c.
 2. **Gamification giocatore.** Primo lavoro, prima delle pagine: **il badge
    XP della navbar non esiste piu'.** L'handoff lo ha tolto sia da
    `base.html` (anello di progresso, livello, XP, i `data-*` che alimentano
