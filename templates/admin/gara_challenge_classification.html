@@ -1,11 +1,13 @@
 {% extends "base.html" %}
+{% import "components/_gara_header.html" as gara_head with context %}
 
-{% block title %}Classifica Challenge - {{ gara.name }}{% endblock %}
+{% block title %}{{ _('Classifica Challenge') }} - {{ gara.name }}{% endblock %}
+
+{% block page_back %}{{ gara_head.back(gara) }}{% endblock %}
+{% block page_title %}{{ _('Classifica Challenge') }}{% endblock %}
+{% block page_sub %}{{ gara.display_name }} <span class="c7-sep">·</span> {{ gara_head.sub(gara) }}{% endblock %}
 
 {% block content %}
-<!-- Header della gara -->
-{% include "components/_gara_header.html" %}
-
 <div class="row">
     <!-- Classifica Challenge -->
     <div class="col-md-8">

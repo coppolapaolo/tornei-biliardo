@@ -428,7 +428,9 @@ class TestHomepageActionableSections:
         assert "Coppa Aperta" in body
         assert "Iscrizioni aperte" in body
         assert "2/4" in body
-        assert "Scadenza iscrizioni" in body
+        # "Chiudono il <data>" dopo il redesign 7c: stessa informazione,
+        # detta come la direbbe una persona.
+        assert "Chiudono il" in body
 
     def test_live_section_shows_match_at_table(
         self, app, db_session, isolated_director_user, isolated_players

@@ -24,6 +24,10 @@ from models import Gara, Match
 from models.status_enum import Discipline, GaraStatus, MatchStatus
 from models.user.role_enum import UserRole
 
+# Testata "Gestione" nel design 7c: h3 a tutta riga, senza l'icona a
+# ingranaggio di prima. Conta le occorrenze per scoprire i duplicati.
+GESTIONE_HEADING = 'flex-fill">Gestione</h3>'
+
 
 @pytest.fixture
 def admin_client(client, db_session):
@@ -150,7 +154,7 @@ def test_amalfi_turno_finito_gestione_in_cima_e_aperta(admin_client, db_session)
     # Il pulsante dell'azione probabile e' renderizzato (non dietro un collapse)
     assert "Avvia Turno 2" in html
     # Desktop invariato: la sidebar mantiene la sua copia
-    assert html.count('fa-cog"></i> Gestione') == 2
+    assert html.count(GESTIONE_HEADING) == 2
 
 
 def test_amalfi_turno_in_corso_mantiene_gestione_collassata(admin_client, db_session):
@@ -197,7 +201,7 @@ def test_amalfi_gara_finita_gestione_gia_in_cima_senza_duplicati(
     assert "Termina Gara" in html
     # Una sola Gestione in tutto il documento: quella della sidebar, che su
     # mobile e' gia' in cima (order-1) e aperta.
-    assert html.count('fa-cog"></i> Gestione') == 1
+    assert html.count(GESTIONE_HEADING) == 1
     assert 'id="sectionGestioneMobileAperta"' not in html
     assert 'id="sectionGestioneMobile"' not in html
 

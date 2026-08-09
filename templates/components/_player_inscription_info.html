@@ -1,35 +1,39 @@
-{# templates/components/_player_inscription_info.html #}
-{# Box informazioni iscrizione per player iscritto alla gara #}
+{# templates/components/_player_inscription_info.html — 7c #}
+{# Riquadro dell'iscrizione, nella colonna di destra della pagina gara. #}
 
-<div class="card">
-    <div class="card-header">
-        <h5><i class="fas fa-user-check"></i> {{ _('La Tua Iscrizione') }}</h5>
+<section class="c7-card">
+    <div class="d-flex align-items-center gap-2 mb-3">
+        <h3 class="mb-0 flex-fill">{{ _('La tua iscrizione') }}</h3>
+        {% if user_inscription and user_inscription.is_waitlist %}
+        <span class="c7-state c7-state--warn">{{ _("In lista d'attesa") }}</span>
+        {% elif user_inscription %}
+        <span class="c7-state c7-state--ok">{{ _('Iscritto') }}</span>
+        {% endif %}
     </div>
-    <div class="card-body">
-        {% if user_inscription %}
-        <div class="alert alert-success">
-            <i class="fas fa-check-circle"></i> {{ _('Sei iscritto a questa gara') }}
-            {% if user_inscription.is_waitlist %}
-            <br><small><i class="fas fa-clock"></i> {{ _('In lista d\'attesa') }}</small>
-            {% endif %}
-        </div>
 
-        <p><strong>{{ _('Data iscrizione:') }}</strong><br>
-            {{ user_inscription.inscription_date|datetime_local if user_inscription.inscription_date else _('N/D') }}
-        </p>
+    {% if user_inscription %}
+    <dl style="display: grid; grid-template-columns: auto 1fr; gap: 10px 18px; margin: 0; font-size: 13px;">
+        {# `created_at`: il campo `inscription_date` non e' mai esistito sul
+           modello Inscription, quindi Jinja lo risolveva a Undefined e la data
+           era sempre "N/D" — senza alcun errore da nessuna parte. #}
+        <dt class="text-muted" style="font-weight: 700;">{{ _('Iscritto il') }}</dt>
+        <dd class="c7-num" style="margin: 0; text-align: right;">
+            {{ user_inscription.created_at|datetime_local if user_inscription.created_at else '—' }}
+        </dd>
 
         {% if user_inscription.initial_order %}
-        <p><strong>{{ _('Ordine sorteggio:') }}</strong> {{ user_inscription.initial_order }}</p>
+        <dt class="text-muted" style="font-weight: 700;">{{ _('Ordine sorteggio') }}</dt>
+        <dd class="c7-num" style="margin: 0; text-align: right;">{{ user_inscription.initial_order }}</dd>
         {% endif %}
 
         {% if user_inscription.is_waitlist and user_inscription.waitlist_position %}
-        <p><strong>{{ _('Posizione lista d\'attesa:') }}</strong> #{{ user_inscription.waitlist_position }}</p>
+        <dt class="text-muted" style="font-weight: 700;">{{ _('Posizione in lista') }}</dt>
+        <dd class="c7-num" style="margin: 0; text-align: right;">{{ user_inscription.waitlist_position }}</dd>
         {% endif %}
-        {% else %}
-        <div class="alert alert-info">
-            <i class="fas fa-info-circle"></i> {{ _('Stai visualizzando questa gara come ospite') }}
-            <br><small>{{ _('Non sei iscritto ma puoi vedere i risultati e la classifica') }}</small>
-        </div>
-        {% endif %}
-    </div>
-</div>
+    </dl>
+    {% else %}
+    <p class="text-muted" style="margin: 0; font-size: 13px; line-height: 1.55;">
+        {{ _('Stai guardando questa gara come ospite: vedi risultati e classifica, ma non partecipi.') }}
+    </p>
+    {% endif %}
+</section>

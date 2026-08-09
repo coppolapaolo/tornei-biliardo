@@ -2,7 +2,10 @@
 {% macro directors_management(entity, add_director_route, remove_director_route, entity_id_param='campionato_id',
 show_admin_management=False, show_director_management=False, users=[], can_manage_directors=False, current_user=None, inherited_directors=[]) %}
 {% if (show_admin_management or show_director_management) and (entity.directors or users or inherited_directors) %}
-<div class="card m-3">
+{# Niente margine proprio: la distanza fra le sezioni la decide la pila che
+   contiene la card, altrimenti questa risulta rientrata rispetto a tutte
+   le altre. #}
+<div class="card">
     <div class="card-header">
         <h6><i class="fas fa-users"></i> {{ _('Direttori di gara') }}</h6>
     </div>

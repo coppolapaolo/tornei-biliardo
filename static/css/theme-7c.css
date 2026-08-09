@@ -247,6 +247,15 @@ code, kbd, pre, samp, .font-mono { font-family: var(--c7-font-mono); }
 
 .c7-grid { display: grid; gap: var(--c7-gap); }
 .c7-stack { display: flex; flex-direction: column; gap: var(--c7-gap); }
+/* Pila di sezioni di pagina. Una sezione che non produce nulla (dipende
+   dallo stato della gara: turni, direttori, tavoli…) lascerebbe comunque il
+   buco del `gap`, perche' il gap separa anche gli elementi alti zero. */
+.c7-sections > *:not(:has(*)) { display: none; }
+
+/* Sotto i 992px le due colonne diventano una pila. Serve dirlo: senza
+   questa regola `.c7-cols` era un blocco qualunque e le due colonne si
+   toccavano, perche' la spaziatura arrivava solo dal `gap` della griglia. */
+.c7-cols { display: flex; flex-direction: column; gap: var(--c7-gap); }
 @media (min-width: 992px) {
   .c7-cols { display: grid; grid-template-columns: 1fr 380px; gap: var(--c7-gap-lg); align-items: start; }
   .c7-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--c7-gap-lg); }
@@ -286,10 +295,14 @@ code, kbd, pre, samp, .font-mono { font-family: var(--c7-font-mono); }
 }
 .btn:focus, .btn:focus-visible { box-shadow: 0 0 0 3px rgba(44, 74, 82, .28); outline: 0; }
 
-.btn-primary, .btn-dark {
+/* Nessun bottone "outline": in 7c la gerarchia la fa la superficie, non il
+   bordo. Le varianti outline seguono quindi la corrispondente piena, o il
+   secondario dove il bordo era solo un modo per dire "azione minore". */
+.btn-primary, .btn-dark, .btn-outline-primary, .btn-outline-dark {
   background: var(--c7-ink); color: #fff;
 }
-.btn-primary:hover, .btn-dark:hover { background: #2A3033; color: #fff; }
+.btn-primary:hover, .btn-dark:hover,
+.btn-outline-primary:hover, .btn-outline-dark:hover { background: #2A3033; color: #fff; }
 
 .btn-secondary, .btn-light, .btn-outline-secondary {
   background: var(--c7-card); color: var(--c7-ink-soft); font-weight: 700; border: 0;
@@ -298,9 +311,25 @@ code, kbd, pre, samp, .font-mono { font-family: var(--c7-font-mono); }
   background: var(--c7-line); color: var(--c7-ink);
 }
 
+/* Il secondario e' fondo-card: su una card, dentro un modal o dentro un
+   gruppo di campi sparirebbe, perche' avrebbe lo stesso colore di cio' che
+   sta sotto. In quei contesti prende il fondo pagina, cosi' resta un
+   rilievo in entrambi i casi. */
+.card .btn-secondary, .c7-card .btn-secondary, .modal-content .btn-secondary,
+.card .btn-light, .c7-card .btn-light, .modal-content .btn-light,
+.card .btn-outline-secondary, .c7-card .btn-outline-secondary, .modal-content .btn-outline-secondary {
+  background: var(--c7-bg);
+}
+.card .btn-secondary:hover, .c7-card .btn-secondary:hover, .modal-content .btn-secondary:hover,
+.card .btn-light:hover, .c7-card .btn-light:hover, .modal-content .btn-light:hover,
+.card .btn-outline-secondary:hover, .c7-card .btn-outline-secondary:hover,
+.modal-content .btn-outline-secondary:hover {
+  background: var(--c7-line);
+}
+
 /* Verde = crea o conferma. Non decorativo. */
-.btn-success { background: var(--c7-ok); color: #fff; }
-.btn-success:hover { background: #257558; color: #fff; }
+.btn-success, .btn-outline-success { background: var(--c7-ok); color: #fff; }
+.btn-success:hover, .btn-outline-success:hover { background: #257558; color: #fff; }
 
 /* Distruttive: fondo tenue, mai rosso pieno. */
 .btn-danger, .btn-outline-danger {
@@ -308,8 +337,8 @@ code, kbd, pre, samp, .font-mono { font-family: var(--c7-font-mono); }
 }
 .btn-danger:hover, .btn-outline-danger:hover { background: #EBD2CF; color: var(--c7-err-ink); }
 
-.btn-warning { background: var(--c7-warn-bg); color: var(--c7-warn-ink); }
-.btn-info    { background: var(--c7-accent-tint); color: var(--c7-accent-tint-ink); }
+.btn-warning, .btn-outline-warning { background: var(--c7-warn-bg); color: var(--c7-warn-ink); }
+.btn-info, .btn-outline-info { background: var(--c7-accent-tint); color: var(--c7-accent-tint-ink); }
 .btn-link    { background: none; color: var(--c7-accent); height: auto; padding: 0; font-weight: 700; }
 
 .btn-sm { height: 40px; border-radius: var(--c7-r-chip); padding: 0 15px; font-size: 13px; }
@@ -367,6 +396,16 @@ code, kbd, pre, samp, .font-mono { font-family: var(--c7-font-mono); }
   color: var(--c7-ink);
   box-shadow: none;
 }
+/* Stessa ragione dei bottoni secondari: il campo e' fondo-card, quindi su una
+   card o dentro un modal avrebbe il colore di cio' che sta sotto e non si
+   vedrebbe. In quei contesti prende il fondo pagina. (Sta prima delle regole
+   di readonly/disabled, che devono continuare a vincere.) */
+.card .form-control, .c7-card .form-control, .modal-content .form-control,
+.card .form-select, .c7-card .form-select, .modal-content .form-select,
+.card .input-group-text, .c7-card .input-group-text, .modal-content .input-group-text {
+  background: var(--c7-bg);
+}
+
 textarea.form-control { height: auto; min-height: 96px; padding: 16px; font-weight: 500; line-height: 1.5; }
 .form-control::placeholder { color: var(--c7-ink-faint); font-weight: 600; }
 .form-control:focus, .form-select:focus {
@@ -433,6 +472,14 @@ input[type="number"].form-control {
 }
 /* Traduce il numero in parole: "si vince a 5 rack". */
 .c7-stepper__hint { margin-top: 6px; font-size: 12px; font-weight: 700; color: var(--c7-ink-muted); text-align: center; }
+
+/* Stepper appoggiato su una card o dentro un modal: le due superfici si
+   invertono, altrimenti lo stepper sparisce nella card e i tasti nello
+   stepper. */
+.c7-stepper--sunk { background: var(--c7-bg); padding: 10px; }
+.c7-stepper--sunk button { background: var(--c7-card); }
+.c7-stepper--sunk button:hover { background: var(--c7-line); }
+.c7-stepper--sunk .c7-stepper__value { font-size: 26px; }
 
 /* --------------------------------------------------------------------------
    8. Tabelle
@@ -615,6 +662,14 @@ input[type="number"].form-control {
   background: var(--c7-card); color: var(--c7-ink);
 }
 .modal-header, .modal-footer { border-color: var(--c7-line-soft); padding: 20px; }
+/* Su schermo stretto due bottoni affiancati non ci stanno e si accavallano:
+   in verticale, a tutta larghezza. Sopra i 576px tornano in riga a destra. */
+.modal-footer { gap: 10px; flex-wrap: nowrap; flex-direction: column; }
+.modal-footer > * { margin: 0; width: 100%; }
+@media (min-width: 576px) {
+  .modal-footer { flex-direction: row; justify-content: flex-end; }
+  .modal-footer > * { width: auto; }
+}
 .modal-body { padding: 0 20px; }
 .modal-title { font-size: 19px; font-weight: 800; letter-spacing: -.025em; }
 .modal-backdrop.show { opacity: .55; background: var(--c7-ink); }
@@ -648,6 +703,41 @@ input[type="number"].form-control {
 
 .list-group-item { background: var(--c7-card); border-color: var(--c7-line-soft); padding: 14px 16px; }
 .toast { border: 0; border-radius: var(--c7-r-card); background: var(--c7-card); box-shadow: var(--c7-shadow-toast); }
+
+/* Griglia di scelta del tavolo (modal di assegnazione). Le regole originali
+   in main.css sono della vecchia palette: bordi da 2px, bianco pieno e
+   `--tb-*`. Qui la scelta e' un riquadro pieno per stato, senza bordo. */
+.table-grid { margin: 0; grid-template-columns: repeat(auto-fit, minmax(84px, 1fr)); }
+.table-btn {
+  min-height: 76px; height: auto;
+  border: 0; border-radius: var(--c7-r-control);
+  background: var(--c7-bg); color: var(--c7-ink);
+  font-family: var(--c7-font-mono); font-size: 20px; font-weight: 800;
+  box-shadow: none;
+}
+.table-btn:hover:not(:disabled) { transform: none; box-shadow: none; }
+.table-btn-available,
+.table-btn-available:hover { background: var(--c7-bg); color: var(--c7-ink); }
+.table-btn-available:hover { background: var(--c7-line); }
+/* Il tavolo gia' assegnato e' un `button` disabilitato, e senza alzare la
+   specificita' `.btn:disabled` lo grigiava come "non disponibile": e'
+   l'opposto di quello che deve dire. */
+.btn.table-btn-current,
+.btn.table-btn-current:hover,
+.btn.table-btn-current:disabled { background: var(--c7-accent); color: var(--c7-accent-ink); opacity: 1; }
+.table-btn-occupied,
+.table-btn-occupied:hover { background: var(--c7-warn-bg); color: var(--c7-warn-ink); }
+.table-icon { font-size: 14px; margin-bottom: 3px; opacity: .6; }
+.table-name { font-family: var(--c7-font); font-size: 11px; font-weight: 700; }
+
+/* L'overlay di caricamento dei modali era bianco su fondo chiaro. */
+.modal-loading-overlay { background: rgba(228, 232, 231, .78); }
+
+/* Chevron delle sezioni richiudibili: ruota quando la sezione e' aperta.
+   Era un <style> dentro gara_detail.html, ma il motivo si ripete in ogni
+   pagina che usa il collapse di Bootstrap. */
+.collapse-icon { transition: transform .2s ease; color: var(--c7-ink-faint); }
+[aria-expanded="true"] .collapse-icon { transform: rotate(180deg); }
 
 /* --------------------------------------------------------------------------
    13. Utilita'

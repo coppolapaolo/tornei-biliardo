@@ -1,8 +1,15 @@
-{# templates/components/_gara_info.html — 7c #}
-<section class="c7-card">
-    <div class="c7-kicker">{{ _('Informazioni gara') }}</div>
+{# templates/components/_gara_info.html — 7c
 
-    <dl style="display: grid; grid-template-columns: auto 1fr; gap: 10px 18px; margin: 14px 0 0; font-size: 13px;">
+   info_headerless: sopprime card e titolo quando il componente e' dentro un
+   contenitore che ha gia' la sua testata (su mobile la sezione richiudibile
+   in fondo alla pagina della gara). Stessa convenzione di
+   `management_headerless` in _gara_management.html. #}
+<section class="{{ '' if info_headerless else 'c7-card' }}">
+    {% if not info_headerless %}
+    <div class="c7-kicker">{{ _('Informazioni gara') }}</div>
+    {% endif %}
+
+    <dl style="display: grid; grid-template-columns: auto 1fr; gap: 10px 18px; margin: {{ '0' if info_headerless else '14px 0 0' }}; font-size: 13px;">
         <dt class="text-muted" style="font-weight: 700;">{{ _('Data') }}</dt>
         <dd class="c7-num" style="margin: 0; text-align: right;">{{ gara.date|date_local }}{% if gara.time %} {{ gara.time|time_local }}{% endif %}</dd>
 

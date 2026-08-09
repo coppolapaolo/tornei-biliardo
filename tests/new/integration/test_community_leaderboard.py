@@ -52,8 +52,9 @@ class TestLeaderboardPage:
         body = resp.get_data(as_text=True)
         assert "Contributo" in body
         assert "La tua zona" in body
-        # tab locale invita l'anonimo ad accedere
-        assert "Accedi per vedere la classifica della tua zona" in body
+        # tab locale invita l'anonimo ad accedere (il redesign 7c ha spezzato
+        # la frase in titolo + spiegazione dello stato vuoto)
+        assert "Accedi per vedere la tua zona" in body
 
     def test_non_numeric_limit_does_not_500(self, app):
         # Regressione: un ?limit non numerico non deve generare un 500

@@ -34,7 +34,9 @@ RE_URL_FOR = re.compile(r"url_for\(\s*['\"]([a-zA-Z0-9_.]+)['\"]")
 
 
 def _tutti_i_template():
-    return sorted(p.relative_to(TEMPLATES).as_posix() for p in TEMPLATES.rglob("*.html"))
+    return sorted(
+        p.relative_to(TEMPLATES).as_posix() for p in TEMPLATES.rglob("*.html")
+    )
 
 
 @pytest.fixture(scope="module")

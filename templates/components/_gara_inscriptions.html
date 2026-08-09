@@ -1,6 +1,12 @@
 {# templates/components/_gara_inscriptions.html — Design System 7c
-   Elenco iscritti + lista d'attesa. Endpoint, capability e conferme invariati. #}
-<div class="c7-card">
+   Elenco iscritti + lista d'attesa. Endpoint, capability e conferme invariati.
+
+   inscriptions_headerless: sopprime card e testata quando il componente e'
+   dentro un contenitore che ha gia' titolo e conteggio (su mobile la sezione
+   richiudibile in fondo alla pagina della gara). Stessa convenzione di
+   `management_headerless` in _gara_management.html. #}
+<div class="{{ '' if inscriptions_headerless else 'c7-card' }}">
+  {% if not inscriptions_headerless %}
   <div class="d-flex align-items-center gap-2 mb-3">
     <h3 class="mb-0 flex-fill">{{ _('Iscritti') }}</h3>
     <span class="c7-num" style="color:var(--c7-ink-muted)">
@@ -10,6 +16,7 @@
     <span class="c7-state c7-state--warn">+{{ gara.get_waitlist_count() }} {{ _("in attesa") }}</span>
     {% endif %}
   </div>
+  {% endif %}
 
   {# Aggiunta manuale (solo direttore/admin in fase iscrizione) #}
   {% if available_users and available_users|length > 0 %}
@@ -50,7 +57,9 @@
         {% if inscription.is_forfeit %}
         <span class="c7-state c7-state--muted" title="{{ _('Ha dato forfait') }}">{{ _('Forfait') }}</span>
         {% endif %}
-        {% if (current_user.is_admin or current_user.is_director) and gara.status == 'inscription' %}
+        {# user_can_manage, non "e' un direttore qualunque": e' la stessa
+           capability che il server verifica sulla POST. #}
+        {% if user_can_manage and gara.status == GaraStatus.INSCRIPTION.value %}
         <form method="POST"
               action="{{ url_for('admin.competition.admin_uninscribe_user', gara_id=gara.id, user_id=inscription.user_id) }}"
               onsubmit="return confirmSubmit(this, {{ _('Disiscrivere %(username)s? Riceverà una notifica.', username=inscription.user.username)|tojson }})">
@@ -80,7 +89,7 @@
             {{ _('In lista dal %(date)s', date=inscription.created_at|datetime_local) }}
           </div>
         </div>
-        {% if (current_user.is_admin or current_user.is_director) and gara.status == 'inscription' %}
+        {% if user_can_manage and gara.status == GaraStatus.INSCRIPTION.value %}
         <form method="POST"
               action="{{ url_for('admin.competition.admin_uninscribe_user', gara_id=gara.id, user_id=inscription.user_id) }}"
               onsubmit="return confirmSubmit(this, {{ _('Rimuovere %(username)s dalla lista d\'attesa?', username=inscription.user.username)|tojson }})">

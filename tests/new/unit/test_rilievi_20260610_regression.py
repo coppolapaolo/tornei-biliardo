@@ -51,14 +51,22 @@ class TestIndexLiveIconRegression:
             live_matches=[live_match],
         )
 
-    def test_ai_tavoli_adesso_uses_billiard_icon(self, app):
+    def test_ai_tavoli_adesso_non_usa_icone_di_altri_sport(self, app):
+        """Il rilievo era la racchetta da ping pong su una card di biliardo.
+
+        Il redesign 7c ha poi tolto le icone decorative dalla card e scrive la
+        disciplina a parole, quindi le due `fa-8-ball` di allora non ci sono
+        piu'. L'invariante che vale ancora e' quello: mai l'icona di un altro
+        sport. La presenza della sezione e' asserita perche' altrimenti un
+        template vuoto passerebbe per costruzione.
+        """
         with app.test_request_context("/"):
             html = render_template(
                 "components/_index_live.html", live_garas=[self._live_card()]
             )
+        assert "Ai tavoli adesso" in html
         assert "table-tennis" not in html
-        # fa-8-ball: una per la disciplina, una per "Ai tavoli adesso"
-        assert html.count("fa-8-ball") == 2
+        assert "ping-pong" not in html
 
 
 @pytest.mark.unit
