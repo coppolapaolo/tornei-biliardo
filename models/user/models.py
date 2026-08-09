@@ -69,6 +69,13 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
     # (ADR-034). Opt-in; mai coordinate precise dell'utente.
     home_city = db.Column(db.String(100), nullable=True)
 
+    # Squadra dichiarata dal giocatore: **testo libero**, non una FK. Serve
+    # solo a precompilare l'iscrizione alle gare che hanno attivato le
+    # squadre; l'appartenenza che conta per il sorteggio è quella registrata
+    # su Inscription.squadra_id, dentro la singola competizione.
+    # Scrivibile solo dal giocatore stesso: né director né admin lo toccano.
+    squadra = db.Column(db.String(100), nullable=True)
+
     # Onboarding obbligatorio (una volta sola) — ADR-035. Default False per
     # tutti, inclusi gli account esistenti (backfill): ognuno esegue
     # l'onboarding al primo login successivo al rilascio.

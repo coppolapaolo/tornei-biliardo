@@ -718,6 +718,9 @@ class TestGaraServiceValidationIntegration:
             time=time(18, 0),
             is_race_to=True,  # Race to required for POSITION
             matchmaking_strategy="direct_elimination",
+            # Obbligatorio per le strategie a tabellone: da qui si stima il
+            # numero di turni quando gli iscritti non ci sono ancora.
+            max_participants=16,
         )
         assert gara.id is not None
         assert gara.matchmaking_strategy == "direct_elimination"
@@ -740,6 +743,7 @@ class TestGaraServiceValidationIntegration:
                 time=time(20, 0),
                 is_race_to=False,  # Exactly N
                 matchmaking_strategy="direct_elimination",  # POSITION
+                max_participants=16,
             )
 
         assert "pari" in str(exc_info.value).lower()

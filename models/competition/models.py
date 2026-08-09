@@ -173,6 +173,25 @@ class Gara(SoftDeleteMixin, db.Model):
         db.Boolean, default=True
     )  # Evita reincontri tra giocatori
 
+    # ── Configurazione a tabellone (eliminazione diretta / doppio KO) ──────
+    # Separazione dei compagni di squadra nel sorteggio del primo turno.
+    # Spenta di default: chi non usa le squadre non vede alcun cambiamento.
+    # Decidibile solo in stato setup, così ogni iscrizione nasce con la sua
+    # squadra e non esiste il caso "metà iscritti senza squadra".
+    separate_teammates = db.Column(db.Boolean, nullable=False, default=False)
+    # Finale per il 3°/4° posto. Solo eliminazione diretta: nel doppio KO il
+    # terzo posto lo determina già il tabellone. Non aggiunge turni — il match
+    # occupa lo stesso turno della finale.
+    third_place_match = db.Column(db.Boolean, nullable=False, default=False)
+    # Seme del sorteggio, generato una volta all'avvio del primo turno e
+    # persistito perché preview e create_round diano lo stesso tabellone.
+    # Azzerato da cancel_first_round_startup: riavviare = risorteggiare.
+    draw_seed = db.Column(db.Integer, nullable=True)
+    # Quale rating usare quando first_round_policy == "rating".
+    # Solo "elo" è attivo: fargo_rating esiste su User ma non è ancora
+    # alimentato, quindi la voce resta predisposta e non selezionabile.
+    seeding_rating = db.Column(db.String(16), nullable=False, default="elo")
+
     # Tiebreaker configuration (spareggio fine gara)
     tiebreaker_enabled = db.Column(
         db.Boolean, default=True
@@ -477,18 +496,39 @@ class Gara(SoftDeleteMixin, db.Model):
         Usa models.matchmaking.configuration.StrategyConfiguration
         per validazione centralizzata.
         """
-        from models.matchmaking.configuration import StrategyConfiguration
+        from models.matchmaking.configuration import (
+            MatchmakingStrategy,
+            StrategyConfiguration,
+        )
 
         # Crea config da gara e valida
         config = StrategyConfiguration.from_gara(self)
         num_participants = len(getattr(self, "inscriptions", []) or [])
 
         # Delega validazione a StrategyConfiguration
-        return config.validate(
+        errors = config.validate(
             num_players=num_participants if num_participants > 0 else None,
             distance=self.distance,
             is_race_to=self.is_race_to,
         )
+
+        # Le strategie a tabellone hanno bisogno della capienza dichiarata: è
+        # da lì che si stima il numero di turni in fase di creazione, quando
+        # gli iscritti non ci sono ancora. (La dimensione *effettiva* del
+        # tabellone la fissa poi il sorteggio sugli iscritti reali.)
+        bracket_strategies = {
+            MatchmakingStrategy.DIRECT_ELIMINATION.value,
+            MatchmakingStrategy.DOUBLE_KNOCKOUT.value,
+        }
+        if (
+            self.matchmaking_strategy in bracket_strategies
+            and not self.max_participants
+        ):
+            errors.append(
+                "Le gare a tabellone richiedono un numero massimo di partecipanti"
+            )
+
+        return errors
 
     def calculate_rounds_for_strategy(self, num_players):
         """Calcola turni ottimali (delegato a configuration module).
@@ -824,6 +864,16 @@ class Inscription(db.Model):
     waitlist_position = db.Column(db.Integer, nullable=True)
     # Reason: 'capacity' (max exceeded) or 'parity' (odd count w/ NO policy)
     waitlist_reason = db.Column(db.String(20), nullable=True)
+
+    # Squadra con cui il giocatore disputa QUESTA gara. È l'unica fonte
+    # autorevole per la separazione dei compagni nel sorteggio: il testo
+    # libero sul profilo (user.squadra) serve solo a precompilare questo
+    # campo al momento dell'iscrizione, e non viene più riletto dopo.
+    # NULL = "gioca senza squadra qui", uno stato legittimo e distinto.
+    squadra_id = db.Column(
+        db.Integer, db.ForeignKey("squadra.id", ondelete="SET NULL"), nullable=True
+    )
+    squadra = db.relationship("Squadra", foreign_keys=[squadra_id])
 
     @classmethod
     def active_for_gara(cls, gara_id: int) -> list["Inscription"]:
