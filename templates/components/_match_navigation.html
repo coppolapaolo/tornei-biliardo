@@ -1,20 +1,17 @@
-<!-- Navigation Sidebar Component -->
-<div class="mt-3">
-    {% if match.gara_id and (current_user.is_admin or current_user.is_director) %}
-        <a href="{{ url_for('admin.competition.gara_detail', gara_id=match.gara_id) }}"
-           class="btn btn-outline-secondary w-100">
-            <i class="fas fa-arrow-left"></i> {{ _('Torna alla Gara') }}
-        </a>
-    {% elif match.gara_id %}
-        <a href="{{ url_for('player.dashboard') }}"
-           class="btn btn-outline-secondary w-100">
-            <i class="fas fa-arrow-left"></i> {{ _('Torna alla Dashboard') }}
-        </a>
-    {% else %}
-        {# Standalone match - go to history #}
-        <a href="{{ url_for('player.history') }}"
-           class="btn btn-outline-secondary w-100">
-            <i class="fas fa-arrow-left"></i> {{ _('Torna allo Storico') }}
-        </a>
-    {% endif %}
-</div>
+{# templates/components/_match_navigation.html — 7c
+
+   Ritorno con etichetta, usato solo su mobile: da 992px in su il ritorno sta
+   nella testata (`_match_header.actions`). La destinazione e' la stessa di
+   `_match_header.back_url`, che disegna la freccia della testata mobile.
+
+   La pagina lo include due volte — in cima quando il punteggio e' definitivo,
+   in fondo altrimenti — e le due copie sono mutuamente esclusive. Niente `id`
+   ne' `<script>` qui dentro: e' la condizione che rende sicura la doppia
+   inclusione (`templates/CLAUDE.md`).
+
+   Nessun margine proprio: la distanza dalle altre sezioni la da' la pila. #}
+{% import "components/_match_header.html" as match_head with context %}
+
+<a href="{{ match_head.back_url(match)|trim }}" class="btn btn-secondary w-100 d-inline-flex align-items-center justify-content-center gap-2">
+    <i class="fas fa-arrow-left"></i>{{ match_head.back_label(match)|trim }}
+</a>

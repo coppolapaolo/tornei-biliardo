@@ -485,11 +485,18 @@ input[type="number"].form-control {
    8. Tabelle
    -------------------------------------------------------------------------- */
 
+/* `overflow-x: auto` e non `hidden`: il contenitore serve a ritagliare gli
+   angoli, ma una tabella piu' larga dello schermo deve poter scorrere. Con
+   `hidden` le ultime colonne sparivano senza modo di raggiungerle — su 390px
+   lo faceva lo storico rack, e con lui ogni tabella larga della app: la
+   regola sovrascrive anche `.table-responsive` di Bootstrap, che il tema
+   carica dopo. */
 .c7-table-wrap,
 .table-responsive {
   background: var(--c7-card);
   border-radius: var(--c7-r-card);
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 .table {
   --bs-table-bg: transparent;

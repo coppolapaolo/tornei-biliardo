@@ -1,199 +1,150 @@
 {% extends "base.html" %}
+{% import "components/_match_header.html" as match_head with context %}
 
+{# Lo spazio dopo "Match" e' significativo: con `{%- if -%}` veniva mangiato
+   e la linguetta del browser leggeva "Matchplayer2 vs player3". #}
 {% block title %}{{ _('Match') }}
-{%- if match.is_trio and match.trio_match -%}
+{% if match.is_trio and match.trio_match %}
 {# Trio match title #}
 {{ match.trio_match.player1.username }} • {{ match.trio_match.player2.username }} • {{ match.trio_match.player3.username
 }}
-{%- else -%}
+{% else %}
 {{ match.player1|player_name_with_forfeit(is_forfeit=player1_is_forfeit) }} vs {{
-match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.player2 else _('Bye') }}
-{%- endif -%}
+match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.player2 else _('X a tavolino') }}
+{% endif %}
 {% if match.gara %} - {{ _('Gara') }} {{ match.gara.name }}{% endif %}{% endblock %}
 
+{# Testata: una sola per pagina, quella del guscio. #}
+{% block page_back %}{{ match_head.back(match) }}{% endblock %}
+{% block page_title %}{{ match_head.names(match) }}{% endblock %}
+{% block page_sub %}{{ match_head.sub(match) }}{% endblock %}
+{% block page_actions %}{{ match_head.actions(match) }}{% endblock %}
+
 {% block content %}
-<div class="container-fluid">
-    {# "L'azionabile va prima" (UI_CONVENTIONS): a punteggio definitivo la
-       prossima azione probabile e' uscire dal match, quindi su mobile il
-       pulsante di ritorno sale in cima (su desktop e' gia' nell'header sotto).
-       Doppia inclusione sicura: _match_navigation non ha id/script e le due
-       copie sono mutuamente esclusive per viewport. #}
-    {% if score_is_final %}
-    <div class="d-md-none mb-3" id="matchNavTop">
-        {% include "components/_match_navigation.html" %}
-    </div>
-    {% endif %}
+{# Il guscio 7c cambia impaginazione a 992px (compaiono la barra laterale e
+   la seconda colonna, sparisce la nav flottante): le alternative
+   mobile/desktop di questa pagina usano quindi `lg`, non piu' `md`.
+   Il gutter e la larghezza massima li da' `c7-content` di base.html: qui non
+   serve piu' un `container-fluid`. #}
+<div class="c7-cols">
 
-    {# Match Header - hidden on mobile (card already shows all info) #}
-    <div class="d-none d-md-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1>
-                {% if match.is_trio and match.trio_match %}
-                <i class="fas fa-users"></i>
-                <span class="badge bg-primary me-2">{{ _('Trio') }}</span>
-                {{ match.trio_match.player1.username }}
-                {% if can_view_ratings and match.trio_match.player1.elo_rating %}
-                <span class="badge bg-warning text-dark small" style="font-size: 0.5em; vertical-align: middle;">{{
-                    match.trio_match.player1.elo_rating }}</span>
-                {% endif %}
-                •
-                {{ match.trio_match.player2.username }}
-                {% if can_view_ratings and match.trio_match.player2.elo_rating %}
-                <span class="badge bg-warning text-dark small" style="font-size: 0.5em; vertical-align: middle;">{{
-                    match.trio_match.player2.elo_rating }}</span>
-                {% endif %}
-                •
-                {{ match.trio_match.player3.username }}
-                {% if can_view_ratings and match.trio_match.player3.elo_rating %}
-                <span class="badge bg-warning text-dark small" style="font-size: 0.5em; vertical-align: middle;">{{
-                    match.trio_match.player3.elo_rating }}</span>
-                {% endif %}
-                {% else %}
-                <i class="fas fa-shield-halved"></i>
-                {{ match.player1|player_name_with_forfeit(is_forfeit=player1_is_forfeit) }}
-                {% if can_view_ratings and match.player1.elo_rating %}
-                <span class="badge bg-warning text-dark small" style="font-size: 0.5em; vertical-align: middle;">{{
-                    match.player1.elo_rating }}</span>
-                {% endif %}
-                vs
-                {% if match.player2 %}
-                {{ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) }}
-                {% if can_view_ratings and match.player2.elo_rating %}
-                <span class="badge bg-warning text-dark small" style="font-size: 0.5em; vertical-align: middle;">{{
-                    match.player2.elo_rating }}</span>
-                {% endif %}
-                {% else %}
-                {{ _('Bye') }}
-                {% endif %}
-                {% endif %}
-            </h1>
+    {# ---------- Colonna principale: punteggio e controlli ---------- #}
+    <div class="c7-stack c7-sections">
+
+        {# "L'azionabile va prima" (UI_CONVENTIONS): a punteggio definitivo la
+           prossima azione probabile e' uscire dal match, quindi su mobile il
+           pulsante di ritorno sale in cima. Su desktop il ritorno e' in
+           testata (`page_actions`), quindi qui e' sempre solo mobile.
+           Doppia inclusione sicura: _match_navigation non ha id/script e le
+           due copie sono mutuamente esclusive per viewport. #}
+        {% if score_is_final %}
+        <div class="d-lg-none" id="matchNavTop">
+            {% include "components/_match_navigation.html" %}
         </div>
-        <div>
-            {# Back button - adapts based on whether match belongs to a gara #}
-            {% if match.gara_id %}
-            <a href="{{ url_for('admin.competition.gara_detail', gara_id=match.gara_id) }}"
-                class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left"></i> {{ _('Torna alla Gara') }}
-            </a>
+        {% endif %}
+
+        {# Come si vince, dove si gioca, a che punto e'. #}
+        {{ match_head.meta(match) }}
+
+        {# Punteggio: il componente disegna gia' la propria card accento, non
+           va quindi annidato in una seconda card. #}
+        {% set is_trio = match.is_trio and match.trio_match %}
+        {% set player1_name = match.player1|player_name_with_forfeit(is_forfeit=player1_is_forfeit) %}
+        {% set player2_name = match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.player2 else _('X a tavolino') %}
+        {% include "components/_unified_match_score.html" %}
+
+        {# Multi-set breakdown (if applicable) #}
+        {% if match.is_multi_set %}
+        {% include "components/_multi_set_score_display.html" %}
+        {% endif %}
+
+        {# Player Controls - Simplified Interface (priority for fairness) #}
+        {# Directors who are players in this match use player interface #}
+        {% if user_is_player %}
+            {% if match.is_trio and match.trio_match %}
+                {# Trio matches have their own specialized component #}
+                {% include "components/_trio_rack_input.html" %}
             {% else %}
-            <a href="{{ url_for('player.history') }}" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left"></i> {{ _('Torna allo Storico') }}
-            </a>
+                {# Use unified component for both single-set and multi-set gara matches #}
+                {% set api_format = 'form' %}
+                {% set require_table_assignment = True %}
+                {# Players can always forfeit their own match, even if they're also directors #}
+                {% set show_forfeit = True %}
+                {% if match.is_multi_set %}
+                    {% set current_set = match.get_current_set() if match.get_current_set is defined else none %}
+                    {% set add_rack_js_func = 'addSetRackWin' %}
+                    {% set remove_rack_js_func = 'removeSetRack' %}
+                    {% set start_next_set_js_func = 'startNextSet' %}
+                {% else %}
+                    {% set add_rack_js_func = 'addRackWin' %}
+                    {% set remove_rack_js_func = 'removeRack' %}
+                {% endif %}
+                {% include "components/_unified_rack_input.html" with context %}
             {% endif %}
-        </div>
+        {% elif user_can_manage %}
+        {# Admin/Director Controls - Only for matches where they are NOT a player #}
+        {% include "components/_match_admin_controls.html" %}
+        {% endif %}
+
+        {# Challenge Input (if applicable) #}
+        {% include "components/_match_challenge_input.html" %}
+
+        {# Bye Match Info #}
+        {% include "components/_match_bye.html" %}
+
+        {# Rack History - detailed audit trail (non-trio matches only) #}
+        {% if not match.is_trio and match.racks is defined %}
+        {% set player1 = match.player1 %}
+        {% set player2 = match.player2 %}
+        {% set player1_name = match.player1|player_name_with_forfeit(is_forfeit=player1_is_forfeit) %}
+        {% set player2_name = match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.player2 else _('X a tavolino') %}
+        {% include "components/_unified_rack_history.html" %}
+        {% endif %}
     </div>
 
-    <div class="row">
-        <!-- Match Information and Scoring -->
-        <div class="col-md-8">
-            <!-- Match Header -->
-            <div class="card mb-4">
-                {% include "components/_match_header.html" %}
-                <div class="card-body">
-                    {# Unified Score Display with consistent styling #}
-                    {% set is_trio = match.is_trio and match.trio_match %}
-                    {% set player1_name = match.player1|player_name_with_forfeit(is_forfeit=player1_is_forfeit) %}
-                    {% set player2_name = match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.player2 else _('Bye') %}
-                    {% include "components/_unified_match_score.html" %}
+    {# ---------- Seconda colonna: contorno della partita ---------- #}
+    <div class="c7-stack c7-sections">
+        {% include "components/_match_info.html" %}
 
-                    {# Multi-set breakdown (if applicable) #}
-                    {% if match.is_multi_set %}
-                    {% include "components/_multi_set_score_display.html" %}
-                    {% endif %}
-
-                    {# Player Controls - Simplified Interface (priority for fairness) #}
-                    {# Directors who are players in this match use player interface #}
-                    {% if user_is_player %}
-                        {% if match.is_trio and match.trio_match %}
-                            {# Trio matches have their own specialized component #}
-                            {% include "components/_trio_rack_input.html" %}
-                        {% else %}
-                            {# Use unified component for both single-set and multi-set gara matches #}
-                            {% set api_format = 'form' %}
-                            {% set require_table_assignment = True %}
-                            {# Players can always forfeit their own match, even if they're also directors #}
-                            {% set show_forfeit = True %}
-                            {% if match.is_multi_set %}
-                                {% set current_set = match.get_current_set() if match.get_current_set is defined else none %}
-                                {% set add_rack_js_func = 'addSetRackWin' %}
-                                {% set remove_rack_js_func = 'removeSetRack' %}
-                                {% set start_next_set_js_func = 'startNextSet' %}
-                            {% else %}
-                                {% set add_rack_js_func = 'addRackWin' %}
-                                {% set remove_rack_js_func = 'removeRack' %}
-                            {% endif %}
-                            {% include "components/_unified_rack_input.html" with context %}
+        {% if available_challenges %}
+        <div class="c7-card">
+            <h3 class="mb-1">{{ _('Challenge Disponibili') }}</h3>
+            <p class="text-muted mb-3" style="font-size: 13px; font-weight: 600;">
+                {{ _('Le challenge sono prove tecniche che puoi completare durante il match.') }}
+            </p>
+            <div class="c7-stack" style="gap: 8px;">
+                {% for gara_challenge in available_challenges %}
+                <a href="{{ url_for('player.challenge_detail', gara_challenge_id=gara_challenge.id) }}"
+                    class="c7-card" style="background: var(--c7-sunken); padding: 14px 16px; text-decoration: none; color: inherit;">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="flex-fill" style="font-size: 14px; font-weight: 800;">{{ gara_challenge.challenge.get_display_name() }}</span>
+                        {% if current_user.is_authenticated and current_user.id in player_challenge_progress %}
+                        {% set progress = player_challenge_progress[current_user.id] %}
+                        {% set challenge_data = progress.get('challenges', [])|selectattr('gara_challenge.id',
+                        'equalto', gara_challenge.id)|first %}
+                        {% if challenge_data %}
+                        <span class="c7-state c7-state--ok">
+                            <span class="c7-num">{{ challenge_data.get('attempts_count', 0) }}/{{ gara_challenge.max_attempts }}</span>
+                        </span>
                         {% endif %}
-                    {% elif user_can_manage %}
-                    {# Admin/Director Controls - Only for matches where they are NOT a player #}
-                    {% include "components/_match_admin_controls.html" %}
-                    {% endif %}
-
-
-                    {# Challenge Input (if applicable) #}
-                    {% include "components/_match_challenge_input.html" %}
-
-                    {# Bye Match Info #}
-                    {% include "components/_match_bye.html" %}
-                </div>
-            </div>
-
-            {# Rack History - detailed audit trail (non-trio matches only) #}
-            {% if not match.is_trio and match.racks is defined %}
-            {% set player1 = match.player1 %}
-            {% set player2 = match.player2 %}
-            {% set player1_name = match.player1|player_name_with_forfeit(is_forfeit=player1_is_forfeit) %}
-            {% set player2_name = match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.player2 else _('Bye') %}
-            {% include "components/_unified_rack_history.html" %}
-            {% endif %}
-        </div>
-
-        <!-- Sidebar -->
-        <div class="col-md-4">
-            <!-- Match Information -->
-            {% include "components/_match_info.html" %}
-
-            <!-- Challenge Section -->
-            {% if available_challenges %}
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5><i class="fas fa-star"></i> {{ _('Challenge Disponibili') }}</h5>
-                </div>
-                <div class="card-body">
-                    <p class="text-muted small">{{ _('Le challenge sono prove tecniche che puoi completare durante il
-                        match.') }}</p>
-                    <div class="list-group">
-                        {% for gara_challenge in available_challenges %}
-                        <a href="{{ url_for('player.challenge_detail', gara_challenge_id=gara_challenge.id) }}"
-                            class="list-group-item list-group-item-action">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h6 class="mb-1">{{ gara_challenge.challenge.get_display_name() }}</h6>
-                                {% if current_user.is_authenticated and current_user.id in player_challenge_progress %}
-                                {% set progress = player_challenge_progress[current_user.id] %}
-                                {% set challenge_data = progress.get('challenges', [])|selectattr('gara_challenge.id',
-                                'equalto', gara_challenge.id)|first %}
-                                {% if challenge_data %}
-                                <small class="text-success">
-                                    <i class="fas fa-check-circle"></i> {{ challenge_data.get('attempts_count', 0) }}/{{
-                                    gara_challenge.max_attempts }}
-                                </small>
-                                {% endif %}
-                                {% endif %}
-                            </div>
-                            <p class="mb-1 small text-muted">{{ gara_challenge.challenge.description|truncate(60) }}</p>
-                        </a>
-                        {% endfor %}
+                        {% endif %}
                     </div>
-                </div>
-            </div>
-            {% endif %}
-
-            <!-- Actions / Navigation -->
-            {# A punteggio definitivo la copia mobile e' gia' in cima alla pagina #}
-            <div id="matchNavSidebar" class="{% if score_is_final %}d-none d-md-block{% endif %}">
-                {% include "components/_match_navigation.html" %}
+                    <div class="text-muted" style="font-size: 12px; font-weight: 600; margin-top: 4px;">
+                        {{ gara_challenge.challenge.description|truncate(60) }}
+                    </div>
+                </a>
+                {% endfor %}
             </div>
         </div>
+        {% endif %}
+
+        {# A punteggio definitivo la copia mobile e' gia' in cima alla pagina;
+           su desktop il ritorno vive nella testata. #}
+        {% if not score_is_final %}
+        <div id="matchNavSidebar" class="d-lg-none">
+            {% include "components/_match_navigation.html" %}
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

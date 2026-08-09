@@ -15,7 +15,9 @@ from types import SimpleNamespace
 import pytest
 from flask import render_template
 
-TEMPLATE = "components/_player_inscription_info.html"
+# Il nome del template va scritto per esteso a ogni chiamata: l'analisi
+# statica di `test_no_orphan_templates` legge solo i letterali, e con una
+# costante di modulo il guardiano di quel test falliva.
 
 
 def _inscription(**overrides):
@@ -32,7 +34,9 @@ def _inscription(**overrides):
 @pytest.mark.unit
 def test_mostra_la_data_di_iscrizione(app):
     with app.test_request_context("/"):
-        html = render_template(TEMPLATE, user_inscription=_inscription())
+        html = render_template(
+            "components/_player_inscription_info.html", user_inscription=_inscription()
+        )
 
     assert "N/D" not in html
     assert "28/07/2026" in html
@@ -42,7 +46,10 @@ def test_mostra_la_data_di_iscrizione(app):
 def test_il_campo_letto_e_created_at(app):
     """Senza `created_at` niente data — ma nemmeno un attributo inventato."""
     with app.test_request_context("/"):
-        html = render_template(TEMPLATE, user_inscription=_inscription(created_at=None))
+        html = render_template(
+            "components/_player_inscription_info.html",
+            user_inscription=_inscription(created_at=None),
+        )
 
     assert "—" in html
     assert "inscription_date" not in html
@@ -52,7 +59,7 @@ def test_il_campo_letto_e_created_at(app):
 def test_lista_di_attesa_dichiarata(app):
     with app.test_request_context("/"):
         html = render_template(
-            TEMPLATE,
+            "components/_player_inscription_info.html",
             user_inscription=_inscription(is_waitlist=True, waitlist_position=2),
         )
 
