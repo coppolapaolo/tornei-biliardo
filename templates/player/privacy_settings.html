@@ -1,16 +1,14 @@
 {% extends "base.html" %}
 {% block title %}{{ _("Privacy") }} - {{ current_user.username }}{% endblock %}
 
+{% block page_back %}
+<a class="c7-head__back" href="{{ url_for('player.profile') }}" aria-label="{{ _('Torna al profilo') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("Privacy") }}{% endblock %}
+{% block page_sub %}{{ _("Decidi cosa vedono gli altri sul tuo profilo.") }}{% endblock %}
+
 {% block content %}
 <div style="max-width: 600px; margin: 0 auto;">
-  <header class="c7-head" style="padding-left: 0; padding-right: 0;">
-    <a class="c7-head__back" href="{{ url_for('player.profile') }}" aria-label="{{ _('Torna al profilo') }}"><i class="fas fa-arrow-left"></i></a>
-    <div class="c7-head__title">
-      <h1>{{ _("Privacy") }}</h1>
-      <div class="c7-head__sub">{{ _("Decidi cosa vedono gli altri sul tuo profilo.") }}</div>
-    </div>
-  </header>
-
   <form method="POST" action="{{ url_for('player.privacy_settings') }}" class="c7-stack">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 

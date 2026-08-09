@@ -1,14 +1,10 @@
 {% extends 'base.html' %}
 {% block title %}{{ _('Richieste direttore di gara') }}{% endblock %}
 
-{% block content %}
-<header class="c7-head" style="padding-left: 0; padding-right: 0;">
-  <div class="c7-head__title">
-    <h1>{{ _('Richieste direttore di gara') }}</h1>
-    <div class="c7-head__sub">{{ _('Approva o rifiuta chi chiede di dirigere le gare.') }}</div>
-  </div>
-</header>
+{% block page_title %}{{ _('Richieste direttore di gara') }}{% endblock %}
+{% block page_sub %}{{ _('Approva o rifiuta chi chiede di dirigere le gare.') }}{% endblock %}
 
+{% block content %}
 {% if requests %}
 <div class="c7-table-wrap table-responsive">
   <table class="table">

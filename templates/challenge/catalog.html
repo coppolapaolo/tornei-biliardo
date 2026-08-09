@@ -2,17 +2,18 @@
 
 {% block title %}{{ _("Challenge") }}{% endblock %}
 
-{% block content %}
-<header class="c7-head" style="padding-left: 0; padding-right: 0;">
-    <div class="c7-head__title">
-        <h1>{{ _("Challenge") }}</h1>
-        <div class="c7-head__sub">{{ _("Esercizi di abilità: provaci, registra il punteggio, migliora.") }}</div>
-    </div>
+{# Testata: si riempiono i blocchi del guscio, non se ne disegna una seconda
+   dentro `content`. Sovrascrivere `page_head` per intero farebbe perdere il
+   link indietro e l'avatar che base.html ci mette per il mobile. #}
+{% block page_title %}{{ _("Challenge") }}{% endblock %}
+{% block page_sub %}{{ _("Esercizi di abilità: provaci, registra il punteggio, migliora.") }}{% endblock %}
+{% block page_actions %}
     {% if current_user.is_authenticated and current_user.can_access('create_challenge') %}
     <a href="{{ url_for('challenge.create_challenge') }}" class="btn btn-success btn-sm">{{ _("Nuova challenge") }}</a>
     {% endif %}
-</header>
+{% endblock %}
 
+{% block content %}
 <nav class="nav-tabs nav" id="challengeTabs" role="tablist" style="margin-bottom: 20px;">
     <button class="nav-link active" id="all-tab" data-bs-toggle="pill" data-bs-target="#all-challenges" type="button" role="tab">
         {{ _("Tutte") }} <span class="c7-num" style="margin-left: 6px;">{{ all_challenges|length }}</span>

@@ -3,16 +3,16 @@
 
 {% block title %}{{ _("Storico") }} - {{ current_user.username }}{% endblock %}
 
-{% block content %}
-<header class="c7-head" style="padding-left: 0; padding-right: 0;">
-    <a class="c7-head__back" href="{{ url_for('dashboard.dashboard') }}" aria-label="{{ _('Torna alla dashboard') }}"><i class="fas fa-arrow-left"></i></a>
-    <div class="c7-head__title">
-        <h1>{{ _("Storico") }}</h1>
-        <div class="c7-head__sub">{{ _("Tutte le tue partite, gare e campionati") }}</div>
-    </div>
-    <a href="{{ url_for('player.profile') }}" class="btn btn-secondary btn-sm">{{ _("Profilo") }}</a>
-</header>
+{% block page_back %}
+<a class="c7-head__back" href="{{ url_for('dashboard.dashboard') }}" aria-label="{{ _('Torna alla dashboard') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("Storico") }}{% endblock %}
+{% block page_sub %}{{ _("Tutte le tue partite, gare e campionati") }}{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('player.profile') }}" class="btn btn-secondary btn-sm">{{ _("Profilo") }}</a>
+{% endblock %}
 
+{% block content %}
 <nav style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;">
     <a class="c7-pill {{ 'is-active' if active_tab == 'matches' else '' }}" href="{{ url_for('player.history', tab='matches') }}">
         {{ _("Partite") }}{% if match_stats %} <span class="c7-num">{{ match_stats.total_matches }}</span>{% endif %}

@@ -1,14 +1,12 @@
 {% extends "base.html" %}
 {% block title %}{{ page_title }} - Campionato Biliardo{% endblock %}
 
-{% block content %}
-<header class="c7-head" style="padding-left: 0; padding-right: 0;">
-    <div class="c7-head__title">
-        <h1>{{ page_title }}</h1>
-        <div class="c7-head__sub">{{ _('La tua zona e chi fa crescere la community') }}</div>
-    </div>
-</header>
+{# `page_title` qui è la variabile passata dalla route, non il blocco:
+   dentro il blocco omonimo resta accessibile dal contesto. #}
+{% block page_title %}{{ page_title }}{% endblock %}
+{% block page_sub %}{{ _('La tua zona e chi fa crescere la community') }}{% endblock %}
 
+{% block content %}
 <nav class="nav nav-tabs" id="leaderboardTabs" role="tablist" style="margin-bottom: 20px;">
     <button class="nav-link {% if active_tab == 'local' %}active{% endif %}" id="local-tab" data-bs-toggle="tab" data-bs-target="#local" type="button" role="tab">
         {{ _('La tua zona') }}

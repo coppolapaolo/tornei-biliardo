@@ -5,25 +5,18 @@
 {% if is_own_profile %}{{ _("Il mio profilo") }} - {{ user.username }}{% else %}{{ _("Profilo di") }} {{ user.username }}{% endif %}
 {% endblock %}
 
-{% block content %}
-<header class="c7-head" style="padding-left: 0; padding-right: 0;">
-    {% if not is_own_profile %}
-    <a class="c7-head__back" href="{{ request.referrer or url_for('main.index') }}" aria-label="{{ _('Indietro') }}"><i class="fas fa-arrow-left"></i></a>
-    {% endif %}
-    <div class="c7-head__title" style="display: flex; align-items: center; gap: 12px;">
-        <span class="c7-avatar c7-avatar--lg">{{ user.username[:2]|upper }}</span>
-        <span>
-            <h1>{{ user.username }}</h1>
-            <div class="c7-head__sub">
-                {% if is_own_profile %}{{ _("Il mio profilo") }}{% else %}{{ _("Profilo pubblico") }}{% endif %}
-            </div>
-        </span>
-    </div>
+{# Testata: si riempiono i blocchi del guscio invece di disegnarne una
+   seconda dentro `content`. Sovrascrivere `page_head` per intero farebbe
+   sparire il link indietro e l'avatar che base.html mostra sul mobile. #}
+{% block page_title %}{{ user.username }}{% endblock %}
+{% block page_sub %}{% if is_own_profile %}{{ _("Il mio profilo") }}{% else %}{{ _("Profilo pubblico") }}{% endif %}{% endblock %}
+{% block page_actions %}
     {% if is_own_profile %}
     <a href="{{ url_for('player.history') }}" class="btn btn-secondary btn-sm">{{ _("Storico") }}</a>
     {% endif %}
-</header>
+{% endblock %}
 
+{% block content %}
 <div class="c7-cols">
     <div class="c7-stack">
         {# Ratings: solo se can_view_ratings e (privacy.show_statistics o profilo proprio/admin) #}

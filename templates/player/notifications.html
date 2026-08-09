@@ -2,20 +2,20 @@
 
 {% block title %}{{ _("Notifiche") }}{% endblock %}
 
-{% block content %}
-<header class="c7-head" style="padding-left: 0; padding-right: 0;">
-    <a class="c7-head__back" href="{{ url_for('player.dashboard') }}" aria-label="{{ _('Torna alla dashboard') }}"><i class="fas fa-arrow-left"></i></a>
-    <div class="c7-head__title">
-        <h1>{{ _("Notifiche") }}</h1>
-    </div>
+{% block page_back %}
+<a class="c7-head__back" href="{{ url_for('player.dashboard') }}" aria-label="{{ _('Torna alla dashboard') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("Notifiche") }}{% endblock %}
+{% block page_actions %}
     {% if notifications %}
     <form action="{{ url_for('player.mark_all_notifications_read') }}" method="POST">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="btn btn-secondary btn-sm">{{ _("Segna tutte lette") }}</button>
     </form>
     {% endif %}
-</header>
+{% endblock %}
 
+{% block content %}
 <section class="c7-card">
     <form id="auto-delete-form" method="POST" action="{{ url_for('player.update_auto_delete') }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

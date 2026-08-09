@@ -271,14 +271,25 @@
         {# ---------- Colonna contenuto ---------- #}
         <div class="c7-main">
 
-            {# Testata: le pagine possono sostituirla con il proprio blocco. #}
+            {# Testata unica della pagina. Le pagine la personalizzano
+               riempiendo `page_back`, `page_title`, `page_sub` e
+               `page_actions` — NON disegnandone una seconda dentro
+               `content`, che produrrebbe due testate sovrapposte, e NON
+               sostituendo `page_head` per intero, che farebbe sparire la
+               freccia e l'avatar del mobile. #}
             {% block page_head %}
             <header class="c7-head">
+                {% block page_back %}
                 <a class="c7-head__back d-lg-none" href="{{ url_for('main.index') }}" aria-label="{{ _('Home') }}">
                     <i class="fas fa-circle-nodes"></i>
                 </a>
+                {% endblock %}
                 <div class="c7-head__title">
-                    <span class="c7-title">{% block page_title %}{{ self.title() }}{% endblock %}</span>
+                    {# Ripiego sul titolo del browser solo se la pagina non
+                       dichiara `page_title`: quei titoli sono scritti per la
+                       linguetta, quindi si tagliano i suffissi tecnici
+                       (" - Campionato Biliardo", " - Admin", " - Dettagli"). #}
+                    <span class="c7-title">{% block page_title %}{{ (self.title()|trim).split(' - ')[0]|trim }}{% endblock %}</span>
                     <span class="c7-head__sub">{% block page_sub %}{% endblock %}</span>
                 </div>
                 {% block page_actions %}{% endblock %}

@@ -3,14 +3,15 @@
 
 {% block title %}{{ _("Le mie richieste") }}{% endblock %}
 
+{# La lista sale sta sotto /admin/venues ma è aperta a ogni utente
+   autenticato (solo @login_required): il rimando non è un privilegio. #}
+{% block page_back %}
+<a class="c7-head__back" href="{{ url_for('admin.venue.venues_list') }}" aria-label="{{ _('Torna alle sale') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("Richieste di gestione sala") }}{% endblock %}
+{% block page_sub %}{{ _("%(n)s richieste inviate", n=requests|length) }}{% endblock %}
+
 {% block content %}
-<header class="c7-head" style="padding-left: 0; padding-right: 0;">
-    <a class="c7-head__back" href="{{ url_for('admin.venue.venues_list') }}" aria-label="{{ _('Torna alle sale') }}"><i class="fas fa-arrow-left"></i></a>
-    <div class="c7-head__title">
-        <h1>{{ _("Richieste di gestione sala") }}</h1>
-        <div class="c7-head__sub">{{ _("%(n)s richieste inviate", n=requests|length) }}</div>
-    </div>
-</header>
 
 {% if requests %}
 <div class="c7-table-wrap table-responsive">

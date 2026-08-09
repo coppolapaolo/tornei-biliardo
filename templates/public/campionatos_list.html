@@ -1,15 +1,13 @@
 {% extends "base.html" %}
 {% block title %}{{ _('Campionati') }}{% endblock %}
 
-{% block content %}
-<header class="c7-head" style="padding-left: 0; padding-right: 0;">
-    <a class="c7-head__back" href="{{ url_for('main.index') }}" aria-label="{{ _('Torna alla home') }}"><i class="fas fa-arrow-left"></i></a>
-    <div class="c7-head__title">
-        <h1>{{ _('Campionati') }}</h1>
-        <div class="c7-head__sub">{{ _('Lista pubblica: si consulta senza registrarsi.') }}</div>
-    </div>
-</header>
+{% block page_back %}
+<a class="c7-head__back" href="{{ url_for('main.index') }}" aria-label="{{ _('Torna alla home') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _('Campionati') }}{% endblock %}
+{% block page_sub %}{{ _('Lista pubblica: si consulta senza registrarsi.') }}{% endblock %}
 
+{% block content %}
 <form method="get" class="c7-card" style="display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 20px;">
     <div>
         <label for="q" class="form-label">{{ _('Cerca') }}</label>

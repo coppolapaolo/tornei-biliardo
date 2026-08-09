@@ -3,14 +3,10 @@
 
 {% block title %}{{ _("Sale biliardo") }}{% endblock %}
 
-{% block content %}
-<header class="c7-head" style="padding-left: 0; padding-right: 0;">
-    <div class="c7-head__title">
-        <h1>{{ _("Sale biliardo") }}</h1>
-        <div class="c7-head__sub">{{ _("%(n)s sale registrate", n=venues_with_managers|length) }}</div>
-    </div>
-</header>
+{% block page_title %}{{ _("Sale biliardo") }}{% endblock %}
+{% block page_sub %}{{ _("%(n)s sale registrate", n=venues_with_managers|length) }}{% endblock %}
 
+{% block content %}
 {% if venues_with_managers %}
 <div class="c7-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
     {% for item in venues_with_managers %}

@@ -45,14 +45,13 @@
 </div>
 {% endmacro %}
 
+{% block page_back %}
+<a class="c7-head__back" href="{{ url_for('main.index') }}" aria-label="{{ _('Torna alla home') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("Gare") }}{% endblock %}
+{% block page_sub %}{{ _("Lista pubblica: si consulta senza registrarsi.") }}{% endblock %}
+
 {% block content %}
-<header class="c7-head" style="padding-left: 0; padding-right: 0;">
-    <a class="c7-head__back" href="{{ url_for('main.index') }}" aria-label="{{ _('Torna alla home') }}"><i class="fas fa-arrow-left"></i></a>
-    <div class="c7-head__title">
-        <h1>{{ _("Gare") }}</h1>
-        <div class="c7-head__sub">{{ _("Lista pubblica: si consulta senza registrarsi.") }}</div>
-    </div>
-</header>
 
 {# B5: prima le attive, poi le concluse in un blocco distinto e più tenue #}
 <section class="c7-stack">
