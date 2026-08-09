@@ -185,7 +185,12 @@ class RoleGrantService:
         un titolare vede solo quelle in cui è destinatario **non ancora
         espresso**.
         """
-        query = RoleRequest.query.filter(
+        from sqlalchemy.orm import joinedload
+
+        # joinedload sul richiedente: il template della coda stampa
+        # ``req.user.username`` per riga, che con il lazy di default sarebbe
+        # una SELECT per richiesta. ``recipients`` è già selectin.
+        query = RoleRequest.query.options(joinedload(RoleRequest.user)).filter(
             RoleRequest.status == RoleRequestStatus.PENDING.value
         )
         if not actor.is_admin:

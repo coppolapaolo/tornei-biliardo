@@ -365,24 +365,50 @@ def _is_production() -> bool:
     return not current_app.config.get("DEBUG_MODE", False)
 
 
+#: Ruoli che NON derivano da ``user.role`` ma da una tabella di concessione
+#: (ADR-038), e che quindi costano una query per essere accertati. Serve a
+#: ``is_endpoint_visible`` per non pagare quel costo quando l'endpoint non li
+#: ammette comunque.
+GRANTABLE_ROLES: frozenset[Role] = frozenset({"examiner"})
+
+
+def _primary_role(user) -> Role:
+    """Ruolo primario, derivato da ``user.role``: nessun accesso al DB."""
+    if not user.is_authenticated:
+        return "anonimo"
+    return "director" if getattr(user, "is_director", False) else "player"
+
+
+def _grantable_roles(user) -> set[Role]:
+    """Ruoli concedibili posseduti dall'utente. **Costa una query** per ruolo.
+
+    Chiamare solo quando l'endpoint ne ammette almeno uno: vedi
+    ``is_endpoint_visible``.
+    """
+    if not user.is_authenticated:
+        return set()
+    return {"examiner"} if getattr(user, "is_examiner", False) else set()
+
+
 def _user_roles(user) -> set[Role]:
-    """Role **set** for the current user, used to look up the matrix.
+    """Role **set** completo per l'utente: primario + concedibili.
 
-    The primary role (``user.role``) contributes exactly one entry; grantable
-    roles (ADR-038) add to it. Returning a set rather than a single string is
-    what keeps an examiner-who-is-not-a-director from being flattened to
-    ``"player"`` and losing access to the examiner endpoints in production.
+    Il primario (``user.role``) contribuisce esattamente una voce; i ruoli
+    concedibili (ADR-038) si aggiungono. Restituire un insieme invece di una
+    stringa è ciò che impedisce a un esaminatore che non è anche director di
+    essere appiattito su ``"player"``, perdendo in produzione gli endpoint
+    dichiarati per ``{"examiner"}``.
 
-    Admins are handled by the bypass branch in ``is_endpoint_visible`` and
-    must not reach this function.
+    ``is_endpoint_visible`` **non** usa questa funzione nel percorso caldo,
+    perché accerterebbe i concedibili anche quando non servono; la usano i
+    chiamanti che vogliono davvero l'insieme completo (introspezione, test).
+
+    Gli admin sono gestiti dal ramo di bypass in ``is_endpoint_visible`` e non
+    devono arrivare qui.
     """
     if not user.is_authenticated:
         return {"anonimo"}
-
-    roles: set[Role] = {"director" if getattr(user, "is_director", False) else "player"}
-    if getattr(user, "is_examiner", False):
-        roles.add("examiner")
-    return roles
+    return {_primary_role(user)} | _grantable_roles(user)
 
 
 def is_endpoint_visible(endpoint: str | None, user) -> bool:
@@ -393,11 +419,19 @@ def is_endpoint_visible(endpoint: str | None, user) -> bool:
     2. Pass-through in dev/test (``_is_production()`` is False).
     3. ``endpoint in INFRASTRUCTURE_ALLOWLIST``: True for every role.
     4. Admin user: True (global bypass).
-    5. ``user``'s role set intersects ``ENDPOINT_ROLES[endpoint]``: True.
-    6. Otherwise: False.
+    5. The user's **primary** role is in ``ENDPOINT_ROLES[endpoint]``: True.
+    6. The endpoint admits a grantable role and the user holds it: True.
+    7. Otherwise: False.
 
     Endpoints absent from ``ENDPOINT_ROLES`` (and not in infrastructure)
     are visible only to admins by default.
+
+    Steps 5-6 are split on purpose. ``feature_visible()`` is a template global
+    called once per gated link, so a single page render invokes this function
+    dozens of times, and establishing a grantable role costs a query. Step 6
+    therefore runs only when the primary role was not already enough **and**
+    the endpoint actually admits a grantable role — today a handful of
+    endpoints out of ~250, and none at all while the rollout is dark.
     """
     if endpoint is None:
         return True
@@ -407,4 +441,12 @@ def is_endpoint_visible(endpoint: str | None, user) -> bool:
         return True
     if user.is_authenticated and getattr(user, "is_admin", False):
         return True
-    return bool(_user_roles(user) & ENDPOINT_ROLES.get(endpoint, set()))
+
+    allowed = ENDPOINT_ROLES.get(endpoint, set())
+    if not allowed:
+        return False
+    if _primary_role(user) in allowed:
+        return True
+    if not (allowed & GRANTABLE_ROLES):
+        return False
+    return bool(_grantable_roles(user) & allowed)

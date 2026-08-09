@@ -320,6 +320,53 @@ def test_examiner_not_degraded_to_player(app, production_mode, monkeypatch):
         assert is_endpoint_visible("player.profile", examiner) is True
 
 
+def test_grantable_role_is_not_probed_when_endpoint_ignores_it(app, production_mode):
+    """``is_endpoint_visible`` non accerta i ruoli concedibili se non servono.
+
+    ``is_examiner`` fa una query su ``role_grant``, e ``feature_visible()`` è
+    un global di template chiamato una volta per ogni link protetto: senza il
+    corto circuito una singola pagina costerebbe decine di SELECT. Qui
+    l'utente finto esplode se qualcuno legge ``is_examiner``, così il test
+    fallisce se il corto circuito viene rimosso.
+    """
+
+    class ExplodingExaminerUser:
+        """Player normale, ma leggere ``is_examiner`` è un errore."""
+
+        is_authenticated = True
+        is_admin = False
+        is_director = False
+        is_player = True
+
+        @property
+        def is_examiner(self):  # pragma: no cover - deve non essere chiamata
+            raise AssertionError("is_examiner non va accertato per questo endpoint")
+
+    with app.app_context():
+        user = ExplodingExaminerUser()
+
+        # Endpoint concesso dal solo ruolo primario: risposta senza query.
+        assert is_endpoint_visible("dashboard.dashboard", user) is True
+        # Endpoint negato che non ammette concedibili: idem.
+        assert is_endpoint_visible("admin.campionato.wizard_start", user) is False
+        # Endpoint assente dalla matrice (admin-only): idem.
+        assert is_endpoint_visible("gamification.admin_dashboard", user) is False
+
+
+def test_grantable_role_is_probed_when_endpoint_admits_it(
+    app, production_mode, monkeypatch
+):
+    """Il corto circuito non deve rendere i ruoli concedibili inefficaci."""
+    with app.app_context():
+        monkeypatch.setitem(ENDPOINT_ROLES, "roles.role_requests", {"examiner"})
+
+        player = FakeUser(is_authenticated=True, is_player=True)
+        examiner = FakeUser(is_authenticated=True, is_player=True, is_examiner=True)
+
+        assert is_endpoint_visible("roles.role_requests", player) is False
+        assert is_endpoint_visible("roles.role_requests", examiner) is True
+
+
 def test_role_endpoints_are_dark_until_phase_5(app, production_mode):
     """ROLLOUT: la superficie /roles è admin-only finché gli esami non esistono.
 
