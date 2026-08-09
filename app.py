@@ -472,6 +472,16 @@ def create_app(config_name=None):
     def not_found(e):
         return render_template("errors/404.html"), 404
 
+    @app.errorhandler(403)
+    def forbidden(e):
+        # Senza questo handler un permesso negato mostrava la pagina grezza
+        # di Werkzeug: in inglese e fuori dal design. I decoratori in
+        # utils/permissions.py fanno abort(403) in parecchi punti.
+        is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
+        if request.is_json or is_ajax:
+            return jsonify({"error": "Accesso negato"}), 403
+        return render_template("errors/403.html"), 403
+
     @app.errorhandler(500)
     def internal_error(e):
         db.session.rollback()

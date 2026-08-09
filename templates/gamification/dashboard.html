@@ -67,24 +67,28 @@
                         <div>
                             <strong>
                                 {% if streak_type == 'weekly_activity' %}
-                                <i class="fas fa-calendar-check text-warning me-1"></i>{{ _('Attivita Settimanale') }}
+                                <i class="fas fa-calendar-check text-warning me-1"></i>{{ _('Attività Settimanale') }}
                                 {% elif streak_type == 'weekly_match' %}
                                 <i class="fas fa-shield-halved me-1 text-info"></i>{{ _('Partite Settimanali') }}
                                 {% elif streak_type == 'weekly_tournament' %}
                                 <i class="fas fa-trophy text-success me-1"></i>{{ _('Tornei Settimanali') }}
+                                {% elif streak_type == 'weekly_drill' %}
+                                <i class="fas fa-bullseye text-danger me-1"></i>{{ _('Challenge Settimanali') }}
                                 {% else %}
                                 {{ streak_type }}
                                 {% endif %}
                             </strong>
                             <br>
-                            <small class="text-muted">{{ _('Record') }}: {{ streak_info.longest_streak }} {{
-                                _('settimane') }}</small>
+                            <small class="text-muted">{{ _('Record') }}: {{ ngettext('%(num)d settimana',
+                                '%(num)d settimane', streak_info.longest_streak,
+                                num=streak_info.longest_streak) }}</small>
                         </div>
                         <div class="text-end">
                             <span class="streak-fire {% if streak_info.current_streak >= 5 %}hot{% endif %}">🔥</span>
                             <span class="badge bg-warning text-dark fs-5">{{ streak_info.current_streak }}</span>
                             <br>
-                            <small class="text-muted">{{ _('settimane') }}</small>
+                            <small class="text-muted">{{ ngettext('settimana', 'settimane',
+                                streak_info.current_streak) }}</small>
                         </div>
                     </div>
                     {% endfor %}

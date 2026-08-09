@@ -665,3 +665,41 @@ input[type="number"].form-control {
 .c7-crumbs { display: flex; align-items: center; gap: 12px; font-size: 12px; font-weight: 700; color: var(--c7-ink-muted); }
 .c7-crumbs i { font-size: 9px; }
 .c7-crumbs .is-current { color: var(--c7-ink); }
+
+/* --------------------------------------------------------------------------
+   14. Aggiunte post-handoff
+   -------------------------------------------------------------------------- */
+
+/* Larghezza massima del contenuto.
+   Il redesign nasce mobile-first e non poneva alcun limite: su un monitor
+   largo filtri, tabelle e righe di testo si stiravano per tutta la finestra,
+   con i comandi a meta' schermo e il vuoto a destra. Il contenuto resta
+   allineato a sinistra, come la testata, invece di essere centrato: con la
+   barra laterale a sinistra e' l'allineamento che tiene le due cose in asse. */
+@media (min-width: 992px) {
+  .c7-content { max-width: 1440px; }
+}
+
+/* Utility di sfondo di Bootstrap.
+   Il tema ridefinisce .card, .btn, .table e .badge, ma non le utility bg-*:
+   le pagine non ancora convertite mostravano cosi' riquadri blu, rossi e
+   gialli a tinta piena in mezzo alla palette 7c (i KPI dello storico erano
+   il caso piu' vistoso). Qui vengono ricondotte ai semantici del tema, che
+   usano fondo tenue e inchiostro scuro invece del colore saturo. */
+.bg-primary { background: var(--c7-accent) !important; color: var(--c7-accent-ink) !important; }
+.bg-secondary { background: var(--c7-sunken) !important; color: var(--c7-ink-soft) !important; }
+.bg-success { background: var(--c7-ok-bg) !important; color: var(--c7-ok-ink) !important; }
+.bg-danger { background: var(--c7-err-bg) !important; color: var(--c7-err-ink) !important; }
+.bg-warning { background: var(--c7-warn-bg) !important; color: var(--c7-warn-ink) !important; }
+.bg-info { background: var(--c7-accent-tint) !important; color: var(--c7-accent-tint-ink) !important; }
+.bg-light { background: var(--c7-card) !important; color: var(--c7-ink) !important; }
+.bg-dark { background: var(--c7-ink) !important; color: var(--c7-on-ink) !important; }
+
+/* Il testo bianco che accompagnava quelle tinte ora starebbe su fondo
+   chiaro: si riporta all'inchiostro del tema. Le eccezioni sono i blocchi
+   che restano scuri per davvero. */
+.bg-primary.text-white, .bg-primary .text-white { color: var(--c7-accent-ink) !important; }
+.bg-success.text-white, .bg-success .text-white { color: var(--c7-ok-ink) !important; }
+.bg-danger.text-white, .bg-danger .text-white { color: var(--c7-err-ink) !important; }
+.bg-info.text-white, .bg-info .text-white { color: var(--c7-accent-tint-ink) !important; }
+.bg-warning.text-dark, .bg-warning .text-dark { color: var(--c7-warn-ink) !important; }

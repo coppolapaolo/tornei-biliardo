@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}403 - {{ _('Accesso negato') }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 520px; margin: 8vh auto 0;">
+  <div class="c7-empty">
+    <div class="c7-empty__ico"><i class="fas fa-lock"></i></div>
+    <div class="c7-num-xl" style="margin-top: 14px; color: var(--c7-ink-faint);">403</div>
+    <h1 class="c7-empty__title">{{ _('Tavolo riservato') }}</h1>
+    <p class="c7-empty__text">{{ _('Questa pagina è riservata a chi ha i permessi per aprirla.') }}</p>
+    <p class="c7-empty__text" style="margin-top: 10px; color: var(--c7-ink-faint);">{{ _('Se pensi che sia un errore, chiedi al direttore di gara o a un amministratore.') }}</p>
+    <div class="c7-empty__actions">
+      {% if current_user.is_authenticated %}
+      <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-primary">{{ _('Torna alla dashboard') }}</a>
+      {% else %}
+      <a href="{{ url_for('auth.login') }}" class="btn btn-primary">{{ _('Accedi') }}</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
