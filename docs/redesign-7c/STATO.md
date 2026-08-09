@@ -125,6 +125,10 @@ passo):
   quella gara (`user_can_manage`, la stessa capability che il server
   verifica sulla POST).
 
+**Giro nel browser.** Mobile (331px) e desktop (1512px), nei tre ruoli e in
+tutti gli stati: iscrizione, gioco, conclusa con spareggio. Nessun difetto
+residuo.
+
 **Test.** `tests/new/unit/` **verde** (era gia' rosso su 5 test prima di
 questo passo, per asserzioni scritte sul markup pre-7c: flash, etichetta
 "Pos. Turno Prec", icona `fa-8-ball`, template orfani). Aggiornati
@@ -134,13 +138,6 @@ all'invariante invece che alla stringa esatta. `tests/new/integration/`:
 
 ## Da fare
 
-0. **Verifica desktop di `gara_detail.html`.** Il giro e' stato fatto a
-   331px di viewport nei tre ruoli e in tutti gli stati (iscrizione, gioco,
-   conclusa con spareggio); **il controllo a 1512px manca**, perche' a
-   meta' sessione la finestra di Chrome pilotata dall'estensione si e'
-   bloccata a 331px e non ha piu' risposto a `resize_window`. Da rifare
-   appena il browser e' sano: e' il passo che nel giro precedente aveva
-   fatto emergere i due difetti solo-desktop.
 1. **`match_detail.html` (30 KB)** — l'altra meta' del punto 1 della lista
    "da rifare a mano". Stesso metodo: a sezioni, verificando nel browser.
 2. **Gamification giocatore.** Primo lavoro, prima delle pagine: **il badge
@@ -207,6 +204,12 @@ Visti ma non ancora affrontati, in ordine di dubbio:
 - Il CSS è servito con `?v=ASSET_VERSION`: dopo averlo modificato serve un
   ricaricamento forzato del browser, altrimenti si guarda la versione
   vecchia e si crede che il fix non funzioni.
+- **Se il browser pilotato smette di ridimensionarsi**, la scheda e' andata,
+  non la finestra: `resize_window` risponde "success" mentre `innerWidth`
+  resta fermo e `outerWidth` diventa uguale a `innerWidth` (impossibile per
+  una finestra vera). Si risolve aprendo una scheda nuova — che nasce con la
+  misura chiesta — e chiudendo la vecchia. Sintomo collaterale: gli
+  screenshot restano indietro di uno scroll o escono grigi.
 
 ## Lavori in parallelo
 
