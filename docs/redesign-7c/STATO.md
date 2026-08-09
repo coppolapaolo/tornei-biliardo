@@ -289,12 +289,16 @@ Visti ma non ancora affrontati, in ordine di dubbio:
   l.href = u.toString(); })`. Senza questo si guarda la versione vecchia e si
   crede che la correzione non funzioni (verificare con
   `getComputedStyle(...)`, non a occhio).
-- **La finestra di Chrome non scende sotto ~500px** su macOS, quindi 390px
-  non si ottengono ridimensionando. Si ottengono con
-  `document.documentElement.style.zoom = '1.282'` (500 / 390): il contenuto
-  viene impaginato su 390px logici mentre le media query restano sul valore
-  vero della finestra — che sotto i 992px e' comunque il ramo mobile, quello
-  che si vuole provare. `document.body.scrollWidth` dice se c'e' overflow.
+- **Il mobile si guarda con i DevTools di Chrome** (device toolbar,
+  cmd+shift+M): e' l'unico modo in cui viewport, media query e touch sono
+  davvero quelli di un telefono. Ridimensionare la finestra non basta —
+  su macOS non scende sotto ~500px, quindi 390px non si raggiungono.
+  Ripiego per la sessione pilotata, quando la device toolbar non e'
+  raggiungibile: `document.documentElement.style.zoom = '1.282'` (500 / 390)
+  impagina il contenuto su 390px logici, mentre le media query restano sul
+  valore vero della finestra — sotto i 992px e' comunque il ramo mobile.
+  `document.body.scrollWidth` dice se c'e' overflow. Serve a vedere il
+  ritorno a capo e gli sbordamenti, non a sostituire la verifica vera.
 - **Se il browser pilotato smette di ridimensionarsi**, la scheda e' andata,
   non la finestra: `resize_window` risponde "success" mentre `innerWidth`
   resta fermo e `outerWidth` diventa uguale a `innerWidth` (impossibile per
