@@ -119,9 +119,19 @@ def create_matches_from_pairings(
     winning_score = round_distance
 
     for pairing in pairings:
+        # Le coordinate variano per pairing, quindi non possono stare in
+        # common_kwargs. getattr con default perché diversi test passano
+        # pairing duck-typed che non hanno questi attributi.
+        bracket_kwargs = {
+            "bracket_type": getattr(pairing, "bracket_type", None),
+            "bracket_round": getattr(pairing, "bracket_round", None),
+            "bracket_slot": getattr(pairing, "bracket_slot", None),
+        }
+
         if len(pairing.players) == 1 and pairing.is_bye:
             match = Match(
                 **common_kwargs,
+                **bracket_kwargs,
                 player1_id=pairing.players[0],
                 player2_id=None,
                 is_bye=True,
@@ -152,6 +162,7 @@ def create_matches_from_pairings(
 
                 match = Match(
                     **common_kwargs,
+                    **bracket_kwargs,
                     player1_id=pairing.players[0],
                     player2_id=pairing.players[1],
                     is_bye=False,
@@ -171,6 +182,7 @@ def create_matches_from_pairings(
             else:
                 match = Match(
                     **common_kwargs,
+                    **bracket_kwargs,
                     player1_id=pairing.players[0],
                     player2_id=pairing.players[1],
                     is_bye=False,
