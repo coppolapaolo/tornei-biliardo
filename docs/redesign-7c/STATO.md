@@ -136,19 +136,75 @@ all'invariante invece che alla stringa esatta. `tests/new/integration/`:
 9 rossi prima, 1 adesso (vedi sotto). `pyright` 0 errori, `black` pulito,
 `flake8` invariato sui file toccati.
 
+**`match_detail.html`: il guscio** — chiusa l'altra meta' del punto 1 della
+lista "da rifare a mano". Come per la gara, solo guscio: nessuna variabile
+`vm.*`, nessun `onclick`, nessun commento sulle issue e' cambiato.
+
+- **Testata.** `components/_match_header.html` e' diventato un modulo di
+  macro (`back`, `names`, `sub`, `actions`, `meta`) come `_gara_header.html`:
+  la pagina riempie `page_back` / `page_title` / `page_sub` / `page_actions`
+  e la testata dentro `content` (il `d-none d-md-flex` a riga 28) e' sparita.
+  Con essa se ne vanno i badge ELO gialli con `style` inline: l'ELO era gia'
+  nella card del punteggio, in palette.
+- **Identita' in testata, stato operativo sopra il punteggio.** Su 390px un
+  sottotitolo di cinque voci mandava la `c7-head` sticky a tre righe. Il
+  sottotitolo dice ora dove si colloca la partita (gara · turno ·
+  disciplina); distanza, tavolo e stato stanno nella riga `meta()`, sopra il
+  punteggio, uguale in mobile e desktop.
+- **Colonne.** Via `container-fluid` / `row` / `col-md-8` / `col-md-4`:
+  restano `c7-cols` e `c7-stack`, con il punto di rottura a **lg (992px)**,
+  non piu' `md`. Via anche la card che avvolgeva il punteggio: i componenti
+  disegnano gia' la propria superficie, quindi era una card dentro una card.
+- **Un solo ritorno per viewport.** Su desktop vive nella testata, su mobile
+  e' la freccia piu' il bottone largo di `_match_navigation.html` — in cima
+  a punteggio definitivo, in fondo altrimenti. Prima "Torna alla Gara"
+  compariva due volte su desktop.
+- **`_match_info.html` e `_match_navigation.html`** (usati solo qui, quindi
+  di fatto guscio) portati sul tema: `dl` a due colonne come `_gara_info`,
+  stringhe finalmente dentro `_()` — erano tutte in italiano fisso — e via
+  la ripetizione di distanza e tavolo, che ora sono nella riga `meta()`.
+- **`_match_admin_controls.html`** non e' piu' una card gialla: in 7c il
+  giallo e' il semantico "attenzione", e quelli sono i controlli ordinari di
+  chi dirige. I punteggi sono `c7-stepper` invece che campi numerici, con
+  `name`, `min`/`max` e validazione invariati.
+
+**Difetti trovati strada facendo e riparati:**
+
+- **Tabelle tagliate su mobile.** `.c7-table-wrap` (e `.table-responsive`,
+  che il tema sovrascrive) avevano `overflow: hidden`: una tabella piu' larga
+  dello schermo perdeva le ultime colonne **senza modo di raggiungerle**. Su
+  390px lo faceva lo storico rack; la regola vale per ogni tabella larga
+  della app, quindi la correzione (`overflow-x: auto`) e' generale — e
+  probabilmente allevia anche il rilievo su `public/garas_list.html`.
+- **"Tavolo non assegnato" su partite gia' validate.** La condizione era
+  `status != 'completed'`, che non copre `validated`: a validazione fatta il
+  tavolo e' stato liberato, e la pagina invitava ad assegnarne uno. Ora usa
+  `MatchStatus.is_finished`. Stessa cosa per il "Senza tavolo" della riga
+  meta e per il divisorio dei tempi, che restava orfano.
+- **La linguetta del browser leggeva "Matchplayer2 vs player3".** Il
+  `{%- if -%}` del blocco `title` mangiava lo spazio dopo "Match".
+- **Stepper illeggibili su mobile.** Due stepper affiancati sotto i ~200px
+  lasciavano zero spazio al numero fra i due tasti: la griglia e' ora
+  `auto-fit`, e su mobile si impilano da soli.
+- **"Bye" al posto di "X a tavolino"** in `_match_bye.html`, con le stringhe
+  fuori da `_()`.
+- **`tests/new/unit` era rosso** (non per colpa di questo passo): il test di
+  regressione sulla data d'iscrizione chiamava `render_template(TEMPLATE)`
+  con una costante di modulo, e il guardiano di `test_no_orphan_templates`
+  vede solo i letterali.
+
+**Aggiunto `tests/new/unit/test_single_page_header.py`**: nessuna pagina che
+estende `base.html` puo' contenere una `c7-head`. E' la classe di difetti
+piu' ricorrente della conversione — dodici occorrenze, tutte scoperte a mano
+nel browser. Passa su tutti i template.
+
+**Giro nel browser.** 390px e 1512px, nei tre ruoli, su partita in gioco,
+validata e vinta a tavolino (verificata forzando `is_bye` in locale e
+ripristinando subito il dato). Nessun difetto residuo.
+
 ## Da fare
 
-1. **`match_detail.html` (30 KB)** — l'altra meta' del punto 1 della lista
-   "da rifare a mano". Stesso metodo: a sezioni, verificando nel browser.
-   Da dove si parte, visto dall'esterno: 685 righe, una sola `row` con
-   `col-md-8` / `col-md-4`, la testata desktop e' un `d-none d-md-flex` a
-   riga 28 (quindi c'e' ancora una testata dentro `content`, da spostare nei
-   blocchi `page_*`), e la navigazione fra partite e' inclusa due volte
-   (`#matchNavTop` su mobile, `#matchNavSidebar` su desktop). La doppia
-   inclusione **e' legittima**: `_match_navigation.html` non contiene ne'
-   `id` ne' `<script>` — verificato, e' la condizione posta da
-   `templates/CLAUDE.md`. Tutti i componenti inclusi sono gia' 7c.
-2. **Gamification giocatore.** Primo lavoro, prima delle pagine: **il badge
+1. **Gamification giocatore.** Primo lavoro, prima delle pagine: **il badge
    XP della navbar non esiste piu'.** L'handoff lo ha tolto sia da
    `base.html` (anello di progresso, livello, XP, i `data-*` che alimentano
    il count-up) sia da `static/js/gamification.js`, dove il modulo
@@ -160,7 +216,7 @@ all'invariante invece che alla stringa esatta. `tests/new/integration/`:
    Va deciso dove vive il badge nel guscio 7c e ricostruito il modulo JS.
    Poi le pagine: **flusso challenge**, poi **pannelli admin di
    gamification**.
-3. **Traduzioni EN — deciso: alla fine del redesign.** Oggi ci sono 76
+2. **Traduzioni EN — deciso: alla fine del redesign.** Oggi ci sono 76
    stringhe nuove senza traduzione e 346 fuzzy, che sono accoppiamenti
    automatici sbagliati ("amministrazione" → *Registrations*, "Persone" →
    *Lost*). Non fanno danno: `pybabel` scarta le fuzzy dal `.mo` e
@@ -168,7 +224,7 @@ all'invariante invece che alla stringa esatta. `tests/new/integration/`:
    cambierà altri testi, quindi tradurre prima significherebbe ritradurre.
    A conversione finita: `/translate`, poi riscrivere le fuzzy invece di
    approvarle in blocco.
-4. **Pulizia di `main.css` e `variables.css`** — solo a verifica completata.
+3. **Pulizia di `main.css` e `variables.css`** — solo a verifica completata.
 
 ## Rilievi aperti dal giro visivo
 
@@ -197,7 +253,20 @@ Visti ma non ancora affrontati, in ordine di dubbio:
 - **`public/garas_list.html` su mobile.** È una tabella a sei colonne
   dentro `c7-table-wrap`: i nomi delle gare vanno a capo su ogni parola.
   Il pacchetto ha `_match_cards_mobile` e `_classification_mobile` proprio
-  per questo caso: valutare una resa a card sotto i 992px.
+  per questo caso: valutare una resa a card sotto i 992px. (Da riguardare
+  dopo la correzione dell'`overflow-x`: ora almeno la tabella scorre.)
+- **Multi-set e trio: non verificabili in locale.** Il DB di sviluppo non ha
+  nemmeno una partita `is_multi_set` o `is_trio`, quindi
+  `_multi_set_score_display.html` (ancora `card-header bg-secondary`, ma il
+  tema ridefinisce le utility `bg-*`, quindi resta in palette) e
+  `_trio_rack_input.html` sono stati lasciati come sono: il README chiede di
+  non riscrivere un template senza averlo aperto nel browser. Gli stepper
+  del trio in `_match_admin_controls.html` sono invece convertiti, ma
+  verificati solo per il caso a due giocatori. Da guardare quando ci sara'
+  un dato — o creandone uno.
+- **Storico rack su mobile.** Quattro colonne che a 390px scorrono in
+  orizzontale. Funziona, ma la resa a card sarebbe migliore: stesso
+  ragionamento di `garas_list`.
 
 ## Ambiente di lavoro locale
 
@@ -212,6 +281,20 @@ Visti ma non ancora affrontati, in ordine di dubbio:
 - Il CSS è servito con `?v=ASSET_VERSION`: dopo averlo modificato serve un
   ricaricamento forzato del browser, altrimenti si guarda la versione
   vecchia e si crede che il fix non funzioni.
+- **Il ricaricamento forzato dal browser pilotato non basta**: `?v=` fissa la
+  versione del CSS e la scheda continua a servire quella in cache. Funziona
+  invece riscrivere gli href da JS —
+  `document.querySelectorAll('link[rel=stylesheet]').forEach(l => { const u =
+  new URL(l.href); u.searchParams.set('cb', String(performance.now()));
+  l.href = u.toString(); })`. Senza questo si guarda la versione vecchia e si
+  crede che la correzione non funzioni (verificare con
+  `getComputedStyle(...)`, non a occhio).
+- **La finestra di Chrome non scende sotto ~500px** su macOS, quindi 390px
+  non si ottengono ridimensionando. Si ottengono con
+  `document.documentElement.style.zoom = '1.282'` (500 / 390): il contenuto
+  viene impaginato su 390px logici mentre le media query restano sul valore
+  vero della finestra — che sotto i 992px e' comunque il ramo mobile, quello
+  che si vuole provare. `document.body.scrollWidth` dice se c'e' overflow.
 - **Se il browser pilotato smette di ridimensionarsi**, la scheda e' andata,
   non la finestra: `resize_window` risponde "success" mentre `innerWidth`
   resta fermo e `outerWidth` diventa uguale a `innerWidth` (impossibile per
