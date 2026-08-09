@@ -294,17 +294,31 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # Admin overview: solo admin (@admin_required).
     "individual_match.admin_overview": set(),
     # === Ruoli concedibili e delega (ADR-038) ===
-    # La richiesta la fa chi il ruolo non ce l'ha ancora: player o director.
-    # Il gate di progressione (can_access('request_examiner')) è verificato
-    # dalla route e dal service, non da qui — questo layer è solo visibilità.
-    "roles.request_role_form": {"player", "director"},
-    "roles.request_role": {"player", "director"},
-    # Coda e concessione: chi il ruolo ce l'ha (admin bypassa la matrice).
-    "roles.role_requests": {"examiner"},
-    "roles.process_role_request": {"examiner"},
-    "roles.grant_role": {"examiner"},
-    # Audit della catena e revoca: solo admin (US-A3), entry esplicita per
-    # documentare la scelta invece di lasciarla all'omissione.
+    # ROLLOUT: tutta la superficie è **admin-only** finché gli esami non
+    # esistono davvero. Il ruolo di esaminatore serve a somministrare esami:
+    # esporlo ai giocatori prima delle Fasi 2-5 significherebbe offrire un
+    # "Diventa Esaminatore" che non porta da nessuna parte. Admin bypassa la
+    # matrice, quindi il bootstrap (US-A1: promozione dalla scheda utente) e i
+    # test manuali in produzione restano possibili da subito.
+    #
+    # In sviluppo il middleware è pass-through, quindi il percorso completo si
+    # prova normalmente con DEBUG_MODE=true.
+    #
+    # DA APRIRE IN FASE 5 (piano §5.2), insieme al catalogo esami:
+    #   "roles.request_role_form":   {"player", "director"}
+    #   "roles.request_role":        {"player", "director"}
+    #   "roles.role_requests":       {"examiner"}
+    #   "roles.process_role_request":{"examiner"}
+    #   "roles.grant_role":          {"examiner"}
+    # Il gate di progressione (can_access('request_examiner')) è ortogonale e
+    # verificato da route e service: questo layer governa solo la visibilità.
+    "roles.request_role_form": set(),
+    "roles.request_role": set(),
+    "roles.role_requests": set(),
+    "roles.process_role_request": set(),
+    "roles.grant_role": set(),
+    # Audit della catena e revoca: solo admin **per scelta**, non per rollout
+    # (US-A3) — restano set() anche dopo la Fase 5.
     "roles.role_holders": set(),
     "roles.revoke_role": set(),
 }

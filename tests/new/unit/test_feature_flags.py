@@ -297,29 +297,52 @@ def test_user_roles_is_a_set_not_a_single_role(app, production_mode):
         assert _user_roles(director_examiner) == {"director", "examiner"}
 
 
-def test_examiner_not_degraded_to_player(app, production_mode):
-    """L'esaminatore vede la coda dei ruoli; un player normale no."""
+def test_examiner_not_degraded_to_player(app, production_mode, monkeypatch):
+    """Un endpoint dichiarato {"examiner"} è visibile a un esaminatore che NON
+    è director, e invisibile a un player qualunque.
+
+    Il test monkeypatcha la matrice invece di leggerla: quello che va protetto
+    dalla regressione è la **semantica a intersezione** del motore, non lo
+    stato del rollout (oggi la superficie /roles è ancora admin-only, vedi
+    ``test_role_endpoints_are_dark_until_phase_5``).
+    """
     with app.app_context():
+        monkeypatch.setitem(ENDPOINT_ROLES, "roles.role_requests", {"examiner"})
+
         player = FakeUser(is_authenticated=True, is_player=True)
         examiner = FakeUser(is_authenticated=True, is_player=True, is_examiner=True)
 
-        for endpoint in ("roles.role_requests", "roles.process_role_request"):
-            assert is_endpoint_visible(endpoint, player) is False, endpoint
-            assert is_endpoint_visible(endpoint, examiner) is True, endpoint
+        assert is_endpoint_visible("roles.role_requests", player) is False
+        assert is_endpoint_visible("roles.role_requests", examiner) is True
 
         # E non perde per strada gli endpoint del suo ruolo primario.
         assert is_endpoint_visible("dashboard.dashboard", examiner) is True
         assert is_endpoint_visible("player.profile", examiner) is True
 
 
-def test_role_audit_endpoints_are_admin_only(app, production_mode):
-    """US-A3: la catena delle deleghe e la revoca restano ad admin."""
+def test_role_endpoints_are_dark_until_phase_5(app, production_mode):
+    """ROLLOUT: la superficie /roles è admin-only finché gli esami non esistono.
+
+    Il ruolo di esaminatore serve a somministrare esami: esporlo prima delle
+    Fasi 2-5 offrirebbe ai giocatori un percorso che non porta da nessuna
+    parte. Admin bypassa la matrice, quindi il bootstrap resta possibile.
+
+    Quando la Fase 5 accende il catalogo esami, questo test va aggiornato
+    insieme alle entry di ``ENDPOINT_ROLES``.
+    """
     with app.app_context():
+        anon = FakeUser()
+        player = FakeUser(is_authenticated=True, is_player=True)
+        director = FakeUser(is_authenticated=True, is_director=True)
         examiner = FakeUser(is_authenticated=True, is_player=True, is_examiner=True)
         admin = FakeUser(is_authenticated=True, is_admin=True)
 
-        for endpoint in ("roles.role_holders", "roles.revoke_role"):
-            assert is_endpoint_visible(endpoint, examiner) is False, endpoint
+        role_endpoints = [ep for ep in ENDPOINT_ROLES if ep.startswith("roles.")]
+        assert role_endpoints, "le entry roles.* devono essere dichiarate"
+
+        for endpoint in role_endpoints:
+            for viewer in (anon, player, director, examiner):
+                assert is_endpoint_visible(endpoint, viewer) is False, endpoint
             assert is_endpoint_visible(endpoint, admin) is True, endpoint
 
 
