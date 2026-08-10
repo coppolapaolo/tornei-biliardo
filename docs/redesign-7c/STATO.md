@@ -303,6 +303,42 @@ la device toolbar**: viewport e media query erano quelle della finestra a
 500px, cioe' comunque il ramo mobile, e `document.body.scrollWidth` dice 390
 senza sbordamenti. La resa vera su 390px va confermata col device mode.
 
+**Badge di livello ricostruito** — primo pezzo del punto 1 di "Da fare". Era
+sparito nell'handoff sia da `base.html` sia da `static/js/gamification.js`, e
+con esso **la scala d'intensita' §11**: senza il badge il dispatcher era stato
+riscritto "un toast per ogni evento", quindi ogni guadagno di XP apriva un
+toast — esattamente il contrario di quello che la scala prescrive (XP =
+badge, niente toast) — e il **cap anti-invasivita'** (al piu' un toast
+celebrativo per sessione, con il level-up esente) non c'era piu'.
+
+- **Dove vive**: nella testata del guscio, prima dell'avatar. E' la pill scura
+  con trofeo e "Lv N" della schermata 13b — 34px su mobile, 40 da 576px, dove
+  compare anche l'XP. Non sulla home, come nel prototipo, perche' gli XP si
+  guadagnano in partita e in gara: se il badge non e' visibile la', un
+  guadagno di XP non ha alcun riscontro (per scelta non fa toast). Su desktop
+  il livello resta anche nella barra laterale, come testo — quello e' il posto
+  che gli da' il prototipo, e li' non serve che sia vivo.
+- **Una sola istanza per pagina**: il modulo JS cerca per `id`. Metterlo anche
+  nella barra laterale avrebbe duplicato gli id.
+- **Colori riportati in palette**: l'anello e l'alone del level-up erano ambra
+  e oro (`#f59e0b`, `rgba(251,191,36)`), colori che in 7c non esistono — il
+  giallo e' il semantico "attenzione". Ora sono `--c7-accent-bright`, lo stesso
+  azzurro dell'anello che si e' appena chiuso. Il "buco" dell'anello combaciava
+  con `--bs-light` di Bootstrap: ora col fondo accento della pill.
+- **Conseguenza sulla testata della gara**: il sottotitolo aveva quattro voci
+  (data · disciplina · distanza · sala) e con il badge andava a **tre righe** su
+  390px. Ora e' quello del prototipo (8a) — **sala · distanza** — e data e
+  disciplina restano da 992px in su. La disciplina della gara e' comunque solo
+  il default: quella vera e' del turno, e ogni turno la scrive da se'.
+
+**La suite e' tutta verde per la prima volta da inizio redesign**: 1520 unit,
+550 integrazione (il rosso "voluto" era il promemoria del badge) e i **26
+controlli headless** di `tests/frontend`, che non partivano nemmeno — morivano
+all'import su `GamificationBadge is not defined`.
+
+Verificato anche a mano: un evento `xp` fa pulse e count-up **senza toast**, un
+`levelup` aggiorna il numero, accende l'alone e apre **un solo** toast.
+
 ## Disallineamenti fra prototipo e codice
 
 Rilevati confrontando le schermate del prototipo con l'app in esecuzione.
@@ -347,18 +383,16 @@ Quelli sopra sono chiusi; questi no.
 
 ## Da fare
 
-1. **Gamification giocatore.** Primo lavoro, prima delle pagine: **il badge
-   XP della navbar non esiste piu'.** L'handoff lo ha tolto sia da
-   `base.html` (anello di progresso, livello, XP, i `data-*` che alimentano
-   il count-up) sia da `static/js/gamification.js`, dove il modulo
-   `GamificationBadge` e' sparito. Conseguenze verificate: il test
-   `tests/new/integration/gamification/test_navbar_badge_render.py` e'
-   **rosso di proposito** (unico rosso rimasto: e' il promemoria), e la
-   suite headless `tests/frontend` (26 controlli su §11/§11-quater) non
-   parte nemmeno — muore all'import su `GamificationBadge is not defined`.
-   Va deciso dove vive il badge nel guscio 7c e ricostruito il modulo JS.
-   Poi le pagine: **flusso challenge**, poi **pannelli admin di
-   gamification**.
+1. **Gamification giocatore.** ~~Il badge XP della navbar non esiste piu'.~~
+   **Badge fatto** (vedi "Fatto"). Restano le **pagine**:
+   `gamification/dashboard.html`, `achievements.html`, `quests.html`,
+   `streaks.html` — sono al punto 2 della lista "da rifare a mano" del README,
+   contengono `<style>` inline con gradienti da togliere, e il prototipo le
+   copre nella **#11a** (barra XP piena larghezza in card scura, achievement
+   come elenco con gli stati bloccati spenti, streak con traguardi a 4/12/52
+   settimane, quest con progresso e scadenza). Poi il **flusso challenge**
+   — ma solo dopo il merge del branch parallelo — e per ultimi i **pannelli
+   admin di gamification**.
 2. **Traduzioni EN — deciso: alla fine del redesign.** Oggi ci sono 76
    stringhe nuove senza traduzione e 346 fuzzy, che sono accoppiamenti
    automatici sbagliati ("amministrazione" → *Registrations*, "Persone" →
@@ -444,6 +478,19 @@ Visti ma non ancora affrontati, in ordine di dubbio:
   l.href = u.toString(); })`. Senza questo si guarda la versione vecchia e si
   crede che la correzione non funzioni (verificare con
   `getComputedStyle(...)`, non a occhio).
+- **Aprire i DevTools stringe il viewport, e questo dalla sessione pilotata
+  funziona** (verificato il 2026-08-10, suggerimento dell'utente): il tasto
+  `alt+cmd+i` inviato alla pagina apre davvero i DevTools, che agganciati a
+  destra portano `innerWidth` a **357px** — piu' stretto dei 390 che si
+  volevano provare, con media query **vere** (non il ripiego dello `zoom`, che
+  le lascia al valore della finestra). E' il modo migliore per verificare il
+  mobile senza chiedere aiuto.
+  Quello che **non** si ottiene cosi' e' `pointer: coarse`: `cmd+shift+m` per
+  la device toolbar non scatta, perche' la scorciatoia vuole il focus dentro i
+  DevTools e il tasto arriva alla pagina. Per i componenti dietro il touch
+  (il tabellone orizzontale) serve ancora la mano dell'utente — oppure si
+  forza a runtime la regola senza la condizione, che mostra la resa ma non
+  prova l'innesco.
 - **Il mobile si guarda con i DevTools di Chrome** (device toolbar,
   cmd+shift+M): e' l'unico modo in cui viewport, media query e touch sono
   davvero quelli di un telefono. Ridimensionare la finestra non basta —

@@ -34,14 +34,19 @@
 {%- endif -%}
 {%- endmacro %}
 
-{# Sottotitolo: data, disciplina, distanza, sala. #}
+{# Sottotitolo. Su mobile e' quello del prototipo (8a): **sala e distanza**,
+   dove e a quanto si gioca. Le quattro voci di prima mandavano la testata
+   sticky a tre righe su 390px, perche' ospita anche freccia, badge di livello
+   e avatar. Data e disciplina restano sul desktop, dove c'e' spazio: la
+   disciplina della gara e' comunque solo il default, quella vera e' del turno
+   e ogni turno la scrive da se'. #}
 {% macro sub(gara) -%}
-<span class="c7-num">{{ gara.date|date_local }}</span>
-<span class="c7-sep">·</span> {{ gara.discipline|discipline_display }}
-<span class="c7-sep">·</span> {{ gara.distance_config|format_distance }}
-{%- if gara.location %}
-<span class="c7-sep">·</span> {{ gara.location }}
-{%- endif -%}
+{%- if gara.location %}{{ gara.location }} <span class="c7-sep">·</span> {% endif -%}
+{{ gara.distance_config|format_distance }}
+<span class="d-none d-lg-inline">
+  <span class="c7-sep">·</span> {{ gara.discipline|discipline_display }}
+  <span class="c7-sep">·</span> <span class="c7-num">{{ gara.date|date_local }}</span>
+</span>
 {%- endmacro %}
 
 {# Modifica gara: e' l'unico ingresso alla pagina di modifica, quindi

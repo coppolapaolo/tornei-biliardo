@@ -294,6 +294,32 @@
                 </div>
                 {% block page_actions %}{% endblock %}
 
+                {# Badge di livello (§11-quater). I guadagni XP per scelta non
+                   producono toast: questo e' il loro unico riscontro, quindi
+                   deve stare dove l'XP si guadagna — partita, gara — non solo
+                   sulla home. Forma: la pill scura con trofeo e "Lv N" della
+                   13b; l'XP compare da 576px, dove c'e' spazio.
+                   **Una sola istanza per pagina**: il modulo JS la cerca per
+                   id, e su desktop il livello e' anche nella barra laterale
+                   (testo, non elemento vivo). #}
+                {% if current_user.is_authenticated and not current_user.is_admin
+                and gamification_context and gamification_context.progress
+                and feature_visible('gamification.dashboard') %}
+                {% set gami = gamification_context.progress %}
+                <a href="{{ url_for('gamification.dashboard') }}" id="gami-badge" class="gami-badge"
+                   title="{{ _('Livello') }} {{ gami.current_level }} — {{ gami.current_xp }}/{{ gami.xp_for_next_level }} XP"
+                   data-level="{{ gami.current_level }}"
+                   data-current-xp="{{ gami.current_xp }}"
+                   data-xp-next="{{ gami.xp_for_next_level }}"
+                   data-progress="{{ gami.progress_percentage }}">
+                    <span class="gami-badge-ring" style="--gami-progress: {{ gami.progress_percentage }}">
+                        <i class="fas fa-trophy"></i>
+                    </span>
+                    <span class="gami-badge__level">{{ _('Lv') }} <span id="gami-badge-level">{{ gami.current_level }}</span></span>
+                    <span class="gami-badge__xp"><span id="gami-badge-xp">{{ gami.current_xp }}</span> XP</span>
+                </a>
+                {% endif %}
+
                 {% if current_user.is_authenticated %}
                 <div class="dropdown d-lg-none">
                     <a href="#" class="c7-avatar c7-avatar--lg" role="button" data-bs-toggle="dropdown" aria-expanded="false">
