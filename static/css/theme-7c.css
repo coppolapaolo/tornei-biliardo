@@ -828,9 +828,14 @@ input[type="number"].form-control {
   display: grid; grid-template-columns: 1fr auto 1fr; align-items: start; gap: 12px;
 }
 .c7-score__side { display: flex; flex-direction: column; align-items: center; }
+/* Manrope, non mono: nel prototipo la cifra del punteggio e' un titolo, non
+   un dato tabellare — il mono resta ai numeri di servizio (quote, XP, orari,
+   conteggi), che infatti nel prototipo sono in JetBrains Mono fino a 32px.
+   `tabular-nums` tiene comunque ferma la larghezza quando il punteggio
+   cambia sotto gli occhi. */
 .c7-score__num {
-  font-family: var(--c7-font-mono);
-  font-size: 68px; font-weight: 800; letter-spacing: -.06em; line-height: 1;
+  font-family: var(--c7-font);
+  font-size: 76px; font-weight: 800; letter-spacing: -.06em; line-height: 1;
   font-variant-numeric: tabular-nums;
 }
 /* Chi insegue e' grigio: la differenza si legge prima del numero. */
@@ -841,7 +846,7 @@ input[type="number"].form-control {
 .c7-score__foot { margin-top: 18px; font-size: 13px; font-weight: 600; color: var(--c7-ink-muted); }
 
 @media (max-width: 380px) {
-  .c7-score__num { font-size: 54px; }
+  .c7-score__num { font-size: 60px; }
 }
 
 /* Comandi del rack: due bersagli grossi, uno per giocatore. */
@@ -884,11 +889,12 @@ input[type="number"].form-control {
 .c7-racklist__n {
   width: 26px; height: 26px; border-radius: 50%; background: var(--c7-bg);
   display: grid; place-items: center;
-  font-family: var(--c7-font-mono); font-size: 11px; font-weight: 800; color: var(--c7-ink-muted);
+  font-size: 11px; font-weight: 800; color: var(--c7-ink-muted);
   flex-shrink: 0;
 }
 .c7-racklist__who { flex: 1; font-size: 14px; font-weight: 700; min-width: 0; }
-.c7-racklist__score { font-family: var(--c7-font-mono); font-size: 13px; font-weight: 700; color: var(--c7-ink-muted); }
+/* Anche qui Manrope: nel prototipo la lista dei rack e' testo, non tabella. */
+.c7-racklist__score { font-size: 13px; font-weight: 700; color: var(--c7-ink-muted); font-variant-numeric: tabular-nums; }
 .c7-racklist__row--deleted .c7-racklist__who { text-decoration: line-through; color: var(--c7-ink-faint); }
 
 /* --------------------------------------------------------------------------
@@ -953,7 +959,7 @@ input[type="number"].form-control {
 }
 .c7-board__name--behind { color: var(--c7-accent-dim); }
 .c7-board__num {
-  font-family: var(--c7-font-mono);
+  font-family: var(--c7-font);
   font-size: clamp(72px, 22vh, 116px); font-weight: 800; letter-spacing: -.07em; line-height: .9;
   font-variant-numeric: tabular-nums;
 }
