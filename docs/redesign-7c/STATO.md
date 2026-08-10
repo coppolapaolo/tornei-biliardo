@@ -472,9 +472,27 @@ dietro un effetto collaterale**: la gamification e' agganciata alla creazione,
 quindi `pa` ha guadagnato achievement e due livelli. La proposta e' rimasta
 apposta: serve anche ai prossimi passi. `/reset` la porta via.
 
-**Restano 7 file** (2014 righe): `create_proposal` (489), `match_detail` (412),
-`statistics` (345), `proposal_detail` (224), `discover_players` (206),
-`admin_overview` (199), `availability` (139). Il
+**`individual_match/match_detail.html`**: il **guscio**. Il segnapunti, lo
+storico rack e il punteggio erano gia' 7c (sono gli stessi componenti
+`_unified_*` della pagina di gara), quindi il lavoro e' stato solo intorno:
+testata dai blocchi (`pa vs pb`, disciplina · sala) invece di briciola di pane
+piu' card che ripeteva disciplina, luogo e stato; `c7-cols` invece di
+`row`/`col-md-8`; stati **tradotti** (erano `status.value.replace('_',' ')
+.title()`, cioe' "In Progress"); il ritorno non e' piu' un pulsante fra le
+azioni, perche' vive nella testata come in ogni altra pagina 7c. Tolto anche
+qui il blocco **"Entry Fee"**, campo che sul modello non esiste.
+Difetto mio, corretto subito: la prima stesura metteva una pastiglia di stato
+sopra il punteggio, e `_unified_match_score` ne disegna gia' una — lo stato si
+leggeva due volte.
+
+**Restano 6 file** (1602 righe): `create_proposal` (489), `statistics` (345),
+`proposal_detail` (224), `discover_players` (206), `admin_overview` (199),
+`availability` (139). **Il prossimo da fare e' `create_proposal`**: e' il piu'
+grande e il prototipo lo copre bene (#9a·2 — date come opzioni selezionabili
+con `c7-choice`, sala, messaggio, barra d'azione appiccicata in fondo).
+`availability` ha la sua schermata nella #9a·3 (calendario del mese).
+`proposal_detail` ha ancora il blocco "Entry Fee" da togliere (due
+occorrenze). Il
 prototipo copre la proposta di date (#9a·2, opzioni selezionabili con
 `c7-choice`) e le disponibilita' (#9a·3, calendario del mese).
 **Attenzione ai dati**: in locale c'e' **una** partita individuale e **zero**
