@@ -1,296 +1,230 @@
 {% extends "base.html" %}
+{% import "components/_gamification_labels.html" as gami with context %}
 {% block title %}{{ page_title }} - Campionato Biliardo{% endblock %}
 
+{# Testata: una sola per pagina, quella del guscio. #}
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('dashboard.dashboard') }}"
+   aria-label="{{ _('Torna alla dashboard') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _('I tuoi progressi') }}{% endblock %}
+
 {% block content %}
-<div class="container py-4">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1 class="mb-0"><i class="fas fa-star me-2"></i>{{ page_title }}</h1>
-            <p class="text-muted">{{ _('Monitora i tuoi progressi e obiettivi') }}</p>
+{# Prototipo 11a, prima schermata. Le variabili sono quelle di prima
+   (progress, streaks, locked_features, recent_achievements, active_quests):
+   cambia la resa, non i dati. #}
+<div class="c7-stack c7-sections">
+
+  {# ---------- Livello e XP: l'unica card scura della pagina ---------- #}
+  <section class="c7-card c7-card--accent" style="border-radius: var(--c7-r-card-lg); padding: var(--c7-pad-card-lg)">
+    <div class="d-flex align-items-center gap-3">
+      {# Il livello e' la cifra protagonista: Manrope, non mono. #}
+      <div style="width:56px;height:56px;border-radius:var(--c7-r-field);background:rgba(242,248,247,.14);
+                  display:grid;place-items:center;font-size:24px;font-weight:800;letter-spacing:-.04em">
+        {{ progress.current_level }}
+      </div>
+      <div class="flex-fill">
+        <div class="c7-kicker">{{ _('Livello') }}</div>
+        <div style="margin-top:4px;font-size:15px;font-weight:700">
+          <span class="c7-num">{{ progress.total_xp }}</span> {{ _('XP totali') }}
         </div>
+      </div>
     </div>
 
-    <!-- Level Progress Card -->
-    <div class="row mb-4">
-        <div class="col-lg-6">
-            <div class="card h-100 border-primary">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="fas fa-star me-2"></i>{{ _('Livello e XP') }}</h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="level-badge me-3">{{ progress.current_level }}</div>
-                        <div>
-                            <div class="h6 mb-0">{{ _('Livello') }}</div>
-                            <small class="text-muted">
-                                <span class="xp-counter" data-xp="{{ progress.total_xp }}">{{ progress.total_xp
-                                    }}</span> XP totali
-                            </small>
-                        </div>
-                    </div>
+    {# La barra era `style="width: 0%"` con l'animazione affidata a un JS che
+       non esiste: restava vuota per sempre, a qualunque livello. Ora la
+       larghezza la scrive il server. #}
+    <div class="progress progress--lg" style="margin-top:18px" role="progressbar"
+         aria-valuenow="{{ progress.progress_percentage|round|int }}" aria-valuemin="0" aria-valuemax="100">
+      <div class="progress-bar" style="width: {{ progress.progress_percentage }}%"></div>
+    </div>
+    <div class="d-flex justify-content-between" style="margin-top:10px;font-size:12px;font-weight:700;color:var(--c7-accent-dim)">
+      <span><span class="c7-num">{{ progress.current_xp }} / {{ progress.xp_for_next_level }}</span> XP</span>
+      <span>{{ progress.progress_percentage|round|int }}% {{ _('al livello') }} {{ progress.current_level + 1 }}</span>
+    </div>
+  </section>
 
-                    <!-- XP Progress Bar with Animation -->
-                    <div class="mb-2">
-                        <div class="d-flex justify-content-between mb-1">
-                            <small>{{ progress.current_xp }} / {{ progress.xp_for_next_level }} XP</small>
-                            <small>{{ progress.progress_percentage|round(1) }}%</small>
-                        </div>
-                        <div class="xp-progress-bar">
-                            <div class="xp-progress-fill" data-percentage="{{ progress.progress_percentage }}"
-                                style="width: 0%;">
-                            </div>
-                        </div>
-                    </div>
-
-                    {# NOTE: next_unlock removed - old level-only system replaced by ABAC #}
-                    {# Features now unlock based on multiple conditions (level + activity) #}
-                </div>
-                <div class="card-footer bg-light">
-                    <a href="{{ url_for('gamification.leaderboards') }}" class="btn btn-sm btn-outline-primary">
-                        <i class="fas fa-trophy me-1"></i>{{ _('Vedi Classifiche') }}
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Streaks Card -->
-        <div class="col-lg-6">
-            <div class="card h-100 border-warning">
-                <div class="card-header bg-warning text-dark">
-                    <h5 class="mb-0"><i class="fas fa-fire me-2"></i>{{ _('Streak Settimanali') }}</h5>
-                </div>
-                <div class="card-body">
-                    {% if streaks %}
-                    {% for streak_type, streak_info in streaks.items() %}
-                    <div
-                        class="d-flex justify-content-between align-items-center {% if not loop.last %}mb-3 pb-3 border-bottom{% endif %}">
-                        <div>
-                            <strong>
-                                {% if streak_type == 'weekly_activity' %}
-                                <i class="fas fa-calendar-check text-warning me-1"></i>{{ _('Attività Settimanale') }}
-                                {% elif streak_type == 'weekly_match' %}
-                                <i class="fas fa-shield-halved me-1 text-info"></i>{{ _('Partite Settimanali') }}
-                                {% elif streak_type == 'weekly_tournament' %}
-                                <i class="fas fa-trophy text-success me-1"></i>{{ _('Tornei Settimanali') }}
-                                {% elif streak_type == 'weekly_drill' %}
-                                <i class="fas fa-bullseye text-danger me-1"></i>{{ _('Challenge Settimanali') }}
-                                {% else %}
-                                {{ streak_type }}
-                                {% endif %}
-                            </strong>
-                            <br>
-                            <small class="text-muted">{{ _('Record') }}: {{ ngettext('%(num)d settimana',
-                                '%(num)d settimane', streak_info.longest_streak,
-                                num=streak_info.longest_streak) }}</small>
-                        </div>
-                        <div class="text-end">
-                            <span class="streak-fire {% if streak_info.current_streak >= 5 %}hot{% endif %}">🔥</span>
-                            <span class="badge bg-warning text-dark fs-5">{{ streak_info.current_streak }}</span>
-                            <br>
-                            <small class="text-muted">{{ ngettext('settimana', 'settimane',
-                                streak_info.current_streak) }}</small>
-                        </div>
-                    </div>
-                    {% endfor %}
-                    {% else %}
-                    <div class="text-center text-muted py-3">
-                        <i class="fas fa-fire-alt fa-2x mb-2"></i>
-                        <p class="mb-0">{{ _('Inizia a giocare per costruire le tue streak!') }}</p>
-                    </div>
-                    {% endif %}
-                </div>
-                <div class="card-footer bg-light">
-                    <a href="{{ url_for('gamification.streaks') }}" class="btn btn-sm btn-outline-warning">
-                        <i class="fas fa-fire me-1"></i>{{ _('Dettagli Streak') }}
-                    </a>
-                </div>
-            </div>
-        </div>
+  {# ---------- Streak settimanali ---------- #}
+  <section class="c7-stack">
+    <div class="c7-sechead">
+      <h2>{{ _('Streak settimanali') }}</h2>
+      <a class="c7-sechead__more" href="{{ url_for('gamification.streaks') }}">{{ _('Dettagli') }}</a>
     </div>
 
-    <!-- Locked Features Progress - What's Next -->
-    {% if locked_features %}
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card border-secondary">
-                <div class="card-header bg-secondary text-white">
-                    <h5 class="mb-0"><i class="fas fa-key me-2"></i>{{ _('Prossimi Sblocchi') }}</h5>
-                </div>
-                <div class="card-body">
-                    <p class="text-muted small mb-3">{{ _('Completa queste attività per sbloccare nuove funzionalità') }}</p>
-                    <div class="row g-3">
-                        {% for feature in locked_features[:4] %}
-                        <div class="col-md-6 col-lg-3">
-                            <div class="card h-100 border-warning">
-                                <div class="card-body">
-                                    <div class="d-flex align-items-center mb-2">
-                                        <i class="fas fa-lock text-warning me-2"></i>
-                                        <h6 class="card-title mb-0">{{ feature.feature_name }}</h6>
-                                    </div>
-                                    {% if feature.description %}
-                                    <p class="card-text small text-muted mb-2">{{ feature.description|truncate(60) }}</p>
-                                    {% endif %}
-
-                                    {# Show conditions progress #}
-                                    {% for rule_set in feature.rule_sets %}
-                                    {% if not loop.first %}<hr class="my-2">{% endif %}
-                                    <ul class="list-unstyled small mb-0">
-                                        {% for cond in rule_set.conditions %}
-                                        <li class="mb-1">
-                                            {% if cond.is_met %}
-                                            <i class="fas fa-check-circle text-success me-1"></i>
-                                            {% else %}
-                                            <i class="fas fa-circle text-warning me-1"></i>
-                                            {% endif %}
-                                            {{ cond.description }}
-                                            {% if cond.current_value is defined and cond.required_value is defined %}
-                                            <span class="text-muted">({{ cond.current_value }}/{{ cond.required_value }})</span>
-                                            {% endif %}
-                                        </li>
-                                        {% endfor %}
-                                    </ul>
-                                    {% endfor %}
-
-                                    {# Show next action hint #}
-                                    {% if feature.next_action %}
-                                    <div class="mt-2 pt-2 border-top">
-                                        <small class="text-primary">
-                                            <i class="fas fa-arrow-right me-1"></i>{{ feature.next_action }}
-                                        </small>
-                                    </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% if locked_features|length > 4 %}
-                    <div class="text-center mt-3">
-                        <small class="text-muted">
-                            {{ _('e altre') }} {{ locked_features|length - 4 }} {{ _('funzionalità da sbloccare') }}
-                        </small>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
+    {% if streaks %}
+    <div class="c7-rows">
+      {% for streak_type, streak_info in streaks.items() %}
+      {% set is_live = streak_info.current_streak > 0 %}
+      <div class="c7-rows__row">
+        {# Un'icona sola, accesa se la streak e' viva. Il fuoco era un'emoji
+           con drop-shadow: in 7c e' un'icona in palette. #}
+        <i class="fas fa-fire" style="font-size:15px;color:{{ 'var(--c7-err)' if is_live else 'var(--c7-ink-faint)' }}"></i>
+        <div class="c7-rows__main">
+          <div class="c7-rows__title">{{ gami.streak_labels.get(streak_type, streak_type) }}</div>
+          <div class="c7-rows__sub">
+            {{ _('Record') }} {{ ngettext('%(num)d settimana', '%(num)d settimane',
+                streak_info.longest_streak, num=streak_info.longest_streak) }}
+          </div>
         </div>
+        <span style="font-size:20px;font-weight:800;letter-spacing:-.03em;{{ '' if is_live else 'color:var(--c7-ink-muted)' }}">
+          {{ streak_info.current_streak }}
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="c7-empty">
+      <div class="c7-empty__ico"><i class="fas fa-fire"></i></div>
+      <div class="c7-empty__title">{{ _('Nessuna streak ancora') }}</div>
+      <p class="c7-empty__text">{{ _('Gioca una partita a settimana e la streak comincia a salire.') }}</p>
     </div>
     {% endif %}
+  </section>
 
-    <!-- Recent Achievements -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card border-success">
-                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="fas fa-medal me-2"></i>{{ _('Achievement Recenti') }}</h5>
-                    <a href="{{ url_for('gamification.achievements') }}" class="btn btn-sm btn-light">
-                        {{ _('Vedi Tutti') }} <i class="fas fa-arrow-right ms-1"></i>
-                    </a>
-                </div>
-                <div class="card-body">
-                    {% if recent_achievements %}
-                    <div class="row g-3">
-                        {% for ua in recent_achievements %}
-                        <div class="col-md-4 col-lg-2">
-                            <div
-                                class="card h-100 text-center {% if ua.is_unlocked %}bg-light{% else %}bg-secondary bg-opacity-10{% endif %}">
-                                <div class="card-body py-3">
-                                    {% set achievement = ua.achievement %}
-                                    <div class="mb-2">
-                                        {% if achievement.icon_path %}
-                                        <img src="{{ achievement.icon_path }}" alt=""
-                                            style="width: 48px; height: 48px;">
-                                        {% else %}
-                                        <i class="fas fa-trophy fa-2x text-warning"></i>
-                                        {% endif %}
-                                    </div>
-                                    <h6 class="card-title mb-1">{{ achievement.name }}</h6>
-                                    <small class="text-muted">
-                                        {% if ua.unlocked_at %}
-                                        {{ ua.unlocked_at|datetime_local }}
-                                        {% endif %}
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% else %}
-                    <div class="text-center text-muted py-4">
-                        <i class="fas fa-medal fa-2x mb-2"></i>
-                        <p class="mb-0">{{ _('Nessun achievement sbloccato ancora. Continua a giocare!') }}</p>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
+  {# ---------- Prossimi sblocchi ---------- #}
+  {% if locked_features %}
+  <section class="c7-stack">
+    <div>
+      <div class="c7-sechead"><h2>{{ _('Prossimi sblocchi') }}</h2></div>
+      <div class="c7-sechead__sub">{{ _('Completa queste attività per sbloccare nuove funzionalità') }}</div>
     </div>
 
-    <!-- Active Quests -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card border-info">
-                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="fas fa-tasks me-2"></i>{{ _('Quest Attive') }}</h5>
-                    <a href="{{ url_for('gamification.quests') }}" class="btn btn-sm btn-light">
-                        {{ _('Vedi Tutte') }} <i class="fas fa-arrow-right ms-1"></i>
-                    </a>
-                </div>
-                <div class="card-body">
-                    {% if active_quests %}
-                    <div class="row g-3">
-                        {% for quest_info in active_quests[:3] %}
-                        {% set quest = quest_info.quest %}
-                        <div class="col-md-4">
-                            <div class="card h-100">
-                                <div class="card-body">
-                                    <h6 class="card-title">
-                                        {% if quest.quest_type.value == 'weekly' %}
-                                        <span class="badge bg-info me-1">{{ _('Settimanale') }}</span>
-                                        {% elif quest.quest_type.value == 'monthly' %}
-                                        <span class="badge bg-primary me-1">{{ _('Mensile') }}</span>
-                                        {% else %}
-                                        <span class="badge bg-warning me-1">{{ _('Speciale') }}</span>
-                                        {% endif %}
-                                        {{ _(quest.name) }}
-                                    </h6>
-                                    <p class="card-text small text-muted">{{ _(quest.description)|truncate(80) }}</p>
-
-                                    {% if quest_info.is_participating %}
-                                    <div class="progress mb-2" style="height: 8px;">
-                                        <div class="progress-bar bg-info" role="progressbar"
-                                            style="width: {{ quest_info.progress_percentage }}%">
-                                        </div>
-                                    </div>
-                                    <small class="text-muted">
-                                        {{ quest_info.progress_percentage|round(1) }}% {{ _('completato') }}
-                                    </small>
-                                    {% else %}
-                                    <small class="text-muted">
-                                        <i class="fas fa-plus-circle me-1"></i>{{ _('Non ancora iscritto') }}
-                                    </small>
-                                    {% endif %}
-                                </div>
-                                <div class="card-footer bg-light">
-                                    <small>
-                                        <i class="fas fa-gift text-success me-1"></i>
-                                        +{{ quest.xp_reward }} XP
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% else %}
-                    <div class="text-center text-muted py-4">
-                        <i class="fas fa-tasks fa-2x mb-2"></i>
-                        <p class="mb-0">{{ _('Nessuna quest attiva al momento.') }}</p>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
+    <div class="c7-grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">
+      {% for feature in locked_features[:4] %}
+      <div class="c7-card">
+        <div class="d-flex align-items-center gap-2">
+          <i class="fas fa-lock" style="font-size:13px;color:var(--c7-ink-muted)"></i>
+          <strong style="font-size:15px;font-weight:800;letter-spacing:-.02em">{{ feature.feature_name }}</strong>
         </div>
+
+        {% if feature.description %}
+        <p style="margin:8px 0 0;font-size:12px;font-weight:600;line-height:1.45;color:var(--c7-ink-muted)">
+          {{ feature.description|truncate(80) }}
+        </p>
+        {% endif %}
+
+        {# Condizioni: quelle fatte con la spunta verde, le altre col cerchio
+           vuoto. Nessuna barra: sono elenchi corti. #}
+        {% for rule_set in feature.rule_sets %}
+        {% if not loop.first %}<hr class="c7-divider">{% endif %}
+        <div class="c7-stack" style="margin-top:12px;gap:8px">
+          {% for cond in rule_set.conditions %}
+          <div class="d-flex align-items-center gap-2" style="font-size:13px;font-weight:600;color:var(--c7-ink-soft)">
+            {% if cond.is_met %}
+            <i class="fas fa-circle-check" style="font-size:13px;color:var(--c7-ok)"></i>
+            {% else %}
+            <i class="far fa-circle" style="font-size:13px;color:var(--c7-ink-faint)"></i>
+            {% endif %}
+            <span class="flex-fill">{{ cond.description }}</span>
+            {% if cond.current_value is defined and cond.required_value is defined %}
+            <span class="c7-num" style="color:var(--c7-ink-muted)">{{ cond.current_value }}/{{ cond.required_value }}</span>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        {% endfor %}
+
+        {% if feature.next_action %}
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--c7-line-soft);
+                    font-size:12px;font-weight:700;color:var(--c7-accent)">
+          {{ feature.next_action }}
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
     </div>
+
+    {% if locked_features|length > 4 %}
+    <div style="text-align:center;font-size:12px;font-weight:700;color:var(--c7-ink-faint)">
+      {{ ngettext('e un\'altra funzionalità da sbloccare', 'e altre %(num)d funzionalità da sbloccare',
+          locked_features|length - 4, num=locked_features|length - 4) }}
+    </div>
+    {% endif %}
+  </section>
+  {% endif %}
+
+  {# ---------- Achievement recenti ---------- #}
+  <section class="c7-stack">
+    <div class="c7-sechead">
+      <h2>{{ _('Achievement recenti') }}</h2>
+      <a class="c7-sechead__more" href="{{ url_for('gamification.achievements') }}">{{ _('Tutti') }}</a>
+    </div>
+
+    {% if recent_achievements %}
+    <div class="c7-grid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr))">
+      {% for ua in recent_achievements %}
+      {% set achievement = ua.achievement %}
+      <div class="c7-card">
+        {% if achievement.icon_path %}
+        <img src="{{ achievement.icon_path }}" alt="" width="40" height="40" style="border-radius:var(--c7-r-chip)">
+        {% else %}
+        <div class="c7-tile c7-tile--sm"><i class="fas fa-trophy"></i></div>
+        {% endif %}
+        <div style="margin-top:12px;font-size:14px;font-weight:800">{{ achievement.name }}</div>
+        <div class="c7-rows__sub">
+          {%- if ua.unlocked_at %}{{ ua.unlocked_at|date_local }}{% endif %}
+          {%- if achievement.xp_reward %} <span class="c7-sep">·</span> <span class="c7-num">+{{ achievement.xp_reward }}</span> XP{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="c7-empty">
+      <div class="c7-empty__ico"><i class="fas fa-medal"></i></div>
+      <div class="c7-empty__title">{{ _('Nessun achievement ancora') }}</div>
+      <p class="c7-empty__text">{{ _('Il primo arriva presto: basta giocare.') }}</p>
+    </div>
+    {% endif %}
+  </section>
+
+  {# ---------- Quest attive ---------- #}
+  <section class="c7-stack">
+    <div class="c7-sechead">
+      <h2>{{ _('Quest attive') }}</h2>
+      <a class="c7-sechead__more" href="{{ url_for('gamification.quests') }}">{{ _('Tutte') }}</a>
+    </div>
+
+    {% if active_quests %}
+    <div class="c7-grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))">
+      {% for quest_info in active_quests[:3] %}
+      {% set quest = quest_info.quest %}
+      <div class="c7-card">
+        <div class="d-flex align-items-center gap-2">
+          <span class="c7-state c7-state--muted">{{ gami.quest_type_labels.get(quest.quest_type.value, quest.quest_type.value) }}</span>
+          <span style="margin-left:auto;font-size:12px;font-weight:800;color:var(--c7-accent)">
+            +<span class="c7-num">{{ quest.xp_reward }}</span> XP
+          </span>
+        </div>
+        <div style="margin-top:12px;font-size:15px;font-weight:800;letter-spacing:-.02em">{{ _(quest.name) }}</div>
+        <p style="margin:5px 0 0;font-size:13px;font-weight:500;line-height:1.45;color:var(--c7-ink-soft)">
+          {{ _(quest.description)|truncate(90) }}
+        </p>
+
+        {% if quest_info.is_participating %}
+        <div class="progress" style="margin-top:14px" role="progressbar"
+             aria-valuenow="{{ quest_info.progress_percentage|round|int }}" aria-valuemin="0" aria-valuemax="100">
+          <div class="progress-bar" style="width: {{ quest_info.progress_percentage }}%"></div>
+        </div>
+        <div style="margin-top:8px;font-size:12px;font-weight:700;color:var(--c7-ink-muted)">
+          {{ quest_info.progress_percentage|round|int }}% {{ _('completato') }}
+        </div>
+        {% else %}
+        <div style="margin-top:14px;padding:12px 14px;border-radius:var(--c7-r-control);background:var(--c7-bg);
+                    font-size:12px;font-weight:700;color:var(--c7-ink-soft)">
+          {{ _('Partecipi automaticamente giocando') }}
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="c7-empty">
+      <div class="c7-empty__ico"><i class="fas fa-list-check"></i></div>
+      <div class="c7-empty__title">{{ _('Nessuna quest attiva') }}</div>
+      <p class="c7-empty__text">{{ _('Le quest arrivano a ondate: settimanali, mensili e qualche speciale.') }}</p>
+    </div>
+    {% endif %}
+  </section>
 </div>
 
 {# ═══════════════════════════════════════════════════════════════════════════
@@ -298,67 +232,46 @@ Polling: Real-time notifications for gamification events (replaces SSE)
 User receives live notifications for XP gains, level-ups, and achievements.
 ═══════════════════════════════════════════════════════════════════════════ #}
 {% if current_user.is_authenticated %}
-<!-- Toast container for notifications -->
-<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100;">
-    <div id="sseToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="toast-header">
-            <i id="sseToastIcon" class="fas fa-star text-warning me-2"></i>
-            <strong class="me-auto" id="sseToastTitle">{{ _('Notifica') }}</strong>
-            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-        </div>
-        <div class="toast-body" id="sseToastBody"></div>
-    </div>
-</div>
-
-<!-- JSON Configuration Block (ADR-018) -->
+{# I toast di questa pagina passano ora dal sistema Chalky del guscio, che
+   applica la scala d'intensita' §11 (gli XP fanno pulsare il badge in testata
+   e non aprono toast) invece di un toast Bootstrap per ogni evento. #}
 <script type="application/json" id="poll-config">
 {
     "userId": {{ current_user.id }},
     "i18n": {
         "xpGained": {{ _('XP Guadagnati!')|tojson }},
         "levelUp": {{ _('Nuovo Livello!')|tojson }},
-        "achievement": {{ _('Achievement Sbloccato!')|tojson }},
-        "total": {{ _('Totale: ')|tojson }},
-        "reachedLevel": {{ _('Hai raggiunto il livello ')|tojson }}
+        "achievement": {{ _('Achievement Sbloccato!')|tojson }}
     }
 }
 </script>
 
 <script>
     (function () {
-        // Load configuration from JSON block
         const POLL_CONFIG = JSON.parse(document.getElementById('poll-config').textContent);
         const userId = POLL_CONFIG.userId;
         const i18n = POLL_CONFIG.i18n;
 
-        function showToast(icon, iconColor, title, message) {
-            const toastEl = document.getElementById('sseToast');
-            document.getElementById('sseToastIcon').className = 'fas ' + icon + ' ' + iconColor + ' me-2';
-            document.getElementById('sseToastTitle').textContent = title;
-            document.getElementById('sseToastBody').textContent = message;
-
-            const toast = new bootstrap.Toast(toastEl, { delay: 5000 });
-            toast.show();
-        }
-
         window.Polling.create({
             url: '/sse/poll/user/' + userId,
-            onEvent: function(event) {
+            onEvent: function (event) {
                 const data = event.data;
 
                 if (event.type === 'xp_gained') {
-                    showToast('fa-star', 'text-warning', i18n.xpGained,
-                        '+' + data.xp_amount + ' XP - ' + i18n.total + data.new_total_xp + ' XP');
-                    setTimeout(function () { location.reload(); }, 3000);
+                    showGamificationEvent('xp', { amount: data.xp_amount, reason: i18n.xpGained });
                 } else if (event.type === 'level_up') {
-                    showToast('fa-level-up-alt', 'text-success', i18n.levelUp,
-                        i18n.reachedLevel + data.new_level + '!');
-                    setTimeout(function () { location.reload(); }, 3000);
+                    showGamificationEvent('levelup', { level: data.new_level, title: i18n.levelUp });
                 } else if (event.type === 'achievement') {
-                    showToast('fa-trophy', 'text-primary', i18n.achievement,
-                        data.achievement_name + ' (+' + data.xp_awarded + ' XP)');
-                    setTimeout(function () { location.reload(); }, 3000);
+                    showGamificationEvent('achievement', {
+                        name: data.achievement_name, description: i18n.achievement
+                    });
+                } else {
+                    return;
                 }
+                /* La pagina mostra dati aggregati (barra XP, elenchi): il
+                   ricaricamento e' l'unico modo per rinfrescarli tutti, e
+                   arriva dopo che il toast si e' visto. */
+                setTimeout(function () { location.reload(); }, 3000);
             }
         }).start();
     })();

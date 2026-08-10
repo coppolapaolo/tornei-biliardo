@@ -339,6 +339,63 @@ all'import su `GamificationBadge is not defined`.
 Verificato anche a mano: un evento `xp` fa pulse e count-up **senza toast**, un
 `levelup` aggiorna il numero, accende l'alone e apre **un solo** toast.
 
+**Le quattro pagine dei progressi** (`gamification/dashboard`, `achievements`,
+`streaks`, `quests`) rifatte sulla **#11a**. Erano Bootstrap puro: `container
+py-4`, `row`/`col`, testate a tinta piena (`bg-primary text-white`,
+`bg-success`, `bg-info`), briciole di pane — le uniche dell'app — e una tabella
+a quattro colonne per le quest completate.
+
+- **Progressi**: card scura del livello con la barra XP, streak come elenco
+  raggruppato, prossimi sblocchi con le condizioni a spunta, achievement
+  recenti come tessere, quest attive.
+- **Achievement**: riepilogo con barra a due segmenti e tre numeri, poi gli
+  achievement **per categoria come elenco**, non come griglia di medaglie. La
+  **difficolta' e' una parola** ("Raro", "Epico"), come chiede il prototipo:
+  via il viola `bg-purple` definito in un `<style>` inline e via la gemma
+  dorata. Sbloccato = tessera accento, bloccato = tessera affossata e riga
+  spenta.
+- **Streak**: card scura con il fuoco e la cifra grande, poi una card per tipo
+  con attuale/record, i tre traguardi (4/12/52 settimane) accesi o spenti e il
+  prossimo traguardo. Via il gradiente della card principale.
+- **Quest**: card con chip del tipo, ricompensa, progresso e scadenza; le
+  completate diventano un elenco raggruppato invece della tabella.
+
+**Difetti trovati e riparati:**
+
+- **La barra XP della pagina progressi era sempre vuota.** Il markup era
+  `style="width: 0%"` con `data-percentage` e l'animazione affidata a un JS
+  che **non esiste**: a qualunque livello la barra restava a zero, senza errori
+  da nessuna parte. Ora la larghezza la scrive il server.
+- **"12 / 24%"** sotto le barre degli achievement progressivi: mescolava il
+  conteggio con la percentuale. Ora e' "12 / 50" come nel prototipo — il
+  traguardo non arriva dal servizio ma la percentuale lo determina.
+- **I toast di questa pagina erano un sistema a parte**: toast Bootstrap propri
+  e un `location.reload()` per ogni evento, quindi un guadagno di XP apriva un
+  toast qui e faceva pulsare il badge altrove. Ora passa dal sistema Chalky del
+  guscio, che applica la scala d'intensita'.
+- **Quattro copie divergenti delle etichette dei tipi** (streak, quest,
+  difficolta', categoria), come catene di `{% if %}` nel markup: i "Tornei
+  settimanali" comparivano solo in due. Ora sono una mappa sola in
+  `components/_gamification_labels.html`.
+- **Un comando morto**: "Usa Freeze" era un pulsante `disabled`, e lato server
+  la funzione non esiste (nessuna route, nessun servizio). Al suo posto lo
+  stato: quanti freeze hai e cosa serve per non perdere la streak. **Il
+  prototipo mostra il pulsante attivo: implementarlo e' lavoro di dominio, non
+  di interfaccia** — da decidere a parte.
+
+**Divergenza dichiarata**: il prototipo mette sulla pagina Quest tre linguette
+(Attive / In arrivo / Completate). Qui sono tre sezioni: i gruppi sono corti e
+gia' intitolati, e un commutatore aggiungerebbe un tap per vedere due righe.
+**Quando si faranno i match individuali** — che di linguette hanno bisogno
+davvero (#9a: "Da giocare / In attesa / Giocati") — conviene rendere riusabile
+il commutatore della pagina gara e riconsiderare anche questa.
+
+Aggiunte al tema le forme che il prototipo ripete dalla 8a alla 11a e che
+finivano riscritte a mano ogni volta: `c7-rows` (elenco raggruppato con righe
+divise), `c7-sechead` (titolo di sezione con azione a destra), `c7-tile`
+(tessera icona, piena o affossata), `c7-dim`, piu' l'adattamento di `.progress`
+di Bootstrap dentro una card accento.
+
 ## Disallineamenti fra prototipo e codice
 
 Rilevati confrontando le schermate del prototipo con l'app in esecuzione.
@@ -383,17 +440,20 @@ Quelli sopra sono chiusi; questi no.
 
 ## Da fare
 
-1. **Gamification giocatore.** ~~Il badge XP della navbar non esiste piu'.~~
-   **Badge fatto** (vedi "Fatto"). Restano le **pagine**:
-   `gamification/dashboard.html`, `achievements.html`, `quests.html`,
-   `streaks.html` — sono al punto 2 della lista "da rifare a mano" del README,
-   contengono `<style>` inline con gradienti da togliere, e il prototipo le
-   copre nella **#11a** (barra XP piena larghezza in card scura, achievement
-   come elenco con gli stati bloccati spenti, streak con traguardi a 4/12/52
-   settimane, quest con progresso e scadenza). Poi il **flusso challenge**
-   — ma solo dopo il merge del branch parallelo — e per ultimi i **pannelli
-   admin di gamification**.
-2. **Traduzioni EN — deciso: alla fine del redesign.** Oggi ci sono 76
+1. ~~**Gamification giocatore.**~~ **Chiusa**: badge e quattro pagine, vedi
+   "Fatto". Resta fuori `gamification/leaderboards.html`, che l'handoff aveva
+   gia' convertito e che va solo guardato nel browser. Il **flusso challenge**
+   e' il prossimo dei "da rifare a mano", ma **solo dopo il merge del branch
+   parallelo**.
+2. **Rimandati per decisione dell'utente (2026-08-10)**: i **14 pannelli di
+   gamification admin** (2239 righe) e le **12 pagine admin** senza classi
+   `c7-` (3907 righe: kpi, utenti, sale, dettaglio campionato…). Le vede solo
+   chi amministra, il tema le copre gia' a un livello presentabile, e il README
+   stesso metteva i pannelli di gamification per ultimi. **Non sono un debito
+   dimenticato: sono fuori dallo scopo di questo giro.** Se un giorno si
+   riprendono, il criterio e' quello di sempre — aprirle nel browser prima di
+   toccarle.
+3. **Traduzioni EN — deciso: alla fine del redesign.** Oggi ci sono 76
    stringhe nuove senza traduzione e 346 fuzzy, che sono accoppiamenti
    automatici sbagliati ("amministrazione" → *Registrations*, "Persone" →
    *Lost*). Non fanno danno: `pybabel` scarta le fuzzy dal `.mo` e
@@ -401,7 +461,11 @@ Quelli sopra sono chiusi; questi no.
    cambierà altri testi, quindi tradurre prima significherebbe ritradurre.
    A conversione finita: `/translate`, poi riscrivere le fuzzy invece di
    approvarle in blocco.
-3. **Pulizia di `main.css` e `variables.css`** — solo a verifica completata.
+4. **Match individuali** (10 file, 2901 righe) — mai aperti nel browser, e il
+   prototipo (#9a) mostra un divario probabilmente ampio: linguette "Da
+   giocare / In attesa / Giocati", proposte di data come opzioni selezionabili,
+   calendario delle disponibilita'.
+5. **Pulizia di `main.css` e `variables.css`** — solo a verifica completata.
 
 ## Rilievi aperti dal giro visivo
 

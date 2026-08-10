@@ -1,161 +1,144 @@
 {% extends "base.html" %}
+{% import "components/_gamification_labels.html" as gami with context %}
 {% block title %}{{ page_title }} - Campionato Biliardo{% endblock %}
 
+{# Testata: una sola per pagina, quella del guscio. #}
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('gamification.dashboard') }}"
+   aria-label="{{ _('Torna ai progressi') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _('Streak') }}{% endblock %}
+{% block page_sub %}{{ _('Attività settimanali e bonus XP') }}{% endblock %}
+
 {% block content %}
-<div class="container py-4">
-    <div class="row mb-4">
-        <div class="col-12">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('gamification.dashboard') }}">{{ _('Gamification')
-                            }}</a></li>
-                    <li class="breadcrumb-item active">{{ _('Streak') }}</li>
-                </ol>
-            </nav>
-            <h1 class="mb-0"><i class="fas fa-fire me-2 text-warning"></i>{{ page_title }}</h1>
-            <p class="text-muted">{{ _('Mantieni le tue attivita settimanali per guadagnare bonus XP') }}</p>
-        </div>
+{# Prototipo 11a, terza schermata. Via il gradiente della card principale
+   (`streak-highlight-gradient`, che il 7c non ammette) e via le medaglie
+   colorate dei traguardi: raggiunto = accento, da raggiungere = spento. #}
+<div class="c7-stack c7-sections">
+
+  {# ---------- La streak principale ---------- #}
+  {% if primary_streak %}
+  <section class="c7-card c7-card--accent"
+           style="border-radius:var(--c7-r-card-lg);padding:26px 22px;text-align:center">
+    <i class="fas fa-fire" style="font-size:22px;color:#FF8A7E"></i>
+    {# Cifra protagonista: Manrope, non mono. #}
+    <div style="margin-top:10px;font-size:68px;font-weight:800;letter-spacing:-.06em;line-height:1">
+      {{ primary_streak.current_streak }}
+    </div>
+    <div style="margin-top:6px;font-size:15px;font-weight:700">
+      {{ ngettext('settimana consecutiva di attività', 'settimane consecutive di attività',
+          primary_streak.current_streak) }}
+    </div>
+    <div style="margin-top:4px;font-size:12px;font-weight:600;color:var(--c7-accent-dim)">
+      {{ _('Record personale') }}:
+      {{ ngettext('%(num)d settimana', '%(num)d settimane',
+          primary_streak.longest_streak, num=primary_streak.longest_streak) }}
     </div>
 
-    <!-- Primary Streak Highlight -->
-    {% if primary_streak %}
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card bg-gradient border-0 streak-highlight-gradient">
-                <div class="card-body text-white text-center py-5">
-                    <div class="display-1 fw-bold mb-2">
-                        <i class="fas fa-fire me-3"></i>{{ primary_streak.current_streak }}
-                    </div>
-                    <h3>{{ _('Settimane consecutive di attivita') }}</h3>
-                    <p class="mb-0 opacity-75">
-                        {{ _('Record personale') }}: {{ primary_streak.longest_streak }} {{ _('settimane') }}
-                    </p>
-
-                    {% if primary_streak.freeze_count > 0 %}
-                    <div class="mt-3">
-                        <span class="badge bg-light text-dark fs-6">
-                            <i class="fas fa-snowflake me-1"></i>{{ primary_streak.freeze_count }} {{ _('freeze
-                            disponibili') }}
-                        </span>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
+    {% if primary_streak.freeze_count > 0 %}
+    <div style="margin-top:16px;display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 14px;
+                border-radius:var(--c7-r-pill);background:rgba(242,248,247,.14);font-size:12px;font-weight:800">
+      <i class="fas fa-snowflake" style="font-size:11px;color:var(--c7-accent-bright)"></i>
+      {{ ngettext('%(num)d freeze disponibile', '%(num)d freeze disponibili',
+          primary_streak.freeze_count, num=primary_streak.freeze_count) }}
     </div>
     {% endif %}
+  </section>
+  {% endif %}
 
-    <!-- All Streaks -->
-    <div class="row g-4">
-        {% for streak_type, streak_info in streaks.items() %}
-        <div class="col-md-6">
-            <div class="card h-100">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">
-                        {% if streak_type == 'weekly_activity' %}
-                        <i class="fas fa-calendar-check text-warning me-2"></i>{{ _('Attività Settimanale') }}
-                        {% elif streak_type == 'weekly_match' %}
-                        <i class="fas fa-shield-halved text-info me-2"></i>{{ _('Partite Settimanali') }}
-                        {% elif streak_type == 'weekly_tournament' %}
-                        <i class="fas fa-trophy text-success me-2"></i>{{ _('Tornei Settimanali') }}
-                        {% elif streak_type == 'weekly_drill' %}
-                        <i class="fas fa-bullseye text-danger me-2"></i>{{ _('Challenge Settimanali') }}
-                        {% else %}
-                        <i class="fas fa-fire me-2"></i>{{ streak_type }}
-                        {% endif %}
-                    </h5>
-                    {% if streak_info.is_at_risk %}
-                    <span class="badge bg-danger">
-                        <i class="fas fa-exclamation-triangle me-1"></i>{{ _('A rischio!') }}
-                    </span>
-                    {% endif %}
-                </div>
-                <div class="card-body">
-                    <div class="row text-center mb-3">
-                        <div class="col-6">
-                            <div class="display-5 fw-bold text-primary">{{ streak_info.current_streak }}</div>
-                            <small class="text-muted">{{ _('Streak Attuale') }}</small>
-                        </div>
-                        <div class="col-6">
-                            <div class="display-5 fw-bold text-secondary">{{ streak_info.longest_streak }}</div>
-                            <small class="text-muted">{{ _('Record') }}</small>
-                        </div>
-                    </div>
+  {# ---------- Una card per tipo di streak ---------- #}
+  {% if streaks %}
+  <div class="c7-grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+    {% for streak_type, streak_info in streaks.items() %}
+    <section class="c7-card"
+             {% if streak_info.is_at_risk %}style="border:1.5px solid var(--c7-err-bg)"{% endif %}>
+      <div class="d-flex align-items-center gap-2">
+        <i class="fas {{ gami.streak_icons.get(streak_type, 'fa-fire') }}"
+           style="font-size:14px;color:var(--c7-accent)"></i>
+        <strong style="font-size:15px;font-weight:800;letter-spacing:-.02em">
+          {{ gami.streak_labels.get(streak_type, streak_type) }}
+        </strong>
+        {% if streak_info.is_at_risk %}
+        <span class="c7-state c7-state--err" style="margin-left:auto">{{ _('A rischio') }}</span>
+        {% else %}
+        <span class="c7-sechead__note" style="margin-left:auto">
+          {{ ngettext('%(num)d freeze', '%(num)d freeze', streak_info.freeze_count, num=streak_info.freeze_count) }}
+        </span>
+        {% endif %}
+      </div>
 
-                    <!-- Milestones Progress -->
-                    <div class="mb-3">
-                        <small class="text-muted d-block mb-2">{{ _('Traguardi') }}</small>
-                        <div class="d-flex justify-content-between">
-                            <div class="text-center flex-fill">
-                                <i
-                                    class="fas fa-medal fa-lg {% if 4 in streak_info.milestones_reached or '4_weeks' in streak_info.milestones_reached %}text-warning{% else %}text-muted{% endif %}"></i>
-                                <br><small>4 {{ _('sett.') }}</small>
-                            </div>
-                            <div class="text-center flex-fill">
-                                <i
-                                    class="fas fa-award fa-lg {% if 12 in streak_info.milestones_reached or '12_weeks' in streak_info.milestones_reached %}text-info{% else %}text-muted{% endif %}"></i>
-                                <br><small>12 {{ _('sett.') }}</small>
-                            </div>
-                            <div class="text-center flex-fill">
-                                <i
-                                    class="fas fa-crown fa-lg {% if 52 in streak_info.milestones_reached or '52_weeks' in streak_info.milestones_reached %}text-success{% else %}text-muted{% endif %}"></i>
-                                <br><small>52 {{ _('sett.') }}</small>
-                            </div>
-                        </div>
-                    </div>
+      <div class="d-flex" style="margin-top:14px;gap:20px">
+        <div>
+          <div style="font-size:28px;font-weight:800;letter-spacing:-.04em">{{ streak_info.current_streak }}</div>
+          <div class="c7-rows__sub">{{ _('Attuale') }}</div>
+        </div>
+        <div>
+          <div style="font-size:28px;font-weight:800;letter-spacing:-.04em;color:var(--c7-ink-muted)">
+            {{ streak_info.longest_streak }}
+          </div>
+          <div class="c7-rows__sub">{{ _('Record') }}</div>
+        </div>
+      </div>
 
-                    <!-- Next Milestone -->
-                    {% if streak_info.next_milestone %}
-                    <div class="alert alert-light mb-0 py-2">
-                        <small>
-                            <i class="fas fa-flag me-1"></i>
-                            {{ _('Prossimo traguardo') }}: <strong>{{ streak_info.next_milestone }} {{ _('settimane')
-                                }}</strong>
-                            ({{ streak_info.next_milestone - streak_info.current_streak }} {{ _('da raggiungere') }})
-                        </small>
-                    </div>
-                    {% endif %}
-                </div>
-                <div class="card-footer bg-light">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <small class="text-muted">
-                            <i class="fas fa-snowflake me-1"></i>{{ streak_info.freeze_count }} {{ _('freeze') }}
-                        </small>
-                        {% if streak_info.is_at_risk and streak_info.freeze_count > 0 %}
-                        <button class="btn btn-sm btn-outline-info" disabled>
-                            <i class="fas fa-snowflake me-1"></i>{{ _('Usa Freeze') }}
-                        </button>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
+      {# Traguardi: raggiunto = accento, da raggiungere = spento. Nessuna
+         medaglia dorata, nessun colore per il grado. #}
+      {% set reached = streak_info.milestones_reached %}
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--c7-line-soft);display:flex;gap:10px">
+        {% for weeks, icon in [(4, 'fa-medal'), (12, 'fa-award'), (52, 'fa-crown')] %}
+        {% set is_reached = weeks in reached or (weeks|string ~ '_weeks') in reached %}
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px">
+          <i class="fas {{ icon }}"
+             style="font-size:15px;color:{{ 'var(--c7-accent)' if is_reached else 'var(--c7-line)' }}"></i>
+          <span class="c7-num" style="font-size:11px;font-weight:700;color:{{ 'var(--c7-ink-soft)' if is_reached else 'var(--c7-ink-faint)' }}">
+            {{ weeks }} {{ _('sett.') }}
+          </span>
         </div>
         {% endfor %}
-    </div>
+      </div>
 
-    {% if not streaks %}
-    <div class="alert alert-info text-center">
-        <i class="fas fa-info-circle me-2"></i>{{ _('Inizia a giocare per costruire le tue streak settimanali!') }}
-    </div>
-    {% endif %}
+      {% if streak_info.next_milestone %}
+      <div style="margin-top:12px;font-size:12px;font-weight:700;color:var(--c7-ink-muted)">
+        {{ _('Prossimo traguardo') }}:
+        {{ ngettext('%(num)d settimana', '%(num)d settimane',
+            streak_info.next_milestone, num=streak_info.next_milestone) }}
+        ({{ streak_info.next_milestone - streak_info.current_streak }} {{ _('da raggiungere') }})
+      </div>
+      {% endif %}
 
-    <!-- Info Card -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card bg-light">
-                <div class="card-body">
-                    <h6><i class="fas fa-info-circle me-2"></i>{{ _('Come funzionano le Streak') }}</h6>
-                    <ul class="mb-0 small">
-                        <li>{{ _('Ogni settimana che giochi almeno una partita, la tua streak aumenta') }}</li>
-                        <li>{{ _('Raggiungi 4 settimane consecutive per sbloccare un freeze') }}</li>
-                        <li>{{ _('I freeze ti permettono di saltare una settimana senza perdere la streak') }}</li>
-                        <li>{{ _('Traguardi: 4 settimane (+1 freeze), 12 settimane (+1 freeze), 52 settimane (+1
-                            freeze)') }}</li>
-                        <li>{{ _('Massimo 3 freeze accumulabili') }}</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
+      {# Il prototipo mette qui un pulsante "Usa un freeze". Lato server quella
+         funzione non esiste (nessuna route, nessun servizio): al suo posto lo
+         stato, non un comando morto. #}
+      {% if streak_info.is_at_risk %}
+      <div style="margin-top:14px;padding:12px 14px;border-radius:var(--c7-r-control);background:var(--c7-bg);
+                  font-size:12px;font-weight:600;color:var(--c7-ink-soft);line-height:1.45">
+        {% if streak_info.freeze_count > 0 %}
+        {{ ngettext('Questa settimana non hai ancora giocato. Hai %(num)d freeze da parte: quando la funzione sarà attiva potrai usarlo per non azzerare la streak.',
+                    'Questa settimana non hai ancora giocato. Hai %(num)d freeze da parte: quando la funzione sarà attiva potrai usarne uno per non azzerare la streak.',
+                    streak_info.freeze_count, num=streak_info.freeze_count) }}
+        {% else %}
+        {{ _('Questa settimana non hai ancora giocato: una partita basta a tenere in vita la streak.') }}
+        {% endif %}
+      </div>
+      {% endif %}
+    </section>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="c7-empty">
+    <div class="c7-empty__ico"><i class="fas fa-fire"></i></div>
+    <div class="c7-empty__title">{{ _('Nessuna streak ancora') }}</div>
+    <p class="c7-empty__text">{{ _('Gioca una partita a settimana e la streak comincia a salire.') }}</p>
+  </div>
+  {% endif %}
+
+  {# ---------- Come funzionano ---------- #}
+  <section class="c7-card c7-card--locked">
+    <div class="c7-kicker">{{ _('Come funzionano') }}</div>
+    <div class="c7-stack" style="margin-top:10px;gap:7px;font-size:12px;font-weight:600;line-height:1.45">
+      <span>{{ _('Ogni settimana in cui giochi almeno una partita la streak sale.') }}</span>
+      <span>{{ _('A 4, 12 e 52 settimane ottieni un freeze (massimo 3 accumulabili).') }}</span>
+      <span>{{ _('Un freeze copre una settimana saltata senza azzerare la streak.') }}</span>
     </div>
+  </section>
 </div>
 {% endblock %}

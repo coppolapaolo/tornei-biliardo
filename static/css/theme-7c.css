@@ -1064,6 +1064,69 @@ input[type="number"].form-control {
   .c7-tabflat { display: contents; }
 }
 
+/* --------------------------------------------------------------------------
+   17. Elenchi raggruppati, titoli di sezione, tessere
+   Forme che il prototipo usa in continuazione dalla 8a alla 11a e che
+   finivano riscritte a mano ogni volta.
+   -------------------------------------------------------------------------- */
+
+/* Un elenco compatto e' UNA card con le righe divise da una linea, non N card
+   separate: turni conclusi, iscritti, quest completate, streak. */
+.c7-rows {
+  background: var(--c7-card);
+  border-radius: var(--c7-r-card-lg);
+  overflow: hidden;
+}
+.c7-rows__row {
+  padding: 15px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.c7-rows__row + .c7-rows__row { border-top: 1px solid var(--c7-line-soft); }
+.c7-rows__main { flex: 1; min-width: 0; }
+.c7-rows__title { font-size: 14px; font-weight: 800; }
+.c7-rows__sub { margin-top: 2px; font-size: 11px; font-weight: 700; color: var(--c7-ink-muted); }
+/* Riga spenta: elemento concluso o non ancora raggiunto. */
+.c7-rows__row--dim .c7-rows__title { color: var(--c7-ink-muted); }
+
+/* Titolo di sezione, con l'azione facoltativa a destra ("Tutti", "Dettagli"). */
+.c7-sechead { display: flex; align-items: baseline; gap: 10px; }
+.c7-sechead h2,
+.c7-sechead h3 { margin: 0; font-size: 17px; font-weight: 800; letter-spacing: -.02em; }
+.c7-sechead__note { font-size: 12px; font-weight: 700; color: var(--c7-ink-muted); }
+.c7-sechead__more {
+  margin-left: auto;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--c7-accent);
+  white-space: nowrap;
+}
+.c7-sechead__sub { margin-top: 3px; font-size: 12px; font-weight: 600; color: var(--c7-ink-muted); }
+
+/* Tessera con icona: achievement, quest, sblocchi. Piena = ottenuto, affossata
+   = bloccato (mai il grigio disabilitato di Bootstrap). */
+.c7-tile {
+  width: 44px; height: 44px;
+  border-radius: var(--c7-r-control);
+  background: var(--c7-accent);
+  color: var(--c7-accent-bright);
+  display: grid; place-items: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.c7-tile--sm { width: 40px; height: 40px; border-radius: var(--c7-r-chip); font-size: 15px; }
+.c7-tile--locked { background: var(--c7-bg); color: var(--c7-ink-faint); }
+
+/* Un blocco bloccato/concluso si spegne, non si disabilita. */
+.c7-dim { opacity: .62; }
+
+/* Le barre di Bootstrap sono gia' in palette (`.progress`), ma su una card
+   accento il binario chiaro sparirebbe nel fondo. */
+.c7-card--accent .progress { background: rgba(242, 248, 247, .18); }
+.c7-card--accent .progress-bar { background: var(--c7-accent-bright); }
+.progress--lg { height: 10px; }
+
 /* Scorciatoia scura alla propria partita, in cima alla vista Turni: chi gioca
    non deve cercarsi dentro la pila dei turni. */
 .c7-shortcut { display: flex; align-items: center; gap: 14px; }
