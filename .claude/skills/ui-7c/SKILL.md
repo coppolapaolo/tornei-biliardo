@@ -144,10 +144,17 @@ Allora **si interpreta**, non si inventa:
      const u = new URL(l.href); u.searchParams.set('cb', String(performance.now())); l.href = u.toString();
    });
    ```
-4. **Prova l'azione**, non solo l'aspetto: clicca il comando che hai
+4. **Componenti dietro una media query che non riesci a far scattare** (il
+   tabellone `#8b` sta dietro `orientation: landscape` + `pointer: coarse`, e
+   il device mode non è sempre raggiungibile dal browser pilotato): il nodo
+   esiste comunque nel DOM e le regole si applicano lo stesso, quindi puoi
+   leggere `getComputedStyle` sul nodo nascosto per confermare i valori —
+   ma **non è una verifica visiva**. Dichiaralo, e chiedi all'utente il
+   controllo con device mode + touch prima di dire che è chiuso.
+5. **Prova l'azione**, non solo l'aspetto: clicca il comando che hai
    ridisegnato e verifica che l'endpoint risponda (e rimetti a posto il dato
    di prova).
-5. **`pytest tests/new/unit/ -n auto`** — copre integrità dei template,
+6. **`pytest tests/new/unit/ -n auto`** — copre integrità dei template,
    `url_for` inesistenti e testata doppia.
 
 ## Ambiente

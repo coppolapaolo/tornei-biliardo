@@ -838,10 +838,12 @@ input[type="number"].form-control {
   font-size: 76px; font-weight: 800; letter-spacing: -.06em; line-height: 1;
   font-variant-numeric: tabular-nums;
 }
-/* Chi insegue e' grigio: la differenza si legge prima del numero. */
+/* Chi insegue e' grigio: nel prototipo lo e' anche il nome, non solo il
+   numero — la stessa mano vale per entrambi. */
 .c7-score__num.is-behind { color: var(--c7-ink-muted); }
 .c7-score__dash { align-self: center; font-size: 26px; font-weight: 700; color: var(--c7-ink-faint); }
 .c7-score__name { margin-top: 6px; font-size: 13px; font-weight: 700; }
+.c7-score__name.is-behind { color: var(--c7-ink-muted); }
 .c7-score__elo { margin-top: 2px; font-size: 11px; color: var(--c7-ink-muted); }
 .c7-score__foot { margin-top: 18px; font-size: 13px; font-weight: 600; color: var(--c7-ink-muted); }
 
@@ -925,7 +927,7 @@ input[type="number"].form-control {
   body:not(.c7-board-off) .c7-mobilenav { display: none; }
 }
 
-.c7-board__head { padding: 14px 24px 0; display: flex; align-items: center; gap: 12px; }
+.c7-board__head { padding: 16px 24px 0; display: flex; align-items: center; gap: 12px; }
 .c7-board__close {
   width: 40px; height: 40px; border-radius: 50%; border: 0;
   background: rgba(242, 248, 247, .12); color: var(--c7-accent-ink);
@@ -970,16 +972,19 @@ input[type="number"].form-control {
 .c7-board__pip.is-on { background: var(--c7-accent-bright); }
 .c7-board__pip.is-on--muted { background: rgba(242, 248, 247, .5); }
 
-.c7-board__pad { padding: 0 24px 18px; display: flex; align-items: center; gap: 12px; }
+.c7-board__pad { padding: 0 24px 20px; display: flex; align-items: center; gap: 12px; }
 .c7-board__btn {
-  flex: 1; height: 74px; border-radius: 22px; border: 0;
+  flex: 1; height: 74px; border-radius: 22px;
+  border: 1.5px solid rgba(242, 248, 247, .28);
   background: rgba(242, 248, 247, .14); color: var(--c7-accent-ink);
   font-family: inherit; font-size: 17px; font-weight: 800;
   display: flex; align-items: center; justify-content: center; gap: 10px;
   min-width: 0; cursor: pointer;
 }
 .c7-board__btn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.c7-board__btn--mine { background: var(--c7-accent-bright); color: #0D2A36; }
+/* Il proprio e' pieno: non gli serve il bordo che distingue l'altro dal
+   fondo accento. */
+.c7-board__btn--mine { border: 0; background: var(--c7-accent-bright); color: #0D2A36; }
 .c7-board__btn:disabled { opacity: .45; cursor: not-allowed; }
 .c7-board__plus { font-size: 22px; flex-shrink: 0; }
 .c7-board__undo {

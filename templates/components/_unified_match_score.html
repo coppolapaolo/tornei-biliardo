@@ -42,15 +42,15 @@ Parametri:
     <div class="c7-score__row" style="grid-template-columns: repeat(3, 1fr);">
         <div class="c7-score__side">
             <span class="c7-score__num {{ '' if trio.winner_id == trio.player1_id or not trio.winner_id else 'is-behind' }}">{{ trio.player1_racks }}</span>
-            <span class="c7-score__name">{{ trio.player1.username }}</span>
+            <span class="c7-score__name {{ '' if trio.winner_id == trio.player1_id or not trio.winner_id else 'is-behind' }}">{{ trio.player1.username }}</span>
         </div>
         <div class="c7-score__side">
             <span class="c7-score__num {{ '' if trio.winner_id == trio.player2_id or not trio.winner_id else 'is-behind' }}">{{ trio.player2_racks }}</span>
-            <span class="c7-score__name">{{ trio.player2.username }}</span>
+            <span class="c7-score__name {{ '' if trio.winner_id == trio.player2_id or not trio.winner_id else 'is-behind' }}">{{ trio.player2.username }}</span>
         </div>
         <div class="c7-score__side">
             <span class="c7-score__num {{ '' if trio.winner_id == trio.player3_id or not trio.winner_id else 'is-behind' }}">{{ trio.player3_racks }}</span>
-            <span class="c7-score__name">{{ trio.player3.username }}</span>
+            <span class="c7-score__name {{ '' if trio.winner_id == trio.player3_id or not trio.winner_id else 'is-behind' }}">{{ trio.player3.username }}</span>
         </div>
     </div>
     <div class="c7-score__foot">
@@ -74,7 +74,7 @@ Parametri:
     <div class="c7-score__row">
         <div class="c7-score__side">
             <span class="c7-score__num {{ 'is-behind' if p1_score < p2_score }}">{{ p1_score }}</span>
-            <span class="c7-score__name">{{ p1_name }}</span>
+            <span class="c7-score__name {{ 'is-behind' if p1_score < p2_score }}">{{ p1_name }}</span>
             {% if can_view_ratings is defined and can_view_ratings and match.player1.elo_rating %}
             <span class="c7-score__elo c7-num">ELO {{ match.player1.elo_rating }}</span>
             {% endif %}
@@ -85,7 +85,7 @@ Parametri:
         <span class="c7-score__dash">–</span>
         <div class="c7-score__side">
             <span class="c7-score__num {{ 'is-behind' if p2_score < p1_score }}">{{ p2_score }}</span>
-            <span class="c7-score__name">{{ p2_name }}</span>
+            <span class="c7-score__name {{ 'is-behind' if p2_score < p1_score }}">{{ p2_name }}</span>
             {% if can_view_ratings is defined and can_view_ratings and match.player2 and match.player2.elo_rating %}
             <span class="c7-score__elo c7-num">ELO {{ match.player2.elo_rating }}</span>
             {% endif %}

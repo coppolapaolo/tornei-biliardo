@@ -54,26 +54,28 @@
         <span class="c7-board__live">{{ _('In corso') }}</span>
     </div>
 
+    {% set p1_behind = p1_score < p2_score %}
+    {% set p2_behind = p2_score < p1_score %}
     <div class="c7-board__body">
         <div class="c7-board__side">
-            <span class="c7-board__name {{ 'c7-board__name--behind' if p1_score < p2_score }}">{{ p1_name }}</span>
-            <span class="c7-board__num {{ 'c7-board__num--behind' if p1_score < p2_score }}">{{ p1_score }}</span>
+            <span class="c7-board__name {{ 'c7-board__name--behind' if p1_behind }}">{{ p1_name }}</span>
+            <span class="c7-board__num {{ 'c7-board__num--behind' if p1_behind }}">{{ p1_score }}</span>
             {% if pips %}
             <div class="c7-board__pips">
                 {% for i in range(pips) %}
-                <span class="c7-board__pip {{ 'is-on' if i < p1_score }}"></span>
+                <span class="c7-board__pip {{ ('is-on is-on--muted' if p1_behind else 'is-on') if i < p1_score }}"></span>
                 {% endfor %}
             </div>
             {% endif %}
         </div>
         <div class="c7-board__rule"></div>
         <div class="c7-board__side">
-            <span class="c7-board__name {{ 'c7-board__name--behind' if p2_score < p1_score }}">{{ p2_name }}</span>
-            <span class="c7-board__num {{ 'c7-board__num--behind' if p2_score < p1_score }}">{{ p2_score }}</span>
+            <span class="c7-board__name {{ 'c7-board__name--behind' if p2_behind }}">{{ p2_name }}</span>
+            <span class="c7-board__num {{ 'c7-board__num--behind' if p2_behind }}">{{ p2_score }}</span>
             {% if pips %}
             <div class="c7-board__pips">
                 {% for i in range(pips) %}
-                <span class="c7-board__pip {{ 'is-on is-on--muted' if i < p2_score }}"></span>
+                <span class="c7-board__pip {{ ('is-on is-on--muted' if p2_behind else 'is-on') if i < p2_score }}"></span>
                 {% endfor %}
             </div>
             {% endif %}
