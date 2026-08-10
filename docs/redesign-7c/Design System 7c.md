@@ -46,6 +46,9 @@ decorativo: significa "confermato / pagato / completato".
 
 - **Corpo e titoli:** Manrope (400 / 600 / 700 / 800). Fallback `system-ui, sans-serif`.
 - **Cifre, codici, timestamp, stati:** JetBrains Mono (600 / 700 / 800).
+  Vale per i numeri di servizio, fino a ~32px. La cifra protagonista di una
+  schermata — il punteggio di una partita nelle 7c e 8b — è Manrope 800:
+  lì il numero è un titolo. (Precisazione 2026-08-10, dalle schermate.)
   Tutto ciò che è un numero confrontabile (punteggi, iscritti, quote, XP, orari, `14 / 16`)
   va in mono, così le colonne si allineano.
 - Titoli pagina: 22–24 px / 800 / `letter-spacing: -.025em`.

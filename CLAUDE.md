@@ -515,6 +515,8 @@ pytest tests/new/unit/ -n auto && pytest tests/new/integration/ -n 4
 | `raise ValueError(...)` per not-found / conflitto / permesso | Solleva la sottoclasse da `models.exceptions` (`NotFoundError`/`ConflictError`/`PermissionDeniedError`) → route mappano a 404/409/403 |
 | Parsing form duplicato tra create / wizard / edit | Unica fonte `GaraFormParser` / `CampionatoFormParser` (vedi `routes/CLAUDE.md`) |
 | `user.role == "director"` (o `"admin"`/`"player"`/`"guest"` letterali) | `UserRole.DIRECTOR.value` ecc. da `models/user/role_enum.py` — mai letterali per valori di dominio |
+| Interfaccia scritta "a memoria" senza aprire il prototipo | Invoca la skill `ui-7c`: la schermata di riferimento e' in `docs/redesign-7c/Redesign Mobile.dc.html` |
+| `Config.DEBUG_MODE` in una route | `current_app.config.get("DEBUG_MODE", False)` — la classe base legge la env var col default `true`, quindi in produzione il guard non scatta |
 | Co-direttore con `role != director` | `GaraService`/`TournamentService.add_director` lo rifiutano (`ValidationError`): i co-direttori sono sempre `role=director` |
 
 ---

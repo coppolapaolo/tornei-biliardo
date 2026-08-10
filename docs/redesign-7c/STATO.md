@@ -211,6 +211,19 @@ rack", storico come lista col progressivo. Nuovo
 solo quando lo schermo e' basso, largo e touch — il telefono appoggiato alla
 sponda — e usa le stesse funzioni JS del segnapunti verticale.
 
+Un secondo giro, fatto da un subagente con la skill `ui-7c`, ha trovato
+quattro scostamenti dal prototipo sfuggiti al primo: chi insegue aveva grigio
+il numero ma non il nome; i trattini di progresso del tabellone seguivano la
+posizione invece di chi conduce (mentre nome e numero accanto seguivano gia'
+il punteggio); il "+1" dell'avversario aveva perso il bordo; padding a 14/18px
+invece di 16/20px.
+
+**Cosa e' verificato e cosa no.** Verticale: 390px e 1512px, nei due ruoli,
+segnando e annullando un rack contro l'endpoint vero. Tabellone orizzontale:
+i valori CSS sono confermati con `getComputedStyle`, **la resa su un telefono
+vero no** — sta dietro `pointer: coarse`, che il browser pilotato non emula.
+Da guardare col device mode prima di dirlo chiuso.
+
 ## Disallineamenti fra prototipo e codice
 
 Rilevati confrontando le schermate del prototipo con l'app in esecuzione.
@@ -233,10 +246,12 @@ Quelli sopra sono chiusi; questi no.
 4. **Copy della conferma.** Il prototipo parla di **firma** ("serve la tua
    firma", "Invia risultato"), il codice di conferma ("Accetta il risultato").
    Da decidere: la firma e' una metafora piu' chiara di cosa comporta.
-5. **Cifre: mono o Manrope.** Il prototipo scrive i punteggi in Manrope 800,
-   il design system impone JetBrains Mono per i numeri. Ho tenuto mono
-   (tabellare: le cifre non ballano quando il punteggio cambia sotto gli
-   occhi), ma e' una divergenza consapevole dal prototipo.
+5. ~~Cifre: mono o Manrope.~~ **Chiuso: vince il prototipo.** I punteggi sono
+   Manrope 800. La regola scritta ("numeri e punteggi sempre in mono") era
+   piu' grossolana delle schermate: il mono vale per i numeri di servizio
+   (quote, XP, conteggi, orari — nel prototipo fino a ~32px), la cifra
+   protagonista e' un titolo. Precisazione riportata in `README.md` e in
+   `Design System 7c.md`, che erano la fonte dell'equivoco.
 6. **Il verde e' un colore d'azione, nel prototipo.** "Crea campionato" e
    "Crea gara" della 14c sono verde pieno. Questo **chiude il rilievo aperto**
    sui bottoni verdi del catalogo challenge: non sono un errore, sono la
@@ -315,9 +330,24 @@ Visti ma non ancora affrontati, in ordine di dubbio:
 
 ## Ambiente di lavoro locale
 
+- **Prima di toccare interfaccia, invoca la skill `ui-7c`**
+  (`.claude/skills/ui-7c/SKILL.md`): regola zero, aprire la schermata del
+  prototipo che corrisponde a quello che si sta per fare. Contiene la mappa
+  delle ancore, come interpretare le schermate che il prototipo non copre, le
+  regole non negoziabili e la procedura di verifica.
+
 - L'app di sviluppo gira su **porta 5001**, non 5000 (`python app.py`).
 - Per entrare senza password: `/debug/login/<username>` — utenti utili
-  `admin`, `pa` (direttore), `player1`.
+  `admin`, `pa` (direttore), `player1`, `player2`. **Esiste solo con
+  `DEBUG_MODE` attivo** (default in sviluppo, `False` in produzione): come
+  tutte le route `/debug/*` e `/reset`. Il guard leggeva pero'
+  `Config.DEBUG_MODE`, cioe' la classe base, dove il valore arriva dalla
+  variabile d'ambiente col default `true` — in produzione, che quella
+  variabile non la imposta, non scattava. A tenere chiusa la porta restava la
+  sola allowlist di ADR-028, **che pero' fa bypass per gli admin**: un
+  amministratore autenticato poteva aprire `/reset` in produzione. Corretto:
+  ora tutte e dodici le route leggono `current_app.config`, con
+  `tests/new/unit/test_debug_routes_off_in_production.py` a presidiarle.
 - La migration `20260607_onboarding` mette `onboarding_completed = 0` a
   **tutti** gli utenti esistenti, che quindi vengono dirottati sulla
   schermata di benvenuto a ogni pagina finché non la completano. In locale

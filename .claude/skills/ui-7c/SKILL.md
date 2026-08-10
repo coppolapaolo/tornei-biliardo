@@ -160,7 +160,10 @@ Allora **si interpreta**, non si inventa:
 ## Ambiente
 
 - App su **porta 5001** (`python app.py`). Login senza password:
-  `/debug/login/admin`, `/debug/login/pa` (direttore), `/debug/login/player1`.
+  `/debug/login/admin`, `/debug/login/pa` (direttore), `/debug/login/player1`,
+  `/debug/login/player2`. Funziona **solo con `DEBUG_MODE` attivo** (default in
+  sviluppo): in produzione quelle route rispondono 403, ed e' bene che resti
+  cosi' — sono scorciatoie che autenticano senza password.
 - Il browser pilotato perde il ridimensionamento dopo qualche `resize_window`:
   se `outerWidth` diventa uguale a `innerWidth`, la scheda è andata — aprine
   una nuova e ridimensionala **come prima azione**.

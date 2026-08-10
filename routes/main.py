@@ -1,10 +1,17 @@
 # routes/main.py - AGGIORNATO per correggere import path
 from typing import Optional
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import (
+    Blueprint,
+    render_template,
+    request,
+    redirect,
+    url_for,
+    flash,
+    current_app,
+)
 from flask_login import current_user, logout_user
 from models import db, Campionato, Gara, User
-from config import Config
 
 main_bp = Blueprint("main", __name__)
 
@@ -39,7 +46,7 @@ def privacy_policy():
 @main_bp.route("/reset")
 def reset_database():
     """Reset completo del database - SOLO in modalità debug"""
-    if not Config.DEBUG_MODE:
+    if not current_app.config.get("DEBUG_MODE", False):
         return "Reset non disponibile in produzione", 403
 
     from utils.reset_manager import ResetManager
@@ -53,7 +60,7 @@ def reset_database():
 @main_bp.route("/reset/confirm", methods=["POST"])
 def reset_database_confirm():
     """Conferma reset database"""
-    if not Config.DEBUG_MODE:
+    if not current_app.config.get("DEBUG_MODE", False):
         return "Reset non disponibile in produzione", 403
 
     password = request.form.get("password", "")
@@ -89,10 +96,9 @@ def reset_database_confirm():
 @main_bp.route("/debug/login/<username>")
 def quick_login(username):
     """Quick login per debug - SOLO in modalità debug"""
-    from config import Config
     from flask_login import login_user
 
-    if not Config.DEBUG_MODE:
+    if not current_app.config.get("DEBUG_MODE", False):
         return "Quick login non disponibile in produzione", 403
 
     user = User.query.filter_by(username=username).first()
@@ -410,7 +416,7 @@ def gara_detail_public(gara_id):
 @main_bp.route("/reset/save", methods=["POST"])
 def save_reset_snapshot():
     """Salva lo stato corrente del database come snapshot"""
-    if not Config.DEBUG_MODE:
+    if not current_app.config.get("DEBUG_MODE", False):
         return "Funzione non disponibile in produzione", 403
 
     name = request.form.get("name", "")
@@ -436,7 +442,7 @@ def save_reset_snapshot():
 @main_bp.route("/debug/create_player")
 def debug_create_player():
     """Crea un nuovo player con username 'player N' - SOLO in modalità debug"""
-    if not Config.DEBUG_MODE:
+    if not current_app.config.get("DEBUG_MODE", False):
         return "Funzione non disponibile in produzione", 403
 
     from models.user.models import User
@@ -493,7 +499,7 @@ def _current_active_inscriptions(gara_id: int) -> int:
 @main_bp.route("/debug/fill_gara/<int:gara_id>")
 def debug_fill_gara(gara_id):
     """Riempi la gara fino al MIN partecipanti pescando dai quick-login."""
-    if not Config.DEBUG_MODE:
+    if not current_app.config.get("DEBUG_MODE", False):
         return "Funzione non disponibile in produzione", 403
 
     gara = Gara.query.get_or_404(gara_id)
@@ -548,7 +554,7 @@ def debug_fill_gara(gara_id):
 @main_bp.route("/debug/inscribe_next_player/<int:gara_id>")
 def debug_inscribe_next_player(gara_id):
     """Iscrive il prossimo quick-login player non ancora iscritto."""
-    if not Config.DEBUG_MODE:
+    if not current_app.config.get("DEBUG_MODE", False):
         return "Funzione non disponibile in produzione", 403
 
     gara = Gara.query.get_or_404(gara_id)
@@ -784,7 +790,7 @@ def _debug_first_active_round(gara_id: int) -> Optional[int]:
 @main_bp.route("/debug/complete_current_round/<int:gara_id>")
 def debug_complete_current_round(gara_id):
     """Completa i match del primo round attivo con risultati random."""
-    if not Config.DEBUG_MODE:
+    if not current_app.config.get("DEBUG_MODE", False):
         return "Funzione non disponibile in produzione", 403
 
     gara = Gara.query.get_or_404(gara_id)
@@ -835,7 +841,7 @@ def debug_complete_next_match(gara_id):
     PLAYING quando il current_round non si è ancora avanzato. Esclude i
     match PENDING senza tavolo: non sono ancora "al tavolo" (bug 13).
     """
-    if not Config.DEBUG_MODE:
+    if not current_app.config.get("DEBUG_MODE", False):
         return "Funzione non disponibile in produzione", 403
 
     import random
@@ -887,7 +893,7 @@ def debug_complete_gara(gara_id):
     3. assign_available_tables assegna tavoli ai pending (sorting per round)
     4. start_next_round per strategie che generano on-demand (es. Amalfi)
     """
-    if not Config.DEBUG_MODE:
+    if not current_app.config.get("DEBUG_MODE", False):
         return "Funzione non disponibile in produzione", 403
 
     from models.competition.round_service import RoundService
@@ -955,7 +961,7 @@ def debug_complete_gara(gara_id):
 @main_bp.route("/reset/delete/<snapshot_id>", methods=["POST"])
 def delete_reset_snapshot(snapshot_id):
     """Elimina uno snapshot salvato"""
-    if not Config.DEBUG_MODE:
+    if not current_app.config.get("DEBUG_MODE", False):
         return "Funzione non disponibile in produzione", 403
 
     from utils.reset_manager import ResetManager

@@ -79,7 +79,12 @@ Inchiostro `--c7-ink #1B2124`, `--c7-ink-soft #3D474A`, `--c7-ink-muted #6B7679`
 Linee `--c7-line #D3D8D7`, `--c7-line-soft #E4E8E7`.
 Accento `--c7-accent #2C4A52`, `--c7-accent-bright #8FCDE8`, `--c7-accent-dim #A9C4C7`, `--c7-accent-tint #DDE9EE`.
 Semantici: ok `#2C8A6B` su `#E4EDE9` · errore `#B23B3B` su `#F3E2E0` · attenzione `#8A6A1F` su `#F0E9D8` · info = accento.
-Tipografia Manrope (UI, pesi 600/700/800) + JetBrains Mono (numeri e punteggi).
+Tipografia Manrope (UI, pesi 600/700/800) + JetBrains Mono (numeri di
+servizio). **Precisazione dopo verifica sulle schermate** (2026-08-10): il
+mono vale per quote, XP, conteggi, orari e date — nel prototipo arriva fino
+a ~32px. La *cifra protagonista* di una schermata (il punteggio di una
+partita) è **Manrope 800**, come la 7c e la 8b: è un titolo, non un dato
+tabellare.
 Raggi: pill 999 · card 22 · card-lg 26 · campo 18 · controllo 14 · chip 12.
 Spaziature: gutter 18 (mobile) / 28 (desktop) · pad card 16/20 · gap 12/16.
 Misure: touch 48 · campo 58 · bottone 56 · sidebar 244 · nav mobile 76.
@@ -92,7 +97,8 @@ Ombre **solo** su toast e overlay: le card si distinguono per superficie, non pe
 ## Regole non negoziabili
 
 - Nessun bianco puro, nessuna ombra sulle card, nessun gradiente.
-- Numeri e punteggi sempre in JetBrains Mono (`.c7-num*`), tabulari.
+- Numeri di servizio in JetBrains Mono (`.c7-num*`), tabulari. I punteggi
+  grandi no: vedi la precisazione qui sopra.
 - Target tattile mai sotto 48px.
 - Stato "ereditato / bloccato / concluso" = superficie `--c7-sunken`, mai il grigio disabilitato di Bootstrap.
 - Rosso pieno solo per il pallino live e le icone dei flash: le azioni distruttive usano fondo tenue `--c7-err-bg`.

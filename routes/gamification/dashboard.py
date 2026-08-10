@@ -4,7 +4,16 @@
 Dashboard, achievements, quests, streaks, leaderboards.
 """
 
-from flask import render_template, jsonify, request, flash, redirect, url_for, abort
+from flask import (
+    render_template,
+    jsonify,
+    request,
+    flash,
+    redirect,
+    url_for,
+    abort,
+    current_app,
+)
 from flask_login import login_required, current_user
 from flask_babel import gettext as _
 
@@ -32,9 +41,7 @@ from . import gamification_bp
 @gamification_bp.route("/test")
 def test_gamification():
     """Test page for gamification mascot integration - debug only."""
-    from config import Config
-
-    if not Config.DEBUG_MODE:
+    if not current_app.config.get("DEBUG_MODE", False):
         abort(404)
     return render_template("test_gamification.html")
 
