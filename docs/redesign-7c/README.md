@@ -94,6 +94,13 @@ Ombre **solo** su toast e overlay: le card si distinguono per superficie, non pe
 
 `c7-app` `c7-main` `c7-content` `c7-head` (+`__back` `__title` `__sub`) `c7-actionbar` · `c7-side` `c7-mobilenav` · `c7-card` (+`--accent` `--locked` `--ok` `--warn` `--err` `--info`) `c7-grid` `c7-stack` `c7-cols` `c7-kpis` `c7-live` · `c7-pill` `c7-state` (+`--ok` `--err` `--warn` `--info` `--accent` `--muted`) · `c7-num` `c7-num-lg` `c7-num-xl` `c7-label` `c7-kicker` · `c7-choice` `c7-stepper` · `c7-table-wrap` `c7-cell-actions` `c7-row--attention` `c7-row--done` · `c7-flash` (+ toni) `c7-band` · `c7-chalky` (+`--level` `--rare` `--lost`) · `c7-empty` · `c7-avatar` `c7-divider` `c7-sep` `c7-crumbs` `c7-iconbtn`.
 
+**Aggiunte dopo l'handoff** (2026-08-10): `c7-vtabs` (+`__tab`) sono le
+linguette di vista mobile della 8a, `c7-shortcut` (+`__body` `__score` `__go`)
+la card scura che porta alla propria partita, `c7-tabflat` il contenitore che
+su mobile non disegna box (`display: contents`) perche' il filtro delle
+linguette non lasci colonne vuote col loro `gap`. Meccanica completa nella
+sezione 16 di `theme-7c.css` e nel diario.
+
 ## Regole non negoziabili
 
 - Nessun bianco puro, nessuna ombra sulle card, nessun gradiente.

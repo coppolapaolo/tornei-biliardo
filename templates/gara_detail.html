@@ -54,21 +54,61 @@
    la seconda colonna, sparisce la nav flottante): tutte le alternative
    mobile/desktop di questa pagina usano quindi `lg`, non piu' `md`. #}
 
+{# Viste mobile (prototipo 8a): sotto i 992px la pagina si divide in
+   linguette — Turni / Classifica / Iscritti (+ Gestione per chi dirige) —
+   invece di essere una pila unica in cui chi gioca deve scorrere a lungo per
+   trovare la propria partita. Ogni sezione dichiara le viste cui appartiene
+   con `data-c7-tab`; il filtro e' nel foglio di stile (sezione 16), quindi
+   nessun componente viene incluso due volte.
+
+   Una vista compare solo se ha contenuto, e con meno di due viste la barra
+   non serve: la pagina resta la pila di prima. #}
+{% set gara_views = [] %}
+{% if all_matches %}{% set _void = gara_views.append(('turni', _('Turni'))) %}{% endif %}
+{% if has_scores or challenge_classification %}
+{% set _void = gara_views.append(('classifica', _('Classifica'))) %}
+{% endif %}
+{# Iscritti c'e' sempre: contiene anche le informazioni della gara. #}
+{% set _void = gara_views.append(('iscritti', _('Iscritti'))) %}
+{% if user_can_manage %}{% set _void = gara_views.append(('gestione', _('Gestione'))) %}{% endif %}
+
+{# Vista di partenza: le partite se ci sono, altrimenti l'azionabile di chi
+   dirige (avvio del primo turno) e in ultimo gli iscritti. #}
+{% set gara_view_active = 'turni' if all_matches else ('gestione' if user_can_manage else 'iscritti') %}
+{% if gara_views | length < 2 %}{% set gara_views = [] %}{% endif %}
+
+{% include "components/_gara_view_tabs.html" %}
+
 {# La pagina e' una pila di sezioni e la distanza fra loro la da' `c7-stack`,
    non un `mb-*` diverso per ognuna. E' anche un contenitore flex, quindi le
    classi `order-*` del riordino mobile continuano a valere. #}
-<div class="c7-stack c7-sections">
+<div class="c7-stack c7-sections" id="garaViews" data-gara-id="{{ gara.id }}"
+  {% if gara_views %}data-c7-view="{{ gara_view_active }}"{% endif %}>
+
+{# Scorciatoia alla propria partita: prima cosa della vista Turni. Su desktop
+   la tabella delle partite e' tutta in pagina e non serve.
+   La condizione sta qui, non solo dentro il componente: un involucro vuoto
+   dichiarerebbe comunque `data-c7-tab="turni"`, e quella vista puo' non
+   esistere (gara in iscrizione) — sarebbe una sezione irraggiungibile. #}
+{% if my_active_match %}
+<div class="d-lg-none" data-c7-tab="turni">
+  {% include "components/_gara_my_match.html" %}
+</div>
+{% endif %}
 
 {# ============================================================== #}
 {# MOBILE SSR LAYOUT - Phase A: Unresolved tiebreakers #}
 {# Order: 1. SSR (enter scores) 2. Classification 3. Management #}
 {# ============================================================== #}
+{# Lo spareggio e' l'azionabile del momento: sta nella vista di partenza,
+   oltre che in Gestione. Una sezione puo' appartenere a piu' viste — resta un
+   solo nodo nel DOM. #}
 {% if ssr_needs_input and user_can_manage %}
-<div class="d-lg-none">
+<div class="d-lg-none" data-c7-tab="turni gestione">
   {% include "components/_ssr_section.html" %}
 </div>
 {% if has_scores %}
-<div class="d-lg-none">
+<div class="d-lg-none" data-c7-tab="classifica">
   {% with classification=current_round_classification, round_number=latest_round_with_classification %}
   {% include "components/_classification_mobile.html" %}
   {% endwith %}
@@ -83,14 +123,14 @@
 {% if ssr_ready_to_terminate and user_can_manage %}
 {# Classification FIRST - shows final standings #}
 {% if has_scores %}
-<div class="d-lg-none">
+<div class="d-lg-none" data-c7-tab="classifica">
   {% with classification=current_round_classification, round_number=latest_round_with_classification %}
   {% include "components/_classification_mobile.html" %}
   {% endwith %}
 </div>
 {% endif %}
 {# Management SECOND - prominent terminate button #}
-<div class="d-lg-none">
+<div class="d-lg-none" data-c7-tab="turni gestione">
   <div class="c7-card c7-card--ok">
     <div class="d-flex align-items-center gap-2 mb-3">
       <h3 class="mb-0 flex-fill">{{ _('Completa Gara') }}</h3>
@@ -114,12 +154,13 @@
 {# ============================================================== #}
 {# MOBILE - Strategie sequenziali (Amalfi) a turno finito #}
 {# L'azionabile e' avviare il turno successivo / lo spareggio SSR / #}
-{# terminare: Gestione va in cima e gia' aperta (niente collapse). #}
+{# terminare: Gestione va in cima e gia' aperta (niente collapse), e #}
+{# compare sia nella vista di partenza sia in Gestione. #}
 {# La copia desktop resta nella sidebar; il collapse mobile piu' in #}
 {# basso viene soppresso, quindi su mobile la card e' una sola. #}
 {# ============================================================== #}
 {% if round_action_ready %}
-<div class="d-lg-none" id="sectionGestioneMobileAperta">
+<div class="d-lg-none" id="sectionGestioneMobileAperta" data-c7-tab="turni gestione">
   <div class="c7-card">
     <div class="d-flex align-items-center gap-2 mb-3">
       <h3 class="mb-0 flex-fill">{{ _('Gestione') }}</h3>
@@ -134,22 +175,23 @@
 {% endif %}
 
 {# Prima fascia: informazioni a sinistra, pannello adattivo a destra.
-   Su mobile `c7-cols` e' una pila e l'informativa non c'e' (vive nella
-   sezione richiudibile in fondo), quindi resta la sola colonna destra. #}
-<div class="c7-cols">
-  {# Info gara: solo desktop, su mobile e' la sezione richiudibile in fondo #}
+   Su mobile `c7-cols` non disegna nulla (`c7-tabflat`): le sezioni diventano
+   figlie della pila di pagina, cosi' il filtro delle viste non lascia
+   colonne vuote col loro gap. L'informativa vive nella vista Iscritti. #}
+<div class="c7-cols c7-tabflat">
+  {# Info gara: solo desktop, su mobile e' nella vista Iscritti #}
   <div class="d-none d-lg-block c7-stack">
     {% include "components/_gara_info.html" %}
     {% include "components/_gara_challenges_display.html" %}
   </div>
 
-  <div class="c7-stack">
+  <div class="c7-stack c7-tabflat">
     {# SIDEBAR ADATTIVA in base ai permessi #}
     {% if user_can_manage %}
     {# Admin/Director con permessi di gestione #}
     {# MOBILE SSR PHASE A (needs input): Management is collapsible and collapsed #}
     {% if ssr_needs_input %}
-    <div class="d-lg-none">
+    <div class="d-lg-none" data-c7-tab="gestione">
       <div class="c7-card">
         <div class="d-flex align-items-center gap-2" role="button"
           data-bs-toggle="collapse" data-bs-target="#mobileManagementCollapse" aria-expanded="false"
@@ -183,33 +225,45 @@
       {% include "components/_gara_management.html" %}
     </div>
     {% else %}
-    {% include "components/_gara_management.html" %}
+    <div data-c7-tab="gestione">
+      {% include "components/_gara_management.html" %}
+    </div>
     {% endif %}
     {% elif user_inscription %}
-    {# Player iscritto #}
-    {% include "components/_player_inscription_info.html" %}
+    {# Player iscritto: data e ordine di sorteggio stanno fra gli iscritti. Nel
+       prototipo la vista Turni va dalla scorciatoia direttamente ai turni, e
+       fuori dalla fase di gioco le linguette non ci sono, quindi la card si
+       vede comunque quando e' l'unica cosa che c'e'. #}
+    <div data-c7-tab="iscritti">
+      {% include "components/_player_inscription_info.html" %}
+    </div>
     {% else %}
-    {# Guest/Utente non iscritto #}
-    {% include "components/_guest_info.html" %}
+    {# Guest/Utente non iscritto: qui dentro c'e' il pulsante d'iscrizione
+       (issue #61), che non puo' finire dietro una linguetta. #}
+    <div data-c7-tab="turni iscritti">
+      {% include "components/_guest_info.html" %}
+    </div>
     {% endif %}
   </div>
 </div>
 
 {# Sezioni a tutta larghezza. `c7-stack` e' un contenitore flex, quindi in
    fase di gioco le classi order-* riordinano il mobile (vedi playing_admin
-   in alto) e order-lg-* riporta la sequenza originale sul desktop. #}
-<div class="c7-stack c7-sections">
+   in alto) e order-lg-* riporta la sequenza originale sul desktop.
+   `c7-tabflat`: su mobile il gruppo non disegna box, cosi' le sezioni sono
+   figlie della pila di pagina e le `order-*` restano confrontabili fra loro. #}
+<div class="c7-stack c7-sections c7-tabflat">
 {# Sezioni Admin/Director (solo se può gestire) - DESKTOP or non-SSR mobile #}
 {% if user_can_manage %}
 {# Link pubblico da condividere: ha senso finché ci si può iscrivere #}
 {% if gara.status in [GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value] %}
-<div id="sectionLinkPubblico">
+<div id="sectionLinkPubblico" data-c7-tab="gestione">
   {% include "components/_gara_public_link.html" %}
 </div>
 {% endif %}
 {# Directors: on desktop always here, on mobile SSR phase moved to bottom #}
 {% if not is_ssr_phase %}
-<div class="{% if playing_admin %}order-4 order-lg-1{% endif %}" id="sectionDirettori">
+<div class="{% if playing_admin %}order-4 order-lg-1{% endif %}" id="sectionDirettori" data-c7-tab="gestione">
   {% include "components/_gara_directors.html" %}
 </div>
 {% else %}
@@ -222,52 +276,50 @@
 {# Tavoli della gara: editabile tra apertura iscrizioni e avvio,
    sola lettura durante il gioco (il componente gestisce gli stati) #}
 {% if gara.status in [GaraStatus.INSCRIPTION.value, GaraStatus.PLAYING.value] %}
-<div class="{% if playing_admin %}order-5 order-lg-1{% endif %}" id="sectionTavoli">
+<div class="{% if playing_admin %}order-5 order-lg-1{% endif %}" id="sectionTavoli" data-c7-tab="gestione">
   {% include "components/_gara_tables_config.html" %}
 </div>
 {% endif %}
 
-{# Gestione Turni #}
-<div class="{% if playing_admin %}order-2 order-lg-2{% endif %}" id="sectionTurni">
+{# Gestione Turni: e' la configurazione dei turni (disciplina e distanza per
+   turno), non l'elenco delle partite — vive quindi in Gestione, non in Turni.
+   Le partite del turno stanno nella vista Turni. #}
+<div class="{% if playing_admin %}order-2 order-lg-2{% endif %}" id="sectionTurni" data-c7-tab="gestione">
   {% include "components/_round_management.html" %}
 </div>
 
-{# MOBILE (fase di gioco): Gestione collassata dopo l'azionabile. La copia
-   desktop resta nella sidebar in alto (d-none d-lg-block); _gara_management
-   non contiene id/script, quindi la doppia inclusione e' sicura.
-   A turno finito (round_action_ready) Gestione e' invece gia' in cima e
-   aperta: qui non va ripetuta, altrimenti su mobile comparirebbe due volte. #}
+{# MOBILE (fase di gioco): Gestione nella sua linguetta. Era un collapse
+   perche' stava in mezzo alla pila, davanti alle partite; ora la vista di
+   partenza sono i Turni e la Gestione ha una linguetta sua, dove richiuderla
+   sarebbe solo un tap in piu' per arrivare all'unica cosa che contiene.
+   La copia desktop resta nella sidebar in alto (d-none d-lg-block);
+   _gara_management non contiene id/script, quindi la doppia inclusione e'
+   sicura. A turno finito (round_action_ready) Gestione e' invece gia' in cima
+   e aperta: qui non va ripetuta, altrimenti comparirebbe due volte. #}
 {% if playing_admin and not round_action_ready %}
-<div class="d-lg-none order-3" id="sectionGestioneMobile">
+<div class="d-lg-none order-3" id="sectionGestioneMobile" data-c7-tab="gestione">
   <div class="c7-card">
-    <div class="d-flex align-items-center gap-2" role="button"
-      data-bs-toggle="collapse" data-bs-target="#mobilePlayingManagement" aria-expanded="false"
-      aria-controls="mobilePlayingManagement" style="cursor: pointer;">
+    <div class="d-flex align-items-center gap-2 mb-3">
       <h3 class="mb-0 flex-fill">{{ _('Gestione') }}</h3>
       {{ status_badge(gara, 'gara') }}
-      <i class="fas fa-chevron-down collapse-icon"></i>
     </div>
-    <div id="mobilePlayingManagement" class="collapse">
-      {# headerless: il titolo "Gestione" + status badge sono gia' nella
-         testata del collapse qui sopra (rilievo Copilot PR #36) #}
-      <div style="margin-top: 14px;">
-        {% with management_headerless = True %}
-        {% include "components/_gara_management.html" %}
-        {% endwith %}
-      </div>
-    </div>
+    {# headerless: il titolo "Gestione" + status badge sono gia' nella testata
+       qui sopra (rilievo Copilot PR #36) #}
+    {% with management_headerless = True %}
+    {% include "components/_gara_management.html" %}
+    {% endwith %}
   </div>
 </div>
 {% endif %}
 {% endif %}
 
 {# Sezione Partite - adattiva #}
-<div class="c7-cols{% if playing_admin %} order-1 order-lg-3{% endif %}" id="sectionPartite">
-  <div class="c7-stack">
+<div class="c7-cols c7-tabflat{% if playing_admin %} order-1 order-lg-3{% endif %}" id="sectionPartite">
+  <div class="c7-stack c7-tabflat">
     {# === MOBILE: Show Classification FIRST when gara is ending (SSR phase or completed) === #}
     {# Skip if already shown above for SSR phase with user_can_manage #}
     {% if (is_ssr_phase or is_gara_ending) and has_scores and not (is_ssr_phase and user_can_manage) %}
-    <div class="d-lg-none">
+    <div class="d-lg-none" data-c7-tab="classifica">
       {% with classification=current_round_classification, round_number=latest_round_with_classification %}
       {% include "components/_classification_mobile.html" %}
       {% endwith %}
@@ -277,24 +329,28 @@
     {# === MOBILE: Show SSR section BEFORE matches only when needing input (non-director) === #}
     {# For ssr_ready_to_terminate (director), SSR is shown AFTER matches #}
     {% if show_ssr_section and not (is_ssr_phase and user_can_manage) %}
-    <div class="d-lg-none">
+    <div class="d-lg-none" data-c7-tab="turni">
       {% include "components/_ssr_section.html" %}
     </div>
     {% endif %}
 
     {# Partite: card su mobile, tabella su desktop. Il contenuto e' lo stesso
        per direttore, iscritto e ospite — cambiano solo le azioni, che i
-       componenti decidono da user_can_manage / user_inscription. #}
-    <div class="d-lg-none">
+       componenti decidono da user_can_manage / user_inscription.
+       Senza partite l'involucro non si emette: dichiarerebbe la vista Turni,
+       che in quel caso non ha una linguetta. #}
+    {% if all_matches or matches %}
+    <div class="d-lg-none" data-c7-tab="turni">
       {% include "components/_match_cards_mobile.html" %}
     </div>
+    {% endif %}
     <div class="d-none d-lg-block">
       {% include "components/_gara_matches.html" %}
     </div>
 
     {# === MOBILE SSR PHASE B: Show SSR AFTER matches (read-only summary) === #}
     {% if ssr_ready_to_terminate and user_can_manage %}
-    <div class="d-lg-none">
+    <div class="d-lg-none" data-c7-tab="turni gestione">
       {% include "components/_ssr_section.html" %}
     </div>
     {% endif %}
@@ -309,13 +365,13 @@
     {% endif %}
   </div>
 
-  <div class="c7-stack">
+  <div class="c7-stack c7-tabflat">
     {# Classifica: compatta su mobile, dettagliata su desktop. Quando la gara
        sta chiudendo la versione mobile e' gia' in cima alla colonna partite. #}
     {% if has_scores %}
     {% with classification=current_round_classification, round_number=latest_round_with_classification %}
     {% if not is_ssr_phase and not is_gara_ending %}
-    <div class="d-lg-none">
+    <div class="d-lg-none" data-c7-tab="classifica">
       {% include "components/_classification_mobile.html" %}
     </div>
     {% endif %}
@@ -334,73 +390,57 @@
 
     {# Challenge Classification for Random Strategy (solo admin/director) #}
     {% if user_can_manage and challenge_classification %}
-    <div>
+    <div data-c7-tab="classifica">
       {% include "components/_gara_challenge_classification_compact.html" %}
     </div>
     {% endif %}
+  </div>
+</div>
 
-    {# === MOBILE: informazioni e iscritti, richiudibili ===
-       Stessi componenti del desktop, in versione headerless. Prima erano
-       ricopiati a mano qui dentro, e le due versioni erano gia' divergenti:
-       su mobile mancavano challenge, direzione di gara e data d'iscrizione. #}
-    <div class="d-lg-none c7-stack">
-      <div class="c7-card">
-        <div class="d-flex align-items-center gap-2" role="button" data-bs-toggle="collapse"
-          data-bs-target="#mobileInfoCollapse" aria-expanded="false" aria-controls="mobileInfoCollapse"
-          style="cursor: pointer;">
-          <h3 class="mb-0 flex-fill">{{ _('Informazioni gara') }}</h3>
-          <i class="fas fa-chevron-down collapse-icon"></i>
-        </div>
-        <div id="mobileInfoCollapse" class="collapse">
-          <div style="margin-top: 14px;">
-            {% with info_headerless = True %}
-            {% include "components/_gara_info.html" %}
-            {% endwith %}
-          </div>
-        </div>
-      </div>
+{# === MOBILE: iscritti e informazioni, nella loro linguetta ===
+   Stessi componenti del desktop, in versione headerless. Prima stavano
+   *dentro* la sezione Partite (compromesso della PR #36): in fase di gioco
+   risalivano con lei, ed erano entrambi richiusi perche' altrimenti
+   allungavano la pila. Con le linguette hanno una vista propria, quindi gli
+   iscritti — che sono il soggetto della vista — stanno aperti, e resta
+   richiudibile la sola informativa, che e' di contorno. #}
+<div class="d-lg-none c7-stack" data-c7-tab="iscritti">
+  {% if gara.status != GaraStatus.SETUP.value %}
+  {% include "components/_gara_inscriptions.html" %}
+  {% endif %}
 
-      {% if gara.status != GaraStatus.SETUP.value %}
-      <div class="c7-card">
-        <div class="d-flex align-items-center gap-2" role="button" data-bs-toggle="collapse"
-          data-bs-target="#mobileInscriptionsCollapse" aria-expanded="false"
-          aria-controls="mobileInscriptionsCollapse" style="cursor: pointer;">
-          <h3 class="mb-0 flex-fill">{{ _('Iscritti') }}</h3>
-          <span class="c7-num" style="color:var(--c7-ink-muted)">
-            {{ gara.get_active_inscriptions_count() }}{% if gara.max_participants %}/{{ gara.max_participants }}{% endif %}
-          </span>
-          {% if gara.get_waitlist_count() > 0 %}
-          <span class="c7-state c7-state--warn">+{{ gara.get_waitlist_count() }}</span>
-          {% endif %}
-          <i class="fas fa-chevron-down collapse-icon"></i>
-        </div>
-        <div id="mobileInscriptionsCollapse" class="collapse">
-          <div style="margin-top: 14px;">
-            {% with inscriptions_headerless = True %}
-            {% include "components/_gara_inscriptions.html" %}
-            {% endwith %}
-          </div>
-        </div>
+  <div class="c7-card">
+    <div class="d-flex align-items-center gap-2" role="button" data-bs-toggle="collapse"
+      data-bs-target="#mobileInfoCollapse" aria-expanded="false" aria-controls="mobileInfoCollapse"
+      style="cursor: pointer;">
+      <h3 class="mb-0 flex-fill">{{ _('Informazioni gara') }}</h3>
+      <i class="fas fa-chevron-down collapse-icon"></i>
+    </div>
+    <div id="mobileInfoCollapse" class="collapse">
+      <div style="margin-top: 14px;">
+        {% with info_headerless = True %}
+        {% include "components/_gara_info.html" %}
+        {% endwith %}
       </div>
-      {% endif %}
-
-      {# In fase di spareggio i direttori scendono in fondo. Il componente ha
-         gia' la sua card intitolata: il secondo involucro richiudibile
-         ripeteva il titolo, quindi resta la sola card. #}
-      {% if is_ssr_phase and user_can_manage %}
-      <div>
-        {% include "components/_gara_directors.html" %}
-      </div>
-      {% endif %}
     </div>
   </div>
 </div>
+
+{# In fase di spareggio i direttori scendono in fondo. Il componente ha gia'
+   la sua card intitolata: il secondo involucro richiudibile ripeteva il
+   titolo, quindi resta la sola card. #}
+{% if is_ssr_phase and user_can_manage %}
+<div class="d-lg-none" data-c7-tab="gestione">
+  {% include "components/_gara_directors.html" %}
+</div>
+{% endif %}
 {# Chiusura della pila di sezioni a tutta larghezza #}
 </div>
 
-{# Challenge Section - adattiva #}
+{# Challenge Section - adattiva. Per chi ha l'X di turno la challenge e' cosa
+   fare adesso al posto di una partita: sta con i Turni. #}
 {% if gara_challenges or user_challenge_data %}
-<div>
+<div data-c7-tab="turni">
   {% if user_inscription and user_challenge_data %}
   {# Player iscritto: challenge interattive #}
   {% include "components/_player_challenges.html" %}

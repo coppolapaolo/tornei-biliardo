@@ -994,3 +994,92 @@ input[type="number"].form-control {
 }
 .c7-board__undo:disabled { opacity: .4; cursor: not-allowed; }
 .c7-score__state--idle { background: var(--c7-sunken); color: var(--c7-ink-muted); }
+
+/* --------------------------------------------------------------------------
+   16. Linguette di vista e scorciatoia al proprio match (8a)
+
+   Su mobile la pagina gara non e' una pila unica: e' divisa in viste
+   (Turni / Classifica / Iscritti / Gestione) che una barra di pill
+   appiccicata sotto la testata commuta. Ogni sezione dichiara a quali viste
+   appartiene con `data-c7-tab="turni gestione"`; il contenitore dichiara
+   quella attiva con `data-c7-view`. Un solo nodo nel DOM, visibile in piu'
+   linguette: i componenti con `id` e `<script>` dentro (configurazione turni,
+   link pubblico) non si possono duplicare.
+
+   Da 992px le viste non esistono: il desktop mostra tutto, nelle sue due
+   colonne, esattamente come prima.
+   -------------------------------------------------------------------------- */
+
+.c7-vtabs { display: none; }
+
+@media (max-width: 991.98px) {
+  .c7-vtabs {
+    display: flex;
+    gap: 6px;
+    position: sticky;
+    top: var(--c7-head-h);
+    /* Sotto la testata, sopra il contenuto che le scorre sotto. */
+    z-index: calc(var(--c7-z-head) - 1);
+    /* Scavalca i margini di `.c7-content`: il contenuto deve passarle sotto,
+       non di fianco. */
+    margin: 0 calc(-1 * var(--c7-gutter)) var(--c7-gap);
+    padding: 14px var(--c7-gutter) 12px;
+    background: var(--c7-bg);
+  }
+  .c7-vtabs__tab {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    height: 42px;
+    border: 0;
+    border-radius: var(--c7-r-pill);
+    background: var(--c7-card);
+    color: var(--c7-ink-muted);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    display: grid;
+    place-items: center;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  /* Il pill del prototipo e' alto 42px, sotto il minimo tattile di 48.
+     L'area sensibile si allarga di 3px per lato senza spostare nulla: il gap
+     fra i pill e' 6px, quindi le aree si sfiorano e non si accavallano. */
+  .c7-vtabs__tab::after { content: ""; position: absolute; inset: -3px; }
+  .c7-vtabs__tab.is-active { background: var(--c7-accent); color: var(--c7-accent-ink); }
+
+  /* Il filtro: fuori dalla vista attiva la sezione non si disegna. */
+  [data-c7-view="turni"] [data-c7-tab]:not([data-c7-tab~="turni"]),
+  [data-c7-view="classifica"] [data-c7-tab]:not([data-c7-tab~="classifica"]),
+  [data-c7-view="iscritti"] [data-c7-tab]:not([data-c7-tab~="iscritti"]),
+  [data-c7-view="gestione"] [data-c7-tab]:not([data-c7-tab~="gestione"]) {
+    display: none !important;
+  }
+
+  /* I contenitori che impaginano il desktop non disegnano box su mobile: una
+     colonna che il filtro svuota resterebbe un flex item alto zero, e il gap
+     separa anche quelli — un buco doppio fra le sezioni. Con `contents` le
+     sezioni diventano figlie della pila di pagina e il gap torna uniforme. */
+  .c7-tabflat { display: contents; }
+}
+
+/* Scorciatoia scura alla propria partita, in cima alla vista Turni: chi gioca
+   non deve cercarsi dentro la pila dei turni. */
+.c7-shortcut { display: flex; align-items: center; gap: 14px; }
+.c7-shortcut__body { flex: 1; min-width: 0; }
+.c7-shortcut__score { margin-top: 6px; font-size: 17px; font-weight: 800; letter-spacing: -.02em; }
+.c7-shortcut__go,
+.c7-shortcut__go:hover {
+  height: 42px;
+  padding: 0 16px;
+  border-radius: var(--c7-r-pill);
+  background: var(--c7-accent-bright);
+  color: #0D2A36;
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 800;
+  flex-shrink: 0;
+  white-space: nowrap;
+}

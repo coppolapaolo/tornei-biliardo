@@ -16,6 +16,7 @@ In entrambi i casi il desktop resta invariato e su mobile il blocco compare
 UNA sola volta (le copie mobile/desktop sono mutuamente esclusive).
 """
 
+import re
 from datetime import date
 
 import pytest
@@ -27,6 +28,20 @@ from models.user.role_enum import UserRole
 # Testata "Gestione" nel design 7c: h3 a tutta riga, senza l'icona a
 # ingranaggio di prima. Conta le occorrenze per scoprire i duplicati.
 GESTIONE_HEADING = 'flex-fill">Gestione</h3>'
+
+
+def _nav_class(html: str, nav_id: str):
+    """Classi del blocco di ritorno, o None se quel blocco non c'e'.
+
+    Non assume l'ordine degli attributi: il guscio 7c ha spostato `class`
+    prima o dopo `id` a seconda del blocco, e asserire sulla stringa esatta
+    ha lasciato questi test rossi per settimane senza che nulla fosse rotto.
+    """
+    tag = re.search(rf"<div[^>]*\bid=\"{nav_id}\"[^>]*>", html)
+    if not tag:
+        return None
+    classes = re.search(r'class="([^"]*)"', tag.group(0))
+    return classes.group(1) if classes else ""
 
 
 @pytest.fixture
@@ -101,10 +116,10 @@ def test_match_a_distanza_mostra_ritorno_in_cima_su_mobile(admin_client, db_sess
     assert resp.status_code == 200
     html = resp.get_data(as_text=True)
 
-    # Copia mobile in cima + copia in sidebar nascosta su mobile: una sola
-    # visibile per viewport.
-    assert 'id="matchNavTop"' in html
-    assert 'id="matchNavSidebar" class="d-none d-md-block"' in html
+    # Un solo ritorno per viewport: su mobile e' quello in cima, su desktop
+    # vive nella testata (`page_actions`), quindi la copia in fondo non c'e'.
+    assert _nav_class(html, "matchNavTop") == "d-lg-none"
+    assert _nav_class(html, "matchNavSidebar") is None
 
 
 def test_match_in_corso_non_anticipa_il_ritorno(admin_client, db_session):
@@ -116,9 +131,10 @@ def test_match_in_corso_non_anticipa_il_ritorno(admin_client, db_session):
     assert resp.status_code == 200
     html = resp.get_data(as_text=True)
 
-    # Solo la copia in sidebar, visibile anche su mobile a fondo pagina.
-    assert 'id="matchNavTop"' not in html
-    assert 'id="matchNavSidebar" class=""' in html
+    # Solo la copia in fondo, e solo su mobile: sul desktop il ritorno e' in
+    # testata e una seconda copia in pagina lo ripeterebbe.
+    assert _nav_class(html, "matchNavTop") is None
+    assert _nav_class(html, "matchNavSidebar") == "d-lg-none"
 
 
 def test_match_completato_mostra_ritorno_in_cima(admin_client, db_session):

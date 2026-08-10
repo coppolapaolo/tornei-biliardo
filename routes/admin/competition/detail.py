@@ -26,6 +26,15 @@ from models.competition.spareggio_service import SpareggioService
 from . import competition_bp
 
 
+def _plays_in(match, user_id: int) -> bool:
+    """Vero se l'utente e' uno dei giocatori della partita (trio compreso)."""
+    if match.player1_id == user_id or match.player2_id == user_id:
+        return True
+    return bool(
+        match.is_trio and match.trio_match and match.trio_match.player3_id == user_id
+    )
+
+
 @competition_bp.route("/<int:gara_id>")
 def gara_detail(gara_id):
     """
@@ -432,6 +441,24 @@ def gara_detail(gara_id):
         )
     )
 
+    # Scorciatoia "il tuo match" (prototipo 8a): su mobile la propria partita
+    # sta in cima alla vista Turni, non da cercare nella pila dei turni.
+    # `all_matches` e' ordinato per turno, quindi il primo non finito e' quello
+    # piu' basso — lo stesso che _match_cards_mobile mette in alto. L'admin non
+    # gioca: per lui la scorciatoia non ha senso.
+    my_active_match = None
+    if current_user.is_authenticated and not current_user.is_admin:
+        my_active_match = next(
+            (
+                match
+                for match in (all_matches or [])
+                if not MatchStatus.is_finished(match.status)
+                and not match.is_bye
+                and _plays_in(match, current_user.id)
+            ),
+            None,
+        )
+
     # Iscrizione dalla pagina della gara (issue #61). Il pulsante mancava:
     # ci si poteva iscrivere solo dalle card di homepage e liste, quindi chi
     # arrivava qui da un link diretto non aveva alcun modo di iscriversi.
@@ -466,6 +493,7 @@ def gara_detail(gara_id):
         inscriptions=inscriptions,
         matches=matches,
         all_matches=all_matches,
+        my_active_match=my_active_match,
         users=users,
         inherited_directors=inherited_directors,
         can_manage_directors=can_manage_directors,

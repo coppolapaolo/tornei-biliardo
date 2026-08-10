@@ -224,18 +224,99 @@ i valori CSS sono confermati con `getComputedStyle`, **la resa su un telefono
 vero no** — sta dietro `pointer: coarse`, che il browser pilotato non emula.
 Da guardare col device mode prima di dirlo chiuso.
 
+**Pagina gara a linguette** — chiuso il punto 1 dei disallineamenti. Sotto i
+992px la pagina non e' piu' una pila unica: si divide nelle viste del prototipo
+(8a) **Turni · Classifica · Iscritti**, piu' **Gestione** per chi dirige, con la
+barra di pill appiccicata sotto la testata e la card scura "IL TUO MATCH ·
+TAVOLO n → Apri" in cima alla vista Turni.
+
+- **Come e' fatto: filtro CSS, non pannelli separati.** Ogni sezione dichiara le
+  viste a cui appartiene (`data-c7-tab="turni gestione"`), il contenitore
+  dichiara quella attiva (`data-c7-view`) e la sezione 16 di `theme-7c.css`
+  nasconde il resto. **Un solo nodo nel DOM per sezione**: costruire pannelli
+  per il mobile avrebbe richiesto di includere due volte `_round_management`
+  (9 `id` e uno `<script>`), `_gara_public_link` e `_gara_tables_config`, cioe'
+  di rompere il loro JS. Il selettore usa `~=`, quindi una sezione puo' stare
+  in due viste — e' cosi' che lo spareggio e la Gestione a turno finito restano
+  raggiungibili dalla vista di partenza oltre che da Gestione.
+- **`display: contents` sui contenitori di impaginazione** (`c7-tabflat`). Il
+  filtro svuota una delle due colonne di `c7-cols`, che resterebbe un flex item
+  alto zero: il `gap` lo conta comunque e fra le sezioni compare un buco
+  doppio. Su mobile quei contenitori non disegnano box e le sezioni diventano
+  figlie della pila di pagina — misurato, i distacchi sono tutti 12px.
+- **Vista di partenza**: le partite se ci sono, altrimenti Gestione per chi
+  dirige (in iscrizione l'azionabile e' avviare la gara), altrimenti Iscritti.
+  **Con meno di due viste la barra non compare** e la pagina resta la pila di
+  prima: e' il caso del giocatore o dell'ospite su una gara in iscrizione.
+- **La vista scelta sopravvive al ricaricamento** (`sessionStorage`, chiave per
+  gara): quasi ogni azione della pagina ricarica, e senza memoria il direttore
+  tornava ogni volta sulla vista di partenza.
+- **Il compromesso della PR #36 e' chiuso davvero** (verificato, era la
+  richiesta): informazioni e iscritti non stanno piu' *dentro* la sezione
+  Partite — hanno una vista loro, quindi non risalgono piu' con lei in fase di
+  gioco. E gli iscritti non sono piu' richiusi: nella loro vista sono il
+  soggetto, resta richiudibile la sola informativa. Anche la **Gestione mobile
+  non e' piu' un collapse**: in una linguetta dedicata richiuderla era solo un
+  tap in piu' per arrivare all'unica cosa che contiene.
+- **Area tattile.** Il pill del prototipo e' alto 42px, sotto il minimo di 48:
+  l'area sensibile si allarga di 3px per lato con uno `::after`, quindi
+  l'aspetto e' quello del prototipo e il bersaglio e' 48. Verificato con
+  `elementFromPoint`. Aggiunte anche le frecce sinistra/destra: dichiarare
+  `role="tablist"` senza gestirle e' una promessa ARIA non mantenuta.
+
+**Difetti trovati strada facendo e riparati:**
+
+- **Le partite in corso erano card scure.** `_match_card.html` dava
+  `c7-card--accent` a ogni partita in gioco, mentre nella 8a le partite del
+  turno sono card **chiare** e il fondo accento e' riservato alla scorciatoia:
+  una lista di card scure svuotava di significato la card scura che conta. Ora
+  la superficie e' quella normale, con il pill "IN CORSO". Nello stesso file
+  sono spariti i letterali di stato (`'completed'`, `'playing'`, `'pending'`) in
+  favore di `MatchStatus`, e il pill non ha piu' i colori scritti a mano.
+- **Lo script del commutatore non partiva.** Inline durante il parsing, cercava
+  `#garaViews`, che viene dopo: `getElementById` tornava `null` e la funzione
+  usciva subito, in silenzio. Ora aspetta `DOMContentLoaded`.
+- **Due test rossi da settimane, e non per un difetto vero.**
+  `test_rilievi_20260728_mobile_azionabile.py` asseriva
+  `id="matchNavSidebar" class="d-none d-md-block"` come stringa esatta: il
+  guscio 7c della pagina partita (`3e83e1b`) ha cambiato quelle classi e reso
+  la copia condizionale, e i due test sono rimasti indietro. Riscritti
+  sull'invariante — **un solo ritorno per viewport** — con un helper che non
+  assume l'ordine degli attributi. (STATO diceva "1 rosso in integrazione":
+  erano 3.)
+
+**Aggiunto `tests/new/integration/test_gara_view_tabs.py`.** L'invariante che
+conta e' **nessuna sezione irraggiungibile**: se una sezione dichiara una vista
+che non ha il suo pill, su mobile quel contenuto non e' raggiungibile da
+nessuna parte, e la pagina non da' errori. Il test l'ha subito trovata: gli
+involucri della scorciatoia e delle partite venivano emessi vuoti anche in fase
+di iscrizione, dichiarando una vista Turni che non esisteva. Ora non si emettono
+affatto.
+
+**Cosa e' verificato e cosa no.** Desktop 1512px: verificato, **invariato** —
+la barra e' `display:none` e `c7-cols` resta a due colonne. Ruoli: direttore,
+giocatore con partita in corso, giocatore senza partita, ospite non iscritto;
+stati: iscrizione, gioco, conclusa con spareggio. Provata l'azione (la
+scorciatoia porta sulla partita giusta) e la memoria della vista.
+**Il mobile e' stato guardato a 390px logici col ripiego dello `zoom`, non con
+la device toolbar**: viewport e media query erano quelle della finestra a
+500px, cioe' comunque il ramo mobile, e `document.body.scrollWidth` dice 390
+senza sbordamenti. La resa vera su 390px va confermata col device mode.
+
 ## Disallineamenti fra prototipo e codice
 
 Rilevati confrontando le schermate del prototipo con l'app in esecuzione.
 Quelli sopra sono chiusi; questi no.
 
-1. **Pagina gara, mobile (8a·1) — linguette Turni / Classifica / Iscritti.**
-   Il prototipo divide la pagina in tre viste e mette in cima una card scura
-   "IL TUO MATCH · TAVOLO 1 → Apri". Oggi e' una pila unica di sezioni: chi
-   gioca scorre parecchio per trovare la propria partita, e Info/Iscritti
-   restano il compromesso della PR #36. **Le linguette risolvono anche quel
-   compromesso**, perche' ogni vista diventa corta. Lavoro medio: i contenuti
-   esistono gia' tutti, serve il commutatore e la card di scorciatoia.
+1. ~~**Pagina gara, mobile (8a·1) — linguette Turni / Classifica / Iscritti.**~~
+   **Chiuso** (vedi "Fatto"). Restano tre scostamenti minori, tutti nel senso
+   "il design system dice una cosa un po' diversa dalla singola schermata":
+   il kicker della card scura e' il `c7-kicker` da 10px del tema e non i 12px
+   del prototipo (cambiarlo toccherebbe ogni card convertita); il raggio della
+   card e' `--c7-r-card` (22px) e non i 24px della schermata, che non e' un
+   token; e la testata del turno mostra il pill "IN CORSO" invece del "2 di 4
+   chiusi" del prototipo — quello sta in `_match_cards_mobile`, gia' convertito
+   nell'handoff, e vale piu' come nota per quando lo si riaprira'.
 2. **Notifiche (8a·3) — azioni dentro la notifica.** Il prototipo divide "DA
    FARE" da "PRIMA" e mette i bottoni nella notifica ("Firmo" / "Contesto").
    Oggi la pagina si apre con il pannello di auto-cancellazione, poi una lista
@@ -306,10 +387,9 @@ Visti ma non ancora affrontati, in ordine di dubbio:
 - **La card "Gestione" resta visibile e vuota a gara conclusa** — solo
   titolo e badge di stato, nessuna azione. Il badge e' l'unico posto in
   pagina dove lo stato e' scritto, quindi non basta nasconderla.
-- **Info e Iscritti richiudibili su mobile** stanno ancora dentro la
-  sezione Partite, quindi in fase di gioco risalgono con lei (compromesso
-  della PR #36). Con la pila di sezioni ora spostarli in fondo assoluto e'
-  molto meno costoso di prima.
+- ~~**Info e Iscritti richiudibili su mobile** stanno ancora dentro la sezione
+  Partite.~~ **Chiuso dalle linguette**: hanno una vista loro, e gli iscritti
+  non sono piu' richiusi.
 - **`public/garas_list.html` su mobile.** È una tabella a sei colonne
   dentro `c7-table-wrap`: i nomi delle gare vanno a capo su ogni parola.
   Il pacchetto ha `_match_cards_mobile` e `_classification_mobile` proprio

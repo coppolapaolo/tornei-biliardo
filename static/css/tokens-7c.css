@@ -77,6 +77,11 @@
   --c7-btn-h:       56px;
   --c7-side-w:      244px;  /* sidebar desktop */
   --c7-mobilenav-h: 76px;
+  /* Altezza della testata mobile: 20 + 46 (bottone/avatar) + 12. La usa chi
+     si appiccica sotto di lei, come le linguette di vista della pagina gara.
+     Un titolo che va a capo la fa crescere, quindi il commutatore la
+     rimisura e riscrive questa variabile: qui c'e' solo il caso normale. */
+  --c7-head-h:      78px;
 
   /* --- Ombre (solo overlay e toast; le card NON hanno ombra) ------------ */
   --c7-shadow-toast: 0 10px 24px -18px rgba(27, 33, 36, .6);

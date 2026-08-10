@@ -1,23 +1,29 @@
 {# templates/components/_match_card.html — 7c #}
 {# Expects: match, user_can_manage, available_tables, match_can_modify, forfeit_user_ids, user_inscription #}
 
-{% set is_finished = match.status in ['completed', 'validated'] %}
+{# Stati via enum, non stringhe: un membro sbagliato esplode all'import, una
+   stringa sbagliata sbaglia in silenzio. #}
+{% set is_finished = MatchStatus.is_finished(match.status) %}
 {% set p1_wins = is_finished and match.winner_id == match.player1_id %}
 {% set p2_wins = is_finished and match.winner_id == match.player2_id %}
 {% set p1_forfeit = forfeit_user_ids is defined and match.player1_id in forfeit_user_ids %}
 {% set p2_forfeit = forfeit_user_ids is defined and match.player2_id in forfeit_user_ids %}
 {% set is_my_match = user_inscription and current_user.is_authenticated and (match.player1_id == current_user.id or match.player2_id == current_user.id) %}
 
-<article class="c7-card {% if match.status == 'playing' %}c7-card--accent{% elif is_finished %}c7-card--locked{% endif %}">
+{# Superficie: normale mentre si gioca, affossata a partita conclusa. Lo scuro
+   accento non e' piu' qui — nel prototipo (8a) le partite del turno sono card
+   chiare e il fondo accento e' la scorciatoia "il tuo match" in cima: usarlo
+   per tutte le partite in corso lo svuotava di significato. #}
+<article class="c7-card {% if is_finished %}c7-card--locked{% endif %}">
   {# === TESTATA === #}
   <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
     <div style="display: flex; align-items: center; gap: 6px;">
       {% if match.is_bye %}
       <span class="c7-state c7-state--info">{{ _('X a tavolino') }}</span>
-      {% elif match.status == 'pending' %}
+      {% elif match.status == MatchStatus.PENDING.value %}
       <span class="c7-state c7-state--warn">{{ _('Da giocare') }}</span>
-      {% elif match.status == 'playing' %}
-      <span class="c7-state" style="background: var(--c7-accent-bright); color: var(--c7-accent);">{{ _('In corso') }}</span>
+      {% elif match.status == MatchStatus.PLAYING.value %}
+      <span class="c7-state c7-state--accent">{{ _('In corso') }}</span>
       {% elif is_finished %}
       <span class="c7-state c7-state--ok">{{ _('Conclusa') }}</span>
       {% endif %}

@@ -1,0 +1,31 @@
+{# templates/components/_gara_my_match.html — 7c (prototipo 8a) #}
+{# Scorciatoia scura alla propria partita, in cima alla vista Turni: chi gioca
+   non deve scorrere la pila dei turni per trovarsi. Tutta la card e' il
+   bersaglio, non solo il pulsante: su un telefono un bersaglio da 42px in un
+   riquadro da 340 e' un invito a sbagliare. #}
+
+{% if my_active_match %}
+{% set m = my_active_match %}
+<a class="c7-card c7-card--accent c7-shortcut"
+   href="{{ url_for('admin.match.match_detail', match_id=m.id) }}">
+  <span class="c7-shortcut__body">
+    <span class="c7-kicker">
+      {{ _('Il tuo match') }}
+      {%- if m.table_assignment %} <span class="c7-sep">·</span> {{ _('Tavolo') }} {{ m.table_assignment }}
+      {%- endif %}
+    </span>
+    <span class="c7-shortcut__score d-block">
+      {% if m.is_trio and m.trio_match %}
+      {{ m.trio_match.player1.username }} <span class="c7-sep">·</span>
+      {{ m.trio_match.player2.username }} <span class="c7-sep">·</span>
+      {{ m.trio_match.player3.username }}
+      {% else %}
+      {{ m.player1.username if m.player1 else '—' }}
+      {{ m.player1_score }} – {{ m.player2_score }}
+      {{ m.player2.username if m.player2 else '—' }}
+      {% endif %}
+    </span>
+  </span>
+  <span class="c7-shortcut__go">{{ _('Apri') }}</span>
+</a>
+{% endif %}
