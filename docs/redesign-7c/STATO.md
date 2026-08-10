@@ -419,8 +419,31 @@ rifatta sulla **#9a**. E' l'ingresso dell'area, quindi va per prima.
   `invitations` (proposta diretta) o nessuno (proposta aperta). Jinja lo
   risolveva a Undefined, cioe' vuoto, in silenzio.
 
-**Restano 9 file** (2677 righe): `create_proposal` (489), `match_detail` (412),
-`proposals` (397), `statistics` (345), `matches` (266), `proposal_detail` (224),
+**`individual_match/matches.html`** rifatta anche lei, e qui i difetti erano
+peggio della grafica:
+
+- **Il filtro per stato era rotto.** L'opzione "In corso" valeva `playing` —
+  che e' lo stato dei match *di gara* — mentre un match individuale ha
+  `in_progress`: selezionarla svuotava l'elenco. E "Completati" (`completed`)
+  non prendeva i match `validated`, che sono comunque giocati. Ora si filtra
+  per **gruppo** (da giocare / in corso / giocati / annullati), calcolato dal
+  server con `MatchStatus.is_finished`, e i pill sono quelli del prototipo.
+- **I match individuali salvano la disciplina col vocabolario vecchio.**
+  `individual_match.discipline` contiene `palla_8`; `gara.discipline` contiene
+  `8_ball`, il valore dell'enum `Discipline`. Le migration di quell'area hanno
+  ancora `DEFAULT 'palla_8'`. Le opzioni del filtro erano scritte a mano coi
+  valori vecchi, quindi funzionavano **per caso** sui dati esistenti e
+  smetterebbero di funzionare su un match salvato col valore dell'enum. Ora le
+  opzioni si ricavano dai record, che vale in entrambi i casi.
+  **Da decidere a parte: una migration che normalizzi quel campo.** E' un
+  cambio di dominio, non di interfaccia, e tocca i confronti fra discipline.
+- L'elenco degli avversari si ripuliva dai duplicati **lato JS**, dopo averli
+  stampati: ora non li stampa.
+- `Discipline` aggiunta ai globals Jinja, con la nota sul vocabolario doppio.
+- `.c7-pill` non va piu' a capo: "Da giocare" sbordava dalla pastiglia.
+
+**Restano 8 file** (2411 righe): `create_proposal` (489), `match_detail` (412),
+`proposals` (397), `statistics` (345), `proposal_detail` (224),
 `discover_players` (206), `admin_overview` (199), `availability` (139). Il
 prototipo copre la proposta di date (#9a·2, opzioni selezionabili con
 `c7-choice`) e le disponibilita' (#9a·3, calendario del mese).
