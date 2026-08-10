@@ -396,6 +396,38 @@ divise), `c7-sechead` (titolo di sezione con azione a destra), `c7-tile`
 (tessera icona, piena o affossata), `c7-dim`, piu' l'adattamento di `.progress`
 di Bootstrap dentro una card accento.
 
+**Match individuali: 1 pagina su 10** (`individual_match/dashboard.html`),
+rifatta sulla **#9a**. E' l'ingresso dell'area, quindi va per prima.
+
+- **Testata doppia**: la pagina ripeteva titolo e sottotitolo dentro il
+  contenuto, sotto quelli del guscio. Il guardiano
+  `test_single_page_header.py` non la vedeva perche' cerca una seconda
+  `c7-head`, e qui erano un `<h1>` e un `<p>`. **Da tenere presente: la classe
+  di difetti e' piu' larga del test.**
+- **Ordine per cosa devi fare**, come il prototipo: attendono la tua risposta →
+  da giocare → in attesa dell'altro → giocati (spenti). Prima era per tipo di
+  oggetto (proposte, match in corso, match recenti) con le card annidate a due
+  livelli e i bordi colorati per stato.
+- **Niente sottotitolo ne' azione in testata su mobile**: con entrambi la
+  testata sticky arrivava a **quattro righe** su 390px, un terzo dello schermo.
+  La proposta nuova e' la prima voce dell'elenco in fondo (e su desktop resta
+  il pulsante in testata, dove lo spazio c'e').
+- Il pannello "Azioni Rapide" era in realta' **la navigazione dell'area** — la
+  barra laterale ha la sola voce "Match Individuali" — e ora ha la forma di
+  elenco del menu profilo del prototipo.
+- `proposal.opponent` **non esiste** sul modello: una proposta ha `proposer`,
+  `invitations` (proposta diretta) o nessuno (proposta aperta). Jinja lo
+  risolveva a Undefined, cioe' vuoto, in silenzio.
+
+**Restano 9 file** (2677 righe): `create_proposal` (489), `match_detail` (412),
+`proposals` (397), `statistics` (345), `matches` (266), `proposal_detail` (224),
+`discover_players` (206), `admin_overview` (199), `availability` (139). Il
+prototipo copre la proposta di date (#9a·2, opzioni selezionabili con
+`c7-choice`) e le disponibilita' (#9a·3, calendario del mese).
+**Attenzione ai dati**: in locale c'e' **una** partita individuale e **zero**
+proposte, quindi le sezioni "attendono la tua risposta" e "in attesa" non sono
+verificabili senza crearne una dal flusso vero.
+
 ## Disallineamenti fra prototipo e codice
 
 Rilevati confrontando le schermate del prototipo con l'app in esecuzione.

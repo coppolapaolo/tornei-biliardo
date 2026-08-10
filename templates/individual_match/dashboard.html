@@ -2,224 +2,255 @@
 
 {% block title %}{{ _("Match Individuali") }} - {{ _("Campionato Biliardo") }}{% endblock %}
 
+{# Testata: una sola per pagina, quella del guscio. Prima la pagina ripeteva
+   titolo e sottotitolo dentro il contenuto, sotto quello del guscio. #}
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('dashboard.dashboard') }}"
+   aria-label="{{ _('Torna alla dashboard') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("Match individuali") }}{% endblock %}
+{# Niente sottotitolo e niente azione in testata: il prototipo (9a) qui ha il
+   solo titolo, e su 390px il sottotitolo lungo piu' il pulsante mandavano la
+   testata sticky a quattro righe — un terzo dello schermo. La proposta nuova
+   e' la prima voce dell'elenco in fondo e il pulsante dello stato vuoto. #}
+{% block page_actions %}
+<a href="{{ url_for('individual_match.create_proposal') }}" class="btn btn-primary btn-sm d-none d-lg-inline-flex">
+  <i class="fas fa-plus"></i>&nbsp;{{ _("Nuova proposta") }}
+</a>
+{% endblock %}
+
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-md-12">
-            <h1><i class="fas fa-shield-halved"></i> {{ _("Match Individuali") }}</h1>
-            <p class="text-muted">{{ _("Gestisci le tue proposte di match e gioca contro altri membri della community.") }}</p>
-        </div>
+{# Prototipo 9a, prima schermata. L'ordine e' quello di cosa devi fare: prima
+   quello che attende te, poi quello che puoi giocare, poi quello che attende
+   l'altro, e in fondo lo storico spento. #}
+
+{# Macro locale: la riga "avversario" che tutte le card ripetono. #}
+{% macro opponent(user, detail) -%}
+<div class="d-flex align-items-center gap-3" style="margin-top:12px">
+  <span class="c7-avatar c7-avatar--lg" style="background:var(--c7-bg);color:var(--c7-ink-soft)">
+    {{ user.username[:2]|upper if user else '—' }}
+  </span>
+  <div class="flex-fill" style="min-width:0">
+    <div style="font-size:16px;font-weight:800;letter-spacing:-.02em">{{ user.username if user else _('Avversario') }}</div>
+    {% if detail %}
+    <div style="margin-top:3px;font-size:12px;font-weight:600;color:var(--c7-ink-muted)">{{ detail }}</div>
+    {% endif %}
+  </div>
+</div>
+{%- endmacro %}
+
+{% set received = proposals.received_proposals if proposals else [] %}
+{% set sent = (proposals.sent_proposals if proposals else []) + (proposals.open_proposals if proposals else []) %}
+{% set has_nothing = not received and not sent and not active_matches and not recent_matches %}
+
+<div class="c7-stack c7-sections">
+
+  {# ---------- Attendono la tua risposta ---------- #}
+  {% if received %}
+  <section class="c7-stack">
+    <div class="c7-sechead">
+      <h2>{{ _('Attendono la tua risposta') }}</h2>
+      <span class="c7-sechead__note c7-num">{{ received|length }}</span>
     </div>
+    {% for proposal in received %}
+    <article class="c7-card">
+      <div class="d-flex align-items-center gap-2">
+        <span class="c7-kicker" style="color:var(--c7-err)">{{ _('Attende la tua risposta') }}</span>
+        <span class="c7-kicker" style="margin-left:auto">{{ proposal.discipline|discipline_display }}</span>
+      </div>
+      {{ opponent(proposal.proposer,
+           (proposal.scheduled_at|datetime_local if proposal.scheduled_at else _('Data da concordare'))
+           ~ (' · ' ~ proposal.location_display if proposal.location_display else '')) }}
+      <div class="d-flex gap-2" style="margin-top:14px">
+        <form method="POST" action="{{ url_for('individual_match.accept_proposal', proposal_id=proposal.id) }}" class="flex-fill">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-primary w-100">{{ _("Accetta") }}</button>
+        </form>
+        <a href="{{ url_for('individual_match.proposal_detail', proposal_id=proposal.id) }}"
+           class="btn btn-secondary">{{ _("Dettagli") }}</a>
+      </div>
+    </article>
+    {% endfor %}
+  </section>
+  {% endif %}
 
-    <div class="row">
-        <!-- Proposte e Match in Corso -->
-        <div class="col-md-8">
-            <!-- Match Proposals -->
-            {% if proposals and (proposals.received_proposals or proposals.sent_proposals or proposals.open_proposals) %}
-            <div class="card mb-4">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="fas fa-envelope"></i> {{ _("Proposte di Match") }}</h5>
-                    <a href="{{ url_for('individual_match.create_proposal') }}" class="btn btn-primary btn-sm">
-                        <i class="fas fa-plus"></i> {{ _("Nuova Proposta") }}
-                    </a>
-                </div>
-                <div class="card-body">
-                    {% for proposal in (proposals.received_proposals + proposals.sent_proposals + proposals.open_proposals)[:5] %}
-                    <div class="card mb-2 border-{{ 'success' if proposal.status.value == 'accepted' else 'warning' if proposal.status.value == 'pending' else 'danger' }}">
-                        <div class="card-body py-2">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <strong>{{ proposal.discipline|discipline_display }}</strong>
-                                    {% if proposal.proposer_id == current_user.id %}
-                                    <small class="text-muted">{{ _("(Proposta da te)") }}</small>
-                                    {% else %}
-                                    <small class="text-muted">{{ _("da") }} {{ proposal.proposer.username }}</small>
-                                    {% endif %}
-                                    <br>
-                                    <small class="text-muted">
-                                        <i class="fas fa-clock"></i> {{ proposal.scheduled_at|datetime_local if proposal.scheduled_at }}
-                                        <br><i class="fas fa-map-marker-alt"></i> {{ proposal.location_display }}
-                                    </small>
-                                </div>
-                                <div class="text-end">
-                                    <span class="badge bg-{{ 'success' if proposal.status.value == 'accepted' else 'warning' if proposal.status.value == 'pending' else 'danger' }}">
-                                        {{ proposal.status.value.title() }}
-                                    </span>
-                                    {% if proposal.status.value == 'pending' and proposal.proposer_id != current_user.id %}
-                                    <br>
-                                    <form method="POST" action="{{ url_for('individual_match.accept_proposal', proposal_id=proposal.id) }}" class="d-inline">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                        <button type="submit" class="btn btn-success btn-sm mt-1">{{ _("Accetta") }}</button>
-                                    </form>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                    {% if (proposals.received_proposals|length + proposals.sent_proposals|length + proposals.open_proposals|length) > 5 %}
-                    <div class="text-center">
-                        <a href="{{ url_for('individual_match.proposal_list') }}" class="btn btn-outline-primary btn-sm">
-                            <i class="fas fa-list"></i> {{ _("Vedi Tutte le Proposte") }}
-                        </a>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-            {% endif %}
-
-            <!-- Active Matches -->
-            {% if active_matches and active_matches|length %}
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-play"></i> {{ _("Match in Corso") }}</h5>
-                </div>
-                <div class="card-body">
-                    {% for match in active_matches %}
-                    <div class="card mb-2 border-primary">
-                        <div class="card-body py-2">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <strong>{{ match.discipline|discipline_display }}</strong>
-                                    <br>
-                                    <small class="text-muted">
-                                        {{ _("vs") }} {% if match.player1_id == current_user.id %}{{ match.player2.username }}{% else %}{{ match.player1.username }}{% endif %}
-                                        <br><i class="fas fa-map-marker-alt"></i> {{ match.location_display }}
-                                    </small>
-                                </div>
-                                <div class="text-end">
-                                    {% if match.status.value == 'in_progress' %}
-                                    <span class="badge bg-success">{{ match.player1_score }} - {{ match.player2_score }}</span>
-                                    <br>
-                                    {% endif %}
-                                    <a href="{{ url_for('individual_match.match_detail', match_id=match.id) }}" class="btn btn-primary btn-sm">
-                                        {% if match.status.value == 'scheduled' %}{{ _("Inizia") }}{% else %}{{ _("Continua") }}{% endif %}
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
-
-            <!-- Recent Completed Matches -->
-            {% if recent_matches and recent_matches|length %}
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-history"></i> {{ _("Match Recenti") }}</h5>
-                </div>
-                <div class="card-body">
-                    {% for match in recent_matches[:3] %}
-                    <div class="card mb-2 {% if match.winner_id == current_user.id %}border-success{% elif match.winner_id %}border-danger{% else %}border-secondary{% endif %}">
-                        <div class="card-body py-2">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <strong>{{ match.discipline|discipline_display }}</strong>
-                                    <br>
-                                    <small class="text-muted">
-                                        {{ _("vs") }} {% if match.player1_id == current_user.id %}{{ match.player2.username }}{% else %}{{ match.player1.username }}{% endif %}
-                                        – {{ match.ended_at|date_local if match.ended_at }}
-                                    </small>
-                                </div>
-                                <div class="text-end">
-                                    <span class="badge bg-info">{{ match.player1_score }} - {{ match.player2_score }}</span>
-                                    <br>
-                                    {% if match.winner_id == current_user.id %}
-                                    <span class="badge bg-success">{{ _("Vinto") }}</span>
-                                    {% elif match.winner_id %}
-                                    <span class="badge bg-danger">{{ _("Perso") }}</span>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                    <div class="text-center">
-                        <a href="{{ url_for('individual_match.match_list') }}" class="btn btn-outline-primary btn-sm">
-                            <i class="fas fa-list"></i> {{ _("Vedi Tutti i Match") }}
-                        </a>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-
-            <!-- Empty State -->
-            {% if not (proposals.received_proposals or proposals.sent_proposals or proposals.open_proposals) and not active_matches and not recent_matches %}
-            <div class="card">
-                <div class="card-body text-center py-5">
-                    <i class="fas fa-shield-halved fa-3x text-muted mb-3"></i>
-                    <h4>{{ _("Nessun match ancora") }}</h4>
-                    <p class="text-muted">{{ _("Inizia creando una proposta di match per giocare con altri membri della community!") }}</p>
-                    <a href="{{ url_for('individual_match.create_proposal') }}" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> {{ _("Crea la tua prima proposta") }}
-                    </a>
-                </div>
-            </div>
-            {% endif %}
-        </div>
-
-        <!-- Sidebar -->
-        <div class="col-md-4">
-            <!-- Quick Actions -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-bolt"></i> {{ _("Azioni Rapide") }}</h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <a href="{{ url_for('individual_match.create_proposal') }}" class="btn btn-primary">
-                            <i class="fas fa-plus"></i> {{ _("Nuova Proposta di Match") }}
-                        </a>
-                        <a href="{{ url_for('individual_match.proposal_list') }}" class="btn btn-outline-secondary">
-                            <i class="fas fa-envelope"></i> {{ _("Tutte le Proposte") }}
-                        </a>
-                        <a href="{{ url_for('individual_match.match_list') }}" class="btn btn-outline-secondary">
-                            <i class="fas fa-list"></i> {{ _("Tutti i Match") }}
-                        </a>
-                        <a href="{{ url_for('individual_match.manage_availability') }}" class="btn btn-outline-info">
-                            <i class="fas fa-calendar"></i> {{ _("Gestisci Disponibilità") }}
-                        </a>
-                        <a href="{{ url_for('individual_match.user_statistics') }}" class="btn btn-outline-success">
-                            <i class="fas fa-chart-line"></i> {{ _("Statistiche") }}
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- User Statistics -->
-            {% if statistics %}
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-chart-line"></i> {{ _("Le tue Statistiche") }}</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-6">
-                            <h4 class="text-primary">{{ statistics.total_matches or 0 }}</h4>
-                            <small class="text-muted">{{ _("Match Totali") }}</small>
-                        </div>
-                        <div class="col-6">
-                            <h4 class="text-success">{{ statistics.wins or 0 }}</h4>
-                            <small class="text-muted">{{ _("Vittorie") }}</small>
-                        </div>
-                        <div class="col-6">
-                            <h4 class="text-danger">{{ statistics.losses or 0 }}</h4>
-                            <small class="text-muted">{{ _("Sconfitte") }}</small>
-                        </div>
-                        <div class="col-6">
-                            <h4 class="text-info">{{ "%.1f"|format(statistics.win_percentage or 0) }}%</h4>
-                            <small class="text-muted">{{ _("Perc. Vinte") }}</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-
-            <!-- Recent Activity - Placeholder for future implementation -->
-            <!-- TODO: Implement recent_activity in dashboard service -->
-        </div>
+  {# ---------- Da giocare ---------- #}
+  {% if active_matches %}
+  <section class="c7-stack">
+    <div class="c7-sechead">
+      <h2>{{ _('Da giocare') }}</h2>
+      <span class="c7-sechead__note c7-num">{{ active_matches|length }}</span>
     </div>
+    {% for match in active_matches %}
+    {% set is_playing = match.status.value == 'in_progress' %}
+    {% set other = match.player2 if match.player1_id == current_user.id else match.player1 %}
+    <article class="c7-card">
+      <div class="d-flex align-items-center gap-2">
+        <span class="c7-kicker" style="color:{{ 'var(--c7-err)' if is_playing else 'var(--c7-ok)' }}">
+          {{ _('In corso') if is_playing else _('Data confermata') }}
+        </span>
+        <span class="c7-kicker" style="margin-left:auto">{{ match.discipline|discipline_display }}</span>
+      </div>
+      {{ opponent(other,
+           (match.scheduled_at|datetime_local if match.scheduled_at else '')
+           ~ (' · ' ~ match.location_display if match.location_display else '')) }}
+      {% if is_playing %}
+      <div class="d-flex align-items-center gap-2" style="margin-top:12px">
+        <span class="c7-num-lg">{{ match.player1_score }}</span>
+        <span class="c7-sep">–</span>
+        <span class="c7-num-lg">{{ match.player2_score }}</span>
+      </div>
+      {% endif %}
+      <a href="{{ url_for('individual_match.match_detail', match_id=match.id) }}"
+         class="btn btn-primary w-100" style="margin-top:14px">
+        {{ _("Continua") if is_playing else _("Apri la partita") }}
+      </a>
+    </article>
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  {# ---------- In attesa dell'altro ---------- #}
+  {% if sent %}
+  <section class="c7-stack">
+    <div class="c7-sechead">
+      <h2>{{ _("In attesa") }}</h2>
+      <span class="c7-sechead__note c7-num">{{ sent|length }}</span>
+    </div>
+    <div class="c7-rows">
+      {% for proposal in sent[:5] %}
+      <a class="c7-rows__row" href="{{ url_for('individual_match.proposal_detail', proposal_id=proposal.id) }}"
+         style="color:inherit;text-decoration:none">
+        <div class="c7-rows__main">
+          {# Una proposta non ha un "avversario": ha inviti (proposta diretta) o
+             nessuno (proposta aperta, a chi la prende). #}
+          {% set invited = proposal.invitations|map(attribute='invited_user')|select|list %}
+          <div class="c7-rows__title">
+            {%- if invited %}{{ invited|map(attribute='username')|join(', ') }}
+            {%- else %}{{ _('Proposta aperta') }}{% endif %}
+          </div>
+          <div class="c7-rows__sub">
+            {{ proposal.discipline|discipline_display }}
+            {%- if proposal.scheduled_at %} <span class="c7-sep">·</span> {{ proposal.scheduled_at|datetime_local }}{% endif %}
+          </div>
+        </div>
+        <span class="c7-state c7-state--warn">{{ _('In attesa') }}</span>
+        <i class="fas fa-chevron-right" style="font-size:12px;color:var(--c7-ink-faint)"></i>
+      </a>
+      {% endfor %}
+    </div>
+    {% if sent|length > 5 %}
+    <a class="c7-sechead__more" href="{{ url_for('individual_match.proposal_list') }}">{{ _("Tutte le proposte") }}</a>
+    {% endif %}
+  </section>
+  {% endif %}
+
+  {# ---------- Giocati ---------- #}
+  {% if recent_matches %}
+  <section class="c7-stack">
+    <div class="c7-sechead">
+      <h2>{{ _('Giocati') }}</h2>
+      <a class="c7-sechead__more" href="{{ url_for('individual_match.match_list') }}">{{ _("Tutti") }}</a>
+    </div>
+    <div class="c7-rows">
+      {% for match in recent_matches[:3] %}
+      {% set other = match.player2 if match.player1_id == current_user.id else match.player1 %}
+      {% set i_won = match.winner_id == current_user.id %}
+      <a class="c7-rows__row c7-rows__row--dim" href="{{ url_for('individual_match.match_detail', match_id=match.id) }}"
+         style="color:inherit;text-decoration:none">
+        <div class="c7-rows__main">
+          <div class="c7-rows__title">{{ other.username if other else _('Avversario') }}</div>
+          <div class="c7-rows__sub">
+            {%- if match.ended_at %}{{ match.ended_at|date_local }} <span class="c7-sep">·</span> {% endif -%}
+            {% if match.winner_id %}{{ _('hai vinto') if i_won else _('hai perso') }}
+            {%- else %}{{ _('senza vincitore') }}{% endif %}
+            <span class="c7-num">{{ match.player1_score }}–{{ match.player2_score }}</span>
+          </div>
+        </div>
+        <i class="fas fa-chevron-right" style="font-size:12px;color:var(--c7-ink-faint)"></i>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  {# ---------- Niente di niente ---------- #}
+  {% if has_nothing %}
+  <div class="c7-empty">
+    <div class="c7-empty__ico"><i class="fas fa-handshake"></i></div>
+    <div class="c7-empty__title">{{ _("Nessun match ancora") }}</div>
+    <p class="c7-empty__text">
+      {{ _("Proponi una data a un altro giocatore: quando accetta, il match compare qui.") }}
+    </p>
+    <div class="c7-empty__actions">
+      <a href="{{ url_for('individual_match.create_proposal') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> {{ _("Crea la tua prima proposta") }}
+      </a>
+    </div>
+  </div>
+  {% endif %}
+
+  {# ---------- Le tue statistiche ---------- #}
+  {% if statistics and statistics.total_matches %}
+  <section class="c7-stack">
+    <div class="c7-sechead">
+      <h2>{{ _('Le tue statistiche') }}</h2>
+      <a class="c7-sechead__more" href="{{ url_for('individual_match.user_statistics') }}">{{ _("Dettagli") }}</a>
+    </div>
+    <div class="c7-grid" style="grid-template-columns:1fr 1fr">
+      <div class="c7-card">
+        <div class="c7-num-xl">{{ "%.0f"|format(statistics.win_percentage or 0) }}%</div>
+        <div class="c7-rows__sub">{{ _("Match vinti") }}</div>
+      </div>
+      <div class="c7-card">
+        <div class="c7-num-xl">{{ statistics.total_matches or 0 }}</div>
+        <div class="c7-rows__sub">{{ _("Match giocati") }}</div>
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  {# ---------- Il resto dell'area ----------
+     Non e' un pannello "Azioni Rapide": e' la navigazione dell'area, che la
+     barra laterale non contiene (ha la sola voce "Match Individuali"). Forma
+     da elenco, come il menu del profilo nel prototipo. #}
+  <section class="c7-rows">
+    <a class="c7-rows__row d-lg-none" href="{{ url_for('individual_match.create_proposal') }}"
+       style="color:inherit;text-decoration:none">
+      <i class="fas fa-plus" style="font-size:14px;color:var(--c7-accent);width:18px"></i>
+      <div class="c7-rows__main"><div class="c7-rows__title">{{ _("Nuova proposta") }}</div></div>
+      <i class="fas fa-chevron-right" style="font-size:12px;color:var(--c7-ink-faint)"></i>
+    </a>
+    <a class="c7-rows__row" href="{{ url_for('individual_match.proposal_list') }}"
+       style="color:inherit;text-decoration:none">
+      <i class="fas fa-envelope" style="font-size:14px;color:var(--c7-accent);width:18px"></i>
+      <div class="c7-rows__main"><div class="c7-rows__title">{{ _("Tutte le proposte") }}</div></div>
+      <i class="fas fa-chevron-right" style="font-size:12px;color:var(--c7-ink-faint)"></i>
+    </a>
+    <a class="c7-rows__row" href="{{ url_for('individual_match.match_list') }}"
+       style="color:inherit;text-decoration:none">
+      <i class="fas fa-list" style="font-size:14px;color:var(--c7-accent);width:18px"></i>
+      <div class="c7-rows__main"><div class="c7-rows__title">{{ _("Tutti i match") }}</div></div>
+      <i class="fas fa-chevron-right" style="font-size:12px;color:var(--c7-ink-faint)"></i>
+    </a>
+    <a class="c7-rows__row" href="{{ url_for('individual_match.manage_availability') }}"
+       style="color:inherit;text-decoration:none">
+      <i class="fas fa-calendar" style="font-size:14px;color:var(--c7-accent);width:18px"></i>
+      <div class="c7-rows__main"><div class="c7-rows__title">{{ _("Le mie disponibilità") }}</div></div>
+      <i class="fas fa-chevron-right" style="font-size:12px;color:var(--c7-ink-faint)"></i>
+    </a>
+    <a class="c7-rows__row" href="{{ url_for('individual_match.discover_players') }}"
+       style="color:inherit;text-decoration:none">
+      <i class="fas fa-compass" style="font-size:14px;color:var(--c7-accent);width:18px"></i>
+      <div class="c7-rows__main"><div class="c7-rows__title">{{ _("Trova giocatori") }}</div></div>
+      <i class="fas fa-chevron-right" style="font-size:12px;color:var(--c7-ink-faint)"></i>
+    </a>
+    <a class="c7-rows__row" href="{{ url_for('individual_match.user_statistics') }}"
+       style="color:inherit;text-decoration:none">
+      <i class="fas fa-chart-line" style="font-size:14px;color:var(--c7-accent);width:18px"></i>
+      <div class="c7-rows__main"><div class="c7-rows__title">{{ _("Statistiche") }}</div></div>
+      <i class="fas fa-chevron-right" style="font-size:12px;color:var(--c7-ink-faint)"></i>
+    </a>
+  </section>
 </div>
 {% endblock %}
