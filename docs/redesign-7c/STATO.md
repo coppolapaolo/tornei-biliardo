@@ -202,6 +202,53 @@ nel browser. Passa su tutti i template.
 validata e vinta a tavolino (verificata forzando `is_bye` in locale e
 ripristinando subito il dato). Nessun difetto residuo.
 
+**Segnapunti e tabellone** — la pagina partita era 7c nel guscio ma non nel
+punto in cui si usa. Rifatti sul prototipo (schermate 7c e 8b): card del
+punteggio chiara con cifre grandi e chi insegue in grigio, due bersagli "+1"
+da 104px invece dei punteggi dentro pulsanti neri, un solo "Annulla ultimo
+rack", storico come lista col progressivo. Nuovo
+`components/_match_scoreboard.html`: il **tabellone orizzontale** compare da
+solo quando lo schermo e' basso, largo e touch — il telefono appoggiato alla
+sponda — e usa le stesse funzioni JS del segnapunti verticale.
+
+## Disallineamenti fra prototipo e codice
+
+Rilevati confrontando le schermate del prototipo con l'app in esecuzione.
+Quelli sopra sono chiusi; questi no.
+
+1. **Pagina gara, mobile (8a·1) — linguette Turni / Classifica / Iscritti.**
+   Il prototipo divide la pagina in tre viste e mette in cima una card scura
+   "IL TUO MATCH · TAVOLO 1 → Apri". Oggi e' una pila unica di sezioni: chi
+   gioca scorre parecchio per trovare la propria partita, e Info/Iscritti
+   restano il compromesso della PR #36. **Le linguette risolvono anche quel
+   compromesso**, perche' ogni vista diventa corta. Lavoro medio: i contenuti
+   esistono gia' tutti, serve il commutatore e la card di scorciatoia.
+2. **Notifiche (8a·3) — azioni dentro la notifica.** Il prototipo divide "DA
+   FARE" da "PRIMA" e mette i bottoni nella notifica ("Firmo" / "Contesto").
+   Oggi la pagina si apre con il pannello di auto-cancellazione, poi una lista
+   con selezione multipla: le impostazioni prima delle cose da fare, e ogni
+   azione richiede di navigare altrove.
+3. **Classifica larga in orizzontale (8b·2).** In orizzontale la classifica
+   mostrerebbe match, vinti, rack e turno precedente. Rimandata per scelta.
+4. **Copy della conferma.** Il prototipo parla di **firma** ("serve la tua
+   firma", "Invia risultato"), il codice di conferma ("Accetta il risultato").
+   Da decidere: la firma e' una metafora piu' chiara di cosa comporta.
+5. **Cifre: mono o Manrope.** Il prototipo scrive i punteggi in Manrope 800,
+   il design system impone JetBrains Mono per i numeri. Ho tenuto mono
+   (tabellare: le cifre non ballano quando il punteggio cambia sotto gli
+   occhi), ma e' una divergenza consapevole dal prototipo.
+6. **Il verde e' un colore d'azione, nel prototipo.** "Crea campionato" e
+   "Crea gara" della 14c sono verde pieno. Questo **chiude il rilievo aperto**
+   sui bottoni verdi del catalogo challenge: non sono un errore, sono la
+   conferma conclusiva di un flusso.
+7. **Match individuali (9a).** Il prototipo ha linguette "Da giocare / In
+   attesa / Giocati", proposta di date come lista di opzioni selezionabili e
+   calendario delle disponibilita'. I dieci template dell'area sono ancora
+   nella lista "da verificare": il divario e' probabilmente ampio.
+8. **Gara pubblica per l'ospite (10a).** Due tessere ("Turno corrente",
+   "Stato"), classifica provvisoria e invito a registrarsi in card scura. Da
+   confrontare con `_guest_info.html`.
+
 ## Da fare
 
 1. **Gamification giocatore.** Primo lavoro, prima delle pagine: **il badge
@@ -230,11 +277,9 @@ ripristinando subito il dato). Nessun difetto residuo.
 
 Visti ma non ancora affrontati, in ordine di dubbio:
 
-- **Bottoni verdi nel catalogo challenge.** "Nuova challenge" e "Crea la
-  prima" sono verde pieno, mentre in dashboard il bottone primario è
-  inchiostro. Nella palette il verde è il semantico "ok", non un colore
-  d'azione: **da decidere con il committente** se è voluto o va riportato
-  al primario.
+- ~~Bottoni verdi nel catalogo challenge.~~ **Chiuso dal prototipo**: nella
+  14c "Crea campionato" e "Crea gara" sono verde pieno. Il verde e' la
+  conferma conclusiva di un flusso, non solo il semantico "ok".
 - **Card "Unisci utenti (merge)" in `/admin/users`.** Fondo giallo con
   sotto una striscia vuota: sembra un accordion o un alert malformato. Da
   guardare da vicino.
