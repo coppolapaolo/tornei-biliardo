@@ -442,9 +442,39 @@ peggio della grafica:
 - `Discipline` aggiunta ai globals Jinja, con la nota sul vocabolario doppio.
 - `.c7-pill` non va piu' a capo: "Da giocare" sbordava dalla pastiglia.
 
-**Restano 8 file** (2411 righe): `create_proposal` (489), `match_detail` (412),
-`proposals` (397), `statistics` (345), `proposal_detail` (224),
-`discover_players` (206), `admin_overview` (199), `availability` (139). Il
+**`individual_match/proposals.html`** rifatta anche lei. Le condizioni della
+sfida erano ricopiate **tre volte**, una per linguetta: ora sono due macro.
+Altri difetti trovati:
+
+- **Stati in inglese sotto gli occhi dell'utente**: `status.value.title()`
+  stampava "Pending", "Accepted". Ora una mappa tradotta, che serve anche a
+  scegliere il tono del badge.
+- **Il rifiuto di un invito non veniva mai riconosciuto**: il template cercava
+  `declined`, l'enum `InvitationStatus` dice **`rejected`**. Un invito rifiutato
+  prendeva quindi il colore neutro del ramo `else`.
+- **`proposal.entry_fee` non esiste sul modello.** C'era un blocco
+  `{% if proposal.entry_fee %}` che mostrava una quota d'iscrizione: Jinja lo
+  risolveva a Undefined, cioe' non compariva mai. Rimosso.
+- **Il ricaricamento automatico dipendeva da una classe CSS**: contava i
+  `.badge.bg-warning` in pagina per decidere se ricaricare ogni 30s. Cambiando
+  i badge si sarebbe spento in silenzio. Ora il conteggio delle proposte da
+  rispondere arriva dal server in un `data-`.
+- **Data di creazione al posto di quella utile**: la card mostrava
+  `created_at`. Ora mostra in grande **quando si gioca**. La scadenza non e'
+  ripetuta perche' il servizio la fissa due ore prima dell'orario del match,
+  quindi sarebbe la stessa data.
+
+**Dati di prova seminati in locale** (`ProposalService.create_direct_proposal`):
+una proposta diretta di `pa` a `pb` e `player1`, 9-Ball, al 5, fra quattro
+giorni. Serviva perche' l'area era **inverificabile a vuoto** — le sezioni
+"attendono la tua risposta" e "in attesa" non si vedevano. **Si e' portata
+dietro un effetto collaterale**: la gamification e' agganciata alla creazione,
+quindi `pa` ha guadagnato achievement e due livelli. La proposta e' rimasta
+apposta: serve anche ai prossimi passi. `/reset` la porta via.
+
+**Restano 7 file** (2014 righe): `create_proposal` (489), `match_detail` (412),
+`statistics` (345), `proposal_detail` (224), `discover_players` (206),
+`admin_overview` (199), `availability` (139). Il
 prototipo copre la proposta di date (#9a·2, opzioni selezionabili con
 `c7-choice`) e le disponibilita' (#9a·3, calendario del mese).
 **Attenzione ai dati**: in locale c'e' **una** partita individuale e **zero**
