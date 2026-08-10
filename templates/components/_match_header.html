@@ -61,10 +61,10 @@
 {%- endif -%}
 {%- endmacro %}
 
-{# Sottotitolo: dove si gioca questa partita. Solo l'identita' — distanza,
-   tavolo e stato sono operativi e stanno in `meta()`, sopra il punteggio,
-   perche' su 390px un sottotitolo di cinque voci manda la testata sticky a
-   tre righe. #}
+{# Sottotitolo: dove si gioca questa partita, come nel prototipo — "Turno 3 ·
+   Tavolo 1". Distanza e stato non sono qui: li dice la card del punteggio
+   ("Al 5 · 7 rack giocati" e la pill), e ripeterli mandava la testata sticky
+   a tre righe su 390px. #}
 {% macro sub(match) -%}
 {%- if match.gara -%}
 {{ match.gara|gara_display_name }}
@@ -74,6 +74,11 @@
 {{ _('Match individuale') }}
 {%- if match.discipline %} <span class="c7-sep">·</span> {{ match.discipline|discipline_display }}{% endif -%}
 {%- endif -%}
+{%- if match.table_assignment %}
+<span class="c7-sep">·</span> {{ _('Tavolo') }} <span class="c7-num">{{ match.table_assignment }}</span>
+{%- elif not match.is_bye and not MatchStatus.is_finished(match.status) %}
+<span class="c7-sep">·</span> {{ _('senza tavolo') }}
+{%- endif -%}
 {%- endmacro %}
 
 {# Azioni: solo il ritorno, e solo da desktop — su mobile lo fanno la freccia
@@ -82,19 +87,4 @@
 <a href="{{ back_url(match)|trim }}" class="btn btn-secondary btn-sm d-none d-lg-inline-flex align-items-center gap-2">
     <i class="fas fa-arrow-left"></i>{{ back_label(match)|trim }}
 </a>
-{%- endmacro %}
-
-{# Riga operativa sopra il punteggio: come si vince, dove si gioca, a che
-   punto e'. Vale per entrambe le viste. #}
-{% macro meta(match) -%}
-<div class="d-flex align-items-center flex-wrap gap-2">
-    <span class="c7-label mb-0 flex-fill">{{ match.distance_config|format_distance }}</span>
-    {%- if match.table_assignment %}
-    <span class="c7-state">{{ _('Tavolo') }}&nbsp;<span class="c7-num">{{ match.table_assignment }}</span></span>
-    {%- elif not match.is_bye and not MatchStatus.is_finished(match.status) %}
-    {# A partita finita il tavolo e' stato liberato: dirlo sarebbe rumore. #}
-    <span class="c7-state c7-state--muted">{{ _('Senza tavolo') }}</span>
-    {%- endif %}
-    <span class="badge {{ match|status_badge_class }}">{{ match|status_text }}</span>
-</div>
 {%- endmacro %}

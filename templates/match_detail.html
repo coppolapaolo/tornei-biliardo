@@ -43,9 +43,6 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
         </div>
         {% endif %}
 
-        {# Come si vince, dove si gioca, a che punto e'. #}
-        {{ match_head.meta(match) }}
-
         {# Punteggio: il componente disegna gia' la propria card accento, non
            va quindi annidato in una seconda card. #}
         {% set is_trio = match.is_trio and match.trio_match %}
@@ -80,6 +77,11 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
                     {% set remove_rack_js_func = 'removeRack' %}
                 {% endif %}
                 {% include "components/_unified_rack_input.html" with context %}
+                {# Tabellone orizzontale: stesse funzioni del segnapunti qui
+                   sopra, quindi un rack segnato col telefono appoggiato passa
+                   per lo stesso endpoint. Lo mostra il foglio di stile quando
+                   lo schermo e' basso e largo. #}
+                {% include "components/_match_scoreboard.html" with context %}
             {% endif %}
         {% elif user_can_manage %}
         {# Admin/Director Controls - Only for matches where they are NOT a player #}

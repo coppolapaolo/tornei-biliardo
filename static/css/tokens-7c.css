@@ -86,5 +86,8 @@
   /* --- Z-index --------------------------------------------------------- */
   --c7-z-head:     50;
   --c7-z-mobnav:   60;
+  /* Il tabellone orizzontale copre tutta la pagina, nav compresa, ma resta
+     sotto ai toast: un traguardo o un errore devono comunque arrivare. */
+  --c7-z-board:   900;
   --c7-z-toast:   1100;
 }

@@ -96,6 +96,17 @@ Parametri:
     {% set can_add = False %}
 {% endif %}
 
+{# Ultimo rack segnato: serve al comando "Annulla ultimo rack", che nel
+   prototipo e' uno solo invece dei due "−1 <nome>". L'endpoint vuole sapere
+   a chi togliere il rack, quindi il vincitore dell'ultimo lo si ricava qui. #}
+{% set active_racks = (match.racks|selectattr('is_deleted', 'equalto', False)|list) if match.racks is defined else [] %}
+{% set last_rack = (active_racks|sort(attribute='rack_number')|last) if active_racks else none %}
+
+{# Il bersaglio proprio e' pieno, quello dell'avversario no: a colpo d'occhio
+   si sa dove premere senza leggere il nome. Chi guarda senza giocare (il
+   direttore sul match altrui) non ha un "proprio": resta il primo. #}
+{% set mine_is_p2 = current_user.is_authenticated and match.player2_id is defined and current_user.id == match.player2_id %}
+
 {% if is_in_progress %}
 <section class="c7-stack" style="margin-top: 18px;">
     <div style="display: flex; align-items: center; gap: 10px;">
@@ -117,22 +128,23 @@ Parametri:
         </div>
 
         {% elif active_set and not set_completed and not current_user_confirmed %}
-        <div class="c7-card" style="padding: 18px;">
-            <div class="c7-kicker" style="text-align: center;">{{ _('Chi ha vinto il rack?') }}</div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
-                <button class="btn btn-primary btn-lg" style="height: 84px; flex-direction: column; gap: 2px;" onclick="{{ add_rack }}({{ match.player1_id }}, this)" {% if need_table and match.table_assignment is defined and not match.table_assignment %}disabled{% endif %}>
-                    <span class="c7-num-lg">{{ active_set.player1_racks }}</span>
-                    <span style="font-size: 12px; font-weight: 700; opacity: .8;">{{ p1_name }}</span>
-                </button>
-                <button class="btn btn-primary btn-lg" style="height: 84px; flex-direction: column; gap: 2px;" onclick="{{ add_rack }}({{ match.player2_id }}, this)" {% if need_table and match.table_assignment is defined and not match.table_assignment %}disabled{% endif %}>
-                    <span class="c7-num-lg">{{ active_set.player2_racks }}</span>
-                    <span style="font-size: 12px; font-weight: 700; opacity: .8;">{{ p2_name }}</span>
-                </button>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px;">
-                <button class="btn btn-secondary btn-sm" onclick="{{ remove_rack }}({{ match.player1_id }}, this)" {% if active_set.player1_racks == 0 %}disabled{% endif %}>−1 {{ p1_name }}</button>
-                <button class="btn btn-secondary btn-sm" onclick="{{ remove_rack }}({{ match.player2_id }}, this)" {% if active_set.player2_racks == 0 %}disabled{% endif %}>−1 {{ p2_name }}</button>
-            </div>
+        {% set no_table = need_table and match.table_assignment is defined and not match.table_assignment %}
+        <div class="c7-rackpad">
+            <button type="button" class="c7-rackpad__btn {{ 'c7-rackpad__btn--mine' if not mine_is_p2 }}" onclick="{{ add_rack }}({{ match.player1_id }}, this)" {% if no_table %}disabled{% endif %}>
+                <span class="c7-rackpad__plus">+1</span>
+                <span class="c7-rackpad__who">{{ p1_name }}</span>
+            </button>
+            <button type="button" class="c7-rackpad__btn {{ 'c7-rackpad__btn--mine' if mine_is_p2 }}" onclick="{{ add_rack }}({{ match.player2_id }}, this)" {% if no_table %}disabled{% endif %}>
+                <span class="c7-rackpad__plus">+1</span>
+                <span class="c7-rackpad__who">{{ p2_name }}</span>
+            </button>
+        </div>
+        {# Nel set il conteggio per giocatore e' quello del set, non del match:
+           i due comandi restano distinti perche' l'ultimo rack del set non e'
+           ricavabile da `match.racks`. #}
+        <div class="c7-rackpad" style="gap: 10px;">
+            <button type="button" class="c7-undo" onclick="{{ remove_rack }}({{ match.player1_id }}, this)" {% if active_set.player1_racks == 0 %}disabled{% endif %}>−1 {{ p1_name }}</button>
+            <button type="button" class="c7-undo" onclick="{{ remove_rack }}({{ match.player2_id }}, this)" {% if active_set.player2_racks == 0 %}disabled{% endif %}>−1 {{ p2_name }}</button>
         </div>
 
         {% elif active_set and set_completed and not match_complete_by_sets %}
@@ -220,23 +232,21 @@ Parametri:
         {% endif %}
 
         {% if is_in_progress and not current_user_confirmed %}
-        <div class="c7-card" style="padding: 18px;">
-            <div class="c7-kicker" style="text-align: center;">{{ _('Chi ha vinto il rack?') }}</div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
-                <button class="btn btn-primary btn-lg" style="height: 84px; flex-direction: column; gap: 2px;" onclick="{{ add_rack }}({{ match.player1_id }}, this)" {% if not can_add %}disabled{% endif %}>
-                    <span class="c7-num-lg">{{ match.player1_score }}</span>
-                    <span style="font-size: 12px; font-weight: 700; opacity: .8;">{{ p1_name }}</span>
-                </button>
-                <button class="btn btn-primary btn-lg" style="height: 84px; flex-direction: column; gap: 2px;" onclick="{{ add_rack }}({{ match.player2_id }}, this)" {% if not can_add %}disabled{% endif %}>
-                    <span class="c7-num-lg">{{ match.player2_score }}</span>
-                    <span style="font-size: 12px; font-weight: 700; opacity: .8;">{{ p2_name }}</span>
-                </button>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px;">
-                <button class="btn btn-secondary btn-sm" onclick="{{ remove_rack }}({{ match.player1_id }}, this)" {% if match.player1_score == 0 %}disabled{% endif %}>−1 {{ p1_name }}</button>
-                <button class="btn btn-secondary btn-sm" onclick="{{ remove_rack }}({{ match.player2_id }}, this)" {% if match.player2_score == 0 %}disabled{% endif %}>−1 {{ p2_name }}</button>
-            </div>
+        <div class="c7-rackpad">
+            <button type="button" class="c7-rackpad__btn {{ 'c7-rackpad__btn--mine' if not mine_is_p2 }}" onclick="{{ add_rack }}({{ match.player1_id }}, this)" {% if not can_add %}disabled{% endif %}>
+                <span class="c7-rackpad__plus">+1</span>
+                <span class="c7-rackpad__who">{{ p1_name }}</span>
+            </button>
+            <button type="button" class="c7-rackpad__btn {{ 'c7-rackpad__btn--mine' if mine_is_p2 }}" onclick="{{ add_rack }}({{ match.player2_id }}, this)" {% if not can_add %}disabled{% endif %}>
+                <span class="c7-rackpad__plus">+1</span>
+                <span class="c7-rackpad__who">{{ p2_name }}</span>
+            </button>
         </div>
+        {# Un solo annulla, non due "−1 <nome>": si toglie sempre l'ultimo rack
+           segnato, e chi l'ha vinto lo sa gia' la pagina. #}
+        <button type="button" class="c7-undo" onclick="{{ remove_rack }}({{ last_rack.winner_id if last_rack else 0 }}, this)" {% if not last_rack %}disabled{% endif %}>
+            {{ _('Annulla ultimo rack') }}
+        </button>
         {% endif %}
 
         {% if is_in_progress and need_table and match.table_assignment is defined and not match.table_assignment %}

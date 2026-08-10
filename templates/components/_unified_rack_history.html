@@ -16,29 +16,36 @@ Parametri:
 {% set deleted_racks = match.racks|selectattr('is_deleted', 'equalto', True)|list %}
 
 {% if active_racks|length %}
+{# Lista, non tabella: quattro colonne su 390px costringevano a scorrere in
+   orizzontale per leggere l'ultima. Ogni riga porta il progressivo dopo quel
+   rack — com'e' andata la partita si legge scorrendo la colonna di destra.
+   L'ordine e' dal piu' recente, come nel prototipo. #}
+{% set rows = [] %}
+{% set running = namespace(p1=0, p2=0) %}
+{% for rack in active_racks|sort(attribute='rack_number') %}
+    {% if rack.winner_id == p1_id %}{% set running.p1 = running.p1 + 1 %}{% else %}{% set running.p2 = running.p2 + 1 %}{% endif %}
+    {% set _void = rows.append({'rack': rack, 'p1': running.p1, 'p2': running.p2}) %}
+{% endfor %}
 <section class="c7-stack" style="margin-top: 18px;">
-    <h3 style="margin: 0;">{{ _('Storico rack') }}</h3>
-    <div class="c7-table-wrap table-responsive">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th style="width: 70px;">{{ _('Rack') }}</th>
-                    <th>{{ _('Vinto da') }}</th>
-                    <th>{{ _('Segnato da') }}</th>
-                    <th>{{ _('Quando') }}</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for rack in active_racks|sort(attribute='rack_number') %}
-                <tr>
-                    <td><span class="c7-num">{{ rack.rack_number }}</span></td>
-                    <td><strong>{% if rack.winner_id == p1_id %}{{ p1_name }}{% else %}{{ p2_name }}{% endif %}</strong></td>
-                    <td class="text-muted">{{ rack.added_by.username if rack.added_by else '—' }}</td>
-                    <td class="text-muted"><span class="c7-num">{{ rack.added_at|datetime_local if rack.added_at else '—' }}</span></td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <h3 style="margin: 0;">{{ _('Rack giocati') }}</h3>
+    <div class="c7-racklist">
+        {% for row in rows|reverse %}
+        <div class="c7-racklist__row">
+            <span class="c7-racklist__n">{{ row.rack.rack_number }}</span>
+            <span class="c7-racklist__who">
+                {% if row.rack.winner_id == p1_id %}{{ p1_name }}{% else %}{{ p2_name }}{% endif %}
+                {# Chi ha segnato conta solo quando non e' il vincitore stesso:
+                   e' l'informazione che serve in caso di contestazione. #}
+                {% if row.rack.added_by and row.rack.added_by.id != row.rack.winner_id %}
+                <span class="text-muted" style="display: block; font-size: 11px; font-weight: 600;">
+                    {{ _('segnato da %(user)s', user=row.rack.added_by.username) }}
+                    {% if row.rack.added_at %}<span class="c7-sep">·</span> <span class="c7-num">{{ row.rack.added_at|time_local }}</span>{% endif %}
+                </span>
+                {% endif %}
+            </span>
+            <span class="c7-racklist__score">{{ row.p1 }}–{{ row.p2 }}</span>
+        </div>
+        {% endfor %}
     </div>
 </section>
 {% endif %}
