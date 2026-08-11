@@ -33,7 +33,7 @@ class TestMultiSetMatchStart:
             location="Test Hall",
             scheduled_at=utc_now() + timedelta(hours=1),
             status=MatchStatus.SCHEDULED,
-            discipline="palla_8",
+            discipline="8_ball",
             distance=5,  # Each set is race-to-5
             is_race_to=True,
             is_multi_set=True,

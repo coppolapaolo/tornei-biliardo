@@ -31,7 +31,7 @@ class TestIndexLiveIconRegression:
         gara = SimpleNamespace(
             id=1,
             name="Gara Test",
-            discipline="palla_8",
+            discipline="8_ball",
             location="Sala Prova",
         )
         live_match = SimpleNamespace(

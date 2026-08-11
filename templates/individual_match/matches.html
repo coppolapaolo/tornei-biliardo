@@ -46,10 +46,10 @@
     <div class="c7-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
       <select class="form-select" id="disciplineFilter" aria-label="{{ _('Filtra per disciplina') }}">
         <option value="">{{ _("Tutte le discipline") }}</option>
-        {# Le discipline arrivano **dai match**, non dall'enum: i match
-           individuali salvano ancora il vocabolario vecchio (`palla_8`, dove le
-           gare hanno `8_ball` — vedi il diario), quindi un elenco costruito
-           sull'enum non combacerebbe con i dati. #}
+        {# Le discipline arrivano **dai match**, non dall'enum. Il motivo non e'
+           piu' il vocabolario doppio (normalizzato nel 2026-08): e' che un
+           filtro deve offrire solo le voci che restituiscono qualcosa, non
+           tutte e sette le discipline possibili. #}
         {% set seen_disciplines = [] %}
         {% for match in matches %}
         {% if match.discipline not in seen_disciplines %}

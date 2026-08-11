@@ -68,7 +68,7 @@ def _make_gara(
         name=f"Seeding {suffix}",
         date=date(2026, 3, 1),
         time=time(18, 0),
-        discipline="palla_9",
+        discipline="9_ball",
         distance=5,
         is_race_to=True,
         director_id=director.id,

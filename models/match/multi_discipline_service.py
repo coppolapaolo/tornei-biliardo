@@ -9,6 +9,7 @@ from ..base import db
 from .models import Match
 from .set_models import Set
 from ..transaction.manager import transactional
+from ..status_enum import Discipline
 
 
 class MultiDisciplineService:
@@ -68,11 +69,14 @@ class MultiDisciplineService:
 
         Args:
             match_id: ID of the match to configure
-            set_configurations: Dict mapping set number to configuration:
+            set_configurations: Dict mapping set number to configuration.
+                I valori sono quelli di `Discipline`:
                 {
-                    1: {"discipline": "palla_8"},
-                    2: {"multi_discipline": True, "rotation": ["palla_9", "palla_10"]},
-                    3: {"multi_discipline": True, "assignment": {1: "palla_8", 2: "palla_9"}}
+                    1: {"discipline": "8_ball"},
+                    2: {"multi_discipline": True,
+                        "rotation": ["9_ball", "10_ball"]},
+                    3: {"multi_discipline": True,
+                        "assignment": {1: "8_ball", 2: "9_ball"}},
                 }
         """
         match = db.session.get(Match, match_id)
@@ -104,78 +108,64 @@ class MultiDisciplineService:
                     match_set.set_discipline_assignment(config["assignment"])
             else:
                 # Single discipline for this set
-                match_set.discipline = config.get("discipline", "palla_8")
+                match_set.discipline = config.get(
+                    "discipline", Discipline.EIGHT_BALL.value
+                )
                 match_set.is_multi_discipline = False
 
         # Transaction managed by @transactional decorator
 
     @staticmethod
     def get_available_disciplines() -> List[Dict[str, str]]:
-        """Get list of available disciplines with their display names."""
+        """Elenco delle discipline disponibili, derivato dall'enum.
+
+        Era una tabella valore/etichetta scritta a mano — di fatto un secondo
+        enum non dichiarato, per giunta col vocabolario storico nei valori.
+        L'etichetta vive ora su `Discipline`, tradotta.
+        """
         return [
-            {
-                "value": "palla_8",
-                "label": "8-Ball",
-                "description": "Standard 8-ball pool",
-            },
-            {"value": "palla_9", "label": "9-Ball", "description": "9-ball rotation"},
-            {
-                "value": "palla_10",
-                "label": "10-Ball",
-                "description": "10-ball rotation",
-            },
-            {
-                "value": "straight_pool",
-                "label": "Straight Pool",
-                "description": "14.1 continuous",
-            },
-            {
-                "value": "one_pocket",
-                "label": "One Pocket",
-                "description": "One pocket pool",
-            },
-            {
-                "value": "bank_pool",
-                "label": "Bank Pool",
-                "description": "Bank shot pool",
-            },
-            {
-                "value": "rotation",
-                "label": "Rotation",
-                "description": "15-ball rotation",
-            },
+            {"value": discipline.value, "label": discipline.display_name}
+            for discipline in Discipline
         ]
 
     @staticmethod
-    def get_discipline_rules(discipline: str) -> Dict[str, Any]:
-        """Get rules and configuration for a specific discipline."""
-        discipline_rules = {
-            "palla_8": {
-                "name": "8-Ball",
+    def get_discipline_rules(discipline) -> Dict[str, Any]:
+        """Regole di gioco della disciplina.
+
+        Accetta un membro di `Discipline` o un valore, anche del vocabolario
+        storico: `normalize` fa da ponte. Prima la mappa era indicizzata su
+        `palla_*`, quindi con i dati reali (`8_ball`) **non trovava mai nulla**
+        e ogni chiamata cadeva nel dizionario vuoto.
+
+        `name` non è ripetuto qui: viene da `display_name`, ed è tradotto.
+        """
+        member = Discipline.normalize(discipline)
+        if member is None:
+            return {}
+
+        discipline_rules: Dict[Discipline, Dict[str, Any]] = {
+            Discipline.EIGHT_BALL: {
                 "rack_size": 15,
                 "winning_condition": "8-ball after group clearance",
                 "break_rule": "open",
                 "foul_penalties": ["ball_in_hand"],
                 "tiebreaker_type": "spot_shot",
             },
-            "palla_9": {
-                "name": "9-Ball",
+            Discipline.NINE_BALL: {
                 "rack_size": 9,
                 "winning_condition": "9-ball on any legal shot",
                 "break_rule": "push_out_allowed",
                 "foul_penalties": ["ball_in_hand"],
                 "tiebreaker_type": "spot_shot",
             },
-            "palla_10": {
-                "name": "10-Ball",
+            Discipline.TEN_BALL: {
                 "rack_size": 10,
                 "winning_condition": "10-ball called and made",
                 "break_rule": "call_shot",
                 "foul_penalties": ["ball_in_hand"],
                 "tiebreaker_type": "spot_shot",
             },
-            "straight_pool": {
-                "name": "Straight Pool",
+            Discipline.STRAIGHT_POOL: {
                 "rack_size": 15,
                 "winning_condition": "points_based",
                 "target_score": 150,
@@ -183,9 +173,36 @@ class MultiDisciplineService:
                 "foul_penalties": ["minus_one_point"],
                 "tiebreaker_type": "rally",
             },
+            Discipline.ONE_POCKET: {
+                "rack_size": 15,
+                "winning_condition": "points_based",
+                "target_score": 8,
+                "break_rule": "safety_break",
+                "foul_penalties": ["minus_one_point"],
+                "tiebreaker_type": "rally",
+            },
+            Discipline.BANK_POOL: {
+                "rack_size": 15,
+                "winning_condition": "points_based",
+                "target_score": 9,
+                "break_rule": "safety_break",
+                "foul_penalties": ["ball_in_hand"],
+                "tiebreaker_type": "rally",
+            },
+            Discipline.ROTATION: {
+                "rack_size": 15,
+                "winning_condition": "points_based",
+                "target_score": 61,
+                "break_rule": "open",
+                "foul_penalties": ["ball_in_hand"],
+                "tiebreaker_type": "rally",
+            },
         }
 
-        return discipline_rules.get(discipline, {})
+        rules = discipline_rules.get(member)
+        if rules is None:
+            return {}
+        return {"name": member.display_name, **rules}
 
     @staticmethod
     def validate_discipline_configuration(config: Dict[str, Any]) -> Dict[str, Any]:
@@ -233,25 +250,41 @@ class MultiDisciplineService:
                 "name": "Pool Variety",
                 "description": "Rotate through different pool disciplines",
                 "rotation_type": "set_level",
-                "disciplines": ["palla_8", "palla_9", "palla_10"],
+                "disciplines": [
+                    Discipline.EIGHT_BALL.value,
+                    Discipline.NINE_BALL.value,
+                    Discipline.TEN_BALL.value,
+                ],
             },
             "classic_rotation": {
                 "name": "Classic Rotation",
                 "description": "Traditional pool games rotation",
                 "rotation_type": "set_level",
-                "disciplines": ["palla_8", "straight_pool", "palla_9"],
+                "disciplines": [
+                    Discipline.EIGHT_BALL.value,
+                    Discipline.STRAIGHT_POOL.value,
+                    Discipline.NINE_BALL.value,
+                ],
             },
             "rack_by_rack": {
                 "name": "Rack by Rack",
                 "description": "Different discipline each rack",
                 "rotation_type": "rack_level",
-                "disciplines": ["palla_8", "palla_9"],
+                "disciplines": [
+                    Discipline.EIGHT_BALL.value,
+                    Discipline.NINE_BALL.value,
+                ],
             },
             "skill_challenge": {
                 "name": "Skill Challenge",
                 "description": "Comprehensive skill test",
                 "rotation_type": "set_level",
-                "disciplines": ["palla_8", "palla_9", "palla_10", "straight_pool"],
+                "disciplines": [
+                    Discipline.EIGHT_BALL.value,
+                    Discipline.NINE_BALL.value,
+                    Discipline.TEN_BALL.value,
+                    Discipline.STRAIGHT_POOL.value,
+                ],
             },
         }
 
@@ -270,7 +303,9 @@ class MultiDisciplineService:
         if not match.is_multi_set:
             return {
                 "is_multi_discipline": False,
-                "current_discipline": getattr(match, "discipline", "palla_8"),
+                "current_discipline": getattr(
+                    match, "discipline", Discipline.EIGHT_BALL.value
+                ),
                 "progress": "Single discipline match",
             }
 

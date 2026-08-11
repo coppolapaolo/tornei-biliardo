@@ -29,7 +29,7 @@ def _gara(**kwargs) -> Gara:
     defaults = dict(
         number=2,
         date=date.today(),
-        discipline="palla_8",
+        discipline="8_ball",
         distance=5,
         status="setup",
     )

@@ -435,8 +435,8 @@ peggio della grafica:
   valori vecchi, quindi funzionavano **per caso** sui dati esistenti e
   smetterebbero di funzionare su un match salvato col valore dell'enum. Ora le
   opzioni si ricavano dai record, che vale in entrambi i casi.
-  **Da decidere a parte: una migration che normalizzi quel campo.** E' un
-  cambio di dominio, non di interfaccia, e tocca i confronti fra discipline.
+  ~~**Da decidere a parte: una migration che normalizzi quel campo.**~~
+  **Chiuso** (vedi "Vocabolario unico delle discipline" più sotto).
 - L'elenco degli avversari si ripuliva dai duplicati **lato JS**, dopo averli
   stampati: ora non li stampa.
 - `Discipline` aggiunta ai globals Jinja, con la nota sul vocabolario doppio.
@@ -498,6 +498,62 @@ prototipo copre la proposta di date (#9a·2, opzioni selezionabili con
 **Attenzione ai dati**: in locale c'e' **una** partita individuale e **zero**
 proposte, quindi le sezioni "attendono la tua risposta" e "in attesa" non sono
 verificabili senza crearne una dal flusso vero.
+
+**Vocabolario unico delle discipline** — chiuso il rilievo aperto sui match
+individuali, per decisione dell'utente ("le discipline devono stare in un enum
+unico; quello che si visualizza e' una stringa tradotta").
+
+Il problema era piu' largo del campo `individual_match.discipline`. Non
+esistevano due enum Python: ne esisteva **uno solo** (`Discipline`) piu' un
+**vocabolario fantasma** — `palla_8`/`palla_9`/`palla_10`, il nome italiano
+usato come valore persistito, mai dichiarato, sparso in **11 file** fra default
+di colonna, firme di servizio e `<option>` di form. Peggio di due enum
+dichiarati: due enum si vedono e prima o poi si uniscono, un vocabolario
+fantasma passa da `String(50)` senza che nulla lo validi.
+
+Perche' nessuno se n'era accorto: `Discipline("palla_8")` solleva `ValueError`,
+che `discipline_display` cattura ripiegando su `raw.replace("_"," ").title()`
+→ **"Palla 8"**, che a schermo sembra giusto. **Il fallback difensivo
+mascherava esattamente il caso che doveva segnalare.**
+
+- **Il secondo enum c'era davvero**, non dichiarato:
+  `MultiDisciplineService.get_available_disciplines` conteneva la propria
+  tabella valore/etichetta, e altre tre mappe (`get_discipline_rules`, i
+  preset) erano indicizzate sulle stesse chiavi fantasma. Ora tutto deriva da
+  `Discipline`.
+- **Le regole per disciplina non venivano mai trovate**: indicizzate su
+  `palla_*` contro dati `8_ball`, ogni chiamata cadeva sul dizionario vuoto.
+  Coperte ora tutte e sette le discipline (erano quattro).
+- **`Discipline.normalize`** e' il ponte per i dati storici. Restituisce `None`
+  sull'ignoto invece di inventare un default: la scelta del ripiego spetta al
+  chiamante, ed era proprio il ripiego nascosto a coprire il difetto.
+- **Etichette tradotte**: `display_name` passa da `gettext`. Come nel resto del
+  progetto il msgid e' l'italiano — **"Palla 8"** — e l'inglese e' la
+  traduzione (**"8-Ball"**). Prima l'app era incoerente con se stessa: mostrava
+  "8-Ball" quasi ovunque e "Palla 8" nel form di creazione proposta.
+- **Migration** `20260811_normalize_discipline_vocabulary`: converte tutte e
+  nove le colonne di disciplina, comprese le due **JSON** di `set`
+  (`discipline_rotation`, `discipline_assignment`), dove i valori sono annidati
+  nel testo. Idempotente, e segnala i residui invece di tacerli. In locale ha
+  convertito 1 riga.
+- **Guardia**: `tests/new/unit/test_discipline_single_vocabulary.py` presidia
+  l'invariante — nessun letterale nel codice vivo (**commenti inclusi**: un
+  esempio in un docstring e' il modo in cui un valore sbagliato si ripropaga),
+  ogni default di colonna dentro l'enum, l'elenco dei form derivato dall'enum,
+  le etichette che passano da `gettext`. L'unico file autorizzato a nominare il
+  vocabolario vecchio e' `status_enum.py`, che dichiara il ponte.
+- **209 letterali normalizzati nei test** (87 file). Attenzione: la
+  sostituzione automatica ha colpito anche il file della guardia, svuotandone
+  di senso i casi di prova — ora quei valori sono composti a runtime apposta.
+- Riparate strada facendo **tre entry fuzzy del catalogo EN con placeholder
+  incompatibili** (`msgid "%(n)s rack giocati"` → `msgstr "%(num)s rack"`), che
+  facevano fallire `pybabel compile` con due errori.
+
+**Non e' un cambio di comportamento in produzione**: `tiebreaker/services.py`,
+dove il disallineamento produceva un confronto sempre falso, **non ha
+chiamanti** fuori da `tests/legacy/` — lo spareggio vivo e'
+`models/competition/tiebreaker_service.py`. Corretto per coerenza, non come
+bugfix urgente.
 
 ## Disallineamenti fra prototipo e codice
 

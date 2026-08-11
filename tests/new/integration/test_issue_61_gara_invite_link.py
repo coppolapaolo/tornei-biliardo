@@ -49,7 +49,7 @@ def _gara(director: User, **overrides) -> Gara:
         location="Sala Test",
         rounds_count=3,
         min_participants=2,
-        discipline="palla_9",
+        discipline="9_ball",
         distance=5,
         is_race_to=True,
         director_id=director.id,

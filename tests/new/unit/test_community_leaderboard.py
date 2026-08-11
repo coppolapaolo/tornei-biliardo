@@ -160,7 +160,7 @@ def test_compute_contribution_breakdown(db_session):
         number=1,
         name="G",
         date=date.today() + td(days=2),
-        discipline="palla_8",
+        discipline="8_ball",
         distance=5,
         director_id=author.id,
     )
@@ -206,7 +206,7 @@ def test_gare_organized_counts_director_assignment(db_session):
         number=1,
         name="Standalone",
         date=date.today() + td(days=2),
-        discipline="palla_8",
+        discipline="8_ball",
         distance=5,
         director_id=director.id,
     )
@@ -216,7 +216,7 @@ def test_gare_organized_counts_director_assignment(db_session):
         number=1,
         name="Assigned",
         date=date.today() + td(days=3),
-        discipline="palla_8",
+        discipline="8_ball",
         distance=5,
         director_id=admin.id,
     )

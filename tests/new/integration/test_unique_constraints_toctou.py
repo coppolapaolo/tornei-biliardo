@@ -47,7 +47,7 @@ def _make_open_proposal(proposer: User) -> MatchProposal:
         location="Sala Test",
         scheduled_at=utc_now() + timedelta(days=1),
         expires_at=utc_now() + timedelta(days=2),
-        discipline="palla_8",
+        discipline="8_ball",
         distance=5,
         is_race_to=True,
     )
@@ -64,7 +64,7 @@ def _make_match(proposer: User, accepter: User, proposal_id=None) -> IndividualM
         location="Sala Test",
         scheduled_at=utc_now() + timedelta(days=1),
         status=MatchStatus.SCHEDULED,
-        discipline="palla_8",
+        discipline="8_ball",
         distance=5,
     )
     db.session.add(m)

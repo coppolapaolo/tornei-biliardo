@@ -25,7 +25,7 @@ def _make_gara(**kwargs):
         "number": db.session.query(Gara).count() + 1,
         "date": date.today(),
         "distance": 5,
-        "discipline": "palla_9",
+        "discipline": "9_ball",
         "matchmaking_strategy": "random",
         "status": "playing",
         "is_race_to": True,

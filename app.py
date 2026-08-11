@@ -252,10 +252,10 @@ def create_app(config_name=None):
 
         `Discipline` c'e' per la stessa ragione degli altri due: un template che
         deve nominare una disciplina non deve riscriverne il valore a mano.
-        Attenzione pero': i match individuali salvano ancora il vocabolario
-        vecchio (`palla_8`, dove le gare hanno `8_ball`), quindi un elenco di
-        opzioni costruito su questo enum **non combacia** con quei dati — la
-        pagina dei match individuali le ricava dai record.
+        Dal 2026-08 e' l'**unico** vocabolario delle discipline: il parallelo
+        non dichiarato che i match individuali salvavano e' stato normalizzato
+        nei dati e rimosso dal codice, quindi un elenco di opzioni costruito su
+        questo enum combacia con qualunque riga.
         """
         from models.status_enum import Discipline, GaraStatus, MatchStatus
 

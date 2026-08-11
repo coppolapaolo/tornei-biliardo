@@ -74,7 +74,7 @@ def _gara(
         name=f"Equivalence {suffix}",
         date=date(2026, 4, 1),
         time=time(18, 0),
-        discipline="palla_9",
+        discipline="9_ball",
         distance=distance,
         is_race_to=True,
         is_multi_set=is_multi_set,

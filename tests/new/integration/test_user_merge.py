@@ -45,7 +45,7 @@ def _gara(director_id, status=GaraStatus.PLAYING.value):
         number=1,
         date=date.today() + timedelta(days=7),
         time=time(18, 0),
-        discipline="palla_8",
+        discipline="8_ball",
         distance=5,
         rounds_count=3,
         min_participants=2,

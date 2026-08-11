@@ -96,19 +96,16 @@
 
                                         <div class="mb-3">
                                             <label for="discipline" class="form-label">{{ _("Disciplina") }} *</label>
-                                            {% set selected_discipline = rematch_params.discipline if rematch_params
-                                            else 'palla_8' %}
+                                            {# Le opzioni vengono dall'enum `Discipline`: erano scritte a mano
+                                               col vocabolario storico, quindi questo form era il punto in cui
+                                               quei valori **entravano** nei dati. #}
+                                            {% set selected_discipline = (rematch_params.discipline
+                                            if rematch_params else Discipline.EIGHT_BALL.value) %}
                                             <select class="form-select" id="discipline" name="discipline" required>
-                                                <option value="palla_8" {% if selected_discipline=='palla_8'
-                                                    %}selected{% endif %}>Palla 8</option>
-                                                <option value="palla_9" {% if selected_discipline=='palla_9'
-                                                    %}selected{% endif %}>Palla 9</option>
-                                                <option value="palla_10" {% if selected_discipline=='palla_10'
-                                                    %}selected{% endif %}>Palla 10</option>
-                                                <option value="one_pocket" {% if selected_discipline=='one_pocket'
-                                                    %}selected{% endif %}>One Pocket</option>
-                                                <option value="straight_pool" {% if selected_discipline=='straight_pool'
-                                                    %}selected{% endif %}>Straight Pool</option>
+                                                {% for value, label in Discipline.get_choices() %}
+                                                <option value="{{ value }}" {% if selected_discipline==value
+                                                    %}selected{% endif %}>{{ label }}</option>
+                                                {% endfor %}
                                             </select>
                                         </div>
 

@@ -83,7 +83,7 @@ def _open_proposal(proposer_id, location="Sala Test"):
         location=location,
         scheduled_at=utc_now() + timedelta(days=1),
         expires_at=utc_now() + timedelta(hours=23),
-        discipline="palla_8",
+        discipline="8_ball",
         distance=5,
     )
 
@@ -95,7 +95,7 @@ def _direct_proposal(proposer_id, invited_ids, location="Sala Test"):
         location=location,
         scheduled_at=utc_now() + timedelta(days=1),
         expires_at=utc_now() + timedelta(hours=23),
-        discipline="palla_8",
+        discipline="8_ball",
         distance=5,
         invited_user_ids=invited_ids,
     )
@@ -161,7 +161,7 @@ class TestProposalLifecycleRoutes:
                 "location": "Sala Test",
                 "scheduled_at": (utc_now() + timedelta(days=1)).isoformat(),
                 "expires_hours": "1",
-                "discipline": "palla_8",
+                "discipline": "8_ball",
                 "match_format": "single",
                 "distance": "5",
                 "is_race_to": "true",

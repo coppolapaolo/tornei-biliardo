@@ -33,7 +33,7 @@ def _make_gara(db_session, director):
         number=1,
         date=date.today() + timedelta(days=7),
         time=time(18, 0),
-        discipline="palla_8",
+        discipline="8_ball",
         distance=5,
         rounds_count=3,
         min_participants=2,

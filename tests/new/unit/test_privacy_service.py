@@ -47,7 +47,7 @@ def test_gara(db_session):
         name=f"Test Gara {unique_id}",
         number=1,
         date=utc_now().date(),
-        discipline="palla_8",
+        discipline="8_ball",
         distance=5,
         is_race_to=True,
         status=GaraStatus.INSCRIPTION.value,

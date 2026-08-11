@@ -88,7 +88,7 @@ class TestAntiRematchBug:
             min_participants=4,
             max_participants=8,
             entry_fee=10.0,
-            discipline="palla_9",
+            discipline="9_ball",
             distance=5,  # Race to 5
             is_race_to=True,
             director_id=admin_user.id,
@@ -179,7 +179,7 @@ class TestAntiRematchBug:
             min_participants=4,
             max_participants=6,
             entry_fee=10.0,
-            discipline="palla_9",
+            discipline="9_ball",
             distance=5,  # Race to 5
             is_race_to=True,
             director_id=admin_user.id,

@@ -15,6 +15,7 @@ from datetime import datetime
 
 from models import IndividualMatch
 from models.individual_match.services import IndividualMatchService
+from models.status_enum import Discipline
 from models.user.permissions import RoleRequirement
 
 from . import individual_match_bp
@@ -503,7 +504,7 @@ def rematch(match_id):
         "rematch": "true",
         "opponent_id": opponent_id,
         "location": match.location or "",
-        "discipline": match.discipline or "palla_8",
+        "discipline": match.discipline or Discipline.EIGHT_BALL.value,
         "distance": match.distance or 5,
         "is_race_to": "true" if match.is_race_to else "false",
         "break_rule": match.break_rule or "alternate",

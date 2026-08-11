@@ -57,7 +57,7 @@ def _setup_two_player_gara(db_session, matchmaking: str, classification: str) ->
         name=f"Gara B14 {suffix}",
         date=date(2026, 1, 1),
         time=time(18, 0),
-        discipline="palla_9",
+        discipline="9_ball",
         distance=5,
         is_race_to=True,
         director_id=director.id,
