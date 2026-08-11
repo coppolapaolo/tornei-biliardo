@@ -555,6 +555,116 @@ chiamanti** fuori da `tests/legacy/` — lo spareggio vivo e'
 `models/competition/tiebreaker_service.py`. Corretto per coerenza, non come
 bugfix urgente.
 
+**Match individuali: gli ultimi 6 file** — l'area e' chiusa (10 su 10).
+`create_proposal` (la piu' grande) segue la 9a·2: sezioni intitolate — chi
+gioca, quando, dove, come si gioca, messaggio — scelte come card `c7-choice`,
+distanze come `c7-stepper`, barra d'azione in fondo. Il prototipo propone piu'
+date fra cui scegliere; il dominio ne ha una sola (`scheduled_at`), quindi
+resta il campo data con la stessa gerarchia. `availability` segue la 9a·3 nella
+forma ma non nel calendario: qui la disponibilita' non e' per data ma **per
+sala** (ADR-033), cioe' giorni della settimana e fascia oraria.
+
+**Difetti trovati e riparati nell'area:**
+
+- **La barra d'azione appiccicata finiva sotto la nav flottante.** `.c7-actionbar`
+  era `bottom: 0`, cioe' incollata al bordo del viewport, mentre la nav mobile e'
+  `fixed` sopra di essa: il comando principale della pagina non si vedeva. Era il
+  **primo uso della classe** nell'app, quindi non era mai emerso.
+- **La spunta delle `c7-choice` non seguiva la selezione**: era resa solo dal
+  server sull'opzione preselezionata, quindi restava li' anche dopo che l'utente
+  ne sceglieva un'altra. Vale per ogni pagina che usa la macro.
+- **Le disponibilita' non erano modificabili**: l'unico modo di cambiare i giorni
+  di una sala era riaggiungerla da zero. Ora ogni sala si modifica dov'e'. Tolto
+  anche l'interruttore "attualmente disponibile": una riga spenta sparisce
+  dall'elenco (il servizio filtra `is_available`), quindi spegnerla sembrava
+  cancellarla — per non essere piu' disponibile si usa "Rimuovi".
+- **`proposal_detail` cercava `declined`** mentre l'enum dice **`rejected`**: un
+  invito rifiutato si mostrava come neutro. Etichette e toni ora vivono in
+  `components/_proposal_labels.html`, condiviso con l'elenco.
+- **La panoramica admin stampava "In Progress"** (`status.value.replace('_',' ')
+  .title()`). Gli stati tradotti sono ora in `components/_match_status_labels.html`,
+  condiviso con il dettaglio del match.
+- **Le statistiche mostravano quattro traguardi finti** ("Prima Vittoria",
+  "Striscia di 3"…): il servizio non restituisce alcun achievement, quindi si
+  vedeva sempre e solo il ramo "vuoto" scritto a mano. Al loro posto il link ai
+  traguardi veri, avvolto in `feature_visible` (in produzione la gamification e'
+  ancora solo per chi dirige).
+- **TomSelect era caricato dalla CDN senza `integrity`**: aggiunto SRI a CSS e JS.
+
+**Area challenge: 16 template, chiusa** — e' il pezzo che l'utente ha chiesto
+esplicitamente. Catalogo e card erano gia' 7c dall'handoff; il resto era
+Bootstrap **senza una sola stringa dentro `_()`**. Il flusso segue la 9b:
+dettaglio con foto, istruzioni in card scura, i tuoi tentativi; registrazione
+del punteggio con la cifra grande e i due tasti tondi (`c7-scorepad`); pass/fail
+come due bersagli da 96px (`c7-choice--big`); challenge di gara con la card
+scura che spiega perche' stai giocando e la classifica.
+
+**Cinque guasti veri, tutti silenziosi:**
+
+- **Il catalogo era interamente rotto.** Il JS componeva gli indirizzi su
+  `/challenge/<id>/...` mentre il blueprint e' montato su **`/challenges/`**:
+  click sulla card, preferiti ed elimina rispondevano tutti 404, e l'unico
+  segnale era "errore sconosciuto". Ora gli indirizzi li scrive il server.
+- **`/challenges/attempt/<id>` rispondeva 500** su ogni tentativo numerico
+  concluso: la pagina calcolava una percentuale su `challenge.max_score`, campo
+  che **sul modello non esiste** — in Jinja, dividere per Undefined solleva.
+- **Il dettaglio della challenge di gara rispondeva 500** appena la gara aveva
+  una challenge: la route confrontava `c.get("gara_challenge", {}).get("id")` su
+  un **modello**, non un dizionario. Con la lista vuota il generatore non
+  iterava, quindi in sviluppo non si vedeva.
+- **La cronologia challenge del profilo era sempre vuota**: la route costruiva i
+  dizionari leggendo `challenge.max_score`, l'`AttributeError` finiva in un
+  `except Exception: pass`, e il template intanto leggeva chiavi che non
+  esistevano (`attempt.gara_challenge`, `attempt.created_at`). Ora l'except
+  scrive nel log invece di tacere.
+- **L'inserimento dei tentativi nella pagina partita era invertito**: il ramo
+  "tocca a te" apriva un `<div>` che non chiudeva mai e non conteneva campi,
+  mentre i campi stavano nel ramo di chi *non* puo' inserire. In piu'
+  `querySelector('[data-player-id]')` prendeva sempre il primo blocco della
+  pagina, quindi con due challenge la seconda registrava il valore della prima.
+
+Aggiunti `components/_challenge_bits.html` (miniatura e pastiglia del tipo, che
+sei componenti ricopiavano — con **due indirizzi diversi e sbagliati** per la
+stessa immagine) e le due mappe di etichette. Le API admin restituiscono ora
+l'indirizzo dell'immagine gia' pronto.
+
+**Amministrazione** — ripresa dopo che l'utente ha chiesto il redesign completo.
+
+- **170 icone invisibili.** Tredici pagine admin usavano `bi bi-*` (Bootstrap
+  Icons), che **non e' caricato**: al loro posto c'era il vuoto. Convertite tutte
+  a Font Awesome, l'unico set del design system.
+- **I grafici della dashboard KPI non sono mai esistiti.** La pagina metteva
+  Chart.js e i suoi script in `{% block extra_head %}` / `{% block extra_js %}`,
+  **blocchi che `base.html` non definisce**: il codice veniva scartato e le
+  quattro tele restavano vuote. Stessa cosa per lo stile di `venue_detail`.
+  Rinominati in `head_extra` / `scripts`; i colori dei grafici vengono ora dai
+  token.
+- **Testate doppie** in dodici pagine (admin, sale, campionato, gamification):
+  ora riempiono i blocchi del guscio. Le pagine di gamification non avevano
+  nemmeno un `block title`, quindi la linguetta del browser diceva "Campionato
+  Biliardo".
+- **Cifre illeggibili**: dentro un blocco a fondo scuro la regola generale sui
+  titoli li lasciava scuri su scuro (la card XP dei pannelli gamification).
+- **Tabelle larghe su mobile**: nuova `.c7-table-cards` — sotto i 992px la
+  tabella diventa una pila di card con l'etichetta di colonna a sinistra. Usata
+  da utenti (14 colonne) ed elenco gare pubblico.
+- **Colori Bootstrap a mano** (`#0d6efd`, `#198754`, `#e9ecef`…) nei due wizard
+  di creazione gara: portati sui token.
+
+**Traduzioni EN al 100%** (2151 stringhe). Le 627 fuzzy non sono state approvate
+in blocco: erano accoppiamenti automatici sbagliati, e sono state riscritte.
+
+**Test.** 1533 unit, 550 integrazione, 26 controlli headless: tutti verdi.
+`pyright` 0 errori, `black` e `flake8` puliti. Cinque test rossi durante il
+lavoro erano scritti sulla stringa esatta del markup vecchio ("Crea Nuova
+Challenge", `id="formatMulti"`…): riscritti sull'invariante.
+
+**Dati di prova seminati in locale**: due challenge (una a punteggio e una
+pass/fail) con sei tentativi, due challenge agganciate alla gara 3 con la
+relativa classifica, e un campionato con tre gare. Servivano perche' l'area
+challenge era **inverificabile a vuoto** — nel DB non c'era nemmeno una riga.
+`/reset` li porta via.
+
 ## Disallineamenti fra prototipo e codice
 
 Rilevati confrontando le schermate del prototipo con l'app in esecuzione.
@@ -589,10 +699,10 @@ Quelli sopra sono chiusi; questi no.
    "Crea gara" della 14c sono verde pieno. Questo **chiude il rilievo aperto**
    sui bottoni verdi del catalogo challenge: non sono un errore, sono la
    conferma conclusiva di un flusso.
-7. **Match individuali (9a).** Il prototipo ha linguette "Da giocare / In
-   attesa / Giocati", proposta di date come lista di opzioni selezionabili e
-   calendario delle disponibilita'. I dieci template dell'area sono ancora
-   nella lista "da verificare": il divario e' probabilmente ampio.
+7. ~~**Match individuali (9a).**~~ **Chiuso**: dieci template su dieci. Restano
+   due divergenze dichiarate — la proposta ha **una** data e non un elenco di
+   opzioni (il modello ha `scheduled_at`), e le disponibilita' sono per sala e
+   non per giorno del mese (ADR-033), quindi niente calendario.
 8. **Gara pubblica per l'ospite (10a).** Due tessere ("Turno corrente",
    "Stato"), classifica provvisoria e invito a registrarsi in card scura. Da
    confrontare con `_guest_info.html`.
@@ -600,31 +710,42 @@ Quelli sopra sono chiusi; questi no.
 ## Da fare
 
 1. ~~**Gamification giocatore.**~~ **Chiusa**: badge e quattro pagine, vedi
-   "Fatto". Resta fuori `gamification/leaderboards.html`, che l'handoff aveva
-   gia' convertito e che va solo guardato nel browser. Il **flusso challenge**
-   e' il prossimo dei "da rifare a mano", ma **solo dopo il merge del branch
-   parallelo**.
-2. **Rimandati per decisione dell'utente (2026-08-10)**: i **14 pannelli di
-   gamification admin** (2239 righe) e le **12 pagine admin** senza classi
-   `c7-` (3907 righe: kpi, utenti, sale, dettaglio campionato…). Le vede solo
-   chi amministra, il tema le copre gia' a un livello presentabile, e il README
-   stesso metteva i pannelli di gamification per ultimi. **Non sono un debito
-   dimenticato: sono fuori dallo scopo di questo giro.** Se un giorno si
-   riprendono, il criterio e' quello di sempre — aprirle nel browser prima di
-   toccarle.
-3. **Traduzioni EN — deciso: alla fine del redesign.** Oggi ci sono 76
-   stringhe nuove senza traduzione e 346 fuzzy, che sono accoppiamenti
-   automatici sbagliati ("amministrazione" → *Registrations*, "Persone" →
-   *Lost*). Non fanno danno: `pybabel` scarta le fuzzy dal `.mo` e
-   l'interfaccia inglese mostra l'italiano. Convertire le pagine restanti
-   cambierà altri testi, quindi tradurre prima significherebbe ritradurre.
-   A conversione finita: `/translate`, poi riscrivere le fuzzy invece di
-   approvarle in blocco.
-4. **Match individuali** (10 file, 2901 righe) — mai aperti nel browser, e il
-   prototipo (#9a) mostra un divario probabilmente ampio: linguette "Da
-   giocare / In attesa / Giocati", proposte di data come opzioni selezionabili,
-   calendario delle disponibilita'.
-5. **Pulizia di `main.css` e `variables.css`** — solo a verifica completata.
+   "Fatto".
+2. ~~**Rimandati per decisione dell'utente (2026-08-10)**: 14 pannelli di
+   gamification admin e 12 pagine admin.~~ **Ripresi e chiusi il 2026-08-11**,
+   quando l'utente ha chiesto il redesign completo (vedi "Amministrazione" in
+   "Fatto").
+3. ~~**Traduzioni EN.**~~ **Fatte a redesign concluso**, come deciso: il
+   catalogo EN e' al **100% (2151 stringhe)**. Le 627 fuzzy non sono state
+   approvate in blocco ma riscritte: erano accoppiamenti automatici sbagliati
+   ("amministrazione" → *Registrations*).
+4. ~~**Match individuali** (10 file).~~ **Chiusi**, vedi "Fatto".
+5. **Pulizia di `main.css` e `variables.css`** — resta l'ultimo punto del
+   README. Va fatta con il browser davanti, regola per regola: sono i due file
+   che il tema sovrascrive, quindi togliere quella sbagliata non da' errore, da'
+   una pagina storta.
+
+### Rilievi di dominio trovati durante la conversione (non toccati)
+
+Non sono lavoro di interfaccia: si annotano perche' vanno decisi, non fatti di
+nascosto.
+
+- **`Challenge.max_score` e `Challenge.name` non esistono.** `models/exam/`
+  (l'area esami, in lavorazione sull'altro branch) li usa in
+  `get_max_possible_score` e in `ExamChallenge.__repr__`: quelle chiamate
+  sollevano `AttributeError`. Il redesign non li ha aggiunti apposta — sarebbe
+  un cambio di modello con migration, in collisione con quel branch. **Una
+  challenge numerica non dichiara un massimo**: l'interfaccia mostra quindi il
+  punteggio e basta, senza "/N" ne' barra di progresso (divergenza dichiarata
+  dal prototipo 9b·3).
+- **`raise ValueError("Campionato not found")`** in
+  `models/campionato/tournament_service.py` (11 occorrenze): la convenzione del
+  progetto vuole `NotFoundError` → 404. Oggi la pagina di un campionato
+  inesistente risponde **500**. Cambiarlo tocca anche i test legacy: da fare a
+  parte.
+- **`record_challenge_attempts`** (registrazione a lotti dei tentativi) non ha
+  piu' chiamanti: `_match_challenge_input.html` registra un tentativo per volta.
+  La route c'e' ancora.
 
 ## Rilievi aperti dal giro visivo
 
@@ -633,25 +754,24 @@ Visti ma non ancora affrontati, in ordine di dubbio:
 - ~~Bottoni verdi nel catalogo challenge.~~ **Chiuso dal prototipo**: nella
   14c "Crea campionato" e "Crea gara" sono verde pieno. Il verde e' la
   conferma conclusiva di un flusso, non solo il semantico "ok".
-- **Card "Unisci utenti (merge)" in `/admin/users`.** Fondo giallo con
-  sotto una striscia vuota: sembra un accordion o un alert malformato. Da
-  guardare da vicino.
-- **`admin/gara_challenge_classification.html` non e' internazionalizzata.**
-  Il corpo della pagina ha le stringhe in italiano fuori da `_()` ("Pos.",
-  "Giocatore", "Classifica Challenge"). Qui e' stata toccata solo la
-  testata, per non collidere con il branch challenge: la conversione della
-  pagina se ne fa carico.
+- ~~**Card "Unisci utenti (merge)" in `/admin/users`.**~~ **Chiusa**: era una
+  card con la testata a fondo giallo e sotto la striscia vuota del pannello
+  richiuso. Ora e' una riga che si apre, come le altre sezioni richiudibili.
+- ~~**`admin/gara_challenge_classification.html` non e' internazionalizzata.**~~
+  **Chiusa** con la conversione dell'area challenge: il corpo della pagina —
+  che era in italiano fisso, fuori da `_()` — e' tradotto e passato al design
+  system.
 - **La card "Gestione" resta visibile e vuota a gara conclusa** — solo
   titolo e badge di stato, nessuna azione. Il badge e' l'unico posto in
   pagina dove lo stato e' scritto, quindi non basta nasconderla.
 - ~~**Info e Iscritti richiudibili su mobile** stanno ancora dentro la sezione
   Partite.~~ **Chiuso dalle linguette**: hanno una vista loro, e gli iscritti
   non sono piu' richiusi.
-- **`public/garas_list.html` su mobile.** È una tabella a sei colonne
-  dentro `c7-table-wrap`: i nomi delle gare vanno a capo su ogni parola.
-  Il pacchetto ha `_match_cards_mobile` e `_classification_mobile` proprio
-  per questo caso: valutare una resa a card sotto i 992px. (Da riguardare
-  dopo la correzione dell'`overflow-x`: ora almeno la tabella scorre.)
+- ~~**`public/garas_list.html` su mobile.**~~ **Chiusa**: sotto i 992px la
+  tabella si impagina a card (`.c7-table-cards`), una per gara, con
+  l'etichetta di ogni colonna a sinistra e il valore a destra. La stessa
+  classe serve la tabella utenti dell'admin, che di colonne ne ha quattordici.
+  Un DOM solo, quindi i filtri e l'ordinamento in JS continuano a funzionare.
 - **Multi-set e trio: non verificabili in locale.** Il DB di sviluppo non ha
   nemmeno una partita `is_multi_set` o `is_trio`, quindi
   `_multi_set_score_display.html` (ancora `card-header bg-secondary`, ma il
@@ -662,8 +782,8 @@ Visti ma non ancora affrontati, in ordine di dubbio:
   verificati solo per il caso a due giocatori. Da guardare quando ci sara'
   un dato — o creandone uno.
 - **Storico rack su mobile.** Quattro colonne che a 390px scorrono in
-  orizzontale. Funziona, ma la resa a card sarebbe migliore: stesso
-  ragionamento di `garas_list`.
+  orizzontale. Funziona, ma la resa a card sarebbe migliore: ora c'e'
+  `.c7-table-cards`, quindi basta aggiungere la classe e le `data-label`.
 
 ## Ambiente di lavoro locale
 
