@@ -3,20 +3,23 @@
 
 {% block title %}{{ venue.name }} - Sala Biliardo{% endblock %}
 
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('admin.venue.venues_list') }}"
+   aria-label="{{ _('Torna alle sale') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ venue.name }}{% endblock %}
+{% block page_sub %}
+{%- if venue.city %}{{ venue.city }}{% else %}{{ _("Sala biliardo") }}{% endif %}
+{% endblock %}
+{% block page_actions %}
+{% if can_manage %}
+<a href="{{ url_for('admin.venue.edit_venue', venue_id=venue.id) }}" class="btn btn-primary btn-sm">
+  <i class="fas fa-pencil"></i>&nbsp;{{ _("Gestisci") }}
+</a>
+{% endif %}
+{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1><i class="fas fa-building"></i> {{ venue.name }}</h1>
-    <div>
-        {% if can_manage %}
-        <a href="{{ url_for('admin.venue.edit_venue', venue_id=venue.id) }}" class="btn btn-primary me-2">
-            <i class="fas fa-edit"></i> Gestisci Sala
-        </a>
-        {% endif %}
-        <a href="{{ url_for('admin.venue.venues_list') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left"></i> Torna alle Sale
-        </a>
-    </div>
-</div>
 
 <div class="row">
     <!-- Informazioni Principali -->

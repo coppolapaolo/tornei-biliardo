@@ -1,17 +1,23 @@
 {% extends 'base.html' %}
+{% block title %}{{ _('Configurazione Streak') }}{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('gamification.admin_config_dashboard') }}"
+   aria-label="{{ _('Indietro') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _('Configurazione Streak') }}{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('gamification.admin_config_dashboard') }}" class="btn btn-secondary btn-sm d-none d-lg-inline-flex">
+  <i class="fas fa-arrow-left"></i>&nbsp;{{ _('Torna alla Config') }}
+</a>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="bi bi-fire"></i> {{ _('Configurazione Streak') }}</h2>
-    <a href="{{ url_for('gamification.admin_config_dashboard') }}" class="btn btn-outline-secondary">
-      <i class="bi bi-arrow-left"></i> {{ _('Torna alla Config') }}
-    </a>
-  </div>
-
   <!-- General Streak Config -->
   <div class="card mb-4">
     <div class="card-header">
-      <h5 class="mb-0"><i class="bi bi-sliders"></i> {{ _('Configurazione Generale') }}</h5>
+      <h5 class="mb-0"><i class="fas fa-sliders"></i> {{ _('Configurazione Generale') }}</h5>
     </div>
     <div class="card-body">
       <div class="row">
@@ -25,7 +31,7 @@
               <input type="number" name="value" value="{{ config.value }}"
                      class="form-control" min="0" required>
               <button type="submit" class="btn btn-primary">
-                <i class="bi bi-check"></i> {{ _('Salva') }}
+                <i class="fas fa-check"></i> {{ _('Salva') }}
               </button>
             </div>
           </form>
@@ -38,14 +44,14 @@
   <!-- Streak Milestones -->
   <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-      <h5 class="mb-0"><i class="bi bi-award"></i> {{ _('Streak Milestones') }}</h5>
+      <h5 class="mb-0"><i class="fas fa-award"></i> {{ _('Streak Milestones') }}</h5>
       <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#addMilestoneModal">
-        <i class="bi bi-plus"></i> {{ _('Aggiungi Milestone') }}
+        <i class="fas fa-plus"></i> {{ _('Aggiungi Milestone') }}
       </button>
     </div>
     <div class="card-body">
       <div class="alert alert-info mb-3">
-        <i class="bi bi-info-circle"></i>
+        <i class="fas fa-circle-info"></i>
         {{ _('I milestone definiscono i reward quando un utente raggiunge una certa streak. I milestone ricorrenti si applicano ogni volta che la streak è un multiplo delle settimane.') }}
       </div>
 
@@ -65,38 +71,38 @@
           <tr{% if not milestone.is_active %} class="table-secondary"{% endif %}>
             <td>
               <span class="badge bg-warning text-dark fs-6">
-                <i class="bi bi-fire"></i> {{ milestone.weeks }}w
+                <i class="fas fa-fire"></i> {{ milestone.weeks }}w
               </span>
             </td>
             <td>
-              <span class="badge bg-info fs-6">{{ milestone.freeze_tokens }} <i class="bi bi-snow"></i></span>
+              <span class="badge bg-info fs-6">{{ milestone.freeze_tokens }} <i class="fas fa-snowflake"></i></span>
             </td>
             <td>x{{ milestone.xp_bonus_multiplier }}</td>
             <td>
               {% if milestone.is_recurring %}
-              <span class="badge bg-primary"><i class="bi bi-arrow-repeat"></i> {{ _('Si') }}</span>
+              <span class="badge bg-primary"><i class="fas fa-rotate"></i> {{ _('Si') }}</span>
               {% else %}
               <span class="badge bg-secondary">{{ _('No') }}</span>
               {% endif %}
             </td>
             <td>
               {% if milestone.is_active %}
-              <span class="badge bg-success"><i class="bi bi-check"></i></span>
+              <span class="badge bg-success"><i class="fas fa-check"></i></span>
               {% else %}
-              <span class="badge bg-secondary"><i class="bi bi-x"></i></span>
+              <span class="badge bg-secondary"><i class="fas fa-xmark"></i></span>
               {% endif %}
             </td>
             <td>
               <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
                       data-bs-target="#editMilestoneModal{{ milestone.id }}">
-                <i class="bi bi-pencil"></i>
+                <i class="fas fa-pencil"></i>
               </button>
               <form action="{{ url_for('gamification.admin_delete_streak_milestone', milestone_id=milestone.id) }}"
                     method="POST" class="d-inline"
                     onsubmit="return confirmSubmit(this, {{ _('Eliminare questo milestone?')|tojson }})">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="btn btn-sm btn-outline-danger">
-                  <i class="bi bi-trash"></i>
+                  <i class="fas fa-trash"></i>
                 </button>
               </form>
             </td>
@@ -162,7 +168,7 @@
   <!-- Milestone Preview -->
   <div class="card mt-4">
     <div class="card-header">
-      <h5 class="mb-0"><i class="bi bi-eye"></i> {{ _('Anteprima Reward per Streak') }}</h5>
+      <h5 class="mb-0"><i class="fas fa-eye"></i> {{ _('Anteprima Reward per Streak') }}</h5>
     </div>
     <div class="card-body">
       <div class="table-responsive">
@@ -189,7 +195,7 @@
                   {% endif %}
                 {% endfor %}
                 {% if freeze > 0 %}
-                <span class="badge bg-info">{{ freeze }} <i class="bi bi-snow"></i></span>
+                <span class="badge bg-info">{{ freeze }} <i class="fas fa-snowflake"></i></span>
                 {% else %}
                 <span class="text-muted">-</span>
                 {% endif %}

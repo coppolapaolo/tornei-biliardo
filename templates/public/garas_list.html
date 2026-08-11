@@ -3,7 +3,7 @@
 
 {% macro garas_table(garas) %}
 <div class="c7-table-wrap table-responsive">
-    <table class="table">
+    <table class="table c7-table-cards">
         <thead>
             <tr>
                 <th>{{ _("Gara") }}</th>
@@ -18,23 +18,23 @@
         <tbody>
             {% for gara in garas %}
             <tr>
-                <td>
+                <td data-label="{{ _("Gara") }}">
                     <strong>{{ gara.name }}</strong>
                     {% if gara.description %}
                     <div class="text-muted" style="font-size: 12px; font-weight: 600;">{{ gara.description[:60] }}…</div>
                     {% endif %}
                 </td>
-                <td>
+                <td data-label="{{ _("Disciplina") }}">
                     {{ gara.discipline|discipline_display }}
                     <div class="text-muted" style="font-size: 12px; font-weight: 600;">{{ gara.distance_config|format_distance }}</div>
                 </td>
-                <td><span class="c7-num">{{ gara.date|date_local }}</span></td>
-                <td>{{ gara.location or "—" }}</td>
-                <td>
+                <td data-label="{{ _("Data") }}"><span class="c7-num">{{ gara.date|date_local }}</span></td>
+                <td data-label="{{ _("Sala") }}">{{ gara.location or "—" }}</td>
+                <td data-label="{{ _("Stato") }}">
                     {% set badge_info = gara.get_status_badge_info() %}
                     <span class="badge {{ badge_info.class }}">{{ badge_info.text }}</span>
                 </td>
-                <td><span class="c7-num">{{ gara.current_round }}/{{ gara.rounds_count }}</span></td>
+                <td data-label="{{ _("Turno") }}"><span class="c7-num">{{ gara.current_round }}/{{ gara.rounds_count }}</span></td>
                 <td class="c7-cell-actions">
                     <a href="{{ url_for('main.gara_detail_public', gara_id=gara.id) }}" class="btn btn-secondary btn-sm">{{ _("Apri") }}</a>
                 </td>

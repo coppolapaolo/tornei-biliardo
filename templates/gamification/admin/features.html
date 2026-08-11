@@ -1,18 +1,19 @@
 {% extends 'base.html' %}
+{% block title %}{{ _('Gestione Feature Gating') }}{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('gamification.admin_dashboard') }}"
+   aria-label="{{ _('Torna ai pannelli') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _('Gestione Feature Gating') }}{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('gamification.admin_create_feature') }}" class="btn btn-primary btn-sm">
+        <i class="fas fa-circle-plus"></i> {{ _('Nuova Feature') }}
+      </a>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="bi bi-key"></i> {{ _('Gestione Feature Gating') }}</h2>
-    <div>
-      <a href="{{ url_for('gamification.admin_dashboard') }}" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left"></i> {{ _('Torna al Dashboard') }}
-      </a>
-      <a href="{{ url_for('gamification.admin_create_feature') }}" class="btn btn-primary">
-        <i class="bi bi-plus-circle"></i> {{ _('Nuova Feature') }}
-      </a>
-    </div>
-  </div>
-
   <div class="card">
     <div class="card-body">
       <p class="text-muted mb-4">
@@ -56,14 +57,14 @@
             <td>
               <a href="{{ url_for('gamification.admin_feature_detail', code=feature.code) }}"
                  class="btn btn-sm btn-primary">
-                <i class="bi bi-pencil"></i> {{ _('Modifica') }}
+                <i class="fas fa-pencil"></i> {{ _('Modifica') }}
               </a>
             </td>
           </tr>
           {% else %}
           <tr>
             <td colspan="5" class="text-center text-muted py-4">
-              <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+              <i class="fas fa-inbox fs-1 d-block mb-2"></i>
               {{ _('Nessuna feature configurata') }}
             </td>
           </tr>

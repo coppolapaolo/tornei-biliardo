@@ -115,10 +115,14 @@ code, kbd, pre, samp, .font-mono { font-family: var(--c7-font-mono); }
 .c7-head__title .c7-title { margin: 0; font-size: 18px; font-weight: 800; letter-spacing: -.025em; }
 .c7-head__sub { font-size: 12px; font-weight: 600; color: var(--c7-ink-muted); }
 
-/* Barra azioni appiccicata in fondo alle pagine lunghe. */
+/* Barra azioni appiccicata in fondo alle pagine lunghe. Su mobile si ferma
+   **sopra** la nav flottante: `bottom: 0` la incollava al bordo del viewport,
+   cioe' dietro la nav, e il comando principale della pagina non si vedeva
+   (`.c7-main` ha il padding che tiene il contenuto sopra la nav, ma un
+   elemento sticky si aggancia al viewport, non al contenuto). */
 .c7-actionbar {
   position: sticky;
-  bottom: 0;
+  bottom: calc(var(--c7-mobilenav-h) + 4px);
   padding: 12px var(--c7-gutter) 22px;
   background: linear-gradient(to top, var(--c7-bg) 70%, rgba(228, 232, 231, 0));
   display: flex;
@@ -205,7 +209,7 @@ code, kbd, pre, samp, .font-mono { font-family: var(--c7-font-mono); }
   .c7-head { padding: 22px var(--c7-gutter-lg) 20px; border-bottom: 1px solid var(--c7-line); }
   .c7-head__back { display: none; }
   .c7-head__title h1, .c7-head__title .c7-title { font-size: 22px; }
-  .c7-actionbar { padding: 12px var(--c7-gutter-lg) 22px; }
+  .c7-actionbar { padding: 12px var(--c7-gutter-lg) 22px; bottom: 0; }
   .c7-actionbar .btn { flex: 0 0 auto; padding: 0 22px; }
 }
 
@@ -372,6 +376,14 @@ code, kbd, pre, samp, .font-mono { font-family: var(--c7-font-mono); }
 }
 .c7-pill.is-active { background: var(--c7-ink); color: #fff; font-weight: 800; }
 
+/* Chip selezionabile: un pill che porta dentro il proprio checkbox (i giorni
+   della settimana nelle disponibilita'). La selezione la mostra il CSS, non
+   del JS — e il bersaglio resta l'intera pastiglia, non il quadratino. */
+.c7-pill input[type="checkbox"],
+.c7-pill input[type="radio"] { position: absolute; opacity: 0; pointer-events: none; }
+.c7-pill:has(input:checked) { background: var(--c7-ink); color: #fff; font-weight: 800; }
+.c7-pill:has(input:focus-visible) { outline: 2px solid var(--c7-accent); outline-offset: 2px; }
+
 .badge,
 .c7-state {
   height: 26px; padding: 0 11px; border-radius: var(--c7-r-pill);
@@ -464,6 +476,32 @@ input[type="number"].form-control {
 .c7-choice.is-selected { background: var(--c7-accent); color: var(--c7-accent-ink); }
 .c7-choice.is-selected .c7-choice__desc { color: var(--c7-accent-dim); }
 .c7-choice.is-locked { background: var(--c7-sunken); opacity: .6; cursor: not-allowed; }
+/* La spunta segue la selezione viva, non quella stampata dal server. */
+.c7-choice__mark { display: none; font-size: 15px; flex-shrink: 0; }
+.c7-choice.is-selected .c7-choice__mark { display: block; }
+
+/* Scelta grande: due sole opzioni che sono l'esito di quello che hai appena
+   fatto (challenge superata o no, prototipo 9b·4). Il bersaglio e' la card. */
+.c7-choice--big { min-height: 96px; border-radius: var(--c7-r-card-lg); gap: 16px; padding: 0 20px; }
+.c7-choice--big .c7-choice__title { font-size: 18px; letter-spacing: -.02em; }
+
+/* Registrazione del punteggio (prototipo 9b·3): la cifra e' protagonista —
+   Manrope 800, non mono — e i due tasti sono grossi come nel segnapunti. */
+.c7-scorepad { text-align: center; }
+.c7-scorepad__row {
+  margin-top: 16px;
+  display: flex; align-items: center; justify-content: center; gap: 22px;
+}
+.c7-scorepad__btn {
+  width: 60px; height: 60px; border: 0; border-radius: 50%;
+  background: rgba(242, 248, 247, .14); color: var(--c7-on-ink);
+  font-size: 20px; display: grid; place-items: center; flex-shrink: 0;
+}
+.c7-scorepad__btn--plus { background: var(--c7-accent-bright); color: #0D2A36; }
+.c7-scorepad__value {
+  font-size: 74px; font-weight: 800; letter-spacing: -.06em; line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
 
 /* Stepper: sostituisce input[type=number] per valori piccoli e frequenti. */
 .c7-stepper { border-radius: var(--c7-r-card); background: var(--c7-card); padding: 16px; }
@@ -498,6 +536,51 @@ input[type="number"].form-control {
    lo faceva lo storico rack, e con lui ogni tabella larga della app: la
    regola sovrascrive anche `.table-responsive` di Bootstrap, che il tema
    carica dopo. */
+/* Tabella larga che su mobile diventa una pila di card: una card per riga,
+   ogni cella con la sua etichetta (`data-label`). Serve dove le colonne sono
+   troppe per 390px — utenti, elenco gare pubblico: con il solo scorrimento
+   orizzontale le colonne di destra restano fuori e nessuno le cerca. */
+@media (max-width: 991.98px) {
+  .c7-table-cards thead { display: none; }
+  .c7-table-cards,
+  .c7-table-cards tbody,
+  .c7-table-cards tr,
+  .c7-table-cards td { display: block; width: auto; }
+  /* Le due tabelle che usano questa resa stanno dentro una card, quindi la
+     riga prende il fondo pagina: card su card sarebbero indistinguibili. */
+  .c7-table-cards tr,
+  .c7-table-cards.table-striped > tbody > tr:nth-of-type(odd) > td,
+  .c7-table-cards.table-striped > tbody > tr:nth-of-type(odd) {
+    background: var(--c7-bg);
+    box-shadow: none;
+  }
+  .c7-table-cards tr {
+    border-radius: var(--c7-r-card);
+    padding: 12px 16px;
+    margin-bottom: 10px;
+  }
+  .c7-table-cards td { border-bottom: 0; }
+  .c7-table-cards td {
+    border: 0;
+    padding: 5px 0;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    text-align: right;
+  }
+  .c7-table-cards td::before {
+    content: attr(data-label);
+    flex-shrink: 0;
+    font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--c7-ink-muted);
+    text-align: left;
+  }
+  /* La prima cella e' il titolo della card. */
+  .c7-table-cards td:first-child {
+    font-size: 15px; font-weight: 800;
+    padding-bottom: 8px;
+  }
+  .c7-table-cards td:first-child::before { display: none; }
+}
+
 .c7-table-wrap,
 .table-responsive {
   background: var(--c7-card);
@@ -706,12 +789,22 @@ input[type="number"].form-control {
 .progress { height: 8px; border-radius: var(--c7-r-pill); background: var(--c7-bg); }
 .progress-bar { background: var(--c7-accent); border-radius: var(--c7-r-pill); }
 
-.nav-tabs { border: 0; gap: 8px; }
+/* Fila di pill. Su mobile scorre in orizzontale invece di andare a capo su
+   tre righe (prototipo 8a·2 e 9b·1). */
+.nav-tabs {
+  border: 0; gap: 8px;
+  flex-wrap: nowrap; overflow-x: auto;
+  scrollbar-width: none;
+}
+.nav-tabs::-webkit-scrollbar { display: none; }
 .nav-tabs .nav-link {
   height: 38px; padding: 0 16px; border: 0; border-radius: var(--c7-r-pill);
   background: var(--c7-card); color: var(--c7-ink-muted);
   font-size: 13px; font-weight: 700;
-  display: inline-flex; align-items: center;
+  /* `gap`: il pill e' un flex container, quindi lo spazio scritto nel markup
+     fra icona ed etichetta sparisce e le due si toccano. */
+  display: inline-flex; align-items: center; gap: 7px;
+  white-space: nowrap; flex-shrink: 0;
 }
 .nav-tabs .nav-link.active { background: var(--c7-ink); color: #fff; font-weight: 800; }
 
@@ -765,6 +858,10 @@ input[type="number"].form-control {
 }
 .c7-avatar--lg { width: 46px; height: 46px; font-size: 14px; }
 .c7-divider { height: 1px; background: var(--c7-line-soft); border: 0; margin: 16px 0; }
+/* Filo sopra un blocco che continua la card. `.c7-divider` non va usato come
+   contenitore: e' alto 1px e con un fondo suo, quindi il contenuto ci esce
+   sopra e si legge come una barra grigia dietro al testo. */
+.c7-topline { border-top: 1px solid var(--c7-line-soft); margin-top: 14px; padding-top: 14px; }
 .c7-sep { color: var(--c7-ink-faint); }
 .c7-crumbs { display: flex; align-items: center; gap: 12px; font-size: 12px; font-weight: 700; color: var(--c7-ink-muted); }
 .c7-crumbs i { font-size: 9px; }
@@ -807,6 +904,18 @@ input[type="number"].form-control {
 .bg-danger.text-white, .bg-danger .text-white { color: var(--c7-err-ink) !important; }
 .bg-info.text-white, .bg-info .text-white { color: var(--c7-accent-tint-ink) !important; }
 .bg-warning.text-dark, .bg-warning .text-dark { color: var(--c7-warn-ink) !important; }
+
+/* Dentro un blocco a fondo scuro il testo eredita il colore del blocco: la
+   regola generale sui titoli (`h1…h6 { color: var(--c7-ink) }`) li lasciava
+   invece scuri su scuro — la cifra grande della card XP nei pannelli di
+   gamification era illeggibile. */
+.bg-primary :is(h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6, .display-1, .display-2, .display-3, .display-4, .display-5, .display-6),
+.bg-dark    :is(h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6, .display-1, .display-2, .display-3, .display-4, .display-5, .display-6),
+.c7-card--accent :is(h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6) {
+  color: inherit;
+}
+.bg-primary .text-muted,
+.bg-dark .text-muted { color: var(--c7-accent-dim) !important; }
 
 /* --------------------------------------------------------------------------
    15. Segnapunti e tabellone
@@ -1123,6 +1232,7 @@ input[type="number"].form-control {
   flex-shrink: 0;
 }
 .c7-tile--sm { width: 40px; height: 40px; border-radius: var(--c7-r-chip); font-size: 15px; }
+.c7-tile--round { width: 46px; height: 46px; border-radius: 50%; font-size: 18px; }
 .c7-tile--locked { background: var(--c7-bg); color: var(--c7-ink-faint); }
 
 /* Un blocco bloccato/concluso si spegne, non si disabilita. */
