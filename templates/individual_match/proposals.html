@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% import "components/_proposal_labels.html" as lbl with context %}
 
 {% block title %}{{ _("Proposte di match") }} - {{ _("Campionato Biliardo") }}{% endblock %}
 
@@ -16,21 +17,13 @@
 {% endblock %}
 
 {% block content %}
-{# Etichette di stato tradotte. Prima erano `status.value.title()`, cioe'
+{# Etichette di stato tradotte, ora condivise con la pagina di dettaglio:
+   erano scritte a mano in entrambe. Prima erano `status.value.title()`, cioe'
    "Pending" e "Accepted" in inglese sotto gli occhi dell'utente; e il rifiuto
    di un invito era cercato come 'declined' mentre l'enum dice 'rejected',
    quindi non veniva mai riconosciuto. #}
-{% set status_labels = {
-  'pending': _('In attesa'),
-  'accepted': _('Accettata'),
-  'rejected': _('Rifiutata'),
-  'expired': _('Scaduta'),
-  'cancelled': _('Annullata')
-} %}
-{% set status_tone = {
-  'pending': 'warn', 'accepted': 'ok', 'rejected': 'err',
-  'expired': 'muted', 'cancelled': 'muted'
-} %}
+{% set status_labels = lbl.status_labels %}
+{% set status_tone = lbl.status_tone %}
 
 {# Le condizioni della sfida: erano ricopiate tre volte, una per linguetta. #}
 {% macro terms(proposal) -%}

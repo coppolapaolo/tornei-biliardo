@@ -1,0 +1,51 @@
+{# templates/components/_proposal_labels.html — 7c
+
+   Etichette e toni degli stati delle proposte di match, in un posto solo.
+   Erano scritti a mano in `proposals.html` e in `proposal_detail.html`, e le
+   due copie divergevano: il dettaglio cercava `declined`, mentre l'enum
+   `InvitationStatus` dice **`rejected`** — un invito rifiutato cadeva quindi
+   nel ramo `else` e si mostrava come neutro.
+
+   Uso:
+
+     {% import "components/_proposal_labels.html" as lbl with context %}
+     {{ lbl.status_labels.get(proposal.status.value, proposal.status.value) }}
+
+   `with context` serve perche' le etichette passano da `_()`.
+#}
+
+{% set status_labels = {
+  'pending': _('In attesa'),
+  'accepted': _('Accettata'),
+  'rejected': _('Rifiutata'),
+  'expired': _('Scaduta'),
+  'cancelled': _('Annullata')
+} %}
+
+{% set status_tone = {
+  'pending': 'warn', 'accepted': 'ok', 'rejected': 'err',
+  'expired': 'muted', 'cancelled': 'muted'
+} %}
+
+{# Un invito e' la risposta di una singola persona: "Ha accettato", non
+   "Accettata". #}
+{% set invitation_labels = {
+  'pending': _('Non ha ancora risposto'),
+  'accepted': _('Ha accettato'),
+  'rejected': _('Ha rifiutato'),
+  'expired': _('Scaduto'),
+  'cancelled': _('Annullato')
+} %}
+
+{% set invitation_icons = {
+  'pending': 'fa-clock',
+  'accepted': 'fa-check',
+  'rejected': 'fa-xmark',
+  'expired': 'fa-hourglass-end',
+  'cancelled': 'fa-ban'
+} %}
+
+{% set type_labels = {
+  'direct': _('Invito diretto'),
+  'open': _('Aperta a tutti')
+} %}

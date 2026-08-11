@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% import "components/_match_status_labels.html" as st with context %}
 
 {% block title %}
 {{- _("Match") }} {{ match.player1.username }} vs
@@ -21,14 +22,9 @@
 
 {% block content %}
 {# Stati tradotti: erano `status.value.replace('_',' ').title()`, cioe'
-   "In Progress" e "Scheduled" in inglese. #}
-{% set state_labels = {
-  MatchStatus.SCHEDULED.value: _('Da giocare'),
-  MatchStatus.IN_PROGRESS.value: _('In corso'),
-  MatchStatus.COMPLETED.value: _('Concluso'),
-  MatchStatus.VALIDATED.value: _('Validato'),
-  MatchStatus.CANCELLED.value: _('Annullato')
-} %}
+   "In Progress" e "Scheduled" in inglese. La mappa e' condivisa con la
+   panoramica admin, che era rimasta indietro. #}
+{% set state_labels = st.labels %}
 {% set state = match.status.value %}
 {% set is_finished = MatchStatus.is_finished(state) %}
 

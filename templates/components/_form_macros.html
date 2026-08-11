@@ -60,7 +60,11 @@
                 <span class="c7-choice__title d-block">{{ o.title }}</span>
                 {% if o.desc %}<span class="c7-choice__desc d-block">{{ o.desc }}</span>{% endif %}
             </span>
-            {% if o.value == selected %}<i class="fas fa-circle-check" style="font-size:15px"></i>{% endif %}
+            {# La spunta e' sempre nel markup e la mostra il CSS su
+               `.is-selected`: renderla solo sull'opzione scelta dal server la
+               lasciava ferma li' anche dopo che l'utente ne sceglieva
+               un'altra — la card cambiava colore ma la spunta no. #}
+            <i class="fas fa-circle-check c7-choice__mark"></i>
         </label>
         {% endfor %}
     </div>
@@ -84,7 +88,7 @@
             </div>
             <button type="button" data-step="1" aria-label="{{ _('Aumenta') }}"><i class="fas fa-plus"></i></button>
         </div>
-        <input type="hidden" name="{{ name }}" value="{{ value }}" data-stepper-input>
+        <input type="hidden" id="f-{{ name }}" name="{{ name }}" value="{{ value }}" data-stepper-input>
     </div>
 </div>
 {% endmacro %}

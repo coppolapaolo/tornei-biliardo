@@ -407,10 +407,14 @@ class TestRematchPreservesFormat:
         )
         assert response.status_code == 200
         html = response.get_data(as_text=True)
-        # Il radio multi deve essere preselezionato
+        # L'invariante e' che il formato "multi" arrivi preselezionato, non il
+        # markup con cui il form lo disegna: gli `id` dei radio sono spariti
+        # quando le tre opzioni sono diventate card selezionabili (7c).
         import re
 
-        multi_radio = re.search(r'<input[^>]*id="formatMulti"[^>]*>', html)
+        multi_radio = re.search(
+            r'<input[^>]*name="match_format"[^>]*value="multi"[^>]*>', html
+        )
         assert multi_radio and "checked" in multi_radio.group(0)
 
 
