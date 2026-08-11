@@ -72,38 +72,50 @@
 </div>
 
 <script>
+    // Gli indirizzi li scrive il server, in `data-*` sulla card: erano stringhe
+    // costruite a mano su `/challenge/<id>/...` mentre il blueprint e' montato
+    // su **`/challenges/`** — click sulla card, preferiti ed elimina
+    // rispondevano tutti 404, e l'unico segnale era un "errore sconosciuto".
+    const i18n = {
+        favAdd: {{ _("Aggiungi ai preferiti")|tojson }},
+        favRemove: {{ _("Rimuovi dai preferiti")|tojson }},
+        favError: {{ _("Non è stato possibile aggiornare i preferiti.")|tojson }},
+        netError: {{ _("Errore di rete: riprova.")|tojson }},
+        deleteConfirm: {{ _("Confermi di voler eliminare questa challenge? Non si torna indietro.")|tojson }},
+        deleteError: {{ _("Non è stato possibile eliminare la challenge.")|tojson }}
+    };
+
     document.addEventListener('DOMContentLoaded', function () {
-        // Click sulla card: apre il dettaglio
         document.addEventListener('click', function (e) {
-            if (e.target.closest('.favorite-btn') || e.target.closest('.btn') || e.target.closest('.dropdown')) {
+            const favBtn = e.target.closest('.favorite-btn');
+            if (favBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleFavorite(favBtn);
                 return;
             }
 
-            const challengeCard = e.target.closest('.challenge-card');
-            if (challengeCard) {
-                const challengeId = challengeCard.dataset.challengeId;
-                window.location.href = `/challenge/${challengeId}`;
-            }
-        });
-
-        document.addEventListener('click', function (e) {
-            if (e.target.closest('.favorite-btn')) {
+            const deleteBtn = e.target.closest('.delete-challenge-btn');
+            if (deleteBtn) {
                 e.preventDefault();
                 e.stopPropagation();
+                deleteChallenge(deleteBtn.dataset.deleteUrl);
+                return;
+            }
 
-                const btn = e.target.closest('.favorite-btn');
-                const challengeId = btn.dataset.challengeId;
-                toggleFavorite(challengeId, btn);
+            // Click sulla card (fuori dai comandi): apre il dettaglio.
+            if (e.target.closest('.btn') || e.target.closest('.dropdown')) return;
+            const card = e.target.closest('.challenge-card');
+            if (card && card.dataset.challengeUrl) {
+                window.location.href = card.dataset.challengeUrl;
             }
         });
     });
 
-    function toggleFavorite(challengeId, btn) {
-        fetch(`/challenge/${challengeId}/favorite`, {
+    function toggleFavorite(btn) {
+        fetch(btn.dataset.favoriteUrl, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            'X-CSRFToken': csrfToken()}
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken() }
         })
             .then(response => response.json())
             .then(data => {
@@ -112,20 +124,41 @@
                     if (data.is_favorite) {
                         icon.className = 'fas fa-heart';
                         btn.style.color = 'var(--c7-err)';
-                        btn.title = 'Rimuovi dai preferiti';
+                        btn.title = i18n.favRemove;
                     } else {
                         icon.className = 'far fa-heart';
                         btn.style.color = '';
-                        btn.title = 'Aggiungi ai preferiti';
+                        btn.title = i18n.favAdd;
                     }
                 } else {
-                    showError('Errore nell\'aggiornamento dei preferiti');
+                    showError(i18n.favError);
                 }
             })
             .catch(error => {
                 console.error('Error toggling favorite:', error);
-                showError('Errore di rete');
+                showError(i18n.netError);
             });
+    }
+
+    function deleteChallenge(url) {
+        showConfirm(i18n.deleteConfirm, () => {
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken() }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        showError(i18n.deleteError + (data.error ? ' ' + data.error : ''));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error deleting challenge:', error);
+                    showError(i18n.netError);
+                });
+        });
     }
 </script>
 {% endblock %}

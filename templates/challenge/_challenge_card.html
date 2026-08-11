@@ -1,5 +1,13 @@
-{# templates/challenge/_challenge_card.html — 7c #}
-<article class="c7-card challenge-card" data-challenge-id="{{ challenge.id }}" style="cursor: pointer; padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+{# templates/challenge/_challenge_card.html — 7c
+
+   La card del catalogo (prototipo 9b·1). Niente `<script>` qui dentro: il
+   file e' incluso una volta per challenge, quindi la funzione veniva
+   ridichiarata a ogni card. I comandi vivono in `_challenge_grid.html`.
+#}
+{% set stats = challenge.get_statistics() %}
+<article class="c7-card challenge-card" data-challenge-id="{{ challenge.id }}"
+         data-challenge-url="{{ url_for('challenge.challenge_detail', challenge_id=challenge.id) }}"
+         style="cursor: pointer; padding: 0; overflow: hidden; display: flex; flex-direction: column;">
     {# Foto del tavolo: è il contenuto principale della challenge #}
     <div style="position: relative; aspect-ratio: 4 / 3; background: var(--c7-sunken);">
         {% if challenge.image_filename %}
@@ -16,6 +24,7 @@
         {% endif %}
 
         <button class="favorite-btn" data-challenge-id="{{ challenge.id }}"
+            data-favorite-url="{{ url_for('challenge.toggle_favorite', challenge_id=challenge.id) }}"
             style="position: absolute; top: 10px; right: 10px; width: 38px; height: 38px; border: 0; border-radius: 50%; background: var(--c7-card); display: grid; place-items: center; {% if challenge.id in user_favorites %}color: var(--c7-err);{% else %}color: var(--c7-ink-muted);{% endif %}"
             title="{% if challenge.id in user_favorites %}{{ _('Rimuovi dai preferiti') }}{% else %}{{ _('Aggiungi ai preferiti') }}{% endif %}">
             {% if challenge.id in user_favorites %}<i class="fas fa-heart"></i>{% else %}<i class="far fa-heart"></i>{% endif %}
@@ -34,10 +43,12 @@
         <span class="c7-kicker" style="margin-top: 6px;">{{ _('Creata da te') }}</span>
         {% endif %}
 
+        {# `get_statistics()` era chiamata due volte per card: due passate sui
+           tentativi per stampare due numeri. #}
         <div class="text-muted" style="margin-top: 12px; font-size: 12px; font-weight: 700;">
-            <span class="c7-num">{{ challenge.get_statistics().unique_players }}</span> {{ _('giocatori') }}
+            <span class="c7-num">{{ stats.unique_players }}</span> {{ _('giocatori') }}
             <span class="c7-sep">·</span>
-            <span class="c7-num">{{ challenge.get_statistics().total_attempts }}</span> {{ _('tentativi') }}
+            <span class="c7-num">{{ stats.total_attempts }}</span> {{ _('tentativi') }}
         </div>
 
         <div style="display: flex; gap: 8px; margin-top: 16px;">
@@ -46,7 +57,9 @@
             {% endif %}
             <a href="{{ url_for('challenge.challenge_detail', challenge_id=challenge.id) }}" class="btn btn-secondary btn-sm" style="flex: 1;">{{ _('Dettagli') }}</a>
             {% if current_user.is_admin or (current_user.is_authenticated and challenge.created_by_id == current_user.id) %}
-            <button class="c7-iconbtn" style="width: 40px; height: 40px; background: var(--c7-err-bg); color: var(--c7-err-ink);" onclick="deleteChallenge({{ challenge.id }})" title="{{ _('Elimina') }}">
+            <button class="c7-iconbtn delete-challenge-btn" style="width: 40px; height: 40px; background: var(--c7-err-bg); color: var(--c7-err-ink);"
+                    data-delete-url="{{ url_for('challenge.delete_challenge', challenge_id=challenge.id) }}"
+                    title="{{ _('Elimina') }}" aria-label="{{ _('Elimina') }}">
                 <i class="fas fa-trash"></i>
             </button>
             {% endif %}
@@ -58,28 +71,3 @@
         </div>
     </div>
 </article>
-
-<script>
-    function deleteChallenge(challengeId) {
-        showConfirm('Confermi di voler eliminare questa challenge? Non si torna indietro.', () => {
-            fetch(`/challenge/${challengeId}/delete`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken()}
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        location.reload();
-                    } else {
-                        showError('Errore nell\'eliminazione della challenge: ' + (data.error || 'Errore sconosciuto'));
-                    }
-                })
-                .catch(error => {
-                    console.error('Error deleting challenge:', error);
-                    showError('Errore di rete nell\'eliminazione della challenge');
-                });
-        });
-    }
-</script>

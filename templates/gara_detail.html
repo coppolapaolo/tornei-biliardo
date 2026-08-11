@@ -424,6 +424,12 @@
       </div>
     </div>
   </div>
+
+  {# Le challenge configurate sulla gara: su desktop stanno nella colonna di
+     fianco alle informazioni, che e' `d-none d-lg-block` — su mobile non erano
+     raggiungibili da nessuna vista. Qui stanno accanto alle informazioni, come
+     su desktop. #}
+  {% include "components/_gara_challenges_display.html" %}
 </div>
 
 {# In fase di spareggio i direttori scendono in fondo. Il componente ha gia'

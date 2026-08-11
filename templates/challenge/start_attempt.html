@@ -1,161 +1,85 @@
 {% extends "base.html" %}
 
-{% block title %}Inizia Challenge - {{ challenge.get_display_name() }}{% endblock %}
+{% block title %}{{ _("Inizia la challenge") }} - {{ challenge.get_display_name() }}{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('challenge.challenge_detail', challenge_id=challenge.id) }}"
+   aria-label="{{ _('Torna alla challenge') }}"><i class="fas fa-xmark"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("Inizia il tentativo") }}{% endblock %}
+{% block page_sub %}{{ challenge.description|truncate(46, True, "…") }}{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('challenge.challenge_detail', challenge_id=challenge.id) }}"
+   class="btn btn-secondary btn-sm d-none d-lg-inline-flex">
+  <i class="fas fa-xmark"></i>&nbsp;{{ _("Non ora") }}
+</a>
+{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <!-- Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard.dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="{{ url_for('challenge.challenge_catalog') }}">Challenge</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Inizia Challenge</li>
-                </ol>
-            </nav>
-            
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h2><i class="fas fa-play text-success"></i> Inizia Challenge</h2>
-                    <p class="text-muted mb-0">Preparati per: {{ challenge.get_display_name() }}</p>
-                </div>
-                <div>
-                    <a href="{{ url_for('challenge.challenge_catalog') }}" class="btn btn-outline-secondary">
-                        <i class="fas fa-arrow-left"></i> Torna al Catalogo
-                    </a>
-                </div>
-            </div>
+{# Passo intermedio del flusso 9b: si guarda la disposizione, si prende il
+   tavolo, si comincia. La foto e le istruzioni sono le stesse della pagina di
+   dettaglio, quindi il componente e' lo stesso. #}
+<div style="max-width:720px">
+  <div class="c7-stack">
+    {% include "challenge/_challenge_detail.html" %}
+
+    <div class="c7-card">
+      <div class="c7-sechead mb-3"><h2>{{ _("Cosa succede adesso") }}</h2></div>
+      <div class="c7-rows" style="background:var(--c7-bg)">
+        <div class="c7-rows__row">
+          <span class="c7-tile c7-tile--sm"><i class="fas fa-play"></i></span>
+          <div class="c7-rows__main">
+            <div class="c7-rows__title">{{ _("Il tentativo si apre") }}</div>
+            <div class="c7-rows__sub">{{ _("Prepara il tavolo come nella foto e gioca.") }}</div>
+          </div>
         </div>
-    </div>
-
-    <!-- Challenge Info and Start Form -->
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <!-- Challenge Info -->
-            <div class="card mb-4">
-                <div class="row g-0">
-                    <div class="col-md-4">
-                        <div class="card-img-top d-flex align-items-center justify-content-center" style="height: 250px; background-color: #f8f9fa;">
-                            {% if challenge.image_filename %}
-                                <img src="{{ challenge_image_url(challenge) }}" 
-                                     class="img-fluid rounded-start h-100"
-                                     style="object-fit: cover;"
-                                     alt="Challenge Image"
-                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                <div class="d-none flex-column align-items-center justify-content-center text-muted h-100">
-                                    <i class="fas fa-bullseye fa-3x mb-2"></i>
-                                    <p>Immagine non disponibile</p>
-                                </div>
-                            {% else %}
-                                <div class="text-center text-muted">
-                                    <i class="fas fa-bullseye fa-3x mb-2"></i>
-                                    <p>Nessuna immagine</p>
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    <div class="col-md-8">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ challenge.get_display_name() }}</h5>
-                            <p class="card-text">{{ challenge.description }}</p>
-                            
-                            <div class="row text-center mt-3">
-                                <div class="col-6">
-                                    <div class="mb-2">
-                                        <i class="fas fa-chart-line text-primary"></i>
-                                        <h6 class="mb-0">Tipo</h6>
-                                        {% if challenge.pass_fail_only %}
-                                            <span class="badge bg-info">Pass/Fail</span>
-                                        {% else %}
-                                            <span class="badge bg-secondary">{{ challenge.min_score }}-{{ challenge.max_score }} punti</span>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                                
-                                <div class="col-6">
-                                    <div class="mb-2">
-                                        <i class="fas fa-users text-success"></i>
-                                        <h6 class="mb-0">Partecipanti</h6>
-                                        {% set stats = challenge.get_statistics() %}
-                                        <small class="text-muted">{{ stats.unique_players }} giocatori</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <div class="c7-rows__row">
+          <span class="c7-tile c7-tile--sm"><i class="fas fa-flag-checkered"></i></span>
+          <div class="c7-rows__main">
+            <div class="c7-rows__title">
+              {{ _("Alla fine dici se l'hai superata") if challenge.pass_fail_only else _("Alla fine registri il punteggio") }}
             </div>
-
-            <!-- Start Attempt Form -->
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="fas fa-play"></i> Inizia il Tuo Tentativo
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <form id="startAttemptForm" method="POST">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        {# Contesto gara: il form fa POST su window.location.href con
-                           FormData, e la route legge request.form — la query string
-                           da sola non arriverebbe mai al servizio, e il tentativo
-                           risulterebbe slegato dalla gara senza alcun errore. #}
-                        {% if request.args.get('gara_id') %}
-                        <input type="hidden" name="gara_id" value="{{ request.args.get('gara_id') }}">
-                        {% endif %}
-                        {% if request.args.get('round_number') %}
-                        <input type="hidden" name="round_number" value="{{ request.args.get('round_number') }}">
-                        {% endif %}
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle"></i>
-                            <strong>{{ _('Istruzioni:') }}</strong>
-                            {{ challenge.description }}
-                        </div>
-
-                        {% if challenge.pass_fail_only %}
-                            <div class="alert alert-warning">
-                                <i class="fas fa-flag-checkered"></i>
-                                Questa è una challenge <strong>Pass/Fail</strong>: dovrai indicare se hai superato la sfida oppure no.
-                            </div>
-                        {% else %}
-                            <div class="alert alert-warning">
-                                <i class="fas fa-chart-line"></i>
-                                Questa challenge utilizza un <strong>sistema a punti</strong> da {{ challenge.min_score }} a {{ challenge.max_score }}. 
-                                Dovrai registrare il tuo punteggio al completamento.
-                            </div>
-                        {% endif %}
-
-                        <div class="text-center">
-                            <p class="text-muted">Sei pronto per iniziare questa challenge?</p>
-                            
-                            <div class="d-flex justify-content-center gap-3">
-                                <a href="{{ url_for('challenge.challenge_catalog') }}" class="btn btn-outline-secondary btn-lg">
-                                    <i class="fas fa-times"></i> Non Ora
-                                </a>
-                                <button type="submit" class="btn btn-success btn-lg">
-                                    <i class="fas fa-play"></i> Inizia Ora!
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
+            <div class="c7-rows__sub">
+              {{ _("Puoi riprovare quante volte vuoi: resta il tuo risultato migliore.") }}
             </div>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
+
+  <form id="startAttemptForm" method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    {# Contesto gara: il form fa POST su window.location.href con
+       FormData, e la route legge request.form — la query string
+       da sola non arriverebbe mai al servizio, e il tentativo
+       risulterebbe slegato dalla gara senza alcun errore. #}
+    {% if request.args.get('gara_id') %}
+    <input type="hidden" name="gara_id" value="{{ request.args.get('gara_id') }}">
+    {% endif %}
+    {% if request.args.get('round_number') %}
+    <input type="hidden" name="round_number" value="{{ request.args.get('round_number') }}">
+    {% endif %}
+  </form>
+
+  <div class="c7-actionbar">
+    <button type="submit" form="startAttemptForm" class="btn btn-primary w-100">
+      <i class="fas fa-play"></i>&nbsp;{{ _("Inizia ora") }}
+    </button>
+  </div>
 </div>
+{% endblock %}
 
+{% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('startAttemptForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        
-        const formData = new FormData(this);
-        
+
         fetch(window.location.href, {
             method: 'POST',
             headers: {'X-CSRFToken': csrfToken()},
-            body: formData
+            body: new FormData(this)
         })
         .then(response => {
             if (response.redirected) {
@@ -166,7 +90,6 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(html => {
             if (typeof html === 'string') {
-                // Replace page content if there were errors
                 document.open();
                 document.write(html);
                 document.close();
@@ -174,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => {
             console.error('Error starting attempt:', error);
-            showError('Errore nell\'iniziare la challenge. Riprova.');
+            showError({{ _("Non è stato possibile iniziare il tentativo. Riprova.")|tojson }});
         });
     });
 });
