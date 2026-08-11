@@ -357,7 +357,7 @@
         left: 10%;
         right: 10%;
         height: 3px;
-        background: #e9ecef;
+        background: var(--c7-line);
         z-index: 0;
     }
     .wizard-progress-fill {
@@ -365,7 +365,7 @@
         top: 15px;
         left: 10%;
         height: 3px;
-        background: #0d6efd;
+        background: var(--c7-accent);
         z-index: 1;
         width: 0%;
         transition: width 0.3s ease;
@@ -382,8 +382,8 @@
         width: 32px;
         height: 32px;
         border-radius: 50%;
-        background: #e9ecef;
-        color: #6c757d;
+        background: var(--c7-line);
+        color: var(--c7-ink-muted);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -393,24 +393,24 @@
     }
     .wizard-step.active .wizard-step-circle,
     .wizard-step.completed .wizard-step-circle {
-        background: #0d6efd;
+        background: var(--c7-accent);
         color: white;
     }
     .wizard-step.completed .wizard-step-circle {
-        background: #198754;
+        background: var(--c7-ok);
     }
     .wizard-step-label {
         font-size: 11px;
-        color: #6c757d;
+        color: var(--c7-ink-muted);
         margin-top: 4px;
         text-align: center;
     }
     .wizard-step.active .wizard-step-label {
-        color: #0d6efd;
+        color: var(--c7-accent);
         font-weight: 600;
     }
     .wizard-step.completed .wizard-step-label {
-        color: #198754;
+        color: var(--c7-ok);
     }
     .wizard-content {
         min-height: 280px;
