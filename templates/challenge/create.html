@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% from "components/_form_macros.html" import choice, form_macros_scripts %}
 
-{% block title %}{{ _("Nuova challenge") }} - {{ _("Campionato Biliardo") }}{% endblock %}
+{% block title %}{{ _("Nuova challenge") }} - {{ config.APP_NAME }}{% endblock %}
 
 {% block page_back %}
 <a class="c7-head__back d-lg-none" href="{{ url_for('challenge.challenge_catalog') }}"

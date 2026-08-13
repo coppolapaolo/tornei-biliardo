@@ -54,6 +54,12 @@ class Config:
     ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD") or "admin123"
     ADMIN_PASSWORD_REQUIRED = False
 
+    # App Info — dichiarate qui, prima della posta, perché il mittente di
+    # default le usa: dentro il corpo di una classe si vede solo ciò che è
+    # già stato definito sopra.
+    APP_NAME = "Tornei Biliardo"
+    VERSION = "1.0.0"
+
     # Email Service (SMTP)
     MAIL_SERVER = os.environ.get("MAIL_SERVER") or "smtp.gmail.com"
     MAIL_PORT = int(os.environ.get("MAIL_PORT") or 587)
@@ -65,8 +71,7 @@ class Config:
     MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
     MAIL_DEFAULT_SENDER = (
-        os.environ.get("MAIL_DEFAULT_SENDER")
-        or f"Campionato Biliardo <{MAIL_USERNAME}>"
+        os.environ.get("MAIL_DEFAULT_SENDER") or f"{APP_NAME} <{MAIL_USERNAME}>"
     )
 
     # Error tracking (GlitchTip/Sentry)
@@ -76,10 +81,6 @@ class Config:
     # Non impostato = nessuno snippet renderizzato: in sviluppo e nei test il
     # traffico locale non finisce nelle statistiche di produzione.
     GA_MEASUREMENT_ID = os.environ.get("GA_MEASUREMENT_ID")
-
-    # App Info
-    APP_NAME = "Campionato Biliardo"
-    VERSION = "1.0.0"
 
     # Cache-buster per CSS/JS (vedi _compute_asset_version).
     ASSET_VERSION = _compute_asset_version()

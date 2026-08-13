@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-13 21:25+0200\n"
+"POT-Creation-Date: 2026-08-13 21:51+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -518,7 +518,7 @@ msgstr ""
 msgid "Che piacere rivederti!"
 msgstr ""
 
-#: routes/auth.py:48 templates/base.html:556
+#: routes/auth.py:48 templates/base.html:560
 msgid "Tutto pronto per giocare?"
 msgstr ""
 
@@ -1541,7 +1541,7 @@ msgstr ""
 msgid "Generale"
 msgstr ""
 
-#: templates/admin/kpi.html:37 templates/base.html:187 templates/base.html:395
+#: templates/admin/kpi.html:37 templates/base.html:187 templates/base.html:399
 msgid "Dashboard"
 msgstr ""
 
@@ -1558,7 +1558,7 @@ msgid "Persone"
 msgstr ""
 
 #: templates/admin/users_list.html:10 templates/base.html:211
-#: templates/base.html:408 templates/gamification/admin/dashboard.html:103
+#: templates/base.html:412 templates/gamification/admin/dashboard.html:103
 msgid "Utenti"
 msgstr ""
 
@@ -1635,20 +1635,20 @@ msgstr ""
 msgid "Chiudi"
 msgstr ""
 
-#: templates/base.html:381 templates/privacy.html:3
+#: templates/base.html:385 templates/privacy.html:3
 msgid "Privacy e Cookie"
 msgstr ""
 
-#: templates/admin/venue_manager_requests.html:14 templates/base.html:399
+#: templates/admin/venue_manager_requests.html:14 templates/base.html:403
 msgid "Sale"
 msgstr ""
 
-#: templates/base.html:417 templates/components/_user_menu.html:8
+#: templates/base.html:421 templates/components/_user_menu.html:8
 #: templates/player/notifications.html:3 templates/player/notifications.html:8
 msgid "Notifiche"
 msgstr ""
 
-#: templates/base.html:525 templates/base.html:531
+#: templates/base.html:529 templates/base.html:535
 msgid "Conferma"
 msgstr ""
 
@@ -1657,7 +1657,7 @@ msgstr ""
 #: templates/admin/campionato_wizard_step1.html:8
 #: templates/admin/campionato_wizard_step1.html:144
 #: templates/admin/campionato_wizard_step2.html:8
-#: templates/admin/gara_edit.html:11 templates/base.html:530
+#: templates/admin/gara_edit.html:11 templates/base.html:534
 #: templates/challenge/create.html:14
 #: templates/components/_campionato_create_modal.html:35
 #: templates/components/_campionato_edit_form.html:204
@@ -1680,51 +1680,51 @@ msgstr ""
 msgid "Annulla"
 msgstr ""
 
-#: templates/base.html:546
+#: templates/base.html:550
 msgid "XP OTTENUTI"
 msgstr ""
 
-#: templates/base.html:547
+#: templates/base.html:551
 msgid "LEVEL UP!"
 msgstr ""
 
-#: templates/base.html:548
+#: templates/base.html:552
 msgid "Nuovo livello raggiunto!"
 msgstr ""
 
-#: templates/base.html:549
+#: templates/base.html:553
 msgid "NUOVO TRAGUARDO!"
 msgstr ""
 
-#: templates/base.html:550
+#: templates/base.html:554
 msgid "STREAK!"
 msgstr ""
 
-#: templates/base.html:551
+#: templates/base.html:555
 msgid "Freeze attivo"
 msgstr ""
 
-#: templates/base.html:552
+#: templates/base.html:556
 msgid "STREAK PERSA"
 msgstr ""
 
-#: templates/base.html:553
+#: templates/base.html:557
 msgid "Non mollare, riprovare!"
 msgstr ""
 
-#: templates/base.html:554
+#: templates/base.html:558
 msgid "QUEST COMPLETATA!"
 msgstr ""
 
-#: templates/base.html:555
+#: templates/base.html:559
 msgid "TI DIAMO IL BENTORNATO!"
 msgstr ""
 
-#: templates/base.html:557
+#: templates/base.html:561
 msgid "Ciao!"
 msgstr ""
 
-#: templates/base.html:558
+#: templates/base.html:562
 #, python-format
 msgid "Ciao %(username)s!"
 msgstr ""
@@ -2275,20 +2275,6 @@ msgstr ""
 #: templates/errors/403.html:17 templates/login.html:3 templates/login.html:30
 #: templates/register.html:42
 msgid "Accedi"
-msgstr ""
-
-#: templates/challenge/create.html:4
-#: templates/individual_match/availability.html:3
-#: templates/individual_match/create_proposal.html:4
-#: templates/individual_match/dashboard.html:3
-#: templates/individual_match/discover_players.html:3
-#: templates/individual_match/match_detail.html:6
-#: templates/individual_match/matches.html:3
-#: templates/individual_match/proposal_detail.html:4
-#: templates/individual_match/proposals.html:4
-#: templates/individual_match/statistics.html:3 templates/login.html:8
-#: templates/register.html:8
-msgid "Campionato Biliardo"
 msgstr ""
 
 #: templates/login.html:9
