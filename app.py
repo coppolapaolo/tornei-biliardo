@@ -9,7 +9,7 @@ from flask import (
     redirect,
     url_for,
 )
-from flask_babel import Babel
+from flask_babel import Babel, gettext as _
 from flask_login import LoginManager, current_user
 import os
 import logging
@@ -488,7 +488,7 @@ def create_app(config_name=None):
         # utils/permissions.py fanno abort(403) in parecchi punti.
         is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
         if request.is_json or is_ajax:
-            return jsonify({"error": "Accesso negato"}), 403
+            return jsonify({"error": _("Accesso negato")}), 403
         return render_template("errors/403.html"), 403
 
     @app.errorhandler(500)

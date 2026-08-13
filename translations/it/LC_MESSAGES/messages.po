@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-11 20:18+0200\n"
+"POT-Creation-Date: 2026-08-13 21:25+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -17,6 +17,10 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
+
+#: app.py:491 templates/errors/403.html:3
+msgid "Accesso negato"
+msgstr ""
 
 #: models/status_enum.py:229
 msgid "Palla 8"
@@ -2617,7 +2621,7 @@ msgid "Hai già un account?"
 msgstr ""
 
 #: templates/admin/campionato_detail.html:10
-#, fuzzy, python-format
+#, fuzzy
 msgid "Torna ai campionati"
 msgstr ""
 
@@ -2646,7 +2650,7 @@ msgstr ""
 
 #: templates/admin/campionato_detail.html:44
 #: templates/admin/campionato_edit.html:10
-#, fuzzy, python-format
+#, fuzzy
 msgid "Modifica campionato"
 msgstr ""
 
@@ -2655,7 +2659,7 @@ msgid "Passa alla fase playoff"
 msgstr ""
 
 #: templates/admin/campionato_detail.html:54
-#, fuzzy, python-format
+#, fuzzy
 msgid "Termina campionato"
 msgstr ""
 
@@ -3982,7 +3986,7 @@ msgid "Creata da %(who)s"
 msgstr ""
 
 #: templates/challenge/_challenge_detail.html:91
-#, fuzzy, python-format
+#, fuzzy
 msgid "non più attiva"
 msgstr ""
 
@@ -7183,10 +7187,6 @@ msgstr ""
 msgid "Vai alla home"
 msgstr ""
 
-#: templates/errors/403.html:3
-msgid "Accesso negato"
-msgstr ""
-
 #: templates/errors/403.html:10
 msgid "Tavolo riservato"
 msgstr ""
@@ -8939,7 +8939,7 @@ msgid "Proposte aperte vicino a te"
 msgstr ""
 
 #: templates/individual_match/discover_players.html:155
-#, fuzzy, python-format
+#, fuzzy
 msgid "Nessun giocatore disponibile"
 msgstr ""
 
