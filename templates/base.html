@@ -11,7 +11,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="theme-color" content="#E4E8E7">
-    <title>{% block title %}Campionato Biliardo{% endblock %}</title>
+    <title>{% block title %}{{ config.APP_NAME }}{% endblock %}</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -288,7 +288,7 @@
                     {# Ripiego sul titolo del browser solo se la pagina non
                        dichiara `page_title`: quei titoli sono scritti per la
                        linguetta, quindi si tagliano i suffissi tecnici
-                       (" - Campionato Biliardo", " - Admin", " - Dettagli"). #}
+                       (" - <nome dell'app>", " - Admin", " - Dettagli"). #}
                     <span class="c7-title">{% block page_title %}{{ (self.title()|trim).split(' - ')[0]|trim }}{% endblock %}</span>
                     <span class="c7-head__sub">{% block page_sub %}{% endblock %}</span>
                 </div>
@@ -376,6 +376,10 @@
             <footer class="c7-content pt-3 pb-4">
                 <div class="text-center" style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
                     <span>{{ config.APP_NAME }}</span>
+                    {# La versione in chiaro: dice quale rilascio sta girando
+                       senza dover leggere un log. La fonte e' Config.VERSION. #}
+                    <span class="c7-sep mx-2">&middot;</span>
+                    <span>v{{ config.VERSION }}</span>
                     {% if feature_visible('main.privacy_policy') %}
                     <span class="c7-sep mx-2">&middot;</span>
                     <a href="{{ url_for('main.privacy_policy') }}" style="color:var(--c7-ink-muted)">{{ _('Privacy e Cookie') }}</a>

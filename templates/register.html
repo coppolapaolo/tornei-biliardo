@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
-{% block title %}{{ _('Registrazione') }} - Campionato Biliardo{% endblock %}
+{% block title %}{{ _('Registrazione') }} - {{ config.APP_NAME }}{% endblock %}
 
 {% block content %}
 <div style="max-width: 440px; margin: 6vh auto 0;">
     <div style="text-align: center; margin-bottom: 24px;">
-        <div class="c7-kicker">{{ _('Campionato Biliardo') }}</div>
+        <div class="c7-kicker">{{ config.APP_NAME }}</div>
         <h1 style="margin: 6px 0 0;">{{ _('Crea il tuo account') }}</h1>
     </div>
 

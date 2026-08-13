@@ -3,7 +3,7 @@
 
 {% block title %}
 {{- _("Match") }} {{ match.player1.username }} vs
-{{ match.player2.username if match.player2 else _('avversario') }} - {{ _("Campionato Biliardo") }}
+{{ match.player2.username if match.player2 else _('avversario') }} - {{ config.APP_NAME }}
 {%- endblock %}
 
 {# Testata: una sola per pagina, quella del guscio. Via la briciola di pane e la

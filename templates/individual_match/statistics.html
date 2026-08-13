@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ _("Le tue statistiche") }} - {{ _("Campionato Biliardo") }}{% endblock %}
+{% block title %}{{ _("Le tue statistiche") }} - {{ config.APP_NAME }}{% endblock %}
 
 {% block page_back %}
 <a class="c7-head__back d-lg-none" href="{{ url_for('individual_match.dashboard') }}"
