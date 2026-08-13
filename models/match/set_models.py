@@ -5,7 +5,7 @@ Set models for multi-set matches.
 from typing import Optional, List, Dict, Any
 
 from models.base import db, BaseModel, utc_now
-from models.status_enum import MatchStatus
+from models.status_enum import Discipline, MatchStatus
 
 
 class Set(BaseModel):
@@ -103,14 +103,23 @@ class Set(BaseModel):
         # Convert integer keys to strings for consistent JSON storage
         self.discipline_assignment = {str(k): v for k, v in rack_disciplines.items()}
 
+    @property
+    def _fallback_discipline(self) -> str:
+        """Disciplina del set, o quella del match, o il default di sistema.
+
+        Era ricopiata in tre punti, ognuno col proprio letterale del vocabolario
+        storico.
+        """
+        return (
+            self.discipline
+            or getattr(self.match, "discipline", None)
+            or Discipline.EIGHT_BALL.value
+        )
+
     def get_discipline_for_rack(self, rack_number: int) -> str:
         """Get the discipline that should be played for a specific rack."""
         if not self.is_multi_discipline:
-            return (
-                self.discipline
-                or getattr(self.match, "discipline", "palla_8")
-                or "palla_8"
-            )
+            return self._fallback_discipline
 
         # Check specific assignment first
         if (
@@ -125,18 +134,12 @@ class Set(BaseModel):
             return self.discipline_rotation[rotation_index]
 
         # Fallback to set or match discipline
-        return (
-            self.discipline or getattr(self.match, "discipline", "palla_8") or "palla_8"
-        )
+        return self._fallback_discipline
 
     def get_discipline_summary(self) -> Dict[str, Any]:
         """Get summary of disciplines used in this set."""
         if not self.is_multi_discipline:
-            discipline = (
-                self.discipline
-                or getattr(self.match, "discipline", "palla_8")
-                or "palla_8"
-            )
+            discipline = self._fallback_discipline
             return {
                 "is_multi_discipline": False,
                 "primary_discipline": discipline,

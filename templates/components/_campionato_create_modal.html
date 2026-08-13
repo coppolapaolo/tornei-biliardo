@@ -1,33 +1,39 @@
-<!-- Modal Nuovo Campionato - Redirect to Wizard -->
+<!-- Modal Nuovo Campionato — 7c. Rimanda al wizard in due passi. -->
 <div class="modal fade" id="newTournamentModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"><i class="fas fa-trophy"></i> {{ _("Nuovo Campionato") }}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <h5 class="modal-title">{{ _("Nuovo campionato") }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Chiudi') }}"></button>
             </div>
             <div class="modal-body">
-                <p>{{ _("Il wizard di creazione campionato ti guidera' attraverso la configurazione in due semplici passaggi:") }}</p>
-                <ol class="mb-4">
-                    <li class="mb-2">
-                        <strong>{{ _("Configurazione Base") }}</strong>
-                        <br><small class="text-muted">{{ _("Nome, tipo, numero gare, playoff") }}</small>
+                <p class="text-muted" style="margin: 0 0 16px;">{{ _("Il wizard ti guida in due passaggi.") }}</p>
+
+                <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px;">
+                    <li class="c7-choice" style="cursor: default;">
+                        <span class="c7-avatar">1</span>
+                        <span>
+                            <span class="c7-choice__title">{{ _("Configurazione base") }}</span>
+                            <span class="c7-choice__desc">{{ _("Nome, tipo, numero di gare, playoff") }}</span>
+                        </span>
                     </li>
-                    <li>
-                        <strong>{{ _("Default per le Gare") }}</strong>
-                        <br><small class="text-muted">{{ _("Sede, costo, turni, opzioni matchmaking") }}</small>
+                    <li class="c7-choice" style="cursor: default;">
+                        <span class="c7-avatar">2</span>
+                        <span>
+                            <span class="c7-choice__title">{{ _("Default per le gare") }}</span>
+                            <span class="c7-choice__desc">{{ _("Sede, costo, turni, opzioni di accoppiamento") }}</span>
+                        </span>
                     </li>
                 </ol>
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle"></i>
-                    {{ _("I default potranno essere modificati singolarmente per ogni gara.") }}
+
+                <div class="c7-flash c7-flash--info" style="margin-top: 14px;">
+                    <span class="c7-flash__ico"><i class="fas fa-info"></i></span>
+                    <span class="c7-flash__body">{{ _("I default restano modificabili gara per gara.") }}</span>
                 </div>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer" style="display: flex; gap: 10px;">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _("Annulla") }}</button>
-                <a href="{{ url_for('admin.campionato.wizard_start') }}" class="btn btn-success">
-                    <i class="fas fa-magic"></i> {{ _("Avvia Wizard") }}
-                </a>
+                <a href="{{ url_for('admin.campionato.wizard_start') }}" class="btn btn-success" style="flex: 1;">{{ _("Avvia il wizard") }}</a>
             </div>
         </div>
     </div>

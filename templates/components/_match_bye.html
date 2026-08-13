@@ -1,9 +1,14 @@
-<!-- Match Bye Component -->
+{# templates/components/_match_bye.html — 7c
+
+   Partita vinta a tavolino perche' il giocatore non ha avversario nel turno.
+   "X a tavolino", mai "bye": e' la terminologia del design system, e le
+   stringhe erano anche fuori da `_()`. #}
 {% if match.is_bye %}
-<!-- Match bye -->
-<div class="alert alert-info text-center">
-    <h5>Partita Bye</h5>
-    <p>{{ match.player1.username }} passa automaticamente al turno successivo.</p>
-    <strong>Risultato: {{ match.player1_score }} - 0</strong>
+<div class="c7-card c7-card--info">
+    <div class="c7-kicker">{{ _('X a tavolino') }}</div>
+    <div style="font-size: 13px; font-weight: 600; line-height: 1.5; margin-top: 8px;">
+        {{ _('%(player)s passa al turno successivo senza giocare.', player=match.player1.username) }}
+    </div>
+    <div class="c7-num-lg" style="margin-top: 10px;">{{ match.player1_score }} – 0</div>
 </div>
 {% endif %}

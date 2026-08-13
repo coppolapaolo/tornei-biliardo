@@ -1,86 +1,58 @@
-{# templates/components/_player_challenges.html #}
-{# Challenge interattive per player iscritto #}
+{# templates/components/_player_challenges.html — 7c
+   Challenge della gara per chi è iscritto: quello che hai fatto e cosa puoi
+   fare adesso. #}
+{% import "components/_challenge_bits.html" as ch with context %}
 
 {% if user_challenge_data %}
-<div class="card">
-    <div class="card-header">
-        <h5><i class="fas fa-target"></i> Challenge della Gara ({{ user_challenge_data|length }})</h5>
-    </div>
-    <div class="card-body">
-        {% for challenge_data in user_challenge_data %}
-        <div class="card mb-3 {% if challenge_data.best_attempt %}border-success{% endif %}">
-            <div class="card-body">
-                <div class="row align-items-center">
-                    <div class="col-md-2">
-                        <!-- Challenge Image -->
-                        {% if challenge_data.challenge.image_path %}
-                            <div class="challenge-image-container">
-                                <img src="/{{ challenge_data.challenge.image_path }}"
-                                     alt="{{ challenge_data.challenge.get_display_name() }}"
-                                     class="challenge-image img-fluid rounded"
-                                     style="width: 100%; height: 80px; object-fit: cover; border: 2px solid #e9ecef;"
-                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                            </div>
-                            <!-- Fallback placeholder (hidden by default) -->
-                            <div class="challenge-placeholder d-flex align-items-center justify-content-center rounded bg-light"
-                                 style="width: 100%; height: 80px; border: 2px solid #e9ecef; display: none;">
-                                <i class="fas fa-target fa-2x text-muted"></i>
-                            </div>
-                        {% else %}
-                            <div class="challenge-placeholder d-flex align-items-center justify-content-center rounded bg-light"
-                                 style="width: 100%; height: 80px; border: 2px solid #e9ecef;">
-                                <i class="fas fa-target fa-2x text-muted"></i>
-                            </div>
-                        {% endif %}
-                    </div>
+<section class="c7-stack">
+  <div class="c7-sechead">
+    <h2>{{ _("Challenge della gara") }}</h2>
+    <span class="c7-sechead__note c7-num">{{ user_challenge_data|length }}</span>
+  </div>
 
-                    <div class="col-md-4">
-                        <h6 class="card-title mb-1">{{ challenge_data.challenge.get_display_name() }}</h6>
-                        <small class="text-muted">
-                            <i class="fas fa-clock"></i> Disponibile dal turno {{ challenge_data.gara_challenge.round_number }}
-                        </small>
-                        {% if challenge_data.challenge.pass_fail_only %}
-                            <br><span class="badge bg-info mt-1">Pass/Fail</span>
-                        {% endif %}
-                    </div>
-
-                    <div class="col-md-3 text-center">
-                        {% if challenge_data.best_attempt %}
-                            <h4 class="mb-0 text-success">{{ challenge_data.best_attempt.score }}</h4>
-                            <small class="text-muted">Miglior punteggio</small>
-                        {% else %}
-                            <h4 class="mb-0 text-muted">-</h4>
-                            <small class="text-muted">Non tentata</small>
-                        {% endif %}
-                    </div>
-
-                    <div class="col-md-2 text-center">
-                        <span class="badge bg-{% if challenge_data.attempts_count >= challenge_data.max_attempts %}secondary{% else %}primary{% endif %}">
-                            {{ challenge_data.attempts_count }}/{{ challenge_data.max_attempts }}
-                        </span>
-                        <br><small>Tentativi</small>
-                    </div>
-
-                    <div class="col-md-2">
-                        {% if challenge_data.can_attempt and gara.current_round >= challenge_data.gara_challenge.round_number %}
-                            <a href="{{ url_for('challenge.attempt_challenge', challenge_id=challenge_data.challenge.id, gara_id=gara.id) }}"
-                               class="btn btn-success btn-sm w-100">
-                                <i class="fas fa-play"></i> Tenta
-                            </a>
-                        {% elif challenge_data.attempts_count >= challenge_data.max_attempts %}
-                            <button class="btn btn-outline-secondary btn-sm w-100" disabled>
-                                <i class="fas fa-check"></i> Completata
-                            </button>
-                        {% elif gara.current_round < challenge_data.gara_challenge.round_number %}
-                            <button class="btn btn-outline-warning btn-sm w-100" disabled>
-                                <i class="fas fa-lock"></i> Bloccata
-                            </button>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
+  {% for challenge_data in user_challenge_data %}
+  {% set challenge = challenge_data.challenge %}
+  {% set gara_challenge = challenge_data.gara_challenge %}
+  {% set locked = gara.current_round < gara_challenge.round_number %}
+  {% set exhausted = challenge_data.attempts_count >= challenge_data.max_attempts %}
+  <article class="c7-card{{ ' c7-card--locked' if locked }}">
+    <div class="d-flex align-items-center gap-3">
+      {{ ch.thumb(challenge, 48) }}
+      <div class="flex-fill" style="min-width:0">
+        <div style="font-size:15px;font-weight:800;letter-spacing:-.02em">{{ challenge.get_display_name() }}</div>
+        <div class="c7-rows__sub" style="margin-top:3px">
+          {{ _("dal turno %(n)s", n=gara_challenge.round_number) }}
+          <span class="c7-sep">·</span>
+          <span class="c7-num">{{ challenge_data.attempts_count }}/{{ challenge_data.max_attempts }}</span>
+          {{ _("tentativi") }}
         </div>
-        {% endfor %}
+      </div>
+      {{ ch.type_pill(challenge) }}
     </div>
-</div>
+
+    <div class="d-flex align-items-center gap-3" style="margin-top:14px">
+      <div class="flex-fill">
+        <div class="c7-kicker">{{ _("Il tuo risultato") }}</div>
+        <div class="c7-num-lg" style="margin-top:4px">
+          {%- if challenge_data.best_attempt %}
+          {%- if challenge.pass_fail_only %}{{ _("Superata") if challenge_data.best_attempt.passed else _("Non superata") }}
+          {%- else %}{{ challenge_data.best_attempt.score }}{% endif %}
+          {%- else %}—{% endif %}
+        </div>
+      </div>
+
+      {% if challenge_data.can_attempt and not locked %}
+      <a href="{{ url_for('challenge.start_attempt', challenge_id=challenge.id, gara_id=gara.id, round_number=gara_challenge.round_number) }}"
+         class="btn btn-primary">
+        <i class="fas fa-play"></i>&nbsp;{{ _("Continua") if challenge_data.attempts_count else _("Prova") }}
+      </a>
+      {% elif locked %}
+      <span class="c7-state c7-state--muted"><i class="fas fa-lock"></i>&nbsp;{{ _("Dal turno %(n)s", n=gara_challenge.round_number) }}</span>
+      {% elif exhausted %}
+      <span class="c7-state c7-state--ok"><i class="fas fa-check"></i>&nbsp;{{ _("Tentativi finiti") }}</span>
+      {% endif %}
+    </div>
+  </article>
+  {% endfor %}
+</section>
 {% endif %}

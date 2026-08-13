@@ -83,7 +83,7 @@ class TestUseCaseAmalfiWorkflow:
         """Test creating Amalfi gara with correct parameters.
 
         UC1: Admin/director creates gara with 3 rounds, Amalfi strategy,
-        min 6, max 10 players, discipline palla_9, race to 5.
+        min 6, max 10 players, discipline 9_ball, race to 5.
         """
         gara = GaraService.create_gara(
             campionato_id=None,
@@ -96,7 +96,7 @@ class TestUseCaseAmalfiWorkflow:
             min_participants=6,
             max_participants=10,
             entry_fee=0.0,
-            discipline="palla_9",
+            discipline="9_ball",
             distance=5,
             is_race_to=True,
             director_id=director_user.id,
@@ -112,7 +112,7 @@ class TestUseCaseAmalfiWorkflow:
         assert gara.min_participants == 6
         assert gara.max_participants == 10
         assert gara.distance == 5
-        assert gara.discipline == "palla_9"
+        assert gara.discipline == "9_ball"
         assert gara.anti_rematch_enabled is True
         assert gara.first_round_policy == "random"
         assert gara.status == GaraStatus.SETUP.value
@@ -136,7 +136,7 @@ class TestUseCaseAmalfiWorkflow:
             min_participants=6,
             max_participants=10,
             entry_fee=0.0,
-            discipline="palla_9",
+            discipline="9_ball",
             distance=5,
             is_race_to=True,
             director_id=director_user.id,
@@ -183,7 +183,7 @@ class TestUseCaseAmalfiWorkflow:
             min_participants=6,
             max_participants=10,
             entry_fee=0.0,
-            discipline="palla_9",
+            discipline="9_ball",
             distance=5,
             is_race_to=True,
             director_id=director_user.id,
@@ -237,7 +237,7 @@ class TestUseCaseAmalfiWorkflow:
             min_participants=6,
             max_participants=10,
             entry_fee=0.0,
-            discipline="palla_9",
+            discipline="9_ball",
             distance=5,
             is_race_to=True,
             director_id=director_user.id,
@@ -316,7 +316,7 @@ class TestUseCaseAmalfiWorkflow:
             min_participants=6,
             max_participants=10,
             entry_fee=0.0,
-            discipline="palla_9",
+            discipline="9_ball",
             distance=5,
             is_race_to=True,
             director_id=director_user.id,
@@ -474,7 +474,7 @@ class TestUseCaseAmalfiChallenge:
             min_participants=4,
             max_participants=8,
             entry_fee=0.0,
-            discipline="palla_9",
+            discipline="9_ball",
             distance=5,
             is_race_to=True,
             director_id=director_user.id,

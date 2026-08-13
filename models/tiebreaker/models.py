@@ -22,6 +22,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship, Mapped
 
 from ..base import db, utc_now
+from ..status_enum import Discipline
 
 if TYPE_CHECKING:
     from ..match.models import Match
@@ -311,7 +312,7 @@ class PlayoffMatch(db.Model):
 
     # Configuration
     distance = Column(Integer, default=3)  # Usually short matches like race to 3
-    discipline = Column(String(20), default="palla_8")
+    discipline = Column(String(20), default=Discipline.EIGHT_BALL.value)
 
     # Results
     player1_score = Column(Integer, default=0)

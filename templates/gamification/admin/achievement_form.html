@@ -6,7 +6,7 @@
       <div class="card">
         <div class="card-header">
           <h4 class="mb-0">
-            <i class="bi bi-trophy"></i>
+            <i class="fas fa-trophy"></i>
             {{ _('Crea Nuovo Achievement') if not achievement else _('Modifica Achievement') }}
           </h4>
         </div>
@@ -116,10 +116,10 @@
 
             <div class="d-flex justify-content-between">
               <a href="{{ url_for('gamification.admin_achievements') }}" class="btn btn-outline-secondary">
-                <i class="bi bi-x-lg"></i> {{ _('Annulla') }}
+                <i class="fas fa-xmark"></i> {{ _('Annulla') }}
               </a>
               <button type="submit" class="btn btn-primary">
-                <i class="bi bi-check-lg"></i> {{ _('Salva Achievement') }}
+                <i class="fas fa-check"></i> {{ _('Salva Achievement') }}
               </button>
             </div>
           </form>

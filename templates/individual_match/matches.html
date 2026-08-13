@@ -1,267 +1,199 @@
 {% extends "base.html" %}
 
-{% block title %}{{ _("I Miei Match") }} - {{ _("Campionato Biliardo") }}{% endblock %}
+{% block title %}{{ _("I miei match") }} - {{ _("Campionato Biliardo") }}{% endblock %}
+
+{# Testata: una sola per pagina, quella del guscio. Via la briciola di pane e
+   il titolo ripetuto dentro il contenuto. #}
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('individual_match.dashboard') }}"
+   aria-label="{{ _('Torna ai match individuali') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("I miei match") }}{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('individual_match.create_proposal') }}" class="btn btn-primary btn-sm d-none d-lg-inline-flex">
+  <i class="fas fa-plus"></i>&nbsp;{{ _("Nuova proposta") }}
+</a>
+{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-md-12">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('individual_match.dashboard') }}">{{ _("Match
-                            Individuali") }}</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">{{ _("I Miei Match") }}</li>
-                </ol>
-            </nav>
+{# Prototipo 9a: lo stato si filtra con i pill in cima, come nell'elenco dei
+   match; disciplina e avversario restano due tendine, che di voci ne hanno
+   troppe per dei pill. #}
+{% if matches %}
+<div class="c7-stack c7-sections">
 
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h1><i class="fas fa-list"></i> {{ _("I Miei Match") }}</h1>
-                    <p class="text-muted">{{ _("Tutti i tuoi match individuali, passati e presenti.") }}</p>
-                </div>
-                <div>
-                    <a href="{{ url_for('individual_match.create_proposal') }}" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> {{ _("Nuova Proposta") }}
-                    </a>
-                </div>
-            </div>
-        </div>
+  {# ---------- Filtri ---------- #}
+  <div class="c7-stack" style="gap:10px">
+    {# Si filtra per **gruppo**, non per valore di stato: "giocati" comprende
+       sia `completed` sia `validated`, e le opzioni scritte a mano avevano
+       `playing` (lo stato dei match di gara) dove un match individuale ha
+       `in_progress` — quel filtro nascondeva tutto. #}
+    <div class="d-flex" style="gap:8px;overflow-x:auto">
+      {% set state_filters = [
+        ('', _('Tutti')),
+        ('da_giocare', _('Da giocare')),
+        ('in_corso', _('In corso')),
+        ('giocati', _('Giocati')),
+        ('annullati', _('Annullati'))
+      ] %}
+      {% for value, label in state_filters %}
+      <button type="button" class="c7-pill{{ ' is-active' if loop.first }}" data-state-filter="{{ value }}">
+        {{ label }}
+      </button>
+      {% endfor %}
     </div>
 
-    {% if matches and matches|length %}
-    <div class="row">
-        <div class="col-md-12">
-            <!-- Filters -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3">
-                            <select class="form-select" id="statusFilter">
-                                <option value="">{{ _("Tutti gli stati") }}</option>
-                                <option value="scheduled">{{ _("Programmati") }}</option>
-                                <option value="playing">{{ _("In corso") }}</option>
-                                <option value="completed">{{ _("Completati") }}</option>
-                                <option value="cancelled">{{ _("Annullati") }}</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <select class="form-select" id="disciplineFilter">
-                                <option value="">{{ _("Tutte le discipline") }}</option>
-                                <option value="palla_8">Palla 8</option>
-                                <option value="palla_9">Palla 9</option>
-                                <option value="palla_10">Palla 10</option>
-                                <option value="one_pocket">One Pocket</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <select class="form-select" id="opponentFilter">
-                                <option value="">{{ _("Tutti gli avversari") }}</option>
-                                {% for match in matches %}
-                                {% set opponent = match.player1 if match.player2_id == current_user.id else
-                                match.player2 %}
-                                <option value="{{ opponent.id }}">{{ opponent.username }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <button class="btn btn-outline-secondary w-100" onclick="clearFilters()">
-                                <i class="fas fa-times"></i> {{ _("Pulisci Filtri") }}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Match List -->
-            <div class="row" id="matchList">
-                {% for match in matches %}
-                {% set opponent = match.player1 if match.player2_id == current_user.id else match.player2 %}
-                <div class="col-md-6 col-lg-4 mb-4 match-card" data-status="{{ match.status.value }}"
-                    data-discipline="{{ match.discipline }}" data-opponent="{{ opponent.id }}">
-                    <div
-                        class="card h-100 border-{{ 'success' if match.status.value == 'completed' else 'primary' if match.status.value == 'in_progress' else 'warning' if match.status.value == 'scheduled' else 'danger' }}">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h6 class="mb-0">{{ match.discipline|discipline_display }}</h6>
-                            <span
-                                class="badge bg-{{ 'success' if match.status.value == 'completed' else 'primary' if match.status.value == 'in_progress' else 'warning' if match.status.value == 'scheduled' else 'danger' }}">
-                                {{ match.status.value.title() }}
-                            </span>
-                        </div>
-                        <div class="card-body">
-                            <!-- Players and Score -->
-                            <div class="text-center mb-3">
-                                <div class="row">
-                                    <div class="col-5">
-                                        <strong
-                                            class="{% if match.status.value == 'completed' and match.winner_id == current_user.id %}text-success{% elif match.status.value == 'completed' %}text-danger{% endif %}">
-                                            {{ current_user.username }}
-                                        </strong>
-                                        <div class="display-6">
-                                            {{ match.player1_score if match.player1_id == current_user.id else
-                                            match.player2_score or 0 }}
-                                        </div>
-                                    </div>
-                                    <div class="col-2">
-                                        <small class="text-muted">{{ _("VS") }}</small>
-                                    </div>
-                                    <div class="col-5">
-                                        <strong
-                                            class="{% if match.status.value == 'completed' and match.winner_id == opponent.id %}text-success{% elif match.status.value == 'completed' %}text-danger{% endif %}">
-                                            {{ opponent.username }}
-                                        </strong>
-                                        <div class="display-6">
-                                            {{ match.player2_score if match.player2_id == opponent.id else
-                                            match.player1_score or 0 }}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Match Info -->
-                            <div class="text-center text-muted small mb-3">
-                                <div><i class="fas fa-map-marker-alt"></i> {{ match.location_display }}</div>
-                                {% if match.scheduled_at %}
-                                <div><i class="fas fa-clock"></i> {{ match.scheduled_at|datetime_local }}</div>
-                                {% endif %}
-                                <div>{{ _('Al') if match.is_race_to else _('Esattamente') }} {{ match.distance }}</div>
-                            </div>
-
-                            <!-- Result -->
-                            {% if match.status.value == 'completed' %}
-                            <div
-                                class="alert alert-{{ 'success' if match.winner_id == current_user.id else 'danger' }} text-center py-2 mb-3">
-                                {% if match.winner_id == current_user.id %}
-                                <i class="fas fa-trophy"></i> {{ _("Hai Vinto!") }}
-                                {% else %}
-                                <i class="fas fa-handshake"></i> {{ _("Hai Perso") }}
-                                {% endif %}
-                            </div>
-                            {% endif %}
-
-                            <!-- Actions -->
-                            <div class="text-center">
-                                {% if match.status.value == 'scheduled' %}
-                                <a href="{{ url_for('individual_match.match_detail', match_id=match.id) }}"
-                                    class="btn btn-primary btn-sm">
-                                    <i class="fas fa-play"></i> {{ _("Inizia") }}
-                                </a>
-                                {% elif match.status.value == 'in_progress' %}
-                                <a href="{{ url_for('individual_match.match_detail', match_id=match.id) }}"
-                                    class="btn btn-success btn-sm">
-                                    <i class="fas fa-shield-halved"></i> {{ _("Continua") }}
-                                </a>
-                                {% else %}
-                                <a href="{{ url_for('individual_match.match_detail', match_id=match.id) }}"
-                                    class="btn btn-outline-secondary btn-sm">
-                                    <i class="fas fa-eye"></i> {{ _("Dettagli") }}
-                                </a>
-                                {% endif %}
-                            </div>
-                        </div>
-                        {% if match.ended_at or match.started_at %}
-                        <div class="card-footer text-muted text-center small">
-                            {% if match.ended_at %}
-                            {{ _("Completato il") }} {{ match.ended_at|date_local }}
-                            {% elif match.started_at %}
-                            {{ _("Iniziato il") }} {{ match.started_at|date_local }}
-                            {% endif %}
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-
-            <!-- No Matches After Filter -->
-            <div class="text-center py-5" id="noMatchesMessage" style="display: none;">
-                <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                <h4>{{ _("Nessun match trovato") }}</h4>
-                <p class="text-muted">{{ _("Prova a modificare i filtri per vedere più risultati.") }}</p>
-            </div>
-        </div>
+    <div class="c7-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+      <select class="form-select" id="disciplineFilter" aria-label="{{ _('Filtra per disciplina') }}">
+        <option value="">{{ _("Tutte le discipline") }}</option>
+        {# Le discipline arrivano **dai match**, non dall'enum. Il motivo non e'
+           piu' il vocabolario doppio (normalizzato nel 2026-08): e' che un
+           filtro deve offrire solo le voci che restituiscono qualcosa, non
+           tutte e sette le discipline possibili. #}
+        {% set seen_disciplines = [] %}
+        {% for match in matches %}
+        {% if match.discipline not in seen_disciplines %}
+        {% set _void = seen_disciplines.append(match.discipline) %}
+        <option value="{{ match.discipline }}">{{ match.discipline|discipline_display }}</option>
+        {% endif %}
+        {% endfor %}
+      </select>
+      <select class="form-select" id="opponentFilter" aria-label="{{ _('Filtra per avversario') }}">
+        <option value="">{{ _("Tutti gli avversari") }}</option>
+        {# Un avversario per volta: prima l'elenco ripeteva chi compariva in
+           piu' match e la ripulitura era affidata al JS. #}
+        {% set seen = [] %}
+        {% for match in matches %}
+        {% set opponent = match.player1 if match.player2_id == current_user.id else match.player2 %}
+        {% if opponent and opponent.id not in seen %}
+        {% set _void = seen.append(opponent.id) %}
+        <option value="{{ opponent.id }}">{{ opponent.username }}</option>
+        {% endif %}
+        {% endfor %}
+      </select>
     </div>
-    {% else %}
-    <!-- Empty State -->
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-body text-center py-5">
-                    <i class="fas fa-shield-halved fa-3x text-muted mb-3"></i>
-                    <h4>{{ _("Nessun match ancora") }}</h4>
-                    <p class="text-muted">{{ _("Inizia creando una proposta di match per giocare con altri membri della community!") }}</p>
-                    <a href="{{ url_for('individual_match.create_proposal') }}" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> {{ _("Crea la tua prima proposta") }}
-                    </a>
-                </div>
-            </div>
+  </div>
+
+  {# ---------- Elenco ---------- #}
+  <div class="c7-grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))" id="matchList">
+    {% for match in matches %}
+    {% set opponent = match.player1 if match.player2_id == current_user.id else match.player2 %}
+    {% set state = match.status.value %}
+    {% set is_finished = MatchStatus.is_finished(state) %}
+    {% set my_score = match.player1_score if match.player1_id == current_user.id else match.player2_score %}
+    {% set their_score = match.player2_score if match.player1_id == current_user.id else match.player1_score %}
+    {% set i_won = match.winner_id == current_user.id %}
+    {% set group = 'annullati' if state == MatchStatus.CANCELLED.value
+                   else ('giocati' if is_finished
+                   else ('in_corso' if state == MatchStatus.IN_PROGRESS.value else 'da_giocare')) %}
+    <article class="c7-card match-card {{ 'c7-dim' if state == MatchStatus.CANCELLED.value }}"
+             data-group="{{ group }}" data-discipline="{{ match.discipline }}"
+             data-opponent="{{ opponent.id if opponent else '' }}">
+      <div class="d-flex align-items-center gap-2">
+        <span class="c7-kicker">{{ match.discipline|discipline_display }}</span>
+        <span style="margin-left:auto">
+          {%- if state == MatchStatus.IN_PROGRESS.value %}
+          <span class="c7-state c7-state--accent">{{ _('In corso') }}</span>
+          {%- elif is_finished %}
+          <span class="c7-state {{ 'c7-state--ok' if i_won else 'c7-state--muted' }}">
+            {{ _('Hai vinto') if i_won else (_('Hai perso') if match.winner_id else _('Concluso')) }}
+          </span>
+          {%- elif state == MatchStatus.CANCELLED.value %}
+          <span class="c7-state c7-state--err">{{ _('Annullato') }}</span>
+          {%- else %}
+          <span class="c7-state c7-state--warn">{{ _('Da giocare') }}</span>
+          {%- endif %}
+        </span>
+      </div>
+
+      {# Punteggio: il proprio a sinistra, sempre. #}
+      <div class="d-flex align-items-center gap-3" style="margin-top:14px">
+        <div class="flex-fill" style="min-width:0">
+          <div style="font-size:14px;font-weight:800">{{ current_user.username }}</div>
+          <div style="margin-top:3px;font-size:14px;font-weight:800;color:var(--c7-ink-muted)">
+            {{ opponent.username if opponent else _('Avversario') }}
+          </div>
         </div>
-    </div>
-    {% endif %}
+        <div style="text-align:right">
+          <div class="c7-num-lg{{ ' ' if not is_finished else '' }}">{{ my_score or 0 }}</div>
+          <div class="c7-num-lg" style="color:var(--c7-ink-muted)">{{ their_score or 0 }}</div>
+        </div>
+      </div>
+
+      <div class="c7-rows__sub" style="margin-top:12px">
+        {%- if match.location_display %}{{ match.location_display }} <span class="c7-sep">·</span> {% endif -%}
+        {{ _('Al') if match.is_race_to else _('Esattamente') }} {{ match.distance }}
+        {%- if match.scheduled_at %}
+        <span class="c7-sep">·</span> {{ match.scheduled_at|datetime_local }}
+        {%- endif %}
+      </div>
+
+      <a href="{{ url_for('individual_match.match_detail', match_id=match.id) }}"
+         class="btn {{ 'btn-primary' if not is_finished else 'btn-secondary' }} w-100" style="margin-top:14px">
+        {%- if state == MatchStatus.SCHEDULED.value %}{{ _("Apri la partita") }}
+        {%- elif state == MatchStatus.IN_PROGRESS.value %}{{ _("Continua") }}
+        {%- else %}{{ _("Dettagli") }}{% endif %}
+      </a>
+    </article>
+    {% endfor %}
+  </div>
+
+  {# Nessun risultato dopo il filtro #}
+  <div class="c7-empty" id="noMatchesMessage" style="display:none">
+    <div class="c7-empty__ico"><i class="fas fa-magnifying-glass"></i></div>
+    <div class="c7-empty__title">{{ _("Nessun match trovato") }}</div>
+    <p class="c7-empty__text">{{ _("Prova a togliere qualche filtro.") }}</p>
+  </div>
 </div>
+{% else %}
+<div class="c7-empty">
+  <div class="c7-empty__ico"><i class="fas fa-handshake"></i></div>
+  <div class="c7-empty__title">{{ _("Nessun match ancora") }}</div>
+  <p class="c7-empty__text">
+    {{ _("Proponi una data a un altro giocatore: quando accetta, il match compare qui.") }}
+  </p>
+  <div class="c7-empty__actions">
+    <a href="{{ url_for('individual_match.create_proposal') }}" class="btn btn-primary">
+      <i class="fas fa-plus"></i> {{ _("Crea la tua prima proposta") }}
+    </a>
+  </div>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block scripts %}
+{% if matches %}
 <script>
-    // Filter functionality
-    function filterMatches() {
-        const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
-        const disciplineFilter = document.getElementById('disciplineFilter').value.toLowerCase();
-        const opponentFilter = document.getElementById('opponentFilter').value;
+    (function () {
+        const pills = document.querySelectorAll('[data-state-filter]');
+        const disciplineSel = document.getElementById('disciplineFilter');
+        const opponentSel = document.getElementById('opponentFilter');
+        const cards = document.querySelectorAll('.match-card');
+        const empty = document.getElementById('noMatchesMessage');
+        let state = '';
 
-        const matchCards = document.querySelectorAll('.match-card');
-        let visibleCount = 0;
-
-        matchCards.forEach(card => {
-            const status = card.getAttribute('data-status');
-            const discipline = card.getAttribute('data-discipline');
-            const opponent = card.getAttribute('data-opponent');
-
-            const statusMatch = !statusFilter || status === statusFilter;
-            const disciplineMatch = !disciplineFilter || discipline === disciplineFilter;
-            const opponentMatch = !opponentFilter || opponent === opponentFilter;
-
-            if (statusMatch && disciplineMatch && opponentMatch) {
-                card.style.display = 'block';
-                visibleCount++;
-            } else {
-                card.style.display = 'none';
-            }
-        });
-
-        // Show/hide no results message
-        const noMatchesMessage = document.getElementById('noMatchesMessage');
-        if (visibleCount === 0 && matchCards.length > 0) {
-            noMatchesMessage.style.display = 'block';
-        } else {
-            noMatchesMessage.style.display = 'none';
+        function apply() {
+            let visible = 0;
+            cards.forEach(function (card) {
+                const ok = (!state || card.dataset.group === state)
+                    && (!disciplineSel.value || card.dataset.discipline === disciplineSel.value)
+                    && (!opponentSel.value || card.dataset.opponent === opponentSel.value);
+                card.style.display = ok ? '' : 'none';
+                if (ok) { visible++; }
+            });
+            empty.style.display = visible === 0 ? '' : 'none';
         }
-    }
 
-    function clearFilters() {
-        document.getElementById('statusFilter').value = '';
-        document.getElementById('disciplineFilter').value = '';
-        document.getElementById('opponentFilter').value = '';
-        filterMatches();
-    }
-
-    // Add event listeners
-    document.getElementById('statusFilter').addEventListener('change', filterMatches);
-    document.getElementById('disciplineFilter').addEventListener('change', filterMatches);
-    document.getElementById('opponentFilter').addEventListener('change', filterMatches);
-
-    // Remove duplicate opponents from filter
-    document.addEventListener('DOMContentLoaded', function () {
-        const opponentSelect = document.getElementById('opponentFilter');
-        const seen = new Set();
-        const options = Array.from(opponentSelect.options);
-
-        options.forEach(option => {
-            if (option.value && seen.has(option.value)) {
-                option.remove();
-            } else if (option.value) {
-                seen.add(option.value);
-            }
+        pills.forEach(function (pill) {
+            pill.addEventListener('click', function () {
+                state = pill.dataset.stateFilter;
+                pills.forEach(function (p) { p.classList.toggle('is-active', p === pill); });
+                apply();
+            });
         });
-    });
+        disciplineSel.addEventListener('change', apply);
+        opponentSel.addEventListener('change', apply);
+    })();
 </script>
+{% endif %}
 {% endblock %}

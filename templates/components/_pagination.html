@@ -1,6 +1,14 @@
-<!-- templates/components/_pagination.html - Generic pagination component
-     Usage: {% set pagination = ... %} {% include "components/_pagination.html" %}
-     Uses request.endpoint automatically for URL generation. -->
+{#
+  templates/components/_pagination.html - Generic pagination component
+
+  Uso: imposta `pagination` (oggetto Pagination di SQLAlchemy) e includi
+  questo file; gli URL sono generati da request.endpoint.
+
+  NB: commento Jinja, non HTML. Dentro <!-- --> il motore interpreta
+  comunque i tag {% %}, e l'esempio d'uso conteneva un `...` che non è
+  sintassi valida: il template non compilava affatto e ogni pagina che lo
+  includeva rispondeva 500.
+#}
 {% if pagination and pagination.pages > 1 %}
 <nav aria-label="{{ _('Navigazione pagine') }}" class="mt-4">
     <ul class="pagination justify-content-center">

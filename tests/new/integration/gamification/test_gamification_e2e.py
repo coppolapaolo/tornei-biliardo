@@ -321,7 +321,7 @@ class TestGamificationIntegrationWithCompetitions:
             number=1,
             name="Test Gara",
             date=datetime.now().date() + timedelta(days=1),
-            discipline="palla_8",
+            discipline="8_ball",
             distance=5,
             status=GaraStatus.INSCRIPTION.value,
         )

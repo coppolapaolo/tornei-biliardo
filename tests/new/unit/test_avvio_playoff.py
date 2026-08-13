@@ -163,9 +163,9 @@ class TestConfigManagement:
         cfg = _make_config(db_session, c)
         db_session.commit()
 
-        PlayoffService.update_configuration(cfg.id, discipline="palla_8", distance=3)
+        PlayoffService.update_configuration(cfg.id, discipline="8_ball", distance=3)
         updated = db.session.get(PlayoffConfiguration, cfg.id)
-        assert updated.discipline == "palla_8"
+        assert updated.discipline == "8_ball"
         assert updated.distance == 3
 
 
@@ -474,7 +474,7 @@ class TestCreatePlayoffGara:
     def test_create_playoff_gara_override_params(self, db_session):
         c = _make_campionato(db_session, terminated=True)
         cfg = _make_config(db_session, c)
-        cfg.discipline = "palla_8"
+        cfg.discipline = "8_ball"
         cfg.distance = 3
         gara = _make_gara(db_session, c)
         players = []
@@ -493,7 +493,7 @@ class TestCreatePlayoffGara:
             PlayoffService.confirm_qualification(qual.id, p.id)
 
         playoff_gara = PlayoffService.create_playoff_gara(cfg.id)
-        assert playoff_gara.discipline == "palla_8"
+        assert playoff_gara.discipline == "8_ball"
         assert playoff_gara.distance == 3
 
 
@@ -548,13 +548,13 @@ class TestGetGaraParams:
     def test_explicit_override(self, db_session):
         c = _make_campionato(db_session)
         cfg = _make_config(db_session, c)
-        cfg.discipline = "palla_8"
+        cfg.discipline = "8_ball"
         cfg.distance = 3
         _make_gara(db_session, c)
         db_session.commit()
 
         params = cfg.get_gara_params()
-        assert params["discipline"] == "palla_8"
+        assert params["discipline"] == "8_ball"
         assert params["distance"] == 3
 
     def test_fallback_no_completed_gara(self, db_session):
@@ -563,7 +563,7 @@ class TestGetGaraParams:
         db_session.commit()
 
         params = cfg.get_gara_params()
-        assert params["discipline"] == "palla_9"  # default fallback
+        assert params["discipline"] == "9_ball"  # default fallback
 
 
 # ── TERMINATED → COMPLETED transition tests ───────────────────────

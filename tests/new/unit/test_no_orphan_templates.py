@@ -134,10 +134,17 @@ def test_no_dynamic_includes_in_templates():
     assert not offenders, "include/extends con nome dinamico: " + ", ".join(offenders)
 
 
+# Libreria di macro del design system 7c: nessun template la importa ancora,
+# perche' le pagine che la useranno (gamification, challenge) non sono
+# convertite. Va tolta da qui appena il primo import la rende raggiungibile —
+# o cancellata, se il redesign finisce senza averla usata.
+PENDING_ADOPTION = {"components/_form_macros.html"}
+
+
 @pytest.mark.unit
 def test_every_template_is_reachable():
     all_tpl = _all_templates()
-    orphans = sorted(all_tpl - _reachable(all_tpl))
+    orphans = sorted(all_tpl - _reachable(all_tpl) - PENDING_ADOPTION)
 
     assert not orphans, (
         f"{len(orphans)} template irraggiungibili — nessuna route li rende e "

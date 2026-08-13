@@ -1,0 +1,98 @@
+/* ==========================================================================
+   Design System 7c — token
+   Caricare PRIMA di theme-7c.css e DOPO bootstrap/variables.css/main.css.
+   Non contiene regole: solo variabili. Nessun selettore oltre :root.
+   ========================================================================== */
+
+:root {
+  /* --- Superfici ------------------------------------------------------- */
+  --c7-bg:            #E4E8E7;   /* fondo pagina, sempre. Mai bianco puro. */
+  --c7-card:          #F5F7F6;   /* card, campi, righe tabella, pill inattivi */
+  --c7-sunken:        #ECEEED;   /* disabilitato / bloccato / ereditato */
+
+  /* --- Inchiostro ------------------------------------------------------ */
+  --c7-ink:           #1B2124;   /* testo principale, bottone primario, sidebar */
+  --c7-ink-soft:      #3D474A;   /* testo secondario forte */
+  --c7-ink-muted:     #6B7679;   /* label, metadati, supporto */
+  --c7-ink-faint:     #9AA3A6;   /* placeholder, icone inerti */
+  --c7-on-ink:        #F2F5F4;   /* testo su --c7-ink */
+  --c7-on-ink-muted:  #9AA6A9;   /* testo secondario su --c7-ink */
+
+  /* --- Linee ----------------------------------------------------------- */
+  --c7-line:          #D3D8D7;   /* separatori su fondo pagina */
+  --c7-line-soft:     #E4E8E7;   /* separatori dentro le card */
+
+  /* --- Accento --------------------------------------------------------- */
+  --c7-accent:        #2C4A52;
+  --c7-accent-ink:    #F2F8F7;   /* testo su --c7-accent */
+  --c7-accent-bright: #8FCDE8;   /* evidenza dentro blocchi accento */
+  --c7-accent-dim:    #A9C4C7;   /* testo secondario dentro blocchi accento */
+  --c7-accent-tint:   #DDE9EE;   /* fondo tenue info */
+  --c7-accent-tint-ink: #23404A;
+
+  /* --- Semantici: fondo / testo / forte -------------------------------- */
+  --c7-ok-bg:         #E4EDE9;
+  --c7-ok-ink:        #1D5F4A;
+  --c7-ok-body:       #37665A;
+  --c7-ok:            #2C8A6B;
+
+  --c7-err-bg:        #F3E2E0;
+  --c7-err-ink:       #8A2C2C;
+  --c7-err-body:      #7A4A48;
+  --c7-err:           #B23B3B;
+
+  --c7-warn-bg:       #F0E9D8;
+  --c7-warn-ink:      #6E5417;
+  --c7-warn-body:     #6E6047;
+  --c7-warn:          #8A6A1F;
+
+  --c7-info-bg:       var(--c7-accent-tint);
+  --c7-info-ink:      var(--c7-accent-tint-ink);
+  --c7-info-body:     #40606A;
+  --c7-info:          var(--c7-accent);
+
+  /* --- Tipografia ------------------------------------------------------ */
+  --c7-font:      "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --c7-font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+
+  /* --- Raggi ----------------------------------------------------------- */
+  --c7-r-pill:    999px;
+  --c7-r-card:    22px;
+  --c7-r-card-lg: 26px;
+  --c7-r-field:   18px;
+  --c7-r-control: 14px;
+  --c7-r-chip:    12px;
+
+  /* --- Spaziature ------------------------------------------------------ */
+  --c7-gutter:      18px;   /* margine laterale mobile */
+  --c7-gutter-lg:   28px;   /* margine laterale desktop */
+  --c7-pad-card:    16px;
+  --c7-pad-card-lg: 20px;
+  --c7-gap:         12px;
+  --c7-gap-lg:      16px;
+
+  /* --- Misure fisse ---------------------------------------------------- */
+  --c7-touch:       48px;   /* target tattile minimo */
+  --c7-field-h:     58px;
+  --c7-btn-h:       56px;
+  --c7-side-w:      244px;  /* sidebar desktop */
+  --c7-mobilenav-h: 76px;
+  /* Altezza della testata mobile: 20 + 46 (bottone/avatar) + 12. La usa chi
+     si appiccica sotto di lei, come le linguette di vista della pagina gara.
+     Un titolo che va a capo la fa crescere, quindi il commutatore la
+     rimisura e riscrive questa variabile: qui c'e' solo il caso normale. */
+  --c7-head-h:      78px;
+
+  /* --- Ombre (solo overlay e toast; le card NON hanno ombra) ------------ */
+  --c7-shadow-toast: 0 10px 24px -18px rgba(27, 33, 36, .6);
+  --c7-shadow-pop:   0 18px 36px -20px rgba(27, 33, 36, .75);
+  --c7-shadow-frame: 0 26px 60px -30px rgba(27, 33, 36, .5);
+
+  /* --- Z-index --------------------------------------------------------- */
+  --c7-z-head:     50;
+  --c7-z-mobnav:   60;
+  /* Il tabellone orizzontale copre tutta la pagina, nav compresa, ma resta
+     sotto ai toast: un traguardo o un errore devono comunque arrivare. */
+  --c7-z-board:   900;
+  --c7-z-toast:   1100;
+}

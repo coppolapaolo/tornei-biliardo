@@ -47,7 +47,7 @@ def test_x_replacement_bye_uses_round_distance_not_raw_score(db_session):
         number=count + 1,
         date=date.today(),
         distance=5,  # race to 5
-        discipline="palla_9",
+        discipline="9_ball",
         status=GaraStatus.PLAYING.value,
         is_race_to=True,
         rounds_count=3,

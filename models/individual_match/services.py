@@ -25,7 +25,7 @@ from .models import (
     ProposalType,
     ProposalStatus,
 )
-from ..status_enum import MatchStatus
+from ..status_enum import Discipline, MatchStatus
 
 # Import specialized services
 from .proposal_service import ProposalService
@@ -47,7 +47,7 @@ class MatchProposalService:
         location: str,
         scheduled_at: datetime,
         expires_at: datetime,
-        discipline: str = "palla_8",
+        discipline: str = Discipline.EIGHT_BALL.value,
         distance: Optional[int] = 5,
         is_race_to: bool = True,
         break_rule: str = "alternate",

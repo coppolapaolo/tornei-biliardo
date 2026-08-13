@@ -1,13 +1,19 @@
 {% extends 'base.html' %}
+{% block title %}{{ _('Configurazione Gamification') }}{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('gamification.admin_dashboard') }}"
+   aria-label="{{ _('Torna ai pannelli') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _('Configurazione Gamification') }}{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('gamification.admin_dashboard') }}" class="btn btn-secondary btn-sm d-none d-lg-inline-flex">
+  <i class="fas fa-arrow-left"></i>&nbsp;{{ _('Pannelli') }}
+</a>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="bi bi-gear"></i> {{ _('Configurazione Gamification') }}</h2>
-    <a href="{{ url_for('gamification.admin_dashboard') }}" class="btn btn-outline-secondary">
-      <i class="bi bi-arrow-left"></i> {{ _('Torna al Dashboard') }}
-    </a>
-  </div>
-
   <!-- Configuration Sections Navigation -->
   <div class="row mb-4">
     <div class="col-12">
@@ -19,21 +25,21 @@
           <div class="row">
             <div class="col-md-4 mb-3">
               <a href="{{ url_for('gamification.admin_xp_config') }}" class="btn btn-outline-primary w-100 py-3">
-                <i class="bi bi-graph-up-arrow fs-3 d-block mb-2"></i>
+                <i class="fas fa-arrow-trend-up fs-3 d-block mb-2"></i>
                 {{ _('XP Rates') }}
                 <small class="d-block text-muted">{{ _('Configura XP per attività') }}</small>
               </a>
             </div>
             <div class="col-md-4 mb-3">
               <a href="{{ url_for('gamification.admin_level_curve_config') }}" class="btn btn-outline-success w-100 py-3">
-                <i class="bi bi-bar-chart-steps fs-3 d-block mb-2"></i>
+                <i class="fas fa-chart-simple fs-3 d-block mb-2"></i>
                 {{ _('Livelli & Unlock') }}
                 <small class="d-block text-muted">{{ _('Curva XP e feature unlock') }}</small>
               </a>
             </div>
             <div class="col-md-4 mb-3">
               <a href="{{ url_for('gamification.admin_streak_config') }}" class="btn btn-outline-warning w-100 py-3">
-                <i class="bi bi-fire fs-3 d-block mb-2"></i>
+                <i class="fas fa-fire fs-3 d-block mb-2"></i>
                 {{ _('Streak & Milestone') }}
                 <small class="d-block text-muted">{{ _('Reward per streak') }}</small>
               </a>
@@ -50,7 +56,7 @@
     <div class="col-md-4 mb-4">
       <div class="card h-100">
         <div class="card-header bg-primary text-white">
-          <h5 class="mb-0"><i class="bi bi-graph-up-arrow"></i> {{ _('XP Rates') }}</h5>
+          <h5 class="mb-0"><i class="fas fa-arrow-trend-up"></i> {{ _('XP Rates') }}</h5>
         </div>
         <div class="card-body">
           <table class="table table-sm">
@@ -66,7 +72,7 @@
         </div>
         <div class="card-footer">
           <a href="{{ url_for('gamification.admin_xp_config') }}" class="btn btn-sm btn-primary w-100">
-            <i class="bi bi-pencil"></i> {{ _('Modifica') }}
+            <i class="fas fa-pencil"></i> {{ _('Modifica') }}
           </a>
         </div>
       </div>
@@ -76,7 +82,7 @@
     <div class="col-md-4 mb-4">
       <div class="card h-100">
         <div class="card-header bg-success text-white">
-          <h5 class="mb-0"><i class="bi bi-unlock"></i> {{ _('Level Unlocks') }}</h5>
+          <h5 class="mb-0"><i class="fas fa-unlock"></i> {{ _('Level Unlocks') }}</h5>
         </div>
         <div class="card-body">
           <table class="table table-sm">
@@ -92,7 +98,7 @@
         </div>
         <div class="card-footer">
           <a href="{{ url_for('gamification.admin_level_curve_config') }}" class="btn btn-sm btn-success w-100">
-            <i class="bi bi-pencil"></i> {{ _('Modifica') }}
+            <i class="fas fa-pencil"></i> {{ _('Modifica') }}
           </a>
         </div>
       </div>
@@ -102,7 +108,7 @@
     <div class="col-md-4 mb-4">
       <div class="card h-100">
         <div class="card-header bg-warning text-dark">
-          <h5 class="mb-0"><i class="bi bi-fire"></i> {{ _('Streak Milestones') }}</h5>
+          <h5 class="mb-0"><i class="fas fa-fire"></i> {{ _('Streak Milestones') }}</h5>
         </div>
         <div class="card-body">
           <table class="table table-sm">
@@ -113,7 +119,7 @@
                 <td><small>{{ milestone.freeze_tokens }} freeze</small></td>
                 <td>
                   {% if milestone.is_recurring %}
-                  <span class="badge bg-info" title="{{ _('Ricorrente') }}"><i class="bi bi-arrow-repeat"></i></span>
+                  <span class="badge bg-info" title="{{ _('Ricorrente') }}"><i class="fas fa-rotate"></i></span>
                   {% endif %}
                 </td>
               </tr>
@@ -123,7 +129,7 @@
         </div>
         <div class="card-footer">
           <a href="{{ url_for('gamification.admin_streak_config') }}" class="btn btn-sm btn-warning w-100">
-            <i class="bi bi-pencil"></i> {{ _('Modifica') }}
+            <i class="fas fa-pencil"></i> {{ _('Modifica') }}
           </a>
         </div>
       </div>
@@ -135,7 +141,7 @@
     <div class="col-12">
       <div class="card">
         <div class="card-header">
-          <h5 class="mb-0"><i class="bi bi-bar-chart"></i> {{ _('Parametri Curva Livelli') }}</h5>
+          <h5 class="mb-0"><i class="fas fa-chart-column"></i> {{ _('Parametri Curva Livelli') }}</h5>
         </div>
         <div class="card-body">
           <div class="row">

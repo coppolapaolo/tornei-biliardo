@@ -1,35 +1,36 @@
-{# templates/components/_index_registration_info.html #}
-<!-- Info App per utenti non registrati -->
+{# templates/components/_index_registration_info.html — 7c #}
 {% if not current_user.is_authenticated %}
-    <div class="card bg-light mb-4">
-        <div class="card-body text-center">
-            <h5><i class="fas fa-info-circle"></i> {{ _("Come Partecipare") }}</h5>
-            <p class="mb-3">{{ _("Iscriviti ai campionati, gioca partite e scala le classifiche!") }}</p>
-            <div class="row text-center align-items-stretch">
-                <div class="col-md-4 mb-3 mb-md-0 d-flex flex-column align-items-center">
-                    <i class="fas fa-user-plus fa-2x text-primary mb-2"></i>
-                    <h6>1. {{ _("Accedi") }}</h6>
-                    <small class="text-muted d-block mb-2">{{ _("Hai già un account? Entra. Altrimenti registrati gratis.") }}</small>
-                    <div class="d-flex gap-2 justify-content-center mt-auto">
-                        <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-sm">
-                            <i class="fas fa-sign-in-alt"></i> {{ _("Accedi") }}
-                        </a>
-                        <a href="{{ url_for('auth.register') }}" class="btn btn-outline-primary btn-sm">
-                            <i class="fas fa-user-plus"></i> {{ _("Registrati") }}
-                        </a>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-3 mb-md-0 d-flex flex-column align-items-center">
-                    <i class="fas fa-calendar-plus fa-2x text-success mb-2"></i>
-                    <h6>2. {{ _("Iscriviti") }}</h6>
-                    <small class="text-muted">{{ _("Partecipa alle gare aperte") }}</small>
-                </div>
-                <div class="col-md-4 d-flex flex-column align-items-center">
-                    <i class="fas fa-trophy fa-2x text-warning mb-2"></i>
-                    <h6>3. {{ _("Gioca") }}</h6>
-                    <small class="text-muted">{{ _("Competi e scala le classifiche") }}</small>
-                </div>
-            </div>
+<section class="c7-card c7-card--accent" style="padding: 24px 20px; margin-bottom: 28px;">
+    <div class="c7-kicker">{{ _("Come si partecipa") }}</div>
+    <h2 style="margin: 6px 0 0; color: inherit; font-size: 22px;">{{ _("Iscriviti, gioca, scala la classifica") }}</h2>
+
+    <div style="display: grid; gap: 14px; margin-top: 20px;">
+        <div style="display: flex; gap: 12px; align-items: flex-start;">
+            <span class="c7-num" style="color: var(--c7-accent-bright); width: 20px;">1</span>
+            <span>
+                <span style="display: block; font-weight: 800; font-size: 14px;">{{ _("Accedi") }}</span>
+                <span style="display: block; font-size: 12px; color: var(--c7-accent-dim); margin-top: 2px;">{{ _("Hai già un account? Entra. Altrimenti registrati, è gratis.") }}</span>
+            </span>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: flex-start;">
+            <span class="c7-num" style="color: var(--c7-accent-bright); width: 20px;">2</span>
+            <span>
+                <span style="display: block; font-weight: 800; font-size: 14px;">{{ _("Iscriviti a una gara") }}</span>
+                <span style="display: block; font-size: 12px; color: var(--c7-accent-dim); margin-top: 2px;">{{ _("Scegli fra le gare con iscrizioni aperte.") }}</span>
+            </span>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: flex-start;">
+            <span class="c7-num" style="color: var(--c7-accent-bright); width: 20px;">3</span>
+            <span>
+                <span style="display: block; font-weight: 800; font-size: 14px;">{{ _("Gioca") }}</span>
+                <span style="display: block; font-size: 12px; color: var(--c7-accent-dim); margin-top: 2px;">{{ _("Segna i rack dal telefono, la classifica si aggiorna da sola.") }}</span>
+            </span>
         </div>
     </div>
+
+    <div style="display: flex; gap: 10px; margin-top: 22px;">
+        <a href="{{ url_for('auth.login') }}" class="btn" style="flex: 1; background: var(--c7-accent-bright); color: var(--c7-accent);">{{ _("Accedi") }}</a>
+        <a href="{{ url_for('auth.register') }}" class="btn" style="flex: 1; background: rgba(255,255,255,.12); color: var(--c7-accent-ink);">{{ _("Registrati") }}</a>
+    </div>
+</section>
 {% endif %}

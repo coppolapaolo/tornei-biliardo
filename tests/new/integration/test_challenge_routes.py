@@ -96,7 +96,10 @@ class TestChallengeRoutes:
 
         response = client.get("/challenges/create")
         assert response.status_code == 200
-        assert b"Crea Nuova Challenge" in response.data
+        # L'invariante e' il form di creazione, non il titolo con cui la
+        # pagina lo intitola (cambiato con la conversione 7c).
+        assert b'id="challengeForm"' in response.data
+        assert b'name="description"' in response.data
 
     def test_create_challenge_post(self, client, director_user):
         """Test POST request to create challenge."""
@@ -152,8 +155,9 @@ class TestChallengeRoutes:
             headers={"X-Requested-With": "XMLHttpRequest"},
         )
         assert response.status_code == 200
-        # Should return partial HTML for modal
-        assert b"Dettagli Challenge" in response.data
+        # La pagina mostra la challenge: si verifica il suo contenuto, non
+        # il titolo della sezione.
+        assert test_challenge.description.encode() in response.data
 
     def test_start_attempt_get(self, client, player_user, test_challenge):
         """Test GET request to start attempt page."""
@@ -162,7 +166,8 @@ class TestChallengeRoutes:
 
         response = client.get(f"/challenges/{test_challenge.id}/attempt")
         assert response.status_code == 200
-        assert b"Inizia Challenge" in response.data
+        # L'invariante e' il form che apre il tentativo.
+        assert b'id="startAttemptForm"' in response.data
 
     def test_start_attempt_post(self, client, player_user, test_challenge):
         """Test POST request to start attempt."""

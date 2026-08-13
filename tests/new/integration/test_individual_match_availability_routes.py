@@ -77,7 +77,10 @@ class TestAvailabilitySurfaceRoutes:
         self._login(client, player)
         resp = client.get("/match/availability")
         assert resp.status_code == 200
-        assert b"Disponibilit" in resp.data
+        # L'invariante e' che la pagina offra di aggiungere una sala: il titolo
+        # e' cambiato con la conversione 7c ("Le mie disponibilita'").
+        assert b"/match/availability/venue" in resp.data
+        assert b"disponibilit" in resp.data.lower()
 
     # ---- set venue availability ----
 

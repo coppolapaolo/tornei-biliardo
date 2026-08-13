@@ -12,7 +12,7 @@ from enum import Enum
 from sqlalchemy import func
 
 from ..base import db, BaseModel, utc_now
-from ..status_enum import MatchStatus
+from ..status_enum import Discipline, MatchStatus
 from ..match.base_match import BaseMatchMixin
 
 if TYPE_CHECKING:
@@ -62,7 +62,9 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
     # Game configuration
     # Note: duplicated from proposal for matches created without proposal
     # or when proposal is deleted. This denormalization is intentional.
-    discipline = db.Column(db.String(50), nullable=False, default="palla_8")
+    discipline = db.Column(
+        db.String(50), nullable=False, default=Discipline.EIGHT_BALL.value
+    )
     # Distance: None = free format (no limit), players end match manually
     # Note: No default - service layer should set 5 for normal matches
     distance = db.Column(db.Integer, nullable=True)

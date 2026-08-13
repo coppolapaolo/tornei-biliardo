@@ -1,229 +1,227 @@
 {% extends "base.html" %}
+{% import "components/_challenge_bits.html" as ch with context %}
 
-{% block title %}Challenge - {{ gara_challenge.challenge.get_display_name() }}{% endblock %}
+{% set challenge = gara_challenge.challenge %}
+
+{% block title %}{{ challenge.get_display_name() }} - {{ _("Challenge della gara") }}{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('player.gara_detail', gara_id=gara_challenge.gara_id) }}"
+   aria-label="{{ _('Torna alla gara') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("Challenge della gara") }}{% endblock %}
+{% block page_sub %}
+{{ gara_challenge.gara.name }} <span class="c7-sep">·</span> {{ _("dopo il turno %(n)s", n=gara_challenge.round_number) }}
+{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <!-- Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h2><i class="fas fa-trophy text-warning"></i> {{ gara_challenge.challenge.get_display_name() }}</h2>
-                    <p class="text-muted mb-0">
-                        {{ gara_challenge.gara.name }} - Turno {{ gara_challenge.round_number }}
-                    </p>
-                </div>
-                <div>
-                    <a href="{{ url_for('player.dashboard') }}" class="btn btn-outline-secondary">
-                        <i class="fas fa-arrow-left"></i> Torna alla Dashboard
-                    </a>
-                </div>
-            </div>
-        </div>
+{# Prototipo 9b·5: la card scura che spiega perché stai giocando la challenge,
+   la challenge con le sue condizioni, il tuo miglior punteggio e il comando. #}
+<div class="c7-cols">
+  <div class="c7-stack">
+
+    {# ---------- Perché sei qui ---------- #}
+    <div class="c7-card c7-card--accent">
+      <div class="c7-kicker">{{ _("Challenge di gara") }}</div>
+      <p class="mb-0" style="margin-top:10px;font-size:16px;font-weight:700;line-height:1.45">
+        {{ _("Il punteggio di questa challenge vale per la classifica della gara.") }}
+      </p>
     </div>
 
-    <div class="row">
-        <!-- Left Column: Challenge Details -->
-        <div class="col-md-7">
-            <div class="card">
-                <div class="card-header">
-                    <h5><i class="fas fa-info-circle"></i> Dettagli Challenge</h5>
-                </div>
-                <div class="card-body">
-                    <!-- Challenge Image -->
-                    {% if gara_challenge.challenge.image_path %}
-                    <div class="text-center mb-3">
-                        <img src="/static/{{ gara_challenge.challenge.image_path }}" 
-                             class="img-fluid rounded shadow" 
-                             style="max-height: 300px;"
-                             alt="Challenge Image">
-                    </div>
-                    {% else %}
-                    <div class="text-center mb-3">
-                        <div class="bg-light rounded d-flex align-items-center justify-content-center" 
-                             style="height: 200px;">
-                            <i class="fas fa-bullseye fa-4x text-muted"></i>
-                        </div>
-                    </div>
-                    {% endif %}
-
-                    <!-- Description -->
-                    <h6>Descrizione:</h6>
-                    <p class="mb-3">{{ gara_challenge.challenge.description }}</p>
-
-                    <!-- Challenge Info -->
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h6>Tipo Challenge:</h6>
-                            {% if gara_challenge.challenge.pass_fail_only %}
-                                <span class="badge bg-secondary mb-2">Pass/Fail</span>
-                            {% else %}
-                                <span class="badge bg-primary mb-2">Punteggio</span>
-                            {% endif %}
-                        </div>
-                        <div class="col-md-6">
-                            <h6>Tentativi Massimi:</h6>
-                            <span class="badge bg-info">{{ gara_challenge.max_attempts }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    {# ---------- La challenge ---------- #}
+    <article class="c7-card">
+      <div class="d-flex align-items-start gap-3">
+        {{ ch.thumb(challenge, 72) }}
+        <div class="flex-fill" style="min-width:0">
+          <div style="font-size:15px;font-weight:800;letter-spacing:-.02em">{{ challenge.get_display_name() }}</div>
+          <p class="mb-0" style="margin-top:5px;font-size:13px;font-weight:500;line-height:1.45;color:var(--c7-ink-soft)">
+            {{ challenge.description }}
+          </p>
         </div>
+      </div>
 
-        <!-- Right Column: Player Progress & Input -->
-        <div class="col-md-5">
-            <!-- Progress Card -->
-            {% if challenge_data %}
-            <div class="card mb-3">
-                <div class="card-header">
-                    <h6><i class="fas fa-chart-line"></i> Il Tuo Progresso</h6>
-                </div>
-                <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-6">
-                            <div class="border-end">
-                                <h4 class="text-primary mb-1">{{ challenge_data.attempts_count }}</h4>
-                                <small class="text-muted">Tentativi</small>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <h4 class="text-success mb-1">{{ challenge_data.best_score }}</h4>
-                            <small class="text-muted">Migliore</small>
-                        </div>
-                    </div>
-                    
-                    {% if not challenge_data.can_attempt %}
-                        <div class="alert alert-warning mt-3 mb-0">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            Hai esaurito tutti i tentativi disponibili!
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-            {% endif %}
+      <div class="d-flex flex-wrap gap-2" style="margin-top:14px">
+        {{ ch.type_pill(challenge) }}
+        <span class="c7-state c7-state--muted">
+          {{ ngettext("%(n)s tentativo", "%(n)s tentativi", gara_challenge.max_attempts, n=gara_challenge.max_attempts) }}
+        </span>
+        <span class="c7-state c7-state--muted">{{ _("dopo il turno %(n)s", n=gara_challenge.round_number) }}</span>
+      </div>
 
-            <!-- Input Card -->
-            {% if not challenge_data or challenge_data.can_attempt %}
-            <div class="card">
-                <div class="card-header">
-                    <h6><i class="fas fa-plus"></i> Registra Tentativo</h6>
-                </div>
-                <div class="card-body">
-                    <form id="attemptForm">
-                        {% if gara_challenge.challenge.pass_fail_only %}
-                            <!-- Pass/Fail Input -->
-                            <div class="mb-3">
-                                <label for="result" class="form-label">Risultato</label>
-                                <select class="form-select" id="result" name="passed" required>
-                                    <option value="">Seleziona risultato</option>
-                                    <option value="true">✓ Superata</option>
-                                    <option value="false">✗ Fallita</option>
-                                </select>
-                            </div>
-                        {% else %}
-                            <!-- Score Input -->
-                            <div class="mb-3">
-                                <label for="score" class="form-label">Punteggio</label>
-                                <input type="number" class="form-control" id="score" name="score"
-                                       min="0" 
-                                       placeholder="Inserisci punteggio" required>
-                            </div>
-                        {% endif %}
-
-                        <!-- Notes -->
-                        <div class="mb-3">
-                            <label for="notes" class="form-label">Note (opzionale)</label>
-                            <textarea class="form-control" id="notes" name="notes" 
-                                      rows="2" placeholder="Note sul tentativo"></textarea>
-                        </div>
-
-                        <!-- Submit Button -->
-                        <button type="submit" class="btn btn-success w-100">
-                            <i class="fas fa-save"></i> Registra Tentativo
-                        </button>
-                    </form>
-                </div>
-            </div>
-            {% endif %}
-
-            <!-- Recent Attempts -->
-            {% if challenge_data and challenge_data.recent_attempts %}
-            <div class="card mt-3">
-                <div class="card-header">
-                    <h6><i class="fas fa-history"></i> Tentativi Recenti</h6>
-                </div>
-                <div class="card-body">
-                    {% for attempt in challenge_data.recent_attempts %}
-                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
-                        <div>
-                            {% if gara_challenge.challenge.pass_fail_only %}
-                                {% if attempt.passed %}
-                                    <span class="badge bg-success">✓ Superata</span>
-                                {% else %}
-                                    <span class="badge bg-danger">✗ Fallita</span>
-                                {% endif %}
-                            {% else %}
-                                <strong>{{ attempt.score }}</strong>
-                            {% endif %}
-                        </div>
-                        <small class="text-muted">{{ attempt.created_at|datetime_local }}</small>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
+      {% if challenge_data %}
+      <div class="c7-topline d-flex align-items-center gap-3">
+        <div class="flex-fill">
+          <div class="c7-kicker">{{ _("Il tuo miglior punteggio") }}</div>
+          <div class="d-flex align-items-baseline gap-2" style="margin-top:6px">
+            <span class="c7-num-lg">{{ challenge_data.best_score }}</span>
+            <span class="c7-rows__sub">
+              <span class="c7-num">{{ challenge_data.attempts_count }}/{{ challenge_data.max_attempts }}</span>
+              {{ _("tentativi") }}
+            </span>
+          </div>
         </div>
+      </div>
+      {% endif %}
+    </article>
+
+    {# ---------- Registra il tentativo ---------- #}
+    {% if not challenge_data or challenge_data.can_attempt %}
+    <form id="attemptForm" class="c7-stack">
+      {% if challenge.pass_fail_only %}
+      <label class="c7-choice c7-choice--big">
+        <input type="radio" name="passed" value="true" class="d-none" required>
+        <span class="c7-tile c7-tile--round"><i class="fas fa-check"></i></span>
+        <span class="flex-fill">
+          <span class="c7-choice__title d-block">{{ _("Superata") }}</span>
+          <span class="c7-choice__desc d-block">{{ _("Hai completato la challenge") }}</span>
+        </span>
+        <i class="fas fa-circle-check c7-choice__mark"></i>
+      </label>
+      <label class="c7-choice c7-choice--big">
+        <input type="radio" name="passed" value="false" class="d-none" required>
+        <span class="c7-tile c7-tile--round c7-tile--locked"><i class="fas fa-xmark"></i></span>
+        <span class="flex-fill">
+          <span class="c7-choice__title d-block">{{ _("Non superata") }}</span>
+          <span class="c7-choice__desc d-block">{{ _("Puoi riprovare se hai ancora tentativi") }}</span>
+        </span>
+        <i class="fas fa-circle-check c7-choice__mark"></i>
+      </label>
+      {% else %}
+      <div class="c7-card c7-card--accent c7-scorepad">
+        <div class="c7-kicker">{{ _("Punteggio ottenuto") }}</div>
+        <div class="c7-scorepad__row">
+          <button type="button" class="c7-scorepad__btn" data-score-step="-1"
+                  aria-label="{{ _('Diminuisci') }}"><i class="fas fa-minus"></i></button>
+          <div class="c7-scorepad__value" id="scoreDisplay">0</div>
+          <button type="button" class="c7-scorepad__btn c7-scorepad__btn--plus" data-score-step="1"
+                  aria-label="{{ _('Aumenta') }}"><i class="fas fa-plus"></i></button>
+        </div>
+        <input type="hidden" name="score" id="scoreInput" value="0">
+      </div>
+      {% endif %}
+
+      <div class="c7-card">
+        <label for="notes" class="form-label">{{ _("Note (opzionale)") }}</label>
+        <textarea class="form-control" id="notes" name="notes" rows="2"
+                  placeholder="{{ _('Com’è andata…') }}"></textarea>
+      </div>
+    </form>
+    {% else %}
+    <div class="c7-flash c7-flash--warning">
+      <span class="c7-flash__ico"><i class="fas fa-circle-info"></i></span>
+      <div class="c7-flash__body">
+        <div class="c7-flash__title">{{ _("Tentativi finiti") }}</div>
+        <div class="c7-flash__text">{{ _("Hai usato tutti i tentativi previsti per questa challenge.") }}</div>
+      </div>
     </div>
+    {% endif %}
+  </div>
+
+  {# ---------- I tuoi tentativi ---------- #}
+  <div class="c7-stack">
+    {% if challenge_data and challenge_data.attempts %}
+    <section class="c7-stack">
+      <div class="c7-sechead"><h2>{{ _("I tuoi tentativi") }}</h2></div>
+      <div class="c7-rows">
+        {# La chiave e' `attempts`: il markup di prima leggeva
+           `recent_attempts`, che il servizio non produce — la sezione non
+           compariva mai. #}
+        {% for attempt in challenge_data.attempts %}
+        <div class="c7-rows__row">
+          <div class="c7-rows__main">
+            <div class="c7-rows__title c7-num">{{ attempt.attempted_at|datetime_local }}</div>
+          </div>
+          {% if challenge.pass_fail_only %}
+          <span class="c7-state c7-state--{{ 'ok' if attempt.passed else 'err' }}">
+            {{ _("Superata") if attempt.passed else _("Non superata") }}
+          </span>
+          {% else %}
+          <span class="c7-num" style="font-size:15px;font-weight:800">{{ attempt.score }}</span>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+  </div>
 </div>
 
+{% if not challenge_data or challenge_data.can_attempt %}
+<div class="c7-actionbar">
+  <button type="submit" form="attemptForm" class="btn btn-primary w-100" id="attemptSubmit">
+    <i class="fas fa-flag-checkered"></i>&nbsp;{{ _("Registra il tentativo") }}
+  </button>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
 <script>
-document.getElementById('attemptForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    const data = {};
-    
-    // Convert form data to object
-    for (let [key, value] of formData.entries()) {
-        if (key === 'passed') {
-            data[key] = value === 'true';
-        } else if (key === 'score') {
-            data[key] = parseInt(value);
-        } else {
-            data[key] = value;
-        }
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('attemptForm');
+    // Il form non c'e' quando i tentativi sono finiti: senza questo guard lo
+    // script moriva su null e portava con se' tutto il JS della pagina.
+    if (!form) return;
+
+    const input = document.getElementById('scoreInput');
+    const display = document.getElementById('scoreDisplay');
+    if (input && display) {
+        document.querySelectorAll('[data-score-step]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                const next = parseInt(input.value, 10) + parseInt(btn.dataset.scoreStep, 10);
+                if (next < 0) return;
+                input.value = next;
+                display.textContent = next;
+            });
+        });
     }
-    
-    // Disable submit button during request
-    const submitBtn = this.querySelector('button[type="submit"]');
-    const originalText = submitBtn.innerHTML;
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvataggio...';
-    
-    fetch(`{{ url_for('player.record_challenge_attempt', gara_challenge_id=gara_challenge.id) }}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        'X-CSRFToken': csrfToken()},
-        body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(result => {
-        if (result.success) {
-            location.reload(); // Reload to show updated progress
-        } else {
-            showError('Errore: ' + (result.error || 'Errore sconosciuto'));
+
+    document.querySelectorAll('input[name="passed"]').forEach(function (radio) {
+        radio.addEventListener('change', function () {
+            document.querySelectorAll('input[name="passed"]').forEach(function (r) {
+                r.closest('.c7-choice').classList.toggle('is-selected', r.checked);
+            });
+        });
+    });
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        const data = {};
+        for (let [key, value] of formData.entries()) {
+            if (key === 'passed') { data[key] = value === 'true'; }
+            else if (key === 'score') { data[key] = parseInt(value, 10); }
+            else { data[key] = value; }
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showError('Errore di rete durante la registrazione del tentativo');
-    })
-    .finally(() => {
-        // Re-enable submit button
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalText;
+
+        const submitBtn = document.getElementById('attemptSubmit');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>&nbsp;' + {{ _("Salvataggio…")|tojson }};
+
+        fetch({{ url_for('player.record_challenge_attempt', gara_challenge_id=gara_challenge.id)|tojson }}, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken() },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                location.reload();
+            } else {
+                showError({{ _("Non è stato possibile registrare il tentativo.")|tojson }}
+                          + (result.error ? ' ' + result.error : ''));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showError({{ _("Errore di rete: il tentativo non è stato registrato.")|tojson }});
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        });
     });
 });
 </script>

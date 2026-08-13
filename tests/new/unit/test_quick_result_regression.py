@@ -26,7 +26,7 @@ def create_test_gara(db_session, name: str, **kwargs) -> Gara:
         "number": existing_count + 1,
         "date": date.today(),
         "distance": 5,
-        "discipline": "palla_9",
+        "discipline": "9_ball",
         "matchmaking_strategy": "random",
         "status": "playing",  # Set to playing so matches can be added
         "is_race_to": True,  # Race to N mode (first to N racks wins)

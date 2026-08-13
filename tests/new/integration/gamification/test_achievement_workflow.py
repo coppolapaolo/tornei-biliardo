@@ -187,7 +187,7 @@ class TestAchievementWorkflowTournamentBased:
             number=1,
             date=date.today(),
             distance=5,
-            discipline="palla_9",
+            discipline="9_ball",
             matchmaking_strategy="amalfi",
             status="inscription",
         )

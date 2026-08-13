@@ -1,137 +1,100 @@
-<!-- Detailed Classification Component -->
+<!-- Classifica dettagliata — 7c -->
 {# B14: respect gara.classification_system, not matchmaking_strategy.
    - WINS / POSITION → primary "Vittorie" + secondary "Diff. Rack"
    - RACK → only "Rack Totali" (no wins column) #}
 {% set classification_sys = (gara.classification_system or 'WINS')|upper %}
 {% set is_rack_only = classification_sys == 'RACK' %}
 {% set is_random_strategy = gara.matchmaking_strategy == 'random' %}
-<div class="card">
-    <div class="card-header">
-        {% if is_random_strategy %}
-            <h5><i class="fas fa-list-ol"></i> {{ _('Classifica Complessiva') }}</h5>
-        {% else %}
-            <h5><i class="fas fa-list-ol"></i> {{ _('Classifica dopo Turno %(num)s', num=round_number) }}</h5>
-        {% endif %}
-    </div>
-    <div class="card-body">
-        {% if classification %}
-            <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th width="10%">{{ _('Pos.') }}</th>
-                            <th width="25%">{{ _('Giocatore') }}</th>
-                            {% if not is_rack_only %}
-                            <th width="15%">{{ _('Vittorie') }}</th>
+<section class="c7-stack">
+    <h3 style="margin: 0;">
+        {% if is_random_strategy %}{{ _('Classifica complessiva') }}{% else %}{{ _('Classifica dopo il turno %(num)s', num=round_number) }}{% endif %}
+    </h3>
+
+    {% if classification %}
+    <div class="c7-table-wrap table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th style="width: 8%;">{{ _('Pos.') }}</th>
+                    <th style="width: 27%;">{{ _('Giocatore') }}</th>
+                    {% if not is_rack_only %}<th style="width: 14%;">{{ _('Vittorie') }}</th>{% endif %}
+                    <th style="width: 15%;">{% if is_rack_only %}{{ _('Rack totali') }}{% else %}{{ _('Diff. rack') }}{% endif %}</th>
+                    {% if ssr_scores_map %}<th style="width: 10%;" title="{{ _('Spot Shot Rally - punteggio spareggio') }}">SSR</th>{% endif %}
+                    {# "Turno" esplicito: qui la posizione precedente è quella del
+                       turno prima DENTRO questa gara, non quella della gara
+                       precedente del campionato. Issue #68. #}
+                    <th style="width: 14%;">{{ _('Turno prec.') }}</th>
+                    <th style="width: 12%;">{{ _('Movimento') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for player_class in classification %}
+                <tr>
+                    <td>
+                        <span class="c7-num" style="{% if player_class.position <= 3 %}color: var(--c7-accent);{% else %}color: var(--c7-ink-faint);{% endif %}">{{ player_class.position }}</span>
+                    </td>
+                    <td><strong>{{ player_class.user.username }}</strong></td>
+                    {% if not is_rack_only %}
+                    <td><span class="c7-num">{{ player_class.matches_won }}</span></td>
+                    {% endif %}
+                    <td>
+                        {# `ranking_rack_value`: rack totali nelle gare RACK, differenza altrove. #}
+                        {% set rack_value = player_class.ranking_rack_value %}
+                        {% if is_rack_only %}
+                        <span class="c7-num">{{ rack_value }}</span>
+                        {% elif rack_value > 0 %}
+                        <span class="c7-num" style="color: var(--c7-ok);">+{{ rack_value }}</span>
+                        {% elif rack_value < 0 %}
+                        <span class="c7-num" style="color: var(--c7-err);">{{ rack_value }}</span>
+                        {% else %}
+                        <span class="c7-num" style="color: var(--c7-ink-faint);">0</span>
+                        {% endif %}
+                    </td>
+                    {% if ssr_scores_map is defined and ssr_scores_map %}
+                    <td>
+                        {% set ssr_score = ssr_scores_map.get(player_class.user_id) %}
+                        {% if ssr_score is not none %}
+                        <span class="c7-state c7-state--warn" title="{{ _('Punteggio Spot Shot Rally') }}">{{ ssr_score }}</span>
+                        {% else %}
+                        <span style="color: var(--c7-ink-faint);">—</span>
+                        {% endif %}
+                    </td>
+                    {% endif %}
+                    <td>
+                        {% if player_class.previous_position %}
+                        <span class="c7-num" style="color: var(--c7-ink-muted);">{{ player_class.previous_position }}</span>
+                        {% else %}
+                        <span style="color: var(--c7-ink-faint);">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if player_class.previous_position and player_class.previous_position != player_class.position %}
+                            {% set diff = player_class.previous_position - player_class.position %}
+                            {% if diff > 0 %}
+                            <span class="c7-num" style="color: var(--c7-ok);"><i class="fas fa-arrow-up"></i> +{{ diff }}</span>
+                            {% else %}
+                            <span class="c7-num" style="color: var(--c7-err);"><i class="fas fa-arrow-down"></i> {{ diff }}</span>
                             {% endif %}
-                            <th width="15%">
-                                {% if is_rack_only %}
-                                    {{ _('Rack Totali') }}
-                                {% else %}
-                                    {{ _('Diff. Rack') }}
-                                {% endif %}
-                            </th>
-                            {% if ssr_scores_map %}
-                            <th width="10%" title="{{ _('Spot Shot Rally - punteggio spareggio') }}">SSR</th>
-                            {% endif %}
-                            {# "Turno" esplicito: qui la posizione precedente è
-                               quella del turno prima DENTRO questa gara, non
-                               quella della prova precedente del campionato
-                               (che è la colonna omonima della classifica
-                               generale). Issue #68. #}
-                            <th width="{% if ssr_scores_map %}10{% else %}15{% endif %}%">{{ _('Pos. Turno Prec.') }}</th>
-                            <th width="{% if ssr_scores_map %}15{% else %}20{% endif %}%">{{ _('Movimento') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for player_class in classification %}
-                            <tr>
-                                <td>
-                                    <strong class="{% if player_class.position <= 3 %}text-warning{% endif %}">
-                                        {{ player_class.position }}°
-                                    </strong>
-                                    {% if player_class.position == 1 %}
-                                        🥇
-                                    {% elif player_class.position == 2 %}
-                                        🥈
-                                    {% elif player_class.position == 3 %}
-                                        🥉
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <strong>{{ player_class.user.username }}</strong>
-                                </td>
-                                {% if not is_rack_only %}
-                                <td>
-                                    <span class="badge bg-success">{{ player_class.matches_won }}</span>
-                                </td>
-                                {% endif %}
-                                <td>
-                                    {# `ranking_rack_value`: rack totali nelle gare RACK,
-                                       differenza altrove. La scelta sta nel modello. #}
-                                    {% set rack_value = player_class.ranking_rack_value %}
-                                    {% if is_rack_only %}
-                                        {# RACK system: show total racks won without +/- signs #}
-                                        <span class="badge bg-primary">{{ rack_value }}</span>
-                                    {% else %}
-                                        {# WINS / POSITION: show rack difference with +/- signs #}
-                                        {% if rack_value > 0 %}
-                                            <span class="text-success">+{{ rack_value }}</span>
-                                        {% elif rack_value < 0 %}
-                                            <span class="text-danger">{{ rack_value }}</span>
-                                        {% else %}
-                                            <span class="text-muted">0</span>
-                                        {% endif %}
-                                    {% endif %}
-                                </td>
-                                {% if ssr_scores_map is defined and ssr_scores_map %}
-                                <td class="text-center">
-                                    {% set ssr_score = ssr_scores_map.get(player_class.user_id) %}
-                                    {% if ssr_score is not none %}
-                                        <span class="badge bg-warning text-dark" title="{{ _('Punteggio Spot Shot Rally') }}">{{ ssr_score }}</span>
-                                    {% else %}
-                                        <span class="text-muted">-</span>
-                                    {% endif %}
-                                </td>
-                                {% endif %}
-                                <td>
-                                    {% if player_class.previous_position %}
-                                        {{ player_class.previous_position }}°
-                                    {% else %}
-                                        <small class="text-muted">-</small>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if player_class.previous_position and player_class.previous_position != player_class.position %}
-                                        {% set diff = player_class.previous_position - player_class.position %}
-                                        {% if diff > 0 %}
-                                            <span class="text-success">
-                                                <i class="fas fa-arrow-up"></i> +{{ diff }}
-                                            </span>
-                                        {% else %}
-                                            <span class="text-danger">
-                                                <i class="fas fa-arrow-down"></i> {{ diff }}
-                                            </span>
-                                        {% endif %}
-                                    {% else %}
-                                        <span class="text-muted">
-                                            <i class="fas fa-minus"></i> =
-                                        </span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% else %}
-            <div class="alert alert-warning text-center">
-                <h5><i class="fas fa-exclamation-triangle"></i> Classifica Non Disponibile</h5>
-                <p>La classifica per questo turno non è ancora stata calcolata.</p>
-                {% if round_number <= gara.current_round %}
-                    <p class="mb-0">Assicurati che tutte le partite del turno siano completate.</p>
-                {% endif %}
-            </div>
-        {% endif %}
+                        {% else %}
+                        <span style="color: var(--c7-ink-faint);">=</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
-</div>
+    {% else %}
+    <div class="c7-empty">
+        <div class="c7-empty__ico c7-empty__ico--warn"><i class="fas fa-list-ol"></i></div>
+        <h3 class="c7-empty__title">{{ _('Classifica non ancora calcolata') }}</h3>
+        <p class="c7-empty__text">
+            {% if round_number <= gara.current_round %}
+            {{ _('Serve che tutte le partite del turno siano concluse.') }}
+            {% else %}
+            {{ _('Verrà calcolata quando il turno sarà giocato.') }}
+            {% endif %}
+        </p>
+    </div>
+    {% endif %}
+</section>

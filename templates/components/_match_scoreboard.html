@@ -1,0 +1,101 @@
+{# templates/components/_match_scoreboard.html — 7c, schermata 8b
+
+   Il telefono appoggiato alla sponda diventa un tabellone: punteggio
+   leggibile a due metri, un pulsante per lato, niente navigazione. Non e' la
+   pagina ruotata — e' una schermata sua, che compare da sola quando lo
+   schermo e' basso e largo (la condizione di un telefono in orizzontale, non
+   di un desktop) e sparisce raddrizzando il telefono o con la X.
+
+   Il markup c'e' sempre, a mostrarlo e' il foglio di stile: cosi' ruotare non
+   costa una richiesta al server e il punteggio e' gia' quello giusto.
+
+   Parametri:
+   - match: Match o IndividualMatch in corso
+   - add_rack_js_func / remove_rack_js_func: nomi delle funzioni JS della
+     pagina ospite (le stesse dei comandi verticali, quindi un rack segnato
+     qui passa per lo stesso endpoint)
+   - player1_name / player2_name: string (opzionali)
+   - where: string (opzionale) — la riga in alto, es. "Gara 4 · Turno 3"
+#}
+
+{% set add_rack = add_rack_js_func|default('addRack') %}
+{% set remove_rack = remove_rack_js_func|default('removeRack') %}
+{% set p1_name = player1_name|default(match.player1.username) %}
+{% set p2_name = player2_name|default(match.player2.username if match.player2 else _('X a tavolino')) %}
+{% set p1_score = match.player1_score or 0 %}
+{% set p2_score = match.player2_score or 0 %}
+
+{% set status_str = match.status.value|default(match.status) %}
+{% set is_in_progress = status_str in ['in_progress', 'playing'] %}
+
+{# Trattini di progresso: quanti rack mancano alla vittoria, senza contare le
+   cifre. Solo per il "race to N", dove un traguardo esiste davvero. #}
+{% set distance = match.distance_config if match.distance_config is defined else none %}
+{% set pips = distance.get_winning_racks() if distance and distance.is_race_to_racks else 0 %}
+
+{% set no_table = match.table_assignment is defined and not match.table_assignment %}
+{% set active_racks = (match.racks|selectattr('is_deleted', 'equalto', False)|list) if match.racks is defined else [] %}
+{% set last_rack = (active_racks|sort(attribute='rack_number')|last) if active_racks else none %}
+{% set mine_is_p2 = current_user.is_authenticated and match.player2_id is defined and current_user.id == match.player2_id %}
+
+{% if is_in_progress and match.player2 %}
+<div class="c7-board" id="matchBoard" role="region" aria-label="{{ _('Tabellone della partita') }}">
+    <div class="c7-board__head">
+        <button type="button" class="c7-board__close" onclick="document.body.classList.add('c7-board-off')" aria-label="{{ _('Chiudi il tabellone') }}">
+            <i class="fas fa-xmark"></i>
+        </button>
+        <span class="c7-board__where">
+            {%- if where %}{{ where }}
+            {%- elif match.gara %}{{ match.gara|gara_display_name }} <span class="c7-sep">·</span> {{ _('Turno') }} {{ match.round_number }}
+            {%- else %}{{ _('Match individuale') }}{% endif -%}
+            {%- if match.table_assignment %} <span class="c7-sep">·</span> {{ _('Tavolo') }} {{ match.table_assignment }}{% endif -%}
+            {%- if distance %} <span class="c7-sep">·</span> {{ distance|format_distance }}{% endif -%}
+        </span>
+        <span class="c7-board__live">{{ _('In corso') }}</span>
+    </div>
+
+    {% set p1_behind = p1_score < p2_score %}
+    {% set p2_behind = p2_score < p1_score %}
+    <div class="c7-board__body">
+        <div class="c7-board__side">
+            <span class="c7-board__name {{ 'c7-board__name--behind' if p1_behind }}">{{ p1_name }}</span>
+            <span class="c7-board__num {{ 'c7-board__num--behind' if p1_behind }}">{{ p1_score }}</span>
+            {% if pips %}
+            <div class="c7-board__pips">
+                {% for i in range(pips) %}
+                <span class="c7-board__pip {{ ('is-on is-on--muted' if p1_behind else 'is-on') if i < p1_score }}"></span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        <div class="c7-board__rule"></div>
+        <div class="c7-board__side">
+            <span class="c7-board__name {{ 'c7-board__name--behind' if p2_behind }}">{{ p2_name }}</span>
+            <span class="c7-board__num {{ 'c7-board__num--behind' if p2_behind }}">{{ p2_score }}</span>
+            {% if pips %}
+            <div class="c7-board__pips">
+                {% for i in range(pips) %}
+                <span class="c7-board__pip {{ ('is-on is-on--muted' if p2_behind else 'is-on') if i < p2_score }}"></span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="c7-board__pad">
+        <button type="button" class="c7-board__btn {{ 'c7-board__btn--mine' if not mine_is_p2 }}"
+                onclick="{{ add_rack }}({{ match.player1_id }}, this)" {% if no_table %}disabled{% endif %}>
+            <span class="c7-board__plus">+1</span><span>{{ p1_name }}</span>
+        </button>
+        <button type="button" class="c7-board__undo"
+                onclick="{{ remove_rack }}({{ last_rack.winner_id if last_rack else 0 }}, this)"
+                {% if not last_rack %}disabled{% endif %} aria-label="{{ _('Annulla ultimo rack') }}">
+            <i class="fas fa-rotate-left"></i>
+        </button>
+        <button type="button" class="c7-board__btn {{ 'c7-board__btn--mine' if mine_is_p2 }}"
+                onclick="{{ add_rack }}({{ match.player2_id }}, this)" {% if no_table %}disabled{% endif %}>
+            <span class="c7-board__plus">+1</span><span>{{ p2_name }}</span>
+        </button>
+    </div>
+</div>
+{% endif %}

@@ -1,152 +1,93 @@
-{# templates/challenge/_challenge_detail.html #}
-<div class="row">
-    <div class="col-md-8">
-        <!-- Challenge Image (Made Larger and More Prominent) -->
-        <div class="card mb-3">
-            <div class="card-body text-center p-2">
-                {% if challenge.image_filename %}
-                    <img src="{{ challenge_image_url(challenge) }}" 
-                         class="img-fluid rounded" 
-                         style="max-height: 450px; width: 100%; object-fit: cover;"
-                         alt="Challenge Image"
-                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                    <div class="text-muted py-5" style="display: none;">
-                        <i class="fas fa-bullseye fa-5x mb-3"></i>
-                        <p class="h5">Immagine non disponibile</p>
-                    </div>
-                {% else %}
-                    <div class="text-muted py-5">
-                        <i class="fas fa-bullseye fa-5x mb-3"></i>
-                        <p class="h5">Nessuna immagine disponibile</p>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-4">
-        <!-- Challenge Info -->
-        <div class="card mb-3">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="fas fa-info-circle"></i> Dettagli Challenge
-                </h5>
-            </div>
-            <div class="card-body">
-                <p class="card-text" style="font-size: 1.1rem; line-height: 1.5;">{{ challenge.description }}</p>
-                
-                <hr>
-                
-                <div class="row text-center">
-                    <div class="col-6">
-                        <div class="mb-2">
-                            <i class="fas fa-chart-line text-primary"></i>
-                            <h6 class="mb-0">Tipo</h6>
-                            {% if challenge.pass_fail_only %}
-                                <span class="badge bg-info">Pass/Fail</span>
-                            {% else %}
-                                <span class="badge bg-secondary">{{ challenge.min_score }}-{{ challenge.max_score }} punti</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                    
-                    <div class="col-6">
-                        <div class="mb-2">
-                            <i class="fas fa-calendar text-success"></i>
-                            <h6 class="mb-0">Creata</h6>
-                            <small class="text-muted">{{ challenge.created_at|date_local }}</small>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="row text-center mt-2">
-                    <div class="col-6">
-                        <div class="mb-2">
-                            <i class="fas fa-user text-warning"></i>
-                            <h6 class="mb-0">Creatore</h6>
-                            <small class="text-muted">
-                                {% if challenge.created_by %}
-                                    {{ challenge.created_by.username }}
-                                {% else %}
-                                    Sistema
-                                {% endif %}
-                            </small>
-                        </div>
-                    </div>
-                    
-                    <div class="col-6">
-                        <div class="mb-2">
-                            <i class="fas fa-chart-bar text-info"></i>
-                            <h6 class="mb-0">Status</h6>
-                            <small class="badge {{ 'bg-success' if challenge.is_active else 'bg-secondary' }}">
-                                {{ 'Attiva' if challenge.is_active else 'Inattiva' }}
-                            </small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+{# templates/challenge/_challenge_detail.html — 7c
 
-<!-- Challenge Statistics -->
-<div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="fas fa-chart-bar"></i> Statistiche Challenge
-                </h5>
-            </div>
-            <div class="card-body">
-                {% set stats = challenge.get_statistics() %}
-                <div class="row text-center">
-                    <div class="col-md-3 mb-3">
-                        <div class="card bg-light">
-                            <div class="card-body">
-                                <i class="fas fa-users fa-2x text-primary mb-2"></i>
-                                <h4 class="mb-0">{{ stats.unique_players }}</h4>
-                                <small class="text-muted">Giocatori Unici</small>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-3 mb-3">
-                        <div class="card bg-light">
-                            <div class="card-body">
-                                <i class="fas fa-chart-line fa-2x text-success mb-2"></i>
-                                <h4 class="mb-0">{{ stats.total_attempts }}</h4>
-                                <small class="text-muted">Tentativi Totali</small>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-3 mb-3">
-                        <div class="card bg-light">
-                            <div class="card-body">
-                                <i class="fas fa-trophy fa-2x text-warning mb-2"></i>
-                                {% if stats.pass_rate is not none %}
-                                    <h4 class="mb-0">{{ stats.pass_rate|round(1) }}%</h4>
-                                    <small class="text-muted">Tasso di Successo</small>
-                                {% else %}
-                                    <h4 class="mb-0">N/A</h4>
-                                    <small class="text-muted">Sfida Numerica</small>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-3 mb-3">
-                        <div class="card bg-light">
-                            <div class="card-body">
-                                <i class="fas fa-star fa-2x text-info mb-2"></i>
-                                <h4 class="mb-0">{{ stats.average_score|round(1) if stats.average_score else 'N/A' }}</h4>
-                                <small class="text-muted">Punteggio Medio</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+   Che cos'è questa challenge: foto della disposizione, istruzioni e numeri.
+   Prototipo 9b, seconda schermata. Usato dalla pagina di dettaglio e dalla
+   classifica challenge di gara.
+
+   Nota: `challenge.min_score` / `max_score` **non esistono sul modello** — le
+   card che stampavano "{min}-{max} punti" mostravano quindi "- punti", e la
+   percentuale calcolata su `max_score` faceva errore di rendering. Una
+   challenge numerica non dichiara un massimo: si mostra il punteggio, non una
+   frazione.
+#}
+{% set stats = challenge.get_statistics() %}
+
+<div class="c7-stack">
+
+  {# ---------- Foto della disposizione ---------- #}
+  {# Il tetto d'altezza serve su desktop: a colonna larga il rapporto 16/10 da
+     solo faceva una foto alta mezzo schermo. #}
+  <div style="border-radius:var(--c7-r-card-lg);overflow:hidden;background:var(--c7-sunken);
+              aspect-ratio:16/10;max-height:380px;position:relative">
+    {% if challenge.image_filename %}
+    <img src="{{ challenge_image_url(challenge) }}" alt="{{ _('Disposizione della challenge') }}"
+         style="width:100%;height:100%;object-fit:cover;display:block"
+         onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';">
+    <div style="display:none;position:absolute;inset:0;place-items:center;color:var(--c7-ink-faint)">
+      <div class="text-center">
+        <i class="fas fa-bullseye" style="font-size:28px"></i>
+        <div class="c7-kicker" style="margin-top:8px">{{ _("Foto non disponibile") }}</div>
+      </div>
     </div>
+    {% else %}
+    <div style="display:grid;position:absolute;inset:0;place-items:center;color:var(--c7-ink-faint)">
+      <div class="text-center">
+        <i class="fas fa-bullseye" style="font-size:28px"></i>
+        <div class="c7-kicker" style="margin-top:8px">{{ _("Nessuna foto") }}</div>
+      </div>
+    </div>
+    {% endif %}
+
+    <span class="c7-state {{ 'c7-state--info' if challenge.pass_fail_only else 'c7-state--muted' }}"
+          style="position:absolute;bottom:12px;left:12px">
+      {{ _('Riuscita o no') if challenge.pass_fail_only else _('A punteggio') }}
+    </span>
+  </div>
+
+  {# ---------- Istruzioni (card scura del prototipo) ---------- #}
+  <div class="c7-card c7-card--accent">
+    <div class="c7-kicker">{{ _("Istruzioni") }}</div>
+    <p class="mb-0" style="margin-top:10px;font-size:15px;font-weight:600;line-height:1.5">
+      {{ challenge.description }}
+    </p>
+  </div>
+
+  {# ---------- Come è andata agli altri ---------- #}
+  <div class="c7-grid" style="grid-template-columns:1fr 1fr">
+    <div class="c7-card">
+      <div class="c7-rows__sub">{{ _("Giocatori") }}</div>
+      <div class="c7-num-lg" style="margin-top:6px">{{ stats.unique_players }}</div>
+    </div>
+    <div class="c7-card">
+      <div class="c7-rows__sub">{{ _("Tentativi") }}</div>
+      <div class="c7-num-lg" style="margin-top:6px">{{ stats.total_attempts }}</div>
+    </div>
+    {% if challenge.pass_fail_only %}
+    {# Per una challenge riuscita/non riuscita il "punteggio" e' 1 o 0: un
+       riquadro "miglior punteggio: 1" non direbbe nulla. #}
+    <div class="c7-card" style="grid-column:span 2">
+      <div class="c7-rows__sub">{{ _("Tentativi riusciti") }}</div>
+      <div class="c7-num-lg" style="margin-top:6px">
+        {{ stats.pass_rate|round(0)|int if stats.pass_rate is not none else '—' }}{% if stats.pass_rate is not none %}%{% endif %}
+      </div>
+    </div>
+    {% else %}
+    <div class="c7-card">
+      <div class="c7-rows__sub">{{ _("Punteggio medio") }}</div>
+      <div class="c7-num-lg" style="margin-top:6px">{{ stats.average_score if stats.average_score else '—' }}</div>
+    </div>
+    <div class="c7-card">
+      <div class="c7-rows__sub">{{ _("Miglior punteggio") }}</div>
+      <div class="c7-num-lg" style="margin-top:6px">{{ stats.max_score_achieved or '—' }}</div>
+    </div>
+    {% endif %}
+  </div>
+
+  {# ---------- Chi l'ha creata ---------- #}
+  <div class="c7-kicker" style="text-align:center">
+    {%- if challenge.created_by %}{{ _("Creata da %(who)s", who=challenge.created_by.username) }}
+    {%- else %}{{ _("Creata dal sistema") }}{% endif %}
+    <span class="c7-sep">·</span> <span class="c7-num">{{ challenge.created_at|date_local }}</span>
+    {%- if not challenge.is_active %} <span class="c7-sep">·</span> {{ _("non più attiva") }}{% endif %}
+  </div>
 </div>

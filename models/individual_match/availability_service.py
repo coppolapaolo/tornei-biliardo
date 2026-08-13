@@ -16,6 +16,7 @@ from typing import List, Optional, Dict, Any
 from models.base import db, transactional, utc_now
 from models.individual_match.models import MatchProposal
 from models.location.models import BilliardHall, UserLocationAvailability
+from models.status_enum import Discipline
 from models.user.models import User
 from models.notification.factory import NotificationFactory
 from models.notification.models import NotificationType, NotificationPriority
@@ -346,7 +347,7 @@ class AvailabilityService:
             location=location,
             scheduled_at=proposed_datetime,
             description=message or "Richiesta di match basata su disponibilità",
-            discipline="palla_8",  # Default
+            discipline=Discipline.EIGHT_BALL.value,
             distance=7,  # Default
             is_race_to=True,
         )

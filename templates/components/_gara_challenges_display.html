@@ -1,75 +1,39 @@
-{# templates/components/_gara_challenges_display.html #}
+{# templates/components/_gara_challenges_display.html — 7c
+   Le challenge configurate sulla gara, come le vede chi la dirige. #}
+{% import "components/_challenge_bits.html" as ch with context %}
+
 {% if gara.matchmaking_strategy == 'random' %}
-    {% set active_challenges = gara.gara_challenges|selectattr("is_active", "equalto", true)|list %}
-    {% if active_challenges %}
-        <div class="card mt-3">
-            <div class="card-header">
-                <h6><i class="fas fa-trophy text-warning"></i> Challenge Attive ({{ active_challenges|length }})</h6>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-sm table-striped mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th style="width: 60px;">Icona</th>
-                                <th>Challenge</th>
-                                <th style="width: 100px;">Tipo</th>
-                                <th style="width: 80px;">Turno</th>
-                                <th style="width: 90px;">Tentativi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for gara_challenge in active_challenges %}
-                                {% set challenge = gara_challenge.challenge %}
-                                <tr>
-                                    <td class="text-center">
-                                        {% if challenge.image_filename %}
-                                            <img src="{{ challenge_image_url(challenge) }}"
-                                                 class="rounded"
-                                                 style="width: 40px; height: 40px; object-fit: cover;"
-                                                 alt="Challenge Image"
-                                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
-                                            <i class="fas fa-bullseye text-warning" style="font-size: 1.5em; display: none;"></i>
-                                        {% else %}
-                                            <i class="fas fa-bullseye text-warning" style="font-size: 1.5em;"></i>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <div class="fw-bold">{{ challenge.get_display_name() }}</div>
-                                        {% if challenge.description|length > 80 %}
-                                            <small class="text-muted">{{ challenge.description[:80] }}...</small>
-                                        {% else %}
-                                            <small class="text-muted">{{ challenge.description }}</small>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if challenge.pass_fail_only %}
-                                            <span class="badge bg-info">Pass/Fail</span>
-                                        {% else %}
-                                            <span class="badge bg-secondary">Punteggio</span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="badge bg-primary">Dopo il {{ gara_challenge.round_number }}°</span>
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="badge bg-success">{{ gara_challenge.max_attempts }}</span>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                
-                <!-- Footer con informazioni aggiuntive -->
-                <div class="card-footer bg-light text-muted">
-                    <small>
-                        <i class="fas fa-info-circle"></i> 
-                        Le challenge verranno eseguite dopo il completamento del turno specificato.
-                        Ogni giocatore avrà il numero indicato di tentativi per completare la challenge.
-                    </small>
-                </div>
-            </div>
+  {% set active_challenges = gara.gara_challenges|selectattr("is_active", "equalto", true)|list %}
+  {% if active_challenges %}
+  <section class="c7-stack">
+    <div class="c7-sechead">
+      <h2>{{ _("Challenge attive") }}</h2>
+      <span class="c7-sechead__note c7-num">{{ active_challenges|length }}</span>
+    </div>
+
+    {# Elenco a righe e non tabella a cinque colonne: su mobile quella tabella
+       scorreva in orizzontale e il numero di tentativi finiva fuori schermo. #}
+    <div class="c7-rows">
+      {% for gara_challenge in active_challenges %}
+      {% set challenge = gara_challenge.challenge %}
+      <div class="c7-rows__row">
+        {{ ch.thumb(challenge, 44, 'var(--c7-r-chip)') }}
+        <div class="c7-rows__main">
+          <div class="c7-rows__title">{{ challenge.get_display_name() }}</div>
+          <div class="c7-rows__sub">
+            {{ _("dopo il turno %(n)s", n=gara_challenge.round_number) }}
+            <span class="c7-sep">·</span>
+            {{ ngettext("%(n)s tentativo", "%(n)s tentativi", gara_challenge.max_attempts, n=gara_challenge.max_attempts) }}
+          </div>
         </div>
-    {% endif %}
+        {{ ch.type_pill(challenge) }}
+      </div>
+      {% endfor %}
+    </div>
+
+    <p class="c7-kicker" style="text-align:center;margin:0">
+      {{ _("Si giocano a turno concluso, con i tentativi indicati per ogni giocatore.") }}
+    </p>
+  </section>
+  {% endif %}
 {% endif %}

@@ -102,6 +102,7 @@ instance/
 !.claude/skills/regression-guard/
 !.claude/skills/translate/
 !.claude/skills/ui-conventions/
+!.claude/skills/ui-7c/
 .agent/
 .codegraph/
 _bmad/

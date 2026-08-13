@@ -1,43 +1,33 @@
 {% extends 'base.html' %}
+{% block title %}{{ _('Admin Gamification') }}{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('gamification.admin_dashboard') }}"
+   aria-label="{{ _('Torna ai pannelli') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _('Admin Gamification') }}{% endblock %}
+
 {% block content %}
 <div class="container-fluid">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="bi bi-controller"></i> {{ _('Admin Gamification') }}</h2>
-  </div>
-
   <!-- Quick Stats -->
-  <div class="row mb-4">
-    <div class="col-md-3">
-      <div class="card bg-primary text-white">
-        <div class="card-body">
-          <h5 class="card-title">{{ _('XP Totale Distribuito') }}</h5>
-          <h2 class="display-6">{{ "{:,}".format(total_xp) }}</h2>
-        </div>
-      </div>
+  {# Quattro numeri, due per riga anche su 390px: uno per riga faceva scorrere
+     mezzo schermo per leggerne quattro. #}
+  <div class="c7-grid mb-4" style="grid-template-columns:1fr 1fr">
+    <div class="c7-card c7-card--accent">
+      <div class="c7-kicker" style="color:var(--c7-accent-dim)">{{ _('XP distribuiti') }}</div>
+      <div class="c7-num-lg" style="margin-top:6px">{{ "{:,}".format(total_xp) }}</div>
     </div>
-    <div class="col-md-3">
-      <div class="card bg-success text-white">
-        <div class="card-body">
-          <h5 class="card-title">{{ _('Quest Attive') }}</h5>
-          <h2 class="display-6">{{ active_quests }}</h2>
-        </div>
-      </div>
+    <div class="c7-card">
+      <div class="c7-kicker">{{ _('Quest attive') }}</div>
+      <div class="c7-num-lg" style="margin-top:6px">{{ active_quests }}</div>
     </div>
-    <div class="col-md-3">
-      <div class="card bg-info text-white">
-        <div class="card-body">
-          <h5 class="card-title">{{ _('Achievement Totali') }}</h5>
-          <h2 class="display-6">{{ total_achievements }}</h2>
-        </div>
-      </div>
+    <div class="c7-card">
+      <div class="c7-kicker">{{ _('Achievement') }}</div>
+      <div class="c7-num-lg" style="margin-top:6px">{{ total_achievements }}</div>
     </div>
-    <div class="col-md-3">
-      <div class="card bg-warning text-dark">
-        <div class="card-body">
-          <h5 class="card-title">{{ _('Achievement Sbloccati') }}</h5>
-          <h2 class="display-6">{{ total_unlocks }}</h2>
-        </div>
-      </div>
+    <div class="c7-card">
+      <div class="c7-kicker">{{ _('Sbloccati') }}</div>
+      <div class="c7-num-lg" style="margin-top:6px">{{ total_unlocks }}</div>
     </div>
   </div>
 
@@ -52,25 +42,25 @@
           <div class="row">
             <div class="col-md-3 mb-3">
               <a href="{{ url_for('gamification.admin_quests') }}" class="btn btn-outline-primary w-100 py-3">
-                <i class="bi bi-journal-check fs-3 d-block mb-2"></i>
+                <i class="fas fa-clipboard-check fs-3 d-block mb-2"></i>
                 {{ _('Quest') }}
               </a>
             </div>
             <div class="col-md-3 mb-3">
               <a href="{{ url_for('gamification.admin_achievements') }}" class="btn btn-outline-success w-100 py-3">
-                <i class="bi bi-trophy fs-3 d-block mb-2"></i>
+                <i class="fas fa-trophy fs-3 d-block mb-2"></i>
                 {{ _('Achievement') }}
               </a>
             </div>
             <div class="col-md-3 mb-3">
               <a href="{{ url_for('gamification.admin_xp_management') }}" class="btn btn-outline-info w-100 py-3">
-                <i class="bi bi-graph-up-arrow fs-3 d-block mb-2"></i>
+                <i class="fas fa-arrow-trend-up fs-3 d-block mb-2"></i>
                 {{ _('XP & Livelli') }}
               </a>
             </div>
             <div class="col-md-3 mb-3">
               <a href="{{ url_for('gamification.admin_streaks') }}" class="btn btn-outline-warning w-100 py-3">
-                <i class="bi bi-fire fs-3 d-block mb-2"></i>
+                <i class="fas fa-fire fs-3 d-block mb-2"></i>
                 {{ _('Streak') }}
               </a>
             </div>
@@ -79,14 +69,14 @@
           <div class="row">
             <div class="col-md-6 mb-3">
               <a href="{{ url_for('gamification.admin_features') }}" class="btn btn-outline-dark w-100 py-3">
-                <i class="bi bi-key fs-3 d-block mb-2"></i>
+                <i class="fas fa-key fs-3 d-block mb-2"></i>
                 {{ _('Feature Gating') }}
                 <small class="d-block text-muted">{{ _('Regole di sblocco funzionalità') }}</small>
               </a>
             </div>
             <div class="col-md-6 mb-3">
               <a href="{{ url_for('gamification.admin_config_dashboard') }}" class="btn btn-outline-secondary w-100 py-3">
-                <i class="bi bi-gear fs-3 d-block mb-2"></i>
+                <i class="fas fa-gear fs-3 d-block mb-2"></i>
                 {{ _('Configurazione Gamification') }}
                 <small class="d-block text-muted">{{ _('XP rates, livelli, streak milestones') }}</small>
               </a>

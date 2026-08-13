@@ -41,7 +41,7 @@ def _gara(suffix):
         name=f"Gara {suffix}",
         date=date(2026, 1, 1),
         time=time(18, 0),
-        discipline="palla_8",
+        discipline="8_ball",
         distance=5,
         rounds_count=1,
         current_round=1,

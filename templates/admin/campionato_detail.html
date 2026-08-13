@@ -2,37 +2,59 @@
 
 {% block title %}{{ campionato.name }} - Admin{% endblock %}
 
+{# Una testata sola, quella del guscio: il titolo era ripetuto sotto quello
+   della pagina, e la fila di bottoni sbordava a destra su mobile. Le azioni
+   stanno ora in testata su desktop e in una barra sotto il titolo su mobile. #}
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('dashboard.dashboard') }}"
+   aria-label="{{ _('Torna ai campionati') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ campionato.name }}{% endblock %}
+{% block page_sub %}
+{{ campionato.campionato_type }} <span class="c7-sep">·</span> {{ campionato | status_text }}
+{% endblock %}
+{% block page_actions %}
+<div class="d-none d-lg-flex align-items-center gap-2">
+  {% if campionato.can_be_modified() %}
+  <a href="{{ url_for('admin.campionato.edit_campionato', campionato_id=campionato.id) }}"
+     class="btn btn-secondary btn-sm">
+    <i class="fas fa-pencil"></i>&nbsp;{{ _("Modifica") }}
+  </a>
+  {% endif %}
+  {% if not campionato.terminated_at %}
+  {% if campionato.is_ready_for_playoff_transition() %}
+  <button type="button" class="btn btn-success btn-sm" id="btn-terminate-campionato">
+    <i class="fas fa-trophy"></i>&nbsp;{{ _("Passa ai playoff") }}
+  </button>
+  {% else %}
+  <button type="button" class="btn btn-danger btn-sm" id="btn-terminate-campionato">
+    <i class="fas fa-stop"></i>&nbsp;{{ _("Termina") }}
+  </button>
+  {% endif %}
+  {% endif %}
+</div>
+{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1>{{ campionato.name }}</h1>
-        <p class="text-muted mb-0">
-            {{ campionato.campionato_type }}
-            <span class="badge {{ campionato | status_badge_class }}">{{ campionato | status_text }}</span>
-        </p>
-    </div>
-    <div class="d-flex align-items-center gap-2 gap-md-3 gap-lg-4">
-        <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left"></i> Torna ai Campionati
-        </a>
-        {% if campionato.can_be_modified() %}
-        <a href="{{ url_for('admin.campionato.edit_campionato', campionato_id=campionato.id) }}"
-            class="btn btn-warning">
-            <i class="fas fa-edit"></i> Modifica Campionato
-        </a>
-        {% endif %}
-        {% if not campionato.terminated_at %}
-        {% if campionato.is_ready_for_playoff_transition() %}
-        <button type="button" class="btn btn-success" id="btn-terminate-campionato">
-            <i class="fas fa-trophy"></i> {{ _("Passa alla fase playoff") }}
-        </button>
-        {% else %}
-        <button type="button" class="btn btn-danger" id="btn-terminate-campionato">
-            <i class="fas fa-stop-circle"></i> {{ _("Termina Campionato") }}
-        </button>
-        {% endif %}
-        {% endif %}
-    </div>
+{# Su mobile le stesse azioni, in colonna: in testata non ci starebbero. #}
+<div class="d-lg-none c7-stack mb-4">
+  {% if campionato.can_be_modified() %}
+  <a href="{{ url_for('admin.campionato.edit_campionato', campionato_id=campionato.id) }}"
+     class="btn btn-secondary w-100">
+    <i class="fas fa-pencil"></i>&nbsp;{{ _("Modifica campionato") }}
+  </a>
+  {% endif %}
+  {% if not campionato.terminated_at %}
+  {% if campionato.is_ready_for_playoff_transition() %}
+  <button type="button" class="btn btn-success w-100" id="btn-terminate-campionato-mobile">
+    <i class="fas fa-trophy"></i>&nbsp;{{ _("Passa alla fase playoff") }}
+  </button>
+  {% else %}
+  <button type="button" class="btn btn-danger w-100" id="btn-terminate-campionato-mobile">
+    <i class="fas fa-stop"></i>&nbsp;{{ _("Termina campionato") }}
+  </button>
+  {% endif %}
+  {% endif %}
 </div>
 
 <!-- Info Campionato -->
@@ -370,9 +392,10 @@
         });
     }
 
-    // Terminazione campionato
-    const btnTerminate = document.getElementById('btn-terminate-campionato');
-    if (btnTerminate) {
+    // Terminazione campionato. Due bottoni con lo stesso compito (testata su
+    // desktop, barra sotto il titolo su mobile): si legano entrambi.
+    document.querySelectorAll('#btn-terminate-campionato, #btn-terminate-campionato-mobile')
+      .forEach(function (btnTerminate) {
         btnTerminate.addEventListener('click', function() {
             {% if campionato.is_ready_for_playoff_transition() %}
             let msg = {{ _("Tutte le gare sono concluse. Passare alla fase playoff? Potrai poi avviare i playoff e invitare i qualificati.")|tojson }};
@@ -396,7 +419,7 @@
                 form.submit();
             });
         });
-    }
+    });
 
     // Auto-popolamento dinamico + logica modalità di gioco
     document.addEventListener('DOMContentLoaded', function () {

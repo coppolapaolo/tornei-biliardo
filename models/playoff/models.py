@@ -15,6 +15,7 @@ from enum import Enum
 
 from ..base import db, BaseModel, utc_now
 from ..transaction import transactional
+from ..status_enum import Discipline
 
 if TYPE_CHECKING:
     from ..classification.models import Classification
@@ -134,7 +135,9 @@ class PlayoffConfiguration(BaseModel):
         params["discipline"] = (
             self.discipline
             if self.discipline is not None
-            else (default_gara.discipline if default_gara else "palla_9")
+            else (
+                default_gara.discipline if default_gara else Discipline.NINE_BALL.value
+            )
         )
         params["distance"] = (
             self.distance

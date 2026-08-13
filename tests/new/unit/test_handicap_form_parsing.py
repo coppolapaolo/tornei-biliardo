@@ -17,7 +17,7 @@ def _gara_form(app, **extra):
     base = {
         "date": "2026-12-01",
         "time": "20:00",
-        "discipline": "palla_8",
+        "discipline": "8_ball",
         "distance": "5",
         "rounds_count": "3",
         "min_participants": "2",

@@ -111,7 +111,7 @@ class TestDemandConsumptionOnGaraCreated:
             number=1,
             name="Gara Napoli",
             date=date.today() + timedelta(days=3),
-            discipline="palla_8",
+            discipline="8_ball",
             distance=5,
             director_id=director_id,
             billiard_hall_id=venue_id,

@@ -1,33 +1,52 @@
 {% extends 'base.html' %}
+{% block title %}{{ _('Richieste direttore di gara') }}{% endblock %}
+
+{% block page_title %}{{ _('Richieste direttore di gara') }}{% endblock %}
+{% block page_sub %}{{ _('Approva o rifiuta chi chiede di dirigere le gare.') }}{% endblock %}
+
 {% block content %}
-  <h2>Richieste Direttore di Gara</h2>
+{% if requests %}
+<div class="c7-table-wrap table-responsive">
   <table class="table">
     <thead>
       <tr>
-        <th>Utente</th>
-        <th>Data richiesta</th>
-        <th>Azione</th>
+        <th>{{ _('Utente') }}</th>
+        <th>{{ _('Data richiesta') }}</th>
+        <th class="c7-cell-actions">{{ _('Azioni') }}</th>
       </tr>
     </thead>
     <tbody>
       {% for req in requests %}
-        <tr>
-          <td>{{ req.user.username }}</td>
-          <td>{{ req.requested_at|datetime_local }}</td>
-          <td>
-            <form method="POST" action="{{ url_for('admin.user.approve_director_request', req_id=req.id) }}" style="display:inline;">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-              <button type="submit" class="btn btn-success btn-sm">Approva</button>
+      <tr>
+        <td>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span class="c7-avatar">{{ req.user.username[:2]|upper }}</span>
+            <strong>{{ req.user.username }}</strong>
+          </div>
+        </td>
+        <td class="text-muted"><span class="c7-num">{{ req.requested_at|datetime_local }}</span></td>
+        <td class="c7-cell-actions">
+          <div style="display: inline-flex; gap: 8px;">
+            <form method="POST" action="{{ url_for('admin.user.approve_director_request', req_id=req.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-success btn-sm">{{ _('Approva') }}</button>
             </form>
-            <form method="POST" action="{{ url_for('admin.user.reject_director_request', req_id=req.id) }}" style="display:inline;">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-              <button type="submit" class="btn btn-danger btn-sm">Rifiuta</button>
+            <form method="POST" action="{{ url_for('admin.user.reject_director_request', req_id=req.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-danger btn-sm">{{ _('Rifiuta') }}</button>
             </form>
-          </td>
-        </tr>
-      {% else %}
-        <tr><td colspan="3">Nessuna richiesta.</td></tr>
+          </div>
+        </td>
+      </tr>
       {% endfor %}
     </tbody>
   </table>
+</div>
+{% else %}
+<div class="c7-empty">
+  <div class="c7-empty__ico"><i class="fas fa-inbox"></i></div>
+  <h2 class="c7-empty__title">{{ _('Nessuna richiesta') }}</h2>
+  <p class="c7-empty__text">{{ _('Quando un giocatore chiederà di diventare direttore di gara, lo troverai qui.') }}</p>
+</div>
+{% endif %}
 {% endblock %}

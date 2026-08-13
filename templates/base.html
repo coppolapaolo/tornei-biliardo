@@ -1,4 +1,8 @@
-<!-- templates/base.html - AGGIORNATO con quick login debug nel footer -->
+<!-- templates/base.html — Design System 7c
+     Guscio: sidebar fissa da lg in su, nav flottante sotto lg.
+     La logica Jinja (auth, ABAC, feature_visible, debug, gamification bridge,
+     polling, analytics) e' invariata rispetto alla versione precedente:
+     cambiano solo struttura e classi. -->
 <!DOCTYPE html>
 <html lang="it">
 
@@ -6,49 +10,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="theme-color" content="#E4E8E7">
     <title>{% block title %}Campionato Biliardo{% endblock %}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-    <!-- Design tokens (CSS custom properties) -->
+    <!-- Design tokens legacy (CSS custom properties) -->
     <link href="{{ url_for('static', filename='css/variables.css') }}?v={{ config.ASSET_VERSION }}" rel="stylesheet">
     <!-- Gamification Animations CSS -->
     <link href="{{ url_for('static', filename='css/gamification.css') }}?v={{ config.ASSET_VERSION }}" rel="stylesheet">
-
     <!-- App styles (table assignment, layout) -->
     <link href="{{ url_for('static', filename='css/main.css') }}?v={{ config.ASSET_VERSION }}" rel="stylesheet">
+    <!-- Design System 7c: token + tema. SEMPRE per ultimi. -->
+    <link href="{{ url_for('static', filename='css/tokens-7c.css') }}?v={{ config.ASSET_VERSION }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/theme-7c.css') }}?v={{ config.ASSET_VERSION }}" rel="stylesheet">
 
     {% if debug_info.debug_mode %}
     <style>
-        .debug-footer {
-            background: #1a1a1a;
-            color: #00ff00;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            padding: 10px;
-            margin-top: 20px;
-            border-top: 3px solid #ff4444;
-        }
-
-        .debug-footer h6 {
-            color: #ffff00;
-            margin-bottom: 5px;
-        }
-
-        .debug-footer .debug-item {
-            margin-bottom: 3px;
-        }
-
-        .debug-footer .debug-value {
-            color: #00ffff;
-        }
-
-        .debug-footer .quick-login-btn {
-            font-size: 10px;
-            padding: 2px 6px;
-            margin: 1px;
-        }
+        .debug-footer { background:#1a1a1a; color:#00ff00; font-family:'Courier New',monospace;
+            font-size:12px; padding:10px; margin-top:20px; border-top:3px solid #ff4444; }
+        .debug-footer h6 { color:#ffff00; margin-bottom:5px; }
+        .debug-footer .debug-item { margin-bottom:3px; }
+        .debug-footer .debug-value { color:#00ffff; }
+        .debug-footer .quick-login-btn { font-size:10px; padding:2px 6px; margin:1px; height:auto; border-radius:6px; }
     </style>
     {% endif %}
+
     <script>
         // CSRF token helper for AJAX requests
         window.csrfToken = function() {
@@ -58,72 +49,43 @@
 
         // Timezone e Datetime utilities
         window.TourneyUtils = {
-            // Ottieni timezone del browser
             getTimezone: function () {
                 return Intl.DateTimeFormat().resolvedOptions().timeZone;
             },
-
-            // Converti UTC string in locale italiano
             utcToLocal: function (utcString) {
                 if (!utcString) return 'N/A';
                 const utcDate = new Date(utcString + 'Z'); // Force UTC
-                // Forza locale italiano per formato dd/mm/yyyy
                 return utcDate.toLocaleString('it-IT');
             },
-
-            // Converti locale in UTC per form
             localToUtc: function (localDatetimeString) {
                 const localDate = new Date(localDatetimeString);
                 return localDate.toISOString().slice(0, 16); // YYYY-MM-DDTHH:MM
             },
-
-            // Ottieni orario attuale locale per confronti
             getCurrentLocal: function () {
                 return new Date();
             },
-
-            // Verifica se un orario UTC è nel futuro
             isInFuture: function (utcString) {
                 if (!utcString) return false;
-                const utcDate = new Date(utcString + 'Z');
-                return utcDate > new Date();
+                return new Date(utcString + 'Z') > new Date();
             },
-
-            // Verifica se un orario UTC è nel passato
             isInPast: function (utcString) {
                 if (!utcString) return false;
-                const utcDate = new Date(utcString + 'Z');
-                return utcDate < new Date();
+                return new Date(utcString + 'Z') < new Date();
             },
-
-            // Formatta data in formato italiano (dd/mm/yyyy)
             formatDate: function (dateString, includeTime) {
                 if (!dateString) return 'N/A';
                 const date = new Date(dateString);
-                if (isNaN(date.getTime())) return dateString; // Ritorna originale se invalida
-
+                if (isNaN(date.getTime())) return dateString;
                 const options = includeTime
                     ? { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }
                     : { year: 'numeric', month: '2-digit', day: '2-digit' };
-
-                // Forza locale italiano per formato dd/mm/yyyy consistente
                 return date.toLocaleString('it-IT', options);
             },
-
-            // Formatta solo la data (senza ora)
-            formatDateOnly: function (dateString) {
-                return this.formatDate(dateString, false);
-            },
-
-            // Formatta data e ora
-            formatDateTime: function (dateString) {
-                return this.formatDate(dateString, true);
-            }
+            formatDateOnly: function (dateString) { return this.formatDate(dateString, false); },
+            formatDateTime: function (dateString) { return this.formatDate(dateString, true); }
         };
 
         // Dual ELO: alterna competitivo <-> globale su tutta l'interfaccia.
-        // Cambia SOLO cosa viene mostrato; categoria/handicap/seeding e il
-        // ranking ufficiale restano sul valore competitivo lato server.
         window.EloToggle = {
             KEY: 'eloMode',
             LABELS: {
@@ -136,16 +98,13 @@
             apply: function (mode) {
                 mode = (mode === 'global') ? 'global' : 'competitive';
                 var attr = (mode === 'global') ? 'data-elo-global' : 'data-elo-competitive';
-                // 1) Valori singoli (profilo, card, ...)
                 document.querySelectorAll('.elo-value').forEach(function (el) {
                     var val = el.getAttribute(attr);
                     if (val !== null) el.textContent = val;
                 });
-                // 2) Etichetta modalità attiva
                 document.querySelectorAll('.elo-mode-label').forEach(function (el) {
                     el.textContent = '(' + window.EloToggle.LABELS[mode] + ')';
                 });
-                // 3) Leaderboard dual-pool: mostra la classifica del pool attivo
                 document.querySelectorAll('[data-elo-pool]').forEach(function (el) {
                     el.classList.toggle('d-none', el.getAttribute('data-elo-pool') !== mode);
                 });
@@ -157,40 +116,26 @@
             }
         };
 
-        // Auto-converti tutti gli orari UTC in pagina
         document.addEventListener('DOMContentLoaded', function () {
-            // Dual ELO: applica la modalità salvata e attiva il click-to-toggle
             window.EloToggle.apply(window.EloToggle.getMode());
             document.addEventListener('click', function (e) {
                 var el = e.target.closest('.elo-value');
                 if (el) { e.preventDefault(); window.EloToggle.toggle(); }
             });
 
-            // Cerca tutti gli elementi con data-utc
             document.querySelectorAll('[data-utc]').forEach(function (element) {
-                const utcTime = element.getAttribute('data-utc');
-                element.textContent = TourneyUtils.utcToLocal(utcTime);
+                element.textContent = TourneyUtils.utcToLocal(element.getAttribute('data-utc'));
             });
-
-            // Cerca tutti i form datetime-local e imposta valori corretti
             document.querySelectorAll('input[type="datetime-local"]').forEach(function (input) {
                 if (input.hasAttribute('data-utc-value')) {
-                    const utcValue = input.getAttribute('data-utc-value');
-                    const localValue = TourneyUtils.localToUtc(utcValue);
-                    input.value = localValue;
+                    input.value = TourneyUtils.localToUtc(input.getAttribute('data-utc-value'));
                 }
             });
-
-            // Formatta tutte le date con attributo data-date (solo data)
             document.querySelectorAll('[data-date]').forEach(function (element) {
-                const dateValue = element.getAttribute('data-date');
-                element.textContent = TourneyUtils.formatDateOnly(dateValue);
+                element.textContent = TourneyUtils.formatDateOnly(element.getAttribute('data-date'));
             });
-
-            // Formatta tutte le date con attributo data-datetime (data e ora)
             document.querySelectorAll('[data-datetime]').forEach(function (element) {
-                const dateValue = element.getAttribute('data-datetime');
-                element.textContent = TourneyUtils.formatDateTime(dateValue);
+                element.textContent = TourneyUtils.formatDateTime(element.getAttribute('data-datetime'));
             });
         });
     </script>
@@ -206,263 +151,275 @@
     <!-- Toast Container for notifications.js -->
     <div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;"></div>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="{{ url_for('main.index') }}">
-                <i class="fas fa-trophy"></i> 🎱 {{ _('Tornei Biliardo') }}
-                {% if debug_info.debug_mode %}
-                <span class="badge bg-warning text-dark ms-2">DEBUG</span>
-                {% endif %}
+    <!-- Toast della mascotte Chalky: coda gamification, indipendente dai flash -->
+    <div id="chalky-container" aria-live="polite"></div>
+
+{#  ============================================================
+    Voci di navigazione: definite una volta, usate dalla sidebar
+    desktop e dalla nav flottante mobile.
+    ============================================================ #}
+{% set nav_dashboard = current_user.is_authenticated %}
+{% set nav_venues    = feature_visible('admin.venue.venues_list') %}
+{% set nav_challenge = current_user.is_authenticated and current_user.can_access('do_challenge') and feature_visible('challenge.challenge_catalog') %}
+{% set nav_matches   = current_user.is_authenticated and not current_user.is_admin and current_user.can_access('create_match_direct') and feature_visible('individual_match.dashboard') %}
+{% set ep = request.endpoint or '' %}
+
+    <div class="c7-app">
+
+        {# ---------- Sidebar (>= lg) ---------- #}
+        <aside class="c7-side">
+            <a class="c7-side__brand" href="{{ url_for('main.index') }}">
+                <span class="c7-side__mark"><i class="fas fa-circle-nodes"></i></span>
+                <span>
+                    <span class="c7-side__name">{{ _('Tornei Biliardo') }}</span>
+                    <span class="c7-side__role d-block">
+                        {% if current_user.is_authenticated and current_user.is_admin %}{{ _('amministrazione') }}
+                        {% elif current_user.is_authenticated and current_user.is_director %}{{ _('direzione gara') }}
+                        {% else %}{{ _('giocatore') }}{% endif %}
+                    </span>
+                </span>
             </a>
 
-            {# TODO(ADR-028 Open Items §2): extend feature_visible(...) to other
-               templates that link to non-MVP endpoints (e.g. dashboard cards,
-               sidebars, footer). Right now only navbar+profile-dropdown are
-               guarded — links elsewhere may render and 404 on click. #}
-            <!-- Gamification Badge (Always Visible for Players/Directors) -->
-            {% if current_user.is_authenticated and not current_user.is_admin and gamification_context and
-            gamification_context.progress and feature_visible('gamification.dashboard') %}
-            <div class="d-flex align-items-center ms-auto me-3">
-                <a href="{{ url_for('gamification.dashboard') }}" class="text-decoration-none"
-                    title="{{ _('Livello') }} {{ gamification_context.progress.current_level }}">
-                    {# §11-quater: badge "vivo" — anello di progresso (auto-referenziale)
-                       + pulse su XP / glow su level-up via static/js/gamification.js.
-                       I data-* alimentano il count-up XP e l'anello senza ricalcoli lato JS. #}
-                    <div id="gami-badge"
-                        class="gami-badge badge bg-light text-primary border border-primary d-flex align-items-center gap-2 py-1 px-2 rounded-pill"
-                        data-level="{{ gamification_context.progress.current_level }}"
-                        data-current-xp="{{ gamification_context.progress.current_xp }}"
-                        data-xp-next="{{ gamification_context.progress.xp_for_next_level }}"
-                        data-progress="{{ gamification_context.progress.progress_percentage }}">
-                        <span class="gami-badge-ring"
-                            style="--gami-progress: {{ gamification_context.progress.progress_percentage }}">
-                            <i class="fas fa-trophy text-warning"></i>
-                        </span>
-                        <span class="fw-bold" id="gami-badge-level">{{ gamification_context.progress.current_level }}</span>
-                        <span class="small text-muted d-none d-sm-inline"><span
-                                id="gami-badge-xp">{{ gamification_context.progress.current_xp }}</span> XP</span>
-                    </div>
+            {% if current_user.is_authenticated %}
+            <nav class="c7-side__group">
+                <span class="c7-side__grouplabel">{{ _('Generale') }}</span>
+                <a href="{{ url_for('dashboard.dashboard') }}" class="{{ 'is-active' if ep.startswith('dashboard.') }}">
+                    <i class="fas fa-gauge"></i>{{ _('Dashboard') }}
                 </a>
-            </div>
+                {% if nav_venues %}
+                <a href="{{ url_for('admin.venue.venues_list') }}" class="{{ 'is-active' if ep.startswith('admin.venue.') }}">
+                    <i class="fas fa-warehouse"></i>{{ _('Sale Biliardo') }}
+                </a>
+                {% endif %}
+                {% if nav_challenge %}
+                <a href="{{ url_for('challenge.challenge_catalog') }}" class="{{ 'is-active' if ep.startswith('challenge.') }}">
+                    <i class="fas fa-bullseye"></i>Challenge
+                </a>
+                {% endif %}
+                {% if nav_matches %}
+                <a href="{{ url_for('individual_match.dashboard') }}" class="{{ 'is-active' if ep.startswith('individual_match.') }}">
+                    <i class="fas fa-handshake"></i>{{ _('Match Individuali') }}
+                </a>
+                {% endif %}
+            </nav>
+
+            {% if current_user.is_admin %}
+            <nav class="c7-side__group">
+                <span class="c7-side__grouplabel">{{ _('Persone') }}</span>
+                {% if feature_visible('admin.user.users_list') %}
+                <a href="{{ url_for('admin.user.users_list') }}" class="{{ 'is-active' if ep.startswith('admin.user.users') }}">
+                    <i class="fas fa-users"></i>{{ _('Utenti') }}
+                </a>
+                {% endif %}
+                {% if feature_visible('admin.user.director_requests') %}
+                <a href="{{ url_for('admin.user.director_requests') }}" class="{{ 'is-active' if ep == 'admin.user.director_requests' }}">
+                    <i class="fas fa-user-tie"></i>{{ _('Richieste Direttore') }}
+                </a>
+                {% endif %}
+                {% if feature_visible('admin.venue.venue_manager_requests') %}
+                <a href="{{ url_for('admin.venue.venue_manager_requests') }}" class="{{ 'is-active' if ep == 'admin.venue.venue_manager_requests' }}">
+                    <i class="fas fa-hand-paper"></i>{{ _('Richieste Gestore Sala') }}
+                </a>
+                {% endif %}
+            </nav>
+
+            <nav class="c7-side__group">
+                <span class="c7-side__grouplabel">Gamification</span>
+                <a href="{{ url_for('gamification.admin_dashboard') }}" class="{{ 'is-active' if ep.startswith('gamification.admin') }}">
+                    <i class="fas fa-medal"></i>{{ _('Traguardi e XP') }}
+                </a>
+                <a href="{{ url_for('admin.kpi.index') }}" class="{{ 'is-active' if ep.startswith('admin.kpi.') }}">
+                    <i class="fas fa-chart-line"></i>KPI
+                </a>
+            </nav>
             {% endif %}
 
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="{{ _('Apri menu') }}">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+            {% if debug_info.debug_mode %}
+            <nav class="c7-side__group">
+                <span class="c7-side__grouplabel">Debug</span>
+                <a href="{{ url_for('main.reset_database') }}"><i class="fas fa-bomb"></i>{{ _('Reset DB') }}</a>
+            </nav>
+            {% endif %}
 
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    {% if current_user.is_authenticated %}
-                    {# Dashboard - always visible to authenticated users #}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('dashboard.dashboard') }}">
-                            <i class="fas fa-home"></i> {{ _('Dashboard') }}
-                        </a>
-                    </li>
-
-                    {# Billiard Halls - public directory, always visible #}
-                    {% if feature_visible('admin.venue.venues_list') %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.venue.venues_list') }}">
-                            <i class="fas fa-building"></i> {{ _('Sale Biliardo') }}
-                        </a>
-                    </li>
-                    {% endif %}
-
-                    {# Challenge - requires do_challenge feature (ABAC) AND production allowlist (ADR-028) #}
-                    {% if current_user.can_access('do_challenge') and feature_visible('challenge.challenge_catalog') %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('challenge.challenge_catalog') }}">
-                            <i class="fas fa-trophy"></i> Challenge
-                        </a>
-                    </li>
-                    {% endif %}
-
-                    {# Individual Matches - requires create_match_direct feature (ABAC) AND production allowlist (ADR-028).
-                       Nascosto agli admin: l'admin non è un giocatore, la sua UI non espone funzioni di gioco
-                       (la supervisione passa da individual_match.admin_overview, admin-only). #}
-                    {% if not current_user.is_admin and current_user.can_access('create_match_direct') and feature_visible('individual_match.dashboard') %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('individual_match.dashboard') }}">
-                            <i class="fas fa-shield-halved"></i> {{ _('Match Individuali') }}
-                        </a>
-                    </li>
-                    {% endif %}
-
-                    {# Admin-only sections #}
-                    {% if current_user.is_admin %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('gamification.admin_dashboard') }}">
-                            <i class="fas fa-cogs text-secondary"></i> {{ _('Admin Gamification') }}
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.user.users_list') }}">
-                            <i class="fas fa-users"></i> {{ _('Utenti') }}
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.kpi.index') }}">
-                            <i class="fas fa-chart-line"></i> KPI
-                        </a>
-                    </li>
-                    {% endif %}
-                    {% endif %}
-                    {% if debug_info.debug_mode %}
-                    <li class="nav-item">
-                        <a class="nav-link text-warning" href="{{ url_for('main.reset_database') }}">
-                            <i class="fas fa-bomb"></i> {{ _('Reset DB') }}
-                        </a>
-                    </li>
-                    {% endif %}
-                </ul>
-
-                <ul class="navbar-nav ms-auto">
-                    {% if current_user.is_authenticated %}
-                    <!-- Language Selector -->
-                    <li class="nav-item dropdown me-2">
-                        <a class="nav-link dropdown-toggle" href="#" id="langDropdown" role="button"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-globe"></i> {{ 'Italiano' if get_locale() == 'it' else 'English' }}
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="langDropdown">
-                            <li>
-                                <a class="dropdown-item {{ 'active' if get_locale() == 'it' }}"
-                                    href="{{ url_for('i18n.set_language', language='it') }}">
-                                    🇮🇹 Italiano
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item {{ 'active' if get_locale() == 'en' }}"
-                                    href="{{ url_for('i18n.set_language', language='en') }}">
-                                    🇺🇸 English
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
-                            aria-expanded="false">
-                            <i class="fas fa-user"></i> {{ current_user.username }}
-                            <span class="badge bg-danger rounded-pill notification-badge"{% if unread_notifications_count == 0 %} style="display:none"{% endif %}>{{ unread_notifications_count }}</span>
-                            {% if current_user.is_admin %}
-                            <span class="badge bg-warning text-dark ms-1">Admin</span>
+            <div class="c7-side__user dropdown">
+                <a href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"
+                   class="d-flex align-items-center gap-2 w-100" style="height:auto;padding:0">
+                    <span class="c7-avatar">{{ current_user.username[:2] | upper }}</span>
+                    <span class="flex-fill text-start">
+                        <span class="d-block" style="font-size:12px;font-weight:800">{{ current_user.username }}</span>
+                        <span class="c7-side__role">
+                            {% if current_user.is_admin %}{{ _('amministratore') }}
+                            {% elif current_user.is_director %}{{ _('direttore') }}
+                            {% else %}{{ _('giocatore') }}{% endif %}
+                            {% if gamification_context and gamification_context.progress %}
+                            &middot; Lv {{ gamification_context.progress.current_level }}
                             {% endif %}
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('player.notifications') }}">
-                                    <i class="fas fa-bell"></i> {{ _('Notifiche') }}
-                                    <span class="badge bg-danger rounded-pill ms-2 notification-badge"{% if unread_notifications_count == 0 %} style="display:none"{% endif %}>{{ unread_notifications_count }}</span>
-                                </a></li>
-                            {% if not current_user.is_admin and feature_visible('player.my_venue_requests') %}
-                            <li><a class="dropdown-item" href="{{ url_for('player.my_venue_requests') }}">
-                                    <i class="fas fa-hand-paper"></i> {{ _('Le mie Richieste Gestore') }}
-                                </a></li>
-                            {% endif %}
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li><a class="dropdown-item" href="{{ url_for('dashboard.dashboard') }}">
-                                    <i class="fas fa-cog"></i> {{ _('Dashboard') }}
-                                </a></li>
-                            {% if can_view_profile %}
-                            <li><a class="dropdown-item" href="{{ url_for('player.profile') }}">
-                                    <i class="fas fa-id-card"></i> {{ _('Il mio Profilo') }}
-                                </a></li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            {% endif %}
-
-                            {% if show_admin_management %}
-                            {% if feature_visible('admin.user.users_list') %}
-                            <li><a class="dropdown-item" href="{{ url_for('admin.user.users_list') }}">
-                                    <i class="fas fa-users"></i> {{ _('Utenti') }}
-                                </a></li>
-                            {% endif %}
-                            {% if feature_visible('admin.venue.venues_list') %}
-                            <li><a class="dropdown-item" href="{{ url_for('admin.venue.venues_list') }}">
-                                    <i class="fas fa-building"></i> {{ _('Sale Biliardo') }}
-                                </a></li>
-                            {% endif %}
-                            {% if feature_visible('challenge.challenge_catalog') %}
-                            <li><a class="dropdown-item" href="{{ url_for('challenge.challenge_catalog') }}">
-                                    <i class="fas fa-trophy"></i> Challenge
-                                </a></li>
-                            {% endif %}
-                            {% if feature_visible('admin.venue.venue_manager_requests') %}
-                            <li><a class="dropdown-item" href="{{ url_for('admin.venue.venue_manager_requests') }}">
-                                    <i class="fas fa-hand-paper"></i> {{ _('Richieste Gestore Sala') }}
-                                </a></li>
-                            {% endif %}
-                            {% if feature_visible('admin.user.director_requests') %}
-                            <li><a class="dropdown-item" href="{{ url_for('admin.user.director_requests') }}">
-                                    <i class="fas fa-user-tie"></i> {{ _('Richieste Director') }}
-                                </a></li>
-                            {% endif %}
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            {% endif %}
-                            {% if can_delete_account and feature_visible('player.delete_account') %}
-                            <li><a class="dropdown-item text-danger" href="{{ url_for('player.delete_account') }}">
-                                    <i class="fas fa-trash"></i> {{ _('Elimina Account') }}
-                                </a></li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            {% endif %}
-
-                            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">
-                                    <i class="fas fa-sign-out-alt"></i> {{ _('Logout') }}
-                                </a></li>
-                        </ul>
-                    </li>
-                    {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('auth.login') }}">{{ _('Login') }}</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('auth.register') }}">{{ _('Registrati') }}</a>
-                    </li>
-                    {% endif %}
-                </ul>
+                        </span>
+                    </span>
+                    <span class="badge bg-danger notification-badge"{% if unread_notifications_count == 0 %} style="display:none"{% endif %}>{{ unread_notifications_count }}</span>
+                </a>
+                {% include "components/_user_menu.html" %}
             </div>
+            {% else %}
+            <div class="c7-side__group mt-auto">
+                <a href="{{ url_for('auth.login') }}"><i class="fas fa-right-to-bracket"></i>{{ _('Login') }}</a>
+                <a href="{{ url_for('auth.register') }}"><i class="fas fa-user-plus"></i>{{ _('Registrati') }}</a>
+            </div>
+            {% endif %}
+        </aside>
+
+        {# ---------- Colonna contenuto ---------- #}
+        <div class="c7-main">
+
+            {# Testata unica della pagina. Le pagine la personalizzano
+               riempiendo `page_back`, `page_title`, `page_sub` e
+               `page_actions` — NON disegnandone una seconda dentro
+               `content`, che produrrebbe due testate sovrapposte, e NON
+               sostituendo `page_head` per intero, che farebbe sparire la
+               freccia e l'avatar del mobile. #}
+            {% block page_head %}
+            <header class="c7-head">
+                {% block page_back %}
+                <a class="c7-head__back d-lg-none" href="{{ url_for('main.index') }}" aria-label="{{ _('Home') }}">
+                    <i class="fas fa-circle-nodes"></i>
+                </a>
+                {% endblock %}
+                <div class="c7-head__title">
+                    {# Ripiego sul titolo del browser solo se la pagina non
+                       dichiara `page_title`: quei titoli sono scritti per la
+                       linguetta, quindi si tagliano i suffissi tecnici
+                       (" - Campionato Biliardo", " - Admin", " - Dettagli"). #}
+                    <span class="c7-title">{% block page_title %}{{ (self.title()|trim).split(' - ')[0]|trim }}{% endblock %}</span>
+                    <span class="c7-head__sub">{% block page_sub %}{% endblock %}</span>
+                </div>
+                {% block page_actions %}{% endblock %}
+
+                {# Badge di livello (§11-quater). I guadagni XP per scelta non
+                   producono toast: questo e' il loro unico riscontro, quindi
+                   deve stare dove l'XP si guadagna — partita, gara — non solo
+                   sulla home. Forma: la pill scura con trofeo e "Lv N" della
+                   13b; l'XP compare da 576px, dove c'e' spazio.
+                   **Una sola istanza per pagina**: il modulo JS la cerca per
+                   id, e su desktop il livello e' anche nella barra laterale
+                   (testo, non elemento vivo). #}
+                {% if current_user.is_authenticated and not current_user.is_admin
+                and gamification_context and gamification_context.progress
+                and feature_visible('gamification.dashboard') %}
+                {% set gami = gamification_context.progress %}
+                <a href="{{ url_for('gamification.dashboard') }}" id="gami-badge" class="gami-badge"
+                   title="{{ _('Livello') }} {{ gami.current_level }} — {{ gami.current_xp }}/{{ gami.xp_for_next_level }} XP"
+                   data-level="{{ gami.current_level }}"
+                   data-current-xp="{{ gami.current_xp }}"
+                   data-xp-next="{{ gami.xp_for_next_level }}"
+                   data-progress="{{ gami.progress_percentage }}">
+                    <span class="gami-badge-ring" style="--gami-progress: {{ gami.progress_percentage }}">
+                        <i class="fas fa-trophy"></i>
+                    </span>
+                    <span class="gami-badge__level">{{ _('Lv') }} <span id="gami-badge-level">{{ gami.current_level }}</span></span>
+                    <span class="gami-badge__xp"><span id="gami-badge-xp">{{ gami.current_xp }}</span> XP</span>
+                </a>
+                {% endif %}
+
+                {% if current_user.is_authenticated %}
+                <div class="dropdown d-lg-none">
+                    <a href="#" class="c7-avatar c7-avatar--lg" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        {{ current_user.username[:2] | upper }}
+                    </a>
+                    {% include "components/_user_menu.html" %}
+                </div>
+                {% else %}
+                <a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-sm d-lg-none">{{ _('Login') }}</a>
+                {% endif %}
+            </header>
+            {% endblock %}
+
+            <main class="c7-content">
+                {# Fetch ALL messages once to avoid consumption issues #}
+                {% set all_messages = get_flashed_messages(with_categories=True) %}
+
+                {% if all_messages %}
+                <div class="c7-flashes">
+                {% for category, message in all_messages %}
+                {# Le categorie "di trasporto" (payload JSON per JS) non sono messaggi
+                   per l'utente: sono consumate piu' sotto dai rispettivi bridge. #}
+                {% if category not in ['gamification_event', 'analytics_event', 'page_modal'] %}
+                    {% if category == 'error' or category == 'danger' %}
+                        {% set tone = 'error' %}{% set ico = 'fa-xmark' %}{% set tone_title = _('Non è riuscito') %}
+                    {% elif category == 'success' %}
+                        {% set tone = 'success' %}{% set ico = 'fa-check' %}{% set tone_title = _('Fatto') %}
+                    {% elif category == 'warning' %}
+                        {% set tone = 'warning' %}{% set ico = 'fa-exclamation' %}{% set tone_title = _('Attenzione') %}
+                    {% else %}
+                        {% set tone = 'info' %}{% set ico = 'fa-info' %}{% set tone_title = _('Informazione') %}
+                    {% endif %}
+                    {# Messaggio breve: fa da titolo. Lungo: titolo di categoria + corpo. #}
+                    {% set is_short = message | length <= 46 %}
+                    <div class="c7-flash c7-flash--{{ tone }}" role="alert">
+                        <span class="c7-flash__ico"><i class="fas {{ ico }}"></i></span>
+                        <div class="c7-flash__body">
+                            <div class="c7-flash__title">{{ message if is_short else tone_title }}</div>
+                            {% if not is_short %}<div class="c7-flash__text">{{ message }}</div>{% endif %}
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{{ _('Chiudi') }}"></button>
+                    </div>
+                {% endif %}
+                {% endfor %}
+                </div>
+                {% endif %}
+
+                {% block content %}{% endblock %}
+            </main>
+
+            {% block actionbar %}{% endblock %}
+
+            {# Footer pubblico: raggiungibilita' dell'informativa privacy/cookie. #}
+            <footer class="c7-content pt-3 pb-4">
+                <div class="text-center" style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
+                    <span>{{ config.APP_NAME }}</span>
+                    {% if feature_visible('main.privacy_policy') %}
+                    <span class="c7-sep mx-2">&middot;</span>
+                    <a href="{{ url_for('main.privacy_policy') }}" style="color:var(--c7-ink-muted)">{{ _('Privacy e Cookie') }}</a>
+                    {% endif %}
+                    <span class="c7-sep mx-2">&middot;</span>
+                    <a href="{{ url_for('i18n.set_language', language='en' if get_locale() == 'it' else 'it') }}"
+                       style="color:var(--c7-ink-muted)">{{ 'English' if get_locale() == 'it' else 'Italiano' }}</a>
+                </div>
+            </footer>
         </div>
+    </div>
+
+    {# ---------- Nav flottante (< lg) ---------- #}
+    {% if current_user.is_authenticated %}
+    <nav class="c7-mobilenav">
+        <a href="{{ url_for('dashboard.dashboard') }}" class="{{ 'is-active' if ep.startswith('dashboard.') }}">
+            <i class="fas fa-gauge"></i>{{ _('Dashboard') }}
+        </a>
+        {% if nav_venues %}
+        <a href="{{ url_for('admin.venue.venues_list') }}" class="{{ 'is-active' if ep.startswith('admin.venue.') }}">
+            <i class="fas fa-warehouse"></i>{{ _('Sale') }}
+        </a>
+        {% endif %}
+        {% if nav_matches %}
+        <a href="{{ url_for('individual_match.dashboard') }}" class="{{ 'is-active' if ep.startswith('individual_match.') }}">
+            <i class="fas fa-handshake"></i>Match
+        </a>
+        {% elif current_user.is_admin and feature_visible('admin.user.users_list') %}
+        <a href="{{ url_for('admin.user.users_list') }}" class="{{ 'is-active' if ep.startswith('admin.user.') }}">
+            <i class="fas fa-users"></i>{{ _('Utenti') }}
+        </a>
+        {% endif %}
+        {% if nav_challenge %}
+        <a href="{{ url_for('challenge.challenge_catalog') }}" class="{{ 'is-active' if ep.startswith('challenge.') }}">
+            <i class="fas fa-bullseye"></i>Challenge
+        </a>
+        {% endif %}
+        <a href="{{ url_for('player.notifications') }}" class="{{ 'is-active' if ep == 'player.notifications' }}">
+            <i class="fas fa-bell"></i>{{ _('Notifiche') }}
+        </a>
     </nav>
+    {% endif %}
 
-    <main class="container mt-4">
-        {# Fetch ALL messages once to avoid consumption issues #}
-        {% set all_messages = get_flashed_messages(with_categories=True) %}
-
-        {% if all_messages %}
-        {% for category, message in all_messages %}
-        {# Le categorie "di trasporto" (payload JSON per JS) non sono messaggi
-           per l'utente: renderizzarle qui mostrerebbe il JSON grezzo dentro un
-           alert. Sono consumate piu' sotto dai rispettivi bridge. #}
-        {% if category not in ['gamification_event', 'analytics_event', 'page_modal'] %}
-        {% if category == 'error' %}
-        {% set alert_class = 'alert-danger' %}
-        {% elif category == 'success' %}
-        {% set alert_class = 'alert-success' %}
-        {% elif category == 'warning' %}
-        {% set alert_class = 'alert-warning' %}
-        {% else %}
-        {% set alert_class = 'alert-info' %}
-        {% endif %}
-        <div class="alert {{ alert_class }} alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-        {% endif %}
-        {% endfor %}
-        {% endif %}
-
-        {% block content %}{% endblock %}
-    </main>
-
-    <!-- DEBUG FOOTER - AGGIORNATO con quick login (PUNTO 8) -->
+    <!-- DEBUG FOOTER - quick login (PUNTO 8) -->
     {% if debug_info.debug_mode %}
     <footer class="debug-footer">
         <div class="container">
@@ -560,18 +517,6 @@
     </footer>
     {% endif %}
 
-    {# Footer pubblico: raggiungibilita' dell'informativa privacy/cookie, che
-       deve essere accessibile da ogni pagina del sito. #}
-    <footer class="mt-5 py-3 border-top">
-        <div class="container text-center text-muted small">
-            <span>{{ config.APP_NAME }}</span>
-            {% if feature_visible('main.privacy_policy') %}
-            <span class="mx-2">&middot;</span>
-            <a href="{{ url_for('main.privacy_policy') }}" class="text-muted">{{ _('Privacy e Cookie') }}</a>
-            {% endif %}
-        </div>
-    </footer>
-
     <!-- Confirm Modal for notifications.js -->
     <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -611,6 +556,20 @@
             "welcome_subtitle": {{ _("Tutto pronto per giocare?") | tojson }},
             "welcome_anonymous": {{ _("Ciao!") | tojson }},
             "welcome_user": {{ _("Ciao %(username)s!", username="%(username)s") | tojson }}
+        },
+        "container": "#chalky-container",
+        "mascot": {
+            "base": "{{ url_for('static', filename='img/') }}",
+            "welcome": "chalk9.png",
+            "xp": "chalk1.png",
+            "level_up": "chalk2.png",
+            "achievement": "chalk3.png",
+            "achievement_rare": "chalk8.png",
+            "streak": "chalk4.png",
+            "streak_lost": "chalk5.png",
+            "quest": "chalk7.png",
+            "unlock": "chalk6.png",
+            "legendary": "chalk10.png"
         }
     }
     </script>
@@ -652,9 +611,13 @@
     {# Analytics: eventi custom accodati lato server (dopo il redirect del POST) #}
     {% include "components/_analytics_events.html" %}
 
-    {# Dialog modali programmate dal server (utils/page_modal.py) #}
+    {# Dialog modali programmate dal server (utils/page_modal.py). L'include
+       era caduto nella riscrittura del guscio: i flash di categoria
+       `page_modal` restavano quindi non consumati e finivano nella lista dei
+       messaggi normali, dove l'utente vedeva il JSON grezzo del payload
+       invece della dialog (arrivo da link pubblico di iscrizione, issue #61). #}
     {% set page_modals = all_messages | selectattr('0', 'equalto', 'page_modal')
-    | map(attribute='1') | map('fromjson') | select | list %}
+       | map(attribute='1') | map('fromjson') | select | list %}
     {% include "components/_page_modal.html" %}
 
     <!-- Gamification Bridge: Consumes events from Flask flash and triggers JS animations -->
@@ -664,19 +627,18 @@
             {% for category, message in all_messages %}
             {% if category == 'gamification_event' %}
             try {
-                const eventData = {{ message| safe
-            }};
-        setTimeout(() => {
-            if (window.showGamificationEvent) {
-                window.showGamificationEvent(eventData.type, eventData.data);
+                const eventData = {{ message | safe }};
+                setTimeout(function () {
+                    if (window.showGamificationEvent) {
+                        window.showGamificationEvent(eventData.type, eventData.data);
+                    }
+                }, {{ loop.index0 * 500 + 500 }});
+            } catch (e) {
+                console.error("Error processing gamification event:", e);
             }
-        }, {{ loop.index0 * 500 + 500 }});
-                        } catch (e) {
-            console.error("Error processing gamification event:", e);
-        }
-        {% endif %}
-        {% endfor %}
-        {% endif %}
+            {% endif %}
+            {% endfor %}
+            {% endif %}
         });
     </script>
 

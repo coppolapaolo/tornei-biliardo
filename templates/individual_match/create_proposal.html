@@ -1,324 +1,211 @@
 {% extends "base.html" %}
+{% from "components/_form_macros.html" import choice, stepper, form_macros_scripts %}
 
-{% block title %}{{ _("Crea Proposta di Match") }} - {{ _("Campionato Biliardo") }}{% endblock %}
+{% block title %}{{ _("Nuova proposta") }} - {{ _("Campionato Biliardo") }}{% endblock %}
 
 {% block head_extra %}
-<!-- TomSelect for autocomplete player selection -->
-<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+<!-- TomSelect: ricerca a completamento per gli inviti diretti -->
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet"
+      integrity="sha384-piG3EtH1fBnPi68q4spy+Qgpb0dHK1D1dwk0GaHwFkvmUxYi526bBlk3xJcjEBsD" crossorigin="anonymous">
+{% endblock %}
+
+{# Testata unica del guscio. Il prototipo (9a·2) chiude la schermata con una
+   X, non con una freccia: e' un modulo che si abbandona, non un livello da
+   cui si risale. #}
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('individual_match.dashboard') }}"
+   aria-label="{{ _('Chiudi') }}"><i class="fas fa-xmark"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("Nuova proposta") }}{% endblock %}
+{% block page_sub %}
+{%- if rematch_opponent %}{{ _("Rivincita con %(name)s", name=rematch_opponent.username) }}
+{%- else %}{{ _("Inviti un altro giocatore a una partita") }}{% endif %}
+{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('individual_match.dashboard') }}" class="btn btn-secondary btn-sm d-none d-lg-inline-flex">
+  <i class="fas fa-xmark"></i>&nbsp;{{ _("Annulla") }}
+</a>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-md-12">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('individual_match.dashboard') }}">{{ _("Match
-                            Individuali") }}</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">{{ _("Crea Proposta") }}</li>
-                </ol>
-            </nav>
+{# Prototipo 9a, seconda schermata: sezioni intitolate, opzioni come card
+   selezionabili, barra d'azione appiccicata in fondo. La schermata propone
+   piu' date fra cui scegliere; qui il dominio ne ha una sola
+   (`scheduled_at`), quindi resta il campo data con la stessa gerarchia. #}
+<div style="max-width:720px">
+  <form id="proposalForm" method="POST" class="c7-stack" style="gap:16px">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-            <div class="row justify-content-center">
-                <div class="col-md-8">
-                    <div class="card">
-                        <div class="card-header">
-                            <h4><i class="fas fa-plus-circle"></i> {{ _("Crea Nuova Proposta di Match") }}</h4>
-                            <small class="text-muted">{{ _("Invita altri giocatori a una partita individuale")
-                                }}</small>
-                        </div>
-                        <div class="card-body">
-                            {% if rematch_opponent %}
-                            <div class="alert alert-info mb-4">
-                                <div class="d-flex align-items-center">
-                                    <i class="fas fa-redo fa-2x me-3"></i>
-                                    <div>
-                                        <strong>{{ _("Nuova partita con") }} {{ rematch_opponent.username }}</strong>
-                                        <br>
-                                        <small class="text-muted">{{ _("Modifica i parametri se desiderato, poi invia la
-                                            proposta") }}</small>
-                                    </div>
-                                </div>
-                            </div>
-                            {% endif %}
-                            <form id="proposalForm" method="POST">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <div class="row">
-                                    <!-- Basic Information -->
-                                    <div class="col-md-6">
-                                        <h5>{{ _("Informazioni Base") }}</h5>
+    {# ---------- Chi gioca ---------- #}
+    <div class="c7-card">
+      <div class="c7-sechead mb-3"><h2>{{ _("Chi gioca") }}</h2></div>
+      {{ choice('proposal_type', '', [
+           {'value': 'direct', 'title': _("Invito diretto"),
+            'desc': _("Scegli tu i giocatori: ricevono una notifica e il primo che accetta gioca con te."),
+            'icon': 'fa-user-friends'},
+           {'value': 'open', 'title': _("Aperto a tutti"),
+            'desc': _("Visibile a tutta la community: la prende chi vuole. Utile per trovare avversari nuovi."),
+            'icon': 'fa-globe'}
+         ], selected='direct') }}
 
-                                        <div class="mb-3">
-                                            <label for="proposal_type" class="form-label">{{ _("Tipo di Proposta") }}</label>
-                                            <select class="form-select" id="proposal_type" name="proposal_type"
-                                                required>
-                                                <option value="direct">{{ _("Invito Diretto") }}</option>
-                                                <option value="open">{{ _("Invito Aperto alla Community") }}</option>
-                                            </select>
-                                            <div class="form-text">
-                                                <strong>{{ _("Diretto:") }}</strong> {{ _("Inviti giocatori specifici") }}<br>
-                                                <strong>{{ _("Aperto:") }}</strong> {{ _("Visibile a tutta la community") }}
-                                            </div>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label for="location" class="form-label">{{ _("Luogo") }} *</label>
-                                            <input type="text" class="form-control" id="location" name="location"
-                                                required placeholder="{{ _('Es: Bar Sport, Sala Biliardi Centro') }}"
-                                                list="venue-suggestions" autocomplete="off"
-                                                value="{{ rematch_params.location if rematch_params else '' }}">
-                                            <datalist id="venue-suggestions">
-                                                {% if verified_venues %}
-                                                {% for venue in verified_venues %}
-                                                <option value="{{ venue.name }}">
-                                                    {{ venue.name }} - {{ venue.city or _('Città non specificata') }}
-                                                </option>
-                                                {% endfor %}
-                                                {% endif %}
-                                            </datalist>
-                                            <div class="form-text">{{ _("Seleziona una sala esistente o scrivine una nuova") }}
-                                            </div>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label for="scheduled_at" class="form-label">{{ _("Data e Ora") }} *</label>
-                                            <input type="datetime-local" class="form-control" id="scheduled_at"
-                                                name="scheduled_at" required
-                                                value="{{ rematch_params.scheduled_at if rematch_params else '' }}">
-                                            <div class="form-text">{{ _("Quando vorresti giocare") }}</div>
-                                        </div>
-
-                                    </div>
-
-                                    <!-- Game Settings -->
-                                    <div class="col-md-6">
-                                        <h5>{{ _("Impostazioni di Gioco") }}</h5>
-
-                                        <div class="mb-3">
-                                            <label for="discipline" class="form-label">{{ _("Disciplina") }} *</label>
-                                            {% set selected_discipline = rematch_params.discipline if rematch_params
-                                            else 'palla_8' %}
-                                            <select class="form-select" id="discipline" name="discipline" required>
-                                                <option value="palla_8" {% if selected_discipline=='palla_8'
-                                                    %}selected{% endif %}>Palla 8</option>
-                                                <option value="palla_9" {% if selected_discipline=='palla_9'
-                                                    %}selected{% endif %}>Palla 9</option>
-                                                <option value="palla_10" {% if selected_discipline=='palla_10'
-                                                    %}selected{% endif %}>Palla 10</option>
-                                                <option value="one_pocket" {% if selected_discipline=='one_pocket'
-                                                    %}selected{% endif %}>One Pocket</option>
-                                                <option value="straight_pool" {% if selected_discipline=='straight_pool'
-                                                    %}selected{% endif %}>Straight Pool</option>
-                                            </select>
-                                        </div>
-
-                                        <!-- Match Format Selection -->
-                                        <div class="mb-3">
-                                            <label class="form-label">{{ _("Tipo Partita") }}</label>
-                                            {# Preseleziona il formato dal rematch (default: single) #}
-                                            {% set selected_format = rematch_params.match_format if rematch_params and rematch_params.match_format else 'single' %}
-                                            <div class="btn-group w-100 mb-2" role="group">
-                                                <input type="radio" class="btn-check" name="match_format" id="formatSingle" value="single" {% if selected_format == 'single' %}checked{% endif %}>
-                                                <label class="btn btn-outline-primary" for="formatSingle">
-                                                    <i class="fas fa-dice-one"></i> {{ _("Set Singolo") }}
-                                                </label>
-
-                                                <input type="radio" class="btn-check" name="match_format" id="formatMulti" value="multi" {% if selected_format == 'multi' %}checked{% endif %}>
-                                                <label class="btn btn-outline-primary" for="formatMulti">
-                                                    <i class="fas fa-layer-group"></i> {{ _("Multi-Set") }}
-                                                </label>
-
-                                                <input type="radio" class="btn-check" name="match_format" id="formatFree" value="free" {% if selected_format == 'free' %}checked{% endif %}>
-                                                <label class="btn btn-outline-primary" for="formatFree">
-                                                    <i class="fas fa-infinity"></i> {{ _("Libero") }}
-                                                </label>
-                                            </div>
-                                            <div class="form-text small">
-                                                <strong>{{ _("Set Singolo") }}:</strong> {{ _("Partita classica") }}<br>
-                                                <strong>{{ _("Multi-Set") }}:</strong> {{ _("Più set, vince chi ne raggiunge N") }}<br>
-                                                <strong>{{ _("Libero") }}:</strong> {{ _("Senza limite, termini quando vuoi") }}
-                                            </div>
-                                        </div>
-
-                                        <!-- Single-set configuration -->
-                                        <div id="singleSetConfig">
-                                            <div class="mb-3">
-                                                <label for="distance" class="form-label">{{ _("Distanza") }} *</label>
-                                                <input type="number" class="form-control" id="distance" name="distance"
-                                                    min="1" max="25"
-                                                    value="{{ rematch_params.distance if rematch_params and rematch_params.distance else '5' }}">
-                                                <div class="form-text">{{ _("Numero di rack da vincere") }}</div>
-                                            </div>
-
-                                            <div class="mb-3">
-                                                {% set is_race_to_value = rematch_params.is_race_to if rematch_params else 'true' %}
-                                                <label class="form-label">{{ _("Tipo Distanza") }}</label>
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="radio" name="is_race_to"
-                                                        id="is_race_to_true" value="true" {% if is_race_to_value=='true' %}checked{% endif %}>
-                                                    <label class="form-check-label" for="is_race_to_true">
-                                                        {{ _("Al (vince chi arriva a N rack)") }}
-                                                    </label>
-                                                </div>
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="radio" name="is_race_to"
-                                                        id="is_race_to_false" value="false" {% if is_race_to_value=='false' %}checked{% endif %}>
-                                                    <label class="form-check-label" for="is_race_to_false">
-                                                        {{ _("Esattamente (tutti i rack specificati)") }}
-                                                    </label>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Multi-set configuration -->
-                                        <div id="multiSetConfig" style="display: none;">
-                                            <div class="mb-3">
-                                                <label for="match_distance" class="form-label">{{ _("Numero di Set") }} *</label>
-                                                <input type="number" class="form-control" id="match_distance" name="match_distance"
-                                                    min="1" max="11" value="{{ rematch_params.match_distance if rematch_params and rematch_params.match_distance else '3' }}">
-                                                <div class="form-text">{{ _("Numero di set da vincere") }}</div>
-                                            </div>
-
-                                            <div class="mb-3">
-                                                <label for="set_distance" class="form-label">{{ _("Rack per Set") }} *</label>
-                                                <input type="number" class="form-control" id="set_distance" name="set_distance"
-                                                    min="1" max="25" value="{{ rematch_params.set_distance if rematch_params and rematch_params.set_distance else '5' }}">
-                                                <div class="form-text">{{ _("Numero di rack per vincere ogni set") }}</div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Free format info -->
-                                        <div id="freeFormatConfig" style="display: none;">
-                                            <div class="alert alert-info">
-                                                <i class="fas fa-info-circle"></i>
-                                                {{ _("Match senza limite. Potrai terminare manualmente quando vuoi.") }}
-                                            </div>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            {% set selected_break_rule = rematch_params.break_rule if rematch_params
-                                            else 'alternate' %}
-                                            <label for="break_rule" class="form-label">{{ _("Regola Break") }}</label>
-                                            <select class="form-select" id="break_rule" name="break_rule">
-                                                <option value="alternate" {% if selected_break_rule=='alternate'
-                                                    %}selected{% endif %}>{{ _("A turno") }}</option>
-                                                <option value="winner_breaks" {% if selected_break_rule=='winner_breaks'
-                                                    %}selected{% endif %}>{{ _("Vincitore rompe") }}</option>
-                                                <option value="loser_breaks" {% if selected_break_rule=='loser_breaks'
-                                                    %}selected{% endif %}>{{ _("Perdente rompe") }}</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Player Invitations (for direct proposals) -->
-                                <div id="playerInvitations" style="display: none;">
-                                    <hr>
-                                    <h5>{{ _("Inviti Diretti") }}</h5>
-
-                                    <div class="mb-3">
-                                        <label for="playerSelect" class="form-label">
-                                            <i class="fas fa-user-friends me-1"></i>
-                                            {{ _("Giocatori da invitare") }}
-                                        </label>
-                                        <select id="playerSelect" name="invited_user_ids" multiple
-                                            placeholder="{{ _('Seleziona giocatori...') }}">
-                                        </select>
-                                        <div class="form-text">
-                                            {{ _("Digita per cercare tra i giocatori con cui hai già giocato") }}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Description -->
-                                <div class="mb-3">
-                                    <label for="description" class="form-label">{{ _("Descrizione (opzionale)") }}</label>
-                                    <textarea class="form-control" id="description" name="description" rows="3"
-                                        placeholder="{{ _('Aggiungi dettagli sul match, livello richiesto, note speciali...') }}"></textarea>
-                                </div>
-
-                                <!-- Expiration -->
-                                <div class="mb-3">
-                                    <label for="expires_hours" class="form-label">{{ _("Scade tra (ore)") }}</label>
-                                    <select class="form-select" id="expires_hours" name="expires_hours">
-                                        {% set selected_expires = rematch_params.expires_hours if rematch_params else
-                                        '1' %}
-                                        <option value="0" {% if selected_expires=='0' %}selected{% endif %}>{{ _("Mai (Match immediato)") }}</option>
-                                        <option value="1" {% if selected_expires=='1' %}selected{% endif %}>{{ _("1 ora prima del match") }}</option>
-                                        <option value="2" {% if selected_expires=='2' %}selected{% endif %}>{{ _("2 ore prima del match") }}</option>
-                                        <option value="6" {% if selected_expires=='6' %}selected{% endif %}>{{ _("6 ore prima del match") }}</option>
-                                        <option value="24" {% if selected_expires=='24' %}selected{% endif %}>{{ _("24 ore prima del match") }}</option>
-                                        <option value="48" {% if selected_expires=='48' %}selected{% endif %}>{{ _("48 ore prima del match") }}</option>
-                                    </select>
-                                    <div class="form-text">{{ _("Quando la proposta scade automaticamente") }}</div>
-                                </div>
-
-                                <!-- Submit -->
-                                <div class="text-center">
-                                    <button type="button" class="btn btn-secondary me-2" onclick="history.back()">
-                                        <i class="fas fa-arrow-left"></i> {{ _("Annulla") }}
-                                    </button>
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-paper-plane"></i> {{ _("Crea Proposta") }}
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-
-                    <!-- Help Card -->
-                    <div class="card mt-4">
-                        <div class="card-header">
-                            <h5><i class="fas fa-question-circle"></i> {{ _("Come funziona?") }}</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <h6><i class="fas fa-user-friends"></i> {{ _("Invito Diretto") }}</h6>
-                                    <ul class="small text-muted">
-                                        <li>{{ _("Inviti giocatori specifici per username") }}</li>
-                                        <li>{{ _("Ricevono una notifica della tua proposta") }}</li>
-                                        <li>{{ _("Il primo che accetta gioca con te") }}</li>
-                                        <li>{{ _("Perfetto per sfidare amici o rivali") }}</li>
-                                    </ul>
-                                </div>
-                                <div class="col-md-6">
-                                    <h6><i class="fas fa-globe"></i> {{ _("Invito Aperto") }}</h6>
-                                    <ul class="small text-muted">
-                                        <li>{{ _("Visibile a tutta la community") }}</li>
-                                        <li>{{ _("Chiunque può accettare la tua proposta") }}</li>
-                                        <li>{{ _("Ideale per trovare nuovi avversari") }}</li>
-                                        <li>{{ _("Amplia la tua cerchia di giocatori") }}</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+      <div id="playerInvitations">
+        <label for="playerSelect" class="form-label">{{ _("Giocatori da invitare") }}</label>
+        <select id="playerSelect" name="invited_user_ids" multiple
+                placeholder="{{ _('Seleziona giocatori...') }}"></select>
+        <div class="form-text">{{ _("Cerca fra i giocatori con cui hai già giocato") }}</div>
+      </div>
     </div>
+
+    {# ---------- Quando ---------- #}
+    <div class="c7-card">
+      <div class="c7-sechead mb-3"><h2>{{ _("Quando") }}</h2></div>
+
+      <div class="mb-3">
+        <label for="scheduled_at" class="form-label">{{ _("Data e ora") }}</label>
+        <input type="datetime-local" class="form-control" id="scheduled_at" name="scheduled_at" required
+               value="{{ rematch_params.scheduled_at if rematch_params else '' }}">
+      </div>
+
+      <div>
+        <label for="expires_hours" class="form-label">{{ _("La proposta scade") }}</label>
+        {% set selected_expires = rematch_params.expires_hours if rematch_params else '1' %}
+        <select class="form-select" id="expires_hours" name="expires_hours">
+          <option value="0" {% if selected_expires=='0' %}selected{% endif %}>{{ _("Mai (match immediato)") }}</option>
+          <option value="1" {% if selected_expires=='1' %}selected{% endif %}>{{ _("1 ora prima del match") }}</option>
+          <option value="2" {% if selected_expires=='2' %}selected{% endif %}>{{ _("2 ore prima del match") }}</option>
+          <option value="6" {% if selected_expires=='6' %}selected{% endif %}>{{ _("6 ore prima del match") }}</option>
+          <option value="24" {% if selected_expires=='24' %}selected{% endif %}>{{ _("24 ore prima del match") }}</option>
+          <option value="48" {% if selected_expires=='48' %}selected{% endif %}>{{ _("48 ore prima del match") }}</option>
+        </select>
+        <div class="form-text">{{ _("Dopo quel momento nessuno può più accettarla") }}</div>
+      </div>
+    </div>
+
+    {# ---------- Dove ---------- #}
+    <div class="c7-card">
+      <div class="c7-sechead mb-3"><h2>{{ _("Dove") }}</h2></div>
+      <label for="location" class="form-label">{{ _("Sala biliardo") }}</label>
+      <input type="text" class="form-control" id="location" name="location" required
+             placeholder="{{ _('es. Sala Regina, Udine') }}"
+             list="venue-suggestions" autocomplete="off"
+             value="{{ rematch_params.location if rematch_params else '' }}">
+      <datalist id="venue-suggestions">
+        {% for venue in verified_venues or [] %}
+        <option value="{{ venue.name }}">{{ venue.name }} - {{ venue.city or _('Città non specificata') }}</option>
+        {% endfor %}
+      </datalist>
+      <div class="form-text">{{ _("Scegli una sala verificata o scrivine una nuova") }}</div>
+    </div>
+
+    {# ---------- Come si gioca ---------- #}
+    <div class="c7-card">
+      <div class="c7-sechead mb-3"><h2>{{ _("Come si gioca") }}</h2></div>
+
+      <div class="mb-3">
+        <label for="discipline" class="form-label">{{ _("Disciplina") }}</label>
+        {# Le opzioni vengono dall'enum `Discipline`: erano scritte a mano
+           col vocabolario storico, quindi questo form era il punto in cui
+           quei valori **entravano** nei dati. #}
+        {% set selected_discipline = (rematch_params.discipline
+           if rematch_params else Discipline.EIGHT_BALL.value) %}
+        <select class="form-select" id="discipline" name="discipline" required>
+          {% for value, label in Discipline.get_choices() %}
+          <option value="{{ value }}" {% if selected_discipline==value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      {% set selected_format = rematch_params.match_format if rematch_params and rematch_params.match_format else 'single' %}
+      {{ choice('match_format', _("Formato"), [
+           {'value': 'single', 'title': _("Set singolo"), 'desc': _("Una partita sola, alla distanza scelta."), 'icon': 'fa-dice-one'},
+           {'value': 'multi', 'title': _("Multi-set"), 'desc': _("Più set: vince chi ne conquista N."), 'icon': 'fa-layer-group'},
+           {'value': 'free', 'title': _("Libero"), 'desc': _("Senza limite: la partita si chiude quando volete."), 'icon': 'fa-infinity'}
+         ], selected=selected_format) }}
+
+      {# Configurazione a set singolo #}
+      <div id="singleSetConfig">
+        {{ stepper('distance', _("Distanza"),
+             value=(rematch_params.distance if rematch_params and rematch_params.distance else 5),
+             min=1, max=25, hint=_("rack per vincere")) }}
+
+        {% set is_race_to_value = rematch_params.is_race_to if rematch_params else 'true' %}
+        {{ choice('is_race_to', _("Come si chiude"), [
+             {'value': 'true', 'title': _("Al N"), 'desc': _("Vince chi arriva primo alla distanza.")},
+             {'value': 'false', 'title': _("Esattamente N"), 'desc': _("Si giocano tutti i rack: vince chi ne ha di più.")}
+           ], selected=is_race_to_value) }}
+      </div>
+
+      {# Configurazione multi-set #}
+      <div id="multiSetConfig" class="d-none">
+        {{ stepper('match_distance', _("Set da vincere"),
+             value=(rematch_params.match_distance if rematch_params and rematch_params.match_distance else 3),
+             min=1, max=11, hint=_("set per vincere il match")) }}
+        {{ stepper('set_distance', _("Rack per set"),
+             value=(rematch_params.set_distance if rematch_params and rematch_params.set_distance else 5),
+             min=1, max=25, hint=_("rack per vincere un set")) }}
+      </div>
+
+      {# Formato libero #}
+      <div id="freeFormatConfig" class="d-none">
+        <div class="c7-flash c7-flash--info mb-3">
+          <span class="c7-flash__ico"><i class="fas fa-infinity"></i></span>
+          <div class="c7-flash__body">
+            <div class="c7-flash__text">{{ _("Match senza limite: lo chiuderete a mano quando volete.") }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        {% set selected_break_rule = rematch_params.break_rule if rematch_params else 'alternate' %}
+        <label for="break_rule" class="form-label">{{ _("Chi rompe") }}</label>
+        <select class="form-select" id="break_rule" name="break_rule">
+          <option value="alternate" {% if selected_break_rule=='alternate' %}selected{% endif %}>{{ _("A turno") }}</option>
+          <option value="winner_breaks" {% if selected_break_rule=='winner_breaks' %}selected{% endif %}>{{ _("Rompe chi ha vinto il rack") }}</option>
+          <option value="loser_breaks" {% if selected_break_rule=='loser_breaks' %}selected{% endif %}>{{ _("Rompe chi ha perso il rack") }}</option>
+        </select>
+      </div>
+    </div>
+
+    {# ---------- Messaggio ---------- #}
+    <div class="c7-card">
+      <label for="description" class="form-label">{{ _("Messaggio (opzionale)") }}</label>
+      <textarea class="form-control" id="description" name="description" rows="3"
+                placeholder="{{ _('Se ti va bene giovedì porto io le bilie…') }}"></textarea>
+    </div>
+  </form>
+
+  {# Barra d'azione appiccicata in fondo, come nel prototipo. Il pulsante sta
+     fuori dal form e lo invia con `form=`: dentro la pila finirebbe sopra il
+     margine della card e perderebbe l'aggancio al fondo dello schermo. #}
+  <div class="c7-actionbar" style="flex-direction:column;gap:6px">
+    <button type="submit" form="proposalForm" class="btn btn-primary w-100">
+      <i class="fas fa-paper-plane"></i>&nbsp;{{ _("Invia la proposta") }}
+    </button>
+    <div class="text-center" style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
+      {{ _("Chi la riceve ha una notifica e decide se accettare") }}
+    </div>
+  </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
-<!-- TomSelect for autocomplete player selection -->
-<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"
+        integrity="sha384-cnROoUgVILyibe3J0zhzWoJ9p2WmdnK7j/BOTSWqVDbC1pVw2d+i6Q/1ESKJKCYf" crossorigin="anonymous"></script>
+{{ form_macros_scripts() }}
 <script>
-    // Internationalization strings
+    // Stringhe tradotte: sempre |tojson, gli apostrofi italiani romperebbero
+    // tutto il JS della pagina.
     const i18n = {
         selectPlayerError: {{ _("Devi selezionare almeno un giocatore per un invito diretto")|tojson }},
         confirmCreate: {{ _("Sei sicuro di voler creare questa proposta di match?")|tojson }},
-        formatRaceTo: {{ _("Al {distance} (chi arriva prima a {distance} vince)")|tojson }},
-        formatExact: {{ _("Esattamente {distance} rack (vincitore per somma punti)")|tojson }},
+        formatRaceTo: {{ _("Vince chi arriva primo a {distance} rack.")|tojson }},
+        formatExact: {{ _("Si giocano {distance} rack: vince chi ne ha di più.")|tojson }},
         noOpponents: {{ _("Non hai ancora giocato con nessuno. Crea prima una proposta aperta!")|tojson }},
-        loadingOpponents: {{ _("Caricamento giocatori...")|tojson }}
+        selectPlaceholder: {{ _("Seleziona giocatori...")|tojson }}
     };
 
     let playerSelect = null;
 
-    // Initialize TomSelect for player selection
     function initPlayerSelect() {
         const selectEl = document.getElementById('playerSelect');
         if (!selectEl || playerSelect) return;
@@ -331,160 +218,112 @@
             maxItems: null,
             create: false,
             sortField: { field: 'username', direction: 'asc' },
-            placeholder: {{ _("Seleziona giocatori...")| tojson }},
-    render: {
-        option: function(data, escape) {
-            return '<div class="py-2 px-3"><i class="fas fa-user me-2 text-muted"></i>' + escape(data.username) + '</div>';
-        },
-        item: function(data, escape) {
-            return '<div><i class="fas fa-user me-1"></i>' + escape(data.username) + '</div>';
-        },
-        no_results: function() {
-            return '<div class="no-results p-3 text-muted">' + i18n.noOpponents + '</div>';
-        }
-    }
+            placeholder: i18n.selectPlaceholder,
+            render: {
+                option: function (data, escape) {
+                    return '<div class="py-2 px-3"><i class="fas fa-user me-2 text-muted"></i>' + escape(data.username) + '</div>';
+                },
+                item: function (data, escape) {
+                    return '<div><i class="fas fa-user me-1"></i>' + escape(data.username) + '</div>';
+                },
+                no_results: function () {
+                    return '<div class="no-results p-3 text-muted">' + i18n.noOpponents + '</div>';
+                }
+            }
         });
 
-    // Load opponents from API
-    fetch('{{ url_for("individual_match.get_opponents") }}')
-        .then(response => response.json())
-        .then(opponents => {
-            opponents.forEach(opp => {
-                playerSelect.addOption(opp);
-            });
-            playerSelect.refreshOptions(false);
-
-            // Pre-select rematch opponent if provided
-            {% if rematch_opponent %}
-            playerSelect.addItem({{ rematch_opponent.id }});
-    {% endif %}
+        fetch({{ url_for("individual_match.get_opponents")|tojson }})
+            .then(response => response.json())
+            .then(opponents => {
+                opponents.forEach(opp => playerSelect.addOption(opp));
+                playerSelect.refreshOptions(false);
+                {% if rematch_opponent %}
+                playerSelect.addItem({{ rematch_opponent.id }});
+                {% endif %}
             })
-            .catch (error => {
-        console.error('Error loading opponents:', error);
-    });
+            .catch(error => {
+                console.error('Error loading opponents:', error);
+            });
     }
 
-    // Show/hide player invitations based on proposal type
-    document.getElementById('proposal_type').addEventListener('change', function () {
-        const playerInvitations = document.getElementById('playerInvitations');
-        if (this.value === 'direct') {
-            playerInvitations.style.display = 'block';
-            initPlayerSelect();
-        } else {
-            playerInvitations.style.display = 'none';
-            if (playerSelect) {
-                playerSelect.clear();
-            }
-        }
-    });
+    function currentValue(name) {
+        const checked = document.querySelector('input[name="' + name + '"]:checked');
+        return checked ? checked.value : null;
+    }
 
-    // Set minimum date to now
+    // Gli inviti diretti si mostrano solo quando servono.
+    function syncProposalType() {
+        const isDirect = currentValue('proposal_type') === 'direct';
+        document.getElementById('playerInvitations').classList.toggle('d-none', !isDirect);
+        if (isDirect) {
+            initPlayerSelect();
+        } else if (playerSelect) {
+            playerSelect.clear();
+        }
+    }
+
+    // Una sola configurazione visibile alla volta: quella del formato scelto.
+    function syncMatchFormat() {
+        const format = currentValue('match_format') || 'single';
+        document.getElementById('singleSetConfig').classList.toggle('d-none', format !== 'single');
+        document.getElementById('multiSetConfig').classList.toggle('d-none', format !== 'multi');
+        document.getElementById('freeFormatConfig').classList.toggle('d-none', format !== 'free');
+    }
+
+    // La descrizione delle due chiusure dice il numero scelto, non "N".
+    function syncFormatExplanation() {
+        const distance = document.getElementById('f-distance').value;
+        const descs = document.querySelectorAll('input[name="is_race_to"]');
+        descs.forEach(radio => {
+            const desc = radio.closest('.c7-choice').querySelector('.c7-choice__desc');
+            if (!desc) return;
+            const template = radio.value === 'true' ? i18n.formatRaceTo : i18n.formatExact;
+            desc.textContent = template.replace(/\{distance\}/g, distance);
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('input[name="proposal_type"]').forEach(r =>
+            r.addEventListener('change', syncProposalType));
+        document.querySelectorAll('input[name="match_format"]').forEach(r =>
+            r.addEventListener('change', syncMatchFormat));
+        document.getElementById('f-distance').addEventListener('change', syncFormatExplanation);
+
+        // Non si propone una partita nel passato, e la proposta tipica e' per
+        // stasera: se il campo e' vuoto parte da fra due ore.
+        const scheduledInput = document.getElementById('scheduled_at');
         const now = new Date();
         now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-        const nowStr = now.toISOString().slice(0, 16);
-        document.getElementById('scheduled_at').min = nowStr;
-
-        // Set default to 2 hours from now ONLY if empty
-        const scheduledInput = document.getElementById('scheduled_at');
+        scheduledInput.min = now.toISOString().slice(0, 16);
         if (!scheduledInput.value) {
             const defaultTime = new Date(now.getTime() + 2 * 60 * 60 * 1000);
             scheduledInput.value = defaultTime.toISOString().slice(0, 16);
         }
+
+        {% if rematch_opponent %}
+        // Rivincita: e' per forza un invito diretto, all'avversario di prima.
+        const direct = document.querySelector('input[name="proposal_type"][value="direct"]');
+        direct.checked = true;
+        direct.dispatchEvent(new Event('change', { bubbles: true }));
+        {% endif %}
+
+        syncProposalType();
+        syncMatchFormat();
+        syncFormatExplanation();
     });
 
-    // Update format explanation based on distance
-    document.getElementById('distance').addEventListener('change', updateFormatExplanation);
-    document.querySelectorAll('input[name="is_race_to"]').forEach(radio => {
-        radio.addEventListener('change', updateFormatExplanation);
-    });
-
-    function updateFormatExplanation() {
-        const distance = parseInt(document.getElementById('distance').value);
-        const isRaceTo = document.querySelector('input[name="is_race_to"]:checked').value === 'true';
-
-        const explanation = document.querySelector('label[for="is_race_to_true"]');
-        if (isRaceTo) {
-            explanation.textContent = i18n.formatRaceTo.replace(/\{distance\}/g, distance);
-        } else {
-            explanation.textContent = i18n.formatExact.replace(/\{distance\}/g, distance);
-        }
-    }
-
-    // Form submission
     document.getElementById('proposalForm').addEventListener('submit', function (e) {
-        const proposalType = document.getElementById('proposal_type').value;
+        e.preventDefault();
 
-        if (proposalType === 'direct') {
+        if (currentValue('proposal_type') === 'direct') {
             const selectedValues = playerSelect ? playerSelect.getValue() : [];
             if (selectedValues.length === 0) {
-                e.preventDefault();
                 showError(i18n.selectPlayerError);
                 return;
             }
         }
 
-        // Show confirmation modal, submit on confirm
-        e.preventDefault();
-        showConfirm(i18n.confirmCreate, () => {
-            this.submit();
-        });
-    });
-
-    // Handle match format toggle
-    document.querySelectorAll('input[name="match_format"]').forEach(radio => {
-        radio.addEventListener('change', function() {
-            const format = this.value;
-            const singleSetConfig = document.getElementById('singleSetConfig');
-            const multiSetConfig = document.getElementById('multiSetConfig');
-            const freeFormatConfig = document.getElementById('freeFormatConfig');
-            const distanceInput = document.getElementById('distance');
-
-            // Hide all configs first
-            singleSetConfig.style.display = 'none';
-            multiSetConfig.style.display = 'none';
-            freeFormatConfig.style.display = 'none';
-
-            // Show appropriate config
-            if (format === 'single') {
-                singleSetConfig.style.display = 'block';
-                distanceInput.required = true;
-            } else if (format === 'multi') {
-                multiSetConfig.style.display = 'block';
-                distanceInput.required = false;
-            } else if (format === 'free') {
-                freeFormatConfig.style.display = 'block';
-                distanceInput.required = false;
-            }
-        });
-    });
-
-    // Initialize format explanation and player invitations visibility
-    document.addEventListener('DOMContentLoaded', function () {
-        updateFormatExplanation();
-
-        // Allinea le sezioni di config al formato preselezionato (rematch
-        // multi/free): senza, resterebbe visibile la config "single".
-        const checkedFormat = document.querySelector('input[name="match_format"]:checked');
-        if (checkedFormat) {
-            checkedFormat.dispatchEvent(new Event('change'));
-        }
-
-        // Check for rematch opponent (pre-selected from previous match)
-        {% if rematch_opponent %}
-        // Set proposal type to direct and show player invitations
-        document.getElementById('proposal_type').value = 'direct';
-        document.getElementById('playerInvitations').style.display = 'block';
-        initPlayerSelect();
-        {% else %}
-        // Show player invitations if "Invito Diretto" is selected on page load
-        const proposalType = document.getElementById('proposal_type').value;
-        const playerInvitations = document.getElementById('playerInvitations');
-        if (proposalType === 'direct') {
-            playerInvitations.style.display = 'block';
-            initPlayerSelect();
-        }
-        {% endif %}
+        showConfirm(i18n.confirmCreate, () => this.submit());
     });
 </script>
 {% endblock %}
