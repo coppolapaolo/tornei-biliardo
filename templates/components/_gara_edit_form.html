@@ -114,6 +114,10 @@
       </div>
     </div>
 
+    {# Opzioni che esistono solo sui formati a tabellone: il blocco si mostra
+       da sé quando la strategia scelta è una di quelle. #}
+    {% include "components/_bracket_options.html" %}
+
     <div class="mb-3">
       <label for="has_handicap" class="form-label">{{ _("Gioco con handicap") }}</label>
       <select class="form-select" id="has_handicap" name="has_handicap">

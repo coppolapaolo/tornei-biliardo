@@ -504,7 +504,7 @@ class Gara(SoftDeleteMixin, db.Model):
         per validazione centralizzata.
         """
         from models.matchmaking.configuration import (
-            MatchmakingStrategy,
+            BRACKET_STRATEGIES,
             StrategyConfiguration,
         )
 
@@ -523,12 +523,8 @@ class Gara(SoftDeleteMixin, db.Model):
         # da lì che si stima il numero di turni in fase di creazione, quando
         # gli iscritti non ci sono ancora. (La dimensione *effettiva* del
         # tabellone la fissa poi il sorteggio sugli iscritti reali.)
-        bracket_strategies = {
-            MatchmakingStrategy.DIRECT_ELIMINATION.value,
-            MatchmakingStrategy.DOUBLE_KNOCKOUT.value,
-        }
         if (
-            self.matchmaking_strategy in bracket_strategies
+            self.matchmaking_strategy in BRACKET_STRATEGIES
             and not self.max_participants
         ):
             errors.append(
