@@ -1,0 +1,31 @@
+{# templates/components/_match_status_labels.html — 7c
+
+   Stati di una partita, tradotti e con il tono del badge. In un posto solo:
+   erano scritti a mano nel dettaglio del match individuale, e nella
+   panoramica admin non erano scritti affatto — `status.value.replace('_',' ')
+   .title()` stampava "In Progress" sotto gli occhi di chi amministra.
+
+   Uso:
+
+     {% import "components/_match_status_labels.html" as st with context %}
+     {{ st.labels.get(match.status.value, match.status.value) }}
+     <span class="c7-state c7-state--{{ st.tone.get(match.status.value, 'muted') }}">
+
+   `with context` serve perche' le etichette passano da `_()`.
+#}
+
+{% set labels = {
+  MatchStatus.SCHEDULED.value: _('Da giocare'),
+  MatchStatus.IN_PROGRESS.value: _('In corso'),
+  MatchStatus.COMPLETED.value: _('Concluso'),
+  MatchStatus.VALIDATED.value: _('Validato'),
+  MatchStatus.CANCELLED.value: _('Annullato')
+} %}
+
+{% set tone = {
+  MatchStatus.SCHEDULED.value: 'warn',
+  MatchStatus.IN_PROGRESS.value: 'err',
+  MatchStatus.COMPLETED.value: 'ok',
+  MatchStatus.VALIDATED.value: 'ok',
+  MatchStatus.CANCELLED.value: 'muted'
+} %}

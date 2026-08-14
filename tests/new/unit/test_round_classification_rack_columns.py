@@ -48,7 +48,7 @@ def _gara_with_result(db_session, classification_system: str) -> Gara:
         name=f"Rack columns {suffix}",
         date=date(2026, 5, 1),
         time=time(18, 0),
-        discipline="palla_9",
+        discipline="9_ball",
         distance=5,
         is_race_to=True,
         director_id=director.id,

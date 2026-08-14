@@ -1,304 +1,264 @@
-{# templates/components/_gara_management.html #}
+{# templates/components/_gara_management.html — Design System 7c
+   Pannello di gestione della gara. Macchina a stati invariata: stessi
+   gara.status / get_real_status(), stessi onclick, stessi modal target,
+   stesse capability. Cambiano solo struttura e classi. #}
 
-{# Macro for Challenge Button #}
-{# Show only for random strategy AND (standalone gara OR campionato with challenge_mode enabled) #}
+{# Challenge: solo strategia random E (gara standalone O campionato con challenge_mode) #}
 {% macro challenge_button(gara) %}
 {% if gara.matchmaking_strategy == 'random' %}
-{% set challenge_enabled = not gara.campionato or gara.campionato.challenge_mode %}
-{% if challenge_enabled %}
-{% set has_challenges = gara.gara_challenges|selectattr("is_active", "equalto", true)|list|length > 0 %}
-<button class="btn btn-warning w-100 mb-2" data-bs-toggle="modal" data-bs-target="#challengeManagementModal">
-    <i class="fas fa-trophy"></i>
-    {% if has_challenges %}
-    {{ _('Gestisci Challenge') }}
-    {% else %}
-    {{ _('Aggiungi Challenge') }}
-    {% endif %}
-</button>
-{% endif %}
+  {% set challenge_enabled = not gara.campionato or gara.campionato.challenge_mode %}
+  {% if challenge_enabled %}
+    {% set has_challenges = gara.gara_challenges|selectattr("is_active", "equalto", true)|list|length > 0 %}
+    <button class="btn btn-secondary w-100" data-bs-toggle="modal" data-bs-target="#challengeManagementModal">
+      <i class="fas fa-bullseye"></i>
+      {{ _('Gestisci Challenge') if has_challenges else _('Aggiungi Challenge') }}
+    </button>
+  {% endif %}
 {% endif %}
 {% endmacro %}
 
-{# Macro for Start Round/Game Button #}
 {% macro start_round_button(gara, disabled_condition) %}
-<button class="btn btn-primary w-100 mb-2" onclick="startFirstRound({{ gara.id }}, '{{ gara.matchmaking_strategy }}')"
-    {% if disabled_condition %}disabled{% endif %}>
-    <i class="fas fa-play"></i>
-    {% if gara.matchmaking_strategy == 'random' %}
-    {{ _('Avvia Gara') }}
-    {% else %}
-    {{ _('Avvia Primo Turno') }}
-    {% endif %}
+<button class="btn btn-primary w-100" onclick="startFirstRound({{ gara.id }}, '{{ gara.matchmaking_strategy }}')"
+        {% if disabled_condition %}disabled{% endif %}>
+  <i class="fas fa-play"></i>
+  {{ _('Avvia Gara') if gara.matchmaking_strategy == 'random' else _('Avvia Primo Turno') }}
 </button>
 {% endmacro %}
 
-{# Macro for Modify Dates Button #}
-{% macro modify_dates_button(button_text, icon_class, margin_class='mb-2') %}
-<button class="btn btn-warning w-100 {{ margin_class }}" data-bs-toggle="modal" data-bs-target="#modifyDatesModal">
-    <i class="{{ icon_class }}"></i> {{ button_text }}
+{% macro modify_dates_button(button_text) %}
+<button class="btn btn-secondary w-100" data-bs-toggle="modal" data-bs-target="#modifyDatesModal">
+  <i class="fas fa-calendar"></i> {{ button_text }}
 </button>
 {% endmacro %}
-<div>
-    <!-- Gestione Stato Gara -->
-    {# management_headerless: sopprime card+header quando il componente e'
-       incluso in un contenitore che ha gia' titolo "Gestione" e status badge
-       (collapse mobile in gara_detail.html, fase di gioco) #}
-    <div class="{% if not management_headerless %}card{% endif %}">
-        {% if not management_headerless %}
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5><i class="fas fa-cog"></i> {{ _('Gestione') }}</h5>
-            {{ status_badge(gara, 'gara') }}
+
+{# Nota esplicativa sotto un'azione #}
+{% macro hint(text) %}
+<div style="font-size:12px;font-weight:600;color:var(--c7-ink-muted);line-height:1.45">{{ text }}</div>
+{% endmacro %}
+
+{# management_headerless: sopprime card+testata quando il componente e' incluso
+   in un contenitore che ha gia' titolo "Gestione" e badge di stato. #}
+<div class="{{ '' if management_headerless else 'c7-card' }}">
+  {% if not management_headerless %}
+  <div class="d-flex align-items-center gap-2 mb-3">
+    <h3 class="mb-0 flex-fill">{{ _('Gestione') }}</h3>
+    {{ status_badge(gara, 'gara') }}
+  </div>
+  {% endif %}
+
+  <div class="c7-stack">
+
+    {# ---------------- SETUP ---------------- #}
+    {% if gara.status == 'setup' %}
+      {{ challenge_button(gara) }}
+      <button class="btn btn-success w-100" data-bs-toggle="modal" data-bs-target="#openInscriptionsModal">
+        <i class="fas fa-door-open"></i> {{ _('Apri Iscrizioni') }}
+      </button>
+
+    {# ---------------- ISCRIZIONI APERTE ---------------- #}
+    {% elif gara.get_real_status() == 'inscription' %}
+      {{ start_round_button(gara, gara.get_active_inscriptions_count() < gara.min_participants) }}
+      {{ challenge_button(gara) }}
+      {% if gara.can_modify_inscription_dates() %}{{ modify_dates_button(_('Modifica Date')) }}{% endif %}
+      {% if gara.get_active_inscriptions_count() == 0 %}
+        <button class="btn btn-secondary w-100" onclick="closeInscriptions({{ gara.id }})">
+          <i class="fas fa-door-closed"></i> {{ _('Chiudi Iscrizioni') }}
+        </button>
+      {% endif %}
+
+      {{ hint(_('Servono %(min)d iscritti (%(current)d attuali)', min=gara.min_participants, current=gara.get_active_inscriptions_count())) }}
+
+      {% if gara.inscription_end %}
+      <div class="c7-flash c7-flash--info">
+        <span class="c7-flash__ico"><i class="fas fa-clock"></i></span>
+        <div class="c7-flash__body">
+          <div class="c7-flash__title">{{ _('Le iscrizioni scadono') }}</div>
+          <div class="c7-flash__text c7-num" style="font-size:13px" data-utc="{{ gara.inscription_end.isoformat() }}">
+            {{ gara.inscription_end|datetime_local }}
+          </div>
         </div>
-        {% endif %}
-        <div class="card-body">
-            {% if gara.status == 'setup' %}
-            {{ challenge_button(gara) }}
+      </div>
+      {% endif %}
 
-            <button class="btn btn-success w-100 mb-2" data-bs-toggle="modal" data-bs-target="#openInscriptionsModal">
-                <i class="fas fa-door-open"></i> {{ _('Apri Iscrizioni') }}
+    {# ---------------- ISCRIZIONI SCADUTE ---------------- #}
+    {% elif gara.get_real_status() == 'inscription_closed' %}
+      <div class="c7-flash c7-flash--warning">
+        <span class="c7-flash__ico"><i class="fas fa-exclamation"></i></span>
+        <div class="c7-flash__body">
+          <div class="c7-flash__title">{{ _('Iscrizioni scadute') }}</div>
+        </div>
+      </div>
+
+      {% if gara.can_modify_inscription_dates() and gara.get_active_inscriptions_count() >= gara.min_participants %}
+        {{ start_round_button(gara, false) }}
+        {{ modify_dates_button(_('Estendi Iscrizioni')) }}
+      {% elif gara.can_modify_inscription_dates() %}
+        {{ modify_dates_button(_('Estendi Iscrizioni')) }}
+        <button class="btn btn-danger w-100" onclick="cancelProvaWithNotifications({{ gara.id }}, {{ gara.number }}, this)">
+          <i class="fas fa-circle-xmark"></i> {{ _('Cancella Gara') }}
+        </button>
+        {{ hint(_('Servono %(min)d iscritti (%(current)d attuali)', min=gara.min_participants, current=gara.get_active_inscriptions_count())) }}
+      {% endif %}
+
+    {# ---------------- ISCRIZIONI NON ANCORA APERTE ---------------- #}
+    {% elif gara.get_real_status() == 'inscription_not_yet_open' %}
+      <div class="c7-flash c7-flash--info">
+        <span class="c7-flash__ico"><i class="fas fa-clock"></i></span>
+        <div class="c7-flash__body">
+          <div class="c7-flash__title">{{ _('Le iscrizioni iniziano') }}</div>
+          <div class="c7-flash__text c7-num" style="font-size:13px" data-utc="{{ gara.inscription_start.isoformat() }}">
+            {{ gara.inscription_start|datetime_local }}
+          </div>
+        </div>
+      </div>
+      {% if gara.can_modify_inscription_dates() %}{{ modify_dates_button(_('Modifica Date')) }}{% endif %}
+
+    {# ---------------- IN GIOCO ---------------- #}
+    {% elif gara.status == 'playing' %}
+      {% set display_round = gara.current_round if gara.current_round > 0 else 1 %}
+
+      {% if gara.matchmaking_strategy == 'random' %}
+        {% set total_matches = gara.matches|length %}
+        {% set completed_count = gara.matches|selectattr('status', 'equalto', 'completed')|list|length %}
+        {% set validated_count = gara.matches|selectattr('status', 'equalto', 'validated')|list|length %}
+        {% set completed_matches = completed_count + validated_count %}
+
+        {% if gara.get_real_status() == 'campionato_completed' or completed_matches == total_matches %}
+          <div class="c7-flash c7-flash--success">
+            <span class="c7-flash__ico"><i class="fas fa-check"></i></span>
+            <div class="c7-flash__body">
+              <div class="c7-flash__title">{{ _('Tutte le %(total)d partite completate!', total=total_matches) }}</div>
+            </div>
+          </div>
+
+          {% if has_unresolved_tiebreakers %}
+            <button class="btn btn-primary w-100" onclick="startSsr({{ gara.id }}, this)">
+              <i class="fas fa-scale-balanced"></i> {{ _('Avvia Spareggio (SSR)') }}
             </button>
+            {{ hint(_('Ci sono parimerito nelle prime %(pos)d posizioni da risolvere', pos=gara.tiebreaker_until_position or 3)) }}
+          {% else %}
+            <button class="btn btn-primary w-100" onclick="terminateGara({{ gara.id }}, this)">
+              <i class="fas fa-flag-checkered"></i> {{ _('Termina Gara') }}
+            </button>
+            {{ hint(_('Conferma la conclusione della gara e blocca le modifiche')) }}
+          {% endif %}
+        {% else %}
+          <div class="c7-card" style="background:var(--c7-bg)">
+            <div class="c7-kicker">{{ _('Partite completate') }}</div>
+            <div class="c7-num mt-1" style="font-size:26px">{{ completed_matches }}/{{ total_matches }}</div>
+            <div class="mt-2" style="height:8px;border-radius:999px;background:var(--c7-line);overflow:hidden">
+              <div style="width:{{ (completed_matches / total_matches * 100) | round | int if total_matches else 0 }}%;height:100%;background:var(--c7-accent)"></div>
+            </div>
+          </div>
+          {{ hint(_('I giocatori avanzano automaticamente quando il loro avversario ha finito')) }}
+        {% endif %}
 
-            {% elif gara.get_real_status() == 'inscription' %}
-            {{ start_round_button(gara, gara.get_active_inscriptions_count() < gara.min_participants) }} {{
-                challenge_button(gara) }} {% if gara.can_modify_inscription_dates() %} {{
-                modify_dates_button(_('Modifica Date'), 'fas fa-edit' ) }} {% endif %} {% if
-                gara.get_active_inscriptions_count()==0 %} <button class="btn btn-secondary w-100 mb-2"
-                onclick="closeInscriptions({{ gara.id }})">
-                <i class="fas fa-door-closed"></i> {{ _('Chiudi Iscrizioni') }}
-                </button>
-                {% endif %}
+      {# Amalfi e altre strategie sequenziali #}
+      {% else %}
+        {% if gara.get_real_status() == 'campionato_completed' %}
+          <div class="c7-flash c7-flash--success">
+            <span class="c7-flash__ico"><i class="fas fa-check"></i></span>
+            <div class="c7-flash__body">
+              <div class="c7-flash__title">{{ _('Tutti i %(total)d turni completati!', total=gara.rounds_count) }}</div>
+            </div>
+          </div>
 
-                <small class="text-muted d-block text-center">
-                    {{ _('Servono %(min)d iscritti (%(current)d attuali)', min=gara.min_participants,
-                    current=gara.get_active_inscriptions_count()) }}
-                </small>
+          {% if has_unresolved_tiebreakers %}
+            <button class="btn btn-primary w-100" onclick="startSsr({{ gara.id }}, this)">
+              <i class="fas fa-scale-balanced"></i> {{ _('Avvia Spareggio (SSR)') }}
+            </button>
+            {{ hint(_('Ci sono parimerito nelle prime %(pos)d posizioni da risolvere', pos=gara.tiebreaker_until_position or 3)) }}
+          {% else %}
+            <button class="btn btn-primary w-100" onclick="terminateGara({{ gara.id }}, this)">
+              <i class="fas fa-flag-checkered"></i> {{ _('Termina Gara') }}
+            </button>
+            {{ hint(_('Conferma la conclusione della gara e blocca le modifiche')) }}
+          {% endif %}
 
-                {% if gara.inscription_end %}
-                <div class="mt-2 alert alert-info p-2">
-                    <small>
-                        <i class="fas fa-clock"></i>
-                        <strong>{{ _('Scade:') }}</strong><br>
-                        <span data-utc="{{ gara.inscription_end.isoformat() }}">
-                            {{ gara.inscription_end|datetime_local }}
-                        </span>
-                    </small>
-                </div>
-                {% endif %}
+          <button class="btn btn-secondary w-100" onclick="resetLastRound({{ gara.id }}, {{ gara.current_round }}, this)">
+            <i class="fas fa-rotate-left"></i> {{ _('Reset Ultimo Turno') }}
+          </button>
+          {{ hint(_('Azzera i risultati del turno %(num)s per correzioni', num=gara.current_round)) }}
 
-                {% elif gara.get_real_status() == 'inscription_closed' %}
-                <div class="alert alert-warning p-2 mb-2">
-                    <small><i class="fas fa-exclamation-triangle"></i> {{ _('Iscrizioni scadute!') }}</small>
-                </div>
+        {% elif gara.get_real_status() == 'round_completed' %}
+          <div class="c7-flash c7-flash--success">
+            <span class="c7-flash__ico"><i class="fas fa-check"></i></span>
+            <div class="c7-flash__body">
+              <div class="c7-flash__title">{{ _('Turno %(current)d/%(total)d completato', current=display_round, total=gara.rounds_count) }}</div>
+            </div>
+          </div>
+          {% if gara.current_round < gara.rounds_count %}
+          <button class="btn btn-success w-100" onclick="startRound({{ gara.current_round + 1 }}, this)">
+            <i class="fas fa-forward"></i> {{ _('Avvia Turno %(num)s', num=gara.current_round + 1) }}
+          </button>
+          {% endif %}
 
-                {% if gara.can_modify_inscription_dates() and gara.get_active_inscriptions_count() >=
-                gara.min_participants %}
-                {{ start_round_button(gara, false) }}
-                {{ modify_dates_button(_('Estendi Iscrizioni'), 'fas fa-edit') }}
-                {% elif gara.can_modify_inscription_dates() %}
-                {{ modify_dates_button(_('Estendi Iscrizioni'), 'fas fa-edit', 'mb-1') }}
-                <button class="btn btn-danger w-100 mb-2"
-                    onclick="cancelProvaWithNotifications({{ gara.id }}, {{ gara.number }}, this)">
-                    <i class="fas fa-times-circle"></i> {{ _('Cancella Gara') }}
-                </button>
-                <small class="text-muted d-block text-center">{{ _('Servono %(min)d iscritti (%(current)d attuali)',
-                    min=gara.min_participants, current=gara.get_active_inscriptions_count()) }}</small>
-                {% endif %}
+        {% else %}
+          <div class="c7-flash c7-flash--info">
+            <span class="c7-flash__ico"><i class="fas fa-play"></i></span>
+            <div class="c7-flash__body">
+              <div class="c7-flash__title">{{ _('Turno %(current)d/%(total)d in corso', current=display_round, total=gara.rounds_count) }}</div>
+            </div>
+          </div>
+        {% endif %}
+      {% endif %}
 
-                {% elif gara.get_real_status() == 'inscription_not_yet_open' %}
-                <div class="alert alert-info p-2 mb-2">
-                    <small>
-                        <i class="fas fa-clock"></i>
-                        <strong>{{ _('Iscrizioni iniziano:') }}</strong><br>
-                        <span data-utc="{{ gara.inscription_start.isoformat() }}">
-                            {{ gara.inscription_start|datetime_local }}
-                        </span>
-                    </small>
-                </div>
+      {# Annullamento avvio turno #}
+      {% if gara.creates_all_rounds_at_startup() and gara.can_cancel_round(1) %}
+        <button class="btn btn-secondary w-100" onclick="cancelFirstRound({{ gara.id }})">
+          <i class="fas fa-rotate-left"></i> {{ _('Annulla Avvio Gara') }}
+        </button>
+        {{ hint(_("Puoi annullare l'avvio poiché non sono ancora stati inseriti risultati")) }}
+      {% elif gara.current_round == 1 and gara.can_cancel_round(1) %}
+        <button class="btn btn-secondary w-100" onclick="cancelFirstRound({{ gara.id }})">
+          <i class="fas fa-rotate-left"></i> {{ _('Annulla Avvio Primo Turno') }}
+        </button>
+        {{ hint(_("Puoi annullare l'avvio poiché non sono ancora stati inseriti risultati")) }}
+      {% elif gara.can_cancel_round() %}
+        <button class="btn btn-secondary w-100" onclick="cancelCurrentRound({{ gara.id }})">
+          <i class="fas fa-rotate-left"></i> {{ _('Annulla Avvio Turno %(num)s', num=gara.current_round) }}
+        </button>
+        {{ hint(_("Puoi annullare l'avvio poiché non sono ancora stati inseriti risultati")) }}
+      {% endif %}
 
-                {% if gara.can_modify_inscription_dates() %}
-                {{ modify_dates_button(_('Modifica Date'), 'fas fa-edit') }}
-                {% endif %}
-
-                {% elif gara.status == 'playing' %}
-                {# Fix: Show at least 1 when gara is playing but current_round is 0 (edge case) #}
-                {% set display_round = gara.current_round if gara.current_round > 0 else 1 %}
-
-                {# Random strategy: all rounds created at start, players advance independently #}
-                {% if gara.matchmaking_strategy == 'random' %}
-                {% set total_matches = gara.matches|length %}
-                {# Count both 'completed' (admin) and 'validated' (bilateral player confirmation) as finished #}
-                {% set completed_count = gara.matches|selectattr('status', 'equalto', 'completed')|list|length %}
-                {% set validated_count = gara.matches|selectattr('status', 'equalto', 'validated')|list|length %}
-                {% set completed_matches = completed_count + validated_count %}
-
-                {% if gara.get_real_status() == 'campionato_completed' or completed_matches == total_matches %}
-                {# All matches completed - check for tiebreakers #}
-                <div class="alert alert-success p-2 mb-2">
-                    <small><strong>{{ _('Tutte le %(total)d partite completate!', total=total_matches)
-                            }}</strong></small>
-                </div>
-
-                {% if has_unresolved_tiebreakers %}
-                {# Has unresolved tiebreakers - show SSR button #}
-                <button class="btn btn-warning w-100 mb-2" onclick="startSsr({{ gara.id }}, this)">
-                    <i class="fas fa-balance-scale"></i> {{ _('Avvia Spareggio (SSR)') }}
-                </button>
-                <small class="text-muted d-block text-center mb-2">
-                    <i class="fas fa-info-circle"></i> {{ _('Ci sono parimerito nelle prime %(pos)d posizioni da
-                    risolvere', pos=gara.tiebreaker_until_position or 3) }}
-                </small>
-                {% else %}
-                {# No tiebreakers - show terminate button #}
-                <button class="btn btn-primary w-100 mb-2" onclick="terminateGara({{ gara.id }}, this)">
-                    <i class="fas fa-flag-checkered"></i> {{ _('Termina Gara') }}
-                </button>
-                <small class="text-muted d-block text-center mb-2">
-                    <i class="fas fa-info-circle"></i> {{ _('Conferma la conclusione della gara e blocca le modifiche')
-                    }}
-                </small>
-                {% endif %}
-                {% else %}
-                {# Random tournament in progress - show match counts #}
-                <div class="alert alert-info p-2 mb-2">
-                    <small><strong>{{ _('Partite: %(completed)d/%(total)d completate', completed=completed_matches,
-                            total=total_matches) }}</strong></small>
-                </div>
-                <small class="text-muted d-block text-center mb-2">
-                    <i class="fas fa-info-circle"></i> {{ _('I giocatori avanzano automaticamente quando il loro
-                    avversario ha finito') }}
-                </small>
-                {% endif %}
-
-                {# Amalfi and other sequential strategies #}
-                {% else %}
-                {% if gara.get_real_status() == 'campionato_completed' %}
-                {# All rounds completed - check for tiebreakers #}
-                <div class="alert alert-success p-2 mb-2">
-                    <small><strong>{{ _('Tutti i %(total)d turni completati!', total=gara.rounds_count)
-                            }}</strong></small>
-                </div>
-
-                {% if has_unresolved_tiebreakers %}
-                {# Has unresolved tiebreakers - show SSR button #}
-                <button class="btn btn-warning w-100 mb-2" onclick="startSsr({{ gara.id }}, this)">
-                    <i class="fas fa-balance-scale"></i> {{ _('Avvia Spareggio (SSR)') }}
-                </button>
-                <small class="text-muted d-block text-center mb-2">
-                    <i class="fas fa-info-circle"></i> {{ _('Ci sono parimerito nelle prime %(pos)d posizioni da
-                    risolvere', pos=gara.tiebreaker_until_position or 3) }}
-                </small>
-                {% else %}
-                {# No tiebreakers - show terminate button #}
-                <button class="btn btn-primary w-100 mb-2" onclick="terminateGara({{ gara.id }}, this)">
-                    <i class="fas fa-flag-checkered"></i> {{ _('Termina Gara') }}
-                </button>
-                <small class="text-muted d-block text-center mb-2">
-                    <i class="fas fa-info-circle"></i> {{ _('Conferma la conclusione della gara e blocca le modifiche')
-                    }}
-                </small>
-                {% endif %}
-
-                {# Allow resetting the last round before termination #}
-                <button class="btn btn-warning w-100 mb-2"
-                    onclick="resetLastRound({{ gara.id }}, {{ gara.current_round }}, this)">
-                    <i class="fas fa-undo"></i> {{ _('Reset Ultimo Turno') }}
-                </button>
-                <small class="text-muted d-block text-center mb-2">
-                    <i class="fas fa-exclamation-triangle"></i> {{ _('Azzera i risultati del turno %(num)s per
-                    correzioni', num=gara.current_round) }}
-                </small>
-                {% elif gara.get_real_status() == 'round_completed' %}
-                <div class="alert alert-success p-2 mb-2">
-                    <small><strong>{{ _('Turno %(current)d/%(total)d completato', current=display_round,
-                            total=gara.rounds_count) }}</strong></small>
-                </div>
-
-                {# Button to start next round - only if not the last round #}
-                {% if gara.current_round < gara.rounds_count %} <button class="btn btn-success w-100 mb-2"
-                    onclick="startRound({{ gara.current_round + 1 }}, this)">
-                    <i class="fas fa-forward"></i> {{ _('Avvia Turno %(num)s', num=gara.current_round + 1) }}
-                    </button>
-                    {% endif %}
-                    {% else %}
-                    <div class="alert alert-info p-2">
-                        <small><strong>{{ _('Turno %(current)d/%(total)d in corso', current=display_round,
-                                total=gara.rounds_count) }}</strong></small>
-                    </div>
-                    {% endif %}
-                    {% endif %}
-
-
-                    <!-- Pulsante per cancellare l'avvio del turno -->
-                    {% if gara.creates_all_rounds_at_startup() and gara.can_cancel_round(1) %}
-                    {# Per strategie che creano tutti i round insieme (es. Random) - cancella tutta la gara #}
-                    <button class="btn btn-warning w-100 mb-2" onclick="cancelFirstRound({{ gara.id }})">
-                        <i class="fas fa-undo"></i> {{ _('Annulla Avvio Gara') }}
-                    </button>
-                    <small class="text-muted d-block text-center mb-2">
-                        <i class="fas fa-info-circle"></i> {{ _("Puoi annullare l'avvio poiché non sono ancora stati
-                        inseriti risultati") }}
-                    </small>
-                    {% elif gara.current_round == 1 and gara.can_cancel_round(1) %}
-                    <button class="btn btn-warning w-100 mb-2" onclick="cancelFirstRound({{ gara.id }})">
-                        <i class="fas fa-undo"></i> {{ _('Annulla Avvio Primo Turno') }}
-                    </button>
-                    <small class="text-muted d-block text-center mb-2">
-                        <i class="fas fa-info-circle"></i> {{ _("Puoi annullare l'avvio poiché non sono ancora stati
-                        inseriti risultati") }}
-                    </small>
-                    {% elif gara.can_cancel_round() %}
-                    <button class="btn btn-warning w-100 mb-2" onclick="cancelCurrentRound({{ gara.id }})">
-                        <i class="fas fa-undo"></i> {{ _('Annulla Avvio Turno %(num)s', num=gara.current_round) }}
-                    </button>
-                    <small class="text-muted d-block text-center mb-2">
-                        <i class="fas fa-info-circle"></i> {{ _("Puoi annullare l'avvio poiché non sono ancora stati
-                        inseriti risultati") }}
-                    </small>
-                    {% endif %}
-
-                    {% elif gara.status == 'awaiting_ssr' %}
-                    {# SSR phase - show SSR management #}
-                    <div class="alert alert-warning p-2 mb-2">
-                        <small><strong><i class="fas fa-balance-scale"></i> {{ _('Fase Spareggio (SSR)')
-                                }}</strong></small>
-                    </div>
-
-                    {% if has_unresolved_tiebreakers %}
-                    {# Still have unresolved tiebreakers #}
-                    <small class="text-muted d-block text-center mb-2">
-                        <i class="fas fa-info-circle"></i> {{ _('Inserisci i punteggi SSR nella sezione sottostante') }}
-                    </small>
-                    {% else %}
-                    {# All tiebreakers resolved - can terminate #}
-                    <div class="alert alert-success p-2 mb-2">
-                        <small><i class="fas fa-check-circle"></i> {{ _('Tutti gli spareggi risolti!') }}</small>
-                    </div>
-                    <button class="btn btn-primary w-100 mb-2" onclick="terminateGara({{ gara.id }}, this)">
-                        <i class="fas fa-flag-checkered"></i> {{ _('Termina Gara') }}
-                    </button>
-                    <small class="text-muted d-block text-center mb-2">
-                        <i class="fas fa-info-circle"></i> {{ _('Conferma la conclusione della gara e blocca le
-                        modifiche') }}
-                    </small>
-                    {% endif %}
-
-                    {% if feature_visible('admin.competition.cancel_ssr') %}
-                    <button class="btn btn-outline-warning w-100 mb-2" onclick="cancelSsr({{ gara.id }}, this)">
-                        <i class="fas fa-undo"></i> {{ _('Annulla Spareggio (SSR)') }}
-                    </button>
-                    <small class="text-muted d-block text-center mb-2">
-                        <i class="fas fa-info-circle"></i> {{ _('Riporta la gara in gioco per correggere i risultati. I punteggi SSR inseriti verranno azzerati.') }}
-                    </small>
-                    {% endif %}
-
-                    <!-- Azioni aggiuntive -->
-                    {% if gara.can_be_deleted() %}
-                    <hr>
-                    <button class="btn btn-danger w-100" onclick="deleteProva({{ gara.id }}, {{ gara.number }}, this)">
-                        <i class="fas fa-trash"></i> {{ _('Elimina Gara') }}
-                    </button>
-                    {% endif %}
-                    {% endif %}{# Close main status if/elif chain #}
+    {# ---------------- SPAREGGI (SSR) ---------------- #}
+    {% elif gara.status == 'awaiting_ssr' %}
+      <div class="c7-flash c7-flash--warning">
+        <span class="c7-flash__ico"><i class="fas fa-scale-balanced"></i></span>
+        <div class="c7-flash__body">
+          <div class="c7-flash__title">{{ _('Fase Spareggio (SSR)') }}</div>
         </div>
-    </div>
+      </div>
+
+      {% if has_unresolved_tiebreakers %}
+        {{ hint(_('Inserisci i punteggi SSR nella sezione sottostante')) }}
+      {% else %}
+        <div class="c7-flash c7-flash--success">
+          <span class="c7-flash__ico"><i class="fas fa-check"></i></span>
+          <div class="c7-flash__body">
+            <div class="c7-flash__title">{{ _('Tutti gli spareggi risolti!') }}</div>
+          </div>
+        </div>
+        <button class="btn btn-primary w-100" onclick="terminateGara({{ gara.id }}, this)">
+          <i class="fas fa-flag-checkered"></i> {{ _('Termina Gara') }}
+        </button>
+        {{ hint(_('Conferma la conclusione della gara e blocca le modifiche')) }}
+      {% endif %}
+
+      {% if feature_visible('admin.competition.cancel_ssr') %}
+        <button class="btn btn-secondary w-100" onclick="cancelSsr({{ gara.id }}, this)">
+          <i class="fas fa-rotate-left"></i> {{ _('Annulla Spareggio (SSR)') }}
+        </button>
+        {{ hint(_('Riporta la gara in gioco per correggere i risultati. I punteggi SSR inseriti verranno azzerati.')) }}
+      {% endif %}
+
+      {% if gara.can_be_deleted() %}
+        <hr class="c7-divider">
+        <button class="btn btn-danger w-100" onclick="deleteProva({{ gara.id }}, {{ gara.number }}, this)">
+          <i class="fas fa-trash"></i> {{ _('Elimina Gara') }}
+        </button>
+      {% endif %}
+    {% endif %}
+
+  </div>
 </div>

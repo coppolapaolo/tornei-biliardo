@@ -61,7 +61,7 @@ def _make_campionato(suffix, n_gare, n_players=3):
             name=f"G{gi}_{suffix}",
             date=date(2026, 1, 1) + timedelta(days=gi),
             time=time(18, 0),
-            discipline="palla_8",
+            discipline="8_ball",
             distance=5,
             rounds_count=2,
             current_round=2,

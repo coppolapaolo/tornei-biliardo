@@ -10,6 +10,7 @@ from typing import Dict, Any, Optional, cast
 
 from ..base import db, utc_now
 from ..transaction.manager import transactional
+from ..status_enum import Discipline
 from .models import (
     Tiebreaker,
     SpotShot,
@@ -41,7 +42,7 @@ class TiebreakerService:
         default_config = {
             "max_rounds": 5,  # Maximum rounds before sudden death
             "sudden_death_after": 5,  # Switch to sudden death after tied rounds
-            "ball_type": "8_ball",  # or "9_ball"
+            "ball_type": Discipline.EIGHT_BALL.value,
         }
 
         if configuration:
@@ -106,7 +107,7 @@ class TiebreakerService:
         configuration = {
             "best_of": best_of,
             "match_distance": 3,  # Race to 3
-            "discipline": "palla_8",
+            "discipline": Discipline.EIGHT_BALL.value,
         }
 
         tiebreaker = Tiebreaker(
@@ -210,7 +211,7 @@ class TiebreakerService:
         tiebreaker_id: int,
         match_number: int,
         distance: int = 3,
-        discipline: str = "palla_8",
+        discipline: str = Discipline.EIGHT_BALL.value,
     ) -> PlayoffMatch:
         """Create a playoff match within a tiebreaker."""
 
@@ -423,8 +424,16 @@ class TiebreakerConfigurationService:
         """Create default tiebreaker configuration."""
 
         default_rules = {
-            "palla_8": {"type": "spot_shot", "max_rounds": 5, "sudden_death_after": 5},
-            "palla_9": {"type": "spot_shot", "max_rounds": 3, "sudden_death_after": 3},
+            Discipline.EIGHT_BALL.value: {
+                "type": "spot_shot",
+                "max_rounds": 5,
+                "sudden_death_after": 5,
+            },
+            Discipline.NINE_BALL.value: {
+                "type": "spot_shot",
+                "max_rounds": 3,
+                "sudden_death_after": 3,
+            },
             "straight_pool": {
                 "type": "rally",
                 "target_score": 15,
@@ -492,9 +501,13 @@ class TiebreakerConfigurationService:
                 return TiebreakerType(rule["type"])
 
         # Default mappings
-        if discipline in ["palla_8", "palla_9"]:
+        # `normalize` accetta anche il vocabolario storico: senza, il
+        # confronto era falso per ogni dato reale (`8_ball`) e cadeva sempre
+        # sul ramo finale.
+        member = Discipline.normalize(discipline)
+        if member in (Discipline.EIGHT_BALL, Discipline.NINE_BALL):
             return TiebreakerType.SPOT_SHOT
-        elif discipline == "straight_pool":
+        elif member is Discipline.STRAIGHT_POOL:
             return TiebreakerType.RALLY
         else:
             return TiebreakerType.PLAYOFF_MATCH

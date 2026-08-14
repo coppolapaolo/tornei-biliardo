@@ -1,199 +1,108 @@
 {% extends "base.html" %}
+{% import "components/_match_status_labels.html" as st with context %}
 
-{% block title %}{{ _("Admin Overview") }} - {{ _("Match Individuali") }}{% endblock %}
+{% block title %}{{ _("Match individuali") }} - {{ _("Amministrazione") }}{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('dashboard.dashboard') }}"
+   aria-label="{{ _('Torna alla dashboard') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("Match individuali") }}{% endblock %}
+{% block page_sub %}{{ _("Panoramica di tutte le partite e le proposte") }}{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-md-12">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard.dashboard') }}">{{ _("Dashboard") }}</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">{{ _("Admin Match Individuali") }}</li>
-                </ol>
-            </nav>
+{# Panoramica di amministrazione: la forma e' quella della 14a (admin
+   desktop) — tessere dei conteggi in cima, poi gli elenchi. #}
+<div class="c7-stack c7-sections">
 
-            <h1><i class="fas fa-shield-halved"></i> {{ _("Admin Overview") }} - {{ _("Match Individuali") }}</h1>
-            <p class="text-muted">{{ _("Panoramica di tutti i match individuali e proposte.") }}</p>
-        </div>
+  {# ---------- Partite per stato ---------- #}
+  <section class="c7-stack">
+    <div class="c7-sechead"><h2>{{ _("Partite") }}</h2></div>
+    <div class="c7-grid" style="grid-template-columns:repeat(auto-fit,minmax(96px,1fr))">
+      {% for key in [MatchStatus.SCHEDULED.value, MatchStatus.IN_PROGRESS.value,
+                     MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value,
+                     MatchStatus.CANCELLED.value] %}
+      <div class="c7-card">
+        <div class="c7-num-lg">{{ status_counts.get(key, 0) }}</div>
+        <div class="c7-rows__sub">{{ st.labels.get(key, key) }}</div>
+      </div>
+      {% endfor %}
     </div>
+  </section>
 
-    <!-- Status Counts -->
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5><i class="fas fa-gamepad"></i> {{ _("Stato Match") }}</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col">
-                            <h4 class="text-warning">{{ status_counts.get('scheduled', 0) }}</h4>
-                            <small class="text-muted">{{ _("Programmati") }}</small>
-                        </div>
-                        <div class="col">
-                            <h4 class="text-primary">{{ status_counts.get('in_progress', 0) }}</h4>
-                            <small class="text-muted">{{ _("In Corso") }}</small>
-                        </div>
-                        <div class="col">
-                            <h4 class="text-success">{{ status_counts.get('completed', 0) }}</h4>
-                            <small class="text-muted">{{ _("Completati") }}</small>
-                        </div>
-                        <div class="col">
-                            <h4 class="text-info">{{ status_counts.get('validated', 0) }}</h4>
-                            <small class="text-muted">{{ _("Validati") }}</small>
-                        </div>
-                        <div class="col">
-                            <h4 class="text-danger">{{ status_counts.get('cancelled', 0) }}</h4>
-                            <small class="text-muted">{{ _("Annullati") }}</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5><i class="fas fa-envelope"></i> {{ _("Stato Proposte") }}</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col">
-                            <h4 class="text-warning">{{ proposal_counts.get('pending', 0) }}</h4>
-                            <small class="text-muted">{{ _("In Attesa") }}</small>
-                        </div>
-                        <div class="col">
-                            <h4 class="text-success">{{ proposal_counts.get('accepted', 0) }}</h4>
-                            <small class="text-muted">{{ _("Accettate") }}</small>
-                        </div>
-                        <div class="col">
-                            <h4 class="text-secondary">{{ proposal_counts.get('expired', 0) }}</h4>
-                            <small class="text-muted">{{ _("Scadute") }}</small>
-                        </div>
-                        <div class="col">
-                            <h4 class="text-danger">{{ proposal_counts.get('cancelled', 0) }}</h4>
-                            <small class="text-muted">{{ _("Annullate") }}</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+  {# ---------- Proposte per stato ---------- #}
+  <section class="c7-stack">
+    <div class="c7-sechead"><h2>{{ _("Proposte") }}</h2></div>
+    <div class="c7-grid" style="grid-template-columns:repeat(auto-fit,minmax(96px,1fr))">
+      {% for key, label in [('pending', _("In attesa")), ('accepted', _("Accettate")),
+                            ('expired', _("Scadute")), ('cancelled', _("Annullate"))] %}
+      <div class="c7-card">
+        <div class="c7-num-lg">{{ proposal_counts.get(key, 0) }}</div>
+        <div class="c7-rows__sub">{{ label }}</div>
+      </div>
+      {% endfor %}
     </div>
+  </section>
 
-    <!-- Statistics -->
-    <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body text-center">
-                    <h2 class="text-info">{{ total_users_with_availability or 0 }}</h2>
-                    <p class="text-muted mb-0">{{ _("Giocatori con disponibilità") }}</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body text-center">
-                    <h2 class="text-primary">{{ active_locations|length }}</h2>
-                    <p class="text-muted mb-0">{{ _("Sale attive") }}</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body text-center">
-                    <h2 class="text-success">{{ recent_matches|length }}</h2>
-                    <p class="text-muted mb-0">{{ _("Match recenti (ultimi 10)") }}</p>
-                </div>
-            </div>
-        </div>
+  {# ---------- Copertura ---------- #}
+  <div class="c7-grid" style="grid-template-columns:1fr 1fr">
+    <div class="c7-card">
+      <div class="c7-num-xl">{{ total_users_with_availability or 0 }}</div>
+      <div class="c7-rows__sub">{{ _("Giocatori con disponibilità") }}</div>
     </div>
+    <div class="c7-card">
+      <div class="c7-num-xl">{{ active_locations|length }}</div>
+      <div class="c7-rows__sub">{{ _("Sale attive") }}</div>
+    </div>
+  </div>
 
-    <!-- Recent Matches -->
-    {% if recent_matches %}
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5><i class="fas fa-history"></i> {{ _("Match Recenti") }}</h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-sm table-hover">
-                            <thead>
-                                <tr>
-                                    <th>{{ _("ID") }}</th>
-                                    <th>{{ _("Giocatore 1") }}</th>
-                                    <th>{{ _("Giocatore 2") }}</th>
-                                    <th>{{ _("Punteggio") }}</th>
-                                    <th>{{ _("Disciplina") }}</th>
-                                    <th>{{ _("Stato") }}</th>
-                                    <th>{{ _("Data") }}</th>
-                                    <th>{{ _("Azioni") }}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for match in recent_matches %}
-                                <tr>
-                                    <td>{{ match.id }}</td>
-                                    <td>
-                                        {% if match.winner_id == match.player1_id %}
-                                        <strong class="text-success">{{ match.player1.username }}</strong>
-                                        {% else %}
-                                        {{ match.player1.username }}
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if match.winner_id == match.player2_id %}
-                                        <strong class="text-success">{{ match.player2.username }}</strong>
-                                        {% else %}
-                                        {{ match.player2.username }}
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ match.player1_score }} - {{ match.player2_score }}</td>
-                                    <td>{{ match.discipline|discipline_display }}</td>
-                                    <td>
-                                        <span class="badge bg-{{ 'success' if match.status.value == 'completed' else 'primary' if match.status.value == 'in_progress' else 'warning' if match.status.value == 'scheduled' else 'danger' }}">
-                                            {{ match.status.value.replace('_', ' ').title() }}
-                                        </span>
-                                    </td>
-                                    <td>{{ match.created_at|datetime_local }}</td>
-                                    <td>
-                                        <a href="{{ url_for('individual_match.match_detail', match_id=match.id) }}" class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
+  {# ---------- Partite recenti ---------- #}
+  {% if recent_matches %}
+  <section class="c7-stack">
+    <div class="c7-sechead">
+      <h2>{{ _("Partite recenti") }}</h2>
+      <span class="c7-sechead__note c7-num">{{ recent_matches|length }}</span>
     </div>
-    {% endif %}
+    {# Elenco a righe e non tabella a otto colonne: su mobile quella tabella
+       scorreva in orizzontale e l'azione era l'ultima colonna, cioe' fuori
+       schermo. #}
+    <div class="c7-rows">
+      {% for match in recent_matches %}
+      {% set state = match.status.value %}
+      <a class="c7-rows__row{{ ' c7-rows__row--dim' if state == MatchStatus.CANCELLED.value }}"
+         href="{{ url_for('individual_match.match_detail', match_id=match.id) }}"
+         style="color:inherit;text-decoration:none">
+        <div class="c7-rows__main">
+          <div class="c7-rows__title">
+            <span{% if match.winner_id == match.player1_id %} style="font-weight:800"{% endif %}>{{ match.player1.username }}</span>
+            <span class="c7-num" style="margin:0 6px">{{ match.player1_score }}–{{ match.player2_score }}</span>
+            <span{% if match.winner_id == match.player2_id %} style="font-weight:800"{% endif %}>{{ match.player2.username }}</span>
+          </div>
+          <div class="c7-rows__sub">
+            {{ match.discipline|discipline_display }} <span class="c7-sep">·</span>
+            {{ match.created_at|datetime_local }}
+          </div>
+        </div>
+        <span class="c7-state c7-state--{{ st.tone.get(state, 'muted') }}">{{ st.labels.get(state, state) }}</span>
+        <i class="fas fa-chevron-right" style="font-size:12px;color:var(--c7-ink-faint)"></i>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
 
-    <!-- Active Locations -->
-    {% if active_locations %}
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5><i class="fas fa-map-marker-alt"></i> {{ _("Sale Attive") }}</h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex flex-wrap gap-2">
-                        {% for location in active_locations %}
-                        <span class="badge bg-secondary fs-6">
-                            <i class="fas fa-location-dot me-1"></i>{{ location }}
-                        </span>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-        </div>
+  {# ---------- Sale attive ---------- #}
+  {% if active_locations %}
+  <section class="c7-stack">
+    <div class="c7-sechead"><h2>{{ _("Sale attive") }}</h2></div>
+    <div class="c7-card d-flex flex-wrap gap-2">
+      {% for location in active_locations %}
+      <span class="c7-pill" style="background:var(--c7-bg)">
+        <i class="fas fa-location-dot" style="font-size:11px"></i>{{ location }}
+      </span>
+      {% endfor %}
     </div>
-    {% endif %}
+  </section>
+  {% endif %}
 </div>
 {% endblock %}

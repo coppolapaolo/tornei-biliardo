@@ -6,6 +6,7 @@ Requirements: Challenge system for individual skill testing with RESTful interfa
 
 from flask import (
     Blueprint,
+    current_app,
     render_template,
     request,
     redirect,
@@ -14,6 +15,7 @@ from flask import (
     jsonify,
     abort,
 )
+from flask_babel import gettext as _
 from flask_login import login_required, current_user
 
 from models import (
@@ -46,8 +48,11 @@ def challenge_catalog():
     try:
         catalog_data = ChallengeService.get_catalog_data(current_user.id)
         return render_template("challenge/catalog.html", **catalog_data)
-    except Exception as e:
-        flash(f"Error loading challenges: {str(e)}", "danger")
+    except Exception:
+        # All'utente il messaggio tradotto, nel log l'errore vero: prima
+        # finiva a schermo il testo dell'eccezione, in inglese.
+        current_app.logger.exception("Catalogo challenge non caricato")
+        flash(_("Non è stato possibile caricare le challenge."), "danger")
         return redirect(url_for("dashboard.dashboard"))
 
 
@@ -96,7 +101,7 @@ def create_challenge():
                 }
             )
         else:
-            flash("Challenge created successfully!", "success")
+            flash(_("Challenge creata."), "success")
             return redirect(
                 url_for("challenge.challenge_detail", challenge_id=challenge.id)
             )
@@ -143,8 +148,23 @@ def challenge_detail(challenge_id):
     """Dettaglio sfida"""
     challenge = db.get_or_404(Challenge, challenge_id)
 
-    # Always return the full page template (no more modal)
-    return render_template("player/challenge_detail.html", challenge=challenge)
+    # I tentativi di chi guarda: la pagina li mostra come elenco (prototipo
+    # 9b·2). Interrogare la relazione dal template funzionerebbe — `attempts`
+    # e' lazy="dynamic" — ma metterebbe una query dentro il markup.
+    user_attempts = (
+        challenge.attempts.filter_by(user_id=current_user.id, completed=True)
+        .order_by(ChallengeAttempt.attempted_at.desc())
+        .limit(10)
+        .all()
+    )
+    user_best = challenge.get_user_best_attempt(current_user.id)
+
+    return render_template(
+        "player/challenge_detail.html",
+        challenge=challenge,
+        user_attempts=user_attempts,
+        user_best=user_best,
+    )
 
 
 @challenge_bp.route("/<int:challenge_id>/attempt", methods=["GET", "POST"])
@@ -155,12 +175,12 @@ def start_attempt(challenge_id):
 
     # Check if challenge is active
     if not challenge.is_active:
-        flash("Questa challenge non è più disponibile.", "warning")
+        flash(_("Questa challenge non è più disponibile."), "warning")
         return redirect(url_for("challenge.challenge_catalog"))
 
     # Prevent admins from attempting challenges
     if current_user.is_admin:
-        flash("Gli amministratori non possono provare le challenge.", "warning")
+        flash(_("Gli amministratori non possono provare le challenge."), "warning")
         return redirect(
             url_for("challenge.challenge_detail", challenge_id=challenge_id)
         )
@@ -189,7 +209,7 @@ def start_attempt(challenge_id):
                 }
             )
         else:
-            flash("Challenge attempt started!", "success")
+            flash(_("Tentativo iniziato."), "success")
             return redirect(url_for("challenge.attempt_detail", attempt_id=attempt.id))
 
     except ValueError as e:
@@ -210,7 +230,20 @@ def attempt_detail(attempt_id):
     """Dettaglio tentativo di sfida"""
     attempt = db.get_or_404(ChallengeAttempt, attempt_id)
 
-    return render_template("player/challenge_attempt_detail.html", attempt=attempt)
+    # Il record personale mentre si registra il punteggio: e' il riferimento
+    # che dice se questo tentativo e' andato meglio (prototipo 9b·3).
+    best = attempt.challenge.get_user_best_attempt(attempt.user_id)
+    user_best_score = (
+        best.score
+        if best and best.id != attempt.id and not attempt.challenge.pass_fail_only
+        else None
+    )
+
+    return render_template(
+        "player/challenge_attempt_detail.html",
+        attempt=attempt,
+        user_best_score=user_best_score,
+    )
 
 
 def _payload_int(data, key, *, required=False):
@@ -304,7 +337,7 @@ def complete_attempt(attempt_id):
                 }
             )
         else:
-            flash("Challenge completed successfully!", "success")
+            flash(_("Tentativo registrato."), "success")
             return redirect(
                 url_for(
                     "challenge.challenge_detail",
@@ -345,7 +378,7 @@ def toggle_favorite(challenge_id):
         if request.is_json:
             return safe_json_error(e, "toggling favorite")
         else:
-            flash("Error updating favorites", "danger")
+            flash(_("Non è stato possibile aggiornare i preferiti."), "danger")
             return redirect(
                 url_for("challenge.challenge_detail", challenge_id=challenge_id)
             )
@@ -379,7 +412,7 @@ def challenge_statistics(challenge_id):
         if request.is_json:
             return safe_json_error(e, "loading challenge statistics")
         else:
-            flash("Error loading statistics", "danger")
+            flash(_("Non è stato possibile caricare le statistiche."), "danger")
             return redirect(url_for("challenge.challenge_catalog"))
 
 
@@ -407,7 +440,7 @@ def create_x_replacement(gara_id, round_number):
                 }
             )
         else:
-            flash("X replacement challenge created!", "success")
+            flash(_("Challenge di gara avviata."), "success")
             return redirect(url_for("challenge.attempt_detail", attempt_id=attempt.id))
 
     except ValueError as e:
@@ -460,7 +493,7 @@ def complete_x_replacement(attempt_id):
                 }
             )
         else:
-            flash("X replacement completed successfully!", "success")
+            flash(_("Challenge di gara registrata."), "success")
             return redirect(url_for("admin.gara_detail", gara_id=redirect_gara_id))
 
     except ValueError as e:
@@ -533,7 +566,7 @@ def challenge_not_found(error):
     if request.is_json:
         return jsonify({"success": False, "error": "Challenge not found"}), 404
     else:
-        flash("Challenge not found.", "danger")
+        flash(_("Challenge non trovata."), "danger")
         return redirect(url_for("challenge.challenge_catalog"))
 
 
@@ -543,5 +576,5 @@ def challenge_access_denied(error):
     if request.is_json:
         return jsonify({"success": False, "error": "Access denied"}), 403
     else:
-        flash("Access denied.", "danger")
+        flash(_("Non hai i permessi per questa challenge."), "danger")
         return redirect(url_for("challenge.challenge_catalog"))

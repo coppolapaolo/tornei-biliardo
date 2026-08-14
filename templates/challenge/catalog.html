@@ -1,165 +1,164 @@
 {% extends "base.html" %}
 
-{% block title %}Challenge - Catalogo{% endblock %}
+{% block title %}{{ _("Challenge") }}{% endblock %}
+
+{# Testata: si riempiono i blocchi del guscio, non se ne disegna una seconda
+   dentro `content`. Sovrascrivere `page_head` per intero farebbe perdere il
+   link indietro e l'avatar che base.html ci mette per il mobile. #}
+{% block page_title %}{{ _("Challenge") }}{% endblock %}
+{% block page_sub %}{{ _("Esercizi di abilità: provaci, registra il punteggio, migliora.") }}{% endblock %}
+{% block page_actions %}
+    {% if current_user.is_authenticated and current_user.can_access('create_challenge') %}
+    <a href="{{ url_for('challenge.create_challenge') }}" class="btn btn-success btn-sm">{{ _("Nuova challenge") }}</a>
+    {% endif %}
+{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <!-- Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h2><i class="fas fa-trophy text-warning"></i> Challenge</h2>
-                    <p class="text-muted mb-0">Catalogo delle sfide di abilità</p>
-                </div>
-                {% if current_user.is_authenticated and current_user.can_access('create_challenge') %}
-                <div>
-                    <a href="{{ url_for('challenge.create_challenge') }}" class="btn btn-success">
-                        <i class="fas fa-plus"></i> Nuova Challenge
-                    </a>
-                </div>
-                {% endif %}
-            </div>
-        </div>
+<nav class="nav-tabs nav" id="challengeTabs" role="tablist" style="margin-bottom: 20px;">
+    <button class="nav-link active" id="all-tab" data-bs-toggle="pill" data-bs-target="#all-challenges" type="button" role="tab">
+        {{ _("Tutte") }} <span class="c7-num" style="margin-left: 6px;">{{ all_challenges|length }}</span>
+    </button>
+    {% if current_user.is_authenticated and current_user.can_access('create_challenge') %}
+    <button class="nav-link" id="my-tab" data-bs-toggle="pill" data-bs-target="#my-challenges" type="button" role="tab">
+        {{ _("Le mie") }} <span class="c7-num" style="margin-left: 6px;">{{ my_challenges|length }}</span>
+    </button>
+    {% endif %}
+    <button class="nav-link" id="favorites-tab" data-bs-toggle="pill" data-bs-target="#favorite-challenges" type="button" role="tab">
+        {{ _("Preferite") }} <span class="c7-num" style="margin-left: 6px;">{{ favorite_challenges|length }}</span>
+    </button>
+</nav>
+
+<div class="tab-content" id="challengeTabContent">
+    <div class="tab-pane fade show active" id="all-challenges" role="tabpanel">
+        {% include "challenge/_challenge_grid.html" with context %}
     </div>
 
-    <!-- Filter Tabs -->
-    <div class="row mb-3">
-        <div class="col-12">
-            <ul class="nav nav-pills" id="challengeTabs" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="all-tab" data-bs-toggle="pill" data-bs-target="#all-challenges"
-                        type="button" role="tab">
-                        <i class="fas fa-list"></i> Tutte le Challenge
-                        <span class="badge bg-secondary ms-1">{{ all_challenges|length }}</span>
-                    </button>
-                </li>
-                {% if current_user.is_authenticated and current_user.can_access('create_challenge') %}
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="my-tab" data-bs-toggle="pill" data-bs-target="#my-challenges"
-                        type="button" role="tab">
-                        <i class="fas fa-user"></i> Le Mie Challenge
-                        <span class="badge bg-primary ms-1">{{ my_challenges|length }}</span>
-                    </button>
-                </li>
-                {% endif %}
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="favorites-tab" data-bs-toggle="pill"
-                        data-bs-target="#favorite-challenges" type="button" role="tab">
-                        <i class="fas fa-heart text-danger"></i> Preferite
-                        <span class="badge bg-danger ms-1">{{ favorite_challenges|length }}</span>
-                    </button>
-                </li>
-            </ul>
+    {% if current_user.is_authenticated and current_user.can_access('create_challenge') %}
+    <div class="tab-pane fade" id="my-challenges" role="tabpanel">
+        {% if my_challenges %}
+        <div class="c7-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
+            {% for challenge in my_challenges %}
+            {% include "challenge/_challenge_card.html" %}
+            {% endfor %}
         </div>
-    </div>
-
-    <!-- Tab Content -->
-    <div class="tab-content" id="challengeTabContent">
-        <!-- All Challenges Tab -->
-        <div class="tab-pane fade show active" id="all-challenges" role="tabpanel">
-            {% include "challenge/_challenge_grid.html" with context %}
-        </div>
-
-        <!-- My Challenges Tab (Directors and Admins) -->
-        {% if current_user.is_authenticated and current_user.can_access('create_challenge') %}
-        <div class="tab-pane fade" id="my-challenges" role="tabpanel">
-            {% if my_challenges %}
-            <div class="row">
-                {% for challenge in my_challenges %}
-                {% include "challenge/_challenge_card.html" %}
-                {% endfor %}
+        {% else %}
+        <div class="c7-empty">
+            <div class="c7-empty__ico"><i class="fas fa-bullseye"></i></div>
+            <h2 class="c7-empty__title">{{ _("Non hai ancora creato challenge") }}</h2>
+            <p class="c7-empty__text">{{ _("Una challenge è un esercizio ripetibile: una foto del tavolo, le regole, il punteggio.") }}</p>
+            <div class="c7-empty__actions">
+                <a href="{{ url_for('challenge.create_challenge') }}" class="btn btn-success">{{ _("Crea la prima") }}</a>
             </div>
-            {% else %}
-            <div class="text-center py-5">
-                <i class="fas fa-plus-circle fa-3x text-muted mb-3"></i>
-                <h4 class="text-muted">Nessuna Challenge Creata</h4>
-                <p class="text-muted">Crea la tua prima challenge per iniziare!</p>
-                <a href="{{ url_for('challenge.create_challenge') }}" class="btn btn-success">
-                    <i class="fas fa-plus"></i> Crea Prima Challenge
-                </a>
-            </div>
-            {% endif %}
         </div>
         {% endif %}
+    </div>
+    {% endif %}
 
-        <!-- Favorite Challenges Tab -->
-        <div class="tab-pane fade" id="favorite-challenges" role="tabpanel">
-            {% if favorite_challenges %}
-            <div class="row">
-                {% for challenge in favorite_challenges %}
-                {% include "challenge/_challenge_card.html" %}
-                {% endfor %}
-            </div>
-            {% else %}
-            <div class="text-center py-5">
-                <i class="fas fa-heart fa-3x text-muted mb-3"></i>
-                <h4 class="text-muted">Nessuna Challenge Preferita</h4>
-                <p class="text-muted">Aggiungi challenge alle tue preferite per trovarle facilmente!</p>
-            </div>
-            {% endif %}
+    <div class="tab-pane fade" id="favorite-challenges" role="tabpanel">
+        {% if favorite_challenges %}
+        <div class="c7-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
+            {% for challenge in favorite_challenges %}
+            {% include "challenge/_challenge_card.html" %}
+            {% endfor %}
         </div>
+        {% else %}
+        <div class="c7-empty">
+            <div class="c7-empty__ico"><i class="far fa-heart"></i></div>
+            <h2 class="c7-empty__title">{{ _("Nessuna preferita") }}</h2>
+            <p class="c7-empty__text">{{ _("Tocca il cuore su una challenge per ritrovarla qui.") }}</p>
+        </div>
+        {% endif %}
     </div>
 </div>
 
-<!-- Modal rimossa - i dettagli si aprono come pagina normale -->
-
 <script>
+    // Gli indirizzi li scrive il server, in `data-*` sulla card: erano stringhe
+    // costruite a mano su `/challenge/<id>/...` mentre il blueprint e' montato
+    // su **`/challenges/`** — click sulla card, preferiti ed elimina
+    // rispondevano tutti 404, e l'unico segnale era un "errore sconosciuto".
+    const i18n = {
+        favAdd: {{ _("Aggiungi ai preferiti")|tojson }},
+        favRemove: {{ _("Rimuovi dai preferiti")|tojson }},
+        favError: {{ _("Non è stato possibile aggiornare i preferiti.")|tojson }},
+        netError: {{ _("Errore di rete: riprova.")|tojson }},
+        deleteConfirm: {{ _("Confermi di voler eliminare questa challenge? Non si torna indietro.")|tojson }},
+        deleteError: {{ _("Non è stato possibile eliminare la challenge.")|tojson }}
+    };
+
     document.addEventListener('DOMContentLoaded', function () {
-        // Gestione click sulle challenge cards - naviga alla pagina di dettaglio
         document.addEventListener('click', function (e) {
-            // Ignora click su pulsanti specifici
-            if (e.target.closest('.favorite-btn') || e.target.closest('.btn') || e.target.closest('.dropdown')) {
+            const favBtn = e.target.closest('.favorite-btn');
+            if (favBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleFavorite(favBtn);
                 return;
             }
 
-            const challengeCard = e.target.closest('.challenge-card');
-            if (challengeCard) {
-                const challengeId = challengeCard.dataset.challengeId;
-                window.location.href = `/challenge/${challengeId}`;
-            }
-        });
-
-        // Gestione favorite toggle
-        document.addEventListener('click', function (e) {
-            if (e.target.closest('.favorite-btn')) {
+            const deleteBtn = e.target.closest('.delete-challenge-btn');
+            if (deleteBtn) {
                 e.preventDefault();
                 e.stopPropagation();
+                deleteChallenge(deleteBtn.dataset.deleteUrl);
+                return;
+            }
 
-                const btn = e.target.closest('.favorite-btn');
-                const challengeId = btn.dataset.challengeId;
-                toggleFavorite(challengeId, btn);
+            // Click sulla card (fuori dai comandi): apre il dettaglio.
+            if (e.target.closest('.btn') || e.target.closest('.dropdown')) return;
+            const card = e.target.closest('.challenge-card');
+            if (card && card.dataset.challengeUrl) {
+                window.location.href = card.dataset.challengeUrl;
             }
         });
     });
 
-    function toggleFavorite(challengeId, btn) {
-        fetch(`/challenge/${challengeId}/favorite`, {
+    function toggleFavorite(btn) {
+        fetch(btn.dataset.favoriteUrl, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            'X-CSRFToken': csrfToken()}
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken() }
         })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Aggiorna icona
                     const icon = btn.querySelector('i');
                     if (data.is_favorite) {
-                        icon.className = 'fas fa-heart text-danger';
-                        btn.title = 'Rimuovi dai preferiti';
+                        icon.className = 'fas fa-heart';
+                        btn.style.color = 'var(--c7-err)';
+                        btn.title = i18n.favRemove;
                     } else {
                         icon.className = 'far fa-heart';
-                        btn.title = 'Aggiungi ai preferiti';
+                        btn.style.color = '';
+                        btn.title = i18n.favAdd;
                     }
                 } else {
-                    showError('Errore nell\'aggiornamento dei preferiti');
+                    showError(i18n.favError);
                 }
             })
             .catch(error => {
                 console.error('Error toggling favorite:', error);
-                showError('Errore di rete');
+                showError(i18n.netError);
             });
+    }
+
+    function deleteChallenge(url) {
+        showConfirm(i18n.deleteConfirm, () => {
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken() }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        showError(i18n.deleteError + (data.error ? ' ' + data.error : ''));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error deleting challenge:', error);
+                    showError(i18n.netError);
+                });
+        });
     }
 </script>
 {% endblock %}

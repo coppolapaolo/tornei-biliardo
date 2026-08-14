@@ -21,6 +21,7 @@ from models import (
 from models.status_enum import GaraStatus
 from utils import gara_manager_required, admin_required
 from utils.route_helpers import get_or_ajax_404, safe_json_error
+from utils.image_paths import challenge_image_url
 
 from . import competition_bp
 
@@ -62,6 +63,12 @@ def get_gara_challenges(gara_id):
                     "challenge_name": gara_challenge.challenge.get_display_name(),
                     "challenge_description": gara_challenge.challenge.description,
                     "challenge_image_filename": gara_challenge.challenge.image_filename,
+                    # L'indirizzo pronto: il JS lo componeva a mano su
+                    # "/static/uploads/challenges/<file>", che è solo uno dei
+                    # due formati con cui il percorso viene salvato.
+                    "challenge_image_url": challenge_image_url(
+                        gara_challenge.challenge
+                    ),
                     "round_number": gara_challenge.round_number,
                     "max_attempts": gara_challenge.max_attempts,
                     "is_active": gara_challenge.is_active,
@@ -239,6 +246,7 @@ def get_available_challenges_for_gara(gara_id):
                     "description": challenge.description,
                     "pass_fail_only": challenge.pass_fail_only,
                     "image_filename": image_filename,
+                    "image_url": challenge_image_url(challenge),
                 }
             )
 

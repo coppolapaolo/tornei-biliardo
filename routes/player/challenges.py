@@ -42,17 +42,19 @@ def challenge_detail(gara_challenge_id):
         gara_challenge.gara_id, current_user.id
     )
 
-    challenge_data = None
-    if progress:
-        # Find the specific challenge data
-        challenge_data = next(
-            (
-                c
-                for c in progress.get("challenges", [])
-                if c.get("gara_challenge", {}).get("id") == gara_challenge_id
-            ),
-            None,
-        )
+    # `gara_challenge` dentro il progresso è il **modello**, non un dizionario:
+    # `c.get("gara_challenge", {}).get("id")` sollevava AttributeError su ogni
+    # gara che avesse almeno una challenge — cioè su ogni pagina che si potesse
+    # davvero aprire (500). Con la lista vuota il generatore non iterava e
+    # l'errore non compariva mai in sviluppo.
+    challenge_data = next(
+        (
+            c
+            for c in (progress or {}).get("challenges", [])
+            if c["gara_challenge"].id == gara_challenge_id
+        ),
+        None,
+    )
 
     return render_template(
         "player/gara_challenge_detail.html",

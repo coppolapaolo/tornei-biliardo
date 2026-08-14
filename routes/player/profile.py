@@ -8,6 +8,7 @@ Privacy, account deletion, and export routes have been split into:
 """
 
 from flask import (
+    current_app,
     render_template,
     request,
     redirect,
@@ -177,23 +178,30 @@ def profile():
 
             # Build challenge history (last 20 attempts)
             for attempt in user_attempts[:20]:
+                challenge = attempt.gara_challenge.challenge
                 challenge_history.append(
                     {
-                        "challenge_name": (
-                            attempt.gara_challenge.challenge.get_display_name()
-                        ),
+                        "challenge": challenge,
+                        "challenge_name": challenge.get_display_name(),
                         "gara_name": attempt.gara_challenge.gara.name,
                         "score": attempt.score,
                         "passed": attempt.passed,
                         "attempted_at": attempt.attempted_at,
-                        "is_pass_fail": attempt.gara_challenge.challenge.pass_fail_only,
-                        "max_score": attempt.gara_challenge.challenge.max_score,
+                        "is_pass_fail": challenge.pass_fail_only,
                     }
                 )
+                # NB: niente "max_score" — quel campo su Challenge non esiste.
+                # Leggerlo sollevava AttributeError proprio qui, e l'except di
+                # sotto lo inghiottiva: la cronologia challenge del profilo
+                # restava **sempre vuota**, senza errori da nessuna parte.
 
     except Exception:
-        # If challenge module is not available or there's an error, just skip
-        pass
+        # Il modulo challenge può non essere disponibile: il profilo si deve
+        # aprire comunque. L'errore però si scrive, altrimenti un difetto qui
+        # dentro non lascia alcuna traccia.
+        current_app.logger.warning(
+            "Statistiche challenge non caricate per il profilo", exc_info=True
+        )
 
     stats = {
         "total_inscriptions": len(inscriptions),

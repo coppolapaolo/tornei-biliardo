@@ -1,316 +1,197 @@
-{# templates/components/_unified_cards.html #}
-{# Componente unificato per visualizzare campionati e gare in card compatte ordinate per data #}
+{# templates/components/_unified_cards.html — 7c #}
+{# Campionati e gare in card compatte, ordinate per data #}
 
 {% if vm.unified_items and vm.unified_items|length %}
-<div class="row">
+<div class="c7-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
   {% for item in vm.unified_items %}
-  <div class="col-md-6 col-lg-4 mb-3">
-    <div class="card h-100 {% if item.type == 'campionato' and not item.entity.is_active %}border-secondary{% endif %}">
-      {# Header compatto #}
-      <div class="card-header py-2">
-        <div class="d-flex justify-content-between align-items-start">
-          <div class="flex-grow-1">
-            <h6 class="mb-1">
-              {% if item.type == 'campionato' %}
-              <i class="fas fa-trophy text-warning me-1"></i>
-              {% else %}
-              <i class="fas fa-bullseye text-primary me-1"></i>
-              {% endif %}
-              {{ item.name }}
-            </h6>
-            <small class="text-muted">
-              {% if item.type == 'campionato' %}
-              {{ item.entity.campionato_type }} • {{ item.entity.gare|length }} {{ _('gare') }}
-              {% else %}
-              {{ item.entity.discipline|discipline_display if item.entity.discipline }}
-              {% if item.entity.distance %}
-              • {{ item.entity.distance_config|format_distance }}
-              {% endif %}
-              {% endif %}
-            </small>
-          </div>
-          <div class="text-end">
-            <span class="badge {{ item.entity | status_badge_class }} fs-6">
-              {{ item.entity | status_text }}
-            </span>
-          </div>
+  <article class="c7-card {% if item.type == 'campionato' and not item.entity.is_active %}c7-card--locked{% endif %}" style="display: flex; flex-direction: column;">
+    {# Testata #}
+    <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;">
+      <div style="min-width: 0;">
+        <div class="c7-kicker">
+          {% if item.type == 'campionato' %}{{ _('Campionato') }}{% else %}{{ _('Gara') }}{% endif %}
         </div>
-      </div>
-
-      {# Body compatto #}
-      <div class="card-body py-2">
-        {# Data e info principali #}
-        <div class="mb-2">
-          {% if item.next_prova_date %}
-          <small class="text-success fw-bold">
-            <i class="fas fa-calendar me-1"></i>
-            {% if item.type == 'campionato' %}
-            {{ _('Prossima:') }} {{ item.next_prova_date|date_local }}
-            {% else %}
-            {{ item.next_prova_date|date_local }}
-            {% endif %}
-          </small>
-          {% else %}
-          <small class="text-muted">
-            <i class="fas fa-calendar-times me-1"></i>
-            {% if item.type == 'campionato' %}
-            {{ _('Nessuna gara programmata') }}
-            {% else %}
-            {{ _('Data da definire') }}
-            {% endif %}
-          </small>
-          {% endif %}
-
-          {% if item.type == 'gara' and item.entity.location %}
-          <small class="text-muted d-block">
-            <i class="fas fa-map-marker-alt me-1"></i>{{ item.entity.location }}
-          </small>
-          {% endif %}
-        </div>
-
-        {# Informazioni specifiche per tipo #}
-        {% if item.type == 'campionato' %}
-        {# Info campionato #}
-        <div class="d-flex justify-content-between align-items-center">
-          <small class="text-muted">
-            {% if item.entity.without_x %}<span class="badge bg-info me-1">{{ _('Senza X') }}</span>{% endif %}
-            {% if item.entity.final_playoffs %}<span class="badge bg-success me-1">Playoff</span>{% endif %}
-            {% if item.entity.challenge_mode %}<span class="badge bg-warning me-1">Challenge</span>{% endif %}
-          </small>
-        </div>
-        {% else %}
-        {# Info gara #}
-        <div class="d-flex justify-content-between align-items-center">
-          <small class="text-muted">
-            {% if item.entity.entry_fee and item.entity.entry_fee > 0 %}
-            {{ _('Quota:') }} €{{ "%.2f"|format(item.entity.entry_fee) }}
-            {% else %}
-            {{ _('Gratuita') }}
-            {% endif %}
-          </small>
-          <small class="text-muted">
-            <i class="fas fa-users me-1"></i>
-            {{ item.entity.get_active_inscriptions_count() }}{% if item.entity.max_participants %}/{{
-            item.entity.max_participants }}{% endif %}
-            {% if item.entity.get_waitlist_count() > 0 %}
-            <span class="text-warning ms-1">
-              <i class="fas fa-clock"></i> +{{ item.entity.get_waitlist_count() }}
-            </span>
-            {% endif %}
-          </small>
-        </div>
-
-        {# Stato iscrizioni per gare #}
-        {% if item.entity.get_real_status() == 'inscription' %}
-        <div class="mt-2">
-          {% if item.entity.is_full() %}
-          <span class="badge bg-warning fs-6">{{ _('Massimo raggiunto') }}</span>
-          {% else %}
-          <span class="badge bg-success fs-6">{{ _('Iscrizioni aperte') }}</span>
-          {% endif %}
-          {% if item.entity.inscription_start %}
-          <small class="text-muted d-block mt-1">
-            <i class="fas fa-play"></i>
-            {{ _('Aperte dal:') }} {{ item.entity.inscription_start|datetime_local }}
-          </small>
-          {% endif %}
-          {% if item.entity.inscription_end %}
-          <small class="text-warning d-block">
-            <i class="fas fa-clock"></i>
-            {{ _('Scade:') }} {{ item.entity.inscription_end|datetime_local }}
-          </small>
-          {% endif %}
-        </div>
-        {% elif item.entity.get_real_status() == 'inscription_not_yet_open' %}
-        <div class="mt-2">
-          <span class="badge bg-secondary fs-6">{{ _('Iscrizioni non ancora aperte') }}</span>
-          {% if item.entity.inscription_start %}
-          <small class="text-info d-block mt-1">
-            <i class="fas fa-hourglass-start"></i>
-            {{ _('Apriranno il:') }} {{ item.entity.inscription_start|datetime_local }}
-          </small>
-          {% endif %}
-          {% if item.entity.inscription_end %}
-          <small class="text-muted d-block">
-            <i class="fas fa-clock"></i>
-            {{ _('Chiuderanno il:') }} {{ item.entity.inscription_end|datetime_local }}
-          </small>
-          {% endif %}
-        </div>
-        {% elif item.entity.status == 'completed' %}
-        {# Podio per gare completate #}
-        {% set podium = item.entity.get_podium() %}
-        {% if podium %}
-        <div class="podium-display border-top pt-2 mt-2">
-          <small class="text-muted d-block mb-1"><i class="fas fa-trophy"></i> {{ _('Podio') }}</small>
-          <div class="d-flex justify-content-center align-items-end gap-1">
-            {% if podium|length >= 2 %}
-            <div class="text-center" style="order: 1;">
-              <div class="bg-secondary bg-opacity-25 rounded px-2 py-1">
-                <small class="d-block">🥈</small>
-                <small class="fw-bold text-truncate d-block" style="max-width: 60px; font-size: 0.7rem;">{{ podium[1].username }}</small>
-              </div>
-            </div>
-            {% endif %}
-            {% if podium|length >= 1 %}
-            <div class="text-center" style="order: 0;">
-              <div class="bg-warning bg-opacity-25 rounded px-2 py-1">
-                <small class="d-block">🥇</small>
-                <small class="fw-bold text-truncate d-block" style="max-width: 60px; font-size: 0.7rem;">{{ podium[0].username }}</small>
-              </div>
-            </div>
-            {% endif %}
-            {% if podium|length >= 3 %}
-            <div class="text-center" style="order: 2;">
-              <div class="bg-warning bg-opacity-10 rounded px-2 py-1">
-                <small class="d-block">🥉</small>
-                <small class="fw-bold text-truncate d-block" style="max-width: 60px; font-size: 0.7rem;">{{ podium[2].username }}</small>
-              </div>
-            </div>
-            {% endif %}
-          </div>
-        </div>
-        {% endif %}
-        {% endif %}
-        {% endif %}
-      </div>
-
-      {# Footer con azioni - solo se ci sono azioni da mostrare #}
-      {% set has_actions = item.can_view_details or item.can_manage or (not item.can_manage and item.type == 'gara' and
-      item.entity.get_real_status() == 'inscription') %}
-      {% if has_actions %}
-      <div class="card-footer py-2 bg-transparent">
-        <div class="btn-group w-100" role="group">
+        <h3 style="margin: 5px 0 0;">{{ item.name }}</h3>
+        <div class="text-muted" style="font-size: 12px; margin-top: 3px;">
           {% if item.type == 'campionato' %}
-          {# Pulsante Dettagli solo se può vedere dettagli #}
-          {% if item.can_view_details %}
-          <a href="{{ url_for('admin.campionato.campionato_detail', campionato_id=item.id) }}"
-            class="btn btn-outline-primary btn-sm">
-            <i class="fas fa-eye"></i> {{ _('Dettagli') }}
-          </a>
-          {% endif %}
-
-          {# Pulsanti di gestione solo se può gestire #}
-          {% if item.can_manage %}
-          {% if item.entity.can_be_modified() %}
-          <a href="{{ url_for('admin.campionato.edit_campionato', campionato_id=item.id) }}"
-            class="btn btn-outline-warning btn-sm">
-            <i class="fas fa-edit"></i>
-          </a>
-          {% endif %}
-          {# Pulsante Attiva/Disattiva per campionati #}
-          <button class="btn btn-{% if item.entity.is_active %}secondary{% else %}success{% endif %} btn-sm"
-            onclick="toggleActive({{ item.id }})">
-            {% if item.entity.is_active %}
-            <i class="fas fa-pause"></i>
-            {% else %}
-            <i class="fas fa-play"></i>
-            {% endif %}
-          </button>
-          {% endif %}
+          {{ item.entity.campionato_type }} <span class="c7-sep">·</span> <span class="c7-num">{{ item.entity.gare|length }}</span> {{ _('gare') }}
           {% else %}
-          {# Pulsante Dettagli solo se può vedere dettagli #}
-          {% if item.can_view_details %}
-          <a href="{{ url_for('admin.competition.gara_detail', gara_id=item.id) }}"
-            class="btn btn-outline-primary btn-sm">
-            <i class="fas fa-eye"></i> {{ _('Dettagli') }}
-          </a>
-          {% endif %}
-
-          {# Pulsanti di gestione solo se può gestire #}
-          {% if item.can_manage %}
-          {% if item.entity.can_be_modified() %}
-          <a href="{{ url_for('admin.competition.edit_gara', gara_id=item.id) }}"
-            class="btn btn-outline-warning btn-sm">
-            <i class="fas fa-edit"></i>
-          </a>
-          {% endif %}
-          {% endif %}
-
-          {# Pulsante iscrizione per player e direttori (solo per gare) - mai per admin #}
-          {% if not current_user.is_admin and item.entity.get_real_status() == 'inscription' %}
-          {% set ns = namespace(inscribed=false, is_waitlist=false) %}
-          {% for ins in item.entity.inscriptions %}
-          {% if ins.user_id == current_user.id %}
-          {% set ns.inscribed = true %}
-          {% if ins.is_waitlist %}{% set ns.is_waitlist = true %}{% endif %}
-          {% endif %}
-          {% endfor %}
-          {% if not ns.inscribed %}
-          <form method="POST" action="{{ url_for('player.inscribe_to_gara', gara_id=item.id) }}" class="d-inline">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            {% if item.entity.is_full() %}
-            <button type="submit" class="btn btn-warning btn-sm">
-              <i class="fas fa-clock"></i> {{ _("Lista d'attesa") }}
-            </button>
-            {% else %}
-            <button type="submit" class="btn btn-success btn-sm">
-              <i class="fas fa-user-plus"></i> {{ _('Iscriviti') }}
-            </button>
-            {% endif %}
-          </form>
-          {% elif ns.inscribed and ns.is_waitlist %}
-          <span class="btn btn-secondary btn-sm disabled">
-            <i class="fas fa-clock"></i> {{ _("In lista d'attesa") }}
-          </span>
-          {% endif %}
-          {% endif %}
+          {{ item.entity.discipline|discipline_display if item.entity.discipline }}
+          {% if item.entity.distance %}<span class="c7-sep">·</span> {{ item.entity.distance_config|format_distance }}{% endif %}
           {% endif %}
         </div>
+      </div>
+      <span class="badge {{ item.entity | status_badge_class }}">{{ item.entity | status_text }}</span>
+    </div>
 
-        {# Pulsanti di eliminazione - riga separata #}
-        {% if item.can_manage %}
-        {% if item.type == 'campionato' %}
-        {# Admin: soft delete sempre disponibile #}
-        {% if current_user.is_admin %}
-        <button class="btn btn-danger btn-sm w-100 mt-2"
-                onclick="showSoftDeleteModal('campionato', {{ item.id }}, '{{ item.name|e }}', '{{ url_for('admin.campionato.soft_delete_campionato', campionato_id=item.id) }}')">
-          <i class="fas fa-trash-alt"></i> {{ _('Elimina Campionato') }}
-        </button>
-        {% elif item.entity.can_be_deleted() %}
-        <button class="btn btn-danger btn-sm w-100 mt-2" onclick="deleteTournament({{ item.id }}, '{{ item.name|e }}')">
-          <i class="fas fa-trash"></i> {{ _('Elimina Campionato') }}
-        </button>
-        {% endif %}
-        {% else %}
-        {# Admin: soft delete sempre disponibile #}
-        {% if current_user.is_admin %}
-        <button class="btn btn-danger btn-sm w-100 mt-2"
-                onclick="showSoftDeleteModal('gara', {{ item.id }}, '{{ item.name|e }}', '{{ url_for('admin.competition.soft_delete_gara', gara_id=item.id) }}')">
-          <i class="fas fa-trash-alt"></i> {{ _('Elimina Gara') }}
-        </button>
-        {% elif item.entity.can_be_deleted() %}
-        <form class="mt-2" method="POST" action="{{ url_for('admin.competition.delete_gara', gara_id=item.id) }}"
-          onsubmit="return confirmSubmit(this, {{ _('Sei SICURO di voler eliminare definitivamente questa gara?')|tojson }})">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <button type="submit" class="btn btn-danger btn-sm w-100">
-            <i class="fas fa-trash"></i> {{ _('Elimina Gara') }}
-          </button>
-        </form>
-        {% endif %}
-        {% endif %}
-        {% endif %}
+    <hr class="c7-divider">
+
+    {# Data e luogo #}
+    <div style="font-size: 12px; font-weight: 700;">
+      {% if item.next_prova_date %}
+      <div>
+        {% if item.type == 'campionato' %}<span class="text-muted">{{ _('Prossima gara') }}</span> {% endif %}
+        <span class="c7-num">{{ item.next_prova_date|date_local }}</span>
+      </div>
+      {% else %}
+      <div class="text-muted">
+        {% if item.type == 'campionato' %}{{ _('Nessuna gara in calendario') }}{% else %}{{ _('Data da definire') }}{% endif %}
       </div>
       {% endif %}
+
+      {% if item.type == 'gara' and item.entity.location %}
+      <div class="text-muted" style="margin-top: 3px;">{{ item.entity.location }}</div>
+      {% endif %}
     </div>
-  </div>
+
+    {# Informazioni specifiche per tipo #}
+    {% if item.type == 'campionato' %}
+    <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px;">
+      {% if item.entity.without_x %}<span class="c7-state c7-state--info">{{ _('Senza X') }}</span>{% endif %}
+      {% if item.entity.final_playoffs %}<span class="c7-state c7-state--ok">Playoff</span>{% endif %}
+      {% if item.entity.challenge_mode %}<span class="c7-state c7-state--warn">Challenge</span>{% endif %}
+    </div>
+    {% else %}
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; font-size: 12px; font-weight: 700;">
+      <span class="text-muted">
+        {% if item.entity.entry_fee and item.entity.entry_fee > 0 %}<span class="c7-num">€{{ "%.2f"|format(item.entity.entry_fee) }}</span>{% else %}{{ _('Gratuita') }}{% endif %}
+      </span>
+      <span class="text-muted">
+        <span class="c7-num">{{ item.entity.get_active_inscriptions_count() }}</span>{% if item.entity.max_participants %}/<span class="c7-num">{{ item.entity.max_participants }}</span>{% endif %} {{ _('iscritti') }}
+        {% if item.entity.get_waitlist_count() > 0 %}<span style="color: var(--c7-warn-ink);">+{{ item.entity.get_waitlist_count() }}</span>{% endif %}
+      </span>
+    </div>
+
+    {# Stato iscrizioni #}
+    {% if item.entity.get_real_status() == 'inscription' %}
+    <div style="margin-top: 12px;">
+      {% if item.entity.is_full() %}
+      <span class="c7-state c7-state--warn">{{ _('Posti esauriti') }}</span>
+      {% else %}
+      <span class="c7-state c7-state--ok">{{ _('Iscrizioni aperte') }}</span>
+      {% endif %}
+      {% if item.entity.inscription_end %}
+      <div class="text-muted" style="font-size: 12px; margin-top: 6px;">{{ _('Chiudono il') }} <span class="c7-num">{{ item.entity.inscription_end|datetime_local }}</span></div>
+      {% endif %}
+    </div>
+    {% elif item.entity.get_real_status() == 'inscription_not_yet_open' %}
+    <div style="margin-top: 12px;">
+      <span class="c7-state c7-state--muted">{{ _('Iscrizioni non ancora aperte') }}</span>
+      {% if item.entity.inscription_start %}
+      <div class="text-muted" style="font-size: 12px; margin-top: 6px;">{{ _('Aprono il') }} <span class="c7-num">{{ item.entity.inscription_start|datetime_local }}</span></div>
+      {% endif %}
+    </div>
+    {% elif item.entity.status == 'completed' %}
+    {% set podium = item.entity.get_podium() %}
+    {% if podium %}
+    <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--c7-line-soft);">
+      <div class="c7-kicker">{{ _('Podio') }}</div>
+      <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
+        {% for p in podium[:3] %}
+        <div style="display: flex; align-items: center; gap: 10px; font-size: 13px;">
+          <span class="c7-num" style="width: 18px; color: {% if loop.index == 1 %}var(--c7-accent){% else %}var(--c7-ink-faint){% endif %};">{{ loop.index }}</span>
+          <strong style="min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ p.username }}</strong>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+    {% endif %}
+    {% endif %}
+
+    {# Azioni #}
+    {% set has_actions = item.can_view_details or item.can_manage or (not item.can_manage and item.type == 'gara' and item.entity.get_real_status() == 'inscription') %}
+    {% if has_actions %}
+    <div style="margin-top: auto; padding-top: 16px; display: flex; flex-wrap: wrap; gap: 8px;">
+      {% if item.type == 'campionato' %}
+      {% if item.can_view_details %}
+      <a href="{{ url_for('admin.campionato.campionato_detail', campionato_id=item.id) }}" class="btn btn-secondary btn-sm" style="flex: 1;">{{ _('Dettagli') }}</a>
+      {% endif %}
+      {% if item.can_manage %}
+      {% if item.entity.can_be_modified() %}
+      <a href="{{ url_for('admin.campionato.edit_campionato', campionato_id=item.id) }}" class="c7-iconbtn" style="width: 40px; height: 40px;" title="{{ _('Modifica') }}"><i class="fas fa-pen"></i></a>
+      {% endif %}
+      <button class="c7-iconbtn" style="width: 40px; height: 40px;" onclick="toggleActive({{ item.id }})" title="{% if item.entity.is_active %}{{ _('Sospendi') }}{% else %}{{ _('Attiva') }}{% endif %}">
+        {% if item.entity.is_active %}<i class="fas fa-pause"></i>{% else %}<i class="fas fa-play"></i>{% endif %}
+      </button>
+      {% endif %}
+      {% else %}
+      {% if item.can_view_details %}
+      <a href="{{ url_for('admin.competition.gara_detail', gara_id=item.id) }}" class="btn btn-secondary btn-sm" style="flex: 1;">{{ _('Dettagli') }}</a>
+      {% endif %}
+      {% if item.can_manage and item.entity.can_be_modified() %}
+      <a href="{{ url_for('admin.competition.edit_gara', gara_id=item.id) }}" class="c7-iconbtn" style="width: 40px; height: 40px;" title="{{ _('Modifica') }}"><i class="fas fa-pen"></i></a>
+      {% endif %}
+
+      {# Iscrizione per giocatori e direttori di gara, mai per admin #}
+      {% if not current_user.is_admin and item.entity.get_real_status() == 'inscription' %}
+      {% set ns = namespace(inscribed=false, is_waitlist=false) %}
+      {% for ins in item.entity.inscriptions %}
+      {% if ins.user_id == current_user.id %}
+      {% set ns.inscribed = true %}
+      {% if ins.is_waitlist %}{% set ns.is_waitlist = true %}{% endif %}
+      {% endif %}
+      {% endfor %}
+      {% if not ns.inscribed %}
+      <form method="POST" action="{{ url_for('player.inscribe_to_gara', gara_id=item.id) }}" style="flex: 1;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        {% if item.entity.is_full() %}
+        <button type="submit" class="btn btn-warning btn-sm w-100">{{ _("Lista d'attesa") }}</button>
+        {% else %}
+        <button type="submit" class="btn btn-success btn-sm w-100">{{ _('Iscriviti') }}</button>
+        {% endif %}
+      </form>
+      {% elif ns.inscribed and ns.is_waitlist %}
+      <span class="c7-state c7-state--warn">{{ _("In lista d'attesa") }}</span>
+      {% endif %}
+      {% endif %}
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {# Eliminazione #}
+    {% if item.can_manage %}
+    {% if item.type == 'campionato' %}
+    {% if current_user.is_admin %}
+    <button class="btn btn-danger btn-sm w-100" style="margin-top: 8px;"
+            onclick="showSoftDeleteModal('campionato', {{ item.id }}, '{{ item.name|e }}', '{{ url_for('admin.campionato.soft_delete_campionato', campionato_id=item.id) }}')">
+      {{ _('Elimina il campionato') }}
+    </button>
+    {% elif item.entity.can_be_deleted() %}
+    <button class="btn btn-danger btn-sm w-100" style="margin-top: 8px;" onclick="deleteTournament({{ item.id }}, '{{ item.name|e }}')">
+      {{ _('Elimina il campionato') }}
+    </button>
+    {% endif %}
+    {% else %}
+    {% if current_user.is_admin %}
+    <button class="btn btn-danger btn-sm w-100" style="margin-top: 8px;"
+            onclick="showSoftDeleteModal('gara', {{ item.id }}, '{{ item.name|e }}', '{{ url_for('admin.competition.soft_delete_gara', gara_id=item.id) }}')">
+      {{ _('Elimina la gara') }}
+    </button>
+    {% elif item.entity.can_be_deleted() %}
+    <form style="margin-top: 8px;" method="POST" action="{{ url_for('admin.competition.delete_gara', gara_id=item.id) }}"
+      onsubmit="return confirmSubmit(this, {{ _('Confermi di voler eliminare definitivamente questa gara?')|tojson }})">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-danger btn-sm w-100">{{ _('Elimina la gara') }}</button>
+    </form>
+    {% endif %}
+    {% endif %}
+    {% endif %}
+  </article>
   {% endfor %}
 </div>
 {% else %}
-<div class="alert alert-info text-center">
-  <h4><i class="fas fa-trophy"></i> {{ _('Nessuna Competizione') }}</h4>
-  <p>{{ _('Non ci sono ancora campionati o gare da mostrare.') }}</p>
+<div class="c7-empty">
+  <div class="c7-empty__ico"><i class="fas fa-trophy"></i></div>
+  <h2 class="c7-empty__title">{{ _('Nessuna competizione') }}</h2>
+  <p class="c7-empty__text">{{ _('Non ci sono ancora campionati o gare da mostrare.') }}</p>
   {% if vm.caps and (vm.caps.can_create_campionato or vm.caps.can_create_standalone) %}
-  <div class="mt-3">
+  <div class="c7-empty__actions">
     {% if vm.caps.can_create_campionato %}
-    <button class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#newTournamentModal">
-      <i class="fas fa-plus"></i> {{ _('Crea Campionato') }}
-    </button>
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newTournamentModal">{{ _('Crea un campionato') }}</button>
     {% endif %}
     {% if vm.caps.can_create_standalone %}
-    <a class="btn btn-primary" href="{{ url_for('admin.competition.create_gara_standalone') }}">
-      <i class="fas fa-plus"></i> {{ _('Crea Gara') }}
-    </a>
+    <a class="btn btn-secondary" href="{{ url_for('admin.competition.create_gara_standalone') }}">{{ _('Crea una gara') }}</a>
     {% endif %}
   </div>
   {% endif %}

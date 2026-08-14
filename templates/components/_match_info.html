@@ -1,64 +1,76 @@
-<!-- Match Info Sidebar Component -->
-<div class="card">
-    <div class="card-header">
-        <h6>Info Partita</h6>
-    </div>
-    <div class="card-body">
+{# templates/components/_match_info.html — 7c
+
+   Contorno della partita: dove si colloca e quando si e' giocata. Distanza,
+   tavolo e stato non stanno qui: sono operativi e vivono nella riga `meta()`
+   di `_match_header.html`, sopra il punteggio. #}
+<section class="c7-card">
+    <div class="c7-kicker">{{ _('Informazioni partita') }}</div>
+
+    <dl style="display: grid; grid-template-columns: auto 1fr; gap: 10px 18px; margin: 14px 0 0; font-size: 13px;">
         {% if match.gara %}
             {% if match.gara.campionato %}
-            <p><strong>Campionato:</strong> {{ match.gara.campionato.name }}</p>
+            <dt class="text-muted" style="font-weight: 700;">{{ _('Campionato') }}</dt>
+            <dd style="margin: 0; text-align: right;">{{ match.gara.campionato.name }}</dd>
             {% endif %}
-            <p><strong>Gara:</strong> {{ match.gara.display_name }}</p>
-            <p><strong>Turno:</strong> {{ match.round_number }}/{{ match.gara.rounds_count }}</p>
-            <p><strong>Disciplina:</strong> {{ (match.discipline or match.gara.discipline)|discipline_display }}</p>
-            <p><strong>Data:</strong> {{ match.gara.date|date_local }}</p>
+
+            <dt class="text-muted" style="font-weight: 700;">{{ _('Gara') }}</dt>
+            <dd style="margin: 0; text-align: right;">{{ match.gara.display_name }}</dd>
+
+            <dt class="text-muted" style="font-weight: 700;">{{ _('Turno') }}</dt>
+            <dd style="margin: 0; text-align: right;">
+                <span class="c7-num">{{ match.round_number }}</span><span style="color: var(--c7-ink-faint);">/</span><span class="c7-num">{{ match.gara.rounds_count }}</span>
+            </dd>
+
+            <dt class="text-muted" style="font-weight: 700;">{{ _('Disciplina') }}</dt>
+            <dd style="margin: 0; text-align: right;">{{ (match.discipline or match.gara.discipline)|discipline_display }}</dd>
+
+            <dt class="text-muted" style="font-weight: 700;">{{ _('Data') }}</dt>
+            <dd class="c7-num" style="margin: 0; text-align: right;">{{ match.gara.date|date_local }}</dd>
+
             {% if match.gara.location %}
-                <p><strong>Luogo:</strong> {{ match.gara.location }}</p>
+            <dt class="text-muted" style="font-weight: 700;">{{ _('Sala') }}</dt>
+            <dd style="margin: 0; text-align: right;">{{ match.gara.location }}</dd>
             {% endif %}
         {% else %}
-            {# Standalone match (dopo soft delete con keep_matches) #}
-            <p><strong>Tipo:</strong> <span class="badge bg-secondary">{{ _('Match Individuale') }}</span></p>
-            <p><strong>Turno:</strong> {{ match.round_number }}</p>
+            {# Partita senza gara (soft delete con keep_matches) #}
+            <dt class="text-muted" style="font-weight: 700;">{{ _('Tipo') }}</dt>
+            <dd style="margin: 0; text-align: right;">
+                <span class="c7-state c7-state--muted">{{ _('Match Individuale') }}</span>
+            </dd>
+
+            <dt class="text-muted" style="font-weight: 700;">{{ _('Turno') }}</dt>
+            <dd class="c7-num" style="margin: 0; text-align: right;">{{ match.round_number }}</dd>
+
             {% if match.discipline %}
-            <p><strong>Disciplina:</strong> {{ match.discipline|discipline_display }}</p>
+            <dt class="text-muted" style="font-weight: 700;">{{ _('Disciplina') }}</dt>
+            <dd style="margin: 0; text-align: right;">{{ match.discipline|discipline_display }}</dd>
             {% endif %}
+
             {% if match.created_at %}
-            <p><strong>Data:</strong> {{ match.created_at|date_local }}</p>
-            {% endif %}
-        {% endif %}
-        <p><strong>Modalità:</strong>
-            {{ match.distance_config|format_distance }}
-        </p>
-        {% if match.table_assignment %}
-            <p><strong>Tavolo:</strong> {{ match.table_assignment }}</p>
-        {% else %}
-            <p><strong>Tavolo:</strong> <span class="text-muted">Non assegnato</span></p>
-        {% endif %}
-
-        {# Match timing for statistics #}
-        {% if match.started_at or match.ended_at %}
-        <hr>
-        <h6 class="text-muted">Tempi</h6>
-            {% if match.started_at %}
-            <p><strong>Inizio:</strong> {{ match.started_at|time_local }}</p>
-            {% endif %}
-            {% if match.ended_at %}
-            <p><strong>Fine:</strong> {{ match.ended_at|time_local }}</p>
+            <dt class="text-muted" style="font-weight: 700;">{{ _('Data') }}</dt>
+            <dd class="c7-num" style="margin: 0; text-align: right;">{{ match.created_at|date_local }}</dd>
             {% endif %}
         {% endif %}
 
-        {% if debug_info.debug_mode %}
-            <hr>
-            <h6 class="text-muted">DEBUG Info:</h6>
-            <small class="text-muted">
-                Match ID: {{ match.id }}<br>
-                Status: {{ match.status }}<br>
-                Player1 ID: {{ match.player1_id }}<br>
-                Player2 ID: {{ match.player2_id }}<br>
-                Winner ID: {{ match.winner_id }}<br>
-                Is Bye: {{ match.is_bye }}<br>
-                Racks count: {{ racks|length }}
-            </small>
+        {# Tempi di gioco: servono alle statistiche, quindi restano vicini al
+           resto dell'anagrafica invece di avere una card propria. #}
+        {% if match.started_at %}
+        <dt class="text-muted" style="font-weight: 700;">{{ _('Inizio') }}</dt>
+        <dd class="c7-num" style="margin: 0; text-align: right;">{{ match.started_at|time_local }}</dd>
         {% endif %}
+        {% if match.ended_at %}
+        <dt class="text-muted" style="font-weight: 700;">{{ _('Fine') }}</dt>
+        <dd class="c7-num" style="margin: 0; text-align: right;">{{ match.ended_at|time_local }}</dd>
+        {% endif %}
+    </dl>
+
+    {% if debug_info.debug_mode %}
+    <hr class="c7-divider">
+    <div class="c7-kicker">DEBUG</div>
+    <div class="text-muted c7-num" style="font-size: 11px; line-height: 1.7; margin-top: 6px;">
+        match {{ match.id }} · {{ match.status }}<br>
+        p1 {{ match.player1_id }} · p2 {{ match.player2_id }} · win {{ match.winner_id }}<br>
+        bye {{ match.is_bye }} · rack {{ racks|length }}
     </div>
-</div>
+    {% endif %}
+</section>

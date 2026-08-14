@@ -92,7 +92,7 @@ class TestUseCaseRoundRobin:
             min_participants=6,
             max_participants=12,
             entry_fee=0.0,
-            discipline="palla_8",
+            discipline="8_ball",
             distance=5,  # Sets are race to 5 racks
             is_race_to=True,
             director_id=director_user.id,
@@ -106,7 +106,7 @@ class TestUseCaseRoundRobin:
         assert gara.matchmaking_strategy == "round_robin"
         assert gara.min_participants == 6
         assert gara.max_participants == 12
-        assert gara.discipline == "palla_8"
+        assert gara.discipline == "8_ball"
         assert gara.status == GaraStatus.SETUP.value
 
     def test_round_robin_first_round_pairing(
@@ -127,7 +127,7 @@ class TestUseCaseRoundRobin:
             min_participants=4,
             max_participants=8,
             entry_fee=0.0,
-            discipline="palla_8",
+            discipline="8_ball",
             distance=5,
             is_race_to=True,
             director_id=director_user.id,
@@ -190,7 +190,7 @@ class TestUseCaseRoundRobin:
             min_participants=4,
             max_participants=8,
             entry_fee=0.0,
-            discipline="palla_8",
+            discipline="8_ball",
             distance=5,
             is_race_to=True,
             director_id=director_user.id,

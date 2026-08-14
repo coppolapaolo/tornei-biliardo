@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% import "components/_gara_header.html" as gara_head with context %}
 
 {% block title %}
 {% if user_can_manage %}
@@ -10,21 +11,33 @@
 {% endif %}
 {% endblock %}
 
+{# Testata: una sola per pagina, quella del guscio. #}
+{% block page_back %}{{ gara_head.back(gara) }}{% endblock %}
+{% block page_title %}{{ gara.display_name }}{% endblock %}
+{% block page_sub %}{{ gara_head.sub(gara) }}{% endblock %}
+{% block page_actions %}{{ gara_head.actions(gara) }}{% endblock %}
+
 {% block content %}
-{# CSS for mobile collapsible sections #}
-<style>
-  /* Collapse icon rotation animation */
-  .collapse-icon {
-    transition: transform 0.2s ease;
-  }
-
-  [aria-expanded="true"] .collapse-icon {
-    transform: rotate(180deg);
-  }
-</style>
-
-{# Header comune a tutti gli utenti #}
-{% include "components/_gara_header.html" %}
+{# Punteggio di un giocatore nel modal del risultato rapido: stepper, non
+   campo numerico (regola 7c per i numeri piccoli e frequenti). L'input
+   conserva id, min/max e handler, quindi il JS non cambia. #}
+{% macro score_stepper(input_id, label, label_id, max_value=None) %}
+<div>
+  <div class="c7-label" id="{{ label_id }}">{{ label }}</div>
+  <div class="c7-stepper c7-stepper--sunk">
+    <div class="c7-stepper__row">
+      <button type="button" onclick="stepQuickScore('{{ input_id }}', -1)" aria-label="{{ _('Un rack in meno') }}">
+        <i class="fas fa-minus"></i>
+      </button>
+      <input type="number" class="c7-stepper__value" id="{{ input_id }}" min="0"{% if max_value %} max="{{ max_value }}"{% endif %}
+             oninput="validateQuickResultLive()" style="border: 0; background: transparent; width: 100%;">
+      <button type="button" onclick="stepQuickScore('{{ input_id }}', 1)" aria-label="{{ _('Un rack in più') }}">
+        <i class="fas fa-plus"></i>
+      </button>
+    </div>
+  </div>
+</div>
+{% endmacro %}
 
 {# Phase flags are pre-computed in the route handler (detail.py) and passed as template variables:
    is_ssr_phase, show_ssr_section, is_gara_ending, has_scores,
@@ -33,20 +46,69 @@
 {# Mobile "azionabile prima" (rilievo test manuale 2026-06-10): in fase di
    gioco l'azionabile sono le partite, non Gestione/Direttori. Su mobile le
    sezioni vengono riordinate con flex order-* (Partite -> Turni -> Gestione
-   collassata -> Direttori); il desktop resta invariato via order-md-*. #}
+   collassata -> Direttori); il desktop resta invariato via order-lg-*. #}
 {% set playing_admin = user_can_manage and gara.status == GaraStatus.PLAYING.value
    and not is_ssr_phase and not is_gara_ending %}
+
+{# Il guscio 7c cambia impaginazione a 992px (compaiono la barra laterale e
+   la seconda colonna, sparisce la nav flottante): tutte le alternative
+   mobile/desktop di questa pagina usano quindi `lg`, non piu' `md`. #}
+
+{# Viste mobile (prototipo 8a): sotto i 992px la pagina si divide in
+   linguette — Turni / Classifica / Iscritti (+ Gestione per chi dirige) —
+   invece di essere una pila unica in cui chi gioca deve scorrere a lungo per
+   trovare la propria partita. Ogni sezione dichiara le viste cui appartiene
+   con `data-c7-tab`; il filtro e' nel foglio di stile (sezione 16), quindi
+   nessun componente viene incluso due volte.
+
+   Una vista compare solo se ha contenuto, e con meno di due viste la barra
+   non serve: la pagina resta la pila di prima. #}
+{% set gara_views = [] %}
+{% if all_matches %}{% set _void = gara_views.append(('turni', _('Turni'))) %}{% endif %}
+{% if has_scores or challenge_classification %}
+{% set _void = gara_views.append(('classifica', _('Classifica'))) %}
+{% endif %}
+{# Iscritti c'e' sempre: contiene anche le informazioni della gara. #}
+{% set _void = gara_views.append(('iscritti', _('Iscritti'))) %}
+{% if user_can_manage %}{% set _void = gara_views.append(('gestione', _('Gestione'))) %}{% endif %}
+
+{# Vista di partenza: le partite se ci sono, altrimenti l'azionabile di chi
+   dirige (avvio del primo turno) e in ultimo gli iscritti. #}
+{% set gara_view_active = 'turni' if all_matches else ('gestione' if user_can_manage else 'iscritti') %}
+{% if gara_views | length < 2 %}{% set gara_views = [] %}{% endif %}
+
+{% include "components/_gara_view_tabs.html" %}
+
+{# La pagina e' una pila di sezioni e la distanza fra loro la da' `c7-stack`,
+   non un `mb-*` diverso per ognuna. E' anche un contenitore flex, quindi le
+   classi `order-*` del riordino mobile continuano a valere. #}
+<div class="c7-stack c7-sections" id="garaViews" data-gara-id="{{ gara.id }}"
+  {% if gara_views %}data-c7-view="{{ gara_view_active }}"{% endif %}>
+
+{# Scorciatoia alla propria partita: prima cosa della vista Turni. Su desktop
+   la tabella delle partite e' tutta in pagina e non serve.
+   La condizione sta qui, non solo dentro il componente: un involucro vuoto
+   dichiarerebbe comunque `data-c7-tab="turni"`, e quella vista puo' non
+   esistere (gara in iscrizione) — sarebbe una sezione irraggiungibile. #}
+{% if my_active_match %}
+<div class="d-lg-none" data-c7-tab="turni">
+  {% include "components/_gara_my_match.html" %}
+</div>
+{% endif %}
 
 {# ============================================================== #}
 {# MOBILE SSR LAYOUT - Phase A: Unresolved tiebreakers #}
 {# Order: 1. SSR (enter scores) 2. Classification 3. Management #}
 {# ============================================================== #}
+{# Lo spareggio e' l'azionabile del momento: sta nella vista di partenza,
+   oltre che in Gestione. Una sezione puo' appartenere a piu' viste — resta un
+   solo nodo nel DOM. #}
 {% if ssr_needs_input and user_can_manage %}
-<div class="d-md-none mb-3">
+<div class="d-lg-none" data-c7-tab="turni gestione">
   {% include "components/_ssr_section.html" %}
 </div>
 {% if has_scores %}
-<div class="d-md-none mb-3">
+<div class="d-lg-none" data-c7-tab="classifica">
   {% with classification=current_round_classification, round_number=latest_round_with_classification %}
   {% include "components/_classification_mobile.html" %}
   {% endwith %}
@@ -61,30 +123,29 @@
 {% if ssr_ready_to_terminate and user_can_manage %}
 {# Classification FIRST - shows final standings #}
 {% if has_scores %}
-<div class="d-md-none mb-3">
+<div class="d-lg-none" data-c7-tab="classifica">
   {% with classification=current_round_classification, round_number=latest_round_with_classification %}
   {% include "components/_classification_mobile.html" %}
   {% endwith %}
 </div>
 {% endif %}
 {# Management SECOND - prominent terminate button #}
-<div class="d-md-none mb-3">
-  <div class="card border-success">
-    <div class="card-header bg-success bg-opacity-10 d-flex justify-content-between align-items-center">
-      <h5 class="mb-0"><i class="fas fa-flag-checkered text-success"></i> {{ _('Completa Gara') }}</h5>
+<div class="d-lg-none" data-c7-tab="turni gestione">
+  <div class="c7-card c7-card--ok">
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <h3 class="mb-0 flex-fill">{{ _('Completa Gara') }}</h3>
       {{ status_badge(gara, 'gara') }}
     </div>
-    <div class="card-body">
-      <div class="alert alert-success p-2 mb-2">
-        <small><i class="fas fa-check-circle"></i> {{ _('Tutti gli spareggi risolti! Classifica finale pronta.')
-          }}</small>
+    <div class="c7-stack">
+      <div style="font-size:13px;font-weight:600;line-height:1.45">
+        {{ _('Tutti gli spareggi risolti! Classifica finale pronta.') }}
       </div>
       <button class="btn btn-success btn-lg w-100" onclick="terminateGara({{ gara.id }}, this)">
         <i class="fas fa-flag-checkered"></i> {{ _('Termina Gara') }}
       </button>
-      <small class="text-muted d-block text-center mt-2">
-        <i class="fas fa-info-circle"></i> {{ _('Conferma la conclusione e blocca le modifiche') }}
-      </small>
+      <div class="text-center" style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
+        {{ _('Conferma la conclusione e blocca le modifiche') }}
+      </div>
     </div>
   </div>
 </div>
@@ -93,18 +154,19 @@
 {# ============================================================== #}
 {# MOBILE - Strategie sequenziali (Amalfi) a turno finito #}
 {# L'azionabile e' avviare il turno successivo / lo spareggio SSR / #}
-{# terminare: Gestione va in cima e gia' aperta (niente collapse). #}
+{# terminare: Gestione va in cima e gia' aperta (niente collapse), e #}
+{# compare sia nella vista di partenza sia in Gestione. #}
 {# La copia desktop resta nella sidebar; il collapse mobile piu' in #}
 {# basso viene soppresso, quindi su mobile la card e' una sola. #}
 {# ============================================================== #}
 {% if round_action_ready %}
-<div class="d-md-none mb-3" id="sectionGestioneMobileAperta">
-  <div class="card">
-    <div class="card-header py-2 d-flex justify-content-between align-items-center">
-      <h5 class="mb-0"><i class="fas fa-cog"></i> {{ _('Gestione') }}</h5>
+<div class="d-lg-none" id="sectionGestioneMobileAperta" data-c7-tab="turni gestione">
+  <div class="c7-card">
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <h3 class="mb-0 flex-fill">{{ _('Gestione') }}</h3>
       {{ status_badge(gara, 'gara') }}
     </div>
-    {# headerless: titolo e status badge sono gia' nell'header qui sopra #}
+    {# headerless: titolo e status badge sono gia' nella testata qui sopra #}
     {% with management_headerless = True %}
     {% include "components/_gara_management.html" %}
     {% endwith %}
@@ -112,157 +174,152 @@
 </div>
 {% endif %}
 
-{# Row principale: Sidebar + Info (ordine invertito su mobile) #}
-<div class="row mb-4">
-  {# MOBILE: Sidebar FIRST (order-1), Info HIDDEN (moved to bottom) #}
-  {# DESKTOP: Info LEFT (col-md-8, order-md-1), Sidebar RIGHT (col-md-4, order-md-2) #}
-
-  <div class="col-md-8 order-2 order-md-1">
-    {# Info Gara: visible only on desktop, mobile version is collapsible at bottom #}
-    <div class="d-none d-md-block">
-      {% include "components/_gara_info.html" %}
-      {% include "components/_gara_challenges_display.html" %}
-    </div>
+{# Prima fascia: informazioni a sinistra, pannello adattivo a destra.
+   Su mobile `c7-cols` non disegna nulla (`c7-tabflat`): le sezioni diventano
+   figlie della pila di pagina, cosi' il filtro delle viste non lascia
+   colonne vuote col loro gap. L'informativa vive nella vista Iscritti. #}
+<div class="c7-cols c7-tabflat">
+  {# Info gara: solo desktop, su mobile e' nella vista Iscritti #}
+  <div class="d-none d-lg-block c7-stack">
+    {% include "components/_gara_info.html" %}
+    {% include "components/_gara_challenges_display.html" %}
   </div>
 
-  <div class="col-md-4 order-1 order-md-2">
+  <div class="c7-stack c7-tabflat">
     {# SIDEBAR ADATTIVA in base ai permessi #}
     {% if user_can_manage %}
     {# Admin/Director con permessi di gestione #}
     {# MOBILE SSR PHASE A (needs input): Management is collapsible and collapsed #}
     {% if ssr_needs_input %}
-    <div class="d-md-none">
-      <div class="card mb-3">
-        <div class="card-header py-2 d-flex justify-content-between align-items-center" role="button"
+    <div class="d-lg-none" data-c7-tab="gestione">
+      <div class="c7-card">
+        <div class="d-flex align-items-center gap-2" role="button"
           data-bs-toggle="collapse" data-bs-target="#mobileManagementCollapse" aria-expanded="false"
           aria-controls="mobileManagementCollapse" style="cursor: pointer;">
-          <h5 class="mb-0"><i class="fas fa-cog"></i> {{ _('Gestione') }}</h5>
-          <div>
-            {{ status_badge(gara, 'gara') }}
-            <i class="fas fa-chevron-down collapse-icon ms-2"></i>
-          </div>
+          <h3 class="mb-0 flex-fill">{{ _('Gestione') }}</h3>
+          {{ status_badge(gara, 'gara') }}
+          <i class="fas fa-chevron-down collapse-icon"></i>
         </div>
         <div id="mobileManagementCollapse" class="collapse">
-          <div class="card-body">
-            <div class="alert alert-warning p-2 mb-2">
-              <small><strong><i class="fas fa-balance-scale"></i> {{ _('Fase Spareggio (SSR)') }}</strong></small>
+          <div class="c7-stack" style="margin-top: 14px;">
+            <div class="alert alert-warning">{{ _('Fase Spareggio (SSR)') }}</div>
+            <div class="text-center" style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
+              {{ _('Inserisci i punteggi SSR nella sezione sopra') }}
             </div>
-            <small class="text-muted d-block text-center mb-2">
-              <i class="fas fa-info-circle"></i> {{ _('Inserisci i punteggi SSR nella sezione sopra') }}
-            </small>
           </div>
         </div>
       </div>
     </div>
-    <div class="d-none d-md-block">
+    <div class="d-none d-lg-block">
       {% include "components/_gara_management.html" %}
     </div>
     {# MOBILE SSR PHASE B (ready to terminate): Management already shown above, hide here #}
     {% elif ssr_ready_to_terminate %}
-    <div class="d-none d-md-block">
+    <div class="d-none d-lg-block">
       {% include "components/_gara_management.html" %}
     </div>
     {# FASE DI GIOCO: su mobile la Gestione e' collassata dopo le partite
        (sectionGestioneMobile), qui resta la copia desktop #}
     {% elif playing_admin %}
-    <div class="d-none d-md-block">
+    <div class="d-none d-lg-block">
       {% include "components/_gara_management.html" %}
     </div>
     {% else %}
-    {% include "components/_gara_management.html" %}
+    <div data-c7-tab="gestione">
+      {% include "components/_gara_management.html" %}
+    </div>
     {% endif %}
     {% elif user_inscription %}
-    {# Player iscritto #}
-    {% include "components/_player_inscription_info.html" %}
+    {# Player iscritto: data e ordine di sorteggio stanno fra gli iscritti. Nel
+       prototipo la vista Turni va dalla scorciatoia direttamente ai turni, e
+       fuori dalla fase di gioco le linguette non ci sono, quindi la card si
+       vede comunque quando e' l'unica cosa che c'e'. #}
+    <div data-c7-tab="iscritti">
+      {% include "components/_player_inscription_info.html" %}
+    </div>
     {% else %}
-    {# Guest/Utente non iscritto #}
-    {% include "components/_guest_info.html" %}
+    {# Guest/Utente non iscritto: qui dentro c'e' il pulsante d'iscrizione
+       (issue #61), che non puo' finire dietro una linguetta. #}
+    <div data-c7-tab="turni iscritti">
+      {% include "components/_guest_info.html" %}
+    </div>
     {% endif %}
   </div>
 </div>
 
-{# Wrapper flex: in fase di gioco le sezioni sotto vengono riordinate su
-   mobile con le classi order-* (vedi playing_admin in alto) #}
-<div class="{% if playing_admin %}d-flex flex-column{% endif %}">
+{# Sezioni a tutta larghezza. `c7-stack` e' un contenitore flex, quindi in
+   fase di gioco le classi order-* riordinano il mobile (vedi playing_admin
+   in alto) e order-lg-* riporta la sequenza originale sul desktop.
+   `c7-tabflat`: su mobile il gruppo non disegna box, cosi' le sezioni sono
+   figlie della pila di pagina e le `order-*` restano confrontabili fra loro. #}
+<div class="c7-stack c7-sections c7-tabflat">
 {# Sezioni Admin/Director (solo se può gestire) - DESKTOP or non-SSR mobile #}
 {% if user_can_manage %}
 {# Link pubblico da condividere: ha senso finché ci si può iscrivere #}
 {% if gara.status in [GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value] %}
-<div class="row" id="sectionLinkPubblico">
-  <div class="col-12">
-    {% include "components/_gara_public_link.html" %}
-  </div>
+<div id="sectionLinkPubblico" data-c7-tab="gestione">
+  {% include "components/_gara_public_link.html" %}
 </div>
 {% endif %}
 {# Directors: on desktop always here, on mobile SSR phase moved to bottom #}
 {% if not is_ssr_phase %}
-<div class="row mb-4{% if playing_admin %} order-4 order-md-1{% endif %}" id="sectionDirettori">
-  <div class="col-12">
-    {% include "components/_gara_directors.html" %}
-  </div>
+<div class="{% if playing_admin %}order-4 order-lg-1{% endif %}" id="sectionDirettori" data-c7-tab="gestione">
+  {% include "components/_gara_directors.html" %}
 </div>
 {% else %}
 {# DESKTOP ONLY during SSR phase #}
-<div class="row mb-4 d-none d-md-block">
-  <div class="col-12">
-    {% include "components/_gara_directors.html" %}
-  </div>
+<div class="d-none d-lg-block">
+  {% include "components/_gara_directors.html" %}
 </div>
 {% endif %}
 
 {# Tavoli della gara: editabile tra apertura iscrizioni e avvio,
    sola lettura durante il gioco (il componente gestisce gli stati) #}
 {% if gara.status in [GaraStatus.INSCRIPTION.value, GaraStatus.PLAYING.value] %}
-<div class="row mb-4{% if playing_admin %} order-5 order-md-1{% endif %}" id="sectionTavoli">
-  <div class="col-12">
-    {% include "components/_gara_tables_config.html" %}
-  </div>
+<div class="{% if playing_admin %}order-5 order-lg-1{% endif %}" id="sectionTavoli" data-c7-tab="gestione">
+  {% include "components/_gara_tables_config.html" %}
 </div>
 {% endif %}
 
-<!-- Gestione Turni Section -->
-<div class="row mb-4{% if playing_admin %} order-2 order-md-2{% endif %}" id="sectionTurni">
-  <div class="col-12">
-    {% include "components/_round_management.html" %}
-  </div>
+{# Gestione Turni: e' la configurazione dei turni (disciplina e distanza per
+   turno), non l'elenco delle partite — vive quindi in Gestione, non in Turni.
+   Le partite del turno stanno nella vista Turni. #}
+<div class="{% if playing_admin %}order-2 order-lg-2{% endif %}" id="sectionTurni" data-c7-tab="gestione">
+  {% include "components/_round_management.html" %}
 </div>
 
-{# MOBILE (fase di gioco): Gestione collassata dopo l'azionabile. La copia
-   desktop resta nella sidebar in alto (d-none d-md-block); _gara_management
-   non contiene id/script, quindi la doppia inclusione e' sicura.
-   A turno finito (round_action_ready) Gestione e' invece gia' in cima e
-   aperta: qui non va ripetuta, altrimenti su mobile comparirebbe due volte. #}
+{# MOBILE (fase di gioco): Gestione nella sua linguetta. Era un collapse
+   perche' stava in mezzo alla pila, davanti alle partite; ora la vista di
+   partenza sono i Turni e la Gestione ha una linguetta sua, dove richiuderla
+   sarebbe solo un tap in piu' per arrivare all'unica cosa che contiene.
+   La copia desktop resta nella sidebar in alto (d-none d-lg-block);
+   _gara_management non contiene id/script, quindi la doppia inclusione e'
+   sicura. A turno finito (round_action_ready) Gestione e' invece gia' in cima
+   e aperta: qui non va ripetuta, altrimenti comparirebbe due volte. #}
 {% if playing_admin and not round_action_ready %}
-<div class="d-md-none order-3 mb-4" id="sectionGestioneMobile">
-  <div class="card">
-    <div class="card-header py-2 d-flex justify-content-between align-items-center" role="button"
-      data-bs-toggle="collapse" data-bs-target="#mobilePlayingManagement" aria-expanded="false"
-      aria-controls="mobilePlayingManagement" style="cursor: pointer;">
-      <h5 class="mb-0"><i class="fas fa-cog"></i> {{ _('Gestione') }}</h5>
-      <div>
-        {{ status_badge(gara, 'gara') }}
-        <i class="fas fa-chevron-down collapse-icon ms-2"></i>
-      </div>
+<div class="d-lg-none order-3" id="sectionGestioneMobile" data-c7-tab="gestione">
+  <div class="c7-card">
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <h3 class="mb-0 flex-fill">{{ _('Gestione') }}</h3>
+      {{ status_badge(gara, 'gara') }}
     </div>
-    <div id="mobilePlayingManagement" class="collapse">
-      {# headerless: il titolo "Gestione" + status badge sono gia' nell'header
-         del collapse qui sopra (rilievo Copilot PR #36) #}
-      {% with management_headerless = True %}
-      {% include "components/_gara_management.html" %}
-      {% endwith %}
-    </div>
+    {# headerless: il titolo "Gestione" + status badge sono gia' nella testata
+       qui sopra (rilievo Copilot PR #36) #}
+    {% with management_headerless = True %}
+    {% include "components/_gara_management.html" %}
+    {% endwith %}
   </div>
 </div>
 {% endif %}
 {% endif %}
 
 {# Sezione Partite - adattiva #}
-<div class="row{% if playing_admin %} order-1 order-md-3{% endif %}" id="sectionPartite">
-  <div class="col-md-8">
+<div class="c7-cols c7-tabflat{% if playing_admin %} order-1 order-lg-3{% endif %}" id="sectionPartite">
+  <div class="c7-stack c7-tabflat">
     {# === MOBILE: Show Classification FIRST when gara is ending (SSR phase or completed) === #}
     {# Skip if already shown above for SSR phase with user_can_manage #}
     {% if (is_ssr_phase or is_gara_ending) and has_scores and not (is_ssr_phase and user_can_manage) %}
-    <div class="d-md-none mb-3">
+    <div class="d-lg-none" data-c7-tab="classifica">
       {% with classification=current_round_classification, round_number=latest_round_with_classification %}
       {% include "components/_classification_mobile.html" %}
       {% endwith %}
@@ -272,332 +329,135 @@
     {# === MOBILE: Show SSR section BEFORE matches only when needing input (non-director) === #}
     {# For ssr_ready_to_terminate (director), SSR is shown AFTER matches #}
     {% if show_ssr_section and not (is_ssr_phase and user_can_manage) %}
-    <div class="d-md-none mb-3">
+    <div class="d-lg-none" data-c7-tab="turni">
       {% include "components/_ssr_section.html" %}
     </div>
     {% endif %}
 
-    {# === MOBILE VIEW (< 768px)===#} <div class="d-md-none">
+    {# Partite: card su mobile, tabella su desktop. Il contenuto e' lo stesso
+       per direttore, iscritto e ospite — cambiano solo le azioni, che i
+       componenti decidono da user_can_manage / user_inscription.
+       Senza partite l'involucro non si emette: dichiarerebbe la vista Turni,
+       che in quel caso non ha una linguetta. #}
+    {% if all_matches or matches %}
+    <div class="d-lg-none" data-c7-tab="turni">
       {% include "components/_match_cards_mobile.html" %}
-  </div>
+    </div>
+    {% endif %}
+    <div class="d-none d-lg-block">
+      {% include "components/_gara_matches.html" %}
+    </div>
 
-  {# === MOBILE SSR PHASE B: Show SSR AFTER matches (read-only summary) === #}
-  {% if ssr_ready_to_terminate and user_can_manage %}
-  <div class="d-md-none mb-3">
-    {% include "components/_ssr_section.html" %}
-  </div>
-  {% endif %}
+    {# === MOBILE SSR PHASE B: Show SSR AFTER matches (read-only summary) === #}
+    {% if ssr_ready_to_terminate and user_can_manage %}
+    <div class="d-lg-none" data-c7-tab="turni gestione">
+      {% include "components/_ssr_section.html" %}
+    </div>
+    {% endif %}
 
-  {# === DESKTOP VIEW (>= 768px) === #}
-  <div class="d-none d-md-block">
-    {% if user_can_manage %}
-    {# Admin/Director con permessi: mostra tutte le partite #}
-    {% include "components/_gara_matches.html" %}
-    {% elif user_inscription %}
-    {# Player iscritto: mostra tutte le partite (come guest) ma con azioni per le sue #}
-    {% include "components/_gara_matches.html" %}
-    {% else %}
-    {# Guest: mostra tutte le partite (read-only) #}
-    {% include "components/_gara_matches.html" %}
+    {# SSR su desktop: stesso componente del mobile. Le due copie possono
+       coesistere nel DOM (una nascosta), e `saveSsrGroup` legge solo i campi
+       visibili. #}
+    {% if show_ssr_section %}
+    <div class="d-none d-lg-block">
+      {% include "components/_ssr_section.html" %}
+    </div>
     {% endif %}
   </div>
 
-  {# SSR (Spot Shot Rally) Section - DESKTOP only here (mobile shown above) #}
-  {% if show_ssr_section %}
-  <div class="card mt-4 d-none d-md-block">
-    <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
-      <h5 class="mb-0">
-        <i class="fas fa-balance-scale"></i> {{ _('Spot Shot Rally (SSR)') }}
-      </h5>
-      {% if has_unresolved_tiebreakers %}
-      <span class="badge bg-dark">{{ _('In attesa di punteggi') }}</span>
-      {% else %}
-      <span class="badge bg-success">{{ _('Completato') }}</span>
-      {% endif %}
-    </div>
-    <div class="card-body">
-      {% if ssr_groups %}
-      <div class="row">
-        {% for group in ssr_groups %}
-        <div class="col-md-6 mb-3">
-          <div class="card h-100">
-            <div class="card-header py-2">
-              <strong>
-                <i
-                  class="fas fa-trophy {% if group.position == 1 %}text-warning{% elif group.position == 2 %}text-secondary{% else %}text-danger{% endif %}"></i>
-                {{ _('Parimerito per il %(pos)s° posto', pos=group.position) }}
-              </strong>
-              <small class="text-muted ms-2">({{ group.rack_totali }} rack)</small>
-            </div>
-            <div class="card-body py-2">
-              <table class="table table-sm mb-0">
-                <thead>
-                  <tr>
-                    <th>{{ _('Giocatore') }}</th>
-                    <th class="text-center" style="width: 100px;">{{ _('Punti SSR') }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for player in group.players %}
-                  <tr>
-                    <td>{{ player.username }}</td>
-                    <td class="text-center">
-                      {% if can_edit_ssr %}
-                      <input type="number" class="form-control form-control-sm text-center ssr-group-input"
-                        data-user-id="{{ player.user_id }}" data-group-position="{{ group.position }}"
-                        data-needs-distinct-top="{{ group.needs_distinct_top }}"
-                        value="{{ player.current_ssr_score if player.current_ssr_score is not none else '' }}" min="0"
-                        style="width: 80px; display: inline-block;">
-                      {% else %}
-                      {% if player.current_ssr_score is not none %}
-                      <span class="badge bg-warning text-dark">{{ player.current_ssr_score }}</span>
-                      {% else %}
-                      <span class="text-muted">-</span>
-                      {% endif %}
-                      {% endif %}
-                    </td>
-                  </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-              {% if can_edit_ssr %}
-              <div class="mt-2 text-end">
-                <button type="button" class="btn btn-sm btn-warning"
-                  onclick='saveSsrGroup({{ gara.id }}, {{ group.position }}, this)'>
-                  <i class="fas fa-save"></i> {{ _('Salva') }}
-                </button>
-              </div>
-              {% endif %}
-            </div>
-          </div>
-        </div>
-        {% endfor %}
-      </div>
-      {% else %}
-      <div class="alert alert-info mb-0">
-        <i class="fas fa-info-circle"></i> {{ _('Nessun parimerito da risolvere.') }}
-      </div>
-      {% endif %}
-    </div>
-  </div>
-  {% endif %}
-</div>
-
-<div class="col-md-4">
-  {# === MOBILE: Classification with toggle (only if NOT already shown at top) === #}
-  {% if not is_ssr_phase and not is_gara_ending %}
-  <div class="d-md-none">
+  <div class="c7-stack c7-tabflat">
+    {# Classifica: compatta su mobile, dettagliata su desktop. Quando la gara
+       sta chiudendo la versione mobile e' gia' in cima alla colonna partite. #}
     {% if has_scores %}
     {% with classification=current_round_classification, round_number=latest_round_with_classification %}
-    {% include "components/_classification_mobile.html" %}
+    {% if not is_ssr_phase and not is_gara_ending %}
+    <div class="d-lg-none" data-c7-tab="classifica">
+      {% include "components/_classification_mobile.html" %}
+    </div>
+    {% endif %}
+    <div class="d-none d-lg-block">
+      {% include "components/_detailed_classification.html" %}
+    </div>
     {% endwith %}
     {% endif %}
-  </div>
-  {% endif %}
 
-  {# === DESKTOP: Detailed classification === #}
-  <div class="d-none d-md-block">
-    {# Classificazione (tutti) - solo se ci sono punteggi #}
-    {% if has_scores %}
-    {% with classification=current_round_classification, round_number=latest_round_with_classification %}
-    {% include "components/_detailed_classification.html" %}
-    {% endwith %}
-    {% endif %}
-  </div>
-
-  {# Iscrizioni - DESKTOP ONLY (mobile has collapsible version below) #}
-  {% if gara.status != 'setup' %}
-  <div class="mt-3 d-none d-md-block">
-    {% include "components/_gara_inscriptions.html" %}
-  </div>
-  {% endif %}
-
-  {# Challenge Classification for Random Strategy (solo admin/director) #}
-  {% if user_can_manage and challenge_classification %}
-  <div class="mt-3">
-    {% include "components/_gara_challenge_classification_compact.html" %}
-  </div>
-  {% endif %}
-
-  {# === MOBILE ONLY: Collapsible Info & Iscritti === #}
-  <div class="d-md-none mt-3">
-    {# Collapsible Info Gara #}
-    <div class="card mb-3">
-      <div class="card-header py-2" role="button" data-bs-toggle="collapse" data-bs-target="#mobileInfoCollapse"
-        aria-expanded="false" aria-controls="mobileInfoCollapse" style="cursor: pointer;">
-        <div class="d-flex justify-content-between align-items-center">
-          <h6 class="mb-0">
-            <i class="fas fa-info-circle"></i> {{ _('Informazioni Gara') }}
-          </h6>
-          <i class="fas fa-chevron-down collapse-icon"></i>
-        </div>
-      </div>
-      <div id="mobileInfoCollapse" class="collapse">
-        <div class="card-body py-2">
-          <div class="small">
-            <strong>{{ _('Data:') }}</strong> {{ gara.date|date_local }}{% if gara.time %} {{ gara.time|time_local }}{%
-            endif %}<br>
-            <strong>{{ _('Turni:') }}</strong> {{ gara.rounds_count }}<br>
-            <strong>{{ _('Tipo:') }}</strong> {{ gara.matchmaking_strategy.replace('_', ' ').title() }}<br>
-            {% if gara.location %}
-            <strong>{{ _('Luogo:') }}</strong> {{ gara.location }}<br>
-            {% endif %}
-            <strong>{{ _('Partecipanti:') }}</strong> {{ _('min') }} {{ gara.min_participants }}{% if
-            gara.max_participants %} - {{ _('max') }} {{ gara.max_participants }}{% endif %}<br>
-            <strong>{{ _('Quota:') }}</strong> {% if gara.entry_fee > 0 %}€{{ "%.2f"|format(gara.entry_fee) }}{% else
-            %}{{ _('Gratuita') }}{% endif %}<br>
-            <strong>{{ _('Anti-reincontro:') }}</strong> {% if gara.anti_rematch_enabled %}<span class="text-success">{{
-              _('Sì') }}</span>{% else %}<span class="text-muted">{{ _('No') }}</span>{% endif %}<br>
-            <strong>{{ _('Num. dispari:') }}</strong> {{ gara.odd_number_policy.replace('_', ' ').title() }}
-            {% if gara.description %}
-            <hr class="my-2">
-            <strong>{{ _('Descrizione:') }}</strong> {{ gara.description }}
-            {% endif %}
-          </div>
-        </div>
-      </div>
-    </div>
-
-    {# Collapsible Iscritti #}
-    {% if gara.status != 'setup' %}
-    <div class="card">
-      <div class="card-header py-2" role="button" data-bs-toggle="collapse" data-bs-target="#mobileInscriptionsCollapse"
-        aria-expanded="false" aria-controls="mobileInscriptionsCollapse" style="cursor: pointer;">
-        <div class="d-flex justify-content-between align-items-center">
-          <h6 class="mb-0">
-            <i class="fas fa-users"></i> {{ _('Iscritti') }}
-            ({{ gara.get_active_inscriptions_count() }}{% if gara.max_participants %}/{{ gara.max_participants }}{%
-            endif %})
-            {% if gara.get_waitlist_count() > 0 %}
-            <span class="text-warning ms-1">
-              <i class="fas fa-clock"></i> +{{ gara.get_waitlist_count() }}
-            </span>
-            {% endif %}
-          </h6>
-          <i class="fas fa-chevron-down collapse-icon"></i>
-        </div>
-      </div>
-      <div id="mobileInscriptionsCollapse" class="collapse">
-        <div class="card-body py-2">
-          {# Form per aggiungere iscritti (solo director/admin in fase iscrizione) #}
-          {% if user_can_manage and available_users and available_users|length > 0 %}
-          <form method="POST" action="{{ url_for('admin.competition.admin_inscribe_user', gara_id=gara.id) }}" class="mb-3">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <div class="input-group input-group-sm">
-              <select name="user_id" class="form-select form-select-sm" required>
-                <option value="">{{ _('Seleziona utente...') }}</option>
-                {% for user in available_users %}
-                <option value="{{ user.id }}">{{ user.username }}</option>
-                {% endfor %}
-              </select>
-              <button type="submit" class="btn btn-primary btn-sm" title="{{ _('Aggiungi iscritto') }}">
-                <i class="fas fa-user-plus"></i>
-              </button>
-            </div>
-          </form>
-          {% endif %}
-
-          {% if inscriptions %}
-          {% set active_inscriptions = inscriptions | selectattr('is_waitlist', 'equalto', false) |
-          selectattr('is_withdrawn', 'equalto', false) | list %}
-          {% if active_inscriptions %}
-          <div class="small">
-            {% for inscription in active_inscriptions %}
-            <div class="d-flex justify-content-between align-items-center py-1 {% if not loop.last %}border-bottom{% endif %}">
-              <div>
-                <span class="{% if inscription.is_forfeit %}text-muted text-decoration-line-through{% endif %}">
-                  {{ inscription.user.username }}
-                </span>
-                {% if inscription.is_forfeit %}
-                <i class="fas fa-ban text-secondary ms-1" title="{{ _('Forfait') }}"></i>
-                {% endif %}
-              </div>
-              {% if user_can_manage and gara.status == 'inscription' %}
-              <form class="d-inline" method="POST"
-                action="{{ url_for('admin.competition.admin_uninscribe_user', gara_id=gara.id, user_id=inscription.user_id) }}"
-                onsubmit='return confirmSubmit(this, {{ _("Sei sicuro di voler disiscrivere %(username)s?", username=inscription.user.username)|tojson }})'>
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-1" title="{{ _('Disiscrive utente') }}">
-                  <i class="fas fa-user-minus"></i>
-                </button>
-              </form>
-              {% endif %}
-            </div>
-            {% endfor %}
-          </div>
-          {% endif %}
-          {% set waitlist = inscriptions | selectattr('is_waitlist', 'equalto', true) | selectattr('is_withdrawn',
-          'equalto', false) | sort(attribute='waitlist_position') | list %}
-          {% if waitlist %}
-          <h6 class="text-warning mt-2 mb-1 small"><i class="fas fa-clock"></i> {{ _('Lista Attesa') }}</h6>
-          <div class="small">
-            {% for inscription in waitlist %}
-            <div class="d-flex justify-content-between align-items-center py-1 {% if not loop.last %}border-bottom{% endif %}">
-              <div>
-                <span class="badge bg-warning text-dark me-1">{{ inscription.waitlist_position }}</span>
-                {{ inscription.user.username }}
-              </div>
-              {% if user_can_manage and gara.status == 'inscription' %}
-              <form class="d-inline" method="POST"
-                action="{{ url_for('admin.competition.admin_uninscribe_user', gara_id=gara.id, user_id=inscription.user_id) }}"
-                onsubmit='return confirmSubmit(this, {{ _("Sei sicuro di voler rimuovere %(username)s dalla lista d\'attesa?", username=inscription.user.username)|tojson }})'>
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-1" title="{{ _('Rimuove dalla lista d\'attesa') }}">
-                  <i class="fas fa-user-minus"></i>
-                </button>
-              </form>
-              {% endif %}
-            </div>
-            {% endfor %}
-          </div>
-          {% endif %}
-          {% else %}
-          <p class="text-muted small mb-0">{{ _('Nessun iscritto') }}</p>
-          {% endif %}
-        </div>
-      </div>
+    {# Iscrizioni - DESKTOP ONLY (mobile has collapsible version below) #}
+    {% if gara.status != GaraStatus.SETUP.value %}
+    <div class="d-none d-lg-block">
+      {% include "components/_gara_inscriptions.html" %}
     </div>
     {% endif %}
 
-    {# === MOBILE SSR PHASE: Directors section at the very bottom === #}
-    {% if is_ssr_phase and user_can_manage %}
-    <div class="card mt-3">
-      <div class="card-header py-2" role="button" data-bs-toggle="collapse" data-bs-target="#mobileDirectorsCollapse"
-        aria-expanded="false" aria-controls="mobileDirectorsCollapse" style="cursor: pointer;">
-        <div class="d-flex justify-content-between align-items-center">
-          <h6 class="mb-0">
-            <i class="fas fa-user-tie"></i> {{ _('Direttori di Gara') }}
-          </h6>
-          <i class="fas fa-chevron-down collapse-icon"></i>
-        </div>
-      </div>
-      <div id="mobileDirectorsCollapse" class="collapse">
-        <div class="card-body py-2">
-          {% include "components/_gara_directors.html" %}
-        </div>
-      </div>
+    {# Challenge Classification for Random Strategy (solo admin/director) #}
+    {% if user_can_manage and challenge_classification %}
+    <div data-c7-tab="classifica">
+      {% include "components/_gara_challenge_classification_compact.html" %}
     </div>
     {% endif %}
   </div>
 </div>
-{# Chiusura wrapper flex "azionabile prima" (vedi apertura sopra Sezioni Admin) #}
-</div>
+
+{# === MOBILE: iscritti e informazioni, nella loro linguetta ===
+   Stessi componenti del desktop, in versione headerless. Prima stavano
+   *dentro* la sezione Partite (compromesso della PR #36): in fase di gioco
+   risalivano con lei, ed erano entrambi richiusi perche' altrimenti
+   allungavano la pila. Con le linguette hanno una vista propria, quindi gli
+   iscritti — che sono il soggetto della vista — stanno aperti, e resta
+   richiudibile la sola informativa, che e' di contorno. #}
+<div class="d-lg-none c7-stack" data-c7-tab="iscritti">
+  {% if gara.status != GaraStatus.SETUP.value %}
+  {% include "components/_gara_inscriptions.html" %}
+  {% endif %}
+
+  <div class="c7-card">
+    <div class="d-flex align-items-center gap-2" role="button" data-bs-toggle="collapse"
+      data-bs-target="#mobileInfoCollapse" aria-expanded="false" aria-controls="mobileInfoCollapse"
+      style="cursor: pointer;">
+      <h3 class="mb-0 flex-fill">{{ _('Informazioni gara') }}</h3>
+      <i class="fas fa-chevron-down collapse-icon"></i>
+    </div>
+    <div id="mobileInfoCollapse" class="collapse">
+      <div style="margin-top: 14px;">
+        {% with info_headerless = True %}
+        {% include "components/_gara_info.html" %}
+        {% endwith %}
+      </div>
+    </div>
+  </div>
+
+  {# Le challenge configurate sulla gara: su desktop stanno nella colonna di
+     fianco alle informazioni, che e' `d-none d-lg-block` — su mobile non erano
+     raggiungibili da nessuna vista. Qui stanno accanto alle informazioni, come
+     su desktop. #}
+  {% include "components/_gara_challenges_display.html" %}
 </div>
 
-{# Challenge Section - adattiva #}
-{% if gara_challenges or user_challenge_data %}
-<div class="row mb-4">
-  <div class="col-12">
-    {% if user_inscription and user_challenge_data %}
-    {# Player iscritto: challenge interattive #}
-    {% include "components/_player_challenges.html" %}
-    {% elif gara_challenges %}
-    {# Altri: challenge read-only #}
-    {% include "components/_public_challenges.html" %}
-    {% endif %}
-  </div>
+{# In fase di spareggio i direttori scendono in fondo. Il componente ha gia'
+   la sua card intitolata: il secondo involucro richiudibile ripeteva il
+   titolo, quindi resta la sola card. #}
+{% if is_ssr_phase and user_can_manage %}
+<div class="d-lg-none" data-c7-tab="gestione">
+  {% include "components/_gara_directors.html" %}
 </div>
 {% endif %}
+{# Chiusura della pila di sezioni a tutta larghezza #}
+</div>
+
+{# Challenge Section - adattiva. Per chi ha l'X di turno la challenge e' cosa
+   fare adesso al posto di una partita: sta con i Turni. #}
+{% if gara_challenges or user_challenge_data %}
+<div data-c7-tab="turni">
+  {% if user_inscription and user_challenge_data %}
+  {# Player iscritto: challenge interattive #}
+  {% include "components/_player_challenges.html" %}
+  {% elif gara_challenges %}
+  {# Altri: challenge read-only #}
+  {% include "components/_public_challenges.html" %}
+  {% endif %}
+</div>
+{% endif %}
+{# Chiusura della pila di pagina #}
+</div>
 
 {# Modali (solo admin/director con permessi) #}
 {% if user_can_manage %}
@@ -613,112 +473,97 @@
 {% include "components/_challenge_management_modal.html" %}
 {% endif %}
 
-<!-- Modal Risultato Rapido -->
+{# Modal Risultato Rapido #}
 <div class="modal fade" id="quickResultModal" tabindex="-1">
   <div class="modal-dialog modal-fullscreen-sm-down">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">{{ _('Imposta Risultato Rapido') }}</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Chiudi') }}"></button>
       </div>
       <form id="quickResultForm" onsubmit="return submitQuickResult(event)">
         <div class="modal-body">
-          {# B29: Info modalità per match normali — populated dynamically by JS
-             so per-round overrides (RoundConfiguration) are respected. #}
-          <div class="alert alert-warning" id="quickResultNormalInfo">
-            <small>
-              <i class="fas fa-info-circle"></i>
-              <strong>{{ _('Modalità:') }}</strong>
-              <span id="quickResultModeRaceTo" style="display: none;">
-                {{ _('Race to') }} <span data-modal-distance></span>
-                ({{ _('vince chi vince') }} <span data-modal-distance></span> {{ _('rack') }})
-              </span>
-              <span id="quickResultModeExact" style="display: none;">
-                {{ _('Esattamente') }} <span data-modal-distance></span> {{ _('rack') }}
-                ({{ _('somma rack =') }} <span data-modal-distance></span>)
-              </span>
-            </small>
-          </div>
+          <div class="c7-stack">
 
-          {# Info modalità per trio - calculated from TrioConfig #}
-          {% set trio_config = gara.distance|trio_config_for_distance %}
-          <div class="alert alert-info" id="quickResultTrioInfo" style="display: none;">
-            <small>
-              <i class="fas fa-users"></i>
-              <strong>{{ _('Trio (Round-Robin):') }}</strong>
-              {% if trio_config %}
-              {{ _('%(gironi)s gironi, max %(max_racks)s rack per giocatore', gironi=trio_config.num_rounds,
-              max_racks=trio_config.max_racks_per_player) }}
-              {% if trio_config.bonus_racks > 0 %}
-              <br><i class="fas fa-plus-circle text-success"></i> {{ _('Bonus: +%(bonus)s rack equamente distribuiti',
-              bonus=trio_config.bonus_racks) }}
-              {% endif %}
-              {% else %}
-              {{ _('Distanza %(d)s', d=gara.distance) }}
-              {% endif %}
-            </small>
-          </div>
+            {# B29: Info modalità per match normali — populated dynamically by JS
+               so per-round overrides (RoundConfiguration) are respected. #}
+            <div class="alert alert-info" id="quickResultNormalInfo">
+              <div>
+                <strong>{{ _('Modalità:') }}</strong>
+                <span id="quickResultModeRaceTo" style="display: none;">
+                  {{ _('Race to') }} <span class="c7-num" data-modal-distance></span>
+                  ({{ _('vince chi vince') }} <span class="c7-num" data-modal-distance></span> {{ _('rack') }})
+                </span>
+                <span id="quickResultModeExact" style="display: none;">
+                  {{ _('Esattamente') }} <span class="c7-num" data-modal-distance></span> {{ _('rack') }}
+                  ({{ _('somma rack =') }} <span class="c7-num" data-modal-distance></span>)
+                </span>
+              </div>
+            </div>
 
-          {# Layout per match normali (2 giocatori) — max set by JS per match-effective-distance #}
-          <div class="row" id="quickResultNormalInputs">
-            <div class="col-6">
-              <label id="player1Label" class="form-label">{{ _('Giocatore 1') }}</label>
-              <input type="number" class="form-control" id="quickPlayer1Score" min="0" oninput="validateQuickResultLive()">
+            {# Info modalità per trio - calculated from TrioConfig #}
+            {% set trio_config = gara.distance|trio_config_for_distance %}
+            <div class="alert alert-info" id="quickResultTrioInfo" style="display: none;">
+              <div>
+                <strong>{{ _('Trio (Round-Robin):') }}</strong>
+                {% if trio_config %}
+                {{ _('%(gironi)s gironi, max %(max_racks)s rack per giocatore', gironi=trio_config.num_rounds,
+                max_racks=trio_config.max_racks_per_player) }}
+                {% if trio_config.bonus_racks > 0 %}
+                <br>{{ _('Bonus: +%(bonus)s rack equamente distribuiti', bonus=trio_config.bonus_racks) }}
+                {% endif %}
+                {% else %}
+                {{ _('Distanza %(d)s', d=gara.distance) }}
+                {% endif %}
+              </div>
             </div>
-            <div class="col-6">
-              <label id="player2Label" class="form-label">{{ _('Giocatore 2') }}</label>
-              <input type="number" class="form-control" id="quickPlayer2Score" min="0" oninput="validateQuickResultLive()">
-            </div>
-          </div>
 
-          {# B15: live validation message — populated by validateQuickResultLive() #}
-          <div id="quickResultValidationMsg" class="alert alert-danger mt-2" style="display: none;" role="alert">
-            <small><i class="fas fa-exclamation-triangle me-1"></i><span id="quickResultValidationText"></span></small>
-          </div>
+            {# Punteggi: stepper, non campi numerici (regola 7c). Il max lo
+               imposta JS sulla distanza effettiva del match. #}
+            <div class="c7-stack" id="quickResultNormalInputs">
+              {{ score_stepper('quickPlayer1Score', _('Giocatore 1'), 'player1Label') }}
+              {{ score_stepper('quickPlayer2Score', _('Giocatore 2'), 'player2Label') }}
+            </div>
 
-          {# Layout per trio (3 giocatori) #}
-          {# Max racks = distance (or default 5 if trio not configured) #}
-          {% set trio_max_racks = trio_config.max_racks_per_player if trio_config else gara.distance %}
-          <div class="row" id="quickResultTrioInputs" style="display: none;">
-            <div class="col-4">
-              <label id="trioPlayer1Label" class="form-label">{{ _('Giocatore 1') }}</label>
-              <input type="number" class="form-control" id="quickTrioPlayer1Score" min="0" max="{{ trio_max_racks }}">
+            {# B15: live validation message — populated by validateQuickResultLive() #}
+            <div id="quickResultValidationMsg" class="alert alert-danger" style="display: none;" role="alert">
+              <div><span id="quickResultValidationText"></span></div>
             </div>
-            <div class="col-4">
-              <label id="trioPlayer2Label" class="form-label">{{ _('Giocatore 2') }}</label>
-              <input type="number" class="form-control" id="quickTrioPlayer2Score" min="0" max="{{ trio_max_racks }}">
-            </div>
-            <div class="col-4">
-              <label id="trioPlayer3Label" class="form-label">{{ _('Giocatore 3') }}</label>
-              <input type="number" class="form-control" id="quickTrioPlayer3Score" min="0" max="{{ trio_max_racks }}">
-            </div>
-          </div>
 
-          <input type="hidden" id="quickMatchId">
-          <input type="hidden" id="quickTrioId">
-          <input type="hidden" id="quickIsTrio" value="false">
+            {# Layout per trio (3 giocatori) #}
+            {# Max racks = distance (or default 5 if trio not configured) #}
+            {% set trio_max_racks = trio_config.max_racks_per_player if trio_config else gara.distance %}
+            <div class="c7-stack" id="quickResultTrioInputs" style="display: none;">
+              {{ score_stepper('quickTrioPlayer1Score', _('Giocatore 1'), 'trioPlayer1Label', trio_max_racks) }}
+              {{ score_stepper('quickTrioPlayer2Score', _('Giocatore 2'), 'trioPlayer2Label', trio_max_racks) }}
+              {{ score_stepper('quickTrioPlayer3Score', _('Giocatore 3'), 'trioPlayer3Label', trio_max_racks) }}
+            </div>
 
-          {# Time fields for statistics #}
-          <hr class="my-3">
-          <div class="row">
-            <div class="col-12">
-              <small class="text-muted d-block mb-2">
-                <i class="fas fa-clock"></i> {{ _('Tempi partita (opzionale)') }}
-              </small>
+            <input type="hidden" id="quickMatchId">
+            <input type="hidden" id="quickTrioId">
+            <input type="hidden" id="quickIsTrio" value="false">
+
+            {# Time fields for statistics #}
+            <hr class="c7-divider">
+            <div>
+              <div class="c7-kicker">{{ _('Tempi partita (opzionale)') }}</div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
+                <div>
+                  <label class="form-label" for="quickStartTime">{{ _('Inizio') }}</label>
+                  <input type="time" class="form-control" id="quickStartTime">
+                </div>
+                <div>
+                  <label class="form-label" for="quickEndTime">{{ _('Fine') }}</label>
+                  <input type="time" class="form-control" id="quickEndTime">
+                </div>
+              </div>
             </div>
-            <div class="col-6">
-              <label class="form-label small">{{ _('Inizio') }}</label>
-              <input type="time" class="form-control form-control-sm" id="quickStartTime">
-            </div>
-            <div class="col-6">
-              <label class="form-label small">{{ _('Fine') }}</label>
-              <input type="time" class="form-control form-control-sm" id="quickEndTime">
-            </div>
+
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Annulla') }}</button>
-          <button type="submit" class="btn btn-warning">
+          <button type="submit" class="btn btn-primary">
             <i class="fas fa-save"></i> {{ _('Imposta Risultato') }}
           </button>
         </div>
@@ -727,77 +572,68 @@
   </div>
 </div>
 
-<!-- Modal Assegnazione Tavolo -->
+{# Modal Assegnazione Tavolo #}
 <div class="modal fade" id="tableAssignmentModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">
-          <i class="fas fa-table"></i> {{ _('Assegna Tavolo') }}
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <h5 class="modal-title">{{ _('Assegna Tavolo') }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Chiudi') }}"></button>
       </div>
       <div class="modal-body">
-        <!-- Info partita -->
-        <div class="alert alert-info mb-3">
-          <strong id="tableModalMatchInfo"></strong>
-        </div>
+        <div class="c7-stack">
+          {# Info partita #}
+          <div class="alert alert-info">
+            <strong id="tableModalMatchInfo"></strong>
+          </div>
 
-        <!-- Tavolo attuale -->
-        <div id="currentTableInfo" class="mb-3" style="display: none;">
-          <small class="text-muted">
-            <i class="fas fa-info-circle"></i>
-            {{ _('Tavolo attuale:') }} <strong id="currentTableDisplay"></strong>
-          </small>
-        </div>
+          {# Tavolo attuale #}
+          <div id="currentTableInfo" style="display: none; font-size: 12px; font-weight: 600; color: var(--c7-ink-muted);">
+            {{ _('Tavolo attuale:') }} <strong class="c7-num" id="currentTableDisplay"></strong>
+          </div>
 
-        <!-- Griglia tavoli -->
-        <div class="table-grid" id="tableGrid">
-          <!-- Bottoni tavoli generati dinamicamente -->
-        </div>
+          {# Griglia tavoli — i bottoni li genera il JS #}
+          <div class="table-grid" id="tableGrid"></div>
 
-        <!-- Rimuovi tavolo -->
-        <button class="btn btn-outline-danger w-100" onclick="selectTableFromModal(null, this)">
-          <i class="fas fa-times-circle"></i> {{ _('Rimuovi Tavolo') }}
-        </button>
+          <button class="btn btn-danger w-100" onclick="selectTableFromModal(null, this)">
+            <i class="fas fa-circle-xmark"></i> {{ _('Rimuovi Tavolo') }}
+          </button>
+        </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-          <i class="fas fa-times"></i> {{ _('Annulla') }}
-        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Annulla') }}</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Modal Spareggio (SSR) -->
+{# Modal Spareggio (SSR) #}
 <div class="modal fade" id="ssrModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
     <div class="modal-content">
-      <div class="modal-header bg-warning text-dark">
-        <h5 class="modal-title">
-          <i class="fas fa-balance-scale"></i> {{ _('Risolvi Spareggi') }}
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      <div class="modal-header">
+        <h5 class="modal-title">{{ _('Risolvi Spareggi') }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Chiudi') }}"></button>
       </div>
       <div class="modal-body">
-        <div class="alert alert-info mb-3">
-          <i class="fas fa-info-circle"></i>
-          {{ _('Ci sono parimerito nelle prime %(pos)s posizioni. Inserire il punteggio finale dello Spot Shot Rally
-          (SSR) per ogni giocatore.', pos=gara.tiebreaker_until_position or 3) }}
-          <br><small class="text-muted">{{ _('Punteggi più alti = posizione migliore') }}</small>
-        </div>
-
-        <form id="ssrForm">
-          <div id="ssrGroupsContainer">
-            <!-- Groups will be inserted here dynamically -->
+        <div class="c7-stack">
+          <div class="alert alert-warning">
+            <div>
+              {{ _('Ci sono parimerito nelle prime %(pos)s posizioni. Inserire il punteggio finale dello Spot Shot Rally
+              (SSR) per ogni giocatore.', pos=gara.tiebreaker_until_position or 3) }}
+              <div style="margin-top: 4px; color: var(--c7-ink-muted);">{{ _('Punteggi più alti = posizione migliore') }}</div>
+            </div>
           </div>
-        </form>
+
+          <form id="ssrForm">
+            <div class="c7-stack" id="ssrGroupsContainer">
+              {# I gruppi li inserisce showSsrModal() #}
+            </div>
+          </form>
+        </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-          <i class="fas fa-times"></i> {{ _('Annulla') }}
-        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Annulla') }}</button>
         <button type="button" class="btn btn-primary" onclick="submitSsrScores()">
           <i class="fas fa-check"></i> {{ _('Conferma e Termina Gara') }}
         </button>
@@ -1061,64 +897,64 @@
       groupsContainer.removeChild(groupsContainer.firstChild);
     }
 
-    const positionIcons = { 1: 'text-warning', 2: 'text-secondary', 3: 'text-danger' };
     const i18n = GARA_CONFIG.i18n;
 
     // Build UI for each tiebreaker group using safe DOM methods
     tiebreakers.forEach(function (group) {
+      // Card su fondo pagina: dentro il modal, che e' gia' superficie card,
+      // il gruppo si distingue per superficie e non per bordo.
       const groupDiv = document.createElement('div');
-      groupDiv.className = 'mb-4';
+      groupDiv.className = 'c7-card';
+      groupDiv.style.background = 'var(--c7-bg)';
 
-      // Header
-      const header = document.createElement('h6');
-      header.className = 'border-bottom pb-2 mb-3';
+      const header = document.createElement('div');
+      header.className = 'd-flex align-items-center gap-2 mb-3';
 
-      const trophy = document.createElement('i');
-      trophy.className = 'fas fa-trophy ' + (positionIcons[group.position] || '');
-      header.appendChild(trophy);
+      const title = document.createElement('div');
+      title.className = 'c7-kicker flex-fill';
+      title.textContent = i18n.tieFor + ' ' + group.position + '° ' + i18n.place;
+      header.appendChild(title);
 
-      const headerText = document.createTextNode(' ' + i18n.tieFor + ' ' + group.position + '° ' + i18n.place + ' ');
-      header.appendChild(headerText);
-
-      const rackInfo = document.createElement('small');
-      rackInfo.className = 'text-muted';
-      rackInfo.textContent = '(' + group.rack_totali + ' rack)';
+      const rackInfo = document.createElement('span');
+      rackInfo.className = 'c7-state c7-state--muted';
+      rackInfo.textContent = group.rack_totali + ' rack';
       header.appendChild(rackInfo);
 
       groupDiv.appendChild(header);
 
-      // Player inputs
+      const players = document.createElement('div');
+      players.className = 'c7-stack';
+      players.style.gap = '8px';
+
       group.players.forEach(function (player) {
         const row = document.createElement('div');
-        row.className = 'row mb-2 align-items-center';
+        row.className = 'd-flex align-items-center gap-3';
 
-        const nameCol = document.createElement('div');
-        nameCol.className = 'col-6';
-        const nameStrong = document.createElement('strong');
-        nameStrong.textContent = player.username;
-        nameCol.appendChild(nameStrong);
+        const name = document.createElement('span');
+        name.className = 'flex-fill';
+        name.style.cssText = 'font-size:14px;font-weight:700';
+        name.textContent = player.username;
 
-        const inputCol = document.createElement('div');
-        inputCol.className = 'col-6';
         const input = document.createElement('input');
         input.type = 'number';
-        input.className = 'form-control ssr-score-input';
+        input.className = 'form-control ssr-score-input text-center';
         input.name = 'ssr_' + player.user_id;
         input.dataset.userId = player.user_id;
         input.min = '0';
         input.step = '1';
+        input.style.width = '110px';
         input.placeholder = i18n.ssrPoints;
         input.required = true;
         if (player.current_ssr_score != null) {
           input.value = player.current_ssr_score;
         }
-        inputCol.appendChild(input);
 
-        row.appendChild(nameCol);
-        row.appendChild(inputCol);
-        groupDiv.appendChild(row);
+        row.appendChild(name);
+        row.appendChild(input);
+        players.appendChild(row);
       });
 
+      groupDiv.appendChild(players);
       groupsContainer.appendChild(groupDiv);
     });
 
@@ -1567,16 +1403,33 @@
    * @param {number} effectiveDistance - Match-effective distance (B29: respects RoundConfiguration)
    * @param {boolean} isRaceTo - True if race-to-N, false if exactly-N
    */
+  /**
+   * Stepper dei punteggi del modal risultato rapido. Rispetta i limiti
+   * dell'input: `min` e il `max` che openQuickResult imposta sulla distanza
+   * effettiva del match (RoundConfiguration compresa).
+   */
+  function stepQuickScore(inputId, delta) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    const min = input.min === '' ? 0 : parseInt(input.min, 10);
+    const max = input.max === '' ? Infinity : parseInt(input.max, 10);
+    const current = parseInt(input.value, 10);
+    const next = (isNaN(current) ? min : current) + delta;
+    input.value = Math.min(max, Math.max(min, next));
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
   function openQuickResult(matchId, player1Name, player2Name, player1Score, player2Score, startTime, effectiveDistance, isRaceTo) {
     currentMatchId = matchId;
     document.getElementById('quickMatchId').value = matchId;
     document.getElementById('quickIsTrio').value = 'false';
     document.getElementById('quickTrioId').value = '';
 
-    // Mostra input normali, nascondi trio
-    document.getElementById('quickResultNormalInfo').style.display = 'block';
+    // Mostra input normali, nascondi trio. Stringa vuota = torna al display
+    // del foglio di stile (i contenitori sono `c7-stack`, cioe' flex column).
+    document.getElementById('quickResultNormalInfo').style.display = '';
     document.getElementById('quickResultTrioInfo').style.display = 'none';
-    document.getElementById('quickResultNormalInputs').style.display = 'flex';
+    document.getElementById('quickResultNormalInputs').style.display = '';
     document.getElementById('quickResultTrioInputs').style.display = 'none';
 
     // B29: configure mode label + max via match-effective values (RoundConfiguration aware).
@@ -1628,9 +1481,9 @@
 
     // Mostra input trio, nascondi normali
     document.getElementById('quickResultNormalInfo').style.display = 'none';
-    document.getElementById('quickResultTrioInfo').style.display = 'block';
+    document.getElementById('quickResultTrioInfo').style.display = '';
     document.getElementById('quickResultNormalInputs').style.display = 'none';
-    document.getElementById('quickResultTrioInputs').style.display = 'flex';
+    document.getElementById('quickResultTrioInputs').style.display = '';
 
     // Popola i campi
     document.getElementById('trioPlayer1Label').textContent = player1Name;
@@ -1703,7 +1556,7 @@
 
     if (error) {
       msgText.textContent = error;
-      msgBox.style.display = 'block';
+      msgBox.style.display = '';
       if (submitBtn) submitBtn.disabled = true;
       return false;
     }
@@ -1914,7 +1767,7 @@
 
     // Mostra/nascondi info tavolo attuale
     if (currentTable) {
-      document.getElementById('currentTableInfo').style.display = 'block';
+      document.getElementById('currentTableInfo').style.display = '';
       document.getElementById('currentTableDisplay').textContent = GARA_CONFIG.i18n.tablePrefix + ' ' + currentTable;
     } else {
       document.getElementById('currentTableInfo').style.display = 'none';

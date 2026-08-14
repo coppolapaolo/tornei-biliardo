@@ -1,67 +1,49 @@
-{# templates/components/_index_upcoming.html #}
-{# Sezione "In arrivo": gare e campionati in preparazione (setup, data futura). #}
+{# templates/components/_index_upcoming.html — 7c #}
+{# "In arrivo": gare e campionati in preparazione. #}
 {% if upcoming_garas or upcoming_campionati %}
-<div class="d-flex justify-content-between align-items-center mb-3 mt-5">
-    <h2 class="mb-0"><i class="fas fa-calendar-plus text-info"></i>
-        {{ _("In arrivo") }}
-    </h2>
-</div>
+<section class="c7-stack" style="margin-top: 34px;">
+    <h2 style="margin: 0;">{{ _("In arrivo") }}</h2>
 
-<div class="row">
-    {% for campionato in upcoming_campionati %}
-    <div class="col-md-6 col-lg-4 mb-3">
-        <div class="card h-100 border-info">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h6 class="card-title mb-0"><i class="fas fa-trophy"></i> {{ campionato.name }}</h6>
-                <span class="badge bg-info text-dark">{{ _("Campionato") }}</span>
+    <div class="c7-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
+        {% for campionato in upcoming_campionati %}
+        <article class="c7-card" style="display: flex; flex-direction: column;">
+            <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;">
+                <div style="min-width: 0;">
+                    <div class="c7-kicker">{{ _("Campionato") }}</div>
+                    <h3 style="margin: 4px 0 0;">{{ campionato.name }}</h3>
+                </div>
+                <span class="c7-state c7-state--muted">{{ _("In preparazione") }}</span>
             </div>
-            <div class="card-body">
-                <p class="small text-muted mb-1">{{ campionato.campionato_type }}</p>
-                <span class="badge bg-secondary">{{ _("In preparazione") }}</span>
-            </div>
-            <div class="card-footer">
-                <a href="{{ url_for('main.campionato_detail_public', campionato_id=campionato.id) }}"
-                   class="btn btn-outline-info btn-sm w-100">
-                    <i class="fas fa-eye"></i> {{ _("Dettagli") }}
-                </a>
-            </div>
-        </div>
-    </div>
-    {% endfor %}
+            <p class="text-muted" style="margin: 10px 0 0; font-size: 12px; font-weight: 700;">{{ campionato.campionato_type }}</p>
+            <a href="{{ url_for('main.campionato_detail_public', campionato_id=campionato.id) }}" class="btn btn-secondary w-100" style="margin-top: 16px;">{{ _("Dettagli") }}</a>
+        </article>
+        {% endfor %}
 
-    {% for gara in upcoming_garas %}
-    <div class="col-md-6 col-lg-4 mb-3">
-        <div class="card h-100">
-            <div class="card-header d-flex justify-content-between align-items-start">
-                <div>
-                    <h6 class="card-title mb-0">{{ gara.name }}</h6>
-                    {% if gara.campionato %}
-                    <small class="text-muted">{{ gara.campionato.name }}</small>
-                    {% endif %}
+        {% for gara in upcoming_garas %}
+        <article class="c7-card" style="display: flex; flex-direction: column;">
+            <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;">
+                <div style="min-width: 0;">
+                    {% if gara.campionato %}<div class="c7-kicker">{{ gara.campionato.name }}</div>{% endif %}
+                    <h3 style="margin: 4px 0 0;">{{ gara.name }}</h3>
                 </div>
                 <span class="badge {{ gara | status_badge_class }}">{{ gara | status_text }}</span>
             </div>
-            <div class="card-body">
-                <ul class="list-unstyled small mb-0">
-                    <li><i class="fas fa-calendar"></i> {{ gara.date|date_local if gara.date else _("Da definire") }}</li>
-                    <li><i class="fas fa-map-marker-alt"></i> {{ gara.location or _("Da definire") }}</li>
-                    <li><i class="fas fa-8-ball"></i> {{ gara.discipline|discipline_display }}</li>
-                </ul>
-                {% if gara.inscription_start %}
-                <p class="small text-info mb-0 mt-2">
-                    <i class="fas fa-hourglass-start"></i> {{ _("Iscrizioni dal:") }}
-                    <span data-utc="{{ gara.inscription_start.isoformat() }}">{{ gara.inscription_start|datetime_local }}</span>
-                </p>
-                {% endif %}
+
+            <div class="text-muted" style="margin-top: 10px; font-size: 12px; font-weight: 700;">
+                <span class="c7-num">{{ gara.date|date_local if gara.date else _("Data da definire") }}</span>
+                <span class="c7-sep">·</span> {{ gara.discipline|discipline_display }}
+                <span class="c7-sep">·</span> {{ gara.location or _("Sala da definire") }}
             </div>
-            <div class="card-footer">
-                <a href="{{ url_for('main.gara_detail_public', gara_id=gara.id) }}"
-                   class="btn btn-outline-info btn-sm w-100">
-                    <i class="fas fa-eye"></i> {{ _("Dettagli") }}
-                </a>
-            </div>
-        </div>
+
+            {% if gara.inscription_start %}
+            <p style="margin: 10px 0 0; font-size: 12px; font-weight: 700; color: var(--c7-accent);">
+                {{ _("Iscrizioni dal") }} <span class="c7-num" data-utc="{{ gara.inscription_start.isoformat() }}">{{ gara.inscription_start|datetime_local }}</span>
+            </p>
+            {% endif %}
+
+            <a href="{{ url_for('main.gara_detail_public', gara_id=gara.id) }}" class="btn btn-secondary w-100" style="margin-top: 16px;">{{ _("Dettagli") }}</a>
+        </article>
+        {% endfor %}
     </div>
-    {% endfor %}
-</div>
+</section>
 {% endif %}

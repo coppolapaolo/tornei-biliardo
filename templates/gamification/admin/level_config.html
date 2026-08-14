@@ -1,21 +1,27 @@
 {% extends 'base.html' %}
+{% block title %}{{ _('Configurazione Livelli') }}{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('gamification.admin_config_dashboard') }}"
+   aria-label="{{ _('Indietro') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _('Configurazione Livelli') }}{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('gamification.admin_config_dashboard') }}" class="btn btn-secondary btn-sm d-none d-lg-inline-flex">
+  <i class="fas fa-arrow-left"></i>&nbsp;{{ _('Torna alla Config') }}
+</a>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="bi bi-bar-chart-steps"></i> {{ _('Configurazione Livelli') }}</h2>
-    <a href="{{ url_for('gamification.admin_config_dashboard') }}" class="btn btn-outline-secondary">
-      <i class="bi bi-arrow-left"></i> {{ _('Torna alla Config') }}
-    </a>
-  </div>
-
   <!-- Level Curve Parameters -->
   <div class="card mb-4">
     <div class="card-header">
-      <h5 class="mb-0"><i class="bi bi-sliders"></i> {{ _('Parametri Curva Livelli') }}</h5>
+      <h5 class="mb-0"><i class="fas fa-sliders"></i> {{ _('Parametri Curva Livelli') }}</h5>
     </div>
     <div class="card-body">
       <div class="alert alert-info mb-3">
-        <i class="bi bi-info-circle"></i>
+        <i class="fas fa-circle-info"></i>
         {{ _('Formula XP per livello: XP = base_xp * (livello ^ power)') }}
       </div>
 
@@ -33,7 +39,7 @@
               <span class="input-group-text">= {{ (config.value / 100)|round(2) }}</span>
               {% endif %}
               <button type="submit" class="btn btn-primary">
-                <i class="bi bi-check"></i> {{ _('Salva') }}
+                <i class="fas fa-check"></i> {{ _('Salva') }}
               </button>
             </div>
             <small class="text-muted mt-1">
@@ -80,9 +86,9 @@
   <!-- Level Unlocks -->
   <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-      <h5 class="mb-0"><i class="bi bi-unlock"></i> {{ _('Feature Unlock per Livello') }}</h5>
+      <h5 class="mb-0"><i class="fas fa-unlock"></i> {{ _('Feature Unlock per Livello') }}</h5>
       <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#addUnlockModal">
-        <i class="bi bi-plus"></i> {{ _('Aggiungi Unlock') }}
+        <i class="fas fa-plus"></i> {{ _('Aggiungi Unlock') }}
       </button>
     </div>
     <div class="card-body">
@@ -106,22 +112,22 @@
             <td>{{ unlock.description or '-' }}</td>
             <td>
               {% if unlock.is_active %}
-              <span class="badge bg-success"><i class="bi bi-check"></i></span>
+              <span class="badge bg-success"><i class="fas fa-check"></i></span>
               {% else %}
-              <span class="badge bg-secondary"><i class="bi bi-x"></i></span>
+              <span class="badge bg-secondary"><i class="fas fa-xmark"></i></span>
               {% endif %}
             </td>
             <td>
               <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
                       data-bs-target="#editUnlockModal{{ unlock.id }}">
-                <i class="bi bi-pencil"></i>
+                <i class="fas fa-pencil"></i>
               </button>
               <form action="{{ url_for('gamification.admin_delete_level_unlock', unlock_id=unlock.id) }}"
                     method="POST" class="d-inline"
                     onsubmit="return confirmSubmit(this, {{ _('Eliminare questo unlock?')|tojson }})">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="btn btn-sm btn-outline-danger">
-                  <i class="bi bi-trash"></i>
+                  <i class="fas fa-trash"></i>
                 </button>
               </form>
             </td>

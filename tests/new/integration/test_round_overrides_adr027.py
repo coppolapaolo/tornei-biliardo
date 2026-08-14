@@ -76,7 +76,7 @@ class TestRoundOverridesEndToEnd:
             min_participants=4,
             max_participants=10,
             entry_fee=0.0,
-            discipline="palla_9",
+            discipline="9_ball",
             distance=distance,
             is_race_to=is_race_to,
             director_id=director.id,
@@ -93,13 +93,13 @@ class TestRoundOverridesEndToEnd:
         # Gara: exact-5
         gara = self._make_gara(director, distance=5, is_race_to=False)
 
-        # Override turno 2: exact-4 (palla_8)
+        # Override turno 2: exact-4 (8_ball)
         RoundConfiguration.create_or_update(
             gara_id=gara.id,
             round_number=2,
             distance=4,
             is_race_to=False,
-            discipline="palla_8",
+            discipline="8_ball",
         )
         db_session.commit()
 
@@ -124,7 +124,7 @@ class TestRoundOverridesEndToEnd:
             assert (
                 m.effective_is_race_to is False
             ), f"round 1 match {m.id}: effective_is_race_to atteso False (exact)"
-            assert m.get_effective_discipline() == "palla_9"
+            assert m.get_effective_discipline() == "9_ball"
 
     def test_scoring_respects_round_override(self, director, players_8, db_session):
         """Round con override exact-4: il match accetta totale 4 rack, non 5.
@@ -220,7 +220,7 @@ class TestRoundConfigAPIEnforcement:
             min_participants=4,
             max_participants=8,
             entry_fee=0.0,
-            discipline="palla_9",
+            discipline="9_ball",
             distance=5,
             is_race_to=False,
             director_id=admin.id,
@@ -234,7 +234,7 @@ class TestRoundConfigAPIEnforcement:
         client, _ = admin_client
         resp = client.post(
             f"/admin/gara/{gara_setup.id}/round-config/2",
-            json={"distance": 4, "is_race_to": False, "discipline": "palla_8"},
+            json={"distance": 4, "is_race_to": False, "discipline": "8_ball"},
         )
         assert resp.status_code == 200, resp.data
         data = resp.get_json()

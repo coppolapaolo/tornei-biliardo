@@ -1,19 +1,19 @@
-{# templates/challenge/_challenge_grid.html #}
+{# templates/challenge/_challenge_grid.html — 7c #}
 {% if all_challenges %}
-<div class="row">
+<div class="c7-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
     {% for challenge in all_challenges %}
     {% include "challenge/_challenge_card.html" %}
     {% endfor %}
 </div>
 {% else %}
-<div class="text-center py-5">
-    <i class="fas fa-search fa-3x text-muted mb-3"></i>
-    <h4 class="text-muted">Nessuna Challenge Disponibile</h4>
-    <p class="text-muted">Non ci sono challenge nel catalogo al momento.</p>
+<div class="c7-empty">
+    <div class="c7-empty__ico"><i class="fas fa-bullseye"></i></div>
+    <h2 class="c7-empty__title">{{ _('Catalogo vuoto') }}</h2>
+    <p class="c7-empty__text">{{ _('Non ci sono ancora challenge da provare.') }}</p>
     {% if current_user.is_authenticated and current_user.can_access('create_challenge') %}
-    <a href="{{ url_for('challenge.create_challenge') }}" class="btn btn-success">
-        <i class="fas fa-plus"></i> Crea Prima Challenge
-    </a>
+    <div class="c7-empty__actions">
+        <a href="{{ url_for('challenge.create_challenge') }}" class="btn btn-success">{{ _('Crea la prima') }}</a>
+    </div>
     {% endif %}
 </div>
 {% endif %}

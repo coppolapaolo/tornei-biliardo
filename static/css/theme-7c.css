@@ -1,0 +1,1265 @@
+/* ==========================================================================
+   Design System 7c — tema
+   Caricare DOPO bootstrap, variables.css, main.css e tokens-7c.css.
+   Sovrascrive i componenti Bootstrap usati dal progetto; le pagine ereditano
+   lo stile senza modifiche all'HTML. I layout nuovi (sidebar, tabelle-card,
+   stepper) usano le classi .c7-* di questo file.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Base
+   -------------------------------------------------------------------------- */
+
+body {
+  background: var(--c7-bg);
+  color: var(--c7-ink);
+  font-family: var(--c7-font);
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.5;
+  text-wrap: pretty;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+  font-weight: 800;
+  letter-spacing: -.025em;
+  color: var(--c7-ink);
+}
+
+h1, .h1 { font-size: 24px; }
+h2, .h2 { font-size: 20px; }
+h3, .h3 { font-size: 17px; letter-spacing: -.02em; }
+h4, h5, h6, .h4, .h5, .h6 { font-size: 15px; letter-spacing: -.02em; }
+
+a { color: var(--c7-accent); text-decoration: none; font-weight: 700; }
+a:hover { color: var(--c7-ink); text-decoration: none; }
+
+small, .small { font-size: 12px; }
+.text-muted { color: var(--c7-ink-muted) !important; font-weight: 600; }
+hr { border-color: var(--c7-line); opacity: 1; }
+code, kbd, pre, samp, .font-mono { font-family: var(--c7-font-mono); }
+
+/* Cifre confrontabili: punteggi, quote, XP, conteggi, orari. */
+.c7-num {
+  font-family: var(--c7-font-mono);
+  font-weight: 700;
+  letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums;
+}
+.c7-num-lg { font-family: var(--c7-font-mono); font-weight: 800; font-size: 26px; letter-spacing: -.03em; }
+.c7-num-xl { font-family: var(--c7-font-mono); font-weight: 800; font-size: 32px; letter-spacing: -.04em; }
+
+/* Etichetta di sezione / colonna */
+.c7-label,
+.form-label {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--c7-ink-muted);
+  margin-bottom: 9px;
+  padding-left: 4px;
+}
+
+.c7-kicker {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--c7-ink-muted);
+}
+
+/* --------------------------------------------------------------------------
+   2. Guscio applicazione
+   -------------------------------------------------------------------------- */
+
+.c7-app { display: flex; min-height: 100vh; }
+
+.c7-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: calc(var(--c7-mobilenav-h) + 12px);
+}
+
+.c7-content { flex: 1; padding: 0 var(--c7-gutter) 28px; }
+
+/* Testata di pagina — stesso fondo della pagina, senza ombra. */
+.c7-head {
+  position: sticky;
+  top: 0;
+  z-index: var(--c7-z-head);
+  background: var(--c7-bg);
+  padding: 20px var(--c7-gutter) 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.c7-head__back {
+  width: 46px; height: 46px;
+  border: 0; border-radius: 50%;
+  background: var(--c7-card);
+  color: var(--c7-accent);
+  font-size: 16px;
+  display: grid; place-items: center;
+  flex-shrink: 0;
+}
+/* Colonna, non riga: nel guscio titolo e sottotitolo sono due <span> (che
+   affiancati finirebbero sulla stessa riga), mentre le pagine che riempiono
+   la testata a mano usano <h1> + <div>. Cosi' entrambe le forme si
+   impilano allo stesso modo. */
+.c7-head__title { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.c7-head__title h1,
+.c7-head__title .c7-title { margin: 0; font-size: 18px; font-weight: 800; letter-spacing: -.025em; }
+.c7-head__sub { font-size: 12px; font-weight: 600; color: var(--c7-ink-muted); }
+
+/* Barra azioni appiccicata in fondo alle pagine lunghe. Su mobile si ferma
+   **sopra** la nav flottante: `bottom: 0` la incollava al bordo del viewport,
+   cioe' dietro la nav, e il comando principale della pagina non si vedeva
+   (`.c7-main` ha il padding che tiene il contenuto sopra la nav, ma un
+   elemento sticky si aggancia al viewport, non al contenuto). */
+.c7-actionbar {
+  position: sticky;
+  bottom: calc(var(--c7-mobilenav-h) + 4px);
+  padding: 12px var(--c7-gutter) 22px;
+  background: linear-gradient(to top, var(--c7-bg) 70%, rgba(228, 232, 231, 0));
+  display: flex;
+  gap: 10px;
+}
+.c7-actionbar .btn { flex: 1; }
+.c7-actionbar .btn.c7-btn-narrow { flex: 0 0 auto; padding: 0 20px; }
+
+/* --------------------------------------------------------------------------
+   3. Sidebar desktop / nav flottante mobile
+   -------------------------------------------------------------------------- */
+
+.c7-side {
+  display: none;
+  width: var(--c7-side-w);
+  flex-shrink: 0;
+  background: var(--c7-ink);
+  color: var(--c7-bg);
+  padding: 24px 16px;
+  flex-direction: column;
+  gap: 26px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+.c7-side__brand { display: flex; align-items: center; gap: 11px; padding: 0 6px; }
+.c7-side__mark {
+  width: 34px; height: 34px; border-radius: 10px;
+  background: var(--c7-accent); color: var(--c7-accent-bright);
+  display: grid; place-items: center; font-size: 14px;
+}
+.c7-side__name { font-size: 14px; font-weight: 800; letter-spacing: -.01em; }
+.c7-side__role { font-size: 11px; font-weight: 600; color: #8A9599; }
+.c7-side__group { display: flex; flex-direction: column; gap: 3px; }
+.c7-side__grouplabel {
+  font-size: 10px; font-weight: 800; letter-spacing: .12em;
+  color: #6E797C; padding: 0 10px 8px;
+}
+.c7-side a {
+  height: 42px; border-radius: 12px; padding: 0 12px;
+  display: flex; align-items: center; gap: 11px;
+  font-size: 13px; font-weight: 600; color: #B6BEC0;
+}
+.c7-side a:hover { background: #2A3033; color: var(--c7-bg); }
+.c7-side a.is-active { background: var(--c7-accent); color: #EAF6F8; font-weight: 700; }
+.c7-side a i { font-size: 13px; width: 16px; text-align: center; }
+.c7-side__count {
+  margin-left: auto; height: 20px; min-width: 20px; padding: 0 6px;
+  border-radius: var(--c7-r-pill); background: var(--c7-err); color: #fff;
+  display: grid; place-items: center;
+  font-family: var(--c7-font-mono); font-size: 11px; font-weight: 700;
+}
+.c7-side__count.is-soft { background: var(--c7-ok); }
+.c7-side__user {
+  margin-top: auto; border-radius: var(--c7-r-control); background: #2A3033;
+  padding: 12px; display: flex; align-items: center; gap: 11px;
+}
+
+/* Nav flottante mobile */
+.c7-mobilenav {
+  position: fixed; left: 12px; right: 12px; bottom: 14px;
+  z-index: var(--c7-z-mobnav);
+  height: 62px; padding: 0 8px;
+  border-radius: var(--c7-r-pill);
+  background: var(--c7-card);
+  box-shadow: var(--c7-shadow-pop);
+  display: flex; align-items: center; justify-content: space-around;
+}
+.c7-mobilenav a {
+  flex: 1; height: 48px; border-radius: var(--c7-r-pill);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  color: var(--c7-ink-muted); font-size: 10px; font-weight: 700;
+}
+.c7-mobilenav a i { font-size: 16px; }
+.c7-mobilenav a.is-active { color: var(--c7-ink); }
+.c7-mobilenav a.is-active i { color: var(--c7-accent); }
+
+@media (min-width: 992px) {
+  .c7-side { display: flex; }
+  .c7-mobilenav { display: none; }
+  .c7-main { padding-bottom: 0; }
+  .c7-content { padding: 0 var(--c7-gutter-lg) 28px; }
+  .c7-head { padding: 22px var(--c7-gutter-lg) 20px; border-bottom: 1px solid var(--c7-line); }
+  .c7-head__back { display: none; }
+  .c7-head__title h1, .c7-head__title .c7-title { font-size: 22px; }
+  .c7-actionbar { padding: 12px var(--c7-gutter-lg) 22px; bottom: 0; }
+  .c7-actionbar .btn { flex: 0 0 auto; padding: 0 22px; }
+}
+
+/* La navbar Bootstrap non esiste piu' in 7c: il guscio la sostituisce. */
+.navbar { display: none !important; }
+
+/* --------------------------------------------------------------------------
+   4. Card
+   -------------------------------------------------------------------------- */
+
+.card,
+.c7-card {
+  background: var(--c7-card);
+  border: 0;
+  border-radius: var(--c7-r-card);
+  padding: var(--c7-pad-card);
+  box-shadow: none;
+}
+.card > .card-body { padding: 0; }
+.card > .card-header,
+.card > .card-footer {
+  background: transparent;
+  border-color: var(--c7-line-soft);
+  padding: 0 0 14px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  font-size: 15px;
+}
+.card > .card-footer { padding: 14px 0 0; border-top: 1px solid var(--c7-line-soft); }
+
+.c7-card--accent { background: var(--c7-accent); color: var(--c7-accent-ink); }
+.c7-card--accent .text-muted,
+.c7-card--accent .c7-kicker { color: var(--c7-accent-dim) !important; }
+.c7-card--locked { background: var(--c7-sunken); color: var(--c7-ink-muted); }
+.c7-card--ok   { background: var(--c7-ok-bg);   color: var(--c7-ok-ink); }
+.c7-card--warn { background: var(--c7-warn-bg); color: var(--c7-warn-ink); }
+.c7-card--err  { background: var(--c7-err-bg);  color: var(--c7-err-ink); }
+.c7-card--info { background: var(--c7-info-bg); color: var(--c7-info-ink); }
+
+.c7-grid { display: grid; gap: var(--c7-gap); }
+.c7-stack { display: flex; flex-direction: column; gap: var(--c7-gap); }
+/* Pila di sezioni di pagina. Una sezione che non produce nulla (dipende
+   dallo stato della gara: turni, direttori, tavoli…) lascerebbe comunque il
+   buco del `gap`, perche' il gap separa anche gli elementi alti zero. */
+.c7-sections > *:not(:has(*)) { display: none; }
+
+/* Sotto i 992px le due colonne diventano una pila. Serve dirlo: senza
+   questa regola `.c7-cols` era un blocco qualunque e le due colonne si
+   toccavano, perche' la spaziatura arrivava solo dal `gap` della griglia. */
+.c7-cols { display: flex; flex-direction: column; gap: var(--c7-gap); }
+@media (min-width: 992px) {
+  .c7-cols { display: grid; grid-template-columns: 1fr 380px; gap: var(--c7-gap-lg); align-items: start; }
+  .c7-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--c7-gap-lg); }
+}
+
+/* Fascia "in corso": solo se c'e' davvero qualcosa in corso. */
+.c7-live {
+  border-radius: var(--c7-r-card);
+  background: var(--c7-accent);
+  color: var(--c7-accent-ink);
+  padding: 20px 22px;
+  display: flex; align-items: center; gap: 22px; flex-wrap: wrap;
+}
+.c7-live__dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: #FF8A7E; animation: c7-pulse 2s infinite;
+}
+@keyframes c7-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: .45; transform: scale(.82); }
+}
+@media (prefers-reduced-motion: reduce) { .c7-live__dot { animation: none; } }
+
+/* --------------------------------------------------------------------------
+   5. Bottoni
+   -------------------------------------------------------------------------- */
+
+.btn {
+  height: var(--c7-btn-h);
+  border: 0;
+  border-radius: var(--c7-r-field);
+  padding: 0 20px;
+  font-size: 15px;
+  font-weight: 800;
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  box-shadow: none;
+}
+.btn:focus, .btn:focus-visible { box-shadow: 0 0 0 3px rgba(44, 74, 82, .28); outline: 0; }
+
+/* Nessun bottone "outline": in 7c la gerarchia la fa la superficie, non il
+   bordo. Le varianti outline seguono quindi la corrispondente piena, o il
+   secondario dove il bordo era solo un modo per dire "azione minore". */
+.btn-primary, .btn-dark, .btn-outline-primary, .btn-outline-dark {
+  background: var(--c7-ink); color: #fff;
+}
+.btn-primary:hover, .btn-dark:hover,
+.btn-outline-primary:hover, .btn-outline-dark:hover { background: #2A3033; color: #fff; }
+
+.btn-secondary, .btn-light, .btn-outline-secondary {
+  background: var(--c7-card); color: var(--c7-ink-soft); font-weight: 700; border: 0;
+}
+.btn-secondary:hover, .btn-light:hover, .btn-outline-secondary:hover {
+  background: var(--c7-line); color: var(--c7-ink);
+}
+
+/* Il secondario e' fondo-card: su una card, dentro un modal o dentro un
+   gruppo di campi sparirebbe, perche' avrebbe lo stesso colore di cio' che
+   sta sotto. In quei contesti prende il fondo pagina, cosi' resta un
+   rilievo in entrambi i casi. */
+.card .btn-secondary, .c7-card .btn-secondary, .modal-content .btn-secondary,
+.card .btn-light, .c7-card .btn-light, .modal-content .btn-light,
+.card .btn-outline-secondary, .c7-card .btn-outline-secondary, .modal-content .btn-outline-secondary {
+  background: var(--c7-bg);
+}
+.card .btn-secondary:hover, .c7-card .btn-secondary:hover, .modal-content .btn-secondary:hover,
+.card .btn-light:hover, .c7-card .btn-light:hover, .modal-content .btn-light:hover,
+.card .btn-outline-secondary:hover, .c7-card .btn-outline-secondary:hover,
+.modal-content .btn-outline-secondary:hover {
+  background: var(--c7-line);
+}
+
+/* Verde = crea o conferma. Non decorativo. */
+.btn-success, .btn-outline-success { background: var(--c7-ok); color: #fff; }
+.btn-success:hover, .btn-outline-success:hover { background: #257558; color: #fff; }
+
+/* Distruttive: fondo tenue, mai rosso pieno. */
+.btn-danger, .btn-outline-danger {
+  background: var(--c7-err-bg); color: var(--c7-err-ink); border: 0;
+}
+.btn-danger:hover, .btn-outline-danger:hover { background: #EBD2CF; color: var(--c7-err-ink); }
+
+.btn-warning, .btn-outline-warning { background: var(--c7-warn-bg); color: var(--c7-warn-ink); }
+.btn-info, .btn-outline-info { background: var(--c7-accent-tint); color: var(--c7-accent-tint-ink); }
+.btn-link    { background: none; color: var(--c7-accent); height: auto; padding: 0; font-weight: 700; }
+
+.btn-sm { height: 40px; border-radius: var(--c7-r-chip); padding: 0 15px; font-size: 13px; }
+.btn-lg { height: 60px; font-size: 16px; }
+.btn:disabled, .btn.disabled { background: var(--c7-sunken); color: var(--c7-ink-faint); opacity: 1; }
+
+/* Bottone icona quadrato (azioni di riga tabella) */
+.c7-iconbtn {
+  width: 34px; height: 34px; border: 0; border-radius: 10px;
+  background: var(--c7-bg); color: var(--c7-ink-soft);
+  display: grid; place-items: center; font-size: 12px;
+}
+.c7-iconbtn:hover { background: var(--c7-line); color: var(--c7-ink); }
+
+/* --------------------------------------------------------------------------
+   6. Pill, chip, badge di stato
+   -------------------------------------------------------------------------- */
+
+.c7-pill {
+  height: 38px; padding: 0 16px; border-radius: var(--c7-r-pill);
+  background: var(--c7-card); color: var(--c7-ink-muted);
+  font-size: 13px; font-weight: 700;
+  display: inline-flex; align-items: center; gap: 8px;
+  /* Un pill non va a capo: l'altezza e' fissa, e un'etichetta di due parole
+     sborderebbe dalla pastiglia. In una fila che scorre in orizzontale
+     (prototipo 8a·2) e' anche il comportamento giusto. */
+  white-space: nowrap;
+  border: 0;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.c7-pill.is-active { background: var(--c7-ink); color: #fff; font-weight: 800; }
+
+/* Chip selezionabile: un pill che porta dentro il proprio checkbox (i giorni
+   della settimana nelle disponibilita'). La selezione la mostra il CSS, non
+   del JS — e il bersaglio resta l'intera pastiglia, non il quadratino. */
+.c7-pill input[type="checkbox"],
+.c7-pill input[type="radio"] { position: absolute; opacity: 0; pointer-events: none; }
+.c7-pill:has(input:checked) { background: var(--c7-ink); color: #fff; font-weight: 800; }
+.c7-pill:has(input:focus-visible) { outline: 2px solid var(--c7-accent); outline-offset: 2px; }
+
+.badge,
+.c7-state {
+  height: 26px; padding: 0 11px; border-radius: var(--c7-r-pill);
+  font-size: 10px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.badge.bg-success, .c7-state--ok    { background: var(--c7-ok-bg) !important;   color: var(--c7-ok-ink) !important; }
+.badge.bg-danger,  .c7-state--err   { background: var(--c7-err-bg) !important;  color: var(--c7-err-ink) !important; }
+.badge.bg-warning, .c7-state--warn  { background: var(--c7-warn-bg) !important; color: var(--c7-warn-ink) !important; }
+.badge.bg-info,    .c7-state--info  { background: var(--c7-accent-tint) !important; color: var(--c7-accent-tint-ink) !important; }
+.badge.bg-primary, .c7-state--accent{ background: var(--c7-accent) !important;  color: var(--c7-accent-ink) !important; }
+.badge.bg-light, .badge.bg-secondary, .c7-state--muted {
+  background: var(--c7-bg) !important; color: var(--c7-ink-muted) !important;
+}
+
+/* --------------------------------------------------------------------------
+   7. Form
+   -------------------------------------------------------------------------- */
+
+.form-control, .form-select, .input-group-text {
+  height: var(--c7-field-h);
+  border: 0;
+  border-radius: var(--c7-r-field);
+  background: var(--c7-card);
+  padding: 0 16px;
+  font-family: var(--c7-font);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--c7-ink);
+  box-shadow: none;
+}
+/* Stessa ragione dei bottoni secondari: il campo e' fondo-card, quindi su una
+   card o dentro un modal avrebbe il colore di cio' che sta sotto e non si
+   vedrebbe. In quei contesti prende il fondo pagina. (Sta prima delle regole
+   di readonly/disabled, che devono continuare a vincere.) */
+.card .form-control, .c7-card .form-control, .modal-content .form-control,
+.card .form-select, .c7-card .form-select, .modal-content .form-select,
+.card .input-group-text, .c7-card .input-group-text, .modal-content .input-group-text {
+  background: var(--c7-bg);
+}
+
+textarea.form-control { height: auto; min-height: 96px; padding: 16px; font-weight: 500; line-height: 1.5; }
+.form-control::placeholder { color: var(--c7-ink-faint); font-weight: 600; }
+.form-control:focus, .form-select:focus {
+  background: var(--c7-card);
+  border: 1.5px solid var(--c7-accent);
+  box-shadow: none;
+  color: var(--c7-ink);
+}
+.form-control[readonly], .form-control:disabled, .form-select:disabled {
+  background: var(--c7-sunken); color: var(--c7-ink-muted);
+}
+.form-control.is-invalid, .form-select.is-invalid {
+  background-image: none;
+  border: 1.5px solid var(--c7-err);
+}
+.invalid-feedback {
+  font-size: 12px; font-weight: 700; color: var(--c7-err-ink); padding-left: 4px; margin-top: 8px;
+}
+.form-text {
+  font-size: 12px; font-weight: 600; color: var(--c7-ink-muted); padding-left: 4px; margin-top: 8px;
+}
+/* Le date e i numeri si leggono in mono anche dentro i campi. */
+input[type="date"].form-control,
+input[type="time"].form-control,
+input[type="datetime-local"].form-control,
+input[type="number"].form-control {
+  font-family: var(--c7-font-mono); font-weight: 700;
+}
+
+/* Interruttore */
+.form-switch .form-check-input {
+  width: 52px; height: 30px; border-radius: var(--c7-r-pill);
+  background-color: var(--c7-line); border: 0;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
+}
+.form-switch .form-check-input:checked { background-color: var(--c7-accent); }
+.form-switch .form-check-input:focus { box-shadow: none; }
+
+/* Scelta a poche opzioni: card selezionabili, non <select>. */
+.c7-choice {
+  border-radius: var(--c7-r-field);
+  background: var(--c7-card);
+  padding: 16px;
+  display: flex; align-items: center; gap: 12px;
+  cursor: pointer;
+}
+.c7-choice__title { font-size: 15px; font-weight: 800; }
+.c7-choice__desc  { margin-top: 3px; font-size: 12px; font-weight: 600; color: var(--c7-ink-muted); line-height: 1.4; }
+.c7-choice.is-selected { background: var(--c7-accent); color: var(--c7-accent-ink); }
+.c7-choice.is-selected .c7-choice__desc { color: var(--c7-accent-dim); }
+.c7-choice.is-locked { background: var(--c7-sunken); opacity: .6; cursor: not-allowed; }
+/* La spunta segue la selezione viva, non quella stampata dal server. */
+.c7-choice__mark { display: none; font-size: 15px; flex-shrink: 0; }
+.c7-choice.is-selected .c7-choice__mark { display: block; }
+
+/* Scelta grande: due sole opzioni che sono l'esito di quello che hai appena
+   fatto (challenge superata o no, prototipo 9b·4). Il bersaglio e' la card. */
+.c7-choice--big { min-height: 96px; border-radius: var(--c7-r-card-lg); gap: 16px; padding: 0 20px; }
+.c7-choice--big .c7-choice__title { font-size: 18px; letter-spacing: -.02em; }
+
+/* Registrazione del punteggio (prototipo 9b·3): la cifra e' protagonista —
+   Manrope 800, non mono — e i due tasti sono grossi come nel segnapunti. */
+.c7-scorepad { text-align: center; }
+.c7-scorepad__row {
+  margin-top: 16px;
+  display: flex; align-items: center; justify-content: center; gap: 22px;
+}
+.c7-scorepad__btn {
+  width: 60px; height: 60px; border: 0; border-radius: 50%;
+  background: rgba(242, 248, 247, .14); color: var(--c7-on-ink);
+  font-size: 20px; display: grid; place-items: center; flex-shrink: 0;
+}
+.c7-scorepad__btn--plus { background: var(--c7-accent-bright); color: #0D2A36; }
+.c7-scorepad__value {
+  font-size: 74px; font-weight: 800; letter-spacing: -.06em; line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Stepper: sostituisce input[type=number] per valori piccoli e frequenti. */
+.c7-stepper { border-radius: var(--c7-r-card); background: var(--c7-card); padding: 16px; }
+.c7-stepper__row { display: flex; align-items: center; gap: 12px; }
+.c7-stepper button {
+  width: 52px; height: 52px; border: 0; border-radius: var(--c7-r-control);
+  background: var(--c7-bg); color: var(--c7-accent); font-size: 15px;
+  display: grid; place-items: center; flex-shrink: 0;
+}
+.c7-stepper__value {
+  flex: 1; text-align: center;
+  font-family: var(--c7-font-mono); font-size: 30px; font-weight: 800; letter-spacing: -.04em;
+}
+/* Traduce il numero in parole: "si vince a 5 rack". */
+.c7-stepper__hint { margin-top: 6px; font-size: 12px; font-weight: 700; color: var(--c7-ink-muted); text-align: center; }
+
+/* Stepper appoggiato su una card o dentro un modal: le due superfici si
+   invertono, altrimenti lo stepper sparisce nella card e i tasti nello
+   stepper. */
+.c7-stepper--sunk { background: var(--c7-bg); padding: 10px; }
+.c7-stepper--sunk button { background: var(--c7-card); }
+.c7-stepper--sunk button:hover { background: var(--c7-line); }
+.c7-stepper--sunk .c7-stepper__value { font-size: 26px; }
+
+/* --------------------------------------------------------------------------
+   8. Tabelle
+   -------------------------------------------------------------------------- */
+
+/* `overflow-x: auto` e non `hidden`: il contenitore serve a ritagliare gli
+   angoli, ma una tabella piu' larga dello schermo deve poter scorrere. Con
+   `hidden` le ultime colonne sparivano senza modo di raggiungerle — su 390px
+   lo faceva lo storico rack, e con lui ogni tabella larga della app: la
+   regola sovrascrive anche `.table-responsive` di Bootstrap, che il tema
+   carica dopo. */
+/* Tabella larga che su mobile diventa una pila di card: una card per riga,
+   ogni cella con la sua etichetta (`data-label`). Serve dove le colonne sono
+   troppe per 390px — utenti, elenco gare pubblico: con il solo scorrimento
+   orizzontale le colonne di destra restano fuori e nessuno le cerca. */
+@media (max-width: 991.98px) {
+  .c7-table-cards thead { display: none; }
+  .c7-table-cards,
+  .c7-table-cards tbody,
+  .c7-table-cards tr,
+  .c7-table-cards td { display: block; width: auto; }
+  /* Le due tabelle che usano questa resa stanno dentro una card, quindi la
+     riga prende il fondo pagina: card su card sarebbero indistinguibili. */
+  .c7-table-cards tr,
+  .c7-table-cards.table-striped > tbody > tr:nth-of-type(odd) > td,
+  .c7-table-cards.table-striped > tbody > tr:nth-of-type(odd) {
+    background: var(--c7-bg);
+    box-shadow: none;
+  }
+  .c7-table-cards tr {
+    border-radius: var(--c7-r-card);
+    padding: 12px 16px;
+    margin-bottom: 10px;
+  }
+  .c7-table-cards td { border-bottom: 0; }
+  .c7-table-cards td {
+    border: 0;
+    padding: 5px 0;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    text-align: right;
+  }
+  .c7-table-cards td::before {
+    content: attr(data-label);
+    flex-shrink: 0;
+    font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--c7-ink-muted);
+    text-align: left;
+  }
+  /* La prima cella e' il titolo della card. */
+  .c7-table-cards td:first-child {
+    font-size: 15px; font-weight: 800;
+    padding-bottom: 8px;
+  }
+  .c7-table-cards td:first-child::before { display: none; }
+}
+
+.c7-table-wrap,
+.table-responsive {
+  background: var(--c7-card);
+  border-radius: var(--c7-r-card);
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.table {
+  --bs-table-bg: transparent;
+  margin: 0;
+  color: var(--c7-ink);
+  border-color: var(--c7-line-soft);
+}
+.table > :not(caption) > * > * { background: transparent; box-shadow: none; }
+.table thead th {
+  padding: 12px 20px;
+  font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--c7-ink-muted);
+  border-bottom: 1px solid var(--c7-line-soft);
+  white-space: nowrap;
+}
+.table tbody td {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--c7-line-soft);
+  vertical-align: middle;
+  font-size: 14px; font-weight: 700;
+}
+.table tbody tr:last-child td { border-bottom: 0; }
+.table-striped > tbody > tr:nth-of-type(odd) > * { background: transparent; }
+.table-hover > tbody > tr:hover > * { background: var(--c7-bg); }
+.table-bordered > :not(caption) > * > * { border-width: 0 0 1px 0; }
+.table tr.c7-row--attention > td { background: var(--c7-warn-bg); }
+.table tr.c7-row--done > td { opacity: .7; }
+.table .c7-cell-actions { text-align: right; white-space: nowrap; }
+.table .c7-cell-actions .c7-iconbtn + .c7-iconbtn { margin-left: 8px; }
+
+/* --------------------------------------------------------------------------
+   9. Messaggi flash
+   -------------------------------------------------------------------------- */
+
+.c7-flashes { display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px; }
+
+.alert,
+.c7-flash {
+  border: 0;
+  border-radius: var(--c7-r-field);
+  padding: 15px 16px;
+  display: flex; gap: 13px; align-items: flex-start;
+  font-size: 13px; font-weight: 600; line-height: 1.45;
+  margin: 0;
+}
+.c7-flash__ico {
+  width: 30px; height: 30px; border-radius: 50%;
+  color: #fff; font-size: 12px;
+  display: grid; place-items: center; flex-shrink: 0;
+}
+.c7-flash__body { flex: 1; min-width: 0; }
+.c7-flash__title { font-size: 14px; font-weight: 800; }
+.c7-flash__text { margin-top: 3px; }
+.c7-flash .btn-close {
+  background: none; opacity: 1; width: auto; height: auto; padding: 6px 0 0; margin: 0; flex-shrink: 0;
+}
+.c7-flash .btn-close::before { content: "\f00d"; font: 900 13px "Font Awesome 6 Free"; }
+
+.alert-success, .c7-flash--success { background: var(--c7-ok-bg);   color: var(--c7-ok-body); }
+.alert-danger,  .c7-flash--error   { background: var(--c7-err-bg);  color: var(--c7-err-body); }
+.alert-warning, .c7-flash--warning { background: var(--c7-warn-bg); color: var(--c7-warn-body); }
+.alert-info,    .c7-flash--info    { background: var(--c7-info-bg); color: var(--c7-info-body); }
+
+.c7-flash--success .c7-flash__ico { background: var(--c7-ok); }
+.c7-flash--error   .c7-flash__ico { background: var(--c7-err); }
+.c7-flash--warning .c7-flash__ico { background: var(--c7-warn); }
+.c7-flash--info    .c7-flash__ico { background: var(--c7-info); }
+.c7-flash--success .c7-flash__title { color: var(--c7-ok-ink); }
+.c7-flash--error   .c7-flash__title { color: var(--c7-err-ink); }
+.c7-flash--warning .c7-flash__title { color: var(--c7-warn-ink); }
+.c7-flash--info    .c7-flash__title { color: var(--c7-info-ink); }
+
+/* Versione compatta a pillola: conferma senza corpo testo. */
+.c7-flash--compact {
+  height: 46px; padding: 0 16px; border-radius: var(--c7-r-pill);
+  align-items: center; gap: 11px; font-size: 13px; font-weight: 700;
+}
+.c7-flash--compact .c7-flash__ico { width: auto; height: auto; background: none !important; }
+.c7-flash--compact.c7-flash--success .c7-flash__ico { color: var(--c7-ok); }
+.c7-flash--compact.c7-flash--error   .c7-flash__ico { color: var(--c7-err); }
+
+/* Banda di connessione / stato di sistema */
+.c7-band {
+  height: 44px; padding: 0 16px; border-radius: 16px;
+  display: flex; align-items: center; gap: 10px;
+  font-size: 13px; font-weight: 700;
+  background: var(--c7-ink-soft); color: var(--c7-on-ink);
+}
+.c7-band--ok { background: var(--c7-ok-bg); color: var(--c7-ok-ink); }
+
+/* --------------------------------------------------------------------------
+   10. Toast della mascotte (Chalky)
+   Famiglia separata dai flash: i flash sono il sistema, Chalky e' il giocatore.
+   -------------------------------------------------------------------------- */
+
+#chalky-container {
+  position: fixed;
+  top: 16px; left: 14px; right: 14px;
+  z-index: var(--c7-z-toast);
+  display: flex; flex-direction: column; gap: 10px;
+  pointer-events: none;
+}
+@media (min-width: 992px) {
+  #chalky-container { left: auto; right: 24px; width: 380px; top: 20px; }
+}
+
+.c7-chalky {
+  border-radius: 24px;
+  background: var(--c7-card);
+  padding: 14px 16px 14px 12px;
+  display: flex; align-items: center; gap: 12px;
+  box-shadow: var(--c7-shadow-toast);
+  pointer-events: auto;
+  animation: c7-chalky-in .32s cubic-bezier(.2, .8, .3, 1) both;
+}
+.c7-chalky img { width: 68px; height: 68px; object-fit: contain; flex-shrink: 0; }
+.c7-chalky__body { flex: 1; min-width: 0; }
+.c7-chalky__title { margin-top: 5px; font-size: 17px; font-weight: 800; letter-spacing: -.02em; }
+.c7-chalky__sub { margin-top: 3px; font-size: 12px; font-weight: 600; color: var(--c7-ink-muted); }
+.c7-chalky__xp { margin-top: 5px; font-family: var(--c7-font-mono); font-size: 22px; font-weight: 800; letter-spacing: -.03em; color: var(--c7-ok); }
+.c7-chalky .btn-close { background: none; opacity: .5; }
+
+.c7-chalky--level { background: var(--c7-accent); color: var(--c7-accent-ink); }
+.c7-chalky--level .c7-kicker { color: var(--c7-accent-bright); }
+.c7-chalky--level .c7-chalky__sub { color: var(--c7-accent-dim); }
+.c7-chalky--rare { background: var(--c7-warn-bg); color: var(--c7-warn-ink); }
+.c7-chalky--rare .c7-kicker { color: var(--c7-warn); }
+.c7-chalky--rare .c7-chalky__sub { color: var(--c7-warn-body); }
+.c7-chalky--lost { background: var(--c7-err-bg); color: var(--c7-err-ink); }
+.c7-chalky--lost .c7-kicker { color: var(--c7-err-ink); }
+
+/* Toast in coda: rientrati e attenuati sotto il primo. */
+.c7-chalky.is-queued { margin: 0 12px; opacity: .82; }
+.c7-chalky.is-queued img { width: 46px; height: 46px; }
+.c7-chalky.is-queued .c7-chalky__title { font-size: 15px; }
+
+@keyframes c7-chalky-in {
+  from { opacity: 0; transform: translateY(-14px) scale(.97); }
+  to   { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) { .c7-chalky { animation: none; } }
+
+/* --------------------------------------------------------------------------
+   11. Stato vuoto / blocco a pagina piena
+   -------------------------------------------------------------------------- */
+
+.c7-empty {
+  border-radius: var(--c7-r-card-lg);
+  background: var(--c7-card);
+  padding: 26px 20px;
+  text-align: center;
+}
+.c7-empty__ico {
+  width: 66px; height: 66px; margin: 0 auto; border-radius: 50%;
+  background: var(--c7-bg); color: var(--c7-ink-faint);
+  display: grid; place-items: center; font-size: 24px;
+}
+.c7-empty__ico--err  { background: var(--c7-err-bg);  color: var(--c7-err); }
+.c7-empty__ico--warn { background: var(--c7-warn-bg); color: var(--c7-warn); }
+.c7-empty__title { margin-top: 16px; font-size: 19px; font-weight: 800; letter-spacing: -.02em; }
+.c7-empty__text  { margin: 8px 0 0; font-size: 13px; font-weight: 600; line-height: 1.55; color: var(--c7-ink-muted); }
+.c7-empty__actions { margin-top: 18px; display: flex; flex-direction: column; gap: 10px; }
+
+/* --------------------------------------------------------------------------
+   12. Componenti Bootstrap residui
+   -------------------------------------------------------------------------- */
+
+.modal-content {
+  border: 0; border-radius: var(--c7-r-card-lg);
+  background: var(--c7-card); color: var(--c7-ink);
+}
+.modal-header, .modal-footer { border-color: var(--c7-line-soft); padding: 20px; }
+/* Su schermo stretto due bottoni affiancati non ci stanno e si accavallano:
+   in verticale, a tutta larghezza. Sopra i 576px tornano in riga a destra. */
+.modal-footer { gap: 10px; flex-wrap: nowrap; flex-direction: column; }
+.modal-footer > * { margin: 0; width: 100%; }
+@media (min-width: 576px) {
+  .modal-footer { flex-direction: row; justify-content: flex-end; }
+  .modal-footer > * { width: auto; }
+}
+.modal-body { padding: 0 20px; }
+.modal-title { font-size: 19px; font-weight: 800; letter-spacing: -.025em; }
+.modal-backdrop.show { opacity: .55; background: var(--c7-ink); }
+
+.dropdown-menu {
+  border: 0; border-radius: var(--c7-r-card);
+  background: var(--c7-card);
+  padding: 8px;
+  box-shadow: var(--c7-shadow-pop);
+}
+.dropdown-item {
+  border-radius: var(--c7-r-chip); padding: 10px 12px;
+  font-size: 13px; font-weight: 700; color: var(--c7-ink-soft);
+  display: flex; align-items: center; gap: 10px;
+}
+.dropdown-item:hover { background: var(--c7-bg); color: var(--c7-ink); }
+.dropdown-item.text-danger { color: var(--c7-err-ink) !important; }
+.dropdown-divider { border-color: var(--c7-line-soft); }
+
+.progress { height: 8px; border-radius: var(--c7-r-pill); background: var(--c7-bg); }
+.progress-bar { background: var(--c7-accent); border-radius: var(--c7-r-pill); }
+
+/* Fila di pill. Su mobile scorre in orizzontale invece di andare a capo su
+   tre righe (prototipo 8a·2 e 9b·1). */
+.nav-tabs {
+  border: 0; gap: 8px;
+  flex-wrap: nowrap; overflow-x: auto;
+  scrollbar-width: none;
+}
+.nav-tabs::-webkit-scrollbar { display: none; }
+.nav-tabs .nav-link {
+  height: 38px; padding: 0 16px; border: 0; border-radius: var(--c7-r-pill);
+  background: var(--c7-card); color: var(--c7-ink-muted);
+  font-size: 13px; font-weight: 700;
+  /* `gap`: il pill e' un flex container, quindi lo spazio scritto nel markup
+     fra icona ed etichetta sparisce e le due si toccano. */
+  display: inline-flex; align-items: center; gap: 7px;
+  white-space: nowrap; flex-shrink: 0;
+}
+.nav-tabs .nav-link.active { background: var(--c7-ink); color: #fff; font-weight: 800; }
+
+.list-group-item { background: var(--c7-card); border-color: var(--c7-line-soft); padding: 14px 16px; }
+.toast { border: 0; border-radius: var(--c7-r-card); background: var(--c7-card); box-shadow: var(--c7-shadow-toast); }
+
+/* Griglia di scelta del tavolo (modal di assegnazione). Le regole originali
+   in main.css sono della vecchia palette: bordi da 2px, bianco pieno e
+   `--tb-*`. Qui la scelta e' un riquadro pieno per stato, senza bordo. */
+.table-grid { margin: 0; grid-template-columns: repeat(auto-fit, minmax(84px, 1fr)); }
+.table-btn {
+  min-height: 76px; height: auto;
+  border: 0; border-radius: var(--c7-r-control);
+  background: var(--c7-bg); color: var(--c7-ink);
+  font-family: var(--c7-font-mono); font-size: 20px; font-weight: 800;
+  box-shadow: none;
+}
+.table-btn:hover:not(:disabled) { transform: none; box-shadow: none; }
+.table-btn-available,
+.table-btn-available:hover { background: var(--c7-bg); color: var(--c7-ink); }
+.table-btn-available:hover { background: var(--c7-line); }
+/* Il tavolo gia' assegnato e' un `button` disabilitato, e senza alzare la
+   specificita' `.btn:disabled` lo grigiava come "non disponibile": e'
+   l'opposto di quello che deve dire. */
+.btn.table-btn-current,
+.btn.table-btn-current:hover,
+.btn.table-btn-current:disabled { background: var(--c7-accent); color: var(--c7-accent-ink); opacity: 1; }
+.table-btn-occupied,
+.table-btn-occupied:hover { background: var(--c7-warn-bg); color: var(--c7-warn-ink); }
+.table-icon { font-size: 14px; margin-bottom: 3px; opacity: .6; }
+.table-name { font-family: var(--c7-font); font-size: 11px; font-weight: 700; }
+
+/* L'overlay di caricamento dei modali era bianco su fondo chiaro. */
+.modal-loading-overlay { background: rgba(228, 232, 231, .78); }
+
+/* Chevron delle sezioni richiudibili: ruota quando la sezione e' aperta.
+   Era un <style> dentro gara_detail.html, ma il motivo si ripete in ogni
+   pagina che usa il collapse di Bootstrap. */
+.collapse-icon { transition: transform .2s ease; color: var(--c7-ink-faint); }
+[aria-expanded="true"] .collapse-icon { transform: rotate(180deg); }
+
+/* --------------------------------------------------------------------------
+   13. Utilita'
+   -------------------------------------------------------------------------- */
+
+.c7-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--c7-accent); color: #fff;
+  display: grid; place-items: center;
+  font-size: 11px; font-weight: 800; flex-shrink: 0;
+}
+.c7-avatar--lg { width: 46px; height: 46px; font-size: 14px; }
+.c7-divider { height: 1px; background: var(--c7-line-soft); border: 0; margin: 16px 0; }
+/* Filo sopra un blocco che continua la card. `.c7-divider` non va usato come
+   contenitore: e' alto 1px e con un fondo suo, quindi il contenuto ci esce
+   sopra e si legge come una barra grigia dietro al testo. */
+.c7-topline { border-top: 1px solid var(--c7-line-soft); margin-top: 14px; padding-top: 14px; }
+.c7-sep { color: var(--c7-ink-faint); }
+.c7-crumbs { display: flex; align-items: center; gap: 12px; font-size: 12px; font-weight: 700; color: var(--c7-ink-muted); }
+.c7-crumbs i { font-size: 9px; }
+.c7-crumbs .is-current { color: var(--c7-ink); }
+
+/* --------------------------------------------------------------------------
+   14. Aggiunte post-handoff
+   -------------------------------------------------------------------------- */
+
+/* Larghezza massima del contenuto.
+   Il redesign nasce mobile-first e non poneva alcun limite: su un monitor
+   largo filtri, tabelle e righe di testo si stiravano per tutta la finestra,
+   con i comandi a meta' schermo e il vuoto a destra. Il contenuto resta
+   allineato a sinistra, come la testata, invece di essere centrato: con la
+   barra laterale a sinistra e' l'allineamento che tiene le due cose in asse. */
+@media (min-width: 992px) {
+  .c7-content { max-width: 1440px; }
+}
+
+/* Utility di sfondo di Bootstrap.
+   Il tema ridefinisce .card, .btn, .table e .badge, ma non le utility bg-*:
+   le pagine non ancora convertite mostravano cosi' riquadri blu, rossi e
+   gialli a tinta piena in mezzo alla palette 7c (i KPI dello storico erano
+   il caso piu' vistoso). Qui vengono ricondotte ai semantici del tema, che
+   usano fondo tenue e inchiostro scuro invece del colore saturo. */
+.bg-primary { background: var(--c7-accent) !important; color: var(--c7-accent-ink) !important; }
+.bg-secondary { background: var(--c7-sunken) !important; color: var(--c7-ink-soft) !important; }
+.bg-success { background: var(--c7-ok-bg) !important; color: var(--c7-ok-ink) !important; }
+.bg-danger { background: var(--c7-err-bg) !important; color: var(--c7-err-ink) !important; }
+.bg-warning { background: var(--c7-warn-bg) !important; color: var(--c7-warn-ink) !important; }
+.bg-info { background: var(--c7-accent-tint) !important; color: var(--c7-accent-tint-ink) !important; }
+.bg-light { background: var(--c7-card) !important; color: var(--c7-ink) !important; }
+.bg-dark { background: var(--c7-ink) !important; color: var(--c7-on-ink) !important; }
+
+/* Il testo bianco che accompagnava quelle tinte ora starebbe su fondo
+   chiaro: si riporta all'inchiostro del tema. Le eccezioni sono i blocchi
+   che restano scuri per davvero. */
+.bg-primary.text-white, .bg-primary .text-white { color: var(--c7-accent-ink) !important; }
+.bg-success.text-white, .bg-success .text-white { color: var(--c7-ok-ink) !important; }
+.bg-danger.text-white, .bg-danger .text-white { color: var(--c7-err-ink) !important; }
+.bg-info.text-white, .bg-info .text-white { color: var(--c7-accent-tint-ink) !important; }
+.bg-warning.text-dark, .bg-warning .text-dark { color: var(--c7-warn-ink) !important; }
+
+/* Dentro un blocco a fondo scuro il testo eredita il colore del blocco: la
+   regola generale sui titoli (`h1…h6 { color: var(--c7-ink) }`) li lasciava
+   invece scuri su scuro — la cifra grande della card XP nei pannelli di
+   gamification era illeggibile. */
+.bg-primary :is(h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6, .display-1, .display-2, .display-3, .display-4, .display-5, .display-6),
+.bg-dark    :is(h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6, .display-1, .display-2, .display-3, .display-4, .display-5, .display-6),
+.c7-card--accent :is(h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6) {
+  color: inherit;
+}
+.bg-primary .text-muted,
+.bg-dark .text-muted { color: var(--c7-accent-dim) !important; }
+
+/* --------------------------------------------------------------------------
+   15. Segnapunti e tabellone
+   Schermate 7c (verticale) e 8b (orizzontale) del prototipo. E' il punto in
+   cui l'app si usa davvero: in piedi, con una mano, o col telefono
+   appoggiato sulla sponda.
+   -------------------------------------------------------------------------- */
+
+/* Card del punteggio: superficie chiara, cifre grandi, tutto centrato. */
+.c7-score {
+  border-radius: var(--c7-r-card-lg);
+  background: var(--c7-card);
+  padding: 20px;
+  text-align: center;
+}
+.c7-score__state {
+  display: inline-flex; align-items: center; gap: 7px;
+  height: 28px; padding: 0 12px; border-radius: var(--c7-r-pill);
+  font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+}
+.c7-score__state::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.c7-score__state--live { background: var(--c7-err-bg); color: var(--c7-err); }
+.c7-score__state--done { background: var(--c7-ok-bg); color: var(--c7-ok-ink); }
+.c7-score__row {
+  margin-top: 18px;
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: start; gap: 12px;
+}
+.c7-score__side { display: flex; flex-direction: column; align-items: center; }
+/* Manrope, non mono: nel prototipo la cifra del punteggio e' un titolo, non
+   un dato tabellare — il mono resta ai numeri di servizio (quote, XP, orari,
+   conteggi), che infatti nel prototipo sono in JetBrains Mono fino a 32px.
+   `tabular-nums` tiene comunque ferma la larghezza quando il punteggio
+   cambia sotto gli occhi. */
+.c7-score__num {
+  font-family: var(--c7-font);
+  font-size: 76px; font-weight: 800; letter-spacing: -.06em; line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+/* Chi insegue e' grigio: nel prototipo lo e' anche il nome, non solo il
+   numero — la stessa mano vale per entrambi. */
+.c7-score__num.is-behind { color: var(--c7-ink-muted); }
+.c7-score__dash { align-self: center; font-size: 26px; font-weight: 700; color: var(--c7-ink-faint); }
+.c7-score__name { margin-top: 6px; font-size: 13px; font-weight: 700; }
+.c7-score__name.is-behind { color: var(--c7-ink-muted); }
+.c7-score__elo { margin-top: 2px; font-size: 11px; color: var(--c7-ink-muted); }
+.c7-score__foot { margin-top: 18px; font-size: 13px; font-weight: 600; color: var(--c7-ink-muted); }
+
+@media (max-width: 380px) {
+  .c7-score__num { font-size: 60px; }
+}
+
+/* Comandi del rack: due bersagli grossi, uno per giocatore. */
+.c7-rackpad { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.c7-rackpad__btn {
+  height: 104px; border: 0; border-radius: var(--c7-r-card);
+  background: var(--c7-card); color: var(--c7-ink);
+  font-family: inherit;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  cursor: pointer;
+}
+.c7-rackpad__btn:hover { background: var(--c7-line-soft); }
+/* Il proprio: pieno, cosi' si distingue senza leggere il nome. */
+.c7-rackpad__btn--mine { background: var(--c7-accent); color: var(--c7-accent-ink); }
+.c7-rackpad__btn--mine:hover { background: var(--c7-accent); filter: brightness(1.08); }
+.c7-rackpad__btn:disabled { background: var(--c7-sunken); color: var(--c7-ink-faint); cursor: not-allowed; }
+.c7-rackpad__plus { font-size: 28px; font-weight: 800; letter-spacing: -.03em; }
+.c7-rackpad__who { font-size: 12px; font-weight: 700; color: var(--c7-ink-muted); }
+.c7-rackpad__btn--mine .c7-rackpad__who { color: var(--c7-accent-dim); }
+.c7-rackpad__btn:disabled .c7-rackpad__who { color: var(--c7-ink-faint); }
+
+/* Annulla: presente ma non invitante — bordo, non superficie. */
+.c7-undo {
+  width: 100%; height: 48px; border-radius: var(--c7-r-pill);
+  background: transparent; border: 1.5px solid var(--c7-line);
+  color: var(--c7-ink-soft); font-family: inherit; font-size: 14px; font-weight: 700;
+  cursor: pointer;
+}
+.c7-undo:hover { background: var(--c7-card); }
+.c7-undo:disabled { color: var(--c7-ink-faint); border-color: var(--c7-line-soft); cursor: not-allowed; }
+
+/* Storico dei rack come lista, non come tabella: quattro colonne su 390px
+   costringevano a scorrere in orizzontale per leggere l'ora. */
+.c7-racklist { border-radius: var(--c7-r-card); background: var(--c7-card); overflow: hidden; }
+.c7-racklist__row {
+  padding: 15px 18px; display: flex; align-items: center; gap: 12px;
+  border-bottom: 1px solid var(--c7-line-soft);
+}
+.c7-racklist__row:last-child { border-bottom: 0; }
+.c7-racklist__n {
+  width: 26px; height: 26px; border-radius: 50%; background: var(--c7-bg);
+  display: grid; place-items: center;
+  font-size: 11px; font-weight: 800; color: var(--c7-ink-muted);
+  flex-shrink: 0;
+}
+.c7-racklist__who { flex: 1; font-size: 14px; font-weight: 700; min-width: 0; }
+/* Anche qui Manrope: nel prototipo la lista dei rack e' testo, non tabella. */
+.c7-racklist__score { font-size: 13px; font-weight: 700; color: var(--c7-ink-muted); font-variant-numeric: tabular-nums; }
+.c7-racklist__row--deleted .c7-racklist__who { text-decoration: line-through; color: var(--c7-ink-faint); }
+
+/* --------------------------------------------------------------------------
+   Tabellone orizzontale (8b)
+   Il telefono appoggiato al tavolo non e' la stessa pagina ruotata: e' un
+   tabellone leggibile a due metri, un pulsante per lato, niente navigazione.
+   Compare da solo quando lo schermo e' basso e largo — la condizione di un
+   telefono ruotato, non di un desktop.
+   -------------------------------------------------------------------------- */
+
+.c7-board { display: none; }
+
+/* `pointer: coarse` oltre all'orientamento: senza, bastava rimpicciolire in
+   altezza la finestra di un desktop per ritrovarsi il tabellone a tutto
+   schermo. Con il dito si segna, col mouse si legge la pagina.
+   Per provarlo da desktop serve il device mode dei DevTools (emula il touch),
+   oppure si rimuove la condizione al volo dal foglio di stile. */
+@media (orientation: landscape) and (max-height: 520px) and (pointer: coarse) {
+  .c7-board {
+    position: fixed; inset: 0; z-index: var(--c7-z-board);
+    display: flex; flex-direction: column;
+    background: var(--c7-accent); color: var(--c7-accent-ink);
+    font-family: var(--c7-font);
+  }
+  /* Chiuso a mano: si torna alla pagina normale senza raddrizzare il telefono. */
+  body.c7-board-off .c7-board { display: none; }
+  /* Con il tabellone aperto la nav flottante non deve intravedersi. */
+  body:not(.c7-board-off) .c7-mobilenav { display: none; }
+}
+
+.c7-board__head { padding: 16px 24px 0; display: flex; align-items: center; gap: 12px; }
+.c7-board__close {
+  width: 40px; height: 40px; border-radius: 50%; border: 0;
+  background: rgba(242, 248, 247, .12); color: var(--c7-accent-ink);
+  font-size: 15px; flex-shrink: 0; cursor: pointer;
+}
+.c7-board__where {
+  font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--c7-accent-dim);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.c7-board__live {
+  margin-left: auto; display: flex; align-items: center; gap: 7px;
+  font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+  color: #FFC2BB; flex-shrink: 0;
+}
+.c7-board__live::before {
+  content: ""; width: 7px; height: 7px; border-radius: 50%; background: #FF7A6E;
+  animation: c7-livepulse 2s infinite;
+}
+@keyframes c7-livepulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+
+.c7-board__body {
+  flex: 1; display: grid; grid-template-columns: 1fr 1px 1fr; align-items: center; padding: 0 24px;
+  min-height: 0;
+}
+.c7-board__rule { height: 70%; background: rgba(242, 248, 247, .14); }
+.c7-board__side { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
+.c7-board__name {
+  font-size: 15px; font-weight: 800; letter-spacing: -.01em;
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.c7-board__name--behind { color: var(--c7-accent-dim); }
+.c7-board__num {
+  font-family: var(--c7-font);
+  font-size: clamp(72px, 22vh, 116px); font-weight: 800; letter-spacing: -.07em; line-height: .9;
+  font-variant-numeric: tabular-nums;
+}
+.c7-board__num--behind { color: var(--c7-accent-dim); }
+/* Quanto manca alla vittoria, senza far contare le cifre. */
+.c7-board__pips { display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; }
+.c7-board__pip { width: 26px; height: 6px; border-radius: var(--c7-r-pill); background: rgba(242, 248, 247, .2); }
+.c7-board__pip.is-on { background: var(--c7-accent-bright); }
+.c7-board__pip.is-on--muted { background: rgba(242, 248, 247, .5); }
+
+.c7-board__pad { padding: 0 24px 20px; display: flex; align-items: center; gap: 12px; }
+.c7-board__btn {
+  flex: 1; height: 74px; border-radius: 22px;
+  border: 1.5px solid rgba(242, 248, 247, .28);
+  background: rgba(242, 248, 247, .14); color: var(--c7-accent-ink);
+  font-family: inherit; font-size: 17px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  min-width: 0; cursor: pointer;
+}
+.c7-board__btn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Il proprio e' pieno: non gli serve il bordo che distingue l'altro dal
+   fondo accento. */
+.c7-board__btn--mine { border: 0; background: var(--c7-accent-bright); color: #0D2A36; }
+.c7-board__btn:disabled { opacity: .45; cursor: not-allowed; }
+.c7-board__plus { font-size: 22px; flex-shrink: 0; }
+.c7-board__undo {
+  width: 74px; height: 74px; border-radius: 22px; border: 0; flex-shrink: 0;
+  background: rgba(242, 248, 247, .12); color: var(--c7-accent-ink); font-size: 16px;
+  cursor: pointer;
+}
+.c7-board__undo:disabled { opacity: .4; cursor: not-allowed; }
+.c7-score__state--idle { background: var(--c7-sunken); color: var(--c7-ink-muted); }
+
+/* --------------------------------------------------------------------------
+   16. Linguette di vista e scorciatoia al proprio match (8a)
+
+   Su mobile la pagina gara non e' una pila unica: e' divisa in viste
+   (Turni / Classifica / Iscritti / Gestione) che una barra di pill
+   appiccicata sotto la testata commuta. Ogni sezione dichiara a quali viste
+   appartiene con `data-c7-tab="turni gestione"`; il contenitore dichiara
+   quella attiva con `data-c7-view`. Un solo nodo nel DOM, visibile in piu'
+   linguette: i componenti con `id` e `<script>` dentro (configurazione turni,
+   link pubblico) non si possono duplicare.
+
+   Da 992px le viste non esistono: il desktop mostra tutto, nelle sue due
+   colonne, esattamente come prima.
+   -------------------------------------------------------------------------- */
+
+.c7-vtabs { display: none; }
+
+@media (max-width: 991.98px) {
+  .c7-vtabs {
+    display: flex;
+    gap: 6px;
+    position: sticky;
+    top: var(--c7-head-h);
+    /* Sotto la testata, sopra il contenuto che le scorre sotto. */
+    z-index: calc(var(--c7-z-head) - 1);
+    /* Scavalca i margini di `.c7-content`: il contenuto deve passarle sotto,
+       non di fianco. */
+    margin: 0 calc(-1 * var(--c7-gutter)) var(--c7-gap);
+    padding: 14px var(--c7-gutter) 12px;
+    background: var(--c7-bg);
+  }
+  .c7-vtabs__tab {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    height: 42px;
+    border: 0;
+    border-radius: var(--c7-r-pill);
+    background: var(--c7-card);
+    color: var(--c7-ink-muted);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    display: grid;
+    place-items: center;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  /* Il pill del prototipo e' alto 42px, sotto il minimo tattile di 48.
+     L'area sensibile si allarga di 3px per lato senza spostare nulla: il gap
+     fra i pill e' 6px, quindi le aree si sfiorano e non si accavallano. */
+  .c7-vtabs__tab::after { content: ""; position: absolute; inset: -3px; }
+  .c7-vtabs__tab.is-active { background: var(--c7-accent); color: var(--c7-accent-ink); }
+
+  /* Il filtro: fuori dalla vista attiva la sezione non si disegna. */
+  [data-c7-view="turni"] [data-c7-tab]:not([data-c7-tab~="turni"]),
+  [data-c7-view="classifica"] [data-c7-tab]:not([data-c7-tab~="classifica"]),
+  [data-c7-view="iscritti"] [data-c7-tab]:not([data-c7-tab~="iscritti"]),
+  [data-c7-view="gestione"] [data-c7-tab]:not([data-c7-tab~="gestione"]) {
+    display: none !important;
+  }
+
+  /* I contenitori che impaginano il desktop non disegnano box su mobile: una
+     colonna che il filtro svuota resterebbe un flex item alto zero, e il gap
+     separa anche quelli — un buco doppio fra le sezioni. Con `contents` le
+     sezioni diventano figlie della pila di pagina e il gap torna uniforme. */
+  .c7-tabflat { display: contents; }
+}
+
+/* --------------------------------------------------------------------------
+   17. Elenchi raggruppati, titoli di sezione, tessere
+   Forme che il prototipo usa in continuazione dalla 8a alla 11a e che
+   finivano riscritte a mano ogni volta.
+   -------------------------------------------------------------------------- */
+
+/* Un elenco compatto e' UNA card con le righe divise da una linea, non N card
+   separate: turni conclusi, iscritti, quest completate, streak. */
+.c7-rows {
+  background: var(--c7-card);
+  border-radius: var(--c7-r-card-lg);
+  overflow: hidden;
+}
+.c7-rows__row {
+  padding: 15px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.c7-rows__row + .c7-rows__row { border-top: 1px solid var(--c7-line-soft); }
+.c7-rows__main { flex: 1; min-width: 0; }
+.c7-rows__title { font-size: 14px; font-weight: 800; }
+.c7-rows__sub { margin-top: 2px; font-size: 11px; font-weight: 700; color: var(--c7-ink-muted); }
+/* Riga spenta: elemento concluso o non ancora raggiunto. */
+.c7-rows__row--dim .c7-rows__title { color: var(--c7-ink-muted); }
+
+/* Titolo di sezione, con l'azione facoltativa a destra ("Tutti", "Dettagli"). */
+.c7-sechead { display: flex; align-items: baseline; gap: 10px; }
+.c7-sechead h2,
+.c7-sechead h3 { margin: 0; font-size: 17px; font-weight: 800; letter-spacing: -.02em; }
+.c7-sechead__note { font-size: 12px; font-weight: 700; color: var(--c7-ink-muted); }
+.c7-sechead__more {
+  margin-left: auto;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--c7-accent);
+  white-space: nowrap;
+}
+.c7-sechead__sub { margin-top: 3px; font-size: 12px; font-weight: 600; color: var(--c7-ink-muted); }
+
+/* Tessera con icona: achievement, quest, sblocchi. Piena = ottenuto, affossata
+   = bloccato (mai il grigio disabilitato di Bootstrap). */
+.c7-tile {
+  width: 44px; height: 44px;
+  border-radius: var(--c7-r-control);
+  background: var(--c7-accent);
+  color: var(--c7-accent-bright);
+  display: grid; place-items: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.c7-tile--sm { width: 40px; height: 40px; border-radius: var(--c7-r-chip); font-size: 15px; }
+.c7-tile--round { width: 46px; height: 46px; border-radius: 50%; font-size: 18px; }
+.c7-tile--locked { background: var(--c7-bg); color: var(--c7-ink-faint); }
+
+/* Un blocco bloccato/concluso si spegne, non si disabilita. */
+.c7-dim { opacity: .62; }
+
+/* Le barre di Bootstrap sono gia' in palette (`.progress`), ma su una card
+   accento il binario chiaro sparirebbe nel fondo. */
+.c7-card--accent .progress { background: rgba(242, 248, 247, .18); }
+.c7-card--accent .progress-bar { background: var(--c7-accent-bright); }
+.progress--lg { height: 10px; }
+
+/* Scorciatoia scura alla propria partita, in cima alla vista Turni: chi gioca
+   non deve cercarsi dentro la pila dei turni. */
+.c7-shortcut { display: flex; align-items: center; gap: 14px; }
+.c7-shortcut__body { flex: 1; min-width: 0; }
+.c7-shortcut__score { margin-top: 6px; font-size: 17px; font-weight: 800; letter-spacing: -.02em; }
+.c7-shortcut__go,
+.c7-shortcut__go:hover {
+  height: 42px;
+  padding: 0 16px;
+  border-radius: var(--c7-r-pill);
+  background: var(--c7-accent-bright);
+  color: #0D2A36;
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 800;
+  flex-shrink: 0;
+  white-space: nowrap;
+}

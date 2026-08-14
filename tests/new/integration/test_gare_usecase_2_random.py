@@ -96,7 +96,7 @@ class TestUseCaseRandomStrategy:
             min_participants=6,
             max_participants=10,
             entry_fee=0.0,
-            discipline="palla_8",  # Default discipline
+            discipline="8_ball",  # Default discipline
             distance=5,
             is_race_to=True,
             director_id=director_user.id,
@@ -109,7 +109,7 @@ class TestUseCaseRandomStrategy:
         assert gara is not None
         assert gara.rounds_count == 3
         assert gara.matchmaking_strategy == "random"
-        assert gara.discipline == "palla_8"
+        assert gara.discipline == "8_ball"
         assert gara.anti_rematch_enabled is True
         assert gara.status == GaraStatus.SETUP.value
 
@@ -131,7 +131,7 @@ class TestUseCaseRandomStrategy:
             min_participants=6,
             max_participants=10,
             entry_fee=0.0,
-            discipline="palla_8",
+            discipline="8_ball",
             distance=5,
             is_race_to=True,
             director_id=director_user.id,
@@ -197,7 +197,7 @@ class TestUseCaseRandomStrategy:
             min_participants=6,
             max_participants=12,
             entry_fee=0.0,
-            discipline="palla_8",
+            discipline="8_ball",
             distance=5,
             is_race_to=True,
             director_id=director_user.id,
@@ -257,7 +257,7 @@ class TestUseCaseRandomStrategy:
             min_participants=6,
             max_participants=10,
             entry_fee=0.0,
-            discipline="palla_8",
+            discipline="8_ball",
             distance=5,
             is_race_to=True,
             director_id=director_user.id,
@@ -349,7 +349,7 @@ class TestUseCaseRandomChallenge:
             min_participants=4,
             max_participants=8,
             entry_fee=0.0,
-            discipline="palla_8",
+            discipline="8_ball",
             distance=5,
             is_race_to=True,
             director_id=director_user.id,
@@ -436,7 +436,7 @@ class TestUseCaseRandomClassification:
             min_participants=4,
             max_participants=8,
             entry_fee=0.0,
-            discipline="palla_8",
+            discipline="8_ball",
             distance=5,
             is_race_to=True,
             director_id=director_user.id,

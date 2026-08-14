@@ -1,127 +1,105 @@
 {% extends "base.html" %}
-{% block title %}{{ _("Impostazioni Privacy") }} - {{ current_user.username }}{% endblock %}
+{% block title %}{{ _("Privacy") }} - {{ current_user.username }}{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back" href="{{ url_for('player.profile') }}" aria-label="{{ _('Torna al profilo') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("Privacy") }}{% endblock %}
+{% block page_sub %}{{ _("Decidi cosa vedono gli altri sul tuo profilo.") }}{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-md-8">
-    <div class="card">
-      <div class="card-header">
-        <h4><i class="fas fa-lock"></i> {{ _("Impostazioni Privacy") }}</h4>
-        <small class="text-muted">{{ _("Controlla cosa gli altri utenti possono vedere sul tuo profilo pubblico.") }}</small>
-      </div>
-      <div class="card-body">
-        <form method="POST" action="{{ url_for('player.privacy_settings') }}">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<div style="max-width: 600px; margin: 0 auto;">
+  <form method="POST" action="{{ url_for('player.privacy_settings') }}" class="c7-stack">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-          <div class="mb-4">
-            <h5><i class="fas fa-id-card me-2"></i>{{ _("Informazioni Personali") }}</h5>
-            <p class="text-muted small mb-3">{{ _("Scegli quali informazioni di contatto mostrare agli altri giocatori.") }}</p>
+    <div class="c7-label">{{ _("Contatti") }}</div>
+    <div class="c7-stack">
+      <label class="c7-choice" for="show_email">
+        <span style="flex: 1;">
+          <span class="c7-choice__title">{{ _("Email") }}</span>
+          <span class="c7-choice__desc">{{ _("Visibile agli altri giocatori.") }}</span>
+        </span>
+        <span class="form-switch form-check" style="padding-left: 0;">
+          <input class="form-check-input" type="checkbox" id="show_email" name="show_email" style="margin-left: 0;" {% if settings.show_email %}checked{% endif %}>
+        </span>
+      </label>
 
-            <div class="form-check form-switch mb-2">
-              <input class="form-check-input" type="checkbox" id="show_email"
-                     name="show_email" {% if settings.show_email %}checked{% endif %}>
-              <label class="form-check-label" for="show_email">
-                <i class="fas fa-envelope me-1 text-muted"></i> {{ _("Mostra Email") }}
-              </label>
-            </div>
-
-            <div class="form-check form-switch mb-2">
-              <input class="form-check-input" type="checkbox" id="show_phone"
-                     name="show_phone" {% if settings.show_phone %}checked{% endif %}>
-              <label class="form-check-label" for="show_phone">
-                <i class="fas fa-phone me-1 text-muted"></i> {{ _("Mostra Telefono") }}
-              </label>
-            </div>
-          </div>
-
-          <hr>
-
-          <div class="mb-4">
-            <h5><i class="fas fa-chart-bar me-2"></i>{{ _("Dati di Gioco") }}</h5>
-            <p class="text-muted small mb-3">{{ _("Scegli quali statistiche e attivita mostrare sul tuo profilo pubblico.") }}</p>
-
-            <div class="form-check form-switch mb-2">
-              <input class="form-check-input" type="checkbox" id="show_statistics"
-                     name="show_statistics" {% if settings.show_statistics %}checked{% endif %}>
-              <label class="form-check-label" for="show_statistics">
-                <i class="fas fa-percentage me-1 text-muted"></i> {{ _("Mostra Statistiche (vittorie, partite, win rate)") }}
-              </label>
-            </div>
-
-            <div class="form-check form-switch mb-2">
-              <input class="form-check-input" type="checkbox" id="show_recent_matches"
-                     name="show_recent_matches" {% if settings.show_recent_matches %}checked{% endif %}>
-              <label class="form-check-label" for="show_recent_matches">
-                <i class="fas fa-history me-1 text-muted"></i> {{ _("Mostra Partite Recenti") }}
-              </label>
-            </div>
-
-            <div class="form-check form-switch mb-2">
-              <input class="form-check-input" type="checkbox" id="show_classifications"
-                     name="show_classifications" {% if settings.show_classifications %}checked{% endif %}>
-              <label class="form-check-label" for="show_classifications">
-                <i class="fas fa-trophy me-1 text-muted"></i> {{ _("Mostra Classifiche Tornei") }}
-              </label>
-            </div>
-
-            <div class="form-check form-switch mb-2">
-              <input class="form-check-input" type="checkbox" id="show_challenge_stats"
-                     name="show_challenge_stats" {% if settings.show_challenge_stats %}checked{% endif %}>
-              <label class="form-check-label" for="show_challenge_stats">
-                <i class="fas fa-bullseye me-1 text-muted"></i> {{ _("Mostra Statistiche Challenge") }}
-              </label>
-            </div>
-          </div>
-
-          <div class="alert alert-info">
-            <i class="fas fa-info-circle me-2"></i>
-            <strong>{{ _("Nota:") }}</strong> {{ _("Il tuo nome utente e la partecipazione ai tornei sono sempre visibili quando sei iscritto a una gara.") }}
-          </div>
-
-          <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary">
-              <i class="fas fa-save me-1"></i> {{ _("Salva") }}
-            </button>
-            <a href="{{ url_for('player.profile') }}" class="btn btn-outline-secondary">
-              {{ _("Annulla") }}
-            </a>
-          </div>
-        </form>
-      </div>
+      <label class="c7-choice" for="show_phone">
+        <span style="flex: 1;">
+          <span class="c7-choice__title">{{ _("Telefono") }}</span>
+          <span class="c7-choice__desc">{{ _("Utile se organizzi partite fuori gara.") }}</span>
+        </span>
+        <span class="form-switch form-check" style="padding-left: 0;">
+          <input class="form-check-input" type="checkbox" id="show_phone" name="show_phone" style="margin-left: 0;" {% if settings.show_phone %}checked{% endif %}>
+        </span>
+      </label>
     </div>
 
-    {# GDPR Export Section #}
-    <div class="card mt-4">
-      <div class="card-header">
-        <h5><i class="fas fa-download"></i> {{ _("Esporta i Tuoi Dati") }}</h5>
-        <small class="text-muted">{{ _("Scarica una copia di tutti i tuoi dati personali (GDPR Art. 20).") }}</small>
-      </div>
-      <div class="card-body">
-        <p class="mb-3">{{ _("L'export include:") }}</p>
-        <ul class="mb-3">
-          <li>{{ _("Dati del tuo account (username, email, telefono)") }}</li>
-          <li>{{ _("Tutte le partite giocate e i risultati") }}</li>
-          <li>{{ _("Iscrizioni a gare e tornei") }}</li>
-          <li>{{ _("Classifiche e posizioni") }}</li>
-          <li>{{ _("Challenge completate") }}</li>
-          <li>{{ _("Dati di gamification (livello, XP, achievement, streak)") }}</li>
-        </ul>
+    <div class="c7-label" style="margin-top: 10px;">{{ _("Dati di gioco") }}</div>
+    <div class="c7-stack">
+      <label class="c7-choice" for="show_statistics">
+        <span style="flex: 1;">
+          <span class="c7-choice__title">{{ _("Statistiche") }}</span>
+          <span class="c7-choice__desc">{{ _("Partite giocate, vittorie, percentuale.") }}</span>
+        </span>
+        <span class="form-switch form-check" style="padding-left: 0;">
+          <input class="form-check-input" type="checkbox" id="show_statistics" name="show_statistics" style="margin-left: 0;" {% if settings.show_statistics %}checked{% endif %}>
+        </span>
+      </label>
 
-        <div class="alert alert-info">
-          <i class="fas fa-info-circle me-2"></i>
-          {{ _("La generazione dell'archivio avviene in background. Riceverai una notifica quando sarà pronto per il download.") }}
-          {{ _("Il link di download sarà valido per 24 ore.") }}
-        </div>
+      <label class="c7-choice" for="show_recent_matches">
+        <span style="flex: 1;">
+          <span class="c7-choice__title">{{ _("Partite recenti") }}</span>
+          <span class="c7-choice__desc">{{ _("Le ultime partite con il risultato.") }}</span>
+        </span>
+        <span class="form-switch form-check" style="padding-left: 0;">
+          <input class="form-check-input" type="checkbox" id="show_recent_matches" name="show_recent_matches" style="margin-left: 0;" {% if settings.show_recent_matches %}checked{% endif %}>
+        </span>
+      </label>
 
-        <form method="POST" action="{{ url_for('player.request_gdpr_export') }}">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <button type="submit" class="btn btn-outline-primary">
-            <i class="fas fa-file-archive me-1"></i> {{ _("Richiedi Export GDPR") }}
-          </button>
-        </form>
-      </div>
+      <label class="c7-choice" for="show_classifications">
+        <span style="flex: 1;">
+          <span class="c7-choice__title">{{ _("Classifiche") }}</span>
+          <span class="c7-choice__desc">{{ _("Le tue posizioni nei campionati.") }}</span>
+        </span>
+        <span class="form-switch form-check" style="padding-left: 0;">
+          <input class="form-check-input" type="checkbox" id="show_classifications" name="show_classifications" style="margin-left: 0;" {% if settings.show_classifications %}checked{% endif %}>
+        </span>
+      </label>
+
+      <label class="c7-choice" for="show_challenge_stats">
+        <span style="flex: 1;">
+          <span class="c7-choice__title">{{ _("Statistiche challenge") }}</span>
+          <span class="c7-choice__desc">{{ _("Tentativi e punteggi negli esercizi di abilità.") }}</span>
+        </span>
+        <span class="form-switch form-check" style="padding-left: 0;">
+          <input class="form-check-input" type="checkbox" id="show_challenge_stats" name="show_challenge_stats" style="margin-left: 0;" {% if settings.show_challenge_stats %}checked{% endif %}>
+        </span>
+      </label>
     </div>
 
-  </div>
+    <div class="c7-flash c7-flash--info">
+      <span class="c7-flash__ico"><i class="fas fa-info"></i></span>
+      <span class="c7-flash__body">{{ _("Nome utente e partecipazione alle gare restano sempre visibili: senza, le classifiche non avrebbero senso.") }}</span>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100">{{ _("Salva") }}</button>
+  </form>
+
+  {# Esportazione GDPR #}
+  <section class="c7-card" style="margin-top: 24px;">
+    <div class="c7-kicker">{{ _("I tuoi dati") }}</div>
+    <h2 style="margin: 6px 0 0; font-size: 17px;">{{ _("Scarica una copia di tutto") }}</h2>
+    <p class="text-muted" style="margin: 8px 0 0; font-size: 13px; line-height: 1.55;">
+      {{ _("Account, partite, iscrizioni, classifiche, challenge e progressi. È un tuo diritto (GDPR art. 20).") }}
+    </p>
+    <p class="text-muted" style="margin: 10px 0 0; font-size: 12px;">
+      {{ _("L'archivio si prepara in background: ti arriva una notifica quando è pronto, e il link vale 24 ore.") }}
+    </p>
+    <form method="POST" action="{{ url_for('player.request_gdpr_export') }}" style="margin-top: 16px;">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-secondary w-100">{{ _("Richiedi l'archivio") }}</button>
+    </form>
+  </section>
 </div>
 {% endblock %}

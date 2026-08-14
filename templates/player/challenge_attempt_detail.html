@@ -1,302 +1,231 @@
 {% extends "base.html" %}
 
-{% block title %}Tentativo Challenge - {{ attempt.challenge.get_display_name() }}{% endblock %}
+{% set challenge = attempt.challenge %}
+{% set is_pass_fail = challenge.pass_fail_only %}
+
+{% block title %}
+{{- _("Tentativo") }} - {{ challenge.get_display_name() }}
+{%- endblock %}
+
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('challenge.challenge_detail', challenge_id=challenge.id) }}"
+   aria-label="{{ _('Torna alla challenge') }}">
+  <i class="fas {{ 'fa-arrow-left' if attempt.completed else 'fa-xmark' }}"></i>
+</a>
+{% endblock %}
+{% block page_title %}
+{%- if attempt.completed %}{{ _("Tentativo") }}
+{%- elif is_pass_fail %}{{ _("Superata o no?") }}
+{%- else %}{{ _("Registra il punteggio") }}{% endif %}
+{% endblock %}
+{% block page_sub %}{{ challenge.description|truncate(46, True, "…") }}{% endblock %}
+{% block page_actions %}
+{% if not attempt.completed %}
+<span class="c7-state c7-state--err d-none d-lg-inline-flex">{{ _("In corso") }}</span>
+{% endif %}
+{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <!-- Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard.dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="{{ url_for('challenge.challenge_catalog') }}">Challenge</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Tentativo Challenge</li>
-                </ol>
-            </nav>
-            
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h2>
-                        <i class="fas fa-{{ 'flag-checkered' if attempt.completed else 'play' }} text-{{ 'success' if attempt.completed else 'primary' }}"></i> 
-                        {{ 'Tentativo Completato' if attempt.completed else 'Tentativo in Corso' }}
-                    </h2>
-                    <p class="text-muted mb-0">Challenge: {{ attempt.challenge.get_display_name() }}</p>
-                </div>
-                <div>
-                    <a href="{{ url_for('challenge.challenge_catalog') }}" class="btn btn-outline-secondary">
-                        <i class="fas fa-arrow-left"></i> Torna al Catalogo
-                    </a>
-                </div>
-            </div>
+{# Prototipo 9b·3 (punteggio) e 9b·4 (riuscita o no). La schermata del
+   prototipo mostra "7 / 10" e i trattini di progresso perche' quella
+   challenge dichiara un massimo: **sul modello non esiste** né `min_score` né
+   `max_score`, quindi qui si mostra il punteggio e basta. Prima la pagina
+   stampava "-  punti" e, a tentativo concluso, calcolava una percentuale su
+   `max_score` — cioe' su Undefined: **la pagina rispondeva 500**. #}
+<div style="max-width:720px">
+  <div class="c7-stack">
+
+    {# ---------- Di che challenge si tratta ---------- #}
+    <div class="c7-card d-flex align-items-center gap-3">
+      <div style="width:56px;height:56px;border-radius:var(--c7-r-control);overflow:hidden;
+                  background:var(--c7-sunken);display:grid;place-items:center;
+                  color:var(--c7-ink-faint);flex-shrink:0">
+        {% if challenge.image_filename %}
+        <img src="{{ challenge_image_url(challenge) }}" alt=""
+             style="width:100%;height:100%;object-fit:cover"
+             onerror="this.style.display='none'">
+        {% else %}<i class="fas fa-bullseye"></i>{% endif %}
+      </div>
+      <div class="flex-fill" style="min-width:0">
+        <div style="font-size:15px;font-weight:800;letter-spacing:-.02em">{{ challenge.get_display_name() }}</div>
+        <div class="c7-rows__sub" style="margin-top:3px">
+          {{ _("Riuscita o no") if is_pass_fail else _("A punteggio") }}
+          <span class="c7-sep">·</span>
+          {{ _("iniziato") }} <span class="c7-num">{{ attempt.attempted_at|datetime_local }}</span>
         </div>
+      </div>
     </div>
 
-    <!-- Attempt Details -->
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <!-- Challenge Info -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="fas fa-info-circle"></i> Dettagli Challenge
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-8">
-                            <h6>{{ attempt.challenge.get_display_name() }}</h6>
-                            <p class="text-muted">{{ attempt.challenge.description }}</p>
-                        </div>
-                        <div class="col-md-4 text-center">
-                            {% if attempt.challenge.pass_fail_only %}
-                                <span class="badge bg-info fs-6">Pass/Fail</span>
-                            {% else %}
-                                <span class="badge bg-secondary fs-6">{{ attempt.challenge.min_score }}-{{ attempt.challenge.max_score }} punti</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
+    {% if not attempt.completed %}
+    {# ================= Tentativo da chiudere ================= #}
+    <form id="completeAttemptForm" method="POST"
+          action="{{ url_for('challenge.complete_attempt', attempt_id=attempt.id) }}" class="c7-stack">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-            <!-- Attempt Status -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="fas fa-chart-line"></i> Stato del Tentativo
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-md-3">
-                            <div class="mb-3">
-                                <i class="fas fa-calendar fa-2x text-primary mb-2"></i>
-                                <h6>Iniziato</h6>
-                                <small class="text-muted">{{ attempt.attempted_at|datetime_local }}</small>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-3">
-                            <div class="mb-3">
-                                <i class="fas fa-{{ 'check-circle' if attempt.completed else 'clock' }} fa-2x text-{{ 'success' if attempt.completed else 'warning' }} mb-2"></i>
-                                <h6>Stato</h6>
-                                <span class="badge bg-{{ 'success' if attempt.completed else 'warning' }}">
-                                    {{ 'Completato' if attempt.completed else 'In Corso' }}
-                                </span>
-                            </div>
-                        </div>
+      {% if is_pass_fail %}
+      {# ---------- Riuscita o no: due bersagli grandi ---------- #}
+      <div class="c7-card" style="font-size:14px;font-weight:600;line-height:1.5;color:var(--c7-ink-soft)">
+        {{ challenge.description }}
+      </div>
 
-                        {% if attempt.completed %}
-                        <div class="col-md-3">
-                            <div class="mb-3">
-                                <i class="fas fa-trophy fa-2x text-warning mb-2"></i>
-                                <h6>Risultato</h6>
-                                {% if attempt.challenge.pass_fail_only %}
-                                    <span class="badge bg-{{ 'success' if attempt.passed else 'danger' }}">
-                                        {{ 'Passato' if attempt.passed else 'Fallito' }}
-                                    </span>
-                                {% else %}
-                                    <strong>{{ attempt.score or 'N/A' }}/{{ attempt.challenge.max_score }}</strong>
-                                {% endif %}
-                            </div>
-                        </div>
+      <label class="c7-choice c7-choice--big" id="choicePassed">
+        <input type="radio" name="passed" value="true" class="d-none" required>
+        <span class="c7-tile c7-tile--round"><i class="fas fa-check"></i></span>
+        <span class="flex-fill">
+          <span class="c7-choice__title d-block">{{ _("Superata") }}</span>
+          <span class="c7-choice__desc d-block">{{ _("Hai completato la challenge") }}</span>
+        </span>
+        <i class="fas fa-circle-check c7-choice__mark"></i>
+      </label>
 
-                        <div class="col-md-3">
-                            <div class="mb-3">
-                                <i class="fas fa-clock fa-2x text-info mb-2"></i>
-                                <h6>Completato</h6>
-                                <small class="text-muted">{{ attempt.attempted_at|datetime_local if attempt.attempted_at else 'N/A' }}</small>
-                            </div>
-                        </div>
-                        {% endif %}
-                    </div>
+      <label class="c7-choice c7-choice--big" id="choiceFailed">
+        <input type="radio" name="passed" value="false" class="d-none" required>
+        <span class="c7-tile c7-tile--round c7-tile--locked"><i class="fas fa-xmark"></i></span>
+        <span class="flex-fill">
+          <span class="c7-choice__title d-block">{{ _("Non superata") }}</span>
+          <span class="c7-choice__desc d-block">{{ _("Puoi riprovare quando vuoi") }}</span>
+        </span>
+        <i class="fas fa-circle-check c7-choice__mark"></i>
+      </label>
 
-                    {% if attempt.notes %}
-                    <hr>
-                    <div class="mt-3">
-                        <h6><i class="fas fa-sticky-note"></i> Note:</h6>
-                        <p class="text-muted">{{ attempt.notes }}</p>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Complete Attempt Form (if not completed) -->
-            {% if not attempt.completed %}
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="fas fa-flag-checkered"></i> Completa Tentativo
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <form id="completeAttemptForm" method="POST" action="{{ url_for('challenge.complete_attempt', attempt_id=attempt.id) }}">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle"></i>
-                            Hai completato la challenge? Inserisci il tuo risultato qui sotto.
-                        </div>
-
-                        {% if attempt.challenge.pass_fail_only %}
-                            <!-- Pass/Fail Selection -->
-                            <div class="mb-3">
-                                <label class="form-label">Risultato <span class="text-danger">*</span></label>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="passed" id="passed_true" value="true" required>
-                                            <label class="form-check-label" for="passed_true">
-                                                <i class="fas fa-check-circle text-success"></i> <strong>Passato</strong>
-                                                <br><small class="text-muted">Hai superato la challenge</small>
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="passed" id="passed_false" value="false" required>
-                                            <label class="form-check-label" for="passed_false">
-                                                <i class="fas fa-times-circle text-danger"></i> <strong>Fallito</strong>
-                                                <br><small class="text-muted">Non sei riuscito a superare la challenge</small>
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        {% else %}
-                            <!-- Score Input -->
-                            <div class="mb-3">
-                                <label for="score" class="form-label">
-                                    Punteggio <span class="text-danger">*</span>
-                                </label>
-                                <div class="input-group">
-                                    <input type="number" 
-                                           class="form-control" 
-                                           id="score" 
-                                           name="score"
-                                           min="{{ attempt.challenge.min_score }}"
-                                           max="{{ attempt.challenge.max_score }}"
-                                           placeholder="Inserisci il tuo punteggio..."
-                                           required>
-                                    <span class="input-group-text">/ {{ attempt.challenge.max_score }}</span>
-                                </div>
-                                <div class="form-text">Range valido: {{ attempt.challenge.min_score }} - {{ attempt.challenge.max_score }} punti</div>
-                            </div>
-                        {% endif %}
-
-                        <!-- Notes -->
-                        <div class="mb-3">
-                            <label for="notes" class="form-label">Note (opzionale)</label>
-                            <textarea class="form-control" 
-                                      id="notes" 
-                                      name="notes"
-                                      rows="3"
-                                      placeholder="Aggiungi note o commenti sul tuo tentativo..."
-                                      maxlength="500"></textarea>
-                            <div class="form-text">Descrivi come è andata o aggiungi osservazioni</div>
-                        </div>
-
-                        <!-- Submit Buttons -->
-                        <div class="text-center">
-                            <button type="submit" class="btn btn-success btn-lg">
-                                <i class="fas fa-flag-checkered"></i> Completa Tentativo
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            {% else %}
-            <!-- Performance Analysis (if completed) -->
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="fas fa-chart-bar"></i> Analisi Prestazione
-                    </h5>
-                </div>
-                <div class="card-body text-center">
-                    {% if attempt.challenge.pass_fail_only %}
-                        {% if attempt.passed %}
-                            <div class="text-success">
-                                <i class="fas fa-trophy fa-3x mb-3"></i>
-                                <h4>Complimenti!</h4>
-                                <p>Hai superato questa challenge con successo.</p>
-                            </div>
-                        {% else %}
-                            <div class="text-warning">
-                                <i class="fas fa-redo fa-3x mb-3"></i>
-                                <h4>Riprova!</h4>
-                                <p>Non sei riuscito a superare la challenge questa volta, ma puoi riprovare!</p>
-                            </div>
-                        {% endif %}
-                    {% else %}
-                        {% set percentage = (attempt.score / attempt.challenge.max_score * 100) if attempt.score else 0 %}
-                        <div class="text-{{ 'success' if percentage >= 70 else 'warning' if percentage >= 50 else 'danger' }}">
-                            {% if percentage >= 90 %}
-                                <i class="fas fa-star fa-3x mb-3"></i>
-                                <h4>Eccellente!</h4>
-                                <p>Prestazione straordinaria: {{ percentage|round(1) }}%</p>
-                            {% elif percentage >= 70 %}
-                                <i class="fas fa-thumbs-up fa-3x mb-3"></i>
-                                <h4>Buona Prestazione!</h4>
-                                <p>Risultato soddisfacente: {{ percentage|round(1) }}%</p>
-                            {% elif percentage >= 50 %}
-                                <i class="fas fa-redo fa-3x mb-3"></i>
-                                <h4>Puoi Migliorare</h4>
-                                <p>Risultato: {{ percentage|round(1) }}% - Riprova per migliorare!</p>
-                            {% else %}
-                                <i class="fas fa-redo fa-3x mb-3"></i>
-                                <h4>Riprova!</h4>
-                                <p>Risultato: {{ percentage|round(1) }}% - Non scoraggiarti, riprova!</p>
-                            {% endif %}
-                        </div>
-                    {% endif %}
-                    
-                    <div class="mt-3">
-                        <a href="{{ url_for('challenge.start_attempt', challenge_id=attempt.challenge.id) }}" class="btn btn-primary">
-                            <i class="fas fa-redo"></i> Riprova Challenge
-                        </a>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
+      {% else %}
+      {# ---------- Punteggio: la cifra e i due tasti ---------- #}
+      <div class="c7-card c7-card--accent c7-scorepad">
+        <div class="c7-kicker">{{ _("Punteggio ottenuto") }}</div>
+        <div class="c7-scorepad__row">
+          <button type="button" class="c7-scorepad__btn" data-score-step="-1"
+                  aria-label="{{ _('Diminuisci') }}"><i class="fas fa-minus"></i></button>
+          <div class="c7-scorepad__value" id="scoreDisplay">0</div>
+          <button type="button" class="c7-scorepad__btn c7-scorepad__btn--plus" data-score-step="1"
+                  aria-label="{{ _('Aumenta') }}"><i class="fas fa-plus"></i></button>
         </div>
+        {% if user_best_score is defined and user_best_score %}
+        <div class="c7-kicker" style="margin-top:12px;color:var(--c7-accent-dim)">
+          {{ _("Il tuo record è %(best)s", best=user_best_score) }}
+        </div>
+        {% endif %}
+        <input type="hidden" name="score" id="scoreInput" value="0">
+      </div>
+      {% endif %}
+
+      {# ---------- Note ---------- #}
+      <div class="c7-card">
+        <label for="notes" class="form-label">{{ _("Note (opzionale)") }}</label>
+        <textarea class="form-control" id="notes" name="notes" rows="3" maxlength="500"
+                  placeholder="{{ _('Com’è andata, cosa hai sbagliato…') }}"></textarea>
+      </div>
+    </form>
+
+    <div class="c7-actionbar">
+      <button type="submit" form="completeAttemptForm" class="btn btn-primary w-100" id="completeBtn"
+              {% if is_pass_fail %}disabled{% endif %}>
+        <i class="fas fa-flag-checkered"></i>&nbsp;
+        <span id="completeBtnLabel">
+          {%- if is_pass_fail %}{{ _("Scegli un esito per continuare") }}
+          {%- else %}{{ _("Completa il tentativo") }}{% endif %}
+        </span>
+      </button>
     </div>
+
+    {% else %}
+    {# ================= Tentativo concluso ================= #}
+    <div class="c7-card c7-card--accent" style="text-align:center">
+      <div class="c7-kicker">{{ _("Risultato") }}</div>
+      {% if is_pass_fail %}
+      <div style="margin-top:12px;font-size:28px;font-weight:800;letter-spacing:-.03em">
+        {{ _("Superata") if attempt.passed else _("Non superata") }}
+      </div>
+      {% else %}
+      <div class="c7-scorepad__value" style="margin-top:12px">{{ attempt.score }}</div>
+      {% endif %}
+      <div class="c7-kicker" style="margin-top:12px;color:var(--c7-accent-dim)">
+        <span class="c7-num">{{ attempt.attempted_at|datetime_local }}</span>
+      </div>
+    </div>
+
+    {% if attempt.notes %}
+    <div class="c7-card">
+      <div class="c7-label">{{ _("Note") }}</div>
+      <p class="mb-0" style="margin-top:8px;font-size:14px;font-weight:600;line-height:1.5;color:var(--c7-ink-soft)">
+        {{ attempt.notes }}
+      </p>
+    </div>
+    {% endif %}
+
+    {# Niente "analisi della prestazione": era una percentuale calcolata su un
+       massimo che il modello non ha. #}
+    <div class="c7-actionbar">
+      <a href="{{ url_for('challenge.start_attempt', challenge_id=challenge.id) }}" class="btn btn-primary w-100">
+        <i class="fas fa-redo"></i>&nbsp;{{ _("Riprova") }}
+      </a>
+      <a href="{{ url_for('challenge.challenge_detail', challenge_id=challenge.id) }}"
+         class="btn btn-secondary c7-btn-narrow">{{ _("Dettagli") }}</a>
+    </div>
+    {% endif %}
+  </div>
 </div>
+{% endblock %}
 
+{% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('completeAttemptForm');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            
-            fetch(this.action, {
-                method: 'POST',
-                headers: {'X-CSRFToken': csrfToken()},
-                body: formData
-            })
-            .then(response => {
-                if (response.redirected) {
-                    window.location.href = response.url;
-                    return;
-                }
-                return response.text();
-            })
-            .then(html => {
-                if (typeof html === 'string') {
-                    // Replace page content if there were errors
-                    document.open();
-                    document.write(html);
-                    document.close();
-                }
-            })
-            .catch(error => {
-                console.error('Error completing attempt:', error);
-                showError('Errore nel completare il tentativo. Riprova.');
+    if (!form) return;
+
+    // Punteggio: due tasti grossi al posto di un campo numerico.
+    const input = document.getElementById('scoreInput');
+    const display = document.getElementById('scoreDisplay');
+    if (input && display) {
+        document.querySelectorAll('[data-score-step]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                const next = parseInt(input.value, 10) + parseInt(btn.dataset.scoreStep, 10);
+                if (next < 0) return;
+                input.value = next;
+                display.textContent = next;
             });
         });
     }
+
+    // Riuscita o no: il comando si accende quando un esito e' scelto.
+    const completeBtn = document.getElementById('completeBtn');
+    const completeLabel = document.getElementById('completeBtnLabel');
+    document.querySelectorAll('input[name="passed"]').forEach(function (radio) {
+        radio.addEventListener('change', function () {
+            document.querySelectorAll('input[name="passed"]').forEach(function (r) {
+                r.closest('.c7-choice').classList.toggle('is-selected', r.checked);
+            });
+            completeBtn.disabled = false;
+            completeLabel.textContent = {{ _("Completa il tentativo")|tojson }};
+        });
+    });
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        fetch(this.action, {
+            method: 'POST',
+            headers: {'X-CSRFToken': csrfToken()},
+            body: new FormData(this)
+        })
+        .then(response => {
+            if (response.redirected) {
+                window.location.href = response.url;
+                return;
+            }
+            return response.text();
+        })
+        .then(html => {
+            if (typeof html === 'string') {
+                document.open();
+                document.write(html);
+                document.close();
+            }
+        })
+        .catch(error => {
+            console.error('Error completing attempt:', error);
+            showError({{ _("Non è stato possibile registrare il tentativo. Riprova.")|tojson }});
+        });
+    });
 });
 </script>
 {% endblock %}

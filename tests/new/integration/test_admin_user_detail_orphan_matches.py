@@ -42,7 +42,7 @@ def _make_gara(db_session, director_id, campionato_id=None, number=1):
         number=number,
         date=date.today(),
         distance=5,
-        discipline="palla_9",
+        discipline="9_ball",
         matchmaking_strategy="random",
         status=GaraStatus.PLAYING.value,
         is_race_to=True,

@@ -3,55 +3,42 @@
 
 {% block title %}{{ _('KPI Dashboard') }} - Admin{% endblock %}
 
-{% block extra_head %}
+{% block head_extra %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-    .kpi-card {
-        transition: transform 0.2s;
-    }
-    .kpi-card:hover {
-        transform: translateY(-2px);
-    }
-    .trend-up {
-        color: #28a745;
-    }
-    .trend-down {
-        color: #dc3545;
-    }
-    .trend-stable {
-        color: #6c757d;
-    }
-    .feature-row-zero {
-        opacity: 0.6;
-        background-color: #f8f9fa;
-    }
+    /* Solo quello che il tema non copre: i colori sono token, non esadecimali
+       di Bootstrap, e le card non si sollevano al passaggio del mouse (in 7c
+       la profondita' non esiste). */
+    .trend-up     { color: var(--c7-ok); }
+    .trend-down   { color: var(--c7-err); }
+    .trend-stable { color: var(--c7-ink-muted); }
+    .feature-row-zero { opacity: .6; }
     .metric-value {
-        font-size: 2rem;
-        font-weight: bold;
+        font-family: var(--c7-font-mono);
+        font-size: 30px; font-weight: 800; letter-spacing: -.04em;
     }
     .metric-label {
-        font-size: 0.9rem;
-        color: #6c757d;
+        font-size: 12px; font-weight: 700;
+        color: var(--c7-ink-muted);
     }
-    .period-selector .btn {
-        min-width: 60px;
-    }
-    .chart-container {
-        position: relative;
-        height: 300px;
-    }
+    .period-selector .btn { min-width: 60px; }
+    .chart-container { position: relative; height: 300px; }
 </style>
 {% endblock %}
 
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('dashboard.dashboard') }}"
+   aria-label="{{ _('Torna alla dashboard') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _('Andamento') }}{% endblock %}
+{% block page_sub %}{{ _('I numeri della piattaforma') }}{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-secondary btn-sm d-none d-lg-inline-flex">
+  <i class="fas fa-arrow-left"></i>&nbsp;{{ _('Dashboard') }}
+</a>
+{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1><i class="bi bi-graph-up"></i> {{ _('KPI Dashboard') }}</h1>
-    <div class="d-flex gap-2">
-        <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left"></i> {{ _('Dashboard') }}
-        </a>
-    </div>
-</div>
 
 <!-- Period Selector -->
 <div class="card mb-4">
@@ -122,43 +109,43 @@
     <li class="nav-item" role="presentation">
         <a class="nav-link {% if active_tab == 'overview' %}active{% endif %}"
            href="{{ tab_url('overview') }}">
-            <i class="bi bi-speedometer2"></i> {{ _('Panoramica') }}
+            <i class="fas fa-gauge-high"></i> {{ _('Panoramica') }}
         </a>
     </li>
     <li class="nav-item" role="presentation">
         <a class="nav-link {% if active_tab == 'acquisition' %}active{% endif %}"
            href="{{ tab_url('acquisition') }}">
-            <i class="bi bi-person-plus"></i> {{ _('Acquisizione') }}
+            <i class="fas fa-user-plus"></i> {{ _('Acquisizione') }}
         </a>
     </li>
     <li class="nav-item" role="presentation">
         <a class="nav-link {% if active_tab == 'retention' %}active{% endif %}"
            href="{{ tab_url('retention') }}">
-            <i class="bi bi-arrow-repeat"></i> {{ _('Retention') }}
+            <i class="fas fa-rotate"></i> {{ _('Retention') }}
         </a>
     </li>
     <li class="nav-item" role="presentation">
         <a class="nav-link {% if active_tab == 'engagement' %}active{% endif %}"
            href="{{ tab_url('engagement') }}">
-            <i class="bi bi-lightning"></i> {{ _('Engagement') }}
+            <i class="fas fa-bolt"></i> {{ _('Engagement') }}
         </a>
     </li>
     <li class="nav-item" role="presentation">
         <a class="nav-link {% if active_tab == 'features' %}active{% endif %}"
            href="{{ tab_url('features') }}">
-            <i class="bi bi-puzzle"></i> {{ _('Features') }}
+            <i class="fas fa-puzzle-piece"></i> {{ _('Features') }}
         </a>
     </li>
     <li class="nav-item" role="presentation">
         <a class="nav-link {% if active_tab == 'business' %}active{% endif %}"
            href="{{ tab_url('business') }}">
-            <i class="bi bi-briefcase"></i> {{ _('Business & Community') }}
+            <i class="fas fa-briefcase"></i> {{ _('Business & Community') }}
         </a>
     </li>
     <li class="nav-item" role="presentation">
         <a class="nav-link {% if active_tab == 'performance' %}active{% endif %}"
            href="{{ tab_url('performance') }}">
-            <i class="bi bi-cpu"></i> {{ _('Performance') }}
+            <i class="fas fa-microchip"></i> {{ _('Performance') }}
         </a>
     </li>
 </ul>
@@ -176,7 +163,7 @@
             <div class="card kpi-card h-100">
                 <div class="card-body text-center">
                     <div class="metric-value">{{ metrics.total_users }}</div>
-                    <div class="metric-label"><i class="bi bi-people"></i> {{ _('Utenti totali') }}</div>
+                    <div class="metric-label"><i class="fas fa-users"></i> {{ _('Utenti totali') }}</div>
                 </div>
             </div>
         </div>
@@ -185,14 +172,14 @@
             <div class="card kpi-card h-100">
                 <div class="card-body text-center">
                     <div class="metric-value">{{ metrics.new_users.current }}</div>
-                    <div class="metric-label"><i class="bi bi-person-plus"></i> {{ _('Nuovi utenti') }}</div>
+                    <div class="metric-label"><i class="fas fa-user-plus"></i> {{ _('Nuovi utenti') }}</div>
                     <small class="trend-{{ metrics.new_users.trend_direction }}">
                         {% if metrics.new_users.trend_direction == 'up' %}
-                            <i class="bi bi-arrow-up"></i>
+                            <i class="fas fa-arrow-up"></i>
                         {% elif metrics.new_users.trend_direction == 'down' %}
-                            <i class="bi bi-arrow-down"></i>
+                            <i class="fas fa-arrow-down"></i>
                         {% else %}
-                            <i class="bi bi-dash"></i>
+                            <i class="fas fa-minus"></i>
                         {% endif %}
                         {{ metrics.new_users.trend_percent }}%
                     </small>
@@ -204,14 +191,14 @@
             <div class="card kpi-card h-100">
                 <div class="card-body text-center">
                     <div class="metric-value">{{ metrics.matches_played.current }}</div>
-                    <div class="metric-label"><i class="bi bi-controller"></i> {{ _('Match giocati') }}</div>
+                    <div class="metric-label"><i class="fas fa-gamepad"></i> {{ _('Match giocati') }}</div>
                     <small class="trend-{{ metrics.matches_played.trend_direction }}">
                         {% if metrics.matches_played.trend_direction == 'up' %}
-                            <i class="bi bi-arrow-up"></i>
+                            <i class="fas fa-arrow-up"></i>
                         {% elif metrics.matches_played.trend_direction == 'down' %}
-                            <i class="bi bi-arrow-down"></i>
+                            <i class="fas fa-arrow-down"></i>
                         {% else %}
-                            <i class="bi bi-dash"></i>
+                            <i class="fas fa-minus"></i>
                         {% endif %}
                         {{ metrics.matches_played.trend_percent }}%
                     </small>
@@ -223,7 +210,7 @@
             <div class="card kpi-card h-100">
                 <div class="card-body text-center">
                     <div class="metric-value">{{ metrics.active_gare }}</div>
-                    <div class="metric-label"><i class="bi bi-trophy"></i> {{ _('Gare attive') }}</div>
+                    <div class="metric-label"><i class="fas fa-trophy"></i> {{ _('Gare attive') }}</div>
                 </div>
             </div>
         </div>
@@ -232,7 +219,7 @@
             <div class="card kpi-card h-100">
                 <div class="card-body text-center">
                     <div class="metric-value">{{ metrics.activation_rate }}%</div>
-                    <div class="metric-label"><i class="bi bi-check-circle"></i> {{ _('Attivazione') }}</div>
+                    <div class="metric-label"><i class="fas fa-circle-check"></i> {{ _('Attivazione') }}</div>
                 </div>
             </div>
         </div>
@@ -241,7 +228,7 @@
             <div class="card kpi-card h-100">
                 <div class="card-body text-center">
                     <div class="metric-value">{{ metrics.mau }}</div>
-                    <div class="metric-label"><i class="bi bi-calendar-month"></i> MAU</div>
+                    <div class="metric-label"><i class="fas fa-calendar-days"></i> MAU</div>
                 </div>
             </div>
         </div>
@@ -252,7 +239,7 @@
         <div class="col-lg-6">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="mb-0"><i class="bi bi-graph-up"></i> {{ _('Registrazioni') }}</h5>
+                    <h5 class="mb-0"><i class="fas fa-chart-line"></i> {{ _('Registrazioni') }}</h5>
                 </div>
                 <div class="card-body">
                     <div class="chart-container">
@@ -264,7 +251,7 @@
         <div class="col-lg-6">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="mb-0"><i class="bi bi-graph-up"></i> {{ _('Match giocati') }}</h5>
+                    <h5 class="mb-0"><i class="fas fa-chart-line"></i> {{ _('Match giocati') }}</h5>
                 </div>
                 <div class="card-body">
                     <div class="chart-container">
@@ -282,7 +269,7 @@
             <div class="card kpi-card h-100">
                 <div class="card-body text-center">
                     <div class="metric-value">{{ total_users }}</div>
-                    <div class="metric-label"><i class="bi bi-people"></i> {{ _('Utenti totali') }}</div>
+                    <div class="metric-label"><i class="fas fa-users"></i> {{ _('Utenti totali') }}</div>
                 </div>
             </div>
         </div>
@@ -290,14 +277,14 @@
             <div class="card kpi-card h-100">
                 <div class="card-body text-center">
                     <div class="metric-value">{{ new_users.current }}</div>
-                    <div class="metric-label"><i class="bi bi-person-plus"></i> {{ _('Nuovi nel periodo') }}</div>
+                    <div class="metric-label"><i class="fas fa-user-plus"></i> {{ _('Nuovi nel periodo') }}</div>
                     <small class="trend-{{ new_users.trend_direction }}">
                         {% if new_users.trend_direction == 'up' %}
-                            <i class="bi bi-arrow-up"></i>
+                            <i class="fas fa-arrow-up"></i>
                         {% elif new_users.trend_direction == 'down' %}
-                            <i class="bi bi-arrow-down"></i>
+                            <i class="fas fa-arrow-down"></i>
                         {% else %}
-                            <i class="bi bi-dash"></i>
+                            <i class="fas fa-minus"></i>
                         {% endif %}
                         {{ new_users.trend_percent }}% {{ _('vs periodo precedente') }}
                     </small>
@@ -308,7 +295,7 @@
             <div class="card kpi-card h-100">
                 <div class="card-body text-center">
                     <div class="metric-value">{{ new_users.previous }}</div>
-                    <div class="metric-label"><i class="bi bi-clock-history"></i> {{ _('Periodo precedente') }}</div>
+                    <div class="metric-label"><i class="fas fa-clock-rotate-left"></i> {{ _('Periodo precedente') }}</div>
                 </div>
             </div>
         </div>
@@ -316,7 +303,7 @@
 
     <div class="card">
         <div class="card-header">
-            <h5 class="mb-0"><i class="bi bi-graph-up"></i> {{ _('Trend registrazioni') }}</h5>
+            <h5 class="mb-0"><i class="fas fa-chart-line"></i> {{ _('Trend registrazioni') }}</h5>
         </div>
         <div class="card-body">
             <div class="chart-container">
@@ -332,7 +319,7 @@
             <div class="card kpi-card h-100">
                 <div class="card-body text-center">
                     <div class="metric-value">{{ dau }}</div>
-                    <div class="metric-label"><i class="bi bi-calendar-day"></i> DAU</div>
+                    <div class="metric-label"><i class="fas fa-calendar-day"></i> DAU</div>
                     <small class="text-muted">{{ _('Utenti attivi oggi') }}</small>
                 </div>
             </div>
@@ -341,7 +328,7 @@
             <div class="card kpi-card h-100">
                 <div class="card-body text-center">
                     <div class="metric-value">{{ wau }}</div>
-                    <div class="metric-label"><i class="bi bi-calendar-week"></i> WAU</div>
+                    <div class="metric-label"><i class="fas fa-calendar-week"></i> WAU</div>
                     <small class="text-muted">{{ _('Utenti attivi settimana') }}</small>
                 </div>
             </div>
@@ -350,7 +337,7 @@
             <div class="card kpi-card h-100">
                 <div class="card-body text-center">
                     <div class="metric-value">{{ mau }}</div>
-                    <div class="metric-label"><i class="bi bi-calendar-month"></i> MAU</div>
+                    <div class="metric-label"><i class="fas fa-calendar-days"></i> MAU</div>
                     <small class="text-muted">{{ _('Utenti attivi mese') }}</small>
                 </div>
             </div>
@@ -362,7 +349,7 @@
             <div class="card kpi-card h-100">
                 <div class="card-body text-center">
                     <div class="metric-value">{{ retention_7d }}%</div>
-                    <div class="metric-label"><i class="bi bi-arrow-repeat"></i> {{ _('Retention 7gg') }}</div>
+                    <div class="metric-label"><i class="fas fa-rotate"></i> {{ _('Retention 7gg') }}</div>
                     <small class="text-muted">{{ _('Tornati entro 7 giorni') }}</small>
                 </div>
             </div>
@@ -371,7 +358,7 @@
             <div class="card kpi-card h-100">
                 <div class="card-body text-center">
                     <div class="metric-value">{{ retention_30d }}%</div>
-                    <div class="metric-label"><i class="bi bi-arrow-repeat"></i> {{ _('Retention 30gg') }}</div>
+                    <div class="metric-label"><i class="fas fa-rotate"></i> {{ _('Retention 30gg') }}</div>
                     <small class="text-muted">{{ _('Tornati entro 30 giorni') }}</small>
                 </div>
             </div>
@@ -380,7 +367,7 @@
             <div class="card kpi-card h-100 border-warning">
                 <div class="card-body text-center">
                     <div class="metric-value text-warning">{{ dormant_users }}</div>
-                    <div class="metric-label"><i class="bi bi-moon"></i> {{ _('Utenti dormienti') }}</div>
+                    <div class="metric-label"><i class="fas fa-moon"></i> {{ _('Utenti dormienti') }}</div>
                     <small class="text-muted">{{ _('Registrati ma mai attivi') }}</small>
                 </div>
             </div>
@@ -394,7 +381,7 @@
             <div class="card kpi-card h-100">
                 <div class="card-body text-center">
                     <div class="metric-value">{{ total_matches }}</div>
-                    <div class="metric-label"><i class="bi bi-controller"></i> {{ _('Match totali') }}</div>
+                    <div class="metric-label"><i class="fas fa-gamepad"></i> {{ _('Match totali') }}</div>
                 </div>
             </div>
         </div>
@@ -402,14 +389,14 @@
             <div class="card kpi-card h-100">
                 <div class="card-body text-center">
                     <div class="metric-value">{{ matches.current }}</div>
-                    <div class="metric-label"><i class="bi bi-calendar-check"></i> {{ _('Nel periodo') }}</div>
+                    <div class="metric-label"><i class="fas fa-calendar-check"></i> {{ _('Nel periodo') }}</div>
                     <small class="trend-{{ matches.trend_direction }}">
                         {% if matches.trend_direction == 'up' %}
-                            <i class="bi bi-arrow-up"></i>
+                            <i class="fas fa-arrow-up"></i>
                         {% elif matches.trend_direction == 'down' %}
-                            <i class="bi bi-arrow-down"></i>
+                            <i class="fas fa-arrow-down"></i>
                         {% else %}
-                            <i class="bi bi-dash"></i>
+                            <i class="fas fa-minus"></i>
                         {% endif %}
                         {{ matches.trend_percent }}%
                     </small>
@@ -420,7 +407,7 @@
             <div class="card kpi-card h-100">
                 <div class="card-body text-center">
                     <div class="metric-value">{{ active_gare }}</div>
-                    <div class="metric-label"><i class="bi bi-trophy"></i> {{ _('Gare in corso') }}</div>
+                    <div class="metric-label"><i class="fas fa-trophy"></i> {{ _('Gare in corso') }}</div>
                 </div>
             </div>
         </div>
@@ -428,7 +415,7 @@
             <div class="card kpi-card h-100">
                 <div class="card-body text-center">
                     <div class="metric-value">{{ completed_gare }}</div>
-                    <div class="metric-label"><i class="bi bi-check-circle"></i> {{ _('Gare completate') }}</div>
+                    <div class="metric-label"><i class="fas fa-circle-check"></i> {{ _('Gare completate') }}</div>
                 </div>
             </div>
         </div>
@@ -439,7 +426,7 @@
             <div class="card kpi-card h-100">
                 <div class="card-body text-center">
                     <div class="metric-value">{{ matches_per_user }}</div>
-                    <div class="metric-label"><i class="bi bi-person"></i> {{ _('Match/utente attivo') }}</div>
+                    <div class="metric-label"><i class="fas fa-user"></i> {{ _('Match/utente attivo') }}</div>
                 </div>
             </div>
         </div>
@@ -447,7 +434,7 @@
             <div class="card kpi-card h-100">
                 <div class="card-body text-center">
                     <div class="metric-value">{{ avg_level }}</div>
-                    <div class="metric-label"><i class="bi bi-star"></i> {{ _('Livello medio') }}</div>
+                    <div class="metric-label"><i class="fas fa-star"></i> {{ _('Livello medio') }}</div>
                 </div>
             </div>
         </div>
@@ -455,7 +442,7 @@
             <div class="card kpi-card h-100">
                 <div class="card-body text-center">
                     <div class="metric-value">{{ xp_awarded }}</div>
-                    <div class="metric-label"><i class="bi bi-lightning"></i> {{ _('XP erogati') }}</div>
+                    <div class="metric-label"><i class="fas fa-bolt"></i> {{ _('XP erogati') }}</div>
                 </div>
             </div>
         </div>
@@ -463,7 +450,7 @@
 
     <div class="card">
         <div class="card-header">
-            <h5 class="mb-0"><i class="bi bi-graph-up"></i> {{ _('Match giornalieri') }}</h5>
+            <h5 class="mb-0"><i class="fas fa-chart-line"></i> {{ _('Match giornalieri') }}</h5>
         </div>
         <div class="card-body">
             <div class="chart-container">
@@ -476,7 +463,7 @@
     <!-- FEATURES TAB -->
     <div class="card">
         <div class="card-header">
-            <h5 class="mb-0"><i class="bi bi-puzzle"></i> {{ _('Utilizzo funzionalità') }}</h5>
+            <h5 class="mb-0"><i class="fas fa-puzzle-piece"></i> {{ _('Utilizzo funzionalità') }}</h5>
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -509,11 +496,11 @@
                             <td class="text-center">
                                 <span class="trend-{{ feature.trend_direction }}">
                                     {% if feature.trend_direction == 'up' %}
-                                        <i class="bi bi-arrow-up"></i>
+                                        <i class="fas fa-arrow-up"></i>
                                     {% elif feature.trend_direction == 'down' %}
-                                        <i class="bi bi-arrow-down"></i>
+                                        <i class="fas fa-arrow-down"></i>
                                     {% else %}
-                                        <i class="bi bi-dash"></i>
+                                        <i class="fas fa-minus"></i>
                                     {% endif %}
                                     {{ feature.trend_percent }}%
                                 </span>
@@ -537,7 +524,7 @@
             </div>
             {% if not feature_usage %}
             <div class="text-center py-4">
-                <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                <i class="fas fa-inbox text-muted" style="font-size: 3rem;"></i>
                 <p class="text-muted mt-2">{{ _('Nessun dato di utilizzo disponibile') }}</p>
             </div>
             {% endif %}
@@ -551,7 +538,7 @@
             <div class="card kpi-card h-100 border-info">
                 <div class="card-body text-center">
                     <div class="metric-value text-info">{{ community.stickiness }}%</div>
-                    <div class="metric-label"><i class="bi bi-magnet"></i> Stickiness</div>
+                    <div class="metric-label"><i class="fas fa-magnet"></i> Stickiness</div>
                     <small class="text-muted">DAU / MAU Ratio</small>
                 </div>
             </div>
@@ -560,7 +547,7 @@
             <div class="card kpi-card h-100 border-success">
                 <div class="card-body text-center">
                     <div class="metric-value text-success">{{ community.virality_score }}%</div>
-                    <div class="metric-label"><i class="bi bi-share"></i> Viralità</div>
+                    <div class="metric-label"><i class="fas fa-share-nodes"></i> Viralità</div>
                     <small class="text-muted">Partite New vs Vet</small>
                 </div>
             </div>
@@ -569,7 +556,7 @@
             <div class="card kpi-card h-100 border-danger">
                 <div class="card-body text-center">
                     <div class="metric-value text-danger">{{ community.churn_rate }}%</div>
-                    <div class="metric-label"><i class="bi bi-door-open"></i> Churn Mese</div>
+                    <div class="metric-label"><i class="fas fa-door-open"></i> Churn Mese</div>
                     <small class="text-muted">{{ community.churn_count }} utenti persi</small>
                 </div>
             </div>
@@ -578,7 +565,7 @@
             <div class="card kpi-card h-100 bg-light">
                 <div class="card-body text-center">
                     <div class="metric-value">{{ power_users|length }}</div>
-                    <div class="metric-label"><i class="bi bi-lightning-fill text-warning"></i> Power Users</div>
+                    <div class="metric-label"><i class="fas fa-bolt text-warning"></i> Power Users</div>
                     <small class="text-muted">Top 10% activity</small>
                 </div>
             </div>
@@ -590,7 +577,7 @@
         <div class="col-lg-8">
             <div class="card h-100">
                 <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="bi bi-person-badge"></i> {{ _('Performance Directors') }}</h5>
+                    <h5 class="mb-0"><i class="fas fa-id-badge"></i> {{ _('Performance Directors') }}</h5>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -649,7 +636,7 @@
         <div class="col-lg-4">
             <div class="card h-100">
                 <div class="card-header bg-warning text-dark">
-                    <h5 class="mb-0"><i class="bi bi-trophy-fill"></i> {{ _('Power Users (30gg)') }}</h5>
+                    <h5 class="mb-0"><i class="fas fa-trophy"></i> {{ _('Power Users (30gg)') }}</h5>
                 </div>
                 <div class="card-body p-0">
                     <ul class="list-group list-group-flush">
@@ -706,7 +693,7 @@
 
     {% if perf.recommend_materialization %}
     <div class="alert alert-warning">
-        <i class="bi bi-exclamation-triangle"></i>
+        <i class="fas fa-triangle-exclamation"></i>
         <strong>{{ _('Valuta la materializzazione delle classifiche.') }}</strong>
         {{ _('Le classifiche sono calcolate on-demand (cache %(ttl)s s). Soglie superate:', ttl=perf.cache_ttl_seconds) }}
         <ul class="mb-0">
@@ -715,7 +702,7 @@
     </div>
     {% else %}
     <div class="alert alert-success">
-        <i class="bi bi-check-circle"></i>
+        <i class="fas fa-circle-check"></i>
         {{ _('Calcolo on-demand nei limiti: nessuna materializzazione necessaria. Cache TTL %(ttl)s s.', ttl=perf.cache_ttl_seconds) }}
     </div>
     {% endif %}
@@ -726,8 +713,20 @@
 </div>
 {% endblock %}
 
-{% block extra_js %}
+{% block scripts %}
 <script>
+// I colori dei grafici vengono dai token, non da valori scritti a mano.
+const C7 = (function () {
+    const s = getComputedStyle(document.documentElement);
+    const v = (name) => s.getPropertyValue(name).trim();
+    return {
+        accent: v('--c7-accent'),
+        accentSoft: v('--c7-accent-tint'),
+        bright: v('--c7-accent-bright'),
+        brightSoft: v('--c7-accent-dim')
+    };
+})();
+
 document.addEventListener('DOMContentLoaded', function() {
     // Check for alerts
     fetch('{{ url_for("admin.kpi.api_check_alerts") }}')
@@ -738,7 +737,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 data.alerts.forEach(alert => {
                     container.innerHTML += `
                         <div class="alert alert-${alert.type} alert-dismissible fade show" role="alert">
-                            <i class="bi bi-exclamation-triangle"></i> ${alert.message}
+                            <i class="fas fa-triangle-exclamation"></i> ${alert.message}
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
                     `;
@@ -755,7 +754,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 data.milestones.forEach(milestone => {
                     container.innerHTML += `
                         <div class="alert alert-${milestone.type} alert-dismissible fade show" role="alert">
-                            <i class="bi bi-trophy"></i> ${milestone.message}
+                            <i class="fas fa-trophy"></i> ${milestone.message}
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
                     `;
@@ -776,8 +775,8 @@ document.addEventListener('DOMContentLoaded', function() {
             datasets: [{
                 label: {{ _('Registrazioni')|tojson }},
                 data: dailyUsers.map(d => d.count),
-                borderColor: 'rgb(75, 192, 192)',
-                backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                borderColor: C7.accent,
+                backgroundColor: C7.accentSoft,
                 tension: 0.3,
                 fill: true
             }]
@@ -802,8 +801,8 @@ document.addEventListener('DOMContentLoaded', function() {
             datasets: [{
                 label: {{ _('Match')|tojson }},
                 data: dailyMatches.map(d => d.count),
-                borderColor: 'rgb(255, 159, 64)',
-                backgroundColor: 'rgba(255, 159, 64, 0.1)',
+                borderColor: C7.bright,
+                backgroundColor: C7.brightSoft,
                 tension: 0.3,
                 fill: true
             }]
@@ -831,8 +830,8 @@ document.addEventListener('DOMContentLoaded', function() {
             datasets: [{
                 label: {{ _('Nuove registrazioni')|tojson }},
                 data: registrations.map(d => d.count),
-                backgroundColor: 'rgba(54, 162, 235, 0.7)',
-                borderColor: 'rgb(54, 162, 235)',
+                backgroundColor: C7.accent,
+                borderColor: C7.accent,
                 borderWidth: 1
             }]
         },
@@ -859,8 +858,8 @@ document.addEventListener('DOMContentLoaded', function() {
             datasets: [{
                 label: {{ _('Match giocati')|tojson }},
                 data: matchesData.map(d => d.count),
-                backgroundColor: 'rgba(255, 159, 64, 0.7)',
-                borderColor: 'rgb(255, 159, 64)',
+                backgroundColor: C7.bright,
+                borderColor: C7.bright,
                 borderWidth: 1
             }]
         },

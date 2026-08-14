@@ -4,7 +4,8 @@ Principio: l'interfaccia mobile mostra prima le cose azionabili in quel
 momento e sposta dopo tutto il resto. In fase di gioco l'azionabile sono le
 partite (risultati da inserire), non Gestione/Direttori: l'ordine visivo
 mobile e' Partite -> Gestione Turni -> Gestione (collassata) -> Direttori,
-ottenuto con classi flex order-* (DOM unico, desktop invariato via order-md).
+ottenuto con classi flex order-* (DOM unico, desktop invariato via order-lg:
+il guscio 7c cambia impaginazione a 992px, non a 768px).
 """
 
 import re
@@ -15,6 +16,10 @@ import pytest
 from models import Gara, Match
 from models.status_enum import Discipline, GaraStatus, MatchStatus
 from models.user.role_enum import UserRole
+
+# Testata "Gestione" nel design 7c: h3 a tutta riga, senza l'icona a
+# ingranaggio di prima. Conta le occorrenze per scoprire i duplicati.
+GESTIONE_HEADING = 'flex-fill">Gestione</h3>'
 
 
 def _classes_of(html: str, section_id: str) -> str:
@@ -79,15 +84,15 @@ def test_playing_phase_mobile_order_actionable_first(admin_client, db_session):
     assert "order-1" in _classes_of(html, "sectionPartite")
     assert "order-2" in _classes_of(html, "sectionTurni")
     gestione = _classes_of(html, "sectionGestioneMobile")
-    assert "order-3" in gestione and "d-md-none" in gestione
+    assert "order-3" in gestione and "d-lg-none" in gestione
     # Niente header "Gestione" duplicato: dentro il collapse mobile il
     # componente e' incluso headerless (restano l'header desktop e quello
     # del collapse stesso) — rilievo Copilot PR #36
-    assert html.count('fa-cog"></i> Gestione') == 2
+    assert html.count(GESTIONE_HEADING) == 2
     assert "order-4" in _classes_of(html, "sectionDirettori")
-    # Desktop invariato: ordine ripristinato dalle classi order-md-*
-    assert "order-md-1" in _classes_of(html, "sectionDirettori")
-    assert "order-md-3" in _classes_of(html, "sectionPartite")
+    # Desktop invariato: ordine ripristinato dalle classi order-lg-*
+    assert "order-lg-1" in _classes_of(html, "sectionDirettori")
+    assert "order-lg-3" in _classes_of(html, "sectionPartite")
 
 
 def test_inscription_phase_keeps_default_layout(admin_client, db_session):

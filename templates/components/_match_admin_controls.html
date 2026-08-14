@@ -1,151 +1,186 @@
-<!-- Admin Controls Component -->
-<div class="card bg-warning bg-opacity-10 border-warning mb-3">
-    <div class="card-header bg-warning bg-opacity-25">
-        <h6><i class="fas fa-user-shield"></i> {% if current_user.is_admin %}{{ _('Controlli Amministratore') }}{% else %}{{ _('Controlli Direttore') }}{% endif %}</h6>
-    </div>
-    <div class="card-body">
-        {# Score controls require table assignment #}
-        {% if match.table_assignment %}
-            {# Quick Rack Entry Section - Only for matches with table assigned #}
-            {% if match.status != 'completed' and not match.is_bye %}
+{# templates/components/_match_admin_controls.html — 7c
 
-            {# === TRIO MATCH - 3 player admin controls (direct result entry) === #}
-            {% if match.is_trio and match.trio_match %}
-            {% set trio = match.trio_match %}
-            {% set config = trio.trio_config %}
-            <!-- Form Risultato Diretto Trio -->
-            <form id="trioResultForm" class="mb-3"
-                data-url="{{ url_for('admin.competition.trio_set_result', trio_id=trio.id) }}"
-                data-num-rounds="{{ config.num_rounds }}"
-                data-max-per-player="{{ config.num_rounds * 2 }}">
-                <h6>{{ _('Imposta Risultato Trio') }}</h6>
-                <div class="row mb-2">
-                    <div class="col-4">
-                        <label class="form-label">{{ trio.player1.username }}</label>
-                        <input type="number" class="form-control" name="player1_racks" min="0"
-                            max="{{ config.num_rounds * 2 }}" value="{{ trio.player1_racks }}" required>
-                    </div>
-                    <div class="col-4">
-                        <label class="form-label">{{ trio.player2.username }}</label>
-                        <input type="number" class="form-control" name="player2_racks" min="0"
-                            max="{{ config.num_rounds * 2 }}" value="{{ trio.player2_racks }}" required>
-                    </div>
-                    <div class="col-4">
-                        <label class="form-label">{{ trio.player3.username }}</label>
-                        <input type="number" class="form-control" name="player3_racks" min="0"
-                            max="{{ config.num_rounds * 2 }}" value="{{ trio.player3_racks }}" required>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-12">
-                        <button type="submit" class="btn btn-warning w-100">
-                            <i class="fas fa-save"></i> {{ _('Imposta Risultato') }}
-                        </button>
-                    </div>
-                </div>
-                <small class="text-muted d-block mt-2">
-                    <i class="fas fa-info-circle"></i>
-                    {{ config.num_rounds }} {{ _('girone/i') }} ({{ config.num_rounds * 3 }} rack)
-                    {% if config.bonus_racks > 0 %}
-                    + {{ config.bonus_racks }} bonus ({{ _('aggiunto automaticamente') }})
-                    {% endif %}
-                    &mdash; {{ _('max %(max)s rack/giocatore, somma = %(sum)s', max=config.num_rounds * 2, sum=config.num_rounds * 3) }}
-                </small>
-            </form>
+   Controlli di chi dirige la gara. La card non e' piu' gialla: il giallo in
+   7c e' il semantico "attenzione", e questi sono i controlli ordinari della
+   pagina. I punteggi sono `c7-stepper` invece che campi numerici (regola per
+   i numeri piccoli e frequenti): gli input conservano name, min/max e
+   validazione, quindi la POST e il JS non cambiano. #}
 
-            {# === REGULAR MATCH - 2 player admin controls === #}
-            {% else %}
-            <!-- Form Risultato Diretto -->
-            <form action="{{ url_for('admin.match.set_match_result_direct', match_id=match.id) }}" method="POST"
-                class="mb-3" onsubmit="return validateScoreForm(this)"
-                data-is-race-to="{{ 'true' if match.distance_config.is_race_to_racks else 'false' }}"
-                data-winning-score="{{ match.effective_distance }}">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <h6>{{ _('Imposta Risultato') }}</h6>
-                <div class="row">
-                    <div class="col-4">
-                        <label class="form-label">{{ match.player1.username }}</label>
-                        <input type="number" class="form-control" name="player1_score" min="0"
-                            max="{{ match.effective_distance }}" value="{{ match.player1_score }}" required>
-                    </div>
-                    <div class="col-4">
-                        <label class="form-label">{{ match.player2.username }}</label>
-                        <input type="number" class="form-control" name="player2_score" min="0"
-                            max="{{ match.effective_distance }}" value="{{ match.player2_score }}" required>
-                    </div>
-                    <div class="col-4">
-                        <label class="form-label">&nbsp;</label>
-                        <button type="submit" class="btn btn-warning w-100">
-                            <i class="fas fa-save"></i> {{ _('Imposta Risultato') }}
-                        </button>
-                    </div>
-                </div>
-                <small class="text-muted">
-                    {{ match.distance_config|format_distance }}:
-                    {% if match.distance_config.is_race_to_racks %}
-                    {{ _('vince chi raggiunge %(score)s punti (max %(max)s per giocatore)', score=match.effective_distance, max=match.effective_distance) }}
-                    {% else %}
-                    {{ _('la somma dei rack deve essere %(distance)s', distance=match.effective_distance) }}
-                    {% endif %}
-                </small>
-            </form>
-            {% endif %}
-
-            {# Validate Result Button - Show when match has winner but not validated/completed #}
-            {% if match.winner_id and not match.validated_by_admin %}
-            <button class="btn btn-success w-100 mb-3" onclick="validateMatch({{ match.id }})">
-                <i class="fas fa-check-circle"></i> {{ _('Valida Risultato') }}
+{# Punteggio di un giocatore: stepper con l'input vero dentro. #}
+{% macro score_stepper(input_id, input_name, label, value, max_value) %}
+<div>
+    <div class="c7-label">{{ label }}</div>
+    <div class="c7-stepper c7-stepper--sunk">
+        <div class="c7-stepper__row">
+            <button type="button" onclick="stepMatchScore('{{ input_id }}', -1)" aria-label="{{ _('Un rack in meno') }}">
+                <i class="fas fa-minus"></i>
             </button>
-            <small class="text-muted d-block mb-3">
-                <i class="fas fa-info-circle"></i> {{ _('Valida il risultato per completare la partita e liberare il tavolo') }}
-            </small>
-            {% endif %}
-            {% endif %}
-        {% elif match.status != 'completed' %}
-            {# No table assigned - show info message #}
-            <div class="alert alert-info mb-3">
-                <i class="fas fa-clock"></i> {{ _('Tavolo non assegnato') }}
-                <small class="d-block text-muted mt-1">{{ _('Assegna un tavolo per abilitare i controlli di punteggio') }}</small>
-            </div>
-        {% endif %}
-
-        <!-- Reset Match - Always available for completed matches or matches with scores -->
-        {% set has_scores = (match.player1_score > 0 or match.player2_score > 0) %}
-        {% if match.is_trio and match.trio_match %}
-            {% set has_scores = (match.trio_match.player1_racks > 0 or match.trio_match.player2_racks > 0 or match.trio_match.player3_racks > 0) %}
-        {% endif %}
-        {% if (match.status == 'completed' or has_scores) and (match_can_modify is not defined or match_can_modify) %}
-        <button class="btn btn-danger" onclick="{% if match.is_trio and match.trio_match %}resetTrio({{ match.trio_match.id }}){% else %}resetMatch({{ match.id }}){% endif %}">
-            <i class="fas fa-undo"></i> {{ _('Reset Partita') }}
-        </button>
-        {% endif %}
-
-        {# Time editing section for statistics #}
-        <div class="mt-3 pt-3 border-top">
-            <h6><i class="fas fa-clock"></i> {{ _('Tempi Partita') }}</h6>
-            <div class="row g-2">
-                <div class="col-6">
-                    <label class="form-label small">{{ _('Inizio') }}</label>
-                    <input type="time" class="form-control form-control-sm" id="matchStartTime"
-                        value="{{ match.started_at.strftime('%H:%M') if match.started_at else '' }}">
-                </div>
-                <div class="col-6">
-                    <label class="form-label small">{{ _('Fine') }}</label>
-                    <input type="time" class="form-control form-control-sm" id="matchEndTime"
-                        value="{{ match.ended_at.strftime('%H:%M') if match.ended_at else '' }}">
-                </div>
-            </div>
-            <button class="btn btn-outline-secondary btn-sm w-100 mt-2" onclick="updateMatchTimes({{ match.id }})">
-                <i class="fas fa-save"></i> {{ _('Aggiorna Tempi') }}
+            <input type="number" class="c7-stepper__value" id="{{ input_id }}" name="{{ input_name }}"
+                   min="0" max="{{ max_value }}" value="{{ value }}" required
+                   style="border: 0; background: transparent; width: 100%;">
+            <button type="button" onclick="stepMatchScore('{{ input_id }}', 1)" aria-label="{{ _('Un rack in più') }}">
+                <i class="fas fa-plus"></i>
             </button>
-            <small class="text-muted d-block mt-1">
-                <i class="fas fa-info-circle"></i> {{ _('Inserisci solo orario, il giorno viene inferito dalla data della gara') }}
-            </small>
         </div>
     </div>
 </div>
+{% endmacro %}
+
+{# Cosa compare sopra i tempi: serve a sapere se il divisorio ha davvero due
+   parti da separare. A partita conclusa non c'e' nulla sopra, e il tratto
+   restava orfano sotto il titolo della card. #}
+{% set has_scores = (match.player1_score > 0 or match.player2_score > 0) %}
+{% if match.is_trio and match.trio_match %}
+    {% set has_scores = (match.trio_match.player1_racks > 0 or match.trio_match.player2_racks > 0 or match.trio_match.player3_racks > 0) %}
+{% endif %}
+{% set reset_visible = (match.status == MatchStatus.COMPLETED.value or has_scores) and (match_can_modify is not defined or match_can_modify) %}
+{% set score_controls_visible = match.table_assignment and match.status != MatchStatus.COMPLETED.value and not match.is_bye %}
+{% set table_notice_visible = not match.table_assignment and not MatchStatus.is_finished(match.status) %}
+
+<section class="c7-card c7-stack">
+    <div class="c7-kicker">
+        {% if current_user.is_admin %}{{ _('Controlli Amministratore') }}{% else %}{{ _('Controlli Direttore') }}{% endif %}
+    </div>
+
+    {# Score controls require table assignment #}
+    {% if match.table_assignment %}
+        {# Quick Rack Entry Section - Only for matches with table assigned #}
+        {% if match.status != MatchStatus.COMPLETED.value and not match.is_bye %}
+
+        {# === TRIO MATCH - 3 player admin controls (direct result entry) === #}
+        {% if match.is_trio and match.trio_match %}
+        {% set trio = match.trio_match %}
+        {% set config = trio.trio_config %}
+        <!-- Form Risultato Diretto Trio -->
+        <form id="trioResultForm" class="c7-stack"
+            data-url="{{ url_for('admin.competition.trio_set_result', trio_id=trio.id) }}"
+            data-num-rounds="{{ config.num_rounds }}"
+            data-max-per-player="{{ config.num_rounds * 2 }}">
+            <h3 class="mb-0">{{ _('Imposta Risultato Trio') }}</h3>
+            {# `auto-fit` invece di colonne fisse: sotto i ~200px per stepper i
+               due tasti mangiavano tutto e il numero spariva. Su mobile gli
+               stepper si impilano da soli, senza una media query in piu'. #}
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                {{ score_stepper('trioScore1', 'player1_racks', trio.player1.username, trio.player1_racks, config.num_rounds * 2) }}
+                {{ score_stepper('trioScore2', 'player2_racks', trio.player2.username, trio.player2_racks, config.num_rounds * 2) }}
+                {{ score_stepper('trioScore3', 'player3_racks', trio.player3.username, trio.player3_racks, config.num_rounds * 2) }}
+            </div>
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-save"></i> {{ _('Imposta Risultato') }}
+            </button>
+            <div class="text-muted" style="font-size: 12px; font-weight: 600;">
+                {{ config.num_rounds }} {{ _('girone/i') }} ({{ config.num_rounds * 3 }} rack)
+                {% if config.bonus_racks > 0 %}
+                + {{ config.bonus_racks }} bonus ({{ _('aggiunto automaticamente') }})
+                {% endif %}
+                &mdash; {{ _('max %(max)s rack/giocatore, somma = %(sum)s', max=config.num_rounds * 2, sum=config.num_rounds * 3) }}
+            </div>
+        </form>
+
+        {# === REGULAR MATCH - 2 player admin controls === #}
+        {% else %}
+        <!-- Form Risultato Diretto -->
+        <form action="{{ url_for('admin.match.set_match_result_direct', match_id=match.id) }}" method="POST"
+            class="c7-stack" onsubmit="return validateScoreForm(this)"
+            data-is-race-to="{{ 'true' if match.distance_config.is_race_to_racks else 'false' }}"
+            data-winning-score="{{ match.effective_distance }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <h3 class="mb-0">{{ _('Imposta Risultato') }}</h3>
+            {# Vedi la nota sul trio: `auto-fit` impila gli stepper quando non
+               c'e' spazio per il numero. #}
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                {{ score_stepper('adminScore1', 'player1_score', match.player1.username, match.player1_score, match.effective_distance) }}
+                {{ score_stepper('adminScore2', 'player2_score', match.player2.username, match.player2_score, match.effective_distance) }}
+            </div>
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-save"></i> {{ _('Imposta Risultato') }}
+            </button>
+            <div class="text-muted" style="font-size: 12px; font-weight: 600;">
+                {{ match.distance_config|format_distance }}:
+                {% if match.distance_config.is_race_to_racks %}
+                {{ _('vince chi raggiunge %(score)s punti (max %(max)s per giocatore)', score=match.effective_distance, max=match.effective_distance) }}
+                {% else %}
+                {{ _('la somma dei rack deve essere %(distance)s', distance=match.effective_distance) }}
+                {% endif %}
+            </div>
+        </form>
+        {% endif %}
+
+        {# Validate Result Button - Show when match has winner but not validated/completed #}
+        {% if match.winner_id and not match.validated_by_admin %}
+        <div class="c7-stack" style="gap: 6px;">
+            <button class="btn btn-success w-100" onclick="validateMatch({{ match.id }})">
+                <i class="fas fa-check-circle"></i> {{ _('Valida Risultato') }}
+            </button>
+            <div class="text-muted" style="font-size: 12px; font-weight: 600;">
+                {{ _('Valida il risultato per completare la partita e liberare il tavolo') }}
+            </div>
+        </div>
+        {% endif %}
+        {% endif %}
+    {% elif not MatchStatus.is_finished(match.status) %}
+        {# No table assigned - show info message.
+           `is_finished` e non `!= completed`: a partita validata il tavolo e'
+           gia' stato liberato dalla validazione, e chiedere di assegnarne uno
+           era un invito senza senso (lo si vedeva su ogni match validato). #}
+        <div class="c7-flash c7-flash--info">
+            <span class="c7-flash__ico"><i class="fas fa-clock"></i></span>
+            <div class="c7-flash__body">
+                <div class="c7-flash__title">{{ _('Tavolo non assegnato') }}</div>
+                <div class="c7-flash__text">{{ _('Assegna un tavolo per abilitare i controlli di punteggio') }}</div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Reset Match - Always available for completed matches or matches with scores -->
+    {% if reset_visible %}
+    <button class="btn btn-danger" onclick="{% if match.is_trio and match.trio_match %}resetTrio({{ match.trio_match.id }}){% else %}resetMatch({{ match.id }}){% endif %}">
+        <i class="fas fa-undo"></i> {{ _('Reset Partita') }}
+    </button>
+    {% endif %}
+
+    {# Time editing section for statistics #}
+    {% if score_controls_visible or table_notice_visible or reset_visible %}
+    <hr class="c7-divider">
+    {% endif %}
+    <div class="c7-stack" style="gap: 10px;">
+        <h3 class="mb-0">{{ _('Tempi Partita') }}</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div>
+                <label class="c7-label" for="matchStartTime">{{ _('Inizio') }}</label>
+                <input type="time" class="form-control" id="matchStartTime"
+                    value="{{ match.started_at.strftime('%H:%M') if match.started_at else '' }}">
+            </div>
+            <div>
+                <label class="c7-label" for="matchEndTime">{{ _('Fine') }}</label>
+                <input type="time" class="form-control" id="matchEndTime"
+                    value="{{ match.ended_at.strftime('%H:%M') if match.ended_at else '' }}">
+            </div>
+        </div>
+        <button class="btn btn-secondary w-100" onclick="updateMatchTimes({{ match.id }})">
+            <i class="fas fa-save"></i> {{ _('Aggiorna Tempi') }}
+        </button>
+        <div class="text-muted" style="font-size: 12px; font-weight: 600;">
+            {{ _('Inserisci solo orario, il giorno viene inferito dalla data della gara') }}
+        </div>
+    </div>
+</section>
 
 <script>
+/**
+ * Aggiunge/toglie un rack allo stepper del punteggio, rispettando min e max.
+ */
+function stepMatchScore(inputId, delta) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    const min = input.min === '' ? 0 : parseInt(input.min, 10);
+    const max = input.max === '' ? Infinity : parseInt(input.max, 10);
+    const current = parseInt(input.value, 10);
+    const next = (isNaN(current) ? min : current) + delta;
+    input.value = Math.min(max, Math.max(min, next));
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
 /**
  * Validates score form before submission.
  * For "race to n" matches, prevents both players from having the winning score.

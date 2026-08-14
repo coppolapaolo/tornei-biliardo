@@ -185,7 +185,7 @@ def sample_match(db_session, sample_users):
         number=1,
         name="Test Gara",
         date=utc_now().date(),
-        discipline="palla_8",
+        discipline="8_ball",
         distance=5,
         is_race_to=True,
         status=GaraStatus.INSCRIPTION.value,

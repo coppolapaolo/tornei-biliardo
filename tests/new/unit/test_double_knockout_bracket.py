@@ -39,7 +39,7 @@ def _make_dk_gara(db_session) -> Gara:
         number=count + 1,
         date=date.today(),
         distance=5,
-        discipline="palla_9",
+        discipline="9_ball",
         matchmaking_strategy="double_knockout",
         status=GaraStatus.PLAYING.value,
         is_race_to=True,

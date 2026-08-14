@@ -1,71 +1,59 @@
-{# templates/components/_index_live.html #}
-{# Sezione "In diretta ora": gare in esecuzione + match attualmente ai tavoli. #}
+{# templates/components/_index_live.html — 7c #}
+{# "In diretta ora": gare in esecuzione + match ai tavoli #}
 {% if live_garas %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="mb-0">
-        <span class="live-dot"></span>
-        {{ _("In diretta ora") }}
-    </h2>
-    <a href="{{ url_for('main.public_garas_list') }}" class="btn btn-outline-danger btn-sm">
-        <i class="fas fa-list"></i> {{ _("Tutte le gare") }}
-    </a>
-</div>
-
-<div class="row">
-    {% for card in live_garas %}
-    {% set gara = card.gara %}
-    <div class="col-md-6 col-lg-4 mb-3">
-        <div class="card h-100 border-danger">
-            <div class="card-header bg-danger bg-opacity-10 d-flex justify-content-between align-items-start">
-                <div>
-                    <h6 class="card-title mb-0">{{ gara.name }}</h6>
-                    {% if card.campionato %}
-                    <small class="text-muted">{{ card.campionato.name }}</small>
-                    {% endif %}
-                </div>
-                <span class="badge bg-danger"><span class="live-dot live-dot-sm"></span> {{ _("LIVE") }}</span>
-            </div>
-            <div class="card-body">
-                <ul class="list-unstyled small mb-2">
-                    <li><i class="fas fa-layer-group"></i>
-                        {{ _("Turno %(current)s/%(total)s", current=card.current_round, total=card.rounds_count) }}</li>
-                    <li><i class="fas fa-8-ball"></i> {{ gara.discipline|discipline_display }}</li>
-                    <li><i class="fas fa-map-marker-alt"></i> {{ gara.location or _("Da definire") }}</li>
-                    <li><i class="fas fa-users"></i>
-                        {{ ngettext("%(num)s iscritto", "%(num)s iscritti", card.active_count, num=card.active_count) }}</li>
-                </ul>
-
-                {% if card.live_matches %}
-                <div class="border-top pt-2 mt-2">
-                    <small class="text-muted d-block mb-1">
-                        <i class="fas fa-8-ball"></i> {{ _("Ai tavoli adesso") }}
-                    </small>
-                    <ul class="list-unstyled small mb-0">
-                        {% for m in card.live_matches %}
-                        <li class="d-flex align-items-center mb-1">
-                            <span class="badge bg-secondary me-2">{{ _("Tav.") }} {{ m.table }}</span>
-                            {% if m.is_trio %}
-                            <span class="text-truncate">
-                                {% for p in m.players %}{{ p.name }} <strong>{{ p.score }}</strong>{% if not loop.last %} · {% endif %}{% endfor %}
-                            </span>
-                            {% else %}
-                            <span class="text-truncate">
-                                {{ m.player1 }} <strong>{{ m.player1_score }}</strong>–<strong>{{ m.player2_score }}</strong> {{ m.player2 }}
-                            </span>
-                            {% endif %}
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                {% endif %}
-            </div>
-            <div class="card-footer">
-                <a href="{{ url_for('main.gara_detail_public', gara_id=gara.id) }}" class="btn btn-danger btn-sm w-100">
-                    <i class="fas fa-play-circle"></i> {{ _("Segui la diretta") }}
-                </a>
-            </div>
+<section class="c7-stack">
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span class="c7-live__dot"></span>
+            <h2 style="margin: 0;">{{ _("In diretta ora") }}</h2>
         </div>
+        <a href="{{ url_for('main.public_garas_list') }}" class="btn btn-secondary btn-sm">{{ _("Tutte le gare") }}</a>
     </div>
-    {% endfor %}
-</div>
+
+    <div class="c7-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
+        {% for card in live_garas %}
+        {% set gara = card.gara %}
+        <article class="c7-card c7-card--accent" style="display: flex; flex-direction: column;">
+            <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;">
+                <div style="min-width: 0;">
+                    {% if card.campionato %}<div class="c7-kicker">{{ card.campionato.name }}</div>{% endif %}
+                    <h3 style="margin: 4px 0 0; color: inherit;">{{ gara.name }}</h3>
+                </div>
+                <span class="c7-state" style="background: var(--c7-accent-bright); color: var(--c7-accent);">{{ _("Live") }}</span>
+            </div>
+
+            <div style="margin-top: 12px; font-size: 12px; font-weight: 700; color: var(--c7-accent-dim);">
+                {{ _("Turno") }} <span class="c7-num">{{ card.current_round }}/{{ card.rounds_count }}</span>
+                <span class="c7-sep">·</span> {{ gara.discipline|discipline_display }}
+                <span class="c7-sep">·</span> {{ gara.location or _("Sala da definire") }}
+                <span class="c7-sep">·</span> <span class="c7-num">{{ card.active_count }}</span> {{ _("iscritti") }}
+            </div>
+
+            {% if card.live_matches %}
+            <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.12);">
+                <div class="c7-kicker">{{ _("Ai tavoli adesso") }}</div>
+                <div style="display: flex; flex-direction: column; gap: 7px; margin-top: 8px;">
+                    {% for m in card.live_matches %}
+                    <div style="display: flex; align-items: center; gap: 10px; font-size: 13px;">
+                        <span class="c7-num" style="color: var(--c7-accent-dim); flex-shrink: 0;">T{{ m.table }}</span>
+                        {% if m.is_trio %}
+                        <span style="min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            {% for p in m.players %}{{ p.name }} <span class="c7-num">{{ p.score }}</span>{% if not loop.last %} <span class="c7-sep">·</span> {% endif %}{% endfor %}
+                        </span>
+                        {% else %}
+                        <span style="min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            {{ m.player1 }} <span class="c7-num">{{ m.player1_score }}–{{ m.player2_score }}</span> {{ m.player2 }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <a href="{{ url_for('main.gara_detail_public', gara_id=gara.id) }}" class="btn w-100" style="margin-top: 16px; background: var(--c7-accent-bright); color: var(--c7-accent);">{{ _("Segui la diretta") }}</a>
+        </article>
+        {% endfor %}
+    </div>
+</section>
 {% endif %}

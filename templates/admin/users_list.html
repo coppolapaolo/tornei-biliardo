@@ -3,27 +3,29 @@
 
 {% block title %}{{ _("Gestione Utenti - Admin") }}{% endblock %}
 
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('dashboard.dashboard') }}"
+   aria-label="{{ _('Torna alla dashboard') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("Utenti") }}{% endblock %}
+{% block page_sub %}{{ _("Chi è registrato sulla piattaforma") }}{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1><i class="fas fa-users"></i> {{ _("Gestione Utenti") }}</h1>
-    <div>
-        <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left"></i> {{ _("Torna alla Dashboard") }}
-        </a>
-    </div>
-</div>
 
 {% if current_user.is_admin and users %}
-<div class="card mb-4 border-warning">
-    <div class="card-header bg-warning-subtle">
-        <button class="btn btn-link text-decoration-none p-0 fw-bold" type="button"
-                data-bs-toggle="collapse" data-bs-target="#mergeUsersPanel"
-                aria-expanded="false" aria-controls="mergeUsersPanel">
-            <i class="fas fa-code-merge"></i> {{ _("Unisci utenti (merge)") }}
-        </button>
+{# Era una card con la testata a fondo giallo e sotto una striscia vuota: a
+   pannello chiuso sembrava un avviso malformato. Ora e' una riga che si apre,
+   come le altre sezioni richiudibili dell'app. #}
+<div class="c7-card mb-4">
+    <div class="d-flex align-items-center gap-2" role="button" style="cursor:pointer"
+         data-bs-toggle="collapse" data-bs-target="#mergeUsersPanel"
+         aria-expanded="false" aria-controls="mergeUsersPanel">
+        <i class="fas fa-code-merge" style="color:var(--c7-accent)"></i>
+        <h3 class="mb-0 flex-fill" style="font-size:15px;font-weight:800">{{ _("Unisci utenti (merge)") }}</h3>
+        <i class="fas fa-chevron-down" style="font-size:12px;color:var(--c7-ink-faint)"></i>
     </div>
     <div id="mergeUsersPanel" class="collapse">
-        <div class="card-body">
+        <div style="margin-top:14px">
             <p class="text-muted small mb-3">
                 {{ _("Unisce l'account SORGENTE in quello DESTINAZIONE: tutte le partite, iscrizioni, XP e statistiche passano alla destinazione, poi la sorgente viene anonimizzata. ELO e classifiche vengono ricalcolati. L'operazione non è reversibile.") }}
             </p>
@@ -58,7 +60,7 @@
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <button type="submit" class="btn btn-warning w-100">
+                        <button type="submit" class="btn btn-danger w-100">
                             <i class="fas fa-code-merge"></i> {{ _("Unisci") }}
                         </button>
                     </div>
@@ -100,7 +102,7 @@
     <div class="card-body">
         {% if users %}
         <div class="table-responsive">
-            <table class="table table-striped" id="usersTable">
+            <table class="table table-striped c7-table-cards" id="usersTable">
                 <thead>
                     <tr>
                         <th class="sortable" data-sort="text">{{ _("Utente") }} <i class="fas fa-sort text-muted"></i></th>
@@ -129,15 +131,15 @@
                         data-email="{{ (user.email or '')|lower }}"
                         data-role="{{ user.role }}"
                         data-verified="{{ '1' if user.is_verified else '0' }}">
-                        <td>
+                        <td data-label="{{ _("Utente") }}">
                             <a href="{{ url_for('admin.user.user_detail', user_id=user.id) }}"
                                class="fw-bold text-decoration-none">
                                 {{ user.username }}
                             </a>
                         </td>
-                        <td>{{ user.email or '-' }}</td>
-                        <td>{{ user.phone or '-' }}</td>
-                        <td>
+                        <td data-label="{{ _("Email") }}">{{ user.email or '-' }}</td>
+                        <td data-label="{{ _("Telefono") }}">{{ user.phone or '-' }}</td>
+                        <td data-label="{{ _("Ruolo") }}">
                             {% if user.is_admin %}
                             <span class="badge bg-dark">{{ _("Admin") }}</span>
                             {% elif user.is_director %}
@@ -146,20 +148,20 @@
                             <span class="badge bg-primary">{{ _("Giocatore") }}</span>
                             {% endif %}
                         </td>
-                        <td data-sort-value="{{ '1' if user.is_verified else '0' }}">
+                        <td data-label="{{ _("Verificato") }}" data-sort-value="{{ '1' if user.is_verified else '0' }}">
                             {% if user.is_verified %}
                             <span class="badge bg-success"><i class="fas fa-check"></i> {{ _("Sì") }}</span>
                             {% else %}
                             <span class="badge bg-warning text-dark"><i class="fas fa-times"></i> {{ _("No") }}</span>
                             {% endif %}
                         </td>
-                        <td data-sort-value="{{ user.elo_rating if user.elo_rating is not none else -1 }}">
+                        <td data-label="{{ _("ELO") }}" data-sort-value="{{ user.elo_rating if user.elo_rating is not none else -1 }}">
                             {{ user.elo_rating if user.elo_rating is not none else '-' }}
                         </td>
-                        <td data-sort-value="{{ user.fargo_rating if user.fargo_rating is not none else -1 }}">
+                        <td data-label="{{ _("Fargo") }}" data-sort-value="{{ user.fargo_rating if user.fargo_rating is not none else -1 }}">
                             {{ user.fargo_rating if user.fargo_rating is not none else '-' }}
                         </td>
-                        <td>
+                        <td data-label="{{ _("Gamification") }}">
                             {% if user.gamification_override %}
                             <span class="badge bg-warning text-dark" title="{{ _('Bypass completo delle regole gamification') }}">
                                 <i class="fas fa-unlock"></i> {{ _("Override") }}
@@ -170,7 +172,7 @@
                             </span>
                             {% endif %}
                         </td>
-                        <td>
+                        <td data-label="{{ _("Richiesta") }}">
                             {% set dr = user|attr('director_request')|default(None, true) %}
                             {% if dr %}
                             {{ dr | status_badge('director_request') }}
@@ -178,13 +180,13 @@
                             <span class="text-muted">{{ _("Nessuna") }}</span>
                             {% endif %}
                         </td>
-                        <td data-sort-value="{{ total_inscriptions }}">
+                        <td data-label="{{ _("Iscrizioni") }}" data-sort-value="{{ total_inscriptions }}">
                             <span class="badge bg-info">{{ total_inscriptions }}</span>
                         </td>
-                        <td data-sort-value="{{ total_matches }}">
+                        <td data-label="{{ _("Partite") }}" data-sort-value="{{ total_matches }}">
                             <span class="badge bg-secondary">{{ total_matches }}</span>
                         </td>
-                        <td data-sort-value="{{ matches_won }}">
+                        <td data-label="{{ _("Vittorie") }}" data-sort-value="{{ matches_won }}">
                             <span class="badge bg-success">{{ matches_won }}</span>
                             {% if total_matches > 0 %}
                             <small class="text-muted">
@@ -192,10 +194,10 @@
                             </small>
                             {% endif %}
                         </td>
-                        <td data-sort-value="{{ user.created_at.isoformat() if user.created_at else '' }}">
+                        <td data-label="{{ _("Registrato") }}" data-sort-value="{{ user.created_at.isoformat() if user.created_at else '' }}">
                             <small>{{ user.created_at|date_local }}</small>
                         </td>
-                        <td>
+                        <td data-label="{{ _("Azioni") }}">
                             <div class="btn-group" role="group">
                                 <a href="{{ url_for('admin.user.user_detail', user_id=user.id) }}"
                                     class="btn btn-sm btn-primary">

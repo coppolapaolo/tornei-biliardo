@@ -16,6 +16,8 @@ from __future__ import annotations
 from enum import Enum
 from typing import Tuple, Type, TypeVar
 
+from flask_babel import gettext as _
+
 __all__ = [
     "GaraStatus",
     "ProvaDerivedStatus",
@@ -182,8 +184,28 @@ class EntityType(_StrEnum):
     GARA = "gara"
 
 
+# Vocabolario storico → valore canonico. Sta fuori dalla classe di proposito:
+# dentro un Enum, un nome che non sia dunder o sunder diventa un **membro**, e
+# comparirebbe iterando `Discipline` (rompendo `get_choices` e i menu a tendina).
+_DISCIPLINE_LEGACY_ALIASES = {
+    "palla_8": "8_ball",
+    "palla_9": "9_ball",
+    "palla_10": "10_ball",
+}
+
+
 class Discipline(_StrEnum):
-    """Discipline di biliardo americano supportate."""
+    """Discipline di biliardo americano supportate.
+
+    **Unico vocabolario delle discipline.** Il valore qui sotto è ciò che finisce
+    su DB; il nome mostrato è una stringa tradotta, non il valore ripulito.
+
+    Fino al 2026-08 è convissuto un vocabolario parallelo mai dichiarato
+    (`palla_8`, `palla_9`, `palla_10`), nato dall'aver usato il nome italiano
+    come valore persistito. Non essendo un enum, niente lo validava: le colonne
+    sono `String(50)`. `normalize` è il ponte per i dati storici e per gli input
+    esterni; il codice nuovo usa direttamente i membri.
+    """
 
     EIGHT_BALL = "8_ball"
     NINE_BALL = "9_ball"
@@ -195,17 +217,45 @@ class Discipline(_StrEnum):
 
     @property
     def display_name(self) -> str:
-        """Nome display della disciplina."""
+        """Nome mostrato, tradotto nella lingua dell'utente.
+
+        Come nel resto del progetto il msgid è l'italiano ("Palla 8") e
+        l'inglese è la traduzione ("8-Ball"). I nomi che in italiano si usano
+        già in inglese (One Pocket, Straight Pool) restano identici nei due
+        cataloghi: passano comunque da `gettext`, così una terza lingua non
+        dovrà toccare il codice.
+        """
         display_map = {
-            self.EIGHT_BALL: "8-Ball",
-            self.NINE_BALL: "9-Ball",
-            self.TEN_BALL: "10-Ball",
-            self.ONE_POCKET: "One Pocket",
-            self.STRAIGHT_POOL: "Straight Pool",
-            self.BANK_POOL: "Bank Pool",
-            self.ROTATION: "Rotation",
+            self.EIGHT_BALL: _("Palla 8"),
+            self.NINE_BALL: _("Palla 9"),
+            self.TEN_BALL: _("Palla 10"),
+            self.ONE_POCKET: _("One Pocket"),
+            self.STRAIGHT_POOL: _("Straight Pool"),
+            self.BANK_POOL: _("Bank Pool"),
+            self.ROTATION: _("Rotation"),
         }
         return display_map.get(self, self.value.replace("_", " ").title())
+
+    @classmethod
+    def normalize(cls, value) -> "Discipline | None":
+        """Converte un valore qualunque nel membro corrispondente.
+
+        Accetta un membro dell'enum (idempotente), un valore canonico o un
+        valore del vocabolario storico. **Restituisce `None` su valore ignoto**:
+        la scelta di un ripiego spetta al chiamante e non va nascosta qui — era
+        proprio il fallback silenzioso a mascherare il disallineamento.
+        """
+        if isinstance(value, cls):
+            return value
+        if not value:
+            return None
+
+        raw = str(value).strip()
+        raw = _DISCIPLINE_LEGACY_ALIASES.get(raw, raw)
+        try:
+            return cls(raw)
+        except ValueError:
+            return None
 
     @classmethod
     def get_choices(cls) -> list[tuple[str, str]]:

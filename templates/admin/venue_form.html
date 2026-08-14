@@ -4,21 +4,27 @@
 {% set is_edit = venue is not none %}
 {% block title %}{% if is_edit %}Modifica {{ venue.name }}{% else %}Nuova Sala Biliardo{% endif %}{% endblock %}
 
+{% set indietro = url_for('admin.venue.venue_detail', venue_id=venue.id) if is_edit
+                        else url_for('admin.venue.venues_list') %}
+{% block page_back %}
+<a class="c7-head__back d-lg-none"
+   href="{% if is_edit %}{{ url_for('admin.venue.venue_detail', venue_id=venue.id) }}{% else %}{{ url_for('admin.venue.venues_list') }}{% endif %}"
+   aria-label="{{ _('Indietro') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}
+{%- if is_edit %}{{ _("Modifica sala") }}{% else %}{{ _("Nuova sala") }}{% endif %}
+{% endblock %}
+{% block page_sub %}
+{%- if is_edit %}{{ venue.name }}{% else %}{{ _("Aggiungi una sala biliardo") }}{% endif %}
+{% endblock %}
+{% block page_actions %}
+<a href="{% if is_edit %}{{ url_for('admin.venue.venue_detail', venue_id=venue.id) }}{% else %}{{ url_for('admin.venue.venues_list') }}{% endif %}"
+   class="btn btn-secondary btn-sm d-none d-lg-inline-flex">
+  <i class="fas fa-arrow-left"></i>&nbsp;{{ _("Indietro") }}
+</a>
+{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>
-        <i class="fas fa-building"></i> 
-        {% if is_edit %}
-            Modifica Sala: {{ venue.name }}
-        {% else %}
-            Nuova Sala Biliardo
-        {% endif %}
-    </h1>
-    <a href="{% if is_edit %}{{ url_for('admin.venue.venue_detail', venue_id=venue.id) }}{% else %}{{ url_for('admin.venue.venues_list') }}{% endif %}" 
-       class="btn btn-outline-secondary">
-        <i class="fas fa-arrow-left"></i> Indietro
-    </a>
-</div>
 
 <form method="POST">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

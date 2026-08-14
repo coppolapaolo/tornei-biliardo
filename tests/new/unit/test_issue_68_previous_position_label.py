@@ -10,6 +10,7 @@ vuota. Il dato resta, l'etichetta si specializza.
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import pytest
@@ -28,7 +29,11 @@ def test_gara_views_qualify_the_previous_position_label(template_name):
     """Desktop e mobile dicono "Turno": è la posizione al turno precedente."""
     content = (TEMPLATES / template_name).read_text(encoding="utf-8")
 
-    assert "Pos. Turno Prec" in content, (
+    # Il redesign 7c ha riscritto le etichette ("Turno prec." in tabella,
+    # "Turno precedente" nella card): quello che conta e' che la parola
+    # "turno" resti attaccata alla posizione precedente, non la stringa
+    # esatta di allora.
+    assert re.search(r"Turno prec", content, re.IGNORECASE), (
         f"{template_name} deve qualificare la colonna come posizione del "
         "TURNO precedente (issue #68)"
     )

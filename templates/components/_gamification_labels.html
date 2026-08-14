@@ -1,0 +1,67 @@
+{# templates/components/_gamification_labels.html — 7c
+
+   Etichette dei tipi di gamification, in un posto solo. Erano catene di
+   `{% if tipo == '...' %}` ricopiate in dashboard, streaks, achievements e
+   quests: quattro copie che divergevano (i "Tornei settimanali" comparivano
+   solo in due).
+
+   Uso:
+
+     {% import "components/_gamification_labels.html" as gami with context %}
+     {{ gami.streak_labels.get(t, t) }}
+
+   `with context` serve perche' le etichette passano da `_()`. Un template
+   importato espone le sue variabili di primo livello, quindi le mappe si
+   leggono come attributi.
+
+   La difficolta' e' **una parola, non un colore** (regola 7c): niente medaglie
+   dorate, niente rosso per il leggendario.
+#}
+
+{% set streak_labels = {
+  'weekly_activity': _('Attività settimanale'),
+  'weekly_match': _('Partite settimanali'),
+  'weekly_tournament': _('Tornei settimanali'),
+  'weekly_drill': _('Challenge settimanali')
+} %}
+
+{% set streak_icons = {
+  'weekly_activity': 'fa-calendar-check',
+  'weekly_match': 'fa-shield-halved',
+  'weekly_tournament': 'fa-trophy',
+  'weekly_drill': 'fa-bullseye'
+} %}
+
+{% set quest_type_labels = {
+  'weekly': _('Settimanale'),
+  'monthly': _('Mensile'),
+  'special_event': _('Speciale')
+} %}
+
+{% set difficulty_labels = {
+  'common': _('Comune'),
+  'uncommon': _('Non comune'),
+  'rare': _('Raro'),
+  'epic': _('Epico'),
+  'legendary': _('Leggendario')
+} %}
+
+{% set category_labels = {
+  'match': _('Partite'),
+  'tournament': _('Gare'),
+  'social': _('Sociale'),
+  'skill': _('Abilità'),
+  'consistency': _('Costanza'),
+  'exploration': _('Esplorazione'),
+  'milestone': _('Traguardi')
+} %}
+
+{% set category_icons = {
+  'match': 'fa-bolt',
+  'tournament': 'fa-trophy',
+  'social': 'fa-users',
+  'skill': 'fa-bullseye',
+  'consistency': 'fa-calendar-check',
+  'exploration': 'fa-compass',
+  'milestone': 'fa-flag-checkered'
+} %}

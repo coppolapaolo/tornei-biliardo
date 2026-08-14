@@ -1,47 +1,78 @@
 /**
- * Gamification Effects JavaScript
+ * Gamification Effects — Design System 7c
  *
- * Provides interactive feedback for gamification events:
- * - Toast notifications for XP, levels, achievements, streaks
- * - Confetti effects for celebrations
- * - XP counter animations
- * - Mascot "Chalky" integration
+ * Toast della mascotte Chalky.
+ * API pubblica invariata rispetto alla versione precedente:
+ *   window.showGamificationEvent(type, data)
+ *   window.testGamificationEffects()
+ * Cambia solo il rendering: markup .c7-chalky dentro #chalky-container,
+ * stile dai token 7c, coda con un toast pieno e i successivi rientrati.
+ *
+ * Il markup e' costruito con metodi DOM sicuri: nessun innerHTML.
  */
 
 // ========================================
-//   Mascot Image Paths
+//   Pose della mascotte
+//   Sovrascrivibili da #gamification-config -> mascot { base, <chiave> }
 // ========================================
 
 const MASCOT_IMAGES = {
-    xp: '/static/img/chalk1.png',           // Thumbs up - XP gained
-    levelup: '/static/img/chalk2.png',      // Celebration - Level up
-    achievement: '/static/img/chalk3.png',  // Trophy - Achievement unlocked
-    streak: '/static/img/chalk4.png',       // Fire - Streak active
-    sad: '/static/img/chalk5.png',          // Sad - Streak lost
-    encourage: '/static/img/chalk6.png',    // Encouraging - Try again
-    quest: '/static/img/chalk7.png',        // Curious - New quest
-    surprised: '/static/img/chalk8.png',    // Surprised - Rare achievement
-    welcome: '/static/img/chalk9.png',      // Waving - Welcome/Login
-    legendary: '/static/img/chalk10.png'    // Crown - Legendary achievement
+    xp: '/static/img/chalk1.png',           // pollice in su
+    levelup: '/static/img/chalk2.png',      // esulta
+    achievement: '/static/img/chalk3.png',  // trofeo
+    streak: '/static/img/chalk4.png',       // streak
+    sad: '/static/img/chalk5.png',          // streak persa
+    encourage: '/static/img/chalk6.png',    // incoraggia / funzione sbloccata
+    quest: '/static/img/chalk7.png',        // curioso
+    surprised: '/static/img/chalk8.png',    // sorpreso / traguardo raro
+    welcome: '/static/img/chalk9.png',      // saluta
+    legendary: '/static/img/chalk10.png'    // corona
+};
+
+// Mappa chiavi di configurazione -> chiavi interne
+const CONFIG_MASCOT_KEYS = {
+    xp: 'xp',
+    level_up: 'levelup',
+    achievement: 'achievement',
+    achievement_rare: 'surprised',
+    streak: 'streak',
+    streak_lost: 'sad',
+    quest: 'quest',
+    unlock: 'encourage',
+    welcome: 'welcome',
+    legendary: 'legendary'
 };
 
 // ========================================
-//   Toast Durations (ms)
+//   Durate (ms) — 5 s e' il passo di riferimento
 // ========================================
 
 const TOAST_DURATIONS = {
-    xp: 3000,
+    xp: 3500,
     levelup: 5000,
     achievement: 5000,
     achievementLegendary: 7000,
-    streak: 4000,
-    streakLost: 4000,
-    quest: 4000,
-    welcome: 5000  // Increased from 3000 to 5000
+    streak: 4500,
+    streakLost: 4500,
+    quest: 4500,
+    welcome: 5000
+};
+
+// Gerarchia per collassare eventi simultanei: badge > level up > XP.
+const EVENT_PRIORITY = {
+    achievement: 40,
+    unlock: 35,
+    levelup: 30,
+    streak: 25,
+    streak_lost: 25,
+    quest: 20,
+    nudge: 15,
+    welcome: 10,
+    xp: 5
 };
 
 // ========================================
-//   Toast Notification System
+//   Toast
 // ========================================
 
 class GamificationToast {
@@ -50,6 +81,7 @@ class GamificationToast {
         this.queue = [];
         this.isProcessing = false;
         this.config = this.loadConfig();
+        this.applyMascotConfig();
         this.init();
     }
 
@@ -60,358 +92,317 @@ class GamificationToast {
                 return JSON.parse(configElement.textContent);
             }
         } catch (e) {
-            console.error("Error loading gamification i18n config:", e);
+            console.error('Error loading gamification config:', e);
         }
         return { i18n: {} };
     }
 
+    /** Le pose possono arrivare da base.html (url_for corretto in sottodirectory). */
+    applyMascotConfig() {
+        const m = this.config.mascot;
+        if (!m) return;
+        const base = m.base || '';
+        Object.keys(CONFIG_MASCOT_KEYS).forEach(function (cfgKey) {
+            if (m[cfgKey]) {
+                MASCOT_IMAGES[CONFIG_MASCOT_KEYS[cfgKey]] = base + m[cfgKey];
+            }
+        });
+    }
+
     getI18n(key, defaultValue) {
-        return this.config.i18n[key] || defaultValue;
+        return (this.config.i18n && this.config.i18n[key]) || defaultValue;
     }
 
     init() {
-        // Create container if it doesn't exist
-        if (!document.querySelector('.gamification-toast-container')) {
+        const selector = this.config.container || '#chalky-container';
+        this.container = document.querySelector(selector);
+        if (!this.container) {
             this.container = document.createElement('div');
-            this.container.className = 'gamification-toast-container';
+            this.container.id = 'chalky-container';
+            this.container.setAttribute('aria-live', 'polite');
             document.body.appendChild(this.container);
-        } else {
-            this.container = document.querySelector('.gamification-toast-container');
         }
     }
 
-    /**
-     * Show XP gain notification
-     * @param {number} amount - XP amount gained
-     * @param {string} reason - Reason for XP gain
-     */
+    // ---------- Eventi ----------
+
     showXPGain(amount, reason = '') {
-        const toast = this.createToast('xp-gain', {
-            mascotImage: MASCOT_IMAGES.xp,
-            title: this.getI18n('xp_title', 'XP OTTENUTI'),
-            contentType: 'xp',
-            contentValue: amount,
-            subtitle: reason
+        this.queueToast({
+            mascot: MASCOT_IMAGES.xp,
+            kicker: this.getI18n('xp_title', 'XP OTTENUTI'),
+            xp: '+' + amount + ' XP',
+            sub: reason,
+            duration: TOAST_DURATIONS.xp,
+            priority: EVENT_PRIORITY.xp
         });
-        this.queueToast(toast, TOAST_DURATIONS.xp);
     }
 
-    /**
-     * Show level up notification
-     * @param {number} newLevel - New level reached
-     * @param {string} title - Optional level title
-     */
     showLevelUp(newLevel, title = '') {
-        // Trigger confetti for level ups
         this.triggerConfetti('level');
-
-        const toast = this.createToast('level-up', {
-            mascotImage: MASCOT_IMAGES.levelup,
-            title: this.getI18n('level_up_title', 'LEVEL UP!'),
-            contentType: 'level',
-            contentValue: newLevel,
-            subtitle: title || this.getI18n('level_up_subtitle', 'Hai raggiunto un nuovo livello!')
+        this.queueToast({
+            mascot: MASCOT_IMAGES.levelup,
+            kicker: this.getI18n('level_up_title', 'LEVEL UP!'),
+            title: 'Livello ' + newLevel,
+            sub: title || this.getI18n('level_up_subtitle', 'Nuovo livello raggiunto!'),
+            variant: 'level',
+            duration: TOAST_DURATIONS.levelup,
+            priority: EVENT_PRIORITY.levelup
         });
-        this.queueToast(toast, TOAST_DURATIONS.levelup);
     }
 
-    /**
-     * Show achievement unlock notification
-     * @param {string} name - Achievement name
-     * @param {string} description - Achievement description
-     * @param {string} rarity - common, rare, epic, legendary
-     * @param {string} icon - Achievement icon (unused, kept for API compatibility)
-     */
-    showAchievement(name, description, rarity = 'common', icon = '🏆') {
-        // Trigger confetti for rare+ achievements
-        if (['rare', 'epic', 'legendary'].includes(rarity)) {
-            this.triggerConfetti(rarity);
-        }
+    showAchievement(name, description, rarity = 'common', icon = '') {
+        const isRare = ['rare', 'epic', 'legendary'].includes(rarity);
+        if (isRare) this.triggerConfetti(rarity);
 
-        // Select mascot based on rarity
-        let mascotImage = MASCOT_IMAGES.achievement;
+        let mascot = MASCOT_IMAGES.achievement;
+        let variant = null;
+        let kicker = this.getI18n('achievement_title', 'NUOVO TRAGUARDO!');
+
         if (rarity === 'legendary') {
-            mascotImage = MASCOT_IMAGES.legendary;
+            mascot = MASCOT_IMAGES.legendary;
+            variant = 'rare';
+            kicker = this.getI18n('achievement_legendary_title', 'NUOVO TRAGUARDO · LEGGENDARIO');
         } else if (rarity === 'epic' || rarity === 'rare') {
-            mascotImage = MASCOT_IMAGES.surprised;
+            mascot = MASCOT_IMAGES.surprised;
+            variant = 'rare';
+            kicker = this.getI18n('achievement_rare_title', 'TRAGUARDO RARO!');
         }
 
-        const rarityClass = rarity !== 'common' ? rarity : '';
-        const toast = this.createToast(`achievement ${rarityClass}`, {
-            mascotImage: mascotImage,
-            title: this.getI18n('achievement_title', 'NUOVO TRAGUARDO!'),
-            contentType: 'achievement',
-            contentValue: name,
-            subtitle: description
+        this.queueToast({
+            mascot: mascot,
+            kicker: kicker,
+            title: name,
+            sub: description,
+            variant: variant,
+            duration: rarity === 'legendary' ? TOAST_DURATIONS.achievementLegendary : TOAST_DURATIONS.achievement,
+            priority: EVENT_PRIORITY.achievement
         });
-        const duration = rarity === 'legendary' ? TOAST_DURATIONS.achievementLegendary : TOAST_DURATIONS.achievement;
-        this.queueToast(toast, duration);
     }
 
-    /**
-     * Show streak milestone notification
-     * @param {number} streakCount - Current streak count
-     * @param {string} streakType - Type of streak
-     * @param {boolean} hasFreeze - Whether streak freeze is active
-     */
     showStreak(streakCount, streakType = 'weekly', hasFreeze = false) {
-        const toast = this.createToast('streak', {
-            mascotImage: MASCOT_IMAGES.streak,
-            title: this.getI18n('streak_title', 'STREAK!'),
-            contentType: 'streak',
-            contentValue: streakCount,
-            subtitle: hasFreeze ? this.getI18n('streak_freeze', 'Freeze attivo') : '',
-            hasFreeze: hasFreeze
+        this.queueToast({
+            mascot: MASCOT_IMAGES.streak,
+            kicker: this.getI18n('streak_title', 'STREAK!'),
+            title: streakCount + ' ' + (streakType === 'daily' ? 'giorni' : 'settimane'),
+            chip: hasFreeze ? this.getI18n('streak_freeze', 'Freeze attivo') : '',
+            duration: TOAST_DURATIONS.streak,
+            priority: EVENT_PRIORITY.streak
         });
-        this.queueToast(toast, TOAST_DURATIONS.streak);
     }
 
-    /**
-     * Show streak lost notification
-     * @param {string} message - Encouragement message
-     */
     showStreakLost(message = '') {
-        const msg = message || this.getI18n('streak_lost_subtitle', 'Non mollare, riprova!');
-        const toast = this.createToast('streak-lost', {
-            mascotImage: MASCOT_IMAGES.sad,
-            title: this.getI18n('streak_lost_title', 'STREAK PERSA'),
-            contentType: 'text',
-            contentValue: msg,
-            subtitle: ''
+        this.queueToast({
+            mascot: MASCOT_IMAGES.sad,
+            kicker: this.getI18n('streak_lost_title', 'STREAK PERSA'),
+            title: message || this.getI18n('streak_lost_subtitle', 'Non mollare, riprova!'),
+            variant: 'lost',
+            duration: TOAST_DURATIONS.streakLost,
+            priority: EVENT_PRIORITY.streak_lost
         });
-        this.queueToast(toast, TOAST_DURATIONS.streakLost);
     }
 
-    /**
-     * Show quest notification
-     * @param {string} questName - Quest name
-     * @param {string} description - Quest description
-     */
     showQuest(questName, description = '') {
-        const toast = this.createToast('quest', {
-            mascotImage: MASCOT_IMAGES.quest,
-            title: this.getI18n('quest_title', 'QUEST COMPLETATA!'),
-            contentType: 'text',
-            contentValue: questName,
-            subtitle: description
+        this.queueToast({
+            mascot: MASCOT_IMAGES.quest,
+            kicker: this.getI18n('quest_title', 'QUEST COMPLETATA!'),
+            title: questName,
+            sub: description,
+            duration: TOAST_DURATIONS.quest,
+            priority: EVENT_PRIORITY.quest
         });
-        this.queueToast(toast, TOAST_DURATIONS.quest);
     }
 
-    /**
-     * Show welcome notification
-     * @param {string} username - User's name
-     * @param {string} title - Custom title (optional)
-     * @param {string} subtitle - Custom subtitle (optional)
-     */
     showWelcome(username = '', title = '', subtitle = '') {
-        let content = '';
-        if (username) {
-            content = this.getI18n('welcome_user', 'Ciao %(username)s!').replace('%(username)s', username);
-        } else {
-            content = this.getI18n('welcome_anonymous', 'Ciao!');
-        }
+        const content = username
+            ? this.getI18n('welcome_user', 'Ciao %(username)s!').replace('%(username)s', username)
+            : this.getI18n('welcome_anonymous', 'Ciao!');
 
-        const toast = this.createToast('welcome', {
-            mascotImage: MASCOT_IMAGES.welcome,
-            title: title || this.getI18n('welcome_title', 'TI DIAMO IL BENTORNATO!'),
-            contentType: 'text',
-            contentValue: content,
-            subtitle: subtitle || this.getI18n('welcome_subtitle', 'Pronto per giocare?')
+        this.queueToast({
+            mascot: MASCOT_IMAGES.welcome,
+            kicker: title || this.getI18n('welcome_title', 'TI DIAMO IL BENTORNATO!'),
+            title: content,
+            sub: subtitle || this.getI18n('welcome_subtitle', 'Pronto per giocare?'),
+            duration: TOAST_DURATIONS.welcome,
+            priority: EVENT_PRIORITY.welcome
         });
-        this.queueToast(toast, TOAST_DURATIONS.welcome);
     }
 
-    /**
-     * Show Nudge notification for unlocked feature
-     * @param {string} code - Feature code
-     * @param {string} name - Feature name
-     * @param {string} description - Feature description
-     */
     showNudge(code, name, description) {
-        const toast = this.createToast('nudge', {
-            mascotImage: MASCOT_IMAGES.quest, // Curious mascot
-            title: this.getI18n('nudge_title', 'NUOVA POSSIBILITÀ!'),
-            contentType: 'text',
-            contentValue: name,
-            subtitle: description || this.getI18n('nudge_subtitle', 'Hai sbloccato questa funzione, provala subito!')
+        this.queueToast({
+            mascot: MASCOT_IMAGES.quest,
+            kicker: this.getI18n('nudge_title', 'NUOVA POSSIBILITÀ!'),
+            title: name,
+            sub: description || this.getI18n('nudge_subtitle', 'Hai sbloccato questa funzione, provala subito!'),
+            duration: TOAST_DURATIONS.quest,
+            priority: EVENT_PRIORITY.nudge
         });
-        this.queueToast(toast, TOAST_DURATIONS.quest);
     }
 
-    /**
-     * Show Feature Unlock notification
-     * @param {string} code - Feature code
-     * @param {string} name - Feature name
-     * @param {string} description - Feature description
-     */
     showUnlock(code, name, description) {
-        this.triggerConfetti('rare'); // Small celebration
-
-        const toast = this.createToast('unlock', {
-            mascotImage: MASCOT_IMAGES.levelup, // Celebration mascot
-            title: this.getI18n('unlock_title', 'FUNZIONE SBLOCCATA!'),
-            contentType: 'text',
-            contentValue: name,
-            subtitle: description
+        this.triggerConfetti('rare');
+        this.queueToast({
+            mascot: MASCOT_IMAGES.encourage,
+            kicker: this.getI18n('unlock_title', 'NUOVA POSSIBILITÀ!'),
+            title: name,
+            sub: description,
+            duration: TOAST_DURATIONS.levelup,
+            priority: EVENT_PRIORITY.unlock
         });
-        this.queueToast(toast, TOAST_DURATIONS.levelup);
     }
 
+    // ---------- Rendering ----------
+
     /**
-     * Create a toast element using safe DOM methods
+     * Costruisce l'elemento .c7-chalky.
+     * @param {object} o - { mascot, kicker, title, sub, xp, chip, variant }
      */
-    createToast(type, { mascotImage, title, contentType, contentValue, subtitle, hasFreeze }) {
+    createToast(o) {
         const toast = document.createElement('div');
-        toast.className = `gamification-toast ${type}`;
+        toast.className = 'c7-chalky' + (o.variant ? ' c7-chalky--' + o.variant : '');
+        toast.setAttribute('role', 'status');
 
-        // Create mascot image
-        const mascotImg = document.createElement('img');
-        mascotImg.src = mascotImage;
-        mascotImg.alt = 'Chalky';
-        mascotImg.className = 'mascot-icon';
-        toast.appendChild(mascotImg);
+        const img = document.createElement('img');
+        img.src = o.mascot;
+        img.alt = 'Chalky';
+        img.loading = 'lazy';
+        toast.appendChild(img);
 
-        // Create content container
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'toast-content';
+        const body = document.createElement('div');
+        body.className = 'c7-chalky__body';
 
-        // Create title span
-        const titleSpan = document.createElement('span');
-        titleSpan.className = 'toast-title';
-        titleSpan.textContent = title;
-        contentDiv.appendChild(titleSpan);
-
-        // Create message div based on content type
-        const messageDiv = document.createElement('div');
-        messageDiv.className = 'toast-message';
-
-        switch (contentType) {
-            case 'xp':
-                const xpSpan = document.createElement('span');
-                xpSpan.className = 'xp-amount';
-                xpSpan.textContent = `+${contentValue} XP`;
-                messageDiv.appendChild(xpSpan);
-                break;
-
-            case 'level':
-                const levelSpan = document.createElement('span');
-                levelSpan.className = 'level-number';
-                levelSpan.textContent = `Livello ${contentValue}`;
-                messageDiv.appendChild(levelSpan);
-                break;
-
-            case 'achievement':
-                const nameStrong = document.createElement('strong');
-                nameStrong.textContent = contentValue;
-                messageDiv.appendChild(nameStrong);
-                break;
-
-            case 'streak':
-                const streakSpan = document.createElement('span');
-                streakSpan.className = 'streak-count';
-                streakSpan.textContent = `${contentValue} settimane`;
-                messageDiv.appendChild(streakSpan);
-                break;
-
-            case 'text':
-            default:
-                const textSpan = document.createElement('span');
-                textSpan.textContent = contentValue;
-                messageDiv.appendChild(textSpan);
+        if (o.kicker) {
+            const kicker = document.createElement('div');
+            kicker.className = 'c7-kicker';
+            kicker.textContent = o.kicker;
+            body.appendChild(kicker);
         }
 
-        contentDiv.appendChild(messageDiv);
-
-        // Create subtitle if present
-        if (subtitle) {
-            const subtitleSpan = document.createElement('span');
-            subtitleSpan.className = 'toast-subtitle';
-
-            if (hasFreeze) {
-                const freezeSpan = document.createElement('span');
-                freezeSpan.className = 'streak-freeze';
-                freezeSpan.textContent = '❄️ ' + subtitle;
-                subtitleSpan.appendChild(freezeSpan);
-            } else {
-                subtitleSpan.textContent = subtitle;
-            }
-
-            contentDiv.appendChild(subtitleSpan);
+        if (o.xp) {
+            const xp = document.createElement('div');
+            xp.className = 'c7-chalky__xp';
+            xp.textContent = o.xp;
+            body.appendChild(xp);
         }
 
-        toast.appendChild(contentDiv);
+        if (o.title) {
+            const title = document.createElement('div');
+            title.className = 'c7-chalky__title';
+            title.textContent = o.title;
+            body.appendChild(title);
+        }
+
+        if (o.sub) {
+            const sub = document.createElement('div');
+            sub.className = 'c7-chalky__sub';
+            sub.textContent = o.sub;
+            body.appendChild(sub);
+        }
+
+        if (o.chip) {
+            const chip = document.createElement('span');
+            chip.className = 'c7-state c7-state--info mt-2';
+            chip.textContent = o.chip;
+            body.appendChild(chip);
+        }
+
+        toast.appendChild(body);
+
+        const close = document.createElement('button');
+        close.type = 'button';
+        close.className = 'btn-close';
+        close.setAttribute('aria-label', 'Chiudi');
+        close.addEventListener('click', function () { toast.remove(); });
+        toast.appendChild(close);
 
         return toast;
     }
 
     /**
-     * Queue and display toast
+     * Accoda. Eventi accodati insieme vengono collassati: resta il piu' alto
+     * in gerarchia (badge > level up > XP), gli altri finiscono nel riepilogo
+     * di fine gara lato server.
      */
-    queueToast(toast, duration) {
-        this.queue.push({ toast, duration });
+    queueToast(item) {
+        this.queue.push(item);
         if (!this.isProcessing) {
-            this.processQueue();
+            // Lascia arrivare gli eventi dello stesso ciclo prima di decidere.
+            setTimeout(this.processQueue.bind(this), 0);
         }
     }
 
-    /**
-     * Process toast queue
-     */
+    collapseBurst() {
+        if (this.queue.length <= 1) return;
+        let best = 0;
+        for (let i = 1; i < this.queue.length; i++) {
+            if ((this.queue[i].priority || 0) > (this.queue[best].priority || 0)) best = i;
+        }
+        // Tiene il piu' importante in testa, gli altri restano come "in coda".
+        const lead = this.queue.splice(best, 1)[0];
+        this.queue.unshift(lead);
+    }
+
     async processQueue() {
+        if (this.isProcessing) return;
         this.isProcessing = true;
+        this.collapseBurst();
 
         while (this.queue.length > 0) {
-            const { toast, duration } = this.queue.shift();
+            const item = this.queue.shift();
+            const toast = this.createToast(item);
             this.container.appendChild(toast);
 
-            // Wait for display duration
-            await this.delay(duration);
+            // Anteprima dei successivi, rientrata e attenuata.
+            const previews = this.renderPreviews();
 
-            // Add hiding animation
-            toast.classList.add('hiding');
+            await this.delay(item.duration || 4500);
 
-            // Wait for animation to complete
-            await this.delay(400);
+            toast.classList.add('is-leaving');
+            toast.style.transition = 'opacity .3s, transform .3s';
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(-10px)';
+            previews.forEach(function (el) { el.remove(); });
 
-            // Remove toast
-            if (toast.parentNode) {
-                toast.parentNode.removeChild(toast);
-            }
+            await this.delay(300);
+            toast.remove();
 
-            // Small gap between toasts
-            if (this.queue.length > 0) {
-                await this.delay(200);
-            }
+            if (this.queue.length > 0) await this.delay(200);
         }
 
         this.isProcessing = false;
     }
 
-    /**
-     * Utility delay function
-     */
-    delay(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
+    /** Mostra al massimo due anteprime dei toast in coda. */
+    renderPreviews() {
+        const out = [];
+        this.queue.slice(0, 2).forEach(function (item) {
+            const el = this.createToast(item);
+            el.classList.add('is-queued');
+            const close = el.querySelector('.btn-close');
+            if (close) close.remove();
+            this.container.appendChild(el);
+            out.push(el);
+        }, this);
+        return out;
     }
 
-    /**
-     * Trigger confetti effect
-     */
+    delay(ms) {
+        return new Promise(function (resolve) { setTimeout(resolve, ms); });
+    }
+
     triggerConfetti(type = 'default') {
         if (typeof ConfettiEffect !== 'undefined') {
-            ConfettiEffect.fire(type);
+            const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (!reduced) ConfettiEffect.fire(type);
         }
     }
 }
 
-// ... ConfettiEffect code similar to existing ...
-
 // ========================================
-//   Navbar Badge "vivo" (§11-quater)
-//   Feedback ambient e sobrio: anello di progresso + pulse su XP + glow su
-//   level-up. Sostituisce il toast per i micro-eventi. È idempotente rispetto
-//   ai valori già renderizzati server-side dal context processor (base.html).
+//   Badge di livello "vivo" (§11-quater)
+//   Feedback ambient e sobrio: anello di progresso + pulse sugli XP + glow al
+//   level-up. Per i micro-eventi sostituisce il toast, che resta ai momenti
+//   forti. E' idempotente rispetto ai valori che il context processor ha gia'
+//   renderizzato nella testata (templates/base.html).
 // ========================================
 
 class GamificationBadge {
@@ -429,12 +420,12 @@ class GamificationBadge {
     }
 
     /**
-     * Micro guadagno XP → count-up + pulse, nessun toast (scala d'intensità).
-     * Il valore renderizzato (data-current-xp) è già quello nuovo: animiamo
-     * dal valore precedente (nuovo - amount) a quello corrente.
+     * Micro guadagno XP → count-up + pulse, nessun toast (scala d'intensita').
+     * Il valore renderizzato (data-current-xp) e' gia' quello nuovo: si anima
+     * dal precedente (nuovo - amount) a quello corrente.
      *
-     * Più eventi XP possono arrivare nella stessa risposta (XP partita + bonus
-     * serie + XP missione): `target` è già il totale finale per tutti, quindi
+     * Piu' eventi XP possono arrivare nella stessa risposta (XP partita + bonus
+     * serie + XP missione): `target` e' gia' il totale finale per tutti, quindi
      * ricalcolare `target - delta` a ogni chiamata farebbe *tornare indietro*
      * il contatore per poi risalire. Il punto di partenza si fissa una volta
      * sola e le chiamate successive accumulano il delta.
@@ -445,7 +436,7 @@ class GamificationBadge {
         const delta = parseInt(amount, 10) || 0;
 
         if (this._xpAnimated) {
-            // Già animato in questa pagina: il valore mostrato è già quello
+            // Gia' animato in questa pagina: il valore mostrato e' quello
             // finale. Solo il pulse, niente count-up all'indietro.
             this._pulse('badge-pulse');
             this._refreshRing();
@@ -457,14 +448,14 @@ class GamificationBadge {
         this._refreshRing();
     }
 
-    /** Level-up → glow + aggiornamento livello (l'unico momento forte sul badge). */
+    /** Level-up → glow + livello aggiornato (l'unico momento forte del badge). */
     levelUp(newLevel) {
         if (!this.available) return;
         if (newLevel != null && this.levelEl) {
             this.levelEl.textContent = newLevel;
             this.el.dataset.level = newLevel;
         }
-        // Il server ha già renderizzato current_xp/progress del nuovo livello.
+        // Il server ha gia' renderizzato current_xp/progress del nuovo livello.
         if (this.xpEl) {
             this.xpEl.textContent = parseInt(this.el.dataset.currentXp || '0', 10);
         }
@@ -486,7 +477,7 @@ class GamificationBadge {
     _pulse(cls) {
         if (!this.available || this.reducedMotion) return;
         this.el.classList.remove(cls);
-        // Forza il reflow per ri-triggerare l'animazione su eventi ravvicinati.
+        // Forza il reflow per ri-innescare l'animazione su eventi ravvicinati.
         void this.el.offsetWidth;
         this.el.classList.add(cls);
         setTimeout(() => this.el.classList.remove(cls), 1300);
@@ -510,9 +501,19 @@ class GamificationBadge {
     }
 }
 
-// Global instances
+// ========================================
+//   API pubblica
+// ========================================
+
 let gamificationToast = null;
 let gamificationBadge = null;
+
+function getGamificationToast() {
+    if (!gamificationToast) {
+        gamificationToast = new GamificationToast();
+    }
+    return gamificationToast;
+}
 
 function getGamificationBadge() {
     if (!gamificationBadge) {
@@ -522,8 +523,8 @@ function getGamificationBadge() {
 }
 
 /**
- * Cap anti-invasività (§11): al più UN toast celebrativo "capped" per sessione
- * di navigazione (sessionStorage). Il level-up ne è esente — è l'unico toast
+ * Cap anti-invasivita' (§11): al piu' UN toast celebrativo "capped" per sessione
+ * di navigazione (sessionStorage). Il level-up ne e' esente — e' l'unico toast
  * celebrativo giustificato (§11-quater) — e gli XP non producono mai toast.
  * Achievement/streak/quest condividono l'unico slot: il primo si mostra, gli
  * altri restano silenziosi (solo pulse del badge).
@@ -536,45 +537,33 @@ function cappedToastAllowed() {
         sessionStorage.setItem(GAMI_CAPPED_TOAST_KEY, '1');
         return true;
     } catch (e) {
-        // sessionStorage non disponibile (privacy mode) → non bloccare.
+        // sessionStorage non disponibile (navigazione privata) → non bloccare.
         return true;
     }
 }
 
-// Global function to trigger gamification notifications
-function getGamificationToast() {
-    if (!gamificationToast) {
-        gamificationToast = new GamificationToast();
-    }
-    return gamificationToast;
-}
-
-// Global function to trigger gamification notifications
 function showGamificationEvent(type, data) {
-    // Il toast si istanzia solo quando serve davvero: gli eventi 'xp' sono
-    // badge-only (§11) e sono i più frequenti — su una pagina di soli XP non
-    // c'è motivo di costruire il container dei toast.
+    data = data || {};
+    // Il toast si istanzia solo quando serve: gli eventi 'xp' sono badge-only
+    // (§11) e sono i piu' frequenti — su una pagina di soli XP non c'e' motivo
+    // di costruire il container dei toast.
     const badge = getGamificationBadge();
 
     switch (type) {
         case 'xp':
-            // Scala d'intensità: micro XP → solo badge (count-up + pulse), niente toast.
+            // Scala d'intensita': micro XP → solo badge, niente toast.
             badge.addXP(data.amount);
             break;
         case 'levelup':
-            // Momento forte: glow del badge + l'unico toast celebrativo giustificato.
+            // Momento forte: glow del badge + l'unico toast celebrativo esente
+            // dal cap.
             badge.levelUp(data.level);
             getGamificationToast().showLevelUp(data.level, data.title);
             break;
         case 'achievement':
             badge.pulse();
             if (cappedToastAllowed()) {
-                getGamificationToast().showAchievement(
-                    data.name,
-                    data.description,
-                    data.rarity,
-                    data.icon
-                );
+                getGamificationToast().showAchievement(data.name, data.description, data.rarity, data.icon);
             }
             break;
         case 'streak':
@@ -596,103 +585,46 @@ function showGamificationEvent(type, data) {
             getGamificationToast().showWelcome(data.username, data.title, data.subtitle);
             break;
         case 'nudge':
-            // Scoperta funzioni (obiettivo #3): resta un toast azionabile.
+            // Scoperta funzioni: resta un toast, perche' e' azionabile.
             getGamificationToast().showNudge(data.code, data.name, data.description);
             break;
         case 'unlock':
             getGamificationToast().showUnlock(data.code, data.name, data.description);
             break;
+        default:
+            console.warn('Evento gamification sconosciuto:', type);
     }
 }
 
-/**
- * Demo function to test all effects with Chalky mascot
- * Call from browser console: testGamificationEffects()
- */
+/** Demo: testGamificationEffects() dalla console. */
 function testGamificationEffects() {
-    console.log('Testing gamification effects with Chalky mascot...');
-
-    // Test welcome
-    setTimeout(() => {
-        showGamificationEvent('welcome', { username: 'Atleta' });
-    }, 500);
-
-    // Test XP gain
-    setTimeout(() => {
-        showGamificationEvent('xp', { amount: 50, reason: 'Vittoria partita' });
-    }, 4000);
-
-    // Test level up
-    setTimeout(() => {
-        showGamificationEvent('levelup', { level: 5, title: 'Talento del Biliardo' });
-    }, 8000);
-
-    // Test achievement (common)
-    setTimeout(() => {
-        showGamificationEvent('achievement', {
-            name: 'Prima Vittoria',
-            description: 'Hai vinto la tua prima partita!',
-            rarity: 'common'
-        });
-    }, 14000);
-
-    // Test achievement (rare) - shows surprised Chalky
-    setTimeout(() => {
-        showGamificationEvent('achievement', {
-            name: 'Star Locale',
-            description: 'Hai vinto 10 partite consecutive!',
-            rarity: 'rare'
-        });
-    }, 20000);
-
-    // Test streak
-    setTimeout(() => {
-        showGamificationEvent('streak', {
-            count: 5,
-            type: 'weekly',
-            hasFreeze: true
-        });
-    }, 26000);
-
-    // Test quest
-    setTimeout(() => {
-        showGamificationEvent('quest', {
-            name: 'Sfida Settimanale',
-            description: 'Gioca 3 partite questa settimana'
-        });
-    }, 31000);
-
-    // Test streak lost
-    setTimeout(() => {
-        showGamificationEvent('streak_lost', {
-            message: 'Non mollare, riprova!'
-        });
-    }, 36000);
-
-    // Test legendary achievement - shows king Chalky
-    setTimeout(() => {
-        showGamificationEvent('achievement', {
-            name: 'Leggenda del Biliardo',
-            description: 'Hai raggiunto 1000 vittorie!',
-            rarity: 'legendary'
-        });
-    }, 41000);
-
-    console.log('Chalky will appear in 9 different poses over 45 seconds!');
+    const seq = [
+        ['welcome', { username: 'Marco' }],
+        ['xp', { amount: 50, reason: 'Vittoria partita' }],
+        ['levelup', { level: 5, title: 'Talento del biliardo' }],
+        ['achievement', { name: 'Prima vittoria', description: 'Hai vinto la tua prima partita!', rarity: 'common' }],
+        ['achievement', { name: 'Star locale', description: '10 partite vinte di fila', rarity: 'rare' }],
+        ['streak', { count: 5, type: 'weekly', hasFreeze: true }],
+        ['quest', { name: 'Sfida settimanale', description: 'Gioca 3 partite questa settimana' }],
+        ['streak_lost', { message: 'Non mollare, riprova!' }],
+        ['unlock', { code: 'direct_match', name: 'Tornei diretti', description: 'Hai sbloccato questa funzione, provala subito!' }],
+        ['achievement', { name: 'Testa di serie', description: 'Girone chiuso al primo posto senza sconfitte', rarity: 'legendary' }]
+    ];
+    seq.forEach(function (pair, i) {
+        setTimeout(function () { showGamificationEvent(pair[0], pair[1]); }, i * 300);
+    });
+    console.log('Chalky in coda: ' + seq.length + ' eventi.');
 }
 
-// Expose test function to window for console access
 window.testGamificationEffects = testGamificationEffects;
 window.showGamificationEvent = showGamificationEvent;
 
-// Export for module systems if needed
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         GamificationToast,
-        ConfettiEffect,
-        XPCounter,
-        ProgressBarAnimation,
+        GamificationBadge,
         showGamificationEvent,
-        testGamificationEffects
+        testGamificationEffects,
+        MASCOT_IMAGES
     };
 }

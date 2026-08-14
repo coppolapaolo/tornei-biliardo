@@ -1,78 +1,43 @@
-{# templates/components/_player_challenges_dashboard.html #}
+{# templates/components/_player_challenges_dashboard.html — 7c
+   Le challenge che puoi giocare adesso, in dashboard. #}
+{% import "components/_challenge_bits.html" as ch with context %}
+
 {% if vm.available_challenges %}
-<div class="card mb-3">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h6 class="mb-0"><i class="fas fa-trophy text-warning"></i> Challenge Attive</h6>
-        <span class="badge bg-info">{{ vm.available_challenges|length }} Disponibili</span>
-    </div>
-    <div class="card-body">
-        {% for gara_challenge in vm.available_challenges %}
-        <div class="challenge-card border rounded p-3 mb-3 bg-light">
-            <div class="row">
-                <div class="col-md-8">
-                    <div class="d-flex align-items-start">
-                        {% if gara_challenge.challenge.image_path %}
-                        <img src="/static/{{ gara_challenge.challenge.image_path }}" 
-                             class="rounded me-3" 
-                             style="width: 80px; height: 60px; object-fit: cover;"
-                             alt="Challenge Image">
-                        {% else %}
-                        <div class="bg-secondary rounded me-3 d-flex align-items-center justify-content-center" 
-                             style="width: 80px; height: 60px;">
-                            <i class="fas fa-bullseye text-light"></i>
-                        </div>
-                        {% endif %}
-                        <div>
-                            <h6 class="text-primary mb-1">{{ gara_challenge.challenge.get_display_name() }}</h6>
-                            <p class="text-muted mb-2 small">{{ gara_challenge.challenge.description[:120] }}{% if gara_challenge.challenge.description|length > 120 %}...{% endif %}</p>
-                            <div class="d-flex gap-2">
-                                {% if gara_challenge.challenge.pass_fail_only %}
-                                    <span class="badge bg-secondary">Pass/Fail</span>
-                                {% else %}
-                                    <span class="badge bg-primary">Score</span>
-                                {% endif %}
-                                <span class="badge bg-info">Max {{ gara_challenge.max_attempts }} tentativi</span>
-                                <span class="badge bg-warning">Dopo turno {{ gara_challenge.round_number }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 text-end">
-                    {% set user_progress = vm.player_challenge_progress.get(current_user.id, {}) if vm.player_challenge_progress else {} %}
-                    {% if user_progress %}
-                        {% set challenge_data = user_progress.challenges | selectattr("gara_challenge.id", "equalto", gara_challenge.id) | first %}
-                        {% if challenge_data %}
-                            <div class="mb-2">
-                                <span class="badge bg-success">Migliore: {{ challenge_data.best_score }}</span>
-                                <br>
-                                <small class="text-muted">{{ challenge_data.attempts_count }}/{{ challenge_data.max_attempts }} tentativi</small>
-                            </div>
-                            {% if challenge_data.can_attempt %}
-                                <a href="{{ url_for('player.challenge_detail', gara_challenge_id=gara_challenge.id) }}" 
-                                   class="btn btn-primary btn-sm">
-                                    <i class="fas fa-play"></i> Continua
-                                </a>
-                            {% else %}
-                                <button class="btn btn-secondary btn-sm" disabled>
-                                    <i class="fas fa-check"></i> Completato
-                                </button>
-                            {% endif %}
-                        {% else %}
-                            <a href="{{ url_for('player.challenge_detail', gara_challenge_id=gara_challenge.id) }}" 
-                               class="btn btn-success btn-sm">
-                                <i class="fas fa-play"></i> Inizia
-                            </a>
-                        {% endif %}
-                    {% else %}
-                        <a href="{{ url_for('player.challenge_detail', gara_challenge_id=gara_challenge.id) }}" 
-                           class="btn btn-success btn-sm">
-                            <i class="fas fa-play"></i> Inizia
-                        </a>
-                    {% endif %}
-                </div>
-            </div>
+<section class="c7-stack">
+  <div class="c7-sechead">
+    <h2>{{ _("Challenge attive") }}</h2>
+    <span class="c7-sechead__note c7-num">{{ vm.available_challenges|length }}</span>
+  </div>
+
+  <div class="c7-rows">
+    {% for gara_challenge in vm.available_challenges %}
+    {% set challenge = gara_challenge.challenge %}
+    {% set user_progress = vm.player_challenge_progress.get(current_user.id, {}) if vm.player_challenge_progress else {} %}
+    {% set challenge_data = (user_progress.challenges | selectattr("gara_challenge.id", "equalto", gara_challenge.id) | first) if user_progress else None %}
+    <a class="c7-rows__row" href="{{ url_for('player.challenge_detail', gara_challenge_id=gara_challenge.id) }}"
+       style="color:inherit;text-decoration:none">
+      {{ ch.thumb(challenge, 44, 'var(--c7-r-chip)') }}
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">{{ challenge.get_display_name() }}</div>
+        <div class="c7-rows__sub">
+          {%- if challenge_data %}
+          {{ _("il tuo migliore") }}: <span class="c7-num">{{ challenge_data.best_score }}</span>
+          <span class="c7-sep">·</span>
+          <span class="c7-num">{{ challenge_data.attempts_count }}/{{ challenge_data.max_attempts }}</span> {{ _("tentativi") }}
+          {%- else %}
+          {{ _("dal turno %(n)s", n=gara_challenge.round_number) }}
+          <span class="c7-sep">·</span>
+          {{ ngettext("%(n)s tentativo", "%(n)s tentativi", gara_challenge.max_attempts, n=gara_challenge.max_attempts) }}
+          {%- endif %}
         </div>
-        {% endfor %}
-    </div>
-</div>
+      </div>
+      {% if challenge_data and not challenge_data.can_attempt %}
+      <span class="c7-state c7-state--ok">{{ _("Fatta") }}</span>
+      {% else %}
+      <i class="fas fa-chevron-right" style="font-size:12px;color:var(--c7-ink-faint)"></i>
+      {% endif %}
+    </a>
+    {% endfor %}
+  </div>
+</section>
 {% endif %}

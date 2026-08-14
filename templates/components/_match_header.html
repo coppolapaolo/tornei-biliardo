@@ -1,19 +1,90 @@
-<!-- Match Header Component -->
-<div class="card-header">
-    <div class="d-flex justify-content-between align-items-center">
-        <small>
-        {% if match.gara %}
-            {{ match.gara|gara_display_name }} - {{ _('Turno') }} {{ match.round_number }} -
-            {{ (match.discipline or match.gara.discipline)|discipline_display }} -
-        {% else %}
-            {{ _('Match Individuale') }} -
-            {{ match.discipline|discipline_display if match.discipline else '' }} -
-        {% endif %}
-        {{ match.distance_config|format_distance }}
-        {% if match.table_assignment %}- {{ _('Tavolo') }} {{ match.table_assignment }}{% endif %}
-        </small>
-        <div>
-            <span class="badge {{ match | status_badge_class }}">{{ match | status_text }}</span>
-        </div>
-    </div>
-</div>
+{# templates/components/_match_header.html — 7c
+
+   Come `_gara_header.html`, questo file non disegna piu' una testata: nel
+   guscio 7c la testata e' una sola, quella di `base.html`. La pagina della
+   partita la riempie con i blocchi `page_back` / `page_title` / `page_sub`
+   / `page_actions`; una seconda `c7-head` dentro `content` ne produrrebbe
+   due sovrapposte.
+
+   Uso:
+
+     {% import "components/_match_header.html" as match_head with context %}
+
+     {% block page_back %}{{ match_head.back(match) }}{% endblock %}
+     {% block page_title %}{{ match_head.names(match) }}{% endblock %}
+     {% block page_sub %}{{ match_head.sub(match) }}{% endblock %}
+     {% block page_actions %}{{ match_head.actions(match) }}{% endblock %}
+
+   L'`import` va in cima al template figlio, fuori dai blocchi: Jinja esegue
+   i nodi di primo livello prima di rendere il genitore, quindi il nome e'
+   visibile dentro i blocchi. `with context` serve perche' le macro usano
+   `current_user`, `url_for`, `_` e i flag di forfait calcolati dalla route.
+#}
+
+{# Destinazione del ritorno: la gara per chi la gestisce, la dashboard per
+   chi ci gioca, lo storico per una partita senza gara (soft delete con
+   keep_matches). Stessa scelta di `_match_navigation.html`, che disegna il
+   bottone con etichetta usato su mobile. #}
+{% macro back_url(match) -%}
+{%- if match.gara_id and (current_user.is_admin or current_user.is_director) -%}
+{{ url_for('admin.competition.gara_detail', gara_id=match.gara_id) }}
+{%- elif match.gara_id -%}
+{{ url_for('player.dashboard') }}
+{%- else -%}
+{{ url_for('player.history') }}
+{%- endif -%}
+{%- endmacro %}
+
+{% macro back_label(match) -%}
+{%- if match.gara_id and (current_user.is_admin or current_user.is_director) -%}
+{{ _('Torna alla Gara') }}
+{%- elif match.gara_id -%}
+{{ _('Torna alla Dashboard') }}
+{%- else -%}
+{{ _('Torna allo Storico') }}
+{%- endif -%}
+{%- endmacro %}
+
+{# Freccia di ritorno, solo mobile: sopra i 992px la sidebar fa da
+   navigazione e il tema nasconde comunque `.c7-head__back`. #}
+{% macro back(match) -%}
+<a class="c7-head__back d-lg-none" href="{{ back_url(match)|trim }}" aria-label="{{ back_label(match)|trim }}"><i class="fas fa-arrow-left"></i></a>
+{%- endmacro %}
+
+{# Titolo: i giocatori. L'ELO non c'e' — vive nella card del punteggio,
+   dove sta in palette invece che come badge giallo. #}
+{% macro names(match) -%}
+{%- if match.is_trio and match.trio_match -%}
+{{ match.trio_match.player1.username }} <span class="c7-sep">·</span> {{ match.trio_match.player2.username }} <span class="c7-sep">·</span> {{ match.trio_match.player3.username }}
+{%- else -%}
+{{ match.player1|player_name_with_forfeit(is_forfeit=player1_is_forfeit) }} vs {{ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.player2 else _('X a tavolino') }}
+{%- endif -%}
+{%- endmacro %}
+
+{# Sottotitolo: dove si gioca questa partita, come nel prototipo — "Turno 3 ·
+   Tavolo 1". Distanza e stato non sono qui: li dice la card del punteggio
+   ("Al 5 · 7 rack giocati" e la pill), e ripeterli mandava la testata sticky
+   a tre righe su 390px. #}
+{% macro sub(match) -%}
+{%- if match.gara -%}
+{{ match.gara|gara_display_name }}
+<span class="c7-sep">·</span> {{ _('Turno') }} <span class="c7-num">{{ match.round_number }}</span>
+<span class="c7-sep">·</span> {{ (match.discipline or match.gara.discipline)|discipline_display }}
+{%- else -%}
+{{ _('Match individuale') }}
+{%- if match.discipline %} <span class="c7-sep">·</span> {{ match.discipline|discipline_display }}{% endif -%}
+{%- endif -%}
+{%- if match.table_assignment %}
+<span class="c7-sep">·</span> {{ _('Tavolo') }} <span class="c7-num">{{ match.table_assignment }}</span>
+{%- elif not match.is_bye and not MatchStatus.is_finished(match.status) %}
+<span class="c7-sep">·</span> {{ _('senza tavolo') }}
+{%- endif -%}
+{%- endmacro %}
+
+{# Azioni: solo il ritorno, e solo da desktop — su mobile lo fanno la freccia
+   qui accanto e il bottone largo di `_match_navigation.html`. #}
+{% macro actions(match) -%}
+<a href="{{ back_url(match)|trim }}" class="btn btn-secondary btn-sm d-none d-lg-inline-flex align-items-center gap-2">
+    <i class="fas fa-arrow-left"></i>{{ back_label(match)|trim }}
+</a>
+{%- endmacro %}

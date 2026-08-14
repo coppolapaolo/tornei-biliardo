@@ -3,22 +3,16 @@
 {% block title %}500 - {{ _('Errore del server') }}{% endblock %}
 
 {% block content %}
-<div class="text-center mt-5 mb-5">
-    <div style="font-size: 5rem; margin-bottom: 0.5rem;">
-        🔧
+<div style="max-width: 520px; margin: 8vh auto 0;">
+  <div class="c7-empty">
+    <div class="c7-empty__ico c7-empty__ico--err"><i class="fas fa-wrench"></i></div>
+    <div class="c7-num-xl" style="margin-top: 14px; color: var(--c7-ink-faint);">500</div>
+    <h1 class="c7-empty__title">{{ _('Fallo tecnico') }}</h1>
+    <p class="c7-empty__text">{{ _('Il panno si è strappato: qualcosa non ha funzionato dalla nostra parte.') }}</p>
+    <p class="c7-empty__text" style="margin-top: 10px; color: var(--c7-ink-faint);">{{ _('Ricarica la pagina. Se il problema resta, riprova tra qualche minuto.') }}</p>
+    <div class="c7-empty__actions">
+      <a href="{{ url_for('main.index') }}" class="btn btn-primary">{{ _('Torna al tavolo') }}</a>
     </div>
-    <h1 class="display-1 fw-bold text-muted" style="letter-spacing: -4px;">500</h1>
-    <h2 class="mt-2">{{ _('Fallo tecnico!') }}</h2>
-    <p class="text-muted mt-3 fs-5">
-        {{ _('Il panno del tavolo si è strappato. I nostri tecnici stanno già riparando il danno.') }}
-    </p>
-    <hr class="w-25 mx-auto my-4">
-    <p class="text-muted fst-italic">
-        <i class="fas fa-sync-alt text-info"></i>
-        {{ _('Prova a ricaricare la pagina. Se il problema persiste, fai una pausa e gessati la stecca.') }}
-    </p>
-    <a href="{{ url_for('main.index') }}" class="btn btn-primary btn-lg mt-3">
-        <i class="fas fa-home"></i> {{ _('Torna al tavolo') }}
-    </a>
+  </div>
 </div>
 {% endblock %}

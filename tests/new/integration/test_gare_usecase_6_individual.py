@@ -86,7 +86,7 @@ class TestUseCaseIndividualMatchProposal:
             invited_user_ids=[player2.id],
             location="Test Billiard Hall",
             scheduled_at=utc_now() + timedelta(days=1),
-            discipline="palla_8",
+            discipline="8_ball",
             distance=5,
             is_race_to=True,
             description="Friendly match",
@@ -121,7 +121,7 @@ class TestUseCaseIndividualMatchProposal:
             invited_user_ids=[player2.id],
             location="Championship Venue",
             scheduled_at=scheduled_time,
-            discipline="palla_9",
+            discipline="9_ball",
             distance=7,
             is_race_to=True,
             description="Practice for tournament",
@@ -130,7 +130,7 @@ class TestUseCaseIndividualMatchProposal:
         db_session.commit()
 
         # Verify configuration
-        assert proposal.discipline == "palla_9"
+        assert proposal.discipline == "9_ball"
         assert proposal.distance == 7
         assert proposal.is_race_to is True
         assert proposal.location == "Championship Venue"
@@ -149,7 +149,7 @@ class TestUseCaseIndividualMatchProposal:
             invited_user_ids=[player1.id, player2.id],
             location="Competition Venue",
             scheduled_at=utc_now() + timedelta(days=1),
-            discipline="palla_9",
+            discipline="9_ball",
             distance=7,
             is_race_to=True,
             description="Director arranged match",
@@ -216,7 +216,7 @@ class TestUseCaseIndividualMatchCancellation:
             invited_user_ids=[player2.id],
             location="Test Venue",
             scheduled_at=utc_now() + timedelta(days=1),
-            discipline="palla_8",
+            discipline="8_ball",
             distance=5,
             is_race_to=True,
         )
@@ -244,7 +244,7 @@ class TestUseCaseIndividualMatchCancellation:
             location="Test Venue",
             scheduled_at=utc_now() + timedelta(days=1),
             expires_at=utc_now() - timedelta(hours=1),  # Already expired
-            discipline="palla_8",
+            discipline="8_ball",
             distance=5,
             is_race_to=True,
         )
@@ -284,7 +284,7 @@ class TestUseCaseOpenProposal:
             proposer_id=player1.id,
             location="Community Hall",
             scheduled_at=utc_now() + timedelta(days=1),
-            discipline="palla_8",
+            discipline="8_ball",
             distance=5,
             is_race_to=True,
             description="Looking for opponent",

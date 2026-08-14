@@ -10,18 +10,22 @@
   aria-hidden="true" data-page-modal>
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
-      <div class="modal-header bg-{{ modal.variant }} {% if modal.variant == 'warning' %}text-dark{% else %}text-white{% endif %}">
-        <h5 class="modal-title" id="pageModalLabel{{ loop.index }}">
-          {% if modal.icon %}<i class="fas {{ modal.icon }} me-2"></i>{% endif %}{{ modal.title }}
-        </h5>
-        <button type="button" class="btn-close {% if modal.variant != 'warning' %}btn-close-white{% endif %}"
-          data-bs-dismiss="modal" aria-label="{{ _('Chiudi') }}"></button>
+      {# 7c: la testata non si colora. Il tono lo porta l'avviso nel corpo,
+         a fondo tenue — le testate a tinta piena non sono nella palette. #}
+      <div class="modal-header">
+        <h5 class="modal-title" id="pageModalLabel{{ loop.index }}">{{ modal.title }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Chiudi') }}"></button>
       </div>
       <div class="modal-body">
-        <p class="mb-0">{{ modal.body }}</p>
-        {% if modal.detail %}
-        <p class="text-muted small mt-2 mb-0">{{ modal.detail }}</p>
-        {% endif %}
+        <div class="alert alert-{{ modal.variant }}">
+          {% if modal.icon %}<span class="c7-flash__ico" style="background: transparent; color: inherit; width: auto; height: auto;"><i class="fas {{ modal.icon }}"></i></span>{% endif %}
+          <div>
+            {{ modal.body }}
+            {% if modal.detail %}
+            <div style="margin-top: 4px; color: var(--c7-ink-muted);">{{ modal.detail }}</div>
+            {% endif %}
+          </div>
+        </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-primary" data-bs-dismiss="modal">{{ _('Ho capito') }}</button>

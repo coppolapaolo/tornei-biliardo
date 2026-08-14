@@ -1,0 +1,93 @@
+{# templates/components/_gara_view_tabs.html — 7c (prototipo 8a) #}
+{# Commutatore di vista mobile della pagina gara: Turni / Classifica /
+   Iscritti / Gestione. Le sezioni non si spostano — dichiarano a quali viste
+   appartengono con `data-c7-tab` e il foglio di stile nasconde quelle fuori
+   dalla vista attiva (sezione 16 di theme-7c.css).
+
+   Attese dal chiamante: `gara_views` (lista di coppie vista/etichetta, vuota
+   quando le linguette non servono) e `gara_view_active`, piu' un contenitore
+   `#garaViews` con `data-c7-view` e `data-gara-id`. #}
+
+{% if gara_views %}
+<nav class="c7-vtabs" role="tablist" aria-label="{{ _('Viste della gara') }}">
+  {% for view, label in gara_views %}
+  <button type="button" class="c7-vtabs__tab{{ ' is-active' if view == gara_view_active }}"
+          role="tab" aria-controls="garaViews"
+          aria-selected="{{ 'true' if view == gara_view_active else 'false' }}"
+          data-c7-tab-btn="{{ view }}">{{ label }}</button>
+  {% endfor %}
+</nav>
+
+<script>
+/* Il contenitore delle sezioni viene dopo questa barra: a script inline in
+   corso di parsing non esiste ancora, quindi si aspetta il DOM. */
+document.addEventListener('DOMContentLoaded', function () {
+  var root = document.getElementById('garaViews');
+  var bar = document.querySelector('.c7-vtabs');
+  if (!root || !bar) { return; }
+
+  var head = document.querySelector('.c7-head');
+  var key = 'garaView:' + (root.dataset.garaId || '');
+
+  /* La barra si appiccica sotto la testata. Il token vale per la testata di
+     altezza normale: un titolo lungo che va a capo la fa crescere, e senza
+     rimisurarla le linguette le finirebbero sotto. */
+  function measureHead() {
+    if (head) {
+      document.documentElement.style.setProperty('--c7-head-h', head.offsetHeight + 'px');
+    }
+  }
+
+  function show(view, remember) {
+    if (!bar.querySelector('[data-c7-tab-btn="' + view + '"]')) { return; }
+    root.setAttribute('data-c7-view', view);
+    bar.querySelectorAll('[data-c7-tab-btn]').forEach(function (btn) {
+      var on = btn.getAttribute('data-c7-tab-btn') === view;
+      btn.classList.toggle('is-active', on);
+      btn.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    if (remember) {
+      try { sessionStorage.setItem(key, view); } catch (e) { /* privata: pazienza */ }
+    }
+  }
+
+  bar.addEventListener('click', function (ev) {
+    var btn = ev.target instanceof Element ? ev.target.closest('[data-c7-tab-btn]') : null;
+    if (!btn) { return; }
+    show(btn.getAttribute('data-c7-tab-btn'), true);
+    /* La vista nuova comincia dall'inizio, non da dove si era rimasti. */
+    window.scrollTo({ top: 0 });
+  });
+
+  /* `role="tablist"` promette le frecce: senza, la tastiera resta ferma sul
+     primo pill e la dichiarazione ARIA e' una bugia. */
+  bar.addEventListener('keydown', function (ev) {
+    var step = ev.key === 'ArrowRight' ? 1 : (ev.key === 'ArrowLeft' ? -1 : 0);
+    if (!step) { return; }
+    var tabs = [...bar.querySelectorAll('[data-c7-tab-btn]')];
+    var at = tabs.indexOf(document.activeElement);
+    if (at < 0) { return; }
+    ev.preventDefault();
+    var next = tabs[(at + step + tabs.length) % tabs.length];
+    next.focus();
+    show(next.getAttribute('data-c7-tab-btn'), true);
+    window.scrollTo({ top: 0 });
+  });
+
+  /* Molte azioni della pagina ricaricano (risultato rapido, avvio turno):
+     senza memoria si tornerebbe ogni volta sulla vista di partenza. */
+  try {
+    var saved = sessionStorage.getItem(key);
+    if (saved) { show(saved, false); }
+  } catch (e) { /* privata: si resta sulla vista di partenza */ }
+
+  measureHead();
+  window.addEventListener('resize', measureHead);
+  /* Manrope arriva da Google Fonts: se il titolo si rimpagina dopo il primo
+     rendering la testata cambia altezza senza che scatti `resize`. */
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(measureHead);
+  }
+});
+</script>
+{% endif %}
