@@ -1,0 +1,47 @@
+<!-- Direct Elimination Algorithm Info Component -->
+{# Attese dal chiamante: gara, round_number, total_players, matches.
+   Il tabellone e' persistito sui match (bracket_type/round/slot), quindi la
+   sua dimensione si legge da li' e non si ricalcola dagli iscritti, che dopo
+   il sorteggio possono essere cambiati. #}
+{% set primo_turno = matches | selectattr("bracket_type", "equalto", "W")
+                             | selectattr("bracket_round", "equalto", 1) | list %}
+{% set dimensione = (primo_turno | length) * 2 %}
+{% set bye = primo_turno | selectattr("is_bye") | list | length %}
+
+<div class="card border-info">
+    <div class="card-header bg-info bg-opacity-10">
+        <h5><i class="fas fa-sitemap"></i> {{ _('Eliminazione diretta — turno %(num)s', num=round_number) }}</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                {% if dimensione %}
+                <strong>{{ _('Tabellone:') }}</strong>
+                <span class="badge bg-primary">{{ _('%(num)s posti', num=dimensione) }}</span>
+                {% if bye %}<span class="badge bg-secondary">{{ _('%(num)s a tavolino al turno 1', num=bye) }}</span>{% endif %}
+                <br>
+                {% endif %}
+                <strong>{{ _('Avanzamento:') }}</strong><br>
+                <small class="text-muted">
+                    {{ _('Il nodo in posizione j accoppia i vincitori dei nodi 2j e 2j+1 del turno precedente.') }}
+                </small>
+            </div>
+            <div class="col-md-6">
+                <strong>{{ _('Giocatori:') }}</strong> {{ total_players }}<br>
+                <strong>{{ _('Sorteggio:') }}</strong>
+                {% if gara.separate_teammates %}
+                <span class="badge bg-info">{{ _('compagni separati') }}</span>
+                {% else %}
+                <span class="badge bg-secondary">{{ _('per teste di serie') }}</span>
+                {% endif %}
+                <br>
+                <strong>{{ _('Terzo posto:') }}</strong>
+                {% if gara.third_place_match %}
+                <span class="badge bg-info">{{ _('finalina 3°/4°') }}</span>
+                {% else %}
+                <span class="badge bg-secondary">{{ _('a pari merito') }}</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>

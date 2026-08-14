@@ -1,0 +1,38 @@
+<!-- Double Knockout Algorithm Info Component -->
+{# Attese dal chiamante: gara, round_number, total_players, matches. #}
+{% set primo_turno = matches | selectattr("bracket_type", "equalto", "W")
+                             | selectattr("bracket_round", "equalto", 1) | list %}
+{% set gironi = matches | map(attribute="bracket_group") | reject("none") | unique | list %}
+
+<div class="card border-info">
+    <div class="card-header bg-info bg-opacity-10">
+        <h5><i class="fas fa-code-branch"></i> {{ _('Doppio KO — turno %(num)s', num=round_number) }}</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <strong>{{ _('Struttura:') }}</strong><br>
+                <small class="text-muted">
+                    {{ _('Chi perde scende nel ramo dei ripescati; chi perde due volte è eliminato. In finale il vincitore dei ripescati deve battere l’imbattuto due volte: se ci riesce una sola, si gioca la bella.') }}
+                </small>
+            </div>
+            <div class="col-md-6">
+                <strong>{{ _('Giocatori:') }}</strong> {{ total_players }}<br>
+                {% if gironi %}
+                <strong>{{ _('Fase a gironi:') }}</strong>
+                <span class="badge bg-primary">{{ _('%(num)s gironi', num=gironi|length) }}</span><br>
+                <small class="text-muted">{{ _('Ogni girone qualifica quattro giocatori: due imbattuti e due ripescati.') }}</small><br>
+                {% elif primo_turno %}
+                <strong>{{ _('Tabellone:') }}</strong>
+                <span class="badge bg-primary">{{ _('%(num)s posti', num=(primo_turno|length) * 2) }}</span><br>
+                {% endif %}
+                <strong>{{ _('Sorteggio:') }}</strong>
+                {% if gara.separate_teammates %}
+                <span class="badge bg-info">{{ _('compagni separati') }}</span>
+                {% else %}
+                <span class="badge bg-secondary">{{ _('per teste di serie') }}</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
