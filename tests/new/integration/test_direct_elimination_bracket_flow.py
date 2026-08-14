@@ -18,7 +18,7 @@ from typing import Dict, List
 
 import pytest
 
-from models import Gara, Match, User
+from models import Gara, Inscription, Match, Squadra, User
 from models.base import utc_now
 from models.competition.inscription_service import InscriptionService
 from models.competition.round_service import RoundService
@@ -45,7 +45,13 @@ def _make_players(db_session, count: int) -> List[User]:
     return players
 
 
-def _make_gara(db_session, players: List[User], *, max_participants: int) -> Gara:
+def _make_gara(
+    db_session,
+    players: List[User],
+    *,
+    max_participants: int,
+    separate_teammates: bool = False,
+) -> Gara:
     """Gara a eliminazione diretta con gli iscritti già dentro.
 
     Il modello viene costruito a mano invece che via `GaraService`: la
@@ -78,6 +84,7 @@ def _make_gara(db_session, players: List[User], *, max_participants: int) -> Gar
         max_participants=max_participants,
         matchmaking_strategy="direct_elimination",
         first_round_policy="random",
+        separate_teammates=separate_teammates,
     )
     db_session.add(gara)
     db_session.commit()
@@ -231,6 +238,87 @@ class TestByeCheAvanzano:
         assert not Match.query.filter_by(
             gara_id=gara.id, round_number=2, is_bye=True
         ).count(), "nel winners bracket i bye stanno solo al turno 1"
+
+
+class TestSeparazioneSquadre:
+    """US-6 attraverso il flusso vero: elenco squadre, iscrizioni, sorteggio."""
+
+    def _iscrivi_con_squadre(self, db_session, gara: Gara, players: List[User], nomi):
+        """Crea l'elenco squadre della gara e lo assegna alle iscrizioni."""
+        squadre = []
+        for nome in nomi:
+            squadra = Squadra(name=nome, gara_id=gara.id)
+            db_session.add(squadra)
+            squadre.append(squadra)
+        db_session.flush()
+
+        for index, player in enumerate(players):
+            inscription = Inscription.query.filter_by(
+                gara_id=gara.id, user_id=player.id
+            ).one()
+            inscription.squadra_id = squadre[index % len(squadre)].id
+        db_session.commit()
+        return squadre
+
+    def test_niente_derby_al_primo_turno(self, db_session):
+        """Due squadre da 4 su tabellone da 8: nessun compagno contro l'altro."""
+        players = _make_players(db_session, 8)
+        gara = _make_gara(
+            db_session, players, max_participants=8, separate_teammates=True
+        )
+        self._iscrivi_con_squadre(db_session, gara, players, ["Circolo A", "Circolo B"])
+
+        RoundService.start_first_round(gara.id)
+
+        squadra_di = {
+            i.user_id: i.squadra_id
+            for i in Inscription.query.filter_by(gara_id=gara.id).all()
+        }
+        for match in _round_nodes(gara.id, 1).values():
+            assert (
+                squadra_di[match.player1_id] != squadra_di[match.player2_id]
+            ), "compagni di squadra accoppiati al primo turno"
+
+    def test_il_profilo_non_conta_dopo_l_iscrizione(self, db_session):
+        """`user.squadra` precompila l'iscrizione e poi esce di scena.
+
+        Il tabellone è persistito: cambiare la squadra a sorteggio fatto — sul
+        profilo o sull'iscrizione — non sposta nessuno. È la proprietà che
+        rende sensato congelare le squadre all'avvio del primo turno (US-11).
+        """
+        players = _make_players(db_session, 8)
+        gara = _make_gara(
+            db_session, players, max_participants=8, separate_teammates=True
+        )
+        self._iscrivi_con_squadre(db_session, gara, players, ["Circolo A", "Circolo B"])
+
+        RoundService.start_first_round(gara.id)
+        prima = {
+            slot: (m.player1_id, m.player2_id)
+            for slot, m in _round_nodes(gara.id, 1).items()
+        }
+
+        for player in players:
+            player.squadra = "Circolo Inventato"
+        db_session.commit()
+
+        dopo = {
+            slot: (m.player1_id, m.player2_id)
+            for slot, m in _round_nodes(gara.id, 1).items()
+        }
+        assert dopo == prima
+
+    def test_opzione_spenta_nessun_vincolo(self, db_session):
+        """Il default non guarda nemmeno le squadre."""
+        players = _make_players(db_session, 8)
+        gara = _make_gara(db_session, players, max_participants=8)
+        self._iscrivi_con_squadre(db_session, gara, players, ["Circolo A", "Circolo B"])
+
+        RoundService.start_first_round(gara.id)
+
+        nodi = _round_nodes(gara.id, 1)
+        assert len(nodi) == 4
+        assert sorted(nodi) == [0, 1, 2, 3]
 
 
 class TestGareLegacy:

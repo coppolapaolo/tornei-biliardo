@@ -22,6 +22,7 @@ from ..bracket import (
     bracket_size,
     standard_bracket_order,
 )
+from ..team_separation import assign_slots
 from .base import Pairing, BaseStrategy
 
 if TYPE_CHECKING:
@@ -178,7 +179,7 @@ class DirectEliminationStrategy(BaseStrategy):
             return []
 
         size = self.bracket_size_for(n)
-        slots = self._assign_slots(gara, player_ids, size)
+        slots = self._assign_slots(gara, player_ids, size, inscriptions)
 
         pairings: List[Pairing] = []
         for slot_index in range(size // 2):
@@ -219,7 +220,11 @@ class DirectEliminationStrategy(BaseStrategy):
         return pairings
 
     def _assign_slots(
-        self, gara: "Gara", player_ids: List[int], size: int
+        self,
+        gara: "Gara",
+        player_ids: List[int],
+        size: int,
+        inscriptions: Optional[List] = None,
     ) -> List[Optional[int]]:
         """Slot del primo turno: `slots[i]` = giocatore, oppure None (buco).
 
@@ -228,11 +233,60 @@ class DirectEliminationStrategy(BaseStrategy):
         di iscritti sono i buchi — che finiscono cosi' davanti ai primi seed,
         dando loro il bye.
 
-        La separazione dei compagni di squadra si innesta qui (Step 6).
+        Con `gara.separate_teammates` attivo la collocazione passa da
+        `team_separation.assign_slots`, che sceglie **quale membro di ciascuna
+        banda di seeding** occupa quale slot della banda: il seeding resta
+        quello canonico, cambia solo il sorteggio interno alla banda — cioe'
+        esattamente "le teste di serie 5-8 si sorteggiano fra i quattro
+        quarti" (US-6, US-10).
         """
-        order = standard_bracket_order(size)
         n = len(player_ids)
-        return [player_ids[seed - 1] if seed <= n else None for seed in order]
+        canonical = [
+            player_ids[seed - 1] if seed <= n else None
+            for seed in standard_bracket_order(size)
+        ]
+
+        if not getattr(gara, "separate_teammates", False):
+            return canonical
+
+        team_of = self._teams_by_player(gara, inscriptions)
+        if not any(team is not None for team in team_of.values()):
+            # Opzione attiva ma nessuno ha dichiarato una squadra: non c'e'
+            # nulla da separare e il canonico e' gia' la risposta giusta.
+            return canonical
+
+        holes = size - n
+        if 2 * holes >= size:
+            # Puo' accadere solo quando il pavimento di formato alza `S` sopra
+            # la potenza di 2 naturale (doppio KO con pochissimi iscritti):
+            # li' meta' del tabellone e' vuota e la separazione non ha piu'
+            # una base sensata su cui lavorare.
+            logger.warning(
+                "Gara %s: separazione squadre saltata, %s buchi su %s slot "
+                "(il pavimento di formato ha allargato il tabellone)",
+                getattr(gara, "id", None),
+                holes,
+                size,
+            )
+            return canonical
+
+        return assign_slots(player_ids, team_of, size, self._rng_for(gara), holes)
+
+    def _teams_by_player(
+        self, gara: "Gara", inscriptions: Optional[List] = None
+    ) -> Dict[int, Optional[int]]:
+        """Squadra di ciascun iscritto, letta **dall'iscrizione**.
+
+        `Inscription.squadra_id` e' l'unica fonte autorevole: il testo libero
+        sul profilo (`user.squadra`) e' servito solo a precompilare quel campo
+        al momento dell'iscrizione e non viene piu' riletto. Cambiarlo dopo —
+        anche a gara in corso — non deve spostare nessuno nel tabellone.
+
+        `None` significa "gioca senza squadra qui", ed e' uno stato legittimo:
+        chi non ha squadra non ha compagni da cui essere separato.
+        """
+        rows = self._active_inscriptions(gara) if inscriptions is None else inscriptions
+        return {i.user_id: getattr(i, "squadra_id", None) for i in rows}
 
     # ── Turni successivi ──────────────────────────────────────────────────
 
