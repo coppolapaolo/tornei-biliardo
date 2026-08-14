@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import logging
 import random
-from typing import Sequence, List, Dict, Any, Optional, TYPE_CHECKING, cast
+from typing import Sequence, List, Dict, Any, Optional, Tuple, TYPE_CHECKING, cast
 
 from ..bracket import (
     BRACKET_WINNERS,
@@ -239,41 +239,163 @@ class DirectEliminationStrategy(BaseStrategy):
     def _generate_subsequent_round_pairings(
         self, gara: "Gara", round_number: int
     ) -> List[Pairing]:
-        """Accoppia i vincitori secondo il tabellone (Step 5)."""
-        # Implementato nello Step 5; per ora comportamento invariato.
+        """Accoppia i vincitori **leggendo il tabellone persistito**.
+
+        E' il punto da cui e' partita tutta l'analisi. La versione precedente
+        riaccoppiava i vincitori nell'ordine di ritorno della query
+        (`pop(0), pop(0)`): non un ordine casuale, ma uno **sistematicamente
+        sbagliato**, perche' i match del turno 1 vengono inseriti prima i bye e
+        poi le coppie. Al turno 2 tutti i giocatori usciti dai bye — cioe' le
+        teste di serie, quelle che il seeding vuole tenere separate il piu' a
+        lungo possibile — finivano per incontrarsi fra loro.
+
+        Il tabellone dice invece che il vincitore dello slot `2j` incontra
+        quello dello slot `2j+1`: entrambi gli alimentatori esistono sempre,
+        perche' il turno 1 e' completo (`S/2` nodi senza lacune, Step 4) e ogni
+        nodo — bye compreso — produce un vincitore.
+        """
         from ...match.models import Match
         from models.status_enum import MatchStatus
 
         previous_round = round_number - 1
-        previous_matches = Match.query.filter(
-            Match.gara_id == gara.id,
-            Match.round_number == previous_round,
-            Match.status.in_(MatchStatus.finished_values()),
-        ).all()
-
-        total_previous_matches = Match.query.filter_by(
-            gara_id=gara.id, round_number=previous_round
-        ).count()
-
-        if len(previous_matches) != total_previous_matches:
+        previous_matches = (
+            Match.query.filter_by(gara_id=gara.id, round_number=previous_round)
+            .order_by(Match.id)
+            .all()
+        )
+        if not previous_matches:
             return []
 
-        winners = []
-        for match in previous_matches:
-            if match.winner_id:
-                winners.append(match.winner_id)
-            elif match.is_bye and match.player1_id:
-                winners.append(match.player1_id)
-            elif match.is_bye and match.player2_id:
-                winners.append(match.player2_id)
-            else:
-                raise ValueError(
-                    f"Match {match.id} completato senza vincitore "
-                    f"(turno {previous_round})"
-                )
+        # Il turno successivo non parte finche' il precedente non e' chiuso.
+        # `validated` e' finale quanto `completed` (conferma bilaterale): usare
+        # solo `completed` bloccava il torneo (vedi
+        # test_direct_elimination_validated_status.py).
+        if any(not MatchStatus.is_finished(m.status) for m in previous_matches):
+            return []
 
-        pairings = []
-        winners = list(winners)
+        coordinates = self._bracket_coordinates(previous_matches)
+        if coordinates is None:
+            logger.warning(
+                "Gara %s, turno %s: il turno precedente non ha coordinate di "
+                "tabellone, accoppiamento legacy (ordine di query). E' il "
+                "comportamento che questa gara ha gia' avuto nei turni "
+                "precedenti: cambiarlo a meta' gara sarebbe peggio.",
+                getattr(gara, "id", None),
+                round_number,
+            )
+            return self._legacy_subsequent_pairings(previous_matches, round_number)
+
+        previous_bracket_round, by_slot = coordinates
+        size = self._persisted_bracket_size(gara)
+        expected_nodes = size >> previous_bracket_round
+
+        if sorted(by_slot) != list(range(expected_nodes)):
+            raise ValueError(
+                f"Tabellone incoerente per la gara {getattr(gara, 'id', None)}: "
+                f"il round W{previous_bracket_round} di un tabellone da {size} "
+                f"dovrebbe avere gli slot 0..{expected_nodes - 1}, ha "
+                f"{sorted(by_slot)}"
+            )
+
+        pairings: List[Pairing] = []
+        for slot_index in range(expected_nodes // 2):
+            pairings.append(
+                Pairing(
+                    players=(
+                        self._winner_of(by_slot[2 * slot_index]),
+                        self._winner_of(by_slot[2 * slot_index + 1]),
+                    ),
+                    round_number=round_number,
+                    bracket_type=BRACKET_WINNERS,
+                    bracket_round=previous_bracket_round + 1,
+                    bracket_slot=slot_index,
+                )
+            )
+        return pairings
+
+    def _bracket_coordinates(
+        self, matches: Sequence[Any]
+    ) -> Optional[Tuple[int, Dict[int, Any]]]:
+        """`(bracket_round, {slot: match})` del turno, o None se non ha tabellone.
+
+        None significa "gara iniziata prima della persistenza del tabellone":
+        basta un solo match senza `bracket_slot` perche' l'intero turno sia
+        inaffidabile come alimentatore, quindi si ricade sul ramo legacy.
+        """
+        if any(getattr(m, "bracket_slot", None) is None for m in matches):
+            return None
+
+        feeders = [m for m in matches if m.bracket_type == BRACKET_WINNERS]
+        if not feeders:
+            raise ValueError(
+                "Turno con coordinate di tabellone ma senza alcun nodo del "
+                "winners bracket: nell'eliminazione diretta non puo' accadere"
+            )
+
+        bracket_rounds = {m.bracket_round for m in feeders}
+        if len(bracket_rounds) != 1:
+            raise ValueError(
+                f"Un turno di gara contiene piu' round di winners bracket: "
+                f"{sorted(bracket_rounds)}"
+            )
+
+        bracket_round = bracket_rounds.pop()
+        by_slot: Dict[int, Any] = {}
+        for match in feeders:
+            if match.bracket_slot in by_slot:
+                raise ValueError(
+                    f"Slot {match.bracket_slot} duplicato nel round "
+                    f"W{bracket_round} (match {match.id})"
+                )
+            by_slot[match.bracket_slot] = match
+        return bracket_round, by_slot
+
+    def _persisted_bracket_size(self, gara: "Gara") -> int:
+        """Dimensione del tabellone **come e' stato estratto**.
+
+        Si conta il turno 1 persistito, non gli iscritti: dopo il sorteggio il
+        tabellone non si tocca piu' (un ritiro fa avanzare l'avversario a
+        tavolino), quindi gli iscritti attivi possono benissimo essere di meno.
+        """
+        from ...match.models import Match
+
+        nodes = Match.query.filter_by(
+            gara_id=gara.id, bracket_type=BRACKET_WINNERS, bracket_round=1
+        ).count()
+        if nodes == 0:
+            raise ValueError(
+                f"Gara {getattr(gara, 'id', None)}: turni successivi con "
+                f"coordinate ma nessun nodo di primo turno da cui derivare la "
+                f"dimensione del tabellone"
+            )
+        return 2 * nodes
+
+    @staticmethod
+    def _winner_of(match: Any) -> int:
+        """Chi passa il turno. Un bye e' un nodo pieno, quindi ha un vincitore."""
+        if match.winner_id:
+            return match.winner_id
+        if match.is_bye:
+            player = match.player1_id or match.player2_id
+            if player:
+                return player
+        raise ValueError(
+            f"Match {match.id} concluso senza vincitore "
+            f"(turno {match.round_number})"
+        )
+
+    def _legacy_subsequent_pairings(
+        self, previous_matches: Sequence[Any], round_number: int
+    ) -> List[Pairing]:
+        """Comportamento pre-tabellone, per le gare iniziate senza coordinate.
+
+        I pairing prodotti qui restano **senza coordinate**: scriverle adesso
+        significherebbe dichiarare un tabellone che i turni gia' giocati non
+        hanno mai rispettato.
+        """
+        winners = [self._winner_of(m) for m in previous_matches]
+
+        pairings: List[Pairing] = []
         while len(winners) >= 2:
             player1 = winners.pop(0)
             player2 = winners.pop(0)
@@ -281,7 +403,7 @@ class DirectEliminationStrategy(BaseStrategy):
                 Pairing(players=(player1, player2), round_number=round_number)
             )
 
-        if len(winners) == 1:
+        if winners:
             pairings.append(
                 Pairing(players=(winners[0],), is_bye=True, round_number=round_number)
             )
