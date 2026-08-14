@@ -60,12 +60,6 @@ class DoubleKnockoutStrategy(BaseStrategy):
 
         return {"errors": errors, "warnings": warnings}
 
-    def preview(self, gara: object, round_number: int) -> Sequence[Pairing]:
-        """Preview pairings for a specific round without side effects."""
-        return self._generate_round_pairings(
-            gara, round_number  # type: ignore[arg-type]
-        )
-
     def _generate_pairings(
         self, processed_data: Dict[str, Any], round_number: int
     ) -> Sequence[Pairing]:

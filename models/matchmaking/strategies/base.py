@@ -181,7 +181,7 @@ class PairingStrategy(ABC):
 
         Primary execution method that generates player pairings and applies
         necessary side effects (creating Match objects, updating classifications,
-        recording encounters). Distinct from preview methods that don't modify state.
+        recording encounters).
 
         Args:
             gara: Tournament object with player inscriptions and history

@@ -61,7 +61,7 @@ class RoundService:
             )
 
         # Seme del sorteggio: generato una volta sola e persistito, così il
-        # tabellone non cambia da solo fra un'anteprima e la conferma.
+        # tabellone e' riproducibile e contestabile a posteriori.
         # `cancel_first_round_startup` lo azzera, quindi riavviare il turno 1
         # significa risorteggiare davvero.
         if gara.draw_seed is None:

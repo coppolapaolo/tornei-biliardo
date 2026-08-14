@@ -40,8 +40,10 @@ def resolve_draw_seed(gara: object) -> int:
     """Seme del sorteggio di questa gara.
 
     ``Gara.draw_seed`` viene generato e persistito una volta sola all'avvio del
-    primo turno, cosi' che il tabellone non cambi da solo fra due letture, e
-    azzerato dall'annullamento del turno 1: riavviare significa risorteggiare.
+    primo turno, e azzerato dall'annullamento: riavviare significa
+    risorteggiare, mentre due invocazioni della stessa generazione danno lo
+    stesso tabellone. Serve anche a poter ricostruire a posteriori perche' il
+    sorteggio e' uscito cosi', se qualcuno lo contesta.
 
     Se manca (gare precedenti all'introduzione del campo, o chiamate fuori dal
     flusso normale) si ricade sull'id della gara: arbitrario ma **stabile**,
@@ -120,10 +122,6 @@ class DirectEliminationStrategy(BaseStrategy):
         return {"errors": errors, "warnings": warnings}
 
     # ── Ingresso ──────────────────────────────────────────────────────────
-
-    def preview(self, gara: object, round_number: int) -> Sequence[Pairing]:
-        """Accoppiamenti di un turno senza effetti collaterali."""
-        return self._generate_round_pairings(gara, round_number)
 
     def _generate_pairings(
         self, processed_data: Dict[str, Any], round_number: int
