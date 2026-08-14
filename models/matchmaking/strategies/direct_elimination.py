@@ -118,8 +118,11 @@ class DirectEliminationStrategy(BaseStrategy):
                     f"{self.display_name} richiede {required_rounds} turni, "
                     f"la gara ne ha {rounds_count}"
                 )
-        except Exception as e:  # pragma: no cover - difensivo
-            warnings.append(f"{self.display_name} validation warning: {str(e)}")
+        except ValueError as e:
+            # Vedi la nota gemella in double_knockout: solo gli errori di
+            # dominio dell'aritmetica diventano errori di configurazione; i bug
+            # propagano invece di essere degradati a warning.
+            errors.append(f"Configurazione a tabellone non valida: {e}")
 
         return {"errors": errors, "warnings": warnings}
 
@@ -226,6 +229,7 @@ class DirectEliminationStrategy(BaseStrategy):
         player_ids: List[int],
         size: int,
         inscriptions: Optional[List] = None,
+        rng: Optional[random.Random] = None,
     ) -> List[Optional[int]]:
         """Slot del primo turno: `slots[i]` = giocatore, oppure None (buco).
 
@@ -240,6 +244,13 @@ class DirectEliminationStrategy(BaseStrategy):
         quello canonico, cambia solo il sorteggio interno alla banda — cioe'
         esattamente "le teste di serie 5-8 si sorteggiano fra i quattro
         quarti" (US-6, US-10).
+
+        `rng` permette al chiamante di sorteggiare **piu' tabelloni** con
+        sorgenti casuali distinte pur restando deterministico: serve alla
+        formula FISBB, dove i gironi sono tabelloni separati estratti nella
+        stessa operazione e condividere la stessa sequenza li renderebbe
+        copie l'uno dell'altro nelle scelte interne all'algoritmo. Assente,
+        vale l'RNG della gara.
         """
         n = len(player_ids)
         canonical = [
@@ -271,7 +282,9 @@ class DirectEliminationStrategy(BaseStrategy):
             )
             return canonical
 
-        return assign_slots(player_ids, team_of, size, self._rng_for(gara), holes)
+        return assign_slots(
+            player_ids, team_of, size, rng or self._rng_for(gara), holes
+        )
 
     def _teams_by_player(
         self, gara: "Gara", inscriptions: Optional[List] = None
@@ -432,7 +445,17 @@ class DirectEliminationStrategy(BaseStrategy):
         if any(getattr(m, "bracket_slot", None) is None for m in matches):
             return None
 
-        feeders = [m for m in matches if m.bracket_type == BRACKET_WINNERS]
+        # `bracket_group is None` = tabellone finale. Nell'eliminazione
+        # diretta pura e' sempre vero (i gironi esistono solo nella formula
+        # FISBB), ma il filtro serve quando e' la fase finale di una gara a
+        # gironi a passare di qui: li' i nodi dei gironi non sono
+        # alimentatori di questo tabellone.
+        feeders = [
+            m
+            for m in matches
+            if m.bracket_type == BRACKET_WINNERS
+            and getattr(m, "bracket_group", None) is None
+        ]
         if not feeders:
             raise ValueError(
                 "Turno con coordinate di tabellone ma senza alcun nodo del "
@@ -466,8 +489,13 @@ class DirectEliminationStrategy(BaseStrategy):
         """
         from ...match.models import Match
 
-        nodes = Match.query.filter_by(
-            gara_id=gara.id, bracket_type=BRACKET_WINNERS, bracket_round=1
+        nodes = Match.query.filter(
+            Match.gara_id == gara.id,
+            Match.bracket_type == BRACKET_WINNERS,
+            Match.bracket_round == 1,
+            # Vedi _bracket_coordinates: i gironi non fanno parte del
+            # tabellone finale e non ne dichiarano la dimensione.
+            Match.bracket_group.is_(None),
         ).count()
         if nodes == 0:
             raise ValueError(

@@ -126,6 +126,7 @@ def create_matches_from_pairings(
             "bracket_type": getattr(pairing, "bracket_type", None),
             "bracket_round": getattr(pairing, "bracket_round", None),
             "bracket_slot": getattr(pairing, "bracket_slot", None),
+            "bracket_group": getattr(pairing, "bracket_group", None),
         }
 
         if len(pairing.players) == 1 and pairing.is_bye:

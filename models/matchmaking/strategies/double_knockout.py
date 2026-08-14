@@ -14,6 +14,14 @@ nel nodo di losers bracket che gli compete.
 Lo schedule (quale round di bracket si gioca a quale turno di gara) e i
 conteggi stanno in ``models/matchmaking/bracket.py``, che non conosce ne'
 Flask ne' il DB.
+
+**Formula FISBB** (Step 12). Con ``gara.double_ko_rounds`` valorizzato la
+gara diventa a due fasi: prima `g` gironi giocati in parallelo, ciascuno un
+doppio KO da `G = 2^(w+1)` fermato dopo `w` round di winners, poi un
+tabellone finale a eliminazione diretta fra i `4g` qualificati (2 diretti e 2
+ripescati per girone). Non e' un formato nuovo: e' lo stesso generatore, con
+le coordinate qualificate dal girone (``Match.bracket_group``) e la fase
+finale delegata all'eliminazione diretta.
 """
 
 from __future__ import annotations
@@ -27,8 +35,12 @@ from ..bracket import (
     BRACKET_LOSERS,
     BRACKET_WINNERS,
     MIN_BRACKET_SIZE_DOUBLE_KNOCKOUT,
+    MIN_GROUP_DOUBLE_KO_ROUNDS,
     BracketRound,
     bracket_schedule,
+    group_phase_is_feasible,
+    group_format_total_rounds,
+    group_size_for,
     losers_feed_permutation,
 )
 from .base import Pairing, BaseStrategy
@@ -42,6 +54,19 @@ logger = logging.getLogger(__name__)
 
 # Chiave di un nodo del tabellone: (bracket_type, bracket_round, bracket_slot).
 NodeKey = Tuple[str, int, int]
+# Nodi indicizzati per girone. La chiave None e' il tabellone finale della
+# formula FISBB, ed e' anche l'unica presente nel doppio KO classico.
+GroupedNodes = Dict[Optional[int], Dict[NodeKey, Any]]
+
+
+def group_rounds_of(gara: object) -> Optional[int]:
+    """`w` se la gara ha una fase a gironi, `None` se e' un doppio KO classico.
+
+    Lo zero e' trattato come assenza: "zero turni di doppio KO nel girone" non
+    e' un formato, e un campo lasciato a 0 da una form vale "non configurato".
+    """
+    value = getattr(gara, "double_ko_rounds", None)
+    return int(value) if value else None
 
 
 class _WinnersBracketSeeding(DirectEliminationStrategy):
@@ -104,7 +129,13 @@ class DoubleKnockoutStrategy(BaseStrategy):
                 )
                 return {"errors": errors, "warnings": warnings}
 
-            required_rounds = self.get_total_rounds_needed(player_count)
+            group_rounds = group_rounds_of(gara)
+            if group_rounds is not None:
+                errors.extend(self._group_format_errors(player_count, group_rounds))
+                if errors:
+                    return {"errors": errors, "warnings": warnings}
+
+            required_rounds = self.total_rounds_for(gara, player_count)
             rounds_count = getattr(gara, "rounds_count", None)
             if rounds_count and rounds_count < required_rounds:
                 errors.append(
@@ -113,7 +144,7 @@ class DoubleKnockoutStrategy(BaseStrategy):
                     f"{rounds_count}"
                 )
 
-            if getattr(gara, "third_place_match", False):
+            if getattr(gara, "third_place_match", False) and group_rounds is None:
                 # Non e' un errore bloccante: il flag e' semplicemente senza
                 # effetto qui, perche' il terzo posto lo assegna gia' il
                 # tabellone (chi perde la finale del losers bracket). In UI
@@ -122,10 +153,40 @@ class DoubleKnockoutStrategy(BaseStrategy):
                     "La finale 3°/4° non si applica al doppio KO: il terzo "
                     "posto è già deciso dal losers bracket"
                 )
-        except Exception as e:  # pragma: no cover - difensivo
-            warnings.append(f"{self.display_name} validation warning: {str(e)}")
+        except ValueError as e:
+            # Solo gli errori di dominio dell'aritmetica del tabellone (taglie
+            # non valide, turni fuori range). Sono configurazioni **invalide**,
+            # quindi diventano errori bloccanti e non warning.
+            #
+            # Tutto il resto propaga di proposito: un `except Exception` qui
+            # trasformava un AttributeError — cioe' un bug — in un warning, e
+            # la validazione proseguiva come se fosse andata a buon fine,
+            # saltando in silenzio ogni controllo successivo.
+            errors.append(f"Configurazione a tabellone non valida: {e}")
 
         return {"errors": errors, "warnings": warnings}
+
+    def _group_format_errors(self, player_count: int, group_rounds: int) -> List[str]:
+        """Vincoli propri della fase a gironi.
+
+        Due soli, ma entrambi bloccanti: sotto i due turni il girone non
+        troncherebbe nulla (tutti si qualificherebbero), e una ripartizione
+        che lascia un girone mezzo vuoto produrrebbe nodi senza giocatori.
+        """
+        if group_rounds < MIN_GROUP_DOUBLE_KO_ROUNDS:
+            return [
+                f"Un girone a doppio KO troncato richiede almeno "
+                f"{MIN_GROUP_DOUBLE_KO_ROUNDS} turni, la gara ne dichiara "
+                f"{group_rounds}"
+            ]
+
+        size = group_size_for(group_rounds)
+        if not group_phase_is_feasible(player_count, size):
+            return [
+                f"{player_count} iscritti non si dividono in gironi da {size}: "
+                f"uno dei gironi resterebbe mezzo vuoto"
+            ]
+        return []
 
     # ── Ingresso ──────────────────────────────────────────────────────────
 
@@ -432,8 +493,21 @@ class DoubleKnockoutStrategy(BaseStrategy):
 
     # ── Aritmetica ────────────────────────────────────────────────────────
 
+    def total_rounds_for(self, gara: object, player_count: int) -> int:
+        """Turni necessari alla gara, nel formato che la gara dichiara.
+
+        Due formati distinti, e la differenza non e' un dettaglio: il doppio KO
+        classico e' un tabellone solo che arriva a un vincitore, la formula
+        FISBB sono `g` gironi in parallelo piu' un tabellone finale, e i turni
+        si contano di conseguenza.
+        """
+        group_rounds = group_rounds_of(gara)
+        if group_rounds is None:
+            return self.get_total_rounds_needed(player_count)
+        return group_format_total_rounds(player_count, group_rounds)
+
     def get_total_rounds_needed(self, player_count: int) -> int:
-        """Turni necessari: `2k + 1`, con `k = log2(S)`.
+        """Turni necessari al doppio KO classico: `2k + 1`, con `k = log2(S)`.
 
         Il `+1` e' la bella, che puo' restare vuota: un turno con zero pairing
         significa "torneo concluso", non errore. Il vecchio `2k + 2` era

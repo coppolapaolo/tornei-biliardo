@@ -22,6 +22,7 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
         db.Index(
             "ix_match_bracket",
             "gara_id",
+            "bracket_group",
             "bracket_type",
             "bracket_round",
             "bracket_slot",
@@ -95,6 +96,11 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
     )  # W | L | GF | GFR | 3P (vedi models/matchmaking/bracket.py)
     bracket_round = db.Column(db.Integer, nullable=True)  # turno interno al bracket
     bracket_slot = db.Column(db.Integer, nullable=True)  # posizione 0-based nel round
+    # Girone di appartenenza nella formula FISBB (Step 12): i gironi sono
+    # doppi KO troncati giocati in parallelo, quindi la tripla sopra non è più
+    # univoca dentro la gara. NULL = tabellone finale, oppure gara senza fase
+    # a gironi (che è il caso di tutte le altre strategie a tabellone).
+    bracket_group = db.Column(db.Integer, nullable=True)  # indice 0-based del girone
 
     # Time tracking for statistics
     started_at = db.Column(db.DateTime, nullable=True)  # Set when match starts playing

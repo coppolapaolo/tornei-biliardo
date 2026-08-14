@@ -191,6 +191,13 @@ class Gara(SoftDeleteMixin, db.Model):
     # Solo "elo" è attivo: fargo_rating esiste su User ma non è ancora
     # alimentato, quindi la voce resta predisposta e non selezionabile.
     seeding_rating = db.Column(db.String(16), nullable=False, default="elo")
+    # Formula FISBB: quanti turni di doppio KO si giocano dentro il girone
+    # prima del troncamento. NULL = nessuna fase a gironi, cioè il doppio KO
+    # classico su un tabellone solo. Valorizzato, la taglia del girone ne
+    # discende (G = 2^(w+1)) e la gara diventa a due fasi: gironi in
+    # parallelo, poi tabellone finale a eliminazione diretta fra i qualificati.
+    # Vale solo per la strategia double_knockout.
+    double_ko_rounds = db.Column(db.Integer, nullable=True)
 
     # Tiebreaker configuration (spareggio fine gara)
     tiebreaker_enabled = db.Column(

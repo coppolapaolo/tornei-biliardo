@@ -36,6 +36,32 @@ BRACKET_THIRD_PLACE = "3P"
 MIN_BRACKET_SIZE_DIRECT_ELIMINATION = 4
 MIN_BRACKET_SIZE_DOUBLE_KNOCKOUT = 8
 
+# ── Formula FISBB: gironi a doppio KO troncato (Step 12) ──────────────────
+#
+# Il regolamento sportivo FISBB descrive la gara regionale come "gironi
+# composti da 8 atleti (doppio KO - solamente ai primi 2 turni - poi
+# eliminazione diretta); si qualificano al tabellone finale 4 atleti di ogni
+# girone (2 diretto + 2 recupero)".
+#
+# Il girone **non e' un formato nuovo**: e' il doppio KO gia' costruito,
+# fermato prima. Si giocano `W_1..W_w` e `L_1..L_{2w-2}`, e si salta l'ultimo
+# round di winners: i due imbattuti sono gia' qualificati, farli giocare fra
+# loro non aggiunge informazione.
+#
+# Da qui la dimensione del girone: `G = 2^(w+1)`, cioe' esattamente la taglia
+# per cui `W_w` lascia **due** imbattuti. Non e' una scelta cosmetica —
+# e' l'unica per cui il conto "2 diretto + 2 recupero" torna:
+#
+#   qualificati diretti  = G / 2^w      = 2
+#   qualificati recupero = G / 2^w      = 2   (vincitori di `L_{2w-2}`)
+#
+# quindi `QUALIFIERS_PER_GROUP = 4` per costruzione, qualunque sia `w`. Con
+# `w = 2` si ottiene il girone da 8 della formula FISBB; con `w = 3` un girone
+# da 16 che qualifica sempre 4. Il parametro esposto al director e' `w`
+# (`gara.double_ko_rounds`), e la taglia del girone ne discende.
+MIN_GROUP_DOUBLE_KO_ROUNDS = 2
+QUALIFIERS_PER_GROUP = 4
+
 
 @dataclass(frozen=True)
 class BracketRound:
@@ -223,3 +249,138 @@ def bracket_schedule(
         BracketRound(BRACKET_GRAND_FINAL_RESET, 1, 1)
     )
     return schedule
+
+
+# ── Fase a gironi (formula FISBB) ─────────────────────────────────────────
+
+
+def _require_group_rounds(double_ko_rounds: int) -> None:
+    _require_positive(double_ko_rounds, "double_ko_rounds")
+    if double_ko_rounds < MIN_GROUP_DOUBLE_KO_ROUNDS:
+        # Con w = 1 il girone sarebbe un tabellone da 4 senza alcun round di
+        # recupero (`2w - 2 = 0`) e tutti e quattro i giocatori si
+        # qualificherebbero: il troncamento non toglierebbe nulla.
+        raise ValueError(
+            f"un girone a doppio KO troncato richiede almeno "
+            f"{MIN_GROUP_DOUBLE_KO_ROUNDS} turni, ricevuto {double_ko_rounds}"
+        )
+
+
+def group_size_for(double_ko_rounds: int) -> int:
+    """Dimensione del girone: `G = 2^(w+1)`.
+
+    Derivata e non configurabile: e' la sola taglia per cui il troncamento
+    dopo `w` round di winners lascia esattamente due imbattuti, cioe' per cui
+    il girone qualifica "2 diretto + 2 recupero" (vedi
+    ``QUALIFIERS_PER_GROUP``). Con `w = 2` da' il girone da 8 della formula
+    FISBB.
+    """
+    _require_group_rounds(double_ko_rounds)
+    return 1 << (double_ko_rounds + 1)
+
+
+def group_phase_rounds(double_ko_rounds: int) -> int:
+    """Turni di gara occupati dalla fase a gironi: `2w - 1`.
+
+    L'ultimo round giocato e' `L_{2w-2}`, che lo schedule del doppio KO
+    colloca al turno `2w - 1`; i round di winners finiscono prima (turno `w`).
+    Con `w = 2`: tre turni (W1 · W2+L1 · L2).
+    """
+    _require_group_rounds(double_ko_rounds)
+    return 2 * double_ko_rounds - 1
+
+
+def group_schedule(double_ko_rounds: int) -> Dict[int, List[BracketRound]]:
+    """Schedule di **un** girone: il doppio KO da `G`, fermato dopo `w`.
+
+    Si riusa `bracket_schedule` invece di riscrivere i conteggi, cosi' il
+    girone non puo' divergere dal doppio KO di cui e' un troncamento: si
+    tengono `W_1..W_w` e `L_1..L_{2w-2}` e si scartano l'ultimo round di
+    winners, i round di recupero successivi, la finale e la bella. La
+    numerazione dei turni resta quella del doppio KO pieno.
+    """
+    _require_group_rounds(double_ko_rounds)
+    size = group_size_for(double_ko_rounds)
+    last_losers_round = 2 * double_ko_rounds - 2
+
+    truncated: Dict[int, List[BracketRound]] = {}
+    for gara_round, rounds in bracket_schedule(size, double_elimination=True).items():
+        kept = [
+            entry
+            for entry in rounds
+            if (
+                entry.bracket_type == BRACKET_WINNERS
+                and entry.bracket_round <= double_ko_rounds
+            )
+            or (
+                entry.bracket_type == BRACKET_LOSERS
+                and entry.bracket_round <= last_losers_round
+            )
+        ]
+        if kept:
+            truncated[gara_round] = kept
+    return truncated
+
+
+def group_count(player_count: int, group_size: int) -> int:
+    """Numero di gironi: `ceil(n / G)`."""
+    _require_positive(player_count, "player_count")
+    _require_power_of_two(group_size, "group_size")
+    return -(-player_count // group_size)
+
+
+def group_player_counts(player_count: int, groups: int) -> List[int]:
+    """Quanti giocatori per girone, distribuiti il piu' uniformemente possibile.
+
+    I `n mod g` gironi in testa ricevono un giocatore in piu'. Non e' una
+    scelta libera: e' la distribuzione che l'assegnazione a serpentina produce
+    e che il chiamante deve poter prevedere prima di sorteggiare.
+    """
+    _require_positive(player_count, "player_count")
+    _require_positive(groups, "groups")
+    base, extra = divmod(player_count, groups)
+    return [base + (1 if index < extra else 0) for index in range(groups)]
+
+
+def group_phase_is_feasible(player_count: int, group_size: int) -> bool:
+    """Il campo si divide in gironi senza lasciarne uno mezzo vuoto?
+
+    Ogni girone e' un tabellone di taglia **fissa** `G` con i buchi al posto
+    degli assenti, quindi vale l'invariante di tutto il resto del tabellone:
+    i buchi devono essere meno della meta' degli slot, altrimenti due buchi
+    finirebbero nella stessa coppia e il nodo non avrebbe nessuno da far
+    giocare. Tradotto: il girone piu' piccolo deve essere **piu' che mezzo
+    pieno**.
+
+    Con `G = 8` l'unico numero di iscritti che non si divide e' 9 (due gironi
+    da 5 e 4, e quello da 4 avrebbe meta' tabellone vuota).
+    """
+    counts = group_player_counts(player_count, group_count(player_count, group_size))
+    return 2 * min(counts) > group_size
+
+
+def final_bracket_size(groups: int) -> int:
+    """Taglia del tabellone finale: i `4g` qualificati arrotondati per eccesso.
+
+    Il pavimento e' quello dell'eliminazione diretta, che il tabellone finale
+    e' a tutti gli effetti. Con 3 gironi: 12 qualificati su un tabellone da 16,
+    quindi 4 bye ai primi seed.
+    """
+    _require_positive(groups, "groups")
+    return max(
+        bracket_size(groups * QUALIFIERS_PER_GROUP),
+        MIN_BRACKET_SIZE_DIRECT_ELIMINATION,
+    )
+
+
+def group_format_total_rounds(player_count: int, double_ko_rounds: int) -> int:
+    """Turni totali della gara: fase a gironi + tabellone finale.
+
+    I gironi si giocano **in parallelo** — tutti nello stesso turno di gara —
+    quindi la fase costa `2w - 1` turni indipendentemente da quanti gironi
+    siano. Il tabellone finale ne aggiunge `log2` della propria taglia.
+    """
+    groups = group_count(player_count, group_size_for(double_ko_rounds))
+    return group_phase_rounds(double_ko_rounds) + bracket_levels(
+        final_bracket_size(groups)
+    )

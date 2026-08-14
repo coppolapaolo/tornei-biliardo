@@ -3,7 +3,7 @@
 Tre blocchi, tutti al servizio dei formati a tabellone (eliminazione diretta e
 doppio KO), che finora esistevano nel dominio ma non erano utilizzabili.
 
-1. ``match.bracket_type`` / ``bracket_round`` / ``bracket_slot``
+1. ``match.bracket_type`` / ``bracket_round`` / ``bracket_slot`` / ``bracket_group``
    Il tabellone non era persistito: dal turno 2 i vincitori venivano
    riaccoppiati nell'ordine di ritorno della query, quindi la struttura del
    tabellone non veniva rispettata. Tre colonne e non un indice heap perché il
@@ -11,6 +11,9 @@ doppio KO), che finora esistevano nel dominio ma non erano utilizzabili.
    maggiori con lo stesso numero di match — e la tripla li rappresenta
    uniformemente entrambi. NULL su tutte e tre = match non-tabellone, oppure
    gara antecedente a questa migration (le strategie ricadono sul ramo legacy).
+   ``bracket_group`` serve alla formula FISBB, dove più gironi giocano in
+   parallelo e la tripla da sola non è più univoca dentro la gara: NULL =
+   tabellone finale, oppure gara senza fase a gironi.
 
 2. Opzioni di sorteggio su ``gara``
    ``separate_teammates`` (evita i derby nei primi turni), ``third_place_match``
@@ -60,9 +63,13 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db"):
     _add_column(cursor, "match", "bracket_type", "VARCHAR(8)")
     _add_column(cursor, "match", "bracket_round", "INTEGER")
     _add_column(cursor, "match", "bracket_slot", "INTEGER")
+    # Girone di appartenenza (formula FISBB): NULL = tabellone finale, oppure
+    # gara senza fase a gironi. I gironi si giocano in parallelo, quindi la
+    # tripla (type, round, slot) da sola non e' piu' univoca dentro la gara.
+    _add_column(cursor, "match", "bracket_group", "INTEGER")
     cursor.execute(
         "CREATE INDEX IF NOT EXISTS ix_match_bracket "
-        "ON match (gara_id, bracket_type, bracket_round, bracket_slot)"
+        "ON match (gara_id, bracket_group, bracket_type, bracket_round, bracket_slot)"
     )
     print("  ✓ Indice ix_match_bracket")
 
@@ -73,6 +80,9 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db"):
     _add_column(cursor, "gara", "third_place_match", "BOOLEAN NOT NULL DEFAULT 0")
     _add_column(cursor, "gara", "draw_seed", "INTEGER")
     _add_column(cursor, "gara", "seeding_rating", "VARCHAR(16) NOT NULL DEFAULT 'elo'")
+    # Formula FISBB: quanti turni di doppio KO si giocano dentro il girone.
+    # NULL = nessuna fase a gironi (doppio KO classico, un tabellone solo).
+    _add_column(cursor, "gara", "double_ko_rounds", "INTEGER")
 
     # ── 3. Squadre ────────────────────────────────────────────────────────
     _add_column(cursor, "user", "squadra", "VARCHAR(100)")

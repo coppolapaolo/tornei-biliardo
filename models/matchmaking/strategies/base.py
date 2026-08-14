@@ -34,6 +34,7 @@ class Pairing:
     bracket_type: Optional[str] = None  # W | L | GF | GFR | 3P
     bracket_round: Optional[int] = None  # turno interno al bracket
     bracket_slot: Optional[int] = None  # posizione 0-based nel round
+    bracket_group: Optional[int] = None  # girone FISBB; None = tabellone finale
 
     @property
     def player1_id(self) -> Optional[int]:
