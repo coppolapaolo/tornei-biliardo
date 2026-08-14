@@ -14,9 +14,9 @@ doppio KO), che finora esistevano nel dominio ma non erano utilizzabili.
 
 2. Opzioni di sorteggio su ``gara``
    ``separate_teammates`` (evita i derby nei primi turni), ``third_place_match``
-   (finale 3°/4°), ``draw_seed`` (rende il sorteggio riproducibile fra anteprima
-   e conferma), ``seeding_rating`` (quale rating usare quando la policy del
-   primo turno è "rating").
+   (finale 3°/4°), ``draw_seed`` (rende il sorteggio riproducibile e
+   ricostruibile a posteriori se qualcuno lo contesta), ``seeding_rating``
+   (quale rating usare quando la policy del primo turno è "rating").
 
 3. Squadre
    ``user.squadra`` è **testo libero**: precompila l'iscrizione, nient'altro.
