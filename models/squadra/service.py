@@ -1,5 +1,7 @@
 """Operazioni di business sull'elenco squadre di una competizione (US-1/2/3/8/9/11).
 
+Decisione: docs/adr/ADR-039-team-separation-in-the-draw.md
+
 L'elenco appartiene al **campionato** quando la gara ne fa parte, alla **gara**
 quando e' standalone: e' l'unica asimmetria del modulo, e sta tutta in
 ``owner_of``. Tutto il resto lavora sull'elenco risolto da li'.

@@ -2,6 +2,7 @@
 Module: models/matchmaking/bracket_view.py
 Purpose: Struttura di presentazione del tabellone (US-13, Step 10)
 Requirements: piano "Eliminazione diretta e doppio KO", Step 10
+Decisione: docs/adr/ADR-038-bracket-persistence.md
 
 Il tabellone e' persistito su `Match` come tripla `(bracket_type,
 bracket_round, bracket_slot)` piu' il girone `bracket_group` (Step 2 e

@@ -2,6 +2,7 @@
 Module: models/classification/bracket_standings.py
 Purpose: posizioni finali ricavate dal tabellone (sistema POSITION)
 Requirements: piano "Eliminazione diretta e doppio KO", Step 9 (US-16)
+Decisione: docs/adr/ADR-040-position-classification-ties.md
 
 Nel tabellone la classifica **non** si costruisce sommando vittorie: si legge
 da dove ciascuno è uscito. Chi esce allo stesso turno ha fatto lo stesso

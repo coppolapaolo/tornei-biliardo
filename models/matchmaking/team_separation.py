@@ -2,6 +2,7 @@
 Module: models/matchmaking/team_separation.py
 Purpose: separazione dei compagni di squadra nel sorteggio del tabellone
 Requirements: piano "Eliminazione diretta e doppio KO", Step 1 (US-6, US-10)
+Decisione: docs/adr/ADR-039-team-separation-in-the-draw.md
 
 Modulo **puro**: dipende solo dalla stdlib e da `bracket`, l'aritmetica del
 tabellone. Nessun accesso al DB, nessun oggetto di dominio: chi chiama

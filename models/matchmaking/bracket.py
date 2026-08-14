@@ -2,6 +2,7 @@
 Module: models/matchmaking/bracket.py
 Purpose: Aritmetica pura del tabellone (eliminazione diretta e doppio KO)
 Requirements: piano "Eliminazione diretta e doppio KO", Step 0
+Decisione: docs/adr/ADR-038-bracket-persistence.md
 
 Modulo **puro**: nessuna dipendenza da Flask, SQLAlchemy o dal resto del
 dominio. Contiene solo la matematica del tabellone, cosi' che le strategie
