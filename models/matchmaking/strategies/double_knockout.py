@@ -2,17 +2,62 @@
 Module: models/matchmaking/strategies/double_knockout.py
 Purpose: Double Knockout (double elimination) pairing strategy implementation
 Requirements: SPECIFICHE.md - Double knockout campionato format
+
+Il tabellone e' **persistito** sui Match (`bracket_type` / `bracket_round` /
+`bracket_slot`) e questa strategia si limita a leggerlo per coordinate. Prima
+lo ricostruiva a ogni turno dallo storico delle sconfitte — sei metodi di
+derivazione a runtime — e accoppiava il losers bracket da `list(set(...))`,
+cioe' in ordine non deterministico. Ora ogni giocatore ha una destinazione
+**calcolata**: chi vince sale di un nodo nel winners bracket, chi perde scende
+nel nodo di losers bracket che gli compete.
+
+Lo schedule (quale round di bracket si gioca a quale turno di gara) e i
+conteggi stanno in ``models/matchmaking/bracket.py``, che non conosce ne'
+Flask ne' il DB.
 """
 
 from __future__ import annotations
 
-import math
-from typing import Sequence, List, Dict, TYPE_CHECKING, Any
+import logging
+from typing import Sequence, List, Dict, Optional, Tuple, TYPE_CHECKING, Any, cast
 
+from ..bracket import (
+    BRACKET_GRAND_FINAL,
+    BRACKET_LOSERS,
+    BRACKET_WINNERS,
+    MIN_BRACKET_SIZE_DOUBLE_KNOCKOUT,
+    BracketRound,
+    bracket_schedule,
+    losers_feed_permutation,
+)
 from .base import Pairing, BaseStrategy
+from .direct_elimination import DirectEliminationStrategy
 
 if TYPE_CHECKING:
     from models.competition.models import Gara
+    from models.matchmaking.registry import PairingContext
+
+logger = logging.getLogger(__name__)
+
+# Chiave di un nodo del tabellone: (bracket_type, bracket_round, bracket_slot).
+NodeKey = Tuple[str, int, int]
+
+
+class _WinnersBracketSeeding(DirectEliminationStrategy):
+    """Il sorteggio del turno 1: identico all'eliminazione diretta.
+
+    Sottoclasse invece di riuso diretto perche' il doppio KO cambia due sole
+    costanti: il pavimento del tabellone (8 invece di 4 — sotto, il losers
+    bracket sarebbe troppo corto per avere senso) e il conteggio dei turni
+    (`2k + 1` invece di `k`). Tutto il resto — slot canonici, bye, seeding per
+    `first_round_policy`, separazione delle squadre — e' lo stesso codice.
+    """
+
+    name = "double_knockout_seeding"
+    display_name = "Double Knockout (sorteggio)"
+    min_players = MIN_BRACKET_SIZE_DOUBLE_KNOCKOUT
+    min_bracket_size = MIN_BRACKET_SIZE_DOUBLE_KNOCKOUT
+    double_elimination = True
 
 
 class DoubleKnockoutStrategy(BaseStrategy):
@@ -22,7 +67,9 @@ class DoubleKnockoutStrategy(BaseStrategy):
     name = "double_knockout"
     display_name = "Double Knockout"
     description = "Double elimination campionato format with winners and losers bracket"
-    min_players = 4
+    # Sotto gli 8 iscritti il losers bracket non ha abbastanza round per
+    # significare qualcosa: e' il pavimento dichiarato in US-4.
+    min_players = MIN_BRACKET_SIZE_DOUBLE_KNOCKOUT
     max_players = 64
     supports_byes = True
     requires_classification = False
@@ -30,398 +77,332 @@ class DoubleKnockoutStrategy(BaseStrategy):
     def __init__(self):
         super().__init__()
         self.strategy_name = "double_knockout"
+        self._seeding = _WinnersBracketSeeding()
+
+    def set_context(self, context: "PairingContext") -> None:
+        """Inietta l'RNG deterministico nel sorteggio del turno 1."""
+        self._seeding.set_context(context)
+
+    # ── Validazione ───────────────────────────────────────────────────────
 
     def _validate_strategy_specific(self, gara: object) -> Dict[str, List[str]]:
-        """Validate Double Knockout specific requirements."""
-        errors = []
-        warnings = []
+        errors: List[str] = []
+        warnings: List[str] = []
 
         try:
-            # Get active inscriptions
-            inscriptions = list(getattr(gara, "inscriptions", []))
-            active_inscriptions = [
-                i for i in inscriptions if not getattr(i, "is_withdrawn", False)
-            ]
-            player_count = len(active_inscriptions)
+            # Il filtro sulla lista d'attesa mancava, a differenza della DE:
+            # chi e' in attesa non gioca e non deve entrare nel conteggio.
+            player_count = len(self._seeding._active_inscriptions(gara))
+            if player_count == 0:
+                return {"errors": errors, "warnings": warnings}
 
-            # Calculate required rounds (approximately 2 * log2(n) rounds)
-            if player_count > 0:
-                required_rounds = self.get_total_rounds_needed(player_count)
+            if player_count < self.min_players:
+                errors.append(
+                    f"{self.display_name} richiede almeno {self.min_players} "
+                    f"iscritti, ne ha {player_count}"
+                )
+                return {"errors": errors, "warnings": warnings}
 
-                rounds_count = getattr(gara, "rounds_count", None)
-                if rounds_count is not None and rounds_count < required_rounds:
-                    errors.append(
-                        f"Double Knockout requires approximately {required_rounds} "
-                        f"rounds, but gara has {rounds_count}"
-                    )
-
-        except Exception as e:
-            warnings.append(f"Double Knockout validation warning: {str(e)}")
+            required_rounds = self.get_total_rounds_needed(player_count)
+            rounds_count = getattr(gara, "rounds_count", None)
+            if rounds_count and rounds_count < required_rounds:
+                errors.append(
+                    f"{self.display_name} richiede {required_rounds} turni "
+                    f"(winners, losers, finale e bella), la gara ne ha "
+                    f"{rounds_count}"
+                )
+        except Exception as e:  # pragma: no cover - difensivo
+            warnings.append(f"{self.display_name} validation warning: {str(e)}")
 
         return {"errors": errors, "warnings": warnings}
+
+    # ── Ingresso ──────────────────────────────────────────────────────────
 
     def _generate_pairings(
         self, processed_data: Dict[str, Any], round_number: int
     ) -> Sequence[Pairing]:
-        """Generate Double Knockout pairings for the round."""
         gara = processed_data["gara"]
-        return self._generate_round_pairings(
-            gara, round_number  # type: ignore[arg-type]
-        )
+        return self._generate_round_pairings(gara, round_number)
 
     def _generate_round_pairings(
         self, gara: object, round_number: int
     ) -> List[Pairing]:
-        """Generate pairings for a specific round using Double Knockout."""
-        from typing import cast
-
+        gara_typed = cast("Gara", gara)
         if round_number == 1:
-            return self._generate_first_round_pairings(cast("Gara", gara))
-        else:
-            return self._generate_subsequent_round_pairings(
-                cast("Gara", gara), round_number
-            )
+            return self._generate_first_round_pairings(gara_typed)
+        return self._generate_subsequent_round_pairings(gara_typed, round_number)
 
     def _generate_first_round_pairings(self, gara: "Gara") -> List[Pairing]:
-        """Generate first round pairings (winners bracket only)."""
-        from .direct_elimination import DirectEliminationStrategy
+        """Turno 1: winners bracket, identico all'eliminazione diretta."""
+        return self._seeding._generate_first_round_pairings(gara)
 
-        # First round is identical to direct elimination
-        de_strategy = DirectEliminationStrategy()
-        return de_strategy._generate_first_round_pairings(gara)
+    def _apply_side_effects(
+        self, pairings: Sequence[Pairing], gara: object, round_number: int
+    ) -> None:
+        """Fissa `rounds_count` a `2k + 1` sugli iscritti effettivi."""
+        self._seeding._apply_side_effects(pairings, gara, round_number)
+
+    # ── Turni successivi: lettura del tabellone ───────────────────────────
 
     def _generate_subsequent_round_pairings(
         self, gara: "Gara", round_number: int
     ) -> List[Pairing]:
-        """Generate pairings for subsequent rounds with winners and losers brackets."""
-        from ...match.models import Match
-        from models.status_enum import MatchStatus
+        """Accoppiamenti del turno, letti dallo schedule e dalle coordinate.
 
-        # Get all finished matches up to previous round (completed OR validated:
-        # la conferma bilaterale porta i match a 'validated', non solo 'completed').
-        all_matches = Match.query.filter(
-            Match.gara_id == gara.id,
-            Match.round_number < round_number,
-            Match.status.in_(MatchStatus.finished_values()),
-        ).all()
-
-        # Track player status: active, eliminated_once, eliminated_twice
-        player_status = self._calculate_player_status(gara, all_matches)
-
-        # Determine bracket phase
-        bracket_info = self._determine_bracket_phase(gara, round_number, player_status)
-
-        pairings = []
-
-        if bracket_info["phase"] == "winners_bracket":
-            pairings.extend(
-                self._generate_winners_bracket_pairings(
-                    gara, round_number, player_status, bracket_info
-                )
-            )
-        elif bracket_info["phase"] == "losers_bracket":
-            pairings.extend(
-                self._generate_losers_bracket_pairings(
-                    gara, round_number, player_status, bracket_info
-                )
-            )
-        elif bracket_info["phase"] == "mixed":
-            # Both brackets active
-            pairings.extend(
-                self._generate_winners_bracket_pairings(
-                    gara, round_number, player_status, bracket_info
-                )
-            )
-            pairings.extend(
-                self._generate_losers_bracket_pairings(
-                    gara, round_number, player_status, bracket_info
-                )
-            )
-        elif bracket_info["phase"] == "grand_final":
-            pairings.extend(
-                self._generate_grand_final_pairings(gara, round_number, player_status)
-            )
-
-        return pairings
-
-    def _calculate_player_status(self, gara: "Gara", matches: List) -> Dict[int, str]:
-        """Calculate current status of each player."""
-        player_status = {}
-
-        # Get all players
-        inscriptions = list(gara.inscriptions)  # type: ignore[arg-type]
-        active_inscriptions = [
-            i
-            for i in inscriptions
-            if not getattr(i, "is_withdrawn", False)
-            and not getattr(i, "is_waitlist", False)
-        ]
-        for inscription in active_inscriptions:
-            player_status[inscription.user_id] = "active"
-
-        # Track losses
-        player_losses = {player_id: 0 for player_id in player_status.keys()}
-
-        for match in matches:
-            if match.winner_id and not match.is_bye:
-                # Determine loser
-                if match.player1_id == match.winner_id:
-                    loser_id = match.player2_id
-                else:
-                    loser_id = match.player1_id
-
-                if loser_id in player_losses:
-                    player_losses[loser_id] += 1
-
-                    if player_losses[loser_id] == 1:
-                        player_status[loser_id] = "eliminated_once"
-                    elif player_losses[loser_id] >= 2:
-                        player_status[loser_id] = "eliminated_twice"
-
-        return player_status
-
-    def _losses_before_round(self, gara: "Gara", round_number: int) -> Dict[int, int]:
-        """Sconfitte per giocatore accumulate nei round STRETTAMENTE precedenti.
-
-        Usato per derivare l'appartenenza al bracket (winners vs losers): un
-        giocatore con 0 sconfitte è ancora nel winners bracket.
+        Ogni round di bracket sa da dove pesca: il winners bracket dai propri
+        vincitori, il losers bracket dai perdenti del winners e dai propri
+        sopravvissuti, la finale dai due campioni. Nessuna ricostruzione
+        dallo storico, nessun `set()` di mezzo.
         """
         from ...match.models import Match
         from models.status_enum import MatchStatus
 
-        matches = Match.query.filter(
-            Match.gara_id == gara.id,
-            Match.round_number < round_number,
-            Match.status.in_(MatchStatus.finished_values()),
-        ).all()
-
-        losses: Dict[int, int] = {}
-        for match in matches:
-            if match.winner_id and not match.is_bye:
-                if match.player1_id == match.winner_id:
-                    loser_id = match.player2_id
-                else:
-                    loser_id = match.player1_id
-                if loser_id is not None:
-                    losses[loser_id] = losses.get(loser_id, 0) + 1
-        return losses
-
-    def _split_bracket_matches(self, gara: "Gara", round_number: int):
-        """(winners_matches, losers_matches) per i match finiti del round dato.
-
-        Match NON ha colonna `notes`: la distinzione winners/losers bracket
-        non può essere persistita su un tag (il vecchio
-        `filter(Match.notes == 'losers_bracket')` sollevava AttributeError e
-        non era mai valorizzato). La deriviamo dallo storico sconfitte: un
-        match è winners bracket se ENTRAMBI i giocatori vi sono entrati
-        imbattuti, altrimenti losers bracket.
-        """
-        from ...match.models import Match
-        from models.status_enum import MatchStatus
-
-        losses_before = self._losses_before_round(gara, round_number)
-        round_matches = Match.query.filter(
-            Match.gara_id == gara.id,
-            Match.round_number == round_number,
-            Match.status.in_(MatchStatus.finished_values()),
-        ).all()
-
-        winners_matches: List = []
-        losers_matches: List = []
-        for match in round_matches:
-            participant_ids = [
-                pid for pid in (match.player1_id, match.player2_id) if pid is not None
-            ]
-            entered_with_loss = any(
-                losses_before.get(pid, 0) > 0 for pid in participant_ids
+        played = (
+            Match.query.filter(
+                Match.gara_id == gara.id, Match.round_number < round_number
             )
-            if entered_with_loss:
-                losers_matches.append(match)
-            else:
-                winners_matches.append(match)
-        return winners_matches, losers_matches
-
-    def _determine_bracket_phase(
-        self, gara: "Gara", round_number: int, player_status: Dict[int, str]
-    ) -> Dict[str, Any]:
-        """Determine which bracket phase we're in."""
-        active_players = [
-            pid for pid, status in player_status.items() if status == "active"
-        ]
-        eliminated_once = [
-            pid for pid, status in player_status.items() if status == "eliminated_once"
-        ]
-
-        if len(active_players) > 1 and len(eliminated_once) > 1:
-            return {
-                "phase": "mixed",
-                "winners_active": len(active_players),
-                "losers_active": len(eliminated_once),
-            }
-        elif len(active_players) > 1:
-            return {"phase": "winners_bracket", "players": active_players}
-        elif len(eliminated_once) > 1:
-            return {"phase": "losers_bracket", "players": eliminated_once}
-        elif len(active_players) == 1 and len(eliminated_once) == 1:
-            return {
-                "phase": "grand_final",
-                "winner_champ": active_players[0],
-                "loser_champ": eliminated_once[0],
-            }
-        else:
-            return {"phase": "finished"}
-
-    def _generate_winners_bracket_pairings(
-        self,
-        gara: "Gara",
-        round_number: int,
-        player_status: Dict[int, str],
-        bracket_info: Dict,
-    ) -> List[Pairing]:
-        """Generate winners bracket pairings."""
-        active_players = [
-            pid for pid, status in player_status.items() if status == "active"
-        ]
-
-        if len(active_players) < 2:
+            .order_by(Match.id)
+            .all()
+        )
+        if not played:
             return []
 
-        # Get winners from previous winners bracket matches (bracket derivato
-        # dallo storico sconfitte, non da un tag Match.notes inesistente).
-        previous_winners_matches, _ = self._split_bracket_matches(
-            gara, round_number - 1
-        )
+        # Nel doppio KO gli alimentatori non stanno tutti nel turno
+        # precedente — il round maggiore di losers pesca i perdenti di un
+        # winners bracket di due turni prima — quindi il gate guarda tutto
+        # cio' che e' stato giocato, non solo l'ultimo turno.
+        if any(not MatchStatus.is_finished(m.status) for m in played):
+            return []
 
-        winners = []
-        for match in previous_winners_matches:
-            if match.winner_id and match.winner_id in active_players:
-                winners.append(match.winner_id)
+        nodes = self._nodes_by_coordinate(gara, played)
+        size = 2 * sum(1 for key in nodes if key[0] == BRACKET_WINNERS and key[1] == 1)
 
-        # If this is early in campionato and we don't have enough previous matches,
-        # just pair available active players
-        if not winners:
-            winners = active_players
-
-        pairings = []
-        winners = list(winners)
-
-        while len(winners) >= 2:
-            player1 = winners.pop(0)
-            player2 = winners.pop(0)
-            pairings.append(
-                Pairing(players=(player1, player2), round_number=round_number)
-            )
-
-        # Handle odd winner
-        if len(winners) == 1:
-            pairings.append(
-                Pairing(players=(winners[0],), is_bye=True, round_number=round_number)
-            )
+        pairings: List[Pairing] = []
+        for bracket_round in bracket_schedule(size, double_elimination=True).get(
+            round_number, []
+        ):
+            if bracket_round.bracket_type == BRACKET_WINNERS:
+                pairings.extend(
+                    self._winners_pairings(nodes, bracket_round, round_number)
+                )
+            elif bracket_round.bracket_type == BRACKET_LOSERS:
+                pairings.extend(
+                    self._losers_pairings(nodes, bracket_round, round_number)
+                )
+            elif bracket_round.bracket_type == BRACKET_GRAND_FINAL:
+                pairings.extend(self._grand_final_pairings(nodes, size, round_number))
+            # La bella (GFR) si materializza solo se il campione del losers
+            # bracket vince la finale: la decide lo Step 8.
 
         return pairings
 
-    def _generate_losers_bracket_pairings(
-        self,
-        gara: "Gara",
-        round_number: int,
-        player_status: Dict[int, str],
-        bracket_info: Dict,
+    def _nodes_by_coordinate(self, gara: "Gara", played: Sequence[Any]) -> Dict:
+        """Match giocati indicizzati per coordinata di tabellone."""
+        nodes: Dict[NodeKey, Any] = {}
+        for match in played:
+            if match.bracket_slot is None or match.bracket_type is None:
+                # Il doppio KO non ha ramo legacy: a differenza
+                # dell'eliminazione diretta, il vecchio codice accoppiava il
+                # losers bracket in ordine non deterministico, quindi non c'e'
+                # un "comportamento precedente" da preservare. Meglio un
+                # errore esplicito che un tabellone inventato a meta' gara.
+                raise ValueError(
+                    f"Gara {getattr(gara, 'id', None)}: il match {match.id} non "
+                    f"ha coordinate di tabellone. Una gara a doppio KO "
+                    f"iniziata prima della persistenza del tabellone non e' "
+                    f"ricostruibile: va annullata e risorteggiata."
+                )
+            key = (match.bracket_type, match.bracket_round, match.bracket_slot)
+            if key in nodes:
+                raise ValueError(
+                    f"Coordinata {key} duplicata nella gara "
+                    f"{getattr(gara, 'id', None)} (match {match.id})"
+                )
+            nodes[key] = match
+        return nodes
+
+    # ── I tre alimentatori ────────────────────────────────────────────────
+
+    def _winners_pairings(
+        self, nodes: Dict, bracket_round: BracketRound, round_number: int
     ) -> List[Pairing]:
-        """Generate losers bracket pairings."""
-        eliminated_once = [
-            pid for pid, status in player_status.items() if status == "eliminated_once"
-        ]
-
-        if len(eliminated_once) < 2:
-            return []
-
-        # Get recent losers from winners bracket
-
-        recent_losers = self._get_recent_winners_bracket_losers(gara, round_number)
-
-        # Get survivors from previous losers bracket
-        previous_losers_survivors = self._get_previous_losers_bracket_survivors(
-            gara, round_number
-        )
-
-        # Combine and pair
-        available_players = list(set(recent_losers + previous_losers_survivors))
-        available_players = [p for p in available_players if p in eliminated_once]
-
-        pairings = []
-        while len(available_players) >= 2:
-            player1 = available_players.pop(0)
-            player2 = available_players.pop(0)
-            # Mark as losers bracket match
-            pairing = Pairing(players=(player1, player2), round_number=round_number)
-            pairings.append(pairing)
-
-        return pairings
-
-    def _generate_grand_final_pairings(
-        self, gara: "Gara", round_number: int, player_status: Dict[int, str]
-    ) -> List[Pairing]:
-        """Generate grand final pairing between winners and losers bracket champions."""
-        active_players = [
-            pid for pid, status in player_status.items() if status == "active"
-        ]
-        eliminated_once = [
-            pid for pid, status in player_status.items() if status == "eliminated_once"
-        ]
-
-        if len(active_players) == 1 and len(eliminated_once) == 1:
-            return [
+        """`W_w` ← vincitori di `(W, w-1, 2s)` e `(W, w-1, 2s+1)`."""
+        previous = bracket_round.bracket_round - 1
+        pairings: List[Pairing] = []
+        for slot in range(bracket_round.n_matches):
+            first = self._required(nodes, (BRACKET_WINNERS, previous, 2 * slot))
+            second = self._required(nodes, (BRACKET_WINNERS, previous, 2 * slot + 1))
+            pairings.append(
                 Pairing(
-                    players=(active_players[0], eliminated_once[0]),
+                    players=(self._winner(first), self._winner(second)),
                     round_number=round_number,
+                    bracket_type=BRACKET_WINNERS,
+                    bracket_round=bracket_round.bracket_round,
+                    bracket_slot=slot,
                 )
+            )
+        return pairings
+
+    def _losers_pairings(
+        self, nodes: Dict, bracket_round: BracketRound, round_number: int
+    ) -> List[Pairing]:
+        """Round minore e maggiore del losers bracket.
+
+        Il losers bracket alterna due tipi di round: quelli **minori**
+        `L_{2j-1}`, che accoppiano fra loro i ripescati appena arrivati, e
+        quelli **maggiori** `L_{2j}`, dove i sopravvissuti incontrano i
+        perdenti freschi del winners bracket.
+
+        E' qui che i buchi del primo turno si propagano: un bye di `W1` non
+        produce alcun perdente, quindi lo slot corrispondente resta vuoto. Un
+        nodo con due alimentatori e' un match, con uno solo e' un bye, con
+        nessuno **non viene materializzato** — e a valle si comporta a sua
+        volta da alimentatore assente.
+        """
+        lb_round = bracket_round.bracket_round
+        pairings: List[Pairing] = []
+
+        for slot in range(bracket_round.n_matches):
+            if lb_round % 2 == 1:
+                feeders = self._minor_round_feeders(nodes, lb_round, slot)
+            else:
+                feeders = self._major_round_feeders(
+                    nodes, lb_round, slot, bracket_round.n_matches
+                )
+
+            present = [player for player in feeders if player is not None]
+            if not present:
+                continue
+
+            pairings.append(
+                Pairing(
+                    players=cast(Tuple[int, ...], tuple(present)),
+                    is_bye=len(present) == 1,
+                    round_number=round_number,
+                    bracket_type=BRACKET_LOSERS,
+                    bracket_round=lb_round,
+                    bracket_slot=slot,
+                )
+            )
+        return pairings
+
+    def _minor_round_feeders(
+        self, nodes: Dict, lb_round: int, slot: int
+    ) -> List[Optional[int]]:
+        """`L_{2j-1}` ← perdenti di `W1` (j=1) o vincitori di `L_{2j-2}`."""
+        j = (lb_round + 1) // 2
+        if j == 1:
+            return [
+                self._loser(self._required(nodes, (BRACKET_WINNERS, 1, 2 * slot))),
+                self._loser(self._required(nodes, (BRACKET_WINNERS, 1, 2 * slot + 1))),
             ]
+        return [
+            self._winner_or_none(nodes.get((BRACKET_LOSERS, lb_round - 1, 2 * slot))),
+            self._winner_or_none(
+                nodes.get((BRACKET_LOSERS, lb_round - 1, 2 * slot + 1))
+            ),
+        ]
 
-        return []
+    def _major_round_feeders(
+        self, nodes: Dict, lb_round: int, slot: int, n_matches: int
+    ) -> List[Optional[int]]:
+        """`L_{2j}` ← vincitore di `(L, 2j-1, s)` + perdente di `(W, j+1, σ(s))`.
 
-    def _get_recent_winners_bracket_losers(
-        self, gara: "Gara", round_number: int
-    ) -> List[int]:
-        """Get players who just lost in winners bracket."""
-        # Match del winners bracket del round precedente (derivati dallo storico).
-        recent_matches, _ = self._split_bracket_matches(gara, round_number - 1)
+        La permutazione `σ` allontana il ripescato dai sopravvissuti che
+        vengono dal suo stesso ramo, cosi' che una rivincita immediata sia
+        l'eccezione e non la regola. I nodi di `W_{j+1}` esistono sempre e
+        non sono mai bye — i buchi stanno solo al primo turno — quindi il
+        perdente c'e' comunque, e un round maggiore non resta mai vuoto.
+        """
+        j = lb_round // 2
+        sigma = losers_feed_permutation(j + 1, n_matches)
+        dropdown = self._required(nodes, (BRACKET_WINNERS, j + 1, sigma[slot]))
+        return [
+            self._winner_or_none(nodes.get((BRACKET_LOSERS, lb_round - 1, slot))),
+            self._loser(dropdown),
+        ]
 
-        losers = []
-        for match in recent_matches:
-            if match.winner_id and not match.is_bye:
-                if match.player1_id == match.winner_id:
-                    losers.append(match.player2_id)
-                else:
-                    losers.append(match.player1_id)
+    def _grand_final_pairings(
+        self, nodes: Dict, size: int, round_number: int
+    ) -> List[Pairing]:
+        """Finale fra i due campioni.
 
-        return losers
+        **Convenzione di seat**: `player1` e' il campione del winners bracket,
+        `player2` quello del losers. Non e' cosmesi — e' cosi' che lo Step 8
+        riconosce il bracket reset (`winner_id == player2_id` significa che a
+        vincere e' stato chi aveva gia' una sconfitta, quindi si gioca la
+        bella). Va quindi mantenuta, e c'e' un test che la sorveglia.
+        """
+        levels = size.bit_length() - 1
+        winners_champion = self._required(nodes, (BRACKET_WINNERS, levels, 0))
+        losers_champion = self._required(nodes, (BRACKET_LOSERS, 2 * levels - 2, 0))
+        return [
+            Pairing(
+                players=(
+                    self._winner(winners_champion),
+                    self._winner(losers_champion),
+                ),
+                round_number=round_number,
+                bracket_type=BRACKET_GRAND_FINAL,
+                bracket_round=1,
+                bracket_slot=0,
+            )
+        ]
 
-    def _get_previous_losers_bracket_survivors(
-        self, gara: "Gara", round_number: int
-    ) -> List[int]:
-        """Get players who survived previous losers bracket round."""
-        # Match del losers bracket del round precedente (derivati dallo storico).
-        _, previous_losers_matches = self._split_bracket_matches(gara, round_number - 1)
+    # ── Lettura dei nodi ──────────────────────────────────────────────────
 
-        survivors = []
-        for match in previous_losers_matches:
-            if match.winner_id:
-                survivors.append(match.winner_id)
+    @staticmethod
+    def _required(nodes: Dict, key: NodeKey) -> Any:
+        """Alimentatore che deve esistere per costruzione."""
+        match = nodes.get(key)
+        if match is None:
+            raise ValueError(
+                f"Alimentatore {key} assente: il tabellone del doppio KO e' "
+                f"incoerente (i nodi del winners bracket esistono sempre)"
+            )
+        return match
 
-        return survivors
+    @staticmethod
+    def _winner(match: Any) -> int:
+        return DirectEliminationStrategy._winner_of(match)
+
+    @staticmethod
+    def _winner_or_none(match: Optional[Any]) -> Optional[int]:
+        """Vincitore di un nodo che **puo' non essere stato materializzato**."""
+        if match is None:
+            return None
+        return DirectEliminationStrategy._winner_of(match)
+
+    @staticmethod
+    def _loser(match: Any) -> Optional[int]:
+        """Chi scende nel losers bracket, o None se il nodo era un bye.
+
+        E' l'unica sorgente di buchi del losers bracket: chi passa il turno
+        senza giocare non produce alcun perdente da ripescare.
+        """
+        if match.is_bye:
+            return None
+        winner_id = match.winner_id
+        if winner_id is None:
+            raise ValueError(
+                f"Match {match.id} concluso senza vincitore "
+                f"(turno {match.round_number})"
+            )
+        return match.player1_id if winner_id == match.player2_id else match.player2_id
+
+    # ── Aritmetica ────────────────────────────────────────────────────────
 
     def get_total_rounds_needed(self, player_count: int) -> int:
-        """Calculate approximate total rounds needed for Double Knockout."""
-        if player_count < 2:
-            return 0
+        """Turni necessari: `2k + 1`, con `k = log2(S)`.
 
-        # Winners bracket rounds
-        winners_rounds = math.ceil(math.log2(player_count))
+        Il `+1` e' la bella, che puo' restare vuota: un turno con zero pairing
+        significa "torneo concluso", non errore. Il vecchio `2k + 2` era
+        un'approssimazione dichiarata tale nel codice.
+        """
+        return self._seeding.get_total_rounds_needed(player_count)
 
-        # Losers bracket rounds (approximately same as winners)
-        losers_rounds = winners_rounds
+    def get_bracket_size(self, player_count: int) -> int:
+        return self._seeding.get_bracket_size(player_count)
 
-        # Grand final
-        grand_final_rounds = 2  # Could be 1 or 2 depending on reset
-
-        return winners_rounds + losers_rounds + grand_final_rounds
+    def get_byes_needed(self, player_count: int) -> int:
+        return self._seeding.get_byes_needed(player_count)
