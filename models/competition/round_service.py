@@ -40,6 +40,7 @@ class RoundService:
         """Avvia il primo turno della gara con controlli e sorteggio."""
         from models.competition.models import Inscription
         import random
+        import secrets
 
         gara = db.session.get(Gara, gara_id)
         if not gara:
@@ -58,6 +59,13 @@ class RoundService:
             raise ValueError(
                 f"Servono almeno {gara.min_participants} iscritti per avviare la gara!"
             )
+
+        # Seme del sorteggio: generato una volta sola e persistito, così il
+        # tabellone non cambia da solo fra un'anteprima e la conferma.
+        # `cancel_first_round_startup` lo azzera, quindi riavviare il turno 1
+        # significa risorteggiare davvero.
+        if gara.draw_seed is None:
+            gara.draw_seed = secrets.randbelow(2**31)
 
         # Genera il sorteggio iniziale
         random.shuffle(inscriptions)
