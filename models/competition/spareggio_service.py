@@ -5,15 +5,20 @@ Purpose: Handle spot shot rally (SSR) tiebreakers for top 3 positions
 
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Tuple, TypedDict
 from sqlalchemy import func
 from models.base import db
+from models.classification.bracket_standings import bracket_positions
 from models.classification.models import RoundClassification, GaraClassification
+from models.classification.strategies.position_strategies import NO_BRACKET_POSITION
 from models.match.models import Match
 from models.transaction.manager import transactional
 
 if TYPE_CHECKING:
     from models.competition.models import Gara
+
+logger = logging.getLogger(__name__)
 
 
 class TiebreakerGroup(TypedDict):
@@ -33,6 +38,25 @@ class SpareggioService:
     # ------------------------------------------------------------------
     # Regola di risoluzione di un gruppo di parimerito
     # ------------------------------------------------------------------
+
+    @staticmethod
+    def tiebreakers_apply_to(gara) -> bool:
+        """Se in questa gara lo spareggio ha senso.
+
+        Nel sistema POSITION **no**, ed è una scelta di prodotto: le posizioni
+        vengono a bande di pari merito perché chi esce allo stesso turno ha
+        fatto lo stesso percorso (i quattro quartifinalisti sono tutti 5°).
+        Proporre uno spot shot rally per separarli significherebbe inventare
+        una gerarchia che il tabellone non ha prodotto, e nessuno l'ha chiesta.
+
+        Vale per tutte le porte d'ingresso dello spareggio, non solo per la
+        schermata: il vincolo sta qui, non nella UI.
+        """
+        if not getattr(gara, "tiebreaker_enabled", False):
+            return False
+        return (
+            getattr(gara, "classification_system", None) or "WINS"
+        ).upper() != "POSITION"
 
     @staticmethod
     def positions_to_discriminate(
@@ -132,12 +156,15 @@ class SpareggioService:
         parimerito (e candidati a SSR se nelle prime ``tiebreaker_until_position``
         posizioni).
 
-        - **WINS** (default), **POSITION**: chiave ``(matches_won, rack_difference)``.
+        - **WINS** (default): chiave ``(matches_won, rack_difference)``.
           Due giocatori sono parimerito solo se *entrambi* coincidono. Bug B20:
           prima il servizio raggruppava sempre per ``rack_difference`` solo,
           generando falsi parimerito quando la gara è WINS e due player hanno
           stesso rack_diff ma diversi matches_won.
         - **RACK**: chiave ``rack_difference`` (intero), come prima.
+        - **POSITION**: non arriva mai qui, perché lo spareggio è spento
+          (``tiebreakers_apply_to``): i pari merito del tabellone sono l'esito
+          voluto e non vanno sciolti.
 
         Returns:
             Tuple ``(sorted_keys, groups_by_key)``. Le keys sono ordinate
@@ -214,8 +241,9 @@ class SpareggioService:
         if not gara:
             return []
 
-        # Check if tiebreaker is enabled for this gara
-        if not gara.tiebreaker_enabled:
+        # Spareggio spento per la gara, o sistema POSITION (dove i pari
+        # merito sono l'esito voluto): vedi `tiebreakers_apply_to`.
+        if not SpareggioService.tiebreakers_apply_to(gara):
             return []
 
         # Get the position limit for tiebreakers (default to 3 if not set)
@@ -330,8 +358,9 @@ class SpareggioService:
         if not gara:
             return []
 
-        # Check if tiebreaker is enabled for this gara
-        if not gara.tiebreaker_enabled:
+        # Spareggio spento per la gara, o sistema POSITION (dove i pari
+        # merito sono l'esito voluto): vedi `tiebreakers_apply_to`.
+        if not SpareggioService.tiebreakers_apply_to(gara):
             return []
 
         # Get the position limit for tiebreakers (default to 3 if not set)
@@ -796,6 +825,29 @@ class SpareggioService:
             if classification_system == "RACK"
             else (lambda x: (-x["matches_won"], -x["rack_totali"], -x["ssr_score"]))
         )
+
+        # POSITION: la classifica la dà il tabellone, non i totali. Chi è
+        # uscito allo stesso turno condivide la banda e quindi la chiave, così
+        # `assign_shared_positions` gli assegna la stessa posizione — che è
+        # esattamente il risultato voluto, non un pareggio da sciogliere.
+        # In produzione la classifica finale passa da qui, non da
+        # `calculate_gara_classification`.
+        if classification_system == "POSITION":
+            bracket = bracket_positions(gara)
+            if bracket:
+                for data in player_data:
+                    data["bracket_position"] = bracket.get(
+                        data["user_id"], NO_BRACKET_POSITION
+                    )
+                merit_key = lambda x: (x["bracket_position"],)  # noqa: E731
+            else:
+                # Gara POSITION senza tabellone persistito: meglio l'ordine
+                # per vittorie di una classifica tutta a pari merito.
+                logger.warning(
+                    "Gara %s è POSITION ma non ha un tabellone persistito: "
+                    "posizioni finali calcolate per vittorie",
+                    gara_id,
+                )
 
         # A pari merito l'ordine di ELENCAZIONE è quello di estrazione, non la
         # posizione di partenza né il rowid: è l'unico criterio che il
