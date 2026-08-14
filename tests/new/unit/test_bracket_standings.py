@@ -21,7 +21,14 @@ from models.classification.bracket_standings import (
 pytestmark = pytest.mark.unit
 
 
-def _match(bracket_type, round_number, winner, loser, order=0):
+def _match(bracket_type, round_number, winner, loser, order=0, double=None):
+    """Un nodo concluso.
+
+    `double` dice quante sconfitte elimina **questo** nodo, e serve solo alla
+    formula FISBB, che mescola le due regole: `True` nel girone (c'è il
+    recupero), `False` nel tabellone finale. Lasciato a `None` vale la regola
+    della gara.
+    """
     return BracketMatch(
         bracket_type=bracket_type,
         round_number=round_number,
@@ -29,6 +36,7 @@ def _match(bracket_type, round_number, winner, loser, order=0):
         winner_id=winner,
         loser_id=loser,
         order=order,
+        double_elimination=double,
     )
 
 
@@ -136,6 +144,73 @@ class TestDoppioKO:
 
         assert positions[3] == 1
         assert positions[1] == 2, "eliminato alla seconda sconfitta, nella bella"
+
+
+class TestFormulaFisbb:
+    """Due fasi, due regole di eliminazione (Step 12).
+
+    Nel girone c'è il recupero e servono due sconfitte; nel tabellone finale
+    ne basta una. Senza questa distinzione chi si qualifica imbattuto e perde
+    subito il primo match del tabellone finale risulterebbe "ancora in gioco"
+    a gara conclusa, cioè primo a pari merito col vincitore.
+    """
+
+    def _girone(self):
+        """Un girone da 8 giocato per intero: 1 e 3 diretti, 2 e 4 dal recupero.
+
+        Turno 1 = `W1`, turno 2 = `W2` + `L1`, turno 3 = `L2`. `W3` non si
+        gioca: i due imbattuti sono già qualificati.
+        """
+        return [
+            _match("W", 1, 1, 2, 0, double=True),
+            _match("W", 1, 3, 4, 1, double=True),
+            _match("W", 1, 5, 6, 2, double=True),
+            _match("W", 1, 7, 8, 3, double=True),
+            _match("W", 2, 1, 5, 4, double=True),
+            _match("W", 2, 3, 7, 5, double=True),
+            _match("L", 2, 2, 6, 6, double=True),  # 6 esce: seconda sconfitta
+            _match("L", 2, 4, 8, 7, double=True),  # 8 esce
+            _match("L", 3, 2, 7, 8, double=True),  # 7 esce
+            _match("L", 3, 4, 5, 9, double=True),  # 5 esce
+        ]
+
+    def _gara(self):
+        """Girone da 8 più tabellone finale da 4 fra i suoi qualificati."""
+        finale = [
+            _match("W", 4, 1, 4, 10, double=False),
+            _match("W", 4, 3, 2, 11, double=False),
+            _match("W", 5, 1, 3, 12, double=False),
+        ]
+        return self._girone() + finale
+
+    def test_nel_tabellone_finale_basta_una_sconfitta(self):
+        """1 e 3 arrivano imbattuti: la prima sconfitta li elimina lo stesso.
+
+        Senza la distinzione fra le due fasi, 3 risulterebbe "ancora in gioco"
+        a gara conclusa — cioè primo a pari merito col vincitore — e 2 e 4,
+        che una sconfitta ce l'avevano già dal girone, sarebbero gli unici a
+        uscire dal tabellone finale.
+        """
+        positions = _positions(self._gara(), double_elimination=True)
+
+        assert positions[1] == 1, "il vincitore"
+        assert positions[3] == 2, "sconfitto in finale, pur essendo imbattuto prima"
+        assert positions[2] == positions[4] == 3, "usciti in semifinale, pari merito"
+
+    def test_nel_girone_la_prima_sconfitta_non_elimina(self):
+        """2 e 4 perdono al turno 1 e si qualificano lo stesso, dal recupero."""
+        positions = _positions(self._gara(), double_elimination=True)
+
+        assert positions[2] < positions[5], "il ripescato sta davanti a chi è uscito"
+        assert positions[4] < positions[5]
+
+    def test_chi_non_passa_il_girone_sta_sotto_a_tutti(self):
+        positions = _positions(self._gara(), double_elimination=True)
+
+        # 5 e 7 escono al turno 3, 6 e 8 al turno 2: chi resiste di più sta
+        # davanti, e i qualificati stanno davanti a entrambe le coppie.
+        assert positions[5] == positions[7] == 5
+        assert positions[6] == positions[8] == 7
 
 
 class TestPosizioniDalleBande:

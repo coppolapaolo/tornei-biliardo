@@ -198,12 +198,15 @@ def qualifier_seeding(qualified_by_group: Sequence[Sequence[int]]) -> List[int]:
     seed `1..g`, i secondi diretti i seed `g+1..2g`, e i ripescati occupano la
     seconda meta'.
 
-    E' anche il modo in cui il **girone di provenienza** viene tenuto in
-    conto senza aggiungere un secondo criterio a `assign_slots`: i quattro
+    Tiene conto del **girone di provenienza**, ma solo in parte: i quattro
     qualificati di uno stesso girone finiscono a distanza `g` l'uno
-    dall'altro nell'ordine dei seed, quindi in bande di seeding diverse, e
-    l'ordine canonico del tabellone li manda in blocchi distinti. La
-    separazione delle squadre resta libera di lavorare sopra questa base.
+    dall'altro nell'ordine dei seed, quindi in bande di seeding diverse. Non
+    basta a garantire che non si incontrino subito — con `g = 3` i seed 7 e
+    10 sono entrambi del primo girone e in un tabellone da 16 sono
+    complementari, cioe' si affronterebbero al primo turno. Ad allontanarli
+    davvero e' la separazione applicata dalla strategia sopra questo ordine
+    (`_assign_slots(..., groups_of=...)`), che quando non ci sono squadre da
+    separare usa proprio il girone.
     """
     if not qualified_by_group:
         return []

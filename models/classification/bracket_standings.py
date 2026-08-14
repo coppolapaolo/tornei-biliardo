@@ -46,6 +46,10 @@ class BracketMatch:
     winner_id: Optional[int] = None
     loser_id: Optional[int] = None
     order: int = 0  # tie-break stabile fra nodi dello stesso turno
+    # Quante sconfitte elimina **questo** nodo: None = come la gara. Serve
+    # alla formula FISBB, dove le due fasi hanno regole diverse — nel girone
+    # c'è il recupero, nel tabellone finale no.
+    double_elimination: Optional[bool] = None
 
 
 def elimination_bands(
@@ -60,7 +64,11 @@ def elimination_bands(
     ordinato.
 
     `double_elimination` cambia una cosa sola: quante sconfitte servono per
-    essere fuori. Il turno in cui cade **quella** sconfitta è la banda.
+    essere fuori. Il turno in cui cade **quella** sconfitta è la banda. Il
+    singolo nodo può dire la sua (`BracketMatch.double_elimination`), e una
+    gara può quindi mescolare le due regole: è il caso della formula FISBB,
+    dove nel girone si esce alla seconda sconfitta e nel tabellone finale
+    alla prima.
     """
     ordered = sorted(matches, key=lambda m: (m.round_number, m.order))
 
@@ -75,12 +83,21 @@ def elimination_bands(
         if match.loser_id is not None:
             losses.setdefault(match.loser_id, []).append(match)
 
-    required_losses = 2 if double_elimination else 1
-    eliminated_at: Dict[int, int] = {
-        player: player_losses[required_losses - 1].round_number
-        for player, player_losses in losses.items()
-        if len(player_losses) >= required_losses
-    }
+    eliminated_at: Dict[int, int] = {}
+    for player, player_losses in losses.items():
+        # Si cammina sulle sconfitte in ordine cronologico e si esce alla
+        # prima che basti secondo la regola del **nodo in cui è avvenuta**:
+        # chi arriva al tabellone finale con una sconfitta nel girone è
+        # eliminato dalla successiva, chi ci arriva imbattuto pure.
+        for tally, match in enumerate(player_losses, start=1):
+            double = (
+                double_elimination
+                if match.double_elimination is None
+                else match.double_elimination
+            )
+            if tally >= (2 if double else 1):
+                eliminated_at[player] = match.round_number
+                break
 
     # La finalina toglie i due semifinalisti dalla loro banda e li ordina fra
     # loro: è esattamente il motivo per cui il director l'ha chiesta.
@@ -157,6 +174,14 @@ def bracket_positions(gara) -> Dict[int, int]:
     if not rows:
         return {}
 
+    double = (
+        getattr(gara, "matchmaking_strategy", None) in DOUBLE_ELIMINATION_STRATEGIES
+    )
+    # Formula FISBB: i nodi con un girone eliminano alla seconda sconfitta,
+    # quelli del tabellone finale (`bracket_group` a NULL) alla prima. Senza
+    # gironi la regola è una sola e vale per tutta la gara.
+    group_format = any(row.bracket_group is not None for row in rows)
+
     matches: List[BracketMatch] = []
     for row in rows:
         winner_id = row.winner_id
@@ -167,6 +192,9 @@ def bracket_positions(gara) -> Dict[int, int]:
             BracketMatch(
                 bracket_type=row.bracket_type,
                 round_number=row.round_number,
+                double_elimination=(
+                    double and (not group_format or row.bracket_group is not None)
+                ),
                 players=tuple(
                     player
                     for player in (row.player1_id, row.player2_id)
@@ -178,9 +206,6 @@ def bracket_positions(gara) -> Dict[int, int]:
             )
         )
 
-    double = (
-        getattr(gara, "matchmaking_strategy", None) in DOUBLE_ELIMINATION_STRATEGIES
-    )
     return positions_from_bands(elimination_bands(matches, double_elimination=double))
 
 

@@ -92,6 +92,25 @@ class DirectEliminationStrategy(BaseStrategy):
             return self._injected_rng
         return random.Random(resolve_draw_seed(gara))
 
+    def _derived_rng(self, gara: object, key: str) -> random.Random:
+        """Sorgente casuale dedicata a **uno** dei sorteggi della gara.
+
+        Serve alla formula FISBB, dove nella stessa operazione si estraggono
+        piu' tabelloni distinti (un girone per volta, poi il tabellone finale).
+        Con una sorgente sola i gironi verrebbero sorteggiati dalla stessa
+        sequenza di numeri: non identici — i giocatori sono altri — ma con le
+        stesse scelte interne all'algoritmo di separazione (stessi restart,
+        stessi scambi), che e' una correlazione che non ha ragione di esserci.
+
+        La derivazione resta deterministica: dal seme persistito della gara
+        piu' la chiave, oppure — quando un test o un replay ha iniettato un
+        RNG — pescando da quello, che a parita' di seme e di ordine di
+        chiamata da' sempre la stessa cosa.
+        """
+        if self._injected_rng is not None:
+            return random.Random(self._injected_rng.random())
+        return random.Random(f"{resolve_draw_seed(gara)}:{key}")
+
     # ── Validazione ───────────────────────────────────────────────────────
 
     def _validate_strategy_specific(self, gara: object) -> Dict[str, List[str]]:
@@ -184,7 +203,23 @@ class DirectEliminationStrategy(BaseStrategy):
 
         size = self.bracket_size_for(n)
         slots = self._assign_slots(gara, player_ids, size, inscriptions)
+        return self._pairings_from_slots(slots, size)
 
+    def _pairings_from_slots(
+        self,
+        slots: Sequence[Optional[int]],
+        size: int,
+        *,
+        round_number: int = 1,
+        bracket_group: Optional[int] = None,
+    ) -> List[Pairing]:
+        """Nodi del primo turno di **un** tabellone, dati i suoi slot.
+
+        Isolata dal resto perche' i tabelloni da costruire non sono uno solo:
+        la formula FISBB ne estrae uno per girone e poi quello finale, tutti
+        con la stessa regola (il nodo `j` prende gli slot `2j` e `2j+1`) ma
+        con turno di gara e `bracket_group` diversi.
+        """
         pairings: List[Pairing] = []
         for slot_index in range(size // 2):
             first = slots[2 * slot_index]
@@ -194,10 +229,11 @@ class DirectEliminationStrategy(BaseStrategy):
                 pairings.append(
                     Pairing(
                         players=(first, second),
-                        round_number=1,
+                        round_number=round_number,
                         bracket_type=BRACKET_WINNERS,
                         bracket_round=1,
                         bracket_slot=slot_index,
+                        bracket_group=bracket_group,
                     )
                 )
             elif first is not None or second is not None:
@@ -205,10 +241,11 @@ class DirectEliminationStrategy(BaseStrategy):
                     Pairing(
                         players=(cast(int, first if first is not None else second),),
                         is_bye=True,
-                        round_number=1,
+                        round_number=round_number,
                         bracket_type=BRACKET_WINNERS,
                         bracket_round=1,
                         bracket_slot=slot_index,
+                        bracket_group=bracket_group,
                     )
                 )
             else:
@@ -218,7 +255,7 @@ class DirectEliminationStrategy(BaseStrategy):
                 # tacere produrrebbe un turno con lacune silenziose.
                 raise ValueError(
                     f"Slot {2 * slot_index} e {2 * slot_index + 1} entrambi "
-                    f"vuoti con {n} iscritti su tabellone da {size}"
+                    f"vuoti su un tabellone da {size}"
                 )
 
         return pairings
@@ -230,6 +267,7 @@ class DirectEliminationStrategy(BaseStrategy):
         size: int,
         inscriptions: Optional[List] = None,
         rng: Optional[random.Random] = None,
+        groups_of: Optional[Dict[int, Optional[int]]] = None,
     ) -> List[Optional[int]]:
         """Slot del primo turno: `slots[i]` = giocatore, oppure None (buco).
 
@@ -251,6 +289,12 @@ class DirectEliminationStrategy(BaseStrategy):
         stessa operazione e condividere la stessa sequenza li renderebbe
         copie l'uno dell'altro nelle scelte interne all'algoritmo. Assente,
         vale l'RNG della gara.
+
+        `groups_of` sostituisce le squadre con **un altro raggruppamento** da
+        separare, e attiva la separazione anche a `separate_teammates` spento.
+        Lo usa il tabellone finale della formula FISBB col girone di
+        provenienza: la separazione e' la stessa operazione, cambia solo che
+        cosa si tiene lontano da cosa.
         """
         n = len(player_ids)
         canonical = [
@@ -258,10 +302,13 @@ class DirectEliminationStrategy(BaseStrategy):
             for seed in standard_bracket_order(size)
         ]
 
-        if not getattr(gara, "separate_teammates", False):
+        if groups_of is not None:
+            team_of: Dict[int, Optional[int]] = groups_of
+        elif not getattr(gara, "separate_teammates", False):
             return canonical
+        else:
+            team_of = self._teams_by_player(gara, inscriptions)
 
-        team_of = self._teams_by_player(gara, inscriptions)
         if not any(team is not None for team in team_of.values()):
             # Opzione attiva ma nessuno ha dichiarato una squadra: non c'e'
             # nulla da separare e il canonico e' gia' la risposta giusta.
