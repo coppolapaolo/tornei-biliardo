@@ -344,3 +344,48 @@ class TestGareLegacy:
             "nessuna coordinata inventata a metà gara: quei turni non hanno "
             "mai rispettato un tabellone"
         )
+
+
+class TestFinalinaTerzoQuarto:
+    """US-7: la finalina occupa lo stesso turno della finale, non uno in più."""
+
+    def test_due_match_all_ultimo_turno(self, db_session):
+        players = _make_players(db_session, 8)
+        gara = _make_gara(db_session, players, max_participants=8)
+        gara.third_place_match = True
+        db_session.commit()
+
+        RoundService.start_first_round(gara.id)
+        db_session.refresh(gara)
+        assert gara.rounds_count == 3, "la finalina non aggiunge turni"
+
+        for round_number in (2, 3):
+            _play_round(db_session, gara.id, round_number - 1)
+            RoundService.start_next_round(gara.id, round_number)
+
+        ultimo = Match.query.filter_by(gara_id=gara.id, round_number=3).all()
+        per_tipo = {m.bracket_type: m for m in ultimo}
+        assert set(per_tipo) == {"W", "3P"}
+
+        # I quattro protagonisti dell'ultimo turno sono i due vincitori e i
+        # due sconfitti delle semifinali, senza sovrapposizioni.
+        semifinali = _round_nodes(gara.id, 2)
+        vincitori = {_winner_of(m) for m in semifinali.values()}
+        sconfitti = {
+            (m.player1_id if m.winner_id == m.player2_id else m.player2_id)
+            for m in semifinali.values()
+        }
+        assert {per_tipo["W"].player1_id, per_tipo["W"].player2_id} == vincitori
+        assert {per_tipo["3P"].player1_id, per_tipo["3P"].player2_id} == sconfitti
+
+    def test_spenta_solo_la_finale(self, db_session):
+        players = _make_players(db_session, 8)
+        gara = _make_gara(db_session, players, max_participants=8)
+
+        RoundService.start_first_round(gara.id)
+        for round_number in (2, 3):
+            _play_round(db_session, gara.id, round_number - 1)
+            RoundService.start_next_round(gara.id, round_number)
+
+        ultimo = Match.query.filter_by(gara_id=gara.id, round_number=3).all()
+        assert [m.bracket_type for m in ultimo] == ["W"]

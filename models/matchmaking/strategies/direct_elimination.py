@@ -16,6 +16,7 @@ import random
 from typing import Sequence, List, Dict, Any, Optional, Tuple, TYPE_CHECKING, cast
 
 from ..bracket import (
+    BRACKET_THIRD_PLACE,
     BRACKET_WINNERS,
     MIN_BRACKET_SIZE_DIRECT_ELIMINATION,
     bracket_levels,
@@ -365,7 +366,59 @@ class DirectEliminationStrategy(BaseStrategy):
                     bracket_slot=slot_index,
                 )
             )
+
+        pairings.extend(
+            self._third_place_pairings(
+                gara, by_slot, expected_nodes, previous_bracket_round + 1, round_number
+            )
+        )
         return pairings
+
+    def _third_place_pairings(
+        self,
+        gara: "Gara",
+        by_slot: Dict[int, Any],
+        expected_nodes: int,
+        bracket_round: int,
+        round_number: int,
+    ) -> List[Pairing]:
+        """Finalina 3°/4° posto, se il director l'ha chiesta (US-7).
+
+        Occupa **lo stesso turno della finale**, non uno in piu': i due
+        semifinalisti sconfitti sono gia' liberi, e allungare il tabellone di
+        un turno per una sola partita costringerebbe tutti gli altri ad
+        aspettare. Da qui `bracket_round` uguale a quello della finale, con
+        `bracket_type='3P'` a distinguere i due nodi.
+
+        Si genera solo quando il turno che si sta creando **e'** la finale,
+        cioe' quando il turno precedente aveva esattamente due nodi: sono le
+        semifinali, e i loro perdenti sono i due contendenti.
+        """
+        if expected_nodes != 2 or not getattr(gara, "third_place_match", False):
+            return []
+
+        contenders = [self._loser_of(by_slot[0]), self._loser_of(by_slot[1])]
+        if any(player is None for player in contenders):
+            # Una semifinale vinta senza giocare non produce uno sconfitto.
+            # Non puo' accadere col dimensionamento sugli iscritti (i bye
+            # stanno solo al turno 1, e con S=4 non ce ne sono), ma se accade
+            # una "finalina" con un solo partecipante non avrebbe senso.
+            logger.warning(
+                "Gara %s: finalina 3°/4° saltata, una semifinale non ha "
+                "prodotto uno sconfitto",
+                getattr(gara, "id", None),
+            )
+            return []
+
+        return [
+            Pairing(
+                players=(cast(int, contenders[0]), cast(int, contenders[1])),
+                round_number=round_number,
+                bracket_type=BRACKET_THIRD_PLACE,
+                bracket_round=bracket_round,
+                bracket_slot=0,
+            )
+        ]
 
     def _bracket_coordinates(
         self, matches: Sequence[Any]
@@ -437,6 +490,24 @@ class DirectEliminationStrategy(BaseStrategy):
             f"Match {match.id} concluso senza vincitore "
             f"(turno {match.round_number})"
         )
+
+    @staticmethod
+    def _loser_of(match: Any) -> Optional[int]:
+        """Chi esce dal nodo, o None se il nodo era un bye.
+
+        Serve alla finalina 3°/4° (qui) e al ripescaggio nel losers bracket
+        del doppio KO: un bye non produce sconfitti, ed e' da li' che nascono
+        i buchi del losers bracket.
+        """
+        if match.is_bye:
+            return None
+        winner_id = match.winner_id
+        if winner_id is None:
+            raise ValueError(
+                f"Match {match.id} concluso senza vincitore "
+                f"(turno {match.round_number})"
+            )
+        return match.player1_id if winner_id == match.player2_id else match.player2_id
 
     def _legacy_subsequent_pairings(
         self, previous_matches: Sequence[Any], round_number: int

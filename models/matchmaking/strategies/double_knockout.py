@@ -23,6 +23,7 @@ from typing import Sequence, List, Dict, Optional, Tuple, TYPE_CHECKING, Any, ca
 
 from ..bracket import (
     BRACKET_GRAND_FINAL,
+    BRACKET_GRAND_FINAL_RESET,
     BRACKET_LOSERS,
     BRACKET_WINNERS,
     MIN_BRACKET_SIZE_DOUBLE_KNOCKOUT,
@@ -111,6 +112,16 @@ class DoubleKnockoutStrategy(BaseStrategy):
                     f"(winners, losers, finale e bella), la gara ne ha "
                     f"{rounds_count}"
                 )
+
+            if getattr(gara, "third_place_match", False):
+                # Non e' un errore bloccante: il flag e' semplicemente senza
+                # effetto qui, perche' il terzo posto lo assegna gia' il
+                # tabellone (chi perde la finale del losers bracket). In UI
+                # l'opzione non viene proprio mostrata sul doppio KO (US-7).
+                warnings.append(
+                    "La finale 3°/4° non si applica al doppio KO: il terzo "
+                    "posto è già deciso dal losers bracket"
+                )
         except Exception as e:  # pragma: no cover - difensivo
             warnings.append(f"{self.display_name} validation warning: {str(e)}")
 
@@ -191,8 +202,8 @@ class DoubleKnockoutStrategy(BaseStrategy):
                 )
             elif bracket_round.bracket_type == BRACKET_GRAND_FINAL:
                 pairings.extend(self._grand_final_pairings(nodes, size, round_number))
-            # La bella (GFR) si materializza solo se il campione del losers
-            # bracket vince la finale: la decide lo Step 8.
+            elif bracket_round.bracket_type == BRACKET_GRAND_FINAL_RESET:
+                pairings.extend(self._bracket_reset_pairings(nodes, round_number))
 
         return pairings
 
@@ -349,6 +360,43 @@ class DoubleKnockoutStrategy(BaseStrategy):
             )
         ]
 
+    def _bracket_reset_pairings(self, nodes: Dict, round_number: int) -> List[Pairing]:
+        """La bella, se la finale l'ha vinta chi arrivava dal losers (US-15).
+
+        Il doppio KO promette due sconfitte prima dell'eliminazione. Chi arriva
+        alla finale imbattuto non puo' quindi essere eliminato da una sola
+        partita: se perde, si rigioca da pari — entrambi con una sconfitta.
+        Se invece vince, la gara e' finita e questo turno **resta vuoto**, che
+        e' uno stato legittimo e non un errore.
+
+        Il rilevamento e' banale grazie alla convenzione di seat della finale
+        (`player1` = campione winners): `winner_id == player2_id` significa
+        "ha vinto quello che era gia' stato eliminato una volta".
+        """
+        final = nodes.get((BRACKET_GRAND_FINAL, 1, 0))
+        if final is None:
+            # La finale non e' stata giocata: puo' capitare se il turno viene
+            # avviato fuori sequenza. Non c'e' niente da decidere.
+            return []
+
+        if final.winner_id != final.player2_id:
+            logger.debug(
+                "Gara %s: la finale l'ha vinta il campione del winners "
+                "bracket, nessuna bella",
+                final.gara_id,
+            )
+            return []
+
+        return [
+            Pairing(
+                players=(final.player1_id, final.player2_id),
+                round_number=round_number,
+                bracket_type=BRACKET_GRAND_FINAL_RESET,
+                bracket_round=1,
+                bracket_slot=0,
+            )
+        ]
+
     # ── Lettura dei nodi ──────────────────────────────────────────────────
 
     @staticmethod
@@ -380,15 +428,7 @@ class DoubleKnockoutStrategy(BaseStrategy):
         E' l'unica sorgente di buchi del losers bracket: chi passa il turno
         senza giocare non produce alcun perdente da ripescare.
         """
-        if match.is_bye:
-            return None
-        winner_id = match.winner_id
-        if winner_id is None:
-            raise ValueError(
-                f"Match {match.id} concluso senza vincitore "
-                f"(turno {match.round_number})"
-            )
-        return match.player1_id if winner_id == match.player2_id else match.player2_id
+        return DirectEliminationStrategy._loser_of(match)
 
     # ── Aritmetica ────────────────────────────────────────────────────────
 

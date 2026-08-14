@@ -85,22 +85,25 @@ def _make_gara(db_session, players: List[User]) -> Gara:
     return gara
 
 
-def _play_round(db_session, gara_id: int, round_number: int) -> None:
-    """Chiude i match del turno: vince sempre `player1`.
+def _play_round(db_session, gara_id: int, round_number: int, winner=None) -> None:
+    """Chiude i match del turno; per default vince `player1`.
 
-    Deterministico di proposito. Nella finale `player1` è il campione del
-    winners bracket, quindi la gara si chiude senza bella — il bracket reset è
-    lo Step 8.
+    Deterministico di proposito. Con il default, nella finale vince il campione
+    del winners bracket (che è `player1` per convenzione di seat) e la gara si
+    chiude senza bella; `winner` permette di ribaltarla per far scattare il
+    bracket reset.
     """
+    pick = winner or (lambda match: match.player1_id)
     matches = Match.query.filter_by(gara_id=gara_id, round_number=round_number).all()
     for match in matches:
         if match.is_bye or MatchStatus.is_finished(match.status):
             continue
+        winner_id = pick(match)
         for _ in range(match.match_distance):
             RackService.add_rack_with_score_update(
                 match_id=match.id,
-                winner_id=match.player1_id,
-                reported_by_id=match.player1_id,
+                winner_id=winner_id,
+                reported_by_id=winner_id,
                 validated_by_admin=True,
             )
         db_session.refresh(match)
@@ -288,3 +291,48 @@ class TestBuchiNelLosersBracket:
         losses = _losses(gara.id)
         imbattuti = [p.id for p in players if losses.get(p.id, 0) < 2]
         assert imbattuti == [nodi[("GF", 1, 0)].winner_id]
+
+
+class TestBracketReset:
+    """US-15: la bella, quando la finale la vince il ripescato."""
+
+    def _fino_alla_finale(self, db_session, gara: Gara) -> Match:
+        """Gioca fino alla finale esclusa e la restituisce."""
+        for round_number in range(2, 7):
+            _play_round(db_session, gara.id, round_number - 1)
+            RoundService.start_next_round(gara.id, round_number)
+        return Match.query.filter_by(gara_id=gara.id, bracket_type="GF").one()
+
+    def test_vince_il_ripescato_si_gioca_la_bella(self, db_session):
+        players = _make_players(db_session, 8)
+        gara = _make_gara(db_session, players)
+        RoundService.start_first_round(gara.id)
+
+        finale = self._fino_alla_finale(db_session, gara)
+        campione_winners, campione_losers = finale.player1_id, finale.player2_id
+
+        # Ribalta la finale: vince chi arrivava dal losers bracket.
+        _play_round(db_session, gara.id, 6, winner=lambda m: m.player2_id)
+        RoundService.start_next_round(gara.id, 7)
+
+        bella = Match.query.filter_by(gara_id=gara.id, round_number=7).all()
+        assert len(bella) == 1
+        assert bella[0].bracket_type == "GFR"
+        assert {bella[0].player1_id, bella[0].player2_id} == {
+            campione_winners,
+            campione_losers,
+        }
+
+    def test_vince_l_imbattuto_la_gara_finisce(self, db_session):
+        """Il turno della bella resta vuoto, e avviarlo non solleva."""
+        players = _make_players(db_session, 8)
+        gara = _make_gara(db_session, players)
+        RoundService.start_first_round(gara.id)
+
+        self._fino_alla_finale(db_session, gara)
+        _play_round(db_session, gara.id, 6)
+
+        total, *_ = RoundService.start_next_round(gara.id, 7)
+
+        assert total == 0
+        assert not Match.query.filter_by(gara_id=gara.id, round_number=7).count()
