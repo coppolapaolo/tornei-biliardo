@@ -334,6 +334,24 @@
     </div>
     {% endif %}
 
+    {# Il tabellone ha una pagina sua — e' largo per costruzione e va anche
+       condiviso durante il torneo — quindi qui c'e' il collegamento, non una
+       seconda copia. Sta nella vista Turni: e' li' che si guarda il percorso
+       della gara. #}
+    {% if has_bracket_view and feature_visible('admin.competition.gara_bracket') %}
+    <div data-c7-tab="turni">
+      <a class="c7-card c7-rows__row" style="text-decoration: none; color: inherit; padding: 15px 18px;"
+         href="{{ url_for('admin.competition.gara_bracket', gara_id=gara.id) }}">
+        <span class="c7-tile"><i class="fas fa-sitemap"></i></span>
+        <span class="c7-rows__main">
+          <span class="c7-rows__title d-block">{{ _('Tabellone') }}</span>
+          <span class="c7-rows__sub d-block">{{ _('Il percorso della gara, turno per turno') }}</span>
+        </span>
+        <i class="fas fa-chevron-right" style="font-size: 12px; color: var(--c7-ink-faint);"></i>
+      </a>
+    </div>
+    {% endif %}
+
     {# Partite: card su mobile, tabella su desktop. Il contenuto e' lo stesso
        per direttore, iscritto e ospite — cambiano solo le azioni, che i
        componenti decidono da user_can_manage / user_inscription.

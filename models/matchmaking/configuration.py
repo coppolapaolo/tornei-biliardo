@@ -32,6 +32,19 @@ class MatchmakingStrategy(str, Enum):
     RANDOM = "random"
 
 
+# Strategie il cui esito è un tabellone: ammettono solo il sistema POSITION,
+# portano con sé le opzioni di sorteggio (separazione compagni, finalina,
+# formula a gironi) e sono le sole per cui esiste una vista tabellone.
+# Vive qui e non fra le route perché la domanda "questa gara ha un tabellone?"
+# se la pongono anche i modelli e i template, non solo il parser dei form.
+BRACKET_STRATEGIES = frozenset(
+    {
+        MatchmakingStrategy.DIRECT_ELIMINATION.value,
+        MatchmakingStrategy.DOUBLE_KNOCKOUT.value,
+    }
+)
+
+
 class FirstRoundPolicy(str, Enum):
     RANDOM = "random"
     RATING = "rating"

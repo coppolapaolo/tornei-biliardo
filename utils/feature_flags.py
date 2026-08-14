@@ -53,6 +53,9 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # utenti non registrati inclusi (link nel footer di base.html).
     "main.privacy_policy": {"anonimo", "player", "director"},
     "admin.competition.gara_detail": {"anonimo", "player", "director"},
+    # Tabellone della gara (US-13): sola lettura, e la segue anche chi non ha
+    # un account — è la schermata che si condivide durante un torneo.
+    "admin.competition.gara_bracket": {"anonimo", "player", "director"},
     "i18n.set_language": {"anonimo", "player", "director"},
     # === Logged-in (player or director) ===
     "auth.logout": {"player", "director"},

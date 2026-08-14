@@ -1,0 +1,121 @@
+{# templates/components/_bracket_view.html — 7c
+
+   Il tabellone di una gara a eliminazione diretta o doppio KO (US-13).
+   Una colonna per turno, un nodo per partita, i rami vuoti non disegnati.
+
+   Attese dal chiamante: `gara`, `boards` (da
+   `models/matchmaking/bracket_view.build_bracket_boards`), `has_bracket`,
+   `user_can_manage`, `forfeit_user_ids`.
+
+   Il prototipo non ha questa schermata — `#8b` e' il segnapunti da tavolo,
+   non un tabellone di torneo — quindi la forma e' interpretata da `#8a`: la
+   partita come card chiara con il nome a sinistra e il punteggio a destra,
+   ripetuta in colonne. Le classi sono nella sezione 18 di theme-7c.css. #}
+
+{# Etichetta di una colonna. Nell'eliminazione diretta il nome del turno lo
+   da' quante partite contiene (una sola = la finale); nel doppio KO e nei
+   gironi no — li' un turno di vincenti non elimina nessuno — quindi resta il
+   numero del turno. #}
+{% macro column_label(board, column) -%}
+{%- if column.bracket_type == 'GF' -%}{{ _('Finale') }}
+{%- elif column.bracket_type == 'GFR' -%}{{ _('Bella') }}
+{%- elif column.bracket_type == '3P' -%}{{ _('Finale 3°/4°') }}
+{%- elif column.bracket_type == 'L' -%}{{ _('Recupero %(num)s', num=column.bracket_round) }}
+{%- elif board.has_losers or board.is_group -%}{{ _('Turno %(num)s', num=column.bracket_round) }}
+{%- elif column.size == 1 -%}{{ _('Finale') }}
+{%- elif column.size == 2 -%}{{ _('Semifinali') }}
+{%- elif column.size == 4 -%}{{ _('Quarti') }}
+{%- elif column.size == 8 -%}{{ _('Ottavi') }}
+{%- elif column.size == 16 -%}{{ _('Sedicesimi') }}
+{%- else -%}{{ _('Turno %(num)s', num=column.bracket_round) }}
+{%- endif -%}
+{%- endmacro %}
+
+{# Un posto del nodo: chi gioca e quanto ha fatto. #}
+{% macro seat(player, score, is_winner, is_finished) -%}
+{% set is_forfeit = forfeit_user_ids is defined and player and player.id in forfeit_user_ids %}
+<div class="c7-bracket__seat{{ ' is-winner' if is_winner }}{{ ' is-forfeit' if is_forfeit }}">
+  <span class="c7-bracket__who">{{ player.username if player else _('Da definire') }}</span>
+  {% if is_finished %}<span class="c7-bracket__score">{{ score }}</span>{% endif %}
+</div>
+{%- endmacro %}
+
+{% macro bracket_node(match) -%}
+{% set is_finished = MatchStatus.is_finished(match.status) %}
+{% set is_live = match.status == MatchStatus.PLAYING.value %}
+{% set is_mine = current_user.is_authenticated and current_user.id in [match.player1_id, match.player2_id] %}
+{% set tag = 'a' if user_can_manage else 'article' %}
+<{{ tag }} class="c7-bracket__node{{ ' is-done' if is_finished }}{{ ' is-live' if is_live }}{{ ' is-mine' if is_mine }}"
+  {%- if user_can_manage %} href="{{ url_for('admin.match.match_detail', match_id=match.id) }}"{% endif %}>
+  {% if is_live or match.table_assignment or match.is_bye %}
+  <div class="c7-bracket__meta">
+    {% if is_live %}<span class="c7-bracket__live" aria-hidden="true"></span>{{ _('In corso') }}{% endif %}
+    {% if match.is_bye %}{{ _('X a tavolino') }}{% endif %}
+    {% if match.table_assignment %}<span class="c7-bracket__count">{{ _('Tavolo') }} {{ match.table_assignment }}</span>{% endif %}
+  </div>
+  {% endif %}
+
+  {% if match.is_bye %}
+  {{ seat(match.player1, match.player1_score, True, False) }}
+  {% else %}
+  {{ seat(match.player1, match.player1_score, is_finished and match.winner_id == match.player1_id, is_finished) }}
+  {{ seat(match.player2, match.player2_score, is_finished and match.winner_id == match.player2_id, is_finished) }}
+  {% endif %}
+</{{ tag }}>
+{%- endmacro %}
+
+{% if not has_bracket %}
+<div class="c7-empty">
+  <div class="c7-empty__ico"><i class="fas fa-sitemap"></i></div>
+  <div class="c7-empty__title">{{ _('Tabellone non ancora sorteggiato') }}</div>
+  <p class="c7-empty__text">
+    {{ _('Il tabellone compare quando il direttore di gara avvia il primo turno: è quello il momento in cui viene estratto.') }}
+  </p>
+</div>
+{% else %}
+{% for board in boards %}
+<section class="c7-stack">
+  {% if board.is_group %}
+  <div class="c7-sechead">
+    <h2>{{ _('Girone %(num)s', num=board.group + 1) }}</h2>
+    <span class="c7-sechead__note">{{ _('Qualificano in quattro: due imbattuti e due ripescati') }}</span>
+  </div>
+  {% elif boards | length > 1 %}
+  <div class="c7-sechead">
+    <h2>{{ _('Tabellone finale') }}</h2>
+    <span class="c7-sechead__note">{{ _('Fra i qualificati dei gironi') }}</span>
+  </div>
+  {% endif %}
+
+  {% for section in board.sections %}
+  <div>
+    {% if board.has_losers %}
+    <div class="c7-bracket__branch">
+      <span class="c7-kicker">
+        {{ _('Vincenti') if section.key == 'winners' else _('Ripescati') }}
+      </span>
+    </div>
+    {% endif %}
+
+    <div class="c7-bracket">
+      <div class="c7-bracket__rail">
+        {% for column in section.columns %}
+        <div class="c7-bracket__col">
+          <div class="c7-bracket__colhead">
+            <span class="c7-kicker">{{ column_label(board, column) }}</span>
+            <span class="c7-bracket__count">{{ column.size }}</span>
+          </div>
+          <div class="c7-bracket__nodes">
+            {% for match in column.matches %}
+            <div class="c7-bracket__cell">{{ bracket_node(match) }}</div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</section>
+{% endfor %}
+{% endif %}

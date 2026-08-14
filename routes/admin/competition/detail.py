@@ -366,6 +366,17 @@ def gara_detail(gara_id):
     # Get forfeit user IDs for visual indication
     forfeit_user_ids = set(insc.user_id for insc in inscriptions if insc.is_forfeit)
 
+    # Collegamento alla vista tabellone (US-13). Compare solo quando c'e'
+    # davvero un tabellone da guardare: prima del sorteggio la pagina
+    # esisterebbe ma sarebbe uno stato vuoto, e una gara a tabellone
+    # antecedente allo Step 2 non ha coordinate da disegnare affatto.
+    from models.matchmaking.bracket_view import has_bracket_coordinates
+    from models.matchmaking.configuration import BRACKET_STRATEGIES
+
+    has_bracket_view = gara.matchmaking_strategy in BRACKET_STRATEGIES and (
+        has_bracket_coordinates(all_matches or [])
+    )
+
     # SSR (Spot Shot Rally) data for tiebreaker display
     ssr_groups = []
     has_ssr_data = False
@@ -509,6 +520,7 @@ def gara_detail(gara_id):
         available_tables=available_tables,
         occupied_tables=occupied_tables,
         forfeit_user_ids=forfeit_user_ids,
+        has_bracket_view=has_bracket_view,
         available_users=available_users,
         # SSR (Spot Shot Rally) data
         ssr_groups=ssr_groups,

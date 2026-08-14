@@ -16,21 +16,18 @@ from models.competition.constants import (
     DEFAULT_WITHDRAW_POLICY,
 )
 from models.matchmaking.configuration import (
+    BRACKET_STRATEGIES,
     StrategyConfiguration,
     MatchmakingStrategy,
     FirstRoundPolicy,
     OddNumberPolicy,
 )
 
-# Strategie il cui esito è un tabellone: ammettono solo il sistema POSITION e
-# portano con sé le opzioni di sorteggio (separazione compagni, finalina,
-# formula a gironi).
-BRACKET_STRATEGIES = frozenset(
-    {
-        MatchmakingStrategy.DIRECT_ELIMINATION.value,
-        MatchmakingStrategy.DOUBLE_KNOCKOUT.value,
-    }
-)
+# Ri-esportato: `BRACKET_STRATEGIES` vive nel dominio
+# (`models/matchmaking/configuration.py`) perché la domanda "questa gara ha un
+# tabellone?" se la pongono anche modelli e template. Qui resta importabile
+# dove lo era prima.
+__all__ = ["BRACKET_STRATEGIES", "GaraFormParser"]
 
 
 def _resolve_classification_system(strategy: str, requested: str) -> str:
