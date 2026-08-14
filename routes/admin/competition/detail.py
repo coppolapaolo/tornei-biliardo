@@ -377,6 +377,23 @@ def gara_detail(gara_id):
         has_bracket_coordinates(all_matches or [])
     )
 
+    # Squadre (US-2/3/8/9). L'elenco esiste solo dove serve, cioè quando il
+    # director ha chiesto di separare i compagni nel sorteggio: fuori di lì il
+    # campo squadra non compare da nessuna parte e nulla cambia per chi non
+    # usa le squadre.
+    from models.squadra.service import SquadraService
+
+    squadre = []
+    squadre_all = []
+    squadra_counts = {}
+    squadre_editable = False
+    if gara.separate_teammates:
+        squadre = SquadraService.list_for_gara(gara)
+        squadre_editable = SquadraService.is_editable(gara)
+        if user_can_manage:
+            squadre_all = SquadraService.list_for_gara(gara, include_inactive=True)
+            squadra_counts = SquadraService.counts_by_squadra(gara.id)
+
     # SSR (Spot Shot Rally) data for tiebreaker display
     ssr_groups = []
     has_ssr_data = False
@@ -521,6 +538,11 @@ def gara_detail(gara_id):
         occupied_tables=occupied_tables,
         forfeit_user_ids=forfeit_user_ids,
         has_bracket_view=has_bracket_view,
+        squadre=squadre,
+        squadre_all=squadre_all,
+        squadra_counts=squadra_counts,
+        squadre_editable=squadre_editable,
+        squadra_owner_is_campionato=bool(gara.campionato_id),
         available_users=available_users,
         # SSR (Spot Shot Rally) data
         ssr_groups=ssr_groups,

@@ -216,7 +216,9 @@ class UserProfileService:
 
         # Update allowed fields, tracking whether the email actually changed
         # so we can revoke verification + queue a new verification email.
-        allowed_fields = ["username", "email", "phone", "home_city"]
+        # `squadra` è testo libero e la scrive solo il giocatore (US-1):
+        # nessuna route di amministrazione passa da qui con quel campo.
+        allowed_fields = ["username", "email", "phone", "home_city", "squadra"]
         email_changed = False
         for field, value in kwargs.items():
             if field in allowed_fields and hasattr(user, field):

@@ -10,6 +10,7 @@ statistiche o punteggi per squadra fuori da lì, quindi un'anagrafica globale
 sarebbe stata una struttura da mantenere senza nulla che la giustificasse.
 """
 
-from .models import Squadra
+from .models import Squadra, normalize_squadra_name
+from .service import SquadraService
 
-__all__ = ["Squadra"]
+__all__ = ["Squadra", "SquadraService", "normalize_squadra_name"]

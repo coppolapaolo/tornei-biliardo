@@ -234,8 +234,11 @@
        prototipo la vista Turni va dalla scorciatoia direttamente ai turni, e
        fuori dalla fase di gioco le linguette non ci sono, quindi la card si
        vede comunque quando e' l'unica cosa che c'e'. #}
-    <div data-c7-tab="iscritti">
+    <div class="c7-stack" data-c7-tab="iscritti">
       {% include "components/_player_inscription_info.html" %}
+      {# La propria squadra sta con la propria iscrizione: è una cosa sola —
+         con chi gioco questa gara (US-8). #}
+      {% include "components/_squadra_choice.html" %}
     </div>
     {% else %}
     {# Guest/Utente non iscritto: qui dentro c'e' il pulsante d'iscrizione
@@ -280,6 +283,13 @@
   {% include "components/_gara_tables_config.html" %}
 </div>
 {% endif %}
+
+{# Elenco squadre della competizione (US-3): sta in Gestione accanto ai tavoli,
+   perche' e' configurazione della gara e non un elenco di persone. Il
+   componente si mostra da se' solo quando le squadre sono attive. #}
+<div class="{% if playing_admin %}order-6 order-lg-1{% endif %}" id="sectionSquadre" data-c7-tab="gestione">
+  {% include "components/_squadre_management.html" %}
+</div>
 
 {# Gestione Turni: e' la configurazione dei turni (disciplina e distanza per
    turno), non l'elenco delle partite — vive quindi in Gestione, non in Turni.

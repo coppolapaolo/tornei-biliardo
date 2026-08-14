@@ -10,6 +10,7 @@ This package organizes competition routes by responsibility:
 - rounds: Round lifecycle, matchmaking, classification
 - matches: Match and trio operations
 - challenges: Challenge integration with competitions
+- squadre: Elenco squadre della competizione e squadra degli iscritti
 """
 
 from flask import Blueprint
@@ -26,6 +27,7 @@ from . import inscriptions  # noqa: E402, F401
 from . import rounds  # noqa: E402, F401
 from . import matches  # noqa: E402, F401
 from . import challenges  # noqa: E402, F401
+from . import squadre  # noqa: E402, F401
 
 # Export blueprint for parent package
 __all__ = ["competition_bp"]

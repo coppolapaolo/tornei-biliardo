@@ -1,0 +1,139 @@
+{# templates/components/_squadre_management.html — 7c
+
+   L'elenco squadre della competizione, governato dal direttore (US-3):
+   aggiungere una voce, rinominarla, unire due doppioni, disattivarla.
+
+   Sta dentro la pagina della gara e non in una sezione globale perche' un
+   elenco squadre esiste solo dentro una competizione: quando la gara fa
+   parte di un campionato l'elenco e' del campionato ed e' condiviso da tutte
+   le sue gare, e la nota qui sotto lo dice invece di lasciarlo scoprire dopo
+   una rinomina.
+
+   Attese dal chiamante: `gara`, `squadre_all`, `squadra_counts`,
+   `squadre_editable`, `squadra_owner_is_campionato`. Una sola inclusione. #}
+
+{% if gara.separate_teammates and user_can_manage %}
+<div class="c7-card">
+  <div class="d-flex align-items-center gap-2 mb-3">
+    <h3 class="mb-0 flex-fill">{{ _('Squadre') }}</h3>
+    <span class="c7-num" style="color:var(--c7-ink-muted)">{{ squadre_all | length }}</span>
+  </div>
+
+  <div style="font-size:12px;font-weight:600;color:var(--c7-ink-muted);line-height:1.45">
+    {% if squadra_owner_is_campionato %}
+    {{ _('Elenco del campionato: le modifiche valgono per tutte le sue gare.') }}
+    {% else %}
+    {{ _('Elenco di questa gara.') }}
+    {% endif %}
+    {{ _('Il sorteggio tiene lontani i compagni di squadra il più a lungo possibile; con squadre molto numerose l’incontro viene rinviato, non evitato.') }}
+  </div>
+
+  {% if squadre_editable %}
+  <form method="POST" action="{{ url_for('admin.competition.create_squadra', gara_id=gara.id) }}"
+        class="d-flex gap-2" style="margin-top:14px">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="text" name="name" class="form-control flex-fill" maxlength="100" required
+           placeholder="{{ _('Nuova squadra') }}" aria-label="{{ _('Nome della nuova squadra') }}">
+    <button type="submit" class="btn btn-primary" title="{{ _('Aggiungi squadra') }}">
+      <i class="fas fa-plus"></i>
+    </button>
+  </form>
+  {% endif %}
+
+  {% if squadre_all %}
+  <div class="c7-stack" style="gap:8px;margin-top:14px">
+    {% for squadra in squadre_all %}
+    {% set iscritti = squadra_counts.get(squadra.id, 0) %}
+    <div style="background:var(--c7-bg);border-radius:var(--c7-r-chip);padding:12px 14px">
+      <div class="d-flex align-items-center gap-3">
+        <div class="flex-fill min-width-0">
+          <div style="font-size:14px;font-weight:700{% if not squadra.is_active %};color:var(--c7-ink-muted){% endif %}">
+            {{ squadra.name }}
+          </div>
+          <div style="font-size:11px;font-weight:600;color:var(--c7-ink-muted)">
+            {% if iscritti %}{{ ngettext('%(num)s iscritto in questa gara', '%(num)s iscritti in questa gara', iscritti) }}
+            {% else %}{{ _('Nessun iscritto in questa gara') }}{% endif %}
+            {% if not squadra.is_active %}<span class="c7-sep">·</span> {{ _('Disattivata') }}{% endif %}
+          </div>
+        </div>
+
+        {% if squadre_editable %}
+        <form method="POST"
+              action="{{ url_for('admin.competition.toggle_squadra', gara_id=gara.id, squadra_id=squadra.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          {% if squadra.is_active %}
+          <button type="submit" class="c7-iconbtn" style="background:var(--c7-card);color:var(--c7-ink-muted)"
+                  title="{{ _('Toglie la squadra dalle scelte, senza toccare le iscrizioni che la usano') }}">
+            <i class="fas fa-eye-slash"></i>
+          </button>
+          {% else %}
+          <input type="hidden" name="active" value="on">
+          <button type="submit" class="c7-iconbtn" style="background:var(--c7-card);color:var(--c7-accent)"
+                  title="{{ _('Rimette la squadra fra le scelte') }}">
+            <i class="fas fa-eye"></i>
+          </button>
+          {% endif %}
+        </form>
+        {% endif %}
+      </div>
+
+      {% if squadre_editable %}
+      {# `details` e non un collassabile Bootstrap: il componente non ha id,
+         quindi resta ripetibile riga per riga senza collisioni. #}
+      <details style="margin-top:10px">
+        <summary style="font-size:12px;font-weight:700;color:var(--c7-accent);cursor:pointer">
+          {{ _('Rinomina o unisci') }}
+        </summary>
+
+        <form method="POST"
+              action="{{ url_for('admin.competition.rename_squadra', gara_id=gara.id, squadra_id=squadra.id) }}"
+              class="d-flex gap-2" style="margin-top:10px">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="text" name="name" class="form-control flex-fill" maxlength="100" required
+                 value="{{ squadra.name }}" aria-label="{{ _('Nuovo nome della squadra') }}">
+          <button type="submit" class="btn btn-secondary" title="{{ _('Rinomina') }}">
+            <i class="fas fa-pen"></i>
+          </button>
+        </form>
+
+        {% if squadre_all | length > 1 %}
+        <form method="POST"
+              action="{{ url_for('admin.competition.merge_squadra', gara_id=gara.id, squadra_id=squadra.id) }}"
+              class="d-flex gap-2" style="margin-top:8px"
+              onsubmit='return confirmSubmit(this, {{ _("Unire «%(nome)s» in un’altra squadra? Le iscrizioni passano alla squadra scelta e questa voce sparisce dall’elenco.", nome=squadra.name)|tojson }})'>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <select name="target_id" class="form-select flex-fill" required
+                  aria-label="{{ _('Squadra in cui unire questa voce') }}">
+            <option value="">{{ _('Unisci in…') }}</option>
+            {% for altra in squadre_all if altra.id != squadra.id %}
+            <option value="{{ altra.id }}">{{ altra.name }}</option>
+            {% endfor %}
+          </select>
+          <button type="submit" class="btn btn-secondary" title="{{ _('Unisci') }}">
+            <i class="fas fa-code-merge"></i>
+          </button>
+        </form>
+        {% endif %}
+      </details>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="c7-empty" style="background:var(--c7-bg);margin-top:14px">
+    <div class="c7-empty__ico"><i class="fas fa-people-group"></i></div>
+    <div class="c7-empty__title">{{ _('Nessuna squadra in elenco') }}</div>
+    <p class="c7-empty__text">
+      {{ _('Le squadre si aggiungono qui, oppure nascono da sole quando un iscritto indica la propria.') }}
+    </p>
+  </div>
+  {% endif %}
+
+  {% if not squadre_editable %}
+  <div style="margin-top:12px;font-size:12px;font-weight:600;color:var(--c7-ink-muted);line-height:1.45">
+    {{ _('Il primo turno è partito: il tabellone è già estratto, quindi l’elenco non si modifica più.') }}
+  </div>
+  {% endif %}
+</div>
+{% endif %}
