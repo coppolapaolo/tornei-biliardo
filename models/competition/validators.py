@@ -62,6 +62,8 @@ def validate_gara_configuration(
     odd_handling: OddHandling,
     forfeit_policy: ForfeitPolicy,
     matchmaking: MatchmakingStrategy,
+    sets_distance_type: Optional[DistanceType] = None,
+    sets_distance: Optional[int] = None,
 ) -> tuple[list[str], list[str]]:
     """
     Valida la configurazione di una gara.
@@ -74,6 +76,8 @@ def validate_gara_configuration(
         odd_handling: Gestione dispari
         forfeit_policy: Policy forfait
         matchmaking: Strategia matchmaking
+        sets_distance_type: Tipo distanza a livello SET (solo multi-set)
+        sets_distance: Numero di set (solo multi-set)
 
     Returns:
         Tupla (errors, warnings) dove:
@@ -117,6 +121,9 @@ def validate_gara_configuration(
             matchmaking,
             errors,
             warnings,
+            multi_set=multi_set,
+            sets_distance_type=sets_distance_type,
+            sets_distance=sets_distance,
         )
 
     return errors, warnings
@@ -200,14 +207,33 @@ def _validate_position_system(
     matchmaking: MatchmakingStrategy,
     errors: list[str],
     warnings: list[str],
+    multi_set: bool = False,
+    sets_distance_type: Optional[DistanceType] = None,
+    sets_distance: Optional[int] = None,
 ) -> None:
-    """Validazione per sistema POSITION."""
+    """Validazione per sistema POSITION.
+
+    La regola di fondo e' una sola: **un nodo del tabellone deve produrre un
+    vincitore**. Un match pari lascerebbe lo slot a valle senza chi lo occupa,
+    e la generazione del turno successivo si fermerebbe.
+    """
     # Exactly N pari non permesso (pareggi non ammessi nel bracket)
     if distance_type == DistanceType.EXACTLY and distance % 2 == 0:
         errors.append(
             f"Sistema POSITION non supporta Exactly {distance} (pari): "
             "il bracket richiede sempre un vincitore"
         )
+
+    # Stessa regola un livello piu' su: in multi-set e' il numero di SET a
+    # decidere il match, quindi un numero pari di set esatti puo' finire in
+    # parita' anche se ogni singolo set ha un vincitore.
+    if multi_set and sets_distance_type == DistanceType.EXACTLY:
+        if sets_distance is not None and sets_distance % 2 == 0:
+            errors.append(
+                f"Sistema POSITION non supporta {sets_distance} set esatti "
+                "(pari): il match potrebbe finire in parità e il tabellone "
+                "richiede sempre un vincitore"
+            )
 
     # Solo FORFEIT policy (EXCLUDE non permesso)
     if forfeit_policy == ForfeitPolicy.EXCLUDE:
@@ -312,8 +338,19 @@ def validate_gara(
     is_race_to = getattr(gara, "is_race_to", False)
     distance_type = DistanceType.RACE_TO if is_race_to else DistanceType.EXACTLY
 
-    # Multi-set
+    # Multi-set. `distance`/`is_race_to` descrivono il singolo SET; a decidere
+    # il match sono `match_distance`/`is_race_to_sets`, che vanno validati a
+    # parte: un numero pari di set esatti puo' finire in parita' anche se ogni
+    # set ha il suo vincitore.
     multi_set = getattr(gara, "is_multi_set", False)
+    sets_distance_type = None
+    sets_distance = None
+    if multi_set:
+        is_race_to_sets = getattr(gara, "is_race_to_sets", True)
+        sets_distance_type = (
+            DistanceType.RACE_TO if is_race_to_sets else DistanceType.EXACTLY
+        )
+        sets_distance = getattr(gara, "match_distance", None)
 
     # Distance
     distance = getattr(gara, "distance", 5)
@@ -339,4 +376,6 @@ def validate_gara(
         odd_handling=odd_handling,
         forfeit_policy=forfeit_policy,
         matchmaking=matchmaking,
+        sets_distance_type=sets_distance_type,
+        sets_distance=sets_distance,
     )
