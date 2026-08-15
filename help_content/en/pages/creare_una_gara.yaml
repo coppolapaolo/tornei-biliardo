@@ -1,0 +1,157 @@
+title: "Creating a competition"
+section: organizzare
+kind: tutorial
+audience: [direttore]
+minutes: 6
+summary: "From creation to kick-off: name, date, venue, match format and opening registrations. With the recommended values if it is your first time."
+screens: [admin.competition.create_gara_standalone]
+related: [opzioni_della_gara, gestire_le_iscrizioni, condurre_la_gara]
+
+blocks:
+  - type: text
+    text: >-
+      A competition is a single evening: a date, a venue, some entrants and a
+      number of rounds. It can stand on its own (**stand-alone competition**)
+      or live inside a championship. Here we cover the stand-alone one; for
+      championships see [Creating a
+      championship](/aiuto/organizzare/creare_un_campionato).
+
+  - type: note
+    tone: tip
+    title: "If it is your first time"
+    text: >-
+      Leave every value as the app proposes it and change only the name, date,
+      venue and discipline. The proposed values are the ones that suit an
+      ordinary club evening. You can explore the rest at your leisure in [All
+      the options](/aiuto/organizzare/opzioni_della_gara).
+
+  - type: heading
+    id: creare
+    title: "Creating the competition"
+
+  - type: steps
+    items:
+      - title: "From your home, tap «New Competition»"
+        text: "The button only appears if you are a competition director."
+        shot: dashboard-direttore
+      - title: "Give the competition a name"
+        text: >-
+          A name that makes it recognisable: «Spring tournament», «Thursday
+          9-ball night». It will show in the public lists.
+        shot: gara-nuova
+      - title: "Date, time and venue"
+        text: >-
+          The time is when people gather. Picking one of the registered venues
+          means the competition inherits its tables, and you will be able to
+          assign them to matches during the evening.
+      - title: "Discipline and distance"
+        text: >-
+          The discipline is the game (8-ball, 9-ball, 10-ball…). The distance
+          is how many racks it takes to win: **«race to 4»** means the first to
+          4 takes the match. See [Match
+          formats](/aiuto/approfondimenti/formati_di_gioco).
+      - title: "Number of rounds"
+        text: >-
+          How many sets of matches. Three is the recommended value for an
+          evening: with eight players that is twelve matches, roughly two and a
+          half hours on four tables.
+      - title: "Minimum and maximum entrants"
+        text: >-
+          The minimum is the threshold below which the competition will not
+          start. The maximum is optional: if you set it, latecomers go on the
+          waitlist.
+      - title: "Save"
+        text: >-
+          The competition is created as a **Draft**: it exists, it is yours,
+          but nobody can register yet. Up to this point you can change anything.
+
+  - type: heading
+    id: prima_di_aprire
+    title: "Before opening registrations"
+
+  - type: text
+    text: >-
+      **Draft** is the only moment when you can change everything without
+      consequences. Three things are worth checking.
+
+  - type: options
+    items:
+      - name: "The match format"
+        text: "Discipline, distance and number of rounds: once play starts they are fixed."
+        hint: gara.distanza
+      - name: "The pairing strategy"
+        text: >-
+          How the app forms the pairs each round. The proposed value is right
+          almost always; the alternatives are in [How pairs are
+          formed](/aiuto/approfondimenti/abbinamenti).
+        hint: gara.strategia
+      - name: "Handling an odd number"
+        text: >-
+          What happens if the number of players is odd. See [When the number of
+          players is odd](/aiuto/approfondimenti/numero_dispari).
+        hint: gara.dispari
+
+  - type: heading
+    id: aprire
+    title: "Opening registrations"
+
+  - type: text
+    text: >-
+      From the competition page, in the **Management** panel, tap **Open
+      registrations** and set the window during which people can sign up. From
+      then on the competition appears in the public lists and players can
+      register.
+
+  - type: shot
+    shot: gara-gestione
+    caption: "The «Management» panel: this is where you open registrations, start the round and run the evening."
+
+  - type: note
+    tone: warning
+    title: "The closing date is not a detail"
+    text: >-
+      At the deadline registrations close by themselves. Set it shortly before
+      the start — an hour, two — not days before: most people decide at the
+      last minute.
+
+  - type: heading
+    id: link
+    title: "The invitation link"
+
+  - type: text
+    text: >-
+      Every competition has a short link, which you will find in the Management
+      panel. Send it to the club's group chat: whoever taps it registers
+      directly, and anyone without an account is guided through creating one
+      and then registered automatically.
+
+  - type: heading
+    id: campionato
+    title: "Competitions inside a championship"
+
+  - type: text
+    text: >-
+      If the competition is part of a championship you create it from the
+      championship page, not from «New Competition». Little changes: it
+      inherits the championship's default settings (venue, fee, rounds,
+      standings), which you can still change competition by competition.
+
+  - type: note
+    tone: warning
+    title: "Dates must be in order"
+    text: >-
+      Inside a championship, competition number 2 cannot have a date earlier
+      than number 1. If you try, the app refuses with a message: it is a
+      deliberate check, because the overall standings are built in the order of
+      the competitions.
+
+  - type: faq
+    items:
+      - q: "Can I change a competition after creating it?"
+        a: "Yes, freely while it is a draft. After registrations open the dates stay editable; once the first round has started the match format is frozen."
+      - q: "I got everything wrong, can I delete it?"
+        a: "A draft competition can be deleted by an administrator. If registrations have already happened, the normal route is to cancel it rather than delete it: the people who registered keep a record."
+      - q: "How many players do I need?"
+        a: "The minimum you set, and at least four for a rounds-based competition to make sense. Below the minimum the app will not start the first round."
+      - q: "Can I let someone else run the competition?"
+        a: "Yes: in the Management panel you can add co-directors. Handy if you are playing that evening yourself."

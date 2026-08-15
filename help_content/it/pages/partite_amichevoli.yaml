@@ -116,6 +116,10 @@ blocks:
       amichevoli). Puoi passare dall'una all'altra con un tocco. Le classifiche
       delle gare, invece, non sono toccate dalle amichevoli.
 
+  - type: shot
+    shot: statistiche-amichevoli
+    caption: "Le statistiche delle amichevoli: partite, vittorie e avversari più frequenti, contate a parte."
+
   - type: faq
     items:
       - q: "Non vedo la sezione Match."

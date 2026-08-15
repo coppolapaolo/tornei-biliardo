@@ -1,0 +1,135 @@
+title: "Words worth knowing"
+section: introduzione
+kind: riferimento
+audience: [tutti]
+minutes: 4
+summary: "Championship, competition, round, match, rack, distance: six words that come up everywhere in the app, explained with a concrete example."
+related: [cosa_e, formati_di_gioco]
+
+blocks:
+  - type: text
+    text: >-
+      The app always uses the same six words. Learning them once makes
+      everything else clear, including the busier-looking screens.
+
+  - type: heading
+    id: le_sei_parole
+    title: "The six words"
+
+  - type: options
+    items:
+      - name: "Rack"
+        values: "a single frame at the table"
+        text: >-
+          A rack is one game: the balls are broken and play continues until one
+          of the two wins. It is the smallest unit. When you press the button
+          with a player's name during a match, you are saying «this rack was
+          won by them».
+        hint: partita.rack
+      - name: "Match"
+        values: "one player against another"
+        text: >-
+          A match is made of several racks. It ends when one of the two reaches
+          the agreed number of racks, which is called the **distance**.
+      - name: "Distance"
+        values: "e.g. «race to 4»"
+        text: >-
+          How many racks it takes to win the match. «Race to 4» means the first
+          to win 4 racks takes the match: it can last at most 7 racks (4-3). It
+          does not mean «4 racks are played».
+        hint: gara.distanza
+      - name: "Round"
+        values: "one set of matches"
+        text: >-
+          In a round every entrant plays one match, each against a different
+          opponent. Once the round is over the app updates the standings and
+          forms the pairs for the next one.
+        hint: gara.turni
+      - name: "Competition"
+        values: "the evening"
+        text: >-
+          A competition is the event: a date, a venue, a list of entrants and a
+          certain number of rounds. When the last round ends, the competition
+          has its final standings.
+      - name: "Championship"
+        values: "several competitions in a series"
+        text: >-
+          A championship groups several competitions over weeks or months. Each
+          competition has its own standings, and those add up into the overall
+          championship standings.
+
+  - type: heading
+    id: esempio
+    title: "An example from start to finish"
+
+  - type: text
+    text: >-
+      The club runs the **2026 Club Championship**, made of six
+      **competitions**, one a month. Eight players enter the March
+      **competition**. It runs over three **rounds**, discipline 8-ball,
+      **distance** race to 4.
+
+  - type: steps
+    items:
+      - title: "First round"
+        text: >-
+          The app draws four pairs. Everyone plays their **match**: racks are
+          played until one player reaches 4. Marco wins 4-2, so he played 6
+          racks and won 4 of them.
+      - title: "Standings after the first round"
+        text: >-
+          The app counts everyone's wins and rack difference and produces the
+          provisional standings.
+      - title: "Second and third rounds"
+        text: >-
+          The new pairs are not random: they come from the standings, and the
+          app avoids two players meeting twice. How it does that is explained
+          in [How pairs are formed](/aiuto/approfondimenti/abbinamenti).
+      - title: "End of the competition"
+        text: >-
+          After the last round the final standings come out. The points earned
+          add to those of the other competitions in the overall championship
+          standings.
+
+  - type: note
+    tone: info
+    title: "Competitions without a championship"
+    text: >-
+      A competition can also stand on its own, belonging to no championship:
+      it is called a **stand-alone competition** and works in exactly the same
+      way, except that its standings do not add up to anything else.
+
+  - type: heading
+    id: altre_parole
+    title: "Other words you will meet"
+
+  - type: options
+    items:
+      - name: "Competition director"
+        text: >-
+          The person who organises and runs the competition: opens
+          registrations, starts the rounds, corrects wrong results. See [Who
+          does what](/aiuto/introduzione/chi_fa_cosa).
+      - name: "X by walkover"
+        text: >-
+          When the number of players is odd, one of them is left without an
+          opponent for that round and is awarded a win without playing. See
+          [When the number of players is
+          odd](/aiuto/approfondimenti/numero_dispari).
+      - name: "Trio"
+        text: >-
+          The alternative to a walkover: instead of leaving someone out, three
+          players play a mini round-robin together.
+      - name: "Forfeit"
+        text: >-
+          When a player abandons a match or does not show up. The opponent
+          takes the remaining racks.
+      - name: "Tie-break"
+        text: >-
+          The extra contest that decides who finishes ahead when two players
+          end the competition level.
+      - name: "Waitlist"
+        text: >-
+          If a competition has a maximum number of entrants and fills up,
+          latecomers join the waitlist and get in automatically if someone
+          withdraws.

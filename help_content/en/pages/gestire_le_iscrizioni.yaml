@@ -1,0 +1,137 @@
+title: "Handling registrations"
+section: organizzare
+kind: approfondimento
+audience: [direttore]
+minutes: 4
+summary: "Opening, extending and closing registrations; adding or removing someone by hand; understanding the waitlist."
+screens: [admin.competition.gara_detail]
+related: [creare_una_gara, condurre_la_gara, numero_dispari]
+
+blocks:
+  - type: text
+    text: >-
+      Registrations are the phase in which the competition takes shape. All the
+      controls are in the **Management** panel of the competition page.
+
+  - type: heading
+    id: stati
+    title: "A competition's three phases"
+
+  - type: options
+    items:
+      - name: "Draft"
+        text: "The competition exists but nobody can register. This is when you can change any setting."
+      - name: "Registrations open"
+        text: "The competition is public and players sign themselves up. Play settings remain editable, with care."
+      - name: "In progress"
+        text: "The first round has started. The match format is frozen: changing it would falsify results already recorded."
+
+  - type: heading
+    id: aprire
+    title: "Opening registrations"
+
+  - type: steps
+    items:
+      - title: "Go to Management"
+        text: "On a phone it is one of the tabs at the top of the competition page."
+        shot: gara-gestione
+      - title: "Tap «Open registrations»"
+        text: >-
+          Set the window. The closing date cannot be later than the date of the
+          competition: if you get it wrong, the app pulls it back to the
+          competition's time and tells you.
+      - title: "Circulate the link"
+        text: >-
+          In the Management panel you will find the short invitation link:
+          whoever opens it registers directly.
+
+  - type: heading
+    id: durante
+    title: "While registrations are open"
+
+  - type: shot
+    shot: gara-iscritti
+    caption: "The list of entrants as the director sees it: this is where you add or remove a player by hand."
+
+  - type: options
+    title: "What you can do"
+    items:
+      - name: "Register a player by hand"
+        text: >-
+          For people who do not use the app or did not make it in time: you
+          search for them by name and add them. They still need an account.
+      - name: "Remove an entrant"
+        text: >-
+          For people who say they cannot come. The player is notified, and if
+          there is a waitlist the first in the queue takes their place.
+      - name: "Change the dates"
+        text: >-
+          Extend the closing time if entries are thin, or bring it forward if
+          you are already full.
+      - name: "Close early"
+        text: >-
+          **Close registrations** locks the list without waiting for the
+          deadline. Useful when the group is complete and you want to begin.
+
+  - type: heading
+    id: lista_attesa
+    title: "The waitlist"
+
+  - type: text
+    text: >-
+      There are two different reasons for ending up on it, and it is worth not
+      confusing them.
+
+  - type: options
+    items:
+      - name: "The competition is full"
+        text: >-
+          You set a maximum number of entrants and it has been reached.
+          Latecomers queue up, and if someone withdraws they get in
+          automatically in order of arrival.
+      - name: "Even-number requirement"
+        text: >-
+          You chose that the competition needs an even number of players.
+          Whoever registers and makes the count odd waits until another person
+          arrives: then two get in together. See [When the number of players is
+          odd](/aiuto/approfondimenti/numero_dispari).
+
+  - type: note
+    tone: info
+    text: >-
+      If both constraints are active, the app checks parity first and the
+      maximum second.
+
+  - type: heading
+    id: chiudere
+    title: "Closing and starting"
+
+  - type: text
+    text: >-
+      At closing time the list is final and is the one the draw will use. Check
+      two things before starting the first round:
+
+  - type: list
+    items:
+      - "**There are at least as many entrants as your minimum**, otherwise the app will not start the round."
+      - "**Everyone really is there** in the venue: whoever is missing should be removed now, because removing them after the start means replaying the round."
+
+  - type: note
+    tone: warning
+    title: "Last-minute no-shows"
+    text: >-
+      A registered player who does not turn up is the most common problem of
+      the evening. Remove them **before** starting the first round: a second's
+      work. After the start, the only routes are cancelling the round and
+      redrawing — or letting their opponent win by forfeit.
+
+  - type: faq
+    items:
+      - q: "Can I reopen registrations after closing them?"
+        a: "Yes, as long as the first round has not started: just set a closing date in the future again."
+      - q: "An entrant has not paid the fee. Can I flag that?"
+        a: "The app does not handle payments: the fee is information on the competition card. Takings are handled as they always have been."
+      - q: "How do I register someone without a smartphone?"
+        a: "Add them by hand from the Management panel. They do need an account, though: you can create one together, it takes a minute."
+      - q: "How many entrants do I need to start?"
+        a: "The minimum you set when creating the competition. Below that threshold the start button stays disabled."

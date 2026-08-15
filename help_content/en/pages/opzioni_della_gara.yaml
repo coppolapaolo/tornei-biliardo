@@ -1,0 +1,221 @@
+title: "All the options of a competition"
+section: organizzare
+kind: riferimento
+audience: [direttore]
+minutes: 8
+summary: "Every field of the creation form, what it actually changes, and which value to pick when you are unsure."
+screens: [admin.competition.create_gara_standalone, admin.competition.edit_gara]
+related: [creare_una_gara, formati_di_gioco, abbinamenti, classifiche]
+
+blocks:
+  - type: text
+    text: >-
+      The creation form is split into four steps. Here is every field, with the
+      recommended value where the choice is not obvious. If you are creating
+      your first competition you can skip this page: the proposed values work.
+
+  - type: shot
+    shot: gara-nuova
+    caption: "The four steps: public information, structure, match format, summary."
+
+  - type: heading
+    id: informazioni
+    title: "1. Public information"
+
+  - type: text
+    text: "What players will see in the lists and on the competition card."
+
+  - type: options
+    items:
+      - name: "Competition name"
+        values: "required"
+        text: "How it appears in the lists. Recognisable beats formal: «Thursday 9-ball night» works perfectly well."
+      - name: "Discipline"
+        values: "required · 8-ball, 9-ball, 10-ball, one pocket, straight pool, bank pool, rotation"
+        text: "The game. It only determines how the competition is displayed: the rules at the table are yours to know."
+        hint: gara.disciplina
+      - name: "Date and start time"
+        values: "the date is required"
+        text: >-
+          The time is when people gather. Inside a championship the dates must
+          increase in line with the competition number.
+      - name: "Location / Venue"
+        text: >-
+          Choosing a registered venue means the competition inherits its tables
+          and you will be able to assign them during the evening. You can also
+          type a location by hand.
+      - name: "Available tables"
+        text: >-
+          Which of the venue's tables you will actually use tonight. If the
+          venue has eight but you have four tonight, list those: the app will
+          only assign matches to them.
+        hint: gara.tavoli
+      - name: "Entry fee"
+        values: "informational"
+        text: "Appears on the card. The app does not handle payments."
+      - name: "Notes / description"
+        text: "Free text: the evening's format, prizes, what to bring."
+
+  - type: heading
+    id: struttura
+    title: "2. Competition structure"
+
+  - type: options
+    items:
+      - name: "Pairing algorithm"
+        values: "Amalfi (recommended) · Random · Round robin · Knockout · Double elimination"
+        text: >-
+          How pairs are formed each round. **Amalfi** is designed for club
+          competitions over rounds: everyone plays every round and pairings
+          follow the standings. The others are described in [How pairs are
+          formed](/aiuto/approfondimenti/abbinamenti).
+        hint: gara.strategia
+      - name: "Number of rounds"
+        values: "recommended 3"
+        text: >-
+          How many sets of matches. With knockout and double elimination there
+          is nothing to set: the bracket decides, based on the entrants.
+      - name: "Forfeit handling"
+        values: "Win by walkover (default) · Remove from the round"
+        text: >-
+          What to do with someone who abandons mid-competition. With **win by
+          walkover** they stay in the pairings and their opponents win without
+          playing — simpler, but one opponent ends up with an empty match. With
+          **remove** they drop out of the pairings: cleaner, but it changes the
+          parity and can trigger the odd-number handling.
+        hint: gara.forfait
+      - name: "Minimum entrants"
+        values: "required · recommended 4"
+        text: "Below this threshold the app will not start the first round."
+      - name: "Maximum entrants"
+        values: "optional"
+        text: "If set, anyone beyond that number goes on the waitlist."
+      - name: "Avoid rematches"
+        values: "recommended on"
+        text: >-
+          Prevents two players meeting twice in the same competition. With the
+          usual number of rounds it is nearly always possible to honour.
+        hint: gara.anti_rematch
+      - name: "Play with handicap"
+        values: "default off"
+        text: >-
+          Gives the lower-category player a head start in racks, to even out
+          matches between very different levels. **Note**: competitions with a
+          handicap do not update players' ratings.
+        hint: gara.handicap
+      - name: "First round"
+        values: "Random (default) · Rating · Standings"
+        text: >-
+          How the **first** round's pairs are formed, when no standings exist
+          yet. **Random** is a straight draw. **Rating** pairs by declared
+          strength, so the strongest do not meet immediately. **Standings**
+          uses the championship standings.
+        hint: gara.primo_turno
+      - name: "If players are odd"
+        values: "Bye · Bye with challenge · Trio · Waitlist"
+        text: >-
+          What happens when the number of players is odd and someone would be
+          left without an opponent. Explained one by one in [When the number of
+          players is odd](/aiuto/approfondimenti/numero_dispari).
+        hint: gara.dispari
+      - name: "Standings system"
+        values: "Wins (default) · Racks · Position"
+        text: >-
+          How players are ordered. **Wins** counts matches won and, when level,
+          rack difference. **Racks** counts total racks. With knockout and
+          double elimination **Position** is compulsory, decided by the
+          bracket. See [How standings are worked
+          out](/aiuto/approfondimenti/classifiche).
+        hint: gara.classifica
+      - name: "Tie-break"
+        values: "on up to 3rd place"
+        text: >-
+          Whether and up to which position to settle level finishes with an
+          extra contest. Below the podium, as a rule, level finishes are left
+          as they are.
+        hint: gara.spareggio
+
+  - type: heading
+    id: formato
+    title: "3. Match format"
+
+  - type: text
+    text: >-
+      How long a match lasts. This is the choice that most affects the length
+      of the evening.
+
+  - type: options
+    items:
+      - name: "Distance"
+        values: "e.g. 4, 5, 7"
+        text: >-
+          How many racks it takes to win the match. **Race to 4** means the
+          first to 4 takes it: at most 7 racks. Going up by one lengthens the
+          evening considerably.
+        hint: gara.distanza
+      - name: "Exact number of racks"
+        values: "default off"
+        text: >-
+          If on, **all** the racks listed are played, even once the result is
+          settled. Needed when what counts is the total number of racks rather
+          than who wins — that is, with the «Racks» standings system. With an
+          even number, a match can end level.
+        hint: gara.numero_esatto
+      - name: "Set play"
+        values: "default off"
+        text: >-
+          The match is split into sets: a set is won by reaching the distance,
+          and the match by taking enough sets. It lengthens things a lot:
+          suitable for finals or dedicated evenings.
+        hint: gara.multiset
+
+  - type: note
+    tone: tip
+    title: "How long an evening takes"
+    text: >-
+      Rule of thumb: with **8 players, 3 rounds, race to 4** and 4 tables you
+      stay within two and a half hours. Each extra round adds roughly
+      forty-five minutes; each extra unit of distance, about twenty minutes per
+      round.
+
+  - type: heading
+    id: riepilogo
+    title: "4. Summary and confirmation"
+
+  - type: text
+    text: >-
+      The last step recaps every choice on a single screen. It is worth
+      reading: it is the last convenient moment to notice a wrong distance or a
+      date that does not add up.
+
+  - type: heading
+    id: dopo
+    title: "What can still be changed afterwards"
+
+  - type: options
+    items:
+      - name: "Competition in draft"
+        values: "everything"
+        text: "Nobody has registered yet: you can change any field."
+      - name: "Registrations open"
+        values: "almost everything"
+        text: >-
+          Dates, venue, notes and capacity stay editable. Changing the format
+          and pairings is technically possible but unwise: people registered
+          knowing the earlier rules.
+      - name: "Competition started"
+        values: "little"
+        text: >-
+          The match format is frozen. Surrounding information (notes, tables)
+          stays editable and, with due care, results that are not yet locked.
+
+  - type: faq
+    items:
+      - q: "What do I pick if I have no idea?"
+        a: "Amalfi, 3 rounds, distance 4, Wins standings, odd numbers with «Bye», avoid rematches on. That is the club-evening setup."
+      - q: "I want a knockout tournament: what changes?"
+        a: "Choose «Knockout»: the number of rounds disappears (the bracket decides it) and the standings system becomes «Position» by necessity."
+      - q: "Why can I not select «Trio»?"
+        a: "Trio is only possible for distances between 2 and 7, and not with bracket strategies. If the distance is outside that range the option is unavailable."
+      - q: "Does the handicap affect the standings?"
+        a: "Yes: the standings use the effective scores, that is the ones after the handicap. But competitions with a handicap do not move players' personal ratings."

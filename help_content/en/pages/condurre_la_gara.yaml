@@ -1,0 +1,167 @@
+title: "Running a competition round by round"
+section: organizzare
+kind: approfondimento
+audience: [direttore]
+minutes: 6
+summary: "The evening itself: starting rounds, assigning tables, correcting wrong results and closing the competition."
+screens: [admin.competition.gara_detail]
+related: [gestire_le_iscrizioni, abbinamenti, numero_dispari]
+
+blocks:
+  - type: text
+    text: >-
+      During the evening your job comes down to three gestures: start the
+      round, watch the matches finish, start the next round. The app does the
+      rest.
+
+  - type: shot
+    shot: gara-gestione
+    caption: "The «Management» panel during a competition: the state of the current round and the button to start the next."
+
+  - type: heading
+    id: primo_turno
+    title: "Starting the first round"
+
+  - type: steps
+    items:
+      - title: "Close registrations"
+        text: "Check the list matches who is actually in the venue."
+      - title: "Tap «Start first round»"
+        text: >-
+          The app draws the pairs and creates the matches. Every player gets a
+          notification with their opponent's name.
+      - title: "Assign the tables"
+        text: >-
+          If the venue has tables configured, the app spreads them across the
+          first matches; the others wait and get a table as soon as one frees
+          up.
+
+  - type: note
+    tone: info
+    title: "The draw is reproducible"
+    text: >-
+      The first-round draw is recorded: if anyone disputes a pairing, it is
+      possible to reconstruct how it came out. Cancelling the first round
+      deletes the draw, and restarting it means genuinely drawing again.
+
+  - type: heading
+    id: durante
+    title: "While play is under way"
+
+  - type: text
+    text: >-
+      Players record their own racks from their phones and you watch the page
+      update itself. You need do nothing, except step in when something goes
+      wrong.
+
+  - type: options
+    title: "What you can do during the round"
+    items:
+      - name: "Enter a result on the players' behalf"
+        text: >-
+          If a table has no smartphone, open the match and record the racks
+          yourself: the scoreboard is the same.
+      - name: "Change a match's table"
+        text: "If a table breaks down or two pairs agree otherwise."
+      - name: "Record a forfeit"
+        text: >-
+          Whoever abandons leaves their opponent all the racks missing to the
+          distance.
+        hint: partita.forfait
+      - name: "Reset a wrong match"
+        text: >-
+          Puts the score back to zero keeping the same pair, who replay. This
+          is the correction to use when a result was entered wrongly.
+        hint: gara.reset_partita
+
+  - type: heading
+    id: turni_successivi
+    title: "Starting the following rounds"
+
+  - type: text
+    text: >-
+      The **Start next round** button only lights up when **every** match in
+      the current round is finished. That is deliberate: the new pairs come
+      from the standings, and incomplete standings would produce wrong
+      pairings.
+
+  - type: note
+    tone: warning
+    title: "Starting a round locks the previous one"
+    text: >-
+      As soon as the new round starts, the previous round's matches become
+      **Locked**: they can no longer be corrected, because the pairings just
+      created are based on those results. Check the scores **before** pressing.
+
+  - type: heading
+    id: correggere
+    title: "Correcting a mistake"
+
+  - type: text
+    text: >-
+      It depends when you notice. The three situations are resolved
+      differently.
+
+  - type: options
+    items:
+      - name: "The round is still under way"
+        values: "easy"
+        text: >-
+          Open the match and reset it: the pair stays the same and replays, or
+          you enter the correct score yourself.
+      - name: "The round is over but the next has not started"
+        values: "still easy"
+        text: >-
+          Same thing. Until you start the following round, results are
+          editable.
+      - name: "The next round has already started"
+        values: "think it over"
+        text: >-
+          The matches are locked. To correct them you have to **cancel the next
+          round**: its matches are deleted and the pairs are freed. Then you
+          correct, and start again. The players in the cancelled round will
+          have to replay, so weigh up whether it is worth it.
+
+  - type: heading
+    id: dispari
+    title: "If the number of players is odd"
+
+  - type: text
+    text: >-
+      You need do nothing: the app applies the rule you chose when creating the
+      competition — X by walkover, trio or challenge — and applies it to a
+      different player each round, so the burden goes around. How it works is
+      explained in [When the number of players is
+      odd](/aiuto/approfondimenti/numero_dispari).
+
+  - type: heading
+    id: chiudere
+    title: "Closing the competition"
+
+  - type: text
+    text: >-
+      After the last round the competition ends and the standings become final.
+      Two things can still happen:
+
+  - type: list
+    items:
+      - >-
+        **Tie-breaks**: if players are level in the positions you chose to
+        break, the competition waits until you have them played. You start the
+        tie-break from the Management panel.
+      - >-
+        **Championship standings**: if the competition is part of one, the
+        results are added to the overall standings as soon as it finishes.
+
+  - type: faq
+    items:
+      - q: "The «Start next round» button is greyed out."
+        a: "At least one match is still open. In the Rounds view, the open matches are the ones without the «Finished» label."
+      - q: "A player leaves halfway through the competition."
+        a: "Record a forfeit on the match in progress. For the following rounds, the rule you chose at creation decides whether they stay in the pairings (losing by walkover) or drop out."
+      - q: "Can I run a competition and play in it?"
+        a: "No: a director cannot register for the competition they run. If you want to play, add a co-director to run the evening."
+      - q: "I cancelled a round by mistake."
+        a: "Start it again: the app will re-form the pairs. They will not necessarily be the same as before, because the pairing is recalculated."
+      - q: "Can I change the distance halfway through?"
+        a: "The format is frozen at the start. If you need a different distance for a specific round, it has to be set before kick-off, while the competition is still a draft."

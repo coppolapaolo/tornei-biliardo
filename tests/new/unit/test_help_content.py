@@ -33,21 +33,30 @@ ROOT = Path(__file__).resolve().parents[3]
 STATIC = ROOT / "static"
 
 
+def _locales() -> list[str]:
+    return available_locales()
+
+
 @pytest.mark.unit
 def test_contenuto_coerente(app):
     """Nessun legame rotto fra indice, pagine, figure, ancore ed endpoint.
 
     E' il test che conta davvero: `validate` raccoglie in un colpo solo tutte
-    le incoerenze che renderebbero la guida silenziosamente falsa.
+    le incoerenze che renderebbero la guida silenziosamente falsa. Gira su
+    **ogni lingua**: una traduzione che cita una figura mai catturata o un
+    endpoint rinominato sbaglia esattamente come farebbe l'originale.
     """
     with app.app_context():
         endpoints = {rule.endpoint for rule in app.url_map.iter_rules()}
-        problems = validate(
-            FALLBACK_LOCALE, known_endpoints=endpoints, static_dir=str(STATIC)
-        )
-    assert not problems, "Contenuti dell'aiuto incoerenti:\n  - " + "\n  - ".join(
-        problems
-    )
+        for locale in _locales():
+            problems = validate(
+                locale, known_endpoints=endpoints, static_dir=str(STATIC)
+            )
+            assert (
+                not problems
+            ), f"Contenuti dell'aiuto incoerenti ({locale}):\n  - " + "\n  - ".join(
+                problems
+            )
 
 
 @pytest.mark.unit
@@ -57,11 +66,65 @@ def test_la_lingua_di_riferimento_esiste(app):
 
 
 @pytest.mark.unit
+def test_le_lingue_hanno_la_stessa_struttura(app):
+    """Sezioni e pagine devono coincidere fra le lingue.
+
+    Il cambio lingua tiene l'indirizzo corrente: se una pagina esiste solo in
+    italiano, chi passa all'inglese da quella pagina finisce su un 404. Ed e'
+    l'errore che si introduce da soli aggiungendo una pagina e traducendola
+    "dopo".
+    """
+    with app.app_context():
+        strutture = {}
+        for locale in _locales():
+            content = get_content(locale)
+            strutture[locale] = (
+                {section.id for section in content.sections},
+                set(content.pages),
+            )
+
+    riferimento = strutture[FALLBACK_LOCALE]
+    for locale, struttura in strutture.items():
+        assert struttura[0] == riferimento[0], (
+            f"Sezioni diverse in «{locale}»: "
+            f"mancano {riferimento[0] - struttura[0]}, "
+            f"in piu' {struttura[0] - riferimento[0]}"
+        )
+        assert struttura[1] == riferimento[1], (
+            f"Pagine diverse in «{locale}»: "
+            f"mancano {riferimento[1] - struttura[1]}, "
+            f"in piu' {struttura[1] - riferimento[1]}"
+        )
+
+
+@pytest.mark.unit
+def test_le_ancore_del_microaiuto_non_si_traducono(app):
+    """`anchor` e' il contratto con i template dell'app.
+
+    E' il valore che l'elemento dell'interfaccia esporra' in `data-help`:
+    tradurlo significherebbe due ancore diverse per lo stesso comando, e
+    l'interfaccia adattiva ne troverebbe una sola.
+    """
+    with app.app_context():
+        ancore = {
+            locale: {
+                hint_id: hint.anchor
+                for hint_id, hint in get_content(locale).hints.items()
+            }
+            for locale in _locales()
+        }
+    riferimento = ancore[FALLBACK_LOCALE]
+    for locale, mappa in ancore.items():
+        assert mappa == riferimento, f"Ancore divergenti in «{locale}»"
+
+
+@pytest.mark.unit
 def test_ogni_sezione_ha_almeno_una_pagina(app):
     with app.app_context():
-        content = get_content(FALLBACK_LOCALE)
-        vuote = [s.id for s in content.sections if not content.pages_of(s)]
-    assert not vuote, f"Sezioni senza pagine (comparirebbero vuote): {vuote}"
+        for locale in _locales():
+            content = get_content(locale)
+            vuote = [s.id for s in content.sections if not content.pages_of(s)]
+            assert not vuote, f"Sezioni senza pagine in «{locale}»: {vuote}"
 
 
 @pytest.mark.unit
@@ -110,9 +173,10 @@ def test_i_suggerimenti_stanno_in_un_fumetto(app):
     """Un micro-aiuto è una o due frasi accanto a un comando. Oltre, è un
     paragrafo nel posto sbagliato e va spostato nella pagina."""
     with app.app_context():
-        hints = get_content(FALLBACK_LOCALE).hints.values()
-        lunghi = [(h.id, len(h.short)) for h in hints if len(h.short) > 220]
-    assert not lunghi, f"Suggerimenti troppo lunghi per un fumetto: {lunghi}"
+        for locale in _locales():
+            hints = get_content(locale).hints.values()
+            lunghi = [(h.id, len(h.short)) for h in hints if len(h.short) > 220]
+            assert not lunghi, f"Suggerimenti troppo lunghi in «{locale}»: {lunghi}"
 
 
 @pytest.mark.unit

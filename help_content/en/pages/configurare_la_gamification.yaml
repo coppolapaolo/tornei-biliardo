@@ -1,0 +1,140 @@
+title: "Configuring points, goals and milestones"
+section: amministrare
+kind: approfondimento
+audience: [amministratore]
+minutes: 5
+summary: "How much each action is worth, how levels are earned, which goals are active and which features unlock with use."
+screens: [gamification.admin_dashboard, gamification.admin_quests, gamification.admin_config_dashboard, gamification.admin_features]
+related: [progressi]
+
+blocks:
+  - type: text
+    text: >-
+      The playing side of the platform — experience points, levels, milestones,
+      streaks — is entirely configurable. It already works without touching
+      anything: this page is for when you want to change the weights or add
+      goals of your own.
+
+  - type: shot
+    shot: admin-gamification
+    caption: "The panel: XP awarded, active goals, existing milestones and level distribution."
+
+  - type: heading
+    id: pannello
+    title: "Reading the panel"
+
+  - type: options
+    items:
+      - name: "XP awarded"
+        text: "How many experience points the platform has handed out in total. It grows on its own with use."
+      - name: "Active goals"
+        text: "How many periodic goals are running right now."
+      - name: "Milestones"
+        text: "How many exist in the catalogue, and how many have been unlocked at least once."
+      - name: "Level distribution"
+        text: >-
+          How many users sit at each level. This is the number to watch to tell
+          whether the curve is tuned right: if everyone is at level 1 the curve
+          is too steep, if everyone is at the top it is too flat.
+      - name: "Top 10 XP users"
+        text: "Who has accumulated most. Useful for spotting anomalous counts."
+
+  - type: heading
+    id: obiettivi
+    title: "Periodic goals"
+
+  - type: shot
+    shot: admin-gamification-obiettivi
+    caption: "Managing periodic goals: creating them, activating them, expiring them."
+
+  - type: text
+    text: >-
+      These are the short tasks players see on their progress page («play three
+      matches this week»). Two weekly ones come as standard; you can create
+      others by saying what to count, how much, over what period and how many
+      points to give.
+
+  - type: options
+    title: "A goal's states"
+    items:
+      - name: "Active"
+        text: "Running: players see it and progress counts."
+      - name: "Expired"
+        text: "Closed: it stays in the history of whoever completed it, but takes no further progress."
+      - name: "Deleted"
+        text: "Removed from the catalogue. For goals created by mistake, not for closing one that is running — for that there is «expire»."
+
+  - type: heading
+    id: configurazione
+    title: "Points, levels and streaks"
+
+  - type: shot
+    shot: admin-gamification-config
+    caption: "The configuration: how much each action is worth, the level curve, the streak rules."
+
+  - type: options
+    items:
+      - name: "XP per action"
+        text: >-
+          How many points playing a match, winning it, registering for a
+          competition or completing a challenge is worth. Raising a value does
+          not recalculate the past: it applies from then on.
+      - name: "Level curve"
+        text: >-
+          How many points each level takes. The principle is that early levels
+          come quickly — they exist to show the mechanism is there — and later
+          ones slow down.
+      - name: "Streaks"
+        text: >-
+          How often you have to play to keep a streak alive, and the rewards at
+          each threshold. This is also where **freezes** are granted, which
+          protect a streak from one interruption.
+
+  - type: heading
+    id: funzioni
+    title: "Features that unlock"
+
+  - type: shot
+    shot: admin-funzioni
+    caption: "The unlock rules: who sees which feature, and under which conditions."
+
+  - type: text
+    text: >-
+      Some parts of the app only appear after a bit of activity — friendly
+      matches, challenges. It keeps someone opening the app for the first time
+      from facing a menu of fifteen items they do not need.
+
+  - type: text
+    text: >-
+      Each feature has a rule that can be based on **role** (directors see it
+      anyway), on the **level** reached, or on an activity **measure** (number
+      of matches played). Before applying a change you can preview who would
+      have access.
+
+  - type: note
+    tone: warning
+    title: "Unlocking beats locking"
+    text: >-
+      A feature taken away from someone who was using it is, from their point
+      of view, a fault: they look where they have always found it and it is
+      gone. Before tightening a rule, look at the preview and count how many
+      people would lose it.
+
+  - type: note
+    tone: info
+    title: "Administrators are out of it"
+    text: >-
+      Administrator accounts have no points or levels and do not appear in the
+      leaderboards: whoever referees does not play. If you want to try a
+      player's view, you need a player account.
+
+  - type: faq
+    items:
+      - q: "If I change an action's points, do old scores change?"
+        a: "No. The change applies to subsequent actions; the history stays as it is."
+      - q: "Can I award points by hand?"
+        a: "Yes, from the XP management, and likewise a user's points can be reset. It is for repairing, not for rewarding."
+      - q: "Can a milestone be taken away from someone who unlocked it?"
+        a: "You can hide a milestone from the catalogue, but the ones already earned stay: they are that user's history."
+      - q: "How do I turn gamification off completely?"
+        a: "There is no single switch. You can set action XP to zero and expire the goals, but levels and milestones stay visible."

@@ -1,0 +1,119 @@
+title: "Who does what"
+section: introduzione
+kind: introduzione
+audience: [tutti]
+minutes: 3
+summary: "Player, competition director and administrator: who can do what, and how to become a director."
+related: [primo_accesso, creare_una_gara]
+
+blocks:
+  - type: text
+    text: >-
+      Every account has a role, and the role decides which screens you see. It
+      is not a ranking of importance: it is a division of duties. Most people
+      stay a **player** forever, and that is perfectly fine.
+
+  - type: heading
+    id: giocatore
+    title: "Player"
+
+  - type: text
+    text: >-
+      This is the role every new account starts with. A player can register for
+      competitions, play, record their own scores, follow standings and
+      statistics, propose friendly matches and look after their profile.
+
+  - type: list
+    title: "A player can"
+    items:
+      - "Register for and withdraw from competitions while registrations are open."
+      - "Record the racks of their **own** matches (not other people's)."
+      - "See rounds, opponents, standings and brackets."
+      - "Propose and play friendly matches outside competitions."
+      - "Change profile, privacy and email; download their own data."
+
+  - type: heading
+    id: direttore
+    title: "Competition director"
+
+  - type: text
+    text: >-
+      The competition director is the person who organises. On top of
+      everything a player does, they can create competitions and championships,
+      open and close registrations, start rounds, assign tables and correct
+      wrong results.
+
+  - type: shot
+    shot: dashboard-direttore
+    caption: "A competition director's home: the «New Competition» and «New Championship» buttons appear at the top, which a player does not see."
+
+  - type: note
+    tone: warning
+    title: "Whoever runs a competition does not play in it"
+    text: >-
+      A director **cannot register for the competitions they run themselves**:
+      that would make them both judge and party. They can happily play in
+      competitions run by someone else, where they are a player like anyone.
+
+  - type: text
+    text: >-
+      A competition can have more than one director. That helps on long
+      evenings: whoever is at the table playing cannot also run the
+      competition, and a co-director moves the rounds along in their place.
+
+  - type: heading
+    id: diventare_direttore
+    title: "How to become a director"
+
+  - type: steps
+    items:
+      - title: "Open your profile"
+        text: "Tap the initial of your name at the top right, then «My profile»."
+        shot: profilo
+      - title: "Ask for the director role"
+        text: >-
+          In your profile there is a request to be promoted to competition
+          director. Send it: it reaches whoever administers the platform.
+      - title: "Wait for the answer"
+        text: >-
+          When the request is accepted you get a notification, and the next
+          time you open your home you will find the buttons to create
+          competitions and championships.
+
+  - type: heading
+    id: amministratore
+    title: "Administrator"
+
+  - type: text
+    text: >-
+      The administrator is whoever keeps the platform running: they manage
+      accounts, approve director requests, keep an eye on the data and can step
+      into any competition. It is a technical role, normally held by one or two
+      people.
+
+  - type: note
+    tone: info
+    text: >-
+      Administrators **do not take part in the playing side**: they have no
+      experience points or levels, and do not appear in the standings. This
+      keeps whoever referees separate from whoever plays.
+
+  - type: heading
+    id: gestore_sala
+    title: "Venue manager"
+
+  - type: text
+    text: >-
+      Finally there is a secondary role that adds to the others: the manager of
+      a billiard venue, who can keep their venue's page up to date (address,
+      tables, opening hours). You ask for it from your profile, as with the
+      director role, and an administrator approves it.
+
+  - type: faq
+    items:
+      - q: "Can I be both a player and a director?"
+        a: "Yes, and that is the normal situation: a director is a player with a few extra powers. The only limit is that they cannot register for the competitions they run."
+      - q: "I asked to become a director but nothing changed."
+        a: "The request has to be approved by an administrator. Until it is, your account stays a player. Check your notifications: the answer arrives there."
+      - q: "Who can correct a result that has already been entered?"
+        a: "The competition director. A player can undo the last rack while the match is still in progress, but cannot step in once the result has been closed."

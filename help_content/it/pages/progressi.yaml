@@ -58,6 +58,10 @@ blocks:
       Saltare un periodo la azzera — salvo avere un «congelamento», che
       protegge la serie da un'interruzione.
 
+  - type: shot
+    shot: serie
+    caption: "La pagina delle serie: da quanto giochi di fila e quando rischi di azzerarla."
+
   - type: heading
     id: obiettivi
     title: "Obiettivi periodici"
@@ -67,6 +71,31 @@ blocks:
       Ogni settimana ci sono un paio di obiettivi brevi («gioca tre partite
       questa settimana», «vinci una partita»). Si completano giocando
       normalmente e danno punti esperienza in più.
+
+  - type: shot
+    shot: obiettivi
+    caption: "Gli obiettivi in corso, con la barra che mostra a che punto sei."
+
+  - type: heading
+    id: classifiche
+    title: "Le classifiche di piattaforma"
+
+  - type: text
+    text: >-
+      Sono una cosa diversa dalle classifiche delle gare: mettono in fila tutti
+      i giocatori per punti esperienza, livello e serie. Sono pubbliche, e non
+      c'entrano con i risultati sportivi.
+
+  - type: shot
+    shot: classifiche-piattaforma
+    caption: "Le classifiche di piattaforma: XP, livelli e serie di tutti i giocatori."
+
+  - type: note
+    tone: info
+    text: >-
+      Stare in alto qui significa **usare molto l'app**, non giocare meglio
+      degli altri. Le due cose sono volutamente separate: chi vuole misurarsi
+      sul tavolo guarda la classifica della gara e il rating nel profilo.
 
   - type: heading
     id: sblocchi

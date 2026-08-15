@@ -1,0 +1,68 @@
+title: "Gli indicatori della piattaforma"
+section: amministrare
+kind: riferimento
+audience: [amministratore]
+minutes: 3
+summary: "La pagina KPI: quanti utenti, quante gare, quante partite, e come stanno andando nel tempo."
+screens: [admin.kpi.index]
+related: [gestire_gli_utenti]
+
+blocks:
+  - type: text
+    text: >-
+      È la pagina da guardare una volta al mese per sapere se la piattaforma è
+      viva. Non serve a nient'altro: non contiene comandi, solo numeri.
+
+  - type: shot
+    shot: admin-kpi
+    caption: "Gli indicatori: iscritti, gare, partite e andamento nel tempo."
+
+  - type: heading
+    id: cosa_guardare
+    title: "Cosa guardare davvero"
+
+  - type: options
+    items:
+      - name: "Utenti registrati"
+        text: >-
+          Il totale conta poco. Quello che conta è **quanti sono attivi**: un
+          registrato che non gioca da tre mesi non è un utente, è una riga.
+      - name: "Gare create e concluse"
+        text: >-
+          Il rapporto fra le due dice se le gare arrivano in fondo. Molte gare
+          create e poche concluse significa che qualcosa si inceppa a metà
+          serata, e vale la pena chiedere a un direttore cosa succede.
+      - name: "Partite giocate"
+        text: >-
+          È l'indicatore più onesto: misura l'uso reale, non le iscrizioni.
+      - name: "Andamento nel tempo"
+        text: >-
+          Il confronto fra periodi. Un calo improvviso di solito ha una causa
+          concreta — la stagione, un guasto, una gara annullata — che vale la
+          pena cercare invece di aspettare.
+
+  - type: note
+    tone: info
+    title: "Sono numeri aggregati"
+    text: >-
+      La pagina non mostra dati personali di nessuno: sono conteggi. Per i dati
+      di un singolo utente c'è la sua scheda, e vale il principio di guardarla
+      solo quando serve davvero a risolvere un problema.
+
+  - type: heading
+    id: altri_dati
+    title: "Dove stanno gli altri dati"
+
+  - type: list
+    items:
+      - "**Progressi e XP**: nel pannello della gamification, con la distribuzione dei livelli."
+      - "**Statistiche di una gara**: nella pagina della gara, alla voce classifica."
+      - "**Statistiche di un giocatore**: nella sua scheda, o nel suo profilo pubblico."
+      - "**Copia dei propri dati**: la richiede l'utente dal suo profilo — non serve che gliela estragga tu."
+
+  - type: faq
+    items:
+      - q: "Posso esportare questi numeri?"
+        a: "La pagina non ha un export. Per un'analisi seria si legge direttamente il database, cosa che conviene fare su una copia e non sul database in esercizio."
+      - q: "Ogni quanto si aggiornano?"
+        a: "Sono calcolati al momento in cui apri la pagina."

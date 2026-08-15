@@ -73,23 +73,31 @@ PAGE_KINDS = {"introduzione", "tutorial", "approfondimento", "riferimento"}
 
 @dataclass(frozen=True)
 class Shot:
-    """Una schermata catturata dall'app (voce di `screenshots.yaml`)."""
+    """Una schermata catturata dall'app (voce di `screenshots.yaml`).
+
+    Le catture sono **per lingua**: l'app e' tradotta, quindi una guida inglese
+    con le schermate in italiano mostrerebbe pulsanti che nell'interfaccia del
+    lettore non esistono — cioe' proprio l'errore che la guida dovrebbe evitare.
+    Da qui `static/img/help/<lingua>/<id>.png` e il `locale` gia' risolto in
+    `caption`.
+    """
 
     id: str
     caption: str
     route: str
     role: str
     viewports: tuple[str, ...]
+    locale: str = FALLBACK_LOCALE
 
     @property
     def filename(self) -> str:
-        return f"img/help/{self.id}.png"
+        return f"img/help/{self.locale}/{self.id}.png"
 
     @property
     def desktop_filename(self) -> Optional[str]:
         if "desktop" not in self.viewports:
             return None
-        return f"img/help/{self.id}-desktop.png"
+        return f"img/help/{self.locale}/{self.id}-desktop.png"
 
 
 @dataclass(frozen=True)
@@ -244,8 +252,16 @@ def _as_tuple(value: Any) -> tuple[str, ...]:
     return tuple(str(item) for item in value)
 
 
-def _load_shots(root: str, problems: list[str]) -> dict[str, Shot]:
+def _load_shots(root: str, locale: str, problems: list[str]) -> dict[str, Shot]:
+    """Manifest delle catture, con didascalie nella lingua richiesta.
+
+    La parte tecnica (quale percorso, con quale utente, a quale larghezza) e'
+    una sola per tutte le lingue: descrive l'app, non il testo. Le didascalie
+    sono per lingua e stanno in `<lingua>/captions.yaml`, perche' sono il testo
+    alternativo dell'immagine — cioe' cio' che legge chi non vede la figura.
+    """
     data = _read_yaml(os.path.join(root, "screenshots.yaml")) or {}
+    captions = _read_yaml(os.path.join(root, locale, "captions.yaml")) or {}
     shots: dict[str, Shot] = {}
     for entry in data.get("shots") or []:
         shot_id = entry.get("id")
@@ -254,10 +270,11 @@ def _load_shots(root: str, problems: list[str]) -> dict[str, Shot]:
             continue
         shots[shot_id] = Shot(
             id=shot_id,
-            caption=entry.get("caption", ""),
+            caption=captions.get(shot_id) or entry.get("caption", ""),
             route=entry.get("route", ""),
             role=entry.get("as", "anonimo"),
             viewports=_as_tuple(entry.get("viewports")) or ("mobile",),
+            locale=locale,
         )
     return shots
 
@@ -356,7 +373,7 @@ def _load(locale: str) -> HelpContent:
     )
 
     pages = _load_pages(locale_dir, problems)
-    shots = _load_shots(root, problems)
+    shots = _load_shots(root, locale, problems)
     hints, tours = _load_hints(locale_dir)
 
     return HelpContent(

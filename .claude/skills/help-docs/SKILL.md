@@ -37,18 +37,27 @@ correzioni di bug che ripristinano il comportamento già documentato.
 ```
 help_content/
   screenshots.yaml            manifest delle catture (id → route, ruolo, viewport)
-  it/
+  it/                         lingua di riferimento
     site.yaml                 sezioni e ordine delle pagine
     hints.yaml                micro-aiuto e presentazioni (interfaccia adattiva)
+    captions.yaml             didascalie delle schermate
     pages/<slug>.yaml         una pagina per file
+  en/                         stessa struttura, stessi slug
 
-static/img/help/<id>.png      le catture, generate — mai ritoccate a mano
+static/img/help/<lingua>/<id>.png   le catture, generate — mai ritoccate a mano
 static/css/help-7c.css        stili del solo mini-sito
 templates/help/               guscio, blocchi, pagine
 routes/help.py                blueprint /aiuto
 utils/help_content.py         caricamento, ricerca, verifica
 scripts/help_docs/            seed dimostrativo e cattura schermate
 ```
+
+**Le lingue hanno la stessa struttura, sempre.** Stessi id di sezione, stessi
+slug di pagina: il cambio lingua tiene l'indirizzo corrente, quindi una pagina
+che esiste solo in italiano manda chi passa all'inglese su un 404. Lo verifica
+`test_le_lingue_hanno_la_stessa_struttura`, e non e' un formalismo — e'
+esattamente l'errore che si commette aggiungendo una pagina e rimandando la
+traduzione.
 
 Il contenuto è **dato**, non markup. Le pagine sono elenchi di blocchi tipati;
 i testi brevi dei suggerimenti stanno in `hints.yaml` e sono già interrogabili
@@ -126,16 +135,20 @@ Poi si rigenera:
 # 1. dataset dimostrativo (deterministico, azzera il DB di sviluppo!)
 python scripts/help_docs/seed_demo.py
 
-# 2. l'app in ascolto con DEBUG_MODE attivo
-python app.py &
-
-# 3. cattura (tutte, oppure solo quelle che servono)
-python scripts/help_docs/capture_screenshots.py
-python scripts/help_docs/capture_screenshots.py --only gara-gestione partita-rack
-
-# in alternativa, avvia e chiude l'app da solo:
+# 2. cattura: avvia e chiude l'app da sola, in tutte le lingue dichiarate
 python scripts/help_docs/capture_screenshots.py --serve
+
+# solo alcune schermate, o solo una lingua
+python scripts/help_docs/capture_screenshots.py --serve --only gara-gestione
+python scripts/help_docs/capture_screenshots.py --serve --lang it
 ```
+
+Il seed **fissa il generatore casuale** (`SEED`): senza, il sorteggio del primo
+turno cambierebbe a ogni esecuzione e ogni ricattura riscriverebbe tutte le
+immagini anche a interfaccia identica. Se tocchi il seed, ricontrolla gli id
+nei percorsi del manifest (gara 1/2/3, match 18): la cattura si ferma con un
+errore se un percorso sparisce, ma una gara diversa da quella attesa passerebbe
+inosservata.
 
 Il seed crea sempre gli stessi dati: un campionato con tre gare (una conclusa,
 una in corso con una partita viva, una con le iscrizioni aperte), un direttore
@@ -147,7 +160,33 @@ Se hai cambiato una schermata senza aggiungere figure nuove, basta rilanciare
 la cattura: i file esistenti vengono riscritti e il diff mostra esattamente
 quali immagini sono cambiate.
 
-### 4. Aggiorna il micro-aiuto
+### 4. Traduci
+
+Ogni pagina nuova va aggiunta a **tutte** le lingue nello stesso giro di
+lavoro. Cosa si traduce e cosa no:
+
+| Si traduce | Non si traduce |
+|---|---|
+| `title`, `summary`, testi dei blocchi | `slug` (nome del file) |
+| `title` dei `heading` | `id` dei `heading` — sono le ancore dei micro-aiuti |
+| `label` e `short` dei suggerimenti | `anchor` dei suggerimenti — e' il contratto con `data-help` |
+| Le didascalie (`captions.yaml`) | `screens`, `related`, `hint`, `kind`, `audience` |
+
+La terminologia inglese segue **l'interfaccia inglese dell'app**, non una
+traduzione a orecchio: `competition`, `championship`, `round`, `match`, `rack`,
+`distance`, `standings`, `venue`, `competition director`, `X by walkover`. In
+dubbio, cerca la stringa nel catalogo:
+
+```bash
+grep -A 1 'msgid "Classifica"' translations/en/LC_MESSAGES/messages.po
+```
+
+Le schermate sono catturate **una volta per lingua** con l'app impostata su
+quella lingua (`locales:` in `screenshots.yaml`). Una guida inglese con i
+pulsanti italiani manda il lettore a cercare comandi che nella sua interfaccia
+non esistono: e' l'esatto contrario di cio' che deve fare.
+
+### 5. Aggiorna il micro-aiuto
 
 `help_content/it/hints.yaml` contiene i testi **già pronti** per l'interfaccia
 adattiva prevista dal progetto: la presentazione alla prima visita di una
@@ -174,7 +213,7 @@ resta una dichiarazione di intenti verificata dai test.
 
 Per rivederli tutti insieme: `/aiuto/microaiuto` (in produzione è admin-only).
 
-### 5. Verifica
+### 6. Verifica
 
 ```bash
 # coerenza dei contenuti: pagine orfane, figure mancanti, ancore rotte,
@@ -206,7 +245,10 @@ il mini-sito è mobile first ma vive anche su desktop (vedi la skill `ui-7c`).
 | Documentare una funzione a metà | Prometti ciò che l'app non mantiene | O si documenta com'è oggi, o non si documenta |
 | Rinominare una route e non toccare i contenuti | I rimandi puntano al vuoto | La verifica confronta `screens:` con `app.url_map` |
 | Nuova pagina `/aiuto/...` senza entry in `ENDPOINT_ROLES` | In produzione è admin-only (ADR-028) | Le route del blueprint ci sono già; una nuova va aggiunta |
-| Termini inglesi nei testi | L'interfaccia dice altro: l'utente non ritrova la parola | campionato, gara, turno, partita, X a tavolino |
+| Termini inglesi nei testi italiani | L'interfaccia dice altro: l'utente non ritrova la parola | campionato, gara, turno, partita, X a tavolino |
+| Pagina aggiunta in una lingua sola | Il cambio lingua porta su un 404 | Aggiungila a tutte, nello stesso giro di lavoro |
+| `anchor` tradotto | Due ancore per lo stesso comando: l'interfaccia adattiva ne trova una | `anchor` è identico in tutte le lingue |
+| Guida inglese con schermate italiane | Manda a cercare pulsanti che non esistono | `locales:` nel manifest e ricattura |
 
 ## Dove guardare per scrivere cose vere
 
@@ -224,7 +266,15 @@ il mini-sito è mobile first ma vive anche su desktop (vedi la skill `ui-7c`).
 
 ## Aggiungere una lingua
 
-Il caricamento è già per lingua: `help_content/<codice>/` con `site.yaml`,
-`hints.yaml` e `pages/`. Una lingua assente ricade sull'italiano, quindi si può
-tradurre una pagina alla volta senza rompere il sito. Le figure sono condivise
-e restano in italiano finché non si aggiunge una cattura per lingua.
+1. Crea `help_content/<codice>/` con `site.yaml`, `hints.yaml`, `captions.yaml`
+   e `pages/` — **stessi id di sezione e stessi slug** delle altre lingue.
+2. Aggiungi il codice a `locales:` in `screenshots.yaml` e ricattura: le
+   immagini finiscono in `static/img/help/<codice>/`.
+3. Aggiungi la lingua al selettore dell'app (`routes/i18n.py` accetta oggi solo
+   `it` e `en`) e al catalogo delle traduzioni dell'interfaccia.
+4. `pytest tests/new/unit/test_help_content.py` verifica struttura, figure e
+   ancore per ogni lingua trovata: non serve toccare i test.
+
+Nei `hints.yaml` si traducono `label` e `short`, **mai** `anchor`: quello è il
+valore che l'elemento dell'interfaccia esporrà in `data-help`, uguale per tutte
+le lingue.

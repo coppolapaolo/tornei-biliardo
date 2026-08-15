@@ -1,0 +1,108 @@
+title: "Venues, availability and nearby players"
+section: giocare
+kind: approfondimento
+audience: [giocatore]
+minutes: 4
+summary: "The registered billiard venues, how to say where and when you play, and how to be found by someone looking for an opponent."
+screens: [admin.venue.venues_list, admin.venue.venue_detail, individual_match.manage_availability, individual_match.discover_players]
+related: [partite_amichevoli, diventare_direttore]
+
+blocks:
+  - type: text
+    text: >-
+      The app knows where people play. That serves three purposes: showing you
+      competitions near you, saying where you are available, and finding
+      opponents who use the same venues.
+
+  - type: heading
+    id: sale
+    title: "Venues"
+
+  - type: shot
+    shot: sale-biliardo
+    caption: "The list of registered venues, with town and number of tables."
+
+  - type: text
+    text: >-
+      Every venue has a page with its address, contacts, and the number and
+      type of tables. Competitions played there point to it, and the venue's
+      tables are the ones the director assigns to matches during the evening.
+
+  - type: shot
+    shot: sala-dettaglio
+    caption: "A venue page: where it is, how many tables it has, how to get in touch."
+
+  - type: note
+    tone: tip
+    title: "Your venue is missing?"
+    text: >-
+      Ask an administrator to add it. If you are the one running the club, you
+      can also ask to look after its page: see [Becoming a director or venue
+      manager](/aiuto/account/diventare_direttore).
+
+  - type: heading
+    id: disponibilita
+    title: "Saying where and when you play"
+
+  - type: shot
+    shot: disponibilita
+    caption: "Availability: you pick the venue, the days and the time slot."
+
+  - type: text
+    text: >-
+      From the **Matches** section, under availability, you say which venues
+      you usually play at and on which days and times. It is entirely optional
+      and can be removed at any point.
+
+  - type: note
+    tone: info
+    title: "Venues and time slots, never your location"
+    text: >-
+      What you share is a venue and a time slot you chose yourself, not where
+      you are. The app does not record your location and never asks for it.
+
+  - type: heading
+    id: trovare
+    title: "Finding opponents"
+
+  - type: shot
+    shot: trova-giocatori
+    caption: "Searching among players available at the same venues and times."
+
+  - type: text
+    text: >-
+      Anyone who has declared their availability shows up to people looking for
+      an opponent at the same venues. From there you go straight to a match
+      proposal: see [Friendly
+      matches](/aiuto/giocare/partite_amichevoli).
+
+  - type: heading
+    id: gare_vicine
+    title: "Competitions near you"
+
+  - type: shot
+    shot: dashboard-giocatore
+    caption: "At the bottom of your home, the «Competitions near you» box inviting you to set your availability."
+
+  - type: text
+    text: >-
+      At the bottom of your home there is **Competitions near you**. Until you
+      say where you play, the box asks you to; after that it shows open
+      competitions at the venues you use and in your area.
+
+  - type: text
+    text: >-
+      The area is based on the town you entered in your profile, not on your
+      phone's location. If you leave the town blank, the box stays generic:
+      that is not a fault.
+
+  - type: faq
+    items:
+      - q: "Do I have to declare my availability?"
+        a: "No. It only serves to make you findable and to show nearby competitions. Without it the app works exactly the same in every other respect."
+      - q: "Who can see my availability?"
+        a: "Other players looking for opponents at the same venues. They see the venue and the time slot, nothing else."
+      - q: "I have changed clubs."
+        a: "Update your availability and the town in your profile: from then on you will see competitions in the new area."
+      - q: "A venue has wrong details."
+        a: "Report it to whoever manages it or to an administrator: they are the ones who edit the page."

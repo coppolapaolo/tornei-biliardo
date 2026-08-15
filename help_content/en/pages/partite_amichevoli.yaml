@@ -1,0 +1,132 @@
+title: "Friendly matches"
+section: giocare
+kind: tutorial
+audience: [giocatore]
+minutes: 4
+summary: "Outside official competitions you can propose a match to another player, agree on where and when, and record the result."
+screens: [individual_match.dashboard, individual_match.create_proposal]
+related: [giocare_una_partita, profilo_e_statistiche]
+
+blocks:
+  - type: text
+    text: >-
+      Not everything goes through competitions. If you want to play a couple of
+      frames with a friend and keep a record — in your statistics, your rating,
+      your progress — you can do it from the **Matches** section.
+
+  - type: shot
+    shot: match-individuali
+    caption: "The friendly matches section: pending proposals, the ones you received, and matches coming up."
+
+  - type: heading
+    id: proporre
+    title: "Proposing a match"
+
+  - type: steps
+    items:
+      - title: "Open Matches and tap «New proposal»"
+        text: "On a phone, «Matches» is in the bar at the bottom of the screen."
+      - title: "Choose your opponent"
+        text: >-
+          Search for the player by name. You can also leave the proposal
+          **open**: more players will see it and whoever answers first takes it.
+        shot: proposta-nuova
+      - title: "Say where and when"
+        text: >-
+          Venue, date and time. If the venue is one of those registered in the
+          app, pick it from the list: it will show with its address and number
+          of tables.
+      - title: "Choose the format"
+        text: >-
+          Discipline (8-ball, 9-ball…) and distance, that is how many racks it
+          takes to win. These are the same choices as in a competition,
+          explained in [Match
+          formats](/aiuto/approfondimenti/formati_di_gioco).
+      - title: "Send it"
+        text: >-
+          Your opponent gets a notification and can accept or decline. Until
+          they answer the proposal stays «pending» and you can withdraw it.
+
+  - type: heading
+    id: rispondere
+    title: "Answering a proposal"
+
+  - type: text
+    text: >-
+      When someone proposes a match you get a notification. Opening it shows
+      who is proposing, where, when and in what format, and two buttons:
+      **Accept** or **Decline**. If you accept, the match joins your list of
+      upcoming ones.
+
+  - type: note
+    tone: info
+    title: "Proposals expire"
+    text: >-
+      Every proposal has a deadline, normally a few hours before the planned
+      time. After that it lapses on its own: it keeps invitations nobody
+      answered from hanging around forever.
+
+  - type: heading
+    id: giocare
+    title: "Playing and recording the result"
+
+  - type: text
+    text: >-
+      When it is time to play, open the match and press **Start**. The
+      scoreboard is identical to the one in competitions: one button per
+      player, pressed after each rack. See [Playing a
+      match](/aiuto/giocare/giocare_una_partita).
+
+  - type: text
+    text: >-
+      At the end the match needs **both players to confirm**. That is the main
+      difference from competitions: there, a director vouches for the result;
+      here, the two of you do. Until your opponent confirms, the result stays
+      pending; if they disagree they can reject it and you fix it.
+
+  - type: heading
+    id: disponibilita
+    title: "Being findable"
+
+  - type: text
+    text: >-
+      If you have nobody particular in mind, you can declare **where and when
+      you are available**: which venues you usually play at and on what days
+      and times. Other players available at the same venues will see you when
+      they look for an opponent.
+
+  - type: shot
+    shot: sale-biliardo
+    caption: "The list of registered venues: this is where you declare which ones you are available at."
+
+  - type: note
+    tone: tip
+    text: >-
+      Availability is entirely optional and can be removed at any time. You
+      give venues and time slots, never your precise location.
+
+  - type: heading
+    id: statistiche
+    title: "Do they count in the statistics?"
+
+  - type: text
+    text: >-
+      Yes, but separately. In your profile the rating has two modes:
+      **competitive** (official competitions only) and **overall**
+      (competitions plus friendlies). You can switch with one tap. Competition
+      standings, on the other hand, are untouched by friendlies.
+
+  - type: shot
+    shot: statistiche-amichevoli
+    caption: "Friendly match statistics: matches, wins and most frequent opponents, counted separately."
+
+  - type: faq
+    items:
+      - q: "I cannot see the Matches section."
+        a: "It is a feature that unlocks as you use the platform. If it is not there yet, play a few more competitions and it will appear."
+      - q: "My opponent does not confirm the result."
+        a: "The match stays pending. Nudge them: without both confirmations the result does not go into the statistics."
+      - q: "Can I propose a match to someone who is not on the app?"
+        a: "No, your opponent needs an account. You can invite them to sign up: it is free."
+      - q: "What is the difference from a competition?"
+        a: "A friendly is a single match, with no rounds, no standings and no director. A competition is an organised event with several rounds and final standings."

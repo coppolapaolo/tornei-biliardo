@@ -40,6 +40,7 @@ sections:
       - giocare_una_partita
       - seguire_la_gara
       - partite_amichevoli
+      - sale_e_disponibilita
       - challenge
 
   - id: organizzare
@@ -69,9 +70,20 @@ sections:
     title: "Il tuo account"
     kicker: "Profilo e dati"
     icon: fa-user
-    summary: "Profilo, statistiche, notifiche, progressi e il controllo su ciò che gli altri vedono di te."
+    summary: "Profilo, statistiche, notifiche, progressi, ruoli da richiedere e il controllo su ciò che gli altri vedono di te."
     pages:
       - profilo_e_statistiche
       - notifiche
       - progressi
+      - diventare_direttore
       - privacy_e_dati
+
+  - id: amministrare
+    title: "Amministrare la piattaforma"
+    kicker: "Per gli amministratori"
+    icon: fa-shield-halved
+    summary: "Gestire gli account, rispondere alle richieste di ruolo, configurare punti e traguardi, leggere gli indicatori."
+    pages:
+      - gestire_gli_utenti
+      - configurare_la_gamification
+      - kpi_e_dati

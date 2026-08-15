@@ -6,10 +6,14 @@ Le immagini di `docs/help/` non sono mockup: sono catturate dall'app vera
 dump binario, e' cio' che rende le schermate rigenerabili quando l'interfaccia
 cambia: si rilancia il seed, si ricattura, e le immagini tornano allineate.
 
-Il dataset e' **deterministico** (nomi, date relative a oggi, punteggi scritti a
-mano) perche' due catture successive senza modifiche all'app devono produrre
-immagini identiche: altrimenti ogni rigenerazione sporcherebbe il diff con
-rumore e nessuno saprebbe piu' quali schermate sono davvero cambiate.
+Il dataset e' **deterministico** perche' due catture successive senza modifiche
+all'app devono produrre immagini identiche: altrimenti ogni rigenerazione
+sporcherebbe il diff con rumore e nessuno saprebbe piu' quali schermate sono
+davvero cambiate. Deterministico significa tre cose: nomi e date scritti qui,
+punteggi decisi dalla parita' dell'id del match, e **il generatore casuale
+fissato** (`SEED`) — il sorteggio del primo turno e le strategie di
+abbinamento pescano dal `random` globale, quindi senza fissarlo ogni
+esecuzione produrrebbe accoppiamenti diversi e tutte le immagini cambierebbero.
 
 Uso:
     python scripts/help_docs/seed_demo.py            # ricrea da zero
@@ -23,19 +27,29 @@ from __future__ import annotations
 
 import argparse
 import os
+import random
 import sys
 from datetime import date, datetime, time, timedelta
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 # Il progetto si importa dalla radice del repo, non da scripts/.
-sys.path.insert(
-    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-)
+sys.path.insert(0, str(REPO_ROOT))
 
-# Le schermate dell'aiuto sono in italiano.
+# La lingua delle catture la imposta `capture_screenshots.py` sessione per
+# sessione: qui serve solo un valore di partenza per i testi generati dal seed.
 os.environ.setdefault("BABEL_DEFAULT_LOCALE", "it")
 
 
 DEMO_PASSWORD = "demo1234"
+
+# Seme del generatore casuale. Il valore non conta, conta che sia **fisso**:
+# `RoundService.start_first_round` mescola gli iscritti con `random.shuffle` e
+# le strategie di abbinamento pescano dallo stesso generatore. Senza questa
+# riga ogni esecuzione del seed darebbe un tabellone diverso e la ricattura
+# cambierebbe tutte le immagini anche a interfaccia identica.
+SEED = 20260815
 
 # Il direttore e i giocatori del dataset. L'ordine conta: `capture_screenshots`
 # fa login per username, e i primi due giocatori sono quelli che compaiono nelle
@@ -310,6 +324,51 @@ def _score_match(db, match, partial: bool = False) -> None:
         )
 
 
+def _create_challenges(db, director):
+    """Due prove di abilita', una a punteggio e una superata/non superata.
+
+    Servono entrambe perche' la guida spiega che le challenge si contano in due
+    modi diversi, e un catalogo con un solo tipo non lo mostrerebbe. Le immagini
+    sono quelle gia' presenti in `static/uploads/challenges/`: il seed non ne
+    inventa di nuove.
+    """
+    from models.challenge.models import Challenge
+
+    disponibili = sorted((REPO_ROOT / "static" / "uploads" / "challenges").glob("*.*"))
+    if not disponibili:
+        log("challenge non create: nessuna immagine in static/uploads/challenges/")
+        return
+
+    specs = [
+        (
+            "Spot Shot Rally — dieci tiri dalla stessa posizione: la bilia "
+            "bersaglio sul punto, la battente in mano. Un punto per ogni "
+            "imbucata riuscita.",
+            False,
+        ),
+        (
+            "Serie da otto — imbuca otto bilie di fila senza sbagliare. "
+            "Si passa o non si passa.",
+            True,
+        ),
+    ]
+    for index, (description, pass_fail) in enumerate(specs):
+        if Challenge.query.filter_by(description=description).first():
+            continue
+        image = disponibili[index % len(disponibili)]
+        db.session.add(
+            Challenge(
+                description=description,
+                image_path=f"uploads/challenges/{image.name}",
+                pass_fail_only=pass_fail,
+                created_by_id=director.id,
+                is_active=True,
+            )
+        )
+    db.session.commit()
+    log(f"challenge: {len(specs)} prove nel catalogo")
+
+
 def _create_individual_match(db, players):
     """Una partita casual conclusa + una proposta in attesa di risposta."""
     from models.individual_match.services import MatchProposalService
@@ -353,6 +412,8 @@ def main() -> int:
     from app import create_app
     from models import db
 
+    random.seed(SEED)
+
     app = create_app("development")
     with app.app_context():
         print("Seed dimostrativo per il mini-sito di aiuto")
@@ -379,6 +440,7 @@ def main() -> int:
         _open_and_fill(db, gara_iscrizioni, players[:5])
 
         _backdate_gare(db, [gara_conclusa, gara_in_corso])
+        _create_challenges(db, director)
         _create_individual_match(db, players)
 
         print("\nFatto. Credenziali dimostrative:")

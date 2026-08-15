@@ -1,0 +1,150 @@
+title: "How standings are worked out"
+section: approfondimenti
+kind: approfondimento
+audience: [tutti]
+minutes: 5
+summary: "Three ways of ordering players — wins, racks, position — and how level finishes are settled."
+related: [seguire_la_gara, abbinamenti, formati_di_gioco]
+
+blocks:
+  - type: text
+    text: >-
+      Every competition picks **one** standings system, decided at creation and
+      valid throughout. It changes what gets rewarded, and therefore how it
+      pays to play.
+
+  - type: shot
+    shot: gara-classifica
+    caption: "Standings using the «Wins» system: the two right-hand columns are wins and rack difference."
+
+  - type: heading
+    id: vittorie
+    title: "Wins — the normal system"
+
+  - type: text
+    text: >-
+      Orders by **matches won**. When wins are level, **rack difference**
+      decides: racks won minus racks lost across the whole competition.
+
+  - type: list
+    title: "An example"
+    items:
+      - "Marco: 3 wins, difference +6 → **first**"
+      - "Elena: 2 wins, difference +2 → **second**"
+      - "Paolo: 2 wins, difference +2 → **second, level with Elena**"
+      - "Davide: 1 win, difference -2 → **fourth**"
+
+  - type: text
+    text: >-
+      This is the system to use when winning the match is what counts: winning
+      4-3 earns the same win as winning 4-0, and the margin only separates
+      players who are otherwise level.
+
+  - type: heading
+    id: rack
+    title: "Racks — every rack counts"
+
+  - type: text
+    text: >-
+      Orders by **total racks won**, regardless of who won the matches. Someone
+      who loses 4-3 every time can finish ahead of someone who wins 4-0 in half
+      their matches and loses 4-0 in the rest.
+
+  - type: note
+    tone: warning
+    title: "It goes with the exact number of racks"
+    text: >-
+      With this system matches should be played out in full (the **exact number
+      of racks** option). Otherwise whoever wins comfortably stops earlier and
+      collects fewer racks than someone who wins narrowly: the count would
+      reward the opposite of what it means to reward.
+
+  - type: heading
+    id: posizione
+    title: "Position — for brackets"
+
+  - type: text
+    text: >-
+      This is the compulsory system for knockout and double elimination: the
+      standings **are** the bracket. Whoever wins the tournament is first, the
+      losing finalist second, and so on. In a championship each position is
+      worth a number of points, and points add up across competitions.
+
+  - type: heading
+    id: pari_merito
+    title: "Level finishes"
+
+  - type: text
+    text: >-
+      It often happens that two players finish identically. At creation the
+      director decides **up to which position** it is worth separating them:
+      normally the podium, because nobody argues over fifth and sixth.
+
+  - type: options
+    title: "How a level finish is settled"
+    items:
+      - name: "Head to head"
+        text: >-
+          If the two already met during the competition, whoever won that match
+          finishes ahead. Simple, and no replay needed.
+      - name: "Tie-break"
+        text: >-
+          An extra contest — usually the Spot Shot Rally — that produces a
+          score: the better one finishes ahead. See
+          [Challenges](/aiuto/giocare/challenge).
+      - name: "Neither"
+        text: >-
+          Outside the positions set for tie-breaking, the level finish stands:
+          two players share the same position and the next one is skipped.
+
+  - type: heading
+    id: quando_aggiorna
+    title: "When they update"
+
+  - type: text
+    text: >-
+      A competition's standings are recalculated **at the end of each round**,
+      not after each match: the round has to be complete for the comparison to
+      be between like situations. That is why they can sit still while play
+      continues.
+
+  - type: text
+    text: >-
+      The **championship** standings update when a competition finishes, adding
+      up the results of every competition played. Missing one is not penalised
+      beyond not having earned points on that occasion.
+
+  - type: heading
+    id: casi_particolari
+    title: "Special cases"
+
+  - type: options
+    items:
+      - name: "X by walkover"
+        text: >-
+          Whoever is left without an opponent gets a win and zero rack
+          difference: neither rewarded nor penalised against those who played.
+      - name: "Forfeit"
+        text: >-
+          Whoever abandons leaves their opponent all the remaining racks. Those
+          racks count in the standings like any other.
+      - name: "Trio match"
+        text: >-
+          In the three-way mini round-robin, the most racks wins; if two are
+          level at the top, nobody takes the win and only rack differences
+          count.
+      - name: "Handicap"
+        text: >-
+          The standings use the **effective** scores, that is the ones after
+          the handicap.
+
+  - type: faq
+    items:
+      - q: "I have more wins but I am behind."
+        a: "Then the competition uses the «Racks» system, where total racks count and wins do not. The system is shown on the competition card."
+      - q: "Two players share the same position."
+        a: "They finished level in a position for which no tie-break was planned. That is the director's choice, not a fault."
+      - q: "The standings did not update after my match."
+        a: "They are recalculated when every match in the round is finished."
+      - q: "How do the championship standings add up?"
+        a: "By summing: wins and rack difference with «Wins», total racks with «Racks», position points with «Position»."

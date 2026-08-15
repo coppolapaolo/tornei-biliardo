@@ -1,0 +1,147 @@
+title: "Playing a match and keeping score"
+section: giocare
+kind: tutorial
+audience: [giocatore]
+minutes: 5
+summary: "The scoreboard: one button per player, pressed after each rack. How to fix a mistake and what happens when the match ends."
+screens: [admin.match.match_detail]
+related: [seguire_la_gara, formati_di_gioco]
+
+blocks:
+  - type: text
+    text: >-
+      This is the screen you will use most: the match page. It is built to be
+      used standing up, with one hand, while the other holds your cue.
+
+  - type: heading
+    id: aprire
+    title: "Opening the match"
+
+  - type: text
+    text: >-
+      When the round starts, your match appears at the top of your home and on
+      the competition page, with the **Enter the result** button. You also get
+      a notification. Tap it and you are in.
+
+  - type: shot
+    shot: partita-segnapunti
+    caption: "The match page: score at the top, scoreboard in the middle, list of racks played at the bottom."
+
+  - type: heading
+    id: leggere
+    title: "Reading the screen"
+
+  - type: options
+    title: "What is there, top to bottom"
+    items:
+      - name: "The «In progress» dot"
+        text: "Red and blinking: it means the match is live and the score updates in real time for anyone following from a distance."
+      - name: "The score"
+        text: "The two big numbers. Under each is the player's name and rating."
+        hint: partita.punteggio
+      - name: "The distance line"
+        text: "For example «Race to 5 · 7 racks played»: it reminds you what it takes to win and how many racks have been played in total."
+        hint: gara.distanza
+      - name: "The scoreboard"
+        text: "The two large «+1» buttons, one per player. Yours is the solid dark one: you can tell it apart without reading the name."
+        hint: partita.segnapunti
+      - name: "Undo last rack"
+        text: "Removes the last point awarded. For when the wrong button gets pressed."
+      - name: "Declare forfeit"
+        text: "Only for when the match really is abandoned: it awards the opponent all the remaining racks."
+        hint: partita.forfait
+      - name: "Racks played"
+        text: "The list of who won each rack, with the running score. It is the match's scoresheet."
+
+  - type: heading
+    id: segnare
+    title: "Recording a rack"
+
+  - type: steps
+    items:
+      - title: "Finish the rack at the table"
+        text: "You play normally: the app does not get involved in the rules of pool."
+      - title: "Press the button of whoever won"
+        text: >-
+          A single tap on the **+1** button with the rack winner's name. Not
+          «+1 to me» and «-1 to them»: you only record the winner.
+        shot: partita-rack
+      - title: "Check the score at the top"
+        text: >-
+          The big number changes immediately, and the rack appears at the
+          bottom of the list. If the number has not changed, the tap did not
+          register: press again.
+      - title: "Carry on to the distance"
+        text: >-
+          You keep going like that rack by rack. When one of you reaches the
+          agreed number, the match closes on its own.
+
+  - type: note
+    tone: tip
+    title: "Only one of you needs to record"
+    text: >-
+      Both players do not need to keep score: there is one score and it updates
+      on both phones. Agree on who keeps the count, usually whoever has the
+      handier phone.
+
+  - type: heading
+    id: sbagli
+    title: "If you make a mistake"
+
+  - type: text
+    text: >-
+      **You pressed the wrong button**: tap **Undo last rack**. You can repeat
+      it, going back rack by rack.
+
+  - type: text
+    text: >-
+      **The match is already closed**: from then on you cannot correct it
+      yourself. Call the competition director, who can reset the match and have
+      you enter it again. That is deliberate: a closed result has gone into the
+      standings, and it should not be able to change without the organiser
+      knowing.
+
+  - type: heading
+    id: forfait
+    title: "Forfeits and abandoned matches"
+
+  - type: text
+    text: >-
+      If a player cannot continue — has to leave, gets injured, did not turn up
+      — you use **Declare forfeit**. The opponent receives all the racks that
+      were missing to the distance: if you were at 3-2 in a race to 5, the
+      result becomes 5-2.
+
+  - type: note
+    tone: warning
+    text: >-
+      A forfeit cannot be undone by a player. If you declare one by mistake you
+      need the competition director. When in doubt, ask them before pressing.
+
+  - type: heading
+    id: fine
+    title: "When the match ends"
+
+  - type: text
+    text: >-
+      The match closes on its own once the distance is reached and becomes
+      **Finished**. From then on: the result goes into the round standings, the
+      table frees up for the next match, and once **every** match in the round
+      is done the director can start the next one.
+
+  - type: shot
+    shot: gara-turni
+    caption: "The round's matches: finished ones show the result with a crown next to the winner."
+
+  - type: faq
+    items:
+      - q: "Can I record the score of a match that is not mine?"
+        a: "No, only the competition director can. You can see every match, but you can only act on your own."
+      - q: "The score is not updating on my opponent's phone."
+        a: "Updates travel over the network: if the venue has poor signal it can take a few seconds. Reloading the page brings it back in line."
+      - q: "We played more racks than we should have."
+        a: "The app does not allow it: once the distance is reached the match closes and the scoreboard disappears. Any extra racks simply do not count."
+      - q: "Do both of us have to confirm the result?"
+        a: "In some setups, yes: a confirm button appears for your opponent too. If it does not appear, the result is already final as it is."
+      - q: "What is the table number at the top?"
+        a: "The table the director assigned you for this match. If there is none, the venue has no tables configured and you sort it out on the spot."

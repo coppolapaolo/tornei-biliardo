@@ -1,0 +1,166 @@
+title: "How pairs are formed"
+section: approfondimenti
+kind: approfondimento
+audience: [tutti]
+minutes: 6
+summary: "Five ways of pairing players each round: Amalfi, random, round robin, knockout and double elimination. When to use which."
+related: [classifiche, numero_dispari, opzioni_della_gara]
+
+blocks:
+  - type: text
+    text: >-
+      Each round somebody has to decide who plays whom. Doing it at random is
+      simple but unfair; doing it well means taking account of the standings
+      and of who has already met. The app offers five methods.
+
+  - type: heading
+    id: amalfi
+    title: "Amalfi — the recommended method"
+
+  - type: text
+    text: >-
+      It is designed for club competitions played over rounds, where **everyone
+      plays every round** and nobody is knocked out. The principle: the first
+      round is drawn; from the following rounds the standings are the starting
+      point, and each player is paired with someone a certain distance away in
+      the table.
+
+  - type: text
+    text: >-
+      That distance shrinks as the rounds go by: it equals **how many rounds
+      are left**. In a three-round competition, the second round jumps two
+      places, the last one jumps one. The result is that early on you face
+      players far from you in the standings, and towards the end you face your
+      neighbours: the matches that decide the podium are played between the
+      people contesting it.
+
+  - type: list
+    title: "What it guarantees"
+    items:
+      - "**Everyone plays every round**: no eliminations."
+      - "**No rematches**, if the constraint is on and it is mathematically possible."
+      - "**Balanced matches towards the end**, when they matter most."
+
+  - type: note
+    tone: info
+    title: "If a rematch is unavoidable"
+    text: >-
+      With many rounds and few players you reach the point where everyone has
+      played everyone. The app looks for the solution with the fewest rematches
+      it can, but it cannot invent new opponents.
+
+  - type: heading
+    id: casuale
+    title: "Random"
+
+  - type: text
+    text: >-
+      Pairs are drawn, round by round, avoiding rematches. It takes no account
+      of the standings: first and second may meet in round one and never again.
+
+  - type: text
+    text: >-
+      Fine for a light evening, where playing matters more than producing
+      trustworthy standings. With this strategy the app generates **all rounds
+      at once** at the start, so the evening's schedule is known from the off.
+
+  - type: heading
+    id: girone
+    title: "Round robin"
+
+  - type: text
+    text: >-
+      Everyone against everyone: each player meets every other exactly once. It
+      is the fairest method there is, and also the longest.
+
+  - type: note
+    tone: warning
+    title: "Watch the number of matches"
+    text: >-
+      With 6 players that is 15 matches, with 8 it is 28, with 10 it is 45.
+      From eight people up it takes a whole day, or more tables than you
+      usually have.
+
+  - type: heading
+    id: eliminazione
+    title: "Knockout"
+
+  - type: text
+    text: >-
+      The classic bracket: lose and you are out. The number of rounds is not
+      set — it follows from the number of entrants (8 players: quarters, semis,
+      final). You can add a **third-place play-off**.
+
+  - type: list
+    items:
+      - "Losers go out: half the entrants play a single match."
+      - "The standings are the bracket's and use the **Position** system."
+      - "You can ask that team-mates do not meet straight away."
+
+  - type: heading
+    id: doppio_ko
+    title: "Double elimination"
+
+  - type: text
+    text: >-
+      Like knockout, but you have to lose **twice** to go out: whoever loses
+      first drops into a losers' bracket and can climb back. Longer, but nobody
+      goes home after a single defeat — a good compromise when you have time.
+
+  - type: heading
+    id: scegliere
+    title: "Which to choose"
+
+  - type: options
+    items:
+      - name: "Club evening, 6-14 players"
+        values: "Amalfi"
+        text: "Everyone plays every round, the standings mean something, the evening fits the time."
+      - name: "Informal evening, people come to play"
+        values: "Random"
+        text: "No pretence of trustworthy standings, schedule known from the start."
+      - name: "Few players, plenty of time"
+        values: "Round robin"
+        text: "Up to six entrants it stays manageable and it is the fairest."
+      - name: "A tournament with a winner, limited time"
+        values: "Knockout"
+        text: "Quick and easy to follow, but half the entrants play a single match."
+      - name: "A tournament with a winner, second chances"
+        values: "Double elimination"
+        text: "Fairer than straight knockout, takes about twice the time."
+
+  - type: heading
+    id: primo_turno
+    title: "The first round is a special case"
+
+  - type: text
+    text: >-
+      In the first round no standings exist yet, so another criterion is
+      needed. The three possibilities:
+
+  - type: options
+    items:
+      - name: "Random"
+        values: "default"
+        text: "A straight draw. The draw is recorded and stays verifiable."
+      - name: "Rating"
+        text: >-
+          Pairs by players' declared strength, so the strongest do not knock
+          each other out immediately. Typical of knockout brackets, where it is
+          called seeding.
+      - name: "Standings"
+        text: >-
+          Uses the overall championship standings: whoever is doing well in the
+          championship starts from a favourable position in this competition
+          too.
+
+  - type: faq
+    items:
+      - q: "Why do I always play the strongest players?"
+        a: "With Amalfi, if you are doing well you end up facing people doing as well as you — especially in the last rounds. That is the method working as intended."
+      - q: "I met the same opponent twice."
+        a: "That happens when the free pairings run out: with few players and many rounds, at some point everyone has played everyone."
+      - q: "Can I change strategy once the competition has started?"
+        a: "No. Pairings already made follow the chosen strategy, and switching midway would produce an incoherent competition."
+      - q: "Who decides who breaks?"
+        a: "The app does not: sort it out at the table according to your club's habits."

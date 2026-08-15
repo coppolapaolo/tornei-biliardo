@@ -128,6 +128,27 @@ def test_catalogo_microaiuto(client):
 
 
 @pytest.mark.integration
+def test_la_guida_segue_la_lingua_scelta(client):
+    """Cambiando lingua si resta sulla stessa pagina, tradotta.
+
+    Gli slug sono identici fra le lingue apposta: `set_language` riporta
+    all'indirizzo di partenza, e se la pagina esistesse solo in italiano chi
+    passa all'inglese finirebbe su un 404.
+    """
+    client.get("/set_language/en")
+    html = client.get("/aiuto/giocare/giocare_una_partita").get_data(as_text=True)
+    assert "Scoreboard" in html or "scoreboard" in html
+    # Le figure sono per lingua: la guida inglese non puo' mostrare i pulsanti
+    # italiani, sarebbe l'esatto contrario del suo scopo.
+    assert "img/help/en/" in html
+
+    client.get("/set_language/it")
+    html = client.get("/aiuto/giocare/giocare_una_partita").get_data(as_text=True)
+    assert "Segnapunti" in html
+    assert "img/help/it/" in html
+
+
+@pytest.mark.integration
 def test_collegamento_dal_guscio(client):
     """La guida deve essere raggiungibile da qualunque pagina, anche da chi non
     ha un account: se non si trova, tanto vale non averla scritta."""

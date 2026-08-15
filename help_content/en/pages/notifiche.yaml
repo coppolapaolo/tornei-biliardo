@@ -1,0 +1,77 @@
+title: "Notifications"
+section: account
+kind: approfondimento
+audience: [giocatore]
+minutes: 3
+summary: "What the app tells you about, where to read the messages and how to keep the list tidy."
+screens: [player.notifications]
+related: [iscriversi_a_una_gara, seguire_la_gara]
+
+blocks:
+  - type: text
+    text: >-
+      Notifications are how the app keeps you up to date with what is happening
+      in the competitions you take part in. You read them from the bell in the
+      bottom bar (on a phone) or from the profile menu.
+
+  - type: shot
+    shot: notifiche
+    caption: "The list of notifications: unread ones stand out."
+
+  - type: heading
+    id: cosa_arriva
+    title: "What you get notified about"
+
+  - type: options
+    items:
+      - name: "Your opponent for the round"
+        text: "As soon as the director starts a round, you get the name of who you will face and the table assigned."
+      - name: "Results to confirm"
+        text: "When a match needs your confirmation before becoming final."
+      - name: "Match proposals"
+        text: "When someone proposes a friendly, and when they answer one of yours."
+      - name: "Changes in registrations"
+        text: "If you come off the waitlist, or if a director adds you to or removes you from a competition."
+      - name: "Play-off invitations"
+        text: "If you qualify for a championship final, with the invitation to accept or decline."
+      - name: "Milestones reached"
+        text: "When you unlock a milestone or complete a goal."
+      - name: "Answers to your requests"
+        text: "The outcome of your request to become a competition director or a venue manager."
+
+  - type: heading
+    id: gestire
+    title: "Keeping the list tidy"
+
+  - type: list
+    items:
+      - "**Mark as read**: by tapping a notification, which then stops standing out."
+      - "**Mark all as read**: clears the counter in one go."
+      - "**Delete selected**: to clear out the old ones."
+      - "**Automatic deletion**: you can set the app to delete notifications older than a certain age by itself."
+
+  - type: note
+    tone: tip
+    title: "The red number on the bell"
+    text: >-
+      It is the count of unread notifications. If it stays lit after you have
+      read everything, tap «Mark all as read»."
+
+  - type: heading
+    id: email
+    title: "Email notifications"
+
+  - type: text
+    text: >-
+      Some messages also come by email: address verification, password recovery
+      and reminders for upcoming matches. Game notifications, on the other
+      hand, stay inside the app.
+
+  - type: faq
+    items:
+      - q: "I am not getting any notifications."
+        a: "Check you are registered for an active competition: most notifications are about competitions in progress. Notifications live in the app, not as phone alerts."
+      - q: "Can I turn them off?"
+        a: "Notifications inside the app are part of how it works and cannot be turned off; you can however set automatic deletion of old ones."
+      - q: "I deleted a notification by mistake."
+        a: "It cannot be recovered, but nothing is lost: the information is on the competition or match page it referred to anyway."

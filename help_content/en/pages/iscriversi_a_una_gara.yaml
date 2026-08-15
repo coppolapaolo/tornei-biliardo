@@ -1,0 +1,126 @@
+title: "Registering for a competition"
+section: giocare
+kind: tutorial
+audience: [giocatore]
+minutes: 4
+summary: "Finding an open competition, registering, checking you are on the list and — if you have to — pulling out in time."
+screens: [main.public_garas_list, player.gara_detail]
+related: [seguire_la_gara, giocare_una_partita]
+
+blocks:
+  - type: text
+    text: >-
+      Registering takes two taps. The part worth reading is what comes after:
+      how to tell that it worked, and what to do if you then cannot make it.
+
+  - type: heading
+    id: trovare
+    title: "Finding a competition"
+
+  - type: steps
+    items:
+      - title: "Look at your home"
+        text: >-
+          As soon as you log in, competitions open for registration are already
+          there, marked **Registrations open** with the closing date.
+        shot: dashboard-giocatore
+      - title: "Or browse all competitions"
+        text: >-
+          The **See all** link takes you to the full list, including clubs you
+          have never played at.
+        shot: gare-aperte
+      - title: "Open the one you are interested in"
+        text: >-
+          The competition card says everything you need to decide: date and
+          time, venue, discipline, distance, entry fee and how many people have
+          already signed up.
+
+  - type: heading
+    id: iscriversi
+    title: "Registering"
+
+  - type: steps
+    items:
+      - title: "Tap «Register»"
+        text: >-
+          The button is at the bottom of the competition card. It only appears
+          if registrations are open and you are not already registered.
+        shot: gara-iscrizione
+      - title: "Check the confirmation"
+        text: >-
+          A **Your registration** box appears at the top with the date you
+          registered, and your name joins the list of entrants. If you do not
+          see that box, the registration did not go through.
+        shot: gara-iscritto
+
+  - type: note
+    tone: tip
+    title: "The invitation link"
+    text: >-
+      Organisers sometimes circulate a direct link to a competition (in a group
+      chat, say). Tapping it registers you in one go. If you do not have an
+      account yet, you will be asked to create one first and the registration
+      then continues on its own.
+
+  - type: heading
+    id: lista_attesa
+    title: "If the competition is full"
+
+  - type: text
+    text: >-
+      Some competitions have a maximum number of entrants. If it has been
+      reached, registering puts you on the **waitlist**: you are not shut out,
+      you are in the queue. If someone withdraws before the start, the first
+      person on the list gets in automatically and is notified.
+
+  - type: note
+    tone: info
+    title: "Even numbers only"
+    text: >-
+      Certain competitions require an even number of players. In that case, if
+      you register when the count is even, you stay on the waitlist until
+      someone else registers: at that point you both get in together. It is not
+      a fault, and it is explained in [When the number of players is
+      odd](/aiuto/approfondimenti/numero_dispari).
+
+  - type: heading
+    id: disiscriversi
+    title: "Withdrawing"
+
+  - type: text
+    text: >-
+      While registrations are open you can pull out freely: open the
+      competition and tap **Withdraw**. No penalty, and your place goes to the
+      first person on the waitlist.
+
+  - type: note
+    tone: warning
+    title: "Once registrations close you cannot"
+    text: >-
+      When registrations close, the list is the one the director will draw
+      from. If at that point you can no longer come, **tell the competition
+      director**: only they can take you off the list, and doing it before the
+      start avoids leaving someone without an opponent.
+
+  - type: heading
+    id: quando_inizia
+    title: "What happens when the competition starts"
+
+  - type: text
+    text: >-
+      At the appointed time the director closes registrations and starts the
+      first round. The app forms the pairs and sends you a notification with
+      your opponent's name and, if the venue has them configured, the table
+      number. From then on the competition page is your reference point: see
+      [Following a competition](/aiuto/giocare/seguire_la_gara).
+
+  - type: faq
+    items:
+      - q: "I registered but the competition is not on my home page."
+        a: "Your home shows active competitions. If the date is still far off you will find it in the full list, and it will come back to your home as the date approaches."
+      - q: "Can I enter two competitions on the same day?"
+        a: "Yes, the app does not stop you. It is up to you to check the times do not clash."
+      - q: "Do I pay the fee in the app?"
+        a: "No. The fee shown on the card is for information: you pay on site, however the club normally does it."
+      - q: "I registered for the wrong competition by mistake."
+        a: "Withdraw straight away from the competition card: while registrations are open it is immediate and leaves no trace."

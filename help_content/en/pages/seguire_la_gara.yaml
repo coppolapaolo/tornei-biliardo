@@ -1,0 +1,141 @@
+title: "Following a competition: rounds and standings"
+section: giocare
+kind: approfondimento
+audience: [giocatore, tutti]
+minutes: 4
+summary: "The competition page has three views: the round's matches, the standings and the entrants. How to read them and what each label means."
+screens: [admin.competition.gara_detail]
+related: [giocare_una_partita, classifiche]
+
+blocks:
+  - type: text
+    text: >-
+      The competition page is the centre of everything: it shows who plays
+      whom, how the matches are going and how the standings are moving. It is
+      public: you can send the link to someone who does not have the app.
+
+  - type: heading
+    id: linguette
+    title: "The three views"
+
+  - type: text
+    text: >-
+      On a phone there are three or four tabs at the top of the page. They are
+      the same page from three angles: nothing is lost by moving between them.
+      On a computer they are all visible at once, in two columns.
+
+  - type: options
+    items:
+      - name: "Rounds"
+        text: "The matches, grouped by round. This is the view you start from during the evening."
+        hint: gara.turni
+      - name: "Standings"
+        text: "How the players are ordered right now."
+        hint: gara.classifica
+      - name: "Entrants"
+        text: "Who is taking part, and who if anyone is on the waitlist."
+      - name: "Management"
+        text: "Only shown to the competition director: the controls for running the evening."
+
+  - type: heading
+    id: turni
+    title: "The rounds view"
+
+  - type: shot
+    shot: gara-turni
+    caption: "The current round is at the top, finished rounds below. Each box is a match."
+
+  - type: text
+    text: >-
+      The most recent round is at the top. Each box is a match and carries a
+      label saying what state it is in:
+
+  - type: options
+    title: "The match labels"
+    items:
+      - name: "In progress"
+        text: "Being played right now. The score you see is the real one, updating on its own."
+      - name: "Finished"
+        text: "Over. The crown is next to the winner."
+      - name: "To play"
+        text: "The pair is set, the match has not started. Often waiting for a table to free up."
+      - name: "Locked"
+        text: >-
+          The match belongs to a round that is already closed: the result can no
+          longer be changed because the next round has started and is built on
+          it.
+      - name: "X by walkover"
+        text: >-
+          No opponent for that round, because of an odd number of players. See
+          [When the number of players is
+          odd](/aiuto/approfondimenti/numero_dispari).
+
+  - type: note
+    tone: info
+    title: "The table number"
+    text: >-
+      If the venue has tables configured, every match in progress shows its
+      own: «Table 3». When the match ends the table frees up and passes to the
+      next pair waiting.
+
+  - type: heading
+    id: classifica
+    title: "The standings view"
+
+  - type: shot
+    shot: gara-classifica
+    caption: "The standings of a finished competition: position, name, wins and rack difference."
+
+  - type: text
+    text: >-
+      The standings update at the end of each round, not after each match:
+      that is why they can sit still even while play continues. The two columns
+      of numbers on the right are, in order, the **wins** and the **rack
+      difference** (racks won minus racks lost).
+
+  - type: text
+    text: >-
+      Not every competition orders players the same way: some count total
+      racks, others positions in a bracket. The three modes are explained in
+      [How standings are worked out](/aiuto/approfondimenti/classifiche).
+
+  - type: heading
+    id: in_diretta
+    title: "Following a competition live"
+
+  - type: text
+    text: >-
+      While play is under way the page refreshes itself every few seconds: no
+      need to reload. Competitions with matches in progress appear on the home
+      page under **Live now**, with the score at each active table.
+
+  - type: shot
+    shot: home-pubblica
+    caption: "The «Live now» section shows competitions in progress and the scores at the tables, visible without an account."
+
+  - type: heading
+    id: fine_gara
+    title: "When the competition ends"
+
+  - type: text
+    text: >-
+      After the last round the competition becomes **Finished** and the
+      standings become final. If players are level in positions that matter,
+      there may be a **tie-break** before the verdict: the competition waits
+      until it has been played.
+
+  - type: text
+    text: >-
+      If the competition was part of a championship, its results are added to
+      the overall standings, which you will find on the championship page.
+
+  - type: faq
+    items:
+      - q: "Why have the standings not changed after my win?"
+        a: "They are recalculated when every match in the round is finished. Until even one match is missing, they stay as they were at the end of the previous round."
+      - q: "My match says «Locked»: can I still correct it?"
+        a: "No. It means the next round has already been started from that result. Only the competition director can step in, and it means replaying the round."
+      - q: "Who do I play next round?"
+        a: "You only find out when the director starts the round: the pairs come from the updated standings, so before that they do not exist."
+      - q: "Can I show the competition to someone without the app?"
+        a: "Yes: copy the page link and send it. It opens for anyone, no account needed."

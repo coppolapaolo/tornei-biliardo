@@ -1,0 +1,141 @@
+title: "Managing users and requests"
+section: amministrare
+kind: approfondimento
+audience: [amministratore]
+minutes: 5
+summary: "The list of accounts, an individual user's record, and the two queues of requests to work through: competition director and venue manager."
+screens: [admin.user.users_list, admin.user.user_detail, admin.user.director_requests, admin.venue.venue_manager_requests]
+related: [diventare_direttore, chi_fa_cosa]
+
+blocks:
+  - type: text
+    text: >-
+      The administrator is whoever keeps the platform running. Most of the work
+      is two things: looking at the user list when something does not add up,
+      and answering role requests.
+
+  - type: shot
+    shot: admin-dashboard
+    caption: "The administrator home: the overall state of the platform at a glance."
+
+  - type: heading
+    id: elenco
+    title: "The user list"
+
+  - type: shot
+    shot: admin-utenti
+    caption: "Each row is an account, with email, role, rating and number of registrations."
+
+  - type: text
+    text: >-
+      The search at the top filters by username or email. The two boxes **Merge
+      users** and **All users** are for edge cases: the first to merge two
+      accounts belonging to the same person, the second to see deleted ones as
+      well.
+
+  - type: options
+    title: "What each row tells you"
+    items:
+      - name: "Role"
+        text: "Player, director or administrator. The button next to it changes that."
+      - name: "Verified"
+        text: "Whether the user confirmed their email address. Anyone who has not cannot recover their password."
+      - name: "Rating and statistics"
+        text: "Elo, registrations and matches: useful for telling whether an account is genuinely active."
+      - name: "Last login"
+        text: "When they last connected."
+
+  - type: heading
+    id: scheda
+    title: "A user's record"
+
+  - type: shot
+    shot: admin-utente
+    caption: "The individual record: details, role, registrations and recent matches."
+
+  - type: text
+    text: >-
+      Opening a user shows everything they have done on the platform. From here
+      you can promote them to director, demote them, or switch on the
+      gamification exemption for service accounts.
+
+  - type: note
+    tone: warning
+    title: "Accounts are not really deleted"
+    text: >-
+      Deleting an account is an **anonymisation**: personal details go, the
+      sporting results stay in the standings without a name. Physically
+      deleting a user would leave holes in the matches of everyone who played
+      against them.
+
+  - type: heading
+    id: richieste_direttore
+    title: "Requests to become a director"
+
+  - type: shot
+    shot: admin-richieste-direttore
+    caption: "Pending requests: who sent them, when, and the two buttons to answer."
+
+  - type: text
+    text: >-
+      A player who wants to organise competitions sends the request from their
+      profile. It arrives here and stays pending until you answer. The sender
+      gets a notification with the outcome, whatever it is.
+
+  - type: steps
+    items:
+      - title: "See who they are"
+        text: >-
+          The name links to their record: how many competitions they have
+          played, how long they have been a member, whether the email is
+          verified.
+      - title: "Accept or decline"
+        text: >-
+          If you accept, the account becomes a **director** and the next time
+          they log in they find the buttons for creating competitions and
+          championships.
+      - title: "If you change your mind"
+        text: >-
+          A director can always be demoted from their record. The competitions
+          they already created stay, but they will not be able to create new
+          ones.
+
+  - type: note
+    tone: info
+    title: "It is not a promotion, it is a job"
+    text: >-
+      A competition director has no power over other users and no access to
+      platform data: they can only organise their own competitions. Accepting a
+      request is low risk, and declining one from somebody who offered to
+      organise costs more than it looks.
+
+  - type: heading
+    id: richieste_gestore
+    title: "Requests to manage a venue"
+
+  - type: shot
+    shot: admin-richieste-gestore
+    caption: "Requests to become the manager of a billiard venue."
+
+  - type: text
+    text: >-
+      Whoever actually runs a club can ask to look after their venue's page:
+      address, tables, opening hours, contacts. It is a role that adds to the
+      others and does not touch competitions.
+
+  - type: note
+    tone: warning
+    text: >-
+      This is the one request worth verifying **outside the app**: anyone can
+      ask to manage any venue. A phone call to the club settles it.
+
+  - type: faq
+    items:
+      - q: "Can I create an account on someone's behalf?"
+        a: "No: sign-up goes through email verification, which has to reach the person. You can however register them for a competition once the account exists."
+      - q: "A user is not receiving the verification email."
+        a: "From their record check the address is spelled right. The user can request a new send from their own profile."
+      - q: "How many administrators are needed?"
+        a: "One or two. It is a role with full access to the data: the more people hold it, the wider the surface of any eventual problem."
+      - q: "Can I take the administrator role away from someone?"
+        a: "Yes, from their record, as long as at least one active administrator remains."

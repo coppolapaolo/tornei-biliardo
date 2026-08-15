@@ -39,6 +39,16 @@ sys.path.insert(0, str(REPO_ROOT))
 MANIFEST = REPO_ROOT / "help_content" / "screenshots.yaml"
 OUTPUT_DIR = REPO_ROOT / "static" / "img" / "help"
 
+# L'app e' tradotta, quindi le schermate lo sono anche loro: una guida inglese
+# con i pulsanti in italiano manderebbe il lettore a cercare comandi che nella
+# sua interfaccia non esistono. Le catture finiscono in
+# `static/img/help/<lingua>/` e il manifest dichiara quali lingue produrre.
+DEFAULT_LOCALES = ["it"]
+
+# Il tag BCP-47 passato al browser. Non decide la lingua dell'app (quella la
+# imposta `/set_language/<lingua>`), ma il formato di date e numeri.
+LOCALE_TAGS = {"it": "it-IT", "en": "en-GB"}
+
 # Le due larghezze che il mini-sito dichiara di supportare. `deviceScaleFactor`
 # 2 perche' le immagini vengono mostrate a meta' larghezza CSS: a fattore 1 il
 # testo delle schermate risulta sgranato sui display densi.
@@ -239,9 +249,9 @@ def wait_for_app(base_url: str, timeout: float = 60.0) -> None:
     raise CaptureError(f"app non raggiungibile su {base_url} ({last_error})")
 
 
-def output_path(shot_id: str, viewport: str) -> Path:
+def output_path(shot_id: str, viewport: str, locale: str) -> Path:
     suffix = "" if viewport == "mobile" else f"-{viewport}"
-    return OUTPUT_DIR / f"{shot_id}{suffix}.png"
+    return OUTPUT_DIR / locale / f"{shot_id}{suffix}.png"
 
 
 def _launch_chromium(playwright):
@@ -292,7 +302,11 @@ def _shrink(path: Path) -> None:
 
 
 def capture_all(
-    data: dict, base_url: str, only: list[str] | None, quiet: bool
+    data: dict,
+    base_url: str,
+    only: list[str] | None,
+    quiet: bool,
+    locales: list[str],
 ) -> list[Path]:
     from playwright.sync_api import sync_playwright
 
@@ -305,32 +319,35 @@ def capture_all(
                 f"id non presenti nel manifest: {', '.join(sorted(missing))}"
             )
 
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     written: list[Path] = []
 
     with sync_playwright() as playwright:
         browser = _launch_chromium(playwright)
         try:
-            for shot in shots:
-                for viewport in shot.get("viewports") or ["mobile"]:
-                    path = _capture_one(browser, shot, viewport, base_url)
-                    _shrink(path)
-                    written.append(path)
-                    if not quiet:
-                        print(f"  · {path.relative_to(REPO_ROOT)}")
+            for locale in locales:
+                (OUTPUT_DIR / locale).mkdir(parents=True, exist_ok=True)
+                for shot in shots:
+                    for viewport in shot.get("viewports") or ["mobile"]:
+                        path = _capture_one(browser, shot, viewport, base_url, locale)
+                        _shrink(path)
+                        written.append(path)
+                        if not quiet:
+                            print(f"  · {path.relative_to(REPO_ROOT)}")
         finally:
             browser.close()
     return written
 
 
-def _capture_one(browser, shot: dict, viewport: str, base_url: str) -> Path:
+def _capture_one(
+    browser, shot: dict, viewport: str, base_url: str, locale: str
+) -> Path:
     settings = VIEWPORTS[viewport]
     context = browser.new_context(
         viewport={"width": settings["width"], "height": settings["height"]},
         device_scale_factor=settings["device_scale_factor"],
         is_mobile=settings["is_mobile"],
         has_touch=settings["is_mobile"],
-        locale="it-IT",
+        locale=LOCALE_TAGS.get(locale, locale),
         timezone_id="Europe/Rome",
         # Il fuso influenza gli orari mostrati: senza fissarlo, due catture
         # dalla stessa macchina in stagioni diverse darebbero immagini diverse.
@@ -338,6 +355,11 @@ def _capture_one(browser, shot: dict, viewport: str, base_url: str) -> Path:
     _install_asset_proxy(context, base_url)
     page = context.new_page()
     try:
+        # La lingua dell'app la decide la sessione, non l'`Accept-Language` del
+        # browser: senza questo passaggio le schermate uscirebbero tutte nella
+        # lingua predefinita e la guida inglese mostrerebbe pulsanti italiani.
+        page.goto(f"{base_url}/set_language/{locale}", wait_until="networkidle")
+
         role = shot.get("as", "anonimo")
         if role and role != "anonimo":
             page.goto(
@@ -365,7 +387,7 @@ def _capture_one(browser, shot: dict, viewport: str, base_url: str) -> Path:
         if annotations:
             page.evaluate(ANNOTATE_JS, annotations)
 
-        path = output_path(shot["id"], viewport)
+        path = output_path(shot["id"], viewport, locale)
         target = shot.get("clip")
         if target:
             element = page.query_selector(target)
@@ -406,6 +428,11 @@ def main() -> int:
     )
     parser.add_argument("--quiet", action="store_true")
     parser.add_argument(
+        "--lang",
+        nargs="*",
+        help="lingue da catturare (predefinito: quelle dichiarate nel manifest)",
+    )
+    parser.add_argument(
         "--json", action="store_true", help="stampa l'elenco dei file scritti in JSON"
     )
     args = parser.parse_args()
@@ -422,14 +449,19 @@ def main() -> int:
         for problem in problems:
             print(f"  - {problem}", file=sys.stderr)
         return 2
+
+    locales = args.lang or data.get("locales") or DEFAULT_LOCALES
     if args.check:
-        print(f"Manifest valido: {len(data['shots'])} schermate dichiarate.")
+        print(
+            f"Manifest valido: {len(data['shots'])} schermate × "
+            f"{len(locales)} lingue ({', '.join(locales)})."
+        )
         return 0
 
     server = serve_app() if args.serve else None
     try:
         wait_for_app(args.base_url)
-        written = capture_all(data, args.base_url, args.only, args.quiet)
+        written = capture_all(data, args.base_url, args.only, args.quiet, locales)
     except CaptureError as exc:
         print(f"ERRORE: {exc}", file=sys.stderr)
         return 1

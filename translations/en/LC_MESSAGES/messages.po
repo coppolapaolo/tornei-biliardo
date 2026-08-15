@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-15 09:39+0000\n"
+"POT-Creation-Date: 2026-08-15 10:29+0000\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -633,6 +633,54 @@ msgstr "Request not found or cannot be renewed."
 #: routes/demand.py:67
 msgid "Richiesta riconfermata: resterà attiva ancora a lungo."
 msgstr "Request reconfirmed: it will stay active for a while longer."
+
+#: routes/help.py:50 templates/admin/kpi.html:112
+msgid "Panoramica"
+msgstr "Overview"
+
+#: routes/help.py:51
+msgid "Passo passo"
+msgstr "Step by step"
+
+#: routes/help.py:52
+msgid "Approfondimento"
+msgstr "In depth"
+
+#: routes/help.py:53
+msgid "Riferimento"
+msgstr "Reference"
+
+#: routes/help.py:57 templates/components/_classification_mobile.html:13
+#: templates/components/_history_filters.html:53
+#: templates/components/_history_filters.html:67
+#: templates/components/_history_filters.html:99
+#: templates/components/_history_filters.html:130
+#: templates/gamification/dashboard.html:150
+#: templates/individual_match/dashboard.html:153
+#: templates/individual_match/matches.html:33
+#: templates/public/campionatos_list.html:19
+msgid "Tutti"
+msgstr "All"
+
+#: routes/help.py:58 templates/admin/campionato_detail.html:230
+#: templates/admin/users_list.html:91 templates/admin/users_list.html:148
+#: templates/components/_detailed_classification.html:19
+#: templates/components/_unified_dashboard_header.html:10
+#: templates/player/profile.html:79
+msgid "Giocatore"
+msgstr "Player"
+
+#: routes/help.py:59 templates/admin/users_list.html:90
+#: templates/admin/users_list.html:146
+#: templates/components/_unified_dashboard_header.html:9
+#: templates/player/profile.html:78
+msgid "Direttore di gara"
+msgstr "Competition Director"
+
+#: routes/help.py:60 templates/components/_unified_dashboard_header.html:8
+#: templates/player/profile.html:77
+msgid "Amministratore"
+msgstr "Administrator"
 
 #: routes/main.py:293
 #, python-format
@@ -2967,14 +3015,6 @@ msgstr "confirmed"
 msgid "in attesa"
 msgstr "pending"
 
-#: templates/admin/campionato_detail.html:230
-#: templates/admin/users_list.html:91 templates/admin/users_list.html:148
-#: templates/components/_detailed_classification.html:19
-#: templates/components/_unified_dashboard_header.html:10
-#: templates/player/profile.html:79
-msgid "Giocatore"
-msgstr "Player"
-
 #: templates/admin/campionato_detail.html:231
 msgid "Posizione"
 msgstr "Position"
@@ -3649,10 +3689,6 @@ msgstr "From"
 msgid "A"
 msgstr "To"
 
-#: templates/admin/kpi.html:112
-msgid "Panoramica"
-msgstr "Overview"
-
 #: templates/admin/kpi.html:118
 msgid "Acquisizione"
 msgstr "Acquisition"
@@ -3957,12 +3993,6 @@ msgstr "Filter by role"
 #: templates/admin/users_list.html:88
 msgid "Tutti i ruoli"
 msgstr "All roles"
-
-#: templates/admin/users_list.html:90 templates/admin/users_list.html:146
-#: templates/components/_unified_dashboard_header.html:9
-#: templates/player/profile.html:78
-msgid "Direttore di gara"
-msgstr "Competition Director"
 
 #: templates/admin/users_list.html:94
 msgid "Filtra per verifica"
@@ -4876,18 +4906,6 @@ msgstr "Remove from the tournament"
 #: templates/components/_classification_mobile.html:12
 msgid "Prime 6"
 msgstr "Top 6"
-
-#: templates/components/_classification_mobile.html:13
-#: templates/components/_history_filters.html:53
-#: templates/components/_history_filters.html:67
-#: templates/components/_history_filters.html:99
-#: templates/components/_history_filters.html:130
-#: templates/gamification/dashboard.html:150
-#: templates/individual_match/dashboard.html:153
-#: templates/individual_match/matches.html:33
-#: templates/public/campionatos_list.html:19
-msgid "Tutti"
-msgstr "All"
 
 #: templates/components/_classification_mobile.html:26
 #: templates/components/_classification_mobile.html:52
@@ -7638,11 +7656,6 @@ msgstr "Create a championship"
 #: templates/components/_unified_cards.html:194
 msgid "Crea una gara"
 msgstr "Create a tournament"
-
-#: templates/components/_unified_dashboard_header.html:8
-#: templates/player/profile.html:77
-msgid "Amministratore"
-msgstr "Administrator"
 
 #: templates/components/_unified_dashboard_header.html:13
 msgid "Ciao"

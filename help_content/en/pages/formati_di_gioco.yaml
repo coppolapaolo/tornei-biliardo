@@ -1,0 +1,134 @@
+title: "Match formats: distance, disciplines, sets"
+section: approfondimenti
+kind: approfondimento
+audience: [tutti]
+minutes: 5
+summary: "«Race to 4» does not mean four racks. How to read the distance, what changes with an exact number of racks, and what set play is."
+related: [parole_da_sapere, opzioni_della_gara, classifiche]
+
+blocks:
+  - type: text
+    text: >-
+      The format answers a single question: **when does a match end?** There
+      are three ways of answering, and the app calls them distance, exact
+      number of racks, and set play.
+
+  - type: heading
+    id: distanza
+    title: "The distance: «race to N»"
+
+  - type: text
+    text: >-
+      This is the normal format. **«Race to 4»** means the first player to win
+      four racks takes the match. As soon as one gets there, the match closes:
+      the remaining racks are not played.
+
+  - type: list
+    title: "How to read it"
+    items:
+      - "«Race to 4» → the first to 4 wins. At most **7** racks are played (4-3)."
+      - "«Race to 5» → the first to 5 wins. At most **9** racks (5-4)."
+      - "«Race to 7» → the first to 7 wins. At most **13** racks (7-6)."
+
+  - type: note
+    tone: warning
+    title: "It is not «best of N»"
+    text: >-
+      The number given is the racks **to win**, not the racks to play. If you
+      are used to «best of 9», think «race to 5»: the same thing said
+      differently.
+
+  - type: shot
+    shot: partita-segnapunti
+    caption: "Under the score, the line «Race to 5 · 7 racks played» reminds you of the distance and how many racks have gone."
+
+  - type: heading
+    id: numero_esatto
+    title: "Exact number of racks"
+
+  - type: text
+    text: >-
+      Some competitions choose to play **all** the racks, even once the winner
+      is decided: 6 racks means 6 racks, finish them. This is needed when the
+      standings count total racks rather than wins: if you stopped early,
+      whoever wins comfortably would collect fewer racks than someone who wins
+      narrowly.
+
+  - type: note
+    tone: info
+    title: "With an even number a draw is possible"
+    text: >-
+      If the racks to play are an even number, the match can end level: 3-3 out
+      of six racks. With «race to N» there is always a winner.
+
+  - type: heading
+    id: set
+    title: "Set play"
+
+  - type: text
+    text: >-
+      The match is split into **sets**: each set is won by reaching the
+      distance, and the match is won by whoever takes enough sets. For example:
+      sets to 4, match over 3 sets — the winner is the first to take 2 (or 3,
+      if you ask for the full count).
+
+  - type: text
+    text: >-
+      The scoreboard shows the set in progress and the score of completed sets.
+      Between sets there is a button to start the next. It is a long format:
+      suitable for a final, less so for an evening with twelve entrants.
+
+  - type: heading
+    id: discipline
+    title: "The disciplines"
+
+  - type: text
+    text: >-
+      The app records the discipline to show it on the card and in the
+      statistics; the rules at the table remain the ones you know.
+
+  - type: options
+    items:
+      - name: "8-ball"
+        text: "The most common in clubs. Solids against stripes, the player who pots the 8 closes."
+      - name: "9-ball"
+        text: "Balls are played in numerical order, and whoever pots the 9 wins. Quick matches."
+      - name: "10-ball"
+        text: "Like 9-ball but with ten balls and compulsory calling."
+      - name: "One pocket"
+        text: "Each player has a single assigned pocket. Slow and very tactical."
+      - name: "Straight pool"
+        text: "Scored play: points accumulate up to the agreed total."
+      - name: "Bank pool"
+        text: "Every ball must be potted off a cushion."
+      - name: "Rotation"
+        text: "You always strike the lowest-numbered ball; each ball is worth its number."
+
+  - type: heading
+    id: handicap
+    title: "The handicap"
+
+  - type: text
+    text: >-
+      When a competition takes in very different levels, the director can turn
+      on the **handicap**: the lower-category player starts with a few racks in
+      hand, so the match stays uncertain.
+
+  - type: note
+    tone: info
+    text: >-
+      Competitions with a handicap **do not change players' ratings**: the
+      scores are altered by design, and using them to measure players' strength
+      would distort it. The competition's own standings, on the other hand, use
+      the effective scores, handicap included.
+
+  - type: faq
+    items:
+      - q: "How long does a «race to 4» match take?"
+        a: "In practice twenty to thirty minutes at 8-ball. «Race to 5» asks for about ten more, and over three rounds the difference is very noticeable."
+      - q: "Can the distance be changed during the competition?"
+        a: "No, not after the start. The director can however set different formats for individual rounds, but it has to be decided before the competition begins."
+      - q: "Why did my match close at 4-2 if 7 racks were planned?"
+        a: "Because the format was «race to 4»: reaching 4 racks wins the match. The 7 is the maximum possible, not the number to play."
+      - q: "With «exact number», who wins if it ends level?"
+        a: "Nobody: the match is a draw and both players take zero wins and zero rack difference in the standings."

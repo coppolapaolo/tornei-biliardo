@@ -1,0 +1,69 @@
+title: "The platform indicators"
+section: amministrare
+kind: riferimento
+audience: [amministratore]
+minutes: 3
+summary: "The KPI page: how many users, how many competitions, how many matches, and how they are trending."
+screens: [admin.kpi.index]
+related: [gestire_gli_utenti]
+
+blocks:
+  - type: text
+    text: >-
+      This is the page to look at once a month to know whether the platform is
+      alive. It serves no other purpose: it holds no controls, only numbers.
+
+  - type: shot
+    shot: admin-kpi
+    caption: "The indicators: members, competitions, matches and trends over time."
+
+  - type: heading
+    id: cosa_guardare
+    title: "What actually to look at"
+
+  - type: options
+    items:
+      - name: "Registered users"
+        text: >-
+          The total means little. What matters is **how many are active**: a
+          member who has not played for three months is not a user, it is a
+          row.
+      - name: "Competitions created and finished"
+        text: >-
+          The ratio between the two tells you whether competitions reach the
+          end. Many created and few finished means something jams halfway
+          through the evening, and it is worth asking a director what happens.
+      - name: "Matches played"
+        text: >-
+          This is the most honest indicator: it measures real use, not sign-ups.
+      - name: "Trend over time"
+        text: >-
+          The comparison between periods. A sudden drop usually has a concrete
+          cause — the season, a fault, a cancelled competition — worth looking
+          for rather than waiting out.
+
+  - type: note
+    tone: info
+    title: "These are aggregate numbers"
+    text: >-
+      The page shows nobody's personal data: they are counts. For an individual
+      user's data there is their record, and the principle holds of opening it
+      only when it genuinely helps solve a problem.
+
+  - type: heading
+    id: altri_dati
+    title: "Where the other data lives"
+
+  - type: list
+    items:
+      - "**Progress and XP**: in the gamification panel, with the level distribution."
+      - "**A competition's statistics**: on the competition page, under standings."
+      - "**A player's statistics**: in their record, or in their public profile."
+      - "**A copy of one's own data**: the user requests it from their profile — you do not need to extract it for them."
+
+  - type: faq
+    items:
+      - q: "Can I export these numbers?"
+        a: "The page has no export. For serious analysis you read the database directly, which is best done on a copy rather than on the live one."
+      - q: "How often do they update?"
+        a: "They are calculated at the moment you open the page."

@@ -15,10 +15,25 @@ siano gia' li', rivisti e verificati, invece di essere inventati allora.
 
 from __future__ import annotations
 
-from flask import Blueprint, abort, jsonify, redirect, render_template, request, url_for
-from flask_babel import get_locale, lazy_gettext as _l
+from flask import (
+    Blueprint,
+    abort,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
+
+# `lazy_gettext as _`: e' l'alias che il comando di estrazione del progetto
+# riconosce (`pybabel extract` cerca `_`, non `_l`). Con l'alias `_l` queste
+# stringhe non finirebbero nel catalogo e resterebbero in italiano anche in
+# inglese — senza che nulla segnali l'errore.
+from flask_babel import get_locale, lazy_gettext as _
 
 from utils.help_content import (
+    FALLBACK_LOCALE,
     get_content,
     render_text,
     screen_payload,
@@ -33,17 +48,17 @@ help_bp = Blueprint("help", __name__, url_prefix="/aiuto")
 # della guida: `kind: tutorial` e' una classificazione, "Passo passo" e' come
 # la chiamiamo davanti all'utente.
 _KIND_LABELS = {
-    "introduzione": _l("Panoramica"),
-    "tutorial": _l("Passo passo"),
-    "approfondimento": _l("Approfondimento"),
-    "riferimento": _l("Riferimento"),
+    "introduzione": _("Panoramica"),
+    "tutorial": _("Passo passo"),
+    "approfondimento": _("Approfondimento"),
+    "riferimento": _("Riferimento"),
 }
 
 _AUDIENCE_LABELS = {
-    "tutti": _l("Tutti"),
-    "giocatore": _l("Giocatore"),
-    "direttore": _l("Direttore di gara"),
-    "amministratore": _l("Amministratore"),
+    "tutti": _("Tutti"),
+    "giocatore": _("Giocatore"),
+    "direttore": _("Direttore di gara"),
+    "amministratore": _("Amministratore"),
 }
 
 
@@ -57,11 +72,22 @@ def _help_helpers():
 
 
 def _content():
-    """Contenuto nella lingua dell'utente, con ricaduta sull'italiano."""
-    try:
-        locale = str(get_locale() or "it")
-    except Exception:  # fuori da una richiesta con Babel configurato
-        locale = "it"
+    """Contenuto nella lingua dell'utente, con ricaduta sull'italiano.
+
+    La scelta esplicita in sessione viene **prima** di `get_locale()`, e non
+    per gusto: Babel memorizza la lingua risolta sul contesto corrente, e dove
+    quel contesto vive a lungo (uno script, un job che renderizza un template,
+    il contesto applicativo tenuto aperto dai test) la prima risoluzione resta
+    valida per sempre. Il risultato sarebbe una guida che ignora il cambio
+    lingua. `session["language"]` e' la stessa fonte che usa il selettore
+    dell'app, letta senza intermediari.
+    """
+    locale = session.get("language")
+    if not locale:
+        try:
+            locale = str(get_locale() or FALLBACK_LOCALE)
+        except Exception:  # fuori da una richiesta con Babel configurato
+            locale = FALLBACK_LOCALE
     return get_content(locale)
 
 

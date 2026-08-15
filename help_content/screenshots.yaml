@@ -1,7 +1,7 @@
 # Manifest delle schermate del mini-sito di aiuto.
 #
-# Ogni voce diventa un file `static/img/help/<id>.png` (piu' `<id>-desktop.png`
-# se fra i `viewports` c'e' `desktop`), catturato dall'app vera con
+# Ogni voce diventa un file `static/img/help/<lingua>/<id>.png` (piu'
+# `<id>-desktop.png` se fra i `viewports` c'e' `desktop`), dall'app vera con
 # `python scripts/help_docs/capture_screenshots.py` sul database dimostrativo
 # creato da `scripts/help_docs/seed_demo.py`.
 #
@@ -20,9 +20,22 @@
 #   annotate   [{selector, label}] cerchia un elemento e ci mette un numero
 #
 # NOTA: i dati visibili (nomi, date, punteggi) vengono dal seed dimostrativo e
-# sono deterministici. Non ritoccare mai le immagini a mano: al primo
-# cambiamento dell'interfaccia diventerebbero una descrizione falsa dell'app.
+# sono deterministici — il seed fissa il generatore casuale apposta. Non
+# ritoccare mai le immagini a mano: al primo cambiamento dell'interfaccia
+# diventerebbero una descrizione falsa dell'app.
+#
+# Gli id nei percorsi (gara 1/2/3, match 18) sono quelli prodotti dal seed. Se
+# cambi `seed_demo.py` **ricontrollali**: la cattura si ferma con un errore
+# esplicito se un percorso non esiste piu', ma una gara diversa da quella
+# attesa passerebbe inosservata.
 
+# Lingue da catturare. Ogni schermata viene prodotta una volta per lingua, con
+# l'app impostata su quella lingua: la guida inglese non puo' mostrare pulsanti
+# italiani, sarebbe l'esatto contrario del suo scopo.
+locales: [it, en]
+
+# Le didascalie qui sotto sono in italiano e valgono da testo alternativo di
+# riserva; ogni lingua puo' sovrascriverle in `<lingua>/captions.yaml`.
 shots:
   # --- Pagine pubbliche ---------------------------------------------------
   - id: home-pubblica
@@ -75,13 +88,13 @@ shots:
     caption: "La classifica di una gara conclusa, ordinata per vittorie e differenza rack."
 
   - id: partita-segnapunti
-    route: /admin/match/20
+    route: /admin/match/18
     as: Marco Rossi
     caption: "La pagina della partita: punteggio in alto, segnapunti al centro, elenco dei rack giocati sotto."
     viewports: [mobile, desktop]
 
   - id: partita-rack
-    route: /admin/match/20
+    route: /admin/match/18
     as: Marco Rossi
     clip: ".c7-rackpad"
     caption: "I due tasti del segnapunti: si preme quello del giocatore che ha vinto il rack."
@@ -160,3 +173,108 @@ shots:
     as: Luca Bianchi
     caption: "La pagina di un campionato: le sue gare, la classifica generale e le impostazioni."
     viewports: [mobile, desktop]
+
+  - id: challenge-catalogo
+    route: /challenges/
+    as: Marco Rossi
+    caption: "Il catalogo delle challenge: le prove di abilità disponibili, con la disposizione delle bilie."
+
+  - id: challenge-nuova
+    route: /challenges/create
+    as: Luca Bianchi
+    caption: "Il modulo per creare una challenge: descrizione, immagine della disposizione e tipo di punteggio."
+
+  # --- Progressi e classifiche di piattaforma ------------------------------
+  - id: classifiche-piattaforma
+    route: /gamification/leaderboards
+    as: anonimo
+    caption: "Le classifiche di piattaforma: punti esperienza, livelli e serie di tutti i giocatori."
+
+  - id: obiettivi
+    route: /gamification/quests
+    as: Marco Rossi
+    caption: "Gli obiettivi periodici: cosa fare questa settimana e a che punto sei."
+
+  - id: serie
+    route: /gamification/streaks
+    as: Marco Rossi
+    caption: "Le serie: da quanti giorni consecutivi giochi e quando rischi di azzerarle."
+
+  # --- Sale, disponibilità, statistiche ------------------------------------
+  - id: sala-dettaglio
+    route: /admin/venues/1
+    as: Marco Rossi
+    caption: "La scheda di una sala: indirizzo, tavoli, contatti e chi ci gioca."
+
+  - id: disponibilita
+    route: /match/availability
+    as: Marco Rossi
+    caption: "Le tue disponibilità: in quali sale e in che giorni sei disposto a giocare."
+
+  - id: trova-giocatori
+    route: /match/availability/discover
+    as: Marco Rossi
+    caption: "La ricerca di avversari fra chi ha dichiarato le stesse disponibilità."
+
+  - id: statistiche-amichevoli
+    route: /match/statistics
+    as: Marco Rossi
+    caption: "Le statistiche delle partite amichevoli, separate da quelle delle gare."
+
+  - id: richieste-gestore
+    route: /player/my_venue_requests
+    as: Marco Rossi
+    caption: "Lo stato delle tue richieste per diventare gestore di una sala."
+
+  # --- Amministrazione ----------------------------------------------------
+  - id: admin-dashboard
+    route: /dashboard
+    as: admin
+    caption: "La home dell'amministratore: lo stato generale della piattaforma."
+    viewports: [mobile, desktop]
+
+  - id: admin-utenti
+    route: /admin/users
+    as: admin
+    caption: "L'elenco degli utenti con i loro dati e le azioni disponibili."
+
+  - id: admin-utente
+    route: /admin/user/2
+    as: admin
+    caption: "La scheda di un singolo utente: ruolo, iscrizioni, partite e statistiche."
+
+  - id: admin-richieste-direttore
+    route: /admin/director_requests
+    as: admin
+    caption: "Le richieste di promozione a direttore di gara, da accettare o rifiutare."
+
+  - id: admin-richieste-gestore
+    route: /admin/manager-requests
+    as: admin
+    caption: "Le richieste per diventare gestore di una sala biliardo."
+
+  - id: admin-gamification
+    route: /gamification/admin
+    as: admin
+    caption: "Il pannello della gamification: XP distribuiti, obiettivi attivi, traguardi e distribuzione dei livelli."
+    viewports: [mobile, desktop]
+
+  - id: admin-gamification-obiettivi
+    route: /gamification/admin/quests
+    as: admin
+    caption: "La gestione degli obiettivi periodici: crearli, attivarli, farli scadere."
+
+  - id: admin-gamification-config
+    route: /gamification/admin/config
+    as: admin
+    caption: "La configurazione: quanti punti vale ogni azione, la curva dei livelli, le regole delle serie."
+
+  - id: admin-funzioni
+    route: /gamification/admin/features
+    as: admin
+    caption: "Le regole di sblocco delle funzioni: chi vede cosa, e a quali condizioni."
+
+  - id: admin-kpi
+    route: /admin/kpi/
+    as: admin
+    caption: "Gli indicatori della piattaforma: iscritti, gare, partite e andamento nel tempo."

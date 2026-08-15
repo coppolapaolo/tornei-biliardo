@@ -1,0 +1,121 @@
+title: "Your progress"
+section: account
+kind: approfondimento
+audience: [giocatore]
+minutes: 3
+summary: "Experience points, levels, milestones and streaks: what they are for and how they are earned."
+screens: [gamification.dashboard]
+related: [profilo_e_statistiche, challenge]
+
+blocks:
+  - type: text
+    text: >-
+      Alongside sporting results the app keeps a second count, unrelated to the
+      standings: how much you **use** the platform. It serves two purposes —
+      giving regular players something extra, and unlocking a few features for
+      people who have found their feet.
+
+  - type: shot
+    shot: progressi
+    caption: "The progress page: level, experience points, milestones and streaks in progress."
+
+  - type: heading
+    id: xp
+    title: "Experience points and level"
+
+  - type: text
+    text: >-
+      Every meaningful action earns experience points: playing a match, winning
+      it, registering for a competition, completing a challenge. Accumulating
+      them raises your level. The level you reach is that dark pill with the
+      trophy you see at the top of every screen.
+
+  - type: note
+    tone: info
+    text: >-
+      The level has **nothing to do with how well you play**: it measures how
+      much you have used the app, not your ability. For ability there is the
+      rating, in your profile.
+
+  - type: heading
+    id: traguardi
+    title: "Milestones"
+
+  - type: text
+    text: >-
+      One-off goals: your first win, your tenth competition, your first
+      completed challenge. Some are hidden and only revealed by reaching them.
+      When you unlock one a message appears on screen and it stays on your
+      shelf.
+
+  - type: heading
+    id: serie
+    title: "Streaks"
+
+  - type: text
+    text: >-
+      A streak counts the consecutive days or weeks you have played. Missing a
+      period resets it — unless you have a «freeze», which protects a streak
+      from one interruption.
+
+  - type: shot
+    shot: serie
+    caption: "The streaks page: how long you have been playing in a row and when you risk losing it."
+
+  - type: heading
+    id: obiettivi
+    title: "Periodic goals"
+
+  - type: text
+    text: >-
+      Every week there are a couple of short goals («play three matches this
+      week», «win a match»). You complete them by playing normally and they
+      give extra experience points.
+
+  - type: shot
+    shot: obiettivi
+    caption: "The goals in progress, with the bar showing how far along you are."
+
+  - type: heading
+    id: classifiche
+    title: "The platform leaderboards"
+
+  - type: text
+    text: >-
+      These are a different thing from competition standings: they line up all
+      players by experience points, level and streak. They are public, and have
+      nothing to do with sporting results.
+
+  - type: shot
+    shot: classifiche-piattaforma
+    caption: "The platform leaderboards: XP, levels and streaks of all players."
+
+  - type: note
+    tone: info
+    text: >-
+      Being near the top here means **using the app a lot**, not playing better
+      than everyone else. The two are deliberately separate: anyone wanting to
+      measure themselves at the table looks at the competition standings and at
+      the rating in their profile.
+
+  - type: heading
+    id: sblocchi
+    title: "Features that unlock"
+
+  - type: text
+    text: >-
+      Some parts of the app only appear after a bit of activity: friendly
+      matches and challenges, for instance. It is not a punishment for being
+      new — it is so that someone opening the app for the first time is not
+      faced with a menu of fifteen items they do not need.
+
+  - type: faq
+    items:
+      - q: "I cannot see the progress page."
+        a: "Administrator accounts do not take part in this side: they have no points or levels, to keep whoever referees separate from whoever plays."
+      - q: "I won a competition but got no experience points."
+        a: "Points come from actions recorded in the app. If the director entered the matches on your behalf, some actions do not count as yours."
+      - q: "Does the level count towards the standings?"
+        a: "No, in no way. Competition standings look only at results on the table."
+      - q: "Can I lose a milestone?"
+        a: "No, unlocked milestones stay. Streaks, on the other hand, reset if you stop for too long."

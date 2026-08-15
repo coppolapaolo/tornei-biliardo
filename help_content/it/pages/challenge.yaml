@@ -21,8 +21,12 @@ blocks:
   - type: text
     text: >-
       La sezione **Challenge** raccoglie tutte le prove disponibili, con la
-      descrizione, la difficoltà e le regole di punteggio. Puoi metterne
-      qualcuna fra i preferiti per ritrovarla in fretta.
+      descrizione, l'immagine della disposizione e le regole di punteggio. Puoi
+      metterne qualcuna fra i preferiti per ritrovarla in fretta.
+
+  - type: shot
+    shot: challenge-catalogo
+    caption: "Il catalogo: ogni prova ha la sua immagine e il tipo di punteggio."
 
   - type: steps
     items:
@@ -32,6 +36,43 @@ blocks:
         text: "Da quel momento il tentativo è aperto e l'app aspetta il risultato."
       - title: "Esegui e registra il punteggio"
         text: "Al termine inserisci quanto hai fatto. Il tentativo entra nel tuo storico."
+
+  - type: heading
+    id: due_tipi
+    title: "Due modi di contare"
+
+  - type: options
+    items:
+      - name: "A punteggio"
+        values: "da 0 a N"
+        text: >-
+          Si conta quanto hai fatto: dieci tiri, un punto per ogni riuscita. È
+          il tipo che serve per gli spareggi e per sostituire l'X a tavolino,
+          perché produce un numero confrontabile.
+      - name: "Superata o non superata"
+        text: >-
+          Non c'è un punteggio: o riesci o no. Va bene per allenarsi, non per
+          decidere una classifica.
+
+  - type: heading
+    id: crearle
+    title: "Crearne di nuove (direttori)"
+
+  - type: text
+    text: >-
+      Un direttore di gara può aggiungere challenge al catalogo: descrizione,
+      immagine della disposizione delle bilie e tipo di punteggio.
+
+  - type: shot
+    shot: challenge-nuova
+    caption: "Il modulo per creare una challenge."
+
+  - type: note
+    tone: tip
+    text: >-
+      L'immagine è la parte che conta: una descrizione a parole di dove vanno
+      le bilie viene interpretata da ognuno a modo suo. Una foto del tavolo
+      preparato risolve la questione.
 
   - type: heading
     id: in_gara

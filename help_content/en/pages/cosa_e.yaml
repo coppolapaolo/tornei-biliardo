@@ -1,0 +1,104 @@
+title: "What Tornei Biliardo is"
+section: introduzione
+kind: introduzione
+audience: [tutti]
+minutes: 3
+summary: "An app for playing and organising American pool tournaments: it keeps score, pairs the players and updates the standings on its own."
+screens: [main.index]
+related: [parole_da_sapere, chi_fa_cosa]
+
+blocks:
+  - type: text
+    text: >-
+      Tornei Biliardo does two things. If you **play**, it shows you the
+      competitions open for registration, signs you up with one tap, and lets
+      you record the score of your match straight from your phone, propped
+      against the edge of the table. If you **organise**, it takes the sheet of
+      paper out of your hands: you set the rules once, and the app pairs the
+      players each round, works out the standings and notifies everyone.
+
+  - type: shot
+    shot: home-pubblica
+    caption: "The home page shows live competitions and the ones open for registration straight away, even to someone without an account."
+
+  - type: heading
+    id: senza_account
+    title: "What you can see without signing up"
+
+  - type: text
+    text: >-
+      A lot is public: anyone with the link can browse the list of
+      competitions, follow one live while it is being played, and read the
+      standings. That is deliberate, so you can share the result of an evening
+      with people who do not use the app.
+
+  - type: list
+    title: "Visible to everyone, no account needed"
+    items:
+      - "The list of competitions and championships."
+      - "A competition in detail: entrants, rounds, matches and standings."
+      - "Scores updating while the matches are being played."
+
+  - type: shot
+    shot: campionati-pubblici
+    caption: "The public list of championships: it opens for anyone, no account required."
+
+  - type: text
+    text: >-
+      To **register** for a competition, though, you need an account: it is
+      free and takes a username, an email address and a password. How to do it
+      is explained in [Your first
+      steps](/aiuto/introduzione/primo_accesso).
+
+  - type: heading
+    id: come_e_fatta
+    title: "How the app is put together"
+
+  - type: text
+    text: >-
+      Everything revolves around three things nested inside one another: a
+      **championship** contains several **competitions**, each competition is
+      played over several **rounds**, and each round is made of **matches**. If
+      those words are unfamiliar, [Words worth
+      knowing](/aiuto/introduzione/parole_da_sapere) goes through them one by
+      one with an example.
+
+  - type: note
+    tone: tip
+    title: "Designed for the phone first"
+    text: >-
+      The app is meant to be used standing up, one-handed, next to the table:
+      the buttons are deliberately large. It works well on a computer too, and
+      on wide screens it shows some information side by side.
+
+  - type: heading
+    id: cosa_puoi_fare
+    title: "What you can do, in short"
+
+  - type: options
+    title: "The main features"
+    items:
+      - name: "Register for competitions"
+        text: "Find the ones open for registration, sign up, and withdraw as long as registrations are still open."
+      - name: "Keep score"
+        text: "During the match you press the button of whoever won the rack. The score updates for everyone, including people watching from home."
+      - name: "Follow rounds and standings"
+        text: "See who you play next round and where you stand, updated automatically."
+      - name: "Play friendlies"
+        text: "Outside official competitions you can propose a match to another player and record the result."
+      - name: "Organise competitions and championships"
+        text: "If you are a competition director: you create the competition, open registrations, start the rounds, and the app does the rest."
+      - name: "Follow your progress"
+        text: "Personal statistics, experience points, milestones and streaks of matches played."
+
+  - type: faq
+    title: "Frequently asked"
+    items:
+      - q: "Do I have to pay to use it?"
+        a: "No, the account is free. Any entry fees for competitions are set by the organisers and paid outside the app."
+      - q: "Do I need to install anything?"
+        a: "No. You use it from your phone's or computer's browser. You can add a shortcut to your phone's home screen to keep it handy like a real app."
+      - q: "Do I have to keep score on my phone?"
+        a: "No. The competition director can enter results for everyone. The phone is convenient, not compulsory."
+      - q: "What if I record a point by mistake?"
+        a: "You undo it: there is an «Undo last rack» button. If the result has already been closed, the competition director can correct it."

@@ -1,0 +1,111 @@
+title: "Diventare direttore o gestore di sala"
+section: account
+kind: tutorial
+audience: [giocatore]
+minutes: 3
+summary: "Come chiedere di poter organizzare gare, come chiedere di curare la scheda di una sala, e cosa cambia una volta ottenuto."
+screens: [player.profile, player.my_venue_requests]
+related: [chi_fa_cosa, creare_una_gara]
+
+blocks:
+  - type: text
+    text: >-
+      Ogni account nasce **giocatore**. Ci sono due ruoli in più che si possono
+      chiedere, e si chiedono entrambi dal profilo: si aggiungono a quello che
+      già fai, non lo sostituiscono.
+
+  - type: heading
+    id: direttore
+    title: "Chiedere di diventare direttore di gara"
+
+  - type: text
+    text: >-
+      Serve se vuoi **organizzare** gare e campionati: aprire le iscrizioni,
+      avviare i turni, correggere i risultati. Continui a giocare come prima.
+
+  - type: steps
+    items:
+      - title: "Apri il tuo profilo"
+        text: "Tocca l'iniziale del tuo nome in alto a destra, poi «Il mio profilo»."
+        shot: profilo
+      - title: "Invia la richiesta"
+        text: >-
+          Nel profilo trovi la richiesta di promozione a direttore di gara.
+          Non c'è un modulo da compilare: è un pulsante.
+      - title: "Aspetta la risposta"
+        text: >-
+          La richiesta arriva a chi amministra la piattaforma. Quando risponde
+          ricevi una notifica, e se è accettata la volta successiva che entri
+          trovi in home i pulsanti **Nuova Gara** e **Nuovo Campionato**.
+        shot: dashboard-direttore
+
+  - type: note
+    tone: warning
+    title: "Chi dirige una gara non la gioca"
+    text: >-
+      Un direttore **non può iscriversi alle gare che dirige lui stesso**:
+      sarebbe giudice e parte. Se vuoi giocare la tua serata, aggiungi un
+      co-direttore che la conduca. Le gare dirette da altri le giochi
+      normalmente.
+
+  - type: heading
+    id: gestore
+    title: "Chiedere di gestire una sala"
+
+  - type: text
+    text: >-
+      Serve se sei tu a mandare avanti un circolo e vuoi tenere aggiornata la
+      sua scheda: indirizzo, numero di tavoli, contatti, orari. Non dà alcun
+      potere sulle gare.
+
+  - type: steps
+    items:
+      - title: "Apri la sala"
+        text: "Dalla sezione **Sale** cerca la tua e aprine la scheda."
+        shot: sala-dettaglio
+      - title: "Chiedi di gestirla"
+        text: >-
+          Il pulsante è nella scheda della sala. Se la sala non è ancora
+          registrata, chiedi a un amministratore di crearla.
+      - title: "Segui lo stato della richiesta"
+        text: >-
+          Dal profilo, alla voce «Le mie richieste gestore», vedi se è in
+          attesa, accettata o rifiutata. Finché è in attesa puoi annullarla.
+        shot: richieste-gestore
+
+  - type: note
+    tone: info
+    text: >-
+      Questa richiesta viene di solito verificata fuori dall'app — una
+      telefonata al circolo — perché chiunque potrebbe chiedere di gestire una
+      sala qualsiasi. Se ci mette qualche giorno, è normale.
+
+  - type: heading
+    id: cosa_cambia
+    title: "Cosa cambia dopo"
+
+  - type: options
+    items:
+      - name: "Da giocatore a direttore"
+        text: >-
+          Compaiono i pulsanti per creare gare e campionati, e nelle gare che
+          gestisci vedi la linguetta **Gestione**. Tutto il resto resta uguale.
+      - name: "Da giocatore a gestore di sala"
+        text: >-
+          Puoi modificare la scheda della sala che gestisci. Le gare non ne
+          risentono.
+      - name: "Se cambi idea"
+        text: >-
+          Entrambi i ruoli si possono revocare: chiedilo a un amministratore.
+          Le gare che hai già creato restano dove sono.
+
+  - type: faq
+    items:
+      - q: "Quanto ci mette la risposta?"
+        a: "Dipende da chi amministra: non c'è un tempo garantito. La risposta arriva sempre, anche se negativa, e la trovi nelle notifiche."
+      - q: "Ho inviato la richiesta ma non è cambiato niente."
+        a: "Finché non viene accettata il tuo account resta giocatore. Controlla le notifiche: se non c'è ancora risposta, è solo in attesa."
+      - q: "Posso essere direttore e gestore insieme?"
+        a: "Sì, i due ruoli sono indipendenti e si sommano."
+      - q: "Devo diventare direttore per iscrivermi alle gare?"
+        a: "No, assolutamente: da giocatore ti iscrivi a tutto. Il ruolo serve solo per organizzare."
