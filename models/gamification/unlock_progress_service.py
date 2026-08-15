@@ -157,6 +157,7 @@ class UnlockProgressService:
                 "challenges_completed": "drill completati",
                 "gare_with_drill_played": "gare con drill",
                 "tournament_drills_completed": "drill in gara",
+                "exams_certified": "esami certificati",
             }
             metric_label = metric_labels.get(metric_name, metric_name.replace("_", " "))
 
@@ -257,6 +258,7 @@ class UnlockProgressService:
                 "challenges_completed": f"Completa altri {remaining} drill",
                 "gare_with_drill_played": f"Partecipa a {remaining} gare con drill",
                 "tournament_drills_completed": f"Completa {remaining} drill in gara",
+                "exams_certified": f"Supera altri {remaining} esami certificati",
             }
             return hints.get(metric, f"Ti mancano {remaining} per completare")
 

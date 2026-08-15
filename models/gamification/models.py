@@ -36,6 +36,11 @@ class XPTransactionType(Enum):
     STREAK_BONUS = "streak_bonus"
     ACHIEVEMENT_UNLOCK = "achievement_unlock"
     CHALLENGE_COMPLETION = "challenge_completion"
+    # Esame (ADR-042). Due tipi e non uno, perché la differenza fra allenarsi e
+    # farsi certificare è tutta la sostanza del dominio: l'autonomia paga poco,
+    # la certificazione paga come un traguardo.
+    EXAM_CERTIFIED = "exam_certified"
+    EXAM_PRACTICE = "exam_practice"
     GARA_CREATION = "gara_creation"
     CAMPIONATO_CREATION = "campionato_creation"
     ADMIN_ADJUSTMENT = "admin_adjustment"

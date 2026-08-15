@@ -23,12 +23,30 @@ from models.status_enum import MatchStatus
 from models.campionato.models import Campionato
 from models.user.services import UserService
 from models.user.permission_service import UserPermissionService
-from utils import player_only
+from utils import feature_required, player_only
 from utils.route_helpers import handle_service_action
 
 from . import player_bp
 
 # ============ PROFILO UTENTE E GESTIONE ACCOUNT ============
+
+
+def _training_overview(user_id: int) -> dict:
+    """Storico d'allenamento per il profilo, o un guscio vuoto (US-P9).
+
+    Il profilo si deve aprire anche se questa sezione non si carica: è un
+    riquadro, non la pagina. L'errore però si **scrive** — è la lezione del bug
+    che l'ha tenuta vuota per mesi senza lasciare traccia da nessuna parte.
+    """
+    from models.challenge.training_service import TrainingHistoryService
+
+    try:
+        return TrainingHistoryService.get_training_overview(user_id)
+    except Exception:
+        current_app.logger.warning(
+            "Storico d'allenamento non caricato per il profilo", exc_info=True
+        )
+        return {"stats": None, "history": [], "drills": [], "exams": []}
 
 
 @player_bp.route("/profile")
@@ -105,103 +123,11 @@ def profile():
         [insc for insc in inscriptions if insc.gara.status == "completed"]
     )
 
-    # Challenge statistics
-    challenge_stats = None
-    challenge_history = []
-    try:
-        from models.competition.gara_challenge import (
-            GaraChallenge,
-            GaraChallengeAttempt,
-        )
-        from models.challenge import Challenge
-
-        # Get all challenge attempts by this user
-        user_attempts = (
-            GaraChallengeAttempt.query.filter_by(
-                user_id=current_user.id, completed=True
-            )
-            .join(GaraChallenge)
-            .join(Challenge)
-            .order_by(
-                GaraChallengeAttempt.attempted_at.desc()  # type: ignore[attr-defined]
-            )
-            .all()
-        )
-
-        if user_attempts:
-            # Calculate overall challenge statistics
-            total_attempts = len(user_attempts)
-            unique_challenges = len(
-                set(attempt.gara_challenge.challenge_id for attempt in user_attempts)
-            )
-            unique_garas = len(
-                set(attempt.gara_challenge.gara_id for attempt in user_attempts)
-            )
-
-            # Calculate average score (only for numeric challenges)
-            numeric_attempts = [
-                attempt
-                for attempt in user_attempts
-                if attempt.score is not None
-                and not attempt.gara_challenge.challenge.pass_fail_only
-            ]
-            avg_score = (
-                sum(attempt.score for attempt in numeric_attempts)
-                / len(numeric_attempts)
-                if numeric_attempts
-                else 0
-            )
-
-            # Calculate pass rate (for pass/fail challenges)
-            pass_fail_attempts = [
-                attempt
-                for attempt in user_attempts
-                if attempt.gara_challenge.challenge.pass_fail_only
-            ]
-            pass_rate = (
-                (
-                    sum(1 for attempt in pass_fail_attempts if attempt.passed)
-                    / len(pass_fail_attempts)
-                    * 100
-                )
-                if pass_fail_attempts
-                else 0
-            )
-
-            challenge_stats = {
-                "total_attempts": total_attempts,
-                "unique_challenges": unique_challenges,
-                "unique_garas": unique_garas,
-                "avg_score": round(avg_score, 1),
-                "pass_rate": round(pass_rate, 1),
-            }
-
-            # Build challenge history (last 20 attempts)
-            for attempt in user_attempts[:20]:
-                challenge = attempt.gara_challenge.challenge
-                challenge_history.append(
-                    {
-                        "challenge": challenge,
-                        "challenge_name": challenge.get_display_name(),
-                        "gara_name": attempt.gara_challenge.gara.name,
-                        "score": attempt.score,
-                        "passed": attempt.passed,
-                        "attempted_at": attempt.attempted_at,
-                        "is_pass_fail": challenge.pass_fail_only,
-                    }
-                )
-                # NB: niente "max_score" — quel campo su Challenge non esiste.
-                # Leggerlo sollevava AttributeError proprio qui, e l'except di
-                # sotto lo inghiottiva: la cronologia challenge del profilo
-                # restava **sempre vuota**, senza errori da nessuna parte.
-
-    except Exception:
-        # Il modulo challenge può non essere disponibile: il profilo si deve
-        # aprire comunque. L'errore però si scrive, altrimenti un difetto qui
-        # dentro non lascia alcuna traccia.
-        current_app.logger.warning(
-            "Statistiche challenge non caricate per il profilo", exc_info=True
-        )
+    # Allenamento: drill (catalogo + gare) ed esami, da fonte unica (US-P9).
+    # Prima questo blocco leggeva **solo** i drill giocati in gara, quindi
+    # quelli del catalogo non comparivano da nessuna parte; e la vista del
+    # profilo altrui ne costruiva una versione diversa, con un'altra forma.
+    training = _training_overview(current_user.id)
 
     stats = {
         "total_inscriptions": len(inscriptions),
@@ -225,8 +151,10 @@ def profile():
         matches=recent_matches,
         classifications=classifications,
         stats=stats,
-        challenge_stats=challenge_stats,
-        challenge_history=challenge_history,
+        challenge_stats=training["stats"],
+        challenge_history=training["history"],
+        training_drills=training["drills"],
+        training_exams=training["exams"],
         # Privacy context for template
         privacy=privacy,
         is_admin=current_user.is_admin,
@@ -242,7 +170,6 @@ def view_profile(user_id):
     from models.match.models import Match
     from models.status_enum import MatchStatus
     from models.campionato.models import Campionato
-    from models.challenge.models import Challenge, ChallengeAttempt
     from models.user.privacy_service import PrivacyService
 
     user = db.get_or_404(User, user_id)
@@ -326,32 +253,10 @@ def view_profile(user_id):
         "provas_played": completed_provas,
     }
 
-    # Challenge data
-    challenge_attempts = (
-        ChallengeAttempt.query.filter_by(user_id=user.id, completed=True)
-        .join(Challenge)
-        .order_by(ChallengeAttempt.created_at.desc())
-        .all()
-    )
-
-    challenge_stats = None
-    if challenge_attempts:
-        total_attempts = len(challenge_attempts)
-        unique_challenges = len(
-            set(attempt.challenge_id for attempt in challenge_attempts)
-        )
-        avg_score = (
-            sum(attempt.score for attempt in challenge_attempts) / total_attempts
-        )
-        pass_count = sum(1 for attempt in challenge_attempts if attempt.passed)
-        pass_rate = (pass_count / total_attempts * 100) if total_attempts > 0 else 0
-
-        challenge_stats = {
-            "total_attempts": total_attempts,
-            "unique_challenges": unique_challenges,
-            "avg_score": round(avg_score, 1),
-            "pass_rate": round(pass_rate, 1),
-        }
+    # Allenamento: stessa fonte del profilo proprio. Prima qui si leggeva solo
+    # il catalogo e si passavano al template gli oggetti ORM grezzi, che il
+    # componente non sa leggere: le righe uscivano vuote, senza errore.
+    training = _training_overview(user.id)
 
     return render_template(
         "player/profile.html",
@@ -359,8 +264,10 @@ def view_profile(user_id):
         inscriptions=visible_inscriptions,
         matches=recent_matches,
         stats=stats,
-        challenge_stats=challenge_stats,
-        challenge_history=challenge_attempts,
+        challenge_stats=training["stats"],
+        challenge_history=training["history"],
+        training_drills=training["drills"],
+        training_exams=training["exams"],
         classifications=[],
         # Privacy context for template
         privacy=privacy,
@@ -470,6 +377,7 @@ def change_password():
 @player_bp.route("/request_director", methods=["POST"])
 @login_required
 @player_only
+@feature_required("request_director")
 def request_director():
     """Richiede la promozione a direttore di gara"""
     return handle_service_action(

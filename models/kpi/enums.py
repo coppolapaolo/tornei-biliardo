@@ -34,6 +34,10 @@ class FeatureName(Enum):
     DRILL_COMPLETE = "drill_complete"
     DRILL_START = "drill_start"
 
+    # Esame (sequenza di drill, ADR-042)
+    EXAM_START = "exam_start"
+    EXAM_COMPLETE = "exam_complete"
+
 
 class MilestoneType(Enum):
     """Types of milestones for notifications."""

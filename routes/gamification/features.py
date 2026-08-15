@@ -48,6 +48,7 @@ def admin_feature_detail(code: str):
         {"name": "challenges_completed", "label": _("Drill completati")},
         {"name": "gare_with_drill_played", "label": _("Gare con drill giocate")},
         {"name": "tournament_drills_completed", "label": _("Drill completati in gara")},
+        {"name": "exams_certified", "label": _("Esami certificati superati")},
     ]
 
     # Condition types

@@ -7,6 +7,7 @@ from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 
 from models import db, User
+from utils import feature_required
 
 from . import player_bp
 
@@ -175,6 +176,7 @@ def update_auto_delete():
 
 @player_bp.route("/request_venue_manager", methods=["POST"])
 @login_required
+@feature_required("request_venue_manager")
 def request_venue_manager():
     """Richiesta per diventare gestore di una sala specifica"""
     if current_user.is_admin:

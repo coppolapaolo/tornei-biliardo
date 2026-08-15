@@ -30,6 +30,7 @@
 
         {% if is_own_profile or is_admin or privacy.show_challenge_stats %}
         {% include "components/_player_challenge_statistics.html" %}
+        {% include "components/_player_training.html" %}
         {% endif %}
 
         {% if is_own_profile or is_admin or privacy.show_recent_matches %}

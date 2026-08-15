@@ -662,6 +662,7 @@ class ExamService:
 
         if certified:
             ExamService._notify_certified(attempt)
+        ExamService._publish_completed(attempt)
         return attempt
 
     @staticmethod
@@ -692,6 +693,38 @@ class ExamService:
         attempt.passed = None
         db.session.flush()
         return attempt
+
+    # ────────────────────────────────────────────────────────────────────
+    # Eventi di dominio
+    # ────────────────────────────────────────────────────────────────────
+    @staticmethod
+    def _publish_completed(attempt: ExamAttempt) -> None:
+        """Annuncia la chiusura del tentativo (XP, streak, achievement).
+
+        L'esame non chiama la gamification: pubblica il fatto e chi vuole
+        ascolta. Best-effort come le notifiche — un handler che esplode non
+        deve far perdere la certificazione appena registrata, che è il dato
+        importante.
+        """
+        from ..events.base import EventBus
+        from .events import ExamAttemptCompletedEvent
+
+        try:
+            EventBus.publish(
+                ExamAttemptCompletedEvent(
+                    attempt_id=attempt.id,
+                    exam_id=attempt.exam_id,
+                    exam_name=attempt.exam.name if attempt.exam else "",
+                    user_id=attempt.user_id,
+                    mode=attempt.mode,
+                    passed=attempt.passed,
+                    examiner_id=attempt.examiner_id,
+                    total_score=attempt.total_score or 0,
+                    max_possible_score=attempt.max_possible_score or 0,
+                )
+            )
+        except Exception:  # pragma: no cover - la gamification non blocca mai
+            logger.warning("Evento di chiusura esame non pubblicato", exc_info=True)
 
     # ────────────────────────────────────────────────────────────────────
     # Notifiche della sessione (best-effort: non bloccano mai l'operazione)
