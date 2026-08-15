@@ -321,6 +321,10 @@
                                         </div>
                                     </div>
 
+                                    {# Opzioni dei formati a tabellone: si mostrano da sole quando la
+                                       strategia scelta e' eliminazione diretta o doppio KO. #}
+                                    {% include "components/_bracket_options.html" %}
+
                                     <!-- SSR (Spot Shot Rally) Configuration -->
                                     <div class="border-top pt-3 mt-3">
                                         <h6 class="text-uppercase small fw-bold text-muted mb-3">
@@ -439,6 +443,7 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/bracket_options.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         // ANTIGRAVITY FIX: Ensuring clean script scope and syntax

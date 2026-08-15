@@ -379,6 +379,10 @@ def edit_profile():
         email = (request.form.get("email") or "").strip()
         phone = (request.form.get("phone") or "").strip() or None
         home_city = (request.form.get("home_city") or "").strip() or None
+        # Squadra: testo libero, solo del giocatore (US-1). Non produce alcun
+        # effetto da sé — serve a precompilare l'iscrizione alle gare che
+        # hanno attivato le squadre.
+        squadra = (request.form.get("squadra") or "").strip() or None
 
         try:
             user = UserService.update_user(
@@ -387,6 +391,7 @@ def edit_profile():
                 email=email,
                 phone=phone,
                 home_city=home_city,
+                squadra=squadra,
             )
             # If the email changed, update_user revoked is_verified and queued
             # a verification token. Send the email AFTER the transaction commits

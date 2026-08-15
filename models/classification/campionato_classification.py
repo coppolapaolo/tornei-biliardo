@@ -3,10 +3,13 @@ Module: models/classification/campionato_classification.py
 Purpose: Campionato-level classification services with caching and optimization
 """
 
+from dataclasses import replace
 from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import joinedload, selectinload
 from models.base import db
-from .models import Classification
+from .models import Classification, GaraClassification
+from .position_points import points_for_position, points_table_for_campionato
+from .strategies.base import PlayerScore
 from ..status_enum import MatchStatus
 from ..caching import cached, cache_invalidate, cache_manager
 from ..transaction import transactional
@@ -14,9 +17,30 @@ from ..transaction import transactional
 from .registry import get_classification_registry
 from .score_aggregator import ScoreAggregator
 
+# Tipi di campionato in cui le gare sono a tabellone e la classifica generale
+# somma punti per posizione invece di vittorie (US-17).
+POSITION_CAMPIONATO_TYPES = frozenset({"direct_elimination", "double_knockout"})
+
 
 class ClassificationService:
     """Service for managing campionato classifications with caching and optimization."""
+
+    @staticmethod
+    def uses_position_points(campionato) -> bool:
+        """Se la classifica generale di questo campionato somma punti-posizione.
+
+        Il criterio primario è il **tipo di campionato**, perché è quello che
+        determina il formato delle gare. Il sistema di classifica di default è
+        un secondo indizio, utile per i campionati configurati prima che i due
+        formati a tabellone fossero selezionabili come tipo.
+        """
+        if campionato is None:
+            return False
+        if getattr(campionato, "campionato_type", None) in POSITION_CAMPIONATO_TYPES:
+            return True
+        return (
+            getattr(campionato, "default_classification_system", None) or ""
+        ).upper() == "POSITION"
 
     @staticmethod
     def _get_campionato_strategy(campionato_type: str):
@@ -24,10 +48,52 @@ class ClassificationService:
         strategy_map = {
             "amalfi": "amalfi_campionato",
             "random": "random_campionato",
+            "direct_elimination": "position_campionato",
+            "double_knockout": "position_campionato",
         }
         strategy_name = strategy_map.get(campionato_type, "amalfi_campionato")
         registry = get_classification_registry()
         return registry.get(strategy_name)
+
+    @staticmethod
+    def position_points_by_player(campionato) -> Dict[int, int]:
+        """Punti per posizione accumulati da ciascun giocatore nel campionato.
+
+        Si legge dalla classifica **finale di ogni gara**, non dai match: nel
+        tabellone il piazzamento è il risultato, e i totali di rack non lo
+        ricostruiscono. Tutti i pari merito di una banda ricevono lo stesso
+        punteggio, perché la banda è la posizione (i quattro quartifinalisti
+        sono tutti 5° e prendono tutti i punti del 5°).
+        """
+        from models.competition.models import Gara
+
+        table = points_table_for_campionato(campionato)
+        rows = (
+            db.session.query(GaraClassification)
+            .join(Gara, GaraClassification.gara_id == Gara.id)
+            .filter(Gara.campionato_id == campionato.id)
+            .all()
+        )
+
+        totals: Dict[int, int] = {}
+        for row in rows:
+            totals[row.user_id] = totals.get(row.user_id, 0) + points_for_position(
+                row.position, table
+            )
+        return totals
+
+    @staticmethod
+    def _with_position_points(
+        campionato, scores: List[PlayerScore]
+    ) -> List[PlayerScore]:
+        """Popola `PlayerScore.points` per i campionati a tabellone."""
+        if not ClassificationService.uses_position_points(campionato):
+            return list(scores)
+
+        totals = ClassificationService.position_points_by_player(campionato)
+        return [
+            replace(score, points=totals.get(score.player_id, 0)) for score in scores
+        ]
 
     @staticmethod
     def _count_gare_played(campionato_id: int) -> Dict[int, int]:
@@ -98,6 +164,11 @@ class ClassificationService:
         if not scores:
             return []
 
+        # Nei campionati a tabellone la classifica generale somma i punti per
+        # posizione delle singole gare: i totali di rack e vittorie restano
+        # come criterio di elencazione a pari punti.
+        scores = ClassificationService._with_position_points(campionato, scores)
+
         # Get classification strategy based on campionato type
         strategy = ClassificationService._get_campionato_strategy(
             campionato.campionato_type
@@ -136,6 +207,7 @@ class ClassificationService:
             classification.total_racks_won = entry.score.racks_won
             classification.total_point_difference = entry.score.rack_difference
             classification.gare_played = gare_played_map.get(player_id, 0)
+            classification.total_position_points = entry.score.points
 
             db.session.add(classification)
             classifications.append(classification)

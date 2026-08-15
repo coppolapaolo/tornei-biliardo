@@ -38,6 +38,10 @@ class Classification(db.Model, TimestampMixin):
     total_racks_won = db.Column(db.Integer, default=0)  # For Random strategy sort key
     total_point_difference = db.Column(db.Integer, default=0)  # = rack_difference
     gare_played = db.Column(db.Integer, default=0)
+    # Somma dei punti per posizione delle gare a tabellone (sistema POSITION,
+    # US-17). Resta 0 per i campionati che classificano per vittorie o rack:
+    # è la colonna che rende leggibile *perché* uno è davanti all'altro.
+    total_position_points = db.Column(db.Integer, default=0)
 
     # Relations
     campionato = db.relationship(

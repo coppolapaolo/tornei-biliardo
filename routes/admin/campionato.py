@@ -10,7 +10,7 @@ Implements:
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from flask_login import login_required, current_user
 from sqlalchemy.exc import IntegrityError
-from flask_babel import _
+from flask_babel import _, lazy_gettext as _l
 
 from models import (
     db,
@@ -31,6 +31,7 @@ from utils import (
 )
 from models.campionato.services import TournamentService
 from .campionato_form_parser import CampionatoFormParser
+from .competition.form_parser import BRACKET_STRATEGIES
 
 # Initialize the TournamentService
 campionato_service = TournamentService()
@@ -40,6 +41,17 @@ campionato_bp = Blueprint("campionato", __name__)
 
 # Session key for wizard data
 WIZARD_SESSION_KEY = "campionato_wizard_data"
+
+# Formati selezionabili per un campionato. Elenco unico: prima era ripetuto in
+# tre punti (wizard, salvataggio, modifica) e i tre erano liberi di divergere.
+# L'ordine è quello mostrato all'utente.
+CAMPIONATO_TYPES = [
+    (MatchmakingStrategy.AMALFI.value, _l("Amalfi")),
+    (MatchmakingStrategy.RANDOM.value, _l("Random")),
+    (MatchmakingStrategy.DIRECT_ELIMINATION.value, _l("Eliminazione diretta")),
+    (MatchmakingStrategy.DOUBLE_KNOCKOUT.value, _l("Doppio KO")),
+]
+CAMPIONATO_TYPE_VALUES = {value for value, _label in CAMPIONATO_TYPES}
 
 
 # =============================================================================
@@ -68,10 +80,7 @@ def wizard_start():
 
     return render_template(
         "admin/campionato_wizard_step1.html",
-        matchmaking_strategies=[
-            (MatchmakingStrategy.AMALFI.value, "Amalfi"),
-            (MatchmakingStrategy.RANDOM.value, "Random"),
-        ],
+        matchmaking_strategies=CAMPIONATO_TYPES,
         classification_compatibility=get_classification_compatibility_map(),
     )
 
@@ -107,15 +116,18 @@ def wizard_step2():
     campionato_type = request.form.get(
         "campionato_type", MatchmakingStrategy.AMALFI.value
     )
-    if campionato_type not in [
-        MatchmakingStrategy.AMALFI.value,
-        MatchmakingStrategy.RANDOM.value,
-    ]:
+    if campionato_type not in CAMPIONATO_TYPE_VALUES:
         campionato_type = MatchmakingStrategy.AMALFI.value
 
     classification_system = request.form.get("default_classification_system", "WINS")
     if classification_system not in ["WINS", "RACK", "POSITION"]:
         classification_system = "WINS"
+
+    # I formati a tabellone ammettono solo POSITION: imporlo qui evita che la
+    # scelta del sistema di classifica e quella del formato possano divergere
+    # (il wizard le presenta in due campi distinti).
+    if campionato_type in BRACKET_STRATEGIES:
+        classification_system = "POSITION"
 
     challenge_mode = "challenge_mode" in request.form
 
@@ -502,10 +514,7 @@ def edit_campionato(campionato_id):
 
     # GET: Prepare data for template
     venues = BilliardHall.query.order_by(BilliardHall.name).all()
-    matchmaking_strategies = [
-        ("amalfi", "Amalfi"),
-        ("random", "Random"),
-    ]
+    matchmaking_strategies = CAMPIONATO_TYPES
     odd_policies = [
         ("bye", "X (vinto a tavolino)"),
         ("bye_with_challenge", "X con Challenge"),

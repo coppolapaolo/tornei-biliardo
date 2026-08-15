@@ -234,8 +234,11 @@
        prototipo la vista Turni va dalla scorciatoia direttamente ai turni, e
        fuori dalla fase di gioco le linguette non ci sono, quindi la card si
        vede comunque quando e' l'unica cosa che c'e'. #}
-    <div data-c7-tab="iscritti">
+    <div class="c7-stack" data-c7-tab="iscritti">
       {% include "components/_player_inscription_info.html" %}
+      {# La propria squadra sta con la propria iscrizione: è una cosa sola —
+         con chi gioco questa gara (US-8). #}
+      {% include "components/_squadra_choice.html" %}
     </div>
     {% else %}
     {# Guest/Utente non iscritto: qui dentro c'e' il pulsante d'iscrizione
@@ -280,6 +283,13 @@
   {% include "components/_gara_tables_config.html" %}
 </div>
 {% endif %}
+
+{# Elenco squadre della competizione (US-3): sta in Gestione accanto ai tavoli,
+   perche' e' configurazione della gara e non un elenco di persone. Il
+   componente si mostra da se' solo quando le squadre sono attive. #}
+<div class="{% if playing_admin %}order-6 order-lg-1{% endif %}" id="sectionSquadre" data-c7-tab="gestione">
+  {% include "components/_squadre_management.html" %}
+</div>
 
 {# Gestione Turni: e' la configurazione dei turni (disciplina e distanza per
    turno), non l'elenco delle partite — vive quindi in Gestione, non in Turni.
@@ -331,6 +341,24 @@
     {% if show_ssr_section and not (is_ssr_phase and user_can_manage) %}
     <div class="d-lg-none" data-c7-tab="turni">
       {% include "components/_ssr_section.html" %}
+    </div>
+    {% endif %}
+
+    {# Il tabellone ha una pagina sua — e' largo per costruzione e va anche
+       condiviso durante il torneo — quindi qui c'e' il collegamento, non una
+       seconda copia. Sta nella vista Turni: e' li' che si guarda il percorso
+       della gara. #}
+    {% if has_bracket_view and feature_visible('admin.competition.gara_bracket') %}
+    <div data-c7-tab="turni">
+      <a class="c7-card c7-rows__row" style="text-decoration: none; color: inherit; padding: 15px 18px;"
+         href="{{ url_for('admin.competition.gara_bracket', gara_id=gara.id) }}">
+        <span class="c7-tile"><i class="fas fa-sitemap"></i></span>
+        <span class="c7-rows__main">
+          <span class="c7-rows__title d-block">{{ _('Tabellone') }}</span>
+          <span class="c7-rows__sub d-block">{{ _('Il percorso della gara, turno per turno') }}</span>
+        </span>
+        <i class="fas fa-chevron-right" style="font-size: 12px; color: var(--c7-ink-faint);"></i>
+      </a>
     </div>
     {% endif %}
 

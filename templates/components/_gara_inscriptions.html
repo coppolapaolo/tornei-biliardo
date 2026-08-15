@@ -43,7 +43,8 @@
     <div class="c7-kicker mb-2">{{ _('Iscritti attivi') }}</div>
     <div class="c7-stack" style="gap:8px">
       {% for inscription in active_inscriptions %}
-      <div class="d-flex align-items-center gap-3" style="background:var(--c7-bg);border-radius:var(--c7-r-chip);padding:12px 14px">
+      <div style="background:var(--c7-bg);border-radius:var(--c7-r-chip);padding:12px 14px">
+      <div class="d-flex align-items-center gap-3">
         <span class="c7-avatar {{ 'c7-card--locked' if inscription.is_forfeit }}">{{ inscription.user.username[:2] | upper }}</span>
         <div class="flex-fill min-width-0">
           <a href="{{ url_for('player.view_profile', user_id=inscription.user_id) }}"
@@ -70,6 +71,34 @@
           </button>
         </form>
         {% endif %}
+      </div>
+
+      {# Squadra dell'iscritto (US-9): il direttore la corregge da qui, perché
+         è lui a sapere chi rappresenta chi quella sera. Solo dove le squadre
+         sono attive, e solo finché il primo turno non è partito — dopo il
+         tabellone è estratto e resta la sola etichetta. #}
+      {% if gara.separate_teammates %}
+      {% if user_can_manage and squadre_editable %}
+      <form method="POST" style="margin-top:10px"
+            action="{{ url_for('admin.competition.set_inscription_squadra', gara_id=gara.id, inscription_id=inscription.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <select name="squadra_id" class="form-select form-select-sm" onchange="this.form.submit()"
+                aria-label="{{ _('Squadra di %(username)s in questa gara', username=inscription.user.username) }}">
+          <option value="" {% if not inscription.squadra_id %}selected{% endif %}>{{ _('Senza squadra') }}</option>
+          {% for squadra in squadre %}
+          <option value="{{ squadra.id }}" {% if inscription.squadra_id == squadra.id %}selected{% endif %}>{{ squadra.name }}</option>
+          {% endfor %}
+          {% if inscription.squadra and inscription.squadra not in squadre %}
+          <option value="{{ inscription.squadra_id }}" selected>{{ inscription.squadra.name }}</option>
+          {% endif %}
+        </select>
+      </form>
+      {% elif inscription.squadra %}
+      <div style="margin-top:8px">
+        <span class="c7-state c7-state--muted">{{ inscription.squadra.name }}</span>
+      </div>
+      {% endif %}
+      {% endif %}
       </div>
       {% endfor %}
     </div>

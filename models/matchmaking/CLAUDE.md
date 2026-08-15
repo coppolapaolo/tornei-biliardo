@@ -72,8 +72,8 @@ registry.create_strategy(name, seed=42)  # Deterministic for testing
 |----------|-------------|-------------|
 | `amalfi` | Classification-based with anti-rematch | 3 |
 | `round_robin` | All-play-all | 3 |
-| `direct_elimination` | Single knockout | 2 |
-| `double_knockout` | Winners + losers brackets | 4 |
+| `direct_elimination` | Single knockout | 4 |
+| `double_knockout` | Winners + losers brackets | 8 |
 | `random` | Random with anti-rematch | 2 |
 
 ### Amalfi Algorithm
@@ -94,6 +94,16 @@ registry.create_strategy(name, seed=42)  # Deterministic for testing
 ---
 
 ## Configuration Enums
+
+> ⚠️ **Due enum omonimi.** `models/matchmaking/configuration.py` usa
+> `direct_elimination` / `double_knockout`;
+> `models/competition/validators.py` ne ha un altro, con gli stessi nomi di
+> classe ma valori `elimination` / `double_ko`. Il ponte fra i due è
+> `_MATCHMAKING_MAP` in `validators.py`, e un test
+> (`test_matchmaking_enum_bridge.py`) verifica che copra **tutti** i valori
+> dell'enum canonico: senza, una strategia nuova cadrebbe in silenzio sul
+> default Amalfi e verrebbe validata con le regole sbagliate.
+
 
 ```python
 class MatchmakingStrategy(str, Enum):

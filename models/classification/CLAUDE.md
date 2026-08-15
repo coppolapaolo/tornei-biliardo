@@ -75,6 +75,28 @@ Classification uses strategy pattern in `strategies/` subdirectory:
 | `amalfi_gara` | Gara | Amalfi final standings |
 | `random_round` | Round | Random strategy classification |
 | `random_gara` | Gara | Random final standings |
+| `position_round` | Round | Gare a tabellone, classifica parziale |
+| `position_gara` | Gara | Gare a tabellone, bande di pari merito |
+| `position_campionato` | Campionato | Somma dei punti per posizione (US-17) |
+
+### Sistema POSITION (gare a tabellone)
+
+La posizione **si legge dal tabellone**, non si conta dalle vittorie: chi esce
+allo stesso turno condivide la banda e quindi la posizione (due semifinalisti
+entrambi 3°, quattro quartifinalisti tutti 5°). Il calcolo sta in
+`bracket_standings.py` ed è usato da tre chiamanti — le due strategie e
+`SpareggioService.apply_final_positions`, che è il percorso di produzione.
+
+**Lo spareggio è spento per POSITION** (`SpareggioService.tiebreakers_apply_to`):
+i pari merito sono l'esito voluto, non un'ambiguità da sciogliere. È una
+divergenza deliberata dalla convenzione di `gara_strategies.py:36-46`, dove i
+pari merito *devono* far scattare lo spot shot rally.
+
+I punti di campionato stanno in `position_points.py`, con i valori della spec
+come default e una tabella sovrascrivibile su `Campionato.position_points`. Le
+due tabelle punti già presenti nel codice (`statistics_service.py` e
+`PointBasedCampionatoClassificationStrategy`) **non** vanno unificate con
+questa: sono alimentate da campionati esistenti.
 
 ```python
 from models.classification.registry import get_classification_registry

@@ -67,6 +67,20 @@ Parametri:
             </span>
         </label>
     </div>
+
+    {# Avviso dal vivo per i formati a tabellone: un numero **pari** di rack (o
+       di set) esatti puo' finire in parita', e un nodo del tabellone deve
+       sempre produrre un vincitore, altrimenti lo slot a valle resta senza chi
+       lo occupa. La regola esiste gia' lato server
+       (`_validate_position_system`): qui serve solo a non farla scoprire al
+       salvataggio. Il testo sta nei `data-` perche' il JS piu' sotto non passa
+       da `_()`. #}
+    <div id="bracket-distance-warning" class="c7-flash c7-flash--warning" style="display:none;margin-top:12px"
+         data-msg-racks="{{ _('Su un tabellone il numero esatto di rack deve essere dispari: con un numero pari la partita può finire in parità e il nodo resterebbe senza vincitore.') }}"
+         data-msg-sets="{{ _('Su un tabellone il numero esatto di set deve essere dispari: con un numero pari la partita può finire in parità e il nodo resterebbe senza vincitore.') }}">
+        <span class="c7-flash__ico"><i class="fas fa-exclamation"></i></span>
+        <div class="c7-flash__body"><div class="c7-flash__text" id="bracket-distance-warning-text"></div></div>
+    </div>
 </section>
 
 <script>
@@ -125,6 +139,36 @@ function updateDistancePreview() {
             : 'al ' + distance;
         previewText.textContent = sets + ', ogni set ' + racks;
     }
+
+    updateBracketDistanceWarning(exactNumber, distance, isMultiSet, isRaceToSets, matchDistance);
+}
+
+/* Con un formato a tabellone un numero pari di rack (o di set) esatti puo'
+ * finire in parita', e il nodo resterebbe senza vincitore: il server lo
+ * rifiuta gia', qui lo si dice mentre si sceglie. Nelle pagine senza il
+ * selettore di strategia la funzione non fa nulla. */
+function updateBracketDistanceWarning(exactNumber, distance, isMultiSet, isRaceToSets, matchDistance) {
+    const box = document.getElementById('bracket-distance-warning');
+    const strategy = document.getElementById('matchmaking_strategy');
+    if (!box || !strategy) { return; }
+
+    const isBracket = ['direct_elimination', 'double_knockout'].indexOf(strategy.value) >= 0;
+    const problemi = [];
+
+    if (isBracket) {
+        // I due controlli sono indipendenti, come lato server: in multi-set si
+        // possono sbagliare entrambi (rack esatti pari *e* set esatti pari).
+        if (exactNumber && distance % 2 === 0) {
+            problemi.push(box.dataset.msgRacks);
+        }
+        if (isMultiSet && !isRaceToSets && matchDistance % 2 === 0) {
+            problemi.push(box.dataset.msgSets);
+        }
+    }
+
+    const message = problemi.join(' ');
+    document.getElementById('bracket-distance-warning-text').textContent = message;
+    box.style.display = message ? '' : 'none';
 }
 
 document.addEventListener('DOMContentLoaded', updateDistancePreview);

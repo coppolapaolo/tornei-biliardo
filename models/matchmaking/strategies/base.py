@@ -27,6 +27,15 @@ class Pairing:
     requires_handicap: bool = False  # Whether skill balancing is recommended
     notes: Optional[str] = None  # Strategy-specific annotations and context
 
+    # Coordinate nel tabellone, valorizzate solo dalle strategie a tabellone
+    # (eliminazione diretta, doppio KO). Le altre lasciano None e i Match
+    # generati hanno le colonne a NULL. Vedi models/matchmaking/bracket.py per
+    # la semantica e models/match/models.py per la persistenza.
+    bracket_type: Optional[str] = None  # W | L | GF | GFR | 3P
+    bracket_round: Optional[int] = None  # turno interno al bracket
+    bracket_slot: Optional[int] = None  # posizione 0-based nel round
+    bracket_group: Optional[int] = None  # girone FISBB; None = tabellone finale
+
     @property
     def player1_id(self) -> Optional[int]:
         """Get first player ID."""
@@ -173,7 +182,7 @@ class PairingStrategy(ABC):
 
         Primary execution method that generates player pairings and applies
         necessary side effects (creating Match objects, updating classifications,
-        recording encounters). Distinct from preview methods that don't modify state.
+        recording encounters).
 
         Args:
             gara: Tournament object with player inscriptions and history

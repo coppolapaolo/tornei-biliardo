@@ -18,6 +18,16 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
     """Core match entity representing a game between players."""
 
     __tablename__ = "match"
+    __table_args__ = (
+        db.Index(
+            "ix_match_bracket",
+            "gara_id",
+            "bracket_group",
+            "bracket_type",
+            "bracket_round",
+            "bracket_slot",
+        ),
+    )
 
     id = db.Column(db.Integer, primary_key=True)
     # gara_id nullable to support standalone matches (detached from deleted gara)
@@ -69,6 +79,28 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
     round_locked = db.Column(db.Boolean, default=False)  # Round bloccato per modifiche
     created_at = db.Column(db.DateTime, default=utc_now)
     is_trio = db.Column(db.Boolean, default=False)  # Indica se è un trio
+
+    # Coordinate nel tabellone (eliminazione diretta / doppio KO).
+    # NULL su tutte e tre = match non appartenente a un tabellone (amalfi,
+    # round robin, random) oppure gara a tabellone antecedente all'introduzione
+    # di questi campi: in quel caso le strategie ricadono sul ramo legacy.
+    #
+    # Tre colonne invece di un singolo indice heap perché il losers bracket NON
+    # è un albero binario completo (alterna round minori e maggiori con lo
+    # stesso numero di match): la tripla le rappresenta uniformemente entrambi.
+    # Il "seat" nel match successivo non è persistito: è derivato da
+    # bracket_slot % 2 (vedi bracket.wb_feed), e una colonna in più sarebbe
+    # ridondanza desincronizzabile.
+    bracket_type = db.Column(
+        db.String(8), nullable=True
+    )  # W | L | GF | GFR | 3P (vedi models/matchmaking/bracket.py)
+    bracket_round = db.Column(db.Integer, nullable=True)  # turno interno al bracket
+    bracket_slot = db.Column(db.Integer, nullable=True)  # posizione 0-based nel round
+    # Girone di appartenenza nella formula FISBB (Step 12): i gironi sono
+    # doppi KO troncati giocati in parallelo, quindi la tripla sopra non è più
+    # univoca dentro la gara. NULL = tabellone finale, oppure gara senza fase
+    # a gironi (che è il caso di tutte le altre strategie a tabellone).
+    bracket_group = db.Column(db.Integer, nullable=True)  # indice 0-based del girone
 
     # Time tracking for statistics
     started_at = db.Column(db.DateTime, nullable=True)  # Set when match starts playing

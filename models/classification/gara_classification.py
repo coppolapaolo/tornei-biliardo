@@ -3,6 +3,7 @@ Module: models/classification/gara_classification.py
 Purpose: Gara-level classification services (round, final, strategy-based)
 """
 
+import logging
 from dataclasses import replace
 from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import joinedload
@@ -14,10 +15,14 @@ from ..caching import cached, cache_invalidate
 from ..transaction import transactional
 
 # Strategy pattern imports
+from .bracket_standings import bracket_positions
 from .strategies.base import ClassificationResult, ClassificationScope, PlayerScore
+from .strategies.position_strategies import BRACKET_POSITION_KEY
 from .registry import get_classification_registry
 from .score_aggregator import ScoreAggregator
 from .tiebreaker_resolver import TiebreakerResolver
+
+logger = logging.getLogger(__name__)
 
 
 class RoundClassificationService:
@@ -141,7 +146,11 @@ class StrategyBasedClassificationService:
             return self._registry.get("round_robin_round")
         strategy_map = {
             "WINS": "amalfi_round",
-            "POSITION": "amalfi_round",
+            # POSITION era mappato su amalfi_round, cioè si comportava come
+            # WINS: in un tabellone contare le vittorie è la domanda sbagliata,
+            # perché chi ha avuto un bye ne ha una in meno pur essendo andato
+            # più avanti.
+            "POSITION": "position_round",
             "RACK": "random_round",
         }
         return self._registry.get(strategy_map.get(cs, "amalfi_round"))
@@ -158,7 +167,7 @@ class StrategyBasedClassificationService:
         cs = (getattr(gara, "classification_system", None) or "WINS").upper()
         strategy_map = {
             "WINS": "amalfi_gara",
-            "POSITION": "amalfi_gara",
+            "POSITION": "position_gara",
             "RACK": "random_gara",
         }
         return self._registry.get(strategy_map.get(cs, "amalfi_gara"))
@@ -190,6 +199,7 @@ class StrategyBasedClassificationService:
         # Aggregate scores from matches
         scores = self._aggregator.aggregate_round_scores(gara_id, round_number)
         scores = self._enrich_with_spot_shot(gara, scores)
+        scores = self._enrich_with_bracket_position(gara, scores)
 
         # Get previous classification if exists. Per il turno 1 il precedente è
         # il turno 0, cioè la classifica di partenza (SeedingService): serve
@@ -242,9 +252,18 @@ class StrategyBasedClassificationService:
         # Get gara-level strategy
         strategy = self.get_gara_final_strategy(gara)
 
+        # La classifica di turno ricaricata dal DB non porta con sé le
+        # coordinate di tabellone (RoundClassification non le ha), quindi la
+        # posizione va ricalcolata qui. Le strategie non-POSITION ignorano
+        # `scores` e usano `previous_classification`, quindi passarle non
+        # cambia nulla per loro.
+        final_scores = self._enrich_with_bracket_position(
+            gara, [entry.score for entry in previous.entries]
+        )
+
         # Calculate final classification
         result = strategy.calculate(
-            scores=[],  # Gara strategy uses previous classification
+            scores=final_scores,
             previous_classification=previous,
             context={
                 "gara_id": gara_id,
@@ -256,6 +275,46 @@ class StrategyBasedClassificationService:
         self._save_gara_classification(gara_id, result)
 
         return result
+
+    @staticmethod
+    def _enrich_with_bracket_position(
+        gara, scores: List[PlayerScore]
+    ) -> List[PlayerScore]:
+        """Popola `extra_data['bracket_position']` per le gare POSITION.
+
+        L'aggregazione dei punteggi conta rack e vittorie: in un tabellone
+        serve invece sapere dove ciascuno è uscito, e quel dato sta sui match
+        (`bracket_type`/`bracket_round`/`bracket_slot`), non nei totali. Questo
+        è l'unico punto che ha in mano sia la gara sia il tabellone, quindi è
+        qui che le due cose si incontrano.
+        """
+        if (getattr(gara, "classification_system", None) or "WINS").upper() != (
+            "POSITION"
+        ):
+            return list(scores)
+
+        positions = bracket_positions(gara)
+        if not positions:
+            # Gara POSITION senza tabellone persistito (sorteggiata prima
+            # dell'introduzione delle coordinate): meglio una classifica
+            # piatta di una inventata. Se ne accorge chi legge il log.
+            logger.warning(
+                "Gara %s è POSITION ma non ha un tabellone persistito: "
+                "classifica per posizione non calcolabile",
+                getattr(gara, "id", None),
+            )
+            return list(scores)
+
+        return [
+            replace(
+                score,
+                extra_data={
+                    **(score.extra_data or {}),
+                    BRACKET_POSITION_KEY: positions.get(score.player_id),
+                },
+            )
+            for score in scores
+        ]
 
     @staticmethod
     def _enrich_with_spot_shot(gara, scores: List[PlayerScore]) -> List[PlayerScore]:

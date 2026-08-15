@@ -53,6 +53,9 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # utenti non registrati inclusi (link nel footer di base.html).
     "main.privacy_policy": {"anonimo", "player", "director"},
     "admin.competition.gara_detail": {"anonimo", "player", "director"},
+    # Tabellone della gara (US-13): sola lettura, e la segue anche chi non ha
+    # un account — è la schermata che si condivide durante un torneo.
+    "admin.competition.gara_bracket": {"anonimo", "player", "director"},
     "i18n.set_language": {"anonimo", "player", "director"},
     # === Logged-in (player or director) ===
     "auth.logout": {"player", "director"},
@@ -161,6 +164,13 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "admin.competition.modify_inscription_dates": {"director"},
     "admin.competition.admin_inscribe_user": {"director"},
     "admin.competition.admin_uninscribe_user": {"director"},
+    # Squadre (US-2/3/8/9): l'elenco lo governa chi dirige la competizione,
+    # la squadra della propria iscrizione la scrive anche il giocatore.
+    "admin.competition.create_squadra": {"director"},
+    "admin.competition.rename_squadra": {"director"},
+    "admin.competition.merge_squadra": {"director"},
+    "admin.competition.toggle_squadra": {"director"},
+    "admin.competition.set_inscription_squadra": {"player", "director"},
     # Round management
     "admin.competition.start_first_round": {"director"},
     "admin.competition.start_round_generic": {"director"},

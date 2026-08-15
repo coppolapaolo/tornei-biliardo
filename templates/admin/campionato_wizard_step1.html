@@ -42,7 +42,7 @@
       <select class="form-select" id="default_classification_system" name="default_classification_system" required>
         <option value="WINS" selected>{{ _("Vittorie — match vinti, poi differenza rack") }}</option>
         <option value="RACK">{{ _("Rack totali — ogni rack conta") }}</option>
-        <option value="POSITION" disabled>{{ _("Posizione bracket — in arrivo") }}</option>
+        <option value="POSITION">{{ _("Posizione nel tabellone — quanto avanti si arriva") }}</option>
       </select>
       <div class="mt-3">
         <div id="class-description-WINS" class="c7-flash c7-flash--info">
@@ -55,7 +55,7 @@
         </div>
         <div id="class-description-POSITION" class="c7-flash c7-flash--info d-none">
           <span class="c7-flash__ico"><i class="fas fa-sitemap"></i></span>
-          <div class="c7-flash__body"><div class="c7-flash__text">{{ _("Punti per posizione nel bracket. Solo eliminazione diretta o doppio KO.") }}</div></div>
+          <div class="c7-flash__body"><div class="c7-flash__text">{{ _("Punti per quanto si arriva avanti nel tabellone. Solo eliminazione diretta o doppio KO.") }}</div></div>
         </div>
       </div>
     </div>
@@ -80,6 +80,20 @@
           <div class="c7-flash__body">
             <div class="c7-flash__title">Random</div>
             <div class="c7-flash__text">{{ _("Abbinamenti casuali con anti-rematch.") }}</div>
+          </div>
+        </div>
+        <div id="type-description-direct_elimination" class="c7-flash c7-flash--info d-none">
+          <span class="c7-flash__ico"><i class="fas fa-sitemap"></i></span>
+          <div class="c7-flash__body">
+            <div class="c7-flash__title">{{ _("Eliminazione diretta") }}</div>
+            <div class="c7-flash__text">{{ _("Chi perde è fuori. Il tabellone si dimensiona sugli iscritti e le teste di serie restano lontane fino in fondo.") }}</div>
+          </div>
+        </div>
+        <div id="type-description-double_knockout" class="c7-flash c7-flash--info d-none">
+          <span class="c7-flash__ico"><i class="fas fa-rotate-left"></i></span>
+          <div class="c7-flash__body">
+            <div class="c7-flash__title">{{ _("Doppio KO") }}</div>
+            <div class="c7-flash__text">{{ _("Servono due sconfitte per uscire: chi perde una volta rientra dal recupero.") }}</div>
           </div>
         </div>
       </div>
@@ -154,12 +168,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const classificationSelect = document.getElementById('default_classification_system');
     const typeSelect = document.getElementById('campionato_type');
 
-    const classDescWINS = document.getElementById('class-description-WINS');
-    const classDescRACK = document.getElementById('class-description-RACK');
-    const classDescPOSITION = document.getElementById('class-description-POSITION');
-
-    const descAmalfi = document.getElementById('type-description-amalfi');
-    const descRandom = document.getElementById('type-description-random');
+    // Le descrizioni si trovano per convenzione sull'id, non una per una:
+    // aggiungere un formato è così una questione di solo markup.
+    function showDescription(prefix, value) {
+        document.querySelectorAll('[id^="' + prefix + '"]').forEach(function(box) {
+            box.classList.toggle('d-none', box.id !== prefix + value);
+        });
+    }
 
     const playoffEliteCheckbox = document.getElementById('playoff_elite_enabled');
     const playoffAcademyCheckbox = document.getElementById('playoff_academy_enabled');
@@ -169,10 +184,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const validMatchmaking = {{ classification_compatibility|tojson }};
 
     function updateClassificationDescription() {
-        const system = classificationSelect.value;
-        classDescWINS.classList.toggle('d-none', system !== 'WINS');
-        classDescRACK.classList.toggle('d-none', system !== 'RACK');
-        classDescPOSITION.classList.toggle('d-none', system !== 'POSITION');
+        showDescription('class-description-', classificationSelect.value);
     }
 
     function updateMatchmakingOptions() {
@@ -193,9 +205,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateTypeDescription() {
-        const type = typeSelect.value;
-        descAmalfi.classList.toggle('d-none', type !== 'amalfi');
-        descRandom.classList.toggle('d-none', type !== 'random');
+        showDescription('type-description-', typeSelect.value);
     }
 
     classificationSelect.addEventListener('change', function() {

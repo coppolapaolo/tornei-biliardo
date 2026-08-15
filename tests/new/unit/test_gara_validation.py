@@ -260,6 +260,67 @@ class TestWinsSystemValidation:
         assert len(errors) == 1
 
 
+class TestPositionMultiSetValidation:
+    """Un nodo del tabellone deve sempre produrre un vincitore.
+
+    La regola sui rack esatti dispari era già coperta, ma in multi-set a
+    decidere il match è il numero di SET: un numero pari di set esatti può
+    finire in parità anche se ogni singolo set ha il suo vincitore, e il
+    tabellone resterebbe con uno slot senza chi lo occupa.
+    """
+
+    def _validate(self, **kwargs):
+        base = dict(
+            classification_system=ClassificationSystem.POSITION,
+            distance_type=DistanceType.RACE_TO,
+            distance=5,
+            multi_set=True,
+            odd_handling=OddHandling.BRACKET_BYE,
+            forfeit_policy=ForfeitPolicy.FORFEIT,
+            matchmaking=MatchmakingStrategy.ELIMINATION,
+        )
+        base.update(kwargs)
+        return validate_gara_configuration(**base)
+
+    def test_set_esatti_pari_rifiutati(self):
+        errors, _ = self._validate(
+            sets_distance_type=DistanceType.EXACTLY, sets_distance=2
+        )
+        assert len(errors) == 1
+        assert "set esatti" in errors[0]
+
+    def test_set_esatti_dispari_ammessi(self):
+        errors, _ = self._validate(
+            sets_distance_type=DistanceType.EXACTLY, sets_distance=3
+        )
+        assert errors == []
+
+    def test_race_to_sets_pari_ammesso(self):
+        """Al meglio dei set c'è sempre un vincitore, anche con numero pari."""
+        errors, _ = self._validate(
+            sets_distance_type=DistanceType.RACE_TO, sets_distance=2
+        )
+        assert errors == []
+
+    def test_regola_non_si_applica_senza_multi_set(self):
+        errors, _ = self._validate(
+            multi_set=False,
+            sets_distance_type=DistanceType.EXACTLY,
+            sets_distance=2,
+        )
+        assert errors == []
+
+    def test_wins_non_e_toccato(self):
+        """Fuori dal tabellone il pareggio è ammesso: nessun errore nuovo."""
+        errors, _ = self._validate(
+            classification_system=ClassificationSystem.WINS,
+            matchmaking=MatchmakingStrategy.RANDOM,
+            sets_distance_type=DistanceType.EXACTLY,
+            sets_distance=2,
+        )
+        assert errors == []
+
+
 class TestPositionSystemValidation:
     """Test validazione sistema POSITION."""
 
@@ -718,6 +779,9 @@ class TestGaraServiceValidationIntegration:
             time=time(18, 0),
             is_race_to=True,  # Race to required for POSITION
             matchmaking_strategy="direct_elimination",
+            # Obbligatorio per le strategie a tabellone: da qui si stima il
+            # numero di turni quando gli iscritti non ci sono ancora.
+            max_participants=16,
         )
         assert gara.id is not None
         assert gara.matchmaking_strategy == "direct_elimination"
@@ -740,6 +804,7 @@ class TestGaraServiceValidationIntegration:
                 time=time(20, 0),
                 is_race_to=False,  # Exactly N
                 matchmaking_strategy="direct_elimination",  # POSITION
+                max_participants=16,
             )
 
         assert "pari" in str(exc_info.value).lower()

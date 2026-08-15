@@ -16,11 +16,30 @@ from models.competition.constants import (
     DEFAULT_WITHDRAW_POLICY,
 )
 from models.matchmaking.configuration import (
+    BRACKET_STRATEGIES,
     StrategyConfiguration,
     MatchmakingStrategy,
     FirstRoundPolicy,
     OddNumberPolicy,
 )
+
+# Ri-esportato: `BRACKET_STRATEGIES` vive nel dominio
+# (`models/matchmaking/configuration.py`) perché la domanda "questa gara ha un
+# tabellone?" se la pongono anche modelli e template. Qui resta importabile
+# dove lo era prima.
+__all__ = ["BRACKET_STRATEGIES", "GaraFormParser"]
+
+
+def _resolve_classification_system(strategy: str, requested: str) -> str:
+    """Sistema di classifica coerente con la strategia scelta.
+
+    Sul tabellone è POSITION e basta: chiederlo all'utente per poi rifiutare
+    ogni altra risposta sarebbe solo un modo di far fallire il salvataggio.
+    Fuori dal tabellone POSITION non ha senso, quindi si ricade su WINS.
+    """
+    if strategy in BRACKET_STRATEGIES:
+        return "POSITION"
+    return requested if requested in ("WINS", "RACK") else "WINS"
 
 
 class GaraFormParser:
@@ -139,10 +158,19 @@ class GaraFormParser:
             data["anti_rematch_enabled"] = (
                 request.form.get("anti_rematch_enabled") == "on"
             )
-            cs = request.form.get("classification_system", "WINS")
-            if cs not in ("WINS", "RACK"):
-                cs = "WINS"
-            data["classification_system"] = cs
+            data["classification_system"] = request.form.get(
+                "classification_system", "WINS"
+            )
+
+        # I formati a tabellone ammettono un solo sistema di classifica, quindi
+        # non lo si chiede: lo si impone. Prima il parser forzava WINS/RACK, il
+        # che rendeva la combinazione valida irraggiungibile e faceva fallire il
+        # salvataggio di ogni gara a eliminazione diretta o doppio KO.
+        data["classification_system"] = _resolve_classification_system(
+            data["matchmaking_strategy"], data["classification_system"]
+        )
+
+        data.update(GaraFormParser._parse_bracket_options(data["matchmaking_strategy"]))
 
         # ── SSR tiebreaker ───────────────────────────────────────
         data["tiebreaker_enabled"] = request.form.get("tiebreaker_enabled") == "on"
@@ -151,6 +179,48 @@ class GaraFormParser:
         )
 
         return data
+
+    @staticmethod
+    def _parse_bracket_options(strategy: str) -> Dict[str, Any]:
+        """Opzioni che esistono solo per i formati a tabellone.
+
+        Fuori dal tabellone vengono **azzerate** invece che ignorate: se il
+        director cambia formato dopo aver spuntato la finalina, lasciare il
+        flag acceso su una gara a girone significherebbe portarsi dietro una
+        configurazione che nessuna schermata mostra più.
+        """
+        if strategy not in BRACKET_STRATEGIES:
+            return {
+                "separate_teammates": False,
+                "third_place_match": False,
+                "double_ko_rounds": None,
+            }
+
+        options: Dict[str, Any] = {
+            "separate_teammates": request.form.get("separate_teammates") == "on",
+            # La finalina esiste solo a eliminazione diretta: nel doppio KO il
+            # terzo posto lo decide già il tabellone.
+            "third_place_match": (
+                request.form.get("third_place_match") == "on"
+                and strategy == MatchmakingStrategy.DIRECT_ELIMINATION.value
+            ),
+            "seeding_rating": request.form.get("seeding_rating", "elo"),
+            "double_ko_rounds": None,
+        }
+
+        if strategy == MatchmakingStrategy.DOUBLE_KNOCKOUT.value:
+            raw = (request.form.get("double_ko_rounds") or "").strip()
+            if raw:
+                try:
+                    parsed = int(raw)
+                except ValueError:
+                    parsed = 0
+                # 0 e valori non numerici valgono "nessuna fase a gironi",
+                # cioè doppio KO pieno: è il default e non va segnalato come
+                # errore, il formato a gironi è una scelta esplicita.
+                options["double_ko_rounds"] = parsed if parsed > 0 else None
+
+        return options
 
     @staticmethod
     def validate_strategy(data: Dict[str, Any]) -> List[str]:

@@ -1263,3 +1263,181 @@ input[type="number"].form-control {
   flex-shrink: 0;
   white-space: nowrap;
 }
+
+/* --------------------------------------------------------------------------
+   18. Tabellone di torneo
+   Il prototipo non ha questa schermata: `#8b` e' il *segnapunti* da tavolo
+   ("il telefono appoggiato diventa un tabellone"), non un tabellone di
+   torneo. La forma qui sotto e' interpretata da `#8a` — le partite del turno
+   come card chiare con nome a sinistra e punteggio a destra — ripetuta in
+   colonne, una per turno. Nessun valore nuovo: superfici, raggi e pesi sono
+   quelli dei token.
+   -------------------------------------------------------------------------- */
+
+/* Il tabellone e' largo per costruzione: scorre in orizzontale dentro il suo
+   contenitore invece di far scorrere la pagina (regola: `body.scrollWidth`
+   non deve superare il viewport). */
+.c7-bracket {
+  overflow-x: auto;
+  overflow-y: hidden;
+  /* Spazio per l'ombra del focus e per i moncherini fra le colonne. */
+  padding-bottom: 6px;
+}
+.c7-bracket__rail {
+  display: flex;
+  align-items: stretch;
+  gap: 18px;
+  min-width: min-content;
+}
+
+/* Una colonna = un turno. */
+.c7-bracket__col {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  width: 232px;
+}
+@media (max-width: 991.98px) {
+  /* Su 390px una colonna piena piu' uno spicchio della successiva: lo
+     spicchio e' cio' che dice che si scorre. */
+  .c7-bracket__col { width: 208px; }
+  .c7-bracket__rail { gap: 12px; }
+}
+.c7-bracket__colhead {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+  min-height: 18px;
+}
+.c7-bracket__count {
+  margin-left: auto;
+  font-family: var(--c7-font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--c7-ink-faint);
+}
+/* L'albero lo disegna la spartizione dell'altezza, non una posizione
+   calcolata: ogni nodo vive in una cella che vale `1/m` della colonna e ci
+   sta in mezzo, quindi il centro del nodo `j` cade a `(j + 0.5)/m`. Con `m`
+   che si dimezza a ogni turno, il nodo successivo finisce esattamente a
+   meta' fra i suoi due alimentatori — e resta li' anche se un nodo e' piu'
+   alto degli altri (X a tavolino, riga del tavolo, pallino live), che era il
+   difetto di `space-around` sui nodi nudi.
+   Griglia e non flex: `minmax(0, 1fr)` da' righe *esattamente* uguali, mentre
+   `flex: 1 1 0` cede al contenuto (il minimo automatico e' l'altezza del
+   nodo, quindi una cella con dentro un nodo piu' alto si prende piu' spazio e
+   l'allineamento slitta di qualche pixel). Ad altezza indefinita — la colonna
+   piu' alta, che detta la misura a tutte le altre — le righe `1fr` si
+   pareggiano sul contenuto piu' alto, che e' proprio quel che serve. */
+.c7-bracket__nodes {
+  flex: 1;
+  display: grid;
+  grid-auto-rows: minmax(0, 1fr);
+}
+.c7-bracket__cell {
+  display: flex;
+  align-items: center;
+  padding: 4px 0;
+}
+.c7-bracket__cell > * { width: 100%; }
+
+/* Il nodo e' la card partita di 8a, stretta: nome a sinistra, punteggio a
+   destra, una riga per giocatore. */
+.c7-bracket__node {
+  position: relative;
+  border-radius: var(--c7-r-card);
+  background: var(--c7-card);
+  padding: 10px 14px;
+}
+/* Concluso = superficie affossata, come ogni altro blocco chiuso del tema. */
+.c7-bracket__node.is-done { background: var(--c7-sunken); }
+/* In corso: il nodo si distingue per superficie piena, come la scorciatoia
+   alla propria partita. Il rosso resta al solo pallino live. */
+.c7-bracket__node.is-live { background: var(--c7-accent); color: var(--c7-accent-ink); }
+.c7-bracket__node.is-live .c7-bracket__meta,
+.c7-bracket__node.is-live .c7-bracket__seat:not(.is-winner) .c7-bracket__who { color: var(--c7-accent-dim); }
+.c7-bracket__node.is-mine { box-shadow: inset 0 0 0 2px var(--c7-accent); }
+
+a.c7-bracket__node { display: block; color: inherit; text-decoration: none; }
+a.c7-bracket__node:hover { background: var(--c7-line-soft); }
+a.c7-bracket__node.is-live:hover { background: var(--c7-accent); filter: brightness(1.08); }
+
+.c7-bracket__meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--c7-ink-muted);
+}
+.c7-bracket__live {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--c7-err);
+  flex-shrink: 0;
+}
+
+.c7-bracket__seat {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+}
+.c7-bracket__seat + .c7-bracket__seat { border-top: 1px solid var(--c7-line-soft); }
+.c7-bracket__node.is-live .c7-bracket__seat + .c7-bracket__seat { border-top-color: rgba(242, 248, 247, .18); }
+.c7-bracket__who {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--c7-ink-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Chi passa il turno e' l'informazione che si cerca a colpo d'occhio. */
+.c7-bracket__seat.is-winner .c7-bracket__who { font-weight: 800; color: inherit; }
+.c7-bracket__seat.is-forfeit .c7-bracket__who { color: var(--c7-ink-faint); text-decoration: line-through; }
+.c7-bracket__score {
+  font-family: var(--c7-font-mono);
+  font-size: 14px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--c7-ink-faint);
+}
+.c7-bracket__seat.is-winner .c7-bracket__score { color: inherit; }
+
+/* Moncherini di collegamento: mezza distanza per colonna, cosi' le due mezze
+   si incontrano nel gap. Solo decorativi — la struttura la dice gia'
+   l'allineamento verticale — quindi spariscono sotto ai 992px, dove il
+   tabellone si legge scorrendo una colonna per volta. */
+@media (min-width: 992px) {
+  .c7-bracket__col:not(:last-child) .c7-bracket__node::after,
+  .c7-bracket__col:not(:first-child) .c7-bracket__node::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 9px;
+    border-top: 1.5px solid var(--c7-line);
+  }
+  .c7-bracket__col:not(:last-child) .c7-bracket__node::after { left: 100%; }
+  .c7-bracket__col:not(:first-child) .c7-bracket__node::before { right: 100%; }
+}
+
+/* Ramo del doppio KO: vincenti e ripescati vanno distinti a colpo d'occhio
+   (US-13), e la differenza e' di rango, non di stato — quindi un'etichetta,
+   non un colore semantico. */
+.c7-bracket__branch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.c7-bracket__branch::after {
+  content: "";
+  flex: 1;
+  border-top: 1px solid var(--c7-line);
+}

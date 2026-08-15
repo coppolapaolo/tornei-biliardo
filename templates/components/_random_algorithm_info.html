@@ -1,0 +1,32 @@
+<!-- Random Strategy Info Component -->
+{# Estratto da _strategy_algorithm_info.html quando l'if/else binario e'
+   diventato una mappa: il contenuto e' invariato. #}
+<div class="card border-success">
+    <div class="card-header bg-success bg-opacity-10">
+        <h5><i class="fas fa-random"></i> Strategia Random - Classifica Complessiva</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <strong>Criterio Classifica:</strong><br>
+                <small class="text-muted">1. Rack Totali Vinti (desc) &rarr; 2. Diff. Rack (desc)</small><br><br>
+                <strong>Aggiornamento:</strong> <span class="badge bg-info">Dopo ogni match</span>
+            </div>
+            <div class="col-md-6">
+                <strong>Giocatori Totali:</strong> {{ total_players }}<br>
+                <strong>Match Completati:</strong>
+                {# Count both 'completed' and 'validated' as finished #}
+                {% set comp_matches = matches|selectattr("status", "equalto", "completed")|list|length %}
+                {% set val_matches = matches|selectattr("status", "equalto", "validated")|list|length %}
+                {% set completed_matches = comp_matches + val_matches %}
+                {% set total_matches = matches|length %}
+                {{ completed_matches }}/{{ total_matches }}<br>
+                <strong>Note:</strong><br>
+                <small class="text-muted">
+                    I match possono essere giocati in qualsiasi ordine.
+                    La classifica si aggiorna in tempo reale.
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
