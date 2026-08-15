@@ -49,26 +49,24 @@ def parse_json(value):
         return None
 
 
-def format_datetime_local_text(value) -> str:
-    """Data e ora locali (Italia) come testo semplice, senza markup.
+def format_datetime_local_text(value, tz=None) -> str:
+    """Data e ora nel fuso del lettore, come testo semplice e senza markup.
 
     Serve dove il risultato non finisce in una pagina ma dentro un messaggio
     costruito in Python (flash, dialog, notifiche): lì il `<time>` di
     `format_datetime_local` verrebbe mostrato come tag grezzo o, peggio,
     escapato a mano.
+
+    ``tz`` va passato **sempre** quando il testo è destinato a qualcun altro:
+    una notifica scritta per due giocatori, o un promemoria composto da uno
+    scheduled task, non hanno un «lettore corrente» da cui dedurlo, e senza
+    argomento finirebbero nel fuso di ripiego (ADR-043).
     """
     if not value:
         return str(_("N/A"))
 
     if isinstance(value, datetime):
-        from zoneinfo import ZoneInfo
-
-        if value.tzinfo is None:
-            utc_dt = value.replace(tzinfo=ZoneInfo("UTC"))
-        else:
-            utc_dt = value.astimezone(ZoneInfo("UTC"))
-        italian_time = utc_dt.astimezone(ZoneInfo("Europe/Rome"))
-        return italian_time.strftime("%d/%m/%Y, %H:%M")
+        return _to_reader_time(value, tz).strftime("%d/%m/%Y, %H:%M")
 
     if isinstance(value, date):
         return value.strftime("%d/%m/%Y")
@@ -76,13 +74,28 @@ def format_datetime_local_text(value) -> str:
     return str(value)
 
 
-def format_datetime_input(value) -> str:
-    """Valore per un ``<input type="datetime-local">``, in ora italiana.
+def _to_reader_time(value: datetime, tz=None) -> datetime:
+    """Il naive UTC del DB portato nel fuso di chi legge.
 
-    È la controparte in **scrittura** di ``|datetime_local``: quel filtro
-    mostra, questo ripopola. Un form di modifica che stampa il naive del DB
-    così com'è mette l'ora UTC dentro un campo etichettato «ora locale», e chi
-    salva senza toccarlo sposta l'appuntamento indietro di un'ora — ogni volta.
+    Un solo posto lo sa fare, e i filtri lo chiamano tutti: prima ognuno si
+    riscriveva la conversione con ``Europe/Rome`` dentro, e tre copie della
+    stessa regola sono tre modi di divergere.
+    """
+    from utils.local_time import UTC, resolve_timezone
+
+    utc_dt = (
+        value.replace(tzinfo=UTC) if value.tzinfo is None else value.astimezone(UTC)
+    )
+    return utc_dt.astimezone(tz or resolve_timezone())
+
+
+def format_datetime_input(value, tz=None) -> str:
+    """Valore per un ``<input type="datetime-local">``, nel fuso di chi legge.
+
+    È la controparte in **ripopolamento** di ``|datetime_local``: quel filtro
+    mostra, questo rimette il valore dentro il campo. I due devono usare lo
+    stesso fuso della scrittura, altrimenti chi riapre un form e salva senza
+    toccare niente sposta l'orario di un fuso — a ogni giro.
 
     Il ritorno è testo semplice e non ``Markup``: finisce dentro un attributo
     ``value``, dove Jinja lo escapa da sé.
@@ -92,50 +105,39 @@ def format_datetime_input(value) -> str:
     if not value:
         return ""
     if isinstance(value, datetime):
-        return format_local_input(value)
+        return format_local_input(value, tz)
     return str(value)
 
 
-def format_datetime_local(value) -> Markup:
-    """Formatta data e ora per la visualizzazione locale (Italia).
+def format_datetime_local(value, tz=None) -> Markup:
+    """Formatta data e ora nel fuso di **chi legge** (ADR-043).
 
     IMPORTANT: Database stores naive datetimes as UTC (project convention).
-    This filter converts UTC to Italian time using proper DST handling.
+    Il fuso di destinazione è quello salvato su `User.timezone`, dedotto dal
+    browser; per un lettore anonimo o non ancora dedotto si ripiega sull'ora
+    italiana.
 
     Output format:
         <time datetime="2025-01-15T14:30:00Z" class="datetime-local">15/01/2025, 15:30</time>
 
-    The <time> element:
-    - Has semantic meaning for screen readers and search engines
-    - Contains ISO 8601 UTC timestamp in datetime attribute
-    - Displays Italian local time (Europe/Rome) accounting for DST
-    - Can be enhanced by JavaScript to show browser-local time
-
-    For JavaScript enhancement, add to your page:
-        <script src="{{ url_for('static', filename='js/datetime-local.js') }}"></script>
+    L'attributo `datetime` resta l'istante in UTC: è l'unica forma che non
+    dipende da chi guarda, ed è quella che serve a screen reader, motori di
+    ricerca e a qualunque riscrittura lato client.
     """
     if not value:
         return Markup(_("N/A"))
 
     if isinstance(value, datetime):
-        # Import zoneinfo for proper DST handling (Python 3.9+)
-        from zoneinfo import ZoneInfo
+        from utils.local_time import UTC
 
-        # Treat naive datetime as UTC (project convention)
-        if value.tzinfo is None:
-            utc_dt = value.replace(tzinfo=ZoneInfo("UTC"))
-        else:
-            utc_dt = value.astimezone(ZoneInfo("UTC"))
+        reader_time = _to_reader_time(value, tz)
+        utc_dt = (
+            value.replace(tzinfo=UTC) if value.tzinfo is None else value.astimezone(UTC)
+        )
 
-        # Convert to Italian timezone (handles DST automatically)
-        italian_tz = ZoneInfo("Europe/Rome")
-        italian_time = utc_dt.astimezone(italian_tz)
-
-        # Format for display
-        formatted = italian_time.strftime("%d/%m/%Y, %H:%M")
+        formatted = reader_time.strftime("%d/%m/%Y, %H:%M")
         iso_utc = utc_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
 
-        # Output <time> element with ISO datetime for potential JS enhancement
         return Markup(
             f'<time datetime="{iso_utc}" class="datetime-local">'
             f"{escape(formatted)}</time>"
@@ -149,24 +151,18 @@ def format_datetime_local(value) -> Markup:
         return Markup(escape(str(value)))
 
 
-def format_time_local(value) -> Markup:
-    """Formatta un orario in formato HH:MM (timezone Italia per i datetime).
+def format_time_local(value, tz=None) -> Markup:
+    """Formatta un orario in formato HH:MM, nel fuso di chi legge.
 
-    Accetta sia `time` (formattato direttamente) sia `datetime` (convertito
-    da UTC al timezone Italia per coerenza con format_datetime_local).
+    Accetta sia `time` (formattato direttamente: un orario senza data non ha
+    un istante a cui riferirsi, quindi non c'è niente da convertire) sia
+    `datetime` (convertito da UTC per coerenza con `format_datetime_local`).
     """
     if not value:
         return Markup(_("N/A"))
 
     if isinstance(value, datetime):
-        from zoneinfo import ZoneInfo
-
-        if value.tzinfo is None:
-            utc_dt = value.replace(tzinfo=ZoneInfo("UTC"))
-        else:
-            utc_dt = value.astimezone(ZoneInfo("UTC"))
-        italian_time = utc_dt.astimezone(ZoneInfo("Europe/Rome"))
-        time_str = italian_time.strftime("%H:%M")
+        time_str = _to_reader_time(value, tz).strftime("%H:%M")
     elif isinstance(value, time):
         time_str = value.strftime("%H:%M")
     else:

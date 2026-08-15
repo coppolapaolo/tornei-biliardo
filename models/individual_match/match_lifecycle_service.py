@@ -174,6 +174,7 @@ class MatchLifecycleService:
         """
         from flask_babel import _
         from utils.jinja import format_datetime_local_text
+        from utils.local_time import resolve_timezone_for_user_id
         from ..notification.factory import NotificationFactory
         from ..notification.models import NotificationType, NotificationPriority
 
@@ -200,29 +201,43 @@ class MatchLifecycleService:
 
             # Get both player IDs
             player_ids = [match.player1_id, match.player2_id]
-
-            # `scheduled_at` è UTC (convenzione di progetto): stampato grezzo
-            # annuncerebbe un orario sbagliato di una o due ore a seconda
-            # dell'ora legale.
-            when = format_datetime_local_text(match.scheduled_at)
             location_text = match.location or ""
 
             try:
-                created = NotificationFactory.create_bulk_notification(
-                    user_ids=player_ids,
-                    notification_type=NotificationType.MATCH_REMINDER,
-                    title=_("Promemoria match"),
-                    message=_(
-                        "Il tuo match è programmato per il %(when)s%(location)s",
-                        when=when,
-                        location=f" presso {location_text}" if location_text else "",
-                    ),
-                    priority=NotificationPriority.HIGH,
-                    related_entities={"individual_match_id": match.id},
-                    action_url=f"{MatchLifecycleService.REMINDER_URL_PREFIX}{match.id}",
-                    action_text=_("Visualizza"),
-                    continue_on_error=True,
-                )
+                # Un avviso per giocatore, e non uno solo per tutti e due:
+                # `scheduled_at` è UTC (convenzione di progetto) e va mostrato
+                # nel fuso di **chi lo legge** (ADR-043). Due giocatori in fusi
+                # diversi hanno bisogno di due frasi diverse, e qui non c'è
+                # nessun `current_user` da cui dedurlo — è uno scheduled task.
+                created = []
+                for player_id in player_ids:
+                    when = format_datetime_local_text(
+                        match.scheduled_at,
+                        tz=resolve_timezone_for_user_id(player_id),
+                    )
+                    created.extend(
+                        NotificationFactory.create_bulk_notification(
+                            user_ids=[player_id],
+                            notification_type=NotificationType.MATCH_REMINDER,
+                            title=_("Promemoria match"),
+                            message=_(
+                                "Il tuo match è programmato per il "
+                                "%(when)s%(location)s",
+                                when=when,
+                                location=(
+                                    f" presso {location_text}" if location_text else ""
+                                ),
+                            ),
+                            priority=NotificationPriority.HIGH,
+                            related_entities={"individual_match_id": match.id},
+                            action_url=(
+                                f"{MatchLifecycleService.REMINDER_URL_PREFIX}"
+                                f"{match.id}"
+                            ),
+                            action_text=_("Visualizza"),
+                            continue_on_error=True,
+                        )
+                    )
                 # `create_bulk_notification` mette None in lista sia per un
                 # errore sia per una preferenza che blocca l'invio: se sono
                 # tutti None non è uscito niente e il match non va contato.

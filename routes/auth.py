@@ -33,6 +33,20 @@ def login():
         if user:
             login_user(user)
 
+            # Il fuso arriva da un campo nascosto riempito dal browser: da qui
+            # in poi ogni orario della sessione è già quello giusto, senza la
+            # pagina intermedia mostrata nel fuso vecchio. Non blocca il login
+            # se qualcosa va storto — un fuso sbagliato è un fastidio, un login
+            # che fallisce è una porta chiusa (ADR-043).
+            try:
+                UserService.remember_timezone(user.id, request.form.get("timezone"))
+            except Exception:
+                import logging
+
+                logging.getLogger(__name__).warning(
+                    "Fuso orario non registrato al login", exc_info=True
+                )
+
             # Gamification: Welcome message
             try:
                 from models.gamification.frontend_bridge import (
@@ -226,3 +240,31 @@ def reset_password(token):
             return render_template("auth/reset_password.html", token=token)
 
     return render_template("auth/reset_password.html", token=token)
+
+
+@auth_bp.route("/timezone", methods=["POST"])
+@login_required
+def sync_timezone():
+    """Il browser dice in che fuso sta l'utente, quando è cambiato.
+
+    Il campo nascosto del login copre l'accesso; questo copre tutto il resto:
+    la sessione ripresa da «ricordami» (che un login non lo fa), e chi si
+    sposta di fuso a sessione aperta. La pagina chiama solo quando il fuso del
+    browser è **diverso** da quello salvato, quindi in condizioni normali non
+    parte nessuna richiesta.
+
+    Risponde sempre 204: al chiamante non serve sapere niente, e un fuso
+    rifiutato perché inventato non è un errore da mostrare a nessuno.
+    """
+    from flask import Response
+    from flask_login import current_user
+
+    payload = request.get_json(silent=True) or {}
+    try:
+        UserService.remember_timezone(current_user.id, payload.get("timezone"))
+    except Exception:
+        import logging
+
+        logging.getLogger(__name__).warning("Fuso orario non aggiornato", exc_info=True)
+
+    return Response(status=204)

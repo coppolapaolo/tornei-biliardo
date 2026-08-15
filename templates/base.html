@@ -123,6 +123,27 @@
                 if (el) { e.preventDefault(); window.EloToggle.toggle(); }
             });
 
+            {% if current_user.is_authenticated %}
+            /* Il fuso di chi legge (ADR-043). Il campo nascosto del login copre
+               l'accesso; questo copre il resto: la sessione ripresa da
+               "ricordami", che un login non lo fa, e chi si sposta di fuso a
+               sessione aperta. Si scrive solo quando il browser dice una cosa
+               diversa da quella salvata, quindi in condizioni normali non parte
+               nessuna richiesta. */
+            (function () {
+                var known = {{ (current_user.timezone or '')|tojson }};
+                var here;
+                try { here = Intl.DateTimeFormat().resolvedOptions().timeZone; }
+                catch (e) { return; }
+                if (!here || here === known) { return; }
+                fetch({{ url_for('auth.sync_timezone')|tojson }}, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken()},
+                    body: JSON.stringify({timezone: here})
+                }).catch(function () { /* riproverà alla pagina dopo */ });
+            })();
+            {% endif %}
+
             document.querySelectorAll('[data-utc]').forEach(function (element) {
                 element.textContent = TourneyUtils.utcToLocal(element.getAttribute('data-utc'));
             });
