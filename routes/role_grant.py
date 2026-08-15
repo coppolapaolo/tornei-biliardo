@@ -10,6 +10,7 @@ decisione su chi può cosa è delegata a ``RoleGrantService.can_grant`` /
 from flask import (
     Blueprint,
     abort,
+    current_app,
     flash,
     redirect,
     render_template,
@@ -25,6 +26,7 @@ from models.user.models import User
 from models.user.role_enum import GrantableRole
 from models.user.role_grant_service import GRANT_POLICY, RoleGrantService
 from utils.route_helpers import handle_service_action
+from utils.safe_redirect import safe_next_url
 
 role_grant_bp = Blueprint("roles", __name__, url_prefix="/roles")
 
@@ -190,5 +192,42 @@ def revoke_role(role: str, user_id: int):
         action=lambda: RoleGrantService.revoke(user_id, grantable, actor),
         redirect_url=redirect_url,
         success_message=_("Ruolo revocato."),
+        error_prefix=None,
+    )
+
+
+# ────────────────────────────────────────────────────────────────────────────────
+# Auto-concessione in debug (US-D1)
+# ────────────────────────────────────────────────────────────────────────────────
+@role_grant_bp.route("/debug/self-grant/<role>", methods=["POST"])
+@login_required
+def debug_self_grant(role: str):
+    """«Diventa esaminatore» dalla barra di debug, senza costruire una catena.
+
+    **Doppia guardia, e nessuna delle due è ridondante.** Qui si fa
+    ``abort(404)`` fuori da ``DEBUG_MODE`` — l'endpoint non deve nemmeno
+    esistere in produzione — e il servizio rifiuta comunque, perché una guardia
+    sola sarebbe a un refactor di distanza dal cadere.
+
+    Il grant creato è **normale**: revocabile, e visibile nell'audit della
+    catena con la nota ``debug self-grant``. Un ruolo ottenuto da qui non è di
+    seconda classe, è solo arrivato per una scorciatoia.
+    """
+    if not current_app.config.get("DEBUG_MODE", False):
+        abort(404)
+
+    grantable = _parse_role_or_404(role)
+    user = _current_user_obj()
+    # ``next`` arriva da un form: passato grezzo a ``redirect()`` sarebbe un
+    # open redirect. Che la route esista solo in DEBUG_MODE non è una scusa —
+    # è lo stesso presidio che usa ``routes/auth.py``.
+    redirect_url = safe_next_url(request.form.get("next")) or url_for(
+        "challenge.challenge_catalog"
+    )
+
+    return handle_service_action(
+        action=lambda: RoleGrantService.debug_self_grant(user, grantable),
+        redirect_url=redirect_url,
+        success_message=_("Ruolo concesso (debug)."),
         error_prefix=None,
     )

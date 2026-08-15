@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% import "components/_challenge_bits.html" as ch with context %}
+
+{% block title %}{{ attempt.exam.name }}{% endblock %}
+
+{% block page_title %}{{ attempt.exam.name }}{% endblock %}
+{% block page_sub %}
+  {% if attempt.mode == 'certified' %}{{ _("Sessione certificata") }}
+  {% else %}{{ _("Allenamento in autonomia") }}{% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="c7-stack">
+
+  {# ── L'attesa è uno stato, non una schermata (US-P6) ────────────────── #}
+  {% if attempt.status == 'awaiting_player_start' %}
+  <div class="c7-card c7-card--warn">
+    <div class="c7-rows__title">{{ _("In attesa che il candidato accetti") }}</div>
+    <div class="c7-rows__sub">
+      {{ _("Finché non accetta, nessun punteggio è registrabile: nessuno viene valutato a sua insaputa.") }}
+    </div>
+    {% if is_candidate %}
+    <form method="POST" action="{{ url_for('exam.accept_session_start', attempt_id=attempt.id) }}">
+      <button type="submit" class="btn btn-success" style="margin-top:12px">{{ _("Accetto: iniziamo") }}</button>
+    </form>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {# ── Avanzamento ────────────────────────────────────────────────────── #}
+  <div class="c7-card">
+    <div class="c7-label">{{ _("Avanzamento") }}</div>
+    <div style="margin-top:8px;display:flex;align-items:baseline;gap:6px">
+      <span class="c7-num-lg">{{ progress.completed_challenges }}</span>
+      <span class="c7-rows__sub">/ {{ progress.total_challenges }}</span>
+    </div>
+    <div style="margin-top:10px;height:8px;border-radius:var(--c7-r-pill);background:var(--c7-sunken)">
+      <span style="display:block;height:100%;border-radius:var(--c7-r-pill);
+                   background:var(--c7-accent);width:{{ progress.progress_percentage|round|int }}%"></span>
+    </div>
+    {% if attempt.max_possible_score %}
+    <div class="c7-rows__sub" style="margin-top:10px">
+      {{ _("Punteggio: %(score)s su %(max)s", score=attempt.total_score, max=attempt.max_possible_score) }}
+    </div>
+    {% endif %}
+  </div>
+
+  {# ── I drill, uno per uno ───────────────────────────────────────────── #}
+  <div class="c7-sechead"><h2>{{ _("I drill") }}</h2></div>
+
+  {% set can_score = attempt.status == 'in_progress'
+                     and (is_examiner or (is_candidate and attempt.mode == 'self_practice')) %}
+  <div class="c7-stack">
+    {% for result in attempt.challenge_results %}
+    {% set ec = result.exam_challenge %}
+    <div class="c7-card">
+      <div style="display:flex;align-items:center;gap:12px">
+        {{ ch.thumb(ec.challenge, 40, 'var(--c7-r-chip)') }}
+        <div style="flex:1;min-width:0">
+          <div class="c7-rows__title">{{ ec.challenge.get_display_name() }}</div>
+          <div class="c7-rows__sub">
+            {% if ec.is_pass_fail %}{{ _("Superato / non superato") }}
+            {% else %}{{ _("Da 0 a %(n)s", n=ec.effective_max_score) }}{% endif %}
+          </div>
+        </div>
+        {% if result.passed is not none %}
+        <span class="c7-state c7-state--{{ 'ok' if result.passed else 'err' }}">
+          {{ _("Superato") if result.passed else _("Non superato") }}
+        </span>
+        {% elif result.score is not none %}
+        <span class="c7-num" style="font-size:18px;font-weight:800">{{ result.score }}</span>
+        {% else %}
+        <span class="c7-pill">{{ _("Da svolgere") }}</span>
+        {% endif %}
+      </div>
+
+      {% if can_score %}
+      <form method="POST" action="{{ url_for('exam.record_result', attempt_id=attempt.id) }}"
+            style="margin-top:12px;display:flex;gap:8px;align-items:center">
+        <input type="hidden" name="exam_challenge_id" value="{{ ec.id }}">
+        {% if ec.is_pass_fail %}
+        <button type="submit" name="passed" value="1" class="btn btn-success btn-sm">{{ _("Superato") }}</button>
+        <button type="submit" name="passed" value="0" class="btn btn-sm"
+                style="background:var(--c7-err-bg);color:var(--c7-err-ink)">{{ _("Non superato") }}</button>
+        {% else %}
+        <input class="form-control" type="number" name="score" min="0" max="{{ ec.effective_max_score }}"
+               required style="max-width:120px" placeholder="{{ _('Punteggio') }}">
+        <button type="submit" class="btn btn-primary btn-sm">{{ _("Registra") }}</button>
+        {% endif %}
+      </form>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  {# ── Chiusura ───────────────────────────────────────────────────────── #}
+  {% if attempt.status == 'in_progress' %}
+  <div class="c7-sechead"><h2>{{ _("Chiudi la sessione") }}</h2></div>
+
+  {% if attempt.mode == 'certified' and is_examiner %}
+  <div class="c7-card">
+    <div class="c7-rows__sub">
+      {{ _("L'esito è netto: superato oppure no. Nessun voto, nessuna nota.") }}
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px">
+      <form method="POST" action="{{ url_for('exam.complete_attempt', attempt_id=attempt.id) }}">
+        <input type="hidden" name="passed" value="1">
+        <button type="submit" class="btn btn-success"
+                onclick="return confirm({{ _('Certificare l\'esame come superato?')|tojson }})">
+          {{ _("Superato") }}
+        </button>
+      </form>
+      <form method="POST" action="{{ url_for('exam.complete_attempt', attempt_id=attempt.id) }}">
+        <input type="hidden" name="passed" value="0">
+        <button type="submit" class="btn" style="background:var(--c7-err-bg);color:var(--c7-err-ink)"
+                onclick="return confirm({{ _('Certificare l\'esame come non superato?')|tojson }})">
+          {{ _("Non superato") }}
+        </button>
+      </form>
+    </div>
+  </div>
+  {% elif attempt.mode == 'self_practice' and is_candidate %}
+  <form method="POST" action="{{ url_for('exam.complete_attempt', attempt_id=attempt.id) }}">
+    <button type="submit" class="btn btn-primary">{{ _("Chiudi l'allenamento") }}</button>
+  </form>
+  {% endif %}
+
+  <form method="POST" action="{{ url_for('exam.abandon_attempt', attempt_id=attempt.id) }}">
+    <button type="submit" class="btn btn-outline-secondary btn-sm"
+            onclick="return confirm({{ _('Interrompere la sessione senza esito?')|tojson }})">
+      {{ _("Interrompi senza esito") }}
+    </button>
+  </form>
+  {% endif %}
+
+  {# ── Esito ──────────────────────────────────────────────────────────── #}
+  {% if attempt.status == 'completed' and attempt.mode == 'certified' %}
+  <div class="c7-card c7-card--{{ 'ok' if attempt.passed else 'err' }}">
+    <div class="c7-rows__title">
+      {{ _("Esame superato") if attempt.passed else _("Esame non superato") }}
+    </div>
+    <div class="c7-rows__sub">
+      {% if attempt.examiner %}
+      {{ _("Certificato da %(who)s", who=attempt.examiner.username) }}
+      {% endif %}
+      {% if attempt.certified_at %}
+      <span class="c7-sep">·</span><span class="c7-num">{{ attempt.certified_at|date_local }}</span>
+      {% endif %}
+    </div>
+  </div>
+  {% elif attempt.status == 'abandoned' %}
+  <div class="c7-card">
+    <div class="c7-rows__title">{{ _("Sessione interrotta") }}</div>
+    <div class="c7-rows__sub">{{ _("Senza esito: non è una bocciatura.") }}</div>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _("Esaminatori") }}{% endblock %}
+
+{% block page_title %}{{ _("Esaminatori") }}{% endblock %}
+{% block page_sub %}{{ exam.name }}{% endblock %}
+
+{% block content %}
+<section class="c7-stack">
+
+  <div class="c7-sechead">
+    <h2>{{ _("Chi lo somministra") }}</h2>
+    <span class="c7-sechead__note">{{ current|length }}</span>
+  </div>
+  <div class="c7-rows">
+    {% for user in current %}
+    <div class="c7-rows__row">
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">{{ user.username }}</div>
+        {% if user.id == exam.examiner_id %}
+        <div class="c7-rows__sub">{{ _("Ha composto l'esame") }}</div>
+        {% endif %}
+      </div>
+      {% if user.id != exam.examiner_id %}
+      <form method="POST" action="{{ url_for('exam.remove_examiner', exam_id=exam.id, user_id=user.id) }}">
+        <button type="submit" class="btn btn-sm"
+                style="background:var(--c7-err-bg);color:var(--c7-err-ink)">{{ _("Togli") }}</button>
+      </form>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="c7-sechead"><h2>{{ _("Aggiungi un esaminatore") }}</h2></div>
+  {% if candidates %}
+  <form method="POST" action="{{ url_for('exam.add_examiner', exam_id=exam.id) }}" class="c7-card">
+    <label class="c7-label" for="user_id">{{ _("Chi") }}</label>
+    <select class="form-control" id="user_id" name="user_id" required>
+      {% for user in candidates %}
+      <option value="{{ user.id }}">{{ user.username }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-primary" style="margin-top:12px">{{ _("Aggiungi") }}</button>
+  </form>
+  {% else %}
+  {# UJ-1: all'inizio l'unico esaminatore del sistema è il creatore, e la
+     schermata deve reggerlo invece di mostrare un menu senza voci. #}
+  <div class="c7-empty">
+    <div class="c7-empty__ico"><i class="fas fa-user-plus"></i></div>
+    <h2 class="c7-empty__title">{{ _("Nessun candidato") }}</h2>
+    <p class="c7-empty__text">
+      {{ _("Non c'è ancora nessun altro esaminatore da aggiungere: sei l'unico titolare del ruolo.") }}
+    </p>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

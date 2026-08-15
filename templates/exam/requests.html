@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _("Appuntamenti d'esame") }}{% endblock %}
+
+{% block page_title %}{{ _("Appuntamenti d'esame") }}{% endblock %}
+{% block page_sub %}{{ _("Le richieste che hai inviato e quelle che hai ricevuto") }}{% endblock %}
+
+{% macro request_row(r, side) %}
+<a class="c7-rows__row" href="{{ url_for('exam.request_detail', request_id=r.id) }}"
+   style="text-decoration:none;color:inherit">
+  <div class="c7-rows__main">
+    <div class="c7-rows__title">{{ r.exam.name }}</div>
+    <div class="c7-rows__sub">
+      {% if side == 'received' %}{{ r.requester.username }}<span class="c7-sep">·</span>{% endif %}
+      <span class="c7-num">{{ r.scheduled_at|datetime_local }}</span>
+    </div>
+  </div>
+  {% if r.status == 'accepted' %}
+  <span class="c7-state c7-state--ok">{{ _("Confermato") }}</span>
+  {% elif r.status == 'negotiating' %}
+  <span class="c7-pill">{{ _("In trattativa") }}</span>
+  {% elif r.status == 'cancelled' %}
+  <span class="c7-pill">{{ _("Ritirata") }}</span>
+  {% else %}
+  <span class="c7-pill">{{ _("Scaduta") }}</span>
+  {% endif %}
+</a>
+{% endmacro %}
+
+{% block content %}
+<section class="c7-stack">
+  {% if received %}
+  <div class="c7-sechead">
+    <h2>{{ _("Ricevute") }}</h2>
+    <span class="c7-sechead__note">{{ received|length }}</span>
+  </div>
+  <div class="c7-rows">
+    {% for r in received %}{{ request_row(r, 'received') }}{% endfor %}
+  </div>
+  {% endif %}
+
+  {% if sent %}
+  <div class="c7-sechead">
+    <h2>{{ _("Inviate") }}</h2>
+    <span class="c7-sechead__note">{{ sent|length }}</span>
+  </div>
+  <div class="c7-rows">
+    {% for r in sent %}{{ request_row(r, 'sent') }}{% endfor %}
+  </div>
+  {% endif %}
+
+  {% if not sent and not received %}
+  <div class="c7-empty">
+    <div class="c7-empty__ico"><i class="fas fa-calendar-day"></i></div>
+    <h2 class="c7-empty__title">{{ _("Nessun appuntamento") }}</h2>
+    <p class="c7-empty__text">
+      {{ _("Quando chiederai di sostenere un esame, la trattativa comparirà qui.") }}
+    </p>
+    {% if feature_visible('exam.exam_catalog') %}
+    <a class="btn btn-primary" href="{{ url_for('exam.exam_catalog') }}">{{ _("Vedi gli esami") }}</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

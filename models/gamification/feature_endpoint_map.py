@@ -37,12 +37,7 @@ FEATURE_PRIMARY_ENDPOINT: dict[str, str] = {
     "challenge_creation": "challenge.challenge_catalog",
     # Esami e ruolo esaminatore (ADR-041/042)
     "request_examiner": "roles.request_role_form",
-    # ``take_exam`` manca **di proposito**: il suo endpoint primario è
-    # ``exam.exam_catalog``, che nasce con il blueprint dell'esame. Mapparlo
-    # prima farebbe fallire ``test_all_mapped_endpoints_actually_exist``, e
-    # senza quel test fallirebbe in silenzio: un endpoint inesistente in mappa
-    # rende la feature sempre invisibile, quindi il toast di sblocco non
-    # partirebbe mai. Va aggiunto insieme alla route.
+    "take_exam": "exam.exam_catalog",
 }
 
 

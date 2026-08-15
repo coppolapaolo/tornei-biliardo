@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _("Appuntamento d'esame") }}{% endblock %}
+
+{% block page_title %}{{ exam_request.exam.name }}{% endblock %}
+{% block page_sub %}{{ _("Appuntamento d'esame") }}{% endblock %}
+
+{% block content %}
+<section class="c7-stack">
+
+  {# ── Lo slot sul tavolo ─────────────────────────────────────────────── #}
+  <div class="c7-card {{ 'c7-card--ok' if exam_request.is_accepted else 'c7-card--accent' }}">
+    <div class="c7-label">
+      {% if exam_request.is_accepted %}{{ _("Appuntamento confermato") }}
+      {% else %}{{ _("Proposta sul tavolo") }}{% endif %}
+    </div>
+    <div class="c7-rows__title" style="margin-top:8px">
+      <span class="c7-num">{{ exam_request.scheduled_at|datetime_local }}</span>
+    </div>
+    <div class="c7-rows__sub">
+      {% if exam_request.billiard_hall %}{{ exam_request.billiard_hall.name }}{% endif %}
+      {% if exam_request.last_proposed_by %}
+      <span class="c7-sep">·</span>
+      {{ _("proposto da %(who)s", who=exam_request.last_proposed_by.username) }}
+      {% endif %}
+    </div>
+    {% if exam_request.is_accepted and exam_request.accepted_by %}
+    <div class="c7-rows__sub" style="margin-top:8px">
+      {{ _("Con %(who)s", who=exam_request.accepted_by.username) }}
+    </div>
+    {% endif %}
+  </div>
+
+  {# ── Chi è stato interpellato ───────────────────────────────────────── #}
+  <div class="c7-sechead"><h2>{{ _("Esaminatori interpellati") }}</h2></div>
+  <div class="c7-rows">
+    {% for r in exam_request.recipients %}
+    <div class="c7-rows__row">
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">{{ r.examiner.username }}</div>
+      </div>
+      {% if r.status == 'accepted' %}
+      <span class="c7-state c7-state--ok">{{ _("Ha accettato") }}</span>
+      {% elif r.status == 'rejected' %}
+      <span class="c7-state c7-state--err">{{ _("Si è sfilato") }}</span>
+      {% elif r.status == 'closed' %}
+      {# Non ha detto di no: non ha fatto in tempo. La differenza si vede. #}
+      <span class="c7-pill">{{ _("Richiesta chiusa") }}</span>
+      {% else %}
+      <span class="c7-pill">{{ _("In attesa") }}</span>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  {# ── Lo storico della trattativa ────────────────────────────────────── #}
+  {% if exam_request.time_proposals|length > 1 %}
+  <div class="c7-sechead"><h2>{{ _("Come ci siete arrivati") }}</h2></div>
+  <div class="c7-rows">
+    {% for p in exam_request.time_proposals %}
+    <div class="c7-rows__row">
+      <div class="c7-rows__main">
+        <div class="c7-rows__title c7-num" style="font-size:14px">
+          {{ p.scheduled_at|datetime_local }}
+        </div>
+        <div class="c7-rows__sub">
+          {{ p.proposed_by.username }}
+          {% if p.billiard_hall %}<span class="c7-sep">·</span>{{ p.billiard_hall.name }}{% endif %}
+        </div>
+      </div>
+      {% if p.superseded_at is none %}
+      <span class="c7-pill">{{ _("attuale") }}</span>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {# ── Cosa posso fare adesso ─────────────────────────────────────────── #}
+  {% if can_act %}
+    {% if locked_out %}
+    {# Invariante 2: la trattativa è a due, gli altri possono solo accettare. #}
+    <div class="c7-card">
+      <div class="c7-rows__sub">
+        {{ _("La trattativa è in corso con un altro esaminatore: puoi accettare la proposta attuale, o lasciar scadere.") }}
+      </div>
+      <form method="POST" action="{{ url_for('exam.accept_request', request_id=exam_request.id) }}"
+            style="margin-top:12px">
+        <button type="submit" class="btn btn-success">{{ _("Accetto questo slot") }}</button>
+      </form>
+    </div>
+    {% elif waiting_for_the_other %}
+    {# Invariante 1: chi ha proposto per ultimo aspetta. Dirlo, invece di
+       offrire un bottone che il servizio rifiuterebbe. #}
+    <div class="c7-card">
+      <div class="c7-rows__title">{{ _("Tocca all'altra parte") }}</div>
+      <div class="c7-rows__sub">{{ _("Hai fatto tu l'ultima proposta: attendi una risposta.") }}</div>
+    </div>
+    {% else %}
+    <div class="c7-sechead"><h2>{{ _("Rispondi") }}</h2></div>
+    <div class="c7-card">
+      <form method="POST" action="{{ url_for('exam.accept_request', request_id=exam_request.id) }}">
+        <button type="submit" class="btn btn-success">{{ _("Accetto lo slot proposto") }}</button>
+      </form>
+
+      <div class="c7-divider" style="margin:16px 0"></div>
+
+      <div class="c7-label">{{ _("Oppure controproponi") }}</div>
+      <form method="POST" action="{{ url_for('exam.counter_propose', request_id=exam_request.id) }}"
+            style="margin-top:8px">
+        <input class="form-control" type="datetime-local" name="scheduled_at" required>
+        <div class="c7-rows__sub" style="margin-top:8px">
+          {{ _("La sala resta la stessa se non ne indichi un'altra.") }}
+        </div>
+        <button type="submit" class="btn btn-outline-primary" style="margin-top:12px">
+          {{ _("Controproponi") }}
+        </button>
+      </form>
+    </div>
+    {% endif %}
+
+    <div style="display:flex;gap:8px">
+      {% if is_requester %}
+      <form method="POST" action="{{ url_for('exam.cancel_request', request_id=exam_request.id) }}">
+        <button type="submit" class="btn btn-outline-secondary btn-sm"
+                onclick="return confirm({{ _('Ritirare la richiesta?')|tojson }})">
+          {{ _("Ritira la richiesta") }}
+        </button>
+      </form>
+      {% endif %}
+      {% if is_recipient and recipient and recipient.is_pending %}
+      <form method="POST" action="{{ url_for('exam.decline_request', request_id=exam_request.id) }}">
+        <button type="submit" class="btn btn-outline-secondary btn-sm">{{ _("Non posso") }}</button>
+      </form>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  {# ── La sessione, quando l'appuntamento è fissato ───────────────────── #}
+  {% if exam_request.is_accepted %}
+  <div class="c7-sechead"><h2>{{ _("La sessione") }}</h2></div>
+  {% if attempt %}
+  <a class="btn btn-primary" href="{{ url_for('exam.session_detail', attempt_id=attempt.id) }}">
+    {{ _("Vai alla sessione") }}
+  </a>
+  {% elif is_recipient and exam_request.accepted_by_id == current_user.id %}
+  <form method="POST" action="{{ url_for('exam.open_certified_session', request_id=exam_request.id) }}">
+    <button type="submit" class="btn btn-success">{{ _("Apri la sessione") }}</button>
+    <div class="c7-rows__sub" style="margin-top:8px">
+      {{ _("Il candidato dovrà accettare l'inizio prima che tu possa registrare i punteggi.") }}
+    </div>
+  </form>
+  {% else %}
+  <div class="c7-rows__sub">{{ _("L'esaminatore aprirà la sessione al momento dell'esame.") }}</div>
+  {% endif %}
+  {% endif %}
+</section>
+{% endblock %}

@@ -322,33 +322,68 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # Admin overview: solo admin (@admin_required).
     "individual_match.admin_overview": set(),
     # === Ruoli concedibili e delega (ADR-041) ===
-    # ROLLOUT: tutta la superficie è **admin-only** finché gli esami non
-    # esistono davvero. Il ruolo di esaminatore serve a somministrare esami:
-    # esporlo ai giocatori prima delle Fasi 2-5 significherebbe offrire un
-    # "Diventa Esaminatore" che non porta da nessuna parte. Admin bypassa la
-    # matrice, quindi il bootstrap (US-A1: promozione dalla scheda utente) e i
-    # test manuali in produzione restano possibili da subito.
+    # APERTO IN FASE 5 insieme al catalogo esami: il ruolo di esaminatore serve
+    # a somministrare esami, e ora gli esami esistono. Fino alla Fase 4 questa
+    # superficie era tutta a `set()` — un "Diventa esaminatore" che non portava
+    # da nessuna parte sarebbe stato peggio di nessun bottone.
     #
-    # In sviluppo il middleware è pass-through, quindi il percorso completo si
-    # prova normalmente con DEBUG_MODE=true.
-    #
-    # DA APRIRE IN FASE 5 (piano §5.2), insieme al catalogo esami:
-    #   "roles.request_role_form":   {"player", "director"}
-    #   "roles.request_role":        {"player", "director"}
-    #   "roles.role_requests":       {"examiner"}
-    #   "roles.process_role_request":{"examiner"}
-    #   "roles.grant_role":          {"examiner"}
-    # Il gate di progressione (can_access('request_examiner')) è ortogonale e
-    # verificato da route e service: questo layer governa solo la visibilità.
-    "roles.request_role_form": set(),
-    "roles.request_role": set(),
-    "roles.role_requests": set(),
-    "roles.process_role_request": set(),
-    "roles.grant_role": set(),
+    # Il gate di progressione (`can_access('request_examiner')`) è **ortogonale**
+    # e verificato da route e service: questo layer governa solo la visibilità.
+    "roles.request_role_form": {"player", "director"},
+    "roles.request_role": {"player", "director"},
+    "roles.role_requests": {"examiner"},
+    "roles.process_role_request": {"examiner"},
+    "roles.grant_role": {"examiner"},
     # Audit della catena e revoca: solo admin **per scelta**, non per rollout
-    # (US-A3) — restano set() anche dopo la Fase 5.
+    # (US-A3) — con la propagazione a catena la revoca è l'unico punto di
+    # contenimento, e resta in mano ad admin anche adesso.
     "roles.role_holders": set(),
     "roles.revoke_role": set(),
+    # Auto-concessione di debug: la route fa già `abort(404)` fuori da
+    # DEBUG_MODE, quindi in produzione non esiste. `set()` è ridondante per
+    # sicurezza, ma dichiara la decisione invece di lasciarla implicita.
+    "roles.debug_self_grant": set(),
+    # === Esami (ADR-042) ===
+    # Il candidato è un player; l'esaminatore è un ruolo concedibile ortogonale,
+    # quindi molte voci sono `{"player", "examiner"}`: un esaminatore resta
+    # player e continua a sostenere esami altrui.
+    #
+    # Il gate `take_exam` è ortogonale a questa matrice e vive nelle route.
+    "exam.exam_catalog": {"player", "director", "examiner"},
+    "exam.exam_detail": {"player", "director", "examiner"},
+    # Sessioni: le vedono candidato ed esaminatore, la route filtra su chi è
+    # coinvolto in quella specifica sessione.
+    "exam.session_detail": {"player", "director", "examiner"},
+    "exam.start_self_practice": {"player", "director", "examiner"},
+    "exam.accept_session_start": {"player", "director", "examiner"},
+    "exam.record_result": {"player", "director", "examiner"},
+    "exam.complete_attempt": {"player", "director", "examiner"},
+    "exam.abandon_attempt": {"player", "director", "examiner"},
+    # Appuntamento: il candidato chiede, l'esaminatore risponde. Entrambi
+    # contrattano, quindi la negoziazione è aperta a tutti e due.
+    "exam.request_form": {"player", "director", "examiner"},
+    "exam.create_request": {"player", "director", "examiner"},
+    "exam.request_list": {"player", "director", "examiner"},
+    "exam.request_detail": {"player", "director", "examiner"},
+    "exam.counter_propose": {"player", "director", "examiner"},
+    "exam.accept_request": {"player", "director", "examiner"},
+    "exam.cancel_request": {"player", "director", "examiner"},
+    # Rifiutare una richiesta lo fa solo chi è stato interpellato.
+    "exam.decline_request": {"examiner"},
+    # Aprire la sessione è dell'esaminatore che ha accettato l'appuntamento.
+    "exam.open_certified_session": {"examiner"},
+    # Composizione e gestione: solo esaminatori.
+    "exam.manage_exams": {"examiner"},
+    "exam.create_exam": {"examiner"},
+    "exam.update_exam": {"examiner"},
+    "exam.deactivate_exam": {"examiner"},
+    "exam.add_challenge": {"examiner"},
+    "exam.update_challenge": {"examiner"},
+    "exam.remove_challenge": {"examiner"},
+    "exam.reorder_challenges": {"examiner"},
+    "exam.manage_examiners": {"examiner"},
+    "exam.add_examiner": {"examiner"},
+    "exam.remove_examiner": {"examiner"},
 }
 
 

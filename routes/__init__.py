@@ -16,6 +16,7 @@ def register_blueprints(app):
 
     # Import dei blueprint extended domains (Phase 3)
     from .challenge import challenge_bp
+    from .exam import exam_bp
     from .individual_match import individual_match_bp
     from .rating import rating_bp
 
@@ -42,6 +43,10 @@ def register_blueprints(app):
 
     # Registrazione blueprints extended domains
     app.register_blueprint(challenge_bp, url_prefix="/challenges")
+    # Esami (ADR-042): un esame è una sequenza di drill, ma vive per conto suo —
+    # ha un ciclo di vita, degli esaminatori e degli appuntamenti che il
+    # catalogo challenge non ha.
+    app.register_blueprint(exam_bp, url_prefix="/exam")
     app.register_blueprint(individual_match_bp, url_prefix="/match")
     app.register_blueprint(rating_bp, url_prefix="/rating")
 
