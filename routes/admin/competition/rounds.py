@@ -766,38 +766,14 @@ def start_round_generic(gara_id, round_number):
 # ====================================================================
 
 
-@competition_bp.route("/<int:gara_id>/round_management")
-@login_required
-@gara_manager_required
-def round_management_overview(gara_id):
-    """Overview of round management with modification capabilities."""
-    from models.competition.round_manager import AdvancedRoundManager
-
-    gara = db.get_or_404(Gara, gara_id)
-
-    # Get round modification summary
-    rounds_summary = AdvancedRoundManager.get_round_modification_summary(gara_id)
-
-    # Get all matches grouped by round
-    matches_by_round = {}
-    all_matches = (
-        Match.query.filter_by(gara_id=gara_id)
-        .order_by(Match.round_number, Match.id)
-        .all()
-    )
-
-    for match in all_matches:
-        round_num = match.round_number
-        if round_num not in matches_by_round:
-            matches_by_round[round_num] = []
-        matches_by_round[round_num].append(match)
-
-    return render_template(
-        "admin/round_management.html",
-        gara=gara,
-        rounds_summary=rounds_summary,
-        matches_by_round=matches_by_round,
-    )
+# NOTA: qui viveva `round_management_overview` (`GET /<gara_id>/round_management`),
+# una pagina a sé che renderizzava `admin/round_management.html`. Quel template non
+# esiste (né esiste nella storia del repo): la route sollevava `TemplateNotFound`,
+# cioè 500, per chiunque la aprisse. La gestione dei turni sta da tempo dentro
+# `templates/components/_round_management.html`, incluso nella pagina della gara.
+# Le tre azioni qui sotto ci rimandavano dopo aver lavorato: il direttore vedeva un
+# 500 al posto dell'esito, e `resetLastRound` in `gara_detail.html` mostrava
+# "errore" su un reset andato a buon fine. Ora rimandano alla pagina della gara.
 
 
 @competition_bp.route(
@@ -825,9 +801,7 @@ def reset_match_advanced(gara_id, match_id):
         logger.error(f"Error resetting match: {e}", exc_info=True)
         flash("Errore interno del server", "danger")
 
-    return redirect(
-        url_for("admin.competition.round_management_overview", gara_id=gara_id)
-    )
+    return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
 
 @competition_bp.route(
@@ -856,9 +830,7 @@ def cancel_round_advanced(gara_id, round_number):
         logger.error(f"Error cancelling round: {e}", exc_info=True)
         flash("Errore interno del server", "danger")
 
-    return redirect(
-        url_for("admin.competition.round_management_overview", gara_id=gara_id)
-    )
+    return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
 
 @competition_bp.route(
@@ -887,9 +859,7 @@ def bulk_reset_round_matches(gara_id, round_number):
         logger.error(f"Error in bulk reset: {e}", exc_info=True)
         flash("Errore interno del server", "danger")
 
-    return redirect(
-        url_for("admin.competition.round_management_overview", gara_id=gara_id)
-    )
+    return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
 
 @competition_bp.route("/<int:gara_id>/match/<int:match_id>/modification_check")

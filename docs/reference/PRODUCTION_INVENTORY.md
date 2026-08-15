@@ -86,7 +86,6 @@ Per costruire la production allowlist, scorri ogni area in Sezione 1 e marca esp
 | `/admin/competition/<int:gara_id>/save_ssr_scores` | POST | `admin.competition.save_ssr_scores` | `@gara_manager_required` | action | Salva risultati SSR |
 | `/admin/competition/amalfi/classification/<int:gara_id>/<int:round_number>` | GET | `admin.competition.amalfi_classification` | `@login_required` | JSON API | Ritorna classificazione Amalfi per round |
 | `/admin/competition/<int:gara_id>/start_round/<int:round_number>` | POST | `admin.competition.start_round` | `@gara_manager_required` | action | Avvia turno specifico |
-| `/admin/competition/<int:gara_id>/round_management` | GET | `admin.competition.round_management` | `@gara_manager_required` | UI page | Pagina gestione turni |
 | `/admin/competition/<int:gara_id>/round_status` | GET | `admin.competition.round_status` | `@login_required` | JSON API | Stato corrente turno |
 | `/admin/competition/<int:gara_id>/round-config` | GET | `admin.competition.round_config` | `@gara_manager_required` | UI page | Configurazione turno |
 | `/admin/competition/<int:gara_id>/match/<int:match_id>/modification_check` | GET | `admin.competition.modification_check` | `@login_required` | JSON API | Verifica se match è modificabile |

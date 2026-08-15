@@ -43,10 +43,20 @@ esiste.
 
 Per sapere se una schermata è dentro o fuori non fidarti di `ENDPOINT_ROLES`
 (`utils/feature_flags.py`): quella matrice dice cosa è *raggiungibile* in
-produzione, non chi ha il permesso di usarlo. `admin.user.users_list` vi
-compare come `{"director"}` ma il decoratore `@admin_required` risponde 403 a
-un direttore. **La prova sta nel provarla**: apri la schermata con
-`/debug/login/<direttore>` e guarda se risponde.
+produzione, non chi ha il permesso di usarlo. Sono due strati distinti, e
+quando divergono vince il decoratore: un endpoint elencato `{"director"}` ma
+protetto da `@admin_required` risponde 403 a un direttore, e documentarlo
+significa promettere una funzione che non esiste. È già successo — `users_list`
+e `user_detail` sono stati listati per mesi come `{"director"}` mentre il
+decoratore li negava, e la voce è stata corretta proprio scrivendo questa
+guida. Vale anche il contrario: una route può essere fuori matrice (quindi 404
+in produzione) pur essendo aperta a tutti nel codice.
+
+**La prova sta nel provarla**: apri la schermata con `/debug/login/<direttore>`
+e guarda se risponde. Se una route risulta irraggiungibile o rotta, non
+aggirarla scrivendo la pagina «a memoria» — segnalalo, perché quasi sempre è un
+difetto dell'app, non della guida (così è emerso `round_management`, una pagina
+il cui template non è mai esistito).
 
 Verifica del perimetro (elenca le route non-admin che nessuna pagina dichiara
 in `screens:`):
