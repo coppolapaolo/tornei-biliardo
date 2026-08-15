@@ -5938,23 +5938,22 @@ msgstr ""
 msgid "Apri"
 msgstr ""
 
-#: templates/components/_gara_public_link.html:9
-#: templates/components/_gara_public_link.html:17
+#: templates/components/_gara_public_link.html:25
 msgid "Link pubblico di iscrizione"
 msgstr ""
 
-#: templates/components/_gara_public_link.html:13
+#: templates/components/_gara_public_link.html:34
 msgid ""
 "Condividi questo indirizzo su locandine, post o QR code: chi lo apre "
 "arriva su questa gara e si iscrive."
 msgstr ""
 
-#: templates/components/_gara_public_link.html:19
+#: templates/components/_gara_public_link.html:30
 msgid "Copiato!"
 msgstr ""
 
-#: templates/components/_gara_public_link.html:20
-msgid "Copia"
+#: templates/components/_gara_public_link.html:31
+msgid "Copia link"
 msgstr ""
 
 #: templates/components/_gara_tables_config.html:10

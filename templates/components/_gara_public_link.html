@@ -1,40 +1,65 @@
 {# templates/components/_gara_public_link.html #}
 {# Link pubblico di iscrizione alla gara (issue #61): l'indirizzo che il
    direttore mette su locandine, post e QR code. Visibile solo a chi gestisce
-   la gara — la route lo valorizza appunto solo in quel caso. #}
+   la gara — la route lo valorizza appunto solo in quel caso.
+
+   Vive DENTRO la card Gestione (_gara_management.html): condividere il link
+   e' una delle cose che si fanno da li' finche' ci si puo' iscrivere, non una
+   sezione a se'. Quindi qui niente `c7-card` e niente testata: il blocco
+   continua la pila della card che lo ospita, staccato da un filo.
+
+   Indirizzo e pulsante sono impilati, non affiancati in un `input-group`: in
+   Gestione la colonna e' larga ~230px sul desktop, e un campo di riga
+   troncherebbe il link a meta' — chi deve trascriverlo a mano (o dettarlo al
+   telefono) non lo vedrebbe mai per intero.
+
+   Niente `id`: _gara_management puo' essere incluso due volte (copia mobile +
+   copia desktop) e gli id duplicati romperebbero `getElementById`. Il
+   riferimento e' per attributo `data-*`, e l'ascoltatore e' delegato e
+   registrato una volta sola. #}
 
 {% if public_invite_url %}
-<div class="card mb-4">
-  <div class="card-header">
-    <h5 class="mb-0"><i class="fas fa-share-nodes"></i> {{ _('Link pubblico di iscrizione') }}</h5>
+<hr class="c7-divider">
+<div class="c7-linkshare" data-gara-public-link>
+  <div class="c7-label">
+    <i class="fas fa-share-nodes"></i> {{ _('Link pubblico di iscrizione') }}
   </div>
-  <div class="card-body">
-    <p class="text-muted small">
-      {{ _('Condividi questo indirizzo su locandine, post o QR code: chi lo apre arriva su questa gara e si iscrive.') }}
-    </p>
-    <div class="input-group">
-      <input type="text" class="form-control" id="garaPublicLink" value="{{ public_invite_url }}" readonly
-        aria-label="{{ _('Link pubblico di iscrizione') }}">
-      <button class="btn btn-outline-primary" type="button" id="garaPublicLinkCopy"
-        data-copied-label="{{ _('Copiato!') }}">
-        <i class="fas fa-copy"></i> {{ _('Copia') }}
-      </button>
-    </div>
+  <div class="c7-linkbox" data-gara-public-link-value>{{ public_invite_url }}</div>
+  <button class="btn btn-dark" type="button"
+    data-gara-public-link-copy
+    data-copied-label="{{ _('Copiato!') }}">
+    <i class="fas fa-copy"></i> {{ _('Copia link') }}
+  </button>
+  <div class="form-text">
+    {{ _('Condividi questo indirizzo su locandine, post o QR code: chi lo apre arriva su questa gara e si iscrive.') }}
   </div>
 </div>
 
 <script>
   (function () {
-    const input = document.getElementById('garaPublicLink');
-    const button = document.getElementById('garaPublicLinkCopy');
-    if (!input || !button) return;
+    // Ascoltatore delegato e registrato una volta sola: il componente puo'
+    // comparire piu' volte nella pagina e non deve dipendere da id.
+    if (window.__garaPublicLinkBound) return;
+    window.__garaPublicLinkBound = true;
 
-    button.addEventListener('click', function () {
-      // select() + setSelectionRange: su iOS il primo da solo non basta, e
-      // serve comunque come fallback visibile se la clipboard API non c'è
-      // (contesto non sicuro: l'utente vede il testo selezionato e copia).
-      input.select();
-      input.setSelectionRange(0, input.value.length);
+    document.addEventListener('click', function (event) {
+      const button = event.target.closest('[data-gara-public-link-copy]');
+      if (!button) return;
+
+      const block = button.closest('[data-gara-public-link]');
+      const target = block && block.querySelector('[data-gara-public-link-value]');
+      if (!target) return;
+
+      const url = target.textContent.trim();
+
+      // Selezione visibile: e' anche il fallback quando la clipboard API non
+      // c'e' (contesto non sicuro) — l'utente vede il link evidenziato e lo
+      // copia da se'.
+      const range = document.createRange();
+      range.selectNodeContents(target);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
 
       const done = function () {
         const original = button.innerHTML;
@@ -43,7 +68,7 @@
       };
 
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(input.value).then(done).catch(function () { });
+        navigator.clipboard.writeText(url).then(done).catch(function () { });
       }
     });
   })();

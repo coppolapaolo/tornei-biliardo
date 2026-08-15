@@ -6149,12 +6149,11 @@ msgstr "Your match"
 msgid "Apri"
 msgstr "Open"
 
-#: templates/components/_gara_public_link.html:9
-#: templates/components/_gara_public_link.html:17
+#: templates/components/_gara_public_link.html:25
 msgid "Link pubblico di iscrizione"
 msgstr "Public registration link"
 
-#: templates/components/_gara_public_link.html:13
+#: templates/components/_gara_public_link.html:34
 msgid ""
 "Condividi questo indirizzo su locandine, post o QR code: chi lo apre "
 "arriva su questa gara e si iscrive."
@@ -6162,13 +6161,13 @@ msgstr ""
 "Share this address on posters, social posts or QR codes: whoever opens it"
 " lands on this competition and registers."
 
-#: templates/components/_gara_public_link.html:19
+#: templates/components/_gara_public_link.html:30
 msgid "Copiato!"
 msgstr "Copied!"
 
-#: templates/components/_gara_public_link.html:20
-msgid "Copia"
-msgstr "Copy"
+#: templates/components/_gara_public_link.html:31
+msgid "Copia link"
+msgstr "Copy link"
 
 #: templates/components/_gara_tables_config.html:10
 #: templates/components/_gara_tables_config.html:49
