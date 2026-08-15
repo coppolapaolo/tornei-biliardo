@@ -42,6 +42,9 @@
     if (window.__garaPublicLinkBound) return;
     window.__garaPublicLinkBound = true;
 
+    // Per pulsante: etichetta di riposo e ripristino in sospeso.
+    const idle = new WeakMap();
+
     document.addEventListener('click', function (event) {
       const button = event.target.closest('[data-gara-public-link-copy]');
       if (!button) return;
@@ -62,9 +65,18 @@
       selection.addRange(range);
 
       const done = function () {
-        const original = button.innerHTML;
+        // L'etichetta di riposo si memorizza una volta sola: rileggendola a
+        // ogni click, un secondo click entro i due secondi la salverebbe come
+        // "Copiato!" e il pulsante ci resterebbe per sempre. Per la stessa
+        // ragione il ripristino ancora in sospeso va annullato.
+        let state = idle.get(button);
+        if (!state) {
+          state = { label: button.innerHTML, timer: 0 };
+          idle.set(button, state);
+        }
+        clearTimeout(state.timer);
         button.innerHTML = '<i class="fas fa-check"></i> ' + button.dataset.copiedLabel;
-        setTimeout(function () { button.innerHTML = original; }, 2000);
+        state.timer = setTimeout(function () { button.innerHTML = state.label; }, 2000);
       };
 
       if (navigator.clipboard && navigator.clipboard.writeText) {
