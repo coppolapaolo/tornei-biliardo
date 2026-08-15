@@ -68,15 +68,18 @@
             <div class="row">
               <div class="col-md-6 mb-3">
                 <label for="start_date" class="form-label">{{ _('Data Inizio') }}</label>
+                {# `|datetime_input` e non `strftime`: il naive sul DB e' UTC, e
+                   stamparlo grezzo qui mostrerebbe due ore in meno di quelle
+                   che l'admin aveva scritto. #}
                 <input type="datetime-local" class="form-control" id="start_date" name="start_date"
-                       value="{{ quest.start_date.strftime('%Y-%m-%dT%H:%M') if quest else '' }}">
-                <small class="text-muted">{{ _('Lascia vuoto per iniziare subito') }}</small>
+                       value="{{ quest.start_date|datetime_input if quest else '' }}">
+                <small class="text-muted">{{ _('Ora italiana. Lascia vuoto per iniziare subito') }}</small>
               </div>
               <div class="col-md-6 mb-3">
                 <label for="end_date" class="form-label">{{ _('Data Fine') }}</label>
                 <input type="datetime-local" class="form-control" id="end_date" name="end_date"
-                       value="{{ quest.end_date.strftime('%Y-%m-%dT%H:%M') if quest else '' }}">
-                <small class="text-muted">{{ _('Lascia vuoto per durata standard') }}</small>
+                       value="{{ quest.end_date|datetime_input if quest else '' }}">
+                <small class="text-muted">{{ _('Ora italiana. Lascia vuoto per durata standard') }}</small>
               </div>
             </div>
 

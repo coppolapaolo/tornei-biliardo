@@ -684,9 +684,9 @@
       "matchDistance": {{ gara.match_distance or 2 }},
       "isRaceToSets": {{ (gara.is_race_to_sets is not defined or gara.is_race_to_sets) | tojson }},
       "dateIso": {{ gara.date.isoformat() | tojson }},
-      "timeIso": {{ (gara.time.isoformat() if gara.time else "20:00:00") | tojson }},
-      "inscriptionStart": {{ (gara.inscription_start.isoformat() if gara.inscription_start else None) | tojson }},
-      "inscriptionEnd": {{ (gara.inscription_end.isoformat() if gara.inscription_end else None) | tojson }}
+      {# La finestra di iscrizione non passa più di qui: i campi del form di
+         modifica li compila il server, già in ora italiana. #}
+      "timeIso": {{ (gara.time.isoformat() if gara.time else "20:00:00") | tojson }}
     },
     "availableTables": {{ available_tables | tojson }},
     "occupiedTables": {{ occupied_tables | tojson }},
@@ -1224,13 +1224,6 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
-    const timezoneSpans = document.querySelectorAll('#user-timezone, #modify-user-timezone');
-    timezoneSpans.forEach(span => {
-      if (span) {
-        span.textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      }
-    });
-
     const inscriptionStartInput = document.getElementById('inscription_start');
     const inscriptionEndInput = document.getElementById('inscription_end');
 
@@ -1255,62 +1248,21 @@
       openInscriptionsModal.addEventListener('shown.bs.modal', populateInscriptionDates);
     }
 
+    // Il form di modifica arriva già compilato dal server (`|datetime_input`):
+    // qui si riempiono solo i campi ancora vuoti, che è il caso della gara mai
+    // aperta alle iscrizioni. Riscriverli sempre da JS significherebbe avere
+    // due sorgenti per lo stesso valore, e la conversione di fuso la fa il
+    // server — una volta sola, in ora italiana.
     const modifyStartInput = document.getElementById('modify_inscription_start');
     const modifyEndInput = document.getElementById('modify_inscription_end');
 
-    if (modifyStartInput && modifyEndInput) {
-      if (GARA_CONFIG.gara.inscriptionStart) {
-        const currentStart = new Date(GARA_CONFIG.gara.inscriptionStart + 'Z');
-        modifyStartInput.value = dateToLocalString(currentStart);
-      } else {
-        modifyStartInput.value = dateToLocalString(new Date());
-      }
-
-      if (GARA_CONFIG.gara.inscriptionEnd) {
-        const currentEnd = new Date(GARA_CONFIG.gara.inscriptionEnd + 'Z');
-        modifyEndInput.value = dateToLocalString(currentEnd);
-      } else {
-        const garaDateTime = new Date(`${GARA_CONFIG.gara.dateIso}T${GARA_CONFIG.gara.timeIso}`);
-        garaDateTime.setMinutes(garaDateTime.getMinutes() - 30);
-        modifyEndInput.value = dateToLocalString(garaDateTime);
-      }
+    if (modifyStartInput && !modifyStartInput.value) {
+      modifyStartInput.value = dateToLocalString(new Date());
     }
-
-    function addUTCFields(form, startFieldName, endFieldName) {
-      const startInput = form.querySelector(`input[name="${startFieldName}"]`);
-      const endInput = form.querySelector(`input[name="${endFieldName}"]`);
-
-      if (startInput && endInput) {
-        const startLocal = new Date(startInput.value);
-        const endLocal = new Date(endInput.value);
-
-        const startHidden = document.createElement('input');
-        startHidden.type = 'hidden';
-        startHidden.name = startFieldName + '_utc';
-        startHidden.value = startLocal.toISOString().slice(0, 19);
-
-        const endHidden = document.createElement('input');
-        endHidden.type = 'hidden';
-        endHidden.name = endFieldName + '_utc';
-        endHidden.value = endLocal.toISOString().slice(0, 19);
-
-        form.appendChild(startHidden);
-        form.appendChild(endHidden);
-      }
-    }
-
-    const inscriptionForm = document.getElementById('inscriptionForm');
-    if (inscriptionForm) {
-      inscriptionForm.addEventListener('submit', function (e) {
-        addUTCFields(this, 'inscription_start', 'inscription_end');
-      });
-    }
-
-    const modifyDatesForm = document.getElementById('modifyDatesForm');
-    if (modifyDatesForm) {
-      modifyDatesForm.addEventListener('submit', function (e) {
-        addUTCFields(this, 'inscription_start', 'inscription_end');
-      });
+    if (modifyEndInput && !modifyEndInput.value) {
+      const garaDateTime = new Date(`${GARA_CONFIG.gara.dateIso}T${GARA_CONFIG.gara.timeIso}`);
+      garaDateTime.setMinutes(garaDateTime.getMinutes() - 30);
+      modifyEndInput.value = dateToLocalString(garaDateTime);
     }
   });
 

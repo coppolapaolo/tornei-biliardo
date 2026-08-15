@@ -45,6 +45,31 @@ def to_utc_naive(local: datetime) -> datetime:
     return aware.astimezone(UTC).replace(tzinfo=None)
 
 
+def to_local_naive(utc_naive: datetime) -> datetime:
+    """Il verso opposto: naive UTC dal DB → ora italiana, sempre naive.
+
+    Serve per **ripopolare** un ``<input type="datetime-local">``: il campo non
+    accetta un fuso, quindi il valore va già portato nell'ora che l'utente si
+    aspetta di rileggere. Senza questo passaggio il form di modifica mostra
+    l'ora UTC, l'utente la conferma senza toccarla e l'appuntamento arretra di
+    un'ora a ogni salvataggio — il bug di scrittura, moltiplicato per il numero
+    di modifiche.
+    """
+    aware = utc_naive.replace(tzinfo=UTC) if utc_naive.tzinfo is None else utc_naive
+    return aware.astimezone(DISPLAY_TIMEZONE).replace(tzinfo=None)
+
+
+def format_local_input(value: Optional[datetime]) -> str:
+    """Un naive UTC nel formato che un ``datetime-local`` sa rileggere.
+
+    Stringa vuota su ``None``: è quello che l'attributo ``value`` di un campo
+    non compilato vuole, e non ``"None"``.
+    """
+    if value is None:
+        return ""
+    return to_local_naive(value).strftime("%Y-%m-%dT%H:%M")
+
+
 def parse_local_datetime(value: Optional[str]) -> Optional[datetime]:
     """Legge un ``datetime-local`` e lo restituisce naive **UTC**.
 
@@ -75,4 +100,10 @@ def parse_local_datetime(value: Optional[str]) -> Optional[datetime]:
     return None
 
 
-__all__ = ["parse_local_datetime", "to_utc_naive", "DISPLAY_TIMEZONE"]
+__all__ = [
+    "parse_local_datetime",
+    "to_utc_naive",
+    "to_local_naive",
+    "format_local_input",
+    "DISPLAY_TIMEZONE",
+]

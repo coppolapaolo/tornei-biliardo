@@ -76,6 +76,26 @@ def format_datetime_local_text(value) -> str:
     return str(value)
 
 
+def format_datetime_input(value) -> str:
+    """Valore per un ``<input type="datetime-local">``, in ora italiana.
+
+    È la controparte in **scrittura** di ``|datetime_local``: quel filtro
+    mostra, questo ripopola. Un form di modifica che stampa il naive del DB
+    così com'è mette l'ora UTC dentro un campo etichettato «ora locale», e chi
+    salva senza toccarlo sposta l'appuntamento indietro di un'ora — ogni volta.
+
+    Il ritorno è testo semplice e non ``Markup``: finisce dentro un attributo
+    ``value``, dove Jinja lo escapa da sé.
+    """
+    from utils.local_time import format_local_input
+
+    if not value:
+        return ""
+    if isinstance(value, datetime):
+        return format_local_input(value)
+    return str(value)
+
+
 def format_datetime_local(value) -> Markup:
     """Formatta data e ora per la visualizzazione locale (Italia).
 

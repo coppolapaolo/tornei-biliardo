@@ -110,7 +110,9 @@ def admin_quests():
 def admin_create_quest():
     """Create a new quest."""
     from models.gamification.models import QuestType
-    from datetime import datetime, timedelta
+    from datetime import timedelta
+
+    from utils.local_time import parse_local_datetime
 
     if request.method == "POST":
         name = request.form.get("name", "").strip()
@@ -122,29 +124,26 @@ def admin_create_quest():
             flash(_("Il nome della quest è obbligatorio"), "error")
             return redirect(url_for("gamification.admin_create_quest"))
 
-        # int()/fromisoformat/QuestType[...] sollevano ValueError/KeyError su
-        # input invalido: senza guardia il parsing esplode in 500 PRIMA di
+        # int()/QuestType[...] sollevano ValueError/KeyError su input invalido:
+        # senza guardia il parsing esplode in 500 PRIMA di
         # handle_service_action.
         try:
             requirement_target = int(request.form.get("requirement_target", 10))
             xp_reward = int(request.form.get("xp_reward", 100))
             quest_type_enum = QuestType[quest_type.upper()]
-
-            start_date_str = request.form.get("start_date")
-            end_date_str = request.form.get("end_date")
-            start_date = (
-                datetime.fromisoformat(start_date_str) if start_date_str else utc_now()
-            )
-            if end_date_str:
-                end_date = datetime.fromisoformat(end_date_str)
-            else:
-                if quest_type == "weekly":
-                    end_date = start_date + timedelta(days=7)
-                else:
-                    end_date = start_date + timedelta(days=30)
         except (ValueError, KeyError):
             flash(_("Dati del form non validi"), "error")
             return redirect(url_for("gamification.admin_create_quest"))
+
+        # I due campi sono `<input type="datetime-local">`: arrivano in ora
+        # italiana, mentre `Quest.is_active` li confronta con `utc_now()`. Letti
+        # grezzi, una quest aperta "dalle 21:00" restava chiusa fino alle 23:00
+        # — e scadeva due ore dopo il previsto, senza che nulla lo segnalasse.
+        start_date = parse_local_datetime(request.form.get("start_date")) or utc_now()
+        end_date = parse_local_datetime(request.form.get("end_date"))
+        if end_date is None:
+            span = timedelta(days=7 if quest_type == "weekly" else 30)
+            end_date = start_date + span
 
         return handle_service_action(
             action=lambda: QuestService.create_quest(
