@@ -27,6 +27,8 @@ __all__ = [
     "VenueManagerRequestStatus",
     "RoleRequestStatus",
     "RoleRequestRecipientStatus",
+    "ExamAttemptMode",
+    "ExamAttemptStatus",
     "PlayoffConfirmationStatus",
     "Discipline",
     "WithdrawPolicy",
@@ -185,6 +187,42 @@ class RoleRequestRecipientStatus(_StrEnum):
     APPROVED = "approved"
     REJECTED = "rejected"
     CLOSED = "closed"
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# EXAM ATTEMPT — modalità (ADR-042)
+# Persistito: `exam_attempt.mode` → {self_practice, certified}
+# Le due nature convivono in un solo modello, ma **solo `certified` certifica**:
+# un tentativo in autonomia resta allenamento e non diventa certificato mai,
+# nemmeno a posteriori.
+# Fonte: models/exam/models.py (ExamAttempt)
+# ──────────────────────────────────────────────────────────────────────────────
+class ExamAttemptMode(_StrEnum):
+    SELF_PRACTICE = "self_practice"
+    CERTIFIED = "certified"
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# EXAM ATTEMPT — stato (ADR-042)
+# Persistito: `exam_attempt.status`
+# → {awaiting_player_start, in_progress, completed, abandoned}
+# `awaiting_player_start` esiste **solo** in modalità certificata: nessuno può
+# essere valutato a sua insaputa, quindi l'esaminatore apre la sessione ma non
+# registra nulla finché il candidato non accetta l'inizio. Un tentativo in
+# autonomia nasce già `in_progress`.
+# `abandoned` non è una bocciatura: `passed` resta NULL.
+# Fonte: models/exam/models.py (ExamAttempt)
+# ──────────────────────────────────────────────────────────────────────────────
+class ExamAttemptStatus(_StrEnum):
+    AWAITING_PLAYER_START = "awaiting_player_start"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+    ABANDONED = "abandoned"
+
+    @classmethod
+    def is_open(cls, status: str) -> bool:
+        """True se il tentativo è ancora aperto (non concluso né abbandonato)."""
+        return status in (cls.AWAITING_PLAYER_START.value, cls.IN_PROGRESS.value)
 
 
 # ──────────────────────────────────────────────────────────────────────────────

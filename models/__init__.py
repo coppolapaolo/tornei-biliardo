@@ -61,7 +61,13 @@ from .competition.gara_challenge import (
 )
 from .challenge.services import ChallengeService
 from .competition.gara_challenge_service import GaraChallengeService
-from .exam.models import Exam, ExamChallenge, ExamAttempt, ExamChallengeResult
+from .exam.models import (
+    Exam,
+    ExamExaminer,
+    ExamChallenge,
+    ExamAttempt,
+    ExamChallengeResult,
+)
 from .individual_match.models import (
     MatchProposal,
     ProposalInvitation,
@@ -196,6 +202,7 @@ __all__ = [
     "GaraChallengeService",
     # Exam domain models (Phase 3)
     "Exam",
+    "ExamExaminer",
     "ExamChallenge",
     "ExamAttempt",
     "ExamChallengeResult",

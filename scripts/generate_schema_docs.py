@@ -74,6 +74,7 @@ DOMAIN_GROUPS = {
         "gara_challenge_classification",
         "gara_bye_challenge",
         "exam",
+        "exam_examiner",
         "exam_challenge",
         "exam_attempt",
         "exam_challenge_result",
