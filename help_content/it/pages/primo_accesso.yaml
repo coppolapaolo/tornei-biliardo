@@ -4,7 +4,7 @@ kind: tutorial
 audience: [tutti]
 minutes: 3
 summary: "Creare l'account, confermare l'email ed entrare la prima volta. Sono cinque minuti, una volta sola."
-screens: [auth.register, auth.login]
+screens: [auth.register, auth.login, auth.forgot_password, auth.verify_email, onboarding.onboarding]
 related: [iscriversi_a_una_gara, profilo_e_statistiche]
 
 blocks:

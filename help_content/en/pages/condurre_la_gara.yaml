@@ -4,7 +4,7 @@ kind: approfondimento
 audience: [direttore]
 minutes: 6
 summary: "The evening itself: starting rounds, assigning tables, correcting wrong results and closing the competition."
-screens: [admin.competition.gara_detail]
+screens: [admin.competition.gara_detail, admin.competition.amalfi_classification]
 related: [gestire_le_iscrizioni, abbinamenti, numero_dispari]
 
 blocks:

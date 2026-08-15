@@ -4,7 +4,7 @@ kind: tutorial
 audience: [giocatore]
 minutes: 4
 summary: "Finding an open competition, registering, checking you are on the list and — if you have to — pulling out in time."
-screens: [main.public_garas_list, player.gara_detail]
+screens: [main.public_garas_list, player.gara_detail, main.gara_invite]
 related: [seguire_la_gara, giocare_una_partita]
 
 blocks:

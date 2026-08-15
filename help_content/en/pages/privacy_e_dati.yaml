@@ -4,7 +4,7 @@ kind: approfondimento
 audience: [giocatore]
 minutes: 4
 summary: "What others see of you, how to hide individual results, how to download your data and how to close your account."
-screens: [player.privacy_settings]
+screens: [player.privacy_settings, player.delete_account, main.privacy_policy]
 related: [profilo_e_statistiche]
 
 blocks:

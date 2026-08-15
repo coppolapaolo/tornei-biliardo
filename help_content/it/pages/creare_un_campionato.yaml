@@ -4,7 +4,7 @@ kind: tutorial
 audience: [direttore]
 minutes: 5
 summary: "Il wizard in due passaggi: prima le regole generali, poi i valori predefiniti che tutte le gare erediteranno."
-screens: [admin.campionato.wizard_start]
+screens: [admin.campionato.wizard_start, admin.campionato.edit_campionato]
 related: [creare_una_gara, classifiche]
 
 blocks:

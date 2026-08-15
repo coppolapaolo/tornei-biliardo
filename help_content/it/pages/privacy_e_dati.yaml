@@ -4,7 +4,7 @@ kind: approfondimento
 audience: [giocatore]
 minutes: 4
 summary: "Cosa vedono gli altri di te, come nascondere singoli risultati, come scaricare i tuoi dati e come chiudere l'account."
-screens: [player.privacy_settings]
+screens: [player.privacy_settings, player.delete_account, main.privacy_policy]
 related: [profilo_e_statistiche]
 
 blocks:

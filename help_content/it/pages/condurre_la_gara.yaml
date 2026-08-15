@@ -4,7 +4,7 @@ kind: approfondimento
 audience: [direttore]
 minutes: 6
 summary: "La serata dal vivo: avviare i turni, assegnare i tavoli, correggere i risultati sbagliati e chiudere la gara."
-screens: [admin.competition.gara_detail]
+screens: [admin.competition.gara_detail, admin.competition.amalfi_classification]
 related: [gestire_le_iscrizioni, abbinamenti, numero_dispari]
 
 blocks:

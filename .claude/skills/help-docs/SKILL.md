@@ -32,6 +32,47 @@ Serve un passaggio da qui quando la modifica appena fatta:
 Non serve per: modifiche interne senza effetti visibili, rifattorizzazioni,
 correzioni di bug che ripristinano il comportamento già documentato.
 
+## Il perimetro: tutto tranne l'esclusivo-admin
+
+La guida copre **tutte le funzioni e tutte le opzioni** che vedono giocatore,
+direttore di gara e ospite. Resta fuori solo ciò che è **esclusivo
+dell'amministratore**: gestione degli account, approvazione delle richieste di
+ruolo, configurazione della gamification, indicatori di piattaforma. Chi
+amministra conosce già la piattaforma; chi gioca no, ed è per lui che la guida
+esiste.
+
+Per sapere se una schermata è dentro o fuori non fidarti di `ENDPOINT_ROLES`
+(`utils/feature_flags.py`): quella matrice dice cosa è *raggiungibile* in
+produzione, non chi ha il permesso di usarlo. `admin.user.users_list` vi
+compare come `{"director"}` ma il decoratore `@admin_required` risponde 403 a
+un direttore. **La prova sta nel provarla**: apri la schermata con
+`/debug/login/<direttore>` e guarda se risponde.
+
+Verifica del perimetro (elenca le route non-admin che nessuna pagina dichiara
+in `screens:`):
+
+```bash
+python - <<'EOF'
+import yaml, pathlib
+from app import create_app
+from utils.feature_flags import ENDPOINT_ROLES
+covered = set()
+for p in pathlib.Path("help_content/it/pages").glob("*.yaml"):
+    covered.update((yaml.safe_load(p.read_text()) or {}).get("screens") or [])
+app = create_app("development")
+with app.app_context():
+    for r in app.url_map.iter_rules():
+        ep = r.endpoint
+        roles = ENDPOINT_ROLES.get(ep)
+        if not roles or ep in covered: continue
+        if "GET" not in (r.methods - {"HEAD", "OPTIONS"}): continue
+        print(f"{str(r):50s} {ep}")
+EOF
+```
+
+Quello che resta fuori dopo il filtro sono endpoint JSON di servizio,
+redirect e pagine rotte: se compare una **schermata vera**, manca una pagina.
+
 ## Com'è fatto il mini-sito
 
 ```
@@ -249,6 +290,8 @@ il mini-sito è mobile first ma vive anche su desktop (vedi la skill `ui-7c`).
 | Pagina aggiunta in una lingua sola | Il cambio lingua porta su un 404 | Aggiungila a tutte, nello stesso giro di lavoro |
 | `anchor` tradotto | Due ancore per lo stesso comando: l'interfaccia adattiva ne trova una | `anchor` è identico in tutte le lingue |
 | Guida inglese con schermate italiane | Manda a cercare pulsanti che non esistono | `locales:` nel manifest e ricattura |
+| Pagina su una funzione esclusiva dell'admin | Fuori perimetro: la guida è per chi gioca e chi organizza | Vedi «Il perimetro» sopra |
+| Funzione di direttore lasciata fuori perché «avanzata» | Il perimetro è *tutte* le opzioni non-admin, non le principali | Passa la verifica del perimetro prima di chiudere |
 
 ## Dove guardare per scrivere cose vere
 

@@ -4,7 +4,9 @@ kind: approfondimento
 audience: [giocatore]
 minutes: 3
 summary: "Prove di abilità da eseguire da soli: servono ad allenarsi, a sbloccare traguardi e — dentro una gara — a decidere gli spareggi."
-screens: [challenge.challenge_catalog]
+screens: [challenge.challenge_catalog, challenge.challenge_detail, challenge.start_attempt,
+  challenge.attempt_detail, challenge.create_challenge, challenge.edit_challenge,
+  challenge.challenge_statistics, player.challenge_detail]
 related: [progressi, numero_dispari]
 
 blocks:

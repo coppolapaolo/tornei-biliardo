@@ -226,55 +226,34 @@ shots:
     as: Marco Rossi
     caption: "Lo stato delle tue richieste per diventare gestore di una sala."
 
-  # --- Amministrazione ----------------------------------------------------
-  - id: admin-dashboard
-    route: /dashboard
-    as: admin
-    caption: "La home dell'amministratore: lo stato generale della piattaforma."
+  # --- Tabellone, squadre, turni su misura, challenge in gara --------------
+  - id: gara-bozza
+    route: /admin/gara/4
+    as: Luca Bianchi
+    caption: "Una gara ancora in bozza: esiste, ma nessuno può iscriversi finché non si aprono le iscrizioni."
+
+  - id: tabellone
+    route: /admin/gara/5/tabellone
+    as: anonimo
+    caption: "Il tabellone a eliminazione diretta: chi vince sale, chi perde esce."
     viewports: [mobile, desktop]
 
-  - id: admin-utenti
-    route: /admin/users
-    as: admin
-    caption: "L'elenco degli utenti con i loro dati e le azioni disponibili."
+  - id: gara-tabellone-dettaglio
+    route: /admin/gara/5
+    as: anonimo
+    caption: "Una gara a eliminazione diretta: le partite del turno con il collegamento al tabellone."
 
-  - id: admin-utente
-    route: /admin/user/2
-    as: admin
-    caption: "La scheda di un singolo utente: ruolo, iscrizioni, partite e statistiche."
+  - id: gara-squadre
+    route: /admin/gara/3
+    as: Luca Bianchi
+    click: ['[data-c7-tab-btn="gestione"]']
+    clip: "#sectionSquadre"
+    caption: "Il pannello delle squadre: quali ci sono e chi ne fa parte in questa gara."
 
-  - id: admin-richieste-direttore
-    route: /admin/director_requests
-    as: admin
-    caption: "Le richieste di promozione a direttore di gara, da accettare o rifiutare."
+  - id: gara-turni-config
+    route: /admin/gara/4
+    as: Luca Bianchi
+    click: ['[data-c7-tab-btn="gestione"]']
+    clip: "#sectionTurni"
+    caption: "La configurazione dei turni: disciplina e distanza si possono cambiare turno per turno."
 
-  - id: admin-richieste-gestore
-    route: /admin/manager-requests
-    as: admin
-    caption: "Le richieste per diventare gestore di una sala biliardo."
-
-  - id: admin-gamification
-    route: /gamification/admin
-    as: admin
-    caption: "Il pannello della gamification: XP distribuiti, obiettivi attivi, traguardi e distribuzione dei livelli."
-    viewports: [mobile, desktop]
-
-  - id: admin-gamification-obiettivi
-    route: /gamification/admin/quests
-    as: admin
-    caption: "La gestione degli obiettivi periodici: crearli, attivarli, farli scadere."
-
-  - id: admin-gamification-config
-    route: /gamification/admin/config
-    as: admin
-    caption: "La configurazione: quanti punti vale ogni azione, la curva dei livelli, le regole delle serie."
-
-  - id: admin-funzioni
-    route: /gamification/admin/features
-    as: admin
-    caption: "Le regole di sblocco delle funzioni: chi vede cosa, e a quali condizioni."
-
-  - id: admin-kpi
-    route: /admin/kpi/
-    as: admin
-    caption: "Gli indicatori della piattaforma: iscritti, gare, partite e andamento nel tempo."

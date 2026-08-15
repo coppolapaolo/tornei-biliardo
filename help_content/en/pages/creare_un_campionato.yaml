@@ -4,7 +4,7 @@ kind: tutorial
 audience: [direttore]
 minutes: 5
 summary: "The two-step wizard: first the general rules, then the defaults every competition will inherit."
-screens: [admin.campionato.wizard_start]
+screens: [admin.campionato.wizard_start, admin.campionato.edit_campionato]
 related: [creare_una_gara, classifiche]
 
 blocks:

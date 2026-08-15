@@ -1,0 +1,100 @@
+title: "I playoff di fine campionato"
+section: giocare
+kind: approfondimento
+audience: [giocatore]
+minutes: 3
+summary: "Le gare finali riservate ai migliori classificati: come ci si qualifica, come si accetta l'invito e cosa succede se si rifiuta."
+screens: [player.playoff_invitation]
+related: [creare_un_campionato, notifiche]
+
+blocks:
+  - type: text
+    text: >-
+      Un campionato può chiudersi con una o due gare speciali, aperte solo a chi
+      si è piazzato bene nella classifica generale. Non ci si iscrive: ci si
+      **qualifica**, e si riceve un invito.
+
+  - type: heading
+    id: qualificarsi
+    title: "Come ci si qualifica"
+
+  - type: text
+    text: >-
+      Alla fine dell'ultima gara del campionato l'app guarda la classifica
+      generale e individua i qualificati. I playoff previsti possono essere due,
+      con soglie diverse:
+
+  - type: options
+    items:
+      - name: "Playoff Elite"
+        text: "Riservato ai primi classificati — quanti, lo decide chi organizza il campionato."
+      - name: "Playoff Academy"
+        text: >-
+          Per i classificati successivi. Serve a non far finire la stagione a
+          chi non è arrivato sul podio, e di solito è la gara più partecipata
+          delle due.
+
+  - type: note
+    tone: info
+    text: >-
+      I playoff sono facoltativi: molti campionati non li prevedono affatto e
+      si chiudono con la classifica generale dell'ultima gara.
+
+  - type: heading
+    id: invito
+    title: "L'invito"
+
+  - type: text
+    text: >-
+      Se ti qualifichi ricevi una **notifica**. Aprendola trovi la gara di
+      playoff — data, sala, formato — e due pulsanti: accettare o rifiutare.
+
+  - type: shot
+    shot: notifiche
+    caption: "Gli inviti ai playoff arrivano fra le notifiche, come gli altri avvisi della gara."
+
+  - type: steps
+    items:
+      - title: "Leggi le condizioni"
+        text: >-
+          Data e ora contano più del solito: un playoff è una serata sola, e
+          spesso non si recupera.
+      - title: "Accetta o rifiuta"
+        text: >-
+          Accettando entri fra gli iscritti della gara di playoff.
+          Rifiutando lasci il posto: a seconda di come è organizzato il
+          campionato, può scalare al primo escluso.
+      - title: "Rispondi in tempo"
+        text: >-
+          L'invito ha una scadenza. Non rispondere equivale a rifiutare, e il
+          posto va a qualcun altro.
+
+  - type: note
+    tone: warning
+    title: "Rifiutare non è una penalità"
+    text: >-
+      Rinunciare a un playoff non toglie punti né incide sulla classifica del
+      campionato appena concluso: quella è chiusa. Se non puoi esserci, dirlo
+      subito è un favore a chi organizza.
+
+  - type: heading
+    id: come_si_gioca
+    title: "Come si gioca un playoff"
+
+  - type: text
+    text: >-
+      Una volta accettato, un playoff è una gara come le altre: turni,
+      abbinamenti, segnapunti e classifica funzionano esattamente come descritto
+      in [Seguire la gara](/aiuto/giocare/seguire_la_gara). Cambia solo come ci
+      si è arrivati.
+
+  - type: faq
+    items:
+      - q: "Come faccio a sapere se mi sono qualificato?"
+        a: "Ricevi una notifica. Senza notifica non ti sei qualificato, oppure il campionato non prevede playoff."
+      - q: "Posso partecipare a entrambi i playoff?"
+        a: "No: la qualificazione ti assegna a uno dei due, in base alla tua posizione in classifica."
+      - q: "Ho accettato ma poi non posso venire."
+        a: "Avvisa il direttore di gara: può toglierti dagli iscritti come per qualsiasi altra gara."
+      - q: "Il mio campionato non ha playoff."
+        a: "È normale: sono facoltativi e si decidono alla creazione del campionato."

@@ -4,7 +4,7 @@ kind: approfondimento
 audience: [giocatore, tutti]
 minutes: 4
 summary: "La pagina della gara ha tre viste: le partite del turno, la classifica e gli iscritti. Come si leggono e cosa vuol dire ogni etichetta."
-screens: [admin.competition.gara_detail]
+screens: [admin.competition.gara_detail, main.gara_detail_public]
 related: [giocare_una_partita, classifiche]
 
 blocks:

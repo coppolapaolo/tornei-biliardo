@@ -4,6 +4,7 @@ kind: introduzione
 audience: [tutti]
 minutes: 3
 summary: "Giocatore, direttore di gara e amministratore: chi può fare cosa, e come si diventa direttore."
+screens: [dashboard.dashboard]
 related: [primo_accesso, creare_una_gara]
 
 blocks:

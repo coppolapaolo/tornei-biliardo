@@ -4,7 +4,7 @@ kind: introduzione
 audience: [tutti]
 minutes: 3
 summary: "Un'app per giocare e organizzare tornei di biliardo americano: tiene il conto dei punti, abbina i giocatori e aggiorna le classifiche da sola."
-screens: [main.index]
+screens: [main.index, main.public_campionatos_list, main.campionato_detail_public]
 related: [parole_da_sapere, chi_fa_cosa]
 
 blocks:

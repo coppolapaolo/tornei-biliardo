@@ -4,7 +4,7 @@ kind: approfondimento
 audience: [giocatore]
 minutes: 4
 summary: "Cosa contiene il tuo profilo, come si legge il rating e dove trovare lo storico delle gare giocate."
-screens: [player.profile, player.history]
+screens: [player.profile, player.history, player.edit_profile, player.dashboard]
 related: [privacy_e_dati, progressi]
 
 blocks:

@@ -4,7 +4,7 @@ kind: tutorial
 audience: [giocatore]
 minutes: 3
 summary: "How to ask to organise competitions, how to ask to look after a venue's page, and what changes once you have it."
-screens: [player.profile, player.my_venue_requests]
+screens: [player.profile, player.my_venue_requests, admin.venue.venue_detail]
 related: [chi_fa_cosa, creare_una_gara]
 
 blocks:

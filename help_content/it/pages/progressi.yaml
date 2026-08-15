@@ -4,7 +4,8 @@ kind: approfondimento
 audience: [giocatore]
 minutes: 3
 summary: "Punti esperienza, livelli, traguardi e serie: a cosa servono e come si guadagnano."
-screens: [gamification.dashboard]
+screens: [gamification.dashboard, gamification.leaderboards, gamification.quests, gamification.streaks,
+  gamification.achievements]
 related: [profilo_e_statistiche, challenge]
 
 blocks:

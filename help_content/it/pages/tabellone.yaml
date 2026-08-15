@@ -1,0 +1,136 @@
+title: "Il tabellone"
+section: giocare
+kind: approfondimento
+audience: [tutti]
+minutes: 4
+summary: "Nelle gare a eliminazione il percorso si legge su un tabellone: chi vince sale, chi perde esce. Come leggerlo e cosa cambia col doppio KO."
+screens: [admin.competition.gara_bracket]
+related: [abbinamenti, seguire_la_gara, classifiche]
+
+blocks:
+  - type: text
+    text: >-
+      Le gare a **eliminazione diretta** e a **doppio KO** non hanno turni tutti
+      uguali: hanno un percorso. Chi vince avanza, chi perde esce (o scende nel
+      tabellone dei ripescaggi). Quel percorso si guarda tutto insieme in una
+      pagina sola.
+
+  - type: shot
+    shot: tabellone
+    caption: "Il tabellone di una gara a eliminazione diretta: i quarti, con i vincitori in grassetto."
+
+  - type: heading
+    id: aprirlo
+    title: "Dove si trova"
+
+  - type: text
+    text: >-
+      Dalla pagina della gara, l'icona in alto a destra apre il tabellone. È
+      **pubblico**: si può mandare il collegamento a chiunque, e si aggiorna da
+      solo mentre si gioca.
+
+  - type: shot
+    shot: gara-tabellone-dettaglio
+    caption: "Una gara a eliminazione: dalla sua pagina si passa al tabellone."
+
+  - type: heading
+    id: leggerlo
+    title: "Come si legge"
+
+  - type: options
+    items:
+      - name: "I nomi dei turni"
+        text: >-
+          Ottavi, quarti, semifinali, finale. Non li sceglie il direttore: li
+          determina il numero di iscritti.
+      - name: "Il grassetto"
+        text: "Chi ha vinto quella partita, e quindi passa al turno successivo."
+      - name: "I numeri a destra"
+        text: "Il punteggio in rack della partita."
+      - name: "Le caselle vuote"
+        text: >-
+          Partite non ancora giocate: si riempiono man mano che i turni
+          precedenti si concludono.
+
+  - type: note
+    tone: tip
+    title: "Su schermo largo si vede tutto insieme"
+    text: >-
+      Il tabellone dà il meglio in orizzontale: girando il telefono, o su un
+      computer, si vede l'intero percorso invece di un turno alla volta. È la
+      schermata da proiettare in sala, se avete uno schermo.
+
+  - type: heading
+    id: quanti_turni
+    title: "Quanti turni escono"
+
+  - type: text
+    text: >-
+      Il tabellone si dimensiona sugli iscritti effettivi. Con 8 giocatori sono
+      quarti, semifinali e finale: tre turni, sette partite. Con 16 se ne
+      aggiunge uno.
+
+  - type: text
+    text: >-
+      Se gli iscritti non sono una potenza di due (8, 16, 32) alcuni giocatori
+      passano direttamente al secondo turno senza giocare il primo. È il
+      comportamento normale di ogni tabellone e non richiede impostazioni: vedi
+      [Quando i giocatori sono
+      dispari](/aiuto/approfondimenti/numero_dispari).
+
+  - type: heading
+    id: terzo_posto
+    title: "La finale per il terzo posto"
+
+  - type: text
+    text: >-
+      Nell'eliminazione diretta il direttore può prevedere la **finalina** fra
+      i due che hanno perso le semifinali. Non allunga la gara di un turno: si
+      gioca insieme alla finale.
+
+  - type: text
+    text: >-
+      Nel doppio KO non serve: il terzo posto lo determina già il percorso dei
+      ripescaggi.
+
+  - type: heading
+    id: doppio_ko
+    title: "Il doppio KO"
+
+  - type: text
+    text: >-
+      Con il doppio KO i tabelloni sono due: quello dei **vincenti** e quello
+      dei **ripescaggi**. Chi perde la prima partita non esce, scende nel
+      secondo; chi perde di nuovo esce davvero. Alla fine il vincitore del
+      tabellone dei ripescaggi affronta quello dei vincenti.
+
+  - type: note
+    tone: info
+    title: "Con i gironi"
+    text: >-
+      Il doppio KO può anche essere organizzato in gironi paralleli che
+      qualificano alcuni giocatori a un tabellone finale a eliminazione. È la
+      formula più lunga fra quelle disponibili e ha senso su una giornata
+      intera.
+
+  - type: heading
+    id: classifica
+    title: "La classifica di una gara a tabellone"
+
+  - type: text
+    text: >-
+      Non si conta per vittorie o per rack: la classifica **è** il percorso.
+      Chi vince il torneo è primo, chi perde la finale secondo, e così via. In
+      un campionato ogni posizione vale un certo numero di punti. Vedi [Come si
+      calcolano le classifiche](/aiuto/approfondimenti/classifiche).
+
+  - type: faq
+    items:
+      - q: "Non vedo l'icona del tabellone."
+        a: "La gara non usa una strategia a tabellone: con Amalfi, casuale o girone all'italiana non c'è un percorso da disegnare, e la vista non esiste."
+      - q: "Ho perso al primo turno: la mia gara è finita?"
+        a: "Con l'eliminazione diretta sì. Con il doppio KO no: scendi nel tabellone dei ripescaggi e puoi ancora risalire."
+      - q: "Perché qualcuno non ha giocato il primo turno?"
+        a: "Perché gli iscritti non erano una potenza di due: alcuni passano direttamente. Non è un favore, è l'unico modo di far quadrare il tabellone."
+      - q: "Il tabellone si può cambiare dopo il sorteggio?"
+        a: "Solo annullando il turno e risorteggiando, e solo da parte del direttore. Il sorteggio viene registrato e resta verificabile."

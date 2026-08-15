@@ -337,7 +337,7 @@ def _create_challenges(db, director):
     disponibili = sorted((REPO_ROOT / "static" / "uploads" / "challenges").glob("*.*"))
     if not disponibili:
         log("challenge non create: nessuna immagine in static/uploads/challenges/")
-        return
+        return []
 
     specs = [
         (
@@ -352,21 +352,164 @@ def _create_challenges(db, director):
             True,
         ),
     ]
+    create = []
     for index, (description, pass_fail) in enumerate(specs):
-        if Challenge.query.filter_by(description=description).first():
+        existing = Challenge.query.filter_by(description=description).first()
+        if existing:
+            create.append(existing)
             continue
         image = disponibili[index % len(disponibili)]
-        db.session.add(
-            Challenge(
-                description=description,
-                image_path=f"uploads/challenges/{image.name}",
-                pass_fail_only=pass_fail,
-                created_by_id=director.id,
-                is_active=True,
-            )
+        challenge = Challenge(
+            description=description,
+            image_path=f"uploads/challenges/{image.name}",
+            pass_fail_only=pass_fail,
+            created_by_id=director.id,
+            is_active=True,
         )
+        db.session.add(challenge)
+        create.append(challenge)
     db.session.commit()
-    log(f"challenge: {len(specs)} prove nel catalogo")
+    log(f"challenge: {len(create)} prove nel catalogo")
+    return create
+
+
+def _add_challenge_to_gara(db, gara, challenges) -> None:
+    """Una prova di abilita' agganciata a un turno della gara.
+
+    Serve alla pagina che spiega le challenge dentro una gara: senza un caso
+    reale, quella pagina resterebbe l'unica senza schermate.
+    """
+    from models.competition.gara_challenge_service import GaraChallengeService
+
+    if not challenges:
+        return
+    try:
+        GaraChallengeService.add_challenge_to_gara(
+            gara_id=gara.id,
+            challenge_id=challenges[0].id,
+            round_number=1,
+            max_attempts=2,
+            added_by_id=gara.director_id,
+        )
+        db.session.commit()
+        log(f"«{gara.name}»: challenge agganciata al turno 1")
+    except Exception as exc:  # pragma: no cover - il seed non deve bloccarsi
+        log(f"challenge in gara non agganciata ({exc.__class__.__name__}: {exc})")
+
+
+def _create_squadre(db, gara, players) -> None:
+    """Squadre attive su una gara, con i compagni gia' assegnati.
+
+    Le squadre si possono decidere solo mentre la gara e' in bozza o in
+    iscrizione (ADR-039), quindi vanno su quella con le iscrizioni aperte.
+    """
+    from models.competition.models import Inscription
+    from models.squadra.service import SquadraService
+
+    gara.separate_teammates = True
+    db.session.commit()
+
+    try:
+        squadre = [
+            SquadraService.create(gara, name)
+            for name in ("Biliardo Centrale", "CSB Udine")
+        ]
+        db.session.commit()
+        for index, player in enumerate(players):
+            inscription = Inscription.query.filter_by(
+                gara_id=gara.id, user_id=player.id
+            ).first()
+            if inscription:
+                SquadraService.set_inscription_squadra(
+                    gara, inscription, squadre[index % len(squadre)].id
+                )
+        db.session.commit()
+        log(f"«{gara.name}»: {len(squadre)} squadre con i compagni assegnati")
+    except Exception as exc:  # pragma: no cover
+        log(f"squadre non create ({exc.__class__.__name__}: {exc})")
+
+
+def _create_gara_bozza(db, campionato, director, venue):
+    """Una gara ancora in bozza, con un turno configurato a parte.
+
+    Serve per due schermate che nelle altre gare non esistono: la gara prima
+    dell'apertura delle iscrizioni, e la configurazione per turno — che l'app
+    consente solo in bozza (ADR-027), quindi su una gara gia' aperta il
+    pannello e' vuoto e non ci sarebbe niente da mostrare.
+    """
+    from models.competition.round_configuration import RoundConfiguration
+    from models.competition.services import GaraService
+    from models.status_enum import Discipline
+
+    gara = GaraService.create_gara(
+        number=4,
+        name="4ª prova - Palla 10",
+        date=date.today() + timedelta(days=28),
+        discipline=Discipline.TEN_BALL.value,
+        distance=4,
+        campionato_id=campionato.id,
+        director_id=director.id,
+        creator_id=director.id,
+        time=time(20, 30),
+        rounds_count=3,
+        min_participants=4,
+        entry_fee=10.0,
+        billiard_hall_id=venue.id,
+        location=venue.name,
+        is_race_to=True,
+        classification_system="WINS",
+    )
+    db.session.commit()
+
+    db.session.add(
+        RoundConfiguration(
+            gara_id=gara.id,
+            round_number=3,
+            discipline=Discipline.NINE_BALL.value,
+            distance=5,
+            is_race_to=True,
+        )
+    )
+    db.session.commit()
+    log(f"«{gara.name}»: in bozza, turno 3 configurato a parte (palla 9, al 5)")
+    return gara
+
+
+def _create_gara_tabellone(db, director, venue, players):
+    """Una gara a eliminazione diretta, con il primo turno giocato.
+
+    Il tabellone e' una schermata a se' e non esiste per le strategie a turni:
+    senza una gara di questo tipo nel dataset, la pagina che lo spiega non
+    potrebbe mostrarlo.
+    """
+    from models.competition.services import GaraService
+    from models.status_enum import Discipline
+
+    gara = GaraService.create_gara(
+        number=1,
+        name="Torneo di Primavera",
+        date=date.today() + timedelta(days=7),
+        discipline=Discipline.EIGHT_BALL.value,
+        distance=4,
+        director_id=director.id,
+        creator_id=director.id,
+        time=time(20, 0),
+        min_participants=4,
+        entry_fee=15.0,
+        billiard_hall_id=venue.id,
+        location=venue.name,
+        is_race_to=True,
+        classification_system="POSITION",
+        matchmaking_strategy="direct_elimination",
+        max_participants=8,
+        third_place_match=True,
+    )
+    db.session.commit()
+
+    _open_and_fill(db, gara, players)
+    _play_rounds(db, gara, rounds=1)
+    log(f"«{gara.name}»: tabellone a eliminazione diretta, primo turno giocato")
+    return gara
 
 
 def _create_individual_match(db, players):
@@ -440,7 +583,11 @@ def main() -> int:
         _open_and_fill(db, gara_iscrizioni, players[:5])
 
         _backdate_gare(db, [gara_conclusa, gara_in_corso])
-        _create_challenges(db, director)
+        challenges = _create_challenges(db, director)
+        _add_challenge_to_gara(db, gara_in_corso, challenges)
+        _create_squadre(db, gara_iscrizioni, players[:5])
+        _create_gara_bozza(db, campionato, director, venue)
+        _create_gara_tabellone(db, director, venue, players)
         _create_individual_match(db, players)
 
         print("\nFatto. Credenziali dimostrative:")

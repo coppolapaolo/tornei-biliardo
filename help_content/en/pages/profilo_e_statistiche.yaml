@@ -4,7 +4,7 @@ kind: approfondimento
 audience: [giocatore]
 minutes: 4
 summary: "What your profile holds, how to read the rating, and where to find the history of competitions you have played."
-screens: [player.profile, player.history]
+screens: [player.profile, player.history, player.edit_profile, player.dashboard]
 related: [privacy_e_dati, progressi]
 
 blocks:

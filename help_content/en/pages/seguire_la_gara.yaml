@@ -4,7 +4,7 @@ kind: approfondimento
 audience: [giocatore, tutti]
 minutes: 4
 summary: "The competition page has three views: the round's matches, the standings and the entrants. How to read them and what each label means."
-screens: [admin.competition.gara_detail]
+screens: [admin.competition.gara_detail, main.gara_detail_public]
 related: [giocare_una_partita, classifiche]
 
 blocks:

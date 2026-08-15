@@ -376,8 +376,25 @@ def _capture_one(
         page.add_style_tag(content=HIDE_CSS)
 
         for selector in shot.get("click") or []:
-            page.click(selector)
-            page.wait_for_timeout(400)
+            # Click via JS invece di `page.click`: i comandi che ci interessano
+            # sono linguette sotto una testata appiccicata, e il controllo di
+            # "elemento stabile e visibile" di Playwright ci litiga — a volte
+            # passa, a volte no, e una cattura che riesce a giorni alterni e'
+            # peggio di una che fallisce sempre. Qui basta che il gestore parta.
+            clicked = page.evaluate(
+                """(sel) => {
+                    const el = document.querySelector(sel);
+                    if (!el) return false;
+                    el.click();
+                    return true;
+                }""",
+                selector,
+            )
+            if not clicked:
+                raise CaptureError(
+                    f"«{shot['id']}»: selettore `click` non trovato: {selector}"
+                )
+            page.wait_for_timeout(500)
 
         if shot.get("wait_for"):
             page.wait_for_selector(shot["wait_for"], timeout=10_000)

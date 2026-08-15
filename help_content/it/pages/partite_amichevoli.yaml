@@ -4,7 +4,9 @@ kind: tutorial
 audience: [giocatore]
 minutes: 4
 summary: "Fuori dalle gare ufficiali puoi proporre una partita a un altro giocatore, accordarvi su luogo e ora, e registrare il risultato."
-screens: [individual_match.dashboard, individual_match.create_proposal]
+screens: [individual_match.dashboard, individual_match.create_proposal, individual_match.match_list,
+  individual_match.match_detail, individual_match.proposal_list, individual_match.proposal_detail,
+  individual_match.rematch, individual_match.user_statistics]
 related: [giocare_una_partita, profilo_e_statistiche]
 
 blocks:

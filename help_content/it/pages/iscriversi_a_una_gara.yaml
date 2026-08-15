@@ -4,7 +4,7 @@ kind: tutorial
 audience: [giocatore]
 minutes: 4
 summary: "Trovare una gara aperta, iscriversi, controllare di essere in elenco e — se serve — tirarsi indietro in tempo."
-screens: [main.public_garas_list, player.gara_detail]
+screens: [main.public_garas_list, player.gara_detail, main.gara_invite]
 related: [seguire_la_gara, giocare_una_partita]
 
 blocks:

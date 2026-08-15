@@ -4,7 +4,7 @@ kind: introduzione
 audience: [tutti]
 minutes: 3
 summary: "An app for playing and organising American pool tournaments: it keeps score, pairs the players and updates the standings on its own."
-screens: [main.index]
+screens: [main.index, main.public_campionatos_list, main.campionato_detail_public]
 related: [parole_da_sapere, chi_fa_cosa]
 
 blocks:

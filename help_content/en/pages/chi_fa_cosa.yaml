@@ -4,6 +4,7 @@ kind: introduzione
 audience: [tutti]
 minutes: 3
 summary: "Player, competition director and administrator: who can do what, and how to become a director."
+screens: [dashboard.dashboard]
 related: [primo_accesso, creare_una_gara]
 
 blocks:

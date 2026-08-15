@@ -1,0 +1,133 @@
+title: "The bracket"
+section: giocare
+kind: approfondimento
+audience: [tutti]
+minutes: 4
+summary: "In knockout competitions the path is read off a bracket: winners move up, losers are out. How to read it and what changes with double elimination."
+screens: [admin.competition.gara_bracket]
+related: [abbinamenti, seguire_la_gara, classifiche]
+
+blocks:
+  - type: text
+    text: >-
+      **Knockout** and **double elimination** competitions do not have a series
+      of equal rounds: they have a path. Winners advance, losers go out (or drop
+      into the losers' bracket). That path is shown all at once on a single
+      page.
+
+  - type: shot
+    shot: tabellone
+    caption: "The bracket of a knockout competition: the quarter-finals, with winners in bold."
+
+  - type: heading
+    id: aprirlo
+    title: "Where to find it"
+
+  - type: text
+    text: >-
+      From the competition page, the icon at the top right opens the bracket. It
+      is **public**: you can send the link to anyone, and it updates itself
+      while play is under way.
+
+  - type: shot
+    shot: gara-tabellone-dettaglio
+    caption: "A knockout competition: its page leads through to the bracket."
+
+  - type: heading
+    id: leggerlo
+    title: "How to read it"
+
+  - type: options
+    items:
+      - name: "The round names"
+        text: >-
+          Last 16, quarter-finals, semi-finals, final. The director does not
+          choose them: the number of entrants does.
+      - name: "Bold type"
+        text: "Whoever won that match, and therefore goes through to the next round."
+      - name: "The numbers on the right"
+        text: "The match score in racks."
+      - name: "Empty slots"
+        text: >-
+          Matches not yet played: they fill in as the previous rounds finish.
+
+  - type: note
+    tone: tip
+    title: "On a wide screen you see it all at once"
+    text: >-
+      The bracket is at its best in landscape: turning the phone, or using a
+      computer, shows the whole path instead of one round at a time. It is the
+      screen to put on a display in the venue, if you have one.
+
+  - type: heading
+    id: quanti_turni
+    title: "How many rounds come out"
+
+  - type: text
+    text: >-
+      The bracket sizes itself on the actual entrants. With 8 players that is
+      quarter-finals, semi-finals and final: three rounds, seven matches. With
+      16 you add one more.
+
+  - type: text
+    text: >-
+      If the entrants are not a power of two (8, 16, 32) some players go
+      straight through to the second round without playing the first. It is
+      standard bracket behaviour and needs no setting: see [When the number of
+      players is odd](/aiuto/approfondimenti/numero_dispari).
+
+  - type: heading
+    id: terzo_posto
+    title: "The third-place play-off"
+
+  - type: text
+    text: >-
+      In a knockout the director can add a **third-place match** between the two
+      semi-final losers. It does not add a round: it is played alongside the
+      final.
+
+  - type: text
+    text: >-
+      With double elimination it is not needed: the losers' bracket already
+      determines third place.
+
+  - type: heading
+    id: doppio_ko
+    title: "Double elimination"
+
+  - type: text
+    text: >-
+      With double elimination there are two brackets: the **winners'** and the
+      **losers'**. Whoever loses their first match does not go out, they drop
+      into the second; losing again puts them out for good. At the end the
+      winner of the losers' bracket meets the winner of the winners'.
+
+  - type: note
+    tone: info
+    title: "With groups"
+    text: >-
+      Double elimination can also be arranged as parallel groups qualifying
+      some players for a final knockout bracket. It is the longest format
+      available and makes sense over a full day.
+
+  - type: heading
+    id: classifica
+    title: "The standings of a bracket competition"
+
+  - type: text
+    text: >-
+      They are not counted by wins or racks: the standings **are** the path.
+      Whoever wins the tournament is first, the losing finalist second, and so
+      on. In a championship each position is worth a number of points. See [How
+      standings are worked out](/aiuto/approfondimenti/classifiche).
+
+  - type: faq
+    items:
+      - q: "I cannot see the bracket icon."
+        a: "The competition does not use a bracket strategy: with Amalfi, random or round robin there is no path to draw, and the view does not exist."
+      - q: "I lost in the first round: is my competition over?"
+        a: "With knockout, yes. With double elimination, no: you drop into the losers' bracket and can still climb back."
+      - q: "Why did someone not play the first round?"
+        a: "Because the entrants were not a power of two: some go straight through. It is not a favour, it is the only way to make the bracket add up."
+      - q: "Can the bracket be changed after the draw?"
+        a: "Only by cancelling the round and drawing again, and only by the director. The draw is recorded and stays verifiable."

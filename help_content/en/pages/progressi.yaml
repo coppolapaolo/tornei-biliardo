@@ -4,7 +4,8 @@ kind: approfondimento
 audience: [giocatore]
 minutes: 3
 summary: "Experience points, levels, milestones and streaks: what they are for and how they are earned."
-screens: [gamification.dashboard]
+screens: [gamification.dashboard, gamification.leaderboards, gamification.quests, gamification.streaks,
+  gamification.achievements]
 related: [profilo_e_statistiche, challenge]
 
 blocks:

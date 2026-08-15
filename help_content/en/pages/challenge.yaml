@@ -4,7 +4,9 @@ kind: approfondimento
 audience: [giocatore]
 minutes: 3
 summary: "Skill drills you do on your own: for practice, for unlocking milestones, and — inside a competition — for settling tie-breaks."
-screens: [challenge.challenge_catalog]
+screens: [challenge.challenge_catalog, challenge.challenge_detail, challenge.start_attempt,
+  challenge.attempt_detail, challenge.create_challenge, challenge.edit_challenge,
+  challenge.challenge_statistics, player.challenge_detail]
 related: [progressi, numero_dispari]
 
 blocks:

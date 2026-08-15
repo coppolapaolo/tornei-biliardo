@@ -39,9 +39,11 @@ sections:
       - iscriversi_a_una_gara
       - giocare_una_partita
       - seguire_la_gara
+      - tabellone
       - partite_amichevoli
       - sale_e_disponibilita
       - challenge
+      - playoff
 
   - id: organizzare
     title: "Organizzare"
@@ -53,6 +55,9 @@ sections:
       - creare_un_campionato
       - gestire_le_iscrizioni
       - condurre_la_gara
+      - squadre
+      - turni_su_misura
+      - spareggi
       - opzioni_della_gara
 
   - id: approfondimenti
@@ -77,13 +82,3 @@ sections:
       - progressi
       - diventare_direttore
       - privacy_e_dati
-
-  - id: amministrare
-    title: "Amministrare la piattaforma"
-    kicker: "Per gli amministratori"
-    icon: fa-shield-halved
-    summary: "Gestire gli account, rispondere alle richieste di ruolo, configurare punti e traguardi, leggere gli indicatori."
-    pages:
-      - gestire_gli_utenti
-      - configurare_la_gamification
-      - kpi_e_dati

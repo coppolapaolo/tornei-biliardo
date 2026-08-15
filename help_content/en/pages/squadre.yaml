@@ -1,0 +1,107 @@
+title: "Teams"
+section: organizzare
+kind: approfondimento
+audience: [direttore, giocatore]
+minutes: 4
+summary: "When entrants come from different clubs, you can ask the app not to pair team-mates against each other straight away."
+screens: [admin.competition.gara_detail]
+related: [abbinamenti, opzioni_della_gara, profilo_e_statistiche]
+
+blocks:
+  - type: text
+    text: >-
+      In a competition between clubs it happens that two team-mates meet in the
+      first round: sportingly it is a shame, and sometimes it is awkward too.
+      The app can avoid it.
+
+  - type: heading
+    id: due_livelli
+    title: "Two different kinds of team"
+
+  - type: text
+    text: >-
+      The word «team» shows up in two places that should not be confused.
+
+  - type: options
+    items:
+      - name: "The team on your profile"
+        text: >-
+          Free text, written by the player. It only serves to **pre-fill** the
+          registration: nobody uses it to decide pairings, and neither director
+          nor administrator edits it.
+      - name: "The team in the competition"
+        text: >-
+          The membership that actually counts. It lives inside the single
+          competition, is chosen at registration, and can differ from the
+          profile one — which happens when you play for a hosting club.
+
+  - type: heading
+    id: attivare
+    title: "Turning teams on (director)"
+
+  - type: text
+    text: >-
+      The option is called **separate team-mates** and is switched on while the
+      competition is still a draft. It has to be decided beforehand, not after:
+      turning it on with registrations under way would leave half the entrants
+      with no team.
+
+  - type: shot
+    shot: gara-squadre
+    caption: "The teams panel in competition management: which teams exist and how many entrants belong to each."
+
+  - type: options
+    title: "What the panel lets you do"
+    items:
+      - name: "Create a team"
+        text: "Teams are born inside the competition: there is no global list to maintain."
+      - name: "Rename it"
+        text: "To fix a misspelt name, without touching the registrations."
+      - name: "Merge two teams"
+        text: >-
+          When the same club has been written two ways («CSB Udine» and «C.S.B.
+          Udine»): merging brings the entrants together into one.
+      - name: "Deactivate one"
+        text: >-
+          Removes it from the available choices without touching anyone who has
+          already selected it.
+
+  - type: heading
+    id: iscriversi
+    title: "Choosing your team (player)"
+
+  - type: text
+    text: >-
+      When teams are on, registering for the competition asks who you are
+      playing for. If you filled in the team on your profile, it comes
+      pre-selected. **No team** is a legitimate answer, not a field left blank
+      by accident: it means that evening you are playing for yourself.
+
+  - type: heading
+    id: come_funziona
+    title: "What the app does at the draw"
+
+  - type: text
+    text: >-
+      At the first-round draw the app tries **not to pair team-mates**. It is a
+      goal, not a hard rule: if separating them all were impossible — say six of
+      eight entrants from the same team — the app picks the combination that
+      separates as many as it can, rather than refusing to draw.
+
+  - type: note
+    tone: info
+    text: >-
+      Separation applies to the **first round**, the drawn one. In later rounds
+      pairings come from the standings, and there two team-mates can meet: that
+      is the method working normally, not a fault.
+
+  - type: faq
+    items:
+      - q: "I set a team on my profile but it does not show in the competition."
+        a: "The profile team only pre-fills: if the competition does not have teams turned on, it is neither asked for nor used."
+      - q: "Can I change team once the competition has started?"
+        a: "No. Teams are decided by the time registrations open: changing them after the draw would make the separation already applied incoherent."
+      - q: "Two team-mates met anyway."
+        a: "Either it was mathematically unavoidable in the first round, or they met in a later round, where pairings follow the standings."
+      - q: "Do teams produce team standings?"
+        a: "No. They only serve the draw: the standings stay individual."
