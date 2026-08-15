@@ -1,0 +1,155 @@
+title: "Creare una gara"
+section: organizzare
+kind: tutorial
+audience: [direttore]
+minutes: 6
+summary: "Dalla creazione all'avvio: nome, data, sala, formato di gioco e apertura delle iscrizioni. Con i valori consigliati se è la prima volta."
+screens: [admin.competition.create_gara_standalone]
+related: [opzioni_della_gara, gestire_le_iscrizioni, condurre_la_gara]
+
+blocks:
+  - type: text
+    text: >-
+      Una gara è la singola serata: una data, una sala, degli iscritti e un
+      certo numero di turni. Può vivere da sola (**gara singola**) oppure
+      dentro un campionato. Qui vediamo la gara singola; per il campionato
+      vedi [Creare un campionato](/aiuto/organizzare/creare_un_campionato).
+
+  - type: note
+    tone: tip
+    title: "Se è la prima volta"
+    text: >-
+      Lascia tutti i valori come li propone l'app e cambia solo nome, data,
+      sala e disciplina. I valori proposti sono quelli che vanno bene per una
+      serata normale di circolo. Le altre opzioni le puoi scoprire con calma
+      in [Tutte le opzioni](/aiuto/organizzare/opzioni_della_gara).
+
+  - type: heading
+    id: creare
+    title: "Creare la gara"
+
+  - type: steps
+    items:
+      - title: "Dalla tua home, tocca «Nuova Gara»"
+        text: "Il pulsante compare solo se sei un direttore di gara."
+        shot: dashboard-direttore
+      - title: "Dai un nome alla gara"
+        text: >-
+          Un nome che la faccia riconoscere: «Torneo di primavera», «Serata
+          palla 9 del giovedì». Comparirà negli elenchi pubblici.
+        shot: gara-nuova
+      - title: "Data, ora e sala"
+        text: >-
+          L'orario è quello di ritrovo. Scegliendo una sala fra quelle
+          registrate, l'app ne eredita i tavoli e potrai assegnarli alle
+          partite durante la serata.
+      - title: "Disciplina e distanza"
+        text: >-
+          La disciplina è il gioco (palla 8, palla 9, palla 10…). La distanza è
+          a quanti rack si vince: **«Al 4»** significa che vince chi arriva
+          prima a 4. Vedi [Formati di
+          gioco](/aiuto/approfondimenti/formati_di_gioco).
+      - title: "Numero di turni"
+        text: >-
+          Quanti giri di partite. Tre è il valore consigliato per una serata:
+          con otto giocatori sono dodici partite, circa due ore e mezza su
+          quattro tavoli.
+      - title: "Minimo e massimo iscritti"
+        text: >-
+          Il minimo è la soglia sotto la quale la gara non parte. Il massimo è
+          facoltativo: se lo imposti, chi arriva dopo finisce in lista
+          d'attesa.
+      - title: "Salva"
+        text: >-
+          La gara nasce in stato **Bozza**: esiste, è tua, ma nessuno può ancora
+          iscriversi. Fino a qui puoi cambiare qualunque cosa.
+
+  - type: heading
+    id: prima_di_aprire
+    title: "Prima di aprire le iscrizioni"
+
+  - type: text
+    text: >-
+      Lo stato **Bozza** è il solo momento in cui puoi cambiare tutto senza
+      conseguenze. Vale la pena controllare tre cose.
+
+  - type: options
+    items:
+      - name: "Il formato di gioco"
+        text: "Disciplina, distanza e numero di turni: una volta che si gioca non si toccano più."
+        hint: gara.distanza
+      - name: "La strategia di abbinamento"
+        text: >-
+          Come l'app forma le coppie a ogni turno. Il valore proposto va bene
+          quasi sempre; le alternative sono in [Come vengono formate le
+          coppie](/aiuto/approfondimenti/abbinamenti).
+        hint: gara.strategia
+      - name: "La gestione del numero dispari"
+        text: >-
+          Cosa succede se i giocatori sono in numero dispari. Vedi [Quando i
+          giocatori sono dispari](/aiuto/approfondimenti/numero_dispari).
+        hint: gara.dispari
+
+  - type: heading
+    id: aprire
+    title: "Aprire le iscrizioni"
+
+  - type: text
+    text: >-
+      Dalla pagina della gara, nel pannello **Gestione**, tocca **Apri
+      iscrizioni** e indica da quando a quando si può aderire. Da quel momento
+      la gara compare negli elenchi pubblici e i giocatori possono iscriversi.
+
+  - type: shot
+    shot: gara-gestione
+    caption: "Il pannello «Gestione»: da qui si aprono le iscrizioni, si avvia il turno e si conduce la serata."
+
+  - type: note
+    tone: warning
+    title: "La data di chiusura non è un dettaglio"
+    text: >-
+      Alla scadenza le iscrizioni si chiudono da sole. Mettila poco prima
+      dell'inizio della gara — un'ora, due — non giorni prima: chi decide
+      all'ultimo momento è la maggioranza.
+
+  - type: heading
+    id: link
+    title: "Il collegamento di invito"
+
+  - type: text
+    text: >-
+      Ogni gara ha un collegamento breve, che trovi nel pannello Gestione.
+      Mandalo nella chat del circolo: chi lo tocca si iscrive direttamente, e
+      se non ha un account viene guidato a crearne uno e poi iscritto in
+      automatico.
+
+  - type: heading
+    id: campionato
+    title: "Gare dentro un campionato"
+
+  - type: text
+    text: >-
+      Se la gara fa parte di un campionato, la crei dalla pagina del campionato
+      e non da «Nuova Gara». Cambia poco: eredita le impostazioni predefinite
+      del campionato (sala, quota, turni, classifica), che puoi comunque
+      modificare gara per gara.
+
+  - type: note
+    tone: warning
+    title: "Le date devono essere in ordine"
+    text: >-
+      Dentro un campionato, la gara numero 2 non può avere una data precedente
+      alla numero 1. Se provi, l'app rifiuta con un messaggio: è un controllo
+      voluto, perché la classifica generale si costruisce nell'ordine delle
+      gare.
+
+  - type: faq
+    items:
+      - q: "Posso modificare una gara dopo averla creata?"
+        a: "Sì, liberamente finché è in bozza. Dopo l'apertura delle iscrizioni restano modificabili le date; una volta avviato il primo turno il formato di gioco è congelato."
+      - q: "Ho sbagliato tutto, posso cancellarla?"
+        a: "Una gara in bozza può essere eliminata da un amministratore. Se sono già state fatte iscrizioni, la strada normale è annullarla, non cancellarla: resta traccia per chi si era iscritto."
+      - q: "Quanti giocatori servono?"
+        a: "Il minimo che hai impostato, e comunque almeno quattro perché una gara a turni abbia senso. Sotto il minimo l'app non fa partire il primo turno."
+      - q: "Posso far dirigere la gara a qualcun altro?"
+        a: "Sì: nel pannello Gestione puoi aggiungere co-direttori. Utile se sei tu stesso a giocare quella sera."

@@ -1,0 +1,138 @@
+title: "Creare un campionato"
+section: organizzare
+kind: tutorial
+audience: [direttore]
+minutes: 5
+summary: "Il wizard in due passaggi: prima le regole generali, poi i valori predefiniti che tutte le gare erediteranno."
+screens: [admin.campionato.wizard_start, admin.campionato.edit_campionato]
+related: [creare_una_gara, classifiche]
+
+blocks:
+  - type: text
+    text: >-
+      Un campionato è una serie di gare che si sommano in una classifica
+      generale: il torneo sociale dell'anno, il circuito autunnale, il
+      campionato del giovedì. Si crea una volta, e poi si aggiungono le gare
+      man mano.
+
+  - type: heading
+    id: wizard
+    title: "Il wizard in due passaggi"
+
+  - type: text
+    text: >-
+      La creazione è guidata: due schermate, e alla fine il campionato esiste.
+      Quasi tutto è modificabile dopo, quindi non c'è da temere di sbagliare.
+
+  - type: shot
+    shot: campionato-wizard
+    caption: "Primo passo del wizard: nome, numero di gare previste, sistema di classifica e strategia di abbinamento."
+
+  - type: heading
+    id: passo1
+    title: "Passo 1 — Le regole generali"
+
+  - type: options
+    items:
+      - name: "Nome del campionato"
+        text: >-
+          Includi l'anno: «Campionato Sociale 2026». Fra due stagioni sarai
+          contento di distinguerli a colpo d'occhio.
+      - name: "Gare pianificate"
+        text: >-
+          Quante gare prevedi. È un obiettivo indicativo, non un vincolo:
+          potrai aggiungerne o toglierne.
+      - name: "Sistema di classifica"
+        values: "Vittorie · Rack · Posizione"
+        text: >-
+          Come si ordina la classifica. **Vittorie** è la scelta normale: conta
+          quante partite hai vinto, e a parità la differenza rack. Le tre
+          modalità sono spiegate in [Come si calcolano le
+          classifiche](/aiuto/approfondimenti/classifiche).
+        hint: campionato.classifica
+      - name: "Strategia di abbinamento"
+        values: "Amalfi · Casuale · Girone all'italiana · Eliminazione · Doppio KO"
+        text: >-
+          Come si formano le coppie a ogni turno. **Amalfi** è il valore
+          proposto ed è pensato per le gare a turni di circolo. Vedi [Come
+          vengono formate le coppie](/aiuto/approfondimenti/abbinamenti).
+        hint: gara.strategia
+      - name: "Challenge mode"
+        text: >-
+          Attiva le prove di abilità individuali durante il campionato. Vedi
+          [Le challenge](/aiuto/giocare/challenge).
+      - name: "Playoff finali"
+        text: >-
+          Gare speciali a fine campionato riservate ai migliori classificati.
+          Puoi prevedere un playoff «Elite» per i primi e uno «Academy» per i
+          successivi. I qualificati ricevono un invito da accettare.
+
+  - type: note
+    tone: warning
+    title: "Il sistema di classifica vale per tutto il campionato"
+    text: >-
+      Tutte le gare di un campionato devono usare lo **stesso** sistema di
+      classifica: non si possono sommare mele e pere. Sceglilo con attenzione
+      ora, perché cambiarlo a campionato avviato significa rifare i conti.
+
+  - type: heading
+    id: passo2
+    title: "Passo 2 — I valori predefiniti delle gare"
+
+  - type: text
+    text: >-
+      Il secondo passaggio chiede come saranno fatte le gare «tipo» del
+      campionato: sala, quota di partecipazione, numero di turni, gestione del
+      numero dispari. Ogni gara nuova nascerà già così, e tu dovrai solo
+      cambiare nome, data e disciplina.
+
+  - type: note
+    tone: tip
+    text: >-
+      Sono **valori di partenza**, non regole ferree: ogni singola gara resta
+      modificabile. Servono a non ridigitare le stesse dieci scelte per sei
+      serate.
+
+  - type: heading
+    id: aggiungere_gare
+    title: "Aggiungere le gare"
+
+  - type: shot
+    shot: campionato-gestione
+    caption: "La pagina del campionato: le sue gare in ordine, la classifica generale e le impostazioni."
+
+  - type: steps
+    items:
+      - title: "Apri il campionato"
+        text: "Dalla tua home, sotto «Campionati», tocca «Gestione»."
+      - title: "Aggiungi una gara"
+        text: >-
+          La gara eredita i valori predefiniti. Tu metti nome, data e
+          disciplina.
+      - title: "Ripeti per le gare successive"
+        text: >-
+          Le date devono essere in ordine crescente: la gara 2 non può
+          precedere la gara 1. Puoi crearle tutte subito, con le date del
+          calendario, oppure una alla volta.
+
+  - type: heading
+    id: classifica_generale
+    title: "La classifica generale"
+
+  - type: text
+    text: >-
+      Si aggiorna da sola alla fine di ogni gara sommando i risultati: le
+      vittorie e la differenza rack se il sistema è «Vittorie», i rack totali
+      se è «Rack», i punti-posizione se è «Posizione». Chi salta una gara non
+      viene escluso: semplicemente non guadagna nulla in quell'occasione.
+
+  - type: faq
+    items:
+      - q: "Posso aggiungere gare a campionato già iniziato?"
+        a: "Sì, purché la data sia successiva all'ultima gara esistente."
+      - q: "Un giocatore può entrare a campionato iniziato?"
+        a: "Sì. Si iscrive alle gare che restano e parte dal punteggio delle gare a cui ha partecipato."
+      - q: "Posso avere più direttori su un campionato?"
+        a: "Sì, e chi dirige il campionato dirige di conseguenza tutte le sue gare."
+      - q: "Cosa succede se annullo una gara del campionato?"
+        a: "I suoi risultati escono dalla classifica generale. Le altre gare non ne risentono."

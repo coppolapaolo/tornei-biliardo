@@ -261,8 +261,10 @@
     </div>
 </div>
 
+{# `data-help-capture-hide`: escluso dalle schermate della guida (vedi
+   scripts/help_docs/capture_screenshots.py). #}
 {% if debug_info.debug_mode %}
-<div class="mt-4">
+<div class="mt-4" data-help-capture-hide>
     <div class="alert alert-dark">
         <h6><i class="fas fa-bug"></i> DEBUG - Users Stats</h6>
         <small>

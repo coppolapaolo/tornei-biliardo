@@ -1,0 +1,139 @@
+title: "Creating a championship"
+section: organizzare
+kind: tutorial
+audience: [direttore]
+minutes: 5
+summary: "The two-step wizard: first the general rules, then the defaults every competition will inherit."
+screens: [admin.campionato.wizard_start, admin.campionato.edit_campionato]
+related: [creare_una_gara, classifiche]
+
+blocks:
+  - type: text
+    text: >-
+      A championship is a series of competitions that add up into overall
+      standings: the club's season, an autumn circuit, the Thursday
+      championship. You create it once, then add competitions as you go.
+
+  - type: heading
+    id: wizard
+    title: "The two-step wizard"
+
+  - type: text
+    text: >-
+      Creation is guided: two screens, and at the end the championship exists.
+      Almost everything can be changed afterwards, so there is no need to fear
+      getting it wrong.
+
+  - type: shot
+    shot: campionato-wizard
+    caption: "First step of the wizard: name, planned number of competitions, standings system and pairing strategy."
+
+  - type: heading
+    id: passo1
+    title: "Step 1 — The general rules"
+
+  - type: options
+    items:
+      - name: "Championship name"
+        text: >-
+          Include the year: «2026 Club Championship». Two seasons from now you
+          will be glad to tell them apart at a glance.
+      - name: "Planned competitions"
+        text: >-
+          How many you expect. It is an indicative target, not a constraint:
+          you can add or remove them.
+      - name: "Standings system"
+        values: "Wins · Racks · Position"
+        text: >-
+          How the standings are ordered. **Wins** is the normal choice: it
+          counts matches won, and rack difference when level. The three modes
+          are explained in [How standings are worked
+          out](/aiuto/approfondimenti/classifiche).
+        hint: campionato.classifica
+      - name: "Pairing strategy"
+        values: "Amalfi · Random · Round robin · Knockout · Double elimination"
+        text: >-
+          How pairs are formed each round. **Amalfi** is the proposed value and
+          is designed for club competitions played over rounds. See [How pairs
+          are formed](/aiuto/approfondimenti/abbinamenti).
+        hint: gara.strategia
+      - name: "Challenge mode"
+        text: >-
+          Enables individual skill drills during the championship. See
+          [Challenges](/aiuto/giocare/challenge).
+      - name: "Final play-offs"
+        text: >-
+          Special competitions at the end of the championship reserved for the
+          best-placed players. You can plan an «Elite» play-off for the top
+          finishers and an «Academy» one for those below. Qualifiers receive an
+          invitation to accept.
+
+  - type: note
+    tone: warning
+    title: "The standings system applies to the whole championship"
+    text: >-
+      Every competition in a championship must use the **same** standings
+      system: you cannot add apples to pears. Choose carefully now, because
+      changing it once the championship is under way means redoing the sums.
+
+  - type: heading
+    id: passo2
+    title: "Step 2 — The defaults for competitions"
+
+  - type: text
+    text: >-
+      The second step asks what the championship's «typical» competitions look
+      like: venue, entry fee, number of rounds, handling of odd numbers. Every
+      new competition will start out like that, and you will only have to
+      change the name, date and discipline.
+
+  - type: note
+    tone: tip
+    text: >-
+      These are **starting values**, not hard rules: each individual
+      competition stays editable. They exist so you do not retype the same ten
+      choices for six evenings.
+
+  - type: heading
+    id: aggiungere_gare
+    title: "Adding competitions"
+
+  - type: shot
+    shot: campionato-gestione
+    caption: "The championship page: its competitions in order, the overall standings and the settings."
+
+  - type: steps
+    items:
+      - title: "Open the championship"
+        text: "From your home, under «Championships», tap «Manage»."
+      - title: "Add a competition"
+        text: >-
+          The competition inherits the defaults. You supply the name, date and
+          discipline.
+      - title: "Repeat for the following ones"
+        text: >-
+          Dates must be in increasing order: competition 2 cannot come before
+          competition 1. You can create them all at once, with the calendar
+          dates, or one at a time.
+
+  - type: heading
+    id: classifica_generale
+    title: "The overall standings"
+
+  - type: text
+    text: >-
+      They update on their own at the end of each competition by adding up the
+      results: wins and rack difference if the system is «Wins», total racks if
+      it is «Racks», position points if it is «Position». Anyone who misses a
+      competition is not excluded: they simply gain nothing on that occasion.
+
+  - type: faq
+    items:
+      - q: "Can I add competitions once the championship has started?"
+        a: "Yes, as long as the date is after the last existing competition."
+      - q: "Can a player join a championship that has already started?"
+        a: "Yes. They register for the remaining competitions and start from the points of the ones they took part in."
+      - q: "Can a championship have more than one director?"
+        a: "Yes, and whoever runs the championship runs all of its competitions as a result."
+      - q: "What happens if I cancel one of the championship's competitions?"
+        a: "Its results leave the overall standings. The other competitions are unaffected."

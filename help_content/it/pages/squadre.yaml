@@ -1,0 +1,110 @@
+title: "Le squadre"
+section: organizzare
+kind: approfondimento
+audience: [direttore, giocatore]
+minutes: 4
+summary: "Quando i partecipanti arrivano da circoli diversi, si può chiedere all'app di non far incontrare subito i compagni di squadra."
+screens: [admin.competition.gara_detail]
+related: [abbinamenti, opzioni_della_gara, profilo_e_statistiche]
+
+blocks:
+  - type: text
+    text: >-
+      In una gara fra circoli capita che due compagni di squadra si incontrino
+      al primo turno: sportivamente è un peccato, e a volte è anche
+      antipatico. L'app può evitarlo.
+
+  - type: heading
+    id: due_livelli
+    title: "Due squadre diverse"
+
+  - type: text
+    text: >-
+      La parola «squadra» compare in due posti che non vanno confusi.
+
+  - type: options
+    items:
+      - name: "La squadra sul profilo"
+        text: >-
+          Testo libero, lo scrive il giocatore. Serve solo a **precompilare**
+          l'iscrizione: nessuno la usa per decidere gli abbinamenti, e né
+          direttore né amministratore la modificano.
+      - name: "La squadra nella gara"
+        text: >-
+          L'appartenenza che conta davvero. Vive dentro la singola gara, viene
+          scelta al momento dell'iscrizione e può essere diversa da quella del
+          profilo — capita, quando si gioca per un circolo ospitante.
+
+  - type: heading
+    id: attivare
+    title: "Attivare le squadre (direttore)"
+
+  - type: text
+    text: >-
+      L'opzione si chiama **separazione dei compagni** e si accende quando la
+      gara è ancora in bozza. È una scelta che va fatta prima, non dopo:
+      accendendola a iscrizioni avviate ti ritroveresti metà iscritti senza
+      squadra.
+
+  - type: shot
+    shot: gara-squadre
+    caption: "Il pannello delle squadre nella gestione della gara: quali esistono e quanti iscritti ne fanno parte."
+
+  - type: options
+    title: "Cosa puoi fare dal pannello"
+    items:
+      - name: "Creare una squadra"
+        text: "Le squadre nascono nella gara: non c'è un elenco globale da mantenere."
+      - name: "Rinominarla"
+        text: "Per correggere un nome scritto male, senza toccare le iscrizioni."
+      - name: "Unire due squadre"
+        text: >-
+          Quando lo stesso circolo è stato scritto in due modi («CSB Udine» e
+          «C.S.B. Udine»): unendole, gli iscritti confluiscono in una sola.
+      - name: "Disattivarne una"
+        text: >-
+          La toglie dalle scelte possibili senza toccare chi l'ha già
+          selezionata.
+
+  - type: heading
+    id: iscriversi
+    title: "Scegliere la squadra (giocatore)"
+
+  - type: text
+    text: >-
+      Quando le squadre sono attive, iscrivendoti alla gara ti viene chiesto per
+      chi giochi. Se hai compilato la squadra nel profilo, la trovi già
+      proposta. **Nessuna squadra** è una risposta legittima, non un campo
+      lasciato vuoto per distrazione: significa che quella sera giochi per conto
+      tuo.
+
+  - type: heading
+    id: come_funziona
+    title: "Cosa fa l'app col sorteggio"
+
+  - type: text
+    text: >-
+      Al sorteggio del primo turno l'app cerca di **non accoppiare compagni di
+      squadra**. È un obiettivo, non una regola ferrea: se separarli tutti fosse
+      impossibile — per esempio con sei iscritti su otto della stessa squadra —
+      l'app sceglie la combinazione che ne separa il più possibile invece di
+      rifiutarsi di sorteggiare.
+
+  - type: note
+    tone: info
+    text: >-
+      La separazione vale per il **primo turno**, quello sorteggiato. Nei turni
+      successivi gli abbinamenti nascono dalla classifica, e lì due compagni
+      possono ritrovarsi di fronte: è il funzionamento normale del metodo, non
+      un errore.
+
+  - type: faq
+    items:
+      - q: "Ho messo la squadra nel profilo ma nella gara non compare."
+        a: "La squadra del profilo precompila soltanto: se la gara non ha le squadre attive, non viene chiesta né usata."
+      - q: "Posso cambiare squadra a gara iniziata?"
+        a: "No. Le squadre si decidono entro l'apertura delle iscrizioni: cambiarle dopo il sorteggio renderebbe incoerente la separazione già applicata."
+      - q: "Due compagni si sono comunque incontrati."
+        a: "O era matematicamente inevitabile al primo turno, o si sono incontrati in un turno successivo, dove gli abbinamenti seguono la classifica."
+      - q: "Le squadre danno una classifica a squadre?"
+        a: "No. Servono solo al sorteggio: la classifica resta individuale."

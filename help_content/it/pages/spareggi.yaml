@@ -1,0 +1,104 @@
+title: "Gli spareggi di fine gara"
+section: organizzare
+kind: approfondimento
+audience: [direttore]
+minutes: 3
+summary: "Quando due giocatori chiudono a pari merito nelle posizioni che contano: come si decide chi sta davanti, e come si conduce lo spareggio."
+screens: [admin.competition.gara_detail]
+related: [classifiche, challenge, condurre_la_gara]
+
+blocks:
+  - type: text
+    text: >-
+      Finito l'ultimo turno può succedere che due giocatori abbiano le stesse
+      vittorie e la stessa differenza rack. Se capita sul podio, qualcuno deve
+      decidere.
+
+  - type: heading
+    id: decidere_prima
+    title: "Si decide prima, non dopo"
+
+  - type: text
+    text: >-
+      Alla creazione della gara si stabilisce **fino a che posizione** vale la
+      pena sciogliere i pari merito. Il valore proposto è il podio: sul quinto e
+      sesto posto, di norma, nessuno litiga.
+
+  - type: note
+    tone: warning
+    text: >-
+      Deciderlo a fine serata, con i due interessati davanti, è la situazione
+      da evitare: qualunque regola scegli in quel momento sembrerà scelta per
+      favorire qualcuno. Stabilirla in anticipo la rende una regola del gioco.
+
+  - type: heading
+    id: come
+    title: "I due modi di sciogliere un pari merito"
+
+  - type: options
+    items:
+      - name: "Scontro diretto"
+        text: >-
+          Se i due si sono affrontati durante la gara, sta davanti chi ha vinto
+          quella partita. Non richiede di rigiocare nulla, ed è il metodo più
+          facile da spiegare.
+      - name: "Spareggio"
+        values: "Spot Shot Rally"
+        text: >-
+          Una prova di abilità con un punteggio: chi fa meglio sta davanti. È
+          il metodo da usare quando i due non si sono incontrati, o quando lo
+          scontro diretto è finito in parità. Vedi [Le
+          challenge](/aiuto/giocare/challenge).
+
+  - type: heading
+    id: condurlo
+    title: "Condurre lo spareggio"
+
+  - type: steps
+    items:
+      - title: "La gara resta in attesa"
+        text: >-
+          Finito l'ultimo turno, se ci sono pari merito da sciogliere la gara
+          non si chiude: aspetta. La classifica mostra i giocatori appaiati.
+      - title: "Avvia lo spareggio dal pannello Gestione"
+        text: >-
+          L'app propone i giocatori coinvolti. Sono quelli a pari merito nelle
+          posizioni che avevi indicato, non tutti gli appaiati della gara.
+      - title: "Fai giocare la prova e inserisci i punteggi"
+        text: >-
+          Il punteggio si inserisce come un normale risultato. Chi fa meglio
+          sale.
+      - title: "La gara si chiude"
+        text: >-
+          La classifica finale tiene conto dello spareggio, e se la gara fa
+          parte di un campionato i punti vanno nella classifica generale.
+
+  - type: note
+    tone: info
+    title: "Si può annullare"
+    text: >-
+      Uno spareggio avviato per errore si annulla dal pannello Gestione. Finché
+      c'è uno spareggio attivo, però, i risultati della gara non sono
+      modificabili: lo spareggio li dà per definitivi, e cambiarli sotto lo
+      renderebbe insensato.
+
+  - type: heading
+    id: quando_non_serve
+    title: "Quando non serve"
+
+  - type: list
+    items:
+      - "**Gare a tabellone**: il percorso stabilisce già l'ordine, non ci sono pari merito da sciogliere."
+      - "**Fuori dalle posizioni indicate**: i pari merito restano, due giocatori condividono la posizione e la successiva viene saltata."
+      - "**Se lo spareggio è disattivato**: la classifica resta con i pari merito così come sono."
+
+  - type: faq
+    items:
+      - q: "La gara non si chiude e non capisco perché."
+        a: "Quasi sempre c'è uno spareggio in attesa: guarda il pannello Gestione. Se non vuoi giocarlo, si può annullare e la classifica resta a pari merito."
+      - q: "Posso correggere un risultato mentre lo spareggio è attivo?"
+        a: "No. Va prima annullato lo spareggio: certifica implicitamente i risultati della gara."
+      - q: "Quanti giocatori possono essere in uno spareggio?"
+        a: "Tutti quelli appaiati in quella posizione: capita che siano tre o quattro, non solo due."
+      - q: "Serve una challenge configurata?"
+        a: "Per lo spareggio a punteggio sì, serve una prova da far giocare. Lo scontro diretto invece non richiede nulla."

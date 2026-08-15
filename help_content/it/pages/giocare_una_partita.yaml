@@ -1,0 +1,146 @@
+title: "Giocare una partita e segnare i punti"
+section: giocare
+kind: tutorial
+audience: [giocatore]
+minutes: 5
+summary: "Il segnapunti: un tasto per giocatore, si preme dopo ogni rack. Come correggere un errore e cosa succede quando la partita finisce."
+screens: [admin.match.match_detail]
+related: [seguire_la_gara, formati_di_gioco]
+
+blocks:
+  - type: text
+    text: >-
+      Questa è la schermata che userai di più: la pagina della partita. È fatta
+      per essere usata in piedi, con una mano, mentre l'altra tiene la stecca.
+
+  - type: heading
+    id: aprire
+    title: "Aprire la partita"
+
+  - type: text
+    text: >-
+      Quando il turno parte, la tua partita compare in cima alla tua home e
+      nella pagina della gara, con il pulsante **Inserisci risultato**. Ricevi
+      anche una notifica. Toccala e sei dentro.
+
+  - type: shot
+    shot: partita-segnapunti
+    caption: "La pagina della partita: in alto il punteggio, al centro il segnapunti, in fondo l'elenco dei rack già giocati."
+
+  - type: heading
+    id: leggere
+    title: "Leggere la schermata"
+
+  - type: options
+    title: "Cosa c'è, dall'alto in basso"
+    items:
+      - name: "Il pallino «In corso»"
+        text: "Rosso e lampeggiante: vuol dire che la partita è viva e che il punteggio si aggiorna in tempo reale anche per chi la guarda da lontano."
+      - name: "Il punteggio"
+        text: "I due numeri grandi. Sotto ciascuno c'è il nome del giocatore e il suo rating."
+        hint: partita.punteggio
+      - name: "La riga della distanza"
+        text: "Per esempio «Al 5 rack · 7 rack giocati»: ti ricorda a quanto si vince e quanti rack sono già stati giocati in tutto."
+        hint: gara.distanza
+      - name: "Il segnapunti"
+        text: "I due tasti grandi «+1», uno per giocatore. Il tuo è quello pieno, scuro: si riconosce senza leggere il nome."
+        hint: partita.segnapunti
+      - name: "Annulla ultimo rack"
+        text: "Toglie l'ultimo punto assegnato. Serve quando si preme il tasto sbagliato."
+      - name: "Dichiara forfait"
+        text: "Da usare solo se la partita si interrompe davvero: assegna all'avversario tutti i rack che mancano."
+        hint: partita.forfait
+      - name: "Rack giocati"
+        text: "L'elenco di chi ha vinto ogni rack, con il punteggio progressivo. È il tabellino della partita."
+
+  - type: heading
+    id: segnare
+    title: "Segnare un rack"
+
+  - type: steps
+    items:
+      - title: "Finite il rack al tavolo"
+        text: "Si gioca normalmente: l'app non entra nel merito delle regole del biliardo."
+      - title: "Premi il tasto di chi ha vinto"
+        text: >-
+          Un solo tocco sul tasto **+1** con il nome del vincitore del rack.
+          Non «+1 a me» e «-1 a lui»: si segna solo chi ha vinto.
+        shot: partita-rack
+      - title: "Controlla il punteggio in alto"
+        text: >-
+          Il numero grande cambia subito, e il rack compare in fondo
+          all'elenco. Se il numero non è cambiato, il tocco non è arrivato:
+          ripremi.
+      - title: "Avanti fino alla distanza"
+        text: >-
+          Si va avanti così a ogni rack. Quando uno dei due arriva al numero
+          stabilito, la partita si chiude da sola.
+
+  - type: note
+    tone: tip
+    title: "Basta che segni uno dei due"
+    text: >-
+      Non serve che segnino entrambi i giocatori: il punteggio è uno solo e si
+      aggiorna sul telefono di tutti e due. Mettetevi d'accordo su chi tiene il
+      conto, di solito chi ha il telefono più comodo da raggiungere.
+
+  - type: heading
+    id: sbagli
+    title: "Se sbagli"
+
+  - type: text
+    text: >-
+      **Hai premuto il tasto sbagliato**: tocca **Annulla ultimo rack**. Puoi
+      ripeterlo più volte, tornando indietro rack per rack.
+
+  - type: text
+    text: >-
+      **La partita è già chiusa**: da quel momento non puoi più correggerla da
+      solo. Chiama il direttore di gara, che può azzerare la partita e farvela
+      reinserire. È fatto apposta: un risultato chiuso è entrato in classifica,
+      e non deve poter cambiare senza che chi organizza lo sappia.
+
+  - type: heading
+    id: forfait
+    title: "Forfait e abbandoni"
+
+  - type: text
+    text: >-
+      Se un giocatore non può proseguire — deve andare via, si infortuna, non
+      si è presentato — si usa **Dichiara forfait**. L'avversario riceve tutti
+      i rack che mancavano alla distanza: se eravate 3-2 in una gara al 5, il
+      risultato diventa 5-2.
+
+  - type: note
+    tone: warning
+    text: >-
+      Il forfait non è annullabile dal giocatore. Se lo dichiari per sbaglio,
+      serve il direttore di gara. Nel dubbio, chiedi a lui prima di premere.
+
+  - type: heading
+    id: fine
+    title: "Quando la partita finisce"
+
+  - type: text
+    text: >-
+      La partita si chiude da sola al raggiungimento della distanza e diventa
+      **Conclusa**. Da quel momento: il risultato entra nella classifica del
+      turno, il tavolo si libera per la partita successiva, e quando **tutte**
+      le partite del turno sono finite il direttore può avviare il turno dopo.
+
+  - type: shot
+    shot: gara-turni
+    caption: "Le partite del turno: quelle concluse mostrano il risultato con la coroncina accanto al vincitore."
+
+  - type: faq
+    items:
+      - q: "Posso segnare i punti di una partita che non è la mia?"
+        a: "No, solo il direttore di gara può farlo. Tu vedi tutte le partite, ma puoi intervenire solo sulla tua."
+      - q: "Il punteggio non si aggiorna sul telefono dell'altro."
+        a: "L'aggiornamento passa dalla rete: se la sala ha poco segnale può metterci qualche secondo. Ricaricando la pagina si allinea."
+      - q: "Abbiamo giocato più rack del dovuto."
+        a: "L'app non lo permette: al raggiungimento della distanza la partita si chiude e il segnapunti sparisce. Se avete giocato rack in più, semplicemente non contano."
+      - q: "Dobbiamo confermare il risultato in due?"
+        a: "In alcune configurazioni sì: comparirà il pulsante di conferma anche all'avversario. Se non compare, il risultato è già definitivo così."
+      - q: "Che cos'è il numero del tavolo che vedo in alto?"
+        a: "Il tavolo che il direttore vi ha assegnato per questa partita. Se non c'è, la sala non ha configurato i tavoli e vi mettete d'accordo sul posto."

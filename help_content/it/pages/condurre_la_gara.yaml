@@ -1,0 +1,169 @@
+title: "Condurre la gara turno per turno"
+section: organizzare
+kind: approfondimento
+audience: [direttore]
+minutes: 6
+summary: "La serata dal vivo: avviare i turni, assegnare i tavoli, correggere i risultati sbagliati e chiudere la gara."
+screens: [admin.competition.gara_detail, admin.competition.amalfi_classification]
+related: [gestire_le_iscrizioni, abbinamenti, numero_dispari]
+
+blocks:
+  - type: text
+    text: >-
+      Durante la serata il tuo lavoro si riduce a tre gesti: avviare il turno,
+      guardare le partite che si concludono, avviare il turno dopo. Il resto lo
+      fa l'app.
+
+  - type: shot
+    shot: gara-gestione
+    caption: "Il pannello «Gestione» durante una gara: lo stato del turno in corso e il pulsante per avviare il successivo."
+
+  - type: heading
+    id: primo_turno
+    title: "Avviare il primo turno"
+
+  - type: steps
+    items:
+      - title: "Chiudi le iscrizioni"
+        text: "Controlla che l'elenco corrisponda a chi è davvero in sala."
+      - title: "Tocca «Avvia primo turno»"
+        text: >-
+          L'app sorteggia le coppie e crea le partite. Tutti i giocatori
+          ricevono una notifica con il nome dell'avversario.
+      - title: "Assegna i tavoli"
+        text: >-
+          Se la sala ha i tavoli configurati, l'app li distribuisce alle prime
+          partite; le altre restano in attesa e riceveranno un tavolo appena
+          se ne libera uno.
+
+  - type: note
+    tone: info
+    title: "Il sorteggio è riproducibile"
+    text: >-
+      Il sorteggio del primo turno viene registrato: se qualcuno contesta
+      l'abbinamento, è possibile ricostruire come è stato estratto. Annullare
+      il primo turno cancella il sorteggio, e riavviarlo significa risorteggiare
+      davvero.
+
+  - type: heading
+    id: durante
+    title: "Mentre si gioca"
+
+  - type: text
+    text: >-
+      I giocatori segnano i propri rack dal telefono e tu vedi la pagina
+      aggiornarsi da sola. Non devi fare niente, se non intervenire quando
+      qualcosa non va.
+
+  - type: options
+    title: "Quello che puoi fare durante il turno"
+    items:
+      - name: "Inserire un risultato al posto dei giocatori"
+        text: >-
+          Se un tavolo non ha lo smartphone, apri la partita e segna tu i rack:
+          il segnapunti è lo stesso.
+      - name: "Cambiare il tavolo a una partita"
+        text: "Se un tavolo si guasta o due coppie si accordano diversamente."
+      - name: "Registrare un forfait"
+        text: >-
+          Chi abbandona lascia all'avversario tutti i rack che mancano alla
+          distanza.
+        hint: partita.forfait
+      - name: "Azzerare una partita sbagliata"
+        text: >-
+          Riporta il punteggio a zero mantenendo la stessa coppia, che rigioca.
+          È la correzione da usare quando il risultato è stato inserito male.
+        hint: gara.reset_partita
+
+  - type: heading
+    id: turni_successivi
+    title: "Avviare i turni successivi"
+
+  - type: text
+    text: >-
+      Il pulsante **Avvia turno successivo** si accende solo quando **tutte**
+      le partite del turno in corso sono concluse. È un vincolo voluto: le
+      coppie del turno nuovo nascono dalla classifica, e una classifica
+      incompleta produrrebbe abbinamenti sbagliati.
+
+  - type: note
+    tone: warning
+    title: "Avviare un turno blocca quello precedente"
+    text: >-
+      Appena parte il turno nuovo, le partite del turno precedente diventano
+      **Bloccate**: non sono più correggibili, perché gli abbinamenti appena
+      creati si basano su quei risultati. Controlla i punteggi **prima** di
+      premere.
+
+  - type: heading
+    id: correggere
+    title: "Correggere un errore"
+
+  - type: text
+    text: >-
+      Dipende da quando te ne accorgi. Le tre situazioni si risolvono in modo
+      diverso.
+
+  - type: options
+    items:
+      - name: "Il turno è ancora in corso"
+        values: "facile"
+        text: >-
+          Apri la partita e azzerala: la coppia resta la stessa e rigioca, o
+          reinserisci tu il punteggio giusto.
+      - name: "Il turno è finito ma il successivo non è partito"
+        values: "ancora facile"
+        text: >-
+          Stessa cosa. Finché non avvii il turno dopo, i risultati sono
+          modificabili.
+      - name: "Il turno successivo è già partito"
+        values: "da valutare"
+        text: >-
+          Le partite sono bloccate. Per correggere devi **annullare il turno
+          successivo**: le sue partite vengono eliminate e le coppie si
+          liberano. Poi correggi, e riavvii. I giocatori del turno annullato
+          dovranno rigiocare, quindi valuta se ne vale la pena.
+
+  - type: heading
+    id: dispari
+    title: "Se i giocatori sono dispari"
+
+  - type: text
+    text: >-
+      Non devi fare niente: l'app applica la regola che hai scelto alla
+      creazione — X a tavolino, trio o challenge — e la applica a un giocatore
+      diverso ogni turno, così l'onere gira. Il funzionamento è spiegato in
+      [Quando i giocatori sono
+      dispari](/aiuto/approfondimenti/numero_dispari).
+
+  - type: heading
+    id: chiudere
+    title: "Chiudere la gara"
+
+  - type: text
+    text: >-
+      Finito l'ultimo turno, la gara si conclude e la classifica diventa
+      definitiva. Due cose possono ancora accadere:
+
+  - type: list
+    items:
+      - >-
+        **Spareggi**: se ci sono pari merito nelle posizioni che hai deciso di
+        spareggiare, la gara resta in attesa finché non li fai giocare. Puoi
+        avviare lo spareggio dal pannello Gestione.
+      - >-
+        **Classifica del campionato**: se la gara ne fa parte, i risultati
+        vengono sommati alla classifica generale non appena la gara è conclusa.
+
+  - type: faq
+    items:
+      - q: "Il pulsante «Avvia turno successivo» è spento."
+        a: "Manca almeno una partita da concludere. Nella vista Turni, le partite ancora aperte sono quelle senza etichetta «Conclusa»."
+      - q: "Un giocatore se ne va a metà gara."
+        a: "Registra il forfait sulla partita in corso. Per i turni successivi, la regola che hai scelto alla creazione decide se resta negli abbinamenti (perdendo a tavolino) o se ne esce."
+      - q: "Posso dirigere la gara e giocarla?"
+        a: "No: un direttore non può iscriversi alla gara che dirige. Se vuoi giocare, aggiungi un co-direttore che conduca la serata."
+      - q: "Ho annullato il turno per sbaglio."
+        a: "Riavvialo: l'app riformerà le coppie. Non saranno necessariamente le stesse di prima, perché l'abbinamento viene ricalcolato."
+      - q: "Posso cambiare la distanza a metà gara?"
+        a: "Il formato è congelato all'avvio. Se serve una distanza diversa per un turno specifico, va impostata prima della partenza, quando la gara è ancora in bozza."

@@ -1,0 +1,100 @@
+title: "End-of-championship play-offs"
+section: giocare
+kind: approfondimento
+audience: [giocatore]
+minutes: 3
+summary: "The final competitions reserved for the best-placed players: how you qualify, how to accept the invitation and what happens if you decline."
+screens: [player.playoff_invitation]
+related: [creare_un_campionato, notifiche]
+
+blocks:
+  - type: text
+    text: >-
+      A championship can close with one or two special competitions, open only
+      to those who finished well in the overall standings. You do not register:
+      you **qualify**, and you receive an invitation.
+
+  - type: heading
+    id: qualificarsi
+    title: "How you qualify"
+
+  - type: text
+    text: >-
+      At the end of the championship's last competition the app looks at the
+      overall standings and works out who qualifies. There can be two
+      play-offs, with different thresholds:
+
+  - type: options
+    items:
+      - name: "Elite play-off"
+        text: "Reserved for the top finishers — how many is decided by whoever organises the championship."
+      - name: "Academy play-off"
+        text: >-
+          For those placed below. It exists so the season does not end for
+          everyone who missed the podium, and it is usually the better attended
+          of the two.
+
+  - type: note
+    tone: info
+    text: >-
+      Play-offs are optional: many championships have none at all and close
+      with the overall standings after the last competition.
+
+  - type: heading
+    id: invito
+    title: "The invitation"
+
+  - type: text
+    text: >-
+      If you qualify you get a **notification**. Opening it shows the play-off
+      competition — date, venue, format — and two buttons: accept or decline.
+
+  - type: shot
+    shot: notifiche
+    caption: "Play-off invitations arrive among your notifications, like other competition messages."
+
+  - type: steps
+    items:
+      - title: "Read the conditions"
+        text: >-
+          Date and time matter more than usual: a play-off is a single evening,
+          and there is often no rearranging it.
+      - title: "Accept or decline"
+        text: >-
+          Accepting puts you among the entrants of the play-off competition.
+          Declining gives up your place: depending on how the championship is
+          organised, it may pass to the first player left out.
+      - title: "Answer in time"
+        text: >-
+          The invitation has a deadline. Not answering counts as declining, and
+          the place goes to someone else.
+
+  - type: note
+    tone: warning
+    title: "Declining is not a penalty"
+    text: >-
+      Turning down a play-off costs no points and does not affect the standings
+      of the championship just finished: those are closed. If you cannot make
+      it, saying so straight away is a favour to whoever organises.
+
+  - type: heading
+    id: come_si_gioca
+    title: "How a play-off is played"
+
+  - type: text
+    text: >-
+      Once accepted, a play-off is a competition like any other: rounds,
+      pairings, scoreboard and standings work exactly as described in
+      [Following a competition](/aiuto/giocare/seguire_la_gara). Only how you
+      got there is different.
+
+  - type: faq
+    items:
+      - q: "How do I know whether I qualified?"
+        a: "You get a notification. No notification means you did not qualify, or the championship has no play-offs."
+      - q: "Can I play in both play-offs?"
+        a: "No: qualifying assigns you to one of the two, based on your position in the standings."
+      - q: "I accepted but now I cannot come."
+        a: "Tell the competition director: they can remove you from the entrants as with any other competition."
+      - q: "My championship has no play-offs."
+        a: "That is normal: they are optional and decided when the championship is created."

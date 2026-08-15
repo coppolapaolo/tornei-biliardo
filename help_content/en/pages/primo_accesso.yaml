@@ -1,0 +1,111 @@
+title: "Your first steps: sign up and log in"
+section: introduzione
+kind: tutorial
+audience: [tutti]
+minutes: 3
+summary: "Creating the account, confirming your email and logging in for the first time. Five minutes, once and for all."
+screens: [auth.register, auth.login, auth.forgot_password, auth.verify_email, onboarding.onboarding]
+related: [iscriversi_a_una_gara, profilo_e_statistiche]
+
+blocks:
+  - type: text
+    text: >-
+      You need nothing to browse competitions. To **register** for one and to
+      keep score you need an account: it is free and asks for three things.
+
+  - type: heading
+    id: registrazione
+    title: "Creating the account"
+
+  - type: steps
+    items:
+      - title: "Open the sign-up page"
+        text: >-
+          From the home page tap **Sign up**. On a computer the link is in the
+          left-hand column.
+        shot: home-pubblica
+      - title: "Fill in the three fields"
+        text: >-
+          **Username**: this is the name that appears in the standings and that
+          your opponents see — pick one they will recognise.
+          **Email**: used to confirm the account and to reset your password if
+          you forget it. **Password**: at least eight characters.
+        shot: registrazione
+      - title: "Confirm from your email"
+        text: >-
+          You will get a message with a link to tap. It checks that the address
+          really is yours. If nothing arrives within a few minutes, look in
+          your spam folder.
+      - title: "Log in"
+        text: >-
+          Go back to the app and sign in with your username and password. From
+          then on you stay logged in: you will not have to do it every visit.
+
+  - type: note
+    tone: tip
+    title: "Add the app to your phone's home screen"
+    text: >-
+      From your browser's menu choose «Add to Home Screen»: an icon appears
+      like a real app's, and it opens full screen.
+
+  - type: heading
+    id: prima_volta
+    title: "The first time you log in"
+
+  - type: text
+    text: >-
+      On first login the app asks a few short questions — what you are
+      interested in, which town you play in. They are all optional and only
+      serve to show you nearby competitions first. You can change your answers
+      at any time from your profile.
+
+  - type: shot
+    shot: dashboard-giocatore
+    caption: "Your home: at the top the competitions you are registered for, below the championships and competitions near you."
+
+  - type: heading
+    id: muoversi
+    title: "Finding your way around"
+
+  - type: text
+    text: >-
+      On a **phone** there is a bar at the bottom of the screen with the five
+      main destinations: Dashboard, Venues, Matches, Challenges and
+      Notifications. The arrow at the top left always goes back one step.
+
+  - type: shot
+    shot: dashboard-giocatore
+    variant: desktop
+    caption: "On a computer the same items sit in the left-hand column, always visible."
+
+  - type: text
+    text: >-
+      On a **computer** those same items are in the left-hand column, and pages
+      show two columns side by side instead of one: the same information, just
+      arranged differently.
+
+  - type: heading
+    id: password_dimenticata
+    title: "If you forget your password"
+
+  - type: steps
+    items:
+      - title: "Tap «Forgot password» on the login page"
+        text: "You will be asked for the email address you signed up with."
+      - title: "Check your email"
+        text: >-
+          You will get a link for setting a new password. The link lasts only a
+          few hours: if it expires, ask for another.
+      - title: "Choose the new password"
+        text: "From that moment the old one no longer works."
+
+  - type: faq
+    items:
+      - q: "Can I change my username later?"
+        a: "The username stays as chosen at sign-up, because it is the name you appear under in standings that are already published. Email and password can be changed from your profile."
+      - q: "I did not get the confirmation email."
+        a: "Check your spam folder. From your profile you can ask for it to be sent again."
+      - q: "Can I use the app on more than one device?"
+        a: "Yes. The same account works from phone, tablet and computer, even at the same time."
+      - q: "How do I delete my account?"
+        a: "From your profile, «Delete account». Your sporting results stay in the historical standings but without your name. See [Privacy and data](/aiuto/account/privacy_e_dati)."

@@ -1,0 +1,136 @@
+title: "Gestire le iscrizioni"
+section: organizzare
+kind: approfondimento
+audience: [direttore]
+minutes: 4
+summary: "Aprire, prorogare e chiudere le iscrizioni; iscrivere o togliere qualcuno a mano; capire la lista d'attesa."
+screens: [admin.competition.gara_detail]
+related: [creare_una_gara, condurre_la_gara, numero_dispari]
+
+blocks:
+  - type: text
+    text: >-
+      Le iscrizioni sono la fase in cui la gara prende forma. Tutti i comandi
+      stanno nel pannello **Gestione** della pagina della gara.
+
+  - type: heading
+    id: stati
+    title: "Le tre fasi di una gara"
+
+  - type: options
+    items:
+      - name: "Bozza"
+        text: "La gara esiste ma nessuno può iscriversi. È il momento in cui puoi cambiare qualunque impostazione."
+      - name: "Iscrizioni aperte"
+        text: "La gara è pubblica e i giocatori si iscrivono da soli. Le impostazioni di gioco restano modificabili con prudenza."
+      - name: "In corso"
+        text: "Il primo turno è partito. Il formato di gioco è congelato: cambiarlo falserebbe i risultati già registrati."
+
+  - type: heading
+    id: aprire
+    title: "Aprire le iscrizioni"
+
+  - type: steps
+    items:
+      - title: "Vai su Gestione"
+        text: "Su telefono è una delle linguette in cima alla pagina della gara."
+        shot: gara-gestione
+      - title: "Tocca «Apri iscrizioni»"
+        text: >-
+          Indica da quando a quando. La data di chiusura non può essere
+          successiva alla data della gara: se sbagli, l'app la riporta
+          all'orario della gara e ti avvisa.
+      - title: "Diffondi il collegamento"
+        text: >-
+          Nel pannello Gestione trovi il collegamento breve di invito: chi lo
+          apre si iscrive direttamente.
+
+  - type: heading
+    id: durante
+    title: "Durante le iscrizioni"
+
+  - type: shot
+    shot: gara-iscritti
+    caption: "L'elenco degli iscritti visto dal direttore: da qui si iscrive o si toglie un giocatore a mano."
+
+  - type: options
+    title: "Cosa puoi fare"
+    items:
+      - name: "Iscrivere un giocatore a mano"
+        text: >-
+          Per chi non usa l'app o non ce la fa in tempo: lo cerchi per nome e
+          lo aggiungi. Deve comunque avere un account.
+      - name: "Togliere un iscritto"
+        text: >-
+          Per chi avvisa che non viene. Il giocatore riceve una notifica, e se
+          c'è una lista d'attesa il primo in coda entra al suo posto.
+      - name: "Cambiare le date"
+        text: >-
+          Prorogare la chiusura se gli iscritti sono pochi, o anticiparla se
+          siete già al completo.
+      - name: "Chiudere in anticipo"
+        text: >-
+          **Chiudi iscrizioni** blocca l'elenco senza aspettare la scadenza.
+          Utile quando il gruppo è completo e volete cominciare.
+
+  - type: heading
+    id: lista_attesa
+    title: "La lista d'attesa"
+
+  - type: text
+    text: >-
+      Ci si finisce per due motivi diversi, che è bene non confondere.
+
+  - type: options
+    items:
+      - name: "Gara al completo"
+        text: >-
+          Hai impostato un numero massimo di iscritti ed è stato raggiunto. Chi
+          arriva dopo si mette in coda, e se qualcuno si ritira entra
+          automaticamente in ordine di arrivo.
+      - name: "Vincolo di numero pari"
+        text: >-
+          Hai scelto che la gara richiede un numero pari di giocatori. Chi si
+          iscrive facendo diventare il conto dispari resta in attesa finché non
+          arriva un altro: poi entrano in due insieme. Vedi [Quando i giocatori
+          sono dispari](/aiuto/approfondimenti/numero_dispari).
+
+  - type: note
+    tone: info
+    text: >-
+      Se sono attivi tutti e due i vincoli, l'app controlla prima la parità e
+      poi il numero massimo.
+
+  - type: heading
+    id: chiudere
+    title: "Chiudere e avviare"
+
+  - type: text
+    text: >-
+      Alla chiusura l'elenco è definitivo ed è quello su cui si farà il
+      sorteggio. Controlla due cose prima di avviare il primo turno:
+
+  - type: list
+    items:
+      - "**Gli iscritti sono almeno il minimo** che hai impostato, altrimenti l'app non fa partire il turno."
+      - "**Ci sono davvero tutti** in sala: chi manca va tolto adesso, perché toglierlo dopo l'avvio significa rifare il turno."
+
+  - type: note
+    tone: warning
+    title: "Assenti dell'ultimo minuto"
+    text: >-
+      Un giocatore iscritto che non si presenta è il problema più comune della
+      serata. Toglilo **prima** di avviare il primo turno: un secondo di
+      lavoro. Dopo l'avvio, l'unica strada è annullare il turno e risorteggiare
+      — oppure lasciare che il suo avversario vinca per forfait.
+
+  - type: faq
+    items:
+      - q: "Posso riaprire le iscrizioni dopo averle chiuse?"
+        a: "Sì, finché il primo turno non è partito: basta rimettere una data di chiusura futura."
+      - q: "Un iscritto non ha pagato la quota. Posso segnarlo?"
+        a: "L'app non gestisce i pagamenti: la quota è un'informazione sulla scheda della gara. Gli incassi si tengono come si è sempre fatto."
+      - q: "Come faccio a iscrivere chi non ha lo smartphone?"
+        a: "Iscrivilo tu a mano dal pannello Gestione. Serve però che abbia un account: puoi crearglielo insieme, ci vuole un minuto."
+      - q: "Quanti iscritti servono per far partire la gara?"
+        a: "Il minimo che hai indicato alla creazione. Sotto quella soglia il pulsante di avvio resta bloccato."

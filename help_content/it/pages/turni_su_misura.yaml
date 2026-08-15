@@ -1,0 +1,88 @@
+title: "Turni con regole diverse"
+section: organizzare
+kind: approfondimento
+audience: [direttore]
+minutes: 3
+summary: "Una gara può cambiare disciplina o distanza da un turno all'altro: primi due turni a palla 8, finale a palla 9."
+screens: [admin.competition.list_round_configs]
+related: [formati_di_gioco, creare_una_gara, opzioni_della_gara]
+
+blocks:
+  - type: text
+    text: >-
+      Di norma tutti i turni di una gara si giocano allo stesso modo. Se vuoi
+      una serata più varia — o una finale più lunga — puoi dare a ogni turno le
+      sue regole.
+
+  - type: shot
+    shot: gara-turni-config
+    caption: "La configurazione dei turni: ciascuno può avere disciplina e distanza proprie."
+
+  - type: heading
+    id: cosa_si_cambia
+    title: "Cosa si può cambiare, turno per turno"
+
+  - type: options
+    items:
+      - name: "Disciplina"
+        text: "Primi turni a palla 8, ultimo a palla 9: si fa così in molte serate di circolo."
+      - name: "Distanza"
+        text: >-
+          Turni di qualificazione corti e finale più lunga. È il modo più
+          semplice di dare peso all'ultimo turno senza allungare tutta la
+          serata.
+      - name: "Numero esatto di rack"
+        text: "Si può chiedere solo in alcuni turni, se serve alla classifica."
+      - name: "Partita a set"
+        text: "Tipicamente riservata all'ultimo turno."
+
+  - type: note
+    tone: info
+    title: "Quello che non si imposta resta com'è"
+    text: >-
+      Ogni campo lasciato vuoto **eredita** il valore della gara. Non serve
+      ripetere disciplina e distanza per i turni che non cambiano: si tocca solo
+      ciò che deve essere diverso.
+
+  - type: heading
+    id: quando
+    title: "Solo mentre la gara è in bozza"
+
+  - type: shot
+    shot: gara-bozza
+    caption: "Una gara in bozza: è lo stato in cui si decidono le regole dei singoli turni."
+
+  - type: text
+    text: >-
+      La configurazione per turno si decide **prima** che le iscrizioni si
+      aprano. Dopo l'avvio non è più modificabile, e il motivo è semplice: i
+      giocatori si sono iscritti conoscendo il formato, e i risultati già
+      registrati sono stati ottenuti con quelle regole.
+
+  - type: heading
+    id: cosa_vedono
+    title: "Cosa vedono i giocatori"
+
+  - type: text
+    text: >-
+      Nulla di speciale: la pagina della partita mostra sempre la distanza e la
+      disciplina **effettive** di quel turno. Chi gioca il terzo turno di una
+      gara con l'ultimo turno a palla 9 legge «palla 9» sulla sua partita,
+      senza doversi ricordare la configurazione.
+
+  - type: note
+    tone: warning
+    title: "Dillo comunque a voce"
+    text: >-
+      L'app lo scrive sulla partita, ma un giocatore che si siede al tavolo
+      aspettandosi la palla 8 e trova la palla 9 è comunque un giocatore
+      sorpreso. Annunciarlo prima dell'inizio del turno costa dieci secondi.
+
+  - type: faq
+    items:
+      - q: "Posso cambiare regole a un solo turno in mezzo alla gara?"
+        a: "Solo se lo hai deciso prima dell'avvio. A gara iniziata il formato è congelato."
+      - q: "La classifica regge formati diversi fra i turni?"
+        a: "Sì: vittorie e differenza rack si sommano comunque. Attenzione però al sistema «Rack», dove turni con distanze diverse pesano diversamente."
+      - q: "Vale anche per le gare a tabellone?"
+        a: "Sì, e lì è ancora più comune: quarti al 4, semifinali e finale al 5."

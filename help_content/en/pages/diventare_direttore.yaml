@@ -1,0 +1,115 @@
+title: "Becoming a director or venue manager"
+section: account
+kind: tutorial
+audience: [giocatore]
+minutes: 3
+summary: "How to ask to organise competitions, how to ask to look after a venue's page, and what changes once you have it."
+screens: [player.profile, player.my_venue_requests, admin.venue.venue_detail]
+related: [chi_fa_cosa, creare_una_gara]
+
+blocks:
+  - type: text
+    text: >-
+      Every account starts as a **player**. There are two extra roles you can
+      ask for, and you ask for both from your profile: they add to what you
+      already do, they do not replace it.
+
+  - type: heading
+    id: direttore
+    title: "Asking to become a competition director"
+
+  - type: text
+    text: >-
+      You need this if you want to **organise** competitions and championships:
+      open registrations, start rounds, correct results. You go on playing as
+      before.
+
+  - type: steps
+    items:
+      - title: "Open your profile"
+        text: "Tap the initial of your name at the top right, then «My profile»."
+        shot: profilo
+      - title: "Send the request"
+        text: >-
+          In your profile there is a request to be promoted to competition
+          director. There is no form to fill in: it is a button.
+      - title: "Wait for the answer"
+        text: >-
+          The request reaches whoever administers the platform. When they
+          answer you get a notification, and if it is accepted the next time
+          you log in you will find **New Competition** and **New Championship**
+          on your home.
+        shot: dashboard-direttore
+
+  - type: note
+    tone: warning
+    title: "Whoever runs a competition does not play in it"
+    text: >-
+      A director **cannot register for the competitions they run themselves**:
+      that would make them both judge and party. If you want to play your own
+      evening, add a co-director to run it. Competitions run by others you play
+      normally.
+
+  - type: heading
+    id: gestore
+    title: "Asking to manage a venue"
+
+  - type: text
+    text: >-
+      You need this if you are the one running a club and want to keep its page
+      up to date: address, number of tables, contacts, opening hours. It gives
+      no power over competitions.
+
+  - type: steps
+    items:
+      - title: "Open the venue"
+        text: "From the **Venues** section find yours and open its page."
+        shot: sala-dettaglio
+      - title: "Ask to manage it"
+        text: >-
+          The button is on the venue's page. If the venue is not registered
+          yet, ask an administrator to create it.
+      - title: "Track your request"
+        text: >-
+          From your profile, under «My venue manager requests», you can see
+          whether it is pending, accepted or declined. While pending you can
+          withdraw it.
+        shot: richieste-gestore
+
+  - type: note
+    tone: info
+    text: >-
+      This request is normally checked outside the app — a phone call to the
+      club — because anyone could ask to manage any venue. If it takes a few
+      days, that is normal.
+
+  - type: heading
+    id: cosa_cambia
+    title: "What changes afterwards"
+
+  - type: options
+    items:
+      - name: "From player to director"
+        text: >-
+          The buttons for creating competitions and championships appear, and
+          in the competitions you run you see the **Management** tab.
+          Everything else stays the same.
+      - name: "From player to venue manager"
+        text: >-
+          You can edit the page of the venue you manage. Competitions are
+          unaffected.
+      - name: "If you change your mind"
+        text: >-
+          Both roles can be revoked: ask an administrator. The competitions you
+          have already created stay where they are.
+
+  - type: faq
+    items:
+      - q: "How long does the answer take?"
+        a: "It depends on whoever administers: there is no guaranteed time. An answer always comes, even a negative one, and you will find it in your notifications."
+      - q: "I sent the request but nothing has changed."
+        a: "Until it is accepted your account stays a player. Check your notifications: if there is no answer yet, it is simply pending."
+      - q: "Can I be a director and a venue manager at the same time?"
+        a: "Yes, the two roles are independent and add up."
+      - q: "Do I need to become a director to register for competitions?"
+        a: "Absolutely not: as a player you can register for everything. The role is only for organising."

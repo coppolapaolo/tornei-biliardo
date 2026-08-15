@@ -1,0 +1,222 @@
+title: "Tutte le opzioni di una gara"
+section: organizzare
+kind: riferimento
+audience: [direttore]
+minutes: 8
+summary: "Ogni campo del modulo di creazione, cosa cambia davvero e quale valore scegliere se non sei sicuro."
+screens: [admin.competition.create_gara_standalone, admin.competition.edit_gara]
+related: [creare_una_gara, formati_di_gioco, abbinamenti, classifiche]
+
+blocks:
+  - type: text
+    text: >-
+      Il modulo di creazione è diviso in quattro passaggi. Qui c'è ogni campo,
+      con il valore consigliato quando la scelta non è ovvia. Se stai creando
+      la tua prima gara, questa pagina puoi anche saltarla: i valori proposti
+      funzionano.
+
+  - type: shot
+    shot: gara-nuova
+    caption: "I quattro passaggi: informazioni pubbliche, struttura, formato del match, riepilogo."
+
+  - type: heading
+    id: informazioni
+    title: "1. Informazioni pubbliche"
+
+  - type: text
+    text: "Quello che vedranno i giocatori negli elenchi e sulla scheda della gara."
+
+  - type: options
+    items:
+      - name: "Nome competizione"
+        values: "obbligatorio"
+        text: "Come comparirà negli elenchi. Meglio riconoscibile che formale: «Serata palla 9 del giovedì» funziona benissimo."
+      - name: "Disciplina"
+        values: "obbligatorio · palla 8, palla 9, palla 10, one pocket, 14.1, bank pool, rotation"
+        text: "Il gioco. Determina solo come viene mostrata la gara: le regole al tavolo le conoscete voi."
+        hint: gara.disciplina
+      - name: "Data e ora inizio"
+        values: "obbligatoria la data"
+        text: >-
+          L'ora è quella di ritrovo. Dentro un campionato le date devono essere
+          in ordine crescente rispetto al numero della gara.
+      - name: "Luogo / Sala"
+        text: >-
+          Scegliendo una sala registrata la gara eredita i suoi tavoli e potrai
+          assegnarli durante la serata. Puoi anche scrivere un luogo a mano.
+      - name: "Tavoli disponibili"
+        text: >-
+          Quali tavoli della sala userete davvero stasera. Se la sala ne ha
+          otto ma stasera ne avete quattro, indica quelli: l'app assegnerà le
+          partite solo a quelli.
+        hint: gara.tavoli
+      - name: "Quota iscrizione"
+        text: "Informativa: compare sulla scheda. L'app non gestisce pagamenti."
+      - name: "Note / descrizione"
+        text: "Testo libero: formula della serata, premi, cosa portare."
+
+  - type: heading
+    id: struttura
+    title: "2. Struttura della gara"
+
+  - type: options
+    items:
+      - name: "Algoritmo di abbinamento"
+        values: "Amalfi (consigliato) · Casuale · Girone all'italiana · Eliminazione diretta · Doppio KO"
+        text: >-
+          Come si formano le coppie a ogni turno. **Amalfi** è pensato per le
+          gare a turni di circolo: tutti giocano tutti i turni e gli
+          abbinamenti seguono la classifica. Le altre sono descritte in [Come
+          vengono formate le coppie](/aiuto/approfondimenti/abbinamenti).
+        hint: gara.strategia
+      - name: "Numero di turni"
+        values: "consigliato 3"
+        text: >-
+          Quanti giri di partite. Con eliminazione diretta e doppio KO non si
+          imposta: lo decide il tabellone in base agli iscritti.
+      - name: "Gestione forfait"
+        values: "Vincita a tavolino (predefinito) · Escludi dal turno"
+        text: >-
+          Cosa fare di chi abbandona a metà gara. Con **vincita a tavolino**
+          resta negli abbinamenti e i suoi avversari vincono senza giocare —
+          più semplice, ma un avversario si ritrova con una partita vuota. Con
+          **escludi** esce dagli abbinamenti: più pulito, ma cambia la parità e
+          può far scattare la gestione del numero dispari.
+        hint: gara.forfait
+      - name: "Min partecipanti"
+        values: "obbligatorio · consigliato 4"
+        text: "Sotto questa soglia l'app non fa partire il primo turno."
+      - name: "Max partecipanti"
+        values: "facoltativo"
+        text: "Se impostato, oltre quel numero si finisce in lista d'attesa."
+      - name: "Evita reincontri"
+        values: "consigliato attivo"
+        text: >-
+          Impedisce che due giocatori si affrontino due volte nella stessa
+          gara. Con il numero di turni tipico è quasi sempre possibile
+          rispettarlo.
+        hint: gara.anti_rematch
+      - name: "Gioco con handicap"
+        values: "predefinito no"
+        text: >-
+          Assegna un vantaggio in rack al giocatore di categoria inferiore, per
+          pareggiare partite fra livelli molto diversi. **Attenzione**: le gare
+          con handicap non aggiornano il rating dei giocatori.
+        hint: gara.handicap
+      - name: "Primo turno"
+        values: "Casuale (predefinito) · Rating · Classifica"
+        text: >-
+          Come si formano le coppie del **primo** turno, quando non esiste
+          ancora una classifica. **Casuale** è il sorteggio puro. **Rating**
+          accoppia per forza dichiarata, in modo che i più forti non si
+          incontrino subito. **Classifica** usa la classifica del campionato.
+        hint: gara.primo_turno
+      - name: "Se giocatori dispari"
+        values: "Riposo · Riposo con challenge · Trio · Lista d'attesa"
+        text: >-
+          Cosa succede quando i giocatori sono in numero dispari e uno
+          resterebbe senza avversario. Spiegate una per una in [Quando i
+          giocatori sono dispari](/aiuto/approfondimenti/numero_dispari).
+        hint: gara.dispari
+      - name: "Sistema di classifica"
+        values: "Vittorie (predefinito) · Rack · Posizione"
+        text: >-
+          Come si ordinano i giocatori. **Vittorie** conta le partite vinte e,
+          a parità, la differenza rack. **Rack** conta i rack totali. Con
+          eliminazione e doppio KO è obbligatorio **Posizione**, deciso dal
+          tabellone. Vedi [Come si calcolano le
+          classifiche](/aiuto/approfondimenti/classifiche).
+        hint: gara.classifica
+      - name: "Spareggio"
+        values: "attivo fino al 3° posto"
+        text: >-
+          Se e fino a che posizione risolvere i pari merito con una prova
+          aggiuntiva. Dal podio in giù, di norma, i pari merito si lasciano
+          tali.
+        hint: gara.spareggio
+
+  - type: heading
+    id: formato
+    title: "3. Formato del match"
+
+  - type: text
+    text: >-
+      Quanto dura una partita. È la scelta che più incide sulla durata della
+      serata.
+
+  - type: options
+    items:
+      - name: "Distanza"
+        values: "es. 4, 5, 7"
+        text: >-
+          Quanti rack servono per vincere la partita. **Al 4** vuol dire che
+          vince chi arriva prima a 4: al massimo 7 rack. Salire di una unità
+          allunga la serata di parecchio.
+        hint: gara.distanza
+      - name: "Numero esatto di rack"
+        values: "predefinito no"
+        text: >-
+          Se attivo, si giocano **sempre** tutti i rack indicati, anche quando
+          il risultato è già deciso. Serve quando conta il totale dei rack e
+          non chi vince — cioè con il sistema di classifica «Rack». Con un
+          numero pari, la partita può finire in parità.
+        hint: gara.numero_esatto
+      - name: "Partita a set"
+        values: "predefinito no"
+        text: >-
+          La partita si divide in set: si vince un set arrivando alla distanza,
+          e si vince la partita conquistando abbastanza set. Allunga
+          parecchio: adatta a finali o serate dedicate.
+        hint: gara.multiset
+
+  - type: note
+    tone: tip
+    title: "Quanto dura una serata"
+    text: >-
+      Regola pratica: con **8 giocatori, 3 turni, al 4** e 4 tavoli si sta
+      dentro le due ore e mezza. Ogni turno in più aggiunge circa
+      quarantacinque minuti; ogni unità di distanza in più, una ventina di
+      minuti a turno.
+
+  - type: heading
+    id: riepilogo
+    title: "4. Riepilogo e conferma"
+
+  - type: text
+    text: >-
+      L'ultimo passaggio ricapitola tutte le scelte in una schermata sola. Vale
+      la pena leggerla: è l'ultimo momento comodo per accorgersi di una
+      distanza sbagliata o di una data che non torna.
+
+  - type: heading
+    id: dopo
+    title: "Cosa si può ancora cambiare dopo"
+
+  - type: options
+    items:
+      - name: "Gara in bozza"
+        values: "tutto"
+        text: "Nessuno si è ancora iscritto: puoi cambiare qualunque campo."
+      - name: "Iscrizioni aperte"
+        values: "quasi tutto"
+        text: >-
+          Date, sala, note e capienza restano modificabili. Cambiare formato e
+          abbinamenti è tecnicamente possibile ma sconsigliato: chi si è già
+          iscritto lo ha fatto conoscendo le regole di prima.
+      - name: "Gara avviata"
+        values: "poco"
+        text: >-
+          Il formato di gioco è congelato. Restano modificabili le informazioni
+          di contorno (note, tavoli) e, con le dovute cautele, i risultati non
+          ancora bloccati.
+
+  - type: faq
+    items:
+      - q: "Cosa scelgo se non ho idea?"
+        a: "Amalfi, 3 turni, distanza 4, classifica Vittorie, dispari con «Riposo», evita reincontri attivo. È la configurazione da serata di circolo."
+      - q: "Voglio un torneo a eliminazione: cosa cambia?"
+        a: "Scegli «Eliminazione diretta»: il numero di turni sparisce (lo decide il tabellone) e il sistema di classifica diventa obbligatoriamente «Posizione»."
+      - q: "Perché non riesco a selezionare «Trio»?"
+        a: "Il trio è possibile solo per distanze fra 2 e 7 e non con le strategie a tabellone. Se la distanza è fuori da quell'intervallo, l'opzione non è disponibile."
+      - q: "L'handicap incide sulle classifiche?"
+        a: "Sì: la classifica usa i punteggi effettivi, cioè quelli dopo l'handicap. Ma le gare con handicap non muovono il rating personale dei giocatori."

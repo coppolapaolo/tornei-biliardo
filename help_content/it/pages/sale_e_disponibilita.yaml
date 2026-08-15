@@ -1,0 +1,108 @@
+title: "Sale, disponibilità e giocatori vicini"
+section: giocare
+kind: approfondimento
+audience: [giocatore]
+minutes: 4
+summary: "Le sale biliardo registrate, come dire dove e quando giochi, e come farsi trovare da chi cerca un avversario."
+screens: [admin.venue.venues_list, admin.venue.venue_detail, individual_match.manage_availability, individual_match.discover_players]
+related: [partite_amichevoli, diventare_direttore]
+
+blocks:
+  - type: text
+    text: >-
+      L'app sa dove si gioca. Serve a tre cose: far trovare le gare vicine a
+      te, dire dove sei disponibile, e trovare avversari che frequentano le tue
+      stesse sale.
+
+  - type: heading
+    id: sale
+    title: "Le sale"
+
+  - type: shot
+    shot: sale-biliardo
+    caption: "L'elenco delle sale registrate, con città e numero di tavoli."
+
+  - type: text
+    text: >-
+      Ogni sala ha una scheda con indirizzo, contatti, numero e tipo di tavoli.
+      Le gare che si giocano lì la indicano, e i tavoli della sala sono quelli
+      che il direttore assegna alle partite durante la serata.
+
+  - type: shot
+    shot: sala-dettaglio
+    caption: "La scheda di una sala: dove si trova, quanti tavoli ha, come contattarla."
+
+  - type: note
+    tone: tip
+    title: "Manca la tua sala?"
+    text: >-
+      Chiedi a un amministratore di aggiungerla. Se sei tu a gestire il
+      circolo, puoi anche chiedere di curarne la scheda: vedi [Diventare
+      direttore o gestore di sala](/aiuto/account/diventare_direttore).
+
+  - type: heading
+    id: disponibilita
+    title: "Dire dove e quando giochi"
+
+  - type: shot
+    shot: disponibilita
+    caption: "Le disponibilità: si sceglie la sala, i giorni e la fascia oraria."
+
+  - type: text
+    text: >-
+      Dalla sezione **Match**, alla voce disponibilità, indichi in quali sale
+      giochi di solito e in che giorni e orari. È del tutto facoltativo e si
+      toglie in qualsiasi momento.
+
+  - type: note
+    tone: info
+    title: "Sale e fasce orarie, mai la tua posizione"
+    text: >-
+      Quello che condividi sono una sala e una fascia oraria che hai scelto tu,
+      non dove ti trovi. L'app non registra la tua posizione e non la chiede.
+
+  - type: heading
+    id: trovare
+    title: "Trovare avversari"
+
+  - type: shot
+    shot: trova-giocatori
+    caption: "La ricerca fra i giocatori disponibili nelle stesse sale e negli stessi orari."
+
+  - type: text
+    text: >-
+      Chi ha dichiarato le proprie disponibilità compare a chi cerca un
+      avversario nelle stesse sale. Da lì si passa direttamente a una proposta
+      di partita: vedi [Partite
+      amichevoli](/aiuto/giocare/partite_amichevoli).
+
+  - type: heading
+    id: gare_vicine
+    title: "Le gare vicine a te"
+
+  - type: shot
+    shot: dashboard-giocatore
+    caption: "In fondo alla home, il riquadro «Gare vicine a te» con l'invito a impostare le disponibilità."
+
+  - type: text
+    text: >-
+      In fondo alla tua home c'è **Gare vicine a te**. Finché non dici dove
+      giochi, il riquadro ti chiede di farlo; dopo mostra le gare aperte nelle
+      sale che frequenti e nella tua zona.
+
+  - type: text
+    text: >-
+      La zona si basa sulla città che hai indicato nel profilo, non sulla
+      posizione del telefono. Se lasci la città vuota, il riquadro resta
+      generico: non è un guasto.
+
+  - type: faq
+    items:
+      - q: "Devo per forza dichiarare le disponibilità?"
+        a: "No. Servono solo a farti trovare e a vedere le gare vicine. Senza, l'app funziona uguale in tutto il resto."
+      - q: "Chi vede le mie disponibilità?"
+        a: "Gli altri giocatori che cercano avversari nelle stesse sale. Vedono la sala e la fascia oraria, nient'altro."
+      - q: "Ho cambiato circolo."
+        a: "Modifica le disponibilità e la città nel profilo: da quel momento vedrai le gare della zona nuova."
+      - q: "Una sala ha dati sbagliati."
+        a: "Segnalalo a chi la gestisce o a un amministratore: la scheda la modificano loro."

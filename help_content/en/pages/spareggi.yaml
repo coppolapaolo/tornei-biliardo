@@ -1,0 +1,104 @@
+title: "End-of-competition tie-breaks"
+section: organizzare
+kind: approfondimento
+audience: [direttore]
+minutes: 3
+summary: "When two players finish level in the positions that matter: how to decide who is ahead, and how to run the tie-break."
+screens: [admin.competition.gara_detail]
+related: [classifiche, challenge, condurre_la_gara]
+
+blocks:
+  - type: text
+    text: >-
+      After the last round it can happen that two players have the same wins and
+      the same rack difference. If it happens on the podium, somebody has to
+      decide.
+
+  - type: heading
+    id: decidere_prima
+    title: "Decide beforehand, not afterwards"
+
+  - type: text
+    text: >-
+      When creating the competition you set **up to which position** it is worth
+      settling level finishes. The proposed value is the podium: over fifth and
+      sixth place, as a rule, nobody argues.
+
+  - type: note
+    tone: warning
+    text: >-
+      Deciding at the end of the evening, with the two players in front of you,
+      is the situation to avoid: whatever rule you pick at that moment will look
+      like it was picked to favour someone. Setting it in advance makes it a
+      rule of the game.
+
+  - type: heading
+    id: come
+    title: "The two ways of settling a level finish"
+
+  - type: options
+    items:
+      - name: "Head to head"
+        text: >-
+          If the two met during the competition, whoever won that match finishes
+          ahead. Nothing has to be replayed, and it is the easiest to explain.
+      - name: "Tie-break"
+        values: "Spot Shot Rally"
+        text: >-
+          A skill drill with a score: the better score finishes ahead. This is
+          the method for when the two never met, or when the head to head ended
+          level. See [Challenges](/aiuto/giocare/challenge).
+
+  - type: heading
+    id: condurlo
+    title: "Running the tie-break"
+
+  - type: steps
+    items:
+      - title: "The competition waits"
+        text: >-
+          After the last round, if there are level finishes to settle the
+          competition does not close: it waits. The standings show the players
+          level.
+      - title: "Start the tie-break from the Management panel"
+        text: >-
+          The app proposes the players involved. They are the ones level in the
+          positions you specified, not everyone level in the competition.
+      - title: "Have the drill played and enter the scores"
+        text: >-
+          The score is entered like any other result. The better score moves up.
+      - title: "The competition closes"
+        text: >-
+          The final standings take the tie-break into account, and if the
+          competition is part of a championship the points go into the overall
+          standings.
+
+  - type: note
+    tone: info
+    title: "It can be cancelled"
+    text: >-
+      A tie-break started by mistake can be cancelled from the Management panel.
+      While a tie-break is active, though, the competition's results cannot be
+      changed: the tie-break treats them as final, and changing them underneath
+      would make it meaningless.
+
+  - type: heading
+    id: quando_non_serve
+    title: "When it is not needed"
+
+  - type: list
+    items:
+      - "**Bracket competitions**: the path already establishes the order, there are no level finishes to settle."
+      - "**Outside the positions you specified**: level finishes stand, two players share the position and the next one is skipped."
+      - "**If tie-breaks are switched off**: the standings keep the level finishes as they are."
+
+  - type: faq
+    items:
+      - q: "The competition will not close and I cannot see why."
+        a: "Almost always there is a tie-break waiting: check the Management panel. If you do not want to play it, it can be cancelled and the standings keep the level finish."
+      - q: "Can I correct a result while a tie-break is active?"
+        a: "No. The tie-break has to be cancelled first: it implicitly certifies the competition's results."
+      - q: "How many players can be in a tie-break?"
+        a: "Everyone level in that position: three or four is not unusual, not just two."
+      - q: "Does it need a configured challenge?"
+        a: "For a scored tie-break, yes, you need a drill to play. Head to head needs nothing."

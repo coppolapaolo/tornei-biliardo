@@ -1,0 +1,166 @@
+title: "Come vengono formate le coppie"
+section: approfondimenti
+kind: approfondimento
+audience: [tutti]
+minutes: 6
+summary: "Cinque modi di abbinare i giocatori a ogni turno: Amalfi, casuale, girone all'italiana, eliminazione diretta e doppio KO. Quando usare quale."
+related: [classifiche, numero_dispari, opzioni_della_gara]
+
+blocks:
+  - type: text
+    text: >-
+      A ogni turno bisogna decidere chi gioca contro chi. Farlo a caso è
+      semplice ma ingiusto; farlo bene richiede di tenere conto della
+      classifica e di chi si è già incontrato. L'app propone cinque metodi.
+
+  - type: heading
+    id: amalfi
+    title: "Amalfi — il metodo consigliato"
+
+  - type: text
+    text: >-
+      È pensato per le gare a turni di circolo, dove **tutti giocano tutti i
+      turni** e nessuno viene eliminato. Il principio: al primo turno si
+      sorteggia; dai turni successivi si parte dalla classifica e si abbina
+      ciascun giocatore con chi sta a una certa distanza da lui in graduatoria.
+
+  - type: text
+    text: >-
+      Quella distanza si accorcia col passare dei turni: **quanti turni mancano
+      alla fine**. In una gara di tre turni, al secondo turno il salto è di due
+      posizioni, all'ultimo di una. Il risultato è che all'inizio si affrontano
+      giocatori lontani in classifica, e verso la fine i vicini: le partite che
+      decidono il podio si giocano fra chi il podio se lo sta contendendo.
+
+  - type: list
+    title: "Cosa garantisce"
+    items:
+      - "**Tutti giocano ogni turno**: nessuna eliminazione."
+      - "**Nessun reincontro**, se il vincolo è attivo e la cosa è matematicamente possibile."
+      - "**Partite equilibrate verso la fine**, quando conta di più."
+
+  - type: note
+    tone: info
+    title: "Se un reincontro è inevitabile"
+    text: >-
+      Con molti turni e pochi giocatori arriva il momento in cui tutti hanno
+      già giocato contro tutti. L'app cerca la soluzione con meno reincontri
+      possibile, ma non può inventare avversari nuovi.
+
+  - type: heading
+    id: casuale
+    title: "Casuale"
+
+  - type: text
+    text: >-
+      Le coppie sono sorteggiate, turno per turno, evitando i reincontri. Non
+      tiene conto della classifica: può capitare che primo e secondo si
+      incontrino al primo turno e mai più.
+
+  - type: text
+    text: >-
+      Va bene per serate leggere, dove conta giocare più che stabilire una
+      graduatoria attendibile. Con questa strategia l'app genera **tutti i
+      turni in una volta** all'avvio, così il calendario della serata è noto
+      da subito.
+
+  - type: heading
+    id: girone
+    title: "Girone all'italiana"
+
+  - type: text
+    text: >-
+      Tutti contro tutti: ogni giocatore incontra ogni altro esattamente una
+      volta. È il metodo più equo in assoluto, e anche il più lungo.
+
+  - type: note
+    tone: warning
+    title: "Attenzione al numero di partite"
+    text: >-
+      Con 6 giocatori sono 15 partite, con 8 sono 28, con 10 sono 45. Da otto
+      persone in su serve una giornata intera o più tavoli di quanti se ne
+      hanno di solito.
+
+  - type: heading
+    id: eliminazione
+    title: "Eliminazione diretta"
+
+  - type: text
+    text: >-
+      Il tabellone classico: chi perde è fuori. Il numero di turni non si
+      imposta — lo determina il numero di iscritti (8 giocatori: quarti,
+      semifinali, finale). Si può aggiungere la **finale per il terzo posto**.
+
+  - type: list
+    items:
+      - "Chi perde esce: metà dei partecipanti gioca una partita sola."
+      - "La classifica è quella del tabellone e usa il sistema **Posizione**."
+      - "Si può chiedere che i compagni della stessa squadra non si incontrino subito."
+
+  - type: heading
+    id: doppio_ko
+    title: "Doppio KO"
+
+  - type: text
+    text: >-
+      Come l'eliminazione diretta, ma per uscire bisogna perdere **due** volte:
+      chi perde la prima scende in un tabellone dei ripescaggi e può risalire.
+      Più lungo, ma nessuno torna a casa dopo una sola sconfitta — un buon
+      compromesso quando si ha tempo.
+
+  - type: heading
+    id: scegliere
+    title: "Quale scegliere"
+
+  - type: options
+    items:
+      - name: "Serata di circolo, 6-14 giocatori"
+        values: "Amalfi"
+        text: "Tutti giocano tutti i turni, la classifica ha senso, la serata sta nei tempi."
+      - name: "Serata informale, si viene per giocare"
+        values: "Casuale"
+        text: "Nessuna pretesa di graduatoria attendibile, calendario noto da subito."
+      - name: "Pochi giocatori, tanto tempo"
+        values: "Girone all'italiana"
+        text: "Fino a sei partecipanti resta gestibile ed è il più equo."
+      - name: "Torneo con un vincitore, tempo limitato"
+        values: "Eliminazione diretta"
+        text: "Veloce e comprensibile, ma metà dei partecipanti gioca una partita sola."
+      - name: "Torneo con un vincitore, seconda possibilità"
+        values: "Doppio KO"
+        text: "Più giusto dell'eliminazione secca, richiede circa il doppio del tempo."
+
+  - type: heading
+    id: primo_turno
+    title: "Il primo turno è un caso a parte"
+
+  - type: text
+    text: >-
+      Al primo turno non esiste ancora una classifica, quindi serve un altro
+      criterio. Le tre possibilità:
+
+  - type: options
+    items:
+      - name: "Casuale"
+        values: "predefinito"
+        text: "Sorteggio puro. Il sorteggio viene registrato e resta verificabile."
+      - name: "Rating"
+        text: >-
+          Accoppia in base alla forza dichiarata dei giocatori, in modo che i
+          più forti non si eliminino a vicenda subito. Tipico dei tabelloni a
+          eliminazione, dove si chiama «teste di serie».
+      - name: "Classifica"
+        text: >-
+          Usa la classifica generale del campionato: chi va meglio nel
+          campionato parte da una posizione favorevole anche in questa gara.
+
+  - type: faq
+    items:
+      - q: "Perché gioco sempre contro i più forti?"
+        a: "Con Amalfi, se stai andando bene ti trovi ad affrontare chi va bene quanto te — soprattutto negli ultimi turni. È il metodo che funziona come previsto."
+      - q: "Ho incontrato due volte lo stesso avversario."
+        a: "Succede quando gli abbinamenti liberi sono finiti: con pochi giocatori e molti turni, a un certo punto tutti hanno giocato contro tutti."
+      - q: "Posso cambiare strategia a gara iniziata?"
+        a: "No. Gli abbinamenti già fatti seguono la strategia scelta, e cambiarla in corsa produrrebbe una gara incoerente."
+      - q: "Chi sceglie chi spacca?"
+        a: "L'app non lo decide: mettetevi d'accordo al tavolo secondo le abitudini del circolo."

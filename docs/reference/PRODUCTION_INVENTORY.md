@@ -2,7 +2,16 @@
 
 **Data creazione**: 2026-05-09
 **Scopo**: documento di lavoro per decidere una **production allowlist** (deny-by-default) — vedi ADR-028 (in pausa).
-**Stato**: snapshot generato automaticamente; va aggiornato quando nuove route entrano nel codebase.
+**Stato**: snapshot; va aggiornato quando nuove route entrano nel codebase.
+**Ultima verifica contro `app.url_map`**: 2026-08-15 — path, nomi di endpoint e
+decoratori riallineati. La sezione ADMIN/COMPETITION è stata riscritta riga per
+riga ed è l'unica garantita **completa**; le altre restano lacunose (~60 route
+esistenti non ancora documentate, soprattutto campionato, venue, match admin e
+gamification API). Presidiato da
+`tests/new/unit/test_production_inventory_accuracy.py`: il test non pretende
+completezza, ma fallisce se una riga cita un endpoint o un path che non
+esistono — è così che `round_management` è finito in `ENDPOINT_ROLES` e da lì in
+produzione.
 
 ## Come usare questo documento
 
@@ -25,12 +34,12 @@ Per costruire la production allowlist, scorri ogni area in Sezione 1 e marca esp
 
 | Path HTTP | Metodo | Endpoint | Decoratori | Tipo | Descrizione |
 |-----------|--------|----------|-----------|------|-------------|
-| `/login` | GET, POST | `auth.login` | `@limiter.limit("10/minute")` | UI page | Pagina di login con autenticazione username/password |
-| `/register` | GET, POST | `auth.register` | `@limiter.limit("5/minute")` | UI page | Pagina di registrazione con verifica email richiesta |
-| `/logout` | GET, POST | `auth.logout` | `@login_required` | Redirect/action | Effettua logout e reindirizza alla home |
-| `/verify-email/<token>` | GET | `auth.verify_email` | None | Redirect/action | Verifica email tramite token inviato |
-| `/forgot-password` | GET, POST | `auth.forgot_password` | `@limiter.limit("3/minute")` | UI page | Richiesta reset password |
-| `/reset-password/<token>` | GET, POST | `auth.reset_password` | None | UI page | Reset password con token valido |
+| `/auth/login` | GET, POST | `auth.login` | `@limiter.limit("10/minute")` | UI page | Pagina di login con autenticazione username/password |
+| `/auth/register` | GET, POST | `auth.register` | `@limiter.limit("5/minute")` | UI page | Pagina di registrazione con verifica email richiesta |
+| `/auth/logout` | GET, POST | `auth.logout` | `@login_required` | Redirect/action | Effettua logout e reindirizza alla home |
+| `/auth/verify-email/<token>` | GET | `auth.verify_email` | None | Redirect/action | Verifica email tramite token inviato |
+| `/auth/forgot-password` | GET, POST | `auth.forgot_password` | `@limiter.limit("3/minute")` | UI page | Richiesta reset password |
+| `/auth/reset-password/<token>` | GET, POST | `auth.reset_password` | None | UI page | Reset password con token valido |
 
 **Endpoint root:** `/auth`
 
@@ -52,77 +61,95 @@ Per costruire la production allowlist, scorri ogni area in Sezione 1 e marca esp
 |-----------|--------|----------|-----------|------|-------------|
 | `/admin/campionato/wizard` | GET | `admin.campionato.wizard_start` | `@director_or_admin_required` | UI page | Step 1 wizard creazione campionato (configurazione base) |
 | `/admin/campionato/wizard/step2` | POST | `admin.campionato.wizard_step2` | `@director_or_admin_required` | UI page | Step 2 wizard (configurazione gare default) |
-| `/admin/competition/<int:gara_id>` | GET | `admin.competition.gara_detail` | `@admin_or_director_or_guest_for_public` | UI page | Dettaglio gara (view unificata per admin/director/guest) |
-| `/admin/competition/create_standalone` | GET, POST | `admin.competition.create_gara_standalone` | `@director_or_admin_required` | UI page + action | Crea gara standalone |
-| `/admin/competition/create` | POST | `admin.competition.create_gara` | `@director_or_admin_required` | JSON action | Crea gara entro campionato (POST via wizard) |
-| `/admin/competition/<int:gara_id>/edit` | GET, POST | `admin.competition.edit_gara` | `@gara_manager_required` | UI page + action | Modifica configurazione gara |
-| `/admin/competition/<int:gara_id>/delete` | POST | `admin.competition.delete_gara` | `@admin_required` | action | Elimina gara (hard delete) |
-| `/admin/competition/<int:gara_id>/soft-delete` | POST | `admin.competition.soft_delete_gara` | `@admin_required` | action | Soft delete gara |
-| `/admin/competition/<int:gara_id>/cancel` | POST | `admin.competition.cancel_gara` | `@gara_manager_required` | action | Annulla gara in corso |
-| `/admin/competition/api/strategy_constraints/<strategy>` | GET | `admin.competition.strategy_constraints_api` | `@login_required` | JSON API | Returns configurazione constraints per strategia matchmaking |
+| `/admin/gara/<int:gara_id>` | GET | `admin.competition.gara_detail` | *(nessuno: controlli sul ruolo inline)* | UI page | Dettaglio gara (view unificata per admin/director/player/anonimo) |
+| `/admin/gara/<int:gara_id>/tabellone` | GET | `admin.competition.gara_bracket` | *(nessuno: pagina pubblica)* | UI page | Tabellone della gara in sola lettura (solo formule a eliminazione) |
+| `/admin/gara/create_standalone` | GET, POST | `admin.competition.create_gara_standalone` | `@director_or_admin_required` | UI page + action | Crea gara standalone |
+| `/admin/gara/create` | POST | `admin.competition.create_gara` | `@login_required` (permessi sul campionato verificati inline) | action | Crea gara entro campionato (POST via wizard) |
+| `/admin/gara/<int:gara_id>/edit` | GET, POST | `admin.competition.edit_gara` | `@gara_manager_required` | UI page + action | Modifica configurazione gara |
+| `/admin/gara/<int:gara_id>/tables-config` | POST | `admin.competition.update_tables_config` | `@gara_manager_required` | JSON action | Aggiorna numero/nomi dei tavoli |
+| `/admin/gara/<int:gara_id>/delete` | POST | `admin.competition.delete_gara` | `@gara_manager_required` | action | Elimina gara (hard delete) |
+| `/admin/gara/<int:gara_id>/soft-delete` | POST | `admin.competition.soft_delete_gara` | `@admin_required` | action | Soft delete gara |
+| `/admin/gara/<int:gara_id>/cancel` | POST | `admin.competition.cancel_gara` | `@gara_manager_required` | action | Annulla gara in corso |
+| `/admin/gara/api/strategy_constraints/<strategy>` | GET | `admin.competition.get_strategy_constraints` | `@admin_required` | JSON API | Configurazione constraints per strategia matchmaking |
 
 **Inscriptions:**
 
 | Path HTTP | Metodo | Endpoint | Decoratori | Tipo | Descrizione |
 |-----------|--------|----------|-----------|------|-------------|
-| `/admin/competition/<int:gara_id>/open_inscriptions` | POST | `admin.competition.open_inscriptions` | `@gara_manager_required` | action | Apre iscrizioni |
-| `/admin/competition/<int:gara_id>/modify_inscription_dates` | POST | `admin.competition.modify_inscription_dates` | `@gara_manager_required` | action | Modifica date inizio/fine iscrizioni |
-| `/admin/competition/<int:gara_id>/close_inscriptions` | POST | `admin.competition.close_inscriptions` | `@gara_manager_required` | action | Chiude iscrizioni |
-| `/admin/competition/<int:gara_id>/admin_inscribe` | POST | `admin.competition.admin_inscribe` | `@gara_manager_required` | action | Iscrive player manualmente |
-| `/admin/competition/<int:gara_id>/admin_uninscribe/<int:user_id>` | POST | `admin.competition.admin_uninscribe` | `@gara_manager_required` | action | Disiscrive player manualmente |
-| `/admin/competition/<int:gara_id>/add_director` | POST | `admin.competition.add_director` | `@admin_required` | action | Aggiunge co-director a gara |
-| `/admin/competition/<int:gara_id>/remove_director` | POST | `admin.competition.remove_director` | `@admin_required` | action | Rimuove co-director |
+| `/admin/gara/<int:gara_id>/open_inscriptions` | POST | `admin.competition.open_inscriptions` | `@gara_manager_required` | action | Apre iscrizioni |
+| `/admin/gara/<int:gara_id>/modify_inscription_dates` | POST | `admin.competition.modify_inscription_dates` | `@gara_manager_required` | action | Modifica date inizio/fine iscrizioni |
+| `/admin/gara/<int:gara_id>/close_inscriptions` | POST | `admin.competition.close_inscriptions` | `@gara_manager_required` | action | Chiude iscrizioni |
+| `/admin/gara/<int:gara_id>/admin_inscribe` | POST | `admin.competition.admin_inscribe_user` | `@gara_manager_required` | action | Iscrive player manualmente |
+| `/admin/gara/<int:gara_id>/admin_uninscribe/<int:user_id>` | POST | `admin.competition.admin_uninscribe_user` | `@gara_manager_required` | action | Disiscrive player manualmente |
+| `/admin/gara/<int:gara_id>/add_director` | POST | `admin.competition.add_director` | `@gara_manager_required` | action | Aggiunge co-director a gara |
+| `/admin/gara/<int:gara_id>/remove_director` | POST | `admin.competition.remove_director` | `@gara_manager_required` | action | Rimuove co-director |
+
+**Squadre (separazione compagni nel sorteggio, ADR-039):**
+
+| Path HTTP | Metodo | Endpoint | Decoratori | Tipo | Descrizione |
+|-----------|--------|----------|-----------|------|-------------|
+| `/admin/gara/<int:gara_id>/squadre/create` | POST | `admin.competition.create_squadra` | `@gara_manager_required` | JSON action | Crea squadra nella gara |
+| `/admin/gara/<int:gara_id>/squadre/<int:squadra_id>/rename` | POST | `admin.competition.rename_squadra` | `@gara_manager_required` | JSON action | Rinomina squadra |
+| `/admin/gara/<int:gara_id>/squadre/<int:squadra_id>/merge` | POST | `admin.competition.merge_squadra` | `@gara_manager_required` | JSON action | Fonde due squadre |
+| `/admin/gara/<int:gara_id>/squadre/<int:squadra_id>/toggle` | POST | `admin.competition.toggle_squadra` | `@gara_manager_required` | JSON action | Attiva/disattiva squadra |
+| `/admin/gara/<int:gara_id>/inscription/<int:inscription_id>/squadra` | POST | `admin.competition.set_inscription_squadra` | `@login_required` (giocatore titolare **o** direttore: distinzione nel service) | action | Assegna un iscritto a una squadra |
 
 **Rounds Management:**
 
 | Path HTTP | Metodo | Endpoint | Decoratori | Tipo | Descrizione |
 |-----------|--------|----------|-----------|------|-------------|
-| `/admin/competition/<int:gara_id>/start_first_round` | POST | `admin.competition.start_first_round` | `@gara_manager_required` | action | Avvia primo turno, genera match |
-| `/admin/competition/<int:gara_id>/cancel_first_round` | POST | `admin.competition.cancel_first_round` | `@admin_required` | action | Annulla primo turno (resetta gara) |
-| `/admin/competition/<int:gara_id>/cancel_current_round` | POST | `admin.competition.cancel_current_round` | `@gara_manager_required` | action | Annulla turno corrente |
-| `/admin/competition/<int:gara_id>/terminate` | POST | `admin.competition.terminate_gara` | `@admin_required` | action | Termina gara definitivamente |
-| `/admin/competition/<int:gara_id>/start_ssr` | POST | `admin.competition.start_ssr` | `@gara_manager_required` | action | Avvia SSR (Spareggio/Tiebreaker) round |
-| `/admin/competition/<int:gara_id>/save_ssr_group` | POST | `admin.competition.save_ssr_group` | `@gara_manager_required` | action | Salva configurazione gruppo SSR |
-| `/admin/competition/<int:gara_id>/save_ssr_scores` | POST | `admin.competition.save_ssr_scores` | `@gara_manager_required` | action | Salva risultati SSR |
-| `/admin/competition/amalfi/classification/<int:gara_id>/<int:round_number>` | GET | `admin.competition.amalfi_classification` | `@login_required` | JSON API | Ritorna classificazione Amalfi per round |
-| `/admin/competition/<int:gara_id>/start_round/<int:round_number>` | POST | `admin.competition.start_round` | `@gara_manager_required` | action | Avvia turno specifico |
-| `/admin/competition/<int:gara_id>/round_management` | GET | `admin.competition.round_management` | `@gara_manager_required` | UI page | Pagina gestione turni |
-| `/admin/competition/<int:gara_id>/round_status` | GET | `admin.competition.round_status` | `@login_required` | JSON API | Stato corrente turno |
-| `/admin/competition/<int:gara_id>/round-config` | GET | `admin.competition.round_config` | `@gara_manager_required` | UI page | Configurazione turno |
-| `/admin/competition/<int:gara_id>/match/<int:match_id>/modification_check` | GET | `admin.competition.modification_check` | `@login_required` | JSON API | Verifica se match è modificabile |
+| `/admin/gara/<int:gara_id>/start_first_round` | POST | `admin.competition.start_first_round` | `@gara_manager_required` | action | Avvia primo turno, genera match |
+| `/admin/gara/<int:gara_id>/cancel_first_round` | POST | `admin.competition.cancel_first_round` | `@gara_manager_required` | action | Annulla primo turno (resetta gara) |
+| `/admin/gara/<int:gara_id>/cancel_current_round` | POST | `admin.competition.cancel_current_round` | `@gara_manager_required` | action | Annulla turno corrente |
+| `/admin/gara/<int:gara_id>/terminate` | POST | `admin.competition.terminate_gara` | `@gara_manager_required` | action | Termina gara definitivamente |
+| `/admin/gara/<int:gara_id>/start_ssr` | POST | `admin.competition.start_ssr` | `@gara_manager_required` | action | Avvia SSR (Spareggio/Tiebreaker) round |
+| `/admin/gara/<int:gara_id>/cancel_ssr` | POST | `admin.competition.cancel_ssr` | `@gara_manager_required` | action | Annulla SSR e riporta la gara a `playing` |
+| `/admin/gara/<int:gara_id>/save_ssr_group` | POST | `admin.competition.save_ssr_group` | `@gara_manager_required` | action | Salva configurazione gruppo SSR |
+| `/admin/gara/<int:gara_id>/save_ssr_scores` | POST | `admin.competition.save_ssr_scores` | `@gara_manager_required` | action | Salva risultati SSR |
+| `/admin/gara/amalfi/classification/<int:gara_id>/<int:round_number>` | GET | `admin.competition.amalfi_classification` | `@gara_manager_required` | JSON API | Ritorna classificazione Amalfi per round |
+| `/admin/gara/<int:gara_id>/amalfi/start_round/<int:round_number>` | POST | `admin.competition.amalfi_start_round` | `@gara_manager_required` | action | Avvia turno Amalfi con gli accoppiamenti confermati |
+| `/admin/gara/<int:gara_id>/start_round/<int:round_number>` | POST | `admin.competition.start_round_generic` | `@gara_manager_required` | action | Avvia turno specifico |
+| `/admin/gara/<int:gara_id>/round_status` | GET | `admin.competition.get_round_status` | `@gara_manager_required` | JSON API | Stato corrente turno |
+| `/admin/gara/<int:gara_id>/match/<int:match_id>/reset_advanced` | POST | `admin.competition.reset_match_advanced` | `@gara_manager_required` | JSON action | Azzera una singola partita già iniziata |
+| `/admin/gara/<int:gara_id>/round/<int:round_number>/cancel` | POST | `admin.competition.cancel_round_advanced` | `@gara_manager_required` | JSON action | Annulla un turno specifico |
+| `/admin/gara/<int:gara_id>/round/<int:round_number>/bulk_reset` | POST | `admin.competition.bulk_reset_round_matches` | `@gara_manager_required` | JSON action | Azzera tutte le partite del turno |
+| `/admin/gara/<int:gara_id>/round-config` | GET | `admin.competition.list_round_configs` | `@gara_manager_required` | JSON API | Elenca gli override di configurazione per turno |
+| `/admin/gara/<int:gara_id>/round-config/<int:round_number>` | POST | `admin.competition.upsert_round_config` | `@gara_manager_required` | JSON action | Salva l'override del turno (ADR-027) |
+| `/admin/gara/<int:gara_id>/round-config/<int:round_number>` | DELETE | `admin.competition.delete_round_config` | `@gara_manager_required` | JSON action | Rimuove l'override del turno |
+| `/admin/gara/<int:gara_id>/match/<int:match_id>/modification_check` | GET | `admin.competition.check_match_modification` | `@gara_manager_required` | JSON API | Verifica se match è modificabile |
 
 **Challenges in Gara:**
 
 | Path HTTP | Metodo | Endpoint | Decoratori | Tipo | Descrizione |
 |-----------|--------|----------|-----------|------|-------------|
-| `/admin/competition/<int:gara_id>/challenges` | GET | `admin.competition.view_gara_challenges` | `@gara_manager_required` | UI page | Lista challenges associate a gara |
-| `/admin/competition/<int:gara_id>/add_challenge` | POST | `admin.competition.add_challenge_to_gara` | `@gara_manager_required` | action | Aggiunge challenge a gara |
-| `/admin/competition/<int:gara_id>/remove_challenge` | POST | `admin.competition.remove_challenge_from_gara` | `@gara_manager_required` | action | Rimuove challenge da gara |
-| `/admin/competition/<int:gara_id>/challenges/available` | GET | `admin.competition.available_challenges` | `@gara_manager_required` | JSON API | Lista challenges disponibili per gara |
-| `/admin/competition/challenges/available` | GET | `admin.competition.all_available_challenges` | `@admin_required` | JSON API | Tutte challenges disponibili (admin) |
-| `/admin/competition/challenges/create` | POST | `admin.competition.create_challenge_for_gara` | `@admin_required` | action | Crea challenge directamente da gara |
-| `/admin/competition/<int:gara_id>/challenge_classification` | GET | `admin.competition.challenge_classification` | `@gara_manager_required` | UI page | Classificazione per challenge |
+| `/admin/gara/<int:gara_id>/challenges` | GET | `admin.competition.get_gara_challenges` | `@gara_manager_required` | JSON API | Lista challenges associate a gara |
+| `/admin/gara/<int:gara_id>/add_challenge` | POST | `admin.competition.add_challenge_to_gara` | `@gara_manager_required` | JSON action | Aggiunge challenge a gara |
+| `/admin/gara/<int:gara_id>/remove_challenge` | POST | `admin.competition.remove_challenge_from_gara` | `@gara_manager_required` | JSON action | Rimuove challenge da gara |
+| `/admin/gara/<int:gara_id>/challenges/available` | GET | `admin.competition.get_available_challenges_for_gara` | `@gara_manager_required` | JSON API | Lista challenges disponibili per gara |
+| `/admin/gara/challenges/available` | GET | `admin.competition.get_available_challenges` | `@admin_required` | JSON API | Tutte challenges disponibili (admin) |
+| `/admin/gara/challenges/create` | POST | `admin.competition.create_new_challenge` | `@admin_required` | JSON action | Crea challenge direttamente da gara |
+| `/admin/gara/<int:gara_id>/challenge_classification` | GET | `admin.competition.get_gara_challenge_classification` | `@gara_manager_required` | JSON API | Classificazione per challenge |
 
 **Match Scoring (Trio & Multi-Set):**
 
 | Path HTTP | Metodo | Endpoint | Decoratori | Tipo | Descrizione |
 |-----------|--------|----------|-----------|------|-------------|
 | `/admin/match/<int:match_id>` | GET | `admin.match.match_detail` | `@match_manager_required` | UI page | Dettaglio match con scoring |
-| `/admin/match/<int:match_id>/update-times` | POST | `admin.match.update_times` | `@match_manager_required` | action | Modifica orari match |
+| `/admin/match/<int:match_id>/update-times` | POST | `admin.match.update_match_times` | `@match_manager_required` | action | Modifica orari match |
 | `/admin/match/<int:match_id>/assign-table` | POST | `admin.match.assign_table` | `@match_manager_required` | action | Assegna tavolo |
 | `/admin/match/<int:match_id>/start-next-set` | POST | `admin.match.start_next_set` | `@match_manager_required` | action | Avvia set successivo (multi-set) |
-| `/admin/match/<int:match_id>/set/add_rack` | POST | `admin.match.add_rack_multi_set` | `@match_manager_required` | action | Aggiunge rack a set |
-| `/admin/match/<int:match_id>/set/remove_rack` | POST | `admin.match.remove_rack_multi_set` | `@match_manager_required` | action | Rimuove rack da set |
-| `/admin/competition/trio/<int:trio_id>/add_rack` | POST | `admin.competition.add_trio_rack` | `@match_manager_required` | action | Aggiunge rack a trio match |
-| `/admin/competition/trio/<int:trio_id>/remove_rack` | POST | `admin.competition.remove_trio_rack` | `@match_manager_required` | action | Rimuove rack da trio |
-| `/admin/competition/trio/<int:trio_id>/confirm` | POST | `admin.competition.confirm_trio` | `@match_manager_required` | action | Conferma risultato trio |
-| `/admin/competition/trio/<int:trio_id>/forfeit` | POST | `admin.competition.forfeit_trio` | `@match_manager_required` | action | Registra forfeit trio |
-| `/admin/competition/trio/<int:trio_id>/reset` | POST | `admin.competition.reset_trio` | `@admin_required` | action | Reset completo trio |
-| `/admin/competition/trio/<int:trio_id>/set_result` | POST | `admin.competition.set_trio_result` | `@admin_required` | action | Imposta risultato manualmente |
+| `/admin/match/<int:match_id>/set/add_rack` | POST | `admin.match.add_set_rack` | `@match_manager_required` | action | Aggiunge rack a set |
+| `/admin/match/<int:match_id>/set/remove_rack` | POST | `admin.match.remove_set_rack` | `@match_manager_required` | action | Rimuove rack da set |
+| `/admin/gara/trio/<int:trio_id>/add_rack` | POST | `admin.competition.trio_add_rack` | `@trio_manager_required` | action | Aggiunge rack a trio match |
+| `/admin/gara/trio/<int:trio_id>/remove_rack` | POST | `admin.competition.trio_remove_rack` | `@trio_manager_required` | action | Rimuove rack da trio |
+| `/admin/gara/trio/<int:trio_id>/confirm` | POST | `admin.competition.trio_confirm` | `@trio_manager_required` | action | Conferma risultato trio |
+| `/admin/gara/trio/<int:trio_id>/forfeit` | POST | `admin.competition.trio_forfeit` | `@trio_manager_required` | action | Registra forfeit trio |
+| `/admin/gara/trio/<int:trio_id>/reset` | POST | `admin.competition.trio_reset` | `@trio_manager_required` | action | Reset completo trio |
+| `/admin/gara/trio/<int:trio_id>/set_result` | POST | `admin.competition.trio_set_result` | `@trio_manager_required` | action | Imposta risultato manualmente |
 | `/admin/match/record_challenge_attempt` | POST | `admin.match.record_challenge_attempt` | `@match_manager_required` | action | Registra tentativo challenge |
 | `/admin/match/record_challenge_attempts` | POST | `admin.match.record_challenge_attempts` | `@match_manager_required` | action | Registra multiple challenge attempts |
 
-**Endpoint root:** `/admin/competition`, `/admin/match`
+**Endpoint root:** `/admin/gara` (blueprint `admin.competition`), `/admin/match`
 
 ---
 
@@ -130,8 +157,7 @@ Per costruire la production allowlist, scorri ogni area in Sezione 1 e marca esp
 
 | Path HTTP | Metodo | Endpoint | Decoratori | Tipo | Descrizione |
 |-----------|--------|----------|-----------|------|-------------|
-| `/admin/campionato/list` | GET | `admin.campionato.list_campionatos` | `@admin_required` | UI page | Lista di tutti i campionati |
-| `/admin/campionato/create` | GET | `admin.campionato.create_campionato_form` | `@director_or_admin_required` | UI page | Form creazione campionato (legacy, wizard preferito) |
+| `/admin/campionato/create` | POST | `admin.campionato.create_campionato` | `@director_or_admin_required` | action | Crea campionato (legacy, wizard preferito) |
 | (vedi wizard sopra) | - | - | - | - | - |
 
 **Endpoint root:** `/admin/campionato`
@@ -161,12 +187,12 @@ Per costruire la production allowlist, scorri ogni area in Sezione 1 e marca esp
 | Path HTTP | Metodo | Endpoint | Decoratori | Tipo | Descrizione |
 |-----------|--------|----------|-----------|------|-------------|
 | `/admin/venues` | GET | `admin.venue.venues_list` | `@login_required` | UI page | Lista pubbliche sale biliardo |
-| `/admin/venue/<int:venue_id>` | GET | `admin.venue.venue_detail` | `@login_required` | UI page | Dettaglio sala |
-| `/admin/venue_manager_requests` | GET | `admin.venue.venue_manager_requests` | `@admin_required` | UI page | Richieste di gestione sala |
-| `/admin/venue_manager_requests/<int:req_id>/approve` | POST | `admin.venue.approve_manager_request` | `@admin_required` | action | Approva gestore sala |
+| `/admin/venues/<int:venue_id>` | GET | `admin.venue.venue_detail` | `@login_required` | UI page | Dettaglio sala |
+| `/admin/manager-requests` | GET | `admin.venue.venue_manager_requests` | `@admin_required` | UI page | Richieste di gestione sala |
+| `/admin/manager-requests/<int:request_id>/process` | POST | `admin.venue.process_venue_manager_request` | `@admin_required` | action | Approva o rifiuta la richiesta di gestione sala |
 | (vedi player routes per venue manager requests) | - | - | - | - | - |
 
-**Endpoint root:** `/admin/venue`
+**Endpoint root:** `/admin/venues`, `/admin/manager-requests` (blueprint `admin.venue`)
 
 ---
 
@@ -174,8 +200,12 @@ Per costruire la production allowlist, scorri ogni area in Sezione 1 e marca esp
 
 | Path HTTP | Metodo | Endpoint | Decoratori | Tipo | Descrizione |
 |-----------|--------|----------|-----------|------|-------------|
-| `/admin/kpi` | GET | `admin.kpi.index` | `@admin_required` | UI page | Dashboard KPI e metriche di sistema |
-| `/admin/kpi/<metric>` | GET | `admin.kpi.metric_detail` | `@admin_required` | UI page | Dettaglio metrica specifica |
+| `/admin/kpi/` | GET | `admin.kpi.index` | `@admin_required` | UI page | Dashboard KPI e metriche di sistema |
+| `/admin/kpi/api/overview` | GET | `admin.kpi.api_overview` | `@admin_required` | JSON API | Metriche di sintesi per la dashboard |
+| `/admin/kpi/api/chart-data` | GET | `admin.kpi.api_chart_data` | `@admin_required` | JSON API | Serie storiche per i grafici |
+| `/admin/kpi/api/feature-usage` | GET | `admin.kpi.api_feature_usage` | `@admin_required` | JSON API | Utilizzo delle feature |
+| `/admin/kpi/api/check-alerts` | GET | `admin.kpi.api_check_alerts` | `@admin_required` | JSON API | Alert attivi sulle metriche |
+| `/admin/kpi/api/check-milestones` | POST | `admin.kpi.api_check_milestones` | `@admin_required` | JSON action | Verifica il raggiungimento dei milestone |
 
 **Endpoint root:** `/admin/kpi`
 
@@ -185,20 +215,20 @@ Per costruire la production allowlist, scorri ogni area in Sezione 1 e marca esp
 
 | Path HTTP | Metodo | Endpoint | Decoratori | Tipo | Descrizione |
 |-----------|--------|----------|-----------|------|-------------|
-| `/challenge/` | GET | `challenge.challenge_catalog` | `@login_required` | UI page | Catalogo challenges per player |
-| `/challenge/create` | GET, POST | `challenge.create_challenge` | `@director_required` | UI page + action | Crea nuova challenge (directors) |
-| `/challenge/<int:challenge_id>` | GET | `challenge.challenge_detail` | `@login_required` | UI page | Dettaglio challenge |
-| `/challenge/<int:challenge_id>/edit` | GET, POST | `challenge.edit_challenge` | `@director_required` | UI page + action | Modifica challenge |
-| `/challenge/<int:challenge_id>/delete` | POST | `challenge.delete_challenge` | `@director_required` | action | Soft delete challenge |
-| `/challenge/<int:challenge_id>/attempt` | GET, POST | `challenge.start_attempt` | `@login_required` | UI page + action | Inizia tentativo challenge |
-| `/challenge/attempt/<int:attempt_id>` | GET | `challenge.attempt_detail` | `@login_required` | UI page | Dettaglio tentativo |
-| `/challenge/attempt/<int:attempt_id>/complete` | POST | `challenge.complete_attempt` | `@login_required` | action | Completa tentativo challenge |
-| `/challenge/<int:challenge_id>/favorite` | POST | `challenge.toggle_favorite` | `@login_required` | action | Aggiungi/rimuovi dai preferiti |
-| `/challenge/<int:challenge_id>/statistics` | GET | `challenge.challenge_statistics` | `@director_required` | UI page | Statistiche di una challenge |
-| `/challenge/x-replacement/<int:gara_id>/<int:round_number>` | POST | `challenge.create_x_replacement` | `@login_required` | action | Crea tentativo X-replacement |
-| `/challenge/x-replacement/<int:attempt_id>/complete` | POST | `challenge.complete_x_replacement` | `@login_required` | action | Completa X-replacement |
+| `/challenges/` | GET | `challenge.challenge_catalog` | `@login_required` | UI page | Catalogo challenges per player |
+| `/challenges/create` | GET, POST | `challenge.create_challenge` | `@director_required` | UI page + action | Crea nuova challenge (directors) |
+| `/challenges/<int:challenge_id>` | GET | `challenge.challenge_detail` | `@login_required` | UI page | Dettaglio challenge |
+| `/challenges/<int:challenge_id>/edit` | GET, POST | `challenge.edit_challenge` | `@director_required` | UI page + action | Modifica challenge |
+| `/challenges/<int:challenge_id>/delete` | POST | `challenge.delete_challenge` | `@director_required` | action | Soft delete challenge |
+| `/challenges/<int:challenge_id>/attempt` | GET, POST | `challenge.start_attempt` | `@login_required` | UI page + action | Inizia tentativo challenge |
+| `/challenges/attempt/<int:attempt_id>` | GET | `challenge.attempt_detail` | `@login_required` | UI page | Dettaglio tentativo |
+| `/challenges/attempt/<int:attempt_id>/complete` | POST | `challenge.complete_attempt` | `@login_required` | action | Completa tentativo challenge |
+| `/challenges/<int:challenge_id>/favorite` | POST | `challenge.toggle_favorite` | `@login_required` | action | Aggiungi/rimuovi dai preferiti |
+| `/challenges/<int:challenge_id>/statistics` | GET | `challenge.challenge_statistics` | `@director_required` | UI page | Statistiche di una challenge |
+| `/challenges/x-replacement/<int:gara_id>/<int:round_number>` | POST | `challenge.create_x_replacement` | `@login_required` | action | Crea tentativo X-replacement |
+| `/challenges/x-replacement/<int:attempt_id>/complete` | POST | `challenge.complete_x_replacement` | `@login_required` | action | Completa X-replacement |
 
-**Endpoint root:** `/challenge`
+**Endpoint root:** `/challenges` (blueprint `challenge`)
 
 ---
 
@@ -236,8 +266,8 @@ Per costruire la production allowlist, scorri ogni area in Sezione 1 e marca esp
 | `/gamification/dashboard` | GET | `gamification.dashboard` | `@login_required` | UI page | Dashboard gamification: XP, livello, achievements, quests |
 | `/gamification/leaderboards` | GET | `gamification.leaderboards` | None (public) | UI page | Leaderboard pubblico XP, livelli, streaks |
 | `/gamification/achievements` | GET | `gamification.achievements` | None (public) | UI page | Showcase achievements sbloccati |
-| `/gamification/quests` | GET | `gamification.user_quests` | `@login_required` | UI page | Quests attive e completate |
-| `/gamification/streaks` | GET | `gamification.user_streaks` | `@login_required` | UI page | Tracking streaks |
+| `/gamification/quests` | GET | `gamification.quests` | `@login_required` | UI page | Quests attive e completate |
+| `/gamification/streaks` | GET | `gamification.streaks` | `@login_required` | UI page | Tracking streaks |
 
 **Admin Routes:**
 
@@ -245,47 +275,47 @@ Per costruire la production allowlist, scorri ogni area in Sezione 1 e marca esp
 |-----------|--------|----------|-----------|------|-------------|
 | `/gamification/admin` | GET | `gamification.admin_dashboard` | `@admin_required` | UI page | Admin dashboard gamification |
 | `/gamification/admin/quests` | GET | `gamification.admin_quests` | `@admin_required` | UI page | Gestione quests |
-| `/gamification/admin/quests/create` | GET, POST | `gamification.create_quest` | `@admin_required` | UI page + action | Crea quest |
-| `/gamification/admin/quests/<int:quest_id>/activate` | POST | `gamification.activate_quest` | `@admin_required` | action | Attiva quest |
-| `/gamification/admin/quests/<int:quest_id>/expire` | POST | `gamification.expire_quest` | `@admin_required` | action | Scade quest |
-| `/gamification/admin/quests/<int:quest_id>/delete` | POST | `gamification.delete_quest` | `@admin_required` | action | Elimina quest |
+| `/gamification/admin/quests/create` | GET, POST | `gamification.admin_create_quest` | `@admin_required` | UI page + action | Crea quest |
+| `/gamification/admin/quests/<int:quest_id>/activate` | POST | `gamification.admin_activate_quest` | `@admin_required` | action | Attiva quest |
+| `/gamification/admin/quests/<int:quest_id>/expire` | POST | `gamification.admin_expire_quest` | `@admin_required` | action | Scade quest |
+| `/gamification/admin/quests/<int:quest_id>/delete` | POST | `gamification.admin_delete_quest` | `@admin_required` | action | Elimina quest |
 | `/gamification/admin/achievements` | GET | `gamification.admin_achievements` | `@admin_required` | UI page | Gestione achievements |
-| `/gamification/admin/achievements/create` | GET, POST | `gamification.create_achievement` | `@admin_required` | UI page + action | Crea achievement |
-| `/gamification/admin/achievements/<int:achievement_id>/toggle_hidden` | POST | `gamification.toggle_achievement_hidden` | `@admin_required` | action | Nascondi/mostra achievement |
-| `/gamification/admin/xp` | GET | `gamification.admin_xp` | `@admin_required` | UI page | Gestione XP |
-| `/gamification/admin/xp/grant` | POST | `gamification.grant_xp` | `@admin_required` | action | Assegna XP manualmente |
-| `/gamification/admin/xp/reset/<int:user_id>` | POST | `gamification.reset_xp` | `@admin_required` | action | Reset XP player |
+| `/gamification/admin/achievements/create` | GET, POST | `gamification.admin_create_achievement` | `@admin_required` | UI page + action | Crea achievement |
+| `/gamification/admin/achievements/<int:achievement_id>/toggle_hidden` | POST | `gamification.admin_toggle_achievement_hidden` | `@admin_required` | action | Nascondi/mostra achievement |
+| `/gamification/admin/xp` | GET | `gamification.admin_xp_management` | `@admin_required` | UI page | Gestione XP |
+| `/gamification/admin/xp/grant` | POST | `gamification.admin_grant_xp` | `@admin_required` | action | Assegna XP manualmente |
+| `/gamification/admin/xp/reset/<int:user_id>` | POST | `gamification.admin_reset_user_level` | `@admin_required` | action | Reset XP player |
 | `/gamification/admin/streaks` | GET | `gamification.admin_streaks` | `@admin_required` | UI page | Gestione streaks |
-| `/gamification/admin/streaks/grant_freeze` | POST | `gamification.grant_streak_freeze` | `@admin_required` | action | Assegna freeze streak |
-| `/gamification/admin/api/user_search` | GET | `gamification.user_search_api` | `@admin_required` | JSON API | Ricerca player per admin |
+| `/gamification/admin/streaks/grant_freeze` | POST | `gamification.admin_grant_freeze` | `@admin_required` | action | Assegna freeze streak |
+| `/gamification/admin/api/user_search` | GET | `gamification.admin_api_user_search` | `@admin_required` | JSON API | Ricerca player per admin |
 
 **Config Routes:**
 
 | Path HTTP | Metodo | Endpoint | Decoratori | Tipo | Descrizione |
 |-----------|--------|----------|-----------|------|-------------|
-| `/gamification/admin/config` | GET | `gamification.config_dashboard` | `@admin_required` | UI page | Dashboard configurazione gamification |
-| `/gamification/admin/config/xp` | GET | `gamification.config_xp` | `@admin_required` | UI page | Config XP rates |
-| `/gamification/admin/config/xp/update` | POST | `gamification.update_xp_config` | `@admin_required` | action | Aggiorna XP config |
-| `/gamification/admin/config/levels` | GET | `gamification.config_levels` | `@admin_required` | UI page | Config level progression |
-| `/gamification/admin/config/levels/update_curve` | POST | `gamification.update_level_curve` | `@admin_required` | action | Aggiorna curva livelli |
-| `/gamification/admin/config/levels/unlock/add` | POST | `gamification.add_unlock` | `@admin_required` | action | Aggiunge unlock feature |
-| `/gamification/admin/config/levels/unlock/<int:unlock_id>/edit` | POST | `gamification.edit_unlock` | `@admin_required` | action | Modifica unlock |
-| `/gamification/admin/config/levels/unlock/<int:unlock_id>/delete` | POST | `gamification.delete_unlock` | `@admin_required` | action | Elimina unlock |
-| `/gamification/admin/config/streaks` | GET | `gamification.config_streaks` | `@admin_required` | UI page | Config streaks |
-| `/gamification/admin/config/streaks/update` | POST | `gamification.update_streaks_config` | `@admin_required` | action | Aggiorna config streaks |
-| `/gamification/admin/config/streaks/milestone/add` | POST | `gamification.add_streak_milestone` | `@admin_required` | action | Aggiunge milestone |
-| `/gamification/admin/config/streaks/milestone/<int:milestone_id>/edit` | POST | `gamification.edit_streak_milestone` | `@admin_required` | action | Modifica milestone |
-| `/gamification/admin/config/streaks/milestone/<int:milestone_id>/delete` | POST | `gamification.delete_streak_milestone` | `@admin_required` | action | Elimina milestone |
+| `/gamification/admin/config` | GET | `gamification.admin_config_dashboard` | `@admin_required` | UI page | Dashboard configurazione gamification |
+| `/gamification/admin/config/xp` | GET | `gamification.admin_xp_config` | `@admin_required` | UI page | Config XP rates |
+| `/gamification/admin/config/xp/update` | POST | `gamification.admin_update_xp_config` | `@admin_required` | action | Aggiorna XP config |
+| `/gamification/admin/config/levels` | GET | `gamification.admin_level_curve_config` | `@admin_required` | UI page | Config level progression |
+| `/gamification/admin/config/levels/update_curve` | POST | `gamification.admin_update_level_curve` | `@admin_required` | action | Aggiorna curva livelli |
+| `/gamification/admin/config/levels/unlock/add` | POST | `gamification.admin_add_level_unlock` | `@admin_required` | action | Aggiunge unlock feature |
+| `/gamification/admin/config/levels/unlock/<int:unlock_id>/edit` | POST | `gamification.admin_edit_level_unlock` | `@admin_required` | action | Modifica unlock |
+| `/gamification/admin/config/levels/unlock/<int:unlock_id>/delete` | POST | `gamification.admin_delete_level_unlock` | `@admin_required` | action | Elimina unlock |
+| `/gamification/admin/config/streaks` | GET | `gamification.admin_streak_config` | `@admin_required` | UI page | Config streaks |
+| `/gamification/admin/config/streaks/update` | POST | `gamification.admin_update_streak_config` | `@admin_required` | action | Aggiorna config streaks |
+| `/gamification/admin/config/streaks/milestone/add` | POST | `gamification.admin_add_streak_milestone` | `@admin_required` | action | Aggiunge milestone |
+| `/gamification/admin/config/streaks/milestone/<int:milestone_id>/edit` | POST | `gamification.admin_edit_streak_milestone` | `@admin_required` | action | Modifica milestone |
+| `/gamification/admin/config/streaks/milestone/<int:milestone_id>/delete` | POST | `gamification.admin_delete_streak_milestone` | `@admin_required` | action | Elimina milestone |
 
 **Features (ABAC):**
 
 | Path HTTP | Metodo | Endpoint | Decoratori | Tipo | Descrizione |
 |-----------|--------|----------|-----------|------|-------------|
 | `/gamification/admin/features` | GET | `gamification.admin_features` | `@admin_required` | UI page | Gestione feature flags ABAC |
-| `/gamification/admin/features/<code>` | GET | `gamification.feature_detail` | `@admin_required` | UI page | Dettaglio feature |
-| `/gamification/admin/features/<code>/update` | POST | `gamification.update_feature` | `@admin_required` | action | Modifica feature ABAC rules |
-| `/gamification/admin/features/<code>/preview` | GET | `gamification.feature_preview` | `@admin_required` | UI page | Preview chi ha accesso feature |
-| `/gamification/admin/features/create` | GET, POST | `gamification.create_feature` | `@admin_required` | UI page + action | Crea feature flag |
+| `/gamification/admin/features/<code>` | GET | `gamification.admin_feature_detail` | `@admin_required` | UI page | Dettaglio feature |
+| `/gamification/admin/features/<code>/update` | POST | `gamification.admin_update_feature` | `@admin_required` | action | Modifica feature ABAC rules |
+| `/gamification/admin/features/<code>/preview` | GET | `gamification.admin_feature_preview` | `@admin_required` | UI page | Preview chi ha accesso feature |
+| `/gamification/admin/features/create` | GET, POST | `gamification.admin_create_feature` | `@admin_required` | UI page + action | Crea feature flag |
 
 **Endpoint root:** `/gamification`
 
@@ -297,42 +327,42 @@ Per costruire la production allowlist, scorri ogni area in Sezione 1 e marca esp
 
 | Path HTTP | Metodo | Endpoint | Decoratori | Tipo | Descrizione |
 |-----------|--------|----------|-----------|------|-------------|
-| `/individual-match/` | GET | `individual_match.dashboard` | `@player_or_director_required` | UI page | Dashboard match individuali |
-| `/individual-match/statistics` | GET | `individual_match.user_statistics` | `@player_or_director_required` | UI page | Statistiche match individuali |
-| `/individual-match/availability` | GET, POST | `individual_match.manage_availability` | `@player_or_director_required` | UI page + action | Gestione disponibilità per proposte |
-| `/individual-match/admin/overview` | GET | `individual_match.admin_overview` | `@admin_required` | UI page | Admin overview tutti match |
+| `/match/` | GET | `individual_match.dashboard` | `@player_or_director_required` | UI page | Dashboard match individuali |
+| `/match/statistics` | GET | `individual_match.user_statistics` | `@player_or_director_required` | UI page | Statistiche match individuali |
+| `/match/availability` | GET, POST | `individual_match.manage_availability` | `@player_or_director_required` | UI page + action | Gestione disponibilità per proposte |
+| `/match/admin/overview` | GET | `individual_match.admin_overview` | `@admin_required` | UI page | Admin overview tutti match |
 
 **Matches:**
 
 | Path HTTP | Metodo | Endpoint | Decoratori | Tipo | Descrizione |
 |-----------|--------|----------|-----------|------|-------------|
-| `/individual-match/matches` | GET | `individual_match.list_matches` | `@player_or_director_required` | UI page | Lista match individuali dell'utente |
-| `/individual-match/matches/<int:match_id>` | GET | `individual_match.match_detail` | `@login_required` | UI page | Dettaglio match individuale |
-| `/individual-match/matches/<int:match_id>/start` | POST | `individual_match.start_match` | `@login_required` | action | Avvia match |
-| `/individual-match/matches/<int:match_id>/racks/add` | POST | `individual_match.add_rack` | `@login_required` | action | Aggiunge rack |
-| `/individual-match/matches/<int:match_id>/racks/remove` | POST | `individual_match.remove_rack` | `@login_required` | action | Rimuove rack |
-| `/individual-match/matches/<int:match_id>/confirm` | POST | `individual_match.confirm_match` | `@login_required` | action | Conferma risultato |
-| `/individual-match/matches/<int:match_id>/reject` | POST | `individual_match.reject_match` | `@login_required` | action | Rifiuta risultato |
-| `/individual-match/matches/<int:match_id>/complete` | POST | `individual_match.complete_match` | `@login_required` | action | Completa match |
-| `/individual-match/matches/<int:match_id>/cancel` | POST | `individual_match.cancel_match` | `@login_required` | action | Annulla match |
-| `/individual-match/matches/<int:match_id>/update-times` | POST | `individual_match.update_times` | `@login_required` | action | Modifica orari |
-| `/individual-match/matches/<int:match_id>/forfeit` | POST | `individual_match.forfeit_match` | `@login_required` | action | Registra forfeit |
-| `/individual-match/matches/<int:match_id>/rematch` | GET | `individual_match.rematch` | `@login_required` | UI page | Proponi rematch |
+| `/match/matches` | GET | `individual_match.match_list` | `@player_or_director_required` | UI page | Lista match individuali dell'utente |
+| `/match/matches/<int:match_id>` | GET | `individual_match.match_detail` | `@login_required` | UI page | Dettaglio match individuale |
+| `/match/matches/<int:match_id>/start` | POST | `individual_match.start_match` | `@login_required` | action | Avvia match |
+| `/match/matches/<int:match_id>/racks/add` | POST | `individual_match.add_rack` | `@login_required` | action | Aggiunge rack |
+| `/match/matches/<int:match_id>/racks/remove` | POST | `individual_match.remove_rack` | `@login_required` | action | Rimuove rack |
+| `/match/matches/<int:match_id>/confirm` | POST | `individual_match.confirm_result` | `@login_required` | action | Conferma risultato |
+| `/match/matches/<int:match_id>/reject` | POST | `individual_match.reject_result` | `@login_required` | action | Rifiuta risultato |
+| `/match/matches/<int:match_id>/complete` | POST | `individual_match.complete_match` | `@login_required` | action | Completa match |
+| `/match/matches/<int:match_id>/cancel` | POST | `individual_match.cancel_match` | `@login_required` | action | Annulla match |
+| `/match/matches/<int:match_id>/update-times` | POST | `individual_match.update_match_times` | `@login_required` | action | Modifica orari |
+| `/match/matches/<int:match_id>/forfeit` | POST | `individual_match.forfeit_match` | `@login_required` | action | Registra forfeit |
+| `/match/matches/<int:match_id>/rematch` | GET | `individual_match.rematch` | `@login_required` | UI page | Proponi rematch |
 
 **Proposals:**
 
 | Path HTTP | Metodo | Endpoint | Decoratori | Tipo | Descrizione |
 |-----------|--------|----------|-----------|------|-------------|
-| `/individual-match/proposals` | GET | `individual_match.list_proposals` | `@player_or_director_required` | UI page | Lista proposte match |
-| `/individual-match/proposals/<int:proposal_id>` | GET | `individual_match.proposal_detail` | `@login_required` | UI page | Dettaglio proposta |
-| `/individual-match/players/search` | GET | `individual_match.search_players` | `@player_or_director_required` | JSON API | Ricerca player per proposte |
-| `/individual-match/players/opponents` | GET | `individual_match.list_opponents` | `@player_or_director_required` | JSON API | Lista opponent suggeriti |
-| `/individual-match/proposals/create` | GET, POST | `individual_match.create_proposal` | `@player_or_director_required` | UI page + action | Crea proposta match |
-| `/individual-match/proposals/<int:proposal_id>/accept` | POST | `individual_match.accept_proposal` | `@login_required` | action | Accetta proposta |
-| `/individual-match/proposals/<int:proposal_id>/decline` | POST | `individual_match.decline_proposal` | `@login_required` | action | Rifiuta proposta |
-| `/individual-match/proposals/<int:proposal_id>/cancel` | POST | `individual_match.cancel_proposal` | `@login_required` | action | Annulla proposta inviata |
+| `/match/proposals` | GET | `individual_match.proposal_list` | `@player_or_director_required` | UI page | Lista proposte match |
+| `/match/proposals/<int:proposal_id>` | GET | `individual_match.proposal_detail` | `@login_required` | UI page | Dettaglio proposta |
+| `/match/players/search` | GET | `individual_match.search_players` | `@player_or_director_required` | JSON API | Ricerca player per proposte |
+| `/match/players/opponents` | GET | `individual_match.get_opponents` | `@player_or_director_required` | JSON API | Lista opponent suggeriti |
+| `/match/proposals/create` | GET, POST | `individual_match.create_proposal` | `@player_or_director_required` | UI page + action | Crea proposta match |
+| `/match/proposals/<int:proposal_id>/accept` | POST | `individual_match.accept_proposal` | `@login_required` | action | Accetta proposta |
+| `/match/proposals/<int:proposal_id>/decline` | POST | `individual_match.decline_proposal` | `@login_required` | action | Rifiuta proposta |
+| `/match/proposals/<int:proposal_id>/cancel` | POST | `individual_match.cancel_proposal` | `@login_required` | action | Annulla proposta inviata |
 
-**Endpoint root:** `/individual-match`
+**Endpoint root:** `/match` (blueprint `individual_match`)
 
 ---
 
@@ -345,7 +375,7 @@ Per costruire la production allowlist, scorri ogni area in Sezione 1 e marca esp
 | `/player/profile` | GET | `player.profile` | `@login_required` | UI page | Profilo personale con stats |
 | `/player/profile/<int:user_id>` | GET | `player.view_profile` | `@login_required` | UI page | Profilo pubblico altro player |
 | `/player/profile/edit` | GET, POST | `player.edit_profile` | `@login_required` | UI page + action | Modifica profilo |
-| `/player/profile/verify-email` | POST | `player.verify_email_request` | `@login_required` | action | Richiedi re-verifica email |
+| `/player/profile/verify-email` | POST | `player.request_verification_email` | `@login_required` | action | Richiedi re-verifica email |
 | `/player/profile/change_password` | POST | `player.change_password` | `@login_required` | action | Cambio password |
 | `/player/request_director` | POST | `player.request_director` | `@login_required` | action | Richiedi promozione director |
 
@@ -366,7 +396,7 @@ Per costruire la production allowlist, scorri ogni area in Sezione 1 e marca esp
 
 | Path HTTP | Metodo | Endpoint | Decoratori | Tipo | Descrizione |
 |-----------|--------|----------|-----------|------|-------------|
-| `/player/profile/<int:user_id>/export/csv` | GET | `player.export_csv` | `@login_required` | Download | Export CSV dati player |
+| `/player/profile/<int:user_id>/export/csv` | GET | `player.export_profile_csv` | `@login_required` | Download | Export CSV dati player |
 | `/player/gdpr-export/request` | POST | `player.request_gdpr_export` | `@login_required` | action | Richiedi export GDPR completo |
 | `/player/gdpr-export/download/<filename>` | GET | `player.download_gdpr_export` | `@login_required` | Download | Download export GDPR |
 
@@ -374,11 +404,11 @@ Per costruire la production allowlist, scorri ogni area in Sezione 1 e marca esp
 
 | Path HTTP | Metodo | Endpoint | Decoratori | Tipo | Descrizione |
 |-----------|--------|----------|-----------|------|-------------|
-| `/player/` | GET | `player.competitions_list` | `@login_required` | UI page | Lista gare disponibili per iscrizione |
-| `/player/gara/<int:gara_id>` | GET | `player.competition_detail` | `@login_required` | UI page | Dettaglio gara per player |
-| `/player/gara/<int:gara_id>/inscribe` | POST | `player.inscribe_competition` | `@login_required` | action | Iscrivi player a gara |
-| `/player/gara/<int:gara_id>/unsubscribe` | POST | `player.unsubscribe_competition` | `@login_required` | action | Disiscriviti da gara |
-| `/player/history` | GET | `player.competitions_history` | `@login_required` | UI page | Storico gare partecipate |
+| `/player/` | GET | `player.dashboard` | `@login_required` | UI page | Lista gare disponibili per iscrizione |
+| `/player/gara/<int:gara_id>` | GET | `player.gara_detail` | `@login_required` | UI page | Dettaglio gara per player |
+| `/player/gara/<int:gara_id>/inscribe` | POST | `player.inscribe_to_gara` | `@login_required` | action | Iscrivi player a gara |
+| `/player/gara/<int:gara_id>/unsubscribe` | POST | `player.unsubscribe_from_gara` | `@login_required` | action | Disiscriviti da gara |
+| `/player/history` | GET | `player.history` | `@login_required` | UI page | Storico gare partecipate |
 
 **Matches (in Gara):**
 
@@ -386,21 +416,21 @@ Per costruire la production allowlist, scorri ogni area in Sezione 1 e marca esp
 |-----------|--------|----------|-----------|------|-------------|
 | `/player/match/<int:match_id>/trio/add_rack` | POST | `player.add_trio_rack` | `@login_required` | action | Aggiunge rack a trio match |
 | `/player/match/<int:match_id>/trio/remove_rack` | POST | `player.remove_trio_rack` | `@login_required` | action | Rimuove rack trio |
-| `/player/match/<int:match_id>/trio/confirm` | POST | `player.confirm_trio` | `@login_required` | action | Conferma trio |
+| `/player/match/<int:match_id>/trio/confirm` | POST | `player.confirm_trio_result` | `@login_required` | action | Conferma trio |
 | `/player/match/<int:match_id>/trio/forfeit` | POST | `player.forfeit_trio` | `@login_required` | action | Forfeit trio |
-| `/player/match/<int:match_id>/racks/add` | POST | `player.add_rack` | `@login_required` | action | Aggiunge rack standard |
-| `/player/match/<int:match_id>/racks/remove` | POST | `player.remove_rack` | `@login_required` | action | Rimuove rack |
-| `/player/match/<int:match_id>/confirm` | POST | `player.confirm_match` | `@login_required` | action | Conferma match result |
-| `/player/match/<int:match_id>/reject` | POST | `player.reject_match` | `@login_required` | action | Rifiuta risultato match |
+| `/player/match/<int:match_id>/racks/add` | POST | `player.add_rack_simplified` | `@login_required` | action | Aggiunge rack standard |
+| `/player/match/<int:match_id>/racks/remove` | POST | `player.remove_rack_simplified` | `@login_required` | action | Rimuove rack |
+| `/player/match/<int:match_id>/confirm` | POST | `player.confirm_match_result` | `@login_required` | action | Conferma match result |
+| `/player/match/<int:match_id>/reject` | POST | `player.reject_match_result` | `@login_required` | action | Rifiuta risultato match |
 | `/player/match/<int:match_id>/forfeit` | POST | `player.forfeit_match` | `@login_required` | action | Forfeit match |
 
 **Playoff:**
 
 | Path HTTP | Metodo | Endpoint | Decoratori | Tipo | Descrizione |
 |-----------|--------|----------|-----------|------|-------------|
-| `/player/playoff/invitation/<int:qualification_id>` | GET | `player.view_playoff_invitation` | `@login_required` | UI page | Visualizza invito playoff |
-| `/player/playoff/confirm/<int:qualification_id>` | POST | `player.confirm_playoff` | `@login_required` | action | Accetta playoff |
-| `/player/playoff/decline/<int:qualification_id>` | POST | `player.decline_playoff` | `@login_required` | action | Rifiuta playoff |
+| `/player/playoff/invitation/<int:qualification_id>` | GET | `player.playoff_invitation` | `@login_required` | UI page | Visualizza invito playoff |
+| `/player/playoff/confirm/<int:qualification_id>` | POST | `player.playoff_confirm` | `@login_required` | action | Accetta playoff |
+| `/player/playoff/decline/<int:qualification_id>` | POST | `player.playoff_decline` | `@login_required` | action | Rifiuta playoff |
 
 **Notifications & Venue Manager:**
 
@@ -409,8 +439,8 @@ Per costruire la production allowlist, scorri ogni area in Sezione 1 e marca esp
 | `/player/notifications` | GET | `player.notifications` | `@login_required` | UI page | Lista notifiche |
 | `/player/notifications/<int:notification_id>/mark_read` | POST | `player.mark_notification_read` | `@login_required` | action | Segna notifica come letta |
 | `/player/notifications/mark_all_read` | POST | `player.mark_all_notifications_read` | `@login_required` | action | Segna tutte lette |
-| `/player/notifications/delete_selected` | POST | `player.delete_notifications` | `@login_required` | action | Elimina notifiche selezionate |
-| `/player/notifications/update_auto_delete` | POST | `player.update_notification_autodeletedefaults` | `@login_required` | action | Config auto-delete notifiche |
+| `/player/notifications/delete_selected` | POST | `player.delete_selected_notifications` | `@login_required` | action | Elimina notifiche selezionate |
+| `/player/notifications/update_auto_delete` | POST | `player.update_auto_delete` | `@login_required` | action | Config auto-delete notifiche |
 | `/player/request_venue_manager` | POST | `player.request_venue_manager` | `@login_required` | action | Richiedi ruolo gestore sala |
 | `/player/cancel_venue_manager_request/<int:request_id>` | POST | `player.cancel_venue_manager_request` | `@login_required` | action | Annulla richiesta |
 | `/player/my_venue_requests` | GET | `player.my_venue_requests` | `@login_required` | UI page | Mie richieste gestore sala |
@@ -419,15 +449,15 @@ Per costruire la production allowlist, scorri ogni area in Sezione 1 e marca esp
 
 | Path HTTP | Metodo | Endpoint | Decoratori | Tipo | Descrizione |
 |-----------|--------|----------|-----------|------|-------------|
-| `/player/challenge/<int:gara_challenge_id>` | GET | `player.view_gara_challenge` | `@login_required` | UI page | Dettaglio challenge in gara |
-| `/player/challenge/<int:gara_challenge_id>/attempt` | POST | `player.attempt_gara_challenge` | `@login_required` | action | Inizia tentativo challenge in gara |
+| `/player/challenge/<int:gara_challenge_id>` | GET | `player.challenge_detail` | `@login_required` | UI page | Dettaglio challenge in gara |
+| `/player/challenge/<int:gara_challenge_id>/attempt` | POST | `player.record_challenge_attempt` | `@login_required` | action | Inizia tentativo challenge in gara |
 
 **Geo (Location Services):**
 
 | Path HTTP | Metodo | Endpoint | Decoratori | Tipo | Descrizione |
 |-----------|--------|----------|-----------|------|-------------|
-| `/player/api/nearby-gare` | GET | `player.nearby_competitions` | `@login_required` | JSON API | Gare vicino location player |
-| `/player/api/my-provinces` | GET | `player.my_provinces` | `@login_required` | JSON API | Province di interesse player |
+| `/player/api/nearby-gare` | GET | `player.api_nearby_gare` | `@login_required` | JSON API | Gare vicino location player |
+| `/player/api/my-provinces` | GET | `player.api_my_provinces` | `@login_required` | JSON API | Province di interesse player |
 
 **Endpoint root:** `/player`
 
@@ -899,9 +929,9 @@ Model exists (`/models/playoff/models.py`, `/models/playoff/services.py`) with:
 - 30 methods in services
 
 But routes sono sparce:
-- `/admin/competition/<gara_id>/start_ssr` - POST
-- `/admin/competition/<gara_id>/save_ssr_group` - POST
-- `/admin/competition/<gara_id>/save_ssr_scores` - POST
+- `/admin/gara/<gara_id>/start_ssr` - POST
+- `/admin/gara/<gara_id>/save_ssr_group` - POST
+- `/admin/gara/<gara_id>/save_ssr_scores` - POST
 
 **Indizio WIP:** Modelli e servizi playoff ben sviluppati, ma routing e UI per gestire playoff possono essere incomplete o sparse in various competition admin views.
 
@@ -927,7 +957,7 @@ But routes sono sparce:
 - Classificazione system supporta multiple strategie (Amalfi, Random, etc.)
 - Registry pattern suggests extensible-but-incomplete design
 - Tiebreaker resolver con 14 metodi (`/models/tiebreaker/services.py`)
-- Route `/admin/competition/amalfi/classification/<gara_id>/<round_number>` è Amalfi-specific, suggesting possibile altre strategie con routing ancora da completare
+- Route `/admin/gara/amalfi/classification/<gara_id>/<round_number>` è Amalfi-specific, suggesting possibile altre strategie con routing ancora da completare
 
 ---
 
@@ -937,7 +967,7 @@ But routes sono sparce:
 
 **Indizio WIP:**
 - Endpoint `/player/match/<match_id>/trio/...` per trio matches
-- Endpoint `/individual-match/matches/<match_id>/...` per standard individual matches
+- Endpoint `/match/matches/<match_id>/...` per standard individual matches
 - Due sistemi match tipo (Trio dal `Match` model, IndividualMatch modello separato)
 - Possibile inconsistenza tra quale tipo di match usa quale endpoint
 

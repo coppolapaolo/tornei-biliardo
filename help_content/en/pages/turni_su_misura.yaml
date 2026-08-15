@@ -1,0 +1,87 @@
+title: "Rounds with different rules"
+section: organizzare
+kind: approfondimento
+audience: [direttore]
+minutes: 3
+summary: "A competition can change discipline or distance from one round to the next: first two rounds at 8-ball, final at 9-ball."
+screens: [admin.competition.list_round_configs]
+related: [formati_di_gioco, creare_una_gara, opzioni_della_gara]
+
+blocks:
+  - type: text
+    text: >-
+      Normally every round of a competition is played the same way. If you want
+      a more varied evening — or a longer final — you can give each round its
+      own rules.
+
+  - type: shot
+    shot: gara-turni-config
+    caption: "Per-round setup: each one can have its own discipline and distance."
+
+  - type: heading
+    id: cosa_si_cambia
+    title: "What can change, round by round"
+
+  - type: options
+    items:
+      - name: "Discipline"
+        text: "Early rounds at 8-ball, the last at 9-ball: that is how many club evenings run."
+      - name: "Distance"
+        text: >-
+          Short qualifying rounds and a longer final. It is the simplest way of
+          giving the last round weight without lengthening the whole evening.
+      - name: "Exact number of racks"
+        text: "It can be asked for in some rounds only, if the standings need it."
+      - name: "Set play"
+        text: "Typically kept for the last round."
+
+  - type: note
+    tone: info
+    title: "Anything left blank stays as it is"
+    text: >-
+      Every field left empty **inherits** the competition's value. There is no
+      need to repeat discipline and distance for the rounds that do not change:
+      you only touch what has to be different.
+
+  - type: heading
+    id: quando
+    title: "Only while the competition is a draft"
+
+  - type: shot
+    shot: gara-bozza
+    caption: "A competition in draft: this is the state in which individual round rules are decided."
+
+  - type: text
+    text: >-
+      Per-round setup is decided **before** registrations open. After the start
+      it can no longer be changed, and the reason is simple: players registered
+      knowing the format, and results already recorded were obtained under
+      those rules.
+
+  - type: heading
+    id: cosa_vedono
+    title: "What players see"
+
+  - type: text
+    text: >-
+      Nothing special: the match page always shows the **effective** distance
+      and discipline for that round. Someone playing the third round of a
+      competition whose last round is 9-ball reads «9-ball» on their match,
+      without having to remember the setup.
+
+  - type: note
+    tone: warning
+    title: "Say it out loud anyway"
+    text: >-
+      The app writes it on the match, but a player who sits down expecting
+      8-ball and finds 9-ball is a surprised player all the same. Announcing it
+      before the round starts costs ten seconds.
+
+  - type: faq
+    items:
+      - q: "Can I change the rules of a single round mid-competition?"
+        a: "Only if you decided it before the start. Once the competition is under way the format is frozen."
+      - q: "Do the standings cope with different formats between rounds?"
+        a: "Yes: wins and rack difference add up regardless. Watch out with the «Racks» system though, where rounds of different distances carry different weight."
+      - q: "Does it work for bracket competitions too?"
+        a: "Yes, and there it is even more common: quarters race to 4, semis and final race to 5."

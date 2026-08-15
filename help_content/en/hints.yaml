@@ -1,0 +1,292 @@
+# Micro-help and introductions: content ready for the adaptive interface.
+#
+# THIS FILE IS NOT USED BY THE APP YET. It mirrors `it/hints.yaml` one to one:
+# same ids, same `anchor` values, same screens. Only the wording is translated.
+#
+# The `anchor` values are NOT translated on purpose: they are the contract with
+# the app's templates (`data-help="..."`), and translating them would mean two
+# different anchors for the same control.
+
+hints:
+- id: gara.turni
+  label: Rounds
+  short: The matches of the current round, with the finished rounds below.
+  anchor: gara-turni
+  screens:
+  - admin.competition.gara_detail
+  page: seguire_la_gara
+  section: turni
+- id: gara.classifica
+  label: Standings
+  short: Where you stand right now. Updated at the end of each round, not after every match.
+  anchor: gara-classifica
+  screens:
+  - admin.competition.gara_detail
+  page: seguire_la_gara
+  section: classifica
+- id: gara.distanza
+  label: Distance
+  short: «Race to 4» means the first to win 4 racks takes the match, not that 4 racks are played.
+  anchor: gara-distanza
+  screens:
+  - admin.competition.gara_detail
+  - admin.competition.create_gara_standalone
+  - admin.match.match_detail
+  page: formati_di_gioco
+  section: distanza
+- id: gara.disciplina
+  label: Discipline
+  short: 'The game: 8-ball, 9-ball, 10-ball and the rest. The rules at the table stay the ones you know.'
+  anchor: gara-disciplina
+  screens:
+  - admin.competition.create_gara_standalone
+  page: formati_di_gioco
+  section: discipline
+- id: gara.strategia
+  label: Pairing algorithm
+  short: How pairs are formed each round. Amalfi is the choice for club competitions played over rounds.
+  anchor: gara-strategia
+  screens:
+  - admin.competition.create_gara_standalone
+  - admin.campionato.wizard_start
+  page: abbinamenti
+  section: amalfi
+- id: gara.primo_turno
+  label: First round
+  short: 'In the first round there are no standings yet: pairs come from a draw, from ratings, or from
+    the championship standings.'
+  anchor: gara-primo-turno
+  screens:
+  - admin.competition.create_gara_standalone
+  page: abbinamenti
+  section: primo_turno
+- id: gara.dispari
+  label: If players are odd
+  short: 'With an odd number someone would be left without an opponent: bye, bye with challenge, three-way
+    match or waitlist.'
+  anchor: gara-dispari
+  screens:
+  - admin.competition.create_gara_standalone
+  page: numero_dispari
+  section: quale
+- id: gara.classifica_sistema
+  label: Standings system
+  short: Wins counts matches won, Racks counts total racks, Position counts the finish in the bracket.
+  anchor: gara-classifica-sistema
+  screens:
+  - admin.competition.create_gara_standalone
+  page: classifiche
+  section: vittorie
+- id: gara.anti_rematch
+  label: Avoid rematches
+  short: Stops two players meeting twice in the same competition, whenever that is mathematically possible.
+  anchor: gara-anti-rematch
+  screens:
+  - admin.competition.create_gara_standalone
+  page: abbinamenti
+  section: amalfi
+- id: gara.handicap
+  label: Play with handicap
+  short: Gives the lower-category player a head start in racks. Competitions with a handicap do not move
+    the rating.
+  anchor: gara-handicap
+  screens:
+  - admin.competition.create_gara_standalone
+  page: formati_di_gioco
+  section: handicap
+- id: gara.forfait
+  label: Forfeit handling
+  short: 'What to do with someone who abandons: leave them in the pairings and let them lose by walkover,
+    or take them out entirely.'
+  anchor: gara-forfait
+  screens:
+  - admin.competition.create_gara_standalone
+  page: opzioni_della_gara
+  section: struttura
+- id: gara.numero_esatto
+  label: Exact number of racks
+  short: All the planned racks are played even once the result is settled. Needed when standings count
+    racks, not wins.
+  anchor: gara-numero-esatto
+  screens:
+  - admin.competition.create_gara_standalone
+  page: formati_di_gioco
+  section: numero_esatto
+- id: gara.multiset
+  label: Set play
+  short: 'The match is split into sets: a set is won by reaching the distance, the match by taking enough
+    sets.'
+  anchor: gara-multiset
+  screens:
+  - admin.competition.create_gara_standalone
+  page: formati_di_gioco
+  section: set
+- id: gara.spareggio
+  label: Tie-break
+  short: Up to which position level finishes are settled with an extra contest. Normally the podium.
+  anchor: gara-spareggio
+  screens:
+  - admin.competition.create_gara_standalone
+  page: classifiche
+  section: pari_merito
+- id: gara.tavoli
+  label: Available tables
+  short: Which of the venue's tables you will use tonight. The app assigns them to matches and frees them
+    when matches end.
+  anchor: gara-tavoli
+  screens:
+  - admin.competition.create_gara_standalone
+  - admin.competition.gara_detail
+  page: opzioni_della_gara
+  section: informazioni
+- id: gara.reset_partita
+  label: Reset the match
+  short: Puts the score back to zero keeping the same pair, who replay. Use this when a result is wrong.
+  anchor: gara-reset-partita
+  screens:
+  - admin.competition.gara_detail
+  - admin.match.match_detail
+  page: condurre_la_gara
+  section: correggere
+- id: gara.avvia_turno
+  label: Start next round
+  short: Lights up when every match in the round is finished. Starting it locks the previous round's results.
+  anchor: gara-avvia-turno
+  screens:
+  - admin.competition.gara_detail
+  page: condurre_la_gara
+  section: turni_successivi
+- id: partita.punteggio
+  label: Score
+  short: The racks each player has won so far. It changes as soon as anyone records one, including from
+    your opponent's phone.
+  anchor: partita-punteggio
+  screens:
+  - admin.match.match_detail
+  page: giocare_una_partita
+  section: leggere
+- id: partita.segnapunti
+  label: Scoreboard
+  short: After each rack press the button of whoever won it. The solid button is yours.
+  anchor: partita-segnapunti
+  screens:
+  - admin.match.match_detail
+  page: giocare_una_partita
+  section: segnare
+- id: partita.rack
+  label: Racks played
+  short: 'The scoresheet: who won each rack and the running score. For checking back when something does
+    not add up.'
+  anchor: partita-rack
+  screens:
+  - admin.match.match_detail
+  page: giocare_una_partita
+  section: leggere
+- id: partita.forfait
+  label: Declare forfeit
+  short: 'Only for when the match really is abandoned: it awards the opponent all the remaining racks.'
+  anchor: partita-forfait
+  screens:
+  - admin.match.match_detail
+  page: giocare_una_partita
+  section: forfait
+- id: iscrizione.pulsante
+  label: Register
+  short: Puts you on the list of entrants. You can withdraw as long as registrations stay open.
+  anchor: iscrizione-pulsante
+  screens:
+  - admin.competition.gara_detail
+  - player.gara_detail
+  page: iscriversi_a_una_gara
+  section: iscriversi
+- id: iscrizione.lista_attesa
+  label: Waitlist
+  short: 'You are not shut out, you are queuing: you get in automatically if a place frees up or another
+    player registers.'
+  anchor: iscrizione-lista-attesa
+  screens:
+  - admin.competition.gara_detail
+  - player.gara_detail
+  page: iscriversi_a_una_gara
+  section: lista_attesa
+- id: profilo.rating
+  label: Rating
+  short: 'An estimate of your strength worked out from results: it rises when you win, and more when you
+    beat someone stronger.'
+  anchor: profilo-rating
+  screens:
+  - player.profile
+  - player.view_profile
+  page: profilo_e_statistiche
+  section: rating
+- id: profilo.livello
+  label: Level
+  short: It measures how much you use the app, not how well you play. For ability there is the rating.
+  anchor: profilo-livello
+  screens:
+  - gamification.dashboard
+  - player.profile
+  page: progressi
+  section: xp
+- id: campionato.classifica
+  label: Standings system
+  short: 'It applies to every competition in the championship: you cannot add up competitions that count
+    different things.'
+  anchor: campionato-classifica
+  screens:
+  - admin.campionato.wizard_start
+  - admin.campionato.campionato_detail
+  page: creare_un_campionato
+  section: passo1
+tours:
+- screen: dashboard.dashboard
+  title: Your home
+  intro: 'Everything starts here: the competitions you are registered for, the championships you follow
+    and competitions near you.'
+  audience:
+  - giocatore
+  steps:
+  - title: Your competitions
+    text: 'At the top are the active competitions. The colour of the label says where they are: registrations
+      open, in progress, finished.'
+  - title: Register with one tap
+    text: 'Competitions open for registration have the green button: you do not have to look for them
+      elsewhere.'
+  - title: At the bottom of the screen
+    text: The bar with Dashboard, Venues, Matches, Challenges and Notifications takes you everywhere.
+      On a computer it is the left-hand column.
+- screen: admin.competition.gara_detail
+  title: The competition page
+  intro: 'Everything about a competition is here: who plays whom, how the standings are going and who
+    is taking part.'
+  audience:
+  - giocatore
+  - direttore
+  steps:
+  - hint: gara.turni
+  - hint: gara.classifica
+  - title: Entrants
+    text: Who is taking part and who if anyone is on the waitlist.
+  - hint: gara.distanza
+- screen: admin.match.match_detail
+  title: The scoreboard
+  intro: 'You use this screen while you play: one button per player, pressed after each rack.'
+  audience:
+  - giocatore
+  steps:
+  - hint: partita.segnapunti
+  - hint: partita.punteggio
+  - title: If you make a mistake
+    text: «Undo last rack» removes the last point awarded. You can repeat it.
+  - hint: partita.rack
+- screen: admin.competition.create_gara_standalone
+  title: Creating a competition
+  intro: 'Four steps. If it is your first time, change only the name, date, venue and discipline: the
+    rest is already fine.'
+  audience:
+  - direttore
+  steps:
+  - hint: gara.distanza
+  - hint: gara.strategia
+  - hint: gara.dispari
+  - hint: gara.classifica_sistema

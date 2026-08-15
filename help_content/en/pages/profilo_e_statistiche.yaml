@@ -1,0 +1,124 @@
+title: "Profile and statistics"
+section: account
+kind: approfondimento
+audience: [giocatore]
+minutes: 4
+summary: "What your profile holds, how to read the rating, and where to find the history of competitions you have played."
+screens: [player.profile, player.history, player.edit_profile, player.dashboard]
+related: [privacy_e_dati, progressi]
+
+blocks:
+  - type: text
+    text: >-
+      Your profile is your card: what others see of you and what the app has
+      recorded of your matches. You reach it by tapping the initial of your
+      name at the top right.
+
+  - type: shot
+    shot: profilo
+    caption: "The personal profile: details, rating and statistics of matches played."
+
+  - type: heading
+    id: cosa_contiene
+    title: "What it holds"
+
+  - type: options
+    items:
+      - name: "Username"
+        text: "The name you appear under in the standings. It stays as chosen at sign-up."
+      - name: "Email"
+        text: "Used for password recovery and notifications. Editable, with a fresh verification."
+      - name: "Town"
+        text: "Optional: it only serves to show you nearby competitions first. Never your precise location."
+      - name: "Team"
+        text: >-
+          Free text, written by you. Organisers use it when a competition runs
+          a bracket and wants to keep team-mates from meeting straight away.
+      - name: "Rating"
+        text: "A numeric estimate of your strength, worked out from results."
+        hint: profilo.rating
+      - name: "Statistics"
+        text: "Matches played, won, lost, racks and percentages."
+
+  - type: heading
+    id: rating
+    title: "How to read the rating"
+
+  - type: text
+    text: >-
+      The rating starts from a middling value and moves with every match: it
+      rises when you win, falls when you lose, and moves **more** when the
+      result is unexpected. Beating a much stronger opponent gains a lot;
+      losing to a much weaker one costs as much.
+
+  - type: note
+    tone: info
+    title: "Two ratings, not one"
+    text: >-
+      There is a **competitive** rating, which counts official competitions
+      only, and an **overall** one, which also includes friendly matches.
+      Wherever the rating appears you can switch between them with one tap:
+      your choice is remembered across all pages.
+
+  - type: text
+    text: >-
+      Competitions **with a handicap** do not move the rating: the scores are
+      altered by design, and using them to measure players' strength would
+      distort it.
+
+  - type: heading
+    id: storico
+    title: "The history"
+
+  - type: shot
+    shot: storico
+    caption: "The history: every competition you have taken part in, with your finishing position and results."
+
+  - type: text
+    text: >-
+      The history collects every competition you took part in, with your
+      finishing position and the matches you played. It is the place to find an
+      evening from months ago.
+
+  - type: text
+    text: >-
+      If you would rather not show a particular competition or match in your
+      public profile you can hide it: it stays in the official standings —
+      those are untouchable — but disappears from your shop window. See
+      [Privacy and data](/aiuto/account/privacy_e_dati).
+
+  - type: heading
+    id: profili_altrui
+    title: "Other people's profiles"
+
+  - type: text
+    text: >-
+      Tapping a player's name in the standings opens their public profile:
+      you will see what they chose to show. Email, phone and personal settings
+      are never visible to others.
+
+  - type: heading
+    id: modificare
+    title: "Editing your profile"
+
+  - type: steps
+    items:
+      - title: "Open your profile and tap «Edit»"
+        text: "From there you change email, town, team and the rest."
+      - title: "If you change your email, confirm it"
+        text: >-
+          You will get a verification message at the new address. Until you
+          confirm it, password recovery still goes through the old one.
+      - title: "The password has its own entry"
+        text: "It asks for your current password: that is the guarantee it really is you changing it."
+
+  - type: faq
+    items:
+      - q: "Why did my rating fall even though I won?"
+        a: "It does not: winning never lowers the rating. If the number looks different, check you have not switched between competitive and overall."
+      - q: "Can I change my username?"
+        a: "No: it appears in standings that are already published, and changing it would make past results unrecognisable."
+      - q: "Do friendly matches show in my profile?"
+        a: "Yes, in the overall statistics. The competitive rating excludes them."
+      - q: "Who can see my email address?"
+        a: "No other player. It is stored encrypted and is only used for the app's own messages."

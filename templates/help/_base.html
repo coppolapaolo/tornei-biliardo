@@ -1,0 +1,21 @@
+{# templates/help/_base.html — guscio comune del mini-sito di aiuto.
+
+   Estende `base.html` come qualunque altra pagina dell'app: l'aiuto non e' un
+   sito a parte con una sua testata. Chi lo apre da dentro l'app deve
+   ritrovarsi nello stesso posto, con la stessa barra laterale e la stessa
+   navigazione. Cambia solo cio' che serve a un documento, e sta in
+   `help-7c.css`. Le macro condivise stanno in `help/_ui.html`. #}
+{% extends "base.html" %}
+
+{% block head_extra %}
+<link href="{{ url_for('static', filename='css/help-7c.css') }}?v={{ config.ASSET_VERSION }}" rel="stylesheet">
+{% endblock %}
+
+{% block page_back %}
+{# Su mobile la freccia risale di un livello dentro la guida, non alla home
+   dell'app: dentro un documento e' il gesto atteso. #}
+<a class="c7-head__back d-lg-none" href="{{ back_href or url_for('help.index') }}"
+   aria-label="{{ _('Indietro') }}">
+    <i class="fas fa-arrow-left"></i>
+</a>
+{% endblock %}

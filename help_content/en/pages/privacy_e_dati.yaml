@@ -1,0 +1,106 @@
+title: "Privacy and data"
+section: account
+kind: approfondimento
+audience: [giocatore]
+minutes: 4
+summary: "What others see of you, how to hide individual results, how to download your data and how to close your account."
+screens: [player.privacy_settings, player.delete_account, main.privacy_policy]
+related: [profilo_e_statistiche]
+
+blocks:
+  - type: text
+    text: >-
+      Tornei Biliardo collects few things: what it takes to let you in
+      (username, email, password) and what you generate by playing
+      (registrations, results, statistics). Email and phone are stored
+      **encrypted**.
+
+  - type: shot
+    shot: privacy-impostazioni
+    caption: "Privacy settings: what to show in your public profile."
+
+  - type: heading
+    id: cosa_vedono
+    title: "What others see"
+
+  - type: options
+    items:
+      - name: "Always visible"
+        text: >-
+          Your username and your sporting results in the standings of
+          competitions you took part in. Standings are public by nature: they
+          are the outcome of a contest.
+      - name: "Visible if you decide so"
+        text: "Town, team, personal statistics and history in your public profile."
+      - name: "Never visible to others"
+        text: "Email, phone, password and all your settings."
+
+  - type: heading
+    id: nascondere
+    title: "Hiding individual results"
+
+  - type: text
+    text: >-
+      From your history you can hide a competition, a single match or a whole
+      championship from **your profile**. It is a choice about your own shop
+      window.
+
+  - type: note
+    tone: warning
+    title: "Official standings do not change"
+    text: >-
+      Hiding a result removes it from your profile, **not** from the
+      competition's standings: those are the record of a contest other people
+      took part in, and cannot be rewritten by one person. Anyone opening the
+      competition page will still see your result.
+
+  - type: heading
+    id: scaricare
+    title: "Downloading your data"
+
+  - type: text
+    text: >-
+      From your profile you can ask for a copy of your data. There are two
+      routes: a **CSV file** with your results history, which opens in any
+      spreadsheet, and a **full export** with everything the app has recorded
+      about you, prepared and made available for download.
+
+  - type: heading
+    id: chiudere
+    title: "Closing your account"
+
+  - type: text
+    text: >-
+      From the profile menu, **Delete account**. Deletion works by
+      **anonymisation**: your personal details are removed, while your sporting
+      results stay in the historical standings without being traceable to you.
+
+  - type: note
+    tone: info
+    title: "Why not everything is erased"
+    text: >-
+      Because standings with a hole in them are no longer standings: other
+      players' results depend on the matches they played against you.
+      Anonymisation removes your name and leaves everyone else's sporting
+      history standing.
+
+  - type: heading
+    id: cookie
+    title: "Cookies"
+
+  - type: text
+    text: >-
+      The site uses technical cookies, needed to keep you logged in, protect
+      forms and remember your chosen language. The full detail, including any
+      analytics tools, is in the [privacy and cookie notice](/privacy).
+
+  - type: faq
+    items:
+      - q: "Can I take my name out of a set of standings?"
+        a: "Not while the account is active: standings are the outcome of a public contest. Closing your account replaces the name and the results stay anonymous."
+      - q: "Who can see my email address?"
+        a: "No other player, not even competition directors. It is stored encrypted and used only for the app's own messages."
+      - q: "What is the difference between the CSV and the full export?"
+        a: "The CSV is your results history, handy to read. The full export covers everything the app has recorded about you, and is the one that answers a data access request."
+      - q: "Can I change my mind after deleting my account?"
+        a: "No: anonymisation is final and cannot be reversed. You can create a new account, but it starts from scratch."

@@ -1,0 +1,130 @@
+title: "Challenges"
+section: giocare
+kind: approfondimento
+audience: [giocatore]
+minutes: 3
+summary: "Skill drills you do on your own: for practice, for unlocking milestones, and — inside a competition — for settling tie-breaks."
+screens: [challenge.challenge_catalog, challenge.challenge_detail, challenge.start_attempt,
+  challenge.attempt_detail, challenge.create_challenge, challenge.edit_challenge,
+  challenge.challenge_statistics, player.challenge_detail]
+related: [progressi, numero_dispari]
+
+blocks:
+  - type: text
+    text: >-
+      A challenge is a drill with fixed rules: a ball layout to pot, a shot to
+      repeat, a target to reach in a set number of attempts. You play it **on
+      your own**, and the outcome is a score.
+
+  - type: heading
+    id: catalogo
+    title: "The catalogue"
+
+  - type: text
+    text: >-
+      The **Challenges** section gathers every drill available, with its
+      description, the picture of the layout and the scoring rules. You can
+      keep some as favourites to find them quickly.
+
+  - type: shot
+    shot: challenge-catalogo
+    caption: "The catalogue: each drill has its picture and scoring type."
+
+  - type: steps
+    items:
+      - title: "Pick a challenge"
+        text: "Open its page and read the rules: how the balls are set up and how the score is counted."
+      - title: "Tap «Start attempt»"
+        text: "From then on the attempt is open and the app waits for the result."
+      - title: "Play it and record the score"
+        text: "At the end you enter what you did. The attempt goes into your history."
+
+  - type: heading
+    id: due_tipi
+    title: "Two ways of counting"
+
+  - type: options
+    items:
+      - name: "Scored"
+        values: "from 0 to N"
+        text: >-
+          It counts how much you did: ten shots, a point for each success. This
+          is the type used for tie-breaks and for replacing an X by walkover,
+          because it produces a comparable number.
+      - name: "Pass or fail"
+        text: >-
+          There is no score: either you do it or you do not. Fine for practice,
+          not for deciding standings.
+
+  - type: heading
+    id: in_gara
+    title: "Challenges inside a competition"
+
+  - type: text
+    text: >-
+      The director can put challenges into a competition. They serve two very
+      different purposes.
+
+  - type: options
+    items:
+      - name: "Instead of an X by walkover"
+        text: >-
+          When the number of players is odd, whoever is left without an
+          opponent plays a challenge instead of sitting out: the score counts
+          towards the round standings. It is fairer than awarding a win, and
+          more fun than watching.
+      - name: "As a tie-break"
+        text: >-
+          At the end of a competition, if two or more players are level in the
+          positions that matter, it can be settled with a challenge: the best
+          score finishes ahead.
+
+  - type: note
+    tone: info
+    title: "Spot Shot Rally"
+    text: >-
+      This is the challenge most often used for tie-breaks: a series of shots
+      from a fixed position, with a score that accumulates. The highest total
+      wins the tie-break.
+
+  - type: heading
+    id: crearle
+    title: "Creating new ones (directors)"
+
+  - type: text
+    text: >-
+      A competition director can add challenges to the catalogue: description,
+      a picture of the ball layout and the scoring type.
+
+  - type: shot
+    shot: challenge-nuova
+    caption: "The form for creating a challenge."
+
+  - type: note
+    tone: tip
+    text: >-
+      The picture is the part that matters: a description in words of where the
+      balls go gets interpreted differently by everyone. A photo of the table
+      set up settles it.
+
+  - type: heading
+    id: perche
+    title: "What they are for, in practice"
+
+  - type: list
+    items:
+      - "**Practising** a specific shot and measuring your progress over time."
+      - "**Not sitting out** when an odd number leaves someone without an opponent."
+      - "**Settling level finishes** without having to replay a whole match."
+      - "**Unlocking milestones** and earning experience points (see [Your progress](/aiuto/account/progressi))."
+
+  - type: faq
+    items:
+      - q: "I cannot see the Challenges section."
+        a: "It is a feature that unlocks as you use the platform, like the Matches section. If it is not there yet, it will be."
+      - q: "Can I repeat the same challenge?"
+        a: "Yes, except when it is part of a competition: there the number of attempts is set by the director."
+      - q: "Who checks that the score I claim is true?"
+        a: "Outside competitions, nobody: it is practice, and your word counts. Inside a competition the director validates the results."
+      - q: "Do challenges count towards the rating?"
+        a: "No. The rating measures matches against opponents; challenges feed your personal statistics and progress."

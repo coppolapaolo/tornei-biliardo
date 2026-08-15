@@ -1,0 +1,49 @@
+# English alt text for the screenshots.
+#
+# The technical part of the manifest (route, user, viewport) is shared and
+# lives in `help_content/screenshots.yaml`; only the wording is per language,
+# because a caption is what someone who cannot see the picture reads instead.
+#
+# Pages may override these with their own `caption:` on a block. What is here
+# is the fallback used when they do not.
+
+home-pubblica: "The Tornei Biliardo home page as seen by someone without an account: live competitions and the ones open for registration."
+registrazione: "The sign-up form: username, email and password."
+gare-aperte: "The public list of competitions, each with its status."
+campionati-pubblici: "The list of championships in progress."
+dashboard-giocatore: "A player's home: the competitions you are registered for, the championships, and competitions near you."
+gara-iscrizione: "A competition open for registration: the «Register» button is at the bottom of the card."
+gara-iscritto: "The same competition after registering: «Your registration» appears at the top, along with the list of entrants."
+gara-turni: "A competition in progress as a player sees it: the matches of the round, with the results already recorded."
+gara-classifica: "The standings of a finished competition, ordered by wins and rack difference."
+partita-segnapunti: "The match page: score at the top, scoreboard in the middle, list of racks played below."
+partita-rack: "The two scoreboard buttons: you press the one belonging to whoever won the rack."
+profilo: "The personal profile with statistics and rating."
+storico: "The history of competitions you have taken part in."
+notifiche: "The list of notifications received."
+progressi: "The progress page: level, experience points, milestones and streaks."
+match-individuali: "The friendly matches section, outside official competitions."
+proposta-nuova: "The form for proposing a friendly match: opponent, venue, date and format."
+sale-biliardo: "The list of registered billiard venues."
+privacy-impostazioni: "Privacy settings: what to show to other players."
+dashboard-direttore: "A competition director's home: the competitions they manage and the buttons to create new ones."
+campionato-wizard: "First step of creating a championship: name, number of competitions, standings and pairings."
+gara-nuova: "The form for creating a stand-alone competition, outside any championship."
+gara-gestione: "A competition as the director sees it: the «Management» panel with the button to start the next round."
+gara-iscritti: "The list of entrants as the director sees it, with the option to add or remove a player."
+campionato-gestione: "A championship page: its competitions, the overall standings and the settings."
+challenge-catalogo: "The challenge catalogue: the skill drills available, each with the ball layout."
+challenge-nuova: "The form for creating a challenge: description, picture of the layout and scoring type."
+classifiche-piattaforma: "The platform leaderboards: experience points, levels and streaks of all players."
+obiettivi: "The periodic goals: what to do this week and how far along you are."
+serie: "Streaks: how many days in a row you have played and when you risk losing the streak."
+sala-dettaglio: "A venue page: address, tables, contacts and who plays there."
+disponibilita: "Your availability: which venues and which days you are willing to play."
+trova-giocatori: "Searching for opponents among players who declared the same availability."
+statistiche-amichevoli: "Statistics for friendly matches, kept separate from competition ones."
+richieste-gestore: "The status of your requests to become the manager of a venue."
+tabellone: "The knockout bracket: winners move up, losers are out."
+gara-tabellone-dettaglio: "A knockout competition: its page links through to the bracket."
+gara-bozza: "A competition still in draft: it exists, but nobody can register until registrations are opened."
+gara-squadre: "The teams panel in competition management: which teams exist and how many entrants belong to each."
+gara-turni-config: "Per-round setup: each round can have its own discipline and distance."

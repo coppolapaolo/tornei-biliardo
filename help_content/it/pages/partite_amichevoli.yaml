@@ -1,0 +1,134 @@
+title: "Partite amichevoli"
+section: giocare
+kind: tutorial
+audience: [giocatore]
+minutes: 4
+summary: "Fuori dalle gare ufficiali puoi proporre una partita a un altro giocatore, accordarvi su luogo e ora, e registrare il risultato."
+screens: [individual_match.dashboard, individual_match.create_proposal, individual_match.match_list,
+  individual_match.match_detail, individual_match.proposal_list, individual_match.proposal_detail,
+  individual_match.rematch, individual_match.user_statistics]
+related: [giocare_una_partita, profilo_e_statistiche]
+
+blocks:
+  - type: text
+    text: >-
+      Non tutto passa dalle gare. Se vuoi giocare due partite con un amico e
+      tenerne traccia — nelle statistiche, nel rating, nei progressi — puoi
+      farlo dalla sezione **Match**.
+
+  - type: shot
+    shot: match-individuali
+    caption: "La sezione delle partite amichevoli: le proposte in attesa, quelle ricevute e le partite in programma."
+
+  - type: heading
+    id: proporre
+    title: "Proporre una partita"
+
+  - type: steps
+    items:
+      - title: "Apri Match e tocca «Nuova proposta»"
+        text: "Su telefono, «Match» è nella barra in fondo allo schermo."
+      - title: "Scegli l'avversario"
+        text: >-
+          Cerca il giocatore per nome. Puoi anche lasciare la proposta
+          **aperta**: la vedranno più giocatori e la prende chi risponde per
+          primo.
+        shot: proposta-nuova
+      - title: "Indica dove e quando"
+        text: >-
+          Sala, data e ora. Se la sala è fra quelle registrate nell'app,
+          sceglila dall'elenco: comparirà con indirizzo e numero di tavoli.
+      - title: "Scegli il formato"
+        text: >-
+          Disciplina (palla 8, palla 9…) e distanza, cioè a quanti rack si
+          vince. Sono le stesse scelte di una gara, spiegate in [Formati di
+          gioco](/aiuto/approfondimenti/formati_di_gioco).
+      - title: "Invia"
+        text: >-
+          L'avversario riceve una notifica e può accettare o rifiutare. Finché
+          non risponde, la proposta resta «in attesa» e puoi ritirarla.
+
+  - type: heading
+    id: rispondere
+    title: "Rispondere a una proposta"
+
+  - type: text
+    text: >-
+      Quando qualcuno ti propone una partita ricevi una notifica. Aprendola
+      trovi chi propone, dove, quando e con che formato, e due pulsanti:
+      **Accetta** o **Rifiuta**. Accettando, la partita entra nella tua lista
+      delle prossime.
+
+  - type: note
+    tone: info
+    title: "Le proposte scadono"
+    text: >-
+      Ogni proposta ha una scadenza, di norma poche ore prima dell'orario
+      previsto. Passata quella, decade da sola: serve a non lasciare in sospeso
+      inviti a cui nessuno ha risposto.
+
+  - type: heading
+    id: giocare
+    title: "Giocare e registrare il risultato"
+
+  - type: text
+    text: >-
+      Al momento di giocare, apri la partita e premi **Inizia**. Il segnapunti
+      è identico a quello delle gare: un tasto per giocatore, si preme dopo
+      ogni rack. Vedi [Giocare una
+      partita](/aiuto/giocare/giocare_una_partita).
+
+  - type: text
+    text: >-
+      A fine partita serve la **conferma di entrambi**. È la differenza
+      principale rispetto alle gare: lì c'è un direttore che garantisce il
+      risultato, qui garantite voi due. Finché l'avversario non conferma, il
+      risultato resta in attesa; se non è d'accordo può rifiutarlo e si
+      corregge.
+
+  - type: heading
+    id: disponibilita
+    title: "Farsi trovare"
+
+  - type: text
+    text: >-
+      Se non hai in mente nessuno in particolare, puoi dichiarare **dove e
+      quando sei disponibile**: in quali sale giochi di solito e in che giorni
+      e orari. Gli altri giocatori disponibili nelle stesse sale ti vedranno
+      quando cercano un avversario.
+
+  - type: shot
+    shot: sale-biliardo
+    caption: "L'elenco delle sale registrate: da qui si dichiara in quali sei disponibile."
+
+  - type: note
+    tone: tip
+    text: >-
+      La disponibilità è del tutto facoltativa e si può togliere in qualsiasi
+      momento. Indichi le sale e le fasce orarie, mai la tua posizione precisa.
+
+  - type: heading
+    id: statistiche
+    title: "Contano nelle statistiche?"
+
+  - type: text
+    text: >-
+      Sì, ma separatamente. Nel tuo profilo il rating ha due modalità:
+      **competitivo** (solo gare ufficiali) e **globale** (gare più
+      amichevoli). Puoi passare dall'una all'altra con un tocco. Le classifiche
+      delle gare, invece, non sono toccate dalle amichevoli.
+
+  - type: shot
+    shot: statistiche-amichevoli
+    caption: "Le statistiche delle amichevoli: partite, vittorie e avversari più frequenti, contate a parte."
+
+  - type: faq
+    items:
+      - q: "Non vedo la sezione Match."
+        a: "È una funzione che si sblocca con l'uso della piattaforma. Se non compare, continua a giocare qualche gara: comparirà."
+      - q: "L'avversario non conferma il risultato."
+        a: "La partita resta in attesa. Sollecitalo: senza la conferma di entrambi il risultato non entra nelle statistiche."
+      - q: "Posso proporre una partita a chi non è iscritto all'app?"
+        a: "No, l'avversario deve avere un account. Puoi invitarlo a registrarsi: è gratuito."
+      - q: "Che differenza c'è con una gara?"
+        a: "Un'amichevole è una partita sola, senza turni, senza classifica e senza direttore. Una gara è un evento organizzato con più turni e una classifica finale."

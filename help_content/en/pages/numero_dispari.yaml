@@ -1,0 +1,153 @@
+title: "When the number of players is odd"
+section: approfondimenti
+kind: approfondimento
+audience: [tutti]
+minutes: 4
+summary: "With an odd number of entrants somebody would be left without an opponent. The four possible answers and which to choose."
+related: [abbinamenti, challenge, gestire_le_iscrizioni]
+
+blocks:
+  - type: text
+    text: >-
+      If there are nine players, each round forms four pairs and one person is
+      left out. The problem comes up every round, and has to be decided before
+      the competition starts. The app offers four answers.
+
+  - type: note
+    tone: info
+    title: "It is not always the same person left out"
+    text: >-
+      Whichever answer you choose, the app passes the burden around: whoever
+      was left without an opponent in one round does not stay that way in the
+      following ones, as long as there are alternatives.
+
+  - type: heading
+    id: riposo
+    title: "1. Bye — «X by walkover»"
+
+  - type: text
+    text: >-
+      The player does not play and receives a **win by walkover** with zero
+      rack difference. They neither gain nor lose ground against those who
+      played: they take a win like every winner, but without a margin.
+
+  - type: list
+    items:
+      - "**For**: simple, immediate, no extra time."
+      - "**Against**: somebody sits out for a round."
+      - "**Use with** the «Wins» standings system."
+
+  - type: note
+    tone: warning
+    text: >-
+      With the «Racks» system a plain bye **does not work**: whoever does not
+      play would collect zero racks and be heavily penalised. In that case use
+      the bye with challenge.
+
+  - type: heading
+    id: riposo_challenge
+    title: "2. Bye with challenge"
+
+  - type: text
+    text: >-
+      Whoever is left without an opponent plays a **skill drill** instead of
+      sitting out. The score counts towards the standings: with the «Racks»
+      system it becomes the racks credited, with «Wins» it becomes the rack
+      difference that goes with the walkover win.
+
+  - type: list
+    items:
+      - "**For**: nobody sits out, and the round stays fair even on racks."
+      - "**Against**: the competition needs at least one challenge configured."
+
+  - type: heading
+    id: trio
+    title: "3. Trio — a three-way match"
+
+  - type: text
+    text: >-
+      Instead of leaving one out, three players play a mini round-robin
+      together: each faces the other two in single racks.
+
+  - type: options
+    title: "How a trio works"
+    items:
+      - name: "With distance 2 or 3"
+        values: "3 racks in total"
+        text: "A single lap: A against B, A against C, B against C."
+      - name: "With distance 4 or 5"
+        values: "6 racks in total"
+        text: "Two laps: the same three contests repeated."
+      - name: "Who wins"
+        text: >-
+          Whoever won the most racks. If two or more end level at the top,
+          nobody takes the win and only rack differences remain.
+
+  - type: list
+    items:
+      - "**For**: everybody plays, and a three-way match goes down well."
+      - "**Against**: it lasts longer than a normal match and occupies a table for longer."
+      - "**Only available** with distances from 2 to 7, and not in bracket competitions."
+
+  - type: heading
+    id: lista_attesa
+    title: "4. Waitlist — even numbers only"
+
+  - type: text
+    text: >-
+      The competition accepts **only** an even number of entrants. Whoever
+      registers and makes the count odd stays on the waitlist until another
+      person arrives: then they get in together.
+
+  - type: list
+    items:
+      - "**For**: the problem never arises, every round has perfect pairs."
+      - "**Against**: somebody can be shut out of the competition, not just of a round."
+
+  - type: note
+    tone: info
+    title: "It works the other way too"
+    text: >-
+      If someone withdraws and the count becomes odd, the last person to
+      register goes back on the waitlist. It is automatic and the players are
+      notified.
+
+  - type: heading
+    id: quale
+    title: "Which to choose"
+
+  - type: options
+    items:
+      - name: "Normal evening, standings on wins"
+        values: "Bye"
+        text: "The default choice: it does not lengthen the evening and complicates nothing."
+      - name: "Standings on racks"
+        values: "Bye with challenge"
+        text: "Effectively compulsory: a plain bye would distort the standings."
+      - name: "Close-knit group, time to spare"
+        values: "Trio"
+        text: "Nobody sits out and it is the most enjoyable. It costs one extra table-hour."
+      - name: "Far more entrants than places"
+        values: "Waitlist"
+        text: "Only makes sense when exclusions are unavoidable anyway."
+
+  - type: heading
+    id: eliminazione
+    title: "In knockout tournaments"
+
+  - type: text
+    text: >-
+      In brackets the problem solves itself: if the entrants are not a power of
+      two, some go straight through to the next round without playing the
+      first. It is standard bracket behaviour and needs no setting.
+
+  - type: faq
+    items:
+      - q: "I got a win without playing. Is that a mistake?"
+        a: "No: that is the X by walkover, and it goes in turn to whoever is left without an opponent. It counts as a win with zero rack difference."
+      - q: "Why am I on the waitlist when there are still places?"
+        a: "Because the competition needs an even number of players and your registration would make it odd. You will get in as soon as someone else registers."
+      - q: "Trio is not selectable."
+        a: "It is only possible with distances from 2 to 7 and not in bracket competitions. If the distance is outside that range the option stays off."
+      - q: "In a trio I won two racks out of three. Did I win the match?"
+        a: "Yes, if nobody else won as many. If there is a tie at the top score, nobody takes the win."

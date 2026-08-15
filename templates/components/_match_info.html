@@ -64,13 +64,19 @@
         {% endif %}
     </dl>
 
+    {# `data-help-capture-hide`: blocco di solo sviluppo, escluso dalle
+       schermate del mini-sito di aiuto (vedi HIDE_CSS in
+       scripts/help_docs/capture_screenshots.py). Senza, la guida mostrerebbe
+       comandi e dati che in produzione non esistono. #}
     {% if debug_info.debug_mode %}
-    <hr class="c7-divider">
-    <div class="c7-kicker">DEBUG</div>
-    <div class="text-muted c7-num" style="font-size: 11px; line-height: 1.7; margin-top: 6px;">
-        match {{ match.id }} · {{ match.status }}<br>
-        p1 {{ match.player1_id }} · p2 {{ match.player2_id }} · win {{ match.winner_id }}<br>
-        bye {{ match.is_bye }} · rack {{ racks|length }}
+    <div data-help-capture-hide>
+        <hr class="c7-divider">
+        <div class="c7-kicker">DEBUG</div>
+        <div class="text-muted c7-num" style="font-size: 11px; line-height: 1.7; margin-top: 6px;">
+            match {{ match.id }} · {{ match.status }}<br>
+            p1 {{ match.player1_id }} · p2 {{ match.player2_id }} · win {{ match.winner_id }}<br>
+            bye {{ match.is_bye }} · rack {{ racks|length }}
+        </div>
     </div>
     {% endif %}
 </section>

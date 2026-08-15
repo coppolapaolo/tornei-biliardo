@@ -65,6 +65,19 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # un account — è la schermata che si condivide durante un torneo.
     "admin.competition.gara_bracket": {"anonimo", "player", "director"},
     "i18n.set_language": {"anonimo", "player", "director"},
+    # Mini-sito di aiuto: pubblico per costruzione. Chi deve ancora decidere se
+    # registrarsi è il primo destinatario della guida, quindi tenerla dietro il
+    # login la renderebbe inutile proprio a chi serve di più.
+    "help.index": {"anonimo", "player", "director"},
+    "help.section": {"anonimo", "player", "director"},
+    "help.page": {"anonimo", "player", "director"},
+    "help.search": {"anonimo", "player", "director"},
+    # Catalogo dei micro-aiuti e API per schermata: predisposizione per
+    # l'interfaccia adattiva, materiale di lavoro per chi scrive la guida.
+    # `set()` esplicito = admin-only e deciso, non dimenticato: si aprono ai
+    # player quando l'interfaccia adattiva li consumerà davvero.
+    "help.hints_index": set(),
+    "help.screen_api": set(),
     # === Logged-in (player or director) ===
     "auth.logout": {"player", "director"},
     "dashboard.dashboard": {"player", "director"},
@@ -189,7 +202,6 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "admin.competition.bulk_reset_round_matches": {"director"},
     "admin.competition.reset_match_advanced": {"director"},
     "admin.competition.terminate_gara": {"director"},
-    "admin.competition.round_management_overview": {"director"},
     "admin.competition.get_round_status": {"director"},
     "admin.competition.list_round_configs": {"director"},
     "admin.competition.upsert_round_config": {"director"},
@@ -240,9 +252,15 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "admin.competition.trio_forfeit": {"director"},
     "admin.competition.trio_reset": {"director"},
     "admin.competition.trio_set_result": {"director"},
-    # User listing (so a director can find players to enroll manually)
-    "admin.user.users_list": {"director"},
-    "admin.user.user_detail": {"director"},
+    # User listing and user records: admin-only. Erano listati come
+    # {"director"} con la motivazione "so a director can find players to enroll
+    # manually", che non regge su nessuno dei due fronti: entrambe le route
+    # portano @admin_required e a un direttore rispondono 403, e per iscrivere
+    # qualcuno a mano il direttore usa il menu a tendina nella pagina della gara
+    # (`_gara_inscriptions.html`), non l'elenco utenti. La matrice prometteva
+    # una visibilità che il decoratore nega: 200 atteso, 403 reale.
+    "admin.user.users_list": set(),
+    "admin.user.user_detail": set(),
     # User management actions: admin-only (explicit empty set = documents the
     # decision; admin bypasses the matrix). Directors must NOT see these buttons.
     "admin.user.anonymize_user": set(),

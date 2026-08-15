@@ -1,0 +1,294 @@
+# Micro-aiuto e presentazioni: contenuti pronti per l'interfaccia adattiva.
+#
+# QUESTO FILE NON È ANCORA USATO DALL'APP. È la predisposizione per la guida
+# contestuale prevista dal progetto: alla prima visita di una schermata una
+# breve presentazione delle cose principali, poi per un certo periodo una
+# piccola "?" accanto ai comandi, che sparisce man mano che l'utente li usa.
+#
+# Il codice che mostra tutto questo verrà dopo. I testi vengono prima di
+# proposito: sono la parte che richiede di conoscere il dominio e di essere
+# riletta con calma, ed è la parte che, scritta di corsa insieme al codice,
+# esce male. Sono già visibili e verificabili in /aiuto/microaiuto, e
+# interrogabili in JSON da /aiuto/api/schermata/<endpoint>.
+#
+# Campi di `hints`:
+#   id       nome puntato, es. gara.distanza (identifica il suggerimento)
+#   label    titolo del fumetto: il nome del comando come lo chiama l'utente
+#   short    una o due frasi, massimo 220 caratteri. Se serve più spazio,
+#            la spiegazione lunga va nella pagina indicata da `page`.
+#   anchor   valore che l'elemento dell'interfaccia esporrà in `data-help`.
+#            È il contratto fra questo file e i template dell'app.
+#   screens  endpoint Flask in cui il comando compare
+#   page     pagina della guida che lo spiega per esteso
+#   section  ancora dentro quella pagina (deve essere un `heading` esistente)
+#
+# Campi di `tours`: `screen`, `title`, `intro`, `audience`, `steps`. Un passo
+# che indica `hint:` eredita da lì titolo, testo e ancora — non riscriverli, o
+# le due versioni divergeranno alla prima modifica.
+
+hints:
+  # --- Pagina della gara ---------------------------------------------------
+  - id: gara.turni
+    label: "Turni"
+    short: "Le partite del turno in corso, e sotto quelle dei turni già giocati."
+    anchor: gara-turni
+    screens: [admin.competition.gara_detail]
+    page: seguire_la_gara
+    section: turni
+
+  - id: gara.classifica
+    label: "Classifica"
+    short: "Come sei messo adesso. Si aggiorna alla fine di ogni turno, non dopo ogni partita."
+    anchor: gara-classifica
+    screens: [admin.competition.gara_detail]
+    page: seguire_la_gara
+    section: classifica
+
+  - id: gara.distanza
+    label: "Distanza"
+    short: "«Al 4» vuol dire che vince chi arriva prima a 4 rack vinti, non che si giocano 4 rack."
+    anchor: gara-distanza
+    screens:
+      - admin.competition.gara_detail
+      - admin.competition.create_gara_standalone
+      - admin.match.match_detail
+    page: formati_di_gioco
+    section: distanza
+
+  - id: gara.disciplina
+    label: "Disciplina"
+    short: "Il gioco: palla 8, palla 9, palla 10 e gli altri. Le regole al tavolo restano quelle che conoscete."
+    anchor: gara-disciplina
+    screens: [admin.competition.create_gara_standalone]
+    page: formati_di_gioco
+    section: discipline
+
+  - id: gara.strategia
+    label: "Algoritmo di abbinamento"
+    short: "Come si formano le coppie a ogni turno. Amalfi è la scelta per le gare a turni di circolo."
+    anchor: gara-strategia
+    screens:
+      - admin.competition.create_gara_standalone
+      - admin.campionato.wizard_start
+    page: abbinamenti
+    section: amalfi
+
+  - id: gara.primo_turno
+    label: "Primo turno"
+    short: "Al primo turno non c'è ancora una classifica: le coppie si formano a sorteggio, per rating o per classifica di campionato."
+    anchor: gara-primo-turno
+    screens: [admin.competition.create_gara_standalone]
+    page: abbinamenti
+    section: primo_turno
+
+  - id: gara.dispari
+    label: "Se i giocatori sono dispari"
+    short: "Con un numero dispari uno resterebbe senza avversario: riposo, riposo con challenge, partita a tre o lista d'attesa."
+    anchor: gara-dispari
+    screens: [admin.competition.create_gara_standalone]
+    page: numero_dispari
+    section: quale
+
+  - id: gara.classifica_sistema
+    label: "Sistema di classifica"
+    short: "Vittorie conta le partite vinte, Rack i rack totali, Posizione il piazzamento nel tabellone."
+    anchor: gara-classifica-sistema
+    screens: [admin.competition.create_gara_standalone]
+    page: classifiche
+    section: vittorie
+
+  - id: gara.anti_rematch
+    label: "Evita reincontri"
+    short: "Impedisce che due giocatori si affrontino due volte nella stessa gara, quando è matematicamente possibile."
+    anchor: gara-anti-rematch
+    screens: [admin.competition.create_gara_standalone]
+    page: abbinamenti
+    section: amalfi
+
+  - id: gara.handicap
+    label: "Gioco con handicap"
+    short: "Dà un vantaggio in rack al giocatore di categoria inferiore. Le gare con handicap non muovono il rating."
+    anchor: gara-handicap
+    screens: [admin.competition.create_gara_standalone]
+    page: formati_di_gioco
+    section: handicap
+
+  - id: gara.forfait
+    label: "Gestione forfait"
+    short: "Cosa fare di chi abbandona: lasciarlo negli abbinamenti facendogli perdere a tavolino, o toglierlo del tutto."
+    anchor: gara-forfait
+    screens: [admin.competition.create_gara_standalone]
+    page: opzioni_della_gara
+    section: struttura
+
+  - id: gara.numero_esatto
+    label: "Numero esatto di rack"
+    short: "Si giocano tutti i rack previsti anche a risultato deciso. Serve quando la classifica conta i rack, non le vittorie."
+    anchor: gara-numero-esatto
+    screens: [admin.competition.create_gara_standalone]
+    page: formati_di_gioco
+    section: numero_esatto
+
+  - id: gara.multiset
+    label: "Partita a set"
+    short: "La partita si divide in set: si vince un set arrivando alla distanza, e la partita conquistando abbastanza set."
+    anchor: gara-multiset
+    screens: [admin.competition.create_gara_standalone]
+    page: formati_di_gioco
+    section: set
+
+  - id: gara.spareggio
+    label: "Spareggio"
+    short: "Fino a che posizione sciogliere i pari merito con una prova aggiuntiva. Di norma il podio."
+    anchor: gara-spareggio
+    screens: [admin.competition.create_gara_standalone]
+    page: classifiche
+    section: pari_merito
+
+  - id: gara.tavoli
+    label: "Tavoli disponibili"
+    short: "Quali tavoli della sala userete stasera. L'app li assegna alle partite e li libera quando finiscono."
+    anchor: gara-tavoli
+    screens:
+      - admin.competition.create_gara_standalone
+      - admin.competition.gara_detail
+    page: opzioni_della_gara
+    section: informazioni
+
+  - id: gara.reset_partita
+    label: "Azzera la partita"
+    short: "Riporta il punteggio a zero mantenendo la stessa coppia, che rigioca. È la correzione da usare se il risultato è sbagliato."
+    anchor: gara-reset-partita
+    screens: [admin.competition.gara_detail, admin.match.match_detail]
+    page: condurre_la_gara
+    section: correggere
+
+  - id: gara.avvia_turno
+    label: "Avvia turno successivo"
+    short: "Si accende quando tutte le partite del turno sono concluse. Avviandolo, i risultati del turno precedente si bloccano."
+    anchor: gara-avvia-turno
+    screens: [admin.competition.gara_detail]
+    page: condurre_la_gara
+    section: turni_successivi
+
+  # --- Pagina della partita ------------------------------------------------
+  - id: partita.punteggio
+    label: "Punteggio"
+    short: "I rack vinti da ciascuno finora. Cambia appena qualcuno segna, anche dal telefono dell'avversario."
+    anchor: partita-punteggio
+    screens: [admin.match.match_detail]
+    page: giocare_una_partita
+    section: leggere
+
+  - id: partita.segnapunti
+    label: "Segnapunti"
+    short: "Dopo ogni rack premi il tasto del giocatore che l'ha vinto. Il tasto pieno è il tuo."
+    anchor: partita-segnapunti
+    screens: [admin.match.match_detail]
+    page: giocare_una_partita
+    section: segnare
+
+  - id: partita.rack
+    label: "Rack giocati"
+    short: "Il tabellino: chi ha vinto ogni rack e il punteggio progressivo. Serve a ricontrollare se qualcosa non torna."
+    anchor: partita-rack
+    screens: [admin.match.match_detail]
+    page: giocare_una_partita
+    section: leggere
+
+  - id: partita.forfait
+    label: "Dichiara forfait"
+    short: "Da usare solo se la partita si interrompe davvero: assegna all'avversario tutti i rack che mancano."
+    anchor: partita-forfait
+    screens: [admin.match.match_detail]
+    page: giocare_una_partita
+    section: forfait
+
+  # --- Iscrizione ----------------------------------------------------------
+  - id: iscrizione.pulsante
+    label: "Iscriviti"
+    short: "Ti mette nell'elenco dei partecipanti. Puoi disiscriverti finché le iscrizioni restano aperte."
+    anchor: iscrizione-pulsante
+    screens: [admin.competition.gara_detail, player.gara_detail]
+    page: iscriversi_a_una_gara
+    section: iscriversi
+
+  - id: iscrizione.lista_attesa
+    label: "Lista d'attesa"
+    short: "Non sei escluso, sei in coda: entri automaticamente se si libera un posto o se si iscrive un altro giocatore."
+    anchor: iscrizione-lista-attesa
+    screens: [admin.competition.gara_detail, player.gara_detail]
+    page: iscriversi_a_una_gara
+    section: lista_attesa
+
+  # --- Profilo -------------------------------------------------------------
+  - id: profilo.rating
+    label: "Rating"
+    short: "Una stima della tua forza calcolata dai risultati: sale vincendo, e di più quando batti qualcuno più forte."
+    anchor: profilo-rating
+    screens: [player.profile, player.view_profile]
+    page: profilo_e_statistiche
+    section: rating
+
+  - id: profilo.livello
+    label: "Livello"
+    short: "Misura quanto usi l'app, non quanto giochi bene. Per la bravura c'è il rating."
+    anchor: profilo-livello
+    screens: [gamification.dashboard, player.profile]
+    page: progressi
+    section: xp
+
+  # --- Campionato ----------------------------------------------------------
+  - id: campionato.classifica
+    label: "Sistema di classifica"
+    short: "Vale per tutte le gare del campionato: non si possono sommare gare che contano cose diverse."
+    anchor: campionato-classifica
+    screens: [admin.campionato.wizard_start, admin.campionato.campionato_detail]
+    page: creare_un_campionato
+    section: passo1
+
+
+tours:
+  - screen: dashboard.dashboard
+    title: "La tua home"
+    intro: "Da qui parte tutto: le gare a cui sei iscritto, i campionati che segui e le gare vicine a te."
+    audience: [giocatore]
+    steps:
+      - title: "Le tue gare"
+        text: "In cima trovi le gare attive. Il colore dell'etichetta dice a che punto sono: iscrizioni aperte, in corso, conclusa."
+      - title: "Iscriviti con un tocco"
+        text: "Le gare con le iscrizioni aperte hanno il pulsante verde: non serve cercarle altrove."
+      - title: "In fondo allo schermo"
+        text: "La barra con Dashboard, Sale, Match, Challenge e Notifiche ti porta ovunque. Su computer è la colonna di sinistra."
+
+  - screen: admin.competition.gara_detail
+    title: "La pagina della gara"
+    intro: "Tutto quello che riguarda una gara sta qui: chi gioca contro chi, come va la classifica e chi partecipa."
+    audience: [giocatore, direttore]
+    steps:
+      - hint: gara.turni
+      - hint: gara.classifica
+      - title: "Iscritti"
+        text: "Chi partecipa e chi è eventualmente in lista d'attesa."
+      - hint: gara.distanza
+
+  - screen: admin.match.match_detail
+    title: "Il segnapunti"
+    intro: "Questa schermata si usa mentre giochi: un tasto per giocatore, si preme dopo ogni rack."
+    audience: [giocatore]
+    steps:
+      - hint: partita.segnapunti
+      - hint: partita.punteggio
+      - title: "Se sbagli"
+        text: "«Annulla ultimo rack» toglie l'ultimo punto assegnato. Puoi ripeterlo più volte."
+      - hint: partita.rack
+
+  - screen: admin.competition.create_gara_standalone
+    title: "Creare una gara"
+    intro: "Quattro passaggi. Se è la prima volta, cambia solo nome, data, sala e disciplina: il resto va già bene così."
+    audience: [direttore]
+    steps:
+      - hint: gara.distanza
+      - hint: gara.strategia
+      - hint: gara.dispari
+      - hint: gara.classifica_sistema

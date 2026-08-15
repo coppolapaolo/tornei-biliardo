@@ -114,7 +114,6 @@
 | POST | `/<id>/start_round/<round_number>` | manager | Avvia turno specifico |
 | POST | `/<id>/cancel_first_round` | manager | Annulla primo turno |
 | POST | `/<id>/cancel_current_round` | manager | Annulla turno corrente |
-| GET | `/<id>/round_management` | manager | Interfaccia gestione turni |
 | GET | `/<id>/round_status` | manager | Stato turno (JSON) |
 
 ### SSR (Swiss System Round)

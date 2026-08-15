@@ -1,0 +1,114 @@
+{# templates/help/_blocks.html — impaginazione dei blocchi di contenuto.
+
+   Ogni tipo di blocco dichiarato in `utils/help_content.BLOCK_TYPES` ha qui il
+   suo caso. Aggiungere un tipo significa toccare tre punti e nessun altro:
+   l'insieme in `help_content.py`, la sua verifica in `validate`, e questo file.
+
+   `help_text` applica il markup minimo ammesso (grassetto, codice,
+   collegamenti) ed e' gia' messo in sicurezza: il contenuto arriva da file del
+   repository, ma resta testo di dati e non deve poter produrre HTML. #}
+
+{% macro shot_figure(help, shot_id, caption=None, variant=None) %}
+{# `variant: desktop` mostra la cattura larga invece di quella da telefono, e
+   la lascia a piena larghezza: ridotta a 320px sarebbe illeggibile. #}
+{% set shot = help.shots.get(shot_id) %}
+{% if shot %}
+{% set desktop = variant == 'desktop' and shot.desktop_filename %}
+<figure class="help-shot{{ ' help-shot--wide' if desktop }}">
+    <img src="{{ url_for('static', filename=desktop or shot.filename) }}"
+         alt="{{ caption or shot.caption }}" loading="lazy" decoding="async">
+    {% if caption or shot.caption %}
+    <figcaption>{{ caption or shot.caption }}</figcaption>
+    {% endif %}
+</figure>
+{% endif %}
+{% endmacro %}
+
+{% macro render(help, blocks) %}
+{% for block in blocks %}
+{% set type = block.type %}
+
+{% if type == 'heading' %}
+<h2 class="help-h2" id="{{ block.id }}">
+    {{ block.title }}<a class="help-h2__link" href="#{{ block.id }}"
+        aria-label="{{ _('Collegamento a questa sezione') }}"><i class="fas fa-link"></i></a>
+</h2>
+
+{% elif type == 'text' %}
+<div class="help-prose">{{ help_text(block.text) }}</div>
+
+{% elif type == 'steps' %}
+<div class="help-steps">
+    {% for item in block['items'] %}
+    <div class="help-step">
+        <span class="help-step__num">{{ loop.index }}</span>
+        <div class="help-step__body">
+            {% if item.title %}<div class="help-step__title">{{ item.title }}</div>{% endif %}
+            {% if item.text %}<div class="help-step__text help-prose">{{ help_text(item.text) }}</div>{% endif %}
+            {% if item.shot %}{{ shot_figure(help, item.shot, item.caption, item.get('variant')) }}{% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% elif type == 'shot' %}
+{{ shot_figure(help, block.shot, block.caption, block.get('variant')) }}
+
+{% elif type == 'note' %}
+{% set tone = block.get('tone', 'info') %}
+{% set icon = {'info': 'fa-circle-info', 'warning': 'fa-triangle-exclamation', 'tip': 'fa-lightbulb'}[tone] %}
+<div class="c7-card c7-card--{{ {'info': 'info', 'warning': 'warn', 'tip': 'ok'}[tone] }}">
+    <div class="d-flex gap-3 align-items-start">
+        <i class="fas {{ icon }} mt-1" aria-hidden="true"></i>
+        <div class="flex-fill">
+            {% if block.title %}<div class="fw-bold mb-1">{{ block.title }}</div>{% endif %}
+            <div class="help-prose">{{ help_text(block.text) }}</div>
+        </div>
+    </div>
+</div>
+
+{% elif type == 'list' %}
+<div>
+    {% if block.title %}<div class="c7-kicker mb-2">{{ block.title }}</div>{% endif %}
+    <ul class="help-prose ps-4 mb-0">
+        {% for item in block['items'] %}
+        <li>{{ help_text(item if item is string else item.text) }}</li>
+        {% endfor %}
+    </ul>
+</div>
+
+{% elif type == 'options' %}
+<div>
+    {% if block.title %}<div class="c7-kicker mb-2">{{ block.title }}</div>{% endif %}
+    {% for item in block['items'] %}
+    <div class="help-option">
+        <div class="help-option__name">
+            {{ item.name }}
+            {% if item.hint %}<span class="help-qmark" title="{{ _('Ha un micro-aiuto') }}">?</span>{% endif %}
+        </div>
+        {# `item.get('values')` e non `item.values` ne' `item['values']`: per
+           una chiave che collide con un metodo dei dizionari (`values`,
+           `items`, `keys`…) Jinja ricade sull'attributo in entrambe le altre
+           forme, e stamperebbe «built-in method values of dict object».
+           `.get()` e' l'unico accesso che guarda solo dentro il dizionario. #}
+        {% set values = item.get('values') %}
+        {% if values %}<div class="help-option__values">{{ values }}</div>{% endif %}
+        <div class="help-option__text help-prose">{{ help_text(item.text) }}</div>
+    </div>
+    {% endfor %}
+</div>
+
+{% elif type == 'faq' %}
+<div>
+    {% if block.title %}<div class="c7-kicker mb-2">{{ block.title }}</div>{% endif %}
+    {% for item in block['items'] %}
+    <details class="help-faq">
+        <summary>{{ item.q }}</summary>
+        <div class="help-faq__answer help-prose">{{ help_text(item.a) }}</div>
+    </details>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% endfor %}
+{% endmacro %}

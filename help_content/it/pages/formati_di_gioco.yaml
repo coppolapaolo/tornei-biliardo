@@ -1,0 +1,136 @@
+title: "Formati di gioco: distanza, discipline, set"
+section: approfondimenti
+kind: approfondimento
+audience: [tutti]
+minutes: 5
+summary: "«Al 4» non vuol dire quattro rack. Come si legge la distanza, cosa cambia con il numero esatto di rack e cosa sono le partite a set."
+related: [parole_da_sapere, opzioni_della_gara, classifiche]
+
+blocks:
+  - type: text
+    text: >-
+      Il formato è la risposta a una domanda sola: **quando finisce una
+      partita?** Ci sono tre modi di rispondere, e l'app li chiama distanza,
+      numero esatto di rack e partita a set.
+
+  - type: heading
+    id: distanza
+    title: "La distanza: «Al N»"
+
+  - type: text
+    text: >-
+      È il formato normale. **«Al 4»** significa che vince chi arriva prima a
+      quattro rack vinti. Appena uno ci arriva, la partita si chiude: gli altri
+      rack non si giocano.
+
+  - type: list
+    title: "Come leggerlo"
+    items:
+      - "«Al 4» → vince chi arriva a 4. Al massimo si giocano **7** rack (4-3)."
+      - "«Al 5» → vince chi arriva a 5. Al massimo **9** rack (5-4)."
+      - "«Al 7» → vince chi arriva a 7. Al massimo **13** rack (7-6)."
+
+  - type: note
+    tone: warning
+    title: "Non è «al meglio di N»"
+    text: >-
+      Il numero indicato è quello dei rack **da vincere**, non di quelli da
+      giocare. Chi è abituato al «meglio di 9» pensi «al 5»: è la stessa cosa
+      detta in modo diverso.
+
+  - type: shot
+    shot: partita-segnapunti
+    caption: "Sotto il punteggio, la riga «Al 5 rack · 7 rack giocati» ricorda la distanza e quanti rack sono già stati giocati."
+
+  - type: heading
+    id: numero_esatto
+    title: "Numero esatto di rack"
+
+  - type: text
+    text: >-
+      Alcune gare scelgono di far giocare **sempre** tutti i rack, anche quando
+      il vincitore è già deciso: 6 rack sono 6 rack, si finiscano tutti. Serve
+      quando la classifica conta i rack totali e non le vittorie: se ci si
+      fermasse in anticipo, chi vince nettamente accumulerebbe meno rack di chi
+      vince a fatica.
+
+  - type: note
+    tone: info
+    title: "Con numero pari si può pareggiare"
+    text: >-
+      Se i rack da giocare sono un numero pari, la partita può finire in
+      parità: 3-3 su sei rack. Con la distanza «Al N» invece un vincitore c'è
+      sempre.
+
+  - type: heading
+    id: set
+    title: "Partite a set"
+
+  - type: text
+    text: >-
+      La partita si divide in **set**: ogni set si vince arrivando alla
+      distanza, e la partita la vince chi conquista abbastanza set. Per
+      esempio: set al 4, partita a 3 set — vince chi ne prende 2 (o 3, se si
+      chiede di arrivare al numero pieno).
+
+  - type: text
+    text: >-
+      Il segnapunti mostra il set in corso e il punteggio dei set già chiusi.
+      Fra un set e l'altro c'è il pulsante per avviare il successivo. È un
+      formato lungo: adatto a una finale, meno a una serata con dodici
+      partecipanti.
+
+  - type: heading
+    id: discipline
+    title: "Le discipline"
+
+  - type: text
+    text: >-
+      L'app tiene traccia della disciplina per mostrarla sulla scheda e nelle
+      statistiche; le regole al tavolo restano quelle che conoscete.
+
+  - type: options
+    items:
+      - name: "Palla 8"
+        text: "La più diffusa nei circoli. Bilie piene contro spezzate, chiude chi imbuca la 8."
+      - name: "Palla 9"
+        text: "Si giocano le bilie in ordine numerico, vince chi imbuca la 9. Partite rapide."
+      - name: "Palla 10"
+        text: "Come la palla 9 ma con dieci bilie e la chiamata obbligatoria."
+      - name: "One pocket"
+        text: "Ogni giocatore ha una sola buca assegnata. Lenta e molto tattica."
+      - name: "14.1 continuo"
+        text: "A punteggio: si accumulano punti fino al totale stabilito."
+      - name: "Bank pool"
+        text: "Ogni bilia va imbucata di sponda."
+      - name: "Rotation"
+        text: "Si colpisce sempre la bilia di numero più basso; ogni bilia vale il suo numero."
+
+  - type: heading
+    id: handicap
+    title: "L'handicap"
+
+  - type: text
+    text: >-
+      Quando una gara ammette livelli molto diversi, il direttore può attivare
+      l'**handicap**: il giocatore di categoria inferiore parte con qualche
+      rack di vantaggio, così la partita resta incerta.
+
+  - type: note
+    tone: info
+    text: >-
+      Le gare con handicap **non modificano il rating** dei giocatori: i
+      punteggi sono alterati per costruzione, e usarli per misurare la forza
+      dei giocatori la falserebbe. Le classifiche della gara invece usano
+      normalmente i punteggi effettivi, handicap compreso.
+
+  - type: faq
+    items:
+      - q: "Quanto dura una partita «al 4»?"
+        a: "Nella pratica venti-trenta minuti a palla 8. «Al 5» ne chiede una decina in più, e su tre turni la differenza si sente parecchio."
+      - q: "Si può cambiare la distanza durante la gara?"
+        a: "No, non dopo l'avvio. Il direttore può però impostare formati diversi per singoli turni, ma va deciso prima che la gara parta."
+      - q: "Perché la mia partita si è chiusa sul 4-2 se erano previsti 7 rack?"
+        a: "Perché il formato era «al 4»: raggiunti i 4 rack la partita è vinta. I 7 sono il massimo possibile, non il numero da giocare."
+      - q: "Con «numero esatto» chi vince se finisce in parità?"
+        a: "Nessuno: la partita risulta pareggiata e in classifica entrambi prendono zero vittorie e zero differenza rack."

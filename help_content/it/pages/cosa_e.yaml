@@ -1,0 +1,103 @@
+title: "Che cos'è Tornei Biliardo"
+section: introduzione
+kind: introduzione
+audience: [tutti]
+minutes: 3
+summary: "Un'app per giocare e organizzare tornei di biliardo americano: tiene il conto dei punti, abbina i giocatori e aggiorna le classifiche da sola."
+screens: [main.index, main.public_campionatos_list, main.campionato_detail_public]
+related: [parole_da_sapere, chi_fa_cosa]
+
+blocks:
+  - type: text
+    text: >-
+      Tornei Biliardo serve a due cose. Se **giochi**, ti fa trovare le gare
+      aperte, ti iscrive con un tocco e ti permette di segnare i punti della
+      partita direttamente dal telefono, appoggiato al bordo del tavolo. Se
+      **organizzi**, ti toglie di mano il foglio di carta: decidi le regole una
+      volta, e l'app abbina i giocatori a ogni turno, calcola le classifiche e
+      avvisa tutti.
+
+  - type: shot
+    shot: home-pubblica
+    caption: "La pagina iniziale mostra subito le gare in corso e quelle con le iscrizioni aperte, anche a chi non ha ancora un account."
+
+  - type: heading
+    id: senza_account
+    title: "Cosa si vede senza registrarsi"
+
+  - type: text
+    text: >-
+      Molte cose sono pubbliche: chiunque abbia il collegamento può guardare
+      l'elenco delle gare, seguire una gara in diretta mentre si gioca e
+      leggere le classifiche. È fatto apposta, così puoi condividere il
+      risultato di una serata con chi non usa l'app.
+
+  - type: list
+    title: "Visibile a tutti, anche senza account"
+    items:
+      - "L'elenco delle gare e dei campionati."
+      - "Il dettaglio di una gara: iscritti, turni, partite e classifica."
+      - "I punteggi che si aggiornano mentre si gioca."
+
+  - type: shot
+    shot: campionati-pubblici
+    caption: "L'elenco pubblico dei campionati: si apre a chiunque, senza account."
+
+  - type: text
+    text: >-
+      Per **iscriverti** a una gara, invece, serve un account: è gratuito e
+      bastano un nome utente, un indirizzo email e una password. Come si fa è
+      spiegato in [Primo accesso](/aiuto/introduzione/primo_accesso).
+
+  - type: heading
+    id: come_e_fatta
+    title: "Come è fatta l'app"
+
+  - type: text
+    text: >-
+      Tutto ruota attorno a tre cose che stanno una dentro l'altra: il
+      **campionato** contiene più **gare**, ogni gara si gioca in più
+      **turni**, e in ogni turno si giocano le **partite**. Se questi nomi non
+      ti sono familiari, la pagina [Le parole da
+      sapere](/aiuto/introduzione/parole_da_sapere) li spiega uno per uno con
+      un esempio.
+
+  - type: note
+    tone: tip
+    title: "Pensata prima per il telefono"
+    text: >-
+      L'app è disegnata per essere usata in piedi, con una mano, accanto al
+      tavolo: i tasti sono grandi apposta. Funziona bene anche su computer, e
+      su schermi larghi mostra qualche informazione in più affiancata.
+
+  - type: heading
+    id: cosa_puoi_fare
+    title: "Cosa puoi fare, in breve"
+
+  - type: options
+    title: "Le funzioni principali"
+    items:
+      - name: "Iscriverti alle gare"
+        text: "Trovi le gare aperte, ti iscrivi e ti disiscrivi finché le iscrizioni restano aperte."
+      - name: "Segnare i punti"
+        text: "Durante la partita premi il tasto del giocatore che ha vinto il rack. Il punteggio si aggiorna per tutti, anche per chi guarda da casa."
+      - name: "Seguire turni e classifiche"
+        text: "Vedi con chi giochi al turno successivo e come sei messo in classifica, aggiornata da sola."
+      - name: "Giocare amichevoli"
+        text: "Fuori dalle gare ufficiali puoi proporre una partita a un altro giocatore e registrarne il risultato."
+      - name: "Organizzare gare e campionati"
+        text: "Se sei un direttore di gara: crei la gara, apri le iscrizioni, avvii i turni e l'app fa il resto."
+      - name: "Seguire i tuoi progressi"
+        text: "Statistiche personali, punti esperienza, traguardi e serie di partite giocate."
+
+  - type: faq
+    title: "Domande frequenti"
+    items:
+      - q: "Devo pagare per usarla?"
+        a: "No, l'account è gratuito. Le eventuali quote di partecipazione alle gare sono decise dagli organizzatori e si pagano fuori dall'app."
+      - q: "Serve installare qualcosa?"
+        a: "No. Si usa dal browser del telefono o del computer. Puoi aggiungere il collegamento alla schermata iniziale del telefono per averla a portata di mano come un'app."
+      - q: "Devo per forza segnare i punti dal telefono?"
+        a: "No. Il direttore di gara può inserire i risultati per tutti. Il telefono è comodo, non obbligatorio."
+      - q: "Se sbaglio a segnare un punto?"
+        a: "Si annulla: c'è il tasto «Annulla ultimo rack». Se il risultato è già stato chiuso, può correggerlo il direttore di gara."
