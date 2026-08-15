@@ -182,11 +182,14 @@ class UnlockProgressService:
                     is_met = user.is_director or user.is_admin
                 elif target_role == "VENUE_MANAGER":
                     is_met = user.is_venue_manager or user.is_admin
+                elif target_role == "EXAMINER":
+                    is_met = user.is_examiner
 
             role_labels = {
                 "ADMIN": "Admin",
                 "DIRECTOR": "Director",
                 "VENUE_MANAGER": "Gestore Sala",
+                "EXAMINER": "Esaminatore",
             }
 
             return {
@@ -263,6 +266,8 @@ class UnlockProgressService:
                 return "Diventa Director per sbloccare"
             elif role == "VENUE_MANAGER":
                 return "Diventa Gestore Sala per sbloccare"
+            elif role == "EXAMINER":
+                return "Diventa Esaminatore per sbloccare"
             return f"Richiede ruolo {role}"
 
         elif cond_type == "ACHIEVEMENT":

@@ -34,6 +34,7 @@ from .user.models import (
     VenueManagerRequest,
     VenueManagement,
 )
+from .user.role_grant import RoleGrant, RoleRequest, RoleRequestRecipient
 from .user.privacy_models import (
     UserPrivacySetting,
     HiddenMatch,
@@ -60,7 +61,18 @@ from .competition.gara_challenge import (
 )
 from .challenge.services import ChallengeService
 from .competition.gara_challenge_service import GaraChallengeService
-from .exam.models import Exam, ExamChallenge, ExamAttempt, ExamChallengeResult
+from .exam.models import (
+    Exam,
+    ExamExaminer,
+    ExamChallenge,
+    ExamAttempt,
+    ExamChallengeResult,
+)
+from .exam.request_models import (
+    ExamRequest,
+    ExamRequestRecipient,
+    ExamTimeProposal,
+)
 from .individual_match.models import (
     MatchProposal,
     ProposalInvitation,
@@ -152,6 +164,10 @@ __all__ = [
     "DirectorRequest",
     "VenueManagerRequest",
     "VenueManagement",
+    # Ruoli concedibili e delega (ADR-041)
+    "RoleGrant",
+    "RoleRequest",
+    "RoleRequestRecipient",
     # User privacy models
     "UserPrivacySetting",
     "HiddenMatch",
@@ -191,9 +207,13 @@ __all__ = [
     "GaraChallengeService",
     # Exam domain models (Phase 3)
     "Exam",
+    "ExamExaminer",
     "ExamChallenge",
     "ExamAttempt",
     "ExamChallengeResult",
+    "ExamRequest",
+    "ExamRequestRecipient",
+    "ExamTimeProposal",
     # Individual Match domain models (Phase 3)
     "MatchProposal",
     "ProposalInvitation",

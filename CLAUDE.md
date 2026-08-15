@@ -62,13 +62,39 @@ cd /home/paolocoppola/mysite
 git pull origin main
 # ATTENZIONE: migrations SOLO con web app Disabled (tab Web)!
 python migrations/runner.py
-# Web app auto-reloads on push via GitHub Actions
+# poi Reload dal tab Web
 ```
 
-**GitHub Actions** (`.github/workflows/ci.yml`):
-- Runs unit tests and pyright on every push/PR
-- Reloads PythonAnywhere web app on push to main
-- Git pull and migrations must be run manually or via scheduled task
+**GitHub Actions** (`.github/workflows/ci.yml`) — 4 job:
+
+| Job | Quando gira | Cosa fa |
+|-----|-------------|---------|
+| `test-and-typecheck` | ogni push **e** ogni PR | unit test + pyright. È l'unico status check che blocca il merge |
+| `check-migrations` | solo push su `main` | `git diff --diff-filter=A HEAD~1 HEAD -- 'migrations/*.py'`: c'è una migration **nuova**? |
+| `deploy` | solo push su `main`, **e solo se NON ci sono migration nuove** | **reload** della web app via API PythonAnywhere |
+| `skip-deploy-notification` | solo push su `main`, **se ci sono migration nuove** | salta il deploy e stampa la procedura manuale |
+
+> ⚠️ **Il merge su `main` NON deploya il codice.** Questo è l'errore che si continua a
+> fare leggendo di fretta: il job `deploy` esegue **solo un reload** della web app, non un
+> `git pull` (commento esplicito nel workflow: *«PythonAnywhere console API requires
+> browser session, doesn't work from CI»*). Il codice nuovo arriva su PythonAnywhere solo
+> quando gira lo scheduled task giornaliero `scripts/auto_deploy.py`, che fa `git pull` +
+> `pip install` + migrations + reload. Fra il merge e il codice in produzione può quindi
+> passare fino a **un giorno**.
+>
+> E se la PR **aggiunge una migration**, non parte nemmeno il reload: `check-migrations`
+> lo rileva e la CI passa a `skip-deploy-notification`, che stampa la procedura manuale.
+>
+> **Quella procedura è un fallback, non un compito da assegnare a chi fa il merge.**
+> Le migration pendenti le applica da solo `scripts/auto_deploy.py` al giro successivo,
+> disabilitando e riabilitando la web app via API. Quindi dopo un merge **non c'è nulla
+> da ricordare all'utente**: niente promemoria sul deploy, niente istruzioni su Disabled
+> /Enabled, a meno che non sia lui a chiedere di andare in produzione subito.
+>
+> Sulle **PR** girano solo `test-and-typecheck` (verde/rosso); gli altri tre risultano
+> `skipped` perché condizionati a `github.event_name == 'push'`. Vederli skipped su una PR
+> è normale e **non** va segnalato come problema, né richiesto come status check
+> (resterebbero pending all'infinito).
 
 **⚠️ Branch protection su `main` (dal 2026-06)**: `main` è protetto e
 `enforce_admins=true` — **niente push diretti su `main`, neanche da admin**.
@@ -80,12 +106,13 @@ git checkout -b claude/descrizione   # branch di lavoro
 # ... commit ...
 git push -u origin claude/descrizione
 gh pr create                          # apri la PR
-# attendi che la CI sia verde, poi merge → il push su main fa scattare il deploy
+# attendi che la CI sia verde, poi merge (il codice va in produzione dopo, vedi sopra)
 ```
 
 Un `git push origin main` diretto viene rifiutato (`protected branch hook
-declined`). L'auto-deploy (reload PythonAnywhere) parte normalmente al merge,
-ma solo su codice che ha passato la CI. Il gate è solo `test-and-typecheck`:
+declined`). Al merge parte **solo il reload** della web app — e nemmeno quello
+se la PR aggiunge migration: il codice lo porta `auto_deploy.py`, non la CI
+(tabella e riquadro sopra). Il gate è solo `test-and-typecheck`:
 gli altri job (`check-migrations`, `deploy`, `skip-deploy-notification`) girano
 solo sull'evento `push` a `main`, **non** sulle PR, quindi non vanno mai
 richiesti come status check (resterebbero in pending all'infinito). Per un
@@ -510,6 +537,7 @@ pytest tests/new/unit/ -n auto && pytest tests/new/integration/ -n 4
 | `match.gara.distance` in scoring/validation | Use `match.distance_config` or `match.effective_*` (ADR-027) |
 | `RoundConfiguration` salvato solo in `localStorage` | API endpoint `POST /admin/gara/<id>/round-config/<n>` (ADR-027) |
 | Nuova route senza entry in `ENDPOINT_ROLES` | Sarà admin-only in prod (ADR-028) — aggiungila a `utils/feature_flags.py` se non è il comportamento voluto |
+| "Il merge su `main` fa scattare il deploy" | **Falso**: il job `deploy` fa solo un *reload*, e se la PR aggiunge migration non parte neanche quello. Il codice lo porta lo scheduled task `auto_deploy.py` (fino a 24h dopo) |
 | Link a endpoint in template senza `feature_visible(...)` | In prod il link compare ma porta a 404 (ADR-028) — avvolgi con `{% if feature_visible('endpoint.name') %}` |
 | `match.status in ["completed", "validated"]` (letterale raw) | `MatchStatus.is_finished(match.status)` / `is_active(...)` (typo-safe) |
 | `raise ValueError(...)` per not-found / conflitto / permesso | Solleva la sottoclasse da `models.exceptions` (`NotFoundError`/`ConflictError`/`PermissionDeniedError`) → route mappano a 404/409/403 |

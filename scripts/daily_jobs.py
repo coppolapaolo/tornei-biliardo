@@ -74,10 +74,25 @@ def job_demand_signals() -> str:
     )
 
 
+def job_exam_requests() -> str:
+    """Scadenza delle richieste d'esame senza accordo (ADR-042).
+
+    La negoziazione di data e ora può non convergere: senza questa passata la
+    richiesta resterebbe «in trattativa» per sempre e — dato che se ne ammette
+    una sola aperta per esame — il candidato non potrebbe più richiedere quello
+    stesso esame.
+    """
+    from models.exam.request_service import ExamRequestService
+
+    expired = ExamRequestService.expire_pending_requests()
+    return f"{expired} richieste d'esame scadute"
+
+
 # nome → (descrizione, callable). Il callable gira dentro l'app context e
 # restituisce una stringa di riepilogo per il log.
 JOBS = {
     "demand": ("Segnali-domanda: riconferma e scadenze", job_demand_signals),
+    "exam_requests": ("Richieste d'esame: scadenze", job_exam_requests),
 }
 
 

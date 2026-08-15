@@ -25,6 +25,12 @@ __all__ = [
     "MatchStatus",
     "DirectorRequestStatus",
     "VenueManagerRequestStatus",
+    "RoleRequestStatus",
+    "RoleRequestRecipientStatus",
+    "ExamAttemptMode",
+    "ExamAttemptStatus",
+    "ExamRequestStatus",
+    "ExamRequestRecipientStatus",
     "PlayoffConfirmationStatus",
     "Discipline",
     "WithdrawPolicy",
@@ -157,6 +163,107 @@ class VenueManagerRequestStatus(_StrEnum):
     APPROVED = "approved"
     REJECTED = "rejected"
     CANCELLED = "cancelled"
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# ROLE REQUEST (meccanismo generico di delega dei ruoli concedibili, ADR-041)
+# Persistito: `role_request.status` → {pending, approved, rejected}
+# Fonte: models/user/role_grant.py (RoleRequest)
+# ──────────────────────────────────────────────────────────────────────────────
+class RoleRequestStatus(_StrEnum):
+    PENDING = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# ROLE REQUEST RECIPIENT
+# Persistito: `role_request_recipient.status`
+# → {pending, approved, rejected, closed}
+# `closed` = un altro destinatario ha approvato per primo: la richiesta si
+# chiude senza che questo destinatario si sia espresso (US-A2).
+# Fonte: models/user/role_grant.py (RoleRequestRecipient)
+# ──────────────────────────────────────────────────────────────────────────────
+class RoleRequestRecipientStatus(_StrEnum):
+    PENDING = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+    CLOSED = "closed"
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# EXAM ATTEMPT — modalità (ADR-042)
+# Persistito: `exam_attempt.mode` → {self_practice, certified}
+# Le due nature convivono in un solo modello, ma **solo `certified` certifica**:
+# un tentativo in autonomia resta allenamento e non diventa certificato mai,
+# nemmeno a posteriori.
+# Fonte: models/exam/models.py (ExamAttempt)
+# ──────────────────────────────────────────────────────────────────────────────
+class ExamAttemptMode(_StrEnum):
+    SELF_PRACTICE = "self_practice"
+    CERTIFIED = "certified"
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# EXAM ATTEMPT — stato (ADR-042)
+# Persistito: `exam_attempt.status`
+# → {awaiting_player_start, in_progress, completed, abandoned}
+# `awaiting_player_start` esiste **solo** in modalità certificata: nessuno può
+# essere valutato a sua insaputa, quindi l'esaminatore apre la sessione ma non
+# registra nulla finché il candidato non accetta l'inizio. Un tentativo in
+# autonomia nasce già `in_progress`.
+# `abandoned` non è una bocciatura: `passed` resta NULL.
+# Fonte: models/exam/models.py (ExamAttempt)
+# ──────────────────────────────────────────────────────────────────────────────
+class ExamAttemptStatus(_StrEnum):
+    AWAITING_PLAYER_START = "awaiting_player_start"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+    ABANDONED = "abandoned"
+
+    @classmethod
+    def is_open(cls, status: str) -> bool:
+        """True se il tentativo è ancora aperto (non concluso né abbandonato)."""
+        return status in (cls.AWAITING_PLAYER_START.value, cls.IN_PROGRESS.value)
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# EXAM REQUEST — appuntamento d'esame (ADR-042)
+# Persistito: `exam_request.status` → {negotiating, accepted, expired, cancelled}
+# Quattro stati e non cinque: «programmato» e «accettato» sono lo stesso fatto,
+# perché accettare *è* fissare l'appuntamento.
+# `negotiating` copre l'intero ciclo di controproposte: la richiesta resta lì
+# finché uno accetta (`accepted`), il richiedente ritira (`cancelled`) o il
+# tempo finisce senza accordo (`expired`).
+# Fonte: models/exam/request_models.py (ExamRequest)
+# ──────────────────────────────────────────────────────────────────────────────
+class ExamRequestStatus(_StrEnum):
+    NEGOTIATING = "negotiating"
+    ACCEPTED = "accepted"
+    EXPIRED = "expired"
+    CANCELLED = "cancelled"
+
+    @classmethod
+    def is_open(cls, status: str) -> bool:
+        """True se la richiesta è ancora trattabile."""
+        return status == cls.NEGOTIATING.value
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# EXAM REQUEST RECIPIENT
+# Persistito: `exam_request_recipient.status`
+# → {pending, accepted, rejected, closed}
+# `closed` = un altro esaminatore ha accettato per primo, quindi la richiesta si
+# chiude senza che questo destinatario si sia espresso (US-E4b): è lo stato che
+# distingue «ha detto di no» da «non ha fatto in tempo», e la differenza si
+# vede — al secondo arriva una notifica, al primo no.
+# Fonte: models/exam/request_models.py (ExamRequestRecipient)
+# ──────────────────────────────────────────────────────────────────────────────
+class ExamRequestRecipientStatus(_StrEnum):
+    PENDING = "pending"
+    ACCEPTED = "accepted"
+    REJECTED = "rejected"
+    CLOSED = "closed"
 
 
 # ──────────────────────────────────────────────────────────────────────────────

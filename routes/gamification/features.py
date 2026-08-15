@@ -72,6 +72,7 @@ def admin_feature_detail(code: str):
         {"value": "ADMIN", "label": _("Admin")},
         {"value": "DIRECTOR", "label": _("Director")},
         {"value": "VENUE_MANAGER", "label": _("Gestore Sala")},
+        {"value": "EXAMINER", "label": _("Esaminatore")},
     ]
 
     return render_template(

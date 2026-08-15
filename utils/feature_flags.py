@@ -5,7 +5,15 @@ allowed to see them in production. In development (DEBUG_MODE=true) this
 module is pass-through: every endpoint is visible regardless of role.
 Admins always bypass the matrix.
 
-Roles: "anonimo" (not logged in), "player", "director". Admin = bypass.
+Roles: "anonimo" (not logged in), "player", "director", "examiner".
+Admin = bypass.
+
+A user holds a **set** of roles, not one: the primary role ("anonimo" /
+"player" / "director") comes from ``user.role``, while "examiner" is an
+orthogonal grant (ADR-041) that adds to it. An endpoint is visible when the
+user's role set intersects the endpoint's allowed set — a rule that matters
+because an examiner who is not also a director would otherwise fall back to
+"player" and lose visibility in production.
 
 Endpoint not present in ``ENDPOINT_ROLES`` and not in
 ``INFRASTRUCTURE_ALLOWLIST`` is visible only to admins. To expose a new
@@ -18,7 +26,7 @@ from __future__ import annotations
 
 from flask import current_app
 
-Role = str  # "anonimo" | "player" | "director"
+Role = str  # "anonimo" | "player" | "director" | "examiner"
 
 
 # ---------------------------------------------------------------------------
@@ -313,6 +321,34 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "individual_match.request_availability_match": {"player", "director"},
     # Admin overview: solo admin (@admin_required).
     "individual_match.admin_overview": set(),
+    # === Ruoli concedibili e delega (ADR-041) ===
+    # ROLLOUT: tutta la superficie è **admin-only** finché gli esami non
+    # esistono davvero. Il ruolo di esaminatore serve a somministrare esami:
+    # esporlo ai giocatori prima delle Fasi 2-5 significherebbe offrire un
+    # "Diventa Esaminatore" che non porta da nessuna parte. Admin bypassa la
+    # matrice, quindi il bootstrap (US-A1: promozione dalla scheda utente) e i
+    # test manuali in produzione restano possibili da subito.
+    #
+    # In sviluppo il middleware è pass-through, quindi il percorso completo si
+    # prova normalmente con DEBUG_MODE=true.
+    #
+    # DA APRIRE IN FASE 5 (piano §5.2), insieme al catalogo esami:
+    #   "roles.request_role_form":   {"player", "director"}
+    #   "roles.request_role":        {"player", "director"}
+    #   "roles.role_requests":       {"examiner"}
+    #   "roles.process_role_request":{"examiner"}
+    #   "roles.grant_role":          {"examiner"}
+    # Il gate di progressione (can_access('request_examiner')) è ortogonale e
+    # verificato da route e service: questo layer governa solo la visibilità.
+    "roles.request_role_form": set(),
+    "roles.request_role": set(),
+    "roles.role_requests": set(),
+    "roles.process_role_request": set(),
+    "roles.grant_role": set(),
+    # Audit della catena e revoca: solo admin **per scelta**, non per rollout
+    # (US-A3) — restano set() anche dopo la Fase 5.
+    "roles.role_holders": set(),
+    "roles.revoke_role": set(),
 }
 
 
@@ -357,17 +393,50 @@ def _is_production() -> bool:
     return not current_app.config.get("DEBUG_MODE", False)
 
 
-def _user_role(user) -> Role:
-    """Role string for the current user, used to look up the matrix.
+#: Ruoli che NON derivano da ``user.role`` ma da una tabella di concessione
+#: (ADR-041), e che quindi costano una query per essere accertati. Serve a
+#: ``is_endpoint_visible`` per non pagare quel costo quando l'endpoint non li
+#: ammette comunque.
+GRANTABLE_ROLES: frozenset[Role] = frozenset({"examiner"})
 
-    Admins are handled by the bypass branch in ``is_endpoint_visible`` and
-    must not reach this function.
-    """
+
+def _primary_role(user) -> Role:
+    """Ruolo primario, derivato da ``user.role``: nessun accesso al DB."""
     if not user.is_authenticated:
         return "anonimo"
-    if getattr(user, "is_director", False):
-        return "director"
-    return "player"
+    return "director" if getattr(user, "is_director", False) else "player"
+
+
+def _grantable_roles(user) -> set[Role]:
+    """Ruoli concedibili posseduti dall'utente. **Costa una query** per ruolo.
+
+    Chiamare solo quando l'endpoint ne ammette almeno uno: vedi
+    ``is_endpoint_visible``.
+    """
+    if not user.is_authenticated:
+        return set()
+    return {"examiner"} if getattr(user, "is_examiner", False) else set()
+
+
+def _user_roles(user) -> set[Role]:
+    """Role **set** completo per l'utente: primario + concedibili.
+
+    Il primario (``user.role``) contribuisce esattamente una voce; i ruoli
+    concedibili (ADR-041) si aggiungono. Restituire un insieme invece di una
+    stringa è ciò che impedisce a un esaminatore che non è anche director di
+    essere appiattito su ``"player"``, perdendo in produzione gli endpoint
+    dichiarati per ``{"examiner"}``.
+
+    ``is_endpoint_visible`` **non** usa questa funzione nel percorso caldo,
+    perché accerterebbe i concedibili anche quando non servono; la usano i
+    chiamanti che vogliono davvero l'insieme completo (introspezione, test).
+
+    Gli admin sono gestiti dal ramo di bypass in ``is_endpoint_visible`` e non
+    devono arrivare qui.
+    """
+    if not user.is_authenticated:
+        return {"anonimo"}
+    return {_primary_role(user)} | _grantable_roles(user)
 
 
 def is_endpoint_visible(endpoint: str | None, user) -> bool:
@@ -378,11 +447,19 @@ def is_endpoint_visible(endpoint: str | None, user) -> bool:
     2. Pass-through in dev/test (``_is_production()`` is False).
     3. ``endpoint in INFRASTRUCTURE_ALLOWLIST``: True for every role.
     4. Admin user: True (global bypass).
-    5. ``user`` role is in ``ENDPOINT_ROLES[endpoint]``: True.
-    6. Otherwise: False.
+    5. The user's **primary** role is in ``ENDPOINT_ROLES[endpoint]``: True.
+    6. The endpoint admits a grantable role and the user holds it: True.
+    7. Otherwise: False.
 
     Endpoints absent from ``ENDPOINT_ROLES`` (and not in infrastructure)
     are visible only to admins by default.
+
+    Steps 5-6 are split on purpose. ``feature_visible()`` is a template global
+    called once per gated link, so a single page render invokes this function
+    dozens of times, and establishing a grantable role costs a query. Step 6
+    therefore runs only when the primary role was not already enough **and**
+    the endpoint actually admits a grantable role — today a handful of
+    endpoints out of ~250, and none at all while the rollout is dark.
     """
     if endpoint is None:
         return True
@@ -392,4 +469,12 @@ def is_endpoint_visible(endpoint: str | None, user) -> bool:
         return True
     if user.is_authenticated and getattr(user, "is_admin", False):
         return True
-    return _user_role(user) in ENDPOINT_ROLES.get(endpoint, set())
+
+    allowed = ENDPOINT_ROLES.get(endpoint, set())
+    if not allowed:
+        return False
+    if _primary_role(user) in allowed:
+        return True
+    if not (allowed & GRANTABLE_ROLES):
+        return False
+    return bool(_grantable_roles(user) & allowed)
