@@ -1268,8 +1268,17 @@
     // gioca (US-8). Il modale si chiude anche senza rispondere — "senza
     // squadra" è una scelta legittima, e resta cambiabile fino al sorteggio.
     const squadraModal = document.getElementById('squadraChoiceModal');
-    if (squadraModal && window.bootstrap) {
-      new bootstrap.Modal(squadraModal).show();
+    if (squadraModal) {
+      if (window.bootstrap) {
+        new bootstrap.Modal(squadraModal).show();
+      } else {
+        // Senza Bootstrap JS il modale resterebbe invisibile, e la card inline
+        // è soppressa proprio perché c'è lui: la domanda sparirebbe del tutto.
+        // Il form è un POST normale, quindi mostrarlo a mano basta a farlo
+        // funzionare — manca solo il fondale.
+        squadraModal.classList.add('show');
+        squadraModal.style.display = 'block';
+      }
     }
 
     const timezoneSpans = document.querySelectorAll('#user-timezone, #modify-user-timezone');

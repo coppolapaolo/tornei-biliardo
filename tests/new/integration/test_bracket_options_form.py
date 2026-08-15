@@ -9,6 +9,8 @@ irraggiungibili come lo erano i formati stessi.
 
 from __future__ import annotations
 
+import json
+import re
 import uuid
 from datetime import date, timedelta
 
@@ -189,3 +191,35 @@ class TestAvvisoDistanzePari:
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
+
+
+class TestMinimiDiFormatoNellAttributo:
+    """I pavimenti del formato arrivano al JS come JSON in un data attribute.
+
+    Regressione da una review: `|tojson` **non** scappa le virgolette doppie
+    (scappa `< > & '`), quindi in un attributo delimitato da doppi apici il
+    JSON si chiude alla prima chiave e l'HTML si rompe. Il JS leggeva un
+    frammento, `JSON.parse` falliva e — con il `try/catch` — il minimo iscritti
+    e la stima dei turni smettevano di funzionare **in silenzio**.
+
+    Stessa regola degli `onclick` in `templates/CLAUDE.md`: attributo con
+    apici singoli.
+    """
+
+    def test_il_json_dei_minimi_resta_leggibile(self, client, director):
+        _login(client, director)
+        pagina = client.get("/admin/gara/create_standalone").get_data(as_text=True)
+
+        match = re.search(r"data-minimum-players='([^']+)'", pagina)
+        assert match, "l'attributo dev'essere delimitato da apici singoli"
+
+        minimi = json.loads(match.group(1))
+        assert minimi["direct_elimination"] == 4
+        assert minimi["double_knockout"] == 8
+
+    def test_l_attributo_non_usa_i_doppi_apici(self, client, director):
+        """Il caso che rompeva: `data-minimum-players="{"direct_...` ."""
+        _login(client, director)
+        pagina = client.get("/admin/gara/create_standalone").get_data(as_text=True)
+
+        assert 'data-minimum-players="' not in pagina

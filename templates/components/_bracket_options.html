@@ -16,9 +16,14 @@
 {% set g = gara if gara is defined else None %}
 
 {# I minimi di formato li passa il server: sono gli stessi che il sorteggio usa
-   come pavimento del tabellone. In un file .js sarebbero una seconda verità. #}
+   come pavimento del tabellone. In un file .js sarebbero una seconda verità.
+
+   L'attributo vuole gli **apici singoli**: `|tojson` non scappa le virgolette
+   doppie (scappa `< > & '`), quindi dentro un attributo a doppi apici il JSON
+   lo chiuderebbe alla prima chiave. Stessa regola degli `onclick` in
+   `templates/CLAUDE.md`. #}
 <div class="mb-3" id="bracket_options_section" style="display:none"
-     data-minimum-players="{{ bracket_minimum_players|tojson }}">
+     data-minimum-players='{{ bracket_minimum_players|tojson }}'>
   <div class="c7-card" style="background:var(--c7-bg)">
     <div class="c7-kicker mb-3">{{ _('Opzioni del tabellone') }}</div>
 
