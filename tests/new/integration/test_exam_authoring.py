@@ -145,6 +145,37 @@ class TestExamAuthoring:
         with pytest.raises(ValidationError):
             ExamService.reorder_exam_challenges(exam.id, examiner, [first.id])
 
+        # Un duplicato copre tutti gli id ma lascia l'ordine ambiguo: va
+        # rifiutato, non deduplicato in silenzio.
+        with pytest.raises(ValidationError):
+            ExamService.reorder_exam_challenges(
+                exam.id, examiner, [first.id, first.id, second.id]
+            )
+
+        assert [d.order for d in exam.challenges.all()] == [1, 2]
+
+    def test_an_explicit_position_must_start_from_one(self, examiner):
+        """Le posizioni negative sono il parcheggio del riordino, non un ordine."""
+        exam = ExamService.create_exam(examiner, "Posizione esplicita")
+
+        with pytest.raises(ValidationError):
+            ExamService.add_challenge_to_exam(
+                exam.id, _make_challenge().id, examiner, max_score=5, order=0
+            )
+        with pytest.raises(ValidationError):
+            ExamService.add_challenge_to_exam(
+                exam.id, _make_challenge().id, examiner, max_score=5, order=-1
+            )
+
+        first = _make_challenge()
+        ExamService.add_challenge_to_exam(
+            exam.id, first.id, examiner, max_score=5, order=1
+        )
+        with pytest.raises(ConflictError):
+            ExamService.add_challenge_to_exam(
+                exam.id, _make_challenge().id, examiner, max_score=5, order=1
+            )
+
     def test_max_score_is_required_for_numeric_and_forbidden_for_pass_fail(
         self, examiner
     ):

@@ -198,11 +198,18 @@ class ExamService:
                 .scalar()
             )
             order = (max_order or 0) + 1
-        elif (
-            ExamChallenge.query.filter_by(exam_id=exam_id, order=order).first()
-            is not None
-        ):
-            raise ConflictError("Posizione già occupata nell'esame")
+        else:
+            # Le posizioni partono da 1. Ammettere lo zero o un negativo non
+            # sarebbe solo brutto in lista: `reorder_exam_challenges` parcheggia
+            # le posizioni sui negativi, e una riga già negativa collide con il
+            # parcheggio facendo fallire un riordino altrimenti legittimo.
+            if order <= 0:
+                raise ValidationError("La posizione parte da 1")
+            if (
+                ExamChallenge.query.filter_by(exam_id=exam_id, order=order).first()
+                is not None
+            ):
+                raise ConflictError("Posizione già occupata nell'esame")
 
         exam_challenge = ExamChallenge(
             exam_id=exam_id,
@@ -266,10 +273,14 @@ class ExamService:
         ExamService._require_edit(exam, actor)
 
         by_challenge = {ec.challenge_id: ec for ec in exam.challenges.all()}
-        requested = list(dict.fromkeys(ordered_challenge_ids))
-        if set(requested) != set(by_challenge):
+        requested = list(ordered_challenge_ids)
+        # «Esattamente» vuol dire anche una volta sola: deduplicare in silenzio
+        # farebbe passare un elenco ambiguo e ne applicherebbe una lettura
+        # arbitraria, che non è ciò che il chiamante ha chiesto.
+        if len(requested) != len(set(requested)) or set(requested) != set(by_challenge):
             raise ValidationError(
-                "Il riordino deve elencare esattamente i drill dell'esame"
+                "Il riordino deve elencare esattamente i drill dell'esame, "
+                "ciascuno una volta sola"
             )
 
         for index, challenge_id in enumerate(requested, start=1):
