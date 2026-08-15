@@ -863,6 +863,31 @@ input[type="number"].form-control {
    sopra e si legge come una barra grigia dietro al testo. */
 .c7-topline { border-top: 1px solid var(--c7-line-soft); margin-top: 14px; padding-top: 14px; }
 .c7-sep { color: var(--c7-ink-faint); }
+
+/* Blocco "condividi questo indirizzo": etichetta, link, pulsante, nota.
+   Impila da se' invece di affidarsi alle utility di Bootstrap, cosi' il
+   pulsante resta largo quanto il link anche dentro un contenitore di blocco. */
+.c7-linkshare { display: flex; flex-direction: column; gap: 10px; }
+.c7-linkshare .c7-label { margin-bottom: 0; }
+.c7-linkshare .form-text { margin-top: 0; }
+
+/* Indirizzo da leggere e copiare (il link pubblico di iscrizione). Superficie
+   affossata come ogni cosa non modificabile, e testo che va a capo: un link si
+   mostra intero, perche' c'e' chi lo trascrive a mano o lo detta al telefono.
+   `user-select: all` lo seleziona tutto con un click, cosi' resta copiabile
+   anche dove la clipboard API non c'e'. */
+.c7-linkbox {
+  background: var(--c7-sunken);
+  color: var(--c7-ink-soft);
+  border-radius: var(--c7-r-field);
+  padding: 14px 16px;
+  font-family: var(--c7-font-mono);
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1.5;
+  word-break: break-all;
+  user-select: all;
+}
 .c7-crumbs { display: flex; align-items: center; gap: 12px; font-size: 12px; font-weight: 700; color: var(--c7-ink-muted); }
 .c7-crumbs i { font-size: 9px; }
 .c7-crumbs .is-current { color: var(--c7-ink); }
