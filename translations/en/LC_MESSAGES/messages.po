@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-15 17:05+0000\n"
+"POT-Creation-Date: 2026-08-15 19:49+0000\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -248,7 +248,9 @@ msgstr "The exam is about to start"
 msgid ""
 "L'esaminatore ha aperto la sessione di «%(exam)s»: accetta l'inizio per "
 "far partire la valutazione."
-msgstr "The examiner has opened the «%(exam)s» session: accept the start to begin the assessment."
+msgstr ""
+"The examiner has opened the «%(exam)s» session: accept the start to begin"
+" the assessment."
 
 #: models/exam/services.py:762
 msgid "Accetta l'inizio"
@@ -448,7 +450,9 @@ msgstr "You are an examiner"
 msgid ""
 "Ora puoi comporre esami e certificarli di persona. Dichiara le tue "
 "disponibilità per farti trovare."
-msgstr "You can now put exams together and certify them in person. Publish your availability so people can find you."
+msgstr ""
+"You can now put exams together and certify them in person. Publish your "
+"availability so people can find you."
 
 #: models/gamification/frontend_bridge.py:526
 #, python-format
@@ -2444,7 +2448,9 @@ msgstr "Which team are you playing for?"
 msgid ""
 "Questa gara tiene lontani i compagni di squadra nel sorteggio. Dicci con "
 "chi giochi, così il tabellone può farlo."
-msgstr "This competition keeps teammates apart in the draw. Tell us who you play for, so the bracket can do it."
+msgstr ""
+"This competition keeps teammates apart in the draw. Tell us who you play "
+"for, so the bracket can do it."
 
 #: templates/gara_detail.html:726
 msgid ""
@@ -2467,7 +2473,9 @@ msgid ""
 "Sorteggiare il tabellone? Le iscrizioni si chiudono, le squadre si "
 "congelano e il percorso di ogni giocatore fino alla finale resta questo, "
 "salvo annullare il sorteggio."
-msgstr "Draw the bracket? Entries close, teams are frozen, and every player's path to the final stays as drawn unless you cancel the draw."
+msgstr ""
+"Draw the bracket? Entries close, teams are frozen, and every player's "
+"path to the final stays as drawn unless you cancel the draw."
 
 #: templates/gara_detail.html:731
 msgid ""
@@ -4794,7 +4802,9 @@ msgstr "Bracket options"
 msgid ""
 "Al completo sono {n} turni. Il numero definitivo lo fissa il sorteggio, "
 "sugli iscritti che si presentano."
-msgstr "At full capacity that is {n} rounds. The final number is set by the draw, on the players who actually turn up."
+msgstr ""
+"At full capacity that is {n} rounds. The final number is set by the draw,"
+" on the players who actually turn up."
 
 #: templates/components/_bracket_options.html:39
 msgid "Evita incontri fra compagni di squadra nei primi turni"
@@ -5550,23 +5560,12 @@ msgstr "First to arrive wins"
 msgid "Altrimenti si giocano tutti i set previsti."
 msgstr "Otherwise every scheduled set is played."
 
-#: templates/components/_distance_configurator.html:79
+#: templates/components/_distance_configurator.html:83
 msgid ""
-"Su un tabellone il numero esatto di rack deve essere dispari: con un "
-"numero pari la partita può finire in parità e il nodo resterebbe senza "
-"vincitore."
-msgstr ""
-"On a bracket the exact number of racks must be odd: an even number can "
-"end level and the node would have no winner."
-
-#: templates/components/_distance_configurator.html:80
-msgid ""
-"Su un tabellone il numero esatto di set deve essere dispari: con un "
-"numero pari la partita può finire in parità e il nodo resterebbe senza "
-"vincitore."
-msgstr ""
-"On a bracket the exact number of sets must be odd: an even number can end"
-" level and the node would have no winner."
+"Sul tabellone si gioca sempre a chi arriva prima: conta solo chi passa il"
+" turno, quindi i rack giocati dopo che il vincitore è deciso non "
+"cambierebbero nulla."
+msgstr "On a bracket you always race to the distance: only who goes through matters, so racks played after the winner is decided would change nothing."
 
 #: templates/components/_double_knockout_algorithm_info.html:9
 #, python-format
@@ -7449,13 +7448,18 @@ msgid ""
 "Quanti punti di campionato vale ciascun piazzamento nelle gare a "
 "tabellone. I pari merito di una banda prendono lo stesso punteggio: i "
 "quattro quartifinalisti sono tutti quinti."
-msgstr "How many championship points each finishing place is worth in bracket competitions. Everyone tied in a band scores the same: the four quarter-finalists are all fifth."
+msgstr ""
+"How many championship points each finishing place is worth in bracket "
+"competitions. Everyone tied in a band scores the same: the four quarter-"
+"finalists are all fifth."
 
 #: templates/components/_position_points.html:44
 msgid ""
 "Lasciando i valori proposti il campionato continua a seguire la tabella "
 "di default, invece di portarsene dietro una copia."
-msgstr "Leaving the suggested values means the championship keeps following the default table instead of carrying its own copy."
+msgstr ""
+"Leaving the suggested values means the championship keeps following the "
+"default table instead of carrying its own copy."
 
 #: templates/components/_proposal_labels.html:19
 #: templates/individual_match/proposals.html:169
@@ -8281,7 +8285,9 @@ msgstr "Examiner:"
 msgid ""
 "Revocare il ruolo di Esaminatore? Gli esami creati e le certificazioni "
 "rilasciate restano validi."
-msgstr "Revoke the Examiner role? Exams already created and certifications already issued stay valid."
+msgstr ""
+"Revoke the Examiner role? Exams already created and certifications "
+"already issued stay valid."
 
 #: templates/components/_user_info_card.html:52
 msgid "Revoca ruolo"
@@ -11955,7 +11961,9 @@ msgstr "Role holders"
 msgid ""
 "Con la propagazione il ruolo si diffonde senza passare da admin: qui si "
 "legge da dove arriva ciascun titolare."
-msgstr "With propagation the role spreads without going through an admin: here you can see where each holder got it from."
+msgstr ""
+"With propagation the role spreads without going through an admin: here "
+"you can see where each holder got it from."
 
 #: templates/roles/holders.html:20
 msgid "Concesso da"
@@ -11969,7 +11977,9 @@ msgstr "Revoked on"
 msgid ""
 "Revocare il ruolo? Gli esami creati e le certificazioni rilasciate "
 "restano validi."
-msgstr "Revoke the role? Exams already created and certifications already issued stay valid."
+msgstr ""
+"Revoke the role? Exams already created and certifications already issued "
+"stay valid."
 
 #: templates/roles/holders.html:51
 msgid "Revoca"
@@ -11995,7 +12005,9 @@ msgstr "You already have a pending request, sent on"
 msgid ""
 "Un esaminatore compone gli esami e ne certifica di persona l'esito. "
 "Scegli a chi indirizzare la richiesta: basta che uno solo approvi."
-msgstr "An examiner puts exams together and certifies the outcome in person. Choose who to send the request to: only one of them needs to approve."
+msgstr ""
+"An examiner puts exams together and certifies the outcome in person. "
+"Choose who to send the request to: only one of them needs to approve."
 
 #: templates/roles/request_form.html:33
 msgid "Destinatari"
@@ -12017,7 +12029,9 @@ msgstr "Send request"
 msgid ""
 "Basta una sola approvazione: chi approva per primo concede il ruolo e la "
 "richiesta si chiude per gli altri."
-msgstr "A single approval is enough: whoever approves first grants the role, and the request closes for everyone else."
+msgstr ""
+"A single approval is enough: whoever approves first grants the role, and "
+"the request closes for everyone else."
 
 #: templates/roles/requests.html:24
 msgid "Richiesto il"

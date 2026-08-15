@@ -179,14 +179,21 @@ class TestFormDiModifica:
 
 
 class TestAvvisoDistanzePari:
-    def test_il_configuratore_porta_il_messaggio(self, client, director):
-        """La regola è del server; qui c'è il feedback immediato."""
+    def test_il_configuratore_spiega_perche_non_si_sceglie(self, client, director):
+        """Sul tabellone il numero esatto non si avverte: si toglie.
+
+        Prima qui c'era un avviso che chiedeva solo un numero **dispari**.
+        Era la lettura stretta dello stesso principio, e lasciava passare una
+        configurazione comunque inutile: il vincitore è deciso a metà partita
+        e i rack seguenti non cambiano né il tabellone né la classifica.
+        """
         _login(client, director)
         pagina = client.get("/admin/gara/create_standalone").get_data(as_text=True)
 
-        assert 'id="bracket-distance-warning"' in pagina
-        assert "data-msg-racks" in pagina
-        assert "data-msg-sets" in pagina
+        assert 'id="bracket-distance-note"' in pagina
+        assert 'id="exact_number_row"' in pagina
+        # L'avviso vecchio non deve sopravvivere come codice morto.
+        assert "bracket-distance-warning" not in pagina
 
 
 if __name__ == "__main__":

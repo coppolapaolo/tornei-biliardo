@@ -529,12 +529,11 @@
                 }
             }
 
-            // Il passo che contiene il configuratore della distanza non avanza
-            // con una configurazione che il server rifiuterebbe (numero esatto
-            // di rack o di set pari su un tabellone). Il passo si riconosce dal
-            // riquadro d'avviso invece che dal numero, cosi' riordinare il
-            // wizard non slega di nuovo il controllo.
-            if (stepContainer.querySelector('#bracket-distance-warning')) {
+            // Il passo che contiene il configuratore della distanza chiede a
+            // lui se si puo' avanzare. Il passo si riconosce dal configuratore
+            // invece che dal numero, cosi' riordinare il wizard non slega il
+            // controllo.
+            if (stepContainer.querySelector('#distance-configuration')) {
                 if (typeof validateDistanceConfig === 'function' && !validateDistanceConfig()) {
                     isValid = false;
                 }

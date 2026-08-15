@@ -67,7 +67,7 @@ def _third_place_applies(strategy: str, double_ko_rounds: Optional[int]) -> bool
 def _bracket_derived_fields(data: Dict[str, Any]) -> Dict[str, Any]:
     """Campi che sul tabellone non sono una scelta, ma una conseguenza.
 
-    Quattro impostazioni del form non hanno alcun effetto su una gara a
+    Cinque impostazioni del form non hanno alcun effetto su una gara a
     tabellone, e chiederle significava solo far credere che decidessero
     qualcosa:
 
@@ -84,6 +84,12 @@ def _bracket_derived_fields(data: Dict[str, Any]) -> Dict[str, Any]:
     * **numero di turni** — lo riscrive il sorteggio sugli iscritti effettivi
       (ADR-038). Qui vale la stima da ``max_participants``, che è anche il
       tetto massimo: il valore digitato dal director veniva buttato comunque.
+    * **numero esatto di rack (e di set)** — sul tabellone conta solo chi passa
+      il turno. Il vincitore è deciso appena uno arriva a ``(N+1)/2``, e i rack
+      dopo quel punto non cambiano né il tabellone né la classifica, che è per
+      posizione e non guarda i rack: sono solo partite più lunghe a parità di
+      risultato. Con un numero pari è anche peggio, perché la partita può finire
+      in parità e il nodo resterebbe senza vincitore.
 
     Il minimo iscritti viene alzato al pavimento del formato: il default del
     form è 6, che per il doppio KO (che ne vuole 8) avrebbe dato una gara
@@ -97,6 +103,9 @@ def _bracket_derived_fields(data: Dict[str, Any]) -> Dict[str, Any]:
         "withdraw_policy": WithdrawPolicy.FORFEIT.value,
         "odd_number_policy": OddNumberPolicy.BYE.value,
         "tiebreaker_enabled": False,
+        # Sempre "a chi arriva prima", sui rack e sui set.
+        "is_race_to": True,
+        "is_race_to_sets": True,
     }
 
     floor = minimum_players_for(strategy)

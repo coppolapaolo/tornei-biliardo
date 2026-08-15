@@ -100,7 +100,7 @@ class TestOpzioniDiTabellone:
 
 
 class TestCampiDerivati:
-    """Quattro impostazioni del form non hanno alcun effetto sul tabellone.
+    """Cinque impostazioni del form non hanno alcun effetto sul tabellone.
 
     Prima venivano chieste comunque, e la risposta veniva ignorata in silenzio:
     il director poteva scegliere "escludi dal turno" o accendere lo spareggio
@@ -124,6 +124,7 @@ class TestCampiDerivati:
             "odd_number_policy": "trio",
             "tiebreaker_enabled": "on",
             "rounds_count": "3",
+            "exact_number": "on",
         }
         form.update(extra)
         return form
@@ -136,6 +137,21 @@ class TestCampiDerivati:
     def test_i_bye_sono_strutturali_non_una_politica(self, app):
         data = self._parse(app, self._bracket_form("double_knockout"))
         assert data["odd_number_policy"] == "bye"
+
+    def test_la_distanza_e_sempre_a_chi_arriva_prima(self, app):
+        """Sul tabellone conta solo chi passa il turno.
+
+        Il vincitore è deciso appena uno arriva a (N+1)/2: i rack successivi
+        non cambiano né il tabellone né la classifica, che è per posizione.
+        Giocarli è solo una partita più lunga a parità di risultato.
+        """
+        de = self._parse(app, self._bracket_form("direct_elimination"))
+        assert de["is_race_to"] is True
+        assert de["is_race_to_sets"] is True
+
+    def test_fuori_dal_tabellone_il_numero_esatto_resta(self, app):
+        data = self._parse(app, self._bracket_form("amalfi"))
+        assert data["is_race_to"] is False
 
     def test_lo_spareggio_ssr_resta_spento(self, app):
         """Le strategie POSITION dichiarano `requires_tiebreaker=False`."""
