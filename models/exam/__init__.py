@@ -1,15 +1,22 @@
 """
 Module: models/exam/__init__.py
-Purpose: Exam domain initialization and exports
-Requirements: SPECIFICHE.md - Exam system
+Purpose: Dominio esame — esami come sequenza di drill, certificati di persona.
+Requirements: ADR-042 (esame certificato di persona)
 """
 
-from .models import Exam, ExamChallenge, ExamAttempt, ExamChallengeResult
+from .models import (
+    Exam,
+    ExamAttempt,
+    ExamChallenge,
+    ExamChallengeResult,
+    ExamExaminer,
+)
 from .services import ExamService
 
 __all__ = [
     # Models
     "Exam",
+    "ExamExaminer",
     "ExamChallenge",
     "ExamAttempt",
     "ExamChallengeResult",
