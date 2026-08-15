@@ -462,7 +462,7 @@ Milestone raggiunti (de-duplicazione per notifiche).
 Esami creati da director (time limit, grading criteria JSON).
 
 ### ExamChallenge
-Sfida nell'esame (ordine, peso, is_required).
+Sfida nell'esame (`order`, `max_score` per-esame). Niente `weight` né `is_required`: senza voto da calcolare il peso non ha scopo (ADR-042).
 
 ### ExamAttempt
 Tentativo studente (total_score, final_grade A-F).
