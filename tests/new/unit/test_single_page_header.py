@@ -57,3 +57,87 @@ def test_il_guscio_disegna_la_testata():
     assert HEAD_MARKUP.search(source)
     for block in ("page_back", "page_title", "page_sub", "page_actions"):
         assert f"block {block}" in source, f"blocco {block} sparito da base.html"
+
+
+# ────────────────────────────────────────────────────────────────────────────
+# I comandi della testata
+# ────────────────────────────────────────────────────────────────────────────
+#
+# Sotto lg i comandi prendono una riga tutta loro: su 390px due bottoni con
+# l'etichetta scritta non stanno accanto a freccia, titolo, badge e avatar, e il
+# titolo — che ha `flex-basis: 0` — cedeva loro tutto lo spazio finendo a
+# larghezza zero, una parola per riga.
+#
+# La riga in più la può prendere solo chi i comandi ce li ha davvero: il
+# contenitore si disegna solo se il blocco produce qualcosa, altrimenti ogni
+# pagina senza comandi si porterebbe dietro un buco sotto il titolo.
+
+
+def _render(app, page_source: str) -> str:
+    """`render_template_string` e non `from_string`: solo il primo applica i
+    context processor, e il guscio ne usa parecchi (debug, permessi, enum)."""
+    from flask import render_template_string
+
+    with app.test_request_context("/"):
+        return render_template_string(page_source)
+
+
+def _css_rule(css: str, selector: str) -> str:
+    """Il corpo di una regola, cercata a inizio riga: i commenti la nominano."""
+    marker = f"\n{selector} {{"
+    assert marker in css, f"regola {selector} sparita"
+    return css.split(marker, 1)[1].split("}", 1)[0]
+
+
+@pytest.mark.unit
+def test_i_comandi_stanno_in_un_contenitore_proprio(app):
+    html = _render(
+        app,
+        """{% extends "base.html" %}
+        {% block page_title %}Con comandi{% endblock %}
+        {% block page_actions %}<a href="/x" class="btn">Fai</a>{% endblock %}""",
+    )
+
+    assert "c7-head__actions" in html
+    # E il comando ci finisce dentro davvero, non accanto.
+    body = html.split("c7-head__actions", 1)[1]
+    assert body.index(">Fai<") < body.index("</div>")
+
+
+@pytest.mark.unit
+def test_senza_comandi_non_si_disegna_la_riga(app):
+    html = _render(
+        app,
+        """{% extends "base.html" %}
+        {% block page_title %}Senza comandi{% endblock %}""",
+    )
+
+    assert "c7-head__actions" not in html
+
+
+@pytest.mark.unit
+def test_un_blocco_di_soli_spazi_non_conta_come_comando(app):
+    """È il caso normale: `{% if %}` che non scatta lascia solo indentazione."""
+    html = _render(
+        app,
+        """{% extends "base.html" %}
+        {% block page_title %}Comandi condizionati{% endblock %}
+        {% block page_actions %}
+            {% if false %}<a href="/x">Mai</a>{% endif %}
+        {% endblock %}""",
+    )
+
+    assert "c7-head__actions" not in html
+
+
+@pytest.mark.unit
+def test_i_comandi_lasciano_la_riga_del_titolo_sotto_lg():
+    """La regola CSS che tiene in piedi tutto il resto."""
+    css = (ROOT / "static" / "css" / "theme-7c.css").read_text(encoding="utf-8")
+
+    assert "100%" in _css_rule(
+        css, ".c7-head__actions"
+    ), "i comandi non prendono più una riga propria"
+    assert "flex-wrap: wrap" in _css_rule(
+        css, ".c7-head"
+    ), "senza `flex-wrap` sulla testata la riga dei comandi non va a capo"

@@ -293,6 +293,12 @@
                `content`, che produrrebbe due testate sovrapposte, e NON
                sostituendo `page_head` per intero, che farebbe sparire la
                freccia e l'avatar del mobile. #}
+            {# Le azioni si raccolgono qui prima di disegnare la testata, per
+               poterle **omettere** quando la pagina non ne ha: sotto lg
+               prendono una riga tutta loro, e una riga vuota lascerebbe un
+               buco sotto il titolo in ogni pagina senza comandi. Il blocco
+               resta sovrascrivibile dalle pagine come prima. #}
+            {% set page_actions_html %}{% block page_actions %}{% endblock %}{% endset %}
             {% block page_head %}
             <header class="c7-head">
                 {% block page_back %}
@@ -308,7 +314,13 @@
                     <span class="c7-title">{% block page_title %}{{ (self.title()|trim).split(' - ')[0]|trim }}{% endblock %}</span>
                     <span class="c7-head__sub">{% block page_sub %}{% endblock %}</span>
                 </div>
-                {% block page_actions %}{% endblock %}
+                {# Sotto lg le azioni vanno a capo invece di comprimere il
+                   titolo: due comandi con l'etichetta scritta non stanno su
+                   390px accanto a freccia, titolo, badge e avatar, e il
+                   titolo finiva strizzato a una parola per riga. #}
+                {% if page_actions_html|trim %}
+                <div class="c7-head__actions">{{ page_actions_html }}</div>
+                {% endif %}
 
                 {# Badge di livello (§11-quater). I guadagni XP per scelta non
                    producono toast: questo e' il loro unico riscontro, quindi
