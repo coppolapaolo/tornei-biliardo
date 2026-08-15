@@ -234,16 +234,16 @@ class ExamAttempt(BaseModel):
     billiard_hall_id = db.Column(
         db.Integer, db.ForeignKey("billiard_hall.id"), nullable=True
     )
-    # Appuntamento che ha generato la sessione. Colonna semplice per ora: la
-    # tabella ``exam_request`` arriva in Fase 3 e la FK si dichiara lì, quando
-    # esiste il referente (una ForeignKey verso una tabella assente romperebbe
-    # ``db.create_all()``).
-    exam_request_id = db.Column(db.Integer, nullable=True, index=True)
+    # Appuntamento che ha generato la sessione (NULL in autonomia).
+    exam_request_id = db.Column(
+        db.Integer, db.ForeignKey("exam_request.id"), nullable=True
+    )
 
     exam = db.relationship("Exam", back_populates="attempts")
     user = db.relationship("User", foreign_keys=[user_id])
     examiner = db.relationship("User", foreign_keys=[examiner_id])
     billiard_hall = db.relationship("BilliardHall")
+    exam_request = db.relationship("ExamRequest", back_populates="attempt")
 
     challenge_results = db.relationship(
         "ExamChallengeResult",
@@ -262,6 +262,18 @@ class ExamAttempt(BaseModel):
             "exam_id",
             unique=True,
             sqlite_where=db.text("status = 'in_progress' AND mode = 'self_practice'"),
+        ),
+        # Una sola sessione per appuntamento. Attenzione: **non** è il presidio
+        # della corsa «due esaminatori accettano insieme» — quella si gioca
+        # molto prima, su ``exam_request_recipient``, e la vince l'indice
+        # parziale dichiarato lì. Questo protegge la sua corsa: due aperture di
+        # sessione sullo stesso appuntamento. Parziale sul NOT NULL perché i
+        # tentativi in autonomia hanno tutti ``exam_request_id`` a NULL.
+        db.Index(
+            "uq_exam_attempt_request",
+            "exam_request_id",
+            unique=True,
+            sqlite_where=db.text("exam_request_id IS NOT NULL"),
         ),
     )
 
