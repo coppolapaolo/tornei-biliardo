@@ -183,16 +183,22 @@ def losers_feed_permutation(wb_round: int, n_matches: int) -> List[int]:
     """Permutazione dei perdenti del winners bracket verso il losers.
 
     Il round *maggiore* `L_{2j}` accoppia il vincitore di `(L, 2j-1, s)`
-    con il perdente di `(W, j+1, sigma(s))`. La baseline e' l'inversione
+    con il perdente di `(W, j+1, sigma(s))`. Si usa l'inversione
     `sigma(s) = n_matches - 1 - s`, che allontana i perdenti recenti dai
     sopravvissuti provenienti dallo stesso ramo.
 
-    E' isolata in una funzione propria — invece che inline nel generatore —
-    per poterla raffinare (schemi di incrocio piu' elaborati) senza
-    toccare il codice che costruisce il tabellone.
+    **Non e' un segnaposto in attesa di una regola ufficiale.** Il regolamento
+    FISBB non prescrive l'incrocio, e il tabellone stampato della federazione
+    e' un esempio compilato, non una specifica: non c'e' un'autorita' da
+    consultare. L'inversione e' quindi la scelta, presa perche' e' la
+    convenzione diffusa e perche' evita la rivincita immediata fra chi si e'
+    appena incontrato.
 
-    `wb_round` non e' usato dalla baseline ma fa parte della firma: uno
-    schema raffinato dipende dal round di provenienza.
+    Resta in una funzione propria — invece che inline nel generatore — perche'
+    e' il punto in cui un giorno si potrebbe volere uno schema piu' elaborato,
+    e cambiarlo li' non tocca il codice che costruisce il tabellone. Per lo
+    stesso motivo `wb_round` sta nella firma pur non servendo qui: uno schema
+    che dipende dal round di provenienza non cambierebbe i chiamanti.
     """
     _require_positive(wb_round, "wb_round")
     _require_positive(n_matches, "n_matches")
