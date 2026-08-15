@@ -1,0 +1,62 @@
+{# templates/help/index.html — copertina del mini-sito di aiuto. #}
+{% extends "help/_base.html" %}
+{% import "help/_ui.html" as ui with context %}
+
+{% block title %}{{ help.title }}{% endblock %}
+{% block page_title %}{{ _('Guida') }}{% endblock %}
+{% block page_sub %}{{ help.tagline }}{% endblock %}
+
+{% block page_back %}
+{# Dalla copertina si esce verso l'app, non verso la guida stessa. #}
+<a class="c7-head__back d-lg-none" href="{{ url_for('main.index') }}" aria-label="{{ _('Home') }}">
+    <i class="fas fa-circle-nodes"></i>
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="c7-stack help-doc">
+
+    <div class="c7-card c7-card--accent">
+        <div class="c7-kicker">{{ _('Come funziona') }}</div>
+        <h1 class="mt-1 mb-2" style="font-size:22px;font-weight:800;letter-spacing:-.02em">{{ help.title }}</h1>
+        <div class="help-prose" style="color:var(--c7-accent-dim)">{{ help_text(help.intro) }}</div>
+    </div>
+
+    {{ ui.search_box() }}
+
+    {% if quick_start %}
+    <div>
+        <div class="c7-kicker mb-2">{{ _('Comincia da qui') }}</div>
+        <div class="help-cards help-cards--2">
+            {% for page in quick_start %}
+            {{ ui.page_card(page) }}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div>
+        <div class="c7-kicker mb-2">{{ _('Tutte le sezioni') }}</div>
+        <div class="help-cards">
+            {% for section in help.sections %}
+            <a class="help-cardlink" href="{{ url_for('help.section', section_id=section.id) }}">
+                <div class="d-flex gap-3 align-items-start">
+                    <i class="fas {{ section.icon }} mt-1" aria-hidden="true"></i>
+                    <div class="flex-fill">
+                        {% if section.kicker %}<div class="c7-kicker">{{ section.kicker }}</div>{% endif %}
+                        <div class="help-cardlink__title">{{ section.title }}</div>
+                        <div class="help-cardlink__desc">{{ section.summary }}</div>
+                        <div class="help-cardlink__meta">
+                            <span class="c7-label">
+                                {{ _('%(n)s pagine', n=help.pages_of(section)|length) }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

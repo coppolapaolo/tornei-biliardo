@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-14 23:20+0000\n"
+"POT-Creation-Date: 2026-08-15 09:39+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -515,7 +515,7 @@ msgstr ""
 msgid "Che piacere rivederti!"
 msgstr ""
 
-#: routes/auth.py:48 templates/base.html:560
+#: routes/auth.py:48 templates/base.html:573
 msgid "Tutto pronto per giocare?"
 msgstr ""
 
@@ -1218,7 +1218,7 @@ msgstr ""
 msgid "Drill completati in gara"
 msgstr ""
 
-#: routes/gamification/features.py:55 templates/base.html:310
+#: routes/gamification/features.py:55 templates/base.html:315
 #: templates/gamification/admin/dashboard.html:102
 #: templates/gamification/admin/dashboard.html:145
 #: templates/gamification/admin/feature_create.html:69
@@ -1576,7 +1576,7 @@ msgstr ""
 msgid "direzione gara"
 msgstr ""
 
-#: templates/base.html:178 templates/base.html:253
+#: templates/base.html:178 templates/base.html:258
 msgid "giocatore"
 msgstr ""
 
@@ -1584,7 +1584,7 @@ msgstr ""
 msgid "Generale"
 msgstr ""
 
-#: templates/admin/kpi.html:37 templates/base.html:187 templates/base.html:399
+#: templates/admin/kpi.html:37 templates/base.html:187 templates/base.html:412
 msgid "Dashboard"
 msgstr ""
 
@@ -1596,74 +1596,81 @@ msgstr ""
 msgid "Match Individuali"
 msgstr ""
 
-#: templates/base.html:208
+#: templates/base.html:206 templates/base.html:394
+#: templates/gamification/admin/feature_create.html:59
+#: templates/help/_ui.html:10 templates/help/index.html:6
+msgid "Guida"
+msgstr ""
+
+#: templates/base.html:213
 msgid "Persone"
 msgstr ""
 
-#: templates/admin/users_list.html:10 templates/base.html:211
-#: templates/base.html:412 templates/gamification/admin/dashboard.html:103
+#: templates/admin/users_list.html:10 templates/base.html:216
+#: templates/base.html:425 templates/gamification/admin/dashboard.html:103
 msgid "Utenti"
 msgstr ""
 
-#: templates/base.html:216
+#: templates/base.html:221
 msgid "Richieste Direttore"
 msgstr ""
 
-#: templates/base.html:221
+#: templates/base.html:226
 msgid "Richieste Gestore Sala"
 msgstr ""
 
-#: templates/base.html:229
+#: templates/base.html:234
 msgid "Traguardi e XP"
 msgstr ""
 
-#: templates/base.html:240
+#: templates/base.html:245
 msgid "Reset DB"
 msgstr ""
 
-#: templates/base.html:251
+#: templates/base.html:256
 msgid "amministratore"
 msgstr ""
 
-#: templates/base.html:252
+#: templates/base.html:257
 msgid "direttore"
 msgstr ""
 
-#: templates/base.html:265 templates/base.html:331
+#: templates/base.html:270 templates/base.html:336
 msgid "Login"
 msgstr ""
 
-#: templates/base.html:266
+#: templates/base.html:271
 #: templates/components/_index_registration_info.html:33
 #: templates/login.html:34 templates/register.html:38
 msgid "Registrati"
 msgstr ""
 
-#: templates/base.html:283 templates/components/_gara_header.html:33
+#: templates/base.html:288 templates/components/_gara_header.html:33
+#: templates/help/index.html:11
 msgid "Home"
 msgstr ""
 
-#: templates/base.html:318
+#: templates/base.html:323
 msgid "Lv"
 msgstr ""
 
-#: templates/base.html:347
+#: templates/base.html:352
 msgid "Non è riuscito"
 msgstr ""
 
-#: templates/base.html:349
+#: templates/base.html:354
 msgid "Fatto"
 msgstr ""
 
-#: templates/base.html:351
+#: templates/base.html:356
 msgid "Attenzione"
 msgstr ""
 
-#: templates/base.html:353
+#: templates/base.html:358
 msgid "Informazione"
 msgstr ""
 
-#: templates/base.html:363 templates/challenge/create.html:8
+#: templates/base.html:368 templates/challenge/create.html:8
 #: templates/components/_campionato_create_modal.html:7
 #: templates/components/_challenge_management_modal.html:19
 #: templates/components/_challenge_management_modal.html:76
@@ -1678,20 +1685,20 @@ msgstr ""
 msgid "Chiudi"
 msgstr ""
 
-#: templates/base.html:385 templates/privacy.html:3
+#: templates/base.html:398 templates/privacy.html:3
 msgid "Privacy e Cookie"
 msgstr ""
 
-#: templates/admin/venue_manager_requests.html:14 templates/base.html:403
+#: templates/admin/venue_manager_requests.html:14 templates/base.html:416
 msgid "Sale"
 msgstr ""
 
-#: templates/base.html:421 templates/components/_user_menu.html:8
+#: templates/base.html:434 templates/components/_user_menu.html:8
 #: templates/player/notifications.html:3 templates/player/notifications.html:8
 msgid "Notifiche"
 msgstr ""
 
-#: templates/base.html:529 templates/base.html:535
+#: templates/base.html:542 templates/base.html:548
 msgid "Conferma"
 msgstr ""
 
@@ -1700,7 +1707,7 @@ msgstr ""
 #: templates/admin/campionato_wizard_step1.html:8
 #: templates/admin/campionato_wizard_step1.html:158
 #: templates/admin/campionato_wizard_step2.html:8
-#: templates/admin/gara_edit.html:11 templates/base.html:534
+#: templates/admin/gara_edit.html:11 templates/base.html:547
 #: templates/challenge/create.html:14
 #: templates/components/_campionato_create_modal.html:35
 #: templates/components/_campionato_edit_form.html:204
@@ -1723,51 +1730,51 @@ msgstr ""
 msgid "Annulla"
 msgstr ""
 
-#: templates/base.html:550
+#: templates/base.html:563
 msgid "XP OTTENUTI"
 msgstr ""
 
-#: templates/base.html:551
+#: templates/base.html:564
 msgid "LEVEL UP!"
 msgstr ""
 
-#: templates/base.html:552
+#: templates/base.html:565
 msgid "Nuovo livello raggiunto!"
 msgstr ""
 
-#: templates/base.html:553
+#: templates/base.html:566
 msgid "NUOVO TRAGUARDO!"
 msgstr ""
 
-#: templates/base.html:554
+#: templates/base.html:567
 msgid "STREAK!"
 msgstr ""
 
-#: templates/base.html:555
+#: templates/base.html:568
 msgid "Freeze attivo"
 msgstr ""
 
-#: templates/base.html:556
+#: templates/base.html:569
 msgid "STREAK PERSA"
 msgstr ""
 
-#: templates/base.html:557
+#: templates/base.html:570
 msgid "Non mollare, riprovare!"
 msgstr ""
 
-#: templates/base.html:558
+#: templates/base.html:571
 msgid "QUEST COMPLETATA!"
 msgstr ""
 
-#: templates/base.html:559
+#: templates/base.html:572
 msgid "TI DIAMO IL BENTORNATO!"
 msgstr ""
 
-#: templates/base.html:561
+#: templates/base.html:574
 msgid "Ciao!"
 msgstr ""
 
-#: templates/base.html:562
+#: templates/base.html:575
 #, python-format
 msgid "Ciao %(username)s!"
 msgstr ""
@@ -3218,7 +3225,7 @@ msgstr ""
 #: templates/gamification/admin/feature_detail.html:6
 #: templates/gamification/admin/level_config.html:6
 #: templates/gamification/admin/streak_config.html:6
-#: templates/gamification/admin/xp_config.html:6
+#: templates/gamification/admin/xp_config.html:6 templates/help/_base.html:18
 msgid "Indietro"
 msgstr ""
 
@@ -8278,10 +8285,6 @@ msgstr ""
 msgid "Crea Feature"
 msgstr ""
 
-#: templates/gamification/admin/feature_create.html:59
-msgid "Guida"
-msgstr ""
-
 #: templates/gamification/admin/feature_create.html:63
 msgid ""
 "Le feature gating controllano quali funzionalità sono disponibili agli "
@@ -8850,6 +8853,145 @@ msgstr ""
 
 #: templates/gamification/admin/xp_management.html:142
 msgid "Sei sicuro di voler resettare il livello di questo utente?"
+msgstr ""
+
+#: templates/help/_blocks.html:34
+msgid "Collegamento a questa sezione"
+msgstr ""
+
+#: templates/help/_blocks.html:87
+msgid "Ha un micro-aiuto"
+msgstr ""
+
+#: templates/help/_ui.html:9
+msgid "Percorso"
+msgstr ""
+
+#: templates/help/_ui.html:37
+#, python-format
+msgid "%(n)s min"
+msgstr ""
+
+#: templates/help/_ui.html:46
+msgid "Cerca nella guida…"
+msgstr ""
+
+#: templates/help/_ui.html:46 templates/help/search.html:6
+msgid "Cerca nella guida"
+msgstr ""
+
+#: templates/help/_ui.html:47 templates/help/search.html:5
+#: templates/public/campionatos_list.html:13
+msgid "Cerca"
+msgstr ""
+
+#: templates/help/hints.html:11 templates/help/hints.html:12
+msgid "Micro-aiuto"
+msgstr ""
+
+#: templates/help/hints.html:13
+#, python-format
+msgid "%(n)s schermate coperte"
+msgstr ""
+
+#: templates/help/hints.html:21
+msgid "A cosa serve questa pagina"
+msgstr ""
+
+#: templates/help/hints.html:23
+msgid ""
+"Raccoglie i testi già pronti per la guida contestuale: la presentazione "
+"che apparirà la prima volta che si apre una schermata, e le spiegazioni "
+"brevi da mostrare accanto ai singoli comandi. Nessuno di questi testi è "
+"ancora attivo nell'app."
+msgstr ""
+
+#: templates/help/hints.html:29
+msgid "Schermata"
+msgstr ""
+
+#: templates/help/hints.html:35
+msgid "Presentazione alla prima visita"
+msgstr ""
+
+#: templates/help/hints.html:47
+msgid "Spiegazioni accanto ai comandi"
+msgstr ""
+
+#: templates/help/hints.html:56
+msgid "spiegazione completa"
+msgstr ""
+
+#: templates/help/index.html:20
+msgid "Come funziona"
+msgstr ""
+
+#: templates/help/index.html:29
+msgid "Comincia da qui"
+msgstr ""
+
+#: templates/help/index.html:39
+msgid "Tutte le sezioni"
+msgstr ""
+
+#: templates/help/index.html:51 templates/help/section.html:7
+#, python-format
+msgid "%(n)s pagine"
+msgstr ""
+
+#: templates/help/page.html:31
+#, python-format
+msgid "%(n)s min di lettura"
+msgstr ""
+
+#: templates/help/page.html:44
+msgid "In breve, nell'app"
+msgstr ""
+
+#: templates/help/page.html:46
+msgid ""
+"Queste frasi compariranno accanto ai comandi dell'interfaccia quando sarà"
+" attiva la guida contestuale."
+msgstr ""
+
+#: templates/help/page.html:63
+msgid "Precedente"
+msgstr ""
+
+#: templates/help/page.html:69
+msgid "Successiva"
+msgstr ""
+
+#: templates/help/page.html:78
+msgid "Da leggere anche"
+msgstr ""
+
+#: templates/help/page.html:93
+msgid "In questa pagina"
+msgstr ""
+
+#: templates/help/search.html:7
+#, python-format
+msgid "%(n)s risultati"
+msgstr ""
+
+#: templates/help/search.html:17
+#, python-format
+msgid "Nessun risultato per «%(q)s»"
+msgstr ""
+
+#: templates/help/search.html:19
+msgid ""
+"Prova con una parola sola e più comune: per esempio «iscrizione», "
+"«turno», «classifica», «rack»."
+msgstr ""
+
+#: templates/help/search.html:34
+msgid "Oppure sfoglia le sezioni"
+msgstr ""
+
+#: templates/help/section.html:23
+msgid "Questa sezione non ha ancora pagine."
 msgstr ""
 
 #: templates/individual_match/admin_overview.html:4
@@ -10433,10 +10575,6 @@ msgstr ""
 
 #: templates/public/campionatos_list.html:8 templates/public/garas_list.html:52
 msgid "Lista pubblica: si consulta senza registrarsi."
-msgstr ""
-
-#: templates/public/campionatos_list.html:13
-msgid "Cerca"
 msgstr ""
 
 #: templates/public/campionatos_list.html:22

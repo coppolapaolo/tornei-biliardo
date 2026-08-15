@@ -1,0 +1,111 @@
+title: "Primo accesso: registrati ed entra"
+section: introduzione
+kind: tutorial
+audience: [tutti]
+minutes: 3
+summary: "Creare l'account, confermare l'email ed entrare la prima volta. Sono cinque minuti, una volta sola."
+screens: [auth.register, auth.login]
+related: [iscriversi_a_una_gara, profilo_e_statistiche]
+
+blocks:
+  - type: text
+    text: >-
+      Per guardare le gare non serve niente. Per **iscriverti** e per segnare i
+      punteggi serve un account: è gratuito e chiede tre informazioni.
+
+  - type: heading
+    id: registrazione
+    title: "Creare l'account"
+
+  - type: steps
+    items:
+      - title: "Apri la registrazione"
+        text: >-
+          Dalla pagina iniziale tocca **Registrati**. Se sei su computer, il
+          collegamento è nella colonna di sinistra.
+        shot: home-pubblica
+      - title: "Compila i tre campi"
+        text: >-
+          **Nome utente**: è il nome con cui comparirai nelle classifiche e che
+          vedranno gli avversari — scegline uno che ti riconosca.
+          **Email**: serve per confermare l'account e per recuperare la
+          password se la dimentichi. **Password**: almeno otto caratteri.
+        shot: registrazione
+      - title: "Conferma dall'email"
+        text: >-
+          Riceverai un messaggio con un collegamento da toccare. Serve a
+          verificare che l'indirizzo sia davvero tuo. Se non arriva entro
+          qualche minuto, controlla la posta indesiderata.
+      - title: "Entra"
+        text: >-
+          Torna sull'app e accedi con nome utente e password. Da qui in avanti
+          resti collegato: non dovrai rifarlo a ogni visita.
+
+  - type: note
+    tone: tip
+    title: "Aggiungi l'app alla schermata del telefono"
+    text: >-
+      Dal menu del browser scegli «Aggiungi a schermata Home»: comparirà
+      un'icona come quella di una vera app, e si aprirà già a tutto schermo.
+
+  - type: heading
+    id: prima_volta
+    title: "La prima volta che entri"
+
+  - type: text
+    text: >-
+      Al primo accesso l'app fa qualche domanda breve — che cosa ti interessa
+      fare, in che città giochi. Sono tutte facoltative e servono solo a
+      mostrarti per prime le gare vicine a te. Puoi cambiare le risposte in
+      qualsiasi momento dal profilo.
+
+  - type: shot
+    shot: dashboard-giocatore
+    caption: "La tua home: in alto le gare a cui sei iscritto, sotto i campionati e le gare vicine a te."
+
+  - type: heading
+    id: muoversi
+    title: "Come ci si muove"
+
+  - type: text
+    text: >-
+      Su **telefono** c'è una barra in fondo allo schermo con le cinque
+      destinazioni principali: Dashboard, Sale, Match, Challenge e Notifiche.
+      La freccia in alto a sinistra torna sempre indietro di un passo.
+
+  - type: shot
+    shot: dashboard-giocatore
+    variant: desktop
+    caption: "Su computer le stesse voci stanno nella colonna di sinistra, sempre visibile."
+
+  - type: text
+    text: >-
+      Su **computer** le stesse voci sono nella colonna di sinistra, e le
+      pagine mostrano due colonne affiancate invece di una sola: le
+      informazioni sono le stesse, solo disposte diversamente.
+
+  - type: heading
+    id: password_dimenticata
+    title: "Se dimentichi la password"
+
+  - type: steps
+    items:
+      - title: "Tocca «Password dimenticata» nella pagina di accesso"
+        text: "Ti verrà chiesto l'indirizzo email con cui ti sei registrato."
+      - title: "Controlla l'email"
+        text: >-
+          Riceverai un collegamento per impostare una password nuova. Il
+          collegamento vale poche ore: se scade, richiedine un altro.
+      - title: "Scegli la password nuova"
+        text: "Da quel momento la vecchia non funziona più."
+
+  - type: faq
+    items:
+      - q: "Posso cambiare nome utente dopo?"
+        a: "Il nome utente resta quello scelto alla registrazione, perché è il nome con cui compari nelle classifiche già pubblicate. Email e password si cambiano dal profilo."
+      - q: "Non ho ricevuto l'email di conferma."
+        a: "Controlla la posta indesiderata. Dal tuo profilo puoi chiedere di inviarla di nuovo."
+      - q: "Posso usare l'app da più dispositivi?"
+        a: "Sì. Lo stesso account funziona da telefono, tablet e computer, anche contemporaneamente."
+      - q: "Come si cancella l'account?"
+        a: "Dal profilo, voce «Elimina account». I tuoi risultati sportivi restano nelle classifiche storiche ma senza il tuo nome. Vedi [Privacy e dati](/aiuto/account/privacy_e_dati)."

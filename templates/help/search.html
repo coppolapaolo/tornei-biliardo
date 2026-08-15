@@ -1,0 +1,47 @@
+{# templates/help/search.html — risultati della ricerca nella guida. #}
+{% extends "help/_base.html" %}
+{% import "help/_ui.html" as ui with context %}
+
+{% block title %}{{ _('Cerca') }} - {{ help.title }}{% endblock %}
+{% block page_title %}{{ _('Cerca nella guida') }}{% endblock %}
+{% block page_sub %}{% if query %}{{ _('%(n)s risultati', n=results|length) }}{% endif %}{% endblock %}
+
+{% block content %}
+<div class="c7-stack help-doc">
+
+    {{ ui.crumbs() }}
+    {{ ui.search_box(query) }}
+
+    {% if query and not results %}
+    <div class="c7-card">
+        <div class="fw-bold mb-1">{{ _('Nessun risultato per «%(q)s»', q=query) }}</div>
+        <div class="help-prose">
+            {{ _('Prova con una parola sola e più comune: per esempio «iscrizione», «turno», «classifica», «rack».') }}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if results %}
+    <div class="help-cards">
+        {% for page in results %}
+        {{ ui.page_card(page) }}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if not query %}
+    <div>
+        <div class="c7-kicker mb-2">{{ _('Oppure sfoglia le sezioni') }}</div>
+        <div class="help-cards">
+            {% for section in help.sections %}
+            <a class="help-cardlink" href="{{ url_for('help.section', section_id=section.id) }}">
+                <div class="help-cardlink__title">{{ section.title }}</div>
+                <div class="help-cardlink__desc">{{ section.summary }}</div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

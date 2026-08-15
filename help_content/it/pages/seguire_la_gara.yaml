@@ -1,0 +1,143 @@
+title: "Seguire la gara: turni e classifiche"
+section: giocare
+kind: approfondimento
+audience: [giocatore, tutti]
+minutes: 4
+summary: "La pagina della gara ha tre viste: le partite del turno, la classifica e gli iscritti. Come si leggono e cosa vuol dire ogni etichetta."
+screens: [admin.competition.gara_detail]
+related: [giocare_una_partita, classifiche]
+
+blocks:
+  - type: text
+    text: >-
+      La pagina della gara è il centro di tutto: da lì si vede chi gioca contro
+      chi, come stanno andando le partite e come si muove la classifica. È
+      pubblica: puoi mandarne il collegamento a chi non ha l'app.
+
+  - type: heading
+    id: linguette
+    title: "Le tre viste"
+
+  - type: text
+    text: >-
+      Su telefono, in cima alla pagina, ci sono tre o quattro linguette. Sono
+      la stessa pagina vista da tre angolazioni: nessuna informazione si perde
+      passando dall'una all'altra. Su computer sono tutte visibili insieme, in
+      due colonne.
+
+  - type: options
+    items:
+      - name: "Turni"
+        text: "Le partite, raggruppate per turno. È la vista di partenza durante la serata."
+        hint: gara.turni
+      - name: "Classifica"
+        text: "Come sono ordinati i giocatori in questo momento."
+        hint: gara.classifica
+      - name: "Iscritti"
+        text: "Chi partecipa, e chi è eventualmente in lista d'attesa."
+      - name: "Gestione"
+        text: "Compare solo al direttore di gara: i comandi per condurre la serata."
+
+  - type: heading
+    id: turni
+    title: "La vista dei turni"
+
+  - type: shot
+    shot: gara-turni
+    caption: "Il turno in corso è in cima, i turni già finiti sotto. Ogni riquadro è una partita."
+
+  - type: text
+    text: >-
+      Il turno più recente sta in alto. Ogni riquadro è una partita e porta
+      un'etichetta che ne dice lo stato:
+
+  - type: options
+    title: "Le etichette delle partite"
+    items:
+      - name: "In corso"
+        text: "Si sta giocando adesso. Il punteggio che vedi è quello reale, si aggiorna da solo."
+      - name: "Conclusa"
+        text: "Finita. La coroncina è accanto al vincitore."
+      - name: "Da giocare"
+        text: "Coppia già formata, partita non ancora cominciata. Spesso in attesa che si liberi un tavolo."
+      - name: "Bloccato"
+        text: >-
+          La partita appartiene a un turno già chiuso: il risultato non è più
+          modificabile perché il turno successivo è già partito e si basa su
+          quel risultato.
+      - name: "X a tavolino"
+        text: >-
+          Nessun avversario per quel turno, per via del numero dispari di
+          giocatori. Vedi [Quando i giocatori sono
+          dispari](/aiuto/approfondimenti/numero_dispari).
+
+  - type: note
+    tone: info
+    title: "Il numero del tavolo"
+    text: >-
+      Se la sala ha i tavoli configurati, ogni partita in corso mostra il suo:
+      «Tavolo 3». Quando la partita finisce il tavolo si libera e passa alla
+      coppia successiva in attesa.
+
+  - type: heading
+    id: classifica
+    title: "La vista della classifica"
+
+  - type: shot
+    shot: gara-classifica
+    caption: "La classifica di una gara conclusa: posizione, nome, vittorie e differenza rack."
+
+  - type: text
+    text: >-
+      La classifica si aggiorna alla fine di ogni turno, non a ogni partita:
+      per questo può restare ferma per un po' anche mentre si gioca. Le due
+      colonne di numeri a destra sono, nell'ordine, le **vittorie** e la
+      **differenza rack** (i rack vinti meno quelli persi).
+
+  - type: text
+    text: >-
+      Non tutte le gare ordinano allo stesso modo: alcune contano i rack
+      totali, altre le posizioni in un tabellone. Le tre modalità sono spiegate
+      in [Come si calcolano le
+      classifiche](/aiuto/approfondimenti/classifiche).
+
+  - type: heading
+    id: in_diretta
+    title: "Seguire una gara in diretta"
+
+  - type: text
+    text: >-
+      Mentre si gioca, la pagina si aggiorna da sola ogni pochi secondi: non
+      serve ricaricarla. Le gare con partite in corso compaiono nella pagina
+      iniziale sotto **In diretta ora**, con il punteggio dei tavoli attivi.
+
+  - type: shot
+    shot: home-pubblica
+    caption: "La sezione «In diretta ora» mostra le gare in corso e i punteggi ai tavoli, visibile anche senza account."
+
+  - type: heading
+    id: fine_gara
+    title: "Quando la gara finisce"
+
+  - type: text
+    text: >-
+      Finito l'ultimo turno, la gara diventa **Conclusa** e la classifica
+      diventa definitiva. Se ci sono giocatori a pari merito nelle posizioni
+      che contano, può esserci uno **spareggio** prima del verdetto: la gara
+      resta in attesa finché non viene giocato.
+
+  - type: text
+    text: >-
+      Se la gara faceva parte di un campionato, i suoi risultati vengono sommati
+      alla classifica generale, che trovi nella pagina del campionato.
+
+  - type: faq
+    items:
+      - q: "Perché la classifica non cambia dopo la mia vittoria?"
+        a: "Si ricalcola quando tutte le partite del turno sono concluse. Finché manca anche solo una partita, resta quella del turno precedente."
+      - q: "Vedo «Bloccato» sulla mia partita: posso ancora correggerla?"
+        a: "No. Significa che il turno successivo è già stato avviato partendo da quel risultato. Solo il direttore di gara può intervenire, e comporta rifare il turno."
+      - q: "Con chi gioco al prossimo turno?"
+        a: "Lo si sa solo quando il direttore avvia il turno: le coppie nascono dalla classifica aggiornata, quindi prima non esistono."
+      - q: "Posso far vedere la gara a chi non ha l'app?"
+        a: "Sì: copia il collegamento della pagina e mandalo. Si apre a chiunque, senza account."

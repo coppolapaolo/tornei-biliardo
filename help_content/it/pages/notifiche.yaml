@@ -1,0 +1,77 @@
+title: "Le notifiche"
+section: account
+kind: approfondimento
+audience: [giocatore]
+minutes: 3
+summary: "Cosa ti avvisa l'app, dove leggere i messaggi e come tenerne pulito l'elenco."
+screens: [player.notifications]
+related: [iscriversi_a_una_gara, seguire_la_gara]
+
+blocks:
+  - type: text
+    text: >-
+      Le notifiche sono il modo in cui l'app ti tiene aggiornato su quello che
+      succede nelle gare a cui partecipi. Si leggono dalla campanella nella
+      barra in fondo (su telefono) o dal menu del profilo.
+
+  - type: shot
+    shot: notifiche
+    caption: "L'elenco delle notifiche: quelle non lette sono in evidenza."
+
+  - type: heading
+    id: cosa_arriva
+    title: "Cosa ti viene notificato"
+
+  - type: options
+    items:
+      - name: "Il tuo avversario del turno"
+        text: "Appena il direttore avvia un turno, ricevi il nome di chi affronterai e il tavolo assegnato."
+      - name: "Risultati da confermare"
+        text: "Quando una partita richiede la tua conferma prima di diventare definitiva."
+      - name: "Proposte di partita"
+        text: "Quando qualcuno ti propone un'amichevole, e quando risponde a una tua proposta."
+      - name: "Movimenti nelle iscrizioni"
+        text: "Se entri dalla lista d'attesa, o se un direttore ti iscrive o ti toglie da una gara."
+      - name: "Inviti ai playoff"
+        text: "Se ti qualifichi per una gara finale di un campionato, con l'invito da accettare o rifiutare."
+      - name: "Traguardi raggiunti"
+        text: "Quando sblocchi un traguardo o completi un obiettivo."
+      - name: "Risposte alle tue richieste"
+        text: "L'esito della richiesta di diventare direttore di gara o gestore di sala."
+
+  - type: heading
+    id: gestire
+    title: "Tenere pulito l'elenco"
+
+  - type: list
+    items:
+      - "**Segna come letta**: toccando una notifica, che smette di essere evidenziata."
+      - "**Segna tutte come lette**: azzera il contatore in un colpo solo."
+      - "**Elimina le selezionate**: per fare piazza pulita di quelle vecchie."
+      - "**Cancellazione automatica**: puoi impostare l'app perché elimini da sola le notifiche più vecchie di un certo tempo."
+
+  - type: note
+    tone: tip
+    title: "Il numero rosso sulla campanella"
+    text: >-
+      È il conto delle notifiche non lette. Se resta acceso anche dopo che hai
+      letto tutto, tocca «Segna tutte come lette».
+
+  - type: heading
+    id: email
+    title: "Notifiche per email"
+
+  - type: text
+    text: >-
+      Alcune comunicazioni arrivano anche per email: la verifica
+      dell'indirizzo, il recupero della password e i promemoria delle partite
+      in programma. Le notifiche di gioco, invece, restano dentro l'app.
+
+  - type: faq
+    items:
+      - q: "Non ricevo notifiche."
+        a: "Controlla di essere iscritto a una gara attiva: la maggior parte delle notifiche riguarda gare in corso. Le notifiche vivono nell'app, non come avvisi del telefono."
+      - q: "Posso disattivarle?"
+        a: "Le notifiche dentro l'app fanno parte del funzionamento e non si disattivano; puoi però impostare la cancellazione automatica di quelle vecchie."
+      - q: "Ho cancellato una notifica per sbaglio."
+        a: "Non si recupera, ma non si perde nulla: l'informazione è comunque nella pagina della gara o della partita a cui si riferiva."

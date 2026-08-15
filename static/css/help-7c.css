@@ -1,0 +1,288 @@
+/* ==========================================================================
+   Mini-sito di aiuto — estensione del design system 7c
+   Caricato solo dalle pagine sotto /aiuto, DOPO theme-7c.css.
+
+   Qui non nasce un secondo linguaggio visivo: si usano i token di
+   tokens-7c.css e le regole del tema. Le classi aggiunte servono a cose che
+   nell'app non esistono perche' l'app non e' un documento — una colonna di
+   lettura, le schermate incorniciate, i passaggi numerati, l'indice laterale.
+   ========================================================================== */
+
+/* --- Colonna di lettura ---------------------------------------------------
+   La misura di riga e' la ragione per cui una guida si legge o si abbandona:
+   su desktop il contenuto si ferma prima del bordo, invece di distendersi per
+   tutta la larghezza disponibile come fanno le schermate operative dell'app. */
+.help-doc { max-width: 760px; }
+
+/* Il tema mette `font-weight: 600` su `body`: è il peso giusto per
+   un'interfaccia, dove il testo è fatto di etichette brevi da riconoscere a
+   colpo d'occhio. Su un paragrafo di sei righe diventa una macchia compatta e
+   stanca la lettura, quindi qui — e solo dentro la prosa della guida — si
+   torna al peso normale. Manrope 400 è già fra i pesi caricati. */
+.help-prose {
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.65;
+  color: var(--c7-ink-soft);
+}
+.help-prose strong { color: var(--c7-ink); font-weight: 800; }
+.help-prose code {
+  font-family: var(--c7-font-mono);
+  font-size: .88em;
+  font-weight: 700;
+  background: var(--c7-sunken);
+  color: var(--c7-ink);
+  border-radius: var(--c7-r-chip);
+  padding: 2px 6px;
+}
+.help-prose a { color: var(--c7-accent); font-weight: 700; text-decoration: underline; }
+.help-prose p:last-child { margin-bottom: 0; }
+
+/* --- Titoli interni -------------------------------------------------------
+   `scroll-margin-top` e' quello che rende utilizzabili le ancore dei
+   micro-aiuti: senza, il titolo raggiunto da `pagina#sezione` finisce sotto la
+   testata appiccicata e sembra che il collegamento sia sbagliato. */
+.help-h2 {
+  margin: 8px 0 0;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  color: var(--c7-ink);
+  scroll-margin-top: 92px;
+}
+.help-h2__link {
+  margin-left: 8px;
+  font-size: 13px;
+  color: var(--c7-ink-faint);
+  opacity: 0;
+  text-decoration: none;
+}
+.help-h2:hover .help-h2__link,
+.help-h2__link:focus-visible { opacity: 1; }
+
+/* --- Schermate ------------------------------------------------------------
+   Le catture arrivano da un telefono a 390px: mostrate a tutta larghezza su
+   desktop sarebbero enormi e sgranate. Il fondo affossato le stacca dalla
+   pagina senza ricorrere a un'ombra (che il design system non usa). */
+.help-shot {
+  margin: 0;
+  border-radius: var(--c7-r-card);
+  background: var(--c7-sunken);
+  padding: 14px;
+  text-align: center;
+}
+.help-shot img {
+  display: block;
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
+  height: auto;
+  border-radius: var(--c7-r-control);
+  border: 1px solid var(--c7-line);
+  background: var(--c7-bg);
+}
+.help-shot--wide img { max-width: 100%; }
+.help-shot figcaption {
+  margin-top: 10px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--c7-ink-muted);
+  line-height: 1.45;
+}
+
+/* --- Passaggi numerati ----------------------------------------------------
+   Il numero e' un dato di servizio: mono, come quote e conteggi altrove. */
+.help-steps { display: flex; flex-direction: column; gap: 18px; }
+.help-step { display: flex; gap: 14px; align-items: flex-start; }
+.help-step__num {
+  flex: 0 0 auto;
+  width: 30px; height: 30px;
+  border-radius: var(--c7-r-pill);
+  background: var(--c7-accent);
+  color: var(--c7-accent-ink);
+  font-family: var(--c7-font-mono);
+  font-weight: 800;
+  font-size: 14px;
+  line-height: 30px;
+  text-align: center;
+}
+.help-step__body { flex: 1; min-width: 0; }
+.help-step__title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--c7-ink);
+  letter-spacing: -.01em;
+}
+.help-step__text { margin-top: 3px; }
+.help-step .help-shot { margin-top: 12px; }
+
+/* --- Elenco di opzioni ----------------------------------------------------
+   Riferimento delle scelte di un modulo. Su mobile diventa una pila di
+   schede: una tabella a tre colonne a 390px non si legge. */
+.help-option {
+  border-radius: var(--c7-r-control);
+  background: var(--c7-card);
+  padding: 12px 14px;
+}
+.help-option + .help-option { margin-top: 10px; }
+.help-option__name {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--c7-ink);
+}
+.help-option__values {
+  margin-top: 2px;
+  font-family: var(--c7-font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c7-accent);
+}
+.help-option__text { margin-top: 6px; font-size: 14px; }
+
+/* --- Domande frequenti ---------------------------------------------------- */
+.help-faq { border-radius: var(--c7-r-control); background: var(--c7-card); }
+.help-faq + .help-faq { margin-top: 10px; }
+.help-faq summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 13px 14px;
+  font-size: 14.5px;
+  font-weight: 800;
+  color: var(--c7-ink);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+}
+.help-faq summary::-webkit-details-marker { display: none; }
+.help-faq summary::after {
+  content: "\f078";
+  font: 900 12px "Font Awesome 6 Free";
+  margin-left: auto;
+  color: var(--c7-ink-muted);
+}
+.help-faq[open] summary::after { content: "\f077"; }
+.help-faq__answer { padding: 0 14px 14px; }
+
+/* --- Schede indice (sezioni, tutorial, risultati di ricerca) --------------- */
+.help-cards { display: grid; gap: var(--c7-gap); }
+@media (min-width: 768px) { .help-cards--2 { grid-template-columns: 1fr 1fr; } }
+
+.help-cardlink {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  border-radius: var(--c7-r-card);
+  background: var(--c7-card);
+  padding: var(--c7-pad-card);
+}
+.help-cardlink:hover { background: var(--c7-sunken); }
+.help-cardlink__title {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  color: var(--c7-ink);
+}
+.help-cardlink__desc {
+  margin-top: 4px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--c7-ink-muted);
+  line-height: 1.5;
+}
+.help-cardlink__meta {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.help-minutes {
+  font-family: var(--c7-font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--c7-ink-faint);
+}
+
+/* --- Percorso e navigazione fra pagine ------------------------------------ */
+.help-crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c7-ink-muted);
+}
+.help-crumbs a { color: var(--c7-ink-muted); text-decoration: none; }
+.help-crumbs a:hover { color: var(--c7-ink); text-decoration: underline; }
+
+.help-updown { display: grid; gap: 10px; }
+@media (min-width: 576px) { .help-updown { grid-template-columns: 1fr 1fr; } }
+.help-updown a {
+  display: block;
+  text-decoration: none;
+  border-radius: var(--c7-r-control);
+  background: var(--c7-card);
+  padding: 12px 14px;
+  min-height: 48px;
+}
+.help-updown a:hover { background: var(--c7-sunken); }
+.help-updown .c7-label { display: block; }
+.help-updown__title { font-size: 14px; font-weight: 800; color: var(--c7-ink); }
+.help-updown a.is-next { text-align: right; }
+
+/* --- Indice laterale (solo desktop) --------------------------------------- */
+.help-rail { display: none; }
+@media (min-width: 992px) {
+  .help-rail { display: block; position: sticky; top: 92px; }
+}
+.help-rail__list { display: flex; flex-direction: column; gap: 2px; }
+.help-rail__list a {
+  display: block;
+  padding: 7px 10px;
+  border-radius: var(--c7-r-chip);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--c7-ink-muted);
+  text-decoration: none;
+}
+.help-rail__list a:hover { background: var(--c7-sunken); color: var(--c7-ink); }
+.help-rail__list a.is-active { background: var(--c7-accent-tint); color: var(--c7-accent-tint-ink); }
+
+/* --- Ricerca -------------------------------------------------------------- */
+.help-search { display: flex; gap: 10px; }
+.help-search input { flex: 1; }
+
+/* --- Catalogo dei micro-aiuti (predisposizione interfaccia adattiva) ------- */
+.help-hint {
+  border-radius: var(--c7-r-control);
+  background: var(--c7-card);
+  padding: 12px 14px;
+}
+.help-hint + .help-hint { margin-top: 8px; }
+.help-hint__label { font-size: 14px; font-weight: 800; color: var(--c7-ink); }
+.help-hint__short { margin-top: 4px; font-size: 13.5px; color: var(--c7-ink-soft); line-height: 1.5; }
+.help-hint__anchor {
+  margin-top: 6px;
+  font-family: var(--c7-font-mono);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--c7-ink-faint);
+}
+
+/* Il segno "?" che l'interfaccia adattiva mostrera' accanto ai comandi. Vive
+   qui, e non nel tema, finche' e' solo un'anteprima dentro la guida: quando
+   l'app lo usera' davvero si sposta in theme-7c.css. */
+.help-qmark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px; height: 20px;
+  border-radius: var(--c7-r-pill);
+  background: var(--c7-accent-tint);
+  color: var(--c7-accent-tint-ink);
+  font-size: 11px;
+  font-weight: 800;
+  vertical-align: middle;
+}

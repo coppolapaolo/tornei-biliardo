@@ -1,0 +1,149 @@
+title: "Come si calcolano le classifiche"
+section: approfondimenti
+kind: approfondimento
+audience: [tutti]
+minutes: 5
+summary: "Tre modi di ordinare i giocatori — vittorie, rack, posizione — e come si risolvono i pari merito."
+related: [seguire_la_gara, abbinamenti, formati_di_gioco]
+
+blocks:
+  - type: text
+    text: >-
+      Ogni gara sceglie **un** sistema di classifica, deciso alla creazione e
+      valido per tutta la gara. Cambia cosa viene premiato, e quindi come
+      conviene giocare.
+
+  - type: shot
+    shot: gara-classifica
+    caption: "Una classifica con il sistema «Vittorie»: le due colonne di destra sono le vittorie e la differenza rack."
+
+  - type: heading
+    id: vittorie
+    title: "Vittorie — il sistema normale"
+
+  - type: text
+    text: >-
+      Ordina per **partite vinte**. A parità di vittorie, conta la
+      **differenza rack**: i rack vinti meno quelli persi in tutta la gara.
+
+  - type: list
+    title: "Un esempio"
+    items:
+      - "Marco: 3 vittorie, differenza +6 → **primo**"
+      - "Elena: 2 vittorie, differenza +2 → **seconda**"
+      - "Paolo: 2 vittorie, differenza +2 → **secondo a pari merito con Elena**"
+      - "Davide: 1 vittoria, differenza -2 → **quarto**"
+
+  - type: text
+    text: >-
+      È il sistema da usare quando conta vincere la partita: chi vince 4-3
+      prende la stessa vittoria di chi vince 4-0, e il margine serve solo a
+      separare chi è appaiato.
+
+  - type: heading
+    id: rack
+    title: "Rack — ogni rack conta"
+
+  - type: text
+    text: >-
+      Ordina per **rack totali vinti**, senza guardare chi ha vinto le partite.
+      Chi perde 4-3 in tutte le partite può stare davanti a chi vince 4-0 in
+      metà e perde 4-0 nelle altre.
+
+  - type: note
+    tone: warning
+    title: "Va abbinato al numero esatto di rack"
+    text: >-
+      Con questo sistema le partite dovrebbero giocarsi fino in fondo (opzione
+      **numero esatto di rack**). Altrimenti chi vince nettamente smette prima
+      e accumula meno rack di chi vince a fatica: il conteggio premierebbe il
+      contrario di quello che vuole premiare.
+
+  - type: heading
+    id: posizione
+    title: "Posizione — per i tabelloni"
+
+  - type: text
+    text: >-
+      È il sistema obbligatorio per eliminazione diretta e doppio KO: la
+      classifica **è** il tabellone. Chi vince il torneo è primo, chi perde in
+      finale secondo, e così via. In un campionato, ogni posizione vale un
+      certo numero di punti, e i punti si sommano fra le gare.
+
+  - type: heading
+    id: pari_merito
+    title: "I pari merito"
+
+  - type: text
+    text: >-
+      Capita spesso che due giocatori chiudano identici. Il direttore decide
+      alla creazione **fino a che posizione** vale la pena scioglierli: di
+      norma il podio, perché sul quinto e sesto posto nessuno litiga.
+
+  - type: options
+    title: "Come si scioglie un pari merito"
+    items:
+      - name: "Scontro diretto"
+        text: >-
+          Se i due si sono già affrontati durante la gara, sta davanti chi ha
+          vinto quella partita. Semplice e non richiede di rigiocare.
+      - name: "Spareggio"
+        text: >-
+          Una prova aggiuntiva — di solito lo Spot Shot Rally — che assegna un
+          punteggio: sta davanti chi fa meglio. Vedi [Le
+          challenge](/aiuto/giocare/challenge).
+      - name: "Nessuno dei due"
+        text: >-
+          Fuori dalle posizioni da spareggiare, il pari merito resta: due
+          giocatori occupano la stessa posizione e la successiva viene saltata.
+
+  - type: heading
+    id: quando_aggiorna
+    title: "Quando si aggiorna"
+
+  - type: text
+    text: >-
+      La classifica di una gara si ricalcola **alla fine di ogni turno**, non a
+      ogni partita: serve che il turno sia completo perché il confronto sia
+      fra situazioni omogenee. Per questo può restare ferma anche mentre si
+      gioca.
+
+  - type: text
+    text: >-
+      La classifica **del campionato** si aggiorna quando una gara si conclude,
+      sommando i risultati di tutte le gare disputate. Chi salta una gara non
+      viene penalizzato oltre al non aver guadagnato punti in quell'occasione.
+
+  - type: heading
+    id: casi_particolari
+    title: "Casi particolari"
+
+  - type: options
+    items:
+      - name: "X a tavolino"
+        text: >-
+          Chi resta senza avversario riceve una vittoria e zero differenza
+          rack: non viene né premiato né penalizzato rispetto a chi ha giocato.
+      - name: "Forfait"
+        text: >-
+          Chi abbandona lascia all'avversario tutti i rack mancanti. Quei rack
+          contano in classifica come qualsiasi altro.
+      - name: "Partita in trio"
+        text: >-
+          Nel mini-girone a tre, vince chi fa più rack; se due arrivano pari,
+          nessuno prende la vittoria e contano solo le differenze rack.
+      - name: "Handicap"
+        text: >-
+          La classifica usa i punteggi **effettivi**, cioè quelli dopo
+          l'handicap.
+
+  - type: faq
+    items:
+      - q: "Ho più vittorie ma sono dietro."
+        a: "Allora la gara usa il sistema «Rack», dove contano i rack totali e non le vittorie. Il sistema è indicato nella scheda della gara."
+      - q: "Due giocatori hanno la stessa posizione."
+        a: "Sono a pari merito in una posizione per cui non era previsto lo spareggio. È una scelta del direttore, non un errore."
+      - q: "La classifica non si è aggiornata dopo la mia partita."
+        a: "Si ricalcola quando tutte le partite del turno sono concluse."
+      - q: "Come si somma la classifica del campionato?"
+        a: "Sommando: vittorie e differenza rack con «Vittorie», rack totali con «Rack», punti-posizione con «Posizione»."

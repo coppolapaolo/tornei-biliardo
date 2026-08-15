@@ -1,0 +1,87 @@
+title: "Le challenge"
+section: giocare
+kind: approfondimento
+audience: [giocatore]
+minutes: 3
+summary: "Prove di abilità da eseguire da soli: servono ad allenarsi, a sbloccare traguardi e — dentro una gara — a decidere gli spareggi."
+screens: [challenge.challenge_catalog]
+related: [progressi, numero_dispari]
+
+blocks:
+  - type: text
+    text: >-
+      Una challenge è un esercizio con regole fisse: una disposizione di bilie
+      da imbucare, un tiro da ripetere, un obiettivo da raggiungere in un certo
+      numero di tentativi. Si gioca **da soli**, e il risultato è un punteggio.
+
+  - type: heading
+    id: catalogo
+    title: "Il catalogo"
+
+  - type: text
+    text: >-
+      La sezione **Challenge** raccoglie tutte le prove disponibili, con la
+      descrizione, la difficoltà e le regole di punteggio. Puoi metterne
+      qualcuna fra i preferiti per ritrovarla in fretta.
+
+  - type: steps
+    items:
+      - title: "Scegli una challenge"
+        text: "Apri la sua scheda e leggi le regole: come si dispongono le bilie e come si conta il punteggio."
+      - title: "Tocca «Inizia tentativo»"
+        text: "Da quel momento il tentativo è aperto e l'app aspetta il risultato."
+      - title: "Esegui e registra il punteggio"
+        text: "Al termine inserisci quanto hai fatto. Il tentativo entra nel tuo storico."
+
+  - type: heading
+    id: in_gara
+    title: "Le challenge dentro una gara"
+
+  - type: text
+    text: >-
+      Il direttore può inserire challenge nella gara. Servono a due cose molto
+      diverse.
+
+  - type: options
+    items:
+      - name: "Al posto dell'X a tavolino"
+        text: >-
+          Quando i giocatori sono dispari, chi resta senza avversario invece di
+          stare fermo esegue una challenge: il punteggio ottenuto conta per la
+          classifica del turno. È più equo dell'assegnare una vittoria a
+          tavolino, e più divertente che stare a guardare.
+      - name: "Come spareggio"
+        text: >-
+          A fine gara, se due o più giocatori sono a pari merito nelle
+          posizioni che contano, si può decidere con una challenge: chi fa il
+          punteggio migliore sta davanti.
+
+  - type: note
+    tone: info
+    title: "Spot Shot Rally"
+    text: >-
+      È la challenge usata più spesso per gli spareggi: una serie di tiri da
+      posizione fissa, con un punteggio che si accumula. Chi accumula di più
+      vince lo spareggio.
+
+  - type: heading
+    id: perche
+    title: "A cosa servono, in pratica"
+
+  - type: list
+    items:
+      - "**Allenarsi** su un gesto specifico e misurare i progressi nel tempo."
+      - "**Non stare fermi** quando il numero dispari lascia qualcuno senza avversario."
+      - "**Decidere i pari merito** senza dover far rigiocare una partita intera."
+      - "**Sbloccare traguardi** e guadagnare punti esperienza (vedi [I tuoi progressi](/aiuto/account/progressi))."
+
+  - type: faq
+    items:
+      - q: "Non vedo la sezione Challenge."
+        a: "È una funzione che si sblocca con l'uso della piattaforma, come la sezione Match. Se non compare ancora, comparirà."
+      - q: "Posso rifare la stessa challenge più volte?"
+        a: "Sì, salvo quando è inserita in una gara: lì il numero di tentativi lo stabilisce il direttore."
+      - q: "Chi controlla che il punteggio dichiarato sia vero?"
+        a: "Fuori dalle gare, nessuno: è un allenamento, e vale la parola. Dentro una gara è il direttore a validare i risultati."
+      - q: "Le challenge contano per il rating?"
+        a: "No. Il rating misura le partite contro avversari; le challenge alimentano statistiche e progressi personali."

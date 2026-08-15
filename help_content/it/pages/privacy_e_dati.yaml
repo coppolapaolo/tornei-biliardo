@@ -1,0 +1,106 @@
+title: "Privacy e dati"
+section: account
+kind: approfondimento
+audience: [giocatore]
+minutes: 4
+summary: "Cosa vedono gli altri di te, come nascondere singoli risultati, come scaricare i tuoi dati e come chiudere l'account."
+screens: [player.privacy_settings]
+related: [profilo_e_statistiche]
+
+blocks:
+  - type: text
+    text: >-
+      Tornei Biliardo raccoglie poche cose: quel che serve per farti entrare
+      (nome utente, email, password) e quel che generi giocando (iscrizioni,
+      risultati, statistiche). Email e telefono sono conservati **cifrati**.
+
+  - type: shot
+    shot: privacy-impostazioni
+    caption: "Le impostazioni di privacy: cosa mostrare nel profilo pubblico."
+
+  - type: heading
+    id: cosa_vedono
+    title: "Cosa vedono gli altri"
+
+  - type: options
+    items:
+      - name: "Sempre visibile"
+        text: >-
+          Il nome utente e i risultati sportivi nelle classifiche delle gare a
+          cui hai partecipato. Le classifiche sono pubbliche per natura: sono
+          il risultato di una competizione.
+      - name: "Visibile se lo decidi tu"
+        text: "Città, squadra, statistiche personali e storico nel profilo pubblico."
+      - name: "Mai visibile ad altri"
+        text: "Email, telefono, password e tutte le tue impostazioni."
+
+  - type: heading
+    id: nascondere
+    title: "Nascondere singoli risultati"
+
+  - type: text
+    text: >-
+      Dallo storico puoi nascondere una gara, una singola partita o un intero
+      campionato dal **tuo profilo**. È una scelta di vetrina personale.
+
+  - type: note
+    tone: warning
+    title: "Le classifiche ufficiali non cambiano"
+    text: >-
+      Nascondere un risultato lo toglie dal tuo profilo, **non** dalla
+      classifica della gara: quella è il verbale di una competizione a cui
+      hanno partecipato altri, e non può essere riscritta da un singolo. Chi
+      apre la pagina della gara continuerà a vedere il tuo risultato.
+
+  - type: heading
+    id: scaricare
+    title: "Scaricare i tuoi dati"
+
+  - type: text
+    text: >-
+      Dal profilo puoi chiedere una copia dei tuoi dati. Ci sono due strade: un
+      **file CSV** con lo storico dei risultati, aperto con qualunque foglio di
+      calcolo, e un **export completo** con tutto quello che l'app ha registrato
+      su di te, che viene preparato e messo a disposizione per il download.
+
+  - type: heading
+    id: chiudere
+    title: "Chiudere l'account"
+
+  - type: text
+    text: >-
+      Dal menu del profilo, voce **Elimina account**. La cancellazione avviene
+      per **anonimizzazione**: i tuoi dati personali vengono rimossi, mentre i
+      risultati sportivi restano nelle classifiche storiche senza più essere
+      riconducibili a te.
+
+  - type: note
+    tone: info
+    title: "Perché non si cancella tutto"
+    text: >-
+      Perché una classifica con un buco non è più una classifica: i risultati
+      degli altri giocatori dipendono dalle partite che hanno giocato contro di
+      te. L'anonimizzazione toglie il tuo nome e lascia in piedi la storia
+      sportiva di tutti gli altri.
+
+  - type: heading
+    id: cookie
+    title: "Cookie"
+
+  - type: text
+    text: >-
+      Il sito usa cookie tecnici, necessari per tenerti collegato, proteggere i
+      moduli e ricordare la lingua scelta. Il dettaglio completo, compresi gli
+      eventuali strumenti di statistica, è nell'[informativa privacy e
+      cookie](/privacy).
+
+  - type: faq
+    items:
+      - q: "Posso togliere il mio nome da una classifica?"
+        a: "No finché l'account è attivo: la classifica è il risultato di una competizione pubblica. Chiudendo l'account il nome viene sostituito e i risultati restano anonimi."
+      - q: "Chi può vedere il mio indirizzo email?"
+        a: "Nessun altro giocatore, e nemmeno i direttori di gara. È conservato cifrato e serve solo alle comunicazioni dell'app."
+      - q: "Che differenza c'è tra CSV ed export completo?"
+        a: "Il CSV è lo storico dei risultati, comodo da consultare. L'export completo comprende tutto ciò che l'app ha registrato su di te, ed è quello previsto dal diritto di accesso ai dati."
+      - q: "Posso ripensarci dopo aver eliminato l'account?"
+        a: "No: l'anonimizzazione è definitiva e non è reversibile. Potrai crearne uno nuovo, ma partirà da zero."

@@ -103,6 +103,7 @@ instance/
 !.claude/skills/translate/
 !.claude/skills/ui-conventions/
 !.claude/skills/ui-7c/
+!.claude/skills/help-docs/
 .agent/
 .codegraph/
 _bmad/

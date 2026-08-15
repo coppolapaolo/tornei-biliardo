@@ -1,0 +1,66 @@
+{# templates/help/hints.html — catalogo dei micro-aiuti, per schermata.
+
+   Pagina di lavoro, non pagina per l'utente finale (in produzione e' visibile
+   solo agli amministratori, vedi ENDPOINT_ROLES). Mostra, schermata per
+   schermata, cosa dira' la guida contestuale quando verra' costruita: la
+   presentazione della prima visita e le frasi brevi da agganciare ai comandi.
+   Serve a rivedere quei testi **prima** che esista il codice che li mostra. #}
+{% extends "help/_base.html" %}
+{% import "help/_ui.html" as ui with context %}
+
+{% block title %}{{ _('Micro-aiuto') }} - {{ help.title }}{% endblock %}
+{% block page_title %}{{ _('Micro-aiuto') }}{% endblock %}
+{% block page_sub %}{{ _('%(n)s schermate coperte', n=by_screen|length) }}{% endblock %}
+
+{% block content %}
+<div class="c7-stack help-doc">
+
+    {{ ui.crumbs() }}
+
+    <div class="c7-card c7-card--info">
+        <div class="fw-bold mb-1">{{ _('A cosa serve questa pagina') }}</div>
+        <div class="help-prose">
+            {{ _('Raccoglie i testi già pronti per la guida contestuale: la presentazione che apparirà la prima volta che si apre una schermata, e le spiegazioni brevi da mostrare accanto ai singoli comandi. Nessuno di questi testi è ancora attivo nell\'app.') }}
+        </div>
+    </div>
+
+    {% for screen, hints in by_screen.items() %}
+    <div class="c7-card">
+        <div class="c7-kicker">{{ _('Schermata') }}</div>
+        <div class="fw-bold" style="font-family:var(--c7-font-mono);font-size:13px">{{ screen }}</div>
+
+        {% set tour = tours.get(screen) %}
+        {% if tour %}
+        <div class="mt-3">
+            <div class="c7-label">{{ _('Presentazione alla prima visita') }}</div>
+            <div class="fw-bold mt-1">{{ tour.title }}</div>
+            {% if tour.intro %}<div class="help-prose">{{ help_text(tour.intro) }}</div>{% endif %}
+            <ol class="help-prose ps-4 mt-2 mb-0">
+                {% for step in tour.steps %}
+                <li><strong>{{ step.title }}</strong> — {{ step.text }}</li>
+                {% endfor %}
+            </ol>
+        </div>
+        {% endif %}
+
+        <div class="mt-3">
+            <div class="c7-label mb-2">{{ _('Spiegazioni accanto ai comandi') }}</div>
+            {% for hint in hints %}
+            <div class="help-hint">
+                <div class="help-hint__label"><span class="help-qmark">?</span> {{ hint.label }}</div>
+                <div class="help-hint__short">{{ hint.short }}</div>
+                <div class="help-hint__anchor">
+                    data-help="{{ hint.anchor }}"
+                    {%- if hint.page %} ·
+                    <a href="{{ url_for('help.page', section_id=help.pages[hint.page].section, slug=hint.page) }}{{ '#' ~ hint.section if hint.section }}">
+                        {{ _('spiegazione completa') }}</a>
+                    {%- endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+
+</div>
+{% endblock %}

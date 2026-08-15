@@ -1,0 +1,117 @@
+{# templates/help/page.html — una pagina della guida.
+
+   Impaginazione a due colonne da 992px (`c7-cols`, come nel resto dell'app):
+   contenuto a sinistra, indice della pagina e collegamenti a destra. Sotto
+   quella soglia la colonna di destra scende in fondo, dove non disturba la
+   lettura. #}
+{% extends "help/_base.html" %}
+{% import "help/_ui.html" as ui with context %}
+{% import "help/_blocks.html" as blocks with context %}
+
+{% set back_href = url_for('help.section', section_id=page.section) %}
+
+{% block title %}{{ page.title }} - {{ help.title }}{% endblock %}
+{% block page_title %}{{ page.title }}{% endblock %}
+{% block page_sub %}{{ section.title if section }}{% endblock %}
+
+{% block content %}
+<div class="c7-cols">
+
+    <div class="c7-stack help-doc">
+
+        {{ ui.crumbs(section=section, page=page) }}
+
+        <div>
+            <div class="help-cardlink__meta mb-2">
+                <span class="c7-state c7-state--muted">{{ kind_label(page.kind) }}</span>
+                {% for who in page.audience if who != 'tutti' %}
+                <span class="c7-state c7-state--info">{{ audience_label(who) }}</span>
+                {% endfor %}
+                {% if page.minutes %}
+                <span class="help-minutes">{{ _('%(n)s min di lettura', n=page.minutes) }}</span>
+                {% endif %}
+            </div>
+            <div class="help-prose"><strong>{{ page.summary }}</strong></div>
+        </div>
+
+        {{ blocks.render(help, page.blocks) }}
+
+        {% if hints %}
+        {# Anteprima dei micro-aiuti che rimandano a questa pagina. Serve a chi
+           scrive la guida: mostra, accanto alla spiegazione lunga, la frase
+           breve che l'interfaccia adattiva mostrera' un giorno nel fumetto. #}
+        <div class="c7-card c7-card--locked">
+            <div class="c7-kicker mb-2">{{ _('In breve, nell\'app') }}</div>
+            <div class="help-prose mb-3">
+                {{ _('Queste frasi compariranno accanto ai comandi dell\'interfaccia quando sarà attiva la guida contestuale.') }}
+            </div>
+            {% for hint in hints %}
+            <div class="help-hint">
+                <div class="help-hint__label">
+                    <span class="help-qmark">?</span> {{ hint.label }}
+                </div>
+                <div class="help-hint__short">{{ hint.short }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if previous_page or next_page %}
+        <div class="help-updown">
+            {% if previous_page %}
+            <a href="{{ url_for('help.page', section_id=previous_page.section, slug=previous_page.slug) }}">
+                <span class="c7-label">{{ _('Precedente') }}</span>
+                <span class="help-updown__title">{{ previous_page.title }}</span>
+            </a>
+            {% else %}<span></span>{% endif %}
+            {% if next_page %}
+            <a class="is-next" href="{{ url_for('help.page', section_id=next_page.section, slug=next_page.slug) }}">
+                <span class="c7-label">{{ _('Successiva') }}</span>
+                <span class="help-updown__title">{{ next_page.title }}</span>
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if related %}
+        <div>
+            <div class="c7-kicker mb-2">{{ _('Da leggere anche') }}</div>
+            <div class="help-cards">
+                {% for other in related %}
+                {{ ui.page_card(other) }}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <aside class="help-rail">
+        <div class="c7-stack">
+            {% if page.headings %}
+            <div class="c7-card">
+                <div class="c7-kicker mb-2">{{ _('In questa pagina') }}</div>
+                <nav class="help-rail__list">
+                    {% for heading in page.headings %}
+                    <a href="#{{ heading.id }}">{{ heading.title }}</a>
+                    {% endfor %}
+                </nav>
+            </div>
+            {% endif %}
+
+            {% if section %}
+            <div class="c7-card">
+                <div class="c7-kicker mb-2">{{ section.title }}</div>
+                <nav class="help-rail__list">
+                    {% for other in help.pages_of(section) %}
+                    <a href="{{ url_for('help.page', section_id=other.section, slug=other.slug) }}"
+                       class="{{ 'is-active' if other.slug == page.slug }}">{{ other.title }}</a>
+                    {% endfor %}
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+    </aside>
+
+</div>
+{% endblock %}

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-14 23:20+0000\n"
+"POT-Creation-Date: 2026-08-15 09:39+0000\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -308,9 +308,7 @@ msgstr "Try the challenges"
 
 #: models/gamification/frontend_bridge.py:427
 msgid "Allenati con drill mirati: ogni completamento conta per la classifica."
-msgstr ""
-"Practise with focused drills: every completion counts towards the "
-"standings."
+msgstr "Train with focused drills: every completion counts towards the standings."
 
 #: models/gamification/frontend_bridge.py:449
 #, python-format
@@ -430,9 +428,7 @@ msgstr "Milestone: %(value)s matches!"
 #: models/kpi/notifications.py:54
 #, python-format
 msgid "Sono stati giocati %(value)s match sulla piattaforma. La community cresce!"
-msgstr ""
-"%(value)s matches have been played on the platform. The community is "
-"growing!"
+msgstr "%(value)s matches have been played on the platform. The community is growing!"
 
 #: models/kpi/notifications.py:59
 #, python-format
@@ -544,7 +540,7 @@ msgstr "Competition Enrollment"
 msgid "Che piacere rivederti!"
 msgstr "Nice to see you again!"
 
-#: routes/auth.py:48 templates/base.html:560
+#: routes/auth.py:48 templates/base.html:573
 msgid "Tutto pronto per giocare?"
 msgstr "Ready to play?"
 
@@ -1023,7 +1019,9 @@ msgstr "Type the name of the team to add"
 msgid ""
 "In elenco ci sono già nomi simili: %(nomi)s. Scegli la voce giusta, "
 "oppure conferma di volerne creare una nuova."
-msgstr "The list already has similar names: %(nomi)s. Pick the right one, or confirm you want to create a new team."
+msgstr ""
+"The list already has similar names: %(nomi)s. Pick the right one, or "
+"confirm you want to create a new team."
 
 #: routes/admin/competition/squadre.py:168
 msgid "Squadra aggiornata"
@@ -1257,7 +1255,7 @@ msgstr "Competitions with drills played"
 msgid "Drill completati in gara"
 msgstr "Drills completed in competition"
 
-#: routes/gamification/features.py:55 templates/base.html:310
+#: routes/gamification/features.py:55 templates/base.html:315
 #: templates/gamification/admin/dashboard.html:102
 #: templates/gamification/admin/dashboard.html:145
 #: templates/gamification/admin/feature_create.html:69
@@ -1619,7 +1617,7 @@ msgstr "administration"
 msgid "direzione gara"
 msgstr "tournament direction"
 
-#: templates/base.html:178 templates/base.html:253
+#: templates/base.html:178 templates/base.html:258
 msgid "giocatore"
 msgstr "player"
 
@@ -1627,7 +1625,7 @@ msgstr "player"
 msgid "Generale"
 msgstr "General"
 
-#: templates/admin/kpi.html:37 templates/base.html:187 templates/base.html:399
+#: templates/admin/kpi.html:37 templates/base.html:187 templates/base.html:412
 msgid "Dashboard"
 msgstr "Dashboard"
 
@@ -1639,74 +1637,81 @@ msgstr "Billiard Halls"
 msgid "Match Individuali"
 msgstr "Individual Matches"
 
-#: templates/base.html:208
+#: templates/base.html:206 templates/base.html:394
+#: templates/gamification/admin/feature_create.html:59
+#: templates/help/_ui.html:10 templates/help/index.html:6
+msgid "Guida"
+msgstr "Guide"
+
+#: templates/base.html:213
 msgid "Persone"
 msgstr "People"
 
-#: templates/admin/users_list.html:10 templates/base.html:211
-#: templates/base.html:412 templates/gamification/admin/dashboard.html:103
+#: templates/admin/users_list.html:10 templates/base.html:216
+#: templates/base.html:425 templates/gamification/admin/dashboard.html:103
 msgid "Utenti"
 msgstr "Users"
 
-#: templates/base.html:216
+#: templates/base.html:221
 msgid "Richieste Direttore"
 msgstr "Director requests"
 
-#: templates/base.html:221
+#: templates/base.html:226
 msgid "Richieste Gestore Sala"
 msgstr "Venue Manager Requests"
 
-#: templates/base.html:229
+#: templates/base.html:234
 msgid "Traguardi e XP"
 msgstr "Achievements and XP"
 
-#: templates/base.html:240
+#: templates/base.html:245
 msgid "Reset DB"
 msgstr "Reset DB"
 
-#: templates/base.html:251
+#: templates/base.html:256
 msgid "amministratore"
 msgstr "administrator"
 
-#: templates/base.html:252
+#: templates/base.html:257
 msgid "direttore"
 msgstr "director"
 
-#: templates/base.html:265 templates/base.html:331
+#: templates/base.html:270 templates/base.html:336
 msgid "Login"
 msgstr "Login"
 
-#: templates/base.html:266
+#: templates/base.html:271
 #: templates/components/_index_registration_info.html:33
 #: templates/login.html:34 templates/register.html:38
 msgid "Registrati"
 msgstr "Register"
 
-#: templates/base.html:283 templates/components/_gara_header.html:33
+#: templates/base.html:288 templates/components/_gara_header.html:33
+#: templates/help/index.html:11
 msgid "Home"
 msgstr "Home"
 
-#: templates/base.html:318
+#: templates/base.html:323
 msgid "Lv"
 msgstr "Lv"
 
-#: templates/base.html:347
+#: templates/base.html:352
 msgid "Non è riuscito"
 msgstr "Did not pass"
 
-#: templates/base.html:349
+#: templates/base.html:354
 msgid "Fatto"
 msgstr "Done"
 
-#: templates/base.html:351
+#: templates/base.html:356
 msgid "Attenzione"
 msgstr "Warning"
 
-#: templates/base.html:353
+#: templates/base.html:358
 msgid "Informazione"
 msgstr "Information"
 
-#: templates/base.html:363 templates/challenge/create.html:8
+#: templates/base.html:368 templates/challenge/create.html:8
 #: templates/components/_campionato_create_modal.html:7
 #: templates/components/_challenge_management_modal.html:19
 #: templates/components/_challenge_management_modal.html:76
@@ -1721,20 +1726,20 @@ msgstr "Information"
 msgid "Chiudi"
 msgstr "Close"
 
-#: templates/base.html:385 templates/privacy.html:3
+#: templates/base.html:398 templates/privacy.html:3
 msgid "Privacy e Cookie"
 msgstr "Privacy and Cookies"
 
-#: templates/admin/venue_manager_requests.html:14 templates/base.html:403
+#: templates/admin/venue_manager_requests.html:14 templates/base.html:416
 msgid "Sale"
 msgstr "Venues"
 
-#: templates/base.html:421 templates/components/_user_menu.html:8
+#: templates/base.html:434 templates/components/_user_menu.html:8
 #: templates/player/notifications.html:3 templates/player/notifications.html:8
 msgid "Notifiche"
 msgstr "Notifications"
 
-#: templates/base.html:529 templates/base.html:535
+#: templates/base.html:542 templates/base.html:548
 msgid "Conferma"
 msgstr "Confirm"
 
@@ -1743,7 +1748,7 @@ msgstr "Confirm"
 #: templates/admin/campionato_wizard_step1.html:8
 #: templates/admin/campionato_wizard_step1.html:158
 #: templates/admin/campionato_wizard_step2.html:8
-#: templates/admin/gara_edit.html:11 templates/base.html:534
+#: templates/admin/gara_edit.html:11 templates/base.html:547
 #: templates/challenge/create.html:14
 #: templates/components/_campionato_create_modal.html:35
 #: templates/components/_campionato_edit_form.html:204
@@ -1766,51 +1771,51 @@ msgstr "Confirm"
 msgid "Annulla"
 msgstr "Cancel"
 
-#: templates/base.html:550
+#: templates/base.html:563
 msgid "XP OTTENUTI"
 msgstr "XP EARNED"
 
-#: templates/base.html:551
+#: templates/base.html:564
 msgid "LEVEL UP!"
 msgstr "LEVEL UP!"
 
-#: templates/base.html:552
+#: templates/base.html:565
 msgid "Nuovo livello raggiunto!"
 msgstr "New level reached!"
 
-#: templates/base.html:553
+#: templates/base.html:566
 msgid "NUOVO TRAGUARDO!"
 msgstr "NEW MILESTONE!"
 
-#: templates/base.html:554
+#: templates/base.html:567
 msgid "STREAK!"
 msgstr "STREAK!"
 
-#: templates/base.html:555
+#: templates/base.html:568
 msgid "Freeze attivo"
 msgstr "Freeze active"
 
-#: templates/base.html:556
+#: templates/base.html:569
 msgid "STREAK PERSA"
 msgstr "STREAK LOST"
 
-#: templates/base.html:557
+#: templates/base.html:570
 msgid "Non mollare, riprovare!"
 msgstr "Don't give up, try again!"
 
-#: templates/base.html:558
+#: templates/base.html:571
 msgid "QUEST COMPLETATA!"
 msgstr "QUEST COMPLETED!"
 
-#: templates/base.html:559
+#: templates/base.html:572
 msgid "TI DIAMO IL BENTORNATO!"
 msgstr "WELCOME BACK!"
 
-#: templates/base.html:561
+#: templates/base.html:574
 msgid "Ciao!"
 msgstr "Hello!"
 
-#: templates/base.html:562
+#: templates/base.html:575
 #, python-format
 msgid "Ciao %(username)s!"
 msgstr "Hello %(username)s!"
@@ -3161,7 +3166,9 @@ msgstr "Single elimination"
 msgid ""
 "Chi perde è fuori. Il tabellone si dimensiona sugli iscritti e le teste "
 "di serie restano lontane fino in fondo."
-msgstr "Lose once and you are out. The bracket is sized on actual entries and seeds stay apart to the end."
+msgstr ""
+"Lose once and you are out. The bracket is sized on actual entries and "
+"seeds stay apart to the end."
 
 #: templates/admin/campionato_wizard_step1.html:95
 msgid "Doppio KO"
@@ -3171,7 +3178,9 @@ msgstr "Double knockout"
 msgid ""
 "Servono due sconfitte per uscire: chi perde una volta rientra dal "
 "recupero."
-msgstr "It takes two losses to be out: lose once and you come back through the losers bracket."
+msgstr ""
+"It takes two losses to be out: lose once and you come back through the "
+"losers bracket."
 
 #: templates/admin/campionato_wizard_step1.html:104
 msgid "Challenge mode"
@@ -3187,9 +3196,7 @@ msgstr "Final playoffs"
 
 #: templates/admin/campionato_wizard_step1.html:115
 msgid "Gare speciali a fine campionato: i qualificati ricevono un invito."
-msgstr ""
-"Special tournaments at the end of the championship: qualifiers get an "
-"invitation."
+msgstr "Special competitions at the end of the championship: qualified players receive an invitation."
 
 #: templates/admin/campionato_wizard_step1.html:123
 msgid "Per i primi classificati"
@@ -3348,9 +3355,7 @@ msgstr "Handicap mode"
 
 #: templates/admin/campionato_wizard_step2.html:130
 msgid "I match non aggiornano i rating (Elo/Fargo). Ereditato da gare e partite."
-msgstr ""
-"Matches do not update the ratings (Elo/Fargo). Inherited from tournaments"
-" and matches."
+msgstr "Matches do not update ratings (Elo/Fargo). Inherited by competitions and matches."
 
 #: templates/admin/campionato_wizard_step2.html:139
 #: templates/admin/venue_form.html:12 templates/admin/venue_form.html:23
@@ -3358,7 +3363,7 @@ msgstr ""
 #: templates/gamification/admin/feature_detail.html:6
 #: templates/gamification/admin/level_config.html:6
 #: templates/gamification/admin/streak_config.html:6
-#: templates/gamification/admin/xp_config.html:6
+#: templates/gamification/admin/xp_config.html:6 templates/help/_base.html:18
 msgid "Indietro"
 msgstr "Back"
 
@@ -4417,7 +4422,10 @@ msgid ""
 "numerose l’incontro viene rinviato, non evitato: se una società porta più"
 " giocatori di quanti siano i rami del tabellone, un derby è "
 "matematicamente inevitabile."
-msgstr "The draw keeps teammates as far apart as it can. With large teams the meeting is postponed, not avoided: if a club brings more players than the bracket has branches, a derby is mathematically unavoidable."
+msgstr ""
+"The draw keeps teammates as far apart as it can. With large teams the "
+"meeting is postponed, not avoided: if a club brings more players than the"
+" bracket has branches, a derby is mathematically unavoidable."
 
 #: templates/components/_bracket_options.html:46
 msgid "Finale per il 3°/4° posto"
@@ -4427,7 +4435,9 @@ msgstr "3rd/4th place final"
 msgid ""
 "I due semifinalisti sconfitti si giocano il terzo posto, nello stesso "
 "turno della finale. Senza, sono terzi a pari merito."
-msgstr "The two losing semi-finalists play for third place, in the same round as the final. Without it, they share third."
+msgstr ""
+"The two losing semi-finalists play for third place, in the same round as "
+"the final. Without it, they share third."
 
 #: templates/components/_bracket_options.html:63
 msgid "Fase a gironi"
@@ -4449,7 +4459,9 @@ msgstr "Groups of 16 — double knockout for the first 3 rounds"
 msgid ""
 "Ogni girone qualifica quattro giocatori al tabellone finale: due "
 "imbattuti e due ripescati."
-msgstr "Each group sends four players to the final bracket: two unbeaten and two through the losers bracket."
+msgstr ""
+"Each group sends four players to the final bracket: two unbeaten and two "
+"through the losers bracket."
 
 #: templates/components/_bracket_options.html:81
 msgid ""
@@ -4457,7 +4469,11 @@ msgid ""
 "iscritti è obbligatorio: dichiara la capienza e dà la stima dei turni. Il"
 " tabellone vero viene poi dimensionato sugli iscritti effettivi al "
 "momento del sorteggio."
-msgstr "Brackets are ranked by finishing position, and the maximum number of entries is required: it declares the capacity and gives the estimated number of rounds. The actual bracket is then sized on the entries present at the draw."
+msgstr ""
+"Brackets are ranked by finishing position, and the maximum number of "
+"entries is required: it declares the capacity and gives the estimated "
+"number of rounds. The actual bracket is then sized on the entries present"
+" at the draw."
 
 #: templates/components/_bracket_view.html:20
 #: templates/components/_bracket_view.html:25
@@ -4535,7 +4551,9 @@ msgstr "Bracket not drawn yet"
 msgid ""
 "Il tabellone compare quando il direttore di gara avvia il primo turno: è "
 "quello il momento in cui viene estratto."
-msgstr "The bracket appears when the competition director starts the first round: that is when it is drawn."
+msgstr ""
+"The bracket appears when the competition director starts the first round:"
+" that is when it is drawn."
 
 #: templates/components/_bracket_view.html:80
 #, python-format
@@ -4908,9 +4926,7 @@ msgstr "Nothing to manage yet"
 
 #: templates/components/_dashboard_empty_state.html:9
 msgid "Puoi creare un campionato o una singola gara dai pulsanti in testata."
-msgstr ""
-"You can create a championship or a single tournament from the buttons in "
-"the header."
+msgstr "You can create a championship or a single competition from the buttons in the header."
 
 #: templates/components/_dashboard_empty_state.html:11
 msgid "Nessun campionato attivo"
@@ -4998,7 +5014,9 @@ msgstr "Progression:"
 msgid ""
 "Il nodo in posizione j accoppia i vincitori dei nodi 2j e 2j+1 del turno "
 "precedente."
-msgstr "The node in position j pairs the winners of nodes 2j and 2j+1 from the previous round."
+msgstr ""
+"The node in position j pairs the winners of nodes 2j and 2j+1 from the "
+"previous round."
 
 #: templates/components/_direct_elimination_algorithm_info.html:30
 #: templates/components/_double_knockout_algorithm_info.html:20
@@ -5162,14 +5180,18 @@ msgid ""
 "Su un tabellone il numero esatto di rack deve essere dispari: con un "
 "numero pari la partita può finire in parità e il nodo resterebbe senza "
 "vincitore."
-msgstr "On a bracket the exact number of racks must be odd: an even number can end level and the node would have no winner."
+msgstr ""
+"On a bracket the exact number of racks must be odd: an even number can "
+"end level and the node would have no winner."
 
 #: templates/components/_distance_configurator.html:80
 msgid ""
 "Su un tabellone il numero esatto di set deve essere dispari: con un "
 "numero pari la partita può finire in parità e il nodo resterebbe senza "
 "vincitore."
-msgstr "On a bracket the exact number of sets must be odd: an even number can end level and the node would have no winner."
+msgstr ""
+"On a bracket the exact number of sets must be odd: an even number can end"
+" level and the node would have no winner."
 
 #: templates/components/_double_knockout_algorithm_info.html:9
 #, python-format
@@ -5185,7 +5207,10 @@ msgid ""
 "Chi perde scende nel ramo dei ripescati; chi perde due volte è eliminato."
 " In finale il vincitore dei ripescati deve battere l’imbattuto due volte:"
 " se ci riesce una sola, si gioca la bella."
-msgstr "A loss drops you into the losers bracket; two losses are out. In the final the losers-bracket winner must beat the unbeaten player twice: winning once forces a decider."
+msgstr ""
+"A loss drops you into the losers bracket; two losses are out. In the "
+"final the losers-bracket winner must beat the unbeaten player twice: "
+"winning once forces a decider."
 
 #: templates/components/_double_knockout_algorithm_info.html:22
 msgid "Fase a gironi:"
@@ -5198,7 +5223,7 @@ msgstr "%(num)s groups"
 
 #: templates/components/_double_knockout_algorithm_info.html:24
 msgid "Ogni girone qualifica quattro giocatori: due imbattuti e due ripescati."
-msgstr "Each group qualifies four players: two unbeaten and two through the losers bracket."
+msgstr "Each group qualifies four players: two unbeaten and two from the losers' bracket."
 
 #: templates/components/_elo_display.html:20
 msgid "Clicca per alternare ELO competitivo / globale (tornei + casual)"
@@ -5297,9 +5322,7 @@ msgstr "and %(n)s more players"
 
 #: templates/components/_gara_challenges_display.html:35
 msgid "Si giocano a turno concluso, con i tentativi indicati per ogni giocatore."
-msgstr ""
-"They are played once the round is over, with the attempts shown for each "
-"player."
+msgstr "They are played once the round is over, with the attempts specified for each player."
 
 #: templates/components/_gara_edit_form.html:16
 #, python-format
@@ -7278,7 +7301,9 @@ msgstr "Name of the new team"
 msgid ""
 "Scrivi qui solo se la tua squadra non è in elenco. Se ne esistono di "
 "simili te le mostriamo prima di crearla."
-msgstr "Type here only if your team is not in the list. If similar names exist we show them before creating it."
+msgstr ""
+"Type here only if your team is not in the list. If similar names exist we"
+" show them before creating it."
 
 #: templates/components/_squadra_choice.html:56
 msgid "Crea comunque, è davvero un’altra squadra"
@@ -7292,13 +7317,17 @@ msgstr "Save team"
 msgid ""
 "Vale solo per questa gara e non cambia il tuo profilo. Puoi cambiarla "
 "finché il primo turno non è partito."
-msgstr "This applies to this competition only and does not change your profile. You can change it until the first round starts."
+msgstr ""
+"This applies to this competition only and does not change your profile. "
+"You can change it until the first round starts."
 
 #: templates/components/_squadra_choice.html:71
 msgid ""
 "Il primo turno è partito: il tabellone è già estratto, quindi le squadre "
 "non si cambiano più."
-msgstr "The first round has started: the bracket is already drawn, so teams can no longer be changed."
+msgstr ""
+"The first round has started: the bracket is already drawn, so teams can "
+"no longer be changed."
 
 #: templates/components/_squadre_management.html:18
 msgid "Squadre"
@@ -7317,7 +7346,9 @@ msgid ""
 "Il sorteggio tiene lontani i compagni di squadra il più a lungo "
 "possibile; con squadre molto numerose l’incontro viene rinviato, non "
 "evitato."
-msgstr "The draw keeps teammates apart as long as it can; with very large teams the meeting is postponed, not avoided."
+msgstr ""
+"The draw keeps teammates apart as long as it can; with very large teams "
+"the meeting is postponed, not avoided."
 
 #: templates/components/_squadre_management.html:36
 msgid "Nuova squadra"
@@ -7348,7 +7379,7 @@ msgstr "Disabled"
 
 #: templates/components/_squadre_management.html:66
 msgid "Toglie la squadra dalle scelte, senza toccare le iscrizioni che la usano"
-msgstr "Removes the team from the choices, leaving the entries that already use it untouched"
+msgstr "Removes the team from the choices, without touching the entries that use it"
 
 #: templates/components/_squadre_management.html:72
 msgid "Rimette la squadra fra le scelte"
@@ -7371,7 +7402,9 @@ msgstr "Rename"
 msgid ""
 "Unire «%(nome)s» in un’altra squadra? Le iscrizioni passano alla squadra "
 "scelta e questa voce sparisce dall’elenco."
-msgstr "Merge \u00ab%(nome)s\u00bb into another team? Its entries move to the chosen team and this one disappears from the list."
+msgstr ""
+"Merge \\u00ab%(nome)s\\u00bb into another team? Its entries move to the "
+"chosen team and this one disappears from the list."
 
 #: templates/components/_squadre_management.html:106
 msgid "Squadra in cui unire questa voce"
@@ -7389,13 +7422,17 @@ msgstr "No teams in the list"
 msgid ""
 "Le squadre si aggiungono qui, oppure nascono da sole quando un iscritto "
 "indica la propria."
-msgstr "Teams are added here, or appear on their own when an entrant states theirs."
+msgstr ""
+"Teams are added here, or appear on their own when an entrant states "
+"theirs."
 
 #: templates/components/_squadre_management.html:135
 msgid ""
 "Il primo turno è partito: il tabellone è già estratto, quindi l’elenco "
 "non si modifica più."
-msgstr "The first round has started: the bracket is already drawn, so the list can no longer be changed."
+msgstr ""
+"The first round has started: the bracket is already drawn, so the list "
+"can no longer be changed."
 
 #: templates/components/_ssr_section.html:13
 msgid "Spareggio (Spot Shot Rally)"
@@ -8100,9 +8137,7 @@ msgstr "Play a few matches to appear in your local standings."
 
 #: templates/gamification/leaderboards.html:75
 msgid "Challenge create per gli altri, gare organizzate e proposte accettate."
-msgstr ""
-"Challenges created for others, tournaments organised and proposals "
-"accepted."
+msgstr "Challenges created for others, competitions organised and proposals accepted."
 
 #: templates/gamification/leaderboards.html:77
 msgid "Punti contributo"
@@ -8114,9 +8149,7 @@ msgstr "No contribution recorded"
 
 #: templates/gamification/leaderboards.html:79
 msgid "Crea challenge, organizza gare o proponi match: la community cresce così."
-msgstr ""
-"Create challenges, organise tournaments or propose matches: that is how "
-"the community grows."
+msgstr "Create challenges, organise competitions or propose matches: that is how the community grows."
 
 #: templates/gamification/admin/dashboard.html:46
 #: templates/gamification/quests.html:10
@@ -8209,11 +8242,12 @@ msgid_plural ""
 "quando la funzione sarà attiva potrai usarne uno per non azzerare la "
 "streak."
 msgstr[0] ""
-"You have not played this week yet. You have %(num)d freeze saved: when the "
-"feature is live you will be able to use it to keep your streak alive."
+"You have not played this week yet. You have %(num)d freeze saved: when "
+"the feature is live you will be able to use it to keep your streak alive."
 msgstr[1] ""
-"You have not played this week yet. You have %(num)d freezes saved: when the "
-"feature is live you will be able to use one to keep your streak alive."
+"You have not played this week yet. You have %(num)d freezes saved: when "
+"the feature is live you will be able to use one to keep your streak "
+"alive."
 
 #: templates/gamification/streaks.html:119
 msgid ""
@@ -8484,10 +8518,6 @@ msgstr "Feature active"
 #: templates/gamification/admin/feature_create.html:49
 msgid "Crea Feature"
 msgstr "Create Feature"
-
-#: templates/gamification/admin/feature_create.html:59
-msgid "Guida"
-msgstr "Guide"
 
 #: templates/gamification/admin/feature_create.html:63
 msgid ""
@@ -9065,6 +9095,145 @@ msgstr "Select a user"
 #: templates/gamification/admin/xp_management.html:142
 msgid "Sei sicuro di voler resettare il livello di questo utente?"
 msgstr "Are you sure you want to reset this user's level?"
+
+#: templates/help/_blocks.html:34
+msgid "Collegamento a questa sezione"
+msgstr "Link to this section"
+
+#: templates/help/_blocks.html:87
+msgid "Ha un micro-aiuto"
+msgstr "Has a quick tip"
+
+#: templates/help/_ui.html:9
+msgid "Percorso"
+msgstr "Breadcrumb"
+
+#: templates/help/_ui.html:37
+#, python-format
+msgid "%(n)s min"
+msgstr "%(n)s min"
+
+#: templates/help/_ui.html:46
+msgid "Cerca nella guida…"
+msgstr "Search the guide…"
+
+#: templates/help/_ui.html:46 templates/help/search.html:6
+msgid "Cerca nella guida"
+msgstr "Search the guide"
+
+#: templates/help/_ui.html:47 templates/help/search.html:5
+#: templates/public/campionatos_list.html:13
+msgid "Cerca"
+msgstr "Search"
+
+#: templates/help/hints.html:11 templates/help/hints.html:12
+msgid "Micro-aiuto"
+msgstr "Quick tips"
+
+#: templates/help/hints.html:13
+#, python-format
+msgid "%(n)s schermate coperte"
+msgstr "%(n)s screens covered"
+
+#: templates/help/hints.html:21
+msgid "A cosa serve questa pagina"
+msgstr "What this page is for"
+
+#: templates/help/hints.html:23
+msgid ""
+"Raccoglie i testi già pronti per la guida contestuale: la presentazione "
+"che apparirà la prima volta che si apre una schermata, e le spiegazioni "
+"brevi da mostrare accanto ai singoli comandi. Nessuno di questi testi è "
+"ancora attivo nell'app."
+msgstr "It collects the text already written for contextual help: the introduction shown the first time a screen is opened, and the short explanations to display next to individual controls. None of this text is active in the app yet."
+
+#: templates/help/hints.html:29
+msgid "Schermata"
+msgstr "Screen"
+
+#: templates/help/hints.html:35
+msgid "Presentazione alla prima visita"
+msgstr "First-visit introduction"
+
+#: templates/help/hints.html:47
+msgid "Spiegazioni accanto ai comandi"
+msgstr "Tips shown next to the controls"
+
+#: templates/help/hints.html:56
+msgid "spiegazione completa"
+msgstr "full explanation"
+
+#: templates/help/index.html:20
+msgid "Come funziona"
+msgstr "How it works"
+
+#: templates/help/index.html:29
+msgid "Comincia da qui"
+msgstr "Start here"
+
+#: templates/help/index.html:39
+msgid "Tutte le sezioni"
+msgstr "All sections"
+
+#: templates/help/index.html:51 templates/help/section.html:7
+#, python-format
+msgid "%(n)s pagine"
+msgstr "%(n)s pages"
+
+#: templates/help/page.html:31
+#, python-format
+msgid "%(n)s min di lettura"
+msgstr "%(n)s min read"
+
+#: templates/help/page.html:44
+msgid "In breve, nell'app"
+msgstr "In brief, inside the app"
+
+#: templates/help/page.html:46
+msgid ""
+"Queste frasi compariranno accanto ai comandi dell'interfaccia quando sarà"
+" attiva la guida contestuale."
+msgstr "These sentences will appear next to the interface controls once contextual help is switched on."
+
+#: templates/help/page.html:63
+msgid "Precedente"
+msgstr "Previous"
+
+#: templates/help/page.html:69
+msgid "Successiva"
+msgstr "Next"
+
+#: templates/help/page.html:78
+msgid "Da leggere anche"
+msgstr "Read next"
+
+#: templates/help/page.html:93
+msgid "In questa pagina"
+msgstr "On this page"
+
+#: templates/help/search.html:7
+#, python-format
+msgid "%(n)s risultati"
+msgstr "%(n)s results"
+
+#: templates/help/search.html:17
+#, python-format
+msgid "Nessun risultato per «%(q)s»"
+msgstr "No results for “%(q)s”"
+
+#: templates/help/search.html:19
+msgid ""
+"Prova con una parola sola e più comune: per esempio «iscrizione», "
+"«turno», «classifica», «rack»."
+msgstr "Try a single, more common word: for example “entry”, “round”, “standings”, “rack”."
+
+#: templates/help/search.html:34
+msgid "Oppure sfoglia le sezioni"
+msgstr "Or browse the sections"
+
+#: templates/help/section.html:23
+msgid "Questa sezione non ha ancora pagine."
+msgstr "This section has no pages yet."
 
 #: templates/individual_match/admin_overview.html:4
 msgid "Amministrazione"
@@ -10561,7 +10730,10 @@ msgid ""
 "Il circolo o la società con cui giochi di solito. Viene proposta quando "
 "ti iscrivi a una gara che tiene conto delle squadre; lì potrai sempre "
 "cambiarla o lasciarla vuota."
-msgstr "The club or team you usually play for. It is suggested when you enter a competition that takes teams into account; there you can always change it or leave it empty."
+msgstr ""
+"The club or team you usually play for. It is suggested when you enter a "
+"competition that takes teams into account; there you can always change it"
+" or leave it empty."
 
 #: templates/player/venues.html:7
 #, python-format
@@ -10676,10 +10848,6 @@ msgstr "Back to the home page"
 #: templates/public/campionatos_list.html:8 templates/public/garas_list.html:52
 msgid "Lista pubblica: si consulta senza registrarsi."
 msgstr "Public list: you can read it without registering."
-
-#: templates/public/campionatos_list.html:13
-msgid "Cerca"
-msgstr "Search"
 
 #: templates/public/campionatos_list.html:22
 msgid "Terminati"

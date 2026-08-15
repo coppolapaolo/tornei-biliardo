@@ -1,0 +1,118 @@
+title: "Chi fa cosa"
+section: introduzione
+kind: introduzione
+audience: [tutti]
+minutes: 3
+summary: "Giocatore, direttore di gara e amministratore: chi può fare cosa, e come si diventa direttore."
+related: [primo_accesso, creare_una_gara]
+
+blocks:
+  - type: text
+    text: >-
+      Ogni account ha un ruolo, e il ruolo decide quali schermate vedi. Non è
+      una gerarchia di importanza: è una divisione di compiti. La maggior parte
+      delle persone resta **giocatore** per sempre, e va benissimo così.
+
+  - type: heading
+    id: giocatore
+    title: "Giocatore"
+
+  - type: text
+    text: >-
+      È il ruolo con cui nasce ogni account nuovo. Un giocatore può iscriversi
+      alle gare, giocare, segnare i propri punteggi, seguire classifiche e
+      statistiche, proporre partite amichevoli e curare il proprio profilo.
+
+  - type: list
+    title: "Un giocatore può"
+    items:
+      - "Iscriversi e disiscriversi dalle gare con le iscrizioni aperte."
+      - "Segnare i rack delle **proprie** partite (non di quelle altrui)."
+      - "Vedere turni, avversari, classifiche e tabelloni."
+      - "Proporre e giocare partite amichevoli fuori dalle gare."
+      - "Modificare profilo, privacy ed email; scaricare i propri dati."
+
+  - type: heading
+    id: direttore
+    title: "Direttore di gara"
+
+  - type: text
+    text: >-
+      Il direttore di gara è chi organizza. Oltre a tutto ciò che fa un
+      giocatore, può creare gare e campionati, aprire e chiudere le iscrizioni,
+      avviare i turni, assegnare i tavoli e correggere i risultati sbagliati.
+
+  - type: shot
+    shot: dashboard-direttore
+    caption: "La home di un direttore di gara: in cima compaiono i pulsanti «Nuova Gara» e «Nuovo Campionato», che un giocatore non vede."
+
+  - type: note
+    tone: warning
+    title: "Chi dirige una gara non la gioca"
+    text: >-
+      Un direttore **non può iscriversi alle gare che dirige lui stesso**:
+      sarebbe giudice e parte. Può però giocare tranquillamente le gare dirette
+      da qualcun altro, dove è un giocatore come tutti.
+
+  - type: text
+    text: >-
+      Una gara può avere più di un direttore. È utile per le serate lunghe:
+      chi è al tavolo a giocare non può anche condurre la gara, e un
+      co-direttore fa avanzare i turni al posto suo.
+
+  - type: heading
+    id: diventare_direttore
+    title: "Come si diventa direttore"
+
+  - type: steps
+    items:
+      - title: "Apri il tuo profilo"
+        text: "Tocca l'iniziale del tuo nome in alto a destra, poi «Il mio profilo»."
+        shot: profilo
+      - title: "Chiedi il ruolo di direttore"
+        text: >-
+          Nel profilo trovi la richiesta di promozione a direttore di gara.
+          Inviala: arriva a chi amministra la piattaforma.
+      - title: "Aspetta la risposta"
+        text: >-
+          Quando la richiesta viene accolta ricevi una notifica, e la volta
+          successiva che apri la home trovi i pulsanti per creare gare e
+          campionati.
+
+  - type: heading
+    id: amministratore
+    title: "Amministratore"
+
+  - type: text
+    text: >-
+      L'amministratore è chi tiene in piedi la piattaforma: gestisce gli
+      account, approva le richieste di direttore, sorveglia i dati e può
+      intervenire su qualsiasi gara. È un ruolo tecnico, di norma affidato a
+      una o due persone.
+
+  - type: note
+    tone: info
+    text: >-
+      Gli amministratori **non partecipano alla parte di gioco**: non hanno
+      punti esperienza né livelli, e non compaiono nelle classifiche. Serve a
+      tenere separato chi arbitra da chi gioca.
+
+  - type: heading
+    id: gestore_sala
+    title: "Gestore di sala"
+
+  - type: text
+    text: >-
+      C'è infine un ruolo secondario, che si aggiunge agli altri: il gestore di
+      una sala biliardo, che può tenere aggiornata la scheda della sua sala
+      (indirizzo, tavoli, orari). Si richiede dal profilo, come per il ruolo di
+      direttore, e viene approvato da un amministratore.
+
+  - type: faq
+    items:
+      - q: "Posso essere sia giocatore che direttore?"
+        a: "Sì, ed è la situazione normale: il direttore è un giocatore con qualche potere in più. L'unico limite è che non può iscriversi alle gare che dirige."
+      - q: "Ho chiesto di diventare direttore ma non è cambiato niente."
+        a: "La richiesta deve essere approvata da un amministratore. Finché non lo è, il tuo account resta giocatore. Controlla le notifiche: la risposta arriva lì."
+      - q: "Chi può correggere un risultato già inserito?"
+        a: "Il direttore della gara. Un giocatore può annullare l'ultimo rack finché la partita è in corso, ma non può più intervenire dopo che il risultato è stato chiuso."

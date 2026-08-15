@@ -1,0 +1,49 @@
+{# templates/help/_ui.html — macro condivise del mini-sito di aiuto.
+
+   File separato da `help/_base.html` di proposito: `_base.html` estende
+   `base.html`, e importare un template che estende un altro ne rieseguirebbe
+   il guscio fuori dal contesto della richiesta. Le macro stanno qui, senza
+   `extends`, e si importano ovunque servano. #}
+
+{% macro crumbs(section=None, page=None) %}
+<nav class="help-crumbs" aria-label="{{ _('Percorso') }}">
+    <a href="{{ url_for('help.index') }}">{{ _('Guida') }}</a>
+    {% if section %}
+    <span aria-hidden="true">›</span>
+    <a href="{{ url_for('help.section', section_id=section.id) }}">{{ section.title }}</a>
+    {% endif %}
+    {% if page %}
+    <span aria-hidden="true">›</span>
+    <span>{{ page.title }}</span>
+    {% endif %}
+</nav>
+{% endmacro %}
+
+{% macro page_card(page) %}
+{# Scheda-collegamento a una pagina, usata da copertina, sezioni e ricerca:
+   una sola definizione perche' le tre viste restino identiche fra loro. #}
+<a class="help-cardlink" href="{{ url_for('help.page', section_id=page.section, slug=page.slug) }}">
+    <div class="help-cardlink__title">{{ page.title }}</div>
+    <div class="help-cardlink__desc">{{ page.summary }}</div>
+    {# Etichette di stato (`c7-state`), non pastiglie (`c7-pill`): sono
+       metadati, non comandi, e il pill nel design system e' un controllo —
+       darebbe l'idea di qualcosa da premere. #}
+    <div class="help-cardlink__meta">
+        <span class="c7-state c7-state--muted">{{ kind_label(page.kind) }}</span>
+        {% for who in page.audience if who != 'tutti' %}
+        <span class="c7-state c7-state--info">{{ audience_label(who) }}</span>
+        {% endfor %}
+        {% if page.minutes %}
+        <span class="help-minutes">{{ _('%(n)s min', n=page.minutes) }}</span>
+        {% endif %}
+    </div>
+</a>
+{% endmacro %}
+
+{% macro search_box(query='') %}
+<form class="help-search" action="{{ url_for('help.search') }}" method="get" role="search">
+    <input class="form-control" type="search" name="q" value="{{ query }}"
+           placeholder="{{ _('Cerca nella guida…') }}" aria-label="{{ _('Cerca nella guida') }}">
+    <button class="btn btn-secondary" type="submit">{{ _('Cerca') }}</button>
+</form>
+{% endmacro %}

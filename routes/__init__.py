@@ -11,6 +11,7 @@ def register_blueprints(app):
     from .i18n import i18n_bp
     from .onboarding import onboarding_bp
     from .demand import demand_bp
+    from .help import help_bp
 
     # Import dei blueprint extended domains (Phase 3)
     from .challenge import challenge_bp
@@ -32,6 +33,8 @@ def register_blueprints(app):
     app.register_blueprint(i18n_bp)
     app.register_blueprint(onboarding_bp)
     app.register_blueprint(demand_bp, url_prefix="/demand")
+    # Il prefisso /aiuto lo dichiara il blueprint stesso.
+    app.register_blueprint(help_bp)
 
     # Registrazione blueprints extended domains
     app.register_blueprint(challenge_bp, url_prefix="/challenges")

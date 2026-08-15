@@ -57,6 +57,19 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # un account — è la schermata che si condivide durante un torneo.
     "admin.competition.gara_bracket": {"anonimo", "player", "director"},
     "i18n.set_language": {"anonimo", "player", "director"},
+    # Mini-sito di aiuto: pubblico per costruzione. Chi deve ancora decidere se
+    # registrarsi è il primo destinatario della guida, quindi tenerla dietro il
+    # login la renderebbe inutile proprio a chi serve di più.
+    "help.index": {"anonimo", "player", "director"},
+    "help.section": {"anonimo", "player", "director"},
+    "help.page": {"anonimo", "player", "director"},
+    "help.search": {"anonimo", "player", "director"},
+    # Catalogo dei micro-aiuti e API per schermata: predisposizione per
+    # l'interfaccia adattiva, materiale di lavoro per chi scrive la guida.
+    # `set()` esplicito = admin-only e deciso, non dimenticato: si aprono ai
+    # player quando l'interfaccia adattiva li consumerà davvero.
+    "help.hints_index": set(),
+    "help.screen_api": set(),
     # === Logged-in (player or director) ===
     "auth.logout": {"player", "director"},
     "dashboard.dashboard": {"player", "director"},

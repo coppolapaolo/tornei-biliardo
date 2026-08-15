@@ -201,6 +201,11 @@
                     <i class="fas fa-handshake"></i>{{ _('Match Individuali') }}
                 </a>
                 {% endif %}
+                {% if feature_visible('help.index') %}
+                <a href="{{ url_for('help.index') }}" class="{{ 'is-active' if ep.startswith('help.') }}">
+                    <i class="fas fa-circle-question"></i>{{ _('Guida') }}
+                </a>
+                {% endif %}
             </nav>
 
             {% if current_user.is_admin %}
@@ -380,6 +385,14 @@
                        senza dover leggere un log. La fonte e' Config.VERSION. #}
                     <span class="c7-sep mx-2">&middot;</span>
                     <span>v{{ config.VERSION }}</span>
+                    {# Il mini-sito di aiuto sta nel footer perche' deve essere
+                       raggiungibile da ogni pagina e anche da chi non ha
+                       ancora un account: chi deve capire come funziona e'
+                       proprio chi non e' ancora entrato. #}
+                    {% if feature_visible('help.index') %}
+                    <span class="c7-sep mx-2">&middot;</span>
+                    <a href="{{ url_for('help.index') }}" style="color:var(--c7-ink-muted)">{{ _('Guida') }}</a>
+                    {% endif %}
                     {% if feature_visible('main.privacy_policy') %}
                     <span class="c7-sep mx-2">&middot;</span>
                     <a href="{{ url_for('main.privacy_policy') }}" style="color:var(--c7-ink-muted)">{{ _('Privacy e Cookie') }}</a>

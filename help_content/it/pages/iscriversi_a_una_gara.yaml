@@ -1,0 +1,127 @@
+title: "Iscriversi a una gara"
+section: giocare
+kind: tutorial
+audience: [giocatore]
+minutes: 4
+summary: "Trovare una gara aperta, iscriversi, controllare di essere in elenco e — se serve — tirarsi indietro in tempo."
+screens: [main.public_garas_list, player.gara_detail]
+related: [seguire_la_gara, giocare_una_partita]
+
+blocks:
+  - type: text
+    text: >-
+      Iscriversi richiede due tocchi. La parte che vale la pena leggere è
+      quella dopo: come accorgersi che l'iscrizione è andata a buon fine, e
+      cosa fare se poi non puoi venire.
+
+  - type: heading
+    id: trovare
+    title: "Trovare una gara"
+
+  - type: steps
+    items:
+      - title: "Guarda la tua home"
+        text: >-
+          Appena entri, le gare aperte alle iscrizioni sono già lì, con la
+          scritta **Iscrizioni aperte** e la data di scadenza.
+        shot: dashboard-giocatore
+      - title: "Oppure sfoglia tutte le gare"
+        text: >-
+          Il collegamento **Vedi tutte** porta all'elenco completo, comprese le
+          gare di circoli a cui non hai mai partecipato.
+        shot: gare-aperte
+      - title: "Apri la gara che ti interessa"
+        text: >-
+          La scheda della gara dice tutto quello che serve per decidere: data e
+          ora, sala, disciplina, distanza, quota di partecipazione e quante
+          persone si sono già iscritte.
+
+  - type: heading
+    id: iscriversi
+    title: "Iscriversi"
+
+  - type: steps
+    items:
+      - title: "Tocca «Iscriviti»"
+        text: >-
+          Il pulsante è in fondo alla scheda della gara. Compare solo se le
+          iscrizioni sono aperte e se non sei già iscritto.
+        shot: gara-iscrizione
+      - title: "Controlla la conferma"
+        text: >-
+          In cima alla pagina compare il riquadro **La tua iscrizione** con la
+          data in cui ti sei iscritto, e il tuo nome entra nell'elenco degli
+          iscritti. Se non vedi quel riquadro, l'iscrizione non è avvenuta.
+        shot: gara-iscritto
+
+  - type: note
+    tone: tip
+    title: "Il collegamento di invito"
+    text: >-
+      Gli organizzatori a volte diffondono un collegamento diretto alla gara
+      (in una chat, per esempio). Toccandolo ti iscrivi in un colpo solo. Se
+      non hai ancora un account, ti verrà chiesto prima di crearne uno e poi
+      l'iscrizione proseguirà da sola.
+
+  - type: heading
+    id: lista_attesa
+    title: "Se la gara è al completo"
+
+  - type: text
+    text: >-
+      Alcune gare hanno un numero massimo di partecipanti. Se è già raggiunto,
+      l'iscrizione ti mette in **lista d'attesa**: non sei escluso, sei in
+      coda. Se qualcuno si ritira prima dell'inizio, il primo della lista entra
+      automaticamente e riceve una notifica.
+
+  - type: note
+    tone: info
+    title: "Numero pari obbligatorio"
+    text: >-
+      Certe gare vogliono un numero pari di giocatori. In quel caso, se ti
+      iscrivi quando il conto è pari, resti in lista d'attesa finché non si
+      iscrive un'altra persona: a quel punto entrate tutti e due insieme. Non è
+      un errore, ed è spiegato in [Quando i giocatori sono
+      dispari](/aiuto/approfondimenti/numero_dispari).
+
+  - type: heading
+    id: disiscriversi
+    title: "Disiscriversi"
+
+  - type: text
+    text: >-
+      Finché le iscrizioni sono aperte puoi tirarti indietro liberamente: apri
+      la gara e tocca **Disiscriviti**. Nessuna penalità, e il posto va al
+      primo della lista d'attesa.
+
+  - type: note
+    tone: warning
+    title: "Dopo la chiusura delle iscrizioni non si può più"
+    text: >-
+      Quando le iscrizioni chiudono, l'elenco è quello con cui il direttore
+      farà il sorteggio. Se a quel punto non puoi più venire, **avvisa il
+      direttore di gara**: solo lui può toglierti dall'elenco, e farlo prima
+      dell'avvio evita che qualcuno resti senza avversario.
+
+  - type: heading
+    id: quando_inizia
+    title: "Cosa succede quando la gara comincia"
+
+  - type: text
+    text: >-
+      All'ora stabilita il direttore chiude le iscrizioni e avvia il primo
+      turno. L'app forma le coppie e ti manda una notifica con il nome del tuo
+      avversario e, se la sala li ha configurati, il numero del tavolo. Da lì
+      in poi la pagina della gara diventa il tuo punto di riferimento: vedi
+      [Seguire la gara](/aiuto/giocare/seguire_la_gara).
+
+  - type: faq
+    items:
+      - q: "Mi sono iscritto ma non vedo la gara nella mia home."
+        a: "La home mostra le gare attive. Se la gara è ancora lontana nel tempo la trovi comunque nell'elenco completo, e la ritroverai in home avvicinandosi la data."
+      - q: "Posso iscrivermi a due gare nello stesso giorno?"
+        a: "Sì, l'app non lo impedisce. Sta a te controllare che gli orari non si sovrappongano."
+      - q: "Devo pagare la quota nell'app?"
+        a: "No. La quota indicata sulla scheda è informativa: si paga sul posto, secondo le abitudini del circolo."
+      - q: "Mi sono iscritto per sbaglio a una gara sbagliata."
+        a: "Disiscriviti subito dalla scheda della gara: finché le iscrizioni sono aperte è immediato e non lascia traccia."

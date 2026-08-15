@@ -1,0 +1,154 @@
+title: "Quando i giocatori sono dispari"
+section: approfondimenti
+kind: approfondimento
+audience: [tutti]
+minutes: 4
+summary: "Con un numero dispari di partecipanti qualcuno resterebbe senza avversario. Le quattro soluzioni possibili e quale scegliere."
+related: [abbinamenti, challenge, gestire_le_iscrizioni]
+
+blocks:
+  - type: text
+    text: >-
+      Se i giocatori sono nove, in ogni turno si formano quattro coppie e uno
+      resta fuori. Il problema si presenta ogni turno, e va deciso prima che la
+      gara cominci. L'app propone quattro soluzioni.
+
+  - type: note
+    tone: info
+    title: "Non è sempre lo stesso a restare fuori"
+    text: >-
+      Qualunque soluzione si scelga, l'app fa girare l'onere: chi è rimasto
+      senza avversario in un turno non ci resta anche nei successivi, finché ci
+      sono alternative.
+
+  - type: heading
+    id: riposo
+    title: "1. Riposo — «X a tavolino»"
+
+  - type: text
+    text: >-
+      Il giocatore non gioca e riceve una **vittoria a tavolino** con zero
+      differenza rack. Non guadagna né perde terreno rispetto a chi ha giocato:
+      prende una vittoria come tutti i vincitori, ma senza margine.
+
+  - type: list
+    items:
+      - "**Pro**: semplice, immediato, nessun tempo aggiuntivo."
+      - "**Contro**: qualcuno sta fermo un turno."
+      - "**Va usato con** il sistema di classifica «Vittorie»."
+
+  - type: note
+    tone: warning
+    text: >-
+      Con il sistema «Rack» il riposo semplice **non va bene**: chi non gioca
+      accumulerebbe zero rack e verrebbe penalizzato pesantemente. In quel caso
+      si usa il riposo con challenge.
+
+  - type: heading
+    id: riposo_challenge
+    title: "2. Riposo con challenge"
+
+  - type: text
+    text: >-
+      Chi resta senza avversario esegue una **prova di abilità** invece di
+      stare fermo. Il punteggio ottenuto vale per la classifica: con il sistema
+      «Rack» diventa il numero di rack accreditati, con «Vittorie» diventa la
+      differenza rack che accompagna la vittoria a tavolino.
+
+  - type: list
+    items:
+      - "**Pro**: nessuno sta fermo, e il turno resta equo anche a rack."
+      - "**Contro**: serve avere almeno una challenge configurata nella gara."
+
+  - type: heading
+    id: trio
+    title: "3. Trio — partita a tre"
+
+  - type: text
+    text: >-
+      Invece di lasciare uno fuori, tre giocatori giocano insieme un
+      mini-girone: ciascuno affronta gli altri due in rack singoli.
+
+  - type: options
+    title: "Come funziona il trio"
+    items:
+      - name: "Con distanza 2 o 3"
+        values: "3 rack in tutto"
+        text: "Un giro solo: A contro B, A contro C, B contro C."
+      - name: "Con distanza 4 o 5"
+        values: "6 rack in tutto"
+        text: "Due giri: le stesse tre sfide ripetute."
+      - name: "Chi vince"
+        text: >-
+          Chi ha vinto più rack. Se due o più arrivano appaiati al punteggio
+          più alto, nessuno prende la vittoria e restano solo le differenze
+          rack.
+
+  - type: list
+    items:
+      - "**Pro**: giocano tutti, e la partita a tre piace."
+      - "**Contro**: dura più di una partita normale e occupa un tavolo più a lungo."
+      - "**Disponibile solo** con distanze da 2 a 7, e non nelle gare a tabellone."
+
+  - type: heading
+    id: lista_attesa
+    title: "4. Lista d'attesa — solo numeri pari"
+
+  - type: text
+    text: >-
+      La gara ammette **solo** un numero pari di partecipanti. Chi si iscrive
+      rendendo il conto dispari resta in lista d'attesa finché non arriva
+      un'altra persona: allora entrano insieme.
+
+  - type: list
+    items:
+      - "**Pro**: il problema non si pone mai, ogni turno ha coppie perfette."
+      - "**Contro**: qualcuno può restare escluso dalla gara, non solo da un turno."
+
+  - type: note
+    tone: info
+    title: "Vale anche al contrario"
+    text: >-
+      Se qualcuno si disiscrive e il conto diventa dispari, l'ultimo iscritto
+      torna in lista d'attesa. È automatico e i giocatori ricevono la notifica.
+
+  - type: heading
+    id: quale
+    title: "Quale scegliere"
+
+  - type: options
+    items:
+      - name: "Serata normale, classifica a vittorie"
+        values: "Riposo"
+        text: "La scelta predefinita: non allunga la serata e non complica niente."
+      - name: "Classifica a rack"
+        values: "Riposo con challenge"
+        text: "Obbligatorio nei fatti: il riposo semplice falserebbe la classifica."
+      - name: "Gruppo affiatato, tempo a disposizione"
+        values: "Trio"
+        text: "Nessuno sta fermo ed è il più divertente. Serve un tavolo in più di tempo."
+      - name: "Iscrizioni molto sopra il numero di posti"
+        values: "Lista d'attesa"
+        text: "Ha senso solo quando le esclusioni sono comunque inevitabili."
+
+  - type: heading
+    id: eliminazione
+    title: "Nei tornei a eliminazione"
+
+  - type: text
+    text: >-
+      Nei tabelloni il problema si risolve da sé: se i partecipanti non sono
+      una potenza di due, alcuni passano direttamente al turno successivo senza
+      giocare il primo. È il comportamento standard di ogni tabellone e non
+      richiede impostazioni.
+
+  - type: faq
+    items:
+      - q: "Ho ricevuto una vittoria senza giocare. È un errore?"
+        a: "No: è l'X a tavolino, e tocca a turno a chi resta senza avversario. Vale una vittoria con zero differenza rack."
+      - q: "Perché sono in lista d'attesa se ci sono ancora posti?"
+        a: "Perché la gara richiede un numero pari di giocatori e la tua iscrizione lo renderebbe dispari. Entrerai appena si iscrive qualcun altro."
+      - q: "Il trio non è selezionabile."
+        a: "È possibile solo con distanze da 2 a 7 e non nelle gare a tabellone. Se la distanza è fuori intervallo, l'opzione resta spenta."
+      - q: "In un trio ho vinto due rack su tre. Ho vinto la partita?"
+        a: "Sì, se nessun altro ne ha vinti altrettanti. In caso di parità al punteggio più alto, nessuno prende la vittoria."

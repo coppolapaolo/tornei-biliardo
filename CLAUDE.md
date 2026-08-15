@@ -519,6 +519,8 @@ pytest tests/new/unit/ -n auto && pytest tests/new/integration/ -n 4
 | `Config.DEBUG_MODE` in una route | `current_app.config.get("DEBUG_MODE", False)` — la classe base legge la env var col default `true`, quindi in produzione il guard non scatta |
 | Co-direttore con `role != director` | `GaraService`/`TournamentService.add_director` lo rifiutano (`ValidationError`): i co-direttori sono sempre `role=director` |
 | Disciplina come stringa scritta a mano (`"palla_8"`, `"8_ball"`) | `Discipline.*.value` da `models/status_enum.py` — **unico** vocabolario; per dati storici/esterni `Discipline.normalize()` (torna `None` sull'ignoto). Il nome mostrato è `display_name`, tradotto. Presidiato da `test_discipline_single_vocabulary.py` |
+| Funzione visibile all'utente cambiata senza toccare `/aiuto` | Invoca la skill `help-docs`: la guida non si rompe, **invecchia** — continua a descrivere un'app che non esiste più. Contenuti in `help_content/`, schermate rigenerate da `scripts/help_docs/` |
+| Schermata della guida ritoccata a mano in un editor | Le immagini si **generano** dall'app (`capture_screenshots.py`) sul dataset di `seed_demo.py`: una ritoccata sopravvive al cambio di interfaccia e diventa una bugia permanente |
 
 ---
 
@@ -535,6 +537,7 @@ pytest tests/new/unit/ -n auto && pytest tests/new/integration/ -n 4
 - **[docs/usecases/gare.md](docs/usecases/gare.md)**: Detailed workflow documentation
 - **[docs/reference/UI_CONVENTIONS.md](docs/reference/UI_CONVENTIONS.md)**: UI conventions (icons, colors, design decisions)
 - **[docs/reference/NAMING_CONVENTIONS.md](docs/reference/NAMING_CONVENTIONS.md)**: Naming conventions (italian plurals, italian/english split, URL, test, DB columns)
+- **[help_content/](help_content/)**: contenuti del mini-sito di aiuto per gli utenti (`/aiuto`) — YAML, non HTML. `it/pages/*.yaml` le pagine, `it/hints.yaml` i micro-aiuti **già pronti per la futura interfaccia adattiva** (fumetti "?" e presentazione alla prima visita), `screenshots.yaml` il manifest delle catture. Si aggiorna con la skill `help-docs`; le schermate si rigenerano con `scripts/help_docs/seed_demo.py` + `capture_screenshots.py`
 - **[docs/adr/](docs/adr/)**: Architecture Decision Records (ADR)
 - **[docs/adr/ADR-027-round-level-configuration-enforcement.md](docs/adr/ADR-027-round-level-configuration-enforcement.md)**: Override per turno persistiti server-side + uso obbligatorio di `Distance` VO nello scoring
 - **[docs/adr/ADR-028-production-endpoint-allowlist.md](docs/adr/ADR-028-production-endpoint-allowlist.md)**: allowlist endpoint deny-by-default in produzione, matrice ruoli (anonimo/player/director) con admin bypass — vedi anche `docs/reference/PRODUCTION_INVENTORY.md`

@@ -1,0 +1,77 @@
+# Indice del mini-sito di aiuto.
+#
+# L'ordine delle sezioni e delle pagine dentro ogni sezione e' l'ordine in cui
+# compaiono nel sito e in cui si incatenano i pulsanti «precedente/successiva»:
+# va letto come un percorso, non come un elenco alfabetico. Prima si spiega
+# cos'e' l'app, poi come si gioca, poi come si organizza; il resto viene dopo.
+#
+# Una pagina che non compare qui non e' raggiungibile: `validate` lo segnala.
+
+title: "Guida a Tornei Biliardo"
+tagline: "Come si gioca, come si organizza"
+
+intro: >-
+  Qui trovi spiegato, passo per passo e con le schermate dell'app, tutto quello
+  che si può fare con Tornei Biliardo: iscriversi a una gara, segnare i
+  punteggi dal telefono, seguire le classifiche e — se organizzi tu — creare
+  gare e campionati. Non serve essere pratici di computer: ogni passaggio è
+  descritto con parole semplici e accompagnato dall'immagine di quello che
+  vedrai sullo schermo.
+
+sections:
+  - id: introduzione
+    title: "Per cominciare"
+    kicker: "Le basi"
+    icon: fa-compass
+    summary: "Che cos'è Tornei Biliardo, come è fatto, e le prime cose da fare dopo esserti registrato."
+    pages:
+      - cosa_e
+      - parole_da_sapere
+      - chi_fa_cosa
+      - primo_accesso
+
+  - id: giocare
+    title: "Giocare"
+    kicker: "Per i giocatori"
+    icon: fa-play
+    summary: "Iscriversi a una gara, segnare i punteggi durante la partita, seguire turni e classifiche, e organizzare partite amichevoli."
+    pages:
+      - iscriversi_a_una_gara
+      - giocare_una_partita
+      - seguire_la_gara
+      - partite_amichevoli
+      - challenge
+
+  - id: organizzare
+    title: "Organizzare"
+    kicker: "Per i direttori di gara"
+    icon: fa-clipboard-list
+    summary: "Creare una gara o un campionato, gestire le iscrizioni, condurre la serata turno per turno e correggere gli errori."
+    pages:
+      - creare_una_gara
+      - creare_un_campionato
+      - gestire_le_iscrizioni
+      - condurre_la_gara
+      - opzioni_della_gara
+
+  - id: approfondimenti
+    title: "Come funziona davvero"
+    kicker: "Le regole dietro le quinte"
+    icon: fa-book
+    summary: "Le regole che l'app applica da sola: formati di gioco, abbinamenti fra giocatori, classifiche, numero dispari di partecipanti e spareggi."
+    pages:
+      - formati_di_gioco
+      - abbinamenti
+      - classifiche
+      - numero_dispari
+
+  - id: account
+    title: "Il tuo account"
+    kicker: "Profilo e dati"
+    icon: fa-user
+    summary: "Profilo, statistiche, notifiche, progressi e il controllo su ciò che gli altri vedono di te."
+    pages:
+      - profilo_e_statistiche
+      - notifiche
+      - progressi
+      - privacy_e_dati

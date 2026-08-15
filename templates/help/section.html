@@ -1,0 +1,29 @@
+{# templates/help/section.html — elenco delle pagine di una sezione. #}
+{% extends "help/_base.html" %}
+{% import "help/_ui.html" as ui with context %}
+
+{% block title %}{{ section.title }} - {{ help.title }}{% endblock %}
+{% block page_title %}{{ section.title }}{% endblock %}
+{% block page_sub %}{{ _('%(n)s pagine', n=pages|length) }}{% endblock %}
+
+{% block content %}
+<div class="c7-stack help-doc">
+
+    {{ ui.crumbs(section=section) }}
+
+    {% if section.summary %}
+    <div class="help-prose">{{ help_text(section.summary) }}</div>
+    {% endif %}
+
+    <div class="help-cards">
+        {% for page in pages %}
+        {{ ui.page_card(page) }}
+        {% else %}
+        <div class="c7-card">
+            <div class="text-muted">{{ _('Questa sezione non ha ancora pagine.') }}</div>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

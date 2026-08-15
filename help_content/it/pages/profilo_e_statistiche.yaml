@@ -1,0 +1,124 @@
+title: "Profilo e statistiche"
+section: account
+kind: approfondimento
+audience: [giocatore]
+minutes: 4
+summary: "Cosa contiene il tuo profilo, come si legge il rating e dove trovare lo storico delle gare giocate."
+screens: [player.profile, player.history]
+related: [privacy_e_dati, progressi]
+
+blocks:
+  - type: text
+    text: >-
+      Il profilo è la tua scheda: quello che gli altri vedono di te e quello
+      che l'app ha registrato delle tue partite. Ci si arriva toccando
+      l'iniziale del tuo nome in alto a destra.
+
+  - type: shot
+    shot: profilo
+    caption: "Il profilo personale: dati, rating e statistiche delle partite giocate."
+
+  - type: heading
+    id: cosa_contiene
+    title: "Cosa contiene"
+
+  - type: options
+    items:
+      - name: "Nome utente"
+        text: "Il nome con cui compari nelle classifiche. Resta quello scelto alla registrazione."
+      - name: "Email"
+        text: "Serve per il recupero della password e per le notifiche. Modificabile, con una nuova verifica."
+      - name: "Città"
+        text: "Facoltativa: serve solo a mostrarti per prime le gare vicine. Mai la posizione precisa."
+      - name: "Squadra"
+        text: >-
+          Testo libero, lo scrivi tu. Serve agli organizzatori quando una gara
+          usa i tabelloni e vuole evitare che i compagni si incontrino subito.
+      - name: "Rating"
+        text: "Una stima numerica della tua forza, calcolata dai risultati."
+        hint: profilo.rating
+      - name: "Statistiche"
+        text: "Partite giocate, vinte, perse, rack e percentuali."
+
+  - type: heading
+    id: rating
+    title: "Come leggere il rating"
+
+  - type: text
+    text: >-
+      Il rating parte da un valore intermedio e si muove a ogni partita: sale
+      quando vinci, scende quando perdi, e si muove **di più** quando il
+      risultato è inatteso. Battere un avversario molto più forte fa guadagnare
+      parecchio; perdere contro uno molto più debole fa perdere altrettanto.
+
+  - type: note
+    tone: info
+    title: "Due rating, non uno"
+    text: >-
+      C'è un rating **competitivo**, che considera solo le gare ufficiali, e
+      uno **globale**, che comprende anche le partite amichevoli. Ovunque
+      compaia il rating puoi passare dall'uno all'altro con un tocco: la
+      scelta viene ricordata su tutte le pagine.
+
+  - type: text
+    text: >-
+      Le gare **con handicap** non muovono il rating: i punteggi sono alterati
+      per costruzione e userli per misurare la forza dei giocatori la
+      falserebbe.
+
+  - type: heading
+    id: storico
+    title: "Lo storico"
+
+  - type: shot
+    shot: storico
+    caption: "Lo storico: tutte le gare a cui hai partecipato, con posizione e risultati."
+
+  - type: text
+    text: >-
+      Lo storico raccoglie tutte le gare a cui hai partecipato, con la
+      posizione finale e le partite giocate. È il posto dove ritrovare una
+      serata di mesi fa.
+
+  - type: text
+    text: >-
+      Se preferisci non mostrare una certa gara o una certa partita nel tuo
+      profilo pubblico puoi nasconderla: resta nelle classifiche ufficiali —
+      quelle non si toccano — ma sparisce dalla tua vetrina. Vedi [Privacy e
+      dati](/aiuto/account/privacy_e_dati).
+
+  - type: heading
+    id: profili_altrui
+    title: "I profili degli altri"
+
+  - type: text
+    text: >-
+      Toccando il nome di un giocatore in una classifica ne apri il profilo
+      pubblico: vedrai quello che ha scelto di mostrare. Email, telefono e
+      impostazioni personali non sono mai visibili ad altri.
+
+  - type: heading
+    id: modificare
+    title: "Modificare il profilo"
+
+  - type: steps
+    items:
+      - title: "Apri il profilo e tocca «Modifica»"
+        text: "Da lì cambi email, città, squadra e le altre informazioni."
+      - title: "Se cambi email, confermala"
+        text: >-
+          Riceverai un messaggio di verifica al nuovo indirizzo. Finché non lo
+          confermi, il recupero password continua a passare dal vecchio.
+      - title: "Per la password c'è una voce dedicata"
+        text: "Serve la password attuale: è la garanzia che sia davvero tu a cambiarla."
+
+  - type: faq
+    items:
+      - q: "Perché il mio rating è sceso anche se ho vinto?"
+        a: "Non succede: vincere non fa mai scendere il rating. Se il numero sembra diverso, controlla di non aver cambiato modalità fra competitivo e globale."
+      - q: "Posso cambiare nome utente?"
+        a: "No: compare in classifiche già pubblicate, e cambiarlo renderebbe irriconoscibili i risultati passati."
+      - q: "Le partite amichevoli compaiono nel profilo?"
+        a: "Sì, nelle statistiche globali. Il rating competitivo le esclude."
+      - q: "Chi vede il mio indirizzo email?"
+        a: "Nessun altro giocatore. È conservato cifrato e serve solo alle comunicazioni dell'app."

@@ -1,0 +1,91 @@
+title: "I tuoi progressi"
+section: account
+kind: approfondimento
+audience: [giocatore]
+minutes: 3
+summary: "Punti esperienza, livelli, traguardi e serie: a cosa servono e come si guadagnano."
+screens: [gamification.dashboard]
+related: [profilo_e_statistiche, challenge]
+
+blocks:
+  - type: text
+    text: >-
+      Accanto ai risultati sportivi l'app tiene un secondo conto, che non
+      c'entra con le classifiche: quanto **usi** la piattaforma. Serve a due
+      cose — dare una soddisfazione in più a chi gioca spesso, e sbloccare
+      qualche funzione a chi ha preso confidenza.
+
+  - type: shot
+    shot: progressi
+    caption: "La pagina dei progressi: livello, punti esperienza, traguardi e serie in corso."
+
+  - type: heading
+    id: xp
+    title: "Punti esperienza e livello"
+
+  - type: text
+    text: >-
+      Ogni azione significativa dà punti esperienza: giocare una partita,
+      vincerla, iscriversi a una gara, completare una challenge. Accumulandoli
+      si sale di livello. Il livello raggiunto è quella pastiglia scura con il
+      trofeo che vedi in alto in ogni schermata.
+
+  - type: note
+    tone: info
+    text: >-
+      Il livello **non c'entra con la bravura al tavolo**: misura quanto hai
+      usato l'app, non quanto giochi bene. Per la bravura c'è il rating, nel
+      profilo.
+
+  - type: heading
+    id: traguardi
+    title: "Traguardi"
+
+  - type: text
+    text: >-
+      Obiettivi che si sbloccano una volta sola: la prima vittoria, la decima
+      gara, la prima challenge completata. Alcuni sono nascosti e si scoprono
+      raggiungendoli. Quando ne sblocchi uno compare un messaggio a schermo e
+      resta nella tua bacheca.
+
+  - type: heading
+    id: serie
+    title: "Serie"
+
+  - type: text
+    text: >-
+      La serie conta i giorni o le settimane consecutive in cui hai giocato.
+      Saltare un periodo la azzera — salvo avere un «congelamento», che
+      protegge la serie da un'interruzione.
+
+  - type: heading
+    id: obiettivi
+    title: "Obiettivi periodici"
+
+  - type: text
+    text: >-
+      Ogni settimana ci sono un paio di obiettivi brevi («gioca tre partite
+      questa settimana», «vinci una partita»). Si completano giocando
+      normalmente e danno punti esperienza in più.
+
+  - type: heading
+    id: sblocchi
+    title: "Funzioni che si sbloccano"
+
+  - type: text
+    text: >-
+      Alcune parti dell'app compaiono solo dopo un po' di attività: le partite
+      amichevoli e le challenge, per esempio. Non è una punizione per chi è
+      nuovo — è per non mettere davanti a chi entra la prima volta un menu con
+      quindici voci di cui non ha bisogno.
+
+  - type: faq
+    items:
+      - q: "Non vedo la pagina dei progressi."
+        a: "Gli account amministratore non partecipano a questa parte: non hanno punti né livelli, per tenere separato chi arbitra da chi gioca."
+      - q: "Ho vinto una gara ma non ho preso punti esperienza."
+        a: "I punti arrivano dalle azioni registrate nell'app. Se le partite le ha inserite il direttore al posto tuo, alcune azioni non risultano tue."
+      - q: "Il livello conta per le classifiche?"
+        a: "No, in nessun modo. Le classifiche delle gare guardano solo i risultati sul tavolo."
+      - q: "Posso perdere un traguardo?"
+        a: "No, i traguardi sbloccati restano. Le serie invece si azzerano se ti fermi troppo a lungo."
