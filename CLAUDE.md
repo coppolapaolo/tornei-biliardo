@@ -546,6 +546,9 @@ pytest tests/new/unit/ -n auto && pytest tests/new/integration/ -n 4
 | Interfaccia scritta "a memoria" senza aprire il prototipo | Invoca la skill `ui-7c`: la schermata di riferimento e' in `docs/redesign-7c/Redesign Mobile.dc.html` |
 | `Config.DEBUG_MODE` in una route | `current_app.config.get("DEBUG_MODE", False)` — la classe base legge la env var col default `true`, quindi in produzione il guard non scatta |
 | Co-direttore con `role != director` | `GaraService`/`TournamentService.add_director` lo rifiutano (`ValidationError`): i co-direttori sono sempre `role=director` |
+| `challenge.max_score` o `challenge.name` | Non esistono su `Challenge`. Il massimo è per-esame su `ExamChallenge.max_score`; il nome mostrato è `get_display_name()` (ADR-042) |
+| `datetime.strptime`/`fromisoformat` su un `datetime-local` | `utils.local_time.parse_local_datetime` — l'input arriva in **ora italiana**, il DB tiene naive-UTC: salvarlo grezzo sposta l'orario di 1-2h, in silenzio |
+| `request.form.get("next")` passato a `redirect()` | `utils.safe_redirect.safe_next_url` — altrimenti è un open redirect |
 | Disciplina come stringa scritta a mano (`"palla_8"`, `"8_ball"`) | `Discipline.*.value` da `models/status_enum.py` — **unico** vocabolario; per dati storici/esterni `Discipline.normalize()` (torna `None` sull'ignoto). Il nome mostrato è `display_name`, tradotto. Presidiato da `test_discipline_single_vocabulary.py` |
 | Funzione visibile all'utente cambiata senza toccare `/aiuto` | Invoca la skill `help-docs`: la guida non si rompe, **invecchia** — continua a descrivere un'app che non esiste più. Contenuti in `help_content/`, schermate rigenerate da `scripts/help_docs/` |
 | Schermata della guida ritoccata a mano in un editor | Le immagini si **generano** dall'app (`capture_screenshots.py`) sul dataset di `seed_demo.py`: una ritoccata sopravvive al cambio di interfaccia e diventa una bugia permanente |
@@ -573,6 +576,9 @@ pytest tests/new/unit/ -n auto && pytest tests/new/integration/ -n 4
 - **[docs/adr/ADR-038-bracket-persistence.md](docs/adr/ADR-038-bracket-persistence.md)**: il tabellone è persistito su `Match` (`bracket_type`/`round`/`slot`/`group`), seat derivato, dimensionamento sugli iscritti effettivi e riscrittura di `rounds_count` al sorteggio
 - **[docs/adr/ADR-039-team-separation-in-the-draw.md](docs/adr/ADR-039-team-separation-in-the-draw.md)**: squadre a due livelli (testo libero sul profilo, elenco per competizione) e separazione dei compagni come obiettivo lessicografico, non come vincolo rigido
 - **[docs/adr/ADR-040-position-classification-ties.md](docs/adr/ADR-040-position-classification-ties.md)**: classifica POSITION per bande a pari merito, con lo spareggio **deliberatamente** spento — divergenza voluta dalla convenzione di `gara_strategies.py`
+- **[docs/adr/ADR-041-grantable-roles-and-delegation.md](docs/adr/ADR-041-grantable-roles-and-delegation.md)**: ruoli concedibili ortogonali a `user.role` (`RoleGrant`), delega a catena come proprietà **per-ruolo** (`self_propagating`), revoca riservata ad admin perché unico punto di contenimento
+- **[docs/adr/ADR-042-certified-exam.md](docs/adr/ADR-042-certified-exam.md)**: l'esame è una sequenza di drill con esito **booleano**, certificato solo di persona; entità gemelle di `MatchProposal` e non astrazione condivisa; `max_score` per-esame su `ExamChallenge`
+- **[docs/usecases/esami.md](docs/usecases/esami.md)**: i sette journey degli esami e del ruolo esaminatore
 
 ---
 

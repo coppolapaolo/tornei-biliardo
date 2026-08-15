@@ -23,6 +23,8 @@ Flask blueprints for the American Pool community platform with role-based access
 | `admin.venue` | `/admin/venue` | Venue management |
 | `challenge` | `/challenge` | Challenge system |
 | `individual_match` | `/match` | Casual matches |
+| `exam` | `/exam` | Esami: catalogo, sessioni, appuntamenti (ADR-042) |
+| `roles` | `/roles` | Ruoli concedibili e delega (ADR-041) |
 
 ---
 
@@ -95,7 +97,17 @@ ENDPOINT_ROLES = {
 2. Aggiungi l'entry in `ENDPOINT_ROLES` (anche `set()` esplicito = "solo admin", per documentare la decisione).
 3. Se la route compare in un menu/link condizionato, aggiungi `{% if feature_visible('endpoint.name') %}` nel template.
 
-Il test `tests/new/unit/test_endpoint_coverage.py` verifica che ogni endpoint Flask registrato abbia un'entry esplicita in `ENDPOINT_ROLES` o in `INFRASTRUCTURE_ALLOWLIST` — fallisce se ne dimentichi una.
+⚠️ **Nessun test impone la copertura.** `tests/new/unit/test_endpoint_coverage.py`
+**non esiste** (lo citava questa pagina, per errore). Il test reale è
+`tests/new/integration/test_endpoint_allowlist.py`, e:
+
+- `test_endpoint_roles_names_are_real` fallisce sui **refusi** nei nomi;
+- `test_report_unclassified_endpoints` emette solo un `warnings.warn`, non un
+  assert — scelta esplicita durante il rollout MVP (ADR-028, Open Items §3).
+
+Conseguenza pratica: **dimenticare un endpoint non rompe la CI, lo rende
+silenziosamente admin-only in produzione.** Va fatto a mano, e verificato
+percorrendo il flusso con `DEBUG_MODE=false`.
 
 ### In sviluppo
 

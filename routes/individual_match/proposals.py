@@ -12,12 +12,13 @@ import logging
 
 from flask_babel import gettext as _
 from flask_login import current_user
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from models.individual_match.services import MatchProposalService
 from models.individual_match.models import MatchProposal, ProposalType
 from models.status_enum import Discipline
 from models.user.permissions import RoleRequirement
+from utils.local_time import parse_local_datetime
 from utils.route_helpers import safe_json_error
 
 from . import individual_match_bp
@@ -194,10 +195,18 @@ def create_proposal():
 
         # Parse scheduled time. data.get + guard: l'indicizzazione diretta
         # sollevava KeyError (non coperto da except ValueError) → 500.
+        #
+        # `parse_local_datetime` e non `fromisoformat`: il campo è un
+        # `<input type="datetime-local">`, quindi arriva in **ora italiana**,
+        # mentre il DB tiene i naive come UTC e `|datetime_local` ci somma il
+        # fuso in lettura. Salvandolo grezzo, una proposta per le 21:00 veniva
+        # mostrata a entrambi i giocatori come le 23:00.
         scheduled_at_str = data.get("scheduled_at")
         if not scheduled_at_str:
             raise ValueError("Campo scheduled_at mancante")
-        scheduled_at = datetime.fromisoformat(scheduled_at_str.replace("Z", "+00:00"))
+        scheduled_at = parse_local_datetime(scheduled_at_str)
+        if scheduled_at is None:
+            raise ValueError("Campo scheduled_at non valido")
 
         # Calculate expiration (default 1 hour before match)
         expires_hours = int(data.get("expires_hours", 1))

@@ -22,7 +22,6 @@ from models.challenge.services import ChallengeService
 challenge = Challenge(
     description="Spot Shot Rally",
     image_path="/static/challenges/spot_shot.png",
-    max_score=15,
     pass_fail_only=False  # Numeric scoring
 )
 
@@ -44,7 +43,7 @@ stats = ChallengeService.get_player_statistics(user_id=player.id)
 
 | Type | `pass_fail_only` | Scoring | X-Substitution |
 |------|------------------|---------|----------------|
-| Numeric | `False` | 0 to `max_score` | ✅ Yes |
+| Numeric | `False` | Punteggio libero (il massimo lo fissa l'esame) | ✅ Yes |
 | Pass/Fail | `True` | Pass=1, Fail=0 | ❌ No |
 
 **Numeric Challenges:**
@@ -61,7 +60,15 @@ stats = ChallengeService.get_player_statistics(user_id=player.id)
 ## Models
 
 ### Challenge
-**Fields:** `description`, `image_path`, `max_score`, `pass_fail_only`, `is_active`
+**Fields:** `description`, `image_path`, `pass_fail_only`, `is_active`
+
+> ⚠️ `Challenge` **non ha** `max_score`, né `name`. Il punteggio massimo è
+> *per-esame* e sta su `ExamChallenge` (ADR-042): lo stesso drill può valere 10
+> in un esame e 15 in un altro. Leggere `challenge.max_score` solleva
+> `AttributeError` — è il bug che ha tenuto vuoto lo storico drill del profilo
+> per mesi, perché finiva dentro un `except Exception: pass`. Per il nome
+> mostrato si usa `get_display_name()`, che è la descrizione troncata: il vero
+> nome è un debito noto, annotato in ADR-042.
 
 ### ChallengeAttempt
 **Fields:** `challenge_id`, `user_id`, `score`, `passed`, `attempted_at`

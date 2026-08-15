@@ -166,7 +166,8 @@ def grant_role(role: str, user_id: int):
     """Concessione diretta, senza passare da una richiesta (bootstrap incluso)."""
     grantable = _parse_role_or_404(role)
     actor = _current_user_obj()
-    redirect_url = request.form.get("next") or url_for(
+    # `next` arriva da un form: grezzo in `redirect()` sarebbe un open redirect.
+    redirect_url = safe_next_url(request.form.get("next")) or url_for(
         "admin.user.user_detail", user_id=user_id
     )
 
@@ -184,7 +185,8 @@ def revoke_role(role: str, user_id: int):
     """Revoca del ruolo. Il lavoro già svolto dal titolare resta valido."""
     grantable = _parse_role_or_404(role)
     actor = _current_user_obj()
-    redirect_url = request.form.get("next") or url_for(
+    # `next` arriva da un form: grezzo in `redirect()` sarebbe un open redirect.
+    redirect_url = safe_next_url(request.form.get("next")) or url_for(
         "admin.user.user_detail", user_id=user_id
     )
 

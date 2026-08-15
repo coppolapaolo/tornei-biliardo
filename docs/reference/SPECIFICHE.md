@@ -188,9 +188,37 @@ Un giocatore può aggiungere/togliere una **challenge** dalle sue preferite.
 
 ### Esame
 
-Un **esame** è formato da più **challenge** e una griglia di valutazione che associa i punteggi ottenuti a i livelli per l'esame.
-Un utente ``director`` o ``admin`` può creare un **esame**.
-Gli esami compaiono nelle statitiche di ``admin`` e dell'utente ``director`` che l'ha creato.
+Un **esame** è una sequenza ordinata di **challenge**, ciascuna con il proprio
+punteggio massimo *per quell'esame* — lo stesso drill può valere 10 in un esame e
+15 in un altro.
+
+L'esito è **booleano**: superato o non superato. Niente voto, niente griglia di
+valutazione, nessuna nota. La ragione sta in ADR-042: chi certifica lo fa in
+piedi accanto a un tavolo, e un sì/no è un fatto che si registra in un gesto,
+mentre un voto è un giudizio che va argomentato e che il giorno dopo si contesta.
+
+Un esame si può affrontare in due modi:
+
+- **in autonomia**, come allenamento. Non certifica mai, nemmeno a posteriori;
+- **davanti a un esaminatore**, di persona. È l'unica modalità che certifica, e
+  il candidato deve **accettare esplicitamente l'inizio** prima che qualsiasi
+  punteggio sia registrabile.
+
+A comporre e somministrare un esame è un **esaminatore** — un ruolo *concedibile*
+e ortogonale a quello primario (ADR-041), non un `director`: chi lo riceve resta
+player, e continua a iscriversi alle gare e a sostenere esami altrui. Il ruolo lo
+concede un admin oppure un altro esaminatore.
+
+Il creatore di un esame può aggiungere **co-esaminatori**, così che i candidati
+non dipendano da lui solo.
+
+L'esame certificato richiede un **appuntamento**: il candidato chiede a uno o più
+esaminatori, si concorda data, ora e sala con controproposte a oltranza, e il
+primo esaminatore che accetta chiude la richiesta per gli altri.
+
+Gli esami compaiono nelle statistiche di ``admin`` e dell'esaminatore che li
+somministra. Nel profilo del giocatore, quelli certificati portano il badge
+«certificato da …»; quelli in autonomia no.
 
 ## Casi d'uso
 
