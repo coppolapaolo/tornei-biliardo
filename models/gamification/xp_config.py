@@ -29,6 +29,8 @@ XP_RATES: Dict[XPTransactionType, int] = {
     XPTransactionType.TOURNAMENT_WIN: 500,
     XPTransactionType.STREAK_BONUS: 30,  # Multiplied by (weeks / 7) for milestones
     XPTransactionType.CHALLENGE_COMPLETION: 150,
+    XPTransactionType.EXAM_CERTIFIED: 300,
+    XPTransactionType.EXAM_PRACTICE: 50,
     XPTransactionType.GARA_CREATION: 100,
     XPTransactionType.CAMPIONATO_CREATION: 200,
     # ACHIEVEMENT_UNLOCK: Variable (from achievement.xp_reward)

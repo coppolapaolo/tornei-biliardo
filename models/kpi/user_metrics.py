@@ -192,6 +192,36 @@ class UserMetricService:
         ).count()
 
     @staticmethod
+    def _get_exams_certified(
+        user_id: int, context: Optional[Dict[str, Any]] = None
+    ) -> int:
+        """Quanti esami distinti l'utente ha **superato** davanti a un esaminatore.
+
+        Distinti, non tentativi: ripetere lo stesso esame non moltiplica il
+        titolo. È la differenza voluta rispetto a ``challenges_completed``, che
+        conta invece ogni tentativo di drill.
+
+        Contano solo le sessioni certificate e concluse con esito positivo. Il
+        tentativo in autonomia non certifica mai (nemmeno a posteriori), una
+        bocciatura non è un titolo, e una sessione abbandonata — il candidato
+        che non si presenta — non è né l'una né l'altra cosa.
+        """
+        from models.exam.models import ExamAttempt
+        from models.status_enum import ExamAttemptMode, ExamAttemptStatus
+
+        return (
+            db.session.query(func.count(func.distinct(ExamAttempt.exam_id)))
+            .filter(
+                ExamAttempt.user_id == user_id,
+                ExamAttempt.mode == ExamAttemptMode.CERTIFIED.value,
+                ExamAttempt.status == ExamAttemptStatus.COMPLETED.value,
+                ExamAttempt.passed.is_(True),
+            )
+            .scalar()
+            or 0
+        )
+
+    @staticmethod
     def _get_distinct_opponents(
         user_id: int, context: Optional[Dict[str, Any]] = None
     ) -> int:

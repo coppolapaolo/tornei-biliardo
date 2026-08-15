@@ -256,6 +256,7 @@ class RoleGrantService:
 
         if notify:
             RoleGrantService._notify_role_granted(target, role)
+        RoleGrantService._flash_role_unlock(user_id, role)
         return grant
 
     @staticmethod
@@ -623,3 +624,25 @@ class RoleGrantService:
             ),
             priority=NotificationPriority.HIGH,
         )
+
+    @staticmethod
+    def _flash_role_unlock(user_id: int, role: GrantableRole) -> None:
+        """Toast di sblocco 🔓 al titolare del nuovo ruolo.
+
+        Separato dalla notifica: quella resta nella casella e si legge poi, il
+        toast è il momento in cui la porta si apre. Il bridge sa già stare zitto
+        fuori da un request context — un grant concesso da uno script di console
+        non deve rompersi per questo.
+        """
+        try:
+            from models.gamification.frontend_bridge import (
+                GamificationFrontendBridge,
+            )
+
+            GamificationFrontendBridge.handle_role_granted_event(user_id, role)
+        except Exception:  # pragma: no cover - un toast non blocca un grant
+            import logging
+
+            logging.getLogger(__name__).warning(
+                "Toast di sblocco ruolo non emesso", exc_info=True
+            )

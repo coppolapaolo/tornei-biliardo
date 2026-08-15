@@ -111,6 +111,67 @@ def venue_manager_required(f):
     return decorated_function
 
 
+def examiner_required(f):
+    """Permette l'accesso solo a chi ha il grant esaminatore attivo (ADR-041).
+
+    Ruolo ortogonale: guarda ``role_grant``, non ``user.role``. Admin passa,
+    come per ``is_venue_manager``.
+
+    Chi non è autenticato passa dal login, non da un 403: non ha *ancora* il
+    ruolo, non gli è stato *negato*. Il controllo sta qui e non è delegato a un
+    ``@login_required`` sopra, così il decoratore regge da solo se un domani
+    qualcuno lo applica senza — stessa scelta di ``feature_required`` e
+    ``venue_manager_required``.
+    """
+
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return redirect(url_for("auth.login"))
+        if not getattr(current_user, "is_examiner", False):
+            abort(403)
+        return f(*args, **kwargs)
+
+    return decorated_function
+
+
+# --------------------------------------------------------------------------
+# Gamification progression (layer L2 di ADR-031)
+# --------------------------------------------------------------------------
+
+
+def feature_required(feature_code: str):
+    """Richiede che la feature di gamification sia sbloccata per l'utente.
+
+    Fino a qui ``can_access`` era chiamata **solo nei template**: la voce di
+    menu spariva, ma una POST diretta all'endpoint passava lo stesso
+    (``player.request_director`` ne è l'esempio storico). Questo decoratore
+    porta lo stesso controllo lato server.
+
+    Delega a ``User.can_access``, quindi rispetta già i due bypass previsti:
+    ``gamification_override`` (la via di debug, US-D1) e admin.
+
+    ⚠️ ``UnlockEngine`` è **fail-open** sui codici feature non ancora seminati:
+    se la migration di seed non è girata, questo decoratore non blocca nessuno.
+    Non è una difesa di sicurezza — quella è ADR-028 (endpoint non listato in
+    ``ENDPOINT_ROLES`` = admin-only in produzione). Serve a non far accedere
+    per URL a una funzione che l'utente non ha ancora sbloccato.
+    """
+
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if not current_user.is_authenticated:
+                return redirect(url_for("auth.login"))
+            if not current_user.can_access(feature_code):
+                abort(403)
+            return f(*args, **kwargs)
+
+        return decorated_function
+
+    return decorator
+
+
 def rack_manager_required(f):
     """Richiede che l'utente possa gestire la gara collegata al rack.
 
@@ -454,8 +515,11 @@ __all__ = [
     "gara_manager_required",
     "match_manager_required",
     "venue_manager_required",
+    "examiner_required",
     "rack_manager_required",
     "trio_manager_required",
+    # Gamification progression
+    "feature_required",
     # Player access
     "player_only",
     "player_required",

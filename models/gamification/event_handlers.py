@@ -29,6 +29,7 @@ from models.events.competition_events import (
     CompetitionCreatedEvent,
     CampionatoCreatedEvent,
 )
+from models.exam.events import ExamAttemptCompletedEvent
 from models.gamification.level_service import LevelService
 from models.gamification.achievement_service import AchievementService
 from models.gamification.streak_service import StreakService
@@ -82,6 +83,13 @@ class GamificationEventHandlers:
         EventBus.register_handler(
             CampionatoCreatedEvent,
             GamificationEventHandlers.handle_campionato_created_for_xp,
+            priority=10,
+        )
+
+        # Esame (ADR-042)
+        EventBus.register_handler(
+            ExamAttemptCompletedEvent,
+            GamificationEventHandlers.handle_exam_attempt_completed_for_xp,
             priority=10,
         )
 
@@ -598,6 +606,85 @@ class GamificationEventHandlers:
         except Exception as e:
             logger.error(
                 f"Error handling campionato created event for XP: {e}", exc_info=True
+            )
+
+    # ========================================
+    # Exam Domain Handlers (ADR-042)
+    # ========================================
+
+    @staticmethod
+    def handle_exam_attempt_completed_for_xp(
+        event: ExamAttemptCompletedEvent,
+    ) -> None:
+        """XP, streak e achievement alla chiusura di un tentativo d'esame.
+
+        La regola del dominio in una riga: **solo la sessione certificata e
+        superata vale una certificazione.**
+
+        - *In autonomia* → XP di allenamento e streak ``WEEKLY_DRILL``. È un
+          allenamento, e come tale conta per l'abitudine, non per il curriculum:
+          nessun achievement di certificazione.
+        - *Certificato e superato* → XP pieno e riconciliazione degli
+          achievement, perché ``exams_certified`` è appena cambiata.
+        - *Certificato e non superato* → nessun XP. Non è una punizione: è che
+          il tentativo si ripete, e pagarlo comunque renderebbe conveniente
+          farsi bocciare in serie. La streak d'allenamento invece scatta lo
+          stesso — presentarsi a un esame è attività, quale che sia l'esito.
+
+        Un tentativo abbandonato non arriva neanche qui: il dominio non
+        pubblica l'evento per chi non si è presentato.
+        """
+        try:
+            certification = event.is_certification
+
+            if certification:
+                xp_type = XPTransactionType.EXAM_CERTIFIED
+                reason = f"Passed certified exam {event.exam_name}"
+            elif event.is_certified:
+                xp_type = None  # bocciato: nessun XP, il tentativo si ripete
+                reason = ""
+            else:
+                xp_type = XPTransactionType.EXAM_PRACTICE
+                reason = f"Practised exam {event.exam_name}"
+
+            if xp_type is not None:
+                LevelService.award_xp(
+                    user_id=event.user_id,
+                    xp_amount=ConfigService.get_xp_rate(xp_type),
+                    transaction_type=xp_type,
+                    reason=reason,
+                    related_entities={
+                        "exam_id": event.exam_id,
+                        "exam_attempt_id": event.attempt_id,
+                    },
+                )
+
+            # L'esame è una sequenza di drill: allenarsi conta per la stessa
+            # abitudine settimanale, sia da soli sia davanti a un esaminatore.
+            for streak_type in (StreakType.WEEKLY_DRILL, StreakType.WEEKLY_ACTIVITY):
+                try:
+                    StreakService.record_activity(
+                        user_id=event.user_id, streak_type=streak_type
+                    )
+                except Exception as streak_error:
+                    logger.warning(
+                        f"Error recording {streak_type} for user "
+                        f"{event.user_id}: {streak_error}"
+                    )
+
+            # Solo la certificazione muove il curriculum: riconciliare a ogni
+            # allenamento sarebbe lavoro sprecato su una metrica ferma.
+            if certification:
+                try:
+                    AchievementService.reconcile_achievements(event.user_id)
+                except Exception as ach_error:
+                    logger.warning(
+                        f"Error reconciling achievements for user "
+                        f"{event.user_id}: {ach_error}"
+                    )
+        except Exception as e:
+            logger.error(
+                f"Error handling exam attempt completed event: {e}", exc_info=True
             )
 
 

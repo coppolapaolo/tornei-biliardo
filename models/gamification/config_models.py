@@ -112,6 +112,10 @@ DEFAULT_XP_RATES = {
     "xp_tournament_win": (500, "Bonus XP for winning a tournament"),
     "xp_streak_bonus": (30, "XP per week of streak"),
     "xp_challenge_completion": (150, "XP for completing a challenge"),
+    # Esame: senza queste entry get_xp_rate ricadrebbe sul default generico
+    # (50), pagando un allenamento quanto una certificazione.
+    "xp_exam_certified": (300, "XP for passing a certified exam"),
+    "xp_exam_practice": (50, "XP for a self-practice exam attempt"),
     "xp_gara_creation": (100, "XP for creating a standalone gara"),
     "xp_campionato_creation": (200, "XP for creating a campionato"),
 }

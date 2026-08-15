@@ -52,8 +52,11 @@ from .permissions import (
     gara_manager_required,
     match_manager_required,
     venue_manager_required,
+    examiner_required,
     rack_manager_required,
     trio_manager_required,
+    # Gamification progression (layer L2)
+    feature_required,
     # Player access
     player_only,
     player_required,

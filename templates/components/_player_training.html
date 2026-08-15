@@ -1,0 +1,156 @@
+{# templates/components/_player_training.html — 7c
+   La sezione «Allenamento» del profilo: drill sostenuti ed esami (US-P9, UJ-7).
+
+   Ricalca il dettaglio challenge del prototipo (#9b): «Il tuo record» come
+   cifra grande, e sotto l'elenco dei tentativi con data a sinistra e punteggio
+   a destra, il più recente in pieno e i precedenti smorzati.
+
+   Due scelte da non scambiare per sviste:
+
+   1. Il punteggio si mostra **senza il fondoscala** («8», non «8 / 10») a
+      differenza del prototipo: `Challenge` non ha una colonna `max_score`, e
+      inventarne uno a video sarebbe peggio che ometterlo. Debito noto.
+   2. L'andamento è a barre e non a linea: il prototipo non ha grafici, e la sua
+      unica forma per una serie è la barretta arrotondata. Si copia quella
+      invece di introdurre un linguaggio nuovo.
+
+   `training_drills` e `training_exams` arrivano da
+   `TrainingHistoryService`: per ogni drill `attempts` è già in ordine
+   cronologico crescente, che è il verso in cui si legge un andamento. #}
+{% import "components/_challenge_bits.html" as ch with context %}
+
+{% if training_drills or training_exams %}
+<section class="c7-stack">
+  <div class="c7-sechead"><h2>{{ _("Allenamento") }}</h2></div>
+
+  {# ── Drill ─────────────────────────────────────────────────────────── #}
+  {% if training_drills %}
+  <div class="c7-sechead">
+    <h3>{{ _("Drill sostenuti") }}</h3>
+    <span class="c7-sechead__note">{{ training_drills|length }}</span>
+  </div>
+
+  <div class="c7-stack">
+    {% for drill in training_drills %}
+    {% set best = drill.attempts|map(attribute='score')|reject('none')|list %}
+    {% set top = best|max if best else 0 %}
+    <details class="c7-card">
+      <summary style="display:flex;align-items:center;gap:12px;cursor:pointer;list-style:none">
+        {{ ch.thumb(drill.challenge, 44, 'var(--c7-r-chip)') }}
+        <div style="flex:1;min-width:0">
+          <div class="c7-rows__title">{{ drill.challenge_name }}</div>
+          <div class="c7-rows__sub">
+            {{ ngettext("%(n)s tentativo", "%(n)s tentativi", drill.attempts_count, n=drill.attempts_count) }}
+            {% if drill.last_attempt_at %}
+            <span class="c7-sep">·</span>
+            <span class="c7-num">{{ drill.last_attempt_at|date_local }}</span>
+            {% endif %}
+          </div>
+        </div>
+        {% if drill.is_pass_fail %}
+        <span class="c7-state c7-state--{{ 'ok' if drill.best_passed else 'err' }}">
+          {{ _("Superato") if drill.best_passed else _("Mai superato") }}
+        </span>
+        {% else %}
+        <div style="text-align:right">
+          <div class="c7-label">{{ _("Record") }}</div>
+          <div style="font-size:22px;font-weight:800;letter-spacing:-.03em">{{ drill.best_score
+            if drill.best_score is not none else "—" }}</div>
+        </div>
+        {% endif %}
+      </summary>
+
+      {# ── Andamento nel tempo: una barra per tentativo, in ordine ──── #}
+      {% if not drill.is_pass_fail and drill.attempts_count > 1 and top > 0 %}
+      <div style="margin-top:16px">
+        <div class="c7-label">{{ _("Andamento") }}</div>
+        <div style="margin-top:8px;display:flex;align-items:flex-end;gap:4px;height:64px">
+          {% for attempt in drill.attempts %}
+          {% set h = (attempt.score / top * 100)|round|int if attempt.score is not none else 0 %}
+          <span title="{{ attempt.attempted_at|date_local }}: {{ attempt.score }}"
+                style="flex:1;min-width:6px;border-radius:var(--c7-r-pill);
+                       height:{{ [h, 6]|max }}%;
+                       background:{{ 'var(--c7-accent)' if attempt.score == top else 'var(--c7-line)' }}"></span>
+          {% endfor %}
+        </div>
+        <div class="c7-rows__sub" style="margin-top:6px;display:flex;justify-content:space-between">
+          <span class="c7-num">{{ drill.attempts[0].attempted_at|date_local }}</span>
+          <span class="c7-num">{{ drill.attempts[-1].attempted_at|date_local }}</span>
+        </div>
+      </div>
+      {% endif %}
+
+      {# ── Tutti i tentativi ─────────────────────────────────────────── #}
+      <div class="c7-label" style="margin-top:16px">{{ _("I tuoi tentativi") }}</div>
+      <div class="c7-rows" style="margin-top:8px">
+        {% for attempt in drill.attempts|reverse %}
+        <div class="c7-rows__row">
+          <div class="c7-rows__main">
+            <div class="c7-rows__title c7-num" style="font-size:14px">
+              {{ attempt.attempted_at|datetime_local }}
+            </div>
+            {% if attempt.gara_name %}
+            <div class="c7-rows__sub">{{ attempt.gara_name }}</div>
+            {% else %}
+            <div class="c7-rows__sub">{{ _("Dal catalogo") }}</div>
+            {% endif %}
+          </div>
+          {% if attempt.is_pass_fail %}
+          <span class="c7-state c7-state--{{ 'ok' if attempt.passed else 'err' }}">
+            {{ _("Superato") if attempt.passed else _("Non superato") }}
+          </span>
+          {% else %}
+          <span class="c7-num" style="font-size:15px;font-weight:800">{{ attempt.score }}</span>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </details>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {# ── Esami ─────────────────────────────────────────────────────────── #}
+  {% if training_exams %}
+  <div class="c7-sechead">
+    <h3>{{ _("Esami sostenuti") }}</h3>
+    <span class="c7-sechead__note">{{ training_exams|length }}</span>
+  </div>
+
+  <div class="c7-rows">
+    {% for exam in training_exams %}
+    <div class="c7-rows__row">
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">{{ exam.exam_name }}</div>
+        <div class="c7-rows__sub">
+          {% if exam.is_certified %}
+          {# Il badge di US-P7: solo davanti a un esaminatore. In autonomia mai. #}
+          <span class="c7-pill">
+            <i class="fas fa-certificate"></i>
+            {{ _("certificato da %(who)s", who=exam.examiner_name) }}
+          </span>
+          {% if exam.hall_name %}
+          <span class="c7-sep">·</span>{{ exam.hall_name }}
+          {% endif %}
+          {% else %}
+          {{ _("In autonomia") }}
+          {% endif %}
+          {% if exam.completed_at %}
+          <span class="c7-sep">·</span>
+          <span class="c7-num">{{ exam.completed_at|date_local }}</span>
+          {% endif %}
+        </div>
+      </div>
+      {% if exam.is_certified %}
+      <span class="c7-state c7-state--{{ 'ok' if exam.passed else 'err' }}">
+        {{ _("Superato") if exam.passed else _("Non superato") }}
+      </span>
+      {% else %}
+      <span class="c7-num" style="font-size:15px;font-weight:800">{{ exam.total_score }}</span>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</section>
+{% endif %}

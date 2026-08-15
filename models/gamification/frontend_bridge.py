@@ -367,6 +367,53 @@ class GamificationFrontendBridge:
             user_id,
         )
 
+    #: Copy dei ruoli concedibili (ADR-041). Dizionario separato da
+    #: ``_NUDGE_COPY`` di proposito: quello è indicizzato per **codice feature**,
+    #: e un ruolo concesso non è una feature sbloccata. Le chiavi sono i valori
+    #: di ``GrantableRole``.
+    _ROLE_GRANTED_COPY: Dict[str, Dict[str, str]] = {
+        "examiner": {
+            "name": "Sei un esaminatore",
+            "description": (
+                "Ora puoi comporre esami e certificarli di persona. "
+                "Dichiara le tue disponibilità per farti trovare."
+            ),
+        },
+    }
+
+    @staticmethod
+    @_only_in_request
+    def handle_role_granted_event(user_id: int, role: Any) -> None:
+        """Toast di sblocco quando a qualcuno viene concesso un ruolo.
+
+        Perché non riusare ``handle_feature_unlock_event``: la sua firma vuole
+        una ``FeatureConfig``, e un ruolo **non è** una feature sbloccata.
+        Costruirne una fittizia per far tornare i conti significherebbe
+        inventare un codice che non esiste in ``feature_config`` — e quel codice
+        finirebbe nel payload del toast, dove il frontend lo usa per
+        identificare la feature.
+
+        Il toast è dello stesso tipo (``unlock``, 🔓): per chi lo riceve è la
+        stessa cosa, una porta che si apre.
+        """
+        role_value = getattr(role, "value", role)
+        copy = GamificationFrontendBridge._ROLE_GRANTED_COPY.get(role_value)
+        if copy is None:
+            # Un ruolo senza copy non merita un toast muto o in inglese: meglio
+            # il silenzio, finché qualcuno non gli scrive due righe.
+            return
+
+        GamificationFrontendBridge._flash_gamification_event(
+            "unlock",
+            {
+                "code": f"role:{role_value}",
+                "name": _(copy["name"]),
+                "description": _(copy["description"]),
+                "icon": "🔓",
+            },
+            user_id,
+        )
+
     @staticmethod
     @_only_in_request
     def handle_feature_unlock_event(user_id: int, feature_config: Any) -> None:
@@ -425,6 +472,12 @@ def _i18n_nudge_anchor() -> None:
     _("Crea una serie di gare e gestisci una stagione completa.")
     _("Prova le sfide")
     _("Allenati con drill mirati: ogni completamento conta per la classifica.")
+    # _ROLE_GRANTED_COPY (ADR-041): stessa ragione, stessa ancora.
+    _("Sei un esaminatore")
+    _(
+        "Ora puoi comporre esami e certificarli di persona. "
+        "Dichiara le tue disponibilità per farti trovare."
+    )
 
 
 def _get_achievement_description(event: AchievementUnlockedEvent) -> str:
