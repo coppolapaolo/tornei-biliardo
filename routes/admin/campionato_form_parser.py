@@ -14,10 +14,14 @@ they stay in their respective handlers.
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from werkzeug.datastructures import MultiDict
 
+from models.classification.position_points import (
+    DEFAULT_POSITION_POINTS,
+    serialize_points_table,
+)
 from models.matchmaking.configuration import OddNumberPolicy
 
 _VALID_ODD_POLICIES = {
@@ -28,6 +32,35 @@ _VALID_ODD_POLICIES = {
 }
 
 DEFAULT_ROUNDS_COUNT = 3
+
+
+def parse_position_points(form: MultiDict) -> Optional[str]:
+    """Tabella punti per posizione (US-17), o ``None`` per "usa il default".
+
+    Il form espone una casella per ciascuna **soglia** del default — 1°, 2°,
+    3°, 4°, 5°-8°, 9°-16° — e non una per posizione: è la stessa forma in cui
+    la tabella è scritta nella spec, e ``points_for_position`` risolve già una
+    posizione scoperta con la prima soglia che la contiene.
+
+    Se i valori coincidono col default si salva ``None`` invece della tabella:
+    un campionato che non ha configurato nulla deve continuare a **seguire** il
+    default, non a portarsene dietro una copia congelata.
+    """
+    table: Dict[int, int] = {}
+    for threshold, fallback in DEFAULT_POSITION_POINTS:
+        raw = form.get(f"position_points_{threshold}")
+        if raw is None or raw == "":
+            table[threshold] = fallback
+            continue
+        try:
+            value = int(raw)
+        except (TypeError, ValueError):
+            value = fallback
+        table[threshold] = max(value, 0)
+
+    if table == {threshold: pts for threshold, pts in DEFAULT_POSITION_POINTS}:
+        return None
+    return serialize_points_table(table)
 
 
 class CampionatoFormParser:
@@ -78,4 +111,8 @@ class CampionatoFormParser:
             "default_anti_rematch": "default_anti_rematch" in form,
             # Handicap mode del campionato (ereditato da gare/match). Checkbox.
             "has_handicap": "has_handicap" in form,
+            # Punti per posizione delle gare a tabellone (US-17). Il campo
+            # esiste solo sui campionati a tabellone; altrove resta None e la
+            # colonna non viene mai letta.
+            "position_points": parse_position_points(form),
         }

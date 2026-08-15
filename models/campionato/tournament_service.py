@@ -111,6 +111,11 @@ class TournamentService(TournamentStatisticsService):
         default_anti_rematch: bool = True,
         default_classification_system: str = "WINS",
         has_handicap: bool = False,
+        # Punti per posizione delle gare a tabellone (US-17). None = usa i
+        # valori di default della spec, che restano quelli anche se un domani
+        # cambiano: un campionato non configurato li **segue**, non ne
+        # conserva una copia.
+        position_points: Optional[str] = None,
         # Deprecated but kept for compatibility
         without_x: bool = False,
         final_playoffs: bool = False,
@@ -138,6 +143,7 @@ class TournamentService(TournamentStatisticsService):
             default_anti_rematch=default_anti_rematch,
             default_classification_system=default_classification_system,
             has_handicap=has_handicap,
+            position_points=position_points,
             # Deprecated fields
             without_x=without_x,
             final_playoffs=final_playoffs,

@@ -191,6 +191,13 @@
                 <small class="text-muted">{{ _("I match si giocano con handicap e non aggiornano i rating (Elo/Fargo). Ereditato da gare e partite.") }}</small>
             </div>
 
+            {# Punti per posizione (US-17): solo sui campionati a tabellone.
+               Qui il tipo può cambiare senza ricaricare, quindi lo stato
+               iniziale è quello salvato e il resto lo fa lo script in fondo. #}
+            {% with position_points_visible = campionato.campionato_type in bracket_minimum_players %}
+              {% include "components/_position_points.html" %}
+            {% endwith %}
+
             <hr class="my-4">
 
             <div class="alert alert-warning">
@@ -225,6 +232,20 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     typeSelect.addEventListener('change', updateTypeDescription);
+
+    // I punti per posizione esistono solo sui campionati a tabellone: cambiando
+    // tipo il blocco compare o sparisce senza ricaricare la pagina.
+    const bracketTypes = {{ bracket_minimum_players.keys()|list|tojson }};
+    const positionPoints = document.getElementById('position_points_section');
+
+    function updatePositionPoints() {
+        if (!positionPoints) { return; }
+        positionPoints.style.display =
+            bracketTypes.indexOf(typeSelect.value) >= 0 ? '' : 'none';
+    }
+
+    typeSelect.addEventListener('change', updatePositionPoints);
+    updatePositionPoints();
 
     // Toggle classification system descriptions
     const classificationSelect = document.getElementById('default_classification_system');

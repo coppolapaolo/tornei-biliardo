@@ -127,6 +127,32 @@ def points_table_for_campionato(campionato) -> Optional[Dict[int, int]]:
     return parse_points_table(getattr(campionato, "position_points", None))
 
 
+def form_rows(campionato=None) -> List[Tuple[int, str, int]]:
+    """Righe del form "punti per posizione": ``(soglia, etichetta, valore)``.
+
+    Si espongono le **soglie** e non le sedici posizioni: sei caselle dicono
+    già tutto, perché `points_for_position` risolve una posizione scoperta con
+    la prima soglia che la contiene. L'etichetta è la banda che quella soglia
+    copre — ``1°``, ``5°-8°``, ``9°-16°`` — cioè esattamente il pari merito
+    che riceverà quei punti.
+
+    Il valore è quello configurato sul campionato, o il default se non lo è
+    (compreso il caso `campionato=None`, cioè la creazione).
+    """
+    configured = points_table_for_campionato(campionato) or {}
+    rows: List[Tuple[int, str, int]] = []
+    previous = 0
+    for threshold, points in DEFAULT_POSITION_POINTS:
+        label = (
+            f"{threshold}°"
+            if threshold == previous + 1
+            else f"{previous + 1}°-{threshold}°"
+        )
+        rows.append((threshold, label, configured.get(threshold, points)))
+        previous = threshold
+    return rows
+
+
 def describe_default() -> List[str]:
     """Descrizione leggibile delle soglie di default (UI e messaggi)."""
     rows: List[str] = []
@@ -145,6 +171,7 @@ __all__ = [
     "DEFAULT_POSITION_POINTS",
     "default_table",
     "describe_default",
+    "form_rows",
     "parse_points_table",
     "points_for_position",
     "points_table_for_campionato",

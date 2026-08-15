@@ -1,0 +1,47 @@
+{# templates/components/_position_points.html — 7c
+
+   Punti di campionato per posizione nelle gare a tabellone (US-17).
+
+   Si chiedono le **soglie**, non le sedici posizioni: 1°, 2°, 3°, 4°, poi
+   5°-8° e 9°-16°. È la forma in cui la tabella è scritta nella spec, e
+   `points_for_position` risolve già una posizione scoperta con la prima soglia
+   che la contiene — quindi sei caselle bastano a dire tutto.
+
+   I pari merito di una banda prendono lo stesso punteggio, perché la banda
+   **è** la posizione: quattro quartifinalisti sono tutti quinti.
+
+   Visibilità: `position_points_visible` decide lo stato iniziale. Nel wizard il
+   tipo di campionato è già scelto quando si arriva qui, quindi lo si passa
+   `true` e non serve JavaScript; nella modifica il tipo può cambiare sotto le
+   mani, quindi parte com'è e lo script della pagina lo aggiorna.
+
+   Il componente ha degli id: si include **una volta sola** per pagina.
+
+   Attese dal chiamante: `campionato` (assente in creazione). #}
+
+{% set righe = position_points_rows(campionato if campionato is defined else None) %}
+{% set pp_visible = position_points_visible|default(false) %}
+
+<div class="mb-3" id="position_points_section" {% if not pp_visible %}style="display:none"{% endif %}>
+  <div class="c7-card" style="background:var(--c7-bg)">
+    <div class="c7-kicker mb-2">{{ _('Punti per posizione') }}</div>
+    <div class="form-text mb-3">
+      {{ _('Quanti punti di campionato vale ciascun piazzamento nelle gare a tabellone. I pari merito di una banda prendono lo stesso punteggio: i quattro quartifinalisti sono tutti quinti.') }}
+    </div>
+
+    <div class="d-flex gap-2 flex-wrap">
+      {% for threshold, label, value in righe %}
+      <div style="width:104px">
+        <label for="position_points_{{ threshold }}" class="form-label">{{ label }}</label>
+        <input type="number" class="form-control" min="0" max="9999"
+               id="position_points_{{ threshold }}" name="position_points_{{ threshold }}"
+               value="{{ value }}">
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="form-text mt-2">
+      {{ _('Lasciando i valori proposti il campionato continua a seguire la tabella di default, invece di portarsene dietro una copia.') }}
+    </div>
+  </div>
+</div>

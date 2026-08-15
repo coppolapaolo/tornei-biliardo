@@ -357,6 +357,13 @@ def create_app(config_name=None):
     app.jinja_env.globals["challenge_image_url"] = challenge_image_url
     app.jinja_env.globals["challenge_image_filename"] = challenge_image_filename
 
+    # Righe del form "punti per posizione" (US-17): soglia, etichetta della
+    # banda e valore configurato. Una funzione sola invece di due variabili di
+    # contesto da tenere allineate in ogni route che mostra il blocco.
+    from models.classification.position_points import form_rows as position_points_rows
+
+    app.jinja_env.globals["position_points_rows"] = position_points_rows
+
     # Registra blueprints
     from routes import register_blueprints
 
