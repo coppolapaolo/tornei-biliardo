@@ -1,92 +1,97 @@
-{# templates/components/_gara_info.html #}
-<div>
-    <div class="card">
-        <div class="card-header">
-            <h5><i class="fas fa-info-circle"></i> {{ _('Informazioni Gara') }}</h5>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-6">
-                    <strong>{{ _('Data:') }}</strong> {{ gara.date|date_local }}{% if gara.time %} {{
-                    gara.time|time_local }}{% endif %}<br>
-                    <strong>{{ _('Turni:') }}</strong> {{ gara.rounds_count }}<br>
-                    <strong>{{ _('Tipo torneo:') }}</strong> {{ gara.matchmaking_strategy.replace('_', ' ').title() }}
-                </div>
-                <div class="col-md-6">
-                    {% if gara.location %}
-                    <strong>{{ _('Luogo:') }}</strong> {{ gara.location }}<br>
-                    {% endif %}
-                    <strong>{{ _('Partecipanti:') }}</strong> {{ _('minimo') }} {{ gara.min_participants }}{% if
-                    gara.max_participants %} {{ _('fino a') }} {{ gara.max_participants }}{% else %} {{ _('senza
-                    limite') }}{% endif %}<br>
-                    <strong>{{ _('Quota:') }}</strong>
-                    {% if gara.entry_fee > 0 %}
-                    €{{ "%.2f"|format(gara.entry_fee) }}
-                    {% else %}
-                    {{ _('Gratuita') }}
-                    {% endif %}<br>
-                    <strong>{{ _('Iscritti:') }}</strong> {{ gara.get_active_inscriptions_count() }}{% if
-                    gara.max_participants %}/{{ gara.max_participants }}{% endif %}
-                    {% if gara.get_waitlist_count() > 0 %}
-                    <span class="text-warning ms-1">
-                        <i class="fas fa-clock"></i> +{{ gara.get_waitlist_count() }}
-                    </span>
-                    {% endif %}<br>
-                    <strong>{{ _('Anti-reincontro:') }}</strong>
-                    {% if gara.anti_rematch_enabled %}
-                    <span class="text-success">{{ _('Abilitato') }}</span>
-                    {% else %}
-                    <span class="text-secondary">{{ _('Disabilitato') }}</span>
-                    {% endif %}<br>
-                    <strong>{{ _('Numero dispari:') }}</strong> {{ gara.odd_number_policy.replace('_', ' ').title() }}
-                    {# Show challenge info only for random strategy with challenge_mode enabled #}
-                    {% set challenge_enabled = not gara.campionato or gara.campionato.challenge_mode %}
-                    {% if gara.matchmaking_strategy == 'random' and challenge_enabled %}
-                    <br>
-                    {% set challenge_count = gara.gara_challenges|selectattr("is_active", "equalto", true)|list|length
-                    %}
-                    <strong>{{ _('Challenge:') }}</strong>
-                    {% if challenge_count > 0 %}
-                    <span class="text-success">{{ challenge_count }} {{ _('attive') }}</span>
-                    {% else %}
-                    <span class="text-muted">{{ _('Nessuna') }}</span>
-                    {% endif %}
-                    {% endif %}
-                    {# Collect non-admin directors to display #}
-                    {% set organizers = [] %}
-                    {% if gara.is_standalone %}
-                        {% if gara.director and gara.director.role != 'admin' %}
-                            {% set _void = organizers.append({'user': gara.director, 'primary': true}) %}
-                        {% endif %}
-                        {% for director in gara.directors %}
-                            {% if director.role != 'admin' %}
-                                {% set _void = organizers.append({'user': director, 'primary': false}) %}
-                            {% endif %}
-                        {% endfor %}
-                    {% else %}
-                        {% if gara.campionato and gara.campionato.directors %}
-                            {% for director in gara.campionato.directors %}
-                                {% if director.role != 'admin' %}
-                                    {% set _void = organizers.append({'user': director, 'primary': true}) %}
-                                {% endif %}
-                            {% endfor %}
-                        {% endif %}
-                    {% endif %}
-                    {# Only show organizers section if there are non-admin directors #}
-                    {% if organizers %}
-                    <br>
-                    <strong>{{ _('Organizzatori:') }}</strong>
-                    {% for org in organizers %}
-                    <span class="badge {{ 'bg-primary' if org.primary else 'bg-secondary' }}{% if not loop.first %} ms-1{% endif %}">{{ org.user.username }}</span>
-                    {% endfor %}
-                    {% endif %}
-                </div>
-            </div>
-            {% if gara.description %}
-            <hr>
-            <strong>{{ _('Descrizione:') }}</strong><br>
-            <p class="mb-0">{{ gara.description }}</p>
+{# templates/components/_gara_info.html — 7c
+
+   info_headerless: sopprime card e titolo quando il componente e' dentro un
+   contenitore che ha gia' la sua testata (su mobile la sezione richiudibile
+   in fondo alla pagina della gara). Stessa convenzione di
+   `management_headerless` in _gara_management.html. #}
+<section class="{{ '' if info_headerless else 'c7-card' }}">
+    {% if not info_headerless %}
+    <div class="c7-kicker">{{ _('Informazioni gara') }}</div>
+    {% endif %}
+
+    <dl style="display: grid; grid-template-columns: auto 1fr; gap: 10px 18px; margin: {{ '0' if info_headerless else '14px 0 0' }}; font-size: 13px;">
+        <dt class="text-muted" style="font-weight: 700;">{{ _('Data') }}</dt>
+        <dd class="c7-num" style="margin: 0; text-align: right;">{{ gara.date|date_local }}{% if gara.time %} {{ gara.time|time_local }}{% endif %}</dd>
+
+        {% if gara.location %}
+        <dt class="text-muted" style="font-weight: 700;">{{ _('Sala') }}</dt>
+        <dd style="margin: 0; text-align: right;">{{ gara.location }}</dd>
+        {% endif %}
+
+        <dt class="text-muted" style="font-weight: 700;">{{ _('Turni') }}</dt>
+        <dd class="c7-num" style="margin: 0; text-align: right;">{{ gara.rounds_count }}</dd>
+
+        <dt class="text-muted" style="font-weight: 700;">{{ _('Accoppiamento') }}</dt>
+        <dd style="margin: 0; text-align: right;">{{ gara.matchmaking_strategy.replace('_', ' ').title() }}</dd>
+
+        <dt class="text-muted" style="font-weight: 700;">{{ _('Iscritti') }}</dt>
+        <dd style="margin: 0; text-align: right;">
+            <span class="c7-num">{{ gara.get_active_inscriptions_count() }}</span>{% if gara.max_participants %}<span style="color: var(--c7-ink-faint);">/</span><span class="c7-num">{{ gara.max_participants }}</span>{% endif %}
+            {% if gara.get_waitlist_count() > 0 %}
+            <span class="c7-state c7-state--warn" style="margin-left: 6px;">+{{ gara.get_waitlist_count() }} {{ _('in lista') }}</span>
             {% endif %}
-        </div>
-    </div>
-</div>
+        </dd>
+
+        <dt class="text-muted" style="font-weight: 700;">{{ _('Partecipanti') }}</dt>
+        <dd style="margin: 0; text-align: right;">
+            {{ _('minimo') }} <span class="c7-num">{{ gara.min_participants }}</span>{% if gara.max_participants %}, {{ _('fino a') }} <span class="c7-num">{{ gara.max_participants }}</span>{% else %}, {{ _('senza limite') }}{% endif %}
+        </dd>
+
+        <dt class="text-muted" style="font-weight: 700;">{{ _('Quota') }}</dt>
+        <dd style="margin: 0; text-align: right;">
+            {% if gara.entry_fee > 0 %}<span class="c7-num">€{{ "%.2f"|format(gara.entry_fee) }}</span>{% else %}{{ _('Gratuita') }}{% endif %}
+        </dd>
+
+        <dt class="text-muted" style="font-weight: 700;">{{ _('Anti-reincontro') }}</dt>
+        <dd style="margin: 0; text-align: right;">
+            {% if gara.anti_rematch_enabled %}<span style="color: var(--c7-ok);">{{ _('Attivo') }}</span>{% else %}<span style="color: var(--c7-ink-muted);">{{ _('Non attivo') }}</span>{% endif %}
+        </dd>
+
+        <dt class="text-muted" style="font-weight: 700;">{{ _('Numero dispari') }}</dt>
+        <dd style="margin: 0; text-align: right;">{{ gara.odd_number_policy.replace('_', ' ').title() }}</dd>
+
+        {# Challenge solo con strategia random e modalità abilitata #}
+        {% set challenge_enabled = not gara.campionato or gara.campionato.challenge_mode %}
+        {% if gara.matchmaking_strategy == 'random' and challenge_enabled %}
+        {% set challenge_count = gara.gara_challenges|selectattr("is_active", "equalto", true)|list|length %}
+        <dt class="text-muted" style="font-weight: 700;">{{ _('Challenge') }}</dt>
+        <dd style="margin: 0; text-align: right;">
+            {% if challenge_count > 0 %}<span style="color: var(--c7-ok);"><span class="c7-num">{{ challenge_count }}</span> {{ _('attive') }}</span>{% else %}<span style="color: var(--c7-ink-muted);">{{ _('Nessuna') }}</span>{% endif %}
+        </dd>
+        {% endif %}
+
+        {# Direttori di gara non-admin #}
+        {% set organizers = [] %}
+        {% if gara.is_standalone %}
+            {% if gara.director and gara.director.role != 'admin' %}
+                {% set _void = organizers.append({'user': gara.director, 'primary': true}) %}
+            {% endif %}
+            {% for director in gara.directors %}
+                {% if director.role != 'admin' %}
+                    {% set _void = organizers.append({'user': director, 'primary': false}) %}
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            {% if gara.campionato and gara.campionato.directors %}
+                {% for director in gara.campionato.directors %}
+                    {% if director.role != 'admin' %}
+                        {% set _void = organizers.append({'user': director, 'primary': true}) %}
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        {% endif %}
+        {% if organizers %}
+        <dt class="text-muted" style="font-weight: 700;">{{ _('Direzione di gara') }}</dt>
+        <dd style="margin: 0; text-align: right; display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap;">
+            {% for org in organizers %}
+            <span class="c7-state {{ 'c7-state--accent' if org.primary else 'c7-state--muted' }}">{{ org.user.username }}</span>
+            {% endfor %}
+        </dd>
+        {% endif %}
+    </dl>
+
+    {% if gara.description %}
+    <hr class="c7-divider">
+    <p class="text-muted" style="margin: 0; font-size: 13px; line-height: 1.55;">{{ gara.description }}</p>
+    {% endif %}
+</section>

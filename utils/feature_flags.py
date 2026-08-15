@@ -10,7 +10,7 @@ Admin = bypass.
 
 A user holds a **set** of roles, not one: the primary role ("anonimo" /
 "player" / "director") comes from ``user.role``, while "examiner" is an
-orthogonal grant (ADR-038) that adds to it. An endpoint is visible when the
+orthogonal grant (ADR-041) that adds to it. An endpoint is visible when the
 user's role set intersects the endpoint's allowed set — a rule that matters
 because an examiner who is not also a director would otherwise fall back to
 "player" and lose visibility in production.
@@ -61,6 +61,9 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # utenti non registrati inclusi (link nel footer di base.html).
     "main.privacy_policy": {"anonimo", "player", "director"},
     "admin.competition.gara_detail": {"anonimo", "player", "director"},
+    # Tabellone della gara (US-13): sola lettura, e la segue anche chi non ha
+    # un account — è la schermata che si condivide durante un torneo.
+    "admin.competition.gara_bracket": {"anonimo", "player", "director"},
     "i18n.set_language": {"anonimo", "player", "director"},
     # === Logged-in (player or director) ===
     "auth.logout": {"player", "director"},
@@ -169,6 +172,13 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "admin.competition.modify_inscription_dates": {"director"},
     "admin.competition.admin_inscribe_user": {"director"},
     "admin.competition.admin_uninscribe_user": {"director"},
+    # Squadre (US-2/3/8/9): l'elenco lo governa chi dirige la competizione,
+    # la squadra della propria iscrizione la scrive anche il giocatore.
+    "admin.competition.create_squadra": {"director"},
+    "admin.competition.rename_squadra": {"director"},
+    "admin.competition.merge_squadra": {"director"},
+    "admin.competition.toggle_squadra": {"director"},
+    "admin.competition.set_inscription_squadra": {"player", "director"},
     # Round management
     "admin.competition.start_first_round": {"director"},
     "admin.competition.start_round_generic": {"director"},
@@ -293,7 +303,7 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "individual_match.request_availability_match": {"player", "director"},
     # Admin overview: solo admin (@admin_required).
     "individual_match.admin_overview": set(),
-    # === Ruoli concedibili e delega (ADR-038) ===
+    # === Ruoli concedibili e delega (ADR-041) ===
     # ROLLOUT: tutta la superficie è **admin-only** finché gli esami non
     # esistono davvero. Il ruolo di esaminatore serve a somministrare esami:
     # esporlo ai giocatori prima delle Fasi 2-5 significherebbe offrire un
@@ -366,7 +376,7 @@ def _is_production() -> bool:
 
 
 #: Ruoli che NON derivano da ``user.role`` ma da una tabella di concessione
-#: (ADR-038), e che quindi costano una query per essere accertati. Serve a
+#: (ADR-041), e che quindi costano una query per essere accertati. Serve a
 #: ``is_endpoint_visible`` per non pagare quel costo quando l'endpoint non li
 #: ammette comunque.
 GRANTABLE_ROLES: frozenset[Role] = frozenset({"examiner"})
@@ -394,7 +404,7 @@ def _user_roles(user) -> set[Role]:
     """Role **set** completo per l'utente: primario + concedibili.
 
     Il primario (``user.role``) contribuisce esattamente una voce; i ruoli
-    concedibili (ADR-038) si aggiungono. Restituire un insieme invece di una
+    concedibili (ADR-041) si aggiungono. Restituire un insieme invece di una
     stringa è ciò che impedisce a un esaminatore che non è anche director di
     essere appiattito su ``"player"``, perdendo in produzione gli endpoint
     dichiarati per ``{"examiner"}``.

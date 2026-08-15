@@ -71,7 +71,7 @@ class TestCountableMetrics:
             number=1,
             date=date.today(),
             distance=5,
-            discipline="palla_9",
+            discipline="9_ball",
             matchmaking_strategy="amalfi",
             status="playing",
         )
@@ -164,7 +164,7 @@ class TestUniqueOpponents:
             number=1,
             date=date.today(),
             distance=5,
-            discipline="palla_9",
+            discipline="9_ball",
             matchmaking_strategy="amalfi",
             status="playing",
         )
@@ -215,7 +215,7 @@ class TestWinStreakAndStrategies:
             number=1,
             date=date.today(),
             distance=5,
-            discipline="palla_9",
+            discipline="9_ball",
             matchmaking_strategy="amalfi",
             status="playing",
         )
@@ -251,7 +251,7 @@ class TestWinStreakAndStrategies:
                 number=i + 1,
                 date=date.today(),
                 distance=5,
-                discipline="palla_9",
+                discipline="9_ball",
                 matchmaking_strategy=strat,
                 status="playing",
             )

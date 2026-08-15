@@ -277,7 +277,7 @@ def test_polymorphic_endpoint_for_all_roles(app, production_mode):
 
 
 def test_user_roles_is_a_set_not_a_single_role(app, production_mode):
-    """Il ruolo primario e i ruoli concedibili coesistono (ADR-038).
+    """Il ruolo primario e i ruoli concedibili coesistono (ADR-041).
 
     Regressione: con un solo ruolo string-valued, un esaminatore che non è
     anche director ricadeva in "player" e perdeva ogni endpoint dichiarato

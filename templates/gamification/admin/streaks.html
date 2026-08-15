@@ -1,19 +1,25 @@
 {% extends 'base.html' %}
+{% block title %}{{ _('Gestione Streak') }}{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('gamification.admin_dashboard') }}"
+   aria-label="{{ _('Torna ai pannelli') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _('Gestione Streak') }}{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('gamification.admin_dashboard') }}" class="btn btn-secondary btn-sm d-none d-lg-inline-flex">
+  <i class="fas fa-arrow-left"></i>&nbsp;{{ _('Pannelli') }}
+</a>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="bi bi-fire"></i> {{ _('Gestione Streak') }}</h2>
-    <a href="{{ url_for('gamification.admin_dashboard') }}" class="btn btn-outline-secondary">
-      <i class="bi bi-arrow-left"></i> {{ _('Torna al Dashboard') }}
-    </a>
-  </div>
-
   <div class="row">
     <!-- Streak Statistics -->
     <div class="col-md-6">
       <div class="card mb-4">
         <div class="card-header">
-          <h5 class="mb-0"><i class="bi bi-bar-chart"></i> {{ _('Statistiche Streak') }}</h5>
+          <h5 class="mb-0"><i class="fas fa-chart-column"></i> {{ _('Statistiche Streak') }}</h5>
         </div>
         <div class="card-body">
           <table class="table">
@@ -50,7 +56,7 @@
       <!-- Grant Freeze Form -->
       <div class="card">
         <div class="card-header bg-info text-white">
-          <h5 class="mb-0"><i class="bi bi-snow"></i> {{ _('Concedi Freeze') }}</h5>
+          <h5 class="mb-0"><i class="fas fa-snowflake"></i> {{ _('Concedi Freeze') }}</h5>
         </div>
         <div class="card-body">
           <form method="POST" action="{{ url_for('gamification.admin_grant_freeze') }}">
@@ -75,7 +81,7 @@
                      min="1" max="10" value="1">
             </div>
             <button type="submit" class="btn btn-info w-100">
-              <i class="bi bi-send"></i> {{ _('Concedi Freeze') }}
+              <i class="fas fa-paper-plane"></i> {{ _('Concedi Freeze') }}
             </button>
           </form>
         </div>
@@ -86,7 +92,7 @@
     <div class="col-md-6">
       <div class="card">
         <div class="card-header">
-          <h5 class="mb-0"><i class="bi bi-trophy"></i> {{ _('Top Streaker (Attività Settimanale)') }}</h5>
+          <h5 class="mb-0"><i class="fas fa-trophy"></i> {{ _('Top Streaker (Attività Settimanale)') }}</h5>
         </div>
         <div class="card-body">
           <table class="table table-sm table-hover">
@@ -106,13 +112,13 @@
                 <td>{{ tracker.user.username if tracker.user else 'N/A' }}</td>
                 <td>
                   <span class="badge bg-warning text-dark">
-                    <i class="bi bi-fire"></i> {{ tracker.current_streak }}
+                    <i class="fas fa-fire"></i> {{ tracker.current_streak }}
                   </span>
                 </td>
                 <td>{{ tracker.longest_streak }}</td>
                 <td>
                   <span class="badge bg-info">
-                    <i class="bi bi-snow"></i> {{ tracker.freeze_count }}
+                    <i class="fas fa-snowflake"></i> {{ tracker.freeze_count }}
                   </span>
                 </td>
               </tr>

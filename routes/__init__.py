@@ -33,7 +33,7 @@ def register_blueprints(app):
     app.register_blueprint(i18n_bp)
     app.register_blueprint(onboarding_bp)
     app.register_blueprint(demand_bp, url_prefix="/demand")
-    # Ruoli concedibili (ADR-038): prefix /roles, non /admin — le richieste
+    # Ruoli concedibili (ADR-041): prefix /roles, non /admin — le richieste
     # le processano anche i titolari non-admin.
     app.register_blueprint(role_grant_bp)
 

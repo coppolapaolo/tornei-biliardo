@@ -282,7 +282,7 @@ def test_consume_signals_marks_and_notifies(db_session):
         number=1,
         name="Gara X",
         date=date.today() + timedelta(days=3),
-        discipline="palla_8",
+        discipline="8_ball",
         distance=5,
         director_id=director.id,
     )

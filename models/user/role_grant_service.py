@@ -1,6 +1,6 @@
 """
 Module: models/user/role_grant_service.py
-Purpose: Meccanismo generico di delega dei ruoli concedibili (ADR-038).
+Purpose: Meccanismo generico di delega dei ruoli concedibili (ADR-041).
 
 Il servizio è il **punto unico di autorizzazione** per i ruoli concedibili: le
 route non contengono logica sui ruoli, chiedono a ``can_grant``/``can_revoke``.

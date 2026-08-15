@@ -1,5 +1,5 @@
 # routes/role_grant.py
-"""Blueprint per i ruoli concedibili e la loro delega (ADR-038).
+"""Blueprint per i ruoli concedibili e la loro delega (ADR-041).
 
 Prefix ``/roles`` e **non** ``/admin``: le richieste le processano gli
 esaminatori, che admin non sono. L'autorizzazione non vive qui — ogni

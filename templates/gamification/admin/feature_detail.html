@@ -1,16 +1,22 @@
 {% extends 'base.html' %}
+{% block title %}{{ feature.name }}{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('gamification.admin_features') }}"
+   aria-label="{{ _('Indietro') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ feature.name }}{% endblock %}
+{% block page_actions %}
+<button type="button" class="btn btn-secondary btn-sm" onclick="previewEligibility()">
+        <i class="fas fa-users"></i> {{ _('Anteprima utenti') }}
+      </button>
+<a href="{{ url_for('gamification.admin_features') }}" class="btn btn-secondary btn-sm d-none d-lg-inline-flex">
+  <i class="fas fa-arrow-left"></i>&nbsp;{{ _('Torna alla lista') }}
+</a>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="bi bi-key"></i> {{ feature.name }}</h2>
-    <div>
-      <a href="{{ url_for('gamification.admin_features') }}" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left"></i> {{ _('Torna alla lista') }}
-      </a>
-      <button type="button" class="btn btn-info" onclick="previewEligibility()">
-        <i class="bi bi-people"></i> {{ _('Anteprima utenti') }}
-      </button>
-    </div>
   </div>
 
   <div class="row">
@@ -59,13 +65,13 @@
             </div>
 
             <button type="button" class="btn btn-outline-primary btn-sm mb-3" onclick="addRuleSet()">
-              <i class="bi bi-plus-circle"></i> {{ _('Aggiungi gruppo OR') }}
+              <i class="fas fa-circle-plus"></i> {{ _('Aggiungi gruppo OR') }}
             </button>
 
             <hr>
 
             <button type="submit" class="btn btn-primary">
-              <i class="bi bi-check-lg"></i> {{ _('Salva modifiche') }}
+              <i class="fas fa-check"></i> {{ _('Salva modifiche') }}
             </button>
           </form>
         </div>
@@ -78,10 +84,10 @@
           <h6 class="mb-0">{{ _('Guida Condizioni') }}</h6>
         </div>
         <div class="card-body small">
-          <h6><i class="bi bi-bar-chart"></i> {{ _('LEVEL') }}</h6>
+          <h6><i class="fas fa-chart-column"></i> {{ _('LEVEL') }}</h6>
           <p class="text-muted">{{ _('Livello gamification del giocatore (1-50+)') }}</p>
 
-          <h6><i class="bi bi-graph-up"></i> {{ _('METRIC') }}</h6>
+          <h6><i class="fas fa-chart-line"></i> {{ _('METRIC') }}</h6>
           <p class="text-muted">{{ _('Metriche basate su attività utente:') }}</p>
           <ul class="text-muted">
             {% for m in available_metrics %}
@@ -89,10 +95,10 @@
             {% endfor %}
           </ul>
 
-          <h6><i class="bi bi-person-badge"></i> {{ _('ROLE') }}</h6>
+          <h6><i class="fas fa-id-badge"></i> {{ _('ROLE') }}</h6>
           <p class="text-muted">{{ _('Ruolo utente (Admin, Director, Gestore Sala)') }}</p>
 
-          <h6><i class="bi bi-trophy"></i> {{ _('ACHIEVEMENT') }}</h6>
+          <h6><i class="fas fa-trophy"></i> {{ _('ACHIEVEMENT') }}</h6>
           <p class="text-muted">{{ _('Achievement sbloccato (usa lo slug)') }}</p>
         </div>
       </div>
@@ -115,13 +121,13 @@
     <div class="card-header d-flex justify-content-between align-items-center py-2">
       <span class="badge bg-secondary">{{ _('Gruppo') }} <span class="rule-set-number">__NUMBER__</span> (AND)</span>
       <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRuleSet(this)">
-        <i class="bi bi-trash"></i>
+        <i class="fas fa-trash"></i>
       </button>
     </div>
     <div class="card-body py-2">
       <div class="conditions"></div>
       <button type="button" class="btn btn-outline-secondary btn-sm mt-2" onclick="addCondition(this)">
-        <i class="bi bi-plus"></i> {{ _('Aggiungi condizione') }}
+        <i class="fas fa-plus"></i> {{ _('Aggiungi condizione') }}
       </button>
     </div>
   </div>
@@ -169,7 +175,7 @@
     </div>
     <div class="col-auto">
       <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeCondition(this)">
-        <i class="bi bi-x"></i>
+        <i class="fas fa-xmark"></i>
       </button>
     </div>
   </div>
@@ -365,7 +371,7 @@ function previewEligibility() {
   const loadingDiv = document.createElement('div');
   loadingDiv.className = 'text-center';
   const icon = document.createElement('i');
-  icon.className = 'bi bi-hourglass-split';
+  icon.className = 'fas fa-hourglass-half';
   loadingDiv.appendChild(icon);
   loadingDiv.appendChild(document.createTextNode(' ' + i18n.loading));
   content.appendChild(loadingDiv);

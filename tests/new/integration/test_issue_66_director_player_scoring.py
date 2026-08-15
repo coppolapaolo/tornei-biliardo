@@ -42,7 +42,7 @@ def _make_playing_match(db_session, owner, player1, player2):
         rounds_count=1,
         min_participants=2,
         entry_fee=0.0,
-        discipline="palla_9",
+        discipline="9_ball",
         distance=5,
         is_race_to=True,
         director_id=owner.id,

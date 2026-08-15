@@ -1,39 +1,37 @@
 {% extends "base.html" %}
 
-{% block title %}Login - Campionato Biliardo{% endblock %}
+{% block title %}{{ _('Accedi') }} - {{ config.APP_NAME }}{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h4><i class="fas fa-sign-in-alt"></i> Login</h4>
-            </div>
-            <div class="card-body">
-                <form method="POST">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                {# Dove tornare dopo il login (es. il link pubblico di una gara) #}
-                {% if next_url %}<input type="hidden" name="next" value="{{ next_url }}">{% endif %}
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Username</label>
-                        <input type="text" class="form-control" name="username" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Password</label>
-                        <input type="password" class="form-control" name="password" required>
-                        <div class="form-text text-end">
-                            <a href="{{ url_for('auth.forgot_password') }}" class="small">Password dimenticata?</a>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100">Login</button>
-                </form>
+<div style="max-width: 440px; margin: 6vh auto 0;">
+    <div style="text-align: center; margin-bottom: 24px;">
+        <div class="c7-kicker">{{ config.APP_NAME }}</div>
+        <h1 style="margin: 6px 0 0;">{{ _('Bentornato') }}</h1>
+    </div>
 
-                <hr>
-                <div class="text-center">
-                    <p>Non hai un account? <a href="{{ url_for('auth.register', next=next_url) }}">Registrati qui</a></p>
-                </div>
+    <form method="POST" class="c7-stack">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        {# Dove tornare dopo il login (es. il link pubblico di una gara) #}
+        {% if next_url %}<input type="hidden" name="next" value="{{ next_url }}">{% endif %}
+
+        <div>
+            <label for="username" class="form-label">{{ _('Nome utente') }}</label>
+            <input type="text" id="username" class="form-control" name="username" autocomplete="username" required>
+        </div>
+
+        <div>
+            <label for="password" class="form-label">Password</label>
+            <input type="password" id="password" class="form-control" name="password" autocomplete="current-password" required>
+            <div class="form-text" style="text-align: right;">
+                <a href="{{ url_for('auth.forgot_password') }}">{{ _('Password dimenticata?') }}</a>
             </div>
         </div>
-    </div>
+
+        <button type="submit" class="btn btn-primary w-100">{{ _('Accedi') }}</button>
+    </form>
+
+    <p class="text-muted" style="text-align: center; margin-top: 20px; font-size: 13px;">
+        {{ _('Non hai un account?') }} <a href="{{ url_for('auth.register', next=next_url) }}">{{ _('Registrati') }}</a>
+    </p>
 </div>
 {% endblock %}

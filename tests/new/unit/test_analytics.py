@@ -116,7 +116,7 @@ class TestAnalyticsFlashNonVisibileAllUtente:
 
         html = client.get("/privacy").get_data(as_text=True)
 
-        assert "alert-info" not in html
+        assert "c7-flash--info" not in html
         assert "user_registered" not in html
 
     def test_payload_json_non_in_alert_neppure_con_ga_attivo(
@@ -130,7 +130,7 @@ class TestAnalyticsFlashNonVisibileAllUtente:
         # L'evento deve raggiungere gtag...
         assert "gtag('event', analyticsEvent.name" in html
         # ...ma non essere mostrato come notifica all'utente.
-        assert "alert-info" not in html
+        assert "c7-flash--info" not in html
 
     def test_i_flash_normali_restano_visibili(self, client):
         """La correzione non deve nascondere i messaggi veri."""
@@ -139,7 +139,7 @@ class TestAnalyticsFlashNonVisibileAllUtente:
 
         html = client.get("/privacy").get_data(as_text=True)
 
-        assert "alert-success" in html
+        assert "c7-flash--success" in html
         assert "Operazione riuscita" in html
 
 

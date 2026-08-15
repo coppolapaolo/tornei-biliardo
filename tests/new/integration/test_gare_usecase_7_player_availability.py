@@ -144,7 +144,7 @@ class TestUseCasePlayerAvailability:
             expires_at=datetime.combine(
                 next_monday, time(23, 59)
             ),  # Expires end of day
-            discipline="palla_9",
+            discipline="9_ball",
             distance=7,
             is_race_to=True,
             description="Match at downtown venue - saw you're available Mondays!",

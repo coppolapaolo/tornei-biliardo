@@ -1,4 +1,4 @@
-"""Unit test del meccanismo generico di delega dei ruoli (ADR-038, Fase 1).
+"""Unit test del meccanismo generico di delega dei ruoli (ADR-041, Fase 1).
 
 Copre US-A1 (promozione da admin), US-A2 (un titolare concede), US-A3 (revoca
 e audit), US-A4 (il meccanismo è generico e la catena è una proprietà

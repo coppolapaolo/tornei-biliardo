@@ -1,4 +1,4 @@
-"""Crea le tabelle dei ruoli concedibili e della loro delega (ADR-038).
+"""Crea le tabelle dei ruoli concedibili e della loro delega (ADR-041).
 
 Tabelle: ``role_grant``, ``role_request``, ``role_request_recipient``.
 

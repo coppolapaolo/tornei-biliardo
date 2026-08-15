@@ -95,7 +95,7 @@ def _add_completed_gara(
         min_participants=2,
         max_participants=4,
         entry_fee=0.0,
-        discipline="palla_9",
+        discipline="9_ball",
         distance=5,
         is_race_to=True,
         director_id=director_id,
@@ -208,7 +208,7 @@ class TestHomepageCompletedCampionato:
             min_participants=2,
             max_participants=4,
             entry_fee=0.0,
-            discipline="palla_9",
+            discipline="9_ball",
             distance=5,
             is_race_to=True,
             director_id=isolated_director_user.id,
@@ -239,7 +239,7 @@ class TestHomepageCompletedCampionato:
             min_participants=2,
             max_participants=4,
             entry_fee=0.0,
-            discipline="palla_9",
+            discipline="9_ball",
             distance=5,
             is_race_to=True,
             director_id=isolated_director_user.id,
@@ -276,7 +276,7 @@ class TestHomepageCompletedCampionato:
             min_participants=2,
             max_participants=4,
             entry_fee=0.0,
-            discipline="palla_9",
+            discipline="9_ball",
             distance=5,
             is_race_to=True,
             director_id=isolated_director_user.id,
@@ -295,7 +295,7 @@ class TestHomepageCompletedCampionato:
             min_participants=2,
             max_participants=4,
             entry_fee=0.0,
-            discipline="palla_9",
+            discipline="9_ball",
             distance=5,
             is_race_to=True,
             director_id=isolated_director_user.id,
@@ -329,7 +329,7 @@ class TestHomepageCompletedCampionato:
             min_participants=2,
             max_participants=4,
             entry_fee=0.0,
-            discipline="palla_9",
+            discipline="9_ball",
             distance=5,
             is_race_to=True,
             director_id=isolated_director_user.id,
@@ -349,7 +349,7 @@ class TestHomepageCompletedCampionato:
             min_participants=2,
             max_participants=4,
             entry_fee=0.0,
-            discipline="palla_9",
+            discipline="9_ball",
             distance=5,
             is_race_to=True,
             director_id=isolated_director_user.id,
@@ -386,7 +386,7 @@ class TestHomepageActionableSections:
             min_participants=2,
             max_participants=4,
             entry_fee=0.0,
-            discipline="palla_9",
+            discipline="9_ball",
             distance=5,
             is_race_to=True,
             director_id=director_id,
@@ -428,7 +428,9 @@ class TestHomepageActionableSections:
         assert "Coppa Aperta" in body
         assert "Iscrizioni aperte" in body
         assert "2/4" in body
-        assert "Scadenza iscrizioni" in body
+        # "Chiudono il <data>" dopo il redesign 7c: stessa informazione,
+        # detta come la direbbe una persona.
+        assert "Chiudono il" in body
 
     def test_live_section_shows_match_at_table(
         self, app, db_session, isolated_director_user, isolated_players

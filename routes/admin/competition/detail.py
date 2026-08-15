@@ -26,6 +26,15 @@ from models.competition.spareggio_service import SpareggioService
 from . import competition_bp
 
 
+def _plays_in(match, user_id: int) -> bool:
+    """Vero se l'utente e' uno dei giocatori della partita (trio compreso)."""
+    if match.player1_id == user_id or match.player2_id == user_id:
+        return True
+    return bool(
+        match.is_trio and match.trio_match and match.trio_match.player3_id == user_id
+    )
+
+
 @competition_bp.route("/<int:gara_id>")
 def gara_detail(gara_id):
     """
@@ -357,6 +366,34 @@ def gara_detail(gara_id):
     # Get forfeit user IDs for visual indication
     forfeit_user_ids = set(insc.user_id for insc in inscriptions if insc.is_forfeit)
 
+    # Collegamento alla vista tabellone (US-13). Compare solo quando c'e'
+    # davvero un tabellone da guardare: prima del sorteggio la pagina
+    # esisterebbe ma sarebbe uno stato vuoto, e una gara a tabellone
+    # antecedente allo Step 2 non ha coordinate da disegnare affatto.
+    from models.matchmaking.bracket_view import has_bracket_coordinates
+    from models.matchmaking.configuration import BRACKET_STRATEGIES
+
+    has_bracket_view = gara.matchmaking_strategy in BRACKET_STRATEGIES and (
+        has_bracket_coordinates(all_matches or [])
+    )
+
+    # Squadre (US-2/3/8/9). L'elenco esiste solo dove serve, cioè quando il
+    # director ha chiesto di separare i compagni nel sorteggio: fuori di lì il
+    # campo squadra non compare da nessuna parte e nulla cambia per chi non
+    # usa le squadre.
+    from models.squadra.service import SquadraService
+
+    squadre = []
+    squadre_all = []
+    squadra_counts = {}
+    squadre_editable = False
+    if gara.separate_teammates:
+        squadre = SquadraService.list_for_gara(gara)
+        squadre_editable = SquadraService.is_editable(gara)
+        if user_can_manage:
+            squadre_all = SquadraService.list_for_gara(gara, include_inactive=True)
+            squadra_counts = SquadraService.counts_by_squadra(gara.id)
+
     # SSR (Spot Shot Rally) data for tiebreaker display
     ssr_groups = []
     has_ssr_data = False
@@ -432,6 +469,24 @@ def gara_detail(gara_id):
         )
     )
 
+    # Scorciatoia "il tuo match" (prototipo 8a): su mobile la propria partita
+    # sta in cima alla vista Turni, non da cercare nella pila dei turni.
+    # `all_matches` e' ordinato per turno, quindi il primo non finito e' quello
+    # piu' basso — lo stesso che _match_cards_mobile mette in alto. L'admin non
+    # gioca: per lui la scorciatoia non ha senso.
+    my_active_match = None
+    if current_user.is_authenticated and not current_user.is_admin:
+        my_active_match = next(
+            (
+                match
+                for match in (all_matches or [])
+                if not MatchStatus.is_finished(match.status)
+                and not match.is_bye
+                and _plays_in(match, current_user.id)
+            ),
+            None,
+        )
+
     # Iscrizione dalla pagina della gara (issue #61). Il pulsante mancava:
     # ci si poteva iscrivere solo dalle card di homepage e liste, quindi chi
     # arrivava qui da un link diretto non aveva alcun modo di iscriversi.
@@ -466,6 +521,7 @@ def gara_detail(gara_id):
         inscriptions=inscriptions,
         matches=matches,
         all_matches=all_matches,
+        my_active_match=my_active_match,
         users=users,
         inherited_directors=inherited_directors,
         can_manage_directors=can_manage_directors,
@@ -481,6 +537,12 @@ def gara_detail(gara_id):
         available_tables=available_tables,
         occupied_tables=occupied_tables,
         forfeit_user_ids=forfeit_user_ids,
+        has_bracket_view=has_bracket_view,
+        squadre=squadre,
+        squadre_all=squadre_all,
+        squadra_counts=squadra_counts,
+        squadre_editable=squadre_editable,
+        squadra_owner_is_campionato=bool(gara.campionato_id),
         available_users=available_users,
         # SSR (Spot Shot Rally) data
         ssr_groups=ssr_groups,

@@ -1,346 +1,202 @@
 {% extends "base.html" %}
 
-{% block title %}{{ _("Statistiche Match Individuali") }} - {{ _("Campionato Biliardo") }}{% endblock %}
+{% block title %}{{ _("Le tue statistiche") }} - {{ config.APP_NAME }}{% endblock %}
 
-{% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-md-12">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('individual_match.dashboard') }}">{{ _("Match Individuali") }}</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">{{ _("Statistiche") }}</li>
-                </ol>
-            </nav>
-
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h1><i class="fas fa-chart-line"></i> {{ _("Le tue Statistiche") }}</h1>
-                    <p class="text-muted">{{ _("Analisi completa delle tue performance nei match individuali.") }}</p>
-                </div>
-                <div>
-                    <a href="{{ url_for('individual_match.match_list') }}" class="btn btn-outline-primary">
-                        <i class="fas fa-list"></i> {{ _("Vedi Match") }}
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <!-- Overall Statistics -->
-        <div class="col-md-12 mb-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5><i class="fas fa-trophy"></i> {{ _("Statistiche Generali") }}</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-md-2">
-                            <h2 class="display-6 text-primary">{{ statistics.total_matches or 0 }}</h2>
-                            <small class="text-muted">{{ _("Match Totali") }}</small>
-                        </div>
-                        <div class="col-md-2">
-                            <h2 class="display-6 text-success">{{ statistics.won_matches or 0 }}</h2>
-                            <small class="text-muted">{{ _("Vittorie") }}</small>
-                        </div>
-                        <div class="col-md-2">
-                            <h2 class="display-6 text-danger">{{ statistics.lost_matches or 0 }}</h2>
-                            <small class="text-muted">{{ _("Sconfitte") }}</small>
-                        </div>
-                        <div class="col-md-2">
-                            <h2 class="display-6 text-info">{{ "%.1f"|format(statistics.win_percentage or 0) }}%</h2>
-                            <small class="text-muted">{{ _("Perc. Vinte") }}</small>
-                        </div>
-                        <div class="col-md-2">
-                            <h2 class="display-6 text-warning">{{ statistics.total_racks_won or 0 }}</h2>
-                            <small class="text-muted">{{ _("Rack Vinti") }}</small>
-                        </div>
-                        <div class="col-md-2">
-                            <h2 class="display-6 text-secondary">{{ "%.1f"|format(statistics.rack_win_percentage or 0) }}%</h2>
-                            <small class="text-muted">{{ _("Perc. Rack Vinti") }}</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Performance by Discipline -->
-        <div class="col-md-6 mb-4">
-            <div class="card h-100">
-                <div class="card-header">
-                    <h5><i class="fas fa-8-ball"></i> {{ _("Performance per Disciplina") }}</h5>
-                </div>
-                <div class="card-body">
-                    {% if statistics.by_discipline and statistics.by_discipline|length %}
-                    <div class="table-responsive">
-                        <table class="table table-sm">
-                            <thead>
-                                <tr>
-                                    <th>{{ _("Disciplina") }}</th>
-                                    <th class="text-center">{{ _("Match") }}</th>
-                                    <th class="text-center">{{ _("V-S") }}</th>
-                                    <th class="text-center">%</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for discipline_stat in statistics.by_discipline %}
-                                <tr>
-                                    <td>
-                                        <strong>{{ discipline_stat.discipline|discipline_display }}</strong>
-                                    </td>
-                                    <td class="text-center">{{ discipline_stat.total_matches }}</td>
-                                    <td class="text-center">
-                                        <span class="text-success">{{ discipline_stat.wins }}</span>-<span class="text-danger">{{ discipline_stat.losses }}</span>
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="badge bg-{{ 'success' if discipline_stat.win_percentage >= 60 else 'warning' if discipline_stat.win_percentage >= 40 else 'danger' }}">
-                                            {{ "%.0f"|format(discipline_stat.win_percentage) }}%
-                                        </span>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% else %}
-                    <div class="text-center py-4">
-                        <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
-                        <p class="text-muted">{{ _("Nessuna statistica disponibile ancora.") }}<br>{{ _("Gioca qualche match per vedere i dati!") }}</p>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <!-- Recent Performance Trend -->
-        <div class="col-md-6 mb-4">
-            <div class="card h-100">
-                <div class="card-header">
-                    <h5><i class="fas fa-chart-area"></i> {{ _("Trend Recente") }}</h5>
-                </div>
-                <div class="card-body">
-                    {% if statistics.recent_matches and statistics.recent_matches|length %}
-                    <div class="mb-3">
-                        <small class="text-muted">{{ _("Ultimi 10 match:") }}</small>
-                        <div class="mt-2">
-                            {% for match in statistics.recent_matches[-10:] %}
-                            <span class="badge bg-{{ 'success' if match.won else 'danger' }} me-1 mb-1">
-                                {{ _('W') if match.won else _('L') }}
-                            </span>
-                            {% endfor %}
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-6">
-                            <h4 class="text-success">{{ statistics.recent_wins or 0 }}</h4>
-                            <small class="text-muted">{{ _("Vittorie recenti") }}</small>
-                        </div>
-                        <div class="col-6">
-                            <h4 class="text-danger">{{ statistics.recent_losses or 0 }}</h4>
-                            <small class="text-muted">{{ _("Sconfitte recenti") }}</small>
-                        </div>
-                    </div>
-
-                    {% if statistics.current_streak %}
-                    <div class="alert alert-{{ 'success' if statistics.current_streak_type == 'win' else 'danger' }} mt-3">
-                        <i class="fas fa-fire"></i>
-                        <strong>{{ _("Striscia attuale:") }}</strong>
-                        {{ statistics.current_streak }} {{ _('vittorie') if statistics.current_streak_type == 'win' else _('sconfitte') }} {{ _("consecutive") }}
-                    </div>
-                    {% endif %}
-                    {% else %}
-                    <div class="text-center py-4">
-                        <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
-                        <p class="text-muted">{{ _("Gioca alcuni match per vedere il tuo trend di performance!") }}</p>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <!-- Head-to-Head Records -->
-        <div class="col-md-6 mb-4">
-            <div class="card h-100">
-                <div class="card-header">
-                    <h5><i class="fas fa-users"></i> {{ _("Record Testa a Testa") }}</h5>
-                </div>
-                <div class="card-body">
-                    {% if statistics.head_to_head and statistics.head_to_head|length %}
-                    <div class="table-responsive">
-                        <table class="table table-sm">
-                            <thead>
-                                <tr>
-                                    <th>{{ _("Avversario") }}</th>
-                                    <th class="text-center">{{ _("Match") }}</th>
-                                    <th class="text-center">{{ _("Record") }}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for h2h in statistics.head_to_head[:5] %}
-                                <tr>
-                                    <td><strong>{{ h2h.opponent_username }}</strong></td>
-                                    <td class="text-center">{{ h2h.total_matches }}</td>
-                                    <td class="text-center">
-                                        <span class="text-{{ 'success' if h2h.wins > h2h.losses else 'danger' if h2h.wins < h2h.losses else 'warning' }}">
-                                            {{ h2h.wins }}-{{ h2h.losses }}
-                                        </span>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% if statistics.head_to_head|length > 5 %}
-                    <small class="text-muted">{{ _("E altri %(n)s avversari...", n=statistics.head_to_head|length - 5) }}</small>
-                    {% endif %}
-                    {% else %}
-                    <div class="text-center py-4">
-                        <i class="fas fa-handshake fa-3x text-muted mb-3"></i>
-                        <p class="text-muted">{{ _("Nessun record testa a testa ancora.") }}<br>{{ _("Gioca contro diversi avversari!") }}</p>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <!-- Monthly Activity -->
-        <div class="col-md-6 mb-4">
-            <div class="card h-100">
-                <div class="card-header">
-                    <h5><i class="fas fa-calendar"></i> {{ _("Attività Mensile") }}</h5>
-                </div>
-                <div class="card-body">
-                    {% if statistics.monthly_activity and statistics.monthly_activity|length %}
-                    <div class="table-responsive">
-                        <table class="table table-sm">
-                            <thead>
-                                <tr>
-                                    <th>{{ _("Mese") }}</th>
-                                    <th class="text-center">{{ _("Match") }}</th>
-                                    <th class="text-center">{{ _("Vittorie") }}</th>
-                                    <th class="text-center">%</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for month_stat in statistics.monthly_activity[-6:] %}
-                                <tr>
-                                    <td>{{ month_stat.month_name }}</td>
-                                    <td class="text-center">{{ month_stat.total_matches }}</td>
-                                    <td class="text-center">{{ month_stat.wins }}</td>
-                                    <td class="text-center">
-                                        {{ "%.0f"|format(month_stat.win_percentage) }}%
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% else %}
-                    <div class="text-center py-4">
-                        <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
-                        <p class="text-muted">{{ _("Nessuna attività mensile da mostrare.") }}</p>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <!-- Achievements -->
-        <div class="col-md-12 mb-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5><i class="fas fa-medal"></i> {{ _("Traguardi") }}</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        {% if statistics.achievements and statistics.achievements|length %}
-                        {% for achievement in statistics.achievements %}
-                        <div class="col-md-3 mb-3">
-                            <div class="text-center">
-                                <i class="fas fa-{{ achievement.icon }} fa-2x text-{{ achievement.color }} mb-2"></i>
-                                <h6>{{ achievement.title }}</h6>
-                                <small class="text-muted">{{ achievement.description }}</small>
-                            </div>
-                        </div>
-                        {% endfor %}
-                        {% else %}
-                        <!-- Default achievements to unlock -->
-                        <div class="col-md-3 mb-3">
-                            <div class="text-center">
-                                <i class="fas fa-trophy fa-2x text-muted mb-2"></i>
-                                <h6>{{ _("Prima Vittoria") }}</h6>
-                                <small class="text-muted">{{ _("Vinci il tuo primo match") }}</small>
-                            </div>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <div class="text-center">
-                                <i class="fas fa-fire fa-2x text-muted mb-2"></i>
-                                <h6>{{ _("Striscia di 3") }}</h6>
-                                <small class="text-muted">{{ _("Vinci 3 match consecutivi") }}</small>
-                            </div>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <div class="text-center">
-                                <i class="fas fa-8-ball fa-2x text-muted mb-2"></i>
-                                <h6>{{ _("Versatile") }}</h6>
-                                <small class="text-muted">{{ _("Gioca 3 discipline diverse") }}</small>
-                            </div>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <div class="text-center">
-                                <i class="fas fa-users fa-2x text-muted mb-2"></i>
-                                <h6>{{ _("Socievole") }}</h6>
-                                <small class="text-muted">{{ _("Gioca contro 5 avversari diversi") }}</small>
-                            </div>
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Actions -->
-    <div class="row">
-        <div class="col-md-12">
-            <div class="text-center">
-                <a href="{{ url_for('individual_match.dashboard') }}" class="btn btn-outline-secondary me-2">
-                    <i class="fas fa-arrow-left"></i> {{ _("Torna alla Dashboard") }}
-                </a>
-                <a href="{{ url_for('individual_match.create_proposal') }}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> {{ _("Crea Nuova Proposta") }}
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('individual_match.dashboard') }}"
+   aria-label="{{ _('Torna ai match individuali') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("Le tue statistiche") }}{% endblock %}
+{% block page_sub %}{{ _("Come vai nei match individuali") }}{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('individual_match.match_list') }}" class="btn btn-secondary btn-sm d-none d-lg-inline-flex">
+  <i class="fas fa-list"></i>&nbsp;{{ _("Tutti i match") }}
+</a>
 {% endblock %}
 
-{% block scripts %}
-<script>
-// Add some interactivity for demonstration
-document.addEventListener('DOMContentLoaded', function() {
-    // Animate progress bars if any
-    const progressBars = document.querySelectorAll('.progress-bar');
-    progressBars.forEach(bar => {
-        const width = bar.style.width;
-        bar.style.width = '0%';
-        setTimeout(() => {
-            bar.style.width = width;
-            bar.style.transition = 'width 1s ease-in-out';
-        }, 100);
-    });
+{% block content %}
+{# Il prototipo copre questa forma nella #11a (progressi): tessere dei numeri,
+   elenchi raggruppati, niente tabelle a quattro colonne su mobile. #}
+{% set played = statistics.total_matches or 0 %}
 
-    // Add tooltips to badges for additional context
-    const badges = document.querySelectorAll('.badge');
-    badges.forEach(badge => {
-        if (badge.textContent.includes('%')) {
-            badge.setAttribute('title', {{ _("Percentuale di vittorie in questa disciplina")|tojson }});
-            badge.setAttribute('data-bs-toggle', 'tooltip');
-        }
-    });
-});
-</script>
+<div class="c7-stack c7-sections">
+
+  {% if not played %}
+  <div class="c7-empty">
+    <div class="c7-empty__ico"><i class="fas fa-chart-line"></i></div>
+    <div class="c7-empty__title">{{ _("Ancora nessun match") }}</div>
+    <p class="c7-empty__text">
+      {{ _("Le statistiche compaiono dopo la prima partita individuale conclusa.") }}
+    </p>
+    <div class="c7-empty__actions">
+      <a href="{{ url_for('individual_match.create_proposal') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i>&nbsp;{{ _("Proponi un match") }}
+      </a>
+    </div>
+  </div>
+  {% else %}
+
+  {# ---------- I quattro numeri ---------- #}
+  <div class="c7-grid c7-kpis" style="grid-template-columns:1fr 1fr">
+    <div class="c7-card">
+      <div class="c7-num-xl">{{ "%.0f"|format(statistics.win_percentage or 0) }}%</div>
+      <div class="c7-rows__sub">{{ _("Match vinti") }}</div>
+    </div>
+    <div class="c7-card">
+      <div class="c7-num-xl">{{ played }}</div>
+      <div class="c7-rows__sub">{{ _("Match giocati") }}</div>
+    </div>
+    <div class="c7-card">
+      <div class="c7-num-xl">{{ statistics.total_racks_won or 0 }}</div>
+      <div class="c7-rows__sub">{{ _("Rack vinti") }}</div>
+    </div>
+    <div class="c7-card">
+      <div class="c7-num-xl">{{ "%.0f"|format(statistics.rack_win_percentage or 0) }}%</div>
+      <div class="c7-rows__sub">{{ _("Rack vinti su giocati") }}</div>
+    </div>
+  </div>
+
+  {# ---------- Vinte e perse ---------- #}
+  <div class="c7-card">
+    <div class="c7-sechead mb-3"><h2>{{ _("Vinte e perse") }}</h2></div>
+    {% set won = statistics.won_matches or 0 %}
+    {% set lost = statistics.lost_matches or 0 %}
+    <div class="d-flex align-items-baseline gap-2">
+      <span class="c7-num-lg" style="color:var(--c7-ok)">{{ won }}</span>
+      <span class="c7-sep">–</span>
+      <span class="c7-num-lg" style="color:var(--c7-err)">{{ lost }}</span>
+    </div>
+    {# Barra a due segmenti, come il riepilogo degli achievement nella #11a. #}
+    <div class="d-flex gap-1" style="margin-top:12px;height:8px">
+      <span style="flex:{{ won or 0 }};background:var(--c7-ok);border-radius:999px"></span>
+      <span style="flex:{{ lost or 0 }};background:var(--c7-line);border-radius:999px"></span>
+    </div>
+  </div>
+
+  {# ---------- Andamento recente ---------- #}
+  {% if statistics.recent_matches %}
+  <section class="c7-stack">
+    <div class="c7-sechead">
+      <h2>{{ _("Ultimi match") }}</h2>
+      <span class="c7-sechead__note">
+        <span class="c7-num">{{ statistics.recent_wins or 0 }}</span>{{ _("V") }} ·
+        <span class="c7-num">{{ statistics.recent_losses or 0 }}</span>{{ _("P") }}
+      </span>
+    </div>
+    <div class="c7-card">
+      <div class="d-flex flex-wrap gap-1">
+        {% for match in statistics.recent_matches[-10:] %}
+        <span class="c7-state c7-state--{{ 'ok' if match.won else 'err' }}" style="width:34px;padding:0">
+          {{ _('V') if match.won else _('P') }}
+        </span>
+        {% endfor %}
+      </div>
+      {% if statistics.current_streak %}
+      <div style="margin-top:14px;font-size:13px;font-weight:700;color:var(--c7-ink-soft)">
+        <i class="fas fa-fire" style="color:{{ 'var(--c7-ok)' if statistics.current_streak_type == 'win' else 'var(--c7-ink-muted)' }}"></i>
+        {% if statistics.current_streak_type == 'win' %}
+        {{ ngettext("%(n)s vittoria di fila", "%(n)s vittorie di fila",
+                    statistics.current_streak, n=statistics.current_streak) }}
+        {% else %}
+        {{ ngettext("%(n)s sconfitta di fila", "%(n)s sconfitte di fila",
+                    statistics.current_streak, n=statistics.current_streak) }}
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </section>
+  {% endif %}
+
+  {# ---------- Per disciplina ---------- #}
+  {% if statistics.by_discipline %}
+  <section class="c7-stack">
+    <div class="c7-sechead"><h2>{{ _("Per disciplina") }}</h2></div>
+    <div class="c7-rows">
+      {% for stat in statistics.by_discipline %}
+      <div class="c7-rows__row">
+        <div class="c7-rows__main">
+          <div class="c7-rows__title">{{ stat.discipline|discipline_display }}</div>
+          <div class="c7-rows__sub">
+            {{ ngettext("%(n)s match", "%(n)s match", stat.total_matches, n=stat.total_matches) }} <span class="c7-sep">·</span>
+            <span class="c7-num">{{ stat.wins }}–{{ stat.losses }}</span>
+          </div>
+        </div>
+        <span class="c7-num" style="font-size:15px;font-weight:800">{{ "%.0f"|format(stat.win_percentage) }}%</span>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  {# ---------- Testa a testa ---------- #}
+  {% if statistics.head_to_head %}
+  <section class="c7-stack">
+    <div class="c7-sechead">
+      <h2>{{ _("Testa a testa") }}</h2>
+      {% if statistics.head_to_head|length > 5 %}
+      <span class="c7-sechead__note">{{ _("e altri %(n)s", n=statistics.head_to_head|length - 5) }}</span>
+      {% endif %}
+    </div>
+    <div class="c7-rows">
+      {% for h2h in statistics.head_to_head[:5] %}
+      <div class="c7-rows__row">
+        <span class="c7-avatar">{{ h2h.opponent_username[:2]|upper }}</span>
+        <div class="c7-rows__main">
+          <div class="c7-rows__title">{{ h2h.opponent_username }}</div>
+          <div class="c7-rows__sub">{{ ngettext("%(n)s match", "%(n)s match", h2h.total_matches, n=h2h.total_matches) }}</div>
+        </div>
+        <span class="c7-num" style="font-size:15px;font-weight:800;
+              color:{{ 'var(--c7-ok)' if h2h.wins > h2h.losses else 'var(--c7-err)' if h2h.wins < h2h.losses else 'inherit' }}">
+          {{ h2h.wins }}–{{ h2h.losses }}
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  {# ---------- Mese per mese ---------- #}
+  {% if statistics.monthly_activity %}
+  <section class="c7-stack">
+    <div class="c7-sechead"><h2>{{ _("Mese per mese") }}</h2></div>
+    <div class="c7-rows">
+      {% for month_stat in statistics.monthly_activity[-6:] %}
+      <div class="c7-rows__row">
+        <div class="c7-rows__main">
+          <div class="c7-rows__title">{{ month_stat.month_name }}</div>
+          <div class="c7-rows__sub">
+            {{ ngettext("%(n)s match", "%(n)s match", month_stat.total_matches, n=month_stat.total_matches) }} <span class="c7-sep">·</span>
+            {{ ngettext("%(n)s vinto", "%(n)s vinti", month_stat.wins, n=month_stat.wins) }}
+          </div>
+        </div>
+        <span class="c7-num" style="font-size:15px;font-weight:800">{{ "%.0f"|format(month_stat.win_percentage) }}%</span>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+  {% endif %}
+
+  {# ---------- Dove stanno i traguardi ----------
+     Qui c'era una sezione "Traguardi" con quattro tessere scritte a mano
+     ("Prima Vittoria", "Striscia di 3"…): il servizio delle statistiche non
+     restituisce alcun achievement, quindi il ramo "vuoto" era l'unico che si
+     vedeva — traguardi finti, che il sistema non assegna. Quelli veri stanno
+     nella pagina dei progressi. #}
+  {# In produzione la gamification e' ancora solo per chi dirige (ADR-028):
+     senza il guard il link comparirebbe a tutti e porterebbe a un 404. #}
+  {% if feature_visible('gamification.achievements') %}
+  <div class="c7-rows">
+    <a class="c7-rows__row" href="{{ url_for('gamification.achievements') }}"
+       style="color:inherit;text-decoration:none">
+      <span class="c7-tile c7-tile--sm"><i class="fas fa-medal"></i></span>
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">{{ _("I tuoi traguardi") }}</div>
+        <div class="c7-rows__sub">{{ _("Achievement, livelli e strisce") }}</div>
+      </div>
+      <i class="fas fa-chevron-right" style="font-size:12px;color:var(--c7-ink-faint)"></i>
+    </a>
+  </div>
+  {% endif %}
+</div>
 {% endblock %}

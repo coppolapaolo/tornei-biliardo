@@ -3,7 +3,7 @@
 {% block title %}{{ _("Home - Tornei Biliardo") }}{% endblock %}
 
 {% block content %}
-{# 1. Onboarding (solo guest) #}
+{# 1. Onboarding (solo ospiti) #}
 {% include "components/_index_registration_info.html" %}
 
 {# 2. In diretta ora — gare playing/awaiting_ssr + match ai tavoli #}
@@ -14,17 +14,17 @@
 
 {# 4. Campionati in corso — con testa della classifica generale #}
 {% if active_campionati %}
-<div class="d-flex justify-content-between align-items-center mb-3 mt-5">
-    <h2 class="mb-0"><i class="fas fa-trophy text-warning"></i>
-        {{ _("Campionati in corso") }}
-        ({{ ngettext("%(count)s campionato", "%(count)s campionati", active_campionati_count, count=active_campionati_count) }})
-    </h2>
-    <a href="{{ url_for('main.public_campionatos_list') }}" class="btn btn-outline-primary btn-sm">
-        <i class="fas fa-list"></i> {{ _("Vedi tutti") }}
-    </a>
-</div>
-{% set tournaments_data = active_campionati %}
-{% include "components/_index_campionato_cards.html" %}
+<section class="c7-stack" style="margin-top: 34px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+        <div>
+            <div class="c7-kicker">{{ ngettext("%(count)s campionato", "%(count)s campionati", active_campionati_count, count=active_campionati_count) }}</div>
+            <h2 style="margin: 4px 0 0;">{{ _("Campionati in corso") }}</h2>
+        </div>
+        <a href="{{ url_for('main.public_campionatos_list') }}" class="btn btn-secondary btn-sm">{{ _("Vedi tutti") }}</a>
+    </div>
+    {% set tournaments_data = active_campionati %}
+    {% include "components/_index_campionato_cards.html" %}
+</section>
 {% endif %}
 
 {# 5. In arrivo — gare/campionati in preparazione #}

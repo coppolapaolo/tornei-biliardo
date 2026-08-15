@@ -102,6 +102,7 @@ from .location.models import (
     DayOfWeek,
 )
 from .demand.models import DemandSignal, DemandSignalStatus
+from .squadra.models import Squadra
 from .tiebreaker.models import (
     Tiebreaker,
     SpotShot,
@@ -152,7 +153,7 @@ __all__ = [
     "DirectorRequest",
     "VenueManagerRequest",
     "VenueManagement",
-    # Ruoli concedibili e delega (ADR-038)
+    # Ruoli concedibili e delega (ADR-041)
     "RoleGrant",
     "RoleRequest",
     "RoleRequestRecipient",
@@ -234,6 +235,7 @@ __all__ = [
     "DemandSignal",
     "DemandSignalStatus",
     "DayOfWeek",
+    "Squadra",
     # Tiebreaker domain models (Phase 4)
     "Tiebreaker",
     "SpotShot",

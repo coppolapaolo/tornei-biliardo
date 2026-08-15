@@ -32,6 +32,19 @@ class MatchmakingStrategy(str, Enum):
     RANDOM = "random"
 
 
+# Strategie il cui esito è un tabellone: ammettono solo il sistema POSITION,
+# portano con sé le opzioni di sorteggio (separazione compagni, finalina,
+# formula a gironi) e sono le sole per cui esiste una vista tabellone.
+# Vive qui e non fra le route perché la domanda "questa gara ha un tabellone?"
+# se la pongono anche i modelli e i template, non solo il parser dei form.
+BRACKET_STRATEGIES = frozenset(
+    {
+        MatchmakingStrategy.DIRECT_ELIMINATION.value,
+        MatchmakingStrategy.DOUBLE_KNOCKOUT.value,
+    }
+)
+
+
 class FirstRoundPolicy(str, Enum):
     RANDOM = "random"
     RATING = "rating"
@@ -447,9 +460,21 @@ def calculate_rounds_for_strategy(
 
     Different strategies require specific round counts for proper tournament flow:
     - Round-Robin: n-1 rounds (everyone plays everyone)
-    - Direct Elimination: log2(n) rounds (binary elimination tree)
-    - Double Knockout: 2*log2(n) rounds (winners + losers brackets)
+    - Direct Elimination: k = log2(S) rounds (binary elimination tree)
+    - Double Knockout: 2k + 1 rounds (winners, losers, finale e bella)
     - Flexible strategies: Sensible defaults based on tournament size
+
+    Per le due strategie a tabellone il conteggio passa da
+    `models.matchmaking.bracket`, che e' la stessa aritmetica usata dal
+    sorteggio: `S` include il **pavimento di formato** (4 per l'eliminazione
+    diretta, 8 per il doppio KO), altrimenti una gara al minimo di iscritti
+    otterrebbe qui un numero di turni diverso da quello che il sorteggio le
+    scrivera' poi addosso.
+
+    Il `+1` del doppio KO e' la bella: si materializza solo se il campione del
+    losers bracket vince la finale, e altrimenti quel turno resta vuoto. Prima
+    questa funzione diceva `2k` e la strategia ne pretendeva `2k + 2`: nessuno
+    dei due era il numero giusto.
 
     Args:
         strategy: Tournament pairing algorithm
@@ -462,15 +487,25 @@ def calculate_rounds_for_strategy(
         Proper round calculation ensures tournaments conclude naturally
         with clear winners and appropriate time investment for participants.
     """
-    import math
+    from .bracket import (
+        MIN_BRACKET_SIZE_DIRECT_ELIMINATION,
+        MIN_BRACKET_SIZE_DOUBLE_KNOCKOUT,
+        bracket_size,
+        total_rounds,
+    )
 
     if strategy == MatchmakingStrategy.ROUND_ROBIN:
         return num_players - 1 if num_players > 1 else 1
     elif strategy == MatchmakingStrategy.DIRECT_ELIMINATION:
-        return math.ceil(math.log2(num_players)) if num_players > 1 else 1
+        if num_players < 2:
+            return 1
+        size = max(bracket_size(num_players), MIN_BRACKET_SIZE_DIRECT_ELIMINATION)
+        return total_rounds(size)
     elif strategy == MatchmakingStrategy.DOUBLE_KNOCKOUT:
-        # Double elimination needs approximately 2 * log2(n) rounds
-        return 2 * math.ceil(math.log2(num_players)) if num_players > 1 else 1
+        if num_players < 2:
+            return 1
+        size = max(bracket_size(num_players), MIN_BRACKET_SIZE_DOUBLE_KNOCKOUT)
+        return total_rounds(size, double_elimination=True)
     else:
         # For flexible strategies, return a sensible default
         return min(num_players - 1, 5)

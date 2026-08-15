@@ -1,18 +1,19 @@
 {% extends 'base.html' %}
+{% block title %}{{ _('Gestione Quest') }}{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('gamification.admin_dashboard') }}"
+   aria-label="{{ _('Torna ai pannelli') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _('Gestione Quest') }}{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('gamification.admin_create_quest') }}" class="btn btn-primary btn-sm">
+        <i class="fas fa-circle-plus"></i> {{ _('Nuova Quest') }}
+      </a>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="bi bi-journal-check"></i> {{ _('Gestione Quest') }}</h2>
-    <div>
-      <a href="{{ url_for('gamification.admin_dashboard') }}" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left"></i> {{ _('Torna al Dashboard') }}
-      </a>
-      <a href="{{ url_for('gamification.admin_create_quest') }}" class="btn btn-primary">
-        <i class="bi bi-plus-circle"></i> {{ _('Nuova Quest') }}
-      </a>
-    </div>
-  </div>
-
   <div class="card">
     <div class="card-body">
       <table class="table table-hover">
@@ -64,7 +65,7 @@
                 <form method="POST" action="{{ url_for('gamification.admin_activate_quest', quest_id=quest.id) }}" style="display:inline;">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button type="submit" class="btn btn-outline-success" title="{{ _('Attiva') }}">
-                    <i class="bi bi-play-fill"></i>
+                    <i class="fas fa-play"></i>
                   </button>
                 </form>
                 {% endif %}
@@ -72,7 +73,7 @@
                 <form method="POST" action="{{ url_for('gamification.admin_expire_quest', quest_id=quest.id) }}" style="display:inline;">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button type="submit" class="btn btn-outline-warning" title="{{ _('Termina') }}">
-                    <i class="bi bi-stop-fill"></i>
+                    <i class="fas fa-stop"></i>
                   </button>
                 </form>
                 {% endif %}
@@ -81,7 +82,7 @@
                       onsubmit="return confirmSubmit(this, {{ _('Sei sicuro di voler eliminare questa quest?')|tojson }})">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button type="submit" class="btn btn-outline-danger" title="{{ _('Elimina') }}">
-                    <i class="bi bi-trash"></i>
+                    <i class="fas fa-trash"></i>
                   </button>
                 </form>
                 {% endif %}
@@ -91,7 +92,7 @@
           {% else %}
           <tr>
             <td colspan="8" class="text-center text-muted py-4">
-              <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+              <i class="fas fa-inbox fs-1 d-block mb-2"></i>
               {{ _('Nessuna quest disponibile') }}
             </td>
           </tr>

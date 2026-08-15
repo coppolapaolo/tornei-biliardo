@@ -69,3 +69,25 @@ class TestCspConAnalytics:
         assert "code.jquery.com" in csp
         assert "cdnjs.cloudflare.com" in csp
         assert "default-src 'self'" in csp
+
+
+class TestCspFontDelTema:
+    """I font del design system 7c devono poter essere caricati.
+
+    Stessa classe di guasto di GA: `base.html` chiede Manrope e JetBrains
+    Mono a Google Fonts, ma la CSP elencava solo i due CDN storici. Il
+    browser bloccava il foglio e i woff2, la tipografia cadeva sul fallback
+    di sistema su **ogni** pagina e nulla lo segnalava lato server — il
+    sintomo somiglia a un design sbagliato, non a un header.
+
+    La CSP è impostata in un `after_request` non condizionato all'ambiente,
+    quindi il blocco vale anche in sviluppo.
+    """
+
+    def test_style_src_consente_il_foglio_dei_font(self, client):
+        assert "fonts.googleapis.com" in _csp(client)
+
+    def test_font_src_consente_i_woff2(self, client):
+        font_src = [d for d in _csp(client).split(";") if "font-src" in d]
+        assert font_src, "direttiva font-src assente"
+        assert "fonts.gstatic.com" in font_src[0]

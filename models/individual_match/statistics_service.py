@@ -16,7 +16,7 @@ from .models import (
     ProposalStatus,
 )
 from ..location.models import BilliardHall, UserLocationAvailability
-from ..status_enum import MatchStatus
+from ..status_enum import Discipline, MatchStatus
 from ..user.models import User
 
 
@@ -81,7 +81,7 @@ class IndividualMatchStatisticsService:
         # Breakdown per disciplina (pannello "Performance per Disciplina")
         by_discipline_map: Dict[str, Dict[str, Any]] = {}
         for m in matches:
-            disc = m.discipline or "palla_8"
+            disc = m.discipline or Discipline.EIGHT_BALL.value
             entry = by_discipline_map.setdefault(
                 disc,
                 {"discipline": disc, "total_matches": 0, "wins": 0, "losses": 0},

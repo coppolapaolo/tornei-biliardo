@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% import "components/_gara_header.html" as gara_head with context %}
+
+{% block title %}{{ _('Tabellone') }} - {{ gara.display_name }}{% endblock %}
+
+{# Testata: una sola per pagina, quella del guscio. La freccia torna alla
+   gara, non al campionato: da li' si arriva e li' si torna. #}
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}"
+   aria-label="{{ _('Torna alla gara') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _('Tabellone') }}{% endblock %}
+{# Su mobile il sottotitolo e' il solo nome della gara: la testata e' sticky e
+   ospita anche freccia, avatar e comandi, quindi sala + distanza + disciplina
+   + data la mandavano a sei righe su 390px. Restano sul desktop, dove c'e'
+   spazio — stessa scelta gia' presa in `_gara_header.sub`. #}
+{% block page_sub %}{{ gara.display_name }}<span class="d-none d-lg-inline">
+  <span class="c7-sep">·</span> {{ gara_head.sub(gara) }}</span>{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}" class="btn btn-secondary btn-sm">
+  <i class="fas fa-list-ul"></i><span class="d-none d-lg-inline">&nbsp;{{ _('Partite') }}</span>
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="c7-stack">
+  {% include "components/_bracket_view.html" %}
+</div>
+{% endblock %}

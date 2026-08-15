@@ -1,176 +1,187 @@
 {% extends "base.html" %}
 
-{% block title %}{{ _("Trova Giocatori") }} - Campionato Biliardo{% endblock %}
+{% block title %}{{ _("Trova giocatori") }} - {{ config.APP_NAME }}{% endblock %}
 
-{% macro request_form(player, place) %}
-  {% set collapse_id = "request-%s"|format(player.user_id) %}
-  <div class="d-flex justify-content-between align-items-center">
-    <h6 class="mb-0"><i class="fas fa-user me-1"></i>{{ player.username }}</h6>
-    <button class="btn btn-sm btn-outline-success" type="button" data-bs-toggle="collapse"
-            data-bs-target="#{{ collapse_id }}">
-      <i class="fas fa-paper-plane me-1"></i>{{ _("Richiedi match") }}
-    </button>
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('individual_match.manage_availability') }}"
+   aria-label="{{ _('Torna alle disponibilità') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("Trova giocatori") }}{% endblock %}
+{% block page_sub %}{{ _("Chi è disponibile, sala per sala") }}{% endblock %}
+
+{# Richiesta di match a un giocatore trovato: sta chiusa finché non serve —
+   aprirla è una scelta, e aperte tutte insieme la pagina diventa un modulo
+   lungo quanto l'elenco. #}
+{% macro player_row(player, place) %}
+{% set collapse_id = "request-%s-%s"|format(player.user_id, place|replace(' ', '')|replace('.', '')) %}
+<div class="c7-rows__row" style="flex-wrap:wrap">
+  <span class="c7-avatar">{{ player.username[:2]|upper }}</span>
+  <div class="c7-rows__main">
+    <div class="c7-rows__title">{{ player.username }}</div>
+    {% if player.preferred_times %}
+    <div class="c7-rows__sub"><i class="fas fa-clock"></i> <span class="c7-num">{{ player.preferred_times }}</span></div>
+    {% endif %}
   </div>
-  <div class="small text-muted mt-1">
-    {% if player.preferred_times %}<i class="fas fa-clock me-1"></i>{{ player.preferred_times }}{% endif %}
-  </div>
-  <div class="collapse mt-2" id="{{ collapse_id }}">
-    <form method="POST" action="{{ url_for('individual_match.request_availability_match', target_user_id=player.user_id) }}" class="row g-2">
+  <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="collapse"
+          data-bs-target="#{{ collapse_id }}" aria-expanded="false" aria-controls="{{ collapse_id }}">
+    <i class="fas fa-paper-plane"></i>&nbsp;{{ _("Sfida") }}
+  </button>
+
+  <div class="collapse w-100" id="{{ collapse_id }}">
+    <form method="POST"
+          action="{{ url_for('individual_match.request_availability_match', target_user_id=player.user_id) }}"
+          class="c7-stack" style="gap:12px;margin-top:14px">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <input type="hidden" name="location" value="{{ place }}">
-      <div class="col-md-4">
-        <label class="form-label small">{{ _("Data") }}</label>
-        <input type="date" class="form-control form-control-sm" name="proposed_date">
+      <div class="d-flex gap-2">
+        <div class="flex-fill">
+          <label class="form-label" for="{{ collapse_id }}-date">{{ _("Data") }}</label>
+          <input type="date" class="form-control" id="{{ collapse_id }}-date" name="proposed_date">
+        </div>
+        <div style="width:40%">
+          <label class="form-label" for="{{ collapse_id }}-time">{{ _("Ora") }}</label>
+          <input type="time" class="form-control" id="{{ collapse_id }}-time" name="proposed_time">
+        </div>
       </div>
-      <div class="col-md-3">
-        <label class="form-label small">{{ _("Ora") }}</label>
-        <input type="time" class="form-control form-control-sm" name="proposed_time">
+      <div>
+        <label class="form-label" for="{{ collapse_id }}-msg">{{ _("Messaggio (opzionale)") }}</label>
+        <input type="text" class="form-control" id="{{ collapse_id }}-msg" name="message"
+               placeholder="{{ _('Ci vediamo lì?') }}">
       </div>
-      <div class="col-md-5">
-        <label class="form-label small">{{ _("Messaggio") }}</label>
-        <input type="text" class="form-control form-control-sm" name="message" placeholder="{{ _('Facoltativo') }}">
-      </div>
-      <div class="col-12 text-end">
-        <button type="submit" class="btn btn-sm btn-success">
-          <i class="fas fa-paper-plane me-1"></i>{{ _("Invia richiesta") }}
-        </button>
-      </div>
+      <button type="submit" class="btn btn-primary">
+        <i class="fas fa-paper-plane"></i>&nbsp;{{ _("Invia la richiesta") }}
+      </button>
     </form>
   </div>
+</div>
+{% endmacro %}
+
+{% macro venue_group(group) %}
+<section class="c7-stack">
+  <div class="c7-sechead">
+    <h2>{{ group.name }}</h2>
+    {% if group.distance_km is not none %}
+    <span class="c7-sechead__note"><span class="c7-num">{{ group.distance_km }}</span> km</span>
+    {% endif %}
+    <span class="c7-sechead__more" style="pointer-events:none">
+      {{ ngettext("%(n)s giocatore", "%(n)s giocatori", group.players|length, n=group.players|length) }}
+    </span>
+  </div>
+  <div class="c7-rows">
+    {% for player in group.players %}{{ player_row(player, group.name) }}{% endfor %}
+  </div>
+</section>
 {% endmacro %}
 
 {% block content %}
-<div class="container-fluid">
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{{ url_for('individual_match.dashboard') }}">{{ _("Match Individuali") }}</a></li>
-      <li class="breadcrumb-item"><a href="{{ url_for('individual_match.manage_availability') }}">{{ _("Disponibilità") }}</a></li>
-      <li class="breadcrumb-item active" aria-current="page">{{ _("Trova giocatori") }}</li>
-    </ol>
-  </nav>
+{# Il prototipo non copre questa schermata: è un elenco con filtri, quindi
+   segue la forma della 8a (elenco gare) — filtri in una card in cima,
+   risultati raggruppati come elenco a righe. #}
+<div class="c7-stack c7-sections">
 
-  <div class="row justify-content-center">
-    <div class="col-lg-10">
-      <h4 class="mb-1"><i class="fas fa-search me-2"></i>{{ _("Trova giocatori disponibili") }}</h4>
-      <small class="text-muted">{{ _("Scopri chi è disponibile nelle sale e invia una richiesta di match") }}</small>
-
-      {# ---- Proximity + venue filter ---- #}
-      <div class="card my-3">
-        <div class="card-body">
-          <div class="row g-2 align-items-end">
-            <div class="col-md-4">
-              <label for="radius_km" class="form-label">{{ _("Raggio (km)") }}</label>
-              <input type="number" class="form-control" id="radius_km" name="radius_km"
-                     min="1" max="100" value="{{ radius_km }}">
-            </div>
-            <div class="col-md-4 d-grid">
-              <button type="button" class="btn btn-primary" onclick="findNearMe()">
-                <i class="fas fa-location-crosshairs me-1"></i>{{ _("Vicino a me") }}
-              </button>
-            </div>
-            <div class="col-md-4 d-grid">
-              <a href="{{ url_for('individual_match.discover_players') }}" class="btn btn-outline-secondary">
-                <i class="fas fa-list me-1"></i>{{ _("Mostra tutte") }}
-              </a>
-            </div>
-          </div>
-          <div id="geo-status" class="small text-muted mt-2"></div>
-
-          <hr>
-          <form method="GET" action="{{ url_for('individual_match.discover_players') }}" class="row g-2 align-items-end">
-            <div class="col-md-9">
-              <label for="venue_id" class="form-label">{{ _("Oppure filtra per sala") }}</label>
-              <select class="form-select" id="venue_id" name="venue_id">
-                <option value="">{{ _("Tutte le sale") }}</option>
-                {% for venue in active_venues %}
-                <option value="{{ venue.id }}" {% if venue_filter == venue.id %}selected{% endif %}>{{ venue.name }}{% if venue.city %} — {{ venue.city }}{% endif %}</option>
-                {% endfor %}
-              </select>
-            </div>
-            <div class="col-md-3 d-grid">
-              <button type="submit" class="btn btn-outline-primary"><i class="fas fa-filter me-1"></i>{{ _("Filtra") }}</button>
-            </div>
-          </form>
-        </div>
+  {# ---------- Filtri ---------- #}
+  <div class="c7-card">
+    <div class="mb-3">
+      <label for="radius_km" class="form-label">{{ _("Quanto lontano") }}</label>
+      <div class="d-flex gap-2">
+        <input type="number" class="form-control" id="radius_km" name="radius_km"
+               min="1" max="100" value="{{ radius_km }}" style="max-width:110px">
+        <button type="button" class="btn btn-primary flex-fill" onclick="findNearMe()">
+          <i class="fas fa-location-crosshairs"></i>&nbsp;{{ _("Vicino a me") }}
+        </button>
       </div>
+      <div id="geo-status" class="form-text"></div>
+    </div>
 
-      {% if proximity_active %}
-      <div class="alert alert-info py-2">
-        <i class="fas fa-location-dot me-1"></i>
-        {% if proximity_origin == 'gps' %}
-          {{ _("Risultati ordinati per distanza dalla tua posizione, entro %(r)s km", r=radius_km) }}
-        {% else %}
-          {{ _("Posizione non disponibile: uso la tua città, entro %(r)s km", r=radius_km) }}
-        {% endif %}
-      </div>
-      {% endif %}
-
-      {# ---- Open proposals near you ---- #}
-      {% if near_proposals %}
-      <div class="card mb-3">
-        <div class="card-header"><i class="fas fa-bullhorn me-1"></i>{{ _("Proposte aperte vicino a te") }}</div>
-        <ul class="list-group list-group-flush">
-          {% for item in near_proposals %}
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            <span>
-              <i class="fas fa-map-marker-alt me-1"></i>{{ item.proposal.location_display }}
-              <span class="text-muted small ms-2">{{ item.proposal.scheduled_at|datetime_local }}</span>
-            </span>
-            <span class="badge bg-info text-dark">{{ _("a %(d)s km", d=item.distance_km) }}</span>
-          </li>
+    <form method="GET" action="{{ url_for('individual_match.discover_players') }}">
+      <label for="venue_id" class="form-label">{{ _("Oppure una sala") }}</label>
+      <div class="d-flex gap-2">
+        <select class="form-select" id="venue_id" name="venue_id">
+          <option value="">{{ _("Tutte le sale") }}</option>
+          {% for venue in active_venues %}
+          <option value="{{ venue.id }}" {% if venue_filter == venue.id %}selected{% endif %}>
+            {{ venue.name }}{% if venue.city %} — {{ venue.city }}{% endif %}
+          </option>
           {% endfor %}
-        </ul>
+        </select>
+        <button type="submit" class="btn btn-secondary c7-btn-narrow">{{ _("Filtra") }}</button>
       </div>
-      {% endif %}
+    </form>
 
-      {# ---- Venue results ---- #}
-      {% if not venue_groups and not placeless_groups %}
-      <div class="alert alert-info">
-        <i class="fas fa-info-circle me-1"></i>{{ _("Nessun giocatore disponibile trovato. Prova ad aumentare il raggio o a cambiare i filtri.") }}
-      </div>
-      {% endif %}
+    {% if venue_filter or proximity_active %}
+    <a href="{{ url_for('individual_match.discover_players') }}" class="btn btn-secondary w-100 mt-3">
+      {{ _("Mostra tutte le sale") }}
+    </a>
+    {% endif %}
+  </div>
 
-      {% for group in venue_groups %}
-      <div class="card mb-3">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <span>
-            <i class="fas fa-map-marker-alt me-1"></i>{{ group.name }}
-            {% if group.distance_km is not none %}<span class="badge bg-info text-dark ms-2">{{ _("a %(d)s km", d=group.distance_km) }}</span>{% endif %}
-          </span>
-          <span class="badge bg-secondary">{{ group.players|length }} {{ _("giocatori") }}</span>
-        </div>
-        <div class="card-body">
-          {% for player in group.players %}
-          <div class="border rounded p-3 mb-2">
-            {{ request_form(player, group.name) }}
-          </div>
-          {% endfor %}
-        </div>
+  {% if proximity_active %}
+  <div class="c7-flash c7-flash--info c7-flash--compact">
+    <span class="c7-flash__ico"><i class="fas fa-location-dot"></i></span>
+    <div class="c7-flash__body">
+      <div class="c7-flash__text">
+        {%- if proximity_origin == 'gps' %}
+        {{ _("Ordinate per distanza dalla tua posizione, entro %(r)s km", r=radius_km) }}
+        {%- else %}
+        {{ _("Posizione non disponibile: uso la tua città, entro %(r)s km", r=radius_km) }}
+        {%- endif %}
       </div>
-      {% endfor %}
-
-      {# ---- Venues without coordinates (proximity mode) ---- #}
-      {% if placeless_groups %}
-      <h6 class="text-muted mt-4"><i class="fas fa-location-slash me-1"></i>{{ _("Sale senza posizione") }}</h6>
-      <p class="small text-muted">{{ _("Queste sale non hanno coordinate, quindi non possono essere ordinate per distanza.") }}</p>
-      {% for group in placeless_groups %}
-      <div class="card mb-3">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <span><i class="fas fa-map-marker-alt me-1"></i>{{ group.name }}</span>
-          <span class="badge bg-secondary">{{ group.players|length }} {{ _("giocatori") }}</span>
-        </div>
-        <div class="card-body">
-          {% for player in group.players %}
-          <div class="border rounded p-3 mb-2">
-            {{ request_form(player, group.name) }}
-          </div>
-          {% endfor %}
-        </div>
-      </div>
-      {% endfor %}
-      {% endif %}
     </div>
   </div>
+  {% endif %}
+
+  {# ---------- Proposte aperte vicine ---------- #}
+  {% if near_proposals %}
+  <section class="c7-stack">
+    <div class="c7-sechead"><h2>{{ _("Proposte aperte vicino a te") }}</h2></div>
+    <div class="c7-rows">
+      {% for item in near_proposals %}
+      <div class="c7-rows__row">
+        <div class="c7-rows__main">
+          <div class="c7-rows__title">{{ item.proposal.location_display }}</div>
+          <div class="c7-rows__sub">{{ item.proposal.scheduled_at|datetime_local }}</div>
+        </div>
+        <span class="c7-state c7-state--info"><span class="c7-num">{{ item.distance_km }}</span>&nbsp;km</span>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  {# ---------- Risultati ---------- #}
+  {% if not venue_groups and not placeless_groups %}
+  <div class="c7-empty">
+    <div class="c7-empty__ico"><i class="fas fa-compass"></i></div>
+    <div class="c7-empty__title">{{ _("Nessun giocatore disponibile") }}</div>
+    <p class="c7-empty__text">
+      {{ _("Prova ad allargare il raggio o a togliere il filtro sulla sala. Puoi anche segnare le tue disponibilità: chi cerca vede anche te.") }}
+    </p>
+    <div class="c7-empty__actions">
+      <a href="{{ url_for('individual_match.manage_availability') }}" class="btn btn-primary">
+        {{ _("Le mie disponibilità") }}
+      </a>
+    </div>
+  </div>
+  {% endif %}
+
+  {% for group in venue_groups %}{{ venue_group(group) }}{% endfor %}
+
+  {% if placeless_groups %}
+  <section class="c7-stack">
+    <div class="c7-sechead">
+      <h2>{{ _("Sale senza posizione") }}</h2>
+      <span class="c7-sechead__note">{{ _("non ordinabili per distanza") }}</span>
+    </div>
+    {% for group in placeless_groups %}
+    <div class="c7-stack">
+      <div class="c7-label">{{ group.name }}</div>
+      <div class="c7-rows">
+        {% for player in group.players %}{{ player_row(player, group.name) }}{% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </section>
+  {% endif %}
 </div>
 {% endblock %}
 

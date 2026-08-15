@@ -49,7 +49,7 @@ __all__ = [
     "DirectorRequest",
     "VenueManagerRequest",
     "VenueManagement",
-    # Ruoli concedibili e delega (ADR-038)
+    # Ruoli concedibili e delega (ADR-041)
     "UserRole",
     "GrantableRole",
     "RoleGrant",

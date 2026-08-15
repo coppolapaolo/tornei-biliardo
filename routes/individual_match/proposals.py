@@ -16,6 +16,7 @@ from datetime import datetime, timedelta
 
 from models.individual_match.services import MatchProposalService
 from models.individual_match.models import MatchProposal, ProposalType
+from models.status_enum import Discipline
 from models.user.permissions import RoleRequirement
 from utils.route_helpers import safe_json_error
 
@@ -166,7 +167,9 @@ def create_proposal():
             rematch_params = {
                 "billiard_hall_id": request.args.get("billiard_hall_id", ""),
                 "location": request.args.get("location", ""),
-                "discipline": request.args.get("discipline", "palla_8"),
+                "discipline": request.args.get(
+                    "discipline", Discipline.EIGHT_BALL.value
+                ),
                 "match_format": request.args.get("match_format", "single"),
                 "set_distance": request.args.get("set_distance", "5"),
                 "distance": request.args.get("distance", "5"),
@@ -250,7 +253,7 @@ def create_proposal():
             "billiard_hall_id": billiard_hall_id,  # FK to BilliardHall (if found)
             "scheduled_at": scheduled_at,
             "expires_at": expires_at,
-            "discipline": data.get("discipline", "palla_8"),
+            "discipline": data.get("discipline", Discipline.EIGHT_BALL.value),
             "distance": distance,
             "is_race_to": is_race_to,
             "is_multi_set": is_multi_set,

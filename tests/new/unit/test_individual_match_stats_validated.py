@@ -76,7 +76,7 @@ def test_statistics_secondary_panels_populated(app, db_session, isolated_players
 
     stats = Stats.get_user_statistics(me.id)
 
-    # by_discipline: tutti palla_8 → 1 riga, 3 match, 2 vinti
+    # by_discipline: tutti 8_ball → 1 riga, 3 match, 2 vinti
     assert len(stats["by_discipline"]) == 1
     d = stats["by_discipline"][0]
     assert d["total_matches"] == 3 and d["wins"] == 2 and d["losses"] == 1

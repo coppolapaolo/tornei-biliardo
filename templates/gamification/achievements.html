@@ -1,187 +1,134 @@
 {% extends "base.html" %}
-{% block title %}{{ page_title }} - Campionato Biliardo{% endblock %}
+{% import "components/_gamification_labels.html" as gami with context %}
+{% block title %}{{ page_title }} - {{ config.APP_NAME }}{% endblock %}
+
+{# Testata: una sola per pagina, quella del guscio. La briciola di pane
+   "Gamification / Achievement" era l'unica in tutta l'app: al suo posto la
+   freccia di ritorno, come in ogni altra schermata 7c. #}
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('gamification.dashboard') }}"
+   aria-label="{{ _('Torna ai progressi') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _('Achievement') }}{% endblock %}
+{% block page_sub %}
+{{ _('%(done)s di %(tot)s', done=summary.total_unlocked, tot=summary.total_achievements) }}
+<span class="c7-sep">·</span> {{ summary.completion_percentage|round|int }}% {{ _('completato') }}
+{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <div class="row mb-4">
-        <div class="col-12">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('gamification.dashboard') }}">{{ _('Gamification') }}</a></li>
-                    <li class="breadcrumb-item active">{{ _('Achievement') }}</li>
-                </ol>
-            </nav>
-            <h1 class="mb-0"><i class="fas fa-medal me-2"></i>{{ page_title }}</h1>
-            <p class="text-muted">{{ _('Tutti i tuoi achievement e progressi') }}</p>
-        </div>
+{# Prototipo 11a, seconda schermata: riepilogo con barra a segmenti, poi gli
+   achievement per categoria come elenco — non una griglia di medaglie. La
+   difficolta' e' **una parola, non un colore**: via il viola inventato
+   (`bg-purple` in un `<style>` inline), via la gemma dorata. #}
+<div class="c7-stack c7-sections">
+
+  {# ---------- Riepilogo ---------- #}
+  <section class="c7-card">
+    {% set done = summary.total_unlocked %}
+    {% set todo = summary.total_achievements - summary.total_unlocked %}
+    <div class="d-flex" style="gap:6px">
+      <span style="flex:{{ done if done > 0 else 0.001 }};height:10px;border-radius:var(--c7-r-pill);background:var(--c7-accent)"></span>
+      <span style="flex:{{ todo if todo > 0 else 0.001 }};height:10px;border-radius:var(--c7-r-pill);background:var(--c7-bg)"></span>
     </div>
 
-    <!-- Summary Stats -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card text-center bg-success text-white">
-                <div class="card-body">
-                    <div class="display-5 fw-bold">{{ summary.total_unlocked }}</div>
-                    <small>{{ _('Sbloccati') }}</small>
-                </div>
-            </div>
+    <div class="d-flex justify-content-between" style="margin-top:14px">
+      <div>
+        <div style="font-size:24px;font-weight:800;letter-spacing:-.04em">{{ summary.total_unlocked }}</div>
+        <div class="c7-rows__sub">{{ _('Sbloccati') }}</div>
+      </div>
+      <div>
+        <div style="font-size:24px;font-weight:800;letter-spacing:-.04em;color:var(--c7-ink-muted)">{{ summary.total_achievements }}</div>
+        <div class="c7-rows__sub">{{ _('Totali') }}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:24px;font-weight:800;letter-spacing:-.04em">
+          {{ summary.by_difficulty.get('LEGENDARY', {}).get('unlocked', 0) }}
         </div>
-        <div class="col-md-3">
-            <div class="card text-center bg-secondary text-white">
-                <div class="card-body">
-                    <div class="display-5 fw-bold">{{ summary.total_achievements }}</div>
-                    <small>{{ _('Totali') }}</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-center bg-info text-white">
-                <div class="card-body">
-                    <div class="display-5 fw-bold">{{ summary.completion_percentage|round(1) }}%</div>
-                    <small>{{ _('Completamento') }}</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-center bg-warning text-dark">
-                <div class="card-body">
-                    <div class="display-5 fw-bold">
-                        {{ summary.by_difficulty.get('LEGENDARY', {}).get('unlocked', 0) }}
-                    </div>
-                    <small>{{ _('Leggendari') }}</small>
-                </div>
-            </div>
-        </div>
+        <div class="c7-rows__sub">{{ _('Leggendari') }}</div>
+      </div>
+    </div>
+  </section>
+
+  {# ---------- Per categoria ---------- #}
+  {% for category, achievements in achievements_by_category.items() %}
+  <section class="c7-stack">
+    <div class="c7-sechead">
+      <h2>{{ gami.category_labels.get(category, category|capitalize) }}</h2>
+      <span class="c7-sechead__note c7-num">
+        {{ achievements|selectattr('is_unlocked')|list|length }} / {{ achievements|length }}
+      </span>
     </div>
 
-    <!-- Achievements by Category -->
-    {% for category, achievements in achievements_by_category.items() %}
-    <div class="card mb-4">
-        <div class="card-header">
-            <h5 class="mb-0">
-                {% if category == 'match' %}
-                <i class="fas fa-shield-halved text-primary me-2"></i>{{ _('Partite') }}
-                {% elif category == 'tournament' %}
-                <i class="fas fa-trophy text-warning me-2"></i>{{ _('Tornei') }}
-                {% elif category == 'social' %}
-                <i class="fas fa-users text-info me-2"></i>{{ _('Social') }}
-                {% elif category == 'skill' %}
-                <i class="fas fa-star text-success me-2"></i>{{ _('Abilita') }}
-                {% elif category == 'consistency' %}
-                <i class="fas fa-calendar-check text-danger me-2"></i>{{ _('Costanza') }}
-                {% elif category == 'exploration' %}
-                <i class="fas fa-compass text-secondary me-2"></i>{{ _('Esplorazione') }}
-                {% elif category == 'milestone' %}
-                <i class="fas fa-flag-checkered text-dark me-2"></i>{{ _('Traguardi') }}
-                {% else %}
-                <i class="fas fa-award me-2"></i>{{ category|capitalize }}
-                {% endif %}
-                <span class="badge bg-secondary ms-2">
-                    {{ achievements|selectattr('is_unlocked')|list|length }}/{{ achievements|length }}
-                </span>
-            </h5>
+    <div class="c7-stack" style="gap:10px">
+      {% for ua in achievements %}
+      {% set achievement = ua.achievement %}
+      {% set is_secret = achievement.is_hidden and not ua.is_unlocked %}
+      <article class="c7-card {{ 'c7-dim' if not ua.is_unlocked }}"
+               style="display:flex;align-items:center;gap:14px">
+        {# Tessera: piena a sbloccato, affossata altrimenti. #}
+        {% if achievement.icon_path and not is_secret %}
+        <img src="{{ achievement.icon_path }}" alt="" width="44" height="44"
+             style="border-radius:var(--c7-r-control);flex-shrink:0">
+        {% else %}
+        <div class="c7-tile {{ '' if ua.is_unlocked else 'c7-tile--locked' }}">
+          {%- if is_secret %}<i class="fas fa-question"></i>
+          {%- elif ua.is_unlocked %}<i class="fas {{ gami.category_icons.get(category, 'fa-trophy') }}"></i>
+          {%- else %}<i class="fas fa-lock"></i>{% endif %}
         </div>
-        <div class="card-body">
-            <div class="row g-3">
-                {% for ua in achievements %}
-                {% set achievement = ua.achievement %}
-                <div class="col-md-4 col-lg-3">
-                    <div class="card h-100 achievement-card {% if ua.is_unlocked %}unlocked border-success{% else %}locked border-secondary{% endif %}">
-                        <div class="card-body text-center">
-                            <!-- Icon -->
-                            <div class="mb-2 position-relative">
-                                {% if achievement.is_hidden and not ua.is_unlocked %}
-                                <i class="fas fa-question fa-3x text-muted"></i>
-                                {% elif achievement.icon_path %}
-                                <img src="{{ achievement.icon_path }}"
-                                     alt="{{ achievement.name }}"
-                                     style="width: 64px; height: 64px;"
-                                     class="{% if not ua.is_unlocked %}opacity-50{% endif %}">
-                                {% else %}
-                                <i class="fas fa-trophy fa-3x {% if ua.is_unlocked %}text-warning{% else %}text-muted{% endif %}"></i>
-                                {% endif %}
+        {% endif %}
 
-                                <!-- Difficulty Badge -->
-                                <span class="position-absolute top-0 end-0 badge
-                                    {% if achievement.difficulty.value == 'legendary' %}bg-warning text-dark
-                                    {% elif achievement.difficulty.value == 'epic' %}bg-purple
-                                    {% elif achievement.difficulty.value == 'rare' %}bg-info
-                                    {% elif achievement.difficulty.value == 'uncommon' %}bg-success
-                                    {% else %}bg-secondary{% endif %}">
-                                    {% if achievement.difficulty.value == 'legendary' %}
-                                    <i class="fas fa-gem"></i>
-                                    {% elif achievement.difficulty.value == 'epic' %}
-                                    <i class="fas fa-star"></i>
-                                    {% elif achievement.difficulty.value == 'rare' %}
-                                    <i class="fas fa-certificate"></i>
-                                    {% else %}
-                                    <i class="fas fa-circle"></i>
-                                    {% endif %}
-                                </span>
-                            </div>
+        <div class="flex-fill" style="min-width:0">
+          <div style="font-size:14px;font-weight:800">
+            {{ _('Achievement nascosto') if is_secret else achievement.name }}
+          </div>
+          <div style="margin-top:3px;font-size:12px;font-weight:600;color:var(--c7-ink-muted);line-height:1.4">
+            {{ '???' if is_secret else achievement.description|truncate(70) }}
+          </div>
 
-                            <!-- Title -->
-                            <h6 class="card-title mb-1">
-                                {% if achievement.is_hidden and not ua.is_unlocked %}
-                                {{ _('Achievement Nascosto') }}
-                                {% else %}
-                                {{ achievement.name }}
-                                {% endif %}
-                            </h6>
-
-                            <!-- Description -->
-                            <p class="card-text small text-muted mb-2">
-                                {% if achievement.is_hidden and not ua.is_unlocked %}
-                                ???
-                                {% else %}
-                                {{ achievement.description|truncate(60) }}
-                                {% endif %}
-                            </p>
-
-                            <!-- Progress (for progressive achievements) -->
-                            {% if achievement.is_progressive and not ua.is_unlocked %}
-                            <div class="progress mb-2" style="height: 6px;">
-                                <div class="progress-bar bg-info"
-                                     role="progressbar"
-                                     style="width: {{ ua.progress_percentage }}%">
-                                </div>
-                            </div>
-                            <small class="text-muted">{{ ua.current_progress }} / {{ ua.progress_percentage|round(0)|int }}%</small>
-                            {% endif %}
-
-                            <!-- Unlock status -->
-                            {% if ua.is_unlocked %}
-                            <div class="text-success small">
-                                <i class="fas fa-check-circle me-1"></i>
-                                {{ ua.unlocked_at|datetime_local if ua.unlocked_at else _('Sbloccato') }}
-                            </div>
-                            {% endif %}
-
-                            <!-- XP Reward -->
-                            <div class="mt-2">
-                                <span class="badge bg-light text-dark">
-                                    <i class="fas fa-star text-warning me-1"></i>+{{ achievement.xp_reward }} XP
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
+          {% if ua.is_unlocked %}
+          <div style="margin-top:6px;font-size:11px;font-weight:700;color:var(--c7-ok)">
+            {% if ua.unlocked_at %}
+            {{ _('Sbloccato il') }} <span class="c7-num">{{ ua.unlocked_at|date_local }}</span>
+            {% else %}{{ _('Sbloccato') }}{% endif %}
+          </div>
+          {% elif achievement.is_progressive %}
+          <div class="progress" style="margin-top:8px;height:6px" role="progressbar"
+               aria-valuenow="{{ ua.progress_percentage|round|int }}" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-bar" style="width: {{ ua.progress_percentage }}%"></div>
+          </div>
+          {# "12 / 50", come il prototipo. Il traguardo non arriva dal servizio,
+             ma la percentuale lo determina: 12 al 24% sono 50. Diceva invece
+             "12 / 24%", che non vuol dire niente. #}
+          <div class="c7-rows__sub c7-num">
+            {{ ua.current_progress }}
+            {%- if ua.progress_percentage and ua.progress_percentage > 0 %}
+            / {{ (ua.current_progress / ua.progress_percentage * 100)|round|int }}
+            {%- endif %}
+          </div>
+          {% endif %}
         </div>
-    </div>
-    {% endfor %}
 
-    {% if not achievements_by_category %}
-    <div class="alert alert-info text-center">
-        <i class="fas fa-info-circle me-2"></i>{{ _('Nessun achievement disponibile al momento.') }}
+        {# Difficolta' e ricompensa: due righe di testo, nessun colore. #}
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:11px;font-weight:800;letter-spacing:.04em;color:var(--c7-ink-muted);text-transform:uppercase">
+            {{ gami.difficulty_labels.get(achievement.difficulty.value, achievement.difficulty.value) }}
+          </div>
+          {% if achievement.xp_reward and not is_secret %}
+          <div class="c7-num" style="margin-top:6px;font-size:12px;font-weight:800">+{{ achievement.xp_reward }}</div>
+          {% endif %}
+        </div>
+      </article>
+      {% endfor %}
     </div>
-    {% endif %}
+  </section>
+  {% endfor %}
+
+  {% if not achievements_by_category %}
+  <div class="c7-empty">
+    <div class="c7-empty__ico"><i class="fas fa-medal"></i></div>
+    <div class="c7-empty__title">{{ _('Nessun achievement disponibile') }}</div>
+    <p class="c7-empty__text">{{ _('Appena ce ne sono, li trovi qui divisi per categoria.') }}</p>
+  </div>
+  {% endif %}
 </div>
-
-<style>
-.bg-purple {
-    background-color: #6f42c1 !important;
-}
-</style>
 {% endblock %}

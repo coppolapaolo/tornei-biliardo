@@ -1,19 +1,25 @@
 {% extends 'base.html' %}
+{% block title %}{{ _('Gestione XP & Livelli') }}{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('gamification.admin_dashboard') }}"
+   aria-label="{{ _('Torna ai pannelli') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _('Gestione XP & Livelli') }}{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('gamification.admin_dashboard') }}" class="btn btn-secondary btn-sm d-none d-lg-inline-flex">
+  <i class="fas fa-arrow-left"></i>&nbsp;{{ _('Pannelli') }}
+</a>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="bi bi-graph-up-arrow"></i> {{ _('Gestione XP & Livelli') }}</h2>
-    <a href="{{ url_for('gamification.admin_dashboard') }}" class="btn btn-outline-secondary">
-      <i class="bi bi-arrow-left"></i> {{ _('Torna al Dashboard') }}
-    </a>
-  </div>
-
   <div class="row">
     <!-- Grant XP Form -->
     <div class="col-md-4">
       <div class="card mb-4">
         <div class="card-header bg-primary text-white">
-          <h5 class="mb-0"><i class="bi bi-gift"></i> {{ _('Concedi XP') }}</h5>
+          <h5 class="mb-0"><i class="fas fa-gift"></i> {{ _('Concedi XP') }}</h5>
         </div>
         <div class="card-body">
           <form method="POST" action="{{ url_for('gamification.admin_grant_xp') }}">
@@ -38,7 +44,7 @@
                      placeholder="{{ _('Es: Bonus evento speciale') }}">
             </div>
             <button type="submit" class="btn btn-primary w-100">
-              <i class="bi bi-send"></i> {{ _('Concedi XP') }}
+              <i class="fas fa-paper-plane"></i> {{ _('Concedi XP') }}
             </button>
           </form>
         </div>
@@ -47,7 +53,7 @@
       <!-- Reset Level Form -->
       <div class="card">
         <div class="card-header bg-danger text-white">
-          <h5 class="mb-0"><i class="bi bi-arrow-counterclockwise"></i> {{ _('Reset Livello') }}</h5>
+          <h5 class="mb-0"><i class="fas fa-rotate-left"></i> {{ _('Reset Livello') }}</h5>
         </div>
         <div class="card-body">
           <p class="text-muted small">{{ _('Resetta il livello di un utente a 1. I dati XP storici vengono preservati.') }}</p>
@@ -63,7 +69,7 @@
               </select>
             </div>
             <button type="submit" class="btn btn-danger w-100">
-              <i class="bi bi-exclamation-triangle"></i> {{ _('Reset Livello') }}
+              <i class="fas fa-triangle-exclamation"></i> {{ _('Reset Livello') }}
             </button>
           </form>
         </div>
@@ -74,7 +80,7 @@
     <div class="col-md-8">
       <div class="card">
         <div class="card-header">
-          <h5 class="mb-0"><i class="bi bi-clock-history"></i> {{ _('Transazioni Recenti') }}</h5>
+          <h5 class="mb-0"><i class="fas fa-clock-rotate-left"></i> {{ _('Transazioni Recenti') }}</h5>
         </div>
         <div class="card-body">
           <table class="table table-sm table-hover">

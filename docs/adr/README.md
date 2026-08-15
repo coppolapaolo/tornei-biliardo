@@ -42,6 +42,18 @@ Crea un ADR quando:
 | ADR-026 | [Reset Match Preserves Pair Semantics](ADR-026-reset-match-preserves-pair-semantics.md) | Accepted | 2026-04 |
 | ADR-027 | [Round-level Configuration Enforcement](ADR-027-round-level-configuration-enforcement.md) | Accepted | 2026-05 |
 | ADR-028 | [Production Endpoint Allowlist](ADR-028-production-endpoint-allowlist.md) | Accepted | 2026-05-09 |
+| ADR-029 | [Amalfi: garanzia zero-rematch nel caso pari](ADR-029-amalfi-zero-rematch-guarantee.md) | Accepted | 2026-05-10 |
+| ADR-030 | [`Campionato.is_active` non implica "in corso"](ADR-030-campionato-is-active-vs-derived-status.md) | Accepted | 2026-05-12 |
+| ADR-031 | [Modello di gating della gamification](ADR-031-gamification-gating-model.md) | Proposed | 2026-06-05 |
+| ADR-032 | [Consolidamento della superficie di disponibilità](ADR-032-availability-surface-consolidation.md) | Accepted | 2026-06-06 |
+| ADR-033 | [Rimozione della disponibilità "località" a testo libero](ADR-033-remove-free-text-locality-availability.md) | Accepted | 2026-06 |
+| ADR-034 | [Modello geografico / di prossimità](ADR-034-geo-proximity-model.md) | Accepted | 2026-06 |
+| ADR-035 | [Onboarding obbligatorio + backfill](ADR-035-mandatory-onboarding.md) | Accepted | 2026-06 |
+| ADR-036 | [Segnale-domanda → director](ADR-036-demand-signal-to-director.md) | Accepted | 2026-06 |
+| ADR-037 | [Leaderboard locale + contributo](ADR-037-local-contribution-leaderboard.md) | Accepted | 2026-06 |
+| ADR-038 | [Il tabellone è un dato, non una ricostruzione](ADR-038-bracket-persistence.md) | Accepted | 2026-08-15 |
+| ADR-039 | [Squadre: due livelli, e un sorteggio che rinvia i derby](ADR-039-team-separation-in-the-draw.md) | Accepted | 2026-08-15 |
+| ADR-040 | [Classifica per posizione: pari merito voluti](ADR-040-position-classification-ties.md) | Accepted | 2026-08-15 |
 
 ## Come Creare un Nuovo ADR
 

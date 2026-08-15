@@ -49,7 +49,7 @@ def _make_match(db_session, players, scheduled_at) -> IndividualMatch:
         player2_id=player2.id,
         scheduled_at=scheduled_at,
         status=MatchStatus.SCHEDULED.value,
-        discipline="palla_8",
+        discipline="8_ball",
         distance=5,
     )
     db_session.add(match)

@@ -1,122 +1,89 @@
-{# templates/components/_classification_mobile.html #}
-{# Mobile-friendly classification with compact/full toggle #}
-{# Expects: classification, round_number #}
-{# Optional: ssr_scores_map (from parent context) #}
+{# templates/components/_classification_mobile.html — 7c #}
+{# Classifica compatta/completa. Expects: classification, round_number. Optional: ssr_scores_map #}
 
 {% if classification %}
 {# B14: respect gara.classification_system. RACK → only racks; else → wins + racks. #}
 {% set classification_sys = (gara.classification_system or 'WINS')|upper %}
 {% set is_rack_only = classification_sys == 'RACK' %}
-<div class="card mt-3">
-  <div class="card-header py-2 d-flex justify-content-between align-items-center">
-    <h6 class="mb-0"><i class="fas fa-trophy"></i> {{ _('Classifica') }}</h6>
-    <select class="form-select form-select-sm" style="width: auto;"
-            onchange="toggleClassificationView(this.value)" id="classificationViewToggle">
-      <option value="compact">{{ _('Compatta') }}</option>
-      <option value="full">{{ _('Completa') }}</option>
-    </select>
-  </div>
-  <div class="card-body py-2">
-    {# Compact view (default) #}
-    <div id="classificationCompact">
-      <table class="table table-sm mb-0">
-        <tbody>
-          {% for entry in classification[:6] %}
-          <tr>
-            <td style="width: 40px;">
-              {% if loop.index == 1 %}
-              <span class="text-warning"><i class="fas fa-medal"></i></span>
-              {% elif loop.index == 2 %}
-              <span class="text-secondary"><i class="fas fa-medal"></i></span>
-              {% elif loop.index == 3 %}
-              <span class="text-danger"><i class="fas fa-medal"></i></span>
-              {% else %}
-              <span class="text-muted">{{ loop.index }}°</span>
-              {% endif %}
-            </td>
-            <td><strong>{{ entry.user.username }}</strong></td>
-            <td class="text-end">
-              {# Show SSR badge first (left), then wins+rack (right) for alignment #}
-              {% if ssr_scores_map is defined and ssr_scores_map %}
-                {% set ssr_score = ssr_scores_map.get(entry.user_id) %}
-                {% if ssr_score is not none %}
-                <span class="badge bg-warning text-dark me-1" title="SSR">{{ ssr_score }}</span>
-                {% endif %}
-              {% endif %}
-              {% if not is_rack_only %}
-                <span class="badge bg-success me-1" title="{{ _('Vittorie') }}">{{ entry.matches_won }}</span>
-              {% endif %}
-              <span class="badge bg-secondary" title="{% if is_rack_only %}{{ _('Rack Totali') }}{% else %}{{ _('Diff. Rack') }}{% endif %}">{{ entry.ranking_rack_value }}</span>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      {% if classification|length > 6 %}
-      <div class="text-center mt-2">
-        <button class="btn btn-sm btn-link" onclick="document.getElementById('classificationViewToggle').value='full'; toggleClassificationView('full');">
-          {{ _('Mostra tutti (%(count)s)', count=classification|length) }}
-        </button>
-      </div>
-      {% endif %}
+<section class="c7-stack" style="margin-top: 16px;">
+  <div class="d-flex align-items-center justify-content-between" style="gap: 12px;">
+    <h3 style="margin: 0;">{{ _('Classifica') }}</h3>
+    <div style="display: flex; gap: 6px;">
+      <button type="button" class="c7-pill is-active" id="classPillCompact" onclick="toggleClassificationView('compact')">{{ _('Prime 6') }}</button>
+      <button type="button" class="c7-pill" id="classPillFull" onclick="toggleClassificationView('full')">{{ _('Tutti') }}</button>
     </div>
+  </div>
 
-    {# Full view (hidden by default) #}
-    <div id="classificationFull" style="display: none;">
-      {% for entry in classification %}
-      <div class="border-bottom py-2 {% if loop.index <= 3 %}bg-light{% endif %}">
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            {% if loop.index == 1 %}
-            <span class="text-warning"><i class="fas fa-medal"></i></span>
-            {% elif loop.index == 2 %}
-            <span class="text-secondary"><i class="fas fa-medal"></i></span>
-            {% elif loop.index == 3 %}
-            <span class="text-danger"><i class="fas fa-medal"></i></span>
-            {% else %}
-            <span class="text-muted">{{ loop.index }}°</span>
-            {% endif %}
-            <strong class="ms-2">{{ entry.user.username }}</strong>
-          </div>
-          <div class="text-end">
-            {# Show SSR badge first (left), then wins+rack (right) for alignment #}
-            {% if ssr_scores_map is defined and ssr_scores_map %}
-              {% set ssr_score = ssr_scores_map.get(entry.user_id) %}
-              {% if ssr_score is not none %}
-              <span class="badge bg-warning text-dark me-1" title="SSR">{{ ssr_score }}</span>
-              {% endif %}
-            {% endif %}
-            {% if not is_rack_only %}
-              <span class="badge bg-success me-1" title="{{ _('Vittorie') }}">{{ entry.matches_won }}</span>
-            {% endif %}
-            <span class="badge bg-secondary" title="{% if is_rack_only %}{{ _('Rack Totali') }}{% else %}{{ _('Diff. Rack') }}{% endif %}">{{ entry.ranking_rack_value }}</span>
-          </div>
-        </div>
-        <div class="small text-muted mt-1 ms-4">
-          {% if entry.previous_position %}
-          {{ _('Pos. Turno Prec:') }} {{ entry.previous_position }}°
-          {% set movimento = entry.previous_position - entry.position %}
-          {% if movimento > 0 %}
-          <span class="text-success"><i class="fas fa-arrow-up"></i> +{{ movimento }}</span>
-          {% elif movimento < 0 %}
-          <span class="text-danger"><i class="fas fa-arrow-down"></i> {{ movimento }}</span>
-          {% else %}
-          <span class="text-muted">=</span>
-          {% endif %}
-          {% else %}
-          {{ _('Pos. Turno Prec:') }} — <span class="text-muted">=</span>
-          {% endif %}
-        </div>
-      </div>
-      {% endfor %}
+  {# Vista compatta (default) #}
+  <div id="classificationCompact" class="c7-card" style="padding: 6px 0;">
+    {% for entry in classification[:6] %}
+    <div style="display: flex; align-items: center; gap: 12px; padding: 11px 16px; {% if not loop.last %}border-bottom: 1px solid var(--c7-line-soft);{% endif %}">
+      <span class="c7-num" style="width: 26px; text-align: center; color: {% if loop.index <= 3 %}var(--c7-accent){% else %}var(--c7-ink-faint){% endif %};">{{ loop.index }}</span>
+      <strong style="flex: 1; min-width: 0;">{{ entry.user.username }}</strong>
+      {% if ssr_scores_map is defined and ssr_scores_map %}
+        {% set ssr_score = ssr_scores_map.get(entry.user_id) %}
+        {% if ssr_score is not none %}
+        <span class="c7-state c7-state--warn" title="{{ _('Spot Shot Rally') }}">SSR {{ ssr_score }}</span>
+        {% endif %}
+      {% endif %}
+      {% if not is_rack_only %}
+      <span class="c7-num" title="{{ _('Vittorie') }}">{{ entry.matches_won }}</span>
+      {% endif %}
+      <span class="c7-num" style="color: var(--c7-ink-muted); min-width: 34px; text-align: right;" title="{% if is_rack_only %}{{ _('Rack totali') }}{% else %}{{ _('Differenza rack') }}{% endif %}">{{ entry.ranking_rack_value }}</span>
     </div>
+    {% endfor %}
+    {% if classification|length > 6 %}
+    <div style="padding: 10px 16px 4px;">
+      <button type="button" class="btn btn-link" onclick="toggleClassificationView('full')">{{ _('Mostra tutti (%(count)s)', count=classification|length) }}</button>
+    </div>
+    {% endif %}
   </div>
-</div>
+
+  {# Vista completa #}
+  <div id="classificationFull" class="c7-card" style="display: none; padding: 6px 0;">
+    {% for entry in classification %}
+    <div style="padding: 12px 16px; {% if not loop.last %}border-bottom: 1px solid var(--c7-line-soft);{% endif %}">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span class="c7-num" style="width: 26px; text-align: center; color: {% if loop.index <= 3 %}var(--c7-accent){% else %}var(--c7-ink-faint){% endif %};">{{ loop.index }}</span>
+        <strong style="flex: 1; min-width: 0;">{{ entry.user.username }}</strong>
+        {% if ssr_scores_map is defined and ssr_scores_map %}
+          {% set ssr_score = ssr_scores_map.get(entry.user_id) %}
+          {% if ssr_score is not none %}
+          <span class="c7-state c7-state--warn" title="{{ _('Spot Shot Rally') }}">SSR {{ ssr_score }}</span>
+          {% endif %}
+        {% endif %}
+        {% if not is_rack_only %}
+        <span class="c7-num" title="{{ _('Vittorie') }}">{{ entry.matches_won }}</span>
+        {% endif %}
+        <span class="c7-num" style="color: var(--c7-ink-muted); min-width: 34px; text-align: right;">{{ entry.ranking_rack_value }}</span>
+      </div>
+      <div class="text-muted" style="font-size: 12px; margin: 5px 0 0 38px;">
+        {% if entry.previous_position %}
+        {{ _('Turno precedente') }}: <span class="c7-num">{{ entry.previous_position }}</span>
+        {% set movimento = entry.previous_position - entry.position %}
+        {% if movimento > 0 %}
+        <span style="color: var(--c7-ok);"><i class="fas fa-arrow-up"></i> +{{ movimento }}</span>
+        {% elif movimento < 0 %}
+        <span style="color: var(--c7-err);"><i class="fas fa-arrow-down"></i> {{ movimento }}</span>
+        {% else %}
+        <span>=</span>
+        {% endif %}
+        {% else %}
+        {{ _('Turno precedente') }}: —
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
 
 <script>
 function toggleClassificationView(view) {
-  document.getElementById('classificationCompact').style.display = view === 'compact' ? 'block' : 'none';
-  document.getElementById('classificationFull').style.display = view === 'full' ? 'block' : 'none';
+  var compact = view === 'compact';
+  document.getElementById('classificationCompact').style.display = compact ? 'block' : 'none';
+  document.getElementById('classificationFull').style.display = compact ? 'none' : 'block';
+  document.getElementById('classPillCompact').classList.toggle('is-active', compact);
+  document.getElementById('classPillFull').classList.toggle('is-active', !compact);
 }
 </script>
 {% endif %}

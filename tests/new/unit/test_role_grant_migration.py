@@ -1,4 +1,4 @@
-"""Test della migration 20260809_add_role_grant_tables (ADR-038).
+"""Test della migration 20260809_add_role_grant_tables (ADR-041).
 
 Il rischio vero di questa migration non è che fallisca: è che **diverga** dai
 modelli. In sviluppo e nei test le tabelle nascono da ``db.create_all()``, in

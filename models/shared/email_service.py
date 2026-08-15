@@ -10,11 +10,17 @@ from flask import current_app
 from flask_mail import Message
 from markupsafe import escape
 
+from config import Config
+
 from ..base import mail
 from ..user.models import User
 from ..user.tokens import UserToken
 
 logger = logging.getLogger(__name__)
+
+# Il nome dell'app arriva da Config e non da current_app: queste stringhe
+# servono anche fuori da una richiesta (thread di invio, script da console).
+APP_NAME = Config.APP_NAME
 
 
 class EmailService:
@@ -27,7 +33,7 @@ class EmailService:
 
     @staticmethod
     def _get_sender() -> str:
-        DEFAULT = "Campionato Biliardo <noreply@campionato.local>"
+        DEFAULT = f"{APP_NAME} <noreply@torneibiliardo.it>"
         try:
             return (
                 current_app.config.get("MAIL_DEFAULT_SENDER")
@@ -88,13 +94,13 @@ class EmailService:
         """Send verification email to user."""
         verification_url = f"{base_url}/auth/verify-email/{token.token}"
 
-        subject = "Verifica il tuo account - Campionato Biliardo"
+        subject = f"Verifica il tuo account - {APP_NAME}"
         # XSS fix: lo username è dato utente non vincolato e finisce in HTML.
         # Va escapato (markupsafe) per non iniettare markup nell'email.
         safe_username = escape(user.username)
         html_content = f"""
         <h1>Benvenuto {safe_username}!</h1>
-        <p>Grazie per esserti registrato al Campionato Biliardo.</p>
+        <p>Grazie per esserti registrato a {APP_NAME}.</p>
         <p>Per favore, verifica la tua email cliccando sul link sottostante:</p>
         <p><a href="{verification_url}">Verifica Email</a></p>
         <p>Se non hai richiesto questa registrazione, puoi ignorare questa email.</p>
@@ -108,7 +114,7 @@ class EmailService:
         """Send password reset email to user."""
         reset_url = f"{base_url}/auth/reset-password/{token.token}"
 
-        subject = "Reset Password - Campionato Biliardo"
+        subject = f"Reset Password - {APP_NAME}"
         safe_username = escape(user.username)  # XSS: escape dato utente in HTML
         html_content = f"""
         <h1>Reset Password</h1>

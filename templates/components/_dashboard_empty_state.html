@@ -1,15 +1,14 @@
-<!-- Unified Dashboard Empty State Component -->
-<div class="alert alert-info text-center">
-  <h4><i class="fas fa-trophy"></i> Benvenuto!</h4>
+<!-- Stato vuoto dashboard — 7c -->
+<div class="c7-empty">
+  <div class="c7-empty__ico"><i class="fas fa-trophy"></i></div>
   {% if current_user.is_admin %}
-  <p>Non ci sono ancora campionati configurati. Inizia creando il tuo primo campionato!</p>
-  <p class="text-muted mt-3">Usa il pulsante "Nuovo Campionato" nell'intestazione per creare il tuo primo campionato.
-  </p>
+  <h2 class="c7-empty__title">{{ _('Nessun campionato configurato') }}</h2>
+  <p class="c7-empty__text">{{ _('Crea il primo campionato dal pulsante in testata: da lì definisci gare, turni e playoff.') }}</p>
   {% elif show_director_management %}
-  <p>Non ci sono ancora campionati o gare da gestire.</p>
-  <p class="text-muted mt-3">Puoi creare nuovi campionati o gare usando i pulsanti nell'intestazione.</p>
+  <h2 class="c7-empty__title">{{ _('Niente da gestire, per ora') }}</h2>
+  <p class="c7-empty__text">{{ _('Puoi creare un campionato o una singola gara dai pulsanti in testata.') }}</p>
   {% else %}
-  <p>Non ci sono ancora campionati attivi a cui puoi partecipare.</p>
-  <p class="text-muted mt-3">Controlla più tardi per nuove opportunità di gioco.</p>
+  <h2 class="c7-empty__title">{{ _('Nessun campionato attivo') }}</h2>
+  <p class="c7-empty__text">{{ _('Non ci sono campionati aperti a cui iscriverti. Torna più tardi o guarda le gare nella tua zona.') }}</p>
   {% endif %}
 </div>

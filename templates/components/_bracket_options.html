@@ -1,0 +1,84 @@
+{# templates/components/_bracket_options.html — 7c
+
+   Le opzioni che esistono **solo** sui formati a tabellone: separazione dei
+   compagni di squadra (US-6), finale per il 3°/4° posto (US-7, solo
+   eliminazione diretta) e turni di doppio KO dentro il girone della formula
+   FISBB (Step 12).
+
+   Il blocco e' nascosto finché la strategia scelta non e' a tabellone: chi
+   organizza un girone non deve nemmeno sapere che esistono. Lo scoprimento lo
+   fa `static/js/bracket_options.js`, condiviso fra creazione e modifica —
+   sono due schermate diverse ma la regola e' una sola.
+
+   Attese dal chiamante: `gara` (assente in creazione). Il componente si
+   include una volta per pagina: ha degli id, che il JS usa. #}
+
+{% set g = gara if gara is defined else None %}
+
+{# La nota accanto al sistema di classifica la scrive il JS, ma il testo
+   arriva da qui: dentro un file .js non passerebbe da `_()`. #}
+<div class="mb-3" id="bracket_options_section" style="display:none"
+     data-classification-note="{{ _('Sui formati a tabellone la classifica è per posizione nel tabellone.') }}">
+  <div class="c7-card" style="background:var(--c7-bg)">
+    <div class="c7-kicker mb-3">{{ _('Opzioni del tabellone') }}</div>
+
+    {# US-6: spenta di default — chi non usa le squadre non vede cambiare
+       nulla, e il campo squadra non compare da nessuna parte. #}
+    <label class="c7-card d-flex align-items-center gap-3 mb-0" style="cursor:pointer">
+      <span class="flex-fill">
+        <span class="c7-choice__title d-block">{{ _('Evita incontri fra compagni di squadra nei primi turni') }}</span>
+        <span class="c7-choice__desc d-block">
+          {{ _('Il sorteggio allontana i compagni il più possibile. Con squadre molto numerose l’incontro viene rinviato, non evitato: se una società porta più giocatori di quanti siano i rami del tabellone, un derby è matematicamente inevitabile.') }}
+        </span>
+      </span>
+      <span class="form-check form-switch m-0">
+        <input class="form-check-input m-0" type="checkbox" role="switch"
+               id="separate_teammates" name="separate_teammates"
+               {% if g and g.separate_teammates %}checked{% endif %}>
+      </span>
+    </label>
+
+    {# US-7: solo eliminazione diretta. Nel doppio KO il terzo posto lo decide
+       già il tabellone, quindi la voce non si mostra proprio. #}
+    <div id="third_place_row" style="margin-top:10px">
+      <label class="c7-card d-flex align-items-center gap-3 mb-0" style="cursor:pointer">
+        <span class="flex-fill">
+          <span class="c7-choice__title d-block">{{ _('Finale per il 3°/4° posto') }}</span>
+          <span class="c7-choice__desc d-block">
+            {{ _('I due semifinalisti sconfitti si giocano il terzo posto, nello stesso turno della finale. Senza, sono terzi a pari merito.') }}
+          </span>
+        </span>
+        <span class="form-check form-switch m-0">
+          <input class="form-check-input m-0" type="checkbox" role="switch"
+                 id="third_place_match" name="third_place_match"
+                 {% if g and g.third_place_match %}checked{% endif %}>
+        </span>
+      </label>
+    </div>
+
+    {# Formula FISBB: il girone è il doppio KO fermato prima. La taglia del
+       girone discende dai turni (G = 2^(w+1)), quindi si sceglie quella e non
+       due parametri che possono contraddirsi. #}
+    <div id="double_ko_rounds_row" style="margin-top:14px">
+      <label for="double_ko_rounds" class="form-label">{{ _('Fase a gironi') }}</label>
+      <select class="form-select" id="double_ko_rounds" name="double_ko_rounds">
+        <option value="" {% if not (g and g.double_ko_rounds) %}selected{% endif %}>
+          {{ _('Nessuna — un tabellone solo') }}
+        </option>
+        <option value="2" {% if g and g.double_ko_rounds == 2 %}selected{% endif %}>
+          {{ _('Gironi da 8 — doppio KO nei primi 2 turni (formula FISBB)') }}
+        </option>
+        <option value="3" {% if g and g.double_ko_rounds == 3 %}selected{% endif %}>
+          {{ _('Gironi da 16 — doppio KO nei primi 3 turni') }}
+        </option>
+      </select>
+      <div class="form-text">
+        {{ _('Ogni girone qualifica quattro giocatori al tabellone finale: due imbattuti e due ripescati.') }}
+      </div>
+    </div>
+
+    <div class="form-text" style="margin-top:14px">
+      {{ _('Sul tabellone la classifica è per posizione, e il numero massimo di iscritti è obbligatorio: dichiara la capienza e dà la stima dei turni. Il tabellone vero viene poi dimensionato sugli iscritti effettivi al momento del sorteggio.') }}
+    </div>
+  </div>
+</div>

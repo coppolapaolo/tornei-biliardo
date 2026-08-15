@@ -1,25 +1,7 @@
-{# Distance Configurator Component (Phase 6: Multi-Set Support)
+{# Configuratore distanza — 7c
 
-Progressive Disclosure UI for configuring match distance:
-- Single-set (racks only)
-- Multi-set (sets + racks per set)
-
-Parameters:
-- distance: Target score (racks to win the set)
-- is_race_to: Boolean - race-to vs exact racks (required)
-- is_multi_set: Boolean - enable multi-set mode (optional, default false)
-- match_distance: Number of sets (optional)
-- is_race_to_sets: Boolean - race-to vs exact sets (optional, default true)
-- required: Boolean - make fields required (optional, default true)
-
-Usage (in template that includes this component):
-    - For create form (uses defaults):
-      include "components/_distance_configurator.html"
-
-    - For edit form (passes gara values):
-      with distance=gara.distance, is_race_to=gara.is_race_to, is_multi_set=gara.is_multi_set, match_distance=gara.match_distance, is_race_to_sets=gara.is_race_to_sets
-      include "components/_distance_configurator.html"
-      endwith
+Parametri:
+- distance, is_race_to, is_multi_set, match_distance, is_race_to_sets, required
 #}
 
 {% set distance_value = distance if distance is defined else 4 %}
@@ -29,143 +11,103 @@ Usage (in template that includes this component):
 {% set is_race_to_sets_value = is_race_to_sets if is_race_to_sets is defined else True %}
 {% set is_required = required if required is defined else True %}
 
-<div class="card mb-3" id="distance-configuration">
-    <div class="card-header">
-        <h6><i class="fas fa-ruler"></i> Configurazione Distanza</h6>
+<section class="c7-stack" id="distance-configuration">
+    <div class="c7-label">{{ _('Distanza') }}</div>
+
+    {# Rack per set: stepper, non campo numerico #}
+    <div class="c7-stepper">
+        <div class="c7-stepper__row">
+            <button type="button" onclick="stepDistance(-1)" aria-label="{{ _('Meno un rack') }}"><i class="fas fa-minus"></i></button>
+            <input type="number" class="c7-stepper__value" id="distance" name="distance" min="1" max="15"
+                   value="{{ distance_value }}" onchange="updateDistancePreview()"
+                   style="border: 0; background: transparent; width: 100%;" {% if is_required %}required{% endif %}>
+            <button type="button" onclick="stepDistance(1)" aria-label="{{ _('Più un rack') }}"><i class="fas fa-plus"></i></button>
+        </div>
+        <div class="c7-stepper__hint" id="preview-text">{{ _('Rack per set') }}</div>
     </div>
-    <div class="card-body">
-        <!-- Rack Configuration (always visible) -->
-        <div class="row">
-            <div class="col-md-6">
-                <div class="mb-3">
-                    <label for="distance" class="form-label">
-                        Rack per Set
-                        {% if is_required %}<span class="text-danger">*</span>{% endif %}
-                    </label>
-                    <input type="number"
-                           class="form-control"
-                           id="distance"
-                           name="distance"
-                           min="1"
-                           max="15"
-                           value="{{ distance_value }}"
-                           onchange="updateDistancePreview()"
-                           {% if is_required %}required{% endif %}>
-                    <small class="text-muted">Target di rack per vincere il set (es. "Al 4")</small>
-                </div>
-            </div>
 
-            <div class="col-md-6">
-                <div class="mb-3">
-                    <label class="form-label">Modalità Rack</label>
-                    <div class="form-check">
-                        <input class="form-check-input"
-                               type="checkbox"
-                               id="exact_number"
-                               name="exact_number"
-                               onchange="updateDistancePreview()"
-                               {% if not is_race_to_value %}checked{% endif %}>
-                        <label class="form-check-label" for="exact_number">
-                            Numero esatto di rack
-                        </label>
-                        <small class="form-text text-muted d-block">
-                            Se non selezionato: "Al N" (si vince a N rack)<br>
-                            Se selezionato: "Esattamente N rack" (si giocano tutti)
-                        </small>
-                    </div>
-                </div>
+    {# Modalità rack #}
+    <label class="c7-choice" for="exact_number">
+        <input class="form-check-input" type="checkbox" id="exact_number" name="exact_number"
+               onchange="updateDistancePreview()" {% if not is_race_to_value %}checked{% endif %}>
+        <span>
+            <span class="c7-choice__title">{{ _('Numero esatto di rack') }}</span>
+            <span class="c7-choice__desc">{{ _('Si giocano tutti i rack invece di fermarsi al primo che arriva alla distanza.') }}</span>
+        </span>
+    </label>
+
+    {# Multi-set #}
+    <label class="c7-choice" for="is_multi_set">
+        <input class="form-check-input" type="checkbox" id="is_multi_set" name="is_multi_set"
+               onchange="toggleMultiSetOptions()" {% if is_multi_set_value %}checked{% endif %}>
+        <span>
+            <span class="c7-choice__title">{{ _('Partita a set') }}</span>
+            <span class="c7-choice__desc">{{ _('La partita si divide in più set, come nei tornei professionali.') }}</span>
+        </span>
+    </label>
+
+    <div id="multi-set-config" style="display: {% if is_multi_set_value %}block{% else %}none{% endif %};">
+        <div class="c7-stepper">
+            <div class="c7-stepper__row">
+                <button type="button" onclick="stepSets(-1)" aria-label="{{ _('Meno un set') }}"><i class="fas fa-minus"></i></button>
+                <input type="number" class="c7-stepper__value" id="match_distance" name="match_distance" min="1" max="9"
+                       value="{{ match_distance_value }}" onchange="updateDistancePreview()"
+                       style="border: 0; background: transparent; width: 100%;">
+                <button type="button" onclick="stepSets(1)" aria-label="{{ _('Più un set') }}"><i class="fas fa-plus"></i></button>
             </div>
+            <div class="c7-stepper__hint">{{ _('Set nella partita') }}</div>
         </div>
 
-        <hr>
-
-        <!-- Multi-Set Toggle -->
-        <div class="mb-3">
-            <div class="form-check">
-                <input class="form-check-input"
-                       type="checkbox"
-                       id="is_multi_set"
-                       name="is_multi_set"
-                       onchange="toggleMultiSetOptions()"
-                       {% if is_multi_set_value %}checked{% endif %}>
-                <label class="form-check-label" for="is_multi_set">
-                    <strong>Match Multi-Set</strong>
-                </label>
-                <small class="form-text text-muted d-block">
-                    Abilita match diviso in più set (come nei tornei professionali)
-                </small>
-            </div>
-        </div>
-
-        <!-- Multi-Set Configuration (hidden by default) -->
-        <div id="multi-set-config" style="display: {% if is_multi_set_value %}block{% else %}none{% endif %};">
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle"></i>
-                <strong>Configurazione Multi-Set:</strong>
-                Il match sarà diviso in più set. Ogni set avrà il numero di rack specificato sopra.
-            </div>
-
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label for="match_distance" class="form-label">
-                            Numero di Set
-                        </label>
-                        <input type="number"
-                               class="form-control"
-                               id="match_distance"
-                               name="match_distance"
-                               min="1"
-                               max="9"
-                               value="{{ match_distance_value }}"
-                               onchange="updateDistancePreview()">
-                        <small class="text-muted">Quanti set giocare nel match</small>
-                    </div>
-                </div>
-
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label class="form-label">Modalità Set</label>
-                        <div class="form-check">
-                            <input class="form-check-input"
-                                   type="checkbox"
-                                   id="is_race_to_sets"
-                                   name="is_race_to_sets"
-                                   onchange="updateDistancePreview()"
-                                   {% if is_race_to_sets_value %}checked{% endif %}>
-                            <label class="form-check-label" for="is_race_to_sets">
-                                "Al N set"
-                            </label>
-                            <small class="form-text text-muted d-block">
-                                Se selezionato: vince chi arriva a N set<br>
-                                Se non selezionato: giocare tutti gli N set
-                            </small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Live Preview -->
-        <div class="alert alert-secondary mt-3" id="distance-preview">
-            <strong>Anteprima:</strong> <span id="preview-text">Best of 7 racks</span>
-        </div>
+        <label class="c7-choice" for="is_race_to_sets" style="margin-top: 12px;">
+            <input class="form-check-input" type="checkbox" id="is_race_to_sets" name="is_race_to_sets"
+                   onchange="updateDistancePreview()" {% if is_race_to_sets_value %}checked{% endif %}>
+            <span>
+                <span class="c7-choice__title">{{ _('Vince chi arriva prima') }}</span>
+                <span class="c7-choice__desc">{{ _('Altrimenti si giocano tutti i set previsti.') }}</span>
+            </span>
+        </label>
     </div>
-</div>
+
+    {# Avviso dal vivo per i formati a tabellone: un numero **pari** di rack (o
+       di set) esatti puo' finire in parita', e un nodo del tabellone deve
+       sempre produrre un vincitore, altrimenti lo slot a valle resta senza chi
+       lo occupa. La regola esiste gia' lato server
+       (`_validate_position_system`): qui serve solo a non farla scoprire al
+       salvataggio. Il testo sta nei `data-` perche' il JS piu' sotto non passa
+       da `_()`. #}
+    <div id="bracket-distance-warning" class="c7-flash c7-flash--warning" style="display:none;margin-top:12px"
+         data-msg-racks="{{ _('Su un tabellone il numero esatto di rack deve essere dispari: con un numero pari la partita può finire in parità e il nodo resterebbe senza vincitore.') }}"
+         data-msg-sets="{{ _('Su un tabellone il numero esatto di set deve essere dispari: con un numero pari la partita può finire in parità e il nodo resterebbe senza vincitore.') }}">
+        <span class="c7-flash__ico"><i class="fas fa-exclamation"></i></span>
+        <div class="c7-flash__body"><div class="c7-flash__text" id="bracket-distance-warning-text"></div></div>
+    </div>
+</section>
 
 <script>
-// Progressive Disclosure: Show/hide multi-set options
+function stepDistance(delta) {
+    const el = document.getElementById('distance');
+    const v = Math.min(15, Math.max(1, (parseInt(el.value) || 4) + delta));
+    el.value = v;
+    updateDistancePreview();
+}
+
+function stepSets(delta) {
+    const el = document.getElementById('match_distance');
+    const v = Math.min(9, Math.max(1, (parseInt(el.value) || 2) + delta));
+    el.value = v;
+    updateDistancePreview();
+}
+
+// Mostra/nasconde le opzioni multi-set
 function toggleMultiSetOptions() {
     const isMultiSet = document.getElementById('is_multi_set').checked;
     const config = document.getElementById('multi-set-config');
 
     if (isMultiSet) {
         config.style.display = 'block';
-
-        // Ensure multi-set fields have values
         const matchDistance = document.getElementById('match_distance');
         if (!matchDistance.value || matchDistance.value < 1) {
-            matchDistance.value = 3; // Default to best of 3 sets
+            matchDistance.value = 3;
         }
     } else {
         config.style.display = 'none';
@@ -174,7 +116,7 @@ function toggleMultiSetOptions() {
     updateDistancePreview();
 }
 
-// Live Preview: Update distance string as user types
+// Traduce la configurazione in parole
 function updateDistancePreview() {
     const distance = parseInt(document.getElementById('distance').value) || 4;
     const exactNumber = document.getElementById('exact_number').checked;
@@ -184,28 +126,54 @@ function updateDistancePreview() {
 
     const previewText = document.getElementById('preview-text');
 
-    // Build preview string (mimics Distance.to_display_string())
     if (!isMultiSet) {
-        // Single-set
-        const racksDesc = exactNumber ? `esattamente ${distance}` : `al ${distance}`;
-        previewText.textContent = `${racksDesc.charAt(0).toUpperCase() + racksDesc.slice(1)} rack`;
+        previewText.textContent = exactNumber
+            ? 'Si giocano esattamente ' + distance + ' rack'
+            : 'Si vince a ' + distance + ' rack';
     } else {
-        // Multi-set
-        const setsDesc = isRaceToSets ? `al ${matchDistance}` : `esattamente ${matchDistance}`;
-        const racksDesc = exactNumber ? `esattamente ${distance}` : `al ${distance}`;
-
-        previewText.textContent = `${setsDesc.charAt(0).toUpperCase() + setsDesc.slice(1)} set, ogni set ${racksDesc} rack`;
+        const sets = isRaceToSets
+            ? 'Si vince a ' + matchDistance + ' set'
+            : 'Si giocano ' + matchDistance + ' set';
+        const racks = exactNumber
+            ? 'esattamente ' + distance + ' rack'
+            : 'al ' + distance;
+        previewText.textContent = sets + ', ogni set ' + racks;
     }
+
+    updateBracketDistanceWarning(exactNumber, distance, isMultiSet, isRaceToSets, matchDistance);
 }
 
-// Initialize preview on page load
-document.addEventListener('DOMContentLoaded', function() {
-    updateDistancePreview();
-});
+/* Con un formato a tabellone un numero pari di rack (o di set) esatti puo'
+ * finire in parita', e il nodo resterebbe senza vincitore: il server lo
+ * rifiuta gia', qui lo si dice mentre si sceglie. Nelle pagine senza il
+ * selettore di strategia la funzione non fa nulla. */
+function updateBracketDistanceWarning(exactNumber, distance, isMultiSet, isRaceToSets, matchDistance) {
+    const box = document.getElementById('bracket-distance-warning');
+    const strategy = document.getElementById('matchmaking_strategy');
+    if (!box || !strategy) { return; }
 
-// Client-side validation
+    const isBracket = ['direct_elimination', 'double_knockout'].indexOf(strategy.value) >= 0;
+    const problemi = [];
+
+    if (isBracket) {
+        // I due controlli sono indipendenti, come lato server: in multi-set si
+        // possono sbagliare entrambi (rack esatti pari *e* set esatti pari).
+        if (exactNumber && distance % 2 === 0) {
+            problemi.push(box.dataset.msgRacks);
+        }
+        if (isMultiSet && !isRaceToSets && matchDistance % 2 === 0) {
+            problemi.push(box.dataset.msgSets);
+        }
+    }
+
+    const message = problemi.join(' ');
+    document.getElementById('bracket-distance-warning-text').textContent = message;
+    box.style.display = message ? '' : 'none';
+}
+
+document.addEventListener('DOMContentLoaded', updateDistancePreview);
+
 function validateDistanceConfig() {
-    // No specific odd-number validation needed for race-to
     return true;
 }
 </script>

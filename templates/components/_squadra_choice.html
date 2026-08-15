@@ -1,0 +1,75 @@
+{# templates/components/_squadra_choice.html — 7c
+
+   "La mia squadra in questa gara" (US-8): il giocatore conferma la squadra
+   proposta dal profilo, ne sceglie un'altra dall'elenco, ne aggiunge una
+   nuova, oppure dichiara di giocare senza squadra — che e' una scelta, non
+   un campo lasciato indietro.
+
+   Attese dal chiamante: `gara`, `user_inscription`, `squadre`,
+   `squadre_editable`. Il componente si include **una volta sola** (contiene
+   un form con `name`, non `id`, ma la doppia inclusione confonderebbe
+   comunque chi legge due volte la stessa scelta). #}
+
+{% if gara.separate_teammates and user_inscription %}
+<div class="c7-card">
+  <div class="d-flex align-items-center gap-2 mb-3">
+    <h3 class="mb-0 flex-fill">{{ _('La tua squadra') }}</h3>
+    {% if not squadre_editable %}
+    <span class="c7-state c7-state--muted">{{ _('Congelata') }}</span>
+    {% endif %}
+  </div>
+
+  {% if squadre_editable %}
+  <form method="POST"
+        action="{{ url_for('admin.competition.set_inscription_squadra', gara_id=gara.id, inscription_id=user_inscription.id) }}"
+        class="c7-stack" style="gap:12px">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <select name="squadra_id" class="form-select" aria-label="{{ _('Squadra per questa gara') }}">
+      <option value="" {% if not user_inscription.squadra_id %}selected{% endif %}>
+        {{ _('Senza squadra in questa gara') }}
+      </option>
+      {% for squadra in squadre %}
+      <option value="{{ squadra.id }}" {% if user_inscription.squadra_id == squadra.id %}selected{% endif %}>
+        {{ squadra.name }}
+      </option>
+      {% endfor %}
+      {# La voce disattivata dopo la scelta resta selezionabile: toglierla dal
+         menu la cambierebbe di nascosto al primo salvataggio. #}
+      {% if user_inscription.squadra and user_inscription.squadra not in squadre %}
+      <option value="{{ user_inscription.squadra_id }}" selected>{{ user_inscription.squadra.name }}</option>
+      {% endif %}
+      <option value="__new__">{{ _('Aggiungi una squadra nuova…') }}</option>
+    </select>
+
+    <div>
+      <input type="text" name="new_name" class="form-control" maxlength="100"
+             placeholder="{{ _('Nome della squadra nuova') }}"
+             aria-label="{{ _('Nome della squadra nuova') }}">
+      <div class="form-text text-muted">
+        {{ _('Scrivi qui solo se la tua squadra non è in elenco. Se ne esistono di simili te le mostriamo prima di crearla.') }}
+      </div>
+    </div>
+
+    <label class="d-flex align-items-center gap-2" style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
+      <input type="checkbox" name="confirm_new" class="form-check-input mt-0">
+      {{ _('Crea comunque, è davvero un’altra squadra') }}
+    </label>
+
+    <button type="submit" class="btn btn-primary w-100">{{ _('Salva la squadra') }}</button>
+
+    <div style="font-size:12px;font-weight:600;color:var(--c7-ink-muted);line-height:1.45">
+      {{ _('Vale solo per questa gara e non cambia il tuo profilo. Puoi cambiarla finché il primo turno non è partito.') }}
+    </div>
+  </form>
+
+  {% else %}
+  <div style="font-size:14px;font-weight:700">
+    {{ user_inscription.squadra.name if user_inscription.squadra else _('Senza squadra in questa gara') }}
+  </div>
+  <div style="margin-top:6px;font-size:12px;font-weight:600;color:var(--c7-ink-muted);line-height:1.45">
+    {{ _('Il primo turno è partito: il tabellone è già estratto, quindi le squadre non si cambiano più.') }}
+  </div>
+  {% endif %}
+</div>
+{% endif %}

@@ -72,7 +72,7 @@ class TestAntiRematchRegression:
             min_participants=4,
             max_participants=8,
             entry_fee=10.0,
-            discipline="palla_9",
+            discipline="9_ball",
             distance=5,
             is_race_to=True,
             director_id=isolated_director_user.id,
@@ -196,7 +196,7 @@ class TestAntiRematchRegression:
             min_participants=4,
             max_participants=8,
             entry_fee=10.0,
-            discipline="palla_9",
+            discipline="9_ball",
             distance=5,
             is_race_to=True,
             director_id=isolated_director_user.id,
@@ -300,7 +300,7 @@ class TestAntiRematchRegression:
             min_participants=2,
             max_participants=8,
             entry_fee=10.0,
-            discipline="palla_9",
+            discipline="9_ball",
             distance=5,
             is_race_to=True,
             director_id=isolated_director_user.id,
@@ -368,7 +368,7 @@ class TestAntiRematchRegression:
             min_participants=4,
             max_participants=8,
             entry_fee=10.0,
-            discipline="palla_9",
+            discipline="9_ball",
             distance=5,
             is_race_to=True,
             director_id=isolated_director_user.id,
@@ -458,7 +458,7 @@ class TestAntiRematchRegression:
         # Invalid case: 4 max players, 5 rounds, anti-rematch enabled
         invalid_data = {
             "name": "Invalid Config",
-            "discipline": "palla_9",
+            "discipline": "9_ball",
             "distance": 5,
             "rounds_count": 5,
             "max_participants": 4,
@@ -489,7 +489,7 @@ class TestAntiRematchRegression:
         """
         valid_data = {
             "name": "Valid Config",
-            "discipline": "palla_9",
+            "discipline": "9_ball",
             "distance": 5,
             "rounds_count": 3,
             "max_participants": 8,
@@ -514,7 +514,7 @@ class TestAntiRematchRegression:
         """
         data_without_max = {
             "name": "No Max Config",
-            "discipline": "palla_9",
+            "discipline": "9_ball",
             "distance": 5,
             "rounds_count": 10,  # High number but no max_participants
             "anti_rematch_enabled": True,
@@ -534,7 +534,7 @@ class TestAntiRematchRegression:
         """
         data_no_anti_rematch = {
             "name": "No Anti-Rematch Config",
-            "discipline": "palla_9",
+            "discipline": "9_ball",
             "distance": 5,
             "rounds_count": 10,  # More than max_participants - 1
             "max_participants": 4,
@@ -596,7 +596,7 @@ class TestAntiRematchRegression:
             min_participants=4,
             max_participants=8,
             entry_fee=10.0,
-            discipline="palla_9",
+            discipline="9_ball",
             distance=5,
             is_race_to=True,
             director_id=isolated_director_user.id,
@@ -712,7 +712,7 @@ class TestAntiRematchRegression:
             min_participants=4,
             max_participants=8,
             entry_fee=10.0,
-            discipline="palla_9",
+            discipline="9_ball",
             distance=5,
             is_race_to=True,
             director_id=isolated_director_user.id,

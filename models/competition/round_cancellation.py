@@ -66,6 +66,13 @@ class RoundCancellationService:
 
         SeedingService.clear_seeding(gara_id)
 
+        # Stessa logica per il seme del sorteggio: annullare l'avvio significa
+        # voler risorteggiare, quindi al riavvio se ne genera uno nuovo e il
+        # tabellone risulta diverso. (`cancel_current_round_startup` invece non
+        # lo tocca: dai turni 2+ il tabellone e' deterministico e il seme e'
+        # irrilevante.)
+        gara.draw_seed = None
+
         RoundClassification.query.filter_by(gara_id=gara_id).delete()
         GaraClassification.query.filter_by(gara_id=gara_id).delete()
 

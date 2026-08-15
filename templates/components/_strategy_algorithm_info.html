@@ -1,38 +1,19 @@
 <!-- Strategy Algorithm Info Component -->
-{% set is_random_strategy = gara.matchmaking_strategy == 'random' %}
+{# Un partial per formato. La catena e' esplicita e non una mappa
+   nome→template: un include con nome *dinamico* sfugge al grafo dei template
+   e lo vieta `test_no_orphan_templates.py`, che senza nomi letterali non
+   riesce piu' a dire quali file sono ancora raggiungibili.
 
-{% if is_random_strategy %}
-{# Random Strategy Info #}
-<div class="card border-success">
-    <div class="card-header bg-success bg-opacity-10">
-        <h5><i class="fas fa-random"></i> Strategia Random - Classifica Complessiva</h5>
-    </div>
-    <div class="card-body">
-        <div class="row">
-            <div class="col-md-6">
-                <strong>Criterio Classifica:</strong><br>
-                <small class="text-muted">1. Rack Totali Vinti (desc) &rarr; 2. Diff. Rack (desc)</small><br><br>
-                <strong>Aggiornamento:</strong> <span class="badge bg-info">Dopo ogni match</span>
-            </div>
-            <div class="col-md-6">
-                <strong>Giocatori Totali:</strong> {{ total_players }}<br>
-                <strong>Match Completati:</strong>
-                {# Count both 'completed' and 'validated' as finished #}
-                {% set comp_matches = matches|selectattr("status", "equalto", "completed")|list|length %}
-                {% set val_matches = matches|selectattr("status", "equalto", "validated")|list|length %}
-                {% set completed_matches = comp_matches + val_matches %}
-                {% set total_matches = matches|length %}
-                {{ completed_matches }}/{{ total_matches }}<br>
-                <strong>Note:</strong><br>
-                <small class="text-muted">
-                    I match possono essere giocati in qualsiasi ordine.
-                    La classifica si aggiorna in tempo reale.
-                </small>
-            </div>
-        </div>
-    </div>
-</div>
+   Il ripiego resta Amalfi, che e' il formato storico — ma **non** vale piu'
+   per i tabelloni: li' parlava di "formula salto" e leggeva
+   `gara.campionato.without_x`, che su una gara standalone non esiste affatto,
+   quindi la pagina si rompeva. #}
+{% if gara.matchmaking_strategy == 'random' %}
+{% include "components/_random_algorithm_info.html" %}
+{% elif gara.matchmaking_strategy == 'direct_elimination' %}
+{% include "components/_direct_elimination_algorithm_info.html" %}
+{% elif gara.matchmaking_strategy == 'double_knockout' %}
+{% include "components/_double_knockout_algorithm_info.html" %}
 {% else %}
-{# Fallback to Amalfi info #}
 {% include "components/_amalfi_algorithm_info.html" %}
 {% endif %}

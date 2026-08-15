@@ -36,7 +36,7 @@
         {% endif %}
         </p>
 
-        {# Ruolo concedibile: Esaminatore (ADR-038). Ortogonale al ruolo
+        {# Ruolo concedibile: Esaminatore (ADR-041). Ortogonale al ruolo
            primario qui sopra — un esaminatore resta player o director. #}
         {% if current_user.is_admin and not user.is_admin %}
         <p><strong>{{ _("Esaminatore:") }}</strong>

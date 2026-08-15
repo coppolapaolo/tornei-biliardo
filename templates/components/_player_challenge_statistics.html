@@ -1,110 +1,65 @@
-{# templates/components/_player_challenge_statistics.html #}
-<!-- Challenge Statistics Component -->
+{# templates/components/_player_challenge_statistics.html — 7c
+   Le challenge nel profilo del giocatore.
+
+   `challenge_history` è una lista di **dizionari** costruita dalla route
+   (`challenge_name`, `gara_name`, `score`, `passed`, `attempted_at`,
+   `is_pass_fail`, `challenge`): il markup di prima li leggeva come oggetti
+   (`attempt.gara_challenge`, `attempt.created_at`), cioè risolveva tutto a
+   Undefined. #}
+{% import "components/_challenge_bits.html" as ch with context %}
+
 {% if challenge_stats %}
-<div class="card mb-4">
-    <div class="card-header">
-        <h5><i class="fas fa-trophy text-warning"></i> Statistiche Challenge</h5>
-    </div>
-    <div class="card-body">
-        <div class="row">
-            <div class="col-md-6">
-                <div class="stat-item mb-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="text-muted">Tentativi Totali</span>
-                        <span class="badge bg-info fs-6">{{ challenge_stats.total_attempts }}</span>
-                    </div>
-                </div>
-                <div class="stat-item mb-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="text-muted">Challenge Diverse</span>
-                        <span class="badge bg-primary fs-6">{{ challenge_stats.unique_challenges }}</span>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="stat-item mb-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="text-muted">Punteggio Medio</span>
-                        <span class="badge bg-success fs-6">{{ challenge_stats.avg_score }}</span>
-                    </div>
-                </div>
-                <div class="stat-item mb-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="text-muted">Percentuale Successo</span>
-                        <span class="badge bg-warning fs-6">{{ challenge_stats.pass_rate }}%</span>
-                    </div>
-                </div>
-            </div>
-        </div>
+<section class="c7-stack">
+  <div class="c7-sechead"><h2>{{ _("Challenge") }}</h2></div>
 
-        {% if challenge_history %}
-        <hr>
-        <h6 class="mb-3"><i class="fas fa-history"></i> Cronologia Challenge Completata</h6>
-        <div class="table-responsive">
-            <table class="table table-sm">
-                <thead>
-                    <tr>
-                        <th>Challenge</th>
-                        <th>Gara</th>
-                        <th>Punteggio</th>
-                        <th>Data</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for attempt in challenge_history[:10] %}
-                    <tr>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                {% if attempt.gara_challenge %}
-                                    {% set challenge = attempt.gara_challenge.challenge %}
-                                {% else %}
-                                    {% set challenge = attempt.challenge %}
-                                {% endif %}
-
-                                {% if challenge.image_filename %}
-                                    <img src="{{ challenge_image_url(challenge) }}"
-                                         class="rounded me-2"
-                                         style="width: 24px; height: 24px; object-fit: cover;"
-                                         alt="{{ challenge.get_display_name() }}">
-                                {% else %}
-                                    <i class="fas fa-bullseye text-warning me-2"></i>
-                                {% endif %}
-                                <span>{{ challenge.get_display_name() }}</span>
-                            </div>
-                        </td>
-                        <td>
-                            {% if attempt.gara_challenge %}
-                                <small class="text-muted">{{ attempt.gara_challenge.gara.name }}</small>
-                            {% else %}
-                                <small class="text-muted">Standalone</small>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if challenge.pass_fail_only %}
-                                {% if attempt.passed %}
-                                    <span class="badge bg-success">✓ Superata</span>
-                                {% else %}
-                                    <span class="badge bg-danger">✗ Fallita</span>
-                                {% endif %}
-                            {% else %}
-                                <span class="badge bg-info">{{ attempt.score }}</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <small class="text-muted">{{ attempt.created_at|date_local }}</small>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        
-        {% if challenge_history|length > 10 %}
-        <div class="text-center">
-            <small class="text-muted">Mostrati i primi 10 di {{ challenge_history|length }} tentativi totali</small>
-        </div>
-        {% endif %}
-        {% endif %}
+  <div class="c7-grid" style="grid-template-columns:1fr 1fr">
+    <div class="c7-card">
+      <div class="c7-num-lg">{{ challenge_stats.total_attempts }}</div>
+      <div class="c7-rows__sub">{{ _("Tentativi") }}</div>
     </div>
-</div>
+    <div class="c7-card">
+      <div class="c7-num-lg">{{ challenge_stats.unique_challenges }}</div>
+      <div class="c7-rows__sub">{{ _("Challenge diverse") }}</div>
+    </div>
+    <div class="c7-card">
+      <div class="c7-num-lg">{{ challenge_stats.avg_score }}</div>
+      <div class="c7-rows__sub">{{ _("Punteggio medio") }}</div>
+    </div>
+    <div class="c7-card">
+      <div class="c7-num-lg">{{ challenge_stats.pass_rate }}%</div>
+      <div class="c7-rows__sub">{{ _("Riuscite") }}</div>
+    </div>
+  </div>
+
+  {% if challenge_history %}
+  <div class="c7-sechead">
+    <h3>{{ _("Ultimi tentativi") }}</h3>
+    {% if challenge_history|length > 10 %}
+    <span class="c7-sechead__note">{{ _("i più recenti 10 su %(n)s", n=challenge_history|length) }}</span>
+    {% endif %}
+  </div>
+  <div class="c7-rows">
+    {% for entry in challenge_history[:10] %}
+    <div class="c7-rows__row">
+      {% if entry.challenge %}{{ ch.thumb(entry.challenge, 40, 'var(--c7-r-chip)') }}{% endif %}
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">{{ entry.challenge_name }}</div>
+        <div class="c7-rows__sub">
+          {{ entry.gara_name }}
+          <span class="c7-sep">·</span>
+          <span class="c7-num">{{ entry.attempted_at|date_local }}</span>
+        </div>
+      </div>
+      {% if entry.is_pass_fail %}
+      <span class="c7-state c7-state--{{ 'ok' if entry.passed else 'err' }}">
+        {{ _("Superata") if entry.passed else _("Non superata") }}
+      </span>
+      {% else %}
+      <span class="c7-num" style="font-size:15px;font-weight:800">{{ entry.score }}</span>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</section>
 {% endif %}

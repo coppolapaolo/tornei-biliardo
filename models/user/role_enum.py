@@ -23,7 +23,7 @@ class GrantableRole(str, Enum):
     Il precedente architetturale è ``User.is_venue_manager``, che già oggi non
     guarda ``user.role`` ma la tabella di assegnazione ``venue_management``.
 
-    Vedi ADR-038.
+    Vedi ADR-041.
     """
 
     EXAMINER = "examiner"

@@ -48,6 +48,11 @@ class Campionato(db.Model):
     default_classification_system = db.Column(
         db.String(10), nullable=False, default="WINS"
     )  # Default: RACK, WINS, POSITION (see docs/CLASSIFICATION_SYSTEM.md)
+    # Punti per posizione delle gare a tabellone, come JSON {"1": 25, ...}
+    # (US-17). NULL = usa la tabella di default della spec, che è il caso
+    # normale: un campionato non deve configurare nulla per funzionare.
+    # Vedi models/classification/position_points.py.
+    position_points = db.Column(db.Text, nullable=True)
 
     # DEPRECATED - To be removed in future migration
     # Use default_odd_policy instead of without_x

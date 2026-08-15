@@ -1,38 +1,61 @@
-<!-- Gara Header Component -->
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1>{{ gara.display_name }}</h1>
-        <p class="text-muted mb-0">
-            {{ gara.date|date_local }} - {{ gara.discipline|discipline_display }} -
-            {{ gara.distance_config|format_distance }}
-            {% if gara.location %} - {{ gara.location }}{% endif %}
-        </p>
-    </div>
-    <div class="d-flex align-items-center gap-2 gap-md-3 gap-lg-4">
-        {% if current_user.is_authenticated %}
-        {% if gara.campionato_id %}
-        {% if current_user.can_manage_competition(gara.id) %}
-        <a href="{{ url_for('admin.campionato.campionato_detail', campionato_id=gara.campionato_id) }}"
-            class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left"></i> {{ _('Torna al Campionato') }}
-        </a>
-        {% else %}
-        <a href="{{ url_for('main.campionato_detail_public', campionato_id=gara.campionato_id) }}"
-            class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left"></i> {{ _('Torna al Campionato') }}
-        </a>
-        {% endif %}
-        {% else %}
-        <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left"></i> {{ _('Torna alla Dashboard') }}
-        </a>
-        {% endif %}
+{# templates/components/_gara_header.html — 7c
 
-        {% if gara.can_be_modified() and current_user.can_manage_competition(gara.id) %}
-        <a href="{{ url_for('admin.competition.edit_gara', gara_id=gara.id) }}" class="btn btn-warning">
-            <i class="fas fa-edit"></i> {{ _('Modifica Gara') }}
-        </a>
-        {% endif %}
-        {% endif %}
-    </div>
-</div>
+   Questo file non disegna piu' una testata: nel guscio 7c la testata e'
+   una sola, quella di `base.html`. Le pagine di gara la riempiono con i
+   blocchi `page_back` / `page_title` / `page_sub` / `page_actions`; una
+   seconda `c7-head` dentro `content` ne produrrebbe due sovrapposte.
+
+   Uso:
+
+     {% import "components/_gara_header.html" as gara_head with context %}
+
+     {% block page_back %}{{ gara_head.back(gara) }}{% endblock %}
+     {% block page_title %}{{ gara.display_name }}{% endblock %}
+     {% block page_sub %}{{ gara_head.sub(gara) }}{% endblock %}
+     {% block page_actions %}{{ gara_head.actions(gara) }}{% endblock %}
+
+   L'`import` va in cima al template figlio, fuori dai blocchi: Jinja
+   esegue i nodi di primo livello prima di rendere il genitore, quindi il
+   nome e' visibile dentro i blocchi. `with context` serve perche' le
+   macro usano `current_user`, `url_for` e `_`.
+#}
+
+{# Freccia di ritorno, solo mobile: sopra i 992px la sidebar fa da
+   navigazione e il tema nasconde comunque `.c7-head__back`. #}
+{% macro back(gara) -%}
+{%- if current_user.is_authenticated and gara.campionato_id and current_user.can_manage_competition(gara.id) -%}
+<a class="c7-head__back d-lg-none" href="{{ url_for('admin.campionato.campionato_detail', campionato_id=gara.campionato_id) }}" aria-label="{{ _('Torna al campionato') }}"><i class="fas fa-arrow-left"></i></a>
+{%- elif gara.campionato_id -%}
+<a class="c7-head__back d-lg-none" href="{{ url_for('main.campionato_detail_public', campionato_id=gara.campionato_id) }}" aria-label="{{ _('Torna al campionato') }}"><i class="fas fa-arrow-left"></i></a>
+{%- elif current_user.is_authenticated -%}
+<a class="c7-head__back d-lg-none" href="{{ url_for('dashboard.dashboard') }}" aria-label="{{ _('Torna alla dashboard') }}"><i class="fas fa-arrow-left"></i></a>
+{%- else -%}
+<a class="c7-head__back d-lg-none" href="{{ url_for('main.index') }}" aria-label="{{ _('Home') }}"><i class="fas fa-arrow-left"></i></a>
+{%- endif -%}
+{%- endmacro %}
+
+{# Sottotitolo. Su mobile e' quello del prototipo (8a): **sala e distanza**,
+   dove e a quanto si gioca. Le quattro voci di prima mandavano la testata
+   sticky a tre righe su 390px, perche' ospita anche freccia, badge di livello
+   e avatar. Data e disciplina restano sul desktop, dove c'e' spazio: la
+   disciplina della gara e' comunque solo il default, quella vera e' del turno
+   e ogni turno la scrive da se'. #}
+{% macro sub(gara) -%}
+{%- if gara.location %}{{ gara.location }} <span class="c7-sep">·</span> {% endif -%}
+{{ gara.distance_config|format_distance }}
+<span class="d-none d-lg-inline">
+  <span class="c7-sep">·</span> {{ gara.discipline|discipline_display }}
+  <span class="c7-sep">·</span> <span class="c7-num">{{ gara.date|date_local }}</span>
+</span>
+{%- endmacro %}
+
+{# Modifica gara: e' l'unico ingresso alla pagina di modifica, quindi
+   resta raggiungibile anche su mobile — dove pero' la testata ospita gia'
+   freccia e avatar, e l'etichetta non ci sta. #}
+{% macro actions(gara) -%}
+{%- if current_user.is_authenticated and gara.can_be_modified() and current_user.can_manage_competition(gara.id) -%}
+<a href="{{ url_for('admin.competition.edit_gara', gara_id=gara.id) }}" class="btn btn-secondary btn-sm" aria-label="{{ _('Modifica') }}">
+    <i class="fas fa-pen"></i><span class="d-none d-lg-inline">&nbsp;{{ _('Modifica') }}</span>
+</a>
+{%- endif -%}
+{%- endmacro %}

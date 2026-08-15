@@ -1,29 +1,25 @@
 {% extends "base.html" %}
 
-{% block title %}Modifica {{ gara.display_name }} - Admin{% endblock %}
+{% block title %}{{ _('Modifica') }} {{ gara.display_name }}{% endblock %}
+{% block page_title %}{{ _('Modifica') }} {{ gara.display_name }}{% endblock %}
+{% block page_sub %}
+  {% if not gara.is_standalone %}{{ gara.campionato.name }} · {% endif %}
+  {{ gara.date|date_local if gara.date }}
+{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}" class="btn btn-secondary btn-sm d-none d-lg-inline-flex">
+  <i class="fas fa-arrow-left"></i> {{ _('Annulla') }}
+</a>
+{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1>Modifica {{ gara.display_name }}
-        </h1>
-        {% if not gara.is_standalone %}<p class="text-muted mb-0">{{ gara.campionato.name }}</p>{% endif %}
-    </div>
-    <div>
-        <a href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left"></i> Annulla
-        </a>
-    </div>
-</div>
-
-<div class="row justify-content-center">
-    <div class="col-md-10">
-        {% include "components/_gara_edit_form.html" %}
-    </div>
+<div style="max-width:860px">
+  {% include "components/_gara_edit_form.html" %}
 </div>
 {% endblock %}
 
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/bracket_options.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         // Strategy configuration management
@@ -48,187 +44,166 @@
             'POSITION': []  // No odd policy selection for POSITION
         };
 
-        // Store strategy constraints (if available)
-        const strategyConstraints = {{ available_strategies | tojson
-    }};
+        const strategyConstraints = {{ available_strategies | tojson }};
 
-    function updateStrategyUI() {
-        if (!strategySelect) return;
+        function updateStrategyUI() {
+            if (!strategySelect) return;
 
-        const selectedStrategy = strategySelect.value;
-        const constraints = strategyConstraints[selectedStrategy]?.constraints || {};
+            const selectedStrategy = strategySelect.value;
+            const constraints = strategyConstraints[selectedStrategy]?.constraints || {};
 
-        // Update description
-        const selectedOption = strategySelect.options[strategySelect.selectedIndex];
-        if (strategyDescription) {
-            strategyDescription.textContent = selectedOption.dataset.description || '';
-        }
+            const selectedOption = strategySelect.options[strategySelect.selectedIndex];
+            if (strategyDescription) {
+                strategyDescription.textContent = selectedOption.dataset.description || '';
+            }
 
-        // Update first round policy options
-        if (firstRoundSelect) {
-            const allowedFirstPolicies = constraints.first_round_policies || ['random'];
-            Array.from(firstRoundSelect.options).forEach(option => {
-                if (option.value) {
-                    option.disabled = !allowedFirstPolicies.includes(option.value);
-                    if (option.disabled && option.selected) {
-                        firstRoundSelect.value = allowedFirstPolicies[0];
+            if (firstRoundSelect) {
+                const allowedFirstPolicies = constraints.first_round_policies || ['random'];
+                Array.from(firstRoundSelect.options).forEach(option => {
+                    if (option.value) {
+                        option.disabled = !allowedFirstPolicies.includes(option.value);
+                        if (option.disabled && option.selected) {
+                            firstRoundSelect.value = allowedFirstPolicies[0];
+                        }
+                    }
+                });
+            }
+
+            if (oddPolicySelect) {
+                const allowedOddPolicies = constraints.odd_policies || ['bye'];
+                Array.from(oddPolicySelect.options).forEach(option => {
+                    if (option.value) {
+                        option.disabled = !allowedOddPolicies.includes(option.value);
+                        if (option.disabled && option.selected) {
+                            oddPolicySelect.value = allowedOddPolicies[0];
+                        }
+                    }
+                });
+            }
+
+            if (antiRematchCheck) {
+                if (constraints.anti_rematch === false) {
+                    antiRematchCheck.checked = false;
+                    antiRematchCheck.disabled = true;
+                } else {
+                    antiRematchCheck.disabled = false;
+                    if (constraints.anti_rematch_required) {
+                        antiRematchCheck.checked = true;
                     }
                 }
-            });
+            }
+
+            updateTrioWarning();
         }
 
-        // Update odd number policy options
-        if (oddPolicySelect) {
-            const allowedOddPolicies = constraints.odd_policies || ['bye'];
+        function updateTrioWarning() {
+            if (!distanceInput || !oddPolicySelect || !trioWarning) return;
+
+            const distance = parseInt(distanceInput.value) || 0;
+            const oddPolicy = oddPolicySelect.value;
+
+            // Trio valido solo per distanze 2-7 (ADR-005)
+            if (oddPolicy === 'trio' && (distance < 2 || distance > 7)) {
+                trioWarning.style.display = 'block';
+                const system = classificationSelect ? classificationSelect.value : 'WINS';
+                const validPolicies = classificationOddPolicies[system] || ['bye'];
+                oddPolicySelect.value = validPolicies.includes('bye') ? 'bye' : validPolicies[0];
+            } else {
+                trioWarning.style.display = 'none';
+            }
+        }
+
+        function updateOddPoliciesForClassification() {
+            if (!oddPolicySelect || !classificationSelect) return;
+
+            const system = classificationSelect.value;
+            const validPolicies = classificationOddPolicies[system] || ['bye'];
+
             Array.from(oddPolicySelect.options).forEach(option => {
                 if (option.value) {
-                    option.disabled = !allowedOddPolicies.includes(option.value);
+                    const isValid = validPolicies.includes(option.value);
+                    option.disabled = !isValid;
+                    option.style.display = isValid ? '' : 'none';
                     if (option.disabled && option.selected) {
-                        oddPolicySelect.value = allowedOddPolicies[0];
+                        oddPolicySelect.value = validPolicies[0] || 'bye';
                     }
                 }
             });
         }
 
-        // Update anti-rematch checkbox
-        if (antiRematchCheck) {
-            if (constraints.anti_rematch === false) {
-                antiRematchCheck.checked = false;
-                antiRematchCheck.disabled = true;
+        function updateExactNumberAvailability() {
+            if (!distanceInput || !exactNumberCheckbox) return;
+
+            const distance = parseInt(distanceInput.value) || 0;
+
+            if (distance > 0) {
+                exactNumberCheckbox.disabled = false;
+                if (exactNumberContainer) {
+                    exactNumberContainer.style.opacity = '1';
+                    exactNumberContainer.title = '';
+                }
             } else {
-                antiRematchCheck.disabled = false;
-                if (constraints.anti_rematch_required) {
-                    antiRematchCheck.checked = true;
+                exactNumberCheckbox.disabled = true;
+                exactNumberCheckbox.checked = false;
+                if (exactNumberContainer) {
+                    exactNumberContainer.style.opacity = '0.5';
+                    exactNumberContainer.title = '';
                 }
             }
+
+            updateGameModeText();
         }
 
-        updateTrioWarning();
-    }
+        function updateGameModeText() {
+            if (!distanceInput || !exactNumberCheckbox || !gameModeText) return;
 
-    function updateTrioWarning() {
-        if (!distanceInput || !oddPolicySelect || !trioWarning) return;
+            const distance = parseInt(distanceInput.value) || 0;
+            const isExactNumber = exactNumberCheckbox.checked;
 
-        const distance = parseInt(distanceInput.value) || 0;
-        const oddPolicy = oddPolicySelect.value;
-
-        // Trio only valid for distances 2-7 (ADR-005)
-        if (oddPolicy === 'trio' && (distance < 2 || distance > 7)) {
-            trioWarning.style.display = 'block';
-            // Find first valid option
-            const system = classificationSelect ? classificationSelect.value : 'WINS';
-            const validPolicies = classificationOddPolicies[system] || ['bye'];
-            oddPolicySelect.value = validPolicies.includes('bye') ? 'bye' : validPolicies[0];
-        } else {
-            trioWarning.style.display = 'none';
-        }
-    }
-
-    function updateOddPoliciesForClassification() {
-        if (!oddPolicySelect || !classificationSelect) return;
-
-        const system = classificationSelect.value;
-        const validPolicies = classificationOddPolicies[system] || ['bye'];
-
-        Array.from(oddPolicySelect.options).forEach(option => {
-            if (option.value) {
-                const isValid = validPolicies.includes(option.value);
-                option.disabled = !isValid;
-                option.style.display = isValid ? '' : 'none';  // Hide invalid options
-                if (option.disabled && option.selected) {
-                    // Select first valid option
-                    oddPolicySelect.value = validPolicies[0] || 'bye';
-                }
-            }
-        });
-    }
-
-    function updateExactNumberAvailability() {
-        if (!distanceInput || !exactNumberCheckbox) return;
-
-        const distance = parseInt(distanceInput.value) || 0;
-
-        // Per ADR-005: Trio IS compatible with exact number mode
-        // (when using rack-based classification, ties are acceptable)
-        // Exact number is always available when distance > 0
-        if (distance > 0) {
-            exactNumberCheckbox.disabled = false;
-            if (exactNumberContainer) {
-                exactNumberContainer.style.opacity = '1';
-                exactNumberContainer.title = '';
-            }
-        } else {
-            exactNumberCheckbox.disabled = true;
-            exactNumberCheckbox.checked = false;
-            if (exactNumberContainer) {
-                exactNumberContainer.style.opacity = '0.5';
-                exactNumberContainer.title = '';
+            if (isExactNumber && !exactNumberCheckbox.disabled) {
+                gameModeText.textContent = 'Esatto numero: ' + distance + ' rack totali';
+            } else {
+                gameModeText.textContent = 'Al ' + distance + ' (si vince a ' + distance + ' rack)';
             }
         }
 
-        updateGameModeText();
-    }
-
-    function updateGameModeText() {
-        if (!distanceInput || !exactNumberCheckbox || !gameModeText) return;
-
-        const distance = parseInt(distanceInput.value) || 0;
-        const isExactNumber = exactNumberCheckbox.checked;
-
-        if (isExactNumber && !exactNumberCheckbox.disabled) {
-            gameModeText.textContent = 'Esatto numero: ' + distance + ' rack totali';
-        } else {
-            const winScore = Math.floor(distance / 2) + 1;
-            gameModeText.textContent = 'Al ' + distance + ' (si vince a ' + distance + ' rack)';
+        if (strategySelect) {
+            strategySelect.addEventListener('change', updateStrategyUI);
         }
-    }
+        if (oddPolicySelect) {
+            oddPolicySelect.addEventListener('change', function () {
+                updateTrioWarning();
+                updateExactNumberAvailability();
+            });
+        }
+        if (classificationSelect) {
+            classificationSelect.addEventListener('change', function () {
+                updateOddPoliciesForClassification();
+                updateTrioWarning();
+            });
+        }
+        if (distanceInput) {
+            distanceInput.addEventListener('input', function () {
+                updateExactNumberAvailability();
+                updateTrioWarning();
+            });
+            distanceInput.addEventListener('change', function () {
+                updateExactNumberAvailability();
+                updateTrioWarning();
+            });
+        }
+        if (exactNumberCheckbox) {
+            exactNumberCheckbox.addEventListener('change', updateGameModeText);
+        }
 
-
-    // Listen for strategy changes
-    if (strategySelect) {
-        strategySelect.addEventListener('change', updateStrategyUI);
-    }
-    if (oddPolicySelect) {
-        oddPolicySelect.addEventListener('change', function() {
-            updateTrioWarning();
-            updateExactNumberAvailability();
-        });
-    }
-
-    // Listen for classification system changes (standalone gare only)
-    if (classificationSelect) {
-        classificationSelect.addEventListener('change', function() {
-            updateOddPoliciesForClassification();
-            updateTrioWarning();
-        });
-    }
-
-    // Listen for distance changes
-    if (distanceInput) {
-        distanceInput.addEventListener('input', function () {
-            updateExactNumberAvailability();
-            updateTrioWarning();
-        });
-        distanceInput.addEventListener('change', function () {
-            updateExactNumberAvailability();
-            updateTrioWarning();
-        });
-    }
-
-    if (exactNumberCheckbox) {
-        exactNumberCheckbox.addEventListener('change', updateGameModeText);
-    }
-
-    // Initial updates
-    updateStrategyUI();
-    updateOddPoliciesForClassification();
-    updateExactNumberAvailability();
-    // Richiama anche dopo un piccolo delay nel caso ci siano problemi di timing
-    setTimeout(function () {
         updateStrategyUI();
         updateOddPoliciesForClassification();
         updateExactNumberAvailability();
-    }, 100);
-});
+        setTimeout(function () {
+            updateStrategyUI();
+            updateOddPoliciesForClassification();
+            updateExactNumberAvailability();
+        }, 100);
+    });
 </script>
 {% endblock %}

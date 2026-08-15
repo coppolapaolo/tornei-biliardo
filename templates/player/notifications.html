@@ -1,168 +1,133 @@
 {% extends "base.html" %}
 
-{% block title %}{{ _("Le mie Notifiche") }}{% endblock %}
+{% block title %}{{ _("Notifiche") }}{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back" href="{{ url_for('player.dashboard') }}" aria-label="{{ _('Torna alla dashboard') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("Notifiche") }}{% endblock %}
+{% block page_actions %}
+    {% if notifications %}
+    <form action="{{ url_for('player.mark_all_notifications_read') }}" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-secondary btn-sm">{{ _("Segna tutte lette") }}</button>
+    </form>
+    {% endif %}
+{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1><i class="fas fa-bell"></i> {{ _("Le mie Notifiche") }}</h1>
-    <div>
-        {% if notifications %}
-        <form action="{{ url_for('player.mark_all_notifications_read') }}" method="POST" style="display: inline;">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button type="submit" class="btn btn-outline-secondary">
-                <i class="fas fa-check-double"></i> {{ _("Segna tutte come lette") }}
-            </button>
-        </form>
-        {% endif %}
-    </div>
-</div>
-
-<!-- Auto-delete settings card -->
-<div class="card mb-4">
-    <div class="card-header">
-        <h5 class="mb-0"><i class="fas fa-trash-clock"></i> {{ _("Auto-cancellazione Notifiche") }}</h5>
-    </div>
-    <div class="card-body">
-        <form id="auto-delete-form" method="POST" action="{{ url_for('player.update_auto_delete') }}">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <div class="row align-items-center">
-                <div class="col-auto">
-                    <div class="form-check form-switch">
-                        <input type="checkbox" class="form-check-input" id="auto-delete-enabled"
-                               name="auto_delete_enabled"
-                               {% if auto_delete_days %}checked{% endif %}>
-                        <label class="form-check-label" for="auto-delete-enabled">
-                            <strong>{{ _("Attiva auto-cancellazione") }}</strong>
-                        </label>
-                    </div>
-                </div>
-                <div class="col-auto">
-                    <div class="input-group" style="width: 200px;">
-                        <input type="number" class="form-control" id="auto-delete-days"
-                               name="auto_delete_days"
-                               value="{{ auto_delete_days or 30 }}"
-                               min="1" max="365"
-                               {% if not auto_delete_days %}disabled{% endif %}>
-                        <span class="input-group-text">{{ _("giorni") }}</span>
-                    </div>
-                </div>
-                <div class="col-auto">
-                    <span id="auto-delete-status" class="text-muted small"></span>
-                </div>
-                <div class="col">
-                    <small class="text-muted">
-                        {{ _("Le notifiche lette verranno eliminate automaticamente dopo il numero di giorni specificato") }}
-                    </small>
-                </div>
+<section class="c7-card">
+    <form id="auto-delete-form" method="POST" action="{{ url_for('player.update_auto_delete') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="flex: 1; min-width: 0;">
+                <label class="form-check-label" for="auto-delete-enabled" style="font-size: 14px; font-weight: 800;">{{ _("Cancella da sola le notifiche lette") }}</label>
+                <div class="text-muted" style="font-size: 12px; font-weight: 600; margin-top: 2px;">{{ _("Restano nell'elenco per il numero di giorni che scegli.") }}</div>
             </div>
-        </form>
-    </div>
-</div>
+            <div class="form-switch form-check" style="padding-left: 0;">
+                <input type="checkbox" class="form-check-input" id="auto-delete-enabled" name="auto_delete_enabled" style="margin-left: 0;" {% if auto_delete_days %}checked{% endif %}>
+            </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 12px; margin-top: 14px;">
+            <input type="number" class="form-control" id="auto-delete-days" name="auto_delete_days"
+                   value="{{ auto_delete_days or 30 }}" min="1" max="365" style="width: 110px;"
+                   {% if not auto_delete_days %}disabled{% endif %}>
+            <span class="text-muted" style="font-size: 13px; font-weight: 700;">{{ _("giorni") }}</span>
+            <span id="auto-delete-status" class="text-muted" style="font-size: 12px; margin-left: auto;"></span>
+        </div>
+    </form>
+</section>
 
 {% if not notifications %}
-<div class="alert alert-info">
-    <i class="fas fa-info-circle"></i> {{ _("Non hai notifiche.") }}
+<div class="c7-empty" style="margin-top: 18px;">
+    <div class="c7-empty__ico"><i class="fas fa-bell"></i></div>
+    <h2 class="c7-empty__title">{{ _("Nessuna notifica") }}</h2>
+    <p class="c7-empty__text">{{ _("Ti avviseremo qui quando c'è qualcosa da sapere: turni, iscrizioni, risultati.") }}</p>
 </div>
 {% else %}
-<form id="notification-form" action="{{ url_for('player.delete_selected_notifications') }}" method="POST">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <div>
-            <input type="checkbox" id="select-all" class="form-check-input me-2">
-            <label for="select-all" class="form-check-label">{{ _("Seleziona tutte") }}</label>
-        </div>
-        <button type="submit" class="btn btn-danger btn-sm" id="delete-selected-btn" disabled>
-            <i class="fas fa-trash"></i> {{ _("Elimina selezionate") }}
-        </button>
+<form id="notification-form" action="{{ url_for('player.delete_selected_notifications') }}" method="POST" style="margin-top: 22px;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px;">
+        <label for="select-all" style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700;">
+            <input type="checkbox" id="select-all" class="form-check-input" style="margin: 0;">
+            {{ _("Seleziona tutte") }}
+        </label>
+        <button type="submit" class="btn btn-danger btn-sm" id="delete-selected-btn" disabled>{{ _("Elimina selezionate") }}</button>
     </div>
 
-    <div class="list-group">
+    <div class="c7-stack">
         {% for notification in notifications %}
-        <div class="list-group-item {% if notification.status.value == 'read' %}list-group-item-light{% endif %}">
-            <div class="d-flex w-100">
-                <div class="form-check me-3">
-                    <input type="checkbox" name="notification_ids[]" value="{{ notification.id }}"
-                           class="form-check-input notification-checkbox">
-                </div>
-                {% set content = notification.get_translated_content() %}
-                <div class="flex-grow-1">
-                    <h5 class="mb-1">
+        {% set content = notification.get_translated_content() %}
+        <article class="c7-card {% if notification.status.value == 'read' %}c7-card--locked{% endif %}">
+            <div style="display: flex; gap: 12px;">
+                <input type="checkbox" name="notification_ids[]" value="{{ notification.id }}" class="form-check-input notification-checkbox" style="margin-top: 3px;">
+
+                <div style="flex: 1; min-width: 0;">
+                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
                         {% if notification.status.value != 'read' %}
-                            <span class="badge bg-primary me-2">{{ _("Nuova") }}</span>
+                        <span class="c7-state c7-state--accent">{{ _("Nuova") }}</span>
                         {% endif %}
                         {% if notification.priority.value == 'high' %}
-                            <span class="badge bg-danger me-2">{{ _("Importante") }}</span>
+                        <span class="c7-state c7-state--warn">{{ _("Importante") }}</span>
                         {% elif notification.priority.value == 'urgent' %}
-                            <span class="badge bg-danger me-2">{{ _("Urgente") }}</span>
+                        <span class="c7-state c7-state--err">{{ _("Urgente") }}</span>
                         {% endif %}
-                        {{ content.title }}
-                    </h5>
-                    <p class="mb-1">{{ content.message }}</p>
-                    <small class="text-muted">
-                        <i class="fas fa-clock"></i> {{ notification.created_at|datetime_local }}
+                    </div>
+
+                    <h3 style="margin: 8px 0 0; font-size: 15px;">{{ content.title }}</h3>
+                    <p class="text-muted" style="margin: 4px 0 0; font-size: 13px; line-height: 1.5;">{{ content.message }}</p>
+                    <div class="text-muted" style="margin-top: 8px; font-size: 12px; font-weight: 600;">
+                        <span class="c7-num">{{ notification.created_at|datetime_local }}</span>
                         {% if notification.status.value == 'read' %}
-                            - {{ _("Letta il") }} {{ notification.read_at|datetime_local }}
+                        <span class="c7-sep">·</span> {{ _("letta il") }} <span class="c7-num">{{ notification.read_at|datetime_local }}</span>
                         {% endif %}
-                    </small>
-                </div>
-                <div class="ms-3">
-                    {# B23: hide action button if target endpoint is not visible
-                       to the current user (avoids 404 from stale stored URLs). #}
+                    </div>
+
+                    {# B23: nessun pulsante se la destinazione non è visibile all'utente
+                       (evita 404 da URL memorizzati). #}
                     {% if notification.action_url and url_visible(notification.action_url) %}
                     <a href="{{ notification.action_url }}"
-                       class="btn btn-{% if notification.status.value != 'read' %}primary{% else %}outline-primary{% endif %} btn-sm"
+                       class="btn {% if notification.status.value != 'read' %}btn-primary{% else %}btn-secondary{% endif %} btn-sm"
+                       style="margin-top: 12px;"
                        {% if notification.status.value != 'read' %}
                        onclick="event.preventDefault(); markAsReadAndNavigate({{ notification.id }}, '{{ notification.action_url }}');"
                        {% endif %}>
-                        <i class="fas fa-external-link-alt"></i> {{ content.action_text or _("Vai") }}
+                        {{ content.action_text or _("Apri") }}
                     </a>
                     {% elif notification.status.value != 'read' %}
-                    <form action="{{ url_for('player.mark_notification_read', notification_id=notification.id) }}"
-                          method="POST" style="display: inline;">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <button type="submit" class="btn btn-outline-secondary btn-sm">
-                            <i class="fas fa-check"></i> {{ _("Segna come letta") }}
-                        </button>
+                    <form action="{{ url_for('player.mark_notification_read', notification_id=notification.id) }}" method="POST" style="margin-top: 12px;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-secondary btn-sm">{{ _("Segna come letta") }}</button>
                     </form>
                     {% endif %}
                 </div>
             </div>
-        </div>
+        </article>
         {% endfor %}
     </div>
 </form>
 
 <script>
-    // Auto-delete auto-save functionality
     let autoDeleteTimeout = null;
     const statusElement = document.getElementById('auto-delete-status');
 
-    // Translated strings for JavaScript
-    // Note: Use {count} placeholder for JS string interpolation, not %(count)s which is Python-style
     const i18n = {
-        saving: {{ _("Salvataggio...")|tojson }},
+        saving: {{ _("Salvataggio…")|tojson }},
         saved: {{ _("Salvato")|tojson }},
         error: {{ _("Errore")|tojson }},
-        confirmDeleteTemplate: "Sei sicuro di voler eliminare {count} notifiche?"
+        confirmDeleteTemplate: "Confermi l'eliminazione di {count} notifiche?"
     };
 
-    function setStatusMessage(iconClass, colorClass, message) {
-        statusElement.textContent = '';
-        const icon = document.createElement('i');
-        icon.className = iconClass + ' ' + colorClass;
-        statusElement.appendChild(icon);
-        statusElement.appendChild(document.createTextNode(' ' + message));
+    function setStatusMessage(colorVar, message) {
+        statusElement.textContent = message;
+        statusElement.style.color = colorVar || '';
     }
 
     function saveAutoDeleteSettings() {
-        const checkbox = document.getElementById('auto-delete-enabled');
-        const input = document.getElementById('auto-delete-days');
         const form = document.getElementById('auto-delete-form');
+        setStatusMessage('', i18n.saving);
 
-        // Show saving status
-        setStatusMessage('fas fa-spinner fa-spin', '', i18n.saving);
-
-        // Create FormData and submit via fetch
         const formData = new FormData(form);
 
         fetch(form.action, {
@@ -174,45 +139,29 @@
         })
         .then(response => {
             if (response.ok) {
-                setStatusMessage('fas fa-check', 'text-success', i18n.saved);
-                setTimeout(() => {
-                    statusElement.textContent = '';
-                }, 2000);
+                setStatusMessage('var(--c7-ok)', i18n.saved);
+                setTimeout(() => { statusElement.textContent = ''; }, 2000);
             } else {
-                setStatusMessage('fas fa-exclamation-triangle', 'text-danger', i18n.error);
+                setStatusMessage('var(--c7-err)', i18n.error);
             }
         })
-        .catch(error => {
-            setStatusMessage('fas fa-exclamation-triangle', 'text-danger', i18n.error);
-        });
+        .catch(() => setStatusMessage('var(--c7-err)', i18n.error));
     }
 
     function toggleAutoDeleteDays() {
         const checkbox = document.getElementById('auto-delete-enabled');
         const input = document.getElementById('auto-delete-days');
         input.disabled = !checkbox.checked;
-
-        // Auto-save when toggling
         saveAutoDeleteSettings();
     }
 
     function onAutoDeleteDaysChange() {
-        // Clear previous timeout
-        if (autoDeleteTimeout) {
-            clearTimeout(autoDeleteTimeout);
-        }
-
-        // Save after 1 second of inactivity
-        autoDeleteTimeout = setTimeout(() => {
-            saveAutoDeleteSettings();
-        }, 1000);
+        if (autoDeleteTimeout) clearTimeout(autoDeleteTimeout);
+        autoDeleteTimeout = setTimeout(saveAutoDeleteSettings, 1000);
     }
 
-    // Attach event listeners
     document.getElementById('auto-delete-enabled').addEventListener('change', toggleAutoDeleteDays);
     document.getElementById('auto-delete-days').addEventListener('input', onAutoDeleteDaysChange);
-
-    // Also save on blur (when user leaves the field) - more reliable than beforeunload
     document.getElementById('auto-delete-days').addEventListener('blur', function() {
         if (autoDeleteTimeout) {
             clearTimeout(autoDeleteTimeout);
@@ -220,32 +169,24 @@
         }
     });
 
-    // Handle select all checkbox
     document.getElementById('select-all').addEventListener('change', function() {
-        const checkboxes = document.querySelectorAll('.notification-checkbox');
-        checkboxes.forEach(cb => cb.checked = this.checked);
+        document.querySelectorAll('.notification-checkbox').forEach(cb => cb.checked = this.checked);
         updateDeleteButton();
     });
 
-    // Handle individual checkboxes
     document.querySelectorAll('.notification-checkbox').forEach(checkbox => {
         checkbox.addEventListener('change', updateDeleteButton);
     });
 
     function updateDeleteButton() {
         const checkedCount = document.querySelectorAll('.notification-checkbox:checked').length;
-        const deleteBtn = document.getElementById('delete-selected-btn');
-        deleteBtn.disabled = checkedCount === 0;
+        document.getElementById('delete-selected-btn').disabled = checkedCount === 0;
     }
 
-    // Confirm before deletion
     document.getElementById('notification-form').addEventListener('submit', function(e) {
         const checkedCount = document.querySelectorAll('.notification-checkbox:checked').length;
         if (checkedCount > 0) {
-            // If already confirmed via modal, proceed
-            if (this.dataset.confirmed === 'true') {
-                return;
-            }
+            if (this.dataset.confirmed === 'true') return;
             e.preventDefault();
             const message = i18n.confirmDeleteTemplate.replace('{count}', checkedCount);
             const form = this;
@@ -270,10 +211,4 @@
     }
 </script>
 {% endif %}
-
-<div class="mt-4">
-    <a href="{{ url_for('player.dashboard') }}" class="btn btn-secondary">
-        <i class="fas fa-arrow-left"></i> {{ _("Torna alla Dashboard") }}
-    </a>
-</div>
 {% endblock %}

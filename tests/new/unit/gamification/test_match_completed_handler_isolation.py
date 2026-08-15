@@ -36,7 +36,7 @@ def _make_gara(db_session) -> Gara:
         number=existing_count + 1,
         date=date.today(),
         distance=5,
-        discipline="palla_9",
+        discipline="9_ball",
         matchmaking_strategy="amalfi",
         status="playing",
         is_race_to=True,

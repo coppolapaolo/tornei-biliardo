@@ -29,7 +29,7 @@ class TestGaraDateValidationPastDate:
                 name="Gara Test",
                 date=yesterday,
                 time=time(20, 0),
-                discipline="palla_8",
+                discipline="8_ball",
                 distance=5,
                 director_id=isolated_director_user.id,
             )
@@ -43,7 +43,7 @@ class TestGaraDateValidationPastDate:
             name="Gara Oggi",
             date=today,
             time=time(20, 0),
-            discipline="palla_8",
+            discipline="8_ball",
             distance=5,
             director_id=isolated_director_user.id,
         )
@@ -71,7 +71,7 @@ class TestGaraSequentialDateValidation:
             name="Gara 1",
             date=date.today(),
             time=time(18, 0),
-            discipline="palla_8",
+            discipline="8_ball",
             distance=5,
             campionato_id=campionato.id,
         )
@@ -90,7 +90,7 @@ class TestGaraSequentialDateValidation:
                 name="Gara 2",
                 date=date.today(),
                 time=time(17, 0),  # prima di gara 1 (18:00)
-                discipline="palla_8",
+                discipline="8_ball",
                 distance=5,
                 campionato_id=campionato.id,
             )
@@ -106,7 +106,7 @@ class TestGaraSequentialDateValidation:
             name="Gara 2",
             date=date.today(),
             time=time(20, 0),  # dopo gara 1 (18:00)
-            discipline="palla_8",
+            discipline="8_ball",
             distance=5,
             campionato_id=campionato.id,
         )
@@ -124,7 +124,7 @@ class TestGaraSequentialDateValidation:
             name="Gara 2",
             date=tomorrow,
             time=time(10, 0),  # anche prima come ora, ma giorno dopo
-            discipline="palla_8",
+            discipline="8_ball",
             distance=5,
             campionato_id=campionato.id,
         )
@@ -150,7 +150,7 @@ class TestGaraSequentialDateValidation:
             name="Gara 1",
             date=today,
             time=time(18, 0),
-            discipline="palla_8",
+            discipline="8_ball",
             distance=5,
             campionato_id=campionato.id,
         )
@@ -161,7 +161,7 @@ class TestGaraSequentialDateValidation:
             name="Gara 3",
             date=in_5_days,
             time=time(20, 0),
-            discipline="palla_8",
+            discipline="8_ball",
             distance=5,
             campionato_id=campionato.id,
         )
@@ -183,7 +183,7 @@ class TestGaraSequentialDateValidation:
                 name="Gara 2",
                 date=yesterday,
                 time=time(18, 0),
-                discipline="palla_8",
+                discipline="8_ball",
                 distance=5,
                 campionato_id=campionato.id,
             )
@@ -202,7 +202,7 @@ class TestGaraSequentialDateValidation:
                 name="Gara 2",
                 date=in_10_days,
                 time=time(18, 0),
-                discipline="palla_8",
+                discipline="8_ball",
                 distance=5,
                 campionato_id=campionato.id,
             )
@@ -219,7 +219,7 @@ class TestGaraSequentialDateValidation:
             name="Gara 2",
             date=in_2_days,
             time=time(18, 0),
-            discipline="palla_8",
+            discipline="8_ball",
             distance=5,
             campionato_id=campionato.id,
         )
@@ -243,7 +243,7 @@ class TestStandaloneGaraNoSequentialValidation:
             name="Gara Standalone",
             date=today,
             time=time(20, 0),
-            discipline="palla_8",
+            discipline="8_ball",
             distance=5,
             director_id=isolated_director_user.id,
         )

@@ -1,16 +1,22 @@
 {% extends 'base.html' %}
+{% block title %}{{ _('Configurazione XP Rates') }}{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('gamification.admin_config_dashboard') }}"
+   aria-label="{{ _('Indietro') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _('Configurazione XP Rates') }}{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('gamification.admin_config_dashboard') }}" class="btn btn-secondary btn-sm d-none d-lg-inline-flex">
+  <i class="fas fa-arrow-left"></i>&nbsp;{{ _('Torna alla Config') }}
+</a>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="bi bi-graph-up-arrow"></i> {{ _('Configurazione XP Rates') }}</h2>
-    <a href="{{ url_for('gamification.admin_config_dashboard') }}" class="btn btn-outline-secondary">
-      <i class="bi bi-arrow-left"></i> {{ _('Torna alla Config') }}
-    </a>
-  </div>
-
   <!-- Info Box -->
   <div class="alert alert-info mb-4">
-    <i class="bi bi-info-circle"></i>
+    <i class="fas fa-circle-info"></i>
     {{ _('Modifica i valori XP assegnati per ogni tipo di attività. Le modifiche hanno effetto immediato.') }}
   </div>
 
@@ -52,7 +58,7 @@
                 <input type="hidden" name="key" value="{{ config.key }}">
                 <input type="hidden" name="value" value="{{ config.value }}" class="xp-value-input">
                 <button type="submit" class="btn btn-sm btn-primary save-btn" disabled>
-                  <i class="bi bi-check"></i>
+                  <i class="fas fa-check"></i>
                 </button>
               </form>
             </td>
@@ -66,7 +72,7 @@
   <!-- XP Formula Explanation -->
   <div class="card mt-4">
     <div class="card-header">
-      <h5 class="mb-0"><i class="bi bi-calculator"></i> {{ _('Esempi Calcolo XP') }}</h5>
+      <h5 class="mb-0"><i class="fas fa-calculator"></i> {{ _('Esempi Calcolo XP') }}</h5>
     </div>
     <div class="card-body">
       <div class="row">

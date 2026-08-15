@@ -1,68 +1,71 @@
 {% extends "base.html" %}
 
-{% block title %}{{ _("Invito Playoff") }} — {{ config.name }}{% endblock %}
+{% block title %}{{ _("Invito playoff") }} — {{ config.name }}{% endblock %}
+
+{# Il nome del campionato passa da kicker a sottotitolo: nella testata del
+   guscio l'ordine è titolo poi sottotitolo, e non vale una testata doppia
+   per tenere una riga sopra invece che sotto. #}
+{% block page_title %}{{ _("Sei invitato ai playoff") }}{% endblock %}
+{% block page_sub %}{{ campionato.name }}{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h4 class="mb-0"><i class="fas fa-medal"></i> {{ _("Invito Playoff") }}</h4>
-                </div>
-                <div class="card-body">
-                    <h5>{{ config.name }}</h5>
-                    <p class="text-muted">{{ campionato.name }}</p>
+<div style="max-width: 560px; margin: 0 auto;">
+    <section class="c7-card c7-card--accent">
+        <div class="c7-kicker">{{ config.name }}</div>
+        <div class="c7-num-xl" style="margin-top: 10px;">{{ qualification.qualifying_position }}</div>
+        <div style="font-size: 13px; color: var(--c7-accent-dim); margin-top: 2px;">{{ _("posizione in classifica") }}</div>
+        <p style="margin: 14px 0 0; font-size: 13px;">{{ qualification.qualification_reason }}</p>
+    </section>
 
-                    <div class="mb-3">
-                        <p><strong>{{ _("La tua posizione in classifica") }}:</strong> {{ qualification.qualifying_position }}</p>
-                        <p><strong>{{ _("Motivo") }}:</strong> {{ qualification.qualification_reason }}</p>
-                        {% if config.scheduled_date %}
-                        <p><strong>{{ _("Data prevista") }}:</strong> {{ config.scheduled_date|datetime_local }}</p>
-                        {% endif %}
-                        {% if config.location %}
-                        <p><strong>{{ _("Luogo") }}:</strong> {{ config.location }}</p>
-                        {% endif %}
-                        {% if qualification.expires_at %}
-                        <p><strong>{{ _("Rispondi entro") }}:</strong> {{ qualification.expires_at|datetime_local }}</p>
-                        {% endif %}
-                    </div>
+    <section class="c7-card" style="margin-top: 12px;">
+        <dl style="display: grid; grid-template-columns: auto 1fr; gap: 10px 18px; margin: 0; font-size: 13px;">
+            {% if config.scheduled_date %}
+            <dt class="text-muted" style="font-weight: 700;">{{ _("Quando") }}</dt>
+            <dd class="c7-num" style="margin: 0; text-align: right;">{{ config.scheduled_date|datetime_local }}</dd>
+            {% endif %}
+            {% if config.location %}
+            <dt class="text-muted" style="font-weight: 700;">{{ _("Dove") }}</dt>
+            <dd style="margin: 0; text-align: right;">{{ config.location }}</dd>
+            {% endif %}
+            {% if qualification.expires_at %}
+            <dt class="text-muted" style="font-weight: 700;">{{ _("Rispondi entro") }}</dt>
+            <dd class="c7-num" style="margin: 0; text-align: right;">{{ qualification.expires_at|datetime_local }}</dd>
+            {% endif %}
+        </dl>
+    </section>
 
-                    {% if qualification.status.value == 'pending' %}
-                    <div class="d-flex gap-2">
-                        <form method="POST" action='{{ url_for("player.playoff_confirm", qualification_id=qualification.id) }}'>
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <button type="submit" class="btn btn-success btn-lg">
-                                <i class="fas fa-check"></i> {{ _("Confermo la partecipazione") }}
-                            </button>
-                        </form>
-                        <form method="POST" action='{{ url_for("player.playoff_decline", qualification_id=qualification.id) }}'>
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <button type="submit" class="btn btn-outline-danger btn-lg"
-                                    onclick='return confirm({{ _("Sei sicuro di voler rifiutare? Il tuo posto verrà offerto al prossimo in classifica.")|tojson }})'>
-                                <i class="fas fa-times"></i> {{ _("Rifiuto") }}
-                            </button>
-                        </form>
-                    </div>
-
-                    {% elif qualification.status.value == 'confirmed' %}
-                    <div class="alert alert-success">
-                        <i class="fas fa-check-circle"></i> {{ _("Hai confermato la tua partecipazione.") }}
-                    </div>
-
-                    {% elif qualification.status.value == 'declined' %}
-                    <div class="alert alert-secondary">
-                        <i class="fas fa-times-circle"></i> {{ _("Hai rifiutato la partecipazione.") }}
-                    </div>
-
-                    {% elif qualification.status.value == 'expired' %}
-                    <div class="alert alert-warning">
-                        <i class="fas fa-clock"></i> {{ _("L'invito è scaduto.") }}
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
+    {% if qualification.status.value == 'pending' %}
+    <div style="display: grid; gap: 10px; margin-top: 18px;">
+        <form method="POST" action='{{ url_for("player.playoff_confirm", qualification_id=qualification.id) }}'>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-success btn-lg w-100">{{ _("Ci sarò") }}</button>
+        </form>
+        <form method="POST" action='{{ url_for("player.playoff_decline", qualification_id=qualification.id) }}'>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-danger w-100"
+                    onclick='return confirm({{ _("Confermi il rifiuto? Il tuo posto passa al prossimo in classifica.")|tojson }})'>
+                {{ _("Rinuncio") }}
+            </button>
+        </form>
     </div>
+
+    {% elif qualification.status.value == 'confirmed' %}
+    <div class="c7-flash c7-flash--success" style="margin-top: 18px;">
+        <span class="c7-flash__ico"><i class="fas fa-check"></i></span>
+        <span class="c7-flash__body">{{ _("Hai confermato la partecipazione.") }}</span>
+    </div>
+
+    {% elif qualification.status.value == 'declined' %}
+    <div class="c7-flash c7-flash--info" style="margin-top: 18px;">
+        <span class="c7-flash__ico"><i class="fas fa-times"></i></span>
+        <span class="c7-flash__body">{{ _("Hai rinunciato al posto.") }}</span>
+    </div>
+
+    {% elif qualification.status.value == 'expired' %}
+    <div class="c7-flash c7-flash--warning" style="margin-top: 18px;">
+        <span class="c7-flash__ico"><i class="fas fa-hourglass-end"></i></span>
+        <span class="c7-flash__body">{{ _("L'invito è scaduto.") }}</span>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

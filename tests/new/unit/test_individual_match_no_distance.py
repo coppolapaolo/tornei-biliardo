@@ -29,7 +29,7 @@ class TestFreeFormatMatchCreation:
             location="Test Hall",
             scheduled_at=utc_now() + timedelta(hours=1),
             status=MatchStatus.SCHEDULED,
-            discipline="palla_8",
+            discipline="8_ball",
             distance=None,  # Free format
             is_race_to=True,
             is_multi_set=False,

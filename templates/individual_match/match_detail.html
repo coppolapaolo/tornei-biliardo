@@ -1,203 +1,184 @@
 {% extends "base.html" %}
+{% import "components/_match_status_labels.html" as st with context %}
 
-{% block title %}{{ _("Match") }} {{ match.discipline|discipline_display }} - {{ _("Campionato Biliardo") }}{% endblock %}
+{% block title %}
+{{- _("Match") }} {{ match.player1.username }} vs
+{{ match.player2.username if match.player2 else _('avversario') }} - {{ config.APP_NAME }}
+{%- endblock %}
+
+{# Testata: una sola per pagina, quella del guscio. Via la briciola di pane e la
+   card che ripeteva disciplina, luogo e stato sopra il punteggio. #}
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('individual_match.match_list') }}"
+   aria-label="{{ _('Torna ai match') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}
+{{- match.player1.username }} vs {{ match.player2.username if match.player2 else _('avversario') }}
+{%- endblock %}
+{% block page_sub %}
+{{ match.discipline|discipline_display }}
+{%- if match.location_display %} <span class="c7-sep">·</span> {{ match.location_display }}{% endif %}
+{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-md-12">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('individual_match.dashboard') }}">{{ _("Match Individuali") }}</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">{{ _("Match Dettagli") }}</li>
-                </ol>
-            </nav>
-        </div>
+{# Stati tradotti: erano `status.value.replace('_',' ').title()`, cioe'
+   "In Progress" e "Scheduled" in inglese. La mappa e' condivisa con la
+   panoramica admin, che era rimasta indietro. #}
+{% set state_labels = st.labels %}
+{% set state = match.status.value %}
+{% set is_finished = MatchStatus.is_finished(state) %}
+
+<div class="c7-cols">
+  {# ---------- Colonna del gioco ---------- #}
+  <div class="c7-stack c7-sections">
+
+    {# Niente riga di stato qui: `_unified_match_score` disegna gia' la sua
+       pastiglia, e messe una sopra l'altra lo stato si leggeva due volte.
+       `state_labels` resta per il caso "annullato", che il punteggio non
+       distingue. #}
+    {% if state == MatchStatus.CANCELLED.value %}
+    <div class="c7-band">{{ state_labels.get(state, state) }}</div>
+    {% endif %}
+
+    {# Punteggio: il componente disegna gia' la propria card. #}
+    {% include "components/_unified_match_score.html" %}
+
+    {% if match.is_multi_set %}
+    {% include "components/_multi_set_score_display.html" %}
+    {% endif %}
+
+    {% if state == MatchStatus.SCHEDULED.value %}
+    <form method="POST" action="{{ url_for('individual_match.start_match', match_id=match.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-primary btn-lg w-100">
+        <i class="fas fa-play"></i> {{ _('Inizia il match') }}
+      </button>
+    </form>
+    {% endif %}
+
+    {# Distanza libera: si finisce quando lo decidono i giocatori. #}
+    {% if match.distance is none and state == MatchStatus.IN_PROGRESS.value %}
+    {% set total_racks = (match.player1_score or 0) + (match.player2_score or 0) %}
+    {% if total_racks > 0 %}
+    <div class="c7-card">
+      <div class="c7-kicker">{{ _('Distanza libera') }}</div>
+      <p style="margin:8px 0 0;font-size:13px;font-weight:600;line-height:1.45;color:var(--c7-ink-soft)">
+        {{ _('Questo match non ha una distanza: finisce quando lo decidete voi.') }}
+      </p>
+      <button class="btn btn-primary w-100" style="margin-top:14px" onclick="confirmResult(this)">
+        <i class="fas fa-flag-checkered"></i> {{ _('Termina il match') }}
+      </button>
     </div>
+    {% endif %}
+    {% endif %}
 
-    <div class="row">
-        <!-- Match Information and Scoring -->
-        <div class="col-md-8">
-            <!-- Match Header -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h4><i class="fas fa-shield-halved"></i> {{ match.discipline|discipline_display }}</h4>
-                            <small class="text-muted">{{ match.location_display }} - {{ match.scheduled_at|datetime_local if
-                                match.scheduled_at }}</small>
-                        </div>
-                        <div>
-                            <span
-                                class="badge bg-{{ 'success' if match.status.value in [MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value] else 'primary' if match.status.value == MatchStatus.IN_PROGRESS.value else 'warning' }} fs-6">
-                                {{ match.status.value.replace('_', ' ').title() }}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body">
-                    {# Unified Score Display #}
-                    {% include "components/_unified_match_score.html" %}
+    {# Segnapunti: solo a match in corso #}
+    {% if state == MatchStatus.IN_PROGRESS.value %}
+    {% set user_is_player = current_user.id in [match.player1_id, match.player2_id] %}
+    {% set show_forfeit = user_is_player %}
+    {% set api_format = 'json' %}
+    {% set require_table_assignment = False %}
+    {% include "components/_unified_rack_input.html" with context %}
+    {% endif %}
 
-                    {# Multi-set breakdown (if applicable) #}
-                    {% if match.is_multi_set %}
-                        {% include "components/_multi_set_score_display.html" %}
-                    {% endif %}
+    {% include "components/_unified_rack_history.html" with context %}
+  </div>
 
-                    {% if match.status.value == MatchStatus.SCHEDULED.value %}
-                    <div class="text-center mt-3">
-                        <form method="POST" action="{{ url_for('individual_match.start_match', match_id=match.id) }}">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <button type="submit" class="btn btn-success btn-lg">
-                                <i class="fas fa-play"></i> {{ _('Inizia Match') }}
-                            </button>
-                        </form>
-                    </div>
-                    {% endif %}
+  {# ---------- Colonna delle informazioni ---------- #}
+  <div class="c7-stack c7-sections">
 
-                    {# Free format: End Match button when at least one rack played #}
-                    {% if match.distance is none and match.status.value == MatchStatus.IN_PROGRESS.value %}
-                    {% set total_racks = (match.player1_score or 0) + (match.player2_score or 0) %}
-                    {% if total_racks > 0 %}
-                    <div class="alert alert-info text-center mt-3">
-                        <p class="mb-2">
-                            <i class="fas fa-infinity"></i>
-                            {{ _('Match senza limite di distanza.') }}
-                        </p>
-                        <button class="btn btn-warning btn-lg" onclick="confirmResult(this)">
-                            <i class="fas fa-flag-checkered"></i> {{ _('Termina Match') }}
-                        </button>
-                    </div>
-                    {% endif %}
-                    {% endif %}
-                </div>
-            </div>
+    <section class="c7-card">
+      <h3 class="mb-3">{{ _('Informazioni') }}</h3>
+      {# `dl` a due colonne, come `_match_info` della pagina di gara. #}
+      <dl style="display:grid;grid-template-columns:auto 1fr;gap:10px 18px;margin:0;font-size:13px">
+        <dt class="text-muted" style="font-weight:700">{{ _('Disciplina') }}</dt>
+        <dd style="margin:0;text-align:right">{{ match.discipline|discipline_display }}</dd>
 
-            {# Unified Rack Input - only if match is in progress #}
-            {% if match.status.value == MatchStatus.IN_PROGRESS.value %}
-            {% set user_is_player = current_user.id in [match.player1_id, match.player2_id] %}
-            {% set show_forfeit = user_is_player %}
-            {% set api_format = 'json' %}
-            {% set require_table_assignment = False %}
-            {% include "components/_unified_rack_input.html" with context %}
-            {% endif %}
+        <dt class="text-muted" style="font-weight:700">{{ _('Formato') }}</dt>
+        <dd style="margin:0;text-align:right">
+          {%- if match.distance is none %}{{ _('Libero') }}
+          {%- elif match.is_multi_set %}
+          {{ _('Al') if match.is_race_to_sets else _('Esattamente') }} {{ match.match_distance }} {{ _('set') }},
+          {{ _('ogni set al') if match.is_race_to else _('ogni set esattamente') }} {{ match.distance }}
+          {%- else %}
+          {{ _('Al') if match.is_race_to else _('Esattamente') }} {{ match.distance }}
+          {%- endif %}
+        </dd>
 
-            {# Unified Rack History #}
-            {% include "components/_unified_rack_history.html" with context %}
+        {% if match.location_display %}
+        <dt class="text-muted" style="font-weight:700">{{ _('Sala') }}</dt>
+        <dd style="margin:0;text-align:right">{{ match.location_display }}</dd>
+        {% endif %}
+
+        {# Via il blocco "Entry Fee": `entry_fee` non esiste sul modello, quindi
+           Jinja lo risolveva a Undefined e la riga non compariva mai. #}
+
+        {% if match.scheduled_at %}
+        <dt class="text-muted" style="font-weight:700">{{ _('Programmato') }}</dt>
+        <dd class="c7-num" style="margin:0;text-align:right">{{ match.scheduled_at|datetime_local }}</dd>
+        {% endif %}
+
+        {% if match.started_at %}
+        <dt class="text-muted" style="font-weight:700">{{ _('Iniziato') }}</dt>
+        <dd class="c7-num" style="margin:0;text-align:right">{{ match.started_at|datetime_local }}</dd>
+        {% endif %}
+
+        {% if match.ended_at %}
+        <dt class="text-muted" style="font-weight:700">{{ _('Concluso') }}</dt>
+        <dd class="c7-num" style="margin:0;text-align:right">{{ match.ended_at|datetime_local }}</dd>
+        {% endif %}
+      </dl>
+    </section>
+
+    {# Azioni. Il ritorno non e' fra queste: vive nella testata (freccia su
+       mobile, barra laterale su desktop), come in ogni altra pagina 7c. #}
+    {% if state == MatchStatus.SCHEDULED.value or is_finished %}
+    <section class="c7-stack">
+      {% if state == MatchStatus.SCHEDULED.value %}
+      <form method="POST" action="{{ url_for('individual_match.cancel_match', match_id=match.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="button" class="btn btn-danger w-100"
+                onclick='confirmSubmit(this.closest("form"), {{ _("Sei sicuro di voler annullare il match?")|tojson }})'>
+          {{ _('Annulla il match') }}
+        </button>
+      </form>
+      {% endif %}
+
+      {% if is_finished %}
+      <a href="{{ url_for('individual_match.rematch', match_id=match.id) }}" class="btn btn-primary w-100">
+        <i class="fas fa-rotate-right"></i> {{ _("Gioca ancora") }}
+      </a>
+      <a href="{{ url_for('individual_match.user_statistics') }}" class="btn btn-secondary w-100">
+        {{ _("Vedi le statistiche") }}
+      </a>
+      {% endif %}
+    </section>
+    {% endif %}
+
+    {# Modifica dei tempi: chi ha proposto il match, o l'amministratore. #}
+    {% set is_proposer = match.proposal and match.proposal.proposer_id == current_user.id %}
+    {% if is_proposer or current_user.is_admin %}
+    <section class="c7-card">
+      <h3 class="mb-3">{{ _('Orari') }}</h3>
+      <div class="c7-grid" style="grid-template-columns:1fr 1fr">
+        <div>
+          <label class="c7-label" for="individualStartTime">{{ _('Inizio') }}</label>
+          <input type="datetime-local" class="form-control" id="individualStartTime"
+                 value="{{ match.started_at.strftime('%Y-%m-%dT%H:%M') if match.started_at else '' }}">
         </div>
-
-        <!-- Sidebar -->
-        <div class="col-md-4">
-            <!-- Match Information -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5><i class="fas fa-info-circle"></i> {{ _('Informazioni Match') }}</h5>
-                </div>
-                <div class="card-body">
-                    <dl class="row">
-                        <dt class="col-sm-5">{{ _('Disciplina') }}:</dt>
-                        <dd class="col-sm-7">{{ match.discipline|discipline_display }}</dd>
-
-                        <dt class="col-sm-5">{{ _('Formato') }}:</dt>
-                        <dd class="col-sm-7">
-                            {% if match.distance is none %}
-                            <i class="fas fa-infinity"></i> {{ _('Libero') }}
-                            {% elif match.is_multi_set %}
-                            {{ _('Al') if match.is_race_to_sets else _('Esattamente') }} {{ match.match_distance }} {{ _('set') }},
-                            {{ _('ogni set al') if match.is_race_to else _('ogni set esattamente') }} {{ match.distance }}
-                            {% else %}
-                            {{ _('Al') if match.is_race_to else _('Esattamente') }} {{ match.distance }}
-                            {% endif %}
-                        </dd>
-
-                        <dt class="col-sm-5">{{ _('Luogo') }}:</dt>
-                        <dd class="col-sm-7">{{ match.location_display }}</dd>
-
-                        {% if match.entry_fee %}
-                        <dt class="col-sm-5">Entry Fee:</dt>
-                        <dd class="col-sm-7">€{{ "%.2f"|format(match.entry_fee) }}</dd>
-                        {% endif %}
-
-                        {% if match.scheduled_at %}
-                        <dt class="col-sm-5">{{ _('Programmato') }}:</dt>
-                        <dd class="col-sm-7">{{ match.scheduled_at|datetime_local }}</dd>
-                        {% endif %}
-
-                        {% if match.started_at %}
-                        <dt class="col-sm-5">{{ _('Iniziato') }}:</dt>
-                        <dd class="col-sm-7">{{ match.started_at|datetime_local }}</dd>
-                        {% endif %}
-
-                        {% if match.ended_at %}
-                        <dt class="col-sm-5">{{ _('Completato') }}:</dt>
-                        <dd class="col-sm-7">{{ match.ended_at|datetime_local }}</dd>
-                        {% endif %}
-                    </dl>
-                </div>
-            </div>
-
-            <!-- Actions -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5><i class="fas fa-cogs"></i> {{ _('Azioni') }}</h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <a href="{{ url_for('individual_match.match_list') }}" class="btn btn-outline-secondary">
-                            <i class="fas fa-arrow-left"></i> {{ _('Torna alla Lista') }}
-                        </a>
-
-                        {% if match.status.value == MatchStatus.SCHEDULED.value %}
-                        <form method="POST" action="{{ url_for('individual_match.cancel_match', match_id=match.id) }}"
-                            class="d-inline">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <button type="button" class="btn btn-outline-danger w-100"
-                                onclick='confirmSubmit(this.closest("form"), {{ _("Sei sicuro di voler annullare il match?")|tojson }})'>
-                                <i class="fas fa-times"></i> {{ _('Annulla Match') }}
-                            </button>
-                        </form>
-                        {% endif %}
-
-                        {% if match.status.value in [MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value] %}
-                        <a href="{{ url_for('individual_match.rematch', match_id=match.id) }}" class="btn btn-warning">
-                            <i class="fas fa-redo"></i> {{ _("Gioca ancora") }}
-                        </a>
-                        <a href="{{ url_for('individual_match.user_statistics') }}" class="btn btn-outline-info">
-                            <i class="fas fa-chart-line"></i> {{ _("Vedi Statistiche") }}
-                        </a>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-
-            {# Time editing section - visible to proposer or admin #}
-            {% set is_proposer = match.proposal and match.proposal.proposer_id == current_user.id %}
-            {% if is_proposer or current_user.is_admin %}
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5><i class="fas fa-clock"></i> {{ _('Modifica Tempi') }}</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row g-2">
-                        <div class="col-6">
-                            <label class="form-label small">{{ _('Inizio') }}</label>
-                            <input type="datetime-local" class="form-control form-control-sm" id="individualStartTime"
-                                value="{{ match.started_at.strftime('%Y-%m-%dT%H:%M') if match.started_at else '' }}">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label small">{{ _('Fine') }}</label>
-                            <input type="datetime-local" class="form-control form-control-sm" id="individualEndTime"
-                                value="{{ match.ended_at.strftime('%Y-%m-%dT%H:%M') if match.ended_at else '' }}">
-                        </div>
-                    </div>
-                    <button class="btn btn-outline-secondary btn-sm w-100 mt-2" onclick="updateIndividualMatchTimes({{ match.id }})">
-                        <i class="fas fa-save"></i> {{ _('Aggiorna Tempi') }}
-                    </button>
-                </div>
-            </div>
-            {% endif %}
+        <div>
+          <label class="c7-label" for="individualEndTime">{{ _('Fine') }}</label>
+          <input type="datetime-local" class="form-control" id="individualEndTime"
+                 value="{{ match.ended_at.strftime('%Y-%m-%dT%H:%M') if match.ended_at else '' }}">
         </div>
-    </div>
+      </div>
+      <button class="btn btn-secondary w-100" style="margin-top:12px"
+              onclick="updateIndividualMatchTimes({{ match.id }})">
+        {{ _('Aggiorna gli orari') }}
+      </button>
+    </section>
+    {% endif %}
+  </div>
 </div>
 {% endblock %}
 

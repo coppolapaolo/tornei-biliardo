@@ -26,7 +26,7 @@
         left: 0;
         right: 0;
         height: 2px;
-        background-color: #e9ecef;
+        background-color: var(--c7-line);
         z-index: 1;
         transform: translateY(-50%);
     }
@@ -36,7 +36,7 @@
         top: 50%;
         left: 0;
         height: 2px;
-        background-color: #0d6efd;
+        background-color: var(--c7-accent);
         z-index: 2;
         transform: translateY(-50%);
         transition: width 0.3s ease;
@@ -47,8 +47,8 @@
         width: 35px;
         height: 35px;
         border-radius: 50%;
-        background-color: #fff;
-        border: 2px solid #e9ecef;
+        background-color: var(--c7-card);
+        border: 2px solid var(--c7-line);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -59,19 +59,19 @@
     }
 
     .progress-node.active {
-        border-color: #0d6efd;
-        color: #0d6efd;
+        border-color: var(--c7-accent);
+        color: var(--c7-accent);
     }
 
     .progress-node.completed {
-        background-color: #0d6efd;
-        border-color: #0d6efd;
-        color: #fff;
+        background-color: var(--c7-accent);
+        border-color: var(--c7-accent);
+        color: var(--c7-card);
     }
 
     .summary-card {
-        background-color: #f8f9fa;
-        border-left: 4px solid #0d6efd;
+        background-color: var(--c7-bg);
+        border-left: 4px solid var(--c7-accent);
     }
 
     @media (max-width: 576px) {
@@ -321,6 +321,10 @@
                                         </div>
                                     </div>
 
+                                    {# Opzioni dei formati a tabellone: si mostrano da sole quando la
+                                       strategia scelta e' eliminazione diretta o doppio KO. #}
+                                    {% include "components/_bracket_options.html" %}
+
                                     <!-- SSR (Spot Shot Rally) Configuration -->
                                     <div class="border-top pt-3 mt-3">
                                         <h6 class="text-uppercase small fw-bold text-muted mb-3">
@@ -439,6 +443,7 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/bracket_options.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         // ANTIGRAVITY FIX: Ensuring clean script scope and syntax

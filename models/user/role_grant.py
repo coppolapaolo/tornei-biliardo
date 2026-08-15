@@ -1,6 +1,6 @@
 """
 Module: models/user/role_grant.py
-Purpose: Ruoli concedibili e delega generica (ADR-038).
+Purpose: Ruoli concedibili e delega generica (ADR-041).
 
 Data Structures: RoleGrant, RoleRequest, RoleRequestRecipient
 

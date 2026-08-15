@@ -1,66 +1,65 @@
-{# templates/components/_match_cards_mobile.html #}
-{# Mobile card-based view for matches - replaces table on small screens #}
-{# Uses same variables as _gara_matches.html #}
+{# templates/components/_match_cards_mobile.html — 7c #}
+{# Vista a card per mobile, sostituisce la tabella su schermi piccoli #}
+{# Usa le stesse variabili di _gara_matches.html #}
 
 {% set display_matches = all_matches if all_matches else matches %}
 {% if display_matches %}
-<div class="card">
-  <div class="card-header">
-    <h5 class="mb-0"><i class="fas fa-shield-halved"></i> {{ _('Partite') }}</h5>
-  </div>
-  <div class="card-body">
-    {# Collect rounds by status #}
-    {% set active_rounds = [] %}
-    {% set completed_rounds = [] %}
+<section class="c7-stack">
+  <div class="c7-kicker">{{ _('Partite') }}</div>
 
-    {% for round_num in range(1, gara.rounds_count + 1) %}
-      {% set round_matches = display_matches | selectattr("round_number", "equalto", round_num) | list %}
-      {% if round_matches %}
-        {% set has_playing = round_matches | selectattr("status", "equalto", MatchStatus.PLAYING.value) | list | length > 0 %}
-        {% set has_pending = round_matches | selectattr("status", "equalto", MatchStatus.PENDING.value) | list | length > 0 %}
-        {# Count both 'completed' and 'validated' as finished #}
-        {% set completed_count = round_matches | selectattr("status", "equalto", MatchStatus.COMPLETED.value) | list | length %}
-        {% set validated_count = round_matches | selectattr("status", "equalto", MatchStatus.VALIDATED.value) | list | length %}
-        {% set all_finished = (completed_count + validated_count) == round_matches | length %}
+  {# Collect rounds by status #}
+  {% set active_rounds = [] %}
+  {% set completed_rounds = [] %}
 
-        {% if has_playing or has_pending %}
-          {% set _void = active_rounds.append(round_num) %}
-        {% elif all_finished %}
-          {% set _void = completed_rounds.append(round_num) %}
-        {% endif %}
+  {% for round_num in range(1, gara.rounds_count + 1) %}
+    {% set round_matches = display_matches | selectattr("round_number", "equalto", round_num) | list %}
+    {% if round_matches %}
+      {% set has_playing = round_matches | selectattr("status", "equalto", MatchStatus.PLAYING.value) | list | length > 0 %}
+      {% set has_pending = round_matches | selectattr("status", "equalto", MatchStatus.PENDING.value) | list | length > 0 %}
+      {# Count both 'completed' and 'validated' as finished #}
+      {% set completed_count = round_matches | selectattr("status", "equalto", MatchStatus.COMPLETED.value) | list | length %}
+      {% set validated_count = round_matches | selectattr("status", "equalto", MatchStatus.VALIDATED.value) | list | length %}
+      {% set all_finished = (completed_count + validated_count) == round_matches | length %}
+
+      {% if has_playing or has_pending %}
+        {% set _void = active_rounds.append(round_num) %}
+      {% elif all_finished %}
+        {% set _void = completed_rounds.append(round_num) %}
       {% endif %}
-    {% endfor %}
+    {% endif %}
+  {% endfor %}
 
-    {# Turni attivi in ordine crescente (come _gara_matches.html): il turno
-       azionabile piu' basso — risultati da inserire — va in alto. Il reverse
-       (B16) assumeva un solo turno attivo, ma con i turni pre-generati
-       (strategia random) metteva in cima il turno piu' lontano.
-       Turni conclusi: gara in corso → piu' recente prima; conclusa → cronologico. #}
-    {% set is_gara_finished = gara.status == GaraStatus.COMPLETED.value %}
-    {% set ordered_active = active_rounds %}
-    {% set ordered_completed = completed_rounds if is_gara_finished else (completed_rounds | reverse | list) %}
+  {# Turni attivi in ordine crescente (come _gara_matches.html): il turno
+     azionabile piu' basso — risultati da inserire — va in alto.
+     Turni conclusi: gara in corso → piu' recente prima; conclusa → cronologico. #}
+  {% set is_gara_finished = gara.status == GaraStatus.COMPLETED.value %}
+  {% set ordered_active = active_rounds %}
+  {% set ordered_completed = completed_rounds if is_gara_finished else (completed_rounds | reverse | list) %}
 
-    {# Display active rounds first #}
-    {% for round_num in ordered_active %}
-      {% set round_matches = display_matches | selectattr("round_number", "equalto", round_num) | list %}
-      <h6 class="mt-3 mb-3 pb-2 border-bottom">
-        <i class="fas fa-play-circle text-primary"></i> {{ _('Turno %(num)s', num=round_num) }}
-      </h6>
+  {% for round_num in ordered_active %}
+    {% set round_matches = display_matches | selectattr("round_number", "equalto", round_num) | list %}
+    <div class="c7-stack">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <h3 style="margin: 0;">{{ _('Turno %(num)s', num=round_num) }}</h3>
+        <span class="c7-state c7-state--accent" style="margin-left: auto;">{{ _('In corso') }}</span>
+      </div>
       {% for match in round_matches %}
         {% include "components/_match_card.html" %}
       {% endfor %}
-    {% endfor %}
+    </div>
+  {% endfor %}
 
-    {# Then display completed rounds #}
-    {% for round_num in ordered_completed %}
-      {% set round_matches = display_matches | selectattr("round_number", "equalto", round_num) | list %}
-      <h6 class="mt-4 mb-3 pb-2 border-bottom text-muted">
-        <i class="fas fa-check-circle text-success"></i> {{ _('Turno %(num)s', num=round_num) }}
-      </h6>
+  {% for round_num in ordered_completed %}
+    {% set round_matches = display_matches | selectattr("round_number", "equalto", round_num) | list %}
+    <div class="c7-stack">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <h3 style="margin: 0; color: var(--c7-ink-muted);">{{ _('Turno %(num)s', num=round_num) }}</h3>
+        <span class="c7-state c7-state--muted" style="margin-left: auto;">{{ _('Concluso') }}</span>
+      </div>
       {% for match in round_matches %}
         {% include "components/_match_card.html" %}
       {% endfor %}
-    {% endfor %}
-  </div>
-</div>
+    </div>
+  {% endfor %}
+</section>
 {% endif %}

@@ -9,7 +9,7 @@ from flask import (
     redirect,
     url_for,
 )
-from flask_babel import Babel
+from flask_babel import Babel, gettext as _
 from flask_login import LoginManager, current_user
 import os
 import logging
@@ -248,12 +248,21 @@ def create_app(config_name=None):
     # Context processor per enum
     @app.context_processor
     def inject_enums():
-        """Inject enums into all Jinja2 templates"""
-        from models.status_enum import GaraStatus, MatchStatus
+        """Inject enums into all Jinja2 templates.
+
+        `Discipline` c'e' per la stessa ragione degli altri due: un template che
+        deve nominare una disciplina non deve riscriverne il valore a mano.
+        Dal 2026-08 e' l'**unico** vocabolario delle discipline: il parallelo
+        non dichiarato che i match individuali salvavano e' stato normalizzato
+        nei dati e rimosso dal codice, quindi un elenco di opzioni costruito su
+        questo enum combacia con qualunque riga.
+        """
+        from models.status_enum import Discipline, GaraStatus, MatchStatus
 
         return {
             "GaraStatus": GaraStatus,
             "MatchStatus": MatchStatus,
+            "Discipline": Discipline,
         }
 
     # Production endpoint allowlist (ADR-028) — pass-through in dev/test.
@@ -416,8 +425,9 @@ def create_app(config_name=None):
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
             f"script-src {script_src}; "
-            "style-src 'self' 'unsafe-inline' cdn.jsdelivr.net cdnjs.cloudflare.com; "
-            "font-src cdnjs.cloudflare.com cdn.jsdelivr.net; "
+            "style-src 'self' 'unsafe-inline' cdn.jsdelivr.net cdnjs.cloudflare.com "
+            "fonts.googleapis.com; "
+            "font-src cdnjs.cloudflare.com cdn.jsdelivr.net fonts.gstatic.com; "
             f"img-src {img_src}; "
             f"connect-src {connect_src}"
         )
@@ -470,6 +480,16 @@ def create_app(config_name=None):
     @app.errorhandler(404)
     def not_found(e):
         return render_template("errors/404.html"), 404
+
+    @app.errorhandler(403)
+    def forbidden(e):
+        # Senza questo handler un permesso negato mostrava la pagina grezza
+        # di Werkzeug: in inglese e fuori dal design. I decoratori in
+        # utils/permissions.py fanno abort(403) in parecchi punti.
+        is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
+        if request.is_json or is_ajax:
+            return jsonify({"error": _("Accesso negato")}), 403
+        return render_template("errors/403.html"), 403
 
     @app.errorhandler(500)
     def internal_error(e):

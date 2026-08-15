@@ -1,139 +1,160 @@
 {% extends "base.html" %}
 
-{% block title %}{{ _("Gestisci Disponibilità") }} - Campionato Biliardo{% endblock %}
+{% block title %}{{ _("Le mie disponibilità") }} - {{ config.APP_NAME }}{% endblock %}
 
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('individual_match.dashboard') }}"
+   aria-label="{{ _('Torna ai match individuali') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("Le mie disponibilità") }}{% endblock %}
+{% block page_sub %}{{ _("Dove e quando sei disponibile a giocare") }}{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('individual_match.discover_players') }}" class="btn btn-secondary btn-sm d-none d-lg-inline-flex">
+  <i class="fas fa-compass"></i>&nbsp;{{ _("Trova giocatori") }}
+</a>
+{% endblock %}
+
+{% set weekdays = [(1, _("L")), (2, _("M")), (3, _("M")), (4, _("G")), (5, _("V")), (6, _("S")), (0, _("D"))] %}
 {% set day_names = {0: _("Dom"), 1: _("Lun"), 2: _("Mar"), 3: _("Mer"), 4: _("Gio"), 5: _("Ven"), 6: _("Sab")} %}
-{% set weekdays = [(1, _("Lun")), (2, _("Mar")), (3, _("Mer")), (4, _("Gio")), (5, _("Ven")), (6, _("Sab")), (0, _("Dom"))] %}
 
-{% macro day_badges(days) %}
-  {% if days %}{% for d in days %}<span class="badge bg-light text-dark border me-1">{{ day_names.get(d|int, d) }}</span>{% endfor %}{% endif %}
+{# I giorni sono chip selezionabili: un checkbox dentro un pill, la selezione
+   la mostra il CSS. Sono sette e si guardano tutti insieme — una fila di
+   `form-check` con l'etichetta di fianco costava tre righe e un bersaglio
+   sotto i 48px. #}
+{% macro day_chips(selected_days, id_prefix) %}
+<div class="d-flex flex-wrap gap-2">
+  {% for value, label in weekdays %}
+  <label class="c7-pill" style="min-width:48px;justify-content:center">
+    <input type="checkbox" name="available_days" value="{{ value }}"
+           id="{{ id_prefix }}-day-{{ value }}"
+           {% if selected_days and value in selected_days %}checked{% endif %}>
+    <span aria-hidden="true">{{ label }}</span>
+    <span class="visually-hidden">{{ day_names.get(value) }}</span>
+  </label>
+  {% endfor %}
+</div>
 {% endmacro %}
 
-{% macro schedule_fields(days_field) %}
-  <div class="mb-3">
-    <label class="form-label">{{ _("Giorni Preferiti") }}</label>
-    <div class="d-flex flex-wrap gap-2">
-      {% for value, label in weekdays %}
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" id="{{ days_field }}_{{ value }}" name="{{ days_field }}" value="{{ value }}">
-        <label class="form-check-label" for="{{ days_field }}_{{ value }}">{{ label }}</label>
-      </div>
-      {% endfor %}
-    </div>
-  </div>
-  <div class="mb-3">
-    <label class="form-label">{{ _("Orari Preferiti") }}</label>
-    <input type="text" class="form-control" name="preferred_times" placeholder="{{ _('Es: 18:00-22:00') }}" value="18:00-22:00">
-    <div class="form-text">{{ _("Fascia oraria in cui sei disponibile") }}</div>
-  </div>
-  <div class="form-check form-switch mb-3">
-    <input class="form-check-input" type="checkbox" name="is_available" value="true" checked>
-    <label class="form-check-label">{{ _("Attualmente disponibile") }}</label>
-  </div>
+{% macro times_field(id_prefix, value) %}
+<div>
+  <label class="form-label" for="{{ id_prefix }}-times">{{ _("Fascia oraria") }}</label>
+  <input type="text" class="form-control" id="{{ id_prefix }}-times" name="preferred_times"
+         placeholder="18:00-22:00" value="{{ value or '' }}">
+  <div class="form-text">{{ _("Ora di inizio e di fine, separate da un trattino") }}</div>
+</div>
 {% endmacro %}
 
 {% block content %}
-<div class="container-fluid">
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{{ url_for('individual_match.dashboard') }}">{{ _("Match Individuali") }}</a></li>
-      <li class="breadcrumb-item active" aria-current="page">{{ _("Disponibilità") }}</li>
-    </ol>
-  </nav>
+{# Prototipo 9a·3. La schermata mostra un calendario del mese: qui la
+   disponibilità non è per data ma **per sala** (ADR-033), cioè giorni della
+   settimana e fascia oraria in ciascuna sala dove giochi. Restano la forma —
+   elenco, fasce abituali, card scura del perché — e la barra in fondo. #}
+<div style="max-width:720px">
+  <div class="c7-stack c7-sections">
 
-  <div class="row justify-content-center">
-    <div class="col-lg-10">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <div>
-          <h4 class="mb-1"><i class="fas fa-calendar-alt me-2"></i>{{ _("Gestisci la tua Disponibilità") }}</h4>
-          <small class="text-muted">{{ _("Indica dove sei disponibile a giocare per ricevere proposte di match") }}</small>
-        </div>
-        <a href="{{ url_for('individual_match.discover_players') }}" class="btn btn-outline-primary">
-          <i class="fas fa-search me-1"></i>{{ _("Trova giocatori") }}
-        </a>
+    {# ---------- Le sale dove sei disponibile ---------- #}
+    <section class="c7-stack">
+      <div class="c7-sechead">
+        <h2>{{ _("Le tue sale") }}</h2>
+        {% if venues %}<span class="c7-sechead__note c7-num">{{ venues|length }}</span>{% endif %}
       </div>
 
-      <div class="row">
-        <div class="col-lg-8">
-          {# ---- Current availability (venues + locations) ---- #}
-          <div class="card mb-4">
-            <div class="card-header">
-              <h6 class="mb-0"><i class="fas fa-list-check me-2"></i>{{ _("Le tue disponibilità") }}</h6>
-            </div>
-            <div class="card-body">
-              {% if not venues %}
-              <div class="alert alert-info mb-0">
-                <i class="fas fa-info-circle me-1"></i>
-                {{ _("Non hai ancora impostato nessuna disponibilità. Aggiungi una sala qui sotto!") }}
-              </div>
-              {% endif %}
-
-              {% for venue in venues %}
-              <div class="d-flex justify-content-between align-items-start border rounded p-3 mb-2">
-                <div>
-                  <h6 class="mb-1"><i class="fas fa-building me-1 text-primary"></i>{{ venue.venue_name }}
-                    <span class="badge bg-primary ms-1">{{ _("Sala") }}</span>
-                  </h6>
-                  <div class="small text-muted">
-                    {{ day_badges(venue.available_days) }}
-                    {% if venue.preferred_times %}<br><i class="fas fa-clock me-1"></i>{{ venue.preferred_times }}{% endif %}
-                  </div>
-                </div>
-                <form method="POST" action="{{ url_for('individual_match.remove_venue_availability', availability_id=venue.id) }}">
-                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                  <button type="submit" class="btn btn-outline-danger btn-sm" title="{{ _('Rimuovi') }}">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </form>
-              </div>
-              {% endfor %}
-            </div>
-          </div>
-
-          {# ---- Add venue availability ---- #}
-          <div class="card mb-4">
-            <div class="card-header">
-              <h6 class="mb-0"><i class="fas fa-building me-2"></i>{{ _("Aggiungi una sala") }}</h6>
-            </div>
-            <div class="card-body">
-              <form method="POST" action="{{ url_for('individual_match.set_venue_availability') }}">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <div class="mb-3">
-                  <label for="venue_id" class="form-label">{{ _("Sala") }} *</label>
-                  <select class="form-select" id="venue_id" name="venue_id" required>
-                    <option value="">{{ _("Seleziona una sala…") }}</option>
-                    {% for venue in active_venues %}
-                    <option value="{{ venue.id }}">{{ venue.name }}{% if venue.city %} — {{ venue.city }}{% endif %}</option>
-                    {% endfor %}
-                  </select>
-                </div>
-                {{ schedule_fields("available_days") }}
-                <button type="submit" class="btn btn-primary">
-                  <i class="fas fa-plus me-1"></i>{{ _("Aggiungi sala") }}
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-
-        {# ---- Sidebar help ---- #}
-        <div class="col-lg-4">
-          <div class="card">
-            <div class="card-header">
-              <h6 class="mb-0"><i class="fas fa-question-circle me-2"></i>{{ _("Come Funziona?") }}</h6>
-            </div>
-            <div class="card-body">
-              <ul class="small text-muted mb-0">
-                <li>{{ _("Aggiungi le sale dove giochi abitualmente") }}</li>
-                <li>{{ _("Indica i tuoi giorni e orari preferiti") }}</li>
-                <li>{{ _("Altri giocatori vedranno le tue disponibilità") }}</li>
-                <li>{{ _("Riceverai proposte di match nelle tue zone") }}</li>
-              </ul>
-            </div>
-          </div>
-        </div>
+      {% if not venues %}
+      <div class="c7-empty">
+        <div class="c7-empty__ico"><i class="fas fa-calendar"></i></div>
+        <div class="c7-empty__title">{{ _("Nessuna disponibilità") }}</div>
+        <p class="c7-empty__text">
+          {{ _("Aggiungi qui sotto la sala dove giochi di solito: gli altri giocatori ti troveranno e le proposte arriveranno già compatibili.") }}
+        </p>
       </div>
+      {% endif %}
+
+      {% for venue in venues %}
+      {# Ogni sala è modificabile dov'è: il servizio aggiorna la riga esistente
+         quando la sala è la stessa, quindi salvare da qui non ne crea un'altra.
+         Prima l'unico modo di cambiare i giorni era riaggiungere la sala dal
+         form in fondo, ricominciando da zero. #}
+      <article class="c7-card">
+        <div class="d-flex align-items-center gap-3">
+          <span class="c7-tile c7-tile--sm"><i class="fas fa-location-dot"></i></span>
+          <div class="flex-fill" style="min-width:0">
+            <div style="font-size:15px;font-weight:800;letter-spacing:-.02em">{{ venue.venue_name }}</div>
+            <div style="margin-top:3px;font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
+              {% if venue.available_days %}
+                {% for d in venue.available_days %}{{ day_names.get(d|int, d) }}{% if not loop.last %} · {% endif %}{% endfor %}
+              {% else %}{{ _("Tutti i giorni") }}{% endif %}
+              {%- if venue.preferred_times %} <span class="c7-sep">·</span> <span class="c7-num">{{ venue.preferred_times }}</span>{% endif %}
+            </div>
+          </div>
+          <form method="POST"
+                action="{{ url_for('individual_match.remove_venue_availability', availability_id=venue.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-danger btn-sm" title="{{ _('Rimuovi questa sala') }}"
+                    aria-label="{{ _('Rimuovi questa sala') }}"><i class="fas fa-trash"></i></button>
+          </form>
+        </div>
+
+        <form method="POST" action="{{ url_for('individual_match.set_venue_availability') }}"
+              class="c7-stack" style="gap:12px;margin-top:14px">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="venue_id" value="{{ venue.venue_id }}">
+          {# La riga è in elenco perché è attiva: il servizio legge
+             `is_available` dal form e, senza questo campo, salvare la
+             spegnerebbe — e una riga spenta sparisce dall'elenco senza dire
+             perché. Per non essere più disponibile si usa "Rimuovi". #}
+          <input type="hidden" name="is_available" value="true">
+          <div>
+            <div class="form-label">{{ _("Giorni") }}</div>
+            {{ day_chips(venue.available_days, "v%s"|format(venue.id)) }}
+          </div>
+          {{ times_field("v%s"|format(venue.id), venue.preferred_times) }}
+          <button type="submit" class="btn btn-secondary">{{ _("Salva le modifiche") }}</button>
+        </form>
+      </article>
+      {% endfor %}
+    </section>
+
+    {# ---------- Aggiungi una sala ---------- #}
+    <section class="c7-stack">
+      <div class="c7-sechead"><h2>{{ _("Aggiungi una sala") }}</h2></div>
+      <form method="POST" action="{{ url_for('individual_match.set_venue_availability') }}" class="c7-card">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="is_available" value="true">
+
+        <div class="mb-3">
+          <label for="venue_id" class="form-label">{{ _("Sala biliardo") }}</label>
+          <select class="form-select" id="venue_id" name="venue_id" required>
+            <option value="">{{ _("Scegli una sala…") }}</option>
+            {% for venue in active_venues %}
+            <option value="{{ venue.id }}">{{ venue.name }}{% if venue.city %} — {{ venue.city }}{% endif %}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <div class="form-label">{{ _("Giorni") }}</div>
+          {{ day_chips(None, "new") }}
+        </div>
+
+        <div class="mb-3">{{ times_field("new", None) }}</div>
+
+        <button type="submit" class="btn btn-primary w-100">
+          <i class="fas fa-plus"></i>&nbsp;{{ _("Aggiungi la sala") }}
+        </button>
+      </form>
+    </section>
+
+    {# ---------- Perché serve (card scura del prototipo) ---------- #}
+    <div class="c7-card c7-card--accent">
+      <div class="c7-kicker">{{ _("Perché serve") }}</div>
+      <p class="mb-0" style="margin-top:8px;font-size:15px;font-weight:700;line-height:1.45">
+        {{ _("Gli avversari vedono solo i giorni che hai segnato: le proposte arrivano già compatibili e si chiude in un messaggio.") }}
+      </p>
     </div>
+
+    <a href="{{ url_for('individual_match.discover_players') }}" class="btn btn-secondary w-100 d-lg-none">
+      <i class="fas fa-compass"></i>&nbsp;{{ _("Trova giocatori disponibili") }}
+    </a>
   </div>
 </div>
 {% endblock %}

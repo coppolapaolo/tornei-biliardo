@@ -515,7 +515,10 @@ pytest tests/new/unit/ -n auto && pytest tests/new/integration/ -n 4
 | `raise ValueError(...)` per not-found / conflitto / permesso | Solleva la sottoclasse da `models.exceptions` (`NotFoundError`/`ConflictError`/`PermissionDeniedError`) → route mappano a 404/409/403 |
 | Parsing form duplicato tra create / wizard / edit | Unica fonte `GaraFormParser` / `CampionatoFormParser` (vedi `routes/CLAUDE.md`) |
 | `user.role == "director"` (o `"admin"`/`"player"`/`"guest"` letterali) | `UserRole.DIRECTOR.value` ecc. da `models/user/role_enum.py` — mai letterali per valori di dominio |
+| Interfaccia scritta "a memoria" senza aprire il prototipo | Invoca la skill `ui-7c`: la schermata di riferimento e' in `docs/redesign-7c/Redesign Mobile.dc.html` |
+| `Config.DEBUG_MODE` in una route | `current_app.config.get("DEBUG_MODE", False)` — la classe base legge la env var col default `true`, quindi in produzione il guard non scatta |
 | Co-direttore con `role != director` | `GaraService`/`TournamentService.add_director` lo rifiutano (`ValidationError`): i co-direttori sono sempre `role=director` |
+| Disciplina come stringa scritta a mano (`"palla_8"`, `"8_ball"`) | `Discipline.*.value` da `models/status_enum.py` — **unico** vocabolario; per dati storici/esterni `Discipline.normalize()` (torna `None` sull'ignoto). Il nome mostrato è `display_name`, tradotto. Presidiato da `test_discipline_single_vocabulary.py` |
 
 ---
 
@@ -536,6 +539,9 @@ pytest tests/new/unit/ -n auto && pytest tests/new/integration/ -n 4
 - **[docs/adr/ADR-027-round-level-configuration-enforcement.md](docs/adr/ADR-027-round-level-configuration-enforcement.md)**: Override per turno persistiti server-side + uso obbligatorio di `Distance` VO nello scoring
 - **[docs/adr/ADR-028-production-endpoint-allowlist.md](docs/adr/ADR-028-production-endpoint-allowlist.md)**: allowlist endpoint deny-by-default in produzione, matrice ruoli (anonimo/player/director) con admin bypass — vedi anche `docs/reference/PRODUCTION_INVENTORY.md`
 - **[docs/reference/PRODUCTION_INVENTORY.md](docs/reference/PRODUCTION_INVENTORY.md)**: inventario completo route/UI/permessi/feature WIP, base per la matrice di ADR-028
+- **[docs/adr/ADR-038-bracket-persistence.md](docs/adr/ADR-038-bracket-persistence.md)**: il tabellone è persistito su `Match` (`bracket_type`/`round`/`slot`/`group`), seat derivato, dimensionamento sugli iscritti effettivi e riscrittura di `rounds_count` al sorteggio
+- **[docs/adr/ADR-039-team-separation-in-the-draw.md](docs/adr/ADR-039-team-separation-in-the-draw.md)**: squadre a due livelli (testo libero sul profilo, elenco per competizione) e separazione dei compagni come obiettivo lessicografico, non come vincolo rigido
+- **[docs/adr/ADR-040-position-classification-ties.md](docs/adr/ADR-040-position-classification-ties.md)**: classifica POSITION per bande a pari merito, con lo spareggio **deliberatamente** spento — divergenza voluta dalla convenzione di `gara_strategies.py`
 
 ---
 

@@ -182,7 +182,7 @@ class TestGeoProximity:
             location=venue.name,
             scheduled_at=utc_now() + timedelta(days=2),
             expires_at=utc_now() + timedelta(days=1),
-            discipline="palla_8",
+            discipline="8_ball",
             distance=7,
         )
         db.session.add(proposal)

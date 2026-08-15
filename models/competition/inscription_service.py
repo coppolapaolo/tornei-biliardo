@@ -167,6 +167,19 @@ class InscriptionService:
             waitlist_position=waitlist_position,
             waitlist_reason=waitlist_reason,
         )
+        # Squadra precompilata dal testo del profilo (US-1, US-8), e solo qui:
+        # è l'unico momento in cui `user.squadra` viene letto. Se il testo non
+        # corrisponde a nessuna voce dell'elenco l'iscrizione nasce senza
+        # squadra e la voce si crea dalla schermata, che può prima mostrare i
+        # nomi simili — cosa che qui, in automatico, sarebbe un doppione in più
+        # invece che uno in meno.
+        if gara.separate_teammates:
+            from models.squadra.service import SquadraService
+
+            suggerita = SquadraService.suggest_for_user(gara, user)
+            if suggerita:
+                ins.squadra_id = suggerita.id
+
         db.session.add(ins)
         db.session.flush()  # Get ID for event
 
