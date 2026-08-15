@@ -42,6 +42,12 @@ class NotificationType(Enum):
     CHALLENGE_ASSIGNED = "challenge_assigned"  # New challenge available
     EXAM_AVAILABLE = "exam_available"  # New exam available
 
+    # Delega dei ruoli concedibili (ADR-041)
+    ROLE_REQUEST_RECEIVED = "role_request_received"  # Ti è arrivata una richiesta
+    ROLE_REQUEST_PROCESSED = "role_request_processed"  # Esito della tua richiesta
+    ROLE_REQUEST_CLOSED = "role_request_closed"  # Presa in carico da un altro
+    ROLE_GRANTED = "role_granted"  # Ti è stato concesso un ruolo
+
     SYSTEM_ANNOUNCEMENT = "system_announcement"  # System-wide announcement
     ACCOUNT_UPDATE = "account_update"  # Account-related updates
     ADMIN_ACTION_REQUIRED = "admin_action_required"  # Action required by admin

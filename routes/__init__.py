@@ -11,6 +11,7 @@ def register_blueprints(app):
     from .i18n import i18n_bp
     from .onboarding import onboarding_bp
     from .demand import demand_bp
+    from .role_grant import role_grant_bp
 
     # Import dei blueprint extended domains (Phase 3)
     from .challenge import challenge_bp
@@ -32,6 +33,9 @@ def register_blueprints(app):
     app.register_blueprint(i18n_bp)
     app.register_blueprint(onboarding_bp)
     app.register_blueprint(demand_bp, url_prefix="/demand")
+    # Ruoli concedibili (ADR-041): prefix /roles, non /admin — le richieste
+    # le processano anche i titolari non-admin.
+    app.register_blueprint(role_grant_bp)
 
     # Registrazione blueprints extended domains
     app.register_blueprint(challenge_bp, url_prefix="/challenges")

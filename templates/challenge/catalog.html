@@ -8,6 +8,17 @@
 {% block page_title %}{{ _("Challenge") }}{% endblock %}
 {% block page_sub %}{{ _("Esercizi di abilità: provaci, registra il punteggio, migliora.") }}{% endblock %}
 {% block page_actions %}
+    {# Ruolo esaminatore (ADR-041): il punto d'ingresso vive qui, nelle pagine
+       dei drill, non nel profilo — è qui che sta chi si allena. Chi il ruolo
+       ce l'ha già vede invece la coda delle richieste da processare. #}
+    {% if current_user.is_authenticated and current_user.is_examiner
+          and feature_visible('roles.role_requests') %}
+    <a href="{{ url_for('roles.role_requests') }}" class="btn btn-outline-info btn-sm">{{ _("Richieste di ruolo") }}</a>
+    {% elif current_user.is_authenticated
+            and current_user.can_access('request_examiner')
+            and feature_visible('roles.request_role_form') %}
+    <a href="{{ url_for('roles.request_role_form', role='examiner') }}" class="btn btn-outline-primary btn-sm">{{ _("Diventa Esaminatore") }}</a>
+    {% endif %}
     {% if current_user.is_authenticated and current_user.can_access('create_challenge') %}
     <a href="{{ url_for('challenge.create_challenge') }}" class="btn btn-success btn-sm">{{ _("Nuova challenge") }}</a>
     {% endif %}
