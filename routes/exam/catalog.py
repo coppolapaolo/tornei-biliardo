@@ -7,7 +7,7 @@ from flask_login import current_user, login_required
 from models.base import db
 from models.exam.services import ExamService
 from models.user.models import User
-from utils import examiner_required, feature_required
+from utils import examiner_required
 from utils.route_helpers import handle_service_action
 
 from . import exam_bp
@@ -26,26 +26,36 @@ def _int_or_none(value):
     return int(value) if value.isdigit() else None
 
 
+def require_exam_reader() -> User:
+    """Chi può **guardare** gli esami: chi li sostiene, o chi li somministra.
+
+    Il gate ``take_exam`` da solo non basta, ed è una lezione presa provando il
+    percorso a mano: un esaminatore che non ha ancora macinato i suoi drill non
+    può *sostenere* un esame, ma deve arrivare ai propri — e le pagine di
+    lettura sono l'unica strada verso l'area di gestione. Gattando sul solo
+    ``take_exam`` si ottiene un esaminatore che non raggiunge niente.
+
+    Sta qui, in un posto solo, perché la prima volta l'avevo scritta inline nel
+    catalogo e dimenticata su dettaglio e sessione — che è il modo in cui una
+    regola ripetuta smette di valere.
+
+    I due gate restano ortogonali: chi entra perché è esaminatore *vede*, ma i
+    bottoni per sostenere l'esame restano chiusi dalle loro route.
+    """
+    actor = _actor()
+    if not (actor.can_access("take_exam") or actor.is_examiner):
+        abort(403)
+    return actor
+
+
 # ────────────────────────────────────────────────────────────────────────────────
 # Catalogo e dettaglio (US-P1)
 # ────────────────────────────────────────────────────────────────────────────────
 @exam_bp.route("/", methods=["GET"])
 @login_required
 def exam_catalog():
-    """Gli esami disponibili, con i drill che li compongono.
-
-    Il gate ``take_exam`` **non** basta da solo qui, ed è una lezione presa
-    provando il percorso: un esaminatore che non ha ancora macinato i suoi drill
-    non può *sostenere* un esame, ma deve poter arrivare ai propri — e questa è
-    l'unica porta verso l'area di gestione. Gattando sul solo ``take_exam`` si
-    ottiene un esaminatore che non raggiunge niente.
-
-    I due gate restano ortogonali: chi entra di qui perché è esaminatore vede il
-    catalogo, ma i bottoni per sostenere l'esame restano chiusi dalle loro route.
-    """
-    actor = _actor()
-    if not (actor.can_access("take_exam") or actor.is_examiner):
-        abort(403)
+    """Gli esami disponibili, con i drill che li compongono."""
+    require_exam_reader()
 
     return render_template(
         "exam/catalog.html",
@@ -60,13 +70,12 @@ def exam_catalog():
 
 @exam_bp.route("/<int:exam_id>", methods=["GET"])
 @login_required
-@feature_required("take_exam")
 def exam_detail(exam_id: int):
     """Dettaglio: drill, punteggi massimi e **chi lo somministra** (US-P1)."""
     from models.exam.request_service import ExamRequestService
 
+    actor = require_exam_reader()
     exam = ExamService.get_exam(exam_id)
-    actor = _actor()
 
     return render_template(
         "exam/detail.html",

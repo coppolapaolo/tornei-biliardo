@@ -21,12 +21,14 @@
   {% endif %}
 
   {# ── I drill che lo compongono (US-P1) ──────────────────────────────── #}
+  {# La lista si materializza **prima** del badge: ``challenges`` è
+     lazy="dynamic", e un .count() accanto a un .all() sono due query per
+     un'informazione sola. #}
+  {% set exam_challenges = exam.challenges.all() %}
   <div class="c7-sechead">
     <h2>{{ _("I drill dell'esame") }}</h2>
-    <span class="c7-sechead__note">{{ exam.challenges.count() }}</span>
+    <span class="c7-sechead__note">{{ exam_challenges|length }}</span>
   </div>
-
-  {% set exam_challenges = exam.challenges.all() %}
   {# Il tipo di drill e l'azione stanno su una **seconda riga**, non in coda al
      titolo: a 390px un nome lungo più una pill «Superato / non superato» più il
      bottone non ci stanno, e il risultato era un titolo strizzato a una parola

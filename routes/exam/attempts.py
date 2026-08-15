@@ -49,13 +49,20 @@ def _int_or_none(value):
 # ────────────────────────────────────────────────────────────────────────────────
 @exam_bp.route("/sessions/<int:attempt_id>", methods=["GET"])
 @login_required
-@feature_required("take_exam")
 def session_detail(attempt_id: int):
     """La sessione, vista dal candidato o dall'esaminatore.
 
     La stessa schermata per entrambi: cambia chi può agire, non cosa si vede —
     il candidato deve poter seguire i punteggi mentre gli vengono registrati.
+
+    Il gate di lettura è quello condiviso (``require_exam_reader``), non il solo
+    ``take_exam``: l'esaminatore che sta *conducendo* la sessione deve poterla
+    aprire anche se non ha mai sostenuto un esame. Chi è ammesso a *questa*
+    sessione lo decide comunque il controllo qui sotto.
     """
+    from .catalog import require_exam_reader
+
+    require_exam_reader()
     attempt = _attempt_or_404(attempt_id)
     actor = _actor()
 

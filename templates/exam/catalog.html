@@ -27,10 +27,13 @@
     {% for exam in exams %}
     <a class="c7-card" href="{{ url_for('exam.exam_detail', exam_id=exam.id) }}"
        style="display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit">
+      {# ``challenges`` è lazy="dynamic": ogni .count() è una query. Una sola
+         per riga, non due. #}
+      {% set drill_count = exam.challenges.count() %}
       <div style="flex:1;min-width:0">
         <div class="c7-rows__title">{{ exam.name }}</div>
         <div class="c7-rows__sub">
-          {{ ngettext("%(n)s drill", "%(n)s drill", exam.challenges.count(), n=exam.challenges.count()) }}
+          {{ ngettext("%(n)s drill", "%(n)s drill", drill_count, n=drill_count) }}
           <span class="c7-sep">·</span>
           {{ ngettext("%(n)s esaminatore", "%(n)s esaminatori", exam.examiner_ids|length, n=exam.examiner_ids|length) }}
           {% if exam.time_limit_minutes %}
@@ -60,10 +63,11 @@
     {% for exam in my_exams %}
     <a class="c7-rows__row" href="{{ url_for('exam.exam_detail', exam_id=exam.id) }}"
        style="text-decoration:none;color:inherit">
+      {% set drill_count = exam.challenges.count() %}
       <div class="c7-rows__main">
         <div class="c7-rows__title">{{ exam.name }}</div>
         <div class="c7-rows__sub">
-          {{ ngettext("%(n)s drill", "%(n)s drill", exam.challenges.count(), n=exam.challenges.count()) }}
+          {{ ngettext("%(n)s drill", "%(n)s drill", drill_count, n=drill_count) }}
         </div>
       </div>
       <i class="fas fa-chevron-right" style="color:var(--c7-ink-faint)"></i>

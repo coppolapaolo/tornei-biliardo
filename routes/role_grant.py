@@ -26,6 +26,7 @@ from models.user.models import User
 from models.user.role_enum import GrantableRole
 from models.user.role_grant_service import GRANT_POLICY, RoleGrantService
 from utils.route_helpers import handle_service_action
+from utils.safe_redirect import safe_next_url
 
 role_grant_bp = Blueprint("roles", __name__, url_prefix="/roles")
 
@@ -217,7 +218,12 @@ def debug_self_grant(role: str):
 
     grantable = _parse_role_or_404(role)
     user = _current_user_obj()
-    redirect_url = request.form.get("next") or url_for("challenge.challenge_catalog")
+    # ``next`` arriva da un form: passato grezzo a ``redirect()`` sarebbe un
+    # open redirect. Che la route esista solo in DEBUG_MODE non è una scusa —
+    # è lo stesso presidio che usa ``routes/auth.py``.
+    redirect_url = safe_next_url(request.form.get("next")) or url_for(
+        "challenge.challenge_catalog"
+    )
 
     return handle_service_action(
         action=lambda: RoleGrantService.debug_self_grant(user, grantable),

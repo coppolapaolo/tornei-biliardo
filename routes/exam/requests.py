@@ -9,6 +9,7 @@ Qui si legge il form e si lascia parlare il dominio.
 """
 
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from flask import abort, render_template, request, url_for
 from flask_babel import gettext as _
@@ -37,21 +38,32 @@ def _int_or_none(value):
 
 
 def _parse_slot(value) -> "datetime | None":
-    """``datetime-local`` del browser → naive UTC-convention del progetto.
+    """``datetime-local`` del browser → naive **UTC**, come vuole il progetto.
 
-    Il valore arriva senza fuso (``2026-06-12T21:00``); il progetto tiene i
-    datetime naive, quindi si prende com'è. Se il formato non torna si
-    restituisce ``None`` e il servizio dirà che manca la data — meglio del
-    500 di un ``strptime`` che esplode.
+    La conversione di fuso non è pedanteria: l'utente digita l'ora italiana
+    (``2026-06-12T21:00``), il progetto tiene i datetime naive **interpretandoli
+    come UTC** (``utils/jinja.py``), e ``|datetime_local`` ci somma il fuso in
+    lettura. Salvando il valore com'è, un appuntamento fissato per le 21:00
+    verrebbe mostrato a entrambe le parti come le 23:00 — e qualcuno si
+    presenterebbe alla sala all'ora sbagliata.
+
+    Se il formato non torna si restituisce ``None``: il servizio dirà che manca
+    la data, che è meglio del 500 di uno ``strptime`` che esplode.
     """
     value = (value or "").strip()
     if not value:
         return None
+
     for fmt in ("%Y-%m-%dT%H:%M", "%Y-%m-%dT%H:%M:%S"):
         try:
-            return datetime.strptime(value, fmt)
+            local = datetime.strptime(value, fmt)
         except ValueError:
             continue
+        return (
+            local.replace(tzinfo=ZoneInfo("Europe/Rome"))
+            .astimezone(ZoneInfo("UTC"))
+            .replace(tzinfo=None)
+        )
     return None
 
 
