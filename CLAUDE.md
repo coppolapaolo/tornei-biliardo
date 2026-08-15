@@ -83,9 +83,13 @@ python migrations/runner.py
 > passare fino a **un giorno**.
 >
 > E se la PR **aggiunge una migration**, non parte nemmeno il reload: `check-migrations`
-> lo rileva e la CI passa a `skip-deploy-notification`, che si tira indietro di proposito
-> e lascia il controllo all'operatore, stampando:
-> `git pull origin main` → `python migrations/runner.py` → Reload dal dashboard.
+> lo rileva e la CI passa a `skip-deploy-notification`, che stampa la procedura manuale.
+>
+> **Quella procedura è un fallback, non un compito da assegnare a chi fa il merge.**
+> Le migration pendenti le applica da solo `scripts/auto_deploy.py` al giro successivo,
+> disabilitando e riabilitando la web app via API. Quindi dopo un merge **non c'è nulla
+> da ricordare all'utente**: niente promemoria sul deploy, niente istruzioni su Disabled
+> /Enabled, a meno che non sia lui a chiedere di andare in produzione subito.
 >
 > Sulle **PR** girano solo `test-and-typecheck` (verde/rosso); gli altri tre risultano
 > `skipped` perché condizionati a `github.event_name == 'push'`. Vederli skipped su una PR
