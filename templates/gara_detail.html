@@ -265,12 +265,8 @@
 <div class="c7-stack c7-sections c7-tabflat">
 {# Sezioni Admin/Director (solo se può gestire) - DESKTOP or non-SSR mobile #}
 {% if user_can_manage %}
-{# Link pubblico da condividere: ha senso finché ci si può iscrivere #}
-{% if gara.status in [GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value] %}
-<div id="sectionLinkPubblico" data-c7-tab="gestione">
-  {% include "components/_gara_public_link.html" %}
-</div>
-{% endif %}
+{# Il link pubblico da condividere non e' piu' una sezione a se': sta dentro
+   la card Gestione (_gara_management.html), fra le azioni del direttore. #}
 {# Directors: on desktop always here, on mobile SSR phase moved to bottom #}
 {% if not is_ssr_phase %}
 <div class="{% if playing_admin %}order-4 order-lg-1{% endif %}" id="sectionDirettori" data-c7-tab="gestione">
@@ -310,8 +306,9 @@
    partenza sono i Turni e la Gestione ha una linguetta sua, dove richiuderla
    sarebbe solo un tap in piu' per arrivare all'unica cosa che contiene.
    La copia desktop resta nella sidebar in alto (d-none d-lg-block);
-   _gara_management non contiene id/script, quindi la doppia inclusione e'
-   sicura. A turno finito (round_action_ready) Gestione e' invece gia' in cima
+   _gara_management non contiene id e l'unico script che ospita (il link
+   pubblico) e' delegato e si registra una volta sola, quindi la doppia
+   inclusione e' sicura. A turno finito (round_action_ready) Gestione e' gia' in cima
    e aperta: qui non va ripetuta, altrimenti comparirebbe due volte. #}
 {% if playing_admin and not round_action_ready %}
 <div class="d-lg-none order-3" id="sectionGestioneMobile" data-c7-tab="gestione">

@@ -367,30 +367,59 @@ def test_grantable_role_is_probed_when_endpoint_admits_it(
         assert is_endpoint_visible("roles.role_requests", examiner) is True
 
 
-def test_role_endpoints_are_dark_until_phase_5(app, production_mode):
-    """ROLLOUT: la superficie /roles è admin-only finché gli esami non esistono.
+def test_the_role_request_path_is_open_now_that_exams_exist(app, production_mode):
+    """Fase 5: la richiesta del ruolo è visibile, l'audit no.
 
-    Il ruolo di esaminatore serve a somministrare esami: esporlo prima delle
-    Fasi 2-5 offrirebbe ai giocatori un percorso che non porta da nessuna
-    parte. Admin bypassa la matrice, quindi il bootstrap resta possibile.
-
-    Quando la Fase 5 accende il catalogo esami, questo test va aggiornato
-    insieme alle entry di ``ENDPOINT_ROLES``.
+    Fino alla Fase 4 tutta la superficie ``/roles`` era a ``set()``: il ruolo di
+    esaminatore serve a somministrare esami, e prima che gli esami esistessero
+    un «Diventa esaminatore» avrebbe portato in un vicolo cieco. Ora il catalogo
+    c'è, e il percorso si apre — ma **non tutto**: vedi il test successivo.
     """
     with app.app_context():
         anon = FakeUser()
         player = FakeUser(is_authenticated=True, is_player=True)
-        director = FakeUser(is_authenticated=True, is_director=True)
         examiner = FakeUser(is_authenticated=True, is_player=True, is_examiner=True)
+
+        # Chiedere il ruolo: i giocatori sì, gli anonimi no.
+        assert is_endpoint_visible("roles.request_role_form", player) is True
+        assert is_endpoint_visible("roles.request_role_form", anon) is False
+
+        # Processare le richieste: solo chi il ruolo ce l'ha già.
+        assert is_endpoint_visible("roles.role_requests", examiner) is True
+        assert is_endpoint_visible("roles.role_requests", player) is False
+
+
+def test_the_audit_and_the_revoke_stay_admin_only(app, production_mode):
+    """Non è rollout, è una scelta: con la propagazione a catena il ruolo si
+    diffonde senza controllo dall'alto, e la revoca resta l'unico punto di
+    contenimento (US-A3). Resta ad admin anche dopo la Fase 5.
+    """
+    with app.app_context():
         admin = FakeUser(is_authenticated=True, is_admin=True)
+        others = (
+            FakeUser(),
+            FakeUser(is_authenticated=True, is_player=True),
+            FakeUser(is_authenticated=True, is_director=True),
+            FakeUser(is_authenticated=True, is_player=True, is_examiner=True),
+        )
 
-        role_endpoints = [ep for ep in ENDPOINT_ROLES if ep.startswith("roles.")]
-        assert role_endpoints, "le entry roles.* devono essere dichiarate"
-
-        for endpoint in role_endpoints:
-            for viewer in (anon, player, director, examiner):
+        for endpoint in ("roles.role_holders", "roles.revoke_role"):
+            for viewer in others:
                 assert is_endpoint_visible(endpoint, viewer) is False, endpoint
             assert is_endpoint_visible(endpoint, admin) is True, endpoint
+
+
+def test_the_debug_self_grant_is_never_visible_in_production(app, production_mode):
+    """La route fa già ``abort(404)`` fuori da DEBUG_MODE: questa è la seconda
+    rete, e serve a rendere la decisione esplicita invece che implicita.
+    """
+    with app.app_context():
+        for viewer in (
+            FakeUser(),
+            FakeUser(is_authenticated=True, is_player=True),
+            FakeUser(is_authenticated=True, is_player=True, is_examiner=True),
+        ):
+            assert is_endpoint_visible("roles.debug_self_grant", viewer) is False
 
 
 def test_logged_in_user_blocked_from_anonymous_only(app, production_mode):

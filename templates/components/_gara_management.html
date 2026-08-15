@@ -267,5 +267,14 @@
       {% endif %}
     {% endif %}
 
+    {# Link pubblico da condividere: sta qui, in fondo alla Gestione, perche'
+       condividerlo e' una delle azioni del direttore in questa fase — non una
+       sezione separata. Ha senso finche' ci si puo' iscrivere; `gara.status`
+       (non `get_real_status()`) perche' 'inscription' copre anche gli stati
+       derivati "non ancora aperte" e "scadute", dove il link resta utile. #}
+    {% if gara.status in [GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value] %}
+      {% include "components/_gara_public_link.html" %}
+    {% endif %}
+
   </div>
 </div>
