@@ -78,6 +78,22 @@ stats = ChallengeService.get_player_statistics(user_id=player.id)
 
 ---
 
+## Eventi di dominio
+
+`ChallengeAttemptCompletedEvent` (`models/challenge/events.py`) annuncia il drill
+completato. Il dominio **non** chiama la gamification: pubblica il fatto, e chi
+vuole ascolta — stessa regola dell'esame.
+
+Lo pubblicano `ChallengeService.complete_challenge_attempt` (catalogo),
+`ChallengeService.complete_x_replacement_attempt` (drill al posto del bye) e
+`GaraChallengeService.record_challenge_attempt` (drill di turno). L'evento porta
+`origin` e `attempt_number` perché in gara la stessa prova si ripete fino a
+`max_attempts`: chi ascolta deve distinguere un allenamento nuovo da un secondo
+tiro. Le conseguenze (XP, streak `WEEKLY_DRILL`) stanno in
+`models/gamification/CLAUDE.md`.
+
+---
+
 ## Gara Challenge Integration
 
 For X-substitution in tournaments with odd players:

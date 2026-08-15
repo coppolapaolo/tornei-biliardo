@@ -355,8 +355,11 @@ class TestChallengeAttemptRoutes:
             db.session.add(user)
             db.session.commit()
             yield user
-            db.session.delete(user)
-            db.session.commit()
+            # Niente hard delete: completare un drill crea la riga `UserLevel`
+            # (XP), e cancellare l'utente proverebbe ad azzerarne la chiave
+            # primaria. È anche la regola del progetto — gli utenti si
+            # anonimizzano, non si cancellano. La pulizia la fa comunque
+            # `db_session`, che ricrea lo schema a ogni test.
 
     @pytest.fixture
     def test_challenge(self, app):
