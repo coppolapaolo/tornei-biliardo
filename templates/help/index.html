@@ -48,7 +48,7 @@
                         <div class="help-cardlink__desc">{{ section.summary }}</div>
                         <div class="help-cardlink__meta">
                             <span class="c7-label">
-                                {{ _('%(n)s pagine', n=help.pages_of(section)|length) }}
+                                {{ ngettext('%(n)s pagina', '%(n)s pagine', help.pages_of(section)|length, n=help.pages_of(section)|length) }}
                             </span>
                         </div>
                     </div>

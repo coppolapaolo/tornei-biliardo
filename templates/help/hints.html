@@ -10,7 +10,7 @@
 
 {% block title %}{{ _('Micro-aiuto') }} - {{ help.title }}{% endblock %}
 {% block page_title %}{{ _('Micro-aiuto') }}{% endblock %}
-{% block page_sub %}{{ _('%(n)s schermate coperte', n=by_screen|length) }}{% endblock %}
+{% block page_sub %}{{ ngettext('%(n)s schermata coperta', '%(n)s schermate coperte', by_screen|length, n=by_screen|length) }}{% endblock %}
 
 {% block content %}
 <div class="c7-stack help-doc">

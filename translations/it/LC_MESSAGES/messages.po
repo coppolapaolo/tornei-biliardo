@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-15 11:02+0000\n"
+"POT-Creation-Date: 2026-08-15 15:13+0000\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -22,31 +22,31 @@ msgstr ""
 msgid "Accesso negato"
 msgstr ""
 
-#: models/status_enum.py:229
+#: models/status_enum.py:336
 msgid "Palla 8"
 msgstr ""
 
-#: models/status_enum.py:230
+#: models/status_enum.py:337
 msgid "Palla 9"
 msgstr ""
 
-#: models/status_enum.py:231
+#: models/status_enum.py:338
 msgid "Palla 10"
 msgstr ""
 
-#: models/status_enum.py:232
+#: models/status_enum.py:339
 msgid "One Pocket"
 msgstr ""
 
-#: models/status_enum.py:233
+#: models/status_enum.py:340
 msgid "Straight Pool"
 msgstr ""
 
-#: models/status_enum.py:234
+#: models/status_enum.py:341
 msgid "Bank Pool"
 msgstr ""
 
-#: models/status_enum.py:235
+#: models/status_enum.py:342
 msgid "Rotation"
 msgstr ""
 
@@ -153,6 +153,110 @@ msgstr ""
 msgid ""
 "La tua richiesta di una gara nella tua zona sta per scadere. Confermala "
 "se ti interessa ancora."
+msgstr ""
+
+#: models/exam/request_service.py:437
+msgid "Nessun esaminatore ha potuto accogliere la tua richiesta."
+msgstr ""
+
+#: models/exam/request_service.py:458
+msgid "Il candidato ha ritirato la richiesta d'esame."
+msgstr ""
+
+#: models/exam/request_service.py:480
+msgid "La richiesta d'esame è scaduta senza accordo."
+msgstr ""
+
+#: models/exam/request_service.py:489
+msgid ""
+"La tua richiesta d'esame è scaduta senza che si trovasse un accordo su "
+"data e ora."
+msgstr ""
+
+#: models/exam/request_service.py:604
+#, python-format
+msgid "%(user)s chiede di sostenere «%(exam)s»: %(slot)s."
+msgstr ""
+
+#: models/exam/request_service.py:615
+msgid "Richiesta d'esame"
+msgstr ""
+
+#: models/exam/request_service.py:619
+msgid "Vedi la richiesta"
+msgstr ""
+
+#: models/exam/request_service.py:640
+msgid "Nuova proposta di appuntamento"
+msgstr ""
+
+#: models/exam/request_service.py:642
+#, python-format
+msgid "%(user)s propone «%(exam)s»: %(slot)s."
+msgstr ""
+
+#: models/exam/request_service.py:649
+msgid "Rispondi"
+msgstr ""
+
+#: models/exam/request_service.py:662
+msgid "Appuntamento d'esame confermato"
+msgstr ""
+
+#: models/exam/request_service.py:664
+#, python-format
+msgid "«%(exam)s»: appuntamento confermato per %(slot)s."
+msgstr ""
+
+#: models/exam/request_service.py:670
+msgid "Vedi l'appuntamento"
+msgstr ""
+
+#: models/exam/request_service.py:683 models/exam/request_service.py:701
+msgid "Richiesta d'esame chiusa"
+msgstr ""
+
+#: models/exam/request_service.py:686
+#, python-format
+msgid ""
+"La richiesta per «%(exam)s» è stata presa in carico da un altro "
+"esaminatore."
+msgstr ""
+
+#: models/exam/services.py:720
+msgid "L'esame sta per iniziare"
+msgstr ""
+
+#: models/exam/services.py:722
+#, python-format
+msgid ""
+"L'esaminatore ha aperto la sessione di «%(exam)s»: accetta l'inizio per "
+"far partire la valutazione."
+msgstr ""
+
+#: models/exam/services.py:729
+msgid "Accetta l'inizio"
+msgstr ""
+
+#: models/exam/services.py:737
+msgid "superato"
+msgstr ""
+
+#: models/exam/services.py:737
+msgid "non superato"
+msgstr ""
+
+#: models/exam/services.py:741
+msgid "Esame certificato"
+msgstr ""
+
+#: models/exam/services.py:743
+#, python-format
+msgid "«%(exam)s»: esito %(outcome)s, certificato da %(examiner)s."
+msgstr ""
+
+#: models/exam/services.py:754
+msgid "Vedi l'esito"
 msgstr ""
 
 #: models/gamification/frontend_bridge.py:164
@@ -326,20 +430,20 @@ msgstr ""
 
 #: models/individual_match/match_lifecycle_service.py:223
 #: models/individual_match/proposal_service.py:232
-#: models/individual_match/proposal_service.py:566
-#: models/individual_match/proposal_service.py:611
+#: models/individual_match/proposal_service.py:597
+#: models/individual_match/proposal_service.py:642
 msgid "Visualizza"
 msgstr ""
 
 #: models/individual_match/proposal_service.py:192
-#: models/individual_match/proposal_service.py:478
+#: models/individual_match/proposal_service.py:491
 msgid "Un giocatore"
 msgstr ""
 
 #: models/individual_match/proposal_service.py:218
-#: models/individual_match/proposal_service.py:482
-#: models/individual_match/proposal_service.py:553
-#: models/individual_match/proposal_service.py:598
+#: models/individual_match/proposal_service.py:486
+#: models/individual_match/proposal_service.py:584
+#: models/individual_match/proposal_service.py:629
 #, python-format
 msgid "a %(loc)s"
 msgstr ""
@@ -357,39 +461,48 @@ msgstr ""
 msgid "Giocatore già invitato a questa proposta"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:473
+#: models/individual_match/proposal_service.py:483
 msgid "Proposta già accettata"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:487
+#: models/individual_match/proposal_service.py:496
 msgid "Proposta accettata!"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:489
+#: models/individual_match/proposal_service.py:498
 #, python-format
 msgid "%(player)s ha accettato la tua proposta di match%(location)s"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:495
+#: models/individual_match/proposal_service.py:504
 msgid "Vai al match"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:558
-#: models/individual_match/proposal_service.py:603
+#: models/individual_match/proposal_service.py:519
+msgid "Proposta di match chiusa"
+msgstr ""
+
+#: models/individual_match/proposal_service.py:521
+#, python-format
+msgid "La proposta di match%(location)s è stata accettata da un altro giocatore."
+msgstr ""
+
+#: models/individual_match/proposal_service.py:589
+#: models/individual_match/proposal_service.py:634
 msgid "Proposta scaduta"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:560
-#: models/individual_match/proposal_service.py:605
+#: models/individual_match/proposal_service.py:591
+#: models/individual_match/proposal_service.py:636
 #, python-format
 msgid "La tua proposta di match%(location)s è scaduta senza accettazioni."
 msgstr ""
 
-#: models/individual_match/proposal_service.py:692
+#: models/individual_match/proposal_service.py:723
 msgid "Proposta Match Conclusa"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:694
+#: models/individual_match/proposal_service.py:725
 #, python-format
 msgid "La proposta di match '%(title)s' è stata accettata da un altro giocatore."
 msgstr ""
@@ -514,6 +627,57 @@ msgstr ""
 msgid "Iscrizione a Gara"
 msgstr ""
 
+#: models/user/role_grant_service.py:517 routes/gamification/features.py:75
+msgid "Esaminatore"
+msgstr ""
+
+#: models/user/role_grant_service.py:547
+msgid "Richiesta di ruolo"
+msgstr ""
+
+#: models/user/role_grant_service.py:549
+#, python-format
+msgid "%(user)s chiede il ruolo di %(role)s."
+msgstr ""
+
+#: models/user/role_grant_service.py:557
+msgid "Vedi le richieste"
+msgstr ""
+
+#: models/user/role_grant_service.py:572
+#, python-format
+msgid "%(actor)s ha approvato la tua richiesta: ora sei %(role)s."
+msgstr ""
+
+#: models/user/role_grant_service.py:578
+#, python-format
+msgid "La tua richiesta per il ruolo di %(role)s non è stata accolta."
+msgstr ""
+
+#: models/user/role_grant_service.py:585
+msgid "Richiesta di ruolo processata"
+msgstr ""
+
+#: models/user/role_grant_service.py:600
+msgid "Richiesta di ruolo chiusa"
+msgstr ""
+
+#: models/user/role_grant_service.py:602
+#, python-format
+msgid ""
+"La richiesta per il ruolo di %(role)s è stata presa in carico da un altro"
+" titolare."
+msgstr ""
+
+#: models/user/role_grant_service.py:619
+msgid "Nuovo ruolo"
+msgstr ""
+
+#: models/user/role_grant_service.py:621
+#, python-format
+msgid "Hai ottenuto il ruolo di %(role)s."
+msgstr ""
+
 #: routes/auth.py:47
 msgid "Che piacere rivederti!"
 msgstr ""
@@ -574,7 +738,7 @@ msgstr ""
 msgid "Tentativo registrato."
 msgstr ""
 
-#: routes/challenge.py:381 templates/challenge/catalog.html:82
+#: routes/challenge.py:381 templates/challenge/catalog.html:93
 msgid "Non è stato possibile aggiornare i preferiti."
 msgstr ""
 
@@ -763,6 +927,30 @@ msgstr ""
 
 #: routes/onboarding.py:50
 msgid "Tutto pronto! Buon divertimento."
+msgstr ""
+
+#: routes/role_grant.py:59
+msgid "Hai già questo ruolo."
+msgstr ""
+
+#: routes/role_grant.py:93
+msgid "Richiesta inviata."
+msgstr ""
+
+#: routes/role_grant.py:130
+msgid "Richiesta approvata: il ruolo è stato concesso."
+msgstr ""
+
+#: routes/role_grant.py:132
+msgid "Richiesta rifiutata."
+msgstr ""
+
+#: routes/role_grant.py:174
+msgid "Ruolo concesso."
+msgstr ""
+
+#: routes/role_grant.py:192
+msgid "Ruolo revocato."
 msgstr ""
 
 #: routes/admin/campionato.py:104 routes/admin/campionato.py:325
@@ -1312,22 +1500,22 @@ msgstr ""
 msgid "Gestore Sala"
 msgstr ""
 
-#: routes/gamification/features.py:98
+#: routes/gamification/features.py:99
 msgid "Formato regole non valido"
 msgstr ""
 
-#: routes/gamification/features.py:114
+#: routes/gamification/features.py:115
 msgid "Feature aggiornata con successo"
 msgstr ""
 
-#: routes/gamification/features.py:147
+#: routes/gamification/features.py:148
 #: templates/gamification/admin/feature_create.html:2
 #: templates/gamification/admin/feature_create.html:8
 #: templates/gamification/admin/features.html:11
 msgid "Nuova Feature"
 msgstr ""
 
-#: routes/gamification/features.py:163
+#: routes/gamification/features.py:164
 msgid "Feature creata con successo"
 msgstr ""
 
@@ -1779,6 +1967,7 @@ msgstr ""
 #: templates/player/delete_account.html:7
 #: templates/player/delete_account.html:42
 #: templates/player/my_venue_requests.html:66 templates/player/venues.html:99
+#: templates/roles/request_form.html:63
 msgid "Annulla"
 msgstr ""
 
@@ -2917,6 +3106,7 @@ msgstr ""
 #: templates/public/campionato_detail.html:100
 #: templates/public/campionatos_list.html:17
 #: templates/public/garas_list.html:13 templates/public/garas_list.html:33
+#: templates/roles/holders.html:22
 msgid "Stato"
 msgstr ""
 
@@ -3299,6 +3489,7 @@ msgstr ""
 #: templates/gamification/admin/xp_management.html:28
 #: templates/gamification/admin/xp_management.html:63
 #: templates/gamification/admin/xp_management.html:90
+#: templates/roles/holders.html:19
 msgid "Utente"
 msgstr ""
 
@@ -3319,7 +3510,7 @@ msgstr ""
 msgid "Azioni"
 msgstr ""
 
-#: templates/admin/director_requests.html:32
+#: templates/admin/director_requests.html:32 templates/roles/requests.html:39
 msgid "Approva"
 msgstr ""
 
@@ -3328,6 +3519,7 @@ msgstr ""
 #: templates/components/_unified_rack_input.html:229
 #: templates/individual_match/proposal_detail.html:132
 #: templates/individual_match/proposals.html:109
+#: templates/roles/requests.html:48
 msgid "Rifiuta"
 msgstr ""
 
@@ -3454,6 +3646,7 @@ msgstr ""
 #: templates/components/_gara_edit_form.html:130
 #: templates/components/_new_gara_modal.html:288
 #: templates/components/_new_gara_modal.html:290
+#: templates/components/_user_info_card.html:56
 #: templates/gamification/admin/streak_config.html:85
 msgid "No"
 msgstr ""
@@ -3464,6 +3657,7 @@ msgstr ""
 #: templates/components/_gara_edit_form.html:129
 #: templates/components/_new_gara_modal.html:288
 #: templates/components/_new_gara_modal.html:289
+#: templates/components/_user_info_card.html:45
 msgid "Sì"
 msgstr ""
 
@@ -4002,12 +4196,12 @@ msgid "Le sale registrate sulla piattaforma"
 msgstr ""
 
 #: templates/challenge/_challenge_card.html:29
-#: templates/challenge/catalog.html:81
+#: templates/challenge/catalog.html:92
 msgid "Rimuovi dai preferiti"
 msgstr ""
 
 #: templates/challenge/_challenge_card.html:29
-#: templates/challenge/catalog.html:80
+#: templates/challenge/catalog.html:91
 msgid "Aggiungi ai preferiti"
 msgstr ""
 
@@ -4109,7 +4303,7 @@ msgid "Non ci sono ancora challenge da provare."
 msgstr ""
 
 #: templates/challenge/_challenge_grid.html:15
-#: templates/challenge/catalog.html:50
+#: templates/challenge/catalog.html:61
 msgid "Crea la prima"
 msgstr ""
 
@@ -4127,56 +4321,65 @@ msgstr ""
 msgid "Esercizi di abilità: provaci, registra il punteggio, migliora."
 msgstr ""
 
-#: templates/challenge/catalog.html:12 templates/challenge/create.html:4
+#: templates/challenge/catalog.html:16 templates/roles/requests.html:3
+#: templates/roles/requests.html:8
+msgid "Richieste di ruolo"
+msgstr ""
+
+#: templates/challenge/catalog.html:20
+msgid "Diventa Esaminatore"
+msgstr ""
+
+#: templates/challenge/catalog.html:23 templates/challenge/create.html:4
 #: templates/challenge/create.html:10
 #: templates/components/_challenge_management_modal.html:88
 msgid "Nuova challenge"
 msgstr ""
 
-#: templates/challenge/catalog.html:19
+#: templates/challenge/catalog.html:30
 #: templates/components/_history_filters.html:24
 #: templates/components/_history_filters.html:87
 #: templates/gamification/dashboard.html:184
 msgid "Tutte"
 msgstr ""
 
-#: templates/challenge/catalog.html:23
+#: templates/challenge/catalog.html:34
 msgid "Le mie"
 msgstr ""
 
-#: templates/challenge/catalog.html:27
+#: templates/challenge/catalog.html:38
 msgid "Preferite"
 msgstr ""
 
-#: templates/challenge/catalog.html:47
+#: templates/challenge/catalog.html:58
 msgid "Non hai ancora creato challenge"
 msgstr ""
 
-#: templates/challenge/catalog.html:48
+#: templates/challenge/catalog.html:59
 msgid ""
 "Una challenge è un esercizio ripetibile: una foto del tavolo, le regole, "
 "il punteggio."
 msgstr ""
 
-#: templates/challenge/catalog.html:67
+#: templates/challenge/catalog.html:78
 msgid "Nessuna preferita"
 msgstr ""
 
-#: templates/challenge/catalog.html:68
+#: templates/challenge/catalog.html:79
 msgid "Tocca il cuore su una challenge per ritrovarla qui."
 msgstr ""
 
-#: templates/challenge/catalog.html:83
+#: templates/challenge/catalog.html:94
 #: templates/components/_challenge_management_modal.html:151
 msgid "Errore di rete: riprova."
 msgstr ""
 
-#: templates/challenge/catalog.html:84
+#: templates/challenge/catalog.html:95
 #: templates/player/challenge_detail.html:104
 msgid "Confermi di voler eliminare questa challenge? Non si torna indietro."
 msgstr ""
 
-#: templates/challenge/catalog.html:85
+#: templates/challenge/catalog.html:96
 #: templates/player/challenge_detail.html:114
 msgid "Non è stato possibile eliminare la challenge."
 msgstr ""
@@ -4487,6 +4690,7 @@ msgstr ""
 #: templates/gamification/admin/level_config.html:169
 #: templates/gamification/admin/streak_config.html:65
 #: templates/gamification/admin/streak_config.html:147
+#: templates/roles/holders.html:34
 msgid "Attivo"
 msgstr ""
 
@@ -5202,6 +5406,7 @@ msgstr ""
 #: templates/individual_match/discover_players.html:38
 #: templates/public/campionato_detail.html:98
 #: templates/public/garas_list.html:11 templates/public/garas_list.html:31
+#: templates/roles/holders.html:21
 msgid "Data"
 msgstr ""
 
@@ -7622,7 +7827,29 @@ msgstr ""
 msgid "Classifiche per Campionato"
 msgstr ""
 
-#: templates/components/_user_info_card.html:44
+#: templates/components/_user_info_card.html:42
+msgid "Esaminatore:"
+msgstr ""
+
+#: templates/components/_user_info_card.html:49
+msgid ""
+"Revocare il ruolo di Esaminatore? Gli esami creati e le certificazioni "
+"rilasciate restano validi."
+msgstr ""
+
+#: templates/components/_user_info_card.html:52
+msgid "Revoca ruolo"
+msgstr ""
+
+#: templates/components/_user_info_card.html:59
+msgid "Promuovere a Esaminatore?"
+msgstr ""
+
+#: templates/components/_user_info_card.html:62
+msgid "Promuovi a Esaminatore"
+msgstr ""
+
+#: templates/components/_user_info_card.html:74
 msgid "Override Attivo"
 msgstr ""
 
@@ -8926,9 +9153,11 @@ msgid "Micro-aiuto"
 msgstr ""
 
 #: templates/help/hints.html:13
-#, fuzzy, python-format
-msgid "%(n)s schermate coperte"
-msgstr ""
+#, python-format
+msgid "%(n)s schermata coperta"
+msgid_plural "%(n)s schermate coperte"
+msgstr[0] ""
+msgstr[1] ""
 
 #: templates/help/hints.html:21
 msgid "A cosa serve questa pagina"
@@ -8972,8 +9201,10 @@ msgstr ""
 
 #: templates/help/index.html:51 templates/help/section.html:7
 #, fuzzy, python-format
-msgid "%(n)s pagine"
-msgstr ""
+msgid "%(n)s pagina"
+msgid_plural "%(n)s pagine"
+msgstr[0] ""
+msgstr[1] ""
 
 #: templates/help/page.html:31
 #, fuzzy, python-format
@@ -9008,8 +9239,10 @@ msgstr ""
 
 #: templates/help/search.html:7
 #, fuzzy, python-format
-msgid "%(n)s risultati"
-msgstr ""
+msgid "%(n)s risultato"
+msgid_plural "%(n)s risultati"
+msgstr[0] ""
+msgstr[1] ""
 
 #: templates/help/search.html:17
 #, python-format
@@ -10688,6 +10921,103 @@ msgstr ""
 msgid "Vedi le gare"
 msgstr ""
 
+#: templates/roles/holders.html:3 templates/roles/holders.html:8
+msgid "Titolari del ruolo"
+msgstr ""
+
+#: templates/roles/holders.html:11
+msgid ""
+"Con la propagazione il ruolo si diffonde senza passare da admin: qui si "
+"legge da dove arriva ciascun titolare."
+msgstr ""
+
+#: templates/roles/holders.html:20
+msgid "Concesso da"
+msgstr ""
+
+#: templates/roles/holders.html:37
+msgid "Revocato il"
+msgstr ""
+
+#: templates/roles/holders.html:46
+msgid ""
+"Revocare il ruolo? Gli esami creati e le certificazioni rilasciate "
+"restano validi."
+msgstr ""
+
+#: templates/roles/holders.html:51
+msgid "Revoca"
+msgstr ""
+
+#: templates/roles/holders.html:63
+msgid "Nessun titolare: il ruolo non è ancora stato concesso a nessuno."
+msgstr ""
+
+#: templates/roles/request_form.html:3
+msgid "Richiedi un ruolo"
+msgstr ""
+
+#: templates/roles/request_form.html:13
+msgid "Chiedi di diventare Esaminatore"
+msgstr ""
+
+#: templates/roles/request_form.html:20
+msgid "Hai già una richiesta in attesa, inviata il"
+msgstr ""
+
+#: templates/roles/request_form.html:25
+msgid ""
+"Un esaminatore compone gli esami e ne certifica di persona l'esito. "
+"Scegli a chi indirizzare la richiesta: basta che uno solo approvi."
+msgstr ""
+
+#: templates/roles/request_form.html:33
+msgid "Destinatari"
+msgstr ""
+
+#: templates/roles/request_form.html:36
+msgid "Non selezionarne nessuno per inviare la richiesta a tutti."
+msgstr ""
+
+#: templates/roles/request_form.html:49
+msgid "Non c'è ancora nessun destinatario disponibile."
+msgstr ""
+
+#: templates/roles/request_form.html:55
+msgid "Note (facoltative)"
+msgstr ""
+
+#: templates/roles/request_form.html:60
+#, fuzzy
+msgid "Invia richiesta"
+msgstr "Perc. Vinte"
+
+#: templates/roles/requests.html:14
+msgid ""
+"Basta una sola approvazione: chi approva per primo concede il ruolo e la "
+"richiesta si chiude per gli altri."
+msgstr ""
+
+#: templates/roles/requests.html:24
+msgid "Richiesto il"
+msgstr ""
+
+#: templates/roles/requests.html:26
+msgid "Destinatari:"
+msgstr ""
+
+#: templates/roles/requests.html:35
+msgid "Approvare la richiesta e concedere il ruolo?"
+msgstr ""
+
+#: templates/roles/requests.html:44
+msgid "Rifiutare la richiesta?"
+msgstr ""
+
+#: templates/roles/requests.html:58
+msgid "Nessuna richiesta in attesa."
+msgstr ""
+
 #: utils/jinja.py:18 utils/jinja.py:61 utils/jinja.py:98 utils/jinja.py:139
 #: utils/jinja.py:169 utils/jinja.py:201 utils/jinja.py:211 utils/jinja.py:247
 #: utils/jinja.py:265 utils/jinja.py:277 utils/jinja.py:294
@@ -10746,4 +11076,13 @@ msgstr ""
 #: utils/status_ui.py:170
 msgid "Respinta"
 msgstr ""
+
+#~ msgid "%(n)s schermate coperte"
+#~ msgstr ""
+
+#~ msgid "%(n)s pagine"
+#~ msgstr ""
+
+#~ msgid "%(n)s risultati"
+#~ msgstr ""
 

@@ -4,7 +4,7 @@
 
 {% block title %}{{ _('Cerca') }} - {{ help.title }}{% endblock %}
 {% block page_title %}{{ _('Cerca nella guida') }}{% endblock %}
-{% block page_sub %}{% if query %}{{ _('%(n)s risultati', n=results|length) }}{% endif %}{% endblock %}
+{% block page_sub %}{% if query %}{{ ngettext('%(n)s risultato', '%(n)s risultati', results|length, n=results|length) }}{% endif %}{% endblock %}
 
 {% block content %}
 <div class="c7-stack help-doc">

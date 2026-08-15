@@ -114,6 +114,29 @@ def test_api_schermata(client):
 
 
 @pytest.mark.integration
+def test_i_link_dei_microaiuti_portano_da_qualche_parte(client):
+    """Il «leggi tutto» di ogni micro-aiuto deve aprire una pagina vera.
+
+    L'API costruiva l'indirizzo come `/aiuto/<slug>`, ma le pagine stanno
+    sotto la loro sezione (`/aiuto/<sezione>/<slug>`): ogni collegamento
+    restituito era un 404. Un indirizzo scritto a mano in Python non ha modo
+    di accorgersi che la route ha un'altra forma — questo test si', perche'
+    lo apre invece di guardarlo.
+    """
+    content = get_content(FALLBACK_LOCALE)
+    provati = 0
+    for screen in content.tours:
+        payload = client.get(f"/aiuto/api/schermata/{screen}").get_json()
+        for hint in payload["hints"]:
+            url = hint["url"]
+            if not url:
+                continue
+            provati += 1
+            assert client.get(url).status_code == 200, f"{hint['id']} -> {url}"
+    assert provati, "nessun micro-aiuto rimanda a una pagina: test inutile"
+
+
+@pytest.mark.integration
 def test_api_schermata_sconosciuta(client):
     """Meglio un 404 di un oggetto vuoto: chi integra deve accorgersi subito
     di aver scritto il nome dell'endpoint sbagliato."""

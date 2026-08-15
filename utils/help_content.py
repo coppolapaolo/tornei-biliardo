@@ -37,7 +37,7 @@ from dataclasses import dataclass, field
 from html import escape
 from typing import Any, Iterable, Optional
 
-from flask import current_app
+from flask import current_app, url_for
 from markupsafe import Markup
 
 # Lingua in cui l'aiuto e' scritto per intero: ogni altra vi ricade.
@@ -447,10 +447,19 @@ def screen_payload(screen: str, locale: Optional[str] = None) -> dict[str, Any]:
     hints = hints_for_screen(screen, locale)
 
     def page_url(hint: Hint) -> Optional[str]:
+        """Il collegamento «leggi tutto» del micro-aiuto.
+
+        Costruito con `url_for` e non a mano: la pagina sta sotto la sua
+        sezione (`/aiuto/<sezione>/<slug>`), e un path scritto in questo file
+        smetterebbe di corrispondere alla route senza che nulla se ne accorga.
+        """
         if not hint.page:
             return None
+        page = content.pages.get(hint.page)
+        if page is None:
+            return None
         fragment = f"#{hint.section}" if hint.section else ""
-        return f"/aiuto/{hint.page}{fragment}"
+        return url_for("help.page", section_id=page.section, slug=page.slug) + fragment
 
     return {
         "screen": screen,
