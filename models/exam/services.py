@@ -22,9 +22,11 @@ sono proprietà del tentativo, non della schermata che lo pilota.
 
 from __future__ import annotations
 
+import logging
 from typing import Any, Dict, List, Optional, Sequence
 
 from sqlalchemy import case, distinct, func
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
 from ..base import db, utc_now
@@ -39,6 +41,8 @@ from ..status_enum import ExamAttemptMode, ExamAttemptStatus
 from ..transaction.manager import transactional
 from ..user.models import User
 from .models import Exam, ExamAttempt, ExamChallenge, ExamChallengeResult, ExamExaminer
+
+logger = logging.getLogger(__name__)
 
 
 class ExamService:
@@ -455,6 +459,93 @@ class ExamService:
         return attempt
 
     # ────────────────────────────────────────────────────────────────────
+    # Sessione certificata (US-E6, US-P6)
+    # ────────────────────────────────────────────────────────────────────
+    @staticmethod
+    @transactional(domain="exam")
+    def open_certified_session(actor: User, request_id: int) -> ExamAttempt:
+        """Apre la sessione d'esame dall'appuntamento accettato.
+
+        Nasce in ``awaiting_player_start``: la sessione esiste, ma **nessun
+        punteggio è registrabile** finché il candidato non accetta l'inizio
+        (US-P6). L'attesa è uno stato del tentativo, non una schermata: una
+        POST diretta aggira la UI, non il servizio.
+        """
+        from .request_models import ExamRequest
+
+        request = db.session.get(ExamRequest, request_id)
+        if request is None:
+            raise NotFoundError("Richiesta d'esame non trovata")
+
+        actor_id = getattr(actor, "id", None)
+        if actor_id is None:
+            raise PermissionDeniedError("Non puoi aprire questa sessione")
+
+        if not request.is_accepted or request.accepted_by_id is None:
+            raise ConflictError(
+                "L'appuntamento non è stato ancora fissato: non c'è nulla da aprire"
+            )
+        if actor_id != request.accepted_by_id:
+            raise PermissionDeniedError(
+                "Solo l'esaminatore che ha accettato l'appuntamento apre la sessione"
+            )
+        if actor_id == request.requester_id:
+            raise PermissionDeniedError("Un esaminatore non può esaminare se stesso")
+
+        attempt = ExamAttempt(
+            exam_id=request.exam_id,
+            user_id=request.requester_id,
+            mode=ExamAttemptMode.CERTIFIED.value,
+            status=ExamAttemptStatus.AWAITING_PLAYER_START.value,
+            started_at=utc_now(),
+            examiner_id=actor_id,
+            billiard_hall_id=request.billiard_hall_id,
+            exam_request_id=request.id,
+        )
+        db.session.add(attempt)
+
+        # Savepoint: l'indice UNIQUE parziale su ``exam_request_id`` emerge al
+        # flush se una sessione per questo appuntamento esiste già, e va
+        # tradotto invece di uscire come 500 opaco (ADR-025).
+        try:
+            with db.session.begin_nested():
+                db.session.flush()
+        except IntegrityError as exc:
+            raise ConflictError(
+                "Per questo appuntamento la sessione è già stata aperta"
+            ) from exc
+
+        attempt.create_placeholder_results()
+        db.session.flush()
+
+        ExamService._notify_session_opened(attempt)
+        return attempt
+
+    @staticmethod
+    @transactional(domain="exam")
+    def accept_session_start(attempt_id: int, actor: User) -> ExamAttempt:
+        """Il candidato accetta l'inizio dell'esame (US-P6).
+
+        È l'unico gesto che sblocca la registrazione dei punteggi, e lo fa solo
+        il candidato: nessuno viene valutato a sua insaputa.
+        """
+        attempt = db.session.get(ExamAttempt, attempt_id)
+        if attempt is None:
+            raise NotFoundError("Tentativo non trovato")
+
+        if getattr(actor, "id", None) != attempt.user_id:
+            raise PermissionDeniedError(
+                "Solo il candidato può accettare l'inizio dell'esame"
+            )
+        if attempt.status != ExamAttemptStatus.AWAITING_PLAYER_START.value:
+            raise ConflictError("Questa sessione non è in attesa di iniziare")
+
+        attempt.status = ExamAttemptStatus.IN_PROGRESS.value
+        attempt.started_at = utc_now()
+        db.session.flush()
+        return attempt
+
+    # ────────────────────────────────────────────────────────────────────
     # Registrazione dei risultati
     # ────────────────────────────────────────────────────────────────────
     @staticmethod
@@ -552,7 +643,8 @@ class ExamService:
         ExamService._require_scorer(attempt, actor)
         ExamService._require_in_progress(attempt)
 
-        if attempt.mode == ExamAttemptMode.SELF_PRACTICE.value:
+        certified = attempt.mode == ExamAttemptMode.CERTIFIED.value
+        if not certified:
             if passed is not None:
                 raise ValidationError(
                     "Un tentativo in autonomia non certifica: non ha un esito"
@@ -567,6 +659,9 @@ class ExamService:
         attempt.status = ExamAttemptStatus.COMPLETED.value
         attempt.completed_at = utc_now()
         db.session.flush()
+
+        if certified:
+            ExamService._notify_certified(attempt)
         return attempt
 
     @staticmethod
@@ -597,6 +692,67 @@ class ExamService:
         attempt.passed = None
         db.session.flush()
         return attempt
+
+    # ────────────────────────────────────────────────────────────────────
+    # Notifiche della sessione (best-effort: non bloccano mai l'operazione)
+    # ────────────────────────────────────────────────────────────────────
+    @staticmethod
+    def _notify(user_ids: Sequence[int], **kwargs: Any) -> None:
+        if not user_ids:
+            return
+        try:
+            from ..notification.factory import NotificationFactory
+
+            NotificationFactory.create_bulk_notification(
+                user_ids=list(user_ids), continue_on_error=True, **kwargs
+            )
+        except Exception:  # pragma: no cover - le notifiche non bloccano mai
+            logger.warning("Notifica di sessione d'esame non inviata", exc_info=True)
+
+    @staticmethod
+    def _notify_session_opened(attempt: ExamAttempt) -> None:
+        from flask_babel import _
+        from ..notification.models import NotificationPriority, NotificationType
+
+        ExamService._notify(
+            [attempt.user_id],
+            notification_type=NotificationType.EXAM_SESSION_OPENED,
+            title=_("L'esame sta per iniziare"),
+            message=_(
+                "L'esaminatore ha aperto la sessione di «%(exam)s»: accetta "
+                "l'inizio per far partire la valutazione.",
+                exam=attempt.exam.name,
+            ),
+            priority=NotificationPriority.HIGH,
+            # Le route dell'esame arrivano in Fase 5: URL da tenere allineato.
+            action_url=f"/exam/sessions/{attempt.id}",
+            action_text=_("Accetta l'inizio"),
+        )
+
+    @staticmethod
+    def _notify_certified(attempt: ExamAttempt) -> None:
+        from flask_babel import _
+        from ..notification.models import NotificationPriority, NotificationType
+
+        outcome = _("superato") if attempt.passed else _("non superato")
+        ExamService._notify(
+            [attempt.user_id],
+            notification_type=NotificationType.EXAM_CERTIFIED,
+            title=_("Esame certificato"),
+            message=_(
+                "«%(exam)s»: esito %(outcome)s, certificato da %(examiner)s.",
+                exam=attempt.exam.name,
+                outcome=outcome,
+                examiner=(
+                    attempt.examiner.username
+                    if attempt.examiner
+                    else _("l'esaminatore")
+                ),
+            ),
+            priority=NotificationPriority.HIGH,
+            action_url=f"/exam/sessions/{attempt.id}",
+            action_text=_("Vedi l'esito"),
+        )
 
     # ────────────────────────────────────────────────────────────────────
     # Statistiche (US-E8)

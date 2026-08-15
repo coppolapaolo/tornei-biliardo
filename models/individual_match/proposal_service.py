@@ -461,6 +461,16 @@ class ProposalService:
         if not proposal.can_be_accepted_by(user_id):
             raise ValueError("User cannot accept this proposal")
 
+        # Chi resta fuori, letto PRIMA dell'accettazione: proposal.accept()
+        # porta questi inviti a REJECTED, e dopo non si distinguerebbero più
+        # da quelli rifiutati dall'invitato stesso.
+        discarded_ids = [
+            invitation.invited_user_id
+            for invitation in proposal.invitations
+            if invitation.status == InvitationStatus.PENDING
+            and invitation.invited_user_id != user_id
+        ]
+
         # Savepoint forces the UNIQUE(proposal_id) violation to surface at
         # flush time so we can translate it to ValueError. Fires only if
         # another transaction accepted first (TOCTOU). Outer @transactional
@@ -472,15 +482,14 @@ class ProposalService:
         except IntegrityError as exc:
             raise ValueError(_("Proposta già accettata")) from exc
 
+        location_text = proposal.location_display or ""
+        loc_suffix = " " + _("a %(loc)s", loc=location_text) if location_text else ""
+
         # Notify proposer that their proposal was accepted
         try:
             accepter = db.session.get(User, user_id)
             accepter_name = accepter.username if accepter else _("Un giocatore")
-            location_text = proposal.location_display or ""
 
-            loc_suffix = (
-                " " + _("a %(loc)s", loc=location_text) if location_text else ""
-            )
             NotificationFactory.create_bulk_notification(
                 user_ids=[proposal.proposer_id],
                 notification_type=NotificationType.MATCH_ACCEPTED,
@@ -496,6 +505,28 @@ class ProposalService:
             )
         except Exception:
             pass  # Notification failure shouldn't block acceptance
+
+        # Gli altri invitati: proposal.accept() li ha messi a REJECTED, e senza
+        # questo avviso la proposta sparirebbe dai loro elenchi in silenzio.
+        # Solo il percorso diretto: sulle proposte aperte avvisa già
+        # accept_interest_for_open_invitation, e notificare anche qui
+        # significherebbe mandare due volte la stessa cosa.
+        if discarded_ids and proposal.proposal_type == ProposalType.DIRECT:
+            try:
+                NotificationFactory.create_bulk_notification(
+                    user_ids=discarded_ids,
+                    notification_type=NotificationType.MATCH_DECLINED,
+                    title=_("Proposta di match chiusa"),
+                    message=_(
+                        "La proposta di match%(location)s è stata accettata "
+                        "da un altro giocatore.",
+                        location=loc_suffix,
+                    ),
+                    priority=NotificationPriority.NORMAL,
+                    continue_on_error=True,
+                )
+            except Exception:
+                pass  # Notification failure shouldn't block acceptance
 
         # Gamification: chi accetta può aver sbloccato "popular_player".
         _reconcile_user_achievements(user_id)

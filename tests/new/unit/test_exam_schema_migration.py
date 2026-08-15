@@ -1,15 +1,25 @@
-"""Test della migration 20260816_exam_schema_rework (ADR-042).
+"""Test delle migration dello schema esame (ADR-042).
+
+Sono due file, ma un solo schema: ``20260816_exam_schema_rework`` rifà il
+dominio, ``20260817_add_exam_request_tables`` aggiunge l'appuntamento e
+ricostruisce ``exam_attempt`` per agganciarcelo. Il test li applica **in
+sequenza**, che è come girano in produzione: verificarli isolati direbbe poco,
+perché il secondo riscrive una tabella del primo.
 
 Due rischi, diversi fra loro:
 
 1. **Drift.** In sviluppo e nei test le tabelle nascono da ``db.create_all()``,
-   in produzione da questo file. Se i due schemi si allontanano il bug si
-   manifesta solo in produzione — e sull'indice UNIQUE parziale significherebbe
-   perdere il presidio contro il doppio tentativo aperto senza alcun errore
-   visibile. Il test li confronta colonna per colonna e indice per indice.
-2. **Il presupposto «le tabelle sono vuote».** La migration ricrea lo schema da
-   zero: se l'ipotesi fosse falsa, i dati sparirebbero in silenzio. Deve
-   fermarsi, e va verificato che si fermi davvero.
+   in produzione da questi file. Se i due schemi si allontanano il bug si
+   manifesta solo in produzione — e su un indice UNIQUE parziale significherebbe
+   perdere un presidio anti-TOCTOU senza alcun errore visibile. Il confronto è
+   colonna per colonna, indice per indice **e chiave esterna per chiave
+   esterna**: le FK contano davvero, perché il DB gira con
+   ``PRAGMA foreign_keys=ON`` (``models/base.py``) e ``PRAGMA table_info`` non
+   le mostra, quindi un confronto sulle sole colonne le lascerebbe divergere in
+   silenzio.
+2. **Il presupposto «le tabelle sono vuote».** Entrambe ricreano tabelle: se
+   l'ipotesi fosse falsa, i dati sparirebbero in silenzio. Devono fermarsi, e
+   va verificato che si fermino davvero.
 """
 
 from __future__ import annotations
@@ -20,27 +30,43 @@ from pathlib import Path
 
 import pytest
 
-MIGRATION_PATH = (
-    Path(__file__).resolve().parents[3]
-    / "migrations"
-    / "20260816_exam_schema_rework.py"
-)
+MIGRATIONS_DIR = Path(__file__).resolve().parents[3] / "migrations"
+MIGRATION_PATH = MIGRATIONS_DIR / "20260816_exam_schema_rework.py"
+REQUEST_MIGRATION_PATH = MIGRATIONS_DIR / "20260817_add_exam_request_tables.py"
 
+#: Tabelle del dominio esame, nell'ordine in cui le migration le creano.
 TABLES = (
     "exam",
     "exam_examiner",
     "exam_challenge",
     "exam_attempt",
     "exam_challenge_result",
+    "exam_request",
+    "exam_request_recipient",
+    "exam_time_proposal",
 )
 
 
-def _load_migration_module():
-    spec = importlib.util.spec_from_file_location("exam_schema_rework", MIGRATION_PATH)
+def _load(path: Path):
+    spec = importlib.util.spec_from_file_location(path.stem, path)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def _load_migration_module():
+    return _load(MIGRATION_PATH)
+
+
+def _load_request_migration_module():
+    return _load(REQUEST_MIGRATION_PATH)
+
+
+def _apply_chain(db_path: Path) -> None:
+    """Le migration nell'ordine in cui girano in produzione."""
+    _load_migration_module().upgrade_sqlite(str(db_path))
+    _load_request_migration_module().upgrade_sqlite(str(db_path))
 
 
 def _columns(conn: sqlite3.Connection, table: str) -> dict[str, tuple]:
@@ -56,20 +82,30 @@ def _index_sql(conn: sqlite3.Connection, table: str) -> dict[str, str]:
     return {name: " ".join(sql.split()) for name, sql in rows if sql}
 
 
+def _foreign_keys(conn: sqlite3.Connection, table: str) -> set[tuple]:
+    """(colonna locale, tabella riferita, colonna riferita, ON DELETE)."""
+    rows = conn.execute(f"PRAGMA foreign_key_list({table})").fetchall()
+    return {(r[3], r[2], r[4], (r[6] or "NO ACTION").upper()) for r in rows}
+
+
 @pytest.fixture
 def migrated_db(tmp_path) -> sqlite3.Connection:
     db_path = tmp_path / "migrated.db"
-    _load_migration_module().upgrade_sqlite(str(db_path))
+    _apply_chain(db_path)
     conn = sqlite3.connect(db_path)
     yield conn
     conn.close()
 
 
-def test_migration_declares_a_tracking_name():
+def test_migrations_declare_a_tracking_name():
     assert _load_migration_module().migration_name == "20260816_exam_schema_rework"
+    assert (
+        _load_request_migration_module().migration_name
+        == "20260817_add_exam_request_tables"
+    )
 
 
-def test_creates_all_five_tables(migrated_db):
+def test_creates_every_table_of_the_domain(migrated_db):
     names = {
         r[0]
         for r in migrated_db.execute(
@@ -127,6 +163,46 @@ def test_a_certified_session_is_not_blocked_by_the_index(migrated_db):
     assert count == 2
 
 
+def test_the_appointment_tables_are_there_with_their_guard(migrated_db):
+    """Il presidio della corsa «due esaminatori accettano insieme»."""
+    insert = (
+        "INSERT INTO exam_request_recipient (request_id, examiner_id, status,"
+        " created_at, updated_at) VALUES (1, ?, ?, '2026-01-01', '2026-01-01')"
+    )
+    migrated_db.execute(insert, (10, "accepted"))
+
+    # Un secondo accettante sulla stessa richiesta non passa…
+    with pytest.raises(sqlite3.IntegrityError):
+        migrated_db.execute(insert, (11, "accepted"))
+
+    # …ma gli altri esiti convivono quanti sono.
+    migrated_db.execute(insert, (11, "closed"))
+    migrated_db.execute(insert, (12, "closed"))
+    count = migrated_db.execute(
+        "SELECT COUNT(*) FROM exam_request_recipient"
+    ).fetchone()[0]
+    assert count == 3
+
+
+def test_one_session_per_appointment(migrated_db):
+    """L'altra corsa: due sessioni per lo stesso appuntamento."""
+    insert = (
+        "INSERT INTO exam_attempt (exam_id, user_id, mode, status, started_at,"
+        " exam_request_id, created_at, updated_at) VALUES (1, ?, 'certified',"
+        " 'awaiting_player_start', '2026-01-01', ?, '2026-01-01', '2026-01-01')"
+    )
+    migrated_db.execute(insert, (1, 7))
+
+    with pytest.raises(sqlite3.IntegrityError):
+        migrated_db.execute(insert, (2, 7))
+
+    # L'indice è parziale: i tentativi in autonomia hanno tutti NULL.
+    migrated_db.execute(insert, (1, None))
+    migrated_db.execute(insert, (2, None))
+    count = migrated_db.execute("SELECT COUNT(*) FROM exam_attempt").fetchone()[0]
+    assert count == 3
+
+
 def test_migration_refuses_to_drop_a_non_empty_table(tmp_path):
     """L'ipotesi «sono vuote» è verificata, non assunta."""
     db_path = tmp_path / "with_data.db"
@@ -150,11 +226,34 @@ def test_migration_refuses_to_drop_a_non_empty_table(tmp_path):
         conn.close()
 
 
-def test_migration_is_idempotent(tmp_path):
+def test_the_rebuild_refuses_to_drop_recorded_attempts(tmp_path):
+    """Stessa regola per la seconda migration, che ricostruisce i tentativi."""
+    db_path = tmp_path / "with_attempts.db"
+    _load_migration_module().upgrade_sqlite(str(db_path))
+
+    conn = sqlite3.connect(db_path)
+    conn.execute(
+        "INSERT INTO exam_attempt (exam_id, user_id, mode, status, started_at,"
+        " created_at, updated_at) VALUES (1, 1, 'self_practice', 'in_progress',"
+        " '2026-01-01', '2026-01-01', '2026-01-01')"
+    )
+    conn.commit()
+    conn.close()
+
+    with pytest.raises(RuntimeError, match="non sono vuote"):
+        _load_request_migration_module().upgrade_sqlite(str(db_path))
+
+    conn = sqlite3.connect(db_path)
+    try:
+        assert conn.execute("SELECT COUNT(*) FROM exam_attempt").fetchone()[0] == 1
+    finally:
+        conn.close()
+
+
+def test_migrations_are_idempotent(tmp_path):
     db_path = tmp_path / "twice.db"
-    module = _load_migration_module()
-    module.upgrade_sqlite(str(db_path))
-    module.upgrade_sqlite(str(db_path))
+    _apply_chain(db_path)
+    _apply_chain(db_path)
 
     conn = sqlite3.connect(db_path)
     try:
@@ -183,7 +282,7 @@ def test_schema_matches_the_sqlalchemy_models(app, tmp_path):
     expected_conn.commit()
 
     actual_path = tmp_path / "from_migration.db"
-    _load_migration_module().upgrade_sqlite(str(actual_path))
+    _apply_chain(actual_path)
     actual_conn = sqlite3.connect(actual_path)
 
     try:
@@ -191,6 +290,10 @@ def test_schema_matches_the_sqlalchemy_models(app, tmp_path):
             assert _columns(actual_conn, table) == _columns(
                 expected_conn, table
             ), f"colonne divergenti su {table}"
+
+            assert _foreign_keys(actual_conn, table) == _foreign_keys(
+                expected_conn, table
+            ), f"chiavi esterne divergenti su {table}"
 
             actual_ix = _index_sql(actual_conn, table)
             expected_ix = _index_sql(expected_conn, table)

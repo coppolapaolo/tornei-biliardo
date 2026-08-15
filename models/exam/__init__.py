@@ -11,6 +11,12 @@ from .models import (
     ExamChallengeResult,
     ExamExaminer,
 )
+from .request_models import (
+    ExamRequest,
+    ExamRequestRecipient,
+    ExamTimeProposal,
+)
+from .request_service import ExamRequestService
 from .services import ExamService
 
 __all__ = [
@@ -20,6 +26,11 @@ __all__ = [
     "ExamChallenge",
     "ExamAttempt",
     "ExamChallengeResult",
+    # Appuntamento d'esame (Fase 3)
+    "ExamRequest",
+    "ExamRequestRecipient",
+    "ExamTimeProposal",
     # Services
     "ExamService",
+    "ExamRequestService",
 ]

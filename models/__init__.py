@@ -68,6 +68,11 @@ from .exam.models import (
     ExamAttempt,
     ExamChallengeResult,
 )
+from .exam.request_models import (
+    ExamRequest,
+    ExamRequestRecipient,
+    ExamTimeProposal,
+)
 from .individual_match.models import (
     MatchProposal,
     ProposalInvitation,
@@ -206,6 +211,9 @@ __all__ = [
     "ExamChallenge",
     "ExamAttempt",
     "ExamChallengeResult",
+    "ExamRequest",
+    "ExamRequestRecipient",
+    "ExamTimeProposal",
     # Individual Match domain models (Phase 3)
     "MatchProposal",
     "ProposalInvitation",

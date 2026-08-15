@@ -29,6 +29,8 @@ __all__ = [
     "RoleRequestRecipientStatus",
     "ExamAttemptMode",
     "ExamAttemptStatus",
+    "ExamRequestStatus",
+    "ExamRequestRecipientStatus",
     "PlayoffConfirmationStatus",
     "Discipline",
     "WithdrawPolicy",
@@ -223,6 +225,45 @@ class ExamAttemptStatus(_StrEnum):
     def is_open(cls, status: str) -> bool:
         """True se il tentativo è ancora aperto (non concluso né abbandonato)."""
         return status in (cls.AWAITING_PLAYER_START.value, cls.IN_PROGRESS.value)
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# EXAM REQUEST — appuntamento d'esame (ADR-042)
+# Persistito: `exam_request.status` → {negotiating, accepted, expired, cancelled}
+# Quattro stati e non cinque: «programmato» e «accettato» sono lo stesso fatto,
+# perché accettare *è* fissare l'appuntamento.
+# `negotiating` copre l'intero ciclo di controproposte: la richiesta resta lì
+# finché uno accetta (`accepted`), il richiedente ritira (`cancelled`) o il
+# tempo finisce senza accordo (`expired`).
+# Fonte: models/exam/request_models.py (ExamRequest)
+# ──────────────────────────────────────────────────────────────────────────────
+class ExamRequestStatus(_StrEnum):
+    NEGOTIATING = "negotiating"
+    ACCEPTED = "accepted"
+    EXPIRED = "expired"
+    CANCELLED = "cancelled"
+
+    @classmethod
+    def is_open(cls, status: str) -> bool:
+        """True se la richiesta è ancora trattabile."""
+        return status == cls.NEGOTIATING.value
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# EXAM REQUEST RECIPIENT
+# Persistito: `exam_request_recipient.status`
+# → {pending, accepted, rejected, closed}
+# `closed` = un altro esaminatore ha accettato per primo, quindi la richiesta si
+# chiude senza che questo destinatario si sia espresso (US-E4b): è lo stato che
+# distingue «ha detto di no» da «non ha fatto in tempo», e la differenza si
+# vede — al secondo arriva una notifica, al primo no.
+# Fonte: models/exam/request_models.py (ExamRequestRecipient)
+# ──────────────────────────────────────────────────────────────────────────────
+class ExamRequestRecipientStatus(_StrEnum):
+    PENDING = "pending"
+    ACCEPTED = "accepted"
+    REJECTED = "rejected"
+    CLOSED = "closed"
 
 
 # ──────────────────────────────────────────────────────────────────────────────
