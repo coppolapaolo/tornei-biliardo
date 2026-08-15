@@ -187,6 +187,27 @@ class TestBothSourcesAppear:
         _catalog_attempt(_user(), _challenge(), score=8)
         assert TrainingHistoryService.get_drill_attempts(player.id) == []
 
+    def test_a_gara_without_a_name_is_still_a_gara_attempt(self, db_session, player):
+        """``source`` si dichiara, non si deduce dal nome della gara.
+
+        Deducendola dalla verità di ``gara_name``, una gara senza nome
+        etichetterebbe il tentativo come «dal catalogo»: una bugia, e per giunta
+        silenziosa. E ``gara_name`` resta ``None`` invece di "" — assente e
+        vuoto sono due cose diverse.
+        """
+        gara, _ = _gara_attempt(player, _challenge(), score=5)
+        gara.name = ""
+        db.session.commit()
+
+        entry = TrainingHistoryService.get_drill_attempts(player.id)[0]
+        assert entry["source"] == "gara"
+
+    def test_a_catalog_attempt_has_no_gara_name_at_all(self, db_session, player):
+        _catalog_attempt(player, _challenge(), score=8)
+        assert (
+            TrainingHistoryService.get_drill_attempts(player.id)[0]["gara_name"] is None
+        )
+
 
 class TestTheShapeThatBrokeTheTemplate:
     def test_every_entry_carries_the_keys_the_component_reads(self, db_session, player):

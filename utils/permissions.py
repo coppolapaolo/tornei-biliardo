@@ -116,10 +116,23 @@ def examiner_required(f):
 
     Ruolo ortogonale: guarda ``role_grant``, non ``user.role``. Admin passa,
     come per ``is_venue_manager``.
+
+    Chi non è autenticato passa dal login, non da un 403: non ha *ancora* il
+    ruolo, non gli è stato *negato*. Il controllo sta qui e non è delegato a un
+    ``@login_required`` sopra, così il decoratore regge da solo se un domani
+    qualcuno lo applica senza — stessa scelta di ``feature_required`` e
+    ``venue_manager_required``.
     """
-    return RoleRequirement.permission_required(
-        lambda user, **kwargs: bool(getattr(user, "is_examiner", False))
-    )(f)
+
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return redirect(url_for("auth.login"))
+        if not getattr(current_user, "is_examiner", False):
+            abort(403)
+        return f(*args, **kwargs)
+
+    return decorated_function
 
 
 # --------------------------------------------------------------------------

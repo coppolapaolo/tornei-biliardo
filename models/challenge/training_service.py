@@ -33,13 +33,20 @@ def _entry(
     score: Optional[int],
     passed: Optional[bool],
     attempted_at,
-    gara_name: Optional[str],
+    source: str,
+    gara_name: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Forma comune alle due sorgenti.
 
     ``challenge_name`` passa da ``get_display_name()``: ``Challenge`` **non ha**
     un campo ``name`` (né ``max_score``), e leggerli è il bug storico che
     svuotava questa sezione in silenzio.
+
+    ``source`` è **dichiarata dal chiamante**, non dedotta dalla presenza del
+    nome della gara: un tentativo giocato in una gara senza nome verrebbe
+    altrimenti etichettato come «dal catalogo», che è falso. Per lo stesso
+    motivo ``gara_name`` resta ``None`` quando manca invece di diventare "":
+    assente e vuoto sono due cose diverse.
     """
     return {
         "challenge": challenge,
@@ -50,7 +57,7 @@ def _entry(
         "passed": passed,
         "attempted_at": attempted_at,
         "gara_name": gara_name,
-        "source": "gara" if gara_name else "catalog",
+        "source": source,
     }
 
 
@@ -89,7 +96,7 @@ class TrainingHistoryService:
                     score=attempt.score,
                     passed=attempt.passed,
                     attempted_at=attempt.attempted_at,
-                    gara_name=None,
+                    source="catalog",
                 )
             )
 
@@ -120,7 +127,8 @@ class TrainingHistoryService:
                     score=attempt.score,
                     passed=attempt.passed,
                     attempted_at=attempt.attempted_at,
-                    gara_name=getattr(gara, "name", None) or "",
+                    source="gara",
+                    gara_name=getattr(gara, "name", None),
                 )
             )
 

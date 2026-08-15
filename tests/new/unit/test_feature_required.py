@@ -136,6 +136,22 @@ class TestExaminerRequired:
 
         assert _call_as(app, _make_user(role=UserRole.ADMIN.value), view) == "ok"
 
+    def test_an_anonymous_visitor_is_sent_to_the_login(self, app):
+        """Non ha *ancora* il ruolo, non gli è stato *negato*: login, non 403.
+
+        Il controllo vive nel decoratore e non è delegato a un
+        ``@login_required`` sopra, così regge anche applicato da solo.
+        """
+
+        @examiner_required
+        def view():
+            return "ok"
+
+        with app.test_request_context("/x"):
+            response = view()
+        assert response.status_code in (301, 302)
+        assert "/login" in response.headers.get("Location", "")
+
 
 def test_the_decorators_do_not_swallow_the_view_errors(app, db_session):
     """Un 404 sollevato dalla vista deve restare un 404, non diventare 403."""
