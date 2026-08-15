@@ -3,6 +3,7 @@
 
 from flask import (
     render_template,
+    request,
     url_for,
 )
 from flask_login import current_user
@@ -394,6 +395,17 @@ def gara_detail(gara_id):
             squadre_all = SquadraService.list_for_gara(gara, include_inactive=True)
             squadra_counts = SquadraService.counts_by_squadra(gara.id)
 
+    # Si arriva da un'iscrizione appena conclusa (`?chiedi_squadra=1`): la
+    # scelta della squadra si chiede subito, in un modale, invece di lasciarla
+    # a una card dentro una linguetta che chi si iscrive non apre mai (US-8).
+    # A sorteggio fatto non si chiede più: non c'è più niente da decidere.
+    chiedi_squadra = bool(
+        request.args.get("chiedi_squadra")
+        and user_inscription
+        and gara.separate_teammates
+        and squadre_editable
+    )
+
     # SSR (Spot Shot Rally) data for tiebreaker display
     ssr_groups = []
     has_ssr_data = False
@@ -542,6 +554,7 @@ def gara_detail(gara_id):
         squadre_all=squadre_all,
         squadra_counts=squadra_counts,
         squadre_editable=squadre_editable,
+        chiedi_squadra=chiedi_squadra,
         squadra_owner_is_campionato=bool(gara.campionato_id),
         available_users=available_users,
         # SSR (Spot Shot Rally) data
