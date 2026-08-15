@@ -8,9 +8,6 @@ proposta, e la prima controproposta fissa l'interlocutore — vivono nel servizi
 Qui si legge il form e si lascia parlare il dominio.
 """
 
-from datetime import datetime
-from zoneinfo import ZoneInfo
-
 from flask import abort, render_template, request, url_for
 from flask_babel import gettext as _
 from flask_login import current_user, login_required
@@ -20,6 +17,7 @@ from models.exam.request_service import ExamRequestService
 from models.exam.services import ExamService
 from models.user.models import User
 from utils import feature_required
+from utils.local_time import parse_local_datetime
 from utils.route_helpers import handle_service_action
 
 from . import exam_bp
@@ -35,36 +33,6 @@ def _actor() -> User:
 def _int_or_none(value):
     value = (value or "").strip()
     return int(value) if value.isdigit() else None
-
-
-def _parse_slot(value) -> "datetime | None":
-    """``datetime-local`` del browser → naive **UTC**, come vuole il progetto.
-
-    La conversione di fuso non è pedanteria: l'utente digita l'ora italiana
-    (``2026-06-12T21:00``), il progetto tiene i datetime naive **interpretandoli
-    come UTC** (``utils/jinja.py``), e ``|datetime_local`` ci somma il fuso in
-    lettura. Salvando il valore com'è, un appuntamento fissato per le 21:00
-    verrebbe mostrato a entrambe le parti come le 23:00 — e qualcuno si
-    presenterebbe alla sala all'ora sbagliata.
-
-    Se il formato non torna si restituisce ``None``: il servizio dirà che manca
-    la data, che è meglio del 500 di uno ``strptime`` che esplode.
-    """
-    value = (value or "").strip()
-    if not value:
-        return None
-
-    for fmt in ("%Y-%m-%dT%H:%M", "%Y-%m-%dT%H:%M:%S"):
-        try:
-            local = datetime.strptime(value, fmt)
-        except ValueError:
-            continue
-        return (
-            local.replace(tzinfo=ZoneInfo("Europe/Rome"))
-            .astimezone(ZoneInfo("UTC"))
-            .replace(tzinfo=None)
-        )
-    return None
 
 
 # ────────────────────────────────────────────────────────────────────────────────
@@ -161,7 +129,7 @@ def create_request(exam_id: int):
         action=lambda: ExamRequestService.create_request(
             actor,
             exam_id,
-            scheduled_at=_parse_slot(request.form.get("scheduled_at")),
+            scheduled_at=parse_local_datetime(request.form.get("scheduled_at")),
             billiard_hall_id=_int_or_none(request.form.get("billiard_hall_id")),
             recipient_ids=recipient_ids,
             notes=notes,
@@ -184,7 +152,7 @@ def counter_propose(request_id: int):
         action=lambda: ExamRequestService.counter_propose(
             request_id,
             actor,
-            scheduled_at=_parse_slot(request.form.get("scheduled_at")),
+            scheduled_at=parse_local_datetime(request.form.get("scheduled_at")),
             billiard_hall_id=_int_or_none(request.form.get("billiard_hall_id")),
         ),
         redirect_url=url_for("exam.request_detail", request_id=request_id),

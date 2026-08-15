@@ -207,42 +207,6 @@ class TestTheDebugSelfGrant:
         assert "debug" in (grant.notes or "")
 
 
-class TestTheAppointmentSlotKeepsTheHourTheUserTyped:
-    """Il fuso: l'utente digita l'ora italiana, il DB tiene naive-UTC.
-
-    Salvando il valore com'è, un appuntamento fissato per le 21:00 verrebbe
-    mostrato a entrambe le parti come le 23:00 — e qualcuno si presenterebbe
-    alla sala all'ora sbagliata.
-    """
-
-    def test_a_typed_slot_is_shown_back_unchanged(self, app):
-        from routes.exam.requests import _parse_slot
-        from utils.jinja import format_datetime_local_text
-
-        with app.app_context():
-            stored = _parse_slot("2026-06-12T21:00")
-            assert stored is not None
-            assert stored.tzinfo is None, "in DB si tengono i naive"
-            assert "21:00" in format_datetime_local_text(stored)
-
-    def test_it_also_holds_in_winter_time(self, app):
-        """L'ora legale sposta l'offset: la conversione deve seguirlo."""
-        from routes.exam.requests import _parse_slot
-        from utils.jinja import format_datetime_local_text
-
-        with app.app_context():
-            stored = _parse_slot("2026-01-15T21:00")
-            assert "21:00" in format_datetime_local_text(stored)
-
-    def test_a_malformed_slot_is_none_not_an_exception(self, app):
-        """Il servizio dirà che manca la data: meglio di uno strptime che esplode."""
-        from routes.exam.requests import _parse_slot
-
-        assert _parse_slot("non-una-data") is None
-        assert _parse_slot("") is None
-        assert _parse_slot(None) is None
-
-
 class TestTheDebugRedirectIsNotAnOpenDoor:
     def test_an_external_next_is_refused(self, app, db_session):
         """``next`` arriva da un form: grezzo sarebbe un open redirect."""
@@ -273,4 +237,41 @@ class TestTheDebugRedirectIsNotAnOpenDoor:
         finally:
             app.config["DEBUG_MODE"] = False
 
+        assert response.headers.get("Location", "").endswith("/exam/")
+
+
+class TestTheRoleRedirectsAreNotOpenDoors:
+    """``next`` da form, passato a ``redirect()``: va sanificato ovunque.
+
+    Il self-grant di debug è stato corretto durante la review della Fase 5;
+    ``grant_role`` e ``revoke_role`` avevano lo stesso schema dalla Fase 1.
+    """
+
+    def _admin_client(self, app):
+        admin = _make_user(role=UserRole.ADMIN.value)
+        target = _make_user()
+        return _client_for(app, admin.username), target.id
+
+    def test_granting_refuses_an_external_next(self, app, db_session):
+        client, target_id = self._admin_client(app)
+        response = client.post(
+            f"/roles/grant/examiner/{target_id}",
+            data={"next": "https://evil.example.com/phish"},
+        )
+        assert "evil.example.com" not in response.headers.get("Location", "")
+
+    def test_revoking_refuses_an_external_next(self, app, db_session):
+        client, target_id = self._admin_client(app)
+        client.post(f"/roles/grant/examiner/{target_id}")
+        response = client.post(
+            f"/roles/revoke/examiner/{target_id}",
+            data={"next": "//evil.example.com/phish"},
+        )
+        assert "evil.example.com" not in response.headers.get("Location", "")
+
+    def test_an_internal_next_is_still_honoured(self, app, db_session):
+        client, target_id = self._admin_client(app)
+        response = client.post(
+            f"/roles/grant/examiner/{target_id}", data={"next": "/exam/"}
+        )
         assert response.headers.get("Location", "").endswith("/exam/")
