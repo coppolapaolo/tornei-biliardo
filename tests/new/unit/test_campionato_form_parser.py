@@ -31,6 +31,8 @@ class TestParseDefaultSettings:
             "default_odd_policy": "trio",
             "default_anti_rematch": True,
             "has_handicap": False,
+            # None = "usa la tabella punti di default" (US-17)
+            "position_points": None,
         }
 
     def test_empty_form_uses_safe_defaults(self):
@@ -42,6 +44,8 @@ class TestParseDefaultSettings:
             "default_odd_policy": "bye",
             "default_anti_rematch": False,
             "has_handicap": False,
+            # None = "usa la tabella punti di default" (US-17)
+            "position_points": None,
         }
 
     def test_invalid_numeric_inputs_fall_back(self):

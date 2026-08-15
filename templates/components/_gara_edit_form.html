@@ -53,7 +53,7 @@
   <div class="c7-card">
     <h3 class="mb-3">{{ _('Strategia di abbinamento') }}</h3>
 
-    <div class="mb-3">
+    <div class="mb-3" data-bracket-hide>
       <label for="classification_system" class="form-label">{{ _('Sistema di classifica') }}</label>
       {% if gara.campionato_id %}
         {% set campionato_default = gara.campionato.default_classification_system or 'WINS' %}
@@ -141,7 +141,7 @@
           <option value="classification" {% if gara.first_round_policy == 'classification' %}selected{% endif %}>{{ _('Basato su classifica') }}</option>
         </select>
       </div>
-      <div class="flex-fill" style="min-width:200px">
+      <div class="flex-fill" style="min-width:200px" data-bracket-hide>
         <label for="odd_number_policy" class="form-label">{{ _('Giocatori dispari') }}</label>
         <select class="form-select" id="odd_number_policy" name="odd_number_policy">
           <option value="no" {% if gara.odd_number_policy == 'no' %}selected{% endif %}>{{ _("Lista d'attesa — solo pari") }}</option>
@@ -199,7 +199,7 @@
         <input type="number" class="form-control" id="max_participants" name="max_participants" min="2" max="64"
                value="{{ gara.max_participants or '' }}" placeholder="{{ _('Illimitato') }}">
       </div>
-      <div class="flex-fill" style="min-width:200px">
+      <div class="flex-fill" style="min-width:200px" data-bracket-hide>
         <label for="withdraw_policy" class="form-label">{{ _('Gestione ritiri') }}</label>
         <select class="form-select" id="withdraw_policy" name="withdraw_policy" required>
           <option value="{{ WithdrawPolicy.EXCLUDE.value }}" {{ 'selected' if gara.withdraw_policy == WithdrawPolicy.EXCLUDE.value else '' }}>
@@ -233,13 +233,13 @@
   <div class="c7-card">
     <h3 class="mb-3">{{ _('Turni e spareggi') }}</h3>
 
-    <div class="mb-3" style="width:150px">
+    <div class="mb-3" style="width:150px" data-bracket-hide>
       <label for="rounds_count" class="form-label">{{ _('Turni') }}</label>
       <input type="number" class="form-control" id="rounds_count" name="rounds_count" min="1" max="10"
              value="{{ gara.rounds_count }}" required>
     </div>
 
-    <div style="background:var(--c7-bg);border-radius:var(--c7-r-field);padding:16px">
+    <div style="background:var(--c7-bg);border-radius:var(--c7-r-field);padding:16px" data-bracket-hide>
       <div class="c7-kicker mb-3">{{ _('Spareggio SSR') }}</div>
 
       <label class="d-flex align-items-center gap-3 mb-3" style="cursor:pointer">

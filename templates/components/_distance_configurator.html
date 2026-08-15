@@ -173,7 +173,15 @@ function updateBracketDistanceWarning(exactNumber, distance, isMultiSet, isRaceT
 
 document.addEventListener('DOMContentLoaded', updateDistancePreview);
 
+/* Vera dal 2026-08: prima ritornava `true` fisso e non la chiamava nessuno,
+ * quindi l'avviso sulle distanze pari era puramente decorativo — si poteva
+ * proseguire fino in fondo al wizard e scoprire il rifiuto solo al salvataggio.
+ * Ora il passo non avanza finché la configurazione non è giocabile. */
 function validateDistanceConfig() {
-    return true;
+    const box = document.getElementById('bracket-distance-warning');
+    if (!box || box.style.display === 'none') { return true; }
+
+    box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return false;
 }
 </script>

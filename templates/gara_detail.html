@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 {% import "components/_gara_header.html" as gara_head with context %}
 
+{# `chiedi_squadra` lo decide la route (`detail.py`): un `{% set %}` qui in cima
+   non arriverebbe dentro i blocchi, perché con `extends` il corpo del figlio
+   non viene reso. #}
+
 {% block title %}
 {% if user_can_manage %}
 {{ _('Gestione Gara %(id)s - Admin', id=gara.number) }}
@@ -237,8 +241,11 @@
     <div class="c7-stack" data-c7-tab="iscritti">
       {% include "components/_player_inscription_info.html" %}
       {# La propria squadra sta con la propria iscrizione: è una cosa sola —
-         con chi gioco questa gara (US-8). #}
+         con chi gioco questa gara (US-8). Appena iscritti la stessa scelta
+         arriva in un modale, e allora qui non si ripete. #}
+      {% if not chiedi_squadra %}
       {% include "components/_squadra_choice.html" %}
+      {% endif %}
     </div>
     {% else %}
     {# Guest/Utente non iscritto: qui dentro c'e' il pulsante d'iscrizione
@@ -667,6 +674,31 @@
   </div>
 </div>
 {% endif %}
+
+{# Squadra appena iscritti (US-8): si arriva qui da `inscribe_to_gara` con
+   `?chiedi_squadra=1`. Sta **fuori** dal blocco dei modali di gestione: lo
+   vede chi si è appena iscritto, cioè proprio chi non gestisce la gara.
+   La scelta è facoltativa — "senza squadra" è una risposta — ma va chiesta,
+   non lasciata a una card in fondo a una linguetta. Quando c'è il modale la
+   card inline non si include: il componente ha un form solo. #}
+{% if chiedi_squadra %}
+<div class="modal fade" id="squadraChoiceModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ _('Con che squadra giochi?') }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Chiudi') }}"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted" style="font-size:13px">
+          {{ _('Questa gara tiene lontani i compagni di squadra nel sorteggio. Dicci con chi giochi, così il tabellone può farlo.') }}
+        </p>
+        {% include "components/_squadra_choice.html" %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block scripts %}
@@ -693,6 +725,9 @@
     "i18n": {
       "confirmStartRandom": {{ _("Sei sicuro di voler avviare la gara? Tutti i turni verranno creati contemporaneamente e le iscrizioni chiuse definitivamente.") | tojson }},
       "confirmStartStandard": {{ _("Sei sicuro di voler avviare il primo turno? Le iscrizioni verranno chiuse definitivamente.") | tojson }},
+      {# Sul tabellone il sorteggio decide il percorso di tutti fino alla
+         finale e congela le squadre: vale la pena dirlo prima, non dopo. #}
+      "confirmStartBracket": {{ _("Sorteggiare il tabellone? Le iscrizioni si chiudono, le squadre si congelano e il percorso di ogni giocatore fino alla finale resta questo, salvo annullare il sorteggio.") | tojson }},
       "startingScheduleMessage": {{ _("Calcolo dello schedule in corso… Per gare con trio (giocatori dispari) il calcolo può richiedere qualche secondo.") | tojson }},
       "confirmCancelFirstRound": {{ _("Sei sicuro di voler cancellare l'avvio del primo turno? Tutte le partite del primo turno verranno eliminate e la gara tornerà allo stato di iscrizioni.") | tojson }},
       "confirmCancelCurrentRound": {{ _("Sei sicuro di voler cancellare l'avvio del turno corrente? Tutte le partite del turno verranno eliminate e si tornerà al turno precedente.") | tojson }},
@@ -749,6 +784,8 @@
     let message;
     if (strategy === 'random') {
       message = GARA_CONFIG.i18n.confirmStartRandom;
+    } else if (['direct_elimination', 'double_knockout'].indexOf(strategy) >= 0) {
+      message = GARA_CONFIG.i18n.confirmStartBracket;
     } else {
       message = GARA_CONFIG.i18n.confirmStartStandard;
     }
@@ -1224,6 +1261,23 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
+    // Appena iscritti a una gara con le squadre: si chiede subito con chi si
+    // gioca (US-8). Il modale si chiude anche senza rispondere — "senza
+    // squadra" è una scelta legittima, e resta cambiabile fino al sorteggio.
+    const squadraModal = document.getElementById('squadraChoiceModal');
+    if (squadraModal) {
+      if (window.bootstrap) {
+        new bootstrap.Modal(squadraModal).show();
+      } else {
+        // Senza Bootstrap JS il modale resterebbe invisibile, e la card inline
+        // è soppressa proprio perché c'è lui: la domanda sparirebbe del tutto.
+        // Il form è un POST normale, quindi mostrarlo a mano basta a farlo
+        // funzionare — manca solo il fondale.
+        squadraModal.classList.add('show');
+        squadraModal.style.display = 'block';
+      }
+    }
+
     const timezoneSpans = document.querySelectorAll('#user-timezone, #modify-user-timezone');
     timezoneSpans.forEach(span => {
       if (span) {

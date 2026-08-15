@@ -17,11 +17,18 @@
 {% endif %}
 {% endmacro %}
 
+{# Sui formati a tabellone l'azione non e' "avviare un turno" ma **estrarre il
+   tabellone**: da quel momento il percorso di tutti e' fissato fino alla
+   finale, le squadre si congelano e il sorteggio non si rifa' se non
+   annullando. Chiamarlo "avvia primo turno" nascondeva la portata del gesto. #}
 {% macro start_round_button(gara, disabled_condition) %}
+{% set is_bracket = gara.matchmaking_strategy in bracket_minimum_players %}
 <button class="btn btn-primary w-100" onclick="startFirstRound({{ gara.id }}, '{{ gara.matchmaking_strategy }}')"
         {% if disabled_condition %}disabled{% endif %}>
-  <i class="fas fa-play"></i>
-  {{ _('Avvia Gara') if gara.matchmaking_strategy == 'random' else _('Avvia Primo Turno') }}
+  <i class="fas {{ 'fa-sitemap' if is_bracket else 'fa-play' }}"></i>
+  {% if is_bracket %}{{ _('Sorteggia il tabellone') }}
+  {% elif gara.matchmaking_strategy == 'random' %}{{ _('Avvia Gara') }}
+  {% else %}{{ _('Avvia Primo Turno') }}{% endif %}
 </button>
 {% endmacro %}
 

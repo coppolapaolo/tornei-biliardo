@@ -67,12 +67,24 @@ class TestOpzioniDiTabellone:
         )
         assert self._parse(app, "direct_elimination", {})["separate_teammates"] is False
 
-    def test_finalina_solo_a_eliminazione_diretta(self, app):
-        """Nel doppio KO il terzo posto lo decide già il tabellone."""
+    def test_finalina_a_eliminazione_diretta(self, app):
         de = self._parse(app, "direct_elimination", {"third_place_match": "on"})
-        dk = self._parse(app, "double_knockout", {"third_place_match": "on"})
         assert de["third_place_match"] is True
+
+    def test_finalina_rifiutata_sul_doppio_ko_pieno(self, app):
+        """Il terzo è chi perde la finale dei ripescati: non è un pari merito."""
+        dk = self._parse(app, "double_knockout", {"third_place_match": "on"})
         assert dk["third_place_match"] is False
+
+    def test_finalina_ammessa_sul_doppio_ko_a_gironi(self, app):
+        """Col girone il tabellone finale è eliminazione diretta pura, quindi
+        i due semifinalisti tornano a essere terzi a pari merito."""
+        dk = self._parse(
+            app,
+            "double_knockout",
+            {"third_place_match": "on", "double_ko_rounds": "2"},
+        )
+        assert dk["third_place_match"] is True
 
     def test_gironi_solo_nel_doppio_ko(self, app):
         de = self._parse(app, "direct_elimination", {"double_ko_rounds": "2"})
@@ -85,6 +97,77 @@ class TestOpzioniDiTabellone:
         """Assente, zero o illeggibile = nessuna fase a gironi, che è il default."""
         options = self._parse(app, "double_knockout", {"double_ko_rounds": raw})
         assert options["double_ko_rounds"] is None
+
+
+class TestCampiDerivati:
+    """Quattro impostazioni del form non hanno alcun effetto sul tabellone.
+
+    Prima venivano chieste comunque, e la risposta veniva ignorata in silenzio:
+    il director poteva scegliere "escludi dal turno" o accendere lo spareggio
+    SSR e non succedeva nulla. Ora le impone il server, così la gara resta
+    coerente anche con il JavaScript spento.
+    """
+
+    def _parse(self, app, form):
+        with app.test_request_context(method="POST", data=form):
+            return GaraFormParser().parse()
+
+    def _bracket_form(self, strategy, **extra):
+        form = {
+            "date": "2026-09-01",
+            "discipline": "palla_9",
+            "distance": "5",
+            "max_participants": "16",
+            "matchmaking_strategy": strategy,
+            # Valori che il director *potrebbe* mandare e che vanno ignorati:
+            "withdraw_policy": "Exclude",
+            "odd_number_policy": "trio",
+            "tiebreaker_enabled": "on",
+            "rounds_count": "3",
+        }
+        form.update(extra)
+        return form
+
+    def test_il_ritiro_e_sempre_a_tavolino(self, app):
+        """Dopo il sorteggio il tabellone non si tocca: l'avversario avanza."""
+        data = self._parse(app, self._bracket_form("direct_elimination"))
+        assert data["withdraw_policy"] == "Forfeit"
+
+    def test_i_bye_sono_strutturali_non_una_politica(self, app):
+        data = self._parse(app, self._bracket_form("double_knockout"))
+        assert data["odd_number_policy"] == "bye"
+
+    def test_lo_spareggio_ssr_resta_spento(self, app):
+        """Le strategie POSITION dichiarano `requires_tiebreaker=False`."""
+        data = self._parse(app, self._bracket_form("direct_elimination"))
+        assert data["tiebreaker_enabled"] is False
+
+    def test_i_turni_li_calcola_la_capienza(self, app):
+        """Il valore digitato veniva buttato al sorteggio: non si chiede più."""
+        de = self._parse(app, self._bracket_form("direct_elimination"))
+        dk = self._parse(app, self._bracket_form("double_knockout"))
+        assert de["rounds_count"] == 4  # log2(16)
+        assert dk["rounds_count"] == 9  # 2*log2(16) + 1
+
+    def test_il_minimo_iscritti_sale_al_pavimento_del_formato(self, app):
+        """Il default del form è 6, ma il doppio KO ne richiede 8."""
+        dk = self._parse(app, self._bracket_form("double_knockout"))
+        assert dk["min_participants"] == 8
+
+    def test_un_minimo_gia_alto_non_viene_abbassato(self, app):
+        dk = self._parse(
+            app, self._bracket_form("double_knockout", min_participants="12")
+        )
+        assert dk["min_participants"] == 12
+
+    def test_fuori_dal_tabellone_le_scelte_restano_scelte(self, app):
+        """Non-regressione: per chi non usa i tabelloni non cambia nulla."""
+        data = self._parse(app, self._bracket_form("amalfi"))
+        assert data["withdraw_policy"] == "Exclude"
+        assert data["odd_number_policy"] == "trio"
+        assert data["tiebreaker_enabled"] is True
+        assert data["rounds_count"] == 3
+        assert data["min_participants"] == 6
 
 
 class TestParseCompleto:

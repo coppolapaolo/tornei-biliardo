@@ -49,7 +49,7 @@ from ..bracket import (
 )
 from ..group_phase import assign_groups, qualifier_seeding
 from .base import Pairing, BaseStrategy
-from .direct_elimination import DirectEliminationStrategy
+from .direct_elimination import DirectEliminationStrategy, rounds_count_check
 
 if TYPE_CHECKING:
     from models.competition.models import Gara
@@ -141,13 +141,14 @@ class DoubleKnockoutStrategy(BaseStrategy):
                     return {"errors": errors, "warnings": warnings}
 
             required_rounds = self.total_rounds_for(gara, player_count)
-            rounds_count = getattr(gara, "rounds_count", None)
-            if rounds_count and rounds_count < required_rounds:
-                errors.append(
-                    f"{self.display_name} richiede {required_rounds} turni "
-                    f"(winners, losers, finale e bella), la gara ne ha "
-                    f"{rounds_count}"
-                )
+            problems, notes = rounds_count_check(
+                gara,
+                required_rounds,
+                f"{self.display_name} richiede {required_rounds} turni "
+                f"(winners, losers, finale e bella)",
+            )
+            errors.extend(problems)
+            warnings.extend(notes)
 
             if getattr(gara, "third_place_match", False) and group_rounds is None:
                 # Non e' un errore bloccante: il flag e' semplicemente senza
