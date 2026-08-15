@@ -15,12 +15,17 @@
 
 {% set g = gara if gara is defined else None %}
 
-{# La nota accanto al sistema di classifica la scrive il JS, ma il testo
-   arriva da qui: dentro un file .js non passerebbe da `_()`. #}
+{# I minimi di formato li passa il server: sono gli stessi che il sorteggio usa
+   come pavimento del tabellone. In un file .js sarebbero una seconda verità. #}
 <div class="mb-3" id="bracket_options_section" style="display:none"
-     data-classification-note="{{ _('Sui formati a tabellone la classifica è per posizione nel tabellone.') }}">
+     data-minimum-players="{{ bracket_minimum_players|tojson }}">
   <div class="c7-card" style="background:var(--c7-bg)">
     <div class="c7-kicker mb-3">{{ _('Opzioni del tabellone') }}</div>
+
+    {# Il numero di turni non si chiede più: lo fissa il sorteggio sugli
+       iscritti effettivi. Qui si dice solo quanti ne verrebbero al completo. #}
+    <div class="form-text mb-3" id="bracket_rounds_note" style="display:none"
+         data-template="{{ _('Al completo sono {n} turni. Il numero definitivo lo fissa il sorteggio, sugli iscritti che si presentano.') }}"></div>
 
     {# US-6: spenta di default — chi non usa le squadre non vede cambiare
        nulla, e il campo squadra non compare da nessuna parte. #}

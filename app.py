@@ -258,11 +258,21 @@ def create_app(config_name=None):
         questo enum combacia con qualunque riga.
         """
         from models.status_enum import Discipline, GaraStatus, MatchStatus
+        from models.matchmaking.configuration import (
+            BRACKET_STRATEGIES,
+            minimum_players_for,
+        )
 
         return {
             "GaraStatus": GaraStatus,
             "MatchStatus": MatchStatus,
             "Discipline": Discipline,
+            # Minimi di formato per i form a tabellone: il JS li legge da un
+            # data attribute invece di riscriverli, cosi' UI e sorteggio non
+            # possono divergere sul pavimento del tabellone.
+            "bracket_minimum_players": {
+                name: minimum_players_for(name) for name in sorted(BRACKET_STRATEGIES)
+            },
         }
 
     # Production endpoint allowlist (ADR-028) — pass-through in dev/test.

@@ -21,7 +21,10 @@ from models.matchmaking.configuration import (
     MatchmakingStrategy,
     FirstRoundPolicy,
     OddNumberPolicy,
+    calculate_rounds_for_strategy,
+    minimum_players_for,
 )
+from models.status_enum import WithdrawPolicy
 
 # Ri-esportato: `BRACKET_STRATEGIES` vive nel dominio
 # (`models/matchmaking/configuration.py`) perché la domanda "questa gara ha un
@@ -40,6 +43,72 @@ def _resolve_classification_system(strategy: str, requested: str) -> str:
     if strategy in BRACKET_STRATEGIES:
         return "POSITION"
     return requested if requested in ("WINS", "RACK") else "WINS"
+
+
+def _third_place_applies(strategy: str, double_ko_rounds: Optional[int]) -> bool:
+    """La finalina ha senso solo dove il terzo posto è un pari merito.
+
+    A eliminazione diretta i due semifinalisti sconfitti escono allo stesso
+    turno e restano terzi a pari merito: è lì che la finalina serve.
+
+    Nel doppio KO **pieno** no: il terzo è chi perde la finale del losers
+    bracket, un risultato sul campo e non un'ambiguità: far rigiocare quel
+    posto aggiungerebbe un match che il formato non prevede. Ma con la fase a
+    gironi (formula FISBB) il tabellone finale è a eliminazione diretta pura,
+    quindi il pari merito ricompare e la finalina torna ad avere senso.
+    """
+    if strategy == MatchmakingStrategy.DIRECT_ELIMINATION.value:
+        return True
+    if strategy == MatchmakingStrategy.DOUBLE_KNOCKOUT.value:
+        return bool(double_ko_rounds)
+    return False
+
+
+def _bracket_derived_fields(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Campi che sul tabellone non sono una scelta, ma una conseguenza.
+
+    Quattro impostazioni del form non hanno alcun effetto su una gara a
+    tabellone, e chiederle significava solo far credere che decidessero
+    qualcosa:
+
+    * **gestione forfait** — nessuna delle due strategie legge
+      ``withdraw_policy``. Dopo il sorteggio il tabellone non si tocca più:
+      chi si ritira lascia avanzare l'avversario a tavolino, e "escludi dal
+      turno" lascerebbe un nodo senza giocatori.
+    * **giocatori dispari** — nemmeno ``odd_number_policy`` viene letto. I bye
+      sono strutturali (``S - n`` buchi ai primi seed), non una politica: un
+      trio o una lista d'attesa non hanno un posto nell'albero.
+    * **spareggio SSR** — le strategie POSITION dichiarano
+      ``requires_tiebreaker=False``, perché i pari merito per banda sono
+      l'esito voluto. Il flag acceso non produceva alcuno spareggio.
+    * **numero di turni** — lo riscrive il sorteggio sugli iscritti effettivi
+      (ADR-038). Qui vale la stima da ``max_participants``, che è anche il
+      tetto massimo: il valore digitato dal director veniva buttato comunque.
+
+    Il minimo iscritti viene alzato al pavimento del formato: il default del
+    form è 6, che per il doppio KO (che ne vuole 8) avrebbe dato una gara
+    impossibile da avviare.
+    """
+    strategy = data["matchmaking_strategy"]
+    if strategy not in BRACKET_STRATEGIES:
+        return {}
+
+    derived: Dict[str, Any] = {
+        "withdraw_policy": WithdrawPolicy.FORFEIT.value,
+        "odd_number_policy": OddNumberPolicy.BYE.value,
+        "tiebreaker_enabled": False,
+    }
+
+    floor = minimum_players_for(strategy)
+    derived["min_participants"] = max(data.get("min_participants") or floor, floor)
+
+    capienza = data.get("max_participants")
+    if capienza:
+        derived["rounds_count"] = calculate_rounds_for_strategy(
+            MatchmakingStrategy(strategy), int(capienza)
+        )
+
+    return derived
 
 
 class GaraFormParser:
@@ -178,6 +247,12 @@ class GaraFormParser:
             request.form.get("tiebreaker_until_position", 3)
         )
 
+        # Ultimo passaggio: sul tabellone alcune di queste impostazioni sono
+        # conseguenze, non scelte. Le si impone qui — dopo che tutto il resto
+        # è stato letto — così una gara resta coerente anche se il form arriva
+        # da una schermata vecchia o con il JavaScript spento.
+        data.update(_bracket_derived_fields(data))
+
         return data
 
     @staticmethod
@@ -196,18 +271,7 @@ class GaraFormParser:
                 "double_ko_rounds": None,
             }
 
-        options: Dict[str, Any] = {
-            "separate_teammates": request.form.get("separate_teammates") == "on",
-            # La finalina esiste solo a eliminazione diretta: nel doppio KO il
-            # terzo posto lo decide già il tabellone.
-            "third_place_match": (
-                request.form.get("third_place_match") == "on"
-                and strategy == MatchmakingStrategy.DIRECT_ELIMINATION.value
-            ),
-            "seeding_rating": request.form.get("seeding_rating", "elo"),
-            "double_ko_rounds": None,
-        }
-
+        double_ko_rounds: Optional[int] = None
         if strategy == MatchmakingStrategy.DOUBLE_KNOCKOUT.value:
             raw = (request.form.get("double_ko_rounds") or "").strip()
             if raw:
@@ -218,9 +282,17 @@ class GaraFormParser:
                 # 0 e valori non numerici valgono "nessuna fase a gironi",
                 # cioè doppio KO pieno: è il default e non va segnalato come
                 # errore, il formato a gironi è una scelta esplicita.
-                options["double_ko_rounds"] = parsed if parsed > 0 else None
+                double_ko_rounds = parsed if parsed > 0 else None
 
-        return options
+        return {
+            "separate_teammates": request.form.get("separate_teammates") == "on",
+            "third_place_match": (
+                request.form.get("third_place_match") == "on"
+                and _third_place_applies(strategy, double_ko_rounds)
+            ),
+            "seeding_rating": request.form.get("seeding_rating", "elo"),
+            "double_ko_rounds": double_ko_rounds,
+        }
 
     @staticmethod
     def validate_strategy(data: Dict[str, Any]) -> List[str]:
