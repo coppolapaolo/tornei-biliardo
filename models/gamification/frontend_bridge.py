@@ -334,6 +334,20 @@ class GamificationFrontendBridge:
                 "ogni completamento conta per la classifica."
             ),
         },
+        "take_exam": {
+            "name": "Sostieni un esame",
+            "description": (
+                "Più drill in fila, in un colpo solo. "
+                "Da solo per allenarti, o davanti a un esaminatore per farlo valere."
+            ),
+        },
+        "request_examiner": {
+            "name": "Diventa esaminatore",
+            "description": (
+                "Hai macinato abbastanza drill: "
+                "puoi chiedere di comporre esami e certificarli tu."
+            ),
+        },
     }
 
     @staticmethod
@@ -472,6 +486,16 @@ def _i18n_nudge_anchor() -> None:
     _("Crea una serie di gare e gestisci una stagione completa.")
     _("Prova le sfide")
     _("Allenati con drill mirati: ogni completamento conta per la classifica.")
+    _("Sostieni un esame")
+    _(
+        "Più drill in fila, in un colpo solo. "
+        "Da solo per allenarti, o davanti a un esaminatore per farlo valere."
+    )
+    _("Diventa esaminatore")
+    _(
+        "Hai macinato abbastanza drill: "
+        "puoi chiedere di comporre esami e certificarli tu."
+    )
     # _ROLE_GRANTED_COPY (ADR-041): stessa ragione, stessa ancora.
     _("Sei un esaminatore")
     _(

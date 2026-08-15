@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _("Gestisci esami") }}{% endblock %}
+
+{% block page_title %}{{ _("Gestisci esami") }}{% endblock %}
+{% block page_sub %}{{ _("Gli esami che somministri, e come stanno andando") }}{% endblock %}
+
+{% block content %}
+<section class="c7-stack">
+
+  {# ── Statistiche (US-E8) ────────────────────────────────────────────── #}
+  <div class="c7-grid" style="grid-template-columns:1fr 1fr">
+    <div class="c7-card">
+      <div class="c7-num-lg">{{ statistics.certified_attempts }}</div>
+      <div class="c7-rows__sub">{{ _("Esami sostenuti") }}</div>
+    </div>
+    <div class="c7-card">
+      <div class="c7-num-lg">{{ statistics.passed }}</div>
+      <div class="c7-rows__sub">{{ _("Superati") }}</div>
+    </div>
+    <div class="c7-card">
+      <div class="c7-num-lg">{{ statistics.unique_candidates }}</div>
+      <div class="c7-rows__sub">{{ _("Candidati distinti") }}</div>
+    </div>
+    <div class="c7-card">
+      <div class="c7-num-lg">
+        {% if statistics.pass_rate is not none %}{{ statistics.pass_rate }}%{% else %}—{% endif %}
+      </div>
+      <div class="c7-rows__sub">{{ _("Tasso di riuscita") }}</div>
+    </div>
+  </div>
+
+  {# ── I miei esami ───────────────────────────────────────────────────── #}
+  <div class="c7-sechead">
+    <h2>{{ _("I tuoi esami") }}</h2>
+    <span class="c7-sechead__note">{{ exams|length }}</span>
+  </div>
+
+  {% if exams %}
+  <div class="c7-rows">
+    {% for exam in exams %}
+    <a class="c7-rows__row" href="{{ url_for('exam.exam_detail', exam_id=exam.id) }}"
+       style="text-decoration:none;color:inherit">
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">{{ exam.name }}</div>
+        <div class="c7-rows__sub">
+          {{ ngettext("%(n)s drill", "%(n)s drill", exam.challenges.count(), n=exam.challenges.count()) }}
+        </div>
+      </div>
+      <i class="fas fa-chevron-right" style="color:var(--c7-ink-faint)"></i>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="c7-empty">
+    <div class="c7-empty__ico"><i class="fas fa-pen-to-square"></i></div>
+    <h2 class="c7-empty__title">{{ _("Nessun esame") }}</h2>
+    <p class="c7-empty__text">{{ _("Comincia componendone uno: una sequenza di drill, in ordine.") }}</p>
+  </div>
+  {% endif %}
+
+  {# ── Comporre un esame (US-E1) ──────────────────────────────────────── #}
+  <div class="c7-sechead"><h2>{{ _("Componi un nuovo esame") }}</h2></div>
+  <form method="POST" action="{{ url_for('exam.create_exam') }}" class="c7-card">
+    <label class="c7-label" for="name">{{ _("Nome") }}</label>
+    <input class="form-control" type="text" id="name" name="name" required
+           placeholder="{{ _('Fondamentali — livello 1') }}">
+
+    <label class="c7-label" for="description" style="margin-top:12px">{{ _("Descrizione") }}</label>
+    <input class="form-control" type="text" id="description" name="description">
+
+    <label class="c7-label" for="time_limit_minutes" style="margin-top:12px">
+      {{ _("Limite di tempo in minuti (facoltativo)") }}
+    </label>
+    <input class="form-control" type="number" id="time_limit_minutes" name="time_limit_minutes" min="1">
+
+    <button type="submit" class="btn btn-success" style="margin-top:12px">{{ _("Crea l'esame") }}</button>
+    <div class="c7-rows__sub" style="margin-top:8px">
+      {{ _("I drill si aggiungono dopo, dalla pagina dell'esame.") }}
+    </div>
+  </form>
+</section>
+{% endblock %}

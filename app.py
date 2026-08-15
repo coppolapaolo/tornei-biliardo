@@ -178,6 +178,20 @@ def create_app(config_name=None):
                         if current_user.is_authenticated
                         else False
                     ),
+                    # I due gate che decidono cosa si vede dell'area esami
+                    # (US-D1): il ruolo concedibile (L1) e l'override della
+                    # progressione (L2). Mostrarli qui evita di andare a
+                    # indovinare quale dei due sta bloccando la schermata.
+                    "is_examiner": (
+                        current_user.is_examiner
+                        if current_user.is_authenticated
+                        else False
+                    ),
+                    "gamification_override": (
+                        bool(current_user.gamification_override)
+                        if current_user.is_authenticated
+                        else False
+                    ),
                 },
                 "request_endpoint": request.endpoint,
                 "request_method": request.method,

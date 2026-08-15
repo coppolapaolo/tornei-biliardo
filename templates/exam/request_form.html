@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _("Chiedi un appuntamento") }}{% endblock %}
+
+{% block page_title %}{{ _("Chiedi un appuntamento") }}{% endblock %}
+{% block page_sub %}{{ exam.name }}{% endblock %}
+
+{% block content %}
+<section class="c7-stack">
+  {% if open_request %}
+  <div class="c7-card c7-card--warn">
+    <div class="c7-rows__title">{{ _("Hai già una richiesta in corso") }}</div>
+    <a class="btn btn-outline-primary" style="margin-top:12px"
+       href="{{ url_for('exam.request_detail', request_id=open_request.id) }}">
+      {{ _("Vedi la trattativa") }}
+    </a>
+  </div>
+  {% elif not examiners %}
+  <div class="c7-empty">
+    <div class="c7-empty__ico"><i class="fas fa-user-slash"></i></div>
+    <h2 class="c7-empty__title">{{ _("Nessun esaminatore") }}</h2>
+    <p class="c7-empty__text">
+      {{ _("Questo esame non ha esaminatori a cui rivolgersi, oppure lo somministri tu.") }}
+    </p>
+  </div>
+  {% else %}
+  <form method="POST" action="{{ url_for('exam.create_request', exam_id=exam.id) }}" class="c7-stack">
+
+    {# ── A chi (US-P4) ────────────────────────────────────────────────── #}
+    <div class="c7-sechead">
+      <h2>{{ _("A chi lo chiedi") }}</h2>
+      <span class="c7-sechead__note">{{ _("nessuna scelta = a tutti") }}</span>
+    </div>
+    <div class="c7-rows">
+      {% for examiner in examiners %}
+      <label class="c7-rows__row" for="rec-{{ examiner.id }}" style="cursor:pointer">
+        <input type="checkbox" id="rec-{{ examiner.id }}" name="recipient_ids" value="{{ examiner.id }}">
+        <div class="c7-rows__main">
+          <div class="c7-rows__title">{{ examiner.username }}</div>
+        </div>
+      </label>
+      {% endfor %}
+    </div>
+    <div class="c7-rows__sub">
+      {{ _("Se ne interpelli più d'uno, il primo che accetta chiude la richiesta per gli altri.") }}
+    </div>
+
+    {# ── Quando e dove (US-P5) ────────────────────────────────────────── #}
+    <div class="c7-sechead"><h2>{{ _("Quando e dove") }}</h2></div>
+    <div class="c7-card">
+      <label class="c7-label" for="scheduled_at">{{ _("Data e ora") }}</label>
+      <input class="form-control" type="datetime-local" id="scheduled_at" name="scheduled_at" required>
+
+      <label class="c7-label" for="billiard_hall_id" style="margin-top:12px">{{ _("Sala") }}</label>
+      <select class="form-control" id="billiard_hall_id" name="billiard_hall_id" required>
+        <option value="">{{ _("Scegli una sala") }}</option>
+        {% for hall in halls %}
+        <option value="{{ hall.id }}">{{ hall.name }}</option>
+        {% endfor %}
+      </select>
+
+      <label class="c7-label" for="notes" style="margin-top:12px">{{ _("Note (facoltative)") }}</label>
+      <input class="form-control" type="text" id="notes" name="notes"
+             placeholder="{{ _('Qualcosa da dire all\'esaminatore') }}">
+
+      <div class="c7-rows__sub" style="margin-top:12px">
+        {{ _("È una proposta: l'esaminatore può controproporre un altro orario, e si continua finché non trovate l'accordo.") }}
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-success">{{ _("Invia la richiesta") }}</button>
+  </form>
+  {% endif %}
+</section>
+{% endblock %}
