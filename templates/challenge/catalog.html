@@ -19,7 +19,8 @@
             and feature_visible('roles.request_role_form') %}
     <a href="{{ url_for('roles.request_role_form', role='examiner') }}" class="btn btn-outline-primary btn-sm">{{ _("Diventa Esaminatore") }}</a>
     {% endif %}
-    {% if current_user.is_authenticated and current_user.can_access('create_challenge') %}
+    {% if current_user.is_authenticated and current_user.can_access('create_challenge')
+          and feature_visible('challenge.create_challenge') %}
     <a href="{{ url_for('challenge.create_challenge') }}" class="btn btn-success btn-sm">{{ _("Nuova challenge") }}</a>
     {% endif %}
 {% endblock %}
@@ -29,7 +30,8 @@
     <button class="nav-link active" id="all-tab" data-bs-toggle="pill" data-bs-target="#all-challenges" type="button" role="tab">
         {{ _("Tutte") }} <span class="c7-num" style="margin-left: 6px;">{{ all_challenges|length }}</span>
     </button>
-    {% if current_user.is_authenticated and current_user.can_access('create_challenge') %}
+    {% if current_user.is_authenticated and current_user.can_access('create_challenge')
+          and feature_visible('challenge.create_challenge') %}
     <button class="nav-link" id="my-tab" data-bs-toggle="pill" data-bs-target="#my-challenges" type="button" role="tab">
         {{ _("Le mie") }} <span class="c7-num" style="margin-left: 6px;">{{ my_challenges|length }}</span>
     </button>
@@ -44,7 +46,8 @@
         {% include "challenge/_challenge_grid.html" with context %}
     </div>
 
-    {% if current_user.is_authenticated and current_user.can_access('create_challenge') %}
+    {% if current_user.is_authenticated and current_user.can_access('create_challenge')
+          and feature_visible('challenge.create_challenge') %}
     <div class="tab-pane fade" id="my-challenges" role="tabpanel">
         {% if my_challenges %}
         <div class="c7-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">

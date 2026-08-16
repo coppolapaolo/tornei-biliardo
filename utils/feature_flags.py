@@ -335,6 +335,37 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "individual_match.request_availability_match": {"player", "director"},
     # Admin overview: solo admin (@admin_required).
     "individual_match.admin_overview": set(),
+    # === Drill (challenge) ===
+    # Il blueprint non era mai stato classificato: per deny-by-default il
+    # catalogo dei drill è stato admin-only in produzione da sempre — la voce
+    # di menu non compariva (base.html la gatta con feature_visible) e chi
+    # arrivava per URL prendeva 404. Si accende ora che il flusso di
+    # allenamento è completo (schermata /challenges/<id>/train).
+    #
+    # Il gate di progressione `can_access('do_challenge')` è **ortogonale** e
+    # resta dov'è: questo layer dice solo se l'endpoint esiste in produzione,
+    # non se l'utente ha sbloccato la funzione.
+    #
+    # Allenamento: lo percorre anche un director, dirigere non toglie il
+    # diritto di allenarsi.
+    "challenge.challenge_catalog": {"player", "director"},
+    "challenge.challenge_detail": {"player", "director"},
+    "challenge.training_session": {"player", "director"},
+    # start_attempt/attempt_detail/complete_attempt sono il percorso della
+    # gara (il drill al posto del bye), che il giocatore attraversa da solo.
+    "challenge.start_attempt": {"player", "director"},
+    "challenge.attempt_detail": {"player", "director"},
+    "challenge.complete_attempt": {"player", "director"},
+    "challenge.toggle_favorite": {"player", "director"},
+    "challenge.create_x_replacement": {"player", "director"},
+    "challenge.complete_x_replacement": {"player", "director"},
+    # Autorialità e statistiche: portano @director_required, quindi la matrice
+    # non deve prometterle a un player — vedrebbe il pulsante e si prenderebbe
+    # un 403.
+    "challenge.create_challenge": {"director"},
+    "challenge.edit_challenge": {"director"},
+    "challenge.delete_challenge": {"director"},
+    "challenge.challenge_statistics": {"director"},
     # === Ruoli concedibili e delega (ADR-041) ===
     # APERTO IN FASE 5 insieme al catalogo esami: il ruolo di esaminatore serve
     # a somministrare esami, e ora gli esami esistono. Fino alla Fase 4 questa

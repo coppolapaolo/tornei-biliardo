@@ -231,6 +231,15 @@ Per costruire la production allowlist, scorri ogni area in Sezione 1 e marca esp
 
 **Endpoint root:** `/challenges` (blueprint `challenge`)
 
+**Visibilità in produzione (ADR-028)**: il blueprint è stato classificato in
+`ENDPOINT_ROLES` il 2026-08-16 — fino ad allora nessuna sua route compariva
+nella matrice, quindi per deny-by-default l'intero catalogo dei drill era
+**admin-only** (voce di menu assente, 404 per URL diretto). Ora: allenamento
+(catalogo, dettaglio, `train`, tentativo, preferiti, X-replacement) a
+`{"player", "director"}`; autorialità e statistiche (`create`, `edit`,
+`delete`, `statistics`, tutte `@director_required`) a `{"director"}`. Il gate
+di progressione `can_access('do_challenge')` resta ortogonale e invariato.
+
 ---
 
 ### Rating & Handicap (RATING)
