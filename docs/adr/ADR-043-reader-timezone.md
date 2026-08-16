@@ -125,16 +125,22 @@ guadagno che oggi riguarda due messaggi su decine. È annotata sotto.
 - Chi non ha ancora un fuso (anonimo, account vecchio, browser che non lo dice)
   legge in ora italiana — cioè esattamente come prima. Il cambiamento non
   peggiora nessun caso esistente.
-- `static/js/datetime-local.js` resta codice morto, e ora è anche **superato**:
+- `static/js/datetime-local.js` era codice morto, ed è stato anche **superato**:
   la conversione la fa il server, che è l'unico posto che può farla anche fuori
-  da una pagina. Da rimuovere.
+  da una pagina. Rimosso insieme a `TourneyUtils` e ai sei attributi `data-utc`
+  che sovrascrivevano lato client il testo già reso dal server.
+- Il vincolo «un solo modulo conosce un fuso» ha ora un **presidio**:
+  `test_only_one_module_knows_what_a_timezone_is` cammina l'AST di `models/`,
+  `routes/` e `utils/` e fallisce su qualunque `ZoneInfo(...)` costruito fuori
+  da `utils/local_time.py`. Serviva: dopo la prima stesura ne erano rimasti due
+  — le ore di silenzio delle notifiche, valutate in ora italiana per chiunque, e
+  `|date_local`, che non convertiva affatto e vicino a mezzanotte mostrava il
+  giorno prima.
 
 ## Open Items
 
-1. **`datetime-local.js` e `TourneyUtils.utcToLocal`**: due meccanismi client
-   che convertono al fuso del browser, ora ridondanti e potenzialmente in
-   disaccordo col server (`utcToLocal` per giunta forza il formato `it-IT`).
-   Da togliere, con i 5 template che usano `data-utc`.
+1. ~~**`datetime-local.js` e `TourneyUtils.utcToLocal`**~~ — fatto: rimossi
+   entrambi, con i cinque template che usavano `data-utc`.
 2. **Notifiche con l'istante invece del testo**: formattare alla lettura invece
    che alla scrittura toglierebbe la necessità di comporre per destinatario, e
    renderebbe corretti anche i messaggi già scritti quando un utente cambia fuso.

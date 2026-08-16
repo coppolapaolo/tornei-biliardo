@@ -42,8 +42,62 @@ REPOPULATED_FIELDS = (
 )
 
 
+#: I package dove un fuso scritto a mano è un bug: lì si formatta per un
+#: lettore, e il lettore non è detto che stia in Italia (ADR-043).
+SCANNED_PACKAGES = ("models", "routes", "utils")
+
+#: L'unico modulo autorizzato a nominare un fuso. `scripts/help_docs` resta
+#: fuori dalla scansione di proposito: lì il fuso è quello del **browser
+#: pilotato**, che va fissato perché le schermate siano riproducibili.
+TIMEZONE_OWNER = Path("utils") / "local_time.py"
+
+
 def _source(relative: str) -> str:
     return (ROOT / relative).read_text(encoding="utf-8")
+
+
+def _modules_naming_a_timezone() -> list[str]:
+    """I moduli che costruiscono uno ``ZoneInfo`` per conto loro.
+
+    Si guarda l'AST e non il testo: `models/user/models.py` cita
+    ``"Europe/Rome"`` in un commento come esempio di nome IANA, e un test che
+    fallisse su quello insegnerebbe solo a non scrivere commenti.
+    """
+    offenders = []
+    for package in SCANNED_PACKAGES:
+        for path in (ROOT / package).rglob("*.py"):
+            if path.relative_to(ROOT) == TIMEZONE_OWNER:
+                continue
+            tree = ast.parse(path.read_text(encoding="utf-8"))
+            for node in ast.walk(tree):
+                if not isinstance(node, ast.Call):
+                    continue
+                func = node.func
+                name = (
+                    func.attr
+                    if isinstance(func, ast.Attribute)
+                    else func.id if isinstance(func, ast.Name) else ""
+                )
+                if name == "ZoneInfo":
+                    offenders.append(str(path.relative_to(ROOT)))
+                    break
+    return sorted(offenders)
+
+
+def test_only_one_module_knows_what_a_timezone_is():
+    """Un ``ZoneInfo`` costruito altrove è un fuso che diverge dagli altri.
+
+    È già successo due volte, e le due volte in silenzio: le ore di silenzio
+    delle notifiche valutate in ora italiana per un giocatore a New York, e i
+    filtri Jinja che si riscrivevano la conversione ognuno per conto suo. Il
+    fuso giusto lo sa ``utils/local_time.py``, che lo ricava dal lettore;
+    chiunque altro lo indovina.
+    """
+    offenders = _modules_naming_a_timezone()
+    assert not offenders, (
+        "fuso scritto a mano fuori da utils/local_time.py: "
+        f"{offenders} — usa resolve_timezone/resolve_timezone_for_user_id"
+    )
 
 
 @pytest.mark.parametrize("relative", SURFACES)

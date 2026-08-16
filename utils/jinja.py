@@ -12,14 +12,28 @@ def display_user_handle(user) -> Markup:
     return Markup(escape(user.username))
 
 
-def format_date_local(value) -> Markup:
-    """Formatta una data in formato italiano (dd/mm/yyyy)."""
+def format_date_local(value, tz=None) -> Markup:
+    """Solo il giorno (dd/mm/yyyy), nel fuso di chi legge (ADR-043).
+
+    La distinzione fra i due rami è il punto:
+
+    - un ``datetime`` è un **istante**, e il DB lo tiene in UTC. Va convertito
+      prima di ridurlo a un giorno, altrimenti vicino a mezzanotte la data
+      mostrata è quella sbagliata — un tentativo registrato alle 01:30 di
+      martedì a Roma risultava fatto di lunedì. Non c'è modo di accorgersene:
+      «lunedì» è una data plausibile;
+    - una ``date`` **non** è un istante: «il 12 giugno» è il 12 giugno per
+      tutti. Riproiettarla la falserebbe, facendo comparire l'11 a chi sta a
+      ovest di Greenwich.
+
+    ``tz`` va passato quando il testo è destinato a qualcun altro, come per
+    gli altri filtri d'orario.
+    """
     if not value:
         return Markup(_("N/A"))
 
-    # Formatta direttamente in Python con formato italiano
     if isinstance(value, datetime):
-        formatted = value.strftime("%d/%m/%Y")
+        formatted = _to_reader_time(value, tz).strftime("%d/%m/%Y")
     elif isinstance(value, date):
         formatted = value.strftime("%d/%m/%Y")
     else:
