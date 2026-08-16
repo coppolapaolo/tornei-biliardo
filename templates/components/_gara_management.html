@@ -80,7 +80,7 @@
         <span class="c7-flash__ico"><i class="fas fa-clock"></i></span>
         <div class="c7-flash__body">
           <div class="c7-flash__title">{{ _('Le iscrizioni scadono') }}</div>
-          <div class="c7-flash__text c7-num" style="font-size:13px" data-utc="{{ gara.inscription_end.isoformat() }}">
+          <div class="c7-flash__text c7-num" style="font-size:13px">
             {{ gara.inscription_end|datetime_local }}
           </div>
         </div>
@@ -113,7 +113,7 @@
         <span class="c7-flash__ico"><i class="fas fa-clock"></i></span>
         <div class="c7-flash__body">
           <div class="c7-flash__title">{{ _('Le iscrizioni iniziano') }}</div>
-          <div class="c7-flash__text c7-num" style="font-size:13px" data-utc="{{ gara.inscription_start.isoformat() }}">
+          <div class="c7-flash__text c7-num" style="font-size:13px">
             {{ gara.inscription_start|datetime_local }}
           </div>
         </div>

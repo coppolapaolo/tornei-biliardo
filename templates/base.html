@@ -47,43 +47,11 @@
             return meta ? meta.getAttribute('content') : '';
         };
 
-        // Timezone e Datetime utilities
-        window.TourneyUtils = {
-            getTimezone: function () {
-                return Intl.DateTimeFormat().resolvedOptions().timeZone;
-            },
-            utcToLocal: function (utcString) {
-                if (!utcString) return 'N/A';
-                const utcDate = new Date(utcString + 'Z'); // Force UTC
-                return utcDate.toLocaleString('it-IT');
-            },
-            localToUtc: function (localDatetimeString) {
-                const localDate = new Date(localDatetimeString);
-                return localDate.toISOString().slice(0, 16); // YYYY-MM-DDTHH:MM
-            },
-            getCurrentLocal: function () {
-                return new Date();
-            },
-            isInFuture: function (utcString) {
-                if (!utcString) return false;
-                return new Date(utcString + 'Z') > new Date();
-            },
-            isInPast: function (utcString) {
-                if (!utcString) return false;
-                return new Date(utcString + 'Z') < new Date();
-            },
-            formatDate: function (dateString, includeTime) {
-                if (!dateString) return 'N/A';
-                const date = new Date(dateString);
-                if (isNaN(date.getTime())) return dateString;
-                const options = includeTime
-                    ? { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }
-                    : { year: 'numeric', month: '2-digit', day: '2-digit' };
-                return date.toLocaleString('it-IT', options);
-            },
-            formatDateOnly: function (dateString) { return this.formatDate(dateString, false); },
-            formatDateTime: function (dateString) { return this.formatDate(dateString, true); }
-        };
+        {# Nessuna conversione di fuso qui dentro: la fa il server, nel fuso del
+           lettore (`User.timezone`), tramite i filtri `|datetime_local` e
+           compagni. Il browser non conosce quella colonna, quindi qualsiasi
+           riformattazione lato client produrrebbe un orario diverso da quello
+           che l'utente vede altrove. Vedi ADR-043. #}
 
         // Dual ELO: alterna competitivo <-> globale su tutta l'interfaccia.
         window.EloToggle = {
@@ -143,21 +111,6 @@
                 }).catch(function () { /* riproverà alla pagina dopo */ });
             })();
             {% endif %}
-
-            document.querySelectorAll('[data-utc]').forEach(function (element) {
-                element.textContent = TourneyUtils.utcToLocal(element.getAttribute('data-utc'));
-            });
-            document.querySelectorAll('input[type="datetime-local"]').forEach(function (input) {
-                if (input.hasAttribute('data-utc-value')) {
-                    input.value = TourneyUtils.localToUtc(input.getAttribute('data-utc-value'));
-                }
-            });
-            document.querySelectorAll('[data-date]').forEach(function (element) {
-                element.textContent = TourneyUtils.formatDateOnly(element.getAttribute('data-date'));
-            });
-            document.querySelectorAll('[data-datetime]').forEach(function (element) {
-                element.textContent = TourneyUtils.formatDateTime(element.getAttribute('data-datetime'));
-            });
         });
     </script>
 
