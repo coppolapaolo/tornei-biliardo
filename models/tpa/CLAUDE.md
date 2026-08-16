@@ -116,6 +116,10 @@ sbloccato il pulsante per compilarlo sarebbe assurdo.
   il registro dei comandi. Un totale salvato diverge al primo annulla.
 - **Non applicare un comando senza validarlo** contro `state.available_buttons()`:
   è quello che impedisce a un client fuori sincrono di sporcare il referto.
+- **Non rimettere `@feature_required` sulle route di lettura o di scrittura.**
+  Sta solo su `tpa_open`: prendere un referto è la funzione da sbloccare,
+  leggerne uno che ti riguarda no, e il compilatore non va chiuso fuori da un
+  referto a metà se le regole cambiano a partita in corso.
 - **Non far segnare i rack a mano** su un match con referto aperto: il punteggio
   discende dal referto (`_sync_match_score`), e due segnapunti si
   contraddicono. Il template del match nasconde il segnapunti normale.

@@ -1,8 +1,20 @@
 """Referto TPA di un match individuale.
 
-Una pagina e cinque azioni. La pagina la vedono tutti e due i giocatori; le
-azioni le puo' fare solo chi tiene il referto — e il controllo sta nel servizio,
-non qui, cosi' vale anche per una POST arrivata per conto suo.
+Una pagina e cinque azioni.
+
+**Il gate della gamification sta sull'apertura, non sulla lettura.** Sbloccare
+la funzione vuol dire poter *prendere* un referto; una volta che il referto
+esiste, riguarda tutti e due i giocatori — e chi non ha sbloccato niente lo
+vede comunque, in sola lettura. E' la stessa regola del TPA nel profilo
+(ADR-044): il dato esiste e ti riguarda, nasconderlo sarebbe assurdo.
+
+Tenere il gate anche sulla scrittura sarebbe peggio che inutile: se l'admin
+irrigidisse le regole a partita in corso, il compilatore resterebbe chiuso
+fuori da un referto a meta', con il segnapunti normale nascosto e nessun modo
+di segnare i rack.
+
+Chi puo' *scrivere* resta una cosa sola: il compilatore. Quel controllo sta nel
+servizio, non qui, cosi' vale anche per una POST arrivata per conto suo.
 
 Le azioni rispondono sempre con **lo stato completo del referto**, non con un
 "ok": il tastierino cambia a ogni tocco, e farlo ricalcolare al client da un
@@ -13,7 +25,7 @@ from __future__ import annotations
 
 import logging
 
-from flask import jsonify, redirect, render_template, request, url_for, flash
+from flask import abort, jsonify, redirect, render_template, request, url_for, flash
 from flask_babel import gettext as _
 from flask_login import current_user
 
@@ -36,6 +48,18 @@ def _load(match_id: int):
     return match, TpaRefertoService.get_for_match(match_id), True
 
 
+def _may_read(referto) -> bool:
+    """Se l'utente corrente puo' *guardare* il referto.
+
+    Basta che il referto esista: e' una partita sua, e chi l'ha annotata ha
+    annotato anche lui. Chi non ha ancora un referto vede invece la pagina di
+    presentazione, e quella si', e' riservata a chi ha sbloccato la funzione.
+    """
+    if referto is not None:
+        return True
+    return bool(current_user.is_authenticated and current_user.can_access(FEATURE_CODE))
+
+
 def _state_response(referto):
     return jsonify(
         {
@@ -54,13 +78,14 @@ def _domain_error(error: Exception):
 
 @individual_match_bp.route("/matches/<int:match_id>/tpa")
 @RoleRequirement.player_or_director_required
-@feature_required(FEATURE_CODE)
 def tpa_referto(match_id: int):
     """La pagina del referto: si compila o si guarda, secondo chi sei."""
     match, referto, is_player = _load(match_id)
     if not is_player:
         flash(_("Accesso negato a questo match."), "danger")
         return redirect(url_for("individual_match.match_list"))
+    if not _may_read(referto):
+        abort(403)
 
     state = None
     if referto is not None:
@@ -96,7 +121,6 @@ def tpa_open(match_id: int):
 
 @individual_match_bp.route("/matches/<int:match_id>/tpa/press", methods=["POST"])
 @RoleRequirement.player_or_director_required
-@feature_required(FEATURE_CODE)
 def tpa_press(match_id: int):
     """Registra un tocco sul tastierino."""
     match, referto, is_player = _load(match_id)
@@ -119,7 +143,6 @@ def tpa_press(match_id: int):
 
 @individual_match_bp.route("/matches/<int:match_id>/tpa/undo", methods=["POST"])
 @RoleRequirement.player_or_director_required
-@feature_required(FEATURE_CODE)
 def tpa_undo(match_id: int):
     """Annulla l'ultimo tocco."""
     match, referto, is_player = _load(match_id)
@@ -141,7 +164,6 @@ def tpa_undo(match_id: int):
 
 @individual_match_bp.route("/matches/<int:match_id>/tpa/state")
 @RoleRequirement.player_or_director_required
-@feature_required(FEATURE_CODE)
 def tpa_state(match_id: int):
     """Lo stato del referto, per chi lo sta guardando in sola lettura."""
     match, referto, is_player = _load(match_id)
@@ -152,7 +174,6 @@ def tpa_state(match_id: int):
 
 @individual_match_bp.route("/matches/<int:match_id>/tpa/close", methods=["POST"])
 @RoleRequirement.player_or_director_required
-@feature_required(FEATURE_CODE)
 def tpa_close(match_id: int):
     """Chiude il referto: da qui in poi si legge e basta."""
     match, referto, is_player = _load(match_id)

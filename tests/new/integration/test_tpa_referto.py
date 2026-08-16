@@ -275,6 +275,9 @@ class TestPunteggioDerivato:
                 ).count()
                 == 0
             )
+            # Chi ha tolto il rack resta scritto, come nel resto del dominio.
+            rimosso = IndividualRack.query.filter_by(match_id=match.id).first()
+            assert rimosso.removed_by_id == one.id
 
     def test_annullare_toglie_un_comando_per_volta(self, app, players):
         with app.app_context():
@@ -401,6 +404,36 @@ class TestRotte:
 class TestSblocco:
     """Il gate della gamification."""
 
+    @staticmethod
+    def _gate_chiuso() -> None:
+        """Configura `tpa_scoresheet` con una regola che nessuno soddisfa."""
+        from models.gamification.feature_models import FeatureConfig
+
+        db.session.add(
+            FeatureConfig(
+                code=FEATURE_CODE,
+                name="Referto TPA",
+                description="",
+                is_active=True,
+                rules=json.dumps(
+                    [
+                        {
+                            "description": "Veterano",
+                            "conditions": [
+                                {
+                                    "type": "METRIC",
+                                    "metric": "exams_certified",
+                                    "operator": "gte",
+                                    "value": 1,
+                                }
+                            ],
+                        }
+                    ]
+                ),
+            )
+        )
+        db.session.commit()
+
     def test_senza_i_requisiti_la_funzione_non_si_raggiunge(self, app, players):
         """Chi non l'ha sbloccata, indovinando l'URL, non entra.
 
@@ -408,46 +441,90 @@ class TestSblocco:
         chiamate JSON rispondono 403: in nessuno dei due casi si annota.
         """
         with app.app_context():
-            from models.gamification.feature_models import FeatureConfig
-
             one, two = players
             match = _match(one, two)
-
-            db.session.add(
-                FeatureConfig(
-                    code=FEATURE_CODE,
-                    name="Referto TPA",
-                    description="",
-                    is_active=True,
-                    rules=json.dumps(
-                        [
-                            {
-                                "description": "Veterano",
-                                "conditions": [
-                                    {
-                                        "type": "METRIC",
-                                        "metric": "exams_certified",
-                                        "operator": "gte",
-                                        "value": 1,
-                                    }
-                                ],
-                            }
-                        ]
-                    ),
-                )
-            )
-            db.session.commit()
+            self._gate_chiuso()
 
             client = TestRotte._client(app, one)
 
+            # La pagina che propone il referto rimbalza sul cruscotto.
             page = client.get(f"/match/matches/{match.id}/tpa")
             assert page.status_code == 302
             assert "/match/" in page.headers["Location"]
 
-            api = client.post(
+            # E il referto non si prende: e' *quello* il gesto da sbloccare.
+            client.post(f"/match/matches/{match.id}/tpa/open")
+            assert TpaRefertoService.get_for_match(match.id) is None
+
+    def test_chi_non_ha_sbloccato_puo_comunque_guardare_il_referto(self, app, players):
+        """Il gate sta sull'apertura, non sulla lettura.
+
+        Il referto di una tua partita ti riguarda anche se la funzione non l'hai
+        sbloccata tu: e' la stessa regola del TPA nel profilo. Vietarne la
+        lettura renderebbe falsa la promessa dell'interfaccia — «l'altro
+        giocatore lo vede aggiornarsi».
+        """
+        with app.app_context():
+            one, two = players
+            match = _match(one, two)
+            # Il referto lo apre `one` mentre la funzione e' ancora aperta...
+            referto = TpaRefertoService.open_referto(match.id, one.id)
+            TpaRefertoService.press(referto.id, one.id, "2")
+            # ...e solo dopo il gate si chiude per tutti.
+            self._gate_chiuso()
+
+            client = TestRotte._client(app, two)
+
+            assert client.get(f"/match/matches/{match.id}/tpa").status_code == 200
+            stato = client.get(f"/match/matches/{match.id}/tpa/state")
+            assert stato.status_code == 200
+            assert stato.get_json()["state"]["can_write"] is False
+
+    def test_guardare_non_vuol_dire_scrivere(self, app, players):
+        """Chi guarda resta chi guarda, gate o non gate."""
+        with app.app_context():
+            one, two = players
+            match = _match(one, two)
+            TpaRefertoService.open_referto(match.id, one.id)
+            self._gate_chiuso()
+
+            risposta = TestRotte._client(app, two).post(
                 f"/match/matches/{match.id}/tpa/press", json={"command": "1"}
             )
-            assert api.status_code == 403
+            assert risposta.status_code == 403
+
+    def test_il_compilatore_continua_a_scrivere_anche_se_le_regole_cambiano(
+        self, app, players
+    ):
+        """Un referto a meta' non si abbandona.
+
+        Se l'admin irrigidisse le regole a partita in corso e il gate valesse
+        anche in scrittura, il compilatore resterebbe chiuso fuori: referto a
+        meta', segnapunti normale nascosto, nessun modo di segnare i rack.
+        """
+        with app.app_context():
+            one, two = players
+            match = _match(one, two)
+            referto = TpaRefertoService.open_referto(match.id, one.id)
+            self._gate_chiuso()
+
+            risposta = TestRotte._client(app, one).post(
+                f"/match/matches/{match.id}/tpa/press", json={"command": "1"}
+            )
+            assert risposta.status_code == 200
+            assert risposta.get_json()["state"]["can_write"] is True
+            assert referto.id  # il referto e' ancora quello di prima
+
+    def test_senza_referto_la_presentazione_resta_riservata(self, app, players):
+        """La pagina che *propone* di prendere il referto e' la funzione da
+        sbloccare, e resta dietro il gate."""
+        with app.app_context():
+            one, two = players
+            match = _match(one, two)
+            self._gate_chiuso()
+
+            pagina = TestRotte._client(app, one).get(f"/match/matches/{match.id}/tpa")
+            assert pagina.status_code == 302
 
 
 class TestStatisticheDiCarriera:

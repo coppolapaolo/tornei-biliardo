@@ -38,6 +38,20 @@ difesa, un kick da un miss, e di deciderlo in due secondi con la stecca in mano.
 Proposto a chi si è appena iscritto sarebbe rumore; a chi ha già giocato gare,
 campionati, match, drill ed esami è la cosa che stava aspettando.
 
+**Il gate sta sul *prendere* un referto, non sul leggerlo.** Sbloccare la
+funzione vuol dire poter aprire un referto; una volta che il referto esiste,
+riguarda tutti e due i giocatori, e chi non ha sbloccato niente lo vede
+comunque in sola lettura. È la stessa regola del TPA nel profilo: il dato
+esiste e ti riguarda, nasconderlo sarebbe assurdo — e senza questo l'interfaccia
+prometterebbe una cosa («l'altro giocatore lo vede aggiornarsi») che il
+decoratore smentisce.
+
+Il gate non vale nemmeno sulla scrittura del compilatore, e non per pigrizia:
+se l'admin irrigidisse le regole a partita in corso, chi sta compilando
+resterebbe chiuso fuori da un referto a metà, con il segnapunti normale
+nascosto e nessun modo di segnare i rack. Chi può scrivere resta una cosa sola
+— il compilatore — e quel controllo sta nel servizio.
+
 Il gate è la macchina ABAC che c'è già (`FeatureConfig` + `UnlockEngine`), con
 codice feature `tpa_scoresheet`. Le soglie iniziali — una gara, un campionato,
 tre match individuali, tre drill, un esame certificato — sono **seminate dalla
@@ -153,8 +167,9 @@ confine fra un set e l'altro, e forzarcelo dentro sarebbe stato inventare.
 ## Conseguenze
 
 - Una route nuova per pagina (`individual_match.tpa_referto`) e cinque per le
-  azioni, tutte in `ENDPOINT_ROLES` (ADR-028) e tutte con
-  `@feature_required("tpa_scoresheet")`.
+  azioni, tutte in `ENDPOINT_ROLES` (ADR-028). `@feature_required` sta **solo**
+  su `tpa_open`: le altre controllano che chi guarda sia uno dei due giocatori
+  e, per scrivere, che sia il compilatore.
 - Le azioni rispondono con **lo stato completo del referto**, tastierino
   compreso: il client non ricalcola niente, e non può andare fuori sincrono.
 - La validazione dei comandi è **server-side e contro il motore**: si accetta

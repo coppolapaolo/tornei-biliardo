@@ -342,7 +342,9 @@ class TpaRefertoService:
                 match.add_rack_result(user_id)
                 changed = True
             while TpaRefertoService._score_of(match, seat) > target:
-                TpaRefertoService._remove_last_rack(match, user_id)
+                TpaRefertoService._remove_last_rack(
+                    match, user_id, actor_id=referto.compiler_id
+                )
                 changed = True
 
         if not changed:
@@ -364,8 +366,16 @@ class TpaRefertoService:
         return (match.player1_score if seat == 1 else match.player2_score) or 0
 
     @staticmethod
-    def _remove_last_rack(match: IndividualMatch, user_id: int) -> None:
-        """Toglie l'ultimo rack vinto da un giocatore (cancellazione morbida)."""
+    def _remove_last_rack(
+        match: IndividualMatch, user_id: int, actor_id: Optional[int] = None
+    ) -> None:
+        """Toglie l'ultimo rack vinto da un giocatore (cancellazione morbida).
+
+        ``actor_id`` e' chi ha annullato, cioe' il compilatore del referto: il
+        dominio dei match individuali registra sempre **chi** ha tolto un rack,
+        e un rack sparito senza un nome accanto e' esattamente il tipo di cosa
+        che poi nessuno sa spiegare.
+        """
         rack = (
             IndividualRack.query.filter_by(
                 match_id=match.id, winner_id=user_id, is_deleted=False
@@ -375,6 +385,7 @@ class TpaRefertoService:
         )
         if rack is not None:
             rack.is_deleted = True
+            rack.removed_by_id = actor_id
             rack.removed_at = utc_now()
         if user_id == match.player1_id:
             match.player1_score = max(0, (match.player1_score or 0) - 1)

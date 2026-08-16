@@ -85,15 +85,19 @@
     {% include "components/_unified_rack_input.html" with context %}
     {% endif %}
 
-    {# Referto TPA: si propone solo a chi lo ha sbloccato, e solo dove ha senso. #}
+    {# Referto TPA. *Prendere* un referto e' la funzione da sbloccare; una volta
+       che esiste, riguarda tutti e due i giocatori — anche quello che non ha
+       sbloccato niente, che lo apre in sola lettura. #}
     {% set user_is_player = current_user.id in [match.player1_id, match.player2_id] %}
     {% if user_is_player and feature_visible('individual_match.tpa_referto')
-          and current_user.can_access('tpa_scoresheet') %}
+          and (tpa is not none or current_user.can_access('tpa_scoresheet')) %}
       {% if tpa is not none %}
       <a class="btn {{ 'btn-primary btn-lg' if tpa_live else 'btn-secondary' }} w-100"
          href="{{ url_for('individual_match.tpa_referto', match_id=match.id) }}">
         <i class="fas fa-pen-to-square"></i>
-        {{ _('Apri il referto TPA') if tpa_live else _('Rivedi il referto TPA') }}
+        {%- if not tpa_live %}{{ _('Rivedi il referto TPA') }}
+        {%- elif tpa.compiler_id == current_user.id %}{{ _('Apri il referto TPA') }}
+        {%- else %}{{ _('Guarda il referto TPA') }}{% endif %}
       </a>
       {% elif state == MatchStatus.IN_PROGRESS.value and tpa_can_open %}
       <a class="btn btn-secondary w-100"
