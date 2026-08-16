@@ -42,10 +42,19 @@ def user_statistics():
     try:
         stats = IndividualMatchService.get_user_statistics(current_user.id)
 
+        # Il TPA sta accanto alle statistiche dei match perche' e' la stessa
+        # partita raccontata piu' da vicino. `None` quando qui non ci va: vedi
+        # `TpaStatsService.profile_summary`.
+        from models.tpa.stats_service import TpaStatsService
+
+        tpa = TpaStatsService.profile_summary(current_user.id, user=current_user)
+
         if request.is_json:
-            return jsonify({"success": True, "statistics": stats})
+            return jsonify({"success": True, "statistics": stats, "tpa": tpa})
         else:
-            return render_template("individual_match/statistics.html", statistics=stats)
+            return render_template(
+                "individual_match/statistics.html", statistics=stats, tpa=tpa
+            )
 
     except Exception as e:
         error_msg = f"Error loading statistics: {str(e)}"

@@ -26,7 +26,7 @@ class RatingEventHandlers:
         rating signal.
 
         Handicap matches (effective_has_handicap, ereditato da gara/campionato)
-        non aggiornano i rating (né Elo né, in futuro, Fargo): il risultato è
+        non aggiornano il rating Elo: il risultato è
         falsato dall'handicap e non riflette la skill.
         """
         from models.match.models import Match

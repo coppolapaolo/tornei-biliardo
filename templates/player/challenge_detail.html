@@ -83,11 +83,11 @@
 {# L'amministratore non prova le challenge: e' una funzione di gioco. #}
 {% if not current_user.is_admin %}
 <div class="c7-actionbar" style="flex-direction:column;gap:6px">
-  <a href="{{ url_for('challenge.start_attempt', challenge_id=challenge.id) }}" class="btn btn-primary w-100">
-    <i class="fas fa-play"></i>&nbsp;{{ _("Inizia il tentativo") }}
+  <a href="{{ url_for('challenge.training_session', challenge_id=challenge.id) }}" class="btn btn-primary w-100">
+    <i class="fas fa-play"></i>&nbsp;{{ _("Allenati su questo drill") }}
   </a>
   <div class="text-center" style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
-    {{ _("Al termine registri com'è andata") }}
+    {{ _("Registri una prova dopo l'altra, sulla stessa schermata") }}
   </div>
 </div>
 {% endif %}

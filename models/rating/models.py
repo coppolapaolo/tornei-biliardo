@@ -29,7 +29,6 @@ class CategoryLevel(Enum):
 class RatingSystem(Enum):
     """Supported rating systems."""
 
-    FARGO = "fargo"
     ELO = "elo"  # Competitivo: SOLO match di torneo. Pilota categoria/handicap.
     ELO_GLOBAL = "elo_global"  # Tornei + casual VALIDATED. SOLO display (dual ELO).
     INTERNAL = "internal"  # Club internal rating
@@ -128,17 +127,7 @@ class PlayerRating(BaseModel):
 
     def get_category_equivalent(self) -> CategoryLevel:
         """Convert rating to category equivalent."""
-        if self.rating_system == RatingSystem.FARGO:
-            # Fargo rating to category mapping
-            if self.rating_value >= 600:
-                return CategoryLevel.A
-            elif self.rating_value >= 500:
-                return CategoryLevel.B
-            elif self.rating_value >= 400:
-                return CategoryLevel.C
-            else:
-                return CategoryLevel.D
-        elif self.rating_system == RatingSystem.ELO:
+        if self.rating_system == RatingSystem.ELO:
             # ELO rating to category mapping
             if self.rating_value >= 1800:
                 return CategoryLevel.A

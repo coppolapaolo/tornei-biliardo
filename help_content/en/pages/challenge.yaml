@@ -4,9 +4,9 @@ kind: approfondimento
 audience: [giocatore]
 minutes: 3
 summary: "Skill drills you do on your own: for practice, for unlocking milestones, and — inside a competition — for settling tie-breaks."
-screens: [challenge.challenge_catalog, challenge.challenge_detail, challenge.start_attempt,
-  challenge.attempt_detail, challenge.create_challenge, challenge.edit_challenge,
-  challenge.challenge_statistics, player.challenge_detail]
+screens: [challenge.challenge_catalog, challenge.challenge_detail, challenge.training_session,
+  challenge.start_attempt, challenge.attempt_detail, challenge.create_challenge,
+  challenge.edit_challenge, challenge.challenge_statistics, player.challenge_detail]
 related: [progressi, numero_dispari, esami]
 
 blocks:
@@ -30,14 +30,37 @@ blocks:
     shot: challenge-catalogo
     caption: "The catalogue: each drill has its picture and scoring type."
 
+  - type: heading
+    id: allenarsi
+    title: "Practising a drill"
+
+  - type: text
+    text: >-
+      Practising means repeating: ten attempts in a row, not one at a time.
+      That is why there is **a single screen**, where the picture of the layout
+      and the instructions stay in front of you while you record one attempt
+      after another, without ever changing page.
+
   - type: steps
     items:
       - title: "Pick a challenge"
         text: "Open its page and read the rules: how the balls are set up and how the score is counted."
-      - title: "Tap «Start attempt»"
-        text: "From then on the attempt is open and the app waits for the result."
-      - title: "Play it and record the score"
-        text: "At the end you enter what you did. The attempt goes into your history."
+      - title: "Tap «Try it»"
+        text: "It is the button on the card in the catalogue. From the challenge page it reads «Practise this drill»."
+      - title: "Set the table up and play"
+        text: "The picture and the instructions stay at the top, always visible: nothing to keep in your head."
+      - title: "Record how it went"
+        text: "Use «−» and «+» to set the score, or pick «Passed» or «Not passed». Then tap «Record the attempt»."
+      - title: "Try again as often as you like"
+        text: "The attempt shows up straight away under «Your attempts», and «Attempts recorded» and «Your record» go up at the top. The field resets itself: you are ready for the next one."
+      - title: "When you have had enough, tap «I'm done»"
+        text: "You go back to the catalogue. The attempts stay in your history, and coming back to the challenge shows you the last ten."
+
+  - type: note
+    tone: info
+    text: >-
+      Trying again costs you nothing: your **best result** is the one that
+      stands. A bad attempt does not wipe out the good one before it.
 
   - type: heading
     id: due_tipi
@@ -78,6 +101,17 @@ blocks:
           At the end of a competition, if two or more players are level in the
           positions that matter, it can be settled with a challenge: the best
           score finishes ahead.
+
+  - type: note
+    tone: warning
+    title: "Inside a competition you go a different way"
+    text: >-
+      A competition challenge does not start from the catalogue: you find it on
+      the competition page, with the «Try» button (or «Continue», if you have
+      already begun), and the app shows you a confirmation page before you
+      play. There the score counts towards the standings, and how many attempts
+      you get is set by the director: next to the challenge you can see how
+      many you have already used.
 
   - type: note
     tone: info
@@ -123,7 +157,7 @@ blocks:
       - q: "I cannot see the Challenges section."
         a: "It is a feature that unlocks as you use the platform, like the Matches section. If it is not there yet, it will be."
       - q: "Can I repeat the same challenge?"
-        a: "Yes, when you do it to practise. Inside a competition the number of attempts is set by the director, and inside an exam it is set by whoever composed it: there it can ask you for several attempts at the same drill, and the best one counts."
+        a: "Yes, and that is exactly what the practice screen is for: you record one attempt after another without leaving. Inside a competition it is different: there the number of attempts is set by the director, and inside an exam it is set by whoever composed it — it can ask you for several attempts at the same drill, and the best one counts."
       - q: "What is the difference between a challenge and an exam?"
         a: "A challenge is a single drill. An exam is a sequence of several drills in order, and it can be certified by an examiner. See [Sitting an exam](/aiuto/giocare/esami)."
       - q: "Who checks that the score I claim is true?"

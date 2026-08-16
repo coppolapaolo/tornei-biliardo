@@ -57,7 +57,7 @@ Una **sttategia di abbinamento per _doppio ko_** abbina tra loro i vincitori e r
 
 La **strategia di abbinamento _casuale_** abbina a caso i giocatori assicurandosi solo che non ci sia mai lo stesso abbinamento più di una volta in turni diversi della stessa gara. Questo tipo di strategia può calcolare tutti gli abbinamenti subito e non ha bisogno di aspettare la conclusione dei match per l'abbinamento successivo.
 
-Una strategia di abbinamento è associata anche ad una **strategia per il _primo abbinamento_** che può essere _casuale_ (in questo caso limitata al primo turno) oppure _basato su classifica_ oppure _basato su rating_ (fargo o elo).
+Una strategia di abbinamento è associata anche ad una **strategia per il _primo abbinamento_** che può essere _casuale_ (in questo caso limitata al primo turno) oppure _basato su classifica_ oppure _basato su rating_ (elo).
 
 Una strategia di abbinamento è associata anche ad una **policy per la X** che decide come trattare il caso in cui ci siano meno giocatori rispetto a quelli necessari. 
 Ad esempio la strategia di _eliminazione diretta_ seleziona casualmente il numero di giocatori che eccede la potenza del 2 più alta e li fa passare tutti automaticamente al secondo turno (perché li abbina alla X e vincono atuomaticamente). 
@@ -88,7 +88,7 @@ Per distanze superiori a 7, i rack totali da giocare diventano troppi rispetto a
 ### Gare amalfi
 
 Una gara **amalfi** è una gara in cui non c'è eliminazione e tutti i giocatori giocano lo stesso numero di turni.
-Inizialmente gli iscritti vengono abbinati casualmente. Una variante prevede un abbinamento iniziale basato sulla classifica del campionato (comunque nella prima gara, in cui la classifica è assente, l'abbinamento è casuale). Un'altra variante prevede che l'abbinamento iniziale sia basato sulla classifica del _Fargo rating_ o del _Elo rating_.
+Inizialmente gli iscritti vengono abbinati casualmente. Una variante prevede un abbinamento iniziale basato sulla classifica del campionato (comunque nella prima gara, in cui la classifica è assente, l'abbinamento è casuale). Un'altra variante prevede che l'abbinamento iniziale sia basato sull'_Elo rating_. Il _Fargo rating_, previsto nelle prime stesure, non viene implementato (2026-08).
 Amalfi abbina ad ogni turno i giocatori partendo dalla classifica precedente e saltando un numero di posizioni pari ai turni che mancano alla fine.
 
 #### Garanzia anti-rematch nel caso pari
@@ -141,7 +141,7 @@ Il valore di default per la distanza dei set viene dalla gara a cui appartiene i
 Di solito la disciplina dei rack che compongono un set è la stessa, ma una variante prevede che la distanza sia da coprire con più discipline diverse. Ad esempio vince chi arriva prima a 7, ma i primi 5 rack sono a palla 8 e gli altri a palla 9.
 Un'altra variante, che si accompagna al break continuo per il set (il giocatore che vince il rack è lo stesso che apre il successivo), prevede che chi spacca decide la disciplina tra un predeterminato insieme di discipline possibili (ad esempio un match al 5, break continuo, scelta tra palla 8 o palla 9).
 
-Un **match** può essere con handicap o no. Se c'è l'handicap allora dipende dalla differenza di categoria dei giocatori o dalla differenza di rating (fargo o elo) dei giocatori. Un esempio di handicap può essere questo: se un giocatore di categoria A è abbinato con uno di categoria C, parte da -2, se è abbinato con uno di categoria B parte da -1 come pure un giocatore di categoria B abbinato con uno di C.
+Un **match** può essere con handicap o no. Se c'è l'handicap allora dipende dalla differenza di categoria dei giocatori o dalla differenza di rating (elo) dei giocatori. Un esempio di handicap può essere questo: se un giocatore di categoria A è abbinato con uno di categoria C, parte da -2, se è abbinato con uno di categoria B parte da -1 come pure un giocatore di categoria B abbinato con uno di C.
 
 La app permette anche agli utenti ``player`` di organizzare **match _standalone_** (casual match) con un altro utente. Questi match utilizzano la stessa interfaccia di gestione dei rack dei match di torneo tramite un componente unificato (**BaseMatchMixin**), garantendo una UX coerente.
 

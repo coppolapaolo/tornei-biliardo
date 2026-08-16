@@ -58,3 +58,7 @@ esame-gestione: "The area for whoever administers exams: the ones they composed,
 esame-esaminatori: "The examiners of an exam: who administers it and who can be added."
 ruolo-richiesta: "The form for requesting the examiner role: who to forward the request to, and optional notes."
 ruolo-richieste: "Incoming role requests: approved or rejected one at a time."
+
+# --- TPA scoresheet ------------------------------------------------------
+referto-tpa: "The TPA scoresheet during the match: the two players with their TPA, the inning box and the keypad."
+referto-tpa-foglio: "The scoresheet itself: each row is one visit to the table, with the balls pocketed and why the inning ended."

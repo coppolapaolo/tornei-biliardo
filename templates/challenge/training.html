@@ -1,0 +1,292 @@
+{% extends "base.html" %}
+
+{# La schermata dell'allenamento: si sceglie il drill, si registra una prova
+   dopo l'altra, si chiude quando si vuole.
+
+   Prima ogni singola prova costava due pagine e quattro richieste — pagina di
+   conferma, POST che apriva il tentativo, redirect alla pagina del punteggio,
+   POST che lo chiudeva, redirect al dettaglio — e per la seconda si
+   ricominciava da capo. Chi si allena ne fa dieci di fila.
+
+   La sessione NON e' un'entita': la POST registra una prova gia' completa e
+   risponde in JSON, la pagina si aggiorna in posto. L'elenco delle prove
+   arriva dal server e sopravvive a un ricaricamento, perche' e' ricavato dai
+   tentativi e non da uno stato tenuto qui. #}
+
+{% set is_pass_fail = challenge.pass_fail_only %}
+
+{% block title %}{{ _("Allenamento") }} - {{ challenge.get_display_name() }}{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('challenge.challenge_catalog') }}"
+   aria-label="{{ _('Torna ai drill') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("Allenamento") }}{% endblock %}
+{% block page_sub %}{{ challenge.description|truncate(46, True, "…") }}{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('challenge.challenge_catalog') }}"
+   class="btn btn-secondary btn-sm d-none d-lg-inline-flex">
+  <i class="fas fa-check"></i>&nbsp;{{ _("Ho finito") }}
+</a>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:720px">
+  <div class="c7-stack">
+
+    {# ---------- Il drill: foto e istruzioni, sempre sotto gli occhi ---------- #}
+    <div class="c7-diagram c7-diagram--card">
+      {% if challenge.image_filename %}
+      <img class="c7-diagram__img" src="{{ challenge_image_url(challenge) }}"
+           alt="{{ _('Disposizione del drill') }}"
+           onerror="this.style.display='none'">
+      {% else %}
+      <i class="fas fa-bullseye" style="font-size:28px"></i>
+      {% endif %}
+      <span class="c7-state {{ 'c7-state--info' if is_pass_fail else 'c7-state--muted' }}"
+            style="position:absolute;bottom:12px;left:12px">
+        {{ _('Riuscita o no') if is_pass_fail else _('A punteggio') }}
+      </span>
+    </div>
+
+    <div class="c7-card c7-card--accent">
+      <div class="c7-kicker">{{ _("Istruzioni") }}</div>
+      <p class="mb-0" style="margin-top:10px;font-size:15px;font-weight:600;line-height:1.5">
+        {{ challenge.description }}
+      </p>
+    </div>
+
+    {# ---------- Come sta andando ---------- #}
+    <div class="c7-grid" style="grid-template-columns:1fr 1fr">
+      <div class="c7-card">
+        <div class="c7-rows__sub">{{ _("Prove registrate") }}</div>
+        <div class="c7-num-lg" style="margin-top:6px" id="attemptsCount">{{ attempts|length }}</div>
+      </div>
+      <div class="c7-card">
+        <div class="c7-rows__sub">{{ _("Il tuo record") if not is_pass_fail else _("Riuscite") }}</div>
+        <div class="c7-num-lg" style="margin-top:6px" id="bestScore">
+          {%- if is_pass_fail %}{{ attempts|selectattr('passed')|list|length }}
+          {%- else %}{{ best_score if best_score is not none else '—' }}{% endif %}
+        </div>
+      </div>
+    </div>
+
+    {# ---------- Il gesto: registra una prova ---------- #}
+    <form id="attemptForm" class="c7-stack" autocomplete="off">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      {% if is_pass_fail %}
+      <label class="c7-choice c7-choice--big" data-outcome="true">
+        <input type="radio" name="passed" value="true" class="d-none">
+        <span class="c7-tile c7-tile--round"><i class="fas fa-check"></i></span>
+        <span class="flex-fill">
+          <span class="c7-choice__title d-block">{{ _("Superata") }}</span>
+          <span class="c7-choice__desc d-block">{{ _("Registra e passa alla prossima") }}</span>
+        </span>
+        <i class="fas fa-circle-check c7-choice__mark"></i>
+      </label>
+
+      <label class="c7-choice c7-choice--big" data-outcome="false">
+        <input type="radio" name="passed" value="false" class="d-none">
+        <span class="c7-tile c7-tile--round c7-tile--locked"><i class="fas fa-xmark"></i></span>
+        <span class="flex-fill">
+          <span class="c7-choice__title d-block">{{ _("Non superata") }}</span>
+          <span class="c7-choice__desc d-block">{{ _("Registra e riprova") }}</span>
+        </span>
+        <i class="fas fa-circle-check c7-choice__mark"></i>
+      </label>
+
+      {% else %}
+      <div class="c7-card c7-card--accent c7-scorepad">
+        <div class="c7-kicker">{{ _("Punteggio della prova") }}</div>
+        <div class="c7-scorepad__row">
+          <button type="button" class="c7-scorepad__btn" data-score-step="-1"
+                  aria-label="{{ _('Diminuisci') }}"><i class="fas fa-minus"></i></button>
+          <div class="c7-scorepad__value" id="scoreDisplay">0</div>
+          <button type="button" class="c7-scorepad__btn c7-scorepad__btn--plus" data-score-step="1"
+                  aria-label="{{ _('Aumenta') }}"><i class="fas fa-plus"></i></button>
+        </div>
+        <input type="hidden" name="score" id="scoreInput" value="0">
+      </div>
+      {% endif %}
+    </form>
+
+    {# ---------- Le prove fatte ---------- #}
+    <div class="c7-card">
+      <div class="c7-sechead mb-3"><h2>{{ _("Le tue prove") }}</h2></div>
+      <div class="c7-rows" style="background:var(--c7-bg)" id="attemptsList">
+        {% for attempt in attempts %}
+        <div class="c7-rows__row">
+          <span class="c7-tile c7-tile--sm {{ 'c7-tile--locked' if is_pass_fail and not attempt.passed }}">
+            {%- if is_pass_fail %}<i class="fas {{ 'fa-check' if attempt.passed else 'fa-xmark' }}"></i>
+            {%- else %}<span class="c7-num">{{ attempt.score }}</span>{% endif %}
+          </span>
+          <div class="c7-rows__main">
+            <div class="c7-rows__title">
+              {%- if is_pass_fail %}{{ _("Superata") if attempt.passed else _("Non superata") }}
+              {%- else %}{{ _("Punteggio %(score)s", score=attempt.score) }}{% endif %}
+            </div>
+            <div class="c7-rows__sub"><span class="c7-num">{{ attempt.attempted_at|datetime_local }}</span></div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="c7-kicker" id="attemptsEmpty" style="text-align:center;margin-top:12px;
+           {% if attempts %}display:none{% endif %}">
+        {{ _("Nessuna prova ancora. Registra la prima qui sopra.") }}
+      </div>
+    </div>
+
+    <div class="c7-kicker" style="text-align:center">
+      {{ _("Puoi riprovare quante volte vuoi: resta il tuo risultato migliore.") }}
+    </div>
+  </div>
+
+  <div class="c7-actionbar">
+    <button type="button" class="btn btn-primary w-100" id="recordBtn">
+      <i class="fas fa-plus"></i>&nbsp;<span id="recordBtnLabel">{{ _("Registra la prova") }}</span>
+    </button>
+    <a href="{{ url_for('challenge.challenge_catalog') }}"
+       class="btn btn-secondary c7-btn-narrow">{{ _("Ho finito") }}</a>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const isPassFail = {{ is_pass_fail|tojson }};
+    const recordUrl = {{ url_for('challenge.training_session', challenge_id=challenge.id)|tojson }};
+
+    const list = document.getElementById('attemptsList');
+    const empty = document.getElementById('attemptsEmpty');
+    const countEl = document.getElementById('attemptsCount');
+    const bestEl = document.getElementById('bestScore');
+    const btn = document.getElementById('recordBtn');
+    const label = document.getElementById('recordBtnLabel');
+
+    // Punteggio: due tasti grossi, come nella schermata che questa sostituisce.
+    const scoreInput = document.getElementById('scoreInput');
+    const scoreDisplay = document.getElementById('scoreDisplay');
+    document.querySelectorAll('[data-score-step]').forEach(function (stepBtn) {
+        stepBtn.addEventListener('click', function () {
+            const next = parseInt(scoreInput.value, 10) + parseInt(stepBtn.dataset.scoreStep, 10);
+            if (next < 0) return;
+            scoreInput.value = next;
+            scoreDisplay.textContent = next;
+        });
+    });
+
+    // Riuscita o no: scegliere un esito e' gia' meta' del gesto.
+    document.querySelectorAll('input[name="passed"]').forEach(function (radio) {
+        radio.addEventListener('change', function () {
+            document.querySelectorAll('input[name="passed"]').forEach(function (r) {
+                r.closest('.c7-choice').classList.toggle('is-selected', r.checked);
+            });
+        });
+    });
+
+    // Una riga nuova in cima: la prova appena fatta e' quella che interessa.
+    function prependRow(attempt) {
+        const row = document.createElement('div');
+        row.className = 'c7-rows__row';
+
+        const tile = document.createElement('span');
+        tile.className = 'c7-tile c7-tile--sm';
+        if (isPassFail) {
+            if (!attempt.passed) tile.classList.add('c7-tile--locked');
+            tile.innerHTML = '<i class="fas ' + (attempt.passed ? 'fa-check' : 'fa-xmark') + '"></i>';
+        } else {
+            const num = document.createElement('span');
+            num.className = 'c7-num';
+            num.textContent = attempt.score;
+            tile.appendChild(num);
+        }
+
+        const main = document.createElement('div');
+        main.className = 'c7-rows__main';
+        const title = document.createElement('div');
+        title.className = 'c7-rows__title';
+        if (isPassFail) {
+            title.textContent = attempt.passed ? passedLabel : failedLabel;
+        } else {
+            title.textContent = scoreLabel.replace('{score}', attempt.score);
+        }
+        const sub = document.createElement('div');
+        sub.className = 'c7-rows__sub';
+        sub.textContent = justNowLabel;
+        main.appendChild(title);
+        main.appendChild(sub);
+
+        row.appendChild(tile);
+        row.appendChild(main);
+        list.insertBefore(row, list.firstChild);
+        empty.style.display = 'none';
+    }
+
+    // Le etichette che il JS compone: placeholder in stile JS, mai `%(x)s`,
+    // che Flask-Babel proverebbe a sostituire al rendering (KeyError).
+    const passedLabel = {{ _("Superata")|tojson }};
+    const failedLabel = {{ _("Non superata")|tojson }};
+    const justNowLabel = {{ _("adesso")|tojson }};
+    // Anche qui `|tojson`: la parte tradotta va serializzata, il placeholder
+    // si compone in JS. Oggi "Punteggio" e' innocua, ma la regola esiste
+    // perche' domani una traduzione con un apostrofo romperebbe la stringa e
+    // con lei tutto il JavaScript della pagina.
+    const scoreLabel = {{ _("Punteggio")|tojson }} + " {score}";
+
+    btn.addEventListener('click', function () {
+        const form = document.getElementById('attemptForm');
+        const payload = new FormData(form);
+
+        if (isPassFail && !form.querySelector('input[name="passed"]:checked')) {
+            showError({{ _("Scegli se la prova è stata superata o no.")|tojson }});
+            return;
+        }
+
+        btn.disabled = true;
+        const previous = label.textContent;
+        label.textContent = {{ _("Registro…")|tojson }};
+
+        fetch(recordUrl, {
+            method: 'POST',
+            headers: {'X-CSRFToken': csrfToken(), 'X-Requested-With': 'XMLHttpRequest'},
+            body: payload
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                showError(data.error || {{ _("Non è stato possibile registrare la prova.")|tojson }});
+                return;
+            }
+            prependRow(data.attempt);
+            countEl.textContent = data.attempts_count;
+            if (isPassFail) {
+                bestEl.textContent = parseInt(bestEl.textContent, 10) + (data.attempt.passed ? 1 : 0);
+            } else if (data.best_score !== null) {
+                bestEl.textContent = data.best_score;
+            }
+
+            // Il campo si azzera: la prossima prova parte pulita, che e' il
+            // punto di tutta la schermata.
+            if (scoreInput) {
+                scoreInput.value = 0;
+                scoreDisplay.textContent = '0';
+            }
+            document.querySelectorAll('input[name="passed"]').forEach(function (r) {
+                r.checked = false;
+                r.closest('.c7-choice').classList.remove('is-selected');
+            });
+        })
+        .catch(error => {
+            console.error('Error recording attempt:', error);
+            showError({{ _("Non è stato possibile registrare la prova. Riprova.")|tojson }});
+        })
+        .finally(() => {
+            btn.disabled = false;
+            label.textContent = previous;
+        });
+    });
+});
+</script>
+{% endblock %}

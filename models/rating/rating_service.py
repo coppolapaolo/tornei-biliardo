@@ -319,10 +319,8 @@ class RatingService:
         if assigned_category:
             return assigned_category.category
 
-        # Fall back to rating-derived category
-        # Try Fargo first, then ELO, then internal
+        # Fall back to rating-derived category: prima l'Elo, poi l'interno
         for rating_system in [
-            RatingSystem.FARGO,
             RatingSystem.ELO,
             RatingSystem.INTERNAL,
         ]:

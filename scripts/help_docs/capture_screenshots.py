@@ -83,22 +83,26 @@ HIDE_CSS = """
 html { scroll-behavior: auto !important; }
 """
 
-# CSS aggiuntivo per i soli scatti a pagina intera.
+# CSS per gli scatti che non sono la semplice finestra: `full_page` e `clip`.
 #
-# Playwright compone `full_page` scorrendo la pagina, ma un elemento
-# `position: fixed` resta agganciato al viewport e viene dipinto **una volta,
-# in mezzo all'immagine**: la nav flottante del design system 7c finiva sopra
-# il contenuto, a meta' schermata, e un lettore la interpreterebbe come parte
-# della pagina. E' il motivo per cui `full_page` era documentato ma non usato
-# da nessuna voce del manifest.
+# Un elemento `position: fixed` resta agganciato al viewport, e in entrambi i
+# casi finisce dove non deve:
 #
-# La barra si toglie solo qui: negli scatti normali e' vera, sta al suo posto
-# in fondo allo schermo, e nasconderla mostrerebbe un'app che non esiste.
-# I selettori sono i due `position: fixed` reali del tema (theme-7c.css): la
-# nav flottante e la mascotte. Non e' un elenco indovinato — un selettore che
-# non esiste non da' errore, semplicemente non nasconde niente, e il difetto
-# tornerebbe senza che nessuno se ne accorga.
-FULL_PAGE_CSS = """
+#   full_page  Playwright compone la pagina scorrendola, ma la barra viene
+#              dipinta **una volta, in mezzo all'immagine**. E' il motivo per
+#              cui `full_page` era documentato e non usato da nessuna voce.
+#   clip       lo scatto di un elemento riprende la pagina gia' composta, e la
+#              barra che gli passa sopra entra nel ritaglio — il foglio del
+#              referto usciva coperto dopo una riga sola.
+#
+# Negli scatti normali la barra resta: e' vera, sta in fondo allo schermo, e
+# nasconderla mostrerebbe un'app che non esiste. Qui invece copre contenuto
+# che l'utente raggiunge scorrendo, quindi tenerla sarebbe la bugia.
+#
+# I selettori sono i due `position: fixed` reali del tema (theme-7c.css), non
+# un elenco indovinato: un selettore inesistente non da' errore, semplicemente
+# non nasconde niente, e il difetto tornerebbe in silenzio.
+OVERLAY_CSS = """
 .c7-mobilenav, #chalky-container { display: none !important; }
 """
 
@@ -393,8 +397,8 @@ def _capture_one(
 
         page.goto(f"{base_url}{shot['route']}", wait_until="networkidle")
         page.add_style_tag(content=HIDE_CSS)
-        if shot.get("full_page") and not shot.get("clip"):
-            page.add_style_tag(content=FULL_PAGE_CSS)
+        if shot.get("full_page") or shot.get("clip"):
+            page.add_style_tag(content=OVERLAY_CSS)
 
         for selector in shot.get("click") or []:
             # Click via JS invece di `page.click`: i comandi che ci interessano

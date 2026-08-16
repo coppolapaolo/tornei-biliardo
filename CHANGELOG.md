@@ -7,6 +7,58 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
 
 ## [Non rilasciato]
 
+### Aggiunto
+
+- **Referto TPA sui match singoli** (ADR-044). Nelle partite amichevoli a palla
+  8, 9 e 10 si può annotare tutta la partita — quante bilie a ogni visita al
+  tavolo e perché il turno è finito — e ricavarne il *Total Performance
+  Average*, il metodo Accu-Stats usato nel biliardo professionistico. È una
+  funzione **da sbloccare** (feature gamification `tpa_scoresheet`): la vede
+  chi ha già giocato gare, campionati, match singoli, drill ed esami.
+  - Il **punteggio del match discende dal referto**: chi lo compila non segna i
+    rack, li registra il referto. Con un referto aperto il segnapunti normale
+    sparisce, così le due cose non possono divergere.
+  - Il motore delle regole (`models/tpa/engine.py`) è un port fedele dell'app
+    JS di riferimento, **verificato per differenza** su 600 partite generate a
+    caso: stessi totali, stesso tastierino, stessi momenti in cui si passa il
+    tavolo. Zero divergenze.
+  - Si salva il registro dei comandi premuti, non lo stato che ne risulta:
+    l'annulla è esatto e i totali non possono disallinearsi.
+- Due metriche nuove per lo sblocco delle funzioni, disponibili anche nel menù
+  della gestione gamification: `campionati_played` e
+  `individual_matches_played`.
+- Pagina di guida **«Il referto TPA»** in italiano e inglese, con i
+  suggerimenti per l'interfaccia adattiva. Le figure sono ancora da catturare.
+- Il **TPA nel profilo** (accanto all'Elo) e nelle **statistiche dei match
+  individuali**, con il dettaglio di dove nascono gli errori e l'elenco delle
+  partite con referto. Si somma su tutti i referti — bilie ed errori sommati e
+  divisi una volta sola, non la media dei TPA di partita. Compare a chi ha
+  sbloccato la funzione **oppure** a chi ha gia' giocato una partita in cui il
+  referto lo teneva l'avversario.
+- Filtro `|tpa_display`: il TPA come si scrive sul referto (`.780`, `1.000`).
+- **Il referto si vede cambiare dall'altro capo del tavolo.** Ogni tocco
+  annuncia `tpa_updated` sul canale del match e la pagina di chi guarda
+  ridisegna **senza ricaricarsi**; il punteggio annuncia `rack_updated` solo
+  quando si e' mosso davvero, e li' la pagina del match si ricarica come fa
+  gia' per il segnapunti normale. Prima la pagina del referto faceva polling a
+  orologio per conto suo, e la pagina del match non si accorgeva di niente.
+- Le sei route del referto in `docs/reference/PRODUCTION_INVENTORY.md`.
+
+### Rimosso
+
+- **Il rating Fargo, da tutte le parti.** Era predisposto e mai alimentato: la
+  colonna `user.fargo_rating` esisteva dal principio, nessuna riga di codice ci
+  ha mai scritto dentro, e il profilo e l'elenco utenti mostravano comunque un
+  trattino perenne. Un dato che non arriva mai non e' una funzione a meta': e'
+  una promessa che l'interfaccia continua a fare per conto di nessuno.
+  - Via la colonna, il membro `RatingSystem.FARGO`, le regole di handicap
+    costruite su quel sistema e l'importazione massiva mai usata
+    (`bulk_import_fargo_ratings`).
+  - Il sorteggio per rating (Amalfi ed eliminazione diretta) ora guarda solo
+    l'Elo. Chi non ha un Elo vale zero e finisce in coda.
+  - Migration `20260816_drop_fargo_rating`: elimina colonna, righe di
+    `player_rating` e regole di handicap.
+
 ## [1.0.0] — 2026-08-13
 
 Prima release numerata. L'applicazione era già in produzione su

@@ -1,0 +1,254 @@
+title: "The TPA scoresheet"
+section: giocare
+kind: tutorial
+audience: [giocatore]
+minutes: 6
+summary: "In friendly matches you can record the whole match, not just who wins the racks, and get your TPA: the share of successful actions."
+screens: [individual_match.tpa_referto]
+related: [partite_amichevoli, profilo_e_statistiche]
+
+blocks:
+  - type: text
+    text: >-
+      Usually all that is left of a match is a single number: 5 to 3. But two
+      matches that end 5 to 3 can be very different matches. The **TPA
+      scoresheet** records the rest: how many balls you pocketed and why each
+      inning ended.
+
+  - type: text
+    text: >-
+      What comes out at the end is one figure, the **TPA**, read as a share of
+      successful actions. A TPA of **.750** means that three times out of four
+      what you did at the table worked. It is the same figure used in
+      professional American pool.
+
+  - type: note
+    tone: info
+    title: "It unlocks with experience"
+    text: >-
+      The scoresheet does not show up straight away. It unlocks once you have
+      played competitions, championships, friendly matches, drills and exams —
+      not because it is hard to understand, but because you fill it in **while
+      you play**, and it is better to get there knowing the app well.
+
+  - type: heading
+    id: aprire
+    title: "Starting the scoresheet"
+
+  - type: steps
+    items:
+      - title: "Open a friendly match and press «Start»"
+        text: >-
+          The scoresheet works for friendly matches at **8-ball, 9-ball and
+          10-ball**. In the other disciplines the TPA is not defined.
+      - title: "Tap «Keep the TPA scoresheet»"
+        text: >-
+          The button sits below the score. Press it **before the first rack**:
+          the scoresheet tells the match from the start, so it cannot be
+          started once play is under way.
+      - title: "Confirm with «Start the scoresheet»"
+        text: >-
+          From now on the scoresheet is yours: you keep it for the whole match.
+          Your opponent gets «View the TPA scoresheet» and watches the same
+          screen fill in on its own, but cannot write on it.
+
+  - type: note
+    tone: warning
+    title: "Racks are no longer recorded by hand"
+    text: >-
+      With the scoresheet open, the ordinary scoreboard disappears. That is
+      deliberate: racks won are recorded by the scoresheet, so you never enter
+      the same thing twice and the score can never disagree with what you wrote
+      down.
+
+  - type: heading
+    id: chi-lo-vede
+    title: "Who sees it, and how the button changes"
+
+  - type: text
+    text: >-
+      The button below the match score does not say the same thing to both
+      players, and its wording changes as the match goes on.
+
+  - type: list
+    items:
+      - "**Keep the TPA scoresheet**: there is no scoresheet yet and you can start one."
+      - "**Open the TPA scoresheet**: the scoresheet is open and you are the one keeping it. This is where you record."
+      - "**View the TPA scoresheet**: your opponent is keeping it. You watch it fill in, but you do not write on it."
+      - "**Review the TPA scoresheet**: the scoresheet is closed. Read-only from here."
+
+  - type: note
+    tone: info
+    title: "If your opponent starts it, you see it anyway"
+    text: >-
+      Only **starting** a scoresheet has to be unlocked. Watching one does not:
+      if your opponent started it, the match is yours too, and the «View the
+      TPA scoresheet» button shows up for you as well, even if you have
+      unlocked nothing.
+
+  - type: note
+    tone: tip
+    title: "No need to reload the page"
+    text: >-
+      Whoever is watching sees the scoresheet fill in on its own, one entry
+      after another, without touching anything. And when the person keeping it
+      closes the scoresheet, the watcher's page notices on its own.
+
+  - type: heading
+    id: come-si-compila
+    title: "How to fill it in"
+
+  - type: shot
+    shot: referto-tpa
+    caption: "The TPA scoresheet during the match: the two players with their TPA, the inning box and the keypad."
+
+  - type: text
+    text: >-
+      The two players are at the top. The **dark** one is whoever is at the
+      table now. Next to the name you find their TPA and, smaller, how many
+      balls they have pocketed (**B**) and how many errors they have made
+      (**E**). The circle on the right holds racks won.
+
+  - type: text
+    text: >-
+      Below there are two boxes. In the **light box** you record how many balls
+      went in and why the inning ended. In the **dark box**, fouls only. They
+      are the same two boxes as on the paper scoresheet.
+
+  - type: steps
+    items:
+      - title: "How many balls they pocketed"
+        text: >-
+          Press the number. On the break inning the numbers are pressed
+          **twice**: first how many went in on the break, then how many in the
+          inning altogether.
+      - title: "Why the inning ended"
+        text: >-
+          **M** if they missed a shot they meant to pot, **S** if they played a
+          safety, **K** if they were forced into a rail-first shot because they
+          could not see the ball.
+      - title: "If there was a foul"
+        text: >-
+          **P** if the cue ball was pocketed or left the table, **N** if they
+          failed to hit the lowest ball legally.
+      - title: "If they won the rack"
+        text: >-
+          Press **G**. If they pocketed every remaining ball you do not need
+          to: the scoresheet works it out on its own.
+      - title: "Hand over the table"
+        text: >-
+          Tap the other player's name. The inning closes and theirs begins.
+
+  - type: note
+    tone: tip
+    title: "The keypad guides you"
+    text: >-
+      You do not have to remember what can and cannot be pressed: keys that
+      make no sense at that moment are switched off. If you got it wrong,
+      **Undo last entry** steps back, as many times as you like.
+
+  - type: heading
+    id: annotazioni-piccole
+    title: "The three small marks"
+
+  - type: text
+    text: >-
+      Below the big letters there are three small ones. They keep an error off
+      the player who did not commit it, and they are what makes the TPA fair
+      rather than roughly right.
+
+  - type: options
+    items:
+      - name: "n"
+        text: >-
+          The missed shot was an **easy** one, easier than a spot shot. It
+          counts double: miss something simple and the TPA says so.
+      - name: "x"
+        text: >-
+          The safety was **planned**: you were not trying to run out, so it is
+          not a position error.
+      - name: "p"
+        text: >-
+          It was a **push out**, the free shot straight after the break.
+
+  - type: heading
+    id: il-foglio
+    title: "Reading the match back"
+
+  - type: text
+    text: >-
+      At the bottom of the page is **the sheet**: the whole match, rack by rack
+      and inning by inning. Use it during play to check you have not missed
+      anything, and afterwards to see how it went.
+
+  - type: shot
+    shot: referto-tpa-foglio
+    caption: "The scoresheet itself: each row is one visit to the table, with the balls pocketed and why the inning ended."
+
+  - type: text
+    text: >-
+      When you are done, **Close the scoresheet**. From then on it is
+      read-only. The match result follows the usual path: both of you have to
+      confirm it.
+
+  - type: heading
+    id: dove-si-vede
+    title: "Where to find your TPA"
+
+  - type: text
+    text: >-
+      A single match's TPA says very little: it gets interesting over time. You
+      find it in two places, where it adds up on its own.
+
+  - type: list
+    items:
+      - "In your **profile**, next to the Elo: the TPA across all your matches."
+      - "In the **statistics** for friendly matches, with a breakdown of where your errors come from and the list of matches with a scoresheet."
+
+  - type: note
+    tone: info
+    title: "It is not the average of your match TPAs"
+    text: >-
+      Balls and errors from every match are added up and divided once. A long
+      match weighs more than a short one, as it should: otherwise one lucky
+      rack would count as much as an hour of clean play.
+
+  - type: text
+    text: >-
+      The TPA shows up even when your opponent kept the scoresheet: what was
+      recorded is about you too.
+
+  - type: heading
+    id: gli-errori
+    title: "What counts as an error"
+
+  - type: list
+    title: "The TPA counts five kinds of error"
+    items:
+      - "**Miss**: you could see the ball, you tried to pot it, you missed. Two errors if the shot was an easy one."
+      - "**Break**: cue ball pocketed or off the table on the break."
+      - "**Kick**: you were forced into a rail-first shot and it did not come off."
+      - "**Safety**: you played a safety and your opponent then pocketed, or missed an easy shot."
+      - "**Position**: cue ball pocketed, or you potted something without managing to close the rack."
+
+  - type: text
+    text: >-
+      The last one surprises most people: **potting without closing is an
+      error**. It makes sense, though — had you left the cue ball where it
+      belonged, you would have carried on. It is also why the small marks
+      exist: when it was not your fault, you note it and it does not count.
+
+  - type: faq
+    items:
+      - q: "I cannot see the scoresheet button."
+        a: "«Keep the TPA scoresheet» only shows up if you have unlocked the feature — it needs competitions, championships, friendly matches, drills and exams already played — and only with the match under way, in an 8-ball, 9-ball or 10-ball match without sets, before the first rack is recorded. If your opponent has already started the scoresheet, the «View the TPA scoresheet» button shows up for you anyway, unlocked or not."
+      - q: "Can I start it once the match is under way?"
+        a: "No. The scoresheet tells the match from the start, so it has to be started before the first rack. If racks have already been recorded, that match can no longer have one."
+      - q: "Can my opponent keep it instead of me?"
+        a: "Whoever starts it keeps it, for the whole match. You press «View the TPA scoresheet» and watch it fill in on its own, without reloading the page, but you cannot write on it."
+      - q: "I pressed the wrong key."
+        a: "«Undo last entry» steps back one move. Press it repeatedly and it goes back a whole rack, score included."
+      - q: "What counts as a good TPA?"
+        a: "It depends on the discipline and the standard. The useful thing is not the number itself but how yours changes over time: that is what the scoresheet is for."
+      - q: "Does it work in competitions too?"
+        a: "Not for now, only in friendly matches."

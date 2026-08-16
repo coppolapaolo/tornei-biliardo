@@ -25,17 +25,47 @@ challenge = Challenge(
     pass_fail_only=False  # Numeric scoring
 )
 
-# Record attempt
+# Registra una prova gia' conclusa (aprire e chiudere in un gesto solo)
 attempt = ChallengeService.record_attempt(
-    challenge_id=challenge.id,
     user_id=player.id,
-    score=12  # Out of 15
+    challenge_id=challenge.id,
+    score=12,          # drill numerico
+)
+attempt = ChallengeService.record_attempt(
+    user_id=player.id,
+    challenge_id=challenge.id,
+    passed=True,       # drill riuscita-o-no
 )
 
 # Get player stats
 stats = ChallengeService.get_player_statistics(user_id=player.id)
 # Returns: {attempts, avg_score, best_score, pass_rate}
 ```
+
+---
+
+## Allenarsi: una prova, una richiesta
+
+Dal catalogo si passa da `challenge.training_session`
+(`/challenges/<id>/train`): una schermata sola, dove si registra una prova
+dopo l'altra. La POST chiama `ChallengeService.record_attempt`, che **apre e
+chiude** il tentativo in un gesto solo e risponde in JSON — la pagina non si
+ricarica. Prima ogni singola prova costava due pagine e quattro richieste, e
+per la seconda si ricominciava da capo.
+
+**La sessione di allenamento non è un'entità**: a DB restano i singoli
+`ChallengeAttempt`, già completi. Il gruppo «le prove di stasera» non è un
+fatto di dominio, e dargli una tabella avrebbe voluto dire aprirla, chiuderla
+e poi ripulire quelle rimaste aperte da chi chiude il browser a metà.
+
+`record_attempt` **valida prima di creare**: `start_challenge_attempt` e
+`complete_challenge_attempt` sono due transazioni distinte, quindi un esito
+mancante scoperto solo dalla seconda lascerebbe una riga `completed=False` che
+nessuno chiude più — invisibile, ma capace di falsare il conteggio dei drill
+completati che apre i gate di gamification.
+
+Il drill giocato **al posto del bye in gara** non passa di qui: ha un contesto
+(gara, turno) e conseguenze in classifica, e resta su `challenge.start_attempt`.
 
 ---
 

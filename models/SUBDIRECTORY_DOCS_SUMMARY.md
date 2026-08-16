@@ -118,7 +118,7 @@ To complete the subdirectory documentation, the following domains should be docu
 **10. Rating Domain (`models/rating/CLAUDE.md`)**
 - Models: HandicapRule
 - Services: RatingService, HandicapService
-- Key Concepts: Fargo/Elo ratings, handicap calculation
+- Key Concepts: Elo rating, handicap calculation
 
 **11. Location Domain (`models/location/CLAUDE.md`)**
 - Models: BilliardHall, UserLocationAvailability

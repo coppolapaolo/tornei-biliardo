@@ -155,6 +155,51 @@ class UserMetricService:
         return assignments
 
     @staticmethod
+    def _get_campionati_played(
+        user_id: int, context: Optional[Dict[str, Any]] = None
+    ) -> int:
+        """Quanti campionati distinti l'utente ha giocato.
+
+        Si conta l'iscrizione a una gara che appartiene a un campionato: e'
+        quello il segno di aver giocato un campionato, perche' al campionato in
+        se' non ci si iscrive. Distinti, non gare: un campionato da otto gare
+        resta un campionato.
+        """
+        return (
+            db.session.query(func.count(func.distinct(Gara.campionato_id)))
+            .select_from(Inscription)
+            .join(Gara, Gara.id == Inscription.gara_id)
+            .filter(
+                Inscription.user_id == user_id,
+                Gara.campionato_id.isnot(None),
+            )
+            .scalar()
+            or 0
+        )
+
+    @staticmethod
+    def _get_individual_matches_played(
+        user_id: int, context: Optional[Dict[str, Any]] = None
+    ) -> int:
+        """Quanti match individuali l'utente ha portato a termine.
+
+        Solo quelli conclusi e confermati da entrambi: una proposta accettata e
+        mai giocata non e' esperienza, e un match lasciato a meta' nemmeno.
+        Distinto da ``total_matches``, che conta i match di torneo.
+        """
+        from models.individual_match.match_models import IndividualMatch
+
+        return IndividualMatch.query.filter(
+            or_(
+                IndividualMatch.player1_id == user_id,
+                IndividualMatch.player2_id == user_id,
+            ),
+            IndividualMatch.status.in_(
+                [MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value]
+            ),
+        ).count()
+
+    @staticmethod
     def _get_matches_in_location(
         user_id: int, context: Optional[Dict[str, Any]] = None
     ) -> int:

@@ -373,6 +373,32 @@ def _create_challenges(db, director):
     return create
 
 
+def _allena_su_challenge(db, player, challenges) -> None:
+    """Qualche prova gia' registrata, per la schermata di allenamento.
+
+    Senza, la figura della guida mostrerebbe «Nessuna prova ancora» e un
+    record vuoto: il lettore vedrebbe la schermata che si ha *prima* di usarla,
+    proprio mentre il testo gli spiega l'elenco delle prove e il record. I
+    punteggi sono scritti qui e non sorteggiati perche' due catture successive
+    devono produrre immagini identiche (vedi il docstring del modulo).
+    """
+    from models.challenge.services import ChallengeService
+
+    numeriche = [c for c in challenges if not c.pass_fail_only]
+    if not player or not numeriche:
+        return
+
+    drill = numeriche[0]
+    for punteggio in (6, 4, 8):
+        ChallengeService.record_attempt(
+            user_id=player.id,
+            challenge_id=drill.id,
+            score=punteggio,
+        )
+    db.session.commit()
+    log(f"allenamento: 3 prove registrate su «{drill.get_display_name()}»")
+
+
 def _add_challenge_to_gara(db, gara, challenges) -> None:
     """Una prova di abilita' agganciata a un turno della gara.
 
@@ -704,6 +730,45 @@ def _create_esami(db, director, players, challenges, venue):
     log(f"sessione certificata in corso: {sara.username} davanti a {director.username}")
 
 
+def _create_tpa_referto(db, players):
+    """Un match singolo in corso con il referto TPA gia' avviato.
+
+    Serve alle figure della guida: la pagina del referto ha senso solo con
+    dentro qualche turno annotato, altrimenti si fotografa un foglio bianco.
+    La sequenza sotto e' un primo rack verosimile — spaccata con una bilia,
+    serie interrotta da un errore, difesa dell'avversario — e produce due TPA
+    diversi, che e' esattamente cio' che la pagina deve far vedere.
+    """
+    from models.base import utc_now
+    from models.individual_match.match_models import IndividualMatch
+    from models.status_enum import Discipline, MatchStatus
+    from models.tpa.services import TpaRefertoService
+
+    compilatore, avversario = players[0], players[3]
+    try:
+        match = IndividualMatch(
+            player1_id=compilatore.id,
+            player2_id=avversario.id,
+            location="Biliardo Centrale",
+            scheduled_at=utc_now(),
+            status=MatchStatus.IN_PROGRESS,
+            discipline=Discipline.NINE_BALL.value,
+            distance=5,
+            is_race_to=True,
+            started_at=utc_now(),
+        )
+        db.session.add(match)
+        db.session.commit()
+
+        referto = TpaRefertoService.open_referto(match.id, compilatore.id)
+        for comando in ["1", "3", "M", "end", "2", "S", "end", "2"]:
+            TpaRefertoService.press(referto.id, compilatore.id, comando)
+        db.session.commit()
+        log(f"referto TPA: match #{match.id}, referto #{referto.id}")
+    except Exception as exc:  # pragma: no cover - il seed non deve bloccarsi qui
+        log(f"referto TPA non creato ({exc.__class__.__name__}: {exc})")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -750,11 +815,13 @@ def main() -> int:
         _backdate_gare(db, [gara_conclusa, gara_in_corso])
         challenges = _create_challenges(db, director)
         _add_challenge_to_gara(db, gara_in_corso, challenges)
+        _allena_su_challenge(db, players[0], challenges)
         _create_squadre(db, gara_iscrizioni, players[:5])
         _create_gara_bozza(db, campionato, director, venue)
         _create_gara_tabellone(db, director, venue, players)
         _create_individual_match(db, players)
         _create_esami(db, director, players, challenges, venue)
+        _create_tpa_referto(db, players)
 
         print("\nFatto. Credenziali dimostrative:")
         print(f"  direttore: {DEMO_DIRECTOR[0]} / {DEMO_PASSWORD}")
