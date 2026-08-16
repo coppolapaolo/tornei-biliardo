@@ -93,6 +93,51 @@ blocks:
       modificabile. Servono a non ridigitare le stesse dieci scelte per sei
       serate.
 
+  - type: note
+    tone: info
+    title: "Se il campionato è a tabellone il passo 2 è più corto"
+    text: >-
+      Scegliendo eliminazione diretta o doppio KO al passo 1, il passo 2 non
+      chiede numero di turni, gestione del numero dispari ed evita reincontri:
+      sulle gare a tabellone quelle impostazioni non hanno effetto, quindi non
+      avrebbe senso ereditarle. Compare invece la tabella dei punti per
+      posizione, qui sotto.
+
+  - type: heading
+    id: punti_posizione
+    title: "I punti per posizione (solo campionati a tabellone)"
+
+  - type: text
+    text: >-
+      Nelle gare a tabellone la classifica è per posizione, e ogni piazzamento
+      vale un certo numero di punti di campionato. Quanti, lo decidi tu.
+
+  - type: text
+    text: >-
+      Non si compilano sedici caselle: si indicano **sei soglie**, cioè le
+      bande di piazzamento che nel tabellone esistono davvero — 1°, 2°, 3°, 4°,
+      5°-8° e 9°-16°. Chi condivide una banda prende lo stesso punteggio: i
+      quattro quartifinalisti sono tutti quinti, e prendono tutti i punti del
+      quinto posto.
+
+  - type: list
+    title: "I valori proposti"
+    items:
+      - "**1°** — 25 punti"
+      - "**2°** — 18 punti"
+      - "**3°** — 15 punti"
+      - "**4°** — 12 punti"
+      - "**5°-8°** — 8 punti"
+      - "**9°-16°** — 4 punti"
+
+  - type: note
+    tone: tip
+    text: >-
+      Se lasci i valori proposti, il campionato **segue** la tabella di
+      riferimento invece di portarsene dietro una copia: il giorno in cui i
+      valori di riferimento cambiassero, il tuo campionato si adegua da solo.
+      Cambia le caselle solo se il tuo regolamento dice altro.
+
   - type: heading
     id: aggiungere_gare
     title: "Aggiungere le gare"
@@ -123,8 +168,9 @@ blocks:
     text: >-
       Si aggiorna da sola alla fine di ogni gara sommando i risultati: le
       vittorie e la differenza rack se il sistema è «Vittorie», i rack totali
-      se è «Rack», i punti-posizione se è «Posizione». Chi salta una gara non
-      viene escluso: semplicemente non guadagna nulla in quell'occasione.
+      se è «Rack», i punti per posizione — quelli della tabella qui sopra — se
+      è «Posizione». Chi salta una gara non viene escluso: semplicemente non
+      guadagna nulla in quell'occasione.
 
   - type: faq
     items:
@@ -136,3 +182,7 @@ blocks:
         a: "Sì, e chi dirige il campionato dirige di conseguenza tutte le sue gare."
       - q: "Cosa succede se annullo una gara del campionato?"
         a: "I suoi risultati escono dalla classifica generale. Le altre gare non ne risentono."
+      - q: "Posso cambiare i punti per posizione a campionato iniziato?"
+        a: "Sì, dalle impostazioni del campionato. Tieni presente che la classifica generale si ricalcola con i valori nuovi, quindi le gare già concluse cambiano punteggio: se il campionato è in corso, avvisa i partecipanti."
+      - q: "Non vedo la tabella dei punti per posizione."
+        a: "Compare solo sui campionati a eliminazione diretta o doppio KO. Con Amalfi, casuale o girone all'italiana la classifica non è per posizione e quei punti non servono."

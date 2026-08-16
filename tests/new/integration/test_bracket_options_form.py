@@ -352,3 +352,141 @@ class TestLeTreSchermateSonoCoerenti:
         assert 'id="create_rounds_count"' in pagina
         assert "Gestione Forfait" in pagina
         assert "Gestione Dispari" in pagina
+
+
+class TestDefaultDelCampionato:
+    """Anche i default del campionato smettono di chiedere l'inutile.
+
+    Un livello sopra ai form della gara c'era lo stesso difetto: il campionato
+    a tabellone proponeva "Turni", "Giocatori dispari" e "Anti-rematch", che
+    il parser della gara sovrascrive comunque — turni fissati dal sorteggio,
+    bye strutturali, e nessun reincontro possibile visto che chi perde esce.
+    """
+
+    def _campionato(self, db_session, director, tipo):
+        from models import Campionato
+        from models.user.models import DirectorAssignment
+
+        campionato = Campionato(
+            name=f"Camp {uuid.uuid4().hex[:6]}",
+            campionato_type=tipo,
+            default_classification_system="POSITION" if "elim" in tipo else "WINS",
+            is_active=True,
+        )
+        db_session.add(campionato)
+        db_session.flush()
+        db_session.add(
+            DirectorAssignment(
+                entity_type="campionato",
+                entity_id=campionato.id,
+                user_id=director.id,
+                assigned_by_id=director.id,
+            )
+        )
+        db_session.commit()
+        return campionato
+
+    def test_la_modifica_marca_i_campi_inerti(self, client, db_session, director):
+        campionato = self._campionato(db_session, director, "direct_elimination")
+        _login(client, director)
+
+        pagina = client.get(
+            f"/admin/campionato/{campionato.id}/edit"
+        ).get_data(as_text=True)
+
+        # Tre blocchi marcati, che lo script nasconde sui tipi a tabellone.
+        assert pagina.count("js-bracket-inert") >= 3
+
+    def test_su_un_campionato_a_girone_restano(self, client, db_session, director):
+        """Non-regressione: fuori dal tabellone quei default servono davvero."""
+        campionato = self._campionato(db_session, director, "amalfi")
+        _login(client, director)
+
+        pagina = client.get(
+            f"/admin/campionato/{campionato.id}/edit"
+        ).get_data(as_text=True)
+
+        assert 'id="default_rounds_count"' in pagina
+        assert 'id="default_odd_policy"' in pagina
+
+
+class TestOverridePerTurno:
+    """L'override per turno era l'ultima porta aperta sul numero esatto.
+
+    Le tre schermate di creazione/modifica non lo chiedono più e il parser lo
+    impone, ma `RoundConfiguration` scavalca i default della gara
+    (`Match.effective_is_race_to`, ADR-027): da lì si poteva ancora ottenere un
+    match a rack esatti su un tabellone — e con un numero pari un nodo senza
+    vincitore, che blocca la generazione del turno successivo.
+    """
+
+    def _gara_setup(self, db_session, director, strategy="direct_elimination"):
+        from models import Gara
+
+        gara = Gara(
+            director_id=director.id,
+            number=db_session.query(Gara).count() + 1,
+            name=f"G {uuid.uuid4().hex[:6]}",
+            date=date.today() + timedelta(days=10),
+            discipline="9_ball",
+            distance=5,
+            is_race_to=True,
+            rounds_count=4,
+            min_participants=4,
+            max_participants=16,
+            matchmaking_strategy=strategy,
+        )
+        db_session.add(gara)
+        db_session.commit()
+        return gara
+
+    def test_il_numero_esatto_e_rifiutato_anche_per_un_solo_turno(
+        self, client, db_session, director
+    ):
+        gara = self._gara_setup(db_session, director)
+        _login(client, director)
+
+        risposta = client.post(
+            f"/admin/gara/{gara.id}/round-config/1",
+            json={"distance": 5, "is_race_to": False},
+        )
+
+        assert risposta.status_code == 400
+        assert "chi arriva prima" in risposta.get_json()["error"]
+
+    def test_anche_i_set_esatti_sono_rifiutati(self, client, db_session, director):
+        gara = self._gara_setup(db_session, director)
+        _login(client, director)
+
+        risposta = client.post(
+            f"/admin/gara/{gara.id}/round-config/1",
+            json={"is_multi_set": True, "match_distance": 3, "is_race_to_sets": False},
+        )
+
+        assert risposta.status_code == 400
+
+    def test_gli_altri_override_restano_ammessi(self, client, db_session, director):
+        """Il turno può ancora cambiare disciplina e distanza: quelli servono."""
+        gara = self._gara_setup(db_session, director)
+        _login(client, director)
+
+        risposta = client.post(
+            f"/admin/gara/{gara.id}/round-config/1",
+            json={"discipline": "8_ball", "distance": 7, "is_race_to": True},
+        )
+
+        assert risposta.status_code == 200
+
+    def test_fuori_dal_tabellone_il_numero_esatto_resta(
+        self, client, db_session, director
+    ):
+        """Non-regressione: su un girone l'override serve e non si tocca."""
+        gara = self._gara_setup(db_session, director, strategy="amalfi")
+        _login(client, director)
+
+        risposta = client.post(
+            f"/admin/gara/{gara.id}/round-config/1",
+            json={"distance": 4, "is_race_to": False},
+        )
+
+        assert risposta.status_code == 200

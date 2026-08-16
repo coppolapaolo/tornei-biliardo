@@ -32,7 +32,10 @@ blocks:
           semplice di dare peso all'ultimo turno senza allungare tutta la
           serata.
       - name: "Numero esatto di rack"
-        text: "Si può chiedere solo in alcuni turni, se serve alla classifica."
+        text: >-
+          Si può chiedere solo in alcuni turni, se serve alla classifica. Nelle
+          gare a tabellone non compare: lì conta solo chi passa il turno, e vale
+          per ogni turno senza eccezioni.
       - name: "Partita a set"
         text: "Tipicamente riservata all'ultimo turno."
 

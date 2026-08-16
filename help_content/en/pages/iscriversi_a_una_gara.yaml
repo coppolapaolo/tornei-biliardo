@@ -52,6 +52,14 @@ blocks:
           registered, and your name joins the list of entrants. If you do not
           see that box, the registration did not go through.
         shot: gara-iscritto
+      - title: "If it asks for your team, answer"
+        text: >-
+          In some competitions a box opens by itself right after you register,
+          asking **«Which team are you playing for?»**. That happens when the
+          competition keeps team-mates apart in the draw: your answer is what
+          makes that possible. **No team** is a legitimate answer, and you can
+          change it until the bracket is drawn. See
+          [Teams](/aiuto/organizzare/squadre).
 
   - type: note
     tone: tip
@@ -124,3 +132,5 @@ blocks:
         a: "No. The fee shown on the card is for information: you pay on site, however the club normally does it."
       - q: "I registered for the wrong competition by mistake."
         a: "Withdraw straight away from the competition card: while registrations are open it is immediate and leaves no trace."
+      - q: "It asked me for my team and I closed the box without answering."
+        a: "No harm done: the registration is valid all the same. You will find the team in the competition's Entrants tab and can set it until the bracket is drawn."

@@ -61,6 +61,18 @@ blocks:
       If the racks to play are an even number, the match can end level: 3-3 out
       of six racks. With «race to N» there is always a winner.
 
+  - type: note
+    tone: warning
+    title: "In bracket competitions it cannot be asked for"
+    text: >-
+      With knockout and double elimination the checkbox does not appear at all,
+      neither for racks nor for sets. There, all that counts is who goes
+      through: the winner is settled the moment somebody reaches the distance,
+      and racks played afterwards change neither the bracket nor the standings,
+      which go by position and never look at racks. They would be longer matches
+      for the same result — and with an even number worse still, because a draw
+      would leave the next slot in the bracket with nobody in it.
+
   - type: heading
     id: set
     title: "Set play"
@@ -132,3 +144,5 @@ blocks:
         a: "Because the format was «race to 4»: reaching 4 racks wins the match. The 7 is the maximum possible, not the number to play."
       - q: "With «exact number», who wins if it ends level?"
         a: "Nobody: the match is a draw and both players take zero wins and zero rack difference in the standings."
+      - q: "I cannot find «exact number of racks» in my knockout."
+        a: "It is not there on bracket formats: play is always a race. In place of the checkbox the app shows a note explaining why."

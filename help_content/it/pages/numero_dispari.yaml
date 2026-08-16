@@ -140,7 +140,16 @@ blocks:
       Nei tabelloni il problema si risolve da sé: se i partecipanti non sono
       una potenza di due, alcuni passano direttamente al turno successivo senza
       giocare il primo. È il comportamento standard di ogni tabellone e non
-      richiede impostazioni.
+      richiede impostazioni — tanto che scegliendo eliminazione diretta o
+      doppio KO la domanda «Se giocatori dispari» sparisce proprio dal modulo
+      di creazione.
+
+  - type: text
+    text: >-
+      Le quattro soluzioni qui sopra non si applicano: i passaggi diretti sono
+      quanti mancano per riempire il tabellone, e vanno ai primi della lista di
+      sorteggio. Non è una politica da decidere, è il modo in cui l'albero si
+      chiude.
 
   - type: faq
     items:

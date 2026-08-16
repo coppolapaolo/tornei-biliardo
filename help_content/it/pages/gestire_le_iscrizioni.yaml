@@ -124,6 +124,17 @@ blocks:
       lavoro. Dopo l'avvio, l'unica strada è annullare il turno e risorteggiare
       — oppure lasciare che il suo avversario vinca per forfait.
 
+  - type: note
+    tone: info
+    title: "Nelle gare a tabellone il pulsante si chiama diversamente"
+    text: >-
+      Con eliminazione diretta e doppio KO al posto di **Avvia Primo Turno**
+      trovi **Sorteggia il tabellone**, e lì l'elenco degli iscritti conta il
+      doppio: da quel gesto nasce il percorso di tutti fino alla finale, si
+      chiudono le iscrizioni e le squadre si congelano. Un assente tolto un
+      minuto dopo costa un tabellone da rifare. Vedi [Il
+      tabellone](/aiuto/giocare/tabellone).
+
   - type: faq
     items:
       - q: "Posso riaprire le iscrizioni dopo averle chiuse?"

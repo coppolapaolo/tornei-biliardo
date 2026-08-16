@@ -59,6 +59,17 @@ blocks:
     id: struttura
     title: "2. Struttura della gara"
 
+  - type: note
+    tone: info
+    title: "Con eliminazione diretta e doppio KO il modulo si accorcia"
+    text: >-
+      Scegliendo un formato a tabellone sei campi spariscono dal modulo: numero
+      di turni, gestione forfait, se i giocatori sono dispari, evita
+      reincontri, sistema di classifica e spareggio. Non è una semplificazione
+      di comodo: su un tabellone quelle scelte non cambiavano nulla, e l'app le
+      decideva comunque da sé. Al loro posto compare il riquadro **Opzioni del
+      tabellone**, con le voci che invece contano.
+
   - type: options
     items:
       - name: "Algoritmo di abbinamento"
@@ -72,8 +83,10 @@ blocks:
       - name: "Numero di turni"
         values: "consigliato 3"
         text: >-
-          Quanti giri di partite. Con eliminazione diretta e doppio KO non si
-          imposta: lo decide il tabellone in base agli iscritti.
+          Quanti giri di partite. Con eliminazione diretta e doppio KO il campo
+          non compare: il numero di turni lo fissa il sorteggio, sugli iscritti
+          che si presentano davvero. Prima del sorteggio l'app ne mostra solo
+          una stima, calcolata sulla capienza massima.
       - name: "Gestione forfait"
         values: "Vincita a tavolino (predefinito) · Escludi dal turno"
         text: >-
@@ -81,20 +94,32 @@ blocks:
           resta negli abbinamenti e i suoi avversari vincono senza giocare —
           più semplice, ma un avversario si ritrova con una partita vuota. Con
           **escludi** esce dagli abbinamenti: più pulito, ma cambia la parità e
-          può far scattare la gestione del numero dispari.
+          può far scattare la gestione del numero dispari. Sui tabelloni non si
+          chiede: il ritiro è sempre una vincita a tavolino, perché una volta
+          sorteggiato il tabellone non si tocca più e togliere qualcuno
+          lascerebbe una casella vuota.
         hint: gara.forfait
       - name: "Min partecipanti"
         values: "obbligatorio · consigliato 4"
-        text: "Sotto questa soglia l'app non fa partire il primo turno."
+        text: >-
+          Sotto questa soglia l'app non fa partire il primo turno. Sui
+          tabelloni c'è un minimo di formato che non si può scendere: **4** per
+          l'eliminazione diretta, **8** per il doppio KO. Se il valore era più
+          basso, l'app lo alza da sé.
       - name: "Max partecipanti"
-        values: "facoltativo"
-        text: "Se impostato, oltre quel numero si finisce in lista d'attesa."
+        values: "facoltativo · obbligatorio sui tabelloni"
+        text: >-
+          Se impostato, oltre quel numero si finisce in lista d'attesa. Sui
+          formati a tabellone diventa obbligatorio: dichiara la capienza e
+          serve a dare la stima dei turni.
       - name: "Evita reincontri"
         values: "consigliato attivo"
         text: >-
           Impedisce che due giocatori si affrontino due volte nella stessa
           gara. Con il numero di turni tipico è quasi sempre possibile
-          rispettarlo.
+          rispettarlo. Sui tabelloni non si chiede: chi perde esce, quindi un
+          reincontro non può proprio capitare. Nel doppio KO l'unico possibile
+          — fra un ripescato e chi lo aveva battuto — è previsto dal formato.
         hint: gara.anti_rematch
       - name: "Gioco con handicap"
         values: "predefinito no"
@@ -116,24 +141,61 @@ blocks:
         text: >-
           Cosa succede quando i giocatori sono in numero dispari e uno
           resterebbe senza avversario. Spiegate una per una in [Quando i
-          giocatori sono dispari](/aiuto/approfondimenti/numero_dispari).
+          giocatori sono dispari](/aiuto/approfondimenti/numero_dispari). Sui
+          tabelloni non si chiede: chi resta fuori dal conto passa
+          direttamente al turno successivo, ed è il modo in cui un tabellone si
+          costruisce, non una politica da scegliere.
         hint: gara.dispari
       - name: "Sistema di classifica"
-        values: "Vittorie (predefinito) · Rack · Posizione"
+        values: "Vittorie (predefinito) · Rack"
         text: >-
           Come si ordinano i giocatori. **Vittorie** conta le partite vinte e,
-          a parità, la differenza rack. **Rack** conta i rack totali. Con
-          eliminazione e doppio KO è obbligatorio **Posizione**, deciso dal
-          tabellone. Vedi [Come si calcolano le
-          classifiche](/aiuto/approfondimenti/classifiche).
+          a parità, la differenza rack. **Rack** conta i rack totali. Sui
+          tabelloni il campo non compare, perché la classifica è per
+          **posizione** e non c'è altro da scegliere. Vedi [Come si calcolano
+          le classifiche](/aiuto/approfondimenti/classifiche).
         hint: gara.classifica
       - name: "Spareggio"
         values: "attivo fino al 3° posto"
         text: >-
           Se e fino a che posizione risolvere i pari merito con una prova
           aggiuntiva. Dal podio in giù, di norma, i pari merito si lasciano
-          tali.
+          tali. Sui tabelloni non si chiede: lì i pari merito per banda — i due
+          semifinalisti sconfitti, i quattro quartifinalisti — sono il
+          risultato voluto, e nessuno spareggio scatterebbe.
         hint: gara.spareggio
+
+  - type: heading
+    id: tabellone
+    title: "Le opzioni del tabellone"
+
+  - type: text
+    text: >-
+      Scegliendo eliminazione diretta o doppio KO compare un riquadro che con
+      gli altri formati non esiste. Sono le sole scelte che su un tabellone
+      cambiano davvero qualcosa.
+
+  - type: options
+    items:
+      - name: "Evita incontri fra compagni di squadra nei primi turni"
+        values: "predefinito no"
+        text: >-
+          Il sorteggio allontana il più possibile chi gioca per la stessa
+          squadra. Accendendola, a chi si iscrive viene chiesto per chi gioca.
+          Vedi [Le squadre](/aiuto/organizzare/squadre).
+      - name: "Finale per il 3°/4° posto"
+        values: "solo dove il terzo posto è un pari merito"
+        text: >-
+          I due semifinalisti sconfitti si giocano il terzo posto, nello stesso
+          turno della finale. Compare con l'eliminazione diretta e con il
+          doppio KO **a gironi**; nel doppio KO pieno no, perché lì il terzo è
+          chi perde la finale dei ripescati, e non c'è ambiguità da sciogliere.
+      - name: "Fase a gironi"
+        values: "solo doppio KO · nessuna (predefinito) · gironi da 8 · gironi da 16"
+        text: >-
+          La formula lunga: si gioca a doppio KO dentro gironi paralleli, e
+          ogni girone qualifica quattro giocatori — due imbattuti e due
+          ripescati — a un tabellone finale a eliminazione diretta.
 
   - type: heading
     id: formato
@@ -154,19 +216,23 @@ blocks:
           allunga la serata di parecchio.
         hint: gara.distanza
       - name: "Numero esatto di rack"
-        values: "predefinito no"
+        values: "predefinito no · non c'è sui tabelloni"
         text: >-
           Se attivo, si giocano **sempre** tutti i rack indicati, anche quando
           il risultato è già deciso. Serve quando conta il totale dei rack e
           non chi vince — cioè con il sistema di classifica «Rack». Con un
-          numero pari, la partita può finire in parità.
+          numero pari, la partita può finire in parità. Sui formati a tabellone
+          la casella non compare: si gioca sempre a chi arriva prima, e al suo
+          posto c'è una nota che spiega il perché.
         hint: gara.numero_esatto
       - name: "Partita a set"
         values: "predefinito no"
         text: >-
           La partita si divide in set: si vince un set arrivando alla distanza,
           e si vince la partita conquistando abbastanza set. Allunga
-          parecchio: adatta a finali o serate dedicate.
+          parecchio: adatta a finali o serate dedicate. Anche qui, sui
+          tabelloni il set si vince arrivando primi: la scelta di giocarli
+          tutti non viene chiesta.
         hint: gara.multiset
 
   - type: note
@@ -215,7 +281,9 @@ blocks:
       - q: "Cosa scelgo se non ho idea?"
         a: "Amalfi, 3 turni, distanza 4, classifica Vittorie, dispari con «Riposo», evita reincontri attivo. È la configurazione da serata di circolo."
       - q: "Voglio un torneo a eliminazione: cosa cambia?"
-        a: "Scegli «Eliminazione diretta»: il numero di turni sparisce (lo decide il tabellone) e il sistema di classifica diventa obbligatoriamente «Posizione»."
+        a: "Scegli «Eliminazione diretta» e il modulo si accorcia: spariscono numero di turni, gestione forfait, giocatori dispari, evita reincontri, sistema di classifica, spareggio e numero esatto di rack. Compare invece il riquadro «Opzioni del tabellone». Il massimo iscritti diventa obbligatorio, e la classifica è per posizione."
+      - q: "Ho scelto il tabellone e metà delle opzioni è sparita. Ho fatto un danno?"
+        a: "No: quelle opzioni su un tabellone non avevano effetto. Prima si chiedevano e la risposta veniva ignorata in silenzio; ora non si chiedono più. Se torni a una strategia a turni, ricompaiono tutte."
       - q: "Perché non riesco a selezionare «Trio»?"
         a: "Il trio è possibile solo per distanze fra 2 e 7 e non con le strategie a tabellone. Se la distanza è fuori da quell'intervallo, l'opzione non è disponibile."
       - q: "L'handicap incide sulle classifiche?"

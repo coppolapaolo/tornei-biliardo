@@ -41,10 +41,12 @@ blocks:
 
   - type: text
     text: >-
-      The option is called **separate team-mates** and is switched on while the
-      competition is still a draft. It has to be decided beforehand, not after:
-      turning it on with registrations under way would leave half the entrants
-      with no team.
+      The option is called **Keep team-mates apart in the early rounds** and
+      lives in the «Bracket options» panel, which only appears if you choose
+      knockout or double elimination: it is at the bracket draw that separation
+      has room to work. Turn it on while the competition is still a draft. It
+      has to be decided beforehand, not after: turning it on with registrations
+      under way would leave half the entrants with no team.
 
   - type: shot
     shot: gara-squadre
@@ -72,10 +74,19 @@ blocks:
 
   - type: text
     text: >-
-      When teams are on, registering for the competition asks who you are
-      playing for. If you filled in the team on your profile, it comes
-      pre-selected. **No team** is a legitimate answer, not a field left blank
-      by accident: it means that evening you are playing for yourself.
+      When teams are on, a box opens by itself the moment you register, asking
+      **«Which team are you playing for?»**. The question comes right there,
+      straight away, and not at the bottom of a tab: the team is what the draw
+      works with, and a draw that receives nearly every registration without a
+      team has nothing to work on.
+
+  - type: text
+    text: >-
+      If you filled in the team on your profile, it comes pre-selected. **No
+      team** is a legitimate answer, not a field left blank by accident: it
+      means that evening you are playing for yourself. Closing the box without
+      answering does no harm: the registration stays valid and the same choice
+      waits for you in the competition's **Entrants** tab.
 
   - type: heading
     id: come_funziona
@@ -99,8 +110,8 @@ blocks:
     items:
       - q: "I set a team on my profile but it does not show in the competition."
         a: "The profile team only pre-fills: if the competition does not have teams turned on, it is neither asked for nor used."
-      - q: "Can I change team once the competition has started?"
-        a: "No. Teams are decided by the time registrations open: changing them after the draw would make the separation already applied incoherent."
+      - q: "How long can I change my team for?"
+        a: "Until the first-round draw. From that moment the bracket has already been built around the teams, and changing them would make the separation already applied incoherent."
       - q: "Two team-mates met anyway."
         a: "Either it was mathematically unavoidable in the first round, or they met in a later round, where pairings follow the standings."
       - q: "Do teams produce team standings?"
