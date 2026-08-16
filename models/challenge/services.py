@@ -37,6 +37,7 @@ class ChallengeService:
         image_path: str,
         pass_fail_only: bool = False,
         created_by_id: Optional[int] = None,
+        diagram_scene: Optional[str] = None,
     ) -> Challenge:
         """Crea una nuova sfida nel sistema.
 
@@ -45,6 +46,9 @@ class ChallengeService:
             image_path: Percorso all'immagine che illustra la sfida
             pass_fail_only: True se pass/fail, False se punteggio numerico
             created_by_id: ID del direttore/admin che ha creato la sfida (opzionale)
+            diagram_scene: la scena del builder in JSON, se il drill e' stato
+                disegnato invece che fotografato. ``None`` per le foto, ed e'
+                cio' che dice se il disegno si potra' riaprire
 
         Returns:
             Challenge: L'oggetto sfida creato e persistito nel database
@@ -54,6 +58,7 @@ class ChallengeService:
             pass_fail_only=pass_fail_only,
             image_path=image_path,
             created_by_id=created_by_id,
+            diagram_scene=diagram_scene,
         )
 
         db.session.add(challenge)
@@ -67,6 +72,7 @@ class ChallengeService:
         image_path: Optional[str] = None,
         pass_fail_only: Optional[bool] = None,
         is_active: Optional[bool] = None,
+        diagram_scene: Optional[str] = None,
     ) -> Challenge:
         """Aggiorna una sfida esistente con validazione.
 
@@ -76,6 +82,7 @@ class ChallengeService:
             image_path: Nuovo percorso immagine (mantiene esistente se None)
             pass_fail_only: Nuovo tipo di scoring (mantiene esistente se None)
             is_active: Nuovo stato attivo/inattivo (mantiene esistente se None)
+            diagram_scene: Nuova scena del builder (mantiene esistente se None)
 
         Returns:
             Challenge: L'oggetto sfida aggiornato
@@ -92,6 +99,8 @@ class ChallengeService:
             challenge.description = description
         if image_path is not None:
             challenge.image_path = image_path
+        if diagram_scene is not None:
+            challenge.diagram_scene = diagram_scene
         if pass_fail_only is not None:
             challenge.pass_fail_only = pass_fail_only
         if is_active is not None:

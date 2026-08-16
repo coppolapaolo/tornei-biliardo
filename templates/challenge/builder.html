@@ -1,0 +1,313 @@
+{% extends "base.html" %}
+
+{# Il builder dei drill: si disegna la disposizione invece di fotografarla.
+
+   Serve a chi propone un drill e non ha una foto del tavolo preparato — e una
+   descrizione a parole di dove vanno le bilie viene interpretata da ognuno a
+   modo suo. Non sostituisce il caricamento della foto: e' l'altra strada.
+
+   Salvare produce **due** cose: l'immagine, che serve a mostrare il drill
+   dappertutto, e la scena JSON, che serve a riaprirlo e correggerlo. Da un PNG
+   non si torna indietro alle bilie.
+
+   Il markup e il foglio di stile vengono dal tool autonomo e sono confinati
+   sotto `.drill-builder`: il tool stila `body`, `header` e soprattutto `.btn`,
+   che nell'app e' di Bootstrap. Senza confine ridisegnerebbe ogni pulsante di
+   ogni schermata. #}
+
+{% block title %}
+{{- _("Disegna il drill") }}{% if challenge %} - {{ challenge.get_display_name() }}{% endif %}
+{%- endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/drill-builder.css') }}">
+<style>
+  /* Il builder vuole tutta l'altezza che resta sotto l'intestazione della
+     pagina: da autonomo se la prendeva da `body`, che qui non e' suo. */
+  .drill-builder { height: min(78vh, 760px); border-radius: var(--c7-r-card-lg); overflow: hidden; }
+</style>
+{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ cancel_url }}"
+   aria-label="{{ _('Annulla') }}"><i class="fas fa-xmark"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("Disegna il drill") if not challenge else _("Modifica il disegno") }}{% endblock %}
+{% block page_sub %}{{ _("Disponi le bilie e traccia i tiri: l'immagine la genera il builder") }}{% endblock %}
+
+{% block content %}
+<div class="c7-stack">
+
+  <div class="drill-builder">
+  <main>
+    <div id="panel">
+
+      <div class="sec">
+        <h2>Strumenti</h2>
+        <div class="row">
+          <button class="btn wide" data-tool="select">Sposta</button>
+          <button class="btn wide" data-tool="shot">Tiro</button>
+        </div>
+        <div class="row" style="margin-top:6px">
+          <button class="btn wide" data-tool="line">Linea libera</button>
+          <button class="btn wide" data-tool="text">Testo</button>
+        </div>
+        <div class="row" style="margin-top:6px">
+          <button class="btn wide ghostbtn" id="undo">Annulla</button>
+          <button class="btn wide ghostbtn" id="redo">Ripeti</button>
+          <button class="btn wide ghostbtn" id="del">Elimina</button>
+        </div>
+      </div>
+
+      <div class="sec">
+        <h2>Biglie</h2>
+        <div id="palette"></div>
+        <label class="chk" style="margin-top:6px"><input type="checkbox" id="magnets" checked> Calamite sponda e biglie</label>
+        <div class="field">
+          <span>Dimensione delle biglie</span>
+          <select id="ballScale">
+            <option value="1" selected>in scala reale — 2,25″</option>
+            <option value="1.15">+15% (più leggibile)</option>
+            <option value="1.3">+30% (stile diagramma)</option>
+          </select>
+        </div>
+        <p class="tip">Scegli una biglia, poi clicca sul tavolo. Si aggancia alla griglia, alla sponda e a contatto con le altre; un movimento fine resta libero. <kbd>Alt</kbd> disattiva ogni aggancio.</p>
+      </div>
+
+      <div class="sec">
+        <h2>Tiro</h2>
+        <p class="tip" id="shotHint"></p>
+
+        <div class="field"><span>Punto di impatto sulla bianca</span></div>
+        <div id="tipwrap">
+          <svg id="tipsvg" viewBox="-52 -52 104 104"></svg>
+          <div id="tipinfo"></div>
+        </div>
+
+        <div class="field">
+          <span>Inclinazione stecca — <b id="elevVal">0°</b></span>
+          <input type="range" id="elev" min="0" max="60" step="5" value="0">
+        </div>
+
+        <div class="field">
+          <span>Forza — <b id="forceVal">30% · medio</b></span>
+          <input type="range" id="force" min="5" max="100" step="5" value="30">
+        </div>
+        <div class="row" id="forcePresets"></div>
+        <p class="tip" style="margin-top:6px">Al 30% la biglia percorre due lunghezze di tavolo. Il percorso cresce con il quadrato della forza, si divide fra le biglie all'impatto e cala a ogni sponda; il cerchio tratteggiato segna il punto di arresto.</p>
+
+        <label class="chk"><input type="checkbox" id="pocketSnap" checked> Aggancia la mira alla buca</label>
+        <p class="tip" style="margin-top:2px">Tieni premuto e trascina per mirare libero, senza aggancio.</p>
+        <label class="chk"><input type="checkbox" id="showPost" checked> Traiettoria della bianca</label>
+        <label class="chk"><input type="checkbox" id="showObj" checked> Traiettorie delle altre biglie</label>
+        <label class="chk"><input type="checkbox" id="showStick" checked> Stecca sul tavolo</label>
+        <label class="chk"><input type="checkbox" id="showCard" checked> Scheda del tiro sotto al tavolo</label>
+        <label class="chk"><input type="checkbox" id="showAngle"> Etichetta dell'angolo di taglio</label>
+      </div>
+
+      <div class="sec">
+        <h2>Linea libera</h2>
+        <div class="row">
+          <button class="btn wide" data-lstyle="solid">Continua</button>
+          <button class="btn wide" data-lstyle="dashed">Tratteggiata</button>
+        </div>
+        <div class="field">
+          <span>Colore</span>
+          <div class="swatches" id="swatches"></div>
+        </div>
+        <label class="chk"><input type="checkbox" id="lineArrow" checked> Punta a freccia</label>
+        <label class="chk"><input type="checkbox" id="lineGhost"> Biglia fantasma in fondo</label>
+        <div class="row" style="margin-top:4px">
+          <button class="btn wide" id="finishLine">Chiudi linea</button>
+        </div>
+      </div>
+
+      <div class="sec">
+        <h2>Tavolo</h2>
+        <div class="field">
+          <span>Panno</span>
+          <div class="cloths" id="cloths"></div>
+        </div>
+        <label class="chk"><input type="checkbox" id="showGrid" checked> Griglia dei diamanti</label>
+        <label class="chk"><input type="checkbox" id="showSub"> Griglia ¼ di diamante</label>
+        <label class="chk"><input type="checkbox" id="showMarks" checked> Punti e linee standard</label>
+        <div class="field">
+          <span>Aggancio alla griglia</span>
+          <select id="snapSel">
+            <option value="quarter" selected>¼ di diamante</option>
+            <option value="half">½ diamante</option>
+            <option value="full">1 diamante</option>
+            <option value="off">nessuno</option>
+          </select>
+        </div>
+        <div class="field">
+          <span>Orientamento</span>
+          <select id="orientSel">
+            <option value="h" selected>Orizzontale</option>
+            <option value="v">Verticale</option>
+          </select>
+        </div>
+        <div class="field">
+          <span>Titolo del diagramma</span>
+          <input type="text" id="titleInput" placeholder="es. Drill 1 — Stop shot">
+        </div>
+      </div>
+
+      <div class="sec">
+        <h2>Posizioni standard</h2>
+        <div class="row">
+          <button class="btn wide" data-preset="rack9">Rack 9-ball</button>
+          <button class="btn wide" data-preset="rack8">Rack 8-ball</button>
+        </div>
+        <div class="row" style="margin-top:6px">
+          <button class="btn wide" data-preset="rack10">Rack 10-ball</button>
+          <button class="btn wide" data-preset="break9">Break 9-ball</button>
+        </div>
+        <div class="row" style="margin-top:6px">
+          <button class="btn wide" data-preset="wagon">Wagon wheel</button>
+          <button class="btn wide" data-preset="line">Linea di stop</button>
+        </div>
+        <div class="row" style="margin-top:6px">
+          <button class="btn wide" data-preset="lshape">L drill</button>
+          <button class="btn wide" data-preset="clear">Svuota</button>
+        </div>
+      </div>
+
+      <div class="sec">
+        <h2>Esporta</h2>
+        <label class="chk"><input type="checkbox" id="expGrid"> Includi la griglia nell'immagine</label>
+        <div class="field">
+          <span>Risoluzione</span>
+          <select id="expScale">
+            <option value="1">1×</option>
+            <option value="2" selected>2×</option>
+            <option value="3">3×</option>
+            <option value="4">4×</option>
+          </select>
+        </div>
+        <div class="row" style="margin-top:7px">
+          <button class="btn wide" id="expPng">Scarica PNG</button>
+          <button class="btn wide" id="expJpg">Scarica JPG</button>
+        </div>
+        <div class="row" style="margin-top:6px">
+          <button class="btn wide ghostbtn" id="saveJson">Salva drill</button>
+          <button class="btn wide ghostbtn" id="openJson">Apri drill</button>
+        </div>
+        <input type="file" id="fileIn" accept="application/json" hidden>
+      </div>
+
+    </div>
+
+    <div id="stage"></div>
+  </main>
+
+  <div id="toast"></div>
+  </div>
+
+  {# ---------- Cosa serve all'app, oltre al disegno ---------- #}
+  <form id="drillSaveForm" class="c7-card c7-stack" autocomplete="off">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <div>
+      <label for="drillDescription" class="form-label">{{ _("Istruzioni per chi la esegue") }}</label>
+      <textarea class="form-control" id="drillDescription" name="description" rows="3"
+                maxlength="1000" required
+                placeholder="{{ _('Come si dispongono le bilie e come si conta il punteggio') }}">{{ challenge.description if challenge }}</textarea>
+      <div class="c7-kicker" style="margin-top:6px">
+        {{ _("Il disegno mostra la disposizione; qui si scrive la regola.") }}
+      </div>
+    </div>
+
+    <div>
+      <label for="drillScoring" class="form-label">{{ _("Come si conta") }}</label>
+      <select class="form-select" id="drillScoring" name="pass_fail_only">
+        <option value="false" {% if challenge and not challenge.pass_fail_only %}selected{% endif %}>
+          {{ _("A punteggio") }}
+        </option>
+        <option value="true" {% if challenge and challenge.pass_fail_only %}selected{% endif %}>
+          {{ _("Superata o non superata") }}
+        </option>
+      </select>
+    </div>
+  </form>
+</div>
+
+<div class="c7-actionbar">
+  <button type="button" class="btn btn-primary w-100" id="saveDrillBtn">
+    <i class="fas fa-floppy-disk"></i>&nbsp;<span id="saveDrillLabel">
+      {{- _("Salva il drill") if not challenge else _("Salva le modifiche") -}}
+    </span>
+  </button>
+  <a href="{{ cancel_url }}" class="btn btn-secondary c7-btn-narrow">{{ _("Annulla") }}</a>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/drill-builder.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Se stiamo modificando, il disegno di prima torna sul tavolo. Senza
+    // questo "modifica" vorrebbe dire ridisegnare da capo, che e' il motivo
+    // per cui la scena viene salvata.
+    const preloaded = {{ (challenge.diagram_scene or '')|tojson }};
+    if (preloaded) {
+        try { window.DrillBuilder.load(JSON.parse(preloaded)); }
+        catch (e) { showError({{ _("Il disegno salvato non si è potuto ricaricare.")|tojson }}); }
+    }
+
+    const btn = document.getElementById('saveDrillBtn');
+    const label = document.getElementById('saveDrillLabel');
+    const form = document.getElementById('drillSaveForm');
+    const saveUrl = {{ save_url|tojson }};
+
+    btn.addEventListener('click', function () {
+        const description = form.querySelector('#drillDescription').value.trim();
+        if (!description) {
+            showError({{ _("Servono le istruzioni: il disegno da solo non dice come si conta.")|tojson }});
+            return;
+        }
+        if (window.DrillBuilder.isEmpty()) {
+            showError({{ _("Il tavolo è vuoto: disponi almeno una bilia.")|tojson }});
+            return;
+        }
+
+        btn.disabled = true;
+        const previous = label.textContent;
+        label.textContent = {{ _("Salvo…")|tojson }};
+
+        // L'immagine si genera qui, dal disegno vero: e' l'unico posto che sa
+        // come va reso. Il server la riceve come un normale caricamento.
+        window.DrillBuilder.png(2, function (blob) {
+            if (!blob) {
+                showError({{ _("Non è stato possibile generare l'immagine del drill.")|tojson }});
+                btn.disabled = false; label.textContent = previous;
+                return;
+            }
+            const payload = new FormData(form);
+            payload.append('diagram_scene', JSON.stringify(window.DrillBuilder.scene()));
+            payload.append('image', blob, 'drill.jpg');
+
+            fetch(saveUrl, {
+                method: 'POST',
+                headers: {'X-CSRFToken': csrfToken(), 'X-Requested-With': 'XMLHttpRequest'},
+                body: payload
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (!data.success) {
+                    showError(data.error || {{ _("Non è stato possibile salvare il drill.")|tojson }});
+                    btn.disabled = false; label.textContent = previous;
+                    return;
+                }
+                window.location.href = data.redirect_url;
+            })
+            .catch(err => {
+                console.error('Error saving drill:', err);
+                showError({{ _("Non è stato possibile salvare il drill. Riprova.")|tojson }});
+                btn.disabled = false; label.textContent = previous;
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

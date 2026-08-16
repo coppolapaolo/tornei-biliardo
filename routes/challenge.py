@@ -23,12 +23,14 @@ from models import (
     Challenge,
     ChallengeAttempt,
 )
+from models.exceptions import ValidationError
 from utils import (
     director_required,
     challenge_player_required,
     challenge_attempt_player_required,
 )
 from models.challenge.services import ChallengeService
+from utils.permissions import feature_required
 from utils.route_helpers import handle_ajax_service_action, safe_json_error
 from utils.image_paths import ImagePathManager
 
@@ -221,6 +223,140 @@ def start_attempt(challenge_id):
             return redirect(
                 url_for("challenge.challenge_detail", challenge_id=challenge_id)
             )
+
+
+def _save_from_builder(challenge_id=None):
+    """Salva un drill disegnato: l'immagine **e** la scena, insieme.
+
+    Le due cose fanno mestieri diversi e vanno scritte nello stesso gesto. Se
+    si salvasse la sola scena il catalogo non avrebbe niente da mostrare (e
+    ``image_path`` è NOT NULL, quindi il drill non nascerebbe proprio); se si
+    salvasse la sola immagine, correggere una bilia vorrebbe dire ridisegnare
+    tutto da capo — cioè il motivo per cui esiste questa colonna.
+
+    L'immagine arriva **già renderizzata dal browser**: è il builder l'unico
+    posto che sa come va disegnata una scena, e riprodurne le regole lato
+    server significherebbe tenerne due copie destinate a divergere al primo
+    ritocco grafico. Quello che il server non delega è il resto: la scena
+    passa da ``parse_scene``, e il file dall'ordinario ``save_challenge_image``
+    che ridimensiona e normalizza come per qualsiasi foto caricata.
+    """
+    from models.challenge.diagram import parse_scene
+    from utils.image_paths import ImagePathManager
+
+    data = request.form
+    scene = parse_scene(data.get("diagram_scene"))
+    if scene is None:
+        raise ValidationError("Il drill non ha un disegno da salvare")
+
+    image_file = request.files.get("image")
+    image_filename = save_challenge_image(image_file) if image_file else None
+    if not image_filename:
+        raise ValidationError("L'immagine del drill non è arrivata")
+    image_path = ImagePathManager.get_challenge_db_path(image_filename)
+
+    pass_fail_only = (data.get("pass_fail_only") or "false").lower() == "true"
+    description = (data.get("description") or "").strip()
+    if not description:
+        raise ValidationError("Servono le istruzioni per chi esegue il drill")
+
+    if challenge_id is None:
+        challenge = ChallengeService.create_challenge(
+            description=description,
+            image_path=image_path,
+            pass_fail_only=pass_fail_only,
+            created_by_id=current_user.id,
+            diagram_scene=scene,
+        )
+    else:
+        previous = db.session.get(Challenge, challenge_id)
+        old_image = previous.image_filename if previous else None
+        challenge = ChallengeService.update_challenge(
+            challenge_id=challenge_id,
+            description=description,
+            image_path=image_path,
+            pass_fail_only=pass_fail_only,
+            diagram_scene=scene,
+        )
+        # Il disegno precedente non serve più a nessuno: senza questa riga ogni
+        # ritocco lascerebbe un file orfano sul disco, per sempre.
+        if old_image and old_image != image_filename:
+            delete_challenge_image(old_image)
+
+    return {
+        "challenge_id": challenge.id,
+        "redirect_url": url_for(
+            "challenge.challenge_detail", challenge_id=challenge.id
+        ),
+    }
+
+
+@challenge_bp.route("/builder", methods=["GET", "POST"])
+@director_required
+@feature_required("use_drill_builder")
+def diagram_builder():
+    """Disegna un drill nuovo invece di fotografarlo.
+
+    È l'alternativa al caricamento della foto, non il suo sostituto: chi la
+    foto ce l'ha continua a caricarla dal modulo di creazione.
+    """
+    if request.method == "GET":
+        return render_template(
+            "challenge/builder.html",
+            challenge=None,
+            save_url=url_for("challenge.diagram_builder"),
+            cancel_url=url_for("challenge.challenge_catalog"),
+        )
+
+    return handle_ajax_service_action(
+        action=lambda: _save_from_builder(),
+        redirect_url=url_for("challenge.challenge_catalog"),
+        success_message=_("Drill creato."),
+        error_prefix=None,
+    )
+
+
+@challenge_bp.route("/<int:challenge_id>/builder", methods=["GET", "POST"])
+@director_required
+@feature_required("use_drill_builder")
+def edit_diagram(challenge_id):
+    """Riapre il disegno di un drill costruito.
+
+    Solo per i drill che una scena ce l'hanno: da un drill fotografato non c'è
+    niente da riaprire, e proporre il builder lì vorrebbe dire offrire di
+    ridisegnarlo da zero spacciandolo per una modifica.
+    """
+    challenge = db.get_or_404(Challenge, challenge_id)
+
+    can_edit = current_user.is_admin or (
+        current_user.is_director and challenge.created_by_id == current_user.id
+    )
+    if not can_edit:
+        abort(403)
+
+    if not challenge.diagram_scene:
+        flash(
+            _("Questo drill nasce da una foto: non c'è un disegno da modificare."),
+            "warning",
+        )
+        return redirect(
+            url_for("challenge.challenge_detail", challenge_id=challenge_id)
+        )
+
+    if request.method == "GET":
+        return render_template(
+            "challenge/builder.html",
+            challenge=challenge,
+            save_url=url_for("challenge.edit_diagram", challenge_id=challenge_id),
+            cancel_url=url_for("challenge.challenge_detail", challenge_id=challenge_id),
+        )
+
+    return handle_ajax_service_action(
+        action=lambda: _save_from_builder(challenge_id),
+        redirect_url=url_for("challenge.challenge_detail", challenge_id=challenge_id),
+        success_message=_("Disegno aggiornato."),
+        error_prefix=None,
+    )
 
 
 @challenge_bp.route("/<int:challenge_id>/train", methods=["GET", "POST"])

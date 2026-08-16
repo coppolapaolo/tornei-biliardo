@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-16 14:47+0000\n"
+"POT-Creation-Date: 2026-08-16 16:30+0000\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -691,7 +691,7 @@ msgstr ""
 msgid "Il referto di questo match e' gia' aperto."
 msgstr ""
 
-#: models/tpa/services.py:164 models/tpa/services.py:265
+#: models/tpa/services.py:164 models/tpa/services.py:264
 #, python-format
 msgid "Il referto lo tiene %(name)s."
 msgstr ""
@@ -700,10 +700,10 @@ msgstr ""
 msgid "Il referto e' chiuso."
 msgstr ""
 
-#: models/tpa/services.py:180 models/tpa/services.py:241
-#: models/tpa/services.py:262 routes/individual_match/tpa.py:128
-#: routes/individual_match/tpa.py:150 routes/individual_match/tpa.py:171
-#: routes/individual_match/tpa.py:181
+#: models/tpa/services.py:180 models/tpa/services.py:240
+#: models/tpa/services.py:261 routes/individual_match/tpa.py:177
+#: routes/individual_match/tpa.py:201 routes/individual_match/tpa.py:224
+#: routes/individual_match/tpa.py:234
 msgid "Referto non trovato"
 msgstr ""
 
@@ -715,23 +715,23 @@ msgstr ""
 msgid "Giocatore non valido."
 msgstr ""
 
-#: models/tpa/services.py:221
+#: models/tpa/services.py:220
 msgid "Chi spacca si sceglie prima di annotare la spaccata."
 msgstr ""
 
-#: models/tpa/services.py:226
+#: models/tpa/services.py:225
 msgid "Comando di referto sconosciuto."
 msgstr ""
 
-#: models/tpa/services.py:228
+#: models/tpa/services.py:227
 msgid "Questo comando non e' possibile adesso."
 msgstr ""
 
-#: models/tpa/services.py:246
+#: models/tpa/services.py:245
 msgid "Non c'e' niente da annullare."
 msgstr ""
 
-#: models/tpa/services.py:338
+#: models/tpa/services.py:337
 msgid ""
 "Il match ha raggiunto la distanza: prima di continuare il risultato va "
 "confermato o rifiutato."
@@ -822,65 +822,77 @@ msgstr ""
 msgid "Registrazione completata con successo."
 msgstr ""
 
-#: routes/challenge.py:55
+#: routes/challenge.py:57
 #: templates/components/_challenge_management_modal.html:150
 msgid "Non è stato possibile caricare le challenge."
 msgstr ""
 
-#: routes/challenge.py:104
+#: routes/challenge.py:106
 #: templates/components/_challenge_management_modal.html:158
 msgid "Challenge creata."
 msgstr ""
 
-#: routes/challenge.py:178
+#: routes/challenge.py:180
 msgid "Questa challenge non è più disponibile."
 msgstr ""
 
-#: routes/challenge.py:183
+#: routes/challenge.py:185
 msgid "Gli amministratori non possono provare le challenge."
 msgstr ""
 
-#: routes/challenge.py:212
+#: routes/challenge.py:214
 msgid "Tentativo iniziato."
 msgstr ""
 
-#: routes/challenge.py:245
+#: routes/challenge.py:314
+msgid "Drill creato."
+msgstr ""
+
+#: routes/challenge.py:339
+msgid "Questo drill nasce da una foto: non c'è un disegno da modificare."
+msgstr ""
+
+#: routes/challenge.py:357
+msgid "Disegno aggiornato."
+msgstr ""
+
+#: routes/challenge.py:381
 msgid "Questo drill non è più disponibile."
 msgstr ""
 
-#: routes/challenge.py:249
+#: routes/challenge.py:385
 msgid "Gli amministratori non provano i drill."
 msgstr ""
 
-#: routes/challenge.py:292
+#: routes/challenge.py:428
 msgid "Prova registrata."
 msgstr ""
 
-#: routes/challenge.py:441
+#: routes/challenge.py:577
 msgid "Tentativo registrato."
 msgstr ""
 
-#: routes/challenge.py:482 templates/challenge/catalog.html:93
+#: routes/challenge.py:618 templates/challenge/catalog.html:93
 msgid "Non è stato possibile aggiornare i preferiti."
 msgstr ""
 
-#: routes/challenge.py:516
+#: routes/challenge.py:652
 msgid "Non è stato possibile caricare le statistiche."
 msgstr ""
 
-#: routes/challenge.py:544
+#: routes/challenge.py:680
 msgid "Challenge di gara avviata."
 msgstr ""
 
-#: routes/challenge.py:597
+#: routes/challenge.py:733
 msgid "Challenge di gara registrata."
 msgstr ""
 
-#: routes/challenge.py:670
+#: routes/challenge.py:806
 msgid "Challenge non trovata."
 msgstr ""
 
-#: routes/challenge.py:680
+#: routes/challenge.py:816
 msgid "Non hai i permessi per questa challenge."
 msgstr ""
 
@@ -1308,9 +1320,9 @@ msgstr ""
 #: routes/individual_match/matches.py:66
 #: routes/individual_match/proposals.py:38
 #: routes/individual_match/proposals.py:66
-#: routes/individual_match/proposals.py:384 routes/individual_match/tpa.py:118
-#: routes/individual_match/tpa.py:138 routes/individual_match/tpa.py:159
-#: routes/individual_match/tpa.py:191 routes/individual_match/views.py:34
+#: routes/individual_match/proposals.py:384 routes/individual_match/tpa.py:167
+#: routes/individual_match/tpa.py:188 routes/individual_match/tpa.py:211
+#: routes/individual_match/tpa.py:245 routes/individual_match/views.py:34
 #: routes/individual_match/views.py:82
 msgid "Errore interno del server"
 msgstr ""
@@ -1781,7 +1793,7 @@ msgid "Disponibilità rimossa"
 msgstr ""
 
 #: routes/individual_match/matches.py:50 routes/individual_match/matches.py:497
-#: routes/individual_match/tpa.py:85
+#: routes/individual_match/tpa.py:134
 msgid "Accesso negato a questo match."
 msgstr ""
 
@@ -1852,7 +1864,7 @@ msgstr ""
 msgid "Proposta rifiutata."
 msgstr ""
 
-#: routes/individual_match/tpa.py:186
+#: routes/individual_match/tpa.py:240
 msgid "Referto chiuso."
 msgstr ""
 
@@ -2174,6 +2186,7 @@ msgstr ""
 #: templates/admin/campionato_wizard_step1.html:158
 #: templates/admin/campionato_wizard_step2.html:8
 #: templates/admin/gara_edit.html:11 templates/base.html:565
+#: templates/challenge/builder.html:33 templates/challenge/builder.html:241
 #: templates/challenge/create.html:14
 #: templates/components/_campionato_create_modal.html:35
 #: templates/components/_campionato_edit_form.html:214
@@ -4460,7 +4473,8 @@ msgstr ""
 
 #: templates/challenge/_challenge_card.html:35
 #: templates/challenge/_challenge_detail.html:43
-#: templates/challenge/create.html:36 templates/challenge/training.html:48
+#: templates/challenge/builder.html:225 templates/challenge/create.html:36
+#: templates/challenge/training.html:48
 #: templates/components/_challenge_bits.html:27
 #: templates/components/_challenge_management_modal.html:97
 #: templates/player/challenge_attempt_detail.html:49
@@ -4552,6 +4566,77 @@ msgstr ""
 msgid "Crea la prima"
 msgstr ""
 
+#: templates/challenge/builder.html:19 templates/challenge/builder.html:35
+#: templates/challenge/create.html:61
+msgid "Disegna il drill"
+msgstr ""
+
+#: templates/challenge/builder.html:35
+#: templates/player/challenge_detail.html:105
+msgid "Modifica il disegno"
+msgstr ""
+
+#: templates/challenge/builder.html:36
+msgid "Disponi le bilie e traccia i tiri: l'immagine la genera il builder"
+msgstr ""
+
+#: templates/challenge/builder.html:212
+msgid "Istruzioni per chi la esegue"
+msgstr ""
+
+#: templates/challenge/builder.html:215
+msgid "Come si dispongono le bilie e come si conta il punteggio"
+msgstr ""
+
+#: templates/challenge/builder.html:217
+msgid "Il disegno mostra la disposizione; qui si scrive la regola."
+msgstr ""
+
+#: templates/challenge/builder.html:222
+msgid "Come si conta"
+msgstr ""
+
+#: templates/challenge/builder.html:228
+msgid "Superata o non superata"
+msgstr ""
+
+#: templates/challenge/builder.html:238
+msgid "Salva il drill"
+msgstr ""
+
+#: templates/challenge/builder.html:238
+#: templates/individual_match/availability.html:111
+msgid "Salva le modifiche"
+msgstr ""
+
+#: templates/challenge/builder.html:255
+msgid "Il disegno salvato non si è potuto ricaricare."
+msgstr ""
+
+#: templates/challenge/builder.html:266
+msgid "Servono le istruzioni: il disegno da solo non dice come si conta."
+msgstr ""
+
+#: templates/challenge/builder.html:270
+msgid "Il tavolo è vuoto: disponi almeno una bilia."
+msgstr ""
+
+#: templates/challenge/builder.html:276
+msgid "Salvo…"
+msgstr ""
+
+#: templates/challenge/builder.html:282
+msgid "Non è stato possibile generare l'immagine del drill."
+msgstr ""
+
+#: templates/challenge/builder.html:298
+msgid "Non è stato possibile salvare il drill."
+msgstr ""
+
+#: templates/challenge/builder.html:306
+msgid "Non è stato possibile salvare il drill. Riprova."
+msgstr ""
+
 #: templates/challenge/catalog.html:3 templates/challenge/catalog.html:8
 #: templates/components/_gara_info.html:69
 #: templates/components/_history_campionati_tab.html:96
@@ -4620,12 +4705,12 @@ msgid "Errore di rete: riprova."
 msgstr ""
 
 #: templates/challenge/catalog.html:95
-#: templates/player/challenge_detail.html:104
+#: templates/player/challenge_detail.html:119
 msgid "Confermi di voler eliminare questa challenge? Non si torna indietro."
 msgstr ""
 
 #: templates/challenge/catalog.html:96
-#: templates/player/challenge_detail.html:114
+#: templates/player/challenge_detail.html:129
 msgid "Non è stato possibile eliminare la challenge."
 msgstr ""
 
@@ -4676,11 +4761,15 @@ msgid "Anteprima della foto"
 msgstr ""
 
 #: templates/challenge/create.html:58
+msgid "Non hai una foto?"
+msgstr ""
+
+#: templates/challenge/create.html:71
 #: templates/components/_challenge_management_modal.html:119
 msgid "Crea la challenge"
 msgstr ""
 
-#: templates/challenge/create.html:107
+#: templates/challenge/create.html:120
 msgid "Non è stato possibile creare la challenge. Riprova."
 msgstr ""
 
@@ -7547,7 +7636,7 @@ msgstr ""
 
 #: templates/components/_round_management.html:68
 #: templates/components/_unified_rack_history.html:61
-#: templates/individual_match/tpa_referto.html:131
+#: templates/individual_match/tpa_referto.html:132
 msgid "Rack"
 msgstr ""
 
@@ -10416,10 +10505,6 @@ msgstr ""
 msgid "Giorni"
 msgstr ""
 
-#: templates/individual_match/availability.html:111
-msgid "Salva le modifiche"
-msgstr ""
-
 #: templates/individual_match/availability.html:119
 msgid "Aggiungi una sala"
 msgstr ""
@@ -11392,47 +11477,47 @@ msgstr ""
 msgid "Chiudi il referto"
 msgstr ""
 
-#: templates/individual_match/tpa_referto.html:124
+#: templates/individual_match/tpa_referto.html:125
 msgid "passa il tavolo"
 msgstr ""
 
-#: templates/individual_match/tpa_referto.html:125
+#: templates/individual_match/tpa_referto.html:126
 msgid "al tavolo"
 msgstr ""
 
-#: templates/individual_match/tpa_referto.html:126
+#: templates/individual_match/tpa_referto.html:127
 msgid "spacca"
 msgstr ""
 
-#: templates/individual_match/tpa_referto.html:127
+#: templates/individual_match/tpa_referto.html:128
 msgid "spacca lui"
 msgstr ""
 
-#: templates/individual_match/tpa_referto.html:128
+#: templates/individual_match/tpa_referto.html:129
 msgid "TPA ancora da calcolare"
 msgstr ""
 
-#: templates/individual_match/tpa_referto.html:129
+#: templates/individual_match/tpa_referto.html:130
 msgid "quante bilie?"
 msgstr ""
 
-#: templates/individual_match/tpa_referto.html:130
+#: templates/individual_match/tpa_referto.html:131
 msgid "perche' finisce il turno?"
 msgstr ""
 
-#: templates/individual_match/tpa_referto.html:132
+#: templates/individual_match/tpa_referto.html:133
 msgid "Non e' stato possibile annotare."
 msgstr ""
 
-#: templates/individual_match/tpa_referto.html:133
+#: templates/individual_match/tpa_referto.html:134
 msgid "e' entrata di sponda alla prima bilia"
 msgstr ""
 
-#: templates/individual_match/tpa_referto.html:134
+#: templates/individual_match/tpa_referto.html:135
 msgid "Ha chiuso in una sola visita?"
 msgstr ""
 
-#: templates/individual_match/tpa_referto.html:135
+#: templates/individual_match/tpa_referto.html:136
 msgid "Chiusa in una sola visita"
 msgstr ""
 
@@ -11555,7 +11640,7 @@ msgstr ""
 msgid "Registri una prova dopo l'altra, sulla stessa schermata"
 msgstr ""
 
-#: templates/player/challenge_detail.html:120
+#: templates/player/challenge_detail.html:135
 msgid "Errore di rete: la challenge non è stata eliminata."
 msgstr ""
 

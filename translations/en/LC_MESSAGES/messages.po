@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-16 14:47+0000\n"
+"POT-Creation-Date: 2026-08-16 16:30+0000\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -727,7 +727,7 @@ msgstr "Match not found"
 msgid "Il referto di questo match e' gia' aperto."
 msgstr "This match already has an open scoresheet."
 
-#: models/tpa/services.py:164 models/tpa/services.py:265
+#: models/tpa/services.py:164 models/tpa/services.py:264
 #, python-format
 msgid "Il referto lo tiene %(name)s."
 msgstr "%(name)s is keeping the scoresheet."
@@ -736,10 +736,10 @@ msgstr "%(name)s is keeping the scoresheet."
 msgid "Il referto e' chiuso."
 msgstr "The scoresheet is closed."
 
-#: models/tpa/services.py:180 models/tpa/services.py:241
-#: models/tpa/services.py:262 routes/individual_match/tpa.py:128
-#: routes/individual_match/tpa.py:150 routes/individual_match/tpa.py:171
-#: routes/individual_match/tpa.py:181
+#: models/tpa/services.py:180 models/tpa/services.py:240
+#: models/tpa/services.py:261 routes/individual_match/tpa.py:177
+#: routes/individual_match/tpa.py:201 routes/individual_match/tpa.py:224
+#: routes/individual_match/tpa.py:234
 msgid "Referto non trovato"
 msgstr "Scoresheet not found"
 
@@ -751,23 +751,23 @@ msgstr "Before handing over the table, record why the inning ended."
 msgid "Giocatore non valido."
 msgstr "Invalid player."
 
-#: models/tpa/services.py:221
+#: models/tpa/services.py:220
 msgid "Chi spacca si sceglie prima di annotare la spaccata."
 msgstr "Who breaks is chosen before the break is recorded."
 
-#: models/tpa/services.py:226
+#: models/tpa/services.py:225
 msgid "Comando di referto sconosciuto."
 msgstr "Unknown scoresheet entry."
 
-#: models/tpa/services.py:228
+#: models/tpa/services.py:227
 msgid "Questo comando non e' possibile adesso."
 msgstr "That entry is not possible right now."
 
-#: models/tpa/services.py:246
+#: models/tpa/services.py:245
 msgid "Non c'e' niente da annullare."
 msgstr "There is nothing to undo."
 
-#: models/tpa/services.py:338
+#: models/tpa/services.py:337
 msgid ""
 "Il match ha raggiunto la distanza: prima di continuare il risultato va "
 "confermato o rifiutato."
@@ -862,65 +862,77 @@ msgstr "Welcome aboard!"
 msgid "Registrazione completata con successo."
 msgstr "Registration completed successfully."
 
-#: routes/challenge.py:55
+#: routes/challenge.py:57
 #: templates/components/_challenge_management_modal.html:150
 msgid "Non è stato possibile caricare le challenge."
 msgstr "The challenges could not be loaded."
 
-#: routes/challenge.py:104
+#: routes/challenge.py:106
 #: templates/components/_challenge_management_modal.html:158
 msgid "Challenge creata."
 msgstr "Challenge created."
 
-#: routes/challenge.py:178
+#: routes/challenge.py:180
 msgid "Questa challenge non è più disponibile."
 msgstr "This challenge is no longer available."
 
-#: routes/challenge.py:183
+#: routes/challenge.py:185
 msgid "Gli amministratori non possono provare le challenge."
 msgstr "Administrators cannot attempt challenges."
 
-#: routes/challenge.py:212
+#: routes/challenge.py:214
 msgid "Tentativo iniziato."
 msgstr "Attempt started."
 
-#: routes/challenge.py:245
+#: routes/challenge.py:314
+msgid "Drill creato."
+msgstr "Drill created."
+
+#: routes/challenge.py:339
+msgid "Questo drill nasce da una foto: non c'è un disegno da modificare."
+msgstr "This drill comes from a photo: there is no drawing to edit."
+
+#: routes/challenge.py:357
+msgid "Disegno aggiornato."
+msgstr "Drawing updated."
+
+#: routes/challenge.py:381
 msgid "Questo drill non è più disponibile."
 msgstr "This drill is no longer available."
 
-#: routes/challenge.py:249
+#: routes/challenge.py:385
 msgid "Gli amministratori non provano i drill."
 msgstr "Administrators do not attempt drills."
 
-#: routes/challenge.py:292
+#: routes/challenge.py:428
 msgid "Prova registrata."
 msgstr "Attempt recorded."
 
-#: routes/challenge.py:441
+#: routes/challenge.py:577
 msgid "Tentativo registrato."
 msgstr "Attempt recorded."
 
-#: routes/challenge.py:482 templates/challenge/catalog.html:93
+#: routes/challenge.py:618 templates/challenge/catalog.html:93
 msgid "Non è stato possibile aggiornare i preferiti."
 msgstr "The favourites could not be updated."
 
-#: routes/challenge.py:516
+#: routes/challenge.py:652
 msgid "Non è stato possibile caricare le statistiche."
 msgstr "The statistics could not be loaded."
 
-#: routes/challenge.py:544
+#: routes/challenge.py:680
 msgid "Challenge di gara avviata."
 msgstr "Tournament challenge started."
 
-#: routes/challenge.py:597
+#: routes/challenge.py:733
 msgid "Challenge di gara registrata."
 msgstr "Tournament challenge recorded."
 
-#: routes/challenge.py:670
+#: routes/challenge.py:806
 msgid "Challenge non trovata."
 msgstr "Challenge not found."
 
-#: routes/challenge.py:680
+#: routes/challenge.py:816
 msgid "Non hai i permessi per questa challenge."
 msgstr "You do not have permission for this challenge."
 
@@ -1355,9 +1367,9 @@ msgstr ""
 #: routes/individual_match/matches.py:66
 #: routes/individual_match/proposals.py:38
 #: routes/individual_match/proposals.py:66
-#: routes/individual_match/proposals.py:384 routes/individual_match/tpa.py:118
-#: routes/individual_match/tpa.py:138 routes/individual_match/tpa.py:159
-#: routes/individual_match/tpa.py:191 routes/individual_match/views.py:34
+#: routes/individual_match/proposals.py:384 routes/individual_match/tpa.py:167
+#: routes/individual_match/tpa.py:188 routes/individual_match/tpa.py:211
+#: routes/individual_match/tpa.py:245 routes/individual_match/views.py:34
 #: routes/individual_match/views.py:82
 msgid "Errore interno del server"
 msgstr "Internal server error"
@@ -1830,7 +1842,7 @@ msgid "Disponibilità rimossa"
 msgstr "Availability removed"
 
 #: routes/individual_match/matches.py:50 routes/individual_match/matches.py:497
-#: routes/individual_match/tpa.py:85
+#: routes/individual_match/tpa.py:134
 msgid "Accesso negato a questo match."
 msgstr "Access denied to this match."
 
@@ -1901,7 +1913,7 @@ msgstr "Proposal cancelled successfully!"
 msgid "Proposta rifiutata."
 msgstr "Proposal declined."
 
-#: routes/individual_match/tpa.py:186
+#: routes/individual_match/tpa.py:240
 msgid "Referto chiuso."
 msgstr "Scoresheet closed."
 
@@ -2227,6 +2239,7 @@ msgstr "Confirm"
 #: templates/admin/campionato_wizard_step1.html:158
 #: templates/admin/campionato_wizard_step2.html:8
 #: templates/admin/gara_edit.html:11 templates/base.html:565
+#: templates/challenge/builder.html:33 templates/challenge/builder.html:241
 #: templates/challenge/create.html:14
 #: templates/components/_campionato_create_modal.html:35
 #: templates/components/_campionato_edit_form.html:214
@@ -4629,7 +4642,8 @@ msgstr "Pass or fail"
 
 #: templates/challenge/_challenge_card.html:35
 #: templates/challenge/_challenge_detail.html:43
-#: templates/challenge/create.html:36 templates/challenge/training.html:48
+#: templates/challenge/builder.html:225 templates/challenge/create.html:36
+#: templates/challenge/training.html:48
 #: templates/components/_challenge_bits.html:27
 #: templates/components/_challenge_management_modal.html:97
 #: templates/player/challenge_attempt_detail.html:49
@@ -4720,6 +4734,77 @@ msgstr "There are no challenges to try yet."
 msgid "Crea la prima"
 msgstr "Create the first one"
 
+#: templates/challenge/builder.html:19 templates/challenge/builder.html:35
+#: templates/challenge/create.html:61
+msgid "Disegna il drill"
+msgstr "Draw the drill"
+
+#: templates/challenge/builder.html:35
+#: templates/player/challenge_detail.html:105
+msgid "Modifica il disegno"
+msgstr "Edit the drawing"
+
+#: templates/challenge/builder.html:36
+msgid "Disponi le bilie e traccia i tiri: l'immagine la genera il builder"
+msgstr "Set the balls out and draw the shots: the builder makes the picture"
+
+#: templates/challenge/builder.html:212
+msgid "Istruzioni per chi la esegue"
+msgstr "Instructions for whoever plays it"
+
+#: templates/challenge/builder.html:215
+msgid "Come si dispongono le bilie e come si conta il punteggio"
+msgstr "How the balls are set up and how the score is counted"
+
+#: templates/challenge/builder.html:217
+msgid "Il disegno mostra la disposizione; qui si scrive la regola."
+msgstr "The drawing shows the layout; the rule goes here."
+
+#: templates/challenge/builder.html:222
+msgid "Come si conta"
+msgstr "How it is scored"
+
+#: templates/challenge/builder.html:228
+msgid "Superata o non superata"
+msgstr "Passed or not passed"
+
+#: templates/challenge/builder.html:238
+msgid "Salva il drill"
+msgstr "Save the drill"
+
+#: templates/challenge/builder.html:238
+#: templates/individual_match/availability.html:111
+msgid "Salva le modifiche"
+msgstr "Save changes"
+
+#: templates/challenge/builder.html:255
+msgid "Il disegno salvato non si è potuto ricaricare."
+msgstr "The saved drawing could not be reloaded."
+
+#: templates/challenge/builder.html:266
+msgid "Servono le istruzioni: il disegno da solo non dice come si conta."
+msgstr "Instructions are needed: the drawing alone does not say how to score."
+
+#: templates/challenge/builder.html:270
+msgid "Il tavolo è vuoto: disponi almeno una bilia."
+msgstr "The table is empty: set out at least one ball."
+
+#: templates/challenge/builder.html:276
+msgid "Salvo…"
+msgstr "Saving…"
+
+#: templates/challenge/builder.html:282
+msgid "Non è stato possibile generare l'immagine del drill."
+msgstr "The drill image could not be generated."
+
+#: templates/challenge/builder.html:298
+msgid "Non è stato possibile salvare il drill."
+msgstr "The drill could not be saved."
+
+#: templates/challenge/builder.html:306
+msgid "Non è stato possibile salvare il drill. Riprova."
+msgstr "The drill could not be saved. Try again."
+
 #: templates/challenge/catalog.html:3 templates/challenge/catalog.html:8
 #: templates/components/_gara_info.html:69
 #: templates/components/_history_campionati_tab.html:96
@@ -4790,12 +4875,12 @@ msgid "Errore di rete: riprova."
 msgstr "Network error: try again."
 
 #: templates/challenge/catalog.html:95
-#: templates/player/challenge_detail.html:104
+#: templates/player/challenge_detail.html:119
 msgid "Confermi di voler eliminare questa challenge? Non si torna indietro."
 msgstr "Do you want to delete this challenge? There is no going back."
 
 #: templates/challenge/catalog.html:96
-#: templates/player/challenge_detail.html:114
+#: templates/player/challenge_detail.html:129
 msgid "Non è stato possibile eliminare la challenge."
 msgstr "The challenge could not be deleted."
 
@@ -4848,11 +4933,15 @@ msgid "Anteprima della foto"
 msgstr "Photo preview"
 
 #: templates/challenge/create.html:58
+msgid "Non hai una foto?"
+msgstr "No photo to hand?"
+
+#: templates/challenge/create.html:71
 #: templates/components/_challenge_management_modal.html:119
 msgid "Crea la challenge"
 msgstr "Create the challenge"
 
-#: templates/challenge/create.html:107
+#: templates/challenge/create.html:120
 msgid "Non è stato possibile creare la challenge. Riprova."
 msgstr "The challenge could not be created. Try again."
 
@@ -7772,7 +7861,7 @@ msgstr "(default)"
 
 #: templates/components/_round_management.html:68
 #: templates/components/_unified_rack_history.html:61
-#: templates/individual_match/tpa_referto.html:131
+#: templates/individual_match/tpa_referto.html:132
 msgid "Rack"
 msgstr "Rack"
 
@@ -10704,10 +10793,6 @@ msgstr "Remove this venue"
 msgid "Giorni"
 msgstr "Days"
 
-#: templates/individual_match/availability.html:111
-msgid "Salva le modifiche"
-msgstr "Save the changes"
-
 #: templates/individual_match/availability.html:119
 msgid "Aggiungi una sala"
 msgstr "Add a venue"
@@ -11699,47 +11784,47 @@ msgstr "Close the scoresheet? Nothing can be recorded afterwards."
 msgid "Chiudi il referto"
 msgstr "Close the scoresheet"
 
-#: templates/individual_match/tpa_referto.html:124
+#: templates/individual_match/tpa_referto.html:125
 msgid "passa il tavolo"
 msgstr "hand over the table"
 
-#: templates/individual_match/tpa_referto.html:125
+#: templates/individual_match/tpa_referto.html:126
 msgid "al tavolo"
 msgstr "at the table"
 
-#: templates/individual_match/tpa_referto.html:126
+#: templates/individual_match/tpa_referto.html:127
 msgid "spacca"
 msgstr "breaking"
 
-#: templates/individual_match/tpa_referto.html:127
+#: templates/individual_match/tpa_referto.html:128
 msgid "spacca lui"
 msgstr "let them break"
 
-#: templates/individual_match/tpa_referto.html:128
+#: templates/individual_match/tpa_referto.html:129
 msgid "TPA ancora da calcolare"
 msgstr "TPA not available yet"
 
-#: templates/individual_match/tpa_referto.html:129
+#: templates/individual_match/tpa_referto.html:130
 msgid "quante bilie?"
 msgstr "how many balls?"
 
-#: templates/individual_match/tpa_referto.html:130
+#: templates/individual_match/tpa_referto.html:131
 msgid "perche' finisce il turno?"
 msgstr "why did the inning end?"
 
-#: templates/individual_match/tpa_referto.html:132
+#: templates/individual_match/tpa_referto.html:133
 msgid "Non e' stato possibile annotare."
 msgstr "That entry could not be recorded."
 
-#: templates/individual_match/tpa_referto.html:133
+#: templates/individual_match/tpa_referto.html:134
 msgid "e' entrata di sponda alla prima bilia"
 msgstr "kicked in on the first ball"
 
-#: templates/individual_match/tpa_referto.html:134
+#: templates/individual_match/tpa_referto.html:135
 msgid "Ha chiuso in una sola visita?"
 msgstr "Did they run out in one visit?"
 
-#: templates/individual_match/tpa_referto.html:135
+#: templates/individual_match/tpa_referto.html:136
 msgid "Chiusa in una sola visita"
 msgstr "Ran out in one visit"
 
@@ -11862,7 +11947,7 @@ msgstr "Practise this drill"
 msgid "Registri una prova dopo l'altra, sulla stessa schermata"
 msgstr "Record one attempt after another, on the same screen"
 
-#: templates/player/challenge_detail.html:120
+#: templates/player/challenge_detail.html:135
 msgid "Errore di rete: la challenge non è stata eliminata."
 msgstr "Network error: the challenge was not deleted."
 
