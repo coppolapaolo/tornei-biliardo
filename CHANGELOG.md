@@ -7,6 +7,29 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
 
 ## [Non rilasciato]
 
+### Aggiunto
+
+- **Referto TPA sui match singoli** (ADR-044). Nelle partite amichevoli a palla
+  8, 9 e 10 si può annotare tutta la partita — quante bilie a ogni visita al
+  tavolo e perché il turno è finito — e ricavarne il *Total Performance
+  Average*, il metodo Accu-Stats usato nel biliardo professionistico. È una
+  funzione **da sbloccare** (feature gamification `tpa_scoresheet`): la vede
+  chi ha già giocato gare, campionati, match singoli, drill ed esami.
+  - Il **punteggio del match discende dal referto**: chi lo compila non segna i
+    rack, li registra il referto. Con un referto aperto il segnapunti normale
+    sparisce, così le due cose non possono divergere.
+  - Il motore delle regole (`models/tpa/engine.py`) è un port fedele dell'app
+    JS di riferimento, **verificato per differenza** su 600 partite generate a
+    caso: stessi totali, stesso tastierino, stessi momenti in cui si passa il
+    tavolo. Zero divergenze.
+  - Si salva il registro dei comandi premuti, non lo stato che ne risulta:
+    l'annulla è esatto e i totali non possono disallinearsi.
+- Due metriche nuove per lo sblocco delle funzioni, disponibili anche nel menù
+  della gestione gamification: `campionati_played` e
+  `individual_matches_played`.
+- Pagina di guida **«Il referto TPA»** in italiano e inglese, con i
+  suggerimenti per l'interfaccia adattiva. Le figure sono ancora da catturare.
+
 ## [1.0.0] — 2026-08-13
 
 Prima release numerata. L'applicazione era già in produzione su

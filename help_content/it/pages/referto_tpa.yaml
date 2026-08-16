@@ -1,0 +1,187 @@
+title: "Il referto TPA"
+section: giocare
+kind: tutorial
+audience: [giocatore]
+minutes: 6
+summary: "Nelle partite amichevoli puoi annotare tutta la partita, non solo chi vince i rack, e ottenere il TPA: la percentuale di azioni riuscite."
+screens: [individual_match.tpa_referto]
+related: [partite_amichevoli, profilo_e_statistiche]
+
+blocks:
+  - type: text
+    text: >-
+      Di solito, di una partita resta un numero solo: 5 a 3. Ma due partite
+      finite 5 a 3 possono essere state due partite diversissime. Il **referto
+      TPA** serve a raccontare anche il resto: quante bilie hai imbucato e
+      perché ogni turno è finito.
+
+  - type: text
+    text: >-
+      Alla fine ne esce un numero, il **TPA**, che si legge come una
+      percentuale di azioni riuscite. Un TPA di **.750** vuol dire che tre
+      volte su quattro quello che hai fatto al tavolo è andato a buon fine. È
+      lo stesso conto che si usa nel biliardo americano professionistico.
+
+  - type: note
+    tone: info
+    title: "Si sblocca con l'esperienza"
+    text: >-
+      Il referto non compare subito. Si sblocca quando hai già giocato gare,
+      campionati, partite amichevoli, drill ed esami: non perché sia
+      difficile da capire, ma perché va compilato **mentre giochi**, e conviene
+      arrivarci quando l'app la conosci già bene.
+
+  - type: heading
+    id: aprire
+    title: "Aprire il referto"
+
+  - type: steps
+    items:
+      - title: "Apri una partita amichevole e premi «Inizia»"
+        text: >-
+          Il referto vale per le partite amichevoli a **palla 8, palla 9 e
+          palla 10**. Nelle altre discipline il TPA non si calcola.
+      - title: "Tocca «Prendi il referto TPA»"
+        text: >-
+          Il pulsante è sotto il punteggio. Va premuto **prima del primo
+          rack**: il referto racconta la partita dall'inizio, quindi non si può
+          aprire a partita avviata.
+      - title: "Conferma con «Apri il referto»"
+        text: >-
+          Da questo momento il referto è tuo: lo tieni tu per tutta la partita.
+          Il tuo avversario vede la stessa schermata aggiornarsi, ma non può
+          scriverci.
+
+  - type: note
+    tone: warning
+    title: "I rack non si segnano più a mano"
+    text: >-
+      Con il referto aperto, il segnapunti normale sparisce. Non è una
+      dimenticanza: i rack vinti li registra il referto, così non devi segnare
+      due volte la stessa cosa e il punteggio non può mai discordare da quello
+      che hai annotato.
+
+  - type: heading
+    id: come-si-compila
+    title: "Come si compila"
+
+  - type: text
+    text: >-
+      In alto ci sono i due giocatori. Quello **scuro** è chi sta al tavolo
+      adesso. Accanto al nome trovi il suo TPA e, più piccolo, quante bilie ha
+      imbucato (**B**) e quanti errori ha fatto (**E**). Nel cerchio a destra i
+      rack vinti.
+
+  - type: text
+    text: >-
+      Sotto ci sono due caselle. Nella **casella chiara** si scrive quante
+      bilie sono entrate e perché il turno è finito. Nella **casella scura**,
+      solo i falli. Sono le stesse due caselle del referto di carta.
+
+  - type: steps
+    items:
+      - title: "Quante bilie ha imbucato"
+        text: >-
+          Premi il numero. Se è il turno di spaccata i numeri si premono
+          **due volte**: prima quante ne sono entrate sulla spaccata, poi
+          quante in tutto nel turno.
+      - title: "Perché il turno è finito"
+        text: >-
+          **M** se ha sbagliato un tiro che voleva imbucare, **S** se ha
+          giocato di difesa, **K** se era costretto a un tiro di sponda perché
+          non vedeva la bilia.
+      - title: "Se c'è stato un fallo"
+        text: >-
+          **P** se la bilia bianca è finita in buca o fuori dal tavolo, **N**
+          se non ha colpito regolarmente la bilia designata.
+      - title: "Se ha vinto il rack"
+        text: >-
+          Premi **G**. Se ha imbucato tutte le bilie rimaste non serve: il
+          referto se ne accorge da solo.
+      - title: "Passa il tavolo"
+        text: >-
+          Tocca il nome dell'altro giocatore. Il turno si chiude e comincia il
+          suo.
+
+  - type: note
+    tone: tip
+    title: "Il tastierino ti guida"
+    text: >-
+      Non devi ricordarti cosa si può premere e cosa no: i tasti che in quel
+      momento non hanno senso sono spenti. Se hai sbagliato, **Annulla
+      l'ultimo tocco** torna indietro di un passo, quante volte vuoi.
+
+  - type: heading
+    id: annotazioni-piccole
+    title: "Le tre annotazioni piccole"
+
+  - type: text
+    text: >-
+      Sotto le lettere grandi ce ne sono tre piccole. Servono a non addebitare
+      un errore a chi non l'ha commesso, e sono ciò che rende il TPA giusto
+      invece che approssimativo.
+
+  - type: options
+    items:
+      - name: "n"
+        text: >-
+          Il tiro sbagliato era **facile**, più facile di un tiro dal
+          dischetto. Vale doppio: se sbagli una cosa semplice, il TPA lo dice.
+      - name: "x"
+        text: >-
+          La difesa era **premeditata**: non stavi provando a chiudere il rack,
+          quindi non è un errore di posizione.
+      - name: "p"
+        text: >-
+          Era un **push out**, la giocata libera subito dopo la spaccata.
+
+  - type: heading
+    id: il-foglio
+    title: "Rileggere la partita"
+
+  - type: text
+    text: >-
+      In fondo alla pagina c'è **il foglio**: tutta la partita, rack per rack e
+      turno per turno. Serve durante la partita per controllare di non aver
+      saltato niente, e dopo per rivedere com'è andata.
+
+  - type: text
+    text: >-
+      Quando avete finito, **Chiudi il referto**. Da quel momento si legge e
+      basta. Il risultato della partita segue la strada di sempre: va
+      confermato da tutti e due.
+
+  - type: heading
+    id: gli-errori
+    title: "Cosa conta come errore"
+
+  - type: list
+    title: "Il TPA conta cinque tipi di errore"
+    items:
+      - "**Miss**: vedevi la bilia, hai provato a imbucarla, hai sbagliato. Due errori se il tiro era facile."
+      - "**Spaccata**: bilia bianca in buca o fuori dal tavolo sulla spaccata."
+      - "**Kick**: eri costretto al tiro di sponda e non è andata bene."
+      - "**Difesa**: hai giocato di difesa e l'avversario poi ha imbucato, o ha sbagliato un tiro facile."
+      - "**Posizione**: bilia bianca in buca, oppure hai imbucato qualcosa senza riuscire a chiudere il rack."
+
+  - type: text
+    text: >-
+      L'ultimo è quello che sorprende di più: **imbucare senza chiudere è un
+      errore**. Ha senso, se ci pensi — se avessi lasciato la bilia bianca dove
+      serviva, avresti continuato. È anche il motivo per cui esistono le
+      annotazioni piccole: quando non era colpa tua, si annota e non conta.
+
+  - type: faq
+    items:
+      - q: "Non vedo il pulsante del referto."
+        a: "È una funzione che si sblocca con l'uso: servono gare, campionati, partite amichevoli, drill ed esami già fatti. Continua a giocare e comparirà."
+      - q: "Posso aprirlo a partita già cominciata?"
+        a: "No. Il referto racconta la partita dall'inizio, quindi va aperto prima del primo rack. Se avete già segnato dei rack, per quella partita non si può più."
+      - q: "Lo può tenere il mio avversario al posto mio?"
+        a: "Lo tiene chi lo apre, e resta suo per tutta la partita. L'altro lo vede aggiornarsi in tempo reale, ma non può scriverci."
+      - q: "Ho premuto il tasto sbagliato."
+        a: "«Annulla l'ultimo tocco» torna indietro di un passo. Puoi premerlo più volte di seguito: torna indietro anche di un rack intero, punteggio compreso."
+      - q: "Che TPA è un buon TPA?"
+        a: "Dipende dalla disciplina e dal livello. La cosa utile non è il numero in sé, ma come cambia il tuo nel tempo: è per quello che il referto esiste."
+      - q: "Funziona anche nelle gare?"
+        a: "Per ora no, solo nelle partite amichevoli."

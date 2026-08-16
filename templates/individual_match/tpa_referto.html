@@ -1,0 +1,440 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{- _("Referto TPA") }} - {{ match.player1.username }} vs
+{{ match.player2.username if match.player2 else _('avversario') }} - {{ config.APP_NAME }}
+{%- endblock %}
+
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('individual_match.match_detail', match_id=match.id) }}"
+   aria-label="{{ _('Torna al match') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _('Referto TPA') }}{% endblock %}
+{% block page_sub %}
+{{ match.player1.username }} vs {{ match.player2.username if match.player2 else _('avversario') }}
+<span class="c7-sep">·</span> {{ match.discipline|discipline_display }}
+{% endblock %}
+
+{% block content %}
+<div class="c7-cols">
+  <div class="c7-stack c7-sections">
+
+  {% if referto is none %}
+    {# ══════════ Il referto non c'e' ancora ══════════ #}
+    <section class="c7-card">
+      <div class="c7-kicker">{{ _('Total Performance Average') }}</div>
+      <h3 style="margin:6px 0 0">{{ _('Prendi il referto della partita') }}</h3>
+      <p style="margin:10px 0 0;font-size:13px;font-weight:600;line-height:1.55;color:var(--c7-ink-soft)">
+        {{ _('Invece dei soli rack vinti, annoti ogni visita al tavolo: quante bilie sono entrate e perche\' il turno e\' finito. Da li\' esce il TPA, la percentuale di azioni riuscite — lo stesso conto che Accu-Stats usa per i professionisti.') }}
+      </p>
+      <p style="margin:10px 0 0;font-size:13px;font-weight:600;line-height:1.55;color:var(--c7-ink-soft)">
+        {{ _('Il referto lo tiene chi lo apre; l\'altro giocatore lo vede aggiornarsi. I rack vinti finiscono da soli nel punteggio del match: non c\'e\' niente da segnare due volte.') }}
+      </p>
+    </section>
+
+    {% if blocking_reason %}
+    <div class="c7-flash c7-flash--warning">
+      <span class="c7-flash__ico"><i class="fas fa-exclamation"></i></span>
+      <span class="c7-flash__body">{{ blocking_reason }}</span>
+    </div>
+    {% else %}
+    <form method="POST" action="{{ url_for('individual_match.tpa_open', match_id=match.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-primary btn-lg w-100">
+        <i class="fas fa-pen-to-square"></i> {{ _('Apri il referto') }}
+      </button>
+    </form>
+    {% endif %}
+
+  {% else %}
+    {# ══════════ Il referto ══════════ #}
+    {% if state.closed %}
+    <div class="c7-flash c7-flash--info">
+      <span class="c7-flash__ico"><i class="fas fa-lock"></i></span>
+      <span class="c7-flash__body">{{ _('Referto chiuso: da qui si legge e basta.') }}</span>
+    </div>
+    {% elif not state.can_write %}
+    <div class="c7-flash c7-flash--info">
+      <span class="c7-flash__ico"><i class="fas fa-eye"></i></span>
+      <span class="c7-flash__body">
+        {{ _('Il referto lo tiene %(name)s. Qui lo vedi aggiornarsi.', name=referto.compiler.username) }}
+      </span>
+    </div>
+    {% endif %}
+
+    <section class="c7-tpa">
+      <div id="tpaPlayers" class="c7-tpa"></div>
+
+      <div class="c7-tpa-boxes" id="tpaBoxes">
+        <div class="c7-tpa-box c7-tpa-box--white" id="tpaWhiteBox"></div>
+        <div class="c7-tpa-box c7-tpa-box--shaded" id="tpaShadedBox"></div>
+      </div>
+
+      {% if state.can_write %}
+      <div class="c7-tpa-pad" id="tpaNumbers"></div>
+      <div class="c7-tpa-pad c7-tpa-pad--letters" id="tpaLetters"></div>
+      <button type="button" class="c7-undo" id="tpaUndo">{{ _('Annulla l\'ultimo tocco') }}</button>
+      {% endif %}
+    </section>
+
+    <details class="c7-card">
+      <summary style="font-size:13px;font-weight:800;cursor:pointer">{{ _('Cosa vuol dire ogni lettera') }}</summary>
+      <p class="c7-tpa-legend" style="margin:10px 0 0">
+        <b>M</b> {{ _('sbagli un tiro d\'attacco') }} <span class="c7-sep">·</span>
+        <b>S</b> {{ _('giochi di difesa') }} <span class="c7-sep">·</span>
+        <b>K</b> {{ _('tiro di sponda obbligato, non vedi la bilia') }}<br>
+        <b>P</b> {{ _('battente in buca o fuori dal tavolo') }} <span class="c7-sep">·</span>
+        <b>N</b> {{ _('non colpisci la bilia designata') }}<br>
+        <b>G</b> {{ _('con questo turno vinci il rack') }}<br>
+        <b>n</b> {{ _('il tiro sbagliato era facile: vale doppio') }} <span class="c7-sep">·</span>
+        <b>x</b> {{ _('difesa premeditata: niente errore di posizione') }} <span class="c7-sep">·</span>
+        <b>p</b> {{ _('push out') }}
+      </p>
+    </details>
+
+    <section>
+      <h3 style="margin:0 0 10px">{{ _('Il foglio') }}</h3>
+      <div class="c7-tpa-sheet" id="tpaSheet"></div>
+    </section>
+
+    {% if state.can_write %}
+    <form method="POST" action="{{ url_for('individual_match.tpa_close', match_id=match.id) }}"
+          onsubmit="return confirm({{ _('Chiudere il referto? Dopo non si annota piu\'.')|tojson }})">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-secondary w-100">
+        <i class="fas fa-flag-checkered"></i> {{ _('Chiudi il referto') }}
+      </button>
+    </form>
+    {% endif %}
+  {% endif %}
+
+    <a class="btn btn-secondary w-100" href="{{ url_for('individual_match.match_detail', match_id=match.id) }}">
+      {{ _('Torna al match') }}
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if referto is not none %}
+<script>
+(function () {
+    const MATCH_ID = {{ match.id }};
+    const CAN_WRITE = {{ 'true' if state.can_write else 'false' }};
+    const LABEL_PASS = {{ _('passa il tavolo')|tojson }};
+    const LABEL_AT_TABLE = {{ _('al tavolo')|tojson }};
+    const LABEL_BREAKS = {{ _('spacca')|tojson }};
+    const LABEL_LET_BREAK = {{ _('spacca lui')|tojson }};
+    const LABEL_NO_TPA = {{ _('TPA ancora da calcolare')|tojson }};
+    const LABEL_BALLS = {{ _('quante bilie?')|tojson }};
+    const LABEL_WHY = {{ _('perche\' finisce il turno?')|tojson }};
+    const LABEL_RACK = {{ _('Rack')|tojson }};
+    const LABEL_ERROR = {{ _('Non e\' stato possibile annotare.')|tojson }};
+    const KICK_IN = {{ _('e\' entrata di sponda alla prima bilia')|tojson }};
+    const RUNOUT_ASK = {{ _('Ha chiuso in una sola visita?')|tojson }};
+    const RUNOUT_ON = {{ _('Chiusa in una sola visita')|tojson }};
+
+    let state = {{ state|tojson }};
+
+    const el = (id) => document.getElementById(id);
+
+    /* Il TPA si mostra come sul referto: .780, non 780. */
+    function formatTpa(value) {
+        if (value === null || value === undefined) return '—';
+        return '.' + String(value).padStart(3, '0');
+    }
+
+    function seatOf(n) { return state.players[n] || state.players[String(n)] || {}; }
+    function tallyOf(n) { return state.score[n] || state.score[String(n)] || {}; }
+
+    function renderPlayers() {
+        const host = el('tpaPlayers');
+        host.textContent = '';
+        [1, 2].forEach((seat) => {
+            const tally = tallyOf(seat);
+            const active = state.current_player === seat;
+            /* Il proprio riquadro non si tocca: si tocca quello dell'altro, ed
+               e' quello il gesto che passa il tavolo. */
+            const tappable = CAN_WRITE && !active && state.can_switch_player;
+            const node = document.createElement(tappable ? 'button' : 'div');
+            node.className = 'c7-tpa-player' + (active ? ' c7-tpa-player--active' : '');
+            if (tappable) {
+                node.type = 'button';
+                /* Prima della spaccata il tocco sceglie chi spacca; dopo,
+                   chiude il turno. Chi dei due lo dice il motore. */
+                node.addEventListener('click', () => send('press', {
+                    command: state.current.can_choose_seat ? ('seat:' + seat) : 'end'
+                }));
+            }
+
+            const left = document.createElement('span');
+            const name = document.createElement('span');
+            name.className = 'c7-tpa-player__name';
+            name.textContent = seatOf(seat).name || ('#' + seat);
+            const meta = document.createElement('span');
+            meta.className = 'c7-tpa-player__meta';
+            const errors = tally.total_errors || 0;
+            let metaText = 'B' + (tally.balls_potted || 0) + ' E' + errors;
+            if (active) metaText += ' · ' + (state.current.is_break ? LABEL_BREAKS : LABEL_AT_TABLE);
+            else if (tappable) {
+                metaText += ' · ' + (state.current.can_choose_seat ? LABEL_LET_BREAK : LABEL_PASS);
+            }
+            meta.textContent = metaText;
+            left.appendChild(name);
+            left.appendChild(meta);
+
+            const tpa = document.createElement('span');
+            tpa.className = 'c7-tpa-player__tpa';
+            tpa.textContent = formatTpa(tally.tpa);
+            if (tally.tpa === null || tally.tpa === undefined) tpa.title = LABEL_NO_TPA;
+
+            const racks = document.createElement('span');
+            racks.className = 'c7-tpa-player__racks';
+            racks.textContent = tally.racks_won || 0;
+
+            node.appendChild(left);
+            node.appendChild(tpa);
+            node.appendChild(racks);
+            host.appendChild(node);
+        });
+    }
+
+    function renderBoxes() {
+        const current = state.current;
+        const note = current.annotation;
+        const white = el('tpaWhiteBox');
+        const shaded = el('tpaShadedBox');
+        white.textContent = '';
+        shaded.textContent = '';
+        white.classList.toggle('c7-tpa-box--won', !!current.winning);
+
+        if (note.total_potted === null || note.total_potted === undefined) {
+            const hint = document.createElement('span');
+            hint.className = 'c7-tpa-box__hint';
+            hint.textContent = LABEL_BALLS;
+            /* Sulla spaccata le bilie della spaccata si annotano per prime e
+               restano scritte in piccolo, in alto: e' cosi' sul foglio. */
+            if (current.is_break && note.break_potted !== null && note.break_potted !== undefined) {
+                const brk = document.createElement('span');
+                brk.className = 'c7-tpa-box__break';
+                brk.textContent = note.break_potted;
+                white.appendChild(brk);
+            }
+            white.appendChild(hint);
+        } else {
+            if (current.is_break && note.break_potted !== null && note.break_potted !== undefined) {
+                const brk = document.createElement('span');
+                brk.className = 'c7-tpa-box__break';
+                brk.textContent = note.break_potted;
+                white.appendChild(brk);
+            }
+            const balls = document.createElement('span');
+            balls.textContent = note.total_potted;
+            white.appendChild(balls);
+            if (current.main_note) white.appendChild(noteNode(current.main_note));
+            else if (!current.winning) {
+                const hint = document.createElement('span');
+                hint.className = 'c7-tpa-box__hint';
+                hint.style.marginLeft = '8px';
+                hint.textContent = LABEL_WHY;
+                white.appendChild(hint);
+            }
+            if (note.first_shot_kick_in) {
+                const kick = document.createElement('span');
+                kick.className = 'c7-tpa-box__hint';
+                kick.style.marginLeft = '8px';
+                kick.textContent = '↺';
+                kick.title = KICK_IN;
+                white.appendChild(kick);
+            }
+        }
+        shaded.textContent = current.secondary_note || '';
+    }
+
+    /* "M^n" e "S^x" sul foglio sono una lettera grande con un apice. */
+    function noteNode(text) {
+        const wrap = document.createElement('span');
+        const parts = String(text).split('^');
+        wrap.appendChild(document.createTextNode(parts[0]));
+        if (parts.length > 1) {
+            const sup = document.createElement('sup');
+            sup.textContent = parts[1];
+            wrap.appendChild(sup);
+        }
+        return wrap;
+    }
+
+    /* Il tastierino ha caselle fisse, sempre le stesse: le lettere stanno
+       dove il referto cartaceo le mette (motivo di fine turno, falli,
+       annotazioni piccole) e quelle non ammesse si spengono invece di
+       sparire. Se i pulsanti si riordinassero a ogni tocco, chi annota
+       mentre gioca finirebbe per premere quello sbagliato. */
+    const LETTER_SLOTS = [
+        ['M', 'c7-tpa-key'],
+        ['K', 'c7-tpa-key'],
+        ['S', 'c7-tpa-key'],
+        ['P', 'c7-tpa-key c7-tpa-key--foul'],
+        ['G', 'c7-tpa-key c7-tpa-key--game'],
+        ['N', 'c7-tpa-key c7-tpa-key--foul'],
+        ['n', 'c7-tpa-key c7-tpa-key--small'],
+        ['x', 'c7-tpa-key c7-tpa-key--small'],
+        ['p', 'c7-tpa-key c7-tpa-key--small']
+    ];
+
+    function renderPad() {
+        if (!CAN_WRITE) return;
+        const numbers = el('tpaNumbers');
+        const letters = el('tpaLetters');
+        numbers.textContent = '';
+        letters.textContent = '';
+        const available = state.buttons || [];
+        const has = (b) => available.indexOf(b) >= 0;
+
+        /* Le bilie: una casella per ogni numero possibile in questa
+           disciplina. Quando non se ne puo' premere nessuna il blocco sparisce
+           del tutto, invece di lasciare una griglia spenta. */
+        const anyNumber = available.some((b) => /^\d+$/.test(b));
+        numbers.style.display = anyNumber ? '' : 'none';
+        if (anyNumber) {
+            for (let n = 0; n <= state.game_type; n++) {
+                numbers.appendChild(key(String(n), String(n), 'c7-tpa-key', has(String(n))));
+            }
+        }
+
+        LETTER_SLOTS.forEach(([command, className]) => {
+            letters.appendChild(key(command, command, className, has(command)));
+        });
+
+        if (has('K-in')) {
+            letters.appendChild(key('K-in', '↺ ' + KICK_IN, 'c7-tpa-key c7-tpa-key--wide', true));
+        }
+        if (has('runout')) {
+            const on = state.current.annotation.run_out === true;
+            letters.appendChild(key(
+                'runout',
+                on ? '✓ ' + RUNOUT_ON : RUNOUT_ASK,
+                'c7-tpa-key c7-tpa-key--wide' + (on ? ' c7-tpa-key--on' : ''),
+                true
+            ));
+        }
+    }
+
+    function key(command, label, className, enabled) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = className;
+        button.textContent = label;
+        button.disabled = !enabled;
+        if (enabled) {
+            button.addEventListener('click', () => send('press', { command: command }));
+        }
+        return button;
+    }
+
+    function renderSheet() {
+        const host = el('tpaSheet');
+        host.textContent = '';
+        (state.racks || []).forEach((rack) => {
+            const head = document.createElement('div');
+            head.className = 'c7-tpa-sheet__rack';
+            const title = document.createElement('span');
+            title.textContent = LABEL_RACK + ' ' + rack.number;
+            head.appendChild(title);
+            const last = rack.turns[rack.turns.length - 1];
+            if (last && last.score_snapshot) {
+                const snap = last.score_snapshot;
+                const one = snap[1] || snap['1'] || {};
+                const two = snap[2] || snap['2'] || {};
+                const score = document.createElement('span');
+                score.textContent = (one.racks_won || 0) + '–' + (two.racks_won || 0);
+                head.appendChild(score);
+            }
+            host.appendChild(head);
+
+            rack.turns.forEach((turn) => {
+                const row = document.createElement('div');
+                row.className = 'c7-tpa-sheet__turn' + (turn.winning ? ' c7-tpa-sheet__turn--won' : '');
+                const seat = document.createElement('span');
+                seat.className = 'c7-tpa-sheet__seat';
+                seat.textContent = turn.player;
+                const who = document.createElement('span');
+                who.className = 'c7-tpa-sheet__who';
+                who.textContent = seatOf(turn.player).name || ('#' + turn.player);
+                const note = document.createElement('span');
+                note.className = 'c7-tpa-sheet__note';
+                note.appendChild(document.createTextNode(turnLabel(turn)));
+                row.appendChild(seat);
+                row.appendChild(who);
+                row.appendChild(note);
+                host.appendChild(row);
+            });
+        });
+    }
+
+    function turnLabel(turn) {
+        const note = turn.annotation;
+        let text = '';
+        if (turn.is_break && note.break_potted !== null && note.break_potted !== undefined) {
+            text += note.break_potted + '/';
+        }
+        text += (note.total_potted === null || note.total_potted === undefined) ? '–' : note.total_potted;
+        if (turn.main_note) text += ' ' + turn.main_note.replace('^', '');
+        if (turn.secondary_note) text += ' ' + turn.secondary_note;
+        if (note.first_shot_kick_in) text += ' ↺';
+        if (turn.winning) text += ' ●';
+        return text;
+    }
+
+    function render() {
+        renderPlayers();
+        renderBoxes();
+        renderPad();
+        renderSheet();
+        const undo = el('tpaUndo');
+        if (undo) undo.disabled = !state.commands;
+    }
+
+    let busy = false;
+    function send(action, body) {
+        if (busy) return;
+        busy = true;
+        const url = '/match/matches/' + MATCH_ID + '/tpa/' + (action === 'undo' ? 'undo' : 'press');
+        fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken() },
+            body: JSON.stringify(body || {})
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.success && data.state) {
+                    state = data.state;
+                    render();
+                } else {
+                    showError(data.message || LABEL_ERROR);
+                }
+            })
+            .catch(() => showError(LABEL_ERROR))
+            .finally(() => { busy = false; });
+    }
+
+    const undoButton = el('tpaUndo');
+    if (undoButton) undoButton.addEventListener('click', () => send('undo', {}));
+
+    /* Chi guarda senza compilare rilegge lo stato ogni tanto: e' l'unico modo
+       per vedere il referto crescere dall'altro capo del tavolo. */
+    if (!CAN_WRITE && !state.closed) {
+        setInterval(function () {
+            fetch('/match/matches/' + MATCH_ID + '/tpa/state')
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.success && data.state) { state = data.state; render(); }
+                })
+                .catch(() => {});
+        }, 8000);
+    }
+
+    render();
+})();
+</script>
+{% endif %}
+{% endblock %}

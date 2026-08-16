@@ -1496,3 +1496,140 @@ a.c7-bracket__node.is-live:hover { background: var(--c7-accent); filter: brightn
   flex: 1;
   border-top: 1px solid var(--c7-line);
 }
+
+/* --------------------------------------------------------------------------
+   Referto TPA (ADR-044)
+   Il referto cartaceo Accu-Stats ha due caselle per turno: una bianca, dove si
+   scrive quante bilie e perche' il turno e' finito, e una ombreggiata, dove si
+   scrivono solo i falli. Le due superfici del design system dicono gia' la
+   stessa cosa — `--c7-card` e `--c7-sunken` — quindi chi sa compilare il
+   foglio ritrova il foglio, e chi conosce l'app ritrova l'app.
+   -------------------------------------------------------------------------- */
+
+.c7-tpa { display: grid; gap: var(--c7-gap); }
+
+/* --- La riga del giocatore -------------------------------------------- */
+
+.c7-tpa-player {
+  display: grid; grid-template-columns: 1fr auto auto;
+  gap: var(--c7-gap); align-items: center;
+  padding: 14px var(--c7-pad-card);
+  border-radius: var(--c7-r-card);
+  background: var(--c7-card); color: var(--c7-ink);
+  border: 1.5px solid transparent;
+  width: 100%; text-align: left; font-family: inherit;
+}
+/* Chi e' al tavolo adesso. E' l'unica cosa che si deve capire da lontano. */
+.c7-tpa-player--active { background: var(--c7-accent); color: var(--c7-accent-ink); }
+/* Passare il tavolo si fa toccando l'altro: il bordo dice che e' toccabile. */
+button.c7-tpa-player:not(:disabled) { cursor: pointer; border-color: var(--c7-line); }
+button.c7-tpa-player:not(:disabled):hover { background: var(--c7-line-soft); }
+button.c7-tpa-player:disabled { cursor: default; }
+
+.c7-tpa-player__name {
+  display: block; font-size: 15px; font-weight: 800; letter-spacing: -.01em;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.c7-tpa-player__meta {
+  display: block; margin-top: 2px;
+  font-family: var(--c7-font-mono); font-size: 11px; font-weight: 600;
+  color: var(--c7-ink-muted); font-variant-numeric: tabular-nums;
+}
+.c7-tpa-player--active .c7-tpa-player__meta { color: var(--c7-accent-dim); }
+
+/* Il TPA e' la cifra protagonista: Manrope, non mono. */
+.c7-tpa-player__tpa {
+  font-size: 26px; font-weight: 800; letter-spacing: -.03em;
+  font-variant-numeric: tabular-nums; line-height: 1;
+}
+.c7-tpa-player__racks {
+  min-width: 34px; height: 34px; border-radius: 50%;
+  background: var(--c7-bg); color: var(--c7-ink);
+  display: grid; place-items: center;
+  font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums;
+}
+.c7-tpa-player--active .c7-tpa-player__racks { background: var(--c7-accent-bright); color: var(--c7-ink); }
+
+/* --- Le due caselle del turno ----------------------------------------- */
+
+.c7-tpa-boxes { display: grid; grid-template-columns: 1fr 74px; gap: 8px; }
+.c7-tpa-box {
+  min-height: 62px; border-radius: var(--c7-r-control); padding: 8px;
+  /* In riga e allineate alla base, come si scrive a mano nella casella:
+     le bilie della spaccata in apice, poi il totale, poi la lettera. */
+  display: flex; align-items: baseline; justify-content: center; gap: 3px;
+  font-size: 22px; font-weight: 800; letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums;
+}
+.c7-tpa-box--white { background: var(--c7-card); color: var(--c7-ink); }
+.c7-tpa-box--shaded { background: var(--c7-sunken); color: var(--c7-ink-soft); }
+.c7-tpa-box__break { font-size: 12px; align-self: flex-start; color: var(--c7-ink-muted); }
+.c7-tpa-box sup { font-size: 12px; }
+/* Il turno che chiude il rack: cerchiato, come sul foglio. */
+.c7-tpa-box--won { box-shadow: inset 0 0 0 2px var(--c7-ok); }
+.c7-tpa-box__hint { font-size: 12px; font-weight: 700; color: var(--c7-ink-faint); }
+
+/* --- Il tastierino ----------------------------------------------------- */
+
+.c7-tpa-pad { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.c7-tpa-pad--letters { grid-template-columns: repeat(3, 1fr); }
+.c7-tpa-key {
+  height: var(--c7-touch); border: 0; border-radius: var(--c7-r-control);
+  background: var(--c7-card); color: var(--c7-ink);
+  font-family: inherit; font-size: 17px; font-weight: 800;
+  font-variant-numeric: tabular-nums; cursor: pointer;
+}
+.c7-tpa-key:hover { background: var(--c7-line-soft); }
+.c7-tpa-key:disabled { background: var(--c7-sunken); color: var(--c7-ink-faint); cursor: not-allowed; }
+/* I falli stanno nella casella ombreggiata anche sul tastierino. */
+.c7-tpa-key--foul { background: var(--c7-sunken); }
+.c7-tpa-key--foul:hover { background: var(--c7-line); }
+/* Chiudere il rack e' la conferma conclusiva del gesto: verde. */
+.c7-tpa-key--game { background: var(--c7-ok-bg); color: var(--c7-ok-ink); }
+.c7-tpa-key--game:hover { background: var(--c7-ok-bg); filter: brightness(.97); }
+/* Le annotazioni piccole del foglio restano piccole anche qui. */
+.c7-tpa-key--small { font-size: 15px; color: var(--c7-ink-muted); }
+.c7-tpa-key--wide { grid-column: 1 / -1; height: 46px; font-size: 14px; }
+.c7-tpa-key--on { background: var(--c7-ok); color: var(--c7-on-ink); }
+.c7-tpa-key--on:hover { background: var(--c7-ok); filter: brightness(1.06); }
+
+.c7-tpa-legend {
+  font-size: 12px; font-weight: 600; line-height: 1.5; color: var(--c7-ink-muted);
+}
+.c7-tpa-legend b { color: var(--c7-ink-soft); }
+
+/* --- Lo storico dei turni ---------------------------------------------- */
+
+.c7-tpa-sheet { border-radius: var(--c7-r-card); background: var(--c7-card); overflow: hidden; }
+.c7-tpa-sheet__rack {
+  padding: 8px var(--c7-pad-card);
+  background: var(--c7-sunken);
+  font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--c7-ink-muted);
+  display: flex; justify-content: space-between; gap: 10px;
+}
+.c7-tpa-sheet__turn {
+  padding: 10px var(--c7-pad-card);
+  display: grid; grid-template-columns: 22px 1fr auto;
+  gap: 10px; align-items: center;
+  border-bottom: 1px solid var(--c7-line-soft);
+}
+.c7-tpa-sheet__turn:last-child { border-bottom: 0; }
+.c7-tpa-sheet__seat {
+  width: 22px; height: 22px; border-radius: 50%; background: var(--c7-bg);
+  display: grid; place-items: center;
+  font-size: 10px; font-weight: 800; color: var(--c7-ink-muted);
+}
+.c7-tpa-sheet__who { font-size: 13px; font-weight: 700; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.c7-tpa-sheet__note {
+  font-family: var(--c7-font-mono); font-size: 13px; font-weight: 700;
+  color: var(--c7-ink-soft); font-variant-numeric: tabular-nums;
+}
+.c7-tpa-sheet__turn--won .c7-tpa-sheet__note { color: var(--c7-ok); }
+
+/* Da 640px in su le due colonne del referto stanno affiancate. */
+@media (min-width: 640px) {
+  .c7-tpa-pad { grid-template-columns: repeat(6, 1fr); }
+  .c7-tpa-key { height: 54px; font-size: 18px; }
+}

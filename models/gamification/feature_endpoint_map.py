@@ -27,6 +27,7 @@ FEATURE_PRIMARY_ENDPOINT: dict[str, str] = {
     "create_match_community": "individual_match.dashboard",
     "manage_availability": "individual_match.manage_availability",
     "match_proposals": "individual_match.proposal_list",
+    "tpa_scoresheet": "individual_match.tpa_referto",
     # Tornei e gare
     "create_campionato": "admin.campionato.create_campionato",
     "create_gara": "admin.competition.create_gara_standalone",

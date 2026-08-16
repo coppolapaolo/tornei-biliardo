@@ -41,6 +41,7 @@ sections:
       - seguire_la_gara
       - tabellone
       - partite_amichevoli
+      - referto_tpa
       - sale_e_disponibilita
       - challenge
       - playoff

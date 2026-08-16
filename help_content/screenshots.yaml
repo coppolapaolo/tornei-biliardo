@@ -221,6 +221,22 @@ shots:
     as: Marco Rossi
     caption: "Le statistiche delle partite amichevoli, separate da quelle delle gare."
 
+  # Referto TPA (ADR-044): le figure mancano ancora. Il dataset c'e' gia'
+  # (`_create_tpa_referto` in seed_demo.py crea il match #1 con un primo rack
+  # annotato); per aggiungerle, rimettere qui le due voci e ricatturare:
+  #
+  #   - id: referto-tpa
+  #     route: /match/matches/1/tpa
+  #     as: Marco Rossi
+  #     caption: "Il referto TPA durante la partita: i due giocatori con il loro TPA, la casella del turno e il tastierino."
+  #     viewports: [mobile, desktop]
+  #
+  #   - id: referto-tpa-foglio
+  #     route: /match/matches/1/tpa
+  #     as: Marco Rossi
+  #     caption: "Il foglio del referto: ogni riga e' una visita al tavolo, con le bilie imbucate e il motivo per cui il turno e' finito."
+  #     clip: ".c7-tpa-sheet"
+
   - id: richieste-gestore
     route: /player/my_venue_requests
     as: Marco Rossi

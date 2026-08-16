@@ -51,8 +51,15 @@ def match_detail(match_id):
             return redirect(url_for("individual_match.match_list"))
 
         from flask import render_template
+        from models.tpa.services import TpaRefertoService
 
-        return render_template("individual_match/match_detail.html", match=match)
+        # Il referto TPA si propone solo dove si puo' davvero aprire: il perche'
+        # lo sa il servizio, e la pagina del referto lo ripete per esteso.
+        return render_template(
+            "individual_match/match_detail.html",
+            match=match,
+            tpa_can_open=TpaRefertoService.can_open(match, current_user.id),
+        )
 
     except Exception as e:
         logger.error("Error loading match: %s", e, exc_info=True)
