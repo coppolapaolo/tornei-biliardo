@@ -54,22 +54,31 @@ def test_unmapped_feature_is_always_proponibile(app, production_mode):
         assert feature_visible_to_user("priority_invites", director) is True
 
 
-def test_mapped_feature_hidden_when_endpoint_not_allowlisted(app, production_mode):
+def test_mapped_feature_hidden_when_endpoint_not_allowlisted(
+    app, production_mode, monkeypatch
+):
     """Feature mappata a endpoint non in ENDPOINT_ROLES → suppressa per non-admin.
 
-    Caso reale: ``do_challenge`` mappa a ``challenge.challenge_catalog``, non
-    ancora in allowlist (feature challenge admin-only in prod). Senza questo
-    filtro la gamification proporrebbe a un director un nudge che il navbar
-    nasconde e l'URL diretto restituisce 404.
+    Senza questo filtro la gamification proporrebbe un nudge che il navbar
+    nasconde e che via URL diretto risponde 404.
+
+    L'esempio è **sintetico di proposito**. Prima usava ``do_challenge``, che
+    puntava a un catalogo drill non ancora allowlistato: quando il catalogo si
+    è acceso (2026-08-16) il test è caduto pur essendo l'invariante intatta.
+    Una mappatura finta verso un endpoint realmente non classificato
+    (``admin.kpi.index``) verifica la regola senza dipendere da quali feature
+    siano al buio in questo momento.
     """
+    monkeypatch.setitem(FEATURE_PRIMARY_ENDPOINT, "feature_al_buio", "admin.kpi.index")
+
     with app.app_context():
         director = FakeUser(is_authenticated=True, is_director=True)
         player = FakeUser(is_authenticated=True, is_player=True)
         anon = FakeUser()
 
-        assert feature_visible_to_user("do_challenge", director) is False
-        assert feature_visible_to_user("do_challenge", player) is False
-        assert feature_visible_to_user("do_challenge", anon) is False
+        assert feature_visible_to_user("feature_al_buio", director) is False
+        assert feature_visible_to_user("feature_al_buio", player) is False
+        assert feature_visible_to_user("feature_al_buio", anon) is False
 
 
 def test_mapped_feature_visible_when_endpoint_allowlisted(app, production_mode):
@@ -83,6 +92,10 @@ def test_mapped_feature_visible_when_endpoint_allowlisted(app, production_mode):
         # player e director (ADR-028: feature match individuali attivata).
         assert feature_visible_to_user("create_match_direct", director) is True
         assert feature_visible_to_user("create_match_direct", player) is True
+        # do_challenge → challenge.challenge_catalog, acceso il 2026-08-16:
+        # ora il nudge sui drill può davvero portare da qualche parte.
+        assert feature_visible_to_user("do_challenge", director) is True
+        assert feature_visible_to_user("do_challenge", player) is True
 
 
 def test_admin_sees_every_mapped_feature(app, production_mode):
