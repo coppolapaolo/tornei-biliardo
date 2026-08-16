@@ -32,7 +32,6 @@ class _FakeUser:
         # Testo libero del profilo: non deve influenzare il sorteggio.
         self.squadra = squadra
         self.elo_rating = None
-        self.fargo_rating = None
 
 
 class _FakeInscription:

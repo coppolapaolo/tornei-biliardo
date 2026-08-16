@@ -141,12 +141,18 @@ def profile():
 
     # Privacy context for template consistency (own profile always has full access)
     from models.user.privacy_service import PrivacyService
+    from models.tpa.stats_service import TpaStatsService
 
     privacy = PrivacyService.get_privacy_settings(current_user.id)
+
+    # TPA: compare a chi ha sbloccato il referto oppure a chi ha gia' giocato
+    # una partita in cui qualcun altro lo teneva. `None` = qui non ci va.
+    tpa_stats = TpaStatsService.profile_summary(current_user.id, user=current_user)
 
     return render_template(
         "player/profile.html",
         user=current_user,
+        tpa_stats=tpa_stats,
         inscriptions=inscriptions,
         matches=recent_matches,
         classifications=classifications,
@@ -258,9 +264,12 @@ def view_profile(user_id):
     # componente non sa leggere: le righe uscivano vuote, senza errore.
     training = _training_overview(user.id)
 
+    from models.tpa.stats_service import TpaStatsService
+
     return render_template(
         "player/profile.html",
         user=user,
+        tpa_stats=TpaStatsService.profile_summary(user.id, user=user),
         inscriptions=visible_inscriptions,
         matches=recent_matches,
         stats=stats,

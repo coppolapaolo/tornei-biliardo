@@ -68,10 +68,10 @@ def test_effective_category_defaults_to_D_without_data(db_session):
 
 def test_effective_category_derived_from_rating(db_session):
     user = _user()
-    # Nessuna categoria assegnata, ma un rating Fargo alto → categoria derivata.
-    RatingService.update_player_rating(user.id, RatingSystem.FARGO, 700)
+    # Nessuna categoria assegnata, ma un Elo alto → categoria derivata.
+    RatingService.update_player_rating(user.id, RatingSystem.ELO, 1900)
     derived = RatingService.get_player_effective_category(user.id)
-    # Fargo 700 è "Advanced" → A (vedi get_category_equivalent).
+    # Elo 1900 è "Advanced" → A (vedi get_category_equivalent).
     assert derived == CategoryLevel.A
 
 
@@ -180,7 +180,7 @@ def test_leaderboard_and_statistics_smoke(db_session):
     user = _user()
     admin = _user()
     CategoryService.assign_category(user.id, CategoryLevel.B, assigned_by_id=admin.id)
-    RatingService.update_player_rating(user.id, RatingSystem.FARGO, 500)
+    RatingService.update_player_rating(user.id, RatingSystem.ELO, 1500)
 
     lb = RatingService.get_public_leaderboard()
     assert isinstance(lb, dict)

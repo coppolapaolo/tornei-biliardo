@@ -204,7 +204,6 @@ def _collect_user_data(user_id: int) -> Dict[str, Any]:
         "email": user.email,
         "phone": user.phone,
         "role": user.role,
-        "fargo_rating": user.fargo_rating,
         "elo_rating": user.elo_rating,
         "created_at": serialize_date(user.created_at) if user.created_at else None,
     }

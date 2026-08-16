@@ -560,6 +560,8 @@ pytest tests/new/unit/ -n auto && pytest tests/new/integration/ -n 4
 | `request.form.get("next")` passato a `redirect()` | `utils.safe_redirect.safe_next_url` — altrimenti è un open redirect |
 | Disciplina come stringa scritta a mano (`"palla_8"`, `"8_ball"`) | `Discipline.*.value` da `models/status_enum.py` — **unico** vocabolario; per dati storici/esterni `Discipline.normalize()` (torna `None` sull'ignoto). Il nome mostrato è `display_name`, tradotto. Presidiato da `test_discipline_single_vocabulary.py` |
 | Funzione visibile all'utente cambiata senza toccare `/aiuto` | Invoca la skill `help-docs`: la guida non si rompe, **invecchia** — continua a descrivere un'app che non esiste più. Contenuti in `help_content/`, schermate rigenerate da `scripts/help_docs/` |
+| TPA/errori calcolati fuori da `models/tpa/engine.py` | Le regole Accu-Stats stanno **solo** li'. Il resto persiste comandi e li rigioca (ADR-044) |
+| Rack segnati a mano su un match con referto TPA aperto | Il punteggio **discende** dal referto: due segnapunti si contraddicono al primo tocco (ADR-044) |
 | Schermata della guida ritoccata a mano in un editor | Le immagini si **generano** dall'app (`capture_screenshots.py`) sul dataset di `seed_demo.py`: una ritoccata sopravvive al cambio di interfaccia e diventa una bugia permanente |
 
 ---
@@ -578,6 +580,7 @@ pytest tests/new/unit/ -n auto && pytest tests/new/integration/ -n 4
 - **[docs/reference/UI_CONVENTIONS.md](docs/reference/UI_CONVENTIONS.md)**: UI conventions (icons, colors, design decisions)
 - **[docs/reference/NAMING_CONVENTIONS.md](docs/reference/NAMING_CONVENTIONS.md)**: Naming conventions (italian plurals, italian/english split, URL, test, DB columns)
 - **[help_content/](help_content/)**: contenuti del mini-sito di aiuto per gli utenti (`/aiuto`) — YAML, non HTML. `it/pages/*.yaml` le pagine, `it/hints.yaml` i micro-aiuti **già pronti per la futura interfaccia adattiva** (fumetti "?" e presentazione alla prima visita), `screenshots.yaml` il manifest delle catture. Si aggiorna con la skill `help-docs`; le schermate si rigenerano con `scripts/help_docs/seed_demo.py` + `capture_screenshots.py`
+- **[models/tpa/CLAUDE.md](models/tpa/CLAUDE.md)**: referto TPA (motore Accu-Stats, registro dei comandi, sblocco)
 - **[docs/adr/](docs/adr/)**: Architecture Decision Records (ADR)
 - **[docs/adr/ADR-027-round-level-configuration-enforcement.md](docs/adr/ADR-027-round-level-configuration-enforcement.md)**: Override per turno persistiti server-side + uso obbligatorio di `Distance` VO nello scoring
 - **[docs/adr/ADR-028-production-endpoint-allowlist.md](docs/adr/ADR-028-production-endpoint-allowlist.md)**: allowlist endpoint deny-by-default in produzione, matrice ruoli (anonimo/player/director) con admin bypass — vedi anche `docs/reference/PRODUCTION_INVENTORY.md`
@@ -588,6 +591,7 @@ pytest tests/new/unit/ -n auto && pytest tests/new/integration/ -n 4
 - **[docs/adr/ADR-041-grantable-roles-and-delegation.md](docs/adr/ADR-041-grantable-roles-and-delegation.md)**: ruoli concedibili ortogonali a `user.role` (`RoleGrant`), delega a catena come proprietà **per-ruolo** (`self_propagating`), revoca riservata ad admin perché unico punto di contenimento
 - **[docs/adr/ADR-042-certified-exam.md](docs/adr/ADR-042-certified-exam.md)**: l'esame è una sequenza di drill con esito **booleano**, certificato solo di persona; entità gemelle di `MatchProposal` e non astrazione condivisa; `max_score` per-esame su `ExamChallenge`
 - **[docs/adr/ADR-043-reader-timezone.md](docs/adr/ADR-043-reader-timezone.md)**: gli orari sono nel fuso di **chi legge**, dedotto dal browser e **salvato** su `User.timezone` (senza colonna, promemoria ed email non lo saprebbero); nessun backfill, perché «non lo so» e «è Roma» sono cose diverse
+- **[docs/adr/ADR-044-tpa-scoresheet.md](docs/adr/ADR-044-tpa-scoresheet.md)**: referto TPA sui match singoli — funzione da sbloccare, punteggio **derivato** dal referto, registro dei comandi come unica verita', motore verificato per differenza contro l'app JS di riferimento
 - **[docs/usecases/esami.md](docs/usecases/esami.md)**: i sette journey degli esami e del ruolo esaminatore
 
 ---

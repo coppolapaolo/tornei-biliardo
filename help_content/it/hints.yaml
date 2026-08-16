@@ -304,6 +304,39 @@ hints:
     section: punti_posizione
 
 
+  # --- Referto TPA (ADR-044) -----------------------------------------------
+  - id: referto.tastierino
+    label: "Il tastierino"
+    short: "Prima quante bilie sono entrate, poi perché il turno è finito. I tasti che ora non hanno senso sono spenti."
+    anchor: referto-tastierino
+    screens: [individual_match.tpa_referto]
+    page: referto_tpa
+    section: come-si-compila
+
+  - id: referto.passa_tavolo
+    label: "Passare il tavolo"
+    short: "Tocca il nome dell'altro giocatore: chiude il tuo turno e comincia il suo."
+    anchor: referto-passa-tavolo
+    screens: [individual_match.tpa_referto]
+    page: referto_tpa
+    section: come-si-compila
+
+  - id: referto.annotazioni_piccole
+    label: "n, x, p"
+    short: "Le tre annotazioni che evitano di addebitare un errore a chi non l'ha commesso: tiro facile, difesa premeditata, push out."
+    anchor: referto-annotazioni-piccole
+    screens: [individual_match.tpa_referto]
+    page: referto_tpa
+    section: annotazioni-piccole
+
+  - id: referto.annulla
+    label: "Annulla l'ultimo tocco"
+    short: "Torna indietro di un passo, quante volte vuoi. Riporta indietro anche i rack già assegnati."
+    anchor: referto-annulla
+    screens: [individual_match.tpa_referto]
+    page: referto_tpa
+    section: come-si-compila
+
 tours:
   - screen: dashboard.dashboard
     title: "La tua home"
@@ -350,3 +383,13 @@ tours:
       - hint: gara.classifica_sistema
       - title: "Se scegli un tabellone"
         text: "Con eliminazione diretta e doppio KO metà delle domande sparisce — su un tabellone non avrebbero effetto — e compare il riquadro «Opzioni del tabellone»."
+
+  - screen: individual_match.tpa_referto
+    title: "Il referto TPA"
+    intro: "Qui annoti tutta la partita, non solo chi vince i rack. Un turno per volta: quante bilie e perché è finito."
+    audience: [giocatore]
+    steps:
+      - hint: referto.tastierino
+      - hint: referto.passa_tavolo
+      - hint: referto.annotazioni_piccole
+      - hint: referto.annulla

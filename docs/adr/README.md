@@ -54,6 +54,10 @@ Crea un ADR quando:
 | ADR-038 | [Il tabellone è un dato, non una ricostruzione](ADR-038-bracket-persistence.md) | Accepted | 2026-08-15 |
 | ADR-039 | [Squadre: due livelli, e un sorteggio che rinvia i derby](ADR-039-team-separation-in-the-draw.md) | Accepted | 2026-08-15 |
 | ADR-040 | [Classifica per posizione: pari merito voluti](ADR-040-position-classification-ties.md) | Accepted | 2026-08-15 |
+| ADR-041 | [Ruoli concedibili: ortogonali a `user.role`, e delegabili a catena](ADR-041-grantable-roles-and-delegation.md) | Accepted | 2026-08-15 |
+| ADR-042 | [L'esame e' un evento di persona, e l'esito e' un si' o un no](ADR-042-certified-exam.md) | Accepted | 2026-08-15 |
+| ADR-043 | [L'orario e' quello di chi legge, e il fuso si deduce senza chiederlo](ADR-043-reader-timezone.md) | Accepted | 2026-08-15 |
+| ADR-044 | [Il referto TPA: si annota il gioco, non il punteggio](ADR-044-tpa-scoresheet.md) | Accepted | 2026-08-16 |
 
 ## Come Creare un Nuovo ADR
 

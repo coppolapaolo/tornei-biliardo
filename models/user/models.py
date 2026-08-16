@@ -58,7 +58,6 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
     phone = db.Column(EncryptedString(100), nullable=True)  # Encrypted personal data
 
     # Rating systems (player skill metrics)
-    fargo_rating = db.Column(db.Integer, nullable=True)  # Fargo rating
     elo_rating = db.Column(db.Integer, nullable=True)  # Elo rating
 
     # per utenti cancellati

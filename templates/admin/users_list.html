@@ -111,7 +111,6 @@
                         <th class="sortable" data-sort="text">{{ _("Ruolo") }} <i class="fas fa-sort text-muted"></i></th>
                         <th class="sortable" data-sort="number">{{ _("Verificato") }} <i class="fas fa-sort text-muted"></i></th>
                         <th class="sortable" data-sort="number">{{ _("ELO") }} <i class="fas fa-sort text-muted"></i></th>
-                        <th class="sortable" data-sort="number">{{ _("Fargo") }} <i class="fas fa-sort text-muted"></i></th>
                         <th>{{ _("Gamification") }}</th>
                         <th>{{ _("Richiesta") }}</th>
                         <th class="sortable" data-sort="number">{{ _("Iscrizioni") }} <i class="fas fa-sort text-muted"></i></th>
@@ -157,9 +156,6 @@
                         </td>
                         <td data-label="{{ _("ELO") }}" data-sort-value="{{ user.elo_rating if user.elo_rating is not none else -1 }}">
                             {{ user.elo_rating if user.elo_rating is not none else '-' }}
-                        </td>
-                        <td data-label="{{ _("Fargo") }}" data-sort-value="{{ user.fargo_rating if user.fargo_rating is not none else -1 }}">
-                            {{ user.fargo_rating if user.fargo_rating is not none else '-' }}
                         </td>
                         <td data-label="{{ _("Gamification") }}">
                             {% if user.gamification_override %}
