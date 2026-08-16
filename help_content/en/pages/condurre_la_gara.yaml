@@ -26,10 +26,11 @@ blocks:
     items:
       - title: "Close registrations"
         text: "Check the list matches who is actually in the venue."
-      - title: "Tap «Start first round»"
+      - title: "Tap «Start First Round»"
         text: >-
           The app draws the pairs and creates the matches. Every player gets a
-          notification with their opponent's name.
+          notification with their opponent's name. In bracket competitions the
+          same button is called **Draw the bracket**: see the box below.
       - title: "Assign the tables"
         text: >-
           If the venue has tables configured, the app spreads them across the
@@ -43,6 +44,18 @@ blocks:
       The first-round draw is recorded: if anyone disputes a pairing, it is
       possible to reconstruct how it came out. Cancelling the first round
       deletes the draw, and restarting it means genuinely drawing again.
+
+  - type: note
+    tone: warning
+    title: "In bracket competitions the button is «Draw the bracket»"
+    text: >-
+      With knockout and double elimination you do not start a round: you draw
+      the bracket, and that one action settles everything. Registrations close,
+      teams freeze and every player's path to the final is fixed. The app
+      reminds you with a confirmation before going ahead. The number of rounds,
+      which you did not set at creation time, is decided now on the entrants
+      present: until this moment the competition card showed it as an
+      **estimate**. See [The bracket](/aiuto/giocare/tabellone).
 
   - type: heading
     id: durante
@@ -134,6 +147,12 @@ blocks:
       explained in [When the number of players is
       odd](/aiuto/approfondimenti/numero_dispari).
 
+  - type: text
+    text: >-
+      In bracket competitions that rule is neither chosen nor needed: whoever is
+      left over goes straight through to the next round, and the bracket is
+      built that way from the start.
+
   - type: heading
     id: chiudere
     title: "Closing the competition"
@@ -158,7 +177,9 @@ blocks:
       - q: "The «Start next round» button is greyed out."
         a: "At least one match is still open. In the Rounds view, the open matches are the ones without the «Finished» label."
       - q: "A player leaves halfway through the competition."
-        a: "Record a forfeit on the match in progress. For the following rounds, the rule you chose at creation decides whether they stay in the pairings (losing by walkover) or drop out."
+        a: "Record a forfeit on the match in progress. For the following rounds, the rule you chose at creation decides whether they stay in the pairings (losing by walkover) or drop out. In bracket competitions there is nothing to choose: whoever withdraws lets their opponent through by walkover, and the bracket stays as it is."
+      - q: "Why does my knockout not say «Start First Round»?"
+        a: "Because the action there is a different one: the button says «Draw the bracket». Drawing the bracket closes registrations and fixes everybody's path to the final, so the name says what actually happens."
       - q: "Can I run a competition and play in it?"
         a: "No: a director cannot register for the competition they run. If you want to play, add a co-director to run the evening."
       - q: "I cancelled a round by mistake."

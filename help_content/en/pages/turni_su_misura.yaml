@@ -31,7 +31,10 @@ blocks:
           Short qualifying rounds and a longer final. It is the simplest way of
           giving the last round weight without lengthening the whole evening.
       - name: "Exact number of racks"
-        text: "It can be asked for in some rounds only, if the standings need it."
+        text: >-
+          It can be asked for in some rounds only, if the standings need it. It
+          does not appear in bracket competitions: there only who goes through
+          matters, and that holds for every round without exception.
       - name: "Set play"
         text: "Typically kept for the last round."
 

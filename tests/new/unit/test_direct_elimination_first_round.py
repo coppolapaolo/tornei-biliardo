@@ -197,7 +197,7 @@ class TestFirstRoundPolicy:
         assert sorted(seeded) == [1, 2, 3, 4]
 
     def test_il_sorteggio_per_rating_segue_l_elo(self):
-        """L'Elo e' l'unico rating che guida il sorteggio: il piu' alto e' testa di serie."""
+        """L'Elo e' l'unico rating del sorteggio: il piu' alto e' testa di serie."""
         users = {
             1: _FakeUser(elo_rating=1000),
             2: _FakeUser(elo_rating=900),

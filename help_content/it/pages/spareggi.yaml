@@ -88,7 +88,13 @@ blocks:
 
   - type: list
     items:
-      - "**Gare a tabellone**: il percorso stabilisce già l'ordine, non ci sono pari merito da sciogliere."
+      - >-
+        **Gare a tabellone**: l'opzione non viene nemmeno chiesta alla
+        creazione. Lì i pari merito ci sono — i due semifinalisti sconfitti sono
+        entrambi terzi, i quattro quartifinalisti tutti quinti — ma sono il
+        risultato voluto, non un'ambiguità: il percorso è già la classifica. Se
+        vuoi separare i due terzi, la strada è la **finalina per il 3°/4°
+        posto**, da prevedere alla creazione.
       - "**Fuori dalle posizioni indicate**: i pari merito restano, due giocatori condividono la posizione e la successiva viene saltata."
       - "**Se lo spareggio è disattivato**: la classifica resta con i pari merito così come sono."
 

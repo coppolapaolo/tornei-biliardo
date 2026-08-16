@@ -202,14 +202,14 @@ function openCreateChallengeModal() {
 }
 
 function challengeThumb(url) {
-    const box = 'width:64px;height:48px;border-radius:var(--c7-r-chip);overflow:hidden;'
-              + 'background:var(--c7-sunken);display:grid;place-items:center;'
-              + 'color:var(--c7-ink-faint);flex-shrink:0';
+    // Il riquadro e' `.c7-diagram` come in Jinja: il diagramma non si ritaglia
+    // (vedi ADR-044), e la regola sta nel tema invece che qui.
+    const box = 'width:64px;height:48px;border-radius:var(--c7-r-chip)';
     if (!url) {
-        return `<span style="${box}"><i class="fas fa-bullseye"></i></span>`;
+        return `<span class="c7-diagram" style="${box}"><i class="fas fa-bullseye"></i></span>`;
     }
-    return `<span style="${box}"><img src="${escapeHtml(url)}" alt=""
-              style="width:100%;height:100%;object-fit:cover"
+    return `<span class="c7-diagram" style="${box}"><img class="c7-diagram__img"
+              src="${escapeHtml(url)}" alt=""
               onerror="this.replaceWith(Object.assign(document.createElement('i'),{className:'fas fa-bullseye'}))"></span>`;
 }
 

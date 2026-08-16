@@ -48,23 +48,35 @@ def _challenge(pass_fail: bool = False) -> Challenge:
 
 
 def _exam_with_challenges(owner: User, specs) -> tuple[Exam, list[ExamChallenge]]:
-    """``specs``: lista di ``(pass_fail, max_score)`` nell'ordine voluto."""
+    """``specs``: lista di ``(pass_fail, max_score)``, o ``(…, max_attempts)``."""
     exam = Exam(name=f"Esame {uuid.uuid4().hex[:6]}", examiner_id=owner.id)
     db.session.add(exam)
     db.session.flush()
 
     exam_challenges = []
-    for index, (pass_fail, max_score) in enumerate(specs, start=1):
+    for index, spec in enumerate(specs, start=1):
+        pass_fail, max_score = spec[0], spec[1]
+        max_attempts = spec[2] if len(spec) > 2 else 1
         exam_challenge = ExamChallenge(
             exam_id=exam.id,
             challenge_id=_challenge(pass_fail).id,
             order=index,
             max_score=max_score,
+            max_attempts=max_attempts,
         )
         db.session.add(exam_challenge)
         exam_challenges.append(exam_challenge)
     db.session.flush()
     return exam, exam_challenges
+
+
+def _slots(attempt: ExamAttempt, exam_challenge: ExamChallenge):
+    """I risultati di un drill dentro un tentativo, in ordine di tentativo."""
+    return (
+        attempt.challenge_results.filter_by(exam_challenge_id=exam_challenge.id)
+        .order_by(ExamChallengeResult.attempt_number)
+        .all()
+    )
 
 
 def _attempt(exam: Exam, user: User) -> ExamAttempt:
@@ -275,8 +287,12 @@ def test_is_certified_only_for_completed_certified_attempts(app):
         assert abandoned.passed is None
 
 
-def test_result_is_unique_per_attempt_and_challenge(app):
-    """Un drill non può avere due risultati nello stesso tentativo."""
+def test_result_is_unique_per_attempt_challenge_and_number(app):
+    """Due risultati sullo **stesso** tentativo di drill restano vietati.
+
+    Il vincolo si è allargato per reggere i tentativi ripetuti, non allentato:
+    la coppia (drill, tentativo) resta una sola riga.
+    """
     from sqlalchemy.exc import IntegrityError
 
     with app.app_context():
@@ -287,9 +303,139 @@ def test_result_is_unique_per_attempt_and_challenge(app):
 
         db.session.add(
             ExamChallengeResult(
-                exam_attempt_id=attempt.id, exam_challenge_id=only_one.id
+                exam_attempt_id=attempt.id,
+                exam_challenge_id=only_one.id,
+                attempt_number=1,
             )
         )
         with pytest.raises(IntegrityError):
             db.session.flush()
         db.session.rollback()
+
+
+# ────────────────────────────────────────────────────────────────────────────────
+# Tentativi ripetuti per drill: conta il migliore
+# ────────────────────────────────────────────────────────────────────────────────
+def test_a_drill_gets_one_slot_per_prescribed_attempt(app):
+    """Tre tentativi prescritti, tre righe numerate 1-2-3."""
+    with app.app_context():
+        owner = _user(UserRole.ADMIN.value)
+        player = _user()
+        exam, (drill,) = _exam_with_challenges(owner, [(False, 10, 3)])
+        attempt = _attempt(exam, player)
+
+        assert [s.attempt_number for s in _slots(attempt, drill)] == [1, 2, 3]
+
+
+def test_the_best_attempt_is_the_one_that_counts(app):
+    """6, 8, 7 su un drill da 10 fanno 8 — e il massimo resta 10, non 30.
+
+    È la scelta di fondo: il drill si ripete per migliorare, quindi vale la
+    prova migliore. Contare la somma farebbe pesare un drill a tre tentativi il
+    triplo di uno a tentativo unico, cambiando l'esame senza dirlo.
+    """
+    with app.app_context():
+        owner = _user(UserRole.ADMIN.value)
+        player = _user()
+        exam, (drill,) = _exam_with_challenges(owner, [(False, 10, 3)])
+        attempt = _attempt(exam, player)
+
+        for slot, score in zip(_slots(attempt, drill), (6, 8, 7)):
+            slot.record(score=score)
+        db.session.flush()
+
+        attempt.recompute_scores()
+        assert attempt.total_score == 8
+        assert attempt.max_possible_score == 10
+
+
+def test_a_pass_fail_drill_is_passed_if_any_attempt_passed(app):
+    """Sbagliare la prima e riuscire la seconda vale il punto."""
+    with app.app_context():
+        owner = _user(UserRole.ADMIN.value)
+        player = _user()
+        exam, (drill,) = _exam_with_challenges(owner, [(True, None, 2)])
+        attempt = _attempt(exam, player)
+
+        first, second = _slots(attempt, drill)
+        first.record(score=0, passed=False)
+        second.record(score=1, passed=True)
+        db.session.flush()
+
+        attempt.recompute_scores()
+        assert attempt.total_score == 1
+        assert attempt.max_possible_score == 1
+
+
+def test_slots_still_to_do_do_not_drag_the_best_down(app):
+    """Un tentativo non ancora registrato non è uno zero.
+
+    Vale mentre la sessione è in corso: il punteggio mostrato dopo la prima
+    prova dev'essere quello della prima prova, non una media con dei vuoti.
+    """
+    with app.app_context():
+        owner = _user(UserRole.ADMIN.value)
+        player = _user()
+        exam, (drill,) = _exam_with_challenges(owner, [(False, 10, 3)])
+        attempt = _attempt(exam, player)
+
+        _slots(attempt, drill)[0].record(score=5)
+        db.session.flush()
+
+        attempt.recompute_scores()
+        assert attempt.total_score == 5
+
+
+def test_progress_counts_every_prescribed_attempt(app):
+    """Un drill da tre prove non è svolto dopo la prima.
+
+    L'esame prescrive quante prove servono: fermarsi prima è una sessione
+    incompleta, e la barra deve dirlo invece di segnare 100%.
+    """
+    with app.app_context():
+        owner = _user(UserRole.ADMIN.value)
+        player = _user()
+        exam, (drill,) = _exam_with_challenges(owner, [(False, 10, 3)])
+        attempt = _attempt(exam, player)
+        slots = _slots(attempt, drill)
+
+        slots[0].record(score=4)
+        db.session.flush()
+        progress = attempt.get_progress()
+        assert progress["completed_challenges"] == 0
+        assert progress["completed_attempts"] == 1
+        assert progress["total_attempts"] == 3
+        assert progress["is_complete"] is False
+
+        slots[1].record(score=6)
+        slots[2].record(score=5)
+        db.session.flush()
+        progress = attempt.get_progress()
+        assert progress["completed_challenges"] == 1
+        assert progress["progress_percentage"] == 100
+        assert progress["is_complete"] is True
+
+
+def test_a_single_attempt_per_drill_behaves_exactly_as_before(app):
+    """Il default è 1, e con 1 i conti sono quelli di prima.
+
+    L'esame già composto non cambia di significato: è la condizione perché
+    questa aggiunta non sia una modifica retroattiva.
+    """
+    with app.app_context():
+        owner = _user(UserRole.ADMIN.value)
+        player = _user()
+        exam, (numeric, pass_fail) = _exam_with_challenges(
+            owner, [(False, 10), (True, None)]
+        )
+        assert numeric.max_attempts == 1
+
+        attempt = _attempt(exam, player)
+        _slots(attempt, numeric)[0].record(score=8)
+        _slots(attempt, pass_fail)[0].record(score=1, passed=True)
+        db.session.flush()
+
+        attempt.recompute_scores()
+        assert attempt.total_score == 9
+        assert attempt.max_possible_score == 11
+        assert attempt.get_progress()["is_complete"] is True

@@ -50,16 +50,14 @@
                                 {% if gara.get_real_status() == 'inscription' %}
                                 <br><small class="text-success">
                                     <i class="fas fa-clock"></i>
-                                    {{ _("Scade:") }} <span
-                                        data-utc="{{ gara.inscription_end.isoformat() if gara.inscription_end else '' }}">
+                                    {{ _("Scade:") }} <span>
                                         {{ gara.inscription_end|datetime_local if gara.inscription_end else 'N/A' }}
                                     </span>
                                 </small>
                                 {% elif gara.get_real_status() == 'inscription_not_yet_open' %}
                                 <br><small class="text-info">
                                     <i class="fas fa-clock"></i>
-                                    {{ _("Iniziano:") }} <span
-                                        data-utc="{{ gara.inscription_start.isoformat() if gara.inscription_start else '' }}">
+                                    {{ _("Iniziano:") }} <span>
                                         {{ gara.inscription_start|datetime_local if gara.inscription_start else 'N/A' }}
                                     </span>
                                 </small>

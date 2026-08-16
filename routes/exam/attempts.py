@@ -147,10 +147,17 @@ def record_result(attempt_id: int):
     score = _int_or_none(request.form.get("score"))
     raw_passed = request.form.get("passed")
     passed = None if raw_passed is None else raw_passed in ("1", "true", "True", "on")
+    # Quale prova del drill: assente = la prima ancora libera.
+    attempt_number = _int_or_none(request.form.get("attempt_number"))
 
     return handle_service_action(
         action=lambda: ExamService.record_challenge_result(
-            attempt_id, exam_challenge_id, actor, score=score, passed=passed
+            attempt_id,
+            exam_challenge_id,
+            actor,
+            score=score,
+            passed=passed,
+            attempt_number=attempt_number,
         ),
         redirect_url=url_for("exam.session_detail", attempt_id=attempt_id),
         success_message=_("Risultato registrato."),

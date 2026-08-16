@@ -60,6 +60,17 @@ blocks:
     id: struttura
     title: "2. Competition structure"
 
+  - type: note
+    tone: info
+    title: "With knockout and double elimination the form gets shorter"
+    text: >-
+      Choosing a bracket format makes six fields disappear: number of rounds,
+      forfeit handling, odd number of players, avoid rematches, standings
+      system and tie-break. This is not a convenient simplification: on a
+      bracket those choices changed nothing, and the app settled them by itself
+      anyway. In their place you get the **Bracket options** panel, with the
+      settings that do count.
+
   - type: options
     items:
       - name: "Pairing algorithm"
@@ -73,8 +84,10 @@ blocks:
       - name: "Number of rounds"
         values: "recommended 3"
         text: >-
-          How many sets of matches. With knockout and double elimination there
-          is nothing to set: the bracket decides, based on the entrants.
+          How many sets of matches. With knockout and double elimination the
+          field does not appear: the number of rounds is fixed by the draw, on
+          the entrants who actually turn up. Before the draw the app only shows
+          an estimate, worked out from the maximum capacity.
       - name: "Forfeit handling"
         values: "Win by walkover (default) · Remove from the round"
         text: >-
@@ -82,19 +95,33 @@ blocks:
           walkover** they stay in the pairings and their opponents win without
           playing — simpler, but one opponent ends up with an empty match. With
           **remove** they drop out of the pairings: cleaner, but it changes the
-          parity and can trigger the odd-number handling.
+          parity and can trigger the odd-number handling. On brackets it is not
+          asked: withdrawing is always a walkover, because once the bracket has
+          been drawn it is not touched again and removing somebody would leave
+          an empty slot.
         hint: gara.forfait
       - name: "Minimum entrants"
         values: "required · recommended 4"
-        text: "Below this threshold the app will not start the first round."
+        text: >-
+          Below this threshold the app will not start the first round. On
+          brackets there is a format floor you cannot go under: **4** for
+          knockout, **8** for double elimination. If your value was lower, the
+          app raises it by itself.
       - name: "Maximum entrants"
-        values: "optional"
-        text: "If set, anyone beyond that number goes on the waitlist."
+        values: "optional · required on brackets"
+        text: >-
+          If set, anyone beyond that number goes on the waitlist. On bracket
+          formats it becomes required: it declares the capacity and is what the
+          round estimate is worked out from.
       - name: "Avoid rematches"
         values: "recommended on"
         text: >-
           Prevents two players meeting twice in the same competition. With the
-          usual number of rounds it is nearly always possible to honour.
+          usual number of rounds it is nearly always possible to honour. On
+          brackets it is not asked: whoever loses is out, so a rematch simply
+          cannot happen. In double elimination the only possible one — between
+          a player coming back through the losers bracket and whoever beat them
+          — is part of the format.
         hint: gara.anti_rematch
       - name: "Play with handicap"
         values: "default off"
@@ -116,15 +143,18 @@ blocks:
         text: >-
           What happens when the number of players is odd and someone would be
           left without an opponent. Explained one by one in [When the number of
-          players is odd](/aiuto/approfondimenti/numero_dispari).
+          players is odd](/aiuto/approfondimenti/numero_dispari). On brackets it
+          is not asked: whoever is left over from the count goes straight
+          through to the next round, and that is how a bracket is built, not a
+          policy to choose.
         hint: gara.dispari
       - name: "Standings system"
-        values: "Wins (default) · Racks · Position"
+        values: "Wins (default) · Racks"
         text: >-
           How players are ordered. **Wins** counts matches won and, when level,
-          rack difference. **Racks** counts total racks. With knockout and
-          double elimination **Position** is compulsory, decided by the
-          bracket. See [How standings are worked
+          rack difference. **Racks** counts total racks. On brackets the field
+          does not appear, because the standings go by **position** and there
+          is nothing else to choose. See [How standings are worked
           out](/aiuto/approfondimenti/classifiche).
         hint: gara.classifica
       - name: "Tie-break"
@@ -132,8 +162,43 @@ blocks:
         text: >-
           Whether and up to which position to settle level finishes with an
           extra contest. Below the podium, as a rule, level finishes are left
-          as they are.
+          as they are. On brackets it is not asked: there, level finishes by
+          band — the two beaten semi-finalists, the four quarter-finalists —
+          are the intended outcome, and no tie-break would ever fire.
         hint: gara.spareggio
+
+  - type: heading
+    id: tabellone
+    title: "Bracket options"
+
+  - type: text
+    text: >-
+      Choosing knockout or double elimination brings up a panel that does not
+      exist with the other formats. These are the only choices that really
+      change anything on a bracket.
+
+  - type: options
+    items:
+      - name: "Keep team-mates apart in the early rounds"
+        values: "default off"
+        text: >-
+          The draw separates players from the same team as far as it can.
+          Turning it on means everyone who registers is asked who they play
+          for. See [Teams](/aiuto/organizzare/squadre).
+      - name: "3rd/4th place final"
+        values: "only where third place is a level finish"
+        text: >-
+          The two beaten semi-finalists play for third place, in the same round
+          as the final. It appears with knockout and with double elimination
+          **with a group stage**; not with full double elimination, where third
+          place goes to whoever loses the losers-bracket final — a result, not
+          an ambiguity to settle.
+      - name: "Group stage"
+        values: "double elimination only · none (default) · groups of 8 · groups of 16"
+        text: >-
+          The long format: double elimination is played inside parallel groups,
+          and each group qualifies four players — two unbeaten and two through
+          the losers bracket — for a final knockout bracket.
 
   - type: heading
     id: formato
@@ -154,19 +219,22 @@ blocks:
           evening considerably.
         hint: gara.distanza
       - name: "Exact number of racks"
-        values: "default off"
+        values: "default off · not available on brackets"
         text: >-
           If on, **all** the racks listed are played, even once the result is
           settled. Needed when what counts is the total number of racks rather
           than who wins — that is, with the «Racks» standings system. With an
-          even number, a match can end level.
+          even number, a match can end level. On bracket formats the checkbox
+          does not appear: it is always a race, and in its place there is a
+          note explaining why.
         hint: gara.numero_esatto
       - name: "Set play"
         values: "default off"
         text: >-
           The match is split into sets: a set is won by reaching the distance,
           and the match by taking enough sets. It lengthens things a lot:
-          suitable for finals or dedicated evenings.
+          suitable for finals or dedicated evenings. Here too, on brackets the
+          sets are a race: the option to play them all is not offered.
         hint: gara.multiset
 
   - type: note
@@ -214,7 +282,9 @@ blocks:
       - q: "What do I pick if I have no idea?"
         a: "Amalfi, 3 rounds, distance 4, Wins standings, odd numbers with «Bye», avoid rematches on. That is the club-evening setup."
       - q: "I want a knockout tournament: what changes?"
-        a: "Choose «Knockout»: the number of rounds disappears (the bracket decides it) and the standings system becomes «Position» by necessity."
+        a: "Choose «Knockout» and the form gets shorter: number of rounds, forfeit handling, odd number of players, avoid rematches, standings system, tie-break and exact number of racks all disappear. The «Bracket options» panel appears instead. Maximum entrants becomes required, and the standings go by position."
+      - q: "I picked a bracket and half the options vanished. Have I broken something?"
+        a: "No: those options had no effect on a bracket. They used to be asked and the answer was silently ignored; now they are not asked at all. Switch back to a round-based strategy and they all come back."
       - q: "Why can I not select «Trio»?"
         a: "Trio is only possible for distances between 2 and 7, and not with bracket strategies. If the distance is outside that range the option is unavailable."
       - q: "Does the handicap affect the standings?"

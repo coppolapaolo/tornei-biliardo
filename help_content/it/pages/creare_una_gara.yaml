@@ -53,12 +53,14 @@ blocks:
         text: >-
           Quanti giri di partite. Tre è il valore consigliato per una serata:
           con otto giocatori sono dodici partite, circa due ore e mezza su
-          quattro tavoli.
+          quattro tavoli. Se scegli eliminazione diretta o doppio KO il campo
+          non compare: i turni li fissa il sorteggio del tabellone.
       - title: "Minimo e massimo iscritti"
         text: >-
           Il minimo è la soglia sotto la quale la gara non parte. Il massimo è
           facoltativo: se lo imposti, chi arriva dopo finisce in lista
-          d'attesa.
+          d'attesa. Sui formati a tabellone il massimo diventa obbligatorio,
+          perché dichiara la capienza del tabellone.
       - title: "Salva"
         text: >-
           La gara nasce in stato **Bozza**: esiste, è tua, ma nessuno può ancora
@@ -90,6 +92,18 @@ blocks:
           giocatori sono dispari](/aiuto/approfondimenti/numero_dispari).
         hint: gara.dispari
 
+  - type: note
+    tone: info
+    title: "Se hai scelto un formato a tabellone il modulo è più corto"
+    text: >-
+      Con eliminazione diretta e doppio KO non ti vengono chiesti numero di
+      turni, gestione forfait, numero dispari, evita reincontri, sistema di
+      classifica, spareggio e numero esatto di rack: su un tabellone nessuna di
+      quelle scelte cambia qualcosa, e prima venivano chieste e poi ignorate.
+      Al loro posto compare il riquadro **Opzioni del tabellone**. Tutto
+      l'elenco è in [Tutte le
+      opzioni](/aiuto/organizzare/opzioni_della_gara).
+
   - type: heading
     id: aprire
     title: "Aprire le iscrizioni"
@@ -103,6 +117,14 @@ blocks:
   - type: shot
     shot: gara-gestione
     caption: "Il pannello «Gestione»: da qui si aprono le iscrizioni, si avvia il turno e si conduce la serata."
+
+  - type: note
+    tone: info
+    text: >-
+      Nelle gare a tabellone, al posto di **Avvia Primo Turno** lo stesso
+      pannello mostra **Sorteggia il tabellone**: è la stessa fase della serata,
+      ma il gesto è diverso e vale la pena saperlo prima di arrivarci. Vedi [Il
+      tabellone](/aiuto/giocare/tabellone).
 
   - type: note
     tone: warning

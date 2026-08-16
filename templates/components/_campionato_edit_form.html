@@ -122,8 +122,9 @@
                     </div>
                 </div>
 
-                <!-- Numero Turni -->
-                <div class="col-md-6">
+                <!-- Numero Turni: sui tabelloni lo fissa il sorteggio di ogni
+                     gara sugli iscritti effettivi (ADR-038), non un default. -->
+                <div class="col-md-6 js-bracket-inert">
                     <div class="mb-3">
                         <label for="default_rounds_count" class="form-label">{{ _("Numero Turni Predefinito") }}</label>
                         <select class="form-select" id="default_rounds_count" name="default_rounds_count">
@@ -141,8 +142,9 @@
 
             <h5 class="mb-3"><i class="fas fa-sliders-h text-primary"></i> {{ _("Opzioni Matchmaking") }}</h5>
 
-            <!-- Gestione Numero Dispari -->
-            <div class="mb-3">
+            <!-- Gestione Numero Dispari: nel tabellone i bye sono strutturali
+                 (S - n buchi ai primi seed), non una politica. -->
+            <div class="mb-3 js-bracket-inert">
                 <label for="default_odd_policy" class="form-label">{{ _("Gestione Numero Dispari") }}</label>
                 <select class="form-select" id="default_odd_policy" name="default_odd_policy">
                     {% for value, label in odd_policies %}
@@ -167,8 +169,9 @@
                 </div>
             </div>
 
-            <!-- Anti-Rematch -->
-            <div class="mb-4">
+            <!-- Anti-Rematch: nel tabellone chi perde esce, quindi due
+                 giocatori non possono reincontrarsi. -->
+            <div class="mb-4 js-bracket-inert">
                 <div class="form-check form-switch">
                     <input class="form-check-input" type="checkbox" id="default_anti_rematch" name="default_anti_rematch"
                            {% if campionato.default_anti_rematch %}checked{% endif %}>
@@ -233,19 +236,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
     typeSelect.addEventListener('change', updateTypeDescription);
 
-    // I punti per posizione esistono solo sui campionati a tabellone: cambiando
-    // tipo il blocco compare o sparisce senza ricaricare la pagina.
+    // Cosa ha senso chiedere dipende dal tipo di campionato, che qui può
+    // cambiare senza ricaricare la pagina.
+    //
+    //  - i punti per posizione esistono SOLO sui tabelloni;
+    //  - turni, giocatori dispari e anti-rematch NON esistono sui tabelloni:
+    //    i turni li fissa il sorteggio, i bye sono strutturali, e chi perde
+    //    esce quindi un reincontro non può capitare.
     const bracketTypes = {{ bracket_minimum_players.keys()|list|tojson }};
     const positionPoints = document.getElementById('position_points_section');
+    const inertOnBracket = document.querySelectorAll('.js-bracket-inert');
 
-    function updatePositionPoints() {
-        if (!positionPoints) { return; }
-        positionPoints.style.display =
-            bracketTypes.indexOf(typeSelect.value) >= 0 ? '' : 'none';
+    function updateBracketFields() {
+        const isBracket = bracketTypes.indexOf(typeSelect.value) >= 0;
+        if (positionPoints) {
+            positionPoints.style.display = isBracket ? '' : 'none';
+        }
+        inertOnBracket.forEach(function (node) {
+            node.style.display = isBracket ? 'none' : '';
+        });
     }
 
-    typeSelect.addEventListener('change', updatePositionPoints);
-    updatePositionPoints();
+    typeSelect.addEventListener('change', updateBracketFields);
+    updateBracketFields();
 
     // Toggle classification system descriptions
     const classificationSelect = document.getElementById('default_classification_system');

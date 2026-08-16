@@ -8,11 +8,12 @@
 <article class="c7-card challenge-card" data-challenge-id="{{ challenge.id }}"
          data-challenge-url="{{ url_for('challenge.challenge_detail', challenge_id=challenge.id) }}"
          style="cursor: pointer; padding: 0; overflow: hidden; display: flex; flex-direction: column;">
-    {# Foto del tavolo: è il contenuto principale della challenge #}
-    <div style="position: relative; aspect-ratio: 4 / 3; background: var(--c7-sunken);">
+    {# Foto del tavolo: è il contenuto principale della challenge, e va vista
+       intera — ritagliarla toglie i bordi del tavolo (ADR-044). #}
+    <div class="c7-diagram c7-diagram--card">
         {% if challenge.image_filename %}
-        <img src="{{ challenge_image_url(challenge) }}" alt="{{ challenge.description[:60] }}"
-             style="width: 100%; height: 100%; object-fit: cover; display: block;"
+        <img class="c7-diagram__img" src="{{ challenge_image_url(challenge) }}"
+             alt="{{ challenge.description[:60] }}"
              onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';">
         <div style="display: none; position: absolute; inset: 0; place-items: center; color: var(--c7-ink-faint); font-size: 30px;">
             <i class="fas fa-bullseye"></i>
@@ -53,7 +54,7 @@
 
         <div style="display: flex; gap: 8px; margin-top: 16px;">
             {% if not current_user.is_admin %}
-            <a href="{{ url_for('challenge.start_attempt', challenge_id=challenge.id) }}" class="btn btn-primary btn-sm" style="flex: 1;">{{ _('Provala') }}</a>
+            <a href="{{ url_for('challenge.training_session', challenge_id=challenge.id) }}" class="btn btn-primary btn-sm" style="flex: 1;">{{ _('Provala') }}</a>
             {% endif %}
             <a href="{{ url_for('challenge.challenge_detail', challenge_id=challenge.id) }}" class="btn btn-secondary btn-sm" style="flex: 1;">{{ _('Dettagli') }}</a>
             {% if current_user.is_admin or (current_user.is_authenticated and challenge.created_by_id == current_user.id) %}

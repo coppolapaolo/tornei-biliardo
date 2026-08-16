@@ -69,6 +69,9 @@
                  step="0.50" min="0" max="100" placeholder="0.00">
           <div class="form-text">{{ _("Vuoto se gratuita") }}</div>
         </div>
+        {# Sui tabelloni i turni non sono un default: li fissa il sorteggio di
+           ogni gara sugli iscritti che si presentano (ADR-038). #}
+        {% if wizard_data.campionato_type not in bracket_minimum_players %}
         <div class="flex-fill" style="min-width:180px">
           <label for="default_rounds_count" class="form-label">{{ _("Turni") }}</label>
           <select class="form-select" id="default_rounds_count" name="default_rounds_count">
@@ -79,10 +82,13 @@
           </select>
           <div class="form-text">{{ _("Quanti turni per ogni gara") }}</div>
         </div>
+        {% endif %}
       </div>
     </div>
 
-    <div class="c7-card">
+    {# Nei tabelloni i bye sono strutturali (`S - n` buchi ai primi seed), non
+       una politica: un trio o una lista d'attesa non hanno posto nell'albero. #}
+    <div class="c7-card" {% if wizard_data.campionato_type in bracket_minimum_players %}style="display:none"{% endif %}>
       <label for="default_odd_policy" class="form-label">{{ _("Giocatori dispari") }}</label>
       <select class="form-select" id="default_odd_policy" name="default_odd_policy">
         {% for value, label in odd_policies %}
@@ -114,7 +120,9 @@
       </div>
     </div>
 
-    <label class="c7-card d-flex align-items-center gap-3" style="cursor:pointer">
+    {# Nel tabellone due giocatori non possono reincontrarsi: chi perde esce. #}
+    <label class="c7-card d-flex align-items-center gap-3"
+           style="cursor:pointer{% if wizard_data.campionato_type in bracket_minimum_players %};display:none{% endif %}">
       <span class="flex-fill">
         <span class="c7-choice__title d-block">{{ _("Anti-rematch") }}</span>
         <span class="c7-choice__desc d-block">{{ _("Evita di riabbinare gli stessi giocatori nella stessa gara") }}</span>

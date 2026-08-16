@@ -26,10 +26,12 @@ blocks:
     items:
       - title: "Chiudi le iscrizioni"
         text: "Controlla che l'elenco corrisponda a chi è davvero in sala."
-      - title: "Tocca «Avvia primo turno»"
+      - title: "Tocca «Avvia Primo Turno»"
         text: >-
           L'app sorteggia le coppie e crea le partite. Tutti i giocatori
-          ricevono una notifica con il nome dell'avversario.
+          ricevono una notifica con il nome dell'avversario. Nelle gare a
+          tabellone lo stesso pulsante si chiama **Sorteggia il tabellone**:
+          vedi il riquadro qui sotto.
       - title: "Assegna i tavoli"
         text: >-
           Se la sala ha i tavoli configurati, l'app li distribuisce alle prime
@@ -44,6 +46,19 @@ blocks:
       l'abbinamento, è possibile ricostruire come è stato estratto. Annullare
       il primo turno cancella il sorteggio, e riavviarlo significa risorteggiare
       davvero.
+
+  - type: note
+    tone: warning
+    title: "Nelle gare a tabellone il pulsante è «Sorteggia il tabellone»"
+    text: >-
+      Con eliminazione diretta e doppio KO non si avvia un turno: si estrae il
+      tabellone, e quel gesto decide tutto in una volta. Le iscrizioni si
+      chiudono, le squadre si congelano e il percorso di ogni giocatore fino
+      alla finale è fissato. L'app te lo ricorda con una conferma prima di
+      procedere. Il numero di turni, che alla creazione non hai impostato, viene
+      deciso adesso sugli iscritti presenti: fino a questo momento la scheda
+      della gara lo mostrava come **stima**. Vedi [Il
+      tabellone](/aiuto/giocare/tabellone).
 
   - type: heading
     id: durante
@@ -136,6 +151,12 @@ blocks:
       [Quando i giocatori sono
       dispari](/aiuto/approfondimenti/numero_dispari).
 
+  - type: text
+    text: >-
+      Nelle gare a tabellone quella regola non si sceglie e non serve: chi
+      avanza in numero dispari passa direttamente al turno successivo, e il
+      tabellone si costruisce già così.
+
   - type: heading
     id: chiudere
     title: "Chiudere la gara"
@@ -160,7 +181,9 @@ blocks:
       - q: "Il pulsante «Avvia turno successivo» è spento."
         a: "Manca almeno una partita da concludere. Nella vista Turni, le partite ancora aperte sono quelle senza etichetta «Conclusa»."
       - q: "Un giocatore se ne va a metà gara."
-        a: "Registra il forfait sulla partita in corso. Per i turni successivi, la regola che hai scelto alla creazione decide se resta negli abbinamenti (perdendo a tavolino) o se ne esce."
+        a: "Registra il forfait sulla partita in corso. Per i turni successivi, la regola che hai scelto alla creazione decide se resta negli abbinamenti (perdendo a tavolino) o se ne esce. Nelle gare a tabellone non c'è nulla da scegliere: chi si ritira lascia passare l'avversario a tavolino, e il tabellone resta com'è."
+      - q: "Perché il mio torneo a eliminazione non dice «Avvia Primo Turno»?"
+        a: "Perché lì l'azione è un'altra: il pulsante dice «Sorteggia il tabellone». Estrarre il tabellone chiude le iscrizioni e fissa il percorso di tutti fino alla finale, quindi il nome dice quello che succede davvero."
       - q: "Posso dirigere la gara e giocarla?"
         a: "No: un direttore non può iscriversi alla gara che dirige. Se vuoi giocare, aggiungi un co-direttore che conduca la serata."
       - q: "Ho annullato il turno per sbaglio."

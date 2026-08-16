@@ -60,6 +60,26 @@ blocks:
       screen to put on a display in the venue, if you have one.
 
   - type: heading
+    id: sorteggio
+    title: "The draw"
+
+  - type: text
+    text: >-
+      A bracket is not «started» like a round: it is **drawn**. In the
+      Management panel the director finds the **Draw the bracket** button (in
+      round-based competitions the same place says «Start First Round»), and
+      the app asks for confirmation before going ahead.
+
+  - type: note
+    tone: warning
+    title: "The draw settles everything at once"
+    text: >-
+      The draw closes registrations, freezes the teams and fixes every player's
+      path to the final: who they would meet in the quarter-finals, who in the
+      semi-finals, who in the final. The only way back is to cancel the draw,
+      which redoes every pairing from scratch.
+
+  - type: heading
     id: quanti_turni
     title: "How many rounds come out"
 
@@ -68,6 +88,13 @@ blocks:
       The bracket sizes itself on the actual entrants. With 8 players that is
       quarter-finals, semi-finals and final: three rounds, seven matches. With
       16 you add one more.
+
+  - type: text
+    text: >-
+      That is why the number of rounds is not set at creation time: the draw
+      fixes it, on whoever actually turns up. Before the draw the competition
+      card marks the figure **(estimate)**, worked out from the declared
+      maximum capacity; after the draw it is the final one.
 
   - type: text
     text: >-
@@ -84,12 +111,15 @@ blocks:
     text: >-
       In a knockout the director can add a **third-place match** between the two
       semi-final losers. It does not add a round: it is played alongside the
-      final.
+      final. Without it, both of them finish third, level.
 
   - type: text
     text: >-
-      With double elimination it is not needed: the losers' bracket already
-      determines third place.
+      With full double elimination it is not needed, and indeed it is not even
+      offered: third place goes to whoever loses the losers' bracket final, and
+      that is a result on the table. It comes back with double elimination
+      **with a group stage**, because there the final bracket is a straight
+      knockout and the two beaten semi-finalists are level again.
 
   - type: heading
     id: doppio_ko
@@ -118,13 +148,25 @@ blocks:
     text: >-
       They are not counted by wins or racks: the standings **are** the path.
       Whoever wins the tournament is first, the losing finalist second, and so
-      on. In a championship each position is worth a number of points. See [How
-      standings are worked out](/aiuto/approfondimenti/classifiche).
+      on. In a championship each position is worth a number of points, which the
+      director can configure. See [How standings are worked
+      out](/aiuto/approfondimenti/classifiche).
+
+  - type: note
+    tone: info
+    title: "Level finishes here are not played off"
+    text: >-
+      On a bracket you go out in pairs: the two beaten semi-finalists are both
+      third, the four quarter-finalists all fifth. That is not an ambiguity to
+      settle, it is what the path says — and indeed bracket competitions are not
+      even offered a tie-break at creation time.
 
   - type: faq
     items:
       - q: "I cannot see the bracket icon."
         a: "The competition does not use a bracket strategy: with Amalfi, random or round robin there is no path to draw, and the view does not exist."
+      - q: "The director has pressed «Draw the bracket». Can I still change my team?"
+        a: "No. You pick your team when you register and it stays changeable until the draw: from that moment the bracket has already been built around the teams, and changing them would make it inconsistent."
       - q: "I lost in the first round: is my competition over?"
         a: "With knockout, yes. With double elimination, no: you drop into the losers' bracket and can still climb back."
       - q: "Why did someone not play the first round?"

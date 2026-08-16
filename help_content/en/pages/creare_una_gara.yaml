@@ -54,12 +54,15 @@ blocks:
         text: >-
           How many sets of matches. Three is the recommended value for an
           evening: with eight players that is twelve matches, roughly two and a
-          half hours on four tables.
+          half hours on four tables. If you choose knockout or double
+          elimination the field does not appear: the rounds are fixed by the
+          bracket draw.
       - title: "Minimum and maximum entrants"
         text: >-
           The minimum is the threshold below which the competition will not
           start. The maximum is optional: if you set it, latecomers go on the
-          waitlist.
+          waitlist. On bracket formats the maximum becomes required, because it
+          declares the capacity of the bracket.
       - title: "Save"
         text: >-
           The competition is created as a **Draft**: it exists, it is yours,
@@ -91,6 +94,17 @@ blocks:
           players is odd](/aiuto/approfondimenti/numero_dispari).
         hint: gara.dispari
 
+  - type: note
+    tone: info
+    title: "If you chose a bracket format the form is shorter"
+    text: >-
+      With knockout and double elimination you are not asked for number of
+      rounds, forfeit handling, odd numbers, avoid rematches, standings system,
+      tie-break or exact number of racks: none of those choices changes anything
+      on a bracket, and they used to be asked and then ignored. In their place
+      you get the **Bracket options** panel. The whole list is in [All the
+      options](/aiuto/organizzare/opzioni_della_gara).
+
   - type: heading
     id: aprire
     title: "Opening registrations"
@@ -105,6 +119,14 @@ blocks:
   - type: shot
     shot: gara-gestione
     caption: "The «Management» panel: this is where you open registrations, start the round and run the evening."
+
+  - type: note
+    tone: info
+    text: >-
+      In bracket competitions the same panel shows **Draw the bracket** instead
+      of **Start First Round**: it is the same stage of the evening, but a
+      different action, and it is worth knowing before you get there. See [The
+      bracket](/aiuto/giocare/tabellone).
 
   - type: note
     tone: warning

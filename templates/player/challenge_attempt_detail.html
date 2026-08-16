@@ -37,12 +37,9 @@
 
     {# ---------- Di che challenge si tratta ---------- #}
     <div class="c7-card d-flex align-items-center gap-3">
-      <div style="width:56px;height:56px;border-radius:var(--c7-r-control);overflow:hidden;
-                  background:var(--c7-sunken);display:grid;place-items:center;
-                  color:var(--c7-ink-faint);flex-shrink:0">
+      <div class="c7-diagram c7-diagram--thumb" style="width:56px;height:56px">
         {% if challenge.image_filename %}
-        <img src="{{ challenge_image_url(challenge) }}" alt=""
-             style="width:100%;height:100%;object-fit:cover"
+        <img class="c7-diagram__img" src="{{ challenge_image_url(challenge) }}" alt=""
              onerror="this.style.display='none'">
         {% else %}<i class="fas fa-bullseye"></i>{% endif %}
       </div>
@@ -155,7 +152,7 @@
     {# Niente "analisi della prestazione": era una percentuale calcolata su un
        massimo che il modello non ha. #}
     <div class="c7-actionbar">
-      <a href="{{ url_for('challenge.start_attempt', challenge_id=challenge.id) }}" class="btn btn-primary w-100">
+      <a href="{{ url_for('challenge.training_session', challenge_id=challenge.id) }}" class="btn btn-primary w-100">
         <i class="fas fa-redo"></i>&nbsp;{{ _("Riprova") }}
       </a>
       <a href="{{ url_for('challenge.challenge_detail', challenge_id=challenge.id) }}"

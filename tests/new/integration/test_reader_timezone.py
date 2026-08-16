@@ -15,7 +15,7 @@ test presidiano più delle altre.
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
+from datetime import date, datetime, time
 
 import pytest
 
@@ -23,6 +23,7 @@ from models.user.models import User
 from models.user.role_enum import UserRole
 from models.user.services import UserService
 from utils.jinja import (
+    format_date_local,
     format_datetime_input,
     format_datetime_local_text,
     format_time_local,
@@ -116,6 +117,44 @@ def test_the_same_instant_reads_differently_for_each_reader(
         assert expected in str(format_time_local(SUMMER_UTC, tz=tz))
 
 
+#: Mezzanotte è il punto in cui una data smette di essere «solo una data»: lo
+#: stesso istante cade in due giorni diversi a seconda di chi guarda.
+@pytest.mark.parametrize(
+    "instant,timezone,expected",
+    [
+        # 23:30 UTC: a Roma è già il 13, a New York sono ancora le 19:30 del 12.
+        (datetime(2026, 6, 12, 23, 30), "Europe/Rome", "13/06/2026"),
+        (datetime(2026, 6, 12, 23, 30), "America/New_York", "12/06/2026"),
+        # 01:30 UTC: a Roma è il 12, a New York è ancora l'11.
+        (datetime(2026, 6, 12, 1, 30), "Europe/Rome", "12/06/2026"),
+        (datetime(2026, 6, 12, 1, 30), "America/New_York", "11/06/2026"),
+    ],
+)
+def test_a_date_near_midnight_is_the_readers_date(
+    app, db_session, instant, timezone, expected
+):
+    """``|date_local`` su un *datetime* deve convertire, non troncare.
+
+    Il filtro faceva ``strftime`` sul naive UTC grezzo: vicino a mezzanotte
+    mostrava il giorno sbagliato a chiunque, italiani compresi. Ed è un errore
+    che non si vede — «12/06» è una data plausibile.
+    """
+    with app.app_context():
+        tz = resolve_timezone(_player(db_session, timezone=timezone))
+        assert expected in str(format_date_local(instant, tz=tz))
+
+
+def test_a_plain_date_has_nothing_to_convert(app, db_session):
+    """Una ``date`` non è un istante: spostarla di fuso la falserebbe.
+
+    La data di una gara è «il 12 giugno» per tutti, non un momento preciso da
+    riproiettare — convertirla farebbe comparire l'11 a chi sta a ovest.
+    """
+    with app.app_context():
+        new_york = resolve_timezone(_player(db_session, timezone="America/New_York"))
+        assert "12/06/2026" in str(format_date_local(date(2026, 6, 12), tz=new_york))
+
+
 def test_the_edit_form_is_repopulated_in_the_readers_timezone(app, db_session):
     """Il verso di lettura di un `datetime-local`: stesso fuso della scrittura.
 
@@ -183,6 +222,42 @@ def test_an_unknown_recipient_does_not_explode(app, db_session):
     """Un id che non esiste più (utente cancellato) vale il ripiego, non un 500."""
     with app.app_context():
         assert resolve_timezone_for_user_id(999_999) is FALLBACK_TIMEZONE
+
+
+def test_quiet_hours_are_read_on_the_players_own_clock(app, db_session, monkeypatch):
+    """Le ore di silenzio le imposta l'utente: valgono nel **suo** fuso.
+
+    Il confronto era scritto a mano su ``Europe/Rome``. Per un giocatore a New
+    York la finestra risultava spostata di sei ore: notifiche in piena notte, e
+    silenzio a metà pomeriggio — senza niente da vedere né a log né in pagina.
+    """
+    import models.notification.models as notification_models
+    from models.notification.models import NotificationPreference, NotificationType
+
+    with app.app_context():
+        player = _player(db_session, timezone="America/New_York")
+        preference = NotificationPreference(
+            user_id=player.id,
+            notification_type=NotificationType.MATCH_PROPOSAL,
+            quiet_hours_start=time(22, 0),
+            quiet_hours_end=time(8, 0),
+        )
+        db_session.add(preference)
+        db_session.commit()
+
+        # 11:00 UTC: le 07:00 a New York (dentro la finestra), ma le 13:00 a
+        # Roma (fuori) — è la coppia che distingue il fuso giusto da quello
+        # scritto a mano.
+        monkeypatch.setattr(
+            notification_models, "utc_now", lambda: datetime(2026, 6, 12, 11, 0)
+        )
+        assert preference.is_in_quiet_hours() is True
+
+        # 21:30 UTC: le 17:30 a New York (fuori), le 23:30 a Roma (dentro).
+        monkeypatch.setattr(
+            notification_models, "utc_now", lambda: datetime(2026, 6, 12, 21, 30)
+        )
+        assert preference.is_in_quiet_hours() is False
 
 
 def test_a_match_reminder_speaks_to_each_player_in_their_own_hour(app, db_session):

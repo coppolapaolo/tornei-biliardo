@@ -96,6 +96,7 @@ blocks:
       - "Chi perde esce: metà dei partecipanti gioca una partita sola."
       - "La classifica è quella del tabellone e usa il sistema **Posizione**."
       - "Si può chiedere che i compagni della stessa squadra non si incontrino subito."
+      - "Il primo turno non si «avvia»: si **sorteggia il tabellone**, e da lì il percorso di tutti è fissato."
 
   - type: heading
     id: doppio_ko
@@ -107,6 +108,26 @@ blocks:
       chi perde la prima scende in un tabellone dei ripescaggi e può risalire.
       Più lungo, ma nessuno torna a casa dopo una sola sconfitta — un buon
       compromesso quando si ha tempo.
+
+  - type: text
+    text: >-
+      È l'unico formato in cui due giocatori possono incontrarsi due volte: chi
+      risale dai ripescaggi può ritrovarsi davanti chi lo aveva battuto. Non è
+      un difetto degli abbinamenti, è come è fatto il doppio KO — e la
+      costruzione dei ripescaggi allontana comunque quel ritorno il più
+      possibile.
+
+  - type: note
+    tone: info
+    title: "Sui tabelloni si scelgono meno cose"
+    text: >-
+      Con eliminazione diretta e doppio KO il modulo di creazione non chiede
+      numero di turni, gestione forfait, giocatori dispari, evita reincontri,
+      sistema di classifica, spareggio e numero esatto di rack: su un tabellone
+      nessuna di quelle scelte avrebbe effetto. In cambio compaiono le opzioni
+      che invece contano — separazione dei compagni di squadra, finalina per il
+      terzo posto, fase a gironi. L'elenco completo è in [Tutte le
+      opzioni](/aiuto/organizzare/opzioni_della_gara).
 
   - type: heading
     id: scegliere
@@ -159,7 +180,9 @@ blocks:
       - q: "Perché gioco sempre contro i più forti?"
         a: "Con Amalfi, se stai andando bene ti trovi ad affrontare chi va bene quanto te — soprattutto negli ultimi turni. È il metodo che funziona come previsto."
       - q: "Ho incontrato due volte lo stesso avversario."
-        a: "Succede quando gli abbinamenti liberi sono finiti: con pochi giocatori e molti turni, a un certo punto tutti hanno giocato contro tutti."
+        a: "Succede quando gli abbinamenti liberi sono finiti: con pochi giocatori e molti turni, a un certo punto tutti hanno giocato contro tutti. Nel doppio KO invece è previsto dal formato: chi risale dai ripescaggi può ritrovare chi lo aveva battuto."
+      - q: "Nel torneo a eliminazione non trovo l'opzione «evita reincontri»."
+        a: "Non c'è, e non servirebbe: chi perde esce, quindi due giocatori non possono incontrarsi due volte."
       - q: "Posso cambiare strategia a gara iniziata?"
         a: "No. Gli abbinamenti già fatti seguono la strategia scelta, e cambiarla in corsa produrrebbe una gara incoerente."
       - q: "Chi sceglie chi spacca?"
