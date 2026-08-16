@@ -390,9 +390,9 @@ class TestDefaultDelCampionato:
         campionato = self._campionato(db_session, director, "direct_elimination")
         _login(client, director)
 
-        pagina = client.get(
-            f"/admin/campionato/{campionato.id}/edit"
-        ).get_data(as_text=True)
+        pagina = client.get(f"/admin/campionato/{campionato.id}/edit").get_data(
+            as_text=True
+        )
 
         # Tre blocchi marcati, che lo script nasconde sui tipi a tabellone.
         assert pagina.count("js-bracket-inert") >= 3
@@ -402,9 +402,9 @@ class TestDefaultDelCampionato:
         campionato = self._campionato(db_session, director, "amalfi")
         _login(client, director)
 
-        pagina = client.get(
-            f"/admin/campionato/{campionato.id}/edit"
-        ).get_data(as_text=True)
+        pagina = client.get(f"/admin/campionato/{campionato.id}/edit").get_data(
+            as_text=True
+        )
 
         assert 'id="default_rounds_count"' in pagina
         assert 'id="default_odd_policy"' in pagina

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-16 14:32+0000\n"
+"POT-Creation-Date: 2026-08-16 14:47+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -4829,25 +4829,25 @@ msgstr ""
 msgid "adesso"
 msgstr ""
 
-#: templates/challenge/training.html:232
+#: templates/challenge/training.html:236
 #: templates/components/_match_challenge_input.html:57
 #: templates/exam/session.html:107
 msgid "Punteggio"
 msgstr ""
 
-#: templates/challenge/training.html:239
+#: templates/challenge/training.html:243
 msgid "Scegli se la prova è stata superata o no."
 msgstr ""
 
-#: templates/challenge/training.html:245
+#: templates/challenge/training.html:249
 msgid "Registro…"
 msgstr ""
 
-#: templates/challenge/training.html:255
+#: templates/challenge/training.html:259
 msgid "Non è stato possibile registrare la prova."
 msgstr ""
 
-#: templates/challenge/training.html:279
+#: templates/challenge/training.html:283
 msgid "Non è stato possibile registrare la prova. Riprova."
 msgstr ""
 

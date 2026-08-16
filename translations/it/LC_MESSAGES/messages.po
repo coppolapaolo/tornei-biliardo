@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-16 14:32+0000\n"
+"POT-Creation-Date: 2026-08-16 14:47+0000\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -1371,9 +1371,8 @@ msgid "Sessione aperta: attendi che il candidato accetti."
 msgstr ""
 
 #: routes/exam/attempts.py:125
-#, fuzzy
 msgid "Esame iniziato."
-msgstr "Perc. Vinte"
+msgstr ""
 
 #: routes/exam/attempts.py:163
 msgid "Risultato registrato."
@@ -4833,33 +4832,32 @@ msgid "Nessuna prova ancora. Registra la prima qui sopra."
 msgstr ""
 
 #: templates/challenge/training.html:147
-#, fuzzy
 msgid "Registra la prova"
-msgstr "Perc. Vinte"
+msgstr ""
 
 #: templates/challenge/training.html:231
 msgid "adesso"
 msgstr ""
 
-#: templates/challenge/training.html:232
+#: templates/challenge/training.html:236
 #: templates/components/_match_challenge_input.html:57
 #: templates/exam/session.html:107
 msgid "Punteggio"
 msgstr ""
 
-#: templates/challenge/training.html:239
+#: templates/challenge/training.html:243
 msgid "Scegli se la prova è stata superata o no."
 msgstr ""
 
-#: templates/challenge/training.html:245
+#: templates/challenge/training.html:249
 msgid "Registro…"
 msgstr ""
 
-#: templates/challenge/training.html:255
+#: templates/challenge/training.html:259
 msgid "Non è stato possibile registrare la prova."
 msgstr ""
 
-#: templates/challenge/training.html:279
+#: templates/challenge/training.html:283
 msgid "Non è stato possibile registrare la prova. Riprova."
 msgstr ""
 
@@ -4928,9 +4926,8 @@ msgstr ""
 
 #: templates/components/_bracket_view.html:20
 #: templates/components/_bracket_view.html:25
-#, fuzzy
 msgid "Finale"
-msgstr "Perc. Vinte"
+msgstr ""
 
 #: templates/components/_bracket_view.html:21
 msgid "Bella"
@@ -8746,14 +8743,12 @@ msgid "Controproponi"
 msgstr ""
 
 #: templates/exam/request_detail.html:126
-#, fuzzy
 msgid "Ritirare la richiesta?"
-msgstr "Perc. Vinte"
+msgstr ""
 
 #: templates/exam/request_detail.html:127
-#, fuzzy
 msgid "Ritira la richiesta"
-msgstr "Perc. Vinte"
+msgstr ""
 
 #: templates/exam/request_detail.html:133
 msgid "Non posso"
@@ -8859,9 +8854,8 @@ msgid "In trattativa"
 msgstr ""
 
 #: templates/exam/requests.html:23
-#, fuzzy
 msgid "Ritirata"
-msgstr "Perc. Vinte"
+msgstr ""
 
 #: templates/exam/requests.html:34 templates/individual_match/proposals.html:76
 msgid "Ricevute"
@@ -8869,9 +8863,8 @@ msgstr ""
 
 #: templates/exam/requests.html:44 templates/individual_match/proposals.html:81
 #: templates/individual_match/proposals.html:225
-#, fuzzy
 msgid "Inviate"
-msgstr "Perc. Vinte"
+msgstr ""
 
 #: templates/exam/requests.html:55
 msgid "Nessun appuntamento"
@@ -11056,9 +11049,8 @@ msgid "Annulla la proposta"
 msgstr ""
 
 #: templates/individual_match/proposal_detail.html:143
-#, fuzzy
 msgid "Invitati"
-msgstr "Perc. Vinte"
+msgstr ""
 
 #: templates/individual_match/proposal_detail.html:162
 msgid "È visibile a tutta la community: la prende il primo che accetta."
@@ -11478,9 +11470,8 @@ msgid "Registra il punteggio"
 msgstr ""
 
 #: templates/player/challenge_attempt_detail.html:51
-#, fuzzy
 msgid "iniziato"
-msgstr "Perc. Vinte"
+msgstr ""
 
 #: templates/player/challenge_attempt_detail.html:73
 #: templates/player/gara_challenge_detail.html:76
@@ -11682,9 +11673,8 @@ msgid "%(n)s richieste inviate"
 msgstr ""
 
 #: templates/player/my_venue_requests.html:22
-#, fuzzy
 msgid "Inviata"
-msgstr "Perc. Vinte"
+msgstr ""
 
 #: templates/player/my_venue_requests.html:35
 msgid "Contesa"
@@ -12185,9 +12175,8 @@ msgid "Non c'è ancora nessun destinatario disponibile."
 msgstr ""
 
 #: templates/roles/request_form.html:60
-#, fuzzy
 msgid "Invia richiesta"
-msgstr "Perc. Vinte"
+msgstr ""
 
 #: templates/roles/requests.html:14
 msgid ""
