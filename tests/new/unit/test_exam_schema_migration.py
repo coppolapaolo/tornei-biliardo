@@ -33,6 +33,7 @@ import pytest
 MIGRATIONS_DIR = Path(__file__).resolve().parents[3] / "migrations"
 MIGRATION_PATH = MIGRATIONS_DIR / "20260816_exam_schema_rework.py"
 REQUEST_MIGRATION_PATH = MIGRATIONS_DIR / "20260817_add_exam_request_tables.py"
+ATTEMPTS_MIGRATION_PATH = MIGRATIONS_DIR / "20260819_exam_challenge_max_attempts.py"
 
 #: Tabelle del dominio esame, nell'ordine in cui le migration le creano.
 TABLES = (
@@ -63,10 +64,15 @@ def _load_request_migration_module():
     return _load(REQUEST_MIGRATION_PATH)
 
 
+def _load_attempts_migration_module():
+    return _load(ATTEMPTS_MIGRATION_PATH)
+
+
 def _apply_chain(db_path: Path) -> None:
     """Le migration nell'ordine in cui girano in produzione."""
     _load_migration_module().upgrade_sqlite(str(db_path))
     _load_request_migration_module().upgrade_sqlite(str(db_path))
+    _load_attempts_migration_module().upgrade_sqlite(str(db_path))
 
 
 def _columns(conn: sqlite3.Connection, table: str) -> dict[str, tuple]:
@@ -103,6 +109,43 @@ def test_migrations_declare_a_tracking_name():
         _load_request_migration_module().migration_name
         == "20260817_add_exam_request_tables"
     )
+    assert (
+        _load_attempts_migration_module().migration_name
+        == "20260819_exam_challenge_max_attempts"
+    )
+
+
+def test_a_drill_can_prescribe_more_than_one_attempt(migrated_db):
+    """Le due colonne ci sono, e valgono 1 su una riga che non le nomina."""
+    assert "max_attempts" in _columns(migrated_db, "exam_challenge")
+    assert "attempt_number" in _columns(migrated_db, "exam_challenge_result")
+
+    migrated_db.execute(
+        'INSERT INTO exam_challenge (exam_id, challenge_id, "order", max_score,'
+        " created_at, updated_at) VALUES (1, 1, 1, 10, '2026-08-19', '2026-08-19')"
+    )
+    row = migrated_db.execute(
+        "SELECT max_attempts FROM exam_challenge WHERE exam_id = 1"
+    ).fetchone()
+    assert row[0] == 1, "il default deve tenere gli esami già composti come prima"
+
+
+def test_the_same_attempt_of_a_drill_cannot_be_recorded_twice(migrated_db):
+    """La UNIQUE si è allargata alla prova, non allentata.
+
+    Due righe sulla **stessa** prova restano un errore; due prove diverse dello
+    stesso drill sono esattamente ciò che serve.
+    """
+    insert = (
+        "INSERT INTO exam_challenge_result (exam_attempt_id, exam_challenge_id,"
+        " attempt_number, created_at, updated_at)"
+        " VALUES (1, 1, ?, '2026-08-19', '2026-08-19')"
+    )
+    migrated_db.execute(insert, (1,))
+    migrated_db.execute(insert, (2,))  # seconda prova: legittima
+
+    with pytest.raises(sqlite3.IntegrityError):
+        migrated_db.execute(insert, (1,))
 
 
 def test_creates_every_table_of_the_domain(migrated_db):
