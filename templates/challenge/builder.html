@@ -173,28 +173,14 @@
         </div>
       </div>
 
-      <div class="sec">
-        <h2>Esporta</h2>
-        <label class="chk"><input type="checkbox" id="expGrid"> Includi la griglia nell'immagine</label>
-        <div class="field">
-          <span>Risoluzione</span>
-          <select id="expScale">
-            <option value="1">1×</option>
-            <option value="2" selected>2×</option>
-            <option value="3">3×</option>
-            <option value="4">4×</option>
-          </select>
-        </div>
-        <div class="row" style="margin-top:7px">
-          <button class="btn wide" id="expPng">Scarica PNG</button>
-          <button class="btn wide" id="expJpg">Scarica JPG</button>
-        </div>
-        <div class="row" style="margin-top:6px">
-          <button class="btn wide ghostbtn" id="saveJson">Salva drill</button>
-          <button class="btn wide ghostbtn" id="openJson">Apri drill</button>
-        </div>
-        <input type="file" id="fileIn" accept="application/json" hidden>
-      </div>
+      {# Il pannello «Esporta» del tool autonomo non c'è.
+
+         Lì aveva senso: era una pagina a sé, e l'unico modo di portarsi via il
+         disegno era scaricarlo. Qui il builder è dentro l'applicazione e serve
+         a una cosa sola — mettere il drill nel catalogo. Un pulsante che
+         scarica un PNG o un JSON non porterebbe da nessuna parte, e accanto a
+         «Salva il drill» sarebbe pure un tranello: si crede di aver
+         pubblicato, e invece si ha un file nei download. #}
 
     </div>
 

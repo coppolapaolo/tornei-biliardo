@@ -83,3 +83,59 @@ def test_nessuna_regola_globale_del_tool_originale(pericoloso):
         riga for riga in css.splitlines() if riga.strip().startswith(pericoloso)
     ]
     assert not righe_nude, f"Regola globale non confinata: {righe_nude}"
+
+
+# ---------------------------------------------------------------------------
+# Il builder integrato non produce file.
+#
+# Il tool da cui viene nasce come pagina autonoma, e lì scaricare era l'unico
+# modo di portarsi via il disegno. Qui è dentro l'applicazione e serve a una
+# cosa sola: mettere il drill nel catalogo. Un pulsante che scarica un PNG o un
+# JSON non porterebbe da nessuna parte, e accanto a «Salva il drill» sarebbe
+# anche un tranello — si crede di aver pubblicato, e invece si ha un file nei
+# download.
+#
+# Il presidio serve alla prossima versione del builder: chi la ri-innesta parte
+# dall'originale, che quel pannello ce l'ha.
+# ---------------------------------------------------------------------------
+
+JS = Path(__file__).resolve().parents[3] / "static" / "js" / "drill-builder.js"
+TEMPLATE = (
+    Path(__file__).resolve().parents[3] / "templates" / "challenge" / "builder.html"
+)
+
+
+def _code_without_comments(source: str) -> str:
+    """Via i commenti: qui se ne parla apposta, e non sono codice."""
+    source = re.sub(r"/\*.*?\*/", "", source, flags=re.S)
+    source = re.sub(r"\{#.*?#\}", "", source, flags=re.S)
+    return re.sub(r"^\s*//.*$", "", source, flags=re.M)
+
+
+@pytest.mark.parametrize(
+    "impronta",
+    [
+        "a.download",
+        "createObjectURL",
+        "new FileReader",
+        "exportImage",
+        "function download",
+    ],
+)
+def test_il_js_non_scarica_niente(impronta):
+    codice = _code_without_comments(JS.read_text(encoding="utf-8"))
+    assert impronta not in codice, (
+        f"«{impronta}» è tornata in drill-builder.js: il builder integrato non "
+        "produce file, l'immagine va al server."
+    )
+
+
+@pytest.mark.parametrize(
+    "id_pulsante", ["expPng", "expJpg", "saveJson", "openJson", "fileIn"]
+)
+def test_il_pannello_esporta_non_c_e(id_pulsante):
+    markup = _code_without_comments(TEMPLATE.read_text(encoding="utf-8"))
+    assert id_pulsante not in markup, (
+        f"«{id_pulsante}» è tornato nel builder: era un comando di scaricamento "
+        "del tool autonomo e qui non ha senso."
+    )

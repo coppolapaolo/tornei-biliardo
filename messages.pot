@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-16 16:30+0000\n"
+"POT-Creation-Date: 2026-08-16 16:47+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2182,7 +2182,7 @@ msgstr ""
 #: templates/admin/campionato_wizard_step1.html:158
 #: templates/admin/campionato_wizard_step2.html:8
 #: templates/admin/gara_edit.html:11 templates/base.html:565
-#: templates/challenge/builder.html:33 templates/challenge/builder.html:241
+#: templates/challenge/builder.html:33 templates/challenge/builder.html:227
 #: templates/challenge/create.html:14
 #: templates/components/_campionato_create_modal.html:35
 #: templates/components/_campionato_edit_form.html:214
@@ -4464,7 +4464,7 @@ msgstr ""
 
 #: templates/challenge/_challenge_card.html:35
 #: templates/challenge/_challenge_detail.html:43
-#: templates/challenge/builder.html:225 templates/challenge/create.html:36
+#: templates/challenge/builder.html:211 templates/challenge/create.html:36
 #: templates/challenge/training.html:48
 #: templates/components/_challenge_bits.html:27
 #: templates/components/_challenge_management_modal.html:97
@@ -4570,60 +4570,60 @@ msgstr ""
 msgid "Disponi le bilie e traccia i tiri: l'immagine la genera il builder"
 msgstr ""
 
-#: templates/challenge/builder.html:212
+#: templates/challenge/builder.html:198
 msgid "Istruzioni per chi la esegue"
 msgstr ""
 
-#: templates/challenge/builder.html:215
+#: templates/challenge/builder.html:201
 msgid "Come si dispongono le bilie e come si conta il punteggio"
 msgstr ""
 
-#: templates/challenge/builder.html:217
+#: templates/challenge/builder.html:203
 msgid "Il disegno mostra la disposizione; qui si scrive la regola."
 msgstr ""
 
-#: templates/challenge/builder.html:222
+#: templates/challenge/builder.html:208
 msgid "Come si conta"
 msgstr ""
 
-#: templates/challenge/builder.html:228
+#: templates/challenge/builder.html:214
 msgid "Superata o non superata"
 msgstr ""
 
-#: templates/challenge/builder.html:238
+#: templates/challenge/builder.html:224
 msgid "Salva il drill"
 msgstr ""
 
-#: templates/challenge/builder.html:238
+#: templates/challenge/builder.html:224
 #: templates/individual_match/availability.html:111
 msgid "Salva le modifiche"
 msgstr ""
 
-#: templates/challenge/builder.html:255
+#: templates/challenge/builder.html:241
 msgid "Il disegno salvato non si è potuto ricaricare."
 msgstr ""
 
-#: templates/challenge/builder.html:266
+#: templates/challenge/builder.html:252
 msgid "Servono le istruzioni: il disegno da solo non dice come si conta."
 msgstr ""
 
-#: templates/challenge/builder.html:270
+#: templates/challenge/builder.html:256
 msgid "Il tavolo è vuoto: disponi almeno una bilia."
 msgstr ""
 
-#: templates/challenge/builder.html:276
+#: templates/challenge/builder.html:262
 msgid "Salvo…"
 msgstr ""
 
-#: templates/challenge/builder.html:282
+#: templates/challenge/builder.html:268
 msgid "Non è stato possibile generare l'immagine del drill."
 msgstr ""
 
-#: templates/challenge/builder.html:298
+#: templates/challenge/builder.html:284
 msgid "Non è stato possibile salvare il drill."
 msgstr ""
 
-#: templates/challenge/builder.html:306
+#: templates/challenge/builder.html:292
 msgid "Non è stato possibile salvare il drill. Riprova."
 msgstr ""
 
@@ -4759,7 +4759,7 @@ msgstr ""
 msgid "Crea la challenge"
 msgstr ""
 
-#: templates/challenge/create.html:120
+#: templates/challenge/create.html:138
 msgid "Non è stato possibile creare la challenge. Riprova."
 msgstr ""
 

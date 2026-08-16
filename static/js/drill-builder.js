@@ -947,37 +947,15 @@ function preset(k){
 }
 
 /* ================================================================
-   ESPORTA
+   AVVISI
+
+   `download`/`exportImage` del tool autonomo non ci sono piu': qui il builder
+   e' dentro l'applicazione e serve a mettere il drill nel catalogo, non a
+   produrre file. L'immagine la costruisce `DrillBuilder.png()` in fondo, e
+   finisce al server invece che nei download.
 =================================================================*/
 function toast(m){ const t=$("#toast"); t.textContent=m; t.classList.add("show");
   clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove("show"),1900); }
-function download(blob,name){ const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob); a.download=name; a.click();
-  setTimeout(()=>URL.revokeObjectURL(a.href),4000); }
-function exportImage(type){
-  const scale = +$("#expScale").value;
-  const keep = state.aiming; state.aiming = null;
-  const {svg} = buildScene({forExport:true, includeGrid:$("#expGrid").checked});
-  state.aiming = keep;
-  const vb = svg.getAttribute("viewBox").split(" ").map(Number);
-  const w = Math.round(vb[2]*scale), h = Math.round(vb[3]*scale);
-  svg.setAttribute("width",w); svg.setAttribute("height",h);
-  const src = "data:image/svg+xml;charset=utf-8," +
-    encodeURIComponent(new XMLSerializer().serializeToString(svg));
-  const img = new Image();
-  img.onload = ()=>{
-    const c=document.createElement("canvas"); c.width=w; c.height=h;
-    const ctx=c.getContext("2d");
-    if (type==="image/jpeg"){ ctx.fillStyle="#fff"; ctx.fillRect(0,0,w,h); }
-    ctx.drawImage(img,0,0,w,h);
-    c.toBlob(b=>{
-      const slug=(state.title||"drill").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")||"drill";
-      download(b, slug + (type==="image/jpeg"?".jpg":".png")); toast("Immagine scaricata");
-    }, type, .92);
-  };
-  img.onerror = ()=>toast("Esportazione non riuscita");
-  img.src = src;
-}
 
 /* ================================================================
    UI
@@ -1028,14 +1006,6 @@ $("#orientSel").onchange= e=>{ state.orient=e.target.value; render(); };
 $("#titleInput").oninput= e=>{ state.title=e.target.value; render(); };
 $("#lineArrow").onchange= e=>{ state.lineArrow=e.target.checked; };
 $("#lineGhost").onchange= e=>{ state.lineGhost=e.target.checked; };
-$("#expPng").onclick=()=>exportImage("image/png");
-$("#expJpg").onclick=()=>exportImage("image/jpeg");
-$("#saveJson").onclick=()=>{
-  download(new Blob([JSON.stringify({v:4,title:state.title,orient:state.orient,
-    cloth:state.cloth, ballScale:state.ballScale, items:state.items},null,1)],
-    {type:"application/json"}), (state.title||"drill").replace(/\s+/g,"-").toLowerCase()+".json");
-};
-$("#openJson").onclick=()=>$("#fileIn").click();
 function applyScene(d){
   state.items=(d.items||[]).map(i=>{
         if(i.type==="shot"){
@@ -1054,14 +1024,6 @@ function applyScene(d){
     x.classList.toggle("on", Object.keys(CLOTHS)[i]===state.cloth));
   render();
 }
-
-$("#fileIn").onchange=e=>{
-  const f=e.target.files[0]; if(!f) return;
-  const r=new FileReader();
-  r.onload=()=>{ try{ push(); applyScene(JSON.parse(r.result)); toast("Drill caricato"); }
-                 catch(err){ toast("File non valido"); } };
-  r.readAsText(f); e.target.value="";
-};
 
 render();
 

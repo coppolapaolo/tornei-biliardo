@@ -336,6 +336,24 @@ hints:
   - individual_match.tpa_referto
   page: referto_tpa
   section: come-si-compila
+- id: drill.disegna
+  label: Draw the drill
+  short: 'No photo of the table? Draw the drill instead: place the balls, draw the shot, and the drawing
+    becomes the picture.'
+  anchor: drill-disegna
+  screens:
+  - challenge.create_challenge
+  page: challenge
+  section: disegnare
+- id: drill.modifica_disegno
+  label: Edit the drawing
+  short: 'Puts the balls back on the table as you left them. Only on drawn drills: a photo has no drawing
+    to reopen.'
+  anchor: drill-modifica-disegno
+  screens:
+  - challenge.challenge_detail
+  page: challenge
+  section: disegnare
 tours:
 - screen: dashboard.dashboard
   title: Your home

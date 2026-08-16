@@ -57,7 +57,7 @@
       <div class="c7-topline">
         <div class="c7-kicker">{{ _("Non hai una foto?") }}</div>
         <a href="{{ url_for('challenge.diagram_builder') }}"
-           class="btn btn-secondary w-100" style="margin-top:8px">
+           id="goToBuilder" class="btn btn-secondary w-100" style="margin-top:8px">
           <i class="fas fa-pen-ruler"></i>&nbsp;{{ _("Disegna il drill") }}
         </a>
       </div>
@@ -88,6 +88,24 @@ document.addEventListener('DOMContentLoaded', function() {
         preview.querySelector('img').src = URL.createObjectURL(file);
         preview.classList.remove('d-none');
     });
+
+    // Passare al builder non deve costare quello che si è già scritto: il
+    // link porta a un'altra pagina, quindi la descrizione e il tipo di
+    // punteggio vanno passati a mano. Senza, si torna indietro e si riscrive.
+    const toBuilder = document.getElementById('goToBuilder');
+    if (toBuilder) {
+        toBuilder.addEventListener('click', function (e) {
+            const params = new URLSearchParams();
+            const desc = document.getElementById('description').value.trim();
+            if (desc) params.set('description', desc);
+            const scoring = document.querySelector('input[name="scoring_type"]:checked');
+            if (scoring && scoring.value === 'pass_fail') params.set('pass_fail_only', 'true');
+            if (params.toString()) {
+                e.preventDefault();
+                window.location.href = this.href + '?' + params.toString();
+            }
+        });
+    }
 
     document.getElementById('challengeForm').addEventListener('submit', function(e) {
         e.preventDefault();

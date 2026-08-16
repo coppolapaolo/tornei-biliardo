@@ -2,11 +2,12 @@ title: "Le challenge"
 section: giocare
 kind: approfondimento
 audience: [giocatore]
-minutes: 3
+minutes: 4
 summary: "Prove di abilità da eseguire da soli: servono ad allenarsi, a sbloccare traguardi e — dentro una gara — a decidere gli spareggi."
 screens: [challenge.challenge_catalog, challenge.challenge_detail, challenge.training_session,
   challenge.start_attempt, challenge.attempt_detail, challenge.create_challenge,
-  challenge.edit_challenge, challenge.challenge_statistics, player.challenge_detail]
+  challenge.edit_challenge, challenge.challenge_statistics, player.challenge_detail,
+  challenge.diagram_builder, challenge.edit_diagram]
 related: [progressi, numero_dispari]
 
 blocks:
@@ -97,7 +98,75 @@ blocks:
     text: >-
       L'immagine è la parte che conta: una descrizione a parole di dove vanno
       le bilie viene interpretata da ognuno a modo suo. Una foto del tavolo
-      preparato risolve la questione.
+      preparato risolve la questione — e se la foto non ce l'hai, il drill si
+      può disegnare (qui sotto).
+
+  - type: heading
+    id: disegnare
+    title: "Disegnare il drill invece di fotografarlo"
+
+  - type: text
+    text: >-
+      In fondo al riquadro della foto, nel modulo «Nuova challenge», c'è la
+      domanda **«Non hai una foto?»** e il pulsante **«Disegna il drill»**:
+      apre un tavolo vuoto su cui disponi le bilie e tracci i tiri.
+      L'immagine da mettere nel catalogo la genera il disegno, non serve
+      caricare niente.
+
+  - type: note
+    tone: warning
+    title: "È l'alternativa, non il modo consigliato"
+    text: >-
+      Chi la foto ce l'ha continua a caricarla: il tavolo vero resta la cosa
+      più chiara per chi deve riprodurre la disposizione. Il disegno serve a
+      chi la foto non ce l'ha, o a chi vuole indicare anche il tiro e non solo
+      dove stanno le bilie.
+
+  - type: steps
+    items:
+      - title: "Tocca «Disegna il drill»"
+        text: "È in fondo al riquadro «Foto della disposizione». Si apre una pagina a sé: quello che avevi già scritto nel modulo non viene portato dietro, le istruzioni si scrivono lì."
+      - title: "Disponi le bilie"
+        text: "Scegli una bilia nel riquadro «Biglie», poi tocca il tavolo. Si aggancia da sola alla griglia, alla sponda e alle altre bilie."
+      - title: "Traccia il tiro, se serve"
+        text: "Con lo strumento «Tiro» indichi da dove si colpisce e dove si mira; «Linea libera» serve a segnare una traiettoria o una zona. Con «Sposta» si sistema quel che è già sul tavolo."
+      - title: "Scrivi le istruzioni"
+        text: "Sotto al tavolo, nel campo «Istruzioni per chi la esegue»: il disegno mostra la disposizione, non la regola. Come si conta va scritto a parole."
+      - title: "Scegli come si conta"
+        text: "«A punteggio» oppure «Superata o non superata»: le stesse due possibilità del modulo normale."
+      - title: "Tocca «Salva il drill»"
+        text: "È il pulsante in fondo alla pagina. Il drill entra nel catalogo con l'immagine del disegno, come se l'avessi fotografato. «Annulla» esce senza salvare niente."
+
+  - type: note
+    tone: tip
+    title: "Il disegno non si scarica"
+    text: >-
+      Il builder non produce file: non c'è niente da scaricare e niente da
+      ricaricare da disco. Serve a una cosa sola, mettere il drill nel
+      catalogo, e l'unico modo è **«Salva il drill»**. Il disegno resta
+      sull'applicazione, ed è da lì che lo riapri quando vuoi correggerlo.
+
+  - type: text
+    text: >-
+      Un drill disegnato si può riaprire. Sulla sua pagina, chi l'ha creato
+      trova il pulsante **«Modifica il disegno»**: le bilie tornano sul tavolo
+      come le avevi lasciate, si corregge quel che serve e si tocca «Salva le
+      modifiche».
+
+  - type: note
+    tone: info
+    text: >-
+      Il pulsante compare **solo sui drill disegnati**. Un drill nato da una
+      foto non ha un disegno da riaprire, quindi lì non c'è.
+
+  - type: note
+    tone: info
+    title: "Si sblocca con l'uso"
+    text: >-
+      «Disegna il drill» compare ai direttori di gara che hanno già
+      **completato trenta drill**, come le altre funzioni che si sbloccano
+      giocando. Il motivo: un drill disegnato male lo eseguono poi tutti gli
+      altri, e per disegnarne uno buono conviene averne provati parecchi.
 
   - type: heading
     id: in_gara
@@ -155,6 +224,8 @@ blocks:
     items:
       - q: "Non vedo la sezione Challenge."
         a: "È una funzione che si sblocca con l'uso della piattaforma, come la sezione Match. Se non compare ancora, comparirà."
+      - q: "Non vedo «Disegna il drill» nel modulo di creazione."
+        a: "È un comando da direttore di gara, e si sblocca dopo trenta drill completati. Finché non compare, la challenge si crea caricando la foto: è il modo normale, non un ripiego."
       - q: "Posso rifare la stessa challenge più volte?"
         a: "Sì, ed è proprio il senso della schermata di allenamento: registri una prova dopo l'altra senza uscire. Dentro una gara è diverso: lì il numero di tentativi lo stabilisce il direttore."
       - q: "Chi controlla che il punteggio dichiarato sia vero?"
