@@ -229,7 +229,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const passedLabel = {{ _("Superata")|tojson }};
     const failedLabel = {{ _("Non superata")|tojson }};
     const justNowLabel = {{ _("adesso")|tojson }};
-    const scoreLabel = "{{ _('Punteggio') }} {score}";
+    // Anche qui `|tojson`: la parte tradotta va serializzata, il placeholder
+    // si compone in JS. Oggi "Punteggio" e' innocua, ma la regola esiste
+    // perche' domani una traduzione con un apostrofo romperebbe la stringa e
+    // con lei tutto il JavaScript della pagina.
+    const scoreLabel = {{ _("Punteggio")|tojson }} + " {score}";
 
     btn.addEventListener('click', function () {
         const form = document.getElementById('attemptForm');

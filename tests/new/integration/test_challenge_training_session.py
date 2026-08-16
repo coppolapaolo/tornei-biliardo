@@ -16,6 +16,7 @@ import pytest
 
 from models import db, User, Challenge
 from models.challenge.models import ChallengeAttempt
+from models.user.role_enum import UserRole
 
 
 @pytest.fixture
@@ -26,7 +27,7 @@ def author(app):
             username="drill_author",
             email="drill_author@example.com",
             password_hash="x",
-            role="director",
+            role=UserRole.DIRECTOR.value,
         )
         db.session.add(user)
         db.session.commit()
@@ -40,7 +41,7 @@ def player(app):
             username="drill_player",
             email="drill_player@example.com",
             password_hash="x",
-            role="player",
+            role=UserRole.PLAYER.value,
         )
         db.session.add(user)
         db.session.commit()
@@ -130,7 +131,7 @@ class TestSchermataDiAllenamento:
                 username="drill_admin",
                 email="drill_admin@example.com",
                 password_hash="x",
-                role="admin",
+                role=UserRole.ADMIN.value,
             )
             db.session.add(admin)
             db.session.commit()

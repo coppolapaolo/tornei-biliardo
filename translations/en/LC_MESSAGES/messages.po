@@ -4899,7 +4899,7 @@ msgid "Le tue prove"
 msgstr "Your attempts"
 
 #: templates/challenge/training.html:127
-#,, python-format
+#, python-format
 msgid "Punteggio %(score)s"
 msgstr "Score %(score)s"
 
