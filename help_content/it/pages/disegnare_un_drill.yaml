@@ -1,0 +1,356 @@
+title: "Disegnare un drill"
+section: giocare
+kind: tutorial
+audience: [direttore]
+minutes: 6
+summary: "Se la foto del tavolo non ce l'hai, il drill si disegna: bilie, tiri, linee e scritte su un tavolo vuoto. L'immagine del catalogo la genera il disegno."
+screens: [challenge.diagram_builder, challenge.edit_diagram]
+related: [challenge, esami, progressi]
+
+blocks:
+  - type: text
+    text: >-
+      Una challenge si propone con una **foto del tavolo preparato**. Se la foto
+      non ce l'hai, o se vuoi mostrare anche il tiro e non solo dove stanno le
+      bilie, il drill si può **disegnare**: si dispongono le bilie su un tavolo
+      vuoto, si traccia il tiro, e l'immagine che finirà nel catalogo la genera
+      il disegno.
+
+  - type: note
+    tone: warning
+    title: "È l'alternativa, non il modo consigliato"
+    text: >-
+      Chi la foto ce l'ha continua a caricarla: il tavolo vero resta la cosa
+      più chiara per chi deve riprodurre la disposizione. Il disegno serve a
+      chi la foto non ce l'ha.
+
+  - type: note
+    tone: info
+    title: "Si sblocca con l'uso"
+    text: >-
+      «Disegna il drill» compare ai direttori di gara che hanno già
+      **completato trenta drill**, come le altre funzioni che si sbloccano
+      giocando. Il motivo: un drill disegnato male lo eseguono poi tutti gli
+      altri, e per disegnarne uno buono conviene averne provati parecchi.
+
+  - type: heading
+    id: aprire
+    title: "Come si apre"
+
+  - type: text
+    text: >-
+      Si parte dal modulo **«Nuova challenge»**, lo stesso di sempre. In fondo,
+      sotto il campo della foto, c'è la domanda **«Non hai una foto?»** e il
+      pulsante **«Disegna il drill»**.
+
+  - type: shot
+    shot: challenge-nuova
+    caption: "«Disegna il drill» è in fondo al modulo, sotto il campo della foto."
+
+  - type: note
+    tone: warning
+    text: >-
+      Il builder si apre in una **pagina a sé**, e quello che avevi già scritto
+      nel modulo non viene portato dietro: le istruzioni e il tipo di punteggio
+      si scrivono di là. Se hai già compilato il modulo e poi passi al disegno,
+      quel testo lo riscrivi.
+
+  - type: heading
+    id: schermata
+    title: "Com'è fatta la schermata"
+
+  - type: text
+    text: >-
+      Ci sono due parti: il **pannello dei comandi** e il **tavolo**. Sul
+      telefono il pannello sta sopra e il tavolo sotto, e il pannello si fa
+      scorrere per arrivare ai comandi che non si vedono. Sul computer stanno
+      affiancati, pannello a sinistra e tavolo a destra.
+
+  - type: shot
+    shot: drill-builder
+    caption: "Il builder sul telefono: i comandi in alto, il tavolo sotto."
+
+  - type: note
+    tone: tip
+    text: >-
+      Il disegno è più comodo da fare **al computer**: il tavolo è grande, il
+      pannello sta tutto sotto gli occhi e si punta con più precisione. Dal
+      telefono si fa, ma è un lavoro di pazienza.
+
+  - type: heading
+    id: strumenti
+    title: "I quattro strumenti"
+
+  - type: text
+    text: >-
+      In cima al pannello, nel riquadro **«Strumenti»**, si sceglie cosa si sta
+      facendo. Ne è attivo uno alla volta: quello acceso è giallo.
+
+  - type: shot
+    shot: drill-builder-strumenti
+    caption: "Il riquadro «Strumenti»: lo strumento attivo è quello giallo."
+
+  - type: options
+    items:
+      - name: "Sposta"
+        text: >-
+          È lo strumento di partenza. Serve a prendere quel che è già sul
+          tavolo e spostarlo, e a selezionare una bilia o un tiro per
+          correggerlo.
+      - name: "Tiro"
+        text: >-
+          Disegna un tiro: prima si tocca la bilia che si gioca, poi si muove
+          il dito o il puntatore per mirare e si tocca di nuovo per fissare.
+          Toccando un tiro già fatto lo si corregge.
+      - name: "Linea libera"
+        text: >-
+          Traccia una linea a mano, punto per punto: serve a segnare una
+          traiettoria, un percorso o una zona del tavolo.
+      - name: "Testo"
+        text: >-
+          Scrive una parola sul tavolo. Chiede cosa scrivere, poi la mette dove
+          hai toccato. Per cambiarla, tocca due volte la scritta.
+
+  - type: list
+    title: "Accanto agli strumenti"
+    items:
+      - "**Annulla mossa** torna indietro di un passo, **Ripeti mossa** rifà quello che hai annullato."
+      - "**Elimina** toglie l'elemento selezionato. Sul computer fanno lo stesso i tasti «Canc» e «Backspace»."
+      - "Il tasto «Esc» annulla quello che stai facendo: una mira iniziata, una linea a metà."
+
+  - type: heading
+    id: bilie
+    title: "Mettere le bilie"
+
+  - type: text
+    text: >-
+      Nel riquadro **«Biglie»** scegli la bilia — la bianca, le numerate da 1 a
+      15, o la **bilia fantasma** (quella tratteggiata, che indica un punto
+      dove la bilia *dovrebbe* arrivare) — e poi tocchi il tavolo.
+
+  - type: options
+    items:
+      - name: "Calamite sponda e biglie"
+        values: "attivo"
+        text: >-
+          La bilia si aggancia da sola alla griglia, alla sponda e a contatto
+          con le altre: le disposizioni vengono pulite senza doverle
+          aggiustare. Togliendo il segno di spunta la bilia resta esattamente
+          dove la lasci.
+      - name: "Dimensione delle biglie"
+        values: "in scala reale · +15% · +30%"
+        text: >-
+          **In scala reale** è quanto sono davvero rispetto al tavolo, ed è
+          giusta per far vedere se due bilie passano. **+15%** e **+30%** le
+          ingrandiscono per renderle più leggibili, come nei diagrammi dei
+          libri.
+
+  - type: note
+    tone: tip
+    text: >-
+      Sul computer, tenendo premuto **Alt** mentre posi una bilia, gli agganci
+      si disattivano tutti: serve quando la posizione precisa è proprio quella
+      che la calamita ti sposta.
+
+  - type: heading
+    id: tiro
+    title: "Disegnare un tiro"
+
+  - type: text
+    text: >-
+      Il riquadro **«Tiro»** governa come viene disegnato il tiro: dove si
+      colpisce la bianca, con che forza, e cosa mostrare del risultato. Le
+      traiettorie non sono decorazione — le calcola il builder da questi
+      valori.
+
+  - type: shot
+    shot: drill-builder-tiro
+    variant: desktop
+    caption: "Il riquadro «Tiro»: punto di impatto, inclinazione della stecca, forza e cosa mostrare."
+
+  - type: options
+    items:
+      - name: "Punto di impatto sulla bianca"
+        text: >-
+          Il cerchio in alto è la bilia bianca vista di fronte: si tocca il
+          punto in cui la stecca la colpisce. In mezzo è un tiro pieno; più in
+          alto o più in basso è effetto verticale, ai lati è effetto laterale.
+      - name: "Inclinazione stecca"
+        values: "da 0° a 60°"
+        text: >-
+          Quanto la stecca è alzata rispetto al tavolo. Serve a indicare i tiri
+          che si giocano con la coda alta.
+      - name: "Forza"
+        values: "da 5% a 100%"
+        text: >-
+          Quanto forte si colpisce. I cinque tasti sotto — **tocco, piano,
+          medio, forte, spacco** — sono le forze di uso comune. Il riferimento
+          scritto nel pannello: a forza 30 la bilia percorre due lunghezze di
+          tavolo, e il cerchio tratteggiato sul disegno segna dove si ferma.
+      - name: "Aggancia la mira alla buca"
+        values: "attivo"
+        text: >-
+          La mira si allinea da sola alle buche, che è quello che serve quasi
+          sempre. Per mirare altrove tieni premuto e trascina invece di toccare
+          e basta.
+
+  - type: list
+    title: "Cosa far vedere del tiro"
+    items:
+      - "**Traiettoria della bianca**: dove va la bianca dopo l'impatto."
+      - "**Traiettorie delle altre biglie**: dove vanno le bilie colpite."
+      - "**Stecca sul tavolo**: disegna la stecca, così si capisce da che parte si gioca."
+      - "**Scheda del tiro sotto al tavolo**: il riepilogo scritto — effetto, forza, angolo — sotto il disegno."
+      - "**Etichetta dell'angolo di taglio**: scrive di quanti gradi è il taglio. Normalmente è spenta."
+
+  - type: heading
+    id: linee
+    title: "Linee e scritte"
+
+  - type: text
+    text: >-
+      La **linea libera** si traccia toccando un punto dopo l'altro. Si chiude
+      con il pulsante **«Chiudi linea»**, oppure toccando due volte, oppure
+      tornando sull'ultimo punto messo.
+
+  - type: options
+    items:
+      - name: "Continua / Tratteggiata"
+        text: "Il tratto della linea. La tratteggiata si usa di solito per i percorsi immaginari."
+      - name: "Colore"
+        text: "I quadratini colorati accanto: servono a distinguere due percorsi diversi nello stesso disegno."
+      - name: "Punta a freccia"
+        values: "attivo"
+        text: "Mette la freccia in fondo alla linea, così si capisce il verso."
+      - name: "Biglia fantasma in fondo"
+        text: "Aggiunge una bilia tratteggiata dove la linea finisce: indica dove la bilia deve arrivare."
+
+  - type: heading
+    id: tavolo
+    title: "L'aspetto del tavolo"
+
+  - type: text
+    text: >-
+      Il riquadro **«Tavolo»** non cambia il drill, cambia come si legge il
+      disegno.
+
+  - type: options
+    items:
+      - name: "Panno"
+        text: "Il colore del tavolo, fra quelli proposti."
+      - name: "Griglia dei diamanti"
+        values: "attiva"
+        text: >-
+          Le linee che uniscono i diamanti delle sponde. Sono il modo con cui
+          al biliardo si indicano le posizioni, e nel disegno di un drill
+          servono davvero: dicono *dove* va messa la bilia.
+      - name: "Griglia ¼ di diamante"
+        text: "Una griglia più fitta, per le posizioni che cadono fra un diamante e l'altro."
+      - name: "Punti e linee standard"
+        values: "attivo"
+        text: "Il punto di battuta e la linea della testa, come sul tavolo vero."
+      - name: "Aggancio alla griglia"
+        values: "¼ · ½ · 1 diamante · nessuno"
+        text: >-
+          Quanto fitta è la maglia a cui le bilie si agganciano. Più è larga,
+          più le posizioni vengono regolari; con **nessuno** la bilia resta
+          dove la metti.
+      - name: "Orientamento"
+        values: "orizzontale · verticale"
+        text: >-
+          Il tavolo per lungo o per alto. Verticale sta meglio nelle schermate
+          del telefono, dove il drill verrà guardato.
+      - name: "Titolo del diagramma"
+        text: >-
+          Una scritta in cima al disegno, per esempio «Drill 1 — Stop shot».
+          È facoltativa: il nome con cui il drill compare nel catalogo è un'altra
+          cosa, e viene dalle istruzioni.
+
+  - type: heading
+    id: posizioni
+    title: "Le posizioni standard"
+
+  - type: text
+    text: >-
+      Il riquadro **«Posizioni standard»** mette sul tavolo una disposizione
+      già pronta, così non si parte mai dal foglio bianco. Quello che c'era
+      prima viene sostituito — e se hai sbagliato, «Annulla mossa» rimette
+      tutto com'era.
+
+  - type: shot
+    shot: drill-builder-posizioni
+    variant: desktop
+    caption: "Gli otto schemi pronti del riquadro «Posizioni standard»."
+
+  - type: list
+    items:
+      - "**Rack 9-ball**, **Rack 8-ball**, **Rack 10-ball**: le bilie raccolte come alla partenza della specialità."
+      - "**Break 9-ball**: il rack del 9-ball più la bianca in battuta e il tiro di spacco già tracciato."
+      - "**Wagon wheel**: una bilia al centro e sette bilie fantasma in ventaglio — l'esercizio classico sulla posizione della bianca."
+      - "**Linea di stop**: la bianca e cinque bilie in fila lungo la linea di mezzo."
+      - "**L drill**: la bianca e sei bilie disposte a L lungo due sponde."
+      - "**Svuota**: toglie tutto dal tavolo."
+
+  - type: heading
+    id: salvare
+    title: "Salvare il drill"
+
+  - type: text
+    text: >-
+      Sotto al tavolo, prima del pulsante di salvataggio, ci sono le due cose
+      che il disegno da solo non può dire.
+
+  - type: steps
+    items:
+      - title: "Scrivi le istruzioni"
+        text: "Nel campo «Istruzioni per chi la esegue»: il disegno mostra la disposizione, non la regola. Come si conta il punteggio va scritto a parole, ed è obbligatorio."
+      - title: "Scegli come si conta"
+        text: "«A punteggio» oppure «Superata o non superata»: le stesse due possibilità del modulo normale."
+      - title: "Tocca «Salva il drill»"
+        text: "È il pulsante in fondo alla pagina. Il drill entra nel catalogo con l'immagine del disegno, come se l'avessi fotografato. «Annulla» esce senza salvare niente."
+
+  - type: note
+    tone: info
+    text: >-
+      Se le istruzioni sono vuote, o se il tavolo non ha nemmeno una bilia, il
+      salvataggio si ferma e te lo dice: sono le due cose senza cui il drill
+      non sarebbe eseguibile da nessuno.
+
+  - type: note
+    tone: tip
+    title: "Il disegno non si scarica"
+    text: >-
+      Il builder non produce file: non c'è niente da scaricare e niente da
+      ricaricare da disco. Serve a una cosa sola, mettere il drill nel
+      catalogo, e l'unico modo è **«Salva il drill»**. Il disegno resta
+      sull'applicazione, ed è da lì che lo riapri quando vuoi correggerlo.
+
+  - type: heading
+    id: correggere
+    title: "Correggere un disegno"
+
+  - type: text
+    text: >-
+      Un drill disegnato si può riaprire. Sulla sua pagina, chi l'ha creato
+      trova il pulsante **«Modifica il disegno»**: le bilie tornano sul tavolo
+      come le avevi lasciate, si corregge quel che serve e si tocca **«Salva le
+      modifiche»**.
+
+  - type: note
+    tone: info
+    text: >-
+      Il pulsante compare **solo sui drill disegnati**. Un drill nato da una
+      foto non ha un disegno da riaprire, quindi lì non c'è.
+
+  - type: faq
+    items:
+      - q: "Non vedo «Disegna il drill» nel modulo di creazione."
+        a: "È un comando da direttore di gara, e si sblocca dopo trenta drill completati. Finché non compare, la challenge si crea caricando la foto: è il modo normale, non un ripiego."
+      - q: "Posso disegnare il drill dal telefono?"
+        a: "Sì, tutto funziona. Ma il tavolo è piccolo e il pannello va fatto scorrere: se hai un computer a portata, usalo."
+      - q: "Il disegno lo vedono anche gli altri?"
+        a: "Vedono l'immagine, come per un drill fotografato: il disegno diventa la figura del drill nel catalogo. Riaprirlo e modificarlo può farlo solo chi l'ha creato."
+      - q: "Posso partire da un drill esistente e cambiarlo?"
+        a: "Solo se è tuo e se è disegnato: allora c'è «Modifica il disegno». Un drill di qualcun altro non si riapre; puoi però rifarne uno tuo partendo da una posizione standard."
+      - q: "Cosa succede se chiudo la pagina senza salvare?"
+        a: "Il disegno si perde. Non c'è una bozza automatica: finché non tocchi «Salva il drill» il drill non esiste."

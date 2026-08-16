@@ -177,6 +177,30 @@ def test_il_js_non_ha_testo_italiano_cablato(parola):
     )
 
 
+# Le funzioni con cui il JS parla all'utente. Quello che ricevono lo legge una
+# persona, quindi deve arrivare da `T_()`.
+BOCCHE = ["prompt", "alert", "confirm", "toast"]
+
+
+@pytest.mark.parametrize("funzione", BOCCHE)
+def test_nessun_testo_diretto_in_cio_che_l_utente_legge(funzione):
+    """Presidio sul punto di uscita, non sulla parola.
+
+    `PAROLE_CABLATE` elenca parole note: presidia il passato. Le due domande
+    dello strumento «Testo» (`prompt("Testo da inserire:")`) sono passate
+    indenni proprio per questo — nessuno le aveva aggiunte alla lista, e in
+    inglese il builder chiedeva in italiano. Qui si guarda **chi parla**
+    all'utente, cosi' vale anche per le frasi che nessuno ha ancora scritto.
+    """
+    codice = _code_without_comments(JS.read_text(encoding="utf-8"))
+    diretti = re.findall(rf'\b{funzione}\(\s*["\'`]', codice)
+    assert not diretti, (
+        f"`{funzione}(` riceve una stringa scritta nel codice: "
+        "va in DRILL_BUILDER_I18N e letta con T_(), altrimenti resta "
+        "italiana in ogni lingua."
+    )
+
+
 def test_ogni_chiave_chiesta_dal_js_esiste_nel_dizionario():
     """Una chiave assente non dà errore: cade sul ripiego italiano, in silenzio."""
     codice = _code_without_comments(JS.read_text(encoding="utf-8"))

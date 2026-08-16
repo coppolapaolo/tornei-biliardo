@@ -34,6 +34,16 @@
     letter-spacing:.16em;text-transform:uppercase;color:var(--muted);
     margin:0 0 7px;padding-bottom:5px;border-bottom:1px solid var(--line)}
   .drill-builder .row{display:flex;gap:6px;flex-wrap:wrap}
+  /* Il confine vale anche al contrario: `.row` nel tool autonomo era una
+     semplice riga flex, ma nell'app e' la riga di griglia di Bootstrap, che ai
+     figli impone `width:100%` (piu' gutter negativi sul contenitore). Risultato:
+     i pulsanti raggruppati a due a due andavano uno per riga, il pannello
+     diventava tre volte piu' alto e su mobile — dove sta sopra al tavolo, con
+     `max-height:48vh` — schiacciava il tavolo a una striscia. Qui si annulla la
+     griglia; `.btn.wide` resta piu' specifico e continua a distribuire lo
+     spazio. */
+  .drill-builder .row{--bs-gutter-x:0;--bs-gutter-y:0;margin:0}
+  .drill-builder .row > *{width:auto;max-width:none;padding-left:0;padding-right:0;margin-top:0}
   .drill-builder button, .drill-builder select, .drill-builder input[type=text]{font-family:inherit;font-size:12.5px;color:var(--ink)}
   .drill-builder .btn{background:var(--slate-3);border:1px solid var(--line);border-radius:var(--radius);
     padding:6px 9px;cursor:pointer;transition:.12s;line-height:1.2}

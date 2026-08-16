@@ -397,8 +397,68 @@ hints:
   anchor: drill-modifica-disegno
   screens:
   - challenge.challenge_detail
-  page: challenge
-  section: disegnare
+  page: disegnare_un_drill
+  section: correggere
+- id: drill.strumento
+  label: The tools
+  short: 'One at a time, and the active one is yellow: «Move» tidies up, «Shot» draws a shot, «Free line»
+    traces a path, «Text» writes.'
+  anchor: drill-strumento
+  screens:
+  - challenge.diagram_builder
+  - challenge.edit_diagram
+  page: disegnare_un_drill
+  section: strumenti
+- id: drill.calamite
+  label: Snap to cushions and balls
+  short: The ball snaps by itself to grid, cushion and other balls. Clear the tick box — or hold Alt —
+    if it moves you where you do not want.
+  anchor: drill-calamite
+  screens:
+  - challenge.diagram_builder
+  - challenge.edit_diagram
+  page: disegnare_un_drill
+  section: bilie
+- id: drill.punto_impatto
+  label: Contact point on the cue ball
+  short: 'The circle is the cue ball seen face on: tap where the cue strikes it. Middle is centre-ball,
+    high or low is follow and draw, the sides are side spin.'
+  anchor: drill-punto-impatto
+  screens:
+  - challenge.diagram_builder
+  - challenge.edit_diagram
+  page: disegnare_un_drill
+  section: tiro
+- id: drill.forza
+  label: Power
+  short: How hard the ball is struck. At power 30 it travels two table lengths, and the dashed circle
+    marks where it stops.
+  anchor: drill-forza
+  screens:
+  - challenge.diagram_builder
+  - challenge.edit_diagram
+  page: disegnare_un_drill
+  section: tiro
+- id: drill.posizioni_standard
+  label: Standard positions
+  short: 'Eight ready-made layouts, from the racks to the wagon wheel. They replace what is on the table:
+    if you get it wrong, «Undo» puts everything back.'
+  anchor: drill-posizioni-standard
+  screens:
+  - challenge.diagram_builder
+  - challenge.edit_diagram
+  page: disegnare_un_drill
+  section: posizioni
+- id: drill.istruzioni
+  label: Instructions for whoever plays it
+  short: 'The drawing shows the layout, not the rule: how the score is counted goes here, in words. Without
+    it the drill will not save.'
+  anchor: drill-istruzioni
+  screens:
+  - challenge.diagram_builder
+  - challenge.edit_diagram
+  page: disegnare_un_drill
+  section: salvare
 tours:
 - screen: dashboard.dashboard
   title: Your home

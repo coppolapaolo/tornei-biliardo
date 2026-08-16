@@ -810,7 +810,7 @@ stage.addEventListener("pointerdown", ev=>{
     render(); return;
   }
   if (state.tool === "text"){
-    const t = prompt("Testo da inserire:");
+    const t = prompt(T_("textNew","Testo da inserire:"));
     if (t){ push(); state.items.push({id:uid(),type:"text",text:t,...clampPt(snapPoint(raw,{toBalls:false}))}); }
     state.tool = "select"; render(); return;
   }
@@ -882,7 +882,7 @@ stage.addEventListener("dblclick", ev=>{
   if (state.draft) return finishLine();
   const h = hit(toTable(ev));
   if (h && h.it.type==="text"){
-    const t = prompt("Testo:", h.it.text);
+    const t = prompt(T_("textEdit","Testo:"), h.it.text);
     if (t !== null){ push(); h.it.text = t; render(); }
   }
 });
