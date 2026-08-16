@@ -152,6 +152,33 @@ blocks:
       confermato da tutti e due.
 
   - type: heading
+    id: dove-si-vede
+    title: "Dove ritrovi il tuo TPA"
+
+  - type: text
+    text: >-
+      Il TPA di una partita sola dice poco: è nel tempo che diventa
+      interessante. Lo ritrovi in due posti, dove si somma da solo.
+
+  - type: list
+    items:
+      - "Nel tuo **profilo**, accanto all'Elo: il TPA di tutte le partite messe insieme."
+      - "Nelle **statistiche** dei match amichevoli, con il dettaglio di dove nascono i tuoi errori e l'elenco delle partite con referto."
+
+  - type: note
+    tone: info
+    title: "Non è la media dei TPA delle partite"
+    text: >-
+      Si sommano bilie ed errori di tutte le partite e si divide una volta
+      sola. Una partita lunga pesa più di una corta, com'è giusto: altrimenti
+      un rack fortunato varrebbe quanto un'ora di gioco pulito.
+
+  - type: text
+    text: >-
+      Il TPA compare anche se il referto lo ha tenuto il tuo avversario: quello
+      che è stato annotato riguarda anche te.
+
+  - type: heading
     id: gli-errori
     title: "Cosa conta come errore"
 

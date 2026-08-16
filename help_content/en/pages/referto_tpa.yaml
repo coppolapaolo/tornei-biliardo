@@ -151,6 +151,33 @@ blocks:
       confirm it.
 
   - type: heading
+    id: dove-si-vede
+    title: "Where to find your TPA"
+
+  - type: text
+    text: >-
+      A single match's TPA says very little: it gets interesting over time. You
+      find it in two places, where it adds up on its own.
+
+  - type: list
+    items:
+      - "In your **profile**, next to the Elo: the TPA across all your matches."
+      - "In the **statistics** for friendly matches, with a breakdown of where your errors come from and the list of matches with a scoresheet."
+
+  - type: note
+    tone: info
+    title: "It is not the average of your match TPAs"
+    text: >-
+      Balls and errors from every match are added up and divided once. A long
+      match weighs more than a short one, as it should: otherwise one lucky
+      rack would count as much as an hour of clean play.
+
+  - type: text
+    text: >-
+      The TPA shows up even when your opponent kept the scoresheet: what was
+      recorded is about you too.
+
+  - type: heading
     id: gli-errori
     title: "What counts as an error"
 

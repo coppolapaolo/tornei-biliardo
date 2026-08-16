@@ -186,7 +186,7 @@ class TestCompleteUserJourney:
                 "first_round_policy": "random",
                 "odd_number_policy": "bye",
                 "anti_rematch_enabled": "on",  # Required for amalfi
-                "rating_type": "fargo",
+                "rating_type": "elo",
             },
             follow_redirects=True,
         )
@@ -241,7 +241,7 @@ class TestCompleteUserJourney:
                 "first_round_policy": "random",
                 "odd_number_policy": "bye",
                 "anti_rematch_enabled": "on",  # Fix: Enable anti-rematch for amalfi
-                "rating_type": "fargo",
+                "rating_type": "elo",
             },
             follow_redirects=True,
         )
@@ -571,7 +571,7 @@ class TestCompleteUserJourney:
                 "first_round_policy": "random",
                 "odd_number_policy": "bye",
                 "anti_rematch_enabled": "on",  # Required for amalfi
-                "rating_type": "fargo",
+                "rating_type": "elo",
             },
             follow_redirects=True,
         )
@@ -739,7 +739,7 @@ class TestErrorHandlingWorkflows:
                 "first_round_policy": "random",
                 "odd_number_policy": "bye",
                 "anti_rematch_enabled": "on",  # Required for amalfi
-                "rating_type": "fargo",
+                "rating_type": "elo",
             },
         )
 
@@ -764,7 +764,7 @@ class TestErrorHandlingWorkflows:
                 "first_round_policy": "random",
                 "odd_number_policy": "bye",
                 "anti_rematch_enabled": "on",  # Required for amalfi
-                "rating_type": "fargo",
+                "rating_type": "elo",
             },
         )
 

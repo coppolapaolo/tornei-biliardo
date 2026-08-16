@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-16 12:32+0000\n"
+"POT-Creation-Date: 2026-08-16 14:10+0000\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -960,7 +960,7 @@ msgid "Tutti"
 msgstr "All"
 
 #: routes/help.py:59 templates/admin/campionato_detail.html:230
-#: templates/admin/users_list.html:91 templates/admin/users_list.html:148
+#: templates/admin/users_list.html:91 templates/admin/users_list.html:147
 #: templates/components/_detailed_classification.html:19
 #: templates/components/_unified_dashboard_header.html:10
 #: templates/player/profile.html:80
@@ -968,7 +968,7 @@ msgid "Giocatore"
 msgstr "Player"
 
 #: routes/help.py:60 templates/admin/users_list.html:90
-#: templates/admin/users_list.html:146
+#: templates/admin/users_list.html:145
 #: templates/components/_unified_dashboard_header.html:9
 #: templates/player/profile.html:79
 msgid "Direttore di gara"
@@ -1354,7 +1354,7 @@ msgstr ""
 #: routes/individual_match/proposals.py:384 routes/individual_match/tpa.py:93
 #: routes/individual_match/tpa.py:114 routes/individual_match/tpa.py:136
 #: routes/individual_match/tpa.py:170 routes/individual_match/views.py:34
-#: routes/individual_match/views.py:73
+#: routes/individual_match/views.py:82
 msgid "Errore interno del server"
 msgstr "Internal server error"
 
@@ -1736,7 +1736,7 @@ msgid "Metrica"
 msgstr "Metric"
 
 #: routes/gamification/features.py:60 templates/admin/users_list.html:111
-#: templates/admin/users_list.html:142 templates/player/profile.html:76
+#: templates/admin/users_list.html:141 templates/player/profile.html:76
 msgid "Ruolo"
 msgstr "Role"
 
@@ -1750,7 +1750,7 @@ msgid "Achievement"
 msgstr "Achievement"
 
 #: routes/gamification/features.py:75 templates/admin/users_list.html:89
-#: templates/admin/users_list.html:144
+#: templates/admin/users_list.html:143
 msgid "Admin"
 msgstr "Admin"
 
@@ -1902,11 +1902,11 @@ msgstr "Proposal declined."
 msgid "Referto chiuso."
 msgstr "Scoresheet closed."
 
-#: routes/individual_match/views.py:84
+#: routes/individual_match/views.py:93
 msgid "Risorsa non trovata."
 msgstr "Resource not found."
 
-#: routes/individual_match/views.py:94
+#: routes/individual_match/views.py:103
 msgid "Accesso negato."
 msgstr "Access denied."
 
@@ -1936,7 +1936,7 @@ msgstr "Enrollment in %(gara)s completed!"
 msgid "Errore durante l'iscrizione."
 msgstr "Error during enrollment."
 
-#: routes/player/exports.py:527
+#: routes/player/exports.py:526
 msgid ""
 "Un export è già in corso o è stato generato di recente. Controlla le "
 "notifiche."
@@ -1944,42 +1944,42 @@ msgstr ""
 "An export is already in progress or was recently generated. Check your "
 "notifications."
 
-#: routes/player/exports.py:536
+#: routes/player/exports.py:535
 msgid "Export GDPR Pronto"
 msgstr "GDPR Export Ready"
 
-#: routes/player/exports.py:538
+#: routes/player/exports.py:537
 msgid ""
 "Il tuo archivio dati è pronto per il download. Il link scadrà tra 24 ore."
 msgstr ""
 "Your data archive is ready for download. The link will expire in 24 hours."
 
-#: routes/player/exports.py:540
+#: routes/player/exports.py:539
 msgid "Scarica"
 msgstr "Download"
 
-#: routes/player/exports.py:541
+#: routes/player/exports.py:540
 msgid "Errore Export GDPR"
 msgstr "GDPR Export Error"
 
-#: routes/player/exports.py:543
+#: routes/player/exports.py:542
 msgid ""
 "Si è verificato un errore durante la generazione dell'archivio. Riprova più "
 "tardi."
 msgstr ""
 "An error occurred while generating the archive. Please try again later."
 
-#: routes/player/exports.py:557
+#: routes/player/exports.py:556
 msgid ""
 "Export avviato. Riceverai una notifica quando sarà pronto per il download."
 msgstr ""
 "Export started. You'll get a notification when it's ready to download."
 
-#: routes/player/exports.py:582
+#: routes/player/exports.py:581
 msgid "Il file di export non esiste o è scaduto."
 msgstr "The export file does not exist or has expired."
 
-#: routes/player/exports.py:589
+#: routes/player/exports.py:588
 msgid "Il file di export è scaduto. Richiedi un nuovo export."
 msgstr "The export file has expired. Request a new export."
 
@@ -2039,7 +2039,7 @@ msgstr "Championship visible"
 msgid "Campionato non era nascosto"
 msgstr "Championship was not hidden"
 
-#: routes/player/profile.py:312
+#: routes/player/profile.py:321
 msgid ""
 "Informazioni aggiornate. Abbiamo inviato una nuova email di verifica al "
 "nuovo indirizzo."
@@ -2047,27 +2047,27 @@ msgstr ""
 "Information updated. A new verification email has been sent to the new "
 "address."
 
-#: routes/player/profile.py:318
+#: routes/player/profile.py:327
 msgid "Informazioni aggiornate correttamente."
 msgstr "Information updated successfully."
 
-#: routes/player/profile.py:323
+#: routes/player/profile.py:332
 msgid "Si è verificato un errore durante l'aggiornamento."
 msgstr "An error occurred during the update."
 
-#: routes/player/profile.py:335
+#: routes/player/profile.py:344
 msgid "La tua email è già verificata."
 msgstr "Your email is already verified."
 
-#: routes/player/profile.py:344
+#: routes/player/profile.py:353
 msgid "Email di verifica inviata. Controlla la tua casella di posta."
 msgstr "Verification email sent. Check your inbox."
 
-#: routes/player/profile.py:348
+#: routes/player/profile.py:357
 msgid "Impossibile inviare l'email. Riprova più tardi."
 msgstr "Could not send the email. Please try again later."
 
-#: routes/player/profile.py:350
+#: routes/player/profile.py:359
 #, python-format
 msgid "Errore durante l'invio: %(detail)s"
 msgstr "Error while sending: %(detail)s"
@@ -2311,7 +2311,7 @@ msgstr "Bracket"
 msgid "Torna alla gara"
 msgstr "Back to the tournament"
 
-#: templates/admin/users_list.html:118 templates/admin/users_list.html:186
+#: templates/admin/users_list.html:117 templates/admin/users_list.html:182
 #: templates/components/_gamification_labels.html:50
 #: templates/components/_gara_matches.html:6
 #: templates/components/_history_matches_tab.html:14
@@ -2328,7 +2328,7 @@ msgstr "Matches"
 msgid "Gestione Gara %(id)s - Admin"
 msgstr "Competition %(id)s Management - Admin"
 
-#: templates/admin/users_list.html:204
+#: templates/admin/users_list.html:200
 #: templates/challenge/_challenge_card.html:58
 #: templates/components/_history_campionati_tab.html:105
 #: templates/components/_history_gare_tab.html:116
@@ -3282,7 +3282,7 @@ msgstr "Registration"
 msgid "Crea il tuo account"
 msgstr "Create your account"
 
-#: templates/admin/users_list.html:110 templates/admin/users_list.html:141
+#: templates/admin/users_list.html:110 templates/admin/users_list.html:140
 #: templates/player/privacy_settings.html:29 templates/player/profile.html:71
 #: templates/register.html:28
 msgid "Telefono"
@@ -3461,6 +3461,7 @@ msgid "in attesa"
 msgstr "pending"
 
 #: templates/admin/campionato_detail.html:231
+#: templates/individual_match/statistics.html:80
 msgid "Posizione"
 msgstr "Position"
 
@@ -3717,7 +3718,7 @@ msgid "Passo 2 di 2"
 msgstr "Step 2 of 2"
 
 #: templates/admin/campionato_wizard_step2.html:30
-#: templates/admin/users_list.html:119 templates/admin/users_list.html:189
+#: templates/admin/users_list.html:118 templates/admin/users_list.html:185
 #: templates/components/_classification_mobile.html:30
 #: templates/components/_classification_mobile.html:56
 #: templates/components/_detailed_classification.html:20
@@ -3843,11 +3844,9 @@ msgid "Gioco con handicap"
 msgstr "Handicap mode"
 
 #: templates/admin/campionato_wizard_step2.html:130
-msgid ""
-"I match non aggiornano i rating (Elo/Fargo). Ereditato da gare e partite."
+msgid "I match non aggiornano il rating Elo. Ereditato da gare e partite."
 msgstr ""
-"Matches do not update ratings (Elo/Fargo). Inherited by competitions and "
-"matches."
+"Matches do not update the Elo rating. Inherited by competitions and matches."
 
 #: templates/admin/campionato_wizard_step2.html:147
 #: templates/admin/venue_form.html:12 templates/admin/venue_form.html:23
@@ -3873,7 +3872,7 @@ msgid "Approva o rifiuta chi chiede di dirigere le gare."
 msgstr "Approve or reject those asking to run tournaments."
 
 #: templates/admin/director_requests.html:13
-#: templates/admin/users_list.html:108 templates/admin/users_list.html:134
+#: templates/admin/users_list.html:108 templates/admin/users_list.html:133
 #: templates/gamification/admin/dashboard.html:144
 #: templates/gamification/admin/streaks.html:65
 #: templates/gamification/admin/streaks.html:102
@@ -3889,7 +3888,7 @@ msgid "Data richiesta"
 msgstr "Request date"
 
 #: templates/admin/director_requests.html:15
-#: templates/admin/users_list.html:121 templates/admin/users_list.html:200
+#: templates/admin/users_list.html:120 templates/admin/users_list.html:196
 #: templates/components/_gara_matches.html:58
 #: templates/components/_gara_matches.html:92
 #: templates/gamification/admin/achievements.html:29
@@ -4035,7 +4034,7 @@ msgid "Gestisci le challenge"
 msgstr "Manage the challenges"
 
 #: templates/admin/gara_create_standalone.html:275
-#: templates/admin/users_list.html:155
+#: templates/admin/users_list.html:154
 #: templates/components/_gara_edit_form.html:126
 #: templates/components/_gara_edit_form.html:130
 #: templates/components/_new_gara_modal.html:310
@@ -4046,7 +4045,7 @@ msgid "No"
 msgstr "No"
 
 #: templates/admin/gara_create_standalone.html:276
-#: templates/admin/users_list.html:153
+#: templates/admin/users_list.html:152
 #: templates/components/_gara_edit_form.html:126
 #: templates/components/_gara_edit_form.html:129
 #: templates/components/_new_gara_modal.html:310
@@ -4058,8 +4057,8 @@ msgstr "Yes"
 #: templates/admin/gara_create_standalone.html:278
 #: templates/components/_gara_edit_form.html:132
 #: templates/components/_new_gara_modal.html:314
-msgid "I match con handicap non aggiornano i rating (Elo/Fargo)."
-msgstr "Handicap matches do not update ratings (Elo/Fargo)."
+msgid "I match con handicap non aggiornano il rating Elo."
+msgstr "Handicap matches do not update the Elo rating."
 
 #: templates/admin/gara_create_standalone.html:310
 #: templates/components/_campionato_edit_form.html:65
@@ -4183,7 +4182,7 @@ msgstr "New users"
 
 #: templates/admin/kpi.html:194 templates/admin/kpi.html:254
 #: templates/admin/kpi.html:859 templates/individual_match/dashboard.html:207
-#: templates/individual_match/statistics.html:47
+#: templates/individual_match/statistics.html:151
 msgid "Match giocati"
 msgstr "Matches played"
 
@@ -4468,76 +4467,72 @@ msgstr "Verified"
 msgid "Non verificati"
 msgstr "Unverified"
 
-#: templates/admin/users_list.html:109 templates/admin/users_list.html:140
+#: templates/admin/users_list.html:109 templates/admin/users_list.html:139
 #: templates/player/privacy_settings.html:19
 msgid "Email"
 msgstr "Email"
 
-#: templates/admin/users_list.html:112 templates/admin/users_list.html:151
+#: templates/admin/users_list.html:112 templates/admin/users_list.html:150
 msgid "Verificato"
 msgstr "Verified"
 
-#: templates/admin/users_list.html:113 templates/admin/users_list.html:158
+#: templates/admin/users_list.html:113 templates/admin/users_list.html:157
 msgid "ELO"
 msgstr "ELO"
 
-#: templates/admin/users_list.html:114 templates/admin/users_list.html:161
-msgid "Fargo"
-msgstr "Fargo"
-
-#: templates/admin/users_list.html:115 templates/admin/users_list.html:164
+#: templates/admin/users_list.html:114 templates/admin/users_list.html:160
 msgid "Gamification"
 msgstr "Gamification"
 
-#: templates/admin/users_list.html:116 templates/admin/users_list.html:175
+#: templates/admin/users_list.html:115 templates/admin/users_list.html:171
 msgid "Richiesta"
 msgstr "Request"
 
-#: templates/admin/users_list.html:117 templates/admin/users_list.html:183
+#: templates/admin/users_list.html:116 templates/admin/users_list.html:179
 msgid "Iscrizioni"
 msgstr "Registrations"
 
-#: templates/admin/users_list.html:120 templates/admin/users_list.html:197
+#: templates/admin/users_list.html:119 templates/admin/users_list.html:193
 msgid "Registrato"
 msgstr "Registered"
 
-#: templates/admin/users_list.html:166
+#: templates/admin/users_list.html:162
 msgid "Bypass completo delle regole gamification"
 msgstr "Full bypass of gamification rules"
 
-#: templates/admin/users_list.html:167
+#: templates/admin/users_list.html:163
 msgid "Override"
 msgstr "Override"
 
-#: templates/admin/users_list.html:171
+#: templates/admin/users_list.html:167
 msgid "Normale"
 msgstr "Normal"
 
-#: templates/admin/users_list.html:180 templates/components/_gara_info.html:71
+#: templates/admin/users_list.html:176 templates/components/_gara_info.html:71
 msgid "Nessuna"
 msgstr "None"
 
-#: templates/admin/users_list.html:209
+#: templates/admin/users_list.html:205
 msgid "Rimuovere il ruolo director a questo utente?"
 msgstr "Remove the director role from this user?"
 
-#: templates/admin/users_list.html:212
+#: templates/admin/users_list.html:208
 msgid "Rimuovi director"
 msgstr "Remove director"
 
-#: templates/admin/users_list.html:222
+#: templates/admin/users_list.html:218
 msgid "Segna email come verificata"
 msgstr "Mark email as verified"
 
-#: templates/admin/users_list.html:223
+#: templates/admin/users_list.html:219
 msgid "Verifica"
 msgstr "Verify"
 
-#: templates/admin/users_list.html:230
+#: templates/admin/users_list.html:226
 msgid "Reinvia email di verifica"
 msgstr "Resend verification email"
 
-#: templates/admin/users_list.html:237
+#: templates/admin/users_list.html:233
 msgid ""
 "Eliminare definitivamente questo utente? I dati personali verranno "
 "anonimizzati e l'azione non è reversibile."
@@ -4545,19 +4540,19 @@ msgstr ""
 "Permanently delete this user? Personal data will be anonymized and this "
 "action cannot be undone."
 
-#: templates/admin/users_list.html:240
+#: templates/admin/users_list.html:236
 msgid "Elimina (anonimizza) utente"
 msgstr "Delete (anonymize) user"
 
-#: templates/admin/users_list.html:253
+#: templates/admin/users_list.html:249
 msgid "Nessun utente corrisponde ai filtri."
 msgstr "No user matches the filters."
 
-#: templates/admin/users_list.html:257
+#: templates/admin/users_list.html:253
 msgid "Nessun Utente"
 msgstr "No Users"
 
-#: templates/admin/users_list.html:258
+#: templates/admin/users_list.html:254
 msgid "Non ci sono ancora utenti registrati."
 msgstr "There are no registered users yet."
 
@@ -5246,10 +5241,10 @@ msgstr ""
 
 #: templates/components/_campionato_edit_form.html:191
 msgid ""
-"I match si giocano con handicap e non aggiornano i rating (Elo/Fargo). "
-"Ereditato da gare e partite."
+"I match si giocano con handicap e non aggiornano il rating Elo. Ereditato da"
+" gare e partite."
 msgstr ""
-"Matches are played with handicap and do not update ratings (Elo/Fargo). "
+"Matches are played with a handicap and do not update the Elo rating. "
 "Inherited by competitions and matches."
 
 #: templates/components/_campionato_edit_form.html:205
@@ -5590,7 +5585,7 @@ msgstr "Take part"
 
 #: templates/components/_director_dashboard_content.html:47
 #: templates/components/_player_dashboard_content.html:53
-#: templates/individual_match/statistics.html:33
+#: templates/individual_match/statistics.html:137
 msgid "Proponi un match"
 msgstr "Propose a match"
 
@@ -7452,21 +7447,44 @@ msgstr "Privacy"
 msgid "Cambia password"
 msgstr "Change password"
 
-#: templates/components/_player_ratings.html:5
+#: templates/components/_player_ratings.html:15
 msgid "Rating"
 msgstr "Rating"
 
-#: templates/components/_player_ratings.html:7
+#: templates/components/_player_ratings.html:17
 msgid "Lv. 6+"
 msgstr "Lv. 6+"
 
-#: templates/components/_player_ratings.html:26
+#: templates/components/_player_ratings.html:32
+#: templates/individual_match/statistics.html:35
+#, python-format
+msgid "%(n)s referto"
+msgid_plural "%(n)s referti"
+msgstr[0] "%(n)s scoresheet"
+msgstr[1] "%(n)s scoresheets"
+
+#: templates/components/_player_ratings.html:47
 msgid ""
 "L'Elo competitivo si aggiorna a fine partita ufficiale. Clicca il valore per"
 " vedere l'Elo globale (include i match individuali)."
 msgstr ""
 "Competitive Elo updates at the end of an official match. Click the value to "
 "see the global Elo (includes individual matches)."
+
+#: templates/components/_player_ratings.html:53
+#, python-format
+msgid ""
+"Il TPA e' la percentuale di azioni riuscite al tavolo: %(balls)s bilie "
+"imbucate contro %(errors)s errori."
+msgstr ""
+"The TPA is the share of successful actions at the table: %(balls)s balls "
+"pocketed against %(errors)s errors."
+
+#: templates/components/_player_ratings.html:56
+#: templates/individual_match/statistics.html:43
+msgid "Il TPA compare dopo il primo referto compilato durante una partita."
+msgstr ""
+"The TPA appears after the first scoresheet is filled in during a match."
 
 #: templates/components/_player_recent_matches.html:5
 msgid "Storico Partite Recenti"
@@ -10509,8 +10527,8 @@ msgid "G"
 msgstr "T"
 
 #: templates/individual_match/availability.html:17
-#: templates/individual_match/statistics.html:82
-#: templates/individual_match/statistics.html:90
+#: templates/individual_match/statistics.html:186
+#: templates/individual_match/statistics.html:194
 msgid "V"
 msgstr "W"
 
@@ -10908,7 +10926,7 @@ msgid "Le tue statistiche"
 msgstr "Your statistics"
 
 #: templates/individual_match/dashboard.html:203
-#: templates/individual_match/statistics.html:43
+#: templates/individual_match/statistics.html:147
 msgid "Match vinti"
 msgstr "Matches won"
 
@@ -11002,6 +11020,7 @@ msgstr "Location unavailable. Set a city in your profile or filter by venue."
 
 #: templates/individual_match/match_detail.html:6
 #: templates/individual_match/match_detail.html:16
+#: templates/individual_match/statistics.html:111
 #: templates/individual_match/tpa_referto.html:5
 #: templates/individual_match/tpa_referto.html:14
 msgid "avversario"
@@ -11326,87 +11345,143 @@ msgstr ""
 msgid "Come vai nei match individuali"
 msgstr "How you are doing in individual matches"
 
-#: templates/individual_match/statistics.html:27
+#: templates/individual_match/statistics.html:32
+msgid "TPA"
+msgstr "TPA"
+
+#: templates/individual_match/statistics.html:46
+msgid "Vai ai match"
+msgstr "Go to matches"
+
+#: templates/individual_match/statistics.html:53
+msgid "TPA di carriera"
+msgstr "Career TPA"
+
+#: templates/individual_match/statistics.html:59
+msgid "Miglior partita"
+msgstr "Best match"
+
+#: templates/individual_match/statistics.html:63
+msgid "Bilie imbucate"
+msgstr "Balls pocketed"
+
+#: templates/individual_match/statistics.html:67
+msgid "Errori"
+msgstr "Errors"
+
+#: templates/individual_match/statistics.html:73
+msgid "Da dove vengono gli errori"
+msgstr "Where the errors come from"
+
+#: templates/individual_match/statistics.html:76
+msgid "Tiri sbagliati"
+msgstr "Missed shots"
+
+#: templates/individual_match/statistics.html:77
+msgid "Spaccate"
+msgstr "Breaks"
+
+#: templates/individual_match/statistics.html:78
+msgid "Tiri di sponda"
+msgstr "Kicks"
+
+#: templates/individual_match/statistics.html:79
+msgid "Difese"
+msgstr "Safeties"
+
+#: templates/individual_match/statistics.html:93
+msgid "Spacca e chiude"
+msgstr "Break & runs"
+
+#: templates/individual_match/statistics.html:97
+msgid "Chiuse in una visita"
+msgstr "Run-outs"
+
+#: templates/individual_match/statistics.html:101
+msgid "Rack perfetti"
+msgstr "Perfect racks"
+
+#: templates/individual_match/statistics.html:131
 msgid "Ancora nessun match"
 msgstr "No matches yet"
 
-#: templates/individual_match/statistics.html:29
+#: templates/individual_match/statistics.html:133
 msgid "Le statistiche compaiono dopo la prima partita individuale conclusa."
 msgstr "The statistics appear after your first individual match is finished."
 
-#: templates/individual_match/statistics.html:51
+#: templates/individual_match/statistics.html:155
 msgid "Rack vinti"
 msgstr "Racks won"
 
-#: templates/individual_match/statistics.html:55
+#: templates/individual_match/statistics.html:159
 msgid "Rack vinti su giocati"
 msgstr "Racks won out of played"
 
-#: templates/individual_match/statistics.html:61
+#: templates/individual_match/statistics.html:165
 msgid "Vinte e perse"
 msgstr "Won and lost"
 
-#: templates/individual_match/statistics.html:80
+#: templates/individual_match/statistics.html:184
 msgid "Ultimi match"
 msgstr "Latest matches"
 
-#: templates/individual_match/statistics.html:83
-#: templates/individual_match/statistics.html:90
+#: templates/individual_match/statistics.html:187
+#: templates/individual_match/statistics.html:194
 msgid "P"
 msgstr "L"
 
-#: templates/individual_match/statistics.html:98
+#: templates/individual_match/statistics.html:202
 #, python-format
 msgid "%(n)s vittoria di fila"
 msgid_plural "%(n)s vittorie di fila"
 msgstr[0] "%"
 msgstr[1] "("
 
-#: templates/individual_match/statistics.html:101
+#: templates/individual_match/statistics.html:205
 #, python-format
 msgid "%(n)s sconfitta di fila"
 msgid_plural "%(n)s sconfitte di fila"
 msgstr[0] "%(n)s loss in a row"
 msgstr[1] "%(n)s losses in a row"
 
-#: templates/individual_match/statistics.html:113
+#: templates/individual_match/statistics.html:217
 msgid "Per disciplina"
 msgstr "By discipline"
 
-#: templates/individual_match/statistics.html:120
-#: templates/individual_match/statistics.html:146
-#: templates/individual_match/statistics.html:168
+#: templates/individual_match/statistics.html:224
+#: templates/individual_match/statistics.html:250
+#: templates/individual_match/statistics.html:272
 #, python-format
 msgid "%(n)s match"
 msgid_plural "%(n)s match"
 msgstr[0] "%"
 msgstr[1] "("
 
-#: templates/individual_match/statistics.html:135
+#: templates/individual_match/statistics.html:239
 msgid "Testa a testa"
 msgstr "Head to head"
 
-#: templates/individual_match/statistics.html:137
+#: templates/individual_match/statistics.html:241
 #, python-format
 msgid "e altri %(n)s"
 msgstr "and %(n)s more"
 
-#: templates/individual_match/statistics.html:161
+#: templates/individual_match/statistics.html:265
 msgid "Mese per mese"
 msgstr "Month by month"
 
-#: templates/individual_match/statistics.html:169
+#: templates/individual_match/statistics.html:273
 #, python-format
 msgid "%(n)s vinto"
 msgid_plural "%(n)s vinti"
 msgstr[0] "%"
 msgstr[1] "("
 
-#: templates/individual_match/statistics.html:194
+#: templates/individual_match/statistics.html:298
 msgid "I tuoi traguardi"
 msgstr "Your achievements"
 
-#: templates/individual_match/statistics.html:195
+#: templates/individual_match/statistics.html:299
 msgid "Achievement, livelli e strisce"
 msgstr "Achievements, levels and streaks"
 

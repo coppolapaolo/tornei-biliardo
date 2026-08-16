@@ -29,6 +29,28 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
   `individual_matches_played`.
 - Pagina di guida **«Il referto TPA»** in italiano e inglese, con i
   suggerimenti per l'interfaccia adattiva. Le figure sono ancora da catturare.
+- Il **TPA nel profilo** (accanto all'Elo) e nelle **statistiche dei match
+  individuali**, con il dettaglio di dove nascono gli errori e l'elenco delle
+  partite con referto. Si somma su tutti i referti — bilie ed errori sommati e
+  divisi una volta sola, non la media dei TPA di partita. Compare a chi ha
+  sbloccato la funzione **oppure** a chi ha gia' giocato una partita in cui il
+  referto lo teneva l'avversario.
+- Filtro `|tpa_display`: il TPA come si scrive sul referto (`.780`, `1.000`).
+
+### Rimosso
+
+- **Il rating Fargo, da tutte le parti.** Era predisposto e mai alimentato: la
+  colonna `user.fargo_rating` esisteva dal principio, nessuna riga di codice ci
+  ha mai scritto dentro, e il profilo e l'elenco utenti mostravano comunque un
+  trattino perenne. Un dato che non arriva mai non e' una funzione a meta': e'
+  una promessa che l'interfaccia continua a fare per conto di nessuno.
+  - Via la colonna, il membro `RatingSystem.FARGO`, le regole di handicap
+    costruite su quel sistema e l'importazione massiva mai usata
+    (`bulk_import_fargo_ratings`).
+  - Il sorteggio per rating (Amalfi ed eliminazione diretta) ora guarda solo
+    l'Elo. Chi non ha un Elo vale zero e finisce in coda.
+  - Migration `20260816_drop_fargo_rating`: elimina colonna, righe di
+    `player_rating` e regole di handicap.
 
 ## [1.0.0] — 2026-08-13
 

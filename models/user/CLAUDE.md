@@ -56,7 +56,7 @@ db.session.commit()
 ## Key Models
 
 ### User
-**Key Fields:** `username`, `email` (encrypted), `password_hash`, `role`, `phone` (encrypted), `fargo_rating`, `elo_rating`, `deleted_at`
+**Key Fields:** `username`, `email` (encrypted), `password_hash`, `role`, `phone` (encrypted), `elo_rating`, `deleted_at`
 
 **Role Properties:** `is_admin`, `is_director`, `is_player`, `is_venue_manager`, `is_active`
 

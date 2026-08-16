@@ -162,6 +162,12 @@ confine fra un set e l'altro, e forzarcelo dentro sarebbe stato inventare.
   disallineato e contro i doppi tocchi.
 - `models/tpa/` è un dominio nuovo, volutamente sottile: motore, due modelli, un
   servizio.
+- Il TPA compare nel **profilo** (accanto all'Elo) e nelle **statistiche dei
+  match individuali**, sommato su tutti i referti — non mediato fra le partite.
+  Lo si vede se si e' sbloccata la funzione **oppure** se qualcuno ha gia'
+  tenuto il referto di una propria partita: in quel caso il dato esiste, e
+  nasconderlo perche' non si e' ancora sbloccato il pulsante per compilarlo
+  sarebbe assurdo.
 - Il referto oggi vive solo sui match individuali. Il motore però non sa niente
   di `IndividualMatch`: portarlo sui match di gara è, se servirà, un lavoro di
   servizio, non di regole.

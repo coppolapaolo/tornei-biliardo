@@ -138,13 +138,13 @@ def _run_full_tournament(gara: Gara):
 class TestFirstRoundPolicyRating:
     """Test first_round_policy='rating' with Amalfi."""
 
-    def test_rating_seeding_uses_fargo_rating(self, db_session):
-        """Players are ordered by fargo_rating descending for round 1."""
+    def test_rating_seeding_uses_elo_rating(self, db_session):
+        """Players are ordered by elo_rating descending for round 1."""
         director = _create_director(db_session)
         players = _create_players(
             db_session,
             6,
-            fargo_rating=[700, 500, 600, 400, 800, 300],
+            elo_rating=[700, 500, 600, 400, 800, 300],
         )
         gara = _create_amalfi_gara(
             director.id,
@@ -168,19 +168,14 @@ class TestFirstRoundPolicyRating:
             all_paired.add(m.player2_id)
         assert len(all_paired) == 6
 
-    def test_rating_fallback_to_elo(self, db_session):
-        """Players without fargo_rating use elo_rating as fallback."""
+    def test_rating_seeding_tollera_chi_non_ha_elo(self, db_session):
+        """Chi non ha ancora un Elo vale zero e finisce in coda, senza rompere."""
         director = _create_director(db_session)
         players = _create_players(db_session, 4)
-        # Set ratings manually: p0 has fargo, p1 has elo, p2 has both, p3 has none
-        players[0].fargo_rating = 600
-        players[0].elo_rating = None
-        players[1].fargo_rating = None
+        players[0].elo_rating = 600
         players[1].elo_rating = 500
-        players[2].fargo_rating = 700
-        players[2].elo_rating = 400  # fargo takes precedence
-        players[3].fargo_rating = None
-        players[3].elo_rating = None  # defaults to 0
+        players[2].elo_rating = None  # nessun rating: vale 0
+        players[3].elo_rating = None
         db_session.commit()
 
         gara = _create_amalfi_gara(
@@ -201,7 +196,7 @@ class TestFirstRoundPolicyRating:
         players = _create_players(
             db_session,
             6,
-            fargo_rating=[700, 500, 600, 400, 800, 300],
+            elo_rating=[700, 500, 600, 400, 800, 300],
         )
         gara = _create_amalfi_gara(
             director.id,

@@ -21,6 +21,110 @@
 
 <div class="c7-stack c7-sections">
 
+  {# ---------- TPA ----------
+     Sta in cima e fuori dal controllo su `played`: il referto vive anche su
+     una partita ancora in corso, che nelle statistiche dei match non c'e'
+     ancora. `tpa` e' None quando la funzione non e' sbloccata e nessuno ha
+     mai tenuto un referto per questo giocatore. #}
+  {% if tpa %}
+  <section class="c7-stack">
+    <div class="c7-sechead">
+      <h2>{{ _("TPA") }}</h2>
+      {% if tpa.referti %}
+      <span class="c7-sechead__note">
+        {{ ngettext("%(n)s referto", "%(n)s referti", tpa.referti, n=tpa.referti) }}
+      </span>
+      {% endif %}
+    </div>
+
+    {% if tpa.tpa is none %}
+    <div class="c7-card">
+      <p style="margin:0;font-size:13px;font-weight:600;line-height:1.5;color:var(--c7-ink-soft)">
+        {{ _("Il TPA compare dopo il primo referto compilato durante una partita.") }}
+      </p>
+      <a href="{{ url_for('individual_match.match_list') }}" class="btn btn-secondary w-100" style="margin-top:12px">
+        {{ _("Vai ai match") }}
+      </a>
+    </div>
+    {% else %}
+    <div class="c7-grid c7-kpis" style="grid-template-columns:1fr 1fr">
+      <div class="c7-card">
+        <div class="c7-num-xl">{{ tpa.tpa|tpa_display }}</div>
+        <div class="c7-rows__sub">{{ _("TPA di carriera") }}</div>
+      </div>
+      <div class="c7-card">
+        <div class="c7-num-xl">
+          {{ tpa.best_tpa|tpa_display }}
+        </div>
+        <div class="c7-rows__sub">{{ _("Miglior partita") }}</div>
+      </div>
+      <div class="c7-card">
+        <div class="c7-num-xl">{{ tpa.balls_potted }}</div>
+        <div class="c7-rows__sub">{{ _("Bilie imbucate") }}</div>
+      </div>
+      <div class="c7-card">
+        <div class="c7-num-xl">{{ tpa.errors }}</div>
+        <div class="c7-rows__sub">{{ _("Errori") }}</div>
+      </div>
+    </div>
+
+    {# Da dove vengono gli errori: e' la parte che dice su cosa allenarsi. #}
+    <div class="c7-card">
+      <div class="c7-kicker">{{ _("Da dove vengono gli errori") }}</div>
+      <div class="c7-rows" style="margin-top:8px">
+        {% for label, key in [
+            (_("Tiri sbagliati"), 'miss'),
+            (_("Spaccate"), 'break'),
+            (_("Tiri di sponda"), 'kick'),
+            (_("Difese"), 'safety'),
+            (_("Posizione"), 'position')] %}
+        <div class="c7-rows__row">
+          <div class="c7-rows__main"><div class="c7-rows__title">{{ label }}</div></div>
+          <span class="c7-num" style="font-size:15px;font-weight:800">{{ tpa.errors_by_kind[key] }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    {% if tpa.break_and_runs or tpa.run_outs or tpa.perfect_racks %}
+    <div class="c7-grid c7-kpis" style="grid-template-columns:1fr 1fr 1fr">
+      <div class="c7-card">
+        <div class="c7-num-xl">{{ tpa.break_and_runs }}</div>
+        <div class="c7-rows__sub">{{ _("Spacca e chiude") }}</div>
+      </div>
+      <div class="c7-card">
+        <div class="c7-num-xl">{{ tpa.run_outs }}</div>
+        <div class="c7-rows__sub">{{ _("Chiuse in una visita") }}</div>
+      </div>
+      <div class="c7-card">
+        <div class="c7-num-xl">{{ tpa.perfect_racks }}</div>
+        <div class="c7-rows__sub">{{ _("Rack perfetti") }}</div>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if tpa.matches %}
+    <div class="c7-rows">
+      {% for entry in tpa.matches[:8] %}
+      <a class="c7-rows__row" href="{{ url_for('individual_match.tpa_referto', match_id=entry.match_id) }}">
+        <div class="c7-rows__main">
+          <div class="c7-rows__title">{{ entry.opponent or _("avversario") }}</div>
+          <div class="c7-rows__sub">
+            {{ entry.discipline|discipline_display }}
+            {%- if entry.date %} <span class="c7-sep">·</span> {{ entry.date|date_local }}{% endif %}
+          </div>
+        </div>
+        <span class="c7-num" style="font-size:15px;font-weight:800">
+          {{ entry.tpa|tpa_display }}
+        </span>
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% endif %}
+  </section>
+  {% endif %}
+
   {% if not played %}
   <div class="c7-empty">
     <div class="c7-empty__ico"><i class="fas fa-chart-line"></i></div>

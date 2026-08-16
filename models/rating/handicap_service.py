@@ -185,7 +185,6 @@ class HandicapService:
 
         # Try each rating system
         for rating_system in [
-            RatingSystem.FARGO,
             RatingSystem.ELO,
             RatingSystem.INTERNAL,
         ]:
@@ -282,7 +281,6 @@ class HandicapService:
 
         # Standard rating handicap rules
         rating_rules = [
-            (RatingSystem.FARGO, 50, 500, 100, 5),
             (RatingSystem.ELO, 100, 800, 200, 4),
             (RatingSystem.INTERNAL, 10, 60, 20, 3),
         ]
@@ -327,40 +325,6 @@ class HandicapService:
         }
 
     @staticmethod
-    def bulk_import_fargo_ratings(fargo_data: List[Dict[str, Any]]) -> int:
-        """Bulk import Fargo ratings from external data."""
-        from .rating_service import RatingService
-
-        imported_count = 0
-
-        for data in fargo_data:
-            try:
-                user_id = data.get("user_id")
-                fargo_rating = data.get("fargo_rating")
-                external_id = data.get("fargo_id")
-
-                # is not None (non falsy): non saltare user_id==0/fargo==0.
-                if user_id is not None and fargo_rating is not None:
-                    RatingService.update_player_rating(
-                        user_id=user_id,
-                        rating_system=RatingSystem.FARGO,
-                        new_rating=fargo_rating,
-                        verified=True,
-                        external_id=external_id,
-                    )
-                    imported_count += 1
-
-            except Exception as e:
-                # logger, non print: in produzione lo stdout va perso.
-                logger.warning(
-                    "Failed to import Fargo rating for user %s: %s",
-                    data.get("user_id"),
-                    e,
-                )
-
-        return imported_count
-
-    @staticmethod
     def auto_assign_categories_from_ratings() -> int:
         """Auto-assign categories based on existing ratings."""
         from .rating_service import RatingService
@@ -377,7 +341,6 @@ class HandicapService:
 
             # Get best available rating
             for rating_system in [
-                RatingSystem.FARGO,
                 RatingSystem.ELO,
                 RatingSystem.INTERNAL,
             ]:

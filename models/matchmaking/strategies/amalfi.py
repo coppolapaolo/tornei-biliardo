@@ -189,10 +189,11 @@ class AmalfiStrategy(BaseStrategy):
         return order
 
     def _rating_seeding_order(self, gara: Gara) -> List[int]:
-        """Ordine di partenza basato sui rating dei giocatori.
+        """Ordine di partenza basato sull'Elo dei giocatori.
 
-        Usa fargo_rating dal modello User (rating primario).
-        Se non disponibile, usa elo_rating come fallback.
+        Chi non ha ancora un Elo vale zero e finisce in coda: e' l'unico
+        trattamento onesto per «non lo so», e a parita' decide l'id, cosi'
+        l'ordine e' comunque riproducibile.
         """
         inscriptions = self._get_active_inscriptions(gara)
         if len(inscriptions) < self.min_players:
@@ -204,15 +205,12 @@ class AmalfiStrategy(BaseStrategy):
         inscribed_players = [insc.user_id for insc in inscriptions]
         users = User.query.filter(User.id.in_(inscribed_players)).all()
 
-        # Crea mappa player_id -> rating (usa Fargo come primario, Elo come fallback)
+        # Crea mappa player_id -> rating
         player_ratings = {}
         for user in users:
-            if user.fargo_rating is not None:
-                player_ratings[user.id] = user.fargo_rating
-            elif user.elo_rating is not None:
-                player_ratings[user.id] = user.elo_rating
-            else:
-                player_ratings[user.id] = 0  # Default per giocatori senza rating
+            player_ratings[user.id] = (
+                user.elo_rating if user.elo_rating is not None else 0
+            )
 
         # Ordina giocatori per rating (decrescente), poi per user_id per stabilità
         return sorted(

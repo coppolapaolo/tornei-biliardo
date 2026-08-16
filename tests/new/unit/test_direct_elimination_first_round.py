@@ -34,9 +34,8 @@ class _FakeInscription:
 
 
 class _FakeUser:
-    def __init__(self, elo_rating=None, fargo_rating=None):
+    def __init__(self, elo_rating=None):
         self.elo_rating = elo_rating
-        self.fargo_rating = fargo_rating
 
 
 class _FakeGara:
@@ -197,19 +196,16 @@ class TestFirstRoundPolicy:
         assert seeded != [4, 3, 2, 1]  # non è l'ordine per rating
         assert sorted(seeded) == [1, 2, 3, 4]
 
-    def test_seeding_rating_seleziona_il_campo(self):
-        """`seeding_rating` decide quale rating guida il sorteggio."""
+    def test_il_sorteggio_per_rating_segue_l_elo(self):
+        """L'Elo e' l'unico rating che guida il sorteggio: il piu' alto e' testa di serie."""
         users = {
-            1: _FakeUser(elo_rating=1000, fargo_rating=900),
-            2: _FakeUser(elo_rating=900, fargo_rating=1000),
+            1: _FakeUser(elo_rating=1000),
+            2: _FakeUser(elo_rating=900),
         }
         strategy = DirectEliminationStrategy()
+        gara = _FakeGara(2, policy="rating", users=users, seeding_rating="elo")
 
-        by_elo = _FakeGara(2, policy="rating", users=users, seeding_rating="elo")
-        by_fargo = _FakeGara(2, policy="rating", users=users, seeding_rating="fargo")
-
-        assert strategy._get_seeded_players(by_elo, by_elo.inscriptions) == [1, 2]
-        assert strategy._get_seeded_players(by_fargo, by_fargo.inscriptions) == [2, 1]
+        assert strategy._get_seeded_players(gara, gara.inscriptions) == [1, 2]
 
 
 class TestDeterminismo:

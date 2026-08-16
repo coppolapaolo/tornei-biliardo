@@ -161,3 +161,18 @@ def test_riconoscimenti_di_rack(sample):
     assert first.run_outs == 0
     assert first.perfect_racks == 4
     assert (second.break_and_runs, second.run_outs, second.perfect_racks) == (0, 0, 0)
+
+
+def test_il_tpa_pieno_si_scrive_uno_punto_zero_zero_zero():
+    """`1000` millesimi sono `1.000`, non `.1000`.
+
+    E' l'unico caso che sfugge alla regola dei tre decimali dopo il punto, e
+    sfuggiva anche al primo formattatore: un giocatore senza errori vedeva
+    `.1000`, che non e' un numero che esista sul referto.
+    """
+    from utils.jinja import format_tpa
+
+    assert format_tpa(780) == ".780"
+    assert format_tpa(1000) == "1.000"
+    assert format_tpa(0) == ".000"
+    assert format_tpa(None) == "—"

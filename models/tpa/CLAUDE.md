@@ -69,6 +69,32 @@ Sono le lettere del referto cartaceo, più due comandi che pulsanti non sono.
 | `"end"` | tavolo passato all'avversario |
 | `"seat:1"` `"seat:2"` | chi spacca questo rack (solo prima di annotare la spaccata) |
 
+### Il TPA di carriera
+
+```python
+from models.tpa.stats_service import TpaStatsService
+
+# Va mostrato il TPA nel profilo di questo utente?
+TpaStatsService.is_visible_for(user_id, user=user)
+
+# Riassunto per profilo e statistiche: None se qui il TPA non ci va,
+# un riassunto vuoto (`tpa: None`) se la funzione e' sbloccata ma non c'e'
+# ancora nessun referto.
+TpaStatsService.profile_summary(user_id, user=user)
+
+# Tutti i numeri, referto per referto
+TpaStatsService.career_stats(user_id)
+```
+
+**Il TPA di carriera non e' la media dei TPA di partita.** Si sommano bilie ed
+errori di tutti i referti e si divide una volta sola: una partita da quaranta
+bilie deve pesare piu' di una da quattro.
+
+**Quando compare.** Due strade: si e' sbloccata la funzione, **oppure**
+qualcuno ha gia' tenuto il referto di una tua partita. La seconda e' quella che
+conta: il dato esiste e ti riguarda, e nasconderlo perche' non hai ancora
+sbloccato il pulsante per compilarlo sarebbe assurdo.
+
 ---
 
 ## Le cinque famiglie di errore

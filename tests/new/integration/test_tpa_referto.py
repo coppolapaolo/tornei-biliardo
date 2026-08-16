@@ -448,3 +448,171 @@ class TestSblocco:
                 f"/match/matches/{match.id}/tpa/press", json={"command": "1"}
             )
             assert api.status_code == 403
+
+
+class TestStatisticheDiCarriera:
+    """Il TPA nel profilo e nelle statistiche personali."""
+
+    @staticmethod
+    def _referto_giocato(one: User, two: User, comandi) -> IndividualMatch:
+        match = _match(one, two)
+        referto = TpaRefertoService.open_referto(match.id, one.id)
+        for comando in comandi:
+            TpaRefertoService.press(referto.id, one.id, comando)
+        return match
+
+    def test_senza_referti_e_senza_sblocco_il_tpa_non_si_mostra(self, app, players):
+        """La condizione che decide se il TPA compare o no."""
+        with app.app_context():
+            from models.gamification.feature_models import FeatureConfig
+            from models.tpa.stats_service import TpaStatsService
+
+            one, _ = players
+            # Feature configurata e non raggiunta: senza referti, niente TPA.
+            db.session.add(
+                FeatureConfig(
+                    code=FEATURE_CODE,
+                    name="Referto TPA",
+                    description="",
+                    is_active=True,
+                    rules=json.dumps(
+                        [
+                            {
+                                "description": "Veterano",
+                                "conditions": [
+                                    {
+                                        "type": "METRIC",
+                                        "metric": "exams_certified",
+                                        "operator": "gte",
+                                        "value": 1,
+                                    }
+                                ],
+                            }
+                        ]
+                    ),
+                )
+            )
+            db.session.commit()
+
+            assert TpaStatsService.is_visible_for(one.id, user=one) is False
+            assert TpaStatsService.profile_summary(one.id, user=one) is None
+
+    def test_un_referto_tenuto_dall_avversario_basta_a_mostrarlo(self, app, players):
+        """Il caso che conta: il dato esiste e ti riguarda, anche se non hai
+        sbloccato tu la funzione."""
+        with app.app_context():
+            from models.gamification.feature_models import FeatureConfig
+            from models.tpa.stats_service import TpaStatsService
+
+            one, two = players
+            db.session.add(
+                FeatureConfig(
+                    code=FEATURE_CODE,
+                    name="Referto TPA",
+                    description="",
+                    is_active=True,
+                    rules=json.dumps(
+                        [
+                            {
+                                "description": "Veterano",
+                                "conditions": [
+                                    {
+                                        "type": "METRIC",
+                                        "metric": "exams_certified",
+                                        "operator": "gte",
+                                        "value": 1,
+                                    }
+                                ],
+                            }
+                        ]
+                    ),
+                )
+            )
+            db.session.commit()
+
+            # Il referto lo tiene `one`; e' `two` a non averlo sbloccato.
+            self._referto_giocato(one, two, ["1", "3", "M", "end"])
+
+            assert TpaStatsService.is_visible_for(two.id, user=two) is True
+            assert TpaStatsService.profile_summary(two.id, user=two) is not None
+
+    def test_il_tpa_di_carriera_somma_bilie_ed_errori(self, app, players):
+        """Non e' la media dei TPA di partita: si somma e si divide una volta.
+
+        Due referti, uno da 3 bilie e 2 errori e uno da 9 bilie e 0: la media
+        dei TPA darebbe .800, il conto giusto da' 12/(12+2) = .857.
+        """
+        with app.app_context():
+            from models.tpa.stats_service import TpaStatsService
+
+            one, two = players
+            # 3 bilie, miss (1 errore) + errore di posizione = 2 errori
+            self._referto_giocato(one, two, ["1", "3", "M", "end"])
+            # spacca e chiude: 9 bilie, nessun errore
+            self._referto_giocato(one, two, ["1", "9", "end"])
+
+            stats = TpaStatsService.career_stats(one.id)
+
+            assert stats["balls_potted"] == 12
+            assert stats["errors"] == 2
+            assert stats["tpa"] == 857  # 12/14, troncato
+            assert stats["referti"] == 2
+            assert stats["best_tpa"] == 1000
+            assert stats["errors_by_kind"]["miss"] == 1
+            assert stats["errors_by_kind"]["position"] == 1
+
+    def test_ogni_giocatore_vede_i_propri_numeri(self, app, players):
+        """Il referto e' uno, i conti sono due: il posto non e' l'identita'."""
+        with app.app_context():
+            from models.tpa.stats_service import TpaStatsService
+
+            one, two = players
+            match = _match(one, two)
+            referto = TpaRefertoService.open_referto(match.id, one.id)
+            for comando in ["1", "3", "M", "end", "2", "S", "end"]:
+                TpaRefertoService.press(referto.id, one.id, comando)
+
+            mine = TpaStatsService.career_stats(one.id)
+            theirs = TpaStatsService.career_stats(two.id)
+
+            assert mine["balls_potted"] == 3
+            assert theirs["balls_potted"] == 2
+            assert theirs["errors_by_kind"]["position"] == 1
+
+    def test_sbloccato_ma_senza_referti_il_riassunto_e_vuoto_non_zero(
+        self, app, players
+    ):
+        """«Nessun dato» non e' «.000»: chi ha appena sbloccato non ha un TPA."""
+        with app.app_context():
+            from models.tpa.stats_service import TpaStatsService
+
+            one, _ = players
+            # Nessuna FeatureConfig: la feature e' aperta (fail-open), quindi
+            # e' visibile ma non c'e' ancora niente da mostrare.
+            summary = TpaStatsService.profile_summary(one.id, user=one)
+
+            assert summary is not None
+            assert summary["tpa"] is None
+            assert summary["referti"] == 0
+
+    def test_la_pagina_delle_statistiche_mostra_il_tpa(self, app, players):
+        with app.app_context():
+            one, two = players
+            self._referto_giocato(one, two, ["1", "3", "M", "end"])
+
+            response = TestRotte._client(app, one).get("/match/statistics")
+
+            assert response.status_code == 200
+            assert b"TPA" in response.data
+
+    def test_il_profilo_mostra_il_tpa(self, app, players):
+        with app.app_context():
+            one, two = players
+            self._referto_giocato(one, two, ["1", "9", "end"])
+
+            response = TestRotte._client(app, one).get("/player/profile")
+
+            assert response.status_code == 200
+            # 9 bilie e nessun errore: TPA pieno, scritto `1.000` e non `.1000`.
+            assert "1.000".encode() in response.data
+            assert ".1000".encode() not in response.data
