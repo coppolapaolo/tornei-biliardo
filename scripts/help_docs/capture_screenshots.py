@@ -99,11 +99,19 @@ html { scroll-behavior: auto !important; }
 # nasconderla mostrerebbe un'app che non esiste. Qui invece copre contenuto
 # che l'utente raggiunge scorrendo, quindi tenerla sarebbe la bugia.
 #
-# I selettori sono i due `position: fixed` reali del tema (theme-7c.css), non
-# un elenco indovinato: un selettore inesistente non da' errore, semplicemente
-# non nasconde niente, e il difetto tornerebbe in silenzio.
+# I selettori sono gli elementi sganciati dal flusso realmente presenti nel
+# tema (theme-7c.css), non un elenco indovinato: un selettore inesistente non
+# da' errore, semplicemente non nasconde niente, e il difetto tornerebbe in
+# silenzio.
+#
+# `.c7-actionbar` non si nasconde, si riporta nel flusso: e' `position: sticky`
+# e in `full_page` veniva dipinta a meta' immagine, sopra la scheda della foto
+# (visto su `challenge-nuova`). Nasconderla toglierebbe pero' il pulsante
+# principale della pagina — «Crea la challenge» — proprio dalla figura che deve
+# mostrarlo. Da statica finisce dov'e' davvero: in fondo alla pagina.
 OVERLAY_CSS = """
 .c7-mobilenav, #chalky-container { display: none !important; }
+.c7-actionbar { position: static !important; }
 """
 
 # Cornice e numeri di richiamo. Ricalcano i token del design system (accento
@@ -284,6 +292,16 @@ def _launch_chromium(playwright):
     su una macchina dove il browser e' stato installato a parte (immagini CI,
     container preconfezionati) il lancio predefinito fallisce anche se un
     Chromium perfettamente valido c'e'. `CHROMIUM_PATH` permette di indicarlo.
+
+    ⚠️ Vicolo cieco gia' percorso: i comandi che disegna **il browser** —
+    il pulsante di `<input type=file>`, i selettori di data — non seguono il
+    `locale` del contesto ma la lingua di avvio, e nella guida italiana escono
+    in inglese («Choose File»). Non si risolve: l'avvio predefinito e'
+    `chrome-headless-shell`, che porta un solo `.pak` di stringhe, quindi
+    `--lang` non ha effetto; e il pacchetto completo (`channel="chromium"`),
+    che i `.pak` li ha, non arriva mai a `networkidle` sulle pagine con lo
+    script di Analytics — le catture vanno in timeout. Restano tre parole
+    inglesi in una figura: e' il male minore.
     """
     override = os.environ.get("CHROMIUM_PATH")
     candidates = [override] if override else []
