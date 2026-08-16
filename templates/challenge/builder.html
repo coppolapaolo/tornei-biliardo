@@ -40,9 +40,15 @@
 
   <div class="drill-builder">
   <main>
+    {# Gli `id` sui riquadri non servono al builder: sono gli appigli dei
+       ritagli in `help_content/screenshots.yaml`, che fotografa una sezione
+       alla volta per le figure della guida. Senza, il manifest dovrebbe
+       contare le posizioni (`.sec:nth-of-type(3)`) e al primo riordino
+       fotograferebbe la sezione sbagliata **senza fallire**: la didascalia
+       direbbe «Tiro» sopra l'immagine del tavolo. #}
     <div id="panel">
 
-      <div class="sec">
+      <div class="sec" id="sec-strumenti">
         <h2>{{ _("Strumenti") }}</h2>
         <div class="row">
           <button class="btn wide" data-tool="select">{{ _("Sposta") }}</button>
@@ -59,7 +65,7 @@
         </div>
       </div>
 
-      <div class="sec">
+      <div class="sec" id="sec-biglie">
         <h2>{{ _("Biglie") }}</h2>
         <div id="palette"></div>
         <label class="chk" style="margin-top:6px"><input type="checkbox" id="magnets" checked> {{ _("Calamite sponda e biglie") }}</label>
@@ -74,7 +80,7 @@
         <p class="tip">{{ _("Scegli una biglia, poi clicca sul tavolo. Si aggancia alla griglia, alla sponda e a contatto con le altre; un movimento fine resta libero.") }} <kbd>{{ _("Alt") }}</kbd> {{ _("disattiva ogni aggancio.") }}</p>
       </div>
 
-      <div class="sec">
+      <div class="sec" id="sec-tiro">
         <h2>{{ _("Tiro") }}</h2>
         <p class="tip" id="shotHint"></p>
 
@@ -105,7 +111,7 @@
         <label class="chk"><input type="checkbox" id="showAngle"> {{ _("Etichetta dell'angolo di taglio") }}</label>
       </div>
 
-      <div class="sec">
+      <div class="sec" id="sec-linea">
         <h2>{{ _("Linea libera") }}</h2>
         <div class="row">
           <button class="btn wide" data-lstyle="solid">{{ _("Continua") }}</button>
@@ -122,7 +128,7 @@
         </div>
       </div>
 
-      <div class="sec">
+      <div class="sec" id="sec-tavolo">
         <h2>{{ _("Tavolo") }}</h2>
         <div class="field">
           <span>{{ _("Panno") }}</span>
@@ -153,7 +159,7 @@
         </div>
       </div>
 
-      <div class="sec">
+      <div class="sec" id="sec-posizioni">
         <h2>{{ _("Posizioni standard") }}</h2>
         <div class="row">
           <button class="btn wide" data-preset="rack9">{{ _("Rack 9-ball") }}</button>
@@ -247,6 +253,11 @@ window.DRILL_BUILDER_I18N = {
     hintAiming: {{ _("Muovi per mirare. Premi e rilascia per fissare; tieni premuto e trascina per la mira fine. Esc annulla.")|tojson }},
     hintPick: {{ _("Clicca la biglia da giocare per iniziare a mirare. Clicca un tiro esistente per correggerlo.")|tojson }},
     toastPickBall: {{ _("Clicca una biglia per iniziare a mirare")|tojson }},
+    {# Le due domande dello strumento «Testo». Sono `prompt()` del browser, ed
+       erano rimaste in italiano in ogni lingua: il giro da `T_` le rendeva
+       traducibili, ma nessuno le ci aveva fatte passare. #}
+    textNew: {{ _("Testo da inserire:")|tojson }},
+    textEdit: {{ _("Testo:")|tojson }},
     ballCue: {{ _("Battente")|tojson }},
     ballGhost: {{ _("Biglia fantasma")|tojson }},
     ballN: {{ _("Biglia")|tojson }},

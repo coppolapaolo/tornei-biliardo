@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-16 17:10+0000\n"
+"POT-Creation-Date: 2026-08-16 20:11+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -584,7 +584,8 @@ msgid "Sono stati giocati %(value)s match sulla piattaforma. La community cresce
 msgstr "%(value)s matches have been played on the platform. The community is growing!"
 "%(value)s matches have been played on the platform. The community is "
 "growing!%(value)s matches have been played on the platform. The community"
-" is growing!"
+" is growing!%(value)s matches have been played on the platform. The "
+"community is growing!"
 
 #: models/kpi/notifications.py:59
 #, python-format
@@ -2222,7 +2223,7 @@ msgstr "Confirm"
 #: templates/admin/campionato_wizard_step1.html:158
 #: templates/admin/campionato_wizard_step2.html:8
 #: templates/admin/gara_edit.html:11 templates/base.html:565
-#: templates/challenge/builder.html:33 templates/challenge/builder.html:227
+#: templates/challenge/builder.html:33 templates/challenge/builder.html:233
 #: templates/challenge/create.html:14
 #: templates/components/_campionato_create_modal.html:35
 #: templates/components/_campionato_edit_form.html:214
@@ -2856,7 +2857,7 @@ msgstr "SSR Points"
 msgid "Click per scambiare con match occupante"
 msgstr "Click to swap with occupying match"
 
-#: templates/challenge/builder.html:126
+#: templates/challenge/builder.html:132
 #: templates/components/_bracket_view.html:54
 #: templates/components/_gara_matches.html:57
 #: templates/components/_gara_matches.html:91
@@ -3690,10 +3691,11 @@ msgstr "Final playoffs"
 
 #: templates/admin/campionato_wizard_step1.html:115
 msgid "Gare speciali a fine campionato: i qualificati ricevono un invito."
-msgstr "Special competitions at the end of a championship: qualifiers get an invitation."
-"Special competitions at the end of the championship: those who qualify "
-"get an invitation.Special competitions at the end of the championship: "
-"qualified players receive an invitation."
+msgstr "Special competitions at the end of a championship: those who qualify get an invitation."
+"Special competitions at the end of a championship: qualifiers get an "
+"invitation.Special competitions at the end of the championship: those who"
+" qualify get an invitation.Special competitions at the end of the "
+"championship: qualified players receive an invitation."
 
 #: templates/admin/campionato_wizard_step1.html:123
 msgid "Per i primi classificati"
@@ -3852,10 +3854,11 @@ msgstr "Handicap mode"
 
 #: templates/admin/campionato_wizard_step2.html:138
 msgid "I match non aggiornano il rating Elo. Ereditato da gare e partite."
-msgstr "Matches do not update the Elo rating. Inherited from competitions and games."
+msgstr "Matches do not update the Elo rating. It comes from competitions and their matches."
 "Matches do not update the Elo rating. Inherited from competitions and "
-"matches.Matches do not update the Elo rating. Inherited by competitions "
-"and matches."
+"games.Matches do not update the Elo rating. Inherited from competitions "
+"and matches.Matches do not update the Elo rating. Inherited by "
+"competitions and matches."
 
 #: templates/admin/campionato_wizard_step2.html:155
 #: templates/admin/venue_form.html:12 templates/admin/venue_form.html:23
@@ -4628,7 +4631,7 @@ msgstr "Pass or fail"
 
 #: templates/challenge/_challenge_card.html:35
 #: templates/challenge/_challenge_detail.html:43
-#: templates/challenge/builder.html:211 templates/challenge/create.html:36
+#: templates/challenge/builder.html:217 templates/challenge/create.html:36
 #: templates/challenge/training.html:48
 #: templates/components/_challenge_bits.html:27
 #: templates/components/_challenge_management_modal.html:97
@@ -4645,7 +4648,7 @@ msgid "Provala"
 msgstr "Try it"
 
 #: templates/challenge/_challenge_card.html:63
-#: templates/challenge/builder.html:58
+#: templates/challenge/builder.html:64
 #: templates/components/_campionato_garas.html:80
 #: templates/components/_campionato_garas.html:178
 #: templates/components/_soft_delete_modal.html:6
@@ -4735,391 +4738,404 @@ msgstr "Edit the drawing"
 msgid "Disponi le bilie e traccia i tiri: l'immagine la genera il builder"
 msgstr "Set the balls out and draw the shots: the builder makes the picture"
 
-#: templates/challenge/builder.html:46
+#: templates/challenge/builder.html:52
 msgid "Strumenti"
 msgstr "Tools"
 
-#: templates/challenge/builder.html:48
+#: templates/challenge/builder.html:54
 msgid "Sposta"
 msgstr "Move"
 
-#: templates/challenge/builder.html:49 templates/challenge/builder.html:78
-#: templates/challenge/builder.html:253
+#: templates/challenge/builder.html:55 templates/challenge/builder.html:84
+#: templates/challenge/builder.html:264
 msgid "Tiro"
 msgstr "Shot"
 
-#: templates/challenge/builder.html:52 templates/challenge/builder.html:109
+#: templates/challenge/builder.html:58 templates/challenge/builder.html:115
 msgid "Linea libera"
 msgstr "Free line"
 
-#: templates/challenge/builder.html:53
+#: templates/challenge/builder.html:59
 msgid "Testo"
 msgstr "Text"
 
-#: templates/challenge/builder.html:56
+#: templates/challenge/builder.html:62
 msgid "Annulla mossa"
 msgstr "Undo"
 
-#: templates/challenge/builder.html:57
+#: templates/challenge/builder.html:63
 msgid "Ripeti mossa"
 msgstr "Redo"
 
-#: templates/challenge/builder.html:63
+#: templates/challenge/builder.html:69
 msgid "Biglie"
 msgstr "Balls"
 
-#: templates/challenge/builder.html:65
+#: templates/challenge/builder.html:71
 msgid "Calamite sponda e biglie"
 msgstr "Snap to cushions and balls"
 
-#: templates/challenge/builder.html:67
+#: templates/challenge/builder.html:73
 msgid "Dimensione delle biglie"
 msgstr "Ball size"
 
-#: templates/challenge/builder.html:69
+#: templates/challenge/builder.html:75
 msgid "in scala reale — 2,25″"
 msgstr "true to scale — 2.25″"
 
-#: templates/challenge/builder.html:70
+#: templates/challenge/builder.html:76
 msgid "più leggibile"
 msgstr "easier to read"
 
-#: templates/challenge/builder.html:71
+#: templates/challenge/builder.html:77
 msgid "stile diagramma"
 msgstr "diagram style"
 
-#: templates/challenge/builder.html:74
+#: templates/challenge/builder.html:80
 msgid ""
 "Scegli una biglia, poi clicca sul tavolo. Si aggancia alla griglia, alla "
 "sponda e a contatto con le altre; un movimento fine resta libero."
-msgstr "Pick a ball, then click on the table. It snaps to the grid, to the cushion and against the other balls; a fine move stays free."
+msgstr ""
+"Pick a ball, then click on the table. It snaps to the grid, to the "
+"cushion and against the other balls; a fine move stays free."
 
-#: templates/challenge/builder.html:74
+#: templates/challenge/builder.html:80
 msgid "Alt"
 msgstr "Alt"
 
-#: templates/challenge/builder.html:74
+#: templates/challenge/builder.html:80
 msgid "disattiva ogni aggancio."
 msgstr "turns every snap off."
 
-#: templates/challenge/builder.html:81
+#: templates/challenge/builder.html:87
 msgid "Punto di impatto sulla bianca"
 msgstr "Contact point on the cue ball"
 
-#: templates/challenge/builder.html:88
+#: templates/challenge/builder.html:94
 msgid "Inclinazione stecca"
 msgstr "Cue elevation"
 
-#: templates/challenge/builder.html:93
+#: templates/challenge/builder.html:99
 msgid "Forza"
 msgstr "Power"
 
-#: templates/challenge/builder.html:97
+#: templates/challenge/builder.html:103
 msgid ""
 "A forza 30 la biglia percorre due lunghezze di tavolo. Il percorso cresce"
 " con il quadrato della forza, si divide fra le biglie all'impatto e cala "
 "a ogni sponda; il cerchio tratteggiato segna il punto di arresto."
-msgstr "At power 30 the ball travels two table lengths. The path grows with the square of the power, splits between the balls on contact and drops at every cushion; the dashed circle marks where it stops."
+msgstr ""
+"At power 30 the ball travels two table lengths. The path grows with the "
+"square of the power, splits between the balls on contact and drops at "
+"every cushion; the dashed circle marks where it stops."
 
-#: templates/challenge/builder.html:99
+#: templates/challenge/builder.html:105
 msgid "Aggancia la mira alla buca"
 msgstr "Snap the aim to the pocket"
 
-#: templates/challenge/builder.html:100
+#: templates/challenge/builder.html:106
 msgid "Tieni premuto e trascina per mirare libero, senza aggancio."
 msgstr "Hold and drag to aim freely, with no snapping."
 
-#: templates/challenge/builder.html:101
+#: templates/challenge/builder.html:107
 msgid "Traiettoria della bianca"
 msgstr "Cue ball path"
 
-#: templates/challenge/builder.html:102
+#: templates/challenge/builder.html:108
 msgid "Traiettorie delle altre biglie"
 msgstr "Object ball paths"
 
-#: templates/challenge/builder.html:103
+#: templates/challenge/builder.html:109
 msgid "Stecca sul tavolo"
 msgstr "Cue on the table"
 
-#: templates/challenge/builder.html:104
+#: templates/challenge/builder.html:110
 msgid "Scheda del tiro sotto al tavolo"
 msgstr "Shot card below the table"
 
-#: templates/challenge/builder.html:105
+#: templates/challenge/builder.html:111
 msgid "Etichetta dell'angolo di taglio"
 msgstr "Cut angle label"
 
-#: templates/challenge/builder.html:111
+#: templates/challenge/builder.html:117
 #: templates/components/_player_challenges.html:47
 #: templates/individual_match/dashboard.html:106
 #: templates/individual_match/matches.html:134
 msgid "Continua"
 msgstr "Solid"
 
-#: templates/challenge/builder.html:112
+#: templates/challenge/builder.html:118
 msgid "Tratteggiata"
 msgstr "Dashed"
 
-#: templates/challenge/builder.html:115
+#: templates/challenge/builder.html:121
 msgid "Colore"
 msgstr "Colour"
 
-#: templates/challenge/builder.html:118
+#: templates/challenge/builder.html:124
 msgid "Punta a freccia"
 msgstr "Arrow head"
 
-#: templates/challenge/builder.html:119
+#: templates/challenge/builder.html:125
 msgid "Biglia fantasma in fondo"
 msgstr "Ghost ball at the end"
 
-#: templates/challenge/builder.html:121
+#: templates/challenge/builder.html:127
 msgid "Chiudi linea"
 msgstr "Finish line"
 
-#: templates/challenge/builder.html:128
+#: templates/challenge/builder.html:134
 msgid "Panno"
 msgstr "Cloth"
 
-#: templates/challenge/builder.html:131
+#: templates/challenge/builder.html:137
 msgid "Griglia dei diamanti"
 msgstr "Diamond grid"
 
-#: templates/challenge/builder.html:132
+#: templates/challenge/builder.html:138
 msgid "Griglia ¼ di diamante"
 msgstr "Quarter-diamond grid"
 
-#: templates/challenge/builder.html:133
+#: templates/challenge/builder.html:139
 msgid "Punti e linee standard"
 msgstr "Standard spots and lines"
 
-#: templates/challenge/builder.html:135
+#: templates/challenge/builder.html:141
 msgid "Aggancio alla griglia"
 msgstr "Snap to grid"
 
-#: templates/challenge/builder.html:137
+#: templates/challenge/builder.html:143
 msgid "¼ di diamante"
 msgstr "quarter diamond"
 
-#: templates/challenge/builder.html:138
+#: templates/challenge/builder.html:144
 msgid "½ diamante"
 msgstr "half diamond"
 
-#: templates/challenge/builder.html:139
+#: templates/challenge/builder.html:145
 msgid "1 diamante"
 msgstr "one diamond"
 
-#: templates/challenge/builder.html:140 templates/player/venues.html:33
+#: templates/challenge/builder.html:146 templates/player/venues.html:33
 msgid "nessuno"
 msgstr "none"
 
-#: templates/challenge/builder.html:144
+#: templates/challenge/builder.html:150
 msgid "Orientamento"
 msgstr "Orientation"
 
-#: templates/challenge/builder.html:146
+#: templates/challenge/builder.html:152
 msgid "Orizzontale"
 msgstr "Landscape"
 
-#: templates/challenge/builder.html:147
+#: templates/challenge/builder.html:153
 msgid "Verticale"
 msgstr "Portrait"
 
-#: templates/challenge/builder.html:151
+#: templates/challenge/builder.html:157
 msgid "Titolo del diagramma"
 msgstr "Diagram title"
 
-#: templates/challenge/builder.html:152
+#: templates/challenge/builder.html:158
 msgid "es. Drill 1 — Stop shot"
 msgstr "e.g. Drill 1 — Stop shot"
 
-#: templates/challenge/builder.html:157
+#: templates/challenge/builder.html:163
 msgid "Posizioni standard"
 msgstr "Standard positions"
 
-#: templates/challenge/builder.html:159
+#: templates/challenge/builder.html:165
 msgid "Rack 9-ball"
 msgstr "9-ball rack"
 
-#: templates/challenge/builder.html:160
+#: templates/challenge/builder.html:166
 msgid "Rack 8-ball"
 msgstr "8-ball rack"
 
-#: templates/challenge/builder.html:163
+#: templates/challenge/builder.html:169
 msgid "Rack 10-ball"
 msgstr "10-ball rack"
 
-#: templates/challenge/builder.html:164
+#: templates/challenge/builder.html:170
 msgid "Break 9-ball"
 msgstr "9-ball break"
 
-#: templates/challenge/builder.html:167
+#: templates/challenge/builder.html:173
 msgid "Wagon wheel"
 msgstr "Wagon wheel"
 
-#: templates/challenge/builder.html:168
+#: templates/challenge/builder.html:174
 msgid "Linea di stop"
 msgstr "Stop line"
 
-#: templates/challenge/builder.html:171
+#: templates/challenge/builder.html:177
 msgid "L drill"
 msgstr "L drill"
 
-#: templates/challenge/builder.html:172
+#: templates/challenge/builder.html:178
 msgid "Svuota"
 msgstr "Clear"
 
-#: templates/challenge/builder.html:198
+#: templates/challenge/builder.html:204
 msgid "Istruzioni per chi la esegue"
 msgstr "Instructions for whoever plays it"
 
-#: templates/challenge/builder.html:201
+#: templates/challenge/builder.html:207
 msgid "Come si dispongono le bilie e come si conta il punteggio"
 msgstr "How the balls are set up and how the score is counted"
 
-#: templates/challenge/builder.html:203
+#: templates/challenge/builder.html:209
 msgid "Il disegno mostra la disposizione; qui si scrive la regola."
 msgstr "The drawing shows the layout; the rule goes here."
 
-#: templates/challenge/builder.html:208
+#: templates/challenge/builder.html:214
 msgid "Come si conta"
 msgstr "How it is scored"
 
-#: templates/challenge/builder.html:214
+#: templates/challenge/builder.html:220
 msgid "Superata o non superata"
 msgstr "Passed or not passed"
 
-#: templates/challenge/builder.html:224
+#: templates/challenge/builder.html:230
 msgid "Salva il drill"
 msgstr "Save the drill"
 
-#: templates/challenge/builder.html:224
+#: templates/challenge/builder.html:230
 #: templates/individual_match/availability.html:111
 msgid "Salva le modifiche"
 msgstr "Save changes"
 
-#: templates/challenge/builder.html:241
+#: templates/challenge/builder.html:247
 msgid "tocco"
 msgstr "feather"
 
-#: templates/challenge/builder.html:242
+#: templates/challenge/builder.html:248
 msgid "piano"
 msgstr "soft"
 
-#: templates/challenge/builder.html:243
+#: templates/challenge/builder.html:249
 msgid "medio"
 msgstr "medium"
 
-#: templates/challenge/builder.html:244
+#: templates/challenge/builder.html:250
 msgid "forte"
 msgstr "hard"
 
-#: templates/challenge/builder.html:245
+#: templates/challenge/builder.html:251
 msgid "spacco"
 msgstr "break"
 
-#: templates/challenge/builder.html:246
+#: templates/challenge/builder.html:252
 msgid ""
 "Attiva Tiro: la traiettoria segue il puntatore e si ricalcola in tempo "
 "reale."
 msgstr "Turn Shot on: the path follows the pointer and is recomputed live."
 
-#: templates/challenge/builder.html:247
+#: templates/challenge/builder.html:253
 msgid ""
 "Muovi per mirare. Premi e rilascia per fissare; tieni premuto e trascina "
 "per la mira fine. Esc annulla."
 msgstr "Move to aim. Click to set it; hold and drag for fine aim. Esc cancels."
 
-#: templates/challenge/builder.html:248
+#: templates/challenge/builder.html:254
 msgid ""
 "Clicca la biglia da giocare per iniziare a mirare. Clicca un tiro "
 "esistente per correggerlo."
 msgstr "Click the ball to play to start aiming. Click an existing shot to fix it."
 
-#: templates/challenge/builder.html:249
+#: templates/challenge/builder.html:255
 msgid "Clicca una biglia per iniziare a mirare"
 msgstr "Click a ball to start aiming"
 
-#: templates/challenge/builder.html:250
+#: templates/challenge/builder.html:259
+msgid "Testo da inserire:"
+msgstr "Text to add:"
+
+#: templates/challenge/builder.html:260
+msgid "Testo:"
+msgstr "Text:"
+
+#: templates/challenge/builder.html:261
 msgid "Battente"
 msgstr "Cue ball"
 
-#: templates/challenge/builder.html:251
+#: templates/challenge/builder.html:262
 msgid "Biglia fantasma"
 msgstr "Ghost ball"
 
-#: templates/challenge/builder.html:252
+#: templates/challenge/builder.html:263
 msgid "Biglia"
 msgstr "Ball"
 
-#: templates/challenge/builder.html:254
+#: templates/challenge/builder.html:265
 msgid "forza"
 msgstr "power"
 
-#: templates/challenge/builder.html:255
+#: templates/challenge/builder.html:266
 msgid "alto"
 msgstr "top"
 
-#: templates/challenge/builder.html:256
+#: templates/challenge/builder.html:267
 msgid "basso"
 msgstr "bottom"
 
-#: templates/challenge/builder.html:257
+#: templates/challenge/builder.html:268
 msgid "sx"
 msgstr "L"
 
-#: templates/challenge/builder.html:258
+#: templates/challenge/builder.html:269
 msgid "dx"
 msgstr "R"
 
-#: templates/challenge/builder.html:259
+#: templates/challenge/builder.html:270
 msgid "verticale"
 msgstr "vertical"
 
-#: templates/challenge/builder.html:260
+#: templates/challenge/builder.html:271
 msgid "laterale"
 msgstr "side"
 
-#: templates/challenge/builder.html:261
+#: templates/challenge/builder.html:272
 msgid "centro"
 msgstr "centre"
 
-#: templates/challenge/builder.html:262
+#: templates/challenge/builder.html:273
 msgid "destro"
 msgstr "right"
 
-#: templates/challenge/builder.html:263
+#: templates/challenge/builder.html:274
 msgid "sinistro"
 msgstr "left"
 
-#: templates/challenge/builder.html:264
+#: templates/challenge/builder.html:275
 msgid "1 = massimo effetto utile"
 msgstr "1 = maximum usable spin"
 
-#: templates/challenge/builder.html:276
+#: templates/challenge/builder.html:287
 msgid "Il disegno salvato non si è potuto ricaricare."
 msgstr "The saved drawing could not be reloaded."
 
-#: templates/challenge/builder.html:287
+#: templates/challenge/builder.html:298
 msgid "Servono le istruzioni: il disegno da solo non dice come si conta."
 msgstr "Instructions are needed: the drawing alone does not say how to score."
 
-#: templates/challenge/builder.html:291
+#: templates/challenge/builder.html:302
 msgid "Il tavolo è vuoto: disponi almeno una bilia."
 msgstr "The table is empty: set out at least one ball."
 
-#: templates/challenge/builder.html:297
+#: templates/challenge/builder.html:308
 msgid "Salvo…"
 msgstr "Saving…"
 
-#: templates/challenge/builder.html:303
+#: templates/challenge/builder.html:314
 msgid "Non è stato possibile generare l'immagine del drill."
 msgstr "The drill image could not be generated."
 
-#: templates/challenge/builder.html:319
+#: templates/challenge/builder.html:330
 msgid "Non è stato possibile salvare il drill."
 msgstr "The drill could not be saved."
 
-#: templates/challenge/builder.html:327
+#: templates/challenge/builder.html:338
 msgid "Non è stato possibile salvare il drill. Riprova."
 msgstr "The drill could not be saved. Try again."
 
@@ -5956,10 +5972,11 @@ msgstr "Nothing to manage yet"
 
 #: templates/components/_dashboard_empty_state.html:9
 msgid "Puoi creare un campionato o una singola gara dai pulsanti in testata."
-msgstr "You can create a championship or a single competition from the buttons in the header."
+msgstr "You can create a championship or a single competition from the buttons at the top."
 "You can create a championship or a single competition from the buttons in"
 " the header.You can create a championship or a single competition from "
-"the buttons in the header."
+"the buttons in the header.You can create a championship or a single "
+"competition from the buttons in the header."
 
 #: templates/components/_dashboard_empty_state.html:11
 msgid "Nessun campionato attivo"
@@ -6249,9 +6266,10 @@ msgstr "%(num)s groups"
 #: templates/components/_double_knockout_algorithm_info.html:24
 msgid "Ogni girone qualifica quattro giocatori: due imbattuti e due ripescati."
 msgstr "Each group qualifies four players: two unbeaten and two brought back."
-"Each group qualifies four players: two unbeaten and two through the "
-"losers bracket.Each group qualifies four players: two unbeaten and two "
-"from the losers' bracket."
+"Each group qualifies four players: two unbeaten and two brought back.Each"
+" group qualifies four players: two unbeaten and two through the losers "
+"bracket.Each group qualifies four players: two unbeaten and two from the "
+"losers' bracket."
 
 #: templates/components/_elo_display.html:20
 msgid "Clicca per alternare ELO competitivo / globale (tornei + casual)"
@@ -6338,10 +6356,11 @@ msgstr "and %(n)s more players"
 
 #: templates/components/_gara_challenges_display.html:35
 msgid "Si giocano a turno concluso, con i tentativi indicati per ogni giocatore."
-msgstr "They are played once the round is over, with the attempts set for each player."
-"They are played once the round is over, with the attempts shown for each "
-"player.They are played once the round is over, with the attempts "
-"specified for each player."
+msgstr "They are played once the round is over, with the attempts shown for each player."
+"They are played once the round is over, with the attempts set for each "
+"player.They are played once the round is over, with the attempts shown "
+"for each player.They are played once the round is over, with the attempts"
+" specified for each player."
 
 #: templates/components/_gara_edit_form.html:16
 #, python-format
@@ -8487,8 +8506,9 @@ msgstr "Disabled"
 
 #: templates/components/_squadre_management.html:66
 msgid "Toglie la squadra dalle scelte, senza toccare le iscrizioni che la usano"
-msgstr "Removes the team from the choices, without touching the entries that use it"
-"Removes the team from the choices, without touching the registrations "
+msgstr "Removes the team from the choices, leaving the entries that use it untouched"
+"Removes the team from the choices, without touching the entries that use "
+"itRemoves the team from the choices, without touching the registrations "
 "that use itRemoves the team from the choices, without touching the "
 "entries that use it"
 
@@ -9842,7 +9862,8 @@ msgid "Challenge create per gli altri, gare organizzate e proposte accettate."
 msgstr "Challenges created for others, competitions organised and proposals accepted."
 "Challenges created for others, competitions organised and proposals "
 "accepted.Challenges created for others, competitions organised and "
-"proposals accepted."
+"proposals accepted.Challenges created for others, competitions organised "
+"and proposals accepted."
 
 #: templates/gamification/leaderboards.html:77
 msgid "Punti contributo"
@@ -9857,7 +9878,8 @@ msgid "Crea challenge, organizza gare o proponi match: la community cresce così
 msgstr "Create challenges, organise competitions or propose matches: that is how the community grows."
 "Create challenges, organise competitions or propose matches: that is how "
 "the community grows.Create challenges, organise competitions or propose "
-"matches: that is how the community grows."
+"matches: that is how the community grows.Create challenges, organise "
+"competitions or propose matches: that is how the community grows."
 
 #: templates/gamification/admin/dashboard.html:46
 #: templates/gamification/quests.html:10
