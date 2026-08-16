@@ -242,7 +242,14 @@ now = datetime.utcnow()   # Deprecated in Python 3.12+
 `utc_now()` uses `datetime.now(timezone.utc).replace(tzinfo=None)` internally — non-deprecated API, but returns naive datetimes compatible with SQLite.
 
 - **Column defaults**: Use `default=utc_now` (no parens — callable reference)
-- **Frontend**: Use `|datetime_local` filter to display UTC → Italian time (UTC+2)
+- **Frontend**: Use `|datetime_local` filter to display UTC → **ora di chi legge**
+  (`User.timezone`, dedotto dal browser; ripiego su ora italiana per chi non ce
+  l'ha). Il fuso lo conosce **solo** `utils/local_time.py`: `resolve_timezone()`
+  per il lettore corrente, `resolve_timezone_for_user_id()` per un destinatario
+  preciso. Un `ZoneInfo("Europe/Rome")` scritto altrove è un bug (ADR-043).
+- **Testo scritto per qualcun altro** (notifiche, promemoria, scheduled task):
+  passa `tz=` esplicito. Senza, si formatta nel fuso di chi ha premuto il
+  pulsante — o, fuori da una richiesta, in quello di nessuno.
 
 ### 2. "Race to N" Terminology (NOT "Best of N")
 The application uses **"Race to N"** terminology (Italian: "Al N").
@@ -547,7 +554,9 @@ pytest tests/new/unit/ -n auto && pytest tests/new/integration/ -n 4
 | `Config.DEBUG_MODE` in una route | `current_app.config.get("DEBUG_MODE", False)` — la classe base legge la env var col default `true`, quindi in produzione il guard non scatta |
 | Co-direttore con `role != director` | `GaraService`/`TournamentService.add_director` lo rifiutano (`ValidationError`): i co-direttori sono sempre `role=director` |
 | `challenge.max_score` o `challenge.name` | Non esistono su `Challenge`. Il massimo è per-esame su `ExamChallenge.max_score`; il nome mostrato è `get_display_name()` (ADR-042) |
-| `datetime.strptime`/`fromisoformat` su un `datetime-local` | `utils.local_time.parse_local_datetime` — l'input arriva in **ora italiana**, il DB tiene naive-UTC: salvarlo grezzo sposta l'orario di 1-2h, in silenzio |
+| `datetime.strptime`/`fromisoformat` su un `datetime-local` | `utils.local_time.parse_local_datetime` — l'input arriva nell'**ora di chi scrive**, il DB tiene naive-UTC: salvarlo grezzo sposta l'orario, in silenzio (ADR-043) |
+| `ZoneInfo("Europe/Rome")` scritto in un filtro o in una route | `resolve_timezone()` da `utils.local_time` — il fuso è quello del lettore, e un solo modulo lo sa (ADR-043) |
+| Orario formattato una volta per N destinatari | Se il testo contiene un'ora, si compone **per destinatario** col suo `tz`: due giocatori in due fusi leggono due frasi diverse |
 | `request.form.get("next")` passato a `redirect()` | `utils.safe_redirect.safe_next_url` — altrimenti è un open redirect |
 | Disciplina come stringa scritta a mano (`"palla_8"`, `"8_ball"`) | `Discipline.*.value` da `models/status_enum.py` — **unico** vocabolario; per dati storici/esterni `Discipline.normalize()` (torna `None` sull'ignoto). Il nome mostrato è `display_name`, tradotto. Presidiato da `test_discipline_single_vocabulary.py` |
 | Funzione visibile all'utente cambiata senza toccare `/aiuto` | Invoca la skill `help-docs`: la guida non si rompe, **invecchia** — continua a descrivere un'app che non esiste più. Contenuti in `help_content/`, schermate rigenerate da `scripts/help_docs/` |
@@ -578,6 +587,7 @@ pytest tests/new/unit/ -n auto && pytest tests/new/integration/ -n 4
 - **[docs/adr/ADR-040-position-classification-ties.md](docs/adr/ADR-040-position-classification-ties.md)**: classifica POSITION per bande a pari merito, con lo spareggio **deliberatamente** spento — divergenza voluta dalla convenzione di `gara_strategies.py`
 - **[docs/adr/ADR-041-grantable-roles-and-delegation.md](docs/adr/ADR-041-grantable-roles-and-delegation.md)**: ruoli concedibili ortogonali a `user.role` (`RoleGrant`), delega a catena come proprietà **per-ruolo** (`self_propagating`), revoca riservata ad admin perché unico punto di contenimento
 - **[docs/adr/ADR-042-certified-exam.md](docs/adr/ADR-042-certified-exam.md)**: l'esame è una sequenza di drill con esito **booleano**, certificato solo di persona; entità gemelle di `MatchProposal` e non astrazione condivisa; `max_score` per-esame su `ExamChallenge`
+- **[docs/adr/ADR-043-reader-timezone.md](docs/adr/ADR-043-reader-timezone.md)**: gli orari sono nel fuso di **chi legge**, dedotto dal browser e **salvato** su `User.timezone` (senza colonna, promemoria ed email non lo saprebbero); nessun backfill, perché «non lo so» e «è Roma» sono cose diverse
 - **[docs/usecases/esami.md](docs/usecases/esami.md)**: i sette journey degli esami e del ruolo esaminatore
 
 ---

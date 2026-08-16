@@ -96,6 +96,8 @@ code, kbd, pre, samp, .font-mono { font-family: var(--c7-font-mono); }
   display: flex;
   align-items: center;
   gap: 12px;
+  /* Le azioni vanno a capo su mobile invece di schiacciare il titolo. */
+  flex-wrap: wrap;
 }
 .c7-head__back {
   width: 46px; height: 46px;
@@ -109,11 +111,38 @@ code, kbd, pre, samp, .font-mono { font-family: var(--c7-font-mono); }
 /* Colonna, non riga: nel guscio titolo e sottotitolo sono due <span> (che
    affiancati finirebbero sulla stessa riga), mentre le pagine che riempiono
    la testata a mano usano <h1> + <div>. Cosi' entrambe le forme si
-   impilano allo stesso modo. */
+   impilano allo stesso modo.
+
+   La base resta 0 (`flex: 1`) e non passa al contenuto: il sottotitolo *non
+   mandato a capo* è lungo decine di parole, e come base spingerebbe freccia,
+   badge e avatar sulla riga sotto. A non far collassare il titolo pensa
+   `.c7-head__actions`, che sotto lg si toglie dalla riga. */
 .c7-head__title { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .c7-head__title h1,
 .c7-head__title .c7-title { margin: 0; font-size: 18px; font-weight: 800; letter-spacing: -.025em; }
 .c7-head__sub { font-size: 12px; font-weight: 600; color: var(--c7-ink-muted); }
+
+/* Comandi di pagina. Sotto lg prendono una riga tutta loro (`order` alto: la
+   riga di sopra resta freccia + titolo + badge + avatar), perché due bottoni
+   con l'etichetta scritta non stanno su 390px accanto a tutto il resto. Da lg
+   in su tornano in linea, spinti a destra. */
+.c7-head__actions {
+  order: 5;
+  flex: 1 0 100%;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+@media (max-width: 991.98px) {
+  /* Diverse pagine mostrano i comandi solo da lg in su (`d-none d-lg-…`):
+     lì il contenitore c'è ma non ha niente da mostrare, e la sua riga
+     sarebbe un buco sotto il titolo. Se il browser non conosce `:has()` il
+     selettore cade per intero e resta il comportamento di prima — che è il
+     verso giusto in cui sbagliare: meglio uno spazio di troppo che dei
+     comandi spariti. */
+  .c7-head__actions:not(:has(> :not(.d-none))) { display: none; }
+}
 
 /* Barra azioni appiccicata in fondo alle pagine lunghe. Su mobile si ferma
    **sopra** la nav flottante: `bottom: 0` la incollava al bordo del viewport,
@@ -209,6 +238,7 @@ code, kbd, pre, samp, .font-mono { font-family: var(--c7-font-mono); }
   .c7-head { padding: 22px var(--c7-gutter-lg) 20px; border-bottom: 1px solid var(--c7-line); }
   .c7-head__back { display: none; }
   .c7-head__title h1, .c7-head__title .c7-title { font-size: 22px; }
+  .c7-head__actions { order: 0; flex: 0 0 auto; margin-left: auto; }
   .c7-actionbar { padding: 12px var(--c7-gutter-lg) 22px; bottom: 0; }
   .c7-actionbar .btn { flex: 0 0 auto; padding: 0 22px; }
 }
@@ -857,6 +887,40 @@ input[type="number"].form-control {
   font-size: 11px; font-weight: 800; flex-shrink: 0;
 }
 .c7-avatar--lg { width: 46px; height: 46px; font-size: 14px; }
+
+/* Riquadro per l'immagine di un drill — che e' un **diagramma**, non una foto
+   d'ambiente: dice dove stanno le bilie e dov'e' la battente. Si mostra
+   intero, sempre, anche a costo di due bande vuote ai lati: ritagliarlo per
+   riempire il riquadro toglie i bordi del tavolo, cioe' proprio cio' che da'
+   senso alle posizioni, e non si vede — un tavolo tagliato somiglia a un
+   tavolo. Il fondo affossato fa da passe-partout e regge anche il segnaposto
+   quando l'immagine manca o non si carica.
+   Le foto reali stanno intorno a 1.74:1 (800x459): i riquadri che le ospitano
+   in grande usano 16/9, cosi' le bande sono un filo. */
+.c7-diagram {
+  position: relative; overflow: hidden;
+  background: var(--c7-sunken); color: var(--c7-ink-faint);
+  display: grid; place-items: center; flex-shrink: 0;
+}
+/* L'immagine si posiziona sul riquadro invece di dimensionarsi in percentuale.
+   Non e' un vezzo: dove l'altezza del riquadro viene da `aspect-ratio`, una
+   percentuale non ha un'altezza **definita** su cui risolvere, e l'immagine
+   ripiega sulla propria misura intrinseca — una foto quadrata usciva dal
+   riquadro e veniva ritagliata **comunque**, cioe' proprio il bug che si
+   stava togliendo (una 1.74:1 se la cavava per caso, ed e' il motivo per cui
+   la cosa passava inosservata). Con `position: absolute; inset: 0` il box e'
+   quello del riquadro, definito, e `contain` fa il suo mestiere. */
+.c7-diagram__img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%; object-fit: contain; display: block;
+}
+/* Le tre misure in uso: miniatura in riga, card del catalogo, dettaglio. */
+.c7-diagram--thumb { border-radius: var(--c7-r-control); }
+.c7-diagram--card  { aspect-ratio: 16 / 9; }
+.c7-diagram--full  {
+  aspect-ratio: 16 / 9; max-height: 380px; border-radius: var(--c7-r-card-lg);
+}
+
 .c7-divider { height: 1px; background: var(--c7-line-soft); border: 0; margin: 16px 0; }
 /* Filo sopra un blocco che continua la card. `.c7-divider` non va usato come
    contenitore: e' alto 1px e con un fondo suo, quindi il contenuto ci esce

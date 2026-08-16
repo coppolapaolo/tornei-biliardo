@@ -14,6 +14,12 @@
         {# Dove tornare dopo il login (es. il link pubblico di una gara) #}
         {% if next_url %}<input type="hidden" name="next" value="{{ next_url }}">{% endif %}
 
+        {# Il fuso orario di chi entra, riempito qui sotto dal browser: da
+           subito ogni orario della sessione è quello giusto, senza la prima
+           pagina mostrata nel fuso vecchio. Se il JavaScript non gira resta
+           vuoto e il server tiene quello che gia' sapeva (ADR-043). #}
+        <input type="hidden" name="timezone" id="login-timezone">
+
         <div>
             <label for="username" class="form-label">{{ _('Nome utente') }}</label>
             <input type="text" id="username" class="form-control" name="username" autocomplete="username" required>
@@ -34,4 +40,20 @@
         {{ _('Non hai un account?') }} <a href="{{ url_for('auth.register', next=next_url) }}">{{ _('Registrati') }}</a>
     </p>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Nome IANA del fuso (es. "Europe/Rome", "America/New_York"). Il server lo
+  // valida: da qui puo' arrivare qualunque cosa.
+  (function () {
+    var field = document.getElementById('login-timezone');
+    if (!field) { return; }
+    try {
+      field.value = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+    } catch (e) {
+      // Browser che non sa dirlo: si accede lo stesso, col fuso di prima.
+    }
+  })();
+</script>
 {% endblock %}

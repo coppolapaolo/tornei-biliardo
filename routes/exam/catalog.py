@@ -5,7 +5,7 @@ from flask_babel import gettext as _
 from flask_login import current_user, login_required
 
 from models.base import db
-from models.exam.services import ExamService
+from models.exam.services import MAX_ATTEMPTS_PER_CHALLENGE, ExamService
 from models.user.models import User
 from utils import examiner_required
 from utils.route_helpers import handle_service_action
@@ -85,6 +85,7 @@ def exam_detail(exam_id: int):
         open_attempt=ExamService.get_open_self_practice(actor.id, exam_id),
         open_request=ExamRequestService.get_open_request(actor.id, exam_id),
         statistics=ExamService.get_exam_statistics(exam_id),
+        max_attempts_cap=MAX_ATTEMPTS_PER_CHALLENGE,
     )
 
 
@@ -168,13 +169,18 @@ def add_challenge(exam_id: int):
     actor = _actor()
     challenge_id = _int_or_none(request.form.get("challenge_id"))
     max_score = _int_or_none(request.form.get("max_score"))
+    max_attempts = _int_or_none(request.form.get("max_attempts")) or 1
 
     if challenge_id is None:
         abort(400)
 
     return handle_service_action(
         action=lambda: ExamService.add_challenge_to_exam(
-            exam_id, challenge_id, actor, max_score=max_score
+            exam_id,
+            challenge_id,
+            actor,
+            max_score=max_score,
+            max_attempts=max_attempts,
         ),
         redirect_url=url_for("exam.exam_detail", exam_id=exam_id),
         success_message=_("Drill aggiunto all'esame."),
@@ -188,13 +194,20 @@ def add_challenge(exam_id: int):
 def update_challenge(exam_id: int, challenge_id: int):
     actor = _actor()
     max_score = _int_or_none(request.form.get("max_score"))
+    # Assente = non si tocca: chi modifica il solo punteggio non deve
+    # rimandare anche il numero di prove per non azzerarlo.
+    max_attempts = _int_or_none(request.form.get("max_attempts"))
 
     return handle_service_action(
         action=lambda: ExamService.update_exam_challenge(
-            exam_id, challenge_id, actor, max_score=max_score
+            exam_id,
+            challenge_id,
+            actor,
+            max_score=max_score,
+            max_attempts=max_attempts,
         ),
         redirect_url=url_for("exam.exam_detail", exam_id=exam_id),
-        success_message=_("Punteggio massimo aggiornato."),
+        success_message=_("Drill aggiornato."),
         error_prefix=None,
     )
 

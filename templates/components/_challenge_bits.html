@@ -14,12 +14,9 @@
 #}
 
 {% macro thumb(challenge, size=56, radius='var(--c7-r-control)') -%}
-<span style="width:{{ size }}px;height:{{ size }}px;border-radius:{{ radius }};overflow:hidden;
-             background:var(--c7-sunken);display:grid;place-items:center;
-             color:var(--c7-ink-faint);flex-shrink:0">
+<span class="c7-diagram" style="width:{{ size }}px;height:{{ size }}px;border-radius:{{ radius }}">
   {%- if challenge.image_filename %}
-  <img src="{{ challenge_image_url(challenge) }}" alt=""
-       style="width:100%;height:100%;object-fit:cover"
+  <img class="c7-diagram__img" src="{{ challenge_image_url(challenge) }}" alt=""
        onerror="this.replaceWith(Object.assign(document.createElement('i'),{className:'fas fa-bullseye'}))">
   {%- else %}<i class="fas fa-bullseye"></i>{% endif -%}
 </span>

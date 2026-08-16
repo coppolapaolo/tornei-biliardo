@@ -338,6 +338,32 @@ class UserService:
         return user
 
     @staticmethod
+    @transactional(domain="user")
+    def remember_timezone(user_id: int, name: Optional[str]) -> bool:
+        """Registra il fuso orario dedotto dal browser. True se è cambiato.
+
+        Il nome arriva da un client, quindi si valida: un fuso inventato
+        salvato in colonna farebbe sollevare a ogni pagina che mostra un
+        orario, cioè quasi tutte. Un nome che non esiste si scarta in silenzio
+        e si tiene quello di prima — meglio un fuso vecchio di nessun fuso.
+
+        Scrive solo quando cambia davvero: la verifica gira a ogni accesso, e
+        una UPDATE per pagina su una colonna che non cambia mai è lavoro
+        buttato su un DB SQLite condiviso.
+        """
+        from utils.local_time import is_valid_timezone
+
+        if not is_valid_timezone(name):
+            return False
+
+        user = db.session.get(User, user_id)
+        if not user or user.timezone == name:
+            return False
+
+        user.timezone = name
+        return True
+
+    @staticmethod
     def request_director_promotion(
         user_id: int, notes: Optional[str] = None
     ) -> DirectorRequest:

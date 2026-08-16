@@ -80,6 +80,11 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "help.screen_api": set(),
     # === Logged-in (player or director) ===
     "auth.logout": {"player", "director"},
+    # Il browser comunica il fuso di chi legge (ADR-043). Lo chiama il guscio da
+    # ogni pagina, quindi deve essere raggiungibile da chiunque sia loggato:
+    # senza, in produzione ogni utente non-admin resterebbe sul fuso dedotto al
+    # login e chi si sposta non si aggiornerebbe mai.
+    "auth.sync_timezone": {"player", "director"},
     "dashboard.dashboard": {"player", "director"},
     # Onboarding obbligatorio (ADR-035): reachable by ogni utente loggato.
     "onboarding.onboarding": {"player", "director"},

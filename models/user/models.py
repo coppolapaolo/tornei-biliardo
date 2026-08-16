@@ -76,6 +76,20 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
     # Scrivibile solo dal giocatore stesso: né director né admin lo toccano.
     squadra = db.Column(db.String(100), nullable=True)
 
+    # Fuso orario del giocatore, nome IANA (es. "Europe/Rome",
+    # "America/New_York"). Non lo si chiede: lo si **deduce dal browser** al
+    # login e a ogni pagina in cui risulta cambiato, perché è l'unico dato che
+    # l'utente non sa di avere e che sbagliato rovina ogni orario che legge.
+    #
+    # Va salvato e non solo dedotto al volo: promemoria e notifiche nascono in
+    # uno scheduled task, senza nessun browser da interrogare, e le caselle di
+    # posta non eseguono JavaScript. Quello che non è scritto qui, fuori da una
+    # pagina non esiste. Vedi ADR-043.
+    #
+    # NULL = mai dedotto: si ripiega sull'ora italiana, che è dove sta la
+    # maggioranza dei giocatori e che era il comportamento di prima.
+    timezone = db.Column(db.String(64), nullable=True)
+
     # Onboarding obbligatorio (una volta sola) — ADR-035. Default False per
     # tutti, inclusi gli account esistenti (backfill): ognuno esegue
     # l'onboarding al primo login successivo al rilascio.

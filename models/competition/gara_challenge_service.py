@@ -14,6 +14,7 @@ Design Note (Sprint 11 - December 2025):
 
 from __future__ import annotations
 
+import logging
 from typing import List, Dict, Any, Optional
 
 from ..base import db
@@ -24,6 +25,8 @@ from .gara_challenge import (
     GaraChallengeClassification,
 )
 from ..transaction.manager import transactional
+
+logger = logging.getLogger(__name__)
 
 
 class GaraChallengeService:
@@ -229,7 +232,44 @@ class GaraChallengeService:
         # Update the gara challenge classification
         GaraChallengeService.update_gara_classification(gara_challenge.gara_id)
 
+        GaraChallengeService._publish_attempt_completed(attempt, gara_challenge)
+
         return attempt
+
+    @staticmethod
+    def _publish_attempt_completed(
+        attempt: GaraChallengeAttempt, gara_challenge: GaraChallenge
+    ) -> None:
+        """Annuncia il drill di gara completato, per XP e streak.
+
+        Best-effort: la gamification non deve mai far perdere un punteggio già
+        registrato. ``attempt_number`` viaggia con l'evento perché in gara la
+        stessa prova si ripete fino a ``max_attempts``, e chi ascolta deve
+        poter distinguere un allenamento nuovo da un secondo tiro.
+        """
+        from models.challenge.events import (
+            ChallengeAttemptCompletedEvent,
+            DrillOrigin,
+        )
+        from models.events.base import EventBus
+
+        try:
+            challenge = gara_challenge.challenge
+            EventBus.publish(
+                ChallengeAttemptCompletedEvent(
+                    attempt_id=attempt.id,
+                    challenge_id=gara_challenge.challenge_id,
+                    challenge_name=(challenge.get_display_name() if challenge else ""),
+                    user_id=attempt.user_id,
+                    origin=DrillOrigin.GARA.value,
+                    score=attempt.score,
+                    passed=attempt.passed,
+                    gara_id=gara_challenge.gara_id,
+                    attempt_number=attempt.attempt_number,
+                )
+            )
+        except Exception:  # pragma: no cover - la gamification non blocca mai
+            logger.warning("Evento di drill di gara non pubblicato", exc_info=True)
 
     @staticmethod
     @transactional(domain="competition")

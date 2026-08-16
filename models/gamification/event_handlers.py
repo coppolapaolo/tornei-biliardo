@@ -29,6 +29,7 @@ from models.events.competition_events import (
     CompetitionCreatedEvent,
     CampionatoCreatedEvent,
 )
+from models.challenge.events import ChallengeAttemptCompletedEvent
 from models.exam.events import ExamAttemptCompletedEvent
 from models.gamification.level_service import LevelService
 from models.gamification.achievement_service import AchievementService
@@ -83,6 +84,13 @@ class GamificationEventHandlers:
         EventBus.register_handler(
             CampionatoCreatedEvent,
             GamificationEventHandlers.handle_campionato_created_for_xp,
+            priority=10,
+        )
+
+        # Drill (catalogo e gara)
+        EventBus.register_handler(
+            ChallengeAttemptCompletedEvent,
+            GamificationEventHandlers.handle_challenge_attempt_completed_for_xp,
             priority=10,
         )
 
@@ -606,6 +614,67 @@ class GamificationEventHandlers:
         except Exception as e:
             logger.error(
                 f"Error handling campionato created event for XP: {e}", exc_info=True
+            )
+
+    # ========================================
+    # Challenge (drill) Domain Handlers
+    # ========================================
+
+    @staticmethod
+    def handle_challenge_attempt_completed_for_xp(
+        event: ChallengeAttemptCompletedEvent,
+    ) -> None:
+        """XP e streak alla chiusura di un drill.
+
+        **Il drill conta da entrambe le parti.** Un allenamento fatto dal
+        catalogo e uno fatto durante una gara sono la stessa abitudine: la
+        ``WEEKLY_DRILL`` scatta per tutt'e due, come per l'esame — che è a sua
+        volta una sequenza di drill (ADR-042). Distinguerli avrebbe voluto dire
+        dire al giocatore che allenarsi in gara non è allenarsi.
+
+        **L'XP invece guarda l'origine**, perché «un drill» vuol dire due cose
+        diverse nei due posti. Dal catalogo un tentativo è una sessione: si
+        sceglie la prova, la si fa, la si chiude. In gara la stessa prova si
+        ripete fino a ``max_attempts`` nello stesso turno, e il direttore
+        registra spesso i tentativi in blocco: pagarli tutti significherebbe
+        moltiplicare l'XP di un allenamento per il numero di tiri. Paga quindi
+        solo il primo — che è il drill — e i successivi sono lo stesso drill,
+        riprovato.
+
+        L'esito non entra nel conto: come per l'esame in autonomia, quello che
+        si premia è essersi allenati. Un drill sbagliato è comunque un drill.
+        """
+        try:
+            if not event.is_a_retry:
+                LevelService.award_xp(
+                    user_id=event.user_id,
+                    xp_amount=ConfigService.get_xp_rate(
+                        XPTransactionType.CHALLENGE_COMPLETION
+                    ),
+                    transaction_type=XPTransactionType.CHALLENGE_COMPLETION,
+                    reason=f"Completed drill {event.challenge_name}",
+                    related_entities={
+                        "challenge_id": event.challenge_id,
+                        "challenge_attempt_id": event.attempt_id,
+                        "gara_id": event.gara_id,
+                    },
+                )
+
+            # La streak è settimanale e idempotente: un secondo tentativo non
+            # la muove, quindi si registra comunque senza doverlo verificare.
+            for streak_type in (StreakType.WEEKLY_DRILL, StreakType.WEEKLY_ACTIVITY):
+                try:
+                    StreakService.record_activity(
+                        user_id=event.user_id, streak_type=streak_type
+                    )
+                except Exception as streak_error:
+                    logger.warning(
+                        f"Error recording {streak_type} for user "
+                        f"{event.user_id}: {streak_error}"
+                    )
+        except Exception as e:
+            logger.error(
+                f"Error handling challenge attempt completed event: {e}", exc_info=True
             )
 
     # ========================================

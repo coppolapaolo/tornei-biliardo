@@ -84,7 +84,26 @@ CompetitionCompletedEvent ──→    handle_competition_completed_for_xp()
                                  - Award winner bonus
                                  - Award podium bonus
                                  - Update quest progress
+
+ChallengeAttemptCompletedEvent ─→ handle_challenge_attempt_completed_for_xp()
+                                 - Award CHALLENGE_COMPLETION XP
+                                 - Record WEEKLY_DRILL + WEEKLY_ACTIVITY streak
 ```
+
+**Il drill non è simmetrico fra le due origini, ed è voluto.** L'evento arriva
+sia dal catalogo (`ChallengeService.complete_challenge_attempt`) sia dalla gara
+(`GaraChallengeService.record_challenge_attempt`, e il drill che sostituisce il
+bye). La **streak** scatta da entrambe: allenarsi è allenarsi, come per l'esame
+(ADR-042), che è a sua volta una sequenza di drill.
+
+L'**XP** invece guarda `attempt_number`: dal catalogo ogni tentativo è una
+sessione a sé e paga; in gara la stessa prova si ripete fino a `max_attempts`
+nello stesso turno — spesso registrate in blocco dal director — quindi paga solo
+il primo. Pagarle tutte moltiplicherebbe l'XP di un allenamento per il numero di
+tiri.
+
+L'esito non conta: un drill sbagliato resta un drill fatto, esattamente come
+l'esame in autonomia.
 
 ### Handler Registration
 

@@ -163,13 +163,15 @@
       <div class="c7-grid" style="grid-template-columns:1fr 1fr">
         <div>
           <label class="c7-label" for="individualStartTime">{{ _('Inizio') }}</label>
-          <input type="datetime-local" class="form-control" id="individualStartTime"
-                 value="{{ match.started_at.strftime('%Y-%m-%dT%H:%M') if match.started_at else '' }}">
+          {# `|datetime_input` e non `strftime`: sul DB il naive e' UTC, e
+             stampato grezzo qui mostrerebbe un orario che nessuno ha scritto. #}
+          <input type="datetime-local" class="form-control" id="individualStartTime" name="started_at"
+                 value="{{ match.started_at|datetime_input }}">
         </div>
         <div>
           <label class="c7-label" for="individualEndTime">{{ _('Fine') }}</label>
-          <input type="datetime-local" class="form-control" id="individualEndTime"
-                 value="{{ match.ended_at.strftime('%Y-%m-%dT%H:%M') if match.ended_at else '' }}">
+          <input type="datetime-local" class="form-control" id="individualEndTime" name="ended_at"
+                 value="{{ match.ended_at|datetime_input }}">
         </div>
       </div>
       <button class="btn btn-secondary w-100" style="margin-top:12px"

@@ -47,43 +47,11 @@
             return meta ? meta.getAttribute('content') : '';
         };
 
-        // Timezone e Datetime utilities
-        window.TourneyUtils = {
-            getTimezone: function () {
-                return Intl.DateTimeFormat().resolvedOptions().timeZone;
-            },
-            utcToLocal: function (utcString) {
-                if (!utcString) return 'N/A';
-                const utcDate = new Date(utcString + 'Z'); // Force UTC
-                return utcDate.toLocaleString('it-IT');
-            },
-            localToUtc: function (localDatetimeString) {
-                const localDate = new Date(localDatetimeString);
-                return localDate.toISOString().slice(0, 16); // YYYY-MM-DDTHH:MM
-            },
-            getCurrentLocal: function () {
-                return new Date();
-            },
-            isInFuture: function (utcString) {
-                if (!utcString) return false;
-                return new Date(utcString + 'Z') > new Date();
-            },
-            isInPast: function (utcString) {
-                if (!utcString) return false;
-                return new Date(utcString + 'Z') < new Date();
-            },
-            formatDate: function (dateString, includeTime) {
-                if (!dateString) return 'N/A';
-                const date = new Date(dateString);
-                if (isNaN(date.getTime())) return dateString;
-                const options = includeTime
-                    ? { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }
-                    : { year: 'numeric', month: '2-digit', day: '2-digit' };
-                return date.toLocaleString('it-IT', options);
-            },
-            formatDateOnly: function (dateString) { return this.formatDate(dateString, false); },
-            formatDateTime: function (dateString) { return this.formatDate(dateString, true); }
-        };
+        {# Nessuna conversione di fuso qui dentro: la fa il server, nel fuso del
+           lettore (`User.timezone`), tramite i filtri `|datetime_local` e
+           compagni. Il browser non conosce quella colonna, quindi qualsiasi
+           riformattazione lato client produrrebbe un orario diverso da quello
+           che l'utente vede altrove. Vedi ADR-043. #}
 
         // Dual ELO: alterna competitivo <-> globale su tutta l'interfaccia.
         window.EloToggle = {
@@ -123,20 +91,26 @@
                 if (el) { e.preventDefault(); window.EloToggle.toggle(); }
             });
 
-            document.querySelectorAll('[data-utc]').forEach(function (element) {
-                element.textContent = TourneyUtils.utcToLocal(element.getAttribute('data-utc'));
-            });
-            document.querySelectorAll('input[type="datetime-local"]').forEach(function (input) {
-                if (input.hasAttribute('data-utc-value')) {
-                    input.value = TourneyUtils.localToUtc(input.getAttribute('data-utc-value'));
-                }
-            });
-            document.querySelectorAll('[data-date]').forEach(function (element) {
-                element.textContent = TourneyUtils.formatDateOnly(element.getAttribute('data-date'));
-            });
-            document.querySelectorAll('[data-datetime]').forEach(function (element) {
-                element.textContent = TourneyUtils.formatDateTime(element.getAttribute('data-datetime'));
-            });
+            {% if current_user.is_authenticated %}
+            /* Il fuso di chi legge (ADR-043). Il campo nascosto del login copre
+               l'accesso; questo copre il resto: la sessione ripresa da
+               "ricordami", che un login non lo fa, e chi si sposta di fuso a
+               sessione aperta. Si scrive solo quando il browser dice una cosa
+               diversa da quella salvata, quindi in condizioni normali non parte
+               nessuna richiesta. */
+            (function () {
+                var known = {{ (current_user.timezone or '')|tojson }};
+                var here;
+                try { here = Intl.DateTimeFormat().resolvedOptions().timeZone; }
+                catch (e) { return; }
+                if (!here || here === known) { return; }
+                fetch({{ url_for('auth.sync_timezone')|tojson }}, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken()},
+                    body: JSON.stringify({timezone: here})
+                }).catch(function () { /* riproverà alla pagina dopo */ });
+            })();
+            {% endif %}
         });
     </script>
 
@@ -293,6 +267,12 @@
                `content`, che produrrebbe due testate sovrapposte, e NON
                sostituendo `page_head` per intero, che farebbe sparire la
                freccia e l'avatar del mobile. #}
+            {# Le azioni si raccolgono qui prima di disegnare la testata, per
+               poterle **omettere** quando la pagina non ne ha: sotto lg
+               prendono una riga tutta loro, e una riga vuota lascerebbe un
+               buco sotto il titolo in ogni pagina senza comandi. Il blocco
+               resta sovrascrivibile dalle pagine come prima. #}
+            {% set page_actions_html %}{% block page_actions %}{% endblock %}{% endset %}
             {% block page_head %}
             <header class="c7-head">
                 {% block page_back %}
@@ -308,7 +288,13 @@
                     <span class="c7-title">{% block page_title %}{{ (self.title()|trim).split(' - ')[0]|trim }}{% endblock %}</span>
                     <span class="c7-head__sub">{% block page_sub %}{% endblock %}</span>
                 </div>
-                {% block page_actions %}{% endblock %}
+                {# Sotto lg le azioni vanno a capo invece di comprimere il
+                   titolo: due comandi con l'etichetta scritta non stanno su
+                   390px accanto a freccia, titolo, badge e avatar, e il
+                   titolo finiva strizzato a una parola per riga. #}
+                {% if page_actions_html|trim %}
+                <div class="c7-head__actions">{{ page_actions_html }}</div>
+                {% endif %}
 
                 {# Badge di livello (§11-quater). I guadagni XP per scelta non
                    producono toast: questo e' il loro unico riscontro, quindi

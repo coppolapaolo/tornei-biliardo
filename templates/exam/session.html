@@ -30,10 +30,18 @@
   {# ── Avanzamento ────────────────────────────────────────────────────── #}
   <div class="c7-card">
     <div class="c7-label">{{ _("Avanzamento") }}</div>
+    {# Si conta per **prove**, non per drill: un drill da tre prove non e' fatto
+       dopo la prima, e la barra calcolata sui drill salterebbe di un terzo. #}
     <div style="margin-top:8px;display:flex;align-items:baseline;gap:6px">
-      <span class="c7-num-lg">{{ progress.completed_challenges }}</span>
-      <span class="c7-rows__sub">/ {{ progress.total_challenges }}</span>
+      <span class="c7-num-lg">{{ progress.completed_attempts }}</span>
+      <span class="c7-rows__sub">/ {{ progress.total_attempts }}</span>
     </div>
+    {% if progress.total_attempts != progress.total_challenges %}
+    <div class="c7-rows__sub" style="margin-top:4px">
+      {{ _("prove · %(done)s di %(all)s drill completati",
+            done=progress.completed_challenges, all=progress.total_challenges) }}
+    </div>
+    {% endif %}
     <div style="margin-top:10px;height:8px;border-radius:var(--c7-r-pill);background:var(--c7-sunken)">
       <span style="display:block;height:100%;border-radius:var(--c7-r-pill);
                    background:var(--c7-accent);width:{{ progress.progress_percentage|round|int }}%"></span>
@@ -51,8 +59,7 @@
   {% set can_score = attempt.status == 'in_progress'
                      and (is_examiner or (is_candidate and attempt.mode == 'self_practice')) %}
   <div class="c7-stack">
-    {% for result in attempt.challenge_results %}
-    {% set ec = result.exam_challenge %}
+    {% for ec, slots in attempt.results_by_challenge() %}
     <div class="c7-card">
       <div style="display:flex;align-items:center;gap:12px">
         {{ ch.thumb(ec.challenge, 40, 'var(--c7-r-chip)') }}
@@ -61,8 +68,21 @@
           <div class="c7-rows__sub">
             {% if ec.is_pass_fail %}{{ _("Superato / non superato") }}
             {% else %}{{ _("Da 0 a %(n)s", n=ec.effective_max_score) }}{% endif %}
+            {% if ec.max_attempts > 1 %}
+            · {{ _("%(n)s prove · conta la migliore", n=ec.max_attempts) }}
+            {% endif %}
           </div>
         </div>
+      </div>
+
+      {# Una riga per prova: la casella e' fissa, cosi' una si puo' anche
+         correggere senza ambiguita' su quale delle tre si sta rifacendo. #}
+      {% for result in slots %}
+      <div style="margin-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        {% if ec.max_attempts > 1 %}
+        <span class="c7-pill" style="min-width:74px">{{ _("Prova %(n)s", n=result.attempt_number) }}</span>
+        {% endif %}
+
         {% if result.passed is not none %}
         <span class="c7-state c7-state--{{ 'ok' if result.passed else 'err' }}">
           {{ _("Superato") if result.passed else _("Non superato") }}
@@ -72,23 +92,26 @@
         {% else %}
         <span class="c7-pill">{{ _("Da svolgere") }}</span>
         {% endif %}
-      </div>
 
-      {% if can_score %}
-      <form method="POST" action="{{ url_for('exam.record_result', attempt_id=attempt.id) }}"
-            style="margin-top:12px;display:flex;gap:8px;align-items:center">
-        <input type="hidden" name="exam_challenge_id" value="{{ ec.id }}">
-        {% if ec.is_pass_fail %}
-        <button type="submit" name="passed" value="1" class="btn btn-success btn-sm">{{ _("Superato") }}</button>
-        <button type="submit" name="passed" value="0" class="btn btn-sm"
-                style="background:var(--c7-err-bg);color:var(--c7-err-ink)">{{ _("Non superato") }}</button>
-        {% else %}
-        <input class="form-control" type="number" name="score" min="0" max="{{ ec.effective_max_score }}"
-               required style="max-width:120px" placeholder="{{ _('Punteggio') }}">
-        <button type="submit" class="btn btn-primary btn-sm">{{ _("Registra") }}</button>
+        {% if can_score %}
+        <form method="POST" action="{{ url_for('exam.record_result', attempt_id=attempt.id) }}"
+              style="margin-left:auto;display:flex;gap:8px;align-items:center">
+          <input type="hidden" name="exam_challenge_id" value="{{ ec.id }}">
+          <input type="hidden" name="attempt_number" value="{{ result.attempt_number }}">
+          {% if ec.is_pass_fail %}
+          <button type="submit" name="passed" value="1" class="btn btn-success btn-sm">{{ _("Superato") }}</button>
+          <button type="submit" name="passed" value="0" class="btn btn-sm"
+                  style="background:var(--c7-err-bg);color:var(--c7-err-ink)">{{ _("Non superato") }}</button>
+          {% else %}
+          <input class="form-control" type="number" name="score" min="0" max="{{ ec.effective_max_score }}"
+                 required style="max-width:120px" placeholder="{{ _('Punteggio') }}"
+                 value="{{ result.score if result.score is not none else '' }}">
+          <button type="submit" class="btn btn-primary btn-sm">{{ _("Registra") }}</button>
+          {% endif %}
+        </form>
         {% endif %}
-      </form>
-      {% endif %}
+      </div>
+      {% endfor %}
     </div>
     {% endfor %}
   </div>

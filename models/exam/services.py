@@ -44,6 +44,11 @@ from .models import Exam, ExamAttempt, ExamChallenge, ExamChallengeResult, ExamE
 
 logger = logging.getLogger(__name__)
 
+#: Tetto alle prove che un drill può prevedere dentro un esame. Ogni prova è una
+#: riga di ``exam_challenge_result`` creata all'apertura di **ogni** sessione:
+#: un numero digitato male si pagherebbe su tutti i candidati.
+MAX_ATTEMPTS_PER_CHALLENGE = 20
+
 
 class ExamService:
     """Composizione, somministrazione e statistiche degli esami."""
@@ -172,6 +177,25 @@ class ExamService:
             raise ValidationError("Il punteggio massimo deve essere positivo")
 
     @staticmethod
+    def _validate_max_attempts(max_attempts: int) -> int:
+        """Quante prove può prevedere un drill: almeno una, e non a piacere.
+
+        Il tetto non è pignoleria: ogni prova prescritta diventa una riga di
+        ``exam_challenge_result`` per **ogni** sessione, create tutte
+        all'apertura. Un numero digitato male — o incollato — si pagherebbe su
+        ogni candidato, e nessuno somministra cinquanta prove dello stesso drill.
+        """
+        if max_attempts is None:
+            return 1
+        if max_attempts < 1:
+            raise ValidationError("Un drill prevede almeno una prova")
+        if max_attempts > MAX_ATTEMPTS_PER_CHALLENGE:
+            raise ValidationError(
+                "Troppe prove per un drill: al massimo " f"{MAX_ATTEMPTS_PER_CHALLENGE}"
+            )
+        return max_attempts
+
+    @staticmethod
     @transactional(domain="exam")
     def add_challenge_to_exam(
         exam_id: int,
@@ -179,6 +203,7 @@ class ExamService:
         actor: User,
         max_score: Optional[int] = None,
         order: Optional[int] = None,
+        max_attempts: int = 1,
     ) -> ExamChallenge:
         """Aggiunge un drill in coda all'esame (o alla posizione richiesta)."""
         exam = ExamService.get_exam(exam_id)
@@ -188,6 +213,7 @@ class ExamService:
         if challenge is None:
             raise NotFoundError("Drill non trovato")
         ExamService._validate_max_score(challenge, max_score)
+        max_attempts = ExamService._validate_max_attempts(max_attempts)
 
         existing = ExamChallenge.query.filter_by(
             exam_id=exam_id, challenge_id=challenge_id
@@ -220,6 +246,7 @@ class ExamService:
             challenge_id=challenge_id,
             order=order,
             max_score=max_score,
+            max_attempts=max_attempts,
         )
         db.session.add(exam_challenge)
         db.session.flush()
@@ -228,9 +255,17 @@ class ExamService:
     @staticmethod
     @transactional(domain="exam")
     def update_exam_challenge(
-        exam_id: int, challenge_id: int, actor: User, max_score: Optional[int]
+        exam_id: int,
+        challenge_id: int,
+        actor: User,
+        max_score: Optional[int],
+        max_attempts: Optional[int] = None,
     ) -> ExamChallenge:
-        """Cambia il punteggio massimo di un drill dentro l'esame."""
+        """Cambia punteggio massimo e numero di prove di un drill dell'esame.
+
+        ``max_attempts=None`` lascia il valore com'è: chi modifica solo il
+        punteggio non deve rimandare anche l'altro campo per non azzerarlo.
+        """
         exam = ExamService.get_exam(exam_id)
         ExamService._require_edit(exam, actor)
 
@@ -242,6 +277,10 @@ class ExamService:
 
         ExamService._validate_max_score(exam_challenge.challenge, max_score)
         exam_challenge.max_score = max_score
+        if max_attempts is not None:
+            exam_challenge.max_attempts = ExamService._validate_max_attempts(
+                max_attempts
+            )
         return exam_challenge
 
     @staticmethod
@@ -592,8 +631,15 @@ class ExamService:
         actor: User,
         score: Optional[int] = None,
         passed: Optional[bool] = None,
+        attempt_number: Optional[int] = None,
     ) -> ExamChallengeResult:
-        """Registra il risultato di un drill dentro un tentativo."""
+        """Registra il risultato di una **prova** di un drill dentro un tentativo.
+
+        Senza ``attempt_number`` si riempie la prima prova ancora libera, che è
+        il gesto normale di chi somministra: si va in ordine. Indicandolo si
+        riscrive quella prova — serve a correggere un punteggio sbagliato, e
+        senza il numero non ci sarebbe modo di dire *quale* si sta correggendo.
+        """
         attempt = db.session.get(ExamAttempt, attempt_id)
         if attempt is None:
             raise NotFoundError("Tentativo non trovato")
@@ -601,11 +647,36 @@ class ExamService:
         ExamService._require_scorer(attempt, actor)
         ExamService._require_in_progress(attempt)
 
-        result = ExamChallengeResult.query.filter_by(
-            exam_attempt_id=attempt_id, exam_challenge_id=exam_challenge_id
-        ).first()
-        if result is None:
+        slots = (
+            ExamChallengeResult.query.filter_by(
+                exam_attempt_id=attempt_id, exam_challenge_id=exam_challenge_id
+            )
+            .order_by(ExamChallengeResult.attempt_number)
+            .all()
+        )
+        if not slots:
             raise NotFoundError("Drill non presente in questo tentativo")
+
+        if attempt_number is None:
+            if len(slots) == 1:
+                # Prova unica: non c'è nessuna ambiguità su quale si intenda, e
+                # ri-registrare **corregge**, come ha sempre fatto.
+                result = slots[0]
+            else:
+                result = next(
+                    (s for s in slots if s.score is None and s.passed is None), None
+                )
+                if result is None:
+                    raise ConflictError(
+                        "Le prove previste per questo drill sono già state "
+                        "registrate: per cambiarne una, indica quale"
+                    )
+        else:
+            result = next(
+                (s for s in slots if s.attempt_number == attempt_number), None
+            )
+            if result is None:
+                raise NotFoundError("Prova non prevista per questo drill")
 
         exam_challenge = result.exam_challenge
         if exam_challenge.is_pass_fail:

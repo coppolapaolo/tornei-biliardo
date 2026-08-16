@@ -37,7 +37,7 @@
 
             {% if gara.inscription_start %}
             <p style="margin: 10px 0 0; font-size: 12px; font-weight: 700; color: var(--c7-accent);">
-                {{ _("Iscrizioni dal") }} <span class="c7-num" data-utc="{{ gara.inscription_start.isoformat() }}">{{ gara.inscription_start|datetime_local }}</span>
+                {{ _("Iscrizioni dal") }} <span class="c7-num">{{ gara.inscription_start|datetime_local }}</span>
             </p>
             {% endif %}
 
