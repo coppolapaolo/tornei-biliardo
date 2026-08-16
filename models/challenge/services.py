@@ -6,12 +6,16 @@ Requirements: SPECIFICHE.md - Challenge management and statistics
 
 from __future__ import annotations
 
+import logging
 from typing import List, Optional, Dict, Any
 from sqlalchemy import desc
 
 from ..base import db
 from ..transaction.manager import transactional
+from .events import DrillOrigin
 from .models import Challenge, ChallengeAttempt, ChallengeFavorite
+
+logger = logging.getLogger(__name__)
 
 
 class ChallengeService:
@@ -243,7 +247,45 @@ class ChallengeService:
         except Exception:
             pass
 
+        ChallengeService._publish_attempt_completed(attempt, DrillOrigin.CATALOG)
+
         return attempt
+
+    @staticmethod
+    def _publish_attempt_completed(
+        attempt: ChallengeAttempt,
+        origin: "DrillOrigin",
+        attempt_number: int = 1,
+        gara_id: Optional[int] = None,
+    ) -> None:
+        """Annuncia che un drill è stato completato (XP, streak).
+
+        Best-effort come le notifiche: un ascoltatore che esplode non deve far
+        perdere il punteggio appena registrato, che è il dato importante.
+        """
+        from models.events.base import EventBus
+
+        from .events import ChallengeAttemptCompletedEvent
+
+        try:
+            challenge = attempt.challenge or db.session.get(
+                Challenge, attempt.challenge_id
+            )
+            EventBus.publish(
+                ChallengeAttemptCompletedEvent(
+                    attempt_id=attempt.id,
+                    challenge_id=attempt.challenge_id,
+                    challenge_name=(challenge.get_display_name() if challenge else ""),
+                    user_id=attempt.user_id,
+                    origin=origin.value,
+                    score=attempt.score,
+                    passed=attempt.passed,
+                    gara_id=gara_id,
+                    attempt_number=attempt_number,
+                )
+            )
+        except Exception:  # pragma: no cover - la gamification non blocca mai
+            logger.warning("Evento di drill completato non pubblicato", exc_info=True)
 
     @staticmethod
     @transactional(domain="challenge")
@@ -389,6 +431,16 @@ class ChallengeService:
 
         # Create equivalent match result for campionato classification
         ChallengeService._create_x_replacement_match_result(attempt)
+
+        # Il drill giocato al posto di un match resta un drill: vale per
+        # l'abitudine settimanale come qualunque altro. Il bye equivalente non
+        # pubblica `MatchCompletedEvent` (il Match nasce già completed, senza
+        # passare dal servizio), quindi qui non si paga niente due volte.
+        ChallengeService._publish_attempt_completed(
+            attempt,
+            DrillOrigin.GARA,
+            gara_id=(bye_challenge.gara_id if bye_challenge else attempt.gara_id),
+        )
 
         return attempt
 

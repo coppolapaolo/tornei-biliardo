@@ -9,16 +9,25 @@
             <form action="{{ url_for('admin.competition.modify_inscription_dates', gara_id=gara.id) }}" method="POST" id="modifyDatesForm">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="modal-body">
+                    {# Il fuso e' fissato: la piattaforma mostra da sempre in ora
+                       italiana, e il server rilegge questi campi con la stessa
+                       assunzione. Prima qui compariva il fuso del *browser*, che
+                       prometteva una cosa che nessuno faceva. #}
                     <div class="alert alert-info">
-                        <small><i class="fas fa-clock"></i> <strong>Timezone:</strong> <span id="modify-user-timezone">Caricamento...</span></small>
+                        <small><i class="fas fa-clock"></i> {{ _("Gli orari sono nel tuo fuso orario.") }}</small>
                     </div>
                     <div class="mb-3">
-                        <label for="modify_inscription_start" class="form-label">Inizio Iscrizioni (Ora Locale)</label>
-                        <input type="datetime-local" class="form-control" name="inscription_start" id="modify_inscription_start" required>
+                        <label for="modify_inscription_start" class="form-label">{{ _("Inizio Iscrizioni") }}</label>
+                        {# Ripopolato lato server: il naive del DB e' UTC, e stamparlo
+                           grezzo qui farebbe arretrare l'orario di un'ora a ogni
+                           salvataggio confermato senza modifiche. #}
+                        <input type="datetime-local" class="form-control" name="inscription_start" id="modify_inscription_start"
+                               value="{{ gara.inscription_start|datetime_input }}" required>
                     </div>
                     <div class="mb-3">
-                        <label for="modify_inscription_end" class="form-label">Fine Iscrizioni (Ora Locale)</label>
-                        <input type="datetime-local" class="form-control" name="inscription_end" id="modify_inscription_end" required>
+                        <label for="modify_inscription_end" class="form-label">{{ _("Fine Iscrizioni") }}</label>
+                        <input type="datetime-local" class="form-control" name="inscription_end" id="modify_inscription_end"
+                               value="{{ gara.inscription_end|datetime_input }}" required>
                     </div>
                 </div>
                 <div class="modal-footer">

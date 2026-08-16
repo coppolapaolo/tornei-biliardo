@@ -11,12 +11,12 @@ import logging
 
 from flask_babel import gettext as _
 from flask_login import current_user
-from datetime import datetime
 
 from models import IndividualMatch
 from models.individual_match.services import IndividualMatchService
 from models.status_enum import Discipline
 from models.user.permissions import RoleRequirement
+from utils.local_time import parse_local_datetime
 
 from . import individual_match_bp
 
@@ -398,13 +398,14 @@ def update_match_times(match_id):
                 400,
             )
 
-        # Parse ISO datetime strings
-        started_at = None
-        ended_at = None
-        if started_at_str:
-            started_at = datetime.fromisoformat(started_at_str.replace("Z", "+00:00"))
-        if ended_at_str:
-            ended_at = datetime.fromisoformat(ended_at_str.replace("Z", "+00:00"))
+        # I due valori arrivano da un `<input type="datetime-local">`, quindi in
+        # **ora italiana**, mentre `started_at`/`ended_at` li scrive `utc_now()`
+        # quando il match parte: leggerli grezzi mischia due scale sulla stessa
+        # colonna, e la durata del match risulta sfalsata di un fuso.
+        started_at = parse_local_datetime(started_at_str) if started_at_str else None
+        ended_at = parse_local_datetime(ended_at_str) if ended_at_str else None
+        if (started_at_str and not started_at) or (ended_at_str and not ended_at):
+            return jsonify({"success": False, "error": "Orario non valido"}), 400
 
         IndividualMatchService.update_times(
             match_id=match_id,

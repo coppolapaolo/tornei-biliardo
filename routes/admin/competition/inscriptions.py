@@ -8,8 +8,6 @@ from flask import (
     flash,
 )
 from flask_login import login_required, current_user
-from datetime import datetime
-from models.shared.utils import parse_date_string
 
 from models import (
     db,
@@ -20,9 +18,30 @@ from models.competition.services import GaraService
 from models.competition.inscription_service import InscriptionService
 from models.competition.state_service import StateService
 from utils import gara_manager_required
+from utils.local_time import parse_local_datetime
 from utils.route_helpers import handle_service_action
 
 from . import competition_bp
+
+
+def _inscription_window():
+    """Legge la finestra di iscrizione dal form, in ora italiana.
+
+    I due campi sono ``<input type="datetime-local">``: il browser li manda in
+    **ora locale**, il DB tiene i naive come **UTC** e ``|datetime_local`` in
+    lettura risomma il fuso. Passare il valore grezzo al service significa
+    aprire le iscrizioni due ore dopo l'ora scritta — senza un errore da
+    nessuna parte.
+
+    Le etichette dicono «ora italiana» ed è quello che il parser assume: il
+    fuso è fissato in ``utils/local_time``, unico posto che lo sa insieme al
+    filtro di lettura.
+    """
+    start = parse_local_datetime(request.form.get("inscription_start"))
+    end = parse_local_datetime(request.form.get("inscription_end"))
+    if not start or not end:
+        raise ValueError("Date di inizio o fine iscrizioni mancanti o non valide")
+    return start, end
 
 
 @competition_bp.route("/<int:gara_id>/open_inscriptions", methods=["POST"])
@@ -32,26 +51,7 @@ def open_inscriptions(gara_id):
     """Apri iscrizioni per una gara"""
 
     def action():
-        start_key = (
-            "inscription_start_utc"
-            if "inscription_start_utc" in request.form
-            else "inscription_start"
-        )
-        end_key = (
-            "inscription_end_utc"
-            if "inscription_end_utc" in request.form
-            else "inscription_end"
-        )
-        start_str = request.form.get(start_key)
-        end_str = request.form.get(end_key)
-        if not start_str or not end_str:
-            raise ValueError("Date di inizio o fine iscrizioni mancanti")
-        inscription_start = parse_date_string(start_str)
-        if not inscription_start:
-            raise ValueError(f"Formato data non valido: {start_str}")
-        inscription_end = parse_date_string(end_str)
-        if not inscription_end:
-            raise ValueError(f"Formato data non valido: {end_str}")
+        inscription_start, inscription_end = _inscription_window()
         InscriptionService.open_inscriptions(
             gara_id, inscription_start, inscription_end
         )
@@ -68,17 +68,15 @@ def open_inscriptions(gara_id):
 @gara_manager_required
 def modify_inscription_dates(gara_id):
     """Modifica date di iscrizione per una gara"""
-    inscription_start = datetime.strptime(
-        request.form["inscription_start_utc"], "%Y-%m-%dT%H:%M:%S"
-    )
-    inscription_end = datetime.strptime(
-        request.form["inscription_end_utc"], "%Y-%m-%dT%H:%M:%S"
-    )
+
+    def action():
+        inscription_start, inscription_end = _inscription_window()
+        InscriptionService.modify_inscription_dates(
+            gara_id, inscription_start, inscription_end
+        )
 
     return handle_service_action(
-        action=lambda: InscriptionService.modify_inscription_dates(
-            gara_id, inscription_start, inscription_end
-        ),
+        action=action,
         redirect_url=url_for("admin.competition.gara_detail", gara_id=gara_id),
         success_message="Date di iscrizione aggiornate con successo!",
         error_prefix=None,

@@ -96,6 +96,8 @@ code, kbd, pre, samp, .font-mono { font-family: var(--c7-font-mono); }
   display: flex;
   align-items: center;
   gap: 12px;
+  /* Le azioni vanno a capo su mobile invece di schiacciare il titolo. */
+  flex-wrap: wrap;
 }
 .c7-head__back {
   width: 46px; height: 46px;
@@ -109,11 +111,38 @@ code, kbd, pre, samp, .font-mono { font-family: var(--c7-font-mono); }
 /* Colonna, non riga: nel guscio titolo e sottotitolo sono due <span> (che
    affiancati finirebbero sulla stessa riga), mentre le pagine che riempiono
    la testata a mano usano <h1> + <div>. Cosi' entrambe le forme si
-   impilano allo stesso modo. */
+   impilano allo stesso modo.
+
+   La base resta 0 (`flex: 1`) e non passa al contenuto: il sottotitolo *non
+   mandato a capo* è lungo decine di parole, e come base spingerebbe freccia,
+   badge e avatar sulla riga sotto. A non far collassare il titolo pensa
+   `.c7-head__actions`, che sotto lg si toglie dalla riga. */
 .c7-head__title { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .c7-head__title h1,
 .c7-head__title .c7-title { margin: 0; font-size: 18px; font-weight: 800; letter-spacing: -.025em; }
 .c7-head__sub { font-size: 12px; font-weight: 600; color: var(--c7-ink-muted); }
+
+/* Comandi di pagina. Sotto lg prendono una riga tutta loro (`order` alto: la
+   riga di sopra resta freccia + titolo + badge + avatar), perché due bottoni
+   con l'etichetta scritta non stanno su 390px accanto a tutto il resto. Da lg
+   in su tornano in linea, spinti a destra. */
+.c7-head__actions {
+  order: 5;
+  flex: 1 0 100%;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+@media (max-width: 991.98px) {
+  /* Diverse pagine mostrano i comandi solo da lg in su (`d-none d-lg-…`):
+     lì il contenitore c'è ma non ha niente da mostrare, e la sua riga
+     sarebbe un buco sotto il titolo. Se il browser non conosce `:has()` il
+     selettore cade per intero e resta il comportamento di prima — che è il
+     verso giusto in cui sbagliare: meglio uno spazio di troppo che dei
+     comandi spariti. */
+  .c7-head__actions:not(:has(> :not(.d-none))) { display: none; }
+}
 
 /* Barra azioni appiccicata in fondo alle pagine lunghe. Su mobile si ferma
    **sopra** la nav flottante: `bottom: 0` la incollava al bordo del viewport,
@@ -209,6 +238,7 @@ code, kbd, pre, samp, .font-mono { font-family: var(--c7-font-mono); }
   .c7-head { padding: 22px var(--c7-gutter-lg) 20px; border-bottom: 1px solid var(--c7-line); }
   .c7-head__back { display: none; }
   .c7-head__title h1, .c7-head__title .c7-title { font-size: 22px; }
+  .c7-head__actions { order: 0; flex: 0 0 auto; margin-left: auto; }
   .c7-actionbar { padding: 12px var(--c7-gutter-lg) 22px; bottom: 0; }
   .c7-actionbar .btn { flex: 0 0 auto; padding: 0 22px; }
 }

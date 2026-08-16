@@ -265,6 +265,7 @@ def register_status_filters(app) -> None:
     # Filtri Jinja per date (formattazione locale nel browser)
     from utils.jinja import (
         format_date_local,
+        format_datetime_input,
         format_datetime_local,
         format_time_local,
         format_discipline,
@@ -274,6 +275,9 @@ def register_status_filters(app) -> None:
     app.jinja_env.filters["date_local"] = format_date_local
     app.jinja_env.filters["datetime_local"] = format_datetime_local
     app.jinja_env.filters["time_local"] = format_time_local
+    # Controparte in scrittura di `datetime_local`: ripopola un
+    # `<input type="datetime-local">` con l'ora che l'utente aveva digitato.
+    app.jinja_env.filters["datetime_input"] = format_datetime_input
     app.jinja_env.filters["discipline_display"] = format_discipline
     # Payload JSON dei flash "di trasporto" (vedi utils/page_modal.py)
     app.jinja_env.filters["fromjson"] = parse_json

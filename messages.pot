@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-15 19:49+0000\n"
+"POT-Creation-Date: 2026-08-16 10:39+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -172,50 +172,50 @@ msgid ""
 "data e ora."
 msgstr ""
 
-#: models/exam/request_service.py:604
+#: models/exam/request_service.py:637
 #, python-format
 msgid "%(user)s chiede di sostenere «%(exam)s»: %(slot)s."
 msgstr ""
 
-#: models/exam/request_service.py:615
+#: models/exam/request_service.py:647
 msgid "Richiesta d'esame"
 msgstr ""
 
-#: models/exam/request_service.py:619
+#: models/exam/request_service.py:651
 msgid "Vedi la richiesta"
 msgstr ""
 
-#: models/exam/request_service.py:640
+#: models/exam/request_service.py:672
 msgid "Nuova proposta di appuntamento"
 msgstr ""
 
-#: models/exam/request_service.py:642
+#: models/exam/request_service.py:674
 #, python-format
 msgid "%(user)s propone «%(exam)s»: %(slot)s."
 msgstr ""
 
-#: models/exam/request_service.py:649 templates/exam/request_detail.html:100
+#: models/exam/request_service.py:681 templates/exam/request_detail.html:100
 msgid "Rispondi"
 msgstr ""
 
-#: models/exam/request_service.py:662
+#: models/exam/request_service.py:694
 msgid "Appuntamento d'esame confermato"
 msgstr ""
 
-#: models/exam/request_service.py:664
+#: models/exam/request_service.py:696
 #, python-format
 msgid "«%(exam)s»: appuntamento confermato per %(slot)s."
 msgstr ""
 
-#: models/exam/request_service.py:670
+#: models/exam/request_service.py:702
 msgid "Vedi l'appuntamento"
 msgstr ""
 
-#: models/exam/request_service.py:683 models/exam/request_service.py:701
+#: models/exam/request_service.py:715 models/exam/request_service.py:733
 msgid "Richiesta d'esame chiusa"
 msgstr ""
 
-#: models/exam/request_service.py:686
+#: models/exam/request_service.py:718
 #, python-format
 msgid ""
 "La richiesta per «%(exam)s» è stata presa in carico da un altro "
@@ -448,16 +448,16 @@ msgstr ""
 msgid "Conquista almeno una vittoria questa settimana."
 msgstr ""
 
-#: models/individual_match/match_lifecycle_service.py:214
+#: models/individual_match/match_lifecycle_service.py:222
 msgid "Promemoria match"
 msgstr ""
 
-#: models/individual_match/match_lifecycle_service.py:216
+#: models/individual_match/match_lifecycle_service.py:224
 #, python-format
 msgid "Il tuo match è programmato per il %(when)s%(location)s"
 msgstr ""
 
-#: models/individual_match/match_lifecycle_service.py:223
+#: models/individual_match/match_lifecycle_service.py:237
 #: models/individual_match/proposal_service.py:232
 #: models/individual_match/proposal_service.py:597
 #: models/individual_match/proposal_service.py:642
@@ -707,37 +707,37 @@ msgstr ""
 msgid "Hai ottenuto il ruolo di %(role)s."
 msgstr ""
 
-#: routes/auth.py:47
+#: routes/auth.py:61
 msgid "Che piacere rivederti!"
 msgstr ""
 
-#: routes/auth.py:48 templates/base.html:605
+#: routes/auth.py:62 templates/base.html:638
 msgid "Tutto pronto per giocare?"
 msgstr ""
 
-#: routes/auth.py:75
+#: routes/auth.py:89
 msgid ""
 "Il tuo account non è ancora verificato. Senza email confermata non potrai"
 " recuperare la password se la dimentichi."
 msgstr ""
 
-#: routes/auth.py:83
+#: routes/auth.py:97
 msgid "Vai al profilo per verificare l'email"
 msgstr ""
 
-#: routes/auth.py:90
+#: routes/auth.py:104
 msgid "Username o password errati."
 msgstr ""
 
-#: routes/auth.py:129
+#: routes/auth.py:143
 msgid "Registrazione completata! Controlla la tua email per verificare l'account."
 msgstr ""
 
-#: routes/auth.py:140 templates/onboarding.html:12
+#: routes/auth.py:154 templates/onboarding.html:12
 msgid "Ti diamo il benvenuto!"
 msgstr ""
 
-#: routes/auth.py:141
+#: routes/auth.py:155
 msgid "Registrazione completata con successo."
 msgstr ""
 
@@ -1349,82 +1349,86 @@ msgstr ""
 msgid "Gestione Quest"
 msgstr ""
 
-#: routes/gamification/admin.py:122
+#: routes/gamification/admin.py:124
 msgid "Il nome della quest è obbligatorio"
 msgstr ""
 
-#: routes/gamification/admin.py:146 routes/gamification/admin.py:269
-#: routes/gamification/admin.py:354 routes/gamification/admin.py:439
+#: routes/gamification/admin.py:135 routes/gamification/admin.py:283
+#: routes/gamification/admin.py:368 routes/gamification/admin.py:453
 msgid "Dati del form non validi"
 msgstr ""
 
-#: routes/gamification/admin.py:160
+#: routes/gamification/admin.py:156
+msgid "Date del form non valide"
+msgstr ""
+
+#: routes/gamification/admin.py:174
 msgid "Quest creata con successo"
 msgstr ""
 
-#: routes/gamification/admin.py:167
+#: routes/gamification/admin.py:181
 #: templates/gamification/admin/quest_form.html:10
 msgid "Crea Nuova Quest"
 msgstr ""
 
-#: routes/gamification/admin.py:178
+#: routes/gamification/admin.py:192
 msgid "Quest attivata"
 msgstr ""
 
-#: routes/gamification/admin.py:189
+#: routes/gamification/admin.py:203
 msgid "Quest scaduta"
 msgstr ""
 
-#: routes/gamification/admin.py:200
+#: routes/gamification/admin.py:214
 msgid "Quest eliminata"
 msgstr ""
 
-#: routes/gamification/admin.py:247
+#: routes/gamification/admin.py:261
 #: templates/gamification/admin/achievements.html:2
 #: templates/gamification/admin/achievements.html:8
 msgid "Gestione Achievement"
 msgstr ""
 
-#: routes/gamification/admin.py:287
+#: routes/gamification/admin.py:301
 msgid "Achievement creato con successo"
 msgstr ""
 
-#: routes/gamification/admin.py:295
+#: routes/gamification/admin.py:309
 #: templates/gamification/admin/achievement_form.html:10
 msgid "Crea Nuovo Achievement"
 msgstr ""
 
-#: routes/gamification/admin.py:308
+#: routes/gamification/admin.py:322
 msgid "Stato achievement aggiornato"
 msgstr ""
 
-#: routes/gamification/admin.py:340
+#: routes/gamification/admin.py:354
 msgid "Gestione XP"
 msgstr ""
 
-#: routes/gamification/admin.py:359 routes/gamification/admin.py:443
+#: routes/gamification/admin.py:373 routes/gamification/admin.py:457
 msgid "Seleziona un utente valido"
 msgstr ""
 
-#: routes/gamification/admin.py:363
+#: routes/gamification/admin.py:377
 msgid "L'importo XP deve essere positivo"
 msgstr ""
 
-#: routes/gamification/admin.py:375
+#: routes/gamification/admin.py:389
 #, python-format
 msgid "Concessi %(n)s XP all'utente."
 msgstr ""
 
-#: routes/gamification/admin.py:386
+#: routes/gamification/admin.py:400
 msgid "Livello utente resettato a 1"
 msgstr ""
 
-#: routes/gamification/admin.py:426 templates/gamification/admin/streaks.html:2
+#: routes/gamification/admin.py:440 templates/gamification/admin/streaks.html:2
 #: templates/gamification/admin/streaks.html:8
 msgid "Gestione Streak"
 msgstr ""
 
-#: routes/gamification/admin.py:453
+#: routes/gamification/admin.py:467
 #, python-format
 msgid "Concessi %(n)s freeze all'utente."
 msgstr ""
@@ -1566,7 +1570,7 @@ msgstr ""
 msgid "Esami certificati superati"
 msgstr ""
 
-#: routes/gamification/features.py:56 templates/base.html:326
+#: routes/gamification/features.py:56 templates/base.html:359
 #: templates/gamification/admin/dashboard.html:102
 #: templates/gamification/admin/dashboard.html:145
 #: templates/gamification/admin/feature_create.html:69
@@ -1672,7 +1676,7 @@ msgstr ""
 msgid "Disponibilità rimossa"
 msgstr ""
 
-#: routes/individual_match/matches.py:50 routes/individual_match/matches.py:489
+#: routes/individual_match/matches.py:50 routes/individual_match/matches.py:490
 msgid "Accesso negato a questo match."
 msgstr ""
 
@@ -1690,12 +1694,12 @@ msgstr ""
 
 #: routes/individual_match/matches.py:260
 #: routes/individual_match/matches.py:349
-#: templates/individual_match/match_detail.html:286
+#: templates/individual_match/match_detail.html:288
 msgid "Match completato con successo!"
 msgstr ""
 
 #: routes/individual_match/matches.py:263
-#: templates/individual_match/match_detail.html:288
+#: templates/individual_match/match_detail.html:290
 msgid "Risultato confermato! In attesa dell'altro giocatore."
 msgstr ""
 
@@ -1707,19 +1711,19 @@ msgstr ""
 msgid "Match annullato con successo!"
 msgstr ""
 
-#: routes/individual_match/matches.py:421
+#: routes/individual_match/matches.py:422
 msgid "Orari aggiornati con successo!"
 msgstr ""
 
-#: routes/individual_match/matches.py:462 templates/match_detail.html:405
+#: routes/individual_match/matches.py:463 templates/match_detail.html:405
 msgid "Forfait dichiarato"
 msgstr ""
 
-#: routes/individual_match/matches.py:466
+#: routes/individual_match/matches.py:467
 msgid "Forfait dichiarato. Match terminato."
 msgstr ""
 
-#: routes/individual_match/matches.py:494
+#: routes/individual_match/matches.py:495
 msgid "Solo i match completati permettono di giocarne un altro."
 msgstr ""
 
@@ -1912,118 +1916,118 @@ msgstr ""
 msgid "globale (tornei + casual)"
 msgstr ""
 
-#: templates/base.html:180
+#: templates/base.html:201
 msgid "Tornei Biliardo"
 msgstr ""
 
-#: templates/base.html:182
+#: templates/base.html:203
 msgid "amministrazione"
 msgstr ""
 
-#: templates/base.html:183
+#: templates/base.html:204
 msgid "direzione gara"
 msgstr ""
 
-#: templates/base.html:184 templates/base.html:269
+#: templates/base.html:205 templates/base.html:290
 msgid "giocatore"
 msgstr ""
 
-#: templates/base.html:191
+#: templates/base.html:212
 msgid "Generale"
 msgstr ""
 
-#: templates/admin/kpi.html:37 templates/base.html:193 templates/base.html:423
+#: templates/admin/kpi.html:37 templates/base.html:214 templates/base.html:456
 msgid "Dashboard"
 msgstr ""
 
-#: templates/base.html:197
+#: templates/base.html:218
 msgid "Sale Biliardo"
 msgstr ""
 
-#: templates/base.html:207 templates/exam/catalog.html:3
+#: templates/base.html:228 templates/exam/catalog.html:3
 #: templates/exam/catalog.html:6
 msgid "Esami"
 msgstr ""
 
-#: templates/base.html:212 templates/individual_match/dashboard.html:3
+#: templates/base.html:233 templates/individual_match/dashboard.html:3
 msgid "Match Individuali"
 msgstr ""
 
-#: templates/base.html:217 templates/base.html:405
+#: templates/base.html:238 templates/base.html:438
 #: templates/gamification/admin/feature_create.html:59
 #: templates/help/_ui.html:10 templates/help/index.html:6
 msgid "Guida"
 msgstr ""
 
-#: templates/base.html:224
+#: templates/base.html:245
 msgid "Persone"
 msgstr ""
 
-#: templates/admin/users_list.html:10 templates/base.html:227
-#: templates/base.html:436 templates/gamification/admin/dashboard.html:103
+#: templates/admin/users_list.html:10 templates/base.html:248
+#: templates/base.html:469 templates/gamification/admin/dashboard.html:103
 msgid "Utenti"
 msgstr ""
 
-#: templates/base.html:232
+#: templates/base.html:253
 msgid "Richieste Direttore"
 msgstr ""
 
-#: templates/base.html:237
+#: templates/base.html:258
 msgid "Richieste Gestore Sala"
 msgstr ""
 
-#: templates/base.html:245
+#: templates/base.html:266
 msgid "Traguardi e XP"
 msgstr ""
 
-#: templates/base.html:256
+#: templates/base.html:277
 msgid "Reset DB"
 msgstr ""
 
-#: templates/base.html:267
+#: templates/base.html:288
 msgid "amministratore"
 msgstr ""
 
-#: templates/base.html:268
+#: templates/base.html:289
 msgid "direttore"
 msgstr ""
 
-#: templates/base.html:281 templates/base.html:347
+#: templates/base.html:302 templates/base.html:380
 msgid "Login"
 msgstr ""
 
-#: templates/base.html:282
+#: templates/base.html:303
 #: templates/components/_index_registration_info.html:33
-#: templates/login.html:34 templates/register.html:38
+#: templates/login.html:40 templates/register.html:38
 msgid "Registrati"
 msgstr ""
 
-#: templates/base.html:299 templates/components/_gara_header.html:33
+#: templates/base.html:326 templates/components/_gara_header.html:33
 #: templates/help/index.html:11
 msgid "Home"
 msgstr ""
 
-#: templates/base.html:334
+#: templates/base.html:367
 msgid "Lv"
 msgstr ""
 
-#: templates/base.html:363
+#: templates/base.html:396
 msgid "Non è riuscito"
 msgstr ""
 
-#: templates/base.html:365
+#: templates/base.html:398
 msgid "Fatto"
 msgstr ""
 
-#: templates/base.html:367
+#: templates/base.html:400
 msgid "Attenzione"
 msgstr ""
 
-#: templates/base.html:369
+#: templates/base.html:402
 msgid "Informazione"
 msgstr ""
 
-#: templates/base.html:379 templates/challenge/create.html:8
+#: templates/base.html:412 templates/challenge/create.html:8
 #: templates/components/_campionato_create_modal.html:7
 #: templates/components/_challenge_management_modal.html:19
 #: templates/components/_challenge_management_modal.html:76
@@ -2038,20 +2042,20 @@ msgstr ""
 msgid "Chiudi"
 msgstr ""
 
-#: templates/base.html:409 templates/privacy.html:3
+#: templates/base.html:442 templates/privacy.html:3
 msgid "Privacy e Cookie"
 msgstr ""
 
-#: templates/admin/venue_manager_requests.html:14 templates/base.html:427
+#: templates/admin/venue_manager_requests.html:14 templates/base.html:460
 msgid "Sale"
 msgstr ""
 
-#: templates/base.html:445 templates/components/_user_menu.html:8
+#: templates/base.html:478 templates/components/_user_menu.html:8
 #: templates/player/notifications.html:3 templates/player/notifications.html:8
 msgid "Notifiche"
 msgstr ""
 
-#: templates/base.html:574 templates/base.html:580
+#: templates/base.html:607 templates/base.html:613
 msgid "Conferma"
 msgstr ""
 
@@ -2060,7 +2064,7 @@ msgstr ""
 #: templates/admin/campionato_wizard_step1.html:8
 #: templates/admin/campionato_wizard_step1.html:158
 #: templates/admin/campionato_wizard_step2.html:8
-#: templates/admin/gara_edit.html:11 templates/base.html:579
+#: templates/admin/gara_edit.html:11 templates/base.html:612
 #: templates/challenge/create.html:14
 #: templates/components/_campionato_create_modal.html:35
 #: templates/components/_campionato_edit_form.html:211
@@ -2070,7 +2074,7 @@ msgstr ""
 #: templates/gamification/admin/achievement_form.html:119
 #: templates/gamification/admin/level_config.html:173
 #: templates/gamification/admin/level_config.html:220
-#: templates/gamification/admin/quest_form.html:87
+#: templates/gamification/admin/quest_form.html:90
 #: templates/gamification/admin/streak_config.html:151
 #: templates/gamification/admin/streak_config.html:273
 #: templates/gara_detail.html:597 templates/gara_detail.html:636
@@ -2084,51 +2088,51 @@ msgstr ""
 msgid "Annulla"
 msgstr ""
 
-#: templates/base.html:595
+#: templates/base.html:628
 msgid "XP OTTENUTI"
 msgstr ""
 
-#: templates/base.html:596
+#: templates/base.html:629
 msgid "LEVEL UP!"
 msgstr ""
 
-#: templates/base.html:597
+#: templates/base.html:630
 msgid "Nuovo livello raggiunto!"
 msgstr ""
 
-#: templates/base.html:598
+#: templates/base.html:631
 msgid "NUOVO TRAGUARDO!"
 msgstr ""
 
-#: templates/base.html:599
+#: templates/base.html:632
 msgid "STREAK!"
 msgstr ""
 
-#: templates/base.html:600
+#: templates/base.html:633
 msgid "Freeze attivo"
 msgstr ""
 
-#: templates/base.html:601
+#: templates/base.html:634
 msgid "STREAK PERSA"
 msgstr ""
 
-#: templates/base.html:602
+#: templates/base.html:635
 msgid "Non mollare, riprovare!"
 msgstr ""
 
-#: templates/base.html:603
+#: templates/base.html:636
 msgid "QUEST COMPLETATA!"
 msgstr ""
 
-#: templates/base.html:604
+#: templates/base.html:637
 msgid "TI DIAMO IL BENTORNATO!"
 msgstr ""
 
-#: templates/base.html:606
+#: templates/base.html:639
 msgid "Ciao!"
 msgstr ""
 
-#: templates/base.html:607
+#: templates/base.html:640
 #, python-format
 msgid "Ciao %(username)s!"
 msgstr ""
@@ -2343,7 +2347,7 @@ msgstr ""
 
 #: templates/components/_match_admin_controls.html:155
 #: templates/components/_match_info.html:62 templates/gara_detail.html:588
-#: templates/individual_match/match_detail.html:170
+#: templates/individual_match/match_detail.html:172
 msgid "Fine"
 msgstr ""
 
@@ -2490,15 +2494,15 @@ msgid ""
 "Questa azione è IRREVERSIBILE!"
 msgstr ""
 
-#: templates/gara_detail.html:741 templates/gara_detail.html:1749
+#: templates/gara_detail.html:741 templates/gara_detail.html:1705
 msgid "Sei sicuro di voler resettare questa partita?"
 msgstr ""
 
-#: templates/gara_detail.html:742 templates/gara_detail.html:1773
+#: templates/gara_detail.html:742 templates/gara_detail.html:1729
 msgid "Sei sicuro di voler resettare questo trio?"
 msgstr ""
 
-#: templates/gara_detail.html:743 templates/gara_detail.html:1801
+#: templates/gara_detail.html:743 templates/gara_detail.html:1757
 #: templates/match_detail.html:600
 msgid ""
 "Confermi di voler validare questo risultato? Il tavolo verrà liberato e "
@@ -2508,12 +2512,12 @@ msgstr ""
 #: templates/components/_match_admin_controls.html:258
 #: templates/components/_match_admin_controls.html:300
 #: templates/gara_detail.html:744 templates/gara_detail.html:759
-#: templates/individual_match/match_detail.html:235
-#: templates/individual_match/match_detail.html:261
-#: templates/individual_match/match_detail.html:292
-#: templates/individual_match/match_detail.html:319
-#: templates/individual_match/match_detail.html:345
-#: templates/individual_match/match_detail.html:384
+#: templates/individual_match/match_detail.html:237
+#: templates/individual_match/match_detail.html:263
+#: templates/individual_match/match_detail.html:294
+#: templates/individual_match/match_detail.html:321
+#: templates/individual_match/match_detail.html:347
+#: templates/individual_match/match_detail.html:386
 #: templates/individual_match/proposal_detail.html:190
 #: templates/individual_match/proposals.html:252
 #: templates/match_detail.html:179 templates/match_detail.html:211
@@ -2619,7 +2623,7 @@ msgstr ""
 #: templates/components/_match_admin_controls.html:258
 #: templates/components/_match_admin_controls.html:300
 #: templates/gara_detail.html:767
-#: templates/individual_match/match_detail.html:384
+#: templates/individual_match/match_detail.html:386
 #: templates/match_detail.html:179 templates/match_detail.html:211
 #: templates/match_detail.html:247 templates/match_detail.html:280
 #: templates/match_detail.html:306 templates/match_detail.html:436
@@ -2662,37 +2666,37 @@ msgstr ""
 msgid "Tavolo"
 msgstr ""
 
-#: templates/gara_detail.html:1468
+#: templates/gara_detail.html:1424
 msgid ""
 "Sei sicuro di voler chiudere le iscrizioni? La gara tornerà allo stato di"
 " setup."
 msgstr ""
 
-#: templates/gara_detail.html:1617
+#: templates/gara_detail.html:1573
 msgid "I rack non possono essere negativi."
 msgstr ""
 
-#: templates/gara_detail.html:1619
+#: templates/gara_detail.html:1575
 #, python-format
 msgid "Nessun giocatore può avere più di %(d)s rack."
 msgstr ""
 
-#: templates/gara_detail.html:1623
+#: templates/gara_detail.html:1579
 #, python-format
 msgid "Somma rack troppo alta: massimo %(d)s."
 msgstr ""
 
-#: templates/gara_detail.html:1625
+#: templates/gara_detail.html:1581
 #, python-format
 msgid "Risultato incompleto: uno dei due deve raggiungere %(d)s."
 msgstr ""
 
-#: templates/gara_detail.html:1630
+#: templates/gara_detail.html:1586
 #, python-format
 msgid "Somma rack troppo alta: il totale esatto è %(d)s."
 msgstr ""
 
-#: templates/gara_detail.html:1632
+#: templates/gara_detail.html:1588
 #, python-format
 msgid "Risultato incompleto: la somma deve essere esattamente %(d)s."
 msgstr ""
@@ -2720,7 +2724,7 @@ msgstr ""
 
 #: templates/components/_index_registration_info.html:11
 #: templates/components/_index_registration_info.html:32
-#: templates/errors/403.html:17 templates/login.html:3 templates/login.html:30
+#: templates/errors/403.html:17 templates/login.html:3 templates/login.html:36
 #: templates/register.html:42
 msgid "Accedi"
 msgstr ""
@@ -2729,16 +2733,16 @@ msgstr ""
 msgid "Bentornato"
 msgstr ""
 
-#: templates/login.html:18 templates/player/profile.html:64
+#: templates/login.html:24 templates/player/profile.html:64
 #: templates/register.html:18
 msgid "Nome utente"
 msgstr ""
 
-#: templates/login.html:26
+#: templates/login.html:32
 msgid "Password dimenticata?"
 msgstr ""
 
-#: templates/login.html:34
+#: templates/login.html:40
 msgid "Non hai un account?"
 msgstr ""
 
@@ -2787,7 +2791,7 @@ msgstr ""
 msgid "Errore durante l'aggiunta del rack al trio"
 msgstr ""
 
-#: templates/individual_match/match_detail.html:267
+#: templates/individual_match/match_detail.html:269
 #: templates/match_detail.html:217 templates/match_detail.html:337
 #: templates/match_detail.html:468
 msgid "Errore durante la rimozione del rack"
@@ -2805,7 +2809,7 @@ msgstr ""
 msgid "Errore durante la registrazione del forfait"
 msgstr ""
 
-#: templates/individual_match/match_detail.html:241
+#: templates/individual_match/match_detail.html:243
 #: templates/match_detail.html:312
 msgid "Errore durante l'aggiunta del rack"
 msgstr ""
@@ -2818,7 +2822,7 @@ msgstr ""
 msgid "Impossibile confermare il risultato"
 msgstr ""
 
-#: templates/individual_match/match_detail.html:298
+#: templates/individual_match/match_detail.html:300
 #: templates/match_detail.html:362
 msgid "Errore durante la conferma"
 msgstr ""
@@ -2831,7 +2835,7 @@ msgstr ""
 msgid "Impossibile rifiutare il risultato"
 msgstr ""
 
-#: templates/individual_match/match_detail.html:325
+#: templates/individual_match/match_detail.html:327
 #: templates/match_detail.html:387
 msgid "Errore durante il rifiuto"
 msgstr ""
@@ -2846,7 +2850,7 @@ msgstr ""
 msgid "Impossibile dichiarare forfait"
 msgstr ""
 
-#: templates/individual_match/match_detail.html:350
+#: templates/individual_match/match_detail.html:352
 #: templates/match_detail.html:414
 msgid "Errore durante la dichiarazione di forfait"
 msgstr ""
@@ -3578,7 +3582,7 @@ msgstr ""
 #: templates/admin/gara_create_standalone.html:273
 #: templates/components/_campionato_edit_form.html:188
 #: templates/components/_gara_edit_form.html:122
-#: templates/components/_new_gara_modal.html:286
+#: templates/components/_new_gara_modal.html:308
 msgid "Gioco con handicap"
 msgstr ""
 
@@ -3773,8 +3777,8 @@ msgstr ""
 #: templates/admin/users_list.html:155
 #: templates/components/_gara_edit_form.html:126
 #: templates/components/_gara_edit_form.html:130
-#: templates/components/_new_gara_modal.html:288
-#: templates/components/_new_gara_modal.html:290
+#: templates/components/_new_gara_modal.html:310
+#: templates/components/_new_gara_modal.html:312
 #: templates/components/_user_info_card.html:56
 #: templates/gamification/admin/streak_config.html:85
 msgid "No"
@@ -3784,15 +3788,15 @@ msgstr ""
 #: templates/admin/users_list.html:153
 #: templates/components/_gara_edit_form.html:126
 #: templates/components/_gara_edit_form.html:129
-#: templates/components/_new_gara_modal.html:288
-#: templates/components/_new_gara_modal.html:289
+#: templates/components/_new_gara_modal.html:310
+#: templates/components/_new_gara_modal.html:311
 #: templates/components/_user_info_card.html:45
 msgid "Sì"
 msgstr ""
 
 #: templates/admin/gara_create_standalone.html:278
 #: templates/components/_gara_edit_form.html:132
-#: templates/components/_new_gara_modal.html:292
+#: templates/components/_new_gara_modal.html:314
 msgid "I match con handicap non aggiornano i rating (Elo/Fargo)."
 msgstr ""
 
@@ -5561,7 +5565,7 @@ msgid ""
 msgstr ""
 
 #: templates/components/_gara_edit_form.html:126
-#: templates/components/_new_gara_modal.html:288
+#: templates/components/_new_gara_modal.html:310
 msgid "Eredita dal campionato"
 msgstr ""
 
@@ -6652,17 +6656,17 @@ msgid "hai inserito"
 msgstr ""
 
 #: templates/components/_match_admin_controls.html:279
-#: templates/individual_match/match_detail.html:363
+#: templates/individual_match/match_detail.html:365
 msgid "Inserisci almeno un orario"
 msgstr ""
 
 #: templates/components/_match_admin_controls.html:297
-#: templates/individual_match/match_detail.html:381
+#: templates/individual_match/match_detail.html:383
 msgid "Tempi aggiornati con successo"
 msgstr ""
 
 #: templates/components/_match_admin_controls.html:305
-#: templates/individual_match/match_detail.html:389
+#: templates/individual_match/match_detail.html:391
 msgid "Errore durante l'aggiornamento dei tempi"
 msgstr ""
 
@@ -6879,6 +6883,21 @@ msgstr ""
 msgid "Annullato"
 msgstr ""
 
+#: templates/components/_modify_dates_modal.html:17
+#: templates/components/_open_inscriptions_modal.html:16
+msgid "Gli orari sono nel tuo fuso orario."
+msgstr ""
+
+#: templates/components/_modify_dates_modal.html:20
+#: templates/components/_open_inscriptions_modal.html:19
+msgid "Inizio Iscrizioni"
+msgstr ""
+
+#: templates/components/_modify_dates_modal.html:28
+#: templates/components/_open_inscriptions_modal.html:23
+msgid "Fine Iscrizioni"
+msgstr ""
+
 #: templates/components/_multi_set_score_display.html:14
 #: templates/components/_user_recent_matches_table.html:32
 #: templates/components/_user_recent_matches_table.html:73
@@ -6943,7 +6962,7 @@ msgstr ""
 msgid "fino al"
 msgstr ""
 
-#: templates/components/_new_gara_modal.html:42
+#: templates/components/_new_gara_modal.html:55
 msgid "Valori precompilati dai default del campionato."
 msgstr ""
 
@@ -9561,19 +9580,19 @@ msgstr ""
 msgid "Data Inizio"
 msgstr ""
 
-#: templates/gamification/admin/quest_form.html:73
-msgid "Lascia vuoto per iniziare subito"
-msgstr ""
-
 #: templates/gamification/admin/quest_form.html:76
-msgid "Data Fine"
+msgid "Nel tuo fuso orario. Lascia vuoto per iniziare subito"
 msgstr ""
 
 #: templates/gamification/admin/quest_form.html:79
-msgid "Lascia vuoto per durata standard"
+msgid "Data Fine"
 msgstr ""
 
-#: templates/gamification/admin/quest_form.html:90
+#: templates/gamification/admin/quest_form.html:82
+msgid "Nel tuo fuso orario. Lascia vuoto per durata standard"
+msgstr ""
+
+#: templates/gamification/admin/quest_form.html:93
 msgid "Salva Quest"
 msgstr ""
 
@@ -10622,33 +10641,33 @@ msgstr ""
 msgid "Orari"
 msgstr ""
 
-#: templates/individual_match/match_detail.html:177
+#: templates/individual_match/match_detail.html:179
 msgid "Aggiorna gli orari"
 msgstr ""
 
-#: templates/individual_match/match_detail.html:247
+#: templates/individual_match/match_detail.html:249
 msgid "Rimuovere l'ultimo rack vinto da questo giocatore?"
 msgstr ""
 
-#: templates/individual_match/match_detail.html:274
+#: templates/individual_match/match_detail.html:276
 msgid "Confermare il risultato del match?"
 msgstr ""
 
-#: templates/individual_match/match_detail.html:305
+#: templates/individual_match/match_detail.html:307
 msgid ""
 "Rifiutare il risultato? L'ultimo rack verrà rimosso e si potrà continuare"
 " a giocare."
 msgstr ""
 
-#: templates/individual_match/match_detail.html:316
+#: templates/individual_match/match_detail.html:318
 msgid "Ultimo rack rimosso. Continuate a giocare!"
 msgstr ""
 
-#: templates/individual_match/match_detail.html:332
+#: templates/individual_match/match_detail.html:334
 msgid "Sei sicuro di voler dichiarare forfait? L'avversario vincerà il match."
 msgstr ""
 
-#: templates/individual_match/match_detail.html:342
+#: templates/individual_match/match_detail.html:344
 msgid "Forfait dichiarato."
 msgstr ""
 
@@ -11712,9 +11731,9 @@ msgstr ""
 msgid "Nessuna richiesta in attesa."
 msgstr ""
 
-#: utils/jinja.py:18 utils/jinja.py:61 utils/jinja.py:98 utils/jinja.py:139
-#: utils/jinja.py:169 utils/jinja.py:201 utils/jinja.py:211 utils/jinja.py:247
-#: utils/jinja.py:265 utils/jinja.py:277 utils/jinja.py:294
+#: utils/jinja.py:18 utils/jinja.py:66 utils/jinja.py:128 utils/jinja.py:162
+#: utils/jinja.py:185 utils/jinja.py:217 utils/jinja.py:227 utils/jinja.py:263
+#: utils/jinja.py:281 utils/jinja.py:293 utils/jinja.py:310
 msgid "N/A"
 msgstr ""
 

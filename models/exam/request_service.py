@@ -561,13 +561,38 @@ class ExamRequestService:
     # ────────────────────────────────────────────────────────────────────
     @staticmethod
     def _notify(user_ids: Sequence[int], **kwargs: Any) -> None:
+        """Avvisa i destinatari, uno per uno se il testo dipende da chi legge.
+
+        ``message`` accetta anche una **funzione** dell'id del destinatario:
+        serve perché un appuntamento porta un orario, e l'orario va detto nel
+        fuso di chi lo legge (ADR-043). Due esaminatori in due paesi diversi
+        ricevono lo stesso invito con due ore diverse — che è il punto.
+
+        Con un messaggio già fatto (una stringa) resta una chiamata sola, come
+        prima: la maggior parte delle notifiche un orario non ce l'ha.
+        """
         if not user_ids:
             return
+
+        message = kwargs.pop("message", None)
         try:
             from ..notification.factory import NotificationFactory
 
+            if callable(message):
+                for user_id in user_ids:
+                    NotificationFactory.create_bulk_notification(
+                        user_ids=[user_id],
+                        message=message(user_id),
+                        continue_on_error=True,
+                        **kwargs,
+                    )
+                return
+
             NotificationFactory.create_bulk_notification(
-                user_ids=list(user_ids), continue_on_error=True, **kwargs
+                user_ids=list(user_ids),
+                message=message,
+                continue_on_error=True,
+                **kwargs,
             )
         except Exception:  # pragma: no cover - le notifiche non bloccano mai
             logger.warning(
@@ -575,11 +600,18 @@ class ExamRequestService:
             )
 
     @staticmethod
-    def _slot_text(request: ExamRequest) -> str:
-        """«giovedì 12/06/2026, 21:00 — Biliardo Centrale», in ora italiana."""
-        from utils.jinja import format_datetime_local_text
+    def _slot_text(request: ExamRequest, user_id: Optional[int] = None) -> str:
+        """«12/06/2026, 21:00 — Biliardo Centrale», nel fuso di chi legge.
 
-        when = format_datetime_local_text(request.scheduled_at)
+        ``user_id`` è il **destinatario**, non l'autore: senza, si finirebbe a
+        raccontare l'appuntamento nel fuso di chi ha premuto il pulsante, o —
+        peggio, fuori da una richiesta — in quello di nessuno.
+        """
+        from utils.jinja import format_datetime_local_text
+        from utils.local_time import resolve_timezone_for_user_id
+
+        tz = resolve_timezone_for_user_id(user_id) if user_id is not None else None
+        when = format_datetime_local_text(request.scheduled_at, tz=tz)
         hall = request.billiard_hall.name if request.billiard_hall else ""
         return f"{when} — {hall}" if hall else when
 
@@ -600,14 +632,14 @@ class ExamRequestService:
         from flask_babel import _
         from ..notification.models import NotificationPriority, NotificationType
 
-        message = _(
-            "%(user)s chiede di sostenere «%(exam)s»: %(slot)s.",
-            user=requester.username,
-            exam=request.exam.name,
-            slot=ExamRequestService._slot_text(request),
-        )
-        if notes:
-            message = f"{message} {notes}"
+        def message(recipient_id: int) -> str:
+            text = _(
+                "%(user)s chiede di sostenere «%(exam)s»: %(slot)s.",
+                user=requester.username,
+                exam=request.exam.name,
+                slot=ExamRequestService._slot_text(request, recipient_id),
+            )
+            return f"{text} {notes}" if notes else text
 
         ExamRequestService._notify(
             recipient_ids,
@@ -638,11 +670,11 @@ class ExamRequestService:
             [t for t in targets if t],
             notification_type=NotificationType.EXAM_TIME_PROPOSED,
             title=_("Nuova proposta di appuntamento"),
-            message=_(
+            message=lambda recipient_id: _(
                 "%(user)s propone «%(exam)s»: %(slot)s.",
                 user=actor.username,
                 exam=request.exam.name,
-                slot=ExamRequestService._slot_text(request),
+                slot=ExamRequestService._slot_text(request, recipient_id),
             ),
             priority=NotificationPriority.NORMAL,
             action_url=ExamRequestService._request_url(request),
@@ -660,10 +692,10 @@ class ExamRequestService:
             [target],
             notification_type=NotificationType.EXAM_REQUEST_ACCEPTED,
             title=_("Appuntamento d'esame confermato"),
-            message=_(
+            message=lambda recipient_id: _(
                 "«%(exam)s»: appuntamento confermato per %(slot)s.",
                 exam=request.exam.name,
-                slot=ExamRequestService._slot_text(request),
+                slot=ExamRequestService._slot_text(request, recipient_id),
             ),
             priority=NotificationPriority.HIGH,
             action_url=ExamRequestService._request_url(request),
