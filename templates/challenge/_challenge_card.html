@@ -54,7 +54,7 @@
 
         <div style="display: flex; gap: 8px; margin-top: 16px;">
             {% if not current_user.is_admin %}
-            <a href="{{ url_for('challenge.start_attempt', challenge_id=challenge.id) }}" class="btn btn-primary btn-sm" style="flex: 1;">{{ _('Provala') }}</a>
+            <a href="{{ url_for('challenge.training_session', challenge_id=challenge.id) }}" class="btn btn-primary btn-sm" style="flex: 1;">{{ _('Provala') }}</a>
             {% endif %}
             <a href="{{ url_for('challenge.challenge_detail', challenge_id=challenge.id) }}" class="btn btn-secondary btn-sm" style="flex: 1;">{{ _('Dettagli') }}</a>
             {% if current_user.is_admin or (current_user.is_authenticated and challenge.created_by_id == current_user.id) %}

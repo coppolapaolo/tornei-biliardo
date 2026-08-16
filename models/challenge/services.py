@@ -11,6 +11,7 @@ from typing import List, Optional, Dict, Any
 from sqlalchemy import desc
 
 from ..base import db
+from ..exceptions import NotFoundError, ValidationError
 from ..transaction.manager import transactional
 from .events import DrillOrigin
 from .models import Challenge, ChallengeAttempt, ChallengeFavorite
@@ -583,31 +584,52 @@ class ChallengeService:
     def record_attempt(
         user_id: int,
         challenge_id: int,
-        score: int,
-        max_score: int = 100,
+        score: Optional[int] = None,
+        passed: Optional[bool] = None,
+        notes: Optional[str] = None,
         gara_id: Optional[int] = None,
         round_number: Optional[int] = None,
-        notes: Optional[str] = None,
     ) -> ChallengeAttempt:
-        """Registra un tentativo di sfida completo in una singola chiamata.
+        """Registra una prova già conclusa: aprire e chiudere sono un gesto solo.
 
-        Metodo di convenienza che combina start_challenge_attempt e
-        complete_challenge_attempt. Registra solo il punteggio senza
-        determinare automaticamente pass/fail.
+        Chi si allena non «apre un tentativo»: gioca, e dice com'è andata. La
+        schermata di allenamento del catalogo passa di qui, così una prova
+        costa **una** richiesta invece delle quattro del flusso a due pagine.
+
+        La validazione sta **prima** della creazione, e non è pignoleria:
+        ``start_challenge_attempt`` e ``complete_challenge_attempt`` sono due
+        transazioni distinte, quindi un esito mancante scoperto solo dalla
+        seconda lascerebbe a DB una riga ``completed=False`` che nessuno chiude
+        più. Righe così non danno errore da nessuna parte: falsano in silenzio
+        il conteggio dei drill completati, che è quello che apre i gate di
+        gamification.
 
         Args:
-            user_id: ID del giocatore che tenta la sfida
-            challenge_id: ID della sfida da tentare
-            score: Punteggio ottenuto dal giocatore
-            max_score: Punteggio massimo teorico (per riferimento, non usato per logica)
-            gara_id: ID gara se il tentativo è durante una competizione
-            round_number: Numero round se durante una competizione
-            notes: Note aggiuntive sul tentativo
+            user_id: chi ha giocato
+            challenge_id: il drill provato
+            score: punteggio ottenuto — richiesto sui drill numerici
+            passed: esito — richiesto sui drill riuscita-o-no
+            notes: appunto facoltativo sulla prova
+            gara_id: contesto gara, se la prova nasce lì (DEPRECATED)
+            round_number: turno di quella gara (DEPRECATED)
 
         Returns:
-            ChallengeAttempt: Il tentativo completato e persistito
+            ChallengeAttempt: la prova completata e persistita
+
+        Raises:
+            NotFoundError: il drill non esiste
+            ValidationError: manca il dato che quel tipo di drill richiede
         """
-        # Start the attempt
+        challenge = db.session.get(Challenge, challenge_id)
+        if challenge is None:
+            raise NotFoundError("Drill non trovato")
+
+        if challenge.pass_fail_only:
+            if passed is None:
+                raise ValidationError("Serve dire se la prova è stata superata o no")
+        elif score is None:
+            raise ValidationError("Serve il punteggio ottenuto")
+
         attempt = ChallengeService.start_challenge_attempt(
             user_id=user_id,
             challenge_id=challenge_id,
@@ -615,12 +637,9 @@ class ChallengeService:
             round_number=round_number,
         )
 
-        # Complete the attempt with score (no pass/fail logic)
-        completed_attempt = ChallengeService.complete_challenge_attempt(
+        return ChallengeService.complete_challenge_attempt(
             attempt_id=attempt.id,
             score=score,
-            passed=None,  # No automatic pass/fail determination
+            passed=passed,
             notes=notes,
         )
-
-        return completed_attempt
