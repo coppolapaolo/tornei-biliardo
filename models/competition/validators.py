@@ -213,27 +213,40 @@ def _validate_position_system(
 ) -> None:
     """Validazione per sistema POSITION.
 
-    La regola di fondo e' una sola: **un nodo del tabellone deve produrre un
-    vincitore**. Un match pari lascerebbe lo slot a valle senza chi lo occupa,
-    e la generazione del turno successivo si fermerebbe.
+    La regola di fondo e' una sola: **sul tabellone conta solo chi passa il
+    turno**. Da li' discende tutto il resto, incluso il divieto del numero
+    esatto di rack.
     """
-    # Exactly N pari non permesso (pareggi non ammessi nel bracket)
-    if distance_type == DistanceType.EXACTLY and distance % 2 == 0:
+    # Il numero esatto non ha senso sul tabellone, e non solo quando e' pari.
+    #
+    # Con un numero **pari** il difetto e' evidente: la partita puo' finire in
+    # parita' e il nodo resterebbe senza vincitore, lasciando lo slot a valle
+    # senza chi lo occupa. Ma anche **dispari** non serve a niente: il vincitore
+    # e' deciso appena uno arriva a (N+1)/2, e i rack successivi si giocano
+    # senza poter cambiare ne' chi passa il turno ne' la classifica, che qui e'
+    # per posizione nel tabellone e non guarda i rack. Sono partite piu' lunghe
+    # a parita' di risultato.
+    #
+    # Prima era ammesso il dispari, e la regola parlava solo di parita': era una
+    # lettura piu' stretta dello stesso principio.
+    if distance_type == DistanceType.EXACTLY:
         errors.append(
-            f"Sistema POSITION non supporta Exactly {distance} (pari): "
-            "il bracket richiede sempre un vincitore"
+            f"Sistema POSITION non supporta il numero esatto di rack "
+            f"(Exactly {distance}): sul tabellone conta solo chi vince, quindi "
+            "si gioca a chi arriva prima alla distanza"
         )
 
-    # Stessa regola un livello piu' su: in multi-set e' il numero di SET a
-    # decidere il match, quindi un numero pari di set esatti puo' finire in
-    # parita' anche se ogni singolo set ha un vincitore.
+    # Stessa cosa un livello piu' su: in multi-set e' il numero di SET a
+    # decidere il match, e giocarli tutti quando il vincitore e' gia' deciso
+    # non cambia chi passa il turno.
     if multi_set and sets_distance_type == DistanceType.EXACTLY:
-        if sets_distance is not None and sets_distance % 2 == 0:
-            errors.append(
-                f"Sistema POSITION non supporta {sets_distance} set esatti "
-                "(pari): il match potrebbe finire in parità e il tabellone "
-                "richiede sempre un vincitore"
-            )
+        # Il numero non compare nel messaggio: la regola non dipende più da
+        # quanti set siano, e `sets_distance` può essere None — `match_distance`
+        # è nullable — cosa che leggeva "None set esatti".
+        errors.append(
+            "Sistema POSITION non supporta un numero esatto di set: "
+            "sul tabellone vince chi arriva prima al numero di set"
+        )
 
     # Solo FORFEIT policy (EXCLUDE non permesso)
     if forfeit_policy == ForfeitPolicy.EXCLUDE:

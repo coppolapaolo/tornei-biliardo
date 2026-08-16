@@ -1,4 +1,17 @@
 <!-- New Gara Modal Component - Wizard Version -->
+
+{# La gara eredita la strategia dal campionato, quindi qui non c'e' un
+   selettore e la decisione si prende **a render time**: `bracket_options.js`
+   non puo' aiutare, perche' esce subito quando non trova
+   `matchmaking_strategy`.
+
+   Sui formati a tabellone spariscono gli stessi campi che spariscono negli
+   altri due form della gara (turni, numero esatto di rack, forfait, dispari,
+   anti-reincontro, spareggio): non hanno effetto, e il parser li impone
+   comunque. Qui erano rimasti tutti visibili — il modale era la terza
+   schermata di creazione e non era stata toccata. #}
+{% set modal_is_bracket = campionato.campionato_type in bracket_minimum_players %}
+
 <div class="modal fade" id="newProvaModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -188,16 +201,19 @@
                                         max="15" value="{{ default_distance }}" required>
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            {# I turni li fissa il sorteggio sugli iscritti effettivi. #}
+                            <div class="col-md-4" {% if modal_is_bracket %}style="display:none"{% endif %}>
                                 <div class="mb-3">
                                     <label for="rounds_count" class="form-label">Numero Turni</label>
                                     <input type="number" class="form-control" name="rounds_count" id="create_rounds_count"
-                                        min="1" max="10" value="{{ campionato.default_rounds_count or 3 }}" required>
+                                        min="1" max="10" value="{{ campionato.default_rounds_count or 3 }}"
+                                        {% if not modal_is_bracket %}required{% endif %}>
                                 </div>
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-md-6">
+                            {# Sul tabellone si gioca sempre a chi arriva prima. #}
+                            <div class="col-md-6" {% if modal_is_bracket %}style="display:none"{% endif %}>
                                 <div class="mb-3">
                                     <label class="form-label">Modalità Punteggio</label>
                                     <div class="form-check" id="create_exact_number_container">
@@ -212,10 +228,12 @@
                                     </small>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            {# Dopo il sorteggio il ritiro e' sempre walkover. #}
+                            <div class="col-md-6" {% if modal_is_bracket %}style="display:none"{% endif %}>
                                 <div class="mb-3">
                                     <label for="withdraw_policy" class="form-label">Gestione Forfait</label>
-                                    <select class="form-control" name="withdraw_policy" id="withdraw_policy" required>
+                                    <select class="form-control" name="withdraw_policy" id="withdraw_policy"
+                                            {% if not modal_is_bracket %}required{% endif %}>
                                         <option value="Forfeit" selected>Vincita a tavolino</option>
                                         <option value="Exclude">Escludi dal turno</option>
                                     </select>
@@ -238,7 +256,8 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            {# I bye del tabellone sono strutturali, non una politica. #}
+                            <div class="col-md-6" {% if modal_is_bracket %}style="display:none"{% endif %}>
                                 <div class="mb-3">
                                     <label for="odd_number_policy" class="form-label">Gestione Dispari</label>
                                     <select class="form-control" name="odd_number_policy" id="create_odd_number_policy">
@@ -261,8 +280,11 @@
                                 </div>
                             </div>
                         </div>
+                        {# Amalfi lo impone acceso; sul tabellone non esiste proprio,
+                           perche' chi perde esce e non puo' esserci un reincontro. #}
                         {% set anti_rematch_forced = campionato.campionato_type in ['amalfi'] %}
-                        <div class="row" id="create_anti_rematch_section" {% if anti_rematch_forced %}style="display: none;"{% endif %}>
+                        <div class="row" id="create_anti_rematch_section"
+                             {% if anti_rematch_forced or modal_is_bracket %}style="display: none;"{% endif %}>
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <div class="form-check">
@@ -292,6 +314,9 @@
                             <small class="text-muted">{{ _("I match con handicap non aggiornano i rating (Elo/Fargo).") }}</small>
                         </div>
 
+                        {# Le strategie POSITION dichiarano `requires_tiebreaker=False`:
+                           i pari merito per banda sono l'esito voluto. #}
+                        <div {% if modal_is_bracket %}style="display:none"{% endif %}>
                         <hr class="my-3">
                         <h6 class="text-primary mb-3"><i class="fas fa-balance-scale"></i> Spareggio (SSR)</h6>
                         <div class="row">
@@ -319,6 +344,7 @@
                                 </div>
                             </div>
                         </div>
+                        </div>{# fine blocco spareggio, nascosto sui tabelloni #}
 
                         <hr class="my-3">
                         <div class="mb-3">

@@ -26,8 +26,8 @@ Parametri:
         <div class="c7-stepper__hint" id="preview-text">{{ _('Rack per set') }}</div>
     </div>
 
-    {# Modalità rack #}
-    <label class="c7-choice" for="exact_number">
+    {# Modalità rack. Sul tabellone non si sceglie: vedi la nota in fondo. #}
+    <label class="c7-choice" for="exact_number" id="exact_number_row">
         <input class="form-check-input" type="checkbox" id="exact_number" name="exact_number"
                onchange="updateDistancePreview()" {% if not is_race_to_value %}checked{% endif %}>
         <span>
@@ -58,7 +58,7 @@ Parametri:
             <div class="c7-stepper__hint">{{ _('Set nella partita') }}</div>
         </div>
 
-        <label class="c7-choice" for="is_race_to_sets" style="margin-top: 12px;">
+        <label class="c7-choice" for="is_race_to_sets" style="margin-top: 12px;" id="race_to_sets_row">
             <input class="form-check-input" type="checkbox" id="is_race_to_sets" name="is_race_to_sets"
                    onchange="updateDistancePreview()" {% if is_race_to_sets_value %}checked{% endif %}>
             <span>
@@ -68,18 +68,20 @@ Parametri:
         </label>
     </div>
 
-    {# Avviso dal vivo per i formati a tabellone: un numero **pari** di rack (o
-       di set) esatti puo' finire in parita', e un nodo del tabellone deve
-       sempre produrre un vincitore, altrimenti lo slot a valle resta senza chi
-       lo occupa. La regola esiste gia' lato server
-       (`_validate_position_system`): qui serve solo a non farla scoprire al
-       salvataggio. Il testo sta nei `data-` perche' il JS piu' sotto non passa
-       da `_()`. #}
-    <div id="bracket-distance-warning" class="c7-flash c7-flash--warning" style="display:none;margin-top:12px"
-         data-msg-racks="{{ _('Su un tabellone il numero esatto di rack deve essere dispari: con un numero pari la partita può finire in parità e il nodo resterebbe senza vincitore.') }}"
-         data-msg-sets="{{ _('Su un tabellone il numero esatto di set deve essere dispari: con un numero pari la partita può finire in parità e il nodo resterebbe senza vincitore.') }}">
-        <span class="c7-flash__ico"><i class="fas fa-exclamation"></i></span>
-        <div class="c7-flash__body"><div class="c7-flash__text" id="bracket-distance-warning-text"></div></div>
+    {# Sui formati a tabellone il numero esatto non si sceglie: si spiega.
+
+       Prima qui c'era un avviso che chiedeva solo un numero **dispari** —
+       lettura piu' stretta dello stesso principio, che lasciava passare una
+       configurazione comunque senza senso: il vincitore e' deciso a meta'
+       partita e i rack seguenti non cambiano ne' il tabellone ne' la
+       classifica, che e' per posizione. Ora la casella sparisce e resta questa
+       nota. Il server impone comunque il valore (`_bracket_derived_fields`), e
+       `_validate_position_system` fa da rete. #}
+    <div id="bracket-distance-note" class="c7-flash c7-flash--info" style="display:none;margin-top:12px">
+        <span class="c7-flash__ico"><i class="fas fa-circle-info"></i></span>
+        <div class="c7-flash__body"><div class="c7-flash__text">
+            {{ _('Sul tabellone si gioca sempre a chi arriva prima: conta solo chi passa il turno, quindi i rack giocati dopo che il vincitore è deciso non cambierebbero nulla.') }}
+        </div></div>
     </div>
 </section>
 
@@ -140,48 +142,52 @@ function updateDistancePreview() {
         previewText.textContent = sets + ', ogni set ' + racks;
     }
 
-    updateBracketDistanceWarning(exactNumber, distance, isMultiSet, isRaceToSets, matchDistance);
+    syncBracketDistance();
 }
 
-/* Con un formato a tabellone un numero pari di rack (o di set) esatti puo'
- * finire in parita', e il nodo resterebbe senza vincitore: il server lo
- * rifiuta gia', qui lo si dice mentre si sceglie. Nelle pagine senza il
- * selettore di strategia la funzione non fa nulla. */
-function updateBracketDistanceWarning(exactNumber, distance, isMultiSet, isRaceToSets, matchDistance) {
-    const box = document.getElementById('bracket-distance-warning');
+/* Sul tabellone il numero esatto non e' una scelta: la casella dei rack
+ * sparisce e i set restano a "vince chi arriva prima", perche' giocare oltre
+ * il punto in cui il vincitore e' deciso non cambia chi passa il turno.
+ *
+ * La casella nascosta viene anche **deselezionata**: `display:none` non impedisce
+ * a una checkbox spuntata di finire nel POST, e una gara aperta in modifica
+ * puo' arrivare qui col valore vecchio. Il server la impone comunque
+ * (`_bracket_derived_fields`); questo serve a non mostrare un'anteprima che
+ * dice una cosa diversa da quella che verra' salvata.
+ *
+ * Nelle pagine senza il selettore di strategia la funzione non fa nulla. */
+function syncBracketDistance() {
+    const nota = document.getElementById('bracket-distance-note');
     const strategy = document.getElementById('matchmaking_strategy');
-    if (!box || !strategy) { return; }
+    if (!nota || !strategy) { return; }
 
     const isBracket = ['direct_elimination', 'double_knockout'].indexOf(strategy.value) >= 0;
-    const problemi = [];
+    const exact = document.getElementById('exact_number');
+    const exactRow = document.getElementById('exact_number_row');
+    const raceToSets = document.getElementById('is_race_to_sets');
+    const raceToSetsRow = document.getElementById('race_to_sets_row');
+
+    nota.style.display = isBracket ? '' : 'none';
+    if (exactRow) { exactRow.style.display = isBracket ? 'none' : ''; }
+    if (raceToSetsRow) { raceToSetsRow.style.display = isBracket ? 'none' : ''; }
 
     if (isBracket) {
-        // I due controlli sono indipendenti, come lato server: in multi-set si
-        // possono sbagliare entrambi (rack esatti pari *e* set esatti pari).
-        if (exactNumber && distance % 2 === 0) {
-            problemi.push(box.dataset.msgRacks);
-        }
-        if (isMultiSet && !isRaceToSets && matchDistance % 2 === 0) {
-            problemi.push(box.dataset.msgSets);
-        }
+        let cambiato = false;
+        if (exact && exact.checked) { exact.checked = false; cambiato = true; }
+        if (raceToSets && !raceToSets.checked) { raceToSets.checked = true; cambiato = true; }
+        // Una sola volta: `updateDistancePreview` richiama questa funzione.
+        if (cambiato) { updateDistancePreview(); }
     }
-
-    const message = problemi.join(' ');
-    document.getElementById('bracket-distance-warning-text').textContent = message;
-    box.style.display = message ? '' : 'none';
 }
 
 document.addEventListener('DOMContentLoaded', updateDistancePreview);
 
-/* Vera dal 2026-08: prima ritornava `true` fisso e non la chiamava nessuno,
- * quindi l'avviso sulle distanze pari era puramente decorativo — si poteva
- * proseguire fino in fondo al wizard e scoprire il rifiuto solo al salvataggio.
- * Ora il passo non avanza finché la configurazione non è giocabile. */
+/* Chiamata dal wizard prima di avanzare. Da quando il numero esatto non e'
+ * piu' selezionabile sui tabelloni non c'e' piu' una configurazione di
+ * distanza che il server rifiuterebbe, quindi non blocca nulla: resta come
+ * gancio, perche' il passo del wizard la interroga e la prossima regola sulla
+ * distanza avra' gia' dove appoggiarsi. */
 function validateDistanceConfig() {
-    const box = document.getElementById('bracket-distance-warning');
-    if (!box || box.style.display === 'none') { return true; }
-
-    box.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    return false;
+    return true;
 }
 </script>

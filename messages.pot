@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-15 17:05+0000\n"
+"POT-Creation-Date: 2026-08-15 19:49+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -5353,18 +5353,11 @@ msgstr ""
 msgid "Altrimenti si giocano tutti i set previsti."
 msgstr ""
 
-#: templates/components/_distance_configurator.html:79
+#: templates/components/_distance_configurator.html:83
 msgid ""
-"Su un tabellone il numero esatto di rack deve essere dispari: con un "
-"numero pari la partita può finire in parità e il nodo resterebbe senza "
-"vincitore."
-msgstr ""
-
-#: templates/components/_distance_configurator.html:80
-msgid ""
-"Su un tabellone il numero esatto di set deve essere dispari: con un "
-"numero pari la partita può finire in parità e il nodo resterebbe senza "
-"vincitore."
+"Sul tabellone si gioca sempre a chi arriva prima: conta solo chi passa il"
+" turno, quindi i rack giocati dopo che il vincitore è deciso non "
+"cambierebbero nulla."
 msgstr ""
 
 #: templates/components/_double_knockout_algorithm_info.html:9
