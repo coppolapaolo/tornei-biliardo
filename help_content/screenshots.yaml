@@ -182,7 +182,49 @@ shots:
   - id: challenge-nuova
     route: /challenges/create
     as: Luca Bianchi
-    caption: "Il modulo per creare una challenge: descrizione, immagine della disposizione e tipo di punteggio."
+    caption: "Il modulo per creare una challenge: descrizione, tipo di punteggio, foto della disposizione e, in fondo, «Disegna il drill» per chi la foto non ce l'ha."
+    # Pagina intera: «Non hai una foto? / Disegna il drill» sta in fondo, sotto
+    # la piega, ed e' il punto da cui la guida fa partire il builder. Senza,
+    # la didascalia prometterebbe un pulsante che nell'immagine non c'e'.
+    full_page: true
+
+  # Il builder si apre vuoto: una figura del tavolo spoglio non farebbe capire
+  # a cosa serve. Il click su una posizione standard mette sul tavolo un drill
+  # vero, che e' esattamente cio' che il lettore deve riconoscere.
+  - id: drill-builder
+    route: /challenges/builder
+    as: Luca Bianchi
+    caption: "Il builder dei drill: a sinistra gli strumenti, a destra il tavolo con le bilie disposte."
+    viewports: [mobile, desktop]
+    click: ['[data-preset="lshape"]']
+
+  # I tre ritagli qui sotto fotografano un riquadro del pannello alla volta: a
+  # figura intera, su mobile, le scritte del pannello sono illeggibili. Gli
+  # `id` sono nel template apposta (vedi il commento in `builder.html`).
+  - id: drill-builder-strumenti
+    route: /challenges/builder
+    as: Luca Bianchi
+    caption: "Il riquadro «Strumenti» del builder: Sposta, Tiro, Linea libera, Testo, e i tasti per annullare, ripetere ed eliminare."
+    clip: "#sec-strumenti"
+
+  # Questi due si scattano da desktop: il ritaglio riprende il rettangolo
+  # dell'elemento sulla pagina gia' composta, e su mobile il pannello e' alto
+  # `48vh` con lo scorrimento suo — un riquadro piu' alto di cosi' esce con
+  # dentro meta' pagina di sfondo. Da desktop il pannello e' alto abbastanza e
+  # il riquadro ci sta intero.
+  - id: drill-builder-tiro
+    route: /challenges/builder
+    as: Luca Bianchi
+    caption: "Il riquadro «Tiro»: il punto di impatto sulla bianca, l'inclinazione della stecca, la forza e cosa mostrare del tiro."
+    viewports: [desktop]
+    clip: "#sec-tiro"
+
+  - id: drill-builder-posizioni
+    route: /challenges/builder
+    as: Luca Bianchi
+    caption: "Il riquadro «Posizioni standard»: gli otto schemi già pronti, fra cui i rack e il tasto «Svuota»."
+    viewports: [desktop]
+    clip: "#sec-posizioni"
 
   # --- Esami ---------------------------------------------------------------
   # Gli utenti sono scelti apposta: la pagina di un esame mostra «Prova da

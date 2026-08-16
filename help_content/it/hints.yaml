@@ -392,8 +392,56 @@ hints:
     short: "Rimette le bilie sul tavolo come le avevi lasciate. Compare solo sui drill disegnati: da una foto non c'è un disegno da riaprire."
     anchor: drill-modifica-disegno
     screens: [challenge.challenge_detail]
-    page: challenge
-    section: disegnare
+    page: disegnare_un_drill
+    section: correggere
+
+  - id: drill.strumento
+    label: "Gli strumenti"
+    short: "Uno alla volta, e quello attivo è giallo: «Sposta» sistema, «Tiro» disegna un tiro, «Linea libera» traccia un percorso, «Testo» scrive."
+    anchor: drill-strumento
+    screens: [challenge.diagram_builder, challenge.edit_diagram]
+    page: disegnare_un_drill
+    section: strumenti
+
+  - id: drill.calamite
+    label: "Calamite sponda e biglie"
+    short: "La bilia si aggancia da sola a griglia, sponda e altre bilie. Togli il segno di spunta — o tieni premuto Alt — se ti sposta dove non vuoi."
+    anchor: drill-calamite
+    screens: [challenge.diagram_builder, challenge.edit_diagram]
+    page: disegnare_un_drill
+    section: bilie
+
+  - id: drill.punto_impatto
+    label: "Punto di impatto sulla bianca"
+    short: "Il cerchio è la bianca vista di fronte: tocca dove la colpisce la stecca. In mezzo è pieno, in alto o in basso è effetto, ai lati è laterale."
+    anchor: drill-punto-impatto
+    screens: [challenge.diagram_builder, challenge.edit_diagram]
+    page: disegnare_un_drill
+    section: tiro
+
+  - id: drill.forza
+    label: "Forza"
+    short: "Quanto forte si colpisce. A forza 30 la bilia percorre due lunghezze di tavolo, e il cerchio tratteggiato segna dove si ferma."
+    anchor: drill-forza
+    screens: [challenge.diagram_builder, challenge.edit_diagram]
+    page: disegnare_un_drill
+    section: tiro
+
+  - id: drill.posizioni_standard
+    label: "Posizioni standard"
+    short: "Otto disposizioni già pronte, dai rack al wagon wheel. Sostituiscono quel che c'è sul tavolo: se sbagli, «Annulla mossa» rimette tutto."
+    anchor: drill-posizioni-standard
+    screens: [challenge.diagram_builder, challenge.edit_diagram]
+    page: disegnare_un_drill
+    section: posizioni
+
+  - id: drill.istruzioni
+    label: "Istruzioni per chi la esegue"
+    short: "Il disegno mostra la disposizione, non la regola: come si conta il punteggio va scritto qui, a parole. Senza, il drill non si salva."
+    anchor: drill-istruzioni
+    screens: [challenge.diagram_builder, challenge.edit_diagram]
+    page: disegnare_un_drill
+    section: salvare
 
 tours:
   - screen: dashboard.dashboard

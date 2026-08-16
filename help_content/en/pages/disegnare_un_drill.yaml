@@ -1,0 +1,351 @@
+title: "Drawing a drill"
+section: giocare
+kind: tutorial
+audience: [direttore]
+minutes: 6
+summary: "If you have no photo of the table, the drill can be drawn: balls, shots, lines and labels on an empty table. The catalogue picture comes from the drawing."
+screens: [challenge.diagram_builder, challenge.edit_diagram]
+related: [challenge, esami, progressi]
+
+blocks:
+  - type: text
+    text: >-
+      A challenge is normally proposed with a **photo of the table set up**. If
+      you have no photo, or if you want to show the shot as well and not only
+      where the balls sit, the drill can be **drawn**: you place the balls on
+      an empty table, draw the shot, and the picture that goes into the
+      catalogue comes from the drawing.
+
+  - type: note
+    tone: warning
+    title: "It is the alternative, not the recommended way"
+    text: >-
+      Anyone who has a photo goes on uploading it: the real table stays the
+      clearest thing for whoever has to reproduce the layout. Drawing is for
+      those without a photo.
+
+  - type: note
+    tone: info
+    title: "It unlocks as you use it"
+    text: >-
+      «Draw the drill» appears to competition directors who have already
+      **completed thirty drills**, like the other features that unlock through
+      playing. The reason: a badly drawn drill is then played by everyone else,
+      and to draw a good one it helps to have tried plenty.
+
+  - type: heading
+    id: aprire
+    title: "How to open it"
+
+  - type: text
+    text: >-
+      You start from the **«New challenge»** form, the usual one. At the
+      bottom, below the photo field, there is the question **«No photo to
+      hand?»** and the button **«Draw the drill»**.
+
+  - type: shot
+    shot: challenge-nuova
+    caption: "«Draw the drill» is at the bottom of the form, below the photo field."
+
+  - type: note
+    tone: warning
+    text: >-
+      The builder opens in **a page of its own**, and anything you had already
+      typed on the form is not carried over: the instructions and the scoring
+      type are written there. If you filled in the form first and then switch
+      to drawing, you type that text again.
+
+  - type: heading
+    id: schermata
+    title: "What the screen looks like"
+
+  - type: text
+    text: >-
+      There are two parts: the **tool panel** and the **table**. On a phone the
+      panel is on top and the table below, and you scroll the panel to reach
+      the controls you cannot see. On a computer they sit side by side, panel
+      on the left and table on the right.
+
+  - type: shot
+    shot: drill-builder
+    caption: "The builder on a phone: controls on top, table below."
+
+  - type: note
+    tone: tip
+    text: >-
+      Drawing is more comfortable **on a computer**: the table is large, the
+      whole panel is in front of you and you can point more precisely. It works
+      from a phone, but it is a patient job.
+
+  - type: heading
+    id: strumenti
+    title: "The four tools"
+
+  - type: text
+    text: >-
+      At the top of the panel, in the **«Tools»** box, you choose what you are
+      doing. One is active at a time: the active one is yellow.
+
+  - type: shot
+    shot: drill-builder-strumenti
+    caption: "The «Tools» box: the active tool is the yellow one."
+
+  - type: options
+    items:
+      - name: "Move"
+        text: >-
+          The starting tool. It picks up what is already on the table and moves
+          it, and selects a ball or a shot so you can correct it.
+      - name: "Shot"
+        text: >-
+          Draws a shot: first you tap the ball being played, then you move your
+          finger or the pointer to aim and tap again to fix it. Tapping an
+          existing shot lets you correct it.
+      - name: "Free line"
+        text: >-
+          Draws a line by hand, point after point: for marking a path, a route
+          or an area of the table.
+      - name: "Text"
+        text: >-
+          Writes a word on the table. It asks what to write, then puts it where
+          you tapped. To change it, tap the label twice.
+
+  - type: list
+    title: "Next to the tools"
+    items:
+      - "**Undo** steps back one move, **Redo** puts back what you undid."
+      - "**Delete** removes the selected item. On a computer the «Del» and «Backspace» keys do the same."
+      - "The «Esc» key cancels what you are doing: an aim you started, a line half drawn."
+
+  - type: heading
+    id: bilie
+    title: "Placing the balls"
+
+  - type: text
+    text: >-
+      In the **«Balls»** box you pick the ball — the cue ball, the numbered
+      ones from 1 to 15, or the **ghost ball** (the dashed one, marking a spot
+      where a ball *should* arrive) — and then you tap the table.
+
+  - type: options
+    items:
+      - name: "Snap to cushions and balls"
+        values: "on"
+        text: >-
+          The ball snaps by itself to the grid, to the cushion and against the
+          others: layouts come out tidy without adjusting them. Clear the tick
+          box and the ball stays exactly where you drop it.
+      - name: "Ball size"
+        values: "true to scale · +15% · +30%"
+        text: >-
+          **True to scale** is how big they really are against the table, and
+          it is the right one for showing whether two balls let a third
+          through. **+15%** and **+30%** make them easier to read, as in book
+          diagrams.
+
+  - type: note
+    tone: tip
+    text: >-
+      On a computer, holding **Alt** while you place a ball turns every snap
+      off: useful when the exact position is the one the magnet keeps moving
+      you away from.
+
+  - type: heading
+    id: tiro
+    title: "Drawing a shot"
+
+  - type: text
+    text: >-
+      The **«Shot»** box governs how the shot is drawn: where the cue ball is
+      struck, how hard, and what to show of the result. The paths are not
+      decoration — the builder works them out from these values.
+
+  - type: shot
+    shot: drill-builder-tiro
+    variant: desktop
+    caption: "The «Shot» box: contact point, cue elevation, power and what to show."
+
+  - type: options
+    items:
+      - name: "Contact point on the cue ball"
+        text: >-
+          The circle at the top is the cue ball seen face on: you tap the point
+          where the cue strikes it. In the middle is a centre-ball hit; higher
+          or lower is follow and draw, to the sides is side spin.
+      - name: "Cue elevation"
+        values: "0° to 60°"
+        text: >-
+          How far the cue is raised off the table. For showing shots played
+          with the butt up.
+      - name: "Power"
+        values: "5% to 100%"
+        text: >-
+          How hard the ball is struck. The five buttons below — **feather,
+          soft, medium, hard, break** — are the everyday levels. The reference
+          written in the panel: at power 30 the ball travels two table lengths,
+          and the dashed circle on the drawing marks where it stops.
+      - name: "Snap the aim to the pocket"
+        values: "on"
+        text: >-
+          The aim lines itself up with the pockets, which is what you want
+          nearly always. To aim elsewhere, press and drag instead of simply
+          tapping.
+
+  - type: list
+    title: "What to show of the shot"
+    items:
+      - "**Cue ball path**: where the cue ball goes after contact."
+      - "**Object ball paths**: where the balls it hits go."
+      - "**Cue on the table**: draws the cue, so the side it is played from is clear."
+      - "**Shot card below the table**: the written summary — spin, power, angle — under the drawing."
+      - "**Cut angle label**: writes how many degrees the cut is. Normally off."
+
+  - type: heading
+    id: linee
+    title: "Lines and labels"
+
+  - type: text
+    text: >-
+      A **free line** is drawn by tapping one point after another. You close it
+      with the **«Finish line»** button, or by tapping twice, or by going back
+      to the last point you placed.
+
+  - type: options
+    items:
+      - name: "Solid / Dashed"
+        text: "The stroke of the line. Dashed is usually kept for imaginary paths."
+      - name: "Colour"
+        text: "The little coloured squares next to it: for telling two different paths apart in the same drawing."
+      - name: "Arrow head"
+        values: "on"
+        text: "Puts an arrow at the end of the line, so the direction is clear."
+      - name: "Ghost ball at the end"
+        text: "Adds a dashed ball where the line ends: it marks where the ball has to arrive."
+
+  - type: heading
+    id: tavolo
+    title: "How the table looks"
+
+  - type: text
+    text: >-
+      The **«Table»** box does not change the drill, it changes how the drawing
+      reads.
+
+  - type: options
+    items:
+      - name: "Cloth"
+        text: "The colour of the table, from those offered."
+      - name: "Diamond grid"
+        values: "on"
+        text: >-
+          The lines joining the diamonds on the cushions. They are how
+          positions are described at the table, and in a drill drawing they
+          genuinely matter: they say *where* the ball goes.
+      - name: "Quarter-diamond grid"
+        text: "A finer grid, for positions that fall between one diamond and the next."
+      - name: "Standard spots and lines"
+        values: "on"
+        text: "The foot spot and the head string, as on a real table."
+      - name: "Snap to grid"
+        values: "quarter · half · one diamond · none"
+        text: >-
+          How fine the mesh the balls snap to is. The wider it is, the more
+          regular the positions come out; with **none** the ball stays where
+          you put it.
+      - name: "Orientation"
+        values: "landscape · portrait"
+        text: >-
+          The table lengthwise or upright. Portrait fits better on the phone
+          screens where the drill will be looked at.
+      - name: "Diagram title"
+        text: >-
+          A caption at the top of the drawing, for example «Drill 1 — Stop
+          shot». It is optional: the name the drill appears under in the
+          catalogue is a different thing, and comes from the instructions.
+
+  - type: heading
+    id: posizioni
+    title: "The standard positions"
+
+  - type: text
+    text: >-
+      The **«Standard positions»** box puts a ready-made layout on the table,
+      so you never start from a blank sheet. Whatever was there is replaced —
+      and if you got it wrong, «Undo» puts everything back.
+
+  - type: shot
+    shot: drill-builder-posizioni
+    variant: desktop
+    caption: "The eight ready-made layouts in the «Standard positions» box."
+
+  - type: list
+    items:
+      - "**9-ball rack**, **8-ball rack**, **10-ball rack**: the balls gathered as at the start of that discipline."
+      - "**9-ball break**: the 9-ball rack plus the cue ball in hand and the break shot already drawn."
+      - "**Wagon wheel**: one ball in the centre and seven ghost balls in a fan — the classic cue ball position exercise."
+      - "**Stop line**: the cue ball and five balls in a row along the centre line."
+      - "**L drill**: the cue ball and six balls set in an L along two cushions."
+      - "**Clear**: takes everything off the table."
+
+  - type: heading
+    id: salvare
+    title: "Saving the drill"
+
+  - type: text
+    text: >-
+      Below the table, before the save button, there are the two things the
+      drawing on its own cannot say.
+
+  - type: steps
+    items:
+      - title: "Write the instructions"
+        text: "In the «Instructions for whoever plays it» field: the drawing shows the layout, not the rule. How the score is counted has to be written in words, and it is required."
+      - title: "Choose how it is scored"
+        text: "«Scored» or «Passed or not passed»: the same two options as the ordinary form."
+      - title: "Tap «Save the drill»"
+        text: "It is the button at the foot of the page. The drill goes into the catalogue with the drawing as its picture, exactly as a photographed one. «Cancel» leaves without saving anything."
+
+  - type: note
+    tone: info
+    text: >-
+      If the instructions are empty, or if there is not a single ball on the
+      table, saving stops and tells you: those are the two things without which
+      nobody could play the drill.
+
+  - type: note
+    tone: tip
+    title: "The drawing is not downloadable"
+    text: >-
+      The builder produces no files: there is nothing to download and nothing
+      to load back from disk. It does one thing, put the drill in the
+      catalogue, and the only way is **«Save the drill»**. The drawing stays on
+      the platform, and that is where you reopen it to fix something.
+
+  - type: heading
+    id: correggere
+    title: "Correcting a drawing"
+
+  - type: text
+    text: >-
+      A drawn drill can be reopened. On its page, whoever created it finds the
+      **«Edit the drawing»** button: the balls come back on the table as you
+      left them, you fix what needs fixing and tap **«Save changes»**.
+
+  - type: note
+    tone: info
+    text: >-
+      The button shows up **only on drawn drills**. A drill born from a photo
+      has no drawing to reopen, so it is not there.
+
+  - type: faq
+    items:
+      - q: "I cannot see «Draw the drill» on the creation form."
+        a: "It is a competition director's command, and it unlocks after thirty drills completed. Until it shows up, a challenge is created by uploading the photo: that is the normal way, not a fallback."
+      - q: "Can I draw the drill from my phone?"
+        a: "Yes, everything works. But the table is small and the panel has to be scrolled: if a computer is within reach, use it."
+      - q: "Do other people see the drawing?"
+        a: "They see the picture, as with a photographed drill: the drawing becomes the drill's image in the catalogue. Reopening and changing it is only for whoever created it."
+      - q: "Can I start from an existing drill and change it?"
+        a: "Only if it is yours and it was drawn: then «Edit the drawing» is there. Somebody else's drill cannot be reopened; you can, though, make your own starting from a standard position."
+      - q: "What happens if I close the page without saving?"
+        a: "The drawing is lost. There is no automatic draft: until you tap «Save the drill» the drill does not exist."
