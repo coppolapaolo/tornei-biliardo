@@ -4,6 +4,9 @@
    contenitore che ha gia' la sua testata (su mobile la sezione richiudibile
    in fondo alla pagina della gara). Stessa convenzione di
    `management_headerless` in _gara_management.html. #}
+
+{% set gara_is_bracket = gara.matchmaking_strategy in bracket_minimum_players %}
+
 <section class="{{ '' if info_headerless else 'c7-card' }}">
     {% if not info_headerless %}
     <div class="c7-kicker">{{ _('Informazioni gara') }}</div>
@@ -18,8 +21,12 @@
         <dd style="margin: 0; text-align: right;">{{ gara.location }}</dd>
         {% endif %}
 
+        {# Sul tabellone i turni sono una stima finché non si sorteggia: il
+           numero definitivo lo fissa il sorteggio sugli iscritti presenti. #}
         <dt class="text-muted" style="font-weight: 700;">{{ _('Turni') }}</dt>
-        <dd class="c7-num" style="margin: 0; text-align: right;">{{ gara.rounds_count }}</dd>
+        <dd class="c7-num" style="margin: 0; text-align: right;">
+            {{ gara.rounds_count }}{% if gara_is_bracket and not gara.current_round %}<span class="c7-num" style="color: var(--c7-ink-faint);"> ({{ _('stima') }})</span>{% endif %}
+        </dd>
 
         <dt class="text-muted" style="font-weight: 700;">{{ _('Accoppiamento') }}</dt>
         <dd style="margin: 0; text-align: right;">{{ gara.matchmaking_strategy.replace('_', ' ').title() }}</dd>
@@ -42,6 +49,10 @@
             {% if gara.entry_fee > 0 %}<span class="c7-num">€{{ "%.2f"|format(gara.entry_fee) }}</span>{% else %}{{ _('Gratuita') }}{% endif %}
         </dd>
 
+        {# Anti-reincontro e numero dispari non esistono sul tabellone: chi
+           perde esce, e i bye sono strutturali. Mostrarli riempiva la scheda
+           di righe che descrivevano impostazioni senza effetto. #}
+        {% if not gara_is_bracket %}
         <dt class="text-muted" style="font-weight: 700;">{{ _('Anti-reincontro') }}</dt>
         <dd style="margin: 0; text-align: right;">
             {% if gara.anti_rematch_enabled %}<span style="color: var(--c7-ok);">{{ _('Attivo') }}</span>{% else %}<span style="color: var(--c7-ink-muted);">{{ _('Non attivo') }}</span>{% endif %}
@@ -49,6 +60,7 @@
 
         <dt class="text-muted" style="font-weight: 700;">{{ _('Numero dispari') }}</dt>
         <dd style="margin: 0; text-align: right;">{{ gara.odd_number_policy.replace('_', ' ').title() }}</dd>
+        {% endif %}
 
         {# Challenge solo con strategia random e modalità abilitata #}
         {% set challenge_enabled = not gara.campionato or gara.campionato.challenge_mode %}

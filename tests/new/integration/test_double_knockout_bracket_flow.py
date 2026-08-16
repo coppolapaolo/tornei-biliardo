@@ -336,3 +336,49 @@ class TestBracketReset:
 
         assert total == 0
         assert not Match.query.filter_by(gara_id=gara.id, round_number=7).count()
+
+
+class TestTurniRimastiIndietro:
+    """Il numero di turni non deve impedire il sorteggio che lo corregge.
+
+    Regressione da una segnalazione dal vivo: una gara creata col wizard si
+    portava dietro `rounds_count=3` (il default del form, che per il doppio KO
+    non vuol dire nulla) e l'avvio del primo turno veniva **rifiutato** con
+    "richiede N turni, la gara ne ha 3". Il valore lo riscrive il sorteggio
+    stesso sugli iscritti effettivi, quindi la validazione bloccava proprio
+    l'azione che l'avrebbe sistemato — e il form non chiede piu' quel campo,
+    quindi non c'era nemmeno un modo di correggerlo a mano.
+    """
+
+    def test_il_sorteggio_riscrive_i_turni_rimasti_indietro(self, db_session):
+        players = _make_players(db_session, 8)
+        gara = _make_gara(db_session, players)
+
+        gara.rounds_count = 3  # com'era prima che il form smettesse di chiederlo
+        db_session.commit()
+
+        RoundService.start_first_round(gara.id)
+
+        db_session.refresh(gara)
+        assert gara.rounds_count == 7  # 2*log2(8) + 1
+        assert Match.query.filter_by(gara_id=gara.id, round_number=1).count() == 4
+
+    def test_a_tabellone_estratto_resta_un_errore(self, db_session):
+        """Dopo il sorteggio i nodi esistono: un valore troppo basso e' un bug.
+
+        Qui non c'e' piu' niente da riscrivere, quindi la validazione torna a
+        essere quello che dice di essere.
+        """
+        from models.matchmaking.bootstrap import get_registry
+
+        players = _make_players(db_session, 8)
+        gara = _make_gara(db_session, players)
+        RoundService.start_first_round(gara.id)
+
+        gara.rounds_count = 3
+        db_session.commit()
+
+        result = get_registry().get("double_knockout").validate(gara)
+
+        assert not result.ok
+        assert any("turni" in error for error in result.errors)

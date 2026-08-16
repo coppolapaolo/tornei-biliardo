@@ -218,13 +218,13 @@
                             </div>
 
                             <div class="row">
-                                <div class="col-sm-6 mb-3">
+                                <div class="col-sm-6 mb-3" data-bracket-hide>
                                     <label for="rounds_count" class="form-label">Numero di Turni <span
                                             class="text-danger">*</span></label>
                                     <input type="number" class="form-control" id="rounds_count" name="rounds_count"
                                         value="3" min="1" max="10" required>
                                 </div>
-                                <div class="col-sm-6 mb-3">
+                                <div class="col-sm-6 mb-3" data-bracket-hide>
                                     <label for="withdraw_policy" class="form-label">Gestione Forfait</label>
                                     <select class="form-select" id="withdraw_policy" name="withdraw_policy" required>
                                         <option value="{{ WithdrawPolicy.FORFEIT.value }}" selected>Vincita a tavolino
@@ -288,7 +288,7 @@
                                                 <option value="classification">Classifica</option>
                                             </select>
                                         </div>
-                                        <div class="col-sm-6 mb-2">
+                                        <div class="col-sm-6 mb-2" data-bracket-hide>
                                             <label for="odd_number_policy" class="form-label small">Se Giocatori
                                                 Dispari</label>
                                             <select class="form-select form-select-sm" id="odd_number_policy"
@@ -305,7 +305,7 @@
                                     </div>
 
                                     <div class="row">
-                                        <div class="col-sm-6 mb-2">
+                                        <div class="col-sm-6 mb-2" data-bracket-hide>
                                             <label for="classification_system" class="form-label small">
                                                 {{ _('Sistema di Classifica') }}
                                             </label>
@@ -326,7 +326,7 @@
                                     {% include "components/_bracket_options.html" %}
 
                                     <!-- SSR (Spot Shot Rally) Configuration -->
-                                    <div class="border-top pt-3 mt-3">
+                                    <div class="border-top pt-3 mt-3" data-bracket-hide>
                                         <h6 class="text-uppercase small fw-bold text-muted mb-3">
                                             <i class="fas fa-balance-scale text-warning me-1"></i> Spareggio (SSR)
                                         </h6>
@@ -525,6 +525,17 @@
             // Step 2: Also validate anti-rematch constraint
             if (step === 2) {
                 if (!validateAntiRematchConstraint()) {
+                    isValid = false;
+                }
+            }
+
+            // Il passo che contiene il configuratore della distanza non avanza
+            // con una configurazione che il server rifiuterebbe (numero esatto
+            // di rack o di set pari su un tabellone). Il passo si riconosce dal
+            // riquadro d'avviso invece che dal numero, cosi' riordinare il
+            // wizard non slega di nuovo il controllo.
+            if (stepContainer.querySelector('#bracket-distance-warning')) {
+                if (typeof validateDistanceConfig === 'function' && !validateDistanceConfig()) {
                     isValid = false;
                 }
             }

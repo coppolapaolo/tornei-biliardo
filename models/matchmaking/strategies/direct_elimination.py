@@ -57,6 +57,33 @@ def resolve_draw_seed(gara: object) -> int:
     return int(getattr(gara, "id", 0) or 0)
 
 
+def rounds_count_check(
+    gara: object, required_rounds: int, message: str
+) -> Tuple[List[str], List[str]]:
+    """Il numero di turni e' un problema solo **dopo** il sorteggio.
+
+    Prima, e' una stima: il sorteggio la sostituisce col numero calcolato sugli
+    iscritti che si sono presentati (ADR-038, `_apply_side_effects`). Trattarla
+    come errore bloccante impediva l'unica azione che l'avrebbe corretta — il
+    director si vedeva rifiutare l'avvio con "richiede N turni, la gara ne ha
+    M" senza avere piu' un campo dove cambiare M, visto che il form non lo
+    chiede piu'. Qui diventa una nota: il valore verra' riscritto fra un
+    istante.
+
+    A tabellone gia' estratto invece resta un errore vero: i nodi esistono, e
+    un `rounds_count` troppo basso significa che gli ultimi turni non si
+    potrebbero materializzare.
+    """
+    rounds_count = getattr(gara, "rounds_count", None)
+    if not rounds_count or rounds_count >= required_rounds:
+        return [], []
+
+    if not getattr(gara, "current_round", 0):
+        return [], [f"{message}: il sorteggio li fissera' a {required_rounds}"]
+
+    return [f"{message}, la gara ne ha {rounds_count}"], []
+
+
 class DirectEliminationStrategy(BaseStrategy):
     """Direct Elimination (single knockout) pairing strategy."""
 
@@ -131,12 +158,13 @@ class DirectEliminationStrategy(BaseStrategy):
                 return {"errors": errors, "warnings": warnings}
 
             required_rounds = self.get_total_rounds_needed(player_count)
-            rounds_count = getattr(gara, "rounds_count", None)
-            if rounds_count and rounds_count < required_rounds:
-                errors.append(
-                    f"{self.display_name} richiede {required_rounds} turni, "
-                    f"la gara ne ha {rounds_count}"
-                )
+            problems, notes = rounds_count_check(
+                gara,
+                required_rounds,
+                f"{self.display_name} richiede {required_rounds} turni",
+            )
+            errors.extend(problems)
+            warnings.extend(notes)
         except ValueError as e:
             # Vedi la nota gemella in double_knockout: solo gli errori di
             # dominio dell'aritmetica diventano errori di configurazione; i bug

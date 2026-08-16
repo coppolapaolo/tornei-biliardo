@@ -92,6 +92,18 @@ def inscribe_to_gara(gara_id):
             )
         else:
             flash(_("Iscrizione a %(gara)s completata!", gara=gara.display_name))
+
+        # Gara con le squadre: la scelta va chiesta **adesso**, non lasciata a
+        # una card in fondo a una linguetta che chi si iscrive non apre mai
+        # (US-8). Si torna sulla pagina della gara con il pannello gia' aperto;
+        # resta comunque una scelta facoltativa — "senza squadra" e' una
+        # risposta valida — e resta cambiabile fino al sorteggio.
+        if gara.separate_teammates:
+            target = next_url or url_for(
+                "admin.competition.gara_detail", gara_id=gara_id
+            )
+            separator = "&" if "?" in target else "?"
+            return redirect(f"{target}{separator}chiedi_squadra=1")
     else:
         flash(_("Errore durante l'iscrizione."), "error")
     # Redirect alla dashboard appropriata

@@ -45,6 +45,28 @@ BRACKET_STRATEGIES = frozenset(
 )
 
 
+def minimum_players_for(strategy: str) -> int:
+    """Iscritti minimi richiesti dal formato (1 se il formato non li impone).
+
+    È lo stesso pavimento che il sorteggio applica alla dimensione del
+    tabellone: sotto 4 l'eliminazione diretta non ha abbastanza turni, sotto 8
+    il losers bracket del doppio KO è troppo corto per avere senso. I valori
+    stanno in `bracket.py` e si leggono da lì — riscriverli qui vorrebbe dire
+    avere due minimi che possono divergere.
+    """
+    from .bracket import (
+        MIN_BRACKET_SIZE_DIRECT_ELIMINATION,
+        MIN_BRACKET_SIZE_DOUBLE_KNOCKOUT,
+    )
+
+    return {
+        MatchmakingStrategy.DIRECT_ELIMINATION.value: (
+            MIN_BRACKET_SIZE_DIRECT_ELIMINATION
+        ),
+        MatchmakingStrategy.DOUBLE_KNOCKOUT.value: MIN_BRACKET_SIZE_DOUBLE_KNOCKOUT,
+    }.get(strategy, 1)
+
+
 class FirstRoundPolicy(str, Enum):
     RANDOM = "random"
     RATING = "rating"

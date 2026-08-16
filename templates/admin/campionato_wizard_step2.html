@@ -134,6 +134,14 @@
       </span>
     </label>
 
+    {# Punti per posizione: solo sui campionati a tabellone. Qui il tipo è già
+       stato scelto allo step 1, quindi la visibilità si decide server-side. #}
+    {% if wizard_data.campionato_type in bracket_minimum_players %}
+      {% with position_points_visible = true %}
+        {% include "components/_position_points.html" %}
+      {% endwith %}
+    {% endif %}
+
     <div class="d-flex gap-2 justify-content-end">
       <a href="{{ url_for('admin.campionato.wizard_start') }}" class="btn btn-secondary">
         <i class="fas fa-arrow-left"></i> {{ _("Indietro") }}

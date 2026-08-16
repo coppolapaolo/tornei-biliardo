@@ -383,3 +383,77 @@ class TestSchermate:
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
+
+
+class TestSquadraChiestaAllIscrizione:
+    """US-8: la squadra si chiede **iscrivendosi**, non in fondo a una scheda.
+
+    Il pannello esisteva già, ma viveva come card dentro la linguetta degli
+    iscritti: chi si iscriveva atterrava sulla pagina, leggeva "iscrizione
+    completata" e non incontrava mai la domanda. Segnalato dal vivo.
+    """
+
+    def test_iscrivendosi_si_torna_con_la_domanda_aperta(self, client, db_session):
+        gara = _gara(db_session)
+        SquadraService.create(gara, "Circolo Nord")
+        db_session.commit()
+        giocatore = _players(db_session, 1)[0]
+        _login(client, giocatore)
+
+        risposta = client.post(f"/player/gara/{gara.id}/inscribe")
+
+        assert risposta.status_code == 302
+        assert "chiedi_squadra=1" in risposta.headers["Location"]
+
+    def test_la_gara_senza_squadre_non_chiede_niente(self, client, db_session):
+        gara = _gara(db_session, separate_teammates=False)
+        giocatore = _players(db_session, 1)[0]
+        _login(client, giocatore)
+
+        risposta = client.post(f"/player/gara/{gara.id}/inscribe")
+
+        assert "chiedi_squadra" not in risposta.headers["Location"]
+
+    def test_la_pagina_mostra_il_modale(self, client, db_session):
+        gara = _gara(db_session)
+        SquadraService.create(gara, "Circolo Nord")
+        db_session.commit()
+        giocatore = _players(db_session, 1)[0]
+        InscriptionService.inscribe_user(giocatore.id, gara.id)
+        db_session.commit()
+        _login(client, giocatore)
+
+        pagina = client.get(f"/admin/gara/{gara.id}?chiedi_squadra=1")
+        html = pagina.get_data(as_text=True)
+
+        assert "squadraChoiceModal" in html
+        assert "Circolo Nord" in html
+
+    def test_senza_il_parametro_resta_la_card(self, client, db_session):
+        """Non-regressione: chi arriva dalla dashboard vede la scheda di sempre."""
+        gara = _gara(db_session)
+        giocatore = _players(db_session, 1)[0]
+        InscriptionService.inscribe_user(giocatore.id, gara.id)
+        db_session.commit()
+        _login(client, giocatore)
+
+        html = client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
+
+        assert "squadraChoiceModal" not in html
+        assert "La tua squadra" in html
+
+    def test_a_sorteggio_fatto_non_si_chiede_piu(self, db_session, client):
+        """Il tabellone è estratto: non c'è più niente da chiedere (US-11)."""
+        gara = _gara(db_session)
+        giocatori = _players(db_session, 4)
+        for giocatore in giocatori:
+            InscriptionService.inscribe_user(giocatore.id, gara.id)
+        db_session.commit()
+        RoundService.start_first_round(gara.id)
+        _login(client, giocatori[0])
+
+        html = client.get(f"/admin/gara/{gara.id}?chiedi_squadra=1").get_data(
+            as_text=True
+        )
+
+        assert "squadraChoiceModal" not in html
