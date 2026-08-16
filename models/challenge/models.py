@@ -77,6 +77,19 @@ class Challenge(BaseModel):
     description = db.Column(db.Text, nullable=False)
     image_path = db.Column(db.String(255), nullable=False)
 
+    # Il disegno del drill, quando e' stato costruito invece che fotografato:
+    # la scena del builder in JSON (`{v, title, orient, cloth, ballScale,
+    # items}`). NULL su ogni drill nato da una foto, che e' la maggioranza.
+    #
+    # Perche' due cose e non una. L'immagine serve a **mostrare** il drill e la
+    # scena serve a **modificarlo**, e nessuna delle due sa fare il mestiere
+    # dell'altra: da un PNG non si torna indietro alle bilie, e una scena non
+    # si mette dentro un `<img>` ne' si manda per email. Tenere solo la scena
+    # vorrebbe dire ridisegnarla a ogni miniatura del catalogo; tenere solo il
+    # PNG vorrebbe dire che correggere una bilia significa rifare il disegno
+    # da capo.
+    diagram_scene = db.Column(db.Text, nullable=True)
+
     # Configurazione Scoring - determina il tipo di valutazione della sfida
     pass_fail_only = db.Column(db.Boolean, nullable=False, default=False)
     # False: sfida numerica (punteggio 0-N), True: sfida pass/fail

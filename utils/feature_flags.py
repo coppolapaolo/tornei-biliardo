@@ -398,6 +398,18 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "exam.manage_examiners": {"examiner"},
     "exam.add_examiner": {"examiner"},
     "exam.remove_examiner": {"examiner"},
+    # --- Builder dei drill -------------------------------------------------
+    # Chi disegna un drill lo fa per tutti gli altri, quindi è autorialità:
+    # stesso pubblico di `create_challenge`, cioè i direttori. Il gate di
+    # progressione (`use_drill_builder`) è un'altra cosa e sta sul decoratore —
+    # questa matrice dice solo *chi può vedere l'endpoint in produzione*.
+    #
+    # ⚠️ Il resto del blueprint `challenge` non è ancora in questa matrice, e
+    # quindi in produzione è admin-only: ci pensa la PR #114. Finché non entra,
+    # queste due righe non bastano da sole — il builder si raggiunge dalle
+    # pagine dei drill, che restano invisibili.
+    "challenge.diagram_builder": {"director"},
+    "challenge.edit_diagram": {"director"},
 }
 
 

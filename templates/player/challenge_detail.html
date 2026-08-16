@@ -91,6 +91,21 @@
   </div>
 </div>
 {% endif %}
+
+{# Riaprire il disegno: solo se un disegno c'è. Un drill nato da una foto non
+   ha niente da riaprire, e offrirlo lì vorrebbe dire spacciare per «modifica»
+   un ridisegno da zero. #}
+{% if challenge.diagram_scene
+      and (current_user.is_admin or (current_user.is_director and challenge.created_by_id == current_user.id))
+      and current_user.can_access('use_drill_builder')
+      and feature_visible('challenge.edit_diagram') %}
+<div class="c7-actionbar">
+  <a href="{{ url_for('challenge.edit_diagram', challenge_id=challenge.id) }}"
+     class="btn btn-secondary w-100">
+    <i class="fas fa-pen-ruler"></i>&nbsp;{{ _("Modifica il disegno") }}
+  </a>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block scripts %}

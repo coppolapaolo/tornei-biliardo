@@ -378,6 +378,23 @@ hints:
     page: referto_tpa
     section: come-si-compila
 
+  # --- Builder dei drill ---------------------------------------------------
+  - id: drill.disegna
+    label: "Disegna il drill"
+    short: "Se la foto del tavolo non ce l'hai, il drill si disegna: disponi le bilie, tracci il tiro, e l'immagine la genera il disegno."
+    anchor: drill-disegna
+    screens: [challenge.create_challenge]
+    page: challenge
+    section: disegnare
+
+  - id: drill.modifica_disegno
+    label: "Modifica il disegno"
+    short: "Rimette le bilie sul tavolo come le avevi lasciate. Compare solo sui drill disegnati: da una foto non c'è un disegno da riaprire."
+    anchor: drill-modifica-disegno
+    screens: [challenge.challenge_detail]
+    page: challenge
+    section: disegnare
+
 tours:
   - screen: dashboard.dashboard
     title: "La tua home"

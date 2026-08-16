@@ -2,11 +2,12 @@ title: "Challenges"
 section: giocare
 kind: approfondimento
 audience: [giocatore]
-minutes: 3
+minutes: 4
 summary: "Skill drills you do on your own: for practice, for unlocking milestones, and — inside a competition — for settling tie-breaks."
 screens: [challenge.challenge_catalog, challenge.challenge_detail, challenge.training_session,
   challenge.start_attempt, challenge.attempt_detail, challenge.create_challenge,
-  challenge.edit_challenge, challenge.challenge_statistics, player.challenge_detail]
+  challenge.edit_challenge, challenge.challenge_statistics, player.challenge_detail,
+  challenge.diagram_builder, challenge.edit_diagram]
 related: [progressi, numero_dispari, esami]
 
 blocks:
@@ -139,7 +140,84 @@ blocks:
     text: >-
       The picture is the part that matters: a description in words of where the
       balls go gets interpreted differently by everyone. A photo of the table
-      set up settles it.
+      set up settles it — and if you have no photo, the drill can be drawn
+      (below).
+
+  - type: heading
+    id: disegnare
+    title: "Drawing the drill instead of photographing it"
+
+  - type: text
+    text: >-
+      At the bottom of the photo box, on the **New challenge** form, there is
+      the question **«No photo to hand?»** and the button **«Draw the drill»**:
+      it opens an empty table where you place the balls and draw the shots. The
+      picture for the catalogue comes from the drawing — there is nothing to
+      upload.
+
+  - type: note
+    tone: warning
+    title: "It is the alternative, not the recommended way"
+    text: >-
+      Anyone who has a photo goes on uploading it: the real table stays the
+      clearest thing for whoever has to reproduce the layout. Drawing is for
+      those without a photo, or for showing the shot itself and not only where
+      the balls sit.
+
+  - type: steps
+    items:
+      - title: "Tap «Draw the drill»"
+        text: "It is at the bottom of the «Layout photo» box. It opens a page of its own: anything you had already typed on the form is not carried over, the instructions are written there."
+      - title: "Place the balls"
+        text: "Pick a ball in the tool panel, then tap the table. It snaps by itself to the grid, to the cushion and to the other balls."
+      - title: "Draw the shot, if you need one"
+        text: "The shot tool marks where the cue ball is struck and where you aim; the free line marks a path or an area. The move tool tidies up what is already on the table."
+      - title: "Write the instructions"
+        text: "Below the table, in «Instructions for whoever plays it»: the drawing shows the layout, not the rule. How the score is counted has to be written in words."
+      - title: "Choose how it is scored"
+        text: "«Scored» or «Passed or not passed»: the same two options as the ordinary form."
+      - title: "Tap «Save the drill»"
+        text: "It is the button at the foot of the page. The drill goes into the catalogue with the drawing as its picture, exactly as a photographed one. «Cancel» leaves without saving anything."
+
+  - type: note
+    tone: warning
+    title: "The drawing panel is still in Italian"
+    text: >-
+      The tools inside the table — «Sposta» (move), «Tiro» (shot), «Linea
+      libera» (free line), «Biglie» (balls) — are not
+      translated yet, so you will read them in Italian whatever language the
+      app is set to. Everything around them, the page you fill in and save, is
+      in English.
+
+  - type: note
+    tone: tip
+    title: "The drawing is not downloadable"
+    text: >-
+      The builder produces no files: there is nothing to download and nothing
+      to load back from disk. It does one thing, put the drill in the
+      catalogue, and the only way is **«Save the drill»**. The drawing stays on
+      the platform, and that is where you reopen it to fix something.
+
+  - type: text
+    text: >-
+      A drawn drill can be reopened. On its page, whoever created it finds the
+      **«Edit the drawing»** button: the balls come back on the table as you
+      left them, you fix what needs fixing and tap «Save changes».
+
+  - type: note
+    tone: info
+    text: >-
+      The button shows up **only on drawn drills**. A drill born from a photo
+      has no drawing to reopen, so it is not there.
+
+  - type: note
+    tone: info
+    title: "It unlocks as you use it"
+    text: >-
+      «Draw the drill» appears to competition directors who have already
+      **completed thirty drills**, like the other features that unlock through
+      playing. The reason: a badly drawn drill is then played by everyone else,
+      and to draw a good one it helps to have tried plenty.
 
   - type: heading
     id: perche
@@ -156,6 +234,8 @@ blocks:
     items:
       - q: "I cannot see the Challenges section."
         a: "It is a feature that unlocks as you use the platform, like the Matches section. If it is not there yet, it will be."
+      - q: "I cannot see «Draw the drill» on the creation form."
+        a: "It is a competition director's command, and it unlocks after thirty drills completed. Until it shows up, a challenge is created by uploading the photo: that is the normal way, not a fallback."
       - q: "Can I repeat the same challenge?"
         a: "Yes, and that is exactly what the practice screen is for: you record one attempt after another without leaving. Inside a competition it is different: there the number of attempts is set by the director, and inside an exam it is set by whoever composed it — it can ask you for several attempts at the same drill, and the best one counts."
       - q: "What is the difference between a challenge and an exam?"

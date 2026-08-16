@@ -69,6 +69,50 @@ Il drill giocato **al posto del bye in gara** non passa di qui: ha un contesto
 
 ---
 
+## Disegnare un drill invece di fotografarlo
+
+Chi propone un drill non sempre ha una foto del tavolo preparato. Il **builder**
+(`challenge.diagram_builder`, `/challenges/builder`) è l'altra strada: si
+dispongono le bilie, si tracciano i tiri, si salva.
+
+Salvare scrive **due cose insieme**, e servono a mestieri diversi:
+
+| Cosa | Colonna | A che serve |
+|---|---|---|
+| Immagine | `image_path` (NOT NULL) | **mostrare** il drill: catalogo, guida, notifiche |
+| Scena JSON | `diagram_scene` (nullable) | **riaprirlo** e correggerlo |
+
+Nessuna sa fare il mestiere dell'altra: da un PNG non si torna indietro alle
+bilie, e una scena non entra in un `<img>`. `diagram_scene` a `NULL` non è un
+dato mancante — dice «questo drill non è stato disegnato», ed è ciò che
+distingue chi può riaprire il builder da chi può solo ri-fotografare.
+
+**L'immagine la renderizza il browser**, non il server: il builder è l'unico
+posto che sa come si disegna una scena, e riprodurne le regole lato server
+significherebbe tenerne due copie destinate a divergere al primo ritocco
+grafico. Il server non delega il resto: la scena passa da
+`models/challenge/diagram.py::parse_scene` (JSON, oggetto, versione nota, lista
+di elementi, tetto di 512 KB) e il file dall'ordinario `save_challenge_image`.
+
+Le chiavi sconosciute della scena **si conservano**: il builder è un file che
+cambia, e scartare ciò che oggi non riconosciamo farebbe perdere pezzi a un
+drill riaperto domani, in silenzio.
+
+**Due gate, non uno.** `@director_required` dice *chi* (è autorialità: il drill
+lo eseguiranno tutti gli altri) e `@feature_required("use_drill_builder")` dice
+*da quando* — soglia più severa di `create_challenge`, e su sola metrica come
+vuole ADR-031.
+
+⚠️ Il CSS e il JS vengono dal tool autonomo e stanno in
+`static/css/drill-builder.css` e `static/js/drill-builder.js`. Il foglio è
+**confinato sotto `.drill-builder`**: il tool stila `body`, `header` e
+soprattutto `.btn`, che nell'app è di Bootstrap, quindi senza confine
+ridisegnerebbe ogni pulsante di ogni schermata. Lo presidia
+`tests/new/unit/test_drill_builder_css_scoped.py` — se arriva una versione
+nuova del builder si **ri-prefissa**, non si incolla grezzo.
+
+---
+
 ## Challenge Types
 
 | Type | `pass_fail_only` | Scoring | X-Substitution |

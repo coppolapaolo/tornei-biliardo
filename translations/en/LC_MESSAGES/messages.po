@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-16 17:39+0200\n"
+"POT-Creation-Date: 2026-08-16 16:53+0000\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -581,9 +581,10 @@ msgstr "Milestone: %(value)s matches!"
 #: models/kpi/notifications.py:54
 #, python-format
 msgid "Sono stati giocati %(value)s match sulla piattaforma. La community cresce!"
-msgstr "%(value)s matches have been played on the platform. The community is growing!"
+msgstr ""
 "%(value)s matches have been played on the platform. The community is "
-"growing!"
+"growing!%(value)s matches have been played on the platform. The community"
+" is growing!"
 
 #: models/kpi/notifications.py:59
 #, python-format
@@ -682,12 +683,12 @@ msgstr "each set race to %(n)s racks"
 msgid "ogni set esattamente %(n)s rack"
 msgstr "each set exactly %(n)s racks"
 
-#: models/notification/factory.py:380
+#: models/notification/factory.py:386
 #, python-format
 msgid "%(enrolled_by)s ti ha iscritto alla gara %(gara_name)s del %(gara_date)s"
 msgstr "%(enrolled_by)s registered you for %(gara_name)s on %(gara_date)s"
 
-#: models/notification/factory.py:390
+#: models/notification/factory.py:396
 msgid "Iscrizione a Gara"
 msgstr "Competition Enrollment"
 
@@ -862,65 +863,77 @@ msgstr "Welcome aboard!"
 msgid "Registrazione completata con successo."
 msgstr "Registration completed successfully."
 
-#: routes/challenge.py:55
+#: routes/challenge.py:57
 #: templates/components/_challenge_management_modal.html:150
 msgid "Non è stato possibile caricare le challenge."
 msgstr "The challenges could not be loaded."
 
-#: routes/challenge.py:104
+#: routes/challenge.py:106
 #: templates/components/_challenge_management_modal.html:158
 msgid "Challenge creata."
 msgstr "Challenge created."
 
-#: routes/challenge.py:178
+#: routes/challenge.py:180
 msgid "Questa challenge non è più disponibile."
 msgstr "This challenge is no longer available."
 
-#: routes/challenge.py:183
+#: routes/challenge.py:185
 msgid "Gli amministratori non possono provare le challenge."
 msgstr "Administrators cannot attempt challenges."
 
-#: routes/challenge.py:212
+#: routes/challenge.py:214
 msgid "Tentativo iniziato."
 msgstr "Attempt started."
 
-#: routes/challenge.py:245
+#: routes/challenge.py:314
+msgid "Drill creato."
+msgstr "Drill created."
+
+#: routes/challenge.py:339
+msgid "Questo drill nasce da una foto: non c'è un disegno da modificare."
+msgstr "This drill comes from a photo: there is no drawing to edit."
+
+#: routes/challenge.py:357
+msgid "Disegno aggiornato."
+msgstr "Drawing updated."
+
+#: routes/challenge.py:381
 msgid "Questo drill non è più disponibile."
 msgstr "This drill is no longer available."
 
-#: routes/challenge.py:249
+#: routes/challenge.py:385
 msgid "Gli amministratori non provano i drill."
 msgstr "Administrators do not attempt drills."
 
-#: routes/challenge.py:292
+#: routes/challenge.py:428
 msgid "Prova registrata."
 msgstr "Attempt recorded."
 
-#: routes/challenge.py:441
+#: routes/challenge.py:577
 msgid "Tentativo registrato."
 msgstr "Attempt recorded."
 
-#: routes/challenge.py:482 templates/challenge/catalog.html:93
+#: routes/challenge.py:618 templates/challenge/catalog.html:93
 msgid "Non è stato possibile aggiornare i preferiti."
 msgstr "The favourites could not be updated."
 
-#: routes/challenge.py:516
+#: routes/challenge.py:652
 msgid "Non è stato possibile caricare le statistiche."
 msgstr "The statistics could not be loaded."
 
-#: routes/challenge.py:544
+#: routes/challenge.py:680
 msgid "Challenge di gara avviata."
 msgstr "Tournament challenge started."
 
-#: routes/challenge.py:597
+#: routes/challenge.py:733
 msgid "Challenge di gara registrata."
 msgstr "Tournament challenge recorded."
 
-#: routes/challenge.py:670
+#: routes/challenge.py:806
 msgid "Challenge non trovata."
 msgstr "Challenge not found."
 
-#: routes/challenge.py:680
+#: routes/challenge.py:816
 msgid "Non hai i permessi per questa challenge."
 msgstr "You do not have permission for this challenge."
 
@@ -1180,70 +1193,66 @@ msgstr "Championship creation cancelled"
 msgid "Non hai i permessi per creare un campionato."
 msgstr "You do not have permission to create a championship."
 
-#: routes/admin/campionato.py:613
+#: routes/admin/campionato.py:617
 #, python-format
 msgid "Campionato \"%(name)s\" terminato con successo."
 msgstr "Championship \"%(name)s\" terminated successfully."
 
-#: routes/admin/campionato.py:619
+#: routes/admin/campionato.py:623
 msgid "Il campionato è già stato terminato."
 msgstr "The championship has already been terminated."
 
-#: routes/admin/campionato.py:637
+#: routes/admin/campionato.py:641
 msgid "Parametri non validi."
 msgstr "Invalid parameters."
 
-#: routes/admin/campionato.py:644
+#: routes/admin/campionato.py:648
 msgid "Requisito minimo gare aggiornato."
 msgstr "Minimum competition requirement updated."
 
-#: routes/admin/campionato.py:667
-msgid "Playoff avviati ma nessun giocatore qualificato. Verifica la classifica."
-msgstr "Playoffs started but no players qualified. Check the standings."
-
-#: routes/admin/campionato.py:673
+#: routes/admin/campionato.py:680
 #, python-format
 msgid "Playoff avviati: %(count)s giocatori qualificati."
 msgstr "Playoffs started: %(count)s players qualified."
 
-#: routes/admin/campionato.py:700
+#: routes/admin/campionato.py:707
 msgid "Configurazione playoff non trovata."
 msgstr "Playoff configuration not found."
 
-#: routes/admin/campionato.py:714
+#: routes/admin/campionato.py:721
 #, python-format
 msgid "Gara playoff \"%(name)s\" creata con successo."
 msgstr "Playoff gara \"%(name)s\" created successfully."
 
-#: routes/admin/campionato.py:736
+#: routes/admin/campionato.py:743
 msgid "Seleziona un giocatore."
 msgstr "Select a player."
 
-#: routes/admin/campionato.py:743
+#: routes/admin/campionato.py:750
 msgid "Giocatore aggiunto ai playoff."
 msgstr "Player added to playoffs."
 
-#: routes/admin/campionato.py:763
+#: routes/admin/campionato.py:770
 msgid "Qualificazione non specificata."
 msgstr "Qualification not specified."
 
-#: routes/admin/campionato.py:770
+#: routes/admin/campionato.py:777
 msgid "Giocatore rimosso dai playoff."
 msgstr "Player removed from playoffs."
 
-#: routes/admin/campionato.py:826
+#: routes/admin/campionato.py:833
 msgid "Configurazione playoff aggiornata."
 msgstr "Playoff configuration updated."
 
-#: routes/admin/campionato.py:848
+#: routes/admin/campionato.py:855
 msgid "Tutti i campi obbligatori devono essere compilati."
 msgstr "All required fields must be filled."
 
-#: routes/admin/campionato.py:867
+#: routes/admin/campionato.py:874
 msgid "Configurazione playoff aggiunta."
 msgstr "Playoff configuration added."
 
-#: routes/admin/campionato.py:887
+#: routes/admin/campionato.py:894
 msgid "Configurazione playoff disattivata."
 msgstr "Playoff configuration deactivated."
 
@@ -1939,45 +1948,31 @@ msgstr "Enrollment in %(gara)s completed!"
 msgid "Errore durante l'iscrizione."
 msgstr "Error during enrollment."
 
-#: routes/player/exports.py:526
-msgid ""
-"Un export è già in corso o è stato generato di recente. Controlla le "
-"notifiche."
-msgstr ""
-"An export is already in progress or was recently generated. Check your "
-"notifications."
-
-#: routes/player/exports.py:535
+#: routes/player/exports.py:542
 msgid "Export GDPR Pronto"
 msgstr "GDPR Export Ready"
 
-#: routes/player/exports.py:537
+#: routes/player/exports.py:544
 msgid "Il tuo archivio dati è pronto per il download. Il link scadrà tra 24 ore."
 msgstr "Your data archive is ready for download. The link will expire in 24 hours."
 
-#: routes/player/exports.py:539
+#: routes/player/exports.py:546
 msgid "Scarica"
 msgstr "Download"
 
-#: routes/player/exports.py:540
+#: routes/player/exports.py:547
 msgid "Errore Export GDPR"
 msgstr "GDPR Export Error"
 
-#: routes/player/exports.py:542
-msgid ""
-"Si è verificato un errore durante la generazione dell'archivio. Riprova "
-"più tardi."
-msgstr "An error occurred while generating the archive. Please try again later."
-
-#: routes/player/exports.py:556
+#: routes/player/exports.py:566
 msgid "Export avviato. Riceverai una notifica quando sarà pronto per il download."
 msgstr "Export started. You'll get a notification when it's ready to download."
 
-#: routes/player/exports.py:581
+#: routes/player/exports.py:591
 msgid "Il file di export non esiste o è scaduto."
 msgstr "The export file does not exist or has expired."
 
-#: routes/player/exports.py:588
+#: routes/player/exports.py:598
 msgid "Il file di export è scaduto. Richiedi un nuovo export."
 msgstr "The export file has expired. Request a new export."
 
@@ -2227,6 +2222,7 @@ msgstr "Confirm"
 #: templates/admin/campionato_wizard_step1.html:158
 #: templates/admin/campionato_wizard_step2.html:8
 #: templates/admin/gara_edit.html:11 templates/base.html:565
+#: templates/challenge/builder.html:33 templates/challenge/builder.html:227
 #: templates/challenge/create.html:14
 #: templates/components/_campionato_create_modal.html:35
 #: templates/components/_campionato_edit_form.html:214
@@ -3693,9 +3689,10 @@ msgstr "Final playoffs"
 
 #: templates/admin/campionato_wizard_step1.html:115
 msgid "Gare speciali a fine campionato: i qualificati ricevono un invito."
-msgstr "Special competitions at the end of the championship: those who qualify get an invitation."
-"Special competitions at the end of the championship: qualified players "
-"receive an invitation."
+msgstr ""
+"Special competitions at the end of the championship: those who qualify "
+"get an invitation.Special competitions at the end of the championship: "
+"qualified players receive an invitation."
 
 #: templates/admin/campionato_wizard_step1.html:123
 msgid "Per i primi classificati"
@@ -3854,9 +3851,10 @@ msgstr "Handicap mode"
 
 #: templates/admin/campionato_wizard_step2.html:138
 msgid "I match non aggiornano il rating Elo. Ereditato da gare e partite."
-msgstr "Matches do not update the Elo rating. Inherited from competitions and matches."
-"Matches do not update the Elo rating. Inherited by competitions and "
-"matches."
+msgstr ""
+"Matches do not update the Elo rating. Inherited from competitions and "
+"matches.Matches do not update the Elo rating. Inherited by competitions "
+"and matches."
 
 #: templates/admin/campionato_wizard_step2.html:155
 #: templates/admin/venue_form.html:12 templates/admin/venue_form.html:23
@@ -4629,7 +4627,8 @@ msgstr "Pass or fail"
 
 #: templates/challenge/_challenge_card.html:35
 #: templates/challenge/_challenge_detail.html:43
-#: templates/challenge/create.html:36 templates/challenge/training.html:48
+#: templates/challenge/builder.html:211 templates/challenge/create.html:36
+#: templates/challenge/training.html:48
 #: templates/components/_challenge_bits.html:27
 #: templates/components/_challenge_management_modal.html:97
 #: templates/player/challenge_attempt_detail.html:49
@@ -4720,6 +4719,77 @@ msgstr "There are no challenges to try yet."
 msgid "Crea la prima"
 msgstr "Create the first one"
 
+#: templates/challenge/builder.html:19 templates/challenge/builder.html:35
+#: templates/challenge/create.html:61
+msgid "Disegna il drill"
+msgstr "Draw the drill"
+
+#: templates/challenge/builder.html:35
+#: templates/player/challenge_detail.html:105
+msgid "Modifica il disegno"
+msgstr "Edit the drawing"
+
+#: templates/challenge/builder.html:36
+msgid "Disponi le bilie e traccia i tiri: l'immagine la genera il builder"
+msgstr "Set the balls out and draw the shots: the builder makes the picture"
+
+#: templates/challenge/builder.html:198
+msgid "Istruzioni per chi la esegue"
+msgstr "Instructions for whoever plays it"
+
+#: templates/challenge/builder.html:201
+msgid "Come si dispongono le bilie e come si conta il punteggio"
+msgstr "How the balls are set up and how the score is counted"
+
+#: templates/challenge/builder.html:203
+msgid "Il disegno mostra la disposizione; qui si scrive la regola."
+msgstr "The drawing shows the layout; the rule goes here."
+
+#: templates/challenge/builder.html:208
+msgid "Come si conta"
+msgstr "How it is scored"
+
+#: templates/challenge/builder.html:214
+msgid "Superata o non superata"
+msgstr "Passed or not passed"
+
+#: templates/challenge/builder.html:224
+msgid "Salva il drill"
+msgstr "Save the drill"
+
+#: templates/challenge/builder.html:224
+#: templates/individual_match/availability.html:111
+msgid "Salva le modifiche"
+msgstr "Save changes"
+
+#: templates/challenge/builder.html:241
+msgid "Il disegno salvato non si è potuto ricaricare."
+msgstr "The saved drawing could not be reloaded."
+
+#: templates/challenge/builder.html:252
+msgid "Servono le istruzioni: il disegno da solo non dice come si conta."
+msgstr "Instructions are needed: the drawing alone does not say how to score."
+
+#: templates/challenge/builder.html:256
+msgid "Il tavolo è vuoto: disponi almeno una bilia."
+msgstr "The table is empty: set out at least one ball."
+
+#: templates/challenge/builder.html:262
+msgid "Salvo…"
+msgstr "Saving…"
+
+#: templates/challenge/builder.html:268
+msgid "Non è stato possibile generare l'immagine del drill."
+msgstr "The drill image could not be generated."
+
+#: templates/challenge/builder.html:284
+msgid "Non è stato possibile salvare il drill."
+msgstr "The drill could not be saved."
+
+#: templates/challenge/builder.html:292
+msgid "Non è stato possibile salvare il drill. Riprova."
+msgstr "The drill could not be saved. Try again."
+
 #: templates/challenge/catalog.html:3 templates/challenge/catalog.html:8
 #: templates/components/_gara_info.html:69
 #: templates/components/_history_campionati_tab.html:96
@@ -4790,12 +4860,12 @@ msgid "Errore di rete: riprova."
 msgstr "Network error: try again."
 
 #: templates/challenge/catalog.html:95
-#: templates/player/challenge_detail.html:104
+#: templates/player/challenge_detail.html:119
 msgid "Confermi di voler eliminare questa challenge? Non si torna indietro."
 msgstr "Do you want to delete this challenge? There is no going back."
 
 #: templates/challenge/catalog.html:96
-#: templates/player/challenge_detail.html:114
+#: templates/player/challenge_detail.html:129
 msgid "Non è stato possibile eliminare la challenge."
 msgstr "The challenge could not be deleted."
 
@@ -4848,11 +4918,15 @@ msgid "Anteprima della foto"
 msgstr "Photo preview"
 
 #: templates/challenge/create.html:58
+msgid "Non hai una foto?"
+msgstr "No photo to hand?"
+
+#: templates/challenge/create.html:71
 #: templates/components/_challenge_management_modal.html:119
 msgid "Crea la challenge"
 msgstr "Create the challenge"
 
-#: templates/challenge/create.html:107
+#: templates/challenge/create.html:138
 msgid "Non è stato possibile creare la challenge. Riprova."
 msgstr "The challenge could not be created. Try again."
 
@@ -5549,9 +5623,10 @@ msgstr "Nothing to manage yet"
 
 #: templates/components/_dashboard_empty_state.html:9
 msgid "Puoi creare un campionato o una singola gara dai pulsanti in testata."
-msgstr "You can create a championship or a single competition from the buttons in the header."
+msgstr ""
 "You can create a championship or a single competition from the buttons in"
-" the header."
+" the header.You can create a championship or a single competition from "
+"the buttons in the header."
 
 #: templates/components/_dashboard_empty_state.html:11
 msgid "Nessun campionato attivo"
@@ -5840,9 +5915,10 @@ msgstr "%(num)s groups"
 
 #: templates/components/_double_knockout_algorithm_info.html:24
 msgid "Ogni girone qualifica quattro giocatori: due imbattuti e due ripescati."
-msgstr "Each group qualifies four players: two unbeaten and two through the losers bracket."
-"Each group qualifies four players: two unbeaten and two from the losers' "
-"bracket."
+msgstr ""
+"Each group qualifies four players: two unbeaten and two through the "
+"losers bracket.Each group qualifies four players: two unbeaten and two "
+"from the losers' bracket."
 
 #: templates/components/_elo_display.html:20
 msgid "Clicca per alternare ELO competitivo / globale (tornei + casual)"
@@ -5929,9 +6005,10 @@ msgstr "and %(n)s more players"
 
 #: templates/components/_gara_challenges_display.html:35
 msgid "Si giocano a turno concluso, con i tentativi indicati per ogni giocatore."
-msgstr "They are played once the round is over, with the attempts shown for each player."
-"They are played once the round is over, with the attempts specified for "
-"each player."
+msgstr ""
+"They are played once the round is over, with the attempts shown for each "
+"player.They are played once the round is over, with the attempts "
+"specified for each player."
 
 #: templates/components/_gara_edit_form.html:16
 #, python-format
@@ -8083,9 +8160,10 @@ msgstr "Disabled"
 
 #: templates/components/_squadre_management.html:66
 msgid "Toglie la squadra dalle scelte, senza toccare le iscrizioni che la usano"
-msgstr "Removes the team from the choices, without touching the registrations that use it"
-"Removes the team from the choices, without touching the entries that use "
-"it"
+msgstr ""
+"Removes the team from the choices, without touching the registrations "
+"that use itRemoves the team from the choices, without touching the "
+"entries that use it"
 
 #: templates/components/_squadre_management.html:72
 msgid "Rimette la squadra fra le scelte"
@@ -9434,9 +9512,10 @@ msgstr "Play a few matches to appear in your local standings."
 
 #: templates/gamification/leaderboards.html:75
 msgid "Challenge create per gli altri, gare organizzate e proposte accettate."
-msgstr "Challenges created for others, competitions organised and proposals accepted."
+msgstr ""
 "Challenges created for others, competitions organised and proposals "
-"accepted."
+"accepted.Challenges created for others, competitions organised and "
+"proposals accepted."
 
 #: templates/gamification/leaderboards.html:77
 msgid "Punti contributo"
@@ -9448,9 +9527,10 @@ msgstr "No contribution recorded"
 
 #: templates/gamification/leaderboards.html:79
 msgid "Crea challenge, organizza gare o proponi match: la community cresce così."
-msgstr "Create challenges, organise competitions or propose matches: that is how the community grows."
+msgstr ""
 "Create challenges, organise competitions or propose matches: that is how "
-"the community grows."
+"the community grows.Create challenges, organise competitions or propose "
+"matches: that is how the community grows."
 
 #: templates/gamification/admin/dashboard.html:46
 #: templates/gamification/quests.html:10
@@ -10709,10 +10789,6 @@ msgstr "Remove this venue"
 msgid "Giorni"
 msgstr "Days"
 
-#: templates/individual_match/availability.html:111
-msgid "Salva le modifiche"
-msgstr "Save the changes"
-
 #: templates/individual_match/availability.html:119
 msgid "Aggiungi una sala"
 msgstr "Add a venue"
@@ -11867,7 +11943,7 @@ msgstr "Practise this drill"
 msgid "Registri una prova dopo l'altra, sulla stessa schermata"
 msgstr "Record one attempt after another, on the same screen"
 
-#: templates/player/challenge_detail.html:120
+#: templates/player/challenge_detail.html:135
 msgid "Errore di rete: la challenge non è stata eliminata."
 msgstr "Network error: the challenge was not deleted."
 
@@ -12542,9 +12618,9 @@ msgstr "Reject the request?"
 msgid "Nessuna richiesta in attesa."
 msgstr "No pending requests."
 
-#: utils/jinja.py:33 utils/jinja.py:80 utils/jinja.py:142 utils/jinja.py:176
-#: utils/jinja.py:199 utils/jinja.py:231 utils/jinja.py:241 utils/jinja.py:277
-#: utils/jinja.py:295 utils/jinja.py:307 utils/jinja.py:324
+#: utils/jinja.py:33 utils/jinja.py:80 utils/jinja.py:143 utils/jinja.py:177
+#: utils/jinja.py:200 utils/jinja.py:232 utils/jinja.py:242 utils/jinja.py:278
+#: utils/jinja.py:296 utils/jinja.py:308 utils/jinja.py:325
 msgid "N/A"
 msgstr "N/A"
 

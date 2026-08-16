@@ -49,6 +49,19 @@
       <div id="imagePreview" class="d-none" style="margin-top:14px;border-radius:var(--c7-r-card);overflow:hidden">
         <img alt="{{ _('Anteprima della foto') }}" style="width:100%;display:block">
       </div>
+
+      {# L'altra strada, per chi la foto non ce l'ha: si disegna. Sta qui e non
+         in cima perché è l'alternativa, non il modo consigliato — una foto del
+         tavolo vero resta la cosa più chiara che si possa dare a chi esegue. #}
+      {% if current_user.can_access('use_drill_builder') and feature_visible('challenge.diagram_builder') %}
+      <div class="c7-topline">
+        <div class="c7-kicker">{{ _("Non hai una foto?") }}</div>
+        <a href="{{ url_for('challenge.diagram_builder') }}"
+           id="goToBuilder" class="btn btn-secondary w-100" style="margin-top:8px">
+          <i class="fas fa-pen-ruler"></i>&nbsp;{{ _("Disegna il drill") }}
+        </a>
+      </div>
+      {% endif %}
     </div>
   </form>
 
@@ -75,6 +88,24 @@ document.addEventListener('DOMContentLoaded', function() {
         preview.querySelector('img').src = URL.createObjectURL(file);
         preview.classList.remove('d-none');
     });
+
+    // Passare al builder non deve costare quello che si è già scritto: il
+    // link porta a un'altra pagina, quindi la descrizione e il tipo di
+    // punteggio vanno passati a mano. Senza, si torna indietro e si riscrive.
+    const toBuilder = document.getElementById('goToBuilder');
+    if (toBuilder) {
+        toBuilder.addEventListener('click', function (e) {
+            const params = new URLSearchParams();
+            const desc = document.getElementById('description').value.trim();
+            if (desc) params.set('description', desc);
+            const scoring = document.querySelector('input[name="scoring_type"]:checked');
+            if (scoring && scoring.value === 'pass_fail') params.set('pass_fail_only', 'true');
+            if (params.toString()) {
+                e.preventDefault();
+                window.location.href = this.href + '?' + params.toString();
+            }
+        });
+    }
 
     document.getElementById('challengeForm').addEventListener('submit', function(e) {
         e.preventDefault();
