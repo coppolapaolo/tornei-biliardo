@@ -172,10 +172,19 @@ def _create_gare(db, campionato, director, venue):
         gara = GaraService.create_gara(
             number=number,
             name=name,
-            # Tutte create a oggi: `create_gara` rifiuta le date passate e le
-            # iscrizioni si aprono solo su una finestra viva. Le prime due
+            # Tutte create nel futuro: `create_gara` rifiuta le date passate e
+            # le iscrizioni si aprono solo su una finestra viva. Le prime due
             # vengono retrodatate a fine seed da `_backdate_gare`.
-            date=today if number < 3 else today + timedelta(days=14),
+            #
+            # Perche' domani e non oggi: `open_inscriptions` taglia la fine
+            # delle iscrizioni alla data della gara, e `inscribe_user` la
+            # confronta con `utc_now()`. Con le gare a oggi la finestra si
+            # chiudeva alle 17:00 UTC, e il seed lanciato di sera moriva su
+            # «Iscrizioni chiuse» — cioe' le schermate della guida non erano
+            # piu' rigenerabili fino al mattino dopo. Le date definitive le
+            # riscrive comunque `_backdate_gare`, quindi il dataset visibile
+            # non cambia.
+            date=today + timedelta(days=1 if number < 3 else 14),
             discipline=discipline,
             distance=distance,
             campionato_id=campionato.id,
@@ -206,19 +215,28 @@ def _backdate_gare(db, gare) -> None:
     """
     today = date.today()
     for gara, offset in zip(gare, (-21, -7)):
-        gara.date = today + timedelta(days=offset)
+        nuova = today + timedelta(days=offset)
+        # Le iscrizioni si spostano di quanto si sposta la gara, non di
+        # `offset`: la gara viene creata in avanti di un giorno (vedi
+        # `_create_gare`), quindi le due quantita' non coincidono e uno scarto
+        # lascerebbe le iscrizioni chiuse *dopo* la gara giocata.
+        scarto = nuova - gara.date
+        gara.date = nuova
         if gara.inscription_start:
-            gara.inscription_start += timedelta(days=offset)
+            gara.inscription_start += scarto
         if gara.inscription_end:
-            gara.inscription_end += timedelta(days=offset)
+            gara.inscription_end += scarto
     db.session.commit()
     log("gare 1 e 2 retrodatate (storico del campionato)")
 
 
 def _open_and_fill(db, gara, players):
+    from models.base import utc_now
     from models.competition.inscription_service import InscriptionService
 
-    now = datetime.now()
+    # `utc_now()` e non `datetime.now()`: e' con l'ora UTC che il servizio
+    # confronta la finestra (convenzione 1 del CLAUDE.md).
+    now = utc_now()
     InscriptionService.open_inscriptions(
         gara_id=gara.id,
         inscription_start=now - timedelta(days=14),
