@@ -171,23 +171,13 @@ blocks:
       - title: "Place the balls"
         text: "Pick a ball in the tool panel, then tap the table. It snaps by itself to the grid, to the cushion and to the other balls."
       - title: "Draw the shot, if you need one"
-        text: "The shot tool marks where the cue ball is struck and where you aim; the free line marks a path or an area. The move tool tidies up what is already on the table."
+        text: "«Shot» marks where the cue ball is struck and where you aim; «Free line» marks a path or an area. «Move» tidies up what is already on the table."
       - title: "Write the instructions"
         text: "Below the table, in «Instructions for whoever plays it»: the drawing shows the layout, not the rule. How the score is counted has to be written in words."
       - title: "Choose how it is scored"
         text: "«Scored» or «Passed or not passed»: the same two options as the ordinary form."
       - title: "Tap «Save the drill»"
         text: "It is the button at the foot of the page. The drill goes into the catalogue with the drawing as its picture, exactly as a photographed one. «Cancel» leaves without saving anything."
-
-  - type: note
-    tone: warning
-    title: "The drawing panel is still in Italian"
-    text: >-
-      The tools inside the table — «Sposta» (move), «Tiro» (shot), «Linea
-      libera» (free line), «Biglie» (balls) — are not
-      translated yet, so you will read them in Italian whatever language the
-      app is set to. Everything around them, the page you fill in and save, is
-      in English.
 
   - type: note
     tone: tip

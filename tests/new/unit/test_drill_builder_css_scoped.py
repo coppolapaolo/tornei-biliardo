@@ -139,3 +139,64 @@ def test_il_pannello_esporta_non_c_e(id_pulsante):
         f"«{id_pulsante}» è tornato nel builder: era un comando di scaricamento "
         "del tool autonomo e qui non ha senso."
     )
+
+
+# ---------------------------------------------------------------------------
+# Le parole del builder passano tutte da `_()`.
+#
+# `babel.cfg` estrae solo da `.py` e `.html`: una stringa scritta direttamente
+# in `static/js/drill-builder.js` non è raggiungibile da gettext e resterebbe
+# italiana in ogni lingua — senza che nulla si rompa, quindi senza che nessuno
+# se ne accorga finché non apre la pagina in inglese.
+#
+# Il template le passa già tradotte in `window.DRILL_BUILDER_I18N`, e il JS le
+# legge con `T_()`. Il presidio verifica le due metà: che il JS non abbia più
+# testo italiano cablato, e che ogni chiave che chiede esista nel dizionario.
+# ---------------------------------------------------------------------------
+
+PAROLE_CABLATE = [
+    '"tocco"',
+    '"spacco"',
+    '"Battente"',
+    '"Biglia fantasma"',
+    '"verticale',
+    '"laterale',
+    'toast("Clicca',
+]
+
+
+@pytest.mark.parametrize("parola", PAROLE_CABLATE)
+def test_il_js_non_ha_testo_italiano_cablato(parola):
+    """I ripieghi dentro `T_(...)` non contano: sono la rete, non l'etichetta."""
+    codice = _code_without_comments(JS.read_text(encoding="utf-8"))
+    # Toglie i ripieghi: `T_("chiave","testo italiano")` → `T_("chiave")`
+    codice = re.sub(r'T_\((\s*"[^"]*")\s*,\s*"[^"]*"\s*\)', r"T_(\1)", codice)
+    assert parola not in codice, (
+        f"{parola} è cablata in drill-builder.js: va in DRILL_BUILDER_I18N, "
+        "altrimenti resta italiana in ogni lingua."
+    )
+
+
+def test_ogni_chiave_chiesta_dal_js_esiste_nel_dizionario():
+    """Una chiave assente non dà errore: cade sul ripiego italiano, in silenzio."""
+    codice = _code_without_comments(JS.read_text(encoding="utf-8"))
+    chieste = set(re.findall(r'T_\(\s*"([^"]+)"', codice))
+
+    markup = TEMPLATE.read_text(encoding="utf-8")
+    blocco = markup.split("window.DRILL_BUILDER_I18N = {", 1)
+    assert len(blocco) == 2, "il dizionario delle traduzioni non c'è più"
+    offerte = set(re.findall(r"^\s*(\w+):", blocco[1].split("};", 1)[0], re.M))
+
+    mancanti = chieste - offerte
+    assert not mancanti, f"chiavi chieste dal JS e non tradotte: {sorted(mancanti)}"
+
+
+def test_il_dizionario_precede_lo_script():
+    """`FORCE_PRESETS` è un `const`: un dizionario definito dopo arriva tardi."""
+    markup = TEMPLATE.read_text(encoding="utf-8")
+    assert markup.index("window.DRILL_BUILDER_I18N") < markup.index(
+        "js/drill-builder.js"
+    ), (
+        "il dizionario deve stare prima dello <script src>, "
+        "o le etichette della forza restano in italiano"
+    )

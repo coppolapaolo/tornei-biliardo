@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-16 16:53+0000\n"
+"POT-Creation-Date: 2026-08-16 17:10+0000\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -872,7 +872,7 @@ msgstr ""
 msgid "Tentativo registrato."
 msgstr ""
 
-#: routes/challenge.py:618 templates/challenge/catalog.html:93
+#: routes/challenge.py:618 templates/challenge/catalog.html:96
 msgid "Non è stato possibile aggiornare i preferiti."
 msgstr ""
 
@@ -2758,6 +2758,7 @@ msgstr ""
 msgid "Click per scambiare con match occupante"
 msgstr ""
 
+#: templates/challenge/builder.html:126
 #: templates/components/_bracket_view.html:54
 #: templates/components/_gara_matches.html:57
 #: templates/components/_gara_matches.html:91
@@ -4437,12 +4438,12 @@ msgid "Le sale registrate sulla piattaforma"
 msgstr ""
 
 #: templates/challenge/_challenge_card.html:30
-#: templates/challenge/catalog.html:92
+#: templates/challenge/catalog.html:95
 msgid "Rimuovi dai preferiti"
 msgstr ""
 
 #: templates/challenge/_challenge_card.html:30
-#: templates/challenge/catalog.html:91
+#: templates/challenge/catalog.html:94
 msgid "Aggiungi ai preferiti"
 msgstr ""
 
@@ -4474,6 +4475,7 @@ msgid "Provala"
 msgstr ""
 
 #: templates/challenge/_challenge_card.html:63
+#: templates/challenge/builder.html:58
 #: templates/components/_campionato_garas.html:80
 #: templates/components/_campionato_garas.html:178
 #: templates/components/_soft_delete_modal.html:6
@@ -4545,8 +4547,8 @@ msgstr ""
 msgid "Non ci sono ancora challenge da provare."
 msgstr ""
 
-#: templates/challenge/_challenge_grid.html:15
-#: templates/challenge/catalog.html:61
+#: templates/challenge/_challenge_grid.html:16
+#: templates/challenge/catalog.html:64
 msgid "Crea la prima"
 msgstr ""
 
@@ -4562,6 +4564,240 @@ msgstr ""
 
 #: templates/challenge/builder.html:36
 msgid "Disponi le bilie e traccia i tiri: l'immagine la genera il builder"
+msgstr ""
+
+#: templates/challenge/builder.html:46
+msgid "Strumenti"
+msgstr ""
+
+#: templates/challenge/builder.html:48
+msgid "Sposta"
+msgstr ""
+
+#: templates/challenge/builder.html:49 templates/challenge/builder.html:78
+#: templates/challenge/builder.html:253
+msgid "Tiro"
+msgstr ""
+
+#: templates/challenge/builder.html:52 templates/challenge/builder.html:109
+msgid "Linea libera"
+msgstr ""
+
+#: templates/challenge/builder.html:53
+msgid "Testo"
+msgstr ""
+
+#: templates/challenge/builder.html:56
+msgid "Annulla mossa"
+msgstr ""
+
+#: templates/challenge/builder.html:57
+msgid "Ripeti mossa"
+msgstr ""
+
+#: templates/challenge/builder.html:63
+msgid "Biglie"
+msgstr ""
+
+#: templates/challenge/builder.html:65
+msgid "Calamite sponda e biglie"
+msgstr ""
+
+#: templates/challenge/builder.html:67
+msgid "Dimensione delle biglie"
+msgstr ""
+
+#: templates/challenge/builder.html:69
+msgid "in scala reale — 2,25″"
+msgstr ""
+
+#: templates/challenge/builder.html:70
+msgid "più leggibile"
+msgstr ""
+
+#: templates/challenge/builder.html:71
+msgid "stile diagramma"
+msgstr ""
+
+#: templates/challenge/builder.html:74
+msgid ""
+"Scegli una biglia, poi clicca sul tavolo. Si aggancia alla griglia, alla "
+"sponda e a contatto con le altre; un movimento fine resta libero."
+msgstr ""
+
+#: templates/challenge/builder.html:74
+msgid "Alt"
+msgstr ""
+
+#: templates/challenge/builder.html:74
+msgid "disattiva ogni aggancio."
+msgstr ""
+
+#: templates/challenge/builder.html:81
+msgid "Punto di impatto sulla bianca"
+msgstr ""
+
+#: templates/challenge/builder.html:88
+msgid "Inclinazione stecca"
+msgstr ""
+
+#: templates/challenge/builder.html:93
+msgid "Forza"
+msgstr ""
+
+#: templates/challenge/builder.html:97
+msgid ""
+"A forza 30 la biglia percorre due lunghezze di tavolo. Il percorso cresce"
+" con il quadrato della forza, si divide fra le biglie all'impatto e cala "
+"a ogni sponda; il cerchio tratteggiato segna il punto di arresto."
+msgstr ""
+
+#: templates/challenge/builder.html:99
+msgid "Aggancia la mira alla buca"
+msgstr ""
+
+#: templates/challenge/builder.html:100
+msgid "Tieni premuto e trascina per mirare libero, senza aggancio."
+msgstr ""
+
+#: templates/challenge/builder.html:101
+msgid "Traiettoria della bianca"
+msgstr ""
+
+#: templates/challenge/builder.html:102
+msgid "Traiettorie delle altre biglie"
+msgstr ""
+
+#: templates/challenge/builder.html:103
+msgid "Stecca sul tavolo"
+msgstr ""
+
+#: templates/challenge/builder.html:104
+msgid "Scheda del tiro sotto al tavolo"
+msgstr ""
+
+#: templates/challenge/builder.html:105
+msgid "Etichetta dell'angolo di taglio"
+msgstr ""
+
+#: templates/challenge/builder.html:111
+#: templates/components/_player_challenges.html:47
+#: templates/individual_match/dashboard.html:106
+#: templates/individual_match/matches.html:134
+msgid "Continua"
+msgstr ""
+
+#: templates/challenge/builder.html:112
+msgid "Tratteggiata"
+msgstr ""
+
+#: templates/challenge/builder.html:115
+msgid "Colore"
+msgstr ""
+
+#: templates/challenge/builder.html:118
+msgid "Punta a freccia"
+msgstr ""
+
+#: templates/challenge/builder.html:119
+msgid "Biglia fantasma in fondo"
+msgstr ""
+
+#: templates/challenge/builder.html:121
+msgid "Chiudi linea"
+msgstr ""
+
+#: templates/challenge/builder.html:128
+msgid "Panno"
+msgstr ""
+
+#: templates/challenge/builder.html:131
+msgid "Griglia dei diamanti"
+msgstr ""
+
+#: templates/challenge/builder.html:132
+msgid "Griglia ¼ di diamante"
+msgstr ""
+
+#: templates/challenge/builder.html:133
+msgid "Punti e linee standard"
+msgstr ""
+
+#: templates/challenge/builder.html:135
+msgid "Aggancio alla griglia"
+msgstr ""
+
+#: templates/challenge/builder.html:137
+msgid "¼ di diamante"
+msgstr ""
+
+#: templates/challenge/builder.html:138
+msgid "½ diamante"
+msgstr ""
+
+#: templates/challenge/builder.html:139
+msgid "1 diamante"
+msgstr ""
+
+#: templates/challenge/builder.html:140 templates/player/venues.html:33
+msgid "nessuno"
+msgstr ""
+
+#: templates/challenge/builder.html:144
+msgid "Orientamento"
+msgstr ""
+
+#: templates/challenge/builder.html:146
+msgid "Orizzontale"
+msgstr ""
+
+#: templates/challenge/builder.html:147
+msgid "Verticale"
+msgstr ""
+
+#: templates/challenge/builder.html:151
+msgid "Titolo del diagramma"
+msgstr ""
+
+#: templates/challenge/builder.html:152
+msgid "es. Drill 1 — Stop shot"
+msgstr ""
+
+#: templates/challenge/builder.html:157
+msgid "Posizioni standard"
+msgstr ""
+
+#: templates/challenge/builder.html:159
+msgid "Rack 9-ball"
+msgstr ""
+
+#: templates/challenge/builder.html:160
+msgid "Rack 8-ball"
+msgstr ""
+
+#: templates/challenge/builder.html:163
+msgid "Rack 10-ball"
+msgstr ""
+
+#: templates/challenge/builder.html:164
+msgid "Break 9-ball"
+msgstr ""
+
+#: templates/challenge/builder.html:167
+msgid "Wagon wheel"
+msgstr ""
+
+#: templates/challenge/builder.html:168
+msgid "Linea di stop"
+msgstr ""
+
+#: templates/challenge/builder.html:171
+#, fuzzy
+msgid "L drill"
+msgstr ""
+
+#: templates/challenge/builder.html:172
+msgid "Svuota"
 msgstr ""
 
 #: templates/challenge/builder.html:198
@@ -4594,30 +4830,128 @@ msgid "Salva le modifiche"
 msgstr ""
 
 #: templates/challenge/builder.html:241
-msgid "Il disegno salvato non si è potuto ricaricare."
+msgid "tocco"
+msgstr ""
+
+#: templates/challenge/builder.html:242
+msgid "piano"
+msgstr ""
+
+#: templates/challenge/builder.html:243
+msgid "medio"
+msgstr ""
+
+#: templates/challenge/builder.html:244
+msgid "forte"
+msgstr ""
+
+#: templates/challenge/builder.html:245
+msgid "spacco"
+msgstr ""
+
+#: templates/challenge/builder.html:246
+msgid ""
+"Attiva Tiro: la traiettoria segue il puntatore e si ricalcola in tempo "
+"reale."
+msgstr ""
+
+#: templates/challenge/builder.html:247
+msgid ""
+"Muovi per mirare. Premi e rilascia per fissare; tieni premuto e trascina "
+"per la mira fine. Esc annulla."
+msgstr ""
+
+#: templates/challenge/builder.html:248
+msgid ""
+"Clicca la biglia da giocare per iniziare a mirare. Clicca un tiro "
+"esistente per correggerlo."
+msgstr ""
+
+#: templates/challenge/builder.html:249
+msgid "Clicca una biglia per iniziare a mirare"
+msgstr ""
+
+#: templates/challenge/builder.html:250
+msgid "Battente"
+msgstr ""
+
+#: templates/challenge/builder.html:251
+msgid "Biglia fantasma"
 msgstr ""
 
 #: templates/challenge/builder.html:252
-msgid "Servono le istruzioni: il disegno da solo non dice come si conta."
+msgid "Biglia"
+msgstr ""
+
+#: templates/challenge/builder.html:254
+msgid "forza"
+msgstr ""
+
+#: templates/challenge/builder.html:255
+msgid "alto"
 msgstr ""
 
 #: templates/challenge/builder.html:256
-msgid "Il tavolo è vuoto: disponi almeno una bilia."
+msgid "basso"
+msgstr ""
+
+#: templates/challenge/builder.html:257
+msgid "sx"
+msgstr ""
+
+#: templates/challenge/builder.html:258
+msgid "dx"
+msgstr ""
+
+#: templates/challenge/builder.html:259
+msgid "verticale"
+msgstr ""
+
+#: templates/challenge/builder.html:260
+msgid "laterale"
+msgstr ""
+
+#: templates/challenge/builder.html:261
+msgid "centro"
 msgstr ""
 
 #: templates/challenge/builder.html:262
+msgid "destro"
+msgstr ""
+
+#: templates/challenge/builder.html:263
+msgid "sinistro"
+msgstr ""
+
+#: templates/challenge/builder.html:264
+msgid "1 = massimo effetto utile"
+msgstr ""
+
+#: templates/challenge/builder.html:276
+msgid "Il disegno salvato non si è potuto ricaricare."
+msgstr ""
+
+#: templates/challenge/builder.html:287
+msgid "Servono le istruzioni: il disegno da solo non dice come si conta."
+msgstr ""
+
+#: templates/challenge/builder.html:291
+msgid "Il tavolo è vuoto: disponi almeno una bilia."
+msgstr ""
+
+#: templates/challenge/builder.html:297
 msgid "Salvo…"
 msgstr ""
 
-#: templates/challenge/builder.html:268
+#: templates/challenge/builder.html:303
 msgid "Non è stato possibile generare l'immagine del drill."
 msgstr ""
 
-#: templates/challenge/builder.html:284
+#: templates/challenge/builder.html:319
 msgid "Non è stato possibile salvare il drill."
 msgstr ""
 
-#: templates/challenge/builder.html:292
+#: templates/challenge/builder.html:327
 msgid "Non è stato possibile salvare il drill. Riprova."
 msgstr ""
 
@@ -4644,56 +4978,56 @@ msgstr ""
 msgid "Diventa Esaminatore"
 msgstr ""
 
-#: templates/challenge/catalog.html:23 templates/challenge/create.html:4
+#: templates/challenge/catalog.html:24 templates/challenge/create.html:4
 #: templates/challenge/create.html:10
 #: templates/components/_challenge_management_modal.html:88
 msgid "Nuova challenge"
 msgstr ""
 
-#: templates/challenge/catalog.html:30
+#: templates/challenge/catalog.html:31
 #: templates/components/_history_filters.html:24
 #: templates/components/_history_filters.html:87
 #: templates/gamification/dashboard.html:184
 msgid "Tutte"
 msgstr ""
 
-#: templates/challenge/catalog.html:34
+#: templates/challenge/catalog.html:36
 msgid "Le mie"
 msgstr ""
 
-#: templates/challenge/catalog.html:38
+#: templates/challenge/catalog.html:40
 msgid "Preferite"
 msgstr ""
 
-#: templates/challenge/catalog.html:58
+#: templates/challenge/catalog.html:61
 msgid "Non hai ancora creato challenge"
 msgstr ""
 
-#: templates/challenge/catalog.html:59
+#: templates/challenge/catalog.html:62
 msgid ""
 "Una challenge è un esercizio ripetibile: una foto del tavolo, le regole, "
 "il punteggio."
 msgstr ""
 
-#: templates/challenge/catalog.html:78
+#: templates/challenge/catalog.html:81
 msgid "Nessuna preferita"
 msgstr ""
 
-#: templates/challenge/catalog.html:79
+#: templates/challenge/catalog.html:82
 msgid "Tocca il cuore su una challenge per ritrovarla qui."
 msgstr ""
 
-#: templates/challenge/catalog.html:94
+#: templates/challenge/catalog.html:97
 #: templates/components/_challenge_management_modal.html:151
 msgid "Errore di rete: riprova."
 msgstr ""
 
-#: templates/challenge/catalog.html:95
+#: templates/challenge/catalog.html:98
 #: templates/player/challenge_detail.html:119
 msgid "Confermi di voler eliminare questa challenge? Non si torna indietro."
 msgstr ""
 
-#: templates/challenge/catalog.html:96
+#: templates/challenge/catalog.html:99
 #: templates/player/challenge_detail.html:129
 msgid "Non è stato possibile eliminare la challenge."
 msgstr ""
@@ -7283,12 +7617,6 @@ msgstr ""
 
 #: templates/components/_player_challenges.html:35
 msgid "Il tuo risultato"
-msgstr ""
-
-#: templates/components/_player_challenges.html:47
-#: templates/individual_match/dashboard.html:106
-#: templates/individual_match/matches.html:134
-msgid "Continua"
 msgstr ""
 
 #: templates/components/_player_challenges.html:47
@@ -12019,10 +12347,6 @@ msgstr ""
 
 #: templates/player/venues.html:32
 msgid "Gestore"
-msgstr ""
-
-#: templates/player/venues.html:33
-msgid "nessuno"
 msgstr ""
 
 #: templates/player/venues.html:35

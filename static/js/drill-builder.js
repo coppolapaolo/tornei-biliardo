@@ -45,10 +45,23 @@ const MAX_DEPTH = 3;
 /* Forza in percentuale: al 30% il percorso è 2L (due lunghezze di tavolo).
    La distanza cresce con il quadrato della velocità.                      */
 const forceDist = f => 2 * L * Math.pow(f/30, 2);
-const FORCE_PRESETS = [{v:10,l:"tocco"},{v:20,l:"piano"},{v:30,l:"medio"},
-                       {v:60,l:"forte"},{v:100,l:"spacco"}];
-const forceLabel = f => f<=12 ? "tocco" : f<=22 ? "piano" : f<=45 ? "medio"
-                      : f<=80 ? "forte" : "spacco";
+
+/* Le parole che il JS compone da solo.
+
+   `babel.cfg` estrae solo da `.py` e `.html`, quindi una stringa scritta qui
+   non passerebbe mai da `_()` e resterebbe italiana in ogni lingua. Il
+   template le mette in `window.DRILL_BUILDER_I18N` gia' tradotte; il ripiego
+   qui sotto e' l'italiano, cosi' la pagina non si svuota se il dizionario
+   manca. */
+const T_ = (chiave, ripiego) =>
+  (window.DRILL_BUILDER_I18N && window.DRILL_BUILDER_I18N[chiave]) || ripiego;
+
+const FORCE_PRESETS = [{v:10,l:T_("forceTouch","tocco")},{v:20,l:T_("forceSoft","piano")},
+                       {v:30,l:T_("forceMedium","medio")},{v:60,l:T_("forceHard","forte")},
+                       {v:100,l:T_("forceBreak","spacco")}];
+const forceLabel = f => f<=12 ? T_("forceTouch","tocco") : f<=22 ? T_("forceSoft","piano")
+                      : f<=45 ? T_("forceMedium","medio") : f<=80 ? T_("forceHard","forte")
+                      : T_("forceBreak","spacco");
 
 const CARD_W = 250, CARD_H = 136, CARD_GAP = 10;
 
@@ -476,7 +489,7 @@ function drawShotCard(root, sh, idx, x, y, sel){
   const T=(x,y,s,o)=>{const t=E("text",Object.assign({x,y,
     "font-family":"Arial, Helvetica, sans-serif","font-size":11,fill:"#8d97a3"},o||{}),g);
     t.textContent=s; return t;};
-  T(12,20,"Tiro "+idx,{fill:"#f5c518","font-weight":"700","font-size":12,"letter-spacing":"1"});
+  T(12,20,T_("shotN","Tiro")+" "+idx,{fill:"#f5c518","font-weight":"700","font-size":12,"letter-spacing":"1"});
 
   const cx=46, cy=74, r=27, tip=sh.tip||{x:0,y:0};
   E("circle",{cx,cy,r,fill:"#fbfaf6",stroke:"#c9ccc8","stroke-width":1.2},g);
@@ -498,7 +511,7 @@ function drawShotCard(root, sh, idx, x, y, sel){
   T(CARD_W-14,26,sh.elev+"\u00B0 stecca",{"text-anchor":"end",fill:"#e8eaed","font-weight":"700","font-size":12});
 
   const f = sh.force==null?30:sh.force;
-  T(12,CARD_H-12,"forza · "+f+"% "+forceLabel(f),{fill:"#e8eaed","font-weight":"600","font-size":11.5});
+  T(12,CARD_H-12,T_("force","forza")+" · "+f+"% "+forceLabel(f),{fill:"#e8eaed","font-weight":"600","font-size":11.5});
   for (let i=1;i<=10;i++)
     E("rect",{x:CARD_W-14-(10-i+1)*10, y:CARD_H-21, width:7, height:10, rx:1.5,
       fill: i*10<=f ? "#f5c518" : "#333b45"},g);
@@ -610,10 +623,10 @@ function render(){
   document.querySelectorAll("[data-tool]").forEach(b=>b.classList.toggle("on",b.dataset.tool===state.tool));
   document.querySelectorAll("[data-lstyle]").forEach(b=>b.classList.toggle("on",b.dataset.lstyle===state.lineStyle));
   $("#shotHint").textContent = state.tool!=="shot"
-    ? "Attiva Tiro: la traiettoria segue il puntatore e si ricalcola in tempo reale."
+    ? T_("hintTool","Attiva Tiro: la traiettoria segue il puntatore e si ricalcola in tempo reale.")
     : state.aiming
-      ? "Muovi per mirare. Premi e rilascia per fissare; tieni premuto e trascina per la mira fine. Esc annulla."
-      : "Clicca la biglia da giocare per iniziare a mirare. Clicca un tiro esistente per correggerlo.";
+      ? T_("hintAiming","Muovi per mirare. Premi e rilascia per fissare; tieni premuto e trascina per la mira fine. Esc annulla.")
+      : T_("hintPick","Clicca la biglia da giocare per iniziare a mirare. Clicca un tiro esistente per correggerlo.");
   renderPalette(); renderTip(); syncShotControls();
 }
 
@@ -627,7 +640,9 @@ function renderPalette(){
     const b = document.createElement("button");
     b.className = "pball" + (state.armed===k?" armed":"") +
       (k!=="ghost" && state.items.some(i=>i.type==="ball"&&i.ball===k) ? " used":"");
-    b.title = k==="cue"?"Battente":k==="ghost"?"Biglia fantasma":"Biglia "+k;
+    b.title = k==="cue" ? T_("ballCue","Battente")
+            : k==="ghost" ? T_("ballGhost","Biglia fantasma")
+            : T_("ballN","Biglia") + " " + k;
     const s = document.createElementNS(NS,"svg");
     s.setAttribute("viewBox","-12 -12 24 24");
     ballSvg(E("g",{},s), k, 0, 0, 10);
@@ -653,12 +668,13 @@ function renderTip(){
   E("circle",{cx:t.x*R,cy:-t.y*R,r:7,fill:"#e63946",stroke:"#fff","stroke-width":2},sv);
   const lab=(x,y,s)=>{const e=E("text",{x,y,"text-anchor":"middle","font-size":8.5,
     fill:"#7c848c","font-family":"IBM Plex Sans, sans-serif"},sv); e.textContent=s;};
-  lab(0,-R-4,"alto"); lab(0,R+10,"basso"); lab(-R-14,3,"sx"); lab(R+14,3,"dx");
+  lab(0,-R-4,T_("up","alto")); lab(0,R+10,T_("down","basso"));
+  lab(-R-14,3,T_("leftShort","sx")); lab(R+14,3,T_("rightShort","dx"));
   const v = x => (Math.abs(x)/TIP_MAX).toFixed(1).replace(".0","");
   $("#tipinfo").innerHTML =
-    `verticale <b>${t.y>0?"alto "+v(t.y):t.y<0?"basso "+v(t.y):"centro"}</b><br>`+
-    `laterale <b>${t.x>0?"destro "+v(t.x):t.x<0?"sinistro "+v(t.x):"centro"}</b><br>`+
-    `<span style="font-size:10.5px">1 = massimo effetto utile</span>`;
+    `${T_("vertical","verticale")} <b>${t.y>0?T_("up","alto")+" "+v(t.y):t.y<0?T_("down","basso")+" "+v(t.y):T_("center","centro")}</b><br>`+
+    `${T_("lateral","laterale")} <b>${t.x>0?T_("right","destro")+" "+v(t.x):t.x<0?T_("left","sinistro")+" "+v(t.x):T_("center","centro")}</b><br>`+
+    `<span style="font-size:10.5px">${T_("spinMax","1 = massimo effetto utile")}</span>`;
 }
 (function tipDrag(){
   const sv = $("#tipsvg"); let on = false;
@@ -779,7 +795,7 @@ stage.addEventListener("pointerdown", ev=>{
     if (sh){ push();
       state.aiming = {shotId:sh.id, cueId:sh.cueId, aim:clampPt(raw), hold:false, free:false};
       state.sel = sh.id; render(); return; }
-    toast("Clicca una biglia per iniziare a mirare");
+    toast(T_("toastPickBall","Clicca una biglia per iniziare a mirare"));
     return;
   }
 
