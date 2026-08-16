@@ -152,7 +152,7 @@
     {# Niente "analisi della prestazione": era una percentuale calcolata su un
        massimo che il modello non ha. #}
     <div class="c7-actionbar">
-      <a href="{{ url_for('challenge.start_attempt', challenge_id=challenge.id) }}" class="btn btn-primary w-100">
+      <a href="{{ url_for('challenge.training_session', challenge_id=challenge.id) }}" class="btn btn-primary w-100">
         <i class="fas fa-redo"></i>&nbsp;{{ _("Riprova") }}
       </a>
       <a href="{{ url_for('challenge.challenge_detail', challenge_id=challenge.id) }}"

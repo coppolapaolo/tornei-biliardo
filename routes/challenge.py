@@ -223,6 +223,107 @@ def start_attempt(challenge_id):
             )
 
 
+@challenge_bp.route("/<int:challenge_id>/train", methods=["GET", "POST"])
+@login_required
+def training_session(challenge_id):
+    """Ci si allena qui: una schermata sola, una prova dopo l'altra.
+
+    Non c'è nessuna entità «sessione»: è solo navigazione. Quello che resta a
+    DB sono i singoli ``ChallengeAttempt``, ciascuno già completo — il gruppo
+    «le prove di stasera» non è un fatto di dominio, e inventargli una tabella
+    avrebbe voluto dire aprirla, chiuderla e poi ripulire quelle rimaste
+    aperte quando uno chiude il browser a metà.
+
+    La POST registra **una prova intera** e risponde in JSON: la pagina resta
+    dov'è. Il percorso della gara (drill al posto del bye) non passa di qui —
+    ha un contesto e conseguenze in classifica, e continua da
+    ``start_attempt``.
+    """
+    challenge = db.get_or_404(Challenge, challenge_id)
+
+    if not challenge.is_active:
+        flash(_("Questo drill non è più disponibile."), "warning")
+        return redirect(url_for("challenge.challenge_catalog"))
+
+    if current_user.is_admin:
+        flash(_("Gli amministratori non provano i drill."), "warning")
+        return redirect(
+            url_for("challenge.challenge_detail", challenge_id=challenge_id)
+        )
+
+    if request.method == "GET":
+        return render_template(
+            "challenge/training.html",
+            challenge=challenge,
+            attempts=_recent_attempts(challenge_id),
+            best_score=_best_score(challenge),
+        )
+
+    data = (request.get_json(silent=True) if request.is_json else request.form) or {}
+    score, passed, notes = _parse_complete_attempt_payload(data)
+
+    def _record():
+        attempt = ChallengeService.record_attempt(
+            user_id=current_user.id,
+            challenge_id=challenge_id,
+            score=score,
+            passed=passed,
+            notes=notes,
+        )
+        # Il dict torna al chiamante dentro la risposta JSON: la pagina
+        # aggiorna in posto l'elenco e il record, senza ricaricarsi.
+        return {
+            "attempt": {
+                "id": attempt.id,
+                "score": attempt.score,
+                "passed": attempt.passed,
+                "notes": attempt.notes,
+                "attempted_at": attempt.attempted_at.isoformat(),
+            },
+            "attempts_count": ChallengeAttempt.query.filter_by(
+                user_id=current_user.id, challenge_id=challenge_id, completed=True
+            ).count(),
+            "best_score": _best_score(challenge),
+        }
+
+    return handle_ajax_service_action(
+        action=_record,
+        redirect_url=url_for("challenge.training_session", challenge_id=challenge_id),
+        success_message=_("Prova registrata."),
+        error_prefix=None,
+    )
+
+
+def _recent_attempts(challenge_id, limit=10):
+    """Le ultime prove di chi sta guardando, la più recente per prima.
+
+    Sopravvive a un ricaricamento della pagina proprio perché è ricavata dai
+    tentativi e non da uno stato di sessione: chi torna sul drill domani
+    ritrova comunque com'era andata.
+    """
+    return (
+        ChallengeAttempt.query.filter_by(
+            user_id=current_user.id, challenge_id=challenge_id, completed=True
+        )
+        .order_by(ChallengeAttempt.attempted_at.desc(), ChallengeAttempt.id.desc())
+        .limit(limit)
+        .all()
+    )
+
+
+def _best_score(challenge):
+    """Il record personale, o ``None`` se il drill è riuscita-o-no.
+
+    Su un pass/fail il punteggio è solo la rappresentazione 1/0 dell'esito:
+    mostrarlo come «record» direbbe «il tuo record è 1», che non vuol dire
+    niente.
+    """
+    if challenge.pass_fail_only:
+        return None
+    best = challenge.get_user_best_attempt(current_user.id)
+    return best.score if best else None
+
+
 @challenge_bp.route("/attempt/<int:attempt_id>")
 @login_required
 @challenge_attempt_player_required

@@ -220,7 +220,8 @@ Per costruire la production allowlist, scorri ogni area in Sezione 1 e marca esp
 | `/challenges/<int:challenge_id>` | GET | `challenge.challenge_detail` | `@login_required` | UI page | Dettaglio challenge |
 | `/challenges/<int:challenge_id>/edit` | GET, POST | `challenge.edit_challenge` | `@director_required` | UI page + action | Modifica challenge |
 | `/challenges/<int:challenge_id>/delete` | POST | `challenge.delete_challenge` | `@director_required` | action | Soft delete challenge |
-| `/challenges/<int:challenge_id>/attempt` | GET, POST | `challenge.start_attempt` | `@login_required` | UI page + action | Inizia tentativo challenge |
+| `/challenges/<int:challenge_id>/train` | GET, POST | `challenge.training_session` | `@login_required` | UI page + action | Allenamento: registra una prova dopo l'altra sulla stessa schermata |
+| `/challenges/<int:challenge_id>/attempt` | GET, POST | `challenge.start_attempt` | `@login_required` | UI page + action | Inizia tentativo challenge (percorso gara: drill al posto del bye) |
 | `/challenges/attempt/<int:attempt_id>` | GET | `challenge.attempt_detail` | `@login_required` | UI page | Dettaglio tentativo |
 | `/challenges/attempt/<int:attempt_id>/complete` | POST | `challenge.complete_attempt` | `@login_required` | action | Completa tentativo challenge |
 | `/challenges/<int:challenge_id>/favorite` | POST | `challenge.toggle_favorite` | `@login_required` | action | Aggiungi/rimuovi dai preferiti |
