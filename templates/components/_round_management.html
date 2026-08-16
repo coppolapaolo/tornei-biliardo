@@ -70,9 +70,15 @@
                  style="height:48px;background:var(--c7-card)"
                  min="1" max="15" value="{{ gara.distance }}" onchange="updateRoundConfig({{ round_num }})">
         </div>
-        <label class="c7-pill" style="height:48px;background:var(--c7-card);cursor:pointer">
+        {# Sul tabellone il numero esatto non si sceglie, nemmeno per un solo
+           turno: conta chi passa, e i rack dopo il vincitore non cambiano
+           niente. La casella resta nel DOM perche' `updateRoundConfig` la
+           legge, ma nascosta e sempre spenta; il server rifiuta comunque
+           l'override (`upsert_round_config`). #}
+        <label class="c7-pill" style="height:48px;background:var(--c7-card);cursor:pointer{% if gara.matchmaking_strategy in bracket_minimum_players %};display:none{% endif %}">
           <input class="form-check-input m-0 me-2" type="checkbox" id="roundExactNumber{{ round_num }}"
-                 onchange="updateRoundConfig({{ round_num }})" {% if not gara.is_race_to %}checked{% endif %}>
+                 onchange="updateRoundConfig({{ round_num }})"
+                 {% if not gara.is_race_to and gara.matchmaking_strategy not in bracket_minimum_players %}checked{% endif %}>
           {{ _('Esatto') }}
         </label>
       </div>

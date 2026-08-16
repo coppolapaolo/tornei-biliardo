@@ -998,6 +998,30 @@ def upsert_round_config(gara_id: int, round_number: int):
 
     payload = request.get_json(silent=True) or {}
 
+    # Sui formati a tabellone il numero esatto di rack non e' ammesso (conta
+    # solo chi passa il turno), e l'override per turno era l'ultima porta
+    # rimasta aperta: `Match.effective_is_race_to` legge la RoundConfiguration
+    # **prima** dei default della gara (ADR-027), quindi da qui si poteva
+    # ancora ottenere un match a rack esatti — e con un numero pari un nodo
+    # senza vincitore, che blocca la generazione del turno successivo.
+    from models.matchmaking.configuration import BRACKET_STRATEGIES
+
+    if gara.matchmaking_strategy in BRACKET_STRATEGIES:
+        chiede_esatto = payload.get("is_race_to") is False
+        chiede_set_esatti = payload.get("is_race_to_sets") is False
+        if chiede_esatto or chiede_set_esatti:
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "error": "Sul tabellone si gioca sempre a chi arriva "
+                        "prima: il numero esatto di rack non è ammesso, "
+                        "nemmeno per un singolo turno.",
+                    }
+                ),
+                400,
+            )
+
     @transactional(domain="competition")
     def _persist() -> RoundConfiguration:
         return RoundConfiguration.create_or_update(

@@ -408,3 +408,85 @@ class TestDefaultDelCampionato:
 
         assert 'id="default_rounds_count"' in pagina
         assert 'id="default_odd_policy"' in pagina
+
+
+class TestOverridePerTurno:
+    """L'override per turno era l'ultima porta aperta sul numero esatto.
+
+    Le tre schermate di creazione/modifica non lo chiedono più e il parser lo
+    impone, ma `RoundConfiguration` scavalca i default della gara
+    (`Match.effective_is_race_to`, ADR-027): da lì si poteva ancora ottenere un
+    match a rack esatti su un tabellone — e con un numero pari un nodo senza
+    vincitore, che blocca la generazione del turno successivo.
+    """
+
+    def _gara_setup(self, db_session, director, strategy="direct_elimination"):
+        from models import Gara
+
+        gara = Gara(
+            director_id=director.id,
+            number=db_session.query(Gara).count() + 1,
+            name=f"G {uuid.uuid4().hex[:6]}",
+            date=date.today() + timedelta(days=10),
+            discipline="9_ball",
+            distance=5,
+            is_race_to=True,
+            rounds_count=4,
+            min_participants=4,
+            max_participants=16,
+            matchmaking_strategy=strategy,
+        )
+        db_session.add(gara)
+        db_session.commit()
+        return gara
+
+    def test_il_numero_esatto_e_rifiutato_anche_per_un_solo_turno(
+        self, client, db_session, director
+    ):
+        gara = self._gara_setup(db_session, director)
+        _login(client, director)
+
+        risposta = client.post(
+            f"/admin/gara/{gara.id}/round-config/1",
+            json={"distance": 5, "is_race_to": False},
+        )
+
+        assert risposta.status_code == 400
+        assert "chi arriva prima" in risposta.get_json()["error"]
+
+    def test_anche_i_set_esatti_sono_rifiutati(self, client, db_session, director):
+        gara = self._gara_setup(db_session, director)
+        _login(client, director)
+
+        risposta = client.post(
+            f"/admin/gara/{gara.id}/round-config/1",
+            json={"is_multi_set": True, "match_distance": 3, "is_race_to_sets": False},
+        )
+
+        assert risposta.status_code == 400
+
+    def test_gli_altri_override_restano_ammessi(self, client, db_session, director):
+        """Il turno può ancora cambiare disciplina e distanza: quelli servono."""
+        gara = self._gara_setup(db_session, director)
+        _login(client, director)
+
+        risposta = client.post(
+            f"/admin/gara/{gara.id}/round-config/1",
+            json={"discipline": "8_ball", "distance": 7, "is_race_to": True},
+        )
+
+        assert risposta.status_code == 200
+
+    def test_fuori_dal_tabellone_il_numero_esatto_resta(
+        self, client, db_session, director
+    ):
+        """Non-regressione: su un girone l'override serve e non si tocca."""
+        gara = self._gara_setup(db_session, director, strategy="amalfi")
+        _login(client, director)
+
+        risposta = client.post(
+            f"/admin/gara/{gara.id}/round-config/1",
+            json={"distance": 4, "is_race_to": False},
+        )
+
+        assert risposta.status_code == 200
