@@ -41,10 +41,12 @@ blocks:
 
   - type: text
     text: >-
-      L'opzione si chiama **separazione dei compagni** e si accende quando la
-      gara è ancora in bozza. È una scelta che va fatta prima, non dopo:
-      accendendola a iscrizioni avviate ti ritroveresti metà iscritti senza
-      squadra.
+      L'opzione si chiama **Evita incontri fra compagni di squadra nei primi
+      turni** e sta nel riquadro «Opzioni del tabellone», che compare solo
+      scegliendo eliminazione diretta o doppio KO: è al sorteggio del tabellone
+      che la separazione ha modo di lavorare. Accendila quando la gara è ancora
+      in bozza. È una scelta che va fatta prima, non dopo: accendendola a
+      iscrizioni avviate ti ritroveresti metà iscritti senza squadra.
 
   - type: shot
     shot: gara-squadre
@@ -72,11 +74,20 @@ blocks:
 
   - type: text
     text: >-
-      Quando le squadre sono attive, iscrivendoti alla gara ti viene chiesto per
-      chi giochi. Se hai compilato la squadra nel profilo, la trovi già
-      proposta. **Nessuna squadra** è una risposta legittima, non un campo
-      lasciato vuoto per distrazione: significa che quella sera giochi per conto
-      tuo.
+      Quando le squadre sono attive, appena ti iscrivi si apre da solo un
+      riquadro che chiede **«Con che squadra giochi?»**. La domanda arriva lì,
+      subito, e non in fondo a una linguetta: la squadra serve al sorteggio, e
+      un sorteggio che riceve quasi tutte le iscrizioni senza squadra non ha su
+      cosa lavorare.
+
+  - type: text
+    text: >-
+      Se hai compilato la squadra nel profilo, la trovi già proposta.
+      **Nessuna squadra** è una risposta legittima, non un campo lasciato vuoto
+      per distrazione: significa che quella sera giochi per conto tuo. Se
+      chiudi il riquadro senza rispondere non succede nulla di male:
+      l'iscrizione resta valida e la stessa scelta ti aspetta nella linguetta
+      **Iscritti** della gara.
 
   - type: heading
     id: come_funziona
@@ -102,8 +113,8 @@ blocks:
     items:
       - q: "Ho messo la squadra nel profilo ma nella gara non compare."
         a: "La squadra del profilo precompila soltanto: se la gara non ha le squadre attive, non viene chiesta né usata."
-      - q: "Posso cambiare squadra a gara iniziata?"
-        a: "No. Le squadre si decidono entro l'apertura delle iscrizioni: cambiarle dopo il sorteggio renderebbe incoerente la separazione già applicata."
+      - q: "Fino a quando posso cambiare squadra?"
+        a: "Fino al sorteggio del primo turno. Da quel momento il tabellone è già stato costruito tenendo conto delle squadre, e cambiarle renderebbe incoerente la separazione già applicata."
       - q: "Due compagni si sono comunque incontrati."
         a: "O era matematicamente inevitabile al primo turno, o si sono incontrati in un turno successivo, dove gli abbinamenti seguono la classifica."
       - q: "Le squadre danno una classifica a squadre?"

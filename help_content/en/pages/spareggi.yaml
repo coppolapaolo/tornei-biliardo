@@ -88,7 +88,13 @@ blocks:
 
   - type: list
     items:
-      - "**Bracket competitions**: the path already establishes the order, there are no level finishes to settle."
+      - >-
+        **Bracket competitions**: the option is not even asked for at creation.
+        Level finishes do exist there — the two beaten semi-finalists are both
+        third, the four quarter-finalists all fifth — but they are the intended
+        result, not an ambiguity: the path already is the standings. If you want
+        to separate the two third places, the way to do it is the **3rd/4th
+        place final**, planned at creation.
       - "**Outside the positions you specified**: level finishes stand, two players share the position and the next one is skipped."
       - "**If tie-breaks are switched off**: the standings keep the level finishes as they are."
 

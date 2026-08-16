@@ -61,6 +61,26 @@ blocks:
       schermata da proiettare in sala, se avete uno schermo.
 
   - type: heading
+    id: sorteggio
+    title: "Il sorteggio"
+
+  - type: text
+    text: >-
+      Un tabellone non si «avvia» come un turno: si **estrae**. Nel pannello
+      Gestione il direttore trova il pulsante **Sorteggia il tabellone** (nelle
+      gare a turni lo stesso posto dice «Avvia Primo Turno»), e l'app chiede
+      conferma prima di procedere.
+
+  - type: note
+    tone: warning
+    title: "Il sorteggio decide tutto in una volta"
+    text: >-
+      Con il sorteggio le iscrizioni si chiudono, le squadre si congelano e il
+      percorso di ogni giocatore fino alla finale è fissato: chi incontrerebbe
+      ai quarti, chi in semifinale, chi in finale. Si torna indietro solo
+      annullando il sorteggio, che rifà tutti gli abbinamenti da capo.
+
+  - type: heading
     id: quanti_turni
     title: "Quanti turni escono"
 
@@ -69,6 +89,13 @@ blocks:
       Il tabellone si dimensiona sugli iscritti effettivi. Con 8 giocatori sono
       quarti, semifinali e finale: tre turni, sette partite. Con 16 se ne
       aggiunge uno.
+
+  - type: text
+    text: >-
+      Per questo il numero di turni non si imposta alla creazione: lo fissa il
+      sorteggio, su chi si presenta davvero. Prima di sorteggiare, nella scheda
+      della gara il numero è marcato **(stima)**, calcolata sulla capienza
+      massima dichiarata; dopo il sorteggio è quello definitivo.
 
   - type: text
     text: >-
@@ -86,12 +113,16 @@ blocks:
     text: >-
       Nell'eliminazione diretta il direttore può prevedere la **finalina** fra
       i due che hanno perso le semifinali. Non allunga la gara di un turno: si
-      gioca insieme alla finale.
+      gioca insieme alla finale. Senza finalina restano terzi a pari merito
+      tutti e due.
 
   - type: text
     text: >-
-      Nel doppio KO non serve: il terzo posto lo determina già il percorso dei
-      ripescaggi.
+      Nel doppio KO pieno non serve, e infatti non viene nemmeno proposta: il
+      terzo è chi perde la finale dei ripescaggi, ed è un risultato sul campo.
+      Torna invece disponibile nel doppio KO **a gironi**, perché lì il
+      tabellone finale è a eliminazione diretta e i due semifinalisti sconfitti
+      sono di nuovo appaiati.
 
   - type: heading
     id: doppio_ko
@@ -121,13 +152,25 @@ blocks:
     text: >-
       Non si conta per vittorie o per rack: la classifica **è** il percorso.
       Chi vince il torneo è primo, chi perde la finale secondo, e così via. In
-      un campionato ogni posizione vale un certo numero di punti. Vedi [Come si
-      calcolano le classifiche](/aiuto/approfondimenti/classifiche).
+      un campionato ogni posizione vale un certo numero di punti, che il
+      direttore può configurare. Vedi [Come si calcolano le
+      classifiche](/aiuto/approfondimenti/classifiche).
+
+  - type: note
+    tone: info
+    title: "I pari merito qui non si spareggiano"
+    text: >-
+      Su un tabellone si esce a coppie: i due semifinalisti sconfitti sono
+      entrambi terzi, i quattro quartifinalisti tutti quinti. Non è
+      un'ambiguità da sciogliere, è quello che dice il percorso — e infatti nelle
+      gare a tabellone lo spareggio non viene nemmeno proposto alla creazione.
 
   - type: faq
     items:
       - q: "Non vedo l'icona del tabellone."
         a: "La gara non usa una strategia a tabellone: con Amalfi, casuale o girone all'italiana non c'è un percorso da disegnare, e la vista non esiste."
+      - q: "Il direttore ha premuto «Sorteggia il tabellone». Posso ancora cambiare la mia squadra?"
+        a: "No. La squadra si sceglie iscrivendosi e resta cambiabile fino al sorteggio: da quel momento il tabellone è già stato costruito tenendo conto delle squadre, e cambiarle lo renderebbe incoerente."
       - q: "Ho perso al primo turno: la mia gara è finita?"
         a: "Con l'eliminazione diretta sì. Con il doppio KO no: scendi nel tabellone dei ripescaggi e puoi ancora risalire."
       - q: "Perché qualcuno non ha giocato il primo turno?"

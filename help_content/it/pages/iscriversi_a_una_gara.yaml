@@ -53,6 +53,14 @@ blocks:
           data in cui ti sei iscritto, e il tuo nome entra nell'elenco degli
           iscritti. Se non vedi quel riquadro, l'iscrizione non è avvenuta.
         shot: gara-iscritto
+      - title: "Se ti chiede la squadra, rispondi"
+        text: >-
+          Su alcune gare, subito dopo l'iscrizione, si apre da solo un riquadro
+          che chiede **«Con che squadra giochi?»**. Succede quando quella gara
+          tiene lontani i compagni di squadra nel sorteggio: la tua risposta
+          serve proprio a quello. **Senza squadra** è una risposta legittima, e
+          puoi cambiarla finché il tabellone non è sorteggiato. Vedi [Le
+          squadre](/aiuto/organizzare/squadre).
 
   - type: note
     tone: tip
@@ -125,3 +133,5 @@ blocks:
         a: "No. La quota indicata sulla scheda è informativa: si paga sul posto, secondo le abitudini del circolo."
       - q: "Mi sono iscritto per sbaglio a una gara sbagliata."
         a: "Disiscriviti subito dalla scheda della gara: finché le iscrizioni sono aperte è immediato e non lascia traccia."
+      - q: "Mi ha chiesto la squadra e ho chiuso il riquadro senza rispondere."
+        a: "Non è un problema: l'iscrizione è valida lo stesso. La squadra la trovi nella linguetta Iscritti della gara e puoi indicarla finché il tabellone non è sorteggiato."

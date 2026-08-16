@@ -125,6 +125,16 @@ blocks:
       work. After the start, the only routes are cancelling the round and
       redrawing — or letting their opponent win by forfeit.
 
+  - type: note
+    tone: info
+    title: "In bracket competitions the button has a different name"
+    text: >-
+      With knockout and double elimination you find **Draw the bracket** in
+      place of **Start First Round**, and there the list of entrants counts
+      double: that one action creates everybody's path to the final, closes
+      registrations and freezes the teams. A no-show removed a minute later
+      costs you a bracket to redo. See [The bracket](/aiuto/giocare/tabellone).
+
   - type: faq
     items:
       - q: "Can I reopen registrations after closing them?"

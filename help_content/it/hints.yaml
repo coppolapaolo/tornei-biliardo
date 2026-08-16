@@ -83,7 +83,7 @@ hints:
 
   - id: gara.dispari
     label: "Se i giocatori sono dispari"
-    short: "Con un numero dispari uno resterebbe senza avversario: riposo, riposo con challenge, partita a tre o lista d'attesa."
+    short: "Riposo, riposo con challenge, partita a tre o lista d'attesa. Sui tabelloni non si chiede: chi resta fuori dal conto passa il turno."
     anchor: gara-dispari
     screens: [admin.competition.create_gara_standalone]
     page: numero_dispari
@@ -91,7 +91,7 @@ hints:
 
   - id: gara.classifica_sistema
     label: "Sistema di classifica"
-    short: "Vittorie conta le partite vinte, Rack i rack totali, Posizione il piazzamento nel tabellone."
+    short: "Vittorie conta le partite vinte, Rack i rack totali. Sui tabelloni non compare: lì la classifica è per posizione e basta."
     anchor: gara-classifica-sistema
     screens: [admin.competition.create_gara_standalone]
     page: classifiche
@@ -99,11 +99,35 @@ hints:
 
   - id: gara.anti_rematch
     label: "Evita reincontri"
-    short: "Impedisce che due giocatori si affrontino due volte nella stessa gara, quando è matematicamente possibile."
+    short: "Impedisce che due giocatori si affrontino due volte nella stessa gara. Sui tabelloni non si chiede: chi perde esce."
     anchor: gara-anti-rematch
     screens: [admin.competition.create_gara_standalone]
     page: abbinamenti
     section: amalfi
+
+  - id: gara.separazione_squadre
+    label: "Evita incontri fra compagni di squadra"
+    short: "Il sorteggio del tabellone allontana i compagni il più possibile. Con squadre numerose il derby viene rinviato, non evitato."
+    anchor: gara-separazione-squadre
+    screens: [admin.competition.create_gara_standalone]
+    page: squadre
+    section: come_funziona
+
+  - id: gara.finalina
+    label: "Finale per il 3°/4° posto"
+    short: "I due semifinalisti sconfitti si giocano il terzo posto, nel turno della finale. Senza, sono terzi a pari merito."
+    anchor: gara-finalina
+    screens: [admin.competition.create_gara_standalone]
+    page: tabellone
+    section: terzo_posto
+
+  - id: gara.fase_gironi
+    label: "Fase a gironi"
+    short: "Doppio KO dentro gironi paralleli: ognuno qualifica quattro giocatori — due imbattuti e due ripescati — al tabellone finale."
+    anchor: gara-fase-gironi
+    screens: [admin.competition.create_gara_standalone]
+    page: tabellone
+    section: doppio_ko
 
   - id: gara.handicap
     label: "Gioco con handicap"
@@ -115,7 +139,7 @@ hints:
 
   - id: gara.forfait
     label: "Gestione forfait"
-    short: "Cosa fare di chi abbandona: lasciarlo negli abbinamenti facendogli perdere a tavolino, o toglierlo del tutto."
+    short: "Chi abbandona resta negli abbinamenti perdendo a tavolino, oppure ne esce. Sui tabelloni non si chiede: è sempre a tavolino."
     anchor: gara-forfait
     screens: [admin.competition.create_gara_standalone]
     page: opzioni_della_gara
@@ -123,7 +147,7 @@ hints:
 
   - id: gara.numero_esatto
     label: "Numero esatto di rack"
-    short: "Si giocano tutti i rack previsti anche a risultato deciso. Serve quando la classifica conta i rack, non le vittorie."
+    short: "Si giocano tutti i rack previsti anche a risultato deciso. Serve alla classifica a rack. Sui tabelloni non c'è: si va sempre a chi arriva prima."
     anchor: gara-numero-esatto
     screens: [admin.competition.create_gara_standalone]
     page: formati_di_gioco
@@ -139,11 +163,19 @@ hints:
 
   - id: gara.spareggio
     label: "Spareggio"
-    short: "Fino a che posizione sciogliere i pari merito con una prova aggiuntiva. Di norma il podio."
+    short: "Fino a che posizione sciogliere i pari merito con una prova aggiuntiva. Di norma il podio. Sui tabelloni non si chiede."
     anchor: gara-spareggio
     screens: [admin.competition.create_gara_standalone]
     page: classifiche
     section: pari_merito
+
+  - id: gara.numero_turni
+    label: "Numero di turni"
+    short: "Quanti giri di partite. Sui tabelloni non si imposta: lo fissa il sorteggio, sugli iscritti che si presentano."
+    anchor: gara-numero-turni
+    screens: [admin.competition.create_gara_standalone]
+    page: opzioni_della_gara
+    section: struttura
 
   - id: gara.tavoli
     label: "Tavoli disponibili"
@@ -170,6 +202,22 @@ hints:
     screens: [admin.competition.gara_detail]
     page: condurre_la_gara
     section: turni_successivi
+
+  - id: gara.sorteggia_tabellone
+    label: "Sorteggia il tabellone"
+    short: "Nelle gare a tabellone sostituisce «Avvia Primo Turno»: chiude le iscrizioni, congela le squadre e fissa il percorso di tutti fino alla finale."
+    anchor: gara-sorteggia-tabellone
+    screens: [admin.competition.gara_detail]
+    page: tabellone
+    section: sorteggio
+
+  - id: gara.squadra_iscrizione
+    label: "Con che squadra giochi?"
+    short: "Te lo chiede appena ti iscrivi, se la gara tiene lontani i compagni nel sorteggio. «Senza squadra» è una risposta, e si può cambiare fino al sorteggio."
+    anchor: gara-squadra-iscrizione
+    screens: [admin.competition.gara_detail]
+    page: squadre
+    section: iscriversi
 
   # --- Pagina della partita ------------------------------------------------
   - id: partita.punteggio
@@ -247,6 +295,14 @@ hints:
     page: creare_un_campionato
     section: passo1
 
+  - id: campionato.punti_posizione
+    label: "Punti per posizione"
+    short: "Quanti punti vale ogni piazzamento nelle gare a tabellone. Si indicano sei bande: chi le condivide prende lo stesso punteggio."
+    anchor: campionato-punti-posizione
+    screens: [admin.campionato.edit_campionato]
+    page: creare_un_campionato
+    section: punti_posizione
+
 
 tours:
   - screen: dashboard.dashboard
@@ -292,3 +348,5 @@ tours:
       - hint: gara.strategia
       - hint: gara.dispari
       - hint: gara.classifica_sistema
+      - title: "Se scegli un tabellone"
+        text: "Con eliminazione diretta e doppio KO metà delle domande sparisce — su un tabellone non avrebbero effetto — e compare il riquadro «Opzioni del tabellone»."

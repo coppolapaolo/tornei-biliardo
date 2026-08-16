@@ -96,6 +96,7 @@ blocks:
       - "Losers go out: half the entrants play a single match."
       - "The standings are the bracket's and use the **Position** system."
       - "You can ask that team-mates do not meet straight away."
+      - "The first round is not «started»: you **draw the bracket**, and from then on everybody's path is fixed."
 
   - type: heading
     id: doppio_ko
@@ -106,6 +107,25 @@ blocks:
       Like knockout, but you have to lose **twice** to go out: whoever loses
       first drops into a losers' bracket and can climb back. Longer, but nobody
       goes home after a single defeat — a good compromise when you have time.
+
+  - type: text
+    text: >-
+      It is the one format where two players can meet twice: somebody climbing
+      back through the losers' bracket may face whoever beat them. That is not a
+      pairing defect, it is how double elimination is built — and the shape of
+      the losers' bracket still pushes that meeting as far away as it can.
+
+  - type: note
+    tone: info
+    title: "On brackets there is less to choose"
+    text: >-
+      With knockout and double elimination the creation form does not ask for
+      number of rounds, forfeit handling, odd number of players, avoid
+      rematches, standings system, tie-break or exact number of racks: none of
+      those choices would have any effect on a bracket. In exchange you get the
+      settings that do count — keeping team-mates apart, the third-place final,
+      the group stage. The full list is in [All the
+      options](/aiuto/organizzare/opzioni_della_gara).
 
   - type: heading
     id: scegliere
@@ -159,7 +179,9 @@ blocks:
       - q: "Why do I always play the strongest players?"
         a: "With Amalfi, if you are doing well you end up facing people doing as well as you — especially in the last rounds. That is the method working as intended."
       - q: "I met the same opponent twice."
-        a: "That happens when the free pairings run out: with few players and many rounds, at some point everyone has played everyone."
+        a: "That happens when the free pairings run out: with few players and many rounds, at some point everyone has played everyone. In double elimination it is part of the format instead: somebody climbing back through the losers' bracket may face whoever beat them."
+      - q: "I cannot find the «avoid rematches» option in my knockout."
+        a: "It is not there, and it would serve no purpose: losers go out, so two players cannot meet twice."
       - q: "Can I change strategy once the competition has started?"
         a: "No. Pairings already made follow the chosen strategy, and switching midway would produce an incoherent competition."
       - q: "Who decides who breaks?"

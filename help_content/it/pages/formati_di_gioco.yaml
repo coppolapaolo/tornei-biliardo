@@ -62,6 +62,18 @@ blocks:
       parità: 3-3 su sei rack. Con la distanza «Al N» invece un vincitore c'è
       sempre.
 
+  - type: note
+    tone: warning
+    title: "Nelle gare a tabellone non si può chiedere"
+    text: >-
+      Con eliminazione diretta e doppio KO la casella non compare proprio, né
+      per i rack né per i set. Lì conta solo chi passa il turno: il vincitore è
+      deciso appena uno arriva alla distanza, e i rack giocati dopo non
+      cambiano né il tabellone né la classifica, che è per posizione e i rack
+      non li guarda. Sarebbero partite più lunghe a parità di risultato — e con
+      un numero pari anche peggio, perché un pareggio lascerebbe la casella
+      successiva del tabellone senza nessuno.
+
   - type: heading
     id: set
     title: "Partite a set"
@@ -134,3 +146,5 @@ blocks:
         a: "Perché il formato era «al 4»: raggiunti i 4 rack la partita è vinta. I 7 sono il massimo possibile, non il numero da giocare."
       - q: "Con «numero esatto» chi vince se finisce in parità?"
         a: "Nessuno: la partita risulta pareggiata e in classifica entrambi prendono zero vittorie e zero differenza rack."
+      - q: "Nel mio torneo a eliminazione non trovo «numero esatto di rack»."
+        a: "Sui formati a tabellone non c'è: si gioca sempre a chi arriva prima. Al posto della casella l'app mostra una nota che lo spiega."

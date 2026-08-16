@@ -139,7 +139,15 @@ blocks:
     text: >-
       In brackets the problem solves itself: if the entrants are not a power of
       two, some go straight through to the next round without playing the
-      first. It is standard bracket behaviour and needs no setting.
+      first. It is standard bracket behaviour and needs no setting — so much so
+      that choosing knockout or double elimination makes the «If players are
+      odd» question disappear from the creation form altogether.
+
+  - type: text
+    text: >-
+      The four solutions above do not apply: the free passes are however many
+      are needed to fill the bracket, and they go to the players at the top of
+      the draw list. It is not a policy to decide, it is how the tree closes.
 
   - type: faq
     items:

@@ -65,10 +65,27 @@ blocks:
 
   - type: text
     text: >-
-      This is the compulsory system for knockout and double elimination: the
-      standings **are** the bracket. Whoever wins the tournament is first, the
-      losing finalist second, and so on. In a championship each position is
-      worth a number of points, and points add up across competitions.
+      This is the system for knockout and double elimination: the standings
+      **are** the bracket. Whoever wins the tournament is first, the losing
+      finalist second, and so on. On bracket formats it is not even a choice —
+      it is the only possible system, and the field disappears from the
+      creation form.
+
+  - type: text
+    text: >-
+      Players go out in pairs, so many positions are **shared**: the two beaten
+      semi-finalists are both third, the four quarter-finalists all fifth. That
+      is not a level finish to settle, it is what the path says.
+
+  - type: text
+    text: >-
+      In a championship each position is worth a number of points, which add up
+      across competitions. The starting table is **25 points for first, 18 for
+      second, 15 for third, 12 for fourth, 8 from fifth to eighth and 4 from
+      ninth to sixteenth**, and the director can change it championship by
+      championship: see [Creating a
+      championship](/aiuto/organizzare/creare_un_campionato). Everybody level
+      inside a band takes the same score.
 
   - type: heading
     id: pari_merito
@@ -96,6 +113,15 @@ blocks:
         text: >-
           Outside the positions set for tie-breaking, the level finish stands:
           two players share the same position and the next one is skipped.
+
+  - type: note
+    tone: info
+    title: "Bracket competitions are never played off"
+    text: >-
+      There, a level finish by band is the intended result and not an
+      ambiguity: the tie-break option is not even asked for at creation. The one
+      exception is the **third-place final**, which can be planned at creation
+      and has the two beaten semi-finalists play for third.
 
   - type: heading
     id: quando_aggiorna

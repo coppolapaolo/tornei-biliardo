@@ -65,10 +65,26 @@ blocks:
 
   - type: text
     text: >-
-      È il sistema obbligatorio per eliminazione diretta e doppio KO: la
-      classifica **è** il tabellone. Chi vince il torneo è primo, chi perde in
-      finale secondo, e così via. In un campionato, ogni posizione vale un
-      certo numero di punti, e i punti si sommano fra le gare.
+      È il sistema di eliminazione diretta e doppio KO: la classifica **è** il
+      tabellone. Chi vince il torneo è primo, chi perde in finale secondo, e
+      così via. Sui formati a tabellone non si sceglie nemmeno — è l'unico
+      sistema possibile, e il campo sparisce dal modulo di creazione.
+
+  - type: text
+    text: >-
+      Si esce a coppie, quindi molte posizioni sono **condivise**: i due
+      semifinalisti sconfitti sono entrambi terzi, i quattro quartifinalisti
+      tutti quinti. Non è un pari merito da sciogliere, è quello che dice il
+      percorso.
+
+  - type: text
+    text: >-
+      In un campionato ogni posizione vale un certo numero di punti, che si
+      sommano fra le gare. La tabella di partenza è **25 punti al primo, 18 al
+      secondo, 15 al terzo, 12 al quarto, 8 dal quinto all'ottavo e 4 dal nono
+      al sedicesimo**, e il direttore può cambiarla campionato per campionato:
+      vedi [Creare un campionato](/aiuto/organizzare/creare_un_campionato).
+      Tutti quelli appaiati in una banda prendono lo stesso punteggio.
 
   - type: heading
     id: pari_merito
@@ -96,6 +112,16 @@ blocks:
         text: >-
           Fuori dalle posizioni da spareggiare, il pari merito resta: due
           giocatori occupano la stessa posizione e la successiva viene saltata.
+
+  - type: note
+    tone: info
+    title: "Nelle gare a tabellone non si spareggia"
+    text: >-
+      Lì il pari merito per banda è il risultato voluto, non un'ambiguità:
+      infatti l'opzione dello spareggio non viene nemmeno chiesta alla
+      creazione. L'unica eccezione è la **finalina per il terzo posto**, che si
+      può prevedere alla creazione e fa giocare il terzo posto ai due
+      semifinalisti sconfitti.
 
   - type: heading
     id: quando_aggiorna

@@ -94,6 +94,50 @@ blocks:
       competition stays editable. They exist so you do not retype the same ten
       choices for six evenings.
 
+  - type: note
+    tone: info
+    title: "If the championship is a bracket one, step 2 is shorter"
+    text: >-
+      Choosing knockout or double elimination in step 1 means step 2 does not
+      ask for number of rounds, handling of odd numbers or avoid rematches: on
+      bracket competitions those settings have no effect, so there would be no
+      point inheriting them. What appears instead is the position points table,
+      below.
+
+  - type: heading
+    id: punti_posizione
+    title: "Position points (bracket championships only)"
+
+  - type: text
+    text: >-
+      In bracket competitions the standings go by position, and each placing is
+      worth a number of championship points. How many is up to you.
+
+  - type: text
+    text: >-
+      You do not fill in sixteen boxes: you set **six thresholds**, that is the
+      placing bands a bracket actually produces — 1st, 2nd, 3rd, 4th, 5th-8th
+      and 9th-16th. Everybody sharing a band takes the same score: the four
+      quarter-finalists are all fifth, and all take the points for fifth.
+
+  - type: list
+    title: "The proposed values"
+    items:
+      - "**1st** — 25 points"
+      - "**2nd** — 18 points"
+      - "**3rd** — 15 points"
+      - "**4th** — 12 points"
+      - "**5th-8th** — 8 points"
+      - "**9th-16th** — 4 points"
+
+  - type: note
+    tone: tip
+    text: >-
+      If you leave the proposed values, the championship **follows** the
+      reference table instead of carrying a copy of it around: the day the
+      reference values change, your championship follows suit on its own. Only
+      change the boxes if your own rules say something different.
+
   - type: heading
     id: aggiungere_gare
     title: "Adding competitions"
@@ -124,8 +168,9 @@ blocks:
     text: >-
       They update on their own at the end of each competition by adding up the
       results: wins and rack difference if the system is «Wins», total racks if
-      it is «Racks», position points if it is «Position». Anyone who misses a
-      competition is not excluded: they simply gain nothing on that occasion.
+      it is «Racks», position points — the ones in the table above — if it is
+      «Position». Anyone who misses a competition is not excluded: they simply
+      gain nothing on that occasion.
 
   - type: faq
     items:
@@ -137,3 +182,7 @@ blocks:
         a: "Yes, and whoever runs the championship runs all of its competitions as a result."
       - q: "What happens if I cancel one of the championship's competitions?"
         a: "Its results leave the overall standings. The other competitions are unaffected."
+      - q: "Can I change the position points once the championship has started?"
+        a: "Yes, from the championship settings. Bear in mind the overall standings are recalculated with the new values, so competitions already finished change score: if the championship is under way, tell the participants."
+      - q: "I cannot see the position points table."
+        a: "It only appears on knockout or double elimination championships. With Amalfi, random or round robin the standings do not go by position and those points serve no purpose."
