@@ -240,8 +240,11 @@ def _validate_position_system(
     # decidere il match, e giocarli tutti quando il vincitore e' gia' deciso
     # non cambia chi passa il turno.
     if multi_set and sets_distance_type == DistanceType.EXACTLY:
+        # Il numero non compare nel messaggio: la regola non dipende più da
+        # quanti set siano, e `sets_distance` può essere None — `match_distance`
+        # è nullable — cosa che leggeva "None set esatti".
         errors.append(
-            f"Sistema POSITION non supporta {sets_distance} set esatti: "
+            "Sistema POSITION non supporta un numero esatto di set: "
             "sul tabellone vince chi arriva prima al numero di set"
         )
 

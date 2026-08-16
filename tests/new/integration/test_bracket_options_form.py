@@ -313,9 +313,7 @@ class TestLeTreSchermateSonoCoerenti:
         campionato = self._campionato_bracket(db_session, director)
         _login(client, director)
 
-        pagina = client.get(
-            f"/admin/campionato/{campionato.id}"
-        ).get_data(as_text=True)
+        pagina = client.get(f"/admin/campionato/{campionato.id}").get_data(as_text=True)
 
         # I campi restano nel DOM (il POST li manda), ma nascosti.
         assert 'id="create_rounds_count"' in pagina
@@ -349,9 +347,7 @@ class TestLeTreSchermateSonoCoerenti:
         db_session.commit()
 
         _login(client, director)
-        pagina = client.get(
-            f"/admin/campionato/{campionato.id}"
-        ).get_data(as_text=True)
+        pagina = client.get(f"/admin/campionato/{campionato.id}").get_data(as_text=True)
 
         assert 'id="create_rounds_count"' in pagina
         assert "Gestione Forfait" in pagina

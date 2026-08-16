@@ -287,7 +287,7 @@ class TestPositionMultiSetValidation:
             sets_distance_type=DistanceType.EXACTLY, sets_distance=2
         )
         assert len(errors) == 1
-        assert "set esatti" in errors[0]
+        assert "numero esatto di set" in errors[0]
 
     def test_set_esatti_dispari_rifiutati(self):
         """Come per i rack: giocare tutti i set non cambia chi passa il turno."""
@@ -295,7 +295,7 @@ class TestPositionMultiSetValidation:
             sets_distance_type=DistanceType.EXACTLY, sets_distance=3
         )
         assert len(errors) == 1
-        assert "set esatti" in errors[0]
+        assert "numero esatto di set" in errors[0]
 
     def test_race_to_sets_pari_ammesso(self):
         """Al meglio dei set c'è sempre un vincitore, anche con numero pari."""
@@ -303,6 +303,18 @@ class TestPositionMultiSetValidation:
             sets_distance_type=DistanceType.RACE_TO, sets_distance=2
         )
         assert errors == []
+
+    def test_senza_numero_di_set_il_messaggio_resta_leggibile(self):
+        """`match_distance` è nullable: il messaggio non deve dire "None set".
+
+        Succede con multi-set attivo, set esatti e il numero mai indicato —
+        un POST senza `match_distance`, o una gara vecchia.
+        """
+        errors, _ = self._validate(
+            sets_distance_type=DistanceType.EXACTLY, sets_distance=None
+        )
+        assert len(errors) == 1
+        assert "None" not in errors[0]
 
     def test_regola_non_si_applica_senza_multi_set(self):
         errors, _ = self._validate(
