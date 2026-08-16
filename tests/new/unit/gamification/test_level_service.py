@@ -8,11 +8,9 @@ Tests:
 - Level unlock eligibility checking
 """
 
-import pytest
-from datetime import datetime
 from models.gamification.level_service import LevelService
-from models.gamification.xp_config import XP_RATES, get_xp_for_level
-from models.gamification.models import UserLevel, XPTransaction, XPTransactionType
+from models.gamification.xp_config import get_xp_for_level
+from models.gamification.models import XPTransaction, XPTransactionType
 
 
 class TestLevelServiceXPAward:

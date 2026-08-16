@@ -3,7 +3,6 @@
 import pytest
 import uuid
 from datetime import date, timedelta
-from typing import Dict, Any
 
 from models import User, Gara
 from models.user.role_enum import UserRole
@@ -134,7 +133,9 @@ class TestGuestCardToDetailsWorkflow:
     def test_guest_cannot_see_details_button_for_closed_inscriptions(
         self, db_session, gara_with_closed_inscriptions
     ):
-        """Test that guest cannot see 'Details' button for gara with closed inscriptions."""
+        """Test that guest cannot see 'Details' button for gara with closed
+        inscriptions.
+        """
         # Get guest dashboard data
         vm = DashboardService.for_guest()
 
@@ -164,7 +165,9 @@ class TestGuestCardToDetailsWorkflow:
         gara_with_random_strategy_and_challenges,
         gara_with_closed_inscriptions,
     ):
-        """Test that player can see 'Details' button for all garas regardless of inscription status."""
+        """Test that player can see 'Details' button for all garas regardless of
+        inscription status.
+        """
         # Get player dashboard data
         vm = DashboardService.for_player(user_id=player_user.id)
 
@@ -197,7 +200,9 @@ class TestGuestCardToDetailsWorkflow:
     def test_template_logic_for_guest_button_display(
         self, db_session, gara_with_random_strategy_and_challenges
     ):
-        """Test the logic that would be used in templates to show/hide Details button for guests."""
+        """Test the logic that would be used in templates to show/hide Details button
+        for guests.
+        """
         # Get guest dashboard data
         vm = DashboardService.for_guest()
 
@@ -290,7 +295,9 @@ class TestGuestCardToDetailsWorkflow:
     def test_dashboard_vm_structure_for_guests(
         self, db_session, gara_with_random_strategy_and_challenges
     ):
-        """Test that DashboardVM for guests has the correct structure and capabilities."""
+        """
+        Test that DashboardVM for guests has the correct structure and capabilities.
+        """
         vm = DashboardService.for_guest()
 
         # Check basic structure

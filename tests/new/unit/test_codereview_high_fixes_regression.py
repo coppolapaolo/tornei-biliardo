@@ -3,18 +3,19 @@
 Ogni classe copre una correzione specifica:
 
 1. nudge_service.mark_feature_used         — usage_count None → TypeError al 1° uso
-2. leaderboard_service._calculate_streak_longest — LeaderboardEntry senza score (NOT NULL)
-3. spareggio_service.finalize_classification     — ordina ignorando matches_won (gare WINS)
-4. set_lifecycle_service.complete_set            — ignora la modalità "esatto numero di set"
+2. leaderboard_service._calculate_streak_longest — LeaderboardEntry senza score (NOT
+    NULL)
+3. spareggio_service.finalize_classification     — ordina ignorando matches_won (gare
+    WINS)
+4. set_lifecycle_service.complete_set            — ignora la modalità "esatto numero di
+    set"
 5. round_manager._recalculate_affected_classifications — dict-vs-ORM + bare except
 """
 
 import uuid
 from datetime import date, time
 
-import pytest
 
-from models.base import db
 from models.user.models import User
 from models.competition.models import Gara, Inscription
 from models.match.models import Match

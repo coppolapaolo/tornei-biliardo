@@ -9,7 +9,8 @@ All public symbols remain unchanged, so calls like:
 continue to work.
 
 Sub-modules:
-    - utils.permissions: Permission decorators (circular import workarounds isolated here)
+    - utils.permissions: Permission decorators (circular import workarounds isolated
+        here)
     - utils.reset_data: Database reset utilities
     - utils.database_utils: Database statistics utilities
 
@@ -42,7 +43,7 @@ from models.user.role_enum import UserRole
 # Re-export all permission decorators from dedicated module
 # This maintains backward compatibility: `from utils import admin_required`
 # --------------------------------------------------------------------------
-from .permissions import (
+from .permissions import (  # noqa: F401  (re-export di compatibilita', vedi sopra)
     # Role-based
     admin_required,
     director_required,

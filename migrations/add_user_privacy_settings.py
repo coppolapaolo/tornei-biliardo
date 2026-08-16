@@ -92,7 +92,8 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
-                FOREIGN KEY (inscription_id) REFERENCES inscription(id) ON DELETE CASCADE,
+                FOREIGN KEY (inscription_id) REFERENCES inscription(id)
+                    ON DELETE CASCADE,
                 UNIQUE(user_id, inscription_id)
             )
         """)
@@ -134,7 +135,10 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
         conn.commit()
         print("Migration completed successfully!")
         print(
-            "   Created tables: user_privacy_setting, hidden_match, hidden_inscription, hidden_campionato"
+            (
+                "   Created tables: user_privacy_setting, hidden_match, "
+                "hidden_inscription, hidden_campionato"
+            )
         )
 
     except sqlite3.OperationalError as e:

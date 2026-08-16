@@ -11,8 +11,8 @@ Strategy: Red-Green-Refactor TDD for each method
 """
 
 import pytest
-from unittest.mock import patch, MagicMock
-from datetime import datetime, timedelta
+from unittest.mock import patch
+from datetime import timedelta
 
 from models import db
 from models.individual_match.models import (
@@ -205,7 +205,8 @@ class TestIndividualMatchServiceTransactionMigration:
         """
         RED: Test current error handling in create_direct_proposal.
 
-        Documents current behavior: service doesn't raise exception for notification errors
+        Documents current behavior: service doesn't raise exception for notification
+        errors
         but should properly rollback any partial data due to @transactional decorator.
         """
         proposer, invitee = test_users
@@ -227,7 +228,8 @@ class TestIndividualMatchServiceTransactionMigration:
                 description="Should rollback",
             )
 
-            # The current implementation returns a MatchProposal object even when transaction fails
+            # The current implementation returns a MatchProposal object even when
+            # transaction fails
             assert proposal is not None
             assert proposal.description == "Should rollback"
 

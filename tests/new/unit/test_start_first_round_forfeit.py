@@ -79,7 +79,8 @@ class TestStartFirstRoundForfeit:
     def test_amalfi_non_random_branch_forfeit_creates_walkover(
         self, db_session, isolated_players
     ):
-        """Non-random branch: 4 players con 1 forfeit; amalfi genera 2 match, quello col forfeiter è walkover.
+        """Non-random branch: 4 players con 1 forfeit; amalfi genera 2 match,
+        quello col forfeiter e' walkover.
 
         We assert the end-state invariant: any match whose player set contains
         the forfeiter must be walkover-completed with the non-forfeit player
@@ -113,7 +114,9 @@ class TestStartFirstRoundForfeit:
     def test_trio_one_forfeit_converts_to_two_player_pending(
         self, db_session, isolated_players
     ):
-        """Non-random branch: 3 iscritti, odd_policy=trio, 1 forfeit → 1 match 2p pending tra survivors, no TrioMatch row."""
+        """Non-random branch: 3 iscritti, odd_policy=trio, 1 forfeit → 1 match 2p
+        pending tra survivors, no TrioMatch row.
+        """
         gara = _make_gara(db_session, min_participants=3, odd_number_policy="trio")
         p0, p1, p2 = (p.id for p in isolated_players[:3])
         _inscribe(db_session, gara.id, p0, is_forfeit=True)
@@ -132,7 +135,9 @@ class TestStartFirstRoundForfeit:
         assert db_session.query(TrioMatch).filter_by(match_id=m.id).count() == 0
 
     def test_trio_two_forfeit_creates_walkover(self, db_session, isolated_players):
-        """Non-random branch: 3 iscritti, odd_policy=trio, 2 forfeit → trio walkover completato, winner = survivor."""
+        """Non-random branch: 3 iscritti, odd_policy=trio, 2 forfeit → trio walkover
+        completato, winner = survivor.
+        """
         gara = _make_gara(db_session, min_participants=3, odd_number_policy="trio")
         p0, p1, p2 = (p.id for p in isolated_players[:3])
         _inscribe(db_session, gara.id, p0, is_forfeit=True)
@@ -181,7 +186,9 @@ class TestStartFirstRoundForfeit:
     def test_no_forfeit_creates_pending_matches_unchanged(
         self, db_session, isolated_players
     ):
-        """Happy path invariance: nessun forfeit → comportamento invariato (match pending)."""
+        """Happy path invariance: nessun forfeit → comportamento invariato (match
+        pending).
+        """
         gara = _make_gara(db_session, min_participants=4)
         p0, p1, p2, p3 = (p.id for p in isolated_players[:4])
         _inscribe(db_session, gara.id, p0)

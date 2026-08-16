@@ -858,7 +858,8 @@ class TestGaraStatusWithEmptyMatches:
         real_status = gara.get_real_status()
         assert real_status == GaraStatus.PLAYING.value, (
             f"Expected 'playing' but got '{real_status}'. "
-            "current_round=0 with empty matches should not be treated as round_completed."
+            "current_round=0 with empty matches should not be treated as "
+            "round_completed."
         )
 
     def test_can_start_new_round_with_no_matches_returns_false(self, db_session):

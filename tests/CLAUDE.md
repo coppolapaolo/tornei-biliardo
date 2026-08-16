@@ -16,12 +16,6 @@ The test suite follows a modern pytest-based approach with clear separation betw
 - Modern fixtures and test patterns
 - Comprehensive coverage strategy
 
-#### `legacy/` - Legacy Test Suite
-**Purpose**: Existing tests being gradually migrated
-- Contains historical test implementations
-- Excluded from default test runs
-- Referenced for migration purposes
-
 ### Test Configuration
 
 #### `conftest.py` - Test Configuration
@@ -183,18 +177,16 @@ markers =
     unit: Unit tests for isolated components
     integration: Integration tests for component interactions
     e2e: End-to-end tests for complete workflows
-    legacy: Legacy tests (excluded by default)
     slow: Tests that take longer than 5 seconds
     requires_network: Tests requiring external network access
 ```
 
 ### Test Execution
-- **Default**: `pytest` (runs unit + integration, excludes legacy)
+- **Default**: `pytest` (runs unit + integration)
 - **Correct Path**: `PYTHONPATH=. pytest tests/new/` (REQUIRED for proper imports)
 - **Unit only**: `PYTHONPATH=. pytest tests/new/unit/ -n auto`
 - **Integration only**: `PYTHONPATH=. pytest tests/new/integration/ -n 4` ⚠️ **MUST use -n 4**
 - **E2E only**: `PYTHONPATH=. pytest tests/new/e2e/`
-- **Legacy tests**: `pytest tests/legacy/` (separate, not maintained)
 
 **⚠️ SQLite Concurrency Warning**: Integration tests MUST use `-n 4` (not `-n auto`).
 With more workers, SQLite creates deadlocks causing infinite loops.
@@ -295,7 +287,6 @@ Tests organized by platform domains supporting community growth:
 
 ### Test Maintenance
 - **Regular Review**: Update tests with feature changes
-- **Legacy Migration**: Gradually move legacy tests to new structure
 - **Performance Monitoring**: Track test execution time
 - **Flaky Test Management**: Identify and fix unreliable tests
 
@@ -337,7 +328,8 @@ Tests organized by platform domains supporting community growth:
 2. **Individual test isolation**: Each test must pass independently
 3. **Type safety**: Ensure all new test code passes `pyright` checks
 4. **Test data isolation**: Fix database state issues, not test logic
-5. **Focus on new tests**: Legacy tests (`tests/legacy/`) are not maintained
+5. **Tutti i test stanno in `tests/new/`**: la vecchia `tests/legacy/` è stata
+   cancellata (non si importava più: nessuno di quei test girava)
 
 ### Performance Guidelines
 - **Fast Unit Tests**: Optimize for quick feedback
@@ -357,7 +349,6 @@ Tests organized by platform domains supporting community growth:
 
 - **Do not use `-n auto` for integration tests** - Use `-n 4` to avoid SQLite deadlocks
 - **Do not use `db.session.refresh()`** - Use `db.session.get()` for test isolation
-- **Do not maintain legacy tests** - Focus on `tests/new/`
 - **Do not create long workflow tests** - Keep tests 30-50 lines, focused on one behavior
 - **Do not share state between tests** - Each test must be independent
 - **Do not clear `EventBus._handlers = {}`** - This removes ALL handlers (notification, gamification, etc.) and breaks other tests running in parallel. Instead, save handlers before test and restore after:

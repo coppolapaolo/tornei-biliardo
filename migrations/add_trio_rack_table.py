@@ -126,7 +126,8 @@ def upgrade_postgres(connection_string: str) -> None:
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS trio_rack (
                 id SERIAL PRIMARY KEY,
-                trio_match_id INTEGER NOT NULL REFERENCES trio_match(id) ON DELETE CASCADE,
+                trio_match_id INTEGER NOT NULL REFERENCES trio_match(id)
+                    ON DELETE CASCADE,
                 rack_number INTEGER NOT NULL,
                 winner_id INTEGER NOT NULL REFERENCES "user"(id),
                 player1_id INTEGER NOT NULL REFERENCES "user"(id),

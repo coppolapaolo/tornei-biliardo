@@ -14,16 +14,14 @@ Following the Red-Green-Refactor cycle for participant management:
 
 import pytest
 import uuid
-from datetime import date, timedelta, datetime
-from typing import Dict, Any
+from datetime import date, timedelta
 
-from models import User, Gara, Inscription, db
+from models import User, Inscription, db
 from models.user.role_enum import UserRole
 from models.competition.models import WithdrawPolicy
 from models.status_enum import GaraStatus
 from models.competition.services import GaraService, InscriptionService
 from models.competition.state_service import StateService
-from models.exceptions import InvalidTransitionError
 from models.base import utc_now
 
 
@@ -34,7 +32,8 @@ class TestParticipantLimitsWaitlistTDD:
     def test_inscription_should_create_waitlist_when_max_participants_reached(
         self, db_session
     ):
-        """Test that inscription creates waitlist entry when max participants limit is reached.
+        """Inscription creates a waitlist entry when the max participants
+        limit is reached.
 
         GREEN PHASE: Test should pass now that waitlist logic is implemented
         for max participants. Additional participants should be added to waitlist.
@@ -193,7 +192,8 @@ class TestParticipantLimitsWaitlistTDD:
         db_session.add(waitlist_inscription)
         db_session.commit()
 
-        # Remove one regular player using the service (which should trigger waitlist promotion)
+        # Remove one regular player using the service (which should trigger waitlist
+        # promotion)
         InscriptionService.uninscribe_user(regular_players[0].id, gara.id)
 
         # Waitlist player should be automatically promoted

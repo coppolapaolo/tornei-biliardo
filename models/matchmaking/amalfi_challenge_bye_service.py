@@ -135,7 +135,7 @@ class AmalfiChallengeByeService:
                     GaraChallenge.gara_id == gara_id,
                     GaraChallengeAttempt.user_id == user_id,
                     GaraChallengeAttempt.round_when_attempted == round_number,
-                    GaraChallengeAttempt.completed == True,
+                    GaraChallengeAttempt.completed == True,  # noqa: E712
                 )
                 .first()
             )

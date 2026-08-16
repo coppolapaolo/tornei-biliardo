@@ -1,7 +1,8 @@
 """
 Module: models/classification/strategies/campionato_strategies.py
 Purpose: Classification strategies for overall campionato ranking
-Data Structures: AmalfiCampionatoClassificationStrategy, RandomCampionatoClassificationStrategy,
+Data Structures: AmalfiCampionatoClassificationStrategy,
+RandomCampionatoClassificationStrategy,
                  PointBasedCampionatoClassificationStrategy
 Dependencies: typing, .base
 """

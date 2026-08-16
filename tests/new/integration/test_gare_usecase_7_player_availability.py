@@ -8,7 +8,7 @@ Tests simple workflow from SPECIFICHE.md:
 
 import pytest
 from datetime import date, datetime, timedelta, time
-from typing import List, Dict, Any
+from typing import List
 import uuid
 
 from models import User
@@ -21,9 +21,7 @@ from models.individual_match.models import (
     ProposalInvitation,
     InvitationStatus,
 )
-from models.location.models import BilliardHall, UserLocationAvailability, DayOfWeek
-from models.notification.models import Notification
-from models.notification.services import NotificationService
+from models.location.models import BilliardHall, DayOfWeek
 from models.individual_match.availability_service import AvailabilityService
 from models.base import utc_now
 
@@ -162,7 +160,7 @@ class TestUseCasePlayerAvailability:
         db_session.commit()
 
         # Step 3: Player1 should receive notification (via availability service)
-        notifications_sent = AvailabilityService.notify_players_of_availability(
+        AvailabilityService.notify_players_of_availability(
             user_id=player2.id,
             location=downtown_hall.name,
             message=f"Match request for {next_monday} at 20:00",
@@ -210,11 +208,11 @@ class TestUseCasePlayerAvailability:
         assert proposal.status.value == "accepted"
         assert proposal.accepted_by_id == player1.id
 
-        print(f"✅ Simple venue availability and match request completed successfully")
+        print("✅ Simple venue availability and match request completed successfully")
         print(f"   - Player1 set availability at {downtown_hall.name} for Mondays")
-        print(f"   - Player2 found availability and sent match proposal")
-        print(f"   - Player1 received notification and accepted match")
-        print(f"   - Individual match created successfully")
+        print("   - Player2 found availability and sent match proposal")
+        print("   - Player1 received notification and accepted match")
+        print("   - Individual match created successfully")
 
     def test_venue_based_player_discovery(
         self,
@@ -236,7 +234,7 @@ class TestUseCasePlayerAvailability:
         # Step 1: Players set availability at different venues
 
         # Player1: Available Tuesdays and Thursdays at Downtown
-        availability1 = AvailabilityService.set_venue_availability(
+        AvailabilityService.set_venue_availability(
             user_id=player1.id,
             billiard_hall_id=downtown_hall.id,
             is_available=True,
@@ -245,7 +243,7 @@ class TestUseCasePlayerAvailability:
         )
 
         # Player2: Available Fridays at Northside
-        availability2 = AvailabilityService.set_venue_availability(
+        AvailabilityService.set_venue_availability(
             user_id=player2.id,
             billiard_hall_id=northside_hall.id,
             is_available=True,
@@ -254,7 +252,7 @@ class TestUseCasePlayerAvailability:
         )
 
         # Player3: Available weekends at Eastside
-        availability3 = AvailabilityService.set_venue_availability(
+        AvailabilityService.set_venue_availability(
             user_id=player3.id,
             billiard_hall_id=eastside_hall.id,
             is_available=True,
@@ -298,10 +296,10 @@ class TestUseCasePlayerAvailability:
         # Should send notifications (though may be 0 if no previous matches played)
         assert notifications_sent >= 0
 
-        print(f"✅ Venue-based player discovery completed successfully")
-        print(f"   - 3 players set availability at different venues")
-        print(f"   - Player discovery working at all venues")
-        print(f"   - Notification system functional")
+        print("✅ Venue-based player discovery completed successfully")
+        print("   - 3 players set availability at different venues")
+        print("   - Player discovery working at all venues")
+        print("   - Notification system functional")
 
     def test_availability_preferences_and_notifications(
         self,
@@ -321,7 +319,7 @@ class TestUseCasePlayerAvailability:
         downtown_hall, northside_hall = billiard_halls[:2]
 
         # Step 1: Player1 sets availability at multiple venues
-        downtown_availability = AvailabilityService.set_venue_availability(
+        AvailabilityService.set_venue_availability(
             user_id=player1.id,
             billiard_hall_id=downtown_hall.id,
             is_available=True,
@@ -329,7 +327,7 @@ class TestUseCasePlayerAvailability:
             preferred_times="19:00-22:00",
         )
 
-        northside_availability = AvailabilityService.set_venue_availability(
+        AvailabilityService.set_venue_availability(
             user_id=player1.id,
             billiard_hall_id=northside_hall.id,
             is_available=True,
@@ -395,7 +393,7 @@ class TestUseCasePlayerAvailability:
         assert individual_match.player1_id == player2.id
         assert individual_match.player2_id == player1.id
 
-        print(f"✅ Availability preferences and notifications completed successfully")
-        print(f"   - Player1 set availability at 2 venues")
-        print(f"   - Comprehensive preferences retrieved successfully")
-        print(f"   - Match request created and accepted based on availability")
+        print("✅ Availability preferences and notifications completed successfully")
+        print("   - Player1 set availability at 2 venues")
+        print("   - Comprehensive preferences retrieved successfully")
+        print("   - Match request created and accepted based on availability")

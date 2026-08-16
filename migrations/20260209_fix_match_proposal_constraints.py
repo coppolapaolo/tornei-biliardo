@@ -27,13 +27,14 @@ def upgrade_sqlite(db_path: str):
         if "PRIMARY KEY" not in schema.upper():
             print("  Rebuilding match_proposal with constraints...")
             columns_str = ", ".join(cols)
-            cursor.execute(f"""
+            cursor.execute("""
                 CREATE TABLE match_proposal_fixed (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     proposer_id INTEGER NOT NULL REFERENCES user(id) ON DELETE CASCADE,
                     proposal_type TEXT NOT NULL,
                     status TEXT NOT NULL DEFAULT 'pending',
-                    billiard_hall_id INTEGER REFERENCES billiard_hall(id) ON DELETE SET NULL,
+                    billiard_hall_id INTEGER REFERENCES billiard_hall(id) ON DELETE
+                        SET NULL,
                     location TEXT,
                     scheduled_at DATETIME NOT NULL,
                     expires_at DATETIME NOT NULL,
@@ -66,19 +67,23 @@ def upgrade_sqlite(db_path: str):
     cols = [row[1] for row in cursor.fetchall()]
     if "id" in cols:
         cursor.execute(
-            "SELECT sql FROM sqlite_master WHERE type='table' AND name='individual_match'"
+            (
+                "SELECT sql FROM sqlite_master WHERE type='table' AND "
+                "name='individual_match'"
+            )
         )
         schema = cursor.fetchone()[0]
         if "PRIMARY KEY" not in schema.upper():
             print("  Rebuilding individual_match with constraints...")
             columns_str = ", ".join(cols)
-            cursor.execute(f"""
+            cursor.execute("""
                 CREATE TABLE individual_match_fixed (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     proposal_id INTEGER REFERENCES match_proposal(id),
                     player1_id INTEGER NOT NULL REFERENCES user(id) ON DELETE CASCADE,
                     player2_id INTEGER NOT NULL REFERENCES user(id) ON DELETE CASCADE,
-                    billiard_hall_id INTEGER REFERENCES billiard_hall(id) ON DELETE SET NULL,
+                    billiard_hall_id INTEGER REFERENCES billiard_hall(id) ON DELETE
+                        SET NULL,
                     location TEXT,
                     scheduled_at DATETIME NOT NULL,
                     status TEXT NOT NULL DEFAULT 'scheduled',

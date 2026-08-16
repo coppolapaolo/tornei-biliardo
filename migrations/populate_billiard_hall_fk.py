@@ -68,11 +68,11 @@ def populate_fk_sqlite(
         columns = {row[1] for row in cursor.fetchall()}
 
         if "location" not in columns:
-            print(f"   ⚠️  Skipping: 'location' column not found")
+            print("   ⚠️  Skipping: 'location' column not found")
             continue
 
         if "billiard_hall_id" not in columns:
-            print(f"   ⚠️  Skipping: 'billiard_hall_id' column not found")
+            print("   ⚠️  Skipping: 'billiard_hall_id' column not found")
             print("   Run add_billiard_hall_fk.py first!")
             continue
 
@@ -88,7 +88,7 @@ def populate_fk_sqlite(
         locations_to_process = cursor.fetchall()
 
         if not locations_to_process:
-            print(f"   ✓ No records to update (all already have FK set)")
+            print("   ✓ No records to update (all already have FK set)")
             continue
 
         matched = 0
@@ -109,7 +109,10 @@ def populate_fk_sqlite(
                 )
                 matched += cursor.rowcount
                 print(
-                    f"   ✓ Matched '{location}' → ID {venue_id} ({cursor.rowcount} records)"
+                    (
+                        f"   ✓ Matched '{location}' → ID {venue_id} ({cursor.rowcount} "
+                        f"records)"
+                    )
                 )
             else:
                 unmatched += count
@@ -220,8 +223,10 @@ def verify_migration(db_path: str = "instance/billiard_campionato.db") -> None:
         cursor.execute(f"""
             SELECT
                 COUNT(*) as total,
-                SUM(CASE WHEN billiard_hall_id IS NOT NULL THEN 1 ELSE 0 END) as with_fk,
-                SUM(CASE WHEN location IS NOT NULL AND location != '' THEN 1 ELSE 0 END) as with_location
+                SUM(CASE WHEN billiard_hall_id IS NOT NULL THEN 1 ELSE 0
+                    END) as with_fk,
+                SUM(CASE WHEN location IS NOT NULL AND location != '' THEN 1 ELSE 0
+                    END) as with_location
             FROM {table}
         """)
         total, with_fk, with_location = cursor.fetchone()
@@ -265,13 +270,22 @@ if __name__ == "__main__":
             print(f"❌ Unknown command: {sys.argv[1]}")
             print("\nUsage:")
             print(
-                "  python migrations/populate_billiard_hall_fk.py           # SQLite (dev)"
+                (
+                    "  python migrations/populate_billiard_hall_fk.py           # "
+                    "SQLite (dev)"
+                )
             )
             print(
-                "  python migrations/populate_billiard_hall_fk.py postgresql # PostgreSQL (prod)"
+                (
+                    "  python migrations/populate_billiard_hall_fk.py postgresql # "
+                    "PostgreSQL (prod)"
+                )
             )
             print(
-                "  python migrations/populate_billiard_hall_fk.py verify     # Check status"
+                (
+                    "  python migrations/populate_billiard_hall_fk.py verify     # "
+                    "Check status"
+                )
             )
             sys.exit(1)
     else:

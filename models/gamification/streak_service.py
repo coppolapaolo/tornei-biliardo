@@ -153,7 +153,8 @@ class StreakService:
             Tuple of (StreakTracker, result_info dict)
 
         Result info dict contains:
-            - "action": "continued" | "incremented" | "freeze_used" | "broken" | "started"
+            - "action": "continued" | "incremented" | "freeze_used" | "broken" |
+                "started"
             - "current_streak": int
             - "longest_streak": int
             - "milestone_reached": Optional[int] (4, 12, or 52 weeks)
@@ -298,7 +299,8 @@ class StreakService:
 
                 logger.info(
                     f"User {user_id} used freeze for {streak_type.value} streak, "
-                    f"now {tracker.current_streak} weeks, {tracker.freeze_count} freezes left"
+                    f"now {tracker.current_streak} weeks, {tracker.freeze_count} "
+                    f"freezes left"
                 )
                 return tracker, result
 
@@ -448,7 +450,10 @@ class StreakService:
                 user_id=tracker.user_id,
                 xp_amount=xp_bonus,
                 transaction_type=XPTransactionType.STREAK_BONUS,
-                reason=f"{current_streak}-week streak milestone ({tracker.streak_type.value})",
+                reason=(
+                    f"{current_streak}-week streak milestone "
+                    f"({tracker.streak_type.value})"
+                ),
             )
 
             result = {

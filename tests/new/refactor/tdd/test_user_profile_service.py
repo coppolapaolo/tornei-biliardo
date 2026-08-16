@@ -11,8 +11,6 @@ Strategy: Red-Green-Refactor TDD methodology following Task 1.2 patterns
 """
 
 import pytest
-from unittest.mock import patch, MagicMock
-from datetime import datetime
 
 from models import db
 from models.user.models import User
@@ -638,7 +636,8 @@ class TestUserProfileServiceTDD:
 
     def test_get_user_detail_data_functionality(self, app, db_session):
         """
-        RED: Test UserProfileService.get_user_detail_data() comprehensive data retrieval.
+        RED: Test UserProfileService.get_user_detail_data() comprehensive data
+            retrieval.
 
         Expected behavior:
         - Returns dictionary with user, inscriptions, matches, classifications
@@ -701,9 +700,11 @@ class TestUserProfileServiceTDD:
         with app.app_context():
             # This test documents expected decorator usage for implementation
             # Implementation should use:
-            # - @transactional(domain="user") for create_user, update_user, change_password, soft_delete_user
+            # - @transactional(domain="user") for create_user, update_user,
+            # change_password, soft_delete_user
             # - @read_only(domain="user") for get_user_detail_data
-            # - No decorator for simple read operations (authenticate_user, get_user_by_*, get_all_users, get_users_by_role)
+            # - No decorator for simple read operations (authenticate_user,
+            # get_user_by_*, get_all_users, get_users_by_role)
 
             from models.user.services import UserProfileService
 

@@ -24,7 +24,7 @@ from __future__ import annotations
 
 from typing import Optional, TYPE_CHECKING
 
-from ..base import db, BaseModel, TimestampMixin, utc_now
+from ..base import db, BaseModel, utc_now
 
 if TYPE_CHECKING:
     pass

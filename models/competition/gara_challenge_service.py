@@ -166,7 +166,7 @@ class GaraChallengeService:
             GaraChallenge.query.filter(
                 GaraChallenge.gara_id == gara_id,
                 GaraChallenge.round_number <= current_round,
-                GaraChallenge.is_active == True,
+                GaraChallenge.is_active == True,  # noqa: E712
             )
             .order_by(GaraChallenge.round_number)
             .all()
@@ -206,7 +206,10 @@ class GaraChallengeService:
         # Check if user can make another attempt
         if not gara_challenge.can_user_attempt(user_id):
             raise ValueError(
-                f"Utente ha già raggiunto il massimo numero di tentativi ({gara_challenge.max_attempts})"
+                (
+                    f"Utente ha già raggiunto il massimo numero di tentativi "
+                    f"({gara_challenge.max_attempts})"
+                )
             )
 
         # Get next attempt number for this user
@@ -333,7 +336,8 @@ class GaraChallengeService:
             gara_id: ID of the gara
 
         Returns:
-            List[GaraChallengeClassification]: Current classification ordered by position
+            List[GaraChallengeClassification]: Current classification ordered by
+                position
         """
         return (
             GaraChallengeClassification.query.filter_by(gara_id=gara_id)

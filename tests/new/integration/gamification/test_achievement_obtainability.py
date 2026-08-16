@@ -12,7 +12,6 @@ attraverso i percorsi reali:
 
 from datetime import timedelta
 
-import pytest
 
 from models.base import db, utc_now
 from models.gamification.achievement_seeds import seed_achievements

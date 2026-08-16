@@ -12,8 +12,7 @@ Strategy: Red-Green-Refactor TDD methodology following Task 1.2 patterns
 """
 
 import pytest
-from unittest.mock import patch, MagicMock
-from datetime import datetime
+from unittest.mock import patch
 
 from models import db
 from models.user.models import User, DirectorRequest
@@ -39,7 +38,10 @@ def grant_aspiring_director_achievement(user_id: int) -> None:
             description="Test achievement for director eligibility",
             category=AchievementCategory.MILESTONE,
             difficulty=AchievementDifficulty.UNCOMMON,
-            requirements='{"type": "director_eligibility", "min_gare": 10, "min_campionati_completi": 1}',
+            requirements=(
+                '{"type": "director_eligibility", "min_gare": 10, '
+                '"min_campionati_completi": 1}'
+            ),
             is_progressive=False,
             xp_reward=200,
         )
@@ -109,7 +111,8 @@ class TestUserPermissionServiceTDD:
             # Verify role was changed
             db_player = db.session.get(User, player.id)
             assert db_player.role == UserRole.DIRECTOR.value
-            # Note: promoted_to_director_by_id field doesn't exist in current implementation
+            # Note: promoted_to_director_by_id field doesn't exist in current
+            # implementation
             # Verify promotion happened through role change
             # Note: User model doesn't have promoted_to_director_at field
             # Check role change instead
@@ -261,7 +264,8 @@ class TestUserPermissionServiceTDD:
 
     def test_demote_director_validates_permission(self, app, db_session):
         """
-        RED: Test UserPermissionService.demote_director_to_player() permission validation.
+        RED: Test UserPermissionService.demote_director_to_player() permission
+            validation.
 
         Expected behavior:
         - Raises PermissionError when demoted_by is not admin
@@ -302,7 +306,8 @@ class TestUserPermissionServiceTDD:
 
     def test_demote_director_validates_target_role(self, app, db_session):
         """
-        RED: Test UserPermissionService.demote_director_to_player() target role validation.
+        RED: Test UserPermissionService.demote_director_to_player() target role
+            validation.
 
         Expected behavior:
         - Raises ValueError when user is not a director
@@ -508,7 +513,8 @@ class TestUserPermissionServiceTDD:
         self, app, db_session
     ):
         """
-        RED: Test UserPermissionService.request_director_promotion() duplicate validation.
+        RED: Test UserPermissionService.request_director_promotion() duplicate
+            validation.
 
         Expected behavior:
         - Raises ValueError when user already has pending request
@@ -672,7 +678,8 @@ class TestUserPermissionServiceTDD:
 
     def test_approve_director_request_backward_compatibility(self, app, db_session):
         """
-        RED: Test UserPermissionService.approve_director_request() backward compatibility.
+        RED: Test UserPermissionService.approve_director_request() backward
+            compatibility.
 
         Expected behavior:
         - Works without approved_by parameter (creates mock admin)

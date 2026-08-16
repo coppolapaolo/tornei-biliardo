@@ -5,7 +5,6 @@ and hidden elements (matches, inscriptions, campionati).
 """
 
 import pytest
-from datetime import datetime
 import uuid
 
 from models.user.privacy_models import (
@@ -218,7 +217,9 @@ class TestPrivacyServiceSettings:
     def test_update_privacy_settings_no_achievement_for_contact_info_only(
         self, db_session, test_player
     ):
-        """Should NOT award achievement when only sharing contact info (not gaming data)."""
+        """Should NOT award achievement when only sharing contact info (not gaming
+        data).
+        """
         from models.gamification.models import Achievement, UserAchievement
         from models.gamification.achievement_seeds import seed_achievements
 

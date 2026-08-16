@@ -8,8 +8,6 @@ STREAK_LONGEST, che prima della Fase 1 non impostava né `score` né
 tutto al refresh. Vedi GAMIFICATION_V3_HANDOFF.md (Task A).
 """
 
-import pytest
-
 from models.base import db
 from models.gamification.leaderboard_service import LeaderboardService
 from models.gamification.models import (

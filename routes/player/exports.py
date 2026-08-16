@@ -424,7 +424,8 @@ def _generate_gdpr_export(
         user_id: User ID to export data for
         username: Username for filename
         i18n_strings: Pre-translated strings (translated before thread spawn
-            because Flask-Babel requires request context which is unavailable in threads)
+            because Flask-Babel requires request context which is unavailable in
+                threads)
     """
     with app.app_context():
         try:
@@ -503,7 +504,10 @@ def _generate_gdpr_export(
                 )
             except Exception as notify_error:
                 current_app.logger.error(
-                    f"Failed to send error notification for user {user_id}: {notify_error}",
+                    (
+                        f"Failed to send error notification for user {user_id}: "
+                        f"{notify_error}"
+                    ),
                     exc_info=True,
                 )
 
@@ -523,7 +527,10 @@ def request_gdpr_export():
         if utc_now() - mtime < timedelta(minutes=5):
             flash(
                 _(
-                    "Un export è già in corso o è stato generato di recente. Controlla le notifiche."
+                    (
+                        "Un export è già in corso o è stato generato di recente. "
+                        "Controlla le notifiche."
+                    )
                 ),
                 "warning",
             )
@@ -539,7 +546,10 @@ def request_gdpr_export():
         "success_action": _("Scarica"),
         "error_title": _("Errore Export GDPR"),
         "error_message": _(
-            "Si è verificato un errore durante la generazione dell'archivio. Riprova più tardi."
+            (
+                "Si è verificato un errore durante la generazione dell'archivio. "
+                "Riprova più tardi."
+            )
         ),
     }
 

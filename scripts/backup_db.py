@@ -6,7 +6,8 @@ saves timestamped copies, and rotates old backups.
 
 Setup on PythonAnywhere:
     Tasks → Add scheduled task (daily)
-    Command: /home/paolocoppola/mysite/venv/bin/python /home/paolocoppola/mysite/scripts/backup_db.py
+    Command: /home/paolocoppola/mysite/venv/bin/python
+    /home/paolocoppola/mysite/scripts/backup_db.py
 
 Or run manually:
     python scripts/backup_db.py
@@ -72,7 +73,7 @@ def rotate_backups(
 
 def main() -> int:
     """Run backup and rotation. Returns 0 on success, 1 on failure."""
-    print(f"Database backup script")
+    print("Database backup script")
     print(f"Source: {DB_PATH}")
     print(f"Backup dir: {BACKUP_DIR}")
     print()

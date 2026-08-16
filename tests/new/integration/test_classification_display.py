@@ -4,7 +4,7 @@ e non per i turni in corso.
 """
 
 import pytest
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from models import db, User, Match
 from models.user.role_enum import UserRole
 from models.status_enum import MatchStatus
@@ -40,7 +40,10 @@ class TestClassificationDisplay:
         return db_session.get(User, admin.id)
 
     @pytest.mark.skip(
-        reason="Session isolation issue: DetachedInstanceError in GamificationFrontendBridge"
+        reason=(
+            "Session isolation issue: DetachedInstanceError in "
+            "GamificationFrontendBridge"
+        )
     )
     def test_classification_only_shown_for_completed_rounds(self, app, admin_user):
         """
@@ -214,7 +217,8 @@ class TestClassificationDisplay:
                     db.session.add(classification)
             db.session.commit()
 
-            # 10. Test: Should now show classification for round 2 (most recent completed)
+            # 10. Test: Should now show classification for round 2 (most recent
+            # completed)
             response = client.get(f"/admin/gara/{gara.id}")
             assert response.status_code == 200
 
@@ -223,7 +227,10 @@ class TestClassificationDisplay:
             # Debug: check what classification is actually shown and why
             db.session.refresh(gara)
             print(
-                f"DEBUG: gara.current_round after round 2 creation: {gara.current_round}"
+                (
+                    f"DEBUG: gara.current_round after round 2 creation: "
+                    f"{gara.current_round}"
+                )
             )
 
             # Check if round 2 is detected as completed
@@ -238,8 +245,16 @@ class TestClassificationDisplay:
                     match.status == MatchStatus.COMPLETED.value
                     for match in round_matches
                 )
+                n_completate = len(
+                    [
+                        m
+                        for m in round_matches
+                        if m.status == MatchStatus.COMPLETED.value
+                    ]
+                )
                 print(
-                    f"DEBUG: Round {round_number} completed: {completed} ({len([m for m in round_matches if m.status == MatchStatus.COMPLETED.value])}/{len(round_matches)} matches)"
+                    f"DEBUG: Round {round_number} completed: {completed} "
+                    f"({n_completate}/{len(round_matches)} matches)"
                 )
                 return completed
 
@@ -269,7 +284,8 @@ class TestClassificationDisplay:
                 "Classifica dopo Turno" in html_content
             ), "Should show some classification after round 2 is completed"
 
-            # The specific assertion can be: should show round 2 classification (or at least not show round 1 when round 2 is complete)
+            # The specific assertion can be: should show round 2 classification (or at
+            # least not show round 1 when round 2 is complete)
             # For now, let's make sure it shows the right one
             if "Classifica dopo Turno 2" in html_content:
                 # Perfect! Shows round 2 as expected
@@ -277,14 +293,17 @@ class TestClassificationDisplay:
             elif "Classifica dopo Turno 1" in html_content:
                 # This means round 2 is not being detected as completed
                 # Let's fail with more info
-                assert (
-                    False
-                ), f"Expected round 2 classification but found round 1. gara.current_round={gara.current_round}"
+                assert False, (
+                    f"Expected round 2 classification but found round 1. "
+                    f"gara.current_round={gara.current_round}"
+                )
             else:
                 assert False, "No round classification found"
 
     @pytest.mark.skip(
-        reason="Session isolation issue: DetachedInstanceError when run after other tests"
+        reason=(
+            "Session isolation issue: DetachedInstanceError when run after other tests"
+        )
     )
     def test_no_classification_shown_when_no_rounds_completed(self, app, admin_user):
         """
@@ -352,11 +371,14 @@ class TestClassificationDisplay:
             ), "Should not show any classification when no rounds are completed"
 
     @pytest.mark.skip(
-        reason="Session isolation issue: DetachedInstanceError when run after other tests"
+        reason=(
+            "Session isolation issue: DetachedInstanceError when run after other tests"
+        )
     )
     def test_classification_recalculated_when_missing(self, app, admin_user):
         """
-        Test che la classificazione venga ricalcolata automaticamente se mancante dal database.
+        Test che la classificazione venga ricalcolata automaticamente se mancante dal
+        database.
         """
         with app.test_client() as client:
             # Login as admin
@@ -427,7 +449,8 @@ class TestClassificationDisplay:
             RoundService.update_round_progression(gara.id)
             db.session.refresh(gara)
 
-            # 5. Remove any automatically created classifications to simulate missing data
+            # 5. Remove any automatically created classifications to simulate missing
+            # data
             existing_classifications = RoundClassification.query.filter_by(
                 gara_id=gara.id, round_number=1
             ).all()
@@ -463,11 +486,14 @@ class TestClassificationDisplay:
             ), "Classifications should have been auto-created"
 
     @pytest.mark.skip(
-        reason="Session isolation issue: DetachedInstanceError when run after other tests"
+        reason=(
+            "Session isolation issue: DetachedInstanceError when run after other tests"
+        )
     )
     def test_classification_updated_after_match_modification(self, app, admin_user):
         """
-        Test che la classificazione venga aggiornata automaticamente quando i risultati dei match vengono modificati.
+        Test che la classificazione venga aggiornata automaticamente quando i risultati
+        dei match vengono modificati.
         """
         with app.test_client() as client:
             # Login as admin
@@ -550,7 +576,7 @@ class TestClassificationDisplay:
             match_to_modify = first_round_matches[0]  # First match
             if not match_to_modify.is_bye:
                 # Change winner from player1 to player2
-                original_winner = match_to_modify.winner_id
+                match_to_modify.winner_id
                 new_winner = match_to_modify.player2_id
 
                 match_to_modify.winner_id = new_winner
@@ -559,7 +585,8 @@ class TestClassificationDisplay:
                 db.session.add(match_to_modify)
                 db.session.commit()
 
-                # 7. Request the page again - classification should be automatically recalculated
+                # 7. Request the page again - classification should be automatically
+                # recalculated
                 response = client.get(f"/admin/gara/{gara.id}")
                 assert response.status_code == 200
                 updated_html = response.data.decode("utf-8")
@@ -568,12 +595,16 @@ class TestClassificationDisplay:
                 assert "Classifica dopo Turno 1" in updated_html
 
                 # The classification should be different from the initial one
-                # (This is verified by the fact that the calculation is triggered on each request)
+                # (This is verified by the fact that the calculation is triggered on
+                # each request)
                 # We can't easily test the exact positions without parsing HTML,
                 # but we can verify that the calculation was triggered
 
     @pytest.mark.skip(
-        reason="Session isolation issue: DetachedInstanceError in GamificationFrontendBridge"
+        reason=(
+            "Session isolation issue: DetachedInstanceError in "
+            "GamificationFrontendBridge"
+        )
     )
     def test_classification_not_shown_when_zero_scores(self, app, admin_user):
         """
@@ -581,7 +612,8 @@ class TestClassificationDisplay:
         hanno punteggi a zero (rack_difference = 0 e matches_won = 0).
 
         Scenario: gara avviata, primo turno creato ma nessuna partita completata.
-        La classificazione esiste nel DB ma con tutti zeri → non deve apparire nell'HTML.
+        La classificazione esiste nel DB ma con tutti zeri → non deve apparire
+        nell'HTML.
         """
         with app.test_client() as client:
             # Login as admin
@@ -640,7 +672,8 @@ class TestClassificationDisplay:
             gara = db.session.get(Gara, gara_id)
 
             # 4. Create classification records manually with ALL ZERO scores
-            # This simulates a scenario where classification exists but no one has played yet
+            # This simulates a scenario where classification exists but no one has
+            # played yet
             for i, player in enumerate(players):
                 existing = RoundClassification.query.filter_by(
                     gara_id=gara.id, round_number=1, user_id=player.id
@@ -678,9 +711,10 @@ class TestClassificationDisplay:
             ), "Desktop classification should not be shown when all scores are zero"
 
             # Should NOT show mobile classification (compact/completa toggle)
-            assert (
-                '<option value="compact">' not in html_content
-            ), "Mobile classification toggle should not be shown when all scores are zero"
+            assert '<option value="compact">' not in html_content, (
+                "Mobile classification toggle should not be shown when all scores are "
+                "zero"
+            )
 
             # Should NOT show the classification card with trophy icon
             assert (
@@ -689,7 +723,10 @@ class TestClassificationDisplay:
             ), "Classification card should not appear when all scores are zero"
 
     @pytest.mark.skip(
-        reason="Session isolation issue: DetachedInstanceError in GamificationFrontendBridge"
+        reason=(
+            "Session isolation issue: DetachedInstanceError in "
+            "GamificationFrontendBridge"
+        )
     )
     def test_classification_shown_when_at_least_one_score(self, app, admin_user):
         """
@@ -801,6 +838,7 @@ class TestClassificationDisplay:
             )
             has_mobile_classification = '<option value="compact">' in html_content
 
-            assert (
-                has_desktop_classification or has_mobile_classification
-            ), "Classification should be shown when at least one player has non-zero scores"
+            assert has_desktop_classification or has_mobile_classification, (
+                "Classification should be shown when at least one player has non-zero "
+                "scores"
+            )

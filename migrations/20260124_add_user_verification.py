@@ -14,15 +14,18 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
     """Run migration for SQLite."""
     db_file = Path(db_path)
     if not db_file.exists():
-        # Try alternate path if default doesn't exist (e.g. tornei_biliardo.db vs billiard_campionato.db)
-        # The user seems to be using tornei_biliardo.db in the update_schema script attempt
+        # Try alternate path if default doesn't exist (e.g. tornei_biliardo.db vs
+        # billiard_campionato.db)
+        # The user seems to be using tornei_biliardo.db in the update_schema script
+        # attempt
         alt_path = "instance/tornei_biliardo.db"
         if Path(alt_path).exists():
             db_path = alt_path
             db_file = Path(db_path)
         else:
             print(f"Database not found at {db_path} or instance/tornei_biliardo.db")
-            # Proceeding anyway as it might be created later or we want to test connections,
+            # Proceeding anyway as it might be created later or we want to test
+            # connections,
             # but standard runner checks logic often happens outside.
 
     if not db_file.exists():
@@ -67,7 +70,7 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
         """)
 
         cursor.execute("""
-            CREATE INDEX IF NOT EXISTS ix_user_token_token 
+            CREATE INDEX IF NOT EXISTS ix_user_token_token
             ON user_token (token)
         """)
 

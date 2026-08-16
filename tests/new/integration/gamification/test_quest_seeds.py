@@ -2,7 +2,6 @@
 
 from datetime import date, datetime, time, timedelta
 
-import pytest
 
 from models.base import db
 from models.gamification.quest_seeds import (

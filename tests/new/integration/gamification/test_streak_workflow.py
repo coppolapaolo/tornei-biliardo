@@ -10,14 +10,10 @@ Tests the complete streak lifecycle:
 - Event emission for notifications
 """
 
-import pytest
-from datetime import date
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 from models.gamification.streak_service import StreakService
-from models.gamification.level_service import LevelService
 from models.gamification.models import (
-    StreakTracker,
     StreakType,
     UserLevel,
     XPTransaction,

@@ -15,7 +15,9 @@ from utils.image_paths import ImagePathManager
 
 @pytest.mark.integration
 class TestRandomStrategyChallengeImages:
-    """Test challenge images visibility in random strategy gara details for player and guest."""
+    """Test challenge images visibility in random strategy gara details for player and
+    guest.
+    """
 
     @pytest.fixture
     def admin_user(self, db_session) -> User:
@@ -143,7 +145,9 @@ class TestRandomStrategyChallengeImages:
     def test_challenge_model_image_properties(
         self, db_session, challenge_with_image, challenge_with_different_image
     ):
-        """Test that Challenge model correctly handles image paths and filename extraction."""
+        """Test that Challenge model correctly handles image paths and filename
+        extraction.
+        """
         # First challenge with JPG image - use centralized path for comparison
         expected_jpg_path = ImagePathManager.get_challenge_db_path(
             "spot_shot_9ball.jpg"
@@ -276,8 +280,10 @@ class TestRandomStrategyChallengeImages:
         for gara_challenge in gara_challenges:
             challenge = gara_challenge.challenge
 
-            # This simulates the template logic from player/gara_detail.html lines 320-340
-            # Since all challenges have image_path (required field), they all render as img
+            # This simulates the template logic from player/gara_detail.html lines
+            # 320-340
+            # Since all challenges have image_path (required field), they all render as
+            # img
             # Use centralized URL generation like templates do
             template_url = ImagePathManager.get_challenge_url_path_from_db_path(
                 challenge.image_path
@@ -379,7 +385,8 @@ class TestRandomStrategyChallengeImages:
         # Verify that challenge data is properly structured for display
         assert len(challenge_display_data) == 2
 
-        # Both challenges should be visible with their images - use centralized URL generation
+        # Both challenges should be visible with their images - use centralized URL
+        # generation
         image_urls = [cd["image_url"] for cd in challenge_display_data]
         assert len(image_urls) == 2, "Both challenges should have image URLs"
 
@@ -401,7 +408,9 @@ class TestRandomStrategyChallengeImages:
     def test_challenge_images_in_random_strategy_context(
         self, db_session, random_gara_with_challenges
     ):
-        """Test that challenge images work correctly in the context of random strategy."""
+        """
+        Test that challenge images work correctly in the context of random strategy.
+        """
         gara = random_gara_with_challenges
 
         # Verify this is indeed a random strategy gara

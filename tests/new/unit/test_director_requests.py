@@ -2,7 +2,6 @@
 
 import pytest
 import uuid
-from datetime import datetime
 
 from models import User, DirectorRequest
 from models.user.role_enum import UserRole
@@ -157,7 +156,10 @@ class TestDirectorRequestService:
                 description="Test achievement for director eligibility",
                 category=AchievementCategory.MILESTONE,
                 difficulty=AchievementDifficulty.UNCOMMON,
-                requirements='{"type": "director_eligibility", "min_gare": 10, "min_campionati_completi": 1}',
+                requirements=(
+                    '{"type": "director_eligibility", "min_gare": 10, '
+                    '"min_campionati_completi": 1}'
+                ),
                 is_progressive=False,
                 xp_reward=200,
             )

@@ -254,7 +254,8 @@ class TestSelectTrioCompanions:
         anchor = 100  # Paolo, index 1
         # Pairs from salto (after swap)
         pairs: List[Tuple[int, int]] = [(10, 40), (30, 60), (50, 70)]
-        # player1=10(idx0), MAX_P=40(idx3), BRUNO=30(idx2), CRISTIAN=60(idx5), PICCHIO=50(idx4), EGLE=70(idx6)
+        # player1=10(idx0), MAX_P=40(idx3), BRUNO=30(idx2), CRISTIAN=60(idx5),
+        # PICCHIO=50(idx4), EGLE=70(idx6)
         trio_counts = {100: 0, 10: 1, 40: 1, 30: 1, 60: 1, 50: 1, 70: 1}
         encounter_matrix: Dict[Tuple[int, int], bool] = {}  # No rematches
         p2i = {10: 0, 100: 1, 30: 2, 40: 3, 50: 4, 60: 5, 70: 6}
@@ -344,7 +345,8 @@ class TestAmalfiPairingTrioIntegration:
         monkeypatch.setattr(
             strategy, "_get_players_with_bye", lambda gara_id: players_with_bye or set()
         )
-        # Patch PlayerEncounterService.get_encounter_matrix (usata sia dal salto sia da Step 3)
+        # Patch PlayerEncounterService.get_encounter_matrix (usata sia dal salto sia da
+        # Step 3)
         monkeypatch.setattr(
             "models.classification.encounter_service.PlayerEncounterService"
             ".get_encounter_matrix",
@@ -393,7 +395,7 @@ class TestAmalfiPairingTrioIntegration:
         trio = [p for p in result if p.is_trio][0]
         trio_list = list(trio.players)
         # Should be sorted by classification position (index order)
-        positions = [classifica[0].gara_id for _ in trio_list]  # dummy
+        [classifica[0].gara_id for _ in trio_list]  # dummy
         player_positions = {c.user_id: c.position for c in classifica}
         sorted_by_pos = sorted(trio_list, key=lambda p: player_positions[p])
         assert trio_list == sorted_by_pos

@@ -93,7 +93,9 @@ class TestGuestGaraAccess:
     def test_guest_cannot_view_details_in_current_logic(
         self, db_session, gara_with_open_inscriptions
     ):
-        """Test current behavior: guest sees gara in public list but button logic needs to be checked."""
+        """Test current behavior: guest sees gara in public list but button logic needs
+        to be checked.
+        """
         # Simulate what happens in main.py for guest (index route)
 
         # This is how guest sees standalone garas (from main.py lines 38-44)
@@ -111,7 +113,8 @@ class TestGuestGaraAccess:
                 found_gara = gara
                 break
 
-        # Guest can see the gara since inscriptions are open (status = INSCRIPTION, not SETUP)
+        # Guest can see the gara since inscriptions are open (status = INSCRIPTION, not
+        # SETUP)
         assert found_gara is not None, "Guest should see gara with inscriptions open"
         assert found_gara.status == GaraStatus.INSCRIPTION.value
 
@@ -121,7 +124,9 @@ class TestGuestGaraAccess:
     def test_guest_should_view_details_when_inscriptions_open(
         self, db_session, gara_with_open_inscriptions
     ):
-        """Test desired behavior: guest should view details when inscriptions are open (THIS SHOULD PASS after we implement)."""
+        """Test desired behavior: guest should view details when inscriptions are open
+        (THIS SHOULD PASS after we implement).
+        """
         # This test represents the desired behavior
         # We'll implement a for_guest method in DashboardService
 

@@ -4,7 +4,8 @@ Migration: Fix foreign key references from match_backup to match
 Date: 2026-01-07
 Description:
 - Fix FK references in child tables that incorrectly point to match_backup
-- Affected tables: rack, match_result, trio_match, set, tiebreaker, hidden_match, gara_bye_challenge
+- Affected tables: rack, match_result, trio_match,
+    set, tiebreaker, hidden_match, gara_bye_challenge
 """
 
 import sqlite3
@@ -54,7 +55,10 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
                     created_at DATETIME
                 )
             """,
-            "columns": "id, match_id, user_id, player1_score, player2_score, winner_id, created_at",
+            "columns": (
+                "id, match_id, user_id, player1_score, player2_score, winner_id, "
+                "created_at"
+            ),
         },
         {
             "name": "trio_match",
@@ -78,7 +82,8 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
             """,
             "columns": "id, match_id, player1_id, player2_id, player3_id, "
             "current_player1_id, current_player2_id, waiting_player_id, "
-            "player1_racks, player2_racks, player3_racks, is_completed, winner_id, created_at",
+            "player1_racks, player2_racks, player3_racks, is_completed, winner_id, "
+            "created_at",
         },
         {
             "name": "set",
@@ -154,7 +159,8 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
                 CREATE TABLE gara_bye_challenge (
                     id INTEGER NOT NULL PRIMARY KEY,
                     gara_id INTEGER NOT NULL REFERENCES gara(id) ON DELETE CASCADE,
-                    challenge_attempt_id INTEGER REFERENCES challenge_attempt(id) ON DELETE SET NULL,
+                    challenge_attempt_id INTEGER REFERENCES challenge_attempt(id)
+                        ON DELETE SET NULL,
                     round_number INTEGER NOT NULL,
                     user_id INTEGER NOT NULL REFERENCES user(id) ON DELETE CASCADE,
                     match_id INTEGER REFERENCES match(id) ON DELETE SET NULL,
@@ -162,7 +168,8 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
                     completed_at DATETIME,
                     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                    CONSTRAINT uq_gara_bye_challenge UNIQUE (gara_id, user_id, round_number)
+                    CONSTRAINT uq_gara_bye_challenge
+                        UNIQUE (gara_id, user_id, round_number)
                 )
             """,
             "columns": "id, gara_id, challenge_attempt_id, round_number, user_id, "
@@ -228,10 +235,16 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
     # Re-create indexes for hidden_match
     try:
         cursor.execute(
-            "CREATE INDEX IF NOT EXISTS idx_hidden_match_user_id ON hidden_match(user_id)"
+            (
+                "CREATE INDEX IF NOT EXISTS idx_hidden_match_user_id ON "
+                "hidden_match(user_id)"
+            )
         )
         cursor.execute(
-            "CREATE INDEX IF NOT EXISTS idx_hidden_match_match_id ON hidden_match(match_id)"
+            (
+                "CREATE INDEX IF NOT EXISTS idx_hidden_match_match_id ON "
+                "hidden_match(match_id)"
+            )
         )
         print("Re-created indexes for hidden_match")
     except sqlite3.Error as e:
@@ -240,7 +253,10 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
     # Re-create index for gara_bye_challenge
     try:
         cursor.execute(
-            "CREATE INDEX IF NOT EXISTS ix_gara_bye_challenge_gara_id ON gara_bye_challenge(gara_id)"
+            (
+                "CREATE INDEX IF NOT EXISTS ix_gara_bye_challenge_gara_id ON "
+                "gara_bye_challenge(gara_id)"
+            )
         )
         print("Re-created index for gara_bye_challenge")
     except sqlite3.Error as e:

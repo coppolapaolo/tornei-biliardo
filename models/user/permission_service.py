@@ -48,7 +48,8 @@ class UserPermissionService:
             DirectorRequest: Newly created request in pending status
 
         Raises:
-            ValueError: If user not found, already director/admin, or has pending request
+            ValueError: If user not found, already director/admin, or has pending
+            request
 
         Business Rules:
             - Directors and admins cannot request promotion
@@ -68,7 +69,8 @@ class UserPermissionService:
 
         if not AchievementService.has_achievement(user_id, "aspiring_director"):
             raise ValueError(
-                "Devi sbloccare l'achievement 'Aspirante Direttore' per richiedere questo ruolo. "
+                "Devi sbloccare l'achievement 'Aspirante Direttore' per richiedere "
+                "questo ruolo. "
                 "Partecipa ad almeno 10 gare o completa un campionato intero."
             )
 
@@ -232,7 +234,8 @@ class UserPermissionService:
             - Returns False if user is already director or admin
             - Returns False if user doesn't have 'Aspirante Direttore' achievement
             - Returns False if user has pending request
-            - Returns True only if user is regular player with achievement and no pending request
+            - Returns True only if user is regular player with achievement
+                and no pending request
         """
         user = db.session.get(User, user_id)
         if not user:

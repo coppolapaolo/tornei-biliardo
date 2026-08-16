@@ -113,7 +113,7 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
                 updated_count += 1
 
         conn.commit()
-        print(f"Migration completed successfully!")
+        print("Migration completed successfully!")
         print(f"   Updated {updated_count} notifications with raw key format")
 
     except sqlite3.OperationalError as e:

@@ -1,7 +1,8 @@
 """Tournament Matchmaking System
 
 This module provides a comprehensive matchmaking system for American Pool tournaments,
-implementing the Strategy Pattern to support multiple tournament formats while maintaining
+implementing the Strategy Pattern to support multiple tournament formats while
+maintaining
 consistent interfaces and behavior.
 
 Core Components:

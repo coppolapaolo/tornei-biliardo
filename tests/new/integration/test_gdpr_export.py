@@ -200,7 +200,8 @@ class TestGDPRExport:
             # Try path traversal - should be blocked by either 400 (bad request)
             # or 404 (Flask routing rejects slashes in filename)
             response = client.get(
-                f"/player/gdpr-export/download/{player_with_data.id}_../../../etc/passwd"
+                f"/player/gdpr-export/download/{player_with_data.id}_../../.."
+                f"/etc/passwd"
             )
 
             assert response.status_code in [400, 404]

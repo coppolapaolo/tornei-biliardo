@@ -4,8 +4,6 @@ import pytest
 import uuid
 from models.user.services import UserService
 from models.user.profile_service import UserProfileService
-from models.user.models import User
-from models.user.role_enum import UserRole
 
 
 @pytest.mark.unit
@@ -69,8 +67,10 @@ class TestCaseSensitiveUsername:
         )
         db_session.commit()
 
-        # Attempting to create same username with DIFFERENT case should now SUCCEED in service layer
-        # (Though NOTE: if the DB has a case-insensitive constraint, it might still fail at commit)
+        # Attempting to create same username with DIFFERENT case should now SUCCEED in
+        # service layer
+        # (Though NOTE: if the DB has a case-insensitive constraint, it might still fail
+        # at commit)
         try:
             UserProfileService.create_user(
                 username=username.lower(),
@@ -83,13 +83,15 @@ class TestCaseSensitiveUsername:
         except ValueError as e:
             # If service still blocks it case-insensitively, this would be an error
             pytest.fail(
-                f"Should allow registration of '{username.lower()}' even if '{username}' exists: {e}"
+                (
+                    f"Should allow registration of '{username.lower()}' even if "
+                    f"'{username}' exists: {e}"
+                )
             )
         except Exception as e:
             # DB level error (e.g. UniqueConstraint in SQLite if not careful)
             # SQLite unique constraints on VARCHAR are case-sensitive by default.
             print(f"DB level block (might be expected depending on DB config): {e}")
-            pass
 
     def test_block_admin_variants(self, db_session):
         """Test that variants of 'admin' are blocked during registration."""

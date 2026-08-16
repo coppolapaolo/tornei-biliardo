@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import List, Optional, TYPE_CHECKING
 from enum import Enum
 
-from ..base import db, BaseModel, TimestampMixin, utc_now
+from ..base import db, BaseModel, utc_now
 from ..status_enum import Discipline
 
 if TYPE_CHECKING:
@@ -65,7 +65,8 @@ class MatchProposal(BaseModel):
         db.ForeignKey("billiard_hall.id", ondelete="SET NULL"),
         nullable=True,
     )
-    # Legacy: string-based location (kept for backward compatibility, will be deprecated)
+    # Legacy: string-based location (kept for backward compatibility, will be
+    # deprecated)
     location = db.Column(
         db.String(255), nullable=True
     )  # Made nullable - prefer billiard_hall_id

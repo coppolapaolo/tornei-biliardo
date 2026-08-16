@@ -5,17 +5,17 @@ Executes only pending migrations and records them in migrations_history table.
 Usage:
     python migrations/runner.py                    # Run pending migrations
     python migrations/runner.py --status           # Show migration status
-    python migrations/runner.py --mark-all-applied # Mark all as applied (for existing DBs)
+    python migrations/runner.py --mark-all-applied # Mark all as applied (for existing
+        DBs)
 """
 
 import sqlite3
 import importlib.util
 import sys
 from pathlib import Path
-from datetime import datetime
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from models.base import utc_now
+from models.base import utc_now  # noqa: E402
 
 
 def get_db_path() -> str:
@@ -72,14 +72,14 @@ def run_migration(migration_path: Path, db_path: str) -> bool:
             module.upgrade_sqlite(db_path)
             return True
         else:
-            print(f"    Warning: No upgrade_sqlite function found")
+            print("    Warning: No upgrade_sqlite function found")
             return False
 
     except Exception as e:
         error_msg = str(e).lower()
         # Handle "already exists" errors as success
         if "duplicate column" in error_msg or "already exists" in error_msg:
-            print(f"    Already applied (column exists)")
+            print("    Already applied (column exists)")
             return True
         print(f"    Error: {e}")
         return False
@@ -88,7 +88,10 @@ def run_migration(migration_path: Path, db_path: str) -> bool:
 def record_migration(conn: sqlite3.Connection, migration_name: str) -> None:
     """Record a migration as applied."""
     conn.execute(
-        "INSERT OR IGNORE INTO migrations_history (migration_name, applied_at) VALUES (?, ?)",
+        (
+            "INSERT OR IGNORE INTO migrations_history (migration_name, applied_at) "
+            "VALUES (?, ?)"
+        ),
         (migration_name, utc_now().isoformat()),
     )
     conn.commit()
@@ -109,7 +112,10 @@ def show_status(conn: sqlite3.Connection) -> None:
 
     print("-" * 50)
     print(
-        f"Total: {len(all_migrations)} | Applied: {len(applied)} | Pending: {len(all_migrations) - len(applied)}"
+        (
+            f"Total: {len(all_migrations)} | Applied: {len(applied)} | Pending: "
+            f"{len(all_migrations) - len(applied)}"
+        )
     )
 
 

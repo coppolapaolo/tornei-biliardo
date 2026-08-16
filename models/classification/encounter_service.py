@@ -132,7 +132,8 @@ class PlayerEncounterService:
         Walkover trios (total_racks_played == 0) are excluded by default,
         so that survivors of a walkover are not penalized in trio rotation.
 
-        Coherent with AmalfiStrategy._get_trio_counts (spec-walkover-side-effects-unified).
+        Coherent with AmalfiStrategy._get_trio_counts
+            (spec-walkover-side-effects-unified).
 
         Args:
             gara_id: ID of the gara

@@ -510,7 +510,9 @@ pytest tests/new/unit/ -n auto && pytest tests/new/integration/ -n 4
 ### Testing Requirements
 - All new features MUST have tests in `tests/new/`
 - Test isolation: use `db_session.get()` not `refresh()`
-- Legacy tests (`tests/legacy/`) are not maintained
+- `tests/legacy/` non esiste più: era rimasta indietro fino a non importarsi
+  nemmeno (referenziava `UtilityMixin`, rimosso a giugno 2026), quindi nessuno
+  di quei test girava. Cancellata.
 - Unit tests: `-n auto` OK; Integration tests: `-n 4` (SQLite concurrency)
 - **EventBus isolation**: Never clear `EventBus._handlers = {}` in tests - preserve and restore:
   ```python

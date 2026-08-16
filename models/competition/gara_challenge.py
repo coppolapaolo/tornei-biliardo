@@ -1,7 +1,8 @@
 """
 Module: models/competition/gara_challenge.py
 Purpose: Models for integrating challenges into tournament competitions (Gara)
-Requirements: Support for challenge execution during tournaments with classification tracking
+Requirements: Support for challenge execution during tournaments with classification
+tracking
 Data Structures: GaraChallenge, GaraChallengeAttempt, GaraChallengeClassification
 
 Design Note (Sprint 11 - December 2025):
@@ -18,7 +19,7 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional, TYPE_CHECKING
 from sqlalchemy import desc
 
-from ..base import db, BaseModel, TimestampMixin, utc_now
+from ..base import db, BaseModel, utc_now
 from ..transaction import transactional
 
 if TYPE_CHECKING:
@@ -101,7 +102,10 @@ class GaraChallenge(BaseModel):
         return current_round >= self.round_number and self.is_active
 
     def __repr__(self) -> str:
-        return f"<GaraChallenge gara_id={self.gara_id} challenge_id={self.challenge_id} round={self.round_number}>"
+        return (
+            f"<GaraChallenge gara_id={self.gara_id} challenge_id={self.challenge_id} "
+            f"round={self.round_number}>"
+        )
 
 
 class GaraChallengeAttempt(BaseModel):
@@ -174,7 +178,10 @@ class GaraChallengeAttempt(BaseModel):
             self.passed = passed  # Only set if explicitly provided
 
     def __repr__(self) -> str:
-        return f"<GaraChallengeAttempt gara_challenge_id={self.gara_challenge_id} user_id={self.user_id} attempt={self.attempt_number}>"
+        return (
+            f"<GaraChallengeAttempt gara_challenge_id={self.gara_challenge_id} "
+            f"user_id={self.user_id} attempt={self.attempt_number}>"
+        )
 
 
 class GaraChallengeClassification(BaseModel):
@@ -229,8 +236,8 @@ class GaraChallengeClassification(BaseModel):
             .join(Inscription, User.id == Inscription.user_id)
             .filter(
                 Inscription.gara_id == gara_id,
-                Inscription.is_withdrawn == False,
-                Inscription.is_waitlist == False,
+                Inscription.is_withdrawn == False,  # noqa: E712
+                Inscription.is_waitlist == False,  # noqa: E712
             )
             .all()
         )
@@ -285,7 +292,8 @@ class GaraChallengeClassification(BaseModel):
 
                 classifications.append(classification)
 
-            # Sort by total_best_score DESC, then by total_all_attempts ASC (lower is better for tiebreaker)
+            # Sort by total_best_score DESC, then by total_all_attempts ASC (lower is
+            # better for tiebreaker)
             classifications.sort(
                 key=lambda x: (-x.total_best_score, x.total_all_attempts)
             )
@@ -297,7 +305,9 @@ class GaraChallengeClassification(BaseModel):
         return classifications
 
     def get_user_challenge_details(self) -> List[Dict[str, Any]]:
-        """Get detailed breakdown of user's performance across all challenges in this gara."""
+        """Get detailed breakdown of user's performance across all challenges in this
+        gara.
+        """
         gara_challenges = GaraChallenge.query.filter_by(
             gara_id=self.gara_id, is_active=True
         ).all()
@@ -328,4 +338,7 @@ class GaraChallengeClassification(BaseModel):
         return details
 
     def __repr__(self) -> str:
-        return f"<GaraChallengeClassification gara_id={self.gara_id} user_id={self.user_id} pos={self.position}>"
+        return (
+            f"<GaraChallengeClassification gara_id={self.gara_id} "
+            f"user_id={self.user_id} pos={self.position}>"
+        )

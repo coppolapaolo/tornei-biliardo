@@ -3,7 +3,6 @@
 Tests the Distance/Score formatting filters for template usage.
 """
 
-import pytest
 from utils.jinja import format_distance, format_score, format_distance_short
 from models.match.distance import Distance
 from models.match.score import RackScore, MatchScore

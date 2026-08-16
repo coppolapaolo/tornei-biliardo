@@ -6,9 +6,7 @@ between Match (tournament matches) and IndividualMatch (casual matches).
 """
 
 import pytest
-from datetime import datetime
-from models.base import db, utc_now
-from models.match.base_match import BaseMatchMixin
+from models.base import utc_now
 from models.status_enum import MatchStatus
 
 

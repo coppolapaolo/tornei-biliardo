@@ -64,8 +64,8 @@ class WithdrawPolicyService:
                     [MatchStatus.PENDING.value, MatchStatus.PLAYING.value]
                 ),
                 or_(Match.player1_id == user_id, Match.player2_id == user_id),
-                Match.is_bye == False,  # Skip bye matches
-                Match.is_trio == False,  # Skip trio matches (handled separately)
+                Match.is_bye == False,  # noqa: E712  Skip bye matches
+                Match.is_trio == False,  # noqa: E712  Skip trio matches
             )
             .all()
         )
@@ -80,7 +80,7 @@ class WithdrawPolicyService:
                 Match.status.in_(
                     [MatchStatus.PENDING.value, MatchStatus.PLAYING.value]
                 ),
-                Match.is_trio == True,
+                Match.is_trio == True,  # noqa: E712
                 TrioMatch.player3_id == user_id,
             )
             .all()
@@ -95,7 +95,7 @@ class WithdrawPolicyService:
                 Match.status.in_(
                     [MatchStatus.PENDING.value, MatchStatus.PLAYING.value]
                 ),
-                Match.is_trio == True,
+                Match.is_trio == True,  # noqa: E712
                 or_(Match.player1_id == user_id, Match.player2_id == user_id),
             )
             .all()

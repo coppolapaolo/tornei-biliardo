@@ -13,8 +13,10 @@ from flask import Blueprint
 
 player_bp = Blueprint("player", __name__)
 
-# Import all route modules to register their routes with the blueprint
-from . import (
+# Import all route modules to register their routes with the blueprint.
+# Servono per l'effetto collaterale (registrano le route sul blueprint),
+# non per il nome che legano: F401 qui e' atteso.
+from . import (  # noqa: F401,E402
     profile,
     privacy,
     account,

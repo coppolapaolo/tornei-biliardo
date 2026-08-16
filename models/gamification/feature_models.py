@@ -95,4 +95,7 @@ class UserFeatureUsage(db.Model, TimestampMixin):
     )
 
     def __repr__(self) -> str:
-        return f"<UserFeatureUsage user={self.user_id} feature={self.feature_code} count={self.usage_count}>"
+        return (
+            f"<UserFeatureUsage user={self.user_id} feature={self.feature_code} "
+            f"count={self.usage_count}>"
+        )

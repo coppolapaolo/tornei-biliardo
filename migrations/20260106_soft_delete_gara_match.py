@@ -9,7 +9,6 @@ Description:
 """
 
 import sqlite3
-from datetime import datetime
 
 
 def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
@@ -54,7 +53,7 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
         cursor.execute(
             "SELECT sql FROM sqlite_master WHERE type='table' AND name='match'"
         )
-        original_sql = cursor.fetchone()[0]
+        cursor.fetchone()[0]
 
         # Create backup table
         cursor.execute("ALTER TABLE match RENAME TO match_backup")
@@ -142,7 +141,7 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
 def downgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
     """Rollback migration (not fully reversible for Match table)."""
     conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
+    conn.cursor()
 
     # Note: SQLite doesn't support DROP COLUMN easily
     # We would need to recreate tables to fully rollback

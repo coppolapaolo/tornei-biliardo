@@ -36,7 +36,7 @@ sys.path.insert(0, os.path.dirname(_HERE))
 
 from prod_env import PRODUCTION_REQUIRED, bootstrap_or_exit  # noqa: E402
 from app import create_app  # noqa: E402
-from models import db, User  # noqa: E402
+from models import User  # noqa: E402
 from models.gamification.achievement_service import AchievementService  # noqa: E402
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -74,7 +74,10 @@ def main() -> int:
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="Non assegna nulla: stampa solo il numero di utenti che verrebbero valutati.",
+        help=(
+            "Non assegna nulla: stampa solo il numero di utenti che verrebbero "
+            "valutati."
+        ),
     )
     args = parser.parse_args()
 
