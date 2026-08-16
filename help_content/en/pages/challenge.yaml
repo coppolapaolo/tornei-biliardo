@@ -7,7 +7,7 @@ summary: "Skill drills you do on your own: for practice, for unlocking milestone
 screens: [challenge.challenge_catalog, challenge.challenge_detail, challenge.start_attempt,
   challenge.attempt_detail, challenge.create_challenge, challenge.edit_challenge,
   challenge.challenge_statistics, player.challenge_detail]
-related: [progressi, numero_dispari]
+related: [progressi, numero_dispari, esami]
 
 blocks:
   - type: text
@@ -123,7 +123,9 @@ blocks:
       - q: "I cannot see the Challenges section."
         a: "It is a feature that unlocks as you use the platform, like the Matches section. If it is not there yet, it will be."
       - q: "Can I repeat the same challenge?"
-        a: "Yes, except when it is part of a competition: there the number of attempts is set by the director."
+        a: "Yes, when you do it to practise. Inside a competition the number of attempts is set by the director, and inside an exam it is set by whoever composed it: there it can ask you for several attempts at the same drill, and the best one counts."
+      - q: "What is the difference between a challenge and an exam?"
+        a: "A challenge is a single drill. An exam is a sequence of several drills in order, and it can be certified by an examiner. See [Sitting an exam](/aiuto/giocare/esami)."
       - q: "Who checks that the score I claim is true?"
         a: "Outside competitions, nobody: it is practice, and your word counts. Inside a competition the director validates the results."
       - q: "Do challenges count towards the rating?"

@@ -83,6 +83,25 @@ HIDE_CSS = """
 html { scroll-behavior: auto !important; }
 """
 
+# CSS aggiuntivo per i soli scatti a pagina intera.
+#
+# Playwright compone `full_page` scorrendo la pagina, ma un elemento
+# `position: fixed` resta agganciato al viewport e viene dipinto **una volta,
+# in mezzo all'immagine**: la nav flottante del design system 7c finiva sopra
+# il contenuto, a meta' schermata, e un lettore la interpreterebbe come parte
+# della pagina. E' il motivo per cui `full_page` era documentato ma non usato
+# da nessuna voce del manifest.
+#
+# La barra si toglie solo qui: negli scatti normali e' vera, sta al suo posto
+# in fondo allo schermo, e nasconderla mostrerebbe un'app che non esiste.
+# I selettori sono i due `position: fixed` reali del tema (theme-7c.css): la
+# nav flottante e la mascotte. Non e' un elenco indovinato — un selettore che
+# non esiste non da' errore, semplicemente non nasconde niente, e il difetto
+# tornerebbe senza che nessuno se ne accorga.
+FULL_PAGE_CSS = """
+.c7-mobilenav, #chalky-container { display: none !important; }
+"""
+
 # Cornice e numeri di richiamo. Ricalcano i token del design system (accento
 # --c7-accent) perche' le schermate annotate stanno dentro le pagine di aiuto e
 # devono sembrare parte dello stesso disegno.
@@ -374,6 +393,8 @@ def _capture_one(
 
         page.goto(f"{base_url}{shot['route']}", wait_until="networkidle")
         page.add_style_tag(content=HIDE_CSS)
+        if shot.get("full_page") and not shot.get("clip"):
+            page.add_style_tag(content=FULL_PAGE_CSS)
 
         for selector in shot.get("click") or []:
             # Click via JS invece di `page.click`: i comandi che ci interessano

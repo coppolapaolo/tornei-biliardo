@@ -539,6 +539,171 @@ def _create_individual_match(db, players):
         log(f"match individuale non creato ({exc.__class__.__name__}: {exc})")
 
 
+def _grant_examiner(db, admin, users) -> bool:
+    """Concede il ruolo di esaminatore, che nessun `create_all()` produce.
+
+    Il ruolo e' **concedibile e ortogonale** (ADR-041): non e' un valore di
+    `user.role`, e' una riga in `role_grant`. Lo prende anche un giocatore e
+    non solo il direttore, di proposito: le due cose sono indipendenti, e un
+    dataset in cui coincidono lascerebbe credere il contrario a chi guarda le
+    figure.
+    """
+    from models.user.role_enum import GrantableRole
+    from models.user.role_grant_service import RoleGrantService
+
+    if admin is None:
+        log("esami non creati: manca l'utente admin che concede il ruolo")
+        return False
+    for user in users:
+        if RoleGrantService.has_role(user.id, GrantableRole.EXAMINER):
+            continue
+        RoleGrantService.grant(
+            user_id=user.id, role=GrantableRole.EXAMINER, granted_by=admin
+        )
+    db.session.commit()
+    log(f"ruolo esaminatore: {', '.join(u.username for u in users)}")
+    return True
+
+
+def _create_esami(db, director, players, challenges, venue):
+    """Un esame composto, piu' i tre stati che le sue schermate mostrano.
+
+    Un esame appena creato non basta alla guida: le pagine dell'area esami
+    cambiano faccia a seconda di dove sei arrivato, e senza gli stati
+    intermedi resterebbero schermate identiche con un elenco vuoto. Servono
+    quindi un allenamento gia' concluso, una trattativa aperta e una sessione
+    certificata a meta'.
+
+    E servono **candidati diversi**: la pagina di un esame mostra «Prova da
+    solo» a chi non ha niente in corso e «Riprendi» a chi ha un tentativo
+    aperto. Catturare i due stati con la stessa persona e' impossibile, quindi
+    Marco Rossi resta pulito (catalogo, dettaglio, modulo di richiesta), Elena
+    Ricci porta la trattativa e Sara Neri la sessione certificata.
+
+    Il primo drill chiede **tre prove**: e' l'unico modo di far vedere nelle
+    figure il «conta la migliore» introdotto con le prove multiple. Con una
+    prova sola la schermata non lo direbbe, e la guida spiegherebbe qualcosa
+    che nell'immagine non si vede.
+    """
+    from models.exam.request_service import ExamRequestService
+    from models.exam.services import ExamService
+
+    if len(challenges) < 2:
+        log("esami non creati: servono almeno due drill nel catalogo")
+        return
+
+    marco, elena, sara = players[0], players[5], players[3]
+    co_esaminatore = players[2]
+
+    from models import User
+    from models.user.role_enum import UserRole
+
+    admin = User.query.filter_by(role=UserRole.ADMIN.value).first()
+    if not _grant_examiner(db, admin, [director, co_esaminatore]):
+        return
+
+    esame = ExamService.create_exam(
+        actor=director,
+        name="Fondamentali — livello 1",
+        description=(
+            "Tre gesti di base, uno dopo l'altro: il tiro dal punto, la serie "
+            "senza errori e il controllo della battente. Si sostiene da soli "
+            "per allenarsi, oppure davanti a un esaminatore per farlo valere."
+        ),
+    )
+    db.session.commit()
+
+    drill_punteggio = ExamService.add_challenge_to_exam(
+        exam_id=esame.id,
+        challenge_id=challenges[0].id,
+        actor=director,
+        max_score=10,
+        max_attempts=3,
+    )
+    drill_passa = ExamService.add_challenge_to_exam(
+        exam_id=esame.id,
+        challenge_id=challenges[1].id,
+        actor=director,
+        max_attempts=1,
+    )
+    ExamService.add_examiner(
+        exam_id=esame.id, user_id=co_esaminatore.id, actor=director
+    )
+    db.session.commit()
+    log(f"esame «{esame.name}»: 2 drill, 2 esaminatori")
+
+    # ── Allenamento gia' concluso: da' statistiche non vuote all'esame e uno
+    #    storico al profilo. I tre punteggi sono 6, 9, 7 — vale 9, e si vede.
+    allenamento = ExamService.start_self_practice(actor=marco, exam_id=esame.id)
+    for numero, punteggio in enumerate([6, 9, 7], start=1):
+        ExamService.record_challenge_result(
+            attempt_id=allenamento.id,
+            exam_challenge_id=drill_punteggio.id,
+            actor=marco,
+            score=punteggio,
+            attempt_number=numero,
+        )
+    ExamService.record_challenge_result(
+        attempt_id=allenamento.id,
+        exam_challenge_id=drill_passa.id,
+        actor=marco,
+        passed=True,
+    )
+    ExamService.complete_attempt(attempt_id=allenamento.id, actor=marco)
+    db.session.commit()
+    log(f"allenamento in autonomia concluso da {marco.username}")
+
+    # ── Trattativa aperta: proposta del candidato, controproposta
+    #    dell'esaminatore. Serve alla figura «Come ci siete arrivati», che con
+    #    una proposta sola non mostrerebbe nessuno scambio.
+    quando = datetime.combine(date.today() + timedelta(days=4), time(20, 0))
+    trattativa = ExamRequestService.create_request(
+        actor=elena,
+        exam_id=esame.id,
+        scheduled_at=quando,
+        billiard_hall_id=venue.id,
+        expires_at=quando - timedelta(hours=6),
+        notes="Se per te va bene mi porto avanti con i fondamentali.",
+    )
+    db.session.commit()
+    ExamRequestService.counter_propose(
+        request_id=trattativa.id,
+        actor=director,
+        scheduled_at=quando + timedelta(minutes=90),
+    )
+    db.session.commit()
+    log(f"appuntamento in trattativa: {elena.username} ↔ {director.username}")
+
+    # ── Sessione certificata a meta': l'appuntamento e' stato accettato, il
+    #    candidato ha dato il via e due prove su tre sono registrate. E' lo
+    #    stato in cui un esaminatore vede davvero la schermata mentre lavora.
+    appuntamento = ExamRequestService.create_request(
+        actor=sara,
+        exam_id=esame.id,
+        scheduled_at=datetime.combine(date.today(), time(21, 0)),
+        billiard_hall_id=venue.id,
+        recipient_ids=[director.id],
+    )
+    db.session.commit()
+    ExamRequestService.accept(request_id=appuntamento.id, actor=director)
+    db.session.commit()
+    sessione = ExamService.open_certified_session(
+        actor=director, request_id=appuntamento.id
+    )
+    db.session.commit()
+    ExamService.accept_session_start(attempt_id=sessione.id, actor=sara)
+    for numero, punteggio in enumerate([7, 8], start=1):
+        ExamService.record_challenge_result(
+            attempt_id=sessione.id,
+            exam_challenge_id=drill_punteggio.id,
+            actor=director,
+            score=punteggio,
+            attempt_number=numero,
+        )
+    db.session.commit()
+    log(f"sessione certificata in corso: {sara.username} davanti a {director.username}")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -589,6 +754,7 @@ def main() -> int:
         _create_gara_bozza(db, campionato, director, venue)
         _create_gara_tabellone(db, director, venue, players)
         _create_individual_match(db, players)
+        _create_esami(db, director, players, challenges, venue)
 
         print("\nFatto. Credenziali dimostrative:")
         print(f"  direttore: {DEMO_DIRECTOR[0]} / {DEMO_PASSWORD}")

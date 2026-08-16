@@ -44,6 +44,7 @@ sections:
       - partite_amichevoli
       - sale_e_disponibilita
       - challenge
+      - esami
       - playoff
 
   - id: organizzare
@@ -82,4 +83,5 @@ sections:
       - notifiche
       - progressi
       - diventare_direttore
+      - diventare_esaminatore
       - privacy_e_dati

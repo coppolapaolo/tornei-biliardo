@@ -303,6 +303,47 @@ hints:
     page: creare_un_campionato
     section: punti_posizione
 
+  # --- Esami ---------------------------------------------------------------
+  - id: esame.prova_da_solo
+    label: "Prova da solo"
+    short: "Ti alleni: registri tu i punteggi e puoi fermarti e riprendere. Resta nel tuo storico ma non porta la certificazione."
+    anchor: esame-prova-da-solo
+    screens: [exam.exam_detail]
+    page: esami
+    section: due_modi
+
+  - id: esame.appuntamento
+    label: "Chiedi un appuntamento"
+    short: "L'esame che vale si fa di persona: proponi data, ora e sala a uno o più esaminatori. Il primo che accetta chiude per gli altri."
+    anchor: esame-appuntamento
+    screens: [exam.exam_detail, exam.request_form]
+    page: esami
+    section: appuntamento
+
+  - id: esame.quante_prove
+    label: "Quante prove"
+    short: "Quante volte il candidato ripete quel drill. Se è più di una vale la prova migliore, non la somma."
+    anchor: esame-quante-prove
+    screens: [exam.exam_detail]
+    page: diventare_esaminatore
+    section: comporre
+
+  - id: esame.punteggio_massimo
+    label: "Punteggio massimo"
+    short: "Quanto vale il drill dentro questo esame. È per-esame, non una proprietà del drill: lo stesso drill può pesare diversamente altrove."
+    anchor: esame-punteggio-massimo
+    screens: [exam.exam_detail]
+    page: diventare_esaminatore
+    section: comporre
+
+  - id: esame.ordine_drill
+    label: "L'ordine dei drill"
+    short: "I candidati li affrontano nella sequenza in cui li metti. Si riordina finché l'esame non è quello che volevi."
+    anchor: esame-ordine-drill
+    screens: [exam.exam_detail]
+    page: diventare_esaminatore
+    section: comporre
+
 
 tours:
   - screen: dashboard.dashboard
