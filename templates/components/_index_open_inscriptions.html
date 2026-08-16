@@ -49,7 +49,7 @@
 
             {% if card.inscription_end %}
             <p class="text-muted" style="margin: 8px 0 0; font-size: 12px; font-weight: 700;">
-                {{ _("Chiudono il") }} <span class="c7-num" data-utc="{{ card.inscription_end.isoformat() }}">{{ card.inscription_end|datetime_local }}</span>
+                {{ _("Chiudono il") }} <span class="c7-num">{{ card.inscription_end|datetime_local }}</span>
             </p>
             {% endif %}
 

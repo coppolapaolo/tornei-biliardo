@@ -373,15 +373,17 @@ class NotificationPreference(BaseModel):
         if not self.quiet_hours_start or not self.quiet_hours_end:
             return False
 
-        # Le quiet hours sono impostate dall'utente in ora locale italiana:
-        # converti il naive-UTC di utc_now() in Europe/Rome (DST incluso)
-        # prima del confronto, come fa format_datetime_local per il display.
-        from zoneinfo import ZoneInfo
+        # Le quiet hours le imposta l'utente, quindi valgono nel **suo** fuso
+        # (ADR-043) — non in quello di chi manda la notifica, e men che meno in
+        # uno scritto a mano qui: per un giocatore a New York la finestra
+        # risulterebbe spostata di sei ore, cioè silenzio nel pomeriggio e
+        # notifiche di notte.
+        from utils.local_time import UTC, resolve_timezone_for_user_id
 
         now = (
             utc_now()
-            .replace(tzinfo=ZoneInfo("UTC"))
-            .astimezone(ZoneInfo("Europe/Rome"))
+            .replace(tzinfo=UTC)
+            .astimezone(resolve_timezone_for_user_id(self.user_id))
             .time()
         )
 

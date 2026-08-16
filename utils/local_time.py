@@ -88,14 +88,20 @@ def resolve_timezone(user: Any = None) -> ZoneInfo:
 _LOCAL_FORMATS = ("%Y-%m-%dT%H:%M", "%Y-%m-%dT%H:%M:%S")
 
 
-def resolve_timezone_for_user_id(user_id: int) -> ZoneInfo:
+def resolve_timezone_for_user_id(user_id: Optional[int]) -> ZoneInfo:
     """Il fuso di un **destinatario preciso**, non del lettore corrente.
 
     Serve dove il testo si scrive per qualcun altro: una notifica per i due
     giocatori di un match, un promemoria composto da uno scheduled task. Lì
     ``current_user`` o non c'è o è la persona sbagliata, e il risultato — un
     orario plausibile ma di un'altra città — non ha modo di farsi notare.
+
+    Un id assente (riga non ancora persistita) vale il ripiego, e lo dice
+    esplicitamente invece di passare per l'eccezione di ``session.get``.
     """
+    if not user_id:
+        return FALLBACK_TIMEZONE
+
     try:
         from models.base import db
         from models.user.models import User
