@@ -381,6 +381,26 @@ hints:
   - individual_match.tpa_referto
   page: referto_tpa
   section: come-si-compila
+- id: challenge.ricerca
+  label: Search the title or the instructions…
+  short: 'It filters all three tabs at once, and the numbers next to the tab names update. It looks inside
+    the instructions too, not just the title.'
+  anchor: challenge-ricerca
+  screens:
+  - challenge.challenge_catalog
+  page: challenge
+  section: catalogo
+- id: challenge.titolo
+  label: Title
+  short: 'The name the drill goes by everywhere. It is optional: without one, it takes its number — «Drill
+    12».'
+  anchor: challenge-titolo
+  screens:
+  - challenge.create_challenge
+  - challenge.diagram_builder
+  - challenge.edit_diagram
+  page: challenge
+  section: crearle
 - id: drill.disegna
   label: Draw the drill
   short: 'No photo of the table? Draw the drill instead: place the balls, draw the shot, and the drawing

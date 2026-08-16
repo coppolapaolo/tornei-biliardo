@@ -162,6 +162,22 @@ class RoleGrantService:
         )
 
     @staticmethod
+    def holder_ids(role: GrantableRole) -> set[int]:
+        """Gli id dei titolari attivi, in **una** query.
+
+        Esiste per le liste: ``User.is_examiner`` interroga il DB per ogni
+        utente, quindi stampare la colonna «Esaminatore» in una tabella di
+        cinquanta righe costa cinquanta query. Qui se ne fa una sola e si
+        controlla l'appartenenza all'insieme.
+        """
+        rows = (
+            db.session.query(RoleGrant.user_id)
+            .filter(RoleGrant.role == role.value, RoleGrant.revoked_at.is_(None))
+            .all()
+        )
+        return {row[0] for row in rows}
+
+    @staticmethod
     def list_grants_history(role: GrantableRole) -> List[RoleGrant]:
         """Tutti i grant del ruolo, revocati inclusi — audit completo (US-A3)."""
         from sqlalchemy.orm import joinedload

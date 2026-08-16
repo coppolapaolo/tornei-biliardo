@@ -182,7 +182,7 @@ shots:
   - id: challenge-nuova
     route: /challenges/create
     as: Luca Bianchi
-    caption: "Il modulo per creare una challenge: descrizione, tipo di punteggio, foto della disposizione e, in fondo, «Disegna il drill» per chi la foto non ce l'ha."
+    caption: "Il modulo per creare una challenge: titolo, descrizione, tipo di punteggio, foto della disposizione e, in fondo, «Disegna il drill» per chi la foto non ce l'ha."
     # Pagina intera: «Non hai una foto? / Disegna il drill» sta in fondo, sotto
     # la piega, ed e' il punto da cui la guida fa partire il builder. Senza,
     # la didascalia prometterebbe un pulsante che nell'immagine non c'e'.

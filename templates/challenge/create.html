@@ -24,8 +24,20 @@
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
     <div class="c7-card">
+      <label for="title" class="form-label">{{ _("Titolo") }}</label>
+      <input type="text" class="form-control" id="title" name="title" maxlength="120"
+             placeholder="{{ _('es. Progressione lungo sponda') }}">
+      <div class="form-text">
+        {{ _("Facoltativo: senza, la challenge prende il suo numero progressivo (Drill 12).") }}
+      </div>
+    </div>
+
+    <div class="c7-card">
       <label for="description" class="form-label">{{ _("Che cosa deve fare il giocatore") }}</label>
-      <textarea class="form-control" id="description" name="description" rows="4" maxlength="500" required
+      {# Nessun `maxlength`: la colonna e' TEXT, e il limite di 500 caratteri
+         era una restrizione del solo modulo — tagliava a meta' le regole dei
+         drill articolati, senza nemmeno dirlo. #}
+      <textarea class="form-control" id="description" name="description" rows="8" required
                 placeholder="{{ _('es. Disponi 10 bilie lungo la sponda lunga e imbucale in sequenza…') }}"></textarea>
       <div class="form-text">{{ _("È il testo che il giocatore legge prima di provarci: sii preciso sulle regole.") }}</div>
     </div>
@@ -96,6 +108,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (toBuilder) {
         toBuilder.addEventListener('click', function (e) {
             const params = new URLSearchParams();
+            const title = document.getElementById('title').value.trim();
+            if (title) params.set('title', title);
             const desc = document.getElementById('description').value.trim();
             if (desc) params.set('description', desc);
             const scoring = document.querySelector('input[name="scoring_type"]:checked');

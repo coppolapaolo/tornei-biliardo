@@ -24,10 +24,19 @@ user_bp = Blueprint("user", __name__)
 @admin_required
 def users_list():
     """Lista di tutti gli utenti con statistiche"""
+    from models.user.role_enum import GrantableRole
+    from models.user.role_grant_service import RoleGrantService
+
     # Use the service layer instead of direct database access
     users = user_service.get_users_with_stats()
 
-    return render_template("admin/users_list.html", users=users)
+    # Una query sola per tutta la colonna «Esaminatore»: `user.is_examiner`
+    # nel template ne farebbe una per riga.
+    examiner_ids = RoleGrantService.holder_ids(GrantableRole.EXAMINER)
+
+    return render_template(
+        "admin/users_list.html", users=users, examiner_ids=examiner_ids
+    )
 
 
 @user_bp.route("/user/<int:user_id>")

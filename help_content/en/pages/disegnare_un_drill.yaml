@@ -48,12 +48,12 @@ blocks:
     caption: "«Draw the drill» is at the bottom of the form, below the photo field."
 
   - type: note
-    tone: warning
+    tone: info
     text: >-
-      The builder opens in **a page of its own**, and anything you had already
-      typed on the form is not carried over: the instructions and the scoring
-      type are written there. If you filled in the form first and then switch
-      to drawing, you type that text again.
+      The builder opens in **a page of its own**, but whatever you had already
+      typed on the form comes along: title, instructions and scoring type are
+      there waiting for you at the bottom, below the table. There is nothing to
+      type again.
 
   - type: heading
     id: schermata
@@ -259,9 +259,11 @@ blocks:
           screens where the drill will be looked at.
       - name: "Diagram title"
         text: >-
-          A caption at the top of the drawing, for example «Drill 1 — Stop
-          shot». It is optional: the name the drill appears under in the
-          catalogue is a different thing, and comes from the instructions.
+          A caption **inside the picture**, at the top of the drawing, for
+          example «Drill 1 — Stop shot». It is optional, and it is not the same
+          as the **«Title»** field at the foot of the page: that one is the name
+          the drill appears under in the catalogue, this one is writing on the
+          drawing.
 
   - type: heading
     id: posizioni
@@ -293,13 +295,15 @@ blocks:
 
   - type: text
     text: >-
-      Below the table, before the save button, there are the two things the
-      drawing on its own cannot say.
+      Below the table, before the save button, there are the things the drawing
+      on its own cannot say.
 
   - type: steps
     items:
+      - title: "Give the drill a name, if you like"
+        text: "The «Title» field is optional: it is the name the drill goes by in the catalogue. Without one, it takes its number — «Drill 12»."
       - title: "Write the instructions"
-        text: "In the «Instructions for whoever plays it» field: the drawing shows the layout, not the rule. How the score is counted has to be written in words, and it is required."
+        text: "In the «Instructions for whoever plays it» field: the drawing shows the layout, not the rule. How the score is counted has to be written in words, and it is required. As long as you need: there is no limit."
       - title: "Choose how it is scored"
         text: "«Scored» or «Passed or not passed»: the same two options as the ordinary form."
       - title: "Tap «Save the drill»"

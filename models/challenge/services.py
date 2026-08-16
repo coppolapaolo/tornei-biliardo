@@ -38,6 +38,7 @@ class ChallengeService:
         pass_fail_only: bool = False,
         created_by_id: Optional[int] = None,
         diagram_scene: Optional[str] = None,
+        title: Optional[str] = None,
     ) -> Challenge:
         """Crea una nuova sfida nel sistema.
 
@@ -49,11 +50,15 @@ class ChallengeService:
             diagram_scene: la scena del builder in JSON, se il drill e' stato
                 disegnato invece che fotografato. ``None`` per le foto, ed e'
                 cio' che dice se il disegno si potra' riaprire
+            title: nome del drill. Facoltativo: senza, il drill si chiama col
+                suo progressivo (``Drill 12``). La stringa vuota vale None —
+                un titolo di soli spazi non e' un titolo
 
         Returns:
             Challenge: L'oggetto sfida creato e persistito nel database
         """
         challenge = Challenge(
+            title=(title or "").strip() or None,
             description=description,
             pass_fail_only=pass_fail_only,
             image_path=image_path,
@@ -73,6 +78,7 @@ class ChallengeService:
         pass_fail_only: Optional[bool] = None,
         is_active: Optional[bool] = None,
         diagram_scene: Optional[str] = None,
+        title: Optional[str] = None,
     ) -> Challenge:
         """Aggiorna una sfida esistente con validazione.
 
@@ -83,6 +89,11 @@ class ChallengeService:
             pass_fail_only: Nuovo tipo di scoring (mantiene esistente se None)
             is_active: Nuovo stato attivo/inattivo (mantiene esistente se None)
             diagram_scene: Nuova scena del builder (mantiene esistente se None)
+            title: nuovo titolo. ``None`` non tocca niente — il campo non e'
+                stato inviato; la **stringa vuota** invece toglie il titolo, ed
+                e' quello che arriva da chi svuota la casella nel modulo. Senza
+                questa distinzione un titolo, una volta messo, non si potrebbe
+                piu' togliere
 
         Returns:
             Challenge: L'oggetto sfida aggiornato
@@ -95,6 +106,8 @@ class ChallengeService:
             raise ValueError("Challenge non trovata")
 
         # Aggiorna solo i campi specificati (pattern partial update)
+        if title is not None:
+            challenge.title = title.strip() or None
         if description is not None:
             challenge.description = description
         if image_path is not None:

@@ -5,7 +5,11 @@
    ridichiarata a ogni card. I comandi vivono in `_challenge_grid.html`.
 #}
 {% set stats = challenge.get_statistics() %}
+{# `data-search`: titolo e istruzioni in un campo solo, gia' minuscolo. La
+   ricerca del catalogo confronta qui — cosi' una parola che sta nelle regole
+   trova la challenge anche se il titolo non la nomina. #}
 <article class="c7-card challenge-card" data-challenge-id="{{ challenge.id }}"
+         data-search="{{ (challenge.get_display_name() ~ ' ' ~ challenge.description)|lower }}"
          data-challenge-url="{{ url_for('challenge.challenge_detail', challenge_id=challenge.id) }}"
          style="cursor: pointer; padding: 0; overflow: hidden; display: flex; flex-direction: column;">
     {# Foto del tavolo: è il contenuto principale della challenge, e va vista
@@ -13,7 +17,7 @@
     <div class="c7-diagram c7-diagram--card">
         {% if challenge.image_filename %}
         <img class="c7-diagram__img" src="{{ challenge_image_url(challenge) }}"
-             alt="{{ challenge.description[:60] }}"
+             alt="{{ challenge.get_display_name() }}"
              onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';">
         <div style="display: none; position: absolute; inset: 0; place-items: center; color: var(--c7-ink-faint); font-size: 30px;">
             <i class="fas fa-bullseye"></i>
@@ -37,7 +41,14 @@
     </div>
 
     <div style="padding: var(--c7-pad-card); display: flex; flex-direction: column; flex: 1;">
-        <p style="margin: 0; font-size: 14px; font-weight: 700; line-height: 1.45; flex: 1;">
+        {# Il titolo e' la riga che distingue una card dall'altra; le istruzioni
+           stanno sotto, in tono minore e limitate a tre righe — per intero
+           stanno nel dettaglio, e in griglia allungherebbero le card a caso. #}
+        <h3 style="margin: 0; font-size: 15px; font-weight: 800; letter-spacing: -.02em; line-height: 1.3;">
+            {{ challenge.get_display_name() }}
+        </h3>
+        <p class="text-muted" style="margin: 6px 0 0; font-size: 13px; font-weight: 600; line-height: 1.45; flex: 1;
+                  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
             {{ challenge.description }}
         </p>
         {% if challenge.created_by_id == current_user.id %}

@@ -26,18 +26,32 @@
 {% endblock %}
 
 {% block content %}
+{# La ricerca sta sopra le schede e vale per tutte e tre: filtrare solo la
+   scheda aperta vorrebbe dire cercare tre volte la stessa parola. Il filtro e'
+   client-side come nella lista utenti — le card sono gia' tutte nel documento,
+   e una chiamata al server per ogni tasto premuto non aggiungerebbe niente. #}
+<div style="margin-bottom: 16px;">
+    <label class="visually-hidden" for="challengeSearch">{{ _("Cerca fra le challenge") }}</label>
+    <input type="search" id="challengeSearch" class="form-control"
+           placeholder="{{ _('Cerca nel titolo o nelle istruzioni…') }}"
+           aria-label="{{ _('Cerca fra le challenge') }}">
+    <div class="c7-kicker d-none" id="challengeSearchEmpty" style="margin-top: 8px;">
+        {{ _("Nessuna challenge corrisponde alla ricerca.") }}
+    </div>
+</div>
+
 <nav class="nav-tabs nav" id="challengeTabs" role="tablist" style="margin-bottom: 20px;">
     <button class="nav-link active" id="all-tab" data-bs-toggle="pill" data-bs-target="#all-challenges" type="button" role="tab">
-        {{ _("Tutte") }} <span class="c7-num" style="margin-left: 6px;">{{ all_challenges|length }}</span>
+        {{ _("Tutte") }} <span class="c7-num" style="margin-left: 6px;" data-count-for="all-challenges">{{ all_challenges|length }}</span>
     </button>
     {% if current_user.is_authenticated and current_user.can_access('create_challenge')
           and feature_visible('challenge.create_challenge') %}
     <button class="nav-link" id="my-tab" data-bs-toggle="pill" data-bs-target="#my-challenges" type="button" role="tab">
-        {{ _("Le mie") }} <span class="c7-num" style="margin-left: 6px;">{{ my_challenges|length }}</span>
+        {{ _("Le mie") }} <span class="c7-num" style="margin-left: 6px;" data-count-for="my-challenges">{{ my_challenges|length }}</span>
     </button>
     {% endif %}
     <button class="nav-link" id="favorites-tab" data-bs-toggle="pill" data-bs-target="#favorite-challenges" type="button" role="tab">
-        {{ _("Preferite") }} <span class="c7-num" style="margin-left: 6px;">{{ favorite_challenges|length }}</span>
+        {{ _("Preferite") }} <span class="c7-num" style="margin-left: 6px;" data-count-for="favorite-challenges">{{ favorite_challenges|length }}</span>
     </button>
 </nav>
 
@@ -99,7 +113,35 @@
         deleteError: {{ _("Non è stato possibile eliminare la challenge.")|tojson }}
     };
 
+    // Ricerca nel catalogo: nasconde le card che non contengono il termine, in
+    // tutte e tre le schede, e aggiorna i contatori — un contatore che resta
+    // sul totale mentre a schermo ci sono due card e' peggio di nessuno.
+    function filterChallenges() {
+        const input = document.getElementById('challengeSearch');
+        if (!input) return;
+        const term = (input.value || '').trim().toLowerCase();
+        let total = 0;
+
+        document.querySelectorAll('.tab-pane').forEach(function (pane) {
+            let visible = 0;
+            pane.querySelectorAll('.challenge-card').forEach(function (card) {
+                const show = !term || (card.dataset.search || '').indexOf(term) !== -1;
+                card.classList.toggle('d-none', !show);
+                if (show) visible++;
+            });
+            const counter = document.querySelector('[data-count-for="' + pane.id + '"]');
+            if (counter) counter.textContent = visible;
+            total += visible;
+        });
+
+        const empty = document.getElementById('challengeSearchEmpty');
+        if (empty) empty.classList.toggle('d-none', !term || total > 0);
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
+        const search = document.getElementById('challengeSearch');
+        if (search) search.addEventListener('input', filterChallenges);
+
         document.addEventListener('click', function (e) {
             const favBtn = e.target.closest('.favorite-btn');
             if (favBtn) {

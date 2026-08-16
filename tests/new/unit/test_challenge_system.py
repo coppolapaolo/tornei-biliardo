@@ -52,6 +52,7 @@ class TestChallengeService:
         """Test challenge creation."""
         with app.app_context():
             challenge = ChallengeService.create_challenge(
+                title="Progressione lungo sponda",
                 description="New challenge description",
                 image_path="test_create.jpg",
                 pass_fail_only=False,
@@ -59,7 +60,7 @@ class TestChallengeService:
             )
 
             assert challenge.id is not None
-            assert challenge.get_display_name() == "New challenge description"
+            assert challenge.get_display_name() == "Progressione lungo sponda"
             assert challenge.description == "New challenge description"
             assert challenge.created_by_id == test_user.id
             assert challenge.is_active is True
@@ -69,7 +70,7 @@ class TestChallengeService:
             db.session.commit()
 
     def test_create_challenge_without_name(self, app, test_user):
-        """Test challenge creation without explicit name."""
+        """Senza titolo il nome è il progressivo, non le istruzioni troncate."""
         with app.app_context():
             challenge = ChallengeService.create_challenge(
                 description="Challenge without name",
@@ -78,7 +79,8 @@ class TestChallengeService:
             )
 
             assert challenge.id is not None
-            assert challenge.get_display_name() == "Challenge without name"
+            assert challenge.title is None
+            assert challenge.get_display_name() == f"Drill {challenge.id}"
             assert challenge.description == "Challenge without name"
 
             # Cleanup
@@ -370,23 +372,48 @@ class TestChallengeModel:
             db.session.commit()
 
     def test_get_display_name(self, app):
-        """Test challenge display name generation."""
-        with app.app_context():
-            # Challenge with name
-            challenge_with_name = Challenge(
-                description="Test challenge", image_path="test_display.jpg"
-            )
-            assert challenge_with_name.get_display_name() == "Test challenge"
+        """Il nome è il titolo; senza titolo, il progressivo.
 
-            # Challenge with long description
-            challenge_without_name = Challenge(
+        La descrizione non c'entra più: due drill che cominciano allo stesso
+        modo — ed è la norma, «Disponi le bilie…» — mostravano lo stesso nome.
+        """
+        with app.app_context():
+            challenge_with_title = Challenge(
+                title="Progressione lungo sponda",
+                description="Test challenge",
+                image_path="test_display.jpg",
+            )
+            assert (
+                challenge_with_title.get_display_name() == "Progressione lungo sponda"
+            )
+
+            # Titolo di soli spazi: non è un titolo.
+            challenge_blank_title = Challenge(
+                title="   ", description="Test challenge", image_path="test_blank.jpg"
+            )
+            db.session.add(challenge_blank_title)
+            db.session.flush()
+            assert challenge_blank_title.get_display_name() == (
+                f"Drill {challenge_blank_title.id}"
+            )
+
+            # Senza titolo la descrizione non finisce nel nome, per quanto lunga.
+            challenge_without_title = Challenge(
                 description=(
                     "Test challenge description that is quite long and needs truncation"
                 ),
                 image_path="test_long.jpg",
             )
-            display_name = challenge_without_name.get_display_name()
-            assert "Test challenge description" in display_name
+            db.session.add(challenge_without_title)
+            db.session.flush()
+            assert challenge_without_title.get_display_name() == (
+                f"Drill {challenge_without_title.id}"
+            )
+            assert "Test challenge description" not in (
+                challenge_without_title.get_display_name()
+            )
+
+            db.session.rollback()
 
     def test_get_statistics(self, app, test_challenge_with_attempts):
         """Test challenge statistics calculation."""

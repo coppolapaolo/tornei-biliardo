@@ -86,6 +86,7 @@
       </div>
       <form method="POST" action="{{ url_for('exam.accept_request', request_id=exam_request.id) }}"
             style="margin-top:12px">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="btn btn-success">{{ _("Accetto questo slot") }}</button>
       </form>
     </div>
@@ -100,6 +101,7 @@
     <div class="c7-sechead"><h2>{{ _("Rispondi") }}</h2></div>
     <div class="c7-card">
       <form method="POST" action="{{ url_for('exam.accept_request', request_id=exam_request.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="btn btn-success">{{ _("Accetto lo slot proposto") }}</button>
       </form>
 
@@ -108,6 +110,7 @@
       <div class="c7-label">{{ _("Oppure controproponi") }}</div>
       <form method="POST" action="{{ url_for('exam.counter_propose', request_id=exam_request.id) }}"
             style="margin-top:8px">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input class="form-control" type="datetime-local" name="scheduled_at" required>
         <div class="c7-rows__sub" style="margin-top:8px">
           {{ _("La sala resta la stessa se non ne indichi un'altra.") }}
@@ -122,6 +125,7 @@
     <div style="display:flex;gap:8px">
       {% if is_requester %}
       <form method="POST" action="{{ url_for('exam.cancel_request', request_id=exam_request.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="btn btn-outline-secondary btn-sm"
                 onclick="return confirm({{ _('Ritirare la richiesta?')|tojson }})">
           {{ _("Ritira la richiesta") }}
@@ -130,6 +134,7 @@
       {% endif %}
       {% if is_recipient and recipient and recipient.is_pending %}
       <form method="POST" action="{{ url_for('exam.decline_request', request_id=exam_request.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="btn btn-outline-secondary btn-sm">{{ _("Non posso") }}</button>
       </form>
       {% endif %}
@@ -145,6 +150,7 @@
   </a>
   {% elif is_recipient and exam_request.accepted_by_id == current_user.id %}
   <form method="POST" action="{{ url_for('exam.open_certified_session', request_id=exam_request.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <button type="submit" class="btn btn-success">{{ _("Apri la sessione") }}</button>
     <div class="c7-rows__sub" style="margin-top:8px">
       {{ _("Il candidato dovrà accettare l'inizio prima che tu possa registrare i punteggi.") }}

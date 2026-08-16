@@ -111,6 +111,14 @@ Allora **si interpreta**, non si inventa:
 
 ## Trappole del progetto
 
+- **Ogni `<form method="POST">` vuole il token CSRF**, prima riga dentro il
+  form: `<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">`.
+  Senza, la schermata è bellissima e il pulsante risponde 400 «Sessione
+  scaduta». Chi invia con `fetch` usa invece l'header
+  `{'X-CSRFToken': csrfToken()}`. **Nessun test te lo dirà**:
+  `WTF_CSRF_ENABLED = False` nella configurazione di test, quindi il buco si
+  vede solo provando l'azione a mano (punto 5 della verifica) — o in
+  produzione. Dettagli in `templates/CLAUDE.md`.
 - **Ogni stringa visibile dentro `_()`**, comprese quelle nei componenti che
   stai solo spostando. Le traduzioni EN si rigenerano a fine redesign.
 - **`|tojson` obbligatorio** per ogni stringa tradotta dentro JavaScript: un

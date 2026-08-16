@@ -378,6 +378,23 @@ hints:
     page: referto_tpa
     section: come-si-compila
 
+  # --- Catalogo e creazione dei drill --------------------------------------
+  - id: challenge.ricerca
+    label: "Cerca nel titolo o nelle istruzioni…"
+    short: "Filtra tutte e tre le linguette insieme, e i numeri accanto ai nomi si aggiornano. Cerca anche dentro le istruzioni, non solo nel titolo."
+    anchor: challenge-ricerca
+    screens: [challenge.challenge_catalog]
+    page: challenge
+    section: catalogo
+
+  - id: challenge.titolo
+    label: "Titolo"
+    short: "Il nome con cui la prova compare ovunque. È facoltativo: senza, prende il suo numero — «Drill 12»."
+    anchor: challenge-titolo
+    screens: [challenge.create_challenge, challenge.diagram_builder, challenge.edit_diagram]
+    page: challenge
+    section: crearle
+
   # --- Builder dei drill ---------------------------------------------------
   - id: drill.disegna
     label: "Disegna il drill"

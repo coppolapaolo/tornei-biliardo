@@ -22,13 +22,31 @@ blocks:
 
   - type: text
     text: >-
-      La sezione **Challenge** raccoglie tutte le prove disponibili, con la
-      descrizione, l'immagine della disposizione e le regole di punteggio. Puoi
-      metterne qualcuna fra i preferiti per ritrovarla in fretta.
+      La sezione **Challenge** raccoglie tutte le prove disponibili. Ogni
+      scheda mostra l'immagine della disposizione, il **nome della prova** in
+      grassetto e sotto le prime righe delle istruzioni. Puoi metterne qualcuna
+      fra i preferiti per ritrovarla in fretta.
 
   - type: shot
     shot: challenge-catalogo
     caption: "Il catalogo: ogni prova ha la sua immagine e il tipo di punteggio."
+
+  - type: text
+    text: >-
+      Sopra le linguette **Tutte**, **Le mie** e **Preferite** c'è la casella
+      **«Cerca nel titolo o nelle istruzioni…»**: mentre scrivi restano solo le
+      prove che contengono quella parola, in tutte e tre le linguette insieme, e
+      i numeri accanto ai nomi si aggiornano da soli. Se non corrisponde niente,
+      te lo dice.
+
+  - type: note
+    tone: info
+    title: "Perché una prova si chiama «Drill 7»"
+    text: >-
+      Il titolo è facoltativo. Chi crea una prova può darle un nome — e allora
+      è quello che si legge dappertutto, nel catalogo, negli esami e nelle
+      gare — oppure lasciarlo in bianco, e allora la prova prende il suo numero:
+      **Drill 7**.
 
   - type: heading
     id: allenarsi
@@ -85,12 +103,31 @@ blocks:
 
   - type: text
     text: >-
-      Un direttore di gara può aggiungere challenge al catalogo: descrizione,
-      immagine della disposizione delle bilie e tipo di punteggio.
+      Un direttore di gara può aggiungere challenge al catalogo: titolo,
+      istruzioni, immagine della disposizione delle bilie e tipo di punteggio.
 
   - type: shot
     shot: challenge-nuova
     caption: "Il modulo per creare una challenge. In fondo, «Disegna il drill» per chi la foto non ce l'ha."
+
+  - type: options
+    items:
+      - name: "Titolo"
+        values: "facoltativo"
+        text: >-
+          Il nome con cui la prova si presenta ovunque. Senza, prende il suo
+          numero — «Drill 12». Vale la pena scriverlo: venti prove che
+          cominciano tutte con «Disponi le bilie…» nel catalogo non si
+          distinguono l'una dall'altra.
+        hint: challenge.titolo
+      - name: "Che cosa deve fare il giocatore"
+        text: >-
+          Le istruzioni. **Non c'è un limite di lunghezza**: le regole
+          articolate si scrivono per esteso, senza doverle accorciare.
+      - name: "Come si valuta"
+        values: "a punteggio · riuscita o no"
+        text: >-
+          Le due possibilità spiegate qui sopra, in «Due modi di contare».
 
   - type: note
     tone: tip

@@ -64,6 +64,7 @@
   {# ── Comporre un esame (US-E1) ──────────────────────────────────────── #}
   <div class="c7-sechead"><h2>{{ _("Componi un nuovo esame") }}</h2></div>
   <form method="POST" action="{{ url_for('exam.create_exam') }}" class="c7-card">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label class="c7-label" for="name">{{ _("Nome") }}</label>
     <input class="form-control" type="text" id="name" name="name" required
            placeholder="{{ _('Fondamentali — livello 1') }}">
