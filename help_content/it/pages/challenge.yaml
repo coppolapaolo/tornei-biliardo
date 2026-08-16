@@ -4,9 +4,9 @@ kind: approfondimento
 audience: [giocatore]
 minutes: 3
 summary: "Prove di abilità da eseguire da soli: servono ad allenarsi, a sbloccare traguardi e — dentro una gara — a decidere gli spareggi."
-screens: [challenge.challenge_catalog, challenge.challenge_detail, challenge.start_attempt,
-  challenge.attempt_detail, challenge.create_challenge, challenge.edit_challenge,
-  challenge.challenge_statistics, player.challenge_detail]
+screens: [challenge.challenge_catalog, challenge.challenge_detail, challenge.training_session,
+  challenge.start_attempt, challenge.attempt_detail, challenge.create_challenge,
+  challenge.edit_challenge, challenge.challenge_statistics, player.challenge_detail]
 related: [progressi, numero_dispari]
 
 blocks:
@@ -30,14 +30,37 @@ blocks:
     shot: challenge-catalogo
     caption: "Il catalogo: ogni prova ha la sua immagine e il tipo di punteggio."
 
+  - type: heading
+    id: allenarsi
+    title: "Allenarsi su una prova"
+
+  - type: text
+    text: >-
+      Allenarsi vuol dire ripetere: dieci prove di fila, non una alla volta.
+      Per questo c'è **una schermata sola**, dove la foto della disposizione e
+      le istruzioni restano sotto gli occhi mentre registri una prova dopo
+      l'altra, senza mai cambiare pagina.
+
   - type: steps
     items:
       - title: "Scegli una challenge"
         text: "Apri la sua scheda e leggi le regole: come si dispongono le bilie e come si conta il punteggio."
-      - title: "Tocca «Inizia tentativo»"
-        text: "Da quel momento il tentativo è aperto e l'app aspetta il risultato."
-      - title: "Esegui e registra il punteggio"
-        text: "Al termine inserisci quanto hai fatto. Il tentativo entra nel tuo storico."
+      - title: "Tocca «Provala»"
+        text: "È il pulsante sulla scheda nel catalogo. Dalla pagina della challenge si chiama «Allenati su questo drill»."
+      - title: "Prepara il tavolo e gioca"
+        text: "La foto e le istruzioni restano in alto, sempre visibili: non devi ricordarti niente a memoria."
+      - title: "Registra com'è andata"
+        text: "Con i tasti «−» e «+» imposti il punteggio, oppure scegli «Superata» o «Non superata». Poi tocca «Registra la prova»."
+      - title: "Riprova quante volte vuoi"
+        text: "La prova compare subito in «Le tue prove», e in alto salgono «Prove registrate» e «Il tuo record». Il campo si azzera da solo: sei già pronto per la prossima."
+      - title: "Quando basta, tocca «Ho finito»"
+        text: "Torni al catalogo. Le prove restano nel tuo storico, e tornando sulla challenge ritrovi le ultime dieci."
+
+  - type: note
+    tone: info
+    text: >-
+      Riprovare non fa danni: resta il tuo **risultato migliore**. Una prova
+      andata male non cancella quella buona di prima.
 
   - type: heading
     id: due_tipi
@@ -100,6 +123,16 @@ blocks:
           punteggio migliore sta davanti.
 
   - type: note
+    tone: warning
+    title: "Dentro una gara si passa da un'altra parte"
+    text: >-
+      La challenge di una gara non si avvia dal catalogo: la trovi nella pagina
+      della gara, con il pulsante «Prova» (o «Continua», se hai già cominciato),
+      e prima di giocare l'app ti mostra una pagina di conferma. Lì il punteggio
+      conta per la classifica, e quante prove hai a disposizione lo stabilisce
+      il direttore: accanto alla challenge vedi quante ne hai già fatte.
+
+  - type: note
     tone: info
     title: "Spot Shot Rally"
     text: >-
@@ -123,7 +156,7 @@ blocks:
       - q: "Non vedo la sezione Challenge."
         a: "È una funzione che si sblocca con l'uso della piattaforma, come la sezione Match. Se non compare ancora, comparirà."
       - q: "Posso rifare la stessa challenge più volte?"
-        a: "Sì, salvo quando è inserita in una gara: lì il numero di tentativi lo stabilisce il direttore."
+        a: "Sì, ed è proprio il senso della schermata di allenamento: registri una prova dopo l'altra senza uscire. Dentro una gara è diverso: lì il numero di tentativi lo stabilisce il direttore."
       - q: "Chi controlla che il punteggio dichiarato sia vero?"
         a: "Fuori dalle gare, nessuno: è un allenamento, e vale la parola. Dentro una gara è il direttore a validare i risultati."
       - q: "Le challenge contano per il rating?"

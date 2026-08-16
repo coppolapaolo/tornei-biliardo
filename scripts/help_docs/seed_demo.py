@@ -373,6 +373,32 @@ def _create_challenges(db, director):
     return create
 
 
+def _allena_su_challenge(db, player, challenges) -> None:
+    """Qualche prova gia' registrata, per la schermata di allenamento.
+
+    Senza, la figura della guida mostrerebbe «Nessuna prova ancora» e un
+    record vuoto: il lettore vedrebbe la schermata che si ha *prima* di usarla,
+    proprio mentre il testo gli spiega l'elenco delle prove e il record. I
+    punteggi sono scritti qui e non sorteggiati perche' due catture successive
+    devono produrre immagini identiche (vedi il docstring del modulo).
+    """
+    from models.challenge.services import ChallengeService
+
+    numeriche = [c for c in challenges if not c.pass_fail_only]
+    if not player or not numeriche:
+        return
+
+    drill = numeriche[0]
+    for punteggio in (6, 4, 8):
+        ChallengeService.record_attempt(
+            user_id=player.id,
+            challenge_id=drill.id,
+            score=punteggio,
+        )
+    db.session.commit()
+    log(f"allenamento: 3 prove registrate su «{drill.get_display_name()}»")
+
+
 def _add_challenge_to_gara(db, gara, challenges) -> None:
     """Una prova di abilita' agganciata a un turno della gara.
 
@@ -585,6 +611,7 @@ def main() -> int:
         _backdate_gare(db, [gara_conclusa, gara_in_corso])
         challenges = _create_challenges(db, director)
         _add_challenge_to_gara(db, gara_in_corso, challenges)
+        _allena_su_challenge(db, players[0], challenges)
         _create_squadre(db, gara_iscrizioni, players[:5])
         _create_gara_bozza(db, campionato, director, venue)
         _create_gara_tabellone(db, director, venue, players)
