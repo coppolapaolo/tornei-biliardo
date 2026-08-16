@@ -9,17 +9,18 @@
             <form action="{{ url_for('admin.competition.open_inscriptions', gara_id=gara.id) }}" method="POST" id="inscriptionForm">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="modal-body">
-                    {# Vedi `_modify_dates_modal.html`: il fuso e' l'ora italiana,
-                       non quella del browser. #}
+                    {# Gli orari si leggono e si scrivono nel fuso di chi sta
+                       compilando (ADR-043): il server li converte con
+                       `parse_local_datetime`. #}
                     <div class="alert alert-info">
-                        <small><i class="fas fa-clock"></i> {{ _("Gli orari sono in ora italiana.") }}</small>
+                        <small><i class="fas fa-clock"></i> {{ _("Gli orari sono nel tuo fuso orario.") }}</small>
                     </div>
                     <div class="mb-3">
-                        <label for="inscription_start" class="form-label">{{ _("Inizio Iscrizioni (Ora Italiana)") }}</label>
+                        <label for="inscription_start" class="form-label">{{ _("Inizio Iscrizioni") }}</label>
                         <input type="datetime-local" class="form-control" name="inscription_start" id="inscription_start" required>
                     </div>
                     <div class="mb-3">
-                        <label for="inscription_end" class="form-label">{{ _("Fine Iscrizioni (Ora Italiana)") }}</label>
+                        <label for="inscription_end" class="form-label">{{ _("Fine Iscrizioni") }}</label>
                         <input type="datetime-local" class="form-control" name="inscription_end" id="inscription_end" required>
                     </div>
                 </div>

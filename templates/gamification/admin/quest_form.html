@@ -73,13 +73,13 @@
                    che l'admin aveva scritto. #}
                 <input type="datetime-local" class="form-control" id="start_date" name="start_date"
                        value="{{ quest.start_date|datetime_input if quest else '' }}">
-                <small class="text-muted">{{ _('Ora italiana. Lascia vuoto per iniziare subito') }}</small>
+                <small class="text-muted">{{ _('Nel tuo fuso orario. Lascia vuoto per iniziare subito') }}</small>
               </div>
               <div class="col-md-6 mb-3">
                 <label for="end_date" class="form-label">{{ _('Data Fine') }}</label>
                 <input type="datetime-local" class="form-control" id="end_date" name="end_date"
                        value="{{ quest.end_date|datetime_input if quest else '' }}">
-                <small class="text-muted">{{ _('Ora italiana. Lascia vuoto per durata standard') }}</small>
+                <small class="text-muted">{{ _('Nel tuo fuso orario. Lascia vuoto per durata standard') }}</small>
               </div>
             </div>
 

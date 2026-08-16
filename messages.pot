@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-16 10:05+0000\n"
+"POT-Creation-Date: 2026-08-16 10:30+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1353,78 +1353,82 @@ msgstr ""
 msgid "Il nome della quest è obbligatorio"
 msgstr ""
 
-#: routes/gamification/admin.py:135 routes/gamification/admin.py:268
-#: routes/gamification/admin.py:353 routes/gamification/admin.py:438
+#: routes/gamification/admin.py:135 routes/gamification/admin.py:283
+#: routes/gamification/admin.py:368 routes/gamification/admin.py:453
 msgid "Dati del form non validi"
 msgstr ""
 
-#: routes/gamification/admin.py:159
+#: routes/gamification/admin.py:156
+msgid "Date del form non valide"
+msgstr ""
+
+#: routes/gamification/admin.py:174
 msgid "Quest creata con successo"
 msgstr ""
 
-#: routes/gamification/admin.py:166
+#: routes/gamification/admin.py:181
 #: templates/gamification/admin/quest_form.html:10
 msgid "Crea Nuova Quest"
 msgstr ""
 
-#: routes/gamification/admin.py:177
+#: routes/gamification/admin.py:192
 msgid "Quest attivata"
 msgstr ""
 
-#: routes/gamification/admin.py:188
+#: routes/gamification/admin.py:203
 msgid "Quest scaduta"
 msgstr ""
 
-#: routes/gamification/admin.py:199
+#: routes/gamification/admin.py:214
 msgid "Quest eliminata"
 msgstr ""
 
-#: routes/gamification/admin.py:246
+#: routes/gamification/admin.py:261
 #: templates/gamification/admin/achievements.html:2
 #: templates/gamification/admin/achievements.html:8
 msgid "Gestione Achievement"
 msgstr ""
 
-#: routes/gamification/admin.py:286
+#: routes/gamification/admin.py:301
 msgid "Achievement creato con successo"
 msgstr ""
 
-#: routes/gamification/admin.py:294
+#: routes/gamification/admin.py:309
 #: templates/gamification/admin/achievement_form.html:10
 msgid "Crea Nuovo Achievement"
 msgstr ""
 
-#: routes/gamification/admin.py:307
+#: routes/gamification/admin.py:322
 msgid "Stato achievement aggiornato"
 msgstr ""
 
-#: routes/gamification/admin.py:339
+#: routes/gamification/admin.py:354
 msgid "Gestione XP"
 msgstr ""
 
-#: routes/gamification/admin.py:358 routes/gamification/admin.py:442
+#: routes/gamification/admin.py:373 routes/gamification/admin.py:457
 msgid "Seleziona un utente valido"
 msgstr ""
 
-#: routes/gamification/admin.py:362
+#: routes/gamification/admin.py:377
 msgid "L'importo XP deve essere positivo"
 msgstr ""
 
-#: routes/gamification/admin.py:374
+#: routes/gamification/admin.py:389
 #, python-format
 msgid "Concessi %(n)s XP all'utente."
 msgstr ""
 
-#: routes/gamification/admin.py:385
+#: routes/gamification/admin.py:400
 msgid "Livello utente resettato a 1"
 msgstr ""
 
-#: routes/gamification/admin.py:425 templates/gamification/admin/streaks.html:2
+#: routes/gamification/admin.py:440 templates/gamification/admin/streaks.html:2
 #: templates/gamification/admin/streaks.html:8
 msgid "Gestione Streak"
 msgstr ""
 
-#: routes/gamification/admin.py:452
+#: routes/gamification/admin.py:467
 #, python-format
 msgid "Concessi %(n)s freeze all'utente."
 msgstr ""
@@ -6887,18 +6891,18 @@ msgid "Annullato"
 msgstr ""
 
 #: templates/components/_modify_dates_modal.html:17
-#: templates/components/_open_inscriptions_modal.html:15
-msgid "Gli orari sono in ora italiana."
+#: templates/components/_open_inscriptions_modal.html:16
+msgid "Gli orari sono nel tuo fuso orario."
 msgstr ""
 
 #: templates/components/_modify_dates_modal.html:20
-#: templates/components/_open_inscriptions_modal.html:18
-msgid "Inizio Iscrizioni (Ora Italiana)"
+#: templates/components/_open_inscriptions_modal.html:19
+msgid "Inizio Iscrizioni"
 msgstr ""
 
 #: templates/components/_modify_dates_modal.html:28
-#: templates/components/_open_inscriptions_modal.html:22
-msgid "Fine Iscrizioni (Ora Italiana)"
+#: templates/components/_open_inscriptions_modal.html:23
+msgid "Fine Iscrizioni"
 msgstr ""
 
 #: templates/components/_multi_set_score_display.html:14
@@ -9584,7 +9588,7 @@ msgid "Data Inizio"
 msgstr ""
 
 #: templates/gamification/admin/quest_form.html:76
-msgid "Ora italiana. Lascia vuoto per iniziare subito"
+msgid "Nel tuo fuso orario. Lascia vuoto per iniziare subito"
 msgstr ""
 
 #: templates/gamification/admin/quest_form.html:79
@@ -9592,7 +9596,7 @@ msgid "Data Fine"
 msgstr ""
 
 #: templates/gamification/admin/quest_form.html:82
-msgid "Ora italiana. Lascia vuoto per durata standard"
+msgid "Nel tuo fuso orario. Lascia vuoto per durata standard"
 msgstr ""
 
 #: templates/gamification/admin/quest_form.html:93

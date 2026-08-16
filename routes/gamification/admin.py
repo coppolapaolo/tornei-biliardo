@@ -139,8 +139,23 @@ def admin_create_quest():
         # italiana, mentre `Quest.is_active` li confronta con `utc_now()`. Letti
         # grezzi, una quest aperta "dalle 21:00" restava chiusa fino alle 23:00
         # — e scadeva due ore dopo il previsto, senza che nulla lo segnalasse.
-        start_date = parse_local_datetime(request.form.get("start_date")) or utc_now()
-        end_date = parse_local_datetime(request.form.get("end_date"))
+        #
+        # Campo vuoto e campo illeggibile non sono la stessa cosa: il primo
+        # significa "usa il default", il secondo che qualcosa è andato storto.
+        # `parse_local_datetime` risponde `None` a entrambi, quindi la
+        # distinzione va fatta qui — altrimenti una data manomessa (o mandata
+        # da un browser che non rispetta il formato) creerebbe in silenzio una
+        # quest che parte adesso e dura sette giorni, senza che nessuno lo
+        # sappia.
+        raw_start = (request.form.get("start_date") or "").strip()
+        raw_end = (request.form.get("end_date") or "").strip()
+
+        start_date = parse_local_datetime(raw_start) if raw_start else utc_now()
+        end_date = parse_local_datetime(raw_end) if raw_end else None
+        if (raw_start and start_date is None) or (raw_end and end_date is None):
+            flash(_("Date del form non valide"), "error")
+            return redirect(url_for("gamification.admin_create_quest"))
+
         if end_date is None:
             span = timedelta(days=7 if quest_type == "weekly" else 30)
             end_date = start_date + span

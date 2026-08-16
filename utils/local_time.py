@@ -20,6 +20,7 @@ per anni: in lettura la conversione c'era, in scrittura no, quindi chi digitava
 from __future__ import annotations
 
 from datetime import datetime
+from functools import lru_cache
 from typing import Any, Optional
 from zoneinfo import ZoneInfo, available_timezones
 
@@ -34,6 +35,19 @@ UTC = ZoneInfo("UTC")
 DISPLAY_TIMEZONE = FALLBACK_TIMEZONE
 
 
+@lru_cache(maxsize=1)
+def _known_timezones() -> frozenset:
+    """L'elenco dei fusi IANA, letto una volta sola.
+
+    ``available_timezones()`` non è memoizzata e a ogni chiamata rilegge il
+    database dei fusi da disco. Non sarebbe un problema se la si invocasse
+    di rado, ma ``is_valid_timezone`` sta dentro ``resolve_timezone``, che sta
+    dentro ogni filtro d'orario: una pagina con venti date la chiamerebbe venti
+    volte. L'elenco non cambia mentre il processo vive.
+    """
+    return frozenset(available_timezones())
+
+
 def is_valid_timezone(name: Optional[str]) -> bool:
     """Il nome è un fuso IANA vero?
 
@@ -42,7 +56,7 @@ def is_valid_timezone(name: Optional[str]) -> bool:
     ``ZoneInfoNotFoundError`` a ogni pagina che mostra un orario — cioè quasi
     tutte.
     """
-    return bool(name) and name in available_timezones()
+    return bool(name) and name in _known_timezones()
 
 
 def resolve_timezone(user: Any = None) -> ZoneInfo:

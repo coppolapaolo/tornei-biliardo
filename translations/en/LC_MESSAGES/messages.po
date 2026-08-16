@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-16 10:05+0000\n"
+"POT-Creation-Date: 2026-08-16 10:30+0000\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -1400,78 +1400,82 @@ msgstr "Quest Management"
 msgid "Il nome della quest è obbligatorio"
 msgstr "Quest name is required"
 
-#: routes/gamification/admin.py:135 routes/gamification/admin.py:268
-#: routes/gamification/admin.py:353 routes/gamification/admin.py:438
+#: routes/gamification/admin.py:135 routes/gamification/admin.py:283
+#: routes/gamification/admin.py:368 routes/gamification/admin.py:453
 msgid "Dati del form non validi"
 msgstr "Invalid form data"
 
-#: routes/gamification/admin.py:159
+#: routes/gamification/admin.py:156
+msgid "Date del form non valide"
+msgstr "Invalid form dates"
+
+#: routes/gamification/admin.py:174
 msgid "Quest creata con successo"
 msgstr "Quest created successfully"
 
-#: routes/gamification/admin.py:166
+#: routes/gamification/admin.py:181
 #: templates/gamification/admin/quest_form.html:10
 msgid "Crea Nuova Quest"
 msgstr "Create New Quest"
 
-#: routes/gamification/admin.py:177
+#: routes/gamification/admin.py:192
 msgid "Quest attivata"
 msgstr "Quest activated"
 
-#: routes/gamification/admin.py:188
+#: routes/gamification/admin.py:203
 msgid "Quest scaduta"
 msgstr "Quest expired"
 
-#: routes/gamification/admin.py:199
+#: routes/gamification/admin.py:214
 msgid "Quest eliminata"
 msgstr "Quest deleted"
 
-#: routes/gamification/admin.py:246
+#: routes/gamification/admin.py:261
 #: templates/gamification/admin/achievements.html:2
 #: templates/gamification/admin/achievements.html:8
 msgid "Gestione Achievement"
 msgstr "Achievement Management"
 
-#: routes/gamification/admin.py:286
+#: routes/gamification/admin.py:301
 msgid "Achievement creato con successo"
 msgstr "Achievement created successfully"
 
-#: routes/gamification/admin.py:294
+#: routes/gamification/admin.py:309
 #: templates/gamification/admin/achievement_form.html:10
 msgid "Crea Nuovo Achievement"
 msgstr "Create New Achievement"
 
-#: routes/gamification/admin.py:307
+#: routes/gamification/admin.py:322
 msgid "Stato achievement aggiornato"
 msgstr "Achievement status updated"
 
-#: routes/gamification/admin.py:339
+#: routes/gamification/admin.py:354
 msgid "Gestione XP"
 msgstr "XP Management"
 
-#: routes/gamification/admin.py:358 routes/gamification/admin.py:442
+#: routes/gamification/admin.py:373 routes/gamification/admin.py:457
 msgid "Seleziona un utente valido"
 msgstr "Select a valid user"
 
-#: routes/gamification/admin.py:362
+#: routes/gamification/admin.py:377
 msgid "L'importo XP deve essere positivo"
 msgstr "XP amount must be positive"
 
-#: routes/gamification/admin.py:374
+#: routes/gamification/admin.py:389
 #, python-format
 msgid "Concessi %(n)s XP all'utente."
 msgstr "Granted %(n)s XP to the user."
 
-#: routes/gamification/admin.py:385
+#: routes/gamification/admin.py:400
 msgid "Livello utente resettato a 1"
 msgstr "User level reset to 1"
 
-#: routes/gamification/admin.py:425 templates/gamification/admin/streaks.html:2
+#: routes/gamification/admin.py:440 templates/gamification/admin/streaks.html:2
 #: templates/gamification/admin/streaks.html:8
 msgid "Gestione Streak"
 msgstr "Streak Management"
 
-#: routes/gamification/admin.py:452
+#: routes/gamification/admin.py:467
 #, python-format
 msgid "Concessi %(n)s freeze all'utente."
 msgstr "Granted %(n)s freezes to the user."
@@ -7116,21 +7120,19 @@ msgid "Annullato"
 msgstr "Cancelled"
 
 #: templates/components/_modify_dates_modal.html:17
-#: templates/components/_open_inscriptions_modal.html:15
-#, fuzzy
-msgid "Gli orari sono in ora italiana."
-msgstr "Round-robin"
+#: templates/components/_open_inscriptions_modal.html:16
+msgid "Gli orari sono nel tuo fuso orario."
+msgstr "Times are shown in your time zone."
 
 #: templates/components/_modify_dates_modal.html:20
-#: templates/components/_open_inscriptions_modal.html:18
-msgid "Inizio Iscrizioni (Ora Italiana)"
-msgstr ""
+#: templates/components/_open_inscriptions_modal.html:19
+msgid "Inizio Iscrizioni"
+msgstr "Registration Start"
 
 #: templates/components/_modify_dates_modal.html:28
-#: templates/components/_open_inscriptions_modal.html:22
-#, fuzzy
-msgid "Fine Iscrizioni (Ora Italiana)"
-msgstr "Entries start"
+#: templates/components/_open_inscriptions_modal.html:23
+msgid "Fine Iscrizioni"
+msgstr "Registration End"
 
 #: templates/components/_multi_set_score_display.html:14
 #: templates/components/_user_recent_matches_table.html:32
@@ -8481,18 +8483,18 @@ msgstr "Available exams"
 
 #: templates/exam/catalog.html:36 templates/exam/catalog.html:70
 #: templates/exam/manage.html:49
-#, fuzzy, python-format
+#, python-format
 msgid "%(n)s drill"
 msgid_plural "%(n)s drill"
-msgstr[0] "%(n)s min"
-msgstr[1] ""
+msgstr[0] "%(n)s drill"
+msgstr[1] "%(n)s drills"
 
 #: templates/exam/catalog.html:38
-#, fuzzy, python-format
+#, python-format
 msgid "%(n)s esaminatore"
 msgid_plural "%(n)s esaminatori"
-msgstr[0] "administrator"
-msgstr[1] ""
+msgstr[0] "%(n)s examiner"
+msgstr[1] "%(n)s examiners"
 
 #: templates/exam/catalog.html:52
 msgid "Nessun esame disponibile"
@@ -9875,18 +9877,16 @@ msgid "Data Inizio"
 msgstr "Start Date"
 
 #: templates/gamification/admin/quest_form.html:76
-#, fuzzy
-msgid "Ora italiana. Lascia vuoto per iniziare subito"
-msgstr "Leave empty to start immediately"
+msgid "Nel tuo fuso orario. Lascia vuoto per iniziare subito"
+msgstr "In your time zone. Leave empty to start immediately"
 
 #: templates/gamification/admin/quest_form.html:79
 msgid "Data Fine"
 msgstr "End Date"
 
 #: templates/gamification/admin/quest_form.html:82
-#, fuzzy
-msgid "Ora italiana. Lascia vuoto per durata standard"
-msgstr "Leave empty for standard duration"
+msgid "Nel tuo fuso orario. Lascia vuoto per durata standard"
+msgstr "In your time zone. Leave empty for standard duration"
 
 #: templates/gamification/admin/quest_form.html:93
 msgid "Salva Quest"
