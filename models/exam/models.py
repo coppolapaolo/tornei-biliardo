@@ -24,7 +24,7 @@ alto.
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 from ..base import db, BaseModel, utc_now
 from ..status_enum import ExamAttemptMode, ExamAttemptStatus
@@ -160,6 +160,11 @@ class ExamChallenge(BaseModel):
     # pass/fail: il servizio lo impone in scrittura.
     max_score = db.Column(db.Integer, nullable=True)
 
+    # Quante prove di questo drill prevede l'esame. Il numero lo decide chi
+    # compone l'esame, non chi lo sostiene: è parte della prova, come il
+    # punteggio massimo. Default 1, che è l'esame di prima parola per parola.
+    max_attempts = db.Column(db.Integer, nullable=False, default=1, server_default="1")
+
     exam = db.relationship("Exam", back_populates="challenges")
     challenge = db.relationship("Challenge")
 
@@ -291,53 +296,118 @@ class ExamAttempt(BaseModel):
         )
 
     def create_placeholder_results(self) -> List["ExamChallengeResult"]:
-        """Crea un risultato vuoto per ogni drill dell'esame."""
+        """Crea un risultato vuoto per ogni **prova** prevista dall'esame.
+
+        Un drill con tre tentativi nasce con tre righe numerate: la sessione è
+        una griglia a caselle fisse, e l'esaminatore le riempie in ordine o le
+        corregge. Creare le righe alla bisogna avrebbe reso il conteggio di
+        «quanto manca» una sottrazione fra due numeri che nessuno tiene.
+        """
         results = []
         for exam_challenge in self.exam.challenges.all():
-            result = ExamChallengeResult(
-                exam_attempt_id=self.id, exam_challenge_id=exam_challenge.id
-            )
-            db.session.add(result)
-            results.append(result)
+            for number in range(1, exam_challenge.max_attempts + 1):
+                result = ExamChallengeResult(
+                    exam_attempt_id=self.id,
+                    exam_challenge_id=exam_challenge.id,
+                    attempt_number=number,
+                )
+                db.session.add(result)
+                results.append(result)
         return results
 
+    def results_by_challenge(
+        self,
+    ) -> List[Tuple["ExamChallenge", List["ExamChallengeResult"]]]:
+        """I risultati raggruppati per drill: l'ordine dell'esame, poi le prove.
+
+        La sessione si somministra per drill — «ora fai questo, tre volte» — non
+        per riga di risultato. Senza il raggruppamento un drill a tre prove
+        comparirebbe come tre schede distinte con lo stesso titolo.
+        """
+        by_challenge: Dict[int, List["ExamChallengeResult"]] = {}
+        for result in self.challenge_results.order_by(
+            ExamChallengeResult.attempt_number
+        ).all():
+            by_challenge.setdefault(result.exam_challenge_id, []).append(result)
+
+        return [
+            (exam_challenge, by_challenge.get(exam_challenge.id, []))
+            for exam_challenge in self.exam.challenges.all()
+        ]
+
     def recompute_scores(self) -> None:
-        """Ricalcola punteggio ottenuto e massimo come **somme semplici**."""
-        total = 0
-        max_total = 0
+        """Ricalcola punteggio ottenuto e massimo.
+
+        Somma semplice fra drill — niente ``weight``, niente moltiplicatori —
+        e, **dentro** ciascun drill, la prova migliore: chi ripete un drill lo
+        ripete per migliorare, quindi vale il picco. Sommare le prove farebbe
+        pesare un drill a tre tentativi il triplo di uno a tentativo unico,
+        cambiando la taratura dell'esame senza che nessuno l'abbia deciso; per
+        questo anche il massimo conta il drill **una volta sola**.
+
+        Una prova non ancora registrata non è uno zero: contribuisce 0 al
+        massimo fra le prove, e lo zero perde contro qualunque punteggio già
+        preso.
+        """
+        best_by_challenge: Dict[int, int] = {}
+        max_by_challenge: Dict[int, int] = {}
+
         for result in self.challenge_results.all():
             exam_challenge = result.exam_challenge
-            total += exam_challenge.score_of(result.score, result.passed)
-            max_total += exam_challenge.effective_max_score
+            scored = exam_challenge.score_of(result.score, result.passed)
+            key = exam_challenge.id
+            best_by_challenge[key] = max(best_by_challenge.get(key, 0), scored)
+            max_by_challenge[key] = exam_challenge.effective_max_score
 
-        self.total_score = total
-        self.max_possible_score = max_total
+        self.total_score = sum(best_by_challenge.values())
+        self.max_possible_score = sum(max_by_challenge.values())
 
     def get_progress(self) -> Dict[str, Any]:
-        """Avanzamento del tentativo, drill per drill.
+        """Avanzamento del tentativo, prova per prova.
 
-        Un drill è svolto se ha un punteggio **oppure** un esito pass/fail: la
+        Una prova è svolta se ha un punteggio **oppure** un esito pass/fail: la
         versione precedente contava il solo ``score``, quindi un esame di soli
         drill pass/fail restava eternamente allo 0%.
+
+        Il conto vero è sulle **prove**, non sui drill: un drill da tre
+        tentativi non è svolto dopo il primo, e la percentuale calcolata sui
+        drill farebbe saltare la barra a un terzo per volta. I due numeri
+        restano entrambi esposti — ``completed_challenges`` per «quanti drill
+        ho chiuso», ``completed_attempts`` per «quanto manca».
         """
-        total_challenges = self.exam.challenges.count()
-        completed_challenges = self.challenge_results.filter(
+        exam_challenges = self.exam.challenges.all()
+        total_challenges = len(exam_challenges)
+        total_attempts = sum(ec.max_attempts for ec in exam_challenges)
+
+        recorded = self.challenge_results.filter(
             db.or_(
                 ExamChallengeResult.score.isnot(None),
                 ExamChallengeResult.passed.isnot(None),
             )
-        ).count()
+        ).all()
+        completed_attempts = len(recorded)
+
+        done_per_challenge: Dict[int, int] = {}
+        for result in recorded:
+            done_per_challenge[result.exam_challenge_id] = (
+                done_per_challenge.get(result.exam_challenge_id, 0) + 1
+            )
+        completed_challenges = sum(
+            1
+            for ec in exam_challenges
+            if done_per_challenge.get(ec.id, 0) >= ec.max_attempts
+        )
 
         return {
             "total_challenges": total_challenges,
             "completed_challenges": completed_challenges,
+            "total_attempts": total_attempts,
+            "completed_attempts": completed_attempts,
             "progress_percentage": (
-                (completed_challenges / total_challenges * 100)
-                if total_challenges > 0
-                else 0
+                (completed_attempts / total_attempts * 100) if total_attempts > 0 else 0
             ),
             "is_complete": (
-                total_challenges > 0 and completed_challenges == total_challenges
+                total_attempts > 0 and completed_attempts == total_attempts
             ),
         }
 
@@ -363,6 +433,13 @@ class ExamChallengeResult(BaseModel):
         nullable=False,
     )
 
+    # Quale delle prove previste dal drill è questa: 1..max_attempts. Non è un
+    # contatore globale ma la **casella** nella griglia della sessione, per
+    # poterla correggere senza ambiguità su quale prova si sta rifacendo.
+    attempt_number = db.Column(
+        db.Integer, nullable=False, default=1, server_default="1"
+    )
+
     score = db.Column(db.Integer, nullable=True)
     passed = db.Column(db.Boolean, nullable=True)
     attempted_at = db.Column(db.DateTime, nullable=True)
@@ -372,7 +449,10 @@ class ExamChallengeResult(BaseModel):
 
     __table_args__ = (
         db.UniqueConstraint(
-            "exam_attempt_id", "exam_challenge_id", name="uq_exam_challenge_result"
+            "exam_attempt_id",
+            "exam_challenge_id",
+            "attempt_number",
+            name="uq_exam_challenge_result",
         ),
     )
 
