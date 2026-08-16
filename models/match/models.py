@@ -113,7 +113,7 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
 
     # Handicap system
     # NULL = eredita da gara (→ campionato). Vedi effective_has_handicap.
-    # Un match con handicap effettivo NON aggiorna i rating (Elo/Fargo).
+    # Un match con handicap effettivo NON aggiorna il rating Elo.
     has_handicap = db.Column(db.Boolean, nullable=True, default=None)
     player1_handicap = db.Column(
         db.Integer, default=0
@@ -303,7 +303,7 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
         NULL su `has_handicap` significa "eredita dalla gara" (che a sua volta
         eredita dal campionato). Per match standalone (gara NULL) il fallback è
         False. Un match con handicap effettivo NON deve aggiornare i rating
-        (Elo/Fargo): vedi RatingEventHandlers.handle_match_completed.
+        (Elo): vedi RatingEventHandlers.handle_match_completed.
         """
         if self.has_handicap is not None:
             return self.has_handicap

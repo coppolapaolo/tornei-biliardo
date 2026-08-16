@@ -37,7 +37,7 @@ def _make_players(db_session, count: int, ratings: List[int] | None = None):
             username=f"{chr(ord('a') + i)}_{suffix}",
             email=f"{chr(ord('a') + i)}_{suffix}@test.com",
             role=UserRole.PLAYER.value,
-            fargo_rating=ratings[i] if ratings else None,
+            elo_rating=ratings[i] if ratings else None,
         )
         player.set_password("x")
         players.append(player)

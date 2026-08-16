@@ -42,6 +42,8 @@ def admin_feature_detail(code: str):
         {"name": "total_matches", "label": _("Match totali giocati")},
         {"name": "scores_inserted", "label": _("Match con punteggio inserito")},
         {"name": "tournaments_played", "label": _("Gare/tornei giocati")},
+        {"name": "campionati_played", "label": _("Campionati giocati")},
+        {"name": "individual_matches_played", "label": _("Match individuali conclusi")},
         {"name": "tournaments_organized", "label": _("Gare organizzate")},
         {"name": "matches_in_location", "label": _("Match in una sala")},
         {"name": "distinct_opponents", "label": _("Avversari diversi")},

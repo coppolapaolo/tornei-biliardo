@@ -83,6 +83,7 @@ from .individual_match.models import (
     MatchStatus,
     InvitationStatus,
 )
+from .tpa.models import TpaReferto, TpaComando
 from .playoff.models import (
     PlayoffConfiguration,
     PlayoffQualification,
@@ -219,6 +220,9 @@ __all__ = [
     "ProposalInvitation",
     "IndividualMatch",
     "IndividualRack",
+    # Referto TPA (ADR-044)
+    "TpaReferto",
+    "TpaComando",
     "ProposalType",
     "ProposalStatus",
     "MatchStatus",

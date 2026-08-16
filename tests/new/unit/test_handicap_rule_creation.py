@@ -26,7 +26,7 @@ def test_create_handicap_rule_with_rating_rules(db_session):
         description="x",
         rating_rules=[
             {
-                "rating_system": "fargo",
+                "rating_system": "elo",
                 "min_difference": 50,
                 "max_difference": 500,
                 "points_per_handicap": 100,
@@ -39,7 +39,7 @@ def test_create_handicap_rule_with_rating_rules(db_session):
     rating_rules = RatingHandicapRule.query.filter_by(rule_id=rule.id).all()
     assert len(rating_rules) == 1
     rr = rating_rules[0]
-    assert rr.rating_system == RatingSystem.FARGO
+    assert rr.rating_system == RatingSystem.ELO
     assert rr.min_difference == 50
     assert rr.max_difference == 500
     assert rr.points_per_handicap == 100

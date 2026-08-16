@@ -136,7 +136,7 @@ class Gara(SoftDeleteMixin, db.Model):
     )  # Race-to vs exact sets
 
     # Handicap mode: NULL = eredita dal campionato (vedi effective_has_handicap).
-    # I match di una gara con handicap non aggiornano i rating (Elo/Fargo).
+    # I match di una gara con handicap non aggiornano il rating Elo.
     has_handicap = db.Column(db.Boolean, nullable=True)
 
     # Date iscrizioni
@@ -187,9 +187,9 @@ class Gara(SoftDeleteMixin, db.Model):
     # persistito perché preview e create_round diano lo stesso tabellone.
     # Azzerato da cancel_first_round_startup: riavviare = risorteggiare.
     draw_seed = db.Column(db.Integer, nullable=True)
-    # Quale rating usare quando first_round_policy == "rating".
-    # Solo "elo" è attivo: fargo_rating esiste su User ma non è ancora
-    # alimentato, quindi la voce resta predisposta e non selezionabile.
+    # Quale rating usare quando first_round_policy == "rating". Oggi ha un
+    # valore solo, "elo": la colonna resta come appiglio se un giorno ne
+    # arrivera' un secondo, ma non e' selezionabile.
     seeding_rating = db.Column(db.String(16), nullable=False, default="elo")
     # Formula FISBB: quanti turni di doppio KO si giocano dentro il girone
     # prima del troncamento. NULL = nessuna fase a gironi, cioè il doppio KO

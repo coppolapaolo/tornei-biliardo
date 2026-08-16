@@ -67,7 +67,7 @@ class Campionato(db.Model):
     )  # DEPRECATED: automatic from campionato_type
 
     # Handicap mode (ereditato da gare/match). Se True i match si giocano con
-    # handicap e NON aggiornano i rating (Elo/Fargo). Radice della catena di
+    # handicap e NON aggiornano il rating Elo. Radice della catena di
     # ereditarietà has_handicap: Campionato → Gara (nullable) → Match (nullable).
     has_handicap = db.Column(db.Boolean, default=False, nullable=False)
 
@@ -358,7 +358,7 @@ class Campionato(db.Model):
 
     def _legacy_set_scoring_policy(self, policy_name: str) -> None:
         """Internal legacy method for migration purposes only."""
-        valid_policies = ["classic", "fargo", "elo"]
+        valid_policies = ["classic", "elo"]
         if policy_name not in valid_policies:
             raise ValueError(
                 f"Invalid scoring policy: {policy_name}. "

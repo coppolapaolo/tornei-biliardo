@@ -394,3 +394,26 @@ def trio_config_for_distance(distance: int):
 
     config = TrioConfig(distance=distance)
     return config if config.is_trio_allowed else None
+
+
+def format_tpa(value) -> str:
+    """Il TPA come si scrive sul referto: `.780`, `1.000`, `—` se non c'e'.
+
+    Il motore lo tiene in millesimi interi (780 = .780). Il caso pieno e'
+    l'unico che sfugge alla regola dei tre decimali dopo il punto: mille
+    millesimi sono `1.000`, non `.1000`.
+
+    Esempi:
+        {{ 780|tpa_display }}   → ".780"
+        {{ 1000|tpa_display }}  → "1.000"
+        {{ None|tpa_display }}  → "—"
+    """
+    if value is None:
+        return "—"
+    try:
+        millesimi = int(value)
+    except (TypeError, ValueError):
+        return "—"
+    if millesimi >= 1000:
+        return f"{millesimi // 1000}.{millesimi % 1000:03d}"
+    return f".{millesimi:03d}"

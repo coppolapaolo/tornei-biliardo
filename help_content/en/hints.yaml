@@ -302,6 +302,40 @@ hints:
   - admin.campionato.edit_campionato
   page: creare_un_campionato
   section: punti_posizione
+- id: referto.tastierino
+  label: The keypad
+  short: 'First how many balls went in, then why the inning ended. Keys that make no sense right now
+    are switched off.'
+  anchor: referto-tastierino
+  screens:
+  - individual_match.tpa_referto
+  page: referto_tpa
+  section: come-si-compila
+- id: referto.passa_tavolo
+  label: Handing over the table
+  short: "Tap the other player's name: it closes your inning and starts theirs."
+  anchor: referto-passa-tavolo
+  screens:
+  - individual_match.tpa_referto
+  page: referto_tpa
+  section: come-si-compila
+- id: referto.annotazioni_piccole
+  label: n, x, p
+  short: 'The three marks that keep an error off the player who did not commit it: easy shot, planned
+    safety, push out.'
+  anchor: referto-annotazioni-piccole
+  screens:
+  - individual_match.tpa_referto
+  page: referto_tpa
+  section: annotazioni-piccole
+- id: referto.annulla
+  label: Undo last entry
+  short: 'Steps back one move, as many times as you like. It also takes back racks already awarded.'
+  anchor: referto-annulla
+  screens:
+  - individual_match.tpa_referto
+  page: referto_tpa
+  section: come-si-compila
 tours:
 - screen: dashboard.dashboard
   title: Your home
@@ -357,3 +391,14 @@ tours:
   - title: If you choose a bracket
     text: With knockout and double elimination half the questions disappear — they would have no effect
       on a bracket — and the «Bracket options» panel appears.
+- screen: individual_match.tpa_referto
+  title: The TPA scoresheet
+  intro: 'Here you record the whole match, not just who wins the racks. One inning at a time: how many
+    balls, and why it ended.'
+  audience:
+  - giocatore
+  steps:
+  - hint: referto.tastierino
+  - hint: referto.passa_tavolo
+  - hint: referto.annotazioni_piccole
+  - hint: referto.annulla

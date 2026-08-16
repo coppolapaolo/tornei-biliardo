@@ -269,6 +269,7 @@ def register_status_filters(app) -> None:
         format_datetime_local,
         format_time_local,
         format_discipline,
+        format_tpa,
         parse_json,
     )
 
@@ -279,5 +280,7 @@ def register_status_filters(app) -> None:
     # `<input type="datetime-local">` con l'ora che l'utente aveva digitato.
     app.jinja_env.filters["datetime_input"] = format_datetime_input
     app.jinja_env.filters["discipline_display"] = format_discipline
+    # Il TPA in millesimi -> come si scrive sul referto (`.780`, `1.000`)
+    app.jinja_env.filters["tpa_display"] = format_tpa
     # Payload JSON dei flash "di trasporto" (vedi utils/page_modal.py)
     app.jinja_env.filters["fromjson"] = parse_json

@@ -690,17 +690,14 @@ class DirectEliminationStrategy(BaseStrategy):
     def _rating_rank(self, gara: "Gara", inscriptions: List) -> Dict[int, float]:
         """Rating decrescente, tradotto in "posizione" (piu' basso = migliore).
 
-        Quale rating usare e' un'opzione della gara (`seeding_rating`). Oggi
-        solo `elo` e' alimentato: `fargo_rating` esiste come colonna ma nessuno
-        lo scrive, quindi la voce resta predisposta e non selezionabile in UI.
+        Il rating e' l'Elo. La colonna `seeding_rating` della gara resta come
+        appiglio per un eventuale secondo sistema, ma oggi ha un valore solo:
+        un rating che nessuno alimenta non e' un'opzione, e' una promessa.
         """
-        field = (getattr(gara, "seeding_rating", None) or "elo").lower()
-        attribute = "fargo_rating" if field == "fargo" else "elo_rating"
-
         rank: Dict[int, float] = {}
         for inscription in inscriptions:
             user = getattr(inscription, "user", None)
-            rating = getattr(user, attribute, None) if user else None
+            rating = getattr(user, "elo_rating", None) if user else None
             if rating is not None:
                 rank[inscription.user_id] = -float(rating)
         return rank
