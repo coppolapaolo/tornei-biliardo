@@ -43,133 +43,133 @@
     <div id="panel">
 
       <div class="sec">
-        <h2>Strumenti</h2>
+        <h2>{{ _("Strumenti") }}</h2>
         <div class="row">
-          <button class="btn wide" data-tool="select">Sposta</button>
-          <button class="btn wide" data-tool="shot">Tiro</button>
+          <button class="btn wide" data-tool="select">{{ _("Sposta") }}</button>
+          <button class="btn wide" data-tool="shot">{{ _("Tiro") }}</button>
         </div>
         <div class="row" style="margin-top:6px">
-          <button class="btn wide" data-tool="line">Linea libera</button>
-          <button class="btn wide" data-tool="text">Testo</button>
+          <button class="btn wide" data-tool="line">{{ _("Linea libera") }}</button>
+          <button class="btn wide" data-tool="text">{{ _("Testo") }}</button>
         </div>
         <div class="row" style="margin-top:6px">
-          <button class="btn wide ghostbtn" id="undo">Annulla</button>
-          <button class="btn wide ghostbtn" id="redo">Ripeti</button>
-          <button class="btn wide ghostbtn" id="del">Elimina</button>
+          <button class="btn wide ghostbtn" id="undo">{{ _("Annulla mossa") }}</button>
+          <button class="btn wide ghostbtn" id="redo">{{ _("Ripeti mossa") }}</button>
+          <button class="btn wide ghostbtn" id="del">{{ _("Elimina") }}</button>
         </div>
       </div>
 
       <div class="sec">
-        <h2>Biglie</h2>
+        <h2>{{ _("Biglie") }}</h2>
         <div id="palette"></div>
-        <label class="chk" style="margin-top:6px"><input type="checkbox" id="magnets" checked> Calamite sponda e biglie</label>
+        <label class="chk" style="margin-top:6px"><input type="checkbox" id="magnets" checked> {{ _("Calamite sponda e biglie") }}</label>
         <div class="field">
-          <span>Dimensione delle biglie</span>
+          <span>{{ _("Dimensione delle biglie") }}</span>
           <select id="ballScale">
-            <option value="1" selected>in scala reale — 2,25″</option>
-            <option value="1.15">+15% (più leggibile)</option>
-            <option value="1.3">+30% (stile diagramma)</option>
+            <option value="1" selected>{{ _("in scala reale — 2,25″") }}</option>
+            <option value="1.15">+15% ({{ _("più leggibile") }})</option>
+            <option value="1.3">+30% ({{ _("stile diagramma") }})</option>
           </select>
         </div>
-        <p class="tip">Scegli una biglia, poi clicca sul tavolo. Si aggancia alla griglia, alla sponda e a contatto con le altre; un movimento fine resta libero. <kbd>Alt</kbd> disattiva ogni aggancio.</p>
+        <p class="tip">{{ _("Scegli una biglia, poi clicca sul tavolo. Si aggancia alla griglia, alla sponda e a contatto con le altre; un movimento fine resta libero.") }} <kbd>{{ _("Alt") }}</kbd> {{ _("disattiva ogni aggancio.") }}</p>
       </div>
 
       <div class="sec">
-        <h2>Tiro</h2>
+        <h2>{{ _("Tiro") }}</h2>
         <p class="tip" id="shotHint"></p>
 
-        <div class="field"><span>Punto di impatto sulla bianca</span></div>
+        <div class="field"><span>{{ _("Punto di impatto sulla bianca") }}</span></div>
         <div id="tipwrap">
           <svg id="tipsvg" viewBox="-52 -52 104 104"></svg>
           <div id="tipinfo"></div>
         </div>
 
         <div class="field">
-          <span>Inclinazione stecca — <b id="elevVal">0°</b></span>
+          <span>{{ _("Inclinazione stecca") }} — <b id="elevVal">0°</b></span>
           <input type="range" id="elev" min="0" max="60" step="5" value="0">
         </div>
 
         <div class="field">
-          <span>Forza — <b id="forceVal">30% · medio</b></span>
+          <span>{{ _("Forza") }} — <b id="forceVal">30% · medio</b></span>
           <input type="range" id="force" min="5" max="100" step="5" value="30">
         </div>
         <div class="row" id="forcePresets"></div>
-        <p class="tip" style="margin-top:6px">Al 30% la biglia percorre due lunghezze di tavolo. Il percorso cresce con il quadrato della forza, si divide fra le biglie all'impatto e cala a ogni sponda; il cerchio tratteggiato segna il punto di arresto.</p>
+        <p class="tip" style="margin-top:6px">{{ _("A forza 30 la biglia percorre due lunghezze di tavolo. Il percorso cresce con il quadrato della forza, si divide fra le biglie all'impatto e cala a ogni sponda; il cerchio tratteggiato segna il punto di arresto.") }}</p>
 
-        <label class="chk"><input type="checkbox" id="pocketSnap" checked> Aggancia la mira alla buca</label>
-        <p class="tip" style="margin-top:2px">Tieni premuto e trascina per mirare libero, senza aggancio.</p>
-        <label class="chk"><input type="checkbox" id="showPost" checked> Traiettoria della bianca</label>
-        <label class="chk"><input type="checkbox" id="showObj" checked> Traiettorie delle altre biglie</label>
-        <label class="chk"><input type="checkbox" id="showStick" checked> Stecca sul tavolo</label>
-        <label class="chk"><input type="checkbox" id="showCard" checked> Scheda del tiro sotto al tavolo</label>
-        <label class="chk"><input type="checkbox" id="showAngle"> Etichetta dell'angolo di taglio</label>
+        <label class="chk"><input type="checkbox" id="pocketSnap" checked> {{ _("Aggancia la mira alla buca") }}</label>
+        <p class="tip" style="margin-top:2px">{{ _("Tieni premuto e trascina per mirare libero, senza aggancio.") }}</p>
+        <label class="chk"><input type="checkbox" id="showPost" checked> {{ _("Traiettoria della bianca") }}</label>
+        <label class="chk"><input type="checkbox" id="showObj" checked> {{ _("Traiettorie delle altre biglie") }}</label>
+        <label class="chk"><input type="checkbox" id="showStick" checked> {{ _("Stecca sul tavolo") }}</label>
+        <label class="chk"><input type="checkbox" id="showCard" checked> {{ _("Scheda del tiro sotto al tavolo") }}</label>
+        <label class="chk"><input type="checkbox" id="showAngle"> {{ _("Etichetta dell'angolo di taglio") }}</label>
       </div>
 
       <div class="sec">
-        <h2>Linea libera</h2>
+        <h2>{{ _("Linea libera") }}</h2>
         <div class="row">
-          <button class="btn wide" data-lstyle="solid">Continua</button>
-          <button class="btn wide" data-lstyle="dashed">Tratteggiata</button>
+          <button class="btn wide" data-lstyle="solid">{{ _("Continua") }}</button>
+          <button class="btn wide" data-lstyle="dashed">{{ _("Tratteggiata") }}</button>
         </div>
         <div class="field">
-          <span>Colore</span>
+          <span>{{ _("Colore") }}</span>
           <div class="swatches" id="swatches"></div>
         </div>
-        <label class="chk"><input type="checkbox" id="lineArrow" checked> Punta a freccia</label>
-        <label class="chk"><input type="checkbox" id="lineGhost"> Biglia fantasma in fondo</label>
+        <label class="chk"><input type="checkbox" id="lineArrow" checked> {{ _("Punta a freccia") }}</label>
+        <label class="chk"><input type="checkbox" id="lineGhost"> {{ _("Biglia fantasma in fondo") }}</label>
         <div class="row" style="margin-top:4px">
-          <button class="btn wide" id="finishLine">Chiudi linea</button>
+          <button class="btn wide" id="finishLine">{{ _("Chiudi linea") }}</button>
         </div>
       </div>
 
       <div class="sec">
-        <h2>Tavolo</h2>
+        <h2>{{ _("Tavolo") }}</h2>
         <div class="field">
-          <span>Panno</span>
+          <span>{{ _("Panno") }}</span>
           <div class="cloths" id="cloths"></div>
         </div>
-        <label class="chk"><input type="checkbox" id="showGrid" checked> Griglia dei diamanti</label>
-        <label class="chk"><input type="checkbox" id="showSub"> Griglia ¼ di diamante</label>
-        <label class="chk"><input type="checkbox" id="showMarks" checked> Punti e linee standard</label>
+        <label class="chk"><input type="checkbox" id="showGrid" checked> {{ _("Griglia dei diamanti") }}</label>
+        <label class="chk"><input type="checkbox" id="showSub"> {{ _("Griglia ¼ di diamante") }}</label>
+        <label class="chk"><input type="checkbox" id="showMarks" checked> {{ _("Punti e linee standard") }}</label>
         <div class="field">
-          <span>Aggancio alla griglia</span>
+          <span>{{ _("Aggancio alla griglia") }}</span>
           <select id="snapSel">
-            <option value="quarter" selected>¼ di diamante</option>
-            <option value="half">½ diamante</option>
-            <option value="full">1 diamante</option>
-            <option value="off">nessuno</option>
+            <option value="quarter" selected>{{ _("¼ di diamante") }}</option>
+            <option value="half">{{ _("½ diamante") }}</option>
+            <option value="full">{{ _("1 diamante") }}</option>
+            <option value="off">{{ _("nessuno") }}</option>
           </select>
         </div>
         <div class="field">
-          <span>Orientamento</span>
+          <span>{{ _("Orientamento") }}</span>
           <select id="orientSel">
-            <option value="h" selected>Orizzontale</option>
-            <option value="v">Verticale</option>
+            <option value="h" selected>{{ _("Orizzontale") }}</option>
+            <option value="v">{{ _("Verticale") }}</option>
           </select>
         </div>
         <div class="field">
-          <span>Titolo del diagramma</span>
-          <input type="text" id="titleInput" placeholder="es. Drill 1 — Stop shot">
+          <span>{{ _("Titolo del diagramma") }}</span>
+          <input type="text" id="titleInput" placeholder="{{ _('es. Drill 1 — Stop shot') }}">
         </div>
       </div>
 
       <div class="sec">
-        <h2>Posizioni standard</h2>
+        <h2>{{ _("Posizioni standard") }}</h2>
         <div class="row">
-          <button class="btn wide" data-preset="rack9">Rack 9-ball</button>
-          <button class="btn wide" data-preset="rack8">Rack 8-ball</button>
+          <button class="btn wide" data-preset="rack9">{{ _("Rack 9-ball") }}</button>
+          <button class="btn wide" data-preset="rack8">{{ _("Rack 8-ball") }}</button>
         </div>
         <div class="row" style="margin-top:6px">
-          <button class="btn wide" data-preset="rack10">Rack 10-ball</button>
-          <button class="btn wide" data-preset="break9">Break 9-ball</button>
+          <button class="btn wide" data-preset="rack10">{{ _("Rack 10-ball") }}</button>
+          <button class="btn wide" data-preset="break9">{{ _("Break 9-ball") }}</button>
         </div>
         <div class="row" style="margin-top:6px">
-          <button class="btn wide" data-preset="wagon">Wagon wheel</button>
-          <button class="btn wide" data-preset="line">Linea di stop</button>
+          <button class="btn wide" data-preset="wagon">{{ _("Wagon wheel") }}</button>
+          <button class="btn wide" data-preset="line">{{ _("Linea di stop") }}</button>
         </div>
         <div class="row" style="margin-top:6px">
-          <button class="btn wide" data-preset="lshape">L drill</button>
-          <button class="btn wide" data-preset="clear">Svuota</button>
+          <button class="btn wide" data-preset="lshape">{{ _("L drill") }}</button>
+          <button class="btn wide" data-preset="clear">{{ _("Svuota") }}</button>
         </div>
       </div>
 
@@ -229,6 +229,41 @@
 {% endblock %}
 
 {% block scripts %}
+{# Le parole che il builder compone da solo. Devono stare **prima** dello
+   script: `FORCE_PRESETS` è un `const` valutato al caricamento, quindi un
+   dizionario definito dopo arriverebbe tardi e quelle cinque etichette
+   resterebbero in italiano — le uniche, il che è peggio di tutte.
+
+   Stanno qui e non nel file .js perché `babel.cfg` estrae solo da `.py` e
+   `.html`: una stringa scritta là non passerebbe mai da `_()`. #}
+<script>
+window.DRILL_BUILDER_I18N = {
+    forceTouch: {{ _("tocco")|tojson }},
+    forceSoft: {{ _("piano")|tojson }},
+    forceMedium: {{ _("medio")|tojson }},
+    forceHard: {{ _("forte")|tojson }},
+    forceBreak: {{ _("spacco")|tojson }},
+    hintTool: {{ _("Attiva Tiro: la traiettoria segue il puntatore e si ricalcola in tempo reale.")|tojson }},
+    hintAiming: {{ _("Muovi per mirare. Premi e rilascia per fissare; tieni premuto e trascina per la mira fine. Esc annulla.")|tojson }},
+    hintPick: {{ _("Clicca la biglia da giocare per iniziare a mirare. Clicca un tiro esistente per correggerlo.")|tojson }},
+    toastPickBall: {{ _("Clicca una biglia per iniziare a mirare")|tojson }},
+    ballCue: {{ _("Battente")|tojson }},
+    ballGhost: {{ _("Biglia fantasma")|tojson }},
+    ballN: {{ _("Biglia")|tojson }},
+    shotN: {{ _("Tiro")|tojson }},
+    force: {{ _("forza")|tojson }},
+    up: {{ _("alto")|tojson }},
+    down: {{ _("basso")|tojson }},
+    leftShort: {{ _("sx")|tojson }},
+    rightShort: {{ _("dx")|tojson }},
+    vertical: {{ _("verticale")|tojson }},
+    lateral: {{ _("laterale")|tojson }},
+    center: {{ _("centro")|tojson }},
+    right: {{ _("destro")|tojson }},
+    left: {{ _("sinistro")|tojson }},
+    spinMax: {{ _("1 = massimo effetto utile")|tojson }}
+};
+</script>
 <script src="{{ url_for('static', filename='js/drill-builder.js') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {

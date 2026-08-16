@@ -56,6 +56,12 @@ AUTHORING_ENDPOINTS = (
     "challenge.edit_challenge",
     "challenge.delete_challenge",
     "challenge.challenge_statistics",
+    # Il builder: disegnare un drill è autorialità come crearlo da una foto —
+    # lo eseguiranno tutti gli altri. Sopra `@director_required` c'è anche il
+    # gate di progressione `use_drill_builder`, che è un'altra cosa e questo
+    # test non lo tocca (vedi la nota sul layer L0 in testa al file).
+    "challenge.diagram_builder",
+    "challenge.edit_diagram",
 )
 
 
