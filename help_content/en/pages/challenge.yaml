@@ -8,7 +8,7 @@ screens: [challenge.challenge_catalog, challenge.challenge_detail, challenge.tra
   challenge.start_attempt, challenge.attempt_detail, challenge.create_challenge,
   challenge.edit_challenge, challenge.challenge_statistics, player.challenge_detail,
   challenge.diagram_builder, challenge.edit_diagram]
-related: [progressi, numero_dispari]
+related: [progressi, numero_dispari, esami]
 
 blocks:
   - type: text
@@ -237,7 +237,9 @@ blocks:
       - q: "I cannot see «Draw the drill» on the creation form."
         a: "It is a competition director's command, and it unlocks after thirty drills completed. Until it shows up, a challenge is created by uploading the photo: that is the normal way, not a fallback."
       - q: "Can I repeat the same challenge?"
-        a: "Yes, and that is exactly what the practice screen is for: you record one attempt after another without leaving. Inside a competition it is different: there the number of attempts is set by the director."
+        a: "Yes, and that is exactly what the practice screen is for: you record one attempt after another without leaving. Inside a competition it is different: there the number of attempts is set by the director, and inside an exam it is set by whoever composed it — it can ask you for several attempts at the same drill, and the best one counts."
+      - q: "What is the difference between a challenge and an exam?"
+        a: "A challenge is a single drill. An exam is a sequence of several drills in order, and it can be certified by an examiner. See [Sitting an exam](/aiuto/giocare/esami)."
       - q: "Who checks that the score I claim is true?"
         a: "Outside competitions, nobody: it is practice, and your word counts. Inside a competition the director validates the results."
       - q: "Do challenges count towards the rating?"

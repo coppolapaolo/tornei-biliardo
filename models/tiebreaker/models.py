@@ -1,7 +1,8 @@
 """
 Module: models/tiebreaker/models.py
 Purpose: Tiebreaker domain models for handling ties in matches
-Requirements: SPECIFICHE.md - Tiebreaker system with spot shot rallies and playoff matches
+Requirements: SPECIFICHE.md - Tiebreaker system with spot shot rallies and playoff
+matches
 """
 
 from __future__ import annotations
@@ -116,7 +117,10 @@ class Tiebreaker(db.Model):
     )
 
     def __repr__(self):
-        return f"<Tiebreaker {self.id} {self.tiebreaker_type} {self.player1.username} vs {self.player2.username}>"
+        return (
+            f"<Tiebreaker {self.id} {self.tiebreaker_type} {self.player1.username} vs "
+            f"{self.player2.username}>"
+        )
 
     def start(self) -> None:
         """Start the tiebreaker."""
@@ -251,7 +255,10 @@ class SpotShot(db.Model):
     player: Mapped["User"] = relationship("User")
 
     def __repr__(self):
-        return f"<SpotShot {self.id} R{self.round_number} {self.player.username} {self.result}>"
+        return (
+            f"<SpotShot {self.id} R{self.round_number} {self.player.username} "
+            f"{self.result}>"
+        )
 
 
 class RallyAttempt(db.Model):
@@ -336,7 +343,10 @@ class PlayoffMatch(db.Model):
     winner: Mapped[Optional["User"]] = relationship("User", foreign_keys=[winner_id])
 
     def __repr__(self):
-        return f"<PlayoffMatch {self.id} {self.player1.username} vs {self.player2.username}>"
+        return (
+            f"<PlayoffMatch {self.id} {self.player1.username} vs "
+            f"{self.player2.username}>"
+        )
 
     def start_match(self) -> None:
         """Start the playoff match."""

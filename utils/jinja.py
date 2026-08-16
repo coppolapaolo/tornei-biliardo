@@ -132,7 +132,8 @@ def format_datetime_local(value, tz=None) -> Markup:
     italiana.
 
     Output format:
-        <time datetime="2025-01-15T14:30:00Z" class="datetime-local">15/01/2025, 15:30</time>
+        <time datetime="2025-01-15T14:30:00Z" class="datetime-local">15/01/2025,
+        15:30</time>
 
     L'attributo `datetime` resta l'istante in UTC: è l'unica forma che non
     dipende da chi guarda, ed è quella che serve a screen reader, motori di
@@ -339,10 +340,12 @@ def player_name_with_forfeit(user, gara_id=None, is_forfeit=False) -> Markup:
 
     Examples:
         {{ player|player_name_with_forfeit(is_forfeit=True) }}
-        → "<s class='text-muted'>Mario</s> <i class='fas fa-flag text-muted small' title='Forfait'>F</i>"
+        → "<s class='text-muted'>Mario</s> <i class='fas fa-flag text-muted small'
+        title='Forfait'>F</i>"
 
         {{ player|player_name_with_forfeit(gara.id) }}  # Legacy, triggers query
-        → "<s class='text-muted'>Mario</s> <i class='fas fa-flag text-muted small' title='Forfait'>F</i>"
+        → "<s class='text-muted'>Mario</s> <i class='fas fa-flag text-muted small'
+        title='Forfait'>F</i>"
     """
     if not user:
         return Markup('<span class="text-muted">Bye</span>')
@@ -366,7 +369,8 @@ def player_name_with_forfeit(user, gara_id=None, is_forfeit=False) -> Markup:
             if is_forfeit_db:
                 return Markup(
                     f'<s class="text-muted">{username}</s> '
-                    f'<i class="fas fa-flag text-muted small ms-1" title="Forfait">F</i>'
+                    '<i class="fas fa-flag text-muted small ms-1" '
+                    'title="Forfait">F</i>'
                 )
         except Exception:
             # Se c'è un errore nel controllo forfait, mostra solo il nome

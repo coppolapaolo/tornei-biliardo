@@ -109,7 +109,9 @@ def close_inscriptions(gara_id):
     return handle_service_action(
         action=action,
         redirect_url=url_for("admin.competition.gara_detail", gara_id=gara_id),
-        success_message="Iscrizioni chiuse con successo! La gara è tornata allo stato di setup.",
+        success_message=(
+            "Iscrizioni chiuse con successo! La gara è tornata allo stato di setup."
+        ),
     )
 
 
@@ -133,7 +135,10 @@ def admin_inscribe_user(gara_id):
         # Verifica che la gara sia ancora in fase di iscrizioni
         if gara.status != GaraStatus.INSCRIPTION.value:
             flash(
-                "Non è possibile iscrivere utenti quando la gara non è in fase di iscrizione.",
+                (
+                    "Non è possibile iscrivere utenti quando la gara non è in fase di "
+                    "iscrizione."
+                ),
                 "error",
             )
             return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
@@ -173,7 +178,10 @@ def admin_inscribe_user(gara_id):
 
             if inscription.is_waitlist:
                 flash(
-                    f"Utente {user.username} aggiunto alla lista d'attesa (posizione {inscription.waitlist_position}).",
+                    (
+                        f"Utente {user.username} aggiunto alla lista d'attesa "
+                        f"(posizione {inscription.waitlist_position})."
+                    ),
                     "warning",
                 )
             else:

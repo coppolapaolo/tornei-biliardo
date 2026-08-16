@@ -212,7 +212,8 @@ class TrioScoringService:
             if racks > max_per_player:
                 raise ValueError(
                     f"{label} non può vincere più di {max_per_player} rack "
-                    f"(partecipa a {max_per_player} matchup su {config.total_played_racks})"
+                    f"(partecipa a {max_per_player} matchup su "
+                    f"{config.total_played_racks})"
                 )
 
         # Delete any existing racks
@@ -361,7 +362,9 @@ class TrioScoringService:
 
     @staticmethod
     def _update_current_players(trio: "TrioMatch") -> None:
-        """Update current_player1, current_player2, waiting_player based on next rack."""
+        """
+        Update current_player1, current_player2, waiting_player based on next rack.
+        """
         config = trio.trio_config
         next_rack = trio.total_racks_played + 1
 

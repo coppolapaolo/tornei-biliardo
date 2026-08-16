@@ -43,7 +43,10 @@ NOTIFICATION_TEMPLATES = {
     # Streak milestone
     "gamification.streak_milestone": {
         "title": "Streak di %(weeks)d Settimane!",
-        "message": "Incredibile! Hai mantenuto il tuo streak di %(type)s per %(weeks)d settimane consecutive!%(freeze)s +%(xp)d XP",
+        "message": (
+            "Incredibile! Hai mantenuto il tuo streak di %(type)s per %(weeks)d "
+            "settimane consecutive!%(freeze)s +%(xp)d XP"
+        ),
         "action_text": "Visualizza Streak",
     },
     # Quest completed
@@ -112,7 +115,9 @@ NOTIFICATION_TEMPLATES = {
     },
     "user.director_rejected": {
         "title": "Richiesta Non Approvata",
-        "message": "La tua richiesta di diventare direttore non è stata approvata.%(notes)s",
+        "message": (
+            "La tua richiesta di diventare direttore non è stata approvata.%(notes)s"
+        ),
         "action_text": "Dettagli",
     },
     "user.venue_manager_approved": {

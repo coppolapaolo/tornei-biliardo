@@ -74,7 +74,8 @@ class ImagePathManager:
     def _get_upload_dir(config_key: str, default_folder: str) -> str:
         """Get the absolute filesystem path for uploads."""
         upload_base = current_app.config.get("UPLOAD_BASE_PATH", "static/uploads")
-        # Remove static/ if present since current_app.static_folder already points to static/
+        # Remove static/ if present since current_app.static_folder already points to
+        # static/
         if upload_base.startswith("static/"):
             upload_base = upload_base.replace("static/", "")
 
@@ -90,7 +91,9 @@ class ImagePathManager:
 
     @staticmethod
     def _get_db_path(config_key: str, default_folder: str, filename: str) -> str:
-        """Get the database path for an image (includes static/ prefix for consistency)."""
+        """
+        Get the database path for an image (includes static/ prefix for consistency).
+        """
         upload_base = current_app.config.get("UPLOAD_BASE_PATH", "static/uploads")
         subfolder = current_app.config.get(config_key, default_folder)
         return f"{upload_base}/{subfolder}/{filename}"
@@ -118,7 +121,9 @@ class ImagePathManager:
         )
 
     @staticmethod
-    def save_challenge_image(image_file) -> Optional[str]:  # type: ignore[no-untyped-def]
+    def save_challenge_image(  # type: ignore[no-untyped-def]
+        image_file,
+    ) -> Optional[str]:
         """Save an uploaded challenge image with resizing and JPEG optimization.
 
         Returns the generated filename on success, or None on failure.

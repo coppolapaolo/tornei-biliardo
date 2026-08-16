@@ -27,7 +27,10 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
         print("   Adding 'total_racks_won' column to classification table...")
         try:
             cursor.execute(
-                "ALTER TABLE classification ADD COLUMN total_racks_won INTEGER DEFAULT 0"
+                (
+                    "ALTER TABLE classification ADD COLUMN total_racks_won INTEGER "
+                    "DEFAULT 0"
+                )
             )
             print("   Column added successfully.")
         except sqlite3.OperationalError as e:

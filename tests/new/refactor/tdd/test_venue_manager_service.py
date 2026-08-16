@@ -15,10 +15,9 @@ Strategy: Align TDD tests with actual VenueManagerService implementation
 """
 
 import pytest
-from unittest.mock import patch
 
 from models import db
-from models.user.models import User, VenueManagerRequest, VenueManagement
+from models.user.models import User, VenueManagement
 from models.user.role_enum import UserRole
 from models.user.venue_manager_service import VenueManagerService
 from models.location.models import BilliardHall
@@ -43,7 +42,6 @@ class TestVenueManagerServiceTDD:
             yield venue
 
             # Note: Cleanup handled by test isolation
-            pass
             db.session.commit()
 
     @pytest.fixture
@@ -62,7 +60,6 @@ class TestVenueManagerServiceTDD:
             yield user
 
             # Note: Cleanup handled by test isolation
-            pass
             db.session.commit()
 
     @pytest.fixture
@@ -86,7 +83,9 @@ class TestVenueManagerServiceTDD:
     def test_create_venue_manager_request_functionality(
         self, app, test_user, test_venue
     ):
-        """Test VenueManagerService.create_venue_manager_request() basic functionality."""
+        """
+        Test VenueManagerService.create_venue_manager_request() basic functionality.
+        """
         with app.app_context():
             # Test successful request creation
             request = VenueManagerService.create_venue_manager_request(
@@ -110,7 +109,9 @@ class TestVenueManagerServiceTDD:
                 )
 
     def test_create_venue_manager_request_venue_not_found(self, app, test_user):
-        """Test VenueManagerService.create_venue_manager_request() with invalid venue."""
+        """
+        Test VenueManagerService.create_venue_manager_request() with invalid venue.
+        """
         with app.app_context():
             with pytest.raises(ValueError, match="Venue not found"):
                 VenueManagerService.create_venue_manager_request(
@@ -120,7 +121,9 @@ class TestVenueManagerServiceTDD:
     def test_create_venue_manager_request_duplicate_pending(
         self, app, test_user, test_venue
     ):
-        """Test VenueManagerService.create_venue_manager_request() prevents duplicate pending requests."""
+        """Test VenueManagerService.create_venue_manager_request() prevents duplicate
+        pending requests.
+        """
         with app.app_context():
             # Create first request
             VenueManagerService.create_venue_manager_request(
@@ -140,7 +143,9 @@ class TestVenueManagerServiceTDD:
     def test_create_venue_manager_request_empty_motivation(
         self, app, test_user, test_venue
     ):
-        """Test VenueManagerService.create_venue_manager_request() validates motivation."""
+        """
+        Test VenueManagerService.create_venue_manager_request() validates motivation.
+        """
         with app.app_context():
             # Test empty motivation
             with pytest.raises(ValueError, match="Notes are required"):
@@ -157,7 +162,9 @@ class TestVenueManagerServiceTDD:
     def test_process_venue_manager_request_approve(
         self, app, test_user, test_venue, test_admin
     ):
-        """Test VenueManagerService.process_venue_manager_request() approval functionality."""
+        """Test VenueManagerService.process_venue_manager_request() approval
+        functionality.
+        """
         with app.app_context():
             # Create request
             request = VenueManagerService.create_venue_manager_request(
@@ -187,7 +194,9 @@ class TestVenueManagerServiceTDD:
     def test_process_venue_manager_request_reject(
         self, app, test_user, test_venue, test_admin
     ):
-        """Test VenueManagerService.process_venue_manager_request() rejection functionality."""
+        """Test VenueManagerService.process_venue_manager_request() rejection
+        functionality.
+        """
         with app.app_context():
             # Create request
             request = VenueManagerService.create_venue_manager_request(
@@ -215,7 +224,9 @@ class TestVenueManagerServiceTDD:
             assert venue_management is None
 
     def test_process_venue_manager_request_non_admin(self, app, test_user, test_venue):
-        """Test VenueManagerService.process_venue_manager_request() requires admin user."""
+        """
+        Test VenueManagerService.process_venue_manager_request() requires admin user.
+        """
         with app.app_context():
             # Create request
             request = VenueManagerService.create_venue_manager_request(
@@ -246,7 +257,9 @@ class TestVenueManagerServiceTDD:
             # Note: Cleanup handled by test isolation
 
     def test_process_venue_manager_request_not_found(self, app, test_admin):
-        """Test VenueManagerService.process_venue_manager_request() with invalid request."""
+        """Test VenueManagerService.process_venue_manager_request() with invalid
+        request.
+        """
         with app.app_context():
             with pytest.raises(ValueError, match="Request not found"):
                 VenueManagerService.process_venue_manager_request(
@@ -256,7 +269,9 @@ class TestVenueManagerServiceTDD:
     def test_process_venue_manager_request_not_pending(
         self, app, test_user, test_venue, test_admin
     ):
-        """Test VenueManagerService.process_venue_manager_request() requires pending status."""
+        """Test VenueManagerService.process_venue_manager_request() requires pending
+        status.
+        """
         with app.app_context():
             # Create and process request
             request = VenueManagerService.create_venue_manager_request(
@@ -278,7 +293,9 @@ class TestVenueManagerServiceTDD:
     def test_get_pending_venue_manager_requests(
         self, app, test_user, test_venue, test_admin
     ):
-        """Test VenueManagerService.get_pending_venue_manager_requests() functionality."""
+        """
+        Test VenueManagerService.get_pending_venue_manager_requests() functionality.
+        """
         with app.app_context():
             # Initially no pending requests
             pending = VenueManagerService.get_pending_venue_manager_requests()
@@ -299,7 +316,9 @@ class TestVenueManagerServiceTDD:
     def test_get_venue_manager_requests_by_user(
         self, app, test_user, test_venue, test_admin
     ):
-        """Test VenueManagerService.get_venue_manager_requests_by_user() functionality."""
+        """
+        Test VenueManagerService.get_venue_manager_requests_by_user() functionality.
+        """
         with app.app_context():
             # Initially no requests for user
             user_requests = VenueManagerService.get_venue_manager_requests_by_user(
@@ -322,7 +341,9 @@ class TestVenueManagerServiceTDD:
             assert user_requests[0].user_id == test_user.id
 
     def test_get_venue_manager_requests_by_venue(self, app, test_user, test_venue):
-        """Test VenueManagerService.get_venue_manager_requests_by_venue() functionality."""
+        """
+        Test VenueManagerService.get_venue_manager_requests_by_venue() functionality.
+        """
         with app.app_context():
             # Initially no requests for venue
             venue_requests = VenueManagerService.get_venue_manager_requests_by_venue(
@@ -472,7 +493,9 @@ class TestVenueManagerServiceTDD:
     def test_remove_venue_manager_not_found(
         self, app, test_user, test_venue, test_admin
     ):
-        """Test VenueManagerService.remove_venue_manager() with non-existent assignment."""
+        """
+        Test VenueManagerService.remove_venue_manager() with non-existent assignment.
+        """
         with app.app_context():
             with pytest.raises(
                 ValueError, match="Venue management assignment not found"

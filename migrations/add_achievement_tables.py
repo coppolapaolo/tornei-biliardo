@@ -46,18 +46,18 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
                 name VARCHAR(100) NOT NULL,
                 description TEXT NOT NULL,
                 icon_path VARCHAR(255),
-                
+
                 category VARCHAR(20) NOT NULL,
                 difficulty VARCHAR(20) NOT NULL DEFAULT 'common',
-                
+
                 requirements TEXT NOT NULL,
                 is_progressive BOOLEAN NOT NULL DEFAULT 0,
-                
+
                 xp_reward INTEGER NOT NULL DEFAULT 0,
-                
+
                 is_hidden BOOLEAN NOT NULL DEFAULT 0,
                 is_active BOOLEAN NOT NULL DEFAULT 1,
-                
+
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
@@ -71,18 +71,19 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id INTEGER NOT NULL,
                 achievement_id INTEGER NOT NULL,
-                
+
                 current_progress INTEGER NOT NULL DEFAULT 0,
                 is_unlocked BOOLEAN NOT NULL DEFAULT 0,
                 unlocked_at TIMESTAMP,
-                
+
                 is_displayed BOOLEAN NOT NULL DEFAULT 1,
-                
+
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                
+
                 FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
-                FOREIGN KEY (achievement_id) REFERENCES achievement(id) ON DELETE CASCADE,
+                FOREIGN KEY (achievement_id) REFERENCES achievement(id)
+                    ON DELETE CASCADE,
                 UNIQUE(user_id, achievement_id)
             )
         """)
@@ -91,32 +92,32 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
         print("   Creating indexes...")
 
         cursor.execute("""
-            CREATE INDEX IF NOT EXISTS idx_achievement_category 
+            CREATE INDEX IF NOT EXISTS idx_achievement_category
             ON achievement(category)
         """)
 
         cursor.execute("""
-            CREATE INDEX IF NOT EXISTS idx_achievement_difficulty 
+            CREATE INDEX IF NOT EXISTS idx_achievement_difficulty
             ON achievement(difficulty)
         """)
 
         cursor.execute("""
-            CREATE INDEX IF NOT EXISTS idx_achievement_slug 
+            CREATE INDEX IF NOT EXISTS idx_achievement_slug
             ON achievement(slug)
         """)
 
         cursor.execute("""
-            CREATE INDEX IF NOT EXISTS idx_user_achievement_user_id 
+            CREATE INDEX IF NOT EXISTS idx_user_achievement_user_id
             ON user_achievement(user_id)
         """)
 
         cursor.execute("""
-            CREATE INDEX IF NOT EXISTS idx_user_achievement_achievement_id 
+            CREATE INDEX IF NOT EXISTS idx_user_achievement_achievement_id
             ON user_achievement(achievement_id)
         """)
 
         cursor.execute("""
-            CREATE INDEX IF NOT EXISTS idx_user_achievement_unlocked 
+            CREATE INDEX IF NOT EXISTS idx_user_achievement_unlocked
             ON user_achievement(is_unlocked)
         """)
 
@@ -127,7 +128,7 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
         print("\n🔍 Verifying migration...")
 
         cursor.execute("""
-            SELECT name FROM sqlite_master 
+            SELECT name FROM sqlite_master
             WHERE type='table' AND name IN ('achievement', 'user_achievement')
             ORDER BY name
         """)
@@ -145,14 +146,14 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
 
         # Verify indexes
         cursor.execute("""
-            SELECT name FROM sqlite_master 
+            SELECT name FROM sqlite_master
             WHERE type='index' AND tbl_name = 'achievement'
         """)
         achievement_indexes = [row[0] for row in cursor.fetchall()]
         print(f"   ✓ {len(achievement_indexes)} indexes on achievement table")
 
         cursor.execute("""
-            SELECT name FROM sqlite_master 
+            SELECT name FROM sqlite_master
             WHERE type='index' AND tbl_name = 'user_achievement'
         """)
         user_achievement_indexes = [row[0] for row in cursor.fetchall()]
@@ -182,7 +183,7 @@ def upgrade_postgresql(connection_string: str) -> None:
         print("❌ psycopg2 not installed. Install with: pip install psycopg2-binary")
         return
 
-    print(f"🔧 Migrating PostgreSQL database...")
+    print("🔧 Migrating PostgreSQL database...")
 
     conn = psycopg2.connect(connection_string)
     cursor = conn.cursor()
@@ -198,18 +199,18 @@ def upgrade_postgresql(connection_string: str) -> None:
                 name VARCHAR(100) NOT NULL,
                 description TEXT NOT NULL,
                 icon_path VARCHAR(255),
-                
+
                 category VARCHAR(20) NOT NULL,
                 difficulty VARCHAR(20) NOT NULL DEFAULT 'common',
-                
+
                 requirements TEXT NOT NULL,
                 is_progressive BOOLEAN NOT NULL DEFAULT FALSE,
-                
+
                 xp_reward INTEGER NOT NULL DEFAULT 0,
-                
+
                 is_hidden BOOLEAN NOT NULL DEFAULT FALSE,
                 is_active BOOLEAN NOT NULL DEFAULT TRUE,
-                
+
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
@@ -223,18 +224,19 @@ def upgrade_postgresql(connection_string: str) -> None:
                 id SERIAL PRIMARY KEY,
                 user_id INTEGER NOT NULL,
                 achievement_id INTEGER NOT NULL,
-                
+
                 current_progress INTEGER NOT NULL DEFAULT 0,
                 is_unlocked BOOLEAN NOT NULL DEFAULT FALSE,
                 unlocked_at TIMESTAMP,
-                
+
                 is_displayed BOOLEAN NOT NULL DEFAULT TRUE,
-                
+
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                
+
                 FOREIGN KEY (user_id) REFERENCES "user"(id) ON DELETE CASCADE,
-                FOREIGN KEY (achievement_id) REFERENCES achievement(id) ON DELETE CASCADE,
+                FOREIGN KEY (achievement_id) REFERENCES achievement(id)
+                    ON DELETE CASCADE,
                 UNIQUE(user_id, achievement_id)
             )
         """)
@@ -243,32 +245,32 @@ def upgrade_postgresql(connection_string: str) -> None:
         print("   Creating indexes...")
 
         cursor.execute("""
-            CREATE INDEX IF NOT EXISTS idx_achievement_category 
+            CREATE INDEX IF NOT EXISTS idx_achievement_category
             ON achievement(category)
         """)
 
         cursor.execute("""
-            CREATE INDEX IF NOT EXISTS idx_achievement_difficulty 
+            CREATE INDEX IF NOT EXISTS idx_achievement_difficulty
             ON achievement(difficulty)
         """)
 
         cursor.execute("""
-            CREATE INDEX IF NOT EXISTS idx_achievement_slug 
+            CREATE INDEX IF NOT EXISTS idx_achievement_slug
             ON achievement(slug)
         """)
 
         cursor.execute("""
-            CREATE INDEX IF NOT EXISTS idx_user_achievement_user_id 
+            CREATE INDEX IF NOT EXISTS idx_user_achievement_user_id
             ON user_achievement(user_id)
         """)
 
         cursor.execute("""
-            CREATE INDEX IF NOT EXISTS idx_user_achievement_achievement_id 
+            CREATE INDEX IF NOT EXISTS idx_user_achievement_achievement_id
             ON user_achievement(achievement_id)
         """)
 
         cursor.execute("""
-            CREATE INDEX IF NOT EXISTS idx_user_achievement_unlocked 
+            CREATE INDEX IF NOT EXISTS idx_user_achievement_unlocked
             ON user_achievement(is_unlocked)
         """)
 
@@ -332,10 +334,16 @@ if __name__ == "__main__":
             print(f"❌ Unknown command: {sys.argv[1]}")
             print("\nUsage:")
             print(
-                "  python migrations/add_achievement_tables.py              # SQLite (dev)"
+                (
+                    "  python migrations/add_achievement_tables.py              # "
+                    "SQLite (dev)"
+                )
             )
             print(
-                "  python migrations/add_achievement_tables.py postgresql   # PostgreSQL (prod)"
+                (
+                    "  python migrations/add_achievement_tables.py postgresql   # "
+                    "PostgreSQL (prod)"
+                )
             )
             print(
                 "  python migrations/add_achievement_tables.py downgrade    # Rollback"

@@ -62,7 +62,8 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
             print("   Adding default_classification_system to 'campionato' table...")
             cursor.execute("""
                 ALTER TABLE campionato
-                ADD COLUMN default_classification_system VARCHAR(10) DEFAULT 'WINS' NOT NULL
+                ADD COLUMN default_classification_system VARCHAR(10) DEFAULT 'WINS'
+                    NOT NULL
             """)
             print("   ✓ campionato.default_classification_system added")
         else:
@@ -100,7 +101,7 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
 
     except sqlite3.OperationalError as e:
         if "duplicate column name" in str(e).lower():
-            print(f"   ⏭️  Column already exists, skipping")
+            print("   ⏭️  Column already exists, skipping")
             conn.commit()
         else:
             conn.rollback()
@@ -128,14 +129,16 @@ def upgrade_postgresql(connection_string: str) -> None:
         print("   Adding classification_system to 'gara' table...")
         cursor.execute("""
             ALTER TABLE gara
-            ADD COLUMN IF NOT EXISTS classification_system VARCHAR(10) DEFAULT 'WINS' NOT NULL
+            ADD COLUMN IF NOT EXISTS classification_system VARCHAR(10) DEFAULT 'WINS'
+                NOT NULL
         """)
 
         # Add default_classification_system to campionato table
         print("   Adding default_classification_system to 'campionato' table...")
         cursor.execute("""
             ALTER TABLE campionato
-            ADD COLUMN IF NOT EXISTS default_classification_system VARCHAR(10) DEFAULT 'WINS' NOT NULL
+            ADD COLUMN IF NOT EXISTS default_classification_system VARCHAR(10)
+                DEFAULT 'WINS' NOT NULL
         """)
 
         conn.commit()

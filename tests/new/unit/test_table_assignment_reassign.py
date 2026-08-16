@@ -12,7 +12,6 @@ Tests cover:
 
 import pytest
 from datetime import datetime
-from models import db
 from models.match.table_assignment_service import TableAssignmentService
 from models.match.models import Match
 from models.competition.models import Gara, WithdrawPolicy

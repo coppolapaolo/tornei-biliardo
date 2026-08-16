@@ -78,5 +78,8 @@ def upgrade_sqlite(db_path: str):
     conn.commit()
     conn.close()
     print(
-        "  Created UNIQUE indexes: uq_individual_match_proposal, uq_proposal_invitation_user"
+        (
+            "  Created UNIQUE indexes: uq_individual_match_proposal, "
+            "uq_proposal_invitation_user"
+        )
     )

@@ -8,7 +8,6 @@ This migration populates the feature_config table with:
 
 import sqlite3
 import json
-import logging
 from pathlib import Path
 
 # Legacy Defaults (from models.gamification.config_models)
@@ -318,7 +317,9 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
             # Insert or Ignore
             cursor.execute(
                 """
-                INSERT OR IGNORE INTO feature_config (code, name, description, rules, is_active, created_at, updated_at)
+                INSERT
+                    OR IGNORE INTO feature_config (code, name, description, rules,
+                    is_active, created_at, updated_at)
                 VALUES (?, ?, ?, ?, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             """,
                 (code, name, description, rules_json),
@@ -334,11 +335,14 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
             description = "Complex rule migrated from system defaults"
 
             # Upsert (Replace if exists)
-            # Note: REPLACE INTO deletes and re-inserts, effectively updating but resetting creation time.
+            # Note: REPLACE INTO deletes and re-inserts, effectively updating but
+            # resetting creation time.
             # For migration purposes this is acceptable.
             cursor.execute(
                 """
-                INSERT OR REPLACE INTO feature_config (code, name, description, rules, is_active, created_at, updated_at)
+                INSERT
+                    OR REPLACE INTO feature_config (code, name, description, rules,
+                    is_active, created_at, updated_at)
                 VALUES (?, ?, ?, ?, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             """,
                 (code, name, description, rules_json),

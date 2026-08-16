@@ -8,10 +8,7 @@ Tests:
 - Requirement checking logic
 """
 
-import pytest
-import json
-from datetime import datetime
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 from models.gamification.achievement_service import AchievementService
 from models.gamification.models import (

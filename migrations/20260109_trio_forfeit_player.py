@@ -19,7 +19,10 @@ def upgrade_sqlite(db_path: str):
 
     if "forfeit_player_id" not in columns:
         cursor.execute(
-            "ALTER TABLE trio_match ADD COLUMN forfeit_player_id INTEGER REFERENCES user(id)"
+            (
+                "ALTER TABLE trio_match ADD COLUMN forfeit_player_id INTEGER "
+                "REFERENCES user(id)"
+            )
         )
         print("  Added forfeit_player_id column to trio_match")
 

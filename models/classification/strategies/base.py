@@ -171,7 +171,8 @@ class ClassificationStrategy(ABC):
         Use negative values for descending sort, positive for ascending.
 
         Example for Amalfi:
-            return (-score.matches_won, -score.rack_difference, score.previous_position or 999)
+            return (-score.matches_won, -score.rack_difference, score.previous_position
+                or 999)
         """
         ...
 

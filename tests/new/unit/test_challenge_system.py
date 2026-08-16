@@ -4,7 +4,6 @@ Unit tests for Challenge system implementation
 
 import pytest
 import uuid
-from unittest.mock import Mock, patch
 from models import db, Challenge, ChallengeAttempt, ChallengeFavorite, User
 from models.challenge.services import ChallengeService
 
@@ -258,7 +257,7 @@ class TestChallengeService:
     def test_update_challenge(self, app, test_challenge):
         """Test challenge update functionality."""
         with app.app_context():
-            original_description = test_challenge.description
+            test_challenge.description
             original_pass_fail = test_challenge.pass_fail_only
 
             # Update challenge
@@ -381,7 +380,9 @@ class TestChallengeModel:
 
             # Challenge with long description
             challenge_without_name = Challenge(
-                description="Test challenge description that is quite long and needs truncation",
+                description=(
+                    "Test challenge description that is quite long and needs truncation"
+                ),
                 image_path="test_long.jpg",
             )
             display_name = challenge_without_name.get_display_name()

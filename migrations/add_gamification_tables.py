@@ -137,7 +137,8 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
-                FOREIGN KEY (achievement_id) REFERENCES achievement(id) ON DELETE CASCADE,
+                FOREIGN KEY (achievement_id) REFERENCES achievement(id)
+                    ON DELETE CASCADE,
                 UNIQUE(user_id, achievement_id)
             )
         """)
@@ -366,7 +367,10 @@ if __name__ == "__main__":
             print(f"Unknown command: {sys.argv[1]}")
             print("\nUsage:")
             print(
-                "  python migrations/add_gamification_tables.py           # Apply migration"
+                (
+                    "  python migrations/add_gamification_tables.py           # Apply "
+                    "migration"
+                )
             )
             print("  python migrations/add_gamification_tables.py downgrade # Rollback")
             sys.exit(1)

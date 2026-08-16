@@ -9,8 +9,6 @@ badge resta disattivato. Lo stato sui DB esistenti è ottenuto dalle migrazioni
 20260605 (disattiva 12) + 20260606 (riattiva 4) + 20260607 (riattiva 8).
 """
 
-import pytest
-
 from models.base import db
 from models.gamification.achievement_seeds import (
     seed_achievements,
@@ -26,7 +24,9 @@ class TestAllAchievementsObtainable:
         assert UNOBTAINABLE_ACHIEVEMENT_SLUGS == frozenset()
 
     def test_seed_leaves_all_achievements_active(self, db_session):
-        """Dopo il seed, tutti gli achievement (anche gli ex-disattivati) sono attivi."""
+        """
+        Dopo il seed, tutti gli achievement (anche gli ex-disattivati) sono attivi.
+        """
         seed_achievements(db.session)
 
         # Gli 8 ultimi riattivati + alcuni rappresentativi.

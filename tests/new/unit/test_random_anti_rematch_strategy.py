@@ -4,11 +4,10 @@ Tests the graph-based algorithm with BYE_PLAYER_ID approach.
 """
 
 import pytest
-from unittest.mock import Mock, MagicMock, patch
-from typing import List, Set, Tuple
+from unittest.mock import Mock, patch
+from typing import Set, Tuple
 
 from models.matchmaking.strategies.random_anti_rematch import RandomAntiRematchStrategy
-from models.matchmaking.strategies.base import Pairing
 
 
 class TestRandomAntiRematchStrategy:
@@ -657,9 +656,10 @@ class TestWeightedMatching:
                     player_ids, set(), round_number=3, gara=mock_gara
                 )
 
-        assert any(
-            "rematch forzato" in rec.message for rec in caplog.records
-        ), f"Expected warning about forced rematch, got: {[r.message for r in caplog.records]}"
+        assert any("rematch forzato" in rec.message for rec in caplog.records), (
+            f"Expected warning about forced rematch, got: "
+            f"{[r.message for r in caplog.records]}"
+        )
 
     def test_no_warning_when_no_rematch(self, caplog):
         """No warning when matching finds a complete non-rematch cover."""
@@ -729,7 +729,9 @@ class TestDeterministicSeeding:
             player_ids, set(), round_number=1
         )
 
-        to_set = lambda pairings: frozenset(tuple(sorted(p.players)) for p in pairings)
+        def to_set(pairings):
+            return frozenset(tuple(sorted(p.players)) for p in pairings)
+
         assert to_set(p1_a) == to_set(p1_a_bis)
         assert to_set(p1_b) == to_set(p1_b_bis)
 
@@ -760,7 +762,8 @@ class TestTrioCountWalkoverFilter:
         with patch(
             "models.classification.encounter_service.db.session.query"
         ) as mock_query:
-            mock_query.return_value.join.return_value.filter.return_value.all.return_value = [
+            filtrati = mock_query.return_value.join.return_value.filter.return_value
+            filtrati.all.return_value = [
                 trio_contested,
                 trio_walkover,
             ]

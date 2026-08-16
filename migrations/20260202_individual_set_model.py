@@ -4,7 +4,8 @@ Migration: Add IndividualSet model for multi-set individual matches
 Date: 2026-02-02
 Description:
 - Create individual_set table for storing set data in multi-set individual matches
-- Add individual_set_id column to individual_rack table (nullable for backward compatibility)
+- Add individual_set_id column to individual_rack table (nullable for backward
+    compatibility)
 - Add current_set_number column to individual_match table
 
 This migration supports Phase 2 of the multi-set implementation plan.
@@ -30,7 +31,8 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
             cursor.execute("""
                 CREATE TABLE individual_set (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    match_id INTEGER NOT NULL REFERENCES individual_match(id) ON DELETE CASCADE,
+                    match_id INTEGER NOT NULL REFERENCES individual_match(id)
+                        ON DELETE CASCADE,
                     set_number INTEGER NOT NULL,
                     distance INTEGER NOT NULL,
                     is_race_to BOOLEAN NOT NULL DEFAULT 1,
@@ -71,7 +73,8 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
         if "individual_set_id" not in columns:
             cursor.execute("""
                 ALTER TABLE individual_rack
-                ADD COLUMN individual_set_id INTEGER REFERENCES individual_set(id) ON DELETE CASCADE
+                ADD COLUMN individual_set_id INTEGER REFERENCES individual_set(id)
+                    ON DELETE CASCADE
             """)
             print("Added 'individual_set_id' column to individual_rack table")
 

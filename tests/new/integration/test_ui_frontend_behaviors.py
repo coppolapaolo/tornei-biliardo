@@ -8,14 +8,13 @@ Tests specific UI behaviors documented in docs/usecases/UC01.md:
 """
 
 import pytest
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from typing import List
 import uuid
 import json
 
-from models import User, Gara, Match, Inscription
+from models import User, Match
 from models.user.role_enum import UserRole
-from models.status_enum import GaraStatus, MatchStatus
 from models.competition.services import GaraService, RoundService, InscriptionService
 from models.match.services import MatchService, RackService
 from models.classification.models import RoundClassification
@@ -85,7 +84,8 @@ class TestUIFrontendBehaviors:
         From UC01.md:
         - Rounds listed in ascending order, but completed rounds at bottom
         - Initially: Round 1 (with edit buttons), Round 2, Round 3 (no buttons)
-        - After Round 1 completion: Round 2 (with buttons) on top, Round 3, Round 1 (no buttons) at bottom
+        - After Round 1 completion: Round 2 (with buttons) on top, Round 3, Round 1 (no
+            buttons) at bottom
         """
         # Step 1: Create random strategy tournament with 3 rounds
         gara = GaraService.create_gara(
@@ -269,7 +269,10 @@ class TestUIFrontendBehaviors:
             if player_matches:
                 match = player_matches[0]
                 print(
-                    f"Player {player.username} sees match {match.id} table assignment in dashboard"
+                    (
+                        f"Player {player.username} sees match {match.id} table "
+                        f"assignment in dashboard"
+                    )
                 )
 
         print("✅ UC01-4: Table assignment display tested successfully")
@@ -310,7 +313,10 @@ class TestUIFrontendBehaviors:
 
         # Step 2: Create challenge after first round
         challenge = Challenge(
-            description="Post-Round 1 Challenge - Challenge available after completing first round",
+            description=(
+                "Post-Round 1 Challenge - Challenge available after completing first "
+                "round"
+            ),
             image_path="/static/challenges/post_round_challenge.jpg",
             pass_fail_only=False,
             is_active=True,
@@ -383,7 +389,10 @@ class TestUIFrontendBehaviors:
         """
         # Step 1: Create standalone challenge
         challenge = Challenge(
-            description="UC01-6 Profile Test Challenge - Challenge for testing profile integration",
+            description=(
+                "UC01-6 Profile Test Challenge - Challenge for testing profile "
+                "integration"
+            ),
             image_path="/static/challenges/profile_test.jpg",
             pass_fail_only=False,
             is_active=True,
@@ -398,7 +407,10 @@ class TestUIFrontendBehaviors:
 
         selected_challenge = available_challenges[0]
         print(
-            f"Player {test_player.username} selects challenge: {selected_challenge.description[:50]}..."
+            (
+                f"Player {test_player.username} selects challenge: "
+                f"{selected_challenge.description[:50]}..."
+            )
         )
 
         # Step 3: Player enters multiple attempts

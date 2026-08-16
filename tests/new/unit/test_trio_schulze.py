@@ -1,12 +1,9 @@
 """Tests for Schulze/Condorcet trio winner determination."""
 
-import pytest
 from unittest.mock import Mock
 from models.match.trio_schulze import (
     determine_trio_winner,
     _build_pairwise_wins,
-    _find_condorcet_winner,
-    _schulze_resolve,
 )
 
 

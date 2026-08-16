@@ -87,7 +87,8 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
     try:
         cursor.execute("""
             ALTER TABLE gara
-            ADD COLUMN playoff_config_id INTEGER REFERENCES playoff_configuration(id) ON DELETE SET NULL
+            ADD COLUMN playoff_config_id INTEGER REFERENCES playoff_configuration(id)
+                ON DELETE SET NULL
         """)
         print("   ✓ Added column: playoff_config_id")
     except sqlite3.OperationalError as e:
@@ -105,7 +106,10 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
 
     # Check if table exists
     cursor.execute(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name='playoff_configuration'"
+        (
+            "SELECT name FROM sqlite_master WHERE type='table' AND "
+            "name='playoff_configuration'"
+        )
     )
     if cursor.fetchone():
         playoff_config_columns = [
@@ -135,7 +139,10 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
     print("📋 Migrating 'playoff_qualification' table...")
 
     cursor.execute(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name='playoff_qualification'"
+        (
+            "SELECT name FROM sqlite_master WHERE type='table' AND "
+            "name='playoff_qualification'"
+        )
     )
     if cursor.fetchone():
         playoff_qual_columns = [
@@ -224,7 +231,8 @@ def upgrade_postgresql(connection_string: str) -> None:
         cursor.execute("""
             ALTER TABLE campionato
             ADD COLUMN IF NOT EXISTS planned_gare_count INTEGER DEFAULT 10,
-            ADD COLUMN IF NOT EXISTS default_venue_id INTEGER REFERENCES billiard_hall(id) ON DELETE SET NULL,
+            ADD COLUMN IF NOT EXISTS default_venue_id INTEGER
+                REFERENCES billiard_hall(id) ON DELETE SET NULL,
             ADD COLUMN IF NOT EXISTS default_entry_fee REAL,
             ADD COLUMN IF NOT EXISTS default_rounds_count INTEGER DEFAULT 3,
             ADD COLUMN IF NOT EXISTS default_odd_policy VARCHAR(30) DEFAULT 'bye',
@@ -246,7 +254,8 @@ def upgrade_postgresql(connection_string: str) -> None:
         print("📋 Migrating 'gara' table...")
         cursor.execute("""
             ALTER TABLE gara
-            ADD COLUMN IF NOT EXISTS playoff_config_id INTEGER REFERENCES playoff_configuration(id) ON DELETE SET NULL
+            ADD COLUMN IF NOT EXISTS playoff_config_id INTEGER
+                REFERENCES playoff_configuration(id) ON DELETE SET NULL
         """)
         print("   ✓ Gara column added")
 
@@ -298,7 +307,10 @@ def downgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
     print("   New columns added by this migration:")
     print("   - campionato: planned_gare_count, default_venue_id, default_entry_fee,")
     print(
-        "                 default_rounds_count, default_odd_policy, default_anti_rematch"
+        (
+            "                 default_rounds_count, default_odd_policy, "
+            "default_anti_rematch"
+        )
     )
     print("   - gara: playoff_config_id")
     print("   - playoff_configuration: positions_from, positions_to")
@@ -328,13 +340,22 @@ if __name__ == "__main__":
             print()
             print("Usage:")
             print(
-                "  python migrations/20260107_campionato_wizard_playoff.py              # SQLite (dev)"
+                (
+                    "  python migrations/20260107_campionato_wizard_playoff.py         "
+                    "     # SQLite (dev)"
+                )
             )
             print(
-                "  python migrations/20260107_campionato_wizard_playoff.py postgresql   # PostgreSQL (prod)"
+                (
+                    "  python migrations/20260107_campionato_wizard_playoff.py "
+                    "postgresql   # PostgreSQL (prod)"
+                )
             )
             print(
-                "  python migrations/20260107_campionato_wizard_playoff.py downgrade    # Rollback info"
+                (
+                    "  python migrations/20260107_campionato_wizard_playoff.py "
+                    "downgrade    # Rollback info"
+                )
             )
             sys.exit(1)
     else:

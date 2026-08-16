@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-16 16:47+0000\n"
+"POT-Creation-Date: 2026-08-16 16:53+0000\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app.py:522 templates/errors/403.html:3
+#: app.py:532 templates/errors/403.html:3
 msgid "Accesso negato"
 msgstr "Access denied"
 
@@ -583,7 +583,8 @@ msgstr "Milestone: %(value)s matches!"
 msgid "Sono stati giocati %(value)s match sulla piattaforma. La community cresce!"
 msgstr ""
 "%(value)s matches have been played on the platform. The community is "
-"growing!"
+"growing!%(value)s matches have been played on the platform. The community"
+" is growing!"
 
 #: models/kpi/notifications.py:59
 #, python-format
@@ -682,12 +683,12 @@ msgstr "each set race to %(n)s racks"
 msgid "ogni set esattamente %(n)s rack"
 msgstr "each set exactly %(n)s racks"
 
-#: models/notification/factory.py:380
+#: models/notification/factory.py:386
 #, python-format
 msgid "%(enrolled_by)s ti ha iscritto alla gara %(gara_name)s del %(gara_date)s"
 msgstr "%(enrolled_by)s registered you for %(gara_name)s on %(gara_date)s"
 
-#: models/notification/factory.py:390
+#: models/notification/factory.py:396
 msgid "Iscrizione a Gara"
 msgstr "Competition Enrollment"
 
@@ -1192,70 +1193,66 @@ msgstr "Championship creation cancelled"
 msgid "Non hai i permessi per creare un campionato."
 msgstr "You do not have permission to create a championship."
 
-#: routes/admin/campionato.py:613
+#: routes/admin/campionato.py:617
 #, python-format
 msgid "Campionato \"%(name)s\" terminato con successo."
 msgstr "Championship \"%(name)s\" terminated successfully."
 
-#: routes/admin/campionato.py:619
+#: routes/admin/campionato.py:623
 msgid "Il campionato è già stato terminato."
 msgstr "The championship has already been terminated."
 
-#: routes/admin/campionato.py:637
+#: routes/admin/campionato.py:641
 msgid "Parametri non validi."
 msgstr "Invalid parameters."
 
-#: routes/admin/campionato.py:644
+#: routes/admin/campionato.py:648
 msgid "Requisito minimo gare aggiornato."
 msgstr "Minimum competition requirement updated."
 
-#: routes/admin/campionato.py:667
-msgid "Playoff avviati ma nessun giocatore qualificato. Verifica la classifica."
-msgstr "Playoffs started but no players qualified. Check the standings."
-
-#: routes/admin/campionato.py:673
+#: routes/admin/campionato.py:680
 #, python-format
 msgid "Playoff avviati: %(count)s giocatori qualificati."
 msgstr "Playoffs started: %(count)s players qualified."
 
-#: routes/admin/campionato.py:700
+#: routes/admin/campionato.py:707
 msgid "Configurazione playoff non trovata."
 msgstr "Playoff configuration not found."
 
-#: routes/admin/campionato.py:714
+#: routes/admin/campionato.py:721
 #, python-format
 msgid "Gara playoff \"%(name)s\" creata con successo."
 msgstr "Playoff gara \"%(name)s\" created successfully."
 
-#: routes/admin/campionato.py:736
+#: routes/admin/campionato.py:743
 msgid "Seleziona un giocatore."
 msgstr "Select a player."
 
-#: routes/admin/campionato.py:743
+#: routes/admin/campionato.py:750
 msgid "Giocatore aggiunto ai playoff."
 msgstr "Player added to playoffs."
 
-#: routes/admin/campionato.py:763
+#: routes/admin/campionato.py:770
 msgid "Qualificazione non specificata."
 msgstr "Qualification not specified."
 
-#: routes/admin/campionato.py:770
+#: routes/admin/campionato.py:777
 msgid "Giocatore rimosso dai playoff."
 msgstr "Player removed from playoffs."
 
-#: routes/admin/campionato.py:826
+#: routes/admin/campionato.py:833
 msgid "Configurazione playoff aggiornata."
 msgstr "Playoff configuration updated."
 
-#: routes/admin/campionato.py:848
+#: routes/admin/campionato.py:855
 msgid "Tutti i campi obbligatori devono essere compilati."
 msgstr "All required fields must be filled."
 
-#: routes/admin/campionato.py:867
+#: routes/admin/campionato.py:874
 msgid "Configurazione playoff aggiunta."
 msgstr "Playoff configuration added."
 
-#: routes/admin/campionato.py:887
+#: routes/admin/campionato.py:894
 msgid "Configurazione playoff disattivata."
 msgstr "Playoff configuration deactivated."
 
@@ -1951,45 +1948,31 @@ msgstr "Enrollment in %(gara)s completed!"
 msgid "Errore durante l'iscrizione."
 msgstr "Error during enrollment."
 
-#: routes/player/exports.py:526
-msgid ""
-"Un export è già in corso o è stato generato di recente. Controlla le "
-"notifiche."
-msgstr ""
-"An export is already in progress or was recently generated. Check your "
-"notifications."
-
-#: routes/player/exports.py:535
+#: routes/player/exports.py:542
 msgid "Export GDPR Pronto"
 msgstr "GDPR Export Ready"
 
-#: routes/player/exports.py:537
+#: routes/player/exports.py:544
 msgid "Il tuo archivio dati è pronto per il download. Il link scadrà tra 24 ore."
 msgstr "Your data archive is ready for download. The link will expire in 24 hours."
 
-#: routes/player/exports.py:539
+#: routes/player/exports.py:546
 msgid "Scarica"
 msgstr "Download"
 
-#: routes/player/exports.py:540
+#: routes/player/exports.py:547
 msgid "Errore Export GDPR"
 msgstr "GDPR Export Error"
 
-#: routes/player/exports.py:542
-msgid ""
-"Si è verificato un errore durante la generazione dell'archivio. Riprova "
-"più tardi."
-msgstr "An error occurred while generating the archive. Please try again later."
-
-#: routes/player/exports.py:556
+#: routes/player/exports.py:566
 msgid "Export avviato. Riceverai una notifica quando sarà pronto per il download."
 msgstr "Export started. You'll get a notification when it's ready to download."
 
-#: routes/player/exports.py:581
+#: routes/player/exports.py:591
 msgid "Il file di export non esiste o è scaduto."
 msgstr "The export file does not exist or has expired."
 
-#: routes/player/exports.py:588
+#: routes/player/exports.py:598
 msgid "Il file di export è scaduto. Richiedi un nuovo export."
 msgstr "The export file has expired. Request a new export."
 
@@ -3707,8 +3690,9 @@ msgstr "Final playoffs"
 #: templates/admin/campionato_wizard_step1.html:115
 msgid "Gare speciali a fine campionato: i qualificati ricevono un invito."
 msgstr ""
-"Special competitions at the end of the championship: qualified players "
-"receive an invitation."
+"Special competitions at the end of the championship: those who qualify "
+"get an invitation.Special competitions at the end of the championship: "
+"qualified players receive an invitation."
 
 #: templates/admin/campionato_wizard_step1.html:123
 msgid "Per i primi classificati"
@@ -3868,8 +3852,9 @@ msgstr "Handicap mode"
 #: templates/admin/campionato_wizard_step2.html:138
 msgid "I match non aggiornano il rating Elo. Ereditato da gare e partite."
 msgstr ""
-"Matches do not update the Elo rating. Inherited by competitions and "
-"matches."
+"Matches do not update the Elo rating. Inherited from competitions and "
+"matches.Matches do not update the Elo rating. Inherited by competitions "
+"and matches."
 
 #: templates/admin/campionato_wizard_step2.html:155
 #: templates/admin/venue_form.html:12 templates/admin/venue_form.html:23
@@ -3960,8 +3945,8 @@ msgstr "Challenge standings"
 #, python-format
 msgid "%(n)s giocatore"
 msgid_plural "%(n)s giocatori"
-msgstr[0] "%"
-msgstr[1] "("
+msgstr[0] "%(n)s player"
+msgstr[1] "%(n)s players"
 
 #: templates/admin/gara_challenge_classification.html:39
 #: templates/components/_gara_challenge_classification_compact.html:27
@@ -4039,8 +4024,8 @@ msgstr "after round %(n)s"
 #, python-format
 msgid "%(n)s tentativo"
 msgid_plural "%(n)s tentativi"
-msgstr[0] "%"
-msgstr[1] "("
+msgstr[0] "%(n)s attempt"
+msgstr[1] "%(n)s attempts"
 
 #: templates/admin/gara_challenge_classification.html:136
 #: templates/challenge/_challenge_card.html:50
@@ -5640,7 +5625,8 @@ msgstr "Nothing to manage yet"
 msgid "Puoi creare un campionato o una singola gara dai pulsanti in testata."
 msgstr ""
 "You can create a championship or a single competition from the buttons in"
-" the header."
+" the header.You can create a championship or a single competition from "
+"the buttons in the header."
 
 #: templates/components/_dashboard_empty_state.html:11
 msgid "Nessun campionato attivo"
@@ -5930,8 +5916,9 @@ msgstr "%(num)s groups"
 #: templates/components/_double_knockout_algorithm_info.html:24
 msgid "Ogni girone qualifica quattro giocatori: due imbattuti e due ripescati."
 msgstr ""
-"Each group qualifies four players: two unbeaten and two from the losers' "
-"bracket."
+"Each group qualifies four players: two unbeaten and two through the "
+"losers bracket.Each group qualifies four players: two unbeaten and two "
+"from the losers' bracket."
 
 #: templates/components/_elo_display.html:20
 msgid "Clicca per alternare ELO competitivo / globale (tornei + casual)"
@@ -6019,8 +6006,9 @@ msgstr "and %(n)s more players"
 #: templates/components/_gara_challenges_display.html:35
 msgid "Si giocano a turno concluso, con i tentativi indicati per ogni giocatore."
 msgstr ""
-"They are played once the round is over, with the attempts specified for "
-"each player."
+"They are played once the round is over, with the attempts shown for each "
+"player.They are played once the round is over, with the attempts "
+"specified for each player."
 
 #: templates/components/_gara_edit_form.html:16
 #, python-format
@@ -7044,8 +7032,8 @@ msgstr "Full: you join the waiting list"
 #, python-format
 msgid "%(num)s posto libero"
 msgid_plural "%(num)s posti liberi"
-msgstr[0] "%"
-msgstr[1] "("
+msgstr[0] "%(num)s spot left"
+msgstr[1] "%(num)s spots left"
 
 #: templates/components/_index_open_inscriptions.html:52
 #: templates/components/_unified_cards.html:74
@@ -8173,8 +8161,9 @@ msgstr "Disabled"
 #: templates/components/_squadre_management.html:66
 msgid "Toglie la squadra dalle scelte, senza toccare le iscrizioni che la usano"
 msgstr ""
-"Removes the team from the choices, without touching the entries that use "
-"it"
+"Removes the team from the choices, without touching the registrations "
+"that use itRemoves the team from the choices, without touching the "
+"entries that use it"
 
 #: templates/components/_squadre_management.html:72
 msgid "Rimette la squadra fra le scelte"
@@ -8880,9 +8869,9 @@ msgstr "Try it on your own"
 msgid "Allenamento: non porta la certificazione."
 msgstr "Practice: it never leads to certification."
 
-#: templates/exam/detail.html:111 templates/gamification/quests.html:110
+#: templates/exam/detail.html:111
 msgid "Inizia"
-msgstr "Starts"
+msgstr "Start"
 
 #: templates/exam/detail.html:117
 msgid "Davanti a un esaminatore, di persona."
@@ -9227,7 +9216,7 @@ msgstr "View the exams"
 
 #: templates/exam/session.html:8
 msgid "Sessione certificata"
-msgstr "Session certified"
+msgstr "Certified session"
 
 #: templates/exam/session.html:9
 msgid "Allenamento in autonomia"
@@ -9423,8 +9412,8 @@ msgstr "Complete these activities to unlock new features"
 #, python-format
 msgid "e un'altra funzionalità da sbloccare"
 msgid_plural "e altre %(num)d funzionalità da sbloccare"
-msgstr[0] "a"
-msgstr[1] "n"
+msgstr[0] "and one more feature to unlock"
+msgstr[1] "and %(num)d more features to unlock"
 
 #: templates/gamification/dashboard.html:149
 msgid "Achievement recenti"
@@ -9525,7 +9514,8 @@ msgstr "Play a few matches to appear in your local standings."
 msgid "Challenge create per gli altri, gare organizzate e proposte accettate."
 msgstr ""
 "Challenges created for others, competitions organised and proposals "
-"accepted."
+"accepted.Challenges created for others, competitions organised and "
+"proposals accepted."
 
 #: templates/gamification/leaderboards.html:77
 msgid "Punti contributo"
@@ -9539,7 +9529,8 @@ msgstr "No contribution recorded"
 msgid "Crea challenge, organizza gare o proponi match: la community cresce così."
 msgstr ""
 "Create challenges, organise competitions or propose matches: that is how "
-"the community grows."
+"the community grows.Create challenges, organise competitions or propose "
+"matches: that is how the community grows."
 
 #: templates/gamification/admin/dashboard.html:46
 #: templates/gamification/quests.html:10
@@ -9558,10 +9549,15 @@ msgstr "Active"
 #, python-format
 msgid "%(num)d partecipante"
 msgid_plural "%(num)d partecipanti"
-msgstr[0] "%"
-msgstr[1] "("
+msgstr[0] "%(num)d participant"
+msgstr[1] "%(num)d participants"
 
-#: templates/gamification/quests.html:121
+#: templates/gamification/quests.html:114
+#, python-format
+msgid "Inizia il %(data)s"
+msgstr "Starts on %(data)s"
+
+#: templates/gamification/quests.html:125
 msgid "Completate"
 msgstr "Completed"
 
@@ -9577,8 +9573,8 @@ msgstr "Weekly activity and XP bonuses"
 #: templates/gamification/streaks.html:29
 msgid "settimana consecutiva di attività"
 msgid_plural "settimane consecutive di attività"
-msgstr[0] "c"
-msgstr[1] "o"
+msgstr[0] "consecutive week of activity"
+msgstr[1] "consecutive weeks of activity"
 
 #: templates/gamification/streaks.html:33
 msgid "Record personale"
@@ -9588,8 +9584,8 @@ msgstr "Personal record"
 #, python-format
 msgid "%(num)d freeze disponibile"
 msgid_plural "%(num)d freeze disponibili"
-msgstr[0] "%"
-msgstr[1] "("
+msgstr[0] "%(num)d freeze available"
+msgstr[1] "%(num)d freezes available"
 
 #: templates/gamification/streaks.html:62
 msgid "A rischio"
@@ -9599,8 +9595,8 @@ msgstr "At risk"
 #, python-format
 msgid "%(num)d freeze"
 msgid_plural "%(num)d freeze"
-msgstr[0] "%"
-msgstr[1] "("
+msgstr[0] "%(num)d freeze"
+msgstr[1] "%(num)d freezes"
 
 #: templates/gamification/streaks.html:73
 msgid "Attuale"
@@ -11624,8 +11620,8 @@ msgstr "L"
 #, python-format
 msgid "%(n)s vittoria di fila"
 msgid_plural "%(n)s vittorie di fila"
-msgstr[0] "%"
-msgstr[1] "("
+msgstr[0] "%(n)s win in a row"
+msgstr[1] "%(n)s wins in a row"
 
 #: templates/individual_match/statistics.html:205
 #, python-format
@@ -11644,8 +11640,8 @@ msgstr "By discipline"
 #, python-format
 msgid "%(n)s match"
 msgid_plural "%(n)s match"
-msgstr[0] "%"
-msgstr[1] "("
+msgstr[0] "%(n)s match"
+msgstr[1] "%(n)s matches"
 
 #: templates/individual_match/statistics.html:239
 msgid "Testa a testa"
@@ -11664,8 +11660,8 @@ msgstr "Month by month"
 #, python-format
 msgid "%(n)s vinto"
 msgid_plural "%(n)s vinti"
-msgstr[0] "%"
-msgstr[1] "("
+msgstr[0] "%(n)s won"
+msgstr[1] "%(n)s won"
 
 #: templates/individual_match/statistics.html:298
 msgid "I tuoi traguardi"
@@ -12622,9 +12618,9 @@ msgstr "Reject the request?"
 msgid "Nessuna richiesta in attesa."
 msgstr "No pending requests."
 
-#: utils/jinja.py:33 utils/jinja.py:80 utils/jinja.py:142 utils/jinja.py:176
-#: utils/jinja.py:199 utils/jinja.py:231 utils/jinja.py:241 utils/jinja.py:277
-#: utils/jinja.py:295 utils/jinja.py:307 utils/jinja.py:324
+#: utils/jinja.py:33 utils/jinja.py:80 utils/jinja.py:143 utils/jinja.py:177
+#: utils/jinja.py:200 utils/jinja.py:232 utils/jinja.py:242 utils/jinja.py:278
+#: utils/jinja.py:296 utils/jinja.py:308 utils/jinja.py:325
 msgid "N/A"
 msgstr "N/A"
 

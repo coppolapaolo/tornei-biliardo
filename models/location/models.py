@@ -13,7 +13,7 @@ from typing import Any, Dict, List, Optional, TYPE_CHECKING
 from enum import Enum
 
 
-from ..base import db, BaseModel, TimestampMixin, utc_now
+from ..base import db, BaseModel, utc_now
 
 if TYPE_CHECKING:
     from ..user.models import User
@@ -185,7 +185,8 @@ class BilliardHall(BaseModel):
             UserLocationAvailability.is_available.is_(True),
         )
 
-        # Get all available users first, then filter by day in application code if needed
+        # Get all available users first, then filter by day in application code if
+        # needed
         all_users = query.all()
 
         if day:

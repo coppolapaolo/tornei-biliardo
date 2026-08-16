@@ -120,14 +120,19 @@ class TestBackfillWalkoverTrioMatchup:
 
         conn = sqlite3.connect(tmp_db)
         row = conn.execute(
-            "SELECT current_player1_id, current_player2_id, waiting_player_id FROM trio_match WHERE id = ?",
+            (
+                "SELECT current_player1_id, current_player2_id, waiting_player_id FROM "
+                "trio_match WHERE id = ?"
+            ),
             (trio_id,),
         ).fetchone()
         conn.close()
         assert row == (10, 20, 30)
 
     def test_skips_contested_trio(self, tmp_db):
-        """Trio with racks played must NOT be rewritten (admin could have progressed the matchup)."""
+        """Trio with racks played must NOT be rewritten (admin could have progressed the
+        matchup).
+        """
         conn = sqlite3.connect(tmp_db)
         trio_id = _insert_trio(
             conn,
@@ -145,7 +150,10 @@ class TestBackfillWalkoverTrioMatchup:
 
         conn = sqlite3.connect(tmp_db)
         row = conn.execute(
-            "SELECT current_player1_id, current_player2_id, waiting_player_id FROM trio_match WHERE id = ?",
+            (
+                "SELECT current_player1_id, current_player2_id, waiting_player_id FROM "
+                "trio_match WHERE id = ?"
+            ),
             (trio_id,),
         ).fetchone()
         conn.close()
@@ -161,7 +169,10 @@ class TestBackfillWalkoverTrioMatchup:
 
         conn = sqlite3.connect(tmp_db)
         row = conn.execute(
-            "SELECT current_player1_id, current_player2_id, waiting_player_id FROM trio_match WHERE id = ?",
+            (
+                "SELECT current_player1_id, current_player2_id, waiting_player_id FROM "
+                "trio_match WHERE id = ?"
+            ),
             (trio_id,),
         ).fetchone()
         conn.close()
@@ -185,7 +196,10 @@ class TestBackfillWalkoverTrioMatchup:
 
         conn = sqlite3.connect(tmp_db)
         row = conn.execute(
-            "SELECT current_player1_id, current_player2_id, waiting_player_id FROM trio_match WHERE id = ?",
+            (
+                "SELECT current_player1_id, current_player2_id, waiting_player_id FROM "
+                "trio_match WHERE id = ?"
+            ),
             (trio_id,),
         ).fetchone()
         conn.close()
@@ -201,7 +215,10 @@ class TestBackfillWalkoverTrioMatchup:
 
         conn = sqlite3.connect(tmp_db)
         row = conn.execute(
-            "SELECT current_player1_id, current_player2_id, waiting_player_id FROM trio_match WHERE id = ?",
+            (
+                "SELECT current_player1_id, current_player2_id, waiting_player_id FROM "
+                "trio_match WHERE id = ?"
+            ),
             (trio_id,),
         ).fetchone()
         conn.close()
@@ -218,7 +235,10 @@ class TestBackfillWalkoverTrioMatchup:
 
         conn = sqlite3.connect(tmp_db)
         rows = conn.execute(
-            "SELECT current_player1_id, current_player2_id, waiting_player_id FROM trio_match"
+            (
+                "SELECT current_player1_id, current_player2_id, waiting_player_id FROM "
+                "trio_match"
+            )
         ).fetchall()
         conn.close()
         assert rows == [(10, 20, 30)]

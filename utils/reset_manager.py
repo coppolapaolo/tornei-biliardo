@@ -239,7 +239,8 @@ class ResetManager:
             db_uri = current_app.config.get("SQLALCHEMY_DATABASE_URI", "")
             if db_uri.startswith("sqlite:///"):
                 db_path = db_uri.replace("sqlite:///", "")
-                # Se il percorso è relativo, controlla prima instance/ poi directory corrente
+                # Se il percorso è relativo, controlla prima instance/ poi directory
+                # corrente
                 if not os.path.isabs(db_path):
                     # Controlla prima nella directory instance (più probabile per Flask)
                     instance_path = os.path.join("instance", db_path)

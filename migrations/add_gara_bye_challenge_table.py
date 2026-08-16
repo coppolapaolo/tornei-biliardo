@@ -12,7 +12,6 @@ This migration:
 """
 
 import sqlite3
-from datetime import datetime
 from models.base import utc_now
 
 
@@ -53,7 +52,8 @@ def upgrade(cursor) -> None:
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (gara_id) REFERENCES gara(id) ON DELETE CASCADE,
-            FOREIGN KEY (challenge_attempt_id) REFERENCES challenge_attempt(id) ON DELETE SET NULL,
+            FOREIGN KEY (challenge_attempt_id) REFERENCES challenge_attempt(id)
+                ON DELETE SET NULL,
             FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
             FOREIGN KEY (match_id) REFERENCES match(id) ON DELETE SET NULL,
             UNIQUE (gara_id, user_id, round_number)

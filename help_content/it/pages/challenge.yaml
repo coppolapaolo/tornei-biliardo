@@ -8,7 +8,7 @@ screens: [challenge.challenge_catalog, challenge.challenge_detail, challenge.tra
   challenge.start_attempt, challenge.attempt_detail, challenge.create_challenge,
   challenge.edit_challenge, challenge.challenge_statistics, player.challenge_detail,
   challenge.diagram_builder, challenge.edit_diagram]
-related: [progressi, numero_dispari]
+related: [progressi, numero_dispari, esami]
 
 blocks:
   - type: text
@@ -227,7 +227,9 @@ blocks:
       - q: "Non vedo «Disegna il drill» nel modulo di creazione."
         a: "È un comando da direttore di gara, e si sblocca dopo trenta drill completati. Finché non compare, la challenge si crea caricando la foto: è il modo normale, non un ripiego."
       - q: "Posso rifare la stessa challenge più volte?"
-        a: "Sì, ed è proprio il senso della schermata di allenamento: registri una prova dopo l'altra senza uscire. Dentro una gara è diverso: lì il numero di tentativi lo stabilisce il direttore."
+        a: "Sì, ed è proprio il senso della schermata di allenamento: registri una prova dopo l'altra senza uscire. Dentro una gara è diverso: lì il numero di tentativi lo stabilisce il direttore, e dentro un esame lo stabilisce chi l'ha composto — può chiederti più prove dello stesso drill, e conta la migliore."
+      - q: "Che differenza c'è fra una challenge e un esame?"
+        a: "Una challenge è una prova sola. Un esame è una sequenza di più drill in ordine, e può essere certificato da un esaminatore. Vedi [Sostenere un esame](/aiuto/giocare/esami)."
       - q: "Chi controlla che il punteggio dichiarato sia vero?"
         a: "Fuori dalle gare, nessuno: è un allenamento, e vale la parola. Dentro una gara è il direttore a validare i risultati."
       - q: "Le challenge contano per il rating?"

@@ -51,7 +51,9 @@ class PlayerAvailabilityCreatedEvent(DomainEvent):
 
 @dataclass
 class AvailabilityNotificationEvent(DomainEvent):
-    """Event published when players should be notified about availability at a location."""
+    """
+    Event published when players should be notified about availability at a location.
+    """
 
     location_id: int
     location_name: str

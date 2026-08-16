@@ -4,12 +4,11 @@ Tests the distance_config property for Gara, MatchProposal, and IndividualMatch
 models with multi-set configuration support.
 """
 
-import pytest
 from models.competition.models import Gara
 from models.individual_match.models import MatchProposal, IndividualMatch
 from models.match.distance import Distance
 from models.status_enum import Discipline
-from datetime import datetime, timedelta
+from datetime import timedelta
 from models.base import utc_now
 
 

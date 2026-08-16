@@ -98,6 +98,10 @@ blocks:
     id: come-si-compila
     title: "How to fill it in"
 
+  - type: shot
+    shot: referto-tpa
+    caption: "The TPA scoresheet during the match: the two players with their TPA, the inning box and the keypad."
+
   - type: text
     text: >-
       The two players are at the top. The **dark** one is whoever is at the
@@ -176,6 +180,10 @@ blocks:
       At the bottom of the page is **the sheet**: the whole match, rack by rack
       and inning by inning. Use it during play to check you have not missed
       anything, and afterwards to see how it went.
+
+  - type: shot
+    shot: referto-tpa-foglio
+    caption: "The scoresheet itself: each row is one visit to the table, with the balls pocketed and why the inning ended."
 
   - type: text
     text: >-

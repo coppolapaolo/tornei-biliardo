@@ -302,6 +302,51 @@ hints:
   - admin.campionato.edit_campionato
   page: creare_un_campionato
   section: punti_posizione
+- id: esame.prova_da_solo
+  label: Try it on your own
+  short: 'You practise: you record the scores and can stop and resume. It stays in your history but
+    carries no certification.'
+  anchor: esame-prova-da-solo
+  screens:
+  - exam.exam_detail
+  page: esami
+  section: due_modi
+- id: esame.appuntamento
+  label: Ask for an appointment
+  short: 'The exam that counts is taken in person: propose a date, a time and a venue to one or more
+    examiners. The first to accept closes it for the others.'
+  anchor: esame-appuntamento
+  screens:
+  - exam.exam_detail
+  - exam.request_form
+  page: esami
+  section: appuntamento
+- id: esame.quante_prove
+  label: How many attempts
+  short: How many times the candidate repeats that drill. If it is more than one, the best attempt
+    counts, not the sum.
+  anchor: esame-quante-prove
+  screens:
+  - exam.exam_detail
+  page: diventare_esaminatore
+  section: comporre
+- id: esame.punteggio_massimo
+  label: Maximum score
+  short: 'What the drill is worth inside this exam. It is per exam, not a property of the drill: the
+    same drill can weigh differently elsewhere.'
+  anchor: esame-punteggio-massimo
+  screens:
+  - exam.exam_detail
+  page: diventare_esaminatore
+  section: comporre
+- id: esame.ordine_drill
+  label: The order of the drills
+  short: Candidates face them in the sequence you set. You can reorder until the exam is what you wanted.
+  anchor: esame-ordine-drill
+  screens:
+  - exam.exam_detail
+  page: diventare_esaminatore
+  section: comporre
 - id: referto.tastierino
   label: The keypad
   short: 'First how many balls went in, then why the inning ended. Keys that make no sense right now

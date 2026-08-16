@@ -150,7 +150,7 @@ def upgrade_postgresql(connection_string: str) -> None:
         print("❌ psycopg2 not installed. Install with: pip install psycopg2-binary")
         return
 
-    print(f"🔧 Migrating PostgreSQL database...")
+    print("🔧 Migrating PostgreSQL database...")
 
     conn = psycopg2.connect(connection_string)
     cursor = conn.cursor()
@@ -259,10 +259,16 @@ if __name__ == "__main__":
             print(f"❌ Unknown command: {sys.argv[1]}")
             print("\nUsage:")
             print(
-                "  python migrations/add_multi_set_fields.py              # SQLite (dev)"
+                (
+                    "  python migrations/add_multi_set_fields.py              # SQLite "
+                    "(dev)"
+                )
             )
             print(
-                "  python migrations/add_multi_set_fields.py postgresql   # PostgreSQL (prod)"
+                (
+                    "  python migrations/add_multi_set_fields.py postgresql   # "
+                    "PostgreSQL (prod)"
+                )
             )
             print("  python migrations/add_multi_set_fields.py downgrade    # Rollback")
             sys.exit(1)

@@ -11,8 +11,7 @@ Strategy: Red-Green-Refactor TDD methodology following Task 1.2 patterns
 """
 
 import pytest
-from unittest.mock import patch, MagicMock
-from datetime import datetime, date, timedelta
+from datetime import date, timedelta
 
 from models import db
 from models.user.models import User
@@ -223,7 +222,8 @@ class TestUserStatsServiceTDD:
         RED: Test UserStatsService.get_users_with_stats() comprehensive user list.
 
         Expected behavior:
-        - Returns list of tuples with (User, inscription_count, total_matches, matches_won)
+        - Returns list of tuples with (User, inscription_count, total_matches,
+            matches_won)
         - Excludes admin users from results
         - Orders by inscription_count desc, then username
         - Uses optimized query for users list page
@@ -318,7 +318,8 @@ class TestUserStatsServiceTDD:
         self, app, test_user_with_stats_data
     ):
         """
-        RED: Test UserStatsService.get_user_statistics() detailed statistics calculation.
+        RED: Test UserStatsService.get_user_statistics() detailed statistics
+            calculation.
 
         Expected behavior:
         - Returns comprehensive statistics dictionary
@@ -341,7 +342,8 @@ class TestUserStatsServiceTDD:
             assert "won_matches" in stats
             assert "lost_matches" in stats
             assert "win_percentage" in stats
-            # Note: Current implementation only includes basic stats, not tournaments_played/provas_played
+            # Note: Current implementation only includes basic stats, not
+            # tournaments_played/provas_played
 
             # Verify calculated values
             assert stats["inscription_count"] == 1
@@ -349,7 +351,8 @@ class TestUserStatsServiceTDD:
             assert stats["won_matches"] == 2
             assert stats["lost_matches"] == 1
             assert stats["win_percentage"] == 66.7  # Rounded to 1 decimal
-            # Note: tournaments_played and provas_played not included in current implementation
+            # Note: tournaments_played and provas_played not included in current
+            # implementation
 
     def test_get_user_matches_functionality(self, app, test_user_with_stats_data):
         """
@@ -502,7 +505,8 @@ class TestUserStatsServiceTDD:
                     "total_matches", service_stats["total_matches"]
                 )
             except AttributeError:
-                # If model method doesn't exist, service should provide the functionality
+                # If model method doesn't exist, service should provide the
+                # functionality
                 pass
 
             # Verify service provides expected interface
@@ -728,11 +732,13 @@ class TestUserStatsServiceTDD:
                 with pytest.raises(ValueError, match=expected_message):
                     UserStatsService.get_user_statistics(user_id=user_id)
 
-                # get_user_matches returns empty list for non-existent users, doesn't raise
+                # get_user_matches returns empty list for non-existent users, doesn't
+                # raise
                 matches = UserStatsService.get_user_matches(user_id=user_id)
                 assert matches == []
 
-                # get_user_classifications returns empty list for non-existent users, doesn't raise
+                # get_user_classifications returns empty list for non-existent users,
+                # doesn't raise
                 classifications = UserStatsService.get_user_classifications(
                     user_id=user_id
                 )

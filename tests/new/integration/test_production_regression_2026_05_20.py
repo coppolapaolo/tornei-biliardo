@@ -24,7 +24,6 @@ from models.user.role_enum import UserRole
 from models.competition.services import GaraService
 from models.competition.inscription_service import InscriptionService
 from models.competition.round_service import RoundService
-from models.match.services import RackService
 from models.match.scoring_service import ScoringService
 from models.match.models import Rack
 from models.base import utc_now, db
@@ -396,7 +395,6 @@ def test_wizard_standalone_persists_classification_system(app, db_session):
     un fake request.form e verifica che il dict restituito contenga la
     chiave attesa. Va oltre la verifica di "default WINS" che esisteva.
     """
-    from werkzeug.datastructures import ImmutableMultiDict
     from routes.admin.competition.form_parser import GaraFormParser
 
     form_fields = {

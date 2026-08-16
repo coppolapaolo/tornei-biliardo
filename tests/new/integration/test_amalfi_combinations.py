@@ -11,11 +11,10 @@ import uuid
 
 from models import User, Gara, Match
 from models.user.role_enum import UserRole
-from models.status_enum import GaraStatus, MatchStatus
+from models.status_enum import MatchStatus
 from models.competition.services import GaraService
 from models.competition.inscription_service import InscriptionService
 from models.competition.round_service import RoundService
-from models.match.services import MatchService, RackService
 from models.classification.models import (
     RoundClassification,
     PlayerEncounter,
@@ -637,7 +636,6 @@ class TestAmalfiOddPolicies:
     def test_bye_with_challenge_full_flow(self, db_session):
         """Full bye_with_challenge flow: bye -> challenge -> score update."""
         from models.challenge.models import Challenge
-        from models.competition.gara_challenge import GaraChallenge
         from models.competition.gara_challenge_service import GaraChallengeService
         from models.matchmaking.amalfi_challenge_bye_service import (
             AmalfiChallengeByeService,
@@ -682,7 +680,7 @@ class TestAmalfiOddPolicies:
         ).first()
         assert bye_match is not None
         bye_player_id = bye_match.player1_id
-        original_score = bye_match.player1_score
+        bye_match.player1_score
 
         # Bye player records a challenge attempt with score 12
         attempt = GaraChallengeService.record_challenge_attempt(

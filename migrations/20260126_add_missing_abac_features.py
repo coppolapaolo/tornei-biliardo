@@ -14,7 +14,6 @@ This migration adds the 8 missing features from the original ABAC plan:
 
 import sqlite3
 import json
-import logging
 from pathlib import Path
 
 # Missing Features from Original Plan
@@ -182,7 +181,9 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
             # Use INSERT OR REPLACE to update if exists
             cursor.execute(
                 """
-                INSERT OR REPLACE INTO feature_config (code, name, description, rules, is_active, created_at, updated_at)
+                INSERT
+                    OR REPLACE INTO feature_config (code, name, description, rules,
+                    is_active, created_at, updated_at)
                 VALUES (?, ?, ?, ?, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             """,
                 (code, name, description, rules_json),

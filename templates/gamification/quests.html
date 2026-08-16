@@ -107,7 +107,11 @@
           {{ _(quest.description)|truncate(90) }}
         </p>
         <div style="margin-top:10px;font-size:12px;font-weight:700">
-          {{ _('Inizia') }} {{ quest.start_date|datetime_local }}
+          {# Stringa completa e non un frammento: «Inizia» da solo collideva con
+             l'omonimo pulsante di `exam/detail.html`, dove e' un imperativo. Un
+             msgid per due significati costringe la traduzione a sceglierne uno,
+             e in inglese il pulsante era diventato «Starts». #}
+          {{ _('Inizia il %(data)s', data=quest.start_date|datetime_local) }}
         </div>
       </article>
       {% endfor %}

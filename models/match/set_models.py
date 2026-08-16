@@ -72,7 +72,8 @@ class Set(BaseModel):
 
         Args:
             disciplines: List of discipline names
-            mode: 'rotation' (cycle through), 'assignment' (specific mapping), or 'random'
+            mode: 'rotation' (cycle through), 'assignment' (specific mapping),
+                or 'random'
         """
         if not disciplines or len(disciplines) < 2:
             raise ValueError(
@@ -85,7 +86,8 @@ class Set(BaseModel):
             self.discipline_rotation = disciplines
             self.discipline_assignment = None
         elif mode == "assignment":
-            # Caller must provide specific rack->discipline mapping via set_discipline_assignment
+            # Caller must provide specific rack->discipline mapping via
+            # set_discipline_assignment
             self.discipline_rotation = disciplines
             self.discipline_assignment = {}
         else:
@@ -169,7 +171,10 @@ class Set(BaseModel):
         }
 
     def __repr__(self) -> str:
-        return f"<Set {self.match_id}-{self.set_number}: {self.player1_racks}-{self.player2_racks}>"
+        return (
+            f"<Set {self.match_id}-{self.set_number}: "
+            f"{self.player1_racks}-{self.player2_racks}>"
+        )
 
     def start_set(self) -> None:
         """Start the set."""

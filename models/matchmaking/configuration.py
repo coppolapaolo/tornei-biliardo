@@ -364,7 +364,8 @@ class StrategyConfiguration:
 
 
 # Strategy constraints definition
-# compatible_classification_systems: which campionato classification systems work with this strategy
+# compatible_classification_systems: which campionato classification systems work with
+# this strategy
 #   - WINS: ranking by match wins, then rack difference
 #   - RACK: ranking by total racks won
 #   - POSITION: ranking by bracket position (elimination formats only)

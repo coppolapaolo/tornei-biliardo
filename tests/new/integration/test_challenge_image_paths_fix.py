@@ -36,7 +36,8 @@ class TestChallengeImagePathsFix:
     @pytest.fixture
     def challenge_with_correct_path(self, db_session, admin_user) -> Challenge:
         """Create a challenge with the correct image path format."""
-        # This simulates how the real application saves image paths (from admin/competition.py:1702)
+        # This simulates how the real application saves image paths (from
+        # admin/competition.py:1702)
         unique_id = str(uuid.uuid4())[:8]
         filename = f"test_challenge_{unique_id}.jpg"
 
@@ -104,7 +105,8 @@ class TestChallengeImagePathsFix:
         """Test that challenge uses the correct path format."""
         challenge = challenge_with_correct_path
 
-        # Should be static/uploads/challenges/filename.jpg, not static/challenges/filename.jpg
+        # Should be static/uploads/challenges/filename.jpg, not
+        # static/challenges/filename.jpg
         assert challenge.image_path.startswith("static/uploads/challenges/")
         assert not challenge.image_path.startswith("static/challenges/")
         assert challenge.image_path.endswith(".jpg")
@@ -233,7 +235,8 @@ class TestChallengeImagePathsFix:
             # Flask static file serving would look for file at:
             static_folder = current_app.static_folder
             assert static_folder is not None, "Static folder should be configured"
-            # Remove the leading slash and "static/" from src to get relative path within static folder
+            # Remove the leading slash and "static/" from src to get relative path
+            # within static folder
             relative_path = src_attribute.lstrip("/").replace("static/", "", 1)
             file_system_path = os.path.join(static_folder, relative_path)
 

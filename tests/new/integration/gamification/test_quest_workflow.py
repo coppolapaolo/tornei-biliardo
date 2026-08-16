@@ -11,14 +11,11 @@ Tests the complete quest lifecycle:
 """
 
 import pytest
-from datetime import datetime, timedelta
-from unittest.mock import patch, MagicMock
-import json
+from datetime import timedelta
+from unittest.mock import patch
 
 from models.gamification.quest_service import QuestService
-from models.gamification.level_service import LevelService
 from models.gamification.models import (
-    Quest,
     QuestParticipation,
     QuestType,
     QuestStatus,
@@ -143,7 +140,7 @@ class TestQuestLifecycleWorkflow:
 
         # When created in past, status would be UPCOMING
         # Run status update to activate it
-        result = QuestService.update_quest_statuses()
+        QuestService.update_quest_statuses()
 
         # Verify the should_be_active quest is now ACTIVE
         db_session.refresh(should_be_active)

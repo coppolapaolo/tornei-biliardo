@@ -130,10 +130,17 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db"):
             "SELECT code FROM feature_config WHERE code = ?", (FEATURE_CODE,)
         )
         if cursor.fetchone() is None:
+            # `created_at`/`updated_at` sono NOT NULL su `feature_config` e non
+            # hanno un default a livello di tabella: il default sta sul modello
+            # SQLAlchemy, che qui non c'e' perche' la migration parla sqlite3
+            # diretto. Ometterli faceva fallire l'INSERT, e con lui l'intera
+            # migration — quindi la feature del referto non veniva mai seminata
+            # e la catena delle migration successive si fermava.
             cursor.execute(
                 "INSERT INTO feature_config "
-                "(code, name, description, rules, is_active) "
-                "VALUES (?, ?, ?, ?, 1)",
+                "(code, name, description, rules, is_active, "
+                " created_at, updated_at) "
+                "VALUES (?, ?, ?, ?, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
                 (
                     FEATURE_CODE,
                     FEATURE_NAME,

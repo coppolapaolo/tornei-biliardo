@@ -11,7 +11,8 @@ from .user import user_bp
 from .venue import venue_bp
 from .kpi import kpi_bp
 
-# from .dashboard import dashboard_bp  # Removed - admin dashboard deprecated, using unified dashboard
+# from .dashboard import dashboard_bp  # Removed - admin dashboard deprecated, using
+# unified dashboard
 
 # Main admin blueprint (parent)
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")

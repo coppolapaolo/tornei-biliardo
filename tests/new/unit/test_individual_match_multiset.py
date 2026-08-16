@@ -10,7 +10,7 @@ Tests the multi-set match workflow for IndividualMatch including:
 """
 
 import pytest
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from models.individual_match.models import (
     IndividualMatch,

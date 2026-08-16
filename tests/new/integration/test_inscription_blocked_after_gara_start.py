@@ -15,7 +15,7 @@ from datetime import date, timedelta
 import pytest
 
 from models import Gara, Inscription, User
-from models.base import db, utc_now
+from models.base import utc_now
 from models.status_enum import GaraStatus
 from models.user.role_enum import UserRole
 

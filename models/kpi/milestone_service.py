@@ -27,7 +27,9 @@ class MilestoneService:
     @staticmethod
     @transactional(domain="kpi")
     def check_and_record_milestones() -> List[Tuple[MilestoneType, int]]:
-        """Check for new milestones and record them. Returns newly reached milestones."""
+        """
+        Check for new milestones and record them. Returns newly reached milestones.
+        """
         newly_reached = []
 
         total_users = MetricsService.get_total_users()

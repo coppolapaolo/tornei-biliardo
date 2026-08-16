@@ -5,7 +5,6 @@ import uuid
 from datetime import date
 
 from models import Campionato
-from models.base import db
 from models.competition.models import Gara
 from models.user.models import User, DirectorAssignment
 from models.user.role_enum import UserRole

@@ -12,7 +12,8 @@ Usage:
         from routes import sse_bridge  # noqa: F401
 
 Events Routed:
-    - MatchCompletedEvent → gara scope (match_completed), user scope (my_match_completed)
+    - MatchCompletedEvent → gara scope (match_completed), user scope
+        (my_match_completed)
     - CompetitionStartedEvent → gara scope (round_started)
     - CompetitionCompletedEvent → gara scope (gara_completed)
     - InscriptionCreatedEvent → gara scope (inscription_added)
@@ -209,7 +210,9 @@ def on_achievement_unlocked(event: AchievementUnlockedEvent) -> None:
 def get_registered_handlers() -> dict:
     """Get list of registered SSE bridge handlers for debugging."""
     return {
-        "match_completed": "MatchCompletedEvent → gara:match_completed, user:my_match_completed",
+        "match_completed": (
+            "MatchCompletedEvent → gara:match_completed, user:my_match_completed"
+        ),
         "competition_started": "CompetitionStartedEvent → gara:round_started",
         "competition_completed": "CompetitionCompletedEvent → gara:gara_completed",
         "inscription_created": "InscriptionCreatedEvent → gara:inscription_added",

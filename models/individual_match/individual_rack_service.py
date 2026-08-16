@@ -1,6 +1,7 @@
 """
 Module: models/individual_match/individual_rack_service.py
-Purpose: Rack management service for individual matches (extracted from IndividualMatchService)
+Purpose: Rack management service for individual matches (extracted
+    from IndividualMatchService)
 Sprint 13: IndividualMatchService decomposition
 """
 
@@ -202,7 +203,10 @@ class IndividualRackService:
 
         return {
             "success": True,
-            "message": f"Rack {rack.rack_number} result disputed by player {disputing_player_id}",
+            "message": (
+                f"Rack {rack.rack_number} result disputed by player "
+                f"{disputing_player_id}"
+            ),
             "reason": reason,
         }
 
@@ -218,7 +222,9 @@ class IndividualRackService:
 
         return {
             "success": True,
-            "message": f"Rack {rack.rack_number} dispute resolved by admin {admin_user_id}",
+            "message": (
+                f"Rack {rack.rack_number} dispute resolved by admin {admin_user_id}"
+            ),
             "resolution": resolution,
             "reason": reason,
         }

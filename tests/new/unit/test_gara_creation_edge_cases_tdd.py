@@ -15,15 +15,10 @@ Following the Red-Green-Refactor cycle:
 import pytest
 import uuid
 from datetime import date, timedelta, datetime
-from typing import Dict, Any
 
-from models import User, Gara, Inscription
+from models import User
 from models.user.role_enum import UserRole
-from models.competition.models import WithdrawPolicy
-from models.status_enum import GaraStatus
 from models.competition.services import GaraService, InscriptionService
-from models.competition.state_service import StateService
-from models.exceptions import InvalidTransitionError
 from models.base import utc_now
 
 

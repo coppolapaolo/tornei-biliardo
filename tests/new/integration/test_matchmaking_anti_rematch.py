@@ -5,10 +5,10 @@ tra giocatori che si sono già incontrati in turni precedenti.
 """
 
 import pytest
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from typing import Set, Tuple
 
-from models import User, Gara, Match
+from models import User, Match
 from models.competition.services import GaraService, RoundService, InscriptionService
 from models.match.services import MatchService, RackService
 from models.classification.models import RoundClassification
@@ -152,16 +152,17 @@ class TestAntiRematchBug:
             # Aggiungi i pairing di questo turno al set totale
             all_pairings.update(round_pairings)
 
-        print(f"\n✅ Anti-rematch test PASSATO!")
+        print("\n✅ Anti-rematch test PASSATO!")
         print(f"   - Tutti i {len(all_pairings)} abbinamenti sono unici")
-        print(f"   - Nessun reincontro rilevato nei 3 turni")
+        print("   - Nessun reincontro rilevato nei 3 turni")
 
     def test_anti_rematch_with_limited_options(
         self, isolated_admin_user: User, isolated_players, db_session
     ):
         """Test edge case: anti-rematch quando le opzioni sono limitate.
 
-        Con 4 giocatori e 2 turni, matematicamente è impossibile evitare tutti i rematches
+        Con 4 giocatori e 2 turni, matematicamente è impossibile evitare tutti i
+        rematches
         dopo il secondo turno, ma con solo 2 turni non dovrebbero esserci rematches.
         """
         admin_user = isolated_admin_user
@@ -250,4 +251,4 @@ class TestAntiRematchBug:
                 f"tra Turno {i+1} e {i+2}: {immediate_rematches}"
             )
 
-        print(f"✅ Test edge case PASSATO: nessun rematch immediato rilevato!")
+        print("✅ Test edge case PASSATO: nessun rematch immediato rilevato!")

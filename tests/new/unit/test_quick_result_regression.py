@@ -316,7 +316,8 @@ class TestTrioResetOnTableRemoval:
     Bug: reset_match_complete didn't handle Trio matches, causing errors
     when trying to remove table assignment from a Trio match.
 
-    Fix: reset_match_complete now delegates to TrioScoringService.reset() for Trio matches.
+    Fix: reset_match_complete now delegates to TrioScoringService.reset() for Trio
+        matches.
     """
 
     def test_reset_match_complete_handles_trio(self, db_session):

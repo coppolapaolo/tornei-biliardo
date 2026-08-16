@@ -41,7 +41,8 @@ except ImportError:
 
     logging.warning("Flask-Mail not installed. Email features will be disabled.")
 
-# Import transactional decorator - now db is available when transaction/manager imports it
+# Import transactional decorator - now db is available when transaction/manager imports
+# it
 try:
     from .transaction.manager import transactional
 except ImportError as e:

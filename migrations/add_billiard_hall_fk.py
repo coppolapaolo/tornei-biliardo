@@ -49,7 +49,8 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
             print(f"   Adding billiard_hall_id to '{table}' table...")
             cursor.execute(f"""
                 ALTER TABLE {table}
-                ADD COLUMN billiard_hall_id INTEGER REFERENCES billiard_hall(id) ON DELETE SET NULL
+                ADD COLUMN billiard_hall_id INTEGER REFERENCES billiard_hall(id)
+                    ON DELETE SET NULL
             """)
             migrated.append(table)
         except sqlite3.OperationalError as e:
@@ -106,7 +107,8 @@ def upgrade_postgresql(connection_string: str) -> None:
             print(f"   Adding billiard_hall_id to '{table}' table...")
             cursor.execute(f"""
                 ALTER TABLE {table}
-                ADD COLUMN IF NOT EXISTS billiard_hall_id INTEGER REFERENCES billiard_hall(id) ON DELETE SET NULL
+                ADD COLUMN IF NOT EXISTS billiard_hall_id INTEGER
+                    REFERENCES billiard_hall(id) ON DELETE SET NULL
             """)
 
         conn.commit()
@@ -158,10 +160,16 @@ if __name__ == "__main__":
             print(f"❌ Unknown command: {sys.argv[1]}")
             print("\nUsage:")
             print(
-                "  python migrations/add_billiard_hall_fk.py              # SQLite (dev)"
+                (
+                    "  python migrations/add_billiard_hall_fk.py              # SQLite "
+                    "(dev)"
+                )
             )
             print(
-                "  python migrations/add_billiard_hall_fk.py postgresql   # PostgreSQL (prod)"
+                (
+                    "  python migrations/add_billiard_hall_fk.py postgresql   # "
+                    "PostgreSQL (prod)"
+                )
             )
             print("  python migrations/add_billiard_hall_fk.py downgrade    # Rollback")
             sys.exit(1)

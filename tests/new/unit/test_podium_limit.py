@@ -1,6 +1,5 @@
 """Tests for podium limit logic."""
 
-import pytest
 from unittest.mock import MagicMock, patch
 from models.competition.models import Gara, GaraStatus
 

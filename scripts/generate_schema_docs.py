@@ -194,7 +194,10 @@ def format_table_markdown(table) -> str:
             description = column.comment
 
         lines.append(
-            f"| `{column.name}` | {col_type} | {nullable} | {key_str} | {default_str} | {description} |"
+            (
+                f"| `{column.name}` | {col_type} | {nullable} | {key_str} | "
+                f"{default_str} | {description} |"
+            )
         )
 
     # Add constraints
@@ -240,7 +243,10 @@ def generate_schema_docs():
         output_lines.append("")
         output_lines.append("> **Auto-generated** from SQLAlchemy models.")
         output_lines.append(
-            f"> Last updated: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}"
+            (
+                f"> Last updated: "
+                f"{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}"
+            )
         )
         output_lines.append(">")
         output_lines.append("> To regenerate: `python scripts/generate_schema_docs.py`")

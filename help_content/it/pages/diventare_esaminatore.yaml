@@ -1,0 +1,178 @@
+title: "Diventare esaminatore"
+section: account
+kind: tutorial
+audience: [giocatore]
+minutes: 4
+summary: "Chi certifica gli esami degli altri: come si ottiene il ruolo, come si compone un esame e cosa succede quando arriva una richiesta."
+screens: [roles.request_role_form, roles.role_requests, exam.manage_exams,
+  exam.manage_examiners]
+related: [esami, diventare_direttore, challenge]
+
+blocks:
+  - type: text
+    text: >-
+      L'**esaminatore** è chi somministra gli esami e ne certifica l'esito. È
+      un ruolo che si **aggiunge** a quello che già hai: resti giocatore,
+      continui a iscriverti alle gare e puoi sostenere gli esami degli altri —
+      solo non quelli che somministri tu.
+
+  - type: heading
+    id: ottenerlo
+    title: "Ottenere il ruolo"
+
+  - type: text
+    text: >-
+      Il ruolo si sblocca **macinando drill**: quando ne hai completati venti,
+      fra le pagine dei drill compare **«Diventa Esaminatore»**. Non si chiede
+      dal profilo, e prima della soglia non compare da nessuna parte.
+
+  - type: shot
+    shot: ruolo-richiesta
+    caption: "Il modulo per chiedere il ruolo di esaminatore: a chi inoltrare la richiesta e le note facoltative."
+
+  - type: steps
+    items:
+      - title: "Scegli a chi chiederlo"
+        text: >-
+          Vedi gli esaminatori già in carica e puoi sceglierne alcuni, oppure
+          **non sceglierne nessuno per chiedere a tutti**. Se non c'è ancora
+          nessun esaminatore, la richiesta va a chi amministra la piattaforma.
+      - title: "Aggiungi due righe, se vuoi"
+        text: "Le note sono facoltative: chi decide vede comunque i tuoi dati di attività."
+      - title: "Aspetta"
+        text: >-
+          **Il primo che approva concede il ruolo**, e per gli altri la
+          richiesta si chiude. Ricevi una notifica e l'area esami compare al
+          tuo prossimo accesso.
+
+  - type: note
+    tone: info
+    text: >-
+      Un esaminatore può concedere il ruolo a un altro: è voluto, ed è il
+      motivo per cui la piattaforma non si blocca in attesa di
+      un'approvazione dall'alto. La **revoca** invece resta a chi amministra.
+
+  - type: heading
+    id: richieste
+    title: "Le richieste che ti arrivano"
+
+  - type: text
+    text: >-
+      Da esaminatore ricevi due cose diverse, e conviene non confonderle: le
+      richieste di **qualcuno che vuole il ruolo** e quelle di **qualcuno che
+      vuole sostenere un tuo esame**.
+
+  - type: shot
+    shot: ruolo-richieste
+    caption: "Le richieste di ruolo ricevute: si approvano o si rifiutano una per una."
+
+  - type: options
+    items:
+      - name: "Richieste di ruolo"
+        text: >-
+          Le approvi o le rifiuti. Se la approvi tu, il ruolo è concesso e la
+          richiesta si chiude anche per gli altri esaminatori interpellati.
+      - name: "Appuntamenti d'esame"
+        text: >-
+          Un candidato propone data, ora e sala. Puoi accettare o
+          **controproporre** un altro orario. Vedi [Sostenere un
+          esame](/aiuto/giocare/esami) per come funziona lo scambio.
+
+  - type: heading
+    id: comporre
+    title: "Comporre un esame"
+
+  - type: text
+    text: >-
+      Dall'area **Gestisci esami** crei l'esame — nome, descrizione ed
+      eventualmente un limite di tempo — e **i drill si aggiungono dopo**,
+      dalla pagina dell'esame.
+
+  - type: shot
+    shot: esame-gestione
+    caption: "L'area di chi somministra gli esami: quelli che ha composto, quanti candidati e il tasso di riuscita."
+
+  - type: options
+    items:
+      - name: "L'ordine dei drill"
+        text: >-
+          Conta: i candidati li affrontano nella sequenza in cui li metti, e
+          puoi spostarli finché ti convince.
+        hint: esame.ordine_drill
+      - name: "Punteggio massimo"
+        values: "per drill"
+        text: >-
+          Lo decidi esame per esame, non è una proprietà del drill. Un drill
+          che vuoi far pesare di più lo si fa valere di più alzandogli il
+          massimo.
+        hint: esame.punteggio_massimo
+      - name: "Quante prove"
+        values: "da 1 a 20"
+        text: >-
+          Quante volte il candidato ripete quel drill. Se è più di una, il
+          drill vale la **prova migliore** — non la somma, così un drill a tre
+          prove non pesa il triplo di uno a prova unica.
+        hint: esame.quante_prove
+
+  - type: note
+    tone: warning
+    text: >-
+      Un esame senza drill **non è sostenibile**, e la sua pagina lo dice.
+      Comporlo e lasciarlo vuoto significa mostrarlo nel catalogo senza che
+      nessuno possa farci niente.
+
+  - type: heading
+    id: co_esaminatori
+    title: "Somministrare in più d'uno"
+
+  - type: text
+    text: >-
+      Puoi aggiungere altri esaminatori a un esame che hai composto: da quel
+      momento un candidato può rivolgersi a chiunque di voi, e chi accetta per
+      primo prende l'appuntamento.
+
+  - type: shot
+    shot: esame-esaminatori
+    caption: "Gli esaminatori di un esame: chi lo somministra e chi si può aggiungere."
+
+  - type: note
+    tone: info
+    text: >-
+      Se sei l'unico titolare del ruolo la schermata te lo dice, invece di
+      mostrarti un elenco vuoto da cui non si capirebbe se manca la gente o
+      manca la funzione.
+
+  - type: heading
+    id: certificare
+    title: "Certificare"
+
+  - type: steps
+    items:
+      - title: "Apri la sessione all'appuntamento"
+        text: "Dalla pagina dell'appuntamento confermato, davanti al tavolo."
+      - title: "Aspetta che il candidato accetti l'inizio"
+        text: >-
+          Finché non lo fa **non puoi registrare niente**. Non è solo un
+          pulsante nascosto: il divieto vale anche per chi provasse ad aggirare
+          la schermata.
+      - title: "Registra prova per prova"
+        text: "Le caselle si riempiono in ordine. Indicando il numero di una prova la riscrivi, se hai sbagliato a digitare."
+        shot: esame-sessione
+      - title: "Chiudi con l'esito"
+        text: >-
+          **Superato** o **non superato**. Se l'esame non si è svolto —
+          il candidato non si presenta, la sala chiude — c'è **«Interrompi
+          senza esito»**, che non è una bocciatura.
+
+  - type: faq
+    items:
+      - q: "Posso modificare un esame composto da un altro?"
+        a: "Solo se ne sei co-esaminatore, oppure se amministri la piattaforma. Altrimenti no."
+      - q: "Posso sostenere un esame che somministro io?"
+        a: "No. La richiesta non nasce nemmeno: chi somministra non si certifica da solo."
+      - q: "Devo aver sbloccato gli esami per fare l'esaminatore?"
+        a: "Sono due cose separate. Puoi somministrare esami senza aver sbloccato la possibilità di sostenerne: vedi i tuoi esami e li certifichi, ma il pulsante per sostenerli resta chiuso finché non completi i tuoi drill."
+      - q: "Se mi tolgono il ruolo, cosa succede agli esami che ho certificato?"
+        a: "Restano validi. La revoca chiude la concessione, non cancella il lavoro fatto: gli esami che hai composto e le certificazioni che hai rilasciato non si toccano."
+      - q: "Che voto posso dare?"
+        a: "Nessuno. L'esito è superato oppure non superato, senza note. È una scelta: un voto va argomentato, e chi certifica sta in piedi accanto a un tavolo con un telefono in mano."

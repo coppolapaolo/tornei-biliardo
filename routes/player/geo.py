@@ -30,7 +30,9 @@ def api_nearby_gare():
                 "success": True,
                 "gare": [],
                 "provinces": [],
-                "message": "Imposta le tue disponibilità nelle sale per vedere gare vicine",
+                "message": (
+                    "Imposta le tue disponibilità nelle sale per vedere gare vicine"
+                ),
             }
         )
 

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-16 16:47+0000\n"
+"POT-Creation-Date: 2026-08-16 16:53+0000\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app.py:522 templates/errors/403.html:3
+#: app.py:532 templates/errors/403.html:3
 msgid "Accesso negato"
 msgstr ""
 
@@ -650,12 +650,12 @@ msgstr ""
 msgid "ogni set esattamente %(n)s rack"
 msgstr ""
 
-#: models/notification/factory.py:380
+#: models/notification/factory.py:386
 #, python-format
 msgid "%(enrolled_by)s ti ha iscritto alla gara %(gara_name)s del %(gara_date)s"
 msgstr ""
 
-#: models/notification/factory.py:390
+#: models/notification/factory.py:396
 msgid "Iscrizione a Gara"
 msgstr ""
 
@@ -1147,70 +1147,66 @@ msgstr ""
 msgid "Non hai i permessi per creare un campionato."
 msgstr ""
 
-#: routes/admin/campionato.py:613
+#: routes/admin/campionato.py:617
 #, python-format
 msgid "Campionato \"%(name)s\" terminato con successo."
 msgstr ""
 
-#: routes/admin/campionato.py:619
+#: routes/admin/campionato.py:623
 msgid "Il campionato è già stato terminato."
 msgstr ""
 
-#: routes/admin/campionato.py:637
+#: routes/admin/campionato.py:641
 msgid "Parametri non validi."
 msgstr ""
 
-#: routes/admin/campionato.py:644
+#: routes/admin/campionato.py:648
 msgid "Requisito minimo gare aggiornato."
 msgstr ""
 
-#: routes/admin/campionato.py:667
-msgid "Playoff avviati ma nessun giocatore qualificato. Verifica la classifica."
-msgstr ""
-
-#: routes/admin/campionato.py:673
+#: routes/admin/campionato.py:680
 #, python-format
 msgid "Playoff avviati: %(count)s giocatori qualificati."
 msgstr ""
 
-#: routes/admin/campionato.py:700
+#: routes/admin/campionato.py:707
 msgid "Configurazione playoff non trovata."
 msgstr ""
 
-#: routes/admin/campionato.py:714
+#: routes/admin/campionato.py:721
 #, python-format
 msgid "Gara playoff \"%(name)s\" creata con successo."
 msgstr ""
 
-#: routes/admin/campionato.py:736
+#: routes/admin/campionato.py:743
 msgid "Seleziona un giocatore."
 msgstr ""
 
-#: routes/admin/campionato.py:743
+#: routes/admin/campionato.py:750
 msgid "Giocatore aggiunto ai playoff."
 msgstr ""
 
-#: routes/admin/campionato.py:763
+#: routes/admin/campionato.py:770
 msgid "Qualificazione non specificata."
 msgstr ""
 
-#: routes/admin/campionato.py:770
+#: routes/admin/campionato.py:777
 msgid "Giocatore rimosso dai playoff."
 msgstr ""
 
-#: routes/admin/campionato.py:826
+#: routes/admin/campionato.py:833
 msgid "Configurazione playoff aggiornata."
 msgstr ""
 
-#: routes/admin/campionato.py:848
+#: routes/admin/campionato.py:855
 msgid "Tutti i campi obbligatori devono essere compilati."
 msgstr ""
 
-#: routes/admin/campionato.py:867
+#: routes/admin/campionato.py:874
 msgid "Configurazione playoff aggiunta."
 msgstr ""
 
-#: routes/admin/campionato.py:887
+#: routes/admin/campionato.py:894
 msgid "Configurazione playoff disattivata."
 msgstr ""
 
@@ -1902,43 +1898,31 @@ msgstr ""
 msgid "Errore durante l'iscrizione."
 msgstr ""
 
-#: routes/player/exports.py:526
-msgid ""
-"Un export è già in corso o è stato generato di recente. Controlla le "
-"notifiche."
-msgstr ""
-
-#: routes/player/exports.py:535
+#: routes/player/exports.py:542
 msgid "Export GDPR Pronto"
 msgstr ""
 
-#: routes/player/exports.py:537
+#: routes/player/exports.py:544
 msgid "Il tuo archivio dati è pronto per il download. Il link scadrà tra 24 ore."
 msgstr ""
 
-#: routes/player/exports.py:539
+#: routes/player/exports.py:546
 msgid "Scarica"
 msgstr ""
 
-#: routes/player/exports.py:540
+#: routes/player/exports.py:547
 msgid "Errore Export GDPR"
 msgstr ""
 
-#: routes/player/exports.py:542
-msgid ""
-"Si è verificato un errore durante la generazione dell'archivio. Riprova "
-"più tardi."
-msgstr ""
-
-#: routes/player/exports.py:556
+#: routes/player/exports.py:566
 msgid "Export avviato. Riceverai una notifica quando sarà pronto per il download."
 msgstr ""
 
-#: routes/player/exports.py:581
+#: routes/player/exports.py:591
 msgid "Il file di export non esiste o è scaduto."
 msgstr ""
 
-#: routes/player/exports.py:588
+#: routes/player/exports.py:598
 msgid "Il file di export è scaduto. Richiedi un nuovo export."
 msgstr ""
 
@@ -8632,7 +8616,7 @@ msgstr ""
 msgid "Allenamento: non porta la certificazione."
 msgstr ""
 
-#: templates/exam/detail.html:111 templates/gamification/quests.html:110
+#: templates/exam/detail.html:111
 msgid "Inizia"
 msgstr ""
 
@@ -9297,7 +9281,12 @@ msgid_plural "%(num)d partecipanti"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/gamification/quests.html:121
+#: templates/gamification/quests.html:114
+#, python-format
+msgid "Inizia il %(data)s"
+msgstr ""
+
+#: templates/gamification/quests.html:125
 msgid "Completate"
 msgstr ""
 
@@ -12289,9 +12278,9 @@ msgstr ""
 msgid "Nessuna richiesta in attesa."
 msgstr ""
 
-#: utils/jinja.py:33 utils/jinja.py:80 utils/jinja.py:142 utils/jinja.py:176
-#: utils/jinja.py:199 utils/jinja.py:231 utils/jinja.py:241 utils/jinja.py:277
-#: utils/jinja.py:295 utils/jinja.py:307 utils/jinja.py:324
+#: utils/jinja.py:33 utils/jinja.py:80 utils/jinja.py:143 utils/jinja.py:177
+#: utils/jinja.py:200 utils/jinja.py:232 utils/jinja.py:242 utils/jinja.py:278
+#: utils/jinja.py:296 utils/jinja.py:308 utils/jinja.py:325
 msgid "N/A"
 msgstr ""
 
