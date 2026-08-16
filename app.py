@@ -2,6 +2,7 @@
 from flask import (
     Flask,
     abort,
+    has_request_context,
     render_template,
     request,
     session,
@@ -136,6 +137,15 @@ def create_app(config_name=None):
 
     # Setup Babel
     def get_locale():
+        # 0. Fuori da una richiesta HTTP non c'e' nessun «chi legge»: niente
+        #    sessione, niente utente, niente header. Succede negli scheduled
+        #    task e negli script da console, che compongono testo tradotto
+        #    (notifiche, email) come le route. Senza questa uscita anticipata
+        #    il primo `_()` solleva «Working outside of request context» e
+        #    l'operazione fallisce per una ragione che non c'entra nulla con
+        #    quello che stava facendo.
+        if not has_request_context():
+            return app.config.get("BABEL_DEFAULT_LOCALE", "it")
         # 1. Try language from session
         if "language" in session:
             return session["language"]
