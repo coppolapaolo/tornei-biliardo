@@ -230,3 +230,129 @@ class TestMinimiDiFormatoNellAttributo:
         pagina = client.get("/admin/gara/create_standalone").get_data(as_text=True)
 
         assert 'data-minimum-players="' not in pagina
+
+
+class TestLeTreSchermateSonoCoerenti:
+    """Le gare si creano e si modificano da **tre** schermate, non una.
+
+    Creazione standalone, modifica, e il modale "nuova gara" dentro un
+    campionato. Le prime due condividono il configuratore della distanza e
+    `bracket_options.js`; la terza no — eredita la strategia dal campionato,
+    quindi non ha il selettore da cui quello script parte, e infatti era
+    rimasta indietro: mostrava turni, numero esatto, forfait, dispari,
+    anti-reincontro e spareggio, tutti senza effetto.
+
+    Il server li impone comunque, quindi non si rompeva niente: si chiedevano
+    sei cose e si ignoravano sei risposte. Questo test tiene allineate le tre
+    schermate, che è il punto in cui il progetto ha già avuto drift.
+    """
+
+    DERIVATI = ["rounds_count", "withdraw_policy", "odd_number_policy"]
+
+    def _campionato_bracket(self, db_session, director):
+        from models import Campionato
+
+        campionato = Campionato(
+            name=f"Camp {uuid.uuid4().hex[:6]}",
+            campionato_type="direct_elimination",
+            default_classification_system="POSITION",
+            is_active=True,
+        )
+        db_session.add(campionato)
+        db_session.flush()
+        from models.user.models import DirectorAssignment
+
+        db_session.add(
+            DirectorAssignment(
+                entity_type="campionato",
+                entity_id=campionato.id,
+                user_id=director.id,
+                assigned_by_id=director.id,
+            )
+        )
+        db_session.commit()
+        return campionato
+
+    def test_la_creazione_standalone_nasconde_i_derivati(self, client, director):
+        _login(client, director)
+        pagina = client.get("/admin/gara/create_standalone").get_data(as_text=True)
+
+        # Il blocco c'è ma è marcato: lo nasconde il JS sulla strategia scelta.
+        assert pagina.count("data-bracket-hide") >= len(self.DERIVATI)
+        assert "anti_rematch_section" in pagina
+
+    def test_la_modifica_marca_gli_stessi_campi(self, client, db_session, director):
+        from models import Gara
+
+        gara = Gara(
+            director_id=director.id,
+            number=db_session.query(Gara).count() + 1,
+            name=f"G {uuid.uuid4().hex[:6]}",
+            date=date.today() + timedelta(days=10),
+            discipline="9_ball",
+            distance=5,
+            is_race_to=True,
+            rounds_count=4,
+            min_participants=4,
+            max_participants=16,
+            matchmaking_strategy="direct_elimination",
+        )
+        db_session.add(gara)
+        db_session.commit()
+
+        _login(client, director)
+        pagina = client.get(f"/admin/gara/{gara.id}/edit").get_data(as_text=True)
+
+        assert pagina.count("data-bracket-hide") >= len(self.DERIVATI)
+
+    def test_il_modale_del_campionato_non_chiede_i_derivati(
+        self, client, db_session, director
+    ):
+        """La terza schermata: qui la strategia è ereditata, quindi la
+        decisione la prende il template invece del JavaScript."""
+        campionato = self._campionato_bracket(db_session, director)
+        _login(client, director)
+
+        pagina = client.get(
+            f"/admin/campionato/{campionato.id}"
+        ).get_data(as_text=True)
+
+        # I campi restano nel DOM (il POST li manda), ma nascosti.
+        assert 'id="create_rounds_count"' in pagina
+        assert 'id="create_exact_number"' in pagina
+        # Ogni blocco derivato porta il suo display:none.
+        assert pagina.count('style="display:none"') >= 4
+
+    def test_su_un_campionato_a_girone_il_modale_chiede_tutto(
+        self, client, db_session, director
+    ):
+        """Non-regressione: fuori dal tabellone il modale non cambia."""
+        from models import Campionato
+        from models.user.models import DirectorAssignment
+
+        campionato = Campionato(
+            name=f"Camp {uuid.uuid4().hex[:6]}",
+            campionato_type="amalfi",
+            default_classification_system="WINS",
+            is_active=True,
+        )
+        db_session.add(campionato)
+        db_session.flush()
+        db_session.add(
+            DirectorAssignment(
+                entity_type="campionato",
+                entity_id=campionato.id,
+                user_id=director.id,
+                assigned_by_id=director.id,
+            )
+        )
+        db_session.commit()
+
+        _login(client, director)
+        pagina = client.get(
+            f"/admin/campionato/{campionato.id}"
+        ).get_data(as_text=True)
+
+        assert 'id="create_rounds_count"' in pagina
+        assert "Gestione Forfait" in pagina
+        assert "Gestione Dispari" in pagina

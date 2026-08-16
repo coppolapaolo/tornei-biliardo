@@ -67,7 +67,7 @@ def _third_place_applies(strategy: str, double_ko_rounds: Optional[int]) -> bool
 def _bracket_derived_fields(data: Dict[str, Any]) -> Dict[str, Any]:
     """Campi che sul tabellone non sono una scelta, ma una conseguenza.
 
-    Cinque impostazioni del form non hanno alcun effetto su una gara a
+    Sei impostazioni del form non hanno alcun effetto su una gara a
     tabellone, e chiederle significava solo far credere che decidessero
     qualcosa:
 
@@ -90,6 +90,11 @@ def _bracket_derived_fields(data: Dict[str, Any]) -> Dict[str, Any]:
       posizione e non guarda i rack: sono solo partite più lunghe a parità di
       risultato. Con un numero pari è anche peggio, perché la partita può finire
       in parità e il nodo resterebbe senza vincitore.
+    * **anti-reincontro** — nemmeno ``anti_rematch_enabled`` viene letto, e non
+      avrebbe cosa fare: nel tabellone due giocatori non possono reincontrarsi,
+      perché chi perde esce. Nel doppio KO il reincontro fra un ripescato e chi
+      lo aveva battuto è previsto dal formato, e l'incrocio del losers bracket
+      lo allontana già per costruzione.
 
     Il minimo iscritti viene alzato al pavimento del formato: il default del
     form è 6, che per il doppio KO (che ne vuole 8) avrebbe dato una gara
@@ -106,6 +111,7 @@ def _bracket_derived_fields(data: Dict[str, Any]) -> Dict[str, Any]:
         # Sempre "a chi arriva prima", sui rack e sui set.
         "is_race_to": True,
         "is_race_to_sets": True,
+        "anti_rematch_enabled": False,
     }
 
     floor = minimum_players_for(strategy)

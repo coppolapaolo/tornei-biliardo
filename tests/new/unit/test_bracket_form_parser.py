@@ -100,7 +100,7 @@ class TestOpzioniDiTabellone:
 
 
 class TestCampiDerivati:
-    """Cinque impostazioni del form non hanno alcun effetto sul tabellone.
+    """Sei impostazioni del form non hanno alcun effetto sul tabellone.
 
     Prima venivano chieste comunque, e la risposta veniva ignorata in silenzio:
     il director poteva scegliere "escludi dal turno" o accendere lo spareggio
@@ -152,6 +152,18 @@ class TestCampiDerivati:
     def test_fuori_dal_tabellone_il_numero_esatto_resta(self, app):
         data = self._parse(app, self._bracket_form("amalfi"))
         assert data["is_race_to"] is False
+
+    def test_l_anti_reincontro_si_spegne(self, app):
+        """Nel tabellone due giocatori non possono reincontrarsi: chi perde esce.
+
+        Nel doppio KO il reincontro fra un ripescato e chi lo aveva battuto è
+        previsto dal formato, e l'incrocio del losers bracket lo allontana già
+        per costruzione: non c'è niente che un flag possa aggiungere.
+        """
+        data = self._parse(
+            app, self._bracket_form("direct_elimination", anti_rematch_enabled="on")
+        )
+        assert data["anti_rematch_enabled"] is False
 
     def test_lo_spareggio_ssr_resta_spento(self, app):
         """Le strategie POSITION dichiarano `requires_tiebreaker=False`."""
