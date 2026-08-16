@@ -19,6 +19,10 @@ cd "${CLAUDE_PROJECT_DIR:-.}" || exit 0
 git rev-parse --git-dir >/dev/null 2>&1 || exit 0
 
 MARKER=".claude/.help-docs-checked"
+PENDING=".claude/.help-docs-pending"
+
+# Quanto vale un controllo "in corso" prima di essere considerato mai arrivato.
+PENDING_TTL_SECONDS=2700  # 45 minuti
 
 # Base del ramo: da dove misurare le modifiche. Se `main` non è raggiungibile
 # (clone parziale, fetch mai fatto) si ripiega sulle sole modifiche non
@@ -55,6 +59,24 @@ printf '%s\n' "$CHANGED" | grep -q '^help_content/' && exit 0
 FINGERPRINT="$(printf '%s' "$VISIBLE" | sha256sum | cut -d' ' -f1)"
 [ -f "$MARKER" ] && [ "$(cat "$MARKER" 2>/dev/null)" = "$FINGERPRINT" ] && exit 0
 
+# Controllo gia' delegato a un subagente e ancora in corso. Senza questo stato
+# il gancio bloccava la chiusura del turno *mentre* il lavoro che chiede veniva
+# fatto: una livelock, perche' l'unico modo di sbloccarsi sarebbe stato scrivere
+# il marcatore "va tutto bene" proprio quando non era vero.
+#
+# Il permesso e' a tempo: se il subagente muore o non conclude, dopo la scadenza
+# il gancio torna a bloccare invece di lasciare un lasciapassare per sempre.
+if [ -f "$PENDING" ]; then
+  PENDING_FP="$(head -n1 "$PENDING" 2>/dev/null)"
+  PENDING_AT="$(sed -n '2p' "$PENDING" 2>/dev/null)"
+  NOW="$(date +%s)"
+  if [ "$PENDING_FP" = "$FINGERPRINT" ] && [ -n "$PENDING_AT" ] \
+     && [ $((NOW - PENDING_AT)) -lt "$PENDING_TTL_SECONDS" ]; then
+    echo "Guida /aiuto: controllo delegato a un subagente, ancora in corso." >&2
+    exit 0
+  fi
+fi
+
 FILES="$(printf '%s\n' "$VISIBLE" | head -12 | sed 's/^/  - /')"
 EXTRA="$(printf '%s\n' "$VISIBLE" | wc -l)"
 
@@ -74,9 +96,17 @@ Fai partire un subagente che verifichi l'allineamento, con questo compito:
   rigenerare. Allinea i testi che risultano sbagliati. Se invece la guida è già
   corretta, dillo e non toccare niente.
 
+**Appena delegato il lavoro**, segna che il controllo è in corso — così il
+turno può chiudersi mentre il subagente lavora:
+
+    printf '%s\n%s\n' "$FINGERPRINT" "\$(date +%s)" > $PENDING
+
 Poi, in base all'esito:
   - guida aggiornata  -> \`help_content/\` risulta cambiato e il controllo passa
   - guida già a posto -> registra l'esito con:
       echo "$FINGERPRINT" > $MARKER
+
+Il permesso "in corso" scade dopo 45 minuti: se il subagente non conclude, il
+controllo torna a bloccare.
 EOF
 exit 2

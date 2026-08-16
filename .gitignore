@@ -122,3 +122,8 @@ repository_export_*.zip
 export_repo.py
 repository_export_*/
 static/uploads/
+# Stato locale del controllo sulla guida /aiuto (.claude/hooks/check-help-docs.sh):
+# dice "questo lavoro l'ho gia' esaminato" su questa macchina, non e' contenuto
+# del repository e non ha senso condividerlo.
+.claude/.help-docs-checked
+.claude/.help-docs-pending
