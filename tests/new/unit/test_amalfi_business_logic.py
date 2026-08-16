@@ -57,5 +57,5 @@ class TestAmalfiInterface:
         gara.inscriptions = inscriptions
 
         # Should handle mock gracefully without throwing exceptions
-        validation = strategy.validate(gara)
+        strategy.validate(gara)
         # We don't assert specific results since mock validation has different logic

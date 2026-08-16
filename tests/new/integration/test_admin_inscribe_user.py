@@ -6,10 +6,9 @@ and the notification system that accompanies it.
 """
 
 import pytest
-from datetime import datetime, timedelta
+from datetime import timedelta
 import uuid
 
-from models import db
 from models.user.models import User
 from models.competition.models import Gara, Inscription
 from models.notification.models import Notification, NotificationType
@@ -173,7 +172,8 @@ class TestAdminInscribeUser:
         assert notification is not None
         assert director_name in notification.message
         assert gara_name in notification.message
-        # Message format: "%(enrolled_by)s ti ha iscritto alla gara %(gara_name)s del %(gara_date)s"
+        # Message format: "%(enrolled_by)s ti ha iscritto alla gara %(gara_name)s del
+        # %(gara_date)s"
         assert "iscritto" in notification.message
         # action_url may be None if set via related_entities instead
 

@@ -9,7 +9,6 @@ Tests:
 - Milestone rewards (4/12/52 weeks)
 """
 
-import pytest
 from datetime import date
 from unittest.mock import patch
 

@@ -7,7 +7,7 @@ If there's a cycle (A>B, B>C, C>A), the Schulze strongest-path method
 resolves it. If completely tied, returns None.
 """
 
-from typing import Optional, List, Tuple, Dict
+from typing import Optional, List, Dict
 
 
 def determine_trio_winner(active_racks: list, player_ids: List[int]) -> Optional[int]:
@@ -94,7 +94,7 @@ def _schulze_resolve(
     The player with the strongest paths wins.
     """
     n = len(player_ids)
-    idx = {p: i for i, p in enumerate(player_ids)}
+    {p: i for i, p in enumerate(player_ids)}
 
     # Build margin matrix: d[i][j] = wins[i][j] - wins[j][i]
     d = [[0] * n for _ in range(n)]

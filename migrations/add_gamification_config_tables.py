@@ -18,7 +18,6 @@ Seeds initial data from xp_config.py hardcoded values for backward compatibility
 
 import sqlite3
 from pathlib import Path
-from datetime import datetime
 from models.base import utc_now
 
 # Default values from xp_config.py for initial seeding
@@ -223,7 +222,9 @@ def seed_initial_data(cursor: sqlite3.Cursor) -> None:
     for key, value, description, category in DEFAULT_XP_RATES:
         cursor.execute(
             """
-            INSERT OR IGNORE INTO gamification_config (key, value, description, category, created_at, updated_at)
+            INSERT
+                OR IGNORE INTO gamification_config (key, value, description, category,
+                created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?)
         """,
             (key, value, description, category, now, now),
@@ -234,7 +235,9 @@ def seed_initial_data(cursor: sqlite3.Cursor) -> None:
     for key, value, description, category in DEFAULT_LEVEL_PARAMS:
         cursor.execute(
             """
-            INSERT OR IGNORE INTO gamification_config (key, value, description, category, created_at, updated_at)
+            INSERT
+                OR IGNORE INTO gamification_config (key, value, description, category,
+                created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?)
         """,
             (key, value, description, category, now, now),
@@ -245,7 +248,9 @@ def seed_initial_data(cursor: sqlite3.Cursor) -> None:
     for key, value, description, category in DEFAULT_STREAK_CONFIG:
         cursor.execute(
             """
-            INSERT OR IGNORE INTO gamification_config (key, value, description, category, created_at, updated_at)
+            INSERT
+                OR IGNORE INTO gamification_config (key, value, description, category,
+                created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?)
         """,
             (key, value, description, category, now, now),
@@ -256,7 +261,9 @@ def seed_initial_data(cursor: sqlite3.Cursor) -> None:
     for level, feature_code, feature_name, description in DEFAULT_LEVEL_UNLOCKS:
         cursor.execute(
             """
-            INSERT OR IGNORE INTO level_unlock (level, feature_code, feature_name, description, is_active, created_at, updated_at)
+            INSERT
+                OR IGNORE INTO level_unlock (level, feature_code, feature_name,
+                description, is_active, created_at, updated_at)
             VALUES (?, ?, ?, ?, 1, ?, ?)
         """,
             (level, feature_code, feature_name, description, now, now),
@@ -267,7 +274,9 @@ def seed_initial_data(cursor: sqlite3.Cursor) -> None:
     for weeks, freeze_tokens, xp_multiplier, is_recurring in DEFAULT_STREAK_MILESTONES:
         cursor.execute(
             """
-            INSERT OR IGNORE INTO streak_milestone (weeks, freeze_tokens, xp_bonus_multiplier, is_recurring, is_active, created_at, updated_at)
+            INSERT
+                OR IGNORE INTO streak_milestone (weeks, freeze_tokens,
+                xp_bonus_multiplier, is_recurring, is_active, created_at, updated_at)
             VALUES (?, ?, ?, ?, 1, ?, ?)
         """,
             (weeks, freeze_tokens, xp_multiplier, is_recurring, now, now),
@@ -316,10 +325,16 @@ if __name__ == "__main__":
             print(f"Unknown command: {sys.argv[1]}")
             print("\nUsage:")
             print(
-                "  python migrations/add_gamification_config_tables.py           # Apply migration"
+                (
+                    "  python migrations/add_gamification_config_tables.py           # "
+                    "Apply migration"
+                )
             )
             print(
-                "  python migrations/add_gamification_config_tables.py downgrade # Rollback"
+                (
+                    "  python migrations/add_gamification_config_tables.py downgrade # "
+                    "Rollback"
+                )
             )
             sys.exit(1)
     else:

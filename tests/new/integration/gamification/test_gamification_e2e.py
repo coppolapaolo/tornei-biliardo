@@ -10,7 +10,6 @@ Tests the complete gamification flow:
 import pytest
 from datetime import datetime, timedelta
 
-from models.base import db
 from models import (
     User,
     Gara,
@@ -22,12 +21,8 @@ from models import (
     Achievement,
     UserAchievement,
     StreakTracker,
-    Notification,
-    NotificationType,
     XPTransactionType,
     StreakType,
-    AchievementCategory,
-    AchievementDifficulty,
 )
 from models.gamification.level_service import LevelService
 from models.gamification.achievement_service import AchievementService
@@ -67,7 +62,7 @@ class TestGamificationE2EWorkflows:
         assert level is None
 
         # Award XP
-        result = LevelService.award_xp(
+        LevelService.award_xp(
             user_id=self.player1.id,
             xp_amount=100,
             transaction_type=XPTransactionType.MATCH_WIN,
@@ -90,7 +85,7 @@ class TestGamificationE2EWorkflows:
         """Test that user levels up when XP threshold is reached."""
         # Level 2 requires int(100 * 2^1.5) = 282 XP
         # Award enough XP to level up
-        result = LevelService.award_xp(
+        LevelService.award_xp(
             user_id=self.player1.id,
             xp_amount=300,
             transaction_type=XPTransactionType.TOURNAMENT_WIN,
@@ -275,7 +270,7 @@ class TestGamificationE2EWorkflows:
     def test_admin_can_grant_xp(self, db_session):
         """Test admin XP grant functionality."""
         # Grant XP as admin
-        result = LevelService.award_xp(
+        LevelService.award_xp(
             user_id=self.player1.id,
             xp_amount=500,
             transaction_type=XPTransactionType.ADMIN_GRANT,

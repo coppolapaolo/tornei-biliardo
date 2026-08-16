@@ -131,7 +131,9 @@ class TestVenueManagerNotifications:
     def test_director_venue_manager_request_creates_admin_notification(
         self, app, client
     ):
-        """Test that a director's venue manager request creates notification for admin."""
+        """
+        Test that a director's venue manager request creates notification for admin.
+        """
         with app.app_context():
             # Get fresh objects from session
             admin = User.query.get(self.admin_id)
@@ -184,7 +186,9 @@ class TestVenueManagerNotifications:
             )  # Non-contested
 
     def test_contested_venue_request_has_high_priority(self, app, client):
-        """Test that contested venue requests (venue already has manager) get HIGH priority."""
+        """Test that contested venue requests (venue already has manager) get HIGH
+        priority.
+        """
         with app.app_context():
             # Get fresh objects from session
             admin = User.query.get(self.admin_id)
@@ -210,7 +214,7 @@ class TestVenueManagerNotifications:
             )
 
             # Verify request is marked as contested
-            assert request.is_contested == True
+            assert request.is_contested is True
 
             # Check that admin received HIGH priority notification
             admin_notification = Notification.query.filter_by(

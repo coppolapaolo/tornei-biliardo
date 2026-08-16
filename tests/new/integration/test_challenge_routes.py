@@ -5,7 +5,6 @@ Integration tests for Challenge routes
 import pytest
 import json
 from models import db, User, Challenge, ChallengeFavorite
-from flask import url_for
 
 
 class TestChallengeRoutes:
@@ -277,7 +276,7 @@ class TestChallengeRoutes:
         # Add an attempt to force soft delete instead of hard delete
         from models.challenge.services import ChallengeService
 
-        attempt = ChallengeService.start_challenge_attempt(
+        ChallengeService.start_challenge_attempt(
             user_id=director_user.id, challenge_id=test_challenge.id
         )
         db.session.commit()

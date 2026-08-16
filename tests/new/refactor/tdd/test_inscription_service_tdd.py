@@ -6,12 +6,10 @@ per centralizzare tutta la logica iscrizioni in un unico service.
 """
 
 import pytest
-from datetime import datetime, date, timedelta
-from models.base import db, utc_now
+from datetime import date, timedelta
+from models.base import utc_now
 from models.status_enum import GaraStatus
 from models.competition.models import Gara
-from models.user.models import User
-from models.user.role_enum import UserRole
 
 
 class TestInscriptionServiceTDD:

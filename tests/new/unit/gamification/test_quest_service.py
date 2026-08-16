@@ -10,9 +10,7 @@ Tests:
 """
 
 import pytest
-import json
-from datetime import datetime, timedelta
-from unittest.mock import patch
+from datetime import timedelta
 
 from models.gamification.quest_service import QuestService
 from models.gamification.models import (
@@ -330,7 +328,7 @@ class TestActivityBasedProgress:
             requirements={"type": "matches_played", "target": 5},
         )
 
-        wins_quest = QuestService.create_quest(
+        QuestService.create_quest(
             name="Wins Quest",
             description="Test",
             quest_type=QuestType.WEEKLY,
@@ -386,7 +384,7 @@ class TestActivityBasedProgress:
         """Recording activity should complete quest when target reached."""
         player = isolated_players[0]
 
-        quest = QuestService.create_quest(
+        QuestService.create_quest(
             name="Easy Quest",
             description="Test",
             quest_type=QuestType.WEEKLY,

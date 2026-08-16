@@ -1,7 +1,8 @@
 """
 Migration Script: Level Based Unlocks -> ABAC Feature Configs
 
-This script migrates the old level-based unlock configuration (models.gamification.config_models)
+This script migrates the old level-based unlock configuration
+    (models.gamification.config_models)
 to the new ABAC FeatureConfig table.
 
 It:
@@ -14,7 +15,7 @@ import json
 import logging
 from app import create_app
 from models.base import db
-from models.gamification.config_models import LevelUnlock, DEFAULT_LEVEL_UNLOCKS
+from models.gamification.config_models import DEFAULT_LEVEL_UNLOCKS
 from models.gamification.feature_models import FeatureConfig
 
 logging.basicConfig(level=logging.INFO)
@@ -64,7 +65,8 @@ def migrate_level_unlocks():
                 logger.info(f"Created FeatureConfig for {code}")
             else:
                 # Update rules only if they seem empty or legacy?
-                # For safety, let's not overwrite if already exists to avoid destroying custom admin configs.
+                # For safety, let's not overwrite if already exists to avoid destroying
+                # custom admin configs.
                 logger.info(f"FeatureConfig {code} already exists. Skipping overwrite.")
 
             processed_codes.add(code)

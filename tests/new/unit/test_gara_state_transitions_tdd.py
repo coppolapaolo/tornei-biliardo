@@ -14,13 +14,11 @@ Following the Red-Green-Refactor cycle for state transitions:
 
 import pytest
 import uuid
-from datetime import date, timedelta, datetime
-from typing import Dict, Any
+from datetime import date, timedelta
 
 from models import User, Gara, Inscription, Match
 from models.user.role_enum import UserRole
-from models.competition.models import WithdrawPolicy
-from models.status_enum import GaraStatus, MatchStatus
+from models.status_enum import GaraStatus
 from models.competition.services import GaraService, InscriptionService
 from models.competition.state_service import StateService
 from models.exceptions import InvalidTransitionError

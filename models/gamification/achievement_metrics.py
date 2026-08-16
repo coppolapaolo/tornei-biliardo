@@ -241,7 +241,9 @@ class AchievementMetrics:
 
     @staticmethod
     def _strategies_tried(user_id: int) -> int:
-        """Strategie di matchmaking distinte delle gare a cui l'utente ha preso parte."""
+        """
+        Strategie di matchmaking distinte delle gare a cui l'utente ha preso parte.
+        """
         from models.competition.models import Gara, Inscription
 
         rows = (

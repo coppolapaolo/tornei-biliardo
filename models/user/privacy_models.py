@@ -1,7 +1,8 @@
 """
 Module: models/user/privacy_models.py
 Purpose: User privacy settings and hidden elements models
-Requirements: Allow users to control visibility of profile data and hide specific elements
+Requirements: Allow users to control visibility of profile data and hide specific
+elements
 """
 
 from __future__ import annotations

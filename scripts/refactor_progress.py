@@ -8,11 +8,9 @@ Usage:
     python scripts/refactor_progress.py
 """
 
-import ast
-import os
 import sys
 from pathlib import Path
-from typing import List, Tuple, Dict, Any, Optional
+from typing import Dict, Any, Optional
 
 
 class RefactorProgressDetector:
@@ -245,11 +243,17 @@ class RefactorProgressDetector:
         tx_data = self.detect_transaction_migration()
         print(f"📊 Transaction Migration: {tx_data['progress_percent']:.1f}%")
         print(
-            f"   Direct commits: {tx_data['total_commits']}/{tx_data['effective_baseline']}"
+            (
+                f"   Direct commits: "
+                f"{tx_data['total_commits']}/{tx_data['effective_baseline']}"
+            )
         )
         if tx_data["excluded_commits"] > 0:
             print(
-                f"   Excluded commits: {tx_data['excluded_commits']} (intentionally preserved)"
+                (
+                    f"   Excluded commits: {tx_data['excluded_commits']} "
+                    f"(intentionally preserved)"
+                )
             )
         print(f"   Files remaining: {tx_data['files_remaining']}")
         if tx_data["files_detail"]:
@@ -284,7 +288,10 @@ class RefactorProgressDetector:
         amalfi_data = self.detect_amalfi_imports()
         print(f"📊 Amalfi Directory Migration: {amalfi_data['progress_percent']:.1f}%")
         print(
-            f"   Direct imports remaining: {amalfi_data['files_with_direct_imports']}/{amalfi_data['baseline']}"
+            (
+                f"   Direct imports remaining: "
+                f"{amalfi_data['files_with_direct_imports']}/{amalfi_data['baseline']}"
+            )
         )
         if amalfi_data["files_list"]:
             print("   Files with direct imports:")

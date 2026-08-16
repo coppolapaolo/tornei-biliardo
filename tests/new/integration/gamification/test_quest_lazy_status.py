@@ -11,7 +11,6 @@ bisogno di cron. Tutti i test qui NON chiamano update_quest_statuses.
 import json
 from datetime import timedelta
 
-import pytest
 
 from models.base import db, utc_now
 from models.gamification.quest_service import QuestService

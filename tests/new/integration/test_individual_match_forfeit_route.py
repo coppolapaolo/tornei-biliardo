@@ -5,7 +5,7 @@ Tests the POST /match/matches/<match_id>/forfeit endpoint.
 """
 
 import pytest
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from models import db
 from models.individual_match.models import IndividualMatch

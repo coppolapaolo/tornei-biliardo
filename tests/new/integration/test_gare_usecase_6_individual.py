@@ -11,13 +11,12 @@ and SQLite parallel testing. Those workflows are tested via unit tests.
 """
 
 import pytest
-from datetime import datetime, timedelta
+from datetime import timedelta
 import uuid
 
 from models import User
 from models.user.role_enum import UserRole
 from models.individual_match.models import (
-    MatchProposal,
     ProposalInvitation,
     ProposalType,
     ProposalStatus,

@@ -10,11 +10,11 @@ Tests focused workflow aspects:
 """
 
 import pytest
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from typing import List
 import uuid
 
-from models import User, Gara, Match
+from models import User, Match
 from models.user.role_enum import UserRole
 from models.status_enum import GaraStatus, MatchStatus
 from models.competition.services import GaraService
@@ -361,9 +361,10 @@ class TestUseCaseAmalfiWorkflow:
             next_cls = classifications[i + 1]
 
             # Primary: matches won (descending)
-            assert (
-                current.matches_won >= next_cls.matches_won
-            ), f"Position {current.position} has fewer wins than position {next_cls.position}"
+            assert current.matches_won >= next_cls.matches_won, (
+                f"Position {current.position} has fewer wins than position "
+                f"{next_cls.position}"
+            )
 
     def _complete_match_simple(self, match: Match, db_session) -> None:
         """Complete a match with random-ish results."""

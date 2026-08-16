@@ -1,6 +1,5 @@
 """Tests for tiebreaker limit logic."""
 
-import pytest
 from unittest.mock import MagicMock, patch
 from models.competition.spareggio_service import SpareggioService
 
@@ -43,7 +42,8 @@ def test_detect_tiebreakers_respects_limit(mock_db):
     mock_class4.matches_won = 1
     mock_class4.rack_difference = 15
 
-    mock_db.session.query.return_value.filter_by.return_value.order_by.return_value.all.return_value = [
+    filtrati = mock_db.session.query.return_value.filter_by.return_value
+    filtrati.order_by.return_value.all.return_value = [
         mock_class1,
         mock_class2,
         mock_class3,

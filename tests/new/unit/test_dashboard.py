@@ -7,7 +7,7 @@ from datetime import date, timedelta
 from models import User
 from models.user.models import DirectorAssignment
 from models.user.role_enum import UserRole
-from models.dashboard.services import DashboardService, UnifiedDashboardItem
+from models.dashboard.services import DashboardService
 from models.campionato.services import TournamentService
 from models.competition.services import GaraService
 

@@ -5,7 +5,6 @@ This module tests the NotificationFactory class to ensure proper
 standardization of notification creation patterns and error handling.
 """
 
-import pytest
 from unittest.mock import patch, MagicMock
 from models.notification.factory import NotificationFactory
 from models.notification.models import NotificationType, NotificationPriority

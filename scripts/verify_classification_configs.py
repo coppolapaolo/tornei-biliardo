@@ -17,10 +17,13 @@ from pathlib import Path
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from app import create_app
-from models.base import db
-from models.competition.models import Gara
-from models.competition.validators import validate_gara, ClassificationSystem
+from app import create_app  # noqa: E402
+from models.base import db  # noqa: E402
+from models.competition.models import Gara  # noqa: E402
+from models.competition.validators import (  # noqa: E402
+    validate_gara,
+    ClassificationSystem,
+)
 
 
 def verify_all_gare(fix_mode: bool = False) -> tuple[int, int, int]:

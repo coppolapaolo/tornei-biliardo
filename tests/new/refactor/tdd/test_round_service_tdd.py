@@ -150,13 +150,16 @@ class TestRoundServiceTDD:
         # Dovrebbe creare un turno usando la strategia
         result = RoundService.create_round_with_strategy(gara.id, round_number=2)
 
-        # Il risultato dipende dalla strategia ma dovrebbe restituire informazioni sui match
+        # Il risultato dipende dalla strategia ma dovrebbe restituire informazioni sui
+        # match
         assert result is not None
 
     def test_create_round_with_strategy_creates_matches_for_random_strategy(
         self, isolated_director_user, db_session
     ):
-        """Test TDD: create_round_with_strategy deve creare match per strategia random."""
+        """
+        Test TDD: create_round_with_strategy deve creare match per strategia random.
+        """
         tomorrow = date.today() + timedelta(days=1)
 
         gara = Gara(

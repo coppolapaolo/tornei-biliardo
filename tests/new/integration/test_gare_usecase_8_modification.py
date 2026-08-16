@@ -8,13 +8,13 @@ Tests focused workflow aspects:
 """
 
 import pytest
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from typing import List
 import uuid
 
 from models import User, Gara, Match
 from models.user.role_enum import UserRole
-from models.status_enum import GaraStatus, MatchStatus
+from models.status_enum import MatchStatus
 from models.competition.services import GaraService, RoundService
 from models.competition.inscription_service import InscriptionService
 from models.competition.round_manager import AdvancedRoundManager, RoundLockStatus
@@ -151,7 +151,7 @@ class TestUseCaseMatchReset:
         initial_classifications = RoundClassification.query.filter_by(
             gara_id=gara.id, round_number=1
         ).all()
-        initial_positions = {c.user_id: c.position for c in initial_classifications}
+        {c.user_id: c.position for c in initial_classifications}
 
         # Get a completed match
         match = Match.query.filter_by(
@@ -173,9 +173,7 @@ class TestUseCaseMatchReset:
             if original_winner == match.player1_id
             else match.player1_id
         )
-        loser_id = (
-            match.player1_id if new_winner_id == match.player2_id else match.player2_id
-        )
+        (match.player1_id if new_winner_id == match.player2_id else match.player2_id)
 
         # Add racks for new winner
         for rack_num in range(1, match.match_distance + 1):
@@ -197,7 +195,7 @@ class TestUseCaseMatchReset:
         new_classifications = RoundClassification.query.filter_by(
             gara_id=gara.id, round_number=1
         ).all()
-        new_positions = {c.user_id: c.position for c in new_classifications}
+        {c.user_id: c.position for c in new_classifications}
 
         # Classification should exist (may or may not have changed)
         assert len(new_classifications) == len(initial_classifications)
@@ -338,7 +336,8 @@ class TestUseCaseRoundLocking:
         RoundClassification.calculate_classification_after_round(gara.id, 1)
 
         # Start round 2 (which should lock round 1)
-        # Note: Random strategy creates all rounds at once, so we check existing round 2 matches
+        # Note: Random strategy creates all rounds at once, so we check existing round 2
+        # matches
         round2_matches = Match.query.filter_by(gara_id=gara.id, round_number=2).all()
         if round2_matches:
             # Round 2 exists, complete it
@@ -383,7 +382,7 @@ class TestUseCaseRoundLocking:
         gara = gara_with_two_rounds
 
         # Check lock status for different rounds
-        round1_status = AdvancedRoundManager.get_round_lock_status(gara.id, 1)
+        AdvancedRoundManager.get_round_lock_status(gara.id, 1)
         round2_status = AdvancedRoundManager.get_round_lock_status(gara.id, 2)
 
         # Round 2 should be unlocked (latest round)

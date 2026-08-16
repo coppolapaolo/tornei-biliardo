@@ -137,13 +137,19 @@ class NotificationFactory:
 
                 if not continue_on_error:
                     logger.error(
-                        f"Stopping bulk notification creation after error for user {user_id}"
+                        (
+                            f"Stopping bulk notification creation after error for user "
+                            f"{user_id}"
+                        )
                     )
                     break
 
         if failed_count > 0:
             logger.warning(
-                f"Bulk notification completed with {failed_count} failures out of {len(user_ids)} users"
+                (
+                    f"Bulk notification completed with {failed_count} failures out of "
+                    f"{len(user_ids)} users"
+                )
             )
         else:
             logger.info(
@@ -398,7 +404,10 @@ class NotificationFactory:
             )
         except Exception as e:
             logger.error(
-                f"Failed to create gara inscription notification for user {user_id}: {e}",
+                (
+                    f"Failed to create gara inscription notification for user "
+                    f"{user_id}: {e}"
+                ),
                 exc_info=True,
             )
             return None

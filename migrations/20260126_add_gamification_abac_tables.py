@@ -58,15 +58,16 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
                 last_used_at TIMESTAMP,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                
+
                 FOREIGN KEY(user_id) REFERENCES user (id) ON DELETE CASCADE,
-                FOREIGN KEY(feature_code) REFERENCES feature_config (code) ON DELETE CASCADE,
+                FOREIGN KEY(feature_code) REFERENCES feature_config (code)
+                    ON DELETE CASCADE,
                 UNIQUE (user_id, feature_code)
             )
         """)
 
         cursor.execute("""
-            CREATE INDEX IF NOT EXISTS idx_feature_usage_user 
+            CREATE INDEX IF NOT EXISTS idx_feature_usage_user
             ON user_feature_usage (user_id)
         """)
 
@@ -74,7 +75,10 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
         print("   Adding 'gamification_override' column to user table...")
         try:
             cursor.execute(
-                "ALTER TABLE user ADD COLUMN gamification_override BOOLEAN DEFAULT 0 NOT NULL"
+                (
+                    "ALTER TABLE user ADD COLUMN gamification_override BOOLEAN DEFAULT "
+                    "0 NOT NULL"
+                )
             )
         except sqlite3.OperationalError as e:
             if (

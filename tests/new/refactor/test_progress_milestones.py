@@ -17,7 +17,9 @@ scripts_path = Path(__file__).parent.parent.parent.parent / "scripts"
 sys.path.insert(0, str(scripts_path))
 
 try:
-    from refactor_progress import RefactorProgressDetector  # type: ignore[import-untyped]
+    from refactor_progress import (  # type: ignore[import-untyped]
+        RefactorProgressDetector,
+    )
 except ImportError:
     RefactorProgressDetector = None
 
@@ -75,7 +77,8 @@ class TestRefactorMilestones:
         else:
             print(
                 f"Amalfi migration progress: {data['progress_percent']:.1f}% "
-                f"({data['files_with_direct_imports']}/{data['baseline']} files remaining)"
+                f"({data['files_with_direct_imports']}/{data['baseline']} files "
+                f"remaining)"
             )
 
     def test_notification_factory_milestone(self):
@@ -89,7 +92,8 @@ class TestRefactorMilestones:
         if data["total_calls"] < 5:
             pytest.fail(
                 f"🎉 MILESTONE RAGGIUNTO! "
-                f"Notification factory completo: {data['total_calls']} pattern duplicati rimanenti "
+                f"Notification factory completo: {data['total_calls']} pattern "
+                f"duplicati rimanenti "
                 f"(erano {data['baseline']}). "
                 f"Aggiornare REFACTOR_PROGRESS.md e rimuovere questo test."
             )
@@ -161,7 +165,8 @@ class TestRefactorMilestones:
 class TestRefactorProgressBaseline:
     """Test che verificano le baseline metrics siano corrette."""
 
-    # test_baseline_metrics_are_reasonable removed - metrics outdated after migration completion
+    # test_baseline_metrics_are_reasonable removed - metrics outdated after migration
+    # completion
 
     def test_progress_detection_is_working(self):
         """Verifica che il sistema di detection progress sia funzionante."""

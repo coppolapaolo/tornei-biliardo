@@ -6,7 +6,7 @@ Mantiene la stessa interfaccia esistente (Gara → Gara) senza sovraingegnerizza
 """
 
 import pytest
-from datetime import datetime, date, timedelta
+from datetime import date, timedelta
 from models.base import db, utc_now
 from models.status_enum import GaraStatus
 from models.exceptions import InvalidTransitionError

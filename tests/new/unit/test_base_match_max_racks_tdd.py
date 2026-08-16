@@ -6,7 +6,6 @@ when the match has reached the maximum possible racks and needs validation.
 """
 
 import pytest
-from datetime import datetime
 from models.status_enum import MatchStatus
 from models.base import utc_now
 

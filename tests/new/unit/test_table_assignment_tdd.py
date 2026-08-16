@@ -413,7 +413,7 @@ class TestTableAssignmentTDD:
         match2.winner_id = player_c.id
         db_session.commit()
 
-        result2 = TableAssignmentService.release_and_reassign_table(match2.id)
+        TableAssignmentService.release_and_reassign_table(match2.id)
 
         # Assert 2: NOW both pending matches should have tables!
         db_session.refresh(match3)

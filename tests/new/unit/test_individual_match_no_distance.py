@@ -8,8 +8,7 @@ Tests the free format match workflow where distance=None:
 - Winner is determined by higher score
 """
 
-import pytest
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from models.individual_match.models import IndividualMatch
 from models.status_enum import MatchStatus

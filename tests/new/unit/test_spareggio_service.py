@@ -1,6 +1,5 @@
 """Tests for SpareggioService - SSR tiebreaker resolution."""
 
-import pytest
 from unittest.mock import MagicMock, patch
 
 from models.competition.spareggio_service import SpareggioService
@@ -70,9 +69,8 @@ class TestSpareggioServiceDetection:
         mock_gara.tiebreaker_enabled = True
         mock_gara.tiebreaker_until_position = 3
         mock_db.session.get.return_value = mock_gara
-        mock_db.session.query.return_value.filter_by.return_value.order_by.return_value.all.return_value = (
-            []
-        )
+        filtrati = mock_db.session.query.return_value.filter_by.return_value
+        filtrati.order_by.return_value.all.return_value = []
 
         result = SpareggioService.detect_tiebreakers(1)
         assert result == []
@@ -110,7 +108,8 @@ class TestSpareggioServiceDetection:
         mock_class3.user = MagicMock(display_name="Player 3")
 
         # Each position has unique (wins, rack) = no ties
-        mock_db.session.query.return_value.filter_by.return_value.order_by.return_value.all.return_value = [
+        filtrati = mock_db.session.query.return_value.filter_by.return_value
+        filtrati.order_by.return_value.all.return_value = [
             mock_class1,
             mock_class2,
             mock_class3,
@@ -152,7 +151,8 @@ class TestSpareggioServiceDetection:
         mock_class3.rack_difference = 15
         mock_class3.user = MagicMock(display_name="Player 3")
 
-        mock_db.session.query.return_value.filter_by.return_value.order_by.return_value.all.return_value = [
+        filtrati = mock_db.session.query.return_value.filter_by.return_value
+        filtrati.order_by.return_value.all.return_value = [
             mock_class1,
             mock_class2,
             mock_class3,
@@ -204,7 +204,8 @@ class TestSpareggioServiceDetection:
         mock_class4.rack_difference = 15  # Tied for 3rd
         mock_class4.user = MagicMock(display_name="Player 4")
 
-        mock_db.session.query.return_value.filter_by.return_value.order_by.return_value.all.return_value = [
+        filtrati = mock_db.session.query.return_value.filter_by.return_value
+        filtrati.order_by.return_value.all.return_value = [
             mock_class1,
             mock_class2,
             mock_class3,

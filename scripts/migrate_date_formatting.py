@@ -44,7 +44,6 @@ def migrate_file(filepath: Path, dry_run: bool = False) -> Tuple[int, List[str]]
         Tuple di (numero_sostituzioni, lista_modifiche)
     """
     content = filepath.read_text(encoding="utf-8")
-    original_content = content
     changes = []
 
     for pattern, replacement in REPLACEMENTS:
@@ -123,7 +122,7 @@ def main():
 
     # Riepilogo
     print("=" * 60)
-    print(f"📊 RIEPILOGO:")
+    print("📊 RIEPILOGO:")
     print(f"   - File modificati: {total_files_changed}")
     print(f"   - Sostituzioni totali: {total_changes}")
 

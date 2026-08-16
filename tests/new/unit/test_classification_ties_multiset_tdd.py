@@ -10,7 +10,7 @@ Following TDD principles to ensure all edge cases are covered.
 
 import pytest
 import uuid
-from datetime import date, time, timedelta, datetime
+from datetime import date, timedelta
 
 from models import User, Gara, Inscription, Match
 from models.user.role_enum import UserRole

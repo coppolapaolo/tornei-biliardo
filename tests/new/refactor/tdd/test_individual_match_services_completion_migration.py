@@ -1,5 +1,6 @@
 """
-TDD Tests for IndividualMatchServices Transaction Migration - Completion (Task 1.1 Final Phase)
+TDD Tests for IndividualMatchServices Transaction Migration - Completion (Task 1.1 Final
+    Phase)
 
 Incremental migration strategy for remaining 14 commit calls in IndividualMatchServices:
 
@@ -27,8 +28,7 @@ Strategy: Red-Green-Refactor TDD for each phase
 """
 
 import pytest
-from unittest.mock import patch, MagicMock
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from models import db
 from models.user.models import User
@@ -343,7 +343,7 @@ class TestIndividualMatchServicesTransactionMigrationPhase2:
             IndividualMatchService.start_match(
                 individual_match.id, individual_match.player1_id
             )
-            rack = IndividualMatchService.add_rack_result(
+            IndividualMatchService.add_rack_result(
                 match_id=individual_match.id,
                 winner_id=individual_match.player1_id,
                 user_id=individual_match.player1_id,

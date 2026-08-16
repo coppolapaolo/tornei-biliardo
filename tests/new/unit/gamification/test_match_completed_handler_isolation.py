@@ -109,17 +109,20 @@ class TestAchievementIsolation:
             reconciled.append(user_id)
             raise RuntimeError("boom")
 
+        def registra_quest(user_id, activity_type, activity_count):
+            quest_calls.append(user_id)
+
         with patch(
-            "models.gamification.event_handlers.AchievementService.reconcile_achievements",
+            "models.gamification.event_handlers.AchievementService."
+            "reconcile_achievements",
             side_effect=boom,
         ), patch(
             "models.gamification.event_handlers.StreakService.record_activity",
             side_effect=lambda user_id, streak_type: streak_calls.append(user_id),
         ), patch(
-            "models.gamification.event_handlers.QuestService.record_activity_for_quests",
-            side_effect=lambda user_id, activity_type, activity_count: quest_calls.append(
-                user_id
-            ),
+            "models.gamification.event_handlers.QuestService."
+            "record_activity_for_quests",
+            side_effect=registra_quest,
         ):
             GamificationEventHandlers.handle_match_completed_for_xp(event)
 
@@ -153,7 +156,8 @@ class TestWalkoverDetectionErrorsPropagate:
             pass
 
         with patch(
-            "models.competition.withdraw_policy_service.WithdrawPolicyService.get_forfeit_user_ids",
+            "models.competition.withdraw_policy_service.WithdrawPolicyService."
+            "get_forfeit_user_ids",
             side_effect=Boom("db error"),
         ):
             # is_walkover is False on this match (has racks), so the forfeit
@@ -191,14 +195,16 @@ class TestTrioPlayerIds:
         streak_calls: List[int] = []
         quest_calls: List[int] = []
 
+        def registra_quest(user_id, activity_type, activity_count):
+            quest_calls.append(user_id)
+
         with patch(
             "models.gamification.event_handlers.StreakService.record_activity",
             side_effect=lambda user_id, streak_type: streak_calls.append(user_id),
         ), patch(
-            "models.gamification.event_handlers.QuestService.record_activity_for_quests",
-            side_effect=lambda user_id, activity_type, activity_count: quest_calls.append(
-                user_id
-            ),
+            "models.gamification.event_handlers.QuestService."
+            "record_activity_for_quests",
+            side_effect=registra_quest,
         ):
             GamificationEventHandlers.handle_match_completed_for_xp(event)
 

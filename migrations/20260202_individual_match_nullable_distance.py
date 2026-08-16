@@ -40,7 +40,8 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
                 proposal_id INTEGER REFERENCES match_proposal(id) ON DELETE SET NULL,
                 player1_id INTEGER NOT NULL REFERENCES user(id),
                 player2_id INTEGER NOT NULL REFERENCES user(id),
-                billiard_hall_id INTEGER REFERENCES billiard_hall(id) ON DELETE SET NULL,
+                billiard_hall_id INTEGER REFERENCES billiard_hall(id) ON DELETE
+                    SET NULL,
                 location VARCHAR(255),
                 scheduled_at DATETIME NOT NULL,
                 status VARCHAR(20) NOT NULL DEFAULT 'scheduled',

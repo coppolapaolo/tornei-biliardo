@@ -20,7 +20,6 @@ Backward Compatibility:
 """
 
 import sqlite3
-from datetime import datetime
 from pathlib import Path
 
 
@@ -303,16 +302,28 @@ if __name__ == "__main__":
             print(f"❌ Unknown command: {sys.argv[1]}")
             print("\nUsage:")
             print(
-                "  python migrations/add_gara_classification_table.py                    # SQLite (dev)"
+                (
+                    "  python migrations/add_gara_classification_table.py              "
+                    "      # SQLite (dev)"
+                )
             )
             print(
-                "  python migrations/add_gara_classification_table.py postgresql         # PostgreSQL (prod)"
+                (
+                    "  python migrations/add_gara_classification_table.py postgresql   "
+                    "      # PostgreSQL (prod)"
+                )
             )
             print(
-                "  python migrations/add_gara_classification_table.py downgrade          # Rollback SQLite"
+                (
+                    "  python migrations/add_gara_classification_table.py downgrade    "
+                    "      # Rollback SQLite"
+                )
             )
             print(
-                "  python migrations/add_gara_classification_table.py downgrade-postgresql  # Rollback PostgreSQL"
+                (
+                    "  python migrations/add_gara_classification_table.py "
+                    "downgrade-postgresql  # Rollback PostgreSQL"
+                )
             )
             sys.exit(1)
     else:

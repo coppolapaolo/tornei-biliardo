@@ -382,7 +382,8 @@ def campionato_detail(campionato_id):
     # Calcola statistiche avanzate del campionato
     campionato_stats = campionato_service.calculate_campionato_statistics(campionato_id)
 
-    # Calcola classifica generale se ci sono gare completate o gare in corso con tutti i round completati
+    # Calcola classifica generale se ci sono gare completate o gare in corso con tutti i
+    # round completati
     general_classification = None
     last_completed_gara_number = None
 
@@ -475,7 +476,10 @@ def edit_campionato(campionato_id):
 
     if not campionato.can_be_modified():
         flash(
-            "Impossibile modificare il campionato: alcune gare hanno già delle iscrizioni!"
+            (
+                "Impossibile modificare il campionato: alcune gare hanno già delle "
+                "iscrizioni!"
+            )
         )
         return redirect(
             url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
@@ -664,7 +668,10 @@ def start_playoff(campionato_id):
         if total == 0:
             flash(
                 _(
-                    "Playoff avviati ma nessun giocatore qualificato. Verifica la classifica."
+                    (
+                        "Playoff avviati ma nessun giocatore qualificato. Verifica la "
+                        "classifica."
+                    )
                 ),
                 "warning",
             )

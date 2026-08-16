@@ -8,14 +8,14 @@ Tests comprehensive workflow:
 """
 
 import pytest
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from typing import List, Dict, Any
 import uuid
 
 from models import User, Gara, Match, Inscription
 from models.user.models import DirectorAssignment
 from models.user.role_enum import UserRole
-from models.status_enum import GaraStatus, MatchStatus
+from models.status_enum import GaraStatus
 from models.competition.services import GaraService, RoundService, InscriptionService
 from models.campionato.services import TournamentService
 from models.match.services import MatchService, RackService
@@ -244,7 +244,7 @@ class TestUseCaseCampionatoWorkflow:
 
         # Note: Campionato classification updates are not implemented yet
         # This test verifies the workflow without the classification system
-        print(f"✅ First gara completed, classification system not implemented yet")
+        print("✅ First gara completed, classification system not implemented yet")
 
         # Step 3: Create second gara (Random strategy) - overlapping players
         gara2 = GaraService.create_gara(
@@ -285,7 +285,10 @@ class TestUseCaseCampionatoWorkflow:
         assert len(campionato_classification_2) == 10  # All players now included
 
         print(
-            f"✅ Second gara completed - {len(campionato_classification_2)} players in campionato classification"
+            (
+                f"✅ Second gara completed - {len(campionato_classification_2)} players "
+                f"in campionato classification"
+            )
         )
 
         # Step 4: Create third gara (Round-robin strategy) - smaller group
@@ -390,11 +393,11 @@ class TestUseCaseCampionatoWorkflow:
                 and current.total_point_difference >= next_player.total_point_difference
             )
 
-        print(f"✅ Complete campionato workflow finished successfully")
-        print(f"   - 3 gare completed with different strategies")
-        print(f"   - 10 players total in final campionato classification")
-        print(f"   - Multiple directors managed different gare")
-        print(f"   - Ready for playoff phase")
+        print("✅ Complete campionato workflow finished successfully")
+        print("   - 3 gare completed with different strategies")
+        print("   - 10 players total in final campionato classification")
+        print("   - Multiple directors managed different gare")
+        print("   - Ready for playoff phase")
 
     def test_campionato_minimum_player_requirements(
         self, director_user: User, players_10: List[User], db_session, client
@@ -454,7 +457,8 @@ class TestUseCaseCampionatoWorkflow:
         assert can_start is False  # Only 10 players, need 12
 
         # Cancel gara due to insufficient players
-        # Since handle_expired_inscriptions_cancel doesn't exist, we simulate the cancellation
+        # Since handle_expired_inscriptions_cancel doesn't exist, we simulate the
+        # cancellation
         # by deleting the gara (this would be the expected behavior)
         gara_to_cancel = db_session.get(Gara, gara.id)
         db_session.delete(gara_to_cancel)
@@ -464,9 +468,9 @@ class TestUseCaseCampionatoWorkflow:
         cancelled_gara = db_session.get(Gara, gara.id)
         assert cancelled_gara is None
 
-        print(f"✅ Minimum player requirements test completed successfully")
-        print(f"   - Gara cancelled due to insufficient players (10 < 12)")
-        print(f"   - Gara successfully removed from database")
+        print("✅ Minimum player requirements test completed successfully")
+        print("   - Gara cancelled due to insufficient players (10 < 12)")
+        print("   - Gara successfully removed from database")
 
     def _complete_full_gara(self, gara: Gara, players: List[User], db_session) -> None:
         """Complete a full gara with all rounds."""
@@ -648,11 +652,12 @@ class TestUseCaseCampionatoVariants:
         self._complete_full_gara_with_challenges(gara, players_6, db_session)
 
         # Update campionato classification
-        # CRITICAL: Clear the cache before calling the service to prevent cache pollution
+        # CRITICAL: Clear the cache before calling the service to prevent cache
+        # pollution
         from models.caching import cache_manager
 
         cache_manager.clear_all()
-        print(f"DEBUG: Cache cleared before calling update_campionato_classification")
+        print("DEBUG: Cache cleared before calling update_campionato_classification")
         ClassificationService.update_campionato_classification(campionato.id)
 
         final_classification = Classification.query.filter_by(
@@ -661,8 +666,8 @@ class TestUseCaseCampionatoVariants:
 
         assert len(final_classification) == 6
 
-        print(f"✅ Challenge mode campionato completed successfully")
-        print(f"   - Challenge mode enabled and integrated")
+        print("✅ Challenge mode campionato completed successfully")
+        print("   - Challenge mode enabled and integrated")
         print(f"   - {len(final_classification)} players in final classification")
 
     def test_campionato_deactivation_and_reactivation(
@@ -750,7 +755,10 @@ class TestUseCaseCampionatoVariants:
 
         # Debug: Check what happens in ClassificationService
         print(
-            f"DEBUG: About to call update_campionato_classification for campionato {campionato.id}"
+            (
+                f"DEBUG: About to call update_campionato_classification for campionato "
+                f"{campionato.id}"
+            )
         )
 
         # Check what gare exist for this campionato
@@ -758,14 +766,20 @@ class TestUseCaseCampionatoVariants:
 
         gare_for_campionato = Gara.query.filter_by(campionato_id=campionato.id).all()
         print(
-            f"DEBUG: Found {len(gare_for_campionato)} gare for campionato {campionato.id}"
+            (
+                f"DEBUG: Found {len(gare_for_campionato)} gare for campionato "
+                f"{campionato.id}"
+            )
         )
 
         for i, gara in enumerate(gare_for_campionato):
             matches = Match.query.filter_by(gara_id=gara.id).all()
             completed_matches = [m for m in matches if m.status == "completed"]
             print(
-                f"DEBUG: Gara {i+1} (id={gara.id}): {len(completed_matches)} completed matches out of {len(matches)} total"
+                (
+                    f"DEBUG: Gara {i+1} (id={gara.id}): {len(completed_matches)} "
+                    f"completed matches out of {len(matches)} total"
+                )
             )
 
             # Check if there are actual player IDs in matches
@@ -782,24 +796,31 @@ class TestUseCaseCampionatoVariants:
             campionato_id=campionato.id
         ).all()
         print(
-            f"DEBUG: Found {len(existing_classifications)} existing classifications for campionato {campionato.id}"
+            (
+                f"DEBUG: Found {len(existing_classifications)} existing "
+                f"classifications for campionato {campionato.id}"
+            )
         )
         for cls in existing_classifications:
             db_session.delete(cls)
         db_session.commit()
 
-        # CRITICAL: Clear the cache before calling the service to prevent cache pollution
+        # CRITICAL: Clear the cache before calling the service to prevent cache
+        # pollution
         from models.caching import cache_manager
 
         cache_manager.clear_all()
-        print(f"DEBUG: Cache cleared before calling update_campionato_classification")
+        print("DEBUG: Cache cleared before calling update_campionato_classification")
 
         # Now try to update
         result_classifications = ClassificationService.update_campionato_classification(
             campionato.id
         )
         print(
-            f"DEBUG: update_campionato_classification returned {len(result_classifications)} classifications"
+            (
+                f"DEBUG: update_campionato_classification returned "
+                f"{len(result_classifications)} classifications"
+            )
         )
 
         # Force a database flush to ensure transaction consistency
@@ -821,7 +842,10 @@ class TestUseCaseCampionatoVariants:
                 campionato_id=campionato.id
             ).all()
             print(
-                f"DEBUG: Fresh query after commit found {len(final_classification)} classifications"
+                (
+                    f"DEBUG: Fresh query after commit found "
+                    f"{len(final_classification)} classifications"
+                )
             )
 
         for cls in final_classification:
@@ -831,10 +855,10 @@ class TestUseCaseCampionatoVariants:
 
         assert len(final_classification) == 6  # All players from both gare
 
-        print(f"✅ Campionato deactivation/reactivation test completed successfully")
-        print(f"   - Campionato deactivated and reactivated")
-        print(f"   - 2 gare completed across activation states")
-        print(f"   - Final classification includes all participants")
+        print("✅ Campionato deactivation/reactivation test completed successfully")
+        print("   - Campionato deactivated and reactivated")
+        print("   - 2 gare completed across activation states")
+        print("   - Final classification includes all participants")
 
     def _complete_full_gara_with_challenges(
         self, gara: Gara, players: List[User], db_session

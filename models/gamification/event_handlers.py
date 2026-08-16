@@ -203,7 +203,10 @@ class GamificationEventHandlers:
                         AchievementService.reconcile_achievements(player_id)
                     except Exception as ach_error:
                         logger.warning(
-                            f"Error reconciling achievements for user {player_id}: {ach_error}"
+                            (
+                                f"Error reconciling achievements for user {player_id}: "
+                                f"{ach_error}"
+                            )
                         )
 
             # Record weekly streaks for all participants (skip forfeiters)
@@ -403,7 +406,10 @@ class GamificationEventHandlers:
                 related_entities={"gara_id": event.gara_id},
             )
             logger.info(
-                f"Awarded {inscription_xp} XP to user {event.user_id} for tournament inscription"
+                (
+                    f"Awarded {inscription_xp} XP to user {event.user_id} for "
+                    f"tournament inscription"
+                )
             )
 
             # Achievement: riconcilia (tournament_participation + strategie provate)
@@ -411,7 +417,10 @@ class GamificationEventHandlers:
                 AchievementService.reconcile_achievements(event.user_id)
             except Exception as ach_error:
                 logger.warning(
-                    f"Error reconciling achievements for user {event.user_id}: {ach_error}"
+                    (
+                        f"Error reconciling achievements for user {event.user_id}: "
+                        f"{ach_error}"
+                    )
                 )
 
             # Record weekly streaks
@@ -487,7 +496,8 @@ class GamificationEventHandlers:
 
             logger.info(
                 f"Awarded {completion_xp} XP "
-                f"to {len(participant_ids)} participants for tournament {event.gara_id} completion"
+                f"to {len(participant_ids)} participants for tournament "
+                f"{event.gara_id} completion"
             )
 
             # Bonus for winner
@@ -542,7 +552,10 @@ class GamificationEventHandlers:
                     AchievementService.reconcile_achievements(participant_id)
                 except Exception as ach_error:
                     logger.warning(
-                        f"Error reconciling achievements for user {participant_id}: {ach_error}"
+                        (
+                            f"Error reconciling achievements for user "
+                            f"{participant_id}: {ach_error}"
+                        )
                     )
                 try:
                     AchievementService.check_and_award_achievement(
@@ -609,7 +622,10 @@ class GamificationEventHandlers:
                 related_entities={"campionato_id": event.campionato_id},
             )
             logger.info(
-                f"Awarded {campionato_xp} XP to user {event.creator_id} for creating Campionato"
+                (
+                    f"Awarded {campionato_xp} XP to user {event.creator_id} for "
+                    f"creating Campionato"
+                )
             )
         except Exception as e:
             logger.error(
