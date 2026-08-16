@@ -407,6 +407,25 @@ class TpaState:
             return False
         return True
 
+    def can_choose_seat(self) -> bool:
+        """Se ora il tocco sull'avversario sceglie **chi spacca**.
+
+        Vale solo sul turno di spaccata e solo finche' non e' stato annotato
+        niente — nemmeno le bilie della spaccata. Dopo, quel tocco chiude il
+        turno, e chi spacca non si cambia piu': il rack e' cominciato.
+
+        La condizione e' la stessa del primo ramo di `can_switch_player`, ed e'
+        qui perche' la usano in due — il tastierino per sapere che comando
+        mandare, il servizio per validare quello che riceve. Duplicarla
+        vorrebbe dire lasciarle divergere.
+        """
+        turn = self.turn()
+        return (
+            turn.is_break()
+            and not turn.has_been_played()
+            and turn.annotation.break_potted is None
+        )
+
     def toggle_player(self) -> None:
         """Passa il tavolo: chiude il turno corrente e ne apre uno nuovo.
 
@@ -851,7 +870,7 @@ class TpaState:
                 # annotato, sceglie chi spacca; dopo, chiude il turno e passa il
                 # tavolo. La distinzione la fa il motore, cosi' l'interfaccia
                 # non deve reimparare la regola.
-                "can_choose_seat": current.is_break() and not current.has_been_played(),
+                "can_choose_seat": self.can_choose_seat(),
                 "balls_remaining": current.balls_remaining,
                 "winning": current.winning_turn,
                 "main_note": current.annotation.main_note(),

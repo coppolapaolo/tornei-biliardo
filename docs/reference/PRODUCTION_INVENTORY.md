@@ -348,6 +348,12 @@ Per costruire la production allowlist, scorri ogni area in Sezione 1 e marca esp
 | `/match/matches/<int:match_id>/cancel` | POST | `individual_match.cancel_match` | `@login_required` | action | Annulla match |
 | `/match/matches/<int:match_id>/update-times` | POST | `individual_match.update_match_times` | `@login_required` | action | Modifica orari |
 | `/match/matches/<int:match_id>/forfeit` | POST | `individual_match.forfeit_match` | `@login_required` | action | Registra forfeit |
+| `/match/matches/<int:match_id>/tpa` | GET | `individual_match.tpa_referto` | `@player_or_director_required` | UI page | Referto TPA: si compila o si guarda (ADR-044) |
+| `/match/matches/<int:match_id>/tpa/open` | POST | `individual_match.tpa_open` | `@player_or_director_required` + `@feature_required('tpa_scoresheet')` | action | Prende il referto — **unica** route col gate gamification |
+| `/match/matches/<int:match_id>/tpa/press` | POST | `individual_match.tpa_press` | `@player_or_director_required` | action (JSON) | Un tocco sul tastierino; scrive solo il compilatore |
+| `/match/matches/<int:match_id>/tpa/undo` | POST | `individual_match.tpa_undo` | `@player_or_director_required` | action (JSON) | Annulla l'ultimo tocco |
+| `/match/matches/<int:match_id>/tpa/state` | GET | `individual_match.tpa_state` | `@player_or_director_required` | API JSON | Stato del referto, per chi lo guarda in sola lettura |
+| `/match/matches/<int:match_id>/tpa/close` | POST | `individual_match.tpa_close` | `@player_or_director_required` | action | Chiude il referto |
 | `/match/matches/<int:match_id>/rematch` | GET | `individual_match.rematch` | `@login_required` | UI page | Proponi rematch |
 
 **Proposals:**

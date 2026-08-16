@@ -30,6 +30,7 @@ from flask_babel import gettext as _
 from flask_login import current_user
 
 from models import IndividualMatch
+from models.base import db
 from models.exceptions import DomainError, http_status_for_exception
 from models.tpa.services import FEATURE_CODE, TpaRefertoService
 from models.user.permissions import RoleRequirement
@@ -66,6 +67,54 @@ def _state_response(referto):
             "success": True,
             "state": TpaRefertoService.describe(referto, viewer_id=current_user.id),
         }
+    )
+
+
+def _score_of(match_id: int):
+    match = db.session.get(IndividualMatch, match_id)
+    return (match.player1_score, match.player2_score) if match else None
+
+
+def _announce(match_id: int, referto, score_before=None) -> None:
+    """Dice al canale del match che il referto e' cambiato.
+
+    Due eventi distinti, perche' interessano due pagine diverse:
+
+    - ``tpa_updated`` a ogni tocco. Lo ascolta la pagina del referto, che
+      rilegge lo stato e si ridisegna **senza ricaricarsi**: chi guarda sta
+      seguendo una partita, e una pagina che si ricarica da sola ogni pochi
+      secondi perde la posizione e fa perdere il filo.
+    - ``rack_updated`` solo quando il punteggio si e' mosso davvero. Lo
+      ascolta la pagina del match, che invece si ricarica: mandarglielo a ogni
+      tocco vorrebbe dire ricaricare la pagina dell'avversario venti volte per
+      rack.
+
+    ``score_before`` a ``None`` significa "questo gesto il punteggio non lo
+    tocca" — la chiusura del referto — e allora il secondo evento non parte.
+    """
+    from routes.sse import emit_individual_match_event
+
+    emit_individual_match_event(
+        match_id,
+        "tpa_updated",
+        {"by": current_user.id, "commands": len(referto.comandi or [])},
+    )
+
+    if score_before is None:
+        return
+    match = db.session.get(IndividualMatch, match_id)
+    if match is None or (match.player1_score, match.player2_score) == score_before:
+        return
+    emit_individual_match_event(
+        match_id,
+        "rack_updated",
+        {
+            "action": "tpa",
+            "added_by": current_user.id,
+            "player1_score": match.player1_score,
+            "player2_score": match.player2_score,
+            "is_ready_for_validation": match.is_ready_for_validation(),
+        },
     )
 
 
@@ -128,6 +177,7 @@ def tpa_press(match_id: int):
         return jsonify({"success": False, "message": _("Referto non trovato")}), 404
 
     command = (request.get_json(silent=True) or {}).get("command", "")
+    score_before = _score_of(match_id)
     try:
         TpaRefertoService.press(referto.id, current_user.id, str(command))
     except DomainError as error:
@@ -138,6 +188,7 @@ def tpa_press(match_id: int):
             jsonify({"success": False, "message": _("Errore interno del server")}),
             500,
         )
+    _announce(match_id, referto, score_before)
     return _state_response(referto)
 
 
@@ -149,6 +200,7 @@ def tpa_undo(match_id: int):
     if not is_player or referto is None:
         return jsonify({"success": False, "message": _("Referto non trovato")}), 404
 
+    score_before = _score_of(match_id)
     try:
         TpaRefertoService.undo(referto.id, current_user.id)
     except DomainError as error:
@@ -159,6 +211,7 @@ def tpa_undo(match_id: int):
             jsonify({"success": False, "message": _("Errore interno del server")}),
             500,
         )
+    _announce(match_id, referto, score_before)
     return _state_response(referto)
 
 
@@ -183,6 +236,7 @@ def tpa_close(match_id: int):
 
     try:
         TpaRefertoService.close(referto.id, current_user.id)
+        _announce(match_id, referto)
         flash(_("Referto chiuso."), "success")
     except DomainError as error:
         flash(str(error), "warning")

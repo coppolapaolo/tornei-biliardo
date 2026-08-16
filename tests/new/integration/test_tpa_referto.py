@@ -693,3 +693,121 @@ class TestStatisticheDiCarriera:
             # 9 bilie e nessun errore: TPA pieno, scritto `1.000` e non `.1000`.
             assert "1.000".encode() in response.data
             assert ".1000".encode() not in response.data
+
+
+class TestChiSpaccaSiSceglieUnaVoltaSola:
+    """Il posto in spaccata non si cambia a spaccata gia' annotata.
+
+    Il tastierino non offre nemmeno il gesto (`can_switch_player` e' falso),
+    ma il servizio non si fida del client: una POST costruita a mano verrebbe
+    comunque rifiutata, perche' cambiare chi spacca a rack cominciato
+    riscriverebbe una partita gia' giocata.
+    """
+
+    def test_dopo_le_bilie_della_spaccata_il_posto_e_fissato(self, app, players):
+        with app.app_context():
+            one, two = players
+            match = _match(one, two)
+            referto = TpaRefertoService.open_referto(match.id, one.id)
+
+            TpaRefertoService.press(referto.id, one.id, "1")  # bilie sulla spaccata
+
+            with pytest.raises(ValidationError):
+                TpaRefertoService.press(referto.id, one.id, "seat:2")
+
+    def test_finche_non_si_annota_il_posto_si_cambia(self, app, players):
+        with app.app_context():
+            one, two = players
+            match = _match(one, two)
+            referto = TpaRefertoService.open_referto(match.id, one.id)
+
+            state = TpaRefertoService.press(referto.id, one.id, "seat:2")
+            assert state.current_player == 2
+            assert state.can_choose_seat() is True
+
+
+class TestIlRefertoSiVedeCambiare:
+    """L'avversario deve vedere il referto crescere, non solo il punteggio.
+
+    Le route annunciano ogni tocco sul canale del match, cosi' la pagina di chi
+    guarda rilegge lo stato e si ridisegna. Il punteggio invece si annuncia solo
+    quando si e' mosso davvero: la pagina del match si **ricarica** su quel
+    segnale, e mandarglielo a ogni tocco vorrebbe dire ricaricarla venti volte
+    per rack.
+    """
+
+    @pytest.fixture(autouse=True)
+    def _canale_pulito(self):
+        """Il buffer degli eventi e' globale e in memoria, il database no.
+
+        Ogni test fa rollback e gli id dei match ripartono da 1, quindi senza
+        questa pulizia gli eventi di un test finirebbero nella casella di
+        quello dopo — e le asserzioni conterebbero roba di altri.
+        """
+        from routes.sse import EventScope, _events, _events_lock
+
+        with _events_lock:
+            _events[EventScope.INDIVIDUAL_MATCH.value].clear()
+        yield
+        with _events_lock:
+            _events[EventScope.INDIVIDUAL_MATCH.value].clear()
+
+    @staticmethod
+    def _eventi(match_id: int):
+        from routes.sse import EventScope, _get_events_since
+
+        return _get_events_since(EventScope.INDIVIDUAL_MATCH, match_id, 0)
+
+    def test_ogni_tocco_si_annuncia(self, app, players):
+        with app.app_context():
+            one, two = players
+            match = _match(one, two)
+            TpaRefertoService.open_referto(match.id, one.id)
+            client = TestRotte._client(app, one)
+
+            client.post(f"/match/matches/{match.id}/tpa/press", json={"command": "2"})
+
+            tocchi = [e for e in self._eventi(match.id) if e["type"] == "tpa_updated"]
+            assert len(tocchi) == 1
+            assert tocchi[0]["data"]["by"] == one.id
+
+    def test_il_punteggio_si_annuncia_solo_quando_si_muove(self, app, players):
+        with app.app_context():
+            one, two = players
+            match = _match(one, two)
+            TpaRefertoService.open_referto(match.id, one.id)
+            client = TestRotte._client(app, one)
+
+            # Spaccata annotata: il referto cambia, il punteggio no.
+            client.post(f"/match/matches/{match.id}/tpa/press", json={"command": "1"})
+            assert not [
+                e for e in self._eventi(match.id) if e["type"] == "rack_updated"
+            ]
+
+            # Imbuca tutto e chiude il rack: ora il punteggio si e' mosso.
+            client.post(f"/match/matches/{match.id}/tpa/press", json={"command": "9"})
+            client.post(f"/match/matches/{match.id}/tpa/press", json={"command": "end"})
+
+            rack = [e for e in self._eventi(match.id) if e["type"] == "rack_updated"]
+            assert len(rack) == 1
+            assert rack[0]["data"]["player1_score"] == 1
+            assert rack[0]["data"]["added_by"] == one.id
+
+    def test_anche_l_annulla_si_annuncia(self, app, players):
+        """Chi guarda deve vedere tornare indietro, non restare su un dato morto."""
+        with app.app_context():
+            one, two = players
+            match = _match(one, two)
+            referto = TpaRefertoService.open_referto(match.id, one.id)
+            client = TestRotte._client(app, one)
+            client.post(f"/match/matches/{match.id}/tpa/press", json={"command": "1"})
+            client.post(f"/match/matches/{match.id}/tpa/press", json={"command": "9"})
+            client.post(f"/match/matches/{match.id}/tpa/press", json={"command": "end"})
+            prima = len(self._eventi(match.id))
+
+            client.post(f"/match/matches/{match.id}/tpa/undo")
+
+            eventi = self._eventi(match.id)[prima:]
+            assert [e["type"] for e in eventi] == ["tpa_updated", "rack_updated"]
+            assert eventi[1]["data"]["player1_score"] == 0
+            assert referto.id  # il referto resta, e' il rack che torna indietro

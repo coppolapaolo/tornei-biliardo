@@ -215,8 +215,7 @@ class TpaRefertoService:
             seat = command[len(TpaComando.SEAT_PREFIX) :]
             if seat not in ("1", "2"):
                 raise ValidationError(_("Giocatore non valido."))
-            turn = state.turn()
-            if turn.has_been_played() or not turn.is_break():
+            if not state.can_choose_seat():
                 raise ValidationError(
                     _("Chi spacca si sceglie prima di annotare la spaccata.")
                 )

@@ -109,6 +109,26 @@ sbloccato il pulsante per compilarlo sarebbe assurdo.
 
 ---
 
+## Chi guarda vede cambiare
+
+Ogni scrittura annuncia sul canale del match (`emit_individual_match_event`)
+due eventi diversi, perche' servono a due pagine diverse:
+
+| Evento | Quando | Chi lo ascolta | Cosa fa |
+|---|---|---|---|
+| `tpa_updated` | a **ogni** tocco | la pagina del referto | rilegge `/tpa/state` e **ridisegna** |
+| `rack_updated` | solo se il punteggio si e' mosso | la pagina del match | si **ricarica** |
+
+La distinzione non e' un dettaglio. Chi guarda il referto sta seguendo una
+partita: una pagina che si ricarica da sola ogni pochi secondi gli fa perdere
+il segno. E mandare `rack_updated` a ogni tocco vorrebbe dire ricaricare la
+pagina dell'avversario venti volte per rack.
+
+L'annuncio sta nelle **route**, non nel servizio: e' la convenzione del resto
+del dominio (`routes/individual_match/matches.py`).
+
+---
+
 ## Do Not
 
 - **Non calcolare il TPA fuori da `engine.py`.** Le regole stanno lì e solo lì.
@@ -116,6 +136,8 @@ sbloccato il pulsante per compilarlo sarebbe assurdo.
   il registro dei comandi. Un totale salvato diverge al primo annulla.
 - **Non applicare un comando senza validarlo** contro `state.available_buttons()`:
   è quello che impedisce a un client fuori sincrono di sporcare il referto.
+- **Non fare polling a orologio dalla pagina.** C'e' `window.Polling` sul
+  canale del match: si rilegge quando e' successo qualcosa, non ogni N secondi.
 - **Non rimettere `@feature_required` sulle route di lettura o di scrittura.**
   Sta solo su `tpa_open`: prendere un referto è la funzione da sbloccare,
   leggerne uno che ti riguarda no, e il compilatore non va chiuso fuori da un

@@ -120,6 +120,7 @@
 <script>
 (function () {
     const MATCH_ID = {{ match.id }};
+    const CURRENT_USER_ID = {{ current_user.id }};
     const CAN_WRITE = {{ 'true' if state.can_write else 'false' }};
     const LABEL_PASS = {{ _('passa il tavolo')|tojson }};
     const LABEL_AT_TABLE = {{ _('al tavolo')|tojson }};
@@ -424,17 +425,37 @@
     const undoButton = el('tpaUndo');
     if (undoButton) undoButton.addEventListener('click', () => send('undo', {}));
 
-    /* Chi guarda senza compilare rilegge lo stato ogni tanto: e' l'unico modo
-       per vedere il referto crescere dall'altro capo del tavolo. */
-    if (!CAN_WRITE && !state.closed) {
-        setInterval(function () {
-            fetch('/match/matches/' + MATCH_ID + '/tpa/state')
-                .then((response) => response.json())
-                .then((data) => {
-                    if (data.success && data.state) { state = data.state; render(); }
-                })
-                .catch(() => {});
-        }, 8000);
+    /* Chi guarda senza compilare deve vedere il referto crescere dall'altro
+       capo del tavolo. Si aggancia al canale del match — lo stesso che usa la
+       pagina della partita — e rilegge lo stato **quando qualcosa e' successo**
+       invece che a orologio.
+
+       E ridisegna, non ricarica: chi guarda sta seguendo una partita, e una
+       pagina che si ricarica da sola gli fa perdere il segno ogni volta. */
+    if (!CAN_WRITE && !state.closed && window.Polling) {
+        window.Polling.create({
+            url: '/sse/poll/individual_match/' + MATCH_ID,
+            onEvent: function (event) {
+                if (event.type !== 'tpa_updated') return;
+                if (event.data && event.data.by === CURRENT_USER_ID) return;
+                refresh();
+            }
+        }).start();
+    }
+
+    function refresh() {
+        fetch('/match/matches/' + MATCH_ID + '/tpa/state')
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.success && data.state) {
+                    state = data.state;
+                    render();
+                    /* Il referto e' stato chiuso mentre lo guardavi: da qui in
+                       poi la pagina e' un'altra cosa, e va ripresa dal server. */
+                    if (state.closed) location.reload();
+                }
+            })
+            .catch(() => {});
     }
 
     render();

@@ -177,6 +177,12 @@ confine fra un set e l'altro, e forzarcelo dentro sarebbe stato inventare.
   disallineato e contro i doppi tocchi.
 - `models/tpa/` è un dominio nuovo, volutamente sottile: motore, due modelli, un
   servizio.
+- **Chi guarda vede il referto cambiare, non solo il punteggio.** Ogni tocco
+  annuncia `tpa_updated` sul canale del match e la pagina di chi guarda
+  ridisegna senza ricaricarsi; il punteggio annuncia `rack_updated` solo quando
+  si e' mosso davvero, e li' la pagina del match si ricarica. Due eventi
+  distinti perche' servono a due pagine con due esigenze opposte: chi segue un
+  referto non puo' perdere il segno ogni tre secondi.
 - Il TPA compare nel **profilo** (accanto all'Elo) e nelle **statistiche dei
   match individuali**, sommato su tutti i referti — non mediato fra le partite.
   Lo si vede se si e' sbloccata la funzione **oppure** se qualcuno ha gia'
