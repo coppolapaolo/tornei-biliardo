@@ -352,3 +352,59 @@ class TestLeTreSchermateSonoCoerenti:
         assert 'id="create_rounds_count"' in pagina
         assert "Gestione Forfait" in pagina
         assert "Gestione Dispari" in pagina
+
+
+class TestDefaultDelCampionato:
+    """Anche i default del campionato smettono di chiedere l'inutile.
+
+    Un livello sopra ai form della gara c'era lo stesso difetto: il campionato
+    a tabellone proponeva "Turni", "Giocatori dispari" e "Anti-rematch", che
+    il parser della gara sovrascrive comunque — turni fissati dal sorteggio,
+    bye strutturali, e nessun reincontro possibile visto che chi perde esce.
+    """
+
+    def _campionato(self, db_session, director, tipo):
+        from models import Campionato
+        from models.user.models import DirectorAssignment
+
+        campionato = Campionato(
+            name=f"Camp {uuid.uuid4().hex[:6]}",
+            campionato_type=tipo,
+            default_classification_system="POSITION" if "elim" in tipo else "WINS",
+            is_active=True,
+        )
+        db_session.add(campionato)
+        db_session.flush()
+        db_session.add(
+            DirectorAssignment(
+                entity_type="campionato",
+                entity_id=campionato.id,
+                user_id=director.id,
+                assigned_by_id=director.id,
+            )
+        )
+        db_session.commit()
+        return campionato
+
+    def test_la_modifica_marca_i_campi_inerti(self, client, db_session, director):
+        campionato = self._campionato(db_session, director, "direct_elimination")
+        _login(client, director)
+
+        pagina = client.get(
+            f"/admin/campionato/{campionato.id}/edit"
+        ).get_data(as_text=True)
+
+        # Tre blocchi marcati, che lo script nasconde sui tipi a tabellone.
+        assert pagina.count("js-bracket-inert") >= 3
+
+    def test_su_un_campionato_a_girone_restano(self, client, db_session, director):
+        """Non-regressione: fuori dal tabellone quei default servono davvero."""
+        campionato = self._campionato(db_session, director, "amalfi")
+        _login(client, director)
+
+        pagina = client.get(
+            f"/admin/campionato/{campionato.id}/edit"
+        ).get_data(as_text=True)
+
+        assert 'id="default_rounds_count"' in pagina
+        assert 'id="default_odd_policy"' in pagina

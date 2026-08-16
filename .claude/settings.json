@@ -27,6 +27,18 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/check-help-docs.sh",
+            "statusMessage": "Controllo che la guida /aiuto sia allineata",
+            "timeout": 20
+          }
+        ]
+      }
     ]
   },
   "enabledPlugins": {
