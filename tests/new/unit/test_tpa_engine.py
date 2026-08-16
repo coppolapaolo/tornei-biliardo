@@ -176,3 +176,36 @@ def test_il_tpa_pieno_si_scrive_uno_punto_zero_zero_zero():
     assert format_tpa(1000) == "1.000"
     assert format_tpa(0) == ".000"
     assert format_tpa(None) == "—"
+
+
+class TestPassaggioDelTavolo:
+    """Toccare l'avversario vuol dire due cose, e il motore deve dire quale.
+
+    Sul primo turno di un rack, finche' nessuno ha annotato, quel tocco sceglie
+    **chi spacca**; da li' in poi **chiude il turno**. Il tastierino non ha modo
+    di indovinarlo da solo, quindi lo stato glielo dice con `can_choose_seat`.
+
+    Il test esiste perche' il difetto e' gia' successo: la pagina mandava sempre
+    il comando "chi spacca", e passare il tavolo non funzionava. La correzione
+    e' stata mettere la distinzione nel motore; questo la tiene ferma.
+    """
+
+    def test_prima_della_spaccata_il_tocco_sceglie_chi_spacca(self):
+        state = TpaState(9)
+        assert state.to_dict()["current"]["can_choose_seat"] is True
+
+    def test_dopo_la_prima_annotazione_il_tocco_chiude_il_turno(self):
+        state = TpaState(9)
+        state.annotate("1")  # bilie sulla spaccata: il turno e' cominciato
+        assert state.to_dict()["current"]["can_choose_seat"] is False
+
+    def test_dentro_il_rack_non_si_sceglie_piu_chi_spacca(self):
+        state = play([(1, ["1", "3", "M"])])  # un turno chiuso, tavolo passato
+        assert state.turn().is_break() is False
+        assert state.to_dict()["current"]["can_choose_seat"] is False
+
+    def test_a_rack_nuovo_si_torna_a_poter_scegliere(self):
+        """Ogni rack ricomincia da chi spacca: e' l'unico momento in cui si sceglie."""
+        state = play([(1, ["1", "9"])])  # spacca e chiude: rack finito
+        assert state.current_rack == 2
+        assert state.to_dict()["current"]["can_choose_seat"] is True

@@ -49,8 +49,8 @@ blocks:
       - title: "Conferma con «Apri il referto»"
         text: >-
           Da questo momento il referto è tuo: lo tieni tu per tutta la partita.
-          Il tuo avversario vede la stessa schermata aggiornarsi, ma non può
-          scriverci.
+          Il tuo avversario trova «Guarda il referto TPA» e vede la stessa
+          schermata riempirsi da sola, ma non può scriverci.
 
   - type: note
     tone: warning
@@ -60,6 +60,40 @@ blocks:
       dimenticanza: i rack vinti li registra il referto, così non devi segnare
       due volte la stessa cosa e il punteggio non può mai discordare da quello
       che hai annotato.
+
+  - type: heading
+    id: chi-lo-vede
+    title: "Chi lo vede, e come cambia il pulsante"
+
+  - type: text
+    text: >-
+      Il pulsante sotto il punteggio della partita non dice la stessa cosa a
+      tutti e due i giocatori, e cambia parole man mano che la partita va
+      avanti.
+
+  - type: list
+    items:
+      - "**Prendi il referto TPA**: il referto non c'è ancora e puoi aprirlo tu."
+      - "**Apri il referto TPA**: il referto è aperto e lo tieni tu. Di qui si annota."
+      - "**Guarda il referto TPA**: il referto lo tiene il tuo avversario. Lo vedi riempirsi, ma non ci scrivi."
+      - "**Rivedi il referto TPA**: il referto è chiuso. Si rilegge e basta."
+
+  - type: note
+    tone: info
+    title: "Se lo apre l'avversario, lo vedi comunque"
+    text: >-
+      Da sbloccare c'è solo la mossa di **prendere** il referto. Guardarne uno
+      no: se lo ha aperto il tuo avversario, la partita è anche tua, e il
+      pulsante «Guarda il referto TPA» ti compare anche se tu non hai sbloccato
+      niente.
+
+  - type: note
+    tone: tip
+    title: "Non serve ricaricare la pagina"
+    text: >-
+      Chi guarda vede il referto riempirsi da solo, un tocco dopo l'altro,
+      senza dover toccare niente. E quando chi lo compila lo chiude, la pagina
+      di chi guarda se ne accorge da sola.
 
   - type: heading
     id: come-si-compila
@@ -201,11 +235,11 @@ blocks:
   - type: faq
     items:
       - q: "Non vedo il pulsante del referto."
-        a: "È una funzione che si sblocca con l'uso: servono gare, campionati, partite amichevoli, drill ed esami già fatti. Continua a giocare e comparirà."
+        a: "«Prendi il referto TPA» compare solo se hai sbloccato la funzione — servono gare, campionati, partite amichevoli, drill ed esami già fatti — e solo a partita iniziata, in una partita a palla 8, palla 9 o palla 10 senza set, prima che sia segnato il primo rack. Se invece il referto lo ha già aperto il tuo avversario, il pulsante «Guarda il referto TPA» ti compare comunque, che tu abbia sbloccato o no."
       - q: "Posso aprirlo a partita già cominciata?"
         a: "No. Il referto racconta la partita dall'inizio, quindi va aperto prima del primo rack. Se avete già segnato dei rack, per quella partita non si può più."
       - q: "Lo può tenere il mio avversario al posto mio?"
-        a: "Lo tiene chi lo apre, e resta suo per tutta la partita. L'altro lo vede aggiornarsi in tempo reale, ma non può scriverci."
+        a: "Lo tiene chi lo apre, e resta suo per tutta la partita. Tu premi «Guarda il referto TPA» e lo vedi riempirsi da solo, senza ricaricare la pagina, ma non puoi scriverci."
       - q: "Ho premuto il tasto sbagliato."
         a: "«Annulla l'ultimo tocco» torna indietro di un passo. Puoi premerlo più volte di seguito: torna indietro anche di un rack intero, punteggio compreso."
       - q: "Che TPA è un buon TPA?"

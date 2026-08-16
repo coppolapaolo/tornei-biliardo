@@ -36,6 +36,13 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
   sbloccato la funzione **oppure** a chi ha gia' giocato una partita in cui il
   referto lo teneva l'avversario.
 - Filtro `|tpa_display`: il TPA come si scrive sul referto (`.780`, `1.000`).
+- **Il referto si vede cambiare dall'altro capo del tavolo.** Ogni tocco
+  annuncia `tpa_updated` sul canale del match e la pagina di chi guarda
+  ridisegna **senza ricaricarsi**; il punteggio annuncia `rack_updated` solo
+  quando si e' mosso davvero, e li' la pagina del match si ricarica come fa
+  gia' per il segnapunti normale. Prima la pagina del referto faceva polling a
+  orologio per conto suo, e la pagina del match non si accorgeva di niente.
+- Le sei route del referto in `docs/reference/PRODUCTION_INVENTORY.md`.
 
 ### Rimosso
 

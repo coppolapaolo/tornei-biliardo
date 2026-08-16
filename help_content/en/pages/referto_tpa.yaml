@@ -49,8 +49,8 @@ blocks:
       - title: "Confirm with «Start the scoresheet»"
         text: >-
           From now on the scoresheet is yours: you keep it for the whole match.
-          Your opponent sees the same screen filling in, but cannot write on
-          it.
+          Your opponent gets «View the TPA scoresheet» and watches the same
+          screen fill in on its own, but cannot write on it.
 
   - type: note
     tone: warning
@@ -60,6 +60,39 @@ blocks:
       deliberate: racks won are recorded by the scoresheet, so you never enter
       the same thing twice and the score can never disagree with what you wrote
       down.
+
+  - type: heading
+    id: chi-lo-vede
+    title: "Who sees it, and how the button changes"
+
+  - type: text
+    text: >-
+      The button below the match score does not say the same thing to both
+      players, and its wording changes as the match goes on.
+
+  - type: list
+    items:
+      - "**Keep the TPA scoresheet**: there is no scoresheet yet and you can start one."
+      - "**Open the TPA scoresheet**: the scoresheet is open and you are the one keeping it. This is where you record."
+      - "**View the TPA scoresheet**: your opponent is keeping it. You watch it fill in, but you do not write on it."
+      - "**Review the TPA scoresheet**: the scoresheet is closed. Read-only from here."
+
+  - type: note
+    tone: info
+    title: "If your opponent starts it, you see it anyway"
+    text: >-
+      Only **starting** a scoresheet has to be unlocked. Watching one does not:
+      if your opponent started it, the match is yours too, and the «View the
+      TPA scoresheet» button shows up for you as well, even if you have
+      unlocked nothing.
+
+  - type: note
+    tone: tip
+    title: "No need to reload the page"
+    text: >-
+      Whoever is watching sees the scoresheet fill in on its own, one entry
+      after another, without touching anything. And when the person keeping it
+      closes the scoresheet, the watcher's page notices on its own.
 
   - type: heading
     id: come-si-compila
@@ -200,11 +233,11 @@ blocks:
   - type: faq
     items:
       - q: "I cannot see the scoresheet button."
-        a: "It is a feature that unlocks with use: it needs competitions, championships, friendly matches, drills and exams already played. Keep playing and it will appear."
+        a: "«Keep the TPA scoresheet» only shows up if you have unlocked the feature — it needs competitions, championships, friendly matches, drills and exams already played — and only with the match under way, in an 8-ball, 9-ball or 10-ball match without sets, before the first rack is recorded. If your opponent has already started the scoresheet, the «View the TPA scoresheet» button shows up for you anyway, unlocked or not."
       - q: "Can I start it once the match is under way?"
         a: "No. The scoresheet tells the match from the start, so it has to be started before the first rack. If racks have already been recorded, that match can no longer have one."
       - q: "Can my opponent keep it instead of me?"
-        a: "Whoever starts it keeps it, for the whole match. The other player watches it fill in live, but cannot write on it."
+        a: "Whoever starts it keeps it, for the whole match. You press «View the TPA scoresheet» and watch it fill in on its own, without reloading the page, but you cannot write on it."
       - q: "I pressed the wrong key."
         a: "«Undo last entry» steps back one move. Press it repeatedly and it goes back a whole rack, score included."
       - q: "What counts as a good TPA?"
