@@ -287,13 +287,15 @@ class TestPositionMultiSetValidation:
             sets_distance_type=DistanceType.EXACTLY, sets_distance=2
         )
         assert len(errors) == 1
-        assert "set esatti" in errors[0]
+        assert "numero esatto di set" in errors[0]
 
-    def test_set_esatti_dispari_ammessi(self):
+    def test_set_esatti_dispari_rifiutati(self):
+        """Come per i rack: giocare tutti i set non cambia chi passa il turno."""
         errors, _ = self._validate(
             sets_distance_type=DistanceType.EXACTLY, sets_distance=3
         )
-        assert errors == []
+        assert len(errors) == 1
+        assert "numero esatto di set" in errors[0]
 
     def test_race_to_sets_pari_ammesso(self):
         """Al meglio dei set c'è sempre un vincitore, anche con numero pari."""
@@ -301,6 +303,18 @@ class TestPositionMultiSetValidation:
             sets_distance_type=DistanceType.RACE_TO, sets_distance=2
         )
         assert errors == []
+
+    def test_senza_numero_di_set_il_messaggio_resta_leggibile(self):
+        """`match_distance` è nullable: il messaggio non deve dire "None set".
+
+        Succede con multi-set attivo, set esatti e il numero mai indicato —
+        un POST senza `match_distance`, o una gara vecchia.
+        """
+        errors, _ = self._validate(
+            sets_distance_type=DistanceType.EXACTLY, sets_distance=None
+        )
+        assert len(errors) == 1
+        assert "None" not in errors[0]
 
     def test_regola_non_si_applica_senza_multi_set(self):
         errors, _ = self._validate(
@@ -337,8 +351,13 @@ class TestPositionSystemValidation:
         )
         assert errors == []
 
-    def test_position_with_exactly_odd_is_valid(self):
-        """POSITION + Exactly N (dispari) = valido."""
+    def test_position_with_exactly_odd_is_error(self):
+        """Anche dispari: sul tabellone il numero esatto non ha senso.
+
+        Il vincitore e' deciso appena uno arriva a (N+1)/2; i rack successivi
+        non cambiano ne' chi passa il turno ne' la classifica, che e' per
+        posizione. Prima era ammesso — la regola guardava solo la parita'.
+        """
         errors, warnings = validate_gara_configuration(
             classification_system=ClassificationSystem.POSITION,
             distance_type=DistanceType.EXACTLY,
@@ -348,10 +367,11 @@ class TestPositionSystemValidation:
             forfeit_policy=ForfeitPolicy.FORFEIT,
             matchmaking=MatchmakingStrategy.ELIMINATION,
         )
-        assert errors == []
+        assert len(errors) == 1
+        assert "chi vince" in errors[0]
 
     def test_position_with_exactly_even_is_error(self):
-        """POSITION + Exactly N (pari) = errore (pareggi non ammessi)."""
+        """Pari resta un errore, e in piu' potrebbe finire in parita'."""
         errors, warnings = validate_gara_configuration(
             classification_system=ClassificationSystem.POSITION,
             distance_type=DistanceType.EXACTLY,
@@ -362,7 +382,7 @@ class TestPositionSystemValidation:
             matchmaking=MatchmakingStrategy.ELIMINATION,
         )
         assert len(errors) == 1
-        assert "pari" in errors[0].lower() or "even" in errors[0].lower()
+        assert "esatto" in errors[0]
 
     def test_position_with_exclude_is_error(self):
         """POSITION + EXCLUDE = errore (solo FORFEIT)."""
@@ -582,19 +602,19 @@ class TestValidateGaraIntegration:
         errors, warnings = validate_gara(MockGara())
         assert errors == []
 
-    def test_validate_gara_elimination_with_even_exactly_is_error(self):
-        """Gara Eliminazione + Exactly pari = errore."""
+    def test_validate_gara_elimination_with_exactly_is_error(self):
+        """Gara Eliminazione + Exactly = errore, a prescindere dalla parita'."""
 
         class MockGara:
             matchmaking_strategy = "direct_elimination"
             odd_number_policy = "bye"
             is_race_to = False  # Exactly
             is_multi_set = False
-            distance = 4  # pari
+            distance = 4
 
         errors, warnings = validate_gara(MockGara())
         assert len(errors) == 1
-        assert "pari" in errors[0].lower()
+        assert "numero esatto" in errors[0].lower()
 
     def test_validate_gara_rack_system_with_multi_set_is_error(self):
         """Gara RACK + multi-set = errore."""
@@ -807,7 +827,7 @@ class TestGaraServiceValidationIntegration:
                 max_participants=16,
             )
 
-        assert "pari" in str(exc_info.value).lower()
+        assert "numero esatto" in str(exc_info.value).lower()
 
     def test_create_gara_with_trio_valid_distance(self, app, db_session, director):
         """create_gara() accetta Trio con distanza 2-7."""

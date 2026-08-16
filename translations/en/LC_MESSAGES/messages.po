@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-16 10:30+0000\n"
+"POT-Creation-Date: 2026-08-16 10:39+0000\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -3736,7 +3736,7 @@ msgstr "Avoids pairing the same players twice in one tournament"
 #: templates/admin/gara_create_standalone.html:273
 #: templates/components/_campionato_edit_form.html:188
 #: templates/components/_gara_edit_form.html:122
-#: templates/components/_new_gara_modal.html:286
+#: templates/components/_new_gara_modal.html:308
 msgid "Gioco con handicap"
 msgstr "Handicap mode"
 
@@ -3935,8 +3935,8 @@ msgstr "Manage the challenges"
 #: templates/admin/users_list.html:155
 #: templates/components/_gara_edit_form.html:126
 #: templates/components/_gara_edit_form.html:130
-#: templates/components/_new_gara_modal.html:288
-#: templates/components/_new_gara_modal.html:290
+#: templates/components/_new_gara_modal.html:310
+#: templates/components/_new_gara_modal.html:312
 #: templates/components/_user_info_card.html:56
 #: templates/gamification/admin/streak_config.html:85
 msgid "No"
@@ -3946,15 +3946,15 @@ msgstr "No"
 #: templates/admin/users_list.html:153
 #: templates/components/_gara_edit_form.html:126
 #: templates/components/_gara_edit_form.html:129
-#: templates/components/_new_gara_modal.html:288
-#: templates/components/_new_gara_modal.html:289
+#: templates/components/_new_gara_modal.html:310
+#: templates/components/_new_gara_modal.html:311
 #: templates/components/_user_info_card.html:45
 msgid "Sì"
 msgstr "Yes"
 
 #: templates/admin/gara_create_standalone.html:278
 #: templates/components/_gara_edit_form.html:132
-#: templates/components/_new_gara_modal.html:292
+#: templates/components/_new_gara_modal.html:314
 msgid "I match con handicap non aggiornano i rating (Elo/Fargo)."
 msgstr "Handicap matches do not update ratings (Elo/Fargo)."
 
@@ -5564,23 +5564,15 @@ msgstr "First to arrive wins"
 msgid "Altrimenti si giocano tutti i set previsti."
 msgstr "Otherwise every scheduled set is played."
 
-#: templates/components/_distance_configurator.html:79
+#: templates/components/_distance_configurator.html:83
 msgid ""
-"Su un tabellone il numero esatto di rack deve essere dispari: con un "
-"numero pari la partita può finire in parità e il nodo resterebbe senza "
-"vincitore."
+"Sul tabellone si gioca sempre a chi arriva prima: conta solo chi passa il"
+" turno, quindi i rack giocati dopo che il vincitore è deciso non "
+"cambierebbero nulla."
 msgstr ""
-"On a bracket the exact number of racks must be odd: an even number can "
-"end level and the node would have no winner."
-
-#: templates/components/_distance_configurator.html:80
-msgid ""
-"Su un tabellone il numero esatto di set deve essere dispari: con un "
-"numero pari la partita può finire in parità e il nodo resterebbe senza "
-"vincitore."
-msgstr ""
-"On a bracket the exact number of sets must be odd: an even number can end"
-" level and the node would have no winner."
+"On a bracket you always race to the distance: only who goes through "
+"matters, so racks played after the winner is decided would change "
+"nothing."
 
 #: templates/components/_double_knockout_algorithm_info.html:9
 #, python-format
@@ -5792,7 +5784,7 @@ msgid ""
 msgstr "Avoids pairing the same players again. It depends on the competition type."
 
 #: templates/components/_gara_edit_form.html:126
-#: templates/components/_new_gara_modal.html:288
+#: templates/components/_new_gara_modal.html:310
 msgid "Eredita dal campionato"
 msgstr "Inherit from championship"
 
@@ -7198,7 +7190,7 @@ msgstr "Set availability"
 msgid "fino al"
 msgstr "up to"
 
-#: templates/components/_new_gara_modal.html:42
+#: templates/components/_new_gara_modal.html:55
 msgid "Valori precompilati dai default del campionato."
 msgstr "Values prefilled from championship defaults."
 
