@@ -604,6 +604,49 @@ dipende dalla **fase** e dal **ruolo**:
 
 ---
 
+### Immagini dei drill: mostrare, non riempire (ADR-044)
+
+L'immagine di un drill **è** l'esercizio: dice dove stanno le bilie e dov'è la
+battente. Riempire il riquadro ritagliandola toglie le teste del tavolo, cioè
+ciò che dà senso alle posizioni — e non si vede, perché un tavolo tagliato
+somiglia a un tavolo.
+
+#### ❌ DA EVITARE: riempire ritagliando
+
+```html
+<!-- SBAGLIATO: cover taglia il 43% di una foto 1.74:1 in un riquadro quadrato -->
+<span style="width:56px;height:56px;overflow:hidden;background:var(--c7-sunken)">
+  <img src="..." style="width:100%;height:100%;object-fit:cover">
+</span>
+```
+
+#### ✅ CORRETTO: il riquadro del tema, che mostra intero
+
+```html
+<span class="c7-diagram c7-diagram--thumb" style="width:56px;height:56px">
+  <img class="c7-diagram__img" src="..." alt="">
+</span>
+
+<div class="c7-diagram c7-diagram--card">…</div>   <!-- card catalogo, 16/9 -->
+<div class="c7-diagram c7-diagram--full">…</div>   <!-- dettaglio, 16/9 max 380px -->
+```
+
+**Regole immagini drill:**
+- Mai `object-fit: cover` su un'immagine di drill: usa `.c7-diagram__img`
+- Il riquadro è `.c7-diagram` — fondo `--c7-sunken` come passe-partout, e regge
+  il segnaposto quando l'immagine manca
+- Le due bande laterali su una foto quadrata sono volute: meglio una banda che
+  una bilia in meno
+- Non ridefinire la regola in un `style=`: era ricopiata in cinque punti, ed è
+  così che quattro restano indietro quando se ne sistema uno
+- ⚠️ Dentro un riquadro a `aspect-ratio`, `height: 100%` **non** basta: la
+  percentuale non ha un'altezza definita su cui risolvere e una foto quadrata
+  esce dal riquadro venendo ritagliata lo stesso. Per questo `.c7-diagram__img`
+  si posiziona (`position: absolute; inset: 0`)
+- Presidiato da `tests/new/unit/test_drill_diagram_not_cropped.py`
+
+---
+
 ### Azioni Distruttive (Elimina, Annulla, etc.)
 
 #### ❌ DA EVITARE: Bottone elimina prominente nell'header
@@ -1060,6 +1103,7 @@ Quando sono presenti punteggi SSR, i badge sono ordinati:
 | 2026-01-24 | Sezione Mobile-First Design | Linee guida complete DO/DON'T per interfacce mobile-first: header layout, azioni distruttive, tabelle responsive, touch target, statistiche, form, navigazione |
 | 2026-06-10 | Principio "l'azionabile va prima" (mobile) | Decisione utente da test manuale: l'interfaccia mostra prima ciò che serve in quel momento. Applicato in gara_detail.html fase gioco (Partite→Turni→Gestione collassata→Direttori via flex order-*) e turni attivi crescenti in _match_cards_mobile.html |
 | 2026-06-10 | fa-8-ball per "Ai tavoli adesso" | Card "In diretta ora": era fa-table-tennis-paddle-ball (racchetta ping pong!) — allineata alla convenzione biliardo |
+| 2026-08-16 | Immagini dei drill mai ritagliate (`.c7-diagram`) | L'immagine **è** l'esercizio: `object-fit: cover` toglieva fino al 43% della foto, cioè le teste del tavolo. Cinque superfici passano a `contain` su riquadro affossato, regola unica nel tema (ADR-044) |
 | 2026-07-28 | "L'azionabile va prima" esteso a admin/match e al turno finito Amalfi | Decisione utente: a punteggio definitivo il pulsante di ritorno sale in cima su mobile (`score_is_final`); a turno Amalfi finito la Gestione sale in cima **già aperta** con Avvia Turno/SSR/Termina (`round_action_ready`). Regressioni in `tests/new/integration/test_rilievi_20260728_mobile_azionabile.py` |
 
 ---

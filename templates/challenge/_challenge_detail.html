@@ -15,13 +15,13 @@
 <div class="c7-stack">
 
   {# ---------- Foto della disposizione ---------- #}
-  {# Il tetto d'altezza serve su desktop: a colonna larga il rapporto 16/10 da
-     solo faceva una foto alta mezzo schermo. #}
-  <div style="border-radius:var(--c7-r-card-lg);overflow:hidden;background:var(--c7-sunken);
-              aspect-ratio:16/10;max-height:380px;position:relative">
+  {# `.c7-diagram--full` porta con se' rapporto, raggio e il tetto d'altezza che
+     serve su desktop: a colonna larga il solo rapporto faceva una foto alta
+     mezzo schermo. Il diagramma si vede intero (ADR-044). #}
+  <div class="c7-diagram c7-diagram--full">
     {% if challenge.image_filename %}
-    <img src="{{ challenge_image_url(challenge) }}" alt="{{ _('Disposizione della challenge') }}"
-         style="width:100%;height:100%;object-fit:cover;display:block"
+    <img class="c7-diagram__img" src="{{ challenge_image_url(challenge) }}"
+         alt="{{ _('Disposizione della challenge') }}"
          onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';">
     <div style="display:none;position:absolute;inset:0;place-items:center;color:var(--c7-ink-faint)">
       <div class="text-center">
