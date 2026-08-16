@@ -47,3 +47,18 @@ gara-tabellone-dettaglio: "A knockout competition: its page links through to the
 gara-bozza: "A competition still in draft: it exists, but nobody can register until registrations are opened."
 gara-squadre: "The teams panel in competition management: which teams exist and how many entrants belong to each."
 gara-turni-config: "Per-round setup: each round can have its own discipline and distance."
+
+# --- Exams ---------------------------------------------------------------
+esame-catalogo: "The exam catalogue: the drill sequences you can sit."
+esame-dettaglio: "An exam page: the drills it is made of with their maximum score and number of attempts, who administers it and the two ways to sit it."
+esame-appuntamento: "The form for requesting an appointment: which examiners to ask, when and at which venue."
+esame-trattativa: "A negotiation under way: the proposal on the table, who made it, and the history of the exchange."
+esame-sessione: "The exam session as the examiner sees it: one box per attempt, the progress bar and the two outcome buttons."
+esame-gestione: "The area for whoever administers exams: the ones they composed, how many candidates, and the pass rate."
+esame-esaminatori: "The examiners of an exam: who administers it and who can be added."
+ruolo-richiesta: "The form for requesting the examiner role: who to forward the request to, and optional notes."
+ruolo-richieste: "Incoming role requests: approved or rejected one at a time."
+
+# --- TPA scoresheet ------------------------------------------------------
+referto-tpa: "The TPA scoresheet during the match: the two players with their TPA, the inning box and the keypad."
+referto-tpa-foglio: "The scoresheet itself: each row is one visit to the table, with the balls pocketed and why the inning ended."

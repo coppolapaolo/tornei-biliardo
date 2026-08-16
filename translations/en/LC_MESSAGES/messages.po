@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-16 14:47+0000\n"
+"POT-Creation-Date: 2026-08-16 17:39+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app.py:522 templates/errors/403.html:3
+#: app.py:532 templates/errors/403.html:3
 msgid "Accesso negato"
 msgstr "Access denied"
 
@@ -581,7 +581,7 @@ msgstr "Milestone: %(value)s matches!"
 #: models/kpi/notifications.py:54
 #, python-format
 msgid "Sono stati giocati %(value)s match sulla piattaforma. La community cresce!"
-msgstr ""
+msgstr "%(value)s matches have been played on the platform. The community is growing!"
 "%(value)s matches have been played on the platform. The community is "
 "growing!"
 
@@ -727,7 +727,7 @@ msgstr "Match not found"
 msgid "Il referto di questo match e' gia' aperto."
 msgstr "This match already has an open scoresheet."
 
-#: models/tpa/services.py:164 models/tpa/services.py:265
+#: models/tpa/services.py:164 models/tpa/services.py:264
 #, python-format
 msgid "Il referto lo tiene %(name)s."
 msgstr "%(name)s is keeping the scoresheet."
@@ -736,10 +736,10 @@ msgstr "%(name)s is keeping the scoresheet."
 msgid "Il referto e' chiuso."
 msgstr "The scoresheet is closed."
 
-#: models/tpa/services.py:180 models/tpa/services.py:241
-#: models/tpa/services.py:262 routes/individual_match/tpa.py:128
-#: routes/individual_match/tpa.py:150 routes/individual_match/tpa.py:171
-#: routes/individual_match/tpa.py:181
+#: models/tpa/services.py:180 models/tpa/services.py:240
+#: models/tpa/services.py:261 routes/individual_match/tpa.py:177
+#: routes/individual_match/tpa.py:201 routes/individual_match/tpa.py:224
+#: routes/individual_match/tpa.py:234
 msgid "Referto non trovato"
 msgstr "Scoresheet not found"
 
@@ -751,23 +751,23 @@ msgstr "Before handing over the table, record why the inning ended."
 msgid "Giocatore non valido."
 msgstr "Invalid player."
 
-#: models/tpa/services.py:221
+#: models/tpa/services.py:220
 msgid "Chi spacca si sceglie prima di annotare la spaccata."
 msgstr "Who breaks is chosen before the break is recorded."
 
-#: models/tpa/services.py:226
+#: models/tpa/services.py:225
 msgid "Comando di referto sconosciuto."
 msgstr "Unknown scoresheet entry."
 
-#: models/tpa/services.py:228
+#: models/tpa/services.py:227
 msgid "Questo comando non e' possibile adesso."
 msgstr "That entry is not possible right now."
 
-#: models/tpa/services.py:246
+#: models/tpa/services.py:245
 msgid "Non c'e' niente da annullare."
 msgstr "There is nothing to undo."
 
-#: models/tpa/services.py:338
+#: models/tpa/services.py:337
 msgid ""
 "Il match ha raggiunto la distanza: prima di continuare il risultato va "
 "confermato o rifiutato."
@@ -1355,9 +1355,9 @@ msgstr ""
 #: routes/individual_match/matches.py:66
 #: routes/individual_match/proposals.py:38
 #: routes/individual_match/proposals.py:66
-#: routes/individual_match/proposals.py:384 routes/individual_match/tpa.py:118
-#: routes/individual_match/tpa.py:138 routes/individual_match/tpa.py:159
-#: routes/individual_match/tpa.py:191 routes/individual_match/views.py:34
+#: routes/individual_match/proposals.py:384 routes/individual_match/tpa.py:167
+#: routes/individual_match/tpa.py:188 routes/individual_match/tpa.py:211
+#: routes/individual_match/tpa.py:245 routes/individual_match/views.py:34
 #: routes/individual_match/views.py:82
 msgid "Errore interno del server"
 msgstr "Internal server error"
@@ -1830,7 +1830,7 @@ msgid "Disponibilità rimossa"
 msgstr "Availability removed"
 
 #: routes/individual_match/matches.py:50 routes/individual_match/matches.py:497
-#: routes/individual_match/tpa.py:85
+#: routes/individual_match/tpa.py:134
 msgid "Accesso negato a questo match."
 msgstr "Access denied to this match."
 
@@ -1901,7 +1901,7 @@ msgstr "Proposal cancelled successfully!"
 msgid "Proposta rifiutata."
 msgstr "Proposal declined."
 
-#: routes/individual_match/tpa.py:186
+#: routes/individual_match/tpa.py:240
 msgid "Referto chiuso."
 msgstr "Scoresheet closed."
 
@@ -3693,7 +3693,7 @@ msgstr "Final playoffs"
 
 #: templates/admin/campionato_wizard_step1.html:115
 msgid "Gare speciali a fine campionato: i qualificati ricevono un invito."
-msgstr ""
+msgstr "Special competitions at the end of the championship: those who qualify get an invitation."
 "Special competitions at the end of the championship: qualified players "
 "receive an invitation."
 
@@ -3854,7 +3854,7 @@ msgstr "Handicap mode"
 
 #: templates/admin/campionato_wizard_step2.html:138
 msgid "I match non aggiornano il rating Elo. Ereditato da gare e partite."
-msgstr ""
+msgstr "Matches do not update the Elo rating. Inherited from competitions and matches."
 "Matches do not update the Elo rating. Inherited by competitions and "
 "matches."
 
@@ -3947,8 +3947,8 @@ msgstr "Challenge standings"
 #, python-format
 msgid "%(n)s giocatore"
 msgid_plural "%(n)s giocatori"
-msgstr[0] "%"
-msgstr[1] "("
+msgstr[0] "%(n)s player"
+msgstr[1] "%(n)s players"
 
 #: templates/admin/gara_challenge_classification.html:39
 #: templates/components/_gara_challenge_classification_compact.html:27
@@ -4026,8 +4026,8 @@ msgstr "after round %(n)s"
 #, python-format
 msgid "%(n)s tentativo"
 msgid_plural "%(n)s tentativi"
-msgstr[0] "%"
-msgstr[1] "("
+msgstr[0] "%(n)s attempt"
+msgstr[1] "%(n)s attempts"
 
 #: templates/admin/gara_challenge_classification.html:136
 #: templates/challenge/_challenge_card.html:50
@@ -5549,7 +5549,7 @@ msgstr "Nothing to manage yet"
 
 #: templates/components/_dashboard_empty_state.html:9
 msgid "Puoi creare un campionato o una singola gara dai pulsanti in testata."
-msgstr ""
+msgstr "You can create a championship or a single competition from the buttons in the header."
 "You can create a championship or a single competition from the buttons in"
 " the header."
 
@@ -5840,7 +5840,7 @@ msgstr "%(num)s groups"
 
 #: templates/components/_double_knockout_algorithm_info.html:24
 msgid "Ogni girone qualifica quattro giocatori: due imbattuti e due ripescati."
-msgstr ""
+msgstr "Each group qualifies four players: two unbeaten and two through the losers bracket."
 "Each group qualifies four players: two unbeaten and two from the losers' "
 "bracket."
 
@@ -5929,7 +5929,7 @@ msgstr "and %(n)s more players"
 
 #: templates/components/_gara_challenges_display.html:35
 msgid "Si giocano a turno concluso, con i tentativi indicati per ogni giocatore."
-msgstr ""
+msgstr "They are played once the round is over, with the attempts shown for each player."
 "They are played once the round is over, with the attempts specified for "
 "each player."
 
@@ -6955,8 +6955,8 @@ msgstr "Full: you join the waiting list"
 #, python-format
 msgid "%(num)s posto libero"
 msgid_plural "%(num)s posti liberi"
-msgstr[0] "%"
-msgstr[1] "("
+msgstr[0] "%(num)s spot left"
+msgstr[1] "%(num)s spots left"
 
 #: templates/components/_index_open_inscriptions.html:52
 #: templates/components/_unified_cards.html:74
@@ -7772,7 +7772,7 @@ msgstr "(default)"
 
 #: templates/components/_round_management.html:68
 #: templates/components/_unified_rack_history.html:61
-#: templates/individual_match/tpa_referto.html:131
+#: templates/individual_match/tpa_referto.html:132
 msgid "Rack"
 msgstr "Rack"
 
@@ -8083,7 +8083,7 @@ msgstr "Disabled"
 
 #: templates/components/_squadre_management.html:66
 msgid "Toglie la squadra dalle scelte, senza toccare le iscrizioni che la usano"
-msgstr ""
+msgstr "Removes the team from the choices, without touching the registrations that use it"
 "Removes the team from the choices, without touching the entries that use "
 "it"
 
@@ -8791,9 +8791,9 @@ msgstr "Try it on your own"
 msgid "Allenamento: non porta la certificazione."
 msgstr "Practice: it never leads to certification."
 
-#: templates/exam/detail.html:111 templates/gamification/quests.html:110
+#: templates/exam/detail.html:111
 msgid "Inizia"
-msgstr "Starts"
+msgstr "Start"
 
 #: templates/exam/detail.html:117
 msgid "Davanti a un esaminatore, di persona."
@@ -9138,7 +9138,7 @@ msgstr "View the exams"
 
 #: templates/exam/session.html:8
 msgid "Sessione certificata"
-msgstr "Session certified"
+msgstr "Certified session"
 
 #: templates/exam/session.html:9
 msgid "Allenamento in autonomia"
@@ -9334,8 +9334,8 @@ msgstr "Complete these activities to unlock new features"
 #, python-format
 msgid "e un'altra funzionalità da sbloccare"
 msgid_plural "e altre %(num)d funzionalità da sbloccare"
-msgstr[0] "a"
-msgstr[1] "n"
+msgstr[0] "and one more feature to unlock"
+msgstr[1] "and %(num)d more features to unlock"
 
 #: templates/gamification/dashboard.html:149
 msgid "Achievement recenti"
@@ -9434,7 +9434,7 @@ msgstr "Play a few matches to appear in your local standings."
 
 #: templates/gamification/leaderboards.html:75
 msgid "Challenge create per gli altri, gare organizzate e proposte accettate."
-msgstr ""
+msgstr "Challenges created for others, competitions organised and proposals accepted."
 "Challenges created for others, competitions organised and proposals "
 "accepted."
 
@@ -9448,7 +9448,7 @@ msgstr "No contribution recorded"
 
 #: templates/gamification/leaderboards.html:79
 msgid "Crea challenge, organizza gare o proponi match: la community cresce così."
-msgstr ""
+msgstr "Create challenges, organise competitions or propose matches: that is how the community grows."
 "Create challenges, organise competitions or propose matches: that is how "
 "the community grows."
 
@@ -9469,10 +9469,15 @@ msgstr "Active"
 #, python-format
 msgid "%(num)d partecipante"
 msgid_plural "%(num)d partecipanti"
-msgstr[0] "%"
-msgstr[1] "("
+msgstr[0] "%(num)d participant"
+msgstr[1] "%(num)d participants"
 
-#: templates/gamification/quests.html:121
+#: templates/gamification/quests.html:114
+#, python-format
+msgid "Inizia il %(data)s"
+msgstr "Starts on %(data)s"
+
+#: templates/gamification/quests.html:125
 msgid "Completate"
 msgstr "Completed"
 
@@ -9488,8 +9493,8 @@ msgstr "Weekly activity and XP bonuses"
 #: templates/gamification/streaks.html:29
 msgid "settimana consecutiva di attività"
 msgid_plural "settimane consecutive di attività"
-msgstr[0] "c"
-msgstr[1] "o"
+msgstr[0] "consecutive week of activity"
+msgstr[1] "consecutive weeks of activity"
 
 #: templates/gamification/streaks.html:33
 msgid "Record personale"
@@ -9499,8 +9504,8 @@ msgstr "Personal record"
 #, python-format
 msgid "%(num)d freeze disponibile"
 msgid_plural "%(num)d freeze disponibili"
-msgstr[0] "%"
-msgstr[1] "("
+msgstr[0] "%(num)d freeze available"
+msgstr[1] "%(num)d freezes available"
 
 #: templates/gamification/streaks.html:62
 msgid "A rischio"
@@ -9510,8 +9515,8 @@ msgstr "At risk"
 #, python-format
 msgid "%(num)d freeze"
 msgid_plural "%(num)d freeze"
-msgstr[0] "%"
-msgstr[1] "("
+msgstr[0] "%(num)d freeze"
+msgstr[1] "%(num)d freezes"
 
 #: templates/gamification/streaks.html:73
 msgid "Attuale"
@@ -11539,8 +11544,8 @@ msgstr "L"
 #, python-format
 msgid "%(n)s vittoria di fila"
 msgid_plural "%(n)s vittorie di fila"
-msgstr[0] "%"
-msgstr[1] "("
+msgstr[0] "%(n)s win in a row"
+msgstr[1] "%(n)s wins in a row"
 
 #: templates/individual_match/statistics.html:205
 #, python-format
@@ -11559,8 +11564,8 @@ msgstr "By discipline"
 #, python-format
 msgid "%(n)s match"
 msgid_plural "%(n)s match"
-msgstr[0] "%"
-msgstr[1] "("
+msgstr[0] "%(n)s match"
+msgstr[1] "%(n)s matches"
 
 #: templates/individual_match/statistics.html:239
 msgid "Testa a testa"
@@ -11579,8 +11584,8 @@ msgstr "Month by month"
 #, python-format
 msgid "%(n)s vinto"
 msgid_plural "%(n)s vinti"
-msgstr[0] "%"
-msgstr[1] "("
+msgstr[0] "%(n)s won"
+msgstr[1] "%(n)s won"
 
 #: templates/individual_match/statistics.html:298
 msgid "I tuoi traguardi"
@@ -11699,47 +11704,47 @@ msgstr "Close the scoresheet? Nothing can be recorded afterwards."
 msgid "Chiudi il referto"
 msgstr "Close the scoresheet"
 
-#: templates/individual_match/tpa_referto.html:124
+#: templates/individual_match/tpa_referto.html:125
 msgid "passa il tavolo"
 msgstr "hand over the table"
 
-#: templates/individual_match/tpa_referto.html:125
+#: templates/individual_match/tpa_referto.html:126
 msgid "al tavolo"
 msgstr "at the table"
 
-#: templates/individual_match/tpa_referto.html:126
+#: templates/individual_match/tpa_referto.html:127
 msgid "spacca"
 msgstr "breaking"
 
-#: templates/individual_match/tpa_referto.html:127
+#: templates/individual_match/tpa_referto.html:128
 msgid "spacca lui"
 msgstr "let them break"
 
-#: templates/individual_match/tpa_referto.html:128
+#: templates/individual_match/tpa_referto.html:129
 msgid "TPA ancora da calcolare"
 msgstr "TPA not available yet"
 
-#: templates/individual_match/tpa_referto.html:129
+#: templates/individual_match/tpa_referto.html:130
 msgid "quante bilie?"
 msgstr "how many balls?"
 
-#: templates/individual_match/tpa_referto.html:130
+#: templates/individual_match/tpa_referto.html:131
 msgid "perche' finisce il turno?"
 msgstr "why did the inning end?"
 
-#: templates/individual_match/tpa_referto.html:132
+#: templates/individual_match/tpa_referto.html:133
 msgid "Non e' stato possibile annotare."
 msgstr "That entry could not be recorded."
 
-#: templates/individual_match/tpa_referto.html:133
+#: templates/individual_match/tpa_referto.html:134
 msgid "e' entrata di sponda alla prima bilia"
 msgstr "kicked in on the first ball"
 
-#: templates/individual_match/tpa_referto.html:134
+#: templates/individual_match/tpa_referto.html:135
 msgid "Ha chiuso in una sola visita?"
 msgstr "Did they run out in one visit?"
 
-#: templates/individual_match/tpa_referto.html:135
+#: templates/individual_match/tpa_referto.html:136
 msgid "Chiusa in una sola visita"
 msgstr "Ran out in one visit"
 

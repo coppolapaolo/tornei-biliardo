@@ -99,6 +99,10 @@ blocks:
     id: come-si-compila
     title: "Come si compila"
 
+  - type: shot
+    shot: referto-tpa
+    caption: "Il referto TPA durante la partita: i due giocatori con il loro TPA, la casella del turno e il tastierino."
+
   - type: text
     text: >-
       In alto ci sono i due giocatori. Quello **scuro** è chi sta al tavolo
@@ -178,6 +182,10 @@ blocks:
       In fondo alla pagina c'è **il foglio**: tutta la partita, rack per rack e
       turno per turno. Serve durante la partita per controllare di non aver
       saltato niente, e dopo per rivedere com'è andata.
+
+  - type: shot
+    shot: referto-tpa-foglio
+    caption: "Il foglio del referto: ogni riga è una visita al tavolo, con le bilie imbucate e il motivo per cui il turno è finito."
 
   - type: text
     text: >-

@@ -1,0 +1,212 @@
+title: "Sostenere un esame"
+section: giocare
+kind: tutorial
+audience: [giocatore]
+minutes: 5
+summary: "Più drill in fila, in ordine. Da solo per allenarti, oppure davanti a un esaminatore perché resti scritto che li hai superati."
+screens: [exam.exam_catalog, exam.exam_detail, exam.request_form,
+  exam.request_list, exam.request_detail, exam.session_detail]
+related: [challenge, diventare_esaminatore, profilo_e_statistiche]
+
+blocks:
+  - type: text
+    text: >-
+      Un esame è una **sequenza di drill**, decisa da chi l'ha composto e
+      sempre nello stesso ordine. Un drill da solo dice come ti è andato un
+      tiro; un esame dice se sai tenere insieme più gesti di seguito. Se non
+      sai cos'è un drill, comincia da [Le
+      challenge](/aiuto/giocare/challenge).
+
+  - type: shot
+    shot: esame-catalogo
+    caption: "Il catalogo degli esami: le sequenze di drill che si possono sostenere."
+
+  - type: heading
+    id: due_modi
+    title: "Due modi di sostenerlo"
+
+  - type: options
+    items:
+      - name: "In autonomia"
+        values: "«Prova da solo»"
+        text: >-
+          Ti alleni. Registri tu i punteggi, quando vuoi, e puoi interrompere
+          e riprendere. Resta nel tuo storico, ma **non porta la
+          certificazione**: nessuno era lì a guardare.
+        hint: esame.prova_da_solo
+      - name: "Davanti a un esaminatore"
+        values: "«Chiedi un appuntamento»"
+        text: >-
+          Di persona, con un esaminatore che guarda e registra. Alla fine
+          l'esame risulta **certificato**, con il nome di chi l'ha certificato,
+          la data e la sala.
+        hint: esame.appuntamento
+
+  - type: note
+    tone: info
+    text: >-
+      Un allenamento resta un allenamento per sempre: non esiste un modo di
+      trasformarlo in esame certificato dopo averlo fatto. Se vuoi che valga,
+      va sostenuto davanti a un esaminatore fin dall'inizio.
+
+  - type: heading
+    id: la_scheda
+    title: "Cosa dice la pagina di un esame"
+
+  - type: text
+    text: >-
+      Prima di iniziare, la scheda dell'esame ti dice esattamente cosa ti
+      aspetta: i drill in ordine, il punteggio massimo di ciascuno, quante
+      prove hai a disposizione e **chi lo somministra**.
+
+  - type: shot
+    shot: esame-dettaglio
+    caption: "La pagina di un esame: i drill che lo compongono con il punteggio massimo e il numero di prove, chi lo somministra e i due modi di sostenerlo."
+
+  - type: note
+    tone: tip
+    title: "Quando un drill chiede più prove, conta la migliore"
+    text: >-
+      Accanto a un drill puoi leggere per esempio **«3 prove · conta la
+      migliore»**. Vuol dire che quel gesto lo ripeti tre volte e vale il tuo
+      risultato **migliore**, non la media e non la somma: se fai 6, 9 e 7 su
+      un drill da 10, quel drill vale 9. Chi compone l'esame decide quante
+      prove servono; sui drill a prova unica non compare nulla e si registra
+      una volta sola.
+
+  - type: heading
+    id: da_solo
+    title: "Provare da solo"
+
+  - type: steps
+    items:
+      - title: "Apri l'esame e cerca «Prova da solo»"
+        text: >-
+          Sotto **Sostieni l'esame** ci sono due riquadri affiancati. Quello a
+          sinistra è l'allenamento: tocca **«Inizia»** e il tentativo si apre
+          subito, senza chiedere niente a nessuno.
+        shot: esame-dettaglio
+      - title: "Esegui i drill nell'ordine in cui sono elencati"
+        text: >-
+          Per ogni prova compare una casella. Le riempi via via, in ordine, e
+          l'avanzamento in cima si aggiorna.
+      - title: "Puoi fermarti e riprendere"
+        text: >-
+          Se chiudi l'app a metà non perdi niente: tornando sull'esame trovi
+          **«Riprendi»** e ritrovi il tentativo dove l'avevi lasciato.
+      - title: "Chiudi l'allenamento"
+        text: >-
+          A quel punto entra nel tuo storico, insieme ai punteggi che hai
+          registrato.
+
+  - type: heading
+    id: appuntamento
+    title: "Chiedere un appuntamento"
+
+  - type: text
+    text: >-
+      L'esame certificato si fa **di persona**, quindi la prima cosa da
+      concordare è quando e dove. Si parte dalla pagina dell'esame, con
+      **«Chiedi un appuntamento»**.
+
+  - type: shot
+    shot: esame-appuntamento
+    caption: "Il modulo per chiedere un appuntamento: a quali esaminatori rivolgersi, quando e in quale sala."
+
+  - type: options
+    items:
+      - name: "A chi lo chiedi"
+        text: >-
+          Se l'esame ha più esaminatori puoi sceglierne uno, alcuni o
+          **lasciare la scelta vuota per chiederlo a tutti**. Chi accetta per
+          primo chiude la richiesta per gli altri, che ricevono un avviso.
+      - name: "Quando e dove"
+        text: >-
+          Proponi data, ora e sala. Sono una proposta, non un impegno: l'altra
+          parte può risponderti con un orario diverso.
+      - name: "Note"
+        text: "Facoltative. Servono a spiegare, non a concordare: l'accordo si fa con le proposte."
+
+  - type: heading
+    id: trattativa
+    title: "La trattativa"
+
+  - type: text
+    text: >-
+      Da lì in poi è uno scambio di proposte. L'esaminatore può accettare
+      quella che hai fatto oppure **controproporre** un altro orario; tu puoi
+      accettare la sua o rilanciare. Si va avanti finché uno dei due accetta,
+      oppure finché la richiesta scade.
+
+  - type: shot
+    shot: esame-trattativa
+    caption: "Una trattativa in corso: la proposta sul tavolo, chi l'ha fatta e lo storico degli scambi."
+
+  - type: note
+    tone: info
+    title: "Tocca a uno per volta"
+    text: >-
+      Chi ha appena proposto **aspetta la risposta**: non si può proporre due
+      volte di fila. E se avevi interpellato più esaminatori, dal momento in
+      cui uno contropropone la trattativa è fra te e lui — gli altri possono
+      solo accettare l'ultima proposta, non inserirsi nello scambio.
+
+  - type: heading
+    id: il_giorno
+    title: "Il giorno dell'esame"
+
+  - type: steps
+    items:
+      - title: "L'esaminatore apre la sessione"
+        text: "Davanti al tavolo, dalla pagina dell'appuntamento confermato."
+      - title: "Tu accetti l'inizio"
+        text: >-
+          Compare **«Accetto: iniziamo»**. Finché non lo tocchi non può essere
+          registrato nessun punteggio: nessuno viene valutato a sua insaputa.
+      - title: "Esegui, lui registra"
+        text: >-
+          Drill dopo drill, prova dopo prova, mentre l'avanzamento sale.
+        shot: esame-sessione
+      - title: "Alla fine certifica l'esito"
+        text: >-
+          **Superato** oppure **non superato**. Non c'è un voto e non c'è una
+          nota: è un fatto, non un giudizio da argomentare.
+
+  - type: note
+    tone: warning
+    title: "Senza appuntamento accettato non si comincia"
+    text: >-
+      Una sessione certificata nasce solo da un appuntamento che qualcuno ha
+      accettato. Non c'è un modo di avviarla per conto proprio, ed è quello che
+      distingue un esame che vale da un allenamento.
+
+  - type: heading
+    id: dopo
+    title: "Dopo l'esame"
+
+  - type: list
+    items:
+      - "L'esame compare nel tuo **profilo**, fra quelli sostenuti."
+      - "Se era certificato porta il segno **«certificato da …»** con la data e la sala; se era un allenamento no."
+      - "Gli **XP di certificazione** e i traguardi legati agli esami scattano solo per quelli certificati (vedi [I tuoi progressi](/aiuto/account/progressi))."
+      - "Se **non l'hai superato**, puoi chiedere di ripeterlo: si apre una richiesta nuova, come la prima volta."
+
+  - type: note
+    tone: tip
+    text: >-
+      Se una sessione si interrompe — non ti presenti, il tavolo salta, si fa
+      tardi — l'esaminatore può chiuderla **senza esito**. Non è una
+      bocciatura e non risulta come tale: è un esame che non si è svolto.
+
+  - type: faq
+    items:
+      - q: "Non vedo la sezione Esami."
+        a: "Si sblocca dopo aver completato tre drill. Fino a quel momento la voce non compare: nella pagina dei progressi la trovi fra le funzioni ancora chiuse, con quanti te ne mancano."
+      - q: "Posso ripetere lo stesso esame più volte?"
+        a: "Sì. In autonomia quando vuoi; certificato, aprendo ogni volta un nuovo appuntamento."
+      - q: "Posso chiedere un esame che somministro io?"
+        a: "No, l'app non lo permette. Chi somministra un esame non può sostenerlo: la richiesta non nasce proprio."
+      - q: "Che differenza c'è fra un esame e le challenge dentro una gara?"
+        a: "Le challenge in gara servono alla gara: sostituiscono l'X a tavolino o decidono uno spareggio. L'esame non c'entra con le gare: certifica che sai fare una sequenza di gesti."
+      - q: "L'esame conta per il rating?"
+        a: "No. Il rating misura le partite contro avversari. Gli esami alimentano lo storico dell'allenamento e i progressi personali."

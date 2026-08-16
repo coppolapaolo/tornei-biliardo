@@ -1,0 +1,179 @@
+title: "Becoming an examiner"
+section: account
+kind: tutorial
+audience: [giocatore]
+minutes: 4
+summary: "The person who certifies other people's exams: how to get the role, how to compose an exam, and what happens when a request arrives."
+screens: [roles.request_role_form, roles.role_requests, exam.manage_exams,
+  exam.manage_examiners]
+related: [esami, diventare_direttore, challenge]
+
+blocks:
+  - type: text
+    text: >-
+      An **examiner** is the person who administers exams and certifies their
+      outcome. It is a role that is **added** to what you already do: you stay
+      a player, you keep registering for competitions, and you can sit other
+      people's exams — just not the ones you administer yourself.
+
+  - type: heading
+    id: ottenerlo
+    title: "Getting the role"
+
+  - type: text
+    text: >-
+      The role unlocks by **grinding drills**: once you have completed twenty,
+      **«Become an Examiner»** appears among the drill pages. You do not ask
+      for it from your profile, and before the threshold it appears nowhere.
+
+  - type: shot
+    shot: ruolo-richiesta
+    caption: "The form for requesting the examiner role: who to forward the request to, and optional notes."
+
+  - type: steps
+    items:
+      - title: "Choose who to ask"
+        text: >-
+          You see the examiners already in place and can pick some of them, or
+          **pick none to ask them all**. If there is no examiner yet, the
+          request goes to whoever administers the platform.
+      - title: "Add a line or two, if you like"
+        text: "Notes are optional: whoever decides can see your activity anyway."
+      - title: "Wait"
+        text: >-
+          **The first one to approve grants the role**, and the request closes
+          for the others. You get a notification and the exam area appears the
+          next time you sign in.
+
+  - type: note
+    tone: info
+    text: >-
+      An examiner can grant the role to someone else: that is deliberate, and
+      it is why the platform does not stall waiting for approval from above.
+      **Revoking**, on the other hand, stays with whoever administers it.
+
+  - type: heading
+    id: richieste
+    title: "The requests that reach you"
+
+  - type: text
+    text: >-
+      As an examiner you receive two different things, and it pays not to mix
+      them up: requests from **someone who wants the role** and requests from
+      **someone who wants to sit one of your exams**.
+
+  - type: shot
+    shot: ruolo-richieste
+    caption: "Incoming role requests: approved or rejected one at a time."
+
+  - type: options
+    items:
+      - name: "Role requests"
+        text: >-
+          You approve or reject them. If you are the one who approves, the role
+          is granted and the request closes for the other examiners who were
+          asked too.
+      - name: "Exam appointments"
+        text: >-
+          A candidate proposes a date, a time and a venue. You can accept or
+          **counter-propose** another slot. See [Sitting an
+          exam](/aiuto/giocare/esami) for how the exchange works.
+
+  - type: heading
+    id: comporre
+    title: "Composing an exam"
+
+  - type: text
+    text: >-
+      From the **Manage exams** area you create the exam — name, description
+      and possibly a time limit — and **the drills are added afterwards**, from
+      the exam's own page.
+
+  - type: shot
+    shot: esame-gestione
+    caption: "The area for whoever administers exams: the ones they composed, how many candidates, and the pass rate."
+
+  - type: options
+    items:
+      - name: "The order of the drills"
+        text: >-
+          It matters: candidates face them in the sequence you set, and you can
+          move them around until it is what you wanted.
+        hint: esame.ordine_drill
+      - name: "Maximum score"
+        values: "per drill"
+        text: >-
+          You decide it exam by exam; it is not a property of the drill. A
+          drill you want to weigh more is made to weigh more by raising its
+          maximum.
+        hint: esame.punteggio_massimo
+      - name: "How many attempts"
+        values: "1 to 20"
+        text: >-
+          How many times the candidate repeats that drill. If it is more than
+          one, the drill is worth its **best attempt** — not the sum, so a
+          three-attempt drill does not weigh three times a single-attempt one.
+        hint: esame.quante_prove
+
+  - type: note
+    tone: warning
+    text: >-
+      An exam with no drills **cannot be sat**, and its page says so.
+      Composing one and leaving it empty means showing it in the catalogue
+      with nothing anyone can do about it.
+
+  - type: heading
+    id: co_esaminatori
+    title: "Administering as more than one"
+
+  - type: text
+    text: >-
+      You can add other examiners to an exam you composed: from then on a
+      candidate can turn to any of you, and whoever accepts first takes the
+      appointment.
+
+  - type: shot
+    shot: esame-esaminatori
+    caption: "The examiners of an exam: who administers it and who can be added."
+
+  - type: note
+    tone: info
+    text: >-
+      If you are the only holder of the role the screen says so, instead of
+      showing you an empty list from which you could not tell whether the
+      people are missing or the feature is.
+
+  - type: heading
+    id: certificare
+    title: "Certifying"
+
+  - type: steps
+    items:
+      - title: "Open the session at the appointment"
+        text: "From the page of the confirmed appointment, at the table."
+      - title: "Wait for the candidate to accept the start"
+        text: >-
+          Until they do **you cannot record anything**. It is not just a hidden
+          button: the block also holds for anyone trying to go around the
+          screen.
+      - title: "Record attempt by attempt"
+        text: "The boxes fill in order. Giving an attempt's number rewrites it, if you mistyped."
+        shot: esame-sessione
+      - title: "Close with the outcome"
+        text: >-
+          **Passed** or **not passed**. If the exam never happened — the
+          candidate does not turn up, the venue closes — there is **«Stop with
+          no outcome»**, which is not a fail.
+
+  - type: faq
+    items:
+      - q: "Can I edit an exam composed by someone else?"
+        a: "Only if you are a co-examiner of it, or if you administer the platform. Otherwise no."
+      - q: "Can I sit an exam that I administer?"
+        a: "No. The request does not even start: whoever administers does not certify themselves."
+      - q: "Do I need exams unlocked to be an examiner?"
+        a: "They are two separate things. You can administer exams without having unlocked the ability to sit them: you see your exams and you certify them, but the button to sit one stays closed until you complete your own drills."
+      - q: "If the role is taken away from me, what happens to the exams I certified?"
+        a: "They stay valid. Revoking closes the grant, it does not undo the work: the exams you composed and the certifications you issued are untouched."
+      - q: "What mark can I give?"
+        a: "None. The outcome is passed or not passed, with no notes. That is a choice: a mark has to be argued for, and whoever certifies is standing next to a table with a phone in their hand."

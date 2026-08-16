@@ -184,6 +184,62 @@ shots:
     as: Luca Bianchi
     caption: "Il modulo per creare una challenge: descrizione, immagine della disposizione e tipo di punteggio."
 
+  # --- Esami ---------------------------------------------------------------
+  # Gli utenti sono scelti apposta: la pagina di un esame mostra «Prova da
+  # solo» a chi non ha niente in corso e «Riprendi» a chi ha un tentativo
+  # aperto, quindi il candidato pulito (Marco Rossi) e quelli che hanno una
+  # trattativa o una sessione in corso devono essere persone diverse.
+  - id: esame-catalogo
+    route: /exam/
+    as: Marco Rossi
+    caption: "Il catalogo degli esami: le sequenze di drill che si possono sostenere."
+
+  - id: esame-dettaglio
+    route: /exam/1
+    as: Marco Rossi
+    caption: "La pagina di un esame: i drill che lo compongono con il punteggio massimo e il numero di prove, chi lo somministra e i due modi di sostenerlo."
+    viewports: [mobile, desktop]
+    # I due pulsanti stanno sotto la piega: senza la pagina intera la didascalia
+    # prometterebbe qualcosa che nell'immagine non c'e'.
+    full_page: true
+
+  - id: esame-appuntamento
+    route: /exam/1/request
+    as: Marco Rossi
+    caption: "Il modulo per chiedere un appuntamento: a quali esaminatori rivolgersi, quando e in quale sala."
+
+  - id: esame-trattativa
+    route: /exam/requests/1
+    as: Elena Ricci
+    caption: "Una trattativa in corso: la proposta sul tavolo, chi l'ha fatta e lo storico degli scambi."
+
+  - id: esame-sessione
+    route: /exam/sessions/2
+    as: Luca Bianchi
+    caption: "La sessione d'esame vista dall'esaminatore: una casella per ogni prova, l'avanzamento e i due pulsanti dell'esito."
+    viewports: [mobile, desktop]
+    full_page: true
+
+  - id: esame-gestione
+    route: /exam/manage
+    as: Luca Bianchi
+    caption: "L'area di chi somministra gli esami: quelli che ha composto, quanti candidati e il tasso di riuscita."
+
+  - id: esame-esaminatori
+    route: /exam/1/examiners
+    as: Luca Bianchi
+    caption: "Gli esaminatori di un esame: chi lo somministra e chi si può aggiungere."
+
+  - id: ruolo-richiesta
+    route: /roles/request/examiner
+    as: Marco Rossi
+    caption: "Il modulo per chiedere il ruolo di esaminatore: a chi inoltrare la richiesta e le note facoltative."
+
+  - id: ruolo-richieste
+    route: /roles/requests
+    as: Luca Bianchi
+    caption: "Le richieste di ruolo ricevute: si approvano o si rifiutano una per una."
+
   # --- Progressi e classifiche di piattaforma ------------------------------
   - id: classifiche-piattaforma
     route: /gamification/leaderboards
@@ -221,21 +277,19 @@ shots:
     as: Marco Rossi
     caption: "Le statistiche delle partite amichevoli, separate da quelle delle gare."
 
-  # Referto TPA (ADR-044): le figure mancano ancora. Il dataset c'e' gia'
-  # (`_create_tpa_referto` in seed_demo.py crea il match #1 con un primo rack
-  # annotato); per aggiungerle, rimettere qui le due voci e ricatturare:
-  #
-  #   - id: referto-tpa
-  #     route: /match/matches/1/tpa
-  #     as: Marco Rossi
-  #     caption: "Il referto TPA durante la partita: i due giocatori con il loro TPA, la casella del turno e il tastierino."
-  #     viewports: [mobile, desktop]
-  #
-  #   - id: referto-tpa-foglio
-  #     route: /match/matches/1/tpa
-  #     as: Marco Rossi
-  #     caption: "Il foglio del referto: ogni riga e' una visita al tavolo, con le bilie imbucate e il motivo per cui il turno e' finito."
-  #     clip: ".c7-tpa-sheet"
+  # Referto TPA (ADR-044). Il dataset lo crea `_create_tpa_referto` in
+  # seed_demo.py: match #1 con un primo rack gia' annotato.
+  - id: referto-tpa
+    route: /match/matches/1/tpa
+    as: Marco Rossi
+    caption: "Il referto TPA durante la partita: i due giocatori con il loro TPA, la casella del turno e il tastierino."
+    viewports: [mobile, desktop]
+
+  - id: referto-tpa-foglio
+    route: /match/matches/1/tpa
+    as: Marco Rossi
+    caption: "Il foglio del referto: ogni riga e' una visita al tavolo, con le bilie imbucate e il motivo per cui il turno e' finito."
+    clip: ".c7-tpa-sheet"
 
   - id: richieste-gestore
     route: /player/my_venue_requests

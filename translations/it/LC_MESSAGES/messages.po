@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-16 14:47+0000\n"
+"POT-Creation-Date: 2026-08-16 17:39+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app.py:522 templates/errors/403.html:3
+#: app.py:532 templates/errors/403.html:3
 msgid "Accesso negato"
 msgstr ""
 
@@ -691,7 +691,7 @@ msgstr ""
 msgid "Il referto di questo match e' gia' aperto."
 msgstr ""
 
-#: models/tpa/services.py:164 models/tpa/services.py:265
+#: models/tpa/services.py:164 models/tpa/services.py:264
 #, python-format
 msgid "Il referto lo tiene %(name)s."
 msgstr ""
@@ -700,10 +700,10 @@ msgstr ""
 msgid "Il referto e' chiuso."
 msgstr ""
 
-#: models/tpa/services.py:180 models/tpa/services.py:241
-#: models/tpa/services.py:262 routes/individual_match/tpa.py:128
-#: routes/individual_match/tpa.py:150 routes/individual_match/tpa.py:171
-#: routes/individual_match/tpa.py:181
+#: models/tpa/services.py:180 models/tpa/services.py:240
+#: models/tpa/services.py:261 routes/individual_match/tpa.py:177
+#: routes/individual_match/tpa.py:201 routes/individual_match/tpa.py:224
+#: routes/individual_match/tpa.py:234
 msgid "Referto non trovato"
 msgstr ""
 
@@ -715,23 +715,23 @@ msgstr ""
 msgid "Giocatore non valido."
 msgstr ""
 
-#: models/tpa/services.py:221
+#: models/tpa/services.py:220
 msgid "Chi spacca si sceglie prima di annotare la spaccata."
 msgstr ""
 
-#: models/tpa/services.py:226
+#: models/tpa/services.py:225
 msgid "Comando di referto sconosciuto."
 msgstr ""
 
-#: models/tpa/services.py:228
+#: models/tpa/services.py:227
 msgid "Questo comando non e' possibile adesso."
 msgstr ""
 
-#: models/tpa/services.py:246
+#: models/tpa/services.py:245
 msgid "Non c'e' niente da annullare."
 msgstr ""
 
-#: models/tpa/services.py:338
+#: models/tpa/services.py:337
 msgid ""
 "Il match ha raggiunto la distanza: prima di continuare il risultato va "
 "confermato o rifiutato."
@@ -1308,9 +1308,9 @@ msgstr ""
 #: routes/individual_match/matches.py:66
 #: routes/individual_match/proposals.py:38
 #: routes/individual_match/proposals.py:66
-#: routes/individual_match/proposals.py:384 routes/individual_match/tpa.py:118
-#: routes/individual_match/tpa.py:138 routes/individual_match/tpa.py:159
-#: routes/individual_match/tpa.py:191 routes/individual_match/views.py:34
+#: routes/individual_match/proposals.py:384 routes/individual_match/tpa.py:167
+#: routes/individual_match/tpa.py:188 routes/individual_match/tpa.py:211
+#: routes/individual_match/tpa.py:245 routes/individual_match/views.py:34
 #: routes/individual_match/views.py:82
 msgid "Errore interno del server"
 msgstr ""
@@ -1781,7 +1781,7 @@ msgid "Disponibilità rimossa"
 msgstr ""
 
 #: routes/individual_match/matches.py:50 routes/individual_match/matches.py:497
-#: routes/individual_match/tpa.py:85
+#: routes/individual_match/tpa.py:134
 msgid "Accesso negato a questo match."
 msgstr ""
 
@@ -1852,7 +1852,7 @@ msgstr ""
 msgid "Proposta rifiutata."
 msgstr ""
 
-#: routes/individual_match/tpa.py:186
+#: routes/individual_match/tpa.py:240
 msgid "Referto chiuso."
 msgstr ""
 
@@ -7547,7 +7547,7 @@ msgstr ""
 
 #: templates/components/_round_management.html:68
 #: templates/components/_unified_rack_history.html:61
-#: templates/individual_match/tpa_referto.html:131
+#: templates/individual_match/tpa_referto.html:132
 msgid "Rack"
 msgstr ""
 
@@ -8543,7 +8543,7 @@ msgstr ""
 msgid "Allenamento: non porta la certificazione."
 msgstr ""
 
-#: templates/exam/detail.html:111 templates/gamification/quests.html:110
+#: templates/exam/detail.html:111
 msgid "Inizia"
 msgstr ""
 
@@ -9208,7 +9208,12 @@ msgid_plural "%(num)d partecipanti"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/gamification/quests.html:121
+#: templates/gamification/quests.html:114
+#, python-format
+msgid "Inizia il %(data)s"
+msgstr ""
+
+#: templates/gamification/quests.html:125
 msgid "Completate"
 msgstr ""
 
@@ -11392,47 +11397,47 @@ msgstr ""
 msgid "Chiudi il referto"
 msgstr ""
 
-#: templates/individual_match/tpa_referto.html:124
+#: templates/individual_match/tpa_referto.html:125
 msgid "passa il tavolo"
 msgstr ""
 
-#: templates/individual_match/tpa_referto.html:125
+#: templates/individual_match/tpa_referto.html:126
 msgid "al tavolo"
 msgstr ""
 
-#: templates/individual_match/tpa_referto.html:126
+#: templates/individual_match/tpa_referto.html:127
 msgid "spacca"
 msgstr ""
 
-#: templates/individual_match/tpa_referto.html:127
+#: templates/individual_match/tpa_referto.html:128
 msgid "spacca lui"
 msgstr ""
 
-#: templates/individual_match/tpa_referto.html:128
+#: templates/individual_match/tpa_referto.html:129
 msgid "TPA ancora da calcolare"
 msgstr ""
 
-#: templates/individual_match/tpa_referto.html:129
+#: templates/individual_match/tpa_referto.html:130
 msgid "quante bilie?"
 msgstr ""
 
-#: templates/individual_match/tpa_referto.html:130
+#: templates/individual_match/tpa_referto.html:131
 msgid "perche' finisce il turno?"
 msgstr ""
 
-#: templates/individual_match/tpa_referto.html:132
+#: templates/individual_match/tpa_referto.html:133
 msgid "Non e' stato possibile annotare."
 msgstr ""
 
-#: templates/individual_match/tpa_referto.html:133
+#: templates/individual_match/tpa_referto.html:134
 msgid "e' entrata di sponda alla prima bilia"
 msgstr ""
 
-#: templates/individual_match/tpa_referto.html:134
+#: templates/individual_match/tpa_referto.html:135
 msgid "Ha chiuso in una sola visita?"
 msgstr ""
 
-#: templates/individual_match/tpa_referto.html:135
+#: templates/individual_match/tpa_referto.html:136
 msgid "Chiusa in una sola visita"
 msgstr ""
 

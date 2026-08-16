@@ -1,0 +1,211 @@
+title: "Sitting an exam"
+section: giocare
+kind: tutorial
+audience: [giocatore]
+minutes: 5
+summary: "Several drills in a row, in order. On your own to practise, or in front of an examiner so that passing them is on the record."
+screens: [exam.exam_catalog, exam.exam_detail, exam.request_form,
+  exam.request_list, exam.request_detail, exam.session_detail]
+related: [challenge, diventare_esaminatore, profilo_e_statistiche]
+
+blocks:
+  - type: text
+    text: >-
+      An exam is a **sequence of drills**, chosen by whoever composed it and
+      always in the same order. A single drill tells you how one shot went; an
+      exam tells you whether you can hold several shots together. If you are
+      not sure what a drill is, start from [Challenges](/aiuto/giocare/challenge).
+
+  - type: shot
+    shot: esame-catalogo
+    caption: "The exam catalogue: the drill sequences you can sit."
+
+  - type: heading
+    id: due_modi
+    title: "Two ways to sit it"
+
+  - type: options
+    items:
+      - name: "On your own"
+        values: "«Try it on your own»"
+        text: >-
+          You practise. You record the scores yourself, whenever you like, and
+          you can stop and resume. It stays in your history, but it **carries
+          no certification**: nobody was there to watch.
+        hint: esame.prova_da_solo
+      - name: "In front of an examiner"
+        values: "«Ask for an appointment»"
+        text: >-
+          In person, with an examiner watching and recording. At the end the
+          exam counts as **certified**, with the name of who certified it, the
+          date and the venue.
+        hint: esame.appuntamento
+
+  - type: note
+    tone: info
+    text: >-
+      Practice stays practice forever: there is no way to turn it into a
+      certified exam afterwards. If you want it to count, it has to be sat in
+      front of an examiner from the start.
+
+  - type: heading
+    id: la_scheda
+    title: "What an exam page tells you"
+
+  - type: text
+    text: >-
+      Before you start, the exam page tells you exactly what is coming: the
+      drills in order, the maximum score of each one, how many attempts you
+      get and **who administers it**.
+
+  - type: shot
+    shot: esame-dettaglio
+    caption: "An exam page: the drills it is made of with their maximum score and number of attempts, who administers it and the two ways to sit it."
+
+  - type: note
+    tone: tip
+    title: "When a drill asks for several attempts, the best one counts"
+    text: >-
+      Next to a drill you may read something like **«3 attempts · best one
+      counts»**. It means you repeat that shot three times and your **best**
+      result is what counts — not the average and not the sum: if you score 6,
+      9 and 7 on a drill out of 10, that drill is worth 9. Whoever composes
+      the exam decides how many attempts are needed; on single-attempt drills
+      nothing is shown and you record once.
+
+  - type: heading
+    id: da_solo
+    title: "Practising on your own"
+
+  - type: steps
+    items:
+      - title: "Open the exam and look for «Try it on your own»"
+        text: >-
+          Under **Sit the exam** there are two boxes side by side. The one on
+          the left is practice: tap **«Start»** and the attempt opens straight
+          away, without asking anyone.
+        shot: esame-dettaglio
+      - title: "Do the drills in the order they are listed"
+        text: >-
+          Each attempt gets its own box. You fill them in as you go, in order,
+          and the progress bar at the top keeps up.
+      - title: "You can stop and resume"
+        text: >-
+          Closing the app halfway loses nothing: going back to the exam you
+          find **«Resume»** and pick the attempt up where you left it.
+      - title: "Close the practice session"
+        text: >-
+          It then enters your history, together with the scores you recorded.
+
+  - type: heading
+    id: appuntamento
+    title: "Asking for an appointment"
+
+  - type: text
+    text: >-
+      A certified exam is taken **in person**, so the first thing to agree on
+      is when and where. It starts from the exam page, with **«Ask for an
+      appointment»**.
+
+  - type: shot
+    shot: esame-appuntamento
+    caption: "The form for requesting an appointment: which examiners to ask, when and at which venue."
+
+  - type: options
+    items:
+      - name: "Who you ask"
+        text: >-
+          If the exam has several examiners you can pick one, a few, or
+          **leave the choice empty to ask them all**. Whoever accepts first
+          closes the request for the others, who are notified.
+      - name: "When and where"
+        text: >-
+          You propose a date, a time and a venue. They are a proposal, not a
+          commitment: the other side can come back with a different time.
+      - name: "Notes"
+        text: "Optional. They explain, they do not settle: the agreement is made through proposals."
+
+  - type: heading
+    id: trattativa
+    title: "The back and forth"
+
+  - type: text
+    text: >-
+      From there it is an exchange of proposals. The examiner can accept yours
+      or **counter-propose** a different time; you can accept theirs or come
+      back with another. It goes on until one of you accepts, or until the
+      request expires.
+
+  - type: shot
+    shot: esame-trattativa
+    caption: "A negotiation under way: the proposal on the table, who made it, and the history of the exchange."
+
+  - type: note
+    tone: info
+    title: "One at a time"
+    text: >-
+      Whoever has just proposed **waits for the answer**: you cannot propose
+      twice in a row. And if you had asked several examiners, from the moment
+      one of them counter-proposes the negotiation is between you and them —
+      the others can only accept the latest proposal, not join the exchange.
+
+  - type: heading
+    id: il_giorno
+    title: "On the day"
+
+  - type: steps
+    items:
+      - title: "The examiner opens the session"
+        text: "At the table, from the page of the confirmed appointment."
+      - title: "You accept the start"
+        text: >-
+          **«I accept: let's start»** appears. Until you tap it no score can be
+          recorded: nobody is assessed without knowing it.
+      - title: "You play, they record"
+        text: >-
+          Drill after drill, attempt after attempt, while the progress bar
+          climbs.
+        shot: esame-sessione
+      - title: "At the end they certify the outcome"
+        text: >-
+          **Passed** or **not passed**. There is no mark and no note: it is a
+          fact, not a judgement to be argued over.
+
+  - type: note
+    tone: warning
+    title: "No accepted appointment, no start"
+    text: >-
+      A certified session can only come from an appointment somebody accepted.
+      There is no way to start one on your own, and that is what separates an
+      exam that counts from a practice session.
+
+  - type: heading
+    id: dopo
+    title: "After the exam"
+
+  - type: list
+    items:
+      - "The exam appears in your **profile**, among the ones you have sat."
+      - "If it was certified it carries the **«certified by …»** mark with the date and the venue; practice does not."
+      - "**Certification XP** and the exam-related achievements only fire for certified ones (see [Your progress](/aiuto/account/progressi))."
+      - "If you **did not pass**, you can ask to sit it again: a new request opens, just like the first time."
+
+  - type: note
+    tone: tip
+    text: >-
+      If a session breaks down — you do not turn up, the table falls through,
+      it gets too late — the examiner can close it **with no outcome**. That is
+      not a fail and is not recorded as one: it is an exam that never happened.
+
+  - type: faq
+    items:
+      - q: "I cannot see the Exams section."
+        a: "It unlocks once you have completed three drills. Until then the entry does not appear: you will find it on the progress page among the features still closed, with how many you have left."
+      - q: "Can I sit the same exam more than once?"
+        a: "Yes. On your own whenever you like; certified, by opening a new appointment each time."
+      - q: "Can I ask for an exam that I administer myself?"
+        a: "No, the app does not allow it. Whoever administers an exam cannot sit it: the request never even starts."
+      - q: "What is the difference between an exam and the challenges inside a competition?"
+        a: "Challenges inside a competition serve the competition: they replace the walkover or settle a tie. An exam has nothing to do with competitions: it certifies that you can perform a sequence of shots."
+      - q: "Does an exam count towards the rating?"
+        a: "No. The rating measures matches against opponents. Exams feed your training history and your personal progress."

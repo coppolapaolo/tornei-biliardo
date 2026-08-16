@@ -83,6 +83,29 @@ HIDE_CSS = """
 html { scroll-behavior: auto !important; }
 """
 
+# CSS per gli scatti che non sono la semplice finestra: `full_page` e `clip`.
+#
+# Un elemento `position: fixed` resta agganciato al viewport, e in entrambi i
+# casi finisce dove non deve:
+#
+#   full_page  Playwright compone la pagina scorrendola, ma la barra viene
+#              dipinta **una volta, in mezzo all'immagine**. E' il motivo per
+#              cui `full_page` era documentato e non usato da nessuna voce.
+#   clip       lo scatto di un elemento riprende la pagina gia' composta, e la
+#              barra che gli passa sopra entra nel ritaglio — il foglio del
+#              referto usciva coperto dopo una riga sola.
+#
+# Negli scatti normali la barra resta: e' vera, sta in fondo allo schermo, e
+# nasconderla mostrerebbe un'app che non esiste. Qui invece copre contenuto
+# che l'utente raggiunge scorrendo, quindi tenerla sarebbe la bugia.
+#
+# I selettori sono i due `position: fixed` reali del tema (theme-7c.css), non
+# un elenco indovinato: un selettore inesistente non da' errore, semplicemente
+# non nasconde niente, e il difetto tornerebbe in silenzio.
+OVERLAY_CSS = """
+.c7-mobilenav, #chalky-container { display: none !important; }
+"""
+
 # Cornice e numeri di richiamo. Ricalcano i token del design system (accento
 # --c7-accent) perche' le schermate annotate stanno dentro le pagine di aiuto e
 # devono sembrare parte dello stesso disegno.
@@ -374,6 +397,8 @@ def _capture_one(
 
         page.goto(f"{base_url}{shot['route']}", wait_until="networkidle")
         page.add_style_tag(content=HIDE_CSS)
+        if shot.get("full_page") or shot.get("clip"):
+            page.add_style_tag(content=OVERLAY_CSS)
 
         for selector in shot.get("click") or []:
             # Click via JS invece di `page.click`: i comandi che ci interessano
