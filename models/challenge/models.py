@@ -74,6 +74,15 @@ class Challenge(BaseModel):
     __tablename__ = "challenge"
 
     id = db.Column(db.Integer, primary_key=True)
+
+    # Il nome del drill, se chi l'ha creato gliene ha dato uno. **Facoltativo**:
+    # NULL non e' un dato mancante, e' «non ha un nome», e in quel caso il nome
+    # se lo prende dal progressivo (vedi `get_display_name`). Non si riempie con
+    # la descrizione troncata, che e' esattamente il problema da cui nasce
+    # questa colonna: venti drill che cominciano con «Disponi le bilie…» sono
+    # venti card indistinguibili.
+    title = db.Column(db.String(120), nullable=True)
+
     description = db.Column(db.Text, nullable=False)
     image_path = db.Column(db.String(255), nullable=False)
 
@@ -234,21 +243,32 @@ class Challenge(BaseModel):
         return not self.pass_fail_only and self.is_active
 
     def get_display_name(self) -> str:
-        """
-        Genera Nome Display Breve per Interfaccia Utente
+        """Il nome con cui il drill si presenta ovunque: catalogo, esami, email.
 
-        Crea una versione abbreviata della descrizione per l'utilizzo
-        in liste, tabelle e componenti UI con spazio limitato.
+        L'ordine è: il titolo scelto, altrimenti il progressivo — ``Drill 12``,
+        dove 12 è l'id. Non si ripiega più sulla descrizione troncata a 50
+        caratteri: era il comportamento di prima e faceva sembrare identici
+        drill diversi, perché le istruzioni cominciano quasi sempre allo stesso
+        modo («Disponi le bilie…»). Un numero distingue; mezza frase no.
+
+        Il fallback è testo dell'interfaccia e passa da gettext, con l'import
+        locale usato anche da ``Gara.display_name``: fuori da un contesto
+        applicativo (script, migration) gettext solleva, e lì il testo grezzo
+        va benissimo.
 
         Returns:
-            Descrizione troncata a 50 caratteri con '...' se necessario
+            Il titolo, oppure ``Drill <id>`` per i drill senza titolo.
         """
-        short_desc = (
-            self.description[:50] + "..."
-            if len(self.description) > 50
-            else self.description
-        )
-        return short_desc
+        title = (self.title or "").strip()
+        if title:
+            return title
+
+        try:
+            from flask_babel import gettext
+
+            return gettext("Drill %(number)s", number=self.id)
+        except (RuntimeError, ImportError):
+            return f"Drill {self.id}"
 
     @property
     def image_filename(self) -> Optional[str]:

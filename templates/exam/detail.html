@@ -56,6 +56,7 @@
         {% if can_edit %}
         <form method="POST" style="margin-left:auto"
               action="{{ url_for('exam.remove_challenge', exam_id=exam.id, challenge_id=ec.challenge_id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <button type="submit" class="btn btn-sm" style="background:var(--c7-err-bg);color:var(--c7-err-ink)"
                   onclick="return confirm({{ _('Togliere questo drill dall\'esame?')|tojson }})">
             {{ _("Togli") }}
@@ -105,6 +106,7 @@
   {% else %}
   <div class="c7-grid" style="grid-template-columns:1fr 1fr">
     <form method="POST" action="{{ url_for('exam.start_self_practice', exam_id=exam.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="c7-card">
         <div class="c7-rows__title">{{ _("Prova da solo") }}</div>
         <div class="c7-rows__sub">{{ _("Allenamento: non porta la certificazione.") }}</div>
@@ -139,6 +141,7 @@
   {% if can_edit %}
   <div class="c7-sechead"><h2>{{ _("Aggiungi un drill") }}</h2></div>
   <form method="POST" action="{{ url_for('exam.add_challenge', exam_id=exam.id) }}" class="c7-card">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label class="c7-label" for="challenge_id">{{ _("Drill") }}</label>
     <input class="form-control" type="number" id="challenge_id" name="challenge_id" required
            placeholder="{{ _('ID del drill') }}">

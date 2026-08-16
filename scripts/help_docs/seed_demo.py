@@ -349,6 +349,10 @@ def _create_challenges(db, director):
     modi diversi, e un catalogo con un solo tipo non lo mostrerebbe. Le immagini
     sono quelle gia' presenti in `static/uploads/challenges/`: il seed non ne
     inventa di nuove.
+
+    Le due prove hanno un **titolo**, e non e' un dettaglio: la guida consiglia
+    di darne uno, e delle schermate piene di «Drill 1» e «Drill 2» direbbero il
+    contrario di quello che c'e' scritto accanto.
     """
     from models.challenge.models import Challenge
 
@@ -359,25 +363,26 @@ def _create_challenges(db, director):
 
     specs = [
         (
-            "Spot Shot Rally — dieci tiri dalla stessa posizione: la bilia "
-            "bersaglio sul punto, la battente in mano. Un punto per ogni "
-            "imbucata riuscita.",
+            "Spot Shot Rally",
+            "Dieci tiri dalla stessa posizione: la bilia bersaglio sul punto, "
+            "la battente in mano. Un punto per ogni imbucata riuscita.",
             False,
         ),
         (
-            "Serie da otto — imbuca otto bilie di fila senza sbagliare. "
-            "Si passa o non si passa.",
+            "Serie da otto",
+            "Imbuca otto bilie di fila senza sbagliare. Si passa o non si passa.",
             True,
         ),
     ]
     create = []
-    for index, (description, pass_fail) in enumerate(specs):
+    for index, (title, description, pass_fail) in enumerate(specs):
         existing = Challenge.query.filter_by(description=description).first()
         if existing:
             create.append(existing)
             continue
         image = disponibili[index % len(disponibili)]
         challenge = Challenge(
+            title=title,
             description=description,
             image_path=f"uploads/challenges/{image.name}",
             pass_fail_only=pass_fail,

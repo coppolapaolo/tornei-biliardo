@@ -535,6 +535,7 @@ pytest tests/new/unit/ -n auto && pytest tests/new/integration/ -n 4
 | `gara.status == GaraStatus.PLAYING` | `gara.status == GaraStatus.PLAYING.value` |
 | `pytest tests/new/integration/ -n auto` | `pytest tests/new/integration/ -n 4` (SQLite deadlock) |
 | Manual `db.session.commit()` | Use `@transactional` decorator |
+| `<form method="POST">` senza `csrf_token()` | Prima riga dentro il form: `<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">`, altrimenti 400 «Sessione scaduta». **I test non lo vedono** (`WTF_CSRF_ENABLED = False`): presidio statico in `tests/new/integration/test_drill_exam_manual_findings.py` |
 | `alert('{{ _("l'errore") }}')` in JS | `alert({{ _("l'errore")\|tojson }})` |
 | `{{ _("%(count)s items")\|tojson }}` + JS replace | Use `"{count} items"` with JS replace |
 | `onclick="func({{ x\|tojson }})"` | `onclick='func({{ x\|tojson }})'` (single quotes) |

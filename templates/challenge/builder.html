@@ -200,11 +200,27 @@
   <form id="drillSaveForm" class="c7-card c7-stack" autocomplete="off">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
+    {# Un drill che si sta modificando ha i suoi valori; uno nuovo eredita
+       quelli scritti nel modulo di creazione, se si e' arrivati da li'. #}
+    {% set drill_title = challenge.title if challenge else (prefill.title if prefill) %}
+    {% set drill_text = challenge.description if challenge else (prefill.description if prefill) %}
+    {% set drill_pass_fail = challenge.pass_fail_only if challenge else (prefill and prefill.pass_fail_only) %}
+
+    <div>
+      <label for="drillTitle" class="form-label">{{ _("Titolo") }}</label>
+      <input type="text" class="form-control" id="drillTitle" name="title" maxlength="120"
+             placeholder="{{ _('es. Progressione lungo sponda') }}" value="{{ drill_title or '' }}">
+      <div class="c7-kicker" style="margin-top:6px">
+        {{ _("Facoltativo: senza, il drill prende il suo numero progressivo.") }}
+      </div>
+    </div>
+
     <div>
       <label for="drillDescription" class="form-label">{{ _("Istruzioni per chi la esegue") }}</label>
-      <textarea class="form-control" id="drillDescription" name="description" rows="3"
-                maxlength="1000" required
-                placeholder="{{ _('Come si dispongono le bilie e come si conta il punteggio') }}">{{ challenge.description if challenge }}</textarea>
+      {# Nessun `maxlength`: la colonna e' TEXT, e il tetto di 1000 caratteri
+         era del solo modulo. #}
+      <textarea class="form-control" id="drillDescription" name="description" rows="6" required
+                placeholder="{{ _('Come si dispongono le bilie e come si conta il punteggio') }}">{{ drill_text or '' }}</textarea>
       <div class="c7-kicker" style="margin-top:6px">
         {{ _("Il disegno mostra la disposizione; qui si scrive la regola.") }}
       </div>
@@ -213,10 +229,10 @@
     <div>
       <label for="drillScoring" class="form-label">{{ _("Come si conta") }}</label>
       <select class="form-select" id="drillScoring" name="pass_fail_only">
-        <option value="false" {% if challenge and not challenge.pass_fail_only %}selected{% endif %}>
+        <option value="false" {% if not drill_pass_fail %}selected{% endif %}>
           {{ _("A punteggio") }}
         </option>
-        <option value="true" {% if challenge and challenge.pass_fail_only %}selected{% endif %}>
+        <option value="true" {% if drill_pass_fail %}selected{% endif %}>
           {{ _("Superata o non superata") }}
         </option>
       </select>

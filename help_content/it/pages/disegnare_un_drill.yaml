@@ -48,12 +48,12 @@ blocks:
     caption: "«Disegna il drill» è in fondo al modulo, sotto il campo della foto."
 
   - type: note
-    tone: warning
+    tone: info
     text: >-
-      Il builder si apre in una **pagina a sé**, e quello che avevi già scritto
-      nel modulo non viene portato dietro: le istruzioni e il tipo di punteggio
-      si scrivono di là. Se hai già compilato il modulo e poi passi al disegno,
-      quel testo lo riscrivi.
+      Il builder si apre in una **pagina a sé**, ma quello che avevi già scritto
+      nel modulo se lo porta dietro: titolo, istruzioni e tipo di punteggio li
+      ritrovi già compilati in fondo, sotto il tavolo. Non c'è niente da
+      riscrivere.
 
   - type: heading
     id: schermata
@@ -262,9 +262,10 @@ blocks:
           del telefono, dove il drill verrà guardato.
       - name: "Titolo del diagramma"
         text: >-
-          Una scritta in cima al disegno, per esempio «Drill 1 — Stop shot».
-          È facoltativa: il nome con cui il drill compare nel catalogo è un'altra
-          cosa, e viene dalle istruzioni.
+          Una scritta **dentro l'immagine**, in cima al disegno, per esempio
+          «Drill 1 — Stop shot». È facoltativa, e non va confusa con il campo
+          **«Titolo»** che sta in fondo alla pagina: quello è il nome con cui il
+          drill compare nel catalogo, questo è una scritta sul disegno.
 
   - type: heading
     id: posizioni
@@ -297,13 +298,15 @@ blocks:
 
   - type: text
     text: >-
-      Sotto al tavolo, prima del pulsante di salvataggio, ci sono le due cose
-      che il disegno da solo non può dire.
+      Sotto al tavolo, prima del pulsante di salvataggio, ci sono le cose che il
+      disegno da solo non può dire.
 
   - type: steps
     items:
+      - title: "Dài un nome al drill, se vuoi"
+        text: "Il campo «Titolo» è facoltativo: è il nome con cui il drill si presenta nel catalogo. Senza, prende il suo numero — «Drill 12»."
       - title: "Scrivi le istruzioni"
-        text: "Nel campo «Istruzioni per chi la esegue»: il disegno mostra la disposizione, non la regola. Come si conta il punteggio va scritto a parole, ed è obbligatorio."
+        text: "Nel campo «Istruzioni per chi la esegue»: il disegno mostra la disposizione, non la regola. Come si conta il punteggio va scritto a parole, ed è obbligatorio. Lunghe quanto serve: non c'è un limite."
       - title: "Scegli come si conta"
         text: "«A punteggio» oppure «Superata o non superata»: le stesse due possibilità del modulo normale."
       - title: "Tocca «Salva il drill»"

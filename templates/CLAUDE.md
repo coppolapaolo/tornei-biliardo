@@ -10,6 +10,35 @@ Flask/Jinja2 templates for the American Pool community platform using Bootstrap 
 
 ## Critical Conventions
 
+### Token CSRF in ogni form che scrive (CRITICAL)
+
+`CSRFProtect` è registrato globalmente in `app.py`: protegge **ogni** POST
+senza che la route dichiari niente. L'onere sta tutto qui, nel template.
+
+```html
+<!-- ❌ SBAGLIATO - risponde 400 «Sessione scaduta», sempre -->
+<form method="POST" action="{{ url_for('exam.create_exam') }}">
+
+<!-- ✅ CORRETTO - il token è la prima riga dentro il form -->
+<form method="POST" action="{{ url_for('exam.create_exam') }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+```
+
+Per chi invia con `fetch` il token viaggia nell'header (vedi «AJAX with Flask
+Routes» più sotto): `headers: {'X-CSRFToken': csrfToken()}`. Sono due strade
+per la stessa cosa — un form che invia da solo vuole il campo nascosto, una
+chiamata JS vuole l'header.
+
+**Perché è critico, e perché i test non ti salvano**: `TestingConfig` imposta
+`WTF_CSRF_ENABLED = False`, quindi nei test un form senza token funziona
+benissimo e **nessuna prova di integrazione può accorgersene**. Il buco si
+scopre solo a mano, in sviluppo o — peggio — in produzione. Nell'agosto 2026
+tutti e 19 i form di `templates/exam/` sono nati senza: ogni singola azione
+degli esami rispondeva 400.
+
+Il presidio è statico, sul testo dei template:
+`tests/new/integration/test_drill_exam_manual_findings.py::test_ogni_form_post_ha_il_token_csrf`.
+
 ### Translated Strings in JavaScript (CRITICAL)
 
 When embedding translated strings in JavaScript, **ALWAYS use `|tojson`** filter. This prevents syntax errors from apostrophes in Italian text.
@@ -232,6 +261,7 @@ const config = {{ some_dict|tojson }};
 
 ## Do Not
 
+- **Do not write a `<form method="POST">` without `csrf_token()`** - risponde 400 «Sessione scaduta»; i test non lo vedono (`WTF_CSRF_ENABLED = False`)
 - **Do not include twice a component containing `id=` or `<script>`** - duplicate ids break `getElementById` (targets the hidden copy) and scripts run twice. For mobile/desktop reordering use flex `order-*` on a single DOM (see "L'azionabile va prima" in `docs/reference/UI_CONVENTIONS.md`); duplication (`d-md-none` + `d-none d-md-block`) only for id/script-free components (check first!)
 - **Do not embed strings in JS without `|tojson`** - Italian apostrophes break JS strings
 - **Do not use double quotes for onclick with `|tojson`** - JSON produces double quotes internally

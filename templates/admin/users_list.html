@@ -90,6 +90,12 @@
                     <option value="director">{{ _("Direttore di gara") }}</option>
                     <option value="player">{{ _("Giocatore") }}</option>
                 </select>
+                <select id="examinerFilter" class="form-select form-select-sm" style="width: auto;"
+                        aria-label="{{ _('Filtra per ruolo esaminatore') }}">
+                    <option value="">{{ _("Esaminatore: tutti") }}</option>
+                    <option value="1">{{ _("Esaminatori") }}</option>
+                    <option value="0">{{ _("Non esaminatori") }}</option>
+                </select>
                 <select id="verifiedFilter" class="form-select form-select-sm" style="width: auto;"
                         aria-label="{{ _('Filtra per verifica') }}">
                     <option value="">{{ _("Verifica: tutti") }}</option>
@@ -109,6 +115,7 @@
                         <th>{{ _("Email") }}</th>
                         <th>{{ _("Telefono") }}</th>
                         <th class="sortable" data-sort="text">{{ _("Ruolo") }} <i class="fas fa-sort text-muted"></i></th>
+                        <th class="sortable" data-sort="number">{{ _("Esaminatore") }} <i class="fas fa-sort text-muted"></i></th>
                         <th class="sortable" data-sort="number">{{ _("Verificato") }} <i class="fas fa-sort text-muted"></i></th>
                         <th class="sortable" data-sort="number">{{ _("ELO") }} <i class="fas fa-sort text-muted"></i></th>
                         <th>{{ _("Gamification") }}</th>
@@ -126,9 +133,15 @@
                     {% set total_inscriptions = user_data[1] or 0 %}
                     {% set total_matches = user_data[2] or 0 %}
                     {% set matches_won = user_data[3] or 0 %}
+                    {# `examiner_ids` e non `user.is_examiner`: la property
+                       interroga il DB a ogni chiamata, e qui siamo in un ciclo.
+                       Per l'admin torna sempre True — la colonna lo dice a
+                       parte, senza offrire comandi che non hanno senso. #}
+                    {% set is_examiner = user.id in examiner_ids %}
                     <tr data-username="{{ user.username|lower }}"
                         data-email="{{ (user.email or '')|lower }}"
                         data-role="{{ user.role }}"
+                        data-examiner="{{ '1' if is_examiner else '0' }}"
                         data-verified="{{ '1' if user.is_verified else '0' }}">
                         <td data-label="{{ _("Utente") }}">
                             <a href="{{ url_for('admin.user.user_detail', user_id=user.id) }}"
@@ -145,6 +158,17 @@
                             <span class="badge bg-secondary">{{ _("Direttore di gara") }}</span>
                             {% else %}
                             <span class="badge bg-primary">{{ _("Giocatore") }}</span>
+                            {% endif %}
+                        </td>
+                        <td data-label="{{ _("Esaminatore") }}" data-sort-value="{{ '1' if is_examiner else '0' }}">
+                            {% if user.is_admin %}
+                            <span class="text-muted" title="{{ _('Un amministratore può già fare tutto ciò che fa un esaminatore') }}">—</span>
+                            {% elif is_examiner %}
+                            <span class="badge bg-info text-dark">
+                                <i class="fas fa-user-graduate"></i> {{ _("Sì") }}
+                            </span>
+                            {% else %}
+                            <span class="badge bg-light text-muted">{{ _("No") }}</span>
                             {% endif %}
                         </td>
                         <td data-label="{{ _("Verificato") }}" data-sort-value="{{ '1' if user.is_verified else '0' }}">
@@ -210,6 +234,36 @@
                                 </form>
                                 {% endif %}
                                 {% if current_user.is_admin and not user.is_admin %}
+                                {# Ruolo esaminatore (ADR-041): ortogonale a
+                                   `user.role`, quindi si concede e si revoca
+                                   qui accanto senza toccare direttore/giocatore.
+                                   `next` riporta a questa lista invece che alla
+                                   scheda dell'utente: chi ne sta promuovendo
+                                   tre di fila non vuole tornare indietro ogni
+                                   volta. #}
+                                {% if is_examiner %}
+                                <form action="{{ url_for('roles.revoke_role', role='examiner', user_id=user.id) }}"
+                                    method="POST" style="display: inline;"
+                                    onsubmit='return confirmSubmit(this, {{ _("Revocare il ruolo di Esaminatore? Gli esami creati e le certificazioni rilasciate restano validi.")|tojson }})'>
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="next" value="{{ url_for('admin.user.users_list') }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                                            title="{{ _('Revoca il ruolo di esaminatore') }}">
+                                        <i class="fas fa-user-graduate"></i> {{ _("Revoca esaminatore") }}
+                                    </button>
+                                </form>
+                                {% else %}
+                                <form action="{{ url_for('roles.grant_role', role='examiner', user_id=user.id) }}"
+                                    method="POST" style="display: inline;"
+                                    onsubmit='return confirmSubmit(this, {{ _("Promuovere a Esaminatore?")|tojson }})'>
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="next" value="{{ url_for('admin.user.users_list') }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-info"
+                                            title="{{ _('Rendi esaminatore') }}">
+                                        <i class="fas fa-user-graduate"></i> {{ _("Rendi esaminatore") }}
+                                    </button>
+                                </form>
+                                {% endif %}
                                 {% if not user.is_verified %}
                                 <form action="{{ url_for('admin.user.verify_user_email', user_id=user.id) }}"
                                     method="POST" style="display: inline;">
@@ -284,6 +338,7 @@
     const rows = Array.from(tbody.querySelectorAll('tr'));
     const searchInput = document.getElementById('userSearch');
     const roleFilter = document.getElementById('roleFilter');
+    const examinerFilter = document.getElementById('examinerFilter');
     const verifiedFilter = document.getElementById('verifiedFilter');
     const countBadge = document.getElementById('usersVisibleCount');
     const noResults = document.getElementById('noResultsRow');
@@ -291,6 +346,7 @@
     function applyFilters() {
         const term = (searchInput.value || '').trim().toLowerCase();
         const role = roleFilter.value;
+        const examiner = examinerFilter.value;
         const verified = verifiedFilter.value;
         let visible = 0;
 
@@ -299,8 +355,9 @@
                 || (row.dataset.username || '').indexOf(term) !== -1
                 || (row.dataset.email || '').indexOf(term) !== -1;
             const matchesRole = !role || row.dataset.role === role;
+            const matchesExaminer = !examiner || row.dataset.examiner === examiner;
             const matchesVerified = !verified || row.dataset.verified === verified;
-            const show = matchesTerm && matchesRole && matchesVerified;
+            const show = matchesTerm && matchesRole && matchesExaminer && matchesVerified;
             row.classList.toggle('d-none', !show);
             if (show) visible++;
         });
@@ -311,6 +368,7 @@
 
     searchInput.addEventListener('input', applyFilters);
     roleFilter.addEventListener('change', applyFilters);
+    examinerFilter.addEventListener('change', applyFilters);
     verifiedFilter.addEventListener('change', applyFilters);
 
     // Ordinamento colonne (client-side)

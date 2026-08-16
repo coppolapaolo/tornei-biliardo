@@ -33,7 +33,7 @@ gara-gestione: "A competition as the director sees it: the «Management» panel 
 gara-iscritti: "The list of entrants as the director sees it, with the option to add or remove a player."
 campionato-gestione: "A championship page: its competitions, the overall standings and the settings."
 challenge-catalogo: "The challenge catalogue: the skill drills available, each with the ball layout."
-challenge-nuova: "The form for creating a challenge: description, scoring type, layout photo and, at the bottom, «Draw the drill» for those without a photo."
+challenge-nuova: "The form for creating a challenge: title, description, scoring type, layout photo and, at the bottom, «Draw the drill» for those without a photo."
 drill-builder: "The drill builder: the tools on one side, the table with the balls placed on the other."
 drill-builder-strumenti: "The builder's «Tools» box: Move, Shot, Free line, Text, and the buttons to undo, redo and delete."
 drill-builder-tiro: "The «Shot» box: the contact point on the cue ball, the cue elevation, the power and what to show of the shot."

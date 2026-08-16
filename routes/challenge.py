@@ -88,6 +88,7 @@ def create_challenge():
         image_path = ImagePathManager.get_challenge_db_path(image_filename)
 
         challenge = ChallengeService.create_challenge(
+            title=data.get("title"),
             description=data["description"],
             image_path=image_path,
             pass_fail_only=data.get("pass_fail_only", "false").lower() == "true",
@@ -259,9 +260,13 @@ def _save_from_builder(challenge_id=None):
     description = (data.get("description") or "").strip()
     if not description:
         raise ValidationError("Servono le istruzioni per chi esegue il drill")
+    # Facoltativo, ma inviato sempre: la stringa vuota **toglie** il titolo, ed
+    # e' quello che deve succedere a chi svuota la casella e risalva.
+    title = (data.get("title") or "").strip()
 
     if challenge_id is None:
         challenge = ChallengeService.create_challenge(
+            title=title,
             description=description,
             image_path=image_path,
             pass_fail_only=pass_fail_only,
@@ -273,6 +278,7 @@ def _save_from_builder(challenge_id=None):
         old_image = previous.image_filename if previous else None
         challenge = ChallengeService.update_challenge(
             challenge_id=challenge_id,
+            title=title,
             description=description,
             image_path=image_path,
             pass_fail_only=pass_fail_only,
@@ -301,9 +307,18 @@ def diagram_builder():
     foto ce l'ha continua a caricarla dal modulo di creazione.
     """
     if request.method == "GET":
+        # Chi arriva da «Non hai una foto?» ha già scritto qualcosa nel modulo
+        # di creazione, e quel modulo se lo porta dietro nella query string.
+        # Leggerlo qui è il pezzo che mancava: senza, il passaggio di consegne
+        # esisteva solo lato JS e il testo appena scritto spariva.
         return render_template(
             "challenge/builder.html",
             challenge=None,
+            prefill={
+                "title": request.args.get("title", ""),
+                "description": request.args.get("description", ""),
+                "pass_fail_only": request.args.get("pass_fail_only", "") == "true",
+            },
             save_url=url_for("challenge.diagram_builder"),
             cancel_url=url_for("challenge.challenge_catalog"),
         )
@@ -347,6 +362,7 @@ def edit_diagram(challenge_id):
         return render_template(
             "challenge/builder.html",
             challenge=challenge,
+            prefill=None,
             save_url=url_for("challenge.edit_diagram", challenge_id=challenge_id),
             cancel_url=url_for("challenge.challenge_detail", challenge_id=challenge_id),
         )
@@ -782,11 +798,23 @@ def edit_challenge(challenge_id):
                 new_image_path = ImagePathManager.get_challenge_db_path(image_filename)
 
     description = data["description"]
-    is_active = data.get("is_active", "false").lower() == "true"
+    # Campo assente = non si tocca. Col default a "false" ogni salvataggio
+    # **disattivava** la challenge, che sparisce dal catalogo: il modulo di
+    # modifica `is_active` non lo manda, quindi bastava correggere un refuso
+    # per far fuori il drill, senza nessun messaggio.
+    is_active = (
+        data.get("is_active").lower() == "true"
+        if data.get("is_active") is not None
+        else None
+    )
+    # `.get` e non `[...]`: chi non manda il campo non voleva toccare il titolo,
+    # chi lo manda vuoto vuole toglierlo. Sono due cose diverse.
+    title = data.get("title")
 
     return handle_ajax_service_action(
         action=lambda: ChallengeService.update_challenge(
             challenge_id=challenge_id,
+            title=title,
             description=description,
             is_active=is_active,
             image_path=new_image_path,

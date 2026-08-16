@@ -211,6 +211,17 @@
                     <i class="fas fa-hand-paper"></i>{{ _('Richieste Gestore Sala') }}
                 </a>
                 {% endif %}
+                {# La coda delle richieste di ruolo (ADR-041) aveva un solo
+                   ingresso: il catalogo delle challenge, e solo per chi e' gia'
+                   esaminatore. Per l'admin — che le puo' approvare tutte — non
+                   c'era nessun modo di arrivarci se non dalla notifica, che
+                   scade dalla lista. Oggi il ruolo concedibile e' uno solo,
+                   quindi l'etichetta lo nomina. #}
+                {% if feature_visible('roles.role_requests') %}
+                <a href="{{ url_for('roles.role_requests') }}" class="{{ 'is-active' if ep == 'roles.role_requests' }}">
+                    <i class="fas fa-user-graduate"></i>{{ _('Richieste Esaminatore') }}
+                </a>
+                {% endif %}
             </nav>
 
             <nav class="c7-side__group">
@@ -465,6 +476,7 @@
                         {% if current_user.is_authenticated and not debug_info.current_user_info.is_examiner %}
                         <form method="POST" action="{{ url_for('roles.debug_self_grant', role='examiner') }}"
                               style="display:inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <input type="hidden" name="next" value="{{ request.full_path }}">
                             <button type="submit" class="btn btn-warning quick-login-btn">
                                 Diventa esaminatore
@@ -618,6 +630,7 @@
     <div class="modal fade" id="saveResetModal" tabindex="-1" aria-labelledby="saveResetModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <form method="POST" action="{{ url_for('main.save_reset_snapshot') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="saveResetModalLabel">Save Reset Snapshot</h5>

@@ -22,13 +22,31 @@ blocks:
 
   - type: text
     text: >-
-      The **Challenges** section gathers every drill available, with its
-      description, the picture of the layout and the scoring rules. You can
-      keep some as favourites to find them quickly.
+      The **Challenges** section gathers every drill available. Each card shows
+      the picture of the layout, the **name of the drill** in bold and, below
+      it, the first lines of the instructions. You can keep some as favourites
+      to find them quickly.
 
   - type: shot
     shot: challenge-catalogo
     caption: "The catalogue: each drill has its picture and scoring type."
+
+  - type: text
+    text: >-
+      Above the **All**, **Mine** and **Favourites** tabs there is the
+      **«Search the title or the instructions…»** box: as you type, only the
+      drills containing that word are left, across all three tabs at once, and
+      the numbers next to the tab names update by themselves. If nothing
+      matches, it tells you.
+
+  - type: note
+    tone: info
+    title: "Why a drill is called «Drill 7»"
+    text: >-
+      The title is optional. Whoever creates a drill can give it a name — and
+      then that is what you read everywhere, in the catalogue, in exams and in
+      competitions — or leave it blank, and then the drill takes its number:
+      **Drill 7**.
 
   - type: heading
     id: allenarsi
@@ -127,12 +145,30 @@ blocks:
 
   - type: text
     text: >-
-      A competition director can add challenges to the catalogue: description,
-      a picture of the ball layout and the scoring type.
+      A competition director can add challenges to the catalogue: title,
+      instructions, a picture of the ball layout and the scoring type.
 
   - type: shot
     shot: challenge-nuova
     caption: "The form for creating a challenge. At the bottom, «Draw the drill» for those without a photo."
+
+  - type: options
+    items:
+      - name: "Title"
+        values: "optional"
+        text: >-
+          The name the drill goes by everywhere. Without one, it takes its
+          number — «Drill 12». It is worth writing: twenty drills that all begin
+          with «Set the balls up…» cannot be told apart in the catalogue.
+        hint: challenge.titolo
+      - name: "What the player has to do"
+        text: >-
+          The instructions. **There is no length limit**: involved rules can be
+          written out in full, without having to cut them short.
+      - name: "How it is scored"
+        values: "scored · pass or fail"
+        text: >-
+          The two options explained above, under «Two ways of counting».
 
   - type: note
     tone: tip

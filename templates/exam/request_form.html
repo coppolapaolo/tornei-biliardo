@@ -25,6 +25,7 @@
   </div>
   {% else %}
   <form method="POST" action="{{ url_for('exam.create_request', exam_id=exam.id) }}" class="c7-stack">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
     {# ── A chi (US-P4) ────────────────────────────────────────────────── #}
     <div class="c7-sechead">

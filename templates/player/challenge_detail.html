@@ -6,10 +6,11 @@
 <a class="c7-head__back d-lg-none" href="{{ url_for('challenge.challenge_catalog') }}"
    aria-label="{{ _('Torna al catalogo') }}"><i class="fas fa-arrow-left"></i></a>
 {% endblock %}
-{# `get_display_name()` tronca a 50 caratteri: come titolo, su 390px sono
-   quattro righe di testata appiccicata. Qui basta riconoscerla — il testo
-   intero e' nella card delle istruzioni, subito sotto. #}
-{% block page_title %}{{ challenge.description|truncate(30, True, "…") }}{% endblock %}
+{# `get_display_name()` non tronca piu' la descrizione a 50 caratteri: e' il
+   titolo scelto, o il progressivo. Sta in testata senza diventare quattro
+   righe appiccicate su 390px, e le istruzioni per intero restano nella card
+   qui sotto. #}
+{% block page_title %}{{ challenge.get_display_name() }}{% endblock %}
 {% block page_sub %}
 {{ _("Challenge riuscita o no") if challenge.pass_fail_only else _("Challenge a punteggio") }}
 {% endblock %}

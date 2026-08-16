@@ -23,6 +23,7 @@
       </div>
       {% if user.id != exam.examiner_id %}
       <form method="POST" action="{{ url_for('exam.remove_examiner', exam_id=exam.id, user_id=user.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="btn btn-sm"
                 style="background:var(--c7-err-bg);color:var(--c7-err-ink)">{{ _("Togli") }}</button>
       </form>
@@ -34,6 +35,7 @@
   <div class="c7-sechead"><h2>{{ _("Aggiungi un esaminatore") }}</h2></div>
   {% if candidates %}
   <form method="POST" action="{{ url_for('exam.add_examiner', exam_id=exam.id) }}" class="c7-card">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label class="c7-label" for="user_id">{{ _("Chi") }}</label>
     <select class="form-control" id="user_id" name="user_id" required>
       {% for user in candidates %}
