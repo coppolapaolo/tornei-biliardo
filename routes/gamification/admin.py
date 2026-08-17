@@ -10,6 +10,7 @@ from utils.route_helpers import handle_service_action
 from models.base import db, utc_now
 from models.gamification.level_service import LevelService
 from models.gamification.quest_service import QuestService
+from models.gamification.achievement_metrics import AchievementMetrics
 from models.gamification.achievement_service import AchievementService
 from models.gamification.streak_service import StreakService
 from models.gamification.models import (
@@ -306,8 +307,42 @@ def admin_create_achievement():
         achievement=None,
         categories=AchievementCategory,
         difficulties=AchievementDifficulty,
+        requirement_types=sorted(AchievementMetrics.COUNTABLE_TYPES),
+        requirement_type_labels=_requirement_type_labels(),
         page_title=_("Crea Nuovo Achievement"),
     )
+
+
+def _requirement_type_labels() -> dict[str, str]:
+    """Etichette leggibili per i requirement type conteggiabili.
+
+    La mappa e' *solo* per la resa: l'elenco autorevole e'
+    `AchievementMetrics.COUNTABLE_TYPES`, e il template ripiega sul nome grezzo
+    per un tipo senza etichetta. Cosi' aggiungere un resolver lo rende subito
+    creabile da interfaccia — al peggio con un nome brutto, mai invisibile.
+
+    **Va ricostruita a ogni richiesta, e non e' una svista.** Le stringhe
+    passano da `gettext`, che risolve nella lingua della richiesta corrente:
+    con `functools.lru_cache` o una costante a livello di modulo il primo
+    chiamante congelerebbe la propria lingua per tutti gli altri. Misurato:
+    fuori da una richiesta (cioe' all'import) la stessa chiamata rende
+    «Vittorie partita», mentre in una richiesta inglese rende «Match wins».
+    Undici voci allocate per una pagina di sola amministrazione non sono un
+    costo; servire l'italiano a chi ha scelto l'inglese lo e'.
+    """
+    return {
+        "match_wins": _("Vittorie partita"),
+        "tournament_participation": _("Partecipazioni a gara"),
+        "tournament_wins": _("Vittorie di gara"),
+        "tournament_podium": _("Podi di gara"),
+        "unique_opponents": _("Avversari diversi affrontati"),
+        "match_proposals_created": _("Proposte di partita create"),
+        "match_proposals_accepted": _("Proposte di partita accettate"),
+        "win_streak": _("Serie di vittorie consecutive"),
+        "strategies_tried": _("Formule di gara provate"),
+        "challenges_completed": _("Drill completati"),
+        "perfect_challenges": _("Drill eseguiti alla perfezione"),
+    }
 
 
 @gamification_bp.route(

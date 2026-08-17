@@ -23,9 +23,13 @@ from __future__ import annotations
 from typing import Optional, Dict, Any
 
 from models.base import db
+from models.status_enum import MatchStatus
 
-# Stati che indicano una partita effettivamente giocata (non solo programmata).
-_PLAYED_MATCH_STATUSES = ("completed", "validated")
+# Stati che indicano una partita effettivamente giocata (non solo programmata):
+# chiusa dal direttore o confermata dai due giocatori. Derivato dall'enum e non
+# scritto a mano, perche' una metrica che filtra sulla stringa sbagliata non
+# solleva — conta zero, e l'achievement non si sblocca mai.
+_PLAYED_MATCH_STATUSES = MatchStatus.finished_values()
 
 
 class AchievementMetrics:

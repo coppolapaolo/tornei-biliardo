@@ -13,11 +13,14 @@
   <h2 class="mb-3" style="font-size:17px">{{ _('I tuoi match') }}</h2>
   <div class="c7-grid" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">
     {% for match in vm.current_matches|sort(attribute='round_number') %}
-      {# NB: solo CLOSED_UNILATERALLY, non `is_finished`. Sostituzione fedele
-         al comportamento precedente: una partita confermata dai due giocatori
-         (CONFIRMED_BY_BOTH) qui non risulta completata, e la coppa del
-         vincitore non compare. Se sia voluto o no e' una domanda aperta. #}
-      {% set is_completed = match.status == MatchStatus.CLOSED_UNILATERALLY.value %}
+      {# Entrambi gli stati finali, non solo la chiusura del direttore: una
+         partita confermata dai due giocatori e' finita quanto l'altra.
+         Il ramo e' comunque difensivo — `vm.current_matches` porta qui solo
+         partite attive (le tre query in dashboard_service/section_builders
+         filtrano PENDING|PLAYING, «le completate vanno nello storico»), quindi
+         oggi non si vede. Scritto giusto perche' il giorno che quella query
+         cambiasse, meta' delle partite finite sparirebbe senza un errore. #}
+      {% set is_completed = MatchStatus.is_finished(match.status) %}
       {% set is_trio = match.is_trio and match.trio_match %}
       {% set is_winner = (current_user.id == match.winner_id) if is_completed else false %}
       <div class="c7-card d-flex flex-column gap-3">

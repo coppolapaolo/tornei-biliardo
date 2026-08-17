@@ -72,14 +72,18 @@
               </div>
               <div class="col-md-4 mb-3">
                 <label for="requirement_type" class="form-label">{{ _('Tipo Requisito') }}</label>
+                {# I tipi vengono da AchievementMetrics.COUNTABLE_TYPES, non da
+                   un elenco scritto qui. Questo form ha un solo campo numerico
+                   e salva `{"type": ..., "count": N}`: sono esattamente i
+                   requisiti "conta N" a poterlo usare. I tipi a logica propria
+                   (win_rate, level_reached, weekly_streak, category_reached)
+                   leggono chiavi su misura (percentage/min_matches, level,
+                   weeks, category) che da qui non si possono comporre, e vanno
+                   dichiarati nei seed. #}
                 <select class="form-select" id="requirement_type" name="requirement_type">
-                  <option value="match_wins">{{ _('Vittorie Match') }}</option>
-                  <option value="matches_played">{{ _('Match Giocati') }}</option>
-                  <option value="tournament_wins">{{ _('Vittorie Torneo') }}</option>
-                  <option value="tournaments_played">{{ _('Tornei Giocati') }}</option>
-                  <option value="win_streak">{{ _('Serie Vincente') }}</option>
-                  <option value="xp_total">{{ _('XP Totale') }}</option>
-                  <option value="level_reached">{{ _('Livello Raggiunto') }}</option>
+                  {% for tipo in requirement_types %}
+                  <option value="{{ tipo }}">{{ requirement_type_labels.get(tipo, tipo) }}</option>
+                  {% endfor %}
                 </select>
               </div>
               <div class="col-md-4 mb-3">
