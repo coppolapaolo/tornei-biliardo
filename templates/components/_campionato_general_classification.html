@@ -3,7 +3,7 @@
 <div class="card mb-4">
     <div class="card-header bg-primary text-white">
         <h5 class="mb-0">
-            <i class="fas fa-trophy"></i> Classifica dopo Gara {{ last_completed_gara_number }}
+            <i class="fas fa-trophy"></i> {{ _("Classifica dopo Gara %(num)s", num=last_completed_gara_number) }}
         </h5>
     </div>
     <div class="card-body">
@@ -11,20 +11,20 @@
             <table class="table table-sm table-hover">
                 <thead>
                     <tr>
-                        <th width="10%">Pos.</th>
-                        <th width="30%">Giocatore</th>
+                        <th width="10%">{{ _("Pos.") }}</th>
+                        <th width="30%">{{ _("Giocatore") }}</th>
                         {% if campionato.campionato_type|lower == 'amalfi' %}
-                            <th width="15%">Match Vinti</th>
-                            <th width="15%">Diff. Rack</th>
+                            <th width="15%">{{ _("Match Vinti") }}</th>
+                            <th width="15%">{{ _("Diff. Rack") }}</th>
                         {% elif campionato.campionato_type|lower == 'random' %}
-                            <th width="15%">Rack Totali</th>
-                            <th width="15%">Punti SSR</th>
+                            <th width="15%">{{ _("Rack Totali") }}</th>
+                            <th width="15%">{{ _("Punti SSR") }}</th>
                         {% else %}
-                            <th width="15%">Punti Totali</th>
-                            <th width="15%">Diff. Rack Tot.</th>
+                            <th width="15%">{{ _("Punti Totali") }}</th>
+                            <th width="15%">{{ _("Diff. Rack Tot.") }}</th>
                         {% endif %}
-                        <th width="15%">Partecipazioni</th>
-                        <th width="15%">Trend</th>
+                        <th width="15%">{{ _("Partecipazioni") }}</th>
+                        <th width="15%">{{ _("Trend") }}</th>
                     </tr>
                 </thead>
                 <tbody>

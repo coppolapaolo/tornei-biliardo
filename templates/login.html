@@ -26,7 +26,7 @@
         </div>
 
         <div>
-            <label for="password" class="form-label">Password</label>
+            <label for="password" class="form-label">{{ _("Password") }}</label>
             <input type="password" id="password" class="form-control" name="password" autocomplete="current-password" required>
             <div class="form-text" style="text-align: right;">
                 <a href="{{ url_for('auth.forgot_password') }}">{{ _('Password dimenticata?') }}</a>

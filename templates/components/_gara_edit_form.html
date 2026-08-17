@@ -298,6 +298,7 @@
         const antiRematchWarning = document.getElementById('anti_rematch_warning');
         const antiRematchWarningText = document.getElementById('anti_rematch_warning_text');
         const form = document.querySelector('form');
+        const antiRematchWarningTemplate = {{ _("Con anti-rematch attivo e {maxParticipants} partecipanti massimi, puoi avere al massimo {maxRounds} turni (ogni giocatore può incontrare al massimo {maxRounds} avversari unici)")|tojson }};
 
         function validateAntiRematchConstraint() {
             const antiRematchEnabled = antiRematchCheck && antiRematchCheck.checked;
@@ -309,10 +310,9 @@
                 if (roundsCount > maxRounds) {
                     if (antiRematchWarning && antiRematchWarningText) {
                         antiRematchWarning.style.display = 'flex';
-                        antiRematchWarningText.textContent =
-                            `Con anti-rematch attivo e ${maxParticipants} partecipanti massimi, ` +
-                            `puoi avere al massimo ${maxRounds} turni ` +
-                            `(ogni giocatore può incontrare al massimo ${maxRounds} avversari unici)`;
+                        antiRematchWarningText.textContent = antiRematchWarningTemplate
+                            .replace('{maxParticipants}', maxParticipants)
+                            .replace(/\{maxRounds\}/g, maxRounds);
                     }
                     if (roundsCountInput) roundsCountInput.classList.add('is-invalid');
                     return false;

@@ -1,7 +1,7 @@
 <!-- templates/admin/venues_list.html - Lista sale biliardo per admin -->
 {% extends "base.html" %}
 
-{% block title %}Gestione Sale Biliardo - Admin{% endblock %}
+{% block title %}{{ _("Gestione Sale Biliardo") }} - Admin{% endblock %}
 
 {% block page_back %}
 <a class="c7-head__back d-lg-none" href="{{ url_for('dashboard.dashboard') }}"
@@ -19,7 +19,7 @@
 
 <div class="card">
     <div class="card-header">
-        <h5><i class="fas fa-list"></i> Tutte le Sale Biliardo ({{ venues_with_stats|length }})</h5>
+        <h5><i class="fas fa-list"></i> {{ _("Tutte le Sale Biliardo") }} ({{ venues_with_stats|length }})</h5>
     </div>
     <div class="card-body">
         {% if venues_with_stats %}
@@ -27,15 +27,15 @@
                 <table class="table table-striped">
                     <thead>
                         <tr>
-                            <th>Nome</th>
-                            <th>Indirizzo</th>
-                            <th>Città</th>
-                            <th>Tavoli</th>
-                            <th>Utenti Attivi</th>
-                            <th>Partite</th>
-                            <th>Gestore</th>
-                            <th>Stato</th>
-                            <th>Azioni</th>
+                            <th>{{ _("Nome") }}</th>
+                            <th>{{ _("Indirizzo") }}</th>
+                            <th>{{ _("Città") }}</th>
+                            <th>{{ _("Tavoli") }}</th>
+                            <th>{{ _("Utenti Attivi") }}</th>
+                            <th>{{ _("Partite") }}</th>
+                            <th>{{ _("Gestore") }}</th>
+                            <th>{{ _("Stato") }}</th>
+                            <th>{{ _("Azioni") }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -56,7 +56,7 @@
                                     {% if venue.number_of_tables %}
                                         <span class="badge bg-info">{{ venue.number_of_tables }}</span>
                                     {% else %}
-                                        <span class="text-muted">Non specificato</span>
+                                        <span class="text-muted">{{ _("Non specificato") }}</span>
                                     {% endif %}
                                 </td>
                                 <td>
@@ -69,35 +69,35 @@
                                     {% if manager %}
                                         <div>
                                             <strong class="text-success">{{ manager.username }}</strong>
-                                            <small class="d-block text-muted">Gestore attivo</small>
+                                            <small class="d-block text-muted">{{ _("Gestore attivo") }}</small>
                                         </div>
                                     {% else %}
-                                        <span class="text-muted">Nessun gestore</span>
+                                        <span class="text-muted">{{ _("Nessun gestore") }}</span>
                                     {% endif %}
                                     {% if pending_requests %}
                                         <div class="mt-1">
-                                            <span class="badge bg-warning">{{ pending_requests|length }} richieste</span>
+                                            <span class="badge bg-warning">{{ _("%(count)s richieste", count=pending_requests|length) }}</span>
                                         </div>
                                     {% endif %}
                                 </td>
                                 <td>
                                     {% if venue.is_active %}
-                                        <span class="badge bg-success">Attiva</span>
+                                        <span class="badge bg-success">{{ _("Attiva") }}</span>
                                     {% else %}
-                                        <span class="badge bg-danger">Disattivata</span>
+                                        <span class="badge bg-danger">{{ _("Disattivata") }}</span>
                                     {% endif %}
                                     <br>
                                     {% if venue.verified %}
                                         <span class="badge bg-success mt-1">
-                                            <i class="fas fa-check-circle"></i> Verificata
+                                            <i class="fas fa-check-circle"></i> {{ _("Verificata") }}
                                         </span>
                                     {% elif venue.can_be_verified() %}
                                         <span class="badge bg-warning text-dark mt-1">
-                                            <i class="fas fa-clock"></i> In attesa di verifica
+                                            <i class="fas fa-clock"></i> {{ _("In attesa di verifica") }}
                                         </span>
                                     {% else %}
                                         <span class="badge bg-secondary mt-1">
-                                            <i class="fas fa-info-circle"></i> Dati incompleti
+                                            <i class="fas fa-info-circle"></i> {{ _("Dati incompleti") }}
                                         </span>
                                     {% endif %}
                                 </td>
@@ -105,34 +105,34 @@
                                     <div class="btn-group-vertical btn-group-sm" role="group">
                                         <!-- Azioni principali -->
                                         <div class="btn-group" role="group">
-                                            <a href="{{ url_for('admin.venue.venue_detail', venue_id=venue.id) }}" 
+                                            <a href="{{ url_for('admin.venue.venue_detail', venue_id=venue.id) }}"
                                                class="btn btn-sm btn-primary">
                                                 {% if is_current_user_manager %}
-                                                    <i class="fas fa-cog"></i> Gestisci
+                                                    <i class="fas fa-cog"></i> {{ _("Gestisci") }}
                                                 {% else %}
-                                                    <i class="fas fa-eye"></i> Dettagli
+                                                    <i class="fas fa-eye"></i> {{ _("Dettagli") }}
                                                 {% endif %}
                                             </a>
-                                            <a href="{{ url_for('admin.venue.edit_venue', venue_id=venue.id) }}" 
+                                            <a href="{{ url_for('admin.venue.edit_venue', venue_id=venue.id) }}"
                                                class="btn btn-sm btn-outline-primary">
-                                                <i class="fas fa-edit"></i> Modifica
+                                                <i class="fas fa-edit"></i> {{ _("Modifica") }}
                                             </a>
                                             {% if venue.is_active %}
                                             <form action="{{ url_for('admin.venue.delete_venue', venue_id=venue.id) }}"
                                                   method="POST" style="display: inline;"
-                                                  onsubmit="return confirmSubmit(this, 'Disattivare la sala {{ venue.name }}?')">
+                                                  onsubmit='return confirmSubmit(this, {{ _("Disattivare la sala %(name)s?", name=venue.name)|tojson }})'>
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                                 <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                    <i class="fas fa-times"></i> Disattiva
+                                                    <i class="fas fa-times"></i> {{ _("Disattiva") }}
                                                 </button>
                                             </form>
                                             {% else %}
                                             <form action="{{ url_for('admin.venue.activate_venue', venue_id=venue.id) }}"
                                                   method="POST" style="display: inline;"
-                                                  onsubmit="return confirmSubmit(this, 'Attivare la sala {{ venue.name }}?')">
+                                                  onsubmit='return confirmSubmit(this, {{ _("Attivare la sala %(name)s?", name=venue.name)|tojson }})'>
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                                 <button type="submit" class="btn btn-sm btn-outline-success">
-                                                    <i class="fas fa-check"></i> Attiva
+                                                    <i class="fas fa-check"></i> {{ _("Attiva") }}
                                                 </button>
                                             </form>
                                             {% endif %}
@@ -143,9 +143,9 @@
                                         <div class="btn-group mt-1" role="group">
                                             {% for request in pending_requests %}
                                             <div class="btn-group" role="group">
-                                                <button type="button" class="btn btn-sm btn-outline-warning" 
-                                                        data-bs-toggle="tooltip" 
-                                                        title="Richiesta di {{ request.user.username }}">
+                                                <button type="button" class="btn btn-sm btn-outline-warning"
+                                                        data-bs-toggle="tooltip"
+                                                        title="{{ _('Richiesta di %(username)s', username=request.user.username) }}">
                                                     <i class="fas fa-user-plus"></i> {{ request.user.username|truncate(8) }}
                                                 </button>
                                                 <div class="btn-group" role="group">
@@ -154,8 +154,8 @@
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                                         <input type="hidden" name="action" value="approve">
                                                         <button type="button" class="btn btn-sm btn-success"
-                                                                data-bs-toggle="tooltip" title="Approva richiesta"
-                                                                onclick="confirmSubmit(this.closest('form'), 'Approvare la richiesta di {{ request.user.username }} per gestire {{ venue.name }}?')">
+                                                                data-bs-toggle="tooltip" title="{{ _('Approva richiesta') }}"
+                                                                onclick='confirmSubmit(this.closest("form"), {{ _("Approvare la richiesta di %(username)s per gestire %(venue)s?", username=request.user.username, venue=venue.name)|tojson }})'>
                                                             <i class="fas fa-check"></i>
                                                         </button>
                                                     </form>
@@ -164,8 +164,8 @@
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                                         <input type="hidden" name="action" value="reject">
                                                         <button type="button" class="btn btn-sm btn-danger"
-                                                                data-bs-toggle="tooltip" title="Rifiuta richiesta"
-                                                                onclick="confirmSubmit(this.closest('form'), 'Rifiutare la richiesta di {{ request.user.username }} per gestire {{ venue.name }}?')">
+                                                                data-bs-toggle="tooltip" title="{{ _('Rifiuta richiesta') }}"
+                                                                onclick='confirmSubmit(this.closest("form"), {{ _("Rifiutare la richiesta di %(username)s per gestire %(venue)s?", username=request.user.username, venue=venue.name)|tojson }})'>
                                                             <i class="fas fa-times"></i>
                                                         </button>
                                                     </form>
@@ -174,16 +174,16 @@
                                             {% endfor %}
                                         </div>
                                         {% endif %}
-                                        
+
                                         <!-- Azione per revocare gestore esistente -->
                                         {% if manager and manager_assignment %}
                                         <div class="btn-group mt-1" role="group">
                                             <form action="{{ url_for('admin.venue.revoke_venue_manager', assignment_id=manager_assignment.id) }}"
                                                   method="POST" style="display: inline;"
-                                                  onsubmit="return confirmSubmit(this, 'Revocare la gestione di {{ venue.name }} a {{ manager.username }}?')">
+                                                  onsubmit='return confirmSubmit(this, {{ _("Revocare la gestione di %(venue)s a %(username)s?", venue=venue.name, username=manager.username)|tojson }})'>
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                                 <button type="submit" class="btn btn-sm btn-warning">
-                                                    <i class="fas fa-user-times"></i> Revoca Gestore
+                                                    <i class="fas fa-user-times"></i> {{ _("Revoca Gestore") }}
                                                 </button>
                                             </form>
                                         </div>
@@ -197,10 +197,10 @@
             </div>
         {% else %}
             <div class="alert alert-info text-center">
-                <h5><i class="fas fa-building"></i> Nessuna Sala Biliardo</h5>
-                <p>Non ci sono ancora sale biliardo registrate.</p>
+                <h5><i class="fas fa-building"></i> {{ _("Nessuna Sala Biliardo") }}</h5>
+                <p>{{ _("Non ci sono ancora sale biliardo registrate.") }}</p>
                 <a href="{{ url_for('admin.venue.create_venue') }}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Aggiungi la Prima Sala
+                    <i class="fas fa-plus"></i> {{ _("Aggiungi la Prima Sala") }}
                 </a>
             </div>
         {% endif %}

@@ -378,7 +378,9 @@
 {% block scripts %}
 <script>
     function deleteProva(provaId, provaNumber) {
-        showConfirm(`Sei SICURO di voler eliminare la Gara ${provaNumber}?\n\nQuesta azione è IRREVERSIBILE!`, () => {
+        const deleteProvaMsg = {{ _("Sei SICURO di voler eliminare la Gara {number}?\n\nQuesta azione è IRREVERSIBILE!")|tojson }}
+            .replace('{number}', provaNumber);
+        showConfirm(deleteProvaMsg, () => {
             fetch(`/admin/gara/${provaId}/delete`, {
                 method: 'POST',
                 headers: {
@@ -464,6 +466,10 @@
     }
 
     // Funzione per aggiornare testo modalità di gioco nel modal creazione
+    const i18nGameMode = {
+        exactNumber: {{ _("Esatto numero: {distance} rack totali")|tojson }},
+        raceTo: {{ _("Al {distance} (si vince a {distance} rack)")|tojson }}
+    };
     function updateCreateGameModeText() {
         const distance = parseInt(createDistanceInput.value) || 7;
         const isExactNumber = createExactNumberCheck.checked;
@@ -472,10 +478,10 @@
         createExactNumberCheck.parentElement.parentElement.style.opacity = '1';
 
         if (isExactNumber && !createExactNumberCheck.disabled) {
-            createGameModeText.textContent = `Esatto numero: ${distance} rack totali`;
+            createGameModeText.textContent = i18nGameMode.exactNumber.replace('{distance}', distance);
         } else {
             const winScore = Math.floor(distance / 2) + 1;
-            createGameModeText.textContent = `Al ${distance} (si vince a ${distance} rack)`;
+            createGameModeText.textContent = i18nGameMode.raceTo.replace(/\{distance\}/g, distance);
         }
     }
 

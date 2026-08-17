@@ -99,7 +99,7 @@
               </button>
               <form action="{{ url_for('gamification.admin_delete_streak_milestone', milestone_id=milestone.id) }}"
                     method="POST" class="d-inline"
-                    onsubmit="return confirmSubmit(this, {{ _('Eliminare questo milestone?')|tojson }})">
+                    onsubmit='return confirmSubmit(this, {{ _('Eliminare questo milestone?')|tojson }})'>
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="btn btn-sm btn-outline-danger">
                   <i class="fas fa-trash"></i>

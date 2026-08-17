@@ -58,7 +58,7 @@
               action="{{ url_for('exam.remove_challenge', exam_id=exam.id, challenge_id=ec.challenge_id) }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <button type="submit" class="btn btn-sm" style="background:var(--c7-err-bg);color:var(--c7-err-ink)"
-                  onclick="return confirm({{ _('Togliere questo drill dall\'esame?')|tojson }})">
+                  onclick='return confirm({{ _('Togliere questo drill dall\'esame?')|tojson }})'>
             {{ _("Togli") }}
           </button>
         </form>

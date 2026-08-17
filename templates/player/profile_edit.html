@@ -1,38 +1,38 @@
 {% extends "base.html" %}
-{% block title %}Modifica Informazioni Personali - {{ user.username }}{% endblock %}
+{% block title %}{{ _("Modifica Informazioni Personali") }} - {{ user.username }}{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
   <div class="col-md-7">
     <div class="card">
       <div class="card-header">
-        <h4><i class="fas fa-user-edit"></i> Modifica Informazioni personali</h4>
+        <h4><i class="fas fa-user-edit"></i> {{ _("Modifica Informazioni personali") }}</h4>
       </div>
       <div class="card-body">
         <form method="POST" action="{{ url_for('player.edit_profile') }}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <div class="mb-3">
-            <label class="form-label" for="username">Username</label>
+            <label class="form-label" for="username">{{ _("Username") }}</label>
             <input id="username" name="username" type="text" class="form-control" required value="{{ user.username }}">
-            <div class="form-text text-muted">L'username deve essere unico</div>
+            <div class="form-text text-muted">{{ _("L'username deve essere unico") }}</div>
           </div>
           <div class="mb-3">
-            <label class="form-label" for="email">Email</label>
+            <label class="form-label" for="email">{{ _("Email") }}</label>
             <input id="email" name="email" type="email" class="form-control" required value="{{ user.email }}">
             {% if user.is_verified %}
-            <div class="form-text text-success"><i class="fas fa-check-circle"></i> Email verificata</div>
+            <div class="form-text text-success"><i class="fas fa-check-circle"></i> {{ _("Email verificata") }}</div>
             {% else %}
             <div class="form-text text-warning">
-              <i class="fas fa-exclamation-triangle"></i> Email non verificata.
+              <i class="fas fa-exclamation-triangle"></i> {{ _("Email non verificata.") }}
               <button type="submit" formaction="{{ url_for('player.request_verification_email') }}"
                 class="btn btn-link btn-sm p-0 align-baseline text-warning fw-bold" style="text-decoration: none;">
-                Invia link di verifica
+                {{ _("Invia link di verifica") }}
               </button>
             </div>
             {% endif %}
           </div>
           <div class="mb-3">
-            <label class="form-label" for="phone">Telefono</label>
+            <label class="form-label" for="phone">{{ _("Telefono") }}</label>
             <input id="phone" name="phone" type="text" class="form-control" value="{{ user.phone or '' }}">
           </div>
           <div class="mb-3">
@@ -54,10 +54,10 @@
           </div>
           <div class="d-flex gap-2">
             <button type="submit" class="btn btn-primary">
-              <i class="fas fa-save"></i> Salva
+              <i class="fas fa-save"></i> {{ _("Salva") }}
             </button>
             <a class="btn btn-outline-secondary" href="{{ url_for('player.profile') }}">
-              Annulla
+              {{ _("Annulla") }}
             </a>
           </div>
         </form>

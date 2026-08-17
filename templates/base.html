@@ -225,7 +225,7 @@
             </nav>
 
             <nav class="c7-side__group">
-                <span class="c7-side__grouplabel">Gamification</span>
+                <span class="c7-side__grouplabel">{{ _('Gamification') }}</span>
                 <a href="{{ url_for('gamification.admin_dashboard') }}" class="{{ 'is-active' if ep.startswith('gamification.admin') }}">
                     <i class="fas fa-medal"></i>{{ _('Traguardi e XP') }}
                 </a>
@@ -237,7 +237,7 @@
 
             {% if debug_info.debug_mode %}
             <nav class="c7-side__group">
-                <span class="c7-side__grouplabel">Debug</span>
+                <span class="c7-side__grouplabel">{{ _('Debug') }}</span>
                 <a href="{{ url_for('main.reset_database') }}"><i class="fas fa-bomb"></i>{{ _('Reset DB') }}</a>
             </nav>
             {% endif %}
@@ -448,30 +448,30 @@
     {% if debug_info.debug_mode %}
     <footer class="debug-footer">
         <div class="container">
-            <h6><i class="fas fa-bug"></i> DEBUG MODE - Informazioni Sistema</h6>
+            <h6><i class="fas fa-bug"></i> {{ _('DEBUG MODE - Informazioni Sistema') }}</h6>
             <div class="row">
                 <div class="col-md-3">
                     <div class="debug-item">
-                        <strong>Utente:</strong>
+                        <strong>{{ _('Utente:') }}</strong>
                         <span class="debug-value">{{ debug_info.current_user_info.username }}</span>
                         {% if debug_info.current_user_info.is_admin %}
                         <span class="badge bg-success">ADMIN</span>
                         {% endif %}
                     </div>
                     <div class="debug-item">
-                        <strong>User ID:</strong>
+                        <strong>{{ _('User ID:') }}</strong>
                         <span class="debug-value">{{ debug_info.current_user_info.id or 'N/A' }}</span>
                     </div>
                     {# I due gate dell'area esami, mostrati separati perché sono
                        ortogonali: il ruolo (L1) e la progressione (L2). Se la
                        sezione non compare, qui si vede quale dei due manca. #}
                     <div class="debug-item">
-                        <strong>Esami:</strong>
+                        <strong>{{ _('Esami:') }}</strong>
                         <span class="badge {{ 'bg-success' if debug_info.current_user_info.is_examiner else 'bg-secondary' }}">
-                            esaminatore {{ 'sì' if debug_info.current_user_info.is_examiner else 'no' }}
+                            {{ _('esaminatore') }} {{ _('sì') if debug_info.current_user_info.is_examiner else _('no') }}
                         </span>
                         <span class="badge {{ 'bg-success' if debug_info.current_user_info.gamification_override else 'bg-secondary' }}">
-                            override {{ 'sì' if debug_info.current_user_info.gamification_override else 'no' }}
+                            {{ _('override') }} {{ _('sì') if debug_info.current_user_info.gamification_override else _('no') }}
                         </span>
                         {% if current_user.is_authenticated and not debug_info.current_user_info.is_examiner %}
                         <form method="POST" action="{{ url_for('roles.debug_self_grant', role='examiner') }}"
@@ -479,7 +479,7 @@
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <input type="hidden" name="next" value="{{ request.full_path }}">
                             <button type="submit" class="btn btn-warning quick-login-btn">
-                                Diventa esaminatore
+                                {{ _('Diventa esaminatore') }}
                             </button>
                         </form>
                         {% endif %}
@@ -487,17 +487,17 @@
                 </div>
                 <div class="col-md-3">
                     <div class="debug-item">
-                        <strong>Endpoint:</strong>
+                        <strong>{{ _('Endpoint:') }}</strong>
                         <span class="debug-value">{{ debug_info.request_endpoint }}</span>
                     </div>
                     <div class="debug-item">
-                        <strong>Method:</strong>
+                        <strong>{{ _('Method:') }}</strong>
                         <span class="debug-value">{{ debug_info.request_method }}</span>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="debug-item">
-                        <strong>Database:</strong>
+                        <strong>{{ _('Database:') }}</strong>
                         {% if debug_info.database_stats %}
                         Users: <span class="debug-value">{{ debug_info.database_stats.users }}</span> |
                         Campionati: <span class="debug-value">{{ debug_info.database_stats.campionati }}</span> |
@@ -505,18 +505,18 @@
                         Inscriptions: <span class="debug-value">{{ debug_info.database_stats.inscriptions }}</span> |
                         Matches: <span class="debug-value">{{ debug_info.database_stats.matches }}</span>
                         {% else %}
-                        <span class="debug-value">Not accessible</span>
+                        <span class="debug-value">{{ _('Not accessible') }}</span>
                         {% endif %}
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="debug-item">
-                        <strong>Database:</strong><br>
-                        <a href="{{ url_for('main.reset_database') }}" class="text-warning">Reset DB</a> |
-                        <a href="#" data-bs-toggle="modal" data-bs-target="#saveResetModal" class="text-success">Save Reset</a>
+                        <strong>{{ _('Database:') }}</strong><br>
+                        <a href="{{ url_for('main.reset_database') }}" class="text-warning">{{ _('Reset DB') }}</a> |
+                        <a href="#" data-bs-toggle="modal" data-bs-target="#saveResetModal" class="text-success">{{ _('Save Reset') }}</a>
                     </div>
                     <div class="debug-item">
-                        <strong>Quick Login:</strong><br>
+                        <strong>{{ _('Quick Login:') }}</strong><br>
                         {% for u in debug_info.quick_login_users %}
                             {% if u.is_admin %}{% set btn_class = 'btn-danger' %}
                             {% elif u.is_director %}{% set btn_class = 'btn-warning' %}
@@ -529,32 +529,32 @@
                         {% endfor %}
                     </div>
                     <div class="debug-item">
-                        <strong>Test Fixtures:</strong><br>
+                        <strong>{{ _('Test Fixtures:') }}</strong><br>
                         <a href="{{ url_for('main.debug_create_player') }}" class="btn btn-success quick-login-btn">
-                            + Player
+                            + {{ _('Player') }}
                         </a>
                         {% if request.endpoint == 'admin.competition.gara_detail' and gara and gara.id %}
                         <a href="{{ url_for('main.debug_fill_gara', gara_id=gara.id) }}"
                             class="btn btn-warning quick-login-btn">
-                            Fill Gara
+                            {{ _('Fill Gara') }}
                         </a>
                         <a href="{{ url_for('main.debug_inscribe_next_player', gara_id=gara.id) }}"
                             class="btn btn-success quick-login-btn">
-                            + Iscrivi
+                            + {{ _('Iscrivi') }}
                         </a>
                         <a href="{{ url_for('main.debug_complete_current_round', gara_id=gara.id) }}"
                             class="btn btn-info quick-login-btn"
-                            onclick="return confirmLink(this, 'Completare i match in corso del turno attuale con risultati random?')">
-                            Complete Round
+                            onclick='return confirmLink(this, {{ _("Completare i match in corso del turno attuale con risultati random?")|tojson }})'>
+                            {{ _('Complete Round') }}
                         </a>
                         <a href="{{ url_for('main.debug_complete_next_match', gara_id=gara.id) }}"
                             class="btn btn-info quick-login-btn">
-                            Complete Match
+                            {{ _('Complete Match') }}
                         </a>
                         <a href="{{ url_for('main.debug_complete_gara', gara_id=gara.id) }}"
                             class="btn btn-danger quick-login-btn"
-                            onclick="return confirmLink(this, 'Completare l intera gara con risultati random fino alla fine?')">
-                            Complete Gara
+                            onclick='return confirmLink(this, {{ _("Completare l'intera gara con risultati random fino alla fine?")|tojson }})'>
+                            {{ _('Complete Gara') }}
                         </a>
                         {% endif %}
                     </div>
@@ -570,7 +570,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="confirmModalLabel">{{ _('Conferma') }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Close') }}"></button>
                 </div>
                 <div class="modal-body" id="confirmModalBody"></div>
                 <div class="modal-footer">
@@ -633,22 +633,22 @@
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="saveResetModalLabel">Save Reset Snapshot</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <h5 class="modal-title" id="saveResetModalLabel">{{ _('Save Reset Snapshot') }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Close') }}"></button>
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label for="saveResetName" class="form-label">Nome snapshot</label>
+                            <label for="saveResetName" class="form-label">{{ _('Nome snapshot') }}</label>
                             <input type="text" class="form-control" id="saveResetName" name="name" required>
                         </div>
                         <div class="mb-3">
-                            <label for="saveResetDescription" class="form-label">Descrizione (opzionale)</label>
+                            <label for="saveResetDescription" class="form-label">{{ _('Descrizione (opzionale)') }}</label>
                             <input type="text" class="form-control" id="saveResetDescription" name="description">
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
-                        <button type="submit" class="btn btn-success">Salva</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Annulla') }}</button>
+                        <button type="submit" class="btn btn-success">{{ _('Salva') }}</button>
                     </div>
                 </div>
             </form>

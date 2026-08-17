@@ -127,7 +127,7 @@
       <form method="POST" action="{{ url_for('exam.cancel_request', request_id=exam_request.id) }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="btn btn-outline-secondary btn-sm"
-                onclick="return confirm({{ _('Ritirare la richiesta?')|tojson }})">
+                onclick='return confirm({{ _('Ritirare la richiesta?')|tojson }})'>
           {{ _("Ritira la richiesta") }}
         </button>
       </form>

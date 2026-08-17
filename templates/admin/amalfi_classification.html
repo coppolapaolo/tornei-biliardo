@@ -4,9 +4,9 @@
 
 {% block title %}
     {% if is_random_strategy %}
-        Classifica - {{ gara.get_display_name() }}
+        {{ _("Classifica - %(name)s", name=gara.get_display_name()) }}
     {% else %}
-        Classifica Turno {{ round_number }} - Gara {{ gara.number }}
+        {{ _("Classifica Turno %(round_number)s - Gara %(gara_number)s", round_number=round_number, gara_number=gara.number) }}
     {% endif %}
 {% endblock %}
 
@@ -14,13 +14,13 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         {% if is_random_strategy %}
-            <h1><i class="fas fa-trophy"></i> Classifica</h1>
+            <h1><i class="fas fa-trophy"></i> {{ _("Classifica") }}</h1>
         {% else %}
-            <h1><i class="fas fa-trophy"></i> Classifica Turno {{ round_number }}</h1>
+            <h1><i class="fas fa-trophy"></i> {{ _("Classifica Turno %(round_number)s", round_number=round_number) }}</h1>
         {% endif %}
         <p class="text-muted mb-0">
             {% if gara.campionato %}
-                {{ gara.campionato.name }} - Gara {{ gara.number }} - {{ gara.date|date_local }}
+                {{ gara.campionato.name }} - {{ _("Gara %(number)s", number=gara.number) }} - {{ gara.date|date_local }}
             {% else %}
                 {{ gara.name }} - {{ gara.date|date_local }}
             {% endif %}
@@ -28,7 +28,7 @@
     </div>
     <div>
         <a href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left"></i> Torna alla Gara
+            <i class="fas fa-arrow-left"></i> {{ _("Torna alla Gara") }}
         </a>
     </div>
 </div>

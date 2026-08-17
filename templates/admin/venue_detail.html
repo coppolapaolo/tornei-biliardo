@@ -42,24 +42,24 @@
     <div class="col-lg-8">
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between">
-                <h5><i class="fas fa-info-circle"></i> Informazioni Generali</h5>
+                <h5><i class="fas fa-info-circle"></i> {{ _("Informazioni Generali") }}</h5>
                 <div>
                     {% if venue.verified %}
                         <span class="badge bg-success">
-                            <i class="fas fa-check-circle"></i> Verificata
+                            <i class="fas fa-check-circle"></i> {{ _("Verificata") }}
                         </span>
                     {% else %}
                         <span class="badge bg-warning">
-                            <i class="fas fa-clock"></i> Non Verificata
+                            <i class="fas fa-clock"></i> {{ _("Non Verificata") }}
                         </span>
                     {% endif %}
                     {% if venue.is_active %}
                         <span class="badge bg-success ms-2">
-                            <i class="fas fa-circle-check"></i> Attiva
+                            <i class="fas fa-circle-check"></i> {{ _("Attiva") }}
                         </span>
                     {% else %}
                         <span class="badge bg-danger ms-2">
-                            <i class="fas fa-circle-xmark"></i> Disattivata
+                            <i class="fas fa-circle-xmark"></i> {{ _("Disattivata") }}
                         </span>
                     {% endif %}
                 </div>
@@ -67,48 +67,48 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <p><strong>Nome:</strong> {{ venue.name }}</p>
-                        <p><strong>Indirizzo:</strong> 
+                        <p><strong>{{ _("Nome:") }}</strong> {{ venue.name }}</p>
+                        <p><strong>{{ _("Indirizzo:") }}</strong>
                             {% if venue.address %}
                                 <a href="https://www.google.com/maps/search/?api=1&query={{ venue.get_full_address()|urlencode }}"
                                 target="_blank">
                                     {{venue.address}}
                                 </a>
                             {% else %}
-                                Non specificato
+                                {{ _("Non specificato") }}
                             {% endif %}
                         </p>
-                        <p><strong>Città:</strong> {{ venue.city or 'Non specificata' }}</p>
-                        <p><strong>CAP:</strong> {{ venue.postal_code or 'Non specificato' }}</p>
-                        <p><strong>Paese:</strong> {{ venue.country }}</p>
+                        <p><strong>{{ _("Città:") }}</strong> {{ venue.city or _("Non specificata") }}</p>
+                        <p><strong>{{ _("CAP:") }}</strong> {{ venue.postal_code or _("Non specificato") }}</p>
+                        <p><strong>{{ _("Paese:") }}</strong> {{ venue.country }}</p>
                     </div>
                     <div class="col-md-6">
-                        <p><strong>Telefono:</strong> 
+                        <p><strong>{{ _("Telefono:") }}</strong>
                             {% if venue.phone %}
                                 <a href="tel:{{ venue.phone }}">{{ venue.phone }}</a>
                             {% else %}
-                                Non specificato
+                                {{ _("Non specificato") }}
                             {% endif %}
                         </p>
-                        <p><strong>Email:</strong> 
+                        <p><strong>{{ _("Email:") }}</strong>
                             {% if venue.email %}
                                 <a href="mailto:{{ venue.email }}">{{ venue.email }}</a>
                             {% else %}
-                                Non specificata
+                                {{ _("Non specificata") }}
                             {% endif %}
                         </p>
-                        <p><strong>Sito Web:</strong> 
+                        <p><strong>{{ _("Sito Web:") }}</strong>
                             {% if venue.website %}
                                 <a href="{{ venue.website }}" target="_blank">{{ venue.website }}</a>
                             {% else %}
-                                Non specificato
+                                {{ _("Non specificato") }}
                             {% endif %}
                         </p>
-                        <p><strong>Tariffa Oraria:</strong> 
+                        <p><strong>{{ _("Tariffa Oraria:") }}</strong>
                             {% if venue.hourly_rate %}
                                 {{ venue.hourly_rate }} {{ venue.currency }}
                             {% else %}
-                                Non specificata
+                                {{ _("Non specificata") }}
                             {% endif %}
                         </p>
                     </div>
@@ -119,16 +119,16 @@
         <!-- Tavoli e Servizi -->
         <div class="card mb-4">
             <div class="card-header">
-                <h5><i class="fas fa-table"></i> Tavoli e Servizi</h5>
+                <h5><i class="fas fa-table"></i> {{ _("Tavoli e Servizi") }}</h5>
             </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <p><strong>Numero Tavoli:</strong> {{ venue.number_of_tables or 'Non specificato' }}</p>
-                        
+                        <p><strong>{{ _("Numero Tavoli:") }}</strong> {{ venue.number_of_tables or _("Non specificato") }}</p>
+
                         <!-- Gestione numerazione tavoli -->
                         <div class="mt-3">
-                            <strong>Numerazione Tavoli:</strong>
+                            <strong>{{ _("Numerazione Tavoli:") }}</strong>
                             {% set table_numbers = [] %}
                             {% for amenity in venue.get_amenities() %}
                                 {% if amenity.startswith("Tavoli:") %}
@@ -138,28 +138,28 @@
                             {% if table_numbers %}
                                 <p class="text-success">{{ table_numbers[0].replace("Tavoli: ", "") }}</p>
                             {% else %}
-                                <p class="text-muted">Standard (1-{{ venue.number_of_tables or 'N' }})</p>
+                                <p class="text-muted">{{ _("Standard") }} (1-{{ venue.number_of_tables or 'N' }})</p>
                             {% endif %}
-                            
-                            <form action="{{ url_for('admin.venue.update_table_numbers', venue_id=venue.id) }}" 
+
+                            <form action="{{ url_for('admin.venue.update_table_numbers', venue_id=venue.id) }}"
                                   method="POST" class="mt-2">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <div class="input-group">
-                                    <input type="text" 
-                                           name="table_numbers" 
-                                           class="form-control" 
-                                           placeholder="es: 1,2,3,A,B,C"
+                                    <input type="text"
+                                           name="table_numbers"
+                                           class="form-control"
+                                           placeholder="{{ _('es: 1,2,3,A,B,C') }}"
                                            value="{% if table_numbers %}{{ table_numbers[0].replace('Tavoli: ', '') }}{% endif %}">
                                     <button type="submit" class="btn btn-outline-primary">
-                                        <i class="fas fa-save"></i> Aggiorna
+                                        <i class="fas fa-save"></i> {{ _("Aggiorna") }}
                                     </button>
                                 </div>
-                                <small class="text-muted">Inserisci i numeri/nomi dei tavoli separati da virgola</small>
+                                <small class="text-muted">{{ _("Inserisci i numeri/nomi dei tavoli separati da virgola") }}</small>
                             </form>
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <p><strong>Tipi di Tavoli:</strong></p>
+                        <p><strong>{{ _("Tipi di Tavoli:") }}</strong></p>
                         {% set table_types = stats.table_types %}
                         {% if table_types %}
                             <ul class="list-unstyled">
@@ -168,10 +168,10 @@
                                 {% endfor %}
                             </ul>
                         {% else %}
-                            <p class="text-muted">Non specificati</p>
+                            <p class="text-muted">{{ _("Non specificati") }}</p>
                         {% endif %}
-                        
-                        <p><strong>Servizi:</strong></p>
+
+                        <p><strong>{{ _("Servizi:") }}</strong></p>
                         {% set filtered_amenities = [] %}
                         {% for amenity in stats.amenities %}
                             {% if not amenity.startswith("Tavoli:") and not amenity.startswith("Foto:") %}
@@ -185,7 +185,7 @@
                                 {% endfor %}
                             </ul>
                         {% else %}
-                            <p class="text-muted">Non specificati</p>
+                            <p class="text-muted">{{ _("Non specificati") }}</p>
                         {% endif %}
                     </div>
                 </div>
@@ -198,49 +198,49 @@
         <!-- Gestione Sala -->
         <div class="card mb-4">
             <div class="card-header">
-                <h5><i class="fas fa-user-cog"></i> Gestione Sala</h5>
+                <h5><i class="fas fa-user-cog"></i> {{ _("Gestione Sala") }}</h5>
             </div>
             <div class="card-body">
                 {% if manager %}
                     <div class="text-center mb-3">
                         <i class="fas fa-user-circle fa-3x text-primary mb-2"></i>
                         <h6><a href="{{ url_for('admin.user.user_detail', user_id=manager.id) }}" class="text-decoration-none">{{ manager.username }}</a></h6>
-                        <small class="text-muted">Gestore Attuale</small>
+                        <small class="text-muted">{{ _("Gestore Attuale") }}</small>
                     </div>
                     <form method="POST" action="{{ url_for('admin.venue.revoke_venue_manager', assignment_id=manager.id) }}"
-                          onsubmit="return confirmSubmit(this, 'Sei sicuro di voler revocare la gestione di questa sala?')">
+                          onsubmit='return confirmSubmit(this, {{ _("Sei sicuro di voler revocare la gestione di questa sala?")|tojson }})'>
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button type="submit" class="btn btn-outline-danger btn-sm w-100">
-                            <i class="fas fa-user-times"></i> Revoca Gestione
+                            <i class="fas fa-user-times"></i> {{ _("Revoca Gestione") }}
                         </button>
                     </form>
                 {% else %}
                     <p class="text-muted text-center mb-3">
                         <i class="fas fa-user-slash fa-2x"></i><br>
-                        Nessun gestore assegnato
+                        {{ _("Nessun gestore assegnato") }}
                     </p>
                 {% endif %}
-                
+
                 {% if eligible_users %}
                     <hr>
                     <form method="POST" action="{{ url_for('admin.venue.assign_venue_manager', venue_id=venue.id) }}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <div class="mb-3">
                             <label for="user_id" class="form-label">
-                                {% if manager %}Cambia Gestore{% else %}Assegna Gestore{% endif %}
+                                {% if manager %}{{ _("Cambia Gestore") }}{% else %}{{ _("Assegna Gestore") }}{% endif %}
                             </label>
                             <select class="form-select" name="user_id" id="user_id" required>
-                                <option value="">Seleziona utente...</option>
+                                <option value="">{{ _("Seleziona utente...") }}</option>
                                 {% for user in eligible_users %}
                                     <option value="{{ user.id }}">
-                                        {{ user.username }} 
-                                        {% if user.is_admin %}(Admin){% elif user.is_director %}(Director){% endif %}
+                                        {{ user.username }}
+                                        {% if user.is_admin %}({{ _("Admin") }}){% elif user.is_director %}({{ _("Director") }}){% endif %}
                                     </option>
                                 {% endfor %}
                             </select>
                         </div>
                         <button type="submit" class="btn btn-primary btn-sm w-100">
-                            <i class="fas fa-user-plus"></i> Assegna Gestore
+                            <i class="fas fa-user-plus"></i> {{ _("Assegna Gestore") }}
                         </button>
                     </form>
                 {% endif %}
@@ -250,15 +250,15 @@
         <!-- Statistiche -->
         <div class="card mb-4">
             <div class="card-header">
-                <h5><i class="fas fa-chart-bar"></i> Statistiche</h5>
+                <h5><i class="fas fa-chart-bar"></i> {{ _("Statistiche") }}</h5>
             </div>
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span>Utenti Attivi:</span>
+                    <span>{{ _("Utenti Attivi:") }}</span>
                     <span class="badge bg-primary fs-6">{{ stats.active_users_count }}</span>
                 </div>
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span>Partite Giocate:</span>
+                    <span>{{ _("Partite Giocate:") }}</span>
                     <span class="badge bg-success fs-6">{{ stats.total_matches_played }}</span>
                 </div>
             </div>
@@ -267,7 +267,7 @@
         <!-- Foto -->
         <div class="card mb-4">
             <div class="card-header">
-                <h5><i class="fas fa-camera"></i> Foto</h5>
+                <h5><i class="fas fa-camera"></i> {{ _("Foto") }}</h5>
             </div>
             <div class="card-body">
                 {% set photos = [] %}
@@ -282,27 +282,27 @@
                         {# Remove static/ prefix since it's already in the path #}
                         {% set clean_path = photo_path.replace("static/", "", 1) if photo_path.startswith("static/") else photo_path %}
                         <img src="{{ url_for('static', filename=clean_path) }}"
-                             alt="Foto {{ venue.name }}"
+                             alt="{{ _('Foto %(name)s', name=venue.name) }}"
                              class="venue-photo mb-2">
                     {% endfor %}
                 {% else %}
-                    <p class="text-muted text-center">Nessuna foto caricata</p>
+                    <p class="text-muted text-center">{{ _("Nessuna foto caricata") }}</p>
                 {% endif %}
-                
-                <form action="{{ url_for('admin.venue.upload_photo', venue_id=venue.id) }}" 
-                      method="POST" 
+
+                <form action="{{ url_for('admin.venue.upload_photo', venue_id=venue.id) }}"
+                      method="POST"
                       enctype="multipart/form-data"
                       class="mt-3">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="mb-3">
-                        <input type="file" 
-                               name="photo" 
-                               class="form-control" 
-                               accept="image/*" 
+                        <input type="file"
+                               name="photo"
+                               class="form-control"
+                               accept="image/*"
                                required>
                     </div>
                     <button type="submit" class="btn btn-primary w-100">
-                        <i class="fas fa-upload"></i> Carica Foto
+                        <i class="fas fa-upload"></i> {{ _("Carica Foto") }}
                     </button>
                 </form>
             </div>
@@ -312,7 +312,7 @@
         {% if venue.business_hours %}
         <div class="card mb-4">
             <div class="card-header">
-                <h5><i class="fas fa-clock"></i> Orari</h5>
+                <h5><i class="fas fa-clock"></i> {{ _("Orari") }}</h5>
             </div>
             <div class="card-body">
                 <pre class="text-muted">{{ venue.business_hours }}</pre>

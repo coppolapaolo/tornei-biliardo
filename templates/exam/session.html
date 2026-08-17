@@ -132,7 +132,7 @@
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="passed" value="1">
         <button type="submit" class="btn btn-success"
-                onclick="return confirm({{ _('Certificare l\'esame come superato?')|tojson }})">
+                onclick='return confirm({{ _('Certificare l\'esame come superato?')|tojson }})'>
           {{ _("Superato") }}
         </button>
       </form>
@@ -140,7 +140,7 @@
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="passed" value="0">
         <button type="submit" class="btn" style="background:var(--c7-err-bg);color:var(--c7-err-ink)"
-                onclick="return confirm({{ _('Certificare l\'esame come non superato?')|tojson }})">
+                onclick='return confirm({{ _('Certificare l\'esame come non superato?')|tojson }})'>
           {{ _("Non superato") }}
         </button>
       </form>
@@ -156,7 +156,7 @@
   <form method="POST" action="{{ url_for('exam.abandon_attempt', attempt_id=attempt.id) }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <button type="submit" class="btn btn-outline-secondary btn-sm"
-            onclick="return confirm({{ _('Interrompere la sessione senza esito?')|tojson }})">
+            onclick='return confirm({{ _('Interrompere la sessione senza esito?')|tojson }})'>
       {{ _("Interrompi senza esito") }}
     </button>
   </form>

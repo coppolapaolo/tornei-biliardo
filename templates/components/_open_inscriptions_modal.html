@@ -3,7 +3,7 @@
     <div class="modal-dialog modal-fullscreen-sm-down">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Apri Iscrizioni</h5>
+                <h5 class="modal-title">{{ _("Apri Iscrizioni") }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form action="{{ url_for('admin.competition.open_inscriptions', gara_id=gara.id) }}" method="POST" id="inscriptionForm">
@@ -25,8 +25,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
-                    <button type="submit" class="btn btn-success">Apri Iscrizioni</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _("Annulla") }}</button>
+                    <button type="submit" class="btn btn-success">{{ _("Apri Iscrizioni") }}</button>
                 </div>
             </form>
         </div>

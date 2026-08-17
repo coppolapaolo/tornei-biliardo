@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Crea Gara Singola{% endblock %}
+{% block title %}{{ _("Crea Gara Singola") }}{% endblock %}
 
 {% block content %}
 <style>
@@ -93,8 +93,8 @@
             <div class="d-flex align-items-center mb-4">
                 <span class="fs-2 me-3">🎱</span>
                 <div>
-                    <h2 class="mb-0">Crea Gara Singola</h2>
-                    <p class="text-muted mb-0">Procedura guidata per la creazione di una competizione indipendente.</p>
+                    <h2 class="mb-0">{{ _("Crea Gara Singola") }}</h2>
+                    <p class="text-muted mb-0">{{ _("Procedura guidata per la creazione di una competizione indipendente.") }}</p>
                 </div>
             </div>
 
@@ -114,23 +114,23 @@
                     <div class="card shadow-sm mb-4">
                         <div class="card-body">
                             <h5 class="card-title mb-4"><i class="fas fa-info-circle text-primary me-2"></i> 1.
-                                Informazioni Pubbliche</h5>
-                            <p class="text-muted small">Questi dati saranno visibili ai giocatori e servono a
-                                identificare la gara.</p>
+                                {{ _("Informazioni Pubbliche") }}</h5>
+                            <p class="text-muted small">{{ _("Questi dati saranno visibili ai giocatori e servono a
+                                identificare la gara.") }}</p>
 
                             <div class="mb-3">
-                                <label for="name" class="form-label">Nome Competizione <span
+                                <label for="name" class="form-label">{{ _("Nome Competizione") }} <span
                                         class="text-danger">*</span></label>
                                 <input type="text" class="form-control form-control-lg" id="name" name="name"
-                                    placeholder="es. Memorial Rossi 2025" required>
+                                    placeholder="{{ _('es. Memorial Rossi 2025') }}" required>
                                 <input type="hidden" name="number" value="1">
                             </div>
 
                             <div class="mb-3">
-                                <label for="discipline" class="form-label">Disciplina <span
+                                <label for="discipline" class="form-label">{{ _("Disciplina") }} <span
                                         class="text-danger">*</span></label>
                                 <select class="form-select" id="discipline" name="discipline" required>
-                                    <option value="">Seleziona disciplina...</option>
+                                    <option value="">{{ _("Seleziona disciplina...") }}</option>
                                     {% for value, label in discipline_choices %}
                                     <option value="{{ value }}">{{ label }}</option>
                                     {% endfor %}
@@ -139,44 +139,44 @@
 
                             <div class="row">
                                 <div class="col-sm-7 mb-3">
-                                    <label for="date" class="form-label">Data <span class="text-danger">*</span></label>
+                                    <label for="date" class="form-label">{{ _("Data") }} <span class="text-danger">*</span></label>
                                     <input type="date" class="form-control" id="date" name="date" required>
                                 </div>
                                 <div class="col-sm-5 mb-3">
-                                    <label for="time" class="form-label">Ora Inizio</label>
+                                    <label for="time" class="form-label">{{ _("Ora Inizio") }}</label>
                                     <input type="time" class="form-control" id="time" name="time" value="20:00">
                                 </div>
                             </div>
 
                             <div class="mb-3">
-                                <label for="location" class="form-label">Luogo</label>
+                                <label for="location" class="form-label">{{ _("Luogo") }}</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
                                     <input type="text" class="form-control" id="location" name="location"
-                                        placeholder="es. Circolo Biliardo Milano" list="venue-suggestions"
+                                        placeholder="{{ _('es. Circolo Biliardo Milano') }}" list="venue-suggestions"
                                         autocomplete="off">
                                 </div>
                                 <datalist id="venue-suggestions">
                                     {% if verified_venues %}
                                     {% for venue in verified_venues %}
                                     <option value="{{ venue.name }}" data-tables="{{ venue.number_of_tables or 0 }}">
-                                        {{ venue.name }} - {{ venue.city or 'Città non specificata' }}
+                                        {{ venue.name }} - {{ venue.city or _('Città non specificata') }}
                                     </option>
                                     {% endfor %}
                                     {% endif %}
                                 </datalist>
-                                <small class="text-muted">Seleziona una sala esistente o scrivine una nuova.</small>
+                                <small class="text-muted">{{ _("Seleziona una sala esistente o scrivine una nuova.") }}</small>
                             </div>
 
                             <div class="mb-3">
-                                <label for="available_tables" class="form-label">Tavoli Disponibili</label>
+                                <label for="available_tables" class="form-label">{{ _("Tavoli Disponibili") }}</label>
                                 <input type="text" class="form-control" id="available_tables" name="available_tables"
-                                    placeholder="es: 3 oppure 2,3,5">
-                                <small class="text-muted">Numero di tavoli oppure elenco specifico separato da virgole</small>
+                                    placeholder="{{ _('es: 3 oppure 2,3,5') }}">
+                                <small class="text-muted">{{ _("Numero di tavoli oppure elenco specifico separato da virgole") }}</small>
                             </div>
 
                             <div class="mb-3">
-                                <label for="entry_fee" class="form-label">Quota Iscrizione (€)</label>
+                                <label for="entry_fee" class="form-label">{{ _("Quota Iscrizione (€)") }}</label>
                                 <div class="input-group">
                                     <span class="input-group-text">€</span>
                                     <input type="number" class="form-control" id="entry_fee" name="entry_fee" value="0"
@@ -185,9 +185,9 @@
                             </div>
 
                             <div class="mb-0">
-                                <label for="description" class="form-label">Note / Descrizione</label>
+                                <label for="description" class="form-label">{{ _("Note / Descrizione") }}</label>
                                 <textarea class="form-control" id="description" name="description" rows="2"
-                                    placeholder="Altre info utili..."></textarea>
+                                    placeholder="{{ _('Altre info utili...') }}"></textarea>
                             </div>
                         </div>
                     </div>
@@ -197,12 +197,12 @@
                 <div class="wizard-step" id="step-2">
                     <div class="card shadow-sm mb-4">
                         <div class="card-body">
-                            <h5 class="card-title mb-4"><i class="fas fa-microchip text-primary me-2"></i> 2. Struttura
-                                del Torneo</h5>
-                            <p class="text-muted small">Configura la logica di abbinamento e il numero di turni.</p>
+                            <h5 class="card-title mb-4"><i class="fas fa-microchip text-primary me-2"></i> 2. {{ _("Struttura
+                                del Torneo") }}</h5>
+                            <p class="text-muted small">{{ _("Configura la logica di abbinamento e il numero di turni.") }}</p>
 
                             <div class="mb-4">
-                                <label for="matchmaking_strategy" class="form-label">Algoritmo di Abbinamento <span
+                                <label for="matchmaking_strategy" class="form-label">{{ _("Algoritmo di Abbinamento") }} <span
                                         class="text-danger">*</span></label>
                                 <select class="form-select" id="matchmaking_strategy" name="matchmaking_strategy"
                                     required>
@@ -219,18 +219,18 @@
 
                             <div class="row">
                                 <div class="col-sm-6 mb-3" data-bracket-hide>
-                                    <label for="rounds_count" class="form-label">Numero di Turni <span
+                                    <label for="rounds_count" class="form-label">{{ _("Numero di Turni") }} <span
                                             class="text-danger">*</span></label>
                                     <input type="number" class="form-control" id="rounds_count" name="rounds_count"
                                         value="3" min="1" max="10" required>
                                 </div>
                                 <div class="col-sm-6 mb-3" data-bracket-hide>
-                                    <label for="withdraw_policy" class="form-label">Gestione Forfait</label>
+                                    <label for="withdraw_policy" class="form-label">{{ _("Gestione Forfait") }}</label>
                                     <select class="form-select" id="withdraw_policy" name="withdraw_policy" required>
-                                        <option value="{{ WithdrawPolicy.FORFEIT.value }}" selected>Vincita a tavolino
-                                            avversario
+                                        <option value="{{ WithdrawPolicy.FORFEIT.value }}" selected>{{ _("Vincita a tavolino
+                                            avversario") }}
                                         </option>
-                                        <option value="{{ WithdrawPolicy.EXCLUDE.value }}">Escludi dal turno (X o Trio)
+                                        <option value="{{ WithdrawPolicy.EXCLUDE.value }}">{{ _("Escludi dal turno (X o Trio)") }}
                                         </option>
                                     </select>
                                 </div>
@@ -238,21 +238,21 @@
 
                             <div class="row">
                                 <div class="col-sm-6 mb-3">
-                                    <label for="min_participants" class="form-label">Min Partecipanti <span
+                                    <label for="min_participants" class="form-label">{{ _("Min Partecipanti") }} <span
                                             class="text-danger">*</span></label>
                                     <input type="number" class="form-control" id="min_participants"
                                         name="min_participants" value="6" min="2" required>
                                 </div>
                                 <div class="col-sm-6 mb-3">
-                                    <label for="max_participants" class="form-label">Max Partecipanti</label>
+                                    <label for="max_participants" class="form-label">{{ _("Max Partecipanti") }}</label>
                                     <input type="number" class="form-control" id="max_participants"
-                                        name="max_participants" placeholder="Nessun limite" min="2">
+                                        name="max_participants" placeholder="{{ _('Nessun limite') }}" min="2">
                                 </div>
                             </div>
 
                             <div class="card bg-light border-0 mb-3" id="advanced-matchmaking-config">
                                 <div class="card-body py-2">
-                                    <h6 class="text-uppercase small fw-bold text-muted mb-3">Configurazioni Avanzate
+                                    <h6 class="text-uppercase small fw-bold text-muted mb-3">{{ _("Configurazioni Avanzate") }}
                                     </h6>
 
                                     <div class="mb-3" id="anti_rematch_section" data-bracket-hide>
@@ -260,7 +260,7 @@
                                             <input class="form-check-input" type="checkbox" id="anti_rematch_enabled"
                                                 name="anti_rematch_enabled" checked>
                                             <label class="form-check-label" for="anti_rematch_enabled">
-                                                Evita reincontri tra gli stessi giocatori
+                                                {{ _("Evita reincontri tra gli stessi giocatori") }}
                                             </label>
                                         </div>
                                         <div id="anti_rematch_warning" class="alert alert-warning py-2 mt-2 small" style="display: none;">
@@ -280,26 +280,26 @@
 
                                     <div class="row" id="strategy_config_section">
                                         <div class="col-sm-6 mb-2">
-                                            <label for="first_round_policy" class="form-label small">Primo Turno</label>
+                                            <label for="first_round_policy" class="form-label small">{{ _("Primo Turno") }}</label>
                                             <select class="form-select form-select-sm" id="first_round_policy"
                                                 name="first_round_policy">
-                                                <option value="random">Casuale</option>
-                                                <option value="rating">Rating</option>
-                                                <option value="classification">Classifica</option>
+                                                <option value="random">{{ _("Casuale") }}</option>
+                                                <option value="rating">{{ _("Rating") }}</option>
+                                                <option value="classification">{{ _("Classifica") }}</option>
                                             </select>
                                         </div>
                                         <div class="col-sm-6 mb-2" data-bracket-hide>
-                                            <label for="odd_number_policy" class="form-label small">Se Giocatori
-                                                Dispari</label>
+                                            <label for="odd_number_policy" class="form-label small">{{ _("Se Giocatori
+                                                Dispari") }}</label>
                                             <select class="form-select form-select-sm" id="odd_number_policy"
                                                 name="odd_number_policy">
-                                                <option value="bye">Riposo (punto gratis)</option>
-                                                <option value="bye_with_challenge">Riposo con Challenge</option>
-                                                <option value="trio">Match a 3 (Trio)</option>
-                                                <option value="no">Lista d'Attesa</option>
+                                                <option value="bye">{{ _("Riposo (punto gratis)") }}</option>
+                                                <option value="bye_with_challenge">{{ _("Riposo con Challenge") }}</option>
+                                                <option value="trio">{{ _("Match a 3 (Trio)") }}</option>
+                                                <option value="no">{{ _("Lista d'Attesa") }}</option>
                                             </select>
                                             <small id="trio_warning" class="text-warning small" style="display: none;">
-                                                <i class="fas fa-exclamation-triangle"></i> Il Trio è disponibile solo per distanze da 2 a 7
+                                                <i class="fas fa-exclamation-triangle"></i> {{ _("Il Trio è disponibile solo per distanze da 2 a 7") }}
                                             </small>
                                         </div>
                                     </div>
@@ -328,7 +328,7 @@
                                     <!-- SSR (Spot Shot Rally) Configuration -->
                                     <div class="border-top pt-3 mt-3" data-bracket-hide>
                                         <h6 class="text-uppercase small fw-bold text-muted mb-3">
-                                            <i class="fas fa-balance-scale text-warning me-1"></i> Spareggio (SSR)
+                                            <i class="fas fa-balance-scale text-warning me-1"></i> {{ _("Spareggio (SSR)") }}
                                         </h6>
                                         <div class="form-check form-switch mb-2">
                                             <input class="form-check-input" type="checkbox" id="tiebreaker_enabled"
@@ -361,9 +361,9 @@
                 <div class="wizard-step" id="step-3">
                     <div class="card shadow-sm mb-4">
                         <div class="card-body">
-                            <h5 class="card-title mb-4"><i class="fas fa-ruler text-primary me-2"></i> 3. Formato del
-                                Match</h5>
-                            <p class="text-muted small">Definisci il target di punteggio per ogni singola partita.</p>
+                            <h5 class="card-title mb-4"><i class="fas fa-ruler text-primary me-2"></i> 3. {{ _("Formato del
+                                Match") }}</h5>
+                            <p class="text-muted small">{{ _("Definisci il target di punteggio per ogni singola partita.") }}</p>
 
                             <!-- Distance Configurator Component (Phase 6: Multi-Set Support) -->
                             {% include "components/_distance_configurator.html" %}
@@ -376,37 +376,37 @@
                     <div class="card shadow-sm mb-4">
                         <div class="card-body">
                             <h5 class="card-title mb-4"><i class="fas fa-check-circle text-primary me-2"></i> 4.
-                                Riepilogo e Conferma</h5>
+                                {{ _("Riepilogo e Conferma") }}</h5>
 
                             <div class="summary-card p-3 mb-4">
                                 <div class="row">
                                     <div class="col-sm-6 mb-3">
-                                        <h6 class="text-muted small text-uppercase mb-1">Competizione</h6>
+                                        <h6 class="text-muted small text-uppercase mb-1">{{ _("Competizione") }}</h6>
                                         <div id="summary-name" class="fw-bold fs-5">-</div>
                                         <div id="summary-discipline" class="text-muted">-</div>
                                         <div id="summary-date" class="small">-</div>
                                         <div id="summary-location" class="small text-muted">-</div>
                                     </div>
                                     <div class="col-sm-6 mb-3">
-                                        <h6 class="text-muted small text-uppercase mb-1">Struttura</h6>
+                                        <h6 class="text-muted small text-uppercase mb-1">{{ _("Struttura") }}</h6>
                                         <div id="summary-strategy" class="fw-bold">-</div>
-                                        <div id="summary-rounds" class="small">- Turni</div>
-                                        <div id="summary-participants" class="small">- Partecipanti</div>
-                                        <div id="summary-withdraw" class="small">- Forfait</div>
-                                        <div id="summary-fee" class="small">- Quota</div>
+                                        <div id="summary-rounds" class="small">- {{ _("Turni") }}</div>
+                                        <div id="summary-participants" class="small">- {{ _("Partecipanti") }}</div>
+                                        <div id="summary-withdraw" class="small">- {{ _("Forfait") }}</div>
+                                        <div id="summary-fee" class="small">- {{ _("Quota") }}</div>
                                     </div>
                                     <div class="col-12 mb-3">
-                                        <h6 class="text-muted small text-uppercase mb-1">Politiche Abbinamento</h6>
+                                        <h6 class="text-muted small text-uppercase mb-1">{{ _("Politiche Abbinamento") }}</h6>
                                         <div class="d-flex flex-wrap gap-2">
                                             <span id="summary-anti-rematch" class="badge bg-secondary">-</span>
-                                            <span id="summary-first-round" class="badge bg-secondary">- Seeding</span>
-                                            <span id="summary-odd-policy" class="badge bg-secondary">- Dispari</span>
+                                            <span id="summary-first-round" class="badge bg-secondary">- {{ _("Seeding") }}</span>
+                                            <span id="summary-odd-policy" class="badge bg-secondary">- {{ _("Dispari") }}</span>
                                             <span id="summary-classification" class="badge bg-info text-dark">-</span>
                                             <span id="summary-ssr" class="badge bg-warning text-dark">-</span>
                                         </div>
                                     </div>
                                     <div class="col-12">
-                                        <h6 class="text-muted small text-uppercase mb-1">Formato Partite</h6>
+                                        <h6 class="text-muted small text-uppercase mb-1">{{ _("Formato Partite") }}</h6>
                                         <div id="summary-format" class="badge bg-info text-dark fs-6">-</div>
                                     </div>
                                 </div>
@@ -414,8 +414,8 @@
 
                             <div class="alert alert-info border-0 bg-light">
                                 <i class="fas fa-lightbulb text-info me-2"></i>
-                                Puoi ancora tornare indietro per correggere eventuali errori prima di salvare
-                                definitivamente.
+                                {{ _("Puoi ancora tornare indietro per correggere eventuali errori prima di salvare
+                                definitivamente.") }}
                             </div>
                         </div>
                     </div>
@@ -425,15 +425,15 @@
                 <div class="d-flex justify-content-between mt-4">
                     <button type="button" class="btn btn-outline-secondary btn-lg px-4" id="btn-prev"
                         style="visibility: hidden;">
-                        <i class="fas fa-chevron-left me-2"></i> Indietro
+                        <i class="fas fa-chevron-left me-2"></i> {{ _("Indietro") }}
                     </button>
 
                     <button type="button" class="btn btn-primary btn-lg px-4" id="btn-next">
-                        Avanti <i class="fas fa-chevron-right ms-2"></i>
+                        {{ _("Avanti") }} <i class="fas fa-chevron-right ms-2"></i>
                     </button>
 
                     <button type="submit" class="btn btn-success btn-lg px-4" id="btn-submit" style="display: none;">
-                        <i class="fas fa-plus-circle me-2"></i> Crea Gara
+                        <i class="fas fa-plus-circle me-2"></i> {{ _("Crea Gara") }}
                     </button>
                 </div>
             </form>
@@ -449,6 +449,27 @@
         // ANTIGRAVITY FIX: Ensuring clean script scope and syntax
         let currentStep = 1;
         const totalSteps = 4;
+
+        // Stringhe tradotte usate nel riepilogo (Step 4) e nei messaggi dinamici
+        const i18n = {
+            noName: {{ _("Nessun nome")|tojson }},
+            noLocation: {{ _("Luogo non specificato")|tojson }},
+            at: {{ _("ore")|tojson }},
+            rounds: {{ _("Turni")|tojson }},
+            unlimited: {{ _("Illimitati")|tojson }},
+            minMax: {{ _("Min: {min}, Max: {max}")|tojson }},
+            withdraw: {{ _("Forfait: {value}")|tojson }},
+            fee: {{ _("Quota: €{value}")|tojson }},
+            antiRematchOn: {{ _("Anti-rematch ON")|tojson }},
+            antiRematchOff: {{ _("Anti-rematch OFF")|tojson }},
+            seeding: {{ _("Seeding: {value}")|tojson }},
+            oddPolicy: {{ _("Dispari: {value}")|tojson }},
+            classification: {{ _("Classifica: {value}")|tojson }},
+            ssrUntil: {{ _("SSR: fino {value}")|tojson }},
+            ssrDisabled: {{ _("SSR: Disabilitato")|tojson }},
+            autoCalculated: {{ _("Calcolato automaticamente")|tojson }},
+            antiRematchWarning: {{ _("Con anti-rematch attivo e {max} partecipanti massimi, puoi avere al massimo {rounds} turni (ogni giocatore può incontrare al massimo {rounds} avversari unici)")|tojson }}
+        };
 
         // UI Elements
         const form = document.getElementById('gara-form');
@@ -543,46 +564,51 @@
         }
 
         function updateSummary() {
-            document.getElementById('summary-name').textContent = nameInput.value || 'Nessun nome';
+            document.getElementById('summary-name').textContent = nameInput.value || i18n.noName;
             document.getElementById('summary-discipline').textContent = disciplineSelect.options[disciplineSelect.selectedIndex].text;
-            document.getElementById('summary-date').textContent = `${dateInput.value} ore ${timeInput.value}`;
-            document.getElementById('summary-location').textContent = locationInput.value || 'Luogo non specificato';
+            document.getElementById('summary-date').textContent = `${dateInput.value} ${i18n.at} ${timeInput.value}`;
+            document.getElementById('summary-location').textContent = locationInput.value || i18n.noLocation;
 
             document.getElementById('summary-strategy').textContent = strategySelect.options[strategySelect.selectedIndex].text;
-            document.getElementById('summary-rounds').textContent = `${roundsInput.value} Turni`;
+            document.getElementById('summary-rounds').textContent = `${roundsInput.value} ${i18n.rounds}`;
 
             const minPart = document.getElementById('min_participants').value;
-            const maxPart = document.getElementById('max_participants').value || 'Illimitati';
-            document.getElementById('summary-participants').textContent = `Min: ${minPart}, Max: ${maxPart}`;
+            const maxPart = document.getElementById('max_participants').value || i18n.unlimited;
+            document.getElementById('summary-participants').textContent =
+                i18n.minMax.replace('{min}', minPart).replace('{max}', maxPart);
 
             const withdrawSelect = document.getElementById('withdraw_policy');
-            document.getElementById('summary-withdraw').textContent = `Forfait: ${withdrawSelect.options[withdrawSelect.selectedIndex].text}`;
+            document.getElementById('summary-withdraw').textContent =
+                i18n.withdraw.replace('{value}', withdrawSelect.options[withdrawSelect.selectedIndex].text);
 
-            document.getElementById('summary-fee').textContent = `Quota: €${feeInput.value || '0'}`;
+            document.getElementById('summary-fee').textContent = i18n.fee.replace('{value}', feeInput.value || '0');
 
             // Advanced settings
-            const antiRematch = document.getElementById('anti_rematch_enabled').checked ? 'Anti-rematch ON' : 'Anti-rematch OFF';
+            const antiRematch = document.getElementById('anti_rematch_enabled').checked ? i18n.antiRematchOn : i18n.antiRematchOff;
             document.getElementById('summary-anti-rematch').textContent = antiRematch;
 
             const firstRound = document.getElementById('first_round_policy');
-            document.getElementById('summary-first-round').textContent = `Seeding: ${firstRound.options[firstRound.selectedIndex].text}`;
+            document.getElementById('summary-first-round').textContent =
+                i18n.seeding.replace('{value}', firstRound.options[firstRound.selectedIndex].text);
 
             const oddPolicy = document.getElementById('odd_number_policy');
-            document.getElementById('summary-odd-policy').textContent = `Dispari: ${oddPolicy.options[oddPolicy.selectedIndex].text}`;
+            document.getElementById('summary-odd-policy').textContent =
+                i18n.oddPolicy.replace('{value}', oddPolicy.options[oddPolicy.selectedIndex].text);
 
             const classification = document.getElementById('classification_system');
             document.getElementById('summary-classification').textContent =
-                `Classifica: ${classification.options[classification.selectedIndex].text}`;
+                i18n.classification.replace('{value}', classification.options[classification.selectedIndex].text);
 
             // SSR configuration summary
             const ssrEnabled = document.getElementById('tiebreaker_enabled').checked;
             const ssrPosition = document.getElementById('tiebreaker_until_position');
             if (ssrEnabled) {
-                document.getElementById('summary-ssr').textContent = `SSR: fino ${ssrPosition.options[ssrPosition.selectedIndex].text}`;
+                document.getElementById('summary-ssr').textContent =
+                    i18n.ssrUntil.replace('{value}', ssrPosition.options[ssrPosition.selectedIndex].text);
                 document.getElementById('summary-ssr').classList.remove('bg-secondary');
                 document.getElementById('summary-ssr').classList.add('bg-warning', 'text-dark');
             } else {
-                document.getElementById('summary-ssr').textContent = 'SSR: Disabilitato';
+                document.getElementById('summary-ssr').textContent = i18n.ssrDisabled;
                 document.getElementById('summary-ssr').classList.remove('bg-warning', 'text-dark');
                 document.getElementById('summary-ssr').classList.add('bg-secondary');
             }
@@ -671,7 +697,7 @@
 
             if (constraints.fixed_rounds) {
                 roundsInput.setAttribute('disabled', 'true');
-                roundsInput.setAttribute('title', 'Calcolato automaticamente');
+                roundsInput.setAttribute('title', i18n.autoCalculated);
             } else {
                 roundsInput.removeAttribute('disabled');
             }
@@ -719,10 +745,10 @@
                 const maxRounds = maxParticipants - 1;
                 if (roundsCount > maxRounds) {
                     antiRematchWarning.style.display = 'block';
-                    antiRematchWarningText.textContent =
-                        `Con anti-rematch attivo e ${maxParticipants} partecipanti massimi, ` +
-                        `puoi avere al massimo ${maxRounds} turni ` +
-                        `(ogni giocatore può incontrare al massimo ${maxRounds} avversari unici)`;
+                    antiRematchWarningText.textContent = i18n.antiRematchWarning
+                        .replace('{max}', maxParticipants)
+                        .replace('{rounds}', maxRounds)
+                        .replace('{rounds}', maxRounds);
                     roundsInput.classList.add('is-invalid');
                     return false;
                 }
