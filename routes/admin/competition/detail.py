@@ -243,7 +243,7 @@ def gara_detail(gara_id):
         if gara.matchmaking_strategy == "random":
             # Random: calcola classifica complessiva da tutti i match completati
             completed_count = Match.query.filter_by(
-                gara_id=gara_id, status=MatchStatus.COMPLETED.value
+                gara_id=gara_id, status=MatchStatus.CLOSED_UNILATERALLY.value
             ).count()
 
             if completed_count > 0:
@@ -285,8 +285,8 @@ def gara_detail(gara_id):
                     return False
                 # Exclude bye matches; VALIDATED conta come finito (post-COMPLETED).
                 finished = (
-                    MatchStatus.COMPLETED.value,
-                    MatchStatus.VALIDATED.value,
+                    MatchStatus.CLOSED_UNILATERALLY.value,
+                    MatchStatus.CONFIRMED_BY_BOTH.value,
                 )
                 return all(
                     match.status in finished or match.is_bye for match in round_matches

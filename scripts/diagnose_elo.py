@@ -50,7 +50,7 @@ def _is_walkover(match, rack_counts):
     Tiene la stessa invariante del modello: un walkover è sempre e solo in
     stato `completed` (vedi models/match/models.py:162).
     """
-    if match.status != MatchStatus.COMPLETED.value or match.winner_id is None:
+    if match.status != MatchStatus.CLOSED_UNILATERALLY.value or match.winner_id is None:
         return False
     if match.is_trio:
         return match.trio_match is not None and match.trio_match.total_racks_played == 0
@@ -184,7 +184,7 @@ def diagnose(user_id=None):
     app = create_app()
     with app.app_context():
         try:
-            _run(user_id, MatchStatus.VALIDATED.value)
+            _run(user_id, MatchStatus.CONFIRMED_BY_BOTH.value)
         finally:
             # Read-only: annulla qualsiasi stato di sessione anche su errore,
             # così la transazione non resta aperta a trattenere lock.

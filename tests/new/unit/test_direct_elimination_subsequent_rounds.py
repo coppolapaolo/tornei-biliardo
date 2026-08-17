@@ -62,7 +62,7 @@ def _node(
     loser=None,
     bracket_round=None,
     bracket_type: str | None = "W",
-    status: str = MatchStatus.COMPLETED.value,
+    status: str = MatchStatus.CLOSED_UNILATERALLY.value,
 ) -> Match:
     """Nodo di tabellone già concluso. `loser=None` significa bye."""
     is_bye = loser is None
@@ -250,7 +250,7 @@ class TestGateDiCompletezza:
             slot=0,
             winner=p[0],
             loser=p[1],
-            status=MatchStatus.VALIDATED.value,
+            status=MatchStatus.CONFIRMED_BY_BOTH.value,
         )
         _node(db_session, gara, round_number=1, slot=1, winner=p[2], loser=p[3])
 
@@ -369,7 +369,7 @@ class TestTabelloneIncoerente:
             player2_id=p[3].id,
             round_number=1,
             is_bye=False,
-            status=MatchStatus.COMPLETED.value,
+            status=MatchStatus.CLOSED_UNILATERALLY.value,
             match_distance=5,
             bracket_type="W",
             bracket_round=1,

@@ -256,7 +256,9 @@ class TestUserProfileServiceTDD:
             )
 
             # Attempt to update user2 to user1's username
-            with pytest.raises(ValueError, match="Username 'user1' already exists"):
+            # Messaggio tradotto: i ValueError di update_user finiscono in un
+            # flash() e li legge l'utente.
+            with pytest.raises(ValueError, match="già in uso"):
                 UserProfileService.update_user(user_id=user2.id, username="user1")
 
             # Cleanup
@@ -284,7 +286,7 @@ class TestUserProfileServiceTDD:
             )
 
             # Attempt to update admin user
-            with pytest.raises(ValueError, match="Cannot modify administrator user"):
+            with pytest.raises(ValueError, match="non è modificabile"):
                 UserProfileService.update_user(
                     user_id=admin.id, username="modified_admin"
                 )
@@ -304,7 +306,7 @@ class TestUserProfileServiceTDD:
             from models.user.services import UserProfileService
 
             # Attempt to update non-existent user
-            with pytest.raises(ValueError, match="User not found"):
+            with pytest.raises(ValueError, match="non trovato"):
                 UserProfileService.update_user(user_id=99999, username="nonexistent")
 
     def test_change_password_functionality(self, app, db_session):

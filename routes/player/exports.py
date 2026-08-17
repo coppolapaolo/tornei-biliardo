@@ -46,7 +46,7 @@ def export_profile_csv(user_id):
     # Get all completed matches for the user
     matches = Match.query.filter(
         (Match.player1_id == user_id) | (Match.player2_id == user_id),
-        Match.status == MatchStatus.COMPLETED.value,
+        Match.status == MatchStatus.CLOSED_UNILATERALLY.value,
     ).all()
 
     # Get challenge attempts

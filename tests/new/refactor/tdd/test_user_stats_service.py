@@ -78,7 +78,7 @@ class TestUserStatsServiceTDD:
                 player2_id=opponent.id,
                 gara_id=gara.id,
                 round_number=1,
-                status=MatchStatus.COMPLETED.value,
+                status=MatchStatus.CLOSED_UNILATERALLY.value,
                 winner_id=user.id,
             )
             match2 = Match(
@@ -86,7 +86,7 @@ class TestUserStatsServiceTDD:
                 player2_id=opponent.id,
                 gara_id=gara.id,
                 round_number=2,
-                status=MatchStatus.COMPLETED.value,
+                status=MatchStatus.CLOSED_UNILATERALLY.value,
                 winner_id=user.id,
             )
             match3 = Match(
@@ -94,7 +94,7 @@ class TestUserStatsServiceTDD:
                 player2_id=opponent.id,
                 gara_id=gara.id,
                 round_number=3,
-                status=MatchStatus.COMPLETED.value,
+                status=MatchStatus.CLOSED_UNILATERALLY.value,
                 winner_id=opponent.id,
             )
 
@@ -379,7 +379,7 @@ class TestUserStatsServiceTDD:
             # Verify all matches involve the user
             for match in matches:
                 assert user.id in [match.player1_id, match.player2_id]
-                assert match.status == MatchStatus.COMPLETED.value
+                assert match.status == MatchStatus.CLOSED_UNILATERALLY.value
 
             # Test with custom limit
             limited_matches = UserStatsService.get_user_matches(
@@ -572,7 +572,7 @@ class TestUserStatsServiceTDD:
                 player2_id=opponent.id,
                 gara_id=gara.id,
                 round_number=1,
-                status=MatchStatus.COMPLETED.value,
+                status=MatchStatus.CLOSED_UNILATERALLY.value,
                 winner_id=user.id,  # Win
             )
             match2 = Match(
@@ -580,7 +580,7 @@ class TestUserStatsServiceTDD:
                 player2_id=opponent.id,
                 gara_id=gara.id,
                 round_number=2,
-                status=MatchStatus.COMPLETED.value,
+                status=MatchStatus.CLOSED_UNILATERALLY.value,
                 winner_id=opponent.id,  # Loss
             )
             match3 = Match(
@@ -588,7 +588,7 @@ class TestUserStatsServiceTDD:
                 player2_id=opponent.id,
                 gara_id=gara.id,
                 round_number=3,
-                status=MatchStatus.COMPLETED.value,
+                status=MatchStatus.CLOSED_UNILATERALLY.value,
                 winner_id=opponent.id,  # Loss
             )
 

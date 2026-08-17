@@ -41,7 +41,7 @@ class TestIndividualMatchForfeitModel:
         match.forfeit_match(player1.id)
 
         assert match.winner_id == player2.id
-        assert match.status == MatchStatus.COMPLETED
+        assert match.status == MatchStatus.CLOSED_UNILATERALLY
 
     def test_forfeit_sets_winner_to_opponent_when_player2_forfeits(
         self, app, db_session, isolated_players
@@ -68,7 +68,7 @@ class TestIndividualMatchForfeitModel:
         match.forfeit_match(player2.id)
 
         assert match.winner_id == player1.id
-        assert match.status == MatchStatus.COMPLETED
+        assert match.status == MatchStatus.CLOSED_UNILATERALLY
 
     def test_forfeit_keeps_current_scores(self, app, db_session, isolated_players):
         """Forfeit should keep the forfeiting player's score (racks already won)."""
@@ -176,7 +176,7 @@ class TestIndividualMatchForfeitModel:
             player2_id=player2.id,
             location="Test Hall",
             scheduled_at=utc_now() + timedelta(hours=1),
-            status=MatchStatus.COMPLETED,  # Already completed
+            status=MatchStatus.CLOSED_UNILATERALLY,  # Already completed
             distance=5,
             is_race_to=True,
             winner_id=player1.id,
@@ -225,7 +225,7 @@ class TestIndividualMatchForfeitModel:
         match.forfeit_match(player1.id)
 
         assert match.winner_id == player2.id
-        assert match.status == MatchStatus.COMPLETED
+        assert match.status == MatchStatus.CLOSED_UNILATERALLY
         # Winner gets winning score, loser has 0 (no racks played)
         assert match.player1_score == 0
         assert match.player2_score == 5
@@ -311,7 +311,7 @@ class TestIndividualMatchCompleteValidation:
 
         match.complete_match(player1.id)
         assert match.winner_id == player1.id
-        assert match.status == MatchStatus.COMPLETED
+        assert match.status == MatchStatus.CLOSED_UNILATERALLY
 
 
 class TestIndividualMatchForfeitService:
@@ -345,7 +345,7 @@ class TestIndividualMatchForfeitService:
 
         assert result.id == match.id
         assert result.winner_id == player2.id
-        assert result.status == MatchStatus.COMPLETED
+        assert result.status == MatchStatus.CLOSED_UNILATERALLY
 
     def test_facade_forfeit_delegates_to_service(
         self, app, db_session, isolated_players
@@ -370,4 +370,4 @@ class TestIndividualMatchForfeitService:
         result = IndividualMatchService.forfeit_match(match.id, player2.id)
 
         assert result.winner_id == player1.id
-        assert result.status == MatchStatus.COMPLETED
+        assert result.status == MatchStatus.CLOSED_UNILATERALLY

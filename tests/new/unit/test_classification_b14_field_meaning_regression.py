@@ -93,7 +93,7 @@ def _setup_two_player_gara(db_session, matchmaking: str, classification: str) ->
         player1_score=5,
         player2_score=3,
         winner_id=player_a.id,
-        status=MatchStatus.COMPLETED.value,
+        status=MatchStatus.CLOSED_UNILATERALLY.value,
     )
     match2 = Match(
         gara_id=gara.id,
@@ -103,7 +103,7 @@ def _setup_two_player_gara(db_session, matchmaking: str, classification: str) ->
         player1_score=6,
         player2_score=4,
         winner_id=player_a.id,
-        status=MatchStatus.COMPLETED.value,
+        status=MatchStatus.CLOSED_UNILATERALLY.value,
     )
     db_session.add_all([match1, match2])
     db_session.flush()

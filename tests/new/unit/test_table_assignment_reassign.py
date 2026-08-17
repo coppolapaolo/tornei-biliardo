@@ -353,7 +353,7 @@ class TestTableAssignmentReassign:
             player1_id=players[0].id,
             player2_id=players[1].id,
             table_assignment="1",
-            status=MatchStatus.COMPLETED.value,
+            status=MatchStatus.CLOSED_UNILATERALLY.value,
         )
         # Match in round 2 (creates subsequent round, locking round 1)
         match_r2 = Match(

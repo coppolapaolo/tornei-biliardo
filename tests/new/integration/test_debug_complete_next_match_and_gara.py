@@ -113,7 +113,7 @@ def test_complete_next_match_completes_one(client, db_session):
     # Complete Match pesca da TUTTI i round attivi (bug 12), quindi il match
     # completato puo' essere indifferentemente di round 1 o round 2.
     completed_total = Match.query.filter_by(
-        gara_id=gara.id, status=MatchStatus.COMPLETED.value
+        gara_id=gara.id, status=MatchStatus.CLOSED_UNILATERALLY.value
     ).count()
     pending_total = (
         Match.query.filter_by(gara_id=gara.id)
@@ -143,7 +143,7 @@ def test_complete_round_advances_to_next_active_round(client, db_session):
     assert resp1.status_code in (302, 303)
     r1_done = (
         Match.query.filter_by(gara_id=gara.id, round_number=1)
-        .filter(Match.status == MatchStatus.COMPLETED.value)
+        .filter(Match.status == MatchStatus.CLOSED_UNILATERALLY.value)
         .count()
     )
     assert r1_done == 2
@@ -156,7 +156,12 @@ def test_complete_round_advances_to_next_active_round(client, db_session):
     r2_done = (
         Match.query.filter_by(gara_id=gara.id, round_number=2)
         .filter(
-            Match.status.in_([MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value])
+            Match.status.in_(
+                [
+                    MatchStatus.CLOSED_UNILATERALLY.value,
+                    MatchStatus.CONFIRMED_BY_BOTH.value,
+                ]
+            )
         )
         .count()
     )
@@ -173,7 +178,7 @@ def test_complete_next_match_picks_from_any_round(client, db_session):
     # match PLAYING attivi: completa direttamente i 2 match di round 1.
     r1_matches = Match.query.filter_by(gara_id=gara.id, round_number=1).all()
     for m in r1_matches:
-        m.status = MatchStatus.COMPLETED.value
+        m.status = MatchStatus.CLOSED_UNILATERALLY.value
         m.player1_score = 5
         m.player2_score = 0
         m.winner_id = m.player1_id
@@ -194,7 +199,7 @@ def test_complete_next_match_picks_from_any_round(client, db_session):
     r2_completed = Match.query.filter_by(
         gara_id=gara.id,
         round_number=2,
-        status=MatchStatus.COMPLETED.value,
+        status=MatchStatus.CLOSED_UNILATERALLY.value,
     ).count()
     assert (
         r2_completed == 1
@@ -219,7 +224,7 @@ def test_complete_next_match_ignores_matches_without_table(client, db_session):
     assert resp.status_code in (302, 303)
 
     completed = Match.query.filter_by(
-        gara_id=gara.id, status=MatchStatus.COMPLETED.value
+        gara_id=gara.id, status=MatchStatus.CLOSED_UNILATERALLY.value
     ).count()
     assert (
         completed == 0
@@ -255,6 +260,7 @@ def test_complete_gara_finishes_all_matches(client, db_session):
     all_matches = Match.query.filter_by(gara_id=gara.id).all()
     assert len(all_matches) == 4
     assert all(
-        m.status in (MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value)
+        m.status
+        in (MatchStatus.CLOSED_UNILATERALLY.value, MatchStatus.CONFIRMED_BY_BOTH.value)
         for m in all_matches
     ), f"Match status: {[m.status for m in all_matches]}"

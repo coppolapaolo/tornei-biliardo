@@ -576,6 +576,8 @@ pytest tests/new/unit/ -n auto && pytest tests/new/integration/ -n 4
 | "Il merge su `main` fa scattare il deploy" | **Falso**: il job `deploy` fa solo un *reload*, e se la PR aggiunge migration non parte neanche quello. Il codice lo porta lo scheduled task `auto_deploy.py` (fino a 24h dopo) |
 | Link a endpoint in template senza `feature_visible(...)` | In prod il link compare ma porta a 404 (ADR-028) — avvolgi con `{% if feature_visible('endpoint.name') %}` |
 | `match.status in ["completed", "validated"]` (letterale raw) | `MatchStatus.is_finished(match.status)` / `is_active(...)` (typo-safe) |
+| Credere che `"validated"` sia la validazione del direttore | È il contrario: `CONFIRMED_BY_BOTH` (valore `"validated"`) = chiusa dai **giocatori** con doppia conferma; `CLOSED_UNILATERALLY` (valore `"completed"`) = chiusa dal direttore/forfait/bye. I nomi dei membri sono stati corretti il 2026-08-17, **i valori persistiti no** |
+| `match.validated_by_admin` | Non esiste su `Match` (vive su `Rack` e `Set`). La validazione del direttore *è* lo stato; per chiudere una partita mai iniziata si passa `to_completed(..., closed_by_director=True)` |
 | `raise ValueError(...)` per not-found / conflitto / permesso | Solleva la sottoclasse da `models.exceptions` (`NotFoundError`/`ConflictError`/`PermissionDeniedError`) → route mappano a 404/409/403 |
 | Parsing form duplicato tra create / wizard / edit | Unica fonte `GaraFormParser` / `CampionatoFormParser` (vedi `routes/CLAUDE.md`) |
 | `user.role == "director"` (o `"admin"`/`"player"`/`"guest"` letterali) | `UserRole.DIRECTOR.value` ecc. da `models/user/role_enum.py` — mai letterali per valori di dominio |

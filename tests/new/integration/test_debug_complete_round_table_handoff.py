@@ -115,7 +115,7 @@ def test_complete_round_reassigns_tables_to_next_round(client, db_session):
     r2_matches = Match.query.filter_by(gara_id=gara.id, round_number=2).all()
 
     # Turno 1: completato, tavoli rilasciati
-    assert all(m.status == MatchStatus.COMPLETED.value for m in r1_matches)
+    assert all(m.status == MatchStatus.CLOSED_UNILATERALLY.value for m in r1_matches)
     assert all(
         m.table_assignment is None for m in r1_matches
     ), "Tavoli del turno 1 devono essere rilasciati"

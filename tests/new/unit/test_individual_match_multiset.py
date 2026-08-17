@@ -365,7 +365,7 @@ class TestMultiSetCompletion:
         result2 = match.confirm_result(player2.id)
         assert result2 is True  # Second confirmation completes
 
-        assert match.status == MatchStatus.VALIDATED
+        assert match.status == MatchStatus.CONFIRMED_BY_BOTH
         assert match.winner_id == player1.id
 
 

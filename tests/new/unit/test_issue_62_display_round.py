@@ -67,8 +67,8 @@ class TestGaraDisplayRound:
         """Turni 1-2 conclusi, turno 3 aperto, current_round fermo a 1."""
         gara = _make_gara(db_session, current_round=1)
         players = _make_players(db_session)
-        _make_match(db_session, gara, 1, players, MatchStatus.COMPLETED.value)
-        _make_match(db_session, gara, 2, players, MatchStatus.VALIDATED.value)
+        _make_match(db_session, gara, 1, players, MatchStatus.CLOSED_UNILATERALLY.value)
+        _make_match(db_session, gara, 2, players, MatchStatus.CONFIRMED_BY_BOTH.value)
         _make_match(db_session, gara, 3, players, MatchStatus.PLAYING.value)
         db_session.commit()
 
@@ -79,7 +79,7 @@ class TestGaraDisplayRound:
         aperto, non il più alto che ha match."""
         gara = _make_gara(db_session, current_round=1)
         players = _make_players(db_session)
-        _make_match(db_session, gara, 1, players, MatchStatus.COMPLETED.value)
+        _make_match(db_session, gara, 1, players, MatchStatus.CLOSED_UNILATERALLY.value)
         _make_match(db_session, gara, 2, players, MatchStatus.PENDING.value)
         _make_match(db_session, gara, 3, players, MatchStatus.PENDING.value)
         db_session.commit()
@@ -91,7 +91,11 @@ class TestGaraDisplayRound:
         players = _make_players(db_session)
         for round_number in (1, 2, 3):
             _make_match(
-                db_session, gara, round_number, players, MatchStatus.COMPLETED.value
+                db_session,
+                gara,
+                round_number,
+                players,
+                MatchStatus.CLOSED_UNILATERALLY.value,
             )
         db_session.commit()
 

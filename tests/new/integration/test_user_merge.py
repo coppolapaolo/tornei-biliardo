@@ -87,7 +87,7 @@ def test_merge_reassigns_match_and_anonymizes_source(app, db_session):
         player1_id=source.id,
         player2_id=third.id,
         winner_id=source.id,
-        status=MatchStatus.VALIDATED.value,
+        status=MatchStatus.CONFIRMED_BY_BOTH.value,
         ended_at=utc_now(),
     )
     db.session.add(match)
@@ -151,7 +151,7 @@ def test_merge_head_to_head_aborts_and_rolls_back(app, db_session):
             round_number=1,
             player1_id=source.id,
             player2_id=target.id,
-            status=MatchStatus.VALIDATED.value,
+            status=MatchStatus.CONFIRMED_BY_BOTH.value,
             ended_at=utc_now(),
         )
     )
@@ -197,7 +197,7 @@ def test_merge_no_sawarning_on_classification_recalc(app, db_session):
             player1_score=5,
             player2_score=2,
             winner_id=source.id,
-            status=MatchStatus.VALIDATED.value,
+            status=MatchStatus.CONFIRMED_BY_BOTH.value,
             ended_at=utc_now(),
         )
     )

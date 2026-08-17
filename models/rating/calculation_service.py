@@ -196,7 +196,7 @@ class RatingCalculationService:
         casual = [
             ("individual", im)
             for im in IndividualMatch.query.filter(
-                IndividualMatch.status == MatchStatus.VALIDATED
+                IndividualMatch.status == MatchStatus.CONFIRMED_BY_BOTH
             ).all()
         ]
 

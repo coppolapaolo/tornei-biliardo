@@ -123,7 +123,7 @@ def _persist(db_session, gara: Gara, pairings: Sequence[Pairing]) -> List[Match]
             player2_id=loser,
             round_number=pairing.round_number,
             is_bye=pairing.is_bye,
-            status=MatchStatus.VALIDATED.value,
+            status=MatchStatus.CONFIRMED_BY_BOTH.value,
             winner_id=winner,
             player1_score=5,
             player2_score=0 if loser is None else 3,

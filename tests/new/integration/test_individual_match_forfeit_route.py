@@ -116,7 +116,7 @@ class TestIndividualMatchForfeitRoute:
                 player2_id=player2.id,
                 location="Test Hall",
                 scheduled_at=utc_now() + timedelta(hours=1),
-                status=MatchStatus.COMPLETED,
+                status=MatchStatus.CLOSED_UNILATERALLY,
                 distance=5,
                 is_race_to=True,
                 winner_id=player1.id,
@@ -156,7 +156,7 @@ class TestIndividualMatchForfeitRoute:
 
         # Reload from DB
         updated_match = db.session.get(IndividualMatch, in_progress_match.id)
-        assert updated_match.status == MatchStatus.COMPLETED
+        assert updated_match.status == MatchStatus.CLOSED_UNILATERALLY
         assert updated_match.winner_id == player2.id
 
     def test_forfeit_endpoint_fails_for_non_player(

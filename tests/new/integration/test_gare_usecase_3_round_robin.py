@@ -302,5 +302,5 @@ class TestUseCaseRoundRobin:
             rack_num += 1
 
         db_session.refresh(match)
-        if match.status != MatchStatus.COMPLETED.value:
+        if match.status != MatchStatus.CLOSED_UNILATERALLY.value:
             MatchService.to_completed(match.id)

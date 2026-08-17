@@ -110,7 +110,7 @@ class TestBaseMatchMaxRacksValidation:
         # Given: A match that is completed
         sample_match.player1_score = 3
         sample_match.player2_score = 2
-        sample_match.status = MatchStatus.COMPLETED.value
+        sample_match.status = MatchStatus.CLOSED_UNILATERALLY.value
 
         # When: Checking if can add rack
         result = sample_match.can_add_rack()

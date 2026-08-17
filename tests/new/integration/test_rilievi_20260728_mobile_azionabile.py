@@ -95,7 +95,7 @@ def _make_match(db_session, gara, p1_score, p2_score, status, suffix=""):
         player2_score=p2_score,
         status=status,
     )
-    if status == MatchStatus.COMPLETED.value:
+    if status == MatchStatus.CLOSED_UNILATERALLY.value:
         match.winner_id = p1.id if p1_score > p2_score else p2.id
     db_session.add(match)
     db_session.commit()
@@ -140,7 +140,7 @@ def test_match_in_corso_non_anticipa_il_ritorno(admin_client, db_session):
 def test_match_completato_mostra_ritorno_in_cima(admin_client, db_session):
     """Match gia' chiuso: nulla da fare se non uscire."""
     gara = _make_gara(db_session)
-    match = _make_match(db_session, gara, 5, 3, MatchStatus.COMPLETED.value)
+    match = _make_match(db_session, gara, 5, 3, MatchStatus.CLOSED_UNILATERALLY.value)
 
     resp = admin_client.get(f"/admin/match/{match.id}")
     assert resp.status_code == 200
@@ -157,7 +157,7 @@ def test_match_completato_mostra_ritorno_in_cima(admin_client, db_session):
 def test_amalfi_turno_finito_gestione_in_cima_e_aperta(admin_client, db_session):
     """Turno 1/3 completato: 'Avvia Turno 2' deve essere a portata di tap."""
     gara = _make_gara(db_session, strategy="amalfi", rounds_count=3, current_round=1)
-    _make_match(db_session, gara, 5, 3, MatchStatus.COMPLETED.value)
+    _make_match(db_session, gara, 5, 3, MatchStatus.CLOSED_UNILATERALLY.value)
 
     resp = admin_client.get(f"/admin/gara/{gara.id}")
     assert resp.status_code == 200
@@ -189,7 +189,7 @@ def test_amalfi_turno_in_corso_mantiene_gestione_collassata(admin_client, db_ses
 def test_random_turno_finito_non_promuove_la_gestione(admin_client, db_session):
     """Random: i giocatori avanzano da soli, non c'e' un turno da avviare."""
     gara = _make_gara(db_session, strategy="random", rounds_count=3, current_round=1)
-    _make_match(db_session, gara, 5, 3, MatchStatus.COMPLETED.value)
+    _make_match(db_session, gara, 5, 3, MatchStatus.CLOSED_UNILATERALLY.value)
 
     resp = admin_client.get(f"/admin/gara/{gara.id}")
     assert resp.status_code == 200
@@ -207,7 +207,7 @@ def test_amalfi_gara_finita_gestione_gia_in_cima_senza_duplicati(
     il blocco dedicato non deve aggiungersene un secondo.
     """
     gara = _make_gara(db_session, strategy="amalfi", rounds_count=1, current_round=1)
-    _make_match(db_session, gara, 5, 3, MatchStatus.COMPLETED.value)
+    _make_match(db_session, gara, 5, 3, MatchStatus.CLOSED_UNILATERALLY.value)
 
     resp = admin_client.get(f"/admin/gara/{gara.id}")
     assert resp.status_code == 200
@@ -230,8 +230,12 @@ def test_amalfi_parimerito_promuove_avvia_spareggio_in_cima(admin_client, db_ses
     entrambi a (1 vittoria, +2 rack) e vanno spareggiati.
     """
     gara = _make_gara(db_session, strategy="amalfi", rounds_count=1, current_round=1)
-    _make_match(db_session, gara, 5, 3, MatchStatus.COMPLETED.value, suffix="a")
-    _make_match(db_session, gara, 5, 3, MatchStatus.COMPLETED.value, suffix="b")
+    _make_match(
+        db_session, gara, 5, 3, MatchStatus.CLOSED_UNILATERALLY.value, suffix="a"
+    )
+    _make_match(
+        db_session, gara, 5, 3, MatchStatus.CLOSED_UNILATERALLY.value, suffix="b"
+    )
 
     resp = admin_client.get(f"/admin/gara/{gara.id}")
     assert resp.status_code == 200

@@ -41,7 +41,7 @@ def _completed_match(user_id, opponent_id):
             round_number=1,
             player1_id=user_id,
             player2_id=opponent_id,
-            status=MatchStatus.COMPLETED.value,
+            status=MatchStatus.CLOSED_UNILATERALLY.value,
         )
     )
 

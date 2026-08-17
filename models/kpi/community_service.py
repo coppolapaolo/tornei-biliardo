@@ -149,13 +149,13 @@ class CommunityService:
             .filter(
                 Match.updated_at >= sixty_days_ago,
                 Match.updated_at < thirty_days_ago,
-                Match.status == MatchStatus.COMPLETED.value,
+                Match.status == MatchStatus.CLOSED_UNILATERALLY.value,
             )
             .union(
                 db.session.query(Match.player2_id).filter(
                     Match.updated_at >= sixty_days_ago,
                     Match.updated_at < thirty_days_ago,
-                    Match.status == MatchStatus.COMPLETED.value,
+                    Match.status == MatchStatus.CLOSED_UNILATERALLY.value,
                 )
             )
             .distinct()
@@ -167,12 +167,12 @@ class CommunityService:
             db.session.query(Match.player1_id)
             .filter(
                 Match.updated_at >= thirty_days_ago,
-                Match.status == MatchStatus.COMPLETED.value,
+                Match.status == MatchStatus.CLOSED_UNILATERALLY.value,
             )
             .union(
                 db.session.query(Match.player2_id).filter(
                     Match.updated_at >= thirty_days_ago,
-                    Match.status == MatchStatus.COMPLETED.value,
+                    Match.status == MatchStatus.CLOSED_UNILATERALLY.value,
                 )
             )
             .distinct()
@@ -189,7 +189,7 @@ class CommunityService:
 
         # 3. Virality: % of matches between New (<30d) and Vet (>30d) users
         recent_matches = (
-            Match.query.filter_by(status=MatchStatus.COMPLETED.value)
+            Match.query.filter_by(status=MatchStatus.CLOSED_UNILATERALLY.value)
             .order_by(Match.updated_at.desc())
             .limit(100)
             .all()
@@ -242,7 +242,7 @@ class CommunityService:
             )
             .filter(
                 Match.updated_at >= thirty_days_ago,
-                Match.status == MatchStatus.COMPLETED.value,
+                Match.status == MatchStatus.CLOSED_UNILATERALLY.value,
                 Match.is_trio == False,  # noqa: E712
             )
             .group_by(Match.player1_id)
@@ -255,7 +255,7 @@ class CommunityService:
             )
             .filter(
                 Match.updated_at >= thirty_days_ago,
-                Match.status == MatchStatus.COMPLETED.value,
+                Match.status == MatchStatus.CLOSED_UNILATERALLY.value,
                 Match.is_trio == False,  # noqa: E712
             )
             .group_by(Match.player2_id)
@@ -270,7 +270,7 @@ class CommunityService:
             .join(Match, Match.id == TrioMatch.match_id)
             .filter(
                 Match.updated_at >= thirty_days_ago,
-                Match.status == MatchStatus.COMPLETED.value,
+                Match.status == MatchStatus.CLOSED_UNILATERALLY.value,
                 Match.is_trio == True,  # noqa: E712
             )
             .group_by(TrioMatch.player1_id)
@@ -285,7 +285,7 @@ class CommunityService:
             .join(Match, Match.id == TrioMatch.match_id)
             .filter(
                 Match.updated_at >= thirty_days_ago,
-                Match.status == MatchStatus.COMPLETED.value,
+                Match.status == MatchStatus.CLOSED_UNILATERALLY.value,
                 Match.is_trio == True,  # noqa: E712
             )
             .group_by(TrioMatch.player2_id)
@@ -300,7 +300,7 @@ class CommunityService:
             .join(Match, Match.id == TrioMatch.match_id)
             .filter(
                 Match.updated_at >= thirty_days_ago,
-                Match.status == MatchStatus.COMPLETED.value,
+                Match.status == MatchStatus.CLOSED_UNILATERALLY.value,
                 Match.is_trio == True,  # noqa: E712
             )
             .group_by(TrioMatch.player3_id)

@@ -42,7 +42,10 @@ class GaraStatusResolver:
         if not matches_list:
             return GaraStatus.PLAYING.value
 
-        finished_statuses = [MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value]
+        finished_statuses = [
+            MatchStatus.CLOSED_UNILATERALLY.value,
+            MatchStatus.CONFIRMED_BY_BOTH.value,
+        ]
 
         # Check if ALL matches across ALL rounds are completed
         all_matches_completed = all(m.status in finished_statuses for m in matches_list)

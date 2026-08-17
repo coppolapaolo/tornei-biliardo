@@ -88,13 +88,14 @@ class UserStatsService:
                         ),
                     ),
                 ),
-                Match.status == MatchStatus.COMPLETED.value,
+                Match.status == MatchStatus.CLOSED_UNILATERALLY.value,
             )
             .count()
         )
 
         won_matches = Match.query.filter(
-            Match.winner_id == user_id, Match.status == MatchStatus.COMPLETED.value
+            Match.winner_id == user_id,
+            Match.status == MatchStatus.CLOSED_UNILATERALLY.value,
         ).count()
 
         lost_matches = total_matches - won_matches
@@ -211,7 +212,7 @@ class UserStatsService:
                 ).label("won_as_p2"),
             )
             .filter(
-                Match.status == MatchStatus.COMPLETED.value,
+                Match.status == MatchStatus.CLOSED_UNILATERALLY.value,
                 Match.player2_id.isnot(None),
             )
             .group_by(Match.player2_id)
@@ -231,7 +232,7 @@ class UserStatsService:
                 ).label("won_as_p1"),
             )
             .filter(
-                Match.status == MatchStatus.COMPLETED.value,
+                Match.status == MatchStatus.CLOSED_UNILATERALLY.value,
                 Match.player1_id.isnot(None),
             )
             .group_by(Match.player1_id)
@@ -254,7 +255,7 @@ class UserStatsService:
             )
             .join(Match, Match.id == TrioMatch.match_id)
             .filter(
-                Match.status == MatchStatus.COMPLETED.value,
+                Match.status == MatchStatus.CLOSED_UNILATERALLY.value,
                 TrioMatch.player3_id.isnot(None),
             )
             .group_by(TrioMatch.player3_id)
@@ -343,7 +344,7 @@ class UserStatsService:
                         ),
                     ),
                 ),
-                Match.status == MatchStatus.COMPLETED.value,
+                Match.status == MatchStatus.CLOSED_UNILATERALLY.value,
             )
             .order_by(Match.updated_at.desc())
             .limit(limit)

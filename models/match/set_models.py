@@ -273,7 +273,7 @@ class Set(BaseModel):
 
     def is_completed(self) -> bool:
         """Check if set is completed."""
-        return self.status == MatchStatus.COMPLETED.value
+        return self.status == MatchStatus.CLOSED_UNILATERALLY.value
 
     @property
     def distance_config(self):

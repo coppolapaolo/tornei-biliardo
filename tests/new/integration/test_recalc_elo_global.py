@@ -27,7 +27,7 @@ def _tournament(db_session, p1, p2, winner, when):
         # VALIDATED (non COMPLETED) → is_walkover=False senza dover creare Rack
         # sintetici: un match COMPLETED senza righe Rack verrebbe scambiato per
         # walkover e saltato dal recalc.
-        status=MatchStatus.VALIDATED.value,
+        status=MatchStatus.CONFIRMED_BY_BOTH.value,
         ended_at=when,
     )
     db_session.add(m)
@@ -41,7 +41,7 @@ def _casual(db_session, p1, p2, winner, when):
         player2_id=p2,
         location="Hall",
         scheduled_at=when - timedelta(hours=1),
-        status=MatchStatus.VALIDATED,
+        status=MatchStatus.CONFIRMED_BY_BOTH,
         distance=5,
         is_race_to=True,
         player1_score=5 if winner == p1 else 2,

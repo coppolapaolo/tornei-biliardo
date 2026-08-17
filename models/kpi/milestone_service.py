@@ -69,7 +69,7 @@ class MilestoneService:
         alerts = []
 
         last_match = (
-            Match.query.filter_by(status=MatchStatus.COMPLETED.value)
+            Match.query.filter_by(status=MatchStatus.CLOSED_UNILATERALLY.value)
             .order_by(Match.updated_at.desc())
             .first()
         )

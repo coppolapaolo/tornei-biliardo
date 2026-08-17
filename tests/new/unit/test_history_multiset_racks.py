@@ -44,7 +44,7 @@ def _add_set(db_session, match, n, p1_racks, p2_racks):
         distance=5,
         player1_racks=p1_racks,
         player2_racks=p2_racks,
-        status=MatchStatus.COMPLETED.value,
+        status=MatchStatus.CLOSED_UNILATERALLY.value,
     )
     db_session.add(s)
     db_session.flush()
@@ -67,7 +67,7 @@ def test_multiset_counts_real_racks_not_sets(db_session):
         player1_score=3,
         player2_score=1,
         winner_id=a.id,
-        status=MatchStatus.COMPLETED.value,
+        status=MatchStatus.CLOSED_UNILATERALLY.value,
     )
     db_session.add(match)
     db_session.flush()
@@ -101,7 +101,7 @@ def test_single_set_unchanged(db_session):
         player1_score=5,
         player2_score=3,
         winner_id=a.id,
-        status=MatchStatus.COMPLETED.value,
+        status=MatchStatus.CLOSED_UNILATERALLY.value,
     )
     db_session.add(match)
     db_session.flush()

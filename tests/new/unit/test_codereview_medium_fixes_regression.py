@@ -117,7 +117,7 @@ class TestBatchCorrectionUnknownType:
             player2_id=p2.id,
             player1_score=3,
             player2_score=1,
-            status=MatchStatus.COMPLETED.value,
+            status=MatchStatus.CLOSED_UNILATERALLY.value,
             winner_id=p1.id,
         )
         db_session.add(match)

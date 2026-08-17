@@ -542,7 +542,7 @@ class TestConfermeERipensamenti:
         driver.entra(direttore)
         driver.gioca_match(partita.id, uno.id)
         assert driver.partite(gara_id, turno=1)[0].status == (
-            MatchStatus.COMPLETED.value
+            MatchStatus.CLOSED_UNILATERALLY.value
         )
 
         driver.entra(uno)

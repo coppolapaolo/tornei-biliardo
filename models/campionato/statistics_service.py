@@ -97,7 +97,7 @@ class TournamentStatisticsService:
             .join(Gara, Match.gara_id == Gara.id)
             .filter(
                 Gara.campionato_id == campionato_id,
-                Match.status == MatchStatus.COMPLETED.value,
+                Match.status == MatchStatus.CLOSED_UNILATERALLY.value,
             )
         )
         total_completed_matches = completed_matches_query.scalar() or 0
@@ -108,7 +108,7 @@ class TournamentStatisticsService:
             .join(Gara, Match.gara_id == Gara.id)
             .filter(
                 Gara.campionato_id == campionato_id,
-                Match.status == MatchStatus.COMPLETED.value,
+                Match.status == MatchStatus.CLOSED_UNILATERALLY.value,
             )
         )
         total_racks_played = rack_sum_query.scalar() or 0

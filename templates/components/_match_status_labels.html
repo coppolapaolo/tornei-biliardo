@@ -14,18 +14,22 @@
    `with context` serve perche' le etichette passano da `_()`.
 #}
 
+{# «Validato» era il fraintendimento da cui e' nato il rinomino dell'enum:
+   CONFIRMED_BY_BOTH non e' la validazione del direttore, e' la chiusura
+   decisa dai due giocatori che hanno confermato entrambi. Quella del
+   direttore e' CLOSED_UNILATERALLY, qui sotto come «Concluso». #}
 {% set labels = {
   MatchStatus.SCHEDULED.value: _('Da giocare'),
   MatchStatus.IN_PROGRESS.value: _('In corso'),
-  MatchStatus.COMPLETED.value: _('Concluso'),
-  MatchStatus.VALIDATED.value: _('Validato'),
+  MatchStatus.CLOSED_UNILATERALLY.value: _('Concluso'),
+  MatchStatus.CONFIRMED_BY_BOTH.value: _('Confermato dai giocatori'),
   MatchStatus.CANCELLED.value: _('Annullato')
 } %}
 
 {% set tone = {
   MatchStatus.SCHEDULED.value: 'warn',
   MatchStatus.IN_PROGRESS.value: 'err',
-  MatchStatus.COMPLETED.value: 'ok',
-  MatchStatus.VALIDATED.value: 'ok',
+  MatchStatus.CLOSED_UNILATERALLY.value: 'ok',
+  MatchStatus.CONFIRMED_BY_BOTH.value: 'ok',
   MatchStatus.CANCELLED.value: 'muted'
 } %}

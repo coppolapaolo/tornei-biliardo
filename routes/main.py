@@ -697,7 +697,7 @@ def _debug_random_score_match(match) -> bool:
         match.player1_score = p1
         match.player2_score = p2
 
-    match.status = MatchStatus.COMPLETED.value
+    match.status = MatchStatus.CLOSED_UNILATERALLY.value
     PlayerEncounterService.record_match_encounters(match)
     return True
 

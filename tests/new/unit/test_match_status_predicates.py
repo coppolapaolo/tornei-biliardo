@@ -39,5 +39,5 @@ class TestMatchStatusPredicates:
 
     def test_predicates_accept_enum_member_value(self):
         """Predicates work with `.value` of enum members (typo-safe usage)."""
-        assert MatchStatus.is_finished(MatchStatus.COMPLETED.value)
+        assert MatchStatus.is_finished(MatchStatus.CLOSED_UNILATERALLY.value)
         assert MatchStatus.is_active(MatchStatus.PLAYING.value)

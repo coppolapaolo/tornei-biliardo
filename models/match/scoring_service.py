@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from typing import Optional, Tuple
 
+from flask_babel import gettext as _
+
 from models.base import db, utc_now
 from models.status_enum import MatchStatus
 from models.transaction.manager import transactional
@@ -157,19 +159,19 @@ class ScoringService:
         # giocatori possono tornare indietro; dopo, il risultato è agli atti e
         # si passa dal reset del direttore.
         #
-        # Attenzione ai due stati finali, che portano nomi fuorvianti:
-        #   COMPLETED  → l'ha chiusa il **direttore** (validazione o forfait)
-        #   VALIDATED  → l'hanno chiusa i **giocatori**, confermando entrambi
-        # Il ripensamento riguarda solo il secondo. `validated_by_admin` non
-        # serve a distinguerli: su `Match` quella colonna non esiste (vive su
-        # `Rack`), e i due punti che la assegnano scrivono un attributo
-        # volatile che non arriva mai al database.
-        if match.status == MatchStatus.COMPLETED.value:
+        # Le due righe qui sotto sono la ragione per cui i due stati finali
+        # hanno cambiato nome: si chiamavano COMPLETED e VALIDATED, e quello
+        # dai poteri più forti portava il nome che suonava più debole. Ora si
+        # legge quello che fanno — quel che i giocatori hanno concordato
+        # possono disfarlo, quel che è stato messo agli atti no.
+        if match.status == MatchStatus.CLOSED_UNILATERALLY.value:
             raise ValueError(
-                "Il risultato è già stato validato: per correggerlo serve il "
-                "direttore di gara"
+                _(
+                    "Il risultato è già stato validato: per correggerlo serve "
+                    "il direttore di gara"
+                )
             )
-        riapri = match.status == MatchStatus.VALIDATED.value
+        riapri = match.status == MatchStatus.CONFIRMED_BY_BOTH.value
 
         # Find last non-deleted rack for this player
         last_rack = (
@@ -415,7 +417,7 @@ class ScoringService:
             raise ValueError("User is not a player in this match")
         if match.is_bye:
             raise ValueError("Cannot forfeit a bye match - it's an automatic win")
-        if match.status == MatchStatus.COMPLETED.value:
+        if match.status == MatchStatus.CLOSED_UNILATERALLY.value:
             raise ValueError("Cannot forfeit a completed match")
 
     @staticmethod
@@ -527,7 +529,7 @@ class ScoringService:
 
                 MatchStateService.to_completed(match.id)
             else:
-                match.status = MatchStatus.COMPLETED.value
+                match.status = MatchStatus.CLOSED_UNILATERALLY.value
                 db.session.add(match)
                 match.reset_confirmations()
         else:
@@ -621,9 +623,12 @@ class ScoringService:
         if match.status != MatchStatus.PLAYING.value:
             MatchStateService.to_playing(match.id)
 
-        # Create new racks
+        # Create new racks. Il contatore si chiama `_indice` e non `_`: in
+        # questo modulo `_` è gettext, e assegnarlo in un `for` lo renderebbe
+        # una variabile locale per tutta la funzione — con un `_()` più su,
+        # sarebbe UnboundLocalError.
         rack_number = 1
-        for _ in range(player1_score):
+        for _indice in range(player1_score):
             RackService.add_rack_result(
                 match.id,
                 rack_number,
@@ -634,7 +639,7 @@ class ScoringService:
             )
             rack_number += 1
 
-        for _ in range(player2_score):
+        for _indice in range(player2_score):
             RackService.add_rack_result(
                 match.id,
                 rack_number,
@@ -653,7 +658,18 @@ class ScoringService:
         winner_id: Optional[int],
         is_complete: bool,
     ) -> None:
-        """Update match with final result."""
+        """Update match with final result.
+
+        Qui c'erano due `match.validated_by_admin = ...`, una per ramo. Su
+        `Match` quella colonna non esiste — vive su `Rack` — quindi SQLAlchemy
+        accettava l'attributo di istanza, lo teneva per la durata della
+        richiesta e non lo scriveva mai. Nessuno lo rileggeva: l'unico effetto
+        era far credere a chi leggeva il codice che ci fosse un flag di
+        validazione da tenere allineato allo stato.
+
+        Il flag è lo stato, e lo si vede proprio dalle due righe rimaste: il
+        ramo completo transita a COMPLETED, quello incompleto torna a PLAYING.
+        """
         from .state_service import MatchStateService
 
         match.player1_score = player1_score
@@ -661,9 +677,11 @@ class ScoringService:
         match.winner_id = winner_id
 
         if is_complete:
-            match.validated_by_admin = True
-            if match.status != MatchStatus.COMPLETED.value:
-                MatchStateService.to_completed(match.id)
+            if match.status != MatchStatus.CLOSED_UNILATERALLY.value:
+                # È il percorso «risultato secco» del direttore: la partita può
+                # non essere mai partita (nessun tavolo, quindi ancora
+                # PENDING), e chiuderla comunque è appunto una sua facoltà.
+                MatchStateService.to_completed(match.id, closed_by_director=True)
 
             # Release table
             if match.table_assignment:
@@ -672,8 +690,7 @@ class ScoringService:
                 TableAssignmentService.release_and_reassign_table(match.id)
                 match.table_assignment = None
         else:
-            match.validated_by_admin = False
-            if match.status == MatchStatus.COMPLETED.value:
+            if match.status == MatchStatus.CLOSED_UNILATERALLY.value:
                 match.status = MatchStatus.PLAYING.value
 
 

@@ -221,7 +221,11 @@ class RoundService:
                 break
 
             all_completed = all(
-                m.status in [MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value]
+                m.status
+                in [
+                    MatchStatus.CLOSED_UNILATERALLY.value,
+                    MatchStatus.CONFIRMED_BY_BOTH.value,
+                ]
                 for m in round_matches
             )
 

@@ -45,7 +45,7 @@ def _complete_round(gara_id: int, round_number: int, db_session) -> None:
         match.player1_score = 5
         match.player2_score = 3
         match.winner_id = match.player1_id
-        match.status = MatchStatus.COMPLETED.value
+        match.status = MatchStatus.CLOSED_UNILATERALLY.value
         db_session.add(match)
     db_session.flush()
 

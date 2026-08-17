@@ -116,7 +116,7 @@ class WithdrawPolicyService:
                 match.player2_score = 0
 
             match.winner_id = winner_id
-            match.status = MatchStatus.COMPLETED.value
+            match.status = MatchStatus.CLOSED_UNILATERALLY.value
 
         # Handle trio matches (all of them - player3, player1, or player2)
         # Combine unique trio matches from both queries

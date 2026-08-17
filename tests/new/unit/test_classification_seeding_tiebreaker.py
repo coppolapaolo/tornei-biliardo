@@ -106,7 +106,7 @@ def _add_match(db_session, gara, round_number, winner, loser, score=(5, 3)):
         player1_score=score[0],
         player2_score=score[1],
         winner_id=winner.id,
-        status=MatchStatus.COMPLETED.value,
+        status=MatchStatus.CLOSED_UNILATERALLY.value,
     )
     db_session.add(match)
     db_session.flush()

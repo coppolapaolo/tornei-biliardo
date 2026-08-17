@@ -100,7 +100,7 @@ def test_direttore_in_gioco_ha_quattro_viste(director_client, db_session):
     gara = _make_gara(db_session)
     p1 = UserService.create_user("vtabs_p1", "vtabs_p1@test.local", "pw12345")
     p2 = UserService.create_user("vtabs_p2", "vtabs_p2@test.local", "pw12345")
-    _make_match(db_session, gara, p1, p2, MatchStatus.COMPLETED.value, (5, 3))
+    _make_match(db_session, gara, p1, p2, MatchStatus.CLOSED_UNILATERALLY.value, (5, 3))
 
     html = director_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
 
@@ -116,7 +116,7 @@ def test_nessuna_sezione_irraggiungibile(director_client, db_session):
     gara = _make_gara(db_session)
     p1 = UserService.create_user("vtabs_r1", "vtabs_r1@test.local", "pw12345")
     p2 = UserService.create_user("vtabs_r2", "vtabs_r2@test.local", "pw12345")
-    _make_match(db_session, gara, p1, p2, MatchStatus.COMPLETED.value, (5, 3))
+    _make_match(db_session, gara, p1, p2, MatchStatus.CLOSED_UNILATERALLY.value, (5, 3))
 
     html = director_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
 
@@ -178,7 +178,9 @@ def test_niente_scorciatoia_a_partita_conclusa(client, db_session):
     gara = _make_gara(db_session)
     db_session.add(Inscription(gara_id=gara.id, user_id=player.id))
     db_session.commit()
-    _make_match(db_session, gara, player, other, MatchStatus.VALIDATED.value, (5, 2))
+    _make_match(
+        db_session, gara, player, other, MatchStatus.CONFIRMED_BY_BOTH.value, (5, 2)
+    )
 
     html = client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
 

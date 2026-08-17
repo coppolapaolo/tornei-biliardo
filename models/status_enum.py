@@ -94,14 +94,53 @@ class TournamentStatus(_StrEnum):
 # ──────────────────────────────────────────────────────────────────────────────
 # MATCH
 # Persistito: `match.status` → {pending, playing, completed, validated}
+#   NB: i due valori finali si chiamano CLOSED_UNILATERALLY ("completed") e
+#   CONFIRMED_BY_BOTH ("validated"). Il perché di quel divario fra nome e
+#   valore sta nella docstring della classe.
 # Fonte: models/match/models.py
 # ──────────────────────────────────────────────────────────────────────────────
 class MatchStatus(_StrEnum):
-    """
-    Status for all match types (tournament and individual).
+    """Status for all match types (tournament and individual).
 
-    Tournament matches: PENDING -> PLAYING -> COMPLETED -> VALIDATED
-    Individual matches: SCHEDULED -> IN_PROGRESS -> COMPLETED/CANCELLED
+    Tournament matches: PENDING → PLAYING → uno dei due stati finali
+    Individual matches: SCHEDULED → IN_PROGRESS → uno dei due stati finali
+                        (oppure CANCELLED)
+
+    I DUE STATI FINALI, E PERCHÉ SI CHIAMAVANO AL CONTRARIO
+    ------------------------------------------------------
+    Si chiamavano ``COMPLETED`` e ``VALIDATED``, e nessuno dei due significava
+    quello che sembrava:
+
+    * ``VALIDATED`` non era la validazione del direttore — era la chiusura
+      fatta dai **due giocatori**, che confermano entrambi il punteggio;
+    * ``COMPLETED`` non era il generico "finita" — era la chiusura fatta
+      **senza** quella doppia firma: il direttore che valida, un forfait, un
+      bye, un risultato inserito a mano, un turno importato già deciso.
+
+    L'inversione non era un dettaglio di lessico. I due stati hanno poteri
+    diversi, e il più forte è quello che si chiamava col nome più debole:
+    ``ScoringService.remove_rack_for_player`` lascia annullare l'ultimo rack a
+    una partita chiusa dai giocatori (è il loro accordo, possono ripensarci) e
+    lo vieta a una chiusa d'ufficio (è agli atti, ci vuole il direttore). Chi
+    leggeva "validated" e credeva di avere in mano lo stato più autorevole
+    concludeva l'esatto contrario del vero.
+
+    I nomi dicono ora la sola cosa che davvero distingue i due stati: **con
+    quante firme** la partita è stata chiusa. Non *chi* l'ha chiusa, perché
+    questo enum lo condividono anche le partite casual
+    (``models/individual_match/``), dove un direttore non esiste e a chiudere
+    sono un forfait o il sistema.
+
+    I VALORI PERSISTITI RESTANO ``"completed"`` E ``"validated"``
+    -------------------------------------------------------------
+    Sono su ``match.status`` e ``individual_match.status`` di ogni riga già
+    scritta, viaggiano nei payload JSON verso il frontend e compaiono nel
+    JavaScript. Rinominare i valori è un secondo passo — migration più
+    allineamento di JS e API — deliberatamente separato da questo, che è solo
+    lessicale e non tocca un byte di database.
+
+    Finché quel passo non si fa, il divario fra nome e valore resta: chi
+    scrive query SQL a mano cerca ancora ``'completed'`` e ``'validated'``.
     """
 
     # Tournament match lifecycle
@@ -112,15 +151,22 @@ class MatchStatus(_StrEnum):
     SCHEDULED = "scheduled"
     IN_PROGRESS = "in_progress"
 
-    # Common final states
-    COMPLETED = "completed"
-    VALIDATED = "validated"  # optional/admin only
+    # ── Stati finali ────────────────────────────────────────────────────────
+    #: Chiusa **senza** la doppia conferma dei giocatori: validazione del
+    #: direttore, forfait, bye, risultato inserito a mano, turno già deciso.
+    #: È lo stato più forte dei due — i giocatori non possono più annullare.
+    CLOSED_UNILATERALLY = "completed"
+
+    #: Chiusa dall'accordo dei due giocatori, che hanno confermato entrambi.
+    #: Resta annullabile da loro: quel che hanno concordato possono disfarlo.
+    CONFIRMED_BY_BOTH = "validated"
+
     CANCELLED = "cancelled"
 
     @classmethod
     def finished_values(cls) -> Tuple[str, ...]:
-        """Status values that count as 'finished' (completed or validated)."""
-        return (cls.COMPLETED.value, cls.VALIDATED.value)
+        """Status values that count as 'finished' (entrambi gli stati finali)."""
+        return (cls.CLOSED_UNILATERALLY.value, cls.CONFIRMED_BY_BOTH.value)
 
     @classmethod
     def is_finished(cls, status: str) -> bool:

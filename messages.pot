@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-17 09:29+0200\n"
+"POT-Creation-Date: 2026-08-17 11:11+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,31 +21,31 @@ msgstr ""
 msgid "Accesso negato"
 msgstr ""
 
-#: models/status_enum.py:336
+#: models/status_enum.py:382
 msgid "Palla 8"
 msgstr ""
 
-#: models/status_enum.py:337
+#: models/status_enum.py:383
 msgid "Palla 9"
 msgstr ""
 
-#: models/status_enum.py:338
+#: models/status_enum.py:384
 msgid "Palla 10"
 msgstr ""
 
-#: models/status_enum.py:339
+#: models/status_enum.py:385
 msgid "One Pocket"
 msgstr ""
 
-#: models/status_enum.py:340
+#: models/status_enum.py:386
 msgid "Straight Pool"
 msgstr ""
 
-#: models/status_enum.py:341
+#: models/status_enum.py:387
 msgid "Bank Pool"
 msgstr ""
 
-#: models/status_enum.py:342
+#: models/status_enum.py:388
 msgid "Rotation"
 msgstr ""
 
@@ -652,6 +652,12 @@ msgstr ""
 msgid "ogni set esattamente %(n)s rack"
 msgstr ""
 
+#: models/match/scoring_service.py:170
+msgid ""
+"Il risultato è già stato validato: per correggerlo serve il direttore di "
+"gara"
+msgstr ""
+
 #: models/notification/factory.py:386
 #, python-format
 msgid "%(enrolled_by)s ti ha iscritto alla gara %(gara_name)s del %(gara_date)s"
@@ -737,6 +743,31 @@ msgstr ""
 msgid ""
 "Il match ha raggiunto la distanza: prima di continuare il risultato va "
 "confermato o rifiutato."
+msgstr ""
+
+#: models/user/profile_service.py:200
+msgid "Utente non trovato."
+msgstr ""
+
+#: models/user/profile_service.py:204
+msgid "L'utente amministratore non è modificabile."
+msgstr ""
+
+#: models/user/profile_service.py:213
+msgid "Il nome utente non può restare vuoto."
+msgstr ""
+
+#: models/user/profile_service.py:214
+msgid "L'indirizzo email non può restare vuoto."
+msgstr ""
+
+#: models/user/profile_service.py:227
+msgid "Lo username «admin» (e le sue varianti) è riservato al sistema."
+msgstr ""
+
+#: models/user/profile_service.py:237
+#, python-format
+msgid "Lo username «%(nome)s» è già in uso."
 msgstr ""
 
 #: models/user/role_grant_service.py:534 routes/gamification/features.py:78
@@ -2012,35 +2043,47 @@ msgstr ""
 msgid "Campionato non era nascosto"
 msgstr ""
 
-#: routes/player/profile.py:321
+#: routes/player/profile.py:337
 msgid ""
 "Informazioni aggiornate. Abbiamo inviato una nuova email di verifica al "
 "nuovo indirizzo."
 msgstr ""
 
-#: routes/player/profile.py:327
+#: routes/player/profile.py:343
 msgid "Informazioni aggiornate correttamente."
 msgstr ""
 
-#: routes/player/profile.py:332
+#: routes/player/profile.py:348
 msgid "Si è verificato un errore durante l'aggiornamento."
 msgstr ""
 
-#: routes/player/profile.py:344
+#: routes/player/profile.py:360
 msgid "La tua email è già verificata."
 msgstr ""
 
-#: routes/player/profile.py:353
+#: routes/player/profile.py:369
 msgid "Email di verifica inviata. Controlla la tua casella di posta."
 msgstr ""
 
-#: routes/player/profile.py:357
+#: routes/player/profile.py:373
 msgid "Impossibile inviare l'email. Riprova più tardi."
 msgstr ""
 
-#: routes/player/profile.py:359
+#: routes/player/profile.py:375
 #, python-format
 msgid "Errore durante l'invio: %(detail)s"
+msgstr ""
+
+#: routes/player/profile.py:390
+msgid "La nuova password e la conferma non coincidono."
+msgstr ""
+
+#: routes/player/profile.py:395
+msgid "Password aggiornata correttamente."
+msgstr ""
+
+#: routes/player/profile.py:397
+msgid "Password attuale errata o nuova password non valida."
 msgstr ""
 
 #: templates/base.html:60
@@ -3407,11 +3450,11 @@ msgstr ""
 #: templates/admin/campionato_detail.html:246
 #: templates/components/_unified_match_score.html:82
 #: templates/components/_unified_match_score.html:93
-#: templates/exam/requests.html:19 utils/status_ui.py:187
+#: templates/exam/requests.html:19 utils/status_ui.py:194
 msgid "Confermato"
 msgstr ""
 
-#: templates/admin/campionato_detail.html:248 utils/status_ui.py:188
+#: templates/admin/campionato_detail.html:248 utils/status_ui.py:195
 msgid "Rifiutato"
 msgstr ""
 
@@ -5500,7 +5543,7 @@ msgstr ""
 #: templates/components/_match_result_row.html:87
 #: templates/components/_match_result_row.html:89
 #: templates/components/_match_scoreboard.html:54
-#: templates/components/_match_status_labels.html:19
+#: templates/components/_match_status_labels.html:23
 #: templates/components/_multi_set_score_display.html:88
 #: templates/components/_separated_dashboard_content.html:36
 #: templates/components/_separated_dashboard_content.html:205
@@ -6806,7 +6849,7 @@ msgstr ""
 #: templates/components/_gara_matches.html:82
 #: templates/components/_history_campionati_tab.html:26
 #: templates/components/_match_cards_mobile.html:57
-#: templates/components/_match_status_labels.html:20
+#: templates/components/_match_status_labels.html:24
 #: templates/individual_match/match_detail.html:153
 #: templates/individual_match/matches.html:99
 msgid "Concluso"
@@ -7436,7 +7479,7 @@ msgstr ""
 #: templates/components/_match_card.html:24
 #: templates/components/_match_result_row.html:81
 #: templates/components/_match_result_row.html:83
-#: templates/components/_match_status_labels.html:18
+#: templates/components/_match_status_labels.html:22
 #: templates/individual_match/dashboard.html:81
 #: templates/individual_match/matches.html:34
 #: templates/individual_match/matches.html:104
@@ -7603,11 +7646,11 @@ msgstr ""
 msgid "Annulla ultimo rack"
 msgstr ""
 
-#: templates/components/_match_status_labels.html:21 utils/status_ui.py:153
-msgid "Validato"
+#: templates/components/_match_status_labels.html:25 utils/status_ui.py:159
+msgid "Confermato dai giocatori"
 msgstr ""
 
-#: templates/components/_match_status_labels.html:22
+#: templates/components/_match_status_labels.html:26
 #: templates/components/_proposal_labels.html:37
 #: templates/individual_match/matches.html:102
 msgid "Annullato"
@@ -12230,7 +12273,7 @@ msgstr ""
 msgid "Contesa"
 msgstr ""
 
-#: templates/player/my_venue_requests.html:43 utils/status_ui.py:169
+#: templates/player/my_venue_requests.html:43 utils/status_ui.py:176
 msgid "Approvata"
 msgstr ""
 
@@ -12771,8 +12814,8 @@ msgstr ""
 msgid "In Corso"
 msgstr ""
 
-#: utils/status_ui.py:104 utils/status_ui.py:138 utils/status_ui.py:156
-#: utils/status_ui.py:174 utils/status_ui.py:192 utils/status_ui.py:231
+#: utils/status_ui.py:104 utils/status_ui.py:138 utils/status_ui.py:163
+#: utils/status_ui.py:181 utils/status_ui.py:199 utils/status_ui.py:238
 msgid "Sconosciuto"
 msgstr ""
 
@@ -12780,15 +12823,15 @@ msgstr ""
 msgid "Terminato"
 msgstr ""
 
-#: utils/status_ui.py:150 utils/status_ui.py:186
+#: utils/status_ui.py:150 utils/status_ui.py:193
 msgid "In Attesa"
 msgstr ""
 
-#: utils/status_ui.py:168
+#: utils/status_ui.py:175
 msgid "In Valutazione"
 msgstr ""
 
-#: utils/status_ui.py:170
+#: utils/status_ui.py:177
 msgid "Respinta"
 msgstr ""
 

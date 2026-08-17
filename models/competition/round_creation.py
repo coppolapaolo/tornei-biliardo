@@ -174,12 +174,15 @@ def create_matches_from_pairings(
                 )
                 db.session.add(match)
                 db.session.flush()
-                # Runtime-only flag (no column on Match) telling
-                # MatchStateService.to_completed this pending non-trio non-bye
-                # match is admin-validated. Same pattern used by
-                # ScoringService._apply_result and TrioMatch._finalize_trio.
-                match.validated_by_admin = True  # type: ignore[attr-defined]
-                MatchStateService.to_completed(match.id)
+                # La partita nasce già decisa e non passa mai da PLAYING:
+                # chiuderla da PENDING è una facoltà del direttore, e ora si
+                # dichiara. Prima lo si comunicava scrivendo
+                # `match.validated_by_admin = True` — un attributo che su
+                # `Match` non esiste (vive su `Rack`) e che `to_completed`
+                # rileggeva col `getattr`. Il `# type: ignore[attr-defined]`
+                # che serviva a zittire pyright era il codice che lo ammetteva
+                # da solo.
+                MatchStateService.to_completed(match.id, closed_by_director=True)
             else:
                 match = Match(
                     **common_kwargs,

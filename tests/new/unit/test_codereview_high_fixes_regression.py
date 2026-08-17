@@ -394,7 +394,7 @@ class TestRecalculateAffectedClassifications:
                 player2_id=p2.id,
                 player1_score=5,
                 player2_score=3,
-                status=MatchStatus.COMPLETED.value,
+                status=MatchStatus.CLOSED_UNILATERALLY.value,
             )
         )
         # RoundClassification stale pre-esistente (verrà cancellata e ricreata)

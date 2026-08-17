@@ -93,7 +93,7 @@ def test_x_replacement_with_real_bye_is_allowed(db_session):
             player1_id=player.id,
             player2_id=None,
             is_bye=True,
-            status=MatchStatus.COMPLETED.value,
+            status=MatchStatus.CLOSED_UNILATERALLY.value,
             winner_id=player.id,
             player1_score=5,
         )

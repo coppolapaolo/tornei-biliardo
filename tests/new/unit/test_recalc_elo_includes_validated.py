@@ -82,8 +82,8 @@ def test_matches_to_process_includes_validated(db_session):
     db.session.flush()
     gara_id = _gara_id(suffix)
 
-    validated = _match(gara_id, p1.id, p2.id, MatchStatus.VALIDATED.value)
-    completed = _match(gara_id, p1.id, p2.id, MatchStatus.COMPLETED.value)
+    validated = _match(gara_id, p1.id, p2.id, MatchStatus.CONFIRMED_BY_BOTH.value)
+    completed = _match(gara_id, p1.id, p2.id, MatchStatus.CLOSED_UNILATERALLY.value)
 
     ids = {m.id for m in matches_to_process()}
     assert validated.id in ids, "il match validated va riprocessato dal backfill"
@@ -116,7 +116,7 @@ def test_validated_match_produces_elo(db_session):
     db.session.add_all([p1, p2])
     db.session.flush()
     gara_id = _gara_id(suffix)
-    match = _match(gara_id, p1.id, p2.id, MatchStatus.VALIDATED.value)
+    match = _match(gara_id, p1.id, p2.id, MatchStatus.CONFIRMED_BY_BOTH.value)
 
     for m in matches_to_process():
         if m.id == match.id:

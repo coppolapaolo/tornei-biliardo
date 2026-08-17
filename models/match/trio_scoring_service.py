@@ -293,7 +293,11 @@ class TrioScoringService:
             match_obj.winner_id = trio.winner_id
             match_obj.player1_score = player1_racks
             match_obj.player2_score = player2_racks
-            match_obj.validated_by_admin = True
+            # Niente `match_obj.validated_by_admin = True`: su `Match` quella
+            # colonna non esiste (vive su `Rack`), e per i trio non serviva
+            # comunque — il guard di `to_completed` li lascia passare da
+            # PENDING perché `is_trio` è vera.
+            #
             # Use service to complete - emits SSE and records PlayerEncounter
             MatchStateService.to_completed(match_obj.id)
 

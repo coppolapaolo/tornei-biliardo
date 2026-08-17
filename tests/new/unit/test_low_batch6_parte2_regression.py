@@ -109,7 +109,7 @@ def test_opponent_filter_includes_trio_matches(db_session):
         player1_id=user.id,
         player2_id=third.id,
         is_trio=True,
-        status=MatchStatus.COMPLETED.value,
+        status=MatchStatus.CLOSED_UNILATERALLY.value,
     )
     db.session.add(match)
     db.session.flush()

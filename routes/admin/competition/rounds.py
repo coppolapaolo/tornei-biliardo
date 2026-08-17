@@ -510,7 +510,10 @@ def amalfi_classification(gara_id, round_number):
     # VALIDATED è uno stato post-COMPLETED (admin ha confermato): conta
     # comunque come "match finito" ai fini della progressione del turno.
     # Bye matches are considered completed automatically.
-    finished_statuses = (MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value)
+    finished_statuses = (
+        MatchStatus.CLOSED_UNILATERALLY.value,
+        MatchStatus.CONFIRMED_BY_BOTH.value,
+    )
     incomplete_matches = [
         m
         for m in matches_in_round
@@ -603,7 +606,10 @@ def amalfi_start_round(gara_id, round_number):
                 gara_id=gara_id, round_number=round_number - 1
             ).all()
             # VALIDATED conta come "match finito" (post-COMPLETED, admin-confirmed).
-            finished = (MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value)
+            finished = (
+                MatchStatus.CLOSED_UNILATERALLY.value,
+                MatchStatus.CONFIRMED_BY_BOTH.value,
+            )
             incomplete_prev = [m for m in prev_matches if m.status not in finished]
             if incomplete_prev:
                 return jsonify(
@@ -699,7 +705,10 @@ def start_round_generic(gara_id, round_number):
                 gara_id=gara_id, round_number=round_number - 1
             ).all()
             # VALIDATED conta come "match finito" (post-COMPLETED, admin-confirmed).
-            finished = (MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value)
+            finished = (
+                MatchStatus.CLOSED_UNILATERALLY.value,
+                MatchStatus.CONFIRMED_BY_BOTH.value,
+            )
             incomplete_prev = [m for m in prev_matches if m.status not in finished]
             if incomplete_prev:
                 return jsonify(

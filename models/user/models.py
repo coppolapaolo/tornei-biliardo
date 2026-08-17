@@ -353,7 +353,7 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
 
         matches: List["Match"] = Match.query.filter(
             db.or_(Match.player1_id == self.id, Match.player2_id == self.id),
-            Match.status == MatchStatus.COMPLETED.value,
+            Match.status == MatchStatus.CLOSED_UNILATERALLY.value,
         ).all()
 
         total_matches = len(matches)

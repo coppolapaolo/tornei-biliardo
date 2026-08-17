@@ -88,11 +88,11 @@ class MetricsService:
         # sia come player1 sia come player2 NON va contato due volte (la vecchia
         # somma dei due distinct() gonfiava il numeratore).
         p1 = db.session.query(Match.player1_id).filter(
-            Match.status == MatchStatus.COMPLETED.value,
+            Match.status == MatchStatus.CLOSED_UNILATERALLY.value,
             Match.player1_id.isnot(None),
         )
         p2 = db.session.query(Match.player2_id).filter(
-            Match.status == MatchStatus.COMPLETED.value,
+            Match.status == MatchStatus.CLOSED_UNILATERALLY.value,
             Match.player2_id.isnot(None),
         )
         unique_players = min(p1.union(p2).count(), total_users)
@@ -148,12 +148,12 @@ class MetricsService:
         # materializziamo tutti gli id in Python (DAU/WAU/MAU è hot path).
         p1 = db.session.query(Match.player1_id.label("uid")).filter(
             Match.updated_at >= cutoff,
-            Match.status == MatchStatus.COMPLETED.value,
+            Match.status == MatchStatus.CLOSED_UNILATERALLY.value,
             Match.player1_id.isnot(None),
         )
         p2 = db.session.query(Match.player2_id.label("uid")).filter(
             Match.updated_at >= cutoff,
-            Match.status == MatchStatus.COMPLETED.value,
+            Match.status == MatchStatus.CLOSED_UNILATERALLY.value,
             Match.player2_id.isnot(None),
         )
         union_subquery = p1.union(p2).subquery()
@@ -202,7 +202,7 @@ class MetricsService:
                 and_(
                     or_(Match.player1_id == user.id, Match.player2_id == user.id),
                     Match.updated_at >= activity_after,
-                    Match.status == MatchStatus.COMPLETED.value,
+                    Match.status == MatchStatus.CLOSED_UNILATERALLY.value,
                 )
             ).first()
             if has_activity:
@@ -217,14 +217,16 @@ class MetricsService:
         """Get total completed matches."""
         from ..match.models import Match
 
-        return Match.query.filter_by(status=MatchStatus.COMPLETED.value).count()
+        return Match.query.filter_by(
+            status=MatchStatus.CLOSED_UNILATERALLY.value
+        ).count()
 
     @staticmethod
     def get_matches_in_period(date_range: Optional[DateRange]) -> int:
         """Get matches completed in date range."""
         from ..match.models import Match
 
-        filters = [Match.status == MatchStatus.COMPLETED.value]
+        filters = [Match.status == MatchStatus.CLOSED_UNILATERALLY.value]
         filters.extend(_build_date_filters(func.date(Match.updated_at), date_range))
         return Match.query.filter(and_(*filters)).count()
 
@@ -244,7 +246,7 @@ class MetricsService:
         """Get daily match counts for charting."""
         from ..match.models import Match
 
-        filters = [Match.status == MatchStatus.COMPLETED.value]
+        filters = [Match.status == MatchStatus.CLOSED_UNILATERALLY.value]
         filters.extend(_build_date_filters(func.date(Match.updated_at), date_range))
 
         results = (

@@ -165,7 +165,7 @@ class AchievementMetrics:
             db.session.query(IndividualMatch.player1_id, IndividualMatch.player2_id)
             .filter(
                 IndividualMatch.status.in_(
-                    [MatchStatus.COMPLETED, MatchStatus.VALIDATED]
+                    [MatchStatus.CLOSED_UNILATERALLY, MatchStatus.CONFIRMED_BY_BOTH]
                 ),
                 db.or_(
                     IndividualMatch.player1_id == user_id,

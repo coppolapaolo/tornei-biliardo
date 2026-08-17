@@ -69,7 +69,7 @@ def _add_completed_match(db_session, gara, player1, player2) -> Match:
         player1_id=player1.id,
         player2_id=player2.id,
         round_number=1,
-        status=MatchStatus.COMPLETED.value,
+        status=MatchStatus.CLOSED_UNILATERALLY.value,
         player1_score=5,
         player2_score=3,
         winner_id=player1.id,

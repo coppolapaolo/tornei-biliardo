@@ -78,7 +78,7 @@ def gara_with_completed_match(director_user, players_pair, db_session):
         player1_id=p1.id,
         player2_id=p2.id,
         round_number=1,
-        status=MatchStatus.COMPLETED.value,
+        status=MatchStatus.CLOSED_UNILATERALLY.value,
         player1_score=5,
         player2_score=3,
         winner_id=p1.id,
@@ -130,7 +130,7 @@ class TestResetWithTiebreakerService:
         assert match.player1_score == 5
         assert match.player2_score == 3
         assert match.winner_id == p1.id
-        assert match.status == MatchStatus.COMPLETED.value
+        assert match.status == MatchStatus.CLOSED_UNILATERALLY.value
 
     def test_reset_succeeds_after_tiebreaker_cancellation(
         self, gara_with_completed_match, db_session

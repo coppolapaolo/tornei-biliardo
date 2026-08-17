@@ -114,7 +114,7 @@ def random_gara_with_tied_players(db_session):
         player2_id=player_b.id,
         player1_score=5,  # player_a gets 5 racks
         player2_score=3,  # player_b gets 3 racks
-        status=MatchStatus.COMPLETED.value,
+        status=MatchStatus.CLOSED_UNILATERALLY.value,
     )
     db_session.add(match1)
 

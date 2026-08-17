@@ -149,8 +149,15 @@ class StatusPresenter:
         mapping: Dict[str, Tuple[str, str]] = {
             MatchStatus.PENDING.value: ("bg-secondary", _("In Attesa")),
             MatchStatus.PLAYING.value: ("bg-primary", _("In Corso")),
-            MatchStatus.COMPLETED.value: ("bg-success", _("Completato")),
-            MatchStatus.VALIDATED.value: ("bg-dark", _("Validato")),
+            MatchStatus.CLOSED_UNILATERALLY.value: ("bg-success", _("Completato")),
+            # Diceva «Validato», che è proprio il fraintendimento da cui è
+            # nato il rinomino dell'enum: questo stato non è la validazione
+            # del direttore — quella è la riga sopra — ma la chiusura decisa
+            # dai due giocatori, che hanno confermato entrambi.
+            MatchStatus.CONFIRMED_BY_BOTH.value: (
+                "bg-dark",
+                _("Confermato dai giocatori"),
+            ),
         }
         return mapping.get(
             s or MatchStatus.PENDING.value, ("bg-secondary", _("Sconosciuto"))

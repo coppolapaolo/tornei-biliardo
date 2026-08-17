@@ -63,7 +63,7 @@ def _make_completed_match(db_session, gara_id, p1, p2):
         player1_score=5,
         player2_score=3,
         winner_id=p1,
-        status=MatchStatus.COMPLETED.value,
+        status=MatchStatus.CLOSED_UNILATERALLY.value,
         updated_at=utc_now(),
     )
     db_session.add(match)

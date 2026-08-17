@@ -85,12 +85,14 @@ def profile():
     )
 
     # Statistiche generali
-    total_matches = len([m for m in matches if m.status == MatchStatus.COMPLETED.value])
+    total_matches = len(
+        [m for m in matches if m.status == MatchStatus.CLOSED_UNILATERALLY.value]
+    )
     won_matches = len(
         [
             m
             for m in matches
-            if m.status == MatchStatus.COMPLETED.value
+            if m.status == MatchStatus.CLOSED_UNILATERALLY.value
             and m.winner_id == current_user.id
         ]
     )
@@ -105,9 +107,9 @@ def profile():
     )
 
     # Partite recenti (ultime 10)
-    recent_matches = [m for m in matches if m.status == MatchStatus.COMPLETED.value][
-        :10
-    ]
+    recent_matches = [
+        m for m in matches if m.status == MatchStatus.CLOSED_UNILATERALLY.value
+    ][:10]
 
     # Conta solo i campionati con gare completate dove l'utente ha partecipato
     completed_tournaments = set(
@@ -221,7 +223,9 @@ def view_profile(user_id):
     )
 
     # Public statistics (calculated from visible matches only for non-owners)
-    completed_matches = [m for m in matches if m.status == MatchStatus.COMPLETED.value]
+    completed_matches = [
+        m for m in matches if m.status == MatchStatus.CLOSED_UNILATERALLY.value
+    ]
     total_matches = len(completed_matches)
     won_matches = len([m for m in completed_matches if m.winner_id == user.id])
     win_percentage = (won_matches / total_matches * 100) if total_matches > 0 else 0
@@ -285,30 +289,42 @@ def view_profile(user_id):
     )
 
 
+#: I campi che la schermata del profilo sa modificare.
+#:
+#: `squadra` è testo libero e la scrive solo il giocatore (US-1): non produce
+#: alcun effetto da sé, serve a precompilare l'iscrizione alle gare che hanno
+#: attivato le squadre.
+CAMPI_PROFILO = ("username", "email", "phone", "home_city", "squadra")
+
+
 @player_bp.route("/profile/edit", methods=["GET", "POST"])
 @login_required
 @player_only
 def edit_profile():
     """Modifica username, email e telefono dell'utente corrente."""
     if request.method == "POST":
-        username = (request.form.get("username") or "").strip()
-        email = (request.form.get("email") or "").strip()
-        phone = (request.form.get("phone") or "").strip() or None
-        home_city = (request.form.get("home_city") or "").strip() or None
-        # Squadra: testo libero, solo del giocatore (US-1). Non produce alcun
-        # effetto da sé — serve a precompilare l'iscrizione alle gare che
-        # hanno attivato le squadre.
-        squadra = (request.form.get("squadra") or "").strip() or None
+        # Si passano al service **solo i campi che il form ha davvero
+        # mandato**. Prima si leggevano tutti con `request.form.get(...) or ""`
+        # e si passavano sempre: una richiesta parziale — un form ridotto, una
+        # chiamata che tocca il solo telefono, un campo rimosso dal template —
+        # arrivava quindi con username ed email a stringa vuota, che il
+        # service normalizza a `None`. Risultato: l'utente restava senza nome
+        # e senza indirizzo, cioè senza modo di autenticarsi né di recuperare
+        # la password. Un campo assente non è un campo svuotato, e le due cose
+        # non vanno confuse.
+        #
+        # Un campo *presente e vuoto* resta invece una cancellazione voluta,
+        # per quelli in cui ha senso: telefono, città e squadra sono
+        # facoltativi e si tolgono così. Su username ed email il service
+        # rifiuta il vuoto, perché lì non è mai un gesto sensato.
+        aggiornamenti = {
+            campo: request.form[campo].strip()
+            for campo in CAMPI_PROFILO
+            if campo in request.form
+        }
 
         try:
-            user = UserService.update_user(
-                current_user.id,
-                username=username,
-                email=email,
-                phone=phone,
-                home_city=home_city,
-                squadra=squadra,
-            )
+            user = UserService.update_user(current_user.id, **aggiornamenti)
             # If the email changed, update_user revoked is_verified and queued
             # a verification token. Send the email AFTER the transaction commits
             # (i.e. now, post-@transactional return) to avoid I/O under DB lock.
@@ -371,14 +387,14 @@ def change_password():
     confirm = request.form.get("confirm_password") or ""
 
     if new != confirm:
-        flash("La nuova password e la conferma non coincidono.", "error")
+        flash(_("La nuova password e la conferma non coincidono."), "error")
         return redirect(url_for("player.profile"))
 
     ok = UserService.change_password(current_user.id, current, new)
     if ok:
-        flash("Password aggiornata correttamente.", "success")
+        flash(_("Password aggiornata correttamente."), "success")
     else:
-        flash("Password attuale errata o nuova password non valida.", "error")
+        flash(_("Password attuale errata o nuova password non valida."), "error")
 
     return redirect(url_for("player.profile"))
 

@@ -470,7 +470,7 @@ class TestExactModeValidation:
         match = db_session.get(Match, match.id)
 
         # THEN: Match should be completed with player1 as winner
-        assert match.status == MatchStatus.COMPLETED.value
+        assert match.status == MatchStatus.CLOSED_UNILATERALLY.value
         assert match.winner_id == user1.id
         assert match.player1_score == 3
         assert match.player2_score == 2
@@ -518,7 +518,7 @@ class TestQuickResultNonCleanWin:
 
         # THEN: Match should be completed with player1 as winner
         assert (
-            match.status == MatchStatus.COMPLETED.value
+            match.status == MatchStatus.CLOSED_UNILATERALLY.value
         ), f"Match should be COMPLETED but is {match.status}"
         assert match.winner_id == user1.id
         assert match.player1_score == 5
@@ -554,7 +554,7 @@ class TestQuickResultNonCleanWin:
         match = db_session.get(Match, match.id)
 
         # THEN: Match should be completed
-        assert match.status == MatchStatus.COMPLETED.value
+        assert match.status == MatchStatus.CLOSED_UNILATERALLY.value
         assert match.winner_id == user1.id
 
     def test_set_match_result_direct_completes_on_4_5(self, db_session):
@@ -587,7 +587,7 @@ class TestQuickResultNonCleanWin:
         match = db_session.get(Match, match.id)
 
         # THEN: Match should be completed with player2 as winner
-        assert match.status == MatchStatus.COMPLETED.value
+        assert match.status == MatchStatus.CLOSED_UNILATERALLY.value
         assert match.winner_id == user2.id
         assert match.player1_score == 4
         assert match.player2_score == 5

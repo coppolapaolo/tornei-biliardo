@@ -114,7 +114,7 @@ class TestVistaTabellone:
         # Il ramo dei ripescati nasce al turno 2: prima non esiste nulla da
         # distinguere, quindi il test lo fa comparire chiudendo il turno 1.
         for match in Match.query.filter_by(gara_id=gara.id, round_number=1).all():
-            match.status = MatchStatus.COMPLETED.value
+            match.status = MatchStatus.CLOSED_UNILATERALLY.value
             match.winner_id = match.player1_id
             match.player1_score = 3
         db_session.commit()
