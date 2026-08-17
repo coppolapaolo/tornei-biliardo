@@ -22,18 +22,23 @@
                     <tbody>
                         {% for match in matches %}
                             <tr>
+                                {# `match.gara` puo' essere None: gara
+                                   soft-deleted o gara_id NULL. La query del
+                                   profilo fa un join inner e li esclude, ma il
+                                   componente regge da solo — vedi il gemello
+                                   `_user_recent_matches_table.html`. #}
                                 <td>
-                                    {% if match.gara.campionato %}
+                                    {% if match.gara and match.gara.campionato %}
                                         {{ match.gara.campionato.name }}
                                     {% else %}
                                         <span class="text-muted">-</span>
                                     {% endif %}
                                 </td>
                                 <td>
-                                    {% if match.gara.campionato %}
+                                    {% if match.gara and match.gara.campionato %}
                                         {{ _("Gara") }} {{ match.gara.number }}
                                     {% else %}
-                                        {{ match.gara.name }}
+                                        {{ match.gara.name if match.gara else '—' }}
                                     {% endif %}
                                 </td>
                                 <td>{{ match.round_number }}</td>

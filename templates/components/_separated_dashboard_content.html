@@ -28,10 +28,17 @@
         <div class="d-flex align-items-start gap-2">
           <div class="flex-fill">
             <div class="c7-kicker">{{ _('Turno') }} {{ match.round_number }}</div>
+            {# `match.gara` puo' essere None — gara soft-deleted (il
+               with_loader_criteria smaterializza la relazione) o gara_id NULL
+               (il FK e' ON DELETE SET NULL). Oggi la query della dashboard fa
+               un join *inner* su Gara e quei match non arrivano fin qui, ma la
+               difesa sta anche nel componente: e' cosi' per il gemello
+               `_user_recent_matches_table.html`, dove l'accesso non protetto
+               costo' un 500 (GlitchTip TORNEI-BILIARDO-5G). #}
             <div class="mt-1" style="font-size:15px;font-weight:800;letter-spacing:-.02em">
-              {{ match.gara.display_name }}
+              {{ match.gara.display_name if match.gara else '—' }}
             </div>
-            {% if match.gara.campionato %}
+            {% if match.gara and match.gara.campionato %}
             <div style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">{{ match.gara.campionato.name }}</div>
             {% endif %}
           </div>
