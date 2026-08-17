@@ -182,11 +182,26 @@ e non importa nulla dal progetto.
 > entrambe orarie, così il promemoria arriva fra le 2 e le 3 ore prima del
 > match.
 
-**⚠️ SQLite su PythonAnywhere (incidente 2026-06-10)**: lo storage è NFS con
-lock inaffidabili — due processi che SCRIVONO insieme (console + web app)
-possono corrompere il DB ("database disk image is malformed"). Regola: ogni
-script/comando console che scrive sul DB di produzione va eseguito con la
-web app su **Disabled** (riabilitare subito dopo).
+**⚠️ SQLite su PythonAnywhere (incidenti 2026-06-10 e 2026-08-17)**: lo storage
+è NFS con lock inaffidabili. Regola operativa: ogni script/comando console che
+scrive sul DB di produzione va eseguito con la web app su **Disabled**
+(riabilitare subito dopo).
+
+> La causa vera delle due corruzioni (`database disk image is malformed`) era
+> però un'altra, e la regola qui sopra da sola non l'avrebbe mai fermata:
+> `PRAGMA journal_mode=WAL` in `models/base.py`. Il WAL coordina i processi con
+> un file `-shm` in **memoria condivisa via mmap**, che su NFS non è coerente —
+> quindi bastavano la web app e uno scheduled task, senza nessuno alla console.
+> Rimosso il 2026-08-17 (**ADR-045**), con presidio in
+> `tests/new/unit/test_sqlite_pragmas.py`. **Non rimetterlo**, nemmeno
+> condizionato a `FLASK_ENV`: una env var assente in un task lo riattiverebbe
+> in silenzio per tutti, ed è persistito dentro il file `.db`.
+>
+> Corollario per la diagnosi: un `malformed` che **sparisce con un reload** non
+> è un file corrotto — è il WAL, e il file può essere intatto. Le due cose si
+> distinguono solo con `PRAGMA integrity_check`, da rifare **dopo** il
+> checkpoint (`PRAGMA journal_mode=DELETE`), perché è lì che un'eventuale
+> incoerenza si materializza su disco.
 
 **Variabili d'ambiente richieste in produzione** (nel WSGI file
 `/var/www/www_torneibiliardo_it_wsgi.py`): `FLASK_ENV=production` e
@@ -627,6 +642,7 @@ pytest tests/new/unit/ -n auto && pytest tests/new/integration/ -n 4
 - **[docs/adr/ADR-042-certified-exam.md](docs/adr/ADR-042-certified-exam.md)**: l'esame è una sequenza di drill con esito **booleano**, certificato solo di persona; entità gemelle di `MatchProposal` e non astrazione condivisa; `max_score` per-esame su `ExamChallenge`
 - **[docs/adr/ADR-043-reader-timezone.md](docs/adr/ADR-043-reader-timezone.md)**: gli orari sono nel fuso di **chi legge**, dedotto dal browser e **salvato** su `User.timezone` (senza colonna, promemoria ed email non lo saprebbero); nessun backfill, perché «non lo so» e «è Roma» sono cose diverse
 - **[docs/adr/ADR-044-tpa-scoresheet.md](docs/adr/ADR-044-tpa-scoresheet.md)**: referto TPA sui match singoli — funzione da sbloccare, punteggio **derivato** dal referto, registro dei comandi come unica verita', motore verificato per differenza contro l'app JS di riferimento
+- **[docs/adr/ADR-045-no-wal-on-network-storage.md](docs/adr/ADR-045-no-wal-on-network-storage.md)**: niente `journal_mode=WAL` — su NFS la memoria condivisa del WAL non e' coerente fra processi e corrompe il DB; il file `.db` ricorda il journal mode, quindi togliere la riga non basta
 - **[docs/usecases/esami.md](docs/usecases/esami.md)**: i sette journey degli esami e del ruolo esaminatore
 
 ---
