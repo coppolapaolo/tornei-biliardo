@@ -70,10 +70,17 @@ _SELECTATTR_PARTITE = re.compile(
 
 # I file Python del dominio partita. Fuori da qui `.status = "pending"` puo'
 # legittimamente riguardare un'altra entita'.
+#
+# gamification/ e kpi/ ci sono perche' *interrogano* lo stato delle partite per
+# contare: una metrica che filtra sulla stringa sbagliata non solleva, conta
+# zero — e l'achievement non si sblocca mai (era il caso di
+# `_PLAYED_MATCH_STATUSES` in achievement_metrics.py).
 _MODULI_PARTITA = (
     "models/match/",
     "models/individual_match/",
     "models/matchmaking/",
+    "models/gamification/",
+    "models/kpi/",
     "routes/admin/match/",
     "routes/individual_match/",
 )

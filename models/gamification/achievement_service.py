@@ -26,6 +26,7 @@ from models.gamification.events import AchievementUnlockedEvent
 from models.gamification.level_service import LevelService
 from models.gamification.models import XPTransactionType
 from models.gamification.achievement_metrics import AchievementMetrics
+from models.exceptions import ValidationError
 from models.events.base import EventBus
 
 logger = logging.getLogger(__name__)
@@ -659,13 +660,30 @@ class AchievementService:
     ) -> Achievement:
         """Create a new achievement definition.
 
+        Accetta solo i requirement type *conteggiabili*
+        (`AchievementMetrics.COUNTABLE_TYPES`), perche' qui la forma salvata e'
+        sempre `{"type": ..., "count": N}`. Un tipo a logica propria
+        (win_rate, level_reached, weekly_streak, category_reached) legge da
+        `requirements` chiavi che questa forma non contiene, e un tipo senza
+        resolver non e' calcolabile affatto: in entrambi i casi l'achievement
+        nascerebbe morto — mai sbloccabile, senza un errore da nessuna parte.
+        Va dichiarato nei seed, dove la forma dei requisiti si scrive per esteso.
+
         Raises:
-            ValueError: If slug/name empty or slug already exists.
+            ValidationError: se slug/nome mancano, se lo slug esiste gia' o se
+                il requirement type non e' conteggiabile.
         """
         if not slug or not name:
-            raise ValueError("Slug e nome sono obbligatori")
+            raise ValidationError("Slug e nome sono obbligatori")
         if Achievement.query.filter_by(slug=slug).first():
-            raise ValueError("Un achievement con questo slug esiste già")
+            raise ValidationError("Un achievement con questo slug esiste già")
+        if requirement_type not in AchievementMetrics.COUNTABLE_TYPES:
+            ammessi = ", ".join(sorted(AchievementMetrics.COUNTABLE_TYPES))
+            raise ValidationError(
+                f"Requisito «{requirement_type}» non conteggiabile: un "
+                f"achievement creato cosi' non si sbloccherebbe mai. "
+                f"Tipi ammessi da questo form: {ammessi}."
+            )
 
         requirements = json.dumps(
             {"type": requirement_type, "count": requirement_value}
