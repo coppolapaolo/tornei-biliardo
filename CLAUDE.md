@@ -130,6 +130,20 @@ poi riapplicarla).
   non solleva — fallisce la decifratura, il backfill resta vuoto e la
   migration risulta comunque applicata (incidente 2026-06-25, vedi sotto). Se
   ci sono migrations pendenti e la chiave non è ricavabile, il deploy si ferma.
+
+  > ⚠️ **Il task va configurato con `venv/bin/python`, mai con `python` nudo**
+  > (incidente 2026-08-17). Su PythonAnywhere `python` è l'interprete di
+  > sistema: lo script installava le dipendenze con `sys.executable -m pip`,
+  > cioè **fuori** dal virtualenv da cui la web app importa, e `deps_in_sync()`
+  > — che interroga lo stesso interprete — le ritrovava dove le aveva messe e
+  > dichiarava tutto a posto. Invisibile da febbraio ad agosto perché in sei
+  > mesi non era stata aggiunta nessuna dipendenza: ogni `pip install` era un
+  > no-op. Al primo pacchetto nuovo (PyYAML) `/aiuto` ha risposto **500 per due
+  > giorni**, sopravvivendo a due deploy, mentre il pacchetto risultava
+  > installato — altrove. Dal 2026-08-17 lo script risolve l'interprete da solo
+  > (`venv_python()`) e **si ferma** se `pip install` fallisce, invece di
+  > ricaricare con le dipendenze vecchie. Presidio:
+  > `tests/new/unit/test_deploy_usa_il_venv.py`.
 - `scripts/backup_db.py`: backup giornaliero del DB (rotazione 7 copie in
   `backups/`).
 - `scripts/daily_jobs.py`: **punto d'ingresso unico dei lavori di dominio
@@ -609,6 +623,7 @@ pytest tests/new/unit/ -n auto && pytest tests/new/integration/ -n 4
 | Orario formattato una volta per N destinatari | Se il testo contiene un'ora, si compone **per destinatario** col suo `tz`: due giocatori in due fusi leggono due frasi diverse |
 | `request.form.get("next")` passato a `redirect()` | `utils.safe_redirect.safe_next_url` — altrimenti è un open redirect |
 | Disciplina come stringa scritta a mano (`"palla_8"`, `"8_ball"`) | `Discipline.*.value` da `models/status_enum.py` — **unico** vocabolario; per dati storici/esterni `Discipline.normalize()` (torna `None` sull'ignoto). Il nome mostrato è `display_name`, tradotto. Presidiato da `test_discipline_single_vocabulary.py` |
+| Scheduled task PythonAnywhere lanciato con `python script.py` | `venv/bin/python script.py`: `python` nudo è l'interprete **di sistema**, e un `pip install` da lì finisce fuori dal virtualenv della web app — senza errori, perché riesce: solo altrove (incidente 2026-08-17, `/aiuto` in 500 per due giorni) |
 | `gara.matchmaking_strategy == "random"`, `campionato_type == "amalfi"` | `MatchmakingStrategy.*.value` da `models/matchmaking/configuration.py`, iniettato nei template. Esiste un **secondo enum omonimo** in `models/competition/validators.py` (`elimination`/`double_ko`) che non sta mai in colonna: citarlo dà un confronto sempre falso, senza errori. Presidiato da `test_match_status_no_raw_literals.py`, che vede anche `campionato_type\|lower == '...'` |
 | Funzione visibile all'utente cambiata senza toccare `/aiuto` | Invoca la skill `help-docs`: la guida non si rompe, **invecchia** — continua a descrivere un'app che non esiste più. Contenuti in `help_content/`, schermate rigenerate da `scripts/help_docs/` |
 | TPA/errori calcolati fuori da `models/tpa/engine.py` | Le regole Accu-Stats stanno **solo** li'. Il resto persiste comandi e li rigioca (ADR-044) |
