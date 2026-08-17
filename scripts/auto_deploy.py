@@ -33,10 +33,33 @@ automaticamente nei task e nelle console quando un token esiste
 Setup on PythonAnywhere:
 1. Go to Tasks tab
 2. Add a new scheduled task (e.g., every hour)
-3. Command: cd /home/paolocoppola/mysite && python scripts/auto_deploy.py
+3. Command:
+   cd /home/paolocoppola/mysite && venv/bin/python scripts/auto_deploy.py
 
 Or run manually via Bash console:
-    cd /home/paolocoppola/mysite && python scripts/auto_deploy.py
+    cd /home/paolocoppola/mysite && venv/bin/python scripts/auto_deploy.py
+
+Il `venv/bin/python` **non e' pignoleria**: fino al 2026-08-17 qui c'era
+scritto `python scripts/auto_deploy.py`, e un `python` nudo su PythonAnywhere
+e' l'interprete di sistema. Lo script installava allora le dipendenze con
+`sys.executable -m pip`, cioe' con un interprete che nel virtualenv della web
+app non puo' scrivere: `pip install` senza `--user` non ha i permessi per i
+site-packages di sistema, quindi falliva — e il fallimento era **un WARNING**,
+dopo il quale il deploy proseguiva fino al reload.
+
+Il difetto e' rimasto invisibile da febbraio ad agosto perche' in quei sei mesi
+non e' stata aggiunta nessuna dipendenza nuova: ogni installazione era un
+no-op, e un no-op fallito non si distingue da uno riuscito. Quando PyYAML e'
+arrivato, `/aiuto` ha risposto 500 per due giorni
+(`ModuleNotFoundError: No module named 'yaml'`) sopravvivendo a due deploy
+consecutivi. Verificato dopo il fatto: il pacchetto non era ne' in `venv/` ne'
+in `~/.local` — non era stato installato affatto.
+
+Stessa causa, altro sintomo: gli scheduled task che *importano l'app* col
+python di sistema si portano dietro i pacchetti di sistema di PythonAnywhere,
+fra cui un `pyOpenSSL` incompatibile con la `cryptography` del progetto (vedi
+`auto_enabling_integrations` in `app.py`). Anche `daily_jobs.py` e
+`send_match_reminders.py` vanno quindi lanciati con `venv/bin/python`.
 """
 
 import ast
@@ -59,6 +82,30 @@ PA_DOMAIN = "www.torneibiliardo.it"  # domain_name della webapp (vedi WSGI file)
 # FLASK_ENV, credenziali mail...). Questo script NON le eredita: gira in un
 # processo separato che il file WSGI non esegue mai.
 WSGI_FILE = Path("/var/www") / f"{PA_DOMAIN.replace('.', '_')}_wsgi.py"
+
+
+def venv_python() -> str:
+    """L'interprete del virtualenv del progetto, non quello che ci esegue.
+
+    Sono due cose diverse ogni volta che il task e' configurato con un `python`
+    nudo, ed e' la differenza fra installare una dipendenza dove la web app la
+    cerca e installarla dove non guardera' mai nessuno: `sys.executable` e' chi
+    esegue *questo script*, mentre la web app importa da `venv/`.
+
+    Ripiega su `sys.executable` se il virtualenv non c'e' — e lo dice, perche'
+    in produzione quel ripiego e' esattamente la condizione che ha rotto
+    `/aiuto`. In sviluppo, dove spesso si lancia lo script gia' dentro un venv
+    con un altro nome, e' invece il comportamento giusto.
+    """
+    candidato = PROJECT_DIR / "venv" / "bin" / "python"
+    if candidato.exists():
+        return str(candidato)
+    print(
+        f"WARNING: nessun interprete in {candidato}. Uso {sys.executable}: "
+        "se questa e' la produzione, pip installera' fuori dal virtualenv "
+        "della web app e le dipendenze nuove non arriveranno mai."
+    )
+    return sys.executable
 
 
 def run_command(cmd: list, cwd: Path = None) -> tuple:
@@ -104,7 +151,7 @@ def deps_in_sync() -> bool:
 
     success, output = run_command(
         [
-            sys.executable,
+            venv_python(),
             "-m",
             "pip",
             "install",
@@ -127,7 +174,7 @@ def install_dependencies() -> tuple:
         return True, "No requirements.txt found"
 
     success, output = run_command(
-        [sys.executable, "-m", "pip", "install", "-q", "-r", str(requirements)],
+        [venv_python(), "-m", "pip", "install", "-q", "-r", str(requirements)],
     )
     return success, output
 
@@ -203,7 +250,7 @@ def run_migrations() -> tuple:
     if not migrations_runner.exists():
         return True, "No migrations runner found, skipping"
 
-    success, output = run_command([sys.executable, str(migrations_runner)])
+    success, output = run_command([venv_python(), str(migrations_runner)])
     return success, output
 
 
@@ -229,7 +276,7 @@ def count_pending_migrations() -> Optional[int]:
         db_path = PROJECT_DIR / db_path
     if not db_path.exists():
         return 0
-    success, output = run_command([sys.executable, str(migrations_runner), "--status"])
+    success, output = run_command([venv_python(), str(migrations_runner), "--status"])
     if not success:
         return None
     return parse_pending(output)
@@ -359,7 +406,20 @@ def main():
     success, output = install_dependencies()
     print(f"Dependencies: {output}")
     if not success:
-        print("WARNING: Dependencies installation may have failed")
+        # Prima era un WARNING e il deploy proseguiva: la web app ripartiva
+        # con il codice nuovo e le dipendenze vecchie, e l'unica traccia era
+        # una riga nel log di un task che nessuno legge. Un'app ricaricata
+        # senza cio' che importa e' peggio di un'app ferma su codice vecchio:
+        # la seconda continua a funzionare, la prima risponde 500 su tutto
+        # quello che tocca il pacchetto mancante.
+        print(
+            "ERROR: installazione delle dipendenze fallita. Deploy interrotto "
+            "senza reload: la web app resta sul codice precedente, che con le "
+            "dipendenze attuali funziona.\n"
+            f"       Riprova a mano: {venv_python()} -m pip install -r "
+            f"{PROJECT_DIR / 'requirements.txt'}"
+        )
+        sys.exit(1)
 
     print()
 
