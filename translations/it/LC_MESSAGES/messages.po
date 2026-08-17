@@ -1555,7 +1555,6 @@ msgid "Partecipazioni a gara"
 msgstr ""
 
 #: routes/gamification/admin.py:327
-#, fuzzy, python-format
 msgid "Vittorie di gara"
 msgstr ""
 

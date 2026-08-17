@@ -660,18 +660,18 @@ class AchievementService:
     ) -> Achievement:
         """Create a new achievement definition.
 
-        Accetta solo i requirement type *conteggiabili*
-        (`AchievementMetrics.COUNTABLE_TYPES`), perche' qui la forma salvata e'
-        sempre `{"type": ..., "count": N}`. Un tipo a logica propria
-        (win_rate, level_reached, weekly_streak, category_reached) legge da
-        `requirements` chiavi che questa forma non contiene, e un tipo senza
-        resolver non e' calcolabile affatto: in entrambi i casi l'achievement
-        nascerebbe morto — mai sbloccabile, senza un errore da nessuna parte.
-        Va dichiarato nei seed, dove la forma dei requisiti si scrive per esteso.
+        Only *countable* requirement types are accepted
+        (`AchievementMetrics.COUNTABLE_TYPES`), because the shape stored here is
+        always `{"type": ..., "count": N}`. A type with bespoke logic
+        (win_rate, level_reached, weekly_streak, category_reached) reads keys
+        this shape does not carry, and a type with no resolver cannot be
+        computed at all: either way the achievement would be born dead — never
+        unlockable, with no error raised anywhere. Those belong in the seeds,
+        where the requirement shape is written out in full.
 
         Raises:
-            ValidationError: se slug/nome mancano, se lo slug esiste gia' o se
-                il requirement type non e' conteggiabile.
+            ValidationError: if slug/name are missing, the slug already exists,
+                or the requirement type is not countable.
         """
         if not slug or not name:
             raise ValidationError("Slug e nome sono obbligatori")
@@ -682,7 +682,9 @@ class AchievementService:
             raise ValidationError(
                 f"Requisito «{requirement_type}» non conteggiabile: un "
                 f"achievement creato cosi' non si sbloccherebbe mai. "
-                f"Tipi ammessi da questo form: {ammessi}."
+                f"Tipi ammessi: {ammessi}. I requisiti a logica propria "
+                f"(win_rate, level_reached, weekly_streak, category_reached) "
+                f"vanno dichiarati nei seed."
             )
 
         requirements = json.dumps(

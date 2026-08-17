@@ -320,6 +320,15 @@ def _requirement_type_labels() -> dict[str, str]:
     `AchievementMetrics.COUNTABLE_TYPES`, e il template ripiega sul nome grezzo
     per un tipo senza etichetta. Cosi' aggiungere un resolver lo rende subito
     creabile da interfaccia — al peggio con un nome brutto, mai invisibile.
+
+    **Va ricostruita a ogni richiesta, e non e' una svista.** Le stringhe
+    passano da `gettext`, che risolve nella lingua della richiesta corrente:
+    con `functools.lru_cache` o una costante a livello di modulo il primo
+    chiamante congelerebbe la propria lingua per tutti gli altri. Misurato:
+    fuori da una richiesta (cioe' all'import) la stessa chiamata rende
+    «Vittorie partita», mentre in una richiesta inglese rende «Match wins».
+    Undici voci allocate per una pagina di sola amministrazione non sono un
+    costo; servire l'italiano a chi ha scelto l'inglese lo e'.
     """
     return {
         "match_wins": _("Vittorie partita"),
