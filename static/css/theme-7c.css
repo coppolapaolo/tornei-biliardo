@@ -1143,8 +1143,13 @@ input[type="number"].form-control {
   }
   /* Chiuso a mano: si torna alla pagina normale senza raddrizzare il telefono. */
   body.c7-board-off .c7-board { display: none; }
-  /* Con il tabellone aperto la nav flottante non deve intravedersi. */
-  body:not(.c7-board-off) .c7-mobilenav { display: none; }
+  /* Con il tabellone aperto la nav flottante non deve intravedersi.
+     `:has(.c7-board)` non e' un vezzo: la classe `c7-board-off` la mette la X,
+     quindi su una pagina che il tabellone non ce l'ha proprio (una partita da
+     giocare, un match altrui) la condizione `:not(.c7-board-off)` era sempre
+     vera e in orizzontale spariva la navigazione senza che comparisse niente
+     al suo posto. */
+  body:has(.c7-board):not(.c7-board-off) .c7-mobilenav { display: none; }
 }
 
 .c7-board__head { padding: 16px 24px 0; display: flex; align-items: center; gap: 12px; }
@@ -1168,6 +1173,19 @@ input[type="number"].form-control {
   animation: c7-livepulse 2s infinite;
 }
 @keyframes c7-livepulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+/* A partita ferma il pallino smette di pulsare: un tabellone che lampeggia
+   su un risultato chiuso racconta una partita che non esiste piu'. */
+.c7-board__live--wait { color: var(--c7-accent-bright); }
+.c7-board__live--wait::before { background: var(--c7-accent-bright); animation: none; }
+.c7-board__live--done { color: var(--c7-accent-dim); }
+.c7-board__live--done::before { background: var(--c7-accent-dim); animation: none; }
+
+/* L'esito a parole, fra le cifre e i comandi. */
+.c7-board__outcome {
+  padding: 0 24px 10px; display: flex; align-items: center; justify-content: center; gap: 9px;
+  font-size: 14px; font-weight: 800; color: var(--c7-accent-bright);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 
 .c7-board__body {
   flex: 1; display: grid; grid-template-columns: 1fr 1px 1fr; align-items: center; padding: 0 24px;
@@ -1206,6 +1224,16 @@ input[type="number"].form-control {
    fondo accento. */
 .c7-board__btn--mine { border: 0; background: var(--c7-accent-bright); color: #0D2A36; }
 .c7-board__btn:disabled { opacity: .45; cursor: not-allowed; }
+/* Accetta / rifiuta il risultato: il verde e' la conferma che chiude il
+   flusso, il rifiuto resta tenue perche' non e' l'esito che si cerca. Su
+   fondo accento servono i colori pieni, non i `--*-bg` pensati per la carta. */
+.c7-board__btn--ok { border: 0; background: var(--c7-ok); color: var(--c7-accent-ink); }
+.c7-board__btn--no { border: 1.5px solid rgba(242, 248, 247, .28); background: transparent; color: var(--c7-accent-ink); }
+/* Quando non c'e' niente da premere resta il perche', in linea con l'annulla. */
+.c7-board__note {
+  flex: 1; min-width: 0; font-size: 14px; font-weight: 700; line-height: 1.4;
+  color: var(--c7-accent-dim);
+}
 .c7-board__plus { font-size: 22px; flex-shrink: 0; }
 .c7-board__undo {
   width: 74px; height: 74px; border-radius: 22px; border: 0; flex-shrink: 0;

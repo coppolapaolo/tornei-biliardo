@@ -9,36 +9,60 @@
    Il markup c'e' sempre, a mostrarlo e' il foglio di stile: cosi' ruotare non
    costa una richiesta al server e il punteggio e' gia' quello giusto.
 
+   IL TABELLONE NON MUORE CON L'ULTIMO RACK
+   ----------------------------------------
+   Fino al 2026-08-17 la condizione di render era `is_in_progress`: segnato il
+   rack decisivo, `location.reload()` ricaricava la pagina e qui non c'era
+   piu' niente. Chi stava giocando col telefono in orizzontale si ritrovava la
+   pagina verticale schiacciata in 520px di altezza, senza capire che la
+   partita era finita e senza i comandi per accettare o rifiutare il
+   risultato — che nella vista verticale ci sono da sempre.
+
+   Il tabellone e' *la vista orizzontale di questa partita*, non *la schermata
+   del gioco in corso*: resta finche' resta la partita, e cambia quello che
+   mostra. Gli stati li decide `match_scoring_state` (utils/status_ui.py), la
+   stessa funzione che usa la vista verticale — perche' e' proprio dall'averli
+   calcolati due volte che nasceva la divergenza.
+
    Parametri:
-   - match: Match o IndividualMatch in corso
-   - add_rack_js_func / remove_rack_js_func: nomi delle funzioni JS della
-     pagina ospite (le stesse dei comandi verticali, quindi un rack segnato
-     qui passa per lo stesso endpoint)
+   - match: Match o IndividualMatch
+   - add_rack_js_func / remove_rack_js_func / confirm_js_func /
+     reject_js_func: nomi delle funzioni JS della pagina ospite (le stesse dei
+     comandi verticali, quindi un rack segnato qui passa per lo stesso
+     endpoint)
    - player1_name / player2_name: string (opzionali)
    - where: string (opzionale) — la riga in alto, es. "Gara 4 · Turno 3"
 #}
 
 {% set add_rack = add_rack_js_func|default('addRack') %}
 {% set remove_rack = remove_rack_js_func|default('removeRack') %}
+{% set confirm_func = confirm_js_func|default('confirmResult') %}
+{% set reject_func = reject_js_func|default('rejectResult') %}
 {% set p1_name = player1_name|default(match.player1.username) %}
 {% set p2_name = player2_name|default(match.player2.username if match.player2 else _('X a tavolino')) %}
 {% set p1_score = match.player1_score or 0 %}
 {% set p2_score = match.player2_score or 0 %}
 
-{% set status_str = match.status.value|default(match.status) %}
-{% set is_in_progress = status_str in ['in_progress', 'playing'] %}
+{% set board = match_scoring_state(match, current_user) %}
 
 {# Trattini di progresso: quanti rack mancano alla vittoria, senza contare le
    cifre. Solo per il "race to N", dove un traguardo esiste davvero. #}
 {% set distance = match.distance_config if match.distance_config is defined else none %}
 {% set pips = distance.get_winning_racks() if distance and distance.is_race_to_racks else 0 %}
 
-{% set no_table = match.table_assignment is defined and not match.table_assignment %}
 {% set active_racks = (match.racks|selectattr('is_deleted', 'equalto', False)|list) if match.racks is defined else [] %}
 {% set last_rack = (active_racks|sort(attribute='rack_number')|last) if active_racks else none %}
 {% set mine_is_p2 = current_user.is_authenticated and match.player2_id is defined and current_user.id == match.player2_id %}
 
-{% if is_in_progress and match.player2 %}
+{# L'annullamento segue la stessa regola della vista verticale: si torna
+   indietro finche' la partita e' in corso o e' stata chiusa dai due
+   giocatori, mai su una chiusura d'ufficio. E' il momento in cui un tocco
+   sbagliato costa di piu' — ha appena chiuso la partita. #}
+{% set puo_annullare = board.is_player and last_rack and (board.in_progress or board.closed_by_players) %}
+
+{% set winner_name = p1_name if board.winner_id == match.player1_id else p2_name %}
+
+{% if match.player2 and (board.in_progress or board.finished) %}
 <div class="c7-board" id="matchBoard" role="region" aria-label="{{ _('Tabellone della partita') }}">
     <div class="c7-board__head">
         <button type="button" class="c7-board__close" onclick="document.body.classList.add('c7-board-off')" aria-label="{{ _('Chiudi il tabellone') }}">
@@ -51,7 +75,16 @@
             {%- if match.table_assignment %} <span class="c7-sep">·</span> {{ _('Tavolo') }} {{ match.table_assignment }}{% endif -%}
             {%- if distance %} <span class="c7-sep">·</span> {{ distance|format_distance }}{% endif -%}
         </span>
+        {# Il pallino che pulsa dice "si sta giocando". A partita ferma
+           smette: un tabellone che continua a lampeggiare su un risultato
+           chiuso racconta una partita che non esiste piu'. #}
+        {% if board.finished %}
+        <span class="c7-board__live c7-board__live--done">{{ _('Conclusa') }}</span>
+        {% elif board.at_distance %}
+        <span class="c7-board__live c7-board__live--wait">{{ _('Da confermare') }}</span>
+        {% else %}
         <span class="c7-board__live">{{ _('In corso') }}</span>
+        {% endif %}
     </div>
 
     {% set p1_behind = p1_score < p2_score %}
@@ -82,20 +115,72 @@
         </div>
     </div>
 
+    {# L'esito a parole sotto le cifre: chi legge da due metri vede i numeri,
+       chi ha il telefono in mano vuole sapere se e' finita davvero. #}
+    {% if board.winner_id and (board.at_distance or board.finished) %}
+    <div class="c7-board__outcome">
+        <i class="fas fa-flag-checkered"></i>
+        <span>{{ winner_name }} {{ _('vince') }} {{ p1_score }}–{{ p2_score }}</span>
+    </div>
+    {% endif %}
+
     <div class="c7-board__pad">
+        {% if board.awaiting_you %}
+        {# Il risultato aspetta questo giocatore: al posto dei +1 le due
+           risposte. Stessi endpoint della vista verticale. #}
+        <button type="button" class="c7-board__btn c7-board__btn--ok" onclick="{{ confirm_func }}(this)">
+            <i class="fas fa-check c7-board__plus"></i><span>{{ _('Accetta') }}</span>
+        </button>
+        {% if puo_annullare %}
+        <button type="button" class="c7-board__undo"
+                onclick="{{ remove_rack }}({{ last_rack.winner_id }}, this)"
+                aria-label="{{ _('Annulla ultimo rack') }}">
+            <i class="fas fa-rotate-left"></i>
+        </button>
+        {% endif %}
+        <button type="button" class="c7-board__btn c7-board__btn--no" onclick="{{ reject_func }}(this)">
+            <i class="fas fa-xmark c7-board__plus"></i><span>{{ _('Rifiuta') }}</span>
+        </button>
+
+        {% elif board.finished or board.at_distance %}
+        {# Niente da confermare (ha gia' risposto, o la partita e' chiusa):
+           resta la sola via d'uscita per il rack segnato per sbaglio. #}
+        <span class="c7-board__note">
+            {%- if board.you_confirmed and not board.opponent_confirmed -%}
+            {{ _('Hai confermato. Manca la conferma dell\'avversario.') }}
+            {%- elif board.closed_by_players -%}
+            {{ _('Risultato confermato da entrambi.') }}
+            {%- else -%}
+            {{ _('Risultato registrato.') }}
+            {%- endif -%}
+        </span>
+        {% if puo_annullare %}
+        <button type="button" class="c7-board__undo"
+                onclick="{{ remove_rack }}({{ last_rack.winner_id }}, this)"
+                aria-label="{{ _('Annulla ultimo rack') }}">
+            <i class="fas fa-rotate-left"></i>
+        </button>
+        {% endif %}
+
+        {% else %}
+        {# Partita in corso. I +1 si spengono quando il rack non va segnato —
+           distanza raggiunta o tavolo non assegnato — come nella vista
+           verticale: un pulsante spento dice la regola prima che venga
+           infranta, un messaggio d'errore la dice dopo. #}
         <button type="button" class="c7-board__btn {{ 'c7-board__btn--mine' if not mine_is_p2 }}"
-                onclick="{{ add_rack }}({{ match.player1_id }}, this)" {% if no_table %}disabled{% endif %}>
+                onclick="{{ add_rack }}({{ match.player1_id }}, this)" {% if not board.can_add %}disabled{% endif %}>
             <span class="c7-board__plus">+1</span><span>{{ p1_name }}</span>
         </button>
         <button type="button" class="c7-board__undo"
                 onclick="{{ remove_rack }}({{ last_rack.winner_id if last_rack else 0 }}, this)"
-                {% if not last_rack %}disabled{% endif %} aria-label="{{ _('Annulla ultimo rack') }}">
+                {% if not puo_annullare %}disabled{% endif %} aria-label="{{ _('Annulla ultimo rack') }}">
             <i class="fas fa-rotate-left"></i>
         </button>
         <button type="button" class="c7-board__btn {{ 'c7-board__btn--mine' if mine_is_p2 }}"
-                onclick="{{ add_rack }}({{ match.player2_id }}, this)" {% if no_table %}disabled{% endif %}>
+                onclick="{{ add_rack }}({{ match.player2_id }}, this)" {% if not board.can_add %}disabled{% endif %}>
             <span class="c7-board__plus">+1</span><span>{{ p2_name }}</span>
         </button>
+        {% endif %}
     </div>
 </div>
 {% endif %}

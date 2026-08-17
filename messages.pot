@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-17 11:11+0200\n"
+"POT-Creation-Date: 2026-08-17 15:09+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app.py:532 templates/errors/403.html:3
+#: app.py:539 templates/errors/403.html:3
 msgid "Accesso negato"
 msgstr ""
 
@@ -1422,7 +1422,7 @@ msgstr ""
 msgid "Esame iniziato."
 msgstr ""
 
-#: routes/exam/attempts.py:163
+#: routes/exam/attempts.py:163 templates/components/_match_scoreboard.html:154
 msgid "Risultato registrato."
 msgstr ""
 
@@ -2844,7 +2844,7 @@ msgstr ""
 #: templates/components/_match_card.html:56
 #: templates/components/_match_header.html:78
 #: templates/components/_match_result_row.html:126
-#: templates/components/_match_scoreboard.html:51
+#: templates/components/_match_scoreboard.html:75
 #: templates/components/_separated_dashboard_content.html:72
 #: templates/gara_detail.html:773
 msgid "Tavolo"
@@ -2944,7 +2944,7 @@ msgstr ""
 #: templates/components/_match_header.html:60
 #: templates/components/_match_result_row.html:54
 #: templates/components/_match_result_row.html:110
-#: templates/components/_match_scoreboard.html:24
+#: templates/components/_match_scoreboard.html:42
 #: templates/components/_unified_match_score.html:23
 #: templates/components/_unified_rack_input.html:23
 #: templates/match_detail.html:13 templates/match_detail.html:50
@@ -3833,8 +3833,9 @@ msgid "Approva"
 msgstr ""
 
 #: templates/admin/director_requests.html:36
-#: templates/components/_unified_rack_input.html:244
+#: templates/components/_match_scoreboard.html:142
 #: templates/components/_unified_rack_input.html:250
+#: templates/components/_unified_rack_input.html:256
 #: templates/individual_match/proposal_detail.html:132
 #: templates/individual_match/proposals.html:109
 #: templates/roles/requests.html:48
@@ -5542,7 +5543,7 @@ msgstr ""
 #: templates/components/_match_cards_mobile.html:44
 #: templates/components/_match_result_row.html:87
 #: templates/components/_match_result_row.html:89
-#: templates/components/_match_scoreboard.html:54
+#: templates/components/_match_scoreboard.html:86
 #: templates/components/_match_status_labels.html:23
 #: templates/components/_multi_set_score_display.html:88
 #: templates/components/_separated_dashboard_content.html:36
@@ -6953,7 +6954,7 @@ msgstr ""
 #: templates/components/_match_header.html:71
 #: templates/components/_match_info.html:19
 #: templates/components/_match_info.html:41
-#: templates/components/_match_scoreboard.html:49
+#: templates/components/_match_scoreboard.html:73
 #: templates/components/_player_recent_matches.html:16
 #: templates/components/_separated_dashboard_content.html:23
 #: templates/components/_separated_dashboard_content.html:255
@@ -7156,6 +7157,7 @@ msgstr ""
 #: templates/components/_match_card.html:28
 #: templates/components/_match_result_row.html:93
 #: templates/components/_match_result_row.html:95
+#: templates/components/_match_scoreboard.html:82
 #: templates/components/_separated_dashboard_content.html:201
 msgid "Conclusa"
 msgstr ""
@@ -7575,7 +7577,7 @@ msgid "Torna allo Storico"
 msgstr ""
 
 #: templates/components/_match_header.html:74
-#: templates/components/_match_scoreboard.html:50
+#: templates/components/_match_scoreboard.html:74
 msgid "Match individuale"
 msgstr ""
 
@@ -7632,18 +7634,47 @@ msgstr ""
 msgid "Assegna un tavolo"
 msgstr ""
 
-#: templates/components/_match_scoreboard.html:42
+#: templates/components/_match_scoreboard.html:66
 msgid "Tabellone della partita"
 msgstr ""
 
-#: templates/components/_match_scoreboard.html:44
+#: templates/components/_match_scoreboard.html:68
 msgid "Chiudi il tabellone"
 msgstr ""
 
-#: templates/components/_match_scoreboard.html:92
+#: templates/components/_match_scoreboard.html:84
+msgid "Da confermare"
+msgstr ""
+
+#: templates/components/_match_scoreboard.html:123
+#: templates/components/_unified_rack_input.html:182
+msgid "vince"
+msgstr ""
+
+#: templates/components/_match_scoreboard.html:132
+#: templates/components/_unified_rack_input.html:249
+#: templates/components/_unified_rack_input.html:255
+#: templates/individual_match/dashboard.html:67
+#: templates/individual_match/proposal_detail.html:128
+#: templates/individual_match/proposals.html:106
+msgid "Accetta"
+msgstr ""
+
+#: templates/components/_match_scoreboard.html:137
+#: templates/components/_match_scoreboard.html:160
+#: templates/components/_match_scoreboard.html:176
 #: templates/components/_trio_rack_input.html:319
-#: templates/components/_unified_rack_input.html:279
+#: templates/components/_unified_rack_input.html:285
 msgid "Annulla ultimo rack"
+msgstr ""
+
+#: templates/components/_match_scoreboard.html:150
+#: templates/components/_unified_rack_input.html:190
+msgid "Hai confermato. Manca la conferma dell'avversario."
+msgstr ""
+
+#: templates/components/_match_scoreboard.html:152
+msgid "Risultato confermato da entrambi."
 msgstr ""
 
 #: templates/components/_match_status_labels.html:25 utils/status_ui.py:159
@@ -7680,8 +7711,8 @@ msgstr ""
 #: templates/components/_multi_set_score_display.html:21
 #: templates/components/_multi_set_score_display.html:60
 #: templates/components/_round_management.html:95
-#: templates/components/_unified_rack_input.html:126
-#: templates/components/_unified_rack_input.html:165
+#: templates/components/_unified_rack_input.html:132
+#: templates/components/_unified_rack_input.html:171
 msgid "Set"
 msgstr ""
 
@@ -8582,7 +8613,7 @@ msgid "Valida risultato"
 msgstr ""
 
 #: templates/components/_trio_rack_input.html:147
-#: templates/components/_unified_rack_input.html:230
+#: templates/components/_unified_rack_input.html:236
 msgid "Hai confermato"
 msgstr ""
 
@@ -8621,8 +8652,8 @@ msgstr ""
 
 #: templates/components/_trio_rack_input.html:229
 #: templates/components/_trio_rack_input.html:244
-#: templates/components/_unified_rack_input.html:197
-#: templates/components/_unified_rack_input.html:291
+#: templates/components/_unified_rack_input.html:203
+#: templates/components/_unified_rack_input.html:297
 msgid "Dichiara forfait"
 msgstr ""
 
@@ -8783,95 +8814,79 @@ msgstr ""
 msgid "Rimosso"
 msgstr ""
 
-#: templates/components/_unified_rack_input.html:124
+#: templates/components/_unified_rack_input.html:130
 msgid "Segnapunti"
 msgstr ""
 
-#: templates/components/_unified_rack_input.html:126
+#: templates/components/_unified_rack_input.html:132
 msgid "al"
 msgstr ""
 
-#: templates/components/_unified_rack_input.html:135
+#: templates/components/_unified_rack_input.html:141
 msgid "Nessun set in corso"
 msgstr ""
 
-#: templates/components/_unified_rack_input.html:137
+#: templates/components/_unified_rack_input.html:143
 msgid "Inizia il set 1"
 msgstr ""
 
-#: templates/components/_unified_rack_input.html:165
+#: templates/components/_unified_rack_input.html:171
 msgid "concluso"
 msgstr ""
 
-#: templates/components/_unified_rack_input.html:166
+#: templates/components/_unified_rack_input.html:172
 msgid "ha vinto il set."
 msgstr ""
 
-#: templates/components/_unified_rack_input.html:169
+#: templates/components/_unified_rack_input.html:175
 msgid "Inizia il set"
 msgstr ""
 
-#: templates/components/_unified_rack_input.html:175
-#: templates/components/_unified_rack_input.html:208
+#: templates/components/_unified_rack_input.html:181
+#: templates/components/_unified_rack_input.html:214
 msgid "Partita conclusa"
 msgstr ""
 
-#: templates/components/_unified_rack_input.html:176
-msgid "vince"
-msgstr ""
-
-#: templates/components/_unified_rack_input.html:180
+#: templates/components/_unified_rack_input.html:186
 msgid "Accetta il risultato"
 msgstr ""
 
-#: templates/components/_unified_rack_input.html:184
-msgid "Hai confermato. Manca la conferma dell'avversario."
-msgstr ""
-
-#: templates/components/_unified_rack_input.html:192
-#: templates/components/_unified_rack_input.html:286
+#: templates/components/_unified_rack_input.html:198
+#: templates/components/_unified_rack_input.html:292
 msgid "Serve un tavolo assegnato prima di iniziare."
 msgstr ""
 
-#: templates/components/_unified_rack_input.html:209
+#: templates/components/_unified_rack_input.html:215
 msgid ""
 "Se l'ultimo rack è stato segnato per errore puoi ancora annullarlo, "
 "finché il direttore non valida il risultato."
 msgstr ""
 
-#: templates/components/_unified_rack_input.html:216
+#: templates/components/_unified_rack_input.html:222
 msgid "Distanza raggiunta"
 msgstr ""
 
-#: templates/components/_unified_rack_input.html:217
+#: templates/components/_unified_rack_input.html:223
 msgid "Il risultato è pronto per la conferma."
 msgstr ""
 
-#: templates/components/_unified_rack_input.html:224
+#: templates/components/_unified_rack_input.html:230
 msgid "Entrambi i giocatori hanno confermato."
 msgstr ""
 
-#: templates/components/_unified_rack_input.html:231
+#: templates/components/_unified_rack_input.html:237
 msgid "In attesa di"
 msgstr ""
 
-#: templates/components/_unified_rack_input.html:238
+#: templates/components/_unified_rack_input.html:244
 msgid "ha confermato"
 msgstr ""
 
-#: templates/components/_unified_rack_input.html:239
+#: templates/components/_unified_rack_input.html:245
 msgid "Conferma o rifiuta per chiudere la partita."
 msgstr ""
 
-#: templates/components/_unified_rack_input.html:243
-#: templates/components/_unified_rack_input.html:249
-#: templates/individual_match/dashboard.html:67
-#: templates/individual_match/proposal_detail.html:128
-#: templates/individual_match/proposals.html:106
-msgid "Accetta"
-msgstr ""
-
-#: templates/components/_unified_rack_input.html:247
+#: templates/components/_unified_rack_input.html:253
 msgid "Conferma il risultato finale."
 msgstr ""
 
