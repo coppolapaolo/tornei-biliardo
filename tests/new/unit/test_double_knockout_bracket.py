@@ -64,7 +64,7 @@ def _node(
     slot: Optional[int],
     winner,
     loser=None,
-    status: str = MatchStatus.VALIDATED.value,
+    status: str = MatchStatus.CONFIRMED_BY_BOTH.value,
 ) -> Match:
     """Nodo di tabellone già concluso. `loser=None` significa bye."""
     is_bye = loser is None
@@ -210,7 +210,7 @@ class TestSchedule:
                 slot=slot,
                 winner=winner,
                 loser=loser,
-                status=MatchStatus.COMPLETED.value,
+                status=MatchStatus.CLOSED_UNILATERALLY.value,
             )
 
         pairings = DoubleKnockoutStrategy()._generate_round_pairings(gara, 2)

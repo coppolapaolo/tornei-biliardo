@@ -176,7 +176,7 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
 
     def is_completed(self) -> bool:
         """Check if match is completed."""
-        return self.status == MatchStatus.COMPLETED.value
+        return self.status == MatchStatus.CLOSED_UNILATERALLY.value
 
     @property
     def is_walkover(self) -> bool:
@@ -191,7 +191,10 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
         `DetachedInstanceError` if the Match instance is detached (relevant for
         future async dispatch where handlers receive detached objects).
         """
-        if self.status != MatchStatus.COMPLETED.value or self.winner_id is None:
+        if (
+            self.status != MatchStatus.CLOSED_UNILATERALLY.value
+            or self.winner_id is None
+        ):
             return False
         if self.is_trio:
             return (
@@ -755,8 +758,13 @@ class TrioMatch(db.Model):
             # Store total racks in match scores for quick access
             match_obj.player1_score = self.player1_racks
             match_obj.player2_score = self.player2_racks
-            match_obj.validated_by_admin = True  # Mark as validated
 
+            # Qui c'era `match_obj.validated_by_admin = True`, un attributo
+            # che su `Match` non esiste (vive su `Rack`) e che serviva solo a
+            # farsi rileggere da `to_completed`. Oltre che invisibile era
+            # anche superfluo: quel guard lascia passare i trio a prescindere,
+            # perché `is_trio` è una colonna vera e questa partita ce l'ha.
+            #
             # Use state service to complete match and emit SSE
             MatchStateService.to_completed(match_obj.id)
 

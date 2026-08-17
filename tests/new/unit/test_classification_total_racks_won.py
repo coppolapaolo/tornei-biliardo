@@ -109,7 +109,7 @@ def random_campionato_with_matches(db_session):
         player2_id=player_b.id,
         player1_score=5,  # player_a: racks_won=5
         player2_score=3,  # player_b: racks_won=3
-        status=MatchStatus.COMPLETED.value,
+        status=MatchStatus.CLOSED_UNILATERALLY.value,
         winner_id=player_a.id,
     )
     db_session.add(match)

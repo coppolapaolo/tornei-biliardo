@@ -165,9 +165,13 @@ class RackService:
         else:
             match.status = MatchStatus.PENDING.value
 
-        # Clear validation flags se presenti
-        if hasattr(match, "validated_by_admin"):
-            match.validated_by_admin = False
+        # Qui c'era un `if hasattr(match, "validated_by_admin"):
+        # match.validated_by_admin = False`. Su `Match` quella colonna non
+        # esiste (vive su `Rack`), quindi la guardia era falsa e il blocco non
+        # è mai stato eseguito — tranne, per caso, su un'istanza a cui
+        # qualcun altro avesse appena appiccicato l'attributo nella stessa
+        # sessione. Il reset della validazione è la riga qui sopra, che
+        # riporta lo stato a PLAYING o PENDING.
 
         # Clear forfeit flags on inscriptions for both players
         # This allows the player to continue competing after match reset
@@ -244,7 +248,7 @@ class RackService:
             match.reset_confirmations()
             # Se era completed, rimettilo in playing (to_playing emette il
             # revert dei rating centralmente).
-            if match.status == MatchStatus.COMPLETED.value:
+            if match.status == MatchStatus.CLOSED_UNILATERALLY.value:
                 from .match_service import MatchService
 
                 MatchService.to_playing(match.id)

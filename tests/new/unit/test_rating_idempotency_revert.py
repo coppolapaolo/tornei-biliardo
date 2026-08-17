@@ -64,7 +64,7 @@ def _completed_match(gara_id, p1, p2, **overrides):
         player1_score=5,
         player2_score=2,
         winner_id=p1,
-        status=MatchStatus.COMPLETED.value,
+        status=MatchStatus.CLOSED_UNILATERALLY.value,
     )
     base.update(overrides)
     return Match(**base)

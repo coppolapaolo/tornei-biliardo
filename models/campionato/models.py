@@ -162,7 +162,7 @@ class Campionato(db.Model):
             matches = getattr(gara, "matches", [])
             for match in matches:
                 if match.status in [
-                    MatchStatus.COMPLETED.value,
+                    MatchStatus.CLOSED_UNILATERALLY.value,
                     MatchStatus.PLAYING.value,
                 ]:
                     return False

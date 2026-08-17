@@ -236,7 +236,7 @@ class TestFreeFormatCompletion:
         match.confirm_result(player1.id)
         match.confirm_result(player2.id)
 
-        assert match.status == MatchStatus.VALIDATED
+        assert match.status == MatchStatus.CONFIRMED_BY_BOTH
         assert match.winner_id == player1.id
 
     def test_player2_wins_when_higher_score(self, app, db_session, isolated_players):
@@ -269,7 +269,7 @@ class TestFreeFormatCompletion:
         match.confirm_result(player1.id)
         match.confirm_result(player2.id)
 
-        assert match.status == MatchStatus.VALIDATED
+        assert match.status == MatchStatus.CONFIRMED_BY_BOTH
         assert match.winner_id == player2.id
 
     def test_tie_results_in_no_winner(self, app, db_session, isolated_players):
@@ -301,7 +301,7 @@ class TestFreeFormatCompletion:
         match.confirm_result(player1.id)
         match.confirm_result(player2.id)
 
-        assert match.status == MatchStatus.VALIDATED
+        assert match.status == MatchStatus.CONFIRMED_BY_BOTH
         assert match.winner_id is None  # Tie
 
 
@@ -390,7 +390,7 @@ class TestFreeFormatWithBilateralConfirmation:
         assert result is True
         assert match.player1_confirmed is True
         assert match.player2_confirmed is True
-        assert match.status == MatchStatus.VALIDATED
+        assert match.status == MatchStatus.CONFIRMED_BY_BOTH
 
     def test_reject_resets_confirmations_and_removes_rack(
         self, app, db_session, isolated_players

@@ -68,7 +68,7 @@ def test_tournament_match_updates_both_pools(app, db_session, isolated_players):
         round_number=1,
         player1_id=p1.id,
         player2_id=p2.id,
-        status=MatchStatus.COMPLETED.value,
+        status=MatchStatus.CLOSED_UNILATERALLY.value,
         player1_score=5,
         player2_score=2,
         winner_id=p1.id,

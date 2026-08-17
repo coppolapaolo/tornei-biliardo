@@ -72,8 +72,12 @@ def test_round2_generated_when_round1_validated(db_session, isolated_players):
     gara = _make_de_gara(db_session)
     p = isolated_players[:4]
 
-    _finished_match(db_session, gara, p[0], p[3], p[0], 1, MatchStatus.VALIDATED.value)
-    _finished_match(db_session, gara, p[1], p[2], p[1], 1, MatchStatus.VALIDATED.value)
+    _finished_match(
+        db_session, gara, p[0], p[3], p[0], 1, MatchStatus.CONFIRMED_BY_BOTH.value
+    )
+    _finished_match(
+        db_session, gara, p[1], p[2], p[1], 1, MatchStatus.CONFIRMED_BY_BOTH.value
+    )
 
     strategy = DirectEliminationStrategy()
     pairings = strategy._generate_round_pairings(gara, 2)
@@ -92,8 +96,12 @@ def test_round2_generated_when_round1_mixed_completed_and_validated(
     gara = _make_de_gara(db_session)
     p = isolated_players[:4]
 
-    _finished_match(db_session, gara, p[0], p[3], p[0], 1, MatchStatus.COMPLETED.value)
-    _finished_match(db_session, gara, p[1], p[2], p[1], 1, MatchStatus.VALIDATED.value)
+    _finished_match(
+        db_session, gara, p[0], p[3], p[0], 1, MatchStatus.CLOSED_UNILATERALLY.value
+    )
+    _finished_match(
+        db_session, gara, p[1], p[2], p[1], 1, MatchStatus.CONFIRMED_BY_BOTH.value
+    )
 
     strategy = DirectEliminationStrategy()
     pairings = strategy._generate_round_pairings(gara, 2)
@@ -109,7 +117,9 @@ def test_round2_blocked_when_round1_not_all_finished(db_session, isolated_player
     gara = _make_de_gara(db_session)
     p = isolated_players[:4]
 
-    _finished_match(db_session, gara, p[0], p[3], p[0], 1, MatchStatus.VALIDATED.value)
+    _finished_match(
+        db_session, gara, p[0], p[3], p[0], 1, MatchStatus.CONFIRMED_BY_BOTH.value
+    )
     # Secondo match ancora in corso (nessun vincitore certificato).
     pending = Match(
         gara_id=gara.id,

@@ -124,7 +124,7 @@ class PlayerHistoryService:
             .outerjoin(Campionato, Campionato.id == Gara.campionato_id)
             .outerjoin(TrioMatch, Match.id == TrioMatch.match_id)
             .filter(
-                Match.status == MatchStatus.COMPLETED.value,
+                Match.status == MatchStatus.CLOSED_UNILATERALLY.value,
                 Match.is_bye == False,  # noqa: E712
                 or_(
                     # Regular matches (not trio)

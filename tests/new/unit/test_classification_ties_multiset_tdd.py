@@ -92,7 +92,7 @@ class TestClassificationTieHandlingTDD:
             round_number=1,
             player1_score=2,
             player2_score=2,  # TIE!
-            status=MatchStatus.COMPLETED.value,
+            status=MatchStatus.CLOSED_UNILATERALLY.value,
             winner_id=None,  # No winner on tie
         )
         db_session.add(match)
@@ -178,7 +178,7 @@ class TestClassificationTieHandlingTDD:
             round_number=1,
             player1_score=5,
             player2_score=3,
-            status=MatchStatus.COMPLETED.value,
+            status=MatchStatus.CLOSED_UNILATERALLY.value,
             winner_id=player1.id,
         )
         db_session.add(match)
@@ -281,7 +281,7 @@ class TestMultiSetClassificationTDD:
             match_distance=2,  # First to 2 sets
             player1_score=2,  # Sets won by player1
             player2_score=1,  # Sets won by player2
-            status=MatchStatus.COMPLETED.value,
+            status=MatchStatus.CLOSED_UNILATERALLY.value,
             winner_id=player1.id,
         )
         db_session.add(match)
@@ -423,7 +423,7 @@ class TestMultiSetClassificationTDD:
             is_multi_set=False,  # Single-set
             player1_score=5,  # Racks for single-set
             player2_score=2,
-            status=MatchStatus.COMPLETED.value,
+            status=MatchStatus.CLOSED_UNILATERALLY.value,
             winner_id=player1.id,
         )
         db_session.add(match)
@@ -522,7 +522,7 @@ class TestCrownDisplayOnTiesTDD:
             round_number=1,
             player1_score=2,
             player2_score=2,  # TIE!
-            status=MatchStatus.COMPLETED.value,
+            status=MatchStatus.CLOSED_UNILATERALLY.value,
             winner_id=None,  # Must be None for tie
         )
         db_session.add(match)
@@ -532,7 +532,7 @@ class TestCrownDisplayOnTiesTDD:
         db_session.refresh(match)
         assert match.winner_id is None, "Tied match should have winner_id = None"
         assert (
-            match.status == MatchStatus.COMPLETED.value
+            match.status == MatchStatus.CLOSED_UNILATERALLY.value
         ), "Match should still be completed"
 
     def test_clear_winner_has_winner_id(self, db_session):
@@ -591,7 +591,7 @@ class TestCrownDisplayOnTiesTDD:
             round_number=1,
             player1_score=5,
             player2_score=3,
-            status=MatchStatus.COMPLETED.value,
+            status=MatchStatus.CLOSED_UNILATERALLY.value,
             winner_id=player1.id,  # Clear winner
         )
         db_session.add(match)
@@ -600,7 +600,7 @@ class TestCrownDisplayOnTiesTDD:
         # Verify winner_id is set correctly
         db_session.refresh(match)
         assert match.winner_id == player1.id, "Winner should be player1"
-        assert match.status == MatchStatus.COMPLETED.value
+        assert match.status == MatchStatus.CLOSED_UNILATERALLY.value
 
 
 @pytest.mark.unit

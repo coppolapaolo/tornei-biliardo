@@ -14,18 +14,16 @@ from models.transaction.manager import transactional
 
 
 class MatchResultService:
-    """Placeholder per gestione risultati/validazioni match."""
+    """Placeholder per gestione risultati/validazioni match.
 
-    @staticmethod
-    @transactional(domain="match")
-    def validate_by_admin(match_id: int) -> Match:
-        match = db.session.get(Match, match_id)
-        if not match:
-            raise ValueError(f"Match {match_id} non trovato")
-        if hasattr(match, "validated_by_admin"):
-            match.validated_by_admin = True
-            db.session.add(match)
-        return match
+    Qui c'era anche un `validate_by_admin(match_id)` che non faceva niente e
+    che nessuno chiamava. Il corpo era
+    `if hasattr(match, "validated_by_admin"): match.validated_by_admin = True`,
+    e su `Match` quella colonna non esiste — vive su `Rack` — quindi la
+    guardia era sempre falsa. Un metodo con quel nome, che non valida nulla,
+    è peggio di un metodo assente: la validazione del direttore la fa
+    `MatchValidationService.validate_and_complete`.
+    """
 
     @staticmethod
     @transactional(domain="match")

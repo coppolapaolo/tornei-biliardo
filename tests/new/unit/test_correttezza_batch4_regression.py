@@ -44,7 +44,7 @@ def test_activation_rate_no_double_count(db_session):
         Match(
             player1_id=a.id,
             player2_id=b.id,
-            status=MatchStatus.COMPLETED.value,
+            status=MatchStatus.CLOSED_UNILATERALLY.value,
             round_number=1,
         )
     )
@@ -52,7 +52,7 @@ def test_activation_rate_no_double_count(db_session):
         Match(
             player1_id=b.id,
             player2_id=a.id,
-            status=MatchStatus.COMPLETED.value,
+            status=MatchStatus.CLOSED_UNILATERALLY.value,
             round_number=1,
         )
     )

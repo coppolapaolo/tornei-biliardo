@@ -73,7 +73,7 @@ def _node(
         player2_id=None if is_bye else player2.id,  # type: ignore[union-attr]
         round_number=round_number,
         is_bye=is_bye,
-        status=MatchStatus.VALIDATED.value,
+        status=MatchStatus.CONFIRMED_BY_BOTH.value,
         winner_id=champion.id,
         player1_score=5,
         player2_score=0 if is_bye else 3,

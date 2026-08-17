@@ -59,7 +59,7 @@ def test_validated_emits_event(app, db_session, isolated_players, captured_event
     m.confirm_result(p1.id)
     m.confirm_result(p2.id)  # entrambi confermano → VALIDATED
 
-    assert m.status == MatchStatus.VALIDATED
+    assert m.status == MatchStatus.CONFIRMED_BY_BOTH
     assert len(captured_events) == 1
     ev = captured_events[0]
     assert ev.match_id == m.id
@@ -74,7 +74,7 @@ def test_forfeit_emits_no_event(app, db_session, isolated_players, captured_even
 
     m.forfeit_match(p1.id)
 
-    assert m.status == MatchStatus.COMPLETED
+    assert m.status == MatchStatus.CLOSED_UNILATERALLY
     assert captured_events == []
 
 
@@ -87,7 +87,7 @@ def test_complete_match_emits_no_event(
 
     m.complete_match(p1.id)
 
-    assert m.status == MatchStatus.COMPLETED
+    assert m.status == MatchStatus.CLOSED_UNILATERALLY
     assert captured_events == []
 
 
@@ -112,6 +112,6 @@ def test_tie_emits_event_without_winner(
     m.confirm_result(p1.id)
     m.confirm_result(p2.id)
 
-    assert m.status == MatchStatus.VALIDATED
+    assert m.status == MatchStatus.CONFIRMED_BY_BOTH
     assert len(captured_events) == 1
     assert captured_events[0].winner_id is None

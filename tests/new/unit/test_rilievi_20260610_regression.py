@@ -149,7 +149,7 @@ class TestNextRoundOnlyTableAssignment:
             1,
             p[2],
             p[3],
-            status=MatchStatus.COMPLETED.value,
+            status=MatchStatus.CLOSED_UNILATERALLY.value,
             winner_id=p[2].id,
         )
         # Turno 2: bloccato (p0 e' ai tavoli nel turno 1)
@@ -196,7 +196,7 @@ class TestNextRoundOnlyTableAssignment:
             1,
             p[0],
             p[1],
-            status=MatchStatus.COMPLETED.value,
+            status=MatchStatus.CLOSED_UNILATERALLY.value,
             winner_id=p[0].id,
         )
         # Turno 2: uno ai tavoli, uno bloccato (p0 occupato)
@@ -251,7 +251,7 @@ class TestMobileRoundOrderingRegression:
         matches = []
         # Turno 1 concluso; turno 2 con risultati da inserire; turno 3 ai tavoli
         for round_number, status in (
-            (1, MatchStatus.COMPLETED.value),
+            (1, MatchStatus.CLOSED_UNILATERALLY.value),
             (2, MatchStatus.PLAYING.value),
             (3, MatchStatus.PLAYING.value),
         ):

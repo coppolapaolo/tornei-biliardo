@@ -292,7 +292,7 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
                     )
 
         # Update status to VALIDATED (bilateral confirmation complete)
-        self.status = MatchStatus.VALIDATED
+        self.status = MatchStatus.CONFIRMED_BY_BOTH
 
         if hasattr(self, "ended_at"):
             self.ended_at = utc_now()
@@ -428,13 +428,13 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
         if winner_id not in (self.player1_id, self.player2_id):
             raise ValueError("Winner must be one of the match players")
 
-        self.status = MatchStatus.COMPLETED
+        self.status = MatchStatus.CLOSED_UNILATERALLY
         self.ended_at = utc_now()
         self.winner_id = winner_id
 
     def cancel_match(self, reason: Optional[str] = None) -> None:
         """Cancel the match."""
-        if self.status == MatchStatus.COMPLETED:
+        if self.status == MatchStatus.CLOSED_UNILATERALLY:
             raise ValueError("Cannot cancel completed match")
 
         self.status = MatchStatus.CANCELLED
@@ -486,7 +486,7 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
             # Keep player2_score as-is (racks/sets already won)
 
         # Complete the match
-        self.status = MatchStatus.COMPLETED
+        self.status = MatchStatus.CLOSED_UNILATERALLY
         self.ended_at = utc_now()
 
     def get_opponent(self, user_id: int) -> Optional["User"]:
@@ -806,7 +806,7 @@ class IndividualSet(BaseModel):
 
     def is_completed(self) -> bool:
         """Check if set is completed."""
-        return self.status == MatchStatus.COMPLETED.value
+        return self.status == MatchStatus.CLOSED_UNILATERALLY.value
 
     def remove_last_rack(self, user_id: int) -> Optional["IndividualRack"]:
         """Remove the last rack from this set (soft delete).
@@ -839,7 +839,7 @@ class IndividualSet(BaseModel):
             self.player2_racks = max(0, self.player2_racks - 1)
 
         # If set was completed, reopen it
-        if self.status == MatchStatus.COMPLETED.value:
+        if self.status == MatchStatus.CLOSED_UNILATERALLY.value:
             self.status = "playing"
             self.completed_at = None
 

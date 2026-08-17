@@ -237,6 +237,30 @@ class GaraDriver:
         """Conferma il risultato da giocatore. Servono entrambe le firme."""
         return self.client.post(f"/player/match/{match_id}/confirm")
 
+    def valida(self, match_id: int) -> Any:
+        """Il pulsante «valida» del direttore: chiude la partita d'ufficio.
+
+        Risponde JSON, come tutte le azioni che il JS della pagina gara chiama
+        senza ricaricare.
+        """
+        return self.client.post(f"/admin/match/{match_id}/validate")
+
+    def annulla_ultimo_rack(self, match_id: int, giocatore_id: int) -> Any:
+        """Il ripensamento del giocatore sull'ultimo rack segnato.
+
+        È il gesto che separa i due stati finali: dopo la doppia conferma dei
+        giocatori si può ancora tornare indietro, dopo la chiusura del
+        direttore no.
+        """
+        return self.client.post(
+            f"/player/match/{match_id}/racks/remove",
+            data={"player_id": str(giocatore_id)},
+        )
+
+    def ritirati(self, match_id: int) -> Any:
+        """Forfait del giocatore autenticato: perde, e la partita si chiude."""
+        return self.client.post(f"/player/match/{match_id}/forfeit")
+
     def imposta_risultato(self, match_id: int, punti1: int, punti2: int) -> Any:
         """Risultato secco dal percorso del direttore, senza passare dai rack."""
         return self.client.post(

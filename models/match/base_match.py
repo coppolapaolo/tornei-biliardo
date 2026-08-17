@@ -147,7 +147,7 @@ class BaseMatchMixin:
 
         from models.status_enum import MatchStatus
 
-        if self.status == MatchStatus.VALIDATED.value:
+        if self.status == MatchStatus.CONFIRMED_BY_BOTH.value:
             raise ValueError("Match already validated")
 
         # Set confirmation for the appropriate player
@@ -211,10 +211,10 @@ class BaseMatchMixin:
         is_tournament_match = isinstance(self.status, str)
         if is_tournament_match:
             # Match (tournament) - use string value
-            self.status = TournamentMatchStatus.VALIDATED.value
+            self.status = TournamentMatchStatus.CONFIRMED_BY_BOTH.value
         else:
             # IndividualMatch - set to VALIDATED for bilateral confirmation
-            self.status = IndividualMatchStatus.VALIDATED
+            self.status = IndividualMatchStatus.CONFIRMED_BY_BOTH
 
         if hasattr(self, "completed_at"):
             self.completed_at = utc_now()

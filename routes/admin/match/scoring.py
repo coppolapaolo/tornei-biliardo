@@ -97,8 +97,9 @@ def validate_match(match_id):
     """Valida risultato match e completa la partita (admin/director).
 
     Questa azione:
-    - Imposta validated_by_admin = True
-    - Completa il match (status = completed)
+    - Completa il match (status = completed): la validazione del direttore
+      *è* quello stato, non un flag a parte — `Match` non ha nessun
+      `validated_by_admin`, quella colonna vive su `Rack`
     - Libera il tavolo e lo assegna alla prima partita in attesa
 
     Note: Se winner_id non è impostato ma la distanza è raggiunta,

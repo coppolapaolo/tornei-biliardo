@@ -78,7 +78,7 @@ def _make_live_garas(suffix, n_gare, players):
                 round_number=1,
                 player1_id=players[0].id,
                 player2_id=players[1].id,
-                status=MatchStatus.COMPLETED.value,
+                status=MatchStatus.CLOSED_UNILATERALLY.value,
             )
         )
         db.session.add(

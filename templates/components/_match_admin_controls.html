@@ -33,8 +33,8 @@
 {% if match.is_trio and match.trio_match %}
     {% set has_scores = (match.trio_match.player1_racks > 0 or match.trio_match.player2_racks > 0 or match.trio_match.player3_racks > 0) %}
 {% endif %}
-{% set reset_visible = (match.status == MatchStatus.COMPLETED.value or has_scores) and (match_can_modify is not defined or match_can_modify) %}
-{% set score_controls_visible = match.table_assignment and match.status != MatchStatus.COMPLETED.value and not match.is_bye %}
+{% set reset_visible = (match.status == MatchStatus.CLOSED_UNILATERALLY.value or has_scores) and (match_can_modify is not defined or match_can_modify) %}
+{% set score_controls_visible = match.table_assignment and match.status != MatchStatus.CLOSED_UNILATERALLY.value and not match.is_bye %}
 {% set table_notice_visible = not match.table_assignment and not MatchStatus.is_finished(match.status) %}
 
 <section class="c7-card c7-stack">
@@ -45,7 +45,7 @@
     {# Score controls require table assignment #}
     {% if match.table_assignment %}
         {# Quick Rack Entry Section - Only for matches with table assigned #}
-        {% if match.status != MatchStatus.COMPLETED.value and not match.is_bye %}
+        {% if match.status != MatchStatus.CLOSED_UNILATERALLY.value and not match.is_bye %}
 
         {# === TRIO MATCH - 3 player admin controls (direct result entry) === #}
         {% if match.is_trio and match.trio_match %}

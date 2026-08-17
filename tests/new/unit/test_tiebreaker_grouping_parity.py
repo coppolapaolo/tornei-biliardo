@@ -98,7 +98,7 @@ def _setup(db_session, classification_system: str) -> Gara:
                 player1_score=s1,
                 player2_score=s2,
                 winner_id=p1.id if s1 > s2 else (p2.id if s2 > s1 else None),
-                status=MatchStatus.COMPLETED.value,
+                status=MatchStatus.CLOSED_UNILATERALLY.value,
             )
         )
 

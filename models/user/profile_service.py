@@ -13,6 +13,7 @@ from models.transaction.manager import transactional, read_only
 from models.user.tokens import UserToken
 from models.shared.email_service import EmailService
 from flask import request  # For base_url
+from flask_babel import gettext as _
 
 
 class UserProfileService:
@@ -190,13 +191,30 @@ class UserProfileService:
             - Username uniqueness must be maintained
             - Only allowed fields can be updated
         """
+        # Questi messaggi finiscono in un `flash()` (routes/player/profile.py),
+        # quindi li legge l'utente: vanno tradotti come qualunque altro testo
+        # d'interfaccia. Erano rimasti fuori — metà in inglese, metà in
+        # italiano non marcato — perché nati come errori interni.
         user = db.session.get(User, user_id)
         if not user:
-            raise ValueError("User not found")
+            raise ValueError(_("Utente non trovato."))
 
         # Prevent modification of admin users
         if user.role == UserRole.ADMIN.value:
-            raise ValueError("Cannot modify administrator user")
+            raise ValueError(_("L'utente amministratore non è modificabile."))
+
+        # Un campo obbligatorio passato vuoto è quasi sempre un form parziale,
+        # non una volontà: prima veniva normalizzato a None più sotto, e
+        # l'utente si ritrovava senza username (niente login) e senza email
+        # (niente recupero password), in silenzio. Meglio rifiutare: chi
+        # volesse davvero azzerarli passa dall'anonimizzazione, che è un'altra
+        # operazione e ha le sue conseguenze.
+        for campo, messaggio in (
+            ("username", _("Il nome utente non può restare vuoto.")),
+            ("email", _("L'indirizzo email non può restare vuoto.")),
+        ):
+            if campo in kwargs and not (kwargs[campo] or "").strip():
+                raise ValueError(messaggio)
 
         # Validate username uniqueness if being updated
         if "username" in kwargs:
@@ -205,14 +223,19 @@ class UserProfileService:
             # Block 'admin' variants
             if new_username.lower() == "admin":
                 raise ValueError(
-                    "Lo username 'admin' (e le sue varianti) è riservato al sistema."
+                    _(
+                        "Lo username «admin» (e le sue varianti) è riservato "
+                        "al sistema."
+                    )
                 )
 
             existing_user = User.query.filter(
                 User.username == new_username, User.id != user_id
             ).first()
             if existing_user:
-                raise ValueError(f"Username '{new_username}' already exists")
+                raise ValueError(
+                    _("Lo username «%(nome)s» è già in uso.", nome=new_username)
+                )
 
         # Update allowed fields, tracking whether the email actually changed
         # so we can revoke verification + queue a new verification email.

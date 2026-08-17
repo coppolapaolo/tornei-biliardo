@@ -90,7 +90,7 @@ class TestBaseMatchValidation:
 
         # Then: Match should be validated (bilateral confirmation complete)
         assert completed is True
-        assert sample_match.status == MatchStatus.VALIDATED.value
+        assert sample_match.status == MatchStatus.CONFIRMED_BY_BOTH.value
         assert sample_match.winner_id == sample_match.player1_id
 
     def test_confirm_result_raises_for_invalid_user(self, db_session, sample_match):

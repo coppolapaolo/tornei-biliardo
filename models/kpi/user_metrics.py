@@ -77,7 +77,7 @@ class UserMetricService:
         """Count total completed matches."""
         query = Match.query.filter(
             or_(Match.player1_id == user_id, Match.player2_id == user_id),
-            Match.status == MatchStatus.COMPLETED.value,
+            Match.status == MatchStatus.CLOSED_UNILATERALLY.value,
         )
         return query.count()
 
@@ -195,7 +195,10 @@ class UserMetricService:
                 IndividualMatch.player2_id == user_id,
             ),
             IndividualMatch.status.in_(
-                [MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value]
+                [
+                    MatchStatus.CLOSED_UNILATERALLY.value,
+                    MatchStatus.CONFIRMED_BY_BOTH.value,
+                ]
             ),
         ).count()
 
@@ -210,7 +213,7 @@ class UserMetricService:
         location_id = context["location_id"]
         query = Match.query.filter(
             or_(Match.player1_id == user_id, Match.player2_id == user_id),
-            Match.status == MatchStatus.COMPLETED.value,
+            Match.status == MatchStatus.CLOSED_UNILATERALLY.value,
             Match.venue_id == location_id,
         )
         return query.count()
@@ -272,10 +275,12 @@ class UserMetricService:
     ) -> int:
         """Count unique players played against."""
         p1_query = db.session.query(Match.player2_id).filter(
-            Match.player1_id == user_id, Match.status == MatchStatus.COMPLETED.value
+            Match.player1_id == user_id,
+            Match.status == MatchStatus.CLOSED_UNILATERALLY.value,
         )
         p2_query = db.session.query(Match.player1_id).filter(
-            Match.player2_id == user_id, Match.status == MatchStatus.COMPLETED.value
+            Match.player2_id == user_id,
+            Match.status == MatchStatus.CLOSED_UNILATERALLY.value,
         )
 
         opponents = set([r[0] for r in p1_query.all()] + [r[0] for r in p2_query.all()])

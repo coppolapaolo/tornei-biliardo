@@ -381,7 +381,7 @@ class AdvancedRoundManager:
         completed_matches = Match.query.filter_by(
             gara_id=gara_id,
             round_number=round_number,
-            status=MatchStatus.COMPLETED.value,
+            status=MatchStatus.CLOSED_UNILATERALLY.value,
         ).all()
 
         if not completed_matches:
@@ -464,7 +464,10 @@ class AdvancedRoundManager:
                 m
                 for m in round_matches
                 if m.status
-                in [MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value]
+                in [
+                    MatchStatus.CLOSED_UNILATERALLY.value,
+                    MatchStatus.CONFIRMED_BY_BOTH.value,
+                ]
             ]
             pending_matches = [
                 m for m in round_matches if m.status == MatchStatus.PENDING.value

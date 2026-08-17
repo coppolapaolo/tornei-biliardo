@@ -19,7 +19,7 @@ from models.status_enum import GaraStatus, MatchStatus
 
 # ✅ Correct
 if gara.status == GaraStatus.PLAYING.value:
-if match.status == MatchStatus.COMPLETED.value:
+if match.status == MatchStatus.CLOSED_UNILATERALLY.value:
 
 # ❌ Wrong - compares to enum object, not string
 if gara.status == GaraStatus.PLAYING:

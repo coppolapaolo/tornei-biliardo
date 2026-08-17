@@ -174,7 +174,7 @@ class TestTableAssignmentTDD:
 
         # Complete first match
         first_match = matches[0]
-        first_match.status = MatchStatus.COMPLETED.value
+        first_match.status = MatchStatus.CLOSED_UNILATERALLY.value
         first_match.winner_id = first_match.player1_id
         db_session.commit()
 
@@ -253,7 +253,7 @@ class TestTableAssignmentTDD:
             round_number=1,
             player1_id=players[0].id,
             player2_id=players[1].id,
-            status=MatchStatus.COMPLETED.value,
+            status=MatchStatus.CLOSED_UNILATERALLY.value,
             table_assignment="Tavolo A",
             winner_id=players[0].id,
         )
@@ -395,7 +395,7 @@ class TestTableAssignmentTDD:
         db_session.commit()
 
         # Act 1: Complete Match 1 (A vs B) - frees A and B
-        match1.status = MatchStatus.COMPLETED.value
+        match1.status = MatchStatus.CLOSED_UNILATERALLY.value
         match1.winner_id = player_a.id
         db_session.commit()
 
@@ -409,7 +409,7 @@ class TestTableAssignmentTDD:
         assert match4.table_assignment is None
 
         # Act 2: Complete Match 2 (C vs D) - frees C and D
-        match2.status = MatchStatus.COMPLETED.value
+        match2.status = MatchStatus.CLOSED_UNILATERALLY.value
         match2.winner_id = player_c.id
         db_session.commit()
 

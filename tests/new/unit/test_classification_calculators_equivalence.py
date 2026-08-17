@@ -120,7 +120,7 @@ def _match(db_session, gara, p1, p2, s1, s2, round_number=1, is_bye=False):
         player1_score=s1,
         player2_score=s2,
         winner_id=p1.id if is_bye else winner,
-        status=MatchStatus.COMPLETED.value,
+        status=MatchStatus.CLOSED_UNILATERALLY.value,
         is_bye=is_bye,
     )
     db_session.add(match)

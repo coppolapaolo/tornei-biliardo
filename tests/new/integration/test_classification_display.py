@@ -122,7 +122,7 @@ class TestClassificationDisplay:
             for i, match in enumerate(first_round_matches):
                 if not match.is_bye:
                     # Simulate match completion
-                    match.status = MatchStatus.COMPLETED.value
+                    match.status = MatchStatus.CLOSED_UNILATERALLY.value
                     match.winner_id = match.player1_id
                     match.player1_score = 3
                     match.player2_score = 1
@@ -188,7 +188,7 @@ class TestClassificationDisplay:
             for i, match in enumerate(second_round_matches):
                 if not match.is_bye:
                     # Simulate match completion
-                    match.status = MatchStatus.COMPLETED.value
+                    match.status = MatchStatus.CLOSED_UNILATERALLY.value
                     match.winner_id = match.player1_id
                     match.player1_score = 3
                     match.player2_score = 2
@@ -242,14 +242,14 @@ class TestClassificationDisplay:
                     print(f"DEBUG: Round {round_number} has no matches")
                     return False
                 completed = all(
-                    match.status == MatchStatus.COMPLETED.value
+                    match.status == MatchStatus.CLOSED_UNILATERALLY.value
                     for match in round_matches
                 )
                 n_completate = len(
                     [
                         m
                         for m in round_matches
-                        if m.status == MatchStatus.COMPLETED.value
+                        if m.status == MatchStatus.CLOSED_UNILATERALLY.value
                     ]
                 )
                 print(
@@ -437,7 +437,7 @@ class TestClassificationDisplay:
 
             for i, match in enumerate(first_round_matches):
                 if not match.is_bye:
-                    match.status = MatchStatus.COMPLETED.value
+                    match.status = MatchStatus.CLOSED_UNILATERALLY.value
                     match.winner_id = match.player1_id
                     match.player1_score = 3
                     match.player2_score = 1
@@ -552,7 +552,7 @@ class TestClassificationDisplay:
 
             for i, match in enumerate(first_round_matches):
                 if not match.is_bye:
-                    match.status = MatchStatus.COMPLETED.value
+                    match.status = MatchStatus.CLOSED_UNILATERALLY.value
                     match.winner_id = match.player1_id  # Player 1 wins initially
                     match.player1_score = 3
                     match.player2_score = 1
@@ -792,7 +792,7 @@ class TestClassificationDisplay:
 
             for match in first_round_matches:
                 if not match.is_bye:
-                    match.status = MatchStatus.COMPLETED.value
+                    match.status = MatchStatus.CLOSED_UNILATERALLY.value
                     match.winner_id = match.player1_id
                     match.player1_score = 5
                     match.player2_score = 2

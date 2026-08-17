@@ -57,13 +57,13 @@ class MatchStateService:
 
         if (match.status or MatchStatus.PENDING.value) not in (
             MatchStatus.PENDING.value,
-            MatchStatus.COMPLETED.value,
+            MatchStatus.CLOSED_UNILATERALLY.value,
         ):
             raise InvalidTransitionError(
                 f"Transizione non ammessa: {match.status!r} → playing"
             )
 
-        was_completed = match.status == MatchStatus.COMPLETED.value
+        was_completed = match.status == MatchStatus.CLOSED_UNILATERALLY.value
 
         match.status = MatchStatus.PLAYING.value
 
@@ -82,7 +82,7 @@ class MatchStateService:
 
     @staticmethod
     @transactional(domain="match")
-    def to_completed(match_id: int) -> Match:
+    def to_completed(match_id: int, closed_by_director: bool = False) -> Match:
         """Transition playing/pending → completed.
 
         Side effects:
@@ -92,6 +92,23 @@ class MatchStateService:
 
         Args:
             match_id: ID of the match to complete
+            closed_by_director: la partita la sta chiudendo il **direttore**,
+                che può farlo anche se non è mai iniziata — risultato inserito
+                a mano, turno importato, partita chiusa d'ufficio. Senza
+                questo, una partita ancora PENDING non può passare a
+                COMPLETED (vedi il guard qui sotto).
+
+                Prima questo parametro non esisteva: chi ne aveva bisogno
+                scriveva `match.validated_by_admin = True` sull'istanza e
+                questo metodo lo rileggeva con
+                `getattr(match, "validated_by_admin", False)`. Su `Match`
+                quella colonna non esiste — vive su `Rack` — quindi era un
+                attributo di sola memoria, valido per la durata della
+                richiesta e invisibile a chiunque leggesse il modello. Un
+                parametro passato di nascosto attraverso l'oggetto, insomma:
+                `round_creation.py` aveva dovuto perfino zittire il type
+                checker con un `# type: ignore[attr-defined]`, che è il
+                momento in cui il codice dice a voce alta di essere sbagliato.
 
         Returns:
             The updated Match object
@@ -113,13 +130,13 @@ class MatchStateService:
             match.status == MatchStatus.PENDING.value
             and not match.is_bye
             and not match.is_trio
-            and not getattr(match, "validated_by_admin", False)
+            and not closed_by_director
         ):
             raise InvalidTransitionError(
                 "Non è possibile completare un match che non è ancora iniziato"
             )
 
-        match.status = MatchStatus.COMPLETED.value
+        match.status = MatchStatus.CLOSED_UNILATERALLY.value
 
         # Auto-set ended_at if not already manually set
         if match.ended_at is None:

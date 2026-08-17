@@ -119,7 +119,7 @@ class TestUseCaseMatchReset:
         match = Match.query.filter_by(
             gara_id=gara.id,
             round_number=1,
-            status=MatchStatus.COMPLETED.value,
+            status=MatchStatus.CLOSED_UNILATERALLY.value,
         ).first()
 
         assert match is not None
@@ -157,7 +157,7 @@ class TestUseCaseMatchReset:
         match = Match.query.filter_by(
             gara_id=gara.id,
             round_number=1,
-            status=MatchStatus.COMPLETED.value,
+            status=MatchStatus.CLOSED_UNILATERALLY.value,
         ).first()
 
         original_winner = match.winner_id
@@ -251,7 +251,7 @@ class TestUseCaseMatchReset:
             rack_num += 1
 
         db_session.refresh(match)
-        if match.status != MatchStatus.COMPLETED.value:
+        if match.status != MatchStatus.CLOSED_UNILATERALLY.value:
             MatchService.to_completed(match.id)
 
 
@@ -444,7 +444,7 @@ class TestUseCaseRoundLocking:
             rack_num += 1
 
         db_session.refresh(match)
-        if match.status != MatchStatus.COMPLETED.value:
+        if match.status != MatchStatus.CLOSED_UNILATERALLY.value:
             MatchService.to_completed(match.id)
 
 
@@ -599,5 +599,5 @@ class TestUseCaseRoundCancellation:
             rack_num += 1
 
         db_session.refresh(match)
-        if match.status != MatchStatus.COMPLETED.value:
+        if match.status != MatchStatus.CLOSED_UNILATERALLY.value:
             MatchService.to_completed(match.id)

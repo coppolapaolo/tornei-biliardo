@@ -361,7 +361,7 @@ class TestRematchPreservesFormat:
             player2_id=p2.id,
             location="Test Hall",
             scheduled_at=utc_now() - timedelta(hours=3),
-            status=MatchStatus.VALIDATED,
+            status=MatchStatus.CONFIRMED_BY_BOTH,
             winner_id=p1.id,
             **extra,
         )

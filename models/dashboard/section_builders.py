@@ -90,7 +90,7 @@ class DashboardSectionBuilder:
             .join(Gara, Gara.id == TournamentMatch.gara_id)
             .filter(
                 Gara.campionato_id == selected.id,
-                TournamentMatch.status == MatchStatus.COMPLETED.value,
+                TournamentMatch.status == MatchStatus.CLOSED_UNILATERALLY.value,
                 _user_is_match_participant(user_id),
             )
             .order_by(

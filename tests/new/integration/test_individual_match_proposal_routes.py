@@ -289,7 +289,7 @@ class TestMatchLifecycleRoutes:
 
         final = db.session.get(IndividualMatch, mid)
         assert final.player1_confirmed and final.player2_confirmed
-        assert final.status == MatchStatus.VALIDATED.value
+        assert final.status == MatchStatus.CONFIRMED_BY_BOTH.value
         assert final.winner_id == p1id
 
     def test_cancel_match(self, app):

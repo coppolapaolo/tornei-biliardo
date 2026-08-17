@@ -92,7 +92,7 @@ class TestTableAssignmentByRanking:
         → classifica attesa: A(1), C(2), E(3), F(4), D(5), B(6).
         """
         a, b, c, d, e, f = players
-        done = MatchStatus.COMPLETED.value
+        done = MatchStatus.CLOSED_UNILATERALLY.value
         self._add_match(db_session, gara, 1, a, b, status=done, score=(7, 0))
         self._add_match(db_session, gara, 1, c, d, status=done, score=(5, 2))
         self._add_match(db_session, gara, 1, e, f, status=done, score=(4, 3))
@@ -110,7 +110,7 @@ class TestTableAssignmentByRanking:
         è completamente terminato, anche se ci sono tavoli liberi."""
         gara = self._make_gara(db_session, ranked=True)
         a, b, c, d, e, f = players
-        done = MatchStatus.COMPLETED.value
+        done = MatchStatus.CLOSED_UNILATERALLY.value
         self._add_match(db_session, gara, 1, a, b, status=done, score=(7, 0))
         self._add_match(db_session, gara, 1, c, d, status=done, score=(5, 2))
         # m3 ancora in gioco sul T3: T1 e T2 sono liberi
@@ -138,7 +138,7 @@ class TestTableAssignmentByRanking:
         turno 2 con entrambi i giocatori liberi parte in anticipo."""
         gara = self._make_gara(db_session, ranked=False)
         a, b, c, d, e, f = players
-        done = MatchStatus.COMPLETED.value
+        done = MatchStatus.CLOSED_UNILATERALLY.value
         self._add_match(db_session, gara, 1, a, b, status=done, score=(7, 0))
         self._add_match(db_session, gara, 1, c, d, status=done, score=(5, 2))
         self._add_match(
@@ -196,7 +196,7 @@ class TestTableAssignmentByRanking:
         m6_refreshed = db_session.get(Match, m6.id)
         m6_refreshed.player1_score = 1
         m6_refreshed.player2_score = 4
-        m6_refreshed.status = MatchStatus.COMPLETED.value
+        m6_refreshed.status = MatchStatus.CLOSED_UNILATERALLY.value
         db_session.commit()
 
         TableAssignmentService.release_and_reassign_table(m6.id)

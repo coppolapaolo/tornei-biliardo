@@ -20,7 +20,7 @@
     <div class="c7-sechead"><h2>{{ _("Partite") }}</h2></div>
     <div class="c7-grid" style="grid-template-columns:repeat(auto-fit,minmax(96px,1fr))">
       {% for key in [MatchStatus.SCHEDULED.value, MatchStatus.IN_PROGRESS.value,
-                     MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value,
+                     MatchStatus.CLOSED_UNILATERALLY.value, MatchStatus.CONFIRMED_BY_BOTH.value,
                      MatchStatus.CANCELLED.value] %}
       <div class="c7-card">
         <div class="c7-num-lg">{{ status_counts.get(key, 0) }}</div>

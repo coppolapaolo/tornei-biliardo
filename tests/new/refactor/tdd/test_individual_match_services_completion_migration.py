@@ -402,7 +402,7 @@ class TestIndividualMatchServicesTransactionMigrationPhase2:
             # Verify changes exist in database (transaction was committed)
             db_match = db.session.get(IndividualMatch, individual_match.id)
             assert db_match is not None
-            assert db_match.status == MatchStatus.COMPLETED
+            assert db_match.status == MatchStatus.CLOSED_UNILATERALLY
             assert db_match.ended_at is not None
             assert db_match.winner_id == winner_id
 

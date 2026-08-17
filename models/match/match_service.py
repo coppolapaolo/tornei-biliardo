@@ -81,11 +81,13 @@ class MatchService:
         return MatchStateService.to_playing(match_id)
 
     @staticmethod
-    def to_completed(match_id: int) -> Match:
+    def to_completed(match_id: int, closed_by_director: bool = False) -> Match:
         """playing → completed (delegates to MatchStateService)."""
         from .state_service import MatchStateService
 
-        return MatchStateService.to_completed(match_id)
+        return MatchStateService.to_completed(
+            match_id, closed_by_director=closed_by_director
+        )
 
     @staticmethod
     @transactional(domain="match")
@@ -689,7 +691,7 @@ class MatchService:
             current_set.player2_racks = max(0, current_set.player2_racks - 1)
 
         # If set was completed, reopen it
-        if current_set.status == MatchStatus.COMPLETED.value:
+        if current_set.status == MatchStatus.CLOSED_UNILATERALLY.value:
             current_set.status = "playing"
             current_set.winner_id = None
             current_set.completed_at = None
@@ -701,7 +703,7 @@ class MatchService:
                 match.player2_score = max(0, match.player2_score - 1)
 
             # If match was completed, reopen it
-            if match.status == MatchStatus.COMPLETED.value:
+            if match.status == MatchStatus.CLOSED_UNILATERALLY.value:
                 match.status = MatchStatus.PLAYING.value
                 match.winner_id = None
 

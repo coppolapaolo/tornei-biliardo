@@ -171,8 +171,8 @@ GaraStatus.AWAITING_SSR.value {# 'awaiting_ssr' #}
 {# MatchStatus - Match status (tournament and individual) #}
 MatchStatus.SCHEDULED.value   {# 'scheduled' #}
 MatchStatus.IN_PROGRESS.value {# 'in_progress' #}
-MatchStatus.COMPLETED.value   {# 'completed' #}
-MatchStatus.VALIDATED.value   {# 'validated' #}
+MatchStatus.CLOSED_UNILATERALLY.value   {# 'completed' #}
+MatchStatus.CONFIRMED_BY_BOTH.value   {# 'validated' #}
 ```
 
 **Always use enum values for status comparisons**, never string literals.
@@ -269,7 +269,7 @@ const config = {{ some_dict|tojson }};
 - **Do not import Python modules in templates** - Pass data from route/view
 - **Do not use `%` in translated strings** - Interpreted as Python format specifier
 - **Do not access relationships without null check** - `gara.campionato` may be None
-- **Do not use string literals for status comparisons** - Use enums: `MatchStatus.COMPLETED.value` not `'completed'`
+- **Do not use string literals for status comparisons** - Use enums: `MatchStatus.CLOSED_UNILATERALLY.value` not `'completed'`
 
 ---
 

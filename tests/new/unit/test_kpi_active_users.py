@@ -43,7 +43,7 @@ def _completed_match(db_session, p1, p2) -> Match:
         round_number=1,
         player1_id=p1.id,
         player2_id=p2.id,
-        status=MatchStatus.COMPLETED.value,
+        status=MatchStatus.CLOSED_UNILATERALLY.value,
         winner_id=p1.id,
         player1_score=5,
         player2_score=0,

@@ -84,7 +84,7 @@ def _gara_with_result(db_session, classification_system: str) -> Gara:
                 player1_score=scores[0],
                 player2_score=scores[1],
                 winner_id=player_a.id,
-                status=MatchStatus.COMPLETED.value,
+                status=MatchStatus.CLOSED_UNILATERALLY.value,
             )
         )
     db_session.flush()

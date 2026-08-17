@@ -56,7 +56,7 @@ class IndividualMatchStatisticsService:
         # (conferma bilaterale, il flusso normale). Contare solo COMPLETED
         # escludeva la maggioranza dei match finiti dalle statistiche.
         matches = IndividualMatchStatisticsService.get_user_matches(
-            user_id, [MatchStatus.COMPLETED, MatchStatus.VALIDATED]
+            user_id, [MatchStatus.CLOSED_UNILATERALLY, MatchStatus.CONFIRMED_BY_BOTH]
         )
 
         total_matches = len(matches)
@@ -284,7 +284,8 @@ class IndividualMatchStatisticsService:
         completed_matches = [
             m
             for m in all_matches
-            if m.status in (MatchStatus.COMPLETED, MatchStatus.VALIDATED)
+            if m.status
+            in (MatchStatus.CLOSED_UNILATERALLY, MatchStatus.CONFIRMED_BY_BOTH)
         ]
         recent_matches = completed_matches[:5]
 
@@ -386,8 +387,8 @@ class IndividualMatchStatisticsService:
                 ),
                 IndividualMatch.status.in_(
                     [
-                        MatchStatus.COMPLETED.value,
-                        MatchStatus.VALIDATED.value,
+                        MatchStatus.CLOSED_UNILATERALLY.value,
+                        MatchStatus.CONFIRMED_BY_BOTH.value,
                     ]
                 ),
             )
@@ -413,8 +414,8 @@ class IndividualMatchStatisticsService:
                 ),
                 Match.status.in_(
                     [
-                        MatchStatus.COMPLETED.value,
-                        MatchStatus.VALIDATED.value,
+                        MatchStatus.CLOSED_UNILATERALLY.value,
+                        MatchStatus.CONFIRMED_BY_BOTH.value,
                     ]
                 ),
             )

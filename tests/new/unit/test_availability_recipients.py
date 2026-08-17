@@ -23,7 +23,7 @@ def _played(p1_id, p2_id, location=LOC):
             player2_id=p2_id,
             location=location,
             scheduled_at=utc_now() + timedelta(hours=1),
-            status=MatchStatus.COMPLETED,
+            status=MatchStatus.CLOSED_UNILATERALLY,
             distance=5,
         )
     )
