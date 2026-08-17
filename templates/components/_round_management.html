@@ -2,7 +2,7 @@
    Configurazione per turno (ADR-027: persistita server-side).
    API, endpoint, payload e nomi degli id invariati; cambiano markup e classi.
    L'evidenziazione degli override usa .c7-card--warn al posto di bg-warning. #}
-{% if gara.status in ['setup'] and gara.rounds_count > 1 and gara.matchmaking_strategy in ['amalfi', 'random'] %}
+{% if gara.status in [GaraStatus.SETUP.value] and gara.rounds_count > 1 and gara.matchmaking_strategy in ['amalfi', 'random'] %}
 <div class="c7-card">
   <h3 class="mb-1">{{ _('Configurazione turni') }}</h3>
   <p class="mb-3" style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">

@@ -173,6 +173,7 @@ def public_campionatos_list():
 def campionato_detail_public(campionato_id):
     """Dettaglio campionato pubblico - visibile ai guest"""
     from models.campionato.services import TournamentService
+    from models.status_enum import GaraStatus
 
     campionato = db.get_or_404(Campionato, campionato_id)
 
@@ -189,7 +190,7 @@ def campionato_detail_public(campionato_id):
 
     # Determine last completed gara number
     last_completed_gara_number = None
-    completed_garas = [g for g in garas if g.status == "completed"]
+    completed_garas = [g for g in garas if g.status == GaraStatus.COMPLETED.value]
     if completed_garas:
         last_completed_gara_number = max(g.number for g in completed_garas)
 

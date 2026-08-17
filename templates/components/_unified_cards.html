@@ -63,7 +63,7 @@
     </div>
 
     {# Stato iscrizioni #}
-    {% if item.entity.get_real_status() == 'inscription' %}
+    {% if item.entity.get_real_status() == GaraStatus.INSCRIPTION.value %}
     <div style="margin-top: 12px;">
       {% if item.entity.is_full() %}
       <span class="c7-state c7-state--warn">{{ _('Posti esauriti') }}</span>
@@ -74,14 +74,14 @@
       <div class="text-muted" style="font-size: 12px; margin-top: 6px;">{{ _('Chiudono il') }} <span class="c7-num">{{ item.entity.inscription_end|datetime_local }}</span></div>
       {% endif %}
     </div>
-    {% elif item.entity.get_real_status() == 'inscription_not_yet_open' %}
+    {% elif item.entity.get_real_status() == ProvaDerivedStatus.INSCRIPTION_NOT_YET_OPEN.value %}
     <div style="margin-top: 12px;">
       <span class="c7-state c7-state--muted">{{ _('Iscrizioni non ancora aperte') }}</span>
       {% if item.entity.inscription_start %}
       <div class="text-muted" style="font-size: 12px; margin-top: 6px;">{{ _('Aprono il') }} <span class="c7-num">{{ item.entity.inscription_start|datetime_local }}</span></div>
       {% endif %}
     </div>
-    {% elif item.entity.status == 'completed' %}
+    {% elif item.entity.status == GaraStatus.COMPLETED.value %}
     {% set podium = item.entity.get_podium() %}
     {% if podium %}
     <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--c7-line-soft);">
@@ -100,7 +100,7 @@
     {% endif %}
 
     {# Azioni #}
-    {% set has_actions = item.can_view_details or item.can_manage or (not item.can_manage and item.type == 'gara' and item.entity.get_real_status() == 'inscription') %}
+    {% set has_actions = item.can_view_details or item.can_manage or (not item.can_manage and item.type == 'gara' and item.entity.get_real_status() == GaraStatus.INSCRIPTION.value) %}
     {% if has_actions %}
     <div style="margin-top: auto; padding-top: 16px; display: flex; flex-wrap: wrap; gap: 8px;">
       {% if item.type == 'campionato' %}
@@ -124,7 +124,7 @@
       {% endif %}
 
       {# Iscrizione per giocatori e direttori di gara, mai per admin #}
-      {% if not current_user.is_admin and item.entity.get_real_status() == 'inscription' %}
+      {% if not current_user.is_admin and item.entity.get_real_status() == GaraStatus.INSCRIPTION.value %}
       {% set ns = namespace(inscribed=false, is_waitlist=false) %}
       {% for ins in item.entity.inscriptions %}
       {% if ins.user_id == current_user.id %}

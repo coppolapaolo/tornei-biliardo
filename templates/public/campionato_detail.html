@@ -68,7 +68,7 @@
                     </div>
                     <div class="d-flex justify-content-between mb-2">
                         <span>{{ _('Gare completate') }}</span>
-                        <strong>{{ garas|selectattr('status', 'equalto', 'completed')|list|length }}</strong>
+                        <strong>{{ garas|selectattr('status', 'equalto', GaraStatus.COMPLETED.value)|list|length }}</strong>
                     </div>
                     <div class="d-flex justify-content-between">
                         <span>{{ _('Partecipanti') }}</span>

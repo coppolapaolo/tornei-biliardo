@@ -23,7 +23,7 @@ from models.matchmaking.configuration import (
     get_classification_compatibility_map,
 )
 from models.competition.constants import DEFAULT_DISTANCE
-from models.status_enum import Discipline
+from models.status_enum import Discipline, GaraStatus
 from utils import (
     campionato_manager_required,
     admin_required,
@@ -390,9 +390,9 @@ def campionato_detail(campionato_id):
     # Trova gare completate o gare "playing" ma con tutti i round completati
     eligible_garas = []
     for p in gare:
-        if p.status == "completed":
+        if p.status == GaraStatus.COMPLETED.value:
             eligible_garas.append(p)
-        elif p.status == "playing" and p.current_round > p.rounds_count:
+        elif p.status == GaraStatus.PLAYING.value and p.current_round > p.rounds_count:
             # Gara tecnicamente completata ma non ancora marcata come tale
             eligible_garas.append(p)
 

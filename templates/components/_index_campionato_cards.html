@@ -47,14 +47,14 @@
 
                                 {{ status_badge(gara, 'gara') }}
 
-                                {% if gara.get_real_status() == 'inscription' %}
+                                {% if gara.get_real_status() == GaraStatus.INSCRIPTION.value %}
                                 <br><small class="text-success">
                                     <i class="fas fa-clock"></i>
                                     {{ _("Scade:") }} <span>
                                         {{ gara.inscription_end|datetime_local if gara.inscription_end else 'N/A' }}
                                     </span>
                                 </small>
-                                {% elif gara.get_real_status() == 'inscription_not_yet_open' %}
+                                {% elif gara.get_real_status() == ProvaDerivedStatus.INSCRIPTION_NOT_YET_OPEN.value %}
                                 <br><small class="text-info">
                                     <i class="fas fa-clock"></i>
                                     {{ _("Iniziano:") }} <span>

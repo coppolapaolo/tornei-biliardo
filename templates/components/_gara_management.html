@@ -56,14 +56,14 @@
   <div class="c7-stack">
 
     {# ---------------- SETUP ---------------- #}
-    {% if gara.status == 'setup' %}
+    {% if gara.status == GaraStatus.SETUP.value %}
       {{ challenge_button(gara) }}
       <button class="btn btn-success w-100" data-bs-toggle="modal" data-bs-target="#openInscriptionsModal">
         <i class="fas fa-door-open"></i> {{ _('Apri Iscrizioni') }}
       </button>
 
     {# ---------------- ISCRIZIONI APERTE ---------------- #}
-    {% elif gara.get_real_status() == 'inscription' %}
+    {% elif gara.get_real_status() == GaraStatus.INSCRIPTION.value %}
       {{ start_round_button(gara, gara.get_active_inscriptions_count() < gara.min_participants) }}
       {{ challenge_button(gara) }}
       {% if gara.can_modify_inscription_dates() %}{{ modify_dates_button(_('Modifica Date')) }}{% endif %}
@@ -88,7 +88,7 @@
       {% endif %}
 
     {# ---------------- ISCRIZIONI SCADUTE ---------------- #}
-    {% elif gara.get_real_status() == 'inscription_closed' %}
+    {% elif gara.get_real_status() == ProvaDerivedStatus.INSCRIPTION_CLOSED.value %}
       <div class="c7-flash c7-flash--warning">
         <span class="c7-flash__ico"><i class="fas fa-exclamation"></i></span>
         <div class="c7-flash__body">
@@ -108,7 +108,7 @@
       {% endif %}
 
     {# ---------------- ISCRIZIONI NON ANCORA APERTE ---------------- #}
-    {% elif gara.get_real_status() == 'inscription_not_yet_open' %}
+    {% elif gara.get_real_status() == ProvaDerivedStatus.INSCRIPTION_NOT_YET_OPEN.value %}
       <div class="c7-flash c7-flash--info">
         <span class="c7-flash__ico"><i class="fas fa-clock"></i></span>
         <div class="c7-flash__body">
@@ -121,7 +121,7 @@
       {% if gara.can_modify_inscription_dates() %}{{ modify_dates_button(_('Modifica Date')) }}{% endif %}
 
     {# ---------------- IN GIOCO ---------------- #}
-    {% elif gara.status == 'playing' %}
+    {% elif gara.status == GaraStatus.PLAYING.value %}
       {% set display_round = gara.current_round if gara.current_round > 0 else 1 %}
 
       {% if gara.matchmaking_strategy == 'random' %}
@@ -130,7 +130,7 @@
         {% set validated_count = gara.matches|selectattr('status', 'equalto', MatchStatus.CONFIRMED_BY_BOTH.value)|list|length %}
         {% set completed_matches = completed_count + validated_count %}
 
-        {% if gara.get_real_status() == 'campionato_completed' or completed_matches == total_matches %}
+        {% if gara.get_real_status() == ProvaDerivedStatus.TOURNAMENT_COMPLETED.value or completed_matches == total_matches %}
           <div class="c7-flash c7-flash--success">
             <span class="c7-flash__ico"><i class="fas fa-check"></i></span>
             <div class="c7-flash__body">
@@ -162,7 +162,7 @@
 
       {# Amalfi e altre strategie sequenziali #}
       {% else %}
-        {% if gara.get_real_status() == 'campionato_completed' %}
+        {% if gara.get_real_status() == ProvaDerivedStatus.TOURNAMENT_COMPLETED.value %}
           <div class="c7-flash c7-flash--success">
             <span class="c7-flash__ico"><i class="fas fa-check"></i></span>
             <div class="c7-flash__body">
@@ -187,7 +187,7 @@
           </button>
           {{ hint(_('Azzera i risultati del turno %(num)s per correzioni', num=gara.current_round)) }}
 
-        {% elif gara.get_real_status() == 'round_completed' %}
+        {% elif gara.get_real_status() == ProvaDerivedStatus.ROUND_COMPLETED.value %}
           <div class="c7-flash c7-flash--success">
             <span class="c7-flash__ico"><i class="fas fa-check"></i></span>
             <div class="c7-flash__body">
@@ -229,7 +229,7 @@
       {% endif %}
 
     {# ---------------- SPAREGGI (SSR) ---------------- #}
-    {% elif gara.status == 'awaiting_ssr' %}
+    {% elif gara.status == GaraStatus.AWAITING_SSR.value %}
       <div class="c7-flash c7-flash--warning">
         <span class="c7-flash__ico"><i class="fas fa-scale-balanced"></i></span>
         <div class="c7-flash__body">
