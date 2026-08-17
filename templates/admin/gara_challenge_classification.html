@@ -148,7 +148,7 @@
     {% endif %}
 
     {% set challenge_enabled = not gara.campionato or gara.campionato.challenge_mode %}
-    {% if gara.matchmaking_strategy == 'random' and challenge_enabled %}
+    {% if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value and challenge_enabled %}
     <button class="btn btn-secondary w-100" data-bs-toggle="modal" data-bs-target="#challengeManagementModal">
       <i class="fas fa-cog"></i>&nbsp;{{ _("Gestisci le challenge") }}
     </button>
@@ -157,7 +157,7 @@
 </div>
 
 {% set challenge_enabled = not gara.campionato or gara.campionato.challenge_mode %}
-{% if gara.matchmaking_strategy == 'random' and challenge_enabled %}
+{% if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value and challenge_enabled %}
 {% include "components/_challenge_management_modal.html" %}
 {% endif %}
 {% endblock %}

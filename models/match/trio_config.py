@@ -17,6 +17,8 @@ See ADR-005 for full specification.
 from dataclasses import dataclass
 from typing import List, Tuple, Optional
 
+from models.matchmaking.configuration import BRACKET_STRATEGIES
+
 
 @dataclass(frozen=True)
 class TrioConfig:
@@ -167,9 +169,15 @@ def get_trio_config_from_gara(gara) -> Optional[TrioConfig]:
     Returns None if gara doesn't allow trio (wrong classification type,
     wrong distance, etc.)
     """
-    # Check if gara uses rack-based classification
-    # (trio only makes sense with rack-based classification)
-    if gara.matchmaking_strategy == "elimination":
+    # Il trio ha senso solo dove si contano i rack, cioe' fuori dai tabelloni.
+    #
+    # Il confronto era `== "elimination"`, e non ha mai escluso niente: quel
+    # valore appartiene all'enum omonimo di `competition/validators.py`, mentre
+    # in colonna c'e' sempre quello di `matchmaking/configuration.py`, che dice
+    # `direct_elimination`. Un guard sempre falso, e nessun errore a dirlo.
+    # `BRACKET_STRATEGIES` copre anche il doppio KO, che il letterale singolo
+    # dimenticava comunque.
+    if gara.matchmaking_strategy in BRACKET_STRATEGIES:
         return None
 
     config = TrioConfig(distance=gara.distance)

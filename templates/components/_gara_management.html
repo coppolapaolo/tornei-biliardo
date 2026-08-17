@@ -5,7 +5,7 @@
 
 {# Challenge: solo strategia random E (gara standalone O campionato con challenge_mode) #}
 {% macro challenge_button(gara) %}
-{% if gara.matchmaking_strategy == 'random' %}
+{% if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value %}
   {% set challenge_enabled = not gara.campionato or gara.campionato.challenge_mode %}
   {% if challenge_enabled %}
     {% set has_challenges = gara.gara_challenges|selectattr("is_active", "equalto", true)|list|length > 0 %}
@@ -27,7 +27,7 @@
         {% if disabled_condition %}disabled{% endif %}>
   <i class="fas {{ 'fa-sitemap' if is_bracket else 'fa-play' }}"></i>
   {% if is_bracket %}{{ _('Sorteggia il tabellone') }}
-  {% elif gara.matchmaking_strategy == 'random' %}{{ _('Avvia Gara') }}
+  {% elif gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value %}{{ _('Avvia Gara') }}
   {% else %}{{ _('Avvia Primo Turno') }}{% endif %}
 </button>
 {% endmacro %}
@@ -124,7 +124,7 @@
     {% elif gara.status == GaraStatus.PLAYING.value %}
       {% set display_round = gara.current_round if gara.current_round > 0 else 1 %}
 
-      {% if gara.matchmaking_strategy == 'random' %}
+      {% if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value %}
         {% set total_matches = gara.matches|length %}
         {% set completed_count = gara.matches|selectattr('status', 'equalto', MatchStatus.CLOSED_UNILATERALLY.value)|list|length %}
         {% set validated_count = gara.matches|selectattr('status', 'equalto', MatchStatus.CONFIRMED_BY_BOTH.value)|list|length %}

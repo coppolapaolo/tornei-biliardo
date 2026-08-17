@@ -251,7 +251,7 @@
             {% endif %}
           {% elif real_status == GaraStatus.PLAYING.value %}
             <div class="d-flex align-items-center gap-2" style="font-size:12px;font-weight:700">
-              {% if item.entity.matchmaking_strategy == 'random' %}
+              {% if item.entity.matchmaking_strategy == MatchmakingStrategy.RANDOM.value %}
                 {% set total_matches = item.entity.matches|length %}
                 {% set comp_count = item.entity.matches|selectattr('status', 'equalto', MatchStatus.CLOSED_UNILATERALLY.value)|list|length %}
                 {% set val_count = item.entity.matches|selectattr('status', 'equalto', MatchStatus.CONFIRMED_BY_BOTH.value)|list|length %}

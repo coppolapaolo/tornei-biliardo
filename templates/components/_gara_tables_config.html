@@ -25,7 +25,7 @@
                     {{ _("Elenco separato da virgole: l'assegnazione automatica userà solo questi tavoli, nell'ordine indicato. Lascia vuoto per usare tutti i tavoli della sala.") }}
                 </small>
             </div>
-            {% if gara.matchmaking_strategy == 'random' %}
+            {% if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value %}
             <div class="form-check mb-3">
                 <input class="form-check-input" type="checkbox" id="assign_tables_by_ranking"
                     name="assign_tables_by_ranking" {% if gara.assign_tables_by_ranking %}checked{% endif %}>
@@ -53,7 +53,7 @@
             <strong>{{ _('Tavoli in uso (in ordine):') }}</strong>
             {{ gara.get_available_tables()|join(', ') }}
         </p>
-        {% if gara.matchmaking_strategy == 'random' %}
+        {% if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value %}
         <p class="mb-0">
             <strong>{{ _('Assegnazione in base alla classifica:') }}</strong>
             {% if gara.assign_tables_by_ranking %}

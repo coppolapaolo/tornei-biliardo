@@ -8,11 +8,11 @@
    per i tabelloni: li' parlava di "formula salto" e leggeva
    `gara.campionato.without_x`, che su una gara standalone non esiste affatto,
    quindi la pagina si rompeva. #}
-{% if gara.matchmaking_strategy == 'random' %}
+{% if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value %}
 {% include "components/_random_algorithm_info.html" %}
-{% elif gara.matchmaking_strategy == 'direct_elimination' %}
+{% elif gara.matchmaking_strategy == MatchmakingStrategy.DIRECT_ELIMINATION.value %}
 {% include "components/_direct_elimination_algorithm_info.html" %}
-{% elif gara.matchmaking_strategy == 'double_knockout' %}
+{% elif gara.matchmaking_strategy == MatchmakingStrategy.DOUBLE_KNOCKOUT.value %}
 {% include "components/_double_knockout_algorithm_info.html" %}
 {% else %}
 {% include "components/_amalfi_algorithm_info.html" %}

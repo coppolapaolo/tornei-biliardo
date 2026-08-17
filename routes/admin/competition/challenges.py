@@ -19,6 +19,7 @@ from models import (
     Gara,
 )
 from models.status_enum import GaraStatus
+from models.matchmaking.configuration import MatchmakingStrategy
 from utils import gara_manager_required, admin_required
 from utils.route_helpers import get_or_ajax_404, safe_json_error
 from utils.image_paths import challenge_image_url
@@ -40,7 +41,7 @@ def get_gara_challenges(gara_id):
     gara = get_or_ajax_404(Gara, gara_id, "Gara")
 
     # Solo per gare Random
-    if gara.matchmaking_strategy != "random":
+    if gara.matchmaking_strategy != MatchmakingStrategy.RANDOM.value:
         return (
             jsonify(
                 {
@@ -91,7 +92,7 @@ def add_challenge_to_gara(gara_id):
     gara = get_or_ajax_404(Gara, gara_id, "Gara")
 
     # Solo per gare Random
-    if gara.matchmaking_strategy != "random":
+    if gara.matchmaking_strategy != MatchmakingStrategy.RANDOM.value:
         return (
             jsonify(
                 {
@@ -161,7 +162,7 @@ def remove_challenge_from_gara(gara_id):
     gara = get_or_ajax_404(Gara, gara_id, "Gara")
 
     # Solo per gare Random
-    if gara.matchmaking_strategy != "random":
+    if gara.matchmaking_strategy != MatchmakingStrategy.RANDOM.value:
         return (
             jsonify(
                 {
@@ -413,7 +414,7 @@ def get_gara_challenge_classification(gara_id):
     gara = db.get_or_404(Gara, gara_id)
 
     # Solo per gare Random
-    if gara.matchmaking_strategy != "random":
+    if gara.matchmaking_strategy != MatchmakingStrategy.RANDOM.value:
         flash("Classifica challenge disponibile solo per tornei Random", "error")
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 

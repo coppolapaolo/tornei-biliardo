@@ -4,7 +4,7 @@
    - RACK → only "Rack Totali" (no wins column) #}
 {% set classification_sys = (gara.classification_system or 'WINS')|upper %}
 {% set is_rack_only = classification_sys == 'RACK' %}
-{% set is_random_strategy = gara.matchmaking_strategy == 'random' %}
+{% set is_random_strategy = gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value %}
 <section class="c7-stack">
     <h3 style="margin: 0;">
         {% if is_random_strategy %}{{ _('Classifica complessiva') }}{% else %}{{ _('Classifica dopo il turno %(num)s', num=round_number) }}{% endif %}

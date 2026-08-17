@@ -296,6 +296,7 @@ def create_app(config_name=None):
         )
         from models.matchmaking.configuration import (
             BRACKET_STRATEGIES,
+            MatchmakingStrategy,
             minimum_players_for,
         )
 
@@ -309,6 +310,15 @@ def create_app(config_name=None):
             # si apre mai e nessuno che lo dica.
             "ProvaDerivedStatus": ProvaDerivedStatus,
             "Discipline": Discipline,
+            # La formula di gara. E' quella di `matchmaking/configuration.py`,
+            # e la precisazione conta: esiste un secondo enum con lo stesso
+            # nome di classe in `competition/validators.py`, che dice
+            # `elimination`/`double_ko` invece di
+            # `direct_elimination`/`double_knockout`. In colonna
+            # (`Gara.matchmaking_strategy`, `Campionato.campionato_type`) c'e'
+            # sempre e solo questo; l'altro vive dietro `_MATCHMAKING_MAP` e
+            # non deve arrivare fino a un template.
+            "MatchmakingStrategy": MatchmakingStrategy,
             # Minimi di formato per i form a tabellone: il JS li legge da un
             # data attribute invece di riscriverli, cosi' UI e sorteggio non
             # possono divergere sul pavimento del tabellone.

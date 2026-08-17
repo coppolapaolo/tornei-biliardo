@@ -13,6 +13,7 @@ from models.user.models import User
 from .models import RoundClassification, GaraClassification
 from ..caching import cached, cache_invalidate
 from ..transaction import transactional
+from ..matchmaking.configuration import MatchmakingStrategy
 
 # Strategy pattern imports
 from .bracket_standings import bracket_positions
@@ -142,7 +143,7 @@ class StrategyBasedClassificationService:
         cs = (getattr(gara, "classification_system", None) or "WINS").upper()
         # round_robin matchmaking conserva la sua strategia round dedicata
         # (semantica già allineata a WINS, ma serve l'ordine stabile per pairing)
-        if gara.matchmaking_strategy == "round_robin":
+        if gara.matchmaking_strategy == MatchmakingStrategy.ROUND_ROBIN.value:
             return self._registry.get("round_robin_round")
         strategy_map = {
             "WINS": "amalfi_round",

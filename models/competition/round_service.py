@@ -12,6 +12,7 @@ are orchestrator methods tightly coupled to gara state transitions.
 from __future__ import annotations
 
 from models.base import db, transactional
+from models.matchmaking.configuration import MatchmakingStrategy
 from .models import Gara
 from .round_creation import RoundCreationService
 from .round_cancellation import RoundCancellationService
@@ -84,7 +85,7 @@ class RoundService:
         forfeit_user_ids = WithdrawPolicyService.get_forfeit_user_ids(gara_id)
 
         # Gestione diversa per strategia Random vs altre strategie
-        if gara.matchmaking_strategy == "random":
+        if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value:
             # Per strategia Random: crea tutti i turni subito usando la strategia
             from models.matchmaking.bootstrap import get_registry
 

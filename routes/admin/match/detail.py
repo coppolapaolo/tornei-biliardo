@@ -16,6 +16,7 @@ from models import (
 from utils import match_manager_required
 from models.match.services import MatchService
 from models.status_enum import GaraStatus, MatchStatus
+from models.matchmaking.configuration import MatchmakingStrategy
 from routes.sse import emit_gara_event
 from utils.route_helpers import safe_json_error
 
@@ -94,7 +95,7 @@ def match_detail(match_id):
     player_challenge_progress = {}
     if (
         match.gara
-        and match.gara.matchmaking_strategy == "random"
+        and match.gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value
         and match.gara.status in [GaraStatus.PLAYING.value, GaraStatus.COMPLETED.value]
     ):
 

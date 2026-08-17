@@ -207,7 +207,7 @@
                                 <select class="form-select" id="matchmaking_strategy" name="matchmaking_strategy"
                                     required>
                                     {% for strategy_key, strategy_info in available_strategies.items() %}
-                                    <option value="{{ strategy_key }}" {% if strategy_key=='amalfi' %}selected{% endif
+                                    <option value="{{ strategy_key }}" {% if strategy_key==MatchmakingStrategy.AMALFI.value %}selected{% endif
                                         %} data-description="{{ strategy_info.description }}">
                                         {{ strategy_info.display_name }}
                                     </option>
