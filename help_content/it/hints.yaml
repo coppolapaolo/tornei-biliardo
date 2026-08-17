@@ -252,6 +252,14 @@ hints:
     page: giocare_una_partita
     section: forfait
 
+  - id: partita.tabellone
+    label: "Tabellone"
+    short: "Gira il telefono in orizzontale: il punteggio diventa grande e si legge da lontano. Si segna allo stesso modo."
+    anchor: partita-tabellone
+    screens: [admin.match.match_detail]
+    page: giocare_una_partita
+    section: tabellone
+
   # --- Iscrizione ----------------------------------------------------------
   - id: iscrizione.pulsante
     label: "Iscriviti"
@@ -494,6 +502,7 @@ tours:
       - title: "Se sbagli"
         text: "«Annulla ultimo rack» toglie l'ultimo punto assegnato. Puoi ripeterlo più volte."
       - hint: partita.rack
+      - hint: partita.tabellone
 
   - screen: admin.competition.create_gara_standalone
     title: "Creare una gara"

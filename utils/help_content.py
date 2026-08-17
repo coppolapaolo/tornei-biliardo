@@ -91,13 +91,26 @@ class Shot:
 
     @property
     def filename(self) -> str:
-        return f"img/help/{self.locale}/{self.id}.png"
+        """Il file da mostrare quando il blocco non chiede una variante.
 
-    @property
-    def desktop_filename(self) -> Optional[str]:
-        if "desktop" not in self.viewports:
+        E' la **prima** vista dichiarata, non necessariamente quella da
+        telefono: il tabellone orizzontale esiste solo ruotando lo schermo,
+        quindi una cattura `mobile` di quella schermata non c'e' proprio.
+        """
+        first = self.viewports[0] if self.viewports else "mobile"
+        return self.filename_for(first) or f"img/help/{self.locale}/{self.id}.png"
+
+    def filename_for(self, viewport: Optional[str]) -> Optional[str]:
+        """Il file di una vista specifica, o `None` se non e' stata catturata.
+
+        Generico invece che un caso per `desktop`: le viste sono quelle
+        dichiarate in `capture_screenshots.VIEWPORTS`, e aggiungerne una non
+        deve costringere a toccare anche il modello e il template.
+        """
+        if not viewport or viewport not in self.viewports:
             return None
-        return f"img/help/{self.locale}/{self.id}-desktop.png"
+        suffix = "" if viewport == "mobile" else f"-{viewport}"
+        return f"img/help/{self.locale}/{self.id}{suffix}.png"
 
 
 @dataclass(frozen=True)
@@ -706,11 +719,7 @@ def _validate_blocks(
                     f"non e' fra i suoi `viewports` ({', '.join(shot.viewports)})"
                 )
                 continue
-            filename = (
-                shot.desktop_filename
-                if variant == "desktop" and shot.desktop_filename
-                else shot.filename
-            )
+            filename = shot.filename_for(variant) or shot.filename
             if static_dir and not os.path.exists(os.path.join(static_dir, filename)):
                 problems.append(
                     f"{where}: la schermata «{shot_id}» e' dichiarata ma il file "

@@ -89,6 +89,45 @@ blocks:
       conto, di solito chi ha il telefono più comodo da raggiungere.
 
   - type: heading
+    id: tabellone
+    title: "Il tabellone: gira il telefono"
+
+  - type: text
+    text: >-
+      Se appoggi il telefono alla sponda e lo giri in orizzontale, la pagina
+      cambia da sola: diventa un tabellone a tutto schermo, con i due punteggi
+      grandi al centro. Si legge da lontano, anche mentre giochi dall'altra
+      parte del tavolo.
+
+  - type: shot
+    shot: partita-tabellone
+    variant: landscape
+    caption: "Il tabellone a telefono ruotato: i due punteggi grandi, un tasto per giocatore in fondo e la X in alto a sinistra per tornare alla pagina."
+
+  - type: list
+    title: "Cosa cambia rispetto alla pagina normale"
+    items:
+      - "Si segna allo stesso modo: i tasti **+1** in fondo sono gli stessi, e il punto arriva nello stesso posto. Fra le due viste non c'è differenza per il punteggio."
+      - "Fra i due tasti c'è il comando per **annullare l'ultimo rack**, quello con la freccia curva."
+      - "Sotto ogni punteggio i trattini dicono quanti rack mancano alla vittoria, senza doverli contare."
+      - "In alto a destra il pallino rosso lampeggia finché si gioca; a partita ferma smette."
+
+  - type: text
+    text: >-
+      Il tabellone resta anche quando la partita finisce: al posto dei tasti
+      **+1** compaiono **Accetta** e **Rifiuta**, e sopra c'è scritto chi ha
+      vinto e con che punteggio. Non serve raddrizzare il telefono per
+      confermare il risultato.
+
+  - type: note
+    tone: tip
+    title: "Per tornare alla pagina normale"
+    text: >-
+      Raddrizza il telefono, e il tabellone sparisce da solo. Se preferisci
+      restare in orizzontale ma rivedere il resto della partita — l'elenco dei
+      rack, il forfait — tocca la **X** in alto a sinistra.
+
+  - type: heading
     id: sbagli
     title: "Se sbagli"
 

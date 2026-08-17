@@ -257,8 +257,106 @@ def filter_status_text(obj: Any, kind: Optional[str] = None) -> str:
     return text
 
 
+def match_scoring_state(match: Any, user: Any) -> Dict[str, Any]:
+    """A che punto è la partita, per chi la sta guardando.
+
+    Esiste perché le due viste del segnapunti — quella verticale
+    (``_unified_rack_input.html``) e il tabellone orizzontale
+    (``_match_scoreboard.html``) — devono rispondere alle stesse domande:
+    si può ancora segnare? il risultato aspetta una conferma, e di chi?
+    Finché ognuna se lo calcolava per conto suo con i propri ``{% set %}``,
+    le due divergevano: la verticale spegneva i ``+1`` a distanza raggiunta
+    (sessione di debug del 2026-08-17, punti 6 e 7) e il tabellone no, perché
+    quella correzione lì non era mai arrivata.
+
+    Non duplica il calcolo della distanza: passa da ``match.distance_config``
+    (ADR-027), così gli override per turno valgono anche qui.
+
+    Chiavi ritornate:
+
+    ``in_progress``            partita ancora in corso
+    ``at_distance``            distanza raggiunta (il risultato è pronto)
+    ``can_add``                si può segnare un altro rack
+    ``you_confirmed``          il lettore ha già confermato il risultato
+    ``opponent_confirmed``     l'avversario ha già confermato
+    ``awaiting_you``           tocca al lettore accettare o rifiutare
+    ``closed_by_players``      chiusa con la doppia conferma (reversibile)
+    ``finished``               in uno dei due stati finali
+    ``winner_id``              vincitore, se determinato dal punteggio
+    ``is_player``              il lettore è uno dei due giocatori
+    """
+    status_str = getattr(match.status, "value", match.status)
+    in_progress = status_str in ("in_progress", "playing")
+    closed_by_players = status_str == MatchStatus.CONFIRMED_BY_BOTH.value
+
+    p1 = match.player1_score or 0
+    p2 = match.player2_score or 0
+
+    # Distanza: unica fonte è il VO (ADR-027), che tiene conto degli override
+    # per turno. Il formato libero non ha traguardo, quindi non finisce mai
+    # "a distanza".
+    at_distance = False
+    distance = getattr(match, "distance_config", None)
+    if getattr(match, "is_multi_set", False):
+        # Nel multi-set i due punteggi sono **set vinti**, non rack: il
+        # traguardo è `match_distance`, e `distance_config` descrive il
+        # singolo set. Leggere lì il traguardo direbbe "finita" a metà.
+        winning_sets = getattr(match, "match_distance", None)
+        if winning_sets:
+            if getattr(match, "is_race_to_sets", True):
+                at_distance = p1 >= winning_sets or p2 >= winning_sets
+            else:
+                at_distance = (p1 + p2) >= winning_sets
+    elif distance is not None:
+        if distance.is_race_to_racks:
+            winning = distance.get_winning_racks()
+            at_distance = p1 >= winning or p2 >= winning
+        else:
+            at_distance = (p1 + p2) >= distance.racks
+
+    user_id = (
+        getattr(user, "id", None) if getattr(user, "is_authenticated", False) else None
+    )
+    is_p1 = user_id is not None and user_id == match.player1_id
+    is_p2 = user_id is not None and user_id == getattr(match, "player2_id", None)
+
+    you_confirmed = bool(
+        (is_p1 and match.player1_confirmed) or (is_p2 and match.player2_confirmed)
+    )
+    opponent_confirmed = bool(
+        (is_p1 and match.player2_confirmed) or (is_p2 and match.player1_confirmed)
+    )
+
+    # Un tavolo non assegnato blocca il punteggio tanto quanto la distanza
+    # raggiunta: in entrambi i casi il rack non va segnato.
+    needs_table = hasattr(match, "table_assignment") and not match.table_assignment
+    can_add = in_progress and not at_distance and not needs_table
+
+    winner_id = None
+    if at_distance or MatchStatus.is_finished(status_str):
+        if p1 > p2:
+            winner_id = match.player1_id
+        elif p2 > p1:
+            winner_id = getattr(match, "player2_id", None)
+
+    return {
+        "in_progress": in_progress,
+        "at_distance": at_distance,
+        "can_add": can_add,
+        "you_confirmed": you_confirmed,
+        "opponent_confirmed": opponent_confirmed,
+        "awaiting_you": (is_p1 or is_p2) and at_distance and not you_confirmed,
+        "closed_by_players": closed_by_players,
+        "finished": MatchStatus.is_finished(status_str),
+        "winner_id": winner_id,
+        "is_player": is_p1 or is_p2,
+    }
+
+
 def register_status_filters(app) -> None:
     """Registra filtri **e** funzioni globali nel jinja_env dell'app Flask."""
+    # Stato del segnapunti, condiviso fra vista verticale e tabellone (8b).
+    app.jinja_env.globals["match_scoring_state"] = match_scoring_state
     # Filtri Jinja per status
     app.jinja_env.filters["status_badge"] = filter_status_badge
     app.jinja_env.filters["status_badge_class"] = filter_status_badge_class

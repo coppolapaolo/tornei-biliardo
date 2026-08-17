@@ -9,13 +9,14 @@
    repository, ma resta testo di dati e non deve poter produrre HTML. #}
 
 {% macro shot_figure(help, shot_id, caption=None, variant=None) %}
-{# `variant: desktop` mostra la cattura larga invece di quella da telefono, e
-   la lascia a piena larghezza: ridotta a 320px sarebbe illeggibile. #}
+{# `variant` sceglie una delle viste catturate (`desktop`, `landscape`, ...).
+   Quelle larghe restano a piena larghezza: ridotte a 320px sarebbero
+   illeggibili. Senza variante si mostra la prima vista dichiarata. #}
 {% set shot = help.shots.get(shot_id) %}
 {% if shot %}
-{% set desktop = variant == 'desktop' and shot.desktop_filename %}
-<figure class="help-shot{{ ' help-shot--wide' if desktop }}">
-    <img src="{{ url_for('static', filename=desktop or shot.filename) }}"
+{% set larga = variant and variant != 'mobile' and shot.filename_for(variant) %}
+<figure class="help-shot{{ ' help-shot--wide' if larga }}">
+    <img src="{{ url_for('static', filename=larga or shot.filename) }}"
          alt="{{ caption or shot.caption }}" loading="lazy" decoding="async">
     {% if caption or shot.caption %}
     <figcaption>{{ caption or shot.caption }}</figcaption>
