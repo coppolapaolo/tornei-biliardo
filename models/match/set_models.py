@@ -181,7 +181,7 @@ class Set(BaseModel):
         if self.status != MatchStatus.PENDING.value:
             raise ValueError("Set can only be started from pending status")
 
-        self.status = "playing"
+        self.status = MatchStatus.PLAYING.value
         self.started_at = utc_now()
 
     def add_rack_result(
@@ -264,7 +264,7 @@ class Set(BaseModel):
 
     def _complete_set(self, winner_id: int) -> None:
         """Complete the set with a winner."""
-        self.status = "completed"
+        self.status = MatchStatus.CLOSED_UNILATERALLY.value
         self.completed_at = utc_now()
         self.winner_id = winner_id
 

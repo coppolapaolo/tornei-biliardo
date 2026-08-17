@@ -692,7 +692,7 @@ class MatchService:
 
         # If set was completed, reopen it
         if current_set.status == MatchStatus.CLOSED_UNILATERALLY.value:
-            current_set.status = "playing"
+            current_set.status = MatchStatus.PLAYING.value
             current_set.winner_id = None
             current_set.completed_at = None
 

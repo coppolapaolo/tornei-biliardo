@@ -15,9 +15,9 @@
             <div class="col-md-6">
                 <strong>Giocatori Totali:</strong> {{ total_players }}<br>
                 <strong>Match Completati:</strong>
-                {# Count both 'completed' and 'validated' as finished #}
-                {% set comp_matches = matches|selectattr("status", "equalto", "completed")|list|length %}
-                {% set val_matches = matches|selectattr("status", "equalto", "validated")|list|length %}
+                {# Finite = chiuse dal direttore + confermate dai giocatori #}
+                {% set comp_matches = matches|selectattr("status", "equalto", MatchStatus.CLOSED_UNILATERALLY.value)|list|length %}
+                {% set val_matches = matches|selectattr("status", "equalto", MatchStatus.CONFIRMED_BY_BOTH.value)|list|length %}
                 {% set completed_matches = comp_matches + val_matches %}
                 {% set total_matches = matches|length %}
                 {{ completed_matches }}/{{ total_matches }}<br>

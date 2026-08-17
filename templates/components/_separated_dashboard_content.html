@@ -13,7 +13,11 @@
   <h2 class="mb-3" style="font-size:17px">{{ _('I tuoi match') }}</h2>
   <div class="c7-grid" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">
     {% for match in vm.current_matches|sort(attribute='round_number') %}
-      {% set is_completed = match.status == 'completed' %}
+      {# NB: solo CLOSED_UNILATERALLY, non `is_finished`. Sostituzione fedele
+         al comportamento precedente: una partita confermata dai due giocatori
+         (CONFIRMED_BY_BOTH) qui non risulta completata, e la coppa del
+         vincitore non compare. Se sia voluto o no e' una domanda aperta. #}
+      {% set is_completed = match.status == MatchStatus.CLOSED_UNILATERALLY.value %}
       {% set is_trio = match.is_trio and match.trio_match %}
       {% set is_winner = (current_user.id == match.winner_id) if is_completed else false %}
       <div class="c7-card d-flex flex-column gap-3">
@@ -246,8 +250,8 @@
             <div class="d-flex align-items-center gap-2" style="font-size:12px;font-weight:700">
               {% if item.entity.matchmaking_strategy == 'random' %}
                 {% set total_matches = item.entity.matches|length %}
-                {% set comp_count = item.entity.matches|selectattr('status', 'equalto', 'completed')|list|length %}
-                {% set val_count = item.entity.matches|selectattr('status', 'equalto', 'validated')|list|length %}
+                {% set comp_count = item.entity.matches|selectattr('status', 'equalto', MatchStatus.CLOSED_UNILATERALLY.value)|list|length %}
+                {% set val_count = item.entity.matches|selectattr('status', 'equalto', MatchStatus.CONFIRMED_BY_BOTH.value)|list|length %}
                 <span class="flex-fill">{{ _('Match') }}
                   <span class="c7-num">{{ comp_count + val_count }}/{{ total_matches }}</span>
                 </span>

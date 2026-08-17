@@ -1,6 +1,8 @@
 {# templates/components/_match_result_row.html — 7c #}
-{# Helper: check if match is finished (completed or validated) #}
-{% set is_finished = match.status in ['completed', 'validated'] %}
+{# Partita finita: chiusa dal direttore o confermata dai due giocatori.
+   `is_finished` conosce entrambi gli stati finali; elencarli a mano qui
+   significava dimenticarne uno il giorno che se ne aggiunge un terzo. #}
+{% set is_finished = MatchStatus.is_finished(match.status) %}
 {# Crown shows when match is finished and has a winner #}
 {% set p1_wins = is_finished and match.winner_id == match.player1_id %}
 {% set p2_wins = is_finished and match.winner_id == match.player2_id %}
@@ -76,13 +78,13 @@
         {% set is_my_match = user_inscription and current_user.is_authenticated and (match.player1_id == current_user.id or match.player2_id == current_user.id) %}
         {% if match.is_bye %}
         <span class="c7-state c7-state--info">{{ _('A tavolino') }}</span>
-        {% elif match.status == 'pending' %}
+        {% elif match.status == MatchStatus.PENDING.value %}
             {% if is_my_match and not match.is_bye %}
             <a href="{{ url_for('admin.match.match_detail', match_id=match.id) }}" class="c7-state c7-state--warn">{{ _('Da giocare') }}</a>
             {% else %}
             <span class="c7-state c7-state--warn">{{ _('Da giocare') }}</span>
             {% endif %}
-        {% elif match.status == 'playing' %}
+        {% elif match.status == MatchStatus.PLAYING.value %}
             {% if is_my_match and not match.is_bye %}
             <a href="{{ url_for('admin.match.match_detail', match_id=match.id) }}" class="c7-state c7-state--accent">{{ _('In corso') }}</a>
             {% else %}

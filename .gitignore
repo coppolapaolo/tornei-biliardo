@@ -127,3 +127,6 @@ static/uploads/
 # del repository e non ha senso condividerlo.
 .claude/.help-docs-checked
 .claude/.help-docs-pending
+# Grafo di conoscenza generato dalla skill graphify: artefatto locale e
+# rigenerabile (graph.json da solo pesa ~10 MB), non contenuto del repository.
+graphify-out/

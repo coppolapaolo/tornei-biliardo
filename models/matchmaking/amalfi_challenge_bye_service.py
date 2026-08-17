@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from typing import Optional
 from ..base import db
+from ..status_enum import MatchStatus
 from ..transaction.manager import transactional
 
 
@@ -62,7 +63,7 @@ class AmalfiChallengeByeService:
 
             # Update the bye match with challenge score
             bye_match.player1_score = attempt.score
-            bye_match.status = "completed"
+            bye_match.status = MatchStatus.CLOSED_UNILATERALLY.value
 
             # Ensure player2_score is 0 for bye matches (consistency)
             if bye_match.player2_score is None:
