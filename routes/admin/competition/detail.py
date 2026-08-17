@@ -240,7 +240,7 @@ def gara_detail(gara_id):
     if gara.current_round > 0:
         # For Random strategy: show overall classification if ANY matches are completed
         # For other strategies: show classification only for completed rounds
-        if gara.matchmaking_strategy == "random":
+        if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value:
             # Random: calcola classifica complessiva da tutti i match completati
             completed_count = Match.query.filter_by(
                 gara_id=gara_id, status=MatchStatus.CLOSED_UNILATERALLY.value
@@ -321,7 +321,7 @@ def gara_detail(gara_id):
     gara_challenges = None
     user_challenge_data = None
 
-    if gara.matchmaking_strategy == "random":
+    if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value:
         from models.competition.gara_challenge_service import GaraChallengeService
 
         if GaraChallengeService.has_active_challenges(gara_id):

@@ -25,6 +25,7 @@ from models.status_enum import (
 )
 from models.competition.services import GaraService
 from models.competition.round_service import RoundService
+from models.matchmaking.configuration import MatchmakingStrategy
 from models.matchmaking.strategies.amalfi import AmalfiStrategy
 from models.classification.models import RoundClassification
 from models.classification.services import RoundClassificationService
@@ -52,7 +53,7 @@ def start_first_round(gara_id):
     try:
         RoundService.start_first_round(gara_id)
 
-        if gara.matchmaking_strategy == "random":
+        if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value:
             flash("Gara avviata! Tutti i turni sono stati creati.", "success")
         else:
             flash("Primo turno avviato!", "success")
@@ -690,7 +691,7 @@ def start_round_generic(gara_id, round_number):
             )
 
         # Validazione specifica per strategia (solo Amalfi ha validazioni speciali)
-        if gara.matchmaking_strategy == "amalfi":
+        if gara.matchmaking_strategy == MatchmakingStrategy.AMALFI.value:
             strategy = AmalfiStrategy()
             validation_result = strategy._validate_strategy_specific(gara)
             if validation_result["errors"]:

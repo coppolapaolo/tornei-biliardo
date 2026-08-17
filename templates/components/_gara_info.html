@@ -64,7 +64,7 @@
 
         {# Challenge solo con strategia random e modalità abilitata #}
         {% set challenge_enabled = not gara.campionato or gara.campionato.challenge_mode %}
-        {% if gara.matchmaking_strategy == 'random' and challenge_enabled %}
+        {% if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value and challenge_enabled %}
         {% set challenge_count = gara.gara_challenges|selectattr("is_active", "equalto", true)|list|length %}
         <dt class="text-muted" style="font-weight: 700;">{{ _('Challenge') }}</dt>
         <dd style="margin: 0; text-align: right;">

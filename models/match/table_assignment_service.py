@@ -34,6 +34,7 @@ from models.base import db, transactional
 from models.match.models import Match
 from models.location.models import BilliardHall
 from models.status_enum import MatchStatus
+from models.matchmaking.configuration import MatchmakingStrategy
 
 
 class TableAssignmentService:
@@ -307,7 +308,7 @@ class TableAssignmentService:
         ranked_mode = (
             gara is not None
             and gara.assign_tables_by_ranking
-            and gara.matchmaking_strategy == "random"
+            and gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value
         )
 
         # Turno corrente = il piu' basso con match non conclusi: i tavoli

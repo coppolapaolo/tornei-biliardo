@@ -157,7 +157,7 @@
                                     endif %} {{ classification.position }}. {{ classification.user.username }} </strong>
                         </div>
                         <small class="text-muted">
-                            {% if campionato.campionato_type|lower == 'random' %}
+                            {% if campionato.campionato_type|lower == MatchmakingStrategy.RANDOM.value %}
                             {% if classification.total_spot_shot_wins|default(0) > 0 %}
                             <span class="badge bg-warning text-dark me-1" title="{{ _('Punti SSR') }}">{{
                                 classification.total_spot_shot_wins }}</span>

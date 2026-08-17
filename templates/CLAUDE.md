@@ -173,9 +173,26 @@ MatchStatus.SCHEDULED.value   {# 'scheduled' #}
 MatchStatus.IN_PROGRESS.value {# 'in_progress' #}
 MatchStatus.CLOSED_UNILATERALLY.value   {# 'completed' #}
 MatchStatus.CONFIRMED_BY_BOTH.value   {# 'validated' #}
+
+{# MatchmakingStrategy - Formula di gara #}
+{# Vale sia per `gara.matchmaking_strategy` sia per `campionato.campionato_type` #}
+MatchmakingStrategy.AMALFI.value             {# 'amalfi' #}
+MatchmakingStrategy.RANDOM.value             {# 'random' #}
+MatchmakingStrategy.ROUND_ROBIN.value        {# 'round_robin' #}
+MatchmakingStrategy.DIRECT_ELIMINATION.value {# 'direct_elimination' #}
+MatchmakingStrategy.DOUBLE_KNOCKOUT.value    {# 'double_knockout' #}
 ```
 
+> ⚠️ Quello iniettato è l'enum di `models/matchmaking/configuration.py`, l'unico
+> i cui valori stanno davvero in colonna. Ne esiste un secondo con lo **stesso
+> nome di classe** in `models/competition/validators.py`, che dice
+> `elimination`/`double_ko`: serve solo alla validazione e non deve arrivare in
+> un template. Un confronto con quei valori è sempre falso, e in silenzio.
+
 **Always use enum values for status comparisons**, never string literals.
+Il presidio statico è `tests/new/unit/test_match_status_no_raw_literals.py`, e
+copre tutti e tre i vocabolari (partita, gara, formula) — anche attraverso un
+filtro Jinja: `campionato_type|lower == 'amalfi'` viene segnalato come il resto.
 
 ---
 

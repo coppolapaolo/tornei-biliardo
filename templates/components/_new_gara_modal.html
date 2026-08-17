@@ -282,7 +282,7 @@
                         </div>
                         {# Amalfi lo impone acceso; sul tabellone non esiste proprio,
                            perche' chi perde esce e non puo' esserci un reincontro. #}
-                        {% set anti_rematch_forced = campionato.campionato_type in ['amalfi'] %}
+                        {% set anti_rematch_forced = campionato.campionato_type in [MatchmakingStrategy.AMALFI.value] %}
                         <div class="row" id="create_anti_rematch_section"
                              {% if anti_rematch_forced or modal_is_bracket %}style="display: none;"{% endif %}>
                             <div class="col-md-6">

@@ -6,6 +6,7 @@ from flask import (
 )
 from flask_login import current_user, login_required
 
+from models.matchmaking.configuration import MatchmakingStrategy
 from utils.route_helpers import safe_json_error
 
 from . import match_bp
@@ -70,7 +71,7 @@ def record_challenge_attempt():
             return forbidden
 
         # Verify it's a Random tournament
-        if gara_challenge.gara.matchmaking_strategy != "random":
+        if gara_challenge.gara.matchmaking_strategy != MatchmakingStrategy.RANDOM.value:
             return (
                 jsonify(
                     {

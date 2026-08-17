@@ -501,7 +501,7 @@
 
 <!-- Modal Gestione Challenge (solo per gare Random con challenge_mode abilitato) -->
 {% set challenge_enabled = not gara.campionato or gara.campionato.challenge_mode %}
-{% if gara.matchmaking_strategy == 'random' and challenge_enabled %}
+{% if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value and challenge_enabled %}
 {% include "components/_challenge_management_modal.html" %}
 {% endif %}
 
@@ -782,9 +782,9 @@
   // JavaScript functions per admin/director (tutto il codice JavaScript da admin/gara_detail.html)
   function startFirstRound(provaId, strategy) {
     let message;
-    if (strategy === 'random') {
+    if (strategy === {{ MatchmakingStrategy.RANDOM.value|tojson }}) {
       message = GARA_CONFIG.i18n.confirmStartRandom;
-    } else if (['direct_elimination', 'double_knockout'].indexOf(strategy) >= 0) {
+    } else if ({{ [MatchmakingStrategy.DIRECT_ELIMINATION.value, MatchmakingStrategy.DOUBLE_KNOCKOUT.value]|tojson }}.indexOf(strategy) >= 0) {
       message = GARA_CONFIG.i18n.confirmStartBracket;
     } else {
       message = GARA_CONFIG.i18n.confirmStartStandard;

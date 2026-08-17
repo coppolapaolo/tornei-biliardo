@@ -32,6 +32,10 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from models.competition.validators import (
+    MatchmakingStrategy as MatchmakingStrategyValidators,
+)
+from models.matchmaking.configuration import MatchmakingStrategy
 from models.status_enum import GaraStatus, MatchStatus, ProvaDerivedStatus
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
@@ -154,8 +158,7 @@ def test_il_dominio_partita_non_assegna_lo_stato_con_letterali():
 _VALORI_GARA = "|".join(
     re.escape(v)
     for v in (
-        tuple(m.value for m in GaraStatus)
-        + tuple(m.value for m in ProvaDerivedStatus)
+        tuple(m.value for m in GaraStatus) + tuple(m.value for m in ProvaDerivedStatus)
     )
 )
 
@@ -207,10 +210,132 @@ def test_le_route_non_confrontano_lo_stato_gara_con_letterali():
         _sorgenti_python_gara(),
         (_CONFRONTO_GARA, _REAL_STATUS),
     )
+    assert (
+        not violazioni
+    ), "Stato di gara confrontato con una stringa scritta a mano.\n\n" + "\n".join(
+        violazioni
+    )
+
+
+# ══ Formula di gara ══════════════════════════════════════════════════════════
+#
+# Terzo vocabolario, stesso difetto — con un'aggravante che gli altri due non
+# hanno: `MatchmakingStrategy` esiste **due volte**, con lo stesso nome di
+# classe e valori diversi. `models/matchmaking/configuration.py` (canonico, e'
+# quello che finisce in `Gara.matchmaking_strategy` e in
+# `Campionato.campionato_type`) dice `direct_elimination` e `double_knockout`;
+# `models/competition/validators.py` dice `elimination` e `double_ko`, e serve
+# solo alla validazione, raggiunto attraverso `_MATCHMAKING_MAP`.
+#
+# Chi scrive il letterale a mano non ha modo di sapere quale dei due sta
+# citando, e sbagliare non costa niente: `gara.matchmaking_strategy ==
+# "elimination"` e' semplicemente sempre falso — era il caso di
+# `models/match/trio_config.py`, dove il guard che doveva escludere le gare a
+# tabellone non ha mai escluso niente.
+#
+# Per questo il presidio guarda **entrambi** i vocabolari: un confronto col
+# valore giusto scritto a mano e' fragile, uno col valore dell'enum sbagliato
+# e' gia' rotto, e nessuno dei due deve passare.
+
+_VALORI_FORMULA = "|".join(
+    sorted(
+        {
+            re.escape(v)
+            for v in (
+                tuple(m.value for m in MatchmakingStrategy)
+                + tuple(m.value for m in MatchmakingStrategyValidators)
+            )
+        },
+        key=len,
+        reverse=True,  # 'direct_elimination' prima di 'elimination'
+    )
+)
+
+# Il soggetto e' il campo, non la variabile che lo porta: `gara.`,
+# `item.entity.`, `match.gara.`, `self.` o niente affatto. `strategy` e
+# `strategy_key` ci sono perche' e' cosi' che il valore si chiama una volta
+# estratto dalla colonna — in un `{% set %}`, in una variabile di ciclo o nel
+# JavaScript di pagina.
+_SOGGETTI_FORMULA = (
+    r"(?:[\w.]+\.)?" r"(?:matchmaking_strategy|campionato_type|strategy_key|strategy)"
+)
+
+# I filtri Jinja fra il campo e il confronto non sono una scappatoia:
+# `campionato_type|lower == 'amalfi'` e' esattamente la stessa cosa, e senza
+# questo pezzo il presidio ne lasciava passare otto
+# (`_campionato_general_classification.html`, `_index_campionato_cards.html`).
+_FILTRI = r"(?:\s*\|\s*\w+)*"
+
+_CONFRONTO_FORMULA = re.compile(
+    rf"{_SOGGETTI_FORMULA}{_FILTRI}\s*(?:===|==|!==|!=|\bin\b)\s*"
+    rf"[\[(]?\s*{_Q}(?:{_VALORI_FORMULA}){_Q}"
+)
+
+_ASSEGNAZIONE_FORMULA = re.compile(
+    rf"\.(?:matchmaking_strategy|campionato_type)\s*=\s*{_Q}(?:{_VALORI_FORMULA}){_Q}"
+)
+
+_MODULI_FORMULA = (
+    "routes/",
+    "models/competition/",
+    "models/campionato/",
+    "models/match/",
+    "models/matchmaking/",
+    "models/classification/",
+)
+
+
+def _sorgenti_python_formula() -> list[Path]:
+    fonti: list[Path] = []
+    for modulo in _MODULI_FORMULA:
+        fonti.extend(sorted((PROJECT_ROOT / modulo).rglob("*.py")))
+    return fonti
+
+
+def test_i_template_non_confrontano_la_formula_con_letterali():
+    violazioni = _violazioni(_sorgenti_template(), (_CONFRONTO_FORMULA,))
     assert not violazioni, (
-        "Stato di gara confrontato con una stringa scritta a mano.\n\n"
+        "Formula di gara confrontata con una stringa scritta a mano.\n"
+        "Usa MatchmakingStrategy.<MEMBRO>.value, iniettato nei template da\n"
+        "app.py: e' quello di models/matchmaking/configuration.py, l'unico i\n"
+        "cui valori stanno davvero nella colonna.\n\n" + "\n".join(violazioni)
+    )
+
+
+def test_il_dominio_non_confronta_la_formula_con_letterali():
+    violazioni = _violazioni(
+        _sorgenti_python_formula(),
+        (_CONFRONTO_FORMULA, _ASSEGNAZIONE_FORMULA),
+    )
+    assert not violazioni, (
+        "Formula di gara confrontata o assegnata con una stringa a mano.\n"
+        "Attenzione a quale dei due enum omonimi stai citando: in colonna c'e'\n"
+        "sempre quello di models/matchmaking/configuration.py.\n\n"
         + "\n".join(violazioni)
     )
+
+
+def test_il_presidio_formula_distingue_i_due_vocabolari(tmp_path):
+    """Entrambi i vocabolari vanno riconosciuti, e per ragioni diverse.
+
+    Il valore canonico scritto a mano e' fragile; quello di `validators.py`
+    confrontato con la colonna e' gia' rotto — non corrisponde a nessuna riga.
+    """
+    righe = [
+        "{% if gara.matchmaking_strategy == 'random' %}x{% endif %}",
+        "{% if campionato.campionato_type in ['amalfi'] %}x{% endif %}",
+        'if gara.matchmaking_strategy == "elimination":',
+        "gara.matchmaking_strategy = 'double_knockout'",
+    ]
+    for riga in righe:
+        assert _CONFRONTO_FORMULA.search(riga) or _ASSEGNAZIONE_FORMULA.search(
+            riga
+        ), f"il presidio non riconosce: {riga}"
+
+    # Non deve mordere su cio' che non e' una formula: `random` e' anche una
+    # first round policy, e li' il letterale non riguarda questo vocabolario.
+    innocua = "{% if gara.first_round_policy == 'random' %}x{% endif %}"
+    assert not _CONFRONTO_FORMULA.search(innocua)
 
 
 def test_il_presidio_riconosce_una_violazione_introdotta(tmp_path):

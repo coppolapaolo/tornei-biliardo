@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% set is_random_strategy = gara.matchmaking_strategy == 'random' %}
+{% set is_random_strategy = gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value %}
 
 {% block title %}
     {% if is_random_strategy %}

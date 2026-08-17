@@ -37,11 +37,11 @@
                     {% endfor %}
                 </select>
                 <div class="mt-2">
-                    <div id="type-description-amalfi" class="alert alert-info py-2 mb-0 small {% if campionato.campionato_type != 'amalfi' %}d-none{% endif %}">
+                    <div id="type-description-amalfi" class="alert alert-info py-2 mb-0 small {% if campionato.campionato_type != MatchmakingStrategy.AMALFI.value %}d-none{% endif %}">
                         <i class="fas fa-chess"></i>
                         <strong>Amalfi:</strong> {{ _("Accoppiamenti basati sulla classifica del turno precedente.") }}
                     </div>
-                    <div id="type-description-random" class="alert alert-info py-2 mb-0 small {% if campionato.campionato_type != 'random' %}d-none{% endif %}">
+                    <div id="type-description-random" class="alert alert-info py-2 mb-0 small {% if campionato.campionato_type != MatchmakingStrategy.RANDOM.value %}d-none{% endif %}">
                         <i class="fas fa-random"></i>
                         <strong>Random:</strong> {{ _("Accoppiamenti casuali con anti-rematch.") }}
                     </div>
@@ -230,8 +230,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateTypeDescription() {
         const type = typeSelect.value;
-        descAmalfi.classList.toggle('d-none', type !== 'amalfi');
-        descRandom.classList.toggle('d-none', type !== 'random');
+        descAmalfi.classList.toggle('d-none', type !== {{ MatchmakingStrategy.AMALFI.value|tojson }});
+        descRandom.classList.toggle('d-none', type !== {{ MatchmakingStrategy.RANDOM.value|tojson }});
     }
 
     typeSelect.addEventListener('change', updateTypeDescription);

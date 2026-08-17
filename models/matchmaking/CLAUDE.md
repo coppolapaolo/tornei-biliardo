@@ -103,6 +103,19 @@ registry.create_strategy(name, seed=42)  # Deterministic for testing
 > (`test_matchmaking_enum_bridge.py`) verifica che copra **tutti** i valori
 > dell'enum canonico: senza, una strategia nuova cadrebbe in silenzio sul
 > default Amalfi e verrebbe validata con le regole sbagliate.
+>
+> In colonna (`Gara.matchmaking_strategy`, `Campionato.campionato_type`) c'è
+> **sempre** quello canonico. Citare l'altro non solleva niente: è solo un
+> confronto sempre falso. È successo in `models/match/trio_config.py`, dove
+> `== "elimination"` doveva escludere le gare a tabellone e non ne ha escluso
+> nessuna — per questo il guard oggi passa da `BRACKET_STRATEGIES`, che copre
+> anche il doppio KO.
+>
+> Da agosto 2026 l'enum canonico è iniettato nei template (`app.py`,
+> `inject_enums`) e i letterali sono presidiati staticamente da
+> `tests/new/unit/test_match_status_no_raw_literals.py`, che controlla
+> **entrambi** i vocabolari: quello giusto perché è fragile scriverlo a mano,
+> quello sbagliato perché è già rotto.
 
 
 ```python
