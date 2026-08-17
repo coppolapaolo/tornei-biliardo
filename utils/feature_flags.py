@@ -95,6 +95,13 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # Player-side dashboard at /player/ (the "back to dashboard" target from
     # several profile/list pages — also reached by the dashboard router).
     "player.dashboard": {"player", "director"},
+    # API del riquadro "Gare vicine a te", incluso senza condizioni dentro la
+    # dashboard qui sopra (`_player_dashboard_content.html`). Era assente dalla
+    # matrice, quindi admin-only: la fetch prendeva 404, il `.catch` spegneva
+    # il "Caricamento…" e la sezione (che parte con display:none) non compariva
+    # mai. Una funzione morta senza un errore a schermo — chi vede il riquadro
+    # deve vederne l'API.
+    "player.api_nearby_gare": {"player", "director"},
     # Profile
     "player.profile": {"player", "director"},
     "player.view_profile": {"player", "director"},
