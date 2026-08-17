@@ -745,7 +745,7 @@ class IndividualSet(BaseModel):
         if self.status != MatchStatus.PENDING.value:
             raise ValueError("Set can only be started from pending status")
 
-        self.status = "playing"
+        self.status = MatchStatus.PLAYING.value
         self.started_at = utc_now()
 
     def add_rack_result(
@@ -812,7 +812,7 @@ class IndividualSet(BaseModel):
 
     def _complete_set(self, winner_id: int) -> None:
         """Complete the set with a winner."""
-        self.status = "completed"
+        self.status = MatchStatus.CLOSED_UNILATERALLY.value
         self.completed_at = utc_now()
         self.winner_id = winner_id
 
@@ -861,7 +861,7 @@ class IndividualSet(BaseModel):
 
         # If set was completed, reopen it
         if self.status == MatchStatus.CLOSED_UNILATERALLY.value:
-            self.status = "playing"
+            self.status = MatchStatus.PLAYING.value
             self.completed_at = None
 
             # Also revert the match set score that was incremented when set completed

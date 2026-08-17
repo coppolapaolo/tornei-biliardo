@@ -82,7 +82,10 @@
       <span class="c7-sechead__note c7-num">{{ active_matches|length }}</span>
     </div>
     {% for match in active_matches %}
-    {% set is_playing = match.status.value == 'in_progress' %}
+    {# Su IndividualMatch la colonna e' db.Enum(MatchStatus): lo stato e' un
+       membro, da cui `.value`. Il gemello match_detail.html:219 lo confronta
+       gia' cosi'. #}
+    {% set is_playing = match.status.value == MatchStatus.IN_PROGRESS.value %}
     {% set other = match.player2 if match.player1_id == current_user.id else match.player1 %}
     <article class="c7-card">
       <div class="d-flex align-items-center gap-2">

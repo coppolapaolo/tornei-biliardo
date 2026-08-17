@@ -66,7 +66,9 @@ Parameters:
                 </thead>
                 <tbody>
                     {% for set in match.sets %}
-                    <tr class="{% if set.status == 'playing' %}table-warning{% elif set.status == 'completed' %}{% else %}table-light{% endif %}">
+                    {# `Set.status` usa lo stesso vocabolario di MatchStatus
+                       (models/match/set_models.py lo importa). #}
+                    <tr class="{% if set.status == MatchStatus.PLAYING.value %}table-warning{% elif set.status == MatchStatus.CLOSED_UNILATERALLY.value %}{% else %}table-light{% endif %}">
                         <td class="text-center">
                             <strong>{{ set.set_number }}</strong>
                         </td>
@@ -83,7 +85,7 @@ Parameters:
                                     <i class="fas fa-trophy"></i>
                                     {% if set.winner_id == match.player1_id %}{{ p1_name|truncate(10, True, '…') }}{% else %}{{ p2_name|truncate(10, True, '…') }}{% endif %}
                                 </span>
-                            {% elif set.status == 'playing' %}
+                            {% elif set.status == MatchStatus.PLAYING.value %}
                                 <span class="badge bg-warning text-dark">
                                     <i class="fas fa-play"></i> {{ _('In corso') }}
                                 </span>

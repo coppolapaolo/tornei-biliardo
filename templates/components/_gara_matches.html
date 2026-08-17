@@ -12,11 +12,12 @@
     {% for round_num in range(1, gara.rounds_count + 1) %}
     {% set round_matches = display_matches | selectattr("round_number", "equalto", round_num) | list %}
     {% if round_matches %}
-    {% set has_playing = round_matches | selectattr("status", "equalto", "playing") | list | length > 0 %}
-    {% set has_pending = round_matches | selectattr("status", "equalto", "pending") | list | length > 0 %}
-    {# Count finished matches (completed OR validated) #}
-    {% set completed_count = round_matches | selectattr("status", "equalto", "completed") | list | length %}
-    {% set validated_count = round_matches | selectattr("status", "equalto", "validated") | list | length %}
+    {% set has_playing = round_matches | selectattr("status", "equalto", MatchStatus.PLAYING.value) | list | length > 0 %}
+    {% set has_pending = round_matches | selectattr("status", "equalto", MatchStatus.PENDING.value) | list | length > 0 %}
+    {# Partite finite: chiusa dal direttore (CLOSED_UNILATERALLY) oppure
+       confermata da entrambi i giocatori (CONFIRMED_BY_BOTH). #}
+    {% set completed_count = round_matches | selectattr("status", "equalto", MatchStatus.CLOSED_UNILATERALLY.value) | list | length %}
+    {% set validated_count = round_matches | selectattr("status", "equalto", MatchStatus.CONFIRMED_BY_BOTH.value) | list | length %}
     {% set all_finished = (completed_count + validated_count) == round_matches | length %}
 
     {% if has_playing or has_pending %}

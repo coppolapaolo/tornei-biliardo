@@ -7,6 +7,7 @@ from flask import (
 from flask_login import login_required
 
 from models import Match
+from models.status_enum import MatchStatus
 from utils import match_manager_required
 from routes.sse import emit_gara_event
 from utils.route_helpers import get_or_ajax_404, safe_json_error
@@ -105,9 +106,13 @@ def add_set_rack(match_id):
                 "rack_number": rack.rack_number,
                 "set_score": set_score,
                 "set_completed": (
-                    current_set.status == "completed" if current_set else False
+                    current_set.status == MatchStatus.CLOSED_UNILATERALLY.value
+                    if current_set
+                    else False
                 ),
-                "match_completed": match.status == "completed",
+                "match_completed": (
+                    match.status == MatchStatus.CLOSED_UNILATERALLY.value
+                ),
             }
         )
 
