@@ -288,7 +288,12 @@ def create_app(config_name=None):
         nei dati e rimosso dal codice, quindi un elenco di opzioni costruito su
         questo enum combacia con qualunque riga.
         """
-        from models.status_enum import Discipline, GaraStatus, MatchStatus
+        from models.status_enum import (
+            Discipline,
+            GaraStatus,
+            MatchStatus,
+            ProvaDerivedStatus,
+        )
         from models.matchmaking.configuration import (
             BRACKET_STRATEGIES,
             minimum_players_for,
@@ -297,6 +302,12 @@ def create_app(config_name=None):
         return {
             "GaraStatus": GaraStatus,
             "MatchStatus": MatchStatus,
+            # `Gara.get_real_status()` restituisce sia valori di GaraStatus sia
+            # stati *derivati* che non esistono su disco (iscrizioni non ancora
+            # aperte, turno finito, campionato concluso). I template li
+            # confrontavano a mano: senza l'enum, un refuso e' un ramo che non
+            # si apre mai e nessuno che lo dica.
+            "ProvaDerivedStatus": ProvaDerivedStatus,
             "Discipline": Discipline,
             # Minimi di formato per i form a tabellone: il JS li legge da un
             # data attribute invece di riscriverli, cosi' UI e sorteggio non

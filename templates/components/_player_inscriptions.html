@@ -18,7 +18,7 @@
 
         {% macro position_badge(gara) %}
             {# Posizione finale, se la gara è chiusa e il giocatore è in classifica #}
-            {% if gara.status == 'completed' %}
+            {% if gara.status == GaraStatus.COMPLETED.value %}
                 {% set user_rcs = gara.round_classifications | selectattr('user_id', 'equalto', current_user.id) | sort(attribute='round_number', reverse=True) | list %}
                 {% if user_rcs %}
                     {% set pos = user_rcs[0].position %}

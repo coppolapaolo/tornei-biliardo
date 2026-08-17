@@ -57,7 +57,7 @@
                 {% for gara in gara_pagination.items %}
                     <div class="col-md-6 col-lg-4 mb-3">
                         <div class="card h-100">
-                            <div class="card-header {{ 'bg-success bg-opacity-10' if gara.status == 'completed' else 'bg-warning bg-opacity-10' }}">
+                            <div class="card-header {{ 'bg-success bg-opacity-10' if gara.status == GaraStatus.COMPLETED.value else 'bg-warning bg-opacity-10' }}">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <strong>
                                         {% if gara.campionato %}
@@ -66,7 +66,7 @@
                                             {{ gara.display_name }}
                                         {% endif %}
                                     </strong>
-                                    <span class="badge {{ 'bg-success' if gara.status == 'completed' else 'bg-warning' }}">
+                                    <span class="badge {{ 'bg-success' if gara.status == GaraStatus.COMPLETED.value else 'bg-warning' }}">
                                         {{ gara.status|title }}
                                     </span>
                                 </div>
@@ -88,7 +88,7 @@
                                 </p>
 
                                 <!-- User's position in this gara -->
-                                {% if gara.status == 'completed' %}
+                                {% if gara.status == GaraStatus.COMPLETED.value %}
                                     {# Use max round_number, not gara.current_round, so SSR finals show correctly #}
                                     {% set user_rcs = gara.round_classifications | selectattr('user_id', 'equalto', current_user.id) | sort(attribute='round_number', reverse=True) | list %}
                                     {% set user_final_position = user_rcs[0].position if user_rcs else None %}

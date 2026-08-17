@@ -7,10 +7,10 @@
         <div class="row">
             <div class="col-12">
                 <strong>Gare Totali:</strong> {{ provas|length }}<br>
-                <strong>Gare Setup:</strong> {{ provas|selectattr("status", "equalto", "setup")|list|length }}<br>
-                <strong>Iscrizioni Aperte:</strong> {{ provas|selectattr("status", "equalto", "inscription")|list|length }}<br>
-                <strong>In Corso:</strong> {{ provas|selectattr("status", "equalto", "playing")|list|length }}<br>
-                <strong>Completate:</strong> {{ provas|selectattr("status", "equalto", "completed")|list|length }}<br>
+                <strong>Gare Setup:</strong> {{ provas|selectattr("status", "equalto", GaraStatus.SETUP.value)|list|length }}<br>
+                <strong>Iscrizioni Aperte:</strong> {{ provas|selectattr("status", "equalto", GaraStatus.INSCRIPTION.value)|list|length }}<br>
+                <strong>In Corso:</strong> {{ provas|selectattr("status", "equalto", GaraStatus.PLAYING.value)|list|length }}<br>
+                <strong>Completate:</strong> {{ provas|selectattr("status", "equalto", GaraStatus.COMPLETED.value)|list|length }}<br>
             </div>
         </div>
         <hr class="my-3">

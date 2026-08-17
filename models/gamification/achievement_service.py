@@ -26,6 +26,7 @@ from models.gamification.events import AchievementUnlockedEvent
 from models.gamification.level_service import LevelService
 from models.gamification.models import XPTransactionType
 from models.gamification.achievement_metrics import AchievementMetrics
+from models.exceptions import ValidationError
 from models.events.base import EventBus
 
 logger = logging.getLogger(__name__)
@@ -659,13 +660,32 @@ class AchievementService:
     ) -> Achievement:
         """Create a new achievement definition.
 
+        Only *countable* requirement types are accepted
+        (`AchievementMetrics.COUNTABLE_TYPES`), because the shape stored here is
+        always `{"type": ..., "count": N}`. A type with bespoke logic
+        (win_rate, level_reached, weekly_streak, category_reached) reads keys
+        this shape does not carry, and a type with no resolver cannot be
+        computed at all: either way the achievement would be born dead — never
+        unlockable, with no error raised anywhere. Those belong in the seeds,
+        where the requirement shape is written out in full.
+
         Raises:
-            ValueError: If slug/name empty or slug already exists.
+            ValidationError: if slug/name are missing, the slug already exists,
+                or the requirement type is not countable.
         """
         if not slug or not name:
-            raise ValueError("Slug e nome sono obbligatori")
+            raise ValidationError("Slug e nome sono obbligatori")
         if Achievement.query.filter_by(slug=slug).first():
-            raise ValueError("Un achievement con questo slug esiste già")
+            raise ValidationError("Un achievement con questo slug esiste già")
+        if requirement_type not in AchievementMetrics.COUNTABLE_TYPES:
+            ammessi = ", ".join(sorted(AchievementMetrics.COUNTABLE_TYPES))
+            raise ValidationError(
+                f"Requisito «{requirement_type}» non conteggiabile: un "
+                f"achievement creato cosi' non si sbloccherebbe mai. "
+                f"Tipi ammessi: {ammessi}. I requisiti a logica propria "
+                f"(win_rate, level_reached, weekly_streak, category_reached) "
+                f"vanno dichiarati nei seed."
+            )
 
         requirements = json.dumps(
             {"type": requirement_type, "count": requirement_value}

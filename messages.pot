@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-17 20:08+0200\n"
+"POT-Creation-Date: 2026-08-17 20:24+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app.py:539 templates/errors/403.html:3
+#: app.py:550 templates/errors/403.html:3
 msgid "Accesso negato"
 msgstr ""
 
@@ -997,102 +997,102 @@ msgstr ""
 msgid "Amministratore"
 msgstr ""
 
-#: routes/main.py:293
+#: routes/main.py:294
 #, python-format
 msgid "Iscrizioni dal %(start)s al %(end)s."
 msgstr ""
 
-#: routes/main.py:299
+#: routes/main.py:300
 #, python-format
 msgid "Iscrizioni aperte fino al %(end)s."
 msgstr ""
 
-#: routes/main.py:304
+#: routes/main.py:305
 #, python-format
 msgid "Iscrizioni aperte dal %(start)s."
 msgstr ""
 
-#: routes/main.py:310
+#: routes/main.py:311
 msgid "Sei già iscritto"
 msgstr ""
 
-#: routes/main.py:311
+#: routes/main.py:312
 #, python-format
 msgid "Risulti iscritto a %(gara)s."
 msgstr ""
 
-#: routes/main.py:317
+#: routes/main.py:318
 msgid "Sei in lista d'attesa"
 msgstr ""
 
-#: routes/main.py:319
+#: routes/main.py:320
 #, python-format
 msgid ""
 "Sei in lista d'attesa per %(gara)s, in posizione %(position)s. Se si "
 "libera un posto entri automaticamente."
 msgstr ""
 
-#: routes/main.py:329
+#: routes/main.py:330
 msgid "Puoi iscriverti"
 msgstr ""
 
-#: routes/main.py:331
+#: routes/main.py:332
 #, python-format
 msgid "Le iscrizioni a %(gara)s sono aperte: premi «Iscriviti» per confermare."
 msgstr ""
 
-#: routes/main.py:341 templates/components/_unified_cards.html:79
+#: routes/main.py:342 templates/components/_unified_cards.html:79
 msgid "Iscrizioni non ancora aperte"
 msgstr ""
 
-#: routes/main.py:343
+#: routes/main.py:344
 #, python-format
 msgid "Le iscrizioni a %(gara)s non sono ancora aperte."
 msgstr ""
 
-#: routes/main.py:352
+#: routes/main.py:353
 msgid "Iscrizioni chiuse"
 msgstr ""
 
-#: routes/main.py:353
+#: routes/main.py:354
 #, python-format
 msgid "Le iscrizioni a %(gara)s sono chiuse."
 msgstr ""
 
-#: routes/main.py:360
+#: routes/main.py:361
 msgid "Gara già iniziata"
 msgstr ""
 
-#: routes/main.py:362
+#: routes/main.py:363
 #, python-format
 msgid ""
 "%(gara)s è già iniziata: non è più possibile iscriversi, ma puoi seguire "
 "i risultati da questa pagina."
 msgstr ""
 
-#: routes/main.py:371
+#: routes/main.py:372
 msgid "Gara conclusa"
 msgstr ""
 
-#: routes/main.py:373
+#: routes/main.py:374
 #, python-format
 msgid "%(gara)s è conclusa: qui trovi la classifica finale."
 msgstr ""
 
-#: routes/main.py:381
+#: routes/main.py:382
 msgid "Gara annullata"
 msgstr ""
 
-#: routes/main.py:382
+#: routes/main.py:383
 #, python-format
 msgid "%(gara)s è stata annullata."
 msgstr ""
 
-#: routes/main.py:388
+#: routes/main.py:389
 msgid "Iscrizione non riuscita"
 msgstr ""
 
-#: routes/main.py:390
+#: routes/main.py:391
 #, python-format
 msgid ""
 "Non è stato possibile iscriverti a %(gara)s. Riprova dal pulsante "
@@ -1489,97 +1489,141 @@ msgstr ""
 msgid "Richiesta ritirata."
 msgstr ""
 
-#: routes/gamification/admin.py:82
+#: routes/gamification/admin.py:83
 #: templates/gamification/admin/dashboard.html:2
 #: templates/gamification/admin/dashboard.html:8
 msgid "Admin Gamification"
 msgstr ""
 
-#: routes/gamification/admin.py:104 templates/gamification/admin/quests.html:2
+#: routes/gamification/admin.py:105 templates/gamification/admin/quests.html:2
 #: templates/gamification/admin/quests.html:8
 msgid "Gestione Quest"
 msgstr ""
 
-#: routes/gamification/admin.py:124
+#: routes/gamification/admin.py:125
 msgid "Il nome della quest è obbligatorio"
 msgstr ""
 
-#: routes/gamification/admin.py:135 routes/gamification/admin.py:283
-#: routes/gamification/admin.py:368 routes/gamification/admin.py:453
+#: routes/gamification/admin.py:136 routes/gamification/admin.py:284
+#: routes/gamification/admin.py:403 routes/gamification/admin.py:488
 msgid "Dati del form non validi"
 msgstr ""
 
-#: routes/gamification/admin.py:156
+#: routes/gamification/admin.py:157
 msgid "Date del form non valide"
 msgstr ""
 
-#: routes/gamification/admin.py:174
+#: routes/gamification/admin.py:175
 msgid "Quest creata con successo"
 msgstr ""
 
-#: routes/gamification/admin.py:181
+#: routes/gamification/admin.py:182
 #: templates/gamification/admin/quest_form.html:10
 msgid "Crea Nuova Quest"
 msgstr ""
 
-#: routes/gamification/admin.py:192
+#: routes/gamification/admin.py:193
 msgid "Quest attivata"
 msgstr ""
 
-#: routes/gamification/admin.py:203
+#: routes/gamification/admin.py:204
 msgid "Quest scaduta"
 msgstr ""
 
-#: routes/gamification/admin.py:214
+#: routes/gamification/admin.py:215
 msgid "Quest eliminata"
 msgstr ""
 
-#: routes/gamification/admin.py:261
+#: routes/gamification/admin.py:262
 #: templates/gamification/admin/achievements.html:2
 #: templates/gamification/admin/achievements.html:8
 msgid "Gestione Achievement"
 msgstr ""
 
-#: routes/gamification/admin.py:301
+#: routes/gamification/admin.py:302
 msgid "Achievement creato con successo"
 msgstr ""
 
-#: routes/gamification/admin.py:309
+#: routes/gamification/admin.py:312
 #: templates/gamification/admin/achievement_form.html:10
 msgid "Crea Nuovo Achievement"
 msgstr ""
 
-#: routes/gamification/admin.py:322
+#: routes/gamification/admin.py:334
+msgid "Vittorie partita"
+msgstr ""
+
+#: routes/gamification/admin.py:335
+msgid "Partecipazioni a gara"
+msgstr ""
+
+#: routes/gamification/admin.py:336
+msgid "Vittorie di gara"
+msgstr ""
+
+#: routes/gamification/admin.py:337
+msgid "Podi di gara"
+msgstr ""
+
+#: routes/gamification/admin.py:338
+msgid "Avversari diversi affrontati"
+msgstr ""
+
+#: routes/gamification/admin.py:339
+msgid "Proposte di partita create"
+msgstr ""
+
+#: routes/gamification/admin.py:340
+msgid "Proposte di partita accettate"
+msgstr ""
+
+#: routes/gamification/admin.py:341
+msgid "Serie di vittorie consecutive"
+msgstr ""
+
+#: routes/gamification/admin.py:342
+msgid "Formule di gara provate"
+msgstr ""
+
+#: routes/gamification/admin.py:343 routes/gamification/features.py:50
+msgid "Drill completati"
+msgstr ""
+
+#: routes/gamification/admin.py:344
+msgid "Drill eseguiti alla perfezione"
+msgstr ""
+
+#: routes/gamification/admin.py:357
 msgid "Stato achievement aggiornato"
 msgstr ""
 
-#: routes/gamification/admin.py:354
+#: routes/gamification/admin.py:389
 msgid "Gestione XP"
 msgstr ""
 
-#: routes/gamification/admin.py:373 routes/gamification/admin.py:457
+#: routes/gamification/admin.py:408 routes/gamification/admin.py:492
 msgid "Seleziona un utente valido"
 msgstr ""
 
-#: routes/gamification/admin.py:377
+#: routes/gamification/admin.py:412
 msgid "L'importo XP deve essere positivo"
 msgstr ""
 
-#: routes/gamification/admin.py:389
+#: routes/gamification/admin.py:424
 #, python-format
 msgid "Concessi %(n)s XP all'utente."
 msgstr ""
 
-#: routes/gamification/admin.py:400
+#: routes/gamification/admin.py:435
 msgid "Livello utente resettato a 1"
 msgstr ""
 
-#: routes/gamification/admin.py:440 templates/gamification/admin/streaks.html:2
+#: routes/gamification/admin.py:475 templates/gamification/admin/streaks.html:2
 #: templates/gamification/admin/streaks.html:8
 msgid "Gestione Streak"
 msgstr ""
 
-#: routes/gamification/admin.py:467
+#: routes/gamification/admin.py:502
 #, python-format
 msgid "Concessi %(n)s freeze all'utente."
 msgstr ""
@@ -1711,10 +1755,6 @@ msgstr ""
 
 #: routes/gamification/features.py:49
 msgid "Avversari diversi"
-msgstr ""
-
-#: routes/gamification/features.py:50
-msgid "Drill completati"
 msgstr ""
 
 #: routes/gamification/features.py:51
@@ -2054,46 +2094,46 @@ msgstr ""
 msgid "Campionato non era nascosto"
 msgstr ""
 
-#: routes/player/profile.py:337
+#: routes/player/profile.py:347
 msgid ""
 "Informazioni aggiornate. Abbiamo inviato una nuova email di verifica al "
 "nuovo indirizzo."
 msgstr ""
 
-#: routes/player/profile.py:343
+#: routes/player/profile.py:353
 msgid "Informazioni aggiornate correttamente."
 msgstr ""
 
-#: routes/player/profile.py:348
+#: routes/player/profile.py:358
 msgid "Si è verificato un errore durante l'aggiornamento."
 msgstr ""
 
-#: routes/player/profile.py:360
+#: routes/player/profile.py:370
 msgid "La tua email è già verificata."
 msgstr ""
 
-#: routes/player/profile.py:369
+#: routes/player/profile.py:379
 msgid "Email di verifica inviata. Controlla la tua casella di posta."
 msgstr ""
 
-#: routes/player/profile.py:373
+#: routes/player/profile.py:383
 msgid "Impossibile inviare l'email. Riprova più tardi."
 msgstr ""
 
-#: routes/player/profile.py:375
+#: routes/player/profile.py:385
 #, python-format
 msgid "Errore durante l'invio: %(detail)s"
 msgstr ""
 
-#: routes/player/profile.py:390
+#: routes/player/profile.py:400
 msgid "La nuova password e la conferma non coincidono."
 msgstr ""
 
-#: routes/player/profile.py:395
+#: routes/player/profile.py:405
 msgid "Password aggiornata correttamente."
 msgstr ""
 
-#: routes/player/profile.py:397
+#: routes/player/profile.py:407
 msgid "Password attuale errata o nuova password non valida."
 msgstr ""
 
@@ -2375,7 +2415,7 @@ msgstr ""
 #: templates/components/_new_gara_modal.html:362
 #: templates/components/_open_inscriptions_modal.html:28
 #: templates/components/_soft_delete_modal.html:48
-#: templates/gamification/admin/achievement_form.html:119
+#: templates/gamification/admin/achievement_form.html:123
 #: templates/gamification/admin/level_config.html:173
 #: templates/gamification/admin/level_config.html:220
 #: templates/gamification/admin/quest_form.html:90
@@ -2501,10 +2541,10 @@ msgstr ""
 #: templates/components/_index_open_inscriptions.html:67
 #: templates/components/_index_upcoming.html:18
 #: templates/components/_index_upcoming.html:44
-#: templates/components/_separated_dashboard_content.html:295
-#: templates/components/_separated_dashboard_content.html:324
-#: templates/components/_separated_dashboard_content.html:338
-#: templates/components/_separated_dashboard_content.html:438
+#: templates/components/_separated_dashboard_content.html:298
+#: templates/components/_separated_dashboard_content.html:327
+#: templates/components/_separated_dashboard_content.html:341
+#: templates/components/_separated_dashboard_content.html:441
 #: templates/components/_unified_cards.html:108
 #: templates/components/_unified_cards.html:120
 #: templates/gamification/dashboard.html:51 templates/gara_detail.html:12
@@ -2547,7 +2587,7 @@ msgstr ""
 #: templates/admin/gara_create_standalone.html:288
 #: templates/components/_classification_mobile.html:10
 #: templates/components/_index_campionato_cards.html:177
-#: templates/components/_separated_dashboard_content.html:441
+#: templates/components/_separated_dashboard_content.html:444
 #: templates/gara_detail.html:73
 msgid "Classifica"
 msgstr ""
@@ -2560,7 +2600,7 @@ msgid "Iscritti"
 msgstr ""
 
 #: templates/components/_gara_management.html:51
-#: templates/components/_separated_dashboard_content.html:428
+#: templates/components/_separated_dashboard_content.html:431
 #: templates/gamification/admin/dashboard.html:39 templates/gara_detail.html:77
 #: templates/gara_detail.html:170 templates/gara_detail.html:203
 #: templates/gara_detail.html:317 templates/player/venue_detail.html:147
@@ -2997,7 +3037,7 @@ msgstr ""
 #: templates/components/_match_header.html:78
 #: templates/components/_match_result_row.html:128
 #: templates/components/_match_scoreboard.html:75
-#: templates/components/_separated_dashboard_content.html:76
+#: templates/components/_separated_dashboard_content.html:79
 #: templates/gara_detail.html:773
 msgid "Tavolo"
 msgstr ""
@@ -3053,7 +3093,7 @@ msgid "Campionati in corso"
 msgstr ""
 
 #: templates/components/_director_dashboard_content.html:14
-#: templates/components/_separated_dashboard_content.html:389
+#: templates/components/_separated_dashboard_content.html:392
 #: templates/index.html:23
 msgid "Vedi tutti"
 msgstr ""
@@ -3087,7 +3127,7 @@ msgid "Non hai un account?"
 msgstr ""
 
 #: templates/admin/kpi.html:802
-#: templates/components/_separated_dashboard_content.html:255
+#: templates/components/_separated_dashboard_content.html:258
 #: templates/individual_match/match_detail.html:5 templates/match_detail.html:6
 msgid "Match"
 msgstr ""
@@ -3454,7 +3494,7 @@ msgstr ""
 #: templates/admin/venue_form.html:5 templates/admin/venues_list.html:118
 #: templates/components/_gara_header.html:57
 #: templates/components/_gara_header.html:58
-#: templates/components/_separated_dashboard_content.html:432
+#: templates/components/_separated_dashboard_content.html:435
 #: templates/components/_unified_cards.html:112
 #: templates/components/_unified_cards.html:123
 #: templates/gamification/admin/config_dashboard.html:75
@@ -3503,7 +3543,7 @@ msgstr ""
 #: templates/components/_history_campionati_tab.html:91
 #: templates/components/_history_campionati_tab.html:92
 #: templates/components/_index_campionato_cards.html:111
-#: templates/components/_separated_dashboard_content.html:420
+#: templates/components/_separated_dashboard_content.html:423
 msgid "Playoff"
 msgstr ""
 
@@ -3899,7 +3939,7 @@ msgstr ""
 #: templates/components/_history_gare_tab.html:14
 #: templates/components/_history_gare_tab.html:50
 #: templates/components/_player_statistics.html:19
-#: templates/components/_separated_dashboard_content.html:155
+#: templates/components/_separated_dashboard_content.html:158
 #: templates/player/history.html:21 templates/public/campionatos_list.html:53
 #: templates/public/garas_list.html:51
 msgid "Gare"
@@ -4179,7 +4219,7 @@ msgstr[1] ""
 
 #: templates/admin/gara_challenge_classification.html:136
 #: templates/challenge/_challenge_card.html:61
-#: templates/components/_separated_dashboard_content.html:264
+#: templates/components/_separated_dashboard_content.html:267
 msgid "giocatori"
 msgstr ""
 
@@ -4515,7 +4555,7 @@ msgstr ""
 #: templates/components/_campionato_details_info.html:86
 #: templates/components/_gara_info.html:47
 #: templates/components/_player_dashboard_content.html:39
-#: templates/components/_separated_dashboard_content.html:271
+#: templates/components/_separated_dashboard_content.html:274
 msgid "Quota"
 msgstr ""
 
@@ -5669,7 +5709,7 @@ msgid "Dati incompleti"
 msgstr ""
 
 #: templates/admin/venues_list.html:111
-#: templates/components/_separated_dashboard_content.html:331
+#: templates/components/_separated_dashboard_content.html:334
 #: templates/player/venue_detail.html:17 templates/player/venues.html:42
 msgid "Gestisci"
 msgstr ""
@@ -6311,7 +6351,7 @@ msgstr ""
 #: templates/components/_history_campionati_tab.html:97
 #: templates/components/_index_campionato_cards.html:114
 #: templates/components/_player_challenge_statistics.html:13
-#: templates/components/_separated_dashboard_content.html:421
+#: templates/components/_separated_dashboard_content.html:424
 #: templates/player/challenge_detail.html:3
 msgid "Challenge"
 msgstr ""
@@ -6669,7 +6709,7 @@ msgstr ""
 #: templates/components/_history_campionati_tab.html:86
 #: templates/components/_history_campionati_tab.html:87
 #: templates/components/_index_campionato_cards.html:108
-#: templates/components/_separated_dashboard_content.html:419
+#: templates/components/_separated_dashboard_content.html:422
 #: templates/components/_unified_cards.html:50
 msgid "Senza X"
 msgstr ""
@@ -6800,8 +6840,8 @@ msgstr ""
 #: templates/components/_match_status_labels.html:23
 #: templates/components/_multi_set_score_display.html:90
 #: templates/components/_round_navigation.html:26
-#: templates/components/_separated_dashboard_content.html:40
-#: templates/components/_separated_dashboard_content.html:209
+#: templates/components/_separated_dashboard_content.html:43
+#: templates/components/_separated_dashboard_content.html:212
 #: templates/individual_match/dashboard.html:93
 #: templates/individual_match/matches.html:35
 #: templates/individual_match/matches.html:96
@@ -7863,7 +7903,7 @@ msgid "senza limite"
 msgstr ""
 
 #: templates/components/_gara_info.html:49
-#: templates/components/_separated_dashboard_content.html:273
+#: templates/components/_separated_dashboard_content.html:276
 #: templates/components/_unified_cards.html:57
 msgid "Gratuita"
 msgstr ""
@@ -7929,8 +7969,8 @@ msgid "Senza squadra"
 msgstr ""
 
 #: templates/components/_gara_inscriptions.html:109
-#: templates/components/_separated_dashboard_content.html:201
-#: templates/components/_separated_dashboard_content.html:345
+#: templates/components/_separated_dashboard_content.html:204
+#: templates/components/_separated_dashboard_content.html:348
 #: templates/components/_unified_cards.html:139
 msgid "Lista d'attesa"
 msgstr ""
@@ -8243,9 +8283,9 @@ msgstr ""
 #: templates/components/_player_recent_matches.html:16
 #: templates/components/_round_navigation.html:22
 #: templates/components/_round_navigation.html:34
-#: templates/components/_separated_dashboard_content.html:27
-#: templates/components/_separated_dashboard_content.html:259
-#: templates/components/_separated_dashboard_content.html:312
+#: templates/components/_separated_dashboard_content.html:30
+#: templates/components/_separated_dashboard_content.html:262
+#: templates/components/_separated_dashboard_content.html:315
 #: templates/components/_user_recent_matches_table.html:15
 #: templates/public/garas_list.html:14 templates/public/garas_list.html:37
 msgid "Turno"
@@ -8255,7 +8295,7 @@ msgstr ""
 #: templates/components/_index_campionato_cards.html:78
 #: templates/components/_index_open_inscriptions.html:61
 #: templates/components/_nearby_gare.html:43
-#: templates/components/_separated_dashboard_content.html:345
+#: templates/components/_separated_dashboard_content.html:348
 #: templates/components/_unified_cards.html:141
 msgid "Iscriviti"
 msgstr ""
@@ -8267,7 +8307,7 @@ msgstr ""
 
 #: templates/components/_history_campionati_tab.html:12
 #: templates/components/_player_statistics.html:13
-#: templates/components/_separated_dashboard_content.html:383
+#: templates/components/_separated_dashboard_content.html:386
 #: templates/player/history.html:24 templates/public/campionatos_list.html:2
 #: templates/public/campionatos_list.html:7
 msgid "Campionati"
@@ -8401,7 +8441,7 @@ msgstr ""
 #: templates/components/_match_card.html:32
 #: templates/components/_match_result_row.html:21
 #: templates/components/_player_recent_matches.html:55
-#: templates/components/_separated_dashboard_content.html:47
+#: templates/components/_separated_dashboard_content.html:50
 #: templates/components/_user_recent_matches_table.html:47
 msgid "Trio"
 msgstr ""
@@ -8456,7 +8496,7 @@ msgstr ""
 #: templates/components/_match_result_row.html:95
 #: templates/components/_match_result_row.html:97
 #: templates/components/_match_scoreboard.html:82
-#: templates/components/_separated_dashboard_content.html:205
+#: templates/components/_separated_dashboard_content.html:208
 msgid "Conclusa"
 msgstr ""
 
@@ -8581,7 +8621,7 @@ msgstr ""
 
 #: templates/components/_index_open_inscriptions.html:6
 #: templates/components/_nearby_gare.html:40
-#: templates/components/_separated_dashboard_content.html:218
+#: templates/components/_separated_dashboard_content.html:221
 #: templates/components/_unified_cards.html:71
 msgid "Iscrizioni aperte"
 msgstr ""
@@ -8634,7 +8674,7 @@ msgstr ""
 
 #: templates/components/_index_registration_info.html:25
 #: templates/components/_match_card.html:166
-#: templates/components/_separated_dashboard_content.html:88
+#: templates/components/_separated_dashboard_content.html:91
 msgid "Gioca"
 msgstr ""
 
@@ -8649,7 +8689,7 @@ msgid "In arrivo"
 msgstr ""
 
 #: templates/components/_index_upcoming.html:15
-#: templates/components/_separated_dashboard_content.html:213
+#: templates/components/_separated_dashboard_content.html:216
 msgid "In preparazione"
 msgstr ""
 
@@ -9287,7 +9327,7 @@ msgid "Proposte aperte"
 msgstr ""
 
 #: templates/components/_player_dashboard_content.html:15
-#: templates/components/_separated_dashboard_content.html:161
+#: templates/components/_separated_dashboard_content.html:164
 msgid "Vedi tutte"
 msgstr ""
 
@@ -9315,7 +9355,7 @@ msgid "In lista d'attesa"
 msgstr ""
 
 #: templates/components/_player_inscription_info.html:10
-#: templates/components/_separated_dashboard_content.html:199
+#: templates/components/_separated_dashboard_content.html:202
 msgid "Iscritto"
 msgstr ""
 
@@ -9689,115 +9729,115 @@ msgstr ""
 msgid "I tuoi match"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:37
+#: templates/components/_separated_dashboard_content.html:40
 msgid "Vinto"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:37
+#: templates/components/_separated_dashboard_content.html:40
 msgid "Perso"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:78
-#: templates/components/_separated_dashboard_content.html:91
+#: templates/components/_separated_dashboard_content.html:81
+#: templates/components/_separated_dashboard_content.html:94
 msgid "In attesa del tavolo"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:84
+#: templates/components/_separated_dashboard_content.html:87
 msgid "Vedi risultato"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:157
+#: templates/components/_separated_dashboard_content.html:160
 #, python-format
 msgid "%(count)s attiva"
 msgid_plural "%(count)s attive"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/components/_separated_dashboard_content.html:189
+#: templates/components/_separated_dashboard_content.html:192
 msgid "Gara singola"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:207
+#: templates/components/_separated_dashboard_content.html:210
 msgid "Turno completato"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:211
+#: templates/components/_separated_dashboard_content.html:214
 #: utils/status_ui.py:101
 msgid "Spareggi"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:216
+#: templates/components/_separated_dashboard_content.html:219
 msgid "Massimo raggiunto"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:230
+#: templates/components/_separated_dashboard_content.html:233
 #: templates/gamification/quests.html:60 templates/gamification/quests.html:73
 #: templates/individual_match/proposal_detail.html:85
 msgid "Scade"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:289
+#: templates/components/_separated_dashboard_content.html:292
 msgid "Vedi risultati"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:320
+#: templates/components/_separated_dashboard_content.html:323
 msgid "Gestisci spareggi"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:349
+#: templates/components/_separated_dashboard_content.html:352
 msgid "Esci dalla lista"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:349
+#: templates/components/_separated_dashboard_content.html:352
 msgid "Disiscriviti"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:361
+#: templates/components/_separated_dashboard_content.html:364
 #, python-format
 msgid "Mostrati %(shown)s di %(total)s gare completate"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:367
+#: templates/components/_separated_dashboard_content.html:370
 msgid "Nessuna gara aperta"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:368
+#: templates/components/_separated_dashboard_content.html:371
 msgid "Quando un direttore apre le iscrizioni la trovi qui."
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:385
+#: templates/components/_separated_dashboard_content.html:388
 #, python-format
 msgid "%(count)s attivo"
 msgid_plural "%(count)s attivi"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/components/_separated_dashboard_content.html:403
+#: templates/components/_separated_dashboard_content.html:406
 #, python-format
 msgid "%(num)s gara"
 msgid_plural "%(num)s gare"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/components/_separated_dashboard_content.html:411
+#: templates/components/_separated_dashboard_content.html:414
 msgid "Prossima"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:413
+#: templates/components/_separated_dashboard_content.html:416
 msgid "Nessuna gara programmata"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:450
+#: templates/components/_separated_dashboard_content.html:453
 #, python-format
 msgid "Mostrati %(shown)s di %(total)s campionati completati"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:456
+#: templates/components/_separated_dashboard_content.html:459
 #: templates/public/campionatos_list.html:64
 msgid "Nessun campionato"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:457
+#: templates/components/_separated_dashboard_content.html:460
 msgid "Non ci sono campionati disponibili al momento."
 msgstr ""
 
@@ -11166,7 +11206,7 @@ msgid "Leggendari"
 msgstr ""
 
 #: templates/gamification/achievements.html:82
-#: templates/gamification/admin/achievement_form.html:108
+#: templates/gamification/admin/achievement_form.html:112
 msgid "Achievement nascosto"
 msgstr ""
 
@@ -11508,53 +11548,23 @@ msgstr ""
 msgid "Tipo Requisito"
 msgstr ""
 
-#: templates/gamification/admin/achievement_form.html:76
-msgid "Vittorie Match"
-msgstr ""
-
-#: templates/gamification/admin/achievement_form.html:77
-#: templates/gamification/admin/quest_form.html:55
-msgid "Match Giocati"
-msgstr ""
-
-#: templates/gamification/admin/achievement_form.html:78
-msgid "Vittorie Torneo"
-msgstr ""
-
-#: templates/gamification/admin/achievement_form.html:79
-msgid "Tornei Giocati"
-msgstr ""
-
-#: templates/gamification/admin/achievement_form.html:80
-msgid "Serie Vincente"
-msgstr ""
-
-#: templates/gamification/admin/achievement_form.html:81
-#: templates/gamification/admin/dashboard.html:146
-msgid "XP Totale"
-msgstr ""
-
-#: templates/gamification/admin/achievement_form.html:82
-msgid "Livello Raggiunto"
-msgstr ""
-
-#: templates/gamification/admin/achievement_form.html:86
+#: templates/gamification/admin/achievement_form.html:90
 msgid "Valore Obiettivo"
 msgstr ""
 
-#: templates/gamification/admin/achievement_form.html:98
+#: templates/gamification/admin/achievement_form.html:102
 msgid "Achievement progressivo"
 msgstr ""
 
-#: templates/gamification/admin/achievement_form.html:100
+#: templates/gamification/admin/achievement_form.html:104
 msgid "Mostra progresso parziale (es: 50/100)"
 msgstr ""
 
-#: templates/gamification/admin/achievement_form.html:110
+#: templates/gamification/admin/achievement_form.html:114
 msgid "Non visibile finché non sbloccato"
 msgstr ""
 
-#: templates/gamification/admin/achievement_form.html:122
+#: templates/gamification/admin/achievement_form.html:126
 msgid "Salva Achievement"
 msgstr ""
 
@@ -11698,6 +11708,10 @@ msgstr ""
 
 #: templates/gamification/admin/dashboard.html:136
 msgid "Top 10 Utenti XP"
+msgstr ""
+
+#: templates/gamification/admin/dashboard.html:146
+msgid "XP Totale"
 msgstr ""
 
 #: templates/gamification/admin/dashboard.html:161
@@ -12000,6 +12014,10 @@ msgstr ""
 
 #: templates/gamification/admin/quest_form.html:40
 msgid "Evento Speciale"
+msgstr ""
+
+#: templates/gamification/admin/quest_form.html:55
+msgid "Match Giocati"
 msgstr ""
 
 #: templates/gamification/admin/quest_form.html:57
