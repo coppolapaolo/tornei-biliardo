@@ -56,7 +56,28 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
     )  # Made nullable - prefer billiard_hall_id
     scheduled_at = db.Column(db.DateTime, nullable=False)
     status = db.Column(
-        db.Enum(MatchStatus), nullable=False, default=MatchStatus.SCHEDULED
+        db.Enum(
+            MatchStatus,
+            # Sul disco finiscono i **valori** ("validated"), non i nomi dei
+            # membri ("VALIDATED"). Senza `values_callable` SQLAlchemy salva
+            # il nome, e allora rinominare un membro dell'enum — un'operazione
+            # che sembra puramente lessicale, e che i test non vedono perché
+            # scrivono e rileggono lo stesso nome nello stesso processo —
+            # rende **illeggibili le righe già scritte**:
+            #
+            #   LookupError: 'VALIDATED' is not among the defined enum values
+            #
+            # È successo il 2026-08-17, con il rinomino di COMPLETED/VALIDATED
+            # in CLOSED_UNILATERALLY/CONFIRMED_BY_BOTH: `match.status` (una
+            # `db.String`, quindi già a valori) non se n'è accorto, questa
+            # colonna sì, e la dashboard è andata in 500.
+            #
+            # Con i valori la colonna diventa indifferente ai nomi Python, e
+            # allineata a `match.status`, che è lo stesso dominio.
+            values_callable=lambda enum_cls: [m.value for m in enum_cls],
+        ),
+        nullable=False,
+        default=MatchStatus.SCHEDULED,
     )
 
     # Game configuration
