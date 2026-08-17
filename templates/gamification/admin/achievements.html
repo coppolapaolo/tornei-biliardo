@@ -48,15 +48,15 @@
             </td>
             <td>
               {% if ach.difficulty.value == 'bronze' %}
-                <span class="badge badge-bronze">Bronze</span>
+                <span class="badge badge-bronze">{{ _("Bronze") }}</span>
               {% elif ach.difficulty.value == 'silver' %}
-                <span class="badge badge-silver">Silver</span>
+                <span class="badge badge-silver">{{ _("Silver") }}</span>
               {% elif ach.difficulty.value == 'gold' %}
-                <span class="badge badge-gold">Gold</span>
+                <span class="badge badge-gold">{{ _("Gold") }}</span>
               {% elif ach.difficulty.value == 'platinum' %}
-                <span class="badge badge-platinum">Platinum</span>
+                <span class="badge badge-platinum">{{ _("Platinum") }}</span>
               {% elif ach.difficulty.value == 'diamond' %}
-                <span class="badge badge-diamond">Diamond</span>
+                <span class="badge badge-diamond">{{ _("Diamond") }}</span>
               {% endif %}
             </td>
             <td><span class="badge bg-warning text-dark">{{ ach.xp_reward }}</span></td>

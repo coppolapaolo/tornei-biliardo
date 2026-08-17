@@ -68,13 +68,13 @@
                                 <p class="mb-0">
                                     <strong>
                                         {% if user_classification.position == 1 %}
-                                            <span class="text-warning"><i class="fas fa-medal"></i> 1° Classifica Generale</span>
+                                            <span class="text-warning"><i class="fas fa-medal"></i> {{ _("1° Classifica Generale") }}</span>
                                         {% elif user_classification.position == 2 %}
-                                            <span class="text-secondary"><i class="fas fa-medal"></i> 2° Classifica Generale</span>
+                                            <span class="text-secondary"><i class="fas fa-medal"></i> {{ _("2° Classifica Generale") }}</span>
                                         {% elif user_classification.position == 3 %}
-                                            <span class="text-danger"><i class="fas fa-medal"></i> 3° Classifica Generale</span>
+                                            <span class="text-danger"><i class="fas fa-medal"></i> {{ _("3° Classifica Generale") }}</span>
                                         {% else %}
-                                            <span class="text-muted"><i class="fas fa-hashtag"></i> {{ user_classification.position }}° Classifica Generale</span>
+                                            <span class="text-muted"><i class="fas fa-hashtag"></i> {{ _("%(pos)s° Classifica Generale", pos=user_classification.position) }}</span>
                                         {% endif %}
                                     </strong>
                                 </p>
@@ -84,17 +84,17 @@
                                 <div class="mt-2">
                                     {% if campionato.without_x %}
                                     <span class="badge bg-info me-1" title="{{ _('Senza X') }}">
-                                        <i class="fas fa-ban"></i> Senza X
+                                        <i class="fas fa-ban"></i> {{ _("Senza X") }}
                                     </span>
                                     {% endif %}
                                     {% if campionato.final_playoffs %}
                                     <span class="badge bg-warning text-dark me-1" title="{{ _('Playoff') }}">
-                                        <i class="fas fa-sitemap"></i> Playoff
+                                        <i class="fas fa-sitemap"></i> {{ _("Playoff") }}
                                     </span>
                                     {% endif %}
                                     {% if campionato.challenge_mode %}
                                     <span class="badge bg-success me-1" title="{{ _('Challenge') }}">
-                                        <i class="fas fa-star"></i> Challenge
+                                        <i class="fas fa-star"></i> {{ _("Challenge") }}
                                     </span>
                                     {% endif %}
                                 </div>

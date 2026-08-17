@@ -1,7 +1,7 @@
 <!-- templates/player/venue_detail.html - Dettagli sala biliardo per player e director -->
 {% extends "base.html" %}
 
-{% block title %}{{ venue.name }} - Sala Biliardo{% endblock %}
+{% block title %}{{ venue.name }} - {{ _("Sala Biliardo") }}{% endblock %}
 
 {% block page_back %}
 <a class="c7-head__back d-lg-none" href="{{ url_for('admin.venue.venues_list') }}"
@@ -26,19 +26,19 @@
     <div class="col-lg-8">
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between">
-                <h5><i class="fas fa-info-circle"></i> Informazioni Generali</h5>
+                <h5><i class="fas fa-info-circle"></i> {{ _("Informazioni Generali") }}</h5>
                 <div>
                     {% if venue.verified %}
                     <span class="badge bg-success">
-                        <i class="fas fa-check-circle"></i> Verificata
+                        <i class="fas fa-check-circle"></i> {{ _("Verificata") }}
                     </span>
                     {% elif venue.can_be_verified() %}
                     <span class="badge bg-warning text-dark">
-                        <i class="fas fa-clock"></i> In Attesa di Verifica
+                        <i class="fas fa-clock"></i> {{ _("In Attesa di Verifica") }}
                     </span>
                     {% else %}
                     <span class="badge bg-secondary">
-                        <i class="fas fa-info-circle"></i> Dati Incompleti
+                        <i class="fas fa-info-circle"></i> {{ _("Dati Incompleti") }}
                     </span>
                     {% endif %}
                 </div>
@@ -46,46 +46,46 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <p><strong>Nome:</strong> {{ venue.name }}</p>
-                        <p><strong>Indirizzo:</strong>
+                        <p><strong>{{ _("Nome") }}:</strong> {{ venue.name }}</p>
+                        <p><strong>{{ _("Indirizzo") }}:</strong>
                             {% if venue.address %}
                             <a href="https://www.google.com/maps/search/?api=1&query={{ venue.get_full_address()|urlencode }}"
                                 target="_blank"> {{ venue.address }}</a>
                             {% else %}
-                            Non specificato
+                            {{ _("Non specificato") }}
                             {% endif %}
                         </p>
-                        <p><strong>Città:</strong> {{ venue.city or 'Non specificata' }}</p>
-                        <p><strong>CAP:</strong> {{ venue.postal_code or 'Non specificato' }}</p>
-                        <p><strong>Paese:</strong> {{ venue.country }}</p>
+                        <p><strong>{{ _("Città") }}:</strong> {{ venue.city or _('Non specificata') }}</p>
+                        <p><strong>{{ _("CAP") }}:</strong> {{ venue.postal_code or _('Non specificato') }}</p>
+                        <p><strong>{{ _("Paese") }}:</strong> {{ venue.country }}</p>
                     </div>
                     <div class="col-md-6">
-                        <p><strong>Telefono:</strong>
+                        <p><strong>{{ _("Telefono") }}:</strong>
                             {% if venue.phone %}
                             <a href="tel:{{ venue.phone }}">{{ venue.phone }}</a>
                             {% else %}
-                            Non specificato
+                            {{ _("Non specificato") }}
                             {% endif %}
                         </p>
-                        <p><strong>Email:</strong>
+                        <p><strong>{{ _("Email") }}:</strong>
                             {% if venue.email %}
                             <a href="mailto:{{ venue.email }}">{{ venue.email }}</a>
                             {% else %}
-                            Non specificata
+                            {{ _("Non specificata") }}
                             {% endif %}
                         </p>
-                        <p><strong>Sito Web:</strong>
+                        <p><strong>{{ _("Sito Web") }}:</strong>
                             {% if venue.website %}
                             <a href="{{ venue.website }}" target="_blank">{{ venue.website }}</a>
                             {% else %}
-                            Non specificato
+                            {{ _("Non specificato") }}
                             {% endif %}
                         </p>
-                        <p><strong>Tariffa Oraria:</strong>
+                        <p><strong>{{ _("Tariffa Oraria") }}:</strong>
                             {% if venue.hourly_rate %}
                             {{ venue.hourly_rate }} {{ venue.currency }}
                             {% else %}
-                            Non specificata
+                            {{ _("Non specificata") }}
                             {% endif %}
                         </p>
                     </div>
@@ -96,14 +96,14 @@
         <!-- Tavoli e Servizi -->
         <div class="card mb-4">
             <div class="card-header">
-                <h5><i class="fas fa-table"></i> Tavoli e Servizi</h5>
+                <h5><i class="fas fa-table"></i> {{ _("Tavoli e Servizi") }}</h5>
             </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <p><strong>Numero Tavoli:</strong> {{ venue.number_of_tables or 'Non specificato' }}</p>
+                        <p><strong>{{ _("Numero Tavoli") }}:</strong> {{ venue.number_of_tables or _('Non specificato') }}</p>
 
-                        <p><strong>Tipi di Tavoli:</strong></p>
+                        <p><strong>{{ _("Tipi di Tavoli") }}:</strong></p>
                         {% set table_types = stats.table_types %}
                         {% if table_types %}
                         <ul class="list-unstyled">
@@ -112,11 +112,11 @@
                             {% endfor %}
                         </ul>
                         {% else %}
-                        <p class="text-muted">Non specificati</p>
+                        <p class="text-muted">{{ _("Non specificati") }}</p>
                         {% endif %}
                     </div>
                     <div class="col-md-6">
-                        <p><strong>Servizi:</strong></p>
+                        <p><strong>{{ _("Servizi") }}:</strong></p>
                         {% set filtered_amenities = [] %}
                         {% for amenity in stats.amenities %}
                         {% if not amenity.startswith("Tavoli:") and not amenity.startswith("Foto:") %}
@@ -130,7 +130,7 @@
                             {% endfor %}
                         </ul>
                         {% else %}
-                        <p class="text-muted">Non specificati</p>
+                        <p class="text-muted">{{ _("Non specificati") }}</p>
                         {% endif %}
                     </div>
                 </div>
@@ -144,13 +144,13 @@
         {% if manager %}
         <div class="card mb-4">
             <div class="card-header">
-                <h5><i class="fas fa-user-cog"></i> Gestione</h5>
+                <h5><i class="fas fa-user-cog"></i> {{ _("Gestione") }}</h5>
             </div>
             <div class="card-body">
                 <div class="text-center">
                     <i class="fas fa-user-circle fa-3x text-primary mb-2"></i>
                     <h6>{{ manager.username }}</h6>
-                    <small class="text-muted">Gestore della Sala</small>
+                    <small class="text-muted">{{ _("Gestore della Sala") }}</small>
                 </div>
             </div>
         </div>
@@ -161,14 +161,13 @@
         current_user.can_access('request_venue_manager') %}
         <div class="card mb-4">
             <div class="card-header">
-                <h5><i class="fas fa-hand-paper"></i> Diventa Gestore</h5>
+                <h5><i class="fas fa-hand-paper"></i> {{ _("Diventa Gestore") }}</h5>
             </div>
             <div class="card-body">
-                <p class="text-muted small">Vuoi gestire questa sala? I gestori possono modificare informazioni, servizi
-                    e dettagli della sala.</p>
+                <p class="text-muted small">{{ _("Vuoi gestire questa sala? I gestori possono modificare informazioni, servizi e dettagli della sala.") }}</p>
                 <button type="button" class="btn btn-primary w-100" data-bs-toggle="modal"
                     data-bs-target="#venueManagerRequestModal">
-                    <i class="fas fa-hand-paper"></i> Richiedi Gestione
+                    <i class="fas fa-hand-paper"></i> {{ _("Richiedi Gestione") }}
                 </button>
             </div>
         </div>
@@ -178,12 +177,12 @@
         {% if not current_user.is_admin and has_pending_requests %}
         <div class="card mb-4">
             <div class="card-header">
-                <h5><i class="fas fa-clock"></i> Richieste in Corso</h5>
+                <h5><i class="fas fa-clock"></i> {{ _("Richieste in Corso") }}</h5>
             </div>
             <div class="card-body">
-                <p class="text-muted small">Hai richieste di gestione sala in attesa.</p>
+                <p class="text-muted small">{{ _("Hai richieste di gestione sala in attesa.") }}</p>
                 <a href="{{ url_for('player.my_venue_requests') }}" class="btn btn-outline-warning btn-sm w-100">
-                    <i class="fas fa-list"></i> Vedi le mie Richieste
+                    <i class="fas fa-list"></i> {{ _("Vedi le mie Richieste") }}
                 </a>
             </div>
         </div>
@@ -192,15 +191,15 @@
         <!-- Statistiche -->
         <div class="card mb-4">
             <div class="card-header">
-                <h5><i class="fas fa-chart-bar"></i> Statistiche</h5>
+                <h5><i class="fas fa-chart-bar"></i> {{ _("Statistiche") }}</h5>
             </div>
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span>Utenti Attivi:</span>
+                    <span>{{ _("Utenti Attivi") }}:</span>
                     <span class="badge bg-primary fs-6">{{ stats.active_users_count }}</span>
                 </div>
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span>Partite Giocate:</span>
+                    <span>{{ _("Partite Giocate") }}:</span>
                     <span class="badge bg-success fs-6">{{ stats.total_matches_played }}</span>
                 </div>
             </div>
@@ -209,7 +208,7 @@
         <!-- Foto -->
         <div class="card mb-4">
             <div class="card-header">
-                <h5><i class="fas fa-camera"></i> Foto</h5>
+                <h5><i class="fas fa-camera"></i> {{ _("Foto") }}</h5>
             </div>
             <div class="card-body">
                 {% set photos = [] %}
@@ -224,11 +223,11 @@
                 {# Remove static/ prefix since it's already in the path #}
                 {% set clean_path = photo_path.replace("static/", "", 1) if photo_path.startswith("static/") else
                 photo_path %}
-                <img src="{{ url_for('static', filename=clean_path) }}" alt="Foto {{ venue.name }}"
+                <img src="{{ url_for('static', filename=clean_path) }}" alt="{{ _('Foto %(name)s', name=venue.name) }}"
                     class="img-fluid mb-2 rounded">
                 {% endfor %}
                 {% else %}
-                <p class="text-muted text-center">Nessuna foto disponibile</p>
+                <p class="text-muted text-center">{{ _("Nessuna foto disponibile") }}</p>
                 {% endif %}
             </div>
         </div>
@@ -243,7 +242,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">
-                    <i class="fas fa-hand-paper"></i> Richiesta Gestione per {{ venue.name }}
+                    <i class="fas fa-hand-paper"></i> {{ _("Richiesta Gestione per %(name)s", name=venue.name) }}
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
@@ -251,38 +250,43 @@
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="venue_id" value="{{ venue.id }}">
                 <div class="modal-body">
-                    <p>Vuoi diventare gestore di <strong>{{ venue.name }}</strong>?</p>
+                    {# Un msgid solo, non «Vuoi diventare gestore di» + il nome:
+                       spezzata, la frase e' intraducibile (in altre lingue il
+                       nome non sta in fondo). Il nome e' escapato a mano prima
+                       di |safe — e' contenuto scritto dagli utenti. #}
+                    {% set nome_sala = '<strong>' ~ venue.name|e ~ '</strong>' %}
+                    <p>{{ _("Vuoi diventare gestore di %(name)s?", name=nome_sala)|safe }}</p>
                     {% if manager %}
                     <div class="alert alert-warning">
                         <i class="fas fa-exclamation-triangle"></i>
-                        <strong>Attenzione:</strong> Questa sala ha già un gestore ({{ manager.username }}).
-                        La tua richiesta aprirà un contenzioso che sarà valutato dall'amministratore.
+                        <strong>{{ _("Attenzione") }}:</strong> {{ _("Questa sala ha già un gestore (%(name)s).", name=manager.username) }}
+                        {{ _("La tua richiesta aprirà un contenzioso che sarà valutato dall'amministratore.") }}
                     </div>
                     {% endif %}
-                    <p>I gestori sala possono:</p>
+                    <p>{{ _("I gestori sala possono:") }}</p>
                     <ul>
-                        <li>Modificare le informazioni della sala</li>
-                        <li>Aggiornare servizi e dettagli</li>
-                        <li>Caricare foto della sala</li>
-                        <li>Gestire la numerazione dei tavoli</li>
+                        <li>{{ _("Modificare le informazioni della sala") }}</li>
+                        <li>{{ _("Aggiornare servizi e dettagli") }}</li>
+                        <li>{{ _("Caricare foto della sala") }}</li>
+                        <li>{{ _("Gestire la numerazione dei tavoli") }}</li>
                     </ul>
                     <p class="text-muted">
                         <i class="fas fa-info-circle"></i>
-                        L'amministratore valuterà la tua richiesta specifica per questa sala.
+                        {{ _("L'amministratore valuterà la tua richiesta specifica per questa sala.") }}
                     </p>
 
                     <div class="mb-3">
-                        <label for="notes" class="form-label">Motivazione{% if manager %} (importante per contenzioso){%
-                            else %} (opzionale){% endif %}</label>
+                        <label for="notes" class="form-label">{{ _("Motivazione") }}{% if manager %} ({{ _("importante per contenzioso") }}){%
+                            else %} ({{ _("opzionale") }}){% endif %}</label>
                         <textarea class="form-control" name="notes" id="notes" rows="3"
-                            placeholder="{% if manager %}Spiega perché dovresti gestire questa sala invece dell'attuale gestore...{% else %}Perché vuoi gestire questa sala? Hai esperienza con sale biliardo?{% endif %}"
+                            placeholder="{% if manager %}{{ _('Spiega perché dovresti gestire questa sala invece dell\'attuale gestore...') }}{% else %}{{ _('Perché vuoi gestire questa sala? Hai esperienza con sale biliardo?') }}{% endif %}"
                             {% if manager %}required{% endif %}></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _("Annulla") }}</button>
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-paper-plane"></i> Invia Richiesta
+                        <i class="fas fa-paper-plane"></i> {{ _("Invia Richiesta") }}
                     </button>
                 </div>
             </form>

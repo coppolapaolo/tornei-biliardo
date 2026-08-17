@@ -65,7 +65,7 @@
                     </a>
                     <a href="{{ url_for('admin.kpi.index', tab=active_tab) }}"
                        class="btn btn-sm {% if not days and not is_custom %}btn-primary{% else %}btn-outline-primary{% endif %}"
-                       title="Tutto">
+                       title="{{ _('Tutto') }}">
                         <i class="fas fa-infinity"></i>
                     </a>
                 </div>
@@ -538,8 +538,8 @@
             <div class="card kpi-card h-100 border-info">
                 <div class="card-body text-center">
                     <div class="metric-value text-info">{{ community.stickiness }}%</div>
-                    <div class="metric-label"><i class="fas fa-magnet"></i> Stickiness</div>
-                    <small class="text-muted">DAU / MAU Ratio</small>
+                    <div class="metric-label"><i class="fas fa-magnet"></i> {{ _('Stickiness') }}</div>
+                    <small class="text-muted">{{ _('DAU / MAU Ratio') }}</small>
                 </div>
             </div>
         </div>
@@ -547,8 +547,8 @@
             <div class="card kpi-card h-100 border-success">
                 <div class="card-body text-center">
                     <div class="metric-value text-success">{{ community.virality_score }}%</div>
-                    <div class="metric-label"><i class="fas fa-share-nodes"></i> Viralità</div>
-                    <small class="text-muted">Partite New vs Vet</small>
+                    <div class="metric-label"><i class="fas fa-share-nodes"></i> {{ _('Viralità') }}</div>
+                    <small class="text-muted">{{ _('Partite New vs Vet') }}</small>
                 </div>
             </div>
         </div>
@@ -556,8 +556,8 @@
             <div class="card kpi-card h-100 border-danger">
                 <div class="card-body text-center">
                     <div class="metric-value text-danger">{{ community.churn_rate }}%</div>
-                    <div class="metric-label"><i class="fas fa-door-open"></i> Churn Mese</div>
-                    <small class="text-muted">{{ community.churn_count }} utenti persi</small>
+                    <div class="metric-label"><i class="fas fa-door-open"></i> {{ _('Churn Mese') }}</div>
+                    <small class="text-muted">{{ _('%(count)s utenti persi', count=community.churn_count) }}</small>
                 </div>
             </div>
         </div>
@@ -565,8 +565,8 @@
             <div class="card kpi-card h-100 bg-light">
                 <div class="card-body text-center">
                     <div class="metric-value">{{ power_users|length }}</div>
-                    <div class="metric-label"><i class="fas fa-bolt text-warning"></i> Power Users</div>
-                    <small class="text-muted">Top 10% activity</small>
+                    <div class="metric-label"><i class="fas fa-bolt text-warning"></i> {{ _('Power Users') }}</div>
+                    <small class="text-muted">{{ _('Top 10') }}% {{ _('activity') }}</small>
                 </div>
             </div>
         </div>
@@ -603,7 +603,7 @@
                                     <td class="text-center">
                                         <span class="badge bg-light text-dark border">{{ d.total_garas }}</span>
                                         {% if d.completed_garas > 0 %}
-                                        <small class="text-muted ms-1">({{ d.completed_garas }} complete)</small>
+                                        <small class="text-muted ms-1">({{ d.completed_garas }} {{ _('complete') }})</small>
                                         {% endif %}
                                     </td>
                                     <td class="text-center">

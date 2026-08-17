@@ -1,24 +1,24 @@
 <!-- Amalfi Algorithm Info Component -->
 <div class="card border-info">
     <div class="card-header bg-info bg-opacity-10">
-        <h5><i class="fas fa-brain"></i> Algoritmo Amalfi - Turno {{ round_number }}</h5>
+        <h5><i class="fas fa-brain"></i> {{ _("Algoritmo Amalfi - Turno %(round_number)s", round_number=round_number) }}</h5>
     </div>
     <div class="card-body">
         <div class="row">
             <div class="col-md-6">
-                <strong>Formula Salto:</strong> {{ gara.rounds_count }} - {{ round_number }} = 
+                <strong>{{ _("Formula Salto:") }}</strong> {{ gara.rounds_count }} - {{ round_number }} =
                 <span class="badge bg-primary">{{ gara.rounds_count - round_number }}</span><br>
-                
-                <strong>Criterio Classifica:</strong><br>
-                <small class="text-muted">1. Vittorie (desc) → 2. Diff. Rack (desc) → 3. Posizione Precedente (asc)</small>
+
+                <strong>{{ _("Criterio Classifica:") }}</strong><br>
+                <small class="text-muted">{{ _("1. Vittorie (desc) → 2. Diff. Rack (desc) → 3. Posizione Precedente (asc)") }}</small>
             </div>
             <div class="col-md-6">
-                <strong>Giocatori Totali:</strong> {{ total_players }}<br>
-                <strong>Modalità Campionato:</strong> 
+                <strong>{{ _("Giocatori Totali:") }}</strong> {{ total_players }}<br>
+                <strong>{{ _("Modalità Campionato:") }}</strong>
                 {% if gara.campionato.without_x %}
-                    <span class="badge bg-info">Senza X</span>
+                    <span class="badge bg-info">{{ _("Senza X") }}</span>
                 {% else %}
-                    <span class="badge bg-warning">Con X</span>
+                    <span class="badge bg-warning">{{ _("Con X") }}</span>
                 {% endif %}
             </div>
         </div>

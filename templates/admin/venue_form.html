@@ -2,7 +2,7 @@
 {% extends "base.html" %}
 
 {% set is_edit = venue is not none %}
-{% block title %}{% if is_edit %}Modifica {{ venue.name }}{% else %}Nuova Sala Biliardo{% endif %}{% endblock %}
+{% block title %}{% if is_edit %}{{ _("Modifica") }} {{ venue.name }}{% else %}{{ _("Nuova Sala Biliardo") }}{% endif %}{% endblock %}
 
 {% set indietro = url_for('admin.venue.venue_detail', venue_id=venue.id) if is_edit
                         else url_for('admin.venue.venues_list') %}
@@ -33,13 +33,13 @@
         <div class="col-lg-8">
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5><i class="fas fa-info-circle"></i> Informazioni Base</h5>
+                    <h5><i class="fas fa-info-circle"></i> {{ _("Informazioni Base") }}</h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="name" class="form-label">Nome Sala *</label>
+                                <label for="name" class="form-label">{{ _("Nome Sala") }} *</label>
                                 <input type="text" 
                                        class="form-control" 
                                        id="name" 
@@ -49,7 +49,7 @@
                             </div>
                             
                             <div class="mb-3">
-                                <label for="address" class="form-label">Indirizzo</label>
+                                <label for="address" class="form-label">{{ _("Indirizzo") }}</label>
                                 <textarea class="form-control" 
                                           id="address" 
                                           name="address" 
@@ -57,7 +57,7 @@
                             </div>
                             
                             <div class="mb-3">
-                                <label for="city" class="form-label">Città</label>
+                                <label for="city" class="form-label">{{ _("Città") }}</label>
                                 <input type="text" 
                                        class="form-control" 
                                        id="city" 
@@ -66,7 +66,7 @@
                             </div>
                             
                             <div class="mb-3">
-                                <label for="postal_code" class="form-label">CAP</label>
+                                <label for="postal_code" class="form-label">{{ _("CAP") }}</label>
                                 <input type="text" 
                                        class="form-control" 
                                        id="postal_code" 
@@ -77,7 +77,7 @@
                         
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="phone" class="form-label">Telefono</label>
+                                <label for="phone" class="form-label">{{ _("Telefono") }}</label>
                                 <input type="tel" 
                                        class="form-control" 
                                        id="phone" 
@@ -86,7 +86,7 @@
                             </div>
                             
                             <div class="mb-3">
-                                <label for="email" class="form-label">Email</label>
+                                <label for="email" class="form-label">{{ _("Email") }}</label>
                                 <input type="email" 
                                        class="form-control" 
                                        id="email" 
@@ -95,7 +95,7 @@
                             </div>
                             
                             <div class="mb-3">
-                                <label for="website" class="form-label">Sito Web</label>
+                                <label for="website" class="form-label">{{ _("Sito Web") }}</label>
                                 <input type="url" 
                                        class="form-control" 
                                        id="website" 
@@ -105,7 +105,7 @@
                             </div>
                             
                             <div class="mb-3">
-                                <label for="hourly_rate" class="form-label">Tariffa Oraria (€)</label>
+                                <label for="hourly_rate" class="form-label">{{ _("Tariffa Oraria (€)") }}</label>
                                 <input type="number" 
                                        class="form-control" 
                                        id="hourly_rate" 
@@ -122,13 +122,13 @@
             <!-- Tavoli e Servizi -->
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5><i class="fas fa-table"></i> Tavoli e Servizi</h5>
+                    <h5><i class="fas fa-table"></i> {{ _("Tavoli e Servizi") }}</h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="number_of_tables" class="form-label">Numero Tavoli *</label>
+                                <label for="number_of_tables" class="form-label">{{ _("Numero Tavoli") }} *</label>
                                 <input type="number" 
                                        class="form-control" 
                                        id="number_of_tables" 
@@ -139,26 +139,26 @@
                             </div>
                             
                             <div class="mb-3">
-                                <label for="table_types" class="form-label">Tipi di Tavoli</label>
-                                <input type="text" 
-                                       class="form-control" 
-                                       id="table_types" 
-                                       name="table_types" 
+                                <label for="table_types" class="form-label">{{ _("Tipi di Tavoli") }}</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="table_types"
+                                       name="table_types"
                                        value="{% if is_edit %}{{ venue.get_table_types()|join(', ') }}{% endif %}"
-                                       placeholder="es: Pool 8ft, Pool 9ft, Snooker">
-                                <small class="text-muted">Separare con virgola</small>
+                                       placeholder="{{ _('es: Pool 8ft, Pool 9ft, Snooker') }}">
+                                <small class="text-muted">{{ _("Separare con virgola") }}</small>
                             </div>
                         </div>
                         
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="amenities" class="form-label">Servizi</label>
-                                <textarea class="form-control" 
-                                          id="amenities" 
-                                          name="amenities" 
+                                <label for="amenities" class="form-label">{{ _("Servizi") }}</label>
+                                <textarea class="form-control"
+                                          id="amenities"
+                                          name="amenities"
                                           rows="3"
-                                          placeholder="es: Parcheggio, Bar, WiFi, Aria Condizionata">{% if is_edit %}{% set filtered_amenities = [] %}{% for amenity in venue.get_amenities() %}{% if not amenity.startswith("Tavoli:") and not amenity.startswith("Foto:") %}{% set _void = filtered_amenities.append(amenity) %}{% endif %}{% endfor %}{{ filtered_amenities|join(', ') }}{% endif %}</textarea>
-                                <small class="text-muted">Separare con virgola</small>
+                                          placeholder="{{ _('es: Parcheggio, Bar, WiFi, Aria Condizionata') }}">{% if is_edit %}{% set filtered_amenities = [] %}{% for amenity in venue.get_amenities() %}{% if not amenity.startswith("Tavoli:") and not amenity.startswith("Foto:") %}{% set _void = filtered_amenities.append(amenity) %}{% endif %}{% endfor %}{{ filtered_amenities|join(', ') }}{% endif %}</textarea>
+                                <small class="text-muted">{{ _("Separare con virgola") }}</small>
                             </div>
                         </div>
                     </div>
@@ -170,21 +170,21 @@
         <div class="col-lg-4">
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5><i class="fas fa-clock"></i> Orari e Note</h5>
+                    <h5><i class="fas fa-clock"></i> {{ _("Orari e Note") }}</h5>
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <label for="business_hours" class="form-label">Orari di Apertura</label>
-                        <textarea class="form-control" 
-                                  id="business_hours" 
-                                  name="business_hours" 
+                        <label for="business_hours" class="form-label">{{ _("Orari di Apertura") }}</label>
+                        <textarea class="form-control"
+                                  id="business_hours"
+                                  name="business_hours"
                                   rows="6"
-                                  placeholder="es:
+                                  placeholder="{{ _('es:
 Lunedì: 15:00-24:00
 Martedì: 15:00-24:00
 Mercoledì: Chiuso
-...">{{ (venue.business_hours or '') if is_edit else '' }}</textarea>
-                        <small class="text-muted">Formato libero - inserire orari come testo</small>
+...') }}">{{ (venue.business_hours or '') if is_edit else '' }}</textarea>
+                        <small class="text-muted">{{ _("Formato libero - inserire orari come testo") }}</small>
                     </div>
                 </div>
             </div>
@@ -192,11 +192,11 @@ Mercoledì: Chiuso
             <!-- Posizione (coordinate per ricerca "vicino a me") -->
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5><i class="fas fa-map-marker-alt"></i> Posizione</h5>
+                    <h5><i class="fas fa-map-marker-alt"></i> {{ _("Posizione") }}</h5>
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <label for="latitude" class="form-label">Latitudine</label>
+                        <label for="latitude" class="form-label">{{ _("Latitudine") }}</label>
                         <input type="number"
                                class="form-control"
                                id="latitude"
@@ -204,10 +204,10 @@ Mercoledì: Chiuso
                                step="any"
                                min="-90" max="90"
                                value="{{ venue.latitude if is_edit and venue.latitude is not none else '' }}"
-                               placeholder="es: 46.0711">
+                               placeholder="{{ _('es: 46.0711') }}">
                     </div>
                     <div class="mb-3">
-                        <label for="longitude" class="form-label">Longitudine</label>
+                        <label for="longitude" class="form-label">{{ _("Longitudine") }}</label>
                         <input type="number"
                                class="form-control"
                                id="longitude"
@@ -215,11 +215,10 @@ Mercoledì: Chiuso
                                step="any"
                                min="-180" max="180"
                                value="{{ venue.longitude if is_edit and venue.longitude is not none else '' }}"
-                               placeholder="es: 13.2346">
+                               placeholder="{{ _('es: 13.2346') }}">
                     </div>
                     <small class="text-muted">
-                        Servono per ordinare le sale per distanza. Senza coordinate
-                        la sala non compare nella ricerca per prossimità.
+                        {{ _("Servono per ordinare le sale per distanza. Senza coordinate la sala non compare nella ricerca per prossimità.") }}
                     </small>
                 </div>
             </div>
@@ -227,11 +226,11 @@ Mercoledì: Chiuso
             {% if is_edit %}
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5><i class="fas fa-info-circle"></i> Stato</h5>
+                    <h5><i class="fas fa-info-circle"></i> {{ _("Stato") }}</h5>
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <label class="form-label"><strong>Stato:</strong></label>
+                        <label class="form-label"><strong>{{ _("Stato:") }}</strong></label>
                         <div class="form-check form-switch">
                             <input class="form-check-input" 
                                    type="checkbox" 
@@ -241,9 +240,9 @@ Mercoledì: Chiuso
                             <label class="form-check-label" for="is_active">
                                 <span id="status-label">
                                     {% if venue.is_active %}
-                                        <span class="badge bg-success">Attiva</span>
+                                        <span class="badge bg-success">{{ _("Attiva") }}</span>
                                     {% else %}
-                                        <span class="badge bg-danger">Disattivata</span>
+                                        <span class="badge bg-danger">{{ _("Disattivata") }}</span>
                                     {% endif %}
                                 </span>
                             </label>
@@ -251,7 +250,7 @@ Mercoledì: Chiuso
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label"><strong>Verificata:</strong></label>
+                        <label class="form-label"><strong>{{ _("Verificata:") }}</strong></label>
                         <div class="form-check form-switch">
                             <input class="form-check-input" 
                                    type="checkbox" 
@@ -261,19 +260,19 @@ Mercoledì: Chiuso
                             <label class="form-check-label" for="verified">
                                 <span id="verified-label">
                                     {% if venue.verified %}
-                                        <span class="badge bg-success">Verificata</span>
+                                        <span class="badge bg-success">{{ _("Verificata") }}</span>
                                     {% else %}
-                                        <span class="badge bg-warning">Non Verificata</span>
+                                        <span class="badge bg-warning">{{ _("Non Verificata") }}</span>
                                     {% endif %}
                                 </span>
                             </label>
                         </div>
                     </div>
                     
-                    <p><strong>Creata:</strong> {{ venue.created_at|datetime_local }}</p>
-                    
+                    <p><strong>{{ _("Creata:") }}</strong> {{ venue.created_at|datetime_local }}</p>
+
                     {% if venue.updated_at %}
-                    <p><strong>Modificata:</strong> {{ venue.updated_at|datetime_local }}</p>
+                    <p><strong>{{ _("Modificata:") }}</strong> {{ venue.updated_at|datetime_local }}</p>
                     {% endif %}
                 </div>
             </div>
@@ -288,13 +287,13 @@ Mercoledì: Chiuso
                 <div class="card-body d-flex justify-content-between">
                     <div>
                         <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i> 
-                            {% if is_edit %}Aggiorna Sala{% else %}Crea Sala{% endif %}
+                            <i class="fas fa-save"></i>
+                            {% if is_edit %}{{ _("Aggiorna Sala") }}{% else %}{{ _("Crea Sala") }}{% endif %}
                         </button>
-                        
-                        <a href="{% if is_edit %}{{ url_for('admin.venue.venue_detail', venue_id=venue.id) }}{% else %}{{ url_for('admin.venue.venues_list') }}{% endif %}" 
+
+                        <a href="{% if is_edit %}{{ url_for('admin.venue.venue_detail', venue_id=venue.id) }}{% else %}{{ url_for('admin.venue.venues_list') }}{% endif %}"
                            class="btn btn-secondary ms-2">
-                            <i class="fas fa-times"></i> Annulla
+                            <i class="fas fa-times"></i> {{ _("Annulla") }}
                         </a>
                     </div>
                 </div>
@@ -307,6 +306,15 @@ Mercoledì: Chiuso
 
 {% block scripts %}
 <script>
+const venueFormI18n = {
+    active: {{ _("Attiva")|tojson }},
+    inactive: {{ _("Disattivata")|tojson }},
+    verified: {{ _("Verificata")|tojson }},
+    notVerified: {{ _("Non Verificata")|tojson }},
+    updateError: {{ _("Errore durante l'aggiornamento")|tojson }},
+    connectionError: {{ _("Errore di connessione")|tojson }}
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     {% if is_edit %}
     const venueId = {{ venue.id if venue and venue.id else 'null' }};
@@ -326,9 +334,9 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Update UI immediately
             if (isActive) {
-                statusLabel.innerHTML = '<span class="badge bg-success">Attiva</span>';
+                statusLabel.innerHTML = `<span class="badge bg-success">${venueFormI18n.active}</span>`;
             } else {
-                statusLabel.innerHTML = '<span class="badge bg-danger">Disattivata</span>';
+                statusLabel.innerHTML = `<span class="badge bg-danger">${venueFormI18n.inactive}</span>`;
             }
             
             // Send AJAX request
@@ -346,9 +354,9 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Update UI immediately
             if (isVerified) {
-                verifiedLabel.innerHTML = '<span class="badge bg-success">Verificata</span>';
+                verifiedLabel.innerHTML = `<span class="badge bg-success">${venueFormI18n.verified}</span>`;
             } else {
-                verifiedLabel.innerHTML = '<span class="badge bg-warning">Non Verificata</span>';
+                verifiedLabel.innerHTML = `<span class="badge bg-warning">${venueFormI18n.notVerified}</span>`;
             }
             
             // Send AJAX request
@@ -380,30 +388,30 @@ function toggleVenueStatus(venueId, field, value, switchElement, labelElement) {
             // Revert UI on error
             switchElement.checked = !value;
             if (field === 'is_active') {
-                labelElement.innerHTML = value ? 
-                    '<span class="badge bg-danger">Disattivata</span>' :
-                    '<span class="badge bg-success">Attiva</span>';
+                labelElement.innerHTML = value ?
+                    `<span class="badge bg-danger">${venueFormI18n.inactive}</span>` :
+                    `<span class="badge bg-success">${venueFormI18n.active}</span>`;
             } else {
-                labelElement.innerHTML = value ? 
-                    '<span class="badge bg-warning">Non Verificata</span>' :
-                    '<span class="badge bg-success">Verificata</span>';
+                labelElement.innerHTML = value ?
+                    `<span class="badge bg-warning">${venueFormI18n.notVerified}</span>` :
+                    `<span class="badge bg-success">${venueFormI18n.verified}</span>`;
             }
-            showFlashMessage(data.message || 'Errore durante l\'aggiornamento', 'error');
+            showFlashMessage(data.message || venueFormI18n.updateError, 'error');
         }
     })
     .catch(error => {
         // Revert UI on error
         switchElement.checked = !value;
         if (field === 'is_active') {
-            labelElement.innerHTML = value ? 
-                '<span class="badge bg-danger">Disattivata</span>' :
-                '<span class="badge bg-success">Attiva</span>';
+            labelElement.innerHTML = value ?
+                `<span class="badge bg-danger">${venueFormI18n.inactive}</span>` :
+                `<span class="badge bg-success">${venueFormI18n.active}</span>`;
         } else {
-            labelElement.innerHTML = value ? 
-                '<span class="badge bg-warning">Non Verificata</span>' :
-                '<span class="badge bg-success">Verificata</span>';
+            labelElement.innerHTML = value ?
+                `<span class="badge bg-warning">${venueFormI18n.notVerified}</span>` :
+                `<span class="badge bg-success">${venueFormI18n.verified}</span>`;
         }
-        showFlashMessage('Errore di connessione', 'error');
+        showFlashMessage(venueFormI18n.connectionError, 'error');
     });
 }
 

@@ -2,34 +2,34 @@
 <!-- Info Utente -->
 <div class="card mb-4">
     <div class="card-header">
-        <h5><i class="fas fa-info-circle"></i> Informazioni</h5>
+        <h5><i class="fas fa-info-circle"></i> {{ _("Informazioni") }}</h5>
     </div>
     <div class="card-body">
-        <p><strong>Username:</strong> {{ user.username }}</p>
-        <p><strong>Email:</strong> {{ user.email }}</p>
-        <p><strong>Telefono:</strong> {{ user.phone or 'Non specificato' }}</p>
-        <p><strong>Ruolo:</strong>
+        <p><strong>{{ _("Username") }}:</strong> {{ user.username }}</p>
+        <p><strong>{{ _("Email") }}:</strong> {{ user.email }}</p>
+        <p><strong>{{ _("Telefono") }}:</strong> {{ user.phone or _('Non specificato') }}</p>
+        <p><strong>{{ _("Ruolo") }}:</strong>
             {% if user.is_director %}
-            <span class="badge bg-secondary">Direttore di gara</span>
+            <span class="badge bg-secondary">{{ _("Direttore di gara") }}</span>
             {% if current_user.is_admin %}
         <form action="{{ url_for('admin.user.demote_director', user_id=user.id) }}" method="POST"
             style="display: inline; margin-left: 10px;"
-            onsubmit="return confirmSubmit(this, 'Sei sicuro di voler rimuovere il ruolo di direttore a {{ user.username }}?')">
+            onsubmit='return confirmSubmit(this, {{ _("Sei sicuro di voler rimuovere il ruolo di direttore a %(name)s?", name=user.username)|tojson }})'>
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-outline-danger btn-sm">
-                <i class="fas fa-user-minus"></i> Rimuovi ruolo
+                <i class="fas fa-user-minus"></i> {{ _("Rimuovi ruolo") }}
             </button>
         </form>
         {% endif %}
         {% else %}
-        <span class="badge bg-primary">Giocatore</span>
+        <span class="badge bg-primary">{{ _("Giocatore") }}</span>
         {% if current_user.is_admin %}
         <form action="{{ url_for('admin.user.promote_director', user_id=user.id) }}" method="POST"
             style="display: inline; margin-left: 10px;"
-            onsubmit="return confirmSubmit(this, 'Promuovere {{ user.username }} a Direttore di Gara?')">
+            onsubmit='return confirmSubmit(this, {{ _("Promuovere %(name)s a Direttore di Gara?", name=user.username)|tojson }})'>
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-outline-success btn-sm">
-                <i class="fas fa-user-plus"></i> Promuovi a Direttore
+                <i class="fas fa-user-plus"></i> {{ _("Promuovi a Direttore") }}
             </button>
         </form>
         {% endif %}
@@ -68,24 +68,24 @@
 
         {# Gamification Override (Admin Only) #}
         {% if current_user.is_admin %}
-        <p><strong>Gamification:</strong>
+        <p><strong>{{ _("Gamification") }}:</strong>
             {% if user.gamification_override %}
             <span class="badge bg-warning text-dark">
                 <i class="fas fa-unlock"></i> {{ _('Override Attivo') }}
             </span>
             {% else %}
             <span class="badge bg-light text-muted">
-                <i class="fas fa-lock"></i> Regole Normali
+                <i class="fas fa-lock"></i> {{ _("Regole Normali") }}
             </span>
             {% endif %}
         <form action="{{ url_for('admin.user.toggle_gamification_override', user_id=user.id) }}" method="POST"
             style="display: inline; margin-left: 10px;"
-            onsubmit="return confirmSubmit(this, '{{ 'Disattivare' if user.gamification_override else 'Attivare' }} Override Gamification per {{ user.username }}?')">
+            onsubmit='return confirmSubmit(this, {{ _("%(action)s Override Gamification per %(name)s?", action=(_("Disattivare") if user.gamification_override else _("Attivare")), name=user.username)|tojson }})'>
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit"
                 class="btn btn-outline-{{ 'danger' if user.gamification_override else 'warning' }} btn-sm">
                 <i class="fas fa-{{ 'lock' if user.gamification_override else 'unlock' }}"></i>
-                {{ 'Disattiva' if user.gamification_override else 'Attiva' }} Override
+                {{ _("Disattiva Override") if user.gamification_override else _("Attiva Override") }}
             </button>
         </form>
         </p>
@@ -94,18 +94,18 @@
         {# Set Password (Admin Only) #}
         {% if current_user.is_admin and not user.is_admin %}
         <hr class="my-3">
-        <p><strong>Imposta Password:</strong></p>
+        <p><strong>{{ _("Imposta Password") }}:</strong></p>
         <form action="{{ url_for('admin.user.set_user_password', user_id=user.id) }}" method="POST"
-            onsubmit='return confirmSubmit(this, {{ "Impostare una nuova password per %s?"|format(user.username)|tojson }})'>
+            onsubmit='return confirmSubmit(this, {{ _("Impostare una nuova password per %(name)s?", name=user.username)|tojson }})'>
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="row g-2 align-items-end">
                 <div class="col-5">
                     <input type="password" name="new_password" class="form-control form-control-sm"
-                           placeholder="Nuova password" required minlength="6">
+                           placeholder="{{ _('Nuova password') }}" required minlength="6">
                 </div>
                 <div class="col-5">
                     <input type="password" name="confirm_password" class="form-control form-control-sm"
-                           placeholder="Conferma password" required minlength="6">
+                           placeholder="{{ _('Conferma password') }}" required minlength="6">
                 </div>
                 <div class="col-2">
                     <button type="submit" class="btn btn-warning btn-sm w-100">
@@ -116,7 +116,7 @@
         </form>
         {% endif %}
 
-        <p><strong>Registrato:</strong> {{ user.created_at|datetime_local }}</p>
+        <p><strong>{{ _("Registrato") }}:</strong> {{ user.created_at|datetime_local }}</p>
 
         {# `data-help-capture-hide`: escluso dalle schermate della guida (vedi
            scripts/help_docs/capture_screenshots.py). #}

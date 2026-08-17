@@ -2,7 +2,7 @@
 <!-- Iscrizioni per Campionato -->
 <div class="card">
     <div class="card-header">
-        <h5><i class="fas fa-list"></i> Iscrizioni per Campionato</h5>
+        <h5><i class="fas fa-list"></i> {{ _("Iscrizioni per Campionato") }}</h5>
     </div>
     <div class="card-body">
         {% if inscriptions %}
@@ -22,7 +22,7 @@
                 </ul>
             {% endfor %}
         {% else %}
-            <p class="text-muted">Nessuna iscrizione</p>
+            <p class="text-muted">{{ _("Nessuna iscrizione") }}</p>
         {% endif %}
     </div>
 </div>

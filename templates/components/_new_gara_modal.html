@@ -16,7 +16,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Nuova Gara</h5>
+                <h5 class="modal-title">{{ _("Nuova Gara") }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form action="{{ url_for('admin.competition.create_gara') }}" method="POST" id="newGaraForm">
@@ -32,19 +32,19 @@
 
                             <div class="wizard-step active" data-step="1">
                                 <div class="wizard-step-circle">1</div>
-                                <div class="wizard-step-label">Base</div>
+                                <div class="wizard-step-label">{{ _("Base") }}</div>
                             </div>
                             <div class="wizard-step" data-step="2">
                                 <div class="wizard-step-circle">2</div>
-                                <div class="wizard-step-label">Partecipanti</div>
+                                <div class="wizard-step-label">{{ _("Partecipanti") }}</div>
                             </div>
                             <div class="wizard-step" data-step="3">
                                 <div class="wizard-step-circle">3</div>
-                                <div class="wizard-step-label">Gioco</div>
+                                <div class="wizard-step-label">{{ _("Gioco") }}</div>
                             </div>
                             <div class="wizard-step" data-step="4">
                                 <div class="wizard-step-circle">4</div>
-                                <div class="wizard-step-label">Strategia</div>
+                                <div class="wizard-step-label">{{ _("Strategia") }}</div>
                             </div>
                         </div>
                     </div>
@@ -58,15 +58,15 @@
 
                     <!-- Step 1: Info Base -->
                     <div class="wizard-content" id="step1" style="display: block;">
-                        <h6 class="text-primary mb-3"><i class="fas fa-info-circle"></i> Informazioni Base</h6>
+                        <h6 class="text-primary mb-3"><i class="fas fa-info-circle"></i> {{ _("Informazioni Base") }}</h6>
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    <label for="number" class="form-label">Numero Gara <span class="text-danger">*</span></label>
+                                    <label for="number" class="form-label">{{ _("Numero Gara") }} <span class="text-danger">*</span></label>
                                     <select class="form-control" name="number" id="create_number" required>
                                         {% for i in range(1, 21) %}
                                         {% if not provas|selectattr("number", "equalto", i)|list %}
-                                        <option value="{{ i }}">Gara {{ i }}</option>
+                                        <option value="{{ i }}">{{ _("Gara %(number)s", number=i) }}</option>
                                         {% endif %}
                                         {% endfor %}
                                     </select>
@@ -74,25 +74,25 @@
                             </div>
                             <div class="col-md-8">
                                 <div class="mb-3">
-                                    <label for="name" class="form-label">Nome</label>
+                                    <label for="name" class="form-label">{{ _("Nome") }}</label>
                                     <input type="text" class="form-control" name="name" id="create_name"
-                                        placeholder="es: Prima Gara, Semifinale... (opzionale)">
+                                        placeholder="{{ _('es: Prima Gara, Semifinale... (opzionale)') }}">
                                 </div>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="date" class="form-label">Data <span class="text-danger">*</span></label>
+                                    <label for="date" class="form-label">{{ _("Data") }} <span class="text-danger">*</span></label>
                                     <input type="date" class="form-control" name="date" id="create_date" required>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="time" class="form-label">Ora <span class="text-danger">*</span></label>
+                                    <label for="time" class="form-label">{{ _("Ora") }} <span class="text-danger">*</span></label>
                                     <input type="time" class="form-control" name="time" id="create_time" value="20:00" required>
                                     <small class="text-muted" id="time_prefill_hint" style="display: none;">
-                                        <i class="fas fa-magic"></i> Ora copiata dalla gara precedente
+                                        <i class="fas fa-magic"></i> {{ _("Ora copiata dalla gara precedente") }}
                                     </small>
                                 </div>
                             </div>
@@ -101,9 +101,9 @@
                         <div class="row">
                             <div class="col-md-8">
                                 <div class="mb-3">
-                                    <label for="location" class="form-label">Luogo</label>
+                                    <label for="location" class="form-label">{{ _("Luogo") }}</label>
                                     <input type="text" class="form-control" name="location" id="create_location"
-                                        placeholder="es: Circolo Biliardo Centro" list="venue-suggestions"
+                                        placeholder="{{ _('es: Circolo Biliardo Centro') }}" list="venue-suggestions"
                                         autocomplete="off"
                                         value="{{ campionato.default_venue.name if campionato.default_venue else '' }}">
                                     <datalist id="venue-suggestions">
@@ -115,17 +115,17 @@
                                         {% endif %}
                                     </datalist>
                                     <small class="text-muted">
-                                        <i class="fas fa-info-circle"></i> Seleziona da sale verificate o inserisci nome
+                                        <i class="fas fa-info-circle"></i> {{ _("Seleziona da sale verificate o inserisci nome") }}
                                     </small>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    <label for="available_tables" class="form-label">Tavoli</label>
+                                    <label for="available_tables" class="form-label">{{ _("Tavoli") }}</label>
                                     <input type="text" class="form-control" name="available_tables"
-                                        id="create_available_tables" placeholder="es: 3 o 2,3,5"
+                                        id="create_available_tables" placeholder="{{ _('es: 3 o 2,3,5') }}"
                                         value="{{ campionato.default_venue.number_of_tables if campionato.default_venue and campionato.default_venue.number_of_tables else '' }}">
-                                    <small class="text-muted">Numero o elenco</small>
+                                    <small class="text-muted">{{ _("Numero o elenco") }}</small>
                                 </div>
                             </div>
                         </div>
@@ -133,25 +133,25 @@
 
                     <!-- Step 2: Partecipanti -->
                     <div class="wizard-content" id="step2" style="display: none;">
-                        <h6 class="text-primary mb-3"><i class="fas fa-users"></i> Partecipanti e Quote</h6>
+                        <h6 class="text-primary mb-3"><i class="fas fa-users"></i> {{ _("Partecipanti e Quote") }}</h6>
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    <label for="min_participants" class="form-label">Min Iscritti <span class="text-danger">*</span></label>
+                                    <label for="min_participants" class="form-label">{{ _("Min Iscritti") }} <span class="text-danger">*</span></label>
                                     <input type="number" class="form-control" name="min_participants"
                                         id="create_min_participants" min="2" max="32" value="6" required>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    <label for="max_participants" class="form-label">Max Iscritti</label>
+                                    <label for="max_participants" class="form-label">{{ _("Max Iscritti") }}</label>
                                     <input type="number" class="form-control" name="max_participants"
-                                        id="create_max_participants" min="2" max="64" placeholder="Illimitato">
+                                        id="create_max_participants" min="2" max="64" placeholder="{{ _('Illimitato') }}">
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    <label for="entry_fee" class="form-label">Quota €</label>
+                                    <label for="entry_fee" class="form-label">{{ _("Quota €") }}</label>
                                     <input type="number" class="form-control" name="entry_fee" id="create_entry_fee" min="0"
                                         step="0.50" value="{{ campionato.default_entry_fee or 0 }}" required>
                                 </div>
@@ -165,28 +165,28 @@
                                         <input class="form-check-input" type="checkbox" name="copy_from_previous"
                                             id="copy_from_previous" value="true" {% if provas %}checked{% endif %}>
                                         <label class="form-check-label" for="copy_from_previous">
-                                            <strong>Auto-copia iscritti</strong>
+                                            <strong>{{ _("Auto-copia iscritti") }}</strong>
                                         </label>
                                     </div>
-                                    <small class="text-muted ms-4">Copia gli iscritti dalla gara precedente</small>
+                                    <small class="text-muted ms-4">{{ _("Copia gli iscritti dalla gara precedente") }}</small>
                                 </div>
                             </div>
                         </div>
                         {% if provas %}
                         <div class="alert alert-info py-2">
                             <i class="fas fa-info-circle"></i>
-                            <small>Con auto-copia attiva, gli iscritti verranno copiati dall'ultima gara del campionato.</small>
+                            <small>{{ _("Con auto-copia attiva, gli iscritti verranno copiati dall'ultima gara del campionato.") }}</small>
                         </div>
                         {% endif %}
                     </div>
 
                     <!-- Step 3: Gioco -->
                     <div class="wizard-content" id="step3" style="display: none;">
-                        <h6 class="text-primary mb-3"><i class="fas fa-trophy"></i> Impostazioni di Gioco</h6>
+                        <h6 class="text-primary mb-3"><i class="fas fa-trophy"></i> {{ _("Impostazioni di Gioco") }}</h6>
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    <label for="discipline" class="form-label">Disciplina</label>
+                                    <label for="discipline" class="form-label">{{ _("Disciplina") }}</label>
                                     <select class="form-control" name="discipline" id="create_discipline" required>
                                         {% for value, label in discipline_choices %}
                                         <option value="{{ value }}" {% if value == default_discipline %}selected{% endif %}>{{ label }}</option>
@@ -196,7 +196,7 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    <label for="distance" class="form-label">Distanza (Rack)</label>
+                                    <label for="distance" class="form-label">{{ _("Distanza (Rack)") }}</label>
                                     <input type="number" class="form-control" name="distance" id="create_distance" min="1"
                                         max="15" value="{{ default_distance }}" required>
                                 </div>
@@ -204,7 +204,7 @@
                             {# I turni li fissa il sorteggio sugli iscritti effettivi. #}
                             <div class="col-md-4" {% if modal_is_bracket %}style="display:none"{% endif %}>
                                 <div class="mb-3">
-                                    <label for="rounds_count" class="form-label">Numero Turni</label>
+                                    <label for="rounds_count" class="form-label">{{ _("Numero Turni") }}</label>
                                     <input type="number" class="form-control" name="rounds_count" id="create_rounds_count"
                                         min="1" max="10" value="{{ campionato.default_rounds_count or 3 }}"
                                         {% if not modal_is_bracket %}required{% endif %}>
@@ -215,27 +215,27 @@
                             {# Sul tabellone si gioca sempre a chi arriva prima. #}
                             <div class="col-md-6" {% if modal_is_bracket %}style="display:none"{% endif %}>
                                 <div class="mb-3">
-                                    <label class="form-label">Modalità Punteggio</label>
+                                    <label class="form-label">{{ _("Modalità Punteggio") }}</label>
                                     <div class="form-check" id="create_exact_number_container">
                                         <input class="form-check-input" type="checkbox" name="exact_number"
                                             id="create_exact_number">
                                         <label class="form-check-label" for="create_exact_number">
-                                            Esatto numero di rack
+                                            {{ _("Esatto numero di rack") }}
                                         </label>
                                     </div>
                                     <small class="text-muted">
-                                        <span id="create-game-mode-text">Al 7 (si vince a 7 rack)</span>
+                                        <span id="create-game-mode-text">{{ _("Al 7 (si vince a 7 rack)") }}</span>
                                     </small>
                                 </div>
                             </div>
                             {# Dopo il sorteggio il ritiro e' sempre walkover. #}
                             <div class="col-md-6" {% if modal_is_bracket %}style="display:none"{% endif %}>
                                 <div class="mb-3">
-                                    <label for="withdraw_policy" class="form-label">Gestione Forfait</label>
+                                    <label for="withdraw_policy" class="form-label">{{ _("Gestione Forfait") }}</label>
                                     <select class="form-control" name="withdraw_policy" id="withdraw_policy"
                                             {% if not modal_is_bracket %}required{% endif %}>
-                                        <option value="Forfeit" selected>Vincita a tavolino</option>
-                                        <option value="Exclude">Escludi dal turno</option>
+                                        <option value="Forfeit" selected>{{ _("Vincita a tavolino") }}</option>
+                                        <option value="Exclude">{{ _("Escludi dal turno") }}</option>
                                     </select>
                                 </div>
                             </div>
@@ -244,38 +244,38 @@
 
                     <!-- Step 4: Strategia e Spareggio -->
                     <div class="wizard-content" id="step4" style="display: none;">
-                        <h6 class="text-primary mb-3"><i class="fas fa-chess"></i> Strategia Abbinamenti</h6>
+                        <h6 class="text-primary mb-3"><i class="fas fa-chess"></i> {{ _("Strategia Abbinamenti") }}</h6>
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="first_round_policy" class="form-label">Primo Abbinamento</label>
+                                    <label for="first_round_policy" class="form-label">{{ _("Primo Abbinamento") }}</label>
                                     <select class="form-control" name="first_round_policy" id="create_first_round_policy">
-                                        <option value="random" selected>Casuale</option>
-                                        <option value="rating">Basato su Rating</option>
-                                        <option value="classification">Basato su Classifica</option>
+                                        <option value="random" selected>{{ _("Casuale") }}</option>
+                                        <option value="rating">{{ _("Basato su Rating") }}</option>
+                                        <option value="classification">{{ _("Basato su Classifica") }}</option>
                                     </select>
                                 </div>
                             </div>
                             {# I bye del tabellone sono strutturali, non una politica. #}
                             <div class="col-md-6" {% if modal_is_bracket %}style="display:none"{% endif %}>
                                 <div class="mb-3">
-                                    <label for="odd_number_policy" class="form-label">Gestione Dispari</label>
+                                    <label for="odd_number_policy" class="form-label">{{ _("Gestione Dispari") }}</label>
                                     <select class="form-control" name="odd_number_policy" id="create_odd_number_policy">
                                         <option value="bye" {% if not campionato.default_odd_policy or campionato.default_odd_policy == 'bye' %}selected{% endif %}>
-                                            X (vinto a tavolino)
+                                            {{ _("X (vinto a tavolino)") }}
                                         </option>
                                         <option value="bye_with_challenge" {% if campionato.default_odd_policy == 'bye_with_challenge' %}selected{% endif %}>
-                                            X con Challenge
+                                            {{ _("X con Challenge") }}
                                         </option>
                                         <option value="trio" {% if campionato.default_odd_policy == 'trio' %}selected{% endif %}>
-                                            Match a 3 Giocatori
+                                            {{ _("Match a 3 Giocatori") }}
                                         </option>
                                         <option value="no" {% if campionato.default_odd_policy == 'no' %}selected{% endif %}>
-                                            Lista d'Attesa
+                                            {{ _("Lista d'Attesa") }}
                                         </option>
                                     </select>
                                     <small id="create_trio_warning" class="form-text text-warning" style="display: none;">
-                                        <i class="fas fa-exclamation-triangle"></i> Trio disponibile solo per distanze 2-7
+                                        <i class="fas fa-exclamation-triangle"></i> {{ _("Trio disponibile solo per distanze 2-7") }}
                                     </small>
                                 </div>
                             </div>
@@ -295,10 +295,10 @@
                                         <input type="hidden" name="anti_rematch_enabled" value="on">
                                         {% endif %}
                                         <label class="form-check-label" for="create_anti_rematch_enabled">
-                                            <strong>Anti-Rematch</strong>
+                                            <strong>{{ _("Anti-Rematch") }}</strong>
                                         </label>
                                     </div>
-                                    <small class="text-muted ms-4">Evita reincontri tra stessi avversari</small>
+                                    <small class="text-muted ms-4">{{ _("Evita reincontri tra stessi avversari") }}</small>
                                 </div>
                             </div>
                         </div>
@@ -318,7 +318,7 @@
                            i pari merito per banda sono l'esito voluto. #}
                         <div {% if modal_is_bracket %}style="display:none"{% endif %}>
                         <hr class="my-3">
-                        <h6 class="text-primary mb-3"><i class="fas fa-balance-scale"></i> Spareggio (SSR)</h6>
+                        <h6 class="text-primary mb-3"><i class="fas fa-balance-scale"></i> {{ _("Spareggio (SSR)") }}</h6>
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
@@ -326,20 +326,20 @@
                                         <input class="form-check-input" type="checkbox" name="tiebreaker_enabled"
                                             id="create_tiebreaker_enabled" checked>
                                         <label class="form-check-label" for="create_tiebreaker_enabled">
-                                            <strong>Abilita spareggio</strong>
+                                            <strong>{{ _("Abilita spareggio") }}</strong>
                                         </label>
                                     </div>
-                                    <small class="text-muted ms-4">Spot Shot Rally per pari punti</small>
+                                    <small class="text-muted ms-4">{{ _("Spot Shot Rally per pari punti") }}</small>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="tiebreaker_until_position" class="form-label">Spareggio fino a</label>
+                                    <label for="tiebreaker_until_position" class="form-label">{{ _("Spareggio fino a") }}</label>
                                     <select class="form-control" name="tiebreaker_until_position" id="create_tiebreaker_until_position">
-                                        <option value="1">Solo 1° posto</option>
-                                        <option value="2">Fino al 2° posto</option>
-                                        <option value="3" selected>Fino al 3° posto (podio)</option>
-                                        <option value="5">Fino al 5° posto</option>
+                                        <option value="1">{{ _("Solo 1° posto") }}</option>
+                                        <option value="2">{{ _("Fino al 2° posto") }}</option>
+                                        <option value="3" selected>{{ _("Fino al 3° posto (podio)") }}</option>
+                                        <option value="5">{{ _("Fino al 5° posto") }}</option>
                                     </select>
                                 </div>
                             </div>
@@ -348,23 +348,23 @@
 
                         <hr class="my-3">
                         <div class="mb-3">
-                            <label for="description" class="form-label">Note</label>
+                            <label for="description" class="form-label">{{ _("Note") }}</label>
                             <textarea class="form-control" name="description" id="create_description" rows="2"
-                                placeholder="Note aggiuntive sulla gara... (opzionale)"></textarea>
+                                placeholder="{{ _('Note aggiuntive sulla gara... (opzionale)') }}"></textarea>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer d-flex justify-content-between">
                     <button type="button" class="btn btn-outline-secondary" id="wizardPrevBtn" style="display: none;">
-                        <i class="fas fa-arrow-left"></i> Indietro
+                        <i class="fas fa-arrow-left"></i> {{ _("Indietro") }}
                     </button>
                     <div class="ms-auto">
-                        <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Annulla</button>
+                        <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">{{ _("Annulla") }}</button>
                         <button type="button" class="btn btn-primary" id="wizardNextBtn">
-                            Avanti <i class="fas fa-arrow-right"></i>
+                            {{ _("Avanti") }} <i class="fas fa-arrow-right"></i>
                         </button>
                         <button type="submit" class="btn btn-success" id="wizardSubmitBtn" style="display: none;">
-                            <i class="fas fa-check"></i> Crea Gara
+                            <i class="fas fa-check"></i> {{ _("Crea Gara") }}
                         </button>
                     </div>
                 </div>
@@ -606,14 +606,18 @@
         }
 
         // Update game mode text
+        const i18n = {
+            exactNumber: {{ _("Esatto numero: {distance} rack totali")|tojson }},
+            raceTo: {{ _("Al {distance} (si vince a {distance} rack)")|tojson }}
+        };
         function updateGameModeText() {
             if (!distanceInput || !gameModeText) return;
             const distance = parseInt(distanceInput.value) || 0;
             const isExactNumber = exactNumberCheckbox && exactNumberCheckbox.checked && !exactNumberCheckbox.disabled;
             if (isExactNumber) {
-                gameModeText.textContent = 'Esatto numero: ' + distance + ' rack totali';
+                gameModeText.textContent = i18n.exactNumber.replace('{distance}', distance);
             } else {
-                gameModeText.textContent = 'Al ' + distance + ' (si vince a ' + distance + ' rack)';
+                gameModeText.textContent = i18n.raceTo.replace(/\{distance\}/g, distance);
             }
         }
 

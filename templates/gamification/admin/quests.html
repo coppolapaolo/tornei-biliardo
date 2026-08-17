@@ -79,7 +79,7 @@
                 {% endif %}
                 {% if quest.participant_count == 0 %}
                 <form method="POST" action="{{ url_for('gamification.admin_delete_quest', quest_id=quest.id) }}" style="display:inline;"
-                      onsubmit="return confirmSubmit(this, {{ _('Sei sicuro di voler eliminare questa quest?')|tojson }})">
+                      onsubmit='return confirmSubmit(this, {{ _('Sei sicuro di voler eliminare questa quest?')|tojson }})'>
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button type="submit" class="btn btn-outline-danger" title="{{ _('Elimina') }}">
                     <i class="fas fa-trash"></i>

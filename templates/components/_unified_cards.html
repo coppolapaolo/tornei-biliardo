@@ -170,7 +170,7 @@
     </button>
     {% elif item.entity.can_be_deleted() %}
     <form style="margin-top: 8px;" method="POST" action="{{ url_for('admin.competition.delete_gara', gara_id=item.id) }}"
-      onsubmit="return confirmSubmit(this, {{ _('Confermi di voler eliminare definitivamente questa gara?')|tojson }})">
+      onsubmit='return confirmSubmit(this, {{ _('Confermi di voler eliminare definitivamente questa gara?')|tojson }})'>
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <button type="submit" class="btn btn-danger btn-sm w-100">{{ _('Elimina la gara') }}</button>
     </form>

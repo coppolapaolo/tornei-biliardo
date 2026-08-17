@@ -63,7 +63,7 @@
         {% if user_can_manage and gara.status == GaraStatus.INSCRIPTION.value %}
         <form method="POST"
               action="{{ url_for('admin.competition.admin_uninscribe_user', gara_id=gara.id, user_id=inscription.user_id) }}"
-              onsubmit="return confirmSubmit(this, {{ _('Disiscrivere %(username)s? Riceverà una notifica.', username=inscription.user.username)|tojson }})">
+              onsubmit='return confirmSubmit(this, {{ _('Disiscrivere %(username)s? Riceverà una notifica.', username=inscription.user.username)|tojson }})'>
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <button type="submit" class="c7-iconbtn" style="background:var(--c7-card);color:var(--c7-err-ink)"
                   title="{{ _('Disiscrive il giocatore') }}">
@@ -121,7 +121,7 @@
         {% if user_can_manage and gara.status == GaraStatus.INSCRIPTION.value %}
         <form method="POST"
               action="{{ url_for('admin.competition.admin_uninscribe_user', gara_id=gara.id, user_id=inscription.user_id) }}"
-              onsubmit="return confirmSubmit(this, {{ _('Rimuovere %(username)s dalla lista d\'attesa?', username=inscription.user.username)|tojson }})">
+              onsubmit='return confirmSubmit(this, {{ _('Rimuovere %(username)s dalla lista d\'attesa?', username=inscription.user.username)|tojson }})'>
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <button type="submit" class="c7-iconbtn" style="background:var(--c7-card);color:var(--c7-err-ink)"
                   title="{{ _('Rimuove dalla lista d\'attesa') }}">

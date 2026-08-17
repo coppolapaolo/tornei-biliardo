@@ -25,7 +25,7 @@
     </section>
 
     <form method="POST" class="c7-stack" style="margin-top: 20px;"
-          onsubmit="return confirmSubmit(this, {{ _('Confermi di voler eliminare definitivamente il tuo account?')|tojson }})">
+          onsubmit='return confirmSubmit(this, {{ _('Confermi di voler eliminare definitivamente il tuo account?')|tojson }})'>
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
         <div>
