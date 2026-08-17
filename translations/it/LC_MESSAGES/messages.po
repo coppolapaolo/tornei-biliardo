@@ -375,7 +375,6 @@ msgid ""
 msgstr ""
 
 #: models/gamification/frontend_bridge.py:481
-#, fuzzy
 msgid "Imposta la tua disponibilità"
 msgstr ""
 
@@ -392,7 +391,6 @@ msgid "Sei pronto: puoi creare la tua prima gara standalone."
 msgstr ""
 
 #: models/gamification/frontend_bridge.py:485
-#, fuzzy
 msgid "Organizza un campionato"
 msgstr ""
 
@@ -1017,7 +1015,6 @@ msgid "Iscrizioni aperte dal %(start)s."
 msgstr ""
 
 #: routes/main.py:311
-#, fuzzy
 msgid "Sei già iscritto"
 msgstr ""
 
@@ -1995,7 +1992,6 @@ msgid "Errore durante l'iscrizione."
 msgstr ""
 
 #: routes/player/competitions.py:128
-#, fuzzy
 msgid "Non sei iscritto a questa gara."
 msgstr ""
 
@@ -2212,7 +2208,6 @@ msgid "Richieste Gestore Sala"
 msgstr ""
 
 #: templates/base.html:222
-#, fuzzy
 msgid "Richieste Esaminatore"
 msgstr ""
 
@@ -2322,7 +2317,6 @@ msgid "Esami:"
 msgstr ""
 
 #: templates/base.html:471
-#, fuzzy
 msgid "esaminatore"
 msgstr ""
 
@@ -3279,12 +3273,10 @@ msgid ""
 msgstr ""
 
 #: templates/no_campionato.html:3
-#, fuzzy
 msgid "Nessun Campionato Attivo"
 msgstr ""
 
 #: templates/no_campionato.html:10
-#, fuzzy
 msgid "Nessun Campionato"
 msgstr ""
 
@@ -3499,7 +3491,6 @@ msgid "Torna alla Gara"
 msgstr ""
 
 #: templates/admin/campionato_detail.html:10
-#, fuzzy
 msgid "Torna ai campionati"
 msgstr ""
 
@@ -3529,7 +3520,6 @@ msgstr ""
 
 #: templates/admin/campionato_detail.html:44
 #: templates/admin/campionato_edit.html:10
-#, fuzzy
 msgid "Modifica campionato"
 msgstr ""
 
@@ -3538,7 +3528,6 @@ msgid "Passa alla fase playoff"
 msgstr ""
 
 #: templates/admin/campionato_detail.html:54
-#, fuzzy
 msgid "Termina campionato"
 msgstr ""
 
@@ -3791,7 +3780,6 @@ msgstr ""
 
 #: templates/admin/campionato_wizard_step1.html:26
 #: templates/public/campionatos_list.html:14
-#, fuzzy
 msgid "Nome del campionato"
 msgstr ""
 
@@ -4068,7 +4056,6 @@ msgid "Indietro"
 msgstr ""
 
 #: templates/admin/campionato_wizard_step2.html:158
-#, fuzzy
 msgid "Crea campionato"
 msgstr ""
 
@@ -4153,7 +4140,7 @@ msgstr ""
 
 #: templates/admin/gara_challenge_classification.html:23
 #: templates/individual_match/discover_players.html:67
-#, fuzzy, python-format
+#, python-format
 msgid "%(n)s giocatore"
 msgid_plural "%(n)s giocatori"
 msgstr[0] ""
@@ -4232,7 +4219,7 @@ msgstr ""
 #: templates/components/_player_training.html:43
 #: templates/components/_public_challenges.html:21
 #: templates/player/gara_challenge_detail.html:46
-#, fuzzy, python-format
+#, python-format
 msgid "%(n)s tentativo"
 msgid_plural "%(n)s tentativi"
 msgstr[0] ""
@@ -4397,12 +4384,10 @@ msgid "Escludi dal turno (X o Trio)"
 msgstr ""
 
 #: templates/admin/gara_create_standalone.html:241
-#, fuzzy
 msgid "Min Partecipanti"
 msgstr ""
 
 #: templates/admin/gara_create_standalone.html:247
-#, fuzzy
 msgid "Max Partecipanti"
 msgstr ""
 
@@ -4916,7 +4901,7 @@ msgid "Churn Mese"
 msgstr ""
 
 #: templates/admin/kpi.html:560
-#, fuzzy, python-format
+#, python-format
 msgid "%(count)s utenti persi"
 msgstr ""
 
@@ -5075,7 +5060,6 @@ msgid "Filtra per ruolo esaminatore"
 msgstr ""
 
 #: templates/admin/users_list.html:95
-#, fuzzy
 msgid "Esaminatore: tutti"
 msgstr ""
 
@@ -5085,7 +5069,6 @@ msgid "Esaminatori"
 msgstr ""
 
 #: templates/admin/users_list.html:97
-#, fuzzy
 msgid "Non esaminatori"
 msgstr ""
 
@@ -5170,7 +5153,6 @@ msgid "Revoca il ruolo di esaminatore"
 msgstr ""
 
 #: templates/admin/users_list.html:252
-#, fuzzy
 msgid "Revoca esaminatore"
 msgstr ""
 
@@ -5180,7 +5162,6 @@ msgid "Promuovere a Esaminatore?"
 msgstr ""
 
 #: templates/admin/users_list.html:262 templates/admin/users_list.html:263
-#, fuzzy
 msgid "Rendi esaminatore"
 msgstr ""
 
@@ -5404,7 +5385,6 @@ msgid "Statistiche"
 msgstr ""
 
 #: templates/admin/venue_detail.html:257
-#, fuzzy
 msgid "Utenti Attivi:"
 msgstr ""
 
@@ -5713,7 +5693,6 @@ msgid "Tavoli"
 msgstr ""
 
 #: templates/admin/venues_list.html:34 templates/player/venue_detail.html:198
-#, fuzzy
 msgid "Utenti Attivi"
 msgstr ""
 
@@ -5730,7 +5709,7 @@ msgid "Nessun gestore"
 msgstr ""
 
 #: templates/admin/venues_list.html:79
-#, fuzzy, python-format
+#, python-format
 msgid "%(count)s richieste"
 msgstr ""
 
@@ -5941,7 +5920,6 @@ msgid "Creata da %(who)s"
 msgstr ""
 
 #: templates/challenge/_challenge_detail.html:91
-#, fuzzy
 msgid "non più attiva"
 msgstr ""
 
@@ -6202,7 +6180,6 @@ msgid "Linea di stop"
 msgstr ""
 
 #: templates/challenge/builder.html:177
-#, fuzzy
 msgid "L drill"
 msgstr ""
 
@@ -6739,7 +6716,6 @@ msgid "Giocatori Totali:"
 msgstr ""
 
 #: templates/components/_amalfi_algorithm_info.html:17
-#, fuzzy
 msgid "Modalità Campionato:"
 msgstr ""
 
@@ -6925,7 +6901,6 @@ msgid "Ripescati"
 msgstr ""
 
 #: templates/components/_campionato_create_modal.html:6
-#, fuzzy
 msgid "Nuovo campionato"
 msgstr ""
 
@@ -7003,7 +6978,7 @@ msgid "Top %(n)s"
 msgstr ""
 
 #: templates/components/_campionato_details_info.html:62
-#, fuzzy, python-format
+#, python-format
 msgid "%(n)s giocatori"
 msgstr ""
 
@@ -7290,7 +7265,7 @@ msgid "Completate:"
 msgstr ""
 
 #: templates/components/_campionato_statistics.html:20
-#, fuzzy, python-format
+#, python-format
 msgid "Giocatori Iscritti:"
 msgstr ""
 
@@ -7417,7 +7392,6 @@ msgid "Turno precedente"
 msgstr ""
 
 #: templates/components/_dashboard_empty_state.html:5
-#, fuzzy
 msgid "Nessun campionato configurato"
 msgstr ""
 
@@ -7436,7 +7410,6 @@ msgid "Puoi creare un campionato o una singola gara dai pulsanti in testata."
 msgstr ""
 
 #: templates/components/_dashboard_empty_state.html:11
-#, fuzzy
 msgid "Nessun campionato attivo"
 msgstr ""
 
@@ -7499,7 +7472,7 @@ msgstr ""
 
 #: templates/components/_direct_elimination_algorithm_info.html:20
 #: templates/components/_double_knockout_algorithm_info.html:27
-#, fuzzy, python-format
+#, python-format
 msgid "%(num)s posti"
 msgstr ""
 
@@ -7520,7 +7493,6 @@ msgstr ""
 
 #: templates/components/_direct_elimination_algorithm_info.html:30
 #: templates/components/_double_knockout_algorithm_info.html:20
-#, fuzzy
 msgid "Giocatori:"
 msgstr ""
 
@@ -7704,7 +7676,7 @@ msgid "Fase a gironi:"
 msgstr ""
 
 #: templates/components/_double_knockout_algorithm_info.html:23
-#, fuzzy, python-format
+#, python-format
 msgid "%(num)s gironi"
 msgstr ""
 
@@ -7800,7 +7772,7 @@ msgid "Si giocano a turno concluso, con i tentativi indicati per ogni giocatore.
 msgstr ""
 
 #: templates/components/_gara_edit_form.html:16
-#, fuzzy, python-format
+#, python-format
 msgid "%(num)d giocatore già iscritto"
 msgid_plural "%(num)d giocatori già iscritti"
 msgstr[0] ""
@@ -7834,7 +7806,6 @@ msgid "Ora"
 msgstr ""
 
 #: templates/components/_gara_edit_form.html:68
-#, fuzzy
 msgid "dal campionato"
 msgstr ""
 
@@ -7910,12 +7881,10 @@ msgid "Numero o elenco separato da virgole"
 msgstr ""
 
 #: templates/components/_gara_edit_form.html:193
-#, fuzzy
 msgid "Min iscritti"
 msgstr ""
 
 #: templates/components/_gara_edit_form.html:198
-#, fuzzy
 msgid "Max iscritti"
 msgstr ""
 
@@ -7988,7 +7957,6 @@ msgstr ""
 
 #: templates/components/_gara_header.html:27
 #: templates/components/_gara_header.html:29
-#, fuzzy
 msgid "Torna al campionato"
 msgstr ""
 
@@ -8022,7 +7990,6 @@ msgid "Anti-reincontro"
 msgstr ""
 
 #: templates/components/_gara_info.html:58
-#, fuzzy
 msgid "Non attivo"
 msgstr ""
 
@@ -8763,7 +8730,7 @@ msgid "Posti esauriti: si entra in lista d'attesa"
 msgstr ""
 
 #: templates/components/_index_open_inscriptions.html:45
-#, fuzzy, python-format
+#, python-format
 msgid "%(num)s posto libero"
 msgid_plural "%(num)s posti liberi"
 msgstr[0] ""
@@ -9239,7 +9206,6 @@ msgid "Valori precompilati dai default del campionato."
 msgstr ""
 
 #: templates/components/_new_gara_modal.html:65
-#, fuzzy
 msgid "Numero Gara"
 msgstr ""
 
@@ -9248,7 +9214,6 @@ msgid "es: Prima Gara, Semifinale... (opzionale)"
 msgstr ""
 
 #: templates/components/_new_gara_modal.html:95
-#, fuzzy
 msgid "Ora copiata dalla gara precedente"
 msgstr ""
 
@@ -9269,7 +9234,6 @@ msgid "Numero o elenco"
 msgstr ""
 
 #: templates/components/_new_gara_modal.html:136
-#, fuzzy
 msgid "Partecipanti e Quote"
 msgstr ""
 
@@ -9286,7 +9250,6 @@ msgid "Auto-copia iscritti"
 msgstr ""
 
 #: templates/components/_new_gara_modal.html:171
-#, fuzzy
 msgid "Copia gli iscritti dalla gara precedente"
 msgstr ""
 
@@ -9481,7 +9444,6 @@ msgstr ""
 
 #: templates/components/_player_inscription_info.html:10
 #: templates/components/_separated_dashboard_content.html:202
-#, fuzzy
 msgid "Iscritto"
 msgstr ""
 
@@ -9512,7 +9474,6 @@ msgid "Gare singole"
 msgstr ""
 
 #: templates/components/_player_inscriptions.html:79
-#, fuzzy
 msgid "Non sei ancora iscritto a nessuna gara."
 msgstr ""
 
@@ -9568,7 +9529,7 @@ msgstr ""
 
 #: templates/components/_player_ratings.html:32
 #: templates/individual_match/statistics.html:35
-#, fuzzy, python-format
+#, python-format
 msgid "%(n)s referto"
 msgid_plural "%(n)s referti"
 msgstr[0] ""
@@ -9961,7 +9922,6 @@ msgstr ""
 
 #: templates/components/_separated_dashboard_content.html:459
 #: templates/public/campionatos_list.html:64
-#, fuzzy
 msgid "Nessun campionato"
 msgstr ""
 
@@ -10109,7 +10069,7 @@ msgid "Aggiungi squadra"
 msgstr ""
 
 #: templates/components/_squadre_management.html:54
-#, fuzzy, python-format
+#, python-format
 msgid "%(num)s iscritto in questa gara"
 msgid_plural "%(num)s iscritti in questa gara"
 msgstr[0] ""
@@ -10356,7 +10316,6 @@ msgid "Non ci sono ancora campionati o gare da mostrare."
 msgstr ""
 
 #: templates/components/_unified_cards.html:191
-#, fuzzy
 msgid "Crea un campionato"
 msgstr ""
 
@@ -10391,7 +10350,7 @@ msgid "%(n)s set giocati"
 msgstr ""
 
 #: templates/components/_unified_match_score.html:104
-#, fuzzy, python-format
+#, python-format
 msgid "%(n)s rack giocati"
 msgstr ""
 
@@ -10615,7 +10574,6 @@ msgid "Conferma password"
 msgstr ""
 
 #: templates/components/_user_inscriptions_card.html:5
-#, fuzzy
 msgid "Iscrizioni per Campionato"
 msgstr ""
 
@@ -10644,7 +10602,6 @@ msgid "Logout"
 msgstr ""
 
 #: templates/components/_user_profile_header.html:10
-#, fuzzy
 msgid "Scheda giocatore"
 msgstr ""
 
@@ -10774,21 +10731,20 @@ msgstr ""
 
 #: templates/exam/catalog.html:36 templates/exam/catalog.html:70
 #: templates/exam/manage.html:49
-#, fuzzy, python-format
+#, python-format
 msgid "%(n)s drill"
 msgid_plural "%(n)s drill"
 msgstr[0] ""
 msgstr[1] ""
 
 #: templates/exam/catalog.html:38
-#, fuzzy, python-format
+#, python-format
 msgid "%(n)s esaminatore"
 msgid_plural "%(n)s esaminatori"
 msgstr[0] ""
 msgstr[1] ""
 
 #: templates/exam/catalog.html:52
-#, fuzzy
 msgid "Nessun esame disponibile"
 msgstr ""
 
@@ -11378,7 +11334,7 @@ msgstr ""
 #: templates/gamification/dashboard.html:65
 #: templates/gamification/streaks.html:34
 #: templates/gamification/streaks.html:102
-#, fuzzy, python-format
+#, python-format
 msgid "%(num)d settimana"
 msgid_plural "%(num)d settimane"
 msgstr[0] ""
@@ -11534,7 +11490,7 @@ msgid "Attive"
 msgstr ""
 
 #: templates/gamification/quests.html:62
-#, fuzzy, python-format
+#, python-format
 msgid "%(num)d partecipante"
 msgid_plural "%(num)d partecipanti"
 msgstr[0] ""
@@ -11580,7 +11536,7 @@ msgid "A rischio"
 msgstr ""
 
 #: templates/gamification/streaks.html:65
-#, fuzzy, python-format
+#, python-format
 msgid "%(num)d freeze"
 msgid_plural "%(num)d freeze"
 msgstr[0] ""
@@ -12442,7 +12398,7 @@ msgid "Percorso"
 msgstr ""
 
 #: templates/help/_ui.html:37
-#, fuzzy, python-format
+#, python-format
 msgid "%(n)s min"
 msgstr ""
 
@@ -12511,14 +12467,14 @@ msgid "Tutte le sezioni"
 msgstr ""
 
 #: templates/help/index.html:51 templates/help/section.html:7
-#, fuzzy, python-format
+#, python-format
 msgid "%(n)s pagina"
 msgid_plural "%(n)s pagine"
 msgstr[0] ""
 msgstr[1] ""
 
 #: templates/help/page.html:31
-#, fuzzy, python-format
+#, python-format
 msgid "%(n)s min di lettura"
 msgstr ""
 
@@ -12549,7 +12505,7 @@ msgid "In questa pagina"
 msgstr ""
 
 #: templates/help/search.html:7
-#, fuzzy, python-format
+#, python-format
 msgid "%(n)s risultato"
 msgid_plural "%(n)s risultati"
 msgstr[0] ""
@@ -13100,7 +13056,6 @@ msgid "Proposte aperte vicino a te"
 msgstr ""
 
 #: templates/individual_match/discover_players.html:155
-#, fuzzy
 msgid "Nessun giocatore disponibile"
 msgstr ""
 
@@ -13438,7 +13393,6 @@ msgid "Accetta la sfida"
 msgstr ""
 
 #: templates/individual_match/proposals.html:205
-#, fuzzy
 msgid "Non più disponibile"
 msgstr ""
 
@@ -13542,7 +13496,7 @@ msgid "P"
 msgstr ""
 
 #: templates/individual_match/statistics.html:202
-#, fuzzy, python-format
+#, python-format
 msgid "%(n)s vittoria di fila"
 msgid_plural "%(n)s vittorie di fila"
 msgstr[0] ""
@@ -13562,7 +13516,7 @@ msgstr ""
 #: templates/individual_match/statistics.html:224
 #: templates/individual_match/statistics.html:250
 #: templates/individual_match/statistics.html:272
-#, fuzzy, python-format
+#, python-format
 msgid "%(n)s match"
 msgid_plural "%(n)s match"
 msgstr[0] ""
@@ -13582,7 +13536,7 @@ msgid "Mese per mese"
 msgstr ""
 
 #: templates/individual_match/statistics.html:273
-#, fuzzy, python-format
+#, python-format
 msgid "%(n)s vinto"
 msgid_plural "%(n)s vinti"
 msgstr[0] ""
@@ -14100,7 +14054,6 @@ msgid "Decidi cosa vedono gli altri sul tuo profilo."
 msgstr ""
 
 #: templates/player/privacy_settings.html:15
-#, fuzzy
 msgid "Contatti"
 msgstr ""
 
@@ -14282,7 +14235,6 @@ msgid "Partite Giocate"
 msgstr ""
 
 #: templates/player/venue_detail.html:230
-#, fuzzy
 msgid "Nessuna foto disponibile"
 msgstr ""
 
@@ -14438,7 +14390,7 @@ msgid "Terminati"
 msgstr ""
 
 #: templates/public/campionatos_list.html:35
-#, fuzzy, python-format
+#, python-format
 msgid "%(num)s campionato"
 msgid_plural "%(num)s campionati"
 msgstr[0] ""

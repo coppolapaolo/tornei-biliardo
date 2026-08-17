@@ -42,9 +42,33 @@ Per ogni stringa **nuova** (non fuzzy, solo untranslated con msgstr vuoto):
 - Scrivi il `msgstr` nel file .po
 
 Per le stringhe **fuzzy**:
-- Mostra all'utente la traduzione suggerita da pybabel e chiedi se va bene o va corretta
-- Se l'utente approva, rimuovi il flag `#, fuzzy`
-- Se sono tante (>20), proponi di approvare in blocco mostrando un campione
+- **Riscrivile a mano, una per una.** `pybabel update` non traduce: copia il
+  `msgstr` di una voce che *somiglia* al `msgid` nuovo, e la somiglianza è sul
+  testo. Casi realmente prodotti: «Nessuna Gara Configurata» → *No features
+  configured*, «Dispari» → *Tiebreakers*. Mostrare la proposta e chiedere
+  conferma in blocco significa far approvare all'utente traduzioni sbagliate.
+- **Controlla i placeholder**, che il fuzzy-matching ignora: «%(position)s°
+  Posto» era diventato «%(num)s slots». Un `%(nome)s` che il `msgid` non ha
+  è un `KeyError` al primo rendering in quella lingua — non un refuso.
+- Conta vuote e fuzzy **col parser di Babel**
+  (`babel.messages.pofile.read_po` + `msg.fuzzy` / `msg.string`), mai con
+  `grep`: un `.po` ha stringhe su più righe e commenti che contengono la
+  parola «fuzzy».
+
+### 3-bis. Ripulisci i fuzzy del catalogo italiano
+
+`pybabel update` marca fuzzy anche le voci **italiane**, che hanno `msgstr`
+vuoto per scelta (in italiano il `msgid` *è* la traduzione). Sono innocue —
+`pybabel compile` ripiega sul `msgid` — ma restano rumore nel catalogo, e chi
+lo apre non sa distinguerle da un lavoro lasciato a metà.
+
+Togli il flag **solo** dalle voci a `msgstr` vuoto: una fuzzy con dentro una
+traduzione va letta, non sbandierata via. Verificato una volta (agosto 2026,
+3317 confronti su tutte le voci, `gettext`/`ngettext` a confronto prima e
+dopo): la rimozione non cambia **nessuna** stringa resa. Il `.mo` cresce —
+entrano le forme plurali, che da fuzzy erano escluse — ma il testo è identico,
+perché il valore compilato coincide col `msgid` e la `Plural-Forms` italiana
+(`n != 1`) è la stessa regola che `gettext` applica quando la voce non c'è.
 
 ### 4. Compile
 
