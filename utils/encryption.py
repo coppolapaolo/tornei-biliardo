@@ -99,7 +99,26 @@ def derive_cipher(key_string: str, salt: Optional[bytes] = None) -> Fernet:
 
 
 class EncryptionManager:
-    """Handles encryption/decryption of sensitive user data."""
+    """Handles encryption/decryption of sensitive user data.
+
+    Il cipher si deriva **al primo uso**, non all'import del modulo.
+
+    Non e' un'ottimizzazione: e' la differenza fra leggere ENCRYPTION_KEY e
+    non leggerla. Console e scheduled task non ereditano le variabili del file
+    WSGI e se le caricano da soli (`scripts/prod_env.py`) subito prima di
+    creare l'app; ma `utils.encryption` viene importato lungo la catena di
+    `import app`, che nei due script avveniva *prima* di quel caricamento. Con
+    l'inizializzazione all'import il cipher nasceva quindi dalla chiave di
+    sviluppo — visibile nel log come "Using default encryption key" stampato
+    **prima** della riga "Env di produzione lette da ..." — e ogni email o
+    telefono si decifrava a stringa vuota, in silenzio. Per il task orario dei
+    promemoria significava non spedire niente e non dirlo a nessuno: stessa
+    famiglia dell'incidente del 2026-06-25.
+
+    Rimandare al primo uso non pretende piu' che nessuno importi il modulo
+    troppo presto: pretende solo che nessuno *cifri* prima di aver caricato
+    l'ambiente, che e' una condizione che si rispetta da se'.
+    """
 
     _instance: Optional["EncryptionManager"] = None
     _cipher_suite: Optional[Fernet] = None
@@ -111,9 +130,9 @@ class EncryptionManager:
         return cls._instance
 
     def __init__(self):
-        if not self._initialized:
-            self._initialize_cipher()
-            EncryptionManager._initialized = True
+        # Volutamente vuoto: vedi docstring. Il cipher lo deriva
+        # _ensure_cipher(), chiamata da chi lo usa davvero.
+        pass
 
     def _initialize_cipher(self) -> None:
         """Initialize encryption cipher from server configuration."""
@@ -123,16 +142,30 @@ class EncryptionManager:
         # Salt configurabile (default = valore storico per retro-compatibilita'
         # con i dati gia' cifrati).
         EncryptionManager._cipher_suite = derive_cipher(key_string)
+        EncryptionManager._initialized = True
+
+    def _ensure_cipher(self) -> Fernet:
+        """Deriva il cipher se non c'e' ancora, e lo restituisce.
+
+        E' qui che scatta il fail-fast in produzione (`_resolve_key_string`):
+        al primo PII toccato, non all'avvio del processo.
+        """
+        if not self._initialized or self._cipher_suite is None:
+            self._initialize_cipher()
+
+        cipher = EncryptionManager._cipher_suite
+        if cipher is None:  # pragma: no cover - o assegna o solleva
+            raise RuntimeError("Encryption manager not properly initialized")
+        return cipher
 
     def encrypt(self, data: str) -> str:
         """Encrypt a string value."""
         if not data:
             return ""
 
-        if self._cipher_suite is None:
-            raise RuntimeError("Encryption manager not properly initialized")
+        cipher = self._ensure_cipher()
 
-        encrypted_bytes = self._cipher_suite.encrypt(data.encode())
+        encrypted_bytes = cipher.encrypt(data.encode())
         return base64.urlsafe_b64encode(encrypted_bytes).decode()
 
     def decrypt(self, encrypted_data: str) -> str:
@@ -140,12 +173,11 @@ class EncryptionManager:
         if not encrypted_data:
             return ""
 
-        if self._cipher_suite is None:
-            raise RuntimeError("Encryption manager not properly initialized")
+        cipher = self._ensure_cipher()
 
         try:
             encrypted_bytes = base64.urlsafe_b64decode(encrypted_data.encode())
-            decrypted_bytes = self._cipher_suite.decrypt(encrypted_bytes)
+            decrypted_bytes = cipher.decrypt(encrypted_bytes)
             return decrypted_bytes.decode()
         except Exception:
             # Degrado garbato (campo vuoto, il sito resta su) ma allarme vero:

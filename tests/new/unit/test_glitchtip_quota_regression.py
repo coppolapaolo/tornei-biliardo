@@ -13,13 +13,20 @@ from config import config as config_map
 
 
 def test_sentry_init_does_not_sample_traces():
-    original_dsn = config_map["testing"].GLITCHTIP_DSN
-    config_map["testing"].GLITCHTIP_DSN = "https://fake@glitchtip.example/1"
-    try:
+    # Il DSN si inietta sovrascrivendo `environment_settings()`, non
+    # l'attributo di classe: da quando `create_app` rilegge l'ambiente dopo
+    # `from_object` (docstring di `Config`), è quel dizionario a vincere.
+    testing = config_map["testing"]
+    con_dsn = dict(
+        testing.environment_settings(),
+        GLITCHTIP_DSN="https://fake@glitchtip.example/1",
+    )
+
+    with patch.object(
+        testing, "environment_settings", classmethod(lambda cls: dict(con_dsn))
+    ):
         with patch("sentry_sdk.init") as mock_init:
             create_app("testing")
-        assert mock_init.call_count == 1
-        kwargs = mock_init.call_args.kwargs
-        assert kwargs["traces_sample_rate"] == 0.0
-    finally:
-        config_map["testing"].GLITCHTIP_DSN = original_dsn
+
+    assert mock_init.call_count == 1
+    assert mock_init.call_args.kwargs["traces_sample_rate"] == 0.0

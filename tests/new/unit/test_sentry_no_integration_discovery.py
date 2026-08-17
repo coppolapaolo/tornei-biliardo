@@ -19,15 +19,28 @@ from config import config as config_map
 
 
 def _init_kwargs_with_dsn():
-    original_dsn = config_map["testing"].GLITCHTIP_DSN
-    config_map["testing"].GLITCHTIP_DSN = "https://fake@glitchtip.example/1"
-    try:
+    """I kwargs con cui `create_app` chiama `sentry_sdk.init`, con DSN finto.
+
+    Il DSN si inietta sovrascrivendo `environment_settings()`, non l'attributo
+    di classe: da quando `create_app` rilegge l'ambiente dopo `from_object`
+    (vedi la docstring di `Config` — serviva a far ripartire gli scheduled
+    task), è quel dizionario ad avere l'ultima parola, e un attributo scritto
+    a mano verrebbe semplicemente rimpiazzato.
+    """
+    testing = config_map["testing"]
+    con_dsn = dict(
+        testing.environment_settings(),
+        GLITCHTIP_DSN="https://fake@glitchtip.example/1",
+    )
+
+    with patch.object(
+        testing, "environment_settings", classmethod(lambda cls: dict(con_dsn))
+    ):
         with patch("sentry_sdk.init") as mock_init:
             create_app("testing")
-        assert mock_init.call_count == 1
-        return mock_init.call_args.kwargs
-    finally:
-        config_map["testing"].GLITCHTIP_DSN = original_dsn
+
+    assert mock_init.call_count == 1
+    return mock_init.call_args.kwargs
 
 
 def test_auto_enabling_integrations_is_disabled():

@@ -34,8 +34,7 @@ _HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, _HERE)
 sys.path.insert(0, os.path.dirname(_HERE))
 
-from prod_env import PRODUCTION_REQUIRED, bootstrap_or_exit  # noqa: E402
-from app import create_app  # noqa: E402
+from prod_env import PRODUCTION_REQUIRED, bootstrap_and_create_app  # noqa: E402
 from models import User  # noqa: E402
 from models.gamification.achievement_service import AchievementService  # noqa: E402
 
@@ -85,8 +84,13 @@ def main() -> int:
     # requisiti perché lo script legge gli utenti (email cifrata): con la
     # chiave di sviluppo la decifratura fallisce in silenzio e la
     # riconciliazione girerebbe su dati vuoti (incidente 2026-06-25).
-    bootstrap_or_exit(PRODUCTION_REQUIRED + ("ENCRYPTION_KEY",))
-    app = create_app(os.environ.get("FLASK_ENV", "production"))
+    #
+    # Le env vanno caricate *prima* che `app`/`config` vengano importati,
+    # perciò l'import sta dentro `bootstrap_and_create_app`: qui in cima
+    # `from app import create_app` congelava SECRET_KEY a stringa vuota e lo
+    # script moriva sulla riga dopo, con nel log la conferma di aver letto
+    # proprio quella variabile.
+    app = bootstrap_and_create_app(required=PRODUCTION_REQUIRED + ("ENCRYPTION_KEY",))
     with app.app_context():
         if args.dry_run:
             count = User.query.filter(User.role != "admin").count()
