@@ -58,6 +58,7 @@ Crea un ADR quando:
 | ADR-042 | [L'esame e' un evento di persona, e l'esito e' un si' o un no](ADR-042-certified-exam.md) | Accepted | 2026-08-15 |
 | ADR-043 | [L'orario e' quello di chi legge, e il fuso si deduce senza chiederlo](ADR-043-reader-timezone.md) | Accepted | 2026-08-15 |
 | ADR-044 | [Il referto TPA: si annota il gioco, non il punteggio](ADR-044-tpa-scoresheet.md) | Accepted | 2026-08-16 |
+| ADR-045 | [Niente WAL: SQLite sta su storage di rete](ADR-045-no-wal-on-network-storage.md) | Accepted | 2026-08-17 |
 
 ## Come Creare un Nuovo ADR
 

@@ -62,13 +62,47 @@ except ImportError as e:
         return decorator
 
 
-# Abilita le foreign key in SQLite (necessario per ON DELETE CASCADE nei test/dev)
+# Quanto aspettare prima di dichiarare un lock irrecuperabile. Il default di
+# SQLite è 0: la prima contesa diventa subito "database is locked". Su storage
+# di rete i lock sono lenti, e le transazioni di questa app sono brevi — un
+# attimo di attesa le risolve quasi tutte.
+SQLITE_BUSY_TIMEOUT_MS = 5000
+
+
+# NON aggiungere `PRAGMA journal_mode=WAL` qui. Non è una svista: è stato
+# rimosso di proposito (ADR-045) dopo due corruzioni del DB di produzione
+# ("database disk image is malformed", 2026-06-10 e 2026-08-17).
+#
+# In WAL i processi non si coordinano solo con i lock sul file: condividono un
+# indice del write-ahead log in un file `-shm` mappato in memoria condivisa via
+# mmap. Su NFS — lo storage di PythonAnywhere — quella mappatura non è coerente
+# fra processi, quindi web app e scheduled task possono leggere pagine che non
+# corrispondono al contenuto reale. La documentazione SQLite lo dice esplicito:
+# WAL non funziona su filesystem di rete.
+#
+# Il guasto è per giunta reversibile e quindi ingannevole: al riavvio SQLite
+# fa il checkpoint, butta lo `-shm` e l'errore sparisce senza che i dati siano
+# mai stati toccati — come il 2026-08-17, quando `PRAGMA integrity_check` è
+# risultato `ok` sia prima sia dopo il checkpoint.
+#
+# Qui non c'è nessuna condizione su FLASK_ENV di proposito: una variabile
+# d'ambiente assente in uno scheduled task rimetterebbe il WAL in silenzio (è
+# la stessa classe di guasto dell'incidente ENCRYPTION_KEY del 2026-06-25), e
+# basterebbe *un solo* processo a riconvertire il file. Il valore di
+# `journal_mode` è persistito dentro il .db: si applica a tutti, per sempre.
+#
+# Presidio: tests/new/unit/test_sqlite_pragmas.py
 @event.listens_for(Engine, "connect")
 def _set_sqlite_pragma(dbapi_connection, connection_record):
+    """PRAGMA applicati a ogni connessione SQLite.
+
+    `foreign_keys=ON` serve per ON DELETE CASCADE (SQLite lo disattiva di
+    default a ogni connessione, non è un'impostazione persistita nel file).
+    """
     if isinstance(dbapi_connection, sqlite3.Connection):
         cursor = dbapi_connection.cursor()
         cursor.execute("PRAGMA foreign_keys=ON")
-        cursor.execute("PRAGMA journal_mode=WAL")
+        cursor.execute(f"PRAGMA busy_timeout={SQLITE_BUSY_TIMEOUT_MS}")
         cursor.close()
 
 
