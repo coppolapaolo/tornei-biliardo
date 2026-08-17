@@ -100,4 +100,4 @@ blocks:
       - q: "Devo per forza segnare i punti dal telefono?"
         a: "No. Il direttore di gara può inserire i risultati per tutti. Il telefono è comodo, non obbligatorio."
       - q: "Se sbaglio a segnare un punto?"
-        a: "Si annulla: c'è il tasto «Annulla ultimo rack». Se il risultato è già stato chiuso, può correggerlo il direttore di gara."
+        a: "Si annulla: c'è il tasto «Annulla ultimo rack», e resta lì anche appena la partita si chiude. Dopo che il direttore ha validato il risultato, invece, la correzione tocca a lui."

@@ -7,6 +7,7 @@ from flask import (
     url_for,
     flash,
 )
+from flask_babel import _
 from flask_login import login_required, current_user
 
 from models import (
@@ -18,7 +19,7 @@ from models.competition.services import GaraService
 from models.competition.inscription_service import InscriptionService
 from models.competition.state_service import StateService
 from utils import gara_manager_required
-from utils.local_time import parse_local_datetime
+from utils.local_time import format_local_input, parse_local_datetime
 from utils.route_helpers import handle_service_action
 
 from . import competition_bp
@@ -52,9 +53,23 @@ def open_inscriptions(gara_id):
 
     def action():
         inscription_start, inscription_end = _inscription_window()
-        InscriptionService.open_inscriptions(
+        gara = InscriptionService.open_inscriptions(
             gara_id, inscription_start, inscription_end
         )
+
+        # Il service accorcia la finestra all'inizio della gara. È un
+        # aggiustamento ragionevole ma non richiesto, quindi va detto — *dopo*
+        # averlo fatto, con le iscrizioni ormai aperte. Annunciarlo sollevando
+        # significava perderlo nel rollback e lasciare la gara chiusa.
+        if gara.inscription_end and gara.inscription_end < inscription_end:
+            flash(
+                _(
+                    "Le iscrizioni non possono restare aperte oltre l'inizio "
+                    "della gara: la chiusura è stata anticipata al %(quando)s.",
+                    quando=format_local_input(gara.inscription_end).replace("T", " "),
+                ),
+                "warning",
+            )
 
     return handle_service_action(
         action=action,

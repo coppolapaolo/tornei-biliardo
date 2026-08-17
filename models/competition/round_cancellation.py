@@ -109,8 +109,14 @@ class RoundCancellationService:
 
         if gara.status == GaraStatus.PLAYING.value:
             gara.status = GaraStatus.INSCRIPTION.value
-            db.session.add(gara)
 
+        # Niente `db.session.add(gara)`: `gara` è già persistente, quindi la
+        # modifica viene salvata comunque dal flush. L'unico effetto di quella
+        # riga era propagare il cascade *save-update* su `gara.matches` — la
+        # stessa collezione i cui elementi sono stati appena cancellati qui
+        # sopra — e SQLAlchemy si rifiuta di reinserire un oggetto cancellato:
+        # «Instance '<Match>' has been deleted». L'annullamento del sorteggio
+        # falliva così, con la gara che restava in `playing`.
         return gara
 
     @staticmethod

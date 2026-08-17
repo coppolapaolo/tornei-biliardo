@@ -293,6 +293,14 @@ code, kbd, pre, samp, .font-mono { font-family: var(--c7-font-mono); }
 @media (min-width: 992px) {
   .c7-cols { display: grid; grid-template-columns: 1fr 380px; gap: var(--c7-gap-lg); align-items: start; }
   .c7-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--c7-gap-lg); }
+
+  /* Sezioni di configurazione fuori dalla griglia a due colonne: larghe come
+     la colonna principale, non come la pagina. Una card con tre righe di
+     contenuto stirata su tutta la finestra sembra un errore di impaginazione,
+     e sopra a «Informazioni gara» — larga la meta' — lo sembra due volte.
+     Le sezioni con tabelle larghe (turni, partite) restano a piena larghezza:
+     li' lo spazio serve davvero. */
+  .c7-section--main { max-width: calc(100% - 380px - var(--c7-gap-lg)); }
 }
 
 /* Fascia "in corso": solo se c'e' davvero qualcosa in corso. */
@@ -645,6 +653,13 @@ input[type="number"].form-control {
 .table tr.c7-row--attention > td { background: var(--c7-warn-bg); }
 .table tr.c7-row--done > td { opacity: .7; }
 .table .c7-cell-actions { text-align: right; white-space: nowrap; }
+/* I comandi di riga stanno in fila. `.c7-iconbtn` e' `display:grid` per
+   centrare l'icona, ma un grid e' un blocco: con due o tre comandi — la riga
+   della partita in corso ne ha tre — andavano a capo uno sotto l'altro, e il
+   `margin-left` pensato per la spaziatura orizzontale diventava un rientro
+   crescente, cioe' pulsanti impilati e disallineati fra loro.
+   `inline-grid` conserva il centraggio e li rimette in riga. */
+.table .c7-cell-actions .c7-iconbtn { display: inline-grid; vertical-align: middle; }
 .table .c7-cell-actions .c7-iconbtn + .c7-iconbtn { margin-left: 8px; }
 
 /* --------------------------------------------------------------------------

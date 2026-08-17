@@ -54,3 +54,11 @@ def app():
         db.session.remove()
         db.drop_all()
         ctx.pop()
+
+
+@pytest.fixture
+def driver(client):
+    """Guida una gara parlando solo HTTP (vedi `gara_driver.py`)."""
+    from gara_driver import GaraDriver
+
+    return GaraDriver(client)

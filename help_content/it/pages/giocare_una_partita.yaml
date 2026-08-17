@@ -46,7 +46,11 @@ blocks:
         text: "I due tasti grandi «+1», uno per giocatore. Il tuo è quello pieno, scuro: si riconosce senza leggere il nome."
         hint: partita.segnapunti
       - name: "Annulla ultimo rack"
-        text: "Toglie l'ultimo punto assegnato. Serve quando si preme il tasto sbagliato."
+        text: >-
+          Toglie l'ultimo punto assegnato. Serve quando si preme il tasto
+          sbagliato, e resta a portata anche a distanza raggiunta e a partita
+          appena conclusa, finché il direttore non valida: è proprio il rack che
+          chiude la partita quello in cui sbagliare costa di più.
       - name: "Dichiara forfait"
         text: "Da usare solo se la partita si interrompe davvero: assegna all'avversario tutti i rack che mancano."
         hint: partita.forfait
@@ -73,8 +77,8 @@ blocks:
           ripremi.
       - title: "Avanti fino alla distanza"
         text: >-
-          Si va avanti così a ogni rack. Quando uno dei due arriva al numero
-          stabilito, la partita si chiude da sola.
+          Si va avanti così a ogni rack. Quando si arriva al numero stabilito
+          i tasti **+1** si spengono e si passa alla conferma del risultato.
 
   - type: note
     tone: tip
@@ -95,10 +99,16 @@ blocks:
 
   - type: text
     text: >-
-      **La partita è già chiusa**: da quel momento non puoi più correggerla da
-      solo. Chiama il direttore di gara, che può azzerare la partita e farvela
-      reinserire. È fatto apposta: un risultato chiuso è entrato in classifica,
-      e non deve poter cambiare senza che chi organizza lo sappia.
+      **La partita si è appena chiusa**: c'è ancora **Annulla ultimo rack**, nel
+      riquadro verde. Toglie il rack sbagliato e riporta la partita in corso,
+      così potete rigiocarlo. Vale finché il direttore non valida il risultato.
+
+  - type: text
+    text: >-
+      **Il direttore ha già validato**: da quel momento non puoi più correggerla
+      da solo. Chiamalo: può azzerare la partita e farvela reinserire. È fatto
+      apposta: un risultato validato è entrato in classifica, e non deve poter
+      cambiare senza che chi organizza lo sappia.
 
   - type: heading
     id: forfait
@@ -123,10 +133,37 @@ blocks:
 
   - type: text
     text: >-
-      La partita si chiude da sola al raggiungimento della distanza e diventa
-      **Conclusa**. Da quel momento: il risultato entra nella classifica del
-      turno, il tavolo si libera per la partita successiva, e quando **tutte**
-      le partite del turno sono finite il direttore può avviare il turno dopo.
+      Raggiunta la distanza compare **Distanza raggiunta**: il punteggio non
+      può più salire e resta solo da confermarlo. Chi ha vinto risulta
+      d'accordo senza fare niente — non ha motivo di contestare il risultato
+      che gli dà la vittoria — quindi la firma che manca è quella di chi ha
+      perso, con i due pulsanti **Accetta** e **Rifiuta**.
+
+  - type: note
+    tone: tip
+    title: "Se sei tu a segnare il rack che ti fa perdere, non ti si chiede altro"
+    text: >-
+      Spesso è chi perde a tenere il conto. Avendo già segnato il punto che
+      chiude la partita a favore dell'altro, non gli viene chiesto di
+      accettarlo una seconda volta: la partita si chiude subito. Lo stesso vale
+      se a segnare è il direttore della gara, perché il suo punteggio è già
+      quello ufficiale.
+
+  - type: text
+    text: >-
+      **Rifiuta** non chiude niente: toglie l'ultimo rack e riporta il
+      punteggio a un tocco dalla fine, così potete rimettervi d'accordo al
+      tavolo e segnare di nuovo.
+
+  - type: text
+    text: >-
+      Confermato il risultato la partita diventa **Conclusa**. Da quel momento:
+      il risultato entra nella classifica del turno, il tavolo si libera per la
+      partita successiva, e quando **tutte** le partite del turno sono finite il
+      direttore può avviare il turno dopo. Al posto dei tasti **+1** resta un
+      riquadro verde con il solo **Annulla ultimo rack**: se l'ultimo rack era
+      sbagliato lo togli e la partita torna in corso, finché il direttore non
+      valida.
 
   - type: shot
     shot: gara-turni
@@ -139,8 +176,8 @@ blocks:
       - q: "Il punteggio non si aggiorna sul telefono dell'altro."
         a: "L'aggiornamento passa dalla rete: se la sala ha poco segnale può metterci qualche secondo. Ricaricando la pagina si allinea."
       - q: "Abbiamo giocato più rack del dovuto."
-        a: "L'app non lo permette: al raggiungimento della distanza la partita si chiude e il segnapunti sparisce. Se avete giocato rack in più, semplicemente non contano."
+        a: "L'app non lo permette: al raggiungimento della distanza i tasti +1 si spengono. Se avete giocato rack in più, semplicemente non contano."
       - q: "Dobbiamo confermare il risultato in due?"
-        a: "In alcune configurazioni sì: comparirà il pulsante di conferma anche all'avversario. Se non compare, il risultato è già definitivo così."
+        a: "Servono le firme di tutti e due, ma quella di chi vince è automatica: la sola che vi resta da dare è quella di chi perde. E se è stato lui a segnare l'ultimo rack l'ha già data premendo, quindi non compare nessun pulsante. Quando compaiono «Accetta» e «Rifiuta», tocca a te."
       - q: "Che cos'è il numero del tavolo che vedo in alto?"
         a: "Il tavolo che il direttore vi ha assegnato per questa partita. Se non c'è, la sala non ha configurato i tavoli e vi mettete d'accordo sul posto."

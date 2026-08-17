@@ -439,11 +439,18 @@ class MatchService:
     # SIMPLIFIED UX - Delegates to ScoringService
     # ---------------------------------------
     @staticmethod
-    def add_rack_for_player(match_id: int, user_id: int, winner_id: int) -> Rack:
+    def add_rack_for_player(
+        match_id: int,
+        user_id: int,
+        winner_id: int,
+        authoritative: bool = False,
+    ) -> Rack:
         """Add a rack won by specified player (delegates to ScoringService)."""
         from .scoring_service import ScoringService
 
-        return ScoringService.add_rack_for_player(match_id, user_id, winner_id)
+        return ScoringService.add_rack_for_player(
+            match_id, user_id, winner_id, authoritative=authoritative
+        )
 
     @staticmethod
     def remove_rack_for_player(match_id: int, user_id: int, player_id: int) -> None:

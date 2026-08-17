@@ -174,4 +174,4 @@ blocks:
       - q: "Quanti giocatori servono?"
         a: "Il minimo che hai impostato, e comunque almeno quattro perché una gara a turni abbia senso. Sotto il minimo l'app non fa partire il primo turno."
       - q: "Posso far dirigere la gara a qualcun altro?"
-        a: "Sì: nel pannello Gestione puoi aggiungere co-direttori. Utile se sei tu stesso a giocare quella sera."
+        a: "Sì: nel pannello Gestione, sezione «Direttori di gara», puoi aggiungere co-direttori. Utile se sei tu stesso a giocare quella sera. L'elenco propone solo i direttori vicini alla sede della gara, perché un co-direttore serve in sala: se non ce n'è nessuno la scelta dice «Nessun altro direttore in zona»."

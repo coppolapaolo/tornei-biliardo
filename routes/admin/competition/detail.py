@@ -168,19 +168,16 @@ def gara_detail(gara_id):
         # Combine gara directors and inherited directors to exclude from dropdown
         excluded_director_ids = set(assigned_director_ids) | set(inherited_director_ids)
 
-        # Get available users for director selection
-        from models.user.role_enum import UserRole
+        # Chi si può proporre come co-direttore: i direttori della zona della
+        # gara, non tutti quelli della piattaforma. Criteri e casi limite in
+        # `models/competition/director_candidates.py`.
+        from models.competition.director_candidates import direttori_candidati
 
-        query = (
-            User.query.filter(User.role == UserRole.DIRECTOR.value)
-            .filter(User.deleted_at.is_(None))
-            .filter(User.id != current_user.id)
+        users = direttori_candidati(
+            gara,
+            escludi_ids=excluded_director_ids,
+            richiedente_id=current_user.id,
         )
-
-        if excluded_director_ids:
-            query = query.filter(~User.id.in_(excluded_director_ids))
-
-        users = query.order_by(User.username).all()
 
         # Permission checks for director management
         is_gara_director = (

@@ -176,4 +176,4 @@ blocks:
       - q: "How many players do I need?"
         a: "The minimum you set, and at least four for a rounds-based competition to make sense. Below the minimum the app will not start the first round."
       - q: "Can I let someone else run the competition?"
-        a: "Yes: in the Management panel you can add co-directors. Handy if you are playing that evening yourself."
+        a: "Yes: in the Management panel, «Competition Directors» section, you can add co-directors. Handy if you are playing that evening yourself. The list only offers directors close to the competition venue, because a co-director is needed at the venue: if there is nobody, the choice reads «No other director nearby»."

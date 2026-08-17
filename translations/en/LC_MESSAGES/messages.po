@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-16 21:10+0200\n"
+"POT-Creation-Date: 2026-08-17 09:29+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -1356,6 +1356,15 @@ msgstr "No players to copy from the previous competition."
 msgid "Configurazione tavoli salvata!"
 msgstr "Table configuration saved!"
 
+#: routes/admin/competition/inscriptions.py:67
+#, python-format
+msgid ""
+"Le iscrizioni non possono restare aperte oltre l'inizio della gara: la "
+"chiusura è stata anticipata al %(quando)s."
+msgstr ""
+"Entries cannot stay open past the start of the competition: the closing "
+"time was moved up to %(quando)s."
+
 #: routes/admin/competition/rounds.py:294
 msgid "La gara non è in fase di spareggio!"
 msgstr "The competition is not in the tiebreaker phase!"
@@ -1956,6 +1965,27 @@ msgstr "Enrollment in %(gara)s completed!"
 msgid "Errore durante l'iscrizione."
 msgstr "Error during enrollment."
 
+#: routes/player/competitions.py:128
+msgid "Non sei iscritto a questa gara."
+msgstr "You are not enrolled in this competition."
+
+#: routes/player/competitions.py:133
+msgid "Impossibile disiscriversi: la gara è già iniziata!"
+msgstr "You cannot withdraw: the competition has already started!"
+
+#: routes/player/competitions.py:145
+msgid "Impossibile disiscriversi: ci sono già partite programmate!"
+msgstr "You cannot withdraw: matches have already been scheduled!"
+
+#: routes/player/competitions.py:154
+#, python-format
+msgid "Disiscrizione da %(gara)s completata!"
+msgstr "Withdrawal from %(gara)s completed!"
+
+#: routes/player/competitions.py:156
+msgid "Errore durante la disiscrizione."
+msgstr "Error during withdrawal."
+
 #: routes/player/exports.py:542
 msgid "Export GDPR Pronto"
 msgstr "GDPR Export Ready"
@@ -2509,21 +2539,21 @@ msgstr "Player 3"
 msgid "Tempi partita (opzionale)"
 msgstr "Match timing (optional)"
 
-#: templates/components/_match_admin_controls.html:150
+#: templates/components/_match_admin_controls.html:151
 #: templates/components/_match_info.html:58 templates/gara_detail.html:584
 #: templates/individual_match/match_detail.html:191
 msgid "Inizio"
 msgstr "Start"
 
-#: templates/components/_match_admin_controls.html:155
+#: templates/components/_match_admin_controls.html:156
 #: templates/components/_match_info.html:62 templates/gara_detail.html:588
 #: templates/individual_match/match_detail.html:198
 msgid "Fine"
 msgstr "End"
 
 #: templates/components/_match_admin_controls.html:69
-#: templates/components/_match_admin_controls.html:88
-#: templates/components/_match_admin_controls.html:96
+#: templates/components/_match_admin_controls.html:89
+#: templates/components/_match_admin_controls.html:97
 #: templates/gara_detail.html:599
 msgid "Imposta Risultato"
 msgstr "Set Result"
@@ -2706,15 +2736,15 @@ msgstr ""
 "Every registered player will get a cancellation notice.\n"
 "This action CANNOT BE UNDONE!"
 
-#: templates/gara_detail.html:741 templates/gara_detail.html:1705
+#: templates/gara_detail.html:741 templates/gara_detail.html:1739
 msgid "Sei sicuro di voler resettare questa partita?"
 msgstr "Are you sure you want to reset this match?"
 
-#: templates/gara_detail.html:742 templates/gara_detail.html:1729
+#: templates/gara_detail.html:742 templates/gara_detail.html:1763
 msgid "Sei sicuro di voler resettare questo trio?"
 msgstr "Are you sure you want to reset this trio?"
 
-#: templates/gara_detail.html:743 templates/gara_detail.html:1757
+#: templates/gara_detail.html:743 templates/gara_detail.html:1791
 #: templates/match_detail.html:600
 msgid ""
 "Confermi di voler validare questo risultato? Il tavolo verrà liberato e "
@@ -2723,8 +2753,8 @@ msgstr ""
 "Do you confirm you want to validate this result? The table will be freed "
 "and assigned to the next pending match."
 
-#: templates/components/_match_admin_controls.html:258
-#: templates/components/_match_admin_controls.html:300
+#: templates/components/_match_admin_controls.html:310
+#: templates/components/_match_admin_controls.html:352
 #: templates/gara_detail.html:744 templates/gara_detail.html:759
 #: templates/individual_match/match_detail.html:263
 #: templates/individual_match/match_detail.html:289
@@ -2789,7 +2819,7 @@ msgstr "Error while starting the round:"
 msgid "Errore di rete durante la creazione del turno"
 msgstr "Network error while creating the round"
 
-#: templates/components/_match_admin_controls.html:263
+#: templates/components/_match_admin_controls.html:315
 #: templates/gara_detail.html:756
 msgid "Errore durante l'impostazione del risultato"
 msgstr "Error while setting the result"
@@ -2836,8 +2866,8 @@ msgstr ""
 msgid "Usa 'Avvia SSR' per inserire i punteggi degli spareggi"
 msgstr "Use 'Start SSR' to enter tiebreaker scores"
 
-#: templates/components/_match_admin_controls.html:258
-#: templates/components/_match_admin_controls.html:300
+#: templates/components/_match_admin_controls.html:310
+#: templates/components/_match_admin_controls.html:352
 #: templates/gara_detail.html:767
 #: templates/individual_match/match_detail.html:412
 #: templates/match_detail.html:179 templates/match_detail.html:211
@@ -2891,31 +2921,31 @@ msgstr ""
 "Are you sure you want to close registrations? The competition will return"
 " to setup state."
 
-#: templates/gara_detail.html:1573
+#: templates/gara_detail.html:1584
 msgid "I rack non possono essere negativi."
 msgstr "Racks cannot be negative."
 
-#: templates/gara_detail.html:1575
+#: templates/gara_detail.html:1586
 #, python-format
 msgid "Nessun giocatore può avere più di %(d)s rack."
 msgstr "No player can have more than %(d)s racks."
 
-#: templates/gara_detail.html:1579
+#: templates/gara_detail.html:1590
 #, python-format
 msgid "Somma rack troppo alta: massimo %(d)s."
 msgstr "Rack sum too high: maximum %(d)s."
 
-#: templates/gara_detail.html:1581
+#: templates/gara_detail.html:1592
 #, python-format
 msgid "Risultato incompleto: uno dei due deve raggiungere %(d)s."
 msgstr "Incomplete result: one player must reach %(d)s."
 
-#: templates/gara_detail.html:1586
+#: templates/gara_detail.html:1597
 #, python-format
 msgid "Somma rack troppo alta: il totale esatto è %(d)s."
 msgstr "Rack sum too high: the exact total is %(d)s."
 
-#: templates/gara_detail.html:1588
+#: templates/gara_detail.html:1599
 #, python-format
 msgid "Risultato incompleto: la somma deve essere esattamente %(d)s."
 msgstr "Incomplete result: the sum must be exactly %(d)s."
@@ -2952,8 +2982,8 @@ msgstr "Login"
 msgid "Bentornato"
 msgstr "Welcome back"
 
-#: templates/login.html:24 templates/player/profile.html:64
-#: templates/register.html:18
+#: templates/components/_player_personal_info.html:15 templates/login.html:24
+#: templates/player/profile.html:64 templates/register.html:18
 msgid "Nome utente"
 msgstr "Username"
 
@@ -3300,6 +3330,7 @@ msgid "Crea il tuo account"
 msgstr "Create your account"
 
 #: templates/admin/users_list.html:116 templates/admin/users_list.html:153
+#: templates/components/_player_personal_info.html:21
 #: templates/player/privacy_settings.html:29 templates/player/profile.html:71
 #: templates/register.html:28
 msgid "Telefono"
@@ -3930,8 +3961,8 @@ msgid "Approva"
 msgstr "Approve"
 
 #: templates/admin/director_requests.html:36
-#: templates/components/_unified_rack_input.html:223
-#: templates/components/_unified_rack_input.html:229
+#: templates/components/_unified_rack_input.html:244
+#: templates/components/_unified_rack_input.html:250
 #: templates/individual_match/proposal_detail.html:132
 #: templates/individual_match/proposals.html:109
 #: templates/roles/requests.html:48
@@ -3939,6 +3970,7 @@ msgid "Rifiuta"
 msgstr "Reject"
 
 #: templates/admin/director_requests.html:48
+#: templates/components/_player_personal_info.html:38
 #: templates/player/my_venue_requests.html:80
 msgid "Nessuna richiesta"
 msgstr "No requests"
@@ -4554,6 +4586,7 @@ msgid "Normale"
 msgstr "Normal"
 
 #: templates/admin/users_list.html:200 templates/components/_gara_info.html:71
+#: templates/components/_player_personal_info.html:28
 msgid "Nessuna"
 msgstr "None"
 
@@ -6235,25 +6268,35 @@ msgstr "Take part"
 msgid "Proponi un match"
 msgstr "Propose a match"
 
-#: templates/components/_directors_management.html:10
+#: templates/components/_directors_management.html:17
 msgid "Direttori di gara"
 msgstr "Competition Directors"
 
-#: templates/components/_directors_management.html:19
+#: templates/components/_directors_management.html:22
+msgid "Nessun co-direttore: la gara la stai dirigendo da solo."
+msgstr "No co-directors: you are running this competition on your own."
+
+#: templates/components/_directors_management.html:31
 msgid "Direttore campionato"
 msgstr "Championship director"
 
-#: templates/components/_directors_management.html:32
+#: templates/components/_directors_management.html:44
 msgid "Rimuovi"
 msgstr "Remove"
 
-#: templates/components/_directors_management.html:46
-msgid "Nessun direttore disponibile"
-msgstr "No directors available"
+#: templates/components/_directors_management.html:59
+msgid "Nessun altro direttore in zona"
+msgstr "No other director nearby"
 
-#: templates/components/_directors_management.html:49
+#: templates/components/_directors_management.html:62
 msgid "Aggiungi co‑direttore"
 msgstr "Add co-director"
+
+#: templates/components/_directors_management.html:67
+msgid ""
+"Si possono aggiungere solo utenti con ruolo direttore vicini alla sede "
+"della gara."
+msgstr "Only users with the director role near the competition venue can be added."
 
 #: templates/components/_distance_configurator.html:15
 #: templates/components/_player_dashboard_content.html:36
@@ -7564,82 +7607,82 @@ msgstr "added automatically"
 msgid "max %(max)s rack/giocatore, somma = %(sum)s"
 msgstr "max %(max)s racks/player, total = %(sum)s"
 
-#: templates/components/_match_admin_controls.html:101
+#: templates/components/_match_admin_controls.html:102
 #, python-format
 msgid "vince chi raggiunge %(score)s punti (max %(max)s per giocatore)"
 msgstr "winner reaches %(score)s points (max %(max)s per player)"
 
-#: templates/components/_match_admin_controls.html:103
+#: templates/components/_match_admin_controls.html:104
 #, python-format
 msgid "la somma dei rack deve essere %(distance)s"
 msgstr "the rack sum must be %(distance)s"
 
-#: templates/components/_match_admin_controls.html:113
+#: templates/components/_match_admin_controls.html:114
 msgid "Valida Risultato"
 msgstr "Validate Result"
 
-#: templates/components/_match_admin_controls.html:116
+#: templates/components/_match_admin_controls.html:117
 msgid "Valida il risultato per completare la partita e liberare il tavolo"
 msgstr "Validate the result to complete the match and free the table"
 
-#: templates/components/_match_admin_controls.html:129
+#: templates/components/_match_admin_controls.html:130
 msgid "Tavolo non assegnato"
 msgstr "Table not assigned"
 
-#: templates/components/_match_admin_controls.html:130
+#: templates/components/_match_admin_controls.html:131
 msgid "Assegna un tavolo per abilitare i controlli di punteggio"
 msgstr "Assign a table to enable score controls"
 
-#: templates/components/_match_admin_controls.html:138
+#: templates/components/_match_admin_controls.html:139
 msgid "Reset Partita"
 msgstr "Reset Match"
 
-#: templates/components/_match_admin_controls.html:147
+#: templates/components/_match_admin_controls.html:148
 msgid "Tempi Partita"
 msgstr "Match Timing"
 
-#: templates/components/_match_admin_controls.html:161
+#: templates/components/_match_admin_controls.html:162
 msgid "Aggiorna Tempi"
 msgstr "Update Timing"
 
-#: templates/components/_match_admin_controls.html:164
+#: templates/components/_match_admin_controls.html:165
 msgid "Inserisci solo orario, il giorno viene inferito dalla data della gara"
 msgstr "Enter time only, the date is inferred from the competition date"
 
-#: templates/components/_match_admin_controls.html:201
+#: templates/components/_match_admin_controls.html:253
 msgid ""
 "In un match 'al N', entrambi i giocatori non possono avere il punteggio "
 "vincente!"
 msgstr "In a 'race to N' match, both players cannot have the winning score!"
 
-#: templates/components/_match_admin_controls.html:206
-#: templates/components/_match_admin_controls.html:247
+#: templates/components/_match_admin_controls.html:258
+#: templates/components/_match_admin_controls.html:299
 msgid "Confermi di voler impostare questo risultato?"
 msgstr "Do you confirm you want to set this result?"
 
-#: templates/components/_match_admin_controls.html:232
+#: templates/components/_match_admin_controls.html:284
 msgid "Ogni giocatore puo' vincere al massimo"
 msgstr "Each player can win at most"
 
-#: templates/components/_match_admin_controls.html:239
+#: templates/components/_match_admin_controls.html:291
 msgid "La somma dei rack deve essere"
 msgstr "The rack sum must be"
 
-#: templates/components/_match_admin_controls.html:239
+#: templates/components/_match_admin_controls.html:291
 msgid "hai inserito"
 msgstr "you entered"
 
-#: templates/components/_match_admin_controls.html:279
+#: templates/components/_match_admin_controls.html:331
 #: templates/individual_match/match_detail.html:391
 msgid "Inserisci almeno un orario"
 msgstr "Enter at least one time"
 
-#: templates/components/_match_admin_controls.html:297
+#: templates/components/_match_admin_controls.html:349
 #: templates/individual_match/match_detail.html:409
 msgid "Tempi aggiornati con successo"
 msgstr "Timing updated successfully"
 
-#: templates/components/_match_admin_controls.html:305
+#: templates/components/_match_admin_controls.html:357
 #: templates/individual_match/match_detail.html:417
 msgid "Errore durante l'aggiornamento dei tempi"
 msgstr "Error updating timing"
@@ -7815,7 +7858,7 @@ msgstr "Close the scoreboard"
 
 #: templates/components/_match_scoreboard.html:92
 #: templates/components/_trio_rack_input.html:319
-#: templates/components/_unified_rack_input.html:248
+#: templates/components/_unified_rack_input.html:279
 msgid "Annulla ultimo rack"
 msgstr "Undo last rack"
 
@@ -7853,8 +7896,8 @@ msgstr "Bye"
 #: templates/components/_multi_set_score_display.html:21
 #: templates/components/_multi_set_score_display.html:60
 #: templates/components/_round_management.html:95
-#: templates/components/_unified_rack_input.html:115
-#: templates/components/_unified_rack_input.html:154
+#: templates/components/_unified_rack_input.html:126
+#: templates/components/_unified_rack_input.html:165
 msgid "Set"
 msgstr "Set"
 
@@ -8030,20 +8073,68 @@ msgstr ""
 "You are viewing this tournament as a guest: you see results and "
 "standings, but you do not take part."
 
+#: templates/components/_player_inscriptions.html:13
+msgid "Le mie iscrizioni"
+msgstr "My entries"
+
+#: templates/components/_player_inscriptions.html:71
+msgid "Gare singole"
+msgstr "Standalone competitions"
+
+#: templates/components/_player_inscriptions.html:79
+msgid "Non sei ancora iscritto a nessuna gara."
+msgstr "You have not entered any competition yet."
+
+#: templates/components/_player_personal_info.html:13
+msgid "Informazioni personali"
+msgstr "Personal information"
+
+#: templates/components/_player_personal_info.html:22
+#: templates/player/profile.html:72
+msgid "Non indicato"
+msgstr "Not given"
+
 #: templates/components/_player_personal_info.html:24
+#: templates/player/profile_edit.html:39
+msgid "Città"
+msgstr "City"
+
+#: templates/components/_player_personal_info.html:25
+msgid "Non indicata"
+msgstr "Not given"
+
+#: templates/components/_player_personal_info.html:27
+#: templates/player/profile_edit.html:48
+msgid "Squadra"
+msgstr "Team"
+
+#: templates/components/_player_personal_info.html:30
+#: templates/player/profile.html:74
+msgid "Iscritto dal"
+msgstr "Registered since"
+
+#: templates/components/_player_personal_info.html:35
+msgid "Richiesta direttore"
+msgstr "Director request"
+
+#: templates/components/_player_personal_info.html:45
 msgid "Modifica contatti"
 msgstr "Edit contacts"
 
-#: templates/components/_player_personal_info.html:27
+#: templates/components/_player_personal_info.html:48
 #: templates/player/privacy_settings.html:2
 #: templates/player/privacy_settings.html:7
 msgid "Privacy"
 msgstr "Privacy"
 
-#: templates/components/_player_personal_info.html:31
+#: templates/components/_player_personal_info.html:52
 #: templates/player/_change_password_modal.html:7
 msgid "Cambia password"
 msgstr "Change password"
+
+#: templates/components/_player_personal_info.html:59
+msgid "Richiedi il ruolo di direttore di gara"
+msgstr "Apply to become a tournament director"
 
 #: templates/components/_player_ratings.html:15
 msgid "Rating"
@@ -8739,7 +8830,7 @@ msgid "Valida risultato"
 msgstr "Validate result"
 
 #: templates/components/_trio_rack_input.html:147
-#: templates/components/_unified_rack_input.html:209
+#: templates/components/_unified_rack_input.html:230
 msgid "Hai confermato"
 msgstr "You confirmed"
 
@@ -8778,8 +8869,8 @@ msgstr "Match in progress"
 
 #: templates/components/_trio_rack_input.html:229
 #: templates/components/_trio_rack_input.html:244
-#: templates/components/_unified_rack_input.html:186
-#: templates/components/_unified_rack_input.html:260
+#: templates/components/_unified_rack_input.html:197
+#: templates/components/_unified_rack_input.html:291
 msgid "Dichiara forfait"
 msgstr "Declare forfeit"
 
@@ -8940,88 +9031,97 @@ msgstr "Removed by"
 msgid "Rimosso"
 msgstr "Removed"
 
-#: templates/components/_unified_rack_input.html:113
+#: templates/components/_unified_rack_input.html:124
 msgid "Segnapunti"
 msgstr "Scoreboard"
 
-#: templates/components/_unified_rack_input.html:115
+#: templates/components/_unified_rack_input.html:126
 msgid "al"
 msgstr "to"
 
-#: templates/components/_unified_rack_input.html:124
+#: templates/components/_unified_rack_input.html:135
 msgid "Nessun set in corso"
 msgstr "No set in progress"
 
-#: templates/components/_unified_rack_input.html:126
+#: templates/components/_unified_rack_input.html:137
 msgid "Inizia il set 1"
 msgstr "Start set 1"
 
-#: templates/components/_unified_rack_input.html:154
+#: templates/components/_unified_rack_input.html:165
 msgid "concluso"
 msgstr "finished"
 
-#: templates/components/_unified_rack_input.html:155
+#: templates/components/_unified_rack_input.html:166
 msgid "ha vinto il set."
 msgstr "won the set."
 
-#: templates/components/_unified_rack_input.html:158
+#: templates/components/_unified_rack_input.html:169
 msgid "Inizia il set"
 msgstr "Start the set"
 
-#: templates/components/_unified_rack_input.html:164
+#: templates/components/_unified_rack_input.html:175
+#: templates/components/_unified_rack_input.html:208
 msgid "Partita conclusa"
 msgstr "Match finished"
 
-#: templates/components/_unified_rack_input.html:165
+#: templates/components/_unified_rack_input.html:176
 msgid "vince"
 msgstr "wins"
 
-#: templates/components/_unified_rack_input.html:169
+#: templates/components/_unified_rack_input.html:180
 msgid "Accetta il risultato"
 msgstr "Accept the result"
 
-#: templates/components/_unified_rack_input.html:173
+#: templates/components/_unified_rack_input.html:184
 msgid "Hai confermato. Manca la conferma dell'avversario."
 msgstr "You confirmed. Your opponent still has to."
 
-#: templates/components/_unified_rack_input.html:181
-#: templates/components/_unified_rack_input.html:255
+#: templates/components/_unified_rack_input.html:192
+#: templates/components/_unified_rack_input.html:286
 msgid "Serve un tavolo assegnato prima di iniziare."
 msgstr "A table must be assigned before starting."
 
-#: templates/components/_unified_rack_input.html:195
+#: templates/components/_unified_rack_input.html:209
+msgid ""
+"Se l'ultimo rack è stato segnato per errore puoi ancora annullarlo, "
+"finché il direttore non valida il risultato."
+msgstr ""
+"If the last rack was scored by mistake you can still undo it, until the "
+"director validates the result."
+
+#: templates/components/_unified_rack_input.html:216
 msgid "Distanza raggiunta"
 msgstr "Distance reached"
 
-#: templates/components/_unified_rack_input.html:196
+#: templates/components/_unified_rack_input.html:217
 msgid "Il risultato è pronto per la conferma."
 msgstr "The result is ready to be confirmed."
 
-#: templates/components/_unified_rack_input.html:203
+#: templates/components/_unified_rack_input.html:224
 msgid "Entrambi i giocatori hanno confermato."
 msgstr "Both players have confirmed."
 
-#: templates/components/_unified_rack_input.html:210
+#: templates/components/_unified_rack_input.html:231
 msgid "In attesa di"
 msgstr "Waiting for"
 
-#: templates/components/_unified_rack_input.html:217
+#: templates/components/_unified_rack_input.html:238
 msgid "ha confermato"
 msgstr "confirmed"
 
-#: templates/components/_unified_rack_input.html:218
+#: templates/components/_unified_rack_input.html:239
 msgid "Conferma o rifiuta per chiudere la partita."
 msgstr "Confirm or reject to close the match."
 
-#: templates/components/_unified_rack_input.html:222
-#: templates/components/_unified_rack_input.html:228
+#: templates/components/_unified_rack_input.html:243
+#: templates/components/_unified_rack_input.html:249
 #: templates/individual_match/dashboard.html:67
 #: templates/individual_match/proposal_detail.html:128
 #: templates/individual_match/proposals.html:106
 msgid "Accetta"
 msgstr "Accept"
 
-#: templates/components/_unified_rack_input.html:226
+#: templates/components/_unified_rack_input.html:247
 msgid "Conferma il risultato finale."
 msgstr "Confirm the final result."
 
@@ -12723,14 +12823,6 @@ msgstr "Private profile"
 msgid "Questo giocatore ha scelto di tenere riservati i propri dati di gioco."
 msgstr "This player chose to keep their playing data private."
 
-#: templates/player/profile.html:72
-msgid "Non indicato"
-msgstr "Not given"
-
-#: templates/player/profile.html:74
-msgid "Iscritto dal"
-msgstr "Registered since"
-
 #: templates/player/profile.html:95
 msgid "Azioni irreversibili"
 msgstr "Irreversible actions"
@@ -12742,14 +12834,6 @@ msgid ""
 msgstr ""
 "Deleting the account loses your history, entries and statistics. There is"
 " no going back."
-
-#: templates/player/profile_edit.html:39
-msgid "Città"
-msgstr "City"
-
-#: templates/player/profile_edit.html:48
-msgid "Squadra"
-msgstr "Team"
 
 #: templates/player/profile_edit.html:52
 msgid ""

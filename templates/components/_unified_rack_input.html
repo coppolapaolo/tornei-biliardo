@@ -28,6 +28,13 @@ Parametri:
 {% set is_in_progress = status_str in ['in_progress', 'playing'] %}
 {% set is_completed_not_validated = status_str == 'completed' %}
 
+{# I due stati finali portano nomi che ingannano: "completed" e' la chiusura del
+   **direttore** (validazione o forfait), "validated" quella dei **giocatori**
+   che hanno confermato entrambi. Solo dalla seconda si torna indietro, e solo
+   fino a quando il direttore non mette mano al risultato. #}
+{% set chiusa_dai_giocatori = status_str == 'validated' %}
+{% set puo_annullare = user_is_player and (is_in_progress or chiusa_dai_giocatori) %}
+
 {% set is_multi_set = match.is_multi_set is defined and match.is_multi_set %}
 {% set is_free_format = match.distance is none %}
 
@@ -107,7 +114,11 @@ Parametri:
    direttore sul match altrui) non ha un "proprio": resta il primo. #}
 {% set mine_is_p2 = current_user.is_authenticated and match.player2_id is defined and current_user.id == match.player2_id %}
 
-{% if is_in_progress %}
+{# La sezione sopravvive alla chiusura per conferma dei giocatori: non per
+   continuare a segnare, ma perche' resti raggiungibile «Annulla ultimo rack».
+   E' il momento in cui un tocco sbagliato costa di piu' — ha appena chiuso la
+   partita — ed era anche l'unico in cui non c'era piu' modo di rimediare. #}
+{% if is_in_progress or puo_annullare %}
 <section class="c7-stack" style="margin-top: 18px;">
     <div style="display: flex; align-items: center; gap: 10px;">
         <h3 style="margin: 0;">{{ _('Segnapunti') }}</h3>
@@ -188,7 +199,17 @@ Parametri:
 
     {# ══════════ SET UNICO ══════════ #}
     {% else %}
-        {% if match_at_distance %}
+        {% if chiusa_dai_giocatori %}
+        {# Partita chiusa dai giocatori: niente da confermare, resta solo la
+           via d'uscita per il rack segnato per sbaglio. #}
+        <div class="c7-flash c7-flash--success">
+            <span class="c7-flash__ico"><i class="fas fa-check"></i></span>
+            <span class="c7-flash__body">
+                <span class="c7-flash__title">{{ _('Partita conclusa') }}</span>
+                <span class="c7-flash__text">{{ _("Se l'ultimo rack è stato segnato per errore puoi ancora annullarlo, finché il direttore non valida il risultato.") }}</span>
+            </span>
+        </div>
+        {% elif match_at_distance %}
         <div class="c7-flash c7-flash--warning">
             <span class="c7-flash__ico"><i class="fas fa-flag-checkered"></i></span>
             <span class="c7-flash__body">
@@ -242,8 +263,18 @@ Parametri:
                 <span class="c7-rackpad__who">{{ p2_name }}</span>
             </button>
         </div>
+        {% endif %}
+
         {# Un solo annulla, non due "−1 <nome>": si toglie sempre l'ultimo rack
-           segnato, e chi l'ha vinto lo sa gia' la pagina. #}
+           segnato, e chi l'ha vinto lo sa gia' la pagina.
+
+           Vive fuori dal blocco qui sopra perche' deve sopravvivere ai due
+           momenti in cui quello sparisce: la distanza raggiunta (che conferma
+           d'ufficio il vincitore) e la chiusura per conferma implicita del
+           perdente. Sono proprio gli istanti in cui un rack di troppo fa piu'
+           danno, e in cui prima non restava nessun modo di tornare indietro.
+           Si ferma quando chiude il direttore (vedi `puo_annullare` in cima). #}
+        {% if puo_annullare %}
         <button type="button" class="c7-undo" onclick="{{ remove_rack }}({{ last_rack.winner_id if last_rack else 0 }}, this)" {% if not last_rack %}disabled{% endif %}>
             {{ _('Annulla ultimo rack') }}
         </button>
