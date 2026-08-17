@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% import "components/_gamification_labels.html" as gami with context %}
 {% block content %}
 <div class="container">
   <div class="row justify-content-center">
@@ -41,7 +42,7 @@
                 <select class="form-select" id="category" name="category">
                   {% for cat in categories %}
                   <option value="{{ cat.name.lower() }}" {{ 'selected' if achievement and achievement.category == cat else '' }}>
-                    {{ cat.value }}
+                    {{ gami.category_labels.get(cat.value, cat.value) }}
                   </option>
                   {% endfor %}
                 </select>
@@ -51,7 +52,7 @@
                 <select class="form-select" id="difficulty" name="difficulty">
                   {% for diff in difficulties %}
                   <option value="{{ diff.name.lower() }}" {{ 'selected' if achievement and achievement.difficulty == diff else '' }}>
-                    {{ diff.value }}
+                    {{ gami.difficulty_labels.get(diff.value, diff.value) }}
                   </option>
                   {% endfor %}
                 </select>

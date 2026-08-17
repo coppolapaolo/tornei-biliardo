@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% import "components/_gamification_labels.html" as gami with context %}
 {% block title %}{{ _('Gestione Achievement') }}{% endblock %}
 
 {% block page_back %}
@@ -44,20 +45,15 @@
             </td>
             <td><code>{{ ach.slug }}</code></td>
             <td>
-              <span class="badge bg-info">{{ ach.category.value }}</span>
+              <span class="badge bg-info">{{ gami.category_labels.get(ach.category.value, ach.category.value) }}</span>
             </td>
             <td>
-              {% if ach.difficulty.value == 'bronze' %}
-                <span class="badge badge-bronze">{{ _("Bronze") }}</span>
-              {% elif ach.difficulty.value == 'silver' %}
-                <span class="badge badge-silver">{{ _("Silver") }}</span>
-              {% elif ach.difficulty.value == 'gold' %}
-                <span class="badge badge-gold">{{ _("Gold") }}</span>
-              {% elif ach.difficulty.value == 'platinum' %}
-                <span class="badge badge-platinum">{{ _("Platinum") }}</span>
-              {% elif ach.difficulty.value == 'diamond' %}
-                <span class="badge badge-diamond">{{ _("Diamond") }}</span>
-              {% endif %}
+              {# La colonna restava vuota: i rami confrontavano bronze/silver/
+                 gold/platinum/diamond, che `AchievementDifficulty` non ha mai
+                 avuto (common/uncommon/rare/epic/legendary). Le etichette
+                 stanno in `_gamification_labels.html`, con le stesse chiavi
+                 dell'enum — e la difficoltà è una parola, non un colore. #}
+              {{ gami.difficulty_labels.get(ach.difficulty.value, ach.difficulty.value) }}
             </td>
             <td><span class="badge bg-warning text-dark">{{ ach.xp_reward }}</span></td>
             <td>
