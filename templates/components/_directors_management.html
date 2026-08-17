@@ -1,7 +1,14 @@
 <!-- Generic Directors Management Macro -->
 {% macro directors_management(entity, add_director_route, remove_director_route, entity_id_param='campionato_id',
 show_admin_management=False, show_director_management=False, users=[], can_manage_directors=False, current_user=None, inherited_directors=[]) %}
-{% if (show_admin_management or show_director_management) and (entity.directors or users or inherited_directors) %}
+{# La card compare per chiunque possa gestire i direttori, anche quando non c'e'
+   ancora nessun co-direttore e nessuno da aggiungere. Prima si richiedeva pure
+   `entity.directors or users or inherited_directors`, e il risultato era che in
+   una piattaforma con un solo direttore la sezione «Direttori di gara» non
+   esisteva: chi la cercava non poteva sapere se fosse sparita, nascosta o mai
+   esistita. Un elenco vuoto che spiega perche' e' vuoto insegna qualcosa; una
+   sezione assente no. #}
+{% if show_admin_management or show_director_management %}
 {# Niente margine proprio: la distanza fra le sezioni la decide la pila che
    contiene la card, altrimenti questa risulta rientrata rispetto a tutte
    le altre. #}
@@ -10,6 +17,11 @@ show_admin_management=False, show_director_management=False, users=[], can_manag
         <h6><i class="fas fa-users"></i> {{ _('Direttori di gara') }}</h6>
     </div>
     <div class="card-body">
+        {% if not entity.directors and not inherited_directors %}
+        <p class="text-muted" style="margin: 0 0 12px;">
+            {{ _('Nessun co-direttore: la gara la stai dirigendo da solo.') }}
+        </p>
+        {% endif %}
         <ul class="list-group">
             {# Show inherited directors from campionato first (read-only) #}
             {% for dir_user in inherited_directors %}
@@ -36,19 +48,27 @@ show_admin_management=False, show_director_management=False, users=[], can_manag
             {% endfor %}
         </ul>
 
+        {% if can_manage_directors %}
         <form method="POST" action="{{ url_for(add_director_route, **{entity_id_param: entity.id}) }}" class="mt-3">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="input-group">
-                <select class="form-select" name="user_id">
+                <select class="form-select" name="user_id" {% if not users %}disabled{% endif %}>
                     {% for user in users %}
                     <option value="{{ user.id }}">{{ user.username }}</option>
                     {% else %}
-                    <option disabled selected>{{ _('Nessun direttore disponibile') }}</option>
+                    <option disabled selected>{{ _('Nessun altro direttore in zona') }}</option>
                     {% endfor %}
                 </select>
-                <button type="submit" class="btn btn-primary">{{ _('Aggiungi co‑direttore') }}</button>
+                <button type="submit" class="btn btn-primary" {% if not users %}disabled{% endif %}>{{ _('Aggiungi co‑direttore') }}</button>
             </div>
+            {% if not users %}
+            {# Perche' l'elenco e' vuoto: senza questa riga sembra un guasto. #}
+            <p class="text-muted mt-2" style="font-size: 13px;">
+                {{ _('Si possono aggiungere solo utenti con ruolo direttore vicini alla sede della gara.') }}
+            </p>
+            {% endif %}
         </form>
+        {% endif %}
     </div>
 </div>
 {% endif %}

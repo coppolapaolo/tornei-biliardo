@@ -683,7 +683,21 @@ class InscriptionService:
     def open_inscriptions(
         gara_id: int, inscription_start: datetime, inscription_end: datetime
     ) -> "Gara":
-        """Apre le iscrizioni per una gara con validazione delle date."""
+        """Apre le iscrizioni per una gara con validazione delle date.
+
+        Una fine oltre l'inizio della gara viene **accorciata** a quell'istante:
+        iscriversi a partita cominciata non vuol dire niente. L'aggiustamento è
+        silenzioso qui e visibile a chi chiama, che confronta
+        `gara.inscription_end` con la fine richiesta (lo fa la route, con una
+        nota in pagina).
+
+        Prima l'aggiustamento veniva *annunciato* sollevando un ValueError. Ma
+        il metodo è `@transactional`: l'eccezione faceva rollback, la correzione
+        spariva con tutto il resto e la gara restava in `setup`. All'utente
+        arrivava «È stata automaticamente impostata alla data della gara», una
+        frase che descriveva qualcosa che non era successo, sopra a un'apertura
+        che non aveva avuto luogo — e che quindi non aveva motivo di riprovare.
+        """
         from models.competition.models import Gara
         from models.competition.state_service import StateService
 
@@ -696,30 +710,15 @@ class InscriptionService:
         if not gara:
             raise NotFoundError(f"Gara {gara_id} non trovata")
 
-        # Valida che la data di fine iscrizioni non superi la data della gara
-        adjusted = False
         if gara.date and gara.time:
-            # Converti date in datetime per confronto
             from datetime import datetime as dt
 
             gara_datetime = dt.combine(gara.date, gara.time)
-
-            if inscription_end > gara_datetime:
-                inscription_end = gara_datetime
-                adjusted = True
+            inscription_end = min(inscription_end, gara_datetime)
 
         gara.inscription_start = inscription_start
         gara.inscription_end = inscription_end
-        gara = StateService.to_inscription(gara)
-
-        # Solleva un'eccezione informativa se la data è stata aggiustata
-        if adjusted:
-            raise ValueError(
-                "La data di fine iscrizioni non può superare la data della gara. "
-                "È stata automaticamente impostata alla data della gara."
-            )
-
-        return gara
+        return StateService.to_inscription(gara)
 
     @staticmethod
     @transactional(domain="competition")

@@ -213,8 +213,26 @@ class PermissionChecker:
 
     @staticmethod
     def can_insert_match_results(user, match_id: int) -> bool:
-        """
-        Check if user can insert results for a match.
+        """Chi può usare gli strumenti di *gestione* del punteggio.
+
+        Guardia delle route `/admin/match/<id>/…` (`match_manager_required`):
+        segnare un rack, imporre un risultato, validare, resettare, cambiare
+        orari e tavolo. Sono azioni che valgono da subito e per tutti, senza
+        chiedere niente a nessuno.
+
+        **Chi gioca non passa di qui.** Ha il suo percorso
+        (`/player/match/<id>/racks/add` + `/confirm`), dove il risultato si
+        chiude con la firma di entrambi — ed è la firma dell'avversario a
+        renderlo un risultato invece che un'affermazione. Lasciare aperta anche
+        la porta di servizio significava che un giocatore poteva chiudere la
+        partita col punteggio che preferiva: i rack inseriti da lì valgono
+        `validated_by_admin=True`. Nessuna schermata glielo proponeva (il
+        template sceglie il flusso player, issue #66), ma l'URL era raggiungibile
+        a mano.
+
+        Un direttore che gioca nella gara che dirige mantiene l'accesso dal ramo
+        `is_director`: è il suo ruolo sulla gara a darglielo, non l'essere in
+        campo.
 
         Args:
             user: User instance or None
@@ -245,10 +263,6 @@ class PermissionChecker:
             # Director can insert results for matches in their competitions
             if user.is_director:
                 return PermissionChecker.can_manage_competition(user, match.gara_id)
-
-            # Players can insert results for their own matches
-            if user.is_player:
-                return match.player1_id == user.id or match.player2_id == user.id
 
         except Exception:
             # If we're outside application context or other issues, return False

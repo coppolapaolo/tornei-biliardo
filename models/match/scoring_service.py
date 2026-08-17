@@ -33,13 +33,23 @@ class ScoringService:
 
     @staticmethod
     @transactional(domain="match")
-    def add_rack_for_player(match_id: int, user_id: int, winner_id: int) -> Rack:
+    def add_rack_for_player(
+        match_id: int,
+        user_id: int,
+        winner_id: int,
+        authoritative: bool = False,
+    ) -> Rack:
         """Add a rack won by specified player (simplified UX for tournament matches).
 
         Args:
             match_id: ID of the match
             user_id: ID of user adding the rack
             winner_id: ID of the player who won the rack
+            authoritative: chi segna dirige anche la gara. Tiene il segnapunti
+                da tavolo, comodo mentre si gioca, ma il suo punteggio non ha
+                bisogno di essere confermato da nessuno: è già la parola del
+                direttore. Chiedergli di accettare il risultato che ha appena
+                scritto significherebbe fargli validare sé stesso.
 
         Returns:
             The created Rack object
@@ -97,6 +107,27 @@ class ScoringService:
                 )
                 match.confirm_result(match_winner_id)
 
+                # Restano due modi perché anche la seconda firma sia già data.
+                #
+                # Il primo: a segnare il rack decisivo è stato **chi perde**.
+                # Ha appena dichiarato il punto che chiude la partita a favore
+                # dell'altro — chiedergli poi di accettare il risultato è
+                # chiedergli due volte la stessa cosa, con in mezzo una
+                # schermata che sembra un ostacolo.
+                #
+                # Il secondo: chi segna **dirige la gara**. Il suo punteggio è
+                # già quello ufficiale, da qualunque schermata lo scriva.
+                #
+                # In entrambi i casi resta possibile annullare l'ultimo rack:
+                # il gesto è implicito, non irrevocabile.
+                loser_id = (
+                    match.player2_id
+                    if match_winner_id == match.player1_id
+                    else match.player1_id
+                )
+                if authoritative or user_id == loser_id:
+                    match.confirm_result(loser_id)
+
         # Soft transition: pending → playing
         if match.status == MatchStatus.PENDING.value:
             match.status = MatchStatus.PLAYING.value
@@ -119,6 +150,26 @@ class ScoringService:
         match = db.session.get(Match, match_id)
         if match is None:
             raise ValueError("Match non trovato")
+
+        # Un rack segnato per sbaglio non smette di essere un errore quando è
+        # l'ultimo: proprio quello chiude la partita, ed è il momento in cui
+        # accorgersene costa di più. Finché il direttore non ha validato, i
+        # giocatori possono tornare indietro; dopo, il risultato è agli atti e
+        # si passa dal reset del direttore.
+        #
+        # Attenzione ai due stati finali, che portano nomi fuorvianti:
+        #   COMPLETED  → l'ha chiusa il **direttore** (validazione o forfait)
+        #   VALIDATED  → l'hanno chiusa i **giocatori**, confermando entrambi
+        # Il ripensamento riguarda solo il secondo. `validated_by_admin` non
+        # serve a distinguerli: su `Match` quella colonna non esiste (vive su
+        # `Rack`), e i due punti che la assegnano scrivono un attributo
+        # volatile che non arriva mai al database.
+        if match.status == MatchStatus.COMPLETED.value:
+            raise ValueError(
+                "Il risultato è già stato validato: per correggerlo serve il "
+                "direttore di gara"
+            )
+        riapri = match.status == MatchStatus.VALIDATED.value
 
         # Find last non-deleted rack for this player
         last_rack = (
@@ -146,6 +197,15 @@ class ScoringService:
 
         # Reset confirmations
         match.reset_confirmations()
+
+        if riapri:
+            # La partita era chiusa: riaprirla significa anche disfare ciò che
+            # la chiusura aveva prodotto (i delta di rating), altrimenti il
+            # punteggio torna indietro e le classifiche no.
+            from .state_service import MatchStateService
+
+            MatchStateService.emit_reopened_event(match)
+            match.status = MatchStatus.PLAYING.value
 
     # -----------------------------
     # FORFEIT HANDLING
@@ -223,6 +283,17 @@ class ScoringService:
         match = db.session.get(Match, match_id)
         if not match:
             raise ValueError(f"Match {match_id} non trovato")
+
+        # Un trio ha tre punteggi e una rotazione (chi aspetta, chi rientra):
+        # sta tutto nel `TrioMatch`, e si segna dalle sue route
+        # (`/admin/gara/trio/<id>/add_rack`). Qui si scriverebbero invece
+        # `player1_score`/`player2_score` sul `Match`, cioè un secondo
+        # punteggio accanto a quello vero, libero di divergere al primo tocco.
+        # Nessuna schermata lo fa, ma l'endpoint lo accettava.
+        if match.is_trio:
+            raise ValueError(
+                "Il match a tre si segna dal suo tabellino, non dai rack a due"
+            )
 
         # Validate match not already complete
         if match.rack_score.is_complete():

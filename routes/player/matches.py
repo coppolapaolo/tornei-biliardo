@@ -143,9 +143,26 @@ def add_rack_simplified(match_id):
     if not winner_id:
         return jsonify({"error": "Winner ID is required"}), 400
 
+    # Chi dirige la gara e ci gioca resta su questo segnapunti — è quello
+    # comodo da usare al tavolo, e il flusso player è la scelta giusta dopo
+    # l'issue #66. Ma il suo punteggio non ha bisogno della firma di nessuno:
+    # è già quello ufficiale. Il permesso si guarda **su questa gara**, non
+    # sul ruolo globale, che è esattamente la distinzione persa in #66.
+    from models.user.permissions import PermissionChecker
+
+    match_prima = db.session.get(Match, match_id)
+    dirige_la_gara = bool(
+        match_prima
+        and match_prima.gara_id
+        and PermissionChecker.can_manage_competition(current_user, match_prima.gara_id)
+    )
+
     try:
         rack = MatchService.add_rack_for_player(
-            match_id=match_id, user_id=current_user.id, winner_id=winner_id
+            match_id=match_id,
+            user_id=current_user.id,
+            winner_id=winner_id,
+            authoritative=dirige_la_gara,
         )
 
         # Get updated match

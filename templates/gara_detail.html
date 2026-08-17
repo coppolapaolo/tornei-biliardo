@@ -35,7 +35,7 @@
       </button>
       <input type="number" class="c7-stepper__value" id="{{ input_id }}" min="0"{% if max_value %} max="{{ max_value }}"{% endif %}
              oninput="validateQuickResultLive()" style="border: 0; background: transparent; width: 100%;">
-      <button type="button" onclick="stepQuickScore('{{ input_id }}', 1)" aria-label="{{ _('Un rack in più') }}">
+      <button type="button" data-piu-per="{{ input_id }}" onclick="stepQuickScore('{{ input_id }}', 1)" aria-label="{{ _('Un rack in più') }}">
         <i class="fas fa-plus"></i>
       </button>
     </div>
@@ -269,7 +269,7 @@
    la card Gestione (_gara_management.html), fra le azioni del direttore. #}
 {# Directors: on desktop always here, on mobile SSR phase moved to bottom #}
 {% if not is_ssr_phase %}
-<div class="{% if playing_admin %}order-4 order-lg-1{% endif %}" id="sectionDirettori" data-c7-tab="gestione">
+<div class="c7-section--main{% if playing_admin %} order-4 order-lg-1{% endif %}" id="sectionDirettori" data-c7-tab="gestione">
   {% include "components/_gara_directors.html" %}
 </div>
 {% else %}
@@ -282,7 +282,7 @@
 {# Tavoli della gara: editabile tra apertura iscrizioni e avvio,
    sola lettura durante il gioco (il componente gestisce gli stati) #}
 {% if gara.status in [GaraStatus.INSCRIPTION.value, GaraStatus.PLAYING.value] %}
-<div class="{% if playing_admin %}order-5 order-lg-1{% endif %}" id="sectionTavoli" data-c7-tab="gestione">
+<div class="c7-section--main{% if playing_admin %} order-5 order-lg-1{% endif %}" id="sectionTavoli" data-c7-tab="gestione">
   {% include "components/_gara_tables_config.html" %}
 </div>
 {% endif %}
@@ -290,7 +290,7 @@
 {# Elenco squadre della competizione (US-3): sta in Gestione accanto ai tavoli,
    perche' e' configurazione della gara e non un elenco di persone. Il
    componente si mostra da se' solo quando le squadre sono attive. #}
-<div class="{% if playing_admin %}order-6 order-lg-1{% endif %}" id="sectionSquadre" data-c7-tab="gestione">
+<div class="c7-section--main{% if playing_admin %} order-6 order-lg-1{% endif %}" id="sectionSquadre" data-c7-tab="gestione">
   {% include "components/_squadre_management.html" %}
 </div>
 
@@ -1502,6 +1502,10 @@
     document.getElementById('quickTrioPlayer1Score').required = false;
     document.getElementById('quickTrioPlayer2Score').required = false;
     document.getElementById('quickTrioPlayer3Score').required = false;
+
+    // Con il punteggio precaricato il tetto puo' essere gia' raggiunto: i «+»
+    // vanno spenti all'apertura, non al primo tocco.
+    validateQuickResultLive();
   }
 
   /**
@@ -1541,6 +1545,13 @@
     document.getElementById('quickTrioPlayer1Score').required = true;
     document.getElementById('quickTrioPlayer2Score').required = true;
     document.getElementById('quickTrioPlayer3Score').required = true;
+
+    // Il modal e' uno solo: i «+» spenti da un match precedente resterebbero
+    // spenti anche qui, dove il limite e' un altro (lo tiene l'attributo max).
+    ['quickPlayer1Score', 'quickPlayer2Score'].forEach(function (id) {
+      const piu = document.querySelector('[data-piu-per="' + id + '"]');
+      if (piu) piu.disabled = false;
+    });
   }
 
   /**
@@ -1589,6 +1600,8 @@
       }
     }
 
+    aggiornaLimitiQuickResult(dist, raceTo, p1, p2);
+
     if (error) {
       msgText.textContent = error;
       msgBox.style.display = '';
@@ -1598,6 +1611,27 @@
     msgBox.style.display = 'none';
     if (submitBtn) submitBtn.disabled = false;
     return true;
+  }
+
+  /**
+   * Spegne i «+» quando il match non ammette altri rack.
+   *
+   * Il tetto non è per giocatore ma del match, e dipende dal formato:
+   * - «al N»: appena uno arriva a N la partita è decisa, e si fermano
+   *   entrambi.
+   * - «esattamente N»: conta la somma. Con un massimo di N a testa si
+   *   arrivava a 2N, e il limite si scopriva solo dal messaggio rosso a
+   *   pulsante «Imposta risultato» già spento — cioè dopo aver sbagliato,
+   *   invece che prima.
+   */
+  function aggiornaLimitiQuickResult(dist, raceTo, p1, p2) {
+    const stop = raceTo
+      ? (p1 >= dist || p2 >= dist)
+      : ((p1 + p2) >= dist);
+    ['quickPlayer1Score', 'quickPlayer2Score'].forEach(function (id) {
+      const piu = document.querySelector('[data-piu-per="' + id + '"]');
+      if (piu) piu.disabled = stop;
+    });
   }
 
   function submitQuickResult(event) {

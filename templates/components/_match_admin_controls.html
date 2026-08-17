@@ -18,7 +18,7 @@
             <input type="number" class="c7-stepper__value" id="{{ input_id }}" name="{{ input_name }}"
                    min="0" max="{{ max_value }}" value="{{ value }}" required
                    style="border: 0; background: transparent; width: 100%;">
-            <button type="button" onclick="stepMatchScore('{{ input_id }}', 1)" aria-label="{{ _('Un rack in più') }}">
+            <button type="button" data-piu-per="{{ input_id }}" onclick="stepMatchScore('{{ input_id }}', 1)" aria-label="{{ _('Un rack in più') }}">
                 <i class="fas fa-plus"></i>
             </button>
         </div>
@@ -80,7 +80,8 @@
         {# === REGULAR MATCH - 2 player admin controls === #}
         {% else %}
         <!-- Form Risultato Diretto -->
-        <form action="{{ url_for('admin.match.set_match_result_direct', match_id=match.id) }}" method="POST"
+        <form id="matchResultForm"
+            action="{{ url_for('admin.match.set_match_result_direct', match_id=match.id) }}" method="POST"
             class="c7-stack" onsubmit="return validateScoreForm(this)"
             data-is-race-to="{{ 'true' if match.distance_config.is_race_to_racks else 'false' }}"
             data-winning-score="{{ match.effective_distance }}">
@@ -179,7 +180,58 @@ function stepMatchScore(inputId, delta) {
     const next = (isNaN(current) ? min : current) + delta;
     input.value = Math.min(max, Math.max(min, next));
     input.dispatchEvent(new Event('input', { bubbles: true }));
+    aggiornaLimitiRack();
 }
+
+/**
+ * Spegne i «+» quando il match non ammette altri rack.
+ *
+ * Il limite non è per giocatore, è del match, e cambia con il formato:
+ * - «al N»: appena uno arriva a N la partita è finita, quindi si fermano
+ *   entrambi — non solo quello che ha vinto.
+ * - «esattamente N»: conta la somma. Un massimo di N per ciascuno lasciava
+ *   arrivare a 2N, e il limite si scopriva solo premendo «Imposta risultato».
+ *
+ * Un pulsante spento dice la regola prima che venga infranta; un messaggio
+ * d'errore la dice dopo, quando l'utente ha già fatto il lavoro sbagliato.
+ */
+function aggiornaLimitiRack() {
+    const form = document.getElementById('matchResultForm');
+    if (!form) return;
+
+    const alN = form.dataset.isRaceTo === 'true';
+    const traguardo = parseInt(form.dataset.winningScore, 10);
+    const uno = document.getElementById('adminScore1');
+    const due = document.getElementById('adminScore2');
+    if (!uno || !due || isNaN(traguardo)) return;
+
+    const p1 = parseInt(uno.value, 10) || 0;
+    const p2 = parseInt(due.value, 10) || 0;
+
+    let stop1, stop2;
+    if (alN) {
+        const finita = p1 >= traguardo || p2 >= traguardo;
+        stop1 = finita;
+        stop2 = finita;
+    } else {
+        stop1 = (p1 + p2) >= traguardo;
+        stop2 = stop1;
+    }
+
+    const piu1 = form.querySelector('[data-piu-per="adminScore1"]');
+    const piu2 = form.querySelector('[data-piu-per="adminScore2"]');
+    if (piu1) piu1.disabled = stop1;
+    if (piu2) piu2.disabled = stop2;
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Anche a mano: il numero si può digitare, non solo pigiare.
+    ['adminScore1', 'adminScore2'].forEach(function (id) {
+        const campo = document.getElementById(id);
+        if (campo) campo.addEventListener('input', aggiornaLimitiRack);
+    });
+    aggiornaLimitiRack();
+});
 
 /**
  * Validates score form before submission.

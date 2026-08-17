@@ -46,7 +46,12 @@ blocks:
         text: "The two large «+1» buttons, one per player. Yours is the solid dark one: you can tell it apart without reading the name."
         hint: partita.segnapunti
       - name: "Undo last rack"
-        text: "Removes the last point awarded. For when the wrong button gets pressed."
+        text: >-
+          Removes the last point awarded. For when the wrong button gets
+          pressed, and it stays within reach once the distance has been reached
+          and even just after the match closes, until the director validates:
+          the rack that closes the match is exactly the one where a mistake
+          costs the most.
       - name: "Declare forfeit"
         text: "Only for when the match really is abandoned: it awards the opponent all the remaining racks."
         hint: partita.forfait
@@ -73,8 +78,9 @@ blocks:
           register: press again.
       - title: "Carry on to the distance"
         text: >-
-          You keep going like that rack by rack. When one of you reaches the
-          agreed number, the match closes on its own.
+          You keep going like that rack by rack. When the agreed number is
+          reached the **+1** buttons switch off and you move on to confirming
+          the result.
 
   - type: note
     tone: tip
@@ -95,11 +101,16 @@ blocks:
 
   - type: text
     text: >-
-      **The match is already closed**: from then on you cannot correct it
-      yourself. Call the competition director, who can reset the match and have
-      you enter it again. That is deliberate: a closed result has gone into the
-      standings, and it should not be able to change without the organiser
-      knowing.
+      **The match has just closed**: **Undo last rack** is still there, in the
+      green box. It removes the wrong rack and puts the match back in progress,
+      so you can replay it. This holds until the director validates the result.
+
+  - type: text
+    text: >-
+      **The director has already validated**: from then on you cannot correct it
+      yourself. Call them: they can reset the match and have you enter it again.
+      That is deliberate: a validated result has gone into the standings, and it
+      should not be able to change without the organiser knowing.
 
   - type: heading
     id: forfait
@@ -124,10 +135,36 @@ blocks:
 
   - type: text
     text: >-
-      The match closes on its own once the distance is reached and becomes
-      **Finished**. From then on: the result goes into the round standings, the
-      table frees up for the next match, and once **every** match in the round
-      is done the director can start the next one.
+      Once the distance is reached **Distance reached** appears: the score can
+      no longer go up and all that is left is to confirm it. Whoever won counts
+      as agreeing without doing anything — they have no reason to dispute the
+      result that hands them the win — so the missing signature is the loser's,
+      with the two buttons **Accept** and **Reject**.
+
+  - type: note
+    tone: tip
+    title: "If you record the rack that makes you lose, nothing more is asked of you"
+    text: >-
+      The one keeping score is often the one losing. Having already recorded
+      the point that closes the match in the other player's favour, they are
+      not asked to accept it a second time: the match closes straight away. The
+      same goes when the competition director is the one recording, because
+      their score is already the official one.
+
+  - type: text
+    text: >-
+      **Reject** closes nothing: it removes the last rack and puts the score
+      back one tap from the end, so you can sort it out at the table and record
+      it again.
+
+  - type: text
+    text: >-
+      Once the result is confirmed the match becomes **Finished**. From then
+      on: the result goes into the round standings, the table frees up for the
+      next match, and once **every** match in the round is done the director can
+      start the next one. In place of the **+1** buttons a green box remains
+      with **Undo last rack** on its own: if the last rack was wrong you remove
+      it and the match goes back in progress, until the director validates.
 
   - type: shot
     shot: gara-turni
@@ -140,8 +177,8 @@ blocks:
       - q: "The score is not updating on my opponent's phone."
         a: "Updates travel over the network: if the venue has poor signal it can take a few seconds. Reloading the page brings it back in line."
       - q: "We played more racks than we should have."
-        a: "The app does not allow it: once the distance is reached the match closes and the scoreboard disappears. Any extra racks simply do not count."
+        a: "The app does not allow it: once the distance is reached the +1 buttons switch off. Any extra racks simply do not count."
       - q: "Do both of us have to confirm the result?"
-        a: "In some setups, yes: a confirm button appears for your opponent too. If it does not appear, the result is already final as it is."
+        a: "Both signatures are needed, but the winner's is automatic: the only one left for you to give is the loser's. And if the loser recorded the last rack they already gave it by pressing, so no button appears at all. When «Accept» and «Reject» show up, it is your turn."
       - q: "What is the table number at the top?"
         a: "The table the director assigned you for this match. If there is none, the venue has no tables configured and you sort it out on the spot."

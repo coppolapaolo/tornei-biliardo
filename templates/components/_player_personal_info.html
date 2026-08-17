@@ -1,44 +1,64 @@
-{# templates/components/_player_personal_info.html #}
-<!-- Info Personali -->
-<div class="card mb-4">
-    <div class="card-header">
-        <h5><i class="fas fa-id-card"></i> Informazioni Personali</h5>
-    </div>
-    <div class="card-body">
-        <p><strong>Username:</strong> {{ user.username }}</p>
-        <p><strong>Email:</strong> {{ user.email }}</p>
-        <p><strong>Telefono:</strong> {{ user.phone or 'Non specificato' }}</p>
-        <p><strong>Registrato:</strong> {{ user.created_at|date_local }}</p>
+{# templates/components/_player_personal_info.html — 7c
+
+   Le informazioni personali del profilo proprio. Stessa forma `dl` della
+   scheda pubblica in `player/profile.html`, così le due viste dello stesso
+   profilo si somigliano invece di sembrare due pagine diverse.
+
+   Città e squadra compaiono qui perché il giocatore le ha compilate e non le
+   rivedeva più da nessuna parte: la città guida la discovery per prossimità
+   (ADR-034) e la squadra precompila l'iscrizione alle gare che separano i
+   compagni (ADR-039). Un dato che ha effetti ma che non si vede è un dato che
+   nessuno corregge. #}
+<section class="c7-card">
+    <div class="c7-kicker">{{ _("Informazioni personali") }}</div>
+    <dl style="display: grid; grid-template-columns: auto 1fr; gap: 10px 18px; margin: 14px 0 0; font-size: 13px;">
+        <dt class="text-muted" style="font-weight: 700;">{{ _("Nome utente") }}</dt>
+        <dd style="margin: 0; text-align: right;">{{ user.username }}</dd>
+
+        <dt class="text-muted" style="font-weight: 700;">Email</dt>
+        <dd style="margin: 0; text-align: right;">{{ user.email }}</dd>
+
+        <dt class="text-muted" style="font-weight: 700;">{{ _("Telefono") }}</dt>
+        <dd style="margin: 0; text-align: right;">{{ user.phone or _("Non indicato") }}</dd>
+
+        <dt class="text-muted" style="font-weight: 700;">{{ _("Città") }}</dt>
+        <dd style="margin: 0; text-align: right;">{{ user.home_city or _("Non indicata") }}</dd>
+
+        <dt class="text-muted" style="font-weight: 700;">{{ _("Squadra") }}</dt>
+        <dd style="margin: 0; text-align: right;">{{ user.squadra or _("Nessuna") }}</dd>
+
+        <dt class="text-muted" style="font-weight: 700;">{{ _("Iscritto dal") }}</dt>
+        <dd class="c7-num" style="margin: 0; text-align: right;">{{ user.created_at|date_local }}</dd>
+
         {% if current_user.role == 'player' %}
         {% set dr = current_user|attr('director_request')|default(None, true) %}
-        {% if dr %}
-        <p><strong>Richiesta Director:</strong> {{ dr | status_badge('director_request') }}</p>
-        {% else %}
-        <p><strong>Richiesta Director:</strong> <span class="text-muted">Nessuna richiesta</span></p>
+        <dt class="text-muted" style="font-weight: 700;">{{ _("Richiesta direttore") }}</dt>
+        <dd style="margin: 0; text-align: right;">
+            {% if dr %}{{ dr | status_badge('director_request') }}
+            {% else %}<span class="text-muted">{{ _("Nessuna richiesta") }}</span>{% endif %}
+        </dd>
         {% endif %}
-        {% endif %}
+    </dl>
 
-        <hr>
-        <div class="d-flex gap-2 flex-wrap">
-            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('player.edit_profile') }}">
-                <i class="fas fa-edit"></i> {{ _("Modifica contatti") }}
-            </a>
-            <a class="btn btn-sm btn-outline-info" href="{{ url_for('player.privacy_settings') }}">
-                <i class="fas fa-lock"></i> {{ _("Privacy") }}
-            </a>
-            <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal"
-                data-bs-target="#changePasswordModal">
-                <i class="fas fa-key"></i> {{ _("Cambia password") }}
+    <div class="d-flex gap-2 flex-wrap" style="margin-top: 16px;">
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('player.edit_profile') }}">
+            <i class="fas fa-edit"></i> {{ _("Modifica contatti") }}
+        </a>
+        <a class="btn btn-sm btn-outline-info" href="{{ url_for('player.privacy_settings') }}">
+            <i class="fas fa-lock"></i> {{ _("Privacy") }}
+        </a>
+        <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal"
+            data-bs-target="#changePasswordModal">
+            <i class="fas fa-key"></i> {{ _("Cambia password") }}
+        </button>
+        {% if current_user.role == 'player' and not current_user.director_request and
+        current_user.can_access('request_director') %}
+        <form action="{{ url_for('player.request_director') }}" method="POST" style="display: inline;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-sm btn-outline-success">
+                <i class="fas fa-user-tie"></i> {{ _("Richiedi il ruolo di direttore di gara") }}
             </button>
-            {% if current_user.role == 'player' and not current_user.director_request and
-            current_user.can_access('request_director') %}
-            <form action="{{ url_for('player.request_director') }}" method="POST" style="display: inline;">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="btn btn-sm btn-outline-success">
-                    <i class="fas fa-user-tie"></i> Richiedi ruolo di Direttore di Gara
-                </button>
-            </form>
-            {% endif %}
-        </div>
+        </form>
+        {% endif %}
     </div>
-</div>
+</section>

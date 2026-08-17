@@ -125,12 +125,12 @@ def unsubscribe_from_gara(gara_id):
         user_id=current_user.id, gara_id=gara_id
     ).first()
     if not inscription:
-        flash("Non sei iscritto a questa gara.")
+        flash(_("Non sei iscritto a questa gara."))
         return redirect(url_for("player.dashboard"))
 
     # Verifica che la gara non sia ancora iniziata
     if gara.status not in [GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value]:
-        flash("Impossibile disiscriversii: la gara è già iniziata!")
+        flash(_("Impossibile disiscriversi: la gara è già iniziata!"))
         return redirect(url_for("player.dashboard"))
 
     # Verifica che non ci siano partite già create
@@ -142,7 +142,7 @@ def unsubscribe_from_gara(gara_id):
     ).first()
 
     if existing_matches:
-        flash("Impossibile disiscriversii: ci sono già partite programmate!")
+        flash(_("Impossibile disiscriversi: ci sono già partite programmate!"))
         return redirect(url_for("player.dashboard"))
 
     # Procedi con la disiscrizione usando il servizio
@@ -151,9 +151,9 @@ def unsubscribe_from_gara(gara_id):
     success = InscriptionService.uninscribe_user(current_user.id, gara_id)
 
     if success:
-        flash(f"Disiscrizione da {gara.name} completata!")
+        flash(_("Disiscrizione da %(gara)s completata!", gara=gara.display_name))
     else:
-        flash("Errore durante la disiscrizione.", "error")
+        flash(_("Errore durante la disiscrizione."), "error")
 
     # Redirect mantenendo il campionato selezionato
     return redirect(url_for("player.dashboard", campionato_id=gara.campionato_id))

@@ -101,4 +101,4 @@ blocks:
       - q: "Do I have to keep score on my phone?"
         a: "No. The competition director can enter results for everyone. The phone is convenient, not compulsory."
       - q: "What if I record a point by mistake?"
-        a: "You undo it: there is an «Undo last rack» button. If the result has already been closed, the competition director can correct it."
+        a: "You undo it: there is an «Undo last rack» button, and it stays there even right after the match closes. Once the director has validated the result, though, correcting it is up to them."

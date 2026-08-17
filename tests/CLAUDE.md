@@ -131,20 +131,37 @@ The test suite follows a modern pytest-based approach with clear separation betw
 - Clear naming enables traceability to source documentation
 
 ### End-to-End Tests (`new/e2e/`)
-**Purpose**: Test complete user workflows through the web interface
+**Purpose**: percorrere i flussi utente **attraverso le route**, con il test
+client di Flask. Niente browser, niente Selenium (mai stato usato: la voce in
+questo file lo dichiarava, ma nessun test lo importava).
 
-**Community Scenarios**:
-- `test_member_onboarding_flow.py`: Complete community member registration
-- `test_tournament_organization_flow.py`: Community leader event organization
-- `test_casual_match_flow.py`: Social match proposal and coordination
-- `test_community_interaction_flow.py`: Member-to-member social features
-- `test_admin_community_management.py`: Platform moderation and administration
+| File | Cosa copre |
+|------|-----------|
+| `gara_driver.py` | Il driver HTTP condiviso: login, form di creazione, iscrizioni, avvio turni, segnatura, lettura della pagina |
+| `test_gara_e2e_amalfi.py` | Gara Amalfi intera + sequenza dei turni + configurazioni rifiutate |
+| `test_gara_e2e_random.py` | Gara Random intera + turni tutti insieme + classifica complessiva |
+| `test_gara_e2e_interazioni.py` | Percorsi di segnatura, annullamenti, permessi, iscrizioni, dispari |
+| `test_complete_workflows.py` | Promozione a direttore, workflow storici |
 
-**Testing Approach**:
-- Selenium WebDriver automation
-- Real browser interaction
-- Complete user workflow validation
-- Cross-browser compatibility testing
+**Cosa cerca questo livello** — e cosa no. Le regole di dominio (trio, bye,
+lista d'attesa, anti-reincontro, spareggi) hanno i loro test di unità, dove si
+decidono: rifarle qui costa tempo e non aggiunge fiducia. Un caso merita un e2e
+solo se può rompersi **nel passaggio interfaccia↔server**: un permesso applicato
+al ruolo globale invece che ai permessi sulla gara (issue #66), un pulsante che
+punta all'endpoint sbagliato, un rifiuto del dominio che diventa 500 invece che
+messaggio, uno stato che la pagina non mostra.
+
+**Regole di scrittura**:
+- **Azioni solo via HTTP.** Nessun service chiamato a mano: se una cosa non si
+  può fare da una route, il test non la fa — ed è un'informazione.
+- **Il sorteggio è casuale** (`draw_seed`): si asserisce sulla *forma* del turno
+  (quante partite, chi compare quante volte), mai su chi incontra chi.
+- **`start_round/<n>` risponde sempre 200**, anche quando rifiuta: l'esito sta in
+  `success` del JSON. Asserire sullo status code lì non verifica nulla.
+- **Un rilievo trovato ma non ancora corretto** si scrive come test
+  `@pytest.mark.xfail(strict=True)` con la spiegazione in `reason`: descrive il
+  comportamento voluto, ed è già il test di regressione pronto per il giorno del
+  fix (con `strict` pytest avvisa se passa).
 
 ### Frontend Headless Tests (`frontend/` — jsdom, Node)
 **Purpose**: Test the deterministic **client-side JS logic** that the Python
@@ -304,9 +321,14 @@ Tests organized by platform domains supporting community growth:
 - **alembic**: Migration testing
 
 ### Web Testing
-- **Selenium**: Browser automation
-- **pytest-selenium**: Selenium integration
-- **WebDriverManager**: Browser driver management
+- **Flask test client**: richieste HTTP vere in-process, sulle route vere. È
+  tutto ciò che serve al livello e2e (vedi `new/e2e/gara_driver.py`)
+- **jsdom + Node** (`tests/frontend/`): il JavaScript deterministico, che il
+  test client non esegue
+- **Playwright**: installato nel venv ma **non** usato dai test — lo usa
+  `scripts/help_docs/capture_screenshots.py` per generare le schermate della
+  guida. È la strada già pronta se un giorno servisse un livello con browser
+  vero (il JS inline, il polling live, i modali)
 
 ### Mock and Fixtures
 - **pytest-mock**: Mocking utilities
