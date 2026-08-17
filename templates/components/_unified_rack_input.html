@@ -26,13 +26,19 @@ Parametri:
 {# Stato partita — Match usa 'playing', IndividualMatch usa 'in_progress' #}
 {% set status_str = match.status.value|default(match.status) %}
 {% set is_in_progress = status_str in ['in_progress', 'playing'] %}
-{% set is_completed_not_validated = status_str == 'completed' %}
+{% set is_completed_not_validated = status_str == MatchStatus.CLOSED_UNILATERALLY.value %}
 
-{# I due stati finali portano nomi che ingannano: "completed" e' la chiusura del
-   **direttore** (validazione o forfait), "validated" quella dei **giocatori**
-   che hanno confermato entrambi. Solo dalla seconda si torna indietro, e solo
-   fino a quando il direttore non mette mano al risultato. #}
-{% set chiusa_dai_giocatori = status_str == 'validated' %}
+{# I due stati finali si distinguono per **quante firme** hanno chiuso la
+   partita: CLOSED_UNILATERALLY (valore 'completed') e' la chiusura senza la
+   doppia conferma — direttore, forfait, bye — mentre CONFIRMED_BY_BOTH (valore
+   'validated') e' quella dei giocatori che hanno confermato entrambi. Solo
+   dalla seconda si torna indietro, e solo finche' il direttore non mette mano
+   al risultato.
+
+   I nomi dei membri sono stati corretti il 2026-08-17 perche' suggerivano il
+   contrario di quel che fanno; i **valori** sono rimasti quelli storici, ed e'
+   per questo che qui si passa dall'enum invece che dalla stringa. #}
+{% set chiusa_dai_giocatori = status_str == MatchStatus.CONFIRMED_BY_BOTH.value %}
 {% set puo_annullare = user_is_player and (is_in_progress or chiusa_dai_giocatori) %}
 
 {% set is_multi_set = match.is_multi_set is defined and match.is_multi_set %}
