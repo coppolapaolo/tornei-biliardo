@@ -7,15 +7,16 @@ Due difetti gemelli in `scripts/auto_deploy.py`, scoperti il 2026-08-17 con
    script — che e' quello del virtualenv solo se il task e' configurato per
    usarlo. Il docstring dello script documentava `python
    scripts/auto_deploy.py`, e un `python` nudo su PythonAnywhere e'
-   l'interprete di sistema: le dipendenze finivano fuori da `venv/`, dove la
-   web app non guarda. `deps_in_sync()`, interrogando lo stesso interprete, le
-   trovava e dichiarava che era tutto a posto.
+   l'interprete di sistema: da li' `pip install` non ha i permessi per
+   scrivere, quindi falliva.
 
    Nessuno se n'era accorto per sei mesi perche' fra febbraio e agosto 2026 non
-   e' stata aggiunta nessuna dipendenza: ogni installazione era un no-op. Il
-   primo pacchetto nuovo — PyYAML, per il mini-sito di aiuto — non e' mai
-   arrivato in produzione, e `ModuleNotFoundError: No module named 'yaml'` e'
-   sopravvissuto a due deploy consecutivi.
+   e' stata aggiunta nessuna dipendenza: ogni installazione era un no-op, e un
+   no-op fallito non si distingue da uno riuscito. Il primo pacchetto nuovo —
+   PyYAML, per il mini-sito di aiuto — non e' mai arrivato in produzione, e
+   `ModuleNotFoundError: No module named 'yaml'` e' sopravvissuto a due deploy
+   consecutivi. Verificato dopo il fatto: il pacchetto non era ne' in `venv/`
+   ne' in `~/.local`.
 
 2. **un `pip install` fallito era solo un WARNING**, e il deploy proseguiva
    fino al reload. La web app ripartiva col codice nuovo e le dipendenze

@@ -39,17 +39,27 @@ Setup on PythonAnywhere:
 Or run manually via Bash console:
     cd /home/paolocoppola/mysite && venv/bin/python scripts/auto_deploy.py
 
-Il percorso completo del `python` del virtualenv **non e' pignoleria**: fino al
-2026-08-17 qui c'era scritto `python scripts/auto_deploy.py`, e un `python`
-nudo su PythonAnywhere e' l'interprete di sistema. Lo script installava allora
-le dipendenze con `sys.executable -m pip`, cioe' *fuori* dal virtualenv da cui
-la web app importa — e `deps_in_sync()`, che interroga lo stesso interprete,
-le trovava dove le aveva messe e rispondeva che era tutto a posto. Il difetto
-e' rimasto invisibile da febbraio ad agosto perche' in quei sei mesi non e'
-stata aggiunta nessuna dipendenza nuova: ogni installazione era un no-op.
-Quando PyYAML e' arrivato, `/aiuto` ha risposto 500 per due giorni con
-`ModuleNotFoundError: No module named 'yaml'`, mentre il pacchetto risultava
-regolarmente installato — altrove.
+Il `venv/bin/python` **non e' pignoleria**: fino al 2026-08-17 qui c'era
+scritto `python scripts/auto_deploy.py`, e un `python` nudo su PythonAnywhere
+e' l'interprete di sistema. Lo script installava allora le dipendenze con
+`sys.executable -m pip`, cioe' con un interprete che nel virtualenv della web
+app non puo' scrivere: `pip install` senza `--user` non ha i permessi per i
+site-packages di sistema, quindi falliva — e il fallimento era **un WARNING**,
+dopo il quale il deploy proseguiva fino al reload.
+
+Il difetto e' rimasto invisibile da febbraio ad agosto perche' in quei sei mesi
+non e' stata aggiunta nessuna dipendenza nuova: ogni installazione era un
+no-op, e un no-op fallito non si distingue da uno riuscito. Quando PyYAML e'
+arrivato, `/aiuto` ha risposto 500 per due giorni
+(`ModuleNotFoundError: No module named 'yaml'`) sopravvivendo a due deploy
+consecutivi. Verificato dopo il fatto: il pacchetto non era ne' in `venv/` ne'
+in `~/.local` — non era stato installato affatto.
+
+Stessa causa, altro sintomo: gli scheduled task che *importano l'app* col
+python di sistema si portano dietro i pacchetti di sistema di PythonAnywhere,
+fra cui un `pyOpenSSL` incompatibile con la `cryptography` del progetto (vedi
+`auto_enabling_integrations` in `app.py`). Anche `daily_jobs.py` e
+`send_match_reminders.py` vanno quindi lanciati con `venv/bin/python`.
 """
 
 import ast
