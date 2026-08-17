@@ -67,7 +67,7 @@
                                         {% endif %}
                                     </strong>
                                     <span class="badge {{ 'bg-success' if gara.status == GaraStatus.COMPLETED.value else 'bg-warning' }}">
-                                        {{ gara.status|title }}
+                                        {{ gara|status_text('gara') }}
                                     </span>
                                 </div>
                             </div>
@@ -97,13 +97,13 @@
                                     <p class="mb-0">
                                         <strong>
                                             {% if user_final_position == 1 %}
-                                                <span class="text-warning"><i class="fas fa-medal"></i> 1° Posto</span>
+                                                <span class="text-warning"><i class="fas fa-medal"></i> {{ _("1° Posto") }}</span>
                                             {% elif user_final_position == 2 %}
-                                                <span class="text-secondary"><i class="fas fa-medal"></i> 2° Posto</span>
+                                                <span class="text-secondary"><i class="fas fa-medal"></i> {{ _("2° Posto") }}</span>
                                             {% elif user_final_position == 3 %}
-                                                <span class="text-danger"><i class="fas fa-medal"></i> 3° Posto</span>
+                                                <span class="text-danger"><i class="fas fa-medal"></i> {{ _("3° Posto") }}</span>
                                             {% else %}
-                                                <span class="text-muted"><i class="fas fa-hashtag"></i> {{ user_final_position }}° Posto</span>
+                                                <span class="text-muted"><i class="fas fa-hashtag"></i> {{ _("%(position)s° Posto", position=user_final_position) }}</span>
                                             {% endif %}
                                         </strong>
                                     </p>

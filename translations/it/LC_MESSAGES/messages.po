@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-17 20:24+0200\n"
+"POT-Creation-Date: 2026-08-17 20:42+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -57,6 +57,7 @@ msgstr ""
 
 #: models/competition/models.py:397
 #: templates/admin/amalfi_classification.html:23
+#: templates/components/_campionato_garas.html:105
 #: templates/components/_new_gara_modal.html:69
 #, python-format
 msgid "Gara %(number)s"
@@ -1539,8 +1540,8 @@ msgid "Quest eliminata"
 msgstr ""
 
 #: routes/gamification/admin.py:262
-#: templates/gamification/admin/achievements.html:2
-#: templates/gamification/admin/achievements.html:8
+#: templates/gamification/admin/achievements.html:3
+#: templates/gamification/admin/achievements.html:9
 msgid "Gestione Achievement"
 msgstr ""
 
@@ -1549,7 +1550,7 @@ msgid "Achievement creato con successo"
 msgstr ""
 
 #: routes/gamification/admin.py:312
-#: templates/gamification/admin/achievement_form.html:10
+#: templates/gamification/admin/achievement_form.html:11
 msgid "Crea Nuovo Achievement"
 msgstr ""
 
@@ -1797,7 +1798,7 @@ msgstr ""
 
 #: routes/gamification/features.py:61
 #: templates/gamification/achievements.html:12
-#: templates/gamification/admin/achievements.html:22
+#: templates/gamification/admin/achievements.html:23
 #: templates/gamification/admin/dashboard.html:25
 #: templates/gamification/admin/dashboard.html:52
 #: templates/gamification/admin/feature_create.html:72
@@ -2321,7 +2322,7 @@ msgid "Esami:"
 msgstr ""
 
 #: templates/base.html:471
-#, fuzzy, python-format
+#, fuzzy
 msgid "esaminatore"
 msgstr ""
 
@@ -2422,7 +2423,7 @@ msgstr ""
 #: templates/components/_new_gara_modal.html:362
 #: templates/components/_open_inscriptions_modal.html:28
 #: templates/components/_soft_delete_modal.html:48
-#: templates/gamification/admin/achievement_form.html:123
+#: templates/gamification/admin/achievement_form.html:124
 #: templates/gamification/admin/level_config.html:173
 #: templates/gamification/admin/level_config.html:220
 #: templates/gamification/admin/quest_form.html:90
@@ -2541,6 +2542,7 @@ msgstr ""
 
 #: templates/admin/users_list.html:224 templates/admin/venues_list.html:113
 #: templates/challenge/_challenge_card.html:70
+#: templates/components/_campionato_garas.html:161
 #: templates/components/_history_campionati_tab.html:105
 #: templates/components/_history_gare_tab.html:116
 #: templates/components/_history_matches_tab.html:183
@@ -2599,6 +2601,7 @@ msgstr ""
 msgid "Classifica"
 msgstr ""
 
+#: templates/components/_campionato_garas.html:22
 #: templates/components/_gara_info.html:34
 #: templates/components/_gara_inscriptions.html:11
 #: templates/components/_index_open_inscriptions.html:31
@@ -3155,6 +3158,7 @@ msgstr ""
 msgid "X a tavolino"
 msgstr ""
 
+#: templates/components/_campionato_garas.html:16
 #: templates/components/_match_info.html:16
 #: templates/components/_player_recent_matches.html:15
 #: templates/components/_player_recent_matches.html:34
@@ -3275,12 +3279,12 @@ msgid ""
 msgstr ""
 
 #: templates/no_campionato.html:3
-#, fuzzy, python-format
+#, fuzzy
 msgid "Nessun Campionato Attivo"
 msgstr ""
 
 #: templates/no_campionato.html:10
-#, fuzzy, python-format
+#, fuzzy
 msgid "Nessun Campionato"
 msgstr ""
 
@@ -3556,6 +3560,7 @@ msgstr ""
 #: templates/components/_history_campionati_tab.html:92
 #: templates/components/_index_campionato_cards.html:111
 #: templates/components/_separated_dashboard_content.html:423
+#: templates/components/_unified_cards.html:51
 msgid "Playoff"
 msgstr ""
 
@@ -3582,7 +3587,7 @@ msgstr ""
 #: templates/admin/venues_list.html:30
 #: templates/components/_gara_edit_form.html:30
 #: templates/components/_new_gara_modal.html:77 templates/exam/manage.html:68
-#: templates/gamification/admin/achievement_form.html:25
+#: templates/gamification/admin/achievement_form.html:26
 #: templates/gamification/admin/feature_create.html:32
 #: templates/gamification/admin/feature_detail.html:35
 #: templates/gamification/admin/features.html:26
@@ -3667,6 +3672,7 @@ msgstr ""
 #: templates/admin/venue_manager_requests.html:33
 #: templates/admin/venues_list.html:37
 #: templates/components/_campionato_details_info.html:40
+#: templates/components/_campionato_garas.html:23
 #: templates/components/_gara_matches.html:57
 #: templates/components/_gara_matches.html:91
 #: templates/components/_guest_info.html:17
@@ -4096,9 +4102,10 @@ msgstr ""
 #: templates/admin/users_list.html:127 templates/admin/users_list.html:220
 #: templates/admin/venue_manager_requests.html:36
 #: templates/admin/venues_list.html:38
+#: templates/components/_campionato_garas.html:24
 #: templates/components/_gara_matches.html:59
 #: templates/components/_gara_matches.html:93
-#: templates/gamification/admin/achievements.html:29
+#: templates/gamification/admin/achievements.html:30
 #: templates/gamification/admin/features.html:29
 #: templates/gamification/admin/level_config.html:103
 #: templates/gamification/admin/quests.html:29
@@ -4273,6 +4280,7 @@ msgid "es. Memorial Rossi 2025"
 msgstr ""
 
 #: templates/admin/gara_create_standalone.html:130
+#: templates/components/_campionato_garas.html:19
 #: templates/components/_gara_edit_form.html:216
 #: templates/components/_history_filters.html:22
 #: templates/components/_match_info.html:24
@@ -4292,6 +4300,7 @@ msgid "Seleziona disciplina..."
 msgstr ""
 
 #: templates/admin/gara_create_standalone.html:142
+#: templates/components/_campionato_garas.html:17
 #: templates/components/_gara_edit_form.html:37
 #: templates/components/_gara_info.html:16
 #: templates/components/_match_info.html:27
@@ -4311,6 +4320,7 @@ msgid "Ora Inizio"
 msgstr ""
 
 #: templates/admin/gara_create_standalone.html:152
+#: templates/components/_campionato_garas.html:18
 #: templates/components/_new_gara_modal.html:104
 msgid "Luogo"
 msgstr ""
@@ -4387,12 +4397,12 @@ msgid "Escludi dal turno (X o Trio)"
 msgstr ""
 
 #: templates/admin/gara_create_standalone.html:241
-#, fuzzy, python-format
+#, fuzzy
 msgid "Min Partecipanti"
 msgstr ""
 
 #: templates/admin/gara_create_standalone.html:247
-#, fuzzy, python-format
+#, fuzzy
 msgid "Max Partecipanti"
 msgstr ""
 
@@ -4569,6 +4579,7 @@ msgstr ""
 
 #: templates/admin/gara_create_standalone.html:396
 #: templates/components/_campionato_details_info.html:86
+#: templates/components/_campionato_garas.html:21
 #: templates/components/_gara_info.html:47
 #: templates/components/_player_dashboard_content.html:39
 #: templates/components/_separated_dashboard_content.html:274
@@ -5383,6 +5394,7 @@ msgid "Seleziona utente..."
 msgstr ""
 
 #: templates/admin/venue_detail.html:253
+#: templates/components/_campionato_statistics.html:4
 #: templates/components/_player_statistics.html:5
 #: templates/exam/detail.html:163 templates/individual_match/dashboard.html:254
 #: templates/player/privacy_settings.html:42
@@ -5392,7 +5404,7 @@ msgid "Statistiche"
 msgstr ""
 
 #: templates/admin/venue_detail.html:257
-#, fuzzy, python-format
+#, fuzzy
 msgid "Utenti Attivi:"
 msgstr ""
 
@@ -5701,7 +5713,7 @@ msgid "Tavoli"
 msgstr ""
 
 #: templates/admin/venues_list.html:34 templates/player/venue_detail.html:198
-#, fuzzy, python-format
+#, fuzzy
 msgid "Utenti Attivi"
 msgstr ""
 
@@ -6376,6 +6388,7 @@ msgstr ""
 #: templates/components/_index_campionato_cards.html:114
 #: templates/components/_player_challenge_statistics.html:13
 #: templates/components/_separated_dashboard_content.html:424
+#: templates/components/_unified_cards.html:52
 #: templates/player/challenge_detail.html:3
 msgid "Challenge"
 msgstr ""
@@ -6720,12 +6733,13 @@ msgid "1. Vittorie (desc) → 2. Diff. Rack (desc) → 3. Posizione Precedente (
 msgstr ""
 
 #: templates/components/_amalfi_algorithm_info.html:16
+#: templates/components/_campionato_statistics.html:19
 #: templates/components/_random_algorithm_info.html:16
 msgid "Giocatori Totali:"
 msgstr ""
 
 #: templates/components/_amalfi_algorithm_info.html:17
-#, fuzzy, python-format
+#, fuzzy
 msgid "Modalità Campionato:"
 msgstr ""
 
@@ -7158,6 +7172,48 @@ msgstr ""
 msgid "Salva Modifiche"
 msgstr ""
 
+#: templates/components/_campionato_garas.html:4
+#: templates/public/campionato_detail.html:88
+msgid "Gare del Campionato"
+msgstr ""
+
+#: templates/components/_campionato_garas.html:6
+#: templates/components/_new_gara_modal.html:19
+#: templates/components/_unified_dashboard_header.html:20
+msgid "Nuova Gara"
+msgstr ""
+
+#: templates/components/_campionato_garas.html:20
+#: templates/components/_distance_configurator.html:15
+#: templates/components/_player_dashboard_content.html:36
+#: templates/components/_round_management.html:28
+#: templates/individual_match/create_proposal.html:127
+#: templates/individual_match/proposal_detail.html:55
+msgid "Distanza"
+msgstr ""
+
+#: templates/components/_campionato_garas.html:42
+#: templates/components/_campionato_garas.html:140
+#: templates/components/_gara_info.html:49
+#: templates/components/_separated_dashboard_content.html:276
+#: templates/components/_unified_cards.html:57
+msgid "Gratuita"
+msgstr ""
+
+#: templates/components/_campionato_garas.html:189
+msgid "Nessuna Gara Configurata"
+msgstr ""
+
+#: templates/components/_campionato_garas.html:190
+msgid "Inizia aggiungendo la prima gara al campionato."
+msgstr ""
+
+#: templates/components/_campionato_garas.html:192
+msgid ""
+"Usa il pulsante \"Nuova Gara\" nell'intestazione per aggiungere la prima "
+"gara."
+msgstr ""
+
 #: templates/components/_campionato_general_classification.html:6
 #, python-format
 msgid "Classifica dopo Gara %(num)s"
@@ -7211,6 +7267,39 @@ msgstr ""
 
 #: templates/components/_campionato_general_classification.html:121
 msgid "Sistema di punteggio: posizioni 1-10 assegnano punti decrescenti."
+msgstr ""
+
+#: templates/components/_campionato_statistics.html:9
+msgid "Gare Totali:"
+msgstr ""
+
+#: templates/components/_campionato_statistics.html:10
+msgid "Gare Setup:"
+msgstr ""
+
+#: templates/components/_campionato_statistics.html:11
+msgid "Iscrizioni Aperte:"
+msgstr ""
+
+#: templates/components/_campionato_statistics.html:12
+msgid "In Corso:"
+msgstr ""
+
+#: templates/components/_campionato_statistics.html:13
+msgid "Completate:"
+msgstr ""
+
+#: templates/components/_campionato_statistics.html:20
+#, fuzzy, python-format
+msgid "Giocatori Iscritti:"
+msgstr ""
+
+#: templates/components/_campionato_statistics.html:21
+msgid "Match Totali Giocati:"
+msgstr ""
+
+#: templates/components/_campionato_statistics.html:22
+msgid "Rack Totali Giocati:"
 msgstr ""
 
 #: templates/components/_challenge_management_modal.html:18
@@ -7534,14 +7623,6 @@ msgstr ""
 msgid ""
 "Si possono aggiungere solo utenti con ruolo direttore vicini alla sede "
 "della gara."
-msgstr ""
-
-#: templates/components/_distance_configurator.html:15
-#: templates/components/_player_dashboard_content.html:36
-#: templates/components/_round_management.html:28
-#: templates/individual_match/create_proposal.html:127
-#: templates/individual_match/proposal_detail.html:55
-msgid "Distanza"
 msgstr ""
 
 #: templates/components/_distance_configurator.html:20
@@ -7877,7 +7958,7 @@ msgstr ""
 
 #: templates/components/_gara_edit_form.html:265 templates/exam/detail.html:18
 #: templates/exam/manage.html:72
-#: templates/gamification/admin/achievement_form.html:33
+#: templates/gamification/admin/achievement_form.html:34
 #: templates/gamification/admin/feature_create.html:38
 #: templates/gamification/admin/feature_detail.html:45
 #: templates/gamification/admin/level_config.html:101
@@ -7933,12 +8014,6 @@ msgstr ""
 
 #: templates/components/_gara_info.html:44
 msgid "senza limite"
-msgstr ""
-
-#: templates/components/_gara_info.html:49
-#: templates/components/_separated_dashboard_content.html:276
-#: templates/components/_unified_cards.html:57
-msgid "Gratuita"
 msgstr ""
 
 #: templates/components/_gara_info.html:56
@@ -8443,6 +8518,23 @@ msgstr ""
 #: templates/components/_history_gare_tab.html:38
 #: templates/components/_user_general_stats.html:24
 msgid "Partite Vinte"
+msgstr ""
+
+#: templates/components/_history_gare_tab.html:100
+msgid "1° Posto"
+msgstr ""
+
+#: templates/components/_history_gare_tab.html:102
+msgid "2° Posto"
+msgstr ""
+
+#: templates/components/_history_gare_tab.html:104
+msgid "3° Posto"
+msgstr ""
+
+#: templates/components/_history_gare_tab.html:106
+#, python-format
+msgid "%(position)s° Posto"
 msgstr ""
 
 #: templates/components/_history_gare_tab.html:130
@@ -9134,11 +9226,6 @@ msgstr ""
 msgid "fino al"
 msgstr ""
 
-#: templates/components/_new_gara_modal.html:19
-#: templates/components/_unified_dashboard_header.html:20
-msgid "Nuova Gara"
-msgstr ""
-
 #: templates/components/_new_gara_modal.html:35
 msgid "Base"
 msgstr ""
@@ -9152,7 +9239,7 @@ msgid "Valori precompilati dai default del campionato."
 msgstr ""
 
 #: templates/components/_new_gara_modal.html:65
-#, fuzzy, python-format
+#, fuzzy
 msgid "Numero Gara"
 msgstr ""
 
@@ -9161,7 +9248,7 @@ msgid "es: Prima Gara, Semifinale... (opzionale)"
 msgstr ""
 
 #: templates/components/_new_gara_modal.html:95
-#, fuzzy, python-format
+#, fuzzy
 msgid "Ora copiata dalla gara precedente"
 msgstr ""
 
@@ -9182,7 +9269,7 @@ msgid "Numero o elenco"
 msgstr ""
 
 #: templates/components/_new_gara_modal.html:136
-#, fuzzy, python-format
+#, fuzzy
 msgid "Partecipanti e Quote"
 msgstr ""
 
@@ -9199,7 +9286,7 @@ msgid "Auto-copia iscritti"
 msgstr ""
 
 #: templates/components/_new_gara_modal.html:171
-#, fuzzy, python-format
+#, fuzzy
 msgid "Copia gli iscritti dalla gara precedente"
 msgstr ""
 
@@ -10528,7 +10615,7 @@ msgid "Conferma password"
 msgstr ""
 
 #: templates/components/_user_inscriptions_card.html:5
-#, fuzzy, python-format
+#, fuzzy
 msgid "Iscrizioni per Campionato"
 msgstr ""
 
@@ -10557,7 +10644,7 @@ msgid "Logout"
 msgstr ""
 
 #: templates/components/_user_profile_header.html:10
-#, fuzzy, python-format
+#, fuzzy
 msgid "Scheda giocatore"
 msgstr ""
 
@@ -11251,7 +11338,7 @@ msgid "Leggendari"
 msgstr ""
 
 #: templates/gamification/achievements.html:82
-#: templates/gamification/admin/achievement_form.html:112
+#: templates/gamification/admin/achievement_form.html:113
 msgid "Achievement nascosto"
 msgstr ""
 
@@ -11264,7 +11351,7 @@ msgid "Sbloccato"
 msgstr ""
 
 #: templates/gamification/achievements.html:129
-#: templates/gamification/admin/achievements.html:86
+#: templates/gamification/admin/achievements.html:82
 msgid "Nessun achievement disponibile"
 msgstr ""
 
@@ -11403,7 +11490,7 @@ msgstr ""
 msgid "sei %(rank)s°"
 msgstr ""
 
-#: templates/gamification/admin/achievements.html:26
+#: templates/gamification/admin/achievements.html:27
 #: templates/gamification/admin/xp_management.html:92
 #: templates/gamification/leaderboards.html:67
 msgid "XP"
@@ -11549,71 +11636,71 @@ msgstr ""
 msgid "Un freeze copre una settimana saltata senza azzerare la streak."
 msgstr ""
 
-#: templates/gamification/admin/achievement_form.html:10
+#: templates/gamification/admin/achievement_form.html:11
 msgid "Modifica Achievement"
 msgstr ""
 
-#: templates/gamification/admin/achievement_form.html:18
+#: templates/gamification/admin/achievement_form.html:19
 msgid "Slug"
 msgstr ""
 
-#: templates/gamification/admin/achievement_form.html:22
+#: templates/gamification/admin/achievement_form.html:23
 msgid "Solo lettere minuscole e underscore"
 msgstr ""
 
-#: templates/gamification/admin/achievement_form.html:27
+#: templates/gamification/admin/achievement_form.html:28
 msgid "First Blood"
 msgstr ""
 
-#: templates/gamification/admin/achievement_form.html:35
+#: templates/gamification/admin/achievement_form.html:36
 msgid "Vinci la tua prima partita"
 msgstr ""
 
-#: templates/gamification/admin/achievement_form.html:40
-#: templates/gamification/admin/achievements.html:24
+#: templates/gamification/admin/achievement_form.html:41
+#: templates/gamification/admin/achievements.html:25
 msgid "Categoria"
 msgstr ""
 
-#: templates/gamification/admin/achievement_form.html:50
-#: templates/gamification/admin/achievements.html:25
+#: templates/gamification/admin/achievement_form.html:51
+#: templates/gamification/admin/achievements.html:26
 msgid "Difficoltà"
 msgstr ""
 
-#: templates/gamification/admin/achievement_form.html:60
+#: templates/gamification/admin/achievement_form.html:61
 msgid "Percorso Icona"
 msgstr ""
 
-#: templates/gamification/admin/achievement_form.html:69
+#: templates/gamification/admin/achievement_form.html:70
 #: templates/gamification/admin/quest_form.html:45
 msgid "Ricompensa XP"
 msgstr ""
 
-#: templates/gamification/admin/achievement_form.html:74
+#: templates/gamification/admin/achievement_form.html:75
 #: templates/gamification/admin/quest_form.html:53
 msgid "Tipo Requisito"
 msgstr ""
 
-#: templates/gamification/admin/achievement_form.html:90
+#: templates/gamification/admin/achievement_form.html:91
 msgid "Valore Obiettivo"
 msgstr ""
 
-#: templates/gamification/admin/achievement_form.html:102
+#: templates/gamification/admin/achievement_form.html:103
 msgid "Achievement progressivo"
 msgstr ""
 
-#: templates/gamification/admin/achievement_form.html:104
+#: templates/gamification/admin/achievement_form.html:105
 msgid "Mostra progresso parziale (es: 50/100)"
 msgstr ""
 
-#: templates/gamification/admin/achievement_form.html:114
+#: templates/gamification/admin/achievement_form.html:115
 msgid "Non visibile finché non sbloccato"
 msgstr ""
 
-#: templates/gamification/admin/achievement_form.html:126
+#: templates/gamification/admin/achievement_form.html:127
 msgid "Salva Achievement"
 msgstr ""
 
-#: templates/gamification/admin/achievements.html:6
+#: templates/gamification/admin/achievements.html:7
 #: templates/gamification/admin/config_dashboard.html:6
 #: templates/gamification/admin/dashboard.html:6
 #: templates/gamification/admin/features.html:6
@@ -11623,46 +11710,26 @@ msgstr ""
 msgid "Torna ai pannelli"
 msgstr ""
 
-#: templates/gamification/admin/achievements.html:11
+#: templates/gamification/admin/achievements.html:12
 msgid "Nuovo Achievement"
 msgstr ""
 
-#: templates/gamification/admin/achievements.html:23
+#: templates/gamification/admin/achievements.html:24
 #: templates/gamification/admin/feature_create.html:24
 #: templates/gamification/admin/feature_detail.html:39
 #: templates/gamification/admin/features.html:25
 msgid "Codice"
 msgstr ""
 
-#: templates/gamification/admin/achievements.html:27
+#: templates/gamification/admin/achievements.html:28
 msgid "Sbloccato da"
 msgstr ""
 
-#: templates/gamification/admin/achievements.html:28
+#: templates/gamification/admin/achievements.html:29
 msgid "Nascosto"
 msgstr ""
 
-#: templates/gamification/admin/achievements.html:51
-msgid "Bronze"
-msgstr ""
-
-#: templates/gamification/admin/achievements.html:53
-msgid "Silver"
-msgstr ""
-
-#: templates/gamification/admin/achievements.html:55
-msgid "Gold"
-msgstr ""
-
-#: templates/gamification/admin/achievements.html:57
-msgid "Platinum"
-msgstr ""
-
-#: templates/gamification/admin/achievements.html:59
-msgid "Diamond"
-msgstr ""
-
-#: templates/gamification/admin/achievements.html:76
+#: templates/gamification/admin/achievements.html:72
 msgid "Toggle nascosto"
 msgstr ""
 
@@ -14215,7 +14282,7 @@ msgid "Partite Giocate"
 msgstr ""
 
 #: templates/player/venue_detail.html:230
-#, fuzzy, python-format
+#, fuzzy
 msgid "Nessuna foto disponibile"
 msgstr ""
 
@@ -14352,10 +14419,6 @@ msgstr ""
 
 #: templates/public/campionato_detail.html:66
 msgid "Gare totali"
-msgstr ""
-
-#: templates/public/campionato_detail.html:88
-msgid "Gare del Campionato"
 msgstr ""
 
 #: templates/public/campionato_detail.html:128
