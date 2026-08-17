@@ -99,6 +99,17 @@ shots:
     clip: ".c7-rackpad"
     caption: "I due tasti del segnapunti: si preme quello del giocatore che ha vinto il rack."
 
+  # Il tabellone compare **solo** a telefono ruotato: dietro `orientation:
+  # landscape`, schermo basso e puntatore grossolano. Da qui l'unico
+  # `viewports: [landscape]` del manifest — una cattura verticale di questa
+  # schermata non esiste, perche' verticalmente il tabellone non c'e'.
+  - id: partita-tabellone
+    route: /admin/match/18
+    as: Marco Rossi
+    viewports: [landscape]
+    wait_for: "#matchBoard"
+    caption: "Il tabellone a telefono ruotato: i due punteggi grandi al centro, un tasto per giocatore in fondo e la X in alto a sinistra per tornare alla pagina."
+
   - id: profilo
     route: /player/profile
     as: Marco Rossi

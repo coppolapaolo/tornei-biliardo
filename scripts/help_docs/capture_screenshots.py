@@ -25,6 +25,7 @@ import argparse
 import json
 import os
 import re
+import socket
 import subprocess
 import sys
 import time
@@ -64,6 +65,18 @@ VIEWPORTS = {
         "height": 860,
         "device_scale_factor": 2,
         "is_mobile": False,
+    },
+    # Telefono ruotato. Non e' un vezzo: il tabellone della partita compare
+    # solo dietro `(orientation: landscape) and (max-height: 520px) and
+    # (pointer: coarse)`, quindi con i due viewport qui sopra non finirebbe in
+    # nessuna immagine — e una guida che lo descrive senza mostrarlo chiede al
+    # lettore di indovinare. `is_mobile` porta con se' `has_touch`, che e' cio'
+    # che rende `pointer` grossolano.
+    "landscape": {
+        "width": 844,
+        "height": 390,
+        "device_scale_factor": 2,
+        "is_mobile": True,
     },
 }
 
@@ -465,7 +478,27 @@ def _capture_one(
         context.close()
 
 
-def serve_app() -> subprocess.Popen:
+def serve_app(base_url: str) -> subprocess.Popen:
+    """Avvia l'app dimostrativa, dopo essersi assicurato che la porta sia libera.
+
+    Il controllo non e' pignoleria. `--serve` avvia `app.py`, che se la porta e'
+    gia' occupata muore in silenzio (lo stdout va nel nulla) — e la cattura
+    prosegue fotografando **l'app che stava li' prima**, con il suo database.
+    Il risultato non e' un errore: sono immagini verosimili e sbagliate, cioe'
+    esattamente cio' che questa guida deve evitare. Con l'app di sviluppo
+    aperta sulla stessa porta e' successo davvero.
+    """
+    port = int(os.environ.get("PORT", "5001"))
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
+        if probe.connect_ex(("127.0.0.1", port)) == 0:
+            raise CaptureError(
+                f"la porta {port} e' gia' occupata: `--serve` avvierebbe l'app "
+                f"dimostrativa a vuoto e le schermate verrebbero da quella gia' "
+                f"in ascolto, con il suo database. Chiudi l'altra app, oppure "
+                f"usa un'altra porta:\n"
+                f"    PORT=5099 python scripts/help_docs/capture_screenshots.py "
+                f"--serve --base-url http://127.0.0.1:5099"
+            )
     env = dict(os.environ, DEBUG_MODE="true", FLASK_ENV="development")
     return subprocess.Popen(
         [sys.executable, "app.py"],
@@ -518,7 +551,7 @@ def main() -> int:
         )
         return 0
 
-    server = serve_app() if args.serve else None
+    server = serve_app(args.base_url) if args.serve else None
     try:
         wait_for_app(args.base_url)
         written = capture_all(data, args.base_url, args.only, args.quiet, locales)

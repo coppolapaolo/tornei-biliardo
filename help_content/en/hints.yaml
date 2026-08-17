@@ -245,6 +245,14 @@ hints:
   - admin.match.match_detail
   page: giocare_una_partita
   section: forfait
+- id: partita.tabellone
+  label: Scoreboard
+  short: 'Turn your phone sideways: the score gets big and reads from a distance. You record the same way.'
+  anchor: partita-tabellone
+  screens:
+  - admin.match.match_detail
+  page: giocare_una_partita
+  section: tabellone
 - id: iscrizione.pulsante
   label: Register
   short: Puts you on the list of entrants. You can withdraw as long as registrations stay open.
@@ -520,6 +528,7 @@ tours:
   - title: If you make a mistake
     text: «Undo last rack» removes the last point awarded. You can repeat it.
   - hint: partita.rack
+  - hint: partita.tabellone
 - screen: admin.competition.create_gara_standalone
   title: Creating a competition
   intro: 'Four steps. If it is your first time, change only the name, date, venue and discipline: the
