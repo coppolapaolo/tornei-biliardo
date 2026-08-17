@@ -52,8 +52,7 @@ _HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, _HERE)
 sys.path.insert(0, os.path.dirname(_HERE))
 
-from prod_env import bootstrap_or_exit  # noqa: E402
-from app import create_app  # noqa: E402
+from prod_env import bootstrap_and_create_app  # noqa: E402
 
 
 def job_demand_signals() -> str:
@@ -111,8 +110,11 @@ def main() -> int:
     # in production solleverebbe su SECRET_KEY e il task fallirebbe ogni
     # giorno; con il solo default a "development" girerebbe invece sul DB
     # sbagliato, che è peggio.
-    bootstrap_or_exit()
-    app = create_app(os.environ.get("FLASK_ENV", "production"))
+    #
+    # Il bootstrap non basta se l'app è già stata importata: `config` legge
+    # l'ambiente e non lo rilegge. Per questo l'import di `app` sta dentro
+    # `bootstrap_and_create_app`, dopo il caricamento — vedi la sua docstring.
+    app = bootstrap_and_create_app()
 
     failed = []
     with app.app_context():

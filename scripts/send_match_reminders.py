@@ -31,21 +31,24 @@ _HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, _HERE)
 sys.path.insert(0, os.path.dirname(_HERE))
 
-from prod_env import bootstrap_or_exit  # noqa: E402
-from app import create_app  # noqa: E402
-from models.individual_match.match_lifecycle_service import (  # noqa: E402
-    MatchLifecycleService,
-)
+from prod_env import bootstrap_and_create_app  # noqa: E402
 
 
 def main() -> int:
     """Send reminders for upcoming matches."""
     # Lo scheduled task è un processo separato e non eredita le variabili del
-    # file WSGI: senza questo, `create_app` in production muore su SECRET_KEY.
-    bootstrap_or_exit()
-    app = create_app(os.environ.get("FLASK_ENV", "production"))
+    # file WSGI: `bootstrap_and_create_app` le carica e *poi* importa l'app.
+    # L'ordine conta — vedi la sua docstring: qui l'import di `app` in cima al
+    # file faceva morire il task ogni ora su SECRET_KEY, e prima ancora
+    # derivava il cipher dalla chiave di sviluppo, che avrebbe reso le email
+    # dei giocatori illeggibili e i promemoria muti anche a errore risolto.
+    app = bootstrap_and_create_app()
 
     with app.app_context():
+        from models.individual_match.match_lifecycle_service import (
+            MatchLifecycleService,
+        )
+
         reminded_ids = MatchLifecycleService.send_match_reminders()
 
         if reminded_ids:

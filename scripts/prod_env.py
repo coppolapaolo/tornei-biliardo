@@ -103,3 +103,49 @@ def bootstrap_or_exit(required: Iterable[str] = PRODUCTION_REQUIRED) -> None:
             f"leggibile, passale a mano:\n"
             f"    {' '.join(f'{n}=...' for n in missing)} python <script>"
         )
+
+
+def bootstrap_and_create_app(
+    config_name: str | None = None,
+    required: Iterable[str] = PRODUCTION_REQUIRED,
+):
+    """Carica le env di produzione e **poi** costruisce l'app.
+
+    L'ordine è tutta la sostanza di questa funzione, ed è il motivo per cui
+    esiste invece di lasciare due righe a ogni script.
+
+    ``from app import create_app`` scritto in cima a un file tira dentro
+    ``config``, ``utils.encryption`` e mezzo dominio *prima* che
+    ``bootstrap_or_exit()`` abbia messo qualcosa in ``os.environ``. Chi legge
+    l'ambiente durante l'import si porta a casa un ambiente vuoto, e non lo
+    rilegge mai più. Sono usciti due guasti da lì:
+
+    * ``config.py`` congelava ``SECRET_KEY`` a stringa vuota →
+      ``RuntimeError: SECRET_KEY env var must be set in production`` a ogni
+      esecuzione di ``daily_jobs.py`` (giornaliero) e
+      ``send_match_reminders.py`` (orario), con nel log la riga che dichiara
+      di aver letto proprio ``SECRET_KEY``: le due righe raccontano momenti
+      diversi;
+    * ``utils.encryption`` derivava il cipher dalla chiave di sviluppo → PII
+      decifrati a stringa vuota, senza errori da nessuna parte.
+
+    Entrambi i moduli sono stati resi indifferenti all'ordine (``config`` legge
+    l'ambiente in ``environment_settings()``, il cipher si deriva al primo
+    uso), quindi questa funzione non è più l'unica difesa: è però il modo per
+    non dover riscoprire la cosa a ogni script nuovo. Uno script che vuole
+    l'app in produzione chiama questa, e non importa ``app`` a livello di
+    modulo — invariante verificata da
+    ``tests/new/unit/test_script_import_order.py``.
+
+    Args:
+        config_name: nome della configurazione; per default quella indicata da
+            ``FLASK_ENV`` **dopo** il caricamento (il file WSGI la contiene).
+        required: variabili senza le quali fermarsi. Uno script che tocca i
+            PII passa ``PRODUCTION_REQUIRED + ("ENCRYPTION_KEY",)``.
+    """
+    bootstrap_or_exit(required)
+
+    # Import ritardato di proposito: vedi docstring.
+    from app import create_app
+
+    return create_app(config_name or os.environ.get("FLASK_ENV", "production"))

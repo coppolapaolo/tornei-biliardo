@@ -65,7 +65,14 @@ def create_app(config_name=None):
 
     # Crea app Flask
     app = Flask(__name__)
-    app.config.from_object(config[config_name])
+    config_class = config[config_name]
+    app.config.from_object(config_class)
+    # Le impostazioni che vengono dall'ambiente si rileggono **adesso**, non
+    # all'import di `config`: gli script da console e gli scheduled task
+    # popolano `os.environ` dal file WSGI poco prima di arrivare qui, e con i
+    # soli attributi di classe leggerebbero la fotografia scattata all'import
+    # — cioè un ambiente vuoto. Vedi la docstring di `Config`.
+    app.config.update(config_class.environment_settings())
 
     # Validate critical config in production
     if config_name == "production":

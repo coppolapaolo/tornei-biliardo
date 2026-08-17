@@ -143,24 +143,44 @@ poi riapplicarla).
 
 **Env di produzione negli script da console/task**: console e scheduled task
 sono processi separati e **non ereditano** le variabili dal file WSGI, quindi
-`create_app("production")` fallirebbe subito su `SECRET_KEY`. Gli script che
-avviano l'app chiamano `bootstrap_or_exit()` da `scripts/prod_env.py`, che le
-legge dal WSGI (riusa `read_wsgi_env` di `auto_deploy`, parsing AST senza
-eseguirlo) e, se manca qualcosa, esce dicendo cosa e da dove dovrebbe arrivare.
-Un valore passato a mano sulla riga di comando resta prioritario. Uno script
-nuovo che fa `create_app` va agganciato lì — chiedendo anche `ENCRYPTION_KEY`
-se tocca i PII, altrimenti la decifratura degrada in silenzio sulla chiave di
-sviluppo (incidente 2026-06-25). `auto_deploy.py` resta autonomo di proposito:
-è il punto d'ingresso del deploy e non importa nulla dal progetto.
+`create_app("production")` fallirebbe subito su `SECRET_KEY`. Uno script che
+avvia l'app chiama **`bootstrap_and_create_app()`** da `scripts/prod_env.py`:
+legge le env dal WSGI (riusa `read_wsgi_env` di `auto_deploy`, parsing AST
+senza eseguirlo), esce dicendo cosa manca e da dove dovrebbe arrivare, e **poi**
+importa l'app. Un valore passato a mano sulla riga di comando resta
+prioritario. Se lo script tocca i PII gli si passa
+`required=PRODUCTION_REQUIRED + ("ENCRYPTION_KEY",)`, altrimenti la decifratura
+degrada in silenzio sulla chiave di sviluppo (incidente 2026-06-25).
+`auto_deploy.py` resta autonomo di proposito: è il punto d'ingresso del deploy
+e non importa nulla dal progetto.
 
-> ⚠️ `scripts/send_match_reminders.py` **non è registrato** (verificato nel
-> pannello PythonAnywhere): i promemoria dei match non partono da gennaio.
-> Cadenza oraria, quindi serve uno slot suo — non è accorpabile a
-> `daily_jobs.py`. Lo script era nato presupponendo di girare ogni 15 minuti,
-> ma gli scheduled task di PythonAnywhere non scendono sotto l'ora: finestra e
-> cadenza sono ora entrambe orarie, così il promemoria arriva fra le 2 e le 3
-> ore prima del match. Da registrare come
-> `cd /home/paolocoppola/mysite && python scripts/send_match_reminders.py`.
+> ⚠️ **`from app import create_app` in cima a uno script è un guasto**, non
+> uno stile. L'import esegue `config.py`, che legge `os.environ` — e a quel
+> punto `bootstrap_or_exit()` non l'ha ancora popolato. Il valore congelato
+> resta per sempre. È così che `daily_jobs.py` (giornaliero) e
+> `send_match_reminders.py` (orario) sono morti a ogni esecuzione con
+> `RuntimeError: SECRET_KEY env var must be set in production` — con nel log,
+> la riga prima, la conferma di aver letto proprio `SECRET_KEY`: le due righe
+> raccontano momenti diversi. `reconcile_achievements.py` aveva lo stesso
+> difetto latente. Dal 2026-08-17 `config.py` rilegge l'ambiente in
+> `Config.environment_settings()` (applicata da `create_app`) e il cipher PII
+> si deriva al primo uso, quindi l'ordine non è più fatale; resta però
+> l'unica regola facile da rispettare, ed è presidiata staticamente da
+> `tests/new/unit/test_script_import_order.py`. Gli script di analisi che si
+> lanciano a mano in sviluppo (`recalc_elo.py`, `diagnose_elo.py`,
+> `set_gara_handicap.py`, `migrate_gamification_rules.py`,
+> `verify_classification_configs.py`) **non** usano `prod_env` e restano fuori
+> dalla regola: non caricano env di produzione, quindi per loro l'ordine non
+> significa nulla. Se un domani dovessero girare in produzione, vanno prima
+> agganciati a `bootstrap_and_create_app`.
+
+> ⚠️ `scripts/send_match_reminders.py` è **registrato** e gira ogni ora
+> (confermato dal log del 2026-08-17). Non è accorpabile a `daily_jobs.py`:
+> quello è il runner dei lavori *giornalieri*. Lo script era nato
+> presupponendo di girare ogni 15 minuti, ma gli scheduled task di
+> PythonAnywhere non scendono sotto l'ora: finestra e cadenza sono ora
+> entrambe orarie, così il promemoria arriva fra le 2 e le 3 ore prima del
+> match.
 
 **⚠️ SQLite su PythonAnywhere (incidente 2026-06-10)**: lo storage è NFS con
 lock inaffidabili — due processi che SCRIVONO insieme (console + web app)
@@ -172,11 +192,17 @@ web app su **Disabled** (riabilitare subito dopo).
 `/var/www/www_torneibiliardo_it_wsgi.py`): `FLASK_ENV=production` e
 `ENCRYPTION_KEY` (la chiave cifra i PII — rotazione con
 `scripts/rotate_encryption_key.py`, procedura nel docstring). Il fail-fast
-scatta al **primo uso** della cifratura, non all'avvio: `_resolve_key_string`
-è invocata da `EncryptionManager._initialize_cipher`, che parte all'import di
-`utils.encryption` (singleton eager). Gli script da console che toccano PII
-vanno lanciati con `ENCRYPTION_KEY='...' python scripts/...` (la console non
-eredita le env del WSGI; `auto_deploy.py` se le legge da solo, vedi sopra).
+scatta al **primo uso** della cifratura — cioè al primo PII toccato, non
+all'import: `_resolve_key_string` è invocata da `_initialize_cipher`, che dal
+2026-08-17 parte da `EncryptionManager._ensure_cipher()` e non più dal
+costruttore. Il singleton eager derivava il cipher all'import di
+`utils.encryption`, cioè **prima** che gli scheduled task avessero caricato le
+env dal WSGI: la chiave usata era quella di sviluppo (nel log "Using default
+encryption key" *precede* la riga delle env lette) e ogni email/telefono si
+decifrava a stringa vuota, senza errori. Gli script da console che toccano PII
+vanno comunque lanciati con `ENCRYPTION_KEY='...' python scripts/...` (la
+console non eredita le env del WSGI; `auto_deploy.py` se le legge da solo,
+vedi sopra).
 
 **⚠️ Migration sui PII senza chiave (incidente 2026-06-25)**: il fail-fast
 richiede `FLASK_ENV=production`. In console/task quella variabile non c'è,
@@ -555,6 +581,9 @@ pytest tests/new/unit/ -n auto && pytest tests/new/integration/ -n 4
 | `user.role == "director"` (o `"admin"`/`"player"`/`"guest"` letterali) | `UserRole.DIRECTOR.value` ecc. da `models/user/role_enum.py` — mai letterali per valori di dominio |
 | Interfaccia scritta "a memoria" senza aprire il prototipo | Invoca la skill `ui-7c`: la schermata di riferimento e' in `docs/redesign-7c/Redesign Mobile.dc.html` |
 | `Config.DEBUG_MODE` in una route | `current_app.config.get("DEBUG_MODE", False)` — la classe base legge la env var col default `true`, quindi in produzione il guard non scatta |
+| Nuova impostazione da env scritta nel corpo di `Config` | Va in `Config.environment_settings()` — il corpo della classe si esegue all'import e congela il valore: per gli scheduled task, che caricano le env *dopo*, sarebbe sbagliato per sempre |
+| `from app import create_app` in cima a uno script con `prod_env` | `prod_env.bootstrap_and_create_app()` — importa l'app **dopo** aver letto le env dal WSGI (presidio: `test_script_import_order.py`) |
+| Migration che solleva su una condizione permanente dell'ambiente | Deve riuscire (no-op dichiarato) o rimediare: se solleva, il runner non la marca applicata e `auto_deploy` la ritenta ogni notte, disabilitando la web app per niente |
 | Co-direttore con `role != director` | `GaraService`/`TournamentService.add_director` lo rifiutano (`ValidationError`): i co-direttori sono sempre `role=director` |
 | `challenge.max_score` o `challenge.name` | Non esistono su `Challenge`. Il massimo è per-esame su `ExamChallenge.max_score`; il nome mostrato è `get_display_name()` (ADR-042) |
 | `datetime.strptime`/`fromisoformat` su un `datetime-local` | `utils.local_time.parse_local_datetime` — l'input arriva nell'**ora di chi scrive**, il DB tiene naive-UTC: salvarlo grezzo sposta l'orario, in silenzio (ADR-043) |
