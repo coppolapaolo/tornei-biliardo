@@ -93,10 +93,10 @@
             <div class="d-md-none">
                 {% for gara in provas %}
                 {% set status_class = 'border-secondary' %}
-                {% if gara.status == 'playing' %}{% set status_class = 'border-primary' %}
-                {% elif gara.status == 'completed' %}{% set status_class = 'border-success' %}
-                {% elif gara.status == 'inscription' %}{% set status_class = 'border-info' %}
-                {% elif gara.status == 'awaiting_ssr' %}{% set status_class = 'border-warning' %}
+                {% if gara.status == GaraStatus.PLAYING.value %}{% set status_class = 'border-primary' %}
+                {% elif gara.status == GaraStatus.COMPLETED.value %}{% set status_class = 'border-success' %}
+                {% elif gara.status == GaraStatus.INSCRIPTION.value %}{% set status_class = 'border-info' %}
+                {% elif gara.status == GaraStatus.AWAITING_SSR.value %}{% set status_class = 'border-warning' %}
                 {% endif %}
                 <div class="card mb-3 {{ status_class }}" style="border-width: 2px;">
                     {# Header: Numero gara + Stato #}

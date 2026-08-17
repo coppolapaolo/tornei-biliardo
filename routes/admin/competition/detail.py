@@ -446,7 +446,7 @@ def gara_detail(gara_id):
     is_ssr_phase = gara.status == GaraStatus.AWAITING_SSR.value
     show_ssr_section = is_ssr_phase or (ssr_groups and has_ssr_data)
     is_gara_ending = (
-        gara.get_real_status() == "campionato_completed"
+        gara.get_real_status() == ProvaDerivedStatus.TOURNAMENT_COMPLETED.value
         and not has_unresolved_tiebreakers
     ) or (has_ssr_data and not has_unresolved_tiebreakers)
     has_scores = bool(

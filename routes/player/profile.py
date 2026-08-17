@@ -19,7 +19,7 @@ from flask_login import login_required, current_user
 from flask_babel import gettext as _
 
 from models import db, Gara, Inscription, Match
-from models.status_enum import MatchStatus
+from models.status_enum import GaraStatus, MatchStatus
 from models.campionato.models import Campionato
 from models.user.services import UserService
 from models.user.permission_service import UserPermissionService
@@ -116,13 +116,18 @@ def profile():
         [
             insc.gara.campionato_id
             for insc in inscriptions
-            if insc.gara.campionato_id is not None and insc.gara.status == "completed"
+            if insc.gara.campionato_id is not None
+            and insc.gara.status == GaraStatus.COMPLETED.value
         ]
     )
 
     # Conta solo le gare completate
     completed_provas = len(
-        [insc for insc in inscriptions if insc.gara.status == "completed"]
+        [
+            insc
+            for insc in inscriptions
+            if insc.gara.status == GaraStatus.COMPLETED.value
+        ]
     )
 
     # Allenamento: drill (catalogo + gare) ed esami, da fonte unica (US-P9).
@@ -245,12 +250,17 @@ def view_profile(user_id):
         [
             insc.gara.campionato_id
             for insc in visible_inscriptions
-            if insc.gara.campionato_id is not None and insc.gara.status == "completed"
+            if insc.gara.campionato_id is not None
+            and insc.gara.status == GaraStatus.COMPLETED.value
         ]
     )
 
     completed_provas = len(
-        [insc for insc in visible_inscriptions if insc.gara.status == "completed"]
+        [
+            insc
+            for insc in visible_inscriptions
+            if insc.gara.status == GaraStatus.COMPLETED.value
+        ]
     )
 
     stats = {

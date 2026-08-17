@@ -32,7 +32,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from models.status_enum import MatchStatus
+from models.status_enum import GaraStatus, MatchStatus, ProvaDerivedStatus
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
@@ -134,6 +134,75 @@ def test_il_dominio_partita_non_assegna_lo_stato_con_letterali():
         "Usa MatchStatus.<MEMBRO>.value: leggere con l'enum e scrivere col\n"
         "letterale e' il modo in cui i due lati divergono senza accorgersene."
         "\n\n" + "\n".join(violazioni)
+    )
+
+
+# ══ Stato di gara ════════════════════════════════════════════════════════════
+#
+# Stesso difetto, vocabolario diverso. `Gara.get_real_status()` complica il
+# quadro: restituisce sia valori di GaraStatus (persistiti) sia di
+# ProvaDerivedStatus (calcolati, mai su disco), e i template li confrontavano
+# tutti come stringhe.
+
+_VALORI_GARA = "|".join(
+    re.escape(v)
+    for v in (
+        tuple(m.value for m in GaraStatus)
+        + tuple(m.value for m in ProvaDerivedStatus)
+    )
+)
+
+_SOGGETTI_GARA = r"(?:gara|g|p|prova|insc\.gara|item\.entity)\.status"
+
+_CONFRONTO_GARA = re.compile(
+    rf"{_SOGGETTI_GARA}\s*(?:==|!=|\bin\b)\s*[\[(]?\s*{_Q}(?:{_VALORI_GARA}){_Q}"
+)
+
+_REAL_STATUS = re.compile(
+    rf"get_real_status\(\)\s*(?:==|!=)\s*{_Q}(?:{_VALORI_GARA}){_Q}"
+)
+
+_SELECTATTR_GARE = re.compile(
+    rf"(?:provas|garas|gare)\s*\|\s*(?:select|reject)attr\(\s*"
+    rf"{_Q}status{_Q}\s*,\s*{_Q}equalto{_Q}\s*,\s*{_Q}(?:{_VALORI_GARA}){_Q}"
+)
+
+_MODULI_GARA = (
+    "routes/",
+    "models/competition/",
+    "models/campionato/",
+)
+
+
+def _sorgenti_python_gara() -> list[Path]:
+    fonti: list[Path] = []
+    for modulo in _MODULI_GARA:
+        fonti.extend(sorted((PROJECT_ROOT / modulo).rglob("*.py")))
+    return fonti
+
+
+def test_i_template_non_confrontano_lo_stato_gara_con_letterali():
+    violazioni = _violazioni(
+        _sorgenti_template(),
+        (_CONFRONTO_GARA, _REAL_STATUS, _SELECTATTR_GARE),
+    )
+    assert not violazioni, (
+        "Stato di gara confrontato con una stringa scritta a mano.\n"
+        "Usa GaraStatus.<MEMBRO>.value per gli stati persistiti e\n"
+        "ProvaDerivedStatus.<MEMBRO>.value per quelli derivati da\n"
+        "get_real_status(); entrambi sono iniettati nei template da app.py.\n\n"
+        + "\n".join(violazioni)
+    )
+
+
+def test_le_route_non_confrontano_lo_stato_gara_con_letterali():
+    violazioni = _violazioni(
+        _sorgenti_python_gara(),
+        (_CONFRONTO_GARA, _REAL_STATUS),
+    )
+    assert not violazioni, (
+        "Stato di gara confrontato con una stringa scritta a mano.\n\n"
+        + "\n".join(violazioni)
     )
 
 

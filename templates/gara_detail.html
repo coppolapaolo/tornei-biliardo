@@ -1960,7 +1960,7 @@
 {# ═══════════════════════════════════════════════════════════════════════════
 Polling: Real-time updates for gara detail page
 ═══════════════════════════════════════════════════════════════════════════ #}
-{% if current_user.is_authenticated and gara.status != 'completed' %}
+{% if current_user.is_authenticated and gara.status != GaraStatus.COMPLETED.value %}
 <script>
   window.Polling.reloadOnEvents({
     url: '/sse/poll/gara/' + GARA_CONFIG.gara.id,
