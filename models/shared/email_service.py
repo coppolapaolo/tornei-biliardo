@@ -6,6 +6,9 @@ Purpose: Service for sending system emails (verification, password reset) via SM
 import os
 import logging
 import threading
+import time
+from typing import Callable, Sequence
+
 from flask import current_app
 from flask_mail import Message
 from markupsafe import escape
@@ -21,6 +24,22 @@ logger = logging.getLogger(__name__)
 # Il nome dell'app arriva da Config e non da current_app: queste stringhe
 # servono anche fuori da una richiesta (thread di invio, script da console).
 APP_NAME = Config.APP_NAME
+
+# Quanto aspettare **prima di ogni ritentativo**: due ripetizioni oltre al
+# tentativo iniziale, quindi tre invii tentati in tutto nell'arco di ~10s.
+#
+# Non e' prudenza generica, sono i guasti che si sono visti davvero (GlitchTip,
+# aprile-agosto 2026): `EOF occurred in violation of protocol`,
+# `Connection unexpectedly closed`, `please run connect() first` — tutti modi
+# diversi di dire che la connessione SMTP e' caduta, tutti transitori. Con un
+# tentativo solo, l'email non arriva e chi l'aspettava non lo sa: la route ha
+# gia' risposto «Controlla la tua casella di posta», e per il recupero password
+# il silenzio e' pure deliberato (anti-enumerazione degli account). Un utente ha
+# chiesto la verifica tre volte in un'ora e mezza senza ricevere nulla.
+#
+# Le attese sono lunghe perche' il thread e' in secondo piano e non trattiene
+# nessuna risposta HTTP: l'unico costo e' un thread che dorme.
+RITENTATIVI_ATTESE = (2, 8)
 
 
 class EmailService:
@@ -45,6 +64,54 @@ class EmailService:
             # RuntimeError. config.get/os.environ.get non sollevano mai
             # ImportError → quel ramo era dead code, rimosso.
             return os.environ.get("MAIL_DEFAULT_SENDER") or DEFAULT
+
+    @staticmethod
+    def _invia_con_ritentativi(
+        msg,  # type: ignore[no-untyped-def]
+        to_email: str,
+        subject: str,
+        attese: Sequence[float] = RITENTATIVI_ATTESE,
+        pausa: Callable[[float], None] = time.sleep,
+    ) -> bool:
+        """Prova a spedire, e ci riprova finche' le attese non sono finite.
+
+        Vive fuori da `send_email` per due ragioni: gira nel thread di invio,
+        dove non c'e' nessuno a cui restituire un esito, ed e' l'unico pezzo
+        che si possa provare senza far partire un thread — `pausa` iniettabile
+        e' li' apposta.
+
+        Un fallimento intermedio e' un `warning` e non un `error`: se il
+        tentativo dopo riesce, l'email e' arrivata e non c'e' niente da
+        guardare. L'`error` resta per la resa definitiva, che e' l'unico caso
+        in cui qualcuno non ricevera' mai la sua email.
+        """
+        totale = len(attese) + 1  # il tentativo iniziale non ha attesa davanti
+        ultimo_errore: Exception | None = None
+
+        for numero in range(1, totale + 1):
+            try:
+                mail.send(msg)
+                coda = f" (al tentativo {numero})" if numero > 1 else ""
+                logger.info(f"Email sent to {to_email} with subject: {subject}{coda}")
+                return True
+            except Exception as e:  # noqa: BLE001 - qualunque guasto va ritentato
+                ultimo_errore = e
+                if numero < totale:
+                    attesa = attese[numero - 1]
+                    logger.warning(
+                        f"Invio a {to_email} fallito al tentativo {numero}"
+                        f"/{totale}, riprovo fra {attesa}s: {e}"
+                    )
+                    pausa(attesa)
+
+        # Il messaggio conserva il prefisso storico «Failed to send email to»:
+        # e' il titolo con cui queste issue esistono su GlitchTip, e cambiarlo
+        # ne aprirebbe di nuove, scollegate dalle precedenti.
+        logger.error(
+            f"Failed to send email to {to_email}: {ultimo_errore} "
+            f"(dopo {totale} tentativi)"
+        )
+        return False
 
     @staticmethod
     def send_email(to_email: str, subject: str, html_content: str) -> bool:
@@ -76,11 +143,7 @@ class EmailService:
 
             def _send(app, msg):  # type: ignore[no-untyped-def]
                 with app.app_context():
-                    try:
-                        mail.send(msg)
-                        logger.info(f"Email sent to {to_email} with subject: {subject}")
-                    except Exception as e:
-                        logger.error(f"Failed to send email to {to_email}: {e}")
+                    EmailService._invia_con_ritentativi(msg, to_email, subject)
 
             t = threading.Thread(target=_send, args=(app, msg), daemon=True)
             t.start()
