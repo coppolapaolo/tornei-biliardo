@@ -48,6 +48,16 @@ blocks:
     shot: dashboard-direttore
     caption: "A competition director's home: the «New Competition» and «New Championship» buttons appear at the top, which a player does not see."
 
+  - type: text
+    text: >-
+      The panel just under the greeting changes too: where a player reads «How
+      you are doing», anyone who has organised at least one competition finds
+      **«How your competitions are going»** — how many they have organised, how
+      many seats are taken out of those available, and how registrations went
+      competition by competition. If any of them is still to be closed, a label
+      next to the title says so. It is a report, nothing more: there is nothing
+      to tap inside it.
+
   - type: note
     tone: warning
     title: "Whoever runs a competition does not play in it"

@@ -1,0 +1,248 @@
+{# templates/components/_player_activity_feedback.html — Design System 7c
+
+   Il blocco «Come stai andando»: feedback sull'attivita' gia' svolta, in cima
+   alla home, sopra le cose da fare e senza mai coprirle.
+
+   Contratto: un solo dict, `vm.activity_feedback`, prodotto da
+   `models/dashboard/activity_feedback.py`. Qui NON si decide niente — quale
+   metrica sta in prima cella, quale grafico si disegna e cosa c'e' dentro le
+   tessere lo ha gia' deciso il servizio guardando quali attivita' il giocatore
+   ha davvero svolto. Il template disegna sempre la stessa impalcatura, e le
+   parti che non esistono semplicemente non compaiono: nessuno slot vuoto.
+
+   Regole di questo blocco (handoff di design):
+   - nessuna CTA e nessun link: e' feedback, non una lista di azioni;
+   - il colore non e' mai l'unico veicolo (ogni tessera porta anche il dato, e
+     dove il testo non ci sta c'e' la legenda dei conteggi);
+   - lo stato aperto vale per la sessione, non oltre (`sessionStorage`).
+#}
+{% set fb = feedback if feedback is defined else vm.activity_feedback %}
+{% if fb %}
+{% set panel_id = 'activity-feedback-panel' %}
+<section class="c7-feedback mb-4" aria-labelledby="activity-feedback-title">
+
+  <div class="c7-feedback__head">
+    <h2 id="activity-feedback-title">{{ fb.title }}</h2>
+    {% if fb.context_badge %}
+    <span class="c7-feedback__badge c7-feedback__badge--{{ fb.context_badge.tone }}">
+      {{ fb.context_badge.text }}
+    </span>
+    {% endif %}
+  </div>
+
+  {# ── Le due metriche ─────────────────────────────────────────────────── #}
+  <div class="c7-feedback__metrics{{ ' c7-feedback__metrics--single' if not fb.secondary }}">
+    {% for cell in [fb.primary, fb.secondary] if cell %}
+      {% if cell.kind == 'donut' %}
+      <div class="c7-feedback__donutcell">
+        <span class="c7-feedback__donut" style="background: {{ cell.gradient }}">
+          <span>{{ cell.center }}</span>
+        </span>
+        <div class="c7-feedback__legend">
+          {% for slice in cell.slices %}
+          <span>
+            <span class="c7-feedback__swatch c7-feedback__swatch--{{ slice.color_role }}"></span>{{ slice.label }}
+          </span>
+          {% endfor %}
+        </div>
+      </div>
+      {% else %}
+      <div>
+        <div class="c7-feedback__value">
+          {{- cell.value -}}
+          {%- if cell.suffix %}<span class="c7-feedback__suffix">{{ cell.suffix }}</span>{% endif -%}
+        </div>
+        <div class="c7-feedback__label">{{ cell.label }}</div>
+        {% if cell.delta %}
+        <div class="c7-feedback__delta c7-feedback__delta--{{ cell.delta_tone }}">{{ cell.delta }}</div>
+        {% endif %}
+      </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  {# ── Il grafico dell'attivita' dominante ─────────────────────────────── #}
+  {% if fb.chart %}
+  <div class="c7-feedback__chart">
+    {% if fb.chart.kind == 'bars' %}
+      <div class="c7-feedback__bars" role="img" aria-label="{{ fb.chart.labels.start }} — {{ fb.chart.labels.end }}">
+        {% for bar in fb.chart.bars %}
+        <span class="c7-feedback__bar c7-feedback__bar--{{ bar.tone }}" style="height: {{ bar.pct }}%"></span>
+        {% endfor %}
+      </div>
+    {% else %}
+      {# `preserveAspectRatio="none"` stira il viewBox: `vector-effect` e'
+         obbligatorio, altrimenti lo spessore del tratto si deforma con lui. #}
+      <svg class="c7-feedback__spark" viewBox="0 0 130 34" preserveAspectRatio="none"
+           role="img" aria-label="{{ fb.chart.labels.start }} — {{ fb.chart.labels.end }}">
+        <polyline points="{{ fb.chart.area }}" fill="rgba(44,74,82,.10)" stroke="none"></polyline>
+        {% if fb.chart.muted %}
+        <polyline points="{{ fb.chart.muted }}" fill="none" stroke="var(--c7-chart-ink)" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"></polyline>
+        {% endif %}
+        {% if fb.chart.main %}
+        <polyline points="{{ fb.chart.main }}" fill="none" stroke="var(--c7-accent)" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"></polyline>
+        {% endif %}
+        {% if fb.chart.highlight %}
+        <polyline points="{{ fb.chart.highlight }}" fill="none" stroke="var(--c7-accent)" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"></polyline>
+        {% endif %}
+        {% if fb.chart.dashed %}
+        <polyline points="{{ fb.chart.dashed }}" fill="none" stroke="var(--c7-chart-ink)" stroke-width="1.5"
+                  stroke-dasharray="3 3" stroke-linecap="round" vector-effect="non-scaling-stroke"></polyline>
+        {% endif %}
+        {% if fb.chart.projection %}
+        <polyline points="{{ fb.chart.projection }}" fill="none" stroke="var(--c7-chart-mid)" stroke-width="1.5"
+                  stroke-dasharray="3 4" vector-effect="non-scaling-stroke"></polyline>
+        {% endif %}
+        {#- I punti NON sono `<circle>`: con `preserveAspectRatio="none"` il
+            viewBox si stira in orizzontale e un cerchio diventa un'ellisse —
+            invisibile a 390px, evidente su una colonna desktop. Un segmento di
+            lunghezza zero con `stroke-linecap="round"` si disegna come un
+            cerchio di diametro pari allo spessore, e `non-scaling-stroke`
+            tiene quello spessore fuori dalla trasformazione: resta rotondo a
+            qualunque larghezza. Il punto vuoto del rientro e' lo stesso
+            cerchio con dentro un secondo punto del colore del riquadro. -#}
+        {% for dot in fb.chart.dots %}
+          {% if dot.kind == 'ghost' %}
+          <line x1="{{ dot.cx }}" y1="{{ dot.cy }}" x2="{{ dot.cx }}" y2="{{ dot.cy }}"
+                stroke="var(--c7-chart-mid)" stroke-width="7" stroke-linecap="round"
+                vector-effect="non-scaling-stroke"></line>
+          <line x1="{{ dot.cx }}" y1="{{ dot.cy }}" x2="{{ dot.cx }}" y2="{{ dot.cy }}"
+                stroke="var(--c7-bg)" stroke-width="4" stroke-linecap="round"
+                vector-effect="non-scaling-stroke"></line>
+          {% elif dot.kind == 'mid' %}
+          <line x1="{{ dot.cx }}" y1="{{ dot.cy }}" x2="{{ dot.cx }}" y2="{{ dot.cy }}"
+                stroke="var(--c7-chart-ink)" stroke-width="5" stroke-linecap="round"
+                vector-effect="non-scaling-stroke"></line>
+          {% else %}
+          <line x1="{{ dot.cx }}" y1="{{ dot.cy }}" x2="{{ dot.cx }}" y2="{{ dot.cy }}"
+                stroke="{{ 'var(--c7-ok)' if dot.kind == 'last-ok' else 'var(--c7-accent)' }}"
+                stroke-width="7" stroke-linecap="round"
+                vector-effect="non-scaling-stroke"></line>
+          {% endif %}
+        {% endfor %}
+      </svg>
+    {% endif %}
+
+    {% if fb.chart.legend %}
+    <div class="c7-feedback__chartlegend">
+      {% for key in fb.chart.legend %}
+      <span><span class="c7-feedback__linekey{{ ' c7-feedback__linekey--dash' if key.kind == 'dashed' }}"></span>{{ key.label }}</span>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="c7-feedback__caption">
+      <span>{{ fb.chart.labels.start }}</span><span>{{ fb.chart.labels.end }}</span>
+    </div>
+  </div>
+  {% endif %}
+
+  {# ── La striscia delle ultime attivita' ──────────────────────────────── #}
+  {% if fb.strip and fb.strip["items"] %}
+  <div class="c7-feedback__strip">
+    <div class="c7-feedback__striphead">
+      <span>{{ fb.strip.label }}</span>
+      {% if fb.strip.note %}<span class="c7-feedback__stripnote">{{ fb.strip.note }}</span>{% endif %}
+    </div>
+    <div class="c7-feedback__tiles{{ ' c7-feedback__tiles--dense' if fb.strip.dense }}">
+      {% for item in fb.strip["items"] %}
+      <span class="c7-feedback__tile c7-feedback__tile--{{ item.outcome }}"
+            title="{{ item.title }}" aria-label="{{ item.title }}">
+        {%- if not fb.strip.dense -%}
+          {#- Lo span interno serve all'ellissi: `text-overflow` non si applica
+              al testo nudo dentro un contenitore flex, e il nome di un drill
+              puo' essere lungo quanto vuole. -#}
+          {%- if item.icon %}<i class="fas {{ item.icon }}" aria-hidden="true"></i>
+          {%- else %}<span class="c7-feedback__tiletext">{{ item.text }}</span>{% endif -%}
+        {%- endif -%}
+      </span>
+      {% endfor %}
+    </div>
+    {% if fb.strip.legend %}
+    <div class="c7-feedback__striplegend">
+      {% for key in fb.strip.legend %}
+      <span>
+        <span class="c7-feedback__swatch c7-feedback__swatch--{{ {'win': 'ok', 'loss': 'err', 'draw': 'muted'}[key.outcome] }}"></span>{{ key.label }}
+      </span>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {# ── La nota: si scrive solo quando c'e' un fatto vero da dire ───────── #}
+  {% if fb.note %}
+  <div class="c7-feedback__note">
+    <i class="fas fa-arrow-trend-up" aria-hidden="true"></i>
+    <p>{{ fb.note }}</p>
+  </div>
+  {% endif %}
+
+  {# ── Espansione ──────────────────────────────────────────────────────── #}
+  {% if fb.expanded_rows %}
+  <div class="c7-rows c7-rows--sunk c7-feedback__panel" id="{{ panel_id }}" hidden>
+    {% for row in fb.expanded_rows %}
+    <div class="c7-rows__row">
+      {% if row.ring_pct is defined and row.ring_pct is not none %}
+      <span class="c7-feedback__ring"
+            style="background: conic-gradient(var(--c7-accent) {{ row.ring_pct }}%, var(--c7-line) 0)">
+        <span>{{ row.ring_pct }}</span>
+      </span>
+      {% elif row.icon %}
+      <i class="fas {{ row.icon }} c7-feedback__rowicon c7-feedback__rowicon--{{ row.color_role }}" aria-hidden="true"></i>
+      {% endif %}
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">{{ row.title }}</div>
+        {% if row.subtitle %}<div class="c7-rows__sub">{{ row.subtitle }}</div>{% endif %}
+      </div>
+      {% if row.value %}<span class="c7-feedback__rowvalue c7-num">{{ row.value }}</span>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <button type="button" class="c7-feedback__toggle" id="activity-feedback-toggle"
+          aria-expanded="false" aria-controls="{{ panel_id }}"
+          data-label-closed="{{ fb.toggle_label }}" data-label-open="{{ _('Chiudi') }}">
+    <span data-role="label">{{ fb.toggle_label }}</span>
+    <i class="fas fa-chevron-down" aria-hidden="true" data-role="chevron"></i>
+  </button>
+  {% endif %}
+</section>
+
+{% if fb.expanded_rows %}
+<script>
+(function () {
+  var btn = document.getElementById('activity-feedback-toggle');
+  var panel = document.getElementById({{ panel_id|tojson }});
+  if (!btn || !panel) { return; }
+
+  var label = btn.querySelector('[data-role="label"]');
+  var chevron = btn.querySelector('[data-role="chevron"]');
+  // Solo per la sessione: al prossimo accesso il blocco riparte chiuso, cosi'
+  // le cose da fare restano la prima cosa che si vede.
+  var KEY = 'home_feedback_open';
+
+  function apply(open) {
+    panel.hidden = !open;
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    label.textContent = open ? btn.dataset.labelOpen : btn.dataset.labelClosed;
+    chevron.classList.toggle('fa-chevron-up', open);
+    chevron.classList.toggle('fa-chevron-down', !open);
+  }
+
+  var stored = null;
+  try { stored = sessionStorage.getItem(KEY); } catch (e) { stored = null; }
+  apply(stored === '1');
+
+  btn.addEventListener('click', function () {
+    var open = btn.getAttribute('aria-expanded') !== 'true';
+    apply(open);
+    try { sessionStorage.setItem(KEY, open ? '1' : '0'); } catch (e) { /* modalita' privata */ }
+  });
+})();
+</script>
+{% endif %}
+{% endif %}

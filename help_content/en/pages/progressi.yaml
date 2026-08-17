@@ -20,6 +20,13 @@ blocks:
     shot: progressi
     caption: "The progress page: level, experience points, milestones and streaks in progress."
 
+  - type: text
+    text: >-
+      A summary of these numbers — your current streak, your level and how far
+      the next one is, the drills you have completed — can be read without
+      opening this page: it is in the panel at the top of your home, under the
+      «All your numbers» button.
+
   - type: heading
     id: xp
     title: "Experience points and level"

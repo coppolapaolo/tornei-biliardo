@@ -47,6 +47,16 @@ blocks:
     shot: dashboard-direttore
     caption: "La home di un direttore di gara: in cima compaiono i pulsanti «Nuova Gara» e «Nuovo Campionato», che un giocatore non vede."
 
+  - type: text
+    text: >-
+      Cambia anche il riquadro subito sotto il saluto: dove un giocatore legge
+      «Come stai andando», chi ha organizzato almeno una gara trova **«Come
+      vanno le tue gare»** — quante ne ha organizzate, quanti posti sono
+      occupati sul totale disponibile e l'andamento delle iscrizioni gara per
+      gara. Se ce n'è qualcuna ancora da chiudere, accanto al titolo compare
+      un'etichetta che lo ricorda. È solo un resoconto: dentro non c'è niente
+      da premere.
+
   - type: note
     tone: warning
     title: "Chi dirige una gara non la gioca"

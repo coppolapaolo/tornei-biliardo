@@ -27,6 +27,23 @@
 # le due versioni divergeranno alla prima modifica.
 
 hints:
+  # --- La tua home ---------------------------------------------------------
+  - id: home.andamento
+    label: "Come stai andando"
+    short: "Due numeri, un grafico e le tue ultime attività. Non porta da nessuna parte: dice solo come stai procedendo."
+    anchor: home-andamento
+    screens: [dashboard.dashboard]
+    page: primo_accesso
+    section: come_stai_andando
+
+  - id: home.tutti_i_numeri
+    label: "Tutti i tuoi numeri"
+    short: "Apre tre o quattro righe in più: serie in corso, posizione in campionato, drill completati, livello. Alla visita dopo riparte chiuso."
+    anchor: home-tutti-i-numeri
+    screens: [dashboard.dashboard]
+    page: primo_accesso
+    section: come_stai_andando
+
   # --- Pagina della gara ---------------------------------------------------
   - id: gara.turni
     label: "Turni"
@@ -471,11 +488,12 @@ hints:
 tours:
   - screen: dashboard.dashboard
     title: "La tua home"
-    intro: "Da qui parte tutto: le gare a cui sei iscritto, i campionati che segui e le gare vicine a te."
+    intro: "Da qui parte tutto: come stai andando, le gare a cui sei iscritto, i campionati che segui e le gare vicine a te."
     audience: [giocatore]
     steps:
+      - hint: home.andamento
       - title: "Le tue gare"
-        text: "In cima trovi le gare attive. Il colore dell'etichetta dice a che punto sono: iscrizioni aperte, in corso, conclusa."
+        text: "Sotto il riquadro dell'andamento trovi le gare attive. Il colore dell'etichetta dice a che punto sono: iscrizioni aperte, in corso, conclusa."
       - title: "Iscriviti con un tocco"
         text: "Le gare con le iscrizioni aperte hanno il pulsante verde: non serve cercarle altrove."
       - title: "In fondo allo schermo"
