@@ -1214,6 +1214,10 @@ msgstr "The username “admin” (and its variants) is reserved by the system."
 msgid "Lo username «%(nome)s» è già in uso."
 msgstr "The username “%(nome)s” is already taken."
 
+#: models/user/role_grant_service.py:558
+msgid "Beta tester"
+msgstr "Beta tester"
+
 #: models/user/role_grant_service.py:553 routes/gamification/features.py:78
 #: templates/admin/users_list.html:133 templates/admin/users_list.html:180
 msgid "Esaminatore"

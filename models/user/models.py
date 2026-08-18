@@ -274,6 +274,16 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
         # opzionale: invalidare la password
         self.password_hash = "!deleted!"
 
+        # La traccia degli accessi se ne va con la persona. Il `CASCADE` sulla
+        # FK non basta: qui non si cancella nessuna riga `user`, si svuota —
+        # e senza questa riga il registro di quando quell'account si collegava
+        # sopravviverebbe alla richiesta di cancellazione che doveva
+        # soddisfare. E' l'unico punto che lo tocca, perche' e' l'unico modo
+        # in cui un utente sparisce davvero da questa applicazione.
+        from .session_models import UserSession
+
+        UserSession.query.filter_by(user_id=self.id).delete(synchronize_session=False)
+
     # ───────────────────
     # Permission helpers
     # ───────────────────

@@ -37,7 +37,9 @@ blocks:
       - name: "Traguardi raggiunti"
         text: "Quando sblocchi un traguardo o completi un obiettivo."
       - name: "Risposte alle tue richieste"
-        text: "L'esito della richiesta di diventare direttore di gara o gestore di sala."
+        text: "L'esito della richiesta di diventare direttore di gara, gestore di sala o esaminatore."
+      - name: "Nuovi ruoli"
+        text: "Quando ti viene assegnato un ruolo che non avevi chiesto, come quello di beta tester."
 
   - type: heading
     id: gestire

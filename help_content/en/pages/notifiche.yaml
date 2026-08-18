@@ -37,7 +37,9 @@ blocks:
       - name: "Milestones reached"
         text: "When you unlock a milestone or complete a goal."
       - name: "Answers to your requests"
-        text: "The outcome of your request to become a competition director or a venue manager."
+        text: "The outcome of your request to become a competition director, a venue manager or an examiner."
+      - name: "New roles"
+        text: "When you are given a role you never asked for, such as beta tester."
 
   - type: heading
     id: gestire

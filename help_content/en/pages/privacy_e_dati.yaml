@@ -15,6 +15,15 @@ blocks:
       (registrations, results, statistics). Email and phone are stored
       **encrypted**.
 
+  - type: text
+    text: >-
+      There is also a bare-bones record of sign-ins: **when you sign in**, when
+      you were last seen, and what kind of device you came from (phone, tablet
+      or computer). It tells whoever administers the platform how many people
+      really use it, and they are the only ones who see it: no other player, no
+      competition director. Neither your IP address nor the pages you open are
+      recorded.
+
   - type: shot
     shot: privacy-impostazioni
     caption: "Privacy settings: what to show in your public profile."

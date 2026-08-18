@@ -550,7 +550,13 @@ class RoleGrantService:
     def _role_label(role: GrantableRole) -> str:
         from flask_babel import _
 
-        labels = {GrantableRole.EXAMINER: _("Esaminatore")}
+        # Senza una voce qui la notifica direbbe «Hai ottenuto il ruolo di
+        # beta_tester»: il valore grezzo dell'enum, non tradotto, letto da chi
+        # il ruolo l'ha appena ricevuto.
+        labels = {
+            GrantableRole.EXAMINER: _("Esaminatore"),
+            GrantableRole.BETA_TESTER: _("Beta tester"),
+        }
         return labels.get(role, role.value)
 
     @staticmethod

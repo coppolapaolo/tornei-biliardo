@@ -48,6 +48,11 @@ class UserSession(BaseModel):
     # apparteneva non e' un dato, e' un residuo. Cancellare la persona deve
     # cancellare anche il registro di dove e' stata — che e' anche l'unica
     # risposta onesta a una richiesta di cancellazione.
+    #
+    # Il `CASCADE` da solo pero' non basta, e vale la pena saperlo: qui gli
+    # utenti non si cancellano, si **anonimizzano** (`User.anonymize()`), e la
+    # riga `user` resta. La cancellazione delle sessioni sta quindi anche li',
+    # esplicita. Il vincolo copre il caso in cui una riga sparisca davvero.
     user_id = db.Column(
         db.Integer,
         db.ForeignKey("user.id", ondelete="CASCADE"),
