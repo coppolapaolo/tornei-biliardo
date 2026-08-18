@@ -157,12 +157,15 @@
                                     endif %} {{ classification.position }}. {{ classification.user.username }} </strong>
                         </div>
                         <small class="text-muted">
-                            {% if campionato.campionato_type|lower == MatchmakingStrategy.RANDOM.value %}
+                            {# Il criterio è il sistema di classifica, non il tipo di
+                               campionato: mostrare la differenza come se fosse un
+                               totale è la issue #89. #}
+                            {% if campionato.classification_system == ClassificationSystem.RACK %}
                             {% if classification.total_spot_shot_wins|default(0) > 0 %}
                             <span class="badge bg-warning text-dark me-1" title="{{ _('Punti SSR') }}">{{
                                 classification.total_spot_shot_wins }}</span>
                             {% endif %}
-                            {% set rack_count = classification.total_rack_difference %}
+                            {% set rack_count = classification.total_racks_won %}
                             {{ ngettext('%(num)s triangoli', '%(num)s triangoli', rack_count, num=rack_count) }}
                             {% else %}
                             {% set wins_count = classification.total_matches_won if classification.total_matches_won is defined else classification.matches_won %}

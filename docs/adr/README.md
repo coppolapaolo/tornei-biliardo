@@ -60,6 +60,7 @@ Crea un ADR quando:
 | ADR-044 | [Il referto TPA: si annota il gioco, non il punteggio](ADR-044-tpa-scoresheet.md) | Accepted | 2026-08-16 |
 | ADR-045 | [Niente WAL: SQLite sta su storage di rete](ADR-045-no-wal-on-network-storage.md) | Accepted | 2026-08-17 |
 | ADR-046 | [Il beta tester vede in anticipo, non vede di più](ADR-046-beta-tester-visibility.md) | Accepted | 2026-08-18 |
+| ADR-047 | [La classifica la decide il sistema di classifica, non il tipo di campionato](ADR-047-classification-system-drives-the-standings.md) | Accepted | 2026-08-18 |
 
 ## Come Creare un Nuovo ADR
 

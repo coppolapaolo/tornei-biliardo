@@ -289,6 +289,7 @@ def create_app(config_name=None):
         questo enum combacia con qualunque riga.
         """
         from models.status_enum import (
+            ClassificationSystem,
             Discipline,
             GaraStatus,
             MatchStatus,
@@ -319,6 +320,11 @@ def create_app(config_name=None):
             # sempre e solo questo; l'altro vive dietro `_MATCHMAKING_MAP` e
             # non deve arrivare fino a un template.
             "MatchmakingStrategy": MatchmakingStrategy,
+            # Su cosa si ordina una classifica. E' una scelta **indipendente**
+            # dalla formula di gara qui sopra: la classifica generale le
+            # confondeva, e mostrava la differenza triangoli sotto l'etichetta
+            # "totali" (issue #89, ADR-047).
+            "ClassificationSystem": ClassificationSystem,
             # Minimi di formato per i form a tabellone: il JS li legge da un
             # data attribute invece di riscriverli, cosi' UI e sorteggio non
             # possono divergere sul pavimento del tabellone.

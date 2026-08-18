@@ -11,11 +11,35 @@ from typing import List, Dict, Any
 
 from models.base import db
 from models.match.models import Match
-from models.status_enum import TournamentStatus, GaraStatus, MatchStatus
-from models.matchmaking.configuration import MatchmakingStrategy
+from models.status_enum import (
+    TournamentStatus,
+    GaraStatus,
+    MatchStatus,
+    ClassificationSystem,
+)
 from .models import Campionato
 from ..transaction.manager import read_only
 from models.exceptions import NotFoundError
+
+
+def _racks_won_of(classification, gara_is_rack: bool) -> int:
+    """I triangoli vinti da una riga di classifica di turno.
+
+    `racks_won` è NULL sulle righe scritte prima della separazione delle due
+    colonne (migration 20260728). Per le gare a triangoli totali il valore
+    stava in `rack_difference` e il backfill l'ha già ricopiato; per le altre
+    non è ricostruibile dalle colonne, e resta 0 finché
+    `scripts/repair_round_classification_racks.py` non lo ricalcola dai match.
+
+    Restituire 0 anziché la differenza è deliberato: in una gara a vittorie
+    quel numero non è un totale, e sommarcelo dentro rifarebbe esattamente il
+    guasto della issue #89.
+    """
+    if classification.racks_won is not None:
+        return classification.racks_won
+    if gara_is_rack:
+        return classification.rack_difference or 0
+    return 0
 
 
 class TournamentStatisticsService:
@@ -124,13 +148,13 @@ class TournamentStatisticsService:
     def _aggregate_player_totals(
         self,
         garas: List,
-        campionato_type: str,
+        classification_system: ClassificationSystem,
     ) -> Dict[int, Dict[str, Any]]:
         """Aggrega i totali dei giocatori per un insieme di gare.
 
         Args:
             garas: Lista di gare da aggregare
-            campionato_type: Tipo di campionato (amalfi, random, etc.)
+            classification_system: Sistema di classifica del campionato
 
         Returns:
             Dizionario user_id -> dati aggregati del giocatore
@@ -162,22 +186,32 @@ class TournamentStatisticsService:
         for rc in rc_rows:
             rc_by_gara.setdefault(rc.gara_id, []).append(rc)
 
-        # SSR (Random): un'unica query GaraClassification per tutte le gare.
+        # SSR: un'unica query GaraClassification per tutte le gare. Serve a
+        # ogni sistema, non solo a RACK — anche la classifica a vittorie usa lo
+        # spareggio come terzo criterio (`Campionato.get_scoring_system`).
         ssr_by_gara: Dict[int, Dict[int, int]] = {}
-        if campionato_type == MatchmakingStrategy.RANDOM.value:
-            gc_rows = (
-                db.session.query(GaraClassification)
-                .filter(GaraClassification.gara_id.in_(final_round_by_gara.keys()))
-                .all()
-            )
-            for gc in gc_rows:
-                ssr_by_gara.setdefault(gc.gara_id, {})[gc.user_id] = (
-                    gc.spot_shot_wins or 0
-                )
+        gc_rows = (
+            db.session.query(GaraClassification)
+            .filter(GaraClassification.gara_id.in_(final_round_by_gara.keys()))
+            .all()
+        )
+        for gc in gc_rows:
+            ssr_by_gara.setdefault(gc.gara_id, {})[gc.user_id] = gc.spot_shot_wins or 0
+
+        # Quali gare classificano a triangoli totali. Si legge dalle gare già in
+        # mano invece che da `rc.gara`, che sarebbe un lazy-load per riga.
+        rack_gara_ids = {
+            g.id
+            for g in garas
+            if ClassificationSystem.resolve(getattr(g, "classification_system", None))
+            == ClassificationSystem.RACK
+        }
 
         for gara in garas:
             classifications = rc_by_gara.get(gara.id, [])
             gara_ssr_scores = ssr_by_gara.get(gara.id, {})
+
+            gara_is_rack = gara.id in rack_gara_ids
 
             for classification in classifications:
                 user_id = classification.user_id
@@ -185,30 +219,39 @@ class TournamentStatisticsService:
                     player_totals[user_id] = {
                         "username": classification.user.username,
                         "total_matches_won": 0,
+                        "total_racks_won": 0,
                         "total_rack_difference": 0,
                         "total_spot_shot_wins": 0,
                         "participations": 0,
                         "total_points": 0,
                     }
 
-                # Per campionati Amalfi: somma match vinti e differenza rack
                 player_totals[user_id]["total_matches_won"] += (
                     classification.matches_won or 0
+                )
+                # Due colonne, due significati fissi (migration 20260728). Prima
+                # qui si sommava `rack_difference` e lo si mostrava come
+                # "triangoli totali": funzionava solo finché quella colonna
+                # conteneva il totale, cioè fino alla separazione — poi la stessa
+                # classifica ha iniziato a sommare differenze, con valori
+                # negativi e totali dimezzati (issue #89).
+                player_totals[user_id]["total_racks_won"] += _racks_won_of(
+                    classification, gara_is_rack
                 )
                 player_totals[user_id]["total_rack_difference"] += (
                     classification.rack_difference or 0
                 )
-                # Aggiungi punteggio SSR per campionati Random
                 player_totals[user_id]["total_spot_shot_wins"] += gara_ssr_scores.get(
                     user_id, 0
                 )
                 player_totals[user_id]["participations"] += 1
 
-        # Per sistemi a punti, calcola i punti
-        if campionato_type not in [
-            MatchmakingStrategy.AMALFI.value,
-            MatchmakingStrategy.RANDOM.value,
-        ]:
+        # Per il sistema a piazzamenti, calcola i punti.
+        # NB: questa tabella è volutamente diversa da quella di
+        # `position_points.py` (25/18/15/12) — vedi il docstring di quel modulo:
+        # alimentano campionati diversi e unificarle riscriverebbe classifiche
+        # già pubblicate.
+        if classification_system == ClassificationSystem.POSITION:
             position_points = {
                 1: 10,
                 2: 7,
@@ -234,40 +277,45 @@ class TournamentStatisticsService:
     def _sort_and_rank_players(
         self,
         player_totals: Dict[int, Dict[str, Any]],
-        campionato_type: str,
+        classification_system: ClassificationSystem,
     ) -> List[tuple]:
         """Ordina i giocatori e assegna le posizioni.
 
+        I criteri sono quelli dichiarati da `Campionato.get_scoring_system()` e
+        discendono dal sistema di classifica scelto dal direttore, non dalla
+        strategia di accoppiamento (ADR-047).
+
         Args:
             player_totals: Dizionario user_id -> dati aggregati
-            campionato_type: Tipo di campionato
+            classification_system: Sistema di classifica del campionato
 
         Returns:
             Lista di tuple (posizione, user_id) ordinate
         """
-        if campionato_type == MatchmakingStrategy.AMALFI.value:
+        if classification_system == ClassificationSystem.RACK:
             sorted_players = sorted(
                 player_totals.items(),
                 key=lambda x: (
-                    -x[1]["total_matches_won"],
-                    -x[1]["total_rack_difference"],
+                    -x[1]["total_racks_won"],
+                    -x[1]["total_spot_shot_wins"],
                 ),
             )
-        elif campionato_type == MatchmakingStrategy.RANDOM.value:
+        elif classification_system == ClassificationSystem.POSITION:
             sorted_players = sorted(
                 player_totals.items(),
                 key=lambda x: (
+                    -x[1].get("total_points", 0),
+                    -x[1]["total_matches_won"],
                     -x[1]["total_rack_difference"],
-                    -x[1]["total_spot_shot_wins"],
                 ),
             )
         else:
             sorted_players = sorted(
                 player_totals.items(),
                 key=lambda x: (
-                    -x[1].get("total_points", 0),
-                    -x[1]["total_rack_difference"],
                     -x[1]["total_matches_won"],
+                    -x[1]["total_rack_difference"],
+                    -x[1]["total_spot_shot_wins"],
                 ),
             )
 
@@ -315,25 +363,21 @@ class TournamentStatisticsService:
         if not completed_garas:
             return []
 
+        # Il criterio è il sistema di classifica scelto per il campionato, non
+        # il suo tipo: sono due configurazioni indipendenti (ADR-047).
+        system = campionato.classification_system
+
         # Calcola posizioni precedenti (tutte le gare tranne l'ultima)
         previous_positions: Dict[int, int] = {}
         if len(completed_garas) > 1:
             previous_garas = completed_garas[:-1]
-            previous_totals = self._aggregate_player_totals(
-                previous_garas, campionato.campionato_type
-            )
-            previous_ranking = self._sort_and_rank_players(
-                previous_totals, campionato.campionato_type
-            )
+            previous_totals = self._aggregate_player_totals(previous_garas, system)
+            previous_ranking = self._sort_and_rank_players(previous_totals, system)
             previous_positions = {user_id: pos for pos, user_id in previous_ranking}
 
         # Calcola classifica attuale (tutte le gare)
-        player_totals = self._aggregate_player_totals(
-            completed_garas, campionato.campionato_type
-        )
-        current_ranking = self._sort_and_rank_players(
-            player_totals, campionato.campionato_type
-        )
+        player_totals = self._aggregate_player_totals(completed_garas, system)
+        current_ranking = self._sort_and_rank_players(player_totals, system)
 
         # Costruisci risultato con posizione precedente
         result = []

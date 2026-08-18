@@ -350,5 +350,6 @@ class HomepageService:
             total_matches_won=player_data.get("total_matches_won", 0),
             matches_won=player_data.get("total_matches_won", 0),
             total_rack_difference=player_data.get("total_rack_difference", 0),
+            total_racks_won=player_data.get("total_racks_won", 0),
             total_spot_shot_wins=player_data.get("total_spot_shot_wins", 0),
         )
