@@ -61,7 +61,7 @@ blocks:
 
   - type: shot
     shot: dashboard-giocatore
-    caption: "Your home: at the top the panel with how you are doing, below the competitions you are registered for, the championships and competitions near you."
+    caption: "Your home right after you come in: at the top the panel with how you are doing, below the competitions you are registered for, the championships and competitions near you."
 
   - type: heading
     id: come_stai_andando
@@ -69,13 +69,16 @@ blocks:
 
   - type: text
     text: >-
-      Just under the greeting there is a panel telling you how you are doing.
-      Right after signing up it has nothing to say yet, so in its place you
-      find **«Your profile is ready»** with three steps to tick off: *Account
-      created*, *Play your first match*, *Try a drill*. Above it, one line
-      tells you where you start from: your **Elo** — the rating you also find
-      in your [profile](/aiuto/account/profilo_e_statistiche) — is 1200 for
-      everyone, and starts moving with your first recorded match.
+      As soon as you come in, just under the greeting there is a panel telling
+      you how you are doing. Right after signing up it has nothing to say yet,
+      so in its place you find **«Your profile is ready»** with three steps to
+      tick off: *Account created*, *Play your first match*, *Try a drill*.
+      Above it, one line tells you where you start from: your **Elo** — the
+      rating you also find in your
+      [profile](/aiuto/account/profilo_e_statistiche) — is 1200 for everyone,
+      and starts moving with your first recorded match. Those three steps greet
+      you when you come in and then give way to the things to do: you find them
+      again next time you sign in, until you do your first activity.
 
   - type: text
     text: >-
@@ -86,16 +89,18 @@ blocks:
       bottom — called **«All your numbers»** or **«Streak and ranking»**
       depending on what you have to show — opens three or four extra rows: your
       current streak, your position in a championship, drills completed, your
-      level.
+      level. It always starts closed: one tap opens it.
 
   - type: note
     tone: info
-    title: "It is a report, nothing more"
+    title: "You read it once, then it makes way"
     text: >-
-      There is nothing to tap in that panel: it leads nowhere and asks for
-      nothing. The things to do stay right below it. If you open it, it stays
-      open while you are using the app; next time you come back it starts
-      closed again.
+      **«How you are doing» is a greeting, not a dashboard**: it appears when
+      you come into your home after signing in, and from then on it is gone. If
+      you come back to your home later you find the things to do straight away,
+      with no summary in front of them. You see it again next time you sign in:
+      there is no button to call it back. Either way there is nothing to tap
+      inside it — it leads nowhere and asks for nothing.
 
   - type: heading
     id: muoversi

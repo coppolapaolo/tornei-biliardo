@@ -868,6 +868,60 @@ def _director_garas(user_id: int) -> List[Any]:
     )
 
 
+def has_any_activity(user_id: int, user: Any = None) -> bool:
+    """Se questo utente ha qualcosa da raccontare, senza calcolare il blocco.
+
+    E' la stessa condizione da cui `for_player` esce restituendo ``None``, ma
+    fatta di `EXISTS`: serve a decidere se disegnare la card di setup **senza**
+    costruire prima il blocco intero per poi buttarlo via.
+
+    Niente filtro temporale, e nessun `>=` su `ended_at`: una partita conclusa
+    con la data di fine mancante e' comunque una partita giocata, e chi l'ha
+    giocata non e' «appena iscritto».
+    """
+    from models.challenge.models import ChallengeAttempt
+    from models.classification.models import GaraClassification
+    from models.competition.models import Gara
+    from models.individual_match.match_models import IndividualMatch
+    from models.match.models import Match
+
+    checks = (
+        db.session.query(Match.id).filter(
+            or_(Match.player1_id == user_id, Match.player2_id == user_id),
+            Match.status.in_(MatchStatus.finished_values()),
+            Match.is_bye.isnot(True),
+            Match.is_trio.isnot(True),
+        ),
+        db.session.query(IndividualMatch.id).filter(
+            or_(
+                IndividualMatch.player1_id == user_id,
+                IndividualMatch.player2_id == user_id,
+            ),
+            IndividualMatch.status.in_(
+                [MatchStatus.CLOSED_UNILATERALLY, MatchStatus.CONFIRMED_BY_BOTH]
+            ),
+        ),
+        db.session.query(GaraClassification.id).filter(
+            GaraClassification.user_id == user_id
+        ),
+        db.session.query(ChallengeAttempt.id).filter(
+            ChallengeAttempt.user_id == user_id,
+            ChallengeAttempt.completed.is_(True),
+        ),
+    )
+    if any(q.first() is not None for q in checks):
+        return True
+
+    # Un direttore con gare organizzate ha il suo blocco anche senza aver
+    # giocato: per lui la card di setup sarebbe fuori posto.
+    if user is not None and getattr(user, "is_director", False):
+        return (
+            db.session.query(Gara.id).filter(Gara.director_id == user_id).first()
+            is not None
+        )
+    return False
+
+
 def activities_since(user_id: int, since: datetime) -> int:
     """Quante attivita' ha svolto un giocatore da una certa data.
 
@@ -1554,4 +1608,4 @@ def _fill_outcome(filled: int, capacity: Optional[int]) -> str:
     return "draw"
 
 
-__all__ = ["ActivityFeedbackService", "Activity"]
+__all__ = ["ActivityFeedbackService", "Activity", "has_any_activity"]

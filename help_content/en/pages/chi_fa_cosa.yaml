@@ -50,13 +50,16 @@ blocks:
 
   - type: text
     text: >-
-      The panel just under the greeting changes too: where a player reads «How
-      you are doing», anyone who has organised at least one competition finds
-      **«How your competitions are going»** — how many they have organised, how
-      many seats are taken out of those available, and how registrations went
-      competition by competition. If any of them is still to be closed, a label
-      next to the title says so. It is a report, nothing more: there is nothing
-      to tap inside it.
+      The panel that greets you on the way in changes too: where a player reads
+      «How you are doing», anyone who has organised at least one competition
+      finds **«How your competitions are going»** — how many they have
+      organised, how many seats are taken out of those available, and how
+      registrations went competition by competition. If any of them is still to
+      be closed, a label next to the title says so. It is a report, nothing
+      more: there is nothing to tap inside it. And just as for a player it
+      shows only once, on the first visit to your home after signing in: then
+      it makes way for the competitions to follow, and comes back next time you
+      sign in.
 
   - type: note
     tone: warning

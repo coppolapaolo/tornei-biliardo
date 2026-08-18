@@ -24,8 +24,8 @@ blocks:
     text: >-
       Un estratto di questi numeri — la serie in corso, il livello e quanto
       manca al prossimo, i drill completati — si legge anche senza aprire
-      questa pagina: è nel riquadro in cima alla home, sotto il pulsante
-      «Tutti i tuoi numeri».
+      questa pagina: è nel riquadro «Come stai andando», quello che trovi in
+      cima alla home quando entri, sotto il pulsante «Tutti i tuoi numeri».
 
   - type: heading
     id: xp
