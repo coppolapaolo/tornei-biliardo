@@ -50,13 +50,28 @@ class GrantPolicy:
     #: True se un titolare del ruolo può concederlo a sua volta.
     self_propagating: bool
     #: Codice ``FeatureConfig`` che sblocca la *richiesta* del ruolo (layer L2).
-    request_feature_code: str
+    #: ``None`` per i ruoli che **non si chiedono**: il beta tester lo si
+    #: riceve perche' qualcuno ha deciso di farti provare qualcosa, non
+    #: perche' hai raggiunto un traguardo. Un codice fasullo l'avrebbe reso
+    #: richiedibile da chiunque sbloccasse quella feature.
+    request_feature_code: Optional[str]
 
 
 GRANT_POLICY: Dict[GrantableRole, GrantPolicy] = {
     GrantableRole.EXAMINER: GrantPolicy(
         self_propagating=True,  # un esaminatore concede esaminatore
         request_feature_code="request_examiner",
+    ),
+    GrantableRole.BETA_TESTER: GrantPolicy(
+        # **Non** propagante, al contrario dell'esaminatore. La differenza non
+        # e' di comodita': l'esaminatore concede un lavoro da fare, il beta
+        # tester concede di *vedere* cose che gli altri non vedono. Una catena
+        # di deleghe allargherebbe quella platea senza che l'admin lo sappia,
+        # e la revoca — l'unico punto di contenimento (US-A3) — arriverebbe
+        # sempre dopo.
+        self_propagating=False,
+        # Non si chiede: lo assegna un amministratore.
+        request_feature_code=None,
     ),
 }
 
@@ -379,6 +394,10 @@ class RoleGrantService:
 
         # Enforcement server-side del gate L2: non basta nascondere il bottone,
         # la richiesta deve essere rifiutata anche via POST diretto.
+        if policy.request_feature_code is None:
+            raise PermissionDeniedError(
+                "Questo ruolo non si richiede: lo assegna un amministratore"
+            )
         if not user.can_access(policy.request_feature_code):
             raise PermissionDeniedError(
                 "Non hai ancora sbloccato la richiesta di questo ruolo"
