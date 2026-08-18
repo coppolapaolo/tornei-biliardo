@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-18 11:41+0200\n"
+"POT-Creation-Date: 2026-08-18 12:45+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -21,6 +21,22 @@ msgstr ""
 #: app.py:598 templates/errors/403.html:3
 msgid "Accesso negato"
 msgstr "Access denied"
+
+#: app.py:616
+msgid "Non è il tuo turno"
+msgstr "Not your turn yet"
+
+#: app.py:617
+msgid "Colpo irregolare"
+msgstr "Illegal shot"
+
+#: app.py:636
+msgid "Operazione non consentita"
+msgstr "That shot isn't allowed."
+
+#: app.py:650
+msgid "Tiro non valido"
+msgstr "Foul shot"
 
 #: models/status_enum.py:382
 msgid "Palla 8"
@@ -1214,56 +1230,56 @@ msgstr "The username “admin” (and its variants) is reserved by the system."
 msgid "Lo username «%(nome)s» è già in uso."
 msgstr "The username “%(nome)s” is already taken."
 
-#: models/user/role_grant_service.py:558
-msgid "Beta tester"
-msgstr "Beta tester"
-
-#: models/user/role_grant_service.py:553 routes/gamification/features.py:78
+#: models/user/role_grant_service.py:557 routes/gamification/features.py:78
 #: templates/admin/users_list.html:133 templates/admin/users_list.html:180
 msgid "Esaminatore"
 msgstr "Examiner"
 
-#: models/user/role_grant_service.py:583
+#: models/user/role_grant_service.py:558
+msgid "Beta tester"
+msgstr "Beta tester"
+
+#: models/user/role_grant_service.py:589
 msgid "Richiesta di ruolo"
 msgstr "Role request"
 
-#: models/user/role_grant_service.py:585
+#: models/user/role_grant_service.py:591
 #, python-format
 msgid "%(user)s chiede il ruolo di %(role)s."
 msgstr "%(user)s is requesting the %(role)s role."
 
-#: models/user/role_grant_service.py:593
+#: models/user/role_grant_service.py:599
 msgid "Vedi le richieste"
 msgstr "View the requests"
 
-#: models/user/role_grant_service.py:608
+#: models/user/role_grant_service.py:614
 #, python-format
 msgid "%(actor)s ha approvato la tua richiesta: ora sei %(role)s."
 msgstr "%(actor)s approved your request: you are now %(role)s."
 
-#: models/user/role_grant_service.py:614
+#: models/user/role_grant_service.py:620
 #, python-format
 msgid "La tua richiesta per il ruolo di %(role)s non è stata accolta."
 msgstr "Your request for the %(role)s role was not granted."
 
-#: models/user/role_grant_service.py:621
+#: models/user/role_grant_service.py:627
 msgid "Richiesta di ruolo processata"
 msgstr "Role request processed"
 
-#: models/user/role_grant_service.py:636
+#: models/user/role_grant_service.py:642
 msgid "Richiesta di ruolo chiusa"
 msgstr "Role request closed"
 
-#: models/user/role_grant_service.py:638
+#: models/user/role_grant_service.py:644
 #, python-format
 msgid "La richiesta per il ruolo di %(role)s è stata presa in carico da un altro titolare."
 msgstr "The request for the %(role)s role has been taken over by another holder."
 
-#: models/user/role_grant_service.py:655
+#: models/user/role_grant_service.py:661
 msgid "Nuovo ruolo"
 msgstr "New role"
 
-#: models/user/role_grant_service.py:657
+#: models/user/role_grant_service.py:663
 #, python-format
 msgid "Hai ottenuto il ruolo di %(role)s."
 msgstr "You have been granted the %(role)s role."
@@ -10000,8 +10016,8 @@ msgstr "Lv. 6+"
 #, python-format
 msgid "%(n)s referto"
 msgid_plural "%(n)s referti"
-msgstr[0] "%"
-msgstr[1] "("
+msgstr[0] "%(n)s scoresheet"
+msgstr[1] "%(n)s scoresheets"
 
 #: templates/components/_player_ratings.html:47
 msgid ""
@@ -11117,9 +11133,13 @@ msgid ""
 "Questa azione è IRREVERSIBILE!"
 msgstr "Are you SURE you want to delete the championship "
 
-#: templates/errors/400.html:3 templates/errors/400.html:10
+#: templates/errors/400.html:3
 msgid "Sessione scaduta"
 msgstr "Session expired"
+
+#: templates/errors/400.html:10
+msgid "Il tavolo si è raffreddato"
+msgstr "The table has gone cold"
 
 #: templates/errors/400.html:11
 msgid "La pagina era aperta da troppo tempo e la sessione è scaduta."
@@ -11129,11 +11149,11 @@ msgstr "The page was open too long and the session expired."
 msgid "Torna indietro, ricarica e reinvia il modulo."
 msgstr "Go back, reload and send the form again."
 
-#: templates/errors/400.html:14
+#: templates/errors/400.html:14 templates/errors/dominio.html:23
 msgid "Torna indietro"
 msgstr "Go back"
 
-#: templates/errors/400.html:15
+#: templates/errors/400.html:15 templates/errors/dominio.html:24
 msgid "Vai alla home"
 msgstr "Go to the home page"
 
@@ -11170,9 +11190,13 @@ msgstr "Check the address and try again."
 msgid "Torna al tavolo"
 msgstr "Back to the table"
 
-#: templates/errors/429.html:3 templates/errors/429.html:10
+#: templates/errors/429.html:3
 msgid "Troppe richieste"
 msgstr "Too many requests"
+
+#: templates/errors/429.html:10
+msgid "Rallenta la stecca"
+msgstr "Ease off the cue"
 
 #: templates/errors/429.html:11
 msgid "Hai fatto troppe azioni di fila: il sistema ti ha messo in pausa per qualche minuto."

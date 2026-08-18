@@ -24,6 +24,7 @@ from .gara_challenge import (
     GaraChallengeAttempt,
     GaraChallengeClassification,
 )
+from ..exceptions import ConflictError, NotFoundError
 from ..transaction.manager import transactional
 
 logger = logging.getLogger(__name__)
@@ -43,8 +44,8 @@ class GaraChallengeService:
         gara_id: int,
         challenge_id: int,
         round_number: int,
+        added_by_id: int,
         max_attempts: int = 1,
-        added_by_id: Optional[int] = None,
     ) -> GaraChallenge:
         """
         Add a challenge to a gara.
@@ -53,14 +54,19 @@ class GaraChallengeService:
             gara_id: ID of the gara
             challenge_id: ID of the challenge to add
             round_number: After which round to execute the challenge
+            added_by_id: chi la sta aggiungendo. Obbligatorio: la colonna e'
+                ``nullable=False``, e la firma con default ``None`` prometteva
+                il contrario — l'unico modo di scoprirlo era
+                ``NOT NULL constraint failed`` da SQLite (GlitchTip
+                TORNEI-BILIARDO-5U), a transazione gia' avviata.
             max_attempts: Maximum attempts per player (default 1)
-            added_by_id: ID of user adding the challenge
 
         Returns:
             GaraChallenge: The created gara challenge link
 
         Raises:
-            ValueError: If challenge already exists for this gara and round
+            ConflictError: la challenge c'e' gia' per questa gara e questo turno
+            NotFoundError: la challenge non esiste
         """
         # Check if challenge already exists for this gara and round
         existing = GaraChallenge.query.filter_by(
@@ -68,12 +74,12 @@ class GaraChallengeService:
         ).first()
 
         if existing:
-            raise ValueError("Challenge già presente per questo round della gara")
+            raise ConflictError("Challenge già presente per questo round della gara")
 
         # Verify challenge exists
         challenge = Challenge.query.get(challenge_id)
         if not challenge:
-            raise ValueError("Challenge non trovata")
+            raise NotFoundError("Challenge non trovata")
 
         # Create the gara challenge link
         gara_challenge = GaraChallenge(
