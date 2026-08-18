@@ -188,9 +188,8 @@ e non importa nulla dal progetto.
 > l'unica regola facile da rispettare, ed è presidiata staticamente da
 > `tests/new/unit/test_script_import_order.py`. Gli script di analisi che si
 > lanciano a mano in sviluppo (`recalc_elo.py`, `diagnose_elo.py`,
-> `set_gara_handicap.py`, `migrate_gamification_rules.py`,
-> `verify_classification_configs.py`) **non** usano `prod_env` e restano fuori
-> dalla regola: non caricano env di produzione, quindi per loro l'ordine non
+> `set_gara_handicap.py`, `migrate_gamification_rules.py`) **non** usano
+> `prod_env` e restano fuori dalla regola: non caricano env di produzione, quindi per loro l'ordine non
 > significa nulla. Se un domani dovessero girare in produzione, vanno prima
 > agganciati a `bootstrap_and_create_app`.
 

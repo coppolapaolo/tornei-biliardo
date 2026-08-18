@@ -1,29 +1,49 @@
 #!/usr/bin/env python3
-"""Verify classification system configurations for all gare.
+"""Verifica le configurazioni delle gare e come sono state classificate.
 
-This script checks all existing gare against the validation rules defined in
-models/competition/validators.py and reports any invalid configurations.
+Due controlli distinti, entrambi di sola lettura:
+
+1. **Configurazioni valide** — ogni gara contro le regole di
+   `models/competition/validators.py`.
+2. **Criterio storico** — quali gare sono state classificate con un criterio
+   diverso da quello che il direttore aveva scelto. Fino al 2026-05-21 il
+   calcolatore sceglieva la strategia di classifica dalla **strategia di
+   accoppiamento** invece che dal **sistema di classifica** (commit `ca3829b8`,
+   «fix B14»): dove le due configurazioni divergono, la classifica mostrata
+   allora ordinava per il criterio sbagliato. Il fix è arrivato in due tempi —
+   un secondo percorso di calcolo è stato allineato solo il 2026-07-28
+   (`335e544f`) — e lo stesso equivoco è stato corretto a livello di campionato
+   il 2026-08-18 (ADR-047).
 
 Usage:
-    python scripts/verify_classification_configs.py [--fix]
+    python scripts/verify_classification_configs.py           # solo lettura
+    python scripts/verify_classification_configs.py --fix     # corregge (interattivo)
 
-Options:
-    --fix   Attempt to fix invalid configurations (interactive)
+In produzione, con l'interprete del venv:
+
+    venv/bin/python scripts/verify_classification_configs.py
 """
 
+import os
 import sys
 from pathlib import Path
 
-# Add project root to path
+_HERE = os.path.dirname(os.path.abspath(__file__))
+# Servono entrambe: la radice del progetto (per `models`) e la cartella scripts
+# (per `prod_env`). La radice per ultima, così resta davanti in sys.path.
+sys.path.insert(0, _HERE)
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from app import create_app  # noqa: E402
+# NB: `app` non si importa qui. `bootstrap_and_create_app` carica le env dal
+# file WSGI e **poi** importa l'app: console e scheduled task non ereditano
+# quelle variabili, e un import in cima congelerebbe un ambiente vuoto.
+# Invariante presidiata da tests/new/unit/test_script_import_order.py.
+from prod_env import bootstrap_and_create_app  # noqa: E402
 from models.base import db  # noqa: E402
 from models.competition.models import Gara  # noqa: E402
-from models.competition.validators import (  # noqa: E402
-    validate_gara,
-    ClassificationSystem,
-)
+from models.status_enum import ClassificationSystem  # noqa: E402
+from models.matchmaking.configuration import MatchmakingStrategy  # noqa: E402
+from models.competition.validators import validate_gara  # noqa: E402
 
 
 def verify_all_gare(fix_mode: bool = False) -> tuple[int, int, int]:
@@ -44,14 +64,10 @@ def verify_all_gare(fix_mode: bool = False) -> tuple[int, int, int]:
     invalid_gare = []
 
     for gara in gare:
-        # Determine classification system
-        if gara.classification_system:
-            try:
-                class_sys = ClassificationSystem(gara.classification_system)
-            except ValueError:
-                class_sys = ClassificationSystem.WINS
-        else:
-            class_sys = ClassificationSystem.WINS
+        # `resolve` conosce il plurale storico "RACKS" e ripiega su WINS.
+        # Il costruttore secco sollevava su quel valore, e il ripiego
+        # silenzioso faceva validare come "a vittorie" una gara a triangoli.
+        class_sys = ClassificationSystem.resolve(gara.classification_system)
 
         errors, warnings = validate_gara(gara, classification_system=class_sys)
 
@@ -152,11 +168,111 @@ def verify_campionati() -> None:
     print()
 
 
+# Data in cui il calcolatore ha smesso di scegliere il criterio dalla strategia
+# di accoppiamento (commit ca3829b8). Serve solo per il testo del report: quali
+# classifiche siano davvero rimaste indietro si legge dai dati, non dalla data.
+DATA_FIX_B14 = "2026-05-21"
+
+
+def _criterio_applicato_allora(gara) -> ClassificationSystem:
+    """Il criterio che il calcolatore usava prima del fix B14.
+
+    La mappa era `{"random": "random_round"}` con default `amalfi_round`: la
+    strategia di accoppiamento decideva, e tutto ciò che non era accoppiamento
+    casuale veniva classificato a vittorie.
+    """
+    if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value:
+        return ClassificationSystem.RACK
+    return ClassificationSystem.WINS
+
+
+def report_criterio_storico() -> int:
+    """Elenca le gare in cui accoppiamento e sistema di classifica divergono.
+
+    Sono le gare che, se calcolate prima del fix B14, mostravano una classifica
+    ordinata con un criterio diverso da quello scelto dal direttore.
+
+    Returns:
+        Numero di gare discordanti trovate.
+    """
+    from models.classification.models import RoundClassification
+
+    print(f"\n{'='*60}")
+    print("CRITERIO STORICO DI CLASSIFICA")
+    print(f"{'='*60}")
+    print(
+        f"Fino al {DATA_FIX_B14} il criterio veniva scelto dalla strategia di\n"
+        "accoppiamento invece che dal sistema di classifica. Dove le due\n"
+        "divergono, la classifica di allora ordinava per il criterio sbagliato.\n"
+    )
+
+    discordanti = []
+    for gara in Gara.query.order_by(Gara.date).all():
+        scelto = ClassificationSystem.resolve(gara.classification_system)
+        applicato = _criterio_applicato_allora(gara)
+        if scelto != applicato:
+            discordanti.append((gara, scelto, applicato))
+
+    if not discordanti:
+        print("✅ Nessuna gara discordante: in ogni gara il criterio applicato")
+        print("   allora coincideva con quello scelto dal direttore.\n")
+        return 0
+
+    etichette = {
+        ClassificationSystem.RACK: "triangoli totali",
+        ClassificationSystem.WINS: "vittorie",
+        ClassificationSystem.POSITION: "punti per piazzamento",
+    }
+
+    for gara, scelto, applicato in discordanti:
+        # Una classifica riscritta dopo la separazione delle colonne
+        # (2026-07-28) ha `racks_won` valorizzato: quella gara è già stata
+        # ricalcolata col criterio corretto, comunque fosse nata.
+        ricalcolata = (
+            db.session.query(RoundClassification)
+            .filter(
+                RoundClassification.gara_id == gara.id,
+                RoundClassification.racks_won.isnot(None),
+            )
+            .first()
+            is not None
+        )
+        stato = (
+            "già ricalcolata col criterio corretto"
+            if ricalcolata
+            else "MAI ricalcolata: le classifiche salvate sono quelle di allora"
+        )
+        nome = gara.name or f"Gara #{gara.number}"
+        print(f"⚠️  Gara {gara.id}: {nome}")
+        print(f"   Data: {gara.date}  |  Stato: {gara.status}")
+        print(f"   Accoppiamento: {gara.matchmaking_strategy}")
+        print(
+            f"   Sistema scelto: {etichette[scelto]}  →  "
+            f"applicato allora: {etichette[applicato]}"
+        )
+        print(f"   {stato}")
+        print()
+
+    mai_ricalcolate = sum(
+        1
+        for gara, _, _ in discordanti
+        if db.session.query(RoundClassification)
+        .filter(
+            RoundClassification.gara_id == gara.id,
+            RoundClassification.racks_won.isnot(None),
+        )
+        .first()
+        is None
+    )
+    print(f"{len(discordanti)} gare discordanti, di cui {mai_ricalcolate} mai")
+    print("ricalcolate dopo il fix.\n")
+    return len(discordanti)
+
+
 def main():
     fix_mode = "--fix" in sys.argv
 
-    # Use default config to access the real database
-    app = create_app()
+    app = bootstrap_and_create_app()
     with app.app_context():
         # Verify gare
         total, valid, invalid = verify_all_gare(fix_mode)
@@ -164,11 +280,16 @@ def main():
         # Verify campionati
         verify_campionati()
 
+        # Come sono state classificate, storicamente
+        discordanti = report_criterio_storico()
+
         # Summary
         print(f"\n{'='*60}")
         print("SUMMARY")
         print(f"{'='*60}")
         print(f"Gare: {valid}/{total} valid")
+        if discordanti:
+            print(f"Criterio storico: {discordanti} gare discordanti (vedi sopra)")
         if invalid > 0:
             print(f"⚠️  {invalid} gare need attention")
             if not fix_mode:
