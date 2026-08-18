@@ -606,6 +606,8 @@ pytest tests/new/unit/ -n auto && pytest tests/new/integration/ -n 4
 | `max(rack_number) WHERE is_deleted=False` | Include ALL records for sequential IDs with UNIQUE constraints |
 | `@transactional` on facade AND inner service | Only decorate the innermost method (nested causes rollback) |
 | `match.gara.distance` in scoring/validation | Use `match.distance_config` or `match.effective_*` (ADR-027) |
+| Cercare *tutte* le partite di un giocatore nella sola tabella `match` | Le sfide individuali stanno su `individual_match`: sono due tabelle. `PlayerHistoryService.get_unified_match_history` le unisce nella stessa forma — interrogarne una sola non dà errore, mostra meno partite di quelle giocate |
+| `Match.status == CLOSED_UNILATERALLY` per «partita giocata» | `MatchStatus.finished_values()`: `CONFIRMED_BY_BOTH` è la chiusura **dei due giocatori**, ed è giocata quanto l'altra. Filtrare solo la prima è il bug che teneva monco lo storico |
 | `RoundConfiguration` salvato solo in `localStorage` | API endpoint `POST /admin/gara/<id>/round-config/<n>` (ADR-027) |
 | Nuova route senza entry in `ENDPOINT_ROLES` | Sarà admin-only in prod (ADR-028) — aggiungila a `utils/feature_flags.py` se non è il comportamento voluto |
 | "Il merge su `main` fa scattare il deploy" | **Falso**: il job `deploy` fa solo un *reload*, e se la PR aggiunge migration non parte neanche quello. Il codice lo porta lo scheduled task `auto_deploy.py` (fino a 24h dopo) |

@@ -1,202 +1,124 @@
-<!-- templates/components/_history_matches_tab.html - Tab partite storico -->
+{# Storico partite: torneo e sfide individuali nello stesso elenco.
 
-<!-- Filters -->
+   Prima questa scheda interrogava la sola tabella `match`, quindi le sfide
+   individuali non comparivano in nessuno storico — e la pagina non sbagliava
+   niente di visibile: mostrava semplicemente meno partite di quelle giocate.
+
+   Le righe arrivano già nella stessa forma (`MatchEntry`), quindi qui non si
+   distingue più fra le due sorgenti: si distingue fra le tre **provenienze**,
+   che è quello che interessa a chi legge. #}
+
 {% set filter_type = 'matches' %}
 {% include "components/_history_filters.html" %}
 
-<!-- Stats Summary -->
 {% if match_stats %}
-<div class="row mb-4">
-    <div class="col-6 col-md-2">
-        <div class="card bg-primary text-white">
-            <div class="card-body text-center py-2">
-                <h4 class="mb-0">{{ match_stats.total_matches }}</h4>
-                <small>{{ _("Partite") }}</small>
-            </div>
-        </div>
+<div class="c7-card" style="margin-bottom:16px">
+  <div class="c7-grid" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:14px">
+    <div>
+      <div class="c7-num-lg">{{ match_stats.total_matches }}</div>
+      <div class="c7-rows__sub">{{ _("Partite") }}</div>
     </div>
-    <div class="col-6 col-md-2">
-        <div class="card bg-success text-white">
-            <div class="card-body text-center py-2">
-                <h4 class="mb-0">{{ match_stats.won_matches }}</h4>
-                <small>{{ _("Vittorie") }}</small>
-            </div>
-        </div>
+    <div>
+      <div class="c7-num-lg">{{ match_stats.won_matches }}</div>
+      <div class="c7-rows__sub">{{ _("Vittorie") }}</div>
     </div>
-    <div class="col-6 col-md-2">
-        <div class="card bg-danger text-white">
-            <div class="card-body text-center py-2">
-                <h4 class="mb-0">{{ match_stats.lost_matches }}</h4>
-                <small>{{ _("Sconfitte") }}</small>
-            </div>
-        </div>
+    <div>
+      <div class="c7-num-lg">{{ match_stats.lost_matches }}</div>
+      <div class="c7-rows__sub">{{ _("Sconfitte") }}</div>
     </div>
-    <div class="col-6 col-md-2">
-        <div class="card bg-warning text-dark">
-            <div class="card-body text-center py-2">
-                <h4 class="mb-0">{{ match_stats.win_percentage }}%</h4>
-                <small>{{ _("Win Rate") }}</small>
-            </div>
-        </div>
+    <div>
+      <div class="c7-num-lg">{{ match_stats.win_percentage }}%</div>
+      <div class="c7-rows__sub">{{ _("Vittorie su giocate") }}</div>
     </div>
-    <div class="col-6 col-md-2">
-        <div class="card bg-info text-white">
-            <div class="card-body text-center py-2">
-                <h4 class="mb-0">{{ match_stats.total_racks_won }}</h4>
-                <small>{{ _("Triangoli Vinti") }}</small>
-            </div>
-        </div>
+    <div>
+      <div class="c7-num-lg">{{ match_stats.total_racks_won }}</div>
+      <div class="c7-rows__sub">{{ _("Triangoli vinti") }}</div>
     </div>
-    <div class="col-6 col-md-2">
-        <div class="card bg-secondary text-white">
-            <div class="card-body text-center py-2">
-                <h4 class="mb-0">{{ match_stats.total_racks_lost }}</h4>
-                <small>{{ _("Triangoli Persi") }}</small>
-            </div>
-        </div>
+    <div>
+      <div class="c7-num-lg">{{ match_stats.total_racks_lost }}</div>
+      <div class="c7-rows__sub">{{ _("Triangoli persi") }}</div>
     </div>
+  </div>
+
+  {# La torta guarda **le partite filtrate**, non tutte: cambiando un filtro
+     deve cambiare anche lei, altrimenti racconta un insieme diverso da quello
+     elencato sotto. #}
+  {% if match_donut %}
+  <div class="c7-topline" style="margin-top:16px">
+    <div class="c7-kicker" style="margin-bottom:10px">{{ _("Da dove vengono") }}</div>
+    {% with donut = match_donut %}{% include "components/_donut.html" %}{% endwith %}
+  </div>
+  {% endif %}
 </div>
 {% endif %}
 
-<!-- Results List -->
-<div class="card">
-    <div class="card-header">
-        <div class="d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">
-                <i class="fas fa-list"></i>
-                {{ _("Partite") }}
-                {% if match_pagination %}({{ match_pagination.total }}){% endif %}
-            </h5>
-            {% if match_pagination and match_pagination.total > 0 %}
-            <a href="{{ url_for('player.export_profile_csv', user_id=current_user.id) }}"
-               class="btn btn-sm btn-outline-secondary">
-                <i class="fas fa-download"></i> {{ _("Esporta CSV") }}
-            </a>
-            {% endif %}
+<div class="c7-card">
+  <div class="c7-sechead mb-3">
+    <h2>{{ _("Partite") }}{% if match_pagination %} <span class="c7-num">{{ match_pagination.total }}</span>{% endif %}</h2>
+    {% if match_pagination and match_pagination.total > 0 %}
+    <a href="{{ url_for('player.export_profile_csv', user_id=current_user.id) }}"
+       class="btn btn-secondary btn-sm">
+      <i class="fas fa-download"></i>&nbsp;{{ _("Esporta CSV") }}
+    </a>
+    {% endif %}
+  </div>
+
+  {% if match_pagination and match_pagination.items %}
+  <div class="c7-rows" style="background:var(--c7-bg)">
+    {% for voce in match_pagination.items %}
+    {% set stile = {'campionato': ['c7-state--info', _('Campionato')],
+                    'gara': ['c7-state--ok', _('Gara')],
+                    'individuale': ['c7-state--muted', _('Individuale')]}[voce.context] %}
+    <div class="c7-rows__row">
+      {# L'esito come tassello: si legge prima del testo, ed è la cosa che si
+         cerca scorrendo un elenco di partite. #}
+      <span class="c7-tile c7-tile--sm {{ 'c7-tile--locked' if voce.outcome != 'won' }}">
+        {%- if voce.outcome == 'won' %}<i class="fas fa-trophy"></i>
+        {%- elif voce.outcome == 'lost' %}<i class="fas fa-xmark"></i>
+        {%- else %}<i class="fas fa-equals"></i>{% endif %}
+      </span>
+
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">
+          {%- if voce.opponents %}{{ voce.opponents|join(' · ') }}
+          {%- else %}{{ _("Avversario non registrato") }}{% endif -%}
+          {%- if voce.my_score is not none %}
+          <span class="c7-num" style="margin-left:8px">
+            {{- voce.my_score }}{% if voce.opponent_score is not none %}–{{ voce.opponent_score }}{% endif -%}
+          </span>
+          {%- endif %}
         </div>
+        <div class="c7-rows__sub">
+          <span class="c7-state {{ stile[0] }}">{{ stile[1] }}</span>
+          {%- if voce.competition %} <span class="c7-sep">·</span> {{ voce.competition }}{% endif -%}
+          {%- if voce.played_on %} <span class="c7-sep">·</span> <span class="c7-num">{{ voce.played_on|date_local }}</span>{% endif -%}
+          {%- if voce.venue %} <span class="c7-sep">·</span> {{ voce.venue }}{% endif -%}
+          {%- if voce.is_trio %} <span class="c7-sep">·</span> {{ _("partita a tre") }}{% endif -%}
+        </div>
+      </div>
+
+      {% if voce.source == 'individual' and feature_visible('individual_match.match_detail') %}
+      <a class="c7-iconbtn" href="{{ url_for('individual_match.match_detail', match_id=voce.match_id) }}"
+         title="{{ _('Apri la sfida') }}" aria-label="{{ _('Apri la sfida') }}">
+        <i class="fas fa-chevron-right"></i>
+      </a>
+      {% elif voce.source == 'tournament' and feature_visible('admin.match.match_detail') %}
+      <a class="c7-iconbtn" href="{{ url_for('admin.match.match_detail', match_id=voce.match_id) }}"
+         title="{{ _('Apri la partita') }}" aria-label="{{ _('Apri la partita') }}">
+        <i class="fas fa-chevron-right"></i>
+      </a>
+      {% endif %}
     </div>
-    <div class="card-body">
-        {% if match_pagination and match_pagination.items %}
-            {% for match in match_pagination.items %}
-                {# Handle trio matches differently #}
-                {% if match.is_trio and match.trio_match %}
-                    {% set trio = match.trio_match %}
-                    {% set is_winner = match.winner_id == current_user.id %}
-                    {% set is_tie = match.winner_id is none %}
-                {% else %}
-                    {% set is_player1 = match.player1_id == current_user.id %}
-                    {% set opponent = match.player2 if is_player1 else match.player1 %}
-                    {% set my_score = match.player1_score if is_player1 else match.player2_score %}
-                    {% set opp_score = match.player2_score if is_player1 else match.player1_score %}
-                    {% set is_winner = match.winner_id == current_user.id %}
-                {% endif %}
+    {% endfor %}
+  </div>
 
-                <div class="card mb-2 {{ 'border-success' if is_winner else ('border-secondary' if match.is_trio and match.winner_id is none else 'border-danger') }}">
-                    <div class="card-body py-2">
-                        <div class="row align-items-center">
-                            <!-- Date and Competition -->
-                            <div class="col-md-3">
-                                <div class="fw-bold">
-                                    {% if match.gara and match.gara.date %}
-                                        {{ match.gara.date|date_local }}
-                                    {% elif match.created_at %}
-                                        {{ match.created_at|date_local }}
-                                    {% else %}
-                                        -
-                                    {% endif %}
-                                </div>
-                                <small class="text-muted">
-                                    {% if match.gara %}
-                                        {% if match.gara.campionato %}
-                                            {{ match.gara.campionato.name }} - {{ match.gara.display_name }}
-                                        {% else %}
-                                            {{ match.gara.display_name }}
-                                        {% endif %}
-                                    {% else %}
-                                        {{ _('Sfida individuale') }}
-                                    {% endif %}
-                                </small>
-                            </div>
-
-                            <!-- Opponent (or Trio players) -->
-                            <div class="col-md-2">
-                                {% if match.is_trio and match.trio_match %}
-                                    {# Trio match: show other 2 players #}
-                                    {% set trio = match.trio_match %}
-                                    {% set other_players = [] %}
-                                    {% if trio.player1_id != current_user.id %}
-                                        {% set _void = other_players.append(trio.player1.username) %}
-                                    {% endif %}
-                                    {% if trio.player2_id != current_user.id %}
-                                        {% set _void = other_players.append(trio.player2.username) %}
-                                    {% endif %}
-                                    {% if trio.player3_id != current_user.id %}
-                                        {% set _void = other_players.append(trio.player3.username) %}
-                                    {% endif %}
-                                    <span class="text-primary" title="{{ _('Trio') }}">
-                                        <i class="fas fa-users me-1"></i>
-                                    </span>
-                                    <strong>{{ other_players|join(' • ') }}</strong>
-                                {% else %}
-                                    <span class="text-muted">vs</span>
-                                    <strong>{{ opponent.username if opponent else 'Bye' }}</strong>
-                                {% endif %}
-                            </div>
-
-                            <!-- Score -->
-                            <div class="col-md-2 text-center">
-                                {% if match.is_trio and match.trio_match %}
-                                    {# Trio: show all 3 scores #}
-                                    {% set trio = match.trio_match %}
-                                    <span class="badge {{ 'bg-success' if is_winner else ('bg-secondary' if match.winner_id is none else 'bg-danger') }} fs-6">
-                                        {{ trio.player1_racks }} - {{ trio.player2_racks }} - {{ trio.player3_racks }}
-                                    </span>
-                                {% else %}
-                                    <span class="badge {{ 'bg-success' if is_winner else 'bg-danger' }} fs-6">
-                                        {{ my_score }} - {{ opp_score }}
-                                    </span>
-                                {% endif %}
-                            </div>
-
-                            <!-- Discipline -->
-                            <div class="col-md-2">
-                                <small class="text-muted">
-                                    <i class="fas fa-trophy me-1"></i>
-                                    {% set discipline = match.discipline or (match.gara.discipline if match.gara else '') %}
-                                    {{ discipline|discipline_display if discipline else '-' }}
-                                </small>
-                            </div>
-
-                            <!-- Location -->
-                            <div class="col-md-2">
-                                <small class="text-muted">
-                                    {% if match.gara and match.gara.location %}
-                                    <i class="fas fa-map-marker-alt me-1"></i>
-                                    {{ match.gara.location|truncate(20) }}
-                                    {% endif %}
-                                </small>
-                            </div>
-
-                            <!-- Action -->
-                            <div class="col-md-1 text-end">
-                                <a href="{{ url_for('admin.match.match_detail', match_id=match.id) }}"
-                                   class="btn btn-sm btn-outline-primary" title="{{ _('Dettagli') }}">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
-
-            <!-- Pagination -->
-            {% set pagination = match_pagination %}
-            {% include "components/_history_pagination.html" %}
-        {% else %}
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle"></i>
-                {{ _("Nessuna partita trovata con i filtri selezionati.") }}
-            </div>
-        {% endif %}
-    </div>
+  {% set pagination = match_pagination %}
+  {% include "components/_history_pagination.html" %}
+  {% else %}
+  <div class="c7-empty">
+    <div class="c7-empty__ico"><i class="fas fa-table-tennis-paddle-ball"></i></div>
+    <h2 class="c7-empty__title">{{ _("Nessuna partita") }}</h2>
+    <p class="c7-empty__text">{{ _("Nessuna partita corrisponde ai filtri scelti.") }}</p>
+  </div>
+  {% endif %}
 </div>

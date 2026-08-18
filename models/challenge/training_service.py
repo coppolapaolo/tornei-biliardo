@@ -35,6 +35,7 @@ def _entry(
     attempted_at,
     source: str,
     gara_name: Optional[str] = None,
+    attempt_id: Optional[int] = None,
 ) -> Dict[str, Any]:
     """Forma comune alle due sorgenti.
 
@@ -52,6 +53,11 @@ def _entry(
         "challenge": challenge,
         "challenge_id": challenge.id,
         "challenge_name": challenge.get_display_name(),
+        # Serve allo storico per cancellare la prova sbagliata. `None` sulle
+        # prove di gara: quelle non si cancellano dal profilo, hanno
+        # conseguenze in classifica e le tocca chi dirige.
+        "attempt_id": attempt_id,
+        "max_score": challenge.max_score,
         "is_pass_fail": bool(challenge.pass_fail_only),
         "score": score,
         "passed": passed,
@@ -97,6 +103,7 @@ class TrainingHistoryService:
                     passed=attempt.passed,
                     attempted_at=attempt.attempted_at,
                     source="catalog",
+                    attempt_id=attempt.id,
                 )
             )
 

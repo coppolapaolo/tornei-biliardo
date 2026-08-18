@@ -164,6 +164,10 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # polymorphic admin.competition.gara_detail above shows the same gara
     # with admin/director management UI.
     "player.history": {"player", "director"},
+    # Cancellare dallo storico una prova inserita per sbaglio: chi vede lo
+    # storico deve poterlo correggere, altrimenti il pulsante c'e' e risponde
+    # 404 solo agli utenti veri.
+    "player.delete_drill_attempt": {"player", "director"},
     "player.gara_detail": {"player", "director"},
     "player.inscribe_to_gara": {"player", "director"},
     "player.unsubscribe_from_gara": {"player", "director"},

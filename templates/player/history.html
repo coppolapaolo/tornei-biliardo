@@ -7,12 +7,16 @@
 <a class="c7-head__back" href="{{ url_for('dashboard.dashboard') }}" aria-label="{{ _('Torna alla dashboard') }}"><i class="fas fa-arrow-left"></i></a>
 {% endblock %}
 {% block page_title %}{{ _("Storico") }}{% endblock %}
-{% block page_sub %}{{ _("Tutte le tue partite, gare e campionati") }}{% endblock %}
+{% block page_sub %}{{ _("Tutto quello che hai giocato: partite, gare, campionati, esercizi ed esami") }}{% endblock %}
 {% block page_actions %}
 <a href="{{ url_for('player.profile') }}" class="btn btn-secondary btn-sm">{{ _("Profilo") }}</a>
 {% endblock %}
 
 {% block content %}
+{# Le schede sono cinque: alle tre di prima si aggiungono esercizi ed esami,
+   che erano attività senza posto nello storico. Il contatore compare solo sulla
+   scheda aperta — è l'unica di cui il server ha caricato i dati, e stampare uno
+   zero sulle altre direbbe «non ne hai» invece di «non l'ho ancora contato». #}
 <nav style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;">
     <a class="c7-pill {{ 'is-active' if active_tab == 'matches' else '' }}" href="{{ url_for('player.history', tab='matches') }}">
         {{ _("Partite") }}{% if match_stats %} <span class="c7-num">{{ match_stats.total_matches }}</span>{% endif %}
@@ -23,6 +27,12 @@
     <a class="c7-pill {{ 'is-active' if active_tab == 'campionati' else '' }}" href="{{ url_for('player.history', tab='campionati') }}">
         {{ _("Campionati") }}{% if campionato_pagination %} <span class="c7-num">{{ campionato_pagination.total }}</span>{% endif %}
     </a>
+    <a class="c7-pill {{ 'is-active' if active_tab == 'esercizi' else '' }}" href="{{ url_for('player.history', tab='esercizi') }}">
+        {{ _("Esercizi") }}{% if drill_stats %} <span class="c7-num">{{ drill_stats.total }}</span>{% endif %}
+    </a>
+    <a class="c7-pill {{ 'is-active' if active_tab == 'esami' else '' }}" href="{{ url_for('player.history', tab='esami') }}">
+        {{ _("Esami") }}{% if exam_stats %} <span class="c7-num">{{ exam_stats.total }}</span>{% endif %}
+    </a>
 </nav>
 
 <div>
@@ -32,6 +42,10 @@
     {% include "components/_history_gare_tab.html" %}
     {% elif active_tab == 'campionati' %}
     {% include "components/_history_campionati_tab.html" %}
+    {% elif active_tab == 'esercizi' %}
+    {% include "components/_history_drills_tab.html" %}
+    {% elif active_tab == 'esami' %}
+    {% include "components/_history_exams_tab.html" %}
     {% endif %}
 </div>
 {% endblock %}

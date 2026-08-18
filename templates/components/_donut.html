@@ -1,0 +1,22 @@
+{# La torta: un `conic-gradient`, niente librerie.
+
+   Il calcolo degli stop sta nel servizio, non qui: un template che calcola può
+   calcolare diversamente dalla riga di testo che gli sta accanto. Riusa le
+   classi del riquadro di feedback della dashboard — stessa forma, stessi
+   colori, così due torte nella stessa app non sembrano di due app diverse.
+
+   Parametri: `donut` = {gradient, center, slices:[{label, count, color_role}]}
+#}
+<div class="c7-feedback__donutcell">
+  <span class="c7-feedback__donut" style="background: {{ donut.gradient }}">
+    <span>{{ donut.center }}</span>
+  </span>
+  <div class="c7-feedback__legend">
+    {% for fetta in donut.slices %}
+    <span>
+      <span class="c7-feedback__swatch c7-feedback__swatch--{{ fetta.color_role }}"></span>
+      {{ fetta.label }}&nbsp;<span class="c7-num">{{ fetta.count }}</span>
+    </span>
+    {% endfor %}
+  </div>
+</div>
