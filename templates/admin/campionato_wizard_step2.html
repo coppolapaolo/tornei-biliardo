@@ -28,7 +28,7 @@
         <div class="c7-kicker">{{ _("Classifica") }}</div>
         <div class="mt-1" style="font-size:14px;font-weight:800">
           {% if wizard_data.default_classification_system == 'WINS' %}{{ _("Vittorie") }}
-          {% elif wizard_data.default_classification_system == 'RACK' %}{{ _("Rack totali") }}
+          {% elif wizard_data.default_classification_system == 'RACK' %}{{ _("Triangoli totali") }}
           {% else %}{{ wizard_data.default_classification_system }}{% endif %}
         </div>
       </div>
@@ -106,7 +106,7 @@
         </div>
         <div id="policy-description-bye_with_challenge" class="c7-flash c7-flash--info d-none">
           <span class="c7-flash__ico"><i class="fas fa-bullseye"></i></span>
-          <div class="c7-flash__body"><div class="c7-flash__text">{{ _("Il giocatore riposa ma deve completare una sfida per guadagnare punti.") }}</div></div>
+          <div class="c7-flash__body"><div class="c7-flash__text">{{ _("Il giocatore riposa ma deve completare un esercizio per guadagnare punti.") }}</div></div>
         </div>
         <div id="policy-description-trio" class="c7-flash c7-flash--info d-none">
           <span class="c7-flash__ico"><i class="fas fa-users"></i></span>

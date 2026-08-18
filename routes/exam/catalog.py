@@ -183,7 +183,7 @@ def add_challenge(exam_id: int):
             max_attempts=max_attempts,
         ),
         redirect_url=url_for("exam.exam_detail", exam_id=exam_id),
-        success_message=_("Drill aggiunto all'esame."),
+        success_message=_("Esercizio aggiunto all'esame."),
         error_prefix=None,
     )
 
@@ -207,7 +207,7 @@ def update_challenge(exam_id: int, challenge_id: int):
             max_attempts=max_attempts,
         ),
         redirect_url=url_for("exam.exam_detail", exam_id=exam_id),
-        success_message=_("Drill aggiornato."),
+        success_message=_("Esercizio aggiornato."),
         error_prefix=None,
     )
 
@@ -222,7 +222,7 @@ def remove_challenge(exam_id: int, challenge_id: int):
             exam_id, challenge_id, actor
         ),
         redirect_url=url_for("exam.exam_detail", exam_id=exam_id),
-        success_message=_("Drill rimosso dall'esame."),
+        success_message=_("Esercizio rimosso dall'esame."),
         error_prefix=None,
     )
 

@@ -28,7 +28,7 @@ blocks:
   - type: text
     text: >-
       Il giocatore non gioca e riceve una **vittoria a tavolino** con zero
-      differenza rack. Non guadagna né perde terreno rispetto a chi ha giocato:
+      differenza triangoli. Non guadagna né perde terreno rispetto a chi ha giocato:
       prende una vittoria come tutti i vincitori, ma senza margine.
 
   - type: list
@@ -40,25 +40,25 @@ blocks:
   - type: note
     tone: warning
     text: >-
-      Con il sistema «Rack» il riposo semplice **non va bene**: chi non gioca
-      accumulerebbe zero rack e verrebbe penalizzato pesantemente. In quel caso
-      si usa il riposo con challenge.
+      Con il sistema «Triangoli» il riposo semplice **non va bene**: chi non gioca
+      accumulerebbe zero triangoli e verrebbe penalizzato pesantemente. In quel caso
+      si usa il riposo con esercizio.
 
   - type: heading
     id: riposo_challenge
-    title: "2. Riposo con challenge"
+    title: "2. Riposo con esercizio"
 
   - type: text
     text: >-
       Chi resta senza avversario esegue una **prova di abilità** invece di
       stare fermo. Il punteggio ottenuto vale per la classifica: con il sistema
-      «Rack» diventa il numero di rack accreditati, con «Vittorie» diventa la
-      differenza rack che accompagna la vittoria a tavolino.
+      «Triangoli» diventa il numero di triangoli accreditati, con «Vittorie» diventa la
+      differenza triangoli che accompagna la vittoria a tavolino.
 
   - type: list
     items:
-      - "**Pro**: nessuno sta fermo, e il turno resta equo anche a rack."
-      - "**Contro**: serve avere almeno una challenge configurata nella gara."
+      - "**Pro**: nessuno sta fermo, e il turno resta equo anche a triangoli."
+      - "**Contro**: serve avere almeno un esercizio configurato nella gara."
 
   - type: heading
     id: trio
@@ -67,22 +67,22 @@ blocks:
   - type: text
     text: >-
       Invece di lasciare uno fuori, tre giocatori giocano insieme un
-      mini-girone: ciascuno affronta gli altri due in rack singoli.
+      mini-girone: ciascuno affronta gli altri due in triangoli singoli.
 
   - type: options
     title: "Come funziona il trio"
     items:
       - name: "Con distanza 2 o 3"
-        values: "3 rack in tutto"
+        values: "3 triangoli in tutto"
         text: "Un giro solo: A contro B, A contro C, B contro C."
       - name: "Con distanza 4 o 5"
-        values: "6 rack in tutto"
+        values: "6 triangoli in tutto"
         text: "Due giri: le stesse tre sfide ripetute."
       - name: "Chi vince"
         text: >-
-          Chi ha vinto più rack. Se due o più arrivano appaiati al punteggio
+          Chi ha vinto più triangoli. Se due o più arrivano appaiati al punteggio
           più alto, nessuno prende la vittoria e restano solo le differenze
-          rack.
+          triangoli.
 
   - type: list
     items:
@@ -121,8 +121,8 @@ blocks:
       - name: "Serata normale, classifica a vittorie"
         values: "Riposo"
         text: "La scelta predefinita: non allunga la serata e non complica niente."
-      - name: "Classifica a rack"
-        values: "Riposo con challenge"
+      - name: "Classifica a triangoli"
+        values: "Riposo con esercizio"
         text: "Obbligatorio nei fatti: il riposo semplice falserebbe la classifica."
       - name: "Gruppo affiatato, tempo a disposizione"
         values: "Trio"
@@ -154,10 +154,10 @@ blocks:
   - type: faq
     items:
       - q: "Ho ricevuto una vittoria senza giocare. È un errore?"
-        a: "No: è l'X a tavolino, e tocca a turno a chi resta senza avversario. Vale una vittoria con zero differenza rack."
+        a: "No: è l'X a tavolino, e tocca a turno a chi resta senza avversario. Vale una vittoria con zero differenza triangoli."
       - q: "Perché sono in lista d'attesa se ci sono ancora posti?"
         a: "Perché la gara richiede un numero pari di giocatori e la tua iscrizione lo renderebbe dispari. Entrerai appena si iscrive qualcun altro."
       - q: "Il trio non è selezionabile."
         a: "È possibile solo con distanze da 2 a 7 e non nelle gare a tabellone. Se la distanza è fuori intervallo, l'opzione resta spenta."
-      - q: "In un trio ho vinto due rack su tre. Ho vinto la partita?"
+      - q: "In un trio ho vinto due triangoli su tre. Ho vinto la partita?"
         a: "Sì, se nessun altro ne ha vinti altrettanti. In caso di parità al punteggio più alto, nessuno prende la vittoria."

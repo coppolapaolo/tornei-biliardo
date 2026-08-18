@@ -212,7 +212,7 @@ Parametri:
             <span class="c7-flash__ico"><i class="fas fa-check"></i></span>
             <span class="c7-flash__body">
                 <span class="c7-flash__title">{{ _('Partita conclusa') }}</span>
-                <span class="c7-flash__text">{{ _("Se l'ultimo rack è stato segnato per errore puoi ancora annullarlo, finché il direttore non valida il risultato.") }}</span>
+                <span class="c7-flash__text">{{ _("Se l'ultimo triangolo è stato segnato per errore puoi ancora annullarlo, finché il direttore non valida il risultato.") }}</span>
             </span>
         </div>
         {% elif match_at_distance %}
@@ -282,7 +282,7 @@ Parametri:
            Si ferma quando chiude il direttore (vedi `puo_annullare` in cima). #}
         {% if puo_annullare %}
         <button type="button" class="c7-undo" onclick="{{ remove_rack }}({{ last_rack.winner_id if last_rack else 0 }}, this)" {% if not last_rack %}disabled{% endif %}>
-            {{ _('Annulla ultimo rack') }}
+            {{ _('Annulla ultimo triangolo') }}
         </button>
         {% endif %}
 

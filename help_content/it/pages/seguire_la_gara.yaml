@@ -85,18 +85,18 @@ blocks:
 
   - type: shot
     shot: gara-classifica
-    caption: "La classifica di una gara conclusa: posizione, nome, vittorie e differenza rack."
+    caption: "La classifica di una gara conclusa: posizione, nome, vittorie e differenza triangoli."
 
   - type: text
     text: >-
       La classifica si aggiorna alla fine di ogni turno, non a ogni partita:
       per questo può restare ferma per un po' anche mentre si gioca. Le due
       colonne di numeri a destra sono, nell'ordine, le **vittorie** e la
-      **differenza rack** (i rack vinti meno quelli persi).
+      **differenza triangoli** (i triangoli vinti meno quelli persi).
 
   - type: text
     text: >-
-      Non tutte le gare ordinano allo stesso modo: alcune contano i rack
+      Non tutte le gare ordinano allo stesso modo: alcune contano i triangoli
       totali, altre le posizioni in un tabellone. Le tre modalità sono spiegate
       in [Come si calcolano le
       classifiche](/aiuto/approfondimenti/classifiche).

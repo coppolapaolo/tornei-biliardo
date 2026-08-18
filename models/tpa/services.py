@@ -88,8 +88,8 @@ class TpaRefertoService:
 
         if (match.player1_score or 0) + (match.player2_score or 0) > 0:
             return _(
-                "Questo match ha gia' dei rack segnati: il referto va aperto "
-                "prima del primo rack."
+                "Questo match ha gia' dei triangoli segnati: il referto va aperto "
+                "prima del primo triangolo."
             )
 
         return None

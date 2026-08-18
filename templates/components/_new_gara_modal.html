@@ -196,7 +196,7 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    <label for="distance" class="form-label">{{ _("Distanza (Rack)") }}</label>
+                                    <label for="distance" class="form-label">{{ _("Distanza (Triangoli)") }}</label>
                                     <input type="number" class="form-control" name="distance" id="create_distance" min="1"
                                         max="15" value="{{ default_distance }}" required>
                                 </div>
@@ -220,11 +220,11 @@
                                         <input class="form-check-input" type="checkbox" name="exact_number"
                                             id="create_exact_number">
                                         <label class="form-check-label" for="create_exact_number">
-                                            {{ _("Esatto numero di rack") }}
+                                            {{ _("Esatto numero di triangoli") }}
                                         </label>
                                     </div>
                                     <small class="text-muted">
-                                        <span id="create-game-mode-text">{{ _("Al 7 (si vince a 7 rack)") }}</span>
+                                        <span id="create-game-mode-text">{{ _("Al 7 (si vince a 7 triangoli)") }}</span>
                                     </small>
                                 </div>
                             </div>
@@ -265,7 +265,7 @@
                                             {{ _("X (vinto a tavolino)") }}
                                         </option>
                                         <option value="bye_with_challenge" {% if campionato.default_odd_policy == 'bye_with_challenge' %}selected{% endif %}>
-                                            {{ _("X con Challenge") }}
+                                            {{ _("X con esercizio") }}
                                         </option>
                                         <option value="trio" {% if campionato.default_odd_policy == 'trio' %}selected{% endif %}>
                                             {{ _("Match a 3 Giocatori") }}
@@ -607,8 +607,8 @@
 
         // Update game mode text
         const i18n = {
-            exactNumber: {{ _("Esatto numero: {distance} rack totali")|tojson }},
-            raceTo: {{ _("Al {distance} (si vince a {distance} rack)")|tojson }}
+            exactNumber: {{ _("Esatto numero: {distance} triangoli totali")|tojson }},
+            raceTo: {{ _("Al {distance} (si vince a {distance} triangoli)")|tojson }}
         };
         function updateGameModeText() {
             if (!distanceInput || !gameModeText) return;

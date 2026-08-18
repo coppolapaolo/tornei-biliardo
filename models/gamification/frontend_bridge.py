@@ -328,23 +328,23 @@ class GamificationFrontendBridge:
             "description": "Crea una serie di gare e gestisci una stagione completa.",
         },
         "do_challenge": {
-            "name": "Prova le sfide",
+            "name": "Prova gli esercizi",
             "description": (
-                "Allenati con drill mirati: "
+                "Allenati con esercizi mirati: "
                 "ogni completamento conta per la classifica."
             ),
         },
         "take_exam": {
             "name": "Sostieni un esame",
             "description": (
-                "Più drill in fila, in un colpo solo. "
+                "Più esercizi in fila, in un colpo solo. "
                 "Da solo per allenarti, o davanti a un esaminatore per farlo valere."
             ),
         },
         "request_examiner": {
             "name": "Diventa esaminatore",
             "description": (
-                "Hai macinato abbastanza drill: "
+                "Hai macinato abbastanza esercizi: "
                 "puoi chiedere di comporre esami e certificarli tu."
             ),
         },
@@ -484,16 +484,16 @@ def _i18n_nudge_anchor() -> None:
     _("Sei pronto: puoi creare la tua prima gara standalone.")
     _("Organizza un campionato")
     _("Crea una serie di gare e gestisci una stagione completa.")
-    _("Prova le sfide")
-    _("Allenati con drill mirati: ogni completamento conta per la classifica.")
+    _("Prova gli esercizi")
+    _("Allenati con esercizi mirati: ogni completamento conta per la classifica.")
     _("Sostieni un esame")
     _(
-        "Più drill in fila, in un colpo solo. "
+        "Più esercizi in fila, in un colpo solo. "
         "Da solo per allenarti, o davanti a un esaminatore per farlo valere."
     )
     _("Diventa esaminatore")
     _(
-        "Hai macinato abbastanza drill: "
+        "Hai macinato abbastanza esercizi: "
         "puoi chiedere di comporre esami e certificarli tu."
     )
     # _ROLE_GRANTED_COPY (ADR-041): stessa ragione, stessa ancora.

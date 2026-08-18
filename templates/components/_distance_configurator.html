@@ -17,13 +17,13 @@ Parametri:
     {# Rack per set: stepper, non campo numerico #}
     <div class="c7-stepper">
         <div class="c7-stepper__row">
-            <button type="button" onclick="stepDistance(-1)" aria-label="{{ _('Meno un rack') }}"><i class="fas fa-minus"></i></button>
+            <button type="button" onclick="stepDistance(-1)" aria-label="{{ _('Meno un triangolo') }}"><i class="fas fa-minus"></i></button>
             <input type="number" class="c7-stepper__value" id="distance" name="distance" min="1" max="15"
                    value="{{ distance_value }}" onchange="updateDistancePreview()"
                    style="border: 0; background: transparent; width: 100%;" {% if is_required %}required{% endif %}>
-            <button type="button" onclick="stepDistance(1)" aria-label="{{ _('Più un rack') }}"><i class="fas fa-plus"></i></button>
+            <button type="button" onclick="stepDistance(1)" aria-label="{{ _('Più un triangolo') }}"><i class="fas fa-plus"></i></button>
         </div>
-        <div class="c7-stepper__hint" id="preview-text">{{ _('Rack per set') }}</div>
+        <div class="c7-stepper__hint" id="preview-text">{{ _('Triangoli per set') }}</div>
     </div>
 
     {# Modalità rack. Sul tabellone non si sceglie: vedi la nota in fondo. #}
@@ -31,8 +31,8 @@ Parametri:
         <input class="form-check-input" type="checkbox" id="exact_number" name="exact_number"
                onchange="updateDistancePreview()" {% if not is_race_to_value %}checked{% endif %}>
         <span>
-            <span class="c7-choice__title">{{ _('Numero esatto di rack') }}</span>
-            <span class="c7-choice__desc">{{ _('Si giocano tutti i rack invece di fermarsi al primo che arriva alla distanza.') }}</span>
+            <span class="c7-choice__title">{{ _('Numero esatto di triangoli') }}</span>
+            <span class="c7-choice__desc">{{ _('Si giocano tutti i triangoli invece di fermarsi al primo che arriva alla distanza.') }}</span>
         </span>
     </label>
 
@@ -80,7 +80,7 @@ Parametri:
     <div id="bracket-distance-note" class="c7-flash c7-flash--info" style="display:none;margin-top:12px">
         <span class="c7-flash__ico"><i class="fas fa-circle-info"></i></span>
         <div class="c7-flash__body"><div class="c7-flash__text">
-            {{ _('Sul tabellone si gioca sempre a chi arriva prima: conta solo chi passa il turno, quindi i rack giocati dopo che il vincitore è deciso non cambierebbero nulla.') }}
+            {{ _('Sul tabellone si gioca sempre a chi arriva prima: conta solo chi passa il turno, quindi i triangoli giocati dopo che il vincitore è deciso non cambierebbero nulla.') }}
         </div></div>
     </div>
 </section>

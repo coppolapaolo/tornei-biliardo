@@ -1,18 +1,18 @@
-title: "Disegnare un drill"
+title: "Disegnare un esercizio"
 section: giocare
 kind: tutorial
 audience: [direttore]
 minutes: 6
-summary: "Se la foto del tavolo non ce l'hai, il drill si disegna: bilie, tiri, linee e scritte su un tavolo vuoto. L'immagine del catalogo la genera il disegno."
+summary: "Se la foto del tavolo non ce l'hai, l'esercizio si disegna: bilie, tiri, linee e scritte su un tavolo vuoto. L'immagine del catalogo la genera il disegno."
 screens: [challenge.diagram_builder, challenge.edit_diagram]
 related: [challenge, esami, progressi]
 
 blocks:
   - type: text
     text: >-
-      Una challenge si propone con una **foto del tavolo preparato**. Se la foto
+      Un esercizio si propone con una **foto del tavolo preparato**. Se la foto
       non ce l'hai, o se vuoi mostrare anche il tiro e non solo dove stanno le
-      bilie, il drill si può **disegnare**: si dispongono le bilie su un tavolo
+      bilie, l'esercizio si può **disegnare**: si dispongono le bilie su un tavolo
       vuoto, si traccia il tiro, e l'immagine che finirà nel catalogo la genera
       il disegno.
 
@@ -28,9 +28,9 @@ blocks:
     tone: info
     title: "Si sblocca con l'uso"
     text: >-
-      «Disegna il drill» compare ai direttori di gara che hanno già
-      **completato trenta drill**, come le altre funzioni che si sbloccano
-      giocando. Il motivo: un drill disegnato male lo eseguono poi tutti gli
+      «Disegna l'esercizio» compare ai direttori di gara che hanno già
+      **completato trenta esercizio**, come le altre funzioni che si sbloccano
+      giocando. Il motivo: un esercizio disegnato male lo eseguono poi tutti gli
       altri, e per disegnarne uno buono conviene averne provati parecchi.
 
   - type: heading
@@ -39,13 +39,13 @@ blocks:
 
   - type: text
     text: >-
-      Si parte dal modulo **«Nuova challenge»**, lo stesso di sempre. In fondo,
+      Si parte dal modulo **«Nuova esercizi»**, lo stesso di sempre. In fondo,
       sotto il campo della foto, c'è la domanda **«Non hai una foto?»** e il
-      pulsante **«Disegna il drill»**.
+      pulsante **«Disegna l'esercizio»**.
 
   - type: shot
     shot: challenge-nuova
-    caption: "«Disegna il drill» è in fondo al modulo, sotto il campo della foto."
+    caption: "«Disegna l'esercizio» è in fondo al modulo, sotto il campo della foto."
 
   - type: note
     tone: info
@@ -231,7 +231,7 @@ blocks:
 
   - type: text
     text: >-
-      Il riquadro **«Tavolo»** non cambia il drill, cambia come si legge il
+      Il riquadro **«Tavolo»** non cambia l'esercizio, cambia come si legge il
       disegno.
 
   - type: options
@@ -242,7 +242,7 @@ blocks:
         values: "attiva"
         text: >-
           Le linee che uniscono i diamanti delle sponde. Sono il modo con cui
-          al biliardo si indicano le posizioni, e nel disegno di un drill
+          al biliardo si indicano le posizioni, e nel disegno di un esercizio
           servono davvero: dicono *dove* va messa la bilia.
       - name: "Griglia ¼ di diamante"
         text: "Una griglia più fitta, per le posizioni che cadono fra un diamante e l'altro."
@@ -259,13 +259,13 @@ blocks:
         values: "orizzontale · verticale"
         text: >-
           Il tavolo per lungo o per alto. Verticale sta meglio nelle schermate
-          del telefono, dove il drill verrà guardato.
+          del telefono, dove l'esercizio verrà guardato.
       - name: "Titolo del diagramma"
         text: >-
           Una scritta **dentro l'immagine**, in cima al disegno, per esempio
-          «Drill 1 — Stop shot». È facoltativa, e non va confusa con il campo
+          «Esercizio 1 — Stop shot». È facoltativa, e non va confusa con il campo
           **«Titolo»** che sta in fondo alla pagina: quello è il nome con cui il
-          drill compare nel catalogo, questo è una scritta sul disegno.
+          esercizio compare nel catalogo, questo è una scritta sul disegno.
 
   - type: heading
     id: posizioni
@@ -285,16 +285,16 @@ blocks:
 
   - type: list
     items:
-      - "**Rack 9-ball**, **Rack 8-ball**, **Rack 10-ball**: le bilie raccolte come alla partenza della specialità."
-      - "**Break 9-ball**: il rack del 9-ball più la bianca in battuta e il tiro di spacco già tracciato."
+      - "**Triangoli 9-ball**, **Triangoli 8-ball**, **Triangoli 10-ball**: le bilie raccolte come alla partenza della specialità."
+      - "**Break 9-ball**: il triangolo del 9-ball più la bianca in battuta e il tiro di spacco già tracciato."
       - "**Wagon wheel**: una bilia al centro e sette bilie fantasma in ventaglio — l'esercizio classico sulla posizione della bianca."
       - "**Linea di stop**: la bianca e cinque bilie in fila lungo la linea di mezzo."
-      - "**L drill**: la bianca e sei bilie disposte a L lungo due sponde."
+      - "**L esercizio**: la bianca e sei bilie disposte a L lungo due sponde."
       - "**Svuota**: toglie tutto dal tavolo."
 
   - type: heading
     id: salvare
-    title: "Salvare il drill"
+    title: "Salvare l'esercizio"
 
   - type: text
     text: >-
@@ -303,20 +303,20 @@ blocks:
 
   - type: steps
     items:
-      - title: "Dài un nome al drill, se vuoi"
-        text: "Il campo «Titolo» è facoltativo: è il nome con cui il drill si presenta nel catalogo. Senza, prende il suo numero — «Drill 12»."
+      - title: "Dài un nome all'esercizio, se vuoi"
+        text: "Il campo «Titolo» è facoltativo: è il nome con cui l'esercizio si presenta nel catalogo. Senza, prende il suo numero — «Esercizio 12»."
       - title: "Scrivi le istruzioni"
         text: "Nel campo «Istruzioni per chi la esegue»: il disegno mostra la disposizione, non la regola. Come si conta il punteggio va scritto a parole, ed è obbligatorio. Lunghe quanto serve: non c'è un limite."
       - title: "Scegli come si conta"
         text: "«A punteggio» oppure «Superata o non superata»: le stesse due possibilità del modulo normale."
-      - title: "Tocca «Salva il drill»"
-        text: "È il pulsante in fondo alla pagina. Il drill entra nel catalogo con l'immagine del disegno, come se l'avessi fotografato. «Annulla» esce senza salvare niente."
+      - title: "Tocca «Salva l'esercizio»"
+        text: "È il pulsante in fondo alla pagina. Il esercizio entra nel catalogo con l'immagine del disegno, come se l'avessi fotografato. «Annulla» esce senza salvare niente."
 
   - type: note
     tone: info
     text: >-
       Se le istruzioni sono vuote, o se il tavolo non ha nemmeno una bilia, il
-      salvataggio si ferma e te lo dice: sono le due cose senza cui il drill
+      salvataggio si ferma e te lo dice: sono le due cose senza cui l'esercizio
       non sarebbe eseguibile da nessuno.
 
   - type: note
@@ -324,8 +324,8 @@ blocks:
     title: "Il disegno non si scarica"
     text: >-
       Il builder non produce file: non c'è niente da scaricare e niente da
-      ricaricare da disco. Serve a una cosa sola, mettere il drill nel
-      catalogo, e l'unico modo è **«Salva il drill»**. Il disegno resta
+      ricaricare da disco. Serve a una cosa sola, mettere l'esercizio nel
+      catalogo, e l'unico modo è **«Salva l'esercizio»**. Il disegno resta
       sull'applicazione, ed è da lì che lo riapri quando vuoi correggerlo.
 
   - type: heading
@@ -334,7 +334,7 @@ blocks:
 
   - type: text
     text: >-
-      Un drill disegnato si può riaprire. Sulla sua pagina, chi l'ha creato
+      Un esercizio disegnato si può riaprire. Sulla sua pagina, chi l'ha creato
       trova il pulsante **«Modifica il disegno»**: le bilie tornano sul tavolo
       come le avevi lasciate, si corregge quel che serve e si tocca **«Salva le
       modifiche»**.
@@ -342,18 +342,18 @@ blocks:
   - type: note
     tone: info
     text: >-
-      Il pulsante compare **solo sui drill disegnati**. Un drill nato da una
+      Il pulsante compare **solo sui esercizi disegnati**. Un esercizio nato da una
       foto non ha un disegno da riaprire, quindi lì non c'è.
 
   - type: faq
     items:
-      - q: "Non vedo «Disegna il drill» nel modulo di creazione."
-        a: "È un comando da direttore di gara, e si sblocca dopo trenta drill completati. Finché non compare, la challenge si crea caricando la foto: è il modo normale, non un ripiego."
-      - q: "Posso disegnare il drill dal telefono?"
+      - q: "Non vedo «Disegna l'esercizio» nel modulo di creazione."
+        a: "È un comando da direttore di gara, e si sblocca dopo trenta esercizi completati. Finché non compare, l'esercizio si crea caricando la foto: è il modo normale, non un ripiego."
+      - q: "Posso disegnare l'esercizio dal telefono?"
         a: "Sì, tutto funziona. Ma il tavolo è piccolo e il pannello va fatto scorrere: se hai un computer a portata, usalo."
       - q: "Il disegno lo vedono anche gli altri?"
-        a: "Vedono l'immagine, come per un drill fotografato: il disegno diventa la figura del drill nel catalogo. Riaprirlo e modificarlo può farlo solo chi l'ha creato."
-      - q: "Posso partire da un drill esistente e cambiarlo?"
-        a: "Solo se è tuo e se è disegnato: allora c'è «Modifica il disegno». Un drill di qualcun altro non si riapre; puoi però rifarne uno tuo partendo da una posizione standard."
+        a: "Vedono l'immagine, come per un esercizio fotografato: il disegno diventa la figura dell'esercizio nel catalogo. Riaprirlo e modificarlo può farlo solo chi l'ha creato."
+      - q: "Posso partire da un esercizio esistente e cambiarlo?"
+        a: "Solo se è tuo e se è disegnato: allora c'è «Modifica il disegno». Un esercizio di qualcun altro non si riapre; puoi però rifarne uno tuo partendo da una posizione standard."
       - q: "Cosa succede se chiudo la pagina senza salvare?"
-        a: "Il disegno si perde. Non c'è una bozza automatica: finché non tocchi «Salva il drill» il drill non esiste."
+        a: "Il disegno si perde. Non c'è una bozza automatica: finché non tocchi «Salva l'esercizio» l'esercizio non esiste."

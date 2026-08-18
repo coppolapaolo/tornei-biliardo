@@ -9,7 +9,7 @@
 
 {% block page_back %}
 <a class="c7-head__back d-lg-none" href="{{ url_for('challenge.challenge_detail', challenge_id=challenge.id) }}"
-   aria-label="{{ _('Torna alla challenge') }}">
+   aria-label="{{ _('Torna all\'esercizio') }}">
   <i class="fas {{ 'fa-arrow-left' if attempt.completed else 'fa-xmark' }}"></i>
 </a>
 {% endblock %}
@@ -70,7 +70,7 @@
         <span class="c7-tile c7-tile--round"><i class="fas fa-check"></i></span>
         <span class="flex-fill">
           <span class="c7-choice__title d-block">{{ _("Superata") }}</span>
-          <span class="c7-choice__desc d-block">{{ _("Hai completato la challenge") }}</span>
+          <span class="c7-choice__desc d-block">{{ _("Hai completato l'esercizio") }}</span>
         </span>
         <i class="fas fa-circle-check c7-choice__mark"></i>
       </label>

@@ -29,7 +29,7 @@
       {% if not is_rack_only %}
       <span class="c7-num" title="{{ _('Vittorie') }}">{{ entry.matches_won }}</span>
       {% endif %}
-      <span class="c7-num" style="color: var(--c7-ink-muted); min-width: 34px; text-align: right;" title="{% if is_rack_only %}{{ _('Rack totali') }}{% else %}{{ _('Differenza rack') }}{% endif %}">{{ entry.ranking_rack_value }}</span>
+      <span class="c7-num" style="color: var(--c7-ink-muted); min-width: 34px; text-align: right;" title="{% if is_rack_only %}{{ _('Triangoli totali') }}{% else %}{{ _('Differenza triangoli') }}{% endif %}">{{ entry.ranking_rack_value }}</span>
     </div>
     {% endfor %}
     {% if classification|length > 6 %}

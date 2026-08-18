@@ -30,12 +30,12 @@
   <div class="c7-label" id="{{ label_id }}">{{ label }}</div>
   <div class="c7-stepper c7-stepper--sunk">
     <div class="c7-stepper__row">
-      <button type="button" onclick="stepQuickScore('{{ input_id }}', -1)" aria-label="{{ _('Un rack in meno') }}">
+      <button type="button" onclick="stepQuickScore('{{ input_id }}', -1)" aria-label="{{ _('Un triangolo in meno') }}">
         <i class="fas fa-minus"></i>
       </button>
       <input type="number" class="c7-stepper__value" id="{{ input_id }}" min="0"{% if max_value %} max="{{ max_value }}"{% endif %}
              oninput="validateQuickResultLive()" style="border: 0; background: transparent; width: 100%;">
-      <button type="button" data-piu-per="{{ input_id }}" onclick="stepQuickScore('{{ input_id }}', 1)" aria-label="{{ _('Un rack in più') }}">
+      <button type="button" data-piu-per="{{ input_id }}" onclick="stepQuickScore('{{ input_id }}', 1)" aria-label="{{ _('Un triangolo in più') }}">
         <i class="fas fa-plus"></i>
       </button>
     </div>
@@ -524,11 +524,11 @@
                 <strong>{{ _('Modalità:') }}</strong>
                 <span id="quickResultModeRaceTo" style="display: none;">
                   {{ _('Race to') }} <span class="c7-num" data-modal-distance></span>
-                  ({{ _('vince chi vince') }} <span class="c7-num" data-modal-distance></span> {{ _('rack') }})
+                  ({{ _('vince chi vince') }} <span class="c7-num" data-modal-distance></span> {{ _('triangoli') }})
                 </span>
                 <span id="quickResultModeExact" style="display: none;">
-                  {{ _('Esattamente') }} <span class="c7-num" data-modal-distance></span> {{ _('rack') }}
-                  ({{ _('somma rack =') }} <span class="c7-num" data-modal-distance></span>)
+                  {{ _('Esattamente') }} <span class="c7-num" data-modal-distance></span> {{ _('triangoli') }}
+                  ({{ _('somma triangoli =') }} <span class="c7-num" data-modal-distance></span>)
                 </span>
               </div>
             </div>
@@ -539,10 +539,10 @@
               <div>
                 <strong>{{ _('Trio (Round-Robin):') }}</strong>
                 {% if trio_config %}
-                {{ _('%(gironi)s gironi, max %(max_racks)s rack per giocatore', gironi=trio_config.num_rounds,
+                {{ _('%(gironi)s gironi, max %(max_racks)s triangoli per giocatore', gironi=trio_config.num_rounds,
                 max_racks=trio_config.max_racks_per_player) }}
                 {% if trio_config.bonus_racks > 0 %}
-                <br>{{ _('Bonus: +%(bonus)s rack equamente distribuiti', bonus=trio_config.bonus_racks) }}
+                <br>{{ _('Bonus: +%(bonus)s triangoli equamente distribuiti', bonus=trio_config.bonus_racks) }}
                 {% endif %}
                 {% else %}
                 {{ _('Distanza %(d)s', d=gara.distance) }}
@@ -1581,20 +1581,20 @@
 
     let error = null;
     if (p1 < 0 || p2 < 0) {
-      error = {{ _('I rack non possono essere negativi.')|tojson }};
+      error = {{ _('I triangoli non possono essere negativi.')|tojson }};
     } else if (p1 > dist || p2 > dist) {
-      error = {{ _('Nessun giocatore può avere più di %(d)s rack.', d='__D__')|tojson }}.replace('__D__', dist);
+      error = {{ _('Nessun giocatore può avere più di %(d)s triangoli.', d='__D__')|tojson }}.replace('__D__', dist);
     } else if (raceTo) {
       // Race-to N: at least one of the two must reach N to finish; sum max = 2N-1.
       if (p1 + p2 > (2 * dist - 1)) {
-        error = {{ _('Somma rack troppo alta: massimo %(d)s.', d='__D__')|tojson }}.replace('__D__', (2 * dist - 1));
+        error = {{ _('Somma triangoli troppo alta: massimo %(d)s.', d='__D__')|tojson }}.replace('__D__', (2 * dist - 1));
       } else if ((p1 + p2) > 0 && p1 < dist && p2 < dist) {
         error = {{ _('Risultato incompleto: uno dei due deve raggiungere %(d)s.', d='__D__')|tojson }}.replace('__D__', dist);
       }
     } else {
       // Exact N: sum must equal N to finish.
       if (p1 + p2 > dist) {
-        error = {{ _('Somma rack troppo alta: il totale esatto è %(d)s.', d='__D__')|tojson }}.replace('__D__', dist);
+        error = {{ _('Somma triangoli troppo alta: il totale esatto è %(d)s.', d='__D__')|tojson }}.replace('__D__', dist);
       } else if ((p1 + p2) > 0 && (p1 + p2) < dist) {
         error = {{ _('Risultato incompleto: la somma deve essere esattamente %(d)s.', d='__D__')|tojson }}.replace('__D__', dist);
       }

@@ -31,7 +31,7 @@ blocks:
           Turni di qualificazione corti e finale più lunga. È il modo più
           semplice di dare peso all'ultimo turno senza allungare tutta la
           serata.
-      - name: "Numero esatto di rack"
+      - name: "Numero esatto di triangoli"
         text: >-
           Si può chiedere solo in alcuni turni, se serve alla classifica. Nelle
           gare a tabellone non compare: lì conta solo chi passa il turno, e vale
@@ -86,6 +86,6 @@ blocks:
       - q: "Posso cambiare regole a un solo turno in mezzo alla gara?"
         a: "Solo se lo hai deciso prima dell'avvio. A gara iniziata il formato è congelato."
       - q: "La classifica regge formati diversi fra i turni?"
-        a: "Sì: vittorie e differenza rack si sommano comunque. Attenzione però al sistema «Rack», dove turni con distanze diverse pesano diversamente."
+        a: "Sì: vittorie e differenza triangoli si sommano comunque. Attenzione però al sistema «Triangoli», dove turni con distanze diverse pesano diversamente."
       - q: "Vale anche per le gare a tabellone?"
         a: "Sì, e lì è ancora più comune: quarti al 4, semifinali e finale al 5."

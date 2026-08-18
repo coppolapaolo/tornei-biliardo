@@ -11,7 +11,7 @@ blocks:
   - type: text
     text: >-
       Finito l'ultimo turno può succedere che due giocatori abbiano le stesse
-      vittorie e la stessa differenza rack. Se capita sul podio, qualcuno deve
+      vittorie e la stessa differenza triangoli. Se capita sul podio, qualcuno deve
       decidere.
 
   - type: heading
@@ -48,7 +48,7 @@ blocks:
           Una prova di abilità con un punteggio: chi fa meglio sta davanti. È
           il metodo da usare quando i due non si sono incontrati, o quando lo
           scontro diretto è finito in parità. Vedi [Le
-          challenge](/aiuto/giocare/challenge).
+          esercizi](/aiuto/giocare/challenge).
 
   - type: heading
     id: condurlo
@@ -106,5 +106,5 @@ blocks:
         a: "No. Va prima annullato lo spareggio: certifica implicitamente i risultati della gara."
       - q: "Quanti giocatori possono essere in uno spareggio?"
         a: "Tutti quelli appaiati in quella posizione: capita che siano tre o quattro, non solo due."
-      - q: "Serve una challenge configurata?"
+      - q: "Serve un esercizio configurato?"
         a: "Per lo spareggio a punteggio sì, serve una prova da far giocare. Lo scontro diretto invece non richiede nulla."

@@ -43,7 +43,7 @@
         <div class="card bg-info text-white">
             <div class="card-body text-center py-2">
                 <h4 class="mb-0">{{ match_stats.total_racks_won }}</h4>
-                <small>{{ _("Rack Vinti") }}</small>
+                <small>{{ _("Triangoli Vinti") }}</small>
             </div>
         </div>
     </div>
@@ -51,7 +51,7 @@
         <div class="card bg-secondary text-white">
             <div class="card-body text-center py-2">
                 <h4 class="mb-0">{{ match_stats.total_racks_lost }}</h4>
-                <small>{{ _("Rack Persi") }}</small>
+                <small>{{ _("Triangoli Persi") }}</small>
             </div>
         </div>
     </div>
@@ -113,7 +113,7 @@
                                             {{ match.gara.display_name }}
                                         {% endif %}
                                     {% else %}
-                                        {{ _('Match Individuale') }}
+                                        {{ _('Sfida individuale') }}
                                     {% endif %}
                                 </small>
                             </div>

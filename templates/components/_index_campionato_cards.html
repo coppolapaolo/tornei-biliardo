@@ -111,7 +111,7 @@
                                 <span class="badge bg-success me-1">{{ _("Playoff") }}</span>
                                 {% endif %}
                                 {% if campionato.challenge_mode %}
-                                <span class="badge bg-warning me-1">{{ _("Challenge") }}</span>
+                                <span class="badge bg-warning me-1">{{ _("Esercizi") }}</span>
                                 {% endif %}
                             </small>
                         </div>
@@ -163,7 +163,7 @@
                                 classification.total_spot_shot_wins }}</span>
                             {% endif %}
                             {% set rack_count = classification.total_rack_difference %}
-                            {{ ngettext('%(num)s rack', '%(num)s rack', rack_count, num=rack_count) }}
+                            {{ ngettext('%(num)s triangoli', '%(num)s triangoli', rack_count, num=rack_count) }}
                             {% else %}
                             {% set wins_count = classification.total_matches_won if classification.total_matches_won is defined else classification.matches_won %}
                             {{ ngettext('%(num)s vittoria', '%(num)s vittorie', wins_count, num=wins_count) }}

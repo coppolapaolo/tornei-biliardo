@@ -69,7 +69,7 @@ def wizard_start():
     - name: Nome del campionato
     - planned_gare_count: Numero pianificato di gare (default: 10)
     - campionato_type: Tipo (amalfi/random)
-    - challenge_mode: Abilita sfide individuali
+    - challenge_mode: Abilita gli esercizi nelle gare del campionato
     - playoff_elite_enabled: Abilita playoff Elite
     - playoff_elite_participants: Numero partecipanti Elite (default: 6)
     - playoff_academy_enabled: Abilita playoff Academy
@@ -181,7 +181,7 @@ def wizard_step2():
         (OddNumberPolicy.BYE.value, _("Bye (riposo)"), ["WINS"]),
         (
             OddNumberPolicy.BYE_WITH_CHALLENGE.value,
-            _("Bye con Challenge"),
+            _("Bye con esercizio"),
             ["WINS", "RACK"],
         ),
         (OddNumberPolicy.TRIO.value, _("Trio (match a 3)"), ["WINS", "RACK"]),

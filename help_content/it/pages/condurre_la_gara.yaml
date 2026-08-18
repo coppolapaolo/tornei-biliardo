@@ -66,7 +66,7 @@ blocks:
 
   - type: text
     text: >-
-      I giocatori segnano i propri rack dal telefono e tu vedi la pagina
+      I giocatori segnano i propri triangoli dal telefono e tu vedi la pagina
       aggiornarsi da sola. Non devi fare niente, se non intervenire quando
       qualcosa non va.
 
@@ -75,13 +75,13 @@ blocks:
     items:
       - name: "Inserire un risultato al posto dei giocatori"
         text: >-
-          Se un tavolo non ha lo smartphone, apri la partita e segna tu i rack:
+          Se un tavolo non ha lo smartphone, apri la partita e segna tu i triangoli:
           il segnapunti è lo stesso.
       - name: "Cambiare il tavolo a una partita"
         text: "Se un tavolo si guasta o due coppie si accordano diversamente."
       - name: "Registrare un forfait"
         text: >-
-          Chi abbandona lascia all'avversario tutti i rack che mancano alla
+          Chi abbandona lascia all'avversario tutti i triangoli che mancano alla
           distanza.
         hint: partita.forfait
       - name: "Azzerare una partita sbagliata"
@@ -146,7 +146,7 @@ blocks:
   - type: text
     text: >-
       Non devi fare niente: l'app applica la regola che hai scelto alla
-      creazione — X a tavolino, trio o challenge — e la applica a un giocatore
+      creazione — X a tavolino, trio o esercizi — e la applica a un giocatore
       diverso ogni turno, così l'onere gira. Il funzionamento è spiegato in
       [Quando i giocatori sono
       dispari](/aiuto/approfondimenti/numero_dispari).

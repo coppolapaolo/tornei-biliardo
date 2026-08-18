@@ -173,7 +173,7 @@
                 {% endif %}
                 {% if nav_challenge %}
                 <a href="{{ url_for('challenge.challenge_catalog') }}" class="{{ 'is-active' if ep.startswith('challenge.') }}">
-                    <i class="fas fa-bullseye"></i>Challenge
+                    <i class="fas fa-bullseye"></i>{{ _('Esercizi') }}
                 </a>
                 {% endif %}
                 {% if nav_exam %}
@@ -183,7 +183,7 @@
                 {% endif %}
                 {% if nav_matches %}
                 <a href="{{ url_for('individual_match.dashboard') }}" class="{{ 'is-active' if ep.startswith('individual_match.') }}">
-                    <i class="fas fa-handshake"></i>{{ _('Match Individuali') }}
+                    <i class="fas fa-handshake"></i>{{ _('Sfide individuali') }}
                 </a>
                 {% endif %}
                 {% if feature_visible('help.index') %}
@@ -431,7 +431,7 @@
         {% endif %}
         {% if nav_matches %}
         <a href="{{ url_for('individual_match.dashboard') }}" class="{{ 'is-active' if ep.startswith('individual_match.') }}">
-            <i class="fas fa-handshake"></i>Match
+            <i class="fas fa-handshake"></i>{{ _('Sfide') }}
         </a>
         {% elif current_user.is_admin and feature_visible('admin.user.users_list') %}
         <a href="{{ url_for('admin.user.users_list') }}" class="{{ 'is-active' if ep.startswith('admin.user.') }}">
@@ -440,7 +440,7 @@
         {% endif %}
         {% if nav_challenge %}
         <a href="{{ url_for('challenge.challenge_catalog') }}" class="{{ 'is-active' if ep.startswith('challenge.') }}">
-            <i class="fas fa-bullseye"></i>Challenge
+            <i class="fas fa-bullseye"></i>{{ _('Esercizi') }}
         </a>
         {% endif %}
         <a href="{{ url_for('player.notifications') }}" class="{{ 'is-active' if ep == 'player.notifications' }}">

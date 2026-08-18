@@ -3,7 +3,7 @@ section: approfondimenti
 kind: approfondimento
 audience: [tutti]
 minutes: 5
-summary: "Tre modi di ordinare i giocatori — vittorie, rack, posizione — e come si risolvono i pari merito."
+summary: "Tre modi di ordinare i giocatori — vittorie, triangoli, posizione — e come si risolvono i pari merito."
 related: [seguire_la_gara, abbinamenti, formati_di_gioco]
 
 blocks:
@@ -15,7 +15,7 @@ blocks:
 
   - type: shot
     shot: gara-classifica
-    caption: "Una classifica con il sistema «Vittorie»: le due colonne di destra sono le vittorie e la differenza rack."
+    caption: "Una classifica con il sistema «Vittorie»: le due colonne di destra sono le vittorie e la differenza triangoli."
 
   - type: heading
     id: vittorie
@@ -24,7 +24,7 @@ blocks:
   - type: text
     text: >-
       Ordina per **partite vinte**. A parità di vittorie, conta la
-      **differenza rack**: i rack vinti meno quelli persi in tutta la gara.
+      **differenza triangoli**: i triangoli vinti meno quelli persi in tutta la gara.
 
   - type: list
     title: "Un esempio"
@@ -42,21 +42,21 @@ blocks:
 
   - type: heading
     id: rack
-    title: "Rack — ogni rack conta"
+    title: "Triangoli — ogni triangolo conta"
 
   - type: text
     text: >-
-      Ordina per **rack totali vinti**, senza guardare chi ha vinto le partite.
+      Ordina per **triangoli totali vinti**, senza guardare chi ha vinto le partite.
       Chi perde 4-3 in tutte le partite può stare davanti a chi vince 4-0 in
       metà e perde 4-0 nelle altre.
 
   - type: note
     tone: warning
-    title: "Va abbinato al numero esatto di rack"
+    title: "Va abbinato al numero esatto di triangoli"
     text: >-
       Con questo sistema le partite dovrebbero giocarsi fino in fondo (opzione
-      **numero esatto di rack**). Altrimenti chi vince nettamente smette prima
-      e accumula meno rack di chi vince a fatica: il conteggio premierebbe il
+      **numero esatto di triangoli**). Altrimenti chi vince nettamente smette prima
+      e accumula meno triangoli di chi vince a fatica: il conteggio premierebbe il
       contrario di quello che vuole premiare.
 
   - type: heading
@@ -107,7 +107,7 @@ blocks:
         text: >-
           Una prova aggiuntiva — di solito lo Spot Shot Rally — che assegna un
           punteggio: sta davanti chi fa meglio. Vedi [Le
-          challenge](/aiuto/giocare/challenge).
+          esercizi](/aiuto/giocare/challenge).
       - name: "Nessuno dei due"
         text: >-
           Fuori dalle posizioni da spareggiare, il pari merito resta: due
@@ -149,15 +149,15 @@ blocks:
       - name: "X a tavolino"
         text: >-
           Chi resta senza avversario riceve una vittoria e zero differenza
-          rack: non viene né premiato né penalizzato rispetto a chi ha giocato.
+          triangoli: non viene né premiato né penalizzato rispetto a chi ha giocato.
       - name: "Forfait"
         text: >-
-          Chi abbandona lascia all'avversario tutti i rack mancanti. Quei rack
+          Chi abbandona lascia all'avversario tutti i triangoli mancanti. Quei triangoli
           contano in classifica come qualsiasi altro.
       - name: "Partita in trio"
         text: >-
-          Nel mini-girone a tre, vince chi fa più rack; se due arrivano pari,
-          nessuno prende la vittoria e contano solo le differenze rack.
+          Nel mini-girone a tre, vince chi fa più triangoli; se due arrivano pari,
+          nessuno prende la vittoria e contano solo le differenze triangoli.
       - name: "Handicap"
         text: >-
           La classifica usa i punteggi **effettivi**, cioè quelli dopo
@@ -166,10 +166,10 @@ blocks:
   - type: faq
     items:
       - q: "Ho più vittorie ma sono dietro."
-        a: "Allora la gara usa il sistema «Rack», dove contano i rack totali e non le vittorie. Il sistema è indicato nella scheda della gara."
+        a: "Allora la gara usa il sistema «Triangoli», dove contano i triangoli totali e non le vittorie. Il sistema è indicato nella scheda della gara."
       - q: "Due giocatori hanno la stessa posizione."
         a: "Sono a pari merito in una posizione per cui non era previsto lo spareggio. È una scelta del direttore, non un errore."
       - q: "La classifica non si è aggiornata dopo la mia partita."
         a: "Si ricalcola quando tutte le partite del turno sono concluse."
       - q: "Come si somma la classifica del campionato?"
-        a: "Sommando: vittorie e differenza rack con «Vittorie», rack totali con «Rack», punti-posizione con «Posizione»."
+        a: "Sommando: vittorie e differenza triangoli con «Vittorie», triangoli totali con «Triangoli», punti-posizione con «Posizione»."

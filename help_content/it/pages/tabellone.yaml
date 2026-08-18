@@ -46,7 +46,7 @@ blocks:
       - name: "Il grassetto"
         text: "Chi ha vinto quella partita, e quindi passa al turno successivo."
       - name: "I numeri a destra"
-        text: "Il punteggio in rack della partita."
+        text: "Il punteggio in triangoli della partita."
       - name: "Le caselle vuote"
         text: >-
           Partite non ancora giocate: si riempiono man mano che i turni
@@ -150,7 +150,7 @@ blocks:
 
   - type: text
     text: >-
-      Non si conta per vittorie o per rack: la classifica **è** il percorso.
+      Non si conta per vittorie o per triangoli: la classifica **è** il percorso.
       Chi vince il torneo è primo, chi perde la finale secondo, e così via. In
       un campionato ogni posizione vale un certo numero di punti, che il
       direttore può configurare. Vedi [Come si calcolano le

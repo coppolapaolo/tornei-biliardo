@@ -15,7 +15,7 @@
   <div class="modal-dialog modal-xl modal-dialog-scrollable">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="challengeManagementModalLabel">{{ _("Challenge della gara") }}</h5>
+        <h5 class="modal-title" id="challengeManagementModalLabel">{{ _("Esercizi della gara") }}</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Chiudi') }}"></button>
       </div>
 
@@ -31,7 +31,7 @@
           {# ---------- Aggiungine una ---------- #}
           <section class="c7-stack">
             <div class="c7-sechead">
-              <h3>{{ _("Aggiungi una challenge") }}</h3>
+              <h3>{{ _("Aggiungi un esercizio") }}</h3>
               <a href="#" class="c7-sechead__more" id="createNewChallengeLink"
                  onclick="openCreateChallengeModal(); return false;">{{ _("Creane una nuova") }}</a>
             </div>
@@ -41,7 +41,7 @@
               <input type="hidden" id="challenge_id" name="challenge_id" required>
 
               <div>
-                <div class="form-label">{{ _("Quale challenge") }}</div>
+                <div class="form-label">{{ _("Quale esercizio") }}</div>
                 <div id="challengeSelectContainer" class="c7-stack"
                      style="max-height:280px;overflow-y:auto"><!-- caricato via AJAX --></div>
               </div>
@@ -85,7 +85,7 @@
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="createChallengeModalLabel">{{ _("Nuova challenge") }}</h5>
+        <h5 class="modal-title" id="createChallengeModalLabel">{{ _("Nuovo esercizio") }}</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Chiudi') }}"></button>
       </div>
 
@@ -116,7 +116,7 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _("Annulla") }}</button>
         <button type="submit" form="createChallengeForm" class="btn btn-success">
-          <i class="fas fa-check"></i>&nbsp;{{ _("Crea la challenge") }}
+          <i class="fas fa-check"></i>&nbsp;{{ _("Crea l'esercizio") }}
         </button>
       </div>
     </div>
@@ -145,18 +145,18 @@ const CHALLENGE_MGMT = {
         create: {{ url_for('admin.competition.create_new_challenge')|tojson }}
     },
     i18n: {
-        noneActive: {{ _("Nessuna challenge in programma per questa gara.")|tojson }},
-        noneAvailable: {{ _("Non ci sono altre challenge da aggiungere.")|tojson }},
-        loadError: {{ _("Non è stato possibile caricare le challenge.")|tojson }},
+        noneActive: {{ _("Nessun esercizio in programma per questa gara.")|tojson }},
+        noneAvailable: {{ _("Non ci sono altri esercizi da aggiungere.")|tojson }},
+        loadError: {{ _("Non è stato possibile caricare gli esercizi.")|tojson }},
         netError: {{ _("Errore di rete: riprova.")|tojson }},
-        pickFirst: {{ _("Scegli prima una challenge.")|tojson }},
-        added: {{ _("Challenge aggiunta alla gara.")|tojson }},
-        addError: {{ _("Non è stato possibile aggiungere la challenge.")|tojson }},
-        removeConfirm: {{ _("Vuoi togliere questa challenge dalla gara?")|tojson }},
-        removed: {{ _("Challenge tolta dalla gara.")|tojson }},
-        removeError: {{ _("Non è stato possibile togliere la challenge.")|tojson }},
-        created: {{ _("Challenge creata.")|tojson }},
-        createError: {{ _("Non è stato possibile creare la challenge.")|tojson }},
+        pickFirst: {{ _("Scegli prima un esercizio.")|tojson }},
+        added: {{ _("Esercizio aggiunto alla gara.")|tojson }},
+        addError: {{ _("Non è stato possibile aggiungere l'esercizio.")|tojson }},
+        removeConfirm: {{ _("Vuoi togliere questo esercizio dalla gara?")|tojson }},
+        removed: {{ _("Esercizio tolto dalla gara.")|tojson }},
+        removeError: {{ _("Non è stato possibile togliere l'esercizio.")|tojson }},
+        created: {{ _("Esercizio creato.")|tojson }},
+        createError: {{ _("Non è stato possibile creare l'esercizio.")|tojson }},
         afterRound: {{ _("dopo il turno {n}")|tojson }},
         attempts: {{ _("{n} tentativi a testa")|tojson }},
         remove: {{ _("Togli dalla gara")|tojson }}

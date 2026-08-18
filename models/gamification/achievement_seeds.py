@@ -162,7 +162,7 @@ PREDEFINED_ACHIEVEMENTS = [
         "name": "Giocatore Aperto",
         "description": (
             "Condividi almeno un dato di gioco pubblicamente (statistiche, partite, "
-            "classifiche o challenge)"
+            "classifiche o esercizi)"
         ),
         "category": AchievementCategory.SOCIAL,
         "difficulty": AchievementDifficulty.COMMON,
@@ -301,8 +301,8 @@ PREDEFINED_ACHIEVEMENTS = [
     },
     {
         "slug": "challenge_master",
-        "name": "Maestro dei Drill",
-        "description": "Completa 10 drill di allenamento",
+        "name": "Maestro degli Esercizi",
+        "description": "Completa 10 esercizi di allenamento",
         "category": AchievementCategory.EXPLORATION,
         "difficulty": AchievementDifficulty.COMMON,
         "requirements": '{"type": "challenges_completed", "count": 10}',
@@ -312,7 +312,7 @@ PREDEFINED_ACHIEVEMENTS = [
     {
         "slug": "perfectionist",
         "name": "Perfezionista",
-        "description": "Supera 5 drill pass/fail diversi",
+        "description": "Supera 5 esercizi superato/non superato diversi",
         "category": AchievementCategory.SKILL,
         "difficulty": AchievementDifficulty.UNCOMMON,
         "requirements": '{"type": "perfect_challenges", "count": 5}',
@@ -321,8 +321,8 @@ PREDEFINED_ACHIEVEMENTS = [
     },
     {
         "slug": "drill_addict",
-        "name": "Dipendente dal Drill",
-        "description": "Completa 100 drill di allenamento",
+        "name": "Dipendente dagli Esercizi",
+        "description": "Completa 100 esercizi di allenamento",
         "category": AchievementCategory.EXPLORATION,
         "difficulty": AchievementDifficulty.EPIC,
         "requirements": '{"type": "challenges_completed", "count": 100}',

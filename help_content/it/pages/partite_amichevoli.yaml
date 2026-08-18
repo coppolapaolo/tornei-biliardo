@@ -40,7 +40,7 @@ blocks:
           sceglila dall'elenco: comparirà con indirizzo e numero di tavoli.
       - title: "Scegli il formato"
         text: >-
-          Disciplina (palla 8, palla 9…) e distanza, cioè a quanti rack si
+          Disciplina (palla 8, palla 9…) e distanza, cioè a quanti triangoli si
           vince. Sono le stesse scelte di una gara, spiegate in [Formati di
           gioco](/aiuto/approfondimenti/formati_di_gioco).
       - title: "Invia"
@@ -75,7 +75,7 @@ blocks:
     text: >-
       Al momento di giocare, apri la partita e premi **Inizia**. Il segnapunti
       è identico a quello delle gare: un tasto per giocatore, si preme dopo
-      ogni rack. Vedi [Giocare una
+      ogni triangolo. Vedi [Giocare una
       partita](/aiuto/giocare/giocare_una_partita).
 
   - type: text

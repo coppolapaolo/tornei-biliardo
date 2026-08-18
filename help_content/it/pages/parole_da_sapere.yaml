@@ -3,7 +3,7 @@ section: introduzione
 kind: riferimento
 audience: [tutti]
 minutes: 4
-summary: "Campionato, gara, turno, partita, rack, distanza: sei parole che ricorrono ovunque nell'app, spiegate con un esempio concreto."
+summary: "Campionato, gara, turno, partita, triangolo, distanza: sei parole che ricorrono ovunque nell'app, spiegate con un esempio concreto."
 related: [cosa_e, formati_di_gioco]
 
 blocks:
@@ -18,26 +18,26 @@ blocks:
 
   - type: options
     items:
-      - name: "Rack"
+      - name: "Triangolo"
         values: "la singola partita al tavolo"
         text: >-
-          Un rack è una giocata: si spaccano le bilie e si gioca finché uno dei
+          Un triangolo è una giocata: si spaccano le bilie e si gioca finché uno dei
           due vince. È l'unità più piccola. Quando durante la partita premi il
-          tasto con il nome di un giocatore, stai dicendo «questo rack l'ha
+          tasto con il nome di un giocatore, stai dicendo «questo triangolo l'ha
           vinto lui».
         hint: partita.rack
       - name: "Partita"
         values: "un giocatore contro un altro"
         text: >-
-          Una partita è fatta di più rack. Finisce quando uno dei due arriva al
-          numero di rack stabilito, che si chiama **distanza**. In alcune
+          Una partita è fatta di più triangoli. Finisce quando uno dei due arriva al
+          numero di triangoli stabilito, che si chiama **distanza**. In alcune
           schermate la partita è chiamata anche «match».
       - name: "Distanza"
         values: "es. «Al 4»"
         text: >-
-          Quanti rack servono per vincere la partita. «Al 4» significa che
-          vince chi arriva per primo a 4 rack vinti: la partita può durare al
-          massimo 7 rack (4-3). Non vuol dire «si giocano 4 rack».
+          Quanti triangoli servono per vincere la partita. «Al 4» significa che
+          vince chi arriva per primo a 4 triangoli vinti: la partita può durare al
+          massimo 7 triangoli (4-3). Non vuol dire «si giocano 4 triangoli».
         hint: gara.distanza
       - name: "Turno"
         values: "un giro di partite"
@@ -75,11 +75,11 @@ blocks:
       - title: "Primo turno"
         text: >-
           L'app forma quattro coppie a sorteggio. Ognuno gioca la sua
-          **partita**: si va avanti a **rack** finché uno arriva a 4. Marco
-          vince 4-2, quindi ha giocato 6 rack e ne ha vinti 4.
+          **partita**: si va avanti a **triangoli** finché uno arriva a 4. Marco
+          vince 4-2, quindi ha giocato 6 triangoli e ne ha vinti 4.
       - title: "Classifica dopo il primo turno"
         text: >-
-          L'app conta le vittorie e la differenza rack di ognuno e stila la
+          L'app conta le vittorie e la differenza triangoli di ognuno e stila la
           classifica provvisoria.
       - title: "Secondo e terzo turno"
         text: >-
@@ -125,7 +125,7 @@ blocks:
       - name: "Forfait"
         text: >-
           Quando un giocatore abbandona una partita o non si presenta.
-          L'avversario vince i rack che restano.
+          L'avversario vince i triangoli che restano.
       - name: "Spareggio"
         text: >-
           La prova che decide chi sta davanti quando due giocatori chiudono la

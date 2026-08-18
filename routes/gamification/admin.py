@@ -340,8 +340,8 @@ def _requirement_type_labels() -> dict[str, str]:
         "match_proposals_accepted": _("Proposte di partita accettate"),
         "win_streak": _("Serie di vittorie consecutive"),
         "strategies_tried": _("Formule di gara provate"),
-        "challenges_completed": _("Drill completati"),
-        "perfect_challenges": _("Drill eseguiti alla perfezione"),
+        "challenges_completed": _("Esercizi completati"),
+        "perfect_challenges": _("Esercizi eseguiti alla perfezione"),
     }
 
 

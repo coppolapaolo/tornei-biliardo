@@ -70,12 +70,12 @@
         <label for="expires_hours" class="form-label">{{ _("La proposta scade") }}</label>
         {% set selected_expires = rematch_params.expires_hours if rematch_params else '1' %}
         <select class="form-select" id="expires_hours" name="expires_hours">
-          <option value="0" {% if selected_expires=='0' %}selected{% endif %}>{{ _("Mai (match immediato)") }}</option>
-          <option value="1" {% if selected_expires=='1' %}selected{% endif %}>{{ _("1 ora prima del match") }}</option>
-          <option value="2" {% if selected_expires=='2' %}selected{% endif %}>{{ _("2 ore prima del match") }}</option>
-          <option value="6" {% if selected_expires=='6' %}selected{% endif %}>{{ _("6 ore prima del match") }}</option>
-          <option value="24" {% if selected_expires=='24' %}selected{% endif %}>{{ _("24 ore prima del match") }}</option>
-          <option value="48" {% if selected_expires=='48' %}selected{% endif %}>{{ _("48 ore prima del match") }}</option>
+          <option value="0" {% if selected_expires=='0' %}selected{% endif %}>{{ _("Mai (sfida immediata)") }}</option>
+          <option value="1" {% if selected_expires=='1' %}selected{% endif %}>{{ _("1 ora prima della sfida") }}</option>
+          <option value="2" {% if selected_expires=='2' %}selected{% endif %}>{{ _("2 ore prima della sfida") }}</option>
+          <option value="6" {% if selected_expires=='6' %}selected{% endif %}>{{ _("6 ore prima della sfida") }}</option>
+          <option value="24" {% if selected_expires=='24' %}selected{% endif %}>{{ _("24 ore prima della sfida") }}</option>
+          <option value="48" {% if selected_expires=='48' %}selected{% endif %}>{{ _("48 ore prima della sfida") }}</option>
         </select>
         <div class="form-text">{{ _("Dopo quel momento nessuno può più accettarla") }}</div>
       </div>
@@ -126,12 +126,12 @@
       <div id="singleSetConfig">
         {{ stepper('distance', _("Distanza"),
              value=(rematch_params.distance if rematch_params and rematch_params.distance else 5),
-             min=1, max=25, hint=_("rack per vincere")) }}
+             min=1, max=25, hint=_("triangoli per vincere")) }}
 
         {% set is_race_to_value = rematch_params.is_race_to if rematch_params else 'true' %}
         {{ choice('is_race_to', _("Come si chiude"), [
              {'value': 'true', 'title': _("Al N"), 'desc': _("Vince chi arriva primo alla distanza.")},
-             {'value': 'false', 'title': _("Esattamente N"), 'desc': _("Si giocano tutti i rack: vince chi ne ha di più.")}
+             {'value': 'false', 'title': _("Esattamente N"), 'desc': _("Si giocano tutti i triangoli: vince chi ne ha di più.")}
            ], selected=is_race_to_value) }}
       </div>
 
@@ -139,10 +139,10 @@
       <div id="multiSetConfig" class="d-none">
         {{ stepper('match_distance', _("Set da vincere"),
              value=(rematch_params.match_distance if rematch_params and rematch_params.match_distance else 3),
-             min=1, max=11, hint=_("set per vincere il match")) }}
-        {{ stepper('set_distance', _("Rack per set"),
+             min=1, max=11, hint=_("set per vincere la sfida")) }}
+        {{ stepper('set_distance', _("Triangoli per set"),
              value=(rematch_params.set_distance if rematch_params and rematch_params.set_distance else 5),
-             min=1, max=25, hint=_("rack per vincere un set")) }}
+             min=1, max=25, hint=_("triangoli per vincere un set")) }}
       </div>
 
       {# Formato libero #}
@@ -150,18 +150,18 @@
         <div class="c7-flash c7-flash--info mb-3">
           <span class="c7-flash__ico"><i class="fas fa-infinity"></i></span>
           <div class="c7-flash__body">
-            <div class="c7-flash__text">{{ _("Match senza limite: lo chiuderete a mano quando volete.") }}</div>
+            <div class="c7-flash__text">{{ _("Sfida senza limite: la chiuderete a mano quando volete.") }}</div>
           </div>
         </div>
       </div>
 
       <div>
         {% set selected_break_rule = rematch_params.break_rule if rematch_params else 'alternate' %}
-        <label for="break_rule" class="form-label">{{ _("Chi rompe") }}</label>
+        <label for="break_rule" class="form-label">{{ _("Chi spacca") }}</label>
         <select class="form-select" id="break_rule" name="break_rule">
           <option value="alternate" {% if selected_break_rule=='alternate' %}selected{% endif %}>{{ _("A turno") }}</option>
-          <option value="winner_breaks" {% if selected_break_rule=='winner_breaks' %}selected{% endif %}>{{ _("Rompe chi ha vinto il rack") }}</option>
-          <option value="loser_breaks" {% if selected_break_rule=='loser_breaks' %}selected{% endif %}>{{ _("Rompe chi ha perso il rack") }}</option>
+          <option value="winner_breaks" {% if selected_break_rule=='winner_breaks' %}selected{% endif %}>{{ _("Spacca chi ha vinto il triangolo") }}</option>
+          <option value="loser_breaks" {% if selected_break_rule=='loser_breaks' %}selected{% endif %}>{{ _("Spacca chi ha perso il triangolo") }}</option>
         </select>
       </div>
     </div>
@@ -197,9 +197,9 @@
     // tutto il JS della pagina.
     const i18n = {
         selectPlayerError: {{ _("Devi selezionare almeno un giocatore per un invito diretto")|tojson }},
-        confirmCreate: {{ _("Sei sicuro di voler creare questa proposta di match?")|tojson }},
-        formatRaceTo: {{ _("Vince chi arriva primo a {distance} rack.")|tojson }},
-        formatExact: {{ _("Si giocano {distance} rack: vince chi ne ha di più.")|tojson }},
+        confirmCreate: {{ _("Sei sicuro di voler creare questa proposta di sfida?")|tojson }},
+        formatRaceTo: {{ _("Vince chi arriva primo a {distance} triangoli.")|tojson }},
+        formatExact: {{ _("Si giocano {distance} triangoli: vince chi ne ha di più.")|tojson }},
         noOpponents: {{ _("Non hai ancora giocato con nessuno. Crea prima una proposta aperta!")|tojson }},
         selectPlaceholder: {{ _("Seleziona giocatori...")|tojson }}
     };

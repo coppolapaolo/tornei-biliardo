@@ -71,7 +71,7 @@
 <span class="c7-sep">·</span> {{ _('Turno') }} <span class="c7-num">{{ match.round_number }}</span>
 <span class="c7-sep">·</span> {{ (match.discipline or match.gara.discipline)|discipline_display }}
 {%- else -%}
-{{ _('Match individuale') }}
+{{ _('Sfida individuale') }}
 {%- if match.discipline %} <span class="c7-sep">·</span> {{ match.discipline|discipline_display }}{% endif -%}
 {%- endif -%}
 {%- if match.table_assignment %}

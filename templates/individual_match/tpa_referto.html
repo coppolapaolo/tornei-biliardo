@@ -7,7 +7,7 @@
 
 {% block page_back %}
 <a class="c7-head__back d-lg-none" href="{{ url_for('individual_match.match_detail', match_id=match.id) }}"
-   aria-label="{{ _('Torna al match') }}"><i class="fas fa-arrow-left"></i></a>
+   aria-label="{{ _('Torna alla sfida') }}"><i class="fas fa-arrow-left"></i></a>
 {% endblock %}
 {% block page_title %}{{ _('Referto TPA') }}{% endblock %}
 {% block page_sub %}
@@ -25,10 +25,10 @@
       <div class="c7-kicker">{{ _('Total Performance Average') }}</div>
       <h3 style="margin:6px 0 0">{{ _('Prendi il referto della partita') }}</h3>
       <p style="margin:10px 0 0;font-size:13px;font-weight:600;line-height:1.55;color:var(--c7-ink-soft)">
-        {{ _('Invece dei soli rack vinti, annoti ogni visita al tavolo: quante bilie sono entrate e perche\' il turno e\' finito. Da li\' esce il TPA, la percentuale di azioni riuscite — lo stesso conto che Accu-Stats usa per i professionisti.') }}
+        {{ _('Invece dei soli triangoli vinti, annoti ogni visita al tavolo: quante bilie sono entrate e perche\' il turno e\' finito. Da li\' esce il TPA, la percentuale di azioni riuscite — lo stesso conto che Accu-Stats usa per i professionisti.') }}
       </p>
       <p style="margin:10px 0 0;font-size:13px;font-weight:600;line-height:1.55;color:var(--c7-ink-soft)">
-        {{ _('Il referto lo tiene chi lo apre; l\'altro giocatore lo vede aggiornarsi. I rack vinti finiscono da soli nel punteggio del match: non c\'e\' niente da segnare due volte.') }}
+        {{ _('Il referto lo tiene chi lo apre; l\'altro giocatore lo vede aggiornarsi. I triangoli vinti finiscono da soli nel punteggio del match: non c\'e\' niente da segnare due volte.') }}
       </p>
     </section>
 
@@ -85,7 +85,7 @@
         <b>K</b> {{ _('tiro di sponda obbligato, non vedi la bilia') }}<br>
         <b>P</b> {{ _('battente in buca o fuori dal tavolo') }} <span class="c7-sep">·</span>
         <b>N</b> {{ _('non colpisci la bilia designata') }}<br>
-        <b>G</b> {{ _('con questo turno vinci il rack') }}<br>
+        <b>G</b> {{ _('con questo turno vinci il triangolo') }}<br>
         <b>n</b> {{ _('il tiro sbagliato era facile: vale doppio') }} <span class="c7-sep">·</span>
         <b>x</b> {{ _('difesa premeditata: niente errore di posizione') }} <span class="c7-sep">·</span>
         <b>p</b> {{ _('push out') }}
@@ -109,7 +109,7 @@
   {% endif %}
 
     <a class="btn btn-secondary w-100" href="{{ url_for('individual_match.match_detail', match_id=match.id) }}">
-      {{ _('Torna al match') }}
+      {{ _('Torna alla sfida') }}
     </a>
   </div>
 </div>
@@ -129,7 +129,7 @@
     const LABEL_NO_TPA = {{ _('TPA ancora da calcolare')|tojson }};
     const LABEL_BALLS = {{ _('quante bilie?')|tojson }};
     const LABEL_WHY = {{ _('perche\' finisce il turno?')|tojson }};
-    const LABEL_RACK = {{ _('Rack')|tojson }};
+    const LABEL_RACK = {{ _('Triangoli')|tojson }};
     const LABEL_ERROR = {{ _('Non e\' stato possibile annotare.')|tojson }};
     const KICK_IN = {{ _('e\' entrata di sponda alla prima bilia')|tojson }};
     const RUNOUT_ASK = {{ _('Ha chiuso in una sola visita?')|tojson }};

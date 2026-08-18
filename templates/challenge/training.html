@@ -19,7 +19,7 @@
 
 {% block page_back %}
 <a class="c7-head__back d-lg-none" href="{{ url_for('challenge.challenge_catalog') }}"
-   aria-label="{{ _('Torna ai drill') }}"><i class="fas fa-arrow-left"></i></a>
+   aria-label="{{ _('Torna agli esercizi') }}"><i class="fas fa-arrow-left"></i></a>
 {% endblock %}
 {% block page_title %}{{ _("Allenamento") }}{% endblock %}
 {% block page_sub %}{{ challenge.description|truncate(46, True, "…") }}{% endblock %}
@@ -38,14 +38,14 @@
     <div class="c7-diagram c7-diagram--card">
       {% if challenge.image_filename %}
       <img class="c7-diagram__img" src="{{ challenge_image_url(challenge) }}"
-           alt="{{ _('Disposizione del drill') }}"
+           alt="{{ _('Disposizione dell\'esercizio') }}"
            onerror="this.style.display='none'">
       {% else %}
       <i class="fas fa-bullseye" style="font-size:28px"></i>
       {% endif %}
       <span class="c7-state {{ 'c7-state--info' if is_pass_fail else 'c7-state--muted' }}"
             style="position:absolute;bottom:12px;left:12px">
-        {{ _('Riuscita o no') if is_pass_fail else _('A punteggio') }}
+        {{ _('Riuscito o no') if is_pass_fail else _('A punteggio') }}
       </span>
     </div>
 

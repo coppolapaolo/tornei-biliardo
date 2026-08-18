@@ -54,10 +54,10 @@
                     <input class="form-check-input" type="checkbox" id="challenge_mode" name="challenge_mode"
                            {% if campionato.challenge_mode %}checked{% endif %}>
                     <label class="form-check-label" for="challenge_mode">
-                        <strong>{{ _("Challenge Mode") }}</strong>
+                        <strong>{{ _("Modalità esercizi") }}</strong>
                     </label>
                 </div>
-                <small class="text-muted">{{ _("Abilita sfide individuali tra giocatori durante il campionato") }}</small>
+                <small class="text-muted">{{ _("Abilita le prove di abilità individuali nelle gare del campionato") }}</small>
             </div>
 
             <!-- Sistema di Classifica -->
@@ -65,20 +65,20 @@
                 <label for="default_classification_system" class="form-label">{{ _("Sistema di Classifica") }}</label>
                 <select class="form-select" id="default_classification_system" name="default_classification_system">
                     <option value="WINS" {% if campionato.default_classification_system == "WINS" %}selected{% endif %}>
-                        {{ _("Vittorie (match vinti → diff rack)") }}
+                        {{ _("Vittorie (match vinti → diff triangoli)") }}
                     </option>
                     <option value="RACK" {% if campionato.default_classification_system == "RACK" %}selected{% endif %}>
-                        {{ _("Rack Totali (rack accumulati)") }}
+                        {{ _("Triangoli Totali (triangoli accumulati)") }}
                     </option>
                 </select>
                 <div class="mt-2">
                     <div id="class-description-WINS" class="alert alert-info py-2 mb-0 small {% if campionato.default_classification_system != 'WINS' %}d-none{% endif %}">
                         <i class="fas fa-trophy"></i>
-                        {{ _("Ordina per: Vittorie → Differenza rack → Ordine precedente") }}
+                        {{ _("Ordina per: Vittorie → Differenza triangoli → Ordine precedente") }}
                     </div>
                     <div id="class-description-RACK" class="alert alert-info py-2 mb-0 small {% if campionato.default_classification_system != 'RACK' %}d-none{% endif %}">
                         <i class="fas fa-list-ol"></i>
-                        {{ _("Ordina per: Rack totali accumulati") }}
+                        {{ _("Ordina per: Triangoli totali accumulati") }}
                     </div>
                 </div>
             </div>
@@ -160,7 +160,7 @@
                     </div>
                     <div id="policy-description-bye_with_challenge" class="alert alert-info py-2 mb-0 small {% if campionato.default_odd_policy != 'bye_with_challenge' %}d-none{% endif %}">
                         <i class="fas fa-bullseye"></i>
-                        {{ _("Il giocatore riceve bye ma deve completare una sfida per guadagnare punti extra.") }}
+                        {{ _("Il giocatore riceve bye ma deve completare un esercizio per guadagnare punti extra.") }}
                     </div>
                     <div id="policy-description-trio" class="alert alert-info py-2 mb-0 small {% if campionato.default_odd_policy != 'trio' %}d-none{% endif %}">
                         <i class="fas fa-users"></i>

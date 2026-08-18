@@ -4,7 +4,7 @@
 
 {# Testata: si riempiono i blocchi del guscio, non se ne disegna una seconda. #}
 {% block page_title %}{{ _("Esami") }}{% endblock %}
-{% block page_sub %}{{ _("Più drill in fila. Da solo per allenarti, davanti a un esaminatore per farlo valere.") }}{% endblock %}
+{% block page_sub %}{{ _("Più esercizi in fila. Da solo per allenarti, davanti a un esaminatore per farlo valere.") }}{% endblock %}
 {% block page_actions %}
     {% if current_user.is_authenticated and current_user.is_examiner
           and feature_visible('exam.manage_exams') %}
@@ -33,7 +33,7 @@
       <div style="flex:1;min-width:0">
         <div class="c7-rows__title">{{ exam.name }}</div>
         <div class="c7-rows__sub">
-          {{ ngettext("%(n)s drill", "%(n)s drill", drill_count, n=drill_count) }}
+          {{ ngettext("%(n)s esercizio", "%(n)s esercizi", drill_count, n=drill_count) }}
           <span class="c7-sep">·</span>
           {{ ngettext("%(n)s esaminatore", "%(n)s esaminatori", exam.examiner_ids|length, n=exam.examiner_ids|length) }}
           {% if exam.time_limit_minutes %}
@@ -67,7 +67,7 @@
       <div class="c7-rows__main">
         <div class="c7-rows__title">{{ exam.name }}</div>
         <div class="c7-rows__sub">
-          {{ ngettext("%(n)s drill", "%(n)s drill", drill_count, n=drill_count) }}
+          {{ ngettext("%(n)s esercizio", "%(n)s esercizi", drill_count, n=drill_count) }}
         </div>
       </div>
       <i class="fas fa-chevron-right" style="color:var(--c7-ink-faint)"></i>

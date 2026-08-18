@@ -34,7 +34,7 @@ class TestGaraMultiSetProperty:
         assert distance.is_race_to_racks is True
         assert distance.is_multi_set is False
         assert distance.sets == 1
-        assert distance.to_display_string() == "Al 7 rack"
+        assert distance.to_display_string() == "Al 7 triangoli"
 
     def test_gara_single_set_exact(self):
         """Test single-set exact configuration (backward compatible)."""
@@ -54,7 +54,7 @@ class TestGaraMultiSetProperty:
         assert distance.is_race_to_racks is False
         assert distance.is_multi_set is False
         # Italian string expected (Flask-Babel returns untranslated without app context)
-        assert distance.to_display_string() == "Esattamente 5 rack"
+        assert distance.to_display_string() == "Esattamente 5 triangoli"
 
     def test_gara_multi_set_race_to_sets_race_to_racks(self):
         """Test multi-set with best-of sets and best-of racks."""
@@ -77,7 +77,7 @@ class TestGaraMultiSetProperty:
         assert distance.is_multi_set is True
         assert distance.sets == 3
         assert distance.is_race_to_sets is True
-        assert distance.to_display_string() == "Al 3 set, ogni set al 5 rack"
+        assert distance.to_display_string() == "Al 3 set, ogni set al 5 triangoli"
         assert distance.get_winning_racks() == 5
         assert distance.get_winning_sets() == 3
 
@@ -101,7 +101,9 @@ class TestGaraMultiSetProperty:
         assert distance.sets == 4
         assert distance.is_race_to_sets is False
         # Italian string expected (Flask-Babel returns untranslated without app context)
-        assert distance.to_display_string() == "Esattamente 4 set, ogni set al 3 rack"
+        assert (
+            distance.to_display_string() == "Esattamente 4 set, ogni set al 3 triangoli"
+        )
 
     def test_gara_multi_set_defaults(self):
         """Test multi-set with None values uses defaults."""
@@ -139,7 +141,7 @@ class TestGaraMultiSetProperty:
 
         assert distance.racks == 7
         assert distance.is_multi_set is False
-        assert distance.to_display_string() == "Al 7 rack"
+        assert distance.to_display_string() == "Al 7 triangoli"
 
 
 class TestMatchProposalMultiSetProperty:
@@ -187,7 +189,7 @@ class TestMatchProposalMultiSetProperty:
         assert distance.is_multi_set is True
         assert distance.sets == 3
         assert distance.is_race_to_sets is True
-        assert distance.to_display_string() == "Al 3 set, ogni set al 5 rack"
+        assert distance.to_display_string() == "Al 3 set, ogni set al 5 triangoli"
 
     def test_proposal_no_distance(self):
         """Test proposal without distance returns None."""
@@ -223,7 +225,7 @@ class TestIndividualMatchMultiSetProperty:
 
         assert distance.racks == 7
         assert distance.is_multi_set is False
-        assert distance.to_display_string() == "Al 7 rack"
+        assert distance.to_display_string() == "Al 7 triangoli"
 
     def test_individual_match_multi_set(self):
         """Test individual match multi-set configuration."""
@@ -245,7 +247,7 @@ class TestIndividualMatchMultiSetProperty:
         assert distance.is_multi_set is True
         assert distance.sets == 5
         assert distance.is_race_to_sets is True
-        assert distance.to_display_string() == "Al 5 set, ogni set al 3 rack"
+        assert distance.to_display_string() == "Al 5 set, ogni set al 3 triangoli"
 
 
 class TestMatchProposalAcceptCopiesMultiSet:

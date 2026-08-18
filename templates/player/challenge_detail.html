@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ challenge.get_display_name() }} - {{ _("Challenge") }}{% endblock %}
+{% block title %}{{ challenge.get_display_name() }} - {{ _("Esercizi") }}{% endblock %}
 
 {% block page_back %}
 <a class="c7-head__back d-lg-none" href="{{ url_for('challenge.challenge_catalog') }}"
@@ -12,7 +12,7 @@
    qui sotto. #}
 {% block page_title %}{{ challenge.get_display_name() }}{% endblock %}
 {% block page_sub %}
-{{ _("Challenge riuscita o no") if challenge.pass_fail_only else _("Challenge a punteggio") }}
+{{ _("Esercizio riuscito o no") if challenge.pass_fail_only else _("Esercizio a punteggio") }}
 {% endblock %}
 {% block page_actions %}
 <a href="{{ url_for('challenge.challenge_catalog') }}" class="btn btn-secondary btn-sm d-none d-lg-inline-flex">
@@ -75,7 +75,7 @@
     {# ---------- Gestione (chi l'ha creata, o l'admin) ---------- #}
     {% if current_user.is_admin or (current_user.is_authenticated and challenge.created_by_id == current_user.id) %}
     <button class="btn btn-danger w-100" onclick="deleteChallenge()">
-      <i class="fas fa-trash"></i>&nbsp;{{ _("Elimina la challenge") }}
+      <i class="fas fa-trash"></i>&nbsp;{{ _("Elimina l'esercizio") }}
     </button>
     {% endif %}
   </div>
@@ -85,7 +85,7 @@
 {% if not current_user.is_admin %}
 <div class="c7-actionbar" style="flex-direction:column;gap:6px">
   <a href="{{ url_for('challenge.training_session', challenge_id=challenge.id) }}" class="btn btn-primary w-100">
-    <i class="fas fa-play"></i>&nbsp;{{ _("Allenati su questo drill") }}
+    <i class="fas fa-play"></i>&nbsp;{{ _("Allenati su questo esercizio") }}
   </a>
   <div class="text-center" style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
     {{ _("Registri una prova dopo l'altra, sulla stessa schermata") }}
@@ -117,7 +117,7 @@ function deleteChallenge() {
     // — il comando rispondeva 404 e l'errore compariva come "errore
     // sconosciuto".
     const url = {{ url_for('challenge.delete_challenge', challenge_id=challenge.id)|tojson }};
-    showConfirm({{ _("Confermi di voler eliminare questa challenge? Non si torna indietro.")|tojson }}, () => {
+    showConfirm({{ _("Confermi di voler eliminare questo esercizio? Non si torna indietro.")|tojson }}, () => {
         fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken() }
@@ -127,13 +127,13 @@ function deleteChallenge() {
             if (data.success) {
                 window.location.href = {{ url_for("challenge.challenge_catalog")|tojson }};
             } else {
-                showError({{ _("Non è stato possibile eliminare la challenge.")|tojson }}
+                showError({{ _("Non è stato possibile eliminare l'esercizio.")|tojson }}
                           + (data.error ? ' ' + data.error : ''));
             }
         })
         .catch(error => {
             console.error('Error deleting challenge:', error);
-            showError({{ _("Errore di rete: la challenge non è stata eliminata.")|tojson }});
+            showError({{ _("Errore di rete: l'esercizio non è stato eliminato.")|tojson }});
         });
     });
 }

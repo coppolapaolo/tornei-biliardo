@@ -39,7 +39,7 @@
     </div>
     {% if progress.total_attempts != progress.total_challenges %}
     <div class="c7-rows__sub" style="margin-top:4px">
-      {{ _("prove · %(done)s di %(all)s drill completati",
+      {{ _("prove · %(done)s di %(all)s esercizi completati",
             done=progress.completed_challenges, all=progress.total_challenges) }}
     </div>
     {% endif %}
@@ -55,7 +55,7 @@
   </div>
 
   {# ── I drill, uno per uno ───────────────────────────────────────────── #}
-  <div class="c7-sechead"><h2>{{ _("I drill") }}</h2></div>
+  <div class="c7-sechead"><h2>{{ _("Gli esercizi") }}</h2></div>
 
   {% set can_score = attempt.status == 'in_progress'
                      and (is_examiner or (is_candidate and attempt.mode == 'self_practice')) %}

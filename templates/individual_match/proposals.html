@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 {% import "components/_proposal_labels.html" as lbl with context %}
 
-{% block title %}{{ _("Proposte di match") }} - {{ config.APP_NAME }}{% endblock %}
+{% block title %}{{ _("Proposte di sfida") }} - {{ config.APP_NAME }}{% endblock %}
 
 {# Testata: una sola per pagina, quella del guscio. Via la briciola di pane e
    il titolo ripetuto dentro il contenuto. #}
 {% block page_back %}
 <a class="c7-head__back d-lg-none" href="{{ url_for('individual_match.dashboard') }}"
-   aria-label="{{ _('Torna ai match individuali') }}"><i class="fas fa-arrow-left"></i></a>
+   aria-label="{{ _('Torna alle sfide individuali') }}"><i class="fas fa-arrow-left"></i></a>
 {% endblock %}
 {% block page_title %}{{ _("Proposte") }}{% endblock %}
 {% block page_actions %}
@@ -37,7 +37,7 @@
   {{ _('Al') }} {{ proposal.match_distance }} {{ _('set') }},
   {{ _('ogni set al') if proposal.is_race_to else _('ogni set esattamente') }} {{ proposal.distance }}
   {%- else %}
-  {{ _('Al') if proposal.is_race_to else _('Esattamente') }} {{ proposal.distance }} {{ _('rack') }}
+  {{ _('Al') if proposal.is_race_to else _('Esattamente') }} {{ proposal.distance }} {{ _('triangoli') }}
   {%- endif %}
 </div>
 {%- if proposal.description %}
@@ -111,7 +111,7 @@
           </div>
           {% elif proposal.status.value == 'accepted' %}
           <div class="c7-band c7-band--ok" style="margin-top:14px">
-            {{ _("Accettata: il match è stato creato") }}
+            {{ _("Accettata: la sfida è stata creata") }}
           </div>
           {% endif %}
         </article>

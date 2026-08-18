@@ -36,7 +36,7 @@
         </button>
 
         <span class="c7-state {% if challenge.pass_fail_only %}c7-state--info{% else %}c7-state--muted{% endif %}" style="position: absolute; bottom: 10px; left: 10px;">
-            {% if challenge.pass_fail_only %}{{ _('Riuscita o no') }}{% else %}{{ _('A punteggio') }}{% endif %}
+            {% if challenge.pass_fail_only %}{{ _('Riuscito o no') }}{% else %}{{ _('A punteggio') }}{% endif %}
         </span>
     </div>
 
@@ -52,7 +52,7 @@
             {{ challenge.description }}
         </p>
         {% if challenge.created_by_id == current_user.id %}
-        <span class="c7-kicker" style="margin-top: 6px;">{{ _('Creata da te') }}</span>
+        <span class="c7-kicker" style="margin-top: 6px;">{{ _('Creato da te') }}</span>
         {% endif %}
 
         {# `get_statistics()` era chiamata due volte per card: due passate sui
@@ -65,7 +65,7 @@
 
         <div style="display: flex; gap: 8px; margin-top: 16px;">
             {% if not current_user.is_admin %}
-            <a href="{{ url_for('challenge.training_session', challenge_id=challenge.id) }}" class="btn btn-primary btn-sm" style="flex: 1;">{{ _('Provala') }}</a>
+            <a href="{{ url_for('challenge.training_session', challenge_id=challenge.id) }}" class="btn btn-primary btn-sm" style="flex: 1;">{{ _('Provalo') }}</a>
             {% endif %}
             <a href="{{ url_for('challenge.challenge_detail', challenge_id=challenge.id) }}" class="btn btn-secondary btn-sm" style="flex: 1;">{{ _('Dettagli') }}</a>
             {% if current_user.is_admin or (current_user.is_authenticated and challenge.created_by_id == current_user.id) %}
@@ -78,7 +78,7 @@
         </div>
 
         <div class="text-muted" style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--c7-line-soft); font-size: 12px; font-weight: 600;">
-            {% if challenge.created_by %}{{ _('Creata da') }} {{ challenge.created_by.username }}{% else %}{{ _('Creata dal sistema') }}{% endif %}
+            {% if challenge.created_by %}{{ _('Creato da') }} {{ challenge.created_by.username }}{% else %}{{ _('Creato dal sistema') }}{% endif %}
             <span class="c7-sep">·</span> <span class="c7-num">{{ challenge.created_at|date_local }}</span>
         </div>
     </div>

@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 {% import "components/_match_status_labels.html" as st with context %}
 
-{% block title %}{{ _("Match individuali") }} - {{ _("Amministrazione") }}{% endblock %}
+{% block title %}{{ _("Sfide individuali") }} - {{ _("Amministrazione") }}{% endblock %}
 
 {% block page_back %}
 <a class="c7-head__back d-lg-none" href="{{ url_for('dashboard.dashboard') }}"
    aria-label="{{ _('Torna alla dashboard') }}"><i class="fas fa-arrow-left"></i></a>
 {% endblock %}
-{% block page_title %}{{ _("Match individuali") }}{% endblock %}
+{% block page_title %}{{ _("Sfide individuali") }}{% endblock %}
 {% block page_sub %}{{ _("Panoramica di tutte le partite e le proposte") }}{% endblock %}
 
 {% block content %}

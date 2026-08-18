@@ -245,7 +245,7 @@ class Challenge(BaseModel):
     def get_display_name(self) -> str:
         """Il nome con cui il drill si presenta ovunque: catalogo, esami, email.
 
-        L'ordine è: il titolo scelto, altrimenti il progressivo — ``Drill 12``,
+        L'ordine è: il titolo scelto, altrimenti il progressivo — ``Esercizio 12``,
         dove 12 è l'id. Non si ripiega più sulla descrizione troncata a 50
         caratteri: era il comportamento di prima e faceva sembrare identici
         drill diversi, perché le istruzioni cominciano quasi sempre allo stesso
@@ -257,7 +257,7 @@ class Challenge(BaseModel):
         va benissimo.
 
         Returns:
-            Il titolo, oppure ``Drill <id>`` per i drill senza titolo.
+            Il titolo, oppure ``Esercizio <id>`` per gli esercizi senza titolo.
         """
         title = (self.title or "").strip()
         if title:
@@ -266,9 +266,9 @@ class Challenge(BaseModel):
         try:
             from flask_babel import gettext
 
-            return gettext("Drill %(number)s", number=self.id)
+            return gettext("Esercizio %(number)s", number=self.id)
         except (RuntimeError, ImportError):
-            return f"Drill {self.id}"
+            return f"Esercizio {self.id}"
 
     @property
     def image_filename(self) -> Optional[str]:

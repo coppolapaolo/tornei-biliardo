@@ -3,7 +3,7 @@ section: approfondimenti
 kind: approfondimento
 audience: [tutti]
 minutes: 5
-summary: "«Al 4» non vuol dire quattro rack. Come si legge la distanza, cosa cambia con il numero esatto di rack e cosa sono le partite a set."
+summary: "«Al 4» non vuol dire quattro triangoli. Come si legge la distanza, cosa cambia con il numero esatto di triangoli e cosa sono le partite a set."
 related: [parole_da_sapere, opzioni_della_gara, classifiche]
 
 blocks:
@@ -11,7 +11,7 @@ blocks:
     text: >-
       Il formato è la risposta a una domanda sola: **quando finisce una
       partita?** Ci sono tre modi di rispondere, e l'app li chiama distanza,
-      numero esatto di rack e partita a set.
+      numero esatto di triangoli e partita a set.
 
   - type: heading
     id: distanza
@@ -20,46 +20,46 @@ blocks:
   - type: text
     text: >-
       È il formato normale. **«Al 4»** significa che vince chi arriva prima a
-      quattro rack vinti. Appena uno ci arriva, la partita si chiude: gli altri
-      rack non si giocano.
+      quattro triangoli vinti. Appena uno ci arriva, la partita si chiude: gli altri
+      triangoli non si giocano.
 
   - type: list
     title: "Come leggerlo"
     items:
-      - "«Al 4» → vince chi arriva a 4. Al massimo si giocano **7** rack (4-3)."
-      - "«Al 5» → vince chi arriva a 5. Al massimo **9** rack (5-4)."
-      - "«Al 7» → vince chi arriva a 7. Al massimo **13** rack (7-6)."
+      - "«Al 4» → vince chi arriva a 4. Al massimo si giocano **7** triangoli (4-3)."
+      - "«Al 5» → vince chi arriva a 5. Al massimo **9** triangoli (5-4)."
+      - "«Al 7» → vince chi arriva a 7. Al massimo **13** triangoli (7-6)."
 
   - type: note
     tone: warning
     title: "Non è «al meglio di N»"
     text: >-
-      Il numero indicato è quello dei rack **da vincere**, non di quelli da
+      Il numero indicato è quello dei triangoli **da vincere**, non di quelli da
       giocare. Chi è abituato al «meglio di 9» pensi «al 5»: è la stessa cosa
       detta in modo diverso.
 
   - type: shot
     shot: partita-segnapunti
-    caption: "Sotto il punteggio, la riga «Al 5 rack · 7 rack giocati» ricorda la distanza e quanti rack sono già stati giocati."
+    caption: "Sotto il punteggio, la riga «Al 5 triangoli · 7 triangoli giocati» ricorda la distanza e quanti triangoli sono già stati giocati."
 
   - type: heading
     id: numero_esatto
-    title: "Numero esatto di rack"
+    title: "Numero esatto di triangoli"
 
   - type: text
     text: >-
-      Alcune gare scelgono di far giocare **sempre** tutti i rack, anche quando
-      il vincitore è già deciso: 6 rack sono 6 rack, si finiscano tutti. Serve
-      quando la classifica conta i rack totali e non le vittorie: se ci si
-      fermasse in anticipo, chi vince nettamente accumulerebbe meno rack di chi
+      Alcune gare scelgono di far giocare **sempre** tutti i triangoli, anche quando
+      il vincitore è già deciso: 6 triangoli sono 6 triangoli, si finiscano tutti. Serve
+      quando la classifica conta i triangoli totali e non le vittorie: se ci si
+      fermasse in anticipo, chi vince nettamente accumulerebbe meno triangoli di chi
       vince a fatica.
 
   - type: note
     tone: info
     title: "Con numero pari si può pareggiare"
     text: >-
-      Se i rack da giocare sono un numero pari, la partita può finire in
-      parità: 3-3 su sei rack. Con la distanza «Al N» invece un vincitore c'è
+      Se i triangoli da giocare sono un numero pari, la partita può finire in
+      parità: 3-3 su sei triangoli. Con la distanza «Al N» invece un vincitore c'è
       sempre.
 
   - type: note
@@ -67,9 +67,9 @@ blocks:
     title: "Nelle gare a tabellone non si può chiedere"
     text: >-
       Con eliminazione diretta e doppio KO la casella non compare proprio, né
-      per i rack né per i set. Lì conta solo chi passa il turno: il vincitore è
-      deciso appena uno arriva alla distanza, e i rack giocati dopo non
-      cambiano né il tabellone né la classifica, che è per posizione e i rack
+      per i triangoli né per i set. Lì conta solo chi passa il turno: il vincitore è
+      deciso appena uno arriva alla distanza, e i triangoli giocati dopo non
+      cambiano né il tabellone né la classifica, che è per posizione e i triangoli
       non li guarda. Sarebbero partite più lunghe a parità di risultato — e con
       un numero pari anche peggio, perché un pareggio lascerebbe la casella
       successiva del tabellone senza nessuno.
@@ -126,7 +126,7 @@ blocks:
     text: >-
       Quando una gara ammette livelli molto diversi, il direttore può attivare
       l'**handicap**: il giocatore di categoria inferiore parte con qualche
-      rack di vantaggio, così la partita resta incerta.
+      triangoli di vantaggio, così la partita resta incerta.
 
   - type: note
     tone: info
@@ -142,9 +142,9 @@ blocks:
         a: "Nella pratica venti-trenta minuti a palla 8. «Al 5» ne chiede una decina in più, e su tre turni la differenza si sente parecchio."
       - q: "Si può cambiare la distanza durante la gara?"
         a: "No, non dopo l'avvio. Il direttore può però impostare formati diversi per singoli turni, ma va deciso prima che la gara parta."
-      - q: "Perché la mia partita si è chiusa sul 4-2 se erano previsti 7 rack?"
-        a: "Perché il formato era «al 4»: raggiunti i 4 rack la partita è vinta. I 7 sono il massimo possibile, non il numero da giocare."
+      - q: "Perché la mia partita si è chiusa sul 4-2 se erano previsti 7 triangoli?"
+        a: "Perché il formato era «al 4»: raggiunti i 4 triangoli la partita è vinta. I 7 sono il massimo possibile, non il numero da giocare."
       - q: "Con «numero esatto» chi vince se finisce in parità?"
-        a: "Nessuno: la partita risulta pareggiata e in classifica entrambi prendono zero vittorie e zero differenza rack."
-      - q: "Nel mio torneo a eliminazione non trovo «numero esatto di rack»."
+        a: "Nessuno: la partita risulta pareggiata e in classifica entrambi prendono zero vittorie e zero differenza triangoli."
+      - q: "Nel mio torneo a eliminazione non trovo «numero esatto di triangoli»."
         a: "Sui formati a tabellone non c'è: si gioca sempre a chi arriva prima. Al posto della casella l'app mostra una nota che lo spiega."

@@ -164,15 +164,19 @@ class ExamService:
     # ────────────────────────────────────────────────────────────────────
     @staticmethod
     def _validate_max_score(challenge: Challenge, max_score: Optional[int]) -> None:
-        """``max_score`` è obbligatorio sui drill numerici, vietato sui pass/fail."""
+        """``max_score`` è obbligatorio sugli esercizi a punteggio, vietato
+        su quelli superato/non superato."""
         if challenge.pass_fail_only:
             if max_score is not None:
                 raise ValidationError(
-                    "Un drill pass/fail non ha punteggio massimo: vale 1 punto"
+                    "Un esercizio superato/non superato non ha punteggio "
+                    "massimo: vale 1 punto"
                 )
             return
         if max_score is None:
-            raise ValidationError("Serve un punteggio massimo per un drill numerico")
+            raise ValidationError(
+                "Serve un punteggio massimo per un esercizio a punteggio"
+            )
         if max_score <= 0:
             raise ValidationError("Il punteggio massimo deve essere positivo")
 
@@ -188,7 +192,7 @@ class ExamService:
         if max_attempts is None:
             return 1
         if max_attempts < 1:
-            raise ValidationError("Un drill prevede almeno una prova")
+            raise ValidationError("Un esercizio prevede almeno una prova")
         if max_attempts > MAX_ATTEMPTS_PER_CHALLENGE:
             raise ValidationError(
                 "Troppe prove per un drill: al massimo " f"{MAX_ATTEMPTS_PER_CHALLENGE}"
@@ -205,13 +209,13 @@ class ExamService:
         order: Optional[int] = None,
         max_attempts: int = 1,
     ) -> ExamChallenge:
-        """Aggiunge un drill in coda all'esame (o alla posizione richiesta)."""
+        """Aggiunge un esercizio in coda all'esame (o alla posizione richiesta)."""
         exam = ExamService.get_exam(exam_id)
         ExamService._require_edit(exam, actor)
 
         challenge = db.session.get(Challenge, challenge_id)
         if challenge is None:
-            raise NotFoundError("Drill non trovato")
+            raise NotFoundError("Esercizio non trovato")
         ExamService._validate_max_score(challenge, max_score)
         max_attempts = ExamService._validate_max_attempts(max_attempts)
 
@@ -219,7 +223,7 @@ class ExamService:
             exam_id=exam_id, challenge_id=challenge_id
         ).first()
         if existing is not None:
-            raise ConflictError("Questo drill fa già parte dell'esame")
+            raise ConflictError("Questo esercizio fa già parte dell'esame")
 
         if order is None:
             max_order = (
@@ -273,7 +277,7 @@ class ExamService:
             exam_id=exam_id, challenge_id=challenge_id
         ).first()
         if exam_challenge is None:
-            raise NotFoundError("Drill non presente nell'esame")
+            raise NotFoundError("Esercizio non presente nell'esame")
 
         ExamService._validate_max_score(exam_challenge.challenge, max_score)
         exam_challenge.max_score = max_score
@@ -288,7 +292,7 @@ class ExamService:
     def remove_challenge_from_exam(
         exam_id: int, challenge_id: int, actor: User
     ) -> None:
-        """Toglie un drill dall'esame."""
+        """Toglie un esercizio dall'esame."""
         exam = ExamService.get_exam(exam_id)
         ExamService._require_edit(exam, actor)
 
@@ -296,7 +300,7 @@ class ExamService:
             exam_id=exam_id, challenge_id=challenge_id
         ).first()
         if exam_challenge is None:
-            raise NotFoundError("Drill non presente nell'esame")
+            raise NotFoundError("Esercizio non presente nell'esame")
 
         db.session.delete(exam_challenge)
 
@@ -322,7 +326,7 @@ class ExamService:
         # arbitraria, che non è ciò che il chiamante ha chiesto.
         if len(requested) != len(set(requested)) or set(requested) != set(by_challenge):
             raise ValidationError(
-                "Il riordino deve elencare esattamente i drill dell'esame, "
+                "Il riordino deve elencare esattamente gli esercizi dell'esame, "
                 "ciascuno una volta sola"
             )
 
@@ -477,7 +481,7 @@ class ExamService:
         if not exam.is_active:
             raise ConflictError("Questo esame non è più disponibile")
         if exam.challenges.count() == 0:
-            raise ValidationError("L'esame non contiene ancora nessun drill")
+            raise ValidationError("L'esame non contiene ancora nessun esercizio")
 
         existing = ExamService.get_open_self_practice(actor.id, exam_id)
         if existing is not None:
@@ -655,7 +659,7 @@ class ExamService:
             .all()
         )
         if not slots:
-            raise NotFoundError("Drill non presente in questo tentativo")
+            raise NotFoundError("Esercizio non presente in questo tentativo")
 
         if attempt_number is None:
             if len(slots) == 1:
@@ -668,7 +672,7 @@ class ExamService:
                 )
                 if result is None:
                     raise ConflictError(
-                        "Le prove previste per questo drill sono già state "
+                        "Le prove previste per questo esercizio sono già state "
                         "registrate: per cambiarne una, indica quale"
                     )
         else:
@@ -676,16 +680,18 @@ class ExamService:
                 (s for s in slots if s.attempt_number == attempt_number), None
             )
             if result is None:
-                raise NotFoundError("Prova non prevista per questo drill")
+                raise NotFoundError("Prova non prevista per questo esercizio")
 
         exam_challenge = result.exam_challenge
         if exam_challenge.is_pass_fail:
             if passed is None:
-                raise ValidationError("Serve l'esito per un drill pass/fail")
+                raise ValidationError(
+                    "Serve l'esito per un esercizio superato/non superato"
+                )
             result.record(score=1 if passed else 0, passed=bool(passed))
         else:
             if score is None:
-                raise ValidationError("Serve il punteggio per un drill numerico")
+                raise ValidationError("Serve il punteggio per un esercizio a punteggio")
             if score < 0 or score > exam_challenge.effective_max_score:
                 raise ValidationError(
                     "Punteggio fuori scala: " f"0–{exam_challenge.effective_max_score}"

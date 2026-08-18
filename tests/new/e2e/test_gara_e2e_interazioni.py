@@ -480,7 +480,7 @@ class TestConfermeERipensamenti:
             driver.aggiungi_rack_da_giocatore(partita.id, uno.id)
 
         pagina = driver.client.get(f"/admin/match/{partita.id}").get_data(as_text=True)
-        assert "Annulla ultimo rack" in pagina
+        assert "Annulla ultimo triangolo" in pagina
 
         risposta = driver.client.post(
             f"/player/match/{partita.id}/racks/remove",
@@ -513,7 +513,7 @@ class TestConfermeERipensamenti:
         # in cui era caduta la prima versione di questa correzione — l'intera
         # sezione del segnapunti vive dentro un `if` sullo stato "in corso".
         pagina = driver.client.get(f"/admin/match/{partita.id}").get_data(as_text=True)
-        assert "Annulla ultimo rack" in pagina
+        assert "Annulla ultimo triangolo" in pagina
 
         risposta = driver.client.post(
             f"/player/match/{partita.id}/racks/remove",

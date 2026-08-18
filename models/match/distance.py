@@ -87,9 +87,9 @@ class Distance:
         if not self.is_multi_set:
             # Single-set
             if self.is_race_to_racks:
-                return _("Al %(n)s rack", n=self.racks)
+                return _("Al %(n)s triangoli", n=self.racks)
             else:
-                return _("Esattamente %(n)s rack", n=self.racks)
+                return _("Esattamente %(n)s triangoli", n=self.racks)
         else:
             # Multi-set
             if self.is_race_to_sets:
@@ -98,9 +98,9 @@ class Distance:
                 sets_part = _("Esattamente %(n)s set", n=self.sets)
 
             if self.is_race_to_racks:
-                racks_part = _("ogni set al %(n)s rack", n=self.racks)
+                racks_part = _("ogni set al %(n)s triangoli", n=self.racks)
             else:
-                racks_part = _("ogni set esattamente %(n)s rack", n=self.racks)
+                racks_part = _("ogni set esattamente %(n)s triangoli", n=self.racks)
 
             return f"{sets_part}, {racks_part}"
 

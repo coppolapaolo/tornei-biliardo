@@ -28,7 +28,7 @@ blocks:
     title: "Un giocatore può"
     items:
       - "Iscriversi e disiscriversi dalle gare con le iscrizioni aperte."
-      - "Segnare i rack delle **proprie** partite (non di quelle altrui)."
+      - "Segnare i triangoli delle **proprie** partite (non di quelle altrui)."
       - "Vedere turni, avversari, classifiche e tabelloni."
       - "Proporre e giocare partite amichevoli fuori dalle gare."
       - "Modificare profilo, privacy ed email; scaricare i propri dati."
@@ -151,6 +151,6 @@ blocks:
       - q: "Ho chiesto di diventare direttore ma non è cambiato niente."
         a: "La richiesta deve essere approvata da un amministratore. Finché non lo è, il tuo account resta giocatore. Controlla le notifiche: la risposta arriva lì."
       - q: "Chi può correggere un risultato già inserito?"
-        a: "Il direttore della gara. Un giocatore può annullare l'ultimo rack finché la partita è in corso, ma non può più intervenire dopo che il risultato è stato chiuso."
+        a: "Il direttore della gara. Un giocatore può annullare l'ultimo triangolo finché la partita è in corso, ma non può più intervenire dopo che il risultato è stato chiuso."
       - q: "Come divento beta tester?"
         a: "Non si può chiedere: è chi amministra la piattaforma a scegliere le persone a cui far provare in anticipo una funzione nuova. Se il ruolo ti viene assegnato lo trovi nelle notifiche."
