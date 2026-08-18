@@ -10,8 +10,8 @@
 hints:
 - id: home.andamento
   label: How you are doing
-  short: 'Two numbers, a chart and your latest activities. It leads nowhere: it only tells you how you
-    are getting on.'
+  short: 'Two numbers, a chart and your latest activities: it tells you how you are getting on, and leads
+    nowhere. It greets you on the way in, once per sign-in.'
   anchor: home-andamento
   screens:
   - dashboard.dashboard
@@ -20,7 +20,7 @@ hints:
 - id: home.tutti_i_numeri
   label: All your numbers
   short: 'Opens three or four extra rows: current streak, position in a championship, drills completed,
-    level. Next visit it starts closed again.'
+    level. It always starts closed, one tap opens it.'
   anchor: home-tutti-i-numeri
   screens:
   - dashboard.dashboard
@@ -513,10 +513,13 @@ tours:
   audience:
   - giocatore
   steps:
-  - hint: home.andamento
+  - title: The summary that greets you
+    text: 'As soon as you come in, at the top there is a panel with how you are doing: two numbers, a
+      chart and your latest activities. You just read it; then it makes way for the things to do, and
+      comes back next time you sign in.'
   - title: Your competitions
-    text: 'Below the panel with how you are doing are the active competitions. The colour of the label
-      says where they are: registrations open, in progress, finished.'
+    text: 'The active competitions are the first thing to do you find in your home. The colour of the
+      label says where they are: registrations open, in progress, finished.'
   - title: Register with one tap
     text: 'Competitions open for registration have the green button: you do not have to look for them
       elsewhere.'

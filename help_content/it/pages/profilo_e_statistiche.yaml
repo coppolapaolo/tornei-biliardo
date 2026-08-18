@@ -54,9 +54,10 @@ blocks:
 
   - type: text
     text: >-
-      Nell'app il rating si chiama **Elo**, ed è il numero che vedi anche in
-      cima alla home, nel riquadro «Come stai andando», insieme a quanto è
-      cambiato nelle ultime partite. Chi non ha ancora giocato parte da 1200.
+      Nell'app il rating si chiama **Elo**, ed è il numero che vedi anche nel
+      riquadro «Come stai andando», quello che ti accoglie in cima alla home
+      quando entri, insieme a quanto è cambiato nelle ultime partite. Chi non
+      ha ancora giocato parte da 1200.
 
   - type: note
     tone: info

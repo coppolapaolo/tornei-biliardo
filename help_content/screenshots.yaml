@@ -63,7 +63,7 @@ shots:
   - id: dashboard-giocatore
     route: /dashboard
     as: Marco Rossi
-    caption: "La home del giocatore: in cima il riquadro «Come stai andando», poi le gare a cui sei iscritto, i campionati e le gare vicine a te."
+    caption: "La home del giocatore appena entrato: in cima il riquadro «Come stai andando», poi le gare a cui sei iscritto, i campionati e le gare vicine a te."
     viewports: [mobile, desktop]
 
   - id: gara-iscrizione
@@ -154,7 +154,7 @@ shots:
   - id: dashboard-direttore
     route: /dashboard
     as: Luca Bianchi
-    caption: "La home del direttore di gara: i pulsanti per creare gare e campionati, il riquadro «Come vanno le tue gare» e l'elenco delle gare che gestisce."
+    caption: "La home del direttore di gara appena entrato: i pulsanti per creare gare e campionati, il riquadro «Come vanno le tue gare» e l'elenco delle gare che gestisce."
     viewports: [mobile, desktop]
 
   - id: campionato-wizard

@@ -24,8 +24,9 @@ blocks:
     text: >-
       A summary of these numbers — your current streak, your level and how far
       the next one is, the drills you have completed — can be read without
-      opening this page: it is in the panel at the top of your home, under the
-      «All your numbers» button.
+      opening this page: it is in the «How you are doing» panel, the one you
+      find at the top of your home when you come in, under the «All your
+      numbers» button.
 
   - type: heading
     id: xp
