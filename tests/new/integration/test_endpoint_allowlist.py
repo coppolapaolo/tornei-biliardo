@@ -101,6 +101,63 @@ def test_nearby_gare_api_visible_to_player_in_production(app, monkeypatch):
         assert is_endpoint_visible("player.api_nearby_gare", director)
 
 
+def test_venues_directory_visible_to_player_in_production(app, monkeypatch):
+    """Regression: l'elenco delle sale biliardo è una directory pubblica, non
+    amministrazione.
+
+    `admin.venue.venues_list` e `venue_detail` stanno nel blueprint `admin.venue`
+    per ragioni storiche, ma il loro decoratore è `@login_required` e la route
+    sceglie la vista in base al ruolo (`player/venues.html` a chi gioca).
+    Nessuna delle due era classificata, quindi per deny-by-default erano
+    admin-only **da sempre**: la voce «Sale Biliardo» spariva dal menu e chi
+    arrivava per URL prendeva 404 (ADR-028, stessa dinamica di #114 e #129).
+
+    Il flusso «chiedi di gestire questa sala» parte dalla stessa pagina e
+    condivideva il destino, quindi entra nella stessa verifica.
+    """
+    with app.test_request_context():
+        # Forza il path "produzione" (in test l'allowlist è pass-through).
+        monkeypatch.setitem(app.config, "TESTING", False)
+        monkeypatch.setitem(app.config, "DEBUG_MODE", False)
+
+        player = _FakeUser()
+        director = _FakeUser(is_director=True)
+
+        for endpoint in (
+            "admin.venue.venues_list",
+            "admin.venue.venue_detail",
+            "player.request_venue_manager",
+            "player.my_venue_requests",
+        ):
+            assert is_endpoint_visible(endpoint, player), endpoint
+            assert is_endpoint_visible(endpoint, director), endpoint
+
+
+def test_venue_manager_can_edit_own_venue_in_production(app, monkeypatch):
+    """Regression: un gestore di sala è quasi sempre un player.
+
+    `edit_venue` è `@venue_manager_required`, che non implica `role=director`
+    né admin. Fuori dalla matrice, il pulsante «Gestisci» sulla scheda della
+    sala portava a 404 proprio a chi quella sala la gestisce. L'autorizzazione
+    vera resta nel decoratore: la matrice dice solo che l'endpoint esiste.
+    """
+    with app.test_request_context():
+        monkeypatch.setitem(app.config, "TESTING", False)
+        monkeypatch.setitem(app.config, "DEBUG_MODE", False)
+
+        player = _FakeUser()
+        for endpoint in (
+            "admin.venue.edit_venue",
+            "admin.venue.update_table_numbers",
+            "admin.venue.upload_photo",
+        ):
+            assert is_endpoint_visible(endpoint, player), endpoint
+
+        # La coda delle richieste resta amministrazione: fuori dalla matrice.
+        assert not is_endpoint_visible("admin.venue.venue_manager_requests", player)
+        assert not is_endpoint_visible("admin.venue.create_venue", player)
+
+
 def test_report_unclassified_endpoints(app):
     """Lists endpoints registered in Flask but not in any allowlist.
 

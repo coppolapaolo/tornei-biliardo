@@ -43,13 +43,16 @@ def admin_feature_detail(code: str):
         {"name": "scores_inserted", "label": _("Match con punteggio inserito")},
         {"name": "tournaments_played", "label": _("Gare/tornei giocati")},
         {"name": "campionati_played", "label": _("Campionati giocati")},
-        {"name": "individual_matches_played", "label": _("Match individuali conclusi")},
+        {"name": "individual_matches_played", "label": _("Sfide individuali concluse")},
         {"name": "tournaments_organized", "label": _("Gare organizzate")},
-        {"name": "matches_in_location", "label": _("Match in una sala")},
+        {"name": "matches_in_location", "label": _("Partite in una sala")},
         {"name": "distinct_opponents", "label": _("Avversari diversi")},
-        {"name": "challenges_completed", "label": _("Drill completati")},
-        {"name": "gare_with_drill_played", "label": _("Gare con drill giocate")},
-        {"name": "tournament_drills_completed", "label": _("Drill completati in gara")},
+        {"name": "challenges_completed", "label": _("Esercizi completati")},
+        {"name": "gare_with_drill_played", "label": _("Gare con esercizi giocate")},
+        {
+            "name": "tournament_drills_completed",
+            "label": _("Esercizi completati in gara"),
+        },
         {"name": "exams_certified", "label": _("Esami certificati superati")},
     ]
 

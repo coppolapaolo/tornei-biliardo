@@ -93,7 +93,7 @@ def record_challenge_attempt(gara_challenge_id):
                 jsonify(
                     {
                         "success": False,
-                        "error": _("Non hai accesso a questa challenge"),
+                        "error": _("Non hai accesso a questo esercizio"),
                     }
                 ),
                 403,

@@ -154,9 +154,13 @@ Regole di scrittura non negoziabili:
 
 - **Linguaggio semplice**: il destinatario non è pratico di computer. Frasi
   brevi, verbi concreti, niente gergo tecnico. «Tocca», non «effettua un tap».
-- **Le parole dell'app**: campionato, gara, turno, partita, rack, distanza,
-  direttore di gara, X a tavolino, conclusa, da giocare. Mai *round*, *match*,
-  *bye*, *director* quando esiste il termine italiano usato nell'interfaccia.
+- **Le parole dell'app**: campionato, gara, turno, partita, **triangolo**,
+  distanza, direttore di gara, X a tavolino, conclusa, da giocare, **esercizio**
+  (mai «challenge» né «drill»), **sfida individuale** (mai «match individuale»).
+  Mai *round*, *match*, *bye*, *rack*, *director* quando esiste il termine
+  italiano usato nell'interfaccia — e attenzione: «sfida» indica la partita fra
+  due giocatori, **non** l'esercizio. Le due cose si chiamavano entrambe
+  «challenge», ed è la confusione da cui nasce questo vocabolario.
 - **Ogni passaggio ha la sua figura** quando descrive dove premere.
 - **Niente promesse su ciò che non esiste**: se una funzione è a metà, o non
   si documenta o si dice cosa fa oggi.
@@ -296,7 +300,7 @@ il mini-sito è mobile first ma vive anche su desktop (vedi la skill `ui-7c`).
 | Documentare una funzione a metà | Prometti ciò che l'app non mantiene | O si documenta com'è oggi, o non si documenta |
 | Rinominare una route e non toccare i contenuti | I rimandi puntano al vuoto | La verifica confronta `screens:` con `app.url_map` |
 | Nuova pagina `/aiuto/...` senza entry in `ENDPOINT_ROLES` | In produzione è admin-only (ADR-028) | Le route del blueprint ci sono già; una nuova va aggiunta |
-| Termini inglesi nei testi italiani | L'interfaccia dice altro: l'utente non ritrova la parola | campionato, gara, turno, partita, X a tavolino |
+| Termini inglesi nei testi italiani | L'interfaccia dice altro: l'utente non ritrova la parola | campionato, gara, turno, partita, triangolo, esercizio, sfida individuale |
 | Pagina aggiunta in una lingua sola | Il cambio lingua porta su un 404 | Aggiungila a tutte, nello stesso giro di lavoro |
 | `anchor` tradotto | Due ancore per lo stesso comando: l'interfaccia adattiva ne trova una | `anchor` è identico in tutte le lingue |
 | Guida inglese con schermate italiane | Manda a cercare pulsanti che non esistono | `locales:` nel manifest e ricattura |

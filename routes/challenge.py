@@ -54,7 +54,7 @@ def challenge_catalog():
         # All'utente il messaggio tradotto, nel log l'errore vero: prima
         # finiva a schermo il testo dell'eccezione, in inglese.
         current_app.logger.exception("Catalogo challenge non caricato")
-        flash(_("Non è stato possibile caricare le challenge."), "danger")
+        flash(_("Non è stato possibile caricare gli esercizi."), "danger")
         return redirect(url_for("dashboard.dashboard"))
 
 
@@ -104,7 +104,7 @@ def create_challenge():
                 }
             )
         else:
-            flash(_("Challenge creata."), "success")
+            flash(_("Esercizio creato."), "success")
             return redirect(
                 url_for("challenge.challenge_detail", challenge_id=challenge.id)
             )
@@ -178,12 +178,12 @@ def start_attempt(challenge_id):
 
     # Check if challenge is active
     if not challenge.is_active:
-        flash(_("Questa challenge non è più disponibile."), "warning")
+        flash(_("Questo esercizio non è più disponibile."), "warning")
         return redirect(url_for("challenge.challenge_catalog"))
 
     # Prevent admins from attempting challenges
     if current_user.is_admin:
-        flash(_("Gli amministratori non possono provare le challenge."), "warning")
+        flash(_("Gli amministratori non possono provare gli esercizi."), "warning")
         return redirect(
             url_for("challenge.challenge_detail", challenge_id=challenge_id)
         )
@@ -326,7 +326,7 @@ def diagram_builder():
     return handle_ajax_service_action(
         action=lambda: _save_from_builder(),
         redirect_url=url_for("challenge.challenge_catalog"),
-        success_message=_("Drill creato."),
+        success_message=_("Esercizio creato."),
         error_prefix=None,
     )
 
@@ -351,7 +351,7 @@ def edit_diagram(challenge_id):
 
     if not challenge.diagram_scene:
         flash(
-            _("Questo drill nasce da una foto: non c'è un disegno da modificare."),
+            _("Questo esercizio nasce da una foto: non c'è un disegno da modificare."),
             "warning",
         )
         return redirect(
@@ -394,11 +394,11 @@ def training_session(challenge_id):
     challenge = db.get_or_404(Challenge, challenge_id)
 
     if not challenge.is_active:
-        flash(_("Questo drill non è più disponibile."), "warning")
+        flash(_("Questo esercizio non è più disponibile."), "warning")
         return redirect(url_for("challenge.challenge_catalog"))
 
     if current_user.is_admin:
-        flash(_("Gli amministratori non provano i drill."), "warning")
+        flash(_("Gli amministratori non provano gli esercizi."), "warning")
         return redirect(
             url_for("challenge.challenge_detail", challenge_id=challenge_id)
         )
@@ -693,7 +693,7 @@ def create_x_replacement(gara_id, round_number):
                 }
             )
         else:
-            flash(_("Challenge di gara avviata."), "success")
+            flash(_("Esercizio di gara avviato."), "success")
             return redirect(url_for("challenge.attempt_detail", attempt_id=attempt.id))
 
     except ValueError as e:
@@ -746,7 +746,7 @@ def complete_x_replacement(attempt_id):
                 }
             )
         else:
-            flash(_("Challenge di gara registrata."), "success")
+            flash(_("Esercizio di gara registrato."), "success")
             return redirect(url_for("admin.gara_detail", gara_id=redirect_gara_id))
 
     except ValueError as e:
@@ -831,7 +831,7 @@ def challenge_not_found(error):
     if request.is_json:
         return jsonify({"success": False, "error": "Challenge not found"}), 404
     else:
-        flash(_("Challenge non trovata."), "danger")
+        flash(_("Esercizio non trovato."), "danger")
         return redirect(url_for("challenge.challenge_catalog"))
 
 
@@ -841,5 +841,5 @@ def challenge_access_denied(error):
     if request.is_json:
         return jsonify({"success": False, "error": "Access denied"}), 403
     else:
-        flash(_("Non hai i permessi per questa challenge."), "danger")
+        flash(_("Non hai i permessi per questo esercizio."), "danger")
         return redirect(url_for("challenge.challenge_catalog"))

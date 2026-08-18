@@ -39,7 +39,7 @@ blocks:
         text: "Una stima numerica della tua forza, calcolata dai risultati."
         hint: profilo.rating
       - name: "Statistiche"
-        text: "Partite giocate, vinte, perse, rack e percentuali."
+        text: "Partite giocate, vinte, perse, triangoli e percentuali."
 
   - type: heading
     id: rating

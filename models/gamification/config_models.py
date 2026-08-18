@@ -130,7 +130,7 @@ DEFAULT_STREAK_CONFIG = {
 }
 
 DEFAULT_LEVEL_UNLOCKS = [
-    (5, "match_proposals", "Proposte Match", "Puoi proporre match individuali"),
+    (5, "match_proposals", "Proposte di sfida", "Puoi proporre sfide individuali"),
     (
         10,
         "tournament_creation",
@@ -148,8 +148,8 @@ DEFAULT_LEVEL_UNLOCKS = [
     (
         30,
         "challenge_creation",
-        "Creazione Challenge",
-        "Puoi creare challenge per altri",
+        "Creazione esercizi",
+        "Puoi creare esercizi per altri",
     ),
     (
         40,

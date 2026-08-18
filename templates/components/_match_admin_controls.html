@@ -12,13 +12,13 @@
     <div class="c7-label">{{ label }}</div>
     <div class="c7-stepper c7-stepper--sunk">
         <div class="c7-stepper__row">
-            <button type="button" onclick="stepMatchScore('{{ input_id }}', -1)" aria-label="{{ _('Un rack in meno') }}">
+            <button type="button" onclick="stepMatchScore('{{ input_id }}', -1)" aria-label="{{ _('Un triangolo in meno') }}">
                 <i class="fas fa-minus"></i>
             </button>
             <input type="number" class="c7-stepper__value" id="{{ input_id }}" name="{{ input_name }}"
                    min="0" max="{{ max_value }}" value="{{ value }}" required
                    style="border: 0; background: transparent; width: 100%;">
-            <button type="button" data-piu-per="{{ input_id }}" onclick="stepMatchScore('{{ input_id }}', 1)" aria-label="{{ _('Un rack in più') }}">
+            <button type="button" data-piu-per="{{ input_id }}" onclick="stepMatchScore('{{ input_id }}', 1)" aria-label="{{ _('Un triangolo in più') }}">
                 <i class="fas fa-plus"></i>
             </button>
         </div>
@@ -73,7 +73,7 @@
                 {% if config.bonus_racks > 0 %}
                 + {{ config.bonus_racks }} bonus ({{ _('aggiunto automaticamente') }})
                 {% endif %}
-                &mdash; {{ _('max %(max)s rack/giocatore, somma = %(sum)s', max=config.num_rounds * 2, sum=config.num_rounds * 3) }}
+                &mdash; {{ _('max %(max)s triangoli/giocatore, somma = %(sum)s', max=config.num_rounds * 2, sum=config.num_rounds * 3) }}
             </div>
         </form>
 
@@ -101,7 +101,7 @@
                 {% if match.distance_config.is_race_to_racks %}
                 {{ _('vince chi raggiunge %(score)s punti (max %(max)s per giocatore)', score=match.effective_distance, max=match.effective_distance) }}
                 {% else %}
-                {{ _('la somma dei rack deve essere %(distance)s', distance=match.effective_distance) }}
+                {{ _('la somma dei triangoli deve essere %(distance)s', distance=match.effective_distance) }}
                 {% endif %}
             </div>
         </form>
@@ -288,7 +288,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Check sum equals expected total
             const actualSum = p1Racks + p2Racks + p3Racks;
             if (actualSum !== expectedSum) {
-                showError({{ _("La somma dei rack deve essere")|tojson }} + ' ' + expectedSum + ' (' + {{ _("hai inserito")|tojson }} + ' ' + actualSum + ')');
+                showError({{ _("La somma dei triangoli deve essere")|tojson }} + ' ' + expectedSum + ' (' + {{ _("hai inserito")|tojson }} + ' ' + actualSum + ')');
                 return;
             }
 

@@ -56,7 +56,7 @@ Parametri:
     <div class="c7-score__foot">
         {% if config.num_rounds == 1 %}{{ _('1 girone all\'italiana') }}{% else %}{{ _('%(n)s gironi all\'italiana', n=config.num_rounds) }}{% endif %}
         {% if config.bonus_racks > 0 %}+ {{ config.bonus_racks }} bonus{% endif %}
-        <span class="c7-sep">·</span> {{ _('vince chi fa più rack') }}
+        <span class="c7-sep">·</span> {{ _('vince chi fa più triangoli') }}
     </div>
 </div>
 
@@ -101,7 +101,7 @@ Parametri:
         {% if is_multi_set %}
         <span class="c7-sep">·</span> {{ _('%(n)s set giocati', n=p1_score + p2_score) }}
         {% else %}
-        <span class="c7-sep">·</span> {{ _('%(n)s rack giocati', n=p1_score + p2_score) }}
+        <span class="c7-sep">·</span> {{ _('%(n)s triangoli giocati', n=p1_score + p2_score) }}
         {% endif %}
     </div>
 </div>

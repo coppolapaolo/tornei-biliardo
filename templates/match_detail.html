@@ -110,9 +110,9 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
 
         {% if available_challenges %}
         <div class="c7-card">
-            <h3 class="mb-1">{{ _('Challenge Disponibili') }}</h3>
+            <h3 class="mb-1">{{ _('Esercizi disponibili') }}</h3>
             <p class="text-muted mb-3" style="font-size: 13px; font-weight: 600;">
-                {{ _('Le challenge sono prove tecniche che puoi completare durante il match.') }}
+                {{ _('Gli esercizi sono prove tecniche che puoi completare durante il match.') }}
             </p>
             <div class="c7-stack" style="gap: 8px;">
                 {% for gara_challenge in available_challenges %}
@@ -182,7 +182,7 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
             })
             .catch (error => {
         console.error('Error:', error);
-        showError({{ _("Errore durante l'aggiunta del rack al trio")| tojson }});
+        showError({{ _("Errore durante l'aggiunta del triangolo al trio")| tojson }});
         restore();
             });
     }
@@ -214,7 +214,7 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
             })
             .catch (error => {
         console.error('Error:', error);
-        showError({{ _("Errore durante la rimozione del rack")| tojson }});
+        showError({{ _("Errore durante la rimozione del triangolo")| tojson }});
         restore();
             });
     }
@@ -309,7 +309,7 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
             })
             .catch (error => {
         console.error('Error:', error);
-        showError({{ _("Errore durante l'aggiunta del rack")| tojson }});
+        showError({{ _("Errore durante l'aggiunta del triangolo")| tojson }});
         restore();
             });
     }
@@ -328,13 +328,13 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
                 if (data.success) {
                     location.reload();
                 } else {
-                    showError({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Impossibile rimuovere il rack")|tojson }}));
+                    showError({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Impossibile rimuovere il triangolo")|tojson }}));
                     restore();
                 }
             })
             .catch (error => {
         console.error('Error:', error);
-        showError({{ _("Errore durante la rimozione del rack")| tojson }});
+        showError({{ _("Errore durante la rimozione del triangolo")| tojson }});
         restore();
             });
     }
@@ -365,7 +365,7 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
     }
 
     function rejectResult(btn) {
-        showConfirm({{ _("Sei sicuro di voler rifiutare il risultato? L'ultimo rack verrà rimosso.")| tojson }}, () => {
+        showConfirm({{ _("Sei sicuro di voler rifiutare il risultato? L'ultimo triangolo verrà rimosso.")| tojson }}, () => {
             const restore = withLoading(btn);
             fetch(`/player/match/{{ match.id }}/reject`, {
                 method: 'POST',
@@ -439,13 +439,13 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
             })
             .catch(error => {
                 console.error('Error:', error);
-                showError({{ _("Errore durante l'aggiunta del rack al set")|tojson }});
+                showError({{ _("Errore durante l'aggiunta del triangolo al set")|tojson }});
                 restore();
             });
     }
 
     function removeSetRack(playerId, btn) {
-        showConfirm({{ _("Rimuovere l'ultimo rack dal set?")|tojson }}, () => {
+        showConfirm({{ _("Rimuovere l'ultimo triangolo dal set?")|tojson }}, () => {
             const restore = withLoading(btn);
             fetch(`/admin/match/{{ match.id }}/set/remove_rack`, {
                 method: 'POST',
@@ -459,13 +459,13 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
                     if (data.success) {
                         location.reload();
                     } else {
-                        showError({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Impossibile rimuovere il rack")|tojson }}));
+                        showError({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Impossibile rimuovere il triangolo")|tojson }}));
                         restore();
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    showError({{ _("Errore durante la rimozione del rack")|tojson }});
+                    showError({{ _("Errore durante la rimozione del triangolo")|tojson }});
                     restore();
                 });
         });

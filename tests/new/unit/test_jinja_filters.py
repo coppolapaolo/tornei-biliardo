@@ -15,14 +15,14 @@ class TestFormatDistanceFilter:
         """Format best-of-7 single-set distance."""
         distance = Distance(racks=7, is_race_to_racks=True)
         result = format_distance(distance)
-        assert str(result) == "Al 7 rack"
+        assert str(result) == "Al 7 triangoli"
 
     def test_format_distance_single_set_exact_4(self):
         """Format exactly-4 single-set distance."""
         distance = Distance(racks=4, is_race_to_racks=False)
         result = format_distance(distance)
         # Italian string expected (Flask-Babel returns untranslated without app context)
-        assert str(result) == "Esattamente 4 rack"
+        assert str(result) == "Esattamente 4 triangoli"
 
     def test_format_distance_multi_set(self):
         """Format multi-set distance."""
@@ -34,7 +34,7 @@ class TestFormatDistanceFilter:
             is_race_to_sets=True,
         )
         result = format_distance(distance)
-        expected = "Al 3 set, ogni set al 5 rack"
+        expected = "Al 3 set, ogni set al 5 triangoli"
         assert str(result) == expected
 
     def test_format_distance_with_model_property(self):
@@ -48,7 +48,7 @@ class TestFormatDistanceFilter:
 
         gara = MockGara()
         result = format_distance(gara)
-        assert str(result) == "Al 7 rack"
+        assert str(result) == "Al 7 triangoli"
 
     def test_format_distance_none_returns_na(self):
         """Format None distance returns N/A."""
@@ -173,7 +173,7 @@ class TestFiltersIntegration:
         score_str = format_score(score)
         short_str = format_distance_short(distance)
 
-        assert str(dist_str) == "Al 7 rack"
+        assert str(dist_str) == "Al 7 triangoli"
         assert str(score_str) == "4-3"
         assert str(short_str) == "BO7"
 
@@ -192,5 +192,5 @@ class TestFiltersIntegration:
         score_str = format_score(match_score)
 
         assert "Al 3 set" in str(dist_str)
-        assert "al 5 rack" in str(dist_str)
+        assert "al 5 triangoli" in str(dist_str)
         assert str(score_str) == "2-0"

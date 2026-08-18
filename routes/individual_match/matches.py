@@ -145,7 +145,7 @@ def add_rack(match_id):
                 }
             )
         else:
-            flash(_("Rack aggiunto!"), "success")
+            flash(_("Triangolo aggiunto!"), "success")
             return redirect(url_for("individual_match.match_detail", match_id=match_id))
 
     except ValueError as e:
@@ -204,7 +204,7 @@ def remove_rack(match_id):
                 }
             )
         else:
-            flash(_("Rack rimosso!"), "success")
+            flash(_("Triangolo rimosso!"), "success")
             return redirect(url_for("individual_match.match_detail", match_id=match_id))
 
     except ValueError as e:
@@ -314,7 +314,7 @@ def reject_result(match_id):
                 }
             )
         else:
-            flash(_("Risultato rifiutato. Ultimo rack rimosso."), "warning")
+            flash(_("Risultato rifiutato. Ultimo triangolo rimosso."), "warning")
             return redirect(url_for("individual_match.match_detail", match_id=match_id))
 
     except ValueError as e:

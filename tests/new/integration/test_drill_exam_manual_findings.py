@@ -203,8 +203,8 @@ def test_senza_titolo_il_drill_prende_il_progressivo(app):
         )
         db.session.flush()
 
-        assert primo.get_display_name() == f"Drill {primo.id}"
-        assert secondo.get_display_name() == f"Drill {secondo.id}"
+        assert primo.get_display_name() == f"Esercizio {primo.id}"
+        assert secondo.get_display_name() == f"Esercizio {secondo.id}"
         assert primo.get_display_name() != secondo.get_display_name()
 
 
@@ -217,7 +217,7 @@ def test_un_titolo_di_soli_spazi_non_e_un_titolo(app):
         db.session.flush()
 
         assert challenge.title is None
-        assert challenge.get_display_name() == f"Drill {challenge.id}"
+        assert challenge.get_display_name() == f"Esercizio {challenge.id}"
 
 
 def test_il_titolo_si_puo_togliere_dopo_averlo_messo(app):
@@ -238,7 +238,7 @@ def test_il_titolo_si_puo_togliere_dopo_averlo_messo(app):
 
         ChallengeService.update_challenge(challenge.id, title="")
         assert challenge.title is None
-        assert challenge.get_display_name() == f"Drill {challenge.id}"
+        assert challenge.get_display_name() == f"Esercizio {challenge.id}"
 
 
 def test_modificare_un_drill_non_lo_disattiva(app):

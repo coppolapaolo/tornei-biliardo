@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% import "components/_proposal_labels.html" as lbl with context %}
 
-{% block title %}{{ _("Proposta di match") }} - {{ config.APP_NAME }}{% endblock %}
+{% block title %}{{ _("Proposta di sfida") }} - {{ config.APP_NAME }}{% endblock %}
 
 {% set is_mine = proposal.proposer_id == current_user.id %}
 {% set status = proposal.status.value %}
@@ -61,7 +61,7 @@
                else _('ogni set esattamente %(racks)s', racks=proposal.distance) }}
             {%- else %}
             {{ _('Al %(racks)s', racks=proposal.distance) if proposal.is_race_to
-               else _('Esattamente %(racks)s rack', racks=proposal.distance) }}
+               else _('Esattamente %(racks)s triangoli', racks=proposal.distance) }}
             {%- endif %}
           </dd>
         </div>
@@ -101,7 +101,7 @@
     <a class="c7-card c7-card--accent d-flex align-items-center gap-3" style="text-decoration:none"
        href="{{ url_for('individual_match.match_detail', match_id=proposal.individual_match.id) }}">
       <div class="flex-fill">
-        <div class="c7-kicker">{{ _("Match creato") }}</div>
+        <div class="c7-kicker">{{ _("Sfida creata") }}</div>
         <div style="margin-top:6px;font-size:16px;font-weight:800;letter-spacing:-.02em">{{ _("Vai alla partita") }}</div>
       </div>
       <span class="c7-shortcut__go"><i class="fas fa-arrow-right"></i></span>

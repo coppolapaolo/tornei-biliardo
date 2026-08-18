@@ -71,7 +71,7 @@
         <span class="c7-board__where">
             {%- if where %}{{ where }}
             {%- elif match.gara %}{{ match.gara|gara_display_name }} <span class="c7-sep">·</span> {{ _('Turno') }} {{ match.round_number }}
-            {%- else %}{{ _('Match individuale') }}{% endif -%}
+            {%- else %}{{ _('Sfida individuale') }}{% endif -%}
             {%- if match.table_assignment %} <span class="c7-sep">·</span> {{ _('Tavolo') }} {{ match.table_assignment }}{% endif -%}
             {%- if distance %} <span class="c7-sep">·</span> {{ distance|format_distance }}{% endif -%}
         </span>
@@ -134,7 +134,7 @@
         {% if puo_annullare %}
         <button type="button" class="c7-board__undo"
                 onclick="{{ remove_rack }}({{ last_rack.winner_id }}, this)"
-                aria-label="{{ _('Annulla ultimo rack') }}">
+                aria-label="{{ _('Annulla ultimo triangolo') }}">
             <i class="fas fa-rotate-left"></i>
         </button>
         {% endif %}
@@ -157,7 +157,7 @@
         {% if puo_annullare %}
         <button type="button" class="c7-board__undo"
                 onclick="{{ remove_rack }}({{ last_rack.winner_id }}, this)"
-                aria-label="{{ _('Annulla ultimo rack') }}">
+                aria-label="{{ _('Annulla ultimo triangolo') }}">
             <i class="fas fa-rotate-left"></i>
         </button>
         {% endif %}
@@ -173,7 +173,7 @@
         </button>
         <button type="button" class="c7-board__undo"
                 onclick="{{ remove_rack }}({{ last_rack.winner_id if last_rack else 0 }}, this)"
-                {% if not puo_annullare %}disabled{% endif %} aria-label="{{ _('Annulla ultimo rack') }}">
+                {% if not puo_annullare %}disabled{% endif %} aria-label="{{ _('Annulla ultimo triangolo') }}">
             <i class="fas fa-rotate-left"></i>
         </button>
         <button type="button" class="c7-board__btn {{ 'c7-board__btn--mine' if mine_is_p2 }}"

@@ -124,7 +124,7 @@ blocks:
       - name: "Gioco con handicap"
         values: "predefinito no"
         text: >-
-          Assegna un vantaggio in rack al giocatore di categoria inferiore, per
+          Assegna un vantaggio in triangoli al giocatore di categoria inferiore, per
           pareggiare partite fra livelli molto diversi. **Attenzione**: le gare
           con handicap non aggiornano il rating dei giocatori.
         hint: gara.handicap
@@ -137,7 +137,7 @@ blocks:
           incontrino subito. **Classifica** usa la classifica del campionato.
         hint: gara.primo_turno
       - name: "Se giocatori dispari"
-        values: "Riposo · Riposo con challenge · Trio · Lista d'attesa"
+        values: "Riposo · Riposo con esercizio · Trio · Lista d'attesa"
         text: >-
           Cosa succede quando i giocatori sono in numero dispari e uno
           resterebbe senza avversario. Spiegate una per una in [Quando i
@@ -147,10 +147,10 @@ blocks:
           costruisce, non una politica da scegliere.
         hint: gara.dispari
       - name: "Sistema di classifica"
-        values: "Vittorie (predefinito) · Rack"
+        values: "Vittorie (predefinito) · Triangoli"
         text: >-
           Come si ordinano i giocatori. **Vittorie** conta le partite vinte e,
-          a parità, la differenza rack. **Rack** conta i rack totali. Sui
+          a parità, la differenza triangoli. **Triangoli** conta i triangoli totali. Sui
           tabelloni il campo non compare, perché la classifica è per
           **posizione** e non c'è altro da scegliere. Vedi [Come si calcolano
           le classifiche](/aiuto/approfondimenti/classifiche).
@@ -211,16 +211,16 @@ blocks:
       - name: "Distanza"
         values: "es. 4, 5, 7"
         text: >-
-          Quanti rack servono per vincere la partita. **Al 4** vuol dire che
-          vince chi arriva prima a 4: al massimo 7 rack. Salire di una unità
+          Quanti triangoli servono per vincere la partita. **Al 4** vuol dire che
+          vince chi arriva prima a 4: al massimo 7 triangoli. Salire di una unità
           allunga la serata di parecchio.
         hint: gara.distanza
-      - name: "Numero esatto di rack"
+      - name: "Numero esatto di triangoli"
         values: "predefinito no · non c'è sui tabelloni"
         text: >-
-          Se attivo, si giocano **sempre** tutti i rack indicati, anche quando
-          il risultato è già deciso. Serve quando conta il totale dei rack e
-          non chi vince — cioè con il sistema di classifica «Rack». Con un
+          Se attivo, si giocano **sempre** tutti i triangoli indicati, anche quando
+          il risultato è già deciso. Serve quando conta il totale dei triangoli e
+          non chi vince — cioè con il sistema di classifica «Triangoli». Con un
           numero pari, la partita può finire in parità. Sui formati a tabellone
           la casella non compare: si gioca sempre a chi arriva prima, e al suo
           posto c'è una nota che spiega il perché.
@@ -281,7 +281,7 @@ blocks:
       - q: "Cosa scelgo se non ho idea?"
         a: "Amalfi, 3 turni, distanza 4, classifica Vittorie, dispari con «Riposo», evita reincontri attivo. È la configurazione da serata di circolo."
       - q: "Voglio un torneo a eliminazione: cosa cambia?"
-        a: "Scegli «Eliminazione diretta» e il modulo si accorcia: spariscono numero di turni, gestione forfait, giocatori dispari, evita reincontri, sistema di classifica, spareggio e numero esatto di rack. Compare invece il riquadro «Opzioni del tabellone». Il massimo iscritti diventa obbligatorio, e la classifica è per posizione."
+        a: "Scegli «Eliminazione diretta» e il modulo si accorcia: spariscono numero di turni, gestione forfait, giocatori dispari, evita reincontri, sistema di classifica, spareggio e numero esatto di triangoli. Compare invece il riquadro «Opzioni del tabellone». Il massimo iscritti diventa obbligatorio, e la classifica è per posizione."
       - q: "Ho scelto il tabellone e metà delle opzioni è sparita. Ho fatto un danno?"
         a: "No: quelle opzioni su un tabellone non avevano effetto. Prima si chiedevano e la risposta veniva ignorata in silenzio; ora non si chiedono più. Se torni a una strategia a turni, ricompaiono tutte."
       - q: "Perché non riesco a selezionare «Trio»?"

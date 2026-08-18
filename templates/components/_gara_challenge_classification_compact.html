@@ -5,7 +5,7 @@
       and challenge_classification|selectattr("challenges_completed", "greaterthan", 0)|list|length > 0 %}
 <section class="c7-stack">
   <div class="c7-sechead">
-    <h2>{{ _("Classifica challenge") }}</h2>
+    <h2>{{ _("Classifica esercizi") }}</h2>
     <a class="c7-sechead__more"
        href="{{ url_for('admin.competition.get_gara_challenge_classification', gara_id=gara.id) }}">
       {{ _("Tutta la classifica") }}
@@ -24,7 +24,7 @@
         <div class="c7-rows__sub">
           <span class="c7-num">{{ entry.challenges_completed }}</span>
           {%- if gara_challenges %}<span class="c7-num">/{{ gara_challenges|length }}</span>{% endif %}
-          {{ _("challenge") }}
+          {{ _("esercizi") }}
         </div>
       </div>
       <span class="c7-num" style="font-size:15px;font-weight:800">{{ entry.total_best_score }}</span>

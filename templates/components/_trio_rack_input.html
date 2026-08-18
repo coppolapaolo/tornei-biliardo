@@ -42,7 +42,7 @@
                 {% endif %}
             </span>
             <span class="badge bg-light text-dark">
-                {{ _('Rack %(played)s/%(total)s', played=trio.total_racks_played, total=config.total_played_racks) }}
+                {{ _('Triangoli %(played)s/%(total)s', played=trio.total_racks_played, total=config.total_played_racks) }}
                 {% if config.bonus_racks > 0 %}
                     (+{{ config.bonus_racks }} {{ _('bonus') }})
                 {% endif %}
@@ -98,7 +98,7 @@
                 </div>
                 {% if trio.bonus_applied and config.bonus_racks > 0 %}
                 <small class="text-muted d-block mt-1">
-                    {{ _('(+%(bonus)s rack bonus applicato a tutti)', bonus=config.bonus_racks) }}
+                    {{ _('(+%(bonus)s triangoli bonus applicati a tutti)', bonus=config.bonus_racks) }}
                 </small>
                 {% endif %}
 
@@ -206,7 +206,7 @@
                     {{ _('Stai aspettando il tuo turno') }}
                     <br>
                     <small class="text-muted">
-                        {{ _('Aspetta che %(p1)s e %(p2)s finiscano questo rack', p1=current_p1.username, p2=current_p2.username) }}
+                        {{ _('Aspetta che %(p1)s e %(p2)s finiscano questo triangolo', p1=current_p1.username, p2=current_p2.username) }}
                     </small>
                 </div>
             {% else %}
@@ -266,7 +266,7 @@
                 </div>
                 {% if trio.bonus_applied and config.bonus_racks > 0 %}
                 <small class="text-muted d-block mt-1">
-                    {{ _('(+%(bonus)s rack bonus applicato a tutti)', bonus=config.bonus_racks) }}
+                    {{ _('(+%(bonus)s triangoli bonus applicati a tutti)', bonus=config.bonus_racks) }}
                 </small>
                 {% endif %}
             </div>
@@ -294,7 +294,7 @@
         {% if rack_history %}
         <div class="border-top pt-3">
             <h6 class="text-muted mb-2">
-                <i class="fas fa-history"></i> {{ _('Storico rack') }}
+                <i class="fas fa-history"></i> {{ _('Storico triangoli') }}
             </h6>
             <div class="list-group list-group-flush">
                 {% for rack in rack_history %}
@@ -316,7 +316,7 @@
                     {% if rack.can_undo and (user_can_manage or user_is_player) and not trio.is_completed %}
                     <button class="btn btn-outline-danger btn-sm"
                             onclick="removeTrioLastRack(this)"
-                            title="{{ _('Annulla ultimo rack') }}">
+                            title="{{ _('Annulla ultimo triangolo') }}">
                         <i class="fas fa-undo"></i>
                     </button>
                     {% endif %}
@@ -333,14 +333,14 @@
             <small class="text-muted">
                 <i class="fas fa-info-circle"></i>
                 {% if config.num_rounds == 1 %}
-                    {{ _('1 girone all\'italiana (3 rack)') }}
+                    {{ _('1 girone all\'italiana (3 triangoli)') }}
                 {% else %}
-                    {{ _('%(n)s gironi all\'italiana (%(racks)s rack)', n=config.num_rounds, racks=config.total_played_racks) }}
+                    {{ _('%(n)s gironi all\'italiana (%(racks)s triangoli)', n=config.num_rounds, racks=config.total_played_racks) }}
                 {% endif %}
                 {% if config.bonus_racks > 0 %}
                     + {{ config.bonus_racks }} {{ _('bonus') }}
                 {% endif %}
-                &mdash; {{ _('vince chi ha piu rack') }}
+                &mdash; {{ _('vince chi ha piu triangoli') }}
             </small>
         </div>
     </div>

@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 {% from "components/_form_macros.html" import choice, form_macros_scripts %}
 
-{% block title %}{{ _("Nuova challenge") }} - {{ config.APP_NAME }}{% endblock %}
+{% block title %}{{ _("Nuovo esercizio") }} - {{ config.APP_NAME }}{% endblock %}
 
 {% block page_back %}
 <a class="c7-head__back d-lg-none" href="{{ url_for('challenge.challenge_catalog') }}"
    aria-label="{{ _('Chiudi') }}"><i class="fas fa-xmark"></i></a>
 {% endblock %}
-{% block page_title %}{{ _("Nuova challenge") }}{% endblock %}
+{% block page_title %}{{ _("Nuovo esercizio") }}{% endblock %}
 {% block page_sub %}{{ _("Un esercizio ripetibile: la foto del tavolo, le regole, il punteggio") }}{% endblock %}
 {% block page_actions %}
 <a href="{{ url_for('challenge.challenge_catalog') }}" class="btn btn-secondary btn-sm d-none d-lg-inline-flex">
@@ -28,7 +28,7 @@
       <input type="text" class="form-control" id="title" name="title" maxlength="120"
              placeholder="{{ _('es. Progressione lungo sponda') }}">
       <div class="form-text">
-        {{ _("Facoltativo: senza, la challenge prende il suo numero progressivo (Drill 12).") }}
+        {{ _("Facoltativo: senza, l'esercizio prende il suo numero progressivo (Esercizio 12).") }}
       </div>
     </div>
 
@@ -49,7 +49,7 @@
             'desc': _("Il giocatore registra un numero: bilie imbucate, punti fatti."),
             'icon': 'fa-chart-line'},
            {'value': 'pass_fail', 'title': _("Riuscita o no"),
-            'desc': _("Nessun numero: la challenge è superata oppure no."),
+            'desc': _("Nessun numero: l'esercizio è superato oppure no."),
             'icon': 'fa-flag-checkered'}
          ], selected='score') }}
     </div>
@@ -70,7 +70,7 @@
         <div class="c7-kicker">{{ _("Non hai una foto?") }}</div>
         <a href="{{ url_for('challenge.diagram_builder') }}"
            id="goToBuilder" class="btn btn-secondary w-100" style="margin-top:8px">
-          <i class="fas fa-pen-ruler"></i>&nbsp;{{ _("Disegna il drill") }}
+          <i class="fas fa-pen-ruler"></i>&nbsp;{{ _("Disegna l'esercizio") }}
         </a>
       </div>
       {% endif %}
@@ -80,7 +80,7 @@
   <div class="c7-actionbar">
     {# Il verde e' la conferma conclusiva di un flusso: qui la challenge nasce. #}
     <button type="submit" form="challengeForm" class="btn btn-success w-100">
-      <i class="fas fa-check"></i>&nbsp;{{ _("Crea la challenge") }}
+      <i class="fas fa-check"></i>&nbsp;{{ _("Crea l'esercizio") }}
     </button>
   </div>
 </div>
@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => {
             console.error('Error creating challenge:', error);
-            showError({{ _("Non è stato possibile creare la challenge. Riprova.")|tojson }});
+            showError({{ _("Non è stato possibile creare l'esercizio. Riprova.")|tojson }});
         });
     });
 });

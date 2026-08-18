@@ -80,7 +80,7 @@ class TestChallengeService:
 
             assert challenge.id is not None
             assert challenge.title is None
-            assert challenge.get_display_name() == f"Drill {challenge.id}"
+            assert challenge.get_display_name() == f"Esercizio {challenge.id}"
             assert challenge.description == "Challenge without name"
 
             # Cleanup
@@ -394,7 +394,7 @@ class TestChallengeModel:
             db.session.add(challenge_blank_title)
             db.session.flush()
             assert challenge_blank_title.get_display_name() == (
-                f"Drill {challenge_blank_title.id}"
+                f"Esercizio {challenge_blank_title.id}"
             )
 
             # Senza titolo la descrizione non finisce nel nome, per quanto lunga.
@@ -407,7 +407,7 @@ class TestChallengeModel:
             db.session.add(challenge_without_title)
             db.session.flush()
             assert challenge_without_title.get_display_name() == (
-                f"Drill {challenge_without_title.id}"
+                f"Esercizio {challenge_without_title.id}"
             )
             assert "Test challenge description" not in (
                 challenge_without_title.get_display_name()

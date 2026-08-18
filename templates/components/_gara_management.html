@@ -11,7 +11,7 @@
     {% set has_challenges = gara.gara_challenges|selectattr("is_active", "equalto", true)|list|length > 0 %}
     <button class="btn btn-secondary w-100" data-bs-toggle="modal" data-bs-target="#challengeManagementModal">
       <i class="fas fa-bullseye"></i>
-      {{ _('Gestisci Challenge') if has_challenges else _('Aggiungi Challenge') }}
+      {{ _('Gestisci gli esercizi') if has_challenges else _('Aggiungi esercizi') }}
     </button>
   {% endif %}
 {% endif %}

@@ -467,8 +467,8 @@
 
     // Funzione per aggiornare testo modalità di gioco nel modal creazione
     const i18nGameMode = {
-        exactNumber: {{ _("Esatto numero: {distance} rack totali")|tojson }},
-        raceTo: {{ _("Al {distance} (si vince a {distance} rack)")|tojson }}
+        exactNumber: {{ _("Esatto numero: {distance} triangoli totali")|tojson }},
+        raceTo: {{ _("Al {distance} (si vince a {distance} triangoli)")|tojson }}
     };
     function updateCreateGameModeText() {
         const distance = parseInt(createDistanceInput.value) || 7;

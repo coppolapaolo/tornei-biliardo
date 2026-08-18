@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-18 12:45+0200\n"
+"POT-Creation-Date: 2026-08-18 15:17+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -67,7 +67,7 @@ msgstr ""
 
 #: models/challenge/models.py:269
 #, python-format
-msgid "Drill %(number)s"
+msgid "Esercizio %(number)s"
 msgstr ""
 
 #: models/competition/models.py:397
@@ -155,22 +155,22 @@ msgid "%(gara)s, %(pos)s°"
 msgstr ""
 
 #: models/dashboard/activity_feedback.py:261 templates/exam/detail.html:145
-msgid "Drill"
+msgid "Esercizio"
 msgstr ""
 
 #: models/dashboard/activity_feedback.py:275
 #, python-format
-msgid "%(drill)s, punteggio %(score)s"
+msgid "%(name)s, punteggio %(score)s"
 msgstr ""
 
 #: models/dashboard/activity_feedback.py:278
 #, python-format
-msgid "%(drill)s, superato"
+msgid "%(name)s, superato"
 msgstr ""
 
 #: models/dashboard/activity_feedback.py:280
 #, python-format
-msgid "%(drill)s, non superato"
+msgid "%(name)s, non superato"
 msgstr ""
 
 #: models/dashboard/activity_feedback.py:597
@@ -245,8 +245,8 @@ msgstr ""
 
 #: models/dashboard/activity_feedback.py:795
 #, python-format
-msgid "%(num)s drill completato"
-msgid_plural "%(num)s drill completati"
+msgid "%(num)s esercizio completato"
+msgid_plural "%(num)s esercizi completati"
 msgstr[0] ""
 msgstr[1] ""
 
@@ -293,7 +293,7 @@ msgid "Da qui parte il tuo Elo"
 msgstr ""
 
 #: models/dashboard/activity_feedback.py:1172
-msgid "Prova un drill"
+msgid "Prova un esercizio"
 msgstr ""
 
 #: models/dashboard/activity_feedback.py:1173
@@ -370,8 +370,6 @@ msgstr ""
 
 #: models/dashboard/activity_feedback.py:1300 templates/admin/kpi.html:194
 #: templates/admin/kpi.html:254 templates/admin/kpi.html:859
-#: templates/individual_match/dashboard.html:210
-#: templates/individual_match/statistics.html:151
 msgid "Match giocati"
 msgstr ""
 
@@ -442,7 +440,7 @@ msgid "Le tue ultime gare"
 msgstr ""
 
 #: models/dashboard/activity_feedback.py:1397
-msgid "I tuoi ultimi drill"
+msgid "I tuoi ultimi esercizi"
 msgstr ""
 
 #: models/dashboard/activity_feedback.py:1407
@@ -467,7 +465,7 @@ msgstr ""
 #: models/dashboard/activity_feedback.py:1430
 #: models/dashboard/activity_feedback.py:1476 routes/gamification/admin.py:343
 #: routes/gamification/features.py:50
-msgid "Drill completati"
+msgid "Esercizi completati"
 msgstr ""
 
 #: models/dashboard/activity_feedback.py:1432
@@ -482,7 +480,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: models/dashboard/activity_feedback.py:1440
-msgid "Punteggio drill"
+msgid "Punteggio esercizi"
 msgstr ""
 
 #: models/dashboard/activity_feedback.py:1479
@@ -699,39 +697,39 @@ msgid ""
 "esaminatore."
 msgstr ""
 
-#: models/exam/services.py:824
+#: models/exam/services.py:830
 msgid "L'esame sta per iniziare"
 msgstr ""
 
-#: models/exam/services.py:826
+#: models/exam/services.py:832
 #, python-format
 msgid ""
 "L'esaminatore ha aperto la sessione di «%(exam)s»: accetta l'inizio per "
 "far partire la valutazione."
 msgstr ""
 
-#: models/exam/services.py:833
+#: models/exam/services.py:839
 msgid "Accetta l'inizio"
 msgstr ""
 
-#: models/exam/services.py:841
+#: models/exam/services.py:847
 msgid "superato"
 msgstr ""
 
-#: models/exam/services.py:841
+#: models/exam/services.py:847
 msgid "non superato"
 msgstr ""
 
-#: models/exam/services.py:845
+#: models/exam/services.py:851
 msgid "Esame certificato"
 msgstr ""
 
-#: models/exam/services.py:847
+#: models/exam/services.py:853
 #, python-format
 msgid "«%(exam)s»: esito %(outcome)s, certificato da %(examiner)s."
 msgstr ""
 
-#: models/exam/services.py:858
+#: models/exam/services.py:864
 msgid "Vedi l'esito"
 msgstr ""
 
@@ -867,11 +865,11 @@ msgid "Crea una serie di gare e gestisci una stagione completa."
 msgstr ""
 
 #: models/gamification/frontend_bridge.py:487
-msgid "Prova le sfide"
+msgid "Prova gli esercizi"
 msgstr ""
 
 #: models/gamification/frontend_bridge.py:488
-msgid "Allenati con drill mirati: ogni completamento conta per la classifica."
+msgid "Allenati con esercizi mirati: ogni completamento conta per la classifica."
 msgstr ""
 
 #: models/gamification/frontend_bridge.py:489
@@ -880,8 +878,8 @@ msgstr ""
 
 #: models/gamification/frontend_bridge.py:491
 msgid ""
-"Più drill in fila, in un colpo solo. Da solo per allenarti, o davanti a "
-"un esaminatore per farlo valere."
+"Più esercizi in fila, in un colpo solo. Da solo per allenarti, o davanti "
+"a un esaminatore per farlo valere."
 msgstr ""
 
 #: models/gamification/frontend_bridge.py:494 templates/base.html:487
@@ -890,7 +888,7 @@ msgstr ""
 
 #: models/gamification/frontend_bridge.py:496
 msgid ""
-"Hai macinato abbastanza drill: puoi chiedere di comporre esami e "
+"Hai macinato abbastanza esercizi: puoi chiedere di comporre esami e "
 "certificarli tu."
 msgstr ""
 
@@ -1096,12 +1094,12 @@ msgstr ""
 
 #: models/match/distance.py:90
 #, python-format
-msgid "Al %(n)s rack"
+msgid "Al %(n)s triangoli"
 msgstr ""
 
 #: models/match/distance.py:92
 #, python-format
-msgid "Esattamente %(n)s rack"
+msgid "Esattamente %(n)s triangoli"
 msgstr ""
 
 #: models/match/distance.py:96
@@ -1116,12 +1114,12 @@ msgstr ""
 
 #: models/match/distance.py:101
 #, python-format
-msgid "ogni set al %(n)s rack"
+msgid "ogni set al %(n)s triangoli"
 msgstr ""
 
 #: models/match/distance.py:103
 #, python-format
-msgid "ogni set esattamente %(n)s rack"
+msgid "ogni set esattamente %(n)s triangoli"
 msgstr ""
 
 #: models/match/scoring_service.py:170
@@ -1159,8 +1157,8 @@ msgstr ""
 
 #: models/tpa/services.py:91
 msgid ""
-"Questo match ha gia' dei rack segnati: il referto va aperto prima del "
-"primo rack."
+"Questo match ha gia' dei triangoli segnati: il referto va aperto prima "
+"del primo triangolo."
 msgstr ""
 
 #: models/tpa/services.py:140
@@ -1242,7 +1240,7 @@ msgstr ""
 msgid "Lo username «%(nome)s» è già in uso."
 msgstr ""
 
-#: models/user/role_grant_service.py:557 routes/gamification/features.py:78
+#: models/user/role_grant_service.py:557 routes/gamification/features.py:81
 #: templates/admin/users_list.html:133 templates/admin/users_list.html:180
 msgid "Esaminatore"
 msgstr ""
@@ -1334,44 +1332,36 @@ msgstr ""
 
 #: routes/challenge.py:57
 #: templates/components/_challenge_management_modal.html:150
-msgid "Non è stato possibile caricare le challenge."
+msgid "Non è stato possibile caricare gli esercizi."
 msgstr ""
 
-#: routes/challenge.py:107
+#: routes/challenge.py:107 routes/challenge.py:329
 #: templates/components/_challenge_management_modal.html:158
-msgid "Challenge creata."
+msgid "Esercizio creato."
 msgstr ""
 
-#: routes/challenge.py:181
-msgid "Questa challenge non è più disponibile."
+#: routes/challenge.py:181 routes/challenge.py:397
+msgid "Questo esercizio non è più disponibile."
 msgstr ""
 
 #: routes/challenge.py:186
-msgid "Gli amministratori non possono provare le challenge."
+msgid "Gli amministratori non possono provare gli esercizi."
 msgstr ""
 
 #: routes/challenge.py:215
 msgid "Tentativo iniziato."
 msgstr ""
 
-#: routes/challenge.py:329
-msgid "Drill creato."
-msgstr ""
-
 #: routes/challenge.py:354
-msgid "Questo drill nasce da una foto: non c'è un disegno da modificare."
+msgid "Questo esercizio nasce da una foto: non c'è un disegno da modificare."
 msgstr ""
 
 #: routes/challenge.py:373
 msgid "Disegno aggiornato."
 msgstr ""
 
-#: routes/challenge.py:397
-msgid "Questo drill non è più disponibile."
-msgstr ""
-
 #: routes/challenge.py:401
-msgid "Gli amministratori non provano i drill."
+msgid "Gli amministratori non provano gli esercizi."
 msgstr ""
 
 #: routes/challenge.py:444
@@ -1391,19 +1381,19 @@ msgid "Non è stato possibile caricare le statistiche."
 msgstr ""
 
 #: routes/challenge.py:696
-msgid "Challenge di gara avviata."
+msgid "Esercizio di gara avviato."
 msgstr ""
 
 #: routes/challenge.py:749
-msgid "Challenge di gara registrata."
+msgid "Esercizio di gara registrato."
 msgstr ""
 
 #: routes/challenge.py:834
-msgid "Challenge non trovata."
+msgid "Esercizio non trovato."
 msgstr ""
 
 #: routes/challenge.py:844
-msgid "Non hai i permessi per questa challenge."
+msgid "Non hai i permessi per questo esercizio."
 msgstr ""
 
 #: routes/demand.py:47
@@ -1435,6 +1425,7 @@ msgid "Riferimento"
 msgstr ""
 
 #: routes/help.py:58 templates/admin/accessi.html:83
+#: templates/challenge/catalog.html:45
 #: templates/components/_classification_mobile.html:13
 #: templates/components/_history_filters.html:53
 #: templates/components/_history_filters.html:67
@@ -1625,7 +1616,7 @@ msgid "Bye (riposo)"
 msgstr ""
 
 #: routes/admin/campionato.py:184
-msgid "Bye con Challenge"
+msgid "Bye con esercizio"
 msgstr ""
 
 #: routes/admin/campionato.py:187
@@ -1931,15 +1922,15 @@ msgid "Esame disattivato."
 msgstr ""
 
 #: routes/exam/catalog.py:186
-msgid "Drill aggiunto all'esame."
+msgid "Esercizio aggiunto all'esame."
 msgstr ""
 
 #: routes/exam/catalog.py:210
-msgid "Drill aggiornato."
+msgid "Esercizio aggiornato."
 msgstr ""
 
 #: routes/exam/catalog.py:225
-msgid "Drill rimosso dall'esame."
+msgid "Esercizio rimosso dall'esame."
 msgstr ""
 
 #: routes/exam/catalog.py:245
@@ -2063,7 +2054,7 @@ msgid "Formule di gara provate"
 msgstr ""
 
 #: routes/gamification/admin.py:344
-msgid "Drill eseguiti alla perfezione"
+msgid "Esercizi eseguiti alla perfezione"
 msgstr ""
 
 #: routes/gamification/admin.py:357
@@ -2215,11 +2206,11 @@ msgid "Campionati giocati"
 msgstr ""
 
 #: routes/gamification/features.py:46
-msgid "Match individuali conclusi"
+msgid "Sfide individuali concluse"
 msgstr ""
 
 #: routes/gamification/features.py:48
-msgid "Match in una sala"
+msgid "Partite in una sala"
 msgstr ""
 
 #: routes/gamification/features.py:49
@@ -2227,18 +2218,18 @@ msgid "Avversari diversi"
 msgstr ""
 
 #: routes/gamification/features.py:51
-msgid "Gare con drill giocate"
+msgid "Gare con esercizi giocate"
 msgstr ""
 
-#: routes/gamification/features.py:52
-msgid "Drill completati in gara"
+#: routes/gamification/features.py:54
+msgid "Esercizi completati in gara"
 msgstr ""
 
-#: routes/gamification/features.py:53
+#: routes/gamification/features.py:56
 msgid "Esami certificati superati"
 msgstr ""
 
-#: routes/gamification/features.py:58 templates/base.html:328
+#: routes/gamification/features.py:61 templates/base.html:328
 #: templates/gamification/admin/dashboard.html:102
 #: templates/gamification/admin/dashboard.html:145
 #: templates/gamification/admin/feature_create.html:69
@@ -2249,11 +2240,11 @@ msgstr ""
 msgid "Livello"
 msgstr ""
 
-#: routes/gamification/features.py:59
+#: routes/gamification/features.py:62
 msgid "Metrica"
 msgstr ""
 
-#: routes/gamification/features.py:60 templates/admin/accessi.html:81
+#: routes/gamification/features.py:63 templates/admin/accessi.html:81
 #: templates/admin/accessi.html:118 templates/admin/accessi.html:135
 #: templates/admin/users_list.html:132 templates/admin/users_list.html:171
 #: templates/components/_user_info_card.html:11
@@ -2261,7 +2252,7 @@ msgstr ""
 msgid "Ruolo"
 msgstr ""
 
-#: routes/gamification/features.py:61
+#: routes/gamification/features.py:64
 #: templates/gamification/achievements.html:12
 #: templates/gamification/admin/achievements.html:23
 #: templates/gamification/admin/dashboard.html:25
@@ -2270,38 +2261,38 @@ msgstr ""
 msgid "Achievement"
 msgstr ""
 
-#: routes/gamification/features.py:75 templates/admin/accessi.html:84
+#: routes/gamification/features.py:78 templates/admin/accessi.html:84
 #: templates/admin/accessi.html:137 templates/admin/users_list.html:104
 #: templates/admin/users_list.html:173 templates/admin/venue_detail.html:237
 #: templates/components/_user_profile_header.html:7
 msgid "Admin"
 msgstr ""
 
-#: routes/gamification/features.py:76 templates/admin/kpi.html:587
+#: routes/gamification/features.py:79 templates/admin/kpi.html:587
 #: templates/admin/venue_detail.html:237
 msgid "Director"
 msgstr ""
 
-#: routes/gamification/features.py:77
+#: routes/gamification/features.py:80
 msgid "Gestore Sala"
 msgstr ""
 
-#: routes/gamification/features.py:102
+#: routes/gamification/features.py:105
 msgid "Formato regole non valido"
 msgstr ""
 
-#: routes/gamification/features.py:118
+#: routes/gamification/features.py:121
 msgid "Feature aggiornata con successo"
 msgstr ""
 
-#: routes/gamification/features.py:151
+#: routes/gamification/features.py:154
 #: templates/gamification/admin/feature_create.html:2
 #: templates/gamification/admin/feature_create.html:8
 #: templates/gamification/admin/features.html:11
 msgid "Nuova Feature"
 msgstr ""
 
-#: routes/gamification/features.py:167
+#: routes/gamification/features.py:170
 msgid "Feature creata con successo"
 msgstr ""
 
@@ -2360,16 +2351,15 @@ msgid "Match avviato con successo!"
 msgstr ""
 
 #: routes/individual_match/matches.py:148
-msgid "Rack aggiunto!"
+msgid "Triangolo aggiunto!"
 msgstr ""
 
 #: routes/individual_match/matches.py:207
-msgid "Rack rimosso!"
+msgid "Triangolo rimosso!"
 msgstr ""
 
 #: routes/individual_match/matches.py:267
 #: routes/individual_match/matches.py:356
-#: templates/individual_match/match_detail.html:314
 msgid "Match completato con successo!"
 msgstr ""
 
@@ -2379,7 +2369,7 @@ msgid "Risultato confermato! In attesa dell'altro giocatore."
 msgstr ""
 
 #: routes/individual_match/matches.py:317
-msgid "Risultato rifiutato. Ultimo rack rimosso."
+msgid "Risultato rifiutato. Ultimo triangolo rimosso."
 msgstr ""
 
 #: routes/individual_match/matches.py:378
@@ -2435,7 +2425,7 @@ msgid "Accesso negato."
 msgstr ""
 
 #: routes/player/challenges.py:96
-msgid "Non hai accesso a questa challenge"
+msgid "Non hai accesso a questo esercizio"
 msgstr ""
 
 #: routes/player/competitions.py:59
@@ -2644,13 +2634,31 @@ msgstr ""
 msgid "Sale Biliardo"
 msgstr ""
 
+#: templates/base.html:176 templates/base.html:443
+#: templates/challenge/catalog.html:3 templates/challenge/catalog.html:8
+#: templates/components/_gara_info.html:69
+#: templates/components/_history_campionati_tab.html:96
+#: templates/components/_history_campionati_tab.html:97
+#: templates/components/_index_campionato_cards.html:114
+#: templates/components/_player_challenge_statistics.html:13
+#: templates/components/_separated_dashboard_content.html:431
+#: templates/components/_unified_cards.html:52
+#: templates/player/challenge_detail.html:3
+msgid "Esercizi"
+msgstr ""
+
 #: templates/base.html:181 templates/exam/catalog.html:3
 #: templates/exam/catalog.html:6
 msgid "Esami"
 msgstr ""
 
-#: templates/base.html:186 templates/individual_match/dashboard.html:3
-msgid "Match Individuali"
+#: templates/base.html:186
+#: templates/components/_player_dashboard_content.html:12
+#: templates/individual_match/admin_overview.html:4
+#: templates/individual_match/admin_overview.html:10
+#: templates/individual_match/dashboard.html:3
+#: templates/individual_match/dashboard.html:11
+msgid "Sfide individuali"
 msgstr ""
 
 #: templates/base.html:191 templates/base.html:407
@@ -2769,6 +2777,10 @@ msgstr ""
 
 #: templates/admin/venue_manager_requests.html:14 templates/base.html:429
 msgid "Sale"
+msgstr ""
+
+#: templates/base.html:434
+msgid "Sfide"
 msgstr ""
 
 #: templates/base.html:447 templates/components/_user_menu.html:8
@@ -3041,12 +3053,12 @@ msgstr ""
 
 #: templates/components/_match_admin_controls.html:15
 #: templates/gara_detail.html:33
-msgid "Un rack in meno"
+msgid "Un triangolo in meno"
 msgstr ""
 
 #: templates/components/_match_admin_controls.html:21
 #: templates/gara_detail.html:38
-msgid "Un rack in più"
+msgid "Un triangolo in più"
 msgstr ""
 
 #: templates/admin/campionato_detail.html:158
@@ -3142,7 +3154,7 @@ msgstr ""
 #: templates/components/_multi_set_score_display.html:117
 #: templates/components/_ssr_section.html:25 templates/gara_detail.html:527
 #: templates/gara_detail.html:530 templates/individual_match/proposals.html:40
-msgid "rack"
+msgid "triangoli"
 msgstr ""
 
 #: templates/components/_multi_set_score_display.html:27
@@ -3155,7 +3167,7 @@ msgid "Esattamente"
 msgstr ""
 
 #: templates/gara_detail.html:531
-msgid "somma rack ="
+msgid "somma triangoli ="
 msgstr ""
 
 #: templates/gara_detail.html:540
@@ -3164,12 +3176,12 @@ msgstr ""
 
 #: templates/gara_detail.html:542
 #, python-format
-msgid "%(gironi)s gironi, max %(max_racks)s rack per giocatore"
+msgid "%(gironi)s gironi, max %(max_racks)s triangoli per giocatore"
 msgstr ""
 
 #: templates/gara_detail.html:545
 #, python-format
-msgid "Bonus: +%(bonus)s rack equamente distribuiti"
+msgid "Bonus: +%(bonus)s triangoli equamente distribuiti"
 msgstr ""
 
 #: templates/gara_detail.html:548
@@ -3529,17 +3541,17 @@ msgid ""
 msgstr ""
 
 #: templates/gara_detail.html:1584
-msgid "I rack non possono essere negativi."
+msgid "I triangoli non possono essere negativi."
 msgstr ""
 
 #: templates/gara_detail.html:1586
 #, python-format
-msgid "Nessun giocatore può avere più di %(d)s rack."
+msgid "Nessun giocatore può avere più di %(d)s triangoli."
 msgstr ""
 
 #: templates/gara_detail.html:1590
 #, python-format
-msgid "Somma rack troppo alta: massimo %(d)s."
+msgid "Somma triangoli troppo alta: massimo %(d)s."
 msgstr ""
 
 #: templates/gara_detail.html:1592
@@ -3549,7 +3561,7 @@ msgstr ""
 
 #: templates/gara_detail.html:1597
 #, python-format
-msgid "Somma rack troppo alta: il totale esatto è %(d)s."
+msgid "Somma triangoli troppo alta: il totale esatto è %(d)s."
 msgstr ""
 
 #: templates/gara_detail.html:1599
@@ -3608,7 +3620,7 @@ msgstr ""
 
 #: templates/admin/kpi.html:802
 #: templates/components/_separated_dashboard_content.html:265
-#: templates/individual_match/match_detail.html:5 templates/match_detail.html:6
+#: templates/match_detail.html:6
 msgid "Match"
 msgstr ""
 
@@ -3629,21 +3641,21 @@ msgid "X a tavolino"
 msgstr ""
 
 #: templates/match_detail.html:113
-msgid "Challenge Disponibili"
+msgid "Esercizi disponibili"
 msgstr ""
 
 #: templates/match_detail.html:115
-msgid "Le challenge sono prove tecniche che puoi completare durante il match."
+msgid "Gli esercizi sono prove tecniche che puoi completare durante il match."
 msgstr ""
 
 #: templates/match_detail.html:185
-msgid "Errore durante l'aggiunta del rack al trio"
+msgid "Errore durante l'aggiunta del triangolo al trio"
 msgstr ""
 
 #: templates/individual_match/match_detail.html:295
 #: templates/match_detail.html:217 templates/match_detail.html:337
 #: templates/match_detail.html:468
-msgid "Errore durante la rimozione del rack"
+msgid "Errore durante la rimozione del triangolo"
 msgstr ""
 
 #: templates/match_detail.html:253
@@ -3660,11 +3672,11 @@ msgstr ""
 
 #: templates/individual_match/match_detail.html:269
 #: templates/match_detail.html:312
-msgid "Errore durante l'aggiunta del rack"
+msgid "Errore durante l'aggiunta del triangolo"
 msgstr ""
 
 #: templates/match_detail.html:331 templates/match_detail.html:462
-msgid "Impossibile rimuovere il rack"
+msgid "Impossibile rimuovere il triangolo"
 msgstr ""
 
 #: templates/match_detail.html:356
@@ -3677,7 +3689,9 @@ msgid "Errore durante la conferma"
 msgstr ""
 
 #: templates/match_detail.html:368
-msgid "Sei sicuro di voler rifiutare il risultato? L'ultimo rack verrà rimosso."
+msgid ""
+"Sei sicuro di voler rifiutare il risultato? L'ultimo triangolo verrà "
+"rimosso."
 msgstr ""
 
 #: templates/match_detail.html:381
@@ -3705,11 +3719,11 @@ msgid "Errore durante la dichiarazione di forfait"
 msgstr ""
 
 #: templates/match_detail.html:442
-msgid "Errore durante l'aggiunta del rack al set"
+msgid "Errore durante l'aggiunta del triangolo al set"
 msgstr ""
 
 #: templates/match_detail.html:448
-msgid "Rimuovere l'ultimo rack dal set?"
+msgid "Rimuovere l'ultimo triangolo dal set?"
 msgstr ""
 
 #: templates/match_detail.html:487
@@ -3793,11 +3807,11 @@ msgid "Scegli quello che preferisci (puoi selezionarne più di uno)."
 msgstr ""
 
 #: templates/onboarding.html:73
-msgid "Allenarmi con i drill"
+msgid "Allenarmi con gli esercizi"
 msgstr ""
 
 #: templates/onboarding.html:73
-msgid "Proporre match individuali"
+msgid "Proporre sfide individuali"
 msgstr ""
 
 #: templates/onboarding.html:73
@@ -4439,13 +4453,13 @@ msgstr ""
 #: templates/admin/campionato_detail.html:470
 #: templates/components/_new_gara_modal.html:610
 #, python-brace-format
-msgid "Esatto numero: {distance} rack totali"
+msgid "Esatto numero: {distance} triangoli totali"
 msgstr ""
 
 #: templates/admin/campionato_detail.html:471
 #: templates/components/_new_gara_modal.html:611
 #, python-brace-format
-msgid "Al {distance} (si vince a {distance} rack)"
+msgid "Al {distance} (si vince a {distance} triangoli)"
 msgstr ""
 
 #: templates/admin/campionato_wizard_step1.html:3
@@ -4487,12 +4501,12 @@ msgstr ""
 
 #: templates/admin/campionato_wizard_step1.html:43
 #: templates/components/_gara_edit_form.html:82
-msgid "Vittorie — match vinti, poi differenza rack"
+msgid "Vittorie — match vinti, poi differenza triangoli"
 msgstr ""
 
 #: templates/admin/campionato_wizard_step1.html:44
 #: templates/components/_gara_edit_form.html:83
-msgid "Rack totali — ogni rack conta"
+msgid "Triangoli totali — ogni triangoli conta"
 msgstr ""
 
 #: templates/admin/campionato_wizard_step1.html:45
@@ -4501,12 +4515,12 @@ msgstr ""
 
 #: templates/admin/campionato_wizard_step1.html:50
 msgid ""
-"Ordina per vittorie, poi differenza rack. Ideale quando vincere il match "
-"è prioritario."
+"Ordina per vittorie, poi differenza triangoli. Ideale quando vincere il "
+"match è prioritario."
 msgstr ""
 
 #: templates/admin/campionato_wizard_step1.html:54
-msgid "Ordina per rack totali vinti. Ideale quando ogni rack conta."
+msgid "Ordina per triangoli totali vinti. Ideale quando ogni triangoli conta."
 msgstr ""
 
 #: templates/admin/campionato_wizard_step1.html:58
@@ -4549,11 +4563,12 @@ msgid ""
 msgstr ""
 
 #: templates/admin/campionato_wizard_step1.html:104
-msgid "Challenge mode"
+#: templates/components/_campionato_edit_form.html:57
+msgid "Modalità esercizi"
 msgstr ""
 
 #: templates/admin/campionato_wizard_step1.html:105
-msgid "Sfide individuali tra giocatori durante il campionato"
+msgid "Prove di abilità individuali nelle gare del campionato"
 msgstr ""
 
 #: templates/admin/campionato_wizard_step1.html:113
@@ -4613,7 +4628,7 @@ msgstr ""
 #: templates/components/_detailed_classification.html:21
 #: templates/components/_gara_edit_form.html:66
 #: templates/components/_gara_edit_form.html:76
-msgid "Rack totali"
+msgid "Triangoli totali"
 msgstr ""
 
 #: templates/admin/campionato_wizard_step2.html:36
@@ -4691,7 +4706,7 @@ msgid "Il giocatore più basso in classifica riposa e vince a tavolino."
 msgstr ""
 
 #: templates/admin/campionato_wizard_step2.html:109
-msgid "Il giocatore riposa ma deve completare una sfida per guadagnare punti."
+msgid "Il giocatore riposa ma deve completare un esercizio per guadagnare punti."
 msgstr ""
 
 #: templates/admin/campionato_wizard_step2.html:115
@@ -4787,7 +4802,7 @@ msgstr ""
 #: templates/admin/gara_challenge_classification.html:5
 #: templates/admin/gara_challenge_classification.html:8
 #: templates/components/_gara_challenge_classification_compact.html:8
-msgid "Classifica challenge"
+msgid "Classifica esercizi"
 msgstr ""
 
 #: templates/admin/gara_challenge_classification.html:23
@@ -4800,7 +4815,7 @@ msgstr[1] ""
 
 #: templates/admin/gara_challenge_classification.html:39
 #: templates/components/_gara_challenge_classification_compact.html:27
-msgid "challenge"
+msgid "esercizi"
 msgstr ""
 
 #: templates/admin/gara_challenge_classification.html:41
@@ -4837,7 +4852,7 @@ msgstr ""
 #: templates/admin/gara_challenge_classification.html:97
 #: templates/components/_gara_challenges_display.html:10
 #: templates/components/_player_challenges_dashboard.html:8
-msgid "Challenge attive"
+msgid "Esercizi attivi"
 msgstr ""
 
 #: templates/admin/gara_challenge_classification.html:101
@@ -4851,7 +4866,7 @@ msgid "Giocatori che hanno provato"
 msgstr ""
 
 #: templates/admin/gara_challenge_classification.html:111
-msgid "Le challenge della gara"
+msgid "Gli esercizi della gara"
 msgstr ""
 
 #: templates/admin/gara_challenge_classification.html:120
@@ -4888,7 +4903,8 @@ msgid "media"
 msgstr ""
 
 #: templates/admin/gara_challenge_classification.html:153
-msgid "Gestisci le challenge"
+#: templates/components/_gara_management.html:14
+msgid "Gestisci gli esercizi"
 msgstr ""
 
 #: templates/admin/gara_create_standalone.html:3
@@ -5087,7 +5103,7 @@ msgid "Riposo (punto gratis)"
 msgstr ""
 
 #: templates/admin/gara_create_standalone.html:297
-msgid "Riposo con Challenge"
+msgid "Riposo con esercizio"
 msgstr ""
 
 #: templates/admin/gara_create_standalone.html:298
@@ -5110,12 +5126,12 @@ msgstr ""
 
 #: templates/admin/gara_create_standalone.html:315
 #: templates/components/_campionato_edit_form.html:68
-msgid "Vittorie (match vinti → diff rack)"
+msgid "Vittorie (match vinti → diff triangoli)"
 msgstr ""
 
 #: templates/admin/gara_create_standalone.html:318
 #: templates/components/_campionato_edit_form.html:71
-msgid "Rack Totali (rack accumulati)"
+msgid "Triangoli Totali (triangoli accumulati)"
 msgstr ""
 
 #: templates/admin/gara_create_standalone.html:331
@@ -6496,12 +6512,8 @@ msgid "Aggiungi ai preferiti"
 msgstr ""
 
 #: templates/challenge/_challenge_card.html:39
-#: templates/challenge/_challenge_detail.html:43
-#: templates/challenge/create.html:51 templates/challenge/training.html:48
-#: templates/components/_challenge_bits.html:27
-#: templates/components/_challenge_management_modal.html:98
-#: templates/player/challenge_attempt_detail.html:49
-msgid "Riuscita o no"
+#: templates/challenge/training.html:48
+msgid "Riuscito o no"
 msgstr ""
 
 #: templates/challenge/_challenge_card.html:39
@@ -6515,11 +6527,11 @@ msgid "A punteggio"
 msgstr ""
 
 #: templates/challenge/_challenge_card.html:55
-msgid "Creata da te"
+msgid "Creato da te"
 msgstr ""
 
 #: templates/challenge/_challenge_card.html:68
-msgid "Provala"
+msgid "Provalo"
 msgstr ""
 
 #: templates/challenge/_challenge_card.html:74
@@ -6533,16 +6545,16 @@ msgid "Elimina"
 msgstr ""
 
 #: templates/challenge/_challenge_card.html:81
-msgid "Creata da"
+msgid "Creato da"
 msgstr ""
 
 #: templates/challenge/_challenge_card.html:81
-#: templates/challenge/_challenge_detail.html:89
-msgid "Creata dal sistema"
+msgid "Creato dal sistema"
 msgstr ""
 
 #: templates/challenge/_challenge_detail.html:24
-msgid "Disposizione della challenge"
+#: templates/challenge/training.html:41
+msgid "Disposizione dell'esercizio"
 msgstr ""
 
 #: templates/challenge/_challenge_detail.html:29
@@ -6551,6 +6563,14 @@ msgstr ""
 
 #: templates/challenge/_challenge_detail.html:36
 msgid "Nessuna foto"
+msgstr ""
+
+#: templates/challenge/_challenge_detail.html:43
+#: templates/challenge/create.html:51
+#: templates/components/_challenge_bits.html:27
+#: templates/components/_challenge_management_modal.html:98
+#: templates/player/challenge_attempt_detail.html:49
+msgid "Riuscita o no"
 msgstr ""
 
 #: templates/challenge/_challenge_detail.html:49
@@ -6582,6 +6602,10 @@ msgstr ""
 msgid "Creata da %(who)s"
 msgstr ""
 
+#: templates/challenge/_challenge_detail.html:89
+msgid "Creata dal sistema"
+msgstr ""
+
 #: templates/challenge/_challenge_detail.html:91
 msgid "non più attiva"
 msgstr ""
@@ -6591,17 +6615,16 @@ msgid "Catalogo vuoto"
 msgstr ""
 
 #: templates/challenge/_challenge_grid.html:12
-msgid "Non ci sono ancora challenge da provare."
+msgid "Non ci sono ancora esercizi da provare."
 msgstr ""
 
 #: templates/challenge/_challenge_grid.html:16
-#: templates/challenge/catalog.html:78
 msgid "Crea la prima"
 msgstr ""
 
 #: templates/challenge/builder.html:19 templates/challenge/builder.html:35
 #: templates/challenge/create.html:73
-msgid "Disegna il drill"
+msgid "Disegna l'esercizio"
 msgstr ""
 
 #: templates/challenge/builder.html:35
@@ -6811,7 +6834,7 @@ msgid "Titolo del diagramma"
 msgstr ""
 
 #: templates/challenge/builder.html:158
-msgid "es. Drill 1 — Stop shot"
+msgid "es. Esercizio 1 — Stop shot"
 msgstr ""
 
 #: templates/challenge/builder.html:163
@@ -6819,15 +6842,15 @@ msgid "Posizioni standard"
 msgstr ""
 
 #: templates/challenge/builder.html:165
-msgid "Rack 9-ball"
+msgid "Triangolo 9-ball"
 msgstr ""
 
 #: templates/challenge/builder.html:166
-msgid "Rack 8-ball"
+msgid "Triangolo 8-ball"
 msgstr ""
 
 #: templates/challenge/builder.html:169
-msgid "Rack 10-ball"
+msgid "Triangolo 10-ball"
 msgstr ""
 
 #: templates/challenge/builder.html:170
@@ -6843,7 +6866,7 @@ msgid "Linea di stop"
 msgstr ""
 
 #: templates/challenge/builder.html:177
-msgid "L drill"
+msgid "Esercizio a L"
 msgstr ""
 
 #: templates/challenge/builder.html:178
@@ -6859,7 +6882,7 @@ msgid "es. Progressione lungo sponda"
 msgstr ""
 
 #: templates/challenge/builder.html:214
-msgid "Facoltativo: senza, il drill prende il suo numero progressivo."
+msgid "Facoltativo: senza, l'esercizio prende il suo numero progressivo."
 msgstr ""
 
 #: templates/challenge/builder.html:219
@@ -6883,7 +6906,7 @@ msgid "Superata o non superata"
 msgstr ""
 
 #: templates/challenge/builder.html:246
-msgid "Salva il drill"
+msgid "Salva l'esercizio"
 msgstr ""
 
 #: templates/challenge/builder.html:246
@@ -7010,36 +7033,23 @@ msgid "Salvo…"
 msgstr ""
 
 #: templates/challenge/builder.html:330
-msgid "Non è stato possibile generare l'immagine del drill."
+msgid "Non è stato possibile generare l'immagine dell'esercizio."
 msgstr ""
 
 #: templates/challenge/builder.html:346
-msgid "Non è stato possibile salvare il drill."
+msgid "Non è stato possibile salvare l'esercizio."
 msgstr ""
 
 #: templates/challenge/builder.html:354
-msgid "Non è stato possibile salvare il drill. Riprova."
-msgstr ""
-
-#: templates/challenge/catalog.html:3 templates/challenge/catalog.html:8
-#: templates/components/_gara_info.html:69
-#: templates/components/_history_campionati_tab.html:96
-#: templates/components/_history_campionati_tab.html:97
-#: templates/components/_index_campionato_cards.html:114
-#: templates/components/_player_challenge_statistics.html:13
-#: templates/components/_separated_dashboard_content.html:431
-#: templates/components/_unified_cards.html:52
-#: templates/player/challenge_detail.html:3
-msgid "Challenge"
+msgid "Non è stato possibile salvare l'esercizio. Riprova."
 msgstr ""
 
 #: templates/challenge/catalog.html:9
 msgid "Esercizi di abilità: provaci, registra il punteggio, migliora."
 msgstr ""
 
-#: templates/challenge/catalog.html:16 templates/roles/requests.html:3
-#: templates/roles/requests.html:8
-msgid "Richieste di ruolo"
+#: templates/challenge/catalog.html:16
+msgid "Richieste ruolo esaminatore"
 msgstr ""
 
 #: templates/challenge/catalog.html:20
@@ -7049,11 +7059,11 @@ msgstr ""
 #: templates/challenge/catalog.html:24 templates/challenge/create.html:4
 #: templates/challenge/create.html:10
 #: templates/components/_challenge_management_modal.html:88
-msgid "Nuova challenge"
+msgid "Nuovo esercizio"
 msgstr ""
 
 #: templates/challenge/catalog.html:34 templates/challenge/catalog.html:37
-msgid "Cerca fra le challenge"
+msgid "Cerca fra gli esercizi"
 msgstr ""
 
 #: templates/challenge/catalog.html:36
@@ -7061,40 +7071,37 @@ msgid "Cerca nel titolo o nelle istruzioni…"
 msgstr ""
 
 #: templates/challenge/catalog.html:39
-msgid "Nessuna challenge corrisponde alla ricerca."
-msgstr ""
-
-#: templates/challenge/catalog.html:45
-#: templates/components/_history_filters.html:24
-#: templates/components/_history_filters.html:87
-#: templates/gamification/dashboard.html:184
-msgid "Tutte"
+msgid "Nessun esercizio corrisponde alla ricerca."
 msgstr ""
 
 #: templates/challenge/catalog.html:50
-msgid "Le mie"
+msgid "I miei"
 msgstr ""
 
 #: templates/challenge/catalog.html:54
-msgid "Preferite"
+msgid "Preferiti"
 msgstr ""
 
 #: templates/challenge/catalog.html:75
-msgid "Non hai ancora creato challenge"
+msgid "Non hai ancora creato esercizi"
 msgstr ""
 
 #: templates/challenge/catalog.html:76
 msgid ""
-"Una challenge è un esercizio ripetibile: una foto del tavolo, le regole, "
-"il punteggio."
+"Un esercizio è una prova ripetibile: una foto del tavolo, le regole, il "
+"punteggio."
+msgstr ""
+
+#: templates/challenge/catalog.html:78
+msgid "Crea il primo"
 msgstr ""
 
 #: templates/challenge/catalog.html:95
-msgid "Nessuna preferita"
+msgid "Nessun preferito"
 msgstr ""
 
 #: templates/challenge/catalog.html:96
-msgid "Tocca il cuore su una challenge per ritrovarla qui."
+msgid "Tocca il cuore su un esercizio per ritrovarlo qui."
 msgstr ""
 
 #: templates/challenge/catalog.html:111
@@ -7104,12 +7111,12 @@ msgstr ""
 
 #: templates/challenge/catalog.html:112
 #: templates/player/challenge_detail.html:120
-msgid "Confermi di voler eliminare questa challenge? Non si torna indietro."
+msgid "Confermi di voler eliminare questo esercizio? Non si torna indietro."
 msgstr ""
 
 #: templates/challenge/catalog.html:113
 #: templates/player/challenge_detail.html:130
-msgid "Non è stato possibile eliminare la challenge."
+msgid "Non è stato possibile eliminare l'esercizio."
 msgstr ""
 
 #: templates/challenge/create.html:11
@@ -7118,8 +7125,8 @@ msgstr ""
 
 #: templates/challenge/create.html:31
 msgid ""
-"Facoltativo: senza, la challenge prende il suo numero progressivo (Drill "
-"12)."
+"Facoltativo: senza, l'esercizio prende il suo numero progressivo "
+"(Esercizio 12)."
 msgstr ""
 
 #: templates/challenge/create.html:36
@@ -7148,7 +7155,7 @@ msgid "Il giocatore registra un numero: bilie imbucate, punti fatti."
 msgstr ""
 
 #: templates/challenge/create.html:52
-msgid "Nessun numero: la challenge è superata oppure no."
+msgid "Nessun numero: l'esercizio è superato oppure no."
 msgstr ""
 
 #: templates/challenge/create.html:58
@@ -7170,20 +7177,20 @@ msgstr ""
 
 #: templates/challenge/create.html:83
 #: templates/components/_challenge_management_modal.html:119
-msgid "Crea la challenge"
+msgid "Crea l'esercizio"
 msgstr ""
 
 #: templates/challenge/create.html:152
-msgid "Non è stato possibile creare la challenge. Riprova."
+msgid "Non è stato possibile creare l'esercizio. Riprova."
 msgstr ""
 
 #: templates/challenge/start_attempt.html:3
-msgid "Inizia la challenge"
+msgid "Inizia l'esercizio"
 msgstr ""
 
 #: templates/challenge/start_attempt.html:7
 #: templates/player/challenge_attempt_detail.html:12
-msgid "Torna alla challenge"
+msgid "Torna all'esercizio"
 msgstr ""
 
 #: templates/challenge/start_attempt.html:9
@@ -7233,15 +7240,11 @@ msgid "Allenamento"
 msgstr ""
 
 #: templates/challenge/training.html:22
-msgid "Torna ai drill"
+msgid "Torna agli esercizi"
 msgstr ""
 
 #: templates/challenge/training.html:29 templates/challenge/training.html:150
 msgid "Ho finito"
-msgstr ""
-
-#: templates/challenge/training.html:41
-msgid "Disposizione del drill"
 msgstr ""
 
 #: templates/challenge/training.html:62
@@ -7369,7 +7372,9 @@ msgid "Criterio Classifica:"
 msgstr ""
 
 #: templates/components/_amalfi_algorithm_info.html:13
-msgid "1. Vittorie (desc) → 2. Diff. Rack (desc) → 3. Posizione Precedente (asc)"
+msgid ""
+"1. Vittorie (desc) → 2. Diff. Triangoli (desc) → 3. Posizione Precedente "
+"(asc)"
 msgstr ""
 
 #: templates/components/_amalfi_algorithm_info.html:16
@@ -7664,8 +7669,9 @@ msgid "X (vinto a tavolino)"
 msgstr ""
 
 #: templates/components/_campionato_details_info.html:103
+#: templates/components/_gara_edit_form.html:149
 #: templates/components/_new_gara_modal.html:268
-msgid "X con Challenge"
+msgid "X con esercizio"
 msgstr ""
 
 #: templates/components/_campionato_details_info.html:105
@@ -7713,20 +7719,16 @@ msgstr ""
 msgid "Accoppiamenti casuali con anti-rematch."
 msgstr ""
 
-#: templates/components/_campionato_edit_form.html:57
-msgid "Challenge Mode"
-msgstr ""
-
 #: templates/components/_campionato_edit_form.html:60
-msgid "Abilita sfide individuali tra giocatori durante il campionato"
+msgid "Abilita le prove di abilità individuali nelle gare del campionato"
 msgstr ""
 
 #: templates/components/_campionato_edit_form.html:77
-msgid "Ordina per: Vittorie → Differenza rack → Ordine precedente"
+msgid "Ordina per: Vittorie → Differenza triangoli → Ordine precedente"
 msgstr ""
 
 #: templates/components/_campionato_edit_form.html:81
-msgid "Ordina per: Rack totali accumulati"
+msgid "Ordina per: Triangoli totali accumulati"
 msgstr ""
 
 #: templates/components/_campionato_edit_form.html:89
@@ -7773,8 +7775,8 @@ msgstr ""
 
 #: templates/components/_campionato_edit_form.html:163
 msgid ""
-"Il giocatore riceve bye ma deve completare una sfida per guadagnare punti"
-" extra."
+"Il giocatore riceve bye ma deve completare un esercizio per guadagnare "
+"punti extra."
 msgstr ""
 
 #: templates/components/_campionato_edit_form.html:167
@@ -7868,11 +7870,11 @@ msgid "Match Vinti"
 msgstr ""
 
 #: templates/components/_campionato_general_classification.html:18
-msgid "Diff. Rack"
+msgid "Diff. Triangoli"
 msgstr ""
 
 #: templates/components/_campionato_general_classification.html:20
-msgid "Rack Totali"
+msgid "Triangoli Totali"
 msgstr ""
 
 #: templates/components/_campionato_general_classification.html:23
@@ -7880,7 +7882,7 @@ msgid "Punti Totali"
 msgstr ""
 
 #: templates/components/_campionato_general_classification.html:24
-msgid "Diff. Rack Tot."
+msgid "Diff. Triangoli Tot."
 msgstr ""
 
 #: templates/components/_campionato_general_classification.html:26
@@ -7889,14 +7891,14 @@ msgstr ""
 
 #: templates/components/_campionato_general_classification.html:116
 msgid ""
-"Classifica generale: ordinata per match vinti, poi per differenza rack "
-"totale."
+"Classifica generale: ordinata per match vinti, poi per differenza "
+"triangoli totale."
 msgstr ""
 
 #: templates/components/_campionato_general_classification.html:118
 msgid ""
-"Classifica generale: ordinata per rack totali, poi per punti spareggio "
-"(SSR)."
+"Classifica generale: ordinata per triangoli totali, poi per punti "
+"spareggio (SSR)."
 msgstr ""
 
 #: templates/components/_campionato_general_classification.html:120
@@ -7936,16 +7938,14 @@ msgid "Match Totali Giocati:"
 msgstr ""
 
 #: templates/components/_campionato_statistics.html:22
-msgid "Rack Totali Giocati:"
+msgid "Triangoli Totali Giocati:"
 msgstr ""
 
 #: templates/components/_challenge_management_modal.html:18
 #: templates/components/_match_challenge_input.html:74
 #: templates/components/_player_challenges.html:9
 #: templates/components/_public_challenges.html:8
-#: templates/player/gara_challenge_detail.html:6
-#: templates/player/gara_challenge_detail.html:12
-msgid "Challenge della gara"
+msgid "Esercizi della gara"
 msgstr ""
 
 #: templates/components/_challenge_management_modal.html:27
@@ -7953,7 +7953,8 @@ msgid "In programma"
 msgstr ""
 
 #: templates/components/_challenge_management_modal.html:34
-msgid "Aggiungi una challenge"
+#: templates/exam/detail.html:142
+msgid "Aggiungi un esercizio"
 msgstr ""
 
 #: templates/components/_challenge_management_modal.html:36
@@ -7961,7 +7962,7 @@ msgid "Creane una nuova"
 msgstr ""
 
 #: templates/components/_challenge_management_modal.html:44
-msgid "Quale challenge"
+msgid "Quale esercizio"
 msgstr ""
 
 #: templates/components/_challenge_management_modal.html:51
@@ -7981,39 +7982,39 @@ msgid "JPG, PNG, GIF o WebP, fino a 5 MB."
 msgstr ""
 
 #: templates/components/_challenge_management_modal.html:148
-msgid "Nessuna challenge in programma per questa gara."
+msgid "Nessun esercizio in programma per questa gara."
 msgstr ""
 
 #: templates/components/_challenge_management_modal.html:149
-msgid "Non ci sono altre challenge da aggiungere."
+msgid "Non ci sono altri esercizi da aggiungere."
 msgstr ""
 
 #: templates/components/_challenge_management_modal.html:152
-msgid "Scegli prima una challenge."
+msgid "Scegli prima un esercizio."
 msgstr ""
 
 #: templates/components/_challenge_management_modal.html:153
-msgid "Challenge aggiunta alla gara."
+msgid "Esercizio aggiunto alla gara."
 msgstr ""
 
 #: templates/components/_challenge_management_modal.html:154
-msgid "Non è stato possibile aggiungere la challenge."
+msgid "Non è stato possibile aggiungere l'esercizio."
 msgstr ""
 
 #: templates/components/_challenge_management_modal.html:155
-msgid "Vuoi togliere questa challenge dalla gara?"
+msgid "Vuoi togliere questo esercizio dalla gara?"
 msgstr ""
 
 #: templates/components/_challenge_management_modal.html:156
-msgid "Challenge tolta dalla gara."
+msgid "Esercizio tolto dalla gara."
 msgstr ""
 
 #: templates/components/_challenge_management_modal.html:157
-msgid "Non è stato possibile togliere la challenge."
+msgid "Non è stato possibile togliere l'esercizio."
 msgstr ""
 
 #: templates/components/_challenge_management_modal.html:159
-msgid "Non è stato possibile creare la challenge."
+msgid "Non è stato possibile creare l'esercizio."
 msgstr ""
 
 #: templates/components/_challenge_management_modal.html:160
@@ -8040,7 +8041,7 @@ msgid "Spot Shot Rally"
 msgstr ""
 
 #: templates/components/_classification_mobile.html:32
-msgid "Differenza rack"
+msgid "Differenza triangoli"
 msgstr ""
 
 #: templates/components/_classification_mobile.html:37
@@ -8091,7 +8092,7 @@ msgid "Classifica dopo il turno %(num)s"
 msgstr ""
 
 #: templates/components/_detailed_classification.html:21
-msgid "Diff. rack"
+msgid "Diff. triangoli"
 msgstr ""
 
 #: templates/components/_detailed_classification.html:22
@@ -8186,7 +8187,7 @@ msgid "a pari merito"
 msgstr ""
 
 #: templates/components/_director_dashboard_content.html:11
-msgid "Match individuali proposti"
+msgid "Sfide individuali proposte"
 msgstr ""
 
 #: templates/components/_director_dashboard_content.html:23
@@ -8225,7 +8226,6 @@ msgstr ""
 
 #: templates/components/_director_dashboard_content.html:47
 #: templates/components/_player_dashboard_content.html:53
-#: templates/individual_match/statistics.html:137
 msgid "Proponi un match"
 msgstr ""
 
@@ -8260,25 +8260,25 @@ msgid ""
 msgstr ""
 
 #: templates/components/_distance_configurator.html:20
-msgid "Meno un rack"
+msgid "Meno un triangolo"
 msgstr ""
 
 #: templates/components/_distance_configurator.html:24
-msgid "Più un rack"
+msgid "Più un triangolo"
 msgstr ""
 
 #: templates/components/_distance_configurator.html:26
 #: templates/individual_match/create_proposal.html:143
-msgid "Rack per set"
+msgid "Triangoli per set"
 msgstr ""
 
 #: templates/components/_distance_configurator.html:34
-msgid "Numero esatto di rack"
+msgid "Numero esatto di triangoli"
 msgstr ""
 
 #: templates/components/_distance_configurator.html:35
 msgid ""
-"Si giocano tutti i rack invece di fermarsi al primo che arriva alla "
+"Si giocano tutti i triangoli invece di fermarsi al primo che arriva alla "
 "distanza."
 msgstr ""
 
@@ -8313,7 +8313,7 @@ msgstr ""
 #: templates/components/_distance_configurator.html:83
 msgid ""
 "Sul tabellone si gioca sempre a chi arriva prima: conta solo chi passa il"
-" turno, quindi i rack giocati dopo che il vincitore è deciso non "
+" turno, quindi i triangoli giocati dopo che il vincitore è deciso non "
 "cambierebbero nulla."
 msgstr ""
 
@@ -8363,7 +8363,7 @@ msgid "Tornei settimanali"
 msgstr ""
 
 #: templates/components/_gamification_labels.html:25
-msgid "Challenge settimanali"
+msgid "Esercizi settimanali"
 msgstr ""
 
 #: templates/components/_gamification_labels.html:36
@@ -8512,10 +8512,6 @@ msgstr ""
 
 #: templates/components/_gara_edit_form.html:148
 msgid "X — vinto a tavolino"
-msgstr ""
-
-#: templates/components/_gara_edit_form.html:149
-msgid "X con challenge"
 msgstr ""
 
 #: templates/components/_gara_edit_form.html:154
@@ -8740,11 +8736,7 @@ msgid "Limite massimo raggiunto"
 msgstr ""
 
 #: templates/components/_gara_management.html:14
-msgid "Gestisci Challenge"
-msgstr ""
-
-#: templates/components/_gara_management.html:14
-msgid "Aggiungi Challenge"
+msgid "Aggiungi esercizi"
 msgstr ""
 
 #: templates/components/_gara_management.html:29
@@ -9086,6 +9078,12 @@ msgstr ""
 msgid "Filtri"
 msgstr ""
 
+#: templates/components/_history_filters.html:24
+#: templates/components/_history_filters.html:87
+#: templates/gamification/dashboard.html:184
+msgid "Tutte"
+msgstr ""
+
 #: templates/components/_history_filters.html:39
 msgid "Cerca sala..."
 msgstr ""
@@ -9170,11 +9168,11 @@ msgid "Win Rate"
 msgstr ""
 
 #: templates/components/_history_matches_tab.html:46
-msgid "Rack Vinti"
+msgid "Triangoli Vinti"
 msgstr ""
 
 #: templates/components/_history_matches_tab.html:54
-msgid "Rack Persi"
+msgid "Triangoli Persi"
 msgstr ""
 
 #: templates/components/_history_matches_tab.html:73
@@ -9182,8 +9180,10 @@ msgid "Esporta CSV"
 msgstr ""
 
 #: templates/components/_history_matches_tab.html:116
+#: templates/components/_match_header.html:74
 #: templates/components/_match_info.html:38
-msgid "Match Individuale"
+#: templates/components/_match_scoreboard.html:74
+msgid "Sfida individuale"
 msgstr ""
 
 #: templates/components/_history_matches_tab.html:136
@@ -9311,8 +9311,8 @@ msgstr ""
 
 #: templates/components/_index_campionato_cards.html:166
 #, python-format
-msgid "%(num)s rack"
-msgid_plural "%(num)s rack"
+msgid "%(num)s triangoli"
+msgid_plural "%(num)s triangoli"
 msgstr[0] ""
 msgstr[1] ""
 
@@ -9428,7 +9428,7 @@ msgid "Gioca"
 msgstr ""
 
 #: templates/components/_index_registration_info.html:26
-msgid "Segna i rack dal telefono, la classifica si aggiorna da sola."
+msgid "Segna i triangoli dal telefono, la classifica si aggiorna da sola."
 msgstr ""
 
 #: templates/components/_index_upcoming.html:5
@@ -9473,7 +9473,7 @@ msgstr ""
 
 #: templates/components/_match_admin_controls.html:76
 #, python-format
-msgid "max %(max)s rack/giocatore, somma = %(sum)s"
+msgid "max %(max)s triangoli/giocatore, somma = %(sum)s"
 msgstr ""
 
 #: templates/components/_match_admin_controls.html:102
@@ -9483,7 +9483,7 @@ msgstr ""
 
 #: templates/components/_match_admin_controls.html:104
 #, python-format
-msgid "la somma dei rack deve essere %(distance)s"
+msgid "la somma dei triangoli deve essere %(distance)s"
 msgstr ""
 
 #: templates/components/_match_admin_controls.html:114
@@ -9534,7 +9534,7 @@ msgid "Ogni giocatore puo' vincere al massimo"
 msgstr ""
 
 #: templates/components/_match_admin_controls.html:291
-msgid "La somma dei rack deve essere"
+msgid "La somma dei triangoli deve essere"
 msgstr ""
 
 #: templates/components/_match_admin_controls.html:291
@@ -9655,11 +9655,6 @@ msgstr ""
 msgid "Torna allo Storico"
 msgstr ""
 
-#: templates/components/_match_header.html:74
-#: templates/components/_match_scoreboard.html:74
-msgid "Match individuale"
-msgstr ""
-
 #: templates/components/_match_header.html:80
 msgid "senza tavolo"
 msgstr ""
@@ -9736,7 +9731,7 @@ msgstr ""
 #: templates/components/_match_scoreboard.html:176
 #: templates/components/_trio_rack_input.html:319
 #: templates/components/_unified_rack_input.html:285
-msgid "Annulla ultimo rack"
+msgid "Annulla ultimo triangolo"
 msgstr ""
 
 #: templates/components/_match_scoreboard.html:150
@@ -9920,7 +9915,7 @@ msgid "Impostazioni di Gioco"
 msgstr ""
 
 #: templates/components/_new_gara_modal.html:199
-msgid "Distanza (Rack)"
+msgid "Distanza (Triangoli)"
 msgstr ""
 
 #: templates/components/_new_gara_modal.html:207
@@ -9932,11 +9927,11 @@ msgid "Modalità Punteggio"
 msgstr ""
 
 #: templates/components/_new_gara_modal.html:223
-msgid "Esatto numero di rack"
+msgid "Esatto numero di triangoli"
 msgstr ""
 
 #: templates/components/_new_gara_modal.html:227
-msgid "Al 7 (si vince a 7 rack)"
+msgid "Al 7 (si vince a 7 triangoli)"
 msgstr ""
 
 #: templates/components/_new_gara_modal.html:237
@@ -10019,7 +10014,7 @@ msgid "Vedi classifica completa"
 msgstr ""
 
 #: templates/components/_player_challenge_statistics.html:22
-msgid "Challenge diverse"
+msgid "Esercizi diversi"
 msgstr ""
 
 #: templates/components/_player_challenge_statistics.html:36
@@ -10057,13 +10052,6 @@ msgstr ""
 
 #: templates/components/_player_challenges_dashboard.html:35
 msgid "Fatta"
-msgstr ""
-
-#: templates/components/_player_dashboard_content.html:12
-#: templates/individual_match/admin_overview.html:4
-#: templates/individual_match/admin_overview.html:10
-#: templates/individual_match/dashboard.html:11
-msgid "Match individuali"
 msgstr ""
 
 #: templates/components/_player_dashboard_content.html:13
@@ -10194,7 +10182,7 @@ msgstr[1] ""
 #: templates/components/_player_ratings.html:47
 msgid ""
 "L'Elo competitivo si aggiorna a fine partita ufficiale. Clicca il valore "
-"per vedere l'Elo globale (include i match individuali)."
+"per vedere l'Elo globale (include le sfide individuali)."
 msgstr ""
 
 #: templates/components/_player_ratings.html:53
@@ -10261,7 +10249,7 @@ msgid "Totali"
 msgstr ""
 
 #: templates/components/_player_training.html:29
-msgid "Drill sostenuti"
+msgid "Esercizi sostenuti"
 msgstr ""
 
 #: templates/components/_player_training.html:52
@@ -10374,7 +10362,7 @@ msgid "Strategia Random - Classifica Complessiva"
 msgstr ""
 
 #: templates/components/_random_algorithm_info.html:12
-msgid "1. Rack Totali Vinti (desc) → 2. Diff. Rack (desc)"
+msgid "1. Triangoli Totali Vinti (desc) → 2. Diff. Triangoli (desc)"
 msgstr ""
 
 #: templates/components/_random_algorithm_info.html:13
@@ -10436,7 +10424,7 @@ msgstr ""
 #: templates/components/_round_management.html:68
 #: templates/components/_unified_rack_history.html:61
 #: templates/individual_match/tpa_referto.html:132
-msgid "Rack"
+msgid "Triangoli"
 msgstr ""
 
 #: templates/components/_round_management.html:89
@@ -10602,7 +10590,7 @@ msgid "Mantieni i match"
 msgstr ""
 
 #: templates/components/_soft_delete_modal.html:30
-msgid "Diventano match individuali, slegati dalla gara."
+msgid "Diventano sfide individuali, slegate dalla gara."
 msgstr ""
 
 #: templates/components/_soft_delete_modal.html:38
@@ -10819,7 +10807,7 @@ msgstr ""
 
 #: templates/components/_trio_rack_input.html:45
 #, python-format
-msgid "Rack %(played)s/%(total)s"
+msgid "Triangoli %(played)s/%(total)s"
 msgstr ""
 
 #: templates/components/_trio_rack_input.html:47
@@ -10845,7 +10833,7 @@ msgstr ""
 #: templates/components/_trio_rack_input.html:101
 #: templates/components/_trio_rack_input.html:269
 #, python-format
-msgid "(+%(bonus)s rack bonus applicato a tutti)"
+msgid "(+%(bonus)s triangoli bonus applicati a tutti)"
 msgstr ""
 
 #: templates/components/_trio_rack_input.html:107
@@ -10891,7 +10879,7 @@ msgstr ""
 
 #: templates/components/_trio_rack_input.html:209
 #, python-format
-msgid "Aspetta che %(p1)s e %(p2)s finiscano questo rack"
+msgid "Aspetta che %(p1)s e %(p2)s finiscano questo triangolo"
 msgstr ""
 
 #: templates/components/_trio_rack_input.html:216
@@ -10923,20 +10911,20 @@ msgid "Il direttore di gara validera il risultato"
 msgstr ""
 
 #: templates/components/_trio_rack_input.html:297
-msgid "Storico rack"
+msgid "Storico triangoli"
 msgstr ""
 
 #: templates/components/_trio_rack_input.html:336
-msgid "1 girone all'italiana (3 rack)"
+msgid "1 girone all'italiana (3 triangoli)"
 msgstr ""
 
 #: templates/components/_trio_rack_input.html:338
 #, python-format
-msgid "%(n)s gironi all'italiana (%(racks)s rack)"
+msgid "%(n)s gironi all'italiana (%(racks)s triangoli)"
 msgstr ""
 
 #: templates/components/_trio_rack_input.html:343
-msgid "vince chi ha piu rack"
+msgid "vince chi ha piu triangoli"
 msgstr ""
 
 #: templates/components/_unified_cards.html:33
@@ -10997,7 +10985,7 @@ msgid "%(n)s gironi all'italiana"
 msgstr ""
 
 #: templates/components/_unified_match_score.html:59
-msgid "vince chi fa più rack"
+msgid "vince chi fa più triangoli"
 msgstr ""
 
 #: templates/components/_unified_match_score.html:102
@@ -11007,7 +10995,7 @@ msgstr ""
 
 #: templates/components/_unified_match_score.html:104
 #, python-format
-msgid "%(n)s rack giocati"
+msgid "%(n)s triangoli giocati"
 msgstr ""
 
 #: templates/components/_unified_match_score.html:113
@@ -11015,7 +11003,7 @@ msgid "ha vinto"
 msgstr ""
 
 #: templates/components/_unified_rack_history.html:30
-msgid "Rack giocati"
+msgid "Triangoli giocati"
 msgstr ""
 
 #: templates/components/_unified_rack_history.html:41
@@ -11024,7 +11012,7 @@ msgid "segnato da %(user)s"
 msgstr ""
 
 #: templates/components/_unified_rack_history.html:55
-msgid "Rack rimossi"
+msgid "Triangoli rimossi"
 msgstr ""
 
 #: templates/components/_unified_rack_history.html:56
@@ -11095,7 +11083,7 @@ msgstr ""
 
 #: templates/components/_unified_rack_input.html:215
 msgid ""
-"Se l'ultimo rack è stato segnato per errore puoi ancora annullarlo, "
+"Se l'ultimo triangolo è stato segnato per errore puoi ancora annullarlo, "
 "finché il direttore non valida il risultato."
 msgstr ""
 
@@ -11390,8 +11378,8 @@ msgstr ""
 
 #: templates/exam/catalog.html:7
 msgid ""
-"Più drill in fila. Da solo per allenarti, davanti a un esaminatore per "
-"farlo valere."
+"Più esercizi in fila. Da solo per allenarti, davanti a un esaminatore per"
+" farlo valere."
 msgstr ""
 
 #: templates/exam/catalog.html:11 templates/exam/manage.html:3
@@ -11410,8 +11398,8 @@ msgstr ""
 #: templates/exam/catalog.html:36 templates/exam/catalog.html:70
 #: templates/exam/manage.html:49
 #, python-format
-msgid "%(n)s drill"
-msgid_plural "%(n)s drill"
+msgid "%(n)s esercizio"
+msgid_plural "%(n)s esercizi"
 msgstr[0] ""
 msgstr[1] ""
 
@@ -11435,11 +11423,11 @@ msgid "Esami che somministro"
 msgstr ""
 
 #: templates/exam/detail.html:7
-msgid "Esame: una sequenza di drill"
+msgid "Esame: una sequenza di esercizi"
 msgstr ""
 
 #: templates/exam/detail.html:29
-msgid "I drill dell'esame"
+msgid "Gli esercizi dell'esame"
 msgstr ""
 
 #: templates/exam/detail.html:44
@@ -11462,7 +11450,7 @@ msgid "%(n)s prove · conta la migliore"
 msgstr ""
 
 #: templates/exam/detail.html:61
-msgid "Togliere questo drill dall'esame?"
+msgid "Togliere questo esercizio dall'esame?"
 msgstr ""
 
 #: templates/exam/detail.html:62 templates/exam/examiners.html:28
@@ -11470,11 +11458,11 @@ msgid "Togli"
 msgstr ""
 
 #: templates/exam/detail.html:73
-msgid "Nessun drill"
+msgid "Nessun esercizio"
 msgstr ""
 
 #: templates/exam/detail.html:74
-msgid "Questo esame non contiene ancora nessun drill: non è sostenibile."
+msgid "Questo esame non contiene ancora nessun esercizio: non è sostenibile."
 msgstr ""
 
 #: templates/exam/detail.html:79 templates/exam/examiners.html:12
@@ -11530,12 +11518,8 @@ msgstr ""
 msgid "Nessun esaminatore disponibile per questo esame."
 msgstr ""
 
-#: templates/exam/detail.html:142
-msgid "Aggiungi un drill"
-msgstr ""
-
 #: templates/exam/detail.html:147
-msgid "ID del drill"
+msgid "ID dell'esercizio"
 msgstr ""
 
 #: templates/exam/detail.html:148
@@ -11543,7 +11527,7 @@ msgid "Punteggio massimo"
 msgstr ""
 
 #: templates/exam/detail.html:150
-msgid "Vuoto per i drill superato / non superato"
+msgid "Vuoto per gli esercizi superato / non superato"
 msgstr ""
 
 #: templates/exam/detail.html:151
@@ -11551,7 +11535,7 @@ msgid "Quante prove"
 msgstr ""
 
 #: templates/exam/detail.html:155
-msgid "Se più di una, il drill vale la prova migliore."
+msgid "Se più di una, l'esercizio vale la prova migliore."
 msgstr ""
 
 #: templates/exam/detail.html:167
@@ -11605,7 +11589,7 @@ msgid "Nessun esame"
 msgstr ""
 
 #: templates/exam/manage.html:60
-msgid "Comincia componendone uno: una sequenza di drill, in ordine."
+msgid "Comincia componendone uno: una sequenza di esercizi, in ordine."
 msgstr ""
 
 #: templates/exam/manage.html:65
@@ -11625,7 +11609,7 @@ msgid "Crea l'esame"
 msgstr ""
 
 #: templates/exam/manage.html:82
-msgid "I drill si aggiungono dopo, dalla pagina dell'esame."
+msgid "Gli esercizi si aggiungono dopo, dalla pagina dell'esame."
 msgstr ""
 
 #: templates/exam/request_detail.html:3 templates/exam/request_detail.html:6
@@ -11868,7 +11852,7 @@ msgstr ""
 
 #: templates/exam/session.html:42
 #, python-format
-msgid "prove · %(done)s di %(all)s drill completati"
+msgid "prove · %(done)s di %(all)s esercizi completati"
 msgstr ""
 
 #: templates/exam/session.html:52
@@ -11877,7 +11861,7 @@ msgid "Punteggio: %(score)s su %(max)s"
 msgstr ""
 
 #: templates/exam/session.html:58
-msgid "I drill"
+msgid "Gli esercizi"
 msgstr ""
 
 #: templates/exam/session.html:71
@@ -12135,7 +12119,7 @@ msgid "Gioca qualche partita per comparire nella classifica della tua zona."
 msgstr ""
 
 #: templates/gamification/leaderboards.html:75
-msgid "Challenge create per gli altri, gare organizzate e proposte accettate."
+msgid "Esercizi creati per gli altri, gare organizzate e proposte accettate."
 msgstr ""
 
 #: templates/gamification/leaderboards.html:77
@@ -12147,7 +12131,7 @@ msgid "Nessun contributo registrato"
 msgstr ""
 
 #: templates/gamification/leaderboards.html:79
-msgid "Crea challenge, organizza gare o proponi match: la community cresce così."
+msgid "Crea esercizi, organizza gare o proponi sfide: la community cresce così."
 msgstr ""
 
 #: templates/gamification/admin/dashboard.html:46
@@ -13193,7 +13177,7 @@ msgstr ""
 #: templates/help/search.html:19
 msgid ""
 "Prova con una parola sola e più comune: per esempio «iscrizione», "
-"«turno», «classifica», «rack»."
+"«turno», «classifica», «triangolo»."
 msgstr ""
 
 #: templates/help/search.html:34
@@ -13256,7 +13240,7 @@ msgstr ""
 #: templates/individual_match/matches.html:9
 #: templates/individual_match/proposals.html:10
 #: templates/individual_match/statistics.html:7
-msgid "Torna ai match individuali"
+msgid "Torna alle sfide individuali"
 msgstr ""
 
 #: templates/individual_match/availability.html:10
@@ -13442,27 +13426,27 @@ msgid "La proposta scade"
 msgstr ""
 
 #: templates/individual_match/create_proposal.html:73
-msgid "Mai (match immediato)"
+msgid "Mai (sfida immediata)"
 msgstr ""
 
 #: templates/individual_match/create_proposal.html:74
-msgid "1 ora prima del match"
+msgid "1 ora prima della sfida"
 msgstr ""
 
 #: templates/individual_match/create_proposal.html:75
-msgid "2 ore prima del match"
+msgid "2 ore prima della sfida"
 msgstr ""
 
 #: templates/individual_match/create_proposal.html:76
-msgid "6 ore prima del match"
+msgid "6 ore prima della sfida"
 msgstr ""
 
 #: templates/individual_match/create_proposal.html:77
-msgid "24 ore prima del match"
+msgid "24 ore prima della sfida"
 msgstr ""
 
 #: templates/individual_match/create_proposal.html:78
-msgid "48 ore prima del match"
+msgid "48 ore prima della sfida"
 msgstr ""
 
 #: templates/individual_match/create_proposal.html:80
@@ -13513,7 +13497,7 @@ msgid "Senza limite: la partita si chiude quando volete."
 msgstr ""
 
 #: templates/individual_match/create_proposal.html:129
-msgid "rack per vincere"
+msgid "triangoli per vincere"
 msgstr ""
 
 #: templates/individual_match/create_proposal.html:132
@@ -13529,7 +13513,7 @@ msgid "Esattamente N"
 msgstr ""
 
 #: templates/individual_match/create_proposal.html:134
-msgid "Si giocano tutti i rack: vince chi ne ha di più."
+msgid "Si giocano tutti i triangoli: vince chi ne ha di più."
 msgstr ""
 
 #: templates/individual_match/create_proposal.html:140
@@ -13537,19 +13521,19 @@ msgid "Set da vincere"
 msgstr ""
 
 #: templates/individual_match/create_proposal.html:142
-msgid "set per vincere il match"
+msgid "set per vincere la sfida"
 msgstr ""
 
 #: templates/individual_match/create_proposal.html:145
-msgid "rack per vincere un set"
+msgid "triangoli per vincere un set"
 msgstr ""
 
 #: templates/individual_match/create_proposal.html:153
-msgid "Match senza limite: lo chiuderete a mano quando volete."
+msgid "Sfida senza limite: la chiuderete a mano quando volete."
 msgstr ""
 
 #: templates/individual_match/create_proposal.html:160
-msgid "Chi rompe"
+msgid "Chi spacca"
 msgstr ""
 
 #: templates/individual_match/create_proposal.html:162
@@ -13557,11 +13541,11 @@ msgid "A turno"
 msgstr ""
 
 #: templates/individual_match/create_proposal.html:163
-msgid "Rompe chi ha vinto il rack"
+msgid "Spacca chi ha vinto il triangolo"
 msgstr ""
 
 #: templates/individual_match/create_proposal.html:164
-msgid "Rompe chi ha perso il rack"
+msgid "Spacca chi ha perso il triangolo"
 msgstr ""
 
 #: templates/individual_match/create_proposal.html:171
@@ -13586,17 +13570,17 @@ msgid "Devi selezionare almeno un giocatore per un invito diretto"
 msgstr ""
 
 #: templates/individual_match/create_proposal.html:200
-msgid "Sei sicuro di voler creare questa proposta di match?"
+msgid "Sei sicuro di voler creare questa proposta di sfida?"
 msgstr ""
 
 #: templates/individual_match/create_proposal.html:201
 #, python-brace-format
-msgid "Vince chi arriva primo a {distance} rack."
+msgid "Vince chi arriva primo a {distance} triangoli."
 msgstr ""
 
 #: templates/individual_match/create_proposal.html:202
 #, python-brace-format
-msgid "Si giocano {distance} rack: vince chi ne ha di più."
+msgid "Si giocano {distance} triangoli: vince chi ne ha di più."
 msgstr ""
 
 #: templates/individual_match/create_proposal.html:203
@@ -13648,13 +13632,13 @@ msgstr ""
 
 #: templates/individual_match/dashboard.html:184
 #: templates/individual_match/matches.html:151
-msgid "Nessun match ancora"
+msgid "Nessuna sfida ancora"
 msgstr ""
 
 #: templates/individual_match/dashboard.html:186
 #: templates/individual_match/matches.html:153
 msgid ""
-"Proponi una data a un altro giocatore: quando accetta, il match compare "
+"Proponi una data a un altro giocatore: quando accetta, la sfida compare "
 "qui."
 msgstr ""
 
@@ -13671,12 +13655,17 @@ msgstr ""
 
 #: templates/individual_match/dashboard.html:206
 #: templates/individual_match/statistics.html:147
-msgid "Match vinti"
+msgid "Sfide vinte"
+msgstr ""
+
+#: templates/individual_match/dashboard.html:210
+#: templates/individual_match/statistics.html:151
+msgid "Sfide giocate"
 msgstr ""
 
 #: templates/individual_match/dashboard.html:236
 #: templates/individual_match/statistics.html:13
-msgid "Tutti i match"
+msgid "Tutte le sfide"
 msgstr ""
 
 #: templates/individual_match/discover_players.html:7
@@ -13688,6 +13677,7 @@ msgid "Chi è disponibile, sala per sala"
 msgstr ""
 
 #: templates/individual_match/discover_players.html:27
+#: templates/individual_match/match_detail.html:5
 msgid "Sfida"
 msgstr ""
 
@@ -13770,11 +13760,11 @@ msgid "avversario"
 msgstr ""
 
 #: templates/individual_match/match_detail.html:13
-msgid "Torna ai match"
+msgid "Torna alle sfide"
 msgstr ""
 
 #: templates/individual_match/match_detail.html:54
-msgid "Inizia il match"
+msgid "Inizia la sfida"
 msgstr ""
 
 #: templates/individual_match/match_detail.html:64
@@ -13783,11 +13773,11 @@ msgid "Distanza libera"
 msgstr ""
 
 #: templates/individual_match/match_detail.html:66
-msgid "Questo match non ha una distanza: finisce quando lo decidete voi."
+msgid "Questa sfida non ha una distanza: finisce quando lo decidete voi."
 msgstr ""
 
 #: templates/individual_match/match_detail.html:69
-msgid "Termina il match"
+msgid "Termina la sfida"
 msgstr ""
 
 #: templates/individual_match/match_detail.html:98
@@ -13830,11 +13820,11 @@ msgid "Iniziato"
 msgstr ""
 
 #: templates/individual_match/match_detail.html:167
-msgid "Sei sicuro di voler annullare il match?"
+msgid "Sei sicuro di voler annullare la sfida?"
 msgstr ""
 
 #: templates/individual_match/match_detail.html:168
-msgid "Annulla il match"
+msgid "Annulla la sfida"
 msgstr ""
 
 #: templates/individual_match/match_detail.html:175
@@ -13850,25 +13840,29 @@ msgid "Aggiorna gli orari"
 msgstr ""
 
 #: templates/individual_match/match_detail.html:275
-msgid "Rimuovere l'ultimo rack vinto da questo giocatore?"
+msgid "Rimuovere l'ultimo triangolo vinto da questo giocatore?"
 msgstr ""
 
 #: templates/individual_match/match_detail.html:302
-msgid "Confermare il risultato del match?"
+msgid "Confermare il risultato della sfida?"
+msgstr ""
+
+#: templates/individual_match/match_detail.html:314
+msgid "Sfida completata!"
 msgstr ""
 
 #: templates/individual_match/match_detail.html:333
 msgid ""
-"Rifiutare il risultato? L'ultimo rack verrà rimosso e si potrà continuare"
-" a giocare."
+"Rifiutare il risultato? L'ultimo triangolo verrà rimosso e si potrà "
+"continuare a giocare."
 msgstr ""
 
 #: templates/individual_match/match_detail.html:344
-msgid "Ultimo rack rimosso. Continuate a giocare!"
+msgid "Ultimo triangolo rimosso. Continuate a giocare!"
 msgstr ""
 
 #: templates/individual_match/match_detail.html:360
-msgid "Sei sicuro di voler dichiarare forfait? L'avversario vincerà il match."
+msgid "Sei sicuro di voler dichiarare forfait? L'avversario vincerà la sfida."
 msgstr ""
 
 #: templates/individual_match/match_detail.html:370
@@ -13877,7 +13871,7 @@ msgstr ""
 
 #: templates/individual_match/matches.html:3
 #: templates/individual_match/matches.html:11
-msgid "I miei match"
+msgid "Le mie sfide"
 msgstr ""
 
 #: templates/individual_match/matches.html:37
@@ -13909,7 +13903,7 @@ msgid "Hai perso"
 msgstr ""
 
 #: templates/individual_match/matches.html:144
-msgid "Nessun match trovato"
+msgid "Nessuna sfida trovata"
 msgstr ""
 
 #: templates/individual_match/matches.html:145
@@ -13917,7 +13911,7 @@ msgid "Prova a togliere qualche filtro."
 msgstr ""
 
 #: templates/individual_match/proposal_detail.html:4
-msgid "Proposta di match"
+msgid "Proposta di sfida"
 msgstr ""
 
 #: templates/individual_match/proposal_detail.html:12
@@ -13958,7 +13952,7 @@ msgstr ""
 
 #: templates/individual_match/proposal_detail.html:64
 #, python-format
-msgid "Esattamente %(racks)s rack"
+msgid "Esattamente %(racks)s triangoli"
 msgstr ""
 
 #: templates/individual_match/proposal_detail.html:69
@@ -13970,7 +13964,7 @@ msgid "Accettata da"
 msgstr ""
 
 #: templates/individual_match/proposal_detail.html:104
-msgid "Match creato"
+msgid "Sfida creata"
 msgstr ""
 
 #: templates/individual_match/proposal_detail.html:119
@@ -14007,7 +14001,7 @@ msgid "Errore durante il rifiuto della proposta"
 msgstr ""
 
 #: templates/individual_match/proposals.html:4
-msgid "Proposte di match"
+msgid "Proposte di sfida"
 msgstr ""
 
 #: templates/individual_match/proposals.html:86
@@ -14020,7 +14014,7 @@ msgid "%(user)s ti ha invitato"
 msgstr ""
 
 #: templates/individual_match/proposals.html:114
-msgid "Accettata: il match è stato creato"
+msgid "Accettata: la sfida è stata creata"
 msgstr ""
 
 #: templates/individual_match/proposals.html:123
@@ -14081,11 +14075,11 @@ msgid ""
 msgstr ""
 
 #: templates/individual_match/statistics.html:10
-msgid "Come vai nei match individuali"
+msgid "Come vai nelle sfide individuali"
 msgstr ""
 
 #: templates/individual_match/statistics.html:46
-msgid "Vai ai match"
+msgid "Vai alle sfide"
 msgstr ""
 
 #: templates/individual_match/statistics.html:59
@@ -14129,23 +14123,27 @@ msgid "Chiuse in una visita"
 msgstr ""
 
 #: templates/individual_match/statistics.html:101
-msgid "Rack perfetti"
+msgid "Triangoli perfetti"
 msgstr ""
 
 #: templates/individual_match/statistics.html:131
-msgid "Ancora nessun match"
+msgid "Ancora nessuna sfida"
 msgstr ""
 
 #: templates/individual_match/statistics.html:133
 msgid "Le statistiche compaiono dopo la prima partita individuale conclusa."
 msgstr ""
 
+#: templates/individual_match/statistics.html:137
+msgid "Proponi una sfida"
+msgstr ""
+
 #: templates/individual_match/statistics.html:155
-msgid "Rack vinti"
+msgid "Triangoli vinti"
 msgstr ""
 
 #: templates/individual_match/statistics.html:159
-msgid "Rack vinti su giocati"
+msgid "Triangoli vinti su giocati"
 msgstr ""
 
 #: templates/individual_match/statistics.html:165
@@ -14153,7 +14151,7 @@ msgid "Vinte e perse"
 msgstr ""
 
 #: templates/individual_match/statistics.html:184
-msgid "Ultimi match"
+msgid "Ultime sfide"
 msgstr ""
 
 #: templates/individual_match/statistics.html:187
@@ -14223,7 +14221,7 @@ msgstr ""
 
 #: templates/individual_match/tpa_referto.html:10
 #: templates/individual_match/tpa_referto.html:112
-msgid "Torna al match"
+msgid "Torna alla sfida"
 msgstr ""
 
 #: templates/individual_match/tpa_referto.html:25
@@ -14236,8 +14234,8 @@ msgstr ""
 
 #: templates/individual_match/tpa_referto.html:28
 msgid ""
-"Invece dei soli rack vinti, annoti ogni visita al tavolo: quante bilie "
-"sono entrate e perche' il turno e' finito. Da li' esce il TPA, la "
+"Invece dei soli triangoli vinti, annoti ogni visita al tavolo: quante "
+"bilie sono entrate e perche' il turno e' finito. Da li' esce il TPA, la "
 "percentuale di azioni riuscite — lo stesso conto che Accu-Stats usa per i"
 " professionisti."
 msgstr ""
@@ -14245,8 +14243,8 @@ msgstr ""
 #: templates/individual_match/tpa_referto.html:31
 msgid ""
 "Il referto lo tiene chi lo apre; l'altro giocatore lo vede aggiornarsi. I"
-" rack vinti finiscono da soli nel punteggio del match: non c'e' niente da"
-" segnare due volte."
+" triangoli vinti finiscono da soli nel punteggio del match: non c'e' "
+"niente da segnare due volte."
 msgstr ""
 
 #: templates/individual_match/tpa_referto.html:44
@@ -14291,7 +14289,7 @@ msgid "non colpisci la bilia designata"
 msgstr ""
 
 #: templates/individual_match/tpa_referto.html:88
-msgid "con questo turno vinci il rack"
+msgid "con questo turno vinci il triangolo"
 msgstr ""
 
 #: templates/individual_match/tpa_referto.html:89
@@ -14393,7 +14391,7 @@ msgstr ""
 
 #: templates/player/challenge_attempt_detail.html:73
 #: templates/player/gara_challenge_detail.html:76
-msgid "Hai completato la challenge"
+msgid "Hai completato l'esercizio"
 msgstr ""
 
 #: templates/player/challenge_attempt_detail.html:83
@@ -14441,11 +14439,11 @@ msgid "Torna al catalogo"
 msgstr ""
 
 #: templates/player/challenge_detail.html:15
-msgid "Challenge riuscita o no"
+msgid "Esercizio riuscito o no"
 msgstr ""
 
 #: templates/player/challenge_detail.html:15
-msgid "Challenge a punteggio"
+msgid "Esercizio a punteggio"
 msgstr ""
 
 #: templates/player/challenge_detail.html:19
@@ -14457,11 +14455,11 @@ msgid "Non ancora superata"
 msgstr ""
 
 #: templates/player/challenge_detail.html:78
-msgid "Elimina la challenge"
+msgid "Elimina l'esercizio"
 msgstr ""
 
 #: templates/player/challenge_detail.html:88
-msgid "Allenati su questo drill"
+msgid "Allenati su questo esercizio"
 msgstr ""
 
 #: templates/player/challenge_detail.html:91
@@ -14469,7 +14467,7 @@ msgid "Registri una prova dopo l'altra, sulla stessa schermata"
 msgstr ""
 
 #: templates/player/challenge_detail.html:136
-msgid "Errore di rete: la challenge non è stata eliminata."
+msgid "Errore di rete: l'esercizio non è stato eliminato."
 msgstr ""
 
 #: templates/player/delete_account.html:4
@@ -14526,12 +14524,17 @@ msgstr ""
 msgid "Elimina definitivamente"
 msgstr ""
 
+#: templates/player/gara_challenge_detail.html:6
+#: templates/player/gara_challenge_detail.html:12
+msgid "Esercizio della gara"
+msgstr ""
+
 #: templates/player/gara_challenge_detail.html:25
-msgid "Challenge di gara"
+msgid "Esercizio di gara"
 msgstr ""
 
 #: templates/player/gara_challenge_detail.html:27
-msgid "Il punteggio di questa challenge vale per la classifica della gara."
+msgid "Il punteggio di questo esercizio vale per la classifica della gara."
 msgstr ""
 
 #: templates/player/gara_challenge_detail.html:54
@@ -14547,7 +14550,7 @@ msgid "Com’è andata…"
 msgstr ""
 
 #: templates/player/gara_challenge_detail.html:114
-msgid "Hai usato tutti i tentativi previsti per questa challenge."
+msgid "Hai usato tutti i tentativi previsti per questo esercizio."
 msgstr ""
 
 #: templates/player/gara_challenge_detail.html:152
@@ -14748,7 +14751,7 @@ msgid "Le tue posizioni nei campionati."
 msgstr ""
 
 #: templates/player/privacy_settings.html:72
-msgid "Statistiche challenge"
+msgid "Statistiche esercizi"
 msgstr ""
 
 #: templates/player/privacy_settings.html:73
@@ -14771,8 +14774,8 @@ msgstr ""
 
 #: templates/player/privacy_settings.html:94
 msgid ""
-"Account, partite, iscrizioni, classifiche, challenge e progressi. È un "
-"tuo diritto (GDPR art. 20)."
+"Account, partite, iscrizioni, classifiche, esercizi e progressi. È un tuo"
+" diritto (GDPR art. 20)."
 msgstr ""
 
 #: templates/player/privacy_settings.html:97
@@ -15179,6 +15182,10 @@ msgstr ""
 
 #: templates/roles/request_form.html:60
 msgid "Invia richiesta"
+msgstr ""
+
+#: templates/roles/requests.html:3 templates/roles/requests.html:8
+msgid "Richieste di ruolo"
 msgstr ""
 
 #: templates/roles/requests.html:14

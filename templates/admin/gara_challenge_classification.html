@@ -2,10 +2,10 @@
 {% import "components/_gara_header.html" as gara_head with context %}
 {% import "components/_challenge_bits.html" as ch with context %}
 
-{% block title %}{{ _('Classifica challenge') }} - {{ gara.name }}{% endblock %}
+{% block title %}{{ _('Classifica esercizi') }} - {{ gara.name }}{% endblock %}
 
 {% block page_back %}{{ gara_head.back(gara) }}{% endblock %}
-{% block page_title %}{{ _('Classifica challenge') }}{% endblock %}
+{% block page_title %}{{ _('Classifica esercizi') }}{% endblock %}
 {% block page_sub %}{{ gara.display_name }} <span class="c7-sep">·</span> {{ gara_head.sub(gara) }}{% endblock %}
 
 {% block content %}
@@ -36,7 +36,7 @@
           <div class="c7-rows__title">{{ entry.user.username }}</div>
           <div class="c7-rows__sub">
             <span class="c7-num">{{ entry.challenges_completed }}/{{ gara_challenges|length }}</span>
-            {{ _("challenge") }}
+            {{ _("esercizi") }}
             <span class="c7-sep">·</span>
             {{ _("somma di tutti i tentativi") }}: <span class="c7-num">{{ entry.total_all_attempts }}</span>
           </div>
@@ -94,7 +94,7 @@
     <div class="c7-grid" style="grid-template-columns:1fr 1fr">
       <div class="c7-card">
         <div class="c7-num-lg">{{ challenge_stats.total_challenges }}</div>
-        <div class="c7-rows__sub">{{ _("Challenge attive") }}</div>
+        <div class="c7-rows__sub">{{ _("Esercizi attivi") }}</div>
       </div>
       <div class="c7-card">
         <div class="c7-num-lg">{{ challenge_stats.total_attempts }}</div>
@@ -108,7 +108,7 @@
 
     {% if gara_challenges %}
     <section class="c7-stack">
-      <div class="c7-sechead"><h2>{{ _("Le challenge della gara") }}</h2></div>
+      <div class="c7-sechead"><h2>{{ _("Gli esercizi della gara") }}</h2></div>
       {% for gara_challenge in gara_challenges %}
       {% set challenge = gara_challenge.challenge %}
       <article class="c7-card">
@@ -150,7 +150,7 @@
     {% set challenge_enabled = not gara.campionato or gara.campionato.challenge_mode %}
     {% if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value and challenge_enabled %}
     <button class="btn btn-secondary w-100" data-bs-toggle="modal" data-bs-target="#challengeManagementModal">
-      <i class="fas fa-cog"></i>&nbsp;{{ _("Gestisci le challenge") }}
+      <i class="fas fa-cog"></i>&nbsp;{{ _("Gestisci gli esercizi") }}
     </button>
     {% endif %}
   </div>

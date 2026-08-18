@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
-{% block title %}{{ _("Inizia la challenge") }} - {{ challenge.get_display_name() }}{% endblock %}
+{% block title %}{{ _("Inizia l'esercizio") }} - {{ challenge.get_display_name() }}{% endblock %}
 
 {% block page_back %}
 <a class="c7-head__back d-lg-none" href="{{ url_for('challenge.challenge_detail', challenge_id=challenge.id) }}"
-   aria-label="{{ _('Torna alla challenge') }}"><i class="fas fa-xmark"></i></a>
+   aria-label="{{ _('Torna all\'esercizio') }}"><i class="fas fa-xmark"></i></a>
 {% endblock %}
 {% block page_title %}{{ _("Inizia il tentativo") }}{% endblock %}
 {% block page_sub %}{{ challenge.description|truncate(46, True, "…") }}{% endblock %}

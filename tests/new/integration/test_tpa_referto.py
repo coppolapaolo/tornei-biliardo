@@ -143,7 +143,9 @@ class TestApertura:
             match = _match(one, two, player1_score=2)
 
             assert TpaRefertoService.can_open(match, one.id) is False
-            assert "rack" in (TpaRefertoService.blocking_reason(match, one.id) or "")
+            assert "triangoli" in (
+                TpaRefertoService.blocking_reason(match, one.id) or ""
+            )
 
     def test_sui_match_a_set_non_si_apre(self, app, players):
         with app.app_context():

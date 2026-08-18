@@ -72,7 +72,7 @@ blocks:
       Appena entri, subito sotto il saluto c'è un riquadro che ti racconta come
       stai andando. Appena registrato non ha ancora niente da dire, quindi al
       suo posto trovi **«Il tuo profilo è pronto»** con tre passi da spuntare:
-      *Account creato*, *Gioca il primo match*, *Prova un drill*. Sopra, una
+      *Account creato*, *Gioca il primo match*, *Prova un esercizio*. Sopra, una
       riga spiega da dove parti: il punteggio **Elo** — il rating che trovi
       anche nel [profilo](/aiuto/account/profilo_e_statistiche) — vale 1200 per
       tutti, e comincia a muoversi con la prima partita registrata. Anche quei
@@ -83,11 +83,11 @@ blocks:
     text: >-
       Dopo la prima attività quel riquadro lascia il posto a **«Come stai
       andando»**: due numeri (per esempio il tuo Elo con la variazione recente,
-      oppure il punteggio dei drill), un piccolo grafico dell'andamento e la
+      oppure il punteggio degli esercizi), un piccolo grafico dell'andamento e la
       striscia delle ultime attività, ognuna con il risultato o il piazzamento.
       Il pulsante in fondo — si chiama **«Tutti i tuoi numeri»** o **«Streak e
       classifica»** a seconda di cosa hai da vedere — apre tre o quattro righe
-      in più: la serie in corso, la tua posizione in campionato, i drill
+      in più: la serie in corso, la tua posizione in campionato, gli esercizi
       completati, il livello. Parte sempre chiuso: si apre con un tocco.
 
   - type: note
@@ -108,7 +108,7 @@ blocks:
   - type: text
     text: >-
       Su **telefono** c'è una barra in fondo allo schermo con le cinque
-      destinazioni principali: Dashboard, Sale, Match, Challenge e Notifiche.
+      destinazioni principali: Dashboard, Sale, Sfide, Esercizi e Notifiche.
       La freccia in alto a sinistra torna sempre indietro di un passo.
 
   - type: shot

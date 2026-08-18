@@ -46,7 +46,7 @@
       <div class="c7-rows__main">
         <div class="c7-rows__title">{{ exam.name }}</div>
         <div class="c7-rows__sub">
-          {{ ngettext("%(n)s drill", "%(n)s drill", drill_count, n=drill_count) }}
+          {{ ngettext("%(n)s esercizio", "%(n)s esercizi", drill_count, n=drill_count) }}
         </div>
       </div>
       <i class="fas fa-chevron-right" style="color:var(--c7-ink-faint)"></i>
@@ -57,7 +57,7 @@
   <div class="c7-empty">
     <div class="c7-empty__ico"><i class="fas fa-pen-to-square"></i></div>
     <h2 class="c7-empty__title">{{ _("Nessun esame") }}</h2>
-    <p class="c7-empty__text">{{ _("Comincia componendone uno: una sequenza di drill, in ordine.") }}</p>
+    <p class="c7-empty__text">{{ _("Comincia componendone uno: una sequenza di esercizi, in ordine.") }}</p>
   </div>
   {% endif %}
 
@@ -79,7 +79,7 @@
 
     <button type="submit" class="btn btn-success" style="margin-top:12px">{{ _("Crea l'esame") }}</button>
     <div class="c7-rows__sub" style="margin-top:8px">
-      {{ _("I drill si aggiungono dopo, dalla pagina dell'esame.") }}
+      {{ _("Gli esercizi si aggiungono dopo, dalla pagina dell'esame.") }}
     </div>
   </form>
 </section>

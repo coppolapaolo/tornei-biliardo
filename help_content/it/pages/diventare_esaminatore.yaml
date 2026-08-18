@@ -22,8 +22,8 @@ blocks:
 
   - type: text
     text: >-
-      Il ruolo si sblocca **macinando drill**: quando ne hai completati venti,
-      fra le pagine dei drill compare **«Diventa Esaminatore»**. Non si chiede
+      Il ruolo si sblocca **macinando esercizio**: quando ne hai completati venti,
+      fra le pagine degli esercizi compare **«Diventa Esaminatore»**. Non si chiede
       dal profilo, e prima della soglia non compare da nessuna parte.
 
   - type: shot
@@ -68,7 +68,7 @@ blocks:
 
   - type: options
     items:
-      - name: "Richieste di ruolo"
+      - name: "Richieste ruolo esaminatore"
         text: >-
           Le approvi o le rifiuti. Se la approvi tu, il ruolo è concesso e la
           richiesta si chiude anche per gli altri esaminatori interpellati.
@@ -85,7 +85,7 @@ blocks:
   - type: text
     text: >-
       Dall'area **Gestisci esami** crei l'esame — nome, descrizione ed
-      eventualmente un limite di tempo — e **i drill si aggiungono dopo**,
+      eventualmente un limite di tempo — e **gli esercizi si aggiungono dopo**,
       dalla pagina dell'esame.
 
   - type: shot
@@ -94,30 +94,30 @@ blocks:
 
   - type: options
     items:
-      - name: "L'ordine dei drill"
+      - name: "L'ordine degli esercizi"
         text: >-
           Conta: i candidati li affrontano nella sequenza in cui li metti, e
           puoi spostarli finché ti convince.
         hint: esame.ordine_drill
       - name: "Punteggio massimo"
-        values: "per drill"
+        values: "per esercizio"
         text: >-
-          Lo decidi esame per esame, non è una proprietà del drill. Un drill
+          Lo decidi esame per esame, non è una proprietà dell'esercizio. Un esercizio
           che vuoi far pesare di più lo si fa valere di più alzandogli il
           massimo.
         hint: esame.punteggio_massimo
       - name: "Quante prove"
         values: "da 1 a 20"
         text: >-
-          Quante volte il candidato ripete quel drill. Se è più di una, il
-          drill vale la **prova migliore** — non la somma, così un drill a tre
+          Quante volte il candidato ripete quell'esercizio. Se è più di una, il
+          esercizio vale la **prova migliore** — non la somma, così un esercizio a tre
           prove non pesa il triplo di uno a prova unica.
         hint: esame.quante_prove
 
   - type: note
     tone: warning
     text: >-
-      Un esame senza drill **non è sostenibile**, e la sua pagina lo dice.
+      Un esame senza esercizio **non è sostenibile**, e la sua pagina lo dice.
       Comporlo e lasciarlo vuoto significa mostrarlo nel catalogo senza che
       nessuno possa farci niente.
 
@@ -171,7 +171,7 @@ blocks:
       - q: "Posso sostenere un esame che somministro io?"
         a: "No. La richiesta non nasce nemmeno: chi somministra non si certifica da solo."
       - q: "Devo aver sbloccato gli esami per fare l'esaminatore?"
-        a: "Sono due cose separate. Puoi somministrare esami senza aver sbloccato la possibilità di sostenerne: vedi i tuoi esami e li certifichi, ma il pulsante per sostenerli resta chiuso finché non completi i tuoi drill."
+        a: "Sono due cose separate. Puoi somministrare esami senza aver sbloccato la possibilità di sostenerne: vedi i tuoi esami e li certifichi, ma il pulsante per sostenerli resta chiuso finché non completi i tuogli esercizi."
       - q: "Se mi tolgono il ruolo, cosa succede agli esami che ho certificato?"
         a: "Restano validi. La revoca chiude la concessione, non cancella il lavoro fatto: gli esami che hai composto e le certificazioni che hai rilasciato non si toccano."
       - q: "Che voto posso dare?"

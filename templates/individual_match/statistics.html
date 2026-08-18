@@ -4,13 +4,13 @@
 
 {% block page_back %}
 <a class="c7-head__back d-lg-none" href="{{ url_for('individual_match.dashboard') }}"
-   aria-label="{{ _('Torna ai match individuali') }}"><i class="fas fa-arrow-left"></i></a>
+   aria-label="{{ _('Torna alle sfide individuali') }}"><i class="fas fa-arrow-left"></i></a>
 {% endblock %}
 {% block page_title %}{{ _("Le tue statistiche") }}{% endblock %}
-{% block page_sub %}{{ _("Come vai nei match individuali") }}{% endblock %}
+{% block page_sub %}{{ _("Come vai nelle sfide individuali") }}{% endblock %}
 {% block page_actions %}
 <a href="{{ url_for('individual_match.match_list') }}" class="btn btn-secondary btn-sm d-none d-lg-inline-flex">
-  <i class="fas fa-list"></i>&nbsp;{{ _("Tutti i match") }}
+  <i class="fas fa-list"></i>&nbsp;{{ _("Tutte le sfide") }}
 </a>
 {% endblock %}
 
@@ -43,7 +43,7 @@
         {{ _("Il TPA compare dopo il primo referto compilato durante una partita.") }}
       </p>
       <a href="{{ url_for('individual_match.match_list') }}" class="btn btn-secondary w-100" style="margin-top:12px">
-        {{ _("Vai ai match") }}
+        {{ _("Vai alle sfide") }}
       </a>
     </div>
     {% else %}
@@ -98,7 +98,7 @@
       </div>
       <div class="c7-card">
         <div class="c7-num-xl">{{ tpa.perfect_racks }}</div>
-        <div class="c7-rows__sub">{{ _("Rack perfetti") }}</div>
+        <div class="c7-rows__sub">{{ _("Triangoli perfetti") }}</div>
       </div>
     </div>
     {% endif %}
@@ -128,13 +128,13 @@
   {% if not played %}
   <div class="c7-empty">
     <div class="c7-empty__ico"><i class="fas fa-chart-line"></i></div>
-    <div class="c7-empty__title">{{ _("Ancora nessun match") }}</div>
+    <div class="c7-empty__title">{{ _("Ancora nessuna sfida") }}</div>
     <p class="c7-empty__text">
       {{ _("Le statistiche compaiono dopo la prima partita individuale conclusa.") }}
     </p>
     <div class="c7-empty__actions">
       <a href="{{ url_for('individual_match.create_proposal') }}" class="btn btn-primary">
-        <i class="fas fa-plus"></i>&nbsp;{{ _("Proponi un match") }}
+        <i class="fas fa-plus"></i>&nbsp;{{ _("Proponi una sfida") }}
       </a>
     </div>
   </div>
@@ -144,19 +144,19 @@
   <div class="c7-grid c7-kpis" style="grid-template-columns:1fr 1fr">
     <div class="c7-card">
       <div class="c7-num-xl">{{ "%.0f"|format(statistics.win_percentage or 0) }}%</div>
-      <div class="c7-rows__sub">{{ _("Match vinti") }}</div>
+      <div class="c7-rows__sub">{{ _("Sfide vinte") }}</div>
     </div>
     <div class="c7-card">
       <div class="c7-num-xl">{{ played }}</div>
-      <div class="c7-rows__sub">{{ _("Match giocati") }}</div>
+      <div class="c7-rows__sub">{{ _("Sfide giocate") }}</div>
     </div>
     <div class="c7-card">
       <div class="c7-num-xl">{{ statistics.total_racks_won or 0 }}</div>
-      <div class="c7-rows__sub">{{ _("Rack vinti") }}</div>
+      <div class="c7-rows__sub">{{ _("Triangoli vinti") }}</div>
     </div>
     <div class="c7-card">
       <div class="c7-num-xl">{{ "%.0f"|format(statistics.rack_win_percentage or 0) }}%</div>
-      <div class="c7-rows__sub">{{ _("Rack vinti su giocati") }}</div>
+      <div class="c7-rows__sub">{{ _("Triangoli vinti su giocati") }}</div>
     </div>
   </div>
 
@@ -181,7 +181,7 @@
   {% if statistics.recent_matches %}
   <section class="c7-stack">
     <div class="c7-sechead">
-      <h2>{{ _("Ultimi match") }}</h2>
+      <h2>{{ _("Ultime sfide") }}</h2>
       <span class="c7-sechead__note">
         <span class="c7-num">{{ statistics.recent_wins or 0 }}</span>{{ _("V") }} ·
         <span class="c7-num">{{ statistics.recent_losses or 0 }}</span>{{ _("P") }}

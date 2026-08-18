@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
-{% block title %}{{ _("Challenge") }}{% endblock %}
+{% block title %}{{ _("Esercizi") }}{% endblock %}
 
 {# Testata: si riempiono i blocchi del guscio, non se ne disegna una seconda
    dentro `content`. Sovrascrivere `page_head` per intero farebbe perdere il
    link indietro e l'avatar che base.html ci mette per il mobile. #}
-{% block page_title %}{{ _("Challenge") }}{% endblock %}
+{% block page_title %}{{ _("Esercizi") }}{% endblock %}
 {% block page_sub %}{{ _("Esercizi di abilità: provaci, registra il punteggio, migliora.") }}{% endblock %}
 {% block page_actions %}
     {# Ruolo esaminatore (ADR-041): il punto d'ingresso vive qui, nelle pagine
@@ -13,7 +13,7 @@
        ce l'ha già vede invece la coda delle richieste da processare. #}
     {% if current_user.is_authenticated and current_user.is_examiner
           and feature_visible('roles.role_requests') %}
-    <a href="{{ url_for('roles.role_requests') }}" class="btn btn-outline-info btn-sm">{{ _("Richieste di ruolo") }}</a>
+    <a href="{{ url_for('roles.role_requests') }}" class="btn btn-outline-info btn-sm">{{ _("Richieste ruolo esaminatore") }}</a>
     {% elif current_user.is_authenticated
             and current_user.can_access('request_examiner')
             and feature_visible('roles.request_role_form') %}
@@ -21,7 +21,7 @@
     {% endif %}
     {% if current_user.is_authenticated and current_user.can_access('create_challenge')
           and feature_visible('challenge.create_challenge') %}
-    <a href="{{ url_for('challenge.create_challenge') }}" class="btn btn-success btn-sm">{{ _("Nuova challenge") }}</a>
+    <a href="{{ url_for('challenge.create_challenge') }}" class="btn btn-success btn-sm">{{ _("Nuovo esercizio") }}</a>
     {% endif %}
 {% endblock %}
 
@@ -31,27 +31,27 @@
    client-side come nella lista utenti — le card sono gia' tutte nel documento,
    e una chiamata al server per ogni tasto premuto non aggiungerebbe niente. #}
 <div style="margin-bottom: 16px;">
-    <label class="visually-hidden" for="challengeSearch">{{ _("Cerca fra le challenge") }}</label>
+    <label class="visually-hidden" for="challengeSearch">{{ _("Cerca fra gli esercizi") }}</label>
     <input type="search" id="challengeSearch" class="form-control"
            placeholder="{{ _('Cerca nel titolo o nelle istruzioni…') }}"
-           aria-label="{{ _('Cerca fra le challenge') }}">
+           aria-label="{{ _('Cerca fra gli esercizi') }}">
     <div class="c7-kicker d-none" id="challengeSearchEmpty" style="margin-top: 8px;">
-        {{ _("Nessuna challenge corrisponde alla ricerca.") }}
+        {{ _("Nessun esercizio corrisponde alla ricerca.") }}
     </div>
 </div>
 
 <nav class="nav-tabs nav" id="challengeTabs" role="tablist" style="margin-bottom: 20px;">
     <button class="nav-link active" id="all-tab" data-bs-toggle="pill" data-bs-target="#all-challenges" type="button" role="tab">
-        {{ _("Tutte") }} <span class="c7-num" style="margin-left: 6px;" data-count-for="all-challenges">{{ all_challenges|length }}</span>
+        {{ _("Tutti") }} <span class="c7-num" style="margin-left: 6px;" data-count-for="all-challenges">{{ all_challenges|length }}</span>
     </button>
     {% if current_user.is_authenticated and current_user.can_access('create_challenge')
           and feature_visible('challenge.create_challenge') %}
     <button class="nav-link" id="my-tab" data-bs-toggle="pill" data-bs-target="#my-challenges" type="button" role="tab">
-        {{ _("Le mie") }} <span class="c7-num" style="margin-left: 6px;" data-count-for="my-challenges">{{ my_challenges|length }}</span>
+        {{ _("I miei") }} <span class="c7-num" style="margin-left: 6px;" data-count-for="my-challenges">{{ my_challenges|length }}</span>
     </button>
     {% endif %}
     <button class="nav-link" id="favorites-tab" data-bs-toggle="pill" data-bs-target="#favorite-challenges" type="button" role="tab">
-        {{ _("Preferite") }} <span class="c7-num" style="margin-left: 6px;" data-count-for="favorite-challenges">{{ favorite_challenges|length }}</span>
+        {{ _("Preferiti") }} <span class="c7-num" style="margin-left: 6px;" data-count-for="favorite-challenges">{{ favorite_challenges|length }}</span>
     </button>
 </nav>
 
@@ -72,10 +72,10 @@
         {% else %}
         <div class="c7-empty">
             <div class="c7-empty__ico"><i class="fas fa-bullseye"></i></div>
-            <h2 class="c7-empty__title">{{ _("Non hai ancora creato challenge") }}</h2>
-            <p class="c7-empty__text">{{ _("Una challenge è un esercizio ripetibile: una foto del tavolo, le regole, il punteggio.") }}</p>
+            <h2 class="c7-empty__title">{{ _("Non hai ancora creato esercizi") }}</h2>
+            <p class="c7-empty__text">{{ _("Un esercizio è una prova ripetibile: una foto del tavolo, le regole, il punteggio.") }}</p>
             <div class="c7-empty__actions">
-                <a href="{{ url_for('challenge.create_challenge') }}" class="btn btn-success">{{ _("Crea la prima") }}</a>
+                <a href="{{ url_for('challenge.create_challenge') }}" class="btn btn-success">{{ _("Crea il primo") }}</a>
             </div>
         </div>
         {% endif %}
@@ -92,8 +92,8 @@
         {% else %}
         <div class="c7-empty">
             <div class="c7-empty__ico"><i class="far fa-heart"></i></div>
-            <h2 class="c7-empty__title">{{ _("Nessuna preferita") }}</h2>
-            <p class="c7-empty__text">{{ _("Tocca il cuore su una challenge per ritrovarla qui.") }}</p>
+            <h2 class="c7-empty__title">{{ _("Nessun preferito") }}</h2>
+            <p class="c7-empty__text">{{ _("Tocca il cuore su un esercizio per ritrovarlo qui.") }}</p>
         </div>
         {% endif %}
     </div>
@@ -109,8 +109,8 @@
         favRemove: {{ _("Rimuovi dai preferiti")|tojson }},
         favError: {{ _("Non è stato possibile aggiornare i preferiti.")|tojson }},
         netError: {{ _("Errore di rete: riprova.")|tojson }},
-        deleteConfirm: {{ _("Confermi di voler eliminare questa challenge? Non si torna indietro.")|tojson }},
-        deleteError: {{ _("Non è stato possibile eliminare la challenge.")|tojson }}
+        deleteConfirm: {{ _("Confermi di voler eliminare questo esercizio? Non si torna indietro.")|tojson }},
+        deleteError: {{ _("Non è stato possibile eliminare l'esercizio.")|tojson }}
     };
 
     // Ricerca nel catalogo: nasconde le card che non contengono il termine, in

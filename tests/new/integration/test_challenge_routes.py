@@ -218,7 +218,7 @@ class TestChallengeRoutes:
 
         response = client.get(f"/challenges/{test_challenge.id}/edit")
         assert response.status_code == 200
-        assert b"Challenge" in response.data  # Using create template for edit
+        assert "esercizio".encode() in response.data  # riusa il template di creazione
         # Note: Using create template for edit mode
 
     def test_edit_challenge_post(self, client, director_user, test_challenge):

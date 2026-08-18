@@ -1,4 +1,4 @@
-title: "Le challenge"
+title: "Gli esercizi"
 section: giocare
 kind: approfondimento
 audience: [giocatore]
@@ -12,7 +12,7 @@ related: [disegnare_un_drill, progressi, numero_dispari, esami]
 blocks:
   - type: text
     text: >-
-      Una challenge è un esercizio con regole fisse: una disposizione di bilie
+      Un esercizio ha regole fisse: una disposizione di bilie
       da imbucare, un tiro da ripetere, un obiettivo da raggiungere in un certo
       numero di tentativi. Si gioca **da soli**, e il risultato è un punteggio.
 
@@ -22,7 +22,7 @@ blocks:
 
   - type: text
     text: >-
-      La sezione **Challenge** raccoglie tutte le prove disponibili. Ogni
+      La sezione **Esercizi** raccoglie tutte le prove disponibili. Ogni
       scheda mostra l'immagine della disposizione, il **nome della prova** in
       grassetto e sotto le prime righe delle istruzioni. Puoi metterne qualcuna
       fra i preferiti per ritrovarla in fretta.
@@ -33,7 +33,7 @@ blocks:
 
   - type: text
     text: >-
-      Sopra le linguette **Tutte**, **Le mie** e **Preferite** c'è la casella
+      Sopra le linguette **Tutti**, **I miei** e **Preferiti** c'è la casella
       **«Cerca nel titolo o nelle istruzioni…»**: mentre scrivi restano solo le
       prove che contengono quella parola, in tutte e tre le linguette insieme, e
       i numeri accanto ai nomi si aggiornano da soli. Se non corrisponde niente,
@@ -41,12 +41,12 @@ blocks:
 
   - type: note
     tone: info
-    title: "Perché una prova si chiama «Drill 7»"
+    title: "Perché una prova si chiama «Esercizio 7»"
     text: >-
       Il titolo è facoltativo. Chi crea una prova può darle un nome — e allora
       è quello che si legge dappertutto, nel catalogo, negli esami e nelle
       gare — oppure lasciarlo in bianco, e allora la prova prende il suo numero:
-      **Drill 7**.
+      **Esercizio 7**.
 
   - type: heading
     id: allenarsi
@@ -61,10 +61,10 @@ blocks:
 
   - type: steps
     items:
-      - title: "Scegli una challenge"
+      - title: "Scegli un esercizio"
         text: "Apri la sua scheda e leggi le regole: come si dispongono le bilie e come si conta il punteggio."
-      - title: "Tocca «Provala»"
-        text: "È il pulsante sulla scheda nel catalogo. Dalla pagina della challenge si chiama «Allenati su questo drill»."
+      - title: "Tocca «Provalo»"
+        text: "È il pulsante sulla scheda nel catalogo. Dalla pagina dell'esercizio si chiama «Allenati su questo esercizio»."
       - title: "Prepara il tavolo e gioca"
         text: "La foto e le istruzioni restano in alto, sempre visibili: non devi ricordarti niente a memoria."
       - title: "Registra com'è andata"
@@ -72,7 +72,7 @@ blocks:
       - title: "Riprova quante volte vuoi"
         text: "La prova compare subito in «Le tue prove», e in alto salgono «Prove registrate» e «Il tuo record». Il campo si azzera da solo: sei già pronto per la prossima."
       - title: "Quando basta, tocca «Ho finito»"
-        text: "Torni al catalogo. Le prove restano nel tuo storico, e tornando sulla challenge ritrovi le ultime dieci."
+        text: "Torni al catalogo. Le prove restano nel tuo storico, e tornando sull'esercizio ritrovi le ultime dieci."
 
   - type: note
     tone: info
@@ -103,12 +103,12 @@ blocks:
 
   - type: text
     text: >-
-      Un direttore di gara può aggiungere challenge al catalogo: titolo,
+      Un direttore di gara può aggiungere esercizi al catalogo: titolo,
       istruzioni, immagine della disposizione delle bilie e tipo di punteggio.
 
   - type: shot
     shot: challenge-nuova
-    caption: "Il modulo per creare una challenge. In fondo, «Disegna il drill» per chi la foto non ce l'ha."
+    caption: "Il modulo per creare un esercizio. In fondo, «Disegna l'esercizio» per chi la foto non ce l'ha."
 
   - type: options
     items:
@@ -116,7 +116,7 @@ blocks:
         values: "facoltativo"
         text: >-
           Il nome con cui la prova si presenta ovunque. Senza, prende il suo
-          numero — «Drill 12». Vale la pena scriverlo: venti prove che
+          numero — «Esercizio 12». Vale la pena scriverlo: venti prove che
           cominciano tutte con «Disponi le bilie…» nel catalogo non si
           distinguono l'una dall'altra.
         hint: challenge.titolo
@@ -143,23 +143,23 @@ blocks:
   - type: text
     text: >-
       In fondo al modulo, sotto il campo della foto, c'è la domanda **«Non hai
-      una foto?»** e il pulsante **«Disegna il drill»**: apre un tavolo vuoto
+      una foto?»** e il pulsante **«Disegna l'esercizio»**: apre un tavolo vuoto
       su cui disponi le bilie e tracci i tiri, e l'immagine del catalogo la
       genera il disegno. È una funzione da direttore di gara, e si sblocca
-      dopo trenta drill completati.
+      dopo trenta esercizi completati.
 
   - type: text
     text: >-
       Come funziona il disegno, comando per comando, è spiegato in
-      [Disegnare un drill](/aiuto/giocare/disegnare_un_drill).
+      [Disegnare un esercizio](/aiuto/giocare/disegnare_un_drill).
 
   - type: heading
     id: in_gara
-    title: "Le challenge dentro una gara"
+    title: "Gli esercizi dentro una gara"
 
   - type: text
     text: >-
-      Il direttore può inserire challenge nella gara. Servono a due cose molto
+      Il direttore può inserire esercizi nella gara. Servono a due cose molto
       diverse.
 
   - type: options
@@ -167,30 +167,30 @@ blocks:
       - name: "Al posto dell'X a tavolino"
         text: >-
           Quando i giocatori sono dispari, chi resta senza avversario invece di
-          stare fermo esegue una challenge: il punteggio ottenuto conta per la
+          stare fermo esegue un esercizio: il punteggio ottenuto conta per la
           classifica del turno. È più equo dell'assegnare una vittoria a
           tavolino, e più divertente che stare a guardare.
       - name: "Come spareggio"
         text: >-
           A fine gara, se due o più giocatori sono a pari merito nelle
-          posizioni che contano, si può decidere con una challenge: chi fa il
+          posizioni che contano, si può decidere con un esercizio: chi fa il
           punteggio migliore sta davanti.
 
   - type: note
     tone: warning
     title: "Dentro una gara si passa da un'altra parte"
     text: >-
-      La challenge di una gara non si avvia dal catalogo: la trovi nella pagina
+      L'esercizio di una gara non si avvia dal catalogo: la trovi nella pagina
       della gara, con il pulsante «Prova» (o «Continua», se hai già cominciato),
       e prima di giocare l'app ti mostra una pagina di conferma. Lì il punteggio
       conta per la classifica, e quante prove hai a disposizione lo stabilisce
-      il direttore: accanto alla challenge vedi quante ne hai già fatte.
+      il direttore: accanto all'esercizio vedi quante ne hai già fatte.
 
   - type: note
     tone: info
     title: "Spot Shot Rally"
     text: >-
-      È la challenge usata più spesso per gli spareggi: una serie di tiri da
+      È l'esercizio usata più spesso per gli spareggi: una serie di tiri da
       posizione fissa, con un punteggio che si accumula. Chi accumula di più
       vince lo spareggio.
 
@@ -207,15 +207,15 @@ blocks:
 
   - type: faq
     items:
-      - q: "Non vedo la sezione Challenge."
+      - q: "Non vedo la sezione Esercizi."
         a: "È una funzione che si sblocca con l'uso della piattaforma, come la sezione Match. Se non compare ancora, comparirà."
-      - q: "Non vedo «Disegna il drill» nel modulo di creazione."
-        a: "È un comando da direttore di gara, e si sblocca dopo trenta drill completati. Finché non compare, la challenge si crea caricando la foto: è il modo normale, non un ripiego."
-      - q: "Posso rifare la stessa challenge più volte?"
-        a: "Sì, ed è proprio il senso della schermata di allenamento: registri una prova dopo l'altra senza uscire. Dentro una gara è diverso: lì il numero di tentativi lo stabilisce il direttore, e dentro un esame lo stabilisce chi l'ha composto — può chiederti più prove dello stesso drill, e conta la migliore."
-      - q: "Che differenza c'è fra una challenge e un esame?"
-        a: "Una challenge è una prova sola. Un esame è una sequenza di più drill in ordine, e può essere certificato da un esaminatore. Vedi [Sostenere un esame](/aiuto/giocare/esami)."
+      - q: "Non vedo «Disegna l'esercizio» nel modulo di creazione."
+        a: "È un comando da direttore di gara, e si sblocca dopo trenta esercizi completati. Finché non compare, l'esercizio si crea caricando la foto: è il modo normale, non un ripiego."
+      - q: "Posso rifare la stesso esercizio più volte?"
+        a: "Sì, ed è proprio il senso della schermata di allenamento: registri una prova dopo l'altra senza uscire. Dentro una gara è diverso: lì il numero di tentativi lo stabilisce il direttore, e dentro un esame lo stabilisce chi l'ha composto — può chiederti più prove dello stesso esercizio, e conta la migliore."
+      - q: "Che differenza c'è fra un esercizio e un esame?"
+        a: "Un esercizio è una prova sola. Un esame è una sequenza di più esercizi in ordine, e può essere certificato da un esaminatore. Vedi [Sostenere un esame](/aiuto/giocare/esami)."
       - q: "Chi controlla che il punteggio dichiarato sia vero?"
         a: "Fuori dalle gare, nessuno: è un allenamento, e vale la parola. Dentro una gara è il direttore a validare i risultati."
-      - q: "Le challenge contano per il rating?"
-        a: "No. Il rating misura le partite contro avversari; le challenge alimentano statistiche e progressi personali."
+      - q: "Gli esercizi contano per il rating?"
+        a: "No. Il rating misura le partite contro avversari; gli esercizi alimentano statistiche e progressi personali."

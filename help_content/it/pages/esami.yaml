@@ -3,7 +3,7 @@ section: giocare
 kind: tutorial
 audience: [giocatore]
 minutes: 5
-summary: "Più drill in fila, in ordine. Da solo per allenarti, oppure davanti a un esaminatore perché resti scritto che li hai superati."
+summary: "Più esercizio in fila, in ordine. Da solo per allenarti, oppure davanti a un esaminatore perché resti scritto che li hai superati."
 screens: [exam.exam_catalog, exam.exam_detail, exam.request_form,
   exam.request_list, exam.request_detail, exam.session_detail]
 related: [challenge, diventare_esaminatore, profilo_e_statistiche]
@@ -11,15 +11,15 @@ related: [challenge, diventare_esaminatore, profilo_e_statistiche]
 blocks:
   - type: text
     text: >-
-      Un esame è una **sequenza di drill**, decisa da chi l'ha composto e
-      sempre nello stesso ordine. Un drill da solo dice come ti è andato un
+      Un esame è una **sequenza dgli esercizi**, decisa da chi l'ha composto e
+      sempre nello stesso ordine. Un esercizio da solo dice come ti è andato un
       tiro; un esame dice se sai tenere insieme più gesti di seguito. Se non
-      sai cos'è un drill, comincia da [Le
-      challenge](/aiuto/giocare/challenge).
+      sai cos'è un esercizio, comincia da [Le
+      esercizi](/aiuto/giocare/challenge).
 
   - type: shot
     shot: esame-catalogo
-    caption: "Il catalogo degli esami: le sequenze di drill che si possono sostenere."
+    caption: "Il catalogo degli esami: le sequenze dgli esercizi che si possono sostenere."
 
   - type: heading
     id: due_modi
@@ -56,22 +56,22 @@ blocks:
   - type: text
     text: >-
       Prima di iniziare, la scheda dell'esame ti dice esattamente cosa ti
-      aspetta: i drill in ordine, il punteggio massimo di ciascuno, quante
+      aspetta: gli esercizi in ordine, il punteggio massimo di ciascuno, quante
       prove hai a disposizione e **chi lo somministra**.
 
   - type: shot
     shot: esame-dettaglio
-    caption: "La pagina di un esame: i drill che lo compongono con il punteggio massimo e il numero di prove, chi lo somministra e i due modi di sostenerlo."
+    caption: "La pagina di un esame: gli esercizi che lo compongono con il punteggio massimo e il numero di prove, chi lo somministra e i due modi di sostenerlo."
 
   - type: note
     tone: tip
-    title: "Quando un drill chiede più prove, conta la migliore"
+    title: "Quando un esercizio chiede più prove, conta la migliore"
     text: >-
-      Accanto a un drill puoi leggere per esempio **«3 prove · conta la
+      Accanto a un esercizio puoi leggere per esempio **«3 prove · conta la
       migliore»**. Vuol dire che quel gesto lo ripeti tre volte e vale il tuo
       risultato **migliore**, non la media e non la somma: se fai 6, 9 e 7 su
-      un drill da 10, quel drill vale 9. Chi compone l'esame decide quante
-      prove servono; sui drill a prova unica non compare nulla e si registra
+      un esercizio da 10, quell'esercizio vale 9. Chi compone l'esame decide quante
+      prove servono; sugli esercizi a prova unica non compare nulla e si registra
       una volta sola.
 
   - type: heading
@@ -86,7 +86,7 @@ blocks:
           sinistra è l'allenamento: tocca **«Inizia»** e il tentativo si apre
           subito, senza chiedere niente a nessuno.
         shot: esame-dettaglio
-      - title: "Esegui i drill nell'ordine in cui sono elencati"
+      - title: "Esegui gli esercizi nell'ordine in cui sono elencati"
         text: >-
           Per ogni prova compare una casella. Le riempi via via, in ordine, e
           l'avanzamento in cima si aggiorna.
@@ -165,7 +165,7 @@ blocks:
           registrato nessun punteggio: nessuno viene valutato a sua insaputa.
       - title: "Esegui, lui registra"
         text: >-
-          Drill dopo drill, prova dopo prova, mentre l'avanzamento sale.
+          Esercizio dopo esercizio, prova dopo prova, mentre l'avanzamento sale.
         shot: esame-sessione
       - title: "Alla fine certifica l'esito"
         text: >-
@@ -201,12 +201,12 @@ blocks:
   - type: faq
     items:
       - q: "Non vedo la sezione Esami."
-        a: "Si sblocca dopo aver completato tre drill. Fino a quel momento la voce non compare: nella pagina dei progressi la trovi fra le funzioni ancora chiuse, con quanti te ne mancano."
+        a: "Si sblocca dopo aver completato tre esercizio. Fino a quel momento la voce non compare: nella pagina dei progressi la trovi fra le funzioni ancora chiuse, con quanti te ne mancano."
       - q: "Posso ripetere lo stesso esame più volte?"
         a: "Sì. In autonomia quando vuoi; certificato, aprendo ogni volta un nuovo appuntamento."
       - q: "Posso chiedere un esame che somministro io?"
         a: "No, l'app non lo permette. Chi somministra un esame non può sostenerlo: la richiesta non nasce proprio."
-      - q: "Che differenza c'è fra un esame e le challenge dentro una gara?"
-        a: "Le challenge in gara servono alla gara: sostituiscono l'X a tavolino o decidono uno spareggio. L'esame non c'entra con le gare: certifica che sai fare una sequenza di gesti."
+      - q: "Che differenza c'è fra un esame e gli esercizi dentro una gara?"
+        a: "Gli esercizi in gara servono alla gara: sostituiscono l'X a tavolino o decidono uno spareggio. L'esame non c'entra con le gare: certifica che sai fare una sequenza di gesti."
       - q: "L'esame conta per il rating?"
         a: "No. Il rating misura le partite contro avversari. Gli esami alimentano lo storico dell'allenamento e i progressi personali."

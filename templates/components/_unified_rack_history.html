@@ -27,7 +27,7 @@ Parametri:
     {% set _void = rows.append({'rack': rack, 'p1': running.p1, 'p2': running.p2}) %}
 {% endfor %}
 <section class="c7-stack" style="margin-top: 18px;">
-    <h3 style="margin: 0;">{{ _('Rack giocati') }}</h3>
+    <h3 style="margin: 0;">{{ _('Triangoli giocati') }}</h3>
     <div class="c7-racklist">
         {% for row in rows|reverse %}
         <div class="c7-racklist__row">
@@ -52,13 +52,13 @@ Parametri:
 
 {% if deleted_racks|length %}
 <section class="c7-stack" style="margin-top: 18px;">
-    <h3 style="margin: 0; color: var(--c7-ink-muted);">{{ _('Rack rimossi') }}</h3>
+    <h3 style="margin: 0; color: var(--c7-ink-muted);">{{ _('Triangoli rimossi') }}</h3>
     <p class="text-muted" style="margin: 0; font-size: 12px;">{{ _('Registro completo, utile in caso di contestazione.') }}</p>
     <div class="c7-table-wrap table-responsive">
         <table class="table">
             <thead>
                 <tr>
-                    <th style="width: 70px;">{{ _('Rack') }}</th>
+                    <th style="width: 70px;">{{ _('Triangoli') }}</th>
                     <th>{{ _('Vinto da') }}</th>
                     <th>{{ _('Segnato da') }}</th>
                     <th>{{ _('Segnato') }}</th>

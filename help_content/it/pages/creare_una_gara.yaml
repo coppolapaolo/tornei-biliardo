@@ -46,7 +46,7 @@ blocks:
       - title: "Disciplina e distanza"
         text: >-
           La disciplina è il gioco (palla 8, palla 9, palla 10…). La distanza è
-          a quanti rack si vince: **«Al 4»** significa che vince chi arriva
+          a quanti triangoli si vince: **«Al 4»** significa che vince chi arriva
           prima a 4. Vedi [Formati di
           gioco](/aiuto/approfondimenti/formati_di_gioco).
       - title: "Numero di turni"
@@ -98,7 +98,7 @@ blocks:
     text: >-
       Con eliminazione diretta e doppio KO non ti vengono chiesti numero di
       turni, gestione forfait, numero dispari, evita reincontri, sistema di
-      classifica, spareggio e numero esatto di rack: su un tabellone nessuna di
+      classifica, spareggio e numero esatto di triangoli: su un tabellone nessuna di
       quelle scelte cambia qualcosa, e prima venivano chieste e poi ignorate.
       Al loro posto compare il riquadro **Opzioni del tabellone**. Tutto
       l'elenco è in [Tutte le

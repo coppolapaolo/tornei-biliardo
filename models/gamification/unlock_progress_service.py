@@ -42,7 +42,7 @@ class UnlockProgressService:
             Dictionary with progress information:
             {
                 "feature_code": "create_match_direct",
-                "feature_name": "Match Individuali",
+                "feature_name": "Sfide individuali",
                 "description": "...",
                 "is_unlocked": False,
                 "rule_sets": [
@@ -155,8 +155,8 @@ class UnlockProgressService:
                 "distinct_opponents": "avversari diversi",
                 "matches_in_location": "match in sala",
                 "challenges_completed": "drill completati",
-                "gare_with_drill_played": "gare con drill",
-                "tournament_drills_completed": "drill in gara",
+                "gare_with_drill_played": "gare con esercizi",
+                "tournament_drills_completed": "esercizi in gara",
                 "exams_certified": "esami certificati",
             }
             metric_label = metric_labels.get(metric_name, metric_name.replace("_", " "))
@@ -256,8 +256,8 @@ class UnlockProgressService:
                 "tournaments_organized": f"Organizza altre {remaining} gare",
                 "distinct_opponents": f"Gioca contro altri {remaining} avversari",
                 "challenges_completed": f"Completa altri {remaining} drill",
-                "gare_with_drill_played": f"Partecipa a {remaining} gare con drill",
-                "tournament_drills_completed": f"Completa {remaining} drill in gara",
+                "gare_with_drill_played": f"Partecipa a {remaining} gare con esercizi",
+                "tournament_drills_completed": f"Completa {remaining} esercizi in gara",
                 "exams_certified": f"Supera altri {remaining} esami certificati",
             }
             return hints.get(metric, f"Ti mancano {remaining} per completare")

@@ -258,7 +258,7 @@ def _drill_activities(user_id: int) -> List[Activity]:
     )
     out: List[Activity] = []
     for row in rows:
-        name = row.challenge.get_display_name() if row.challenge else _("Drill")
+        name = row.challenge.get_display_name() if row.challenge else _("Esercizio")
         if row.passed is True:
             outcome = "win"
         elif row.passed is False:
@@ -272,12 +272,12 @@ def _drill_activities(user_id: int) -> List[Activity]:
                 outcome=outcome,
                 text=name,
                 title=(
-                    _("%(drill)s, punteggio %(score)s", drill=name, score=row.score)
+                    _("%(name)s, punteggio %(score)s", name=name, score=row.score)
                     if not (row.challenge and row.challenge.pass_fail_only)
                     else (
-                        _("%(drill)s, superato", drill=name)
+                        _("%(name)s, superato", name=name)
                         if row.passed
-                        else _("%(drill)s, non superato", drill=name)
+                        else _("%(name)s, non superato", name=name)
                     )
                 ),
                 icon="fa-bullseye",
@@ -792,8 +792,8 @@ def _drill_row(user_id: int) -> List[Dict[str, Any]]:
             "icon": "fa-bullseye",
             "color_role": "accent",
             "title": ngettext(
-                "%(num)s drill completato",
-                "%(num)s drill completati",
+                "%(num)s esercizio completato",
+                "%(num)s esercizi completati",
                 total,
             ),
             "subtitle": subtitle,
@@ -1169,7 +1169,7 @@ class ActivityFeedbackService:
             },
             {
                 "done": drilled,
-                "title": _("Prova un drill"),
+                "title": _("Prova un esercizio"),
                 "subtitle": _("Sblocca il punteggio di precisione"),
             },
         ]
@@ -1394,7 +1394,7 @@ def _strip_label(kind: str, *, mixed: bool) -> str:
     return {
         "match": _("Le tue ultime partite"),
         "gara": _("Le tue ultime gare"),
-        "drill": _("I tuoi ultimi drill"),
+        "drill": _("I tuoi ultimi esercizi"),
     }.get(kind, _("Le tue ultime attività"))
 
 
@@ -1427,7 +1427,7 @@ def _drill_primary(user_id: int, drills: Sequence[Activity]) -> Dict[str, Any]:
     values = _drill_scores(user_id, drills)
     if not values:
         return _metric(
-            _("Drill completati"),
+            _("Esercizi completati"),
             str(len(drills)),
             delta=_("nella tua finestra recente"),
         )
@@ -1437,7 +1437,7 @@ def _drill_primary(user_id: int, drills: Sequence[Activity]) -> Dict[str, Any]:
         ngettext("in %(num)s sessione", "in %(num)s sessioni", len(values)),
     )
     return _metric(
-        _("Punteggio drill"),
+        _("Punteggio esercizi"),
         str(values[-1]),
         delta=delta_text,
         delta_tone=tone,
@@ -1473,7 +1473,7 @@ def _drill_secondary(drills: Sequence[Activity]) -> Optional[Dict[str, Any]]:
     passed = sum(1 for d in drills if d.outcome == "win")
     failed = sum(1 for d in drills if d.outcome == "draw")
     if not (passed or failed):
-        return _metric(_("Drill completati"), str(len(drills)))
+        return _metric(_("Esercizi completati"), str(len(drills)))
     slices = [
         {
             "label": ngettext("%(num)s superato", "%(num)s superati", passed),

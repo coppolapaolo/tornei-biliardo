@@ -3,13 +3,13 @@
 
 {% set challenge = gara_challenge.challenge %}
 
-{% block title %}{{ challenge.get_display_name() }} - {{ _("Challenge della gara") }}{% endblock %}
+{% block title %}{{ challenge.get_display_name() }} - {{ _("Esercizio della gara") }}{% endblock %}
 
 {% block page_back %}
 <a class="c7-head__back d-lg-none" href="{{ url_for('player.gara_detail', gara_id=gara_challenge.gara_id) }}"
    aria-label="{{ _('Torna alla gara') }}"><i class="fas fa-arrow-left"></i></a>
 {% endblock %}
-{% block page_title %}{{ _("Challenge della gara") }}{% endblock %}
+{% block page_title %}{{ _("Esercizio della gara") }}{% endblock %}
 {% block page_sub %}
 {{ gara_challenge.gara.name }} <span class="c7-sep">·</span> {{ _("dopo il turno %(n)s", n=gara_challenge.round_number) }}
 {% endblock %}
@@ -22,9 +22,9 @@
 
     {# ---------- Perché sei qui ---------- #}
     <div class="c7-card c7-card--accent">
-      <div class="c7-kicker">{{ _("Challenge di gara") }}</div>
+      <div class="c7-kicker">{{ _("Esercizio di gara") }}</div>
       <p class="mb-0" style="margin-top:10px;font-size:16px;font-weight:700;line-height:1.45">
-        {{ _("Il punteggio di questa challenge vale per la classifica della gara.") }}
+        {{ _("Il punteggio di questo esercizio vale per la classifica della gara.") }}
       </p>
     </div>
 
@@ -73,7 +73,7 @@
         <span class="c7-tile c7-tile--round"><i class="fas fa-check"></i></span>
         <span class="flex-fill">
           <span class="c7-choice__title d-block">{{ _("Superata") }}</span>
-          <span class="c7-choice__desc d-block">{{ _("Hai completato la challenge") }}</span>
+          <span class="c7-choice__desc d-block">{{ _("Hai completato l'esercizio") }}</span>
         </span>
         <i class="fas fa-circle-check c7-choice__mark"></i>
       </label>
@@ -111,7 +111,7 @@
       <span class="c7-flash__ico"><i class="fas fa-circle-info"></i></span>
       <div class="c7-flash__body">
         <div class="c7-flash__title">{{ _("Tentativi finiti") }}</div>
-        <div class="c7-flash__text">{{ _("Hai usato tutti i tentativi previsti per questa challenge.") }}</div>
+        <div class="c7-flash__text">{{ _("Hai usato tutti i tentativi previsti per questo esercizio.") }}</div>
       </div>
     </div>
     {% endif %}

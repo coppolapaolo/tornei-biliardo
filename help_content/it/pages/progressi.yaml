@@ -23,7 +23,7 @@ blocks:
   - type: text
     text: >-
       Un estratto di questi numeri — la serie in corso, il livello e quanto
-      manca al prossimo, i drill completati — si legge anche senza aprire
+      manca al prossimo, i esercizi completati — si legge anche senza aprire
       questa pagina: è nel riquadro «Come stai andando», quello che trovi in
       cima alla home quando entri, sotto il pulsante «Tutti i tuoi numeri».
 
@@ -34,7 +34,7 @@ blocks:
   - type: text
     text: >-
       Ogni azione significativa dà punti esperienza: giocare una partita,
-      vincerla, iscriversi a una gara, completare una challenge. Accumulandoli
+      vincerla, iscriversi a una gara, completare un esercizio. Accumulandoli
       si sale di livello. Il livello raggiunto è quella pastiglia scura con il
       trofeo che vedi in alto in ogni schermata.
 
@@ -52,7 +52,7 @@ blocks:
   - type: text
     text: >-
       Obiettivi che si sbloccano una volta sola: la prima vittoria, la decima
-      gara, la prima challenge completata. Alcuni sono nascosti e si scoprono
+      gara, il primo esercizio completato. Alcuni sono nascosti e si scoprono
       raggiungendoli. Quando ne sblocchi uno compare un messaggio a schermo e
       resta nella tua bacheca.
 
@@ -112,7 +112,7 @@ blocks:
   - type: text
     text: >-
       Alcune parti dell'app compaiono solo dopo un po' di attività: le partite
-      amichevoli e le challenge, per esempio. Non è una punizione per chi è
+      amichevoli e gli esercizi, per esempio. Non è una punizione per chi è
       nuovo — è per non mettere davanti a chi entra la prima volta un menu con
       quindici voci di cui non ha bisogno.
 

@@ -3,7 +3,7 @@ section: giocare
 kind: tutorial
 audience: [giocatore]
 minutes: 6
-summary: "Nelle partite amichevoli puoi annotare tutta la partita, non solo chi vince i rack, e ottenere il TPA: la percentuale di azioni riuscite."
+summary: "Nelle partite amichevoli puoi annotare tutta la partita, non solo chi vince i triangoli, e ottenere il TPA: la percentuale di azioni riuscite."
 screens: [individual_match.tpa_referto]
 related: [partite_amichevoli, profilo_e_statistiche]
 
@@ -27,7 +27,7 @@ blocks:
     title: "Si sblocca con l'esperienza"
     text: >-
       Il referto non compare subito. Si sblocca quando hai già giocato gare,
-      campionati, partite amichevoli, drill ed esami: non perché sia
+      campionati, partite amichevoli, esercizi ed esami: non perché sia
       difficile da capire, ma perché va compilato **mentre giochi**, e conviene
       arrivarci quando l'app la conosci già bene.
 
@@ -44,7 +44,7 @@ blocks:
       - title: "Tocca «Prendi il referto TPA»"
         text: >-
           Il pulsante è sotto il punteggio. Va premuto **prima del primo
-          rack**: il referto racconta la partita dall'inizio, quindi non si può
+          triangoli**: il referto racconta la partita dall'inizio, quindi non si può
           aprire a partita avviata.
       - title: "Conferma con «Apri il referto»"
         text: >-
@@ -54,10 +54,10 @@ blocks:
 
   - type: note
     tone: warning
-    title: "I rack non si segnano più a mano"
+    title: "I triangoli non si segnano più a mano"
     text: >-
       Con il referto aperto, il segnapunti normale sparisce. Non è una
-      dimenticanza: i rack vinti li registra il referto, così non devi segnare
+      dimenticanza: i triangoli vinti li registra il referto, così non devi segnare
       due volte la stessa cosa e il punteggio non può mai discordare da quello
       che hai annotato.
 
@@ -108,7 +108,7 @@ blocks:
       In alto ci sono i due giocatori. Quello **scuro** è chi sta al tavolo
       adesso. Accanto al nome trovi il suo TPA e, più piccolo, quante bilie ha
       imbucato (**B**) e quanti errori ha fatto (**E**). Nel cerchio a destra i
-      rack vinti.
+      triangoli vinti.
 
   - type: text
     text: >-
@@ -132,7 +132,7 @@ blocks:
         text: >-
           **P** se la bilia bianca è finita in buca o fuori dal tavolo, **N**
           se non ha colpito regolarmente la bilia designata.
-      - title: "Se ha vinto il rack"
+      - title: "Se ha vinto il triangolo"
         text: >-
           Premi **G**. Se ha imbucato tutte le bilie rimaste non serve: il
           referto se ne accorge da solo.
@@ -167,7 +167,7 @@ blocks:
           dischetto. Vale doppio: se sbagli una cosa semplice, il TPA lo dice.
       - name: "x"
         text: >-
-          La difesa era **premeditata**: non stavi provando a chiudere il rack,
+          La difesa era **premeditata**: non stavi provando a chiudere il triangolo,
           quindi non è un errore di posizione.
       - name: "p"
         text: >-
@@ -179,7 +179,7 @@ blocks:
 
   - type: text
     text: >-
-      In fondo alla pagina c'è **il foglio**: tutta la partita, rack per rack e
+      In fondo alla pagina c'è **il foglio**: tutta la partita, triangolo per triangolo e
       turno per turno. Serve durante la partita per controllare di non aver
       saltato niente, e dopo per rivedere com'è andata.
 
@@ -213,7 +213,7 @@ blocks:
     text: >-
       Si sommano bilie ed errori di tutte le partite e si divide una volta
       sola. Una partita lunga pesa più di una corta, com'è giusto: altrimenti
-      un rack fortunato varrebbe quanto un'ora di gioco pulito.
+      un triangolo fortunato varrebbe quanto un'ora di gioco pulito.
 
   - type: text
     text: >-
@@ -231,7 +231,7 @@ blocks:
       - "**Spaccata**: bilia bianca in buca o fuori dal tavolo sulla spaccata."
       - "**Kick**: eri costretto al tiro di sponda e non è andata bene."
       - "**Difesa**: hai giocato di difesa e l'avversario poi ha imbucato, o ha sbagliato un tiro facile."
-      - "**Posizione**: bilia bianca in buca, oppure hai imbucato qualcosa senza riuscire a chiudere il rack."
+      - "**Posizione**: bilia bianca in buca, oppure hai imbucato qualcosa senza riuscire a chiudere il triangolo."
 
   - type: text
     text: >-
@@ -243,13 +243,13 @@ blocks:
   - type: faq
     items:
       - q: "Non vedo il pulsante del referto."
-        a: "«Prendi il referto TPA» compare solo se hai sbloccato la funzione — servono gare, campionati, partite amichevoli, drill ed esami già fatti — e solo a partita iniziata, in una partita a palla 8, palla 9 o palla 10 senza set, prima che sia segnato il primo rack. Se invece il referto lo ha già aperto il tuo avversario, il pulsante «Guarda il referto TPA» ti compare comunque, che tu abbia sbloccato o no."
+        a: "«Prendi il referto TPA» compare solo se hai sbloccato la funzione — servono gare, campionati, partite amichevoli, esercizi ed esami già fatti — e solo a partita iniziata, in una partita a palla 8, palla 9 o palla 10 senza set, prima che sia segnato il primo triangolo. Se invece il referto lo ha già aperto il tuo avversario, il pulsante «Guarda il referto TPA» ti compare comunque, che tu abbia sbloccato o no."
       - q: "Posso aprirlo a partita già cominciata?"
-        a: "No. Il referto racconta la partita dall'inizio, quindi va aperto prima del primo rack. Se avete già segnato dei rack, per quella partita non si può più."
+        a: "No. Il referto racconta la partita dall'inizio, quindi va aperto prima del primo triangolo. Se avete già segnato dei triangoli, per quella partita non si può più."
       - q: "Lo può tenere il mio avversario al posto mio?"
         a: "Lo tiene chi lo apre, e resta suo per tutta la partita. Tu premi «Guarda il referto TPA» e lo vedi riempirsi da solo, senza ricaricare la pagina, ma non puoi scriverci."
       - q: "Ho premuto il tasto sbagliato."
-        a: "«Annulla l'ultimo tocco» torna indietro di un passo. Puoi premerlo più volte di seguito: torna indietro anche di un rack intero, punteggio compreso."
+        a: "«Annulla l'ultimo tocco» torna indietro di un passo. Puoi premerlo più volte di seguito: torna indietro anche di un triangolo intero, punteggio compreso."
       - q: "Che TPA è un buon TPA?"
         a: "Dipende dalla disciplina e dal livello. La cosa utile non è il numero in sé, ma come cambia il tuo nel tempo: è per quello che il referto esiste."
       - q: "Funziona anche nelle gare?"

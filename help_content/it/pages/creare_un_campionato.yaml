@@ -44,10 +44,10 @@ blocks:
           Quante gare prevedi. È un obiettivo indicativo, non un vincolo:
           potrai aggiungerne o toglierne.
       - name: "Sistema di classifica"
-        values: "Vittorie · Rack · Posizione"
+        values: "Vittorie · Triangoli · Posizione"
         text: >-
           Come si ordina la classifica. **Vittorie** è la scelta normale: conta
-          quante partite hai vinto, e a parità la differenza rack. Le tre
+          quante partite hai vinto, e a parità la differenza triangoli. Le tre
           modalità sono spiegate in [Come si calcolano le
           classifiche](/aiuto/approfondimenti/classifiche).
         hint: campionato.classifica
@@ -58,10 +58,11 @@ blocks:
           proposto ed è pensato per le gare a turni di circolo. Vedi [Come
           vengono formate le coppie](/aiuto/approfondimenti/abbinamenti).
         hint: gara.strategia
-      - name: "Challenge mode"
+      - name: "Modalità esercizi"
         text: >-
-          Attiva le prove di abilità individuali durante il campionato. Vedi
-          [Le challenge](/aiuto/giocare/challenge).
+          Attiva gli esercizi dentro le gare del campionato: senza, il pulsante
+          per gestirli non compare. Non riguarda le sfide fra giocatori. Vedi
+          [Gli esercizi](/aiuto/giocare/challenge).
       - name: "Playoff finali"
         text: >-
           Gare speciali a fine campionato riservate ai migliori classificati.
@@ -168,8 +169,8 @@ blocks:
   - type: text
     text: >-
       Si aggiorna da sola alla fine di ogni gara sommando i risultati: le
-      vittorie e la differenza rack se il sistema è «Vittorie», i rack totali
-      se è «Rack», i punti per posizione — quelli della tabella qui sopra — se
+      vittorie e la differenza triangoli se il sistema è «Vittorie», i triangoli totali
+      se è «Triangoli», i punti per posizione — quelli della tabella qui sopra — se
       è «Posizione». Chi salta una gara non viene escluso: semplicemente non
       guadagna nulla in quell'occasione.
 

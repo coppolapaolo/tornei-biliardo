@@ -113,6 +113,37 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # entry il POST era admin-only in prod → 404 per il player (ADR-028).
     "player.request_director": {"player"},
     "player.delete_account": {"player", "director"},
+    # === Sale biliardo: directory pubblica, non amministrazione ===
+    # `venues_list` e `venue_detail` stanno nel blueprint `admin.venue` per
+    # ragioni storiche, ma sono `@login_required` e basta: servono due viste
+    # diverse a seconda del ruolo (`player/venues.html` a chi gioca, la scheda
+    # completa con statistiche e gestore a chi amministra). PRODUCTION_INVENTORY
+    # le dava per «sempre visibili agli utenti autenticati».
+    #
+    # Non erano mai state classificate, quindi per deny-by-default sono state
+    # admin-only in produzione **da sempre**: la voce «Sale Biliardo» spariva
+    # dal menu (base.html la gatta con feature_visible) e chi arrivava per URL
+    # prendeva 404. Stessa dinamica del catalogo esercizi (#114) e delle gare
+    # vicine (#129): il nome del blueprint diceva "admin", il decoratore no.
+    #
+    # Il resto del blueprint (create/delete/verify/assign-manager e la coda
+    # delle richieste) resta fuori dalla matrice, cioè admin-only: lì il
+    # decoratore è `@admin_required` e la matrice non deve contraddirlo.
+    "admin.venue.venues_list": {"player", "director"},
+    "admin.venue.venue_detail": {"player", "director"},
+    # Un gestore di sala è quasi sempre un player: `@venue_manager_required`
+    # non implica `role=director`, tanto meno admin. Senza queste tre voci il
+    # pulsante «Gestisci» sulla scheda della sala portava a 404 proprio a chi
+    # quella sala la gestisce. L'autorizzazione vera resta nel decoratore —
+    # qui si dice solo che l'endpoint esiste, in produzione.
+    "admin.venue.edit_venue": {"player", "director"},
+    "admin.venue.update_table_numbers": {"player", "director"},
+    "admin.venue.upload_photo": {"player", "director"},
+    # Chiedere di gestire una sala, e seguire la richiesta: il form parte dalla
+    # scheda della sala, quindi condivide lo stesso destino.
+    "player.request_venue_manager": {"player", "director"},
+    "player.cancel_venue_manager_request": {"player", "director"},
+    "player.my_venue_requests": {"player", "director"},
     # Notifications
     "player.notifications": {"player", "director"},
     "player.mark_notification_read": {"player", "director"},

@@ -63,7 +63,7 @@
              style="height:56px;padding:0 16px;font-size:15px;font-weight:700">
           <i class="fas fa-lock" style="font-size:12px"></i>
           {% if gara_system == 'WINS' %}{{ _('Vittorie') }}
-          {% elif gara_system in ['RACK', 'RACKS'] %}{{ _('Rack totali') }}
+          {% elif gara_system in ['RACK', 'RACKS'] %}{{ _('Triangoli totali') }}
           {% else %}{{ gara_system }}{% endif %}
           <span class="ms-auto" style="font-size:11px;color:var(--c7-ink-faint)">{{ _('dal campionato') }}</span>
         </div>
@@ -73,14 +73,14 @@
           <i class="fas fa-triangle-exclamation" style="font-size:10px"></i>
           {{ _('Diverso dal campionato') }} ({{ _('default') }}:
           {% if campionato_default == 'WINS' %}{{ _('Vittorie') }}
-          {% elif campionato_default == 'RACK' %}{{ _('Rack totali') }}
+          {% elif campionato_default == 'RACK' %}{{ _('Triangoli totali') }}
           {% else %}{{ campionato_default }}{% endif %})
         </div>
         {% endif %}
       {% else %}
         <select class="form-select" id="classification_system" name="classification_system">
-          <option value="WINS" {% if (gara.classification_system or 'WINS') == 'WINS' %}selected{% endif %}>{{ _('Vittorie — match vinti, poi differenza rack') }}</option>
-          <option value="RACK" {% if gara.classification_system == 'RACK' %}selected{% endif %}>{{ _('Rack totali — ogni rack conta') }}</option>
+          <option value="WINS" {% if (gara.classification_system or 'WINS') == 'WINS' %}selected{% endif %}>{{ _('Vittorie — match vinti, poi differenza triangoli') }}</option>
+          <option value="RACK" {% if gara.classification_system == 'RACK' %}selected{% endif %}>{{ _('Triangoli totali — ogni triangoli conta') }}</option>
         </select>
       {% endif %}
     </div>
@@ -146,7 +146,7 @@
         <select class="form-select" id="odd_number_policy" name="odd_number_policy">
           <option value="no" {% if gara.odd_number_policy == 'no' %}selected{% endif %}>{{ _("Lista d'attesa — solo pari") }}</option>
           <option value="bye" {% if (gara.odd_number_policy or 'bye') == 'bye' %}selected{% endif %}>{{ _('X — vinto a tavolino') }}</option>
-          <option value="bye_with_challenge" {% if gara.odd_number_policy == 'bye_with_challenge' %}selected{% endif %}>{{ _('X con challenge') }}</option>
+          <option value="bye_with_challenge" {% if gara.odd_number_policy == 'bye_with_challenge' %}selected{% endif %}>{{ _('X con esercizio') }}</option>
           <option value="trio" {% if gara.odd_number_policy == 'trio' %}selected{% endif %}>{{ _('Match a 3') }}</option>
         </select>
         <div id="trio_warning" class="form-text" style="display:none;color:var(--c7-err-ink)">

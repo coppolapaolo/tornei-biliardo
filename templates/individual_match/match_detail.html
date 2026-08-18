@@ -2,7 +2,7 @@
 {% import "components/_match_status_labels.html" as st with context %}
 
 {% block title %}
-{{- _("Match") }} {{ match.player1.username }} vs
+{{- _("Sfida") }} {{ match.player1.username }} vs
 {{ match.player2.username if match.player2 else _('avversario') }} - {{ config.APP_NAME }}
 {%- endblock %}
 
@@ -10,7 +10,7 @@
    card che ripeteva disciplina, luogo e stato sopra il punteggio. #}
 {% block page_back %}
 <a class="c7-head__back d-lg-none" href="{{ url_for('individual_match.match_list') }}"
-   aria-label="{{ _('Torna ai match') }}"><i class="fas fa-arrow-left"></i></a>
+   aria-label="{{ _('Torna alle sfide') }}"><i class="fas fa-arrow-left"></i></a>
 {% endblock %}
 {% block page_title %}
 {{- match.player1.username }} vs {{ match.player2.username if match.player2 else _('avversario') }}
@@ -51,7 +51,7 @@
     <form method="POST" action="{{ url_for('individual_match.start_match', match_id=match.id) }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <button type="submit" class="btn btn-primary btn-lg w-100">
-        <i class="fas fa-play"></i> {{ _('Inizia il match') }}
+        <i class="fas fa-play"></i> {{ _('Inizia la sfida') }}
       </button>
     </form>
     {% endif %}
@@ -63,10 +63,10 @@
     <div class="c7-card">
       <div class="c7-kicker">{{ _('Distanza libera') }}</div>
       <p style="margin:8px 0 0;font-size:13px;font-weight:600;line-height:1.45;color:var(--c7-ink-soft)">
-        {{ _('Questo match non ha una distanza: finisce quando lo decidete voi.') }}
+        {{ _('Questa sfida non ha una distanza: finisce quando lo decidete voi.') }}
       </p>
       <button class="btn btn-primary w-100" style="margin-top:14px" onclick="confirmResult(this)">
-        <i class="fas fa-flag-checkered"></i> {{ _('Termina il match') }}
+        <i class="fas fa-flag-checkered"></i> {{ _('Termina la sfida') }}
       </button>
     </div>
     {% endif %}
@@ -164,8 +164,8 @@
       <form method="POST" action="{{ url_for('individual_match.cancel_match', match_id=match.id) }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="button" class="btn btn-danger w-100"
-                onclick='confirmSubmit(this.closest("form"), {{ _("Sei sicuro di voler annullare il match?")|tojson }})'>
-          {{ _('Annulla il match') }}
+                onclick='confirmSubmit(this.closest("form"), {{ _("Sei sicuro di voler annullare la sfida?")|tojson }})'>
+          {{ _('Annulla la sfida') }}
         </button>
       </form>
       {% endif %}
@@ -266,13 +266,13 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                showError({{ _("Errore durante l'aggiunta del rack")|tojson }});
+                showError({{ _("Errore durante l'aggiunta del triangolo")|tojson }});
                 restore();
             });
     }
 
     function removeRack(playerId, btn) {
-        showConfirm({{ _("Rimuovere l'ultimo rack vinto da questo giocatore?")|tojson }}, () => {
+        showConfirm({{ _("Rimuovere l'ultimo triangolo vinto da questo giocatore?")|tojson }}, () => {
             const restore = withLoading(btn);
             fetch(`/match/matches/${matchId}/racks/remove`, {
             method: 'POST',
@@ -292,14 +292,14 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                showError({{ _("Errore durante la rimozione del rack")|tojson }});
+                showError({{ _("Errore durante la rimozione del triangolo")|tojson }});
                 restore();
             });
         });
     }
 
     function confirmResult(btn) {
-        showConfirm({{ _('Confermare il risultato del match?')|tojson }}, () => {
+        showConfirm({{ _('Confermare il risultato della sfida?')|tojson }}, () => {
             const restore = withLoading(btn);
             fetch(`/match/matches/${matchId}/confirm`, {
             method: 'POST',
@@ -311,7 +311,7 @@
             .then(data => {
                 if (data.success) {
                     if (data.completed) {
-                        showSuccess({{ _('Match completato con successo!')|tojson }});
+                        showSuccess({{ _('Sfida completata!')|tojson }});
                     } else {
                         showSuccess({{ _("Risultato confermato! In attesa dell'altro giocatore.")|tojson }});
                     }
@@ -330,7 +330,7 @@
     }
 
     function rejectResult(btn) {
-        showConfirm({{ _("Rifiutare il risultato? L'ultimo rack verrà rimosso e si potrà continuare a giocare.")|tojson }}, () => {
+        showConfirm({{ _("Rifiutare il risultato? L'ultimo triangolo verrà rimosso e si potrà continuare a giocare.")|tojson }}, () => {
             const restore = withLoading(btn);
             fetch(`/match/matches/${matchId}/reject`, {
             method: 'POST',
@@ -341,7 +341,7 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    showInfo({{ _('Ultimo rack rimosso. Continuate a giocare!')|tojson }});
+                    showInfo({{ _('Ultimo triangolo rimosso. Continuate a giocare!')|tojson }});
                     location.reload();
                 } else {
                     showError({{ _('Errore:')|tojson }} + ' ' + data.error);
@@ -357,7 +357,7 @@
     }
 
     function forfeitMatch() {
-        showConfirm({{ _("Sei sicuro di voler dichiarare forfait? L'avversario vincerà il match.")|tojson }}, () => {
+        showConfirm({{ _("Sei sicuro di voler dichiarare forfait? L'avversario vincerà la sfida.")|tojson }}, () => {
             fetch(`/match/matches/${matchId}/forfeit`, {
                 method: 'POST',
                 headers: {

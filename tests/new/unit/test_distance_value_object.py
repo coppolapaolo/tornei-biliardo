@@ -185,12 +185,12 @@ class TestDistanceDisplayStrings:
     def test_display_single_set_race_to_7(self):
         """Display string for race-to-7 single-set."""
         distance = Distance(racks=7, is_race_to_racks=True)
-        assert distance.to_display_string() == "Al 7 rack"
+        assert distance.to_display_string() == "Al 7 triangoli"
 
     def test_display_single_set_exact_4(self):
         """Display string for exactly-4 single-set."""
         distance = Distance(racks=4, is_race_to_racks=False)
-        assert distance.to_display_string() == "Esattamente 4 rack"
+        assert distance.to_display_string() == "Esattamente 4 triangoli"
 
     def test_display_multi_set_race_to_3_sets_race_to_5_racks(self):
         """Display: race-to-3 sets, each race-to-5 racks."""
@@ -201,7 +201,7 @@ class TestDistanceDisplayStrings:
             sets=3,
             is_race_to_sets=True,
         )
-        expected = "Al 3 set, ogni set al 5 rack"
+        expected = "Al 3 set, ogni set al 5 triangoli"
         assert distance.to_display_string() == expected
 
     def test_display_multi_set_exact_4_sets_race_to_3_racks(self):
@@ -213,7 +213,7 @@ class TestDistanceDisplayStrings:
             sets=4,
             is_race_to_sets=False,
         )
-        expected = "Esattamente 4 set, ogni set al 3 rack"
+        expected = "Esattamente 4 set, ogni set al 3 triangoli"
         assert distance.to_display_string() == expected
 
     def test_display_multi_set_race_to_5_sets_exact_2_racks(self):
@@ -225,7 +225,7 @@ class TestDistanceDisplayStrings:
             sets=5,
             is_race_to_sets=True,
         )
-        expected = "Al 5 set, ogni set esattamente 2 rack"
+        expected = "Al 5 set, ogni set esattamente 2 triangoli"
         assert distance.to_display_string() == expected
 
     def test_display_multi_set_exact_2_sets_exact_3_racks(self):
@@ -237,7 +237,7 @@ class TestDistanceDisplayStrings:
             sets=2,
             is_race_to_sets=False,
         )
-        expected = "Esattamente 2 set, ogni set esattamente 3 rack"
+        expected = "Esattamente 2 set, ogni set esattamente 3 triangoli"
         assert distance.to_display_string() == expected
 
 

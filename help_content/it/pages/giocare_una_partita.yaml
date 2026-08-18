@@ -3,7 +3,7 @@ section: giocare
 kind: tutorial
 audience: [giocatore]
 minutes: 5
-summary: "Il segnapunti: un tasto per giocatore, si preme dopo ogni rack. Come correggere un errore e cosa succede quando la partita finisce."
+summary: "Il segnapunti: un tasto per giocatore, si preme dopo ogni triangolo. Come correggere un errore e cosa succede quando la partita finisce."
 screens: [admin.match.match_detail]
 related: [seguire_la_gara, formati_di_gioco]
 
@@ -25,7 +25,7 @@ blocks:
 
   - type: shot
     shot: partita-segnapunti
-    caption: "La pagina della partita: in alto il punteggio, al centro il segnapunti, in fondo l'elenco dei rack già giocati."
+    caption: "La pagina della partita: in alto il punteggio, al centro il segnapunti, in fondo l'elenco dei triangoli già giocati."
 
   - type: heading
     id: leggere
@@ -40,44 +40,44 @@ blocks:
         text: "I due numeri grandi. Sotto ciascuno c'è il nome del giocatore e il suo rating."
         hint: partita.punteggio
       - name: "La riga della distanza"
-        text: "Per esempio «Al 5 rack · 7 rack giocati»: ti ricorda a quanto si vince e quanti rack sono già stati giocati in tutto."
+        text: "Per esempio «Al 5 triangoli · 7 triangoli giocati»: ti ricorda a quanto si vince e quanti triangoli sono già stati giocati in tutto."
         hint: gara.distanza
       - name: "Il segnapunti"
         text: "I due tasti grandi «+1», uno per giocatore. Il tuo è quello pieno, scuro: si riconosce senza leggere il nome."
         hint: partita.segnapunti
-      - name: "Annulla ultimo rack"
+      - name: "Annulla ultimo triangolo"
         text: >-
           Toglie l'ultimo punto assegnato. Serve quando si preme il tasto
           sbagliato, e resta a portata anche a distanza raggiunta e a partita
-          appena conclusa, finché il direttore non valida: è proprio il rack che
+          appena conclusa, finché il direttore non valida: è proprio il triangolo che
           chiude la partita quello in cui sbagliare costa di più.
       - name: "Dichiara forfait"
-        text: "Da usare solo se la partita si interrompe davvero: assegna all'avversario tutti i rack che mancano."
+        text: "Da usare solo se la partita si interrompe davvero: assegna all'avversario tutti i triangoli che mancano."
         hint: partita.forfait
-      - name: "Rack giocati"
-        text: "L'elenco di chi ha vinto ogni rack, con il punteggio progressivo. È il tabellino della partita."
+      - name: "Triangoli giocati"
+        text: "L'elenco di chi ha vinto ogni triangolo, con il punteggio progressivo. È il tabellino della partita."
 
   - type: heading
     id: segnare
-    title: "Segnare un rack"
+    title: "Segnare un triangolo"
 
   - type: steps
     items:
-      - title: "Finite il rack al tavolo"
+      - title: "Finite il triangolo al tavolo"
         text: "Si gioca normalmente: l'app non entra nel merito delle regole del biliardo."
       - title: "Premi il tasto di chi ha vinto"
         text: >-
-          Un solo tocco sul tasto **+1** con il nome del vincitore del rack.
+          Un solo tocco sul tasto **+1** con il nome del vincitore del triangolo.
           Non «+1 a me» e «-1 a lui»: si segna solo chi ha vinto.
         shot: partita-rack
       - title: "Controlla il punteggio in alto"
         text: >-
-          Il numero grande cambia subito, e il rack compare in fondo
+          Il numero grande cambia subito, e il triangolo compare in fondo
           all'elenco. Se il numero non è cambiato, il tocco non è arrivato:
           ripremi.
       - title: "Avanti fino alla distanza"
         text: >-
-          Si va avanti così a ogni rack. Quando si arriva al numero stabilito
+          Si va avanti così a ogni triangolo. Quando si arriva al numero stabilito
           i tasti **+1** si spengono e si passa alla conferma del risultato.
 
   - type: note
@@ -108,8 +108,8 @@ blocks:
     title: "Cosa cambia rispetto alla pagina normale"
     items:
       - "Si segna allo stesso modo: i tasti **+1** in fondo sono gli stessi, e il punto arriva nello stesso posto. Fra le due viste non c'è differenza per il punteggio."
-      - "Fra i due tasti c'è il comando per **annullare l'ultimo rack**, quello con la freccia curva."
-      - "Sotto ogni punteggio i trattini dicono quanti rack mancano alla vittoria, senza doverli contare."
+      - "Fra i due tasti c'è il comando per **annullare l'ultimo triangolo**, quello con la freccia curva."
+      - "Sotto ogni punteggio i trattini dicono quanti triangoli mancano alla vittoria, senza doverli contare."
       - "In alto a destra il pallino rosso lampeggia finché si gioca; a partita ferma smette."
 
   - type: text
@@ -125,7 +125,7 @@ blocks:
     text: >-
       Raddrizza il telefono, e il tabellone sparisce da solo. Se preferisci
       restare in orizzontale ma rivedere il resto della partita — l'elenco dei
-      rack, il forfait — tocca la **X** in alto a sinistra.
+      triangoli, il forfait — tocca la **X** in alto a sinistra.
 
   - type: heading
     id: sbagli
@@ -133,13 +133,13 @@ blocks:
 
   - type: text
     text: >-
-      **Hai premuto il tasto sbagliato**: tocca **Annulla ultimo rack**. Puoi
-      ripeterlo più volte, tornando indietro rack per rack.
+      **Hai premuto il tasto sbagliato**: tocca **Annulla ultimo triangolo**. Puoi
+      ripeterlo più volte, tornando indietro triangolo per triangolo.
 
   - type: text
     text: >-
-      **La partita si è appena chiusa**: c'è ancora **Annulla ultimo rack**, nel
-      riquadro verde. Toglie il rack sbagliato e riporta la partita in corso,
+      **La partita si è appena chiusa**: c'è ancora **Annulla ultimo triangolo**, nel
+      riquadro verde. Toglie il triangolo sbagliato e riporta la partita in corso,
       così potete rigiocarlo. Vale finché il direttore non valida il risultato.
 
   - type: text
@@ -157,7 +157,7 @@ blocks:
     text: >-
       Se un giocatore non può proseguire — deve andare via, si infortuna, non
       si è presentato — si usa **Dichiara forfait**. L'avversario riceve tutti
-      i rack che mancavano alla distanza: se eravate 3-2 in una gara al 5, il
+      i triangoli che mancavano alla distanza: se eravate 3-2 in una gara al 5, il
       risultato diventa 5-2.
 
   - type: note
@@ -180,7 +180,7 @@ blocks:
 
   - type: note
     tone: tip
-    title: "Se sei tu a segnare il rack che ti fa perdere, non ti si chiede altro"
+    title: "Se sei tu a segnare il triangolo che ti fa perdere, non ti si chiede altro"
     text: >-
       Spesso è chi perde a tenere il conto. Avendo già segnato il punto che
       chiude la partita a favore dell'altro, non gli viene chiesto di
@@ -190,7 +190,7 @@ blocks:
 
   - type: text
     text: >-
-      **Rifiuta** non chiude niente: toglie l'ultimo rack e riporta il
+      **Rifiuta** non chiude niente: toglie l'ultimo triangolo e riporta il
       punteggio a un tocco dalla fine, così potete rimettervi d'accordo al
       tavolo e segnare di nuovo.
 
@@ -200,7 +200,7 @@ blocks:
       il risultato entra nella classifica del turno, il tavolo si libera per la
       partita successiva, e quando **tutte** le partite del turno sono finite il
       direttore può avviare il turno dopo. Al posto dei tasti **+1** resta un
-      riquadro verde con il solo **Annulla ultimo rack**: se l'ultimo rack era
+      riquadro verde con il solo **Annulla ultimo triangolo**: se l'ultimo triangolo era
       sbagliato lo togli e la partita torna in corso, finché il direttore non
       valida.
 
@@ -214,9 +214,9 @@ blocks:
         a: "No, solo il direttore di gara può farlo. Tu vedi tutte le partite, ma puoi intervenire solo sulla tua."
       - q: "Il punteggio non si aggiorna sul telefono dell'altro."
         a: "L'aggiornamento passa dalla rete: se la sala ha poco segnale può metterci qualche secondo. Ricaricando la pagina si allinea."
-      - q: "Abbiamo giocato più rack del dovuto."
-        a: "L'app non lo permette: al raggiungimento della distanza i tasti +1 si spengono. Se avete giocato rack in più, semplicemente non contano."
+      - q: "Abbiamo giocato più triangoli del dovuto."
+        a: "L'app non lo permette: al raggiungimento della distanza i tasti +1 si spengono. Se avete giocato triangoli in più, semplicemente non contano."
       - q: "Dobbiamo confermare il risultato in due?"
-        a: "Servono le firme di tutti e due, ma quella di chi vince è automatica: la sola che vi resta da dare è quella di chi perde. E se è stato lui a segnare l'ultimo rack l'ha già data premendo, quindi non compare nessun pulsante. Quando compaiono «Accetta» e «Rifiuta», tocca a te."
+        a: "Servono le firme di tutti e due, ma quella di chi vince è automatica: la sola che vi resta da dare è quella di chi perde. E se è stato lui a segnare l'ultimo triangolo l'ha già data premendo, quindi non compare nessun pulsante. Quando compaiono «Accetta» e «Rifiuta», tocca a te."
       - q: "Che cos'è il numero del tavolo che vedo in alto?"
         a: "Il tavolo che il direttore vi ha assegnato per questa partita. Se non c'è, la sala non ha configurato i tavoli e vi mettete d'accordo sul posto."

@@ -16,7 +16,7 @@
    ogni schermata. #}
 
 {% block title %}
-{{- _("Disegna il drill") }}{% if challenge %} - {{ challenge.get_display_name() }}{% endif %}
+{{- _("Disegna l'esercizio") }}{% if challenge %} - {{ challenge.get_display_name() }}{% endif %}
 {%- endblock %}
 
 {% block head_extra %}
@@ -32,7 +32,7 @@
 <a class="c7-head__back d-lg-none" href="{{ cancel_url }}"
    aria-label="{{ _('Annulla') }}"><i class="fas fa-xmark"></i></a>
 {% endblock %}
-{% block page_title %}{{ _("Disegna il drill") if not challenge else _("Modifica il disegno") }}{% endblock %}
+{% block page_title %}{{ _("Disegna l'esercizio") if not challenge else _("Modifica il disegno") }}{% endblock %}
 {% block page_sub %}{{ _("Disponi le bilie e traccia i tiri: l'immagine la genera il builder") }}{% endblock %}
 
 {% block content %}
@@ -155,18 +155,18 @@
         </div>
         <div class="field">
           <span>{{ _("Titolo del diagramma") }}</span>
-          <input type="text" id="titleInput" placeholder="{{ _('es. Drill 1 — Stop shot') }}">
+          <input type="text" id="titleInput" placeholder="{{ _('es. Esercizio 1 — Stop shot') }}">
         </div>
       </div>
 
       <div class="sec" id="sec-posizioni">
         <h2>{{ _("Posizioni standard") }}</h2>
         <div class="row">
-          <button class="btn wide" data-preset="rack9">{{ _("Rack 9-ball") }}</button>
-          <button class="btn wide" data-preset="rack8">{{ _("Rack 8-ball") }}</button>
+          <button class="btn wide" data-preset="rack9">{{ _("Triangolo 9-ball") }}</button>
+          <button class="btn wide" data-preset="rack8">{{ _("Triangolo 8-ball") }}</button>
         </div>
         <div class="row" style="margin-top:6px">
-          <button class="btn wide" data-preset="rack10">{{ _("Rack 10-ball") }}</button>
+          <button class="btn wide" data-preset="rack10">{{ _("Triangolo 10-ball") }}</button>
           <button class="btn wide" data-preset="break9">{{ _("Break 9-ball") }}</button>
         </div>
         <div class="row" style="margin-top:6px">
@@ -174,7 +174,7 @@
           <button class="btn wide" data-preset="line">{{ _("Linea di stop") }}</button>
         </div>
         <div class="row" style="margin-top:6px">
-          <button class="btn wide" data-preset="lshape">{{ _("L drill") }}</button>
+          <button class="btn wide" data-preset="lshape">{{ _("Esercizio a L") }}</button>
           <button class="btn wide" data-preset="clear">{{ _("Svuota") }}</button>
         </div>
       </div>
@@ -211,7 +211,7 @@
       <input type="text" class="form-control" id="drillTitle" name="title" maxlength="120"
              placeholder="{{ _('es. Progressione lungo sponda') }}" value="{{ drill_title or '' }}">
       <div class="c7-kicker" style="margin-top:6px">
-        {{ _("Facoltativo: senza, il drill prende il suo numero progressivo.") }}
+        {{ _("Facoltativo: senza, l'esercizio prende il suo numero progressivo.") }}
       </div>
     </div>
 
@@ -243,7 +243,7 @@
 <div class="c7-actionbar">
   <button type="button" class="btn btn-primary w-100" id="saveDrillBtn">
     <i class="fas fa-floppy-disk"></i>&nbsp;<span id="saveDrillLabel">
-      {{- _("Salva il drill") if not challenge else _("Salva le modifiche") -}}
+      {{- _("Salva l'esercizio") if not challenge else _("Salva le modifiche") -}}
     </span>
   </button>
   <a href="{{ cancel_url }}" class="btn btn-secondary c7-btn-narrow">{{ _("Annulla") }}</a>
@@ -327,7 +327,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // come va reso. Il server la riceve come un normale caricamento.
         window.DrillBuilder.png(2, function (blob) {
             if (!blob) {
-                showError({{ _("Non è stato possibile generare l'immagine del drill.")|tojson }});
+                showError({{ _("Non è stato possibile generare l'immagine dell'esercizio.")|tojson }});
                 btn.disabled = false; label.textContent = previous;
                 return;
             }
@@ -343,7 +343,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(r => r.json())
             .then(data => {
                 if (!data.success) {
-                    showError(data.error || {{ _("Non è stato possibile salvare il drill.")|tojson }});
+                    showError(data.error || {{ _("Non è stato possibile salvare l'esercizio.")|tojson }});
                     btn.disabled = false; label.textContent = previous;
                     return;
                 }
@@ -351,7 +351,7 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .catch(err => {
                 console.error('Error saving drill:', err);
-                showError({{ _("Non è stato possibile salvare il drill. Riprova.")|tojson }});
+                showError({{ _("Non è stato possibile salvare l'esercizio. Riprova.")|tojson }});
                 btn.disabled = false; label.textContent = previous;
             });
         });
