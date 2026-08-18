@@ -397,9 +397,35 @@ class ChallengeService:
             raise PermissionDeniedError("Questa prova non è tua")
 
         challenge_id = attempt.challenge_id
+        user_id = attempt.user_id
         ChallengeService._refund_xp_for_attempt(attempt)
         db.session.delete(attempt)
+        db.session.flush()  # la riga deve essere sparita PRIMA del ricalcolo
+        ChallengeService._recompute_after_removal(user_id)
         return challenge_id
+
+    @staticmethod
+    def _recompute_after_removal(user_id: int) -> None:
+        """Rimette in riga serie settimanali e traguardi dopo la prova tolta.
+
+        **Ricalcola, non sottrae**: se altri esercizi reggono comunque la serie
+        o il traguardo, non cambia niente. Chi si allena tutti i giorni non deve
+        perdere la serie per un tocco sbagliato.
+
+        Best-effort come il resto del ponte con la gamification, e per la stessa
+        ragione: il dato sbagliato tolto vale piu' di un contatore perfetto. Se
+        qui esplode qualcosa, la prova resta cancellata e l'errore resta nel log.
+        """
+        try:
+            from models.gamification.recalc_service import GamificationRecalcService
+
+            GamificationRecalcService.recompute_after_drill_removed(user_id)
+        except Exception:
+            logger.warning(
+                "Ricalcolo di serie e traguardi non riuscito per l'utente %s",
+                user_id,
+                exc_info=True,
+            )
 
     @staticmethod
     def _refund_xp_for_attempt(attempt: ChallengeAttempt) -> None:

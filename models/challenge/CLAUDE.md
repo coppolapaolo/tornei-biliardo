@@ -185,12 +185,21 @@ concessione: si registra con un tocco solo, col telefono appoggiato alla sponda,
 e il tasto sbagliato si preme. Senza via d'uscita l'unico rimedio sarebbe
 compensare a mano, sbagliando due volte invece di una.
 
-Cancellare **restituisce l'XP** con una transazione compensativa (un movimento
-negativo, non la cancellazione di quello originale: il registro deve raccontare
-cos'è successo). Senza, registra-e-annulla sarebbe un modo banale di salire di
-livello. Restano volutamente in piedi la **serie settimanale** — dice «questa
-settimana ti sei allenato», e un tasto sbagliato non cambia il fatto che eri al
-tavolo — e i **traguardi già sbloccati**.
+Cancellare **disfa quello che la prova aveva prodotto**, e lo fa
+**ricalcolando, non sottraendo**. La differenza è tutto il punto: se altri
+esercizi reggono comunque la serie o il traguardo, non cambia niente — chi si
+allena tutti i giorni non deve perdere la serie per un tocco sbagliato.
+
+| cosa | come torna indietro |
+|---|---|
+| **XP della prova** | movimento compensativo (negativo), non cancellazione di quello originale: il registro racconta cos'è successo |
+| **serie `WEEKLY_DRILL` e `WEEKLY_ACTIVITY`** | ricostruite dalle settimane in cui l'attività c'è *davvero*. `WEEKLY_ACTIVITY` si nutre anche di partite e iscrizioni: se la settimana resta viva per quelle, resta viva |
+| **traguardi legati agli esercizi** | rivalutati sulla fonte di verità; cadono solo se il conto non li regge più, e restituiscono il loro XP |
+| **congelamenti e `milestone_*_reached`** | **non** si toccano: un congelamento speso non si rimette nel cassetto, e azzerare il flag aprirebbe un modo di guadagnarne uno nuovo |
+
+Il ricalcolo è `GamificationRecalcService.recompute_after_drill_removed`, e
+**non** è `_rebuild_streaks`: quello azzera i congelamenti perché ricostruisce
+un account dopo una fusione, qui si sta correggendo un tocco sbagliato.
 
 ### ChallengeFavorite
 **Fields:** `user_id`, `challenge_id` - Quick access to preferred challenges
