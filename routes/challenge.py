@@ -31,7 +31,11 @@ from utils import (
 )
 from models.challenge.services import ChallengeService
 from utils.permissions import feature_required
-from utils.route_helpers import handle_ajax_service_action, safe_json_error
+from utils.route_helpers import (
+    ajax_error,
+    handle_ajax_service_action,
+    safe_json_error,
+)
 from utils.image_paths import ImagePathManager
 
 # Blueprint initialization
@@ -87,12 +91,14 @@ def create_challenge():
 
         image_path = ImagePathManager.get_challenge_db_path(image_filename)
 
+        pass_fail_only = data.get("pass_fail_only", "false").lower() == "true"
         challenge = ChallengeService.create_challenge(
             title=data.get("title"),
             description=data["description"],
             image_path=image_path,
-            pass_fail_only=data.get("pass_fail_only", "false").lower() == "true",
+            pass_fail_only=pass_fail_only,
             created_by_id=current_user.id,
+            max_score=_parse_max_score(data, pass_fail_only),
         )
 
         if request.is_json:
@@ -264,6 +270,8 @@ def _save_from_builder(challenge_id=None):
     # e' quello che deve succedere a chi svuota la casella e risalva.
     title = (data.get("title") or "").strip()
 
+    max_score = _parse_max_score(data, pass_fail_only)
+
     if challenge_id is None:
         challenge = ChallengeService.create_challenge(
             title=title,
@@ -272,6 +280,7 @@ def _save_from_builder(challenge_id=None):
             pass_fail_only=pass_fail_only,
             created_by_id=current_user.id,
             diagram_scene=scene,
+            max_score=max_score,
         )
     else:
         previous = db.session.get(Challenge, challenge_id)
@@ -283,6 +292,10 @@ def _save_from_builder(challenge_id=None):
             image_path=image_path,
             pass_fail_only=pass_fail_only,
             diagram_scene=scene,
+            max_score=max_score,
+            # Il modulo manda sempre il campo: vuoto vuol dire «togli il
+            # tetto», non «non l'ho toccato».
+            clear_max_score=max_score is None,
         )
         # Il disegno precedente non serve più a nessuno: senza questa riga ogni
         # ritocco lascerebbe un file orfano sul disco, per sempre.
@@ -318,6 +331,7 @@ def diagram_builder():
                 "title": request.args.get("title", ""),
                 "description": request.args.get("description", ""),
                 "pass_fail_only": request.args.get("pass_fail_only", "") == "true",
+                "max_score": request.args.get("max_score", ""),
             },
             save_url=url_for("challenge.diagram_builder"),
             cancel_url=url_for("challenge.challenge_catalog"),
@@ -436,6 +450,12 @@ def training_session(challenge_id):
                 user_id=current_user.id, challenge_id=challenge_id, completed=True
             ).count(),
             "best_score": _best_score(challenge),
+            # Sui superato/non superato il secondo contatore mostra le riuscite,
+            # non il record: senza questo campo restava fermo al valore
+            # renderizzato dal server, e chi registrava dieci prove di fila
+            # vedeva salire solo il totale. Si ricalcola dal DB invece di
+            # incrementarlo a schermo, cosi' due schede aperte non divergono.
+            "passed_count": _passed_count(challenge_id),
         }
 
     return handle_ajax_service_action(
@@ -444,6 +464,74 @@ def training_session(challenge_id):
         success_message=_("Prova registrata."),
         error_prefix=None,
     )
+
+
+@challenge_bp.route("/<int:challenge_id>/train/undo", methods=["POST"])
+@login_required
+def training_undo(challenge_id):
+    """Annulla l'ultima prova registrata su questo esercizio.
+
+    **Perche' esiste.** La schermata di allenamento registra con un tocco: il
+    tasto sbagliato si preme, e in una sessione da dieci prove un «superato»
+    di troppo falsa il conto senza lasciare traccia di com'e' successo. Senza
+    via d'uscita l'unico rimedio sarebbe compensare a mano, sbagliando due
+    volte invece di una.
+
+    Annulla **l'ultima**, non una a scelta: qui si sta giocando, e l'errore che
+    si corregge col telefono in mano e' quello appena fatto. Cancellare una
+    prova qualsiasi e' un gesto da scrivania, e vive nello storico del profilo.
+
+    La restituzione dell'XP la fa il servizio: senza, registra-e-annulla
+    sarebbe un modo banale di salire di livello.
+    """
+    ultima = (
+        ChallengeAttempt.query.filter_by(
+            user_id=current_user.id, challenge_id=challenge_id, completed=True
+        )
+        .order_by(ChallengeAttempt.attempted_at.desc(), ChallengeAttempt.id.desc())
+        .first()
+    )
+    if ultima is None:
+        return ajax_error(_("Non c'è nessuna prova da annullare."), 404)
+
+    challenge = db.get_or_404(Challenge, challenge_id)
+
+    def _annulla():
+        ChallengeService.delete_attempt(
+            attempt_id=ultima.id,
+            actor_id=current_user.id,
+            actor_is_admin=bool(current_user.is_admin),
+        )
+        return {
+            "attempts_count": ChallengeAttempt.query.filter_by(
+                user_id=current_user.id, challenge_id=challenge_id, completed=True
+            ).count(),
+            "best_score": _best_score(challenge),
+            "passed_count": _passed_count(challenge_id),
+        }
+
+    return handle_ajax_service_action(
+        action=_annulla,
+        redirect_url=url_for("challenge.training_session", challenge_id=challenge_id),
+        success_message=_("Prova annullata."),
+        error_prefix=None,
+    )
+
+
+def _passed_count(challenge_id):
+    """Quante prove riuscite su questo esercizio, per chi sta guardando.
+
+    Serve solo ai superato/non superato: e' il numero che il contatore mostra
+    al posto del record, e dopo un annulla va ricalcolato dal DB invece che
+    decrementato a schermo — se due schede sono aperte, il conto tenuto in
+    pagina diverge e nessuno se ne accorge.
+    """
+    return ChallengeAttempt.query.filter_by(
+        user_id=current_user.id,
+        challenge_id=challenge_id,
+        completed=True,
+        passed=True,
+    ).count()
 
 
 def _recent_attempts(challenge_id, limit=10):
@@ -519,6 +607,28 @@ def _payload_int(data, key, *, required=False):
         if required:
             raise ValueError(f"Invalid integer for field: {key}")
         return None
+
+
+def _parse_max_score(data, pass_fail_only):
+    """Il tetto di punteggio dal modulo: facoltativo, e vuoto vuol dire assente.
+
+    Non usa il kwarg ``type=int`` di MultiDict per la stessa ragione degli
+    altri parser di questo file: su un body JSON quel kwarg solleva TypeError
+    (500), e la casella vuota — il caso normale — arriva come "".
+
+    Su un esercizio superato/non superato il campo si ignora invece di
+    sollevare: la casella e' nascosta dal modulo, quindi un valore che arriva
+    lo stesso e' residuo di un cambio di tipo a schermo, non una richiesta.
+    """
+    if pass_fail_only:
+        return None
+    grezzo = (data.get("max_score") or "").strip() if hasattr(data, "get") else ""
+    if not grezzo:
+        return None
+    try:
+        return int(grezzo)
+    except (TypeError, ValueError):
+        raise ValidationError("Il punteggio massimo deve essere un numero")
 
 
 def _parse_complete_attempt_payload(data):

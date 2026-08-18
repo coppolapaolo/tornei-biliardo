@@ -97,10 +97,27 @@ def _attempt(exam: Exam, user: User) -> ExamAttempt:
 # max_score per-esame
 # ────────────────────────────────────────────────────────────────────────────────
 def test_max_score_is_per_exam_not_per_challenge(app):
-    """Lo stesso drill vale 10 in un esame e 15 in un altro."""
+    """Lo stesso esercizio vale 10 in un esame e 15 in un altro.
+
+    Dal 2026-08-18 l'esercizio ha un ``max_score`` **suo** (facoltativo), e la
+    convivenza e' voluta: le due colonne rispondono a domande diverse.
+
+    - ``Challenge.max_score`` → *quanto vale al massimo questa prova*, che e'
+      una proprieta' dell'esercizio: quindici bilie sono quindici bilie
+      ovunque. Serve fuori dagli esami — mostrare «12 / 15» a chi si allena dal
+      catalogo, e rifiutare un 20 su una prova che arriva a 15.
+    - ``ExamChallenge.max_score`` → *quanto pesa dentro quell'esame*, che e'
+      una scelta di chi l'esame lo compone.
+
+    Quello che questo test difende e' che il secondo **non** venga derivato dal
+    primo: e' il punto di ADR-042, e derivarlo renderebbe impossibile far
+    pesare diversamente lo stesso esercizio in due esami.
+    """
     with app.app_context():
         owner = _user(UserRole.ADMIN.value)
         challenge = _challenge()
+        challenge.max_score = 30
+        db.session.flush()
 
         first = Exam(name="Primo", examiner_id=owner.id)
         second = Exam(name="Secondo", examiner_id=owner.id)
@@ -116,10 +133,11 @@ def test_max_score_is_per_exam_not_per_challenge(app):
         db.session.add_all([in_first, in_second])
         db.session.flush()
 
+        # Il massimo dell'esercizio non entra nel conto dell'esame, nemmeno
+        # quando c'e' ed e' piu' alto di entrambi.
         assert in_first.effective_max_score == 10
         assert in_second.effective_max_score == 15
-        # Challenge non ha (e non deve avere) un max_score proprio.
-        assert not hasattr(challenge, "max_score")
+        assert challenge.max_score == 30
 
 
 def test_pass_fail_challenge_has_null_max_score_and_counts_one_point(app):

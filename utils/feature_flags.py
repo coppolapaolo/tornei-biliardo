@@ -392,6 +392,10 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "challenge.challenge_catalog": {"player", "director"},
     "challenge.challenge_detail": {"player", "director"},
     "challenge.training_session": {"player", "director"},
+    # L'annulla della schermata di allenamento: chi puo' registrare una prova
+    # deve poter disfare quella appena registrata, altrimenti il tasto c'e' ma
+    # risponde 404 solo in produzione.
+    "challenge.training_undo": {"player", "director"},
     # start_attempt/attempt_detail/complete_attempt sono il percorso della
     # gara (il drill al posto del bye), che il giocatore attraversa da solo.
     "challenge.start_attempt": {"player", "director"},

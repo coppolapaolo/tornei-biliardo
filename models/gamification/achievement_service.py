@@ -10,7 +10,7 @@ Key Methods:
 """
 
 from __future__ import annotations
-from typing import Tuple, Optional, Dict, Any, List
+from typing import Tuple, Optional, Dict, Any, List, Sequence
 import json
 import logging
 
@@ -151,6 +151,114 @@ class AchievementService:
                     f"per user {user_id}: {exc}"
                 )
         return newly_unlocked
+
+    @staticmethod
+    @transactional(domain="gamification")
+    def revoke_no_longer_earned(
+        user_id: int, requirement_types: Sequence[str]
+    ) -> List[str]:
+        """Toglie i traguardi che i dati non giustificano piu'.
+
+        **Perche' esiste.** Fino al 2026-08-18 la riconciliazione sapeva solo
+        sbloccare: era la scelta giusta finche' i fatti non si potevano
+        disfare. Da quando una prova si puo' cancellare — un tocco sbagliato
+        durante l'allenamento — un traguardo poteva restare acceso su un conto
+        che non esisteva piu'.
+
+        **Non e' una revoca a colpo sicuro: e' un ricalcolo.** L'idoneita' si
+        rivaluta sulla fonte di verita' (``AchievementMetrics``), quindi se
+        altri esercizi reggono comunque il requisito il traguardo **resta**.
+        Chi ha fatto cento prove e ne cancella una non perde niente.
+
+        **Solo i tipi indicati.** Il chiamante dichiara quali metriche ha
+        toccato: rivalutare tutto vorrebbe dire togliere anche traguardi il cui
+        requisito e' booleano o legato a un evento irripetibile, dove
+        «non idoneo adesso» non significa «non e' mai successo».
+
+        L'XP del traguardo torna indietro con un movimento compensativo, come
+        per la prova: il registro racconta cos'e' successo, non fa finta di
+        niente.
+
+        Returns:
+            Gli slug dei traguardi tolti.
+        """
+        from models.user.models import User
+
+        user = db.session.get(User, user_id)
+        if user and user.is_admin:
+            return []
+
+        tolti: List[str] = []
+        tipi = set(requirement_types)
+
+        for achievement in Achievement.query.filter_by(is_active=True).all():
+            try:
+                requirements = json.loads(achievement.requirements)
+            except (ValueError, TypeError):
+                continue
+            requirement_type = requirements.get("type")
+            if requirement_type not in tipi:
+                continue
+
+            user_achievement = UserAchievement.query.filter_by(
+                user_id=user_id, achievement_id=achievement.id
+            ).first()
+            if user_achievement is None or not user_achievement.is_unlocked:
+                continue
+
+            try:
+                metric_value = AchievementMetrics.current_value(
+                    user_id, requirement_type, requirements
+                )
+                if metric_value is not None:
+                    target = requirements.get("count", 1)
+                    user_achievement.current_progress = min(metric_value, target)
+
+                ancora_idoneo = AchievementService._check_requirements(
+                    user_id=user_id,
+                    requirement_type=requirement_type,
+                    requirements=requirements,
+                    metric_value=metric_value,
+                )
+            except Exception as exc:
+                # Un errore di valutazione non deve **togliere** niente: nel
+                # dubbio il traguardo resta. Sbagliare per eccesso qui vuol
+                # dire lasciare un badge di troppo; sbagliare per difetto vuol
+                # dire toglierne uno guadagnato.
+                logger.warning(
+                    f"revoca: errore su '{achievement.slug}' per user {user_id}: {exc}"
+                )
+                continue
+
+            if ancora_idoneo:
+                continue
+
+            user_achievement.is_unlocked = False
+            user_achievement.unlocked_at = None
+            tolti.append(achievement.slug)
+
+            if achievement.xp_reward > 0:
+                try:
+                    LevelService.award_xp(
+                        user_id=user_id,
+                        xp_amount=-achievement.xp_reward,
+                        transaction_type=XPTransactionType.ACHIEVEMENT_UNLOCK,
+                        reason=f"Achievement revoked: {achievement.name}",
+                        related_entities={
+                            "achievement_id": achievement.id,
+                            "achievement_slug": achievement.slug,
+                            "revoked": True,
+                        },
+                    )
+                except Exception as exc:
+                    logger.warning(
+                        f"revoca: XP non restituito per '{achievement.slug}' "
+                        f"(user {user_id}): {exc}"
+                    )
+
+            logger.info(f"User {user_id} lost achievement '{achievement.slug}'")
+
+        return tolti
 
     @staticmethod
     def _evaluate_and_award(

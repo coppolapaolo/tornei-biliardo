@@ -16,6 +16,11 @@ Lo stesso `challenge.max_score` inesistente era letto anche in codice **vivo**,
 dentro un `except Exception: pass` che lo inghiottiva — ed è il motivo per cui lo
 storico drill del profilo è stato sempre vuoto, senza un errore da nessuna parte.
 
+> Nota per chi legge dopo: quella colonna **oggi esiste** (dal 2026-08-18, vedi
+> l'emendamento più sotto). Il difetto raccontato qui resta reale — allora non
+> c'era, e il codice la leggeva lo stesso — ma non provare a riprodurlo cercando
+> un `AttributeError`: non lo troveresti più.
+
 Le tabelle esistevano anche in produzione (create da `db.create_all()`) ma erano
 **vuote per costruzione**: nessun codice ci scriveva.
 
@@ -52,12 +57,32 @@ dominio. Nessuno viene valutato a propria insaputa.
 
 ### `max_score` su `ExamChallenge`, non su `Challenge`
 
-Il punteggio massimo è **per-esame**: lo stesso drill può valere 10 in un esame
-e 15 in un altro. Metterlo su `Challenge` lo renderebbe globale, e obbligherebbe
-a toccare il catalogo dei drill per tarare un esame.
+Il punteggio massimo **dell'esame** è per-esame: lo stesso esercizio può valere
+10 in un esame e 15 in un altro. Derivarlo dal catalogo lo renderebbe globale, e
+obbligherebbe a toccare il catalogo per tarare un esame.
 
-`NULL` significa pass/fail: vale 1 punto se superato, 0 altrimenti. Obbligatorio
-se il drill non è pass/fail, vietato se lo è.
+`NULL` significa superato/non superato: vale 1 punto se superato, 0 altrimenti.
+Obbligatorio se l'esercizio non è superato/non superato, vietato se lo è.
+
+> **Emendamento del 2026-08-18.** `Challenge` ha ora un `max_score` **suo**,
+> facoltativo, e la convivenza è voluta: le due colonne rispondono a domande
+> diverse.
+>
+> | | domanda | chi decide |
+> |---|---|---|
+> | `Challenge.max_score` | *quanto vale al massimo questa prova* | chi crea l'esercizio |
+> | `ExamChallenge.max_score` | *quanto pesa dentro questo esame* | chi compone l'esame |
+>
+> Quindici bilie sono quindici bilie in qualunque contesto; quanto quell'esercizio
+> **pesi** in un esame è un'altra cosa. La decisione originale resta intatta —
+> `effective_max_score` **non** guarda il catalogo, e derivarlo da lì
+> renderebbe di nuovo impossibile far pesare diversamente lo stesso esercizio in
+> due esami (presidio: `test_max_score_is_per_exam_not_per_challenge`).
+>
+> Quello che cambia è che *fuori* dagli esami un tetto non c'era da nessuna
+> parte: chi si allena dal catalogo vedeva «12» senza sapere su quanto, e una
+> POST con `score=40` su una prova da 15 entrava senza che niente la fermasse.
+> Vedi «Debito noto» in fondo: questa colonna è metà di quel debito, saldata.
 
 ### Entità gemelle di `MatchProposal`, non un'astrazione condivisa
 
@@ -193,13 +218,30 @@ migration **si ferma rumorosamente** invece di distruggerle.
 
 ## Debito noto
 
-`Challenge` resta **senza `name` e senza `max_score`**, in disallineamento con
-`SPECIFICHE.md` §Challenge («È identificata da un nome. Ha un punteggio minimo e
-massimo»). È una scelta consapevole — `max_score` è per-esame, e il nome è un
-lavoro sul catalogo drill che non appartiene a questo dominio — ma il costo si
-vede: il catalogo mostra la descrizione troncata a 50 caratteri
-(`Challenge.get_display_name()`) al posto di un nome, e le schermate d'esame
-mostrano il punteggio senza fondoscala.
+**Saldato il 2026-08-18.** Diceva:
+
+> `Challenge` resta **senza `name` e senza `max_score`**, in disallineamento con
+> `SPECIFICHE.md` §Challenge («È identificata da un nome. Ha un punteggio minimo
+> e massimo»). È una scelta consapevole — `max_score` è per-esame, e il nome è un
+> lavoro sul catalogo drill che non appartiene a questo dominio — ma il costo si
+> vede: il catalogo mostra la descrizione troncata a 50 caratteri
+> (`Challenge.get_display_name()`) al posto di un nome, e le schermate d'esame
+> mostrano il punteggio senza fondoscala.
+
+Entrambe le metà sono state pagate, in due momenti e per due ragioni diverse:
+
+- **il nome** (`Challenge.title`, facoltativo) perché venti esercizi che
+  cominciano con «Disponi le bilie…» erano venti card indistinguibili. Senza
+  titolo l'esercizio si chiama col suo progressivo — «Esercizio 12» — non con
+  mezza istruzione;
+- **il tetto** (`Challenge.max_score`, facoltativo) perché fuori da un esame non
+  c'era nessun posto dove dire quanto vale al massimo una prova. Vedi
+  l'emendamento sopra: non sostituisce quello per-esame, e non lo alimenta.
+
+Facoltativi tutti e due, e per la stessa ragione: `NULL` non è un dato mancante.
+Dice «questo esercizio non ha un nome scelto» e «questa prova non ha un tetto» —
+ci sono esercizi che si ripetono finché non si sbaglia, dove un massimo non
+esiste, e obbligare a dichiararlo vorrebbe dire farlo inventare.
 
 ## Riferimenti
 

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-18 15:17+0200\n"
+"POT-Creation-Date: 2026-08-18 15:52+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -66,7 +66,7 @@ msgstr ""
 msgid "Rotation"
 msgstr ""
 
-#: models/challenge/models.py:269
+#: models/challenge/models.py:288
 #, python-format
 msgid "Esercizio %(number)s"
 msgstr ""
@@ -1331,69 +1331,77 @@ msgstr ""
 msgid "Registrazione completata con successo."
 msgstr ""
 
-#: routes/challenge.py:57
+#: routes/challenge.py:61
 #: templates/components/_challenge_management_modal.html:150
 msgid "Non è stato possibile caricare gli esercizi."
 msgstr ""
 
-#: routes/challenge.py:107 routes/challenge.py:329
+#: routes/challenge.py:113 routes/challenge.py:343
 #: templates/components/_challenge_management_modal.html:158
 msgid "Esercizio creato."
 msgstr ""
 
-#: routes/challenge.py:181 routes/challenge.py:397
+#: routes/challenge.py:187 routes/challenge.py:411
 msgid "Questo esercizio non è più disponibile."
 msgstr ""
 
-#: routes/challenge.py:186
+#: routes/challenge.py:192
 msgid "Gli amministratori non possono provare gli esercizi."
 msgstr ""
 
-#: routes/challenge.py:215
+#: routes/challenge.py:221
 msgid "Tentativo iniziato."
 msgstr ""
 
-#: routes/challenge.py:354
+#: routes/challenge.py:368
 msgid "Questo esercizio nasce da una foto: non c'è un disegno da modificare."
 msgstr ""
 
-#: routes/challenge.py:373
+#: routes/challenge.py:387
 msgid "Disegno aggiornato."
 msgstr ""
 
-#: routes/challenge.py:401
+#: routes/challenge.py:415
 msgid "Gli amministratori non provano gli esercizi."
 msgstr ""
 
-#: routes/challenge.py:444
+#: routes/challenge.py:464
 msgid "Prova registrata."
 msgstr ""
 
-#: routes/challenge.py:593
+#: routes/challenge.py:495
+msgid "Non c'è nessuna prova da annullare."
+msgstr ""
+
+#: routes/challenge.py:516
+msgid "Prova annullata."
+msgstr ""
+
+#: routes/challenge.py:703
 msgid "Tentativo registrato."
 msgstr ""
 
-#: routes/challenge.py:634 templates/challenge/catalog.html:110
+#: routes/challenge.py:744 templates/challenge/catalog.html:110
 msgid "Non è stato possibile aggiornare i preferiti."
 msgstr ""
 
-#: routes/challenge.py:668
+#: routes/challenge.py:778
 msgid "Non è stato possibile caricare le statistiche."
 msgstr ""
 
-#: routes/challenge.py:696
+#: routes/challenge.py:806
 msgid "Esercizio di gara avviato."
 msgstr ""
 
-#: routes/challenge.py:749
+#: routes/challenge.py:859
 msgid "Esercizio di gara registrato."
 msgstr ""
 
-#: routes/challenge.py:834
+#: routes/challenge.py:944
 msgid "Esercizio non trovato."
 msgstr ""
 
-#: routes/challenge.py:844
+#: routes/challenge.py:954
 msgid "Non hai i permessi per questo esercizio."
 msgstr ""
 
@@ -2896,8 +2904,9 @@ msgstr ""
 #: templates/admin/campionato_wizard_step2.html:8
 #: templates/admin/gara_edit.html:11 templates/admin/venue_form.html:296
 #: templates/admin/venue_manager_requests.html:155 templates/base.html:582
-#: templates/base.html:655 templates/challenge/builder.html:33
-#: templates/challenge/builder.html:249 templates/challenge/create.html:14
+#: templates/base.html:655 templates/challenge/_training_board.html:92
+#: templates/challenge/builder.html:33 templates/challenge/builder.html:262
+#: templates/challenge/create.html:14
 #: templates/components/_campionato_create_modal.html:35
 #: templates/components/_campionato_edit_form.html:214
 #: templates/components/_challenge_management_modal.html:117
@@ -3024,7 +3033,7 @@ msgid "Gestione Gara %(id)s - Admin"
 msgstr ""
 
 #: templates/admin/users_list.html:252 templates/admin/venues_list.html:113
-#: templates/challenge/_challenge_card.html:70
+#: templates/challenge/_challenge_card.html:72
 #: templates/components/_campionato_garas.html:161
 #: templates/components/_history_campionati_tab.html:105
 #: templates/components/_history_gare_tab.html:116
@@ -4829,7 +4838,7 @@ msgstr ""
 
 #: templates/admin/gara_challenge_classification.html:61
 #: templates/admin/gara_challenge_classification.html:132
-#: templates/challenge/_challenge_card.html:63
+#: templates/challenge/_challenge_card.html:65
 #: templates/components/_match_challenge_input.html:38
 #: templates/components/_player_challenges.html:27
 #: templates/components/_player_challenges_dashboard.html:26
@@ -4894,7 +4903,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: templates/admin/gara_challenge_classification.html:136
-#: templates/challenge/_challenge_card.html:61
+#: templates/challenge/_challenge_card.html:63
 #: templates/components/_separated_dashboard_content.html:274
 msgid "giocatori"
 msgstr ""
@@ -6513,29 +6522,35 @@ msgid "Aggiungi ai preferiti"
 msgstr ""
 
 #: templates/challenge/_challenge_card.html:39
-#: templates/challenge/training.html:48
+#: templates/challenge/training.html:59
 msgid "Riuscito o no"
 msgstr ""
 
-#: templates/challenge/_challenge_card.html:39
+#: templates/challenge/_challenge_card.html:40
+#: templates/challenge/training.html:60
+#, python-format
+msgid "0-%(max)s punti"
+msgstr ""
+
+#: templates/challenge/_challenge_card.html:41
 #: templates/challenge/_challenge_detail.html:43
-#: templates/challenge/builder.html:233 templates/challenge/create.html:48
-#: templates/challenge/training.html:48
+#: templates/challenge/builder.html:234 templates/challenge/create.html:48
+#: templates/challenge/training.html:61
 #: templates/components/_challenge_bits.html:27
 #: templates/components/_challenge_management_modal.html:97
 #: templates/player/challenge_attempt_detail.html:49
 msgid "A punteggio"
 msgstr ""
 
-#: templates/challenge/_challenge_card.html:55
+#: templates/challenge/_challenge_card.html:57
 msgid "Creato da te"
 msgstr ""
 
-#: templates/challenge/_challenge_card.html:68
+#: templates/challenge/_challenge_card.html:70
 msgid "Provalo"
 msgstr ""
 
-#: templates/challenge/_challenge_card.html:74
+#: templates/challenge/_challenge_card.html:76
 #: templates/challenge/builder.html:64
 #: templates/components/_campionato_garas.html:80
 #: templates/components/_campionato_garas.html:178
@@ -6545,16 +6560,17 @@ msgstr ""
 msgid "Elimina"
 msgstr ""
 
-#: templates/challenge/_challenge_card.html:81
+#: templates/challenge/_challenge_card.html:83
 msgid "Creato da"
 msgstr ""
 
-#: templates/challenge/_challenge_card.html:81
+#: templates/challenge/_challenge_card.html:83
 msgid "Creato dal sistema"
 msgstr ""
 
 #: templates/challenge/_challenge_detail.html:24
-#: templates/challenge/training.html:41
+#: templates/challenge/_training_board.html:27
+#: templates/challenge/training.html:52
 msgid "Disposizione dell'esercizio"
 msgstr ""
 
@@ -6575,7 +6591,7 @@ msgid "Riuscita o no"
 msgstr ""
 
 #: templates/challenge/_challenge_detail.html:49
-#: templates/challenge/training.html:53
+#: templates/challenge/training.html:66
 msgid "Istruzioni"
 msgstr ""
 
@@ -6623,13 +6639,95 @@ msgstr ""
 msgid "Crea la prima"
 msgstr ""
 
+#: templates/challenge/_training_board.html:21
+msgid "Allenamento a schermo intero"
+msgstr ""
+
+#: templates/challenge/_training_board.html:40
+msgid "Chiudi lo schermo intero"
+msgstr ""
+
+#: templates/challenge/_training_board.html:49
+msgid "Prove"
+msgstr ""
+
+#: templates/challenge/_training_board.html:57
+#: templates/challenge/training.html:79
+#: templates/components/_player_challenge_statistics.html:30
+msgid "Riuscite"
+msgstr ""
+
+#: templates/challenge/_training_board.html:57
+#: templates/components/_player_training.html:56
+#: templates/gamification/admin/streaks.html:104
+#: templates/gamification/dashboard.html:65
+#: templates/gamification/streaks.html:79
+msgid "Record"
+msgstr ""
+
+#: templates/challenge/_training_board.html:65
+#: templates/challenge/training.html:95 templates/challenge/training.html:150
+#: templates/challenge/training.html:193
+#: templates/components/_match_challenge_input.html:52
+#: templates/components/_player_challenge_statistics.html:55
+#: templates/components/_player_challenges.html:38
+#: templates/player/challenge_attempt_detail.html:72
+#: templates/player/challenge_attempt_detail.html:133
+#: templates/player/challenge_detail.html:41
+#: templates/player/challenge_detail.html:66
+#: templates/player/gara_challenge_detail.html:75
+#: templates/player/gara_challenge_detail.html:136
+msgid "Superata"
+msgstr ""
+
+#: templates/challenge/_training_board.html:68
+#: templates/challenge/training.html:99 templates/challenge/training.html:150
+#: templates/challenge/training.html:194
+#: templates/components/_match_challenge_input.html:53
+#: templates/components/_player_challenge_statistics.html:55
+#: templates/components/_player_challenges.html:38
+#: templates/player/challenge_attempt_detail.html:82
+#: templates/player/challenge_attempt_detail.html:133
+#: templates/player/challenge_detail.html:66
+#: templates/player/gara_challenge_detail.html:84
+#: templates/player/gara_challenge_detail.html:136
+msgid "Non superata"
+msgstr ""
+
+#: templates/challenge/_training_board.html:74
+#: templates/challenge/training.html:107
+#: templates/components/_form_macros.html:84
+#: templates/player/challenge_attempt_detail.html:94
+#: templates/player/gara_challenge_detail.html:94
+msgid "Diminuisci"
+msgstr ""
+
+#: templates/challenge/_training_board.html:80
+#: templates/challenge/training.html:116
+#: templates/components/_form_macros.html:89
+#: templates/player/challenge_attempt_detail.html:97
+#: templates/player/gara_challenge_detail.html:97
+msgid "Aumenta"
+msgstr ""
+
+#: templates/challenge/_training_board.html:84
+#: templates/components/_match_challenge_input.html:61
+#: templates/exam/session.html:111
+msgid "Registra"
+msgstr ""
+
+#: templates/challenge/_training_board.html:95
+#: templates/challenge/training.html:38 templates/challenge/training.html:178
+msgid "Ho finito"
+msgstr ""
+
 #: templates/challenge/builder.html:19 templates/challenge/builder.html:35
-#: templates/challenge/create.html:73
+#: templates/challenge/create.html:88
 msgid "Disegna l'esercizio"
 msgstr ""
 
 #: templates/challenge/builder.html:35
-#: templates/player/challenge_detail.html:106
+#: templates/player/challenge_detail.html:108
 msgid "Modifica il disegno"
 msgstr ""
 
@@ -6646,7 +6744,7 @@ msgid "Sposta"
 msgstr ""
 
 #: templates/challenge/builder.html:55 templates/challenge/builder.html:84
-#: templates/challenge/builder.html:280
+#: templates/challenge/builder.html:293
 msgid "Tiro"
 msgstr ""
 
@@ -6716,7 +6814,7 @@ msgstr ""
 msgid "Forza"
 msgstr ""
 
-#: templates/challenge/builder.html:99 templates/challenge/builder.html:265
+#: templates/challenge/builder.html:99 templates/challenge/builder.html:278
 msgid "medio"
 msgstr ""
 
@@ -6874,174 +6972,187 @@ msgstr ""
 msgid "Svuota"
 msgstr ""
 
-#: templates/challenge/builder.html:210 templates/challenge/create.html:27
+#: templates/challenge/builder.html:211 templates/challenge/create.html:27
 msgid "Titolo"
 msgstr ""
 
-#: templates/challenge/builder.html:212 templates/challenge/create.html:29
+#: templates/challenge/builder.html:213 templates/challenge/create.html:29
 msgid "es. Progressione lungo sponda"
 msgstr ""
 
-#: templates/challenge/builder.html:214
+#: templates/challenge/builder.html:215
 msgid "Facoltativo: senza, l'esercizio prende il suo numero progressivo."
 msgstr ""
 
-#: templates/challenge/builder.html:219
+#: templates/challenge/builder.html:220
 msgid "Istruzioni per chi la esegue"
 msgstr ""
 
-#: templates/challenge/builder.html:223
+#: templates/challenge/builder.html:224
 msgid "Come si dispongono le bilie e come si conta il punteggio"
 msgstr ""
 
-#: templates/challenge/builder.html:225
+#: templates/challenge/builder.html:226
 msgid "Il disegno mostra la disposizione; qui si scrive la regola."
 msgstr ""
 
-#: templates/challenge/builder.html:230
+#: templates/challenge/builder.html:231
 msgid "Come si conta"
 msgstr ""
 
-#: templates/challenge/builder.html:236
-msgid "Superata o non superata"
+#: templates/challenge/builder.html:237
+msgid "Superato o non superato"
 msgstr ""
 
-#: templates/challenge/builder.html:246
+#: templates/challenge/builder.html:245 templates/challenge/create.html:62
+#: templates/exam/detail.html:148
+msgid "Punteggio massimo"
+msgstr ""
+
+#: templates/challenge/builder.html:248 templates/challenge/create.html:65
+msgid "es. 15"
+msgstr ""
+
+#: templates/challenge/builder.html:250
+msgid "Facoltativo. Lascialo vuoto se la prova non ha un tetto."
+msgstr ""
+
+#: templates/challenge/builder.html:259
 msgid "Salva l'esercizio"
 msgstr ""
 
-#: templates/challenge/builder.html:246
+#: templates/challenge/builder.html:259
 #: templates/individual_match/availability.html:111
 msgid "Salva le modifiche"
 msgstr ""
 
-#: templates/challenge/builder.html:263
+#: templates/challenge/builder.html:276
 msgid "tocco"
 msgstr ""
 
-#: templates/challenge/builder.html:264
+#: templates/challenge/builder.html:277
 msgid "piano"
 msgstr ""
 
-#: templates/challenge/builder.html:266
+#: templates/challenge/builder.html:279
 msgid "forte"
 msgstr ""
 
-#: templates/challenge/builder.html:267
+#: templates/challenge/builder.html:280
 msgid "spacco"
 msgstr ""
 
-#: templates/challenge/builder.html:268
+#: templates/challenge/builder.html:281
 msgid ""
 "Attiva Tiro: la traiettoria segue il puntatore e si ricalcola in tempo "
 "reale."
 msgstr ""
 
-#: templates/challenge/builder.html:269
+#: templates/challenge/builder.html:282
 msgid ""
 "Muovi per mirare. Premi e rilascia per fissare; tieni premuto e trascina "
 "per la mira fine. Esc annulla."
 msgstr ""
 
-#: templates/challenge/builder.html:270
+#: templates/challenge/builder.html:283
 msgid ""
 "Clicca la biglia da giocare per iniziare a mirare. Clicca un tiro "
 "esistente per correggerlo."
 msgstr ""
 
-#: templates/challenge/builder.html:271
+#: templates/challenge/builder.html:284
 msgid "Clicca una biglia per iniziare a mirare"
 msgstr ""
 
-#: templates/challenge/builder.html:275
+#: templates/challenge/builder.html:288
 msgid "Testo da inserire:"
 msgstr ""
 
-#: templates/challenge/builder.html:276
+#: templates/challenge/builder.html:289
 msgid "Testo:"
 msgstr ""
 
-#: templates/challenge/builder.html:277
+#: templates/challenge/builder.html:290
 msgid "Battente"
 msgstr ""
 
-#: templates/challenge/builder.html:278
+#: templates/challenge/builder.html:291
 msgid "Biglia fantasma"
 msgstr ""
 
-#: templates/challenge/builder.html:279
+#: templates/challenge/builder.html:292
 msgid "Biglia"
 msgstr ""
 
-#: templates/challenge/builder.html:281
+#: templates/challenge/builder.html:294
 msgid "forza"
 msgstr ""
 
-#: templates/challenge/builder.html:282
+#: templates/challenge/builder.html:295
 msgid "alto"
 msgstr ""
 
-#: templates/challenge/builder.html:283
+#: templates/challenge/builder.html:296
 msgid "basso"
 msgstr ""
 
-#: templates/challenge/builder.html:284
+#: templates/challenge/builder.html:297
 msgid "sx"
 msgstr ""
 
-#: templates/challenge/builder.html:285
+#: templates/challenge/builder.html:298
 msgid "dx"
 msgstr ""
 
-#: templates/challenge/builder.html:286
+#: templates/challenge/builder.html:299
 msgid "verticale"
 msgstr ""
 
-#: templates/challenge/builder.html:287
+#: templates/challenge/builder.html:300
 msgid "laterale"
 msgstr ""
 
-#: templates/challenge/builder.html:288
+#: templates/challenge/builder.html:301
 msgid "centro"
 msgstr ""
 
-#: templates/challenge/builder.html:289
+#: templates/challenge/builder.html:302
 msgid "destro"
 msgstr ""
 
-#: templates/challenge/builder.html:290
+#: templates/challenge/builder.html:303
 msgid "sinistro"
 msgstr ""
 
-#: templates/challenge/builder.html:291
+#: templates/challenge/builder.html:304
 msgid "1 = massimo effetto utile"
 msgstr ""
 
-#: templates/challenge/builder.html:303
+#: templates/challenge/builder.html:316
 msgid "Il disegno salvato non si è potuto ricaricare."
 msgstr ""
 
-#: templates/challenge/builder.html:314
+#: templates/challenge/builder.html:339
 msgid "Servono le istruzioni: il disegno da solo non dice come si conta."
 msgstr ""
 
-#: templates/challenge/builder.html:318
+#: templates/challenge/builder.html:343
 msgid "Il tavolo è vuoto: disponi almeno una bilia."
 msgstr ""
 
-#: templates/challenge/builder.html:324
+#: templates/challenge/builder.html:349
 msgid "Salvo…"
 msgstr ""
 
-#: templates/challenge/builder.html:330
+#: templates/challenge/builder.html:355
 msgid "Non è stato possibile generare l'immagine dell'esercizio."
 msgstr ""
 
-#: templates/challenge/builder.html:346
+#: templates/challenge/builder.html:371
 msgid "Non è stato possibile salvare l'esercizio."
 msgstr ""
 
-#: templates/challenge/builder.html:354
+#: templates/challenge/builder.html:379
 msgid "Non è stato possibile salvare l'esercizio. Riprova."
 msgstr ""
 
@@ -7111,12 +7222,12 @@ msgid "Errore di rete: riprova."
 msgstr ""
 
 #: templates/challenge/catalog.html:112
-#: templates/player/challenge_detail.html:120
+#: templates/player/challenge_detail.html:122
 msgid "Confermi di voler eliminare questo esercizio? Non si torna indietro."
 msgstr ""
 
 #: templates/challenge/catalog.html:113
-#: templates/player/challenge_detail.html:130
+#: templates/player/challenge_detail.html:132
 msgid "Non è stato possibile eliminare l'esercizio."
 msgstr ""
 
@@ -7159,29 +7270,35 @@ msgstr ""
 msgid "Nessun numero: l'esercizio è superato oppure no."
 msgstr ""
 
-#: templates/challenge/create.html:58
+#: templates/challenge/create.html:67
+msgid ""
+"Facoltativo. Serve a mostrare «12 / 15» a chi si allena e a rifiutare un "
+"punteggio impossibile. Lascialo vuoto se la prova non ha un tetto."
+msgstr ""
+
+#: templates/challenge/create.html:73
 #: templates/components/_challenge_management_modal.html:109
 msgid "Foto della disposizione"
 msgstr ""
 
-#: templates/challenge/create.html:60
+#: templates/challenge/create.html:75
 msgid "Serve a riprodurre il tavolo: fotografalo dall'alto, JPG o PNG."
 msgstr ""
 
-#: templates/challenge/create.html:62
+#: templates/challenge/create.html:77
 msgid "Anteprima della foto"
 msgstr ""
 
-#: templates/challenge/create.html:70
+#: templates/challenge/create.html:85
 msgid "Non hai una foto?"
 msgstr ""
 
-#: templates/challenge/create.html:83
+#: templates/challenge/create.html:98
 #: templates/components/_challenge_management_modal.html:119
 msgid "Crea l'esercizio"
 msgstr ""
 
-#: templates/challenge/create.html:152
+#: templates/challenge/create.html:186
 msgid "Non è stato possibile creare l'esercizio. Riprova."
 msgstr ""
 
@@ -7223,7 +7340,7 @@ msgid "Alla fine registri il punteggio"
 msgstr ""
 
 #: templates/challenge/start_attempt.html:43
-#: templates/challenge/training.html:141
+#: templates/challenge/training.html:165
 msgid "Puoi riprovare quante volte vuoi: resta il tuo risultato migliore."
 msgstr ""
 
@@ -7235,127 +7352,79 @@ msgstr ""
 msgid "Non è stato possibile iniziare il tentativo. Riprova."
 msgstr ""
 
-#: templates/challenge/training.html:18 templates/challenge/training.html:24
+#: templates/challenge/training.html:27 templates/challenge/training.html:33
 #: templates/components/_player_training.html:24
 msgid "Allenamento"
 msgstr ""
 
-#: templates/challenge/training.html:22
+#: templates/challenge/training.html:31
 msgid "Torna agli esercizi"
 msgstr ""
 
-#: templates/challenge/training.html:29 templates/challenge/training.html:150
-msgid "Ho finito"
-msgstr ""
-
-#: templates/challenge/training.html:62
+#: templates/challenge/training.html:75
 msgid "Prove registrate"
 msgstr ""
 
-#: templates/challenge/training.html:66
-#: templates/player/challenge_detail.html:36
+#: templates/challenge/training.html:79
+#: templates/player/challenge_detail.html:38
 msgid "Il tuo record"
 msgstr ""
 
-#: templates/challenge/training.html:66
-#: templates/components/_player_challenge_statistics.html:30
-msgid "Riuscite"
-msgstr ""
-
-#: templates/challenge/training.html:83 templates/challenge/training.html:126
-#: templates/challenge/training.html:229
-#: templates/components/_match_challenge_input.html:52
-#: templates/components/_player_challenge_statistics.html:55
-#: templates/components/_player_challenges.html:38
-#: templates/player/challenge_attempt_detail.html:72
-#: templates/player/challenge_attempt_detail.html:133
-#: templates/player/challenge_detail.html:39
-#: templates/player/challenge_detail.html:64
-#: templates/player/gara_challenge_detail.html:75
-#: templates/player/gara_challenge_detail.html:136
-msgid "Superata"
-msgstr ""
-
-#: templates/challenge/training.html:84
-msgid "Registra e passa alla prossima"
-msgstr ""
-
-#: templates/challenge/training.html:93 templates/challenge/training.html:126
-#: templates/challenge/training.html:230
-#: templates/components/_match_challenge_input.html:53
-#: templates/components/_player_challenge_statistics.html:55
-#: templates/components/_player_challenges.html:38
-#: templates/player/challenge_attempt_detail.html:82
-#: templates/player/challenge_attempt_detail.html:133
-#: templates/player/challenge_detail.html:64
-#: templates/player/gara_challenge_detail.html:84
-#: templates/player/gara_challenge_detail.html:136
-msgid "Non superata"
-msgstr ""
-
-#: templates/challenge/training.html:94
-msgid "Registra e riprova"
-msgstr ""
-
-#: templates/challenge/training.html:101
+#: templates/challenge/training.html:104
 msgid "Punteggio della prova"
 msgstr ""
 
-#: templates/challenge/training.html:104
-#: templates/components/_form_macros.html:84
-#: templates/player/challenge_attempt_detail.html:94
-#: templates/player/gara_challenge_detail.html:94
-msgid "Diminuisci"
+#: templates/challenge/training.html:129
+#: templates/player/challenge_attempt_detail.html:101
+#, python-format
+msgid "Il tuo record è %(best)s"
 msgstr ""
 
-#: templates/challenge/training.html:107
-#: templates/components/_form_macros.html:89
-#: templates/player/challenge_attempt_detail.html:97
-#: templates/player/gara_challenge_detail.html:97
-msgid "Aumenta"
+#: templates/challenge/training.html:133
+msgid "Registra la prova"
 msgstr ""
 
-#: templates/challenge/training.html:116
+#: templates/challenge/training.html:140
 msgid "Le tue prove"
 msgstr ""
 
-#: templates/challenge/training.html:127
+#: templates/challenge/training.html:151
 #, python-format
 msgid "Punteggio %(score)s"
 msgstr ""
 
-#: templates/challenge/training.html:136
+#: templates/challenge/training.html:160
 msgid "Nessuna prova ancora. Registra la prima qui sopra."
 msgstr ""
 
-#: templates/challenge/training.html:147
-msgid "Registra la prova"
+#: templates/challenge/training.html:175
+msgid "Annulla l'ultima"
 msgstr ""
 
-#: templates/challenge/training.html:231
+#: templates/challenge/training.html:195
 msgid "adesso"
 msgstr ""
 
-#: templates/challenge/training.html:236
+#: templates/challenge/training.html:196
 #: templates/components/_match_challenge_input.html:57
 #: templates/exam/session.html:109
 msgid "Punteggio"
 msgstr ""
 
-#: templates/challenge/training.html:243
-msgid "Scegli se la prova è stata superata o no."
-msgstr ""
-
-#: templates/challenge/training.html:249
+#: templates/challenge/training.html:197
 msgid "Registro…"
 msgstr ""
 
-#: templates/challenge/training.html:259
+#: templates/challenge/training.html:198
 msgid "Non è stato possibile registrare la prova."
 msgstr ""
 
-#: templates/challenge/training.html:283
+#: templates/challenge/training.html:199
 msgid "Non è stato possibile registrare la prova. Riprova."
+msgstr ""
+
+#: templates/challenge/training.html:200
+msgid "Non è stato possibile annullare la prova."
 msgstr ""
 
 #: templates/components/_amalfi_algorithm_info.html:4
@@ -9619,11 +9688,6 @@ msgstr ""
 msgid "Esito…"
 msgstr ""
 
-#: templates/components/_match_challenge_input.html:61
-#: templates/exam/session.html:111
-msgid "Registra"
-msgstr ""
-
 #: templates/components/_match_challenge_input.html:66
 #, python-format
 msgid "I tentativi li registra %(who)s."
@@ -10265,15 +10329,8 @@ msgstr ""
 msgid "Mai superato"
 msgstr ""
 
-#: templates/components/_player_training.html:56
-#: templates/gamification/admin/streaks.html:104
-#: templates/gamification/dashboard.html:65
-#: templates/gamification/streaks.html:79
-msgid "Record"
-msgstr ""
-
 #: templates/components/_player_training.html:84
-#: templates/player/challenge_detail.html:52
+#: templates/player/challenge_detail.html:54
 #: templates/player/gara_challenge_detail.html:124
 msgid "I tuoi tentativi"
 msgstr ""
@@ -11521,10 +11578,6 @@ msgstr ""
 
 #: templates/exam/detail.html:147
 msgid "ID dell'esercizio"
-msgstr ""
-
-#: templates/exam/detail.html:148
-msgid "Punteggio massimo"
 msgstr ""
 
 #: templates/exam/detail.html:150
@@ -14404,11 +14457,6 @@ msgstr ""
 msgid "Punteggio ottenuto"
 msgstr ""
 
-#: templates/player/challenge_attempt_detail.html:101
-#, python-format
-msgid "Il tuo record è %(best)s"
-msgstr ""
-
 #: templates/player/challenge_attempt_detail.html:110
 #: templates/player/gara_challenge_detail.html:104
 msgid "Note (opzionale)"
@@ -14443,31 +14491,36 @@ msgstr ""
 msgid "Esercizio riuscito o no"
 msgstr ""
 
-#: templates/player/challenge_detail.html:15
+#: templates/player/challenge_detail.html:16
+#, python-format
+msgid "Esercizio a punteggio · max %(max)s"
+msgstr ""
+
+#: templates/player/challenge_detail.html:17
 msgid "Esercizio a punteggio"
 msgstr ""
 
-#: templates/player/challenge_detail.html:19
+#: templates/player/challenge_detail.html:21
 msgid "Catalogo"
 msgstr ""
 
-#: templates/player/challenge_detail.html:39
+#: templates/player/challenge_detail.html:41
 msgid "Non ancora superata"
 msgstr ""
 
-#: templates/player/challenge_detail.html:78
+#: templates/player/challenge_detail.html:80
 msgid "Elimina l'esercizio"
 msgstr ""
 
-#: templates/player/challenge_detail.html:88
+#: templates/player/challenge_detail.html:90
 msgid "Allenati su questo esercizio"
 msgstr ""
 
-#: templates/player/challenge_detail.html:91
+#: templates/player/challenge_detail.html:93
 msgid "Registri una prova dopo l'altra, sulla stessa schermata"
 msgstr ""
 
-#: templates/player/challenge_detail.html:136
+#: templates/player/challenge_detail.html:138
 msgid "Errore di rete: l'esercizio non è stato eliminato."
 msgstr ""
 

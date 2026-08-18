@@ -421,6 +421,30 @@ hints:
     section: crearle
 
   # --- Builder degli esercizi ---------------------------------------------------
+  - id: challenge.punteggio_massimo
+    label: "Punteggio massimo"
+    short: "Fin dove si può arrivare. Facoltativo: lascialo vuoto per le prove che si ripetono finché non sbagli, dove un massimo non esiste."
+    anchor: challenge-punteggio-massimo
+    screens: [challenge.create_challenge, challenge.diagram_builder, challenge.edit_diagram]
+    page: challenge
+    section: due_tipi
+
+  - id: allenamento.esito
+    label: "Superata / Non superata"
+    short: "Il tasto che tocchi registra subito la prova: non c'è niente da confermare. Se sbagli tasto, «Annulla l'ultima» lo disfa."
+    anchor: allenamento-esito
+    screens: [challenge.training_session]
+    page: challenge
+    section: allenarsi
+
+  - id: allenamento.annulla
+    label: "Annulla l'ultima"
+    short: "Toglie l'ultima prova registrata. Torna indietro anche l'XP: serve a correggere un tocco sbagliato, non a rigiocarsi il punteggio."
+    anchor: allenamento-annulla
+    screens: [challenge.training_session]
+    page: challenge
+    section: allenarsi
+
   - id: drill.disegna
     label: "Disegna l'esercizio"
     short: "Se la foto del tavolo non ce l'hai, l'esercizio si disegna: disponi le bilie, tracci il tiro, e l'immagine la genera il disegno."
@@ -431,7 +455,7 @@ hints:
 
   - id: drill.modifica_disegno
     label: "Modifica il disegno"
-    short: "Rimette le bilie sul tavolo come le avevi lasciate. Compare solo sui esercizi disegnati: da una foto non c'è un disegno da riaprire."
+    short: "Rimette le bilie sul tavolo come le avevi lasciate. Compare solo sugli esercizi disegnati: da una foto non c'è un disegno da riaprire."
     anchor: drill-modifica-disegno
     screens: [challenge.challenge_detail]
     page: disegnare_un_drill

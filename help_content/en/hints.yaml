@@ -427,6 +427,35 @@ hints:
   - challenge.edit_diagram
   page: challenge
   section: crearle
+- id: challenge.punteggio_massimo
+  label: Maximum score
+  short: 'How far you can get. Optional: leave it empty for drills you repeat until
+    you miss, where a maximum does not exist.'
+  anchor: challenge-punteggio-massimo
+  screens:
+  - challenge.create_challenge
+  - challenge.diagram_builder
+  - challenge.edit_diagram
+  page: challenge
+  section: due_tipi
+- id: allenamento.esito
+  label: Passed / Not passed
+  short: 'The button you tap records the attempt straight away: there is nothing to
+    confirm. Tapped the wrong one? «Undo the last one» takes it back.'
+  anchor: allenamento-esito
+  screens:
+  - challenge.training_session
+  page: challenge
+  section: allenarsi
+- id: allenamento.annulla
+  label: Undo the last one
+  short: 'Removes the attempt you just recorded. The XP goes back too: it is there
+    to fix a wrong tap, not to replay a score.'
+  anchor: allenamento-annulla
+  screens:
+  - challenge.training_session
+  page: challenge
+  section: allenarsi
 - id: drill.disegna
   label: Draw the drill
   short: 'No photo of the table? Draw the drill instead: place the balls, draw the shot, and the drawing

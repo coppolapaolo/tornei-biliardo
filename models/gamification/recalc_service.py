@@ -28,8 +28,9 @@ Known limitations (documented):
 - Achievement eligibility is metric-driven (``AchievementMetrics``): every
   ``requirement_type`` now derives its value from the domain source of truth, so
   the rebuild is self-correcting. Existing unlocks are always preserved.
-- ``WEEKLY_DRILL`` streaks are not rebuilt (challenge activity is not derived
-  here) and are left untouched.
+- ``WEEKLY_DRILL`` **is** rebuilt (since 2026-08-18) from drill attempts —
+  catalogue, gara and exam — because those are the same three sources the live
+  handlers record from.
 """
 
 from __future__ import annotations
@@ -37,7 +38,7 @@ from __future__ import annotations
 import json
 import logging
 from datetime import timedelta
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from sqlalchemy import func, or_
 
@@ -178,7 +179,107 @@ class GamificationRecalcService:
         db.session.flush()
         return newly_unlocked
 
+    # ------------------------------------------------- dopo una prova tolta
+
+    #: Le metriche che dipendono dalle prove di un esercizio. Solo queste si
+    #: rivalutano al ribasso: su un requisito booleano o legato a un evento
+    #: irripetibile «non idoneo adesso» non vuol dire «non e' mai successo».
+    DRILL_DEPENDENT_METRICS = ("challenges_completed", "perfect_challenges")
+
+    @staticmethod
+    @transactional(domain="gamification")
+    def recompute_after_drill_removed(user_id: int) -> Dict[str, Any]:
+        """Rimette in riga cio' che dipendeva da una prova appena cancellata.
+
+        **Ricalcola, non sottrae.** La differenza e' tutto il punto: se altri
+        esercizi reggono comunque la serie o il traguardo, non cambia niente.
+        Sottrarre uno alla serie avrebbe punito chi si allena tutti i giorni per
+        un tocco sbagliato, che e' il contrario di quello che serve.
+
+        Due cose si toccano e una no:
+
+        - **le serie settimanali** ``WEEKLY_DRILL`` e ``WEEKLY_ACTIVITY`` si
+          ricostruiscono dalle settimane in cui l'attivita' c'e' *davvero*.
+          ``WEEKLY_ACTIVITY`` si nutre anche di partite e iscrizioni: se la
+          settimana resta viva per quelle, resta viva;
+        - **i traguardi legati agli esercizi** si rivalutano, e cadono solo se
+          il conto non li regge piu';
+        - **congelamenti e traguardi di serie gia' raggiunti** restano dove
+          sono. Un congelamento speso non si puo' rimettere nel cassetto, e
+          ``milestone_*_reached`` serve a non riassegnarlo due volte: azzerarlo
+          per un annulla aprirebbe un modo di guadagnarne uno nuovo.
+
+        Ed e' anche il motivo per cui questo metodo non e' ``_rebuild_streaks``,
+        che i congelamenti invece li azzera: quello ricostruisce un account dopo
+        una fusione, qui si sta correggendo un tocco sbagliato.
+        """
+        per_type = GamificationRecalcService._activity_dates_by_streak(user_id)
+        toccate = []
+
+        for streak_type in (StreakType.WEEKLY_DRILL, StreakType.WEEKLY_ACTIVITY):
+            tracker = StreakTracker.query.filter_by(
+                user_id=user_id, streak_type=streak_type
+            ).first()
+            if tracker is None:
+                continue  # non c'era niente da correggere
+
+            current, longest, last_date = GamificationRecalcService._streak_from_dates(
+                per_type.get(streak_type, [])
+            )
+            prima = tracker.current_streak
+            tracker.current_streak = current
+            # `longest_streak` puo' solo scendere fino al valore ricostruito: e'
+            # un massimo storico, e qui la storia e' cambiata davvero.
+            tracker.longest_streak = longest
+            if last_date is not None:
+                iso = last_date.isocalendar()
+                tracker.last_activity_year = iso[0]
+                tracker.last_activity_week = iso[1]
+            else:
+                tracker.last_activity_year = None
+                tracker.last_activity_week = None
+            if prima != current:
+                toccate.append((streak_type.value, prima, current))
+
+        from models.gamification.achievement_service import AchievementService
+
+        tolti = AchievementService.revoke_no_longer_earned(
+            user_id, GamificationRecalcService.DRILL_DEPENDENT_METRICS
+        )
+
+        db.session.flush()
+        if toccate or tolti:
+            logger.info(
+                "Dopo una prova tolta (user %s): serie %s, traguardi tolti %s",
+                user_id,
+                toccate,
+                tolti,
+            )
+        return {"streaks_changed": toccate, "achievements_revoked": tolti}
+
     # ----------------------------------------------------------------- streaks
+
+    @staticmethod
+    def _activity_dates_by_streak(user_id: int) -> Dict:
+        """Le date che alimentano ciascuna serie, dalle fonti di verita'.
+
+        Deve rispecchiare **esattamente** chi chiama
+        ``StreakService.record_activity`` negli event handler: una sorgente
+        dimenticata qui non produce un errore, produce una serie piu' corta di
+        quella vera — e chi la guarda non ha modo di accorgersene.
+        """
+        match_dates = GamificationRecalcService._match_activity_dates(user_id)
+        tournament_dates = GamificationRecalcService._inscription_activity_dates(
+            user_id
+        )
+        drill_dates = GamificationRecalcService._drill_activity_dates(user_id)
+
+        return {
+            StreakType.WEEKLY_MATCH: match_dates,
+            StreakType.WEEKLY_TOURNAMENT: tournament_dates,
+            StreakType.WEEKLY_DRILL: drill_dates,
+            StreakType.WEEKLY_ACTIVITY: match_dates + tournament_dates + drill_dates,
+        }
 
     @staticmethod
     def _rebuild_streaks(user_id: int) -> int:
@@ -187,18 +288,9 @@ class GamificationRecalcService:
         Reconstructs the set of ISO weeks (keyed by their Monday date) in which
         the user had a qualifying activity, then derives the longest consecutive
         run and the run ending at the most recent activity. ``freeze_count`` is
-        reset (no freeze ledger exists). ``WEEKLY_DRILL`` is left untouched.
+        reset (no freeze ledger exists).
         """
-        match_dates = GamificationRecalcService._match_activity_dates(user_id)
-        tournament_dates = GamificationRecalcService._inscription_activity_dates(
-            user_id
-        )
-
-        per_type = {
-            StreakType.WEEKLY_MATCH: match_dates,
-            StreakType.WEEKLY_TOURNAMENT: tournament_dates,
-            StreakType.WEEKLY_ACTIVITY: match_dates + tournament_dates,
-        }
+        per_type = GamificationRecalcService._activity_dates_by_streak(user_id)
 
         rebuilt = 0
         for streak_type, dates in per_type.items():
@@ -331,6 +423,52 @@ class GamificationRecalcService:
 
         rows = Inscription.query.filter(Inscription.user_id == user_id).all()
         return [i.created_at.date() for i in rows if i.created_at is not None]
+
+    @staticmethod
+    def _drill_activity_dates(user_id: int) -> List:
+        """I giorni in cui l'utente ha completato un esercizio.
+
+        Tre sorgenti, perche' «allenarsi» succede in tre posti e per la serie
+        settimanale contano allo stesso modo: il catalogo, la gara (l'esercizio
+        al posto dell'X) e l'esame — che e' a sua volta una sequenza di
+        esercizi (ADR-042). Tenerne fuori uno vorrebbe dire dire al giocatore
+        che allenarsi li' non e' allenarsi.
+        """
+        from models.challenge.models import ChallengeAttempt
+        from models.competition.gara_challenge import GaraChallengeAttempt
+
+        dates: List = []
+
+        for attempt in ChallengeAttempt.query.filter(
+            ChallengeAttempt.user_id == user_id,
+            ChallengeAttempt.completed.is_(True),
+        ).all():
+            if attempt.attempted_at is not None:
+                dates.append(attempt.attempted_at.date())
+
+        for attempt in GaraChallengeAttempt.query.filter(
+            GaraChallengeAttempt.user_id == user_id,
+            GaraChallengeAttempt.completed.is_(True),
+        ).all():
+            when = getattr(attempt, "attempted_at", None) or getattr(
+                attempt, "created_at", None
+            )
+            if when is not None:
+                dates.append(when.date())
+
+        return dates + GamificationRecalcService._exam_activity_dates(user_id)
+
+    @staticmethod
+    def _exam_activity_dates(user_id: int) -> List:
+        """I giorni in cui l'utente ha concluso un esame."""
+        from models.exam.models import ExamAttempt
+        from models.status_enum import ExamAttemptStatus
+
+        rows = ExamAttempt.query.filter(
+            ExamAttempt.user_id == user_id,
+            ExamAttempt.status == ExamAttemptStatus.COMPLETED.value,
+        ).all()
+        return [a.completed_at.date() for a in rows if a.completed_at is not None]
 
     @staticmethod
     def _count_activity(user_id: int, activity_type: Optional[str], start, end) -> int:

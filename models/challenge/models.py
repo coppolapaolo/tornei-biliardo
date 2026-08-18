@@ -99,9 +99,28 @@ class Challenge(BaseModel):
     # da capo.
     diagram_scene = db.Column(db.Text, nullable=True)
 
-    # Configurazione Scoring - determina il tipo di valutazione della sfida
+    # Configurazione Scoring - determina il tipo di valutazione dell'esercizio
     pass_fail_only = db.Column(db.Boolean, nullable=False, default=False)
-    # False: sfida numerica (punteggio 0-N), True: sfida pass/fail
+    # False: esercizio a punteggio (0-N), True: esercizio superato/non superato
+
+    # Il punteggio massimo ottenibile, **se l'esercizio ne ha uno**. Facoltativo:
+    # NULL non e' un dato mancante, dice «questo esercizio non ha un tetto» — ci
+    # sono prove che si ripetono finche' si sbaglia, dove il massimo non esiste.
+    #
+    # Non e' in conflitto con ``ExamChallenge.max_score`` (ADR-042): le due
+    # colonne rispondono a domande diverse.
+    #
+    #   questo campo          → *quanto vale al massimo questa prova*, che e'
+    #                           una proprieta' dell'esercizio: quindici bilie
+    #                           sono quindici bilie in qualunque contesto
+    #   ExamChallenge.max_score → *quanto pesa dentro quell'esame*, che e' una
+    #                           scelta di chi l'esame lo compone
+    #
+    # Il primo fa da valore proposto al secondo, e serve a due cose che l'esame
+    # non copre: mostrare «12 / 15» a chi si allena dal catalogo, e rifiutare un
+    # 20 su un esercizio che arriva a 15. Fuori da un esame, prima, non c'era
+    # nessun posto dove dire quanto vale al massimo una prova.
+    max_score = db.Column(db.Integer, nullable=True)
 
     # Metadata
     created_by_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
