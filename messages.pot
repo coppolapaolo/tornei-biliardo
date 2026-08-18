@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-17 23:11+0200\n"
+"POT-Creation-Date: 2026-08-18 10:58+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,6 +19,22 @@ msgstr ""
 
 #: app.py:560 templates/errors/403.html:3
 msgid "Accesso negato"
+msgstr ""
+
+#: app.py:578
+msgid "Non è il tuo turno"
+msgstr ""
+
+#: app.py:579
+msgid "Colpo irregolare"
+msgstr ""
+
+#: app.py:598
+msgid "Operazione non consentita"
+msgstr ""
+
+#: app.py:612
+msgid "Tiro non valido"
 msgstr ""
 
 #: models/status_enum.py:382
@@ -167,7 +183,7 @@ msgid "stabile"
 msgstr ""
 
 #: models/dashboard/activity_feedback.py:661
-#: models/dashboard/activity_feedback.py:985
+#: models/dashboard/activity_feedback.py:1039
 #, python-format
 msgid "%(num)s vinta"
 msgid_plural "%(num)s vinte"
@@ -175,7 +191,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: models/dashboard/activity_feedback.py:662
-#: models/dashboard/activity_feedback.py:990
+#: models/dashboard/activity_feedback.py:1044
 #, python-format
 msgid "%(num)s pari"
 msgid_plural "%(num)s pari"
@@ -183,7 +199,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: models/dashboard/activity_feedback.py:663
-#: models/dashboard/activity_feedback.py:995
+#: models/dashboard/activity_feedback.py:1049
 #, python-format
 msgid "%(num)s persa"
 msgid_plural "%(num)s perse"
@@ -255,310 +271,310 @@ msgstr ""
 msgid "Tutti i tuoi numeri"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1104
+#: models/dashboard/activity_feedback.py:1158
 msgid "Account creato"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1106
+#: models/dashboard/activity_feedback.py:1160
 #, python-format
 msgid "La tua città: %(city)s"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1108
+#: models/dashboard/activity_feedback.py:1162
 msgid "Il tuo profilo è attivo"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1113
+#: models/dashboard/activity_feedback.py:1167
 msgid "Gioca il primo match"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1114
+#: models/dashboard/activity_feedback.py:1168
 msgid "Da qui parte il tuo Elo"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1118
+#: models/dashboard/activity_feedback.py:1172
 msgid "Prova un drill"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1119
+#: models/dashboard/activity_feedback.py:1173
 msgid "Sblocca il punteggio di precisione"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1124
+#: models/dashboard/activity_feedback.py:1178
 msgid "Il tuo profilo è pronto"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1125
+#: models/dashboard/activity_feedback.py:1179
 msgid "Fai la prima attività e qui comparirà il tuo andamento."
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1127
+#: models/dashboard/activity_feedback.py:1181
 msgid "Il tuo Elo parte da 1200: si muove alla prima partita registrata."
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1161
+#: models/dashboard/activity_feedback.py:1215
 msgid "Come stai andando"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1175
+#: models/dashboard/activity_feedback.py:1228
 msgid "Elo gara"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1175
-#: models/dashboard/activity_feedback.py:1256
+#: models/dashboard/activity_feedback.py:1228
+#: models/dashboard/activity_feedback.py:1317
 msgid "Elo"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1185
+#: models/dashboard/activity_feedback.py:1238
 msgid "Elo, invariato"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1185
+#: models/dashboard/activity_feedback.py:1238
 msgid "ti aspetta lì"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1193
+#: models/dashboard/activity_feedback.py:1254
 #, python-format
 msgid "in %(num)s"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1196
+#: models/dashboard/activity_feedback.py:1257
 #, python-format
 msgid "in %(num)s partita"
 msgid_plural "in %(num)s partite"
 msgstr[0] ""
 msgstr[1] ""
 
-#: models/dashboard/activity_feedback.py:1198
-#: models/dashboard/activity_feedback.py:1235
-#: models/dashboard/activity_feedback.py:1325
+#: models/dashboard/activity_feedback.py:1259
+#: models/dashboard/activity_feedback.py:1296
+#: models/dashboard/activity_feedback.py:1386
 #, python-format
 msgid "in %(num)s gara"
 msgid_plural "in %(num)s gare"
 msgstr[0] ""
 msgstr[1] ""
 
-#: models/dashboard/activity_feedback.py:1208
+#: models/dashboard/activity_feedback.py:1269
 msgid "massimo"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1224
+#: models/dashboard/activity_feedback.py:1285
 #: templates/individual_match/statistics.html:53
 msgid "TPA di carriera"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1233
-#: models/dashboard/activity_feedback.py:1323
+#: models/dashboard/activity_feedback.py:1294
+#: models/dashboard/activity_feedback.py:1384
 msgid "Miglior piazzamento"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1239 templates/admin/kpi.html:194
+#: models/dashboard/activity_feedback.py:1300 templates/admin/kpi.html:194
 #: templates/admin/kpi.html:254 templates/admin/kpi.html:859
 #: templates/individual_match/dashboard.html:210
 #: templates/individual_match/statistics.html:151
 msgid "Match giocati"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1242
+#: models/dashboard/activity_feedback.py:1303
 #, python-format
 msgid "%(won)s vinti"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1257
+#: models/dashboard/activity_feedback.py:1318
 #: templates/individual_match/statistics.html:32
 msgid "TPA"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1273
-#: models/dashboard/activity_feedback.py:1522
+#: models/dashboard/activity_feedback.py:1334
+#: models/dashboard/activity_feedback.py:1583
 msgid "dalla più vecchia"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1279
+#: models/dashboard/activity_feedback.py:1340
 msgid "Dove eri rimasto"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1281
+#: models/dashboard/activity_feedback.py:1342
 #, python-format
 msgid "%(num)s settimana fa"
 msgid_plural "%(num)s settimane fa"
 msgstr[0] ""
 msgstr[1] ""
 
-#: models/dashboard/activity_feedback.py:1289
+#: models/dashboard/activity_feedback.py:1350
 #, python-format
 msgid "%(num)s attività nel mese"
 msgid_plural "%(num)s attività nel mese"
 msgstr[0] ""
 msgstr[1] ""
 
-#: models/dashboard/activity_feedback.py:1297
+#: models/dashboard/activity_feedback.py:1358
 msgid "L'Elo è scivolato, ma la tua precisione al tavolo continua a crescere."
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1316
+#: models/dashboard/activity_feedback.py:1377
 msgid "Partite vinte"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1318
+#: models/dashboard/activity_feedback.py:1379
 #, python-format
 msgid "su %(num)s giocata"
 msgid_plural "su %(num)s giocate"
 msgstr[0] ""
 msgstr[1] ""
 
-#: models/dashboard/activity_feedback.py:1327
+#: models/dashboard/activity_feedback.py:1388
 msgid "Attività recenti"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1332
-#: models/dashboard/activity_feedback.py:1337
+#: models/dashboard/activity_feedback.py:1393
+#: models/dashboard/activity_feedback.py:1398
 msgid "Le tue ultime attività"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1334
+#: models/dashboard/activity_feedback.py:1395
 msgid "Le tue ultime partite"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1335
-#: models/dashboard/activity_feedback.py:1521
+#: models/dashboard/activity_feedback.py:1396
+#: models/dashboard/activity_feedback.py:1582
 msgid "Le tue ultime gare"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1336
+#: models/dashboard/activity_feedback.py:1397
 msgid "I tuoi ultimi drill"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1346
+#: models/dashboard/activity_feedback.py:1407
 #, python-format
 msgid "ultima partita %(date)s"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1347
+#: models/dashboard/activity_feedback.py:1408
 msgid "oggi"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1350
+#: models/dashboard/activity_feedback.py:1411
 #, python-format
 msgid "%(value)s all'inizio"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1351
+#: models/dashboard/activity_feedback.py:1412
 #, python-format
 msgid "oggi %(value)s"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1369
-#: models/dashboard/activity_feedback.py:1415 routes/gamification/admin.py:343
+#: models/dashboard/activity_feedback.py:1430
+#: models/dashboard/activity_feedback.py:1476 routes/gamification/admin.py:343
 #: routes/gamification/features.py:50
 msgid "Drill completati"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1371
+#: models/dashboard/activity_feedback.py:1432
 msgid "nella tua finestra recente"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1376
+#: models/dashboard/activity_feedback.py:1437
 #, python-format
 msgid "in %(num)s sessione"
 msgid_plural "in %(num)s sessioni"
 msgstr[0] ""
 msgstr[1] ""
 
-#: models/dashboard/activity_feedback.py:1379
+#: models/dashboard/activity_feedback.py:1440
 msgid "Punteggio drill"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1418
+#: models/dashboard/activity_feedback.py:1479
 #, python-format
 msgid "%(num)s superato"
 msgid_plural "%(num)s superati"
 msgstr[0] ""
 msgstr[1] ""
 
-#: models/dashboard/activity_feedback.py:1423
+#: models/dashboard/activity_feedback.py:1484
 #, python-format
 msgid "%(num)s fallito"
 msgid_plural "%(num)s falliti"
 msgstr[0] ""
 msgstr[1] ""
 
-#: models/dashboard/activity_feedback.py:1440
+#: models/dashboard/activity_feedback.py:1501
 #, python-format
 msgid "%(value)s alla prima"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1441
+#: models/dashboard/activity_feedback.py:1502
 #, python-format
 msgid "%(value)s oggi"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1461
+#: models/dashboard/activity_feedback.py:1522
 msgid "Come vanno le tue gare"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1465
+#: models/dashboard/activity_feedback.py:1526
 #: routes/gamification/features.py:47
 msgid "Gare organizzate"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1467
+#: models/dashboard/activity_feedback.py:1528
 msgid "da quando sei direttore"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1477
+#: models/dashboard/activity_feedback.py:1538
 #, python-format
 msgid "%(num)s da chiudere"
 msgid_plural "%(num)s da chiudere"
 msgstr[0] ""
 msgstr[1] ""
 
-#: models/dashboard/activity_feedback.py:1488
+#: models/dashboard/activity_feedback.py:1549
 #, python-format
 msgid "%(taken)s posti occupati"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1493
+#: models/dashboard/activity_feedback.py:1554
 #, python-format
 msgid "%(free)s liberi"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1503
+#: models/dashboard/activity_feedback.py:1564
 msgid "Iscrizioni gestite"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1505
+#: models/dashboard/activity_feedback.py:1566
 msgid "in tutte le tue gare"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1513
+#: models/dashboard/activity_feedback.py:1574
 #, python-format
 msgid "%(n)s iscritti a %(gara)s"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1515
+#: models/dashboard/activity_feedback.py:1576
 #, python-format
 msgid "%(n)s a %(gara)s"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1530
+#: models/dashboard/activity_feedback.py:1591
 #, python-format
 msgid "%(gara)s, %(n)s iscritti"
 msgstr ""
 
-#: models/dashboard/dashboard_service.py:132
+#: models/dashboard/dashboard_service.py:138
 msgid "Dashboard Amministratore"
 msgstr ""
 
-#: models/dashboard/dashboard_service.py:291
+#: models/dashboard/dashboard_service.py:302
 msgid "Dashboard Direttore"
 msgstr ""
 
-#: models/dashboard/dashboard_service.py:431
+#: models/dashboard/dashboard_service.py:450
 msgid "Dashboard Giocatore"
 msgstr ""
 
-#: models/dashboard/dashboard_service.py:499
+#: models/dashboard/dashboard_service.py:522
 msgid "Vista Pubblica"
 msgstr ""
 
@@ -1278,37 +1294,37 @@ msgstr ""
 msgid "Hai ottenuto il ruolo di %(role)s."
 msgstr ""
 
-#: routes/auth.py:61
+#: routes/auth.py:70
 msgid "Che piacere rivederti!"
 msgstr ""
 
-#: routes/auth.py:62 templates/base.html:603
+#: routes/auth.py:71 templates/base.html:603
 msgid "Tutto pronto per giocare?"
 msgstr ""
 
-#: routes/auth.py:89
+#: routes/auth.py:98
 msgid ""
 "Il tuo account non è ancora verificato. Senza email confermata non potrai"
 " recuperare la password se la dimentichi."
 msgstr ""
 
-#: routes/auth.py:97
+#: routes/auth.py:106
 msgid "Vai al profilo per verificare l'email"
 msgstr ""
 
-#: routes/auth.py:104
+#: routes/auth.py:113
 msgid "Username o password errati."
 msgstr ""
 
-#: routes/auth.py:143
+#: routes/auth.py:152
 msgid "Registrazione completata! Controlla la tua email per verificare l'account."
 msgstr ""
 
-#: routes/auth.py:154 templates/onboarding.html:12
+#: routes/auth.py:163 templates/onboarding.html:12
 msgid "Ti diamo il benvenuto!"
 msgstr ""
 
-#: routes/auth.py:155
+#: routes/auth.py:164
 msgid "Registrazione completata con successo."
 msgstr ""
 
@@ -11051,8 +11067,12 @@ msgid ""
 "Questa azione è IRREVERSIBILE!"
 msgstr ""
 
-#: templates/errors/400.html:3 templates/errors/400.html:10
+#: templates/errors/400.html:3
 msgid "Sessione scaduta"
+msgstr ""
+
+#: templates/errors/400.html:10
+msgid "Il tavolo si è raffreddato"
 msgstr ""
 
 #: templates/errors/400.html:11
@@ -11063,11 +11083,11 @@ msgstr ""
 msgid "Torna indietro, ricarica e reinvia il modulo."
 msgstr ""
 
-#: templates/errors/400.html:14
+#: templates/errors/400.html:14 templates/errors/dominio.html:23
 msgid "Torna indietro"
 msgstr ""
 
-#: templates/errors/400.html:15
+#: templates/errors/400.html:15 templates/errors/dominio.html:24
 msgid "Vai alla home"
 msgstr ""
 
@@ -11106,8 +11126,12 @@ msgstr ""
 msgid "Torna al tavolo"
 msgstr ""
 
-#: templates/errors/429.html:3 templates/errors/429.html:10
+#: templates/errors/429.html:3
 msgid "Troppe richieste"
+msgstr ""
+
+#: templates/errors/429.html:10
+msgid "Rallenta la stecca"
 msgstr ""
 
 #: templates/errors/429.html:11

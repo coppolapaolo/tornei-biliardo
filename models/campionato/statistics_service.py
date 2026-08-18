@@ -15,6 +15,7 @@ from models.status_enum import TournamentStatus, GaraStatus, MatchStatus
 from models.matchmaking.configuration import MatchmakingStrategy
 from .models import Campionato
 from ..transaction.manager import read_only
+from models.exceptions import NotFoundError
 
 
 class TournamentStatisticsService:
@@ -35,7 +36,7 @@ class TournamentStatisticsService:
 
         campionato = db.session.get(Campionato, campionato_id)
         if not campionato:
-            raise ValueError("Campionato not found")
+            raise NotFoundError("Campionato not found")
 
         # Get all provas for this campionato
         gare = Gara.query.filter_by(campionato_id=campionato_id).all()
