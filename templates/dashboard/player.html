@@ -4,6 +4,12 @@
 {% endblock %}
 
 {% block dashboard_content %}
+{# Il feedback sull'attivita' svolta sta in cima — subito dopo il saluto e
+   prima delle cose da fare, che restano visibili sotto senza scorrere. Uno
+   solo dei due si disegna: `_setup` e' il caso «appena iscritto». #}
+{% include "components/_player_activity_feedback.html" %}
+{% include "components/_player_activity_setup.html" %}
+
 {% include "components/_player_dashboard_content.html" %}
 
 {% if vm.caps and vm.caps.can_create_campionato %}

@@ -52,6 +52,12 @@ blocks:
       risultato è inatteso. Battere un avversario molto più forte fa guadagnare
       parecchio; perdere contro uno molto più debole fa perdere altrettanto.
 
+  - type: text
+    text: >-
+      Nell'app il rating si chiama **Elo**, ed è il numero che vedi anche in
+      cima alla home, nel riquadro «Come stai andando», insieme a quanto è
+      cambiato nelle ultime partite. Chi non ha ancora giocato parte da 1200.
+
   - type: note
     tone: info
     title: "Due rating, non uno"

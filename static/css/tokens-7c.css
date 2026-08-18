@@ -51,6 +51,15 @@
   --c7-info-body:     #40606A;
   --c7-info:          var(--c7-accent);
 
+  /* --- Grigi dei grafici ----------------------------------------------- *
+     Una sparkline ha bisogno di gradazioni che non siano ne' testo ne' linea:
+     servono a dire «prima» e «adesso» senza che il prima sembri spento. Non
+     riusano `--c7-line`/`--c7-ink-faint` perche' quelli hanno gia' un
+     mestiere, e cambiarli per il grafico sposterebbe separatori e segnaposto. */
+  --c7-chart-soft:    #C9CFCE;   /* barra piu' bassa, spicchio neutro */
+  --c7-chart-mid:     #A8B4B7;   /* barra intermedia, tessera neutra */
+  --c7-chart-ink:     #8B979A;   /* punti intermedi, serie secondaria */
+
   /* --- Tipografia ------------------------------------------------------ */
   --c7-font:      "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
   --c7-font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;

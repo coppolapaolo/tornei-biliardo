@@ -21,6 +21,7 @@ from models.match.models import Match as TournamentMatch
 from models.user.models import User
 from models.status_enum import GaraStatus, MatchStatus
 
+from .activity_feedback import ActivityFeedbackService
 from .view_models import (
     _role_truthy,
     _user_is_match_participant,
@@ -280,8 +281,20 @@ class DashboardService:
             _standalone_completed_tail(standalones_all)
         )
 
+        # Il blocco di feedback vale anche qui: chi ha il ruolo di direttore
+        # non passa mai da `dashboard/player.html` (la rotta smista per ruolo
+        # piu' alto), quindi la variante «Come vanno le tue gare» del design
+        # senza questa riga non si vedrebbe da nessuna parte.
+        director_feedback = ActivityFeedbackService.for_player(user_id, user=user)
+
         return DashboardVM(
             title=_("Dashboard Direttore"),
+            activity_feedback=director_feedback,
+            activity_setup=(
+                None
+                if director_feedback
+                else ActivityFeedbackService.setup_card(user_id, user=user)
+            ),
             campionati=campionati,
             campionati_active_items=active_items,
             campionati_completed_shown_items=completed_shown_items,
@@ -412,8 +425,16 @@ class DashboardService:
             _standalone_completed_tail(all_standalone_garas)
         )
 
+        activity_feedback = ActivityFeedbackService.for_player(user_id, user=user)
+
         return DashboardVM(
             title=_("Dashboard Giocatore"),
+            activity_feedback=activity_feedback,
+            activity_setup=(
+                None
+                if activity_feedback
+                else ActivityFeedbackService.setup_card(user_id, user=user)
+            ),
             campionati=campionati,
             campionati_active_items=active_items,
             campionati_completed_shown_items=completed_shown_items,

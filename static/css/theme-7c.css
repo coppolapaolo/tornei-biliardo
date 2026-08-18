@@ -1710,3 +1710,238 @@ button.c7-tpa-player:disabled { cursor: default; }
   .c7-tpa-pad { grid-template-columns: repeat(6, 1fr); }
   .c7-tpa-key { height: 54px; font-size: 18px; }
 }
+
+/* --------------------------------------------------------------------------
+   Blocco «Come stai andando» (feedback attivita' in home)
+   Una card chiara con un'impalcatura fissa — titolo, due metriche, un grafico,
+   la striscia delle ultime attivita' — che resta la stessa in tutte le
+   casistiche: e' il servizio a decidere *cosa* mettere in ogni posto, non il
+   CSS a spostare i posti. Nessuna CTA qui dentro: e' feedback, e le cose da
+   fare stanno nelle sezioni sotto, che il blocco non deve coprire.
+   -------------------------------------------------------------------------- */
+
+.c7-feedback {
+  background: var(--c7-card);
+  border-radius: var(--c7-r-card-lg);
+  padding: var(--c7-pad-card-lg);
+}
+
+.c7-feedback__head { display: flex; align-items: baseline; gap: 10px; }
+.c7-feedback__head h2 {
+  margin: 0; font-size: 17px; font-weight: 800; letter-spacing: -.02em;
+}
+/* Il badge di contesto e' l'unico posto dove il blocco puo' alzare la voce:
+   per il direttore dice quante gare restano da chiudere. */
+.c7-feedback__badge {
+  margin-left: auto;
+  height: 24px; padding: 0 10px; border-radius: var(--c7-r-pill);
+  display: inline-flex; align-items: center; white-space: nowrap;
+  font-size: 10px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
+  background: var(--c7-bg); color: var(--c7-ink-muted);
+}
+.c7-feedback__badge--positive { background: var(--c7-ok-bg);  color: var(--c7-ok-ink); }
+.c7-feedback__badge--urgent   { background: var(--c7-err-bg); color: var(--c7-err-ink); }
+
+/* --- Le due metriche ---------------------------------------------------- */
+
+.c7-feedback__metrics {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px;
+}
+/* Quando la seconda metrica non esiste la griglia si stringe: nessuno slot
+   vuoto, nessun placeholder. */
+.c7-feedback__metrics--single { grid-template-columns: 1fr; }
+
+.c7-feedback__value {
+  font-family: var(--c7-font-mono); font-weight: 800;
+  font-size: 30px; letter-spacing: -.035em; line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.c7-feedback__suffix { font-size: 18px; color: var(--c7-ink-muted); }
+.c7-feedback__label {
+  margin-top: 5px; font-size: 11px; font-weight: 700; color: var(--c7-ink-muted);
+}
+.c7-feedback__delta {
+  margin-top: 2px; font-size: 12px; font-weight: 700; color: var(--c7-ink-muted);
+}
+/* Un Elo che scende si scrive in ambra, non in rosso: e' un dato, non un
+   guasto — e accanto c'e' sempre una metrica vera in crescita. */
+.c7-feedback__delta--up   { color: var(--c7-ok); }
+.c7-feedback__delta--down { color: var(--c7-warn); }
+
+/* --- La torta ----------------------------------------------------------- */
+
+.c7-feedback__donutcell { display: flex; align-items: center; gap: 12px; }
+.c7-feedback__donut {
+  position: relative;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 58px; height: 58px; border-radius: 50%; flex-shrink: 0;
+}
+/* Il foro prende il colore della card che ospita l'anello. */
+.c7-feedback__donut::after {
+  content: ""; position: absolute; inset: 9px; border-radius: 50%;
+  background: var(--c7-card);
+}
+.c7-feedback__donut > span {
+  position: relative; z-index: 1;
+  font-family: var(--c7-font-mono); font-size: 14px; font-weight: 800;
+  letter-spacing: -.03em;
+}
+.c7-feedback__legend {
+  min-width: 0; display: flex; flex-direction: column; gap: 3px;
+  font-size: 11px; font-weight: 700;
+}
+.c7-feedback__legend > span {
+  display: flex; align-items: center; gap: 6px; white-space: nowrap;
+}
+.c7-feedback__swatch {
+  width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0;
+  background: var(--c7-chart-soft);
+}
+.c7-feedback__swatch--ok     { background: var(--c7-ok); }
+.c7-feedback__swatch--err    { background: var(--c7-err); }
+.c7-feedback__swatch--accent { background: var(--c7-accent); }
+
+/* --- Il riquadro del grafico -------------------------------------------- */
+
+.c7-feedback__chart {
+  margin-top: 18px;
+  background: var(--c7-bg);
+  border-radius: var(--c7-r-field);
+  padding: 14px 14px 10px;
+}
+/* `preserveAspectRatio="none"` stira il viewBox in orizzontale: senza
+   `vector-effect="non-scaling-stroke"` sul tratto (lo mette il template) la
+   linea risulterebbe piu' sottile che alta. */
+.c7-feedback__spark { width: 100%; height: 66px; display: block; overflow: visible; }
+
+.c7-feedback__bars { display: flex; align-items: flex-end; gap: 5px; height: 62px; }
+.c7-feedback__bar {
+  flex: 1; border-radius: 5px 5px 3px 3px; background: var(--c7-chart-soft);
+}
+.c7-feedback__bar--mid  { background: var(--c7-chart-mid); }
+.c7-feedback__bar--dark { background: var(--c7-accent); }
+.c7-feedback__bar--ok   { background: var(--c7-ok); }
+
+.c7-feedback__caption {
+  display: flex; justify-content: space-between; gap: 10px; margin-top: 8px;
+  font-family: var(--c7-font-mono); font-size: 11px; font-weight: 700;
+  color: var(--c7-ink-muted);
+}
+.c7-feedback__chartlegend {
+  display: flex; align-items: center; gap: 12px; margin-top: 8px;
+  font-size: 11px; font-weight: 700; color: var(--c7-ink-muted);
+}
+.c7-feedback__chartlegend > span { display: flex; align-items: center; gap: 6px; }
+.c7-feedback__linekey {
+  width: 14px; height: 2px; background: var(--c7-accent); flex-shrink: 0;
+}
+.c7-feedback__linekey--dash {
+  height: 0; background: none; border-top: 2px dashed var(--c7-chart-ink);
+}
+
+/* --- La striscia delle ultime attivita' --------------------------------- */
+
+.c7-feedback__strip { margin-top: 14px; }
+.c7-feedback__striphead {
+  display: flex; align-items: baseline; gap: 8px;
+  font-size: 11px; font-weight: 700; color: var(--c7-ink-muted);
+}
+.c7-feedback__stripnote { margin-left: auto; }
+.c7-feedback__tiles { display: flex; gap: 5px; margin-top: 7px; }
+/* Ogni tessera porta il dato oltre al colore: il colore da solo non basta a
+   dire com'e' andata a chi non lo distingue. */
+.c7-feedback__tile {
+  flex: 1; min-width: 0; height: 30px; padding: 0 4px;
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--c7-font-mono); font-size: 12px; font-weight: 700;
+  letter-spacing: -.02em; font-variant-numeric: tabular-nums;
+  white-space: nowrap; overflow: hidden;
+  background: var(--c7-chart-mid); color: var(--c7-ink);
+}
+.c7-feedback__tiletext {
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.c7-feedback__tile--win  { background: var(--c7-ok);   color: #fff; }
+.c7-feedback__tile--draw { background: var(--c7-line); color: var(--c7-ink-soft); }
+.c7-feedback__tile--loss { background: var(--c7-err);  color: #fff; }
+.c7-feedback__tile i { font-size: 11px; }
+/* Oltre sei attivita' il testo non ci sta: le tessere si stringono e i
+   conteggi passano nella legenda sotto, che resta l'unico modo di non
+   lasciare il colore da solo. */
+.c7-feedback__tiles--dense { gap: 4px; }
+.c7-feedback__tiles--dense .c7-feedback__tile { height: 26px; border-radius: 7px; }
+.c7-feedback__striplegend {
+  display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px;
+  font-size: 11px; font-weight: 700; color: var(--c7-ink-muted);
+}
+.c7-feedback__striplegend > span { display: flex; align-items: center; gap: 6px; }
+
+/* --- La nota (caso «in calo») ------------------------------------------- */
+
+.c7-feedback__note {
+  margin-top: 14px; display: flex; align-items: flex-start; gap: 10px;
+  background: var(--c7-bg); border-radius: var(--c7-r-field); padding: 14px 16px;
+}
+.c7-feedback__note i { font-size: 14px; color: var(--c7-ok); margin-top: 2px; }
+.c7-feedback__note p {
+  margin: 0; font-size: 12px; font-weight: 700; line-height: 1.45;
+  color: var(--c7-ink-soft);
+}
+
+/* --- Espansione ---------------------------------------------------------- */
+
+.c7-feedback__toggle {
+  width: 100%; margin-top: 16px; height: 40px;
+  border: 0; border-radius: var(--c7-r-chip);
+  background: var(--c7-bg); color: var(--c7-ink-soft);
+  font-family: var(--c7-font); font-size: 13px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  cursor: pointer;
+}
+.c7-feedback__toggle:hover { background: var(--c7-line); }
+.c7-feedback__toggle i { font-size: 11px; }
+
+.c7-feedback__panel { margin-top: 18px; }
+/* L'elenco compatto del pannello vive dentro una card gia' chiara, quindi
+   affonda di un gradino invece di ripetere lo stesso colore. */
+.c7-rows--sunk { background: var(--c7-bg); border-radius: var(--c7-r-card); }
+.c7-rows--sunk .c7-rows__row + .c7-rows__row { border-top-color: var(--c7-line); }
+.c7-rows--sunk .c7-feedback__donut::after { background: var(--c7-bg); }
+
+.c7-feedback__rowvalue { font-size: 20px; font-weight: 800; letter-spacing: -.03em; }
+.c7-feedback__rowicon { font-size: 15px; width: 16px; text-align: center; }
+.c7-feedback__rowicon--err    { color: var(--c7-err); }
+.c7-feedback__rowicon--accent { color: var(--c7-accent); }
+.c7-feedback__rowicon--ok     { color: var(--c7-ok); }
+
+/* --- Anello piccolo dentro una riga ------------------------------------- */
+
+.c7-feedback__ring {
+  position: relative;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+}
+.c7-feedback__ring::after {
+  content: ""; position: absolute; inset: 5px; border-radius: 50%;
+  background: var(--c7-bg);
+}
+.c7-feedback__ring > span {
+  position: relative; z-index: 1;
+  font-family: var(--c7-font-mono); font-size: 11px; font-weight: 800;
+}
+
+/* --- Appena iscritto: setup, non feedback -------------------------------- */
+
+.c7-setup { background: var(--c7-card); border-radius: var(--c7-r-card-lg); padding: var(--c7-pad-card-lg); }
+.c7-setup__intro {
+  margin: 6px 0 0; font-size: 13px; font-weight: 700; color: var(--c7-ink-soft);
+}
+.c7-setup__head { display: flex; align-items: center; gap: 14px; }
+.c7-setup__head h2 { margin: 0; font-size: 17px; font-weight: 800; letter-spacing: -.02em; }
+.c7-setup__head p {
+  margin: 3px 0 0; font-size: 12px; font-weight: 700; color: var(--c7-ink-muted);
+}
+.c7-setup__steps { margin-top: 18px; }
+.c7-setup__mark { font-size: 14px; width: 16px; text-align: center; color: var(--c7-chart-ink); }
+.c7-setup__mark--done { color: var(--c7-ok); }

@@ -161,6 +161,14 @@ class DashboardVM:
     # Gamification: {level, xp, next_level_xp, streaks}
     gamification_stats: Optional[dict[str, Any]] = None
 
+    # Blocco «Come stai andando» in cima alla home: feedback sull'attivita'
+    # gia' svolta, calcolato da ActivityFeedbackService. Esattamente uno dei
+    # due e' valorizzato — `activity_setup` e' il caso «appena iscritto», dove
+    # non c'e' nessun numero vero da mostrare e si disegna la card dei tre
+    # passi invece di un blocco pieno di trattini.
+    activity_feedback: Optional[dict[str, Any]] = None
+    activity_setup: Optional[dict[str, Any]] = None
+
     # Partizione campionati per presentazione: liste di
     # UnifiedDashboardItem (non Campionato puri) per preservare i flag
     # can_manage/can_view_details/next_prova_date già calcolati da

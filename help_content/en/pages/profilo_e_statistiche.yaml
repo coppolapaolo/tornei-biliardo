@@ -52,6 +52,13 @@ blocks:
       result is unexpected. Beating a much stronger opponent gains a lot;
       losing to a much weaker one costs as much.
 
+  - type: text
+    text: >-
+      In the app the rating is called **Elo**, and it is the number you also
+      see at the top of your home, in the «How you are doing» panel, together
+      with how much it has changed over your recent matches. Anyone who has not
+      played yet starts at 1200.
+
   - type: note
     tone: info
     title: "Two ratings, not one"

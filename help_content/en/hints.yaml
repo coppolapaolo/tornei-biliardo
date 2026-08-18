@@ -8,6 +8,24 @@
 # different anchors for the same control.
 
 hints:
+- id: home.andamento
+  label: How you are doing
+  short: 'Two numbers, a chart and your latest activities. It leads nowhere: it only tells you how you
+    are getting on.'
+  anchor: home-andamento
+  screens:
+  - dashboard.dashboard
+  page: primo_accesso
+  section: come_stai_andando
+- id: home.tutti_i_numeri
+  label: All your numbers
+  short: 'Opens three or four extra rows: current streak, position in a championship, drills completed,
+    level. Next visit it starts closed again.'
+  anchor: home-tutti-i-numeri
+  screens:
+  - dashboard.dashboard
+  page: primo_accesso
+  section: come_stai_andando
 - id: gara.turni
   label: Rounds
   short: The matches of the current round, with the finished rounds below.
@@ -490,14 +508,15 @@ hints:
 tours:
 - screen: dashboard.dashboard
   title: Your home
-  intro: 'Everything starts here: the competitions you are registered for, the championships you follow
-    and competitions near you.'
+  intro: 'Everything starts here: how you are doing, the competitions you are registered for, the championships
+    you follow and competitions near you.'
   audience:
   - giocatore
   steps:
+  - hint: home.andamento
   - title: Your competitions
-    text: 'At the top are the active competitions. The colour of the label says where they are: registrations
-      open, in progress, finished.'
+    text: 'Below the panel with how you are doing are the active competitions. The colour of the label
+      says where they are: registrations open, in progress, finished.'
   - title: Register with one tap
     text: 'Competitions open for registration have the green button: you do not have to look for them
       elsewhere.'

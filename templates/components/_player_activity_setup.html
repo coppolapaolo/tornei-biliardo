@@ -1,0 +1,45 @@
+{# templates/components/_player_activity_setup.html — Design System 7c
+
+   Il posto del blocco «Come stai andando» quando non c'e' ancora niente da
+   raccontare. Un giocatore appena iscritto non riceve un blocco pieno di
+   trattini e di zeri: riceve i tre passi che lo portano al primo dato vero.
+
+   Contratto: `vm.activity_setup`, prodotto da
+   `models/dashboard/activity_feedback.py::ActivityFeedbackService.setup_card`.
+   E' valorizzato solo quando `vm.activity_feedback` e' None.
+#}
+{% set st = setup if setup is defined else vm.activity_setup %}
+{% if st %}
+{# La riga sotto il saluto: dice da dove parte l'Elo, cosi' il 1200 che
+   comparira' fra poco non sembra un punteggio guadagnato. #}
+<p class="c7-setup__intro mb-3">{{ st.intro }}</p>
+
+<section class="c7-setup mb-4" aria-labelledby="activity-setup-title">
+  <div class="c7-setup__head">
+    <span class="c7-feedback__donut"
+          style="background: conic-gradient(var(--c7-accent) 0 {{ st.ring_pct }}%, var(--c7-line) 0)">
+      <span>{{ st.done }}/{{ st.total }}</span>
+    </span>
+    <div class="flex-fill" style="min-width: 0;">
+      <h2 id="activity-setup-title">{{ st.title }}</h2>
+      <p>{{ st.subtitle }}</p>
+    </div>
+  </div>
+
+  <div class="c7-rows c7-rows--sunk c7-setup__steps">
+    {% for step in st.steps %}
+    <div class="c7-rows__row{{ ' c7-rows__row--dim' if not step.done }}">
+      {% if step.done %}
+      <i class="fas fa-check c7-setup__mark c7-setup__mark--done" aria-hidden="true"></i>
+      {% else %}
+      <i class="far fa-circle c7-setup__mark" aria-hidden="true"></i>
+      {% endif %}
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">{{ step.title }}</div>
+        <div class="c7-rows__sub">{{ step.subtitle }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}

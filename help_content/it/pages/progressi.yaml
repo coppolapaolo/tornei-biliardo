@@ -20,6 +20,13 @@ blocks:
     shot: progressi
     caption: "La pagina dei progressi: livello, punti esperienza, traguardi e serie in corso."
 
+  - type: text
+    text: >-
+      Un estratto di questi numeri — la serie in corso, il livello e quanto
+      manca al prossimo, i drill completati — si legge anche senza aprire
+      questa pagina: è nel riquadro in cima alla home, sotto il pulsante
+      «Tutti i tuoi numeri».
+
   - type: heading
     id: xp
     title: "Punti esperienza e livello"

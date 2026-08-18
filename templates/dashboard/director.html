@@ -4,6 +4,11 @@
 {% endblock %}
 
 {% block dashboard_content %}
+{# La variante «Come vanno le tue gare» dello stesso blocco: chi ha il ruolo
+   di direttore non passa mai da dashboard/player.html, quindi senza questa
+   riga il caso 4a del design non si vedrebbe da nessuna parte. #}
+{% include "components/_player_activity_feedback.html" %}
+
 {% include "components/_director_dashboard_content.html" %}
 
 {% if vm.caps and vm.caps.can_create_campionato %}
