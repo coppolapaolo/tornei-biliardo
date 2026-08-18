@@ -280,6 +280,14 @@ code, kbd, pre, samp, .font-mono { font-family: var(--c7-font-mono); }
 .c7-card--info { background: var(--c7-info-bg); color: var(--c7-info-ink); }
 
 .c7-grid { display: grid; gap: var(--c7-gap); }
+
+/* La fascia di numeri in cima a una schermata: due colonne sotto i 992px,
+   quattro sopra (regola nel blocco `min-width: 992px` piu' avanti). Senza
+   questa riga la griglia restava a una colonna e quattro card a piena
+   larghezza si mangiavano lo schermo prima del contenuto. Dichiararlo qui e
+   non con uno `style` inline nel template e' l'unico modo perche' la media
+   query possa poi vincere: l'inline no. */
+.c7-kpis { grid-template-columns: 1fr 1fr; }
 .c7-stack { display: flex; flex-direction: column; gap: var(--c7-gap); }
 /* Pila di sezioni di pagina. Una sezione che non produce nulla (dipende
    dallo stato della gara: turni, direttori, tavoli…) lascerebbe comunque il

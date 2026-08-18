@@ -79,6 +79,21 @@
                 <span class="badge bg-secondary" id="usersVisibleCount">{{ users|length }}</span>
             </h5>
             <div class="d-flex flex-wrap gap-2">
+                {% if non_confermate %}
+                {# Scorciatoia, non una funzione nuova: la colonna e il filtro
+                   c'erano gia'. Quello che mancava era il numero che dice se
+                   vale la pena aprirli — e con quanti destinatari si ha a che
+                   fare prima di rimandare le verifiche. #}
+                <button type="button" class="btn btn-warning btn-sm" id="soloNonConfermate">
+                    <i class="fas fa-envelope-circle-check"></i>
+                    {{ ngettext("%(n)s email da confermare", "%(n)s email da confermare", non_confermate, n=non_confermate) }}
+                </button>
+                {% endif %}
+                {% if feature_visible('admin.user.accessi') %}
+                <a href="{{ url_for('admin.user.accessi') }}" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-door-open"></i> {{ _("Accessi") }}
+                </a>
+                {% endif %}
                 <input type="search" id="userSearch" class="form-control form-control-sm"
                        style="min-width: 200px;"
                        placeholder="{{ _('Cerca per username o email...') }}"
@@ -370,6 +385,17 @@
     roleFilter.addEventListener('change', applyFilters);
     examinerFilter.addEventListener('change', applyFilters);
     verifiedFilter.addEventListener('change', applyFilters);
+
+    // Il contatore in testata e' una scorciatoia al filtro che gia' c'era:
+    // porta la tabella sui soli non confermati, senza duplicare la logica.
+    const soloNonConfermate = document.getElementById('soloNonConfermate');
+    if (soloNonConfermate) {
+        soloNonConfermate.addEventListener('click', function () {
+            verifiedFilter.value = '0';
+            applyFilters();
+            (table.closest('.card') || table).scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    }
 
     // Ordinamento colonne (client-side)
     const headers = table.querySelectorAll('th.sortable');

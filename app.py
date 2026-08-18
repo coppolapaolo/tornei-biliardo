@@ -524,6 +524,44 @@ def create_app(config_name=None):
             response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
         return response
 
+    # ── Traccia degli accessi ────────────────────────────────────────────
+    # Agganciata ai segnali di Flask-Login e non alle route: `login_user()` e'
+    # chiamata da tre punti (login, quick-login di sviluppo, cancellazione
+    # account) e il quarto non se lo ricorderebbe nessuno.
+    from flask_login import user_logged_in, user_logged_out
+    from models.user.session_service import UserSessionService
+
+    @user_logged_in.connect_via(app)
+    def _apri_accesso(sender, user, **extra):
+        try:
+            UserSessionService.apri(user.id, request.headers.get("User-Agent"))
+        except Exception:
+            # Un login che fallisce e' una porta chiusa; una statistica persa
+            # non e' niente. La stessa scelta gia' fatta per il fuso orario.
+            app.logger.warning("Accesso non aperto", exc_info=True)
+
+    @user_logged_out.connect_via(app)
+    def _chiudi_accesso(sender, user, **extra):
+        try:
+            if user is not None and getattr(user, "id", None) is not None:
+                UserSessionService.chiudi(user.id)
+        except Exception:
+            app.logger.warning("Accesso non chiuso", exc_info=True)
+
+    @app.after_request
+    def traccia_attivita(response):
+        """Segno di vita solo sulle pagine, mai sulle risposte JSON.
+
+        Le schermate che interrogano il server a intervalli regolari
+        direbbero «e' ancora qui» di un browser lasciato aperto su un tavolo
+        vuoto: la durata media misurerebbe quanto restano aperte le schede,
+        non quanto la gente usa il sito. Il filtro sul mimetype tiene fuori
+        anche gli asset statici, senza doverne tenere un elenco.
+        """
+        if response.mimetype == "text/html" and current_user.is_authenticated:
+            UserSessionService.registra_attivita(current_user.id)
+        return response
+
     # Health check endpoint
     @app.route("/health")
     def health():

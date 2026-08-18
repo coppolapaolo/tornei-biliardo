@@ -201,6 +201,11 @@
                     <i class="fas fa-users"></i>{{ _('Utenti') }}
                 </a>
                 {% endif %}
+                {% if feature_visible('admin.user.accessi') %}
+                <a href="{{ url_for('admin.user.accessi') }}" class="{{ 'is-active' if ep == 'admin.user.accessi' }}">
+                    <i class="fas fa-door-open"></i>{{ _('Accessi') }}
+                </a>
+                {% endif %}
                 {% if feature_visible('admin.user.director_requests') %}
                 <a href="{{ url_for('admin.user.director_requests') }}" class="{{ 'is-active' if ep == 'admin.user.director_requests' }}">
                     <i class="fas fa-user-tie"></i>{{ _('Richieste Direttore') }}

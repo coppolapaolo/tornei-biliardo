@@ -272,6 +272,9 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # (`_gara_inscriptions.html`), non l'elenco utenti. La matrice prometteva
     # una visibilità che il decoratore nega: 200 atteso, 403 reale.
     "admin.user.users_list": set(),
+    # `set()` esplicito: la traccia degli accessi resta ad admin. Non e'
+    # una dimenticanza — e' un elenco di dove sono state le persone.
+    "admin.user.accessi": set(),
     "admin.user.user_detail": set(),
     # User management actions: admin-only (explicit empty set = documents the
     # decision; admin bypasses the matrix). Directors must NOT see these buttons.

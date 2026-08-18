@@ -34,8 +34,19 @@ def users_list():
     # nel template ne farebbe una per riga.
     examiner_ids = RoleGrantService.holder_ids(GrantableRole.EXAMINER)
 
+    # Il conteggio delle email non confermate sta qui e non nel template:
+    # `users` e' una lista di tuple, e in Jinja l'indice 0 non si raggiunge
+    # con `selectattr`. La colonna «Verificato» e il filtro esistono gia' — a
+    # mancare era il numero che dice **se vale la pena guardarli**.
+    non_confermate = sum(
+        1 for ud in users if not ud[0].is_verified and not ud[0].is_deleted
+    )
+
     return render_template(
-        "admin/users_list.html", users=users, examiner_ids=examiner_ids
+        "admin/users_list.html",
+        users=users,
+        examiner_ids=examiner_ids,
+        non_confermate=non_confermate,
     )
 
 
@@ -63,9 +74,12 @@ def user_detail(user_id):
 
         abort(404)
 
+    from models.user.session_queries import UserSessionQueryService
+
     return render_template(
         "admin/user_detail.html",
         user=user,
+        accessi=UserSessionQueryService.per_utente(user_id, limite=10),
         inscriptions=inscriptions,
         matches=matches,
         classifications=classifications,
@@ -285,4 +299,65 @@ def set_user_password(user_id: int):
         redirect_url=url_for("admin.user.user_detail", user_id=user_id),
         success_message=_("Password impostata con successo"),
         error_prefix=None,
+    )
+
+
+@user_bp.route("/users/accessi")
+@admin_required
+def accessi():
+    """Chi si collega, quando e per quanto.
+
+    Sta sotto la sezione utenti e non fra i KPI perché le domande che si fanno
+    qui sono su **persone**, non su andamenti: «questo si è più fatto vedere?»,
+    «chi c'è adesso?», «chi si è iscritto e non è mai entrato?». I KPI
+    rispondono a «come va la piattaforma», e la loro unità di misura è la
+    metrica, non il nome.
+
+    Le date arrivano nel fuso di chi guarda: la conversione la fa
+    `UserSessionQueryService`, che è l'unico posto dove `user_session`
+    incontra un fuso (ADR-043).
+    """
+    from datetime import datetime as _dt
+
+    from models.user.session_queries import FiltroAccessi, UserSessionQueryService
+
+    def _data(nome):
+        grezzo = request.args.get(nome, "").strip()
+        if not grezzo:
+            return None
+        try:
+            return _dt.strptime(grezzo, "%Y-%m-%d").date()
+        except ValueError:
+            return None
+
+    filtro = FiltroAccessi(
+        dal=_data("dal"),
+        al=_data("al"),
+        testo=request.args.get("q", "").strip() or None,
+        ruolo=request.args.get("ruolo", "").strip() or None,
+        solo_collegati=request.args.get("collegati") == "1",
+    )
+
+    LIMITE = 300
+    righe = UserSessionQueryService.elenco(filtro, limite=LIMITE)
+    totale = UserSessionQueryService.quanti(filtro)
+
+    from models.user.role_enum import UserRole
+
+    return render_template(
+        "admin/accessi.html",
+        # I valori dei ruoli arrivano dall'enum: un `"director"` scritto a mano
+        # nel template si confronterebbe in silenzio con niente.
+        ruoli={
+            "ADMIN": UserRole.ADMIN.value,
+            "DIRECTOR": UserRole.DIRECTOR.value,
+            "PLAYER": UserRole.PLAYER.value,
+        },
+        righe=righe,
+        totale=totale,
+        limite=LIMITE,
+        troncato=totale > LIMITE,
+        riepilogo=UserSessionQueryService.riepilogo(filtro),
+        mai_entrati=UserSessionQueryService.mai_entrati(),
+        filtro=filtro,
     )

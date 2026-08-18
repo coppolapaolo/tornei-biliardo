@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-17 23:11+0200\n"
+"POT-Creation-Date: 2026-08-18 11:23+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app.py:560 templates/errors/403.html:3
+#: app.py:598 templates/errors/403.html:3
 msgid "Accesso negato"
 msgstr ""
 
@@ -167,7 +167,7 @@ msgid "stabile"
 msgstr ""
 
 #: models/dashboard/activity_feedback.py:661
-#: models/dashboard/activity_feedback.py:985
+#: models/dashboard/activity_feedback.py:1039
 #, python-format
 msgid "%(num)s vinta"
 msgid_plural "%(num)s vinte"
@@ -175,7 +175,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: models/dashboard/activity_feedback.py:662
-#: models/dashboard/activity_feedback.py:990
+#: models/dashboard/activity_feedback.py:1044
 #, python-format
 msgid "%(num)s pari"
 msgid_plural "%(num)s pari"
@@ -183,7 +183,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: models/dashboard/activity_feedback.py:663
-#: models/dashboard/activity_feedback.py:995
+#: models/dashboard/activity_feedback.py:1049
 #, python-format
 msgid "%(num)s persa"
 msgid_plural "%(num)s perse"
@@ -255,310 +255,310 @@ msgstr ""
 msgid "Tutti i tuoi numeri"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1104
+#: models/dashboard/activity_feedback.py:1158
 msgid "Account creato"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1106
+#: models/dashboard/activity_feedback.py:1160
 #, python-format
 msgid "La tua città: %(city)s"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1108
+#: models/dashboard/activity_feedback.py:1162
 msgid "Il tuo profilo è attivo"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1113
+#: models/dashboard/activity_feedback.py:1167
 msgid "Gioca il primo match"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1114
+#: models/dashboard/activity_feedback.py:1168
 msgid "Da qui parte il tuo Elo"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1118
+#: models/dashboard/activity_feedback.py:1172
 msgid "Prova un drill"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1119
+#: models/dashboard/activity_feedback.py:1173
 msgid "Sblocca il punteggio di precisione"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1124
+#: models/dashboard/activity_feedback.py:1178
 msgid "Il tuo profilo è pronto"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1125
+#: models/dashboard/activity_feedback.py:1179
 msgid "Fai la prima attività e qui comparirà il tuo andamento."
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1127
+#: models/dashboard/activity_feedback.py:1181
 msgid "Il tuo Elo parte da 1200: si muove alla prima partita registrata."
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1161
+#: models/dashboard/activity_feedback.py:1215
 msgid "Come stai andando"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1175
+#: models/dashboard/activity_feedback.py:1228
 msgid "Elo gara"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1175
-#: models/dashboard/activity_feedback.py:1256
+#: models/dashboard/activity_feedback.py:1228
+#: models/dashboard/activity_feedback.py:1317
 msgid "Elo"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1185
+#: models/dashboard/activity_feedback.py:1238
 msgid "Elo, invariato"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1185
+#: models/dashboard/activity_feedback.py:1238
 msgid "ti aspetta lì"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1193
+#: models/dashboard/activity_feedback.py:1254
 #, python-format
 msgid "in %(num)s"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1196
+#: models/dashboard/activity_feedback.py:1257
 #, python-format
 msgid "in %(num)s partita"
 msgid_plural "in %(num)s partite"
 msgstr[0] ""
 msgstr[1] ""
 
-#: models/dashboard/activity_feedback.py:1198
-#: models/dashboard/activity_feedback.py:1235
-#: models/dashboard/activity_feedback.py:1325
+#: models/dashboard/activity_feedback.py:1259
+#: models/dashboard/activity_feedback.py:1296
+#: models/dashboard/activity_feedback.py:1386
 #, python-format
 msgid "in %(num)s gara"
 msgid_plural "in %(num)s gare"
 msgstr[0] ""
 msgstr[1] ""
 
-#: models/dashboard/activity_feedback.py:1208
+#: models/dashboard/activity_feedback.py:1269
 msgid "massimo"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1224
+#: models/dashboard/activity_feedback.py:1285
 #: templates/individual_match/statistics.html:53
 msgid "TPA di carriera"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1233
-#: models/dashboard/activity_feedback.py:1323
+#: models/dashboard/activity_feedback.py:1294
+#: models/dashboard/activity_feedback.py:1384
 msgid "Miglior piazzamento"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1239 templates/admin/kpi.html:194
+#: models/dashboard/activity_feedback.py:1300 templates/admin/kpi.html:194
 #: templates/admin/kpi.html:254 templates/admin/kpi.html:859
 #: templates/individual_match/dashboard.html:210
 #: templates/individual_match/statistics.html:151
 msgid "Match giocati"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1242
+#: models/dashboard/activity_feedback.py:1303
 #, python-format
 msgid "%(won)s vinti"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1257
+#: models/dashboard/activity_feedback.py:1318
 #: templates/individual_match/statistics.html:32
 msgid "TPA"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1273
-#: models/dashboard/activity_feedback.py:1522
+#: models/dashboard/activity_feedback.py:1334
+#: models/dashboard/activity_feedback.py:1583
 msgid "dalla più vecchia"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1279
+#: models/dashboard/activity_feedback.py:1340
 msgid "Dove eri rimasto"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1281
+#: models/dashboard/activity_feedback.py:1342
 #, python-format
 msgid "%(num)s settimana fa"
 msgid_plural "%(num)s settimane fa"
 msgstr[0] ""
 msgstr[1] ""
 
-#: models/dashboard/activity_feedback.py:1289
+#: models/dashboard/activity_feedback.py:1350
 #, python-format
 msgid "%(num)s attività nel mese"
 msgid_plural "%(num)s attività nel mese"
 msgstr[0] ""
 msgstr[1] ""
 
-#: models/dashboard/activity_feedback.py:1297
+#: models/dashboard/activity_feedback.py:1358
 msgid "L'Elo è scivolato, ma la tua precisione al tavolo continua a crescere."
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1316
+#: models/dashboard/activity_feedback.py:1377
 msgid "Partite vinte"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1318
+#: models/dashboard/activity_feedback.py:1379
 #, python-format
 msgid "su %(num)s giocata"
 msgid_plural "su %(num)s giocate"
 msgstr[0] ""
 msgstr[1] ""
 
-#: models/dashboard/activity_feedback.py:1327
+#: models/dashboard/activity_feedback.py:1388
 msgid "Attività recenti"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1332
-#: models/dashboard/activity_feedback.py:1337
+#: models/dashboard/activity_feedback.py:1393
+#: models/dashboard/activity_feedback.py:1398
 msgid "Le tue ultime attività"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1334
+#: models/dashboard/activity_feedback.py:1395
 msgid "Le tue ultime partite"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1335
-#: models/dashboard/activity_feedback.py:1521
+#: models/dashboard/activity_feedback.py:1396
+#: models/dashboard/activity_feedback.py:1582
 msgid "Le tue ultime gare"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1336
+#: models/dashboard/activity_feedback.py:1397
 msgid "I tuoi ultimi drill"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1346
+#: models/dashboard/activity_feedback.py:1407
 #, python-format
 msgid "ultima partita %(date)s"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1347
+#: models/dashboard/activity_feedback.py:1408
 msgid "oggi"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1350
+#: models/dashboard/activity_feedback.py:1411
 #, python-format
 msgid "%(value)s all'inizio"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1351
+#: models/dashboard/activity_feedback.py:1412
 #, python-format
 msgid "oggi %(value)s"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1369
-#: models/dashboard/activity_feedback.py:1415 routes/gamification/admin.py:343
+#: models/dashboard/activity_feedback.py:1430
+#: models/dashboard/activity_feedback.py:1476 routes/gamification/admin.py:343
 #: routes/gamification/features.py:50
 msgid "Drill completati"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1371
+#: models/dashboard/activity_feedback.py:1432
 msgid "nella tua finestra recente"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1376
+#: models/dashboard/activity_feedback.py:1437
 #, python-format
 msgid "in %(num)s sessione"
 msgid_plural "in %(num)s sessioni"
 msgstr[0] ""
 msgstr[1] ""
 
-#: models/dashboard/activity_feedback.py:1379
+#: models/dashboard/activity_feedback.py:1440
 msgid "Punteggio drill"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1418
+#: models/dashboard/activity_feedback.py:1479
 #, python-format
 msgid "%(num)s superato"
 msgid_plural "%(num)s superati"
 msgstr[0] ""
 msgstr[1] ""
 
-#: models/dashboard/activity_feedback.py:1423
+#: models/dashboard/activity_feedback.py:1484
 #, python-format
 msgid "%(num)s fallito"
 msgid_plural "%(num)s falliti"
 msgstr[0] ""
 msgstr[1] ""
 
-#: models/dashboard/activity_feedback.py:1440
+#: models/dashboard/activity_feedback.py:1501
 #, python-format
 msgid "%(value)s alla prima"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1441
+#: models/dashboard/activity_feedback.py:1502
 #, python-format
 msgid "%(value)s oggi"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1461
+#: models/dashboard/activity_feedback.py:1522
 msgid "Come vanno le tue gare"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1465
+#: models/dashboard/activity_feedback.py:1526
 #: routes/gamification/features.py:47
 msgid "Gare organizzate"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1467
+#: models/dashboard/activity_feedback.py:1528
 msgid "da quando sei direttore"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1477
+#: models/dashboard/activity_feedback.py:1538
 #, python-format
 msgid "%(num)s da chiudere"
 msgid_plural "%(num)s da chiudere"
 msgstr[0] ""
 msgstr[1] ""
 
-#: models/dashboard/activity_feedback.py:1488
+#: models/dashboard/activity_feedback.py:1549
 #, python-format
 msgid "%(taken)s posti occupati"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1493
+#: models/dashboard/activity_feedback.py:1554
 #, python-format
 msgid "%(free)s liberi"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1503
+#: models/dashboard/activity_feedback.py:1564
 msgid "Iscrizioni gestite"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1505
+#: models/dashboard/activity_feedback.py:1566
 msgid "in tutte le tue gare"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1513
+#: models/dashboard/activity_feedback.py:1574
 #, python-format
 msgid "%(n)s iscritti a %(gara)s"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1515
+#: models/dashboard/activity_feedback.py:1576
 #, python-format
 msgid "%(n)s a %(gara)s"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1530
+#: models/dashboard/activity_feedback.py:1591
 #, python-format
 msgid "%(gara)s, %(n)s iscritti"
 msgstr ""
 
-#: models/dashboard/dashboard_service.py:132
+#: models/dashboard/dashboard_service.py:138
 msgid "Dashboard Amministratore"
 msgstr ""
 
-#: models/dashboard/dashboard_service.py:291
+#: models/dashboard/dashboard_service.py:302
 msgid "Dashboard Direttore"
 msgstr ""
 
-#: models/dashboard/dashboard_service.py:431
+#: models/dashboard/dashboard_service.py:450
 msgid "Dashboard Giocatore"
 msgstr ""
 
-#: models/dashboard/dashboard_service.py:499
+#: models/dashboard/dashboard_service.py:522
 msgid "Vista Pubblica"
 msgstr ""
 
@@ -868,7 +868,7 @@ msgid ""
 "un esaminatore per farlo valere."
 msgstr ""
 
-#: models/gamification/frontend_bridge.py:494 templates/base.html:482
+#: models/gamification/frontend_bridge.py:494 templates/base.html:487
 msgid "Diventa esaminatore"
 msgstr ""
 
@@ -1227,7 +1227,7 @@ msgid "Lo username «%(nome)s» è già in uso."
 msgstr ""
 
 #: models/user/role_grant_service.py:534 routes/gamification/features.py:78
-#: templates/admin/users_list.html:118 templates/admin/users_list.html:163
+#: templates/admin/users_list.html:133 templates/admin/users_list.html:178
 msgid "Esaminatore"
 msgstr ""
 
@@ -1278,37 +1278,37 @@ msgstr ""
 msgid "Hai ottenuto il ruolo di %(role)s."
 msgstr ""
 
-#: routes/auth.py:61
+#: routes/auth.py:70
 msgid "Che piacere rivederti!"
 msgstr ""
 
-#: routes/auth.py:62 templates/base.html:603
+#: routes/auth.py:71 templates/base.html:608
 msgid "Tutto pronto per giocare?"
 msgstr ""
 
-#: routes/auth.py:89
+#: routes/auth.py:98
 msgid ""
 "Il tuo account non è ancora verificato. Senza email confermata non potrai"
 " recuperare la password se la dimentichi."
 msgstr ""
 
-#: routes/auth.py:97
+#: routes/auth.py:106
 msgid "Vai al profilo per verificare l'email"
 msgstr ""
 
-#: routes/auth.py:104
+#: routes/auth.py:113
 msgid "Username o password errati."
 msgstr ""
 
-#: routes/auth.py:143
+#: routes/auth.py:152
 msgid "Registrazione completata! Controlla la tua email per verificare l'account."
 msgstr ""
 
-#: routes/auth.py:154 templates/onboarding.html:12
+#: routes/auth.py:163 templates/onboarding.html:12
 msgid "Ti diamo il benvenuto!"
 msgstr ""
 
-#: routes/auth.py:155
+#: routes/auth.py:164
 msgid "Registrazione completata con successo."
 msgstr ""
 
@@ -1414,7 +1414,8 @@ msgstr ""
 msgid "Riferimento"
 msgstr ""
 
-#: routes/help.py:58 templates/components/_classification_mobile.html:13
+#: routes/help.py:58 templates/admin/accessi.html:83
+#: templates/components/_classification_mobile.html:13
 #: templates/components/_history_filters.html:53
 #: templates/components/_history_filters.html:67
 #: templates/components/_history_filters.html:99
@@ -1426,8 +1427,9 @@ msgstr ""
 msgid "Tutti"
 msgstr ""
 
-#: routes/help.py:59 templates/admin/campionato_detail.html:230
-#: templates/admin/users_list.html:91 templates/admin/users_list.html:160
+#: routes/help.py:59 templates/admin/accessi.html:86
+#: templates/admin/accessi.html:141 templates/admin/campionato_detail.html:230
+#: templates/admin/users_list.html:106 templates/admin/users_list.html:175
 #: templates/admin/venue_manager_requests.html:48
 #: templates/components/_campionato_general_classification.html:15
 #: templates/components/_detailed_classification.html:19
@@ -1437,8 +1439,9 @@ msgstr ""
 msgid "Giocatore"
 msgstr ""
 
-#: routes/help.py:60 templates/admin/users_list.html:90
-#: templates/admin/users_list.html:158
+#: routes/help.py:60 templates/admin/accessi.html:85
+#: templates/admin/accessi.html:139 templates/admin/users_list.html:105
+#: templates/admin/users_list.html:173
 #: templates/admin/venue_manager_requests.html:46
 #: templates/components/_unified_dashboard_header.html:9
 #: templates/components/_user_info_card.html:13
@@ -1731,35 +1734,35 @@ msgstr ""
 msgid "Milestone raggiunta: %(value)s gare completate!"
 msgstr ""
 
-#: routes/admin/user.py:202
+#: routes/admin/user.py:216
 msgid "Utente eliminato (anonimizzato) con successo."
 msgstr ""
 
-#: routes/admin/user.py:218
+#: routes/admin/user.py:232
 msgid "Seleziona sia l'account sorgente sia quello destinazione."
 msgstr ""
 
-#: routes/admin/user.py:224
+#: routes/admin/user.py:238
 msgid "Account uniti con successo."
 msgstr ""
 
-#: routes/admin/user.py:238
+#: routes/admin/user.py:252
 msgid "Email verificata manualmente."
 msgstr ""
 
-#: routes/admin/user.py:253
+#: routes/admin/user.py:267
 msgid "Impossibile reinviare: utente già verificato o invio fallito."
 msgstr ""
 
-#: routes/admin/user.py:259
+#: routes/admin/user.py:273
 msgid "Email di verifica reinviata."
 msgstr ""
 
-#: routes/admin/user.py:276
+#: routes/admin/user.py:290
 msgid "Le password non corrispondono"
 msgstr ""
 
-#: routes/admin/user.py:286
+#: routes/admin/user.py:300
 msgid "Password impostata con successo"
 msgstr ""
 
@@ -2215,7 +2218,7 @@ msgstr ""
 msgid "Esami certificati superati"
 msgstr ""
 
-#: routes/gamification/features.py:58 templates/base.html:323
+#: routes/gamification/features.py:58 templates/base.html:328
 #: templates/gamification/admin/dashboard.html:102
 #: templates/gamification/admin/dashboard.html:145
 #: templates/gamification/admin/feature_create.html:69
@@ -2230,8 +2233,9 @@ msgstr ""
 msgid "Metrica"
 msgstr ""
 
-#: routes/gamification/features.py:60 templates/admin/users_list.html:117
-#: templates/admin/users_list.html:154
+#: routes/gamification/features.py:60 templates/admin/accessi.html:81
+#: templates/admin/accessi.html:118 templates/admin/accessi.html:135
+#: templates/admin/users_list.html:132 templates/admin/users_list.html:169
 #: templates/components/_user_info_card.html:11
 #: templates/player/profile.html:76
 msgid "Ruolo"
@@ -2246,8 +2250,9 @@ msgstr ""
 msgid "Achievement"
 msgstr ""
 
-#: routes/gamification/features.py:75 templates/admin/users_list.html:89
-#: templates/admin/users_list.html:156 templates/admin/venue_detail.html:237
+#: routes/gamification/features.py:75 templates/admin/accessi.html:84
+#: templates/admin/accessi.html:137 templates/admin/users_list.html:104
+#: templates/admin/users_list.html:171 templates/admin/venue_detail.html:237
 #: templates/components/_user_profile_header.html:7
 msgid "Admin"
 msgstr ""
@@ -2603,7 +2608,7 @@ msgstr ""
 msgid "direzione gara"
 msgstr ""
 
-#: templates/base.html:158 templates/base.html:254
+#: templates/base.html:158 templates/base.html:259
 msgid "giocatore"
 msgstr ""
 
@@ -2611,7 +2616,7 @@ msgstr ""
 msgid "Generale"
 msgstr ""
 
-#: templates/admin/kpi.html:37 templates/base.html:167 templates/base.html:420
+#: templates/admin/kpi.html:37 templates/base.html:167 templates/base.html:425
 msgid "Dashboard"
 msgstr ""
 
@@ -2628,7 +2633,7 @@ msgstr ""
 msgid "Match Individuali"
 msgstr ""
 
-#: templates/base.html:191 templates/base.html:402
+#: templates/base.html:191 templates/base.html:407
 #: templates/gamification/admin/feature_create.html:59
 #: templates/help/_ui.html:10 templates/help/index.html:6
 msgid "Guida"
@@ -2638,85 +2643,91 @@ msgstr ""
 msgid "Persone"
 msgstr ""
 
-#: templates/admin/users_list.html:10 templates/base.html:201
-#: templates/base.html:433 templates/gamification/admin/dashboard.html:103
+#: templates/admin/accessi.html:37 templates/admin/users_list.html:10
+#: templates/base.html:201 templates/base.html:438
+#: templates/gamification/admin/dashboard.html:103
 msgid "Utenti"
 msgstr ""
 
-#: templates/base.html:206
+#: templates/admin/accessi.html:33 templates/admin/accessi.html:111
+#: templates/admin/users_list.html:94 templates/base.html:206
+msgid "Accessi"
+msgstr ""
+
+#: templates/base.html:211
 msgid "Richieste Direttore"
 msgstr ""
 
-#: templates/admin/venue_manager_requests.html:4 templates/base.html:211
+#: templates/admin/venue_manager_requests.html:4 templates/base.html:216
 msgid "Richieste Gestore Sala"
 msgstr ""
 
-#: templates/base.html:222
+#: templates/base.html:227
 msgid "Richieste Esaminatore"
 msgstr ""
 
-#: templates/admin/users_list.html:121 templates/admin/users_list.html:184
-#: templates/base.html:228 templates/components/_user_info_card.html:71
+#: templates/admin/users_list.html:136 templates/admin/users_list.html:199
+#: templates/base.html:233 templates/components/_user_info_card.html:71
 msgid "Gamification"
 msgstr ""
 
-#: templates/base.html:230
+#: templates/base.html:235
 msgid "Traguardi e XP"
 msgstr ""
 
-#: templates/base.html:240
+#: templates/base.html:245
 msgid "Debug"
 msgstr ""
 
-#: templates/base.html:241 templates/base.html:515
+#: templates/base.html:246 templates/base.html:520
 msgid "Reset DB"
 msgstr ""
 
-#: templates/base.html:252
+#: templates/base.html:257
 msgid "amministratore"
 msgstr ""
 
-#: templates/base.html:253
+#: templates/base.html:258
 msgid "direttore"
 msgstr ""
 
-#: templates/base.html:266 templates/base.html:344
+#: templates/base.html:271 templates/base.html:349
 msgid "Login"
 msgstr ""
 
-#: templates/base.html:267
+#: templates/base.html:272
 #: templates/components/_index_registration_info.html:33
 #: templates/login.html:40 templates/no_campionato.html:15
 #: templates/register.html:38
 msgid "Registrati"
 msgstr ""
 
-#: templates/base.html:290 templates/components/_gara_header.html:33
+#: templates/base.html:295 templates/components/_gara_header.html:33
 #: templates/help/index.html:11
 msgid "Home"
 msgstr ""
 
-#: templates/base.html:331
+#: templates/base.html:336
 msgid "Lv"
 msgstr ""
 
-#: templates/base.html:360
+#: templates/base.html:365
 msgid "Non è riuscito"
 msgstr ""
 
-#: templates/base.html:362
+#: templates/base.html:367
 msgid "Fatto"
 msgstr ""
 
-#: templates/base.html:364 templates/player/venue_detail.html:262
+#: templates/base.html:369 templates/player/venue_detail.html:262
 msgid "Attenzione"
 msgstr ""
 
-#: templates/base.html:366
+#: templates/base.html:371
 msgid "Informazione"
 msgstr ""
 
-#: templates/base.html:376 templates/challenge/create.html:8
+#: templates/base.html:381 templates/challenge/create.html:8
 #: templates/components/_campionato_create_modal.html:7
 #: templates/components/_challenge_management_modal.html:19
 #: templates/components/_challenge_management_modal.html:76
@@ -2732,116 +2743,116 @@ msgstr ""
 msgid "Chiudi"
 msgstr ""
 
-#: templates/base.html:406 templates/privacy.html:3
+#: templates/base.html:411 templates/privacy.html:3
 msgid "Privacy e Cookie"
 msgstr ""
 
-#: templates/admin/venue_manager_requests.html:14 templates/base.html:424
+#: templates/admin/venue_manager_requests.html:14 templates/base.html:429
 msgid "Sale"
 msgstr ""
 
-#: templates/base.html:442 templates/components/_user_menu.html:8
+#: templates/base.html:447 templates/components/_user_menu.html:8
 #: templates/player/notifications.html:3 templates/player/notifications.html:8
 msgid "Notifiche"
 msgstr ""
 
-#: templates/base.html:451
+#: templates/base.html:456
 msgid "DEBUG MODE - Informazioni Sistema"
 msgstr ""
 
-#: templates/base.html:455
+#: templates/base.html:460
 msgid "Utente:"
 msgstr ""
 
-#: templates/base.html:462
+#: templates/base.html:467
 msgid "User ID:"
 msgstr ""
 
-#: templates/base.html:469
+#: templates/base.html:474
 msgid "Esami:"
 msgstr ""
 
-#: templates/base.html:471
+#: templates/base.html:476
 msgid "esaminatore"
 msgstr ""
 
-#: templates/base.html:471 templates/base.html:474
+#: templates/base.html:476 templates/base.html:479
 msgid "sì"
 msgstr ""
 
-#: templates/base.html:471 templates/base.html:474
+#: templates/base.html:476 templates/base.html:479
 msgid "no"
 msgstr ""
 
-#: templates/base.html:474
+#: templates/base.html:479
 msgid "override"
 msgstr ""
 
-#: templates/base.html:490
+#: templates/base.html:495
 msgid "Endpoint:"
 msgstr ""
 
-#: templates/base.html:494
+#: templates/base.html:499
 msgid "Method:"
 msgstr ""
 
-#: templates/base.html:500 templates/base.html:514
+#: templates/base.html:505 templates/base.html:519
 msgid "Database:"
 msgstr ""
 
-#: templates/base.html:508
+#: templates/base.html:513
 msgid "Not accessible"
 msgstr ""
 
-#: templates/base.html:516
+#: templates/base.html:521
 msgid "Save Reset"
 msgstr ""
 
-#: templates/base.html:519
+#: templates/base.html:524
 msgid "Quick Login:"
 msgstr ""
 
-#: templates/base.html:532
+#: templates/base.html:537
 msgid "Test Fixtures:"
 msgstr ""
 
-#: templates/base.html:534
+#: templates/base.html:539
 msgid "Player"
 msgstr ""
 
-#: templates/base.html:539
+#: templates/base.html:544
 msgid "Fill Gara"
 msgstr ""
 
-#: templates/base.html:543
+#: templates/base.html:548
 msgid "Iscrivi"
 msgstr ""
 
-#: templates/base.html:547
+#: templates/base.html:552
 msgid "Completare i match in corso del turno attuale con risultati random?"
 msgstr ""
 
-#: templates/base.html:548
+#: templates/base.html:553
 msgid "Complete Round"
 msgstr ""
 
-#: templates/base.html:552
+#: templates/base.html:557
 msgid "Complete Match"
 msgstr ""
 
-#: templates/base.html:556
+#: templates/base.html:561
 msgid "Completare l'intera gara con risultati random fino alla fine?"
 msgstr ""
 
-#: templates/base.html:557
+#: templates/base.html:562
 msgid "Complete Gara"
 msgstr ""
 
-#: templates/base.html:572 templates/base.html:578
+#: templates/base.html:577 templates/base.html:583
 msgid "Conferma"
 msgstr ""
 
-#: templates/base.html:573 templates/base.html:637
+#: templates/base.html:578 templates/base.html:642
 msgid "Close"
 msgstr ""
 
@@ -2851,8 +2862,8 @@ msgstr ""
 #: templates/admin/campionato_wizard_step1.html:158
 #: templates/admin/campionato_wizard_step2.html:8
 #: templates/admin/gara_edit.html:11 templates/admin/venue_form.html:296
-#: templates/admin/venue_manager_requests.html:155 templates/base.html:577
-#: templates/base.html:650 templates/challenge/builder.html:33
+#: templates/admin/venue_manager_requests.html:155 templates/base.html:582
+#: templates/base.html:655 templates/challenge/builder.html:33
 #: templates/challenge/builder.html:249 templates/challenge/create.html:14
 #: templates/components/_campionato_create_modal.html:35
 #: templates/components/_campionato_edit_form.html:214
@@ -2880,68 +2891,68 @@ msgstr ""
 msgid "Annulla"
 msgstr ""
 
-#: templates/base.html:593
+#: templates/base.html:598
 msgid "XP OTTENUTI"
 msgstr ""
 
-#: templates/base.html:594
+#: templates/base.html:599
 msgid "LEVEL UP!"
 msgstr ""
 
-#: templates/base.html:595
+#: templates/base.html:600
 msgid "Nuovo livello raggiunto!"
 msgstr ""
 
-#: templates/base.html:596
+#: templates/base.html:601
 msgid "NUOVO TRAGUARDO!"
 msgstr ""
 
-#: templates/base.html:597
+#: templates/base.html:602
 msgid "STREAK!"
 msgstr ""
 
-#: templates/base.html:598
+#: templates/base.html:603
 msgid "Freeze attivo"
 msgstr ""
 
-#: templates/base.html:599
+#: templates/base.html:604
 msgid "STREAK PERSA"
 msgstr ""
 
-#: templates/base.html:600
+#: templates/base.html:605
 msgid "Non mollare, riprovare!"
 msgstr ""
 
-#: templates/base.html:601
+#: templates/base.html:606
 msgid "QUEST COMPLETATA!"
 msgstr ""
 
-#: templates/base.html:602
+#: templates/base.html:607
 msgid "TI DIAMO IL BENTORNATO!"
 msgstr ""
 
-#: templates/base.html:604
+#: templates/base.html:609
 msgid "Ciao!"
 msgstr ""
 
-#: templates/base.html:605
+#: templates/base.html:610
 #, python-format
 msgid "Ciao %(username)s!"
 msgstr ""
 
-#: templates/base.html:636
+#: templates/base.html:641
 msgid "Save Reset Snapshot"
 msgstr ""
 
-#: templates/base.html:641
+#: templates/base.html:646
 msgid "Nome snapshot"
 msgstr ""
 
-#: templates/base.html:645
+#: templates/base.html:650
 msgid "Descrizione (opzionale)"
 msgstr ""
 
-#: templates/admin/campionato_detail.html:163 templates/base.html:651
+#: templates/admin/campionato_detail.html:163 templates/base.html:656
 #: templates/gamification/admin/level_config.html:42
 #: templates/gamification/admin/level_config.html:174
 #: templates/gamification/admin/streak_config.html:34
@@ -2961,7 +2972,7 @@ msgstr ""
 msgid "Torna alla gara"
 msgstr ""
 
-#: templates/admin/users_list.html:124 templates/admin/users_list.html:206
+#: templates/admin/users_list.html:139 templates/admin/users_list.html:221
 #: templates/admin/venues_list.html:35
 #: templates/components/_gamification_labels.html:50
 #: templates/components/_gara_matches.html:6
@@ -2979,7 +2990,7 @@ msgstr ""
 msgid "Gestione Gara %(id)s - Admin"
 msgstr ""
 
-#: templates/admin/users_list.html:224 templates/admin/venues_list.html:113
+#: templates/admin/users_list.html:239 templates/admin/venues_list.html:113
 #: templates/challenge/_challenge_card.html:70
 #: templates/components/_campionato_garas.html:161
 #: templates/components/_history_campionati_tab.html:105
@@ -3875,7 +3886,8 @@ msgstr ""
 msgid "Crea il tuo account"
 msgstr ""
 
-#: templates/admin/users_list.html:115 templates/admin/users_list.html:152
+#: templates/admin/accessi.html:190 templates/admin/accessi.html:203
+#: templates/admin/users_list.html:130 templates/admin/users_list.html:167
 #: templates/admin/venue_form.html:89 templates/auth/forgot_password.html:17
 #: templates/components/_player_personal_info.html:18
 #: templates/components/_user_info_card.html:9
@@ -3885,7 +3897,7 @@ msgstr ""
 msgid "Email"
 msgstr ""
 
-#: templates/admin/users_list.html:116 templates/admin/users_list.html:153
+#: templates/admin/users_list.html:131 templates/admin/users_list.html:168
 #: templates/admin/venue_form.html:80
 #: templates/components/_player_personal_info.html:21
 #: templates/components/_user_info_card.html:10
@@ -3901,6 +3913,218 @@ msgstr ""
 
 #: templates/register.html:42
 msgid "Hai già un account?"
+msgstr ""
+
+#: templates/admin/accessi.html:21
+#: templates/components/_user_accessi_card.html:19
+msgid "meno di un minuto"
+msgstr ""
+
+#: templates/admin/accessi.html:22
+#: templates/components/_user_accessi_card.html:20
+#, python-format
+msgid "%(n)s minuto"
+msgid_plural "%(n)s minuti"
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/admin/accessi.html:23
+#: templates/components/_user_accessi_card.html:21
+#, python-format
+msgid "%(ore)sh %(min)sm"
+msgstr ""
+
+#: templates/admin/accessi.html:27
+msgid "Accessi - Admin"
+msgstr ""
+
+#: templates/admin/accessi.html:31
+msgid "Torna agli utenti"
+msgstr ""
+
+#: templates/admin/accessi.html:34
+msgid "Chi si collega, quando e per quanto"
+msgstr ""
+
+#: templates/admin/accessi.html:47
+msgid "Accessi nel periodo"
+msgstr ""
+
+#: templates/admin/accessi.html:51
+msgid "Persone diverse"
+msgstr ""
+
+#: templates/admin/accessi.html:55
+msgid "Permanenza media"
+msgstr ""
+
+#: templates/admin/accessi.html:59
+msgid "Collegati adesso"
+msgstr ""
+
+#: templates/admin/accessi.html:66
+msgid "Dal"
+msgstr ""
+
+#: templates/admin/accessi.html:71
+msgid "Fino al"
+msgstr ""
+
+#: templates/admin/accessi.html:76
+msgid "Nome o email"
+msgstr ""
+
+#: templates/admin/accessi.html:78
+msgid "Cerca..."
+msgstr ""
+
+#: templates/admin/accessi.html:93
+msgid "Solo collegati"
+msgstr ""
+
+#: templates/admin/accessi.html:96
+#: templates/components/_history_filters.html:144
+#: templates/individual_match/discover_players.html:107
+#: templates/public/campionatos_list.html:26
+msgid "Filtra"
+msgstr ""
+
+#: templates/admin/accessi.html:105
+#, python-format
+msgid ""
+"Gli accessi che rispondono al filtro sono %(totale)s: qui sotto ci sono i"
+" %(mostrati)s più recenti. Restringi il periodo per vedere gli altri."
+msgstr ""
+
+#: templates/admin/accessi.html:117 templates/admin/accessi.html:128
+#: templates/admin/accessi.html:189 templates/admin/accessi.html:199
+#: templates/admin/director_requests.html:13
+#: templates/admin/users_list.html:129 templates/admin/users_list.html:161
+#: templates/admin/venue_manager_requests.html:30
+#: templates/gamification/admin/dashboard.html:144
+#: templates/gamification/admin/streaks.html:65
+#: templates/gamification/admin/streaks.html:102
+#: templates/gamification/admin/xp_management.html:28
+#: templates/gamification/admin/xp_management.html:63
+#: templates/gamification/admin/xp_management.html:90
+#: templates/roles/holders.html:19
+msgid "Utente"
+msgstr ""
+
+#: templates/admin/accessi.html:119 templates/admin/accessi.html:144
+msgid "Entrato"
+msgstr ""
+
+#: templates/admin/accessi.html:120 templates/admin/accessi.html:145
+msgid "Ultimo segno"
+msgstr ""
+
+#: templates/admin/accessi.html:121 templates/admin/accessi.html:146
+msgid "Permanenza"
+msgstr ""
+
+#: templates/admin/accessi.html:122 templates/admin/accessi.html:147
+#: templates/admin/kpi.html:77 templates/components/_history_filters.html:113
+msgid "Da"
+msgstr ""
+
+#: templates/admin/accessi.html:132
+#: templates/components/_user_accessi_card.html:26
+msgid "ora"
+msgstr ""
+
+#: templates/admin/accessi.html:148
+msgid "telefono"
+msgstr ""
+
+#: templates/admin/accessi.html:149
+msgid "tablet"
+msgstr ""
+
+#: templates/admin/accessi.html:150
+msgid "computer"
+msgstr ""
+
+#: templates/admin/accessi.html:161
+msgid "Nessun accesso nel periodo"
+msgstr ""
+
+#: templates/admin/accessi.html:163
+msgid ""
+"La traccia degli accessi parte dal momento in cui è stata attivata: prima"
+" di allora l'informazione non esisteva da nessuna parte."
+msgstr ""
+
+#: templates/admin/accessi.html:175
+#, python-format
+msgid "%(n)s registrato che non è mai entrato"
+msgid_plural "%(n)s registrati che non sono mai entrati"
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/admin/accessi.html:182
+msgid ""
+"Iscritti da più di un mese e mai collegati. Se l'email non è nemmeno "
+"confermata, è probabile che la verifica non sia mai arrivata: da qui la "
+"si può rimandare."
+msgstr ""
+
+#: templates/admin/accessi.html:191 templates/admin/accessi.html:204
+#: templates/admin/users_list.html:141 templates/admin/users_list.html:232
+#: templates/components/_user_info_card.html:119
+msgid "Registrato"
+msgstr ""
+
+#: templates/admin/accessi.html:192 templates/admin/accessi.html:205
+msgid "Email confermata"
+msgstr ""
+
+#: templates/admin/accessi.html:193 templates/admin/accessi.html:212
+#: templates/admin/director_requests.html:15
+#: templates/admin/users_list.html:142 templates/admin/users_list.html:235
+#: templates/admin/venue_manager_requests.html:36
+#: templates/admin/venues_list.html:38
+#: templates/components/_campionato_garas.html:24
+#: templates/components/_gara_matches.html:59
+#: templates/components/_gara_matches.html:93
+#: templates/gamification/admin/achievements.html:30
+#: templates/gamification/admin/features.html:29
+#: templates/gamification/admin/level_config.html:103
+#: templates/gamification/admin/quests.html:29
+#: templates/gamification/admin/streak_config.html:66
+#: templates/gamification/admin/xp_config.html:35
+msgid "Azioni"
+msgstr ""
+
+#: templates/admin/accessi.html:207
+#: templates/admin/gara_create_standalone.html:276
+#: templates/admin/users_list.html:183 templates/admin/users_list.html:191
+#: templates/components/_gara_edit_form.html:126
+#: templates/components/_gara_edit_form.html:129
+#: templates/components/_new_gara_modal.html:310
+#: templates/components/_new_gara_modal.html:311
+#: templates/components/_user_info_card.html:45
+msgid "Sì"
+msgstr ""
+
+#: templates/admin/accessi.html:209
+#: templates/admin/gara_create_standalone.html:275
+#: templates/admin/users_list.html:186 templates/admin/users_list.html:193
+#: templates/components/_gara_edit_form.html:126
+#: templates/components/_gara_edit_form.html:130
+#: templates/components/_new_gara_modal.html:310
+#: templates/components/_new_gara_modal.html:312
+#: templates/components/_user_info_card.html:56
+#: templates/gamification/admin/streak_config.html:85
+msgid "No"
+msgstr ""
+
+#: templates/admin/accessi.html:218
+msgid "Rimanda verifica"
+msgstr ""
+
+#: templates/admin/accessi.html:231
+msgid "Nessuno: chi si è registrato è poi entrato almeno una volta."
 msgstr ""
 
 #: templates/admin/amalfi_classification.html:7
@@ -4348,7 +4572,7 @@ msgid "Passo 2 di 2"
 msgstr ""
 
 #: templates/admin/campionato_wizard_step2.html:30
-#: templates/admin/users_list.html:125 templates/admin/users_list.html:209
+#: templates/admin/users_list.html:140 templates/admin/users_list.html:224
 #: templates/components/_classification_mobile.html:30
 #: templates/components/_classification_mobile.html:56
 #: templates/components/_detailed_classification.html:20
@@ -4501,37 +4725,8 @@ msgstr ""
 msgid "Approva o rifiuta chi chiede di dirigere le gare."
 msgstr ""
 
-#: templates/admin/director_requests.html:13
-#: templates/admin/users_list.html:114 templates/admin/users_list.html:146
-#: templates/admin/venue_manager_requests.html:30
-#: templates/gamification/admin/dashboard.html:144
-#: templates/gamification/admin/streaks.html:65
-#: templates/gamification/admin/streaks.html:102
-#: templates/gamification/admin/xp_management.html:28
-#: templates/gamification/admin/xp_management.html:63
-#: templates/gamification/admin/xp_management.html:90
-#: templates/roles/holders.html:19
-msgid "Utente"
-msgstr ""
-
 #: templates/admin/director_requests.html:14
 msgid "Data richiesta"
-msgstr ""
-
-#: templates/admin/director_requests.html:15
-#: templates/admin/users_list.html:127 templates/admin/users_list.html:220
-#: templates/admin/venue_manager_requests.html:36
-#: templates/admin/venues_list.html:38
-#: templates/components/_campionato_garas.html:24
-#: templates/components/_gara_matches.html:59
-#: templates/components/_gara_matches.html:93
-#: templates/gamification/admin/achievements.html:30
-#: templates/gamification/admin/features.html:29
-#: templates/gamification/admin/level_config.html:103
-#: templates/gamification/admin/quests.html:29
-#: templates/gamification/admin/streak_config.html:66
-#: templates/gamification/admin/xp_config.html:35
-msgid "Azioni"
 msgstr ""
 
 #: templates/admin/director_requests.html:32
@@ -4836,27 +5031,6 @@ msgstr ""
 msgid "Evita reincontri tra gli stessi giocatori"
 msgstr ""
 
-#: templates/admin/gara_create_standalone.html:275
-#: templates/admin/users_list.html:171 templates/admin/users_list.html:178
-#: templates/components/_gara_edit_form.html:126
-#: templates/components/_gara_edit_form.html:130
-#: templates/components/_new_gara_modal.html:310
-#: templates/components/_new_gara_modal.html:312
-#: templates/components/_user_info_card.html:56
-#: templates/gamification/admin/streak_config.html:85
-msgid "No"
-msgstr ""
-
-#: templates/admin/gara_create_standalone.html:276
-#: templates/admin/users_list.html:168 templates/admin/users_list.html:176
-#: templates/components/_gara_edit_form.html:126
-#: templates/components/_gara_edit_form.html:129
-#: templates/components/_new_gara_modal.html:310
-#: templates/components/_new_gara_modal.html:311
-#: templates/components/_user_info_card.html:45
-msgid "Sì"
-msgstr ""
-
 #: templates/admin/gara_create_standalone.html:278
 #: templates/components/_gara_edit_form.html:132
 #: templates/components/_new_gara_modal.html:314
@@ -5143,10 +5317,6 @@ msgstr ""
 
 #: templates/admin/kpi.html:68
 msgid "Tutto"
-msgstr ""
-
-#: templates/admin/kpi.html:77 templates/components/_history_filters.html:113
-msgid "Da"
 msgstr ""
 
 #: templates/admin/kpi.html:82 templates/components/_history_filters.html:120
@@ -5466,163 +5636,165 @@ msgstr ""
 msgid "Tutti gli Utenti"
 msgstr ""
 
-#: templates/admin/users_list.html:84
+#: templates/admin/users_list.html:89
+#, python-format
+msgid "%(n)s email da confermare"
+msgid_plural "%(n)s email da confermare"
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/admin/users_list.html:99
 msgid "Cerca per username o email..."
 msgstr ""
 
-#: templates/admin/users_list.html:85
+#: templates/admin/users_list.html:100
 msgid "Cerca utenti"
 msgstr ""
 
-#: templates/admin/users_list.html:87
+#: templates/admin/users_list.html:102
 msgid "Filtra per ruolo"
 msgstr ""
 
-#: templates/admin/users_list.html:88
+#: templates/admin/users_list.html:103
 msgid "Tutti i ruoli"
 msgstr ""
 
-#: templates/admin/users_list.html:94
+#: templates/admin/users_list.html:109
 msgid "Filtra per ruolo esaminatore"
 msgstr ""
 
-#: templates/admin/users_list.html:95
+#: templates/admin/users_list.html:110
 msgid "Esaminatore: tutti"
 msgstr ""
 
-#: templates/admin/users_list.html:96 templates/exam/detail.html:10
+#: templates/admin/users_list.html:111 templates/exam/detail.html:10
 #: templates/exam/examiners.html:3 templates/exam/examiners.html:5
 msgid "Esaminatori"
 msgstr ""
 
-#: templates/admin/users_list.html:97
+#: templates/admin/users_list.html:112
 msgid "Non esaminatori"
 msgstr ""
 
-#: templates/admin/users_list.html:100
+#: templates/admin/users_list.html:115
 msgid "Filtra per verifica"
 msgstr ""
 
-#: templates/admin/users_list.html:101
+#: templates/admin/users_list.html:116
 msgid "Verifica: tutti"
 msgstr ""
 
-#: templates/admin/users_list.html:102
+#: templates/admin/users_list.html:117
 msgid "Verificati"
 msgstr ""
 
-#: templates/admin/users_list.html:103
+#: templates/admin/users_list.html:118
 msgid "Non verificati"
 msgstr ""
 
-#: templates/admin/users_list.html:119 templates/admin/users_list.html:174
+#: templates/admin/users_list.html:134 templates/admin/users_list.html:189
 msgid "Verificato"
 msgstr ""
 
-#: templates/admin/users_list.html:120 templates/admin/users_list.html:181
+#: templates/admin/users_list.html:135 templates/admin/users_list.html:196
 msgid "ELO"
 msgstr ""
 
-#: templates/admin/users_list.html:122 templates/admin/users_list.html:195
+#: templates/admin/users_list.html:137 templates/admin/users_list.html:210
 #: templates/admin/venue_manager_requests.html:32
 msgid "Richiesta"
 msgstr ""
 
-#: templates/admin/users_list.html:123 templates/admin/users_list.html:203
+#: templates/admin/users_list.html:138 templates/admin/users_list.html:218
 msgid "Iscrizioni"
 msgstr ""
 
-#: templates/admin/users_list.html:126 templates/admin/users_list.html:217
-#: templates/components/_user_info_card.html:119
-msgid "Registrato"
-msgstr ""
-
-#: templates/admin/users_list.html:165
+#: templates/admin/users_list.html:180
 msgid "Un amministratore può già fare tutto ciò che fa un esaminatore"
 msgstr ""
 
-#: templates/admin/users_list.html:186
+#: templates/admin/users_list.html:201
 msgid "Bypass completo delle regole gamification"
 msgstr ""
 
-#: templates/admin/users_list.html:187
+#: templates/admin/users_list.html:202
 msgid "Override"
 msgstr ""
 
-#: templates/admin/users_list.html:191
+#: templates/admin/users_list.html:206
 msgid "Normale"
 msgstr ""
 
-#: templates/admin/users_list.html:200
+#: templates/admin/users_list.html:215
 #: templates/components/_campionato_details_info.html:36
 #: templates/components/_gara_info.html:71
 #: templates/components/_player_personal_info.html:28
 msgid "Nessuna"
 msgstr ""
 
-#: templates/admin/users_list.html:229
+#: templates/admin/users_list.html:244
 msgid "Rimuovere il ruolo director a questo utente?"
 msgstr ""
 
-#: templates/admin/users_list.html:232
+#: templates/admin/users_list.html:247
 msgid "Rimuovi director"
 msgstr ""
 
-#: templates/admin/users_list.html:247
+#: templates/admin/users_list.html:262
 #: templates/components/_user_info_card.html:49
 msgid ""
 "Revocare il ruolo di Esaminatore? Gli esami creati e le certificazioni "
 "rilasciate restano validi."
 msgstr ""
 
-#: templates/admin/users_list.html:251
+#: templates/admin/users_list.html:266
 msgid "Revoca il ruolo di esaminatore"
 msgstr ""
 
-#: templates/admin/users_list.html:252
+#: templates/admin/users_list.html:267
 msgid "Revoca esaminatore"
 msgstr ""
 
-#: templates/admin/users_list.html:258
+#: templates/admin/users_list.html:273
 #: templates/components/_user_info_card.html:59
 msgid "Promuovere a Esaminatore?"
 msgstr ""
 
-#: templates/admin/users_list.html:262 templates/admin/users_list.html:263
+#: templates/admin/users_list.html:277 templates/admin/users_list.html:278
 msgid "Rendi esaminatore"
 msgstr ""
 
-#: templates/admin/users_list.html:272
+#: templates/admin/users_list.html:287
 msgid "Segna email come verificata"
 msgstr ""
 
-#: templates/admin/users_list.html:273
+#: templates/admin/users_list.html:288
 msgid "Verifica"
 msgstr ""
 
-#: templates/admin/users_list.html:280
+#: templates/admin/users_list.html:295
 msgid "Reinvia email di verifica"
 msgstr ""
 
-#: templates/admin/users_list.html:287
+#: templates/admin/users_list.html:302
 msgid ""
 "Eliminare definitivamente questo utente? I dati personali verranno "
 "anonimizzati e l'azione non è reversibile."
 msgstr ""
 
-#: templates/admin/users_list.html:290
+#: templates/admin/users_list.html:305
 msgid "Elimina (anonimizza) utente"
 msgstr ""
 
-#: templates/admin/users_list.html:303
+#: templates/admin/users_list.html:318
 msgid "Nessun utente corrisponde ai filtri."
 msgstr ""
 
-#: templates/admin/users_list.html:307
+#: templates/admin/users_list.html:322
 msgid "Nessun Utente"
 msgstr ""
 
-#: templates/admin/users_list.html:308
+#: templates/admin/users_list.html:323
 msgid "Non ci sono ancora utenti registrati."
 msgstr ""
 
@@ -8890,12 +9062,6 @@ msgstr ""
 msgid "Campionato"
 msgstr ""
 
-#: templates/components/_history_filters.html:144
-#: templates/individual_match/discover_players.html:107
-#: templates/public/campionatos_list.html:26
-msgid "Filtra"
-msgstr ""
-
 #: templates/components/_history_filters.html:147
 msgid "Reset"
 msgstr ""
@@ -10895,6 +11061,16 @@ msgstr ""
 
 #: templates/components/_unified_rack_input.html:253
 msgid "Conferma il risultato finale."
+msgstr ""
+
+#: templates/components/_user_accessi_card.html:11
+msgid "Ultimi accessi"
+msgstr ""
+
+#: templates/components/_user_accessi_card.html:33
+msgid ""
+"Nessun accesso registrato. La traccia parte da quando è stata attivata: "
+"prima di allora l'informazione non esisteva."
 msgstr ""
 
 #: templates/components/_user_campionato_classifications_table.html:6
