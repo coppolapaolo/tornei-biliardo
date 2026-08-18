@@ -69,7 +69,7 @@ python migrations/runner.py
 
 | Job | Quando gira | Cosa fa |
 |-----|-------------|---------|
-| `test-and-typecheck` | ogni push **e** ogni PR | unit test + pyright. È l'unico status check che blocca il merge |
+| `test-and-typecheck` | push su `main` **e** PR **verso `main`** | unit test + pyright. È l'unico status check che blocca il merge. Attenzione: il workflow ha `on: push: branches: [main]` e `pull_request: branches: [main]`, quindi **una PR con base diversa da `main` non fa girare nessun check** e resta bloccata per sempre. Le PR impilate vanno riportate su `main` prima del merge |
 | `check-migrations` | solo push su `main` | `git diff --diff-filter=A HEAD~1 HEAD -- 'migrations/*.py'`: c'è una migration **nuova**? |
 | `deploy` | solo push su `main`, **e solo se NON ci sono migration nuove** | **reload** della web app via API PythonAnywhere |
 | `skip-deploy-notification` | solo push su `main`, **se ci sono migration nuove** | salta il deploy e stampa la procedura manuale |
