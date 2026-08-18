@@ -5,6 +5,11 @@ al primo ingresso in dashboard dopo il login, e da li' in poi lascia il posto
 alle cose da fare. Chi torna in dashboard dieci volte in un pomeriggio non ha
 bisogno di rileggere dieci volte com'e' andata.
 
+Il turno vale per l'intero **posto** in cima alla home, non per un singolo
+componente: lo occupa il blocco «Come stai andando» a chi ha gia' giocato e la
+card dei tre passi a chi non ha ancora fatto niente. Sono due facce della
+stessa cosa, e spariscono insieme.
+
 Lo stato vive nella sessione del server, non in `sessionStorage`: il blocco
 deve sparire *senza essere renderizzato* — nasconderlo lato client vorrebbe
 dire calcolarlo e spedirlo comunque, e quello e' lavoro di database per una

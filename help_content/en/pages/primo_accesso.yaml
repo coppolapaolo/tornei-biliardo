@@ -76,8 +76,9 @@ blocks:
       Above it, one line tells you where you start from: your **Elo** — the
       rating you also find in your
       [profile](/aiuto/account/profilo_e_statistiche) — is 1200 for everyone,
-      and starts moving with your first recorded match. Those three steps stay
-      at the top of your home on every visit, until you do your first activity.
+      and starts moving with your first recorded match. Those three steps greet
+      you when you come in and then give way to the things to do: you find them
+      again next time you sign in, until you do your first activity.
 
   - type: text
     text: >-

@@ -75,9 +75,9 @@ blocks:
       *Account creato*, *Gioca il primo match*, *Prova un drill*. Sopra, una
       riga spiega da dove parti: il punteggio **Elo** — il rating che trovi
       anche nel [profilo](/aiuto/account/profilo_e_statistiche) — vale 1200 per
-      tutti, e comincia a muoversi con la prima partita registrata. Quei tre
-      passi restano in cima alla home a ogni visita, finché non fai la prima
-      attività.
+      tutti, e comincia a muoversi con la prima partita registrata. Anche quei
+      tre passi ti accolgono all'ingresso e poi lasciano il posto alle cose da
+      fare: li ritrovi al prossimo accesso, finché non fai la prima attività.
 
   - type: text
     text: >-

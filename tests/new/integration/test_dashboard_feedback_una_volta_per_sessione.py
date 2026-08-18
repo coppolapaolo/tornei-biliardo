@@ -116,3 +116,20 @@ def test_dopo_un_nuovo_login_il_saluto_torna(client, app):
 
     client.get("/auth/logout", follow_redirects=True)
     assert TITOLO in login().get_data(as_text=True)
+
+
+def test_anche_la_card_di_setup_si_mostra_una_volta_sola(logged_in_client):
+    """Il turno vale per il posto, non per il singolo componente.
+
+    Chi non ha ancora fatto niente riceve i tre passi al posto del blocco: e'
+    la stessa cosa vista da prima, e segue la stessa regola.
+    """
+    client, _user = logged_in_client(role="player")
+
+    prima = _home(client)
+    assert "Il tuo profilo" in prima
+    assert "Il tuo Elo parte da 1200" in prima
+
+    seconda = _home(client)
+    assert "Il tuo profilo" not in seconda
+    assert "Il tuo Elo parte da 1200" not in seconda

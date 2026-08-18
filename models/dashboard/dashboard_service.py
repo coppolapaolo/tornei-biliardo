@@ -303,7 +303,7 @@ class DashboardService:
             activity_feedback=director_feedback,
             activity_setup=(
                 ActivityFeedbackService.setup_card(user_id, user=user)
-                if _needs_setup_card(user_id, user)
+                if with_activity_feedback and _needs_setup_card(user_id, user)
                 else None
             ),
             campionati=campionati,
@@ -450,11 +450,12 @@ class DashboardService:
             title=_("Dashboard Giocatore"),
             activity_feedback=activity_feedback,
             activity_setup=(
-                # La card di setup non e' feedback ma una lista di cose da
-                # fare, e resta finche' non sono fatte: sparisce da sola alla
-                # prima attivita', diventando il blocco.
+                # Stesso turno del blocco: la card di setup ne e' la variante
+                # per chi non ha ancora fatto niente, occupa lo stesso posto e
+                # sparisce insieme a lui. Chi rientra in dashboard dieci volte
+                # non ha bisogno di rileggere dieci volte i tre passi.
                 ActivityFeedbackService.setup_card(user_id, user=user)
-                if _needs_setup_card(user_id, user)
+                if with_activity_feedback and _needs_setup_card(user_id, user)
                 else None
             ),
             campionati=campionati,
