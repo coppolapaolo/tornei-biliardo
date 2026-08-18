@@ -3,6 +3,8 @@ import json
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from markupsafe import Markup, escape
 from flask_login import login_user, logout_user, login_required
+
+from utils.activity_feedback_view import reset_activity_feedback_view
 from flask_babel import gettext as _
 from models.user.services import UserService
 from models.user.profile_service import UserProfileService
@@ -32,6 +34,13 @@ def login():
 
         if user:
             login_user(user)
+
+            # Il blocco «Come stai andando» si mostra una volta per sessione, e
+            # «per sessione» qui vuol dire davvero da questo login: senza
+            # questa riga chi esce e rientra dallo stesso browser non lo
+            # rivedrebbe, perche' `logout_user()` toglie dalla sessione solo le
+            # chiavi di Flask-Login.
+            reset_activity_feedback_view()
 
             # Il fuso arriva da un campo nascosto riempito dal browser: da qui
             # in poi ogni orario della sessione è già quello giusto, senza la

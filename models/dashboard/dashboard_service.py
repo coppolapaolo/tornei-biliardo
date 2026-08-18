@@ -21,7 +21,7 @@ from models.match.models import Match as TournamentMatch
 from models.user.models import User
 from models.status_enum import GaraStatus, MatchStatus
 
-from .activity_feedback import ActivityFeedbackService
+from .activity_feedback import ActivityFeedbackService, has_any_activity
 from .view_models import (
     _role_truthy,
     _user_is_match_participant,
@@ -43,6 +43,12 @@ from .item_builders import (
     caps_for,
 )
 from models.status_enum import TournamentStatus
+
+
+def _needs_setup_card(user_id: int, user) -> bool:
+    """La card dei tre passi va solo a chi non ha ancora fatto niente."""
+    return not has_any_activity(user_id, user)
+
 
 # How many completed campionati to show in player/director dashboards.
 # Older completed campionati are accessible via /campionatos archive page.
@@ -164,6 +170,7 @@ class DashboardService:
         user_id: int,
         selected_campionato_id: Optional[int] = None,
         selected_gara_id: Optional[int] = None,
+        with_activity_feedback: bool = True,
     ) -> DashboardVM:
         user = db.session.get(User, user_id)
         if not user:
@@ -285,15 +292,19 @@ class DashboardService:
         # non passa mai da `dashboard/player.html` (la rotta smista per ruolo
         # piu' alto), quindi la variante «Come vanno le tue gare» del design
         # senza questa riga non si vedrebbe da nessuna parte.
-        director_feedback = ActivityFeedbackService.for_player(user_id, user=user)
+        director_feedback = (
+            ActivityFeedbackService.for_player(user_id, user=user)
+            if with_activity_feedback
+            else None
+        )
 
         return DashboardVM(
             title=_("Dashboard Direttore"),
             activity_feedback=director_feedback,
             activity_setup=(
-                None
-                if director_feedback
-                else ActivityFeedbackService.setup_card(user_id, user=user)
+                ActivityFeedbackService.setup_card(user_id, user=user)
+                if _needs_setup_card(user_id, user)
+                else None
             ),
             campionati=campionati,
             campionati_active_items=active_items,
@@ -336,6 +347,7 @@ class DashboardService:
         user_id: int,
         selected_campionato_id: Optional[int] = None,
         selected_gara_id: Optional[int] = None,
+        with_activity_feedback: bool = True,
     ) -> DashboardVM:
         user = db.session.get(User, user_id)
         if not user:
@@ -425,15 +437,25 @@ class DashboardService:
             _standalone_completed_tail(all_standalone_garas)
         )
 
-        activity_feedback = ActivityFeedbackService.for_player(user_id, user=user)
+        # Il blocco si mostra una volta per sessione: quando il turno e' gia'
+        # stato consumato non lo si calcola nemmeno — sarebbero cinque query
+        # per qualcosa che non finisce in pagina.
+        activity_feedback = (
+            ActivityFeedbackService.for_player(user_id, user=user)
+            if with_activity_feedback
+            else None
+        )
 
         return DashboardVM(
             title=_("Dashboard Giocatore"),
             activity_feedback=activity_feedback,
             activity_setup=(
-                None
-                if activity_feedback
-                else ActivityFeedbackService.setup_card(user_id, user=user)
+                # La card di setup non e' feedback ma una lista di cose da
+                # fare, e resta finche' non sono fatte: sparisce da sola alla
+                # prima attivita', diventando il blocco.
+                ActivityFeedbackService.setup_card(user_id, user=user)
+                if _needs_setup_card(user_id, user)
+                else None
             ),
             campionati=campionati,
             campionati_active_items=active_items,

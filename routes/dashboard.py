@@ -4,6 +4,7 @@ from flask_login import login_required, current_user
 
 from models.dashboard.services import DashboardService
 from models.competition.services import GaraService
+from utils.activity_feedback_view import claim_activity_feedback_view
 
 dashboard_bp = Blueprint("dashboard", __name__)
 
@@ -34,11 +35,17 @@ def dashboard() -> str:
         vm = DashboardService.for_admin()
         return render_template("dashboard/admin.html", vm=vm)
 
+    # Il blocco «Come stai andando» e' un saluto: si mostra una volta per
+    # sessione, al primo ingresso dopo il login, e poi lascia il posto alle
+    # cose da fare. Il turno si consuma qui — dentro il ramo che disegna
+    # davvero la dashboard, non prima, altrimenti lo brucerebbe anche l'admin,
+    # che quel blocco non ce l'ha.
     if getattr(current_user, "is_director", False):
         vm = DashboardService.for_director(
             current_user.id,
             selected_campionato_id=campionato_id,
             selected_gara_id=gara_id,
+            with_activity_feedback=claim_activity_feedback_view(current_user.id),
         )
         return render_template("dashboard/director.html", vm=vm)
 
@@ -46,5 +53,6 @@ def dashboard() -> str:
         current_user.id,
         selected_campionato_id=campionato_id,
         selected_gara_id=gara_id,
+        with_activity_feedback=claim_activity_feedback_view(current_user.id),
     )
     return render_template("dashboard/player.html", vm=vm)
