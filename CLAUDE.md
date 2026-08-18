@@ -69,7 +69,7 @@ python migrations/runner.py
 
 | Job | Quando gira | Cosa fa |
 |-----|-------------|---------|
-| `test-and-typecheck` | ogni push **e** ogni PR | unit test + pyright. È l'unico status check che blocca il merge |
+| `test-and-typecheck` | push su `main` **e** PR **verso `main`** | unit test + pyright. È l'unico status check che blocca il merge. Attenzione: il workflow ha `on: push: branches: [main]` e `pull_request: branches: [main]`, quindi **una PR con base diversa da `main` non fa girare nessun check** e resta bloccata per sempre. Le PR impilate vanno riportate su `main` prima del merge |
 | `check-migrations` | solo push su `main` | `git diff --diff-filter=A HEAD~1 HEAD -- 'migrations/*.py'`: c'è una migration **nuova**? |
 | `deploy` | solo push su `main`, **e solo se NON ci sono migration nuove** | **reload** della web app via API PythonAnywhere |
 | `skip-deploy-notification` | solo push su `main`, **se ci sono migration nuove** | salta il deploy e stampa la procedura manuale |
@@ -665,6 +665,7 @@ pytest tests/new/unit/ -n auto && pytest tests/new/integration/ -n 4
 - **[docs/adr/ADR-043-reader-timezone.md](docs/adr/ADR-043-reader-timezone.md)**: gli orari sono nel fuso di **chi legge**, dedotto dal browser e **salvato** su `User.timezone` (senza colonna, promemoria ed email non lo saprebbero); nessun backfill, perché «non lo so» e «è Roma» sono cose diverse
 - **[docs/adr/ADR-044-tpa-scoresheet.md](docs/adr/ADR-044-tpa-scoresheet.md)**: referto TPA sui match singoli — funzione da sbloccare, punteggio **derivato** dal referto, registro dei comandi come unica verita', motore verificato per differenza contro l'app JS di riferimento
 - **[docs/adr/ADR-045-no-wal-on-network-storage.md](docs/adr/ADR-045-no-wal-on-network-storage.md)**: niente `journal_mode=WAL` — su NFS la memoria condivisa del WAL non e' coerente fra processi e corrompe il DB; il file `.db` ricorda il journal mode, quindi togliere la riga non basta
+- **[docs/adr/ADR-046-beta-tester-visibility.md](docs/adr/ADR-046-beta-tester-visibility.md)**: il beta tester e' un `RoleGrant` (ADR-041) che apre la visibilita' di ADR-028 su tutto **tranne** l'amministrazione; «amministrazione» si riconosce dal decoratore `@admin_required`, non dal nome; non propagante e non richiedibile
 - **[docs/usecases/esami.md](docs/usecases/esami.md)**: i sette journey degli esami e del ruolo esaminatore
 
 ---

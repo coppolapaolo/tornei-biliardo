@@ -28,6 +28,12 @@ class RoleRequirement:
                 abort(403)
             return f(*args, **kwargs)
 
+        # Marchio leggibile a runtime: `utils.feature_flags` classifica gli
+        # endpoint di amministrazione per **nome** (blueprint `admin`, oppure
+        # `admin_*`), e questo attributo permette di verificare che la
+        # convenzione e la realta' non divergano — vedi `test_beta_tester.py`.
+        decorated_function._richiede_admin = True
+
         return decorated_function
 
     @staticmethod

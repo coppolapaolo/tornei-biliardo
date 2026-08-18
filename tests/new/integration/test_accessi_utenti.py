@@ -162,3 +162,26 @@ def test_chi_non_e_mai_entrato_compare_a_parte(app, db_session, logged_in_client
 
     assert "fantasma" in corpo
     assert "Rimanda verifica" in corpo, "senza verifica confermata serve il pulsante"
+
+
+@pytest.mark.integration
+def test_anonimizzare_un_utente_cancella_i_suoi_accessi(app, db_session):
+    """La cancellazione toglie anche il registro di dov'e' stato.
+
+    Il `ON DELETE CASCADE` sulla FK non copre questo caso: `anonymize()` non
+    cancella nessuna riga `user`, la svuota. Senza una riga esplicita il
+    registro di quando quell'account si collegava sopravviverebbe proprio alla
+    richiesta che doveva soddisfare — e la promessa scritta in
+    `session_models.py` sarebbe falsa.
+    """
+    utente = _crea_utente(db_session, "sparisce")
+    db.session.add(
+        UserSession(user_id=utente.id, started_at=utc_now(), last_seen_at=utc_now())
+    )
+    db.session.commit()
+    assert UserSession.query.filter_by(user_id=utente.id).count() == 1
+
+    utente.anonymize()
+    db.session.commit()
+
+    assert UserSession.query.filter_by(user_id=utente.id).count() == 0

@@ -14,6 +14,15 @@ blocks:
       (nome utente, email, password) e quel che generi giocando (iscrizioni,
       risultati, statistiche). Email e telefono sono conservati **cifrati**.
 
+  - type: text
+    text: >-
+      C'è poi una traccia essenziale degli accessi: **quando ti colleghi**,
+      quando ti sei fatto vivo l'ultima volta e da che tipo di dispositivo
+      (telefono, tablet o computer). Serve a chi amministra la piattaforma per
+      sapere quanta gente la usa davvero, e la vede solo lui: nessun altro
+      giocatore, nessun direttore di gara. Non vengono registrati né
+      l'indirizzo IP né le pagine che apri.
+
   - type: shot
     shot: privacy-impostazioni
     caption: "Le impostazioni di privacy: cosa mostrare nel profilo pubblico."

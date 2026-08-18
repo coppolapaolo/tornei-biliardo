@@ -124,6 +124,26 @@ blocks:
       (indirizzo, tavoli, orari). Si richiede dal profilo, come per il ruolo di
       direttore, e viene approvato da un amministratore.
 
+  - type: heading
+    id: beta_tester
+    title: "Beta tester"
+
+  - type: text
+    text: >-
+      Ogni tanto una funzione nuova viene fatta provare a poche persone prima
+      di aprirla a tutti. Chi viene scelto riceve il ruolo di **beta tester** e
+      trova nell'app qualche schermata che gli altri ancora non vedono. Non è
+      un potere in più: dentro quelle schermate valgono le stesse regole di
+      sempre, e le pagine di amministrazione restano fuori portata come per
+      chiunque altro.
+
+  - type: note
+    tone: info
+    text: >-
+      Questo ruolo **non si chiede**: lo assegna chi amministra la piattaforma,
+      e lo toglie quando la funzione viene aperta a tutti. Se ti arriva, lo
+      scopri da una notifica.
+
   - type: faq
     items:
       - q: "Posso essere sia giocatore che direttore?"
@@ -132,3 +152,5 @@ blocks:
         a: "La richiesta deve essere approvata da un amministratore. Finché non lo è, il tuo account resta giocatore. Controlla le notifiche: la risposta arriva lì."
       - q: "Chi può correggere un risultato già inserito?"
         a: "Il direttore della gara. Un giocatore può annullare l'ultimo rack finché la partita è in corso, ma non può più intervenire dopo che il risultato è stato chiuso."
+      - q: "Come divento beta tester?"
+        a: "Non si può chiedere: è chi amministra la piattaforma a scegliere le persone a cui far provare in anticipo una funzione nuova. Se il ruolo ti viene assegnato lo trovi nelle notifiche."

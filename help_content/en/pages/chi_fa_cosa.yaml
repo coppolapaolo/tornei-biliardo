@@ -127,6 +127,26 @@ blocks:
       tables, opening hours). You ask for it from your profile, as with the
       director role, and an administrator approves it.
 
+  - type: heading
+    id: beta_tester
+    title: "Beta tester"
+
+  - type: text
+    text: >-
+      Every now and then a new feature is tried out by a handful of people
+      before it opens to everyone. Whoever is picked gets the **beta tester**
+      role and finds a few screens in the app that the others cannot see yet.
+      It is not extra power: inside those screens the usual rules still apply,
+      and the administration pages stay out of reach just as they do for
+      everyone else.
+
+  - type: note
+    tone: info
+    text: >-
+      This role **cannot be asked for**: whoever administers the platform
+      assigns it, and takes it away once the feature opens to everyone. If it
+      comes your way, you find out from a notification.
+
   - type: faq
     items:
       - q: "Can I be both a player and a director?"
@@ -135,3 +155,5 @@ blocks:
         a: "The request has to be approved by an administrator. Until it is, your account stays a player. Check your notifications: the answer arrives there."
       - q: "Who can correct a result that has already been entered?"
         a: "The competition director. A player can undo the last rack while the match is still in progress, but cannot step in once the result has been closed."
+      - q: "How do I become a beta tester?"
+        a: "You cannot ask for it: whoever administers the platform picks the people who get to try a new feature early. If the role is assigned to you, you will find it in your notifications."

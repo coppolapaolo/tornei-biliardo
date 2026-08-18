@@ -210,6 +210,20 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
         return RoleGrantService.has_role(self.id, GrantableRole.EXAMINER)
 
     @property
+    def is_beta_tester(self) -> bool:
+        """True se l'utente prova in produzione le funzioni non ancora aperte.
+
+        A differenza di ``is_examiner`` **non** e' vero d'ufficio per l'admin.
+        L'admin vede gia' tutto per bypass, quindi il grant non gli
+        aggiungerebbe niente; dirlo lo stesso falserebbe l'unica cosa che
+        questa property serve a leggere — l'elenco di chi sta provando.
+        """
+        from .role_enum import GrantableRole
+        from .role_grant_service import RoleGrantService
+
+        return RoleGrantService.has_role(self.id, GrantableRole.BETA_TESTER)
+
+    @property
     def is_player(self) -> bool:
         return self.role == UserRole.PLAYER.value
 
@@ -259,6 +273,16 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
         self.phone = None
         # opzionale: invalidare la password
         self.password_hash = "!deleted!"
+
+        # La traccia degli accessi se ne va con la persona. Il `CASCADE` sulla
+        # FK non basta: qui non si cancella nessuna riga `user`, si svuota —
+        # e senza questa riga il registro di quando quell'account si collegava
+        # sopravviverebbe alla richiesta di cancellazione che doveva
+        # soddisfare. E' l'unico punto che lo tocca, perche' e' l'unico modo
+        # in cui un utente sparisce davvero da questa applicazione.
+        from .session_models import UserSession
+
+        UserSession.query.filter_by(user_id=self.id).delete(synchronize_session=False)
 
     # ───────────────────
     # Permission helpers

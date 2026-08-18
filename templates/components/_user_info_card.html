@@ -66,6 +66,37 @@
         </p>
         {% endif %}
 
+        {# Ruolo concedibile: Beta tester (ADR-041 + ADR-028). Non aggiunge
+           permessi — aggiunge **visibilita'**: le funzioni non ancora aperte
+           al suo ruolo diventano raggiungibili, l'amministrazione no. #}
+        {% if current_user.is_admin and not user.is_admin %}
+        <p><strong>{{ _("Beta tester:") }}</strong>
+            {% if user.is_beta_tester %}
+            <span class="badge bg-info text-dark">
+                <i class="fas fa-flask"></i> {{ _("Sì") }}
+            </span>
+            <form action="{{ url_for('roles.revoke_role', role='beta_tester', user_id=user.id) }}" method="POST"
+                style="display: inline; margin-left: 10px;"
+                onsubmit='return confirmSubmit(this, {{ _("Togliere l'accesso alle funzioni in prova? Tornerà a vedere quello che vede il suo ruolo.")|tojson }})'>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-outline-danger btn-sm">
+                    <i class="fas fa-flask"></i> {{ _("Togli beta") }}
+                </button>
+            </form>
+            {% else %}
+            <span class="badge bg-light text-muted">{{ _("No") }}</span>
+            <form action="{{ url_for('roles.grant_role', role='beta_tester', user_id=user.id) }}" method="POST"
+                style="display: inline; margin-left: 10px;"
+                onsubmit='return confirmSubmit(this, {{ _("Fargli vedere le funzioni non ancora aperte? Non vedrà comunque l'amministrazione.")|tojson }})'>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-outline-success btn-sm">
+                    <i class="fas fa-flask"></i> {{ _("Rendi beta tester") }}
+                </button>
+            </form>
+            {% endif %}
+        </p>
+        {% endif %}
+
         {# Gamification Override (Admin Only) #}
         {% if current_user.is_admin %}
         <p><strong>{{ _("Gamification") }}:</strong>

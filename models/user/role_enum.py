@@ -27,3 +27,9 @@ class GrantableRole(str, Enum):
     """
 
     EXAMINER = "examiner"
+
+    #: Chi prova in produzione le funzioni non ancora aperte al suo ruolo.
+    #: Non e' un permesso in piu' — e' **visibilita'** in piu': un beta tester
+    #: raggiunge le schermate che l'allowlist di ADR-028 terrebbe nascoste,
+    #: ma una volta arrivato valgono gli stessi decoratori di tutti.
+    BETA_TESTER = "beta_tester"

@@ -131,6 +131,7 @@
                         <th>{{ _("Telefono") }}</th>
                         <th class="sortable" data-sort="text">{{ _("Ruolo") }} <i class="fas fa-sort text-muted"></i></th>
                         <th class="sortable" data-sort="number">{{ _("Esaminatore") }} <i class="fas fa-sort text-muted"></i></th>
+                        <th class="sortable" data-sort="number">{{ _("Beta") }} <i class="fas fa-sort text-muted"></i></th>
                         <th class="sortable" data-sort="number">{{ _("Verificato") }} <i class="fas fa-sort text-muted"></i></th>
                         <th class="sortable" data-sort="number">{{ _("ELO") }} <i class="fas fa-sort text-muted"></i></th>
                         <th>{{ _("Gamification") }}</th>
@@ -153,6 +154,7 @@
                        Per l'admin torna sempre True — la colonna lo dice a
                        parte, senza offrire comandi che non hanno senso. #}
                     {% set is_examiner = user.id in examiner_ids %}
+                    {% set is_beta = user.id in beta_ids %}
                     <tr data-username="{{ user.username|lower }}"
                         data-email="{{ (user.email or '')|lower }}"
                         data-role="{{ user.role }}"
@@ -181,6 +183,17 @@
                             {% elif is_examiner %}
                             <span class="badge bg-info text-dark">
                                 <i class="fas fa-user-graduate"></i> {{ _("Sì") }}
+                            </span>
+                            {% else %}
+                            <span class="badge bg-light text-muted">{{ _("No") }}</span>
+                            {% endif %}
+                        </td>
+                        <td data-label="{{ _("Beta") }}" data-sort-value="{{ '1' if is_beta else '0' }}">
+                            {% if user.is_admin %}
+                            <span class="text-muted" title="{{ _('Un amministratore vede già tutto: la concessione non aggiungerebbe niente') }}">—</span>
+                            {% elif is_beta %}
+                            <span class="badge bg-info text-dark">
+                                <i class="fas fa-flask"></i> {{ _("Sì") }}
                             </span>
                             {% else %}
                             <span class="badge bg-light text-muted">{{ _("No") }}</span>
@@ -276,6 +289,35 @@
                                     <button type="submit" class="btn btn-sm btn-outline-info"
                                             title="{{ _('Rendi esaminatore') }}">
                                         <i class="fas fa-user-graduate"></i> {{ _("Rendi esaminatore") }}
+                                    </button>
+                                </form>
+                                {% endif %}
+                                {# Beta tester (ADR-041 + ADR-028): non e' un
+                                   permesso in piu', e' visibilita' in piu'.
+                                   Vede le funzioni non ancora aperte al suo
+                                   ruolo, mai l'amministrazione — e non puo'
+                                   nominarne altri, cosi' la platea resta
+                                   quella che l'admin ha deciso. #}
+                                {% if is_beta %}
+                                <form action="{{ url_for('roles.revoke_role', role='beta_tester', user_id=user.id) }}"
+                                    method="POST" style="display: inline;"
+                                    onsubmit='return confirmSubmit(this, {{ _("Togliere l'accesso alle funzioni in prova? Tornerà a vedere quello che vede il suo ruolo.")|tojson }})'>
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="next" value="{{ url_for('admin.user.users_list') }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                                            title="{{ _('Togli il ruolo di beta tester') }}">
+                                        <i class="fas fa-flask"></i> {{ _("Togli beta") }}
+                                    </button>
+                                </form>
+                                {% else %}
+                                <form action="{{ url_for('roles.grant_role', role='beta_tester', user_id=user.id) }}"
+                                    method="POST" style="display: inline;"
+                                    onsubmit='return confirmSubmit(this, {{ _("Fargli vedere le funzioni non ancora aperte? Non vedrà comunque l'amministrazione.")|tojson }})'>
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="next" value="{{ url_for('admin.user.users_list') }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-info"
+                                            title="{{ _('Rendi beta tester') }}">
+                                        <i class="fas fa-flask"></i> {{ _("Rendi beta") }}
                                     </button>
                                 </form>
                                 {% endif %}

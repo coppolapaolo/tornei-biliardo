@@ -33,6 +33,9 @@ def users_list():
     # Una query sola per tutta la colonna «Esaminatore»: `user.is_examiner`
     # nel template ne farebbe una per riga.
     examiner_ids = RoleGrantService.holder_ids(GrantableRole.EXAMINER)
+    # Stessa ragione della riga sopra: `user.is_beta_tester` dentro il ciclo
+    # sarebbe una query per riga.
+    beta_ids = RoleGrantService.holder_ids(GrantableRole.BETA_TESTER)
 
     # Il conteggio delle email non confermate sta qui e non nel template:
     # `users` e' una lista di tuple, e in Jinja l'indice 0 non si raggiunge
@@ -46,6 +49,7 @@ def users_list():
         "admin/users_list.html",
         users=users,
         examiner_ids=examiner_ids,
+        beta_ids=beta_ids,
         non_confermate=non_confermate,
     )
 

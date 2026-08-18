@@ -535,6 +535,71 @@ def _user_roles(user) -> set[Role]:
     return {_primary_role(user)} | _grantable_roles(user)
 
 
+#: Prefissi che marcano un endpoint come **amministrazione**. Il beta tester
+#: non li attraversa mai: la sua concessione serve a provare funzioni non
+#: ancora aperte, non a leggere email e telefoni di tutti gli iscritti.
+#:
+#: La regola e' strutturale e non un elenco, ed e' la ragione per cui regge:
+#: una schermata amministrativa nuova nasce o sotto il blueprint ``admin``, o
+#: con un endpoint ``qualcosa.admin_*``, e in entrambi i casi risulta esclusa
+#: senza che nessuno se lo debba ricordare. Un elenco, invece, si dimentica di
+#: aggiornare — ed e' esattamente l'errore che ADR-028 esiste per evitare.
+#: Presidiata da ``test_beta_tester.py``, che confronta la regola con i view
+#: function marcati ``@admin_required``.
+def e_amministrazione(endpoint: str) -> bool:
+    """True se l'endpoint appartiene all'area di amministrazione.
+
+    Prima si guarda il **decoratore**, non il nome: un view function marcato
+    ``@admin_required`` e' amministrazione per definizione, e nessuna
+    convenzione di naming puo' smentirlo. Serviva davvero: tre endpoint
+    (``rating.manage_handicap_rules``, ``rating.create_handicap_rule``,
+    ``rating.rating_statistics``) sono admin-only e non si chiamano come gli
+    altri — con la sola regola sul nome sarebbero finiti sotto gli occhi dei
+    beta tester.
+
+    Il nome resta come seconda rete, per le schermate amministrative protette
+    da un decoratore diverso (``gara_manager_required`` e simili) e per i casi
+    in cui non c'e' un contesto applicativo da interrogare.
+    """
+    try:
+        vista = current_app.view_functions.get(endpoint)
+    except RuntimeError:  # fuori dal contesto: resta la regola sul nome
+        vista = None
+    if vista is not None and getattr(vista, "_richiede_admin", False):
+        return True
+    if endpoint.startswith("admin."):
+        return True
+    return endpoint.rsplit(".", 1)[-1].startswith("admin_")
+
+
+def _e_beta_tester(user) -> bool:
+    """Titolare di un grant beta attivo. **Costa una query**, memoizzata.
+
+    ``feature_visible()`` e' un global di template chiamato una volta per ogni
+    link protetto: senza memoria una pagina con venti link farebbe venti
+    query, e le farebbe per **tutti** — il caso negativo (non e' beta tester)
+    e' quello comune, ed e' proprio quello che arriva fin qui.
+
+    La memoria sta in ``request.environ`` e non su ``g``: ``g`` vive quanto il
+    contesto applicativo, che in una richiesta vera coincide con la richiesta
+    ma nei test e' di sessione — una risposta finirebbe per valere per tutti i
+    test successivi. ``environ`` e' per costruzione la richiesta e basta.
+    """
+    if not getattr(user, "is_authenticated", False):
+        return False
+
+    from flask import has_request_context, request
+
+    if not has_request_context():
+        return bool(getattr(user, "is_beta_tester", False))
+
+    memoria = request.environ.setdefault("tornei.beta_tester", {})
+    chiave = getattr(user, "id", None) or id(user)
+    if chiave not in memoria:
+        memoria[chiave] = bool(getattr(user, "is_beta_tester", False))
+    return memoria[chiave]
+
+
 def is_endpoint_visible(endpoint: str | None, user) -> bool:
     """Return True if ``endpoint`` should be reachable for ``user``.
 
@@ -567,10 +632,20 @@ def is_endpoint_visible(endpoint: str | None, user) -> bool:
         return True
 
     allowed = ENDPOINT_ROLES.get(endpoint, set())
-    if not allowed:
-        return False
-    if _primary_role(user) in allowed:
+    if allowed:
+        if _primary_role(user) in allowed:
+            return True
+        if (allowed & GRANTABLE_ROLES) and (_grantable_roles(user) & allowed):
+            return True
+
+    # Il beta tester si guarda per ultimo, e non e' un ruolo della matrice: e'
+    # il contrario di una riga in ``ENDPOINT_ROLES``. La matrice dice cosa e'
+    # gia' aperto; questa concessione dice «a te faccio vedere anche il resto»,
+    # e il resto e' tutto cio' che non e' amministrazione — comprese le voci
+    # dichiarate `set()`, che significa «chiusa per ora», non «riservata».
+    #
+    # Ultimo anche per costo: qui il resto ha gia' risposto di no, ed e'
+    # l'unico punto in cui una query in piu' cambia l'esito.
+    if not e_amministrazione(endpoint) and _e_beta_tester(user):
         return True
-    if not (allowed & GRANTABLE_ROLES):
-        return False
-    return bool(_grantable_roles(user) & allowed)
+    return False

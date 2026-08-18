@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-18 12:33+0200\n"
+"POT-Creation-Date: 2026-08-18 12:45+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -1202,52 +1202,56 @@ msgstr ""
 msgid "Lo username «%(nome)s» è già in uso."
 msgstr ""
 
-#: models/user/role_grant_service.py:534 routes/gamification/features.py:78
-#: templates/admin/users_list.html:133 templates/admin/users_list.html:178
+#: models/user/role_grant_service.py:557 routes/gamification/features.py:78
+#: templates/admin/users_list.html:133 templates/admin/users_list.html:180
 msgid "Esaminatore"
 msgstr ""
 
-#: models/user/role_grant_service.py:564
+#: models/user/role_grant_service.py:558
+msgid "Beta tester"
+msgstr ""
+
+#: models/user/role_grant_service.py:589
 msgid "Richiesta di ruolo"
 msgstr ""
 
-#: models/user/role_grant_service.py:566
+#: models/user/role_grant_service.py:591
 #, python-format
 msgid "%(user)s chiede il ruolo di %(role)s."
 msgstr ""
 
-#: models/user/role_grant_service.py:574
+#: models/user/role_grant_service.py:599
 msgid "Vedi le richieste"
 msgstr ""
 
-#: models/user/role_grant_service.py:589
+#: models/user/role_grant_service.py:614
 #, python-format
 msgid "%(actor)s ha approvato la tua richiesta: ora sei %(role)s."
 msgstr ""
 
-#: models/user/role_grant_service.py:595
+#: models/user/role_grant_service.py:620
 #, python-format
 msgid "La tua richiesta per il ruolo di %(role)s non è stata accolta."
 msgstr ""
 
-#: models/user/role_grant_service.py:602
+#: models/user/role_grant_service.py:627
 msgid "Richiesta di ruolo processata"
 msgstr ""
 
-#: models/user/role_grant_service.py:617
+#: models/user/role_grant_service.py:642
 msgid "Richiesta di ruolo chiusa"
 msgstr ""
 
-#: models/user/role_grant_service.py:619
+#: models/user/role_grant_service.py:644
 #, python-format
 msgid "La richiesta per il ruolo di %(role)s è stata presa in carico da un altro titolare."
 msgstr ""
 
-#: models/user/role_grant_service.py:636
+#: models/user/role_grant_service.py:661
 msgid "Nuovo ruolo"
 msgstr ""
 
-#: models/user/role_grant_service.py:638
+#: models/user/role_grant_service.py:663
 #, python-format
 msgid "Hai ottenuto il ruolo di %(role)s."
 msgstr ""
@@ -1399,7 +1403,7 @@ msgstr ""
 
 #: routes/help.py:59 templates/admin/accessi.html:86 templates/admin/accessi.html:141
 #: templates/admin/campionato_detail.html:230 templates/admin/users_list.html:106
-#: templates/admin/users_list.html:175 templates/admin/venue_manager_requests.html:48
+#: templates/admin/users_list.html:177 templates/admin/venue_manager_requests.html:48
 #: templates/components/_campionato_general_classification.html:15
 #: templates/components/_detailed_classification.html:19
 #: templates/components/_unified_dashboard_header.html:10
@@ -1408,7 +1412,7 @@ msgid "Giocatore"
 msgstr ""
 
 #: routes/help.py:60 templates/admin/accessi.html:85 templates/admin/accessi.html:139
-#: templates/admin/users_list.html:105 templates/admin/users_list.html:173
+#: templates/admin/users_list.html:105 templates/admin/users_list.html:175
 #: templates/admin/venue_manager_requests.html:46
 #: templates/components/_unified_dashboard_header.html:9
 #: templates/components/_user_info_card.html:13 templates/player/profile.html:79
@@ -1528,27 +1532,27 @@ msgstr ""
 msgid "Hai già questo ruolo."
 msgstr ""
 
-#: routes/exam/requests.py:138 routes/role_grant.py:95
+#: routes/exam/requests.py:138 routes/role_grant.py:100
 msgid "Richiesta inviata."
 msgstr ""
 
-#: routes/role_grant.py:132
+#: routes/role_grant.py:137
 msgid "Richiesta approvata: il ruolo è stato concesso."
 msgstr ""
 
-#: routes/exam/requests.py:185 routes/role_grant.py:134
+#: routes/exam/requests.py:185 routes/role_grant.py:139
 msgid "Richiesta rifiutata."
 msgstr ""
 
-#: routes/role_grant.py:177
+#: routes/role_grant.py:182
 msgid "Ruolo concesso."
 msgstr ""
 
-#: routes/role_grant.py:196
+#: routes/role_grant.py:201
 msgid "Ruolo revocato."
 msgstr ""
 
-#: routes/role_grant.py:233
+#: routes/role_grant.py:238
 msgid "Ruolo concesso (debug)."
 msgstr ""
 
@@ -1696,35 +1700,35 @@ msgstr ""
 msgid "Milestone raggiunta: %(value)s gare completate!"
 msgstr ""
 
-#: routes/admin/user.py:216
+#: routes/admin/user.py:220
 msgid "Utente eliminato (anonimizzato) con successo."
 msgstr ""
 
-#: routes/admin/user.py:232
+#: routes/admin/user.py:236
 msgid "Seleziona sia l'account sorgente sia quello destinazione."
 msgstr ""
 
-#: routes/admin/user.py:238
+#: routes/admin/user.py:242
 msgid "Account uniti con successo."
 msgstr ""
 
-#: routes/admin/user.py:252
+#: routes/admin/user.py:256
 msgid "Email verificata manualmente."
 msgstr ""
 
-#: routes/admin/user.py:267
+#: routes/admin/user.py:271
 msgid "Impossibile reinviare: utente già verificato o invio fallito."
 msgstr ""
 
-#: routes/admin/user.py:273
+#: routes/admin/user.py:277
 msgid "Email di verifica reinviata."
 msgstr ""
 
-#: routes/admin/user.py:290
+#: routes/admin/user.py:294
 msgid "Le password non corrispondono"
 msgstr ""
 
-#: routes/admin/user.py:300
+#: routes/admin/user.py:304
 msgid "Password impostata con successo"
 msgstr ""
 
@@ -2187,7 +2191,7 @@ msgstr ""
 
 #: routes/gamification/features.py:60 templates/admin/accessi.html:81
 #: templates/admin/accessi.html:118 templates/admin/accessi.html:135
-#: templates/admin/users_list.html:132 templates/admin/users_list.html:169
+#: templates/admin/users_list.html:132 templates/admin/users_list.html:171
 #: templates/components/_user_info_card.html:11 templates/player/profile.html:76
 msgid "Ruolo"
 msgstr ""
@@ -2202,7 +2206,7 @@ msgstr ""
 
 #: routes/gamification/features.py:75 templates/admin/accessi.html:84
 #: templates/admin/accessi.html:137 templates/admin/users_list.html:104
-#: templates/admin/users_list.html:171 templates/admin/venue_detail.html:237
+#: templates/admin/users_list.html:173 templates/admin/venue_detail.html:237
 #: templates/components/_user_profile_header.html:7
 msgid "Admin"
 msgstr ""
@@ -2608,8 +2612,8 @@ msgstr ""
 msgid "Richieste Esaminatore"
 msgstr ""
 
-#: templates/admin/users_list.html:136 templates/admin/users_list.html:199
-#: templates/base.html:233 templates/components/_user_info_card.html:71
+#: templates/admin/users_list.html:137 templates/admin/users_list.html:212
+#: templates/base.html:233 templates/components/_user_info_card.html:102
 msgid "Gamification"
 msgstr ""
 
@@ -2903,7 +2907,7 @@ msgstr ""
 msgid "Torna alla gara"
 msgstr ""
 
-#: templates/admin/users_list.html:139 templates/admin/users_list.html:221
+#: templates/admin/users_list.html:140 templates/admin/users_list.html:234
 #: templates/admin/venues_list.html:35 templates/components/_gamification_labels.html:50
 #: templates/components/_gara_matches.html:6
 #: templates/components/_history_matches_tab.html:14
@@ -2918,7 +2922,7 @@ msgstr ""
 msgid "Gestione Gara %(id)s - Admin"
 msgstr ""
 
-#: templates/admin/users_list.html:239 templates/admin/venues_list.html:113
+#: templates/admin/users_list.html:252 templates/admin/venues_list.html:113
 #: templates/challenge/_challenge_card.html:70
 #: templates/components/_campionato_garas.html:161
 #: templates/components/_history_campionati_tab.html:105
@@ -3764,7 +3768,7 @@ msgid "Crea il tuo account"
 msgstr ""
 
 #: templates/admin/accessi.html:190 templates/admin/accessi.html:203
-#: templates/admin/users_list.html:130 templates/admin/users_list.html:167
+#: templates/admin/users_list.html:130 templates/admin/users_list.html:169
 #: templates/admin/venue_form.html:89 templates/auth/forgot_password.html:17
 #: templates/components/_player_personal_info.html:18
 #: templates/components/_user_info_card.html:9 templates/player/privacy_settings.html:19
@@ -3773,7 +3777,7 @@ msgstr ""
 msgid "Email"
 msgstr ""
 
-#: templates/admin/users_list.html:131 templates/admin/users_list.html:168
+#: templates/admin/users_list.html:131 templates/admin/users_list.html:170
 #: templates/admin/venue_form.html:80 templates/components/_player_personal_info.html:21
 #: templates/components/_user_info_card.html:10 templates/player/privacy_settings.html:29
 #: templates/player/profile.html:71 templates/player/profile_edit.html:35
@@ -3869,7 +3873,7 @@ msgstr ""
 #: templates/admin/accessi.html:117 templates/admin/accessi.html:128
 #: templates/admin/accessi.html:189 templates/admin/accessi.html:199
 #: templates/admin/director_requests.html:13 templates/admin/users_list.html:129
-#: templates/admin/users_list.html:161 templates/admin/venue_manager_requests.html:30
+#: templates/admin/users_list.html:163 templates/admin/venue_manager_requests.html:30
 #: templates/gamification/admin/dashboard.html:144
 #: templates/gamification/admin/streaks.html:65 templates/gamification/admin/streaks.html:102
 #: templates/gamification/admin/xp_management.html:28
@@ -3935,8 +3939,8 @@ msgid ""
 msgstr ""
 
 #: templates/admin/accessi.html:191 templates/admin/accessi.html:204
-#: templates/admin/users_list.html:141 templates/admin/users_list.html:232
-#: templates/components/_user_info_card.html:119
+#: templates/admin/users_list.html:142 templates/admin/users_list.html:245
+#: templates/components/_user_info_card.html:150
 msgid "Registrato"
 msgstr ""
 
@@ -3945,8 +3949,8 @@ msgid "Email confermata"
 msgstr ""
 
 #: templates/admin/accessi.html:193 templates/admin/accessi.html:212
-#: templates/admin/director_requests.html:15 templates/admin/users_list.html:142
-#: templates/admin/users_list.html:235 templates/admin/venue_manager_requests.html:36
+#: templates/admin/director_requests.html:15 templates/admin/users_list.html:143
+#: templates/admin/users_list.html:248 templates/admin/venue_manager_requests.html:36
 #: templates/admin/venues_list.html:38 templates/components/_campionato_garas.html:24
 #: templates/components/_gara_matches.html:59 templates/components/_gara_matches.html:93
 #: templates/gamification/admin/achievements.html:30
@@ -3959,20 +3963,22 @@ msgid "Azioni"
 msgstr ""
 
 #: templates/admin/accessi.html:207 templates/admin/gara_create_standalone.html:276
-#: templates/admin/users_list.html:183 templates/admin/users_list.html:191
-#: templates/components/_gara_edit_form.html:126
+#: templates/admin/users_list.html:185 templates/admin/users_list.html:196
+#: templates/admin/users_list.html:204 templates/components/_gara_edit_form.html:126
 #: templates/components/_gara_edit_form.html:129
 #: templates/components/_new_gara_modal.html:310
 #: templates/components/_new_gara_modal.html:311 templates/components/_user_info_card.html:45
+#: templates/components/_user_info_card.html:76
 msgid "Sì"
 msgstr ""
 
 #: templates/admin/accessi.html:209 templates/admin/gara_create_standalone.html:275
-#: templates/admin/users_list.html:186 templates/admin/users_list.html:193
-#: templates/components/_gara_edit_form.html:126
+#: templates/admin/users_list.html:188 templates/admin/users_list.html:199
+#: templates/admin/users_list.html:206 templates/components/_gara_edit_form.html:126
 #: templates/components/_gara_edit_form.html:130
 #: templates/components/_new_gara_modal.html:310
 #: templates/components/_new_gara_modal.html:312 templates/components/_user_info_card.html:56
+#: templates/components/_user_info_card.html:87
 #: templates/gamification/admin/streak_config.html:85
 msgid "No"
 msgstr ""
@@ -4387,8 +4393,8 @@ msgstr ""
 msgid "Passo 2 di 2"
 msgstr ""
 
-#: templates/admin/campionato_wizard_step2.html:30 templates/admin/users_list.html:140
-#: templates/admin/users_list.html:224 templates/components/_classification_mobile.html:30
+#: templates/admin/campionato_wizard_step2.html:30 templates/admin/users_list.html:141
+#: templates/admin/users_list.html:237 templates/components/_classification_mobile.html:30
 #: templates/components/_classification_mobile.html:56
 #: templates/components/_detailed_classification.html:20
 #: templates/components/_gara_edit_form.html:65 templates/components/_gara_edit_form.html:75
@@ -5474,105 +5480,139 @@ msgstr ""
 msgid "Non verificati"
 msgstr ""
 
-#: templates/admin/users_list.html:134 templates/admin/users_list.html:189
+#: templates/admin/users_list.html:134 templates/admin/users_list.html:191
+msgid "Beta"
+msgstr ""
+
+#: templates/admin/users_list.html:135 templates/admin/users_list.html:202
 msgid "Verificato"
 msgstr ""
 
-#: templates/admin/users_list.html:135 templates/admin/users_list.html:196
+#: templates/admin/users_list.html:136 templates/admin/users_list.html:209
 msgid "ELO"
 msgstr ""
 
-#: templates/admin/users_list.html:137 templates/admin/users_list.html:210
+#: templates/admin/users_list.html:138 templates/admin/users_list.html:223
 #: templates/admin/venue_manager_requests.html:32
 msgid "Richiesta"
 msgstr ""
 
-#: templates/admin/users_list.html:138 templates/admin/users_list.html:218
+#: templates/admin/users_list.html:139 templates/admin/users_list.html:231
 msgid "Iscrizioni"
 msgstr ""
 
-#: templates/admin/users_list.html:180
+#: templates/admin/users_list.html:182
 msgid "Un amministratore può già fare tutto ciò che fa un esaminatore"
 msgstr ""
 
-#: templates/admin/users_list.html:201
+#: templates/admin/users_list.html:193
+msgid "Un amministratore vede già tutto: la concessione non aggiungerebbe niente"
+msgstr ""
+
+#: templates/admin/users_list.html:214
 msgid "Bypass completo delle regole gamification"
 msgstr ""
 
-#: templates/admin/users_list.html:202
+#: templates/admin/users_list.html:215
 msgid "Override"
 msgstr ""
 
-#: templates/admin/users_list.html:206
+#: templates/admin/users_list.html:219
 msgid "Normale"
 msgstr ""
 
-#: templates/admin/users_list.html:215 templates/components/_campionato_details_info.html:36
+#: templates/admin/users_list.html:228 templates/components/_campionato_details_info.html:36
 #: templates/components/_gara_info.html:71 templates/components/_player_personal_info.html:28
 msgid "Nessuna"
 msgstr ""
 
-#: templates/admin/users_list.html:244
+#: templates/admin/users_list.html:257
 msgid "Rimuovere il ruolo director a questo utente?"
 msgstr ""
 
-#: templates/admin/users_list.html:247
+#: templates/admin/users_list.html:260
 msgid "Rimuovi director"
 msgstr ""
 
-#: templates/admin/users_list.html:262 templates/components/_user_info_card.html:49
+#: templates/admin/users_list.html:275 templates/components/_user_info_card.html:49
 msgid ""
 "Revocare il ruolo di Esaminatore? Gli esami creati e le certificazioni rilasciate "
 "restano validi."
 msgstr ""
 
-#: templates/admin/users_list.html:266
+#: templates/admin/users_list.html:279
 msgid "Revoca il ruolo di esaminatore"
 msgstr ""
 
-#: templates/admin/users_list.html:267
+#: templates/admin/users_list.html:280
 msgid "Revoca esaminatore"
 msgstr ""
 
-#: templates/admin/users_list.html:273 templates/components/_user_info_card.html:59
+#: templates/admin/users_list.html:286 templates/components/_user_info_card.html:59
 msgid "Promuovere a Esaminatore?"
 msgstr ""
 
-#: templates/admin/users_list.html:277 templates/admin/users_list.html:278
+#: templates/admin/users_list.html:290 templates/admin/users_list.html:291
 msgid "Rendi esaminatore"
 msgstr ""
 
-#: templates/admin/users_list.html:287
+#: templates/admin/users_list.html:304 templates/components/_user_info_card.html:80
+msgid ""
+"Togliere l'accesso alle funzioni in prova? Tornerà a vedere quello che vede il suo "
+"ruolo."
+msgstr ""
+
+#: templates/admin/users_list.html:308
+msgid "Togli il ruolo di beta tester"
+msgstr ""
+
+#: templates/admin/users_list.html:309 templates/components/_user_info_card.html:83
+msgid "Togli beta"
+msgstr ""
+
+#: templates/admin/users_list.html:315 templates/components/_user_info_card.html:90
+msgid "Fargli vedere le funzioni non ancora aperte? Non vedrà comunque l'amministrazione."
+msgstr ""
+
+#: templates/admin/users_list.html:319 templates/components/_user_info_card.html:93
+msgid "Rendi beta tester"
+msgstr ""
+
+#: templates/admin/users_list.html:320
+msgid "Rendi beta"
+msgstr ""
+
+#: templates/admin/users_list.html:329
 msgid "Segna email come verificata"
 msgstr ""
 
-#: templates/admin/users_list.html:288
+#: templates/admin/users_list.html:330
 msgid "Verifica"
 msgstr ""
 
-#: templates/admin/users_list.html:295
+#: templates/admin/users_list.html:337
 msgid "Reinvia email di verifica"
 msgstr ""
 
-#: templates/admin/users_list.html:302
+#: templates/admin/users_list.html:344
 msgid ""
 "Eliminare definitivamente questo utente? I dati personali verranno anonimizzati e "
 "l'azione non è reversibile."
 msgstr ""
 
-#: templates/admin/users_list.html:305
+#: templates/admin/users_list.html:347
 msgid "Elimina (anonimizza) utente"
 msgstr ""
 
-#: templates/admin/users_list.html:318
+#: templates/admin/users_list.html:360
 msgid "Nessun utente corrisponde ai filtri."
 msgstr ""
 
-#: templates/admin/users_list.html:322
+#: templates/admin/users_list.html:364
 msgid "Nessun Utente"
 msgstr ""
 
-#: templates/admin/users_list.html:323
+#: templates/admin/users_list.html:365
 msgid "Non ci sono ancora utenti registrati."
 msgstr ""
 
@@ -10745,50 +10785,54 @@ msgstr ""
 msgid "Promuovi a Esaminatore"
 msgstr ""
 
-#: templates/components/_user_info_card.html:74
+#: templates/components/_user_info_card.html:73
+msgid "Beta tester:"
+msgstr ""
+
+#: templates/components/_user_info_card.html:105
 msgid "Override Attivo"
 msgstr ""
 
-#: templates/components/_user_info_card.html:78
+#: templates/components/_user_info_card.html:109
 msgid "Regole Normali"
 msgstr ""
 
-#: templates/components/_user_info_card.html:83
+#: templates/components/_user_info_card.html:114
 #, python-format
 msgid "%(action)s Override Gamification per %(name)s?"
 msgstr ""
 
-#: templates/components/_user_info_card.html:83
+#: templates/components/_user_info_card.html:114
 msgid "Disattivare"
 msgstr ""
 
-#: templates/components/_user_info_card.html:83
+#: templates/components/_user_info_card.html:114
 msgid "Attivare"
 msgstr ""
 
-#: templates/components/_user_info_card.html:88
+#: templates/components/_user_info_card.html:119
 msgid "Disattiva Override"
 msgstr ""
 
-#: templates/components/_user_info_card.html:88
+#: templates/components/_user_info_card.html:119
 msgid "Attiva Override"
 msgstr ""
 
-#: templates/components/_user_info_card.html:97
+#: templates/components/_user_info_card.html:128
 msgid "Imposta Password"
 msgstr ""
 
-#: templates/components/_user_info_card.html:99
+#: templates/components/_user_info_card.html:130
 #, python-format
 msgid "Impostare una nuova password per %(name)s?"
 msgstr ""
 
-#: templates/components/_user_info_card.html:104
+#: templates/components/_user_info_card.html:135
 #: templates/player/_change_password_modal.html:17
 msgid "Nuova password"
 msgstr ""
 
-#: templates/components/_user_info_card.html:108
+#: templates/components/_user_info_card.html:139
 msgid "Conferma password"
 msgstr ""
 

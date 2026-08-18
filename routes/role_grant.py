@@ -62,7 +62,12 @@ def request_role_form(role: str):
         return redirect(url_for("challenge.challenge_catalog"))
 
     policy = RoleGrantService.get_policy(grantable)
-    if not user.can_access(policy.request_feature_code):
+    # `request_feature_code is None` = ruolo che non si chiede (beta tester):
+    # senza questa riga `can_access(None)` deciderebbe al posto nostro, e non
+    # e' detto che dica di no.
+    if policy.request_feature_code is None or not user.can_access(
+        policy.request_feature_code
+    ):
         abort(403)
 
     return render_template(

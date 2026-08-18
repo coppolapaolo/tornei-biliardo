@@ -59,6 +59,7 @@ Crea un ADR quando:
 | ADR-043 | [L'orario e' quello di chi legge, e il fuso si deduce senza chiederlo](ADR-043-reader-timezone.md) | Accepted | 2026-08-15 |
 | ADR-044 | [Il referto TPA: si annota il gioco, non il punteggio](ADR-044-tpa-scoresheet.md) | Accepted | 2026-08-16 |
 | ADR-045 | [Niente WAL: SQLite sta su storage di rete](ADR-045-no-wal-on-network-storage.md) | Accepted | 2026-08-17 |
+| ADR-046 | [Il beta tester vede in anticipo, non vede di più](ADR-046-beta-tester-visibility.md) | Accepted | 2026-08-18 |
 
 ## Come Creare un Nuovo ADR
 
