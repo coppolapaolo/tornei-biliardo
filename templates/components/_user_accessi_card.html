@@ -1,0 +1,37 @@
+{#
+   Gli ultimi accessi di questa persona. Sta nella colonna stretta perche'
+   risponde a una domanda sola — «si e' piu' fatto vedere?» — e la risposta e'
+   quasi sempre la prima riga.
+
+   Nessun accesso non vuol dire «non e' mai entrato»: la traccia parte da
+   quando e' stata attivata, e il vuoto va detto per quello che e'.
+#}
+{% if accessi is defined %}
+<div class="c7-card mb-3">
+  <h3 class="c7-kicker">{{ _("Ultimi accessi") }}</h3>
+  {% if accessi %}
+  <div class="c7-rows">
+    {% for accesso in accessi %}
+    <div class="d-flex justify-content-between align-items-center py-1">
+      <div>
+        <div style="font-weight:700">{{ accesso.started_at|datetime_local }}</div>
+        <div class="c7-rows__sub">
+          {% if accesso.durata_secondi < 60 %}{{ _("meno di un minuto") }}
+          {% elif accesso.durata_secondi < 3600 %}{{ ngettext("%(n)s minuto", "%(n)s minuti", accesso.durata_secondi // 60, n=accesso.durata_secondi // 60) }}
+          {% else %}{{ _("%(ore)sh %(min)sm", ore=accesso.durata_secondi // 3600, min=(accesso.durata_secondi % 3600) // 60) }}{% endif %}
+          {% if accesso.device %} · {{ accesso.device }}{% endif %}
+        </div>
+      </div>
+      {% if accesso.e_aperta %}
+      <span class="c7-state c7-state--ok">{{ _("ora") }}</span>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="text-muted small mb-0">
+    {{ _("Nessun accesso registrato. La traccia parte da quando è stata attivata: prima di allora l'informazione non esisteva.") }}
+  </p>
+  {% endif %}
+</div>
+{% endif %}

@@ -1,0 +1,238 @@
+<!-- templates/admin/accessi.html - Traccia degli accessi (solo admin) -->
+{% extends "base.html" %}
+
+{#
+   Sta sotto la sezione utenti e non fra i KPI perche' le domande che si fanno
+   qui sono su **persone** — «questo si e' piu' fatto vedere?», «chi c'e'
+   adesso?» — mentre i KPI rispondono a «come va la piattaforma». Impaginata
+   sul modello della schermata admin desktop del prototipo (#14a): fascia di
+   numeri in cima, filtri, poi la tabella.
+#}
+
+{% macro durata_breve(secondi) -%}
+  {#- Nello slot numerico ci va un numero: «meno di un minuto» scritto in mono
+      a 32px va a capo e rompe la fascia. Qui la misura, la parola sotto. -#}
+  {%- if secondi < 3600 -%}{{ secondi // 60 }}m
+  {%- else -%}{{ secondi // 3600 }}h {{ (secondi % 3600) // 60 }}m
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro durata(secondi) -%}
+  {%- if secondi < 60 -%}{{ _("meno di un minuto") }}
+  {%- elif secondi < 3600 -%}{{ ngettext("%(n)s minuto", "%(n)s minuti", secondi // 60, n=secondi // 60) }}
+  {%- else -%}{{ _("%(ore)sh %(min)sm", ore=secondi // 3600, min=(secondi % 3600) // 60) }}
+  {%- endif -%}
+{%- endmacro %}
+
+{% block title %}{{ _("Accessi - Admin") }}{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('admin.user.users_list') }}"
+   aria-label="{{ _('Torna agli utenti') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("Accessi") }}{% endblock %}
+{% block page_sub %}{{ _("Chi si collega, quando e per quanto") }}{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('admin.user.users_list') }}" class="btn btn-secondary btn-sm">
+  <i class="fas fa-users"></i> {{ _("Utenti") }}
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="c7-stack">
+
+  <div class="c7-grid c7-kpis">
+    <div class="c7-card">
+      <div class="c7-num-xl">{{ riepilogo.accessi }}</div>
+      <div class="c7-rows__sub">{{ _("Accessi nel periodo") }}</div>
+    </div>
+    <div class="c7-card">
+      <div class="c7-num-xl">{{ riepilogo.persone }}</div>
+      <div class="c7-rows__sub">{{ _("Persone diverse") }}</div>
+    </div>
+    <div class="c7-card">
+      <div class="c7-num-xl">{{ durata_breve(riepilogo.durata_media_secondi) }}</div>
+      <div class="c7-rows__sub">{{ _("Permanenza media") }}</div>
+    </div>
+    <div class="c7-card{% if riepilogo.collegati_adesso %} c7-card--ok{% endif %}">
+      <div class="c7-num-xl">{{ riepilogo.collegati_adesso }}</div>
+      <div class="c7-rows__sub">{{ _("Collegati adesso") }}</div>
+    </div>
+  </div>
+
+  <div class="c7-card">
+    <form method="GET" action="{{ url_for('admin.user.accessi') }}" class="row g-2 align-items-end">
+      <div class="col-6 col-lg-2">
+        <label class="c7-label" for="dal">{{ _("Dal") }}</label>
+        <input type="date" class="form-control form-control-sm" id="dal" name="dal"
+               value="{{ filtro.dal.isoformat() if filtro.dal else '' }}">
+      </div>
+      <div class="col-6 col-lg-2">
+        <label class="c7-label" for="al">{{ _("Fino al") }}</label>
+        <input type="date" class="form-control form-control-sm" id="al" name="al"
+               value="{{ filtro.al.isoformat() if filtro.al else '' }}">
+      </div>
+      <div class="col-12 col-lg-3">
+        <label class="c7-label" for="q">{{ _("Nome o email") }}</label>
+        <input type="search" class="form-control form-control-sm" id="q" name="q"
+               value="{{ filtro.testo or '' }}" placeholder="{{ _('Cerca...') }}">
+      </div>
+      <div class="col-6 col-lg-2">
+        <label class="c7-label" for="ruolo">{{ _("Ruolo") }}</label>
+        <select class="form-select form-select-sm" id="ruolo" name="ruolo">
+          <option value="">{{ _("Tutti") }}</option>
+          <option value="{{ ruoli.ADMIN }}" {% if filtro.ruolo == ruoli.ADMIN %}selected{% endif %}>{{ _("Admin") }}</option>
+          <option value="{{ ruoli.DIRECTOR }}" {% if filtro.ruolo == ruoli.DIRECTOR %}selected{% endif %}>{{ _("Direttore di gara") }}</option>
+          <option value="{{ ruoli.PLAYER }}" {% if filtro.ruolo == ruoli.PLAYER %}selected{% endif %}>{{ _("Giocatore") }}</option>
+        </select>
+      </div>
+      <div class="col-6 col-lg-3 d-flex gap-2 align-items-end">
+        <div class="form-check flex-fill">
+          <input class="form-check-input" type="checkbox" id="collegati" name="collegati" value="1"
+                 {% if filtro.solo_collegati %}checked{% endif %}>
+          <label class="form-check-label" for="collegati">{{ _("Solo collegati") }}</label>
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm">
+          <i class="fas fa-filter"></i> {{ _("Filtra") }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  {% if troncato %}
+  <div class="c7-card c7-card--warn">
+    <p class="mb-0">
+      {{ _("Gli accessi che rispondono al filtro sono %(totale)s: qui sotto ci sono i %(mostrati)s più recenti. Restringi il periodo per vedere gli altri.", totale=totale, mostrati=limite) }}
+    </p>
+  </div>
+  {% endif %}
+
+  <div class="c7-card">
+    <h3 class="c7-kicker">{{ _("Accessi") }}</h3>
+    {% if righe %}
+    <div class="c7-table-wrap">
+      <table class="table table-striped c7-table-cards">
+        <thead>
+          <tr>
+            <th>{{ _("Utente") }}</th>
+            <th>{{ _("Ruolo") }}</th>
+            <th>{{ _("Entrato") }}</th>
+            <th>{{ _("Ultimo segno") }}</th>
+            <th>{{ _("Permanenza") }}</th>
+            <th>{{ _("Da") }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for accesso, utente in righe %}
+          <tr>
+            <td data-label="{{ _('Utente') }}">
+              <a href="{{ url_for('admin.user.user_detail', user_id=utente.id) }}"
+                 class="fw-bold text-decoration-none">{{ utente.username }}</a>
+              {% if accesso.e_aperta %}
+              <span class="c7-state c7-state--ok">{{ _("ora") }}</span>
+              {% endif %}
+            </td>
+            <td data-label="{{ _('Ruolo') }}">
+              {% if utente.is_admin %}
+              <span class="badge bg-dark">{{ _("Admin") }}</span>
+              {% elif utente.is_director %}
+              <span class="badge bg-secondary">{{ _("Direttore di gara") }}</span>
+              {% else %}
+              <span class="badge bg-primary">{{ _("Giocatore") }}</span>
+              {% endif %}
+            </td>
+            <td data-label="{{ _('Entrato') }}">{{ accesso.started_at|datetime_local }}</td>
+            <td data-label="{{ _('Ultimo segno') }}">{{ accesso.last_seen_at|datetime_local }}</td>
+            <td data-label="{{ _('Permanenza') }}">{{ durata(accesso.durata_secondi) }}</td>
+            <td data-label="{{ _('Da') }}">
+              {% if accesso.device == 'mobile' %}<i class="fas fa-mobile-screen"></i> {{ _("telefono") }}
+              {% elif accesso.device == 'tablet' %}<i class="fas fa-tablet-screen-button"></i> {{ _("tablet") }}
+              {% elif accesso.device == 'desktop' %}<i class="fas fa-desktop"></i> {{ _("computer") }}
+              {% else %}<span class="text-muted">—</span>{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="c7-empty">
+      <div class="c7-empty__ico"><i class="fas fa-door-open"></i></div>
+      <h4 class="c7-empty__title">{{ _("Nessun accesso nel periodo") }}</h4>
+      <p class="c7-empty__text">
+        {{ _("La traccia degli accessi parte dal momento in cui è stata attivata: prima di allora l'informazione non esisteva da nessuna parte.") }}
+      </p>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="c7-card{% if mai_entrati %} c7-card--warn{% endif %}">
+    <div class="d-flex align-items-center gap-2" role="button" style="cursor:pointer"
+         data-bs-toggle="collapse" data-bs-target="#maiEntratiPanel"
+         aria-expanded="false" aria-controls="maiEntratiPanel">
+      <i class="fas fa-user-slash" style="color:var(--c7-accent)"></i>
+      <h3 class="mb-0 flex-fill" style="font-size:15px;font-weight:800">
+        {{ ngettext("%(n)s registrato che non è mai entrato", "%(n)s registrati che non sono mai entrati", mai_entrati|length, n=mai_entrati|length) }}
+      </h3>
+      <i class="fas fa-chevron-down" style="font-size:12px;color:var(--c7-ink-faint)"></i>
+    </div>
+    <div id="maiEntratiPanel" class="collapse">
+      <div style="margin-top:14px">
+        <p class="text-muted small mb-3">
+          {{ _("Iscritti da più di un mese e mai collegati. Se l'email non è nemmeno confermata, è probabile che la verifica non sia mai arrivata: da qui la si può rimandare.") }}
+        </p>
+        {% if mai_entrati %}
+        <div class="c7-table-wrap">
+          <table class="table table-striped c7-table-cards">
+            <thead>
+              <tr>
+                <th>{{ _("Utente") }}</th>
+                <th>{{ _("Email") }}</th>
+                <th>{{ _("Registrato") }}</th>
+                <th>{{ _("Email confermata") }}</th>
+                <th>{{ _("Azioni") }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for utente in mai_entrati %}
+              <tr>
+                <td data-label="{{ _('Utente') }}">
+                  <a href="{{ url_for('admin.user.user_detail', user_id=utente.id) }}"
+                     class="fw-bold text-decoration-none">{{ utente.username }}</a>
+                </td>
+                <td data-label="{{ _('Email') }}">{{ utente.email or '-' }}</td>
+                <td data-label="{{ _('Registrato') }}">{{ utente.created_at|datetime_local }}</td>
+                <td data-label="{{ _('Email confermata') }}">
+                  {% if utente.is_verified %}
+                  <span class="badge bg-success"><i class="fas fa-check"></i> {{ _("Sì") }}</span>
+                  {% else %}
+                  <span class="badge bg-warning text-dark"><i class="fas fa-times"></i> {{ _("No") }}</span>
+                  {% endif %}
+                </td>
+                <td data-label="{{ _('Azioni') }}">
+                  {% if not utente.is_verified and utente.email %}
+                  <form action="{{ url_for('admin.user.resend_verification', user_id=utente.id) }}"
+                        method="POST" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-sm btn-secondary">
+                      <i class="fas fa-paper-plane"></i> {{ _("Rimanda verifica") }}
+                    </button>
+                  </form>
+                  {% else %}
+                  <span class="text-muted">—</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <p class="text-muted mb-0">{{ _("Nessuno: chi si è registrato è poi entrato almeno una volta.") }}</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
