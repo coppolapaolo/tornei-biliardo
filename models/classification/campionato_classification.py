@@ -10,7 +10,7 @@ from models.base import db
 from .models import Classification, GaraClassification
 from .position_points import points_for_position, points_table_for_campionato
 from .strategies.base import PlayerScore
-from ..status_enum import MatchStatus
+from ..status_enum import MatchStatus, ClassificationSystem
 from ..caching import cached, cache_invalidate, cache_manager
 from ..transaction import transactional
 
@@ -30,28 +30,44 @@ class ClassificationService:
         """Se la classifica generale di questo campionato somma punti-posizione.
 
         Il criterio primario è il **tipo di campionato**, perché è quello che
-        determina il formato delle gare. Il sistema di classifica di default è
-        un secondo indizio, utile per i campionati configurati prima che i due
-        formati a tabellone fossero selezionabili come tipo.
+        determina il formato delle gare. Il sistema di classifica è un secondo
+        indizio, utile per i campionati configurati prima che i due formati a
+        tabellone fossero selezionabili come tipo.
         """
         if campionato is None:
             return False
         if getattr(campionato, "campionato_type", None) in POSITION_CAMPIONATO_TYPES:
             return True
         return (
-            getattr(campionato, "default_classification_system", None) or ""
-        ).upper() == "POSITION"
+            ClassificationSystem.normalize(
+                getattr(campionato, "default_classification_system", None)
+            )
+            == ClassificationSystem.POSITION
+        )
 
     @staticmethod
-    def _get_campionato_strategy(campionato_type: str):
-        """Get the appropriate classification strategy for a campionato type."""
-        strategy_map = {
-            "amalfi": "amalfi_campionato",
-            "random": "random_campionato",
-            "direct_elimination": "position_campionato",
-            "double_knockout": "position_campionato",
-        }
-        strategy_name = strategy_map.get(campionato_type, "amalfi_campionato")
+    def _get_campionato_strategy(campionato):
+        """La strategia di classifica generale, scelta dal sistema di classifica.
+
+        I nomi registrati sono storici e citano la strategia di accoppiamento
+        ("amalfi", "random") perché è così che la scelta veniva fatta: era
+        l'equivoco della issue #89. I criteri che implementano, però, sono
+        esattamente i tre sistemi di classifica —
+
+        - `amalfi_campionato`   → vittorie, poi differenza, poi SSR  (WINS)
+        - `random_campionato`   → triangoli totali, poi SSR          (RACK)
+        - `position_campionato` → punti per piazzamento              (POSITION)
+
+        — quindi qui si mappa il sistema, non il tipo. Rinominarle è un
+        riordino a parte: `name` è anche la chiave del registry e compare nei
+        metadata dei risultati.
+        """
+        if ClassificationService.uses_position_points(campionato):
+            strategy_name = "position_campionato"
+        elif campionato.classification_system == ClassificationSystem.RACK:
+            strategy_name = "random_campionato"
+        else:
+            strategy_name = "amalfi_campionato"
         registry = get_classification_registry()
         return registry.get(strategy_name)
 
@@ -169,10 +185,8 @@ class ClassificationService:
         # come criterio di elencazione a pari punti.
         scores = ClassificationService._with_position_points(campionato, scores)
 
-        # Get classification strategy based on campionato type
-        strategy = ClassificationService._get_campionato_strategy(
-            campionato.campionato_type
-        )
+        # Get classification strategy based on the campionato classification system
+        strategy = ClassificationService._get_campionato_strategy(campionato)
 
         # Calculate classification using strategy
         result = strategy.calculate(

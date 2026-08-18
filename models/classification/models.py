@@ -15,6 +15,7 @@ Phase 5 Refactor Notes:
 
 from models.base import db, TimestampMixin, utc_now
 from sqlalchemy.orm import backref
+from models.status_enum import ClassificationSystem
 from models.transaction.manager import transactional
 
 
@@ -117,11 +118,21 @@ class RoundClassification(db.Model):
 
     @property
     def is_rack_ranking(self) -> bool:
-        """True se la gara classifica per rack totali invece che per vittorie."""
+        """True se la gara classifica per triangoli totali invece che per vittorie.
+
+        Passa da `ClassificationSystem.resolve` e non da un confronto con la
+        stringa grezza: la colonna è `String(10)` e nessuno l'ha mai validata,
+        quindi il valore storico `"RACKS"` esiste ed è indistinguibile da
+        `"RACK"` per il direttore che l'ha scelto — ma un `== "RACK"` lo
+        classificava a vittorie senza dirlo.
+        """
         gara = self.gara
         if gara is None:
             return False
-        return (gara.classification_system or "WINS").upper() == "RACK"
+        system = ClassificationSystem.resolve(
+            getattr(gara, "classification_system", None)
+        )
+        return system == ClassificationSystem.RACK
 
     @property
     def ranking_rack_value(self) -> int:

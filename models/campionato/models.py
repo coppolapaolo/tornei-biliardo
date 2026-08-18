@@ -7,7 +7,12 @@ Dependencies: models.base.db, models.user.models
 
 from typing import TYPE_CHECKING
 from models.base import db, utc_now
-from models.status_enum import TournamentStatus, GaraStatus, EntityType
+from models.status_enum import (
+    TournamentStatus,
+    GaraStatus,
+    EntityType,
+    ClassificationSystem,
+)
 from models.matchmaking.configuration import MatchmakingStrategy, OddNumberPolicy
 
 if TYPE_CHECKING:
@@ -306,33 +311,53 @@ class Campionato(db.Model):
 
         return True
 
-    def get_scoring_system(self) -> dict:
-        """Get the automatic scoring system based on campionato_type.
+    @property
+    def classification_system(self) -> ClassificationSystem:
+        """Il sistema di classifica del campionato, normalizzato.
 
-        Returns a dict with ordering criteria for classification.
-        The scoring system is automatically determined by the campionato type:
-        - AMALFI: Wins DESC → Rack diff DESC → SSR DESC → Previous order
-        - RANDOM: Racks won DESC → SSR DESC → Previous order
+        Unico punto da cui leggere «su cosa si ordina questo campionato». Le
+        gare che gli appartengono ereditano il valore e non possono
+        cambiarlo dall'interfaccia (`_gara_edit_form.html`), quindi il
+        campionato è la fonte per l'intera classifica generale.
+
+        Da non confondere con `campionato_type`, che è la strategia di
+        accoppiamento: vedi ADR-047.
         """
-        if self.campionato_type == MatchmakingStrategy.AMALFI.value:
+        return ClassificationSystem.resolve(self.default_classification_system)
+
+    def get_scoring_system(self) -> dict:
+        """Criteri di ordinamento della classifica generale.
+
+        Discendono dal **sistema di classifica**, non dal tipo di campionato.
+        Fino al 2026-08 questo metodo derivava i criteri da `campionato_type`
+        e si descriveva come «automatic based on campionato type»: era
+        l'equivoco all'origine della issue #89, perché tipo e sistema
+        coincidono nella configurazione più comune e divergono in silenzio in
+        tutte le altre. Vedi ADR-047.
+        """
+        system = self.classification_system
+        if system == ClassificationSystem.RACK:
             return {
-                "type": "amalfi",
-                "ordering": ["wins", "rack_difference", "ssr", "previous_order"],
-                "description": "Vittorie → Differenza rack → SSR → Ordine precedente",
-            }
-        elif self.campionato_type == MatchmakingStrategy.RANDOM.value:
-            return {
-                "type": "random",
+                "type": "racks",
                 "ordering": ["racks_won", "ssr", "previous_order"],
-                "description": "Rack vinti → SSR → Ordine precedente",
+                "description": "Triangoli totali → SSR → Ordine precedente",
             }
-        else:
-            # Default fallback for other strategies
+        if system == ClassificationSystem.POSITION:
             return {
-                "type": "default",
-                "ordering": ["wins", "rack_difference", "previous_order"],
-                "description": "Vittorie → Differenza rack → Ordine precedente",
+                "type": "position",
+                "ordering": ["points", "wins", "rack_difference", "previous_order"],
+                "description": (
+                    "Punti posizione → Vittorie → Differenza triangoli → "
+                    "Ordine precedente"
+                ),
             }
+        return {
+            "type": "wins",
+            "ordering": ["wins", "rack_difference", "ssr", "previous_order"],
+            "description": (
+                "Vittorie → Differenza triangoli → SSR → Ordine precedente"
+            ),
+        }
 
     def get_scoring_policy_name(self) -> str:
         """DEPRECATED: Use get_scoring_system() instead.

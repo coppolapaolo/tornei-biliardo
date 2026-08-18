@@ -427,6 +427,66 @@ class Discipline(_StrEnum):
         ]
 
 
+# Vocabolario storico: la colonna è `String(10)` e non l'ha mai validata,
+# quindi in DB può esserci il plurale "RACKS" scritto da form vecchi.
+_CLASSIFICATION_SYSTEM_LEGACY_ALIASES = {
+    "RACKS": "RACK",
+}
+
+
+class ClassificationSystem(_StrEnum):
+    """Come si stila una classifica: su cosa si ordinano i giocatori.
+
+    **Unico vocabolario del sistema di classifica.** È ortogonale alla
+    strategia di accoppiamento (`MatchmakingStrategy`): un campionato Amalfi
+    può classificare a triangoli totali e un Random a vittorie. Confondere i
+    due è stato per mesi un bug silenzioso nella classifica generale — la
+    strategia veniva usata al posto del sistema, e i due criteri coincidono
+    abbastanza spesso da non farsi notare (issue #89, ADR-047).
+
+    - `WINS`     → vittorie, poi differenza triangoli
+    - `RACK`     → triangoli totali, poi spareggio SSR
+    - `POSITION` → punti per piazzamento (formati a tabellone)
+    """
+
+    RACK = "RACK"
+    WINS = "WINS"
+    POSITION = "POSITION"
+
+    @classmethod
+    def normalize(cls, value) -> "ClassificationSystem | None":
+        """Converte un valore qualunque nel membro corrispondente.
+
+        Accetta un membro (idempotente), il valore canonico o quello storico.
+        **Restituisce `None` su valore ignoto**: il ripiego lo sceglie chi
+        chiama, come per `Discipline.normalize`. Qui il ripiego sensato è
+        quasi sempre `WINS` — che è anche il default della colonna — ma
+        scriverlo dentro `normalize` nasconderebbe il valore inatteso.
+        """
+        if isinstance(value, cls):
+            return value
+        if not value:
+            return None
+
+        raw = str(value).strip().upper()
+        raw = _CLASSIFICATION_SYSTEM_LEGACY_ALIASES.get(raw, raw)
+        try:
+            return cls(raw)
+        except ValueError:
+            return None
+
+    @classmethod
+    def resolve(cls, value) -> "ClassificationSystem":
+        """Come `normalize`, ma con il ripiego esplicito su `WINS`.
+
+        È il comportamento che il codice ha sempre avuto sparso in giro sotto
+        forma di `(x or "WINS").upper()`: un valore assente o incomprensibile
+        si comporta come `WINS`. Averlo in un punto solo lo rende almeno
+        cercabile.
+        """
+        return cls.normalize(value) or cls.WINS
+
+
 class WithdrawPolicy(_StrEnum):
     """Policy for handling player withdrawals/forfeits."""
 

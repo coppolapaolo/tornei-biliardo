@@ -7,16 +7,12 @@ Implementa le regole di validazione da docs/CLASSIFICATION_SYSTEM.md sezione 9.
 from enum import Enum
 from typing import Optional, TYPE_CHECKING
 
+# Il vocabolario vive in `models/status_enum.py` con gli altri di dominio;
+# qui è re-esportato perché era questo il punto di import storico.
+from models.status_enum import ClassificationSystem
+
 if TYPE_CHECKING:
     from models.competition.models import Gara
-
-
-class ClassificationSystem(Enum):
-    """Sistemi di classifica disponibili."""
-
-    RACK = "RACK"
-    WINS = "WINS"
-    POSITION = "POSITION"
 
 
 class DistanceType(Enum):
@@ -295,13 +291,6 @@ _ODD_HANDLING_MAP = {
     "trio": OddHandling.TRIO,
 }
 
-# Mapping classification_system string -> ClassificationSystem enum
-_CLASSIFICATION_SYSTEM_MAP = {
-    "RACK": ClassificationSystem.RACK,
-    "WINS": ClassificationSystem.WINS,
-    "POSITION": ClassificationSystem.POSITION,
-}
-
 
 def _infer_classification_system(
     matchmaking: MatchmakingStrategy,
@@ -375,9 +364,11 @@ def validate_gara(
     # Sistema di classificazione
     # Priorità: 1) parametro esplicito, 2) campo gara, 3) inferenza da matchmaking
     if classification_system is None:
-        gara_class_system = getattr(gara, "classification_system", None)
-        if gara_class_system and gara_class_system in _CLASSIFICATION_SYSTEM_MAP:
-            classification_system = _CLASSIFICATION_SYSTEM_MAP[gara_class_system]
+        gara_class_system = ClassificationSystem.normalize(
+            getattr(gara, "classification_system", None)
+        )
+        if gara_class_system is not None:
+            classification_system = gara_class_system
         else:
             classification_system = _infer_classification_system(matchmaking)
 
