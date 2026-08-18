@@ -13,7 +13,7 @@ from models.match.models import Match
 from sqlalchemy.exc import IntegrityError
 
 from models.base import db, utc_now
-from models.exceptions import ValidationError
+from models.exceptions import NotFoundError, ValidationError
 from .models import Campionato
 from ..user.role_enum import UserRole
 from ..transaction.manager import (
@@ -128,7 +128,7 @@ class TournamentService(TournamentStatisticsService):
 
         user = db.session.get(User, creator_user_id)
         if not user:
-            raise ValueError("User not found")
+            raise NotFoundError("User not found")
 
         campionato = Campionato(
             name=name,
@@ -179,7 +179,7 @@ class TournamentService(TournamentStatisticsService):
 
         campionato = db.session.get(Campionato, campionato_id)
         if not campionato:
-            raise ValueError("Campionato not found")
+            raise NotFoundError("Campionato not found")
 
         if not campionato.can_be_modified():
             raise ValueError(
@@ -201,7 +201,7 @@ class TournamentService(TournamentStatisticsService):
 
         campionato = db.session.get(Campionato, campionato_id)
         if not campionato:
-            raise ValueError("Campionato not found")
+            raise NotFoundError("Campionato not found")
 
         campionato.is_active = not campionato.is_active
         campionato.updated_at = utc_now()
@@ -225,7 +225,7 @@ class TournamentService(TournamentStatisticsService):
 
         user = db.session.get(User, user_id)
         if not user:
-            raise ValueError("User not found")
+            raise NotFoundError("User not found")
 
         if user.role == UserRole.ADMIN.value:
             raise ValidationError("Gli admin non vanno assegnati come direttori.")
@@ -318,7 +318,7 @@ class TournamentService(TournamentStatisticsService):
 
         campionato = db.session.get(Campionato, campionato_id)
         if not campionato:
-            raise ValueError("Campionato not found")
+            raise NotFoundError("Campionato not found")
 
         if not campionato.can_be_deleted():
             raise ValueError("Campionato non cancellabile: esistono iscrizioni.")
@@ -357,7 +357,7 @@ class TournamentService(TournamentStatisticsService):
 
         campionato = db.session.get(Campionato, campionato_id)
         if not campionato:
-            raise ValueError("Campionato not found")
+            raise NotFoundError("Campionato not found")
 
         if campionato.is_deleted:
             return False
@@ -391,7 +391,7 @@ class TournamentService(TournamentStatisticsService):
 
         campionato = db.session.get(Campionato, campionato_id)
         if not campionato:
-            raise ValueError("Campionato not found")
+            raise NotFoundError("Campionato not found")
 
         if not campionato.is_deleted:
             return False
@@ -414,7 +414,7 @@ class TournamentService(TournamentStatisticsService):
 
         campionato = db.session.get(Campionato, campionato_id)
         if not campionato:
-            raise ValueError("Campionato not found")
+            raise NotFoundError("Campionato not found")
 
         if not campionato.can_be_hard_deleted():
             raise ValueError("Cannot permanently delete campionato with played matches")
@@ -438,7 +438,7 @@ class TournamentService(TournamentStatisticsService):
 
         campionato = db.session.get(Campionato, campionato_id)
         if not campionato:
-            raise ValueError("Campionato not found")
+            raise NotFoundError("Campionato not found")
 
         gare = (
             Gara.query.filter_by(campionato_id=campionato_id)
@@ -483,7 +483,7 @@ class TournamentService(TournamentStatisticsService):
 
         campionato = db.session.get(Campionato, campionato_id)
         if not campionato:
-            raise ValueError("Campionato not found")
+            raise NotFoundError("Campionato not found")
 
         # ID dei direttori già assegnati a questo campionato
         from models.user.models import DirectorAssignment
@@ -516,7 +516,7 @@ class TournamentService(TournamentStatisticsService):
 
         campionato = db.session.get(Campionato, campionato_id)
         if not campionato:
-            raise ValueError("Campionato not found")
+            raise NotFoundError("Campionato not found")
 
         return compute_campionato_status(campionato)
 
@@ -558,7 +558,7 @@ class TournamentService(TournamentStatisticsService):
 
         campionato = db.session.get(Campionato, campionato_id)
         if not campionato:
-            raise ValueError("Campionato not found")
+            raise NotFoundError("Campionato not found")
         if campionato.is_deleted:
             raise ValueError("Campionato già eliminato")
         if campionato.terminated_at:
@@ -627,7 +627,7 @@ class TournamentService(TournamentStatisticsService):
 
         campionato = db.session.get(Campionato, campionato_id)
         if not campionato:
-            raise ValueError("Campionato not found")
+            raise NotFoundError("Campionato not found")
 
         from models.status_enum import GaraStatus
 
@@ -672,7 +672,7 @@ class TournamentService(TournamentStatisticsService):
 
         config = db.session.get(PlayoffConfiguration, config_id)
         if not config:
-            raise ValueError("PlayoffConfiguration not found")
+            raise NotFoundError("PlayoffConfiguration not found")
         if config.campionato_id != campionato_id:
             raise ValueError("Configurazione non appartiene a questo campionato")
         config.min_garas_played = new_min

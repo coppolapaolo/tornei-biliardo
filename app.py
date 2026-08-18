@@ -610,6 +610,54 @@ def create_app(config_name=None):
     def ratelimit_error(e):
         return render_template("errors/429.html"), 429
 
+    from models.exceptions import DomainError, http_status_for_exception
+
+    _TITOLI_DOMINIO = {
+        409: lambda: _("Non è il tuo turno"),
+        422: lambda: _("Colpo irregolare"),
+    }
+
+    @app.errorhandler(DomainError)
+    def domain_error(e):
+        """Un'eccezione di dominio e' una risposta, non un guasto del server.
+
+        `ConflictError("Iscrizioni chiuse")` che sfugge da una route HTML
+        finiva nel gestore del 500: chi aveva premuto «Iscriviti» un minuto
+        dopo la chiusura leggeva «Errore interno del server», e l'evento
+        arrivava su GlitchTip a consumare quota per un rifiuto previsto
+        (TORNEI-BILIARDO-64). Stessa storia per un id inesistente in
+        `campionato_detail`, che dava 500 invece di 404 (TORNEI-BILIARDO-5V).
+
+        Le route AJAX questa mappatura ce l'hanno gia' — `safe_json_error`
+        passa da `http_status_for_exception`. Qui vale per tutte le altre.
+        """
+        db.session.rollback()
+        status = http_status_for_exception(e)
+        messaggio = str(e) or _("Operazione non consentita")
+
+        is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
+        if request.is_json or is_ajax:
+            return jsonify({"success": False, "error": messaggio}), status
+
+        # 404 e 403 hanno gia' la loro pagina, ed e' quella che gli utenti
+        # conoscono: un non-trovato di dominio non deve sembrare diverso da
+        # un indirizzo sbagliato.
+        if status == 404:
+            return render_template("errors/404.html"), 404
+        if status == 403:
+            return render_template("errors/403.html"), 403
+
+        titolo = _TITOLI_DOMINIO.get(status, lambda: _("Tiro non valido"))()
+        return (
+            render_template(
+                "errors/dominio.html",
+                status=status,
+                titolo=titolo,
+                messaggio=messaggio,
+            ),
+            status,
+        )
+
     return app
 
 

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-18 11:23+0200\n"
+"POT-Creation-Date: 2026-08-18 12:33+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -20,6 +20,22 @@ msgstr ""
 
 #: app.py:598 templates/errors/403.html:3
 msgid "Accesso negato"
+msgstr ""
+
+#: app.py:616
+msgid "Non è il tuo turno"
+msgstr ""
+
+#: app.py:617
+msgid "Colpo irregolare"
+msgstr ""
+
+#: app.py:636
+msgid "Operazione non consentita"
+msgstr ""
+
+#: app.py:650
+msgid "Tiro non valido"
 msgstr ""
 
 #: models/status_enum.py:382
@@ -10828,8 +10844,12 @@ msgid ""
 "Questa azione è IRREVERSIBILE!"
 msgstr ""
 
-#: templates/errors/400.html:3 templates/errors/400.html:10
+#: templates/errors/400.html:3
 msgid "Sessione scaduta"
+msgstr ""
+
+#: templates/errors/400.html:10
+msgid "Il tavolo si è raffreddato"
 msgstr ""
 
 #: templates/errors/400.html:11
@@ -10840,11 +10860,11 @@ msgstr ""
 msgid "Torna indietro, ricarica e reinvia il modulo."
 msgstr ""
 
-#: templates/errors/400.html:14
+#: templates/errors/400.html:14 templates/errors/dominio.html:23
 msgid "Torna indietro"
 msgstr ""
 
-#: templates/errors/400.html:15
+#: templates/errors/400.html:15 templates/errors/dominio.html:24
 msgid "Vai alla home"
 msgstr ""
 
@@ -10881,8 +10901,12 @@ msgstr ""
 msgid "Torna al tavolo"
 msgstr ""
 
-#: templates/errors/429.html:3 templates/errors/429.html:10
+#: templates/errors/429.html:3
 msgid "Troppe richieste"
+msgstr ""
+
+#: templates/errors/429.html:10
+msgid "Rallenta la stecca"
 msgstr ""
 
 #: templates/errors/429.html:11
