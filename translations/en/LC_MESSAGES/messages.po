@@ -9852,8 +9852,8 @@ msgstr "Lv. 6+"
 #, python-format
 msgid "%(n)s referto"
 msgid_plural "%(n)s referti"
-msgstr[0] "%"
-msgstr[1] "("
+msgstr[0] "%(n)s scoresheet"
+msgstr[1] "%(n)s scoresheets"
 
 #: templates/components/_player_ratings.html:47
 msgid ""
