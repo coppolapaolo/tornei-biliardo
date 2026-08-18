@@ -343,6 +343,25 @@ class TestSenzaElo:
         assert block["primary"]["delta"] is None
         assert block["chart"] is None
 
+    def test_il_delta_dice_su_quante_partite_e_maturato(self, app):
+        """Non su quante ne ha giocate: sono due numeri diversi.
+
+        Chi ha dieci attivita' ma una sola riga di storico Elo si vedeva
+        scritto «−16 in 10 partite» per un −16 maturato in una partita sola.
+        """
+        user, other = _user(), _user()
+        for i in range(10):
+            _casual_match(user, other, 2, 5, days_ago=10 - i)
+        # Il motore di rating ha elaborato una partita sola.
+        _elo_step(user, 1200, 1184, _casual_match(user, other, 2, 5, days_ago=1))
+
+        block = ActivityFeedbackService.for_player(user.id, user=user)
+        assert block is not None
+        assert block["primary"]["value"] == "1184"
+        assert block["primary"]["delta"] == "−16 in 1 partita"
+        # Un solo evento non e' un andamento: la sparkline resta fuori.
+        assert block["chart"] is None
+
     def test_con_la_serie_l_andamento_dell_elo_c_e(self, app):
         user, other = _user(), _user()
         for i, (old, new) in enumerate([(1200, 1206), (1206, 1201), (1201, 1218)]):

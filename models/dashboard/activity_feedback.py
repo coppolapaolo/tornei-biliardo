@@ -1168,7 +1168,6 @@ def _build_player(
     }
 
     # ── Metrica primaria ────────────────────────────────────────────────────
-    n = len(window)
     if profile == "drill_only":
         block["primary"] = _drill_primary(user_id, drills)
     elif elo_current is not None:
@@ -1185,17 +1184,25 @@ def _build_player(
                 _("Elo, invariato"), str(elo_current), delta=_("ti aspetta lì")
             )
         else:
+            # Su quante partite e' maturato quel delta: si contano gli eventi
+            # di **rating**, non le attivita' della finestra. Le due cose non
+            # coincidono — chi ha dieci attivita' ma una sola riga di storico
+            # si vedeva scritto «−16 in 10 partite» per un −16 maturato in una
+            # partita sola. La finestra dice quanto ha giocato, la serie dice
+            # su cosa il numero e' stato calcolato: accanto al delta va la
+            # seconda.
+            rated = max(len(elo_series) - 1, 1)
             delta_text, tone = _delta_text(
                 elo_delta,
                 (
                     # Al super attivo si aggiunge « · massimo»: la forma lunga
                     # («in 10 partite · massimo») va a capo e spezza la cella.
-                    _("in %(num)s", num=n)
+                    _("in %(num)s", num=rated)
                     if profile == "hyperactive"
                     else (
-                        ngettext("in %(num)s partita", "in %(num)s partite", n)
+                        ngettext("in %(num)s partita", "in %(num)s partite", rated)
                         if dominant_kind == "match"
-                        else ngettext("in %(num)s gara", "in %(num)s gare", n)
+                        else ngettext("in %(num)s gara", "in %(num)s gare", rated)
                     )
                 ),
             )
