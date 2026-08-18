@@ -41,6 +41,7 @@ TRAINING_ENDPOINTS = (
     "challenge.challenge_catalog",
     "challenge.challenge_detail",
     "challenge.training_session",
+    "challenge.training_undo",
     "challenge.start_attempt",
     "challenge.attempt_detail",
     "challenge.complete_attempt",

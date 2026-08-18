@@ -68,11 +68,22 @@ blocks:
       - title: "Prepara il tavolo e gioca"
         text: "La foto e le istruzioni restano in alto, sempre visibili: non devi ricordarti niente a memoria."
       - title: "Registra com'è andata"
-        text: "Con i tasti «−» e «+» imposti il punteggio, oppure scegli «Superata» o «Non superata». Poi tocca «Registra la prova»."
+        text: "Se l'esercizio è superato o non superato, ti bastano i due tasti grandi: quello che tocchi registra subito la prova, senza confermare. Se è a punteggio, imposti il numero con «−» e «+» e poi tocchi «Registra la prova»."
+      - title: "Se sbagli tasto, «Annulla l'ultima»"
+        text: "Toglie l'ultima prova registrata, in fondo alla schermata. Serve proprio perché basta un tocco per registrare: l'errore si corregge dopo, non prima."
       - title: "Riprova quante volte vuoi"
-        text: "La prova compare subito in «Le tue prove», e in alto salgono «Prove registrate» e «Il tuo record». Il campo si azzera da solo: sei già pronto per la prossima."
+        text: "La prova compare subito in «Le tue prove», e in alto salgono «Prove registrate» e il secondo contatore — «Il tuo record» se è a punteggio, «Riuscite» se è superato o non superato. Il campo si azzera da solo: sei già pronto per la prossima."
       - title: "Quando basta, tocca «Ho finito»"
         text: "Torni al catalogo. Le prove restano nel tuo storico, e tornando sull'esercizio ritrovi le ultime dieci."
+
+  - type: note
+    tone: tip
+    title: "Gira il telefono"
+    text: >-
+      Mettendolo in orizzontale la schermata diventa un pannello solo: la foto
+      da una parte, i tasti dall'altra, senza scorrere. È pensata per il
+      telefono appoggiato alla sponda mentre giochi. La **X** in alto a sinistra
+      torna alla schermata normale senza raddrizzarlo.
 
   - type: note
     tone: info
@@ -92,6 +103,14 @@ blocks:
           Si conta quanto hai fatto: dieci tiri, un punto per ogni riuscita. È
           il tipo che serve per gli spareggi e per sostituire l'X a tavolino,
           perché produce un numero confrontabile.
+      - name: "Punteggio massimo"
+        values: "facoltativo"
+        text: >-
+          Chi crea l'esercizio può dire fin dove si può arrivare: allora il
+          catalogo scrive «0-15 punti» e mentre ti alleni leggi «12 / 15»
+          invece di un numero solo. Può anche lasciarlo vuoto, ed è giusto così
+          per le prove che si ripetono finché non sbagli: lì un massimo non
+          esiste.
       - name: "Superata o non superata"
         text: >-
           Non c'è un punteggio: o riesci o no. Va bene per allenarsi, non per

@@ -36,7 +36,9 @@
         </button>
 
         <span class="c7-state {% if challenge.pass_fail_only %}c7-state--info{% else %}c7-state--muted{% endif %}" style="position: absolute; bottom: 10px; left: 10px;">
-            {% if challenge.pass_fail_only %}{{ _('Riuscito o no') }}{% else %}{{ _('A punteggio') }}{% endif %}
+            {%- if challenge.pass_fail_only %}{{ _('Riuscito o no') }}
+            {%- elif challenge.max_score %}{{ _('0-%(max)s punti', max=challenge.max_score) }}
+            {%- else %}{{ _('A punteggio') }}{% endif %}
         </span>
     </div>
 

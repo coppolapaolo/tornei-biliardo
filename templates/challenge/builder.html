@@ -205,6 +205,7 @@
     {% set drill_title = challenge.title if challenge else (prefill.title if prefill) %}
     {% set drill_text = challenge.description if challenge else (prefill.description if prefill) %}
     {% set drill_pass_fail = challenge.pass_fail_only if challenge else (prefill and prefill.pass_fail_only) %}
+    {% set drill_max = challenge.max_score if challenge else (prefill.max_score if prefill) %}
 
     <div>
       <label for="drillTitle" class="form-label">{{ _("Titolo") }}</label>
@@ -233,9 +234,21 @@
           {{ _("A punteggio") }}
         </option>
         <option value="true" {% if drill_pass_fail %}selected{% endif %}>
-          {{ _("Superata o non superata") }}
+          {{ _("Superato o non superato") }}
         </option>
       </select>
+    </div>
+
+    {# Solo per gli esercizi a punteggio, e facoltativo: senza tetto la prova
+       si ripete finche' si sbaglia, ed e' un caso legittimo. #}
+    <div id="drillMaxRow" {% if drill_pass_fail %}style="display:none"{% endif %}>
+      <label for="drillMaxScore" class="form-label">{{ _("Punteggio massimo") }}</label>
+      <input type="number" class="form-control" id="drillMaxScore" name="max_score"
+             min="1" max="999" inputmode="numeric"
+             placeholder="{{ _('es. 15') }}" value="{{ drill_max if drill_max is not none else '' }}">
+      <div class="c7-kicker" style="margin-top:6px">
+        {{ _("Facoltativo. Lascialo vuoto se la prova non ha un tetto.") }}
+      </div>
     </div>
   </form>
 </div>
@@ -302,6 +315,18 @@ document.addEventListener('DOMContentLoaded', function () {
         try { window.DrillBuilder.load(JSON.parse(preloaded)); }
         catch (e) { showError({{ _("Il disegno salvato non si è potuto ricaricare.")|tojson }}); }
     }
+
+    // Il tetto vale solo per gli esercizi a punteggio: cambiando tipo sparisce
+    // e si svuota, cosi' un numero scritto prima di cambiare idea non resta
+    // nel modulo pronto a tornare a galla.
+    const scoring = document.getElementById('drillScoring');
+    const maxRow = document.getElementById('drillMaxRow');
+    const maxInput = document.getElementById('drillMaxScore');
+    scoring.addEventListener('change', function () {
+        const aPunteggio = this.value !== 'true';
+        maxRow.style.display = aPunteggio ? '' : 'none';
+        if (!aPunteggio) maxInput.value = '';
+    });
 
     const btn = document.getElementById('saveDrillBtn');
     const label = document.getElementById('saveDrillLabel');

@@ -61,8 +61,25 @@ e poi ripulire quelle rimaste aperte da chi chiude il browser a metà.
 `record_attempt` **valida prima di creare**: `start_challenge_attempt` e
 `complete_challenge_attempt` sono due transazioni distinte, quindi un esito
 mancante scoperto solo dalla seconda lascerebbe una riga `completed=False` che
-nessuno chiude più — invisibile, ma capace di falsare il conteggio dei drill
-completati che apre i gate di gamification.
+nessuno chiude più — invisibile, ma capace di falsare il conteggio degli
+esercizi completati che apre i gate di gamification.
+
+**Un tocco, non due** (dal 2026-08-18). Su un esercizio superato/non superato il
+tasto dell'esito **è** la registrazione: scegliere e poi confermare erano due
+gesti per un'informazione sola, e fra i due si perde il segno di cosa si era
+scelto. A proteggere dall'errore c'è l'`annulla`, che è l'unico posto dove la
+protezione serve davvero — dopo. Sugli esercizi a punteggio il numero va
+composto, quindi il tastierino resta e la conferma è un tasto a parte, ma il
+giro di richiesta è identico.
+
+**Il tabellone orizzontale.** Girando il telefono
+(`templates/challenge/_training_board.html`) foto, regola e comandi stanno in una
+schermata sola, come il tabellone della partita: chi si allena il telefono non ce
+l'ha in mano, ce l'ha appoggiato alla sponda, e in verticale servivano tre
+scorrimenti fra un tiro e l'altro. **Non è una seconda schermata**: gli stessi
+`data-*`, lo stesso JavaScript, gli stessi contatori del formato verticale — il
+codice lavora per selettore e non per `id` proprio perché i comandi esistono due
+volte nello stesso documento.
 
 Il drill giocato **al posto del bye in gara** non passa di qui: ha un contesto
 (gara, turno) e conseguenze in classifica, e resta su `challenge.start_attempt`.
@@ -117,7 +134,7 @@ nuova del builder si **ri-prefissa**, non si incolla grezzo.
 
 | Type | `pass_fail_only` | Scoring | X-Substitution |
 |------|------------------|---------|----------------|
-| Numeric | `False` | Punteggio libero (il massimo lo fissa l'esame) | ✅ Yes |
+| Numeric | `False` | Punteggio libero, con tetto facoltativo (`max_score`) | ✅ Yes |
 | Pass/Fail | `True` | Pass=1, Fail=0 | ❌ No |
 
 **Numeric Challenges:**
@@ -134,18 +151,46 @@ nuova del builder si **ri-prefissa**, non si incolla grezzo.
 ## Models
 
 ### Challenge
-**Fields:** `description`, `image_path`, `pass_fail_only`, `is_active`
+**Fields:** `title`, `description`, `image_path`, `pass_fail_only`, `max_score`,
+`diagram_scene`, `is_active`
 
-> ⚠️ `Challenge` **non ha** `max_score`, né `name`. Il punteggio massimo è
-> *per-esame* e sta su `ExamChallenge` (ADR-042): lo stesso drill può valere 10
-> in un esame e 15 in un altro. Leggere `challenge.max_score` solleva
-> `AttributeError` — è il bug che ha tenuto vuoto lo storico drill del profilo
-> per mesi, perché finiva dentro un `except Exception: pass`. Per il nome
-> mostrato si usa `get_display_name()`, che è la descrizione troncata: il vero
-> nome è un debito noto, annotato in ADR-042.
+> ⚠️ `Challenge` **non ha** `name`: il nome mostrato è `get_display_name()`, che
+> restituisce il `title` scelto oppure il progressivo (`Esercizio 12`). Non è
+> più la descrizione troncata — quella faceva sembrare identici esercizi diversi,
+> perché le istruzioni cominciano quasi sempre allo stesso modo.
+
+> ⚠️ **Due `max_score`, e non sono lo stesso** (ADR-042 + emendamento
+> 2026-08-18). Entrambi facoltativi, entrambi legittimamente `NULL`:
+>
+> | colonna | risponde a | la decide |
+> |---|---|---|
+> | `Challenge.max_score` | quanto vale **al massimo questa prova** | chi crea l'esercizio |
+> | `ExamChallenge.max_score` | quanto pesa **dentro quell'esame** | chi compone l'esame |
+>
+> `effective_max_score` **non** guarda il catalogo, e non deve iniziare a
+> farlo: derivarlo renderebbe di nuovo impossibile far pesare lo stesso
+> esercizio in due modi in due esami. Il primo serve dove l'esame non arriva —
+> mostrare «12 / 15» a chi si allena, e rifiutare un 20 su una prova da 15.
+>
+> Storicamente `challenge.max_score` **non esisteva** e veniva letto lo stesso,
+> dentro un `except Exception: pass`: è il bug che ha tenuto vuoto lo storico
+> drill del profilo per mesi. Oggi la colonna c'è, quindi quel difetto non si
+> riproduce più cercando un `AttributeError`.
 
 ### ChallengeAttempt
 **Fields:** `challenge_id`, `user_id`, `score`, `passed`, `attempted_at`
+
+Una prova si **cancella**, con `ChallengeService.delete_attempt`. Non è una
+concessione: si registra con un tocco solo, col telefono appoggiato alla sponda,
+e il tasto sbagliato si preme. Senza via d'uscita l'unico rimedio sarebbe
+compensare a mano, sbagliando due volte invece di una.
+
+Cancellare **restituisce l'XP** con una transazione compensativa (un movimento
+negativo, non la cancellazione di quello originale: il registro deve raccontare
+cos'è successo). Senza, registra-e-annulla sarebbe un modo banale di salire di
+livello. Restano volutamente in piedi la **serie settimanale** — dice «questa
+settimana ti sei allenato», e un tasto sbagliato non cambia il fatto che eri al
+tavolo — e i **traguardi già sbloccati**.
 
 ### ChallengeFavorite
 **Fields:** `user_id`, `challenge_id` - Quick access to preferred challenges

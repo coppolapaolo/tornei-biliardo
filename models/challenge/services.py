@@ -39,6 +39,7 @@ class ChallengeService:
         created_by_id: Optional[int] = None,
         diagram_scene: Optional[str] = None,
         title: Optional[str] = None,
+        max_score: Optional[int] = None,
     ) -> Challenge:
         """Crea una nuova sfida nel sistema.
 
@@ -53,10 +54,17 @@ class ChallengeService:
             title: nome del drill. Facoltativo: senza, il drill si chiama col
                 suo progressivo (``Drill 12``). La stringa vuota vale None —
                 un titolo di soli spazi non e' un titolo
+            max_score: punteggio massimo ottenibile. Facoltativo, e vietato
+                sugli esercizi superato/non superato
 
         Returns:
             Challenge: L'oggetto sfida creato e persistito nel database
+
+        Raises:
+            ValidationError: max_score incoerente col tipo di esercizio
         """
+        max_score = ChallengeService._validate_max_score(max_score, pass_fail_only)
+
         challenge = Challenge(
             title=(title or "").strip() or None,
             description=description,
@@ -64,6 +72,7 @@ class ChallengeService:
             image_path=image_path,
             created_by_id=created_by_id,
             diagram_scene=diagram_scene,
+            max_score=max_score,
         )
 
         db.session.add(challenge)
@@ -79,6 +88,8 @@ class ChallengeService:
         is_active: Optional[bool] = None,
         diagram_scene: Optional[str] = None,
         title: Optional[str] = None,
+        max_score: Optional[int] = None,
+        clear_max_score: bool = False,
     ) -> Challenge:
         """Aggiorna una sfida esistente con validazione.
 
@@ -119,7 +130,73 @@ class ChallengeService:
         if is_active is not None:
             challenge.is_active = is_active
 
+        # Il tetto si toglie **solo** su richiesta esplicita: `None` qui vuol
+        # dire «campo non inviato», non «azzera». Senza `clear_max_score` una
+        # qualsiasi modifica parziale — cambiare il titolo dal builder —
+        # cancellerebbe in silenzio il massimo gia' impostato.
+        if clear_max_score:
+            challenge.max_score = None
+        elif max_score is not None:
+            challenge.max_score = ChallengeService._validate_max_score(
+                max_score, challenge.pass_fail_only
+            )
+
+        # Un esercizio che diventa superato/non superato non puo' tenersi un
+        # tetto di punteggio: resterebbe scritto da qualche parte senza piu'
+        # nessuno che lo legge, pronto a ricomparire se un domani torna a
+        # punteggio con un valore che nessuno ha piu' scelto.
+        if challenge.pass_fail_only:
+            challenge.max_score = None
+
         return challenge
+
+    @staticmethod
+    def _validate_score_against_max(challenge: Challenge, score: int) -> None:
+        """Un punteggio non puo' superare il tetto dichiarato dall'esercizio.
+
+        Rifiutare qui e non a schermo: la schermata di allenamento limita gia'
+        il tastierino, ma la POST la puo' fare chiunque, e un 40 su una prova
+        che arriva a 15 falserebbe per sempre il record personale e la
+        classifica dell'esercizio, senza che niente segnali l'anomalia.
+
+        Un esercizio **senza** tetto (``max_score`` a NULL) non ha nulla da
+        verificare: e' il caso normale, ed e' una scelta, non un dato mancante.
+        """
+        if score is None or challenge.max_score is None:
+            return
+        if score > challenge.max_score:
+            raise ValidationError(
+                f"Il punteggio massimo di questo esercizio è " f"{challenge.max_score}"
+            )
+        if score < 0:
+            raise ValidationError("Il punteggio non può essere negativo")
+
+    @staticmethod
+    def _validate_max_score(
+        max_score: Optional[int], pass_fail_only: bool
+    ) -> Optional[int]:
+        """Il tetto di punteggio e' facoltativo, ma non arbitrario.
+
+        ``None`` resta ``None``: dice «questo esercizio non ha un tetto», ed e'
+        una risposta legittima — ci sono prove che si ripetono finche' non si
+        sbaglia. Quello che non e' legittimo e' un tetto su un esercizio
+        superato/non superato (li' il punteggio e' la rappresentazione 1/0
+        dell'esito, non una misura) o un tetto a zero, che renderebbe l'unico
+        punteggio ammesso lo zero.
+        """
+        if max_score is None:
+            return None
+        if pass_fail_only:
+            raise ValidationError(
+                "Un esercizio superato/non superato non ha un punteggio massimo"
+            )
+        try:
+            valore = int(max_score)
+        except (TypeError, ValueError):
+            raise ValidationError("Il punteggio massimo deve essere un numero")
+        if valore <= 0:
+            raise ValidationError("Il punteggio massimo deve essere maggiore di zero")
+        return valore
 
     @staticmethod
     def get_all_challenges() -> List[Challenge]:
@@ -273,6 +350,114 @@ class ChallengeService:
         ChallengeService._publish_attempt_completed(attempt, DrillOrigin.CATALOG)
 
         return attempt
+
+    @staticmethod
+    @transactional(domain="challenge")
+    def delete_attempt(
+        attempt_id: int, actor_id: int, actor_is_admin: bool = False
+    ) -> int:
+        """Cancella una prova sbagliata, e disfa quello che aveva prodotto.
+
+        **Perche' si puo' cancellare.** Una prova si registra in un gesto solo,
+        col telefono in mano, mentre si gioca: il tasto sbagliato si preme, e
+        senza una via d'uscita l'unico rimedio sarebbe falsare il resto per
+        compensare. Vale sia per l'«annulla» della schermata di allenamento sia
+        per lo storico del profilo, che sono lo stesso bisogno a due distanze.
+
+        **Perche' l'XP torna indietro.** Il completamento aveva pagato XP
+        (``handle_challenge_attempt_completed_for_xp``). Cancellare la riga
+        senza restituirlo lascerebbe un modo banale di guadagnare livelli:
+        registra, annulla, ripeti. La restituzione e' una **transazione
+        compensativa** — un movimento negativo, non la cancellazione del
+        movimento originale — cosi' il registro racconta quello che e'
+        successo davvero invece di far finta che non sia successo niente.
+
+        Due conseguenze restano volutamente in piedi:
+
+        - la **serie settimanale**: dice «questa settimana ti sei allenato», e
+          una prova annullata per un tasto sbagliato non cambia il fatto che
+          quella sera eri al tavolo;
+        - i **traguardi gia' sbloccati**: si riconciliano da soli al prossimo
+          giro, e togliere un traguardo a chi l'ha visto comparire e' una
+          punizione sproporzionata per un errore di battitura.
+
+        Returns:
+            L'id dell'esercizio a cui la prova apparteneva.
+
+        Raises:
+            NotFoundError: la prova non esiste
+            PermissionDeniedError: non e' la prova di chi la sta cancellando
+        """
+        from ..exceptions import PermissionDeniedError
+
+        attempt = db.session.get(ChallengeAttempt, attempt_id)
+        if attempt is None:
+            raise NotFoundError("Prova non trovata")
+        if attempt.user_id != actor_id and not actor_is_admin:
+            raise PermissionDeniedError("Questa prova non è tua")
+
+        challenge_id = attempt.challenge_id
+        ChallengeService._refund_xp_for_attempt(attempt)
+        db.session.delete(attempt)
+        return challenge_id
+
+    @staticmethod
+    def _refund_xp_for_attempt(attempt: ChallengeAttempt) -> None:
+        """Restituisce l'XP pagato per questa prova, se era stato pagato.
+
+        Best-effort come il resto del ponte con la gamification: se la
+        restituzione fallisce, la cancellazione va avanti lo stesso — il dato
+        sbagliato tolto vale piu' di un saldo XP perfetto, e resta nel log.
+
+        Non tutte le prove hanno pagato: in gara pagano solo le prime del
+        turno (i tentativi successivi sono lo stesso drill, riprovato). Per
+        questo si cerca il movimento invece di dedurne l'importo: se non c'e',
+        non c'e' niente da rendere.
+        """
+        try:
+            import json
+
+            from models.gamification.level_service import LevelService
+            from models.gamification.models import XPTransaction, XPTransactionType
+
+            movimenti = (
+                XPTransaction.query.filter(
+                    XPTransaction.user_id == attempt.user_id,
+                    XPTransaction.transaction_type
+                    == XPTransactionType.CHALLENGE_COMPLETION,
+                    XPTransaction.related_entities.isnot(None),
+                )
+                .order_by(XPTransaction.id.desc())
+                .limit(200)
+                .all()
+            )
+            for movimento in movimenti:
+                try:
+                    legami = json.loads(movimento.related_entities or "{}")
+                except ValueError:
+                    continue
+                if legami.get("challenge_attempt_id") != attempt.id:
+                    continue
+                if movimento.xp_amount <= 0:
+                    return  # gia' restituito: non si rende due volte
+                LevelService.award_xp(
+                    user_id=attempt.user_id,
+                    xp_amount=-movimento.xp_amount,
+                    transaction_type=XPTransactionType.CHALLENGE_COMPLETION,
+                    reason="Prova annullata",
+                    related_entities={
+                        "challenge_id": attempt.challenge_id,
+                        "challenge_attempt_id": attempt.id,
+                        "refund_of": movimento.id,
+                    },
+                )
+                return
+        except Exception:
+            logger.warning(
+                "Restituzione XP non riuscita per la prova %s",
+                attempt.id,
+                exc_info=True,
+            )
 
     @staticmethod
     def _publish_attempt_completed(
@@ -651,6 +836,8 @@ class ChallengeService:
                 raise ValidationError("Serve dire se la prova è stata superata o no")
         elif score is None:
             raise ValidationError("Serve il punteggio ottenuto")
+        else:
+            ChallengeService._validate_score_against_max(challenge, score)
 
         attempt = ChallengeService.start_challenge_attempt(
             user_id=user_id,

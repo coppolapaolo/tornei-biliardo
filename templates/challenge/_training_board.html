@@ -1,0 +1,104 @@
+{# Il tabellone dell'allenamento: il telefono girato, tutto in una schermata.
+
+   Stessa idea del tabellone della partita (`_match_scoreboard.html`): chi si
+   allena il telefono non ce l'ha in mano, ce l'ha appoggiato sulla sponda. In
+   verticale, per premere il tasto giusto bisogna scorrere fra la foto, le
+   istruzioni e i comandi — tre gesti fra un tiro e l'altro.
+
+   Qui la foto, la regola e i due tasti stanno insieme, e non si scorre. La
+   foto e' `contain` e non `cover`: un drill ritagliato perde i bordi del
+   tavolo, cioe' l'informazione (ADR-044).
+
+   I comandi sono gli **stessi** del formato verticale — stessi `data-*`, stesso
+   JavaScript, stessi contatori. Non e' una seconda schermata da tenere
+   allineata: e' la stessa, disposta diversamente. #}
+
+{% set is_pass_fail = challenge.pass_fail_only %}
+{% set max_score = challenge.max_score %}
+{% set passed_count = attempts|selectattr('passed')|list|length %}
+
+<div class="c7-drillboard" id="drillBoard" role="region"
+     aria-label="{{ _('Allenamento a schermo intero') }}">
+
+  <div class="c7-drillboard__pane">
+    <div class="c7-drillboard__shot">
+      {% if challenge.image_filename %}
+      <img src="{{ challenge_image_url(challenge) }}"
+           alt="{{ _('Disposizione dell\'esercizio') }}"
+           onerror="this.style.display='none'">
+      {% else %}
+      <i class="fas fa-bullseye" style="font-size:34px;opacity:.5"></i>
+      {% endif %}
+    </div>
+    <p class="c7-drillboard__rule">{{ challenge.description }}</p>
+  </div>
+
+  <div class="c7-drillboard__pane c7-drillboard__pane--controls">
+    <div class="c7-drillboard__head">
+      <button type="button" class="c7-board__close"
+              onclick="document.body.classList.add('c7-drillboard-off')"
+              aria-label="{{ _('Chiudi lo schermo intero') }}">
+        <i class="fas fa-xmark"></i>
+      </button>
+      <span class="c7-drillboard__name">{{ challenge.get_display_name() }}</span>
+    </div>
+
+    <div class="c7-drillboard__counts">
+      <div>
+        <span class="c7-drillboard__num" data-drill-count>{{ attempts|length }}</span>
+        <span class="c7-drillboard__lbl">{{ _("Prove") }}</span>
+      </div>
+      <div>
+        <span class="c7-drillboard__num" data-drill-best>
+          {%- if is_pass_fail %}{{ passed_count }}
+          {%- else %}{{ best_score if best_score is not none else '—' }}{% endif %}
+        </span>
+        <span class="c7-drillboard__lbl">
+          {{- _("Riuscite") if is_pass_fail else _("Record") -}}
+        </span>
+      </div>
+    </div>
+
+    {% if is_pass_fail %}
+    <div class="c7-drillboard__pad">
+      <button type="button" class="c7-board__btn c7-board__btn--ok" data-outcome="true">
+        <i class="fas fa-check"></i><span>{{ _("Superata") }}</span>
+      </button>
+      <button type="button" class="c7-board__btn c7-board__btn--no" data-outcome="false">
+        <i class="fas fa-xmark"></i><span>{{ _("Non superata") }}</span>
+      </button>
+    </div>
+    {% else %}
+    <div class="c7-drillboard__score">
+      <button type="button" class="c7-drillboard__step" data-score-step="-1"
+              aria-label="{{ _('Diminuisci') }}"><i class="fas fa-minus"></i></button>
+      <span class="c7-drillboard__figure">
+        <span class="c7-drillboard__value" data-score-display>0</span>
+        {%- if max_score %}<span class="c7-drillboard__max">/&nbsp;{{ max_score }}</span>{% endif %}
+      </span>
+      <button type="button" class="c7-drillboard__step" data-score-step="1"
+              aria-label="{{ _('Aumenta') }}"><i class="fas fa-plus"></i></button>
+    </div>
+    <div class="c7-drillboard__pad">
+      <button type="button" class="c7-board__btn c7-board__btn--ok" data-record>
+        <i class="fas fa-plus"></i><span>{{ _("Registra") }}</span>
+      </button>
+    </div>
+    {% endif %}
+
+    <div class="c7-drillboard__foot">
+      <button type="button" class="c7-drillboard__ghost" data-undo
+              {% if not attempts %}disabled{% endif %}>
+        <i class="fas fa-rotate-left"></i>&nbsp;{{ _("Annulla") }}
+      </button>
+      <a href="{{ url_for('challenge.challenge_catalog') }}" class="c7-drillboard__ghost">
+        <i class="fas fa-check"></i>&nbsp;{{ _("Ho finito") }}
+      </a>
+    </div>
+  </div>
+
+  {# Nessuna lista qui dentro: il tabellone e' un velo sopra la stessa pagina,
+     quindi l'elenco del formato verticale e' gia' nel documento e il
+     JavaScript lo aggiorna comunque. Una seconda lista sarebbe una copia da
+     tenere allineata a mano. #}
+</div>

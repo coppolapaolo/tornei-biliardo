@@ -342,7 +342,7 @@ blocks:
   - type: note
     tone: info
     text: >-
-      Il pulsante compare **solo sui esercizi disegnati**. Un esercizio nato da una
+      Il pulsante compare **solo sugli esercizi disegnati**. Un esercizio nato da una
       foto non ha un disegno da riaprire, quindi lì non c'è.
 
   - type: faq

@@ -1953,3 +1953,158 @@ button.c7-tpa-player:disabled { cursor: default; }
 .c7-setup__steps { margin-top: 18px; }
 .c7-setup__mark { font-size: 14px; width: 16px; text-align: center; color: var(--c7-chart-ink); }
 .c7-setup__mark--done { color: var(--c7-ok); }
+
+/* ============================================================
+   Allenamento su un esercizio
+   ============================================================ */
+
+/* I due tasti dell'esito, nel formato verticale. Grandi perche' si premono
+   fra un tiro e l'altro, col telefono appoggiato sulla sponda: la precisione
+   che si ha in quel momento e' quella di un pollice, non di un mouse. */
+.c7-bigbtn {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  min-height: 104px; padding: 16px 12px;
+  border-radius: var(--c7-r-card); border: 1.5px solid var(--c7-line);
+  background: var(--c7-card); color: var(--c7-ink);
+  font-family: inherit; font-size: 15px; font-weight: 800; letter-spacing: -.01em;
+  cursor: pointer;
+}
+.c7-bigbtn i { font-size: 24px; }
+.c7-bigbtn:disabled { opacity: .5; cursor: default; }
+.c7-bigbtn--ok { border-color: var(--c7-ok); color: var(--c7-ok); }
+.c7-bigbtn--no { border-color: var(--c7-line); color: var(--c7-ink-muted); }
+.c7-bigbtn--ok:active { background: var(--c7-ok-bg, var(--c7-card)); }
+
+/* Il tabellone: telefono girato, tutto in una schermata.
+   Stesse condizioni del tabellone della partita — `pointer: coarse` oltre
+   all'orientamento, altrimenti bastava rimpicciolire in altezza la finestra di
+   un desktop per ritrovarselo a tutto schermo. */
+.c7-drillboard { display: none; }
+
+@media (orientation: landscape) and (max-height: 520px) and (pointer: coarse) {
+  .c7-drillboard {
+    position: fixed; inset: 0; z-index: var(--c7-z-board);
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+    background: var(--c7-accent); color: var(--c7-accent-ink);
+    font-family: var(--c7-font);
+  }
+  /* Chiuso a mano: si torna alla pagina normale senza raddrizzare il telefono. */
+  body.c7-drillboard-off .c7-drillboard { display: none; }
+  /* Col tabellone aperto la nav flottante non deve intravedersi. `:has()` come
+     per la partita: su una pagina che il tabellone non ce l'ha, la sola
+     `:not(.c7-drillboard-off)` sarebbe sempre vera e farebbe sparire la
+     navigazione senza niente al suo posto. */
+  body:has(.c7-drillboard):not(.c7-drillboard-off) .c7-mobilenav { display: none; }
+}
+
+.c7-drillboard__pane {
+  min-width: 0; min-height: 0; padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.c7-drillboard__pane--controls {
+  border-left: 1px solid rgba(242, 248, 247, .16);
+  justify-content: space-between;
+}
+
+/* `contain`, mai `cover`: un esercizio ritagliato perde i bordi del tavolo,
+   che sono l'informazione (ADR-044). Meglio la cornice vuota del taglio. */
+.c7-drillboard__shot {
+  flex: 1; min-height: 0; border-radius: 14px;
+  background: rgba(242, 248, 247, .10);
+  display: grid; place-items: center; overflow: hidden;
+}
+.c7-drillboard__shot img {
+  width: 100%; height: 100%; object-fit: contain; display: block;
+}
+/* Le istruzioni si troncano a righe intere, non a meta' parola: `line-clamp`
+   mette i puntini, `max-height` tagliava la frase dove capitava. Per intero
+   restano nel formato verticale. */
+.c7-drillboard__rule {
+  margin: 0; flex-shrink: 0;
+  font-size: 12px; font-weight: 600; line-height: 1.4; color: var(--c7-accent-dim);
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.c7-drillboard__head { display: flex; align-items: center; gap: 10px; }
+.c7-drillboard__name {
+  font-size: 13px; font-weight: 800; letter-spacing: -.01em;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.c7-drillboard__counts { display: flex; gap: 22px; align-items: baseline; flex-shrink: 0; }
+.c7-drillboard__num {
+  font-size: clamp(26px, 8vh, 46px); font-weight: 800; letter-spacing: -.05em;
+  font-variant-numeric: tabular-nums; line-height: 1;
+}
+.c7-drillboard__lbl {
+  display: block; margin-top: 2px;
+  font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--c7-accent-dim);
+}
+
+/* Il numero puo' stringersi, i comandi no: su un telefono basso (la media
+   query arriva fino a 520px di altezza) e' la cifra a cedere spazio, non la
+   riga «Annulla / Ho finito» — che sparendo lascerebbe il giocatore dentro il
+   tabellone senza via d'uscita. */
+.c7-drillboard__score {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  min-height: 0; flex-shrink: 1;
+}
+.c7-drillboard__step {
+  width: 52px; height: 52px; border-radius: 50%;
+  border: 1.5px solid rgba(242, 248, 247, .28);
+  background: rgba(242, 248, 247, .14); color: var(--c7-accent-ink);
+  font-size: 17px; cursor: pointer; flex-shrink: 0;
+}
+.c7-drillboard__step:disabled { opacity: .45; cursor: default; }
+.c7-drillboard__figure {
+  flex: 1; min-width: 0;
+  display: flex; align-items: baseline; justify-content: center; gap: 4px;
+}
+.c7-drillboard__value {
+  font-size: clamp(34px, 11vh, 58px); font-weight: 800; letter-spacing: -.05em;
+  font-variant-numeric: tabular-nums; line-height: 1;
+}
+.c7-drillboard__max {
+  font-size: clamp(15px, 5vh, 24px); font-weight: 800; letter-spacing: -.03em;
+  color: var(--c7-accent-dim); font-variant-numeric: tabular-nums;
+}
+
+.c7-drillboard__pad { display: flex; gap: 10px; flex-shrink: 0; }
+.c7-drillboard__pad .c7-board__btn {
+  height: clamp(48px, 16vh, 62px); font-size: 15px;
+}
+
+.c7-drillboard__foot { display: flex; gap: 10px; flex-shrink: 0; }
+.c7-drillboard__ghost {
+  flex: 1; height: 40px; border-radius: var(--c7-r-pill);
+  border: 1px solid rgba(242, 248, 247, .24);
+  background: transparent; color: var(--c7-accent-dim);
+  font-family: inherit; font-size: 12px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  text-decoration: none; cursor: pointer;
+}
+.c7-drillboard__ghost:disabled { opacity: .4; cursor: default; }
+
+/* Il numero e il suo tetto, come nel prototipo 9b·3: «7 / 10». La cifra
+   protagonista e' Manrope 800 — e' un titolo, non un dato tabellare — e il
+   tetto le sta accanto in tono minore. */
+.c7-scorepad__figure { display: flex; align-items: baseline; gap: 4px; }
+.c7-scorepad__max {
+  font-size: 26px; font-weight: 800; letter-spacing: -.03em;
+  color: var(--c7-accent-dim); font-variant-numeric: tabular-nums;
+}
+/* Le barrette traducono il numero in quantita': quanto manca si vede senza
+   contare le cifre. */
+.c7-scorepad__pips {
+  margin-top: 16px; display: flex; gap: 5px; flex-wrap: wrap; justify-content: center;
+}
+.c7-scorepad__pip {
+  width: 24px; height: 6px; border-radius: var(--c7-r-pill);
+  background: rgba(242, 248, 247, .2);
+}
+.c7-scorepad__pip.is-on { background: var(--c7-accent-bright); }
+.c7-scorepad__hint {
+  margin-top: 10px; font-size: 12px; font-weight: 700; color: var(--c7-accent-dim);
+}

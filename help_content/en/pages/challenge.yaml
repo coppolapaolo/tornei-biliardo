@@ -68,11 +68,22 @@ blocks:
       - title: "Set the table up and play"
         text: "The picture and the instructions stay at the top, always visible: nothing to keep in your head."
       - title: "Record how it went"
-        text: "Use «−» and «+» to set the score, or pick «Passed» or «Not passed». Then tap «Record the attempt»."
+        text: "On a pass-or-fail drill the two big buttons are enough: whichever you tap records the attempt straight away, with nothing to confirm. On a scored drill you set the number with «−» and «+», then tap «Record the attempt»."
+      - title: "Tapped the wrong one? «Undo the last one»"
+        text: "It removes the attempt you just recorded, at the bottom of the screen. It exists precisely because a single tap records: the mistake is fixed afterwards, not prevented beforehand."
       - title: "Try again as often as you like"
-        text: "The attempt shows up straight away under «Your attempts», and «Attempts recorded» and «Your record» go up at the top. The field resets itself: you are ready for the next one."
+        text: "The attempt shows up straight away under «Your attempts», and at the top «Attempts recorded» goes up along with the second counter — «Your record» on a scored drill, «Passed» on a pass-or-fail one. The field resets itself: you are ready for the next one."
       - title: "When you have had enough, tap «I'm done»"
         text: "You go back to the catalogue. The attempts stay in your history, and coming back to the challenge shows you the last ten."
+
+  - type: note
+    tone: tip
+    title: "Turn your phone sideways"
+    text: >-
+      In landscape the screen becomes a single panel: the picture on one side,
+      the buttons on the other, no scrolling. It is meant for the phone resting
+      on the rail while you play. The **X** at the top left goes back to the
+      normal screen without turning the phone upright again.
 
   - type: note
     tone: info
@@ -92,6 +103,13 @@ blocks:
           It counts how much you did: ten shots, a point for each success. This
           is the type used for tie-breaks and for replacing an X by walkover,
           because it produces a comparable number.
+      - name: "Maximum score"
+        values: "optional"
+        text: >-
+          Whoever creates the drill can say how far you can get: the catalogue
+          then reads «0-15 points» and while practising you see «12 / 15»
+          instead of a bare number. It can also be left empty, and rightly so
+          for drills you repeat until you miss: there a maximum does not exist.
       - name: "Pass or fail"
         text: >-
           There is no score: either you do it or you do not. Fine for practice,
