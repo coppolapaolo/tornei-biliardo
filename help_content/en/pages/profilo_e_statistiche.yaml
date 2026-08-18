@@ -84,9 +84,36 @@ blocks:
 
   - type: text
     text: >-
-      The history collects every competition you took part in, with your
-      finishing position and the matches you played. It is the place to find an
-      evening from months ago.
+      The history holds **everything you have played**, split into five tabs:
+      matches, competitions, championships, drills and exams. It is the place to
+      find an evening from months ago.
+
+  - type: list
+    title: "The five tabs"
+    items:
+      - "**Matches** — all of them, individual matches included. Every row says where it comes from: championship, competition or individual. «Where from» keeps just one kind, and the pie above counts the matches you are looking at, not all of them."
+      - "**Competitions** and **Championships** — the ones you took part in, with your final position."
+      - "**Drills** — the attempts you recorded. From here you can delete one entered by mistake, and picking a scored drill shows its trend."
+      - "**Exams** — the completed ones, with the outcome and, when certified, who certified it."
+
+  - type: note
+    tone: tip
+    title: "A drill's trend"
+    text: >-
+      In the **Drills** tab, the chart icon next to a scored attempt opens that
+      drill's trend: the scores in time order, with zero at the bottom and the
+      drill's maximum at the top. Narrowing the dates narrows the chart. With a
+      single attempt nothing is drawn: one point is not a trend.
+
+  - type: note
+    tone: warning
+    title: "Deleting an attempt"
+    text: >-
+      It is for the score you entered wrong. It does not just remove the row:
+      the XP that attempt paid goes back too, and streaks and achievements are
+      **recalculated**. If other drills still hold them up, nothing changes —
+      deleting one out of a hundred does not cost you the streak. Attempts
+      played **in a competition** cannot be deleted: they count in the standings.
 
   - type: text
     text: >-

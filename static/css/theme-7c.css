@@ -2108,3 +2108,37 @@ button.c7-tpa-player:disabled { cursor: default; }
 .c7-scorepad__hint {
   margin-top: 10px; font-size: 12px; font-weight: 700; color: var(--c7-accent-dim);
 }
+
+/* Il grigio della torta: era nella palette del servizio ma non fra le pastiglie
+   della legenda, quindi una fetta grigia aveva la pastiglia di un altro colore
+   — la legenda diceva una cosa e il disegno un'altra. */
+.c7-feedback__swatch--muted { background: #C9CFCE; }
+
+/* L'andamento di un esercizio: una spezzata servita dal server, senza librerie.
+
+   Il riquadro è alto perché la scala parte da zero e arriva al tetto
+   dell'esercizio — l'unica che non mente — e con punteggi vicini la linea è
+   quasi piatta. Su 66px sarebbe una riga; su 150 si legge. */
+.c7-trend { position: relative; margin-top: 10px; }
+.c7-trend__svg {
+  width: 100%; height: 150px; display: block; overflow: visible;
+}
+.c7-trend__ref {
+  stroke: rgba(242, 248, 247, .18); stroke-width: 1; stroke-dasharray: 3 4;
+}
+/* Le due quote: senza, una linea a metà riquadro non dice se è andata bene. */
+.c7-trend__cap {
+  position: absolute; right: 0;
+  font-family: var(--c7-font-mono); font-size: 11px; font-weight: 700;
+  color: var(--c7-accent-dim);
+}
+.c7-trend__cap--top { top: -6px; }
+.c7-trend__cap--bottom { bottom: -6px; }
+/* I pallini della spezzata: elementi HTML sopra l'SVG, non `<circle>`. Dentro
+   un viewBox stirato un cerchio diventa un'ellisse, e nessun `vector-effect`
+   lo raddrizza — quello salva lo spessore del tratto, non la forma. */
+.c7-trend__dot {
+  position: absolute; width: 9px; height: 9px; border-radius: 50%;
+  background: var(--c7-accent-bright);
+  transform: translate(-50%, -50%); pointer-events: none;
+}

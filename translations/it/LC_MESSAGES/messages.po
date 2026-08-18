@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-18 15:52+0200\n"
+"POT-Creation-Date: 2026-08-18 16:38+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -134,6 +134,8 @@ msgstr ""
 
 #: models/dashboard/activity_feedback.py:205
 #: templates/components/_campionato_garas.html:16
+#: templates/components/_history_filters.html:67
+#: templates/components/_history_matches_tab.html:70
 #: templates/components/_match_info.html:16
 #: templates/components/_player_recent_matches.html:15
 #: templates/components/_player_recent_matches.html:39
@@ -1436,10 +1438,10 @@ msgstr ""
 #: routes/help.py:58 templates/admin/accessi.html:83
 #: templates/challenge/catalog.html:45
 #: templates/components/_classification_mobile.html:13
-#: templates/components/_history_filters.html:53
-#: templates/components/_history_filters.html:67
-#: templates/components/_history_filters.html:99
-#: templates/components/_history_filters.html:130
+#: templates/components/_history_filters.html:79
+#: templates/components/_history_filters.html:93
+#: templates/components/_history_filters.html:125
+#: templates/components/_history_filters.html:156
 #: templates/gamification/dashboard.html:150
 #: templates/individual_match/dashboard.html:156
 #: templates/individual_match/matches.html:33
@@ -2480,6 +2482,18 @@ msgstr ""
 msgid "Errore durante la disiscrizione."
 msgstr ""
 
+#: routes/player/competitions.py:187
+msgid "Questa prova non è tua."
+msgstr ""
+
+#: routes/player/competitions.py:192
+msgid "Prova cancellata."
+msgstr ""
+
+#: routes/player/competitions.py:194
+msgid "Non è stato possibile cancellare la prova."
+msgstr ""
+
 #: routes/player/exports.py:542
 msgid "Export GDPR Pronto"
 msgstr ""
@@ -2652,16 +2666,16 @@ msgstr ""
 #: templates/components/_player_challenge_statistics.html:13
 #: templates/components/_separated_dashboard_content.html:431
 #: templates/components/_unified_cards.html:52
-#: templates/player/challenge_detail.html:3
+#: templates/player/challenge_detail.html:3 templates/player/history.html:31
 msgid "Esercizi"
 msgstr ""
 
 #: templates/base.html:181 templates/exam/catalog.html:3
-#: templates/exam/catalog.html:6
+#: templates/exam/catalog.html:6 templates/player/history.html:34
 msgid "Esami"
 msgstr ""
 
-#: templates/base.html:186
+#: templates/base.html:186 templates/components/_history_filters.html:70
 #: templates/components/_player_dashboard_content.html:12
 #: templates/individual_match/admin_overview.html:4
 #: templates/individual_match/admin_overview.html:10
@@ -2769,6 +2783,7 @@ msgstr ""
 #: templates/components/_challenge_management_modal.html:19
 #: templates/components/_challenge_management_modal.html:76
 #: templates/components/_challenge_management_modal.html:89
+#: templates/components/_history_drills_tab.html:47
 #: templates/components/_page_modal.html:17
 #: templates/components/_player_activity_feedback.html:208
 #: templates/components/_soft_delete_modal.html:7
@@ -2813,7 +2828,7 @@ msgstr ""
 msgid "Esami:"
 msgstr ""
 
-#: templates/base.html:476
+#: templates/base.html:476 templates/components/_history_exams_tab.html:66
 msgid "esaminatore"
 msgstr ""
 
@@ -3018,12 +3033,12 @@ msgstr ""
 #: templates/admin/venues_list.html:35
 #: templates/components/_gamification_labels.html:50
 #: templates/components/_gara_matches.html:6
-#: templates/components/_history_matches_tab.html:14
-#: templates/components/_history_matches_tab.html:67
+#: templates/components/_history_matches_tab.html:19
+#: templates/components/_history_matches_tab.html:57
 #: templates/components/_match_cards_mobile.html:8
 #: templates/gara_bracket.html:21
 #: templates/individual_match/admin_overview.html:20
-#: templates/player/history.html:18
+#: templates/player/history.html:22
 msgid "Partite"
 msgstr ""
 
@@ -3037,7 +3052,6 @@ msgstr ""
 #: templates/components/_campionato_garas.html:161
 #: templates/components/_history_campionati_tab.html:105
 #: templates/components/_history_gare_tab.html:116
-#: templates/components/_history_matches_tab.html:183
 #: templates/components/_index_campionato_cards.html:69
 #: templates/components/_index_open_inscriptions.html:67
 #: templates/components/_index_upcoming.html:18
@@ -4027,7 +4041,7 @@ msgid "Solo collegati"
 msgstr ""
 
 #: templates/admin/accessi.html:96
-#: templates/components/_history_filters.html:144
+#: templates/components/_history_filters.html:170
 #: templates/individual_match/discover_players.html:107
 #: templates/public/campionatos_list.html:26
 msgid "Filtra"
@@ -4068,7 +4082,7 @@ msgid "Permanenza"
 msgstr ""
 
 #: templates/admin/accessi.html:122 templates/admin/accessi.html:147
-#: templates/admin/kpi.html:77 templates/components/_history_filters.html:113
+#: templates/admin/kpi.html:77 templates/components/_history_filters.html:139
 msgid "Da"
 msgstr ""
 
@@ -4370,8 +4384,8 @@ msgstr ""
 #: templates/components/_gara_matches.html:57
 #: templates/components/_gara_matches.html:91
 #: templates/components/_guest_info.html:17
-#: templates/components/_history_filters.html:81
-#: templates/components/_history_filters.html:96
+#: templates/components/_history_filters.html:107
+#: templates/components/_history_filters.html:122
 #: templates/components/_multi_set_score_display.html:64
 #: templates/gamification/admin/features.html:27
 #: templates/gamification/admin/quests.html:24
@@ -4627,8 +4641,8 @@ msgstr ""
 #: templates/components/_detailed_classification.html:20
 #: templates/components/_gara_edit_form.html:65
 #: templates/components/_gara_edit_form.html:75
-#: templates/components/_history_filters.html:69
-#: templates/components/_history_matches_tab.html:22
+#: templates/components/_history_filters.html:95
+#: templates/components/_history_matches_tab.html:23
 #: templates/components/_player_statistics.html:25
 msgid "Vittorie"
 msgstr ""
@@ -4653,7 +4667,7 @@ msgstr ""
 #: templates/components/_history_gare_tab.html:50
 #: templates/components/_player_statistics.html:19
 #: templates/components/_separated_dashboard_content.html:165
-#: templates/player/history.html:21 templates/public/campionatos_list.html:53
+#: templates/player/history.html:25 templates/public/campionatos_list.html:53
 #: templates/public/garas_list.html:51
 msgid "Gare"
 msgstr ""
@@ -4947,7 +4961,7 @@ msgstr ""
 #: templates/admin/gara_create_standalone.html:130
 #: templates/components/_campionato_garas.html:19
 #: templates/components/_gara_edit_form.html:216
-#: templates/components/_history_filters.html:22
+#: templates/components/_history_filters.html:27
 #: templates/components/_match_info.html:24
 #: templates/components/_match_info.html:45
 #: templates/components/_new_gara_modal.html:189
@@ -5369,7 +5383,7 @@ msgstr ""
 msgid "Tutto"
 msgstr ""
 
-#: templates/admin/kpi.html:82 templates/components/_history_filters.html:120
+#: templates/admin/kpi.html:82 templates/components/_history_filters.html:146
 msgid "A"
 msgstr ""
 
@@ -6261,7 +6275,7 @@ msgstr ""
 #: templates/admin/venue_manager_requests.html:31
 #: templates/components/_gara_edit_form.html:165
 #: templates/components/_gara_info.html:20
-#: templates/components/_history_filters.html:36
+#: templates/components/_history_filters.html:41
 #: templates/components/_match_info.html:31
 #: templates/components/_nearby_gare.html:125
 #: templates/components/_player_dashboard_content.html:32
@@ -6611,6 +6625,7 @@ msgid "Punteggio medio"
 msgstr ""
 
 #: templates/challenge/_challenge_detail.html:80
+#: templates/components/_history_drills_tab.html:29
 msgid "Miglior punteggio"
 msgstr ""
 
@@ -6648,6 +6663,7 @@ msgid "Chiudi lo schermo intero"
 msgstr ""
 
 #: templates/challenge/_training_board.html:49
+#: templates/components/_history_drills_tab.html:21
 msgid "Prove"
 msgstr ""
 
@@ -6668,6 +6684,7 @@ msgstr ""
 #: templates/challenge/_training_board.html:65
 #: templates/challenge/training.html:95 templates/challenge/training.html:150
 #: templates/challenge/training.html:193
+#: templates/components/_history_drills_tab.html:133
 #: templates/components/_match_challenge_input.html:52
 #: templates/components/_player_challenge_statistics.html:55
 #: templates/components/_player_challenges.html:38
@@ -6683,6 +6700,7 @@ msgstr ""
 #: templates/challenge/_training_board.html:68
 #: templates/challenge/training.html:99 templates/challenge/training.html:150
 #: templates/challenge/training.html:194
+#: templates/components/_history_drills_tab.html:133
 #: templates/components/_match_challenge_input.html:53
 #: templates/components/_player_challenge_statistics.html:55
 #: templates/components/_player_challenges.html:38
@@ -7385,10 +7403,12 @@ msgid "Registra la prova"
 msgstr ""
 
 #: templates/challenge/training.html:140
+#: templates/components/_history_drills_tab.html:118
 msgid "Le tue prove"
 msgstr ""
 
 #: templates/challenge/training.html:151
+#: templates/components/_history_drills_tab.html:134
 #, python-format
 msgid "Punteggio %(score)s"
 msgstr ""
@@ -8965,7 +8985,7 @@ msgstr ""
 
 #: templates/components/_gara_matches.html:56
 #: templates/components/_gara_matches.html:90
-#: templates/components/_history_filters.html:65
+#: templates/components/_history_filters.html:91
 #: templates/components/_player_recent_matches.html:18
 #: templates/components/_user_recent_matches_table.html:17
 #: templates/player/challenge_attempt_detail.html:130
@@ -9108,7 +9128,7 @@ msgstr ""
 #: templates/components/_history_campionati_tab.html:12
 #: templates/components/_player_statistics.html:13
 #: templates/components/_separated_dashboard_content.html:393
-#: templates/player/history.html:24 templates/public/campionatos_list.html:2
+#: templates/player/history.html:28 templates/public/campionatos_list.html:2
 #: templates/public/campionatos_list.html:7
 msgid "Campionati"
 msgstr ""
@@ -9144,48 +9164,157 @@ msgstr ""
 msgid "Non hai ancora partecipato a nessun campionato."
 msgstr ""
 
+#: templates/components/_history_drills_tab.html:25
+#: templates/components/_player_challenge_statistics.html:22
+msgid "Esercizi diversi"
+msgstr ""
+
+#: templates/components/_history_drills_tab.html:33
+msgid "Superate"
+msgstr ""
+
+#: templates/components/_history_drills_tab.html:52
+msgid "Andamento nel periodo scelto"
+msgstr ""
+
+#: templates/components/_history_drills_tab.html:54
+msgid "prove"
+msgstr ""
+
+#: templates/components/_history_drills_tab.html:70
+#, python-format
+msgid "Andamento dei punteggi, da %(first)s a %(last)s su %(max)s"
+msgstr ""
+
+#: templates/components/_history_drills_tab.html:93
+msgid "Prima prova"
+msgstr ""
+
+#: templates/components/_history_drills_tab.html:97
+msgid "Ultima prova"
+msgstr ""
+
+#: templates/components/_history_drills_tab.html:101
+msgid "Il migliore"
+msgstr ""
+
+#: templates/components/_history_drills_tab.html:106
+msgid ""
+"Questo esercizio è superato o non superato: non c'è un punteggio da "
+"mettere in grafico."
+msgstr ""
+
+#: templates/components/_history_drills_tab.html:110
+msgid "Servono almeno due prove nel periodo scelto per disegnare un andamento."
+msgstr ""
+
+#: templates/components/_history_drills_tab.html:138
+#, fuzzy
+msgid "in gara"
+msgstr "Perc. Vinte"
+
+#: templates/components/_history_drills_tab.html:144
+msgid "Vedi l'andamento"
+msgstr ""
+
+#: templates/components/_history_drills_tab.html:161
+msgid ""
+"Cancellare questa prova? Il punteggio sparisce e i progressi si "
+"ricalcolano."
+msgstr ""
+
+#: templates/components/_history_drills_tab.html:165
+msgid "Cancella la prova"
+msgstr ""
+
+#: templates/components/_history_drills_tab.html:179
+msgid "Nessuna prova"
+msgstr ""
+
+#: templates/components/_history_drills_tab.html:180
+msgid "Nessuna prova di esercizio nel periodo scelto."
+msgstr ""
+
+#: templates/components/_history_drills_tab.html:183
+msgid "Vai agli esercizi"
+msgstr ""
+
+#: templates/components/_history_exams_tab.html:21
+#: templates/components/_player_training.html:116 templates/exam/manage.html:15
+msgid "Esami sostenuti"
+msgstr ""
+
+#: templates/components/_history_exams_tab.html:25
+#: templates/exam/detail.html:171 templates/exam/manage.html:19
+msgid "Superati"
+msgstr ""
+
+#: templates/components/_history_exams_tab.html:29
+msgid "Certificati"
+msgstr ""
+
+#: templates/components/_history_exams_tab.html:33
+msgid "Certificati e superati"
+msgstr ""
+
+#: templates/components/_history_exams_tab.html:41
+#: templates/exam/manage.html:35
+msgid "I tuoi esami"
+msgstr ""
+
+#: templates/components/_history_exams_tab.html:55
+msgid "Esame"
+msgstr ""
+
+#: templates/components/_history_exams_tab.html:64
+msgid "Certificato"
+msgstr ""
+
+#: templates/components/_history_exams_tab.html:64
+#: templates/components/_player_training.html:136
+#: templates/exam/detail.html:179
+msgid "In autonomia"
+msgstr ""
+
+#: templates/components/_history_exams_tab.html:73
+msgid "Apri l'esame"
+msgstr ""
+
+#: templates/components/_history_exams_tab.html:86
+#: templates/exam/manage.html:59
+msgid "Nessun esame"
+msgstr ""
+
+#: templates/components/_history_exams_tab.html:87
+msgid "Nessun esame concluso nel periodo scelto."
+msgstr ""
+
+#: templates/components/_history_exams_tab.html:90
+msgid "Vai agli esami"
+msgstr ""
+
 #: templates/components/_history_filters.html:9
 msgid "Filtri"
 msgstr ""
 
-#: templates/components/_history_filters.html:24
-#: templates/components/_history_filters.html:87
+#: templates/components/_history_filters.html:29
+#: templates/components/_history_filters.html:62
+#: templates/components/_history_filters.html:113
 #: templates/gamification/dashboard.html:184
 msgid "Tutte"
 msgstr ""
 
-#: templates/components/_history_filters.html:39
+#: templates/components/_history_filters.html:44
 msgid "Cerca sala..."
 msgstr ""
 
-#: templates/components/_history_filters.html:51
-#: templates/components/_player_recent_matches.html:17
-#: templates/components/_user_recent_matches_table.html:16
-#: templates/individual_match/dashboard.html:34
-#: templates/individual_match/dashboard.html:165
-#: templates/individual_match/matches.html:114
-msgid "Avversario"
+#: templates/components/_history_filters.html:60
+msgid "Provenienza"
 msgstr ""
 
-#: templates/components/_history_filters.html:72
-#: templates/components/_history_matches_tab.html:30
-#: templates/components/_player_statistics.html:43
-msgid "Sconfitte"
-msgstr ""
-
-#: templates/components/_history_filters.html:84
-msgid "Solo completate"
-msgstr ""
-
-#: templates/components/_history_filters.html:102
-msgid "Attivi"
-msgstr ""
-
-#: templates/components/_history_filters.html:105
-msgid "Conclusi"
-msgstr ""
-
-#: templates/components/_history_filters.html:128
+#: templates/components/_history_filters.html:64
+#: templates/components/_history_filters.html:154
+#: templates/components/_history_matches_tab.html:69
 #: templates/components/_index_upcoming.html:12
 #: templates/components/_match_info.html:12
 #: templates/components/_player_recent_matches.html:14
@@ -9194,7 +9323,34 @@ msgstr ""
 msgid "Campionato"
 msgstr ""
 
-#: templates/components/_history_filters.html:147
+#: templates/components/_history_filters.html:77
+#: templates/components/_player_recent_matches.html:17
+#: templates/components/_user_recent_matches_table.html:16
+#: templates/individual_match/dashboard.html:34
+#: templates/individual_match/dashboard.html:165
+#: templates/individual_match/matches.html:114
+msgid "Avversario"
+msgstr ""
+
+#: templates/components/_history_filters.html:98
+#: templates/components/_history_matches_tab.html:27
+#: templates/components/_player_statistics.html:43
+msgid "Sconfitte"
+msgstr ""
+
+#: templates/components/_history_filters.html:110
+msgid "Solo completate"
+msgstr ""
+
+#: templates/components/_history_filters.html:128
+msgid "Attivi"
+msgstr ""
+
+#: templates/components/_history_filters.html:131
+msgid "Conclusi"
+msgstr ""
+
+#: templates/components/_history_filters.html:173
 msgid "Reset"
 msgstr ""
 
@@ -9232,41 +9388,56 @@ msgstr ""
 msgid "Nessuna gara trovata con i filtri selezionati."
 msgstr ""
 
-#: templates/components/_history_matches_tab.html:38
-#: templates/components/_player_statistics.html:31
-msgid "Win Rate"
-msgstr "Perc. Vinte"
-
-#: templates/components/_history_matches_tab.html:46
-msgid "Triangoli Vinti"
+#: templates/components/_history_matches_tab.html:31
+msgid "Vittorie su giocate"
 msgstr ""
 
-#: templates/components/_history_matches_tab.html:54
-msgid "Triangoli Persi"
+#: templates/components/_history_matches_tab.html:35
+#: templates/individual_match/statistics.html:155
+msgid "Triangoli vinti"
 msgstr ""
 
-#: templates/components/_history_matches_tab.html:73
+#: templates/components/_history_matches_tab.html:39
+msgid "Triangoli persi"
+msgstr ""
+
+#: templates/components/_history_matches_tab.html:48
+msgid "Da dove vengono"
+msgstr ""
+
+#: templates/components/_history_matches_tab.html:61
 msgid "Esporta CSV"
 msgstr ""
 
-#: templates/components/_history_matches_tab.html:116
-#: templates/components/_match_header.html:74
-#: templates/components/_match_info.html:38
-#: templates/components/_match_scoreboard.html:74
-msgid "Sfida individuale"
+#: templates/components/_history_matches_tab.html:71
+msgid "Individuale"
 msgstr ""
 
-#: templates/components/_history_matches_tab.html:136
-#: templates/components/_match_card.html:32
-#: templates/components/_match_result_row.html:21
-#: templates/components/_player_recent_matches.html:60
-#: templates/components/_separated_dashboard_content.html:57
-#: templates/components/_user_recent_matches_table.html:47
-msgid "Trio"
+#: templates/components/_history_matches_tab.html:84
+msgid "Avversario non registrato"
 msgstr ""
 
-#: templates/components/_history_matches_tab.html:198
-msgid "Nessuna partita trovata con i filtri selezionati."
+#: templates/components/_history_matches_tab.html:96
+msgid "partita a tre"
+msgstr ""
+
+#: templates/components/_history_matches_tab.html:102
+msgid "Apri la sfida"
+msgstr ""
+
+#: templates/components/_history_matches_tab.html:107
+#: templates/components/_match_result_row.html:152
+#: templates/individual_match/dashboard.html:109
+#: templates/individual_match/matches.html:133
+msgid "Apri la partita"
+msgstr ""
+
+#: templates/components/_history_matches_tab.html:120
+msgid "Nessuna partita"
+msgstr ""
+
+#: templates/components/_history_matches_tab.html:121
+msgid "Nessuna partita corrisponde ai filtri scelti."
 msgstr ""
 
 #: templates/components/_history_pagination.html:3
@@ -9641,6 +9812,14 @@ msgstr ""
 msgid "Da giocare"
 msgstr ""
 
+#: templates/components/_match_card.html:32
+#: templates/components/_match_result_row.html:21
+#: templates/components/_player_recent_matches.html:60
+#: templates/components/_separated_dashboard_content.html:57
+#: templates/components/_user_recent_matches_table.html:47
+msgid "Trio"
+msgstr ""
+
 #: templates/components/_match_card.html:52
 msgid "Assegna tavolo"
 msgstr ""
@@ -9720,6 +9899,12 @@ msgstr ""
 msgid "Torna allo Storico"
 msgstr ""
 
+#: templates/components/_match_header.html:74
+#: templates/components/_match_info.html:38
+#: templates/components/_match_scoreboard.html:74
+msgid "Sfida individuale"
+msgstr ""
+
 #: templates/components/_match_header.html:80
 msgid "senza tavolo"
 msgstr ""
@@ -9744,12 +9929,6 @@ msgstr ""
 #: templates/components/_match_result_row.html:141
 #: templates/components/_match_result_row.html:146
 msgid "Risultato rapido"
-msgstr ""
-
-#: templates/components/_match_result_row.html:152
-#: templates/individual_match/dashboard.html:109
-#: templates/individual_match/matches.html:133
-msgid "Apri la partita"
 msgstr ""
 
 #: templates/components/_match_result_row.html:159
@@ -10078,10 +10257,6 @@ msgstr ""
 msgid "Vedi classifica completa"
 msgstr ""
 
-#: templates/components/_player_challenge_statistics.html:22
-msgid "Esercizi diversi"
-msgstr ""
-
 #: templates/components/_player_challenge_statistics.html:36
 msgid "Ultimi tentativi"
 msgstr ""
@@ -10308,6 +10483,10 @@ msgstr ""
 msgid "Le mie Statistiche"
 msgstr ""
 
+#: templates/components/_player_statistics.html:31
+msgid "Win Rate"
+msgstr "Perc. Vinte"
+
 #: templates/components/_player_statistics.html:40
 #: templates/gamification/achievements.html:41
 msgid "Totali"
@@ -10346,18 +10525,9 @@ msgstr ""
 msgid "Non superato"
 msgstr ""
 
-#: templates/components/_player_training.html:116 templates/exam/manage.html:15
-msgid "Esami sostenuti"
-msgstr ""
-
 #: templates/components/_player_training.html:130
 #, python-format
 msgid "certificato da %(who)s"
-msgstr ""
-
-#: templates/components/_player_training.html:136
-#: templates/exam/detail.html:179
-msgid "In autonomia"
 msgstr ""
 
 #: templates/components/_position_points.html:27
@@ -11596,10 +11766,6 @@ msgstr ""
 msgid "Sostenuti"
 msgstr ""
 
-#: templates/exam/detail.html:171 templates/exam/manage.html:19
-msgid "Superati"
-msgstr ""
-
 #: templates/exam/detail.html:175
 msgid "Candidati"
 msgstr ""
@@ -11632,14 +11798,6 @@ msgstr ""
 
 #: templates/exam/manage.html:29
 msgid "Tasso di riuscita"
-msgstr ""
-
-#: templates/exam/manage.html:35
-msgid "I tuoi esami"
-msgstr ""
-
-#: templates/exam/manage.html:59
-msgid "Nessun esame"
 msgstr ""
 
 #: templates/exam/manage.html:60
@@ -14192,10 +14350,6 @@ msgstr ""
 msgid "Proponi una sfida"
 msgstr ""
 
-#: templates/individual_match/statistics.html:155
-msgid "Triangoli vinti"
-msgstr ""
-
 #: templates/individual_match/statistics.html:159
 msgid "Triangoli vinti su giocati"
 msgstr ""
@@ -14622,7 +14776,7 @@ msgid "Storico"
 msgstr ""
 
 #: templates/player/history.html:10
-msgid "Tutte le tue partite, gare e campionati"
+msgid "Tutto quello che hai giocato: partite, gare, campionati, esercizi ed esami"
 msgstr ""
 
 #: templates/player/history.html:12

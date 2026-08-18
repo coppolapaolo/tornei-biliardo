@@ -3,7 +3,7 @@ section: account
 kind: approfondimento
 audience: [giocatore]
 minutes: 4
-summary: "Cosa contiene il tuo profilo, come si legge il rating e dove trovare lo storico delle gare giocate."
+summary: "Cosa contiene il tuo profilo, come si legge il rating e dove ritrovare tutto quello che hai giocato: partite, gare, campionati, esercizi ed esami."
 screens: [player.profile, player.history, player.edit_profile, player.dashboard,
   player.view_profile]
 related: [privacy_e_dati, progressi]
@@ -80,13 +80,41 @@ blocks:
 
   - type: shot
     shot: storico
-    caption: "Lo storico: tutte le gare a cui hai partecipato, con posizione e risultati."
+    caption: "Lo storico: cinque linguette per partite, gare, campionati, esercizi ed esami."
 
   - type: text
     text: >-
-      Lo storico raccoglie tutte le gare a cui hai partecipato, con la
-      posizione finale e le partite giocate. È il posto dove ritrovare una
-      serata di mesi fa.
+      Lo storico raccoglie **tutto quello che hai giocato**, diviso in cinque
+      linguette: partite, gare, campionati, esercizi ed esami. È il posto dove
+      ritrovare una serata di mesi fa.
+
+  - type: list
+    title: "Le cinque linguette"
+    items:
+      - "**Partite** — tutte, comprese le sfide individuali. Ogni riga dice da dove viene: campionato, gara o individuale. Con «Provenienza» puoi tenerne una sola, e la torta lì sopra conta le partite che stai guardando, non tutte."
+      - "**Gare** e **Campionati** — le competizioni a cui hai partecipato, con la posizione finale."
+      - "**Esercizi** — le prove che hai registrato. Da qui si cancella una prova inserita per sbaglio, e scegliendo un esercizio a punteggio si vede l'andamento."
+      - "**Esami** — quelli conclusi, con l'esito e, se certificato, chi te l'ha certificato."
+
+  - type: note
+    tone: tip
+    title: "L'andamento di un esercizio"
+    text: >-
+      Nella linguetta **Esercizi**, l'icona del grafico accanto a una prova a
+      punteggio apre l'andamento di quell'esercizio: i punteggi in ordine di
+      tempo, con lo zero in basso e il massimo dell'esercizio in alto. Restringendo
+      le date il grafico segue. Con una prova sola non si disegna niente: un punto
+      non è un andamento.
+
+  - type: note
+    tone: warning
+    title: "Cancellare una prova"
+    text: >-
+      Serve per il punteggio inserito sbagliato. Non toglie solo la riga: torna
+      indietro anche l'XP che quella prova aveva pagato, e serie e traguardi si
+      **ricalcolano**. Se altri esercizi li reggono comunque, non cambia niente
+      — cancellarne una su cento non ti fa perdere la serie. Le prove giocate
+      **in gara** non si cancellano: valgono in classifica.
 
   - type: text
     text: >-

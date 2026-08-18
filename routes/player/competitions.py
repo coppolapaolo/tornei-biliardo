@@ -162,6 +162,47 @@ def unsubscribe_from_gara(gara_id):
 # ============ PLAYER HISTORY ============
 
 
+@player_bp.route("/history/drill/<int:attempt_id>/delete", methods=["POST"])
+@login_required
+@player_only
+def delete_drill_attempt(attempt_id):
+    """Cancella una prova di esercizio dallo storico.
+
+    L'annulla della schermata di allenamento toglie **l'ultima**, perché lì si
+    sta giocando e l'errore da correggere è quello appena fatto. Qui si può
+    togliere una prova qualsiasi: è il gesto da scrivania, per il punteggio
+    inserito sbagliato che ci si accorge di avere in elenco.
+
+    Stessa primitiva, stesse conseguenze: l'XP torna indietro e serie e
+    traguardi si ricalcolano — se altri esercizi li reggono, non cambia niente.
+
+    Le prove giocate **in gara** non passano di qui: hanno conseguenze in
+    classifica, e non è chi le ha giocate a poterle togliere.
+    """
+    from models.challenge.models import ChallengeAttempt
+    from models.challenge.services import ChallengeService
+
+    attempt = db.session.get(ChallengeAttempt, attempt_id)
+    if attempt is None or attempt.user_id != current_user.id:
+        flash(_("Questa prova non è tua."), "danger")
+        return redirect(url_for("player.history", tab="esercizi"))
+
+    try:
+        ChallengeService.delete_attempt(attempt_id=attempt_id, actor_id=current_user.id)
+        flash(_("Prova cancellata."), "success")
+    except Exception:
+        flash(_("Non è stato possibile cancellare la prova."), "danger")
+
+    # Il ritorno conserva i filtri: cancellare una riga non deve rimandare in
+    # cima a un elenco che si era appena finito di restringere.
+    argomenti = {
+        chiave: valore
+        for chiave, valore in request.args.items()
+        if chiave not in ("tab",)
+    }
+    return redirect(url_for("player.history", tab="esercizi", **argomenti))
+
+
 @player_bp.route("/history")
 @login_required
 @player_only
@@ -169,13 +210,17 @@ def history():
     """Storico completo del giocatore con filtri avanzati.
 
     Accessible to players and directors (blocked for pure admins).
-    Supports three tabs: matches, gare, campionati.
+    Cinque schede: partite, gare, campionati, esercizi, esami.
+
+    La scheda «partite» tiene insieme le partite di torneo e le sfide
+    individuali, che stanno su due tabelle diverse: prima interrogava solo la
+    prima, e le sfide individuali non comparivano in nessuno storico.
     """
     from models.player.history_service import PlayerHistoryService, HistoryFilters
 
     # Get active tab (default: matches)
     tab = request.args.get("tab", "matches")
-    if tab not in ("matches", "gare", "campionati"):
+    if tab not in ("matches", "gare", "campionati", "esercizi", "esami"):
         tab = "matches"
 
     # Parse filters from request
@@ -188,10 +233,51 @@ def history():
     gara_pagination = None
     gara_stats = None
     campionato_pagination = None
+    drill_pagination = None
+    drill_stats = None
+    drill_trend = None
+    drill_chart = None
+    selected_drill = None
+    match_donut = None
+    exam_pagination = None
+    exam_stats = None
 
     # Fetch data based on active tab
     if tab == "matches":
-        match_pagination, match_stats = PlayerHistoryService.get_match_history(
+        match_pagination, match_stats = PlayerHistoryService.get_unified_match_history(
+            user_id=current_user.id,
+            filters=filters,
+            page=page,
+            per_page=20,
+        )
+        match_donut = PlayerHistoryService.context_donut(match_stats)
+    elif tab == "esercizi":
+        drill_pagination, drill_stats = PlayerHistoryService.get_drill_history(
+            user_id=current_user.id,
+            filters=filters,
+            page=page,
+            per_page=20,
+        )
+        # Selezionando un esercizio a punteggio si guarda il suo andamento nel
+        # periodo filtrato. Senza selezione non si disegna niente: una media
+        # di esercizi diversi non vuol dire nulla.
+        challenge_id = request.args.get("challenge_id", type=int)
+        if challenge_id:
+            from models import Challenge
+
+            selected_drill = db.session.get(Challenge, challenge_id)
+            drill_trend = PlayerHistoryService.get_drill_trend(
+                user_id=current_user.id,
+                challenge_id=challenge_id,
+                filters=filters,
+            )
+        if drill_trend:
+            drill_chart = PlayerHistoryService.trend_chart(
+                drill_trend,
+                max_score=(selected_drill.max_score if selected_drill else None),
+            )
+    elif tab == "esami":
+        exam_pagination, exam_stats = PlayerHistoryService.get_exam_history(
             user_id=current_user.id,
             filters=filters,
             page=page,
@@ -223,6 +309,14 @@ def history():
         gara_pagination=gara_pagination,
         gara_stats=gara_stats,
         campionato_pagination=campionato_pagination,
+        drill_pagination=drill_pagination,
+        drill_stats=drill_stats,
+        drill_trend=drill_trend,
+        drill_chart=drill_chart,
+        selected_drill=selected_drill,
+        match_donut=match_donut,
+        exam_pagination=exam_pagination,
+        exam_stats=exam_stats,
         filters=filters,
         filter_options=filter_options,
     )

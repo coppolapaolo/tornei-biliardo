@@ -1,0 +1,188 @@
+{# Storico esercizi: le prove fatte, dal catalogo e dalle gare.
+
+   Due cose che le altre schede non hanno, e per due ragioni diverse:
+
+   - **si cancella**, perché una prova si registra con un tocco mentre si gioca
+     e il tasto sbagliato si preme. Solo quelle del catalogo: le prove di gara
+     hanno conseguenze in classifica, e non è chi le ha giocate a poterle
+     togliere;
+   - **si guarda l'andamento**, scegliendo un esercizio a punteggio. Non c'è un
+     andamento «di tutti gli esercizi»: la media fra prove diverse non vuol
+     dire niente. #}
+
+{% set filter_type = 'esercizi' %}
+{% include "components/_history_filters.html" %}
+
+{% if drill_stats %}
+<div class="c7-card" style="margin-bottom:16px">
+  <div class="c7-grid" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:14px">
+    <div>
+      <div class="c7-num-lg">{{ drill_stats.total }}</div>
+      <div class="c7-rows__sub">{{ _("Prove") }}</div>
+    </div>
+    <div>
+      <div class="c7-num-lg">{{ drill_stats.distinct }}</div>
+      <div class="c7-rows__sub">{{ _("Esercizi diversi") }}</div>
+    </div>
+    <div>
+      <div class="c7-num-lg">{{ drill_stats.best_score if drill_stats.best_score is not none else '—' }}</div>
+      <div class="c7-rows__sub">{{ _("Miglior punteggio") }}</div>
+    </div>
+    <div>
+      <div class="c7-num-lg">{{ drill_stats.passed }}</div>
+      <div class="c7-rows__sub">{{ _("Superate") }}</div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{# ---------- L'andamento dell'esercizio scelto ---------- #}
+{% if selected_drill %}
+<div class="c7-card c7-card--accent" style="margin-bottom:16px">
+  <div class="c7-sechead mb-3">
+    <h2>{{ selected_drill.get_display_name() }}</h2>
+    <a href="{{ url_for('player.history', tab='esercizi',
+                        date_from=filters.date_from.isoformat() if filters.date_from else None,
+                        date_to=filters.date_to.isoformat() if filters.date_to else None) }}"
+       class="btn btn-secondary btn-sm">{{ _("Chiudi") }}</a>
+  </div>
+
+  {% if drill_chart %}
+  <div class="c7-kicker">
+    {{ _("Andamento nel periodo scelto") }}
+    <span class="c7-sep">·</span>
+    <span class="c7-num">{{ drill_trend|length }}</span> {{ _("prove") }}
+  </div>
+  {# La spezzata è un SVG servito dal server: nessuna libreria, quindi niente
+     da far passare dalla CSP.
+
+     Il fondoscala parte da **zero** e arriva al massimo dell'esercizio: è
+     l'unica scala che non mente. Scalando sull'intervallo dei dati, una serie
+     6-7-8 sembrerebbe una scalata e una 1-8-15 la stessa identica cosa.
+
+     Il prezzo è che con punteggi vicini la linea è quasi piatta — ed è giusto
+     che lo sia: erano prove quasi uguali. Per non renderla *illeggibile* il
+     riquadro è alto, e le due righe di riferimento dicono dove stanno lo zero
+     e il tetto. #}
+  <div class="c7-trend">
+    <svg class="c7-trend__svg" viewBox="0 0 100 40" preserveAspectRatio="none"
+         role="img"
+         aria-label="{{ _('Andamento dei punteggi, da %(first)s a %(last)s su %(max)s', first=drill_chart.first, last=drill_chart.last, max=drill_chart.max) }}">
+      <line x1="0" y1="2" x2="100" y2="2" class="c7-trend__ref"
+            vector-effect="non-scaling-stroke"></line>
+      <line x1="0" y1="38" x2="100" y2="38" class="c7-trend__ref"
+            vector-effect="non-scaling-stroke"></line>
+      <polyline points="{{ drill_chart.polyline }}" fill="none"
+                stroke="var(--c7-accent-bright)" stroke-width="2"
+                stroke-linejoin="round" stroke-linecap="round"
+                vector-effect="non-scaling-stroke"></polyline>
+    </svg>
+    {# I pallini stanno FUORI dall'SVG: dentro un viewBox stirato un cerchio
+       diventa un'ellisse. Qui sono elementi veri, quindi restano tondi
+       comunque il riquadro si allarghi. #}
+    {% for punto in drill_chart.points %}
+    <span class="c7-trend__dot" title="{{ punto.score }}"
+          style="left:{{ punto.x_pct }}%;top:{{ punto.y_pct }}%"></span>
+    {% endfor %}
+    <span class="c7-trend__cap c7-trend__cap--top">{{ drill_chart.max }}</span>
+    <span class="c7-trend__cap c7-trend__cap--bottom">0</span>
+  </div>
+  <div class="c7-grid" style="grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px">
+    <div>
+      <div class="c7-num-lg" style="font-size:24px">{{ drill_chart.first }}</div>
+      <div class="c7-rows__sub">{{ _("Prima prova") }}</div>
+    </div>
+    <div>
+      <div class="c7-num-lg" style="font-size:24px">{{ drill_chart.last }}</div>
+      <div class="c7-rows__sub">{{ _("Ultima prova") }}</div>
+    </div>
+    <div>
+      <div class="c7-num-lg" style="font-size:24px">{{ drill_chart.best }}{% if selected_drill.max_score %}<span style="font-size:15px;opacity:.7">/{{ selected_drill.max_score }}</span>{% endif %}</div>
+      <div class="c7-rows__sub">{{ _("Il migliore") }}</div>
+    </div>
+  </div>
+  {% elif selected_drill.pass_fail_only %}
+  <p class="mb-0" style="font-size:14px;font-weight:600">
+    {{ _("Questo esercizio è superato o non superato: non c'è un punteggio da mettere in grafico.") }}
+  </p>
+  {% else %}
+  <p class="mb-0" style="font-size:14px;font-weight:600">
+    {{ _("Servono almeno due prove nel periodo scelto per disegnare un andamento.") }}
+  </p>
+  {% endif %}
+</div>
+{% endif %}
+
+<div class="c7-card">
+  <div class="c7-sechead mb-3">
+    <h2>{{ _("Le tue prove") }}{% if drill_pagination %} <span class="c7-num">{{ drill_pagination.total }}</span>{% endif %}</h2>
+  </div>
+
+  {% if drill_pagination and drill_pagination.items %}
+  <div class="c7-rows" style="background:var(--c7-bg)">
+    {% for prova in drill_pagination.items %}
+    <div class="c7-rows__row">
+      <span class="c7-tile c7-tile--sm {{ 'c7-tile--locked' if prova.is_pass_fail and not prova.passed }}">
+        {%- if prova.is_pass_fail %}<i class="fas {{ 'fa-check' if prova.passed else 'fa-xmark' }}"></i>
+        {%- else %}<span class="c7-num">{{ prova.score if prova.score is not none else '—' }}</span>{% endif %}
+      </span>
+
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">{{ prova.challenge_name }}</div>
+        <div class="c7-rows__sub">
+          {%- if prova.is_pass_fail %}{{ _("Superata") if prova.passed else _("Non superata") }}
+          {%- else %}{{ _("Punteggio %(score)s", score=prova.score) }}
+            {%- if prova.max_score %} / {{ prova.max_score }}{% endif %}
+          {%- endif -%}
+          {%- if prova.attempted_at %} <span class="c7-sep">·</span> <span class="c7-num">{{ prova.attempted_at|datetime_local }}</span>{% endif -%}
+          {%- if prova.source == 'gara' %} <span class="c7-sep">·</span> {{ _("in gara") }}{% if prova.gara_name %}: {{ prova.gara_name }}{% endif %}{% endif -%}
+        </div>
+      </div>
+
+      {# Il grafico si apre solo dove c'è qualcosa da disegnare. #}
+      {% if not prova.is_pass_fail %}
+      <a class="c7-iconbtn" title="{{ _('Vedi l\'andamento') }}" aria-label="{{ _('Vedi l\'andamento') }}"
+         href="{{ url_for('player.history', tab='esercizi', challenge_id=prova.challenge_id,
+                          date_from=filters.date_from.isoformat() if filters.date_from else None,
+                          date_to=filters.date_to.isoformat() if filters.date_to else None) }}">
+        <i class="fas fa-chart-line"></i>
+      </a>
+      {% endif %}
+
+      {# Si cancella solo la prova del catalogo: quelle di gara valgono in
+         classifica, e non è chi le ha giocate a poterle togliere. #}
+      {% if prova.attempt_id and prova.source == 'catalog'
+            and feature_visible('player.delete_drill_attempt') %}
+      <form method="POST" style="display:inline"
+            action="{{ url_for('player.delete_drill_attempt', attempt_id=prova.attempt_id,
+                               challenge_id=request.args.get('challenge_id'),
+                               date_from=filters.date_from.isoformat() if filters.date_from else None,
+                               date_to=filters.date_to.isoformat() if filters.date_to else None) }}"
+            onsubmit='return confirm({{ _("Cancellare questa prova? Il punteggio sparisce e i progressi si ricalcolano.")|tojson }})'>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="c7-iconbtn"
+                style="background:var(--c7-err-bg);color:var(--c7-err-ink)"
+                title="{{ _('Cancella la prova') }}" aria-label="{{ _('Cancella la prova') }}">
+          <i class="fas fa-trash"></i>
+        </button>
+      </form>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  {% set pagination = drill_pagination %}
+  {% include "components/_history_pagination.html" %}
+  {% else %}
+  <div class="c7-empty">
+    <div class="c7-empty__ico"><i class="fas fa-bullseye"></i></div>
+    <h2 class="c7-empty__title">{{ _("Nessuna prova") }}</h2>
+    <p class="c7-empty__text">{{ _("Nessuna prova di esercizio nel periodo scelto.") }}</p>
+    {% if feature_visible('challenge.challenge_catalog') %}
+    <div class="c7-empty__actions">
+      <a href="{{ url_for('challenge.challenge_catalog') }}" class="btn btn-primary">{{ _("Vai agli esercizi") }}</a>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>

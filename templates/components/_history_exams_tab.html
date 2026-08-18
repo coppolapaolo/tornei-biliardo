@@ -1,0 +1,95 @@
+{# Storico esami: sola lettura, e non è una dimenticanza.
+
+   Un esame certificato lo chiude un esaminatore davanti al candidato
+   (ADR-042). Lasciarlo cancellare a chi l'ha sostenuto significherebbe
+   lasciargli cancellare il giudizio di un altro — che è l'opposto di quello
+   che la certificazione serve a garantire.
+
+   L'esame in autonomia si potrebbe cancellare senza danno, ma distinguere i
+   due casi con lo stesso pulsante insegnerebbe che «gli esami si cancellano»,
+   e la prima volta che qualcuno prova su uno certificato non capirebbe il
+   rifiuto. #}
+
+{% set filter_type = 'esami' %}
+{% include "components/_history_filters.html" %}
+
+{% if exam_stats %}
+<div class="c7-card" style="margin-bottom:16px">
+  <div class="c7-grid" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:14px">
+    <div>
+      <div class="c7-num-lg">{{ exam_stats.total }}</div>
+      <div class="c7-rows__sub">{{ _("Esami sostenuti") }}</div>
+    </div>
+    <div>
+      <div class="c7-num-lg">{{ exam_stats.passed }}</div>
+      <div class="c7-rows__sub">{{ _("Superati") }}</div>
+    </div>
+    <div>
+      <div class="c7-num-lg">{{ exam_stats.certified }}</div>
+      <div class="c7-rows__sub">{{ _("Certificati") }}</div>
+    </div>
+    <div>
+      <div class="c7-num-lg">{{ exam_stats.certified_passed }}</div>
+      <div class="c7-rows__sub">{{ _("Certificati e superati") }}</div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="c7-card">
+  <div class="c7-sechead mb-3">
+    <h2>{{ _("I tuoi esami") }}{% if exam_pagination %} <span class="c7-num">{{ exam_pagination.total }}</span>{% endif %}</h2>
+  </div>
+
+  {% if exam_pagination and exam_pagination.items %}
+  <div class="c7-rows" style="background:var(--c7-bg)">
+    {% for tentativo in exam_pagination.items %}
+    {% set certificato = tentativo.mode == 'certified' %}
+    <div class="c7-rows__row">
+      <span class="c7-tile c7-tile--sm {{ 'c7-tile--locked' if not tentativo.passed }}">
+        <i class="fas {{ 'fa-check' if tentativo.passed else 'fa-xmark' }}"></i>
+      </span>
+
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">
+          {{- tentativo.exam.name if tentativo.exam else _("Esame") -}}
+          {%- if tentativo.total_score is not none %}
+          <span class="c7-num" style="margin-left:8px">
+            {{- tentativo.total_score }}{% if tentativo.max_possible_score %}/{{ tentativo.max_possible_score }}{% endif -%}
+          </span>
+          {%- endif %}
+        </div>
+        <div class="c7-rows__sub">
+          <span class="c7-state {{ 'c7-state--info' if certificato else 'c7-state--muted' }}">
+            {{- _("Certificato") if certificato else _("In autonomia") -}}
+          </span>
+          {%- if certificato and tentativo.examiner %} <span class="c7-sep">·</span> {{ _("esaminatore") }}: {{ tentativo.examiner.username }}{% endif -%}
+          {%- if tentativo.completed_at %} <span class="c7-sep">·</span> <span class="c7-num">{{ tentativo.completed_at|datetime_local }}</span>{% endif -%}
+        </div>
+      </div>
+
+      {% if feature_visible('exam.exam_detail') %}
+      <a class="c7-iconbtn" href="{{ url_for('exam.exam_detail', exam_id=tentativo.exam_id) }}"
+         title="{{ _('Apri l\'esame') }}" aria-label="{{ _('Apri l\'esame') }}">
+        <i class="fas fa-chevron-right"></i>
+      </a>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  {% set pagination = exam_pagination %}
+  {% include "components/_history_pagination.html" %}
+  {% else %}
+  <div class="c7-empty">
+    <div class="c7-empty__ico"><i class="fas fa-graduation-cap"></i></div>
+    <h2 class="c7-empty__title">{{ _("Nessun esame") }}</h2>
+    <p class="c7-empty__text">{{ _("Nessun esame concluso nel periodo scelto.") }}</p>
+    {% if feature_visible('exam.exam_catalog') %}
+    <div class="c7-empty__actions">
+      <a href="{{ url_for('exam.exam_catalog') }}" class="btn btn-primary">{{ _("Vai agli esami") }}</a>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>

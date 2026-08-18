@@ -15,8 +15,13 @@
         <div class="card-body">
             <form method="GET" action="{{ url_for('player.history') }}">
                 <input type="hidden" name="tab" value="{{ active_tab }}">
+                {% if filter_type == 'esercizi' and request.args.get('challenge_id') %}
+                {# Chi sta guardando l'andamento di un esercizio e restringe le
+                   date vuole lo stesso esercizio, non tornare all'elenco. #}
+                <input type="hidden" name="challenge_id" value="{{ request.args.get('challenge_id') }}">
+                {% endif %}
                 <div class="row g-3">
-                    {% if filter_type != 'campionati' %}
+                    {% if filter_type not in ('campionati', 'esercizi', 'esami') %}
                     <!-- Discipline -->
                     <div class="col-md-3">
                         <label for="discipline" class="form-label">{{ _("Disciplina") }}</label>
@@ -46,6 +51,27 @@
                     {% endif %}
 
                     {% if filter_type == 'matches' %}
+                    {# Da dove viene la partita. Non è deducibile dagli altri
+                       filtri: «campionato» sceglie UN campionato, questo
+                       sceglie il *tipo* di provenienza — ed è l'unico modo per
+                       chiedere «solo le sfide individuali», che prima non
+                       comparivano affatto in questo elenco. #}
+                    <div class="col-md-3">
+                        <label for="context" class="form-label">{{ _("Provenienza") }}</label>
+                        <select name="context" id="context" class="form-select">
+                            <option value="">{{ _("Tutte") }}</option>
+                            <option value="campionato" {{ 'selected' if filters.context == 'campionato' else '' }}>
+                                {{ _("Campionato") }}
+                            </option>
+                            <option value="gara" {{ 'selected' if filters.context == 'gara' else '' }}>
+                                {{ _("Gara") }}
+                            </option>
+                            <option value="individuale" {{ 'selected' if filters.context == 'individuale' else '' }}>
+                                {{ _("Sfide individuali") }}
+                            </option>
+                        </select>
+                    </div>
+
                     <!-- Opponent (only for matches) -->
                     <div class="col-md-3">
                         <label for="opponent_id" class="form-label">{{ _("Avversario") }}</label>
@@ -122,7 +148,7 @@
                                value="{{ filters.date_to.isoformat() if filters.date_to else '' }}">
                     </div>
 
-                    {% if filter_type != 'campionati' %}
+                    {% if filter_type not in ('campionati', 'esercizi', 'esami') %}
                     <!-- Campionato -->
                     <div class="col-md-3">
                         <label for="campionato_id" class="form-label">{{ _("Campionato") }}</label>
