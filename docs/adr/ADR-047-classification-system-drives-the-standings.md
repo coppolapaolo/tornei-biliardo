@@ -128,6 +128,46 @@ documenta la corrispondenza.
   triangoli. Un ricalcolo completo muoverebbe piazzamenti storici già
   comunicati; il dry-run segnala se e dove l'ordine divergerebbe.
 
+## I dati storici non sono stati riparati — decisione del 2026-08-18
+
+Lo script esiste, il dry-run è stato eseguito in produzione (455 righe in 22
+gare) e **non è mai stato applicato**. È una scelta, non un lavoro lasciato a
+metà.
+
+Le ragioni, nell'ordine in cui hanno pesato:
+
+1. **Le gare erano già state premiate.** I risultati sono stati consegnati alle
+   persone. Un archivio riallineato mesi dopo non cambia un premio: lo
+   contraddice soltanto.
+2. **Nessun numero mostrato oggi dipende da quelle righe.** Ripercorrendo i
+   percorsi di lettura uno per uno: nei campionati a triangoli si legge
+   `racks_won`, che il backfill di luglio aveva già riempito correttamente; nei
+   campionati a vittorie si legge `rack_difference`, che in quelle gare non è
+   mai stato ambiguo; per le gare col valore storico `"RACKS"`, saltate dal
+   backfill, interviene il ripiego di `ranking_rack_value` e restituisce il
+   totale giusto. La segnalazione della issue #89 si chiude senza toccare il
+   database.
+3. **Il report iniziale sopravvalutava il problema.** Diceva «455 righe da
+   correggere» mettendo nello stesso mucchio le traduzioni di formato — un
+   numero giusto in una casella che allora significava altro — e le poche righe
+   con un valore che non discende dalle partite. La distinzione è stata aggiunta
+   dopo (PR #151), ma la decisione era già informata da quella lettura.
+
+**Cosa resta esposto.** Il contenuto grezzo di `rack_difference` su un
+sottoinsieme di righe è un totale, non una differenza. Oggi nessun percorso lo
+legge con quel significato. Morderebbe se qualcuno ci costruisse sopra qualcosa
+di nuovo — un criterio di spareggio, una statistica, un export — dando per
+scontato che la colonna dica ciò che il suo nome promette.
+
+**Se un giorno la situazione cambia**, gli strumenti sono già lì e sono di sola
+lettura per default:
+
+```bash
+scripts/repair_round_classification_racks.py --anteprima <campionato>
+scripts/repair_round_classification_racks.py --campionato <id> --apply
+scripts/verify_classification_configs.py
+```
+
 ## Alternative considerate
 
 **Correggere solo il valore mostrato** (usare `ranking_rack_value` e chiudere la
