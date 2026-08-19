@@ -618,8 +618,43 @@ class GaraParticipantReassignService:
         if rounds:
             service.calculate_gara_classification(gara_id)
 
-        if campionato_id:
+        # La classifica di campionato **persistita** si rinfresca solo se
+        # esiste già. Non è pigrizia: l'applicazione la scrive in momenti
+        # precisi — chiusura del campionato, avvio dei playoff, correzione
+        # manuale di un risultato — e finché quei momenti non arrivano la
+        # tabella è vuota di proposito. La schermata che l'utente guarda non la
+        # legge nemmeno: `calculate_general_classification` aggrega al volo le
+        # `GaraClassification`, che qui sono già corrette.
+        #
+        # Popolarla adesso non sarebbe inerte. Da quelle righe leggono il
+        # profilo giocatore, l'export GDPR, la dashboard e le qualificazioni
+        # playoff: il campionato comparirebbe nelle classifiche di tutti i suoi
+        # giocatori perché qualcuno ha corretto un errore di iscrizione. E per
+        # le gare seminate — `AmalfiStrategy._seeding_order`, il tabellone a
+        # eliminazione diretta — l'assenza di righe *è* la condizione che fa
+        # scegliere il sorteggio casuale: una riparazione dati non deve decidere
+        # come si accoppia la gara successiva. Le strategie random, round robin
+        # e doppio KO quelle righe non le leggono, quindi il rischio dipende dal
+        # campionato; il cambiamento sul profilo, no: è certo.
+        #
+        # Una riga che c'è, invece, va rinfrescata: lasciarla stantia dopo lo
+        # spostamento sarebbe peggio che non averla.
+        if campionato_id and GaraParticipantReassignService._has_persisted_standings(
+            campionato_id
+        ):
             ClassificationService.update_campionato_classification(campionato_id)
+
+    @staticmethod
+    def _has_persisted_standings(campionato_id: int) -> bool:
+        """Il campionato ha già una classifica generale persistita?"""
+        from models.classification.models import Classification
+
+        return (
+            db.session.query(Classification.id)
+            .filter(Classification.campionato_id == campionato_id)
+            .first()
+            is not None
+        )
 
     @staticmethod
     def _recalculate_elo() -> None:
