@@ -239,6 +239,14 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "admin.competition.merge_squadra": {"director"},
     "admin.competition.toggle_squadra": {"director"},
     "admin.competition.set_inscription_squadra": {"player", "director"},
+    # Categorie (ADR-049): nessun "player", a differenza delle squadre. La
+    # squadra al piu' influenza il sorteggio; la categoria decide se le
+    # partite muovono l'Elo, e autoassegnarsela sarebbe un pulsante "fammi
+    # contare".
+    "admin.competition.set_inscription_categoria": {"director"},
+    "admin.competition.rename_categoria": {"director"},
+    "admin.competition.toggle_categoria": {"director"},
+    "admin.competition.delete_categoria": {"director"},
     # Round management
     "admin.competition.start_first_round": {"director"},
     "admin.competition.start_round_generic": {"director"},

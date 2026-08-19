@@ -9,7 +9,13 @@ Fix: `match_rating_history` registra il delta per ogni (match, giocatore,
 sistema). Idempotenza (skip se esiste già history) + revert su riapertura.
 
 Feature (2026-06): i match "con handicap" (effective_has_handicap, ereditato
-da gara/campionato) NON aggiornano i rating.
+da gara/campionato) non aggiornano i rating.
+
+Emendamento (ADR-049, 2026-08): l'handicap da solo non basta più a spegnere
+l'Elo. Lo spegne la **differenza di categoria** — fra due giocatori della
+stessa categoria l'handicap non è in gioco, quindi il risultato conta. Senza
+categorie assegnate il comportamento resta quello di prima, ed è la proprietà
+che rende il cambio innocuo sulle gare già esistenti.
 """
 
 from __future__ import annotations
@@ -178,10 +184,21 @@ def test_handler_skips_handicap_match(db_session):
     gara = _gara(suffix, has_handicap=True)  # gara con handicap
     db.session.add(gara)
     db.session.flush()
-    match = _completed_match(gara.id, p1.id, p2.id, has_handicap=None)  # eredita
+    # CONFIRMED_BY_BOTH e non CLOSED_UNILATERALLY: senza righe in `rack` un
+    # match chiuso unilateralmente è un walkover, e sarebbe stato saltato per
+    # quel motivo — il test avrebbe continuato a passare anche togliendo del
+    # tutto la regola sull'handicap.
+    match = _completed_match(
+        gara.id,
+        p1.id,
+        p2.id,
+        has_handicap=None,  # eredita
+        status=MatchStatus.CONFIRMED_BY_BOTH.value,
+    )
     db.session.add(match)
     db.session.flush()
     assert match.effective_has_handicap is True
+    assert match.is_walkover is False
 
     event = MatchCompletedEvent(
         match_id=match.id,
@@ -194,9 +211,125 @@ def test_handler_skips_handicap_match(db_session):
     RatingEventHandlers.handle_match_completed(event)
     db.session.flush()
 
-    # Nessun rating, nessuna history per un match con handicap.
+    # Nessun rating, nessuna history: nessuno ha assegnato categorie, e
+    # "non lo so" non è "sono uguali". È il comportamento storico, invariato.
     assert _elo(p1.id) is None
     assert _elo(p2.id) is None
+    assert MatchRatingHistory.query.filter_by(match_id=match.id).count() == 0
+
+
+def _iscrivi_con_categoria(gara, user, categoria):
+    from models.competition.models import Inscription
+
+    db.session.add(
+        Inscription(
+            gara_id=gara.id,
+            user_id=user.id,
+            categoria_id=categoria.id if categoria else None,
+        )
+    )
+    db.session.flush()
+
+
+def _categoria(gara, nome):
+    from models.categoria.models import Categoria
+
+    categoria = Categoria(name=nome, gara_id=gara.id)
+    db.session.add(categoria)
+    db.session.flush()
+    return categoria
+
+
+def _scenario_handicap(suffix, nome1, nome2):
+    """Gara con handicap, due iscritti con le categorie indicate, un match."""
+    p1, p2 = _user(suffix, "cat_p1"), _user(suffix, "cat_p2")
+    db.session.add_all([p1, p2])
+    db.session.flush()
+    gara = _gara(suffix, has_handicap=True)
+    db.session.add(gara)
+    db.session.flush()
+
+    categorie = {n: _categoria(gara, n) for n in {n for n in (nome1, nome2) if n}}
+    _iscrivi_con_categoria(gara, p1, categorie.get(nome1))
+    _iscrivi_con_categoria(gara, p2, categorie.get(nome2))
+
+    match = _completed_match(
+        gara.id,
+        p1.id,
+        p2.id,
+        has_handicap=None,
+        status=MatchStatus.CONFIRMED_BY_BOTH.value,
+    )
+    db.session.add(match)
+    db.session.flush()
+    assert match.is_walkover is False
+    return p1, p2, match
+
+
+def _completa(match, p1, p2):
+    from models.rating.event_handlers import RatingEventHandlers
+    from models.events import MatchCompletedEvent
+
+    RatingEventHandlers.handle_match_completed(
+        MatchCompletedEvent(
+            match_id=match.id,
+            player1_id=p1.id,
+            player1_name="p1",
+            player2_id=p2.id,
+            player2_name="p2",
+            winner_id=p1.id,
+        )
+    )
+    db.session.flush()
+
+
+@pytest.mark.unit
+def test_handicap_stessa_categoria_aggiorna_il_rating(db_session):
+    """Il cuore di ADR-049: ad armi pari il risultato conta."""
+    p1, p2, match = _scenario_handicap(uuid.uuid4().hex[:8], "B", "B")
+    assert match.effective_has_handicap is True
+
+    _completa(match, p1, p2)
+
+    assert _elo(p1.id) is not None and _elo(p1.id) > 1200
+    assert _elo(p2.id) is not None and _elo(p2.id) < 1200
+    assert MatchRatingHistory.query.filter_by(match_id=match.id).count() > 0
+
+
+@pytest.mark.unit
+def test_handicap_categorie_diverse_non_aggiorna(db_session):
+    p1, p2, match = _scenario_handicap(uuid.uuid4().hex[:8], "B", "A")
+
+    _completa(match, p1, p2)
+
+    assert _elo(p1.id) is None
+    assert _elo(p2.id) is None
+    assert MatchRatingHistory.query.filter_by(match_id=match.id).count() == 0
+
+
+@pytest.mark.unit
+def test_handicap_stessa_categoria_resta_idempotente(db_session):
+    """L'evento ri-emesso non deve raddoppiare il delta."""
+    p1, p2, match = _scenario_handicap(uuid.uuid4().hex[:8], "B", "B")
+
+    _completa(match, p1, p2)
+    dopo_uno = _elo(p1.id)
+    _completa(match, p1, p2)
+
+    assert _elo(p1.id) == dopo_uno
+
+
+@pytest.mark.unit
+def test_handicap_stessa_categoria_si_annulla_alla_riapertura(db_session):
+    p1, p2, match = _scenario_handicap(uuid.uuid4().hex[:8], "B", "B")
+
+    _completa(match, p1, p2)
+    assert _elo(p1.id) != 1200
+
+    RatingCalculationService.revert_match_result(match)
+    db.session.flush()
+
+    assert _elo(p1.id) == 1200
     assert MatchRatingHistory.query.filter_by(match_id=match.id).count() == 0
 
 

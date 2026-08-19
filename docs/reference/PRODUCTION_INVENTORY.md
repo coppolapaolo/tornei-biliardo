@@ -93,6 +93,10 @@ Per costruire la production allowlist, scorri ogni area in Sezione 1 e marca esp
 | `/admin/gara/<int:gara_id>/squadre/<int:squadra_id>/merge` | POST | `admin.competition.merge_squadra` | `@gara_manager_required` | JSON action | Fonde due squadre |
 | `/admin/gara/<int:gara_id>/squadre/<int:squadra_id>/toggle` | POST | `admin.competition.toggle_squadra` | `@gara_manager_required` | JSON action | Attiva/disattiva squadra |
 | `/admin/gara/<int:gara_id>/inscription/<int:inscription_id>/squadra` | POST | `admin.competition.set_inscription_squadra` | `@login_required` (giocatore titolare **o** direttore: distinzione nel service) | action | Assegna un iscritto a una squadra |
+| `/admin/gara/<int:gara_id>/inscription/<int:inscription_id>/categoria` | POST | `admin.competition.set_inscription_categoria` | `@gara_manager_required` | JSON action | Assegna la categoria di un iscritto **dal nome**, creandola se manca (ADR-049) |
+| `/admin/gara/<int:gara_id>/categorie/<int:categoria_id>/rename` | POST | `admin.competition.rename_categoria` | `@gara_manager_required` | action | Rinomina una categoria |
+| `/admin/gara/<int:gara_id>/categorie/<int:categoria_id>/toggle` | POST | `admin.competition.toggle_categoria` | `@gara_manager_required` | action | Attiva/disattiva una categoria |
+| `/admin/gara/<int:gara_id>/categorie/<int:categoria_id>/delete` | POST | `admin.competition.delete_categoria` | `@gara_manager_required` | action | Elimina una categoria non assegnata a nessuno |
 
 **Rounds Management:**
 

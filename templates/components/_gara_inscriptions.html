@@ -44,7 +44,7 @@
     <div class="c7-stack" style="gap:8px">
       {% for inscription in active_inscriptions %}
       <div style="background:var(--c7-bg);border-radius:var(--c7-r-chip);padding:12px 14px">
-      <div class="d-flex align-items-center gap-3">
+      <div class="d-flex align-items-center gap-3 flex-wrap">
         <span class="c7-avatar {{ 'c7-card--locked' if inscription.is_forfeit }}">{{ inscription.user.username[:2] | upper }}</span>
         <div class="flex-fill min-width-0">
           <a href="{{ url_for('player.view_profile', user_id=inscription.user_id) }}"
@@ -55,6 +55,24 @@
             {{ _('Iscritto il %(date)s', date=inscription.created_at|datetime_local) }}
           </div>
         </div>
+        {# Categoria dell'iscritto (ADR-049): decide se le sue partite contano
+           per l'Elo in una gara con handicap. Il campo è un combo — scrivere un
+           nome nuovo crea la categoria, quelli già in elenco si completano da
+           soli — e salva senza ricaricare: con 32 iscritti un invio di form per
+           riga significherebbe 32 ritorni in cima alla pagina. #}
+        {% if gara.effective_has_handicap %}
+        {% if user_can_manage and categorie_editable %}
+        <input type="text" list="categorieGara{{ gara.id }}"
+               class="form-control form-control-sm c7-categoria-input"
+               value="{{ inscription.categoria.name if inscription.categoria else '' }}"
+               placeholder="{{ _('Cat.') }}"
+               maxlength="50"
+               data-categoria-url="{{ url_for('admin.competition.set_inscription_categoria', gara_id=gara.id, inscription_id=inscription.id) }}"
+               aria-label="{{ _('Categoria di %(username)s in questa gara', username=inscription.user.username) }}">
+        {% elif inscription.categoria %}
+        <span class="c7-state">{{ inscription.categoria.name }}</span>
+        {% endif %}
+        {% endif %}
         {% if inscription.is_forfeit %}
         <span class="c7-state c7-state--muted" title="{{ _('Ha dato forfait') }}">{{ _('Forfait') }}</span>
         {% endif %}

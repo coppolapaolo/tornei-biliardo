@@ -294,6 +294,14 @@
   {% include "components/_squadre_management.html" %}
 </div>
 
+{# Categorie della competizione (ADR-049): stessa collocazione delle squadre,
+   perche' e' configurazione della gara. Il componente si mostra da se' solo
+   quando la gara ha l'handicap — e porta con se' il `<datalist>` e lo script
+   del combo che sta nell'elenco iscritti, incluso due volte. #}
+<div class="c7-section--main{% if playing_admin %} order-7 order-lg-1{% endif %}" id="sectionCategorie" data-c7-tab="gestione">
+  {% include "components/_categorie_management.html" %}
+</div>
+
 {# Gestione Turni: e' la configurazione dei turni (disciplina e distanza per
    turno), non l'elenco delle partite — vive quindi in Gestione, non in Turni.
    Le partite del turno stanno nella vista Turni. #}
@@ -709,6 +717,8 @@
       "number": {{ gara.number }},
       "tiebreakerUntilPosition": {{ gara.tiebreaker_until_position or 3 }},
       "campionatoId": {{ gara.campionato_id | tojson }},
+      "senzaCategoria": {{ (iscritti_senza_categoria or 0) | tojson }},
+      "iscrittiAttivi": {{ (inscriptions | rejectattr('is_waitlist') | rejectattr('is_withdrawn') | list | length) | tojson }},
       "discipline": {{ gara.discipline | tojson }},
       "distance": {{ gara.distance }},
       "isRaceTo": {{ (not gara.is_race_to) | tojson }},
@@ -764,6 +774,7 @@
       "errorSsrGroupScores": {{ _("I punteggi devono essere numeri interi non negativi") | tojson }},
       "errorSsrGroupDuplicates": {{ _("Serve un vincitore netto: il punteggio più alto del gruppo non può essere condiviso") | tojson }},
       "infoSsrStart": {{ _("Usa 'Avvia SSR' per inserire i punteggi degli spareggi") | tojson }},
+      "warnSenzaCategoria": {{ _("{senza} iscritti su {totale} non hanno una categoria: le loro partite non conteranno per l'Elo, e dopo l'avvio non potrai più cambiarle.") | tojson }},
       "infoUnknown": {{ _("Errore sconosciuto") | tojson }},
       "infoValidateImpossible": {{ _("Impossibile validare il risultato") | tojson }},
       "tieFor": {{ _("Pari merito per il") | tojson }},
@@ -788,6 +799,17 @@
       message = GARA_CONFIG.i18n.confirmStartBracket;
     } else {
       message = GARA_CONFIG.i18n.confirmStartStandard;
+    }
+
+    // Ultimo istante utile: dopo l'avvio le categorie hanno gia' deciso quali
+    // partite contano per l'Elo, e correggerle richiede uno script e un
+    // ricalcolo che sposta il rating di tutti.
+    const senzaCategoria = GARA_CONFIG.gara.senzaCategoria || 0;
+    if (senzaCategoria > 0) {
+      const avviso = GARA_CONFIG.i18n.warnSenzaCategoria
+        .replace('{senza}', senzaCategoria)
+        .replace('{totale}', GARA_CONFIG.gara.iscrittiAttivi || senzaCategoria);
+      message = avviso + '\n\n' + message;
     }
 
     showConfirm(message, () => {

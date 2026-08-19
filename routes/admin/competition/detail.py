@@ -392,6 +392,25 @@ def gara_detail(gara_id):
             squadre_all = SquadraService.list_for_gara(gara, include_inactive=True)
             squadra_counts = SquadraService.counts_by_squadra(gara.id)
 
+    # Categorie (ADR-049). Come per le squadre, l'elenco esiste solo dove
+    # serve: le categorie decidono quali partite contano per l'Elo, quindi
+    # hanno senso quando la gara ha l'handicap. Fuori di lì non compare nulla
+    # e chi non usa l'handicap non vede alcuna differenza.
+    from models.categoria.service import CategoriaService
+
+    categorie = []
+    categorie_all = []
+    categoria_counts = {}
+    categorie_editable = False
+    iscritti_senza_categoria = 0
+    if gara.effective_has_handicap:
+        categorie = CategoriaService.list_for_gara(gara)
+        categorie_editable = CategoriaService.can_edit_inscription(gara, current_user)
+        if user_can_manage:
+            categorie_all = CategoriaService.list_for_gara(gara, include_inactive=True)
+            categoria_counts = CategoriaService.counts_by_categoria(gara.id)
+            iscritti_senza_categoria = CategoriaService.count_senza_categoria(gara.id)
+
     # Si arriva da un'iscrizione appena conclusa (`?chiedi_squadra=1`): la
     # scelta della squadra si chiede subito, in un modale, invece di lasciarla
     # a una card dentro una linguetta che chi si iscrive non apre mai (US-8).
@@ -553,6 +572,12 @@ def gara_detail(gara_id):
         squadre_editable=squadre_editable,
         chiedi_squadra=chiedi_squadra,
         squadra_owner_is_campionato=bool(gara.campionato_id),
+        categorie=categorie,
+        categorie_all=categorie_all,
+        categoria_counts=categoria_counts,
+        categorie_editable=categorie_editable,
+        iscritti_senza_categoria=iscritti_senza_categoria,
+        categoria_owner_is_campionato=bool(gara.campionato_id),
         available_users=available_users,
         # SSR (Spot Shot Rally) data
         ssr_groups=ssr_groups,
