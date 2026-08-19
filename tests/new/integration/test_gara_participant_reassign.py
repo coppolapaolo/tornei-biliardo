@@ -470,3 +470,89 @@ def test_rinfresca_una_classifica_di_campionato_esistente(scenario, db_session):
     }
     assert sbagliato_id not in righe, "la riga stantia è rimasta"
     assert righe[giusto_id].gare_played == 2
+
+
+def test_sposta_anche_le_partite_a_trio(scenario, db_session):
+    """Il triangolo non e' un caso di scuola: e' come la gara 35 ha giocato.
+
+    Con un numero dispari di iscritti la politica crea una partita a tre, e
+    quella partecipazione vive in `trio_match`/`trio_rack` — otto colonne utente
+    fra le due, non solo `player1_id`. Restare indietro su una sola lascerebbe
+    il triangolo con due identita' diverse per la stessa persona, e gli incontri
+    anti-rivincita si rigenererebbero attorno a quella sbagliata.
+    """
+    from models.match.models import TrioMatch, TrioRack
+
+    gara2 = scenario["gara2"]
+    sbagliato_id = scenario["sbagliato"].id
+    giusto_id = scenario["giusto"].id
+    terzo = _user()
+    quarto = _user()
+    _inscribe(gara2, terzo, quarto)
+
+    partita = Match(
+        gara_id=gara2.id,
+        round_number=1,
+        player1_id=sbagliato_id,
+        player2_id=terzo.id,
+        is_trio=True,
+        status=MatchStatus.CONFIRMED_BY_BOTH.value,
+        ended_at=utc_now() - timedelta(days=10),
+    )
+    db.session.add(partita)
+    db.session.flush()
+
+    trio = TrioMatch(
+        match_id=partita.id,
+        player1_id=sbagliato_id,
+        player2_id=terzo.id,
+        player3_id=quarto.id,
+        current_player1_id=sbagliato_id,
+        current_player2_id=terzo.id,
+        waiting_player_id=quarto.id,
+        winner_id=terzo.id,
+        is_completed=True,
+    )
+    db.session.add(trio)
+    db.session.flush()
+    db.session.add(
+        TrioRack(
+            trio_match_id=trio.id,
+            rack_number=1,
+            winner_id=terzo.id,
+            player1_id=sbagliato_id,
+            player2_id=terzo.id,
+            waiting_player_id=quarto.id,
+            added_by_id=sbagliato_id,
+        )
+    )
+    db.session.commit()
+    trio_id, rack_id, partita_id = trio.id, TrioRack.query.first().id, partita.id
+
+    _run(scenario)
+
+    trio = db_session.get(TrioMatch, trio_id)
+    assert trio.player1_id == giusto_id
+    assert trio.current_player1_id == giusto_id
+    assert trio.player2_id == terzo.id, "gli altri due non si devono muovere"
+    assert trio.player3_id == quarto.id
+
+    rack = db_session.get(TrioRack, rack_id)
+    assert rack.player1_id == giusto_id
+    assert rack.added_by_id == giusto_id
+    assert rack.waiting_player_id == quarto.id
+
+    # La partita che fa da contenitore e il triangolo devono raccontare la
+    # stessa persona: e' la coerenza che gli incontri anti-rivincita leggono.
+    assert db_session.get(Match, partita_id).player1_id == trio.player1_id
+
+    incontri = PlayerEncounter.query.filter_by(gara_id=gara2.id).all()
+    coppie = {(e.player1_id, e.player2_id) for e in incontri}
+    assert sbagliato_id not in {p for c in coppie for p in c}
+    for atteso in (
+        (giusto_id, terzo.id),
+        (giusto_id, quarto.id),
+        (terzo.id, quarto.id),
+    ):
+        ordinata = (min(atteso), max(atteso))
+        assert ordinata in coppie, f"manca l'incontro {ordinata} del triangolo"
