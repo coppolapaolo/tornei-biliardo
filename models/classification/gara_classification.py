@@ -250,6 +250,17 @@ class StrategyBasedClassificationService:
             # Calculate final round first
             previous = self.calculate_round_classification(gara_id, final_round)
 
+        # Lo Spot Shot Rally e' un **fatto**: qualcuno ha tirato. Non si
+        # ricostruisce dalle partite, e `round_classification` non ha una
+        # colonna dove tenerlo — quindi il giro
+        # classifica-di-turno -> classifica-di-gara lo perde per strada. Se il
+        # chiamante non porta risultati freschi si rileggono quelli registrati,
+        # altrimenti ogni ricalcolo (correzione di un risultato, spostamento di
+        # una partecipazione per ADR-048) annulla lo spareggio e fa ricomparire
+        # un pari merito che era gia' stato risolto sul tavolo.
+        if spot_shot_results is None:
+            spot_shot_results = self._recorded_spot_shot(gara_id)
+
         # Get gara-level strategy
         strategy = self.get_gara_final_strategy(gara)
 
@@ -273,7 +284,7 @@ class StrategyBasedClassificationService:
         )
 
         # Persist final gara classification
-        self._save_gara_classification(gara_id, result)
+        self._save_gara_classification(gara_id, result, spot_shot_results)
 
         return result
 
@@ -316,6 +327,21 @@ class StrategyBasedClassificationService:
             )
             for score in scores
         ]
+
+    @staticmethod
+    def _recorded_spot_shot(gara_id: int) -> Dict[int, int]:
+        """Lo Spot Shot Rally gia' registrato per questa gara.
+
+        Solo i valori davvero presenti: uno zero registrato e' indistinguibile
+        da un'assenza sulla colonna, e non deve travestirsi da risultato.
+        """
+        return {
+            gc.user_id: gc.spot_shot_wins
+            for gc in db.session.query(GaraClassification)
+            .filter_by(gara_id=gara_id)
+            .all()
+            if gc.spot_shot_wins
+        }
 
     @staticmethod
     def _enrich_with_spot_shot(gara, scores: List[PlayerScore]) -> List[PlayerScore]:
@@ -459,13 +485,21 @@ class StrategyBasedClassificationService:
         self,
         gara_id: int,
         result: ClassificationResult,
+        spot_shot_results: Optional[Dict[int, int]] = None,
     ) -> None:
         """Save final gara classification to database.
+
+        ``spot_shot_results`` viene riscritto invece che ricavato dallo score:
+        il -1 che `_enrich_with_spot_shot` usa in memoria e' una convenzione di
+        **ordinamento** («non ha tirato» ordina dopo «ha fatto zero») e non deve
+        finire su disco, dove verrebbe riletto come un punteggio vero.
 
         Args:
             gara_id: ID of the gara
             result: ClassificationResult to save
+            spot_shot_results: risultati dello spareggio da conservare
         """
+        spot_shot_results = spot_shot_results or {}
         # Delete existing classifications for this gara
         db.session.query(GaraClassification).filter_by(gara_id=gara_id).delete()
 
@@ -480,7 +514,7 @@ class StrategyBasedClassificationService:
                 racks_won=entry.score.racks_won,
                 racks_lost=entry.score.racks_lost,
                 rack_difference=entry.score.rack_difference,
-                spot_shot_wins=entry.score.spot_shot_wins,
+                spot_shot_wins=spot_shot_results.get(entry.player_id, 0),
                 tied_with_player_ids=list(entry.tied_with) if entry.tied_with else None,
                 tiebreaker_resolved=entry.tiebreaker_resolved,
             )
