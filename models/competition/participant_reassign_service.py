@@ -626,11 +626,16 @@ class GaraParticipantReassignService:
         # legge nemmeno: `calculate_general_classification` aggrega al volo le
         # `GaraClassification`, che qui sono già corrette.
         #
-        # Popolarla adesso cambierebbe il comportamento di un campionato vivo:
-        # `AmalfiStrategy._seeding_order` accoppia a caso proprio *perché* non
-        # trova righe («fallback a random»), e con le righe passerebbe a
-        # seminare per classifica. Una riparazione dati non deve decidere come
-        # si sorteggia la prossima gara.
+        # Popolarla adesso non sarebbe inerte. Da quelle righe leggono il
+        # profilo giocatore, l'export GDPR, la dashboard e le qualificazioni
+        # playoff: il campionato comparirebbe nelle classifiche di tutti i suoi
+        # giocatori perché qualcuno ha corretto un errore di iscrizione. E per
+        # le gare seminate — `AmalfiStrategy._seeding_order`, il tabellone a
+        # eliminazione diretta — l'assenza di righe *è* la condizione che fa
+        # scegliere il sorteggio casuale: una riparazione dati non deve decidere
+        # come si accoppia la gara successiva. Le strategie random, round robin
+        # e doppio KO quelle righe non le leggono, quindi il rischio dipende dal
+        # campionato; il cambiamento sul profilo, no: è certo.
         #
         # Una riga che c'è, invece, va rinfrescata: lasciarla stantia dopo lo
         # spostamento sarebbe peggio che non averla.

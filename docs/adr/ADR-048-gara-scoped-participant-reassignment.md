@@ -114,11 +114,22 @@ campionato, avvio dei playoff, correzione manuale di un risultato — e fino ad
 allora è vuota **di proposito**.
 
 Nel caso reale il campionato 4 non ci era ancora arrivato: zero righe. Popolarle
-durante la riparazione avrebbe cambiato il comportamento di un campionato vivo,
-perché `AmalfiStrategy._seeding_order` accoppia a caso proprio *perché* non trova
-righe (*«Se non c'è classifica campionato (prima gara), fallback a random»*) e
-con le righe sarebbe passato a seminare per classifica. Una riparazione dati non
-deve decidere come si sorteggia la prossima gara.
+durante la riparazione non sarebbe stato inerte, per due motivi di peso diverso.
+
+Il primo è **certo**: da quelle righe leggono il profilo giocatore
+(`profile_service`, `UserStatsService`), l'export GDPR, la dashboard
+(`activity_feedback`) e le qualificazioni playoff. Il campionato sarebbe comparso
+nelle classifiche di tutti i suoi giocatori perché qualcuno ha corretto un errore
+di iscrizione.
+
+Il secondo è **eventuale, e dipende dalle strategie in gioco**: per le gare
+seminate l'assenza di righe *è* la condizione che fa scegliere il sorteggio
+casuale — `AmalfiStrategy._seeding_order` (*«Se non c'è classifica campionato
+(prima gara), fallback a random»*) e `DirectEliminationStrategy._classification_rank`.
+Le strategie `random_anti_rematch`, `round_robin` e `double_knockout` quelle
+righe non le leggono, quindi il rischio si presenta solo se una gara futura del
+campionato usa una delle due seminate. Una riparazione dati, comunque, non deve
+decidere come si accoppia la gara successiva.
 
 Quindi: **si rinfresca ciò che esiste, non si crea ciò che non c'era.** Una riga
 presente va aggiornata — lasciarla stantia dopo lo spostamento sarebbe peggio che
