@@ -304,6 +304,10 @@
                         </div>
 
                         <hr class="my-3">
+                        {# Resta un menù e non un interruttore: qui la gara nasce
+                           dentro un campionato, quindi gli stati sono tre —
+                           eredita / sì / no — e "eredita" non è esprimibile con
+                           un acceso/spento. #}
                         <div class="mb-3">
                             <label for="create_has_handicap" class="form-label">{{ _("Gioco con handicap") }}</label>
                             <select class="form-select" id="create_has_handicap" name="has_handicap">
@@ -311,7 +315,7 @@
                                 <option value="true">{{ _("Sì") }}</option>
                                 <option value="false">{{ _("No") }}</option>
                             </select>
-                            <small class="text-muted">{{ _("I match con handicap non aggiornano il rating Elo.") }}</small>
+                            <small class="text-muted">{{ _("I match con handicap non aggiornano il rating Elo quando i giocatori sono di categorie diverse.") }}</small>
                         </div>
 
                         {# Le strategie POSITION dichiarano `requires_tiebreaker=False`:

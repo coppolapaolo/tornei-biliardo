@@ -19,7 +19,7 @@ categoria nasce lì; sul secondo la trova già in tendina.
 """
 
 from flask import jsonify, request, url_for
-from flask_babel import _
+from flask_babel import _, ngettext
 from flask_login import current_user, login_required
 
 from models import db, Gara, Inscription
@@ -33,6 +33,47 @@ from . import competition_bp
 
 def _back_to_gara(gara_id: int) -> str:
     return url_for("admin.competition.gara_detail", gara_id=gara_id)
+
+
+def avviso_senza_categoria(gara) -> str:
+    """L'avviso da mostrare prima di avviare il primo turno, o "" se non serve.
+
+    Vive qui e non nel template perché lo usano in due: la pagina, che lo
+    stampa al caricamento, e l'endpoint di assegnazione, che lo **ricompone a
+    ogni salvataggio**. Il campo salva senza ricaricare, quindi un conteggio
+    calcolato una volta sola resterebbe fermo a com'era all'apertura: si
+    assegnavano le categorie, si andava ad avviare il turno e l'app diceva
+    ancora che mancavano — finché non si ricaricava la pagina.
+
+    Il plurale si risolve qui, dove il numero è noto: comporlo in JavaScript
+    darebbe «1 iscritti non hanno».
+    """
+    from models.competition.models import Inscription
+    from models.categoria.service import CategoriaService
+
+    if not gara.effective_has_handicap:
+        return ""
+
+    senza = CategoriaService.count_senza_categoria(gara.id)
+    if not senza:
+        return ""
+
+    totale = Inscription.query.filter(
+        Inscription.gara_id == gara.id,
+        Inscription.is_withdrawn.is_(False),
+        Inscription.is_waitlist.is_(False),
+    ).count()
+
+    return ngettext(
+        "%(num)s iscritto su %(tot)s non ha una categoria: le sue partite non "
+        "conteranno per l'Elo, e dopo l'avvio non potrai più cambiarla.",
+        "%(num)s iscritti su %(tot)s non hanno una categoria: le loro partite "
+        "non conteranno per l'Elo, e dopo l'avvio non potrai più cambiarle.",
+        senza,
+        # `num` lo lega flask_babel dal conteggio: passarlo di nuovo qui
+        # solleva «got multiple values for argument 'num'».
+        tot=totale,
+    )
 
 
 # ── Assegnazione: JSON, salvataggio sul posto ────────────────────────────
@@ -79,6 +120,10 @@ def set_inscription_categoria(gara_id: int, inscription_id: int):
             # che la pagina venga ricaricata.
             "elenco": [c.name for c in CategoriaService.list_for_gara(gara)],
             "senza_categoria": CategoriaService.count_senza_categoria(gara.id),
+            # Ricomposto qui a ogni salvataggio: la pagina non si ricarica, e
+            # l'avviso di avvio turno deve dire il vero adesso, non com'era
+            # all'apertura.
+            "avviso_senza_categoria": avviso_senza_categoria(gara),
         }
     )
 

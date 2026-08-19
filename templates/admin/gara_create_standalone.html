@@ -269,13 +269,26 @@
                                         </div>
                                     </div>
 
+                                    {# Gara standalone: l'handicap è sì/no, non
+                                       tre stati (non c'è un campionato da cui
+                                       ereditare), quindi è un interruttore come
+                                       l'opzione qui sopra.
+
+                                       `value="true"` non è decorativo: una
+                                       casella spuntata invia il proprio valore e
+                                       una non spuntata non invia nulla, che è
+                                       esattamente ciò che il parser tri-stato si
+                                       aspetta ("true" → sì, assente → eredita,
+                                       che su una standalone vale no). #}
                                     <div class="mb-3">
-                                        <label for="has_handicap" class="form-label small">{{ _("Gioco con handicap") }}</label>
-                                        <select class="form-select form-select-sm" id="has_handicap" name="has_handicap">
-                                            <option value="false" selected>{{ _("No") }}</option>
-                                            <option value="true">{{ _("Sì") }}</option>
-                                        </select>
-                                        <small class="text-muted">{{ _("I match con handicap non aggiornano il rating Elo.") }}</small>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="has_handicap"
+                                                name="has_handicap" value="true">
+                                            <label class="form-check-label" for="has_handicap">
+                                                {{ _("Gioco con handicap") }}
+                                            </label>
+                                        </div>
+                                        <small class="text-muted">{{ _("I match con handicap non aggiornano il rating Elo quando i giocatori sono di categorie diverse.") }}</small>
                                     </div>
 
                                     <div class="row" id="strategy_config_section">

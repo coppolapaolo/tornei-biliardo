@@ -397,8 +397,10 @@ def gara_detail(gara_id):
     # hanno senso quando la gara ha l'handicap. Fuori di lì non compare nulla
     # e chi non usa l'handicap non vede alcuna differenza.
     from models.categoria.service import CategoriaService
+    from .categorie import avviso_senza_categoria
 
     categorie = []
+    avviso_categorie = ""
     categorie_all = []
     categoria_counts = {}
     categorie_editable = False
@@ -410,6 +412,7 @@ def gara_detail(gara_id):
             categorie_all = CategoriaService.list_for_gara(gara, include_inactive=True)
             categoria_counts = CategoriaService.counts_by_categoria(gara.id)
             iscritti_senza_categoria = CategoriaService.count_senza_categoria(gara.id)
+            avviso_categorie = avviso_senza_categoria(gara)
 
     # Si arriva da un'iscrizione appena conclusa (`?chiedi_squadra=1`): la
     # scelta della squadra si chiede subito, in un modale, invece di lasciarla
@@ -577,6 +580,7 @@ def gara_detail(gara_id):
         categoria_counts=categoria_counts,
         categorie_editable=categorie_editable,
         iscritti_senza_categoria=iscritti_senza_categoria,
+        avviso_categorie=avviso_categorie,
         categoria_owner_is_campionato=bool(gara.campionato_id),
         available_users=available_users,
         # SSR (Spot Shot Rally) data

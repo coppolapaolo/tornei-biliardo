@@ -15,7 +15,11 @@
    `categoria_counts`, `categorie_editable`, `categoria_owner_is_campionato`.
    Una sola inclusione. #}
 
-{% if gara.effective_has_handicap and user_can_manage %}
+{# Sparisce quando il primo turno e' partito: le categorie hanno gia' deciso
+   quali partite contano e non si toccano piu', quindi il riquadro sarebbe solo
+   una scatola da leggere e chiudere. Le categorie restano visibili accanto a
+   ogni iscritto, in sola lettura. #}
+{% if gara.effective_has_handicap and user_can_manage and categorie_editable %}
 
 {# Le voci proposte dal combo di ogni riga dell'elenco iscritti. #}
 <datalist id="categorieGara{{ gara.id }}">
@@ -62,7 +66,6 @@
           </div>
         </div>
 
-        {% if categorie_editable %}
         <form method="POST"
               action="{{ url_for('admin.competition.toggle_categoria', gara_id=gara.id, categoria_id=categoria.id) }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -79,10 +82,8 @@
           </button>
           {% endif %}
         </form>
-        {% endif %}
       </div>
 
-      {% if categorie_editable %}
       {# `<details>` e non un collapse Bootstrap: il blocco si ripete per riga
          e non ha id da bersagliare. #}
       <details style="margin-top:10px">
@@ -108,20 +109,13 @@
         </form>
         {% endif %}
       </details>
-      {% endif %}
     </div>
     {% endfor %}
   </div>
   {% endif %}
 
-  {% if not categorie_editable %}
-  <div style="font-size:12px;font-weight:600;color:var(--c7-ink-muted);line-height:1.45;margin-top:14px">
-    {{ _('Il primo turno è già partito: le categorie hanno deciso quali partite contano per l’Elo e non sono più modificabili.') }}
-  </div>
-  {% endif %}
 </div>
 
-{% if categorie_editable %}
 <script>
   (function () {
     // Il combo salva da sé: con 32 iscritti un invio di form per riga
@@ -180,6 +174,13 @@
           gemello.title = '';
         });
         if (dati.elenco) aggiornaElenco(dati.elenco);
+        // L'avviso dell'avvio turno lo compone il server e va riscritto qui:
+        // la pagina non si ricarica, quindi un conteggio fissato all'apertura
+        // continuerebbe a dire che mancano categorie appena assegnate.
+        if (typeof GARA_CONFIG !== 'undefined' && dati.avviso_senza_categoria !== undefined) {
+          GARA_CONFIG.i18n.warnSenzaCategoria = dati.avviso_senza_categoria;
+          GARA_CONFIG.gara.senzaCategoria = dati.senza_categoria;
+        }
         segnala(campo, true);
       } catch (e) {
         segnala(campo, false);
@@ -208,5 +209,4 @@
     });
   })();
 </script>
-{% endif %}
 {% endif %}

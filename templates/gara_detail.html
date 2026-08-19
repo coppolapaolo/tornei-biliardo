@@ -773,13 +773,11 @@
       "errorSsrGroupScores": {{ _("I punteggi devono essere numeri interi non negativi") | tojson }},
       "errorSsrGroupDuplicates": {{ _("Serve un vincitore netto: il punteggio più alto del gruppo non può essere condiviso") | tojson }},
       "infoSsrStart": {{ _("Usa 'Avvia SSR' per inserire i punteggi degli spareggi") | tojson }},
-      "warnSenzaCategoria": {{ (ngettext(
-            "%(num)s iscritto su %(tot)s non ha una categoria: le sue partite non conteranno per l'Elo, e dopo l'avvio non potrai più cambiarla.",
-            "%(num)s iscritti su %(tot)s non hanno una categoria: le loro partite non conteranno per l'Elo, e dopo l'avvio non potrai più cambiarle.",
-            iscritti_senza_categoria or 0,
-            num=iscritti_senza_categoria or 0,
-            tot=(inscriptions | rejectattr('is_waitlist') | rejectattr('is_withdrawn') | list | length)
-        ) if (iscritti_senza_categoria or 0) else "") | tojson }},
+      {# Composto dal server (`avviso_senza_categoria`) e **riscritto a ogni
+         salvataggio** dalla risposta dell'endpoint: il campo della categoria
+         salva senza ricaricare, quindi un testo fissato all'apertura direbbe
+         che mancano categorie appena assegnate. #}
+      "warnSenzaCategoria": {{ (avviso_categorie or "") | tojson }},
       "infoUnknown": {{ _("Errore sconosciuto") | tojson }},
       "infoValidateImpossible": {{ _("Impossibile validare il risultato") | tojson }},
       "tieFor": {{ _("Pari merito per il") | tojson }},

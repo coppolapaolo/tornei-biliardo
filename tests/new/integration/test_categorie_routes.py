@@ -145,6 +145,59 @@ class TestCreaAssegnando:
         assert resp.get_json()["senza_categoria"] == 1
 
 
+class TestAvvisoSempreAggiornato:
+    """Il difetto trovato provando l'app: il conteggio restava fermo.
+
+    Il campo salva senza ricaricare la pagina, ma l'avviso dell'avvio turno era
+    composto una volta sola al caricamento. Si assegnavano le categorie, si
+    andava ad avviare il turno, e l'app diceva ancora che mancavano — finché
+    non si ricaricava. Ora l'avviso torna dentro ogni risposta.
+    """
+
+    def test_l_avviso_scompare_quando_tutti_hanno_una_categoria(
+        self, db_session, client
+    ):
+        gara, director = _gara(db_session)
+        uno, due = _players(db_session, 2)
+        for giocatore in (uno, due):
+            InscriptionService.inscribe_user(giocatore.id, gara.id)
+        db_session.commit()
+        _login(client, director, "director123")
+
+        primo = _assegna(client, gara, _inscription_of(gara, uno), "B").get_json()
+        assert primo["senza_categoria"] == 1
+        assert "1 iscritto su 2" in primo["avviso_senza_categoria"]
+
+        secondo = _assegna(client, gara, _inscription_of(gara, due), "B").get_json()
+        assert secondo["senza_categoria"] == 0
+        assert secondo["avviso_senza_categoria"] == ""
+
+    def test_l_avviso_ricompare_se_si_toglie_una_categoria(self, db_session, client):
+        gara, director = _gara(db_session)
+        giocatore = _players(db_session, 1)[0]
+        InscriptionService.inscribe_user(giocatore.id, gara.id)
+        db_session.commit()
+        _login(client, director, "director123")
+        _assegna(client, gara, _inscription_of(gara, giocatore), "B")
+
+        dopo = _assegna(client, gara, _inscription_of(gara, giocatore), "").get_json()
+
+        assert dopo["senza_categoria"] == 1
+        # Singolare corretto: il plurale si risolve dove il numero è noto.
+        assert "1 iscritto su 1 non ha" in dopo["avviso_senza_categoria"]
+
+    def test_senza_handicap_non_c_e_nessun_avviso(self, db_session, client):
+        gara, director = _gara(db_session, has_handicap=False)
+        giocatore = _players(db_session, 1)[0]
+        InscriptionService.inscribe_user(giocatore.id, gara.id)
+        db_session.commit()
+        _login(client, director, "director123")
+
+        risposta = _assegna(client, gara, _inscription_of(gara, giocatore), "")
+
+        assert risposta.get_json()["avviso_senza_categoria"] == ""
+
+
 class TestPermessi:
     def test_il_giocatore_non_si_assegna_la_categoria(self, db_session, client):
         """È il vincolo che protegge l'Elo, non una formalità."""
