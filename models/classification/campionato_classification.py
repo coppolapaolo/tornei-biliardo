@@ -226,6 +226,22 @@ class ClassificationService:
             db.session.add(classification)
             classifications.append(classification)
 
+        # Chi non è più in classifica non deve restarci. L'upsert da solo non
+        # basta: aggiorna e crea, ma non toglie, e una riga rimasta indietro non
+        # è inerte — `start_playoff` qualifica leggendo proprio queste righe, e
+        # il profilo giocatore le mostra. Un giocatore esce dall'aggregato
+        # quando una gara viene cancellata, quando un'iscrizione viene ritirata,
+        # o quando una partecipazione viene spostata su un altro account
+        # (ADR-048).
+        #
+        # Si pota solo avendo un risultato in mano: il `return []` sopra, quando
+        # non c'è nessun punteggio, lascia tutto dov'è di proposito — «non so
+        # niente» e «non c'è più nessuno» sono due cose diverse.
+        rimasti = {entry.player_id for entry in result.entries}
+        for user_id, orfana in existing_classifications.items():
+            if user_id not in rimasti:
+                db.session.delete(orfana)
+
         # Transaction managed by @transactional decorator
         return classifications
 

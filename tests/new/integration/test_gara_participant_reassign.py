@@ -24,6 +24,9 @@ from models.classification.models import (
     GaraClassification,
     PlayerEncounter,
 )
+from models.classification.gara_classification import (
+    StrategyBasedClassificationService,
+)
 from models.competition.models import Gara, Inscription
 from models.competition.participant_reassign_service import (
     GaraParticipantReassignService,
@@ -144,6 +147,14 @@ def scenario(app, db_session):
     _inscribe(gara2, sbagliato, avversario)
     match2 = _played(gara2, sbagliato, avversario, ended_offset_days=10)
 
+    # Le classifiche di gara vanno calcolate come le calcola l'applicazione:
+    # è da lì che la classifica generale si aggrega al volo, ed è lì che
+    # comparivano i due omonimi.
+    classification = StrategyBasedClassificationService()
+    for gara in (gara1, gara2):
+        classification.calculate_round_classification(gara.id, 1)
+        classification.calculate_gara_classification(gara.id)
+
     db.session.commit()
     return {
         "admin": admin,
@@ -198,19 +209,39 @@ def test_sposta_iscrizione_e_partita(scenario, db_session):
 
 
 def test_classifica_campionato_torna_a_una_riga(scenario, db_session):
+    """Il sintomo che ha fatto scoprire il guasto: due omonimi in classifica.
+
+    Si verifica sulla classifica **che l'utente guarda**, calcolata al volo da
+    `calculate_general_classification` aggregando le classifiche di gara — non
+    sulla tabella `classification`, che l'applicazione scrive solo alla chiusura
+    del campionato o all'avvio dei playoff.
+    """
+    from models.campionato.statistics_service import TournamentStatisticsService
+
     campionato_id = scenario["campionato"].id
-    sbagliato_id = scenario["sbagliato"].id
-    giusto_id = scenario["giusto"].id
+    # La vista identifica i giocatori per `username`: è la stessa chiave con cui
+    # l'errore si è manifestato, «due Luigi in classifica».
+    sbagliato = db_session.get(User, scenario["sbagliato"].id).username
+    giusto = db_session.get(User, scenario["giusto"].id).username
+
+    statistiche = TournamentStatisticsService()
+    presenti_prima = {
+        dati["username"]
+        for _, dati in statistiche.calculate_general_classification(campionato_id)
+    }
+    assert {sbagliato, giusto} <= presenti_prima, (
+        "lo scenario non riproduce il guasto: i due omonimi devono comparire "
+        "entrambi prima della correzione"
+    )
 
     _run(scenario)
 
-    righe = {
-        row.user_id: row
-        for row in Classification.query.filter_by(campionato_id=campionato_id).all()
+    presenti_dopo = {
+        dati["username"]: dati
+        for _, dati in statistiche.calculate_general_classification(campionato_id)
     }
-    assert sbagliato_id not in righe, "l'omonimo sbagliato è ancora in classifica"
-    assert giusto_id in righe
-    assert righe[giusto_id].gare_played == 2
+    assert sbagliato not in presenti_dopo, "l'omonimo sbagliato è ancora in classifica"
+    assert presenti_dopo[giusto]["participations"] == 2
 
 
 def test_classifica_di_gara_attribuita_al_giocatore_giusto(scenario, db_session):
@@ -390,3 +421,52 @@ def test_traguardo_non_piu_meritato_viene_tolto(scenario, db_session):
         user_id=giusto_id, achievement_id=debutto.id
     ).first()
     assert assegnato is not None and assegnato.is_unlocked is True
+
+
+def test_non_popola_una_classifica_di_campionato_mai_scritta(scenario, db_session):
+    """Una tabella vuota di proposito resta vuota.
+
+    L'applicazione persiste la classifica generale solo in momenti precisi
+    (chiusura campionato, avvio playoff, correzione manuale di un risultato).
+    Finché non arrivano, `AmalfiStrategy._seeding_order` accoppia a caso
+    *perché* non trova righe: popolarle qui cambierebbe il sorteggio della
+    prossima gara. La schermata dell'utente non le legge — aggrega al volo le
+    classifiche di gara, che lo spostamento ha già corretto.
+    """
+    campionato_id = scenario["campionato"].id
+    assert Classification.query.filter_by(campionato_id=campionato_id).count() == 0
+
+    _run(scenario)
+
+    assert (
+        Classification.query.filter_by(campionato_id=campionato_id).count() == 0
+    ), "lo spostamento ha popolato una classifica che non era mai stata scritta"
+
+
+def test_rinfresca_una_classifica_di_campionato_esistente(scenario, db_session):
+    """Una riga che c'è va aggiornata: stantia sarebbe peggio che assente."""
+    campionato_id = scenario["campionato"].id
+    sbagliato_id = scenario["sbagliato"].id
+    giusto_id = scenario["giusto"].id
+
+    # Lo stato che l'utente vedeva: due giocatori dove doveva essercene uno.
+    for position, user_id in ((1, giusto_id), (2, sbagliato_id)):
+        db.session.add(
+            Classification(
+                campionato_id=campionato_id,
+                user_id=user_id,
+                position=position,
+                gare_played=1,
+                total_matches_won=1,
+            )
+        )
+    db.session.commit()
+
+    _run(scenario)
+
+    righe = {
+        row.user_id: row
+        for row in Classification.query.filter_by(campionato_id=campionato_id).all()
+    }
+    assert sbagliato_id not in righe, "la riga stantia è rimasta"
+    assert righe[giusto_id].gare_played == 2

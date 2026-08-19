@@ -618,8 +618,38 @@ class GaraParticipantReassignService:
         if rounds:
             service.calculate_gara_classification(gara_id)
 
-        if campionato_id:
+        # La classifica di campionato **persistita** si rinfresca solo se
+        # esiste già. Non è pigrizia: l'applicazione la scrive in momenti
+        # precisi — chiusura del campionato, avvio dei playoff, correzione
+        # manuale di un risultato — e finché quei momenti non arrivano la
+        # tabella è vuota di proposito. La schermata che l'utente guarda non la
+        # legge nemmeno: `calculate_general_classification` aggrega al volo le
+        # `GaraClassification`, che qui sono già corrette.
+        #
+        # Popolarla adesso cambierebbe il comportamento di un campionato vivo:
+        # `AmalfiStrategy._seeding_order` accoppia a caso proprio *perché* non
+        # trova righe («fallback a random»), e con le righe passerebbe a
+        # seminare per classifica. Una riparazione dati non deve decidere come
+        # si sorteggia la prossima gara.
+        #
+        # Una riga che c'è, invece, va rinfrescata: lasciarla stantia dopo lo
+        # spostamento sarebbe peggio che non averla.
+        if campionato_id and GaraParticipantReassignService._has_persisted_standings(
+            campionato_id
+        ):
             ClassificationService.update_campionato_classification(campionato_id)
+
+    @staticmethod
+    def _has_persisted_standings(campionato_id: int) -> bool:
+        """Il campionato ha già una classifica generale persistita?"""
+        from models.classification.models import Classification
+
+        return (
+            db.session.query(Classification.id)
+            .filter(Classification.campionato_id == campionato_id)
+            .first()
+            is not None
+        )
 
     @staticmethod
     def _recalculate_elo() -> None:

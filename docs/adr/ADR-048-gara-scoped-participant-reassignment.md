@@ -102,6 +102,39 @@ Quindi due modalità, entrambe oneste:
   copiando il file `.db` e lanciando lo script con `--database` su quella copia.
   Con SQLite la copia del file è anche il backup.
 
+### 5. La classifica persistita si rinfresca, non si crea
+
+*(emendamento 2026-08-19, dall'applicazione al caso reale)*
+
+La schermata che mostrava i due omonimi **non legge** la tabella
+`classification`: `TournamentStatisticsService.calculate_general_classification`
+aggrega al volo le `GaraClassification` delle gare concluse. La tabella
+persistita l'applicazione la scrive solo in momenti precisi — chiusura del
+campionato, avvio dei playoff, correzione manuale di un risultato — e fino ad
+allora è vuota **di proposito**.
+
+Nel caso reale il campionato 4 non ci era ancora arrivato: zero righe. Popolarle
+durante la riparazione avrebbe cambiato il comportamento di un campionato vivo,
+perché `AmalfiStrategy._seeding_order` accoppia a caso proprio *perché* non trova
+righe (*«Se non c'è classifica campionato (prima gara), fallback a random»*) e
+con le righe sarebbe passato a seminare per classifica. Una riparazione dati non
+deve decidere come si sorteggia la prossima gara.
+
+Quindi: **si rinfresca ciò che esiste, non si crea ciò che non c'era.** Una riga
+presente va aggiornata — lasciarla stantia dopo lo spostamento sarebbe peggio che
+non averla; una riga assente resta assente, perché la sua assenza è essa stessa
+uno stato che il resto del sistema legge.
+
+Ne è uscito un difetto latente, corretto alla radice:
+`ClassificationService.update_campionato_classification` era **solo upsert** —
+aggiornava e creava, mai toglieva. Nel flusso normale non si nota, perché da un
+campionato un giocatore non sparisce; sparisce però quando una gara viene
+cancellata, un'iscrizione ritirata, o una partecipazione spostata. E la riga
+rimasta indietro non è inerte: `start_playoff` qualifica leggendo proprio quelle
+righe. Ora la funzione pota chi non è più nell'aggregato — ma **solo avendo un
+risultato in mano**: sul `return []` da aggregato vuoto non tocca niente, perché
+«non so niente» e «non c'è più nessuno» sono due cose diverse.
+
 ## Conseguenze
 
 - La correzione è uno **script da console** (`scripts/reassign_gara_participant.py`),
@@ -114,6 +147,10 @@ Quindi due modalità, entrambe oneste:
   recapitate al giocatore sbagliato (sono messaggi storici, non stato) e le
   eventuali qualificazioni playoff, che dipendono dalla posizione in classifica
   e vanno rigenerate a mano.
+- La potatura delle righe orfane in `update_campionato_classification` vale per
+  **tutti** i suoi chiamanti, non solo per lo spostamento: è il posto giusto per
+  quella regola, e i due presidi stanno in
+  `tests/new/integration/test_campionato_classification_pruning.py`.
 - Il difetto del `@transactional` annidato descritto al punto 4 **non è stato
   corretto**: tocca il gestore di transazione di tutta l'applicazione ed è un
   intervento a sé. Qui è stato aggirato, e documentato perché non venga
