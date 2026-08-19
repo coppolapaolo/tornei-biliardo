@@ -12,7 +12,7 @@ cablato), `handicap_rule` e le sue due tabelle figlie. Zero righe ovunque,
 nessuna UI (la cartella `templates/rating/` non è mai esistita, quindi ogni
 view del blueprint cadeva nell'except), nessun consumer.
 
-ATTENZIONE — perché `handicap_rule` non si droppa e basta
+ATTENZIONE — perché `handicap_rule` resta in piedi, vuota
 ---------------------------------------------------------
 `match.handicap_rule_id` la referenzia con una FK, e `models/base.py` applica
 `PRAGMA foreign_keys=ON` a ogni connessione. Con le FK attive, **anche un
@@ -22,12 +22,26 @@ INSERT che lascia la FK a NULL fallisce** se la tabella padre non esiste:
     INSERT INTO match (..., handicap_rule_id) VALUES (..., NULL)
     → sqlite3.OperationalError: no such table: main.handicap_rule
 
-Droppare la tabella senza prima togliere la colonna manderebbe quindi in
-errore **ogni creazione di partita**, cioè ogni avvio di turno in produzione.
-La colonna si toglie solo con `ALTER TABLE ... DROP COLUMN` (SQLite ≥ 3.35);
-PythonAnywhere sta alla 3.31.1. Dove non si può, si applica il **no-op
-dichiarato** già scelto per il Fargo (20260816): la tabella resta in piedi
-vuota e la colonna resta orfana ma non mappata da SQLAlchemy, quindi inerte.
+Droppare la tabella senza prima togliere la colonna manderebbe quindi in errore
+**ogni creazione di partita**, cioè ogni avvio di turno in produzione.
+
+E la colonna non si può togliere. `ALTER TABLE ... DROP COLUMN` esiste da SQLite
+3.35 (PythonAnywhere sta alla 3.31.1), ma anche dove c'è **rifiuta le colonne
+citate in una chiave esterna** — verificato provando la migration su una copia
+del DB di sviluppo, con SQLite 3.51:
+
+    ALTER TABLE match DROP COLUMN handicap_rule_id
+    → error in table match after drop column:
+      unknown column "handicap_rule_id" in foreign key definition
+
+L'unica via sarebbe ricostruire l'intera tabella `match` con la procedura in 12
+passi: una tabella centrale, con molte FK e molti indici, riscritta per
+recuperare una colonna vuota. Il rischio non vale il guadagno.
+
+Quindi **no-op dichiarato**, come per il Fargo (20260816): `handicap_rule`
+resta in piedi svuotata e `match.handicap_rule_id` resta orfana. Non essendo
+più dichiarata nel modello, SQLAlchemy non la seleziona e non la scrive mai:
+è inerte.
 
 Le DROP delle tabelle sono precedute da un conteggio: se una non fosse vuota
 la migration **non** la tocca e lo dice. Non solleva mai su una condizione
@@ -41,9 +55,6 @@ import json
 import sqlite3
 
 migration_name = "20260819_categorie_competizione"
-
-#: Versione minima di SQLite con `ALTER TABLE ... DROP COLUMN`.
-DROP_COLUMN_MIN_VERSION = (3, 35, 0)
 
 #: Tabelle del vecchio impianto senza dipendenze in entrata: droppabili subito.
 DEAD_TABLES = ("category_handicap_rule", "rating_handicap_rule", "player_category")
@@ -80,10 +91,6 @@ def _row_count(cursor: sqlite3.Cursor, table: str) -> int:
     return cursor.fetchone()[0]
 
 
-def _supports_drop_column() -> bool:
-    return sqlite3.sqlite_version_info >= DROP_COLUMN_MIN_VERSION
-
-
 def _drop_if_empty(cursor: sqlite3.Cursor, table: str) -> None:
     """Droppa la tabella solo se è vuota; altrimenti lo dice e prosegue."""
     if not _table_exists(cursor, table):
@@ -114,6 +121,12 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db"):
                 campionato_id INTEGER REFERENCES campionato (id) ON DELETE CASCADE,
                 gara_id INTEGER REFERENCES gara (id) ON DELETE CASCADE,
                 is_active BOOLEAN NOT NULL DEFAULT 1,
+                -- BaseModel aggiunge queste due a ogni entita': ometterle fa
+                -- fallire l'INSERT dell'ORM ("no such column: created_at"),
+                -- e nessun test lo vedrebbe perche' i test creano lo schema
+                -- con db.create_all(), non con questa migration.
+                created_at DATETIME,
+                updated_at DATETIME,
                 CONSTRAINT ck_categoria_owner_exclusive CHECK (
                     (campionato_id IS NOT NULL AND gara_id IS NULL)
                     OR (campionato_id IS NULL AND gara_id IS NOT NULL)
@@ -181,6 +194,12 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db"):
 
 
 def _drop_handicap_rule(cursor: sqlite3.Cursor) -> None:
+    """Svuota `handicap_rule`; la elimina solo se nulla la referenzia più.
+
+    Vedi la docstring del modulo: finché `match.handicap_rule_id` esiste, la
+    tabella padre **deve** restare, e quella colonna non è eliminabile senza
+    ricostruire l'intera tabella `match`.
+    """
     if not _table_exists(cursor, "handicap_rule"):
         print("  ⏭️  handicap_rule già assente")
         return
@@ -188,7 +207,7 @@ def _drop_handicap_rule(cursor: sqlite3.Cursor) -> None:
     righe = _row_count(cursor, "handicap_rule")
     if righe:
         print(
-            f"  ⚠️  handicap_rule contiene {righe} righe: NON la elimino. "
+            f"  ⚠️  handicap_rule contiene {righe} righe: NON la tocco. "
             "Nessun codice ha mai potuto scriverla — vanno guardate prima."
         )
         return
@@ -198,19 +217,10 @@ def _drop_handicap_rule(cursor: sqlite3.Cursor) -> None:
         print("  ✓ handicap_rule eliminata (nessuna FK la referenzia più)")
         return
 
-    if _supports_drop_column():
-        cursor.execute("ALTER TABLE match DROP COLUMN handicap_rule_id")
-        cursor.execute("DROP TABLE handicap_rule")
-        print("  ✓ match.handicap_rule_id e handicap_rule eliminate")
-        return
-
     print(
-        f"  ⏭️  SQLite {sqlite3.sqlite_version} non ha ALTER TABLE DROP COLUMN "
-        f"(serve la {'.'.join(str(n) for n in DROP_COLUMN_MIN_VERSION)}): "
-        "match.handicap_rule_id resta, e con essa handicap_rule — vuota. "
-        "Eliminare la tabella lasciando la FK farebbe fallire OGNI insert su "
-        "match, cioè ogni avvio di turno. La colonna non è più mappata da "
-        "SQLAlchemy, quindi è inerte."
+        "  ⏭️  match.handicap_rule_id la referenzia ancora, e non è eliminabile "
+        "senza ricostruire l'intera tabella match: handicap_rule resta in "
+        "piedi, vuota. Non è più mappata dal modello, quindi è inerte."
     )
 
 

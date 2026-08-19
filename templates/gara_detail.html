@@ -718,7 +718,6 @@
       "tiebreakerUntilPosition": {{ gara.tiebreaker_until_position or 3 }},
       "campionatoId": {{ gara.campionato_id | tojson }},
       "senzaCategoria": {{ (iscritti_senza_categoria or 0) | tojson }},
-      "iscrittiAttivi": {{ (inscriptions | rejectattr('is_waitlist') | rejectattr('is_withdrawn') | list | length) | tojson }},
       "discipline": {{ gara.discipline | tojson }},
       "distance": {{ gara.distance }},
       "isRaceTo": {{ (not gara.is_race_to) | tojson }},
@@ -774,7 +773,13 @@
       "errorSsrGroupScores": {{ _("I punteggi devono essere numeri interi non negativi") | tojson }},
       "errorSsrGroupDuplicates": {{ _("Serve un vincitore netto: il punteggio più alto del gruppo non può essere condiviso") | tojson }},
       "infoSsrStart": {{ _("Usa 'Avvia SSR' per inserire i punteggi degli spareggi") | tojson }},
-      "warnSenzaCategoria": {{ _("{senza} iscritti su {totale} non hanno una categoria: le loro partite non conteranno per l'Elo, e dopo l'avvio non potrai più cambiarle.") | tojson }},
+      "warnSenzaCategoria": {{ (ngettext(
+            "%(num)s iscritto su %(tot)s non ha una categoria: le sue partite non conteranno per l'Elo, e dopo l'avvio non potrai più cambiarla.",
+            "%(num)s iscritti su %(tot)s non hanno una categoria: le loro partite non conteranno per l'Elo, e dopo l'avvio non potrai più cambiarle.",
+            iscritti_senza_categoria or 0,
+            num=iscritti_senza_categoria or 0,
+            tot=(inscriptions | rejectattr('is_waitlist') | rejectattr('is_withdrawn') | list | length)
+        ) if (iscritti_senza_categoria or 0) else "") | tojson }},
       "infoUnknown": {{ _("Errore sconosciuto") | tojson }},
       "infoValidateImpossible": {{ _("Impossibile validare il risultato") | tojson }},
       "tieFor": {{ _("Pari merito per il") | tojson }},
@@ -804,12 +809,11 @@
     // Ultimo istante utile: dopo l'avvio le categorie hanno gia' deciso quali
     // partite contano per l'Elo, e correggerle richiede uno script e un
     // ricalcolo che sposta il rating di tutti.
-    const senzaCategoria = GARA_CONFIG.gara.senzaCategoria || 0;
-    if (senzaCategoria > 0) {
-      const avviso = GARA_CONFIG.i18n.warnSenzaCategoria
-        .replace('{senza}', senzaCategoria)
-        .replace('{totale}', GARA_CONFIG.gara.iscrittiAttivi || senzaCategoria);
-      message = avviso + '\n\n' + message;
+    // Il messaggio arriva gia' composto: il conteggio e' noto al server, e
+    // comporlo li' e' l'unico modo di avere il singolare giusto ("1 iscritto
+    // non ha", non "1 iscritti non hanno").
+    if (GARA_CONFIG.i18n.warnSenzaCategoria) {
+      message = GARA_CONFIG.i18n.warnSenzaCategoria + '\n\n' + message;
     }
 
     showConfirm(message, () => {

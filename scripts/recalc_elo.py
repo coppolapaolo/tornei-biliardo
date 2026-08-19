@@ -1,11 +1,22 @@
-"""
-Script to recalculate Elo ratings from scratch based on match history.
+"""Ricalcola gli Elo da zero rigiocando tutta la storia delle partite.
 
-Usage:
-    python scripts/recalc_elo.py [--commit]
+    venv/bin/python scripts/recalc_elo.py             # prova generale
+    venv/bin/python scripts/recalc_elo.py --commit    # scrive davvero
 
-Options:
-    --commit    Commit changes to database. If not provided, runs in dry-run mode.
+L'Elo è **path-dependent**: il ricalcolo azzera e rigioca tutto in ordine
+cronologico, quindi non è mai un'operazione locale. Cambiare quali partite sono
+eleggibili — per esempio assegnando le categorie di una gara con handicap
+(ADR-049) — sposta il rating di tutti, non solo dei giocatori toccati.
+
+Da agosto 2026 questo script gira anche **in produzione**, come seguito di
+`set_gara_categorie.py`: costruisce quindi l'app con
+`prod_env.bootstrap_and_create_app`, che carica le env dal file WSGI **prima**
+di importare l'app. Console e scheduled task non ereditano l'ambiente della web
+app, e `from app import create_app` in cima al file congelerebbe un ambiente
+vuoto. Invariante presidiata da tests/new/unit/test_script_import_order.py.
+
+⚠️  In produzione va eseguito con la web app su **Disabled** (storage NFS, lock
+SQLite inaffidabili), riabilitandola subito dopo.
 """
 
 import sys
@@ -16,11 +27,7 @@ import logging
 # Add project root to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app import create_app  # noqa: E402
-from models import db  # noqa: E402
-from models.match.models import Match  # noqa: E402
-from models.status_enum import MatchStatus  # noqa: E402
-from models.rating.calculation_service import RatingCalculationService  # noqa: E402
+from scripts.prod_env import bootstrap_and_create_app  # noqa: E402
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -36,6 +43,9 @@ def matches_to_process():
     `completed` faceva sì che il backfill — che prima azzera tutti gli ELO —
     lasciasse a NULL i giocatori i cui match erano già stati validati.
     """
+    from models.match.models import Match
+    from models.status_enum import MatchStatus
+
     return (
         Match.query.filter(Match.status.in_(MatchStatus.finished_values()))
         .order_by(Match.ended_at.asc(), Match.id.asc())
@@ -44,7 +54,12 @@ def matches_to_process():
 
 
 def recalculate_elo(commit=False):
-    app = create_app()
+    # Import ritardati di proposito: l'app (e con lei `config`) va costruita
+    # dopo che `bootstrap_and_create_app` ha popolato l'ambiente.
+    app = bootstrap_and_create_app()
+
+    from models import db
+    from models.rating.calculation_service import RatingCalculationService
 
     with app.app_context():
         logger.info("Starting Elo recalculation...")
