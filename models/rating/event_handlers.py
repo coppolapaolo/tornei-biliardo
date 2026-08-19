@@ -25,25 +25,25 @@ class RatingEventHandlers:
         Elo delta from a forfeit would punish skill blindly and distort the
         rating signal.
 
-        Handicap matches (effective_has_handicap, ereditato da gara/campionato)
-        non aggiornano il rating Elo: il risultato è
-        falsato dall'handicap e non riflette la skill.
+        Nelle gare con handicap l'aggiornamento dipende dalle categorie: fra
+        due giocatori della **stessa** categoria l'handicap non è in gioco e
+        il risultato riflette la forza, quindi l'ELO si aggiorna; fra
+        categorie diverse — o quando manca — no. La regola sta tutta in
+        ``RatingEligibility``, mai duplicata qui (ADR-049).
         """
         from models.match.models import Match
+        from .eligibility import RatingEligibility
 
         match = db.session.get(Match, event.match_id)
         if not match:
             logger.warning(f"Match {event.match_id} not found for rating update")
             return
 
-        if match.is_walkover:
-            logger.info(f"Skipping rating update for walkover match {match.id}")
-            return
-
-        if match.effective_has_handicap:
+        motivo = RatingEligibility.exclusion_reason(match)
+        if motivo is not None:
             logger.info(
-                f"Skipping rating update for handicap match {match.id} "
-                f"(effective_has_handicap)"
+                f"Skipping rating update for match {match.id} — "
+                f"{motivo.description}"
             )
             return
 

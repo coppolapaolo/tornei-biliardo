@@ -10,7 +10,7 @@ requisiti *conteggiabili* (`AchievementMetrics.COUNTABLE_TYPES`) usano `count`:
   l'idoneita' non e' calcolabile e l'achievement non si sblocca **mai**, senza
   errori da nessuna parte;
 - un tipo **a logica propria** (`level_reached`, `win_rate`, `weekly_streak`,
-  `category_reached`) legge da `requirements` chiavi su misura — `level`,
+  `elo_reached`) legge da `requirements` chiavi su misura — `level`,
   `percentage`+`min_matches`, `weeks`, `category` — che quella forma non
   contiene: `level_reached` era offerto dal form e avrebbe fatto `KeyError` al
   primo controllo.

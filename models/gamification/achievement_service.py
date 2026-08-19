@@ -432,20 +432,22 @@ class AchievementService:
                 min_campionati=requirements.get("min_campionati_completi", 1),
             )
 
-        if requirement_type == "category_reached":
-            # "Raggiungi la categoria X" = categoria attuale pari o superiore
-            # (A migliore di B di C di D). Ordine: A=1 … D=4.
-            from models.rating.models import PlayerCategory
+        if requirement_type == "elo_reached":
+            # "Raggiungi N punti Elo". Sostituisce il vecchio
+            # `category_reached`, che leggeva una categoria globale per utente
+            # che nessun codice di produzione ha mai scritto: i due traguardi
+            # erano attivi e visibili, con 200 e 600 XP promessi, e nessuno
+            # poteva ottenerli. Le soglie 1500/1800 sono la stessa scala del
+            # rimosso `PlayerRating.get_category_equivalent` (ADR-049).
+            from models.user.models import User
 
-            order = {"A": 1, "B": 2, "C": 3, "D": 4}
-            target = order.get(str(requirements.get("category", "B")).upper())
-            if target is None:
+            target = requirements.get("rating")
+            if not isinstance(target, int):
                 return False
-            current = PlayerCategory.get_user_current_category(user_id)
-            if current is None:
-                return False
-            current_rank = order.get(current.category.value.upper())
-            return current_rank is not None and current_rank <= target
+            user = db.session.get(User, user_id)
+            # `elo_rating` è None finché non si gioca una partita valida: è
+            # "non ancora classificato", non "zero".
+            return user is not None and (user.elo_rating or 0) >= target
 
         # 3) Tipi privi di tracking → non ottenibili (achievement disattivati).
         if requirement_type in _UNTRACKED_REQUIREMENT_TYPES:
@@ -771,7 +773,7 @@ class AchievementService:
         Only *countable* requirement types are accepted
         (`AchievementMetrics.COUNTABLE_TYPES`), because the shape stored here is
         always `{"type": ..., "count": N}`. A type with bespoke logic
-        (win_rate, level_reached, weekly_streak, category_reached) reads keys
+        (win_rate, level_reached, weekly_streak, elo_reached) reads keys
         this shape does not carry, and a type with no resolver cannot be
         computed at all: either way the achievement would be born dead — never
         unlockable, with no error raised anywhere. Those belong in the seeds,
@@ -791,7 +793,7 @@ class AchievementService:
                 f"Requisito «{requirement_type}» non conteggiabile: un "
                 f"achievement creato cosi' non si sbloccherebbe mai. "
                 f"Tipi ammessi: {ammessi}. I requisiti a logica propria "
-                f"(win_rate, level_reached, weekly_streak, category_reached) "
+                f"(win_rate, level_reached, weekly_streak, elo_reached) "
                 f"vanno dichiarati nei seed."
             )
 

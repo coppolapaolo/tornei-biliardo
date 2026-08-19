@@ -92,12 +92,8 @@ from .playoff.models import (
     QualificationStatus,
 )
 from .rating.models import (
-    PlayerCategory,
     PlayerRating,
-    HandicapRule,
-    CategoryHandicapRule,
-    RatingHandicapRule,
-    CategoryLevel,
+    MatchRatingHistory,
     RatingSystem,
 )
 from .notification.models import (
@@ -115,6 +111,7 @@ from .location.models import (
 )
 from .demand.models import DemandSignal, DemandSignalStatus
 from .squadra.models import Squadra
+from .categoria.models import Categoria
 from .tiebreaker.models import (
     Tiebreaker,
     SpotShot,
@@ -234,12 +231,8 @@ __all__ = [
     "PlayoffType",
     "QualificationStatus",
     # Rating domain models (Phase 3)
-    "PlayerCategory",
     "PlayerRating",
-    "HandicapRule",
-    "CategoryHandicapRule",
-    "RatingHandicapRule",
-    "CategoryLevel",
+    "MatchRatingHistory",
     "RatingSystem",
     # Notification domain models (Phase 3)
     "Notification",
@@ -255,6 +248,7 @@ __all__ = [
     "DemandSignalStatus",
     "DayOfWeek",
     "Squadra",
+    "Categoria",
     # Tiebreaker domain models (Phase 4)
     "Tiebreaker",
     "SpotShot",

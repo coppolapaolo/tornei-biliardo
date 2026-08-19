@@ -46,23 +46,11 @@ def test_leaderboards_negative_limit_no_500(client):
     assert resp.status_code != 500
 
 
-def test_handicap_calculate_json_missing_players_no_500(client, player_user):
-    """JSON senza player ids: 4xx controllato, non TypeError/KeyError → 500."""
-    _login(client, player_user)
-    resp = client.post("/rating/handicap/calculate", json={})
-    assert resp.status_code != 500
-    assert resp.status_code in (400, 422)
-
-
-def test_handicap_calculate_json_with_rule_id_no_typeerror(client, player_user):
-    """rule_id in JSON non deve sollevare TypeError dal kwarg type=int."""
-    _login(client, player_user)
-    resp = client.post(
-        "/rating/handicap/calculate",
-        json={"player1_id": player_user.id, "player2_id": player_user.id, "rule_id": 1},
-    )
-    # Può essere 200 o 400 a seconda della regola, MAI 500.
-    assert resp.status_code != 500
+# Qui c'erano due test su `/rating/handicap/calculate` (input JSON malformato
+# che non deve dare 500). L'endpoint e tutto il blueprint `/rating` sono stati
+# rimossi (ADR-049): erano irraggiungibili, senza template e senza entry
+# nell'allowlist di produzione. Una route che non esiste non ha input da
+# irrobustire.
 
 
 def test_x_replacement_json_invalid_challenge_id_no_500(client, player_user):

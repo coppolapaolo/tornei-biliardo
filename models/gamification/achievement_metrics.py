@@ -13,7 +13,7 @@ corrente da una query sul dominio, NON da un contatore incrementale fragile
 I tipi conteggiabili includono anche win_streak, strategies_tried,
 challenges_completed e perfect_challenges (tutti con resolver in `_RESOLVERS` →
 ora ottenibili). I tipi NON conteggiabili (win_rate, level_reached,
-weekly_streak, gaming_data_shared, director_eligibility, category_reached) hanno
+weekly_streak, gaming_data_shared, director_eligibility, elo_reached) hanno
 logica booleana/a soglia propria in `AchievementService._check_requirements` e
 qui ritornano `None`.
 """

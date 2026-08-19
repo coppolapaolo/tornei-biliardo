@@ -244,27 +244,18 @@ di progressione `can_access('do_challenge')` resta ortogonale e invariato.
 
 ---
 
-### Rating & Handicap (RATING)
+### Rating & Handicap (RATING) — rimosso
 
-| Path HTTP | Metodo | Endpoint | Decoratori | Tipo | Descrizione |
-|-----------|--------|----------|-----------|------|-------------|
-| `/rating/` | GET | `rating.rating_dashboard` | `@login_required` | UI page | Dashboard rating e categorie player |
-| `/rating/category` | GET | `rating.view_category` | `@login_required` | UI page | View categoria corrente e history |
-| `/rating/ratings` | GET | `rating.view_ratings` | `@login_required` | UI page | View tutti rating nei sistemi |
-| `/rating/ratings/update` | POST | `rating.update_rating` | `@login_required` | action | Aggiorna rating self-reported |
-| `/rating/handicap/calculator` | GET | `rating.handicap_calculator` | `@login_required` | UI page | Calcolatore handicap |
-| `/rating/handicap/calculate` | POST | `rating.calculate_handicap` | `@login_required` | action | Calcola handicap tra due player |
-| `/rating/manage` | GET | `rating.manage_ratings` | `@director_required` | UI page | Gestione rating players (directors) |
-| `/rating/category/assign` | POST | `rating.assign_category` | `@director_required` | action | Assegna categoria a player |
-| `/rating/ratings/<int:rating_id>/verify` | POST | `rating.verify_rating` | `@director_required` | action | Verifica rating player |
-| `/rating/admin/rules` | GET | `rating.manage_handicap_rules` | `@admin_required` | UI page | Gestione regole handicap |
-| `/rating/admin/rules/create` | POST | `rating.create_handicap_rule` | `@admin_required` | action | Crea regola handicap |
-| `/rating/admin/statistics` | GET | `rating.rating_statistics` | `@admin_required` | UI page | Statistiche rating system |
-| `/rating/leaderboard` | GET | `rating.public_leaderboard` | None (public) | UI page | Leaderboard pubblico |
-| `/rating/api/user/<int:user_id>/category` | GET | `rating.get_user_category_api` | `@login_required` | JSON API | Categoria corrente player |
-| `/rating/api/handicap/<int:player1_id>/<int:player2_id>` | GET | `rating.get_handicap_api` | `@login_required` | JSON API | Handicap tra due player |
+Il blueprint `/rating` **non esiste più** (ADR-049, 2026-08-19). Erano quindici
+endpoint su categorie globali per utente e regole di handicap, tutti
+irraggiungibili: la cartella `templates/rating/` non è mai stata creata, quindi
+ogni view cadeva nell'except e finiva in un flash + redirect, e nessuna entry
+in `ENDPOINT_ROLES` li rendeva visibili in produzione.
 
-**Endpoint root:** `/rating`
+Le categorie oggi vivono nella competizione (`models/categoria/`) e si
+gestiscono dalla schermata della gara, sotto `admin.competition.*`. L'unica
+cosa che il rating decide da solo è **quali partite entrano nell'Elo**:
+`models/rating/eligibility.py`.
 
 ---
 

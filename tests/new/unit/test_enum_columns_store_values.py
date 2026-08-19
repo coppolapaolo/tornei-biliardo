@@ -124,8 +124,6 @@ def test_i_filtri_per_stato_continuano_a_funzionare(db_session, partita_casual):
 COLONNE_CHE_SALVANO_I_NOMI = {
     "achievement.category",
     "achievement.difficulty",
-    "category_handicap_rule.higher_category",
-    "category_handicap_rule.lower_category",
     "leaderboard_entry.leaderboard_type",
     "match_proposal.proposal_type",
     "match_proposal.status",
@@ -136,14 +134,12 @@ COLONNE_CHE_SALVANO_I_NOMI = {
     "notification_preference.notification_type",
     "notification_template.default_priority",
     "notification_template.notification_type",
-    "player_category.category",
     "player_rating.rating_system",
     "playoff_configuration.playoff_type",
     "playoff_qualification.status",
     "proposal_invitation.status",
     "quest.quest_type",
     "quest.status",
-    "rating_handicap_rule.rating_system",
     "streak_tracker.streak_type",
     "xp_transaction.transaction_type",
 }

@@ -9,6 +9,7 @@ import math
 from typing import Optional
 from models.rating.models import RatingSystem, PlayerRating, MatchRatingHistory
 from models.match.models import Match, TrioMatch
+from models.rating.eligibility import RatingEligibility
 from models.base import db
 import logging
 
@@ -59,9 +60,10 @@ class RatingCalculationService:
         globale, path-dependent, fonde con i casual e gira separato).
 
         NB: il caller (RatingEventHandlers / recalc) è responsabile di NON
-        chiamare questo metodo per i match con handicap (effective_has_handicap)
-        e per i walkover — qui non rileggiamo quei flag per non duplicare la
-        policy, ma l'idempotenza resta una rete di sicurezza.
+        chiamare questo metodo per i match che `RatingEligibility` esclude
+        (walkover, e handicap fra categorie diverse o non assegnate) — qui non
+        rileggiamo la policy per non duplicarla, ma l'idempotenza resta una
+        rete di sicurezza.
         """
         if systems is None:
             systems = [RatingSystem.ELO, RatingSystem.ELO_GLOBAL]
@@ -144,10 +146,13 @@ class RatingCalculationService:
             .order_by(Match.ended_at.asc(), Match.id.asc())
             .all()
         )
+        # Le categorie di tutte le gare toccate in una query sola: senza,
+        # l'eleggibilità farebbe due letture per ogni match del replay.
+        categorie = RatingEligibility.build_index(matches)
         processed = 0
         skipped = 0
         for match in matches:
-            if match.is_walkover or match.effective_has_handicap:
+            if not RatingEligibility.counts_for_rating(match, categorie):
                 skipped += 1
                 continue
             # Solo pool competitivo: il pool globale è path-dependent e va
@@ -208,11 +213,13 @@ class RatingCalculationService:
 
         merged = sorted(tournament + casual, key=_sort_key)
 
+        categorie = RatingEligibility.build_index([m for _kind, m in tournament])
+
         processed = 0
         skipped = 0
         for kind, obj in merged:
             if kind == "match":
-                if obj.is_walkover or obj.effective_has_handicap:
+                if not RatingEligibility.counts_for_rating(obj, categorie):
                     skipped += 1
                     continue
                 RatingCalculationService.process_match_result(

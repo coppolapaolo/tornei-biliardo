@@ -329,7 +329,7 @@ class TestNonCountable:
             "weekly_streak",
             "gaming_data_shared",
             "director_eligibility",
-            "category_reached",
+            "elo_reached",
             "unknown_future_type",
         ],
     )

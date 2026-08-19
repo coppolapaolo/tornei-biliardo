@@ -1,33 +1,33 @@
-"""
-Module: models/rating/__init__.py
-Purpose: Rating domain initialization and exports
-Requirements: SPECIFICHE.md - Handicap system
+"""Dominio rating: i punteggi Elo, il registro dei delta e la loro policy.
+
+Il dominio è deliberatamente piccolo. Fino ad agosto 2026 conteneva anche un
+sistema di categorie e regole di handicap (`PlayerCategory`, `HandicapRule`,
+`RatingService`, `HandicapService`) esposto da un blueprint `/rating`: era
+codice morto — nessun template esisteva, quindi ogni view finiva nell'except —
+e la sua idea di categoria era globale per utente, mentre le categorie sono
+per competizione. Sostituito da `models/categoria/` (ADR-049).
+
+Chi decide **quali partite entrano nell'Elo** è `eligibility.RatingEligibility`,
+in un posto solo: la regola era duplicata in quattro punti e stava per
+diventare più complicata.
 """
 
+from .eligibility import RatingEligibility, RatingExclusion
 from .models import (
-    PlayerCategory,
+    MatchRatingHistory,
     PlayerRating,
-    HandicapRule,
-    CategoryHandicapRule,
-    RatingHandicapRule,
-    CategoryLevel,
     RatingSystem,
 )
-from .services import RatingService
 
 __all__ = [
     # Models
-    "PlayerCategory",
     "PlayerRating",
-    "HandicapRule",
-    "CategoryHandicapRule",
-    "RatingHandicapRule",
+    "MatchRatingHistory",
     # Enums
-    "CategoryLevel",
     "RatingSystem",
-    # Services
-    # Services
-    "RatingService",
+    # Policy
+    "RatingEligibility",
+    "RatingExclusion",
 ]
 
 
