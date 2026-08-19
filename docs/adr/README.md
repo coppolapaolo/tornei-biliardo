@@ -61,6 +61,7 @@ Crea un ADR quando:
 | ADR-045 | [Niente WAL: SQLite sta su storage di rete](ADR-045-no-wal-on-network-storage.md) | Accepted | 2026-08-17 |
 | ADR-046 | [Il beta tester vede in anticipo, non vede di più](ADR-046-beta-tester-visibility.md) | Accepted | 2026-08-18 |
 | ADR-047 | [La classifica la decide il sistema di classifica, non il tipo di campionato](ADR-047-classification-system-drives-the-standings.md) | Accepted | 2026-08-18 |
+| ADR-048 | [Spostare la partecipazione a una gara: fatti riassegnati, derivati ricalcolati](ADR-048-gara-scoped-participant-reassignment.md) | Accepted | 2026-08-19 |
 
 ## Come Creare un Nuovo ADR
 

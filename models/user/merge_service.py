@@ -179,18 +179,20 @@ class UserMergeService:
         except ImportError:  # pragma: no cover
             pass
 
-        # Tiebreaker match
-        try:
-            from models.tiebreaker.models import TiebreakerMatch
+        # Spareggio. L'import è in cima al blocco e NON dentro un try/except:
+        # fino al 2026-08-19 cercava una classe `TiebreakerMatch` che non
+        # esiste (si chiama `Tiebreaker`), e l'`except ImportError` si mangiava
+        # l'errore — questo controllo non è mai girato. Un `except ImportError`
+        # su un modulo del progetto nasconde un refuso invece di tollerare una
+        # dipendenza mancante.
+        from models.tiebreaker.models import Tiebreaker
 
-            if db.session.query(
-                TiebreakerMatch.query.filter(
-                    _pair(TiebreakerMatch.player1_id, TiebreakerMatch.player2_id)
-                ).exists()
-            ).scalar():
-                found.append("tiebreaker")
-        except ImportError:  # pragma: no cover
-            pass
+        if db.session.query(
+            Tiebreaker.query.filter(
+                _pair(Tiebreaker.player1_id, Tiebreaker.player2_id)
+            ).exists()
+        ).scalar():
+            found.append("tiebreaker")
 
         return found
 
