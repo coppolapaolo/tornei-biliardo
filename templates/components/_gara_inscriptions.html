@@ -95,7 +95,7 @@
                class="form-control form-control-sm c7-categoria-input"
                style="width:110px;flex:0 0 auto"
                value="{{ inscription.categoria.name if inscription.categoria else '' }}"
-               placeholder="{{ _('—') }}"
+               placeholder="—"
                maxlength="50"
                data-categoria-url="{{ url_for('admin.competition.set_inscription_categoria', gara_id=gara.id, inscription_id=inscription.id) }}"
                aria-label="{{ _('Categoria di %(username)s in questa gara', username=inscription.user.username) }}">

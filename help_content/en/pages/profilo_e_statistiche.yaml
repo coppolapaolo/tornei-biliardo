@@ -70,9 +70,11 @@ blocks:
 
   - type: text
     text: >-
-      Competitions **with a handicap** do not move the rating: the scores are
-      altered by design, and using them to measure players' strength would
-      distort it.
+      In competitions **with a handicap** the rating only moves in matches
+      between players of the same [category](/aiuto/organizzare/categorie): there nobody
+      gives anything away and the result really does say who is stronger.
+      Between different categories the score is altered by design, and using it
+      to measure players' strength would distort it.
 
   - type: heading
     id: storico

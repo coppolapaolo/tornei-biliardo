@@ -124,9 +124,13 @@ blocks:
       - name: "Gioco con handicap"
         values: "predefinito no"
         text: >-
-          Assegna un vantaggio in triangoli al giocatore di categoria inferiore, per
-          pareggiare partite fra livelli molto diversi. **Attenzione**: le gare
-          con handicap non aggiornano il rating dei giocatori.
+          Dichiara che in questa gara i giocatori non partono alla pari: il
+          vantaggio lo concordate voi al tavolo, l'app non toglie né aggiunge
+          triangoli. Quello che cambia è il **rating**: si aggiorna solo nelle
+          partite fra giocatori della stessa [categoria](/aiuto/organizzare/categorie), e
+          resta fermo in tutte le altre. Va deciso **prima di aprire le
+          iscrizioni**: chi si iscrive ha diritto di sapere se la gara è con
+          handicap.
         hint: gara.handicap
       - name: "Primo turno"
         values: "Casuale (predefinito) · Rating · Classifica"
@@ -287,4 +291,4 @@ blocks:
       - q: "Perché non riesco a selezionare «Trio»?"
         a: "Il trio è possibile solo per distanze fra 2 e 7 e non con le strategie a tabellone. Se la distanza è fuori da quell'intervallo, l'opzione non è disponibile."
       - q: "L'handicap incide sulle classifiche?"
-        a: "Sì: la classifica usa i punteggi effettivi, cioè quelli dopo l'handicap. Ma le gare con handicap non muovono il rating personale dei giocatori."
+        a: "Sì: la classifica usa i punteggi effettivi, cioè quelli che avete scritto dopo aver applicato l'handicap. Il rating personale invece si muove solo nelle partite fra giocatori della stessa categoria."

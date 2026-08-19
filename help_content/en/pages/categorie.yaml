@@ -1,0 +1,131 @@
+title: "Categories"
+section: organizzare
+kind: approfondimento
+audience: [direttore, giocatore]
+minutes: 4
+summary: "In handicap competitions, categories decide which matches count towards the rating: only those between players of the same level."
+screens: [admin.competition.gara_detail]
+related: [opzioni_della_gara, gestire_le_iscrizioni, profilo_e_statistiche]
+
+blocks:
+  - type: text
+    text: >-
+      In a handicap competition players do not start level: the stronger one
+      gives something away. A result obtained that way does not tell you how
+      good the two players really are, which is why the app does not use it to
+      update the rating.
+
+  - type: text
+    text: >-
+      But in a competition open to several levels **most matches are played
+      between equals**: two players of the same level give nothing away, and
+      that result is worth exactly as much as one from an ordinary competition.
+      Categories tell the two cases apart.
+
+  - type: note
+    tone: info
+    title: "In one line"
+    text: >-
+      In a handicap competition the rating is updated **only** in matches
+      between players of the same category.
+
+  - type: heading
+    id: quali
+    title: "Which categories"
+
+  - type: text
+    text: >-
+      You decide. In Italy the federation uses **C, B, A** and **N** for the
+      national level, and many add **E** for beginners — but that is one
+      organiser's choice, and elsewhere the names are different. The app
+      imposes none: write the ones you use.
+
+  - type: text
+    text: >-
+      Categories belong to the whole competition. If the competition is part of
+      a championship, the list belongs to the championship: you write it once
+      and it is ready for the second competition.
+
+  - type: heading
+    id: assegnare
+    title: "Assigning them to entrants"
+
+  - type: text
+    text: >-
+      There is no list to prepare beforehand. On the competition page, under
+      each entrant, you will find the **Category** field: type the name and
+      press Enter.
+
+  - type: steps
+    items:
+      - title: "Type the first player's category"
+        text: >-
+          For example "B". The category is created right there: you do not need
+          to have prepared it.
+      - title: "Move on to the second"
+        text: >-
+          Now "B" is suggested as soon as you start typing. If the player is at
+          another level, type a new name and that one joins the list too.
+      - title: "Carry on to the last one"
+        text: >-
+          Each row saves itself, without reloading the page: the field turns
+          green for a moment once it has saved.
+
+  - type: note
+    tone: tip
+    title: "Capitals and spaces do not matter"
+    text: >-
+      "B", "b" and " B " are the same category: the app treats them as one, so
+      a careless keystroke does not create a duplicate.
+
+  - type: heading
+    id: elenco
+    title: "The list, and typos"
+
+  - type: text
+    text: >-
+      On the **Management** tab the "Categories" panel shows the competition's
+      list with **how many entrants** each one has. That is where a typo shows
+      up: if "BB" has a single player while "B" has eight, "BB" is a slip. From
+      there you can rename it, delete it if nobody uses it, or take it out of
+      future choices without deleting it.
+
+  - type: heading
+    id: quando
+    title: "How long you can change them"
+
+  - type: text
+    text: >-
+      Until the first round starts. After that the matches are already drawn and
+      the categories have already decided which ones count: changing them would
+      give a rating that no longer matches what you see.
+
+  - type: note
+    tone: warning
+    title: "The last useful warning"
+    text: >-
+      If you start the first round with somebody who has no category, the app
+      tells you before going ahead. You can carry on anyway — you may not know a
+      guest's level — but their matches will stay out of the rating.
+
+  - type: heading
+    id: giocatore
+    title: "What the player sees"
+
+  - type: text
+    text: >-
+      Their own category, next to their name in the entrant list. They cannot
+      change it: only whoever runs the competition assigns it.
+
+  - type: faq
+    items:
+      - q: "I left somebody without a category: what happens?"
+        a: "Their matches do not count towards the rating, just as before categories existed. \"I don't know\" is not the same as \"same level\": the app does not guess."
+      - q: "Do categories change the score of a match?"
+        a: "No. You apply the handicap at the table; the app neither adds nor removes racks. Categories only decide which matches count towards the rating."
+      - q: "Do I have to reassign them for every competition in the championship?"
+        a: "No: at the next competition each player's category comes back automatically. You only correct whoever has moved up or down in the meantime."
+      - q: "What order do they appear in?"
+        a: "Alphabetical order. Mind that the alphabet does not reflect strength: \"E\" comes before \"N\" even though it is the lowest level."
+      - q: "I noticed too late: the competition is already over."
+        a: "It can be recovered, but not from here: it needs whoever administers the site, because making it count requires recalculating the rating."

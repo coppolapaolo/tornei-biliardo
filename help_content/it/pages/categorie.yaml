@@ -1,0 +1,130 @@
+title: "Le categorie"
+section: organizzare
+kind: approfondimento
+audience: [direttore, giocatore]
+minutes: 4
+summary: "Nelle gare con handicap le categorie decidono quali partite contano per il rating: solo quelle fra giocatori dello stesso livello."
+screens: [admin.competition.gara_detail]
+related: [opzioni_della_gara, gestire_le_iscrizioni, profilo_e_statistiche]
+
+blocks:
+  - type: text
+    text: >-
+      In una gara con handicap i giocatori non partono alla pari: chi è più
+      forte concede qualcosa. Un risultato ottenuto così non dice quanto valgono
+      davvero i due, e per questo l'app non lo usa per aggiornare il rating.
+
+  - type: text
+    text: >-
+      Ma in una gara aperta a più livelli **la maggior parte delle partite si
+      gioca fra pari**: due giocatori dello stesso livello non si concedono
+      nulla, e quel risultato vale quanto quello di una gara normale. Le
+      categorie servono a distinguere i due casi.
+
+  - type: note
+    tone: info
+    title: "In una riga"
+    text: >-
+      In una gara con handicap il rating si aggiorna **solo** nelle partite fra
+      giocatori della stessa categoria.
+
+  - type: heading
+    id: quali
+    title: "Quali categorie"
+
+  - type: text
+    text: >-
+      Le decidi tu. In Italia la federazione usa **C, B, A** e **N** per i
+      nazionali, e molti aggiungono **E** per gli esordienti — ma è una scelta
+      di chi organizza, e altrove si usano altri nomi. L'app non ne impone
+      nessuno: scrivi quelli che usi.
+
+  - type: text
+    text: >-
+      Le categorie valgono per tutta la competizione. Se la gara fa parte di un
+      campionato, l'elenco è del campionato: lo scrivi una volta e alla seconda
+      prova è già pronto.
+
+  - type: heading
+    id: assegnare
+    title: "Assegnarle agli iscritti"
+
+  - type: text
+    text: >-
+      Non c'è un elenco da preparare prima. Nella scheda della gara, sotto ogni
+      iscritto, trovi il campo **Categoria**: scrivi il nome e premi Invio.
+
+  - type: steps
+    items:
+      - title: "Scrivi la categoria del primo giocatore"
+        text: >-
+          Per esempio «B». La categoria viene creata in quel momento: non devi
+          averla preparata.
+      - title: "Passa al secondo"
+        text: >-
+          Ora «B» ti viene proposta appena inizi a scrivere. Se il giocatore è
+          di un altro livello, scrivi un nome nuovo e anche quello entra in
+          elenco.
+      - title: "Continua fino all'ultimo"
+        text: >-
+          Ogni riga si salva da sola, senza ricaricare la pagina: il campo
+          diventa verde per un istante quando ha salvato.
+
+  - type: note
+    tone: tip
+    title: "Maiuscole e spazi non contano"
+    text: >-
+      «B», «b» e « B » sono la stessa categoria: l'app le riconosce come una
+      sola, così non nascono doppioni per una battitura distratta.
+
+  - type: heading
+    id: elenco
+    title: "L'elenco e i refusi"
+
+  - type: text
+    text: >-
+      Nella linguetta **Gestione** il riquadro «Categorie» mostra l'elenco della
+      competizione con **quanti iscritti** ha ciascuna. È lì che si riconosce un
+      errore di battitura: se «BB» ha un solo giocatore mentre «B» ne ha otto,
+      «BB» è un refuso. Da lì puoi rinominarla, eliminarla se non la usa
+      nessuno, oppure toglierla dalle scelte future senza cancellarla.
+
+  - type: heading
+    id: quando
+    title: "Fino a quando si possono cambiare"
+
+  - type: text
+    text: >-
+      Fino all'avvio del primo turno. Dopo, le partite sono già formate e le
+      categorie hanno già deciso quali contano: cambiarle darebbe un rating che
+      non corrisponde più a quello che si vede.
+
+  - type: note
+    tone: warning
+    title: "L'ultimo avviso utile"
+    text: >-
+      Se avvii il primo turno con qualcuno senza categoria, l'app te lo dice
+      prima di procedere. Puoi andare avanti lo stesso — magari di un ospite non
+      conosci il livello — ma le sue partite resteranno fuori dal rating.
+
+  - type: heading
+    id: giocatore
+    title: "Cosa vede il giocatore"
+
+  - type: text
+    text: >-
+      La propria categoria, accanto al nome nell'elenco iscritti. Non può
+      cambiarla: la assegna solo chi dirige la gara.
+
+  - type: faq
+    items:
+      - q: "Ho lasciato qualcuno senza categoria: cosa succede?"
+        a: "Le sue partite non contano per il rating, come accadeva prima che le categorie esistessero. «Non lo so» non equivale a «sono dello stesso livello»: l'app non tira a indovinare."
+      - q: "Le categorie cambiano il punteggio delle partite?"
+        a: "No. L'handicap lo applicate voi al tavolo; l'app non toglie né aggiunge triangoli. Le categorie servono solo a decidere quali partite contano per il rating."
+      - q: "Devo riassegnarle a ogni gara del campionato?"
+        a: "No: alla gara successiva la categoria di ogni giocatore si ripropone da sola. Correggi solo chi nel frattempo è cambiato di categoria."
+      - q: "In che ordine compaiono?"
+        a: "In ordine alfabetico. Attenzione che l'alfabeto non rispecchia la forza: «E» compare prima di «N» pur essendo il livello più basso."
+      - q: "Mi sono accorto troppo tardi: la gara è già finita."
+        a: "Si recupera, ma non da qui: serve l'intervento di chi amministra il sito, perché per farne effetto occorre ricalcolare il rating."

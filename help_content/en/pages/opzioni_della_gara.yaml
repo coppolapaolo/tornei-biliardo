@@ -126,9 +126,12 @@ blocks:
       - name: "Play with handicap"
         values: "default off"
         text: >-
-          Gives the lower-category player a head start in racks, to even out
-          matches between very different levels. **Note**: competitions with a
-          handicap do not update players' ratings.
+          Declares that players do not start level in this competition: you
+          agree the head start at the table, the app neither adds nor removes
+          racks. What changes is the **rating**: it is only updated in matches
+          between players of the same [category](/aiuto/organizzare/categorie), and stays
+          put in all the others. Decide it **before opening entries**: whoever
+          enters has a right to know whether the competition has a handicap.
         hint: gara.handicap
       - name: "First round"
         values: "Random (default) · Rating · Standings"
@@ -288,4 +291,4 @@ blocks:
       - q: "Why can I not select «Trio»?"
         a: "Trio is only possible for distances between 2 and 7, and not with bracket strategies. If the distance is outside that range the option is unavailable."
       - q: "Does the handicap affect the standings?"
-        a: "Yes: the standings use the effective scores, that is the ones after the handicap. But competitions with a handicap do not move players' personal ratings."
+        a: "Yes: the standings use the effective scores, that is the ones you wrote after applying the handicap. The personal rating, on the other hand, only moves in matches between players of the same category."
