@@ -280,6 +280,12 @@ class StrategyBasedClassificationService:
             context={
                 "gara_id": gara_id,
                 "spot_shot_results": spot_shot_results,
+                # Fin dove lo spareggio scioglie il pari merito. Oltre, due
+                # giocatori pari restano pari: e' un risultato, non un dato
+                # mancante da riempire.
+                "tiebreaker_until_position": getattr(
+                    gara, "tiebreaker_until_position", None
+                ),
             },
         )
 

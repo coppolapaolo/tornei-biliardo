@@ -5,13 +5,12 @@ Data Structures: AmalfiGaraClassificationStrategy, RandomGaraClassificationStrat
 Dependencies: typing, .base
 """
 
-from typing import Sequence, Dict, Any, Optional, Tuple, List
+from typing import Sequence, Dict, Any, Optional, Tuple
 
 from .base import (
     ClassificationStrategy,
     ClassificationScope,
     ClassificationResult,
-    ClassificationEntry,
     PlayerScore,
 )
 
@@ -69,6 +68,7 @@ class AmalfiGaraClassificationStrategy(ClassificationStrategy):
 
         # Get spot shot results for tiebreaking
         spot_shot_results = context.get("spot_shot_results") if context else None
+        until_position = context.get("tiebreaker_until_position") if context else None
 
         # Ricostruisci entries usando il sort key di GARA (senza player_id, vedi
         # `get_sort_key`) per rilevare ties che il round strategy ha nascosto
@@ -96,83 +96,23 @@ class AmalfiGaraClassificationStrategy(ClassificationStrategy):
 
         # Resolve ties using spot shot results
         resolved_entries = self._resolve_ties_with_spot_shot(
-            tuple(rebuilt_entries), spot_shot_results
+            tuple(rebuilt_entries), spot_shot_results, until_position
         )
+
+        # Non tutti i pari merito sono spariti: oltre la soglia restano, e a
+        # SSR uguale pure. Dichiarare `has_ties=False` mentirebbe a chi legge.
+        pari_rimasti = any(e.tied_with for e in resolved_entries)
 
         return ClassificationResult(
             entries=tuple(resolved_entries),
             scope=self.scope,
-            has_ties=False,  # Ties resolved
+            has_ties=pari_rimasti,
             requires_tiebreaker=False,
             metadata={
                 "strategy": self.name,
                 "tiebreaker_applied": True,
             },
         )
-
-    def _resolve_ties_with_spot_shot(
-        self,
-        entries: Tuple[ClassificationEntry, ...],
-        spot_shot_results: Dict[int, int],
-    ) -> List[ClassificationEntry]:
-        """Resolve tied entries using spot shot rally results.
-
-        Args:
-            entries: Classification entries with potential ties
-            spot_shot_results: Dict mapping player_id -> spot shot wins
-
-        Returns:
-            List of entries with ties resolved
-        """
-        # Group entries by position (find ties)
-        position_groups: Dict[int, List[ClassificationEntry]] = {}
-        for entry in entries:
-            if entry.position not in position_groups:
-                position_groups[entry.position] = []
-            position_groups[entry.position].append(entry)
-
-        resolved_entries: List[ClassificationEntry] = []
-        current_position = 1
-
-        for pos in sorted(position_groups.keys()):
-            group = position_groups[pos]
-
-            if len(group) == 1:
-                # No tie - keep entry with updated position
-                entry = group[0]
-                resolved_entries.append(
-                    ClassificationEntry(
-                        player_id=entry.player_id,
-                        position=current_position,
-                        score=entry.score,
-                        tied_with=(),
-                        tiebreaker_resolved=True,
-                    )
-                )
-                current_position += 1
-            else:
-                # Resolve tie using spot shot results
-                sorted_group = sorted(
-                    group,
-                    key=lambda e: (
-                        -spot_shot_results.get(e.player_id, 0),
-                        e.player_id,
-                    ),
-                )
-
-                for entry in sorted_group:
-                    resolved_entries.append(
-                        ClassificationEntry(
-                            player_id=entry.player_id,
-                            position=current_position,
-                            score=entry.score,
-                            tied_with=(),
-                            tiebreaker_resolved=True,
-                        )
-                    )
-                    current_position += 1
-
-        return resolved_entries
 
 
 class RandomGaraClassificationStrategy(ClassificationStrategy):
@@ -217,6 +157,7 @@ class RandomGaraClassificationStrategy(ClassificationStrategy):
             raise ValueError("Random gara requires final round classification")
 
         spot_shot_results = context.get("spot_shot_results") if context else None
+        until_position = context.get("tiebreaker_until_position") if context else None
 
         # Vedi nota in AmalfiGara.calculate: ricostruisci entries usando il
         # sort key di gara per rilevare i parimerito che il round strategy
@@ -243,75 +184,20 @@ class RandomGaraClassificationStrategy(ClassificationStrategy):
 
         # Use parent class resolve method reapplied
         resolved_entries = self._resolve_ties_with_spot_shot(
-            tuple(rebuilt_entries), spot_shot_results
+            tuple(rebuilt_entries), spot_shot_results, until_position
         )
+
+        # Non tutti i pari merito sono spariti: oltre la soglia restano, e a
+        # SSR uguale pure. Dichiarare `has_ties=False` mentirebbe a chi legge.
+        pari_rimasti = any(e.tied_with for e in resolved_entries)
 
         return ClassificationResult(
             entries=tuple(resolved_entries),
             scope=self.scope,
-            has_ties=False,
+            has_ties=pari_rimasti,
             requires_tiebreaker=False,
             metadata={
                 "strategy": self.name,
                 "tiebreaker_applied": True,
             },
         )
-
-    def _resolve_ties_with_spot_shot(
-        self,
-        entries: Tuple[ClassificationEntry, ...],
-        spot_shot_results: Dict[int, int],
-    ) -> List[ClassificationEntry]:
-        """Resolve tied entries using spot shot rally results."""
-        position_groups: Dict[int, List[ClassificationEntry]] = {}
-        for entry in entries:
-            if entry.position not in position_groups:
-                position_groups[entry.position] = []
-            position_groups[entry.position].append(entry)
-
-        resolved_entries: List[ClassificationEntry] = []
-        current_position = 1
-
-        for pos in sorted(position_groups.keys()):
-            group = position_groups[pos]
-
-            if len(group) == 1:
-                entry = group[0]
-                resolved_entries.append(
-                    ClassificationEntry(
-                        player_id=entry.player_id,
-                        position=current_position,
-                        score=entry.score,
-                        tied_with=(),
-                        tiebreaker_resolved=True,
-                    )
-                )
-                current_position += 1
-            else:
-                sorted_group = sorted(
-                    group,
-                    key=lambda e: (
-                        -spot_shot_results.get(e.player_id, 0),
-                        e.player_id,
-                    ),
-                )
-
-                for entry in sorted_group:
-                    resolved_entries.append(
-                        ClassificationEntry(
-                            player_id=entry.player_id,
-                            position=current_position,
-                            score=entry.score,
-                            tied_with=(),
-                            tiebreaker_resolved=True,
-                        )
-                    )
-                    current_position += 1
-
-        return resolved_entries
-
-
-__all__ = [
-    "AmalfiGaraClassificationStrategy",
-    "RandomGaraClassificationStrategy",
-]

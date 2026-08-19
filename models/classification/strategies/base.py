@@ -201,6 +201,91 @@ class ClassificationStrategy(ABC):
             tied_players, key=lambda s: -tiebreaker_results.get(s.player_id, 0)
         )
 
+    #: Fin dove lo spareggio scioglie il pari merito, quando la gara non lo dice.
+    #: Stesso default di `Gara.podio` (`tiebreaker_until_position or 3`).
+    DEFAULT_TIEBREAKER_UNTIL_POSITION = 3
+
+    def _resolve_ties_with_spot_shot(
+        self,
+        entries: Tuple[ClassificationEntry, ...],
+        spot_shot_results: Dict[int, int],
+        until_position: Optional[int] = None,
+    ) -> List[ClassificationEntry]:
+        """Scioglie con lo Spot Shot Rally i pari merito che vanno sciolti.
+
+        Tre regole di dominio, tutte e tre facili da tradire scrivendo un
+        `sorted()` in fretta:
+
+        1. **Solo le posizioni di testa.** Lo spareggio vale entro
+           ``until_position`` (di norma le prime 3): oltre, il pari merito e'
+           un risultato legittimo e non si tocca — `CLASSIFICATION_SYSTEM.md`
+           §5.2, «da una certa posizione in poi i parimerito restano tali».
+        2. **Ordina solo l'SSR.** Nessun altro criterio entra qui: la posizione
+           del turno precedente e' un criterio *di turno*, e importarla
+           separerebbe due giocatori che sul tavolo hanno fatto lo stesso.
+        3. **A SSR uguale il pari merito rimane.** Non c'e' ripiego. In
+           particolare **non** l'id del giocatore, che e' l'ordine di
+           registrazione: separare due pari merito per data di iscrizione e'
+           inventare un risultato, per giunta marcandolo come «risolto».
+
+        La numerazione salta: quattro pari al 3° posto, uno solo con SSR 1,
+        danno 3° il primo e **4°** gli altri tre, ancora a pari fra loro.
+        """
+        gruppi: Dict[int, List[ClassificationEntry]] = {}
+        for entry in entries:
+            gruppi.setdefault(entry.position, []).append(entry)
+
+        soglia = (
+            until_position
+            if until_position is not None
+            else self.DEFAULT_TIEBREAKER_UNTIL_POSITION
+        )
+
+        risolte: List[ClassificationEntry] = []
+        posizione = 1
+        for pos in sorted(gruppi):
+            gruppo = gruppi[pos]
+
+            if len(gruppo) == 1 or posizione > soglia:
+                # Un solo giocatore non ha niente da sciogliere; oltre la
+                # soglia il pari merito resta com'e'.
+                risolte.extend(self._entries_a_pari(gruppo, posizione))
+                posizione += len(gruppo)
+                continue
+
+            ordinato = sorted(
+                gruppo, key=lambda e: -spot_shot_results.get(e.player_id, 0)
+            )
+            indice = 0
+            while indice < len(ordinato):
+                ssr = spot_shot_results.get(ordinato[indice].player_id, 0)
+                stesso_ssr = [
+                    e for e in ordinato if spot_shot_results.get(e.player_id, 0) == ssr
+                ]
+                risolte.extend(self._entries_a_pari(stesso_ssr, posizione + indice))
+                indice += len(stesso_ssr)
+            posizione += len(ordinato)
+
+        return risolte
+
+    @staticmethod
+    def _entries_a_pari(
+        gruppo: Sequence[ClassificationEntry], posizione: int
+    ) -> List[ClassificationEntry]:
+        """Le entries di un gruppo, tutte alla stessa posizione."""
+        da_solo = len(gruppo) == 1
+        ids = tuple(e.player_id for e in gruppo)
+        return [
+            ClassificationEntry(
+                player_id=e.player_id,
+                position=posizione,
+                score=e.score,
+                tied_with=() if da_solo else tuple(i for i in ids if i != e.player_id),
+                tiebreaker_resolved=da_solo,
+            )
+            for e in gruppo
+        ]
+
     def _enrich_with_previous(
         self,
         scores: Sequence[PlayerScore],
