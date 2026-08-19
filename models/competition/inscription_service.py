@@ -180,6 +180,19 @@ class InscriptionService:
             if suggerita:
                 ins.squadra_id = suggerita.id
 
+        # Categoria riportata dalla gara precedente dello stesso campionato
+        # (ADR-049). Senza, un campionato da otto prove significherebbe
+        # riassegnare tutti otto volte; con, il direttore corregge soltanto chi
+        # è cambiato di categoria. Si scrive il campo a mano invece di chiamare
+        # `set_inscription_categoria_by_name`: siamo già dentro un metodo
+        # `@transactional`, e annidarli fa rollback (ADR-012).
+        if gara.effective_has_handicap:
+            from models.categoria.service import CategoriaService
+
+            categoria = CategoriaService.suggest_for_user(gara, user)
+            if categoria:
+                ins.categoria_id = categoria.id
+
         db.session.add(ins)
         db.session.flush()  # Get ID for event
 

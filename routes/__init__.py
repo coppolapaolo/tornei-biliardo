@@ -18,7 +18,6 @@ def register_blueprints(app):
     from .challenge import challenge_bp
     from .exam import exam_bp
     from .individual_match import individual_match_bp
-    from .rating import rating_bp
 
     # Import gamification blueprint (Phase 4)
     from .gamification import gamification_bp
@@ -48,7 +47,6 @@ def register_blueprints(app):
     # catalogo challenge non ha.
     app.register_blueprint(exam_bp, url_prefix="/exam")
     app.register_blueprint(individual_match_bp, url_prefix="/match")
-    app.register_blueprint(rating_bp, url_prefix="/rating")
 
     # Registrazione gamification blueprint
     app.register_blueprint(gamification_bp)

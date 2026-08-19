@@ -471,6 +471,28 @@ code, kbd, pre, samp, .font-mono { font-family: var(--c7-font-mono); }
   background: var(--c7-bg);
 }
 
+/* Un livello piu' sotto: le righe-elenco dentro una card hanno gia' il fondo
+   pagina (`.c7-subrow`), quindi la regola qui sopra renderebbe il campo dello
+   stesso colore di cio' su cui poggia — invisibile, indistinguibile da del
+   testo. Li' il campo torna fondo-card. */
+.c7-subrow {
+  background: var(--c7-bg);
+  border-radius: var(--c7-r-chip);
+  padding: 12px 14px;
+}
+.c7-card .c7-subrow .form-control, .c7-card .c7-subrow .form-select,
+.card .c7-subrow .form-control, .card .c7-subrow .form-select {
+  background: var(--c7-card);
+}
+
+/* Il campo della categoria salva da solo, senza ricaricare: senza un riscontro
+   chi scrive non sa se e' andata. Le classi di validazione di Bootstrap qui non
+   si vedono (il tema azzera i bordi e non le stila), quindi il segnale e' un
+   fondo semantico che sfuma da se'. */
+.c7-categoria-input { transition: background-color .18s ease; }
+.c7-categoria-input.is-valid { background: var(--c7-ok-bg) !important; color: var(--c7-ok-ink); }
+.c7-categoria-input.is-invalid { background: var(--c7-err-bg) !important; color: var(--c7-err-ink); }
+
 textarea.form-control { height: auto; min-height: 96px; padding: 16px; font-weight: 500; line-height: 1.5; }
 .form-control::placeholder { color: var(--c7-ink-faint); font-weight: 600; }
 .form-control:focus, .form-select:focus {

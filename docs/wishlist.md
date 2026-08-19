@@ -12,6 +12,14 @@ Voglio assicurarmi che il sistema copra tutte le funzionalita'. Che sia configur
 L'amministratore e' in grado di capire se la community sta andando bene e se ci sono problemi? Ci sono metriche che dovrei monitorare? Come posso usarle per migliorare la piattaforma? 
 
 ## Sistema di handicap
+**Prerequisito fatto (ADR-049, 2026-08-19)**: le categorie esistono, si
+definiscono per competizione e si assegnano agli iscritti. Da quel lavoro
+discende gia' che in una gara con handicap l'Elo si aggiorna fra giocatori
+della stessa categoria. Resta da fare **l'effetto sul punteggio**, che e' il
+punto 1 qui sotto: richiede una colonna d'ordine sulle categorie (oggi si
+mostrano in ordine alfabetico) e soprattutto di rompere l'assunto "una distanza
+per match" in `models/match/distance.py` e in tutti i suoi consumer.
+
 Aggiungere alle gare e ai campionati la possibilita' di definire un sistema di handicap. Il livello di gioco puo' essere impostato a livello di gara, di campionato o generale. L'handicap impatta sul calcolo del punteggio. Ho in mente almeno due tipi:
 1. giocatori in diverse categorie, ad esempio A, B, C e handicacp uguale alla distanza tra categorie con rack in piu' per chi ha categoria maggiore (ad esempio A vs C -> 2 rack in piu per A)
 2. handicap basato su rating. Questo non mi e' chiarissimo, ma dovrbbe essere un handicap tale per cui la probabilita' di vittoria sia sempre 50%. Non mi e' chiaro se funziona solo con punteggi che contano il numero di biglie imbucate (cosa che al momento in cui scrivo non e' implementata), oppure anche con altri tipi di punteggi. Mi sembra che APA (American Pool Association) usi un sistema di questo tipo.

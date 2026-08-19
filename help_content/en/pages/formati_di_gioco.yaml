@@ -122,17 +122,22 @@ blocks:
 
   - type: text
     text: >-
-      When a competition takes in very different levels, the director can turn
-      on the **handicap**: the lower-category player starts with a few racks in
-      hand, so the match stays uncertain.
+      When a competition takes in very different levels, the director can
+      declare that it is played **with a handicap**: the lower-category player
+      starts with a few racks in hand, so the match stays uncertain. You agree
+      the head start at the table — the app neither adds nor removes racks, it
+      simply knows the competition is played that way.
 
   - type: note
     tone: info
     text: >-
-      Competitions with a handicap **do not change players' ratings**: the
-      scores are altered by design, and using them to measure players' strength
-      would distort it. The competition's own standings, on the other hand, use
-      the effective scores, handicap included.
+      In a handicap competition the **rating** is only updated in matches
+      between players of the same [category](/aiuto/organizzare/categorie): there nobody
+      gives anything away, so the result really does say who is stronger.
+      Between different categories — or when no category has been assigned —
+      the rating stays put, because the score is altered by design. The
+      competition's own standings, on the other hand, use the effective scores,
+      handicap included.
 
   - type: faq
     items:

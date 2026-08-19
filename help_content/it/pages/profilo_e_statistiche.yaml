@@ -70,9 +70,11 @@ blocks:
 
   - type: text
     text: >-
-      Le gare **con handicap** non muovono il rating: i punteggi sono alterati
-      per costruzione e userli per misurare la forza dei giocatori la
-      falserebbe.
+      Nelle gare **con handicap** il rating si muove solo nelle partite fra
+      giocatori della stessa [categoria](/aiuto/organizzare/categorie): lì nessuno concede
+      nulla e il risultato dice davvero chi è più forte. Fra categorie diverse
+      il punteggio è alterato per costruzione, e usarlo per misurare la forza
+      dei giocatori la falserebbe.
 
   - type: heading
     id: storico

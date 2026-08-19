@@ -55,10 +55,13 @@ def in_produzione(app):
 def test_ogni_endpoint_admin_required_e_amministrazione(app):
     """La regola si confronta con la realta', non con un elenco.
 
-    Tre endpoint (`rating.manage_handicap_rules`, `rating.create_handicap_rule`,
-    `rating.rating_statistics`) sono `@admin_required` e **non** seguono la
-    convenzione di nome: con la sola regola sul prefisso sarebbero finiti
-    sotto gli occhi dei beta tester. Da qui la classificazione per decoratore.
+    A motivare la classificazione per **decoratore** invece che per prefisso
+    del nome furono tre endpoint del blueprint `/rating`
+    (`manage_handicap_rules`, `create_handicap_rule`, `rating_statistics`):
+    `@admin_required` ma fuori convenzione di nome, quindi con la sola regola
+    sul prefisso sarebbero finiti sotto gli occhi dei beta tester. Quel
+    blueprint e' stato rimosso (ADR-049), ma la ragione resta: un nome non e'
+    un permesso, e il prossimo endpoint fuori convenzione arrivera'.
     """
     with app.app_context():
         sfuggiti = [
@@ -93,7 +96,6 @@ def test_il_beta_tester_non_vede_nessuna_schermata_di_amministrazione(
         "admin.user.users_list",
         "admin.user.accessi",
         "gamification.admin_dashboard",
-        "rating.rating_statistics",
     ],
 )
 def test_le_schermate_che_contengono_dati_altrui_restano_chiuse(

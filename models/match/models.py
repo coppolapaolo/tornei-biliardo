@@ -121,9 +121,10 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
     player2_handicap = db.Column(
         db.Integer, default=0
     )  # Starting advantage for player2
-    handicap_rule_id = db.Column(
-        db.Integer, db.ForeignKey("handicap_rule.id"), nullable=True
-    )
+    # NB: c'era una `handicap_rule_id` con FK verso `handicap_rule`, tolta con
+    # quella tabella (ADR-049). Sui DB con SQLite < 3.35 la colonna sopravvive
+    # sul disco, orfana: non essendo dichiarata qui, SQLAlchemy non la
+    # seleziona e non la scrive mai. Vedi migrations/20260819.
     handicap_explanation = db.Column(db.String(255), nullable=True)
 
     # Validazione finale del risultato (nuova UX semplificata)
@@ -136,7 +137,6 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
     player1 = db.relationship("User", foreign_keys=[player1_id])
     player2 = db.relationship("User", foreign_keys=[player2_id])
     winner = db.relationship("User", foreign_keys=[winner_id])
-    handicap_rule = db.relationship("HandicapRule", foreign_keys=[handicap_rule_id])
     racks = db.relationship(
         "Rack",
         backref="match",
@@ -313,6 +313,21 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
         if self.gara is not None:
             return self.gara.effective_has_handicap
         return False
+
+    @property
+    def counts_for_rating(self) -> bool:
+        """Questa partita muove i rating Elo?
+
+        Accessore comodo per template, script e diagnosi. La regola vera —
+        walkover, handicap, stessa categoria — sta tutta in
+        ``RatingEligibility``, in un posto solo: qui si delega e basta.
+
+        NB: fa due query per leggere le categorie. Nei cicli su molti match
+        usare ``RatingEligibility.build_index`` e passare l'indice.
+        """
+        from models.rating.eligibility import RatingEligibility
+
+        return RatingEligibility.counts_for_rating(self)
 
     @property
     def rack_score(self):

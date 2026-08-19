@@ -148,11 +148,19 @@ hints:
 
   - id: gara.handicap
     label: "Gioco con handicap"
-    short: "Dà un vantaggio in triangoli al giocatore di categoria inferiore. Le gare con handicap non muovono il rating."
+    short: "Il vantaggio lo concordate al tavolo. Qui cambia il rating: si muove solo fra giocatori della stessa categoria."
     anchor: gara-handicap
     screens: [admin.competition.create_gara_standalone]
     page: formati_di_gioco
     section: handicap
+
+  - id: gara.categoria_iscritto
+    label: "Categoria"
+    short: "Il livello del giocatore in questa gara. Scrivi un nome nuovo e la categoria viene creata."
+    anchor: gara-categoria-iscritto
+    screens: [admin.competition.gara_detail]
+    page: categorie
+    section: assegnare
 
   - id: gara.forfait
     label: "Gestione forfait"

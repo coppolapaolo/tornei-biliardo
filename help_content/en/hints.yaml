@@ -133,13 +133,20 @@ hints:
   section: doppio_ko
 - id: gara.handicap
   label: Play with handicap
-  short: Gives the lower-category player a head start in racks. Competitions with a handicap do not move
-    the rating.
+  short: "You agree the head start at the table. What changes here is the rating\u003A it only moves between players of the same category."
   anchor: gara-handicap
   screens:
   - admin.competition.create_gara_standalone
   page: formati_di_gioco
   section: handicap
+- id: gara.categoria_iscritto
+  label: Category
+  short: The player's level in this competition. Type a new name and the category is created.
+  anchor: gara-categoria-iscritto
+  screens:
+  - admin.competition.gara_detail
+  page: categorie
+  section: assegnare
 - id: gara.forfait
   label: Forfeit handling
   short: 'Whoever abandons stays in the pairings losing by walkover, or drops out. Not asked on brackets:

@@ -6,7 +6,7 @@ attraverso i percorsi reali:
 - social_butterfly: creando proposte via ProposalService;
 - popular_player: accettando una proposta via ProposalService;
 - diverse_competitor: raggiungendo la soglia di avversari unici;
-- category_climber: ricevendo una categoria via RatingService;
+- category_climber / elite_player: superando le soglie Elo;
 - challenge_master: completando drill via ChallengeService.
 """
 
@@ -107,13 +107,16 @@ class TestSocialAchievementsViaProposalService:
         assert AchievementService.has_achievement(accepter.id, "popular_player") is True
 
 
-class TestCategoryAchievementViaRatingService:
-    def test_category_climber_unlocks_on_category_assignment(
-        self, db_session, isolated_players
-    ):
-        from models.rating.models import CategoryLevel
-        from models.rating.rating_service import RatingService
+class TestEloAchievementsAreObtainable:
+    """I due traguardi «di categoria» ora dipendono dall'Elo, ed esistono.
 
+    Prima poggiavano su `PlayerCategory`, una tabella che nessun codice di
+    produzione ha mai scritto: erano attivi, visibili e con 200 e 600 XP
+    promessi, ma irraggiungibili. Ora leggono `User.elo_rating`, che il motore
+    di rating aggiorna a ogni partita valida (ADR-049).
+    """
+
+    def test_soglie_elo_sbloccano_i_due_traguardi(self, db_session, isolated_players):
         seed_achievements(db.session)
         player = isolated_players[0]
 
@@ -121,12 +124,32 @@ class TestCategoryAchievementViaRatingService:
             AchievementService.has_achievement(player.id, "category_climber") is False
         )
 
-        # Assegnare la categoria B innesca la riconciliazione → sblocco.
-        RatingService.assign_player_category(player.id, CategoryLevel.B)
+        player.elo_rating = 1500
+        db.session.flush()
+        AchievementService.reconcile_achievements(player.id)
 
         assert AchievementService.has_achievement(player.id, "category_climber") is True
-        # elite_player (categoria A) NON deve sbloccarsi con la sola B.
+        # elite_player vuole 1800: 1500 non basta.
         assert AchievementService.has_achievement(player.id, "elite_player") is False
+
+        player.elo_rating = 1800
+        db.session.flush()
+        AchievementService.reconcile_achievements(player.id)
+
+        assert AchievementService.has_achievement(player.id, "elite_player") is True
+
+    def test_senza_partite_nessuno_dei_due(self, db_session, isolated_players):
+        """`elo_rating` a None è «non ancora classificato», non «zero»."""
+        seed_achievements(db.session)
+        player = isolated_players[0]
+        player.elo_rating = None
+        db.session.flush()
+
+        AchievementService.reconcile_achievements(player.id)
+
+        assert (
+            AchievementService.has_achievement(player.id, "category_climber") is False
+        )
 
 
 class TestChallengeAchievementViaChallengeService:

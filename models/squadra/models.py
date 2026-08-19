@@ -10,6 +10,7 @@ raggiungere dalla UI.
 from __future__ import annotations
 
 from ..base import db, BaseModel  # noqa: F401
+from ..shared.naming import normalize_list_name
 
 
 def normalize_squadra_name(name: str) -> str:
@@ -19,8 +20,12 @@ def normalize_squadra_name(name: str) -> str:
     stessa squadra. Serve a prevenire i doppioni al momento della creazione
     (il campo mostra i nomi simili prima di confermare) invece di doverli
     rincorrere dopo con l'unione.
+
+    Delega a ``normalize_list_name``: squadre e categorie devono normalizzare
+    allo stesso modo, altrimenti lo stesso refuso si comporta in modo diverso
+    nei due elenchi. Il nome specifico resta come punto d'ingresso storico.
     """
-    return " ".join((name or "").split()).lower()
+    return normalize_list_name(name)
 
 
 class Squadra(BaseModel):

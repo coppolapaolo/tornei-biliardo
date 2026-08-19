@@ -32,6 +32,7 @@ from app import create_app  # noqa: E402
 from models import db, User  # noqa: E402
 from models.match.models import Match, Rack  # noqa: E402
 from models.status_enum import MatchStatus  # noqa: E402
+from models.rating.eligibility import RatingEligibility  # noqa: E402
 
 
 def _rack_counts():
@@ -57,21 +58,41 @@ def _is_walkover(match, rack_counts):
     return rack_counts.get(match.id, 0) == 0
 
 
-def _eligible_for_rating(match, rack_counts):
-    """True se il match dovrebbe contribuire all'ELO.
+class _UnknownExclusion:
+    """Segnaposto per i match che non si riescono nemmeno a valutare.
 
-    Replica i filtri di RatingEventHandlers.handle_match_completed:
-    niente walkover, niente handicap.
+    Non è un membro di `RatingExclusion` di proposito: quell'enum elenca i
+    motivi *del dominio* per cui una partita non conta, mentre questo dice
+    "i dati sono incompleti e la diagnostica non se la sente di decidere".
+    Metterlo nell'enum lo renderebbe un esito legittimo del motore di rating.
+    """
+
+    description = "non valutabile: dati incompleti"
+
+
+_UNKNOWN_EXCLUSION = _UnknownExclusion()
+
+
+def _exclusion(match, rack_counts):
+    """Perché questo match non contribuisce all'ELO, o None se contribuisce.
+
+    Delega a `RatingEligibility`, che è la stessa fonte usata dall'handler e
+    dai ricalcoli. Prima qui c'era una copia dei filtri, e la docstring lo
+    ammetteva: una diagnostica che replica la regola che deve diagnosticare
+    smette di essere una diagnostica appena le due divergono.
     """
     try:
-        if _is_walkover(match, rack_counts):
-            return False
-        if match.effective_has_handicap:
-            return False
+        return RatingEligibility.exclusion_reason(
+            match, is_walkover=_is_walkover(match, rack_counts)
+        )
     except Exception:
         # In caso di dati incompleti, conservativo: non eleggibile.
-        return False
-    return True
+        return _UNKNOWN_EXCLUSION
+
+
+def _eligible_for_rating(match, rack_counts):
+    """True se il match dovrebbe contribuire all'ELO."""
+    return _exclusion(match, rack_counts) is None
 
 
 def _player_ids(match):
@@ -160,18 +181,9 @@ def _run(user_id, validated):
     mine = [m for m in finished if user_id in _player_ids(m)]
     print(f"  match conclusi: {len(mine)}")
     for m in mine:
-        elig = _eligible_for_rating(m, rack_counts)
-        reason = ""
-        if not elig:
-            try:
-                if _is_walkover(m, rack_counts):
-                    reason = "walkover"
-                elif m.effective_has_handicap:
-                    reason = "handicap"
-                else:
-                    reason = "non eleggibile"
-            except Exception:
-                reason = "non valutabile"
+        motivo = _exclusion(m, rack_counts)
+        elig = motivo is None
+        reason = "" if elig else motivo.description
         flag = "OK" if (elig and m.status == validated) else ""
         print(
             f"    match id={m.id:<5} status={m.status:<10} "

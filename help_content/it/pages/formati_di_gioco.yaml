@@ -124,17 +124,22 @@ blocks:
 
   - type: text
     text: >-
-      Quando una gara ammette livelli molto diversi, il direttore può attivare
-      l'**handicap**: il giocatore di categoria inferiore parte con qualche
-      triangoli di vantaggio, così la partita resta incerta.
+      Quando una gara ammette livelli molto diversi, il direttore può dichiarare
+      che si gioca **con handicap**: il giocatore di categoria inferiore parte
+      con qualche triangolo di vantaggio, così la partita resta incerta. Il
+      vantaggio lo concordate al tavolo — l'app non toglie né aggiunge
+      triangoli, si limita a sapere che quella gara si gioca così.
 
   - type: note
     tone: info
     text: >-
-      Le gare con handicap **non modificano il rating** dei giocatori: i
-      punteggi sono alterati per costruzione, e usarli per misurare la forza
-      dei giocatori la falserebbe. Le classifiche della gara invece usano
-      normalmente i punteggi effettivi, handicap compreso.
+      In una gara con handicap il **rating** si aggiorna solo nelle partite fra
+      giocatori della stessa [categoria](/aiuto/organizzare/categorie): lì nessuno concede
+      nulla, quindi il risultato dice davvero chi è più forte. Fra categorie
+      diverse — o quando la categoria non è stata assegnata — il rating resta
+      fermo, perché il punteggio è alterato per costruzione. Le classifiche
+      della gara usano invece normalmente i punteggi effettivi, handicap
+      compreso.
 
   - type: faq
     items:

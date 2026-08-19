@@ -878,6 +878,18 @@ class Inscription(db.Model):
     )
     squadra = db.relationship("Squadra", foreign_keys=[squadra_id])
 
+    # Categoria di gioco del giocatore in QUESTA gara. Decide se le sue
+    # partite contano per l'ELO quando la gara ha l'handicap: due giocatori
+    # della stessa categoria si affrontano ad armi pari, quindi il risultato
+    # dice qualcosa sulla loro forza. Vedi ADR-049.
+    # NULL = "categoria non assegnata", che qui NON è una scelta legittima
+    # come per la squadra ma un dato mancante: è la ragione per cui quelle
+    # partite restano fuori dall'ELO.
+    categoria_id = db.Column(
+        db.Integer, db.ForeignKey("categoria.id", ondelete="SET NULL"), nullable=True
+    )
+    categoria = db.relationship("Categoria", foreign_keys=[categoria_id])
+
     @classmethod
     def active_for_gara(cls, gara_id: int) -> list["Inscription"]:
         """Return active (non-withdrawn, non-waitlist) inscriptions for a gara."""

@@ -118,18 +118,28 @@
        da sé quando la strategia scelta è una di quelle. #}
     {% include "components/_bracket_options.html" %}
 
+    {# Dentro un campionato l'handicap ha **tre** stati — eredita / sì / no — e
+       un interruttore non può dirli: lì resta un menù. Su una gara standalone
+       non c'è niente da cui ereditare, quindi è sì/no e si comporta come le
+       altre opzioni booleane. #}
     <div class="mb-3">
+      {% if gara.campionato %}
       <label for="has_handicap" class="form-label">{{ _("Gioco con handicap") }}</label>
       <select class="form-select" id="has_handicap" name="has_handicap">
-        {% if gara.campionato %}
         <option value="" {% if gara.has_handicap is none %}selected{% endif %}>
           {{ _("Eredita dal campionato") }} ({{ _("Sì") if gara.campionato.has_handicap else _("No") }})
         </option>
-        {% endif %}
         <option value="true" {% if gara.has_handicap is true %}selected{% endif %}>{{ _("Sì") }}</option>
         <option value="false" {% if gara.has_handicap is false %}selected{% endif %}>{{ _("No") }}</option>
       </select>
-      <div class="form-text">{{ _("I match con handicap non aggiornano il rating Elo.") }}</div>
+      {% else %}
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" id="has_handicap" name="has_handicap"
+               value="true" {% if gara.has_handicap %}checked{% endif %}>
+        <label class="form-check-label" for="has_handicap">{{ _("Gioco con handicap") }}</label>
+      </div>
+      {% endif %}
+      <div class="form-text">{{ _("I match con handicap non aggiornano il rating Elo quando i giocatori sono di categorie diverse.") }}</div>
     </div>
 
     <div class="d-flex gap-3 flex-wrap" id="strategy_config_section">

@@ -40,13 +40,6 @@ pybabel compile -d translations                 # Compile translations
 python scripts/generate_schema_docs.py          # Regenerate DB schema docs
 ```
 
-### Key Files & Locations
-- **Application Entry**: `app.py` - Flask factory pattern
-- **Configuration**: `config.py` - Environment-based config
-- **Database**: `instance/billiard_campionato.db` (SQLite dev)
-- **Domain Documentation**: `models/CLAUDE.md`, `routes/CLAUDE.md`, `tests/CLAUDE.md`
-- **Template Documentation**: `templates/CLAUDE.md` - Jinja2/JS integration patterns
-
 ### CI/CD & Deployment
 
 **Production URL**: https://www.torneibiliardo.it
@@ -120,46 +113,11 @@ hotfix urgente con CI rotta serve togliere temporaneamente la protezione
 (`gh api -X DELETE repos/coppolapaolo/tornei-biliardo/branches/main/protection`,
 poi riapplicarla).
 
-**PythonAnywhere Scheduled Tasks** (daily):
-- `scripts/auto_deploy.py`: git pull, pip install, migrations e reload. Le
-  migrations girano SOLO se pendenti e con la web app disabilitata via API
-  (Disable → migrate → Enable; token da `$API_TOKEN`). Senza token si ferma
-  con istruzioni manuali. **Legge le env di produzione dal file WSGI**
-  (`read_wsgi_env`, parsing AST senza eseguirlo): il task è un processo
-  separato e non le eredita, e senza `ENCRYPTION_KEY` una migration sui PII
-  non solleva — fallisce la decifratura, il backfill resta vuoto e la
-  migration risulta comunque applicata (incidente 2026-06-25, vedi sotto). Se
-  ci sono migrations pendenti e la chiave non è ricavabile, il deploy si ferma.
-
-  > ⚠️ **Ogni scheduled task va configurato con `venv/bin/python`, mai con
-  > `python` nudo** (incidente 2026-08-17). Su PythonAnywhere `python` è
-  > l'interprete **di sistema**, e da lì `pip install` non ha i permessi per
-  > scrivere: falliva, `install_dependencies` tornava `False` e lo script
-  > stampava un WARNING e proseguiva fino al reload. Invisibile da febbraio ad
-  > agosto perché in sei mesi non era stata aggiunta nessuna dipendenza — ogni
-  > `pip install` era un no-op, e un no-op fallito non si distingue da uno
-  > riuscito. Al primo pacchetto nuovo (PyYAML) `/aiuto` ha risposto **500 per
-  > due giorni**, sopravvivendo a due deploy; verificato dopo: il pacchetto non
-  > era né in `venv/` né in `~/.local`.
-  >
-  > Dal 2026-08-17 lo script risolve l'interprete da solo (`venv_python()`) e
-  > **si ferma** se `pip install` fallisce, invece di ricaricare con le
-  > dipendenze vecchie. Presidio: `tests/new/unit/test_deploy_usa_il_venv.py`.
-  >
-  > La regola vale per **tutti** i task, non solo per questo: uno script che
-  > importa l'app col python di sistema si porta dietro i pacchetti di sistema
-  > di PythonAnywhere. È da lì che veniva il «set di pacchetti diverso» citato
-  > più sotto a proposito di `pyOpenSSL`/`pymongo`.
-- `scripts/backup_db.py`: backup giornaliero del DB (rotazione 7 copie in
-  `backups/`).
-- `scripts/daily_jobs.py`: **punto d'ingresso unico dei lavori di dominio
-  giornalieri** (oggi: ciclo di vita dei segnali-domanda). Gli slot scheduled
-  task su PythonAnywhere sono limitati, quindi un nuovo job quotidiano si
-  aggiunge alla mappa `JOBS` dello script — **non** come nuovo task, e **non**
-  dentro `auto_deploy`/`backup_db` (il primo esce prima del tempo quando non ci
-  sono modifiche, il secondo non deve dipendere dal codice applicativo). Ogni
-  job è isolato; exit code ≠ 0 se almeno uno fallisce. `python
-  scripts/daily_jobs.py <nome>` per lanciarne uno solo.
+> **Il resto dell'operativita' in produzione — scheduled task, variabili
+> d'ambiente nel WSGI, incidente PII del 2026-06-25, GlitchTip — sta nella skill
+> `deploy`** (`.claude/skills/deploy/SKILL.md`), che si carica quando serve
+> invece di stare in contesto a ogni sessione. Qui restano solo le due cose che
+> devono essere note *sempre*: il merge non deploya, e su `main` non si spinge.
 
 **Env di produzione negli script da console/task**: console e scheduled task
 sono processi separati e **non ereditano** le variabili dal file WSGI, quindi
@@ -221,54 +179,6 @@ scrive sul DB di produzione va eseguito con la web app su **Disabled**
 > distinguono solo con `PRAGMA integrity_check`, da rifare **dopo** il
 > checkpoint (`PRAGMA journal_mode=DELETE`), perché è lì che un'eventuale
 > incoerenza si materializza su disco.
-
-**Variabili d'ambiente richieste in produzione** (nel WSGI file
-`/var/www/www_torneibiliardo_it_wsgi.py`): `FLASK_ENV=production` e
-`ENCRYPTION_KEY` (la chiave cifra i PII — rotazione con
-`scripts/rotate_encryption_key.py`, procedura nel docstring). Il fail-fast
-scatta al **primo uso** della cifratura — cioè al primo PII toccato, non
-all'import: `_resolve_key_string` è invocata da `_initialize_cipher`, che dal
-2026-08-17 parte da `EncryptionManager._ensure_cipher()` e non più dal
-costruttore. Il singleton eager derivava il cipher all'import di
-`utils.encryption`, cioè **prima** che gli scheduled task avessero caricato le
-env dal WSGI: la chiave usata era quella di sviluppo (nel log "Using default
-encryption key" *precede* la riga delle env lette) e ogni email/telefono si
-decifrava a stringa vuota, senza errori. Gli script da console che toccano PII
-vanno comunque lanciati con `ENCRYPTION_KEY='...' python scripts/...` (la
-console non eredita le env del WSGI; `auto_deploy.py` se le legge da solo,
-vedi sopra).
-
-**⚠️ Migration sui PII senza chiave (incidente 2026-06-25)**: il fail-fast
-richiede `FLASK_ENV=production`. In console/task quella variabile non c'è,
-quindi la mancanza di `ENCRYPTION_KEY` degrada in silenzio sulla chiave di
-sviluppo. `20260625_add_email_hash` è girata così dallo scheduled task: la
-decifratura falliva su ogni riga, il guard interno saltava (giustamente, per
-non scrivere hash sbagliati) e il risultato è stato **0 hash su 37 utenti**,
-con la migration marcata come applicata e quindi mai ritentata. Effetto:
-recupero password muto per cinque settimane — `request_password_reset`
-ritorna `True` anche a utente non trovato, per non esporre l'enumerazione
-degli account, quindi nessun errore da nessuna parte. Diagnosi:
-`SELECT COUNT(*) FROM user WHERE email IS NOT NULL AND email != '' AND
-(email_hash IS NULL OR email_hash = '') AND deleted_at IS NULL`.
-
-**Monitoring (GlitchTip)**: DSN in `GLITCHTIP_DSN` (WSGI). In `app.py`
-`traces_sample_rate` deve restare **0.0**: le transaction di performance
-contano nella quota GlitchTip Free (1000 eventi/mese) — con 0.1 la quota si
-è esaurita in un giorno e il throttling scartava anche gli error event
-(sintomo: retry `SSLEOFError ... /api/<id>/envelope/` nell'error log PA,
-2026-06-10). Nota: ogni reload della web app ha una finestra di ~30s di
-`502-backend` mentre l'app riparte — è normale, non un crash.
-
-Sempre in `app.py`, `auto_enabling_integrations` deve restare **False** con le
-integrazioni dichiarate a mano (`FlaskIntegration`, `SqlalchemyIntegration`):
-di default `sentry_sdk.init` importa ~40 moduli di integrazione per scoprire
-quali pacchetti ci sono, e su PythonAnywhere quel giro vede anche i pacchetti
-di sistema. `pymongo` trascina un `pyOpenSSL` incompatibile con la
-`cryptography` installata, quindi ogni script da console o scheduled task
-moriva in `create_app` su `AttributeError: module 'lib' has no attribute
-'X509_V_FLAG_NOTIFY_POLICY'` (la web app no: set di pacchetti diverso). Le due
-integrazioni dichiarate sono le stesse che si attivavano prima — l'insieme
-attivo non cambia.
 
 ---
 
@@ -638,6 +548,10 @@ pytest tests/new/unit/ -n auto && pytest tests/new/integration/ -n 4
 | Funzione visibile all'utente cambiata senza toccare `/aiuto` | Invoca la skill `help-docs`: la guida non si rompe, **invecchia** — continua a descrivere un'app che non esiste più. Contenuti in `help_content/`, schermate rigenerate da `scripts/help_docs/` |
 | TPA/errori calcolati fuori da `models/tpa/engine.py` | Le regole Accu-Stats stanno **solo** li'. Il resto persiste comandi e li rigioca (ADR-044) |
 | Rack segnati a mano su un match con referto TPA aperto | Il punteggio **discende** dal referto: due segnapunti si contraddicono al primo tocco (ADR-044) |
+| `match.effective_has_handicap` letto per decidere se una partita conta per l'ELO | `RatingEligibility.exclusion_reason(match)` (`models/rating/eligibility.py`): dall'ADR-049 l'handicap **da solo** non basta più a escludere — decide la differenza di **categoria**. Nei cicli passa l'indice di `build_index`, altrimenti il ricalcolo fa due query per match |
+| Categoria del giocatore cercata su `User` o in `models/rating/` | Vive su `Inscription.categoria_id`, ed è **per gara**: `models/categoria/`. `PlayerCategory` e l'enum `CategoryLevel` A/B/C/D sono stati rimossi — erano globali per utente e mai scritti da nessuno |
+| `DROP TABLE` di una tabella referenziata da una FK, anche vuota | Con `PRAGMA foreign_keys=ON` (`models/base.py:104`) **ogni INSERT sulla tabella figlia fallisce**, pure con la FK a NULL. E la colonna non si toglie: SQLite rifiuta `DROP COLUMN` su una colonna citata in una chiave esterna, anche sulla 3.51. Resta il no-op dichiarato (vedi `migrations/20260819`) |
+| Migration che crea una tabella senza `created_at`/`updated_at` | `BaseModel` le aggiunge a ogni entità: l'ORM fallisce con «no such column». **I test non lo vedono**, perché creano lo schema con `db.create_all()` e non con la migration — si scopre solo provando la migration su una copia del `.db` |
 | Schermata della guida ritoccata a mano in un editor | Le immagini si **generano** dall'app (`capture_screenshots.py`) sul dataset di `seed_demo.py`: una ritoccata sopravvive al cambio di interfaccia e diventa una bugia permanente |
 
 ---
@@ -672,6 +586,7 @@ pytest tests/new/unit/ -n auto && pytest tests/new/integration/ -n 4
 - **[docs/adr/ADR-046-beta-tester-visibility.md](docs/adr/ADR-046-beta-tester-visibility.md)**: il beta tester e' un `RoleGrant` (ADR-041) che apre la visibilita' di ADR-028 su tutto **tranne** l'amministrazione; «amministrazione» si riconosce dal decoratore `@admin_required`, non dal nome; non propagante e non richiedibile
 - **[docs/adr/ADR-047-classification-system-drives-the-standings.md](docs/adr/ADR-047-classification-system-drives-the-standings.md)**: la classifica generale segue il **sistema di classifica** (`WINS`/`RACK`/`POSITION`), non il tipo di campionato; `ClassificationSystem` è l'unico vocabolario e conosce il plurale storico `RACKS`; le righe storiche si riparano ricalcolandole dai match con `scripts/repair_round_classification_racks.py` (dry-run per default), non indovinando quali siano stantie
 - **[docs/adr/ADR-048-gara-scoped-participant-reassignment.md](docs/adr/ADR-048-gara-scoped-participant-reassignment.md)**: spostare la partecipazione a **una** gara da un giocatore a un altro (direttore che ha iscritto l'omonimo sbagliato) — i **fatti** si riassegnano, i **derivati** (classifiche, ELO, livello, traguardi) si ricalcolano da zero; l'elenco delle tabelle si deriva dal grafo delle FK ed è presidiato; i traguardi non più meritati si tolgono, in deroga allo sblocco monotòno; la prova generale si fa su una **copia del file .db**, perché un `@transactional` annidato committa la transazione esterna e un rollback non annullerebbe i ricalcoli
+- **[docs/adr/ADR-049-same-category-restores-elo-in-handicap-events.md](docs/adr/ADR-049-same-category-restores-elo-in-handicap-events.md)**: in una gara con handicap l'ELO si aggiorna **solo** fra giocatori della stessa categoria; categorie per competizione (campionato XOR gara standalone, calco di ADR-039), **create assegnandole** da un combo accanto all'iscritto, ordine alfabetico senza colonna di posizione (rinvio consapevole: servirà all'handicap sul punteggio), finestra chiusa all'avvio del turno; policy dell'ELO unificata in `RatingEligibility`; rimosso l'impianto morto `PlayerCategory`/`HandicapRule` e il blueprint `/rating`
 - **[docs/usecases/esami.md](docs/usecases/esami.md)**: i sette journey degli esami e del ruolo esaminatore
 
 ---
@@ -687,9 +602,6 @@ casistica completa in `docs/adr/ADR-012-transactional-circular-import-fix.md`.
 
 ## Development Notes
 
-- Codebase uses Italian comments in many places
 - Application usually running - no need to restart for most changes
-- All 8 tournament use cases fully implemented with comprehensive integration tests
-- Gamification system is event-driven and decoupled from core domains
 
 ---

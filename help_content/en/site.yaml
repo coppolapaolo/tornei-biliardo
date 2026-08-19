@@ -60,6 +60,7 @@ sections:
       - gestire_le_iscrizioni
       - condurre_la_gara
       - squadre
+      - categorie
       - turni_su_misura
       - spareggi
       - opzioni_della_gara

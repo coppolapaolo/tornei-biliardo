@@ -43,7 +43,7 @@
     <div class="c7-kicker mb-2">{{ _('Iscritti attivi') }}</div>
     <div class="c7-stack" style="gap:8px">
       {% for inscription in active_inscriptions %}
-      <div style="background:var(--c7-bg);border-radius:var(--c7-r-chip);padding:12px 14px">
+      <div class="c7-subrow">
       <div class="d-flex align-items-center gap-3">
         <span class="c7-avatar {{ 'c7-card--locked' if inscription.is_forfeit }}">{{ inscription.user.username[:2] | upper }}</span>
         <div class="flex-fill min-width-0">
@@ -72,6 +72,41 @@
         </form>
         {% endif %}
       </div>
+
+      {# Categoria dell'iscritto (ADR-049): decide se le sue partite contano per
+         l'Elo in una gara con handicap — contano solo quelle fra giocatori
+         della stessa categoria.
+
+         Il campo è un combo: un nome già in elenco si completa da solo, uno
+         nuovo crea la categoria. Definire l'elenco e assegnare sono quindi lo
+         stesso gesto, e non serve preparare niente prima.
+
+         Sta su una riga propria e non accanto al nome perché questo pannello è
+         largo 380px: con avatar, nome e pulsante di disiscrizione un campo
+         affiancato faceva andare a capo il pulsante.
+
+         Salva senza ricaricare (fetch): con 32 iscritti un invio di form per
+         riga significherebbe 32 ritorni in cima alla pagina. #}
+      {% if gara.effective_has_handicap %}
+      {% if user_can_manage and categorie_editable %}
+      <div class="d-flex align-items-center gap-2" style="margin-top:10px">
+        <span class="c7-label">{{ _('Categoria') }}</span>
+        <input type="text" list="categorieGara{{ gara.id }}"
+               class="form-control form-control-sm c7-categoria-input"
+               style="width:110px;flex:0 0 auto"
+               value="{{ inscription.categoria.name if inscription.categoria else '' }}"
+               placeholder="—"
+               maxlength="50"
+               data-categoria-url="{{ url_for('admin.competition.set_inscription_categoria', gara_id=gara.id, inscription_id=inscription.id) }}"
+               aria-label="{{ _('Categoria di %(username)s in questa gara', username=inscription.user.username) }}">
+      </div>
+      {% elif inscription.categoria %}
+      <div class="d-flex align-items-center gap-2" style="margin-top:8px">
+        <span class="c7-label">{{ _('Categoria') }}</span>
+        <span class="c7-state">{{ inscription.categoria.name }}</span>
+      </div>
+      {% endif %}
+      {% endif %}
 
       {# Squadra dell'iscritto (US-9): il direttore la corregge da qui, perché
          è lui a sapere chi rappresenta chi quella sera. Solo dove le squadre

@@ -1,7 +1,5 @@
 """Regression (review 2026-06-09, batch 6): LOW nits correttezza."""
 
-import uuid
-
 import pytest
 
 from models.base import db
@@ -16,24 +14,11 @@ def _make_user(suffix):
     return u
 
 
-@pytest.mark.unit
-def test_update_user_rating_persists_confidence(db_session):
-    """confidence passata a update_user_rating ora viene persistita."""
-    from models.rating.services import RatingService
-    from models.rating.models import RatingSystem, PlayerRating
-
-    user = _make_user(uuid.uuid4().hex[:8])
-    db.session.commit()
-
-    RatingService.update_user_rating(
-        user_id=user.id,
-        rating_system=RatingSystem.ELO,
-        rating_value=1500,
-        confidence=0.9,
-    )
-    rating = PlayerRating.get_user_rating(user.id, RatingSystem.ELO)
-    assert rating is not None
-    assert rating.confidence == 0.9
+# Qui c'era `test_update_user_rating_persists_confidence`, che presidiava
+# `RatingService.update_user_rating`. Il servizio è stato rimosso con tutto il
+# blueprint `/rating`, che era irraggiungibile (ADR-049). `PlayerRating.confidence`
+# resta una colonna che nessuno scrive più: toglierla richiederebbe un rebuild
+# di tabella per zero guadagno.
 
 
 @pytest.mark.unit

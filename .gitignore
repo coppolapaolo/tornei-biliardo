@@ -104,6 +104,7 @@ instance/
 !.claude/skills/ui-conventions/
 !.claude/skills/ui-7c/
 !.claude/skills/help-docs/
+!.claude/skills/deploy/
 .agent/
 .codegraph/
 _bmad/
