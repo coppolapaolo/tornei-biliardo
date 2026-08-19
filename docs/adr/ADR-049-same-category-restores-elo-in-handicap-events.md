@@ -151,10 +151,15 @@ accessore comodo, ma paga due letture e non va usata nei cicli.
 ### Le gare già giocate
 
 `scripts/set_gara_categorie.py` le recupera: trova le gare con handicap già
-avviate e senza categorie, le percorre dalla più vecchia, chiede la categoria di
-ogni iscritto, mostra il riepilogo, chiede conferma — e se non si conferma
-ricomincia la gara da capo con le risposte precedenti come proposta. Scavalca la
-finestra di modifica con un `force=True` documentato, usato **solo** da lì.
+avviate e senza categorie e le percorre dalla più vecchia. Chiede la categoria
+**solo di chi non si sa già** — la porta dietro da una gara precedente, propria
+o del DB — perché su un circuito di otto prove chiederle tutte ogni volta
+significa ottanta risposte invece di otto. Mostra poi tutti gli iscritti
+ordinati per categoria e nome, marcando i riportati: sono quelli che nessuno ha
+riguardato, quindi è lì che si nasconde chi nel frattempo è salito di categoria.
+Da lì si salva, si rivede (e allora le chiede **tutte**, con i valori attuali
+come proposta), o si salta la gara. Scavalca la finestra di modifica con un
+`force=True` documentato, usato **solo** da lì.
 
 Alla fine propone il ricalcolo dell'Elo, dicendo cosa comporta: è **globale**,
 non chirurgico. L'Elo è path-dependent, quindi far entrare partite prima
