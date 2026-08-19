@@ -126,9 +126,61 @@ def create_app(config_name=None):
         mail.init_app(app)
 
     # CSRF protection
-    from flask_wtf.csrf import CSRFProtect
+    from flask_wtf.csrf import CSRFProtect, CSRFError
 
-    csrf = CSRFProtect(app)  # noqa: F841
+    csrf = CSRFProtect(app)
+
+    @app.before_request
+    def verifica_origine_richiesta():
+        """Rifiuta i POST che dichiarano di venire da un altro sito.
+
+        Prende il posto del controllo sul `Referer` di Flask-WTF, spento in
+        `config.py`: quello pretendeva un header **facoltativo** e rispondeva
+        400 a chi non lo manda (privacy del browser, webview, proxy), login
+        compreso. `Origin` invece i browser lo mandano **sempre** su un POST,
+        ed è esattamente il caso che il referrer serviva a fermare: un form su
+        un sito terzo che spara sul nostro.
+
+        Quando l'header non c'è non si blocca niente: lì la difesa sono il
+        token firmato e il cookie `SameSite=Lax`, che su una richiesta
+        cross-site non parte nemmeno. Si confronta solo l'host e non lo
+        schema: dietro il proxy di PythonAnywhere l'app vede `http` mentre il
+        browser dichiara `https`, e un confronto completo rifiuterebbe tutto.
+        """
+        if request.method in ("GET", "HEAD", "OPTIONS", "TRACE"):
+            return None
+        if not app.config.get("WTF_CSRF_ENABLED", True):
+            return None
+
+        # Le stesse esenzioni che rispetta Flask-WTF: una vista o un
+        # blueprint dichiarati `@csrf.exempt` di solito ricevono richieste da
+        # fuori (webhook), e questo controllo le rifiuterebbe.
+        vista = app.view_functions.get(request.endpoint or "")
+        if vista is not None:
+            nome = f"{vista.__module__}.{vista.__name__}"
+            if nome in getattr(csrf, "_exempt_views", set()):
+                return None
+        blueprint = app.blueprints.get(request.blueprint or "")
+        if blueprint is not None and blueprint in getattr(
+            csrf, "_exempt_blueprints", set()
+        ):
+            return None
+
+        origine = request.headers.get("Origin")
+        if not origine or origine == "null":
+            return None
+
+        from urllib.parse import urlsplit
+
+        if urlsplit(origine).netloc != request.host:
+            app.logger.warning(
+                "Origin rifiutata su %s: %r (host %r)",
+                request.path,
+                origine,
+                request.host,
+            )
+            raise CSRFError("La richiesta non proviene da questo sito.")
+        return None
 
     # Rate limiting
     from utils.rate_limiter import limiter
@@ -583,11 +635,24 @@ def create_app(config_name=None):
             app.logger.error(f"Health check failed: {e}")
             return jsonify(status="unhealthy"), 503
 
-    # Custom error pages
-    from flask_wtf.csrf import CSRFError
+    # Custom error pages (CSRFError e' gia' importato con CSRFProtect, sopra)
 
     @app.errorhandler(CSRFError)
     def csrf_error(e):
+        # La pagina dice «sessione scaduta», che è il caso comune ma non
+        # l'unico: senza questa riga un CSRF che fallisce per un altro motivo
+        # (token assente perché il form non ce l'ha, origine estranea) resta
+        # indistinguibile nei log da una sessione davvero scaduta. È così che
+        # il 400 al login è rimasto senza spiegazione: nel log c'era solo la
+        # pagina servita.
+        app.logger.warning(
+            "CSRF fallito su %s %s: %s (referrer=%r, origin=%r)",
+            request.method,
+            request.path,
+            getattr(e, "description", e),
+            request.referrer,
+            request.headers.get("Origin"),
+        )
         return render_template("errors/400.html"), 400
 
     @app.errorhandler(404)
