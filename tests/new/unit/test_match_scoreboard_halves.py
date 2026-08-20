@@ -158,6 +158,37 @@ class TestRiscontroAlTocco:
         assert "navigator.vibrate" in html
 
 
+class TestIlTelefonoCheSiSpegne:
+    """Il tocco che tiene acceso lo schermo non deve segnare un triangolo.
+
+    Nessuna API dice «lo schermo sta per spegnersi», quindi quel tocco non si
+    riconosce: si toglie il motivo di farlo (il telefono resta acceso finché il
+    tabellone è davanti) e si ignora il primo attimo dopo che la pagina torna
+    in primo piano, cioè dopo uno sblocco.
+    """
+
+    def test_il_telefono_resta_acceso_col_tabellone_aperto(self, app):
+        html = _render(app, _Match())
+
+        assert "wakeLock" in html
+        assert "navigator.wakeLock.request('screen')" in html
+
+    def test_lo_schermo_si_libera_quando_il_tabellone_non_serve(self, app):
+        """Tenere acceso un telefono su una pagina che non si guarda è scortese."""
+        html = _render(app, _Match())
+
+        assert "release()" in html
+        assert "visibilitychange" in html
+
+    def test_dopo_uno_sblocco_c_e_una_finestra_cieca(self, app):
+        html = _render(app, _Match())
+
+        assert "CIECA_MS" in html
+        # In cattura sul contenitore: da lì ferma l'evento prima che arrivi
+        # all'`onclick` della metà.
+        assert "event.stopPropagation();" in html
+
+
 @pytest.mark.parametrize("nome_funzione", ["addRackWin", "segnaTriangolo"])
 def test_le_funzioni_della_pagina_ospite_restano_le_sue(app, nome_funzione):
     """Il tabellone non ha endpoint suoi: chiama il segnapunti della pagina."""

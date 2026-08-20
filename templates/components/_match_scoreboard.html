@@ -204,14 +204,86 @@
 
 <script>
     (function () {
+        var board = document.getElementById('matchBoard');
+        if (!board) { return; }
+
+        /* Il tocco che tiene acceso lo schermo non deve segnare un triangolo
+           -----------------------------------------------------------------
+           Nessuna API dice «lo schermo sta per spegnersi», quindi quel tocco
+           non si riconosce. Si toglie il motivo di farlo: finché il tabellone
+           è davanti, il telefono resta acceso (Screen Wake Lock). Il telefono
+           appoggiato alla sponda non si spegne, e non c'è niente da svegliare.
+
+           Dove il wake lock non c'è (Safari vecchi, browser senza HTTPS) resta
+           la seconda difesa: per un attimo dopo che la pagina torna in primo
+           piano — cioè dopo uno sblocco — i tocchi sulle metà non contano. Un
+           tocco perso si ripete; un triangolo mai giocato va annullato. */
+        var risveglio = null;
+        var tornataVisibile = 0;
+        var CIECA_MS = 700;
+        var orizzontale = window.matchMedia(
+            '(orientation: landscape) and (max-height: 520px) and (pointer: coarse)');
+
+        function tieniAcceso() {
+            if (!('wakeLock' in navigator)) { return; }
+            if (risveglio || document.visibilityState !== 'visible') { return; }
+            if (!orizzontale.matches || document.body.classList.contains('c7-board-off')) { return; }
+            navigator.wakeLock.request('screen').then(function (lock) {
+                risveglio = lock;
+                lock.addEventListener('release', function () { risveglio = null; });
+            }).catch(function () {
+                // Il browser può rifiutare (niente HTTPS, batteria a terra):
+                // pazienza, resta la finestra cieca qui sotto.
+            });
+        }
+
+        function lasciaSpegnere() {
+            if (risveglio) { risveglio.release().catch(function () {}); risveglio = null; }
+        }
+
+        function aggiornaRisveglio() {
+            if (orizzontale.matches && !document.body.classList.contains('c7-board-off')) {
+                tieniAcceso();
+            } else {
+                lasciaSpegnere();
+            }
+        }
+
+        document.addEventListener('visibilitychange', function () {
+            if (document.visibilityState === 'visible') {
+                // Da qui parte la finestra cieca: il primo tocco dopo uno
+                // sblocco è quasi sempre quello dello sblocco.
+                tornataVisibile = Date.now();
+                aggiornaRisveglio();
+            } else {
+                lasciaSpegnere();
+            }
+        });
+        if (orizzontale.addEventListener) { orizzontale.addEventListener('change', aggiornaRisveglio); }
+        var chiudi = board.querySelector('.c7-board__close');
+        if (chiudi) { chiudi.addEventListener('click', lasciaSpegnere); }
+        aggiornaRisveglio();
+
+        // La guardia sta sul contenitore e in fase di cattura: da lì ferma
+        // l'evento prima che arrivi all'`onclick` della metà.
+        board.addEventListener('click', function (event) {
+            if (!event.target.closest('.c7-board__side--tap')) { return; }
+            if (Date.now() - tornataVisibile < CIECA_MS) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        }, true);
+
         // Riscontro immediato al tocco: chi segna sta guardando il tavolo, non
         // lo schermo, e il numero che cambia da solo non basta. Il lampo lo fa
         // il CSS su `:active`; qui resta la vibrazione, e la classe che tiene
         // acceso il lampo anche per un tocco fulmineo.
-        var board = document.getElementById('matchBoard');
-        if (!board) { return; }
         board.querySelectorAll('.c7-board__side--tap').forEach(function (half) {
             half.addEventListener('pointerdown', function () {
+                if (Date.now() - tornataVisibile < CIECA_MS) { return; }
+                // Un tocco è un gesto: se il wake lock era stato rifiutato
+                // prima, adesso il browser lo concede.
+                tieniAcceso();
                 half.classList.add('is-flash');
                 window.setTimeout(function () { half.classList.remove('is-flash'); }, 180);
                 try {

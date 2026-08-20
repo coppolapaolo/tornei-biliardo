@@ -279,9 +279,9 @@ hints:
 
   - id: partita.tabellone
     label: "Tabellone"
-    short: "Gira il telefono in orizzontale: il punteggio diventa grande e si legge da lontano. Si segna allo stesso modo."
+    short: "Gira il telefono in orizzontale: il punteggio diventa grande e si legge da lontano, e il triangolo si segna toccando la metà del giocatore."
     anchor: partita-tabellone
-    screens: [admin.match.match_detail]
+    screens: [admin.match.match_detail, individual_match.match_detail]
     page: giocare_una_partita
     section: tabellone
 

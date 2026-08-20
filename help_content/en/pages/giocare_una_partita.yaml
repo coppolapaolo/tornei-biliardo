@@ -104,22 +104,40 @@ blocks:
   - type: shot
     shot: partita-tabellone
     variant: landscape
-    caption: "The scoreboard with the phone turned sideways: the two large scores, one button per player at the bottom, and the X in the top left to go back to the page."
+    caption: "The scoreboard with the phone turned sideways: the two large scores and the X in the top left to go back to the page."
 
   - type: list
     title: "What changes from the normal page"
     items:
-      - "You record the same way: the **+1** buttons at the bottom are the same ones, and the point lands in the same place. For the score there is no difference between the two views."
-      - "Between the two buttons is the command to **undo the last rack**, the one with the curved arrow."
+      - "You score by tapping the **player's half**: left half of the screen, a rack to whoever is on the left; right half, to the other one. There is no button to look for — the target is half the screen, and you can hit it one-handed, even without looking."
+      - "Your half is the one with **you** next to the name."
+      - "At the bottom the button to **undo the last rack** stays: with a target this big a stray tap gets easier, not harder."
+      - "The point lands in the same place as on the normal page: for the score there is no difference between the two views."
       - "Under each score, the dashes show how many racks are left to win, so you do not have to count them."
       - "The red dot in the top right blinks while the match is live; it stops once the match is over."
 
   - type: text
     text: >-
-      The scoreboard stays on when the match ends: **Accept** and **Reject**
-      take the place of the **+1** buttons, and above them you can read who won
-      and by what score. You do not need to turn the phone upright to confirm
-      the result.
+      The scoreboard stays on when the match ends: the two halves switch off,
+      **Accept** and **Reject** appear at the bottom, and above them you can
+      read who won and by what score. You do not need to turn the phone upright
+      to confirm the result.
+
+  - type: note
+    tone: tip
+    title: "Your phone stays awake"
+    text: >-
+      While the scoreboard is open the screen stays on by itself: you do not
+      have to touch it to keep it alive, so you cannot score a rack that never
+      happened. If the phone locks anyway, the first tap after unlocking does
+      not count: it only picks the match back up.
+
+  - type: note
+    tone: info
+    title: "Friendly matches too"
+    text: >-
+      It is the same scoreboard: turn your phone when you are playing a match
+      outside competitions as well.
 
   - type: note
     tone: tip

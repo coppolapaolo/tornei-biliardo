@@ -82,9 +82,9 @@ class TestTabelloneSullaSfidaIndividuale:
         player1, player2 = _player(), _player()
         match = _match_in_corso(player1, player2)
 
-        body = _get(
-            _client_for(app, player1), f"/match/matches/{match.id}"
-        ).get_data(as_text=True)
+        body = _get(_client_for(app, player1), f"/match/matches/{match.id}").get_data(
+            as_text=True
+        )
 
         assert 'id="matchBoard"' in body
         assert body.count(META_TOCCABILE) == 2
@@ -94,9 +94,9 @@ class TestTabelloneSullaSfidaIndividuale:
         player1, player2 = _player(), _player()
         match = _match_in_corso(player1, player2)
 
-        body = _get(
-            _client_for(app, player1), f"/match/matches/{match.id}"
-        ).get_data(as_text=True)
+        body = _get(_client_for(app, player1), f"/match/matches/{match.id}").get_data(
+            as_text=True
+        )
 
         assert f"addRack({player1.id}, this)" in body
         assert f"addRack({player2.id}, this)" in body
@@ -106,9 +106,9 @@ class TestTabelloneSullaSfidaIndividuale:
         player1, player2 = _player(), _player()
         match = _match_in_corso(player1, player2, player1_score=5, player2_score=2)
 
-        body = _get(
-            _client_for(app, player1), f"/match/matches/{match.id}"
-        ).get_data(as_text=True)
+        body = _get(_client_for(app, player1), f"/match/matches/{match.id}").get_data(
+            as_text=True
+        )
 
         assert META_TOCCABILE not in body
         assert 'id="matchBoard"' in body
@@ -133,9 +133,9 @@ class TestTabelloneSullaSfidaIndividuale:
         )
         db.session.commit()
 
-        body = _get(
-            _client_for(app, player1), f"/match/matches/{match.id}"
-        ).get_data(as_text=True)
+        body = _get(_client_for(app, player1), f"/match/matches/{match.id}").get_data(
+            as_text=True
+        )
 
         assert 'id="matchBoard"' not in body
 
@@ -143,8 +143,8 @@ class TestTabelloneSullaSfidaIndividuale:
         player1, player2 = _player(), _player()
         match = _match_in_corso(player1, player2, status=MatchStatus.SCHEDULED)
 
-        body = _get(
-            _client_for(app, player1), f"/match/matches/{match.id}"
-        ).get_data(as_text=True)
+        body = _get(_client_for(app, player1), f"/match/matches/{match.id}").get_data(
+            as_text=True
+        )
 
         assert 'id="matchBoard"' not in body
