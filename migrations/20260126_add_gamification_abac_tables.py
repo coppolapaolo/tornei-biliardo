@@ -43,7 +43,10 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
                 description TEXT,
                 rules TEXT NOT NULL DEFAULT '[]',
                 is_active BOOLEAN DEFAULT 1,
-                badge_slug VARCHAR(100)
+                badge_slug VARCHAR(100),
+                -- Vedi 20260124: BaseModel pretende queste due ovunque.
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         """)
 

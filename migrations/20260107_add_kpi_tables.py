@@ -105,6 +105,11 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
                 milestone_value INTEGER NOT NULL,
                 reached_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 notification_sent BOOLEAN DEFAULT 0,
+                -- BaseModel le aggiunge a ogni entità (le altre due tabelle
+                -- di questo file ce le hanno già): senza, l'INSERT dell'ORM
+                -- fallisce con «no such column».
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 UNIQUE(milestone_type, milestone_value)
             )
         """)

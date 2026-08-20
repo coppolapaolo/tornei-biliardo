@@ -62,6 +62,11 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
                 token VARCHAR(100) NOT NULL,
                 token_type VARCHAR(20) NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                -- BaseModel le aggiunge a ogni entità: senza, l'INSERT
+                -- dell'ORM fallisce con «no such column». Vale solo per le
+                -- installazioni nuove — dove la tabella c'è già, questa
+                -- CREATE non viene eseguita (vedi 20260820_timestamps_basemodel).
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 expires_at TIMESTAMP NOT NULL,
                 is_used BOOLEAN DEFAULT 0,
                 FOREIGN KEY(user_id) REFERENCES user (id),
