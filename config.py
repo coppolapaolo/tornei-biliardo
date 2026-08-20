@@ -97,6 +97,25 @@ class Config:
     # Attivo in dev e prod; disattivato nei test (vedi TestingConfig).
     ONBOARDING_ENFORCED = True
 
+    # CSRF: il token resta obbligatorio, il *referrer* no.
+    #
+    # Flask-WTF, oltre a validare il token, su HTTPS pretende anche un header
+    # `Referer` che combaci con l'host (`WTF_CSRF_SSL_STRICT`, default True) e
+    # risponde 400 quando manca. È una difesa nata prima di SameSite, e oggi
+    # scarica il costo su chi il referrer non lo manda: browser con la
+    # privacy stretta, webview dentro altre app, estensioni e proxy che lo
+    # tolgono. Per quelle persone *ogni* POST era 400 — login compreso, quindi
+    # senza nemmeno un modo per entrare — mentre per tutti gli altri il sito
+    # funzionava: un guasto che si vede solo addosso a qualcuno.
+    #
+    # Quel che resta a proteggere i form non è poco: il token firmato e legato
+    # alla sessione (che un sito terzo non può leggere), il cookie di sessione
+    # `SameSite=Lax` (che su un POST cross-site non viene proprio inviato) e
+    # il controllo di `Origin` in `app.py`, che rifiuta l'unica cosa che il
+    # referrer rifiutava davvero — una richiesta partita da un altro sito —
+    # senza pretendere un header facoltativo.
+    WTF_CSRF_SSL_STRICT = False
+
     @classmethod
     def environment_settings(cls) -> dict:
         """Le impostazioni che leggono ``os.environ``, risolte **adesso**.

@@ -11,6 +11,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="theme-color" content="#E4E8E7">
+
+    {# App installabile: con il manifest e le icone «Aggiungi a schermata Home»
+       smette di essere un segnalibro e diventa una finestra a sé, con nome e
+       icona propri. I tagli si generano tutti da un master con
+       `scripts/genera_icone_app.py`: le regole dei tre sistemi si
+       contraddicono (Android ritaglia, iOS arrotonda da sé e annerisce la
+       trasparenza) e a mano si divergerebbe. #}
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.webmanifest') }}?v={{ config.ASSET_VERSION }}">
+    <link rel="icon" href="{{ url_for('static', filename='img/app/favicon.ico') }}" sizes="48x48">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='img/app/favicon-32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='img/app/favicon-16.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/app/apple-touch-icon.png') }}">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Biliardo">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>{% block title %}{{ config.APP_NAME }}{% endblock %}</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">

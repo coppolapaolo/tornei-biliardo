@@ -41,12 +41,33 @@ blocks:
           Torna sull'app e accedi con nome utente e password. Da qui in avanti
           resti collegato: non dovrai rifarlo a ogni visita.
 
-  - type: note
-    tone: tip
-    title: "Aggiungi l'app alla schermata del telefono"
+  - type: heading
+    id: installare_app
+    title: "Tenerla sul telefono come un'app"
+
+  - type: text
     text: >-
-      Dal menu del browser scegli «Aggiungi a schermata Home»: comparirà
-      un'icona come quella di una vera app, e si aprirà già a tutto schermo.
+      Non c'è niente da scaricare da nessuno store: è il browser stesso che può
+      aggiungere **Biliardo** fra le app del telefono. Da lì si apre a tutto
+      schermo, con la sua icona e senza la barra dell'indirizzo, e resta a
+      portata di dito come le altre.
+
+  - type: list
+    title: "Dove si trova il comando"
+    items:
+      - "**iPhone e iPad, da Safari**: tocca il tasto Condividi — il quadrato con la freccia verso l'alto, in basso — scorri l'elenco e scegli «Aggiungi a Home»."
+      - "**Android, da Chrome**: tocca i tre puntini in alto a destra e scegli «Installa app»; se non c'è, «Aggiungi a schermata Home» fa la stessa cosa."
+      - "**Android, da Firefox**: i tre puntini, poi «Aggiungi a schermata Home»."
+      - "**Android, da Samsung Internet**: il menu in basso a destra, poi «Aggiungi pagina a» e «Schermata Home»."
+      - "**Computer, con Chrome o Edge**: nella barra dell'indirizzo compare una piccola icona di installazione, a destra; altrimenti la voce «Installa» è nel menu del browser."
+
+  - type: note
+    tone: info
+    title: "Sull'iPhone il primo accesso si rifà"
+    text: >-
+      L'app aggiunta alla schermata Home tiene i suoi dati separati da quelli
+      di Safari: la prima volta che la apri ti chiede di accedere di nuovo,
+      anche se nel browser eri già entrato. Succede una volta sola.
 
   - type: heading
     id: prima_volta

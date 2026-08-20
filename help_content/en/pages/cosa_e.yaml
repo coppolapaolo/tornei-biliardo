@@ -97,7 +97,7 @@ blocks:
       - q: "Do I have to pay to use it?"
         a: "No, the account is free. Any entry fees for competitions are set by the organisers and paid outside the app."
       - q: "Do I need to install anything?"
-        a: "No. You use it from your phone's or computer's browser. You can add a shortcut to your phone's home screen to keep it handy like a real app."
+        a: "No, and there is no app store involved. You use it from your phone's or computer's browser, and if you want, the browser itself adds it to your phone's apps, with its own icon: [First login](/aiuto/introduzione/primo_accesso) explains how."
       - q: "Do I have to keep score on my phone?"
         a: "No. The competition director can enter results for everyone. The phone is convenient, not compulsory."
       - q: "What if I record a point by mistake?"

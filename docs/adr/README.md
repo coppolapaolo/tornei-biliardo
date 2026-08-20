@@ -63,6 +63,7 @@ Crea un ADR quando:
 | ADR-047 | [La classifica la decide il sistema di classifica, non il tipo di campionato](ADR-047-classification-system-drives-the-standings.md) | Accepted | 2026-08-18 |
 | ADR-048 | [Spostare la partecipazione a una gara: fatti riassegnati, derivati ricalcolati](ADR-048-gara-scoped-participant-reassignment.md) | Accepted | 2026-08-19 |
 | ADR-049 | [L'handicap non spegne l'Elo: lo spegne la differenza di categoria](ADR-049-same-category-restores-elo-in-handicap-events.md) | Accepted | 2026-08-19 |
+| ADR-050 | [Il CSRF si difende con l'Origin, non con il referrer](ADR-050-csrf-origin-instead-of-referrer.md) | Accepted | 2026-08-19 |
 
 ## Come Creare un Nuovo ADR
 
