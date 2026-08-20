@@ -272,10 +272,12 @@ hints:
   section: forfait
 - id: partita.tabellone
   label: Scoreboard
-  short: 'Turn your phone sideways: the score gets big and reads from a distance. You record the same way.'
+  short: 'Turn your phone sideways: the score gets big and reads from a distance, and you score a rack
+    by tapping the player''s half.'
   anchor: partita-tabellone
   screens:
   - admin.match.match_detail
+  - individual_match.match_detail
   page: giocare_una_partita
   section: tabellone
 - id: iscrizione.pulsante

@@ -34,6 +34,42 @@
    - where: string (opzionale) — la riga in alto, es. "Gara 4 · Turno 3"
 #}
 
+{# Mezza schermata è il bersaglio (issue #170) --------------------------------
+
+   Al tavolo si segna con una mano sola, spesso senza guardare, con la stecca
+   nell'altra: un bersaglio grande mezzo schermo si prende al buio, un pulsante
+   `+1` no. La metà del giocatore *è* il pulsante.
+
+   Le due metà si accendono **esattamente** quando si accendevano i `+1`
+   (`board.can_add`) e cedono il posto alle stesse risposte quando il risultato
+   aspetta una conferma: un'area invisibile che non fa niente è peggio di un
+   pulsante spento, perché non spiega perché. Quando non si può segnare, il
+   perché resta scritto nella barra in basso.
+
+   È un `<button>`, non un `<div>` con un `onclick`: così si raggiunge da
+   tastiera, si annuncia con il nome del giocatore e risponde a Invio e spazio.
+#}
+{% macro board_side(player_id, name, score, behind, pips, can_add, add_rack, mine) %}
+{% set inner %}
+    <span class="c7-board__name {{ 'c7-board__name--behind' if behind }}">{{ name }}{% if mine %} <span class="c7-board__you">{{ _('tu') }}</span>{% endif %}</span>
+    <span class="c7-board__num {{ 'c7-board__num--behind' if behind }}">{{ score }}</span>
+    {% if pips %}
+    <span class="c7-board__pips">
+        {% for i in range(pips) %}
+        <span class="c7-board__pip {{ ('is-on is-on--muted' if behind else 'is-on') if i < score }}"></span>
+        {% endfor %}
+    </span>
+    {% endif %}
+{% endset %}
+{% if can_add %}
+<button type="button" class="c7-board__side c7-board__side--tap"
+        onclick="{{ add_rack }}({{ player_id }}, this)"
+        aria-label="{{ _('Un triangolo a %(name)s', name=name) }}">{{ inner }}</button>
+{% else %}
+<div class="c7-board__side">{{ inner }}</div>
+{% endif %}
+{% endmacro %}
+
 {% set add_rack = add_rack_js_func|default('addRack') %}
 {% set remove_rack = remove_rack_js_func|default('removeRack') %}
 {% set confirm_func = confirm_js_func|default('confirmResult') %}
@@ -90,29 +126,13 @@
     {% set p1_behind = p1_score < p2_score %}
     {% set p2_behind = p2_score < p1_score %}
     <div class="c7-board__body">
-        <div class="c7-board__side">
-            <span class="c7-board__name {{ 'c7-board__name--behind' if p1_behind }}">{{ p1_name }}</span>
-            <span class="c7-board__num {{ 'c7-board__num--behind' if p1_behind }}">{{ p1_score }}</span>
-            {% if pips %}
-            <div class="c7-board__pips">
-                {% for i in range(pips) %}
-                <span class="c7-board__pip {{ ('is-on is-on--muted' if p1_behind else 'is-on') if i < p1_score }}"></span>
-                {% endfor %}
-            </div>
-            {% endif %}
-        </div>
+        {# `mine`: chi gioca deve riconoscere la propria metà a colpo d'occhio.
+           Prima lo diceva il riempimento del proprio `+1`, che non c'è più. #}
+        {{ board_side(match.player1_id, p1_name, p1_score, p1_behind, pips, board.can_add, add_rack,
+             board.is_player and not mine_is_p2) }}
         <div class="c7-board__rule"></div>
-        <div class="c7-board__side">
-            <span class="c7-board__name {{ 'c7-board__name--behind' if p2_behind }}">{{ p2_name }}</span>
-            <span class="c7-board__num {{ 'c7-board__num--behind' if p2_behind }}">{{ p2_score }}</span>
-            {% if pips %}
-            <div class="c7-board__pips">
-                {% for i in range(pips) %}
-                <span class="c7-board__pip {{ ('is-on is-on--muted' if p2_behind else 'is-on') if i < p2_score }}"></span>
-                {% endfor %}
-            </div>
-            {% endif %}
-        </div>
+        {{ board_side(match.player2_id, p2_name, p2_score, p2_behind, pips, board.can_add, add_rack,
+             board.is_player and mine_is_p2) }}
     </div>
 
     {# L'esito a parole sotto le cifre: chi legge da due metri vede i numeri,
@@ -163,24 +183,117 @@
         {% endif %}
 
         {% else %}
-        {# Partita in corso. I +1 si spengono quando il rack non va segnato —
-           distanza raggiunta o tavolo non assegnato — come nella vista
-           verticale: un pulsante spento dice la regola prima che venga
-           infranta, un messaggio d'errore la dice dopo. #}
-        <button type="button" class="c7-board__btn {{ 'c7-board__btn--mine' if not mine_is_p2 }}"
-                onclick="{{ add_rack }}({{ match.player1_id }}, this)" {% if not board.can_add %}disabled{% endif %}>
-            <span class="c7-board__plus">+1</span><span>{{ p1_name }}</span>
-        </button>
-        <button type="button" class="c7-board__undo"
+        {# Partita in corso. Il triangolo si segna toccando la metà del
+           giocatore (issue #170), quindi qui resta la sola via d'uscita — e
+           resta un pulsante esplicito: con un bersaglio così grande i tocchi
+           sbagliati aumentano, non diminuiscono.
+
+           Quando il rack non va segnato le metà sono spente, e il perché va
+           detto qui: la vista verticale usa queste stesse parole. #}
+        {% if not board.can_add %}
+        <span class="c7-board__note">{{ _('Serve un tavolo assegnato prima di iniziare.') }}</span>
+        {% endif %}
+        <button type="button" class="c7-board__undo c7-board__undo--wide"
                 onclick="{{ remove_rack }}({{ last_rack.winner_id if last_rack else 0 }}, this)"
-                {% if not puo_annullare %}disabled{% endif %} aria-label="{{ _('Annulla ultimo triangolo') }}">
-            <i class="fas fa-rotate-left"></i>
-        </button>
-        <button type="button" class="c7-board__btn {{ 'c7-board__btn--mine' if mine_is_p2 }}"
-                onclick="{{ add_rack }}({{ match.player2_id }}, this)" {% if not board.can_add %}disabled{% endif %}>
-            <span class="c7-board__plus">+1</span><span>{{ p2_name }}</span>
+                {% if not puo_annullare %}disabled{% endif %}>
+            <i class="fas fa-rotate-left"></i><span>{{ _('Annulla il triangolo') }}</span>
         </button>
         {% endif %}
     </div>
 </div>
+
+<script>
+    (function () {
+        var board = document.getElementById('matchBoard');
+        if (!board) { return; }
+
+        /* Il tocco che tiene acceso lo schermo non deve segnare un triangolo
+           -----------------------------------------------------------------
+           Nessuna API dice «lo schermo sta per spegnersi», quindi quel tocco
+           non si riconosce. Si toglie il motivo di farlo: finché il tabellone
+           è davanti, il telefono resta acceso (Screen Wake Lock). Il telefono
+           appoggiato alla sponda non si spegne, e non c'è niente da svegliare.
+
+           Dove il wake lock non c'è (Safari vecchi, browser senza HTTPS) resta
+           la seconda difesa: per un attimo dopo che la pagina torna in primo
+           piano — cioè dopo uno sblocco — i tocchi sulle metà non contano. Un
+           tocco perso si ripete; un triangolo mai giocato va annullato. */
+        var risveglio = null;
+        var tornataVisibile = 0;
+        var CIECA_MS = 700;
+        var orizzontale = window.matchMedia(
+            '(orientation: landscape) and (max-height: 520px) and (pointer: coarse)');
+
+        function tieniAcceso() {
+            if (!('wakeLock' in navigator)) { return; }
+            if (risveglio || document.visibilityState !== 'visible') { return; }
+            if (!orizzontale.matches || document.body.classList.contains('c7-board-off')) { return; }
+            navigator.wakeLock.request('screen').then(function (lock) {
+                risveglio = lock;
+                lock.addEventListener('release', function () { risveglio = null; });
+            }).catch(function () {
+                // Il browser può rifiutare (niente HTTPS, batteria a terra):
+                // pazienza, resta la finestra cieca qui sotto.
+            });
+        }
+
+        function lasciaSpegnere() {
+            if (risveglio) { risveglio.release().catch(function () {}); risveglio = null; }
+        }
+
+        function aggiornaRisveglio() {
+            if (orizzontale.matches && !document.body.classList.contains('c7-board-off')) {
+                tieniAcceso();
+            } else {
+                lasciaSpegnere();
+            }
+        }
+
+        document.addEventListener('visibilitychange', function () {
+            if (document.visibilityState === 'visible') {
+                // Da qui parte la finestra cieca: il primo tocco dopo uno
+                // sblocco è quasi sempre quello dello sblocco.
+                tornataVisibile = Date.now();
+                aggiornaRisveglio();
+            } else {
+                lasciaSpegnere();
+            }
+        });
+        if (orizzontale.addEventListener) { orizzontale.addEventListener('change', aggiornaRisveglio); }
+        var chiudi = board.querySelector('.c7-board__close');
+        if (chiudi) { chiudi.addEventListener('click', lasciaSpegnere); }
+        aggiornaRisveglio();
+
+        // La guardia sta sul contenitore e in fase di cattura: da lì ferma
+        // l'evento prima che arrivi all'`onclick` della metà.
+        board.addEventListener('click', function (event) {
+            if (!event.target.closest('.c7-board__side--tap')) { return; }
+            if (Date.now() - tornataVisibile < CIECA_MS) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        }, true);
+
+        // Riscontro immediato al tocco: chi segna sta guardando il tavolo, non
+        // lo schermo, e il numero che cambia da solo non basta. Il lampo lo fa
+        // il CSS su `:active`; qui resta la vibrazione, e la classe che tiene
+        // acceso il lampo anche per un tocco fulmineo.
+        board.querySelectorAll('.c7-board__side--tap').forEach(function (half) {
+            half.addEventListener('pointerdown', function () {
+                if (Date.now() - tornataVisibile < CIECA_MS) { return; }
+                // Un tocco è un gesto: se il wake lock era stato rifiutato
+                // prima, adesso il browser lo concede.
+                tieniAcceso();
+                half.classList.add('is-flash');
+                window.setTimeout(function () { half.classList.remove('is-flash'); }, 180);
+                try {
+                    if (navigator.vibrate) { navigator.vibrate(15); }
+                } catch (e) {
+                    // La vibrazione è un di più: se il telefono non la
+                    // consente, il lampo resta.
+                }
+            });
+        });
+    })();
+</script>
 {% endif %}

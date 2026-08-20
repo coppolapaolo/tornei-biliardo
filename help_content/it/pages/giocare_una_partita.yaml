@@ -102,22 +102,40 @@ blocks:
   - type: shot
     shot: partita-tabellone
     variant: landscape
-    caption: "Il tabellone a telefono ruotato: i due punteggi grandi, un tasto per giocatore in fondo e la X in alto a sinistra per tornare alla pagina."
+    caption: "Il tabellone a telefono ruotato: i due punteggi grandi e la X in alto a sinistra per tornare alla pagina."
 
   - type: list
     title: "Cosa cambia rispetto alla pagina normale"
     items:
-      - "Si segna allo stesso modo: i tasti **+1** in fondo sono gli stessi, e il punto arriva nello stesso posto. Fra le due viste non c'è differenza per il punteggio."
-      - "Fra i due tasti c'è il comando per **annullare l'ultimo triangolo**, quello con la freccia curva."
+      - "Si segna toccando la **metà del giocatore**: metà sinistra dello schermo, triangolo a chi sta a sinistra; metà destra, all'altro. Non c'è nessun tasto da cercare — il bersaglio è mezzo schermo, e si prende con una mano sola, anche senza guardare."
+      - "La tua metà è quella con scritto **tu** accanto al nome."
+      - "In fondo resta il pulsante per **annullare l'ultimo triangolo**: con un bersaglio così grande un tocco per sbaglio è più facile, non meno."
+      - "Il punto arriva nello stesso posto della pagina normale: fra le due viste non c'è differenza per il punteggio."
       - "Sotto ogni punteggio i trattini dicono quanti triangoli mancano alla vittoria, senza doverli contare."
       - "In alto a destra il pallino rosso lampeggia finché si gioca; a partita ferma smette."
 
   - type: text
     text: >-
-      Il tabellone resta anche quando la partita finisce: al posto dei tasti
-      **+1** compaiono **Accetta** e **Rifiuta**, e sopra c'è scritto chi ha
-      vinto e con che punteggio. Non serve raddrizzare il telefono per
-      confermare il risultato.
+      Il tabellone resta anche quando la partita finisce: le due metà si
+      spengono e in fondo compaiono **Accetta** e **Rifiuta**, mentre sopra c'è
+      scritto chi ha vinto e con che punteggio. Non serve raddrizzare il
+      telefono per confermare il risultato.
+
+  - type: note
+    tone: tip
+    title: "Il telefono non si spegne"
+    text: >-
+      Finché il tabellone è aperto lo schermo resta acceso da solo: non devi
+      toccarlo per tenerlo vivo, e quindi non rischi di segnare un triangolo
+      che non c'è stato. Se il telefono si blocca lo stesso, il primo tocco
+      dopo lo sblocco non conta: serve solo a riprendere in mano la partita.
+
+  - type: note
+    tone: info
+    title: "Vale anche per le sfide individuali"
+    text: >-
+      Il tabellone è lo stesso: gira il telefono anche quando stai giocando una
+      partita fuori dalle gare.
 
   - type: note
     tone: tip
