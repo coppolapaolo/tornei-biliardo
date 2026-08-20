@@ -10,7 +10,10 @@
 {% endblock %}
 {% block page_title %}{{ _("Le mie sfide") }}{% endblock %}
 {% block page_actions %}
-<a href="{{ url_for('individual_match.create_proposal') }}" class="btn btn-primary btn-sm d-none d-lg-inline-flex">
+<a href="{{ url_for('individual_match.quick_match') }}" class="btn btn-primary btn-sm d-none d-lg-inline-flex">
+  <i class="fas fa-play"></i>&nbsp;{{ _("Avvio rapido") }}
+</a>
+<a href="{{ url_for('individual_match.create_proposal') }}" class="btn btn-secondary btn-sm d-none d-lg-inline-flex">
   <i class="fas fa-plus"></i>&nbsp;{{ _("Nuova proposta") }}
 </a>
 {% endblock %}
@@ -153,8 +156,11 @@
     {{ _("Proponi una data a un altro giocatore: quando accetta, la sfida compare qui.") }}
   </p>
   <div class="c7-empty__actions">
-    <a href="{{ url_for('individual_match.create_proposal') }}" class="btn btn-primary">
-      <i class="fas fa-plus"></i> {{ _("Crea la tua prima proposta") }}
+    <a href="{{ url_for('individual_match.quick_match') }}" class="btn btn-primary">
+      <i class="fas fa-play"></i> {{ _("Sto giocando adesso") }}
+    </a>
+    <a href="{{ url_for('individual_match.create_proposal') }}" class="btn btn-secondary">
+      <i class="fas fa-plus"></i> {{ _("Proponi una data") }}
     </a>
   </div>
 </div>

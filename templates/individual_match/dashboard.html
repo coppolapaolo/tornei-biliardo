@@ -14,7 +14,10 @@
    testata sticky a quattro righe — un terzo dello schermo. La proposta nuova
    e' la prima voce dell'elenco in fondo e il pulsante dello stato vuoto. #}
 {% block page_actions %}
-<a href="{{ url_for('individual_match.create_proposal') }}" class="btn btn-primary btn-sm d-none d-lg-inline-flex">
+<a href="{{ url_for('individual_match.quick_match') }}" class="btn btn-primary btn-sm d-none d-lg-inline-flex">
+  <i class="fas fa-play"></i>&nbsp;{{ _("Avvio rapido") }}
+</a>
+<a href="{{ url_for('individual_match.create_proposal') }}" class="btn btn-secondary btn-sm d-none d-lg-inline-flex">
   <i class="fas fa-plus"></i>&nbsp;{{ _("Nuova proposta") }}
 </a>
 {% endblock %}
@@ -44,6 +47,25 @@
 {% set has_nothing = not received and not sent and not active_matches and not recent_matches %}
 
 <div class="c7-stack c7-sections">
+
+  {# ---------- Sei in sala adesso ----------
+     Issue #176: chi apre l'app con la stecca in mano non deve compilare una
+     proposta per una partita che sta gia' cominciando. Prima voce, prima di
+     tutto il resto, perche' e' l'unica che ha fretta. #}
+  <a class="c7-card c7-card--accent d-flex align-items-center gap-3"
+     href="{{ url_for('individual_match.quick_match') }}"
+     style="color:inherit;text-decoration:none">
+    <span class="c7-avatar c7-avatar--lg" style="background:var(--c7-bg);color:var(--c7-accent)">
+      <i class="fas fa-play"></i>
+    </span>
+    <div class="flex-fill" style="min-width:0">
+      <div style="font-size:16px;font-weight:800;letter-spacing:-.02em">{{ _("Giochi adesso?") }}</div>
+      <div style="margin-top:3px;font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
+        {{ _("Scegli l'avversario e sei al segnapunti") }}
+      </div>
+    </div>
+    <i class="fas fa-chevron-right" style="font-size:12px;color:var(--c7-ink-faint)"></i>
+  </a>
 
   {# ---------- Attendono la tua risposta ---------- #}
   {% if received %}
@@ -186,8 +208,11 @@
       {{ _("Proponi una data a un altro giocatore: quando accetta, la sfida compare qui.") }}
     </p>
     <div class="c7-empty__actions">
-      <a href="{{ url_for('individual_match.create_proposal') }}" class="btn btn-primary">
-        <i class="fas fa-plus"></i> {{ _("Crea la tua prima proposta") }}
+      <a href="{{ url_for('individual_match.quick_match') }}" class="btn btn-primary">
+        <i class="fas fa-play"></i> {{ _("Sto giocando adesso") }}
+      </a>
+      <a href="{{ url_for('individual_match.create_proposal') }}" class="btn btn-secondary">
+        <i class="fas fa-plus"></i> {{ _("Proponi una data") }}
       </a>
     </div>
   </div>
@@ -218,6 +243,12 @@
      barra laterale non contiene (ha la sola voce "Match Individuali"). Forma
      da elenco, come il menu del profilo nel prototipo. #}
   <section class="c7-rows">
+    <a class="c7-rows__row" href="{{ url_for('individual_match.quick_match') }}"
+       style="color:inherit;text-decoration:none">
+      <i class="fas fa-play" style="font-size:14px;color:var(--c7-accent);width:18px"></i>
+      <div class="c7-rows__main"><div class="c7-rows__title">{{ _("Avvio rapido") }}</div></div>
+      <i class="fas fa-chevron-right" style="font-size:12px;color:var(--c7-ink-faint)"></i>
+    </a>
     <a class="c7-rows__row d-lg-none" href="{{ url_for('individual_match.create_proposal') }}"
        style="color:inherit;text-decoration:none">
       <i class="fas fa-plus" style="font-size:14px;color:var(--c7-accent);width:18px"></i>

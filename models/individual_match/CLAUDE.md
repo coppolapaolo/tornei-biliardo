@@ -11,6 +11,7 @@ Player-to-player casual match organization system outside formal tournaments.
 - Match History: Track casual game statistics
 - Bilateral Confirmation: VALIDATED status after both players confirm result
 - Rematch: Quick "play another" with same opponent and pre-filled settings
+- Quick Start: match aperto **già in corso** per chi è in sala adesso, senza proposta né accettazione (ADR-051)
 - Notifications: Proposal expiration, open proposals, match reminders
 
 **Distinct from Competition/Match domains** - these are standalone casual games, not tournament matches.
@@ -131,6 +132,23 @@ Single rack result within a match.
 - `reject_match_result(match_id, user_id)` - Reject and undo last rack
 - `send_match_reminders(hours_before, window_minutes)` - Send reminder notifications
 
+### QuickMatchService (ADR-051)
+Avvio rapido: la partita fra due giocatori **già in sala**, senza proposta e
+senza accettazione.
+
+- `get_defaults(user_id)` - quando/dove/come precompilati: ultima partita
+  giocata → sala in cui risulta disponibile (`UserLocationAvailability`) →
+  default di sistema
+- `find_open_match(user_id, opponent_id)` - la partita che i due stanno già
+  giocando (guardia sul doppio avvio)
+- `start(user_id, opponent_id, config=None)` - crea la partita **già
+  `IN_PROGRESS`**; le chiavi assenti in `config` vengono dai default. Se una
+  partita fra i due è in corso, restituisce quella.
+
+L'accettazione non è saltata: è la doppia conferma di fine partita
+(`CONFIRMED_BY_BOTH`), che è anche l'unica condizione che muove l'ELO globale.
+Vedi `docs/adr/ADR-051-quick-start-moves-the-acceptance-to-the-end.md`.
+
 ### IndividualMatchStatisticsService
 - `get_user_statistics(user_id)` - Match/rack statistics
 - `get_frequent_opponents(user_id, limit)` - Users played most matches against
@@ -151,6 +169,7 @@ Single rack result within a match.
 | Match imminente (2-3 ore prima) | MATCH_REMINDER | Both players |
 | Direct invitation | MATCH_PROPOSAL | Invited player |
 | Proposal accepted | MATCH_ACCEPTED | Proposer |
+| Avvio rapido: partita aperta con te | MATCH_ACCEPTED | Avversario |
 
 ---
 
