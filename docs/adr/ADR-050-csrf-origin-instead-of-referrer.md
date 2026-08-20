@@ -131,10 +131,37 @@ essere ambiguo.
 - Il controllo su `Origin` confronta l'host: se un domani il sito rispondesse
   su più domini con un proxy che riscrive `Host`, andrebbe rivisto.
 
+## Emendamento del 2026-08-20: il referrer non era l'unico modo
+
+Dopo il deploy della decisione qui sopra, la stessa pagina 400 è ricomparsa a
+un utente su Android. La misura dall'esterno diceva che il guasto originale non
+c'era più — stesso `POST /auth/login` senza `Referer`, risposta 200 — quindi la
+causa era un'altra, e la pagina la dichiarava da sempre: **«la pagina era
+aperta da troppo tempo»**.
+
+`WTF_CSRF_TIME_LIMIT` vale 3600 secondi per default, contati dalla generazione
+della pagina. Su un telefono il browser non si chiude mai: una scheda con il
+modulo di accesso lasciata aperta la sera prima ha il cookie di sessione ancora
+valido e il token già scaduto, e al primo invio prende 400. Chi ricarica non
+se ne accorge più — ed è il motivo per cui il difetto sembra intermittente e
+inspiegabile a chi lo subisce.
+
+**`WTF_CSRF_TIME_LIMIT = None`**: la validità del token diventa quella della
+sessione, che è la cosa che il token protegge. Non è uno sconto sulla
+sicurezza: per usare un token rubato servirebbe comunque il cookie di sessione
+della vittima — il vero segreto — e quello scade per conto suo.
+
+Le due cose insieme dicono qualcosa sul difetto di partenza: la pagina 400 era
+un imbuto in cui finivano cause diverse, tutte raccontate all'utente come
+«sessione scaduta». È per questo che la riga di log aggiunta al gestore di
+`CSRFError` conta quanto le due correzioni: senza, la seconda causa sarebbe
+stata invisibile esattamente come la prima.
+
 ## Note Implementative
 
 - `config.py`: `Config.WTF_CSRF_SSL_STRICT = False` (vale ovunque — in
-  sviluppo il controllo era comunque inerte, perché scatta solo su HTTPS).
+  sviluppo il controllo era comunque inerte, perché scatta solo su HTTPS) e
+  `Config.WTF_CSRF_TIME_LIMIT = None` (emendamento sopra).
 - `app.py`: `verifica_origine_richiesta` accanto a `CSRFProtect`, salta i
   metodi sicuri, i casi con CSRF disattivato (test) e le viste marcate
   `@csrf.exempt`.

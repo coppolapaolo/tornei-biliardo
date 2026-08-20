@@ -118,3 +118,54 @@ def test_configurazione_non_pretende_il_referrer():
     from config import Config
 
     assert Config.WTF_CSRF_SSL_STRICT is False
+
+
+def test_un_token_vecchio_di_ore_vale_ancora(csrf_client, db_session):
+    """Il modulo lasciato aperto sul telefono deve funzionare lo stesso.
+
+    Il default di Flask-WTF invalida il token dopo un'ora dalla generazione
+    della pagina: su un telefono, dove il browser non si chiude mai, una
+    scheda ripresa il giorno dopo ha il cookie buono e il token scaduto, e
+    l'invio finisce sulla stessa pagina 400. Qui l'ora non si aspetta: si
+    stringe il limite a un secondo per **dimostrare** che il controllo
+    esiste, e poi lo si toglie come in produzione.
+
+    L'attesa è di poco più di due secondi e non di uno: itsdangerous conta
+    l'età in secondi interi e rifiuta solo quando **supera** il limite, quindi
+    a 1,2 secondi un token con limite 1 risulta ancora buono.
+    """
+    import time
+
+    from models.user.services import UserService  # type: ignore
+
+    UserService.create_user("utente_token_vecchio", "vecchio@test.local", "p@ssw0rd")
+
+    def invia(token: str):
+        return csrf_client.post(
+            "/auth/login",
+            base_url="https://localhost",
+            data={
+                "username": "utente_token_vecchio",
+                "password": "p@ssw0rd",
+                "csrf_token": token,
+            },
+        )
+
+    token = _token_di_login(csrf_client)
+    time.sleep(2.2)
+
+    csrf_client.application.config["WTF_CSRF_TIME_LIMIT"] = 1
+    try:
+        assert invia(token).status_code == 400, "il limite di tempo non è attivo"
+    finally:
+        csrf_client.application.config["WTF_CSRF_TIME_LIMIT"] = None
+
+    # Stesso token, stessa età: senza limite di tempo si entra.
+    assert invia(token).status_code in (200, 302)
+
+
+def test_la_configurazione_non_fa_scadere_il_token():
+    """Presidio statico: il default di un'ora non deve tornare da solo."""
+    from config import Config
+
+    assert Config.WTF_CSRF_TIME_LIMIT is None
