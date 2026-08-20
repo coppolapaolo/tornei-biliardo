@@ -41,12 +41,32 @@ blocks:
           Go back to the app and sign in with your username and password. From
           then on you stay logged in: you will not have to do it every visit.
 
-  - type: note
-    tone: tip
-    title: "Add the app to your phone's home screen"
+  - type: heading
+    id: installare_app
+    title: "Keeping it on your phone like an app"
+
+  - type: text
     text: >-
-      From your browser's menu choose «Add to Home Screen»: an icon appears
-      like a real app's, and it opens full screen.
+      There is nothing to download from any store: the browser itself can add
+      **Biliardo** to your phone's apps. From there it opens full screen, with
+      its own icon and no address bar, one tap away like the others.
+
+  - type: list
+    title: "Where the command is"
+    items:
+      - "**iPhone and iPad, in Safari**: tap the Share button — the square with the upward arrow, at the bottom — scroll the list and choose «Add to Home Screen»."
+      - "**Android, in Chrome**: tap the three dots at the top right and choose «Install app»; if it is not there, «Add to Home screen» does the same."
+      - "**Android, in Firefox**: the three dots, then «Add to Home screen»."
+      - "**Android, in Samsung Internet**: the menu at the bottom right, then «Add page to» and «Home screen»."
+      - "**Computer, with Chrome or Edge**: a small install icon appears at the right of the address bar; otherwise «Install» is in the browser menu."
+
+  - type: note
+    tone: info
+    title: "On iPhone you log in once more"
+    text: >-
+      The app added to the Home screen keeps its data separate from Safari's:
+      the first time you open it, it asks you to log in again even if you were
+      already logged in in the browser. It happens only once.
 
   - type: heading
     id: prima_volta

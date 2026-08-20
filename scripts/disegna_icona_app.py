@@ -34,6 +34,10 @@ LATO = 1024
 # Il segno occupa il 70% della tela: il resto è il margine che i sistemi si
 # aspettano e che l'occhio legge come "icona" invece che come "figura".
 QUOTA_SEGNO = 0.70
+# Quota per la variante *maskable*: Android ritaglia fino al cerchio inscritto,
+# quindi il segno deve starci **tutto** dentro, vertici compresi. Il valore non
+# si indovina — `--verifica-maskable` lo misura sui pixel.
+QUOTA_MASKABLE = 0.62
 # Si disegna quattro volte più grandi e si rimpicciolisce: è il modo più
 # semplice per avere bordi puliti senza dipendere dall'antialiasing di Pillow.
 SOVRACAMPIONE = 4
@@ -83,7 +87,7 @@ def _centri_rack(passo: float, righe: int) -> list[tuple[float, float]]:
     return centri
 
 
-def _rack(lato: int, righe: int, con_telaio: bool) -> Image.Image:
+def _rack(lato: int, righe: int, con_telaio: bool, quota: float) -> Image.Image:
     r = 1.0
     distanza = 0.30 if con_telaio else 0.40
     passo = 2 * r + distanza
@@ -104,7 +108,7 @@ def _rack(lato: int, righe: int, con_telaio: bool) -> Image.Image:
         alto = (righe - 1) * altezza + 2 * r
 
     tela = lato * SOVRACAMPIONE
-    scala = (QUOTA_SEGNO * tela) / max(larghezza, alto)
+    scala = (quota * tela) / max(larghezza, alto)
     immagine = Image.new("RGB", (tela, tela), SFONDO)
     disegno = ImageDraw.Draw(immagine)
 
@@ -137,7 +141,7 @@ def _rack(lato: int, righe: int, con_telaio: bool) -> Image.Image:
     return immagine.resize((lato, lato), Image.LANCZOS)
 
 
-def _pieno(lato: int) -> Image.Image:
+def _pieno(lato: int, quota: float) -> Image.Image:
     """Triangolo pieno con le biglie ricavate in negativo."""
     r = 1.0
     passo = 2 * r + 0.45
@@ -148,7 +152,7 @@ def _pieno(lato: int) -> Image.Image:
     larghezza, alto = 2 * RADICE3 * raggio_interno, 3 * raggio_interno
 
     tela = lato * SOVRACAMPIONE
-    scala = (QUOTA_SEGNO * tela) / max(larghezza, alto)
+    scala = (quota * tela) / max(larghezza, alto)
     immagine = Image.new("RGB", (tela, tela), SFONDO)
     disegno = ImageDraw.Draw(immagine)
 
@@ -187,10 +191,31 @@ def _pieno(lato: int) -> Image.Image:
 
 
 VARIANTI = {
-    "rack6": lambda: _rack(LATO, righe=3, con_telaio=True),
-    "rack3": lambda: _rack(LATO, righe=2, con_telaio=False),
-    "pieno": lambda: _pieno(LATO),
+    "rack6": lambda quota: _rack(LATO, righe=3, con_telaio=True, quota=quota),
+    "rack3": lambda quota: _rack(LATO, righe=2, con_telaio=False, quota=quota),
+    "pieno": lambda quota: _pieno(LATO, quota=quota),
 }
+
+
+def distanza_massima_dal_centro(immagine: Image.Image) -> float:
+    """Quota del lato occupata dal segno, misurata sui pixel.
+
+    Serve alla variante maskable: Android ritaglia a cerchio, e «ci sta
+    dentro» è una cosa da misurare, non da stimare a occhio. Restituisce il
+    diametro del cerchio che contiene tutto il disegno, in frazione del lato.
+    """
+    lato = immagine.size[0]
+    centro = (lato - 1) / 2.0
+    sfondo = immagine.convert("RGB").getpixel((2, 2))
+    pixel = immagine.convert("RGB").load()
+    massimo = 0.0
+    for y in range(lato):
+        for x in range(lato):
+            if pixel[x, y] != sfondo:
+                distanza = math.hypot(x - centro, y - centro)
+                if distanza > massimo:
+                    massimo = distanza
+    return 2.0 * massimo / lato
 
 
 def provino(immagini: dict[str, Image.Image], destinazione: Path) -> Path:
@@ -217,6 +242,22 @@ def provino(immagini: dict[str, Image.Image], destinazione: Path) -> Path:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--variante", default="tutte", choices=[*VARIANTI, "tutte"])
+    parser.add_argument(
+        "--quota",
+        type=float,
+        default=QUOTA_SEGNO,
+        help=f"Frazione del lato occupata dal segno (default {QUOTA_SEGNO}; "
+        f"per la maskable {QUOTA_MASKABLE}).",
+    )
+    parser.add_argument(
+        "--suffisso", default="", help="Aggiunto al nome del file prodotto."
+    )
+    parser.add_argument(
+        "--verifica-maskable",
+        action="store_true",
+        help="Misura il cerchio che contiene il segno e verifica che stia "
+        "nell'80% centrale.",
+    )
     parser.add_argument("--cartella", type=Path, default=Path("static/img/app"))
     parser.add_argument("--provino", action="store_true")
     argomenti = parser.parse_args()
@@ -226,11 +267,16 @@ def main() -> None:
 
     immagini = {}
     for nome in nomi:
-        immagine = VARIANTI[nome]()
-        percorso = argomenti.cartella / f"master-{nome}.png"
+        immagine = VARIANTI[nome](argomenti.quota)
+        percorso = argomenti.cartella / f"master-{nome}{argomenti.suffisso}.png"
         immagine.save(percorso, "PNG", optimize=True)
         immagini[nome] = immagine
         print(percorso)
+
+        if argomenti.verifica_maskable:
+            quota_misurata = distanza_massima_dal_centro(immagine)
+            esito = "ok" if quota_misurata <= 0.80 else "SFORA"
+            print(f"  cerchio che contiene il segno: {quota_misurata:.3f} ({esito})")
 
     if argomenti.provino:
         print(provino(immagini, argomenti.cartella / "provino.png"))

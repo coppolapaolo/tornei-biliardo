@@ -96,7 +96,7 @@ blocks:
       - q: "Devo pagare per usarla?"
         a: "No, l'account è gratuito. Le eventuali quote di partecipazione alle gare sono decise dagli organizzatori e si pagano fuori dall'app."
       - q: "Serve installare qualcosa?"
-        a: "No. Si usa dal browser del telefono o del computer. Puoi aggiungere il collegamento alla schermata iniziale del telefono per averla a portata di mano come un'app."
+        a: "No, e non c'è nessuno store di mezzo. Si usa dal browser del telefono o del computer, e se vuoi il browser stesso la aggiunge fra le app del telefono, con la sua icona: come si fa è spiegato in [Primo accesso](/aiuto/introduzione/primo_accesso)."
       - q: "Devo per forza segnare i punti dal telefono?"
         a: "No. Il direttore di gara può inserire i risultati per tutti. Il telefono è comodo, non obbligatorio."
       - q: "Se sbaglio a segnare un punto?"
