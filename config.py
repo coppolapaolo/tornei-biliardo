@@ -116,6 +116,23 @@ class Config:
     # senza pretendere un header facoltativo.
     WTF_CSRF_SSL_STRICT = False
 
+    # ...e il token non scade dopo un'ora.
+    #
+    # Il default di Flask-WTF è 3600 secondi, contati dalla **generazione della
+    # pagina**. Su un telefono il browser non si chiude mai: una scheda con il
+    # modulo di accesso aperta ieri sera ha il cookie di sessione ancora buono
+    # e il token già scaduto, quindi al primo invio arriva 400 — la pagina «Il
+    # tavolo si è raffreddato», che di suo dice il vero ma descrive un guasto
+    # che non doveva esistere. Chi ricarica non se ne accorge più; chi riprende
+    # la scheda da dove l'aveva lasciata ci sbatte ogni volta.
+    #
+    # `None` lega la validità del token a quella della **sessione**, che è la
+    # cosa che il token protegge: finché il cookie vale, il modulo che ne
+    # deriva vale. Un token rubato non diventa più pericoloso — per usarlo
+    # servirebbe comunque il cookie di sessione della vittima, che è il vero
+    # segreto, e quello scade per conto suo.
+    WTF_CSRF_TIME_LIMIT = None
+
     @classmethod
     def environment_settings(cls) -> dict:
         """Le impostazioni che leggono ``os.environ``, risolte **adesso**.
