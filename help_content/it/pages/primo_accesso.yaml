@@ -56,6 +56,7 @@ blocks:
     title: "Dove si trova il comando"
     items:
       - "**iPhone e iPad, da Safari**: tocca il tasto Condividi — il quadrato con la freccia verso l'alto, in basso — scorri l'elenco e scegli «Aggiungi a Home»."
+      - "**iPhone e iPad, da Chrome (o Firefox, o Edge)**: il tasto Condividi c'è anche qui, in alto a destra; nel menu cerca «Aggiungi alla schermata Home». Se non lo vedi, scorri l'elenco fino in fondo o tocca «Modifica azioni» per farlo comparire."
       - "**Android, da Chrome**: tocca i tre puntini in alto a destra e scegli «Installa app»; se non c'è, «Aggiungi a schermata Home» fa la stessa cosa."
       - "**Android, da Firefox**: i tre puntini, poi «Aggiungi a schermata Home»."
       - "**Android, da Samsung Internet**: il menu in basso a destra, poi «Aggiungi pagina a» e «Schermata Home»."
