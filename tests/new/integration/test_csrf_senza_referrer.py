@@ -169,3 +169,38 @@ def test_la_configurazione_non_fa_scadere_il_token():
     from config import Config
 
     assert Config.WTF_CSRF_TIME_LIMIT is None
+
+
+def test_le_pagine_di_auth_non_si_mettono_in_cache(client):
+    """Ogni pagina di auth porta un token legato alla sessione di chi la
+    chiede: una copia servita da una cache (misurato in produzione: mancava
+    del tutto `Cache-Control`) porta il token di una sessione che non esiste
+    più, e l'invio finisce in 400."""
+    for percorso in ("/auth/login", "/auth/register", "/auth/forgot-password"):
+        risposta = client.get(percorso)
+        assert risposta.headers.get("Cache-Control") == "no-store", percorso
+
+
+def test_senza_cookie_la_pagina_400_parla_di_cookie(csrf_client, db_session):
+    """Cookie bloccati: ogni invio fallirà identico, e «ricarica e riprova»
+    è un consiglio che non può funzionare. La pagina deve dirlo."""
+    risposta = csrf_client.post(
+        "/auth/login",
+        base_url="https://localhost",
+        data={"username": "x", "password": "y", "csrf_token": "z"},
+    )
+    assert risposta.status_code == 400
+    assert 'data-causa="cookie-assenti"' in risposta.get_data(as_text=True)
+
+
+def test_con_cookie_e_token_guasto_la_pagina_400_dice_di_riaprire(
+    csrf_client, db_session
+):
+    csrf_client.get("/auth/login", base_url="https://localhost")  # crea la sessione
+    risposta = csrf_client.post(
+        "/auth/login",
+        base_url="https://localhost",
+        data={"username": "x", "password": "y", "csrf_token": "token-guasto"},
+    )
+    assert risposta.status_code == 400
+    assert 'data-causa="modulo-non-valido"' in risposta.get_data(as_text=True)
