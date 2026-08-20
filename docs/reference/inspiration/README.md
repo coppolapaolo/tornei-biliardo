@@ -9,10 +9,17 @@ Stanno qui perché le issue che le citano le descrivono a parole, e una descrizi
 parole invecchia male: fra sei mesi «il radar con tre serie sovrapposte» non ricostruisce
 l'immagine in testa a nessuno.
 
-> **Attenzione**: sono schermate di prodotti commerciali di terzi, tenute in un
-> repository pubblico a fine di documentazione interna. Servono a **capire un problema di
-> progettazione**, non a copiare un'interfaccia: quello che ne prendiamo va ridisegnato
-> nel design system 7c.
+> **Attenzione**: sono schermate di prodotti commerciali di terzi. Servono a **capire un
+> problema di progettazione**, non a copiare un'interfaccia: quello che ne prendiamo va
+> ridisegnato nel design system 7c.
+>
+> ⚠️ **Stanno qui perche' il repository e' privato** (verificato il 2026-08-20). E' la
+> condizione che rende accettabile tenerle versionate: sono materiale di lavoro interno,
+> non ridistribuito. **Se un giorno il repository venisse aperto, questa cartella va
+> rivista prima** — le immagini vanno tolte dalla storia, non solo dall'ultimo commit,
+> perche' `git log` le conserva comunque. In alternativa si sostituiscono con
+> descrizioni a parole: le issue che le citano le descrivono gia' in dettaglio apposta,
+> e sopravvivono senza i file.
 
 ## poolbilliards.co
 
