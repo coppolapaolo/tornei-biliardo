@@ -1,185 +1,88 @@
-{# templates/components/_player_recent_matches.html #}
-<!-- Partite Recenti -->
-<div class="card mb-4">
-    <div class="card-header">
-        <h5><i class="fas fa-shield-halved"></i> {% if is_own_profile %}{{ _("Storico Partite Recenti") }}{% else %}{{ _("Partite Recenti") }}{% endif %}</h5>
-    </div>
-    <div class="card-body">
-        {% if matches %}
-            {# === DESKTOP VIEW (≥768px): Table === #}
-            <div class="table-responsive d-none d-md-block">
-                <table class="table table-sm">
-                    <thead>
-                        <tr>
-                            <th>{{ _("Campionato") }}</th>
-                            <th>{{ _("Gara") }}</th>
-                            <th>{{ _("Turno") }}</th>
-                            <th>{{ _("Avversario") }}</th>
-                            <th>{{ _("Risultato") }}</th>
-                            <th>{{ _("Esito") }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for match in matches %}
-                            <tr>
-                                {# `match.gara` puo' essere None: gara
-                                   soft-deleted o gara_id NULL. La query del
-                                   profilo fa un join inner e li esclude, ma il
-                                   componente regge da solo — vedi il gemello
-                                   `_user_recent_matches_table.html`. #}
-                                <td>
-                                    {% if match.gara and match.gara.campionato %}
-                                        {{ match.gara.campionato.name }}
-                                    {% else %}
-                                        <span class="text-muted">-</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if match.gara and match.gara.campionato %}
-                                        {{ _("Gara") }} {{ match.gara.number }}
-                                    {% else %}
-                                        {{ match.gara.name if match.gara else '—' }}
-                                    {% endif %}
-                                </td>
-                                <td>{{ match.round_number }}</td>
-                                <td>
-                                    {% if match.is_bye %}
-                                        <em class="text-muted">{{ _('Bye') }}</em>
-                                    {% elif match.is_trio and match.trio_match %}
-                                        {% set trio = match.trio_match %}
-                                        {% set other_players = [] %}
-                                        {% if trio.player1_id != user.id %}
-                                            {% set _void = other_players.append(trio.player1.username) %}
-                                        {% endif %}
-                                        {% if trio.player2_id != user.id %}
-                                            {% set _void = other_players.append(trio.player2.username) %}
-                                        {% endif %}
-                                        {% if trio.player3_id != user.id %}
-                                            {% set _void = other_players.append(trio.player3.username) %}
-                                        {% endif %}
-                                        <span class="text-primary" title="{{ _('Trio') }}">
-                                            <i class="fas fa-users me-1"></i>{{ other_players|join(' • ') }}
-                                        </span>
-                                    {% else %}
-                                        {% if match.player1_id == user.id %}
-                                            {{ match.player2.username }}
-                                        {% else %}
-                                            {{ match.player1.username }}
-                                        {% endif %}
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if match.is_trio and match.trio_match %}
-                                        {% set trio = match.trio_match %}
-                                        <span class="badge bg-info">
-                                            {{ trio.player1_racks }} - {{ trio.player2_racks }} - {{ trio.player3_racks }}
-                                        </span>
-                                    {% else %}
-                                        <span class="badge bg-info">
-                                            {{ match.player1_score }} - {{ match.player2_score }}
-                                        </span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if match.is_bye %}
-                                        <span class="badge bg-info">{{ _('Bye') }}</span>
-                                    {% elif match.is_trio and match.trio_match %}
-                                        {% if match.winner_id == user.id %}
-                                            <span class="badge bg-success">{{ _('Vittoria') }}</span>
-                                        {% elif match.winner_id is none %}
-                                            <span class="badge bg-secondary">{{ _('Pareggio') }}</span>
-                                        {% else %}
-                                            <span class="badge bg-danger">{{ _('Sconfitta') }}</span>
-                                        {% endif %}
-                                    {% elif match.winner_id == user.id %}
-                                        <span class="badge bg-success">{{ _("Vittoria") }}</span>
-                                    {% else %}
-                                        <span class="badge bg-danger">{{ _("Sconfitta") }}</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+{# templates/components/_player_recent_matches.html — 7c
 
-            {# === MOBILE VIEW (<768px): Cards === #}
-            <div class="d-md-none">
-                {% for match in matches %}
-                    {# Determine outcome for border color #}
-                    {% if match.is_bye %}
-                        {% set border_color = 'info' %}
-                    {% elif match.winner_id == user.id %}
-                        {% set border_color = 'success' %}
-                    {% elif match.winner_id is none %}
-                        {% set border_color = 'secondary' %}
-                    {% else %}
-                        {% set border_color = 'danger' %}
-                    {% endif %}
+   Le ultime partite giocate, **da qualunque parte siano nate**: le partite di
+   gara stanno su `match`, le sfide individuali su `individual_match`, e qui
+   arrivano già nella stessa forma (`MatchEntry` di `PlayerHistoryService`).
 
-                    <div class="card mb-2 border-{{ border_color }}" style="border-width: 2px;">
-                        <div class="card-body py-2 px-3">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="flex-grow-1">
-                                    {# Opponent name - prominent #}
-                                    <div class="fw-bold">
-                                        {% if match.is_bye %}
-                                            <em class="text-muted">{{ _('Bye') }}</em>
-                                        {% elif match.is_trio and match.trio_match %}
-                                            {% set trio = match.trio_match %}
-                                            {% set other_players = [] %}
-                                            {% if trio.player1_id != user.id %}
-                                                {% set _void = other_players.append(trio.player1.username) %}
-                                            {% endif %}
-                                            {% if trio.player2_id != user.id %}
-                                                {% set _void = other_players.append(trio.player2.username) %}
-                                            {% endif %}
-                                            {% if trio.player3_id != user.id %}
-                                                {% set _void = other_players.append(trio.player3.username) %}
-                                            {% endif %}
-                                            <i class="fas fa-users me-1 text-primary"></i>{{ other_players|join(' • ') }}
-                                        {% else %}
-                                            {% if match.player1_id == user.id %}
-                                                {{ match.player2.username }}
-                                            {% else %}
-                                                {{ match.player1.username }}
-                                            {% endif %}
-                                        {% endif %}
-                                    </div>
-                                    {# Context info - smaller #}
-                                    <small class="text-muted">
-                                        {% if match.gara.campionato %}
-                                            {{ match.gara.campionato.name }} • {{ _("Gara") }} {{ match.gara.number }} • T{{ match.round_number }}
-                                        {% else %}
-                                            {{ match.gara.name }} • T{{ match.round_number }}
-                                        {% endif %}
-                                    </small>
-                                </div>
-                                {# Score badge - right aligned #}
-                                <div class="text-end ms-2">
-                                    {% if match.is_trio and match.trio_match %}
-                                        {% set trio = match.trio_match %}
-                                        <span class="badge bg-{{ border_color }} fs-6">
-                                            {{ trio.player1_racks }}-{{ trio.player2_racks }}-{{ trio.player3_racks }}
-                                        </span>
-                                    {% elif match.is_bye %}
-                                        <span class="badge bg-info fs-6">{{ _('Bye') }}</span>
-                                    {% else %}
-                                        <span class="badge bg-{{ border_color }} fs-6">
-                                            {{ match.player1_score }} - {{ match.player2_score }}
-                                        </span>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="alert alert-info text-center">
-                <h5><i class="fas fa-shield-halved"></i> {{ _("Nessuna Partita") }}</h5>
-                <p>{{ _("Non hai ancora giocato partite. Iscriviti a una gara per iniziare!") }}</p>
-            </div>
+   Prima questo componente riceveva oggetti `Match` grezzi e disegnava una
+   tabella con le colonne del torneo — campionato, gara, turno. Una sfida
+   individuale non ha nessuna delle tre, e infatti non arrivava nemmeno fin
+   qui: la query del profilo interrogava la sola tabella `match`.
+
+   La forma è quella della scheda «Partite» dello storico
+   (`_history_matches_tab.html`): due schermate che mostrano la stessa cosa si
+   somigliano, invece di somigliarsi poco.
+
+   Parametri:
+   - matches: lista di `MatchEntry`
+   - is_own_profile: cambia solo il titolo
+#}
+<div class="c7-card mb-4">
+    <div class="c7-sechead mb-3">
+        <h2>{% if is_own_profile %}{{ _("Storico Partite Recenti") }}{% else %}{{ _("Partite Recenti") }}{% endif %}</h2>
+        {% if is_own_profile and feature_visible('player.history') %}
+        <a class="c7-sechead__more" href="{{ url_for('player.history') }}">{{ _("Tutte") }}</a>
         {% endif %}
     </div>
+
+    {% if matches %}
+    <div class="c7-rows" style="background:var(--c7-bg)">
+        {% for voce in matches %}
+        {% set stile = {'campionato': ['c7-state--info', _('Campionato')],
+                        'gara': ['c7-state--ok', _('Gara')],
+                        'individuale': ['c7-state--muted', _('Individuale')]}[voce.context] %}
+        <div class="c7-rows__row">
+            {# L'esito come tassello: si legge prima del testo, ed è la cosa
+               che si cerca scorrendo un elenco di partite. #}
+            <span class="c7-tile c7-tile--sm {{ 'c7-tile--locked' if voce.outcome != 'won' }}">
+                {%- if voce.outcome == 'won' %}<i class="fas fa-trophy"></i>
+                {%- elif voce.outcome == 'lost' %}<i class="fas fa-xmark"></i>
+                {%- else %}<i class="fas fa-equals"></i>{% endif %}
+            </span>
+
+            <div class="c7-rows__main">
+                <div class="c7-rows__title">
+                    {%- if voce.opponents %}{{ voce.opponents|join(' · ') }}
+                    {%- else %}{{ _("Avversario non registrato") }}{% endif -%}
+                    {%- if voce.my_score is not none %}
+                    <span class="c7-num" style="margin-left:8px">
+                        {{- voce.my_score }}{% if voce.opponent_score is not none %}–{{ voce.opponent_score }}{% endif -%}
+                    </span>
+                    {%- endif %}
+                </div>
+                <div class="c7-rows__sub">
+                    <span class="c7-state {{ stile[0] }}">{{ stile[1] }}</span>
+                    {%- if voce.competition %} <span class="c7-sep">·</span> {{ voce.competition }}{% endif -%}
+                    {%- if voce.played_on %} <span class="c7-sep">·</span> <span class="c7-num">{{ voce.played_on|date_local }}</span>{% endif -%}
+                    {%- if voce.is_trio %} <span class="c7-sep">·</span> {{ _("partita a tre") }}{% endif -%}
+                </div>
+            </div>
+
+            {% if voce.source == 'individual' and feature_visible('individual_match.match_detail') %}
+            <a class="c7-iconbtn" href="{{ url_for('individual_match.match_detail', match_id=voce.match_id) }}"
+               title="{{ _('Apri la sfida') }}" aria-label="{{ _('Apri la sfida') }}">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+            {% elif voce.source == 'tournament' and feature_visible('admin.match.match_detail') %}
+            <a class="c7-iconbtn" href="{{ url_for('admin.match.match_detail', match_id=voce.match_id) }}"
+               title="{{ _('Apri la partita') }}" aria-label="{{ _('Apri la partita') }}">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="c7-empty">
+        <div class="c7-empty__ico"><i class="fas fa-table-tennis-paddle-ball"></i></div>
+        <div class="c7-empty__title">{{ _("Nessuna partita") }}</div>
+        <p class="c7-empty__text">
+            {% if is_own_profile %}
+            {{ _("Non hai ancora giocato partite. Iscriviti a una gara, o apri una sfida con un altro giocatore.") }}
+            {% else %}
+            {{ _("Questo giocatore non ha ancora partite da mostrare.") }}
+            {% endif %}
+        </p>
+    </div>
+    {% endif %}
 </div>

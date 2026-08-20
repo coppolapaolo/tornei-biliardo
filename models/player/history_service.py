@@ -107,6 +107,13 @@ class MatchEntry:
     venue: Optional[str]
     competition: Optional[str]
     is_trio: bool = False
+    #: Gara e campionato di provenienza, quando ci sono. Non servono a
+    #: mostrare la riga — `competition` è già il testo — ma a chi deve
+    #: decidere se **nasconderla**: il proprietario di un profilo può nascondere
+    #: una partita o un campionato intero, e senza questi due la voce non si
+    #: riconosce più una volta uscita dall'ORM.
+    gara_id: Optional[int] = None
+    campionato_id: Optional[int] = None
 
 
 class ListPagination:
@@ -503,6 +510,8 @@ class PlayerHistoryService:
                     venue=(gara.location if gara else None),
                     competition=competition,
                     is_trio=bool(match.is_trio),
+                    gara_id=gara.id if gara else None,
+                    campionato_id=campionato.id if campionato else None,
                 )
             )
         return voci
@@ -639,6 +648,54 @@ class PlayerHistoryService:
         if opponent:
             sono_p1 = not sono_p1
         return match.player1_score if sono_p1 else match.player2_score
+
+    @staticmethod
+    def stats_of(voci: List["MatchEntry"]) -> MatchStats:
+        """Gli aggregati di un elenco di voci già in mano al chiamante.
+
+        Serve a chi le voci le ha dovute filtrare per conto suo — il profilo
+        pubblico, che toglie le partite nascoste — e non può quindi riusare le
+        statistiche calcolate su tutto. Conta lo stesso codice, così le due
+        schermate non possono divergere.
+        """
+        return PlayerHistoryService._stats_from_entries(voci)
+
+    @staticmethod
+    def filter_visible_entries(
+        user_id: int,
+        viewer_id: Optional[int],
+        entries: List["MatchEntry"],
+        is_admin: bool = False,
+    ) -> List["MatchEntry"]:
+        """Le voci che il visitatore può vedere sul profilo di qualcun altro.
+
+        Calco di ``PrivacyService.filter_visible_matches``, ma sulle voci
+        unificate. **Gli id nascosti riguardano le partite di gara**: una sfida
+        individuale non si può ancora nascondere, e gli id delle due tabelle si
+        sovrappongono — filtrare senza guardare la provenienza nasconderebbe una
+        sfida a caso, quella con lo stesso numero di una partita nascosta.
+        """
+        if is_admin or (viewer_id is not None and viewer_id == user_id):
+            return list(entries)
+
+        from models.user.privacy_service import PrivacyService
+
+        nascosti = PrivacyService.get_hidden_ids(user_id)
+        partite_nascoste = nascosti["matches"]
+        campionati_nascosti = nascosti["campionati"]
+
+        visibili: List[MatchEntry] = []
+        for voce in entries:
+            if voce.source == "tournament":
+                if voce.match_id in partite_nascoste:
+                    continue
+                if (
+                    voce.campionato_id is not None
+                    and voce.campionato_id in campionati_nascosti
+                ):
+                    continue
+            visibili.append(voce)
+        return visibili
 
     @staticmethod
     def _stats_from_entries(voci: List["MatchEntry"]) -> MatchStats:

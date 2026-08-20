@@ -18,8 +18,8 @@ from flask import (
 from flask_login import login_required, current_user
 from flask_babel import gettext as _
 
-from models import db, Gara, Inscription, Match
-from models.status_enum import GaraStatus, MatchStatus
+from models import db, Gara, Inscription
+from models.status_enum import GaraStatus
 from models.campionato.models import Campionato
 from models.user.services import UserService
 from models.user.permission_service import UserPermissionService
@@ -55,6 +55,7 @@ def _training_overview(user_id: int) -> dict:
 def profile():
     """Profilo personale del giocatore"""
     from models.classification.models import Classification
+    from models.player.history_service import HistoryFilters, PlayerHistoryService
 
     # Iscrizioni dell'utente (incluse gare standalone)
     inscriptions = (
@@ -65,38 +66,27 @@ def profile():
         .all()
     )
 
-    # Partite giocate (incluse gare standalone)
-    # Order by Match.created_at first so standalone and campionato matches
-    # appear together in chronological order (B25).
-    matches = (
-        Match.query.filter(
-            db.or_(
-                Match.player1_id == current_user.id, Match.player2_id == current_user.id
-            )
-        )
-        .join(Gara)
-        .outerjoin(Campionato)
-        .order_by(
-            Match.created_at.desc(),
-            Gara.date.desc(),
-            Match.round_number.desc(),
-        )
-        .all()
+    # Partite e statistiche: dalla **fonte unica** dello storico.
+    #
+    # Qui c'era una query sul solo `match`, con `join(Gara)` e il filtro sul
+    # solo `CLOSED_UNILATERALLY`. Due errori sovrapposti, tutt'e due nella
+    # tabella delle trappole di `CLAUDE.md`:
+    #
+    # - le sfide individuali stanno su `individual_match`, un'altra tabella:
+    #   qui non potevano comparire in nessun modo;
+    # - `CLOSED_UNILATERALLY` è la chiusura del **direttore**. Una partita
+    #   chiusa dai due giocatori (`CONFIRMED_BY_BOTH`) non veniva contata — ed
+    #   è esattamente così che finisce ogni sfida individuale.
+    #
+    # Lo storico completo faceva già la cosa giusta: il profilo mostrava meno
+    # partite di quelle giocate, e senza errori da nessuna parte.
+    pagina_partite, match_stats = PlayerHistoryService.get_unified_match_history(
+        user_id=current_user.id,
+        filters=HistoryFilters(),
+        page=1,
+        per_page=10,
     )
-
-    # Statistiche generali
-    total_matches = len(
-        [m for m in matches if m.status == MatchStatus.CLOSED_UNILATERALLY.value]
-    )
-    won_matches = len(
-        [
-            m
-            for m in matches
-            if m.status == MatchStatus.CLOSED_UNILATERALLY.value
-            and m.winner_id == current_user.id
-        ]
-    )
-    win_percentage = (won_matches / total_matches * 100) if total_matches > 0 else 0
+    recent_matches = pagina_partite.items
 
     # Classifiche per campionato
     classifications = (
@@ -105,11 +95,6 @@ def profile():
         .order_by(Campionato.created_at.desc())
         .all()
     )
-
-    # Partite recenti (ultime 10)
-    recent_matches = [
-        m for m in matches if m.status == MatchStatus.CLOSED_UNILATERALLY.value
-    ][:10]
 
     # Conta solo i campionati con gare completate dove l'utente ha partecipato
     completed_tournaments = set(
@@ -138,10 +123,10 @@ def profile():
 
     stats = {
         "total_inscriptions": len(inscriptions),
-        "total_matches": total_matches,
-        "won_matches": won_matches,
-        "lost_matches": total_matches - won_matches,
-        "win_percentage": round(win_percentage, 1),
+        "total_matches": match_stats.total_matches,
+        "won_matches": match_stats.won_matches,
+        "lost_matches": match_stats.lost_matches,
+        "win_percentage": match_stats.win_percentage,
         "tournaments_played": len(completed_tournaments),
         "provas_played": completed_provas,
     }
@@ -180,8 +165,6 @@ def view_profile(user_id):
     """View another player's public profile with privacy controls."""
     from models.user.models import User
     from models.competition.models import Gara, Inscription
-    from models.match.models import Match
-    from models.status_enum import MatchStatus
     from models.campionato.models import Campionato
     from models.user.privacy_service import PrivacyService
 
@@ -204,39 +187,36 @@ def view_profile(user_id):
         .all()
     )
 
-    # Matches played
-    all_matches = (
-        Match.query.filter(
-            db.or_(Match.player1_id == user.id, Match.player2_id == user.id)
-        )
-        .join(Gara)
-        .outerjoin(Campionato)
-        .order_by(
-            Campionato.created_at.desc().nullslast(),
-            Gara.date.desc(),
-            Match.round_number.desc(),
-        )
-        .all()
+    # Partite: stessa fonte del profilo proprio, per la stessa ragione (vedi
+    # `profile()`). Il profilo altrui contava e mostrava per conto suo, quindi
+    # aveva entrambi i difetti in copia.
+    from models.player.history_service import HistoryFilters, PlayerHistoryService
+
+    tutte, _ = PlayerHistoryService.get_unified_match_history(
+        user_id=user.id,
+        filters=HistoryFilters(),
+        page=1,
+        per_page=1000,
     )
 
-    # Filter matches based on privacy (hidden matches)
-    matches = PrivacyService.filter_visible_matches(
+    # Le partite nascoste dal proprietario restano nascoste. L'elenco degli id
+    # nascosti riguarda le partite di **gara**: una sfida individuale non si può
+    # ancora nascondere, e gli id delle due tabelle si sovrappongono — filtrare
+    # senza guardare la provenienza ne nasconderebbe una a caso.
+    voci = PlayerHistoryService.filter_visible_entries(
         user_id=user_id,
         viewer_id=viewer_id,
-        matches=all_matches,
+        entries=tutte.items,
         is_admin=is_admin,
     )
 
-    # Public statistics (calculated from visible matches only for non-owners)
-    completed_matches = [
-        m for m in matches if m.status == MatchStatus.CLOSED_UNILATERALLY.value
-    ]
-    total_matches = len(completed_matches)
-    won_matches = len([m for m in completed_matches if m.winner_id == user.id])
-    win_percentage = (won_matches / total_matches * 100) if total_matches > 0 else 0
+    match_stats = PlayerHistoryService.stats_of(voci)
+    total_matches = match_stats.total_matches
+    won_matches = match_stats.won_matches
+    win_percentage = match_stats.win_percentage
 
-    # Recent matches (last 10 visible)
-    recent_matches = completed_matches[:10]
+    # Partite recenti (ultime 10 visibili)
+    recent_matches = voci[:10]
 
     # Completed tournaments count
     visible_inscriptions = PrivacyService.filter_visible_inscriptions(
@@ -267,8 +247,8 @@ def view_profile(user_id):
         "total_inscriptions": len(visible_inscriptions),
         "total_matches": total_matches,
         "won_matches": won_matches,
-        "lost_matches": total_matches - won_matches,
-        "win_percentage": round(win_percentage, 1),
+        "lost_matches": match_stats.lost_matches,
+        "win_percentage": win_percentage,
         "tournaments_played": len(completed_tournaments),
         "provas_played": completed_provas,
     }
