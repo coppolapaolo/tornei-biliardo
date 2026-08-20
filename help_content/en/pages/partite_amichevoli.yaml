@@ -4,9 +4,9 @@ kind: tutorial
 audience: [giocatore]
 minutes: 4
 summary: "Outside official competitions you can propose a match to another player, agree on where and when, and record the result."
-screens: [individual_match.dashboard, individual_match.create_proposal, individual_match.match_list,
-  individual_match.match_detail, individual_match.proposal_list, individual_match.proposal_detail,
-  individual_match.rematch, individual_match.user_statistics]
+screens: [individual_match.dashboard, individual_match.quick_match, individual_match.create_proposal,
+  individual_match.match_list, individual_match.match_detail, individual_match.proposal_list,
+  individual_match.proposal_detail, individual_match.rematch, individual_match.user_statistics]
 related: [giocare_una_partita, profilo_e_statistiche]
 
 blocks:
@@ -19,6 +19,47 @@ blocks:
   - type: shot
     shot: match-individuali
     caption: "The friendly matches section: pending proposals, the ones you received, and matches coming up."
+
+  - type: heading
+    id: avvio-rapido
+    title: "You are already at the table"
+
+  - type: text
+    text: >-
+      If your opponent is right there and the cues are already in your hands,
+      there is nothing to propose: tap **Quick start** in the Matches section,
+      pick who you are playing, and you are at the scoreboard. Nobody asks you
+      when (it is now), and venue, discipline and distance come pre-filled from
+      the last match you played.
+
+  - type: steps
+    items:
+      - title: "Open Matches and tap «Quick start»"
+        text: >-
+          It is the first item in the section, and you will also find it among
+          the links at the bottom of the page.
+      - title: "Pick who you are playing"
+        text: >-
+          The opponents you play most often are already listed: one tap and they
+          are chosen. For everyone else there is the search by name.
+      - title: "Change how you play, if you need to"
+        text: >-
+          Under «How it is played» you get a summary of venue, discipline and
+          distance. Happy with it? Touch nothing. Otherwise tap **Change** and
+          fix what you need.
+      - title: "Start scoring"
+        text: >-
+          The match starts right away. Your opponent gets a notification: they
+          do not have to accept anything, but at the end you both have to
+          **confirm the result**, as in every friendly match.
+
+  - type: note
+    tone: info
+    title: "Why nobody has to accept"
+    text: >-
+      The confirmation does not disappear, it moves to the end — where the
+      question has an answer your opponent actually knows: the score. Until you
+      both confirm, the match does not count towards the rating.
 
   - type: heading
     id: proporre

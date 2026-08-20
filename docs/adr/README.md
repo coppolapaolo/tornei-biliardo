@@ -64,6 +64,7 @@ Crea un ADR quando:
 | ADR-048 | [Spostare la partecipazione a una gara: fatti riassegnati, derivati ricalcolati](ADR-048-gara-scoped-participant-reassignment.md) | Accepted | 2026-08-19 |
 | ADR-049 | [L'handicap non spegne l'Elo: lo spegne la differenza di categoria](ADR-049-same-category-restores-elo-in-handicap-events.md) | Accepted | 2026-08-19 |
 | ADR-050 | [Il CSRF si difende con l'Origin, non con il referrer](ADR-050-csrf-origin-instead-of-referrer.md) | Accepted | 2026-08-19 |
+| ADR-051 | [L'avvio rapido non toglie l'accettazione: la sposta alla fine](ADR-051-quick-start-moves-the-acceptance-to-the-end.md) | Accepted | 2026-08-20 |
 
 ## Come Creare un Nuovo ADR
 

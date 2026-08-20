@@ -171,8 +171,17 @@
       {% endif %}
 
       {% if is_finished %}
-      <a href="{{ url_for('individual_match.rematch', match_id=match.id) }}" class="btn btn-primary w-100">
-        <i class="fas fa-rotate-right"></i> {{ _("Gioca ancora") }}
+      {# Due rivincite diverse: quella che si gioca adesso (issue #176, l'avversario
+         e' ancora al tavolo) e quella che si fissa per un'altra sera. #}
+      {% set other_player = match.player2 if match.player1_id == current_user.id else match.player1 %}
+      {% if other_player %}
+      <a href="{{ url_for('individual_match.quick_match', opponent_id=other_player.id) }}"
+         class="btn btn-primary w-100">
+        <i class="fas fa-play"></i> {{ _("Rigioca adesso") }}
+      </a>
+      {% endif %}
+      <a href="{{ url_for('individual_match.rematch', match_id=match.id) }}" class="btn btn-secondary w-100">
+        <i class="fas fa-rotate-right"></i> {{ _("Proponi un'altra data") }}
       </a>
       <a href="{{ url_for('individual_match.user_statistics') }}" class="btn btn-secondary w-100">
         {{ _("Vedi le statistiche") }}

@@ -541,6 +541,34 @@ hints:
   - challenge.edit_diagram
   page: disegnare_un_drill
   section: salvare
+- id: sfida.avvio_rapido
+  label: Quick start
+  short: 'For the match you are playing right now: pick who is across the table and you are at the scoreboard.
+    No date to agree on, no waiting.'
+  anchor: sfida-avvio-rapido
+  screens:
+  - individual_match.dashboard
+  - individual_match.match_list
+  page: partite_amichevoli
+  section: avvio-rapido
+- id: sfida.chi_hai_davanti
+  label: Who is across the table
+  short: 'The opponents you play most often are already listed. For anyone else, search by name: they
+    need an account.'
+  anchor: sfida-chi-hai-davanti
+  screens:
+  - individual_match.quick_match
+  page: partite_amichevoli
+  section: avvio-rapido
+- id: sfida.riepilogo_rapido
+  label: How it is played
+  short: 'Venue, discipline and distance are the ones from your last match. If they are fine you touch
+    nothing; «Change» opens them up.'
+  anchor: sfida-riepilogo-rapido
+  screens:
+  - individual_match.quick_match
+  page: partite_amichevoli
+  section: avvio-rapido
 tours:
 - screen: dashboard.dashboard
   title: Your home

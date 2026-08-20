@@ -1,0 +1,161 @@
+"""Avvio rapido di una sfida individuale (issue #176).
+
+Due sole schermate: scegli chi hai davanti, e sei al segnapunti. Tutto quello
+che il modulo della proposta chiede — quando, dove, come — qui arriva
+precompilato da ``QuickMatchService.get_defaults`` e si può cambiare solo se si
+vuole davvero.
+"""
+
+import logging
+
+from flask import flash, jsonify, redirect, render_template, request, url_for
+from flask_babel import gettext as _
+from flask_login import current_user
+
+from models.exceptions import DomainError, http_status_for_exception
+from models.individual_match.quick_match_service import QuickMatchService
+from models.status_enum import MatchStatus
+from models.user.permissions import RoleRequirement
+
+from . import individual_match_bp
+
+logger = logging.getLogger(__name__)
+
+
+@individual_match_bp.route("/quick", methods=["GET", "POST"])
+@RoleRequirement.player_or_director_required
+def quick_match():
+    """Apri una partita adesso, contro chi hai davanti."""
+    if request.method == "GET":
+        return _quick_match_form()
+
+    data = request.get_json() if request.is_json else request.form
+
+    try:
+        opponent_id = int(data.get("opponent_id") or 0)
+    except (TypeError, ValueError):
+        opponent_id = 0
+
+    if not opponent_id:
+        message = _("Scegli l'avversario per iniziare.")
+        if request.is_json:
+            return jsonify({"success": False, "error": message}), 400
+        flash(message, "warning")
+        return redirect(url_for("individual_match.quick_match"))
+
+    # `None` = «tienti il default»: il servizio riempie i buchi con le
+    # abitudini del giocatore. Il modulo manda tutti i campi, ma una chiamata
+    # col solo avversario deve restare legittima.
+    config = {
+        "billiard_hall_id": data.get("billiard_hall_id") or None,
+        "location": data.get("location"),
+        "discipline": data.get("discipline") or None,
+        "match_format": data.get("match_format") or None,
+        "distance": data.get("distance") or None,
+        "match_distance": data.get("match_distance") or None,
+        "break_rule": data.get("break_rule") or None,
+    }
+    if data.get("is_race_to") is not None:
+        config["is_race_to"] = str(data.get("is_race_to")).lower() == "true"
+
+    try:
+        match = QuickMatchService.start(current_user.id, opponent_id, config)
+    except DomainError as exc:
+        if request.is_json:
+            return (
+                jsonify({"success": False, "error": str(exc)}),
+                http_status_for_exception(exc),
+            )
+        flash(str(exc), "danger")
+        return redirect(url_for("individual_match.quick_match"))
+
+    if request.is_json:
+        return jsonify(
+            {
+                "success": True,
+                "match_id": match.id,
+                "url": url_for("individual_match.match_detail", match_id=match.id),
+            }
+        )
+
+    flash(_("Partita aperta: segnate pure."), "success")
+    return redirect(url_for("individual_match.match_detail", match_id=match.id))
+
+
+def _quick_match_form():
+    """La schermata di avvio, con i valori già scritti dentro."""
+    from models.base import db
+    from models.individual_match.statistics_service import (
+        IndividualMatchStatisticsService,
+    )
+    from models.location.models import BilliardHall
+
+    defaults = QuickMatchService.get_defaults(current_user.id)
+
+    # `?opponent_id=`: chi arriva dalla partita appena finita ha gia' risposto
+    # alla sola domanda che l'avvio rapido pone.
+    preselected = None
+    requested_id = request.args.get("opponent_id", type=int)
+    if requested_id and requested_id != current_user.id:
+        from models.user.models import User
+
+        candidate = db.session.get(User, requested_id)
+        if (
+            candidate is not None
+            and candidate.deleted_at is None
+            and candidate.can_access("create_match_direct")
+        ):
+            preselected = candidate
+
+    # Gli avversari abituali sono la scorciatoia vera: in sala si rigioca quasi
+    # sempre con le stesse persone. La ricerca completa resta per gli altri.
+    # `can_access` come nell'elenco avversari e nella ricerca: proporre qualcuno
+    # che poi il servizio rifiuta sarebbe una porta dipinta sul muro.
+    frequent = [
+        player
+        for player in IndividualMatchStatisticsService.get_frequent_opponents(
+            current_user.id, limit=8
+        )
+        if player.can_access("create_match_direct")
+    ][:6]
+
+    verified_venues = (
+        BilliardHall.query.filter_by(is_active=True, verified=True)
+        .order_by(BilliardHall.name)
+        .all()
+    )
+
+    # Il preselezionato apre l'elenco, e non ci compare due volte.
+    if preselected is not None:
+        frequent = [preselected] + [p for p in frequent if p.id != preselected.id]
+
+    return render_template(
+        "individual_match/quick_match.html",
+        defaults=defaults,
+        preselected_id=preselected.id if preselected else None,
+        frequent_opponents=frequent,
+        verified_venues=verified_venues,
+        in_progress=_own_matches_in_progress(),
+    )
+
+
+def _own_matches_in_progress():
+    """Le partite che questo giocatore sta già giocando.
+
+    Non è un dettaglio decorativo: chi apre l'avvio rapido per la seconda volta
+    di solito voleva tornare al segnapunti di prima, non aprirne un altro.
+    """
+    from models.base import db
+    from models.individual_match.models import IndividualMatch
+
+    return (
+        IndividualMatch.query.filter(
+            IndividualMatch.status == MatchStatus.IN_PROGRESS,
+            db.or_(
+                IndividualMatch.player1_id == current_user.id,
+                IndividualMatch.player2_id == current_user.id,
+            ),
+        )
+        .order_by(IndividualMatch.created_at.desc())
+        .all()
+    )

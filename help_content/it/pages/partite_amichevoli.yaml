@@ -4,9 +4,9 @@ kind: tutorial
 audience: [giocatore]
 minutes: 4
 summary: "Fuori dalle gare ufficiali puoi proporre una partita a un altro giocatore, accordarvi su luogo e ora, e registrare il risultato."
-screens: [individual_match.dashboard, individual_match.create_proposal, individual_match.match_list,
-  individual_match.match_detail, individual_match.proposal_list, individual_match.proposal_detail,
-  individual_match.rematch, individual_match.user_statistics]
+screens: [individual_match.dashboard, individual_match.quick_match, individual_match.create_proposal,
+  individual_match.match_list, individual_match.match_detail, individual_match.proposal_list,
+  individual_match.proposal_detail, individual_match.rematch, individual_match.user_statistics]
 related: [giocare_una_partita, profilo_e_statistiche]
 
 blocks:
@@ -19,6 +19,47 @@ blocks:
   - type: shot
     shot: match-individuali
     caption: "La sezione delle partite amichevoli: le proposte in attesa, quelle ricevute e le partite in programma."
+
+  - type: heading
+    id: avvio-rapido
+    title: "Siete già in sala"
+
+  - type: text
+    text: >-
+      Se l'avversario ce l'hai davanti e le stecche sono già in mano, non serve
+      proporre niente: tocca **Avvio rapido** nella sezione Match, scegli chi
+      hai davanti e sei al segnapunti. Non si chiede quando (è adesso), e sala,
+      disciplina e distanza arrivano già scritte, riprese dall'ultima partita
+      che hai giocato.
+
+  - type: steps
+    items:
+      - title: "Apri Match e tocca «Avvio rapido»"
+        text: >-
+          È la prima voce della sezione, e la trovi anche in fondo alla pagina
+          fra i collegamenti.
+      - title: "Scegli chi hai davanti"
+        text: >-
+          Gli avversari con cui giochi più spesso sono già in elenco: un tocco
+          e sono scelti. Per tutti gli altri c'è la ricerca per nome.
+      - title: "Se serve, cambia come si gioca"
+        text: >-
+          Sotto «Come si gioca» c'è il riepilogo di sala, disciplina e distanza.
+          Vanno bene? Non toccare niente. Altrimenti tocca **Cambia** e correggi
+          quello che serve.
+      - title: "Inizia a segnare"
+        text: >-
+          La partita parte subito. L'avversario riceve una notifica: non deve
+          accettare niente, ma a fine partita dovete **confermare il risultato
+          in due**, come in ogni amichevole.
+
+  - type: note
+    tone: info
+    title: "Perché nessuno deve accettare"
+    text: >-
+      La conferma non sparisce, si sposta alla fine — dove la domanda ha una
+      risposta che l'avversario conosce davvero: il punteggio. Finché non
+      confermate entrambi, la partita non entra nel rating.
 
   - type: heading
     id: proporre

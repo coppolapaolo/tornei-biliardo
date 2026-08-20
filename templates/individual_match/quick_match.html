@@ -1,0 +1,332 @@
+{% extends "base.html" %}
+{% from "components/_form_macros.html" import choice, stepper, form_macros_scripts %}
+
+{% block title %}{{ _("Avvio rapido") }} - {{ config.APP_NAME }}{% endblock %}
+
+{% block head_extra %}
+<!-- TomSelect: ricerca a completamento per gli avversari fuori dagli abituali -->
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet"
+      integrity="sha384-piG3EtH1fBnPi68q4spy+Qgpb0dHK1D1dwk0GaHwFkvmUxYi526bBlk3xJcjEBsD" crossorigin="anonymous">
+{% endblock %}
+
+{# Come il modulo di proposta (prototipo 9a·2): e' una schermata che si
+   abbandona, non un livello da cui si risale. #}
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('individual_match.dashboard') }}"
+   aria-label="{{ _('Chiudi') }}"><i class="fas fa-xmark"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("Avvio rapido") }}{% endblock %}
+{% block page_sub %}{{ _("La partita che state giocando adesso") }}{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('individual_match.dashboard') }}" class="btn btn-secondary btn-sm d-none d-lg-inline-flex">
+  <i class="fas fa-xmark"></i>&nbsp;{{ _("Annulla") }}
+</a>
+{% endblock %}
+
+{% block content %}
+{# La schermata piu' vicina nel prototipo e' 9a·2: sezioni intitolate, il luogo
+   come riga con "Cambia", barra d'azione appiccicata in fondo con la frase che
+   dice cosa succede dopo. Qui pero' non si propone niente: si comincia. #}
+
+{% set fmt = defaults.match_format %}
+{% set format_summary %}
+  {%- if fmt == 'free' %}{{ _("Senza limite") }}
+  {%- elif fmt == 'multi' %}{{ _("%(sets)s set da %(racks)s", sets=defaults.match_distance or 3, racks=defaults.distance or 5) }}
+  {%- elif defaults.is_race_to %}{{ _("Al %(n)s", n=defaults.distance or 5) }}
+  {%- else %}{{ _("Esattamente %(n)s", n=defaults.distance or 5) }}{% endif -%}
+{% endset %}
+
+<div style="max-width:720px">
+
+  {# ---------- Stai gia' giocando ---------- #}
+  {% if in_progress %}
+  <section class="c7-stack" style="margin-bottom:16px">
+    <div class="c7-sechead"><h2>{{ _("Stai già giocando") }}</h2></div>
+    <div class="c7-rows">
+      {% for match in in_progress %}
+      {% set other = match.player2 if match.player1_id == current_user.id else match.player1 %}
+      <a class="c7-rows__row" href="{{ url_for('individual_match.match_detail', match_id=match.id) }}"
+         style="color:inherit;text-decoration:none">
+        <span class="c7-avatar" style="background:var(--c7-bg);color:var(--c7-ink-soft)">
+          {{ other.username[:2]|upper if other else '—' }}
+        </span>
+        <div class="c7-rows__main">
+          <div class="c7-rows__title">{{ other.username if other else _('Avversario') }}</div>
+          <div class="c7-rows__sub">
+            {{ match.discipline|discipline_display }} <span class="c7-sep">·</span>
+            <span class="c7-num">{{ match.player1_score }}–{{ match.player2_score }}</span>
+          </div>
+        </div>
+        <span class="c7-state c7-state--warn">{{ _("In corso") }}</span>
+        <i class="fas fa-chevron-right" style="font-size:12px;color:var(--c7-ink-faint)"></i>
+      </a>
+      {% endfor %}
+    </div>
+    <div class="form-text">{{ _("Se cercavi una di queste, torna lì invece di aprirne un'altra.") }}</div>
+  </section>
+  {% endif %}
+
+  <form id="quickForm" method="POST" class="c7-stack" style="gap:16px">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="opponent_id" id="opponentId" value="{{ preselected_id or '' }}">
+
+    {# ---------- Chi gioca ---------- #}
+    <div class="c7-card">
+      <div class="c7-sechead mb-3"><h2>{{ _("Chi hai davanti") }}</h2></div>
+
+      {% if frequent_opponents %}
+      <div class="c7-stack mb-3" id="frequentOpponents">
+        {% for player in frequent_opponents %}
+        <label class="c7-choice{{ ' is-selected' if player.id == preselected_id }}" data-opponent="{{ player.id }}">
+          <span class="c7-avatar" style="background:var(--c7-bg);color:var(--c7-ink-soft)">
+            {{ player.username[:2]|upper }}
+          </span>
+          <span class="flex-fill">
+            <span class="c7-choice__title d-block">{{ player.username }}</span>
+          </span>
+          <i class="fas fa-circle-check c7-choice__mark"></i>
+        </label>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <label for="opponentSearch" class="form-label">
+        {{ _("Un altro giocatore") if frequent_opponents else _("Cerca il giocatore") }}
+      </label>
+      <select id="opponentSearch" placeholder="{{ _('Cerca per nome...') }}"></select>
+      <div class="form-text">{{ _("Deve avere un account: la partita finisce nel suo storico e nel tuo.") }}</div>
+    </div>
+
+    {# ---------- Come si gioca: gia' deciso, si cambia solo se serve ---------- #}
+    <div class="c7-card">
+      <div class="c7-sechead mb-3">
+        <h2>{{ _("Come si gioca") }}</h2>
+        <button type="button" class="c7-sechead__more" id="toggleSettings"
+                style="background:none;border:0;padding:0;color:var(--c7-accent)">{{ _("Cambia") }}</button>
+      </div>
+
+      {# Riepilogo: quello che il modulo di proposta chiederebbe, gia' risposto
+         con l'ultima partita giocata (o con la sala in cui sei disponibile). #}
+      <div id="settingsSummary" class="c7-rows">
+        <div class="c7-rows__row">
+          <i class="fas fa-clock" style="font-size:14px;color:var(--c7-accent);width:18px"></i>
+          <div class="c7-rows__main">
+            <div class="c7-rows__title">{{ _("Adesso") }}</div>
+            <div class="c7-rows__sub">{{ _("La partita parte appena tocchi il pulsante") }}</div>
+          </div>
+        </div>
+        <div class="c7-rows__row">
+          <i class="fas fa-location-dot" style="font-size:14px;color:var(--c7-accent);width:18px"></i>
+          <div class="c7-rows__main">
+            <div class="c7-rows__title" id="summaryLocation">
+              {{ defaults.location or _("Sala non indicata") }}
+            </div>
+            <div class="c7-rows__sub">{{ _("Dove state giocando") }}</div>
+          </div>
+        </div>
+        <div class="c7-rows__row">
+          <i class="fas fa-dice-one" style="font-size:14px;color:var(--c7-accent);width:18px"></i>
+          <div class="c7-rows__main">
+            <div class="c7-rows__title" id="summaryFormat">
+              {{ defaults.discipline|discipline_display }} <span class="c7-sep">·</span> {{ format_summary }}
+            </div>
+            <div class="c7-rows__sub">{{ _("Disciplina e distanza") }}</div>
+          </div>
+        </div>
+      </div>
+
+      {# Gli stessi campi del modulo di proposta, ma chiusi: chi non li apre
+         gioca comunque. #}
+      <div id="settingsDetail" class="d-none" style="margin-top:16px">
+        <div class="mb-3">
+          <label for="location" class="form-label">{{ _("Sala biliardo") }}</label>
+          <input type="text" class="form-control" id="location" name="location"
+                 placeholder="{{ _('es. Sala Regina, Udine') }}"
+                 list="venue-suggestions" autocomplete="off"
+                 value="{{ defaults.location }}">
+          <datalist id="venue-suggestions">
+            {% for venue in verified_venues or [] %}
+            <option value="{{ venue.name }}">{{ venue.name }} - {{ venue.city or _('Città non specificata') }}</option>
+            {% endfor %}
+          </datalist>
+        </div>
+
+        <div class="mb-3">
+          <label for="discipline" class="form-label">{{ _("Disciplina") }}</label>
+          <select class="form-select" id="discipline" name="discipline">
+            {% for value, label in Discipline.get_choices() %}
+            <option value="{{ value }}" {% if defaults.discipline==value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        {{ choice('match_format', _("Formato"), [
+             {'value': 'single', 'title': _("Set singolo"), 'desc': _("Una partita sola, alla distanza scelta."), 'icon': 'fa-dice-one'},
+             {'value': 'multi', 'title': _("Multi-set"), 'desc': _("Più set: vince chi ne conquista N."), 'icon': 'fa-layer-group'},
+             {'value': 'free', 'title': _("Libero"), 'desc': _("Senza limite: la partita si chiude quando volete."), 'icon': 'fa-infinity'}
+           ], selected=fmt) }}
+
+        <div id="singleSetConfig" class="{{ 'd-none' if fmt != 'single' }}">
+          {{ stepper('distance', _("Distanza"), value=(defaults.distance or 5),
+               min=1, max=25, hint=_("triangoli per vincere")) }}
+          {{ choice('is_race_to', _("Come si chiude"), [
+               {'value': 'true', 'title': _("Al N"), 'desc': _("Vince chi arriva primo alla distanza.")},
+               {'value': 'false', 'title': _("Esattamente N"), 'desc': _("Si giocano tutti i triangoli: vince chi ne ha di più.")}
+             ], selected=('true' if defaults.is_race_to else 'false')) }}
+        </div>
+
+        <div id="multiSetConfig" class="{{ 'd-none' if fmt != 'multi' }}">
+          {{ stepper('match_distance', _("Set da vincere"), value=(defaults.match_distance or 3),
+               min=1, max=11, hint=_("set per vincere la sfida")) }}
+        </div>
+
+        <div>
+          <label for="break_rule" class="form-label">{{ _("Chi spacca") }}</label>
+          <select class="form-select" id="break_rule" name="break_rule">
+            <option value="alternate" {% if defaults.break_rule=='alternate' %}selected{% endif %}>{{ _("A turno") }}</option>
+            <option value="winner_breaks" {% if defaults.break_rule=='winner_breaks' %}selected{% endif %}>{{ _("Spacca chi ha vinto il triangolo") }}</option>
+            <option value="loser_breaks" {% if defaults.break_rule=='loser_breaks' %}selected{% endif %}>{{ _("Spacca chi ha perso il triangolo") }}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  {# Barra d'azione in fondo, fuori dal form e agganciata con `form=`: dentro la
+     pila perderebbe l'aggancio al fondo dello schermo (come in create_proposal). #}
+  <div class="c7-actionbar" style="flex-direction:column;gap:6px">
+    <button type="submit" form="quickForm" class="btn btn-primary w-100">
+      <i class="fas fa-play"></i>&nbsp;{{ _("Inizia a segnare") }}
+    </button>
+    <div class="text-center" style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
+      {{ _("Nessuno deve accettare: a fine partita confermate il risultato in due.") }}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"
+        integrity="sha384-cnROoUgVILyibe3J0zhzWoJ9p2WmdnK7j/BOTSWqVDbC1pVw2d+i6Q/1ESKJKCYf" crossorigin="anonymous"></script>
+{{ form_macros_scripts() }}
+<script>
+    // Stringhe tradotte: sempre |tojson, gli apostrofi italiani romperebbero
+    // tutto il JS della pagina.
+    const i18n = {
+        noOpponent: {{ _("Scegli chi hai davanti prima di iniziare.")|tojson }},
+        searchPlaceholder: {{ _("Cerca per nome...")|tojson }},
+        noResults: {{ _("Nessun giocatore con questo nome.")|tojson }},
+        typeMore: {{ _("Scrivi almeno due lettere.")|tojson }},
+        change: {{ _("Cambia")|tojson }},
+        close: {{ _("Chiudi")|tojson }}
+    };
+
+    const opponentId = document.getElementById('opponentId');
+    const frequent = document.getElementById('frequentOpponents');
+
+    // Avversario abituale: le card sono l'unica selezione viva, quindi la
+    // spunta si sposta a mano (qui non ci sono radio a gestirla).
+    function pickFrequent(card) {
+        if (!frequent) return;
+        frequent.querySelectorAll('.c7-choice').forEach(el =>
+            el.classList.toggle('is-selected', el === card));
+        opponentId.value = card.dataset.opponent;
+        if (opponentSearch) opponentSearch.clear(true);
+    }
+
+    let opponentSearch = null;
+
+    // La ricerca arriva da una CDN: se non arriva, gli avversari abituali
+    // devono restare cliccabili lo stesso. Per questo l'inizializzazione e'
+    // isolata e viene per ultima.
+    function initSearch() {
+        if (typeof TomSelect === 'undefined') return;
+        opponentSearch = new TomSelect('#opponentSearch', {
+            valueField: 'id',
+            labelField: 'username',
+            searchField: ['username'],
+            maxItems: 1,
+            create: false,
+            placeholder: i18n.searchPlaceholder,
+            load: function (query, callback) {
+                if (query.length < 2) return callback();
+                fetch({{ url_for("individual_match.search_players")|tojson }} + '?q=' + encodeURIComponent(query))
+                    .then(r => r.json())
+                    .then(callback)
+                    .catch(() => callback());
+            },
+            render: {
+                option: function (data, escape) {
+                    return '<div class="py-2 px-3"><i class="fas fa-user me-2 text-muted"></i>' + escape(data.username) + '</div>';
+                },
+                item: function (data, escape) {
+                    return '<div><i class="fas fa-user me-1"></i>' + escape(data.username) + '</div>';
+                },
+                no_results: function () {
+                    return '<div class="no-results p-3 text-muted">' + i18n.noResults + '</div>';
+                },
+                not_loading: function (data) {
+                    return data.input.length ? '<div class="p-3 text-muted">' + i18n.typeMore + '</div>' : null;
+                }
+            },
+            onChange: function (value) {
+                if (!value) return;
+                opponentId.value = value;
+                if (frequent) {
+                    frequent.querySelectorAll('.c7-choice').forEach(el =>
+                        el.classList.remove('is-selected'));
+                }
+            }
+        });
+    }
+
+    function currentValue(name) {
+        const checked = document.querySelector('input[name="' + name + '"]:checked');
+        return checked ? checked.value : null;
+    }
+
+    // Una sola configurazione visibile alla volta: quella del formato scelto.
+    function syncMatchFormat() {
+        const format = currentValue('match_format') || 'single';
+        document.getElementById('singleSetConfig').classList.toggle('d-none', format !== 'single');
+        document.getElementById('multiSetConfig').classList.toggle('d-none', format !== 'multi');
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        if (frequent) {
+            frequent.querySelectorAll('.c7-choice').forEach(card =>
+                card.addEventListener('click', () => pickFrequent(card)));
+        }
+
+        document.querySelectorAll('input[name="match_format"]').forEach(r =>
+            r.addEventListener('change', syncMatchFormat));
+
+        // Il riepilogo e i campi sono due viste della stessa cosa: o l'una o
+        // l'altra, mai il doppione.
+        const toggle = document.getElementById('toggleSettings');
+        const summary = document.getElementById('settingsSummary');
+        const detail = document.getElementById('settingsDetail');
+        toggle.addEventListener('click', function () {
+            const opening = detail.classList.contains('d-none');
+            detail.classList.toggle('d-none', !opening);
+            summary.classList.toggle('d-none', opening);
+            toggle.textContent = opening ? i18n.close : i18n.change;
+        });
+
+        syncMatchFormat();
+
+        try {
+            initSearch();
+        } catch (e) {
+            console.error('Ricerca giocatori non disponibile:', e);
+        }
+    });
+
+    document.getElementById('quickForm').addEventListener('submit', function (e) {
+        if (!opponentId.value) {
+            e.preventDefault();
+            showError(i18n.noOpponent);
+        }
+    });
+</script>
+{% endblock %}

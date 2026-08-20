@@ -517,6 +517,31 @@ hints:
     page: disegnare_un_drill
     section: salvare
 
+  # --- Avvio rapido delle sfide individuali (issue #176) --------------------
+  - id: sfida.avvio_rapido
+    label: "Avvio rapido"
+    short: "Per la partita che state giocando adesso: scegli chi hai davanti e sei al segnapunti. Niente data da concordare, niente attesa."
+    anchor: sfida-avvio-rapido
+    screens: [individual_match.dashboard, individual_match.match_list]
+    page: partite_amichevoli
+    section: avvio-rapido
+
+  - id: sfida.chi_hai_davanti
+    label: "Chi hai davanti"
+    short: "Gli avversari con cui giochi più spesso sono già in elenco. Per gli altri, cerca per nome: deve avere un account."
+    anchor: sfida-chi-hai-davanti
+    screens: [individual_match.quick_match]
+    page: partite_amichevoli
+    section: avvio-rapido
+
+  - id: sfida.riepilogo_rapido
+    label: "Come si gioca"
+    short: "Sala, disciplina e distanza sono già quelle dell'ultima partita. Se vanno bene non tocchi niente; «Cambia» le apre."
+    anchor: sfida-riepilogo-rapido
+    screens: [individual_match.quick_match]
+    page: partite_amichevoli
+    section: avvio-rapido
+
 tours:
   - screen: dashboard.dashboard
     title: "La tua home"
