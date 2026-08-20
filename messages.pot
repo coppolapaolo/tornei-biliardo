@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-20 08:14+0000\n"
+"POT-Creation-Date: 2026-08-20 09:44+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1298,37 +1298,37 @@ msgstr ""
 msgid "Hai ottenuto il ruolo di %(role)s."
 msgstr ""
 
-#: routes/auth.py:86
+#: routes/auth.py:138
 msgid "Che piacere rivederti!"
 msgstr ""
 
-#: routes/auth.py:87 templates/base.html:624
+#: routes/auth.py:139 templates/base.html:624
 msgid "Tutto pronto per giocare?"
 msgstr ""
 
-#: routes/auth.py:114
+#: routes/auth.py:166
 msgid ""
 "Il tuo account non è ancora verificato. Senza email confermata non potrai"
 " recuperare la password se la dimentichi."
 msgstr ""
 
-#: routes/auth.py:122
+#: routes/auth.py:174
 msgid "Vai al profilo per verificare l'email"
 msgstr ""
 
-#: routes/auth.py:129
+#: routes/auth.py:181
 msgid "Username o password errati."
 msgstr ""
 
-#: routes/auth.py:168
+#: routes/auth.py:220
 msgid "Registrazione completata! Controlla la tua email per verificare l'account."
 msgstr ""
 
-#: routes/auth.py:179 templates/onboarding.html:12
+#: routes/auth.py:231 templates/onboarding.html:12
 msgid "Ti diamo il benvenuto!"
 msgstr ""
 
-#: routes/auth.py:180
+#: routes/auth.py:232
 msgid "Registrazione completata con successo."
 msgstr ""
 
@@ -4182,6 +4182,7 @@ msgstr ""
 
 #: templates/admin/accessi.html:207 templates/admin/users_list.html:185
 #: templates/admin/users_list.html:196 templates/admin/users_list.html:204
+#: templates/auth/diagnosi_cookie.html:49
 #: templates/components/_gara_edit_form.html:130
 #: templates/components/_gara_edit_form.html:132
 #: templates/components/_new_gara_modal.html:314
@@ -4193,6 +4194,7 @@ msgstr ""
 
 #: templates/admin/accessi.html:209 templates/admin/users_list.html:188
 #: templates/admin/users_list.html:199 templates/admin/users_list.html:206
+#: templates/auth/diagnosi_cookie.html:50
 #: templates/components/_gara_edit_form.html:130
 #: templates/components/_gara_edit_form.html:133
 #: templates/components/_new_gara_modal.html:314
@@ -6171,7 +6173,8 @@ msgid "Nome Sala"
 msgstr ""
 
 #: templates/admin/venue_form.html:52 templates/admin/venues_list.html:31
-#: templates/player/venue_detail.html:50 templates/player/venues.html:35
+#: templates/auth/diagnosi_cookie.html:20 templates/player/venue_detail.html:50
+#: templates/player/venues.html:35
 msgid "Indirizzo"
 msgstr ""
 
@@ -6515,6 +6518,73 @@ msgstr ""
 
 #: templates/admin/venues_list.html:203
 msgid "Aggiungi la Prima Sala"
+msgstr ""
+
+#: templates/auth/diagnosi_cookie.html:3 templates/auth/diagnosi_cookie.html:9
+msgid "Test dei cookie"
+msgstr ""
+
+#: templates/auth/diagnosi_cookie.html:11
+msgid ""
+"Questa pagina controlla, direttamente sul tuo dispositivo, se i cookie "
+"funzionano su questo sito."
+msgstr ""
+
+#: templates/auth/diagnosi_cookie.html:24
+msgid "Il browser dichiara di accettare i cookie"
+msgstr ""
+
+#: templates/auth/diagnosi_cookie.html:28
+msgid "Il browser salva un cookie di prova"
+msgstr ""
+
+#: templates/auth/diagnosi_cookie.html:32
+msgid "Il cookie di accesso arriva al server"
+msgstr ""
+
+#: templates/auth/diagnosi_cookie.html:41
+msgid "Vai al login"
+msgstr ""
+
+#: templates/auth/diagnosi_cookie.html:89
+msgid "Qui i cookie funzionano"
+msgstr ""
+
+#: templates/auth/diagnosi_cookie.html:90
+msgid ""
+"Su questo browser il sito può riconoscerti: se il login continua a "
+"fallire, fai uno screenshot di questa pagina e segnala il problema."
+msgstr ""
+
+#: templates/auth/diagnosi_cookie.html:92
+msgid "Il browser non salva i cookie di questo sito"
+msgstr ""
+
+#: templates/auth/diagnosi_cookie.html:93
+msgid ""
+"Tocca l'icona accanto all'indirizzo, apri le impostazioni del sito e usa "
+"«Cancella e reimposta»; controlla anche eventuali blocchi per questo sito"
+" nelle impostazioni dei cookie del browser."
+msgstr ""
+
+#: templates/auth/diagnosi_cookie.html:95
+msgid "Il cookie si salva ma non arriva al server"
+msgstr ""
+
+#: templates/auth/diagnosi_cookie.html:96
+msgid ""
+"Qualcosa tra il telefono e il sito lo sta togliendo: controlla app di "
+"blocco pubblicità, VPN o risparmio dati e riprova senza."
+msgstr ""
+
+#: templates/auth/diagnosi_cookie.html:101
+msgid "Il controllo non è riuscito"
+msgstr ""
+
+#: templates/auth/diagnosi_cookie.html:102
+msgid ""
+"La richiesta di verifica non è arrivata al server. Riprova; se succede "
+"ancora, fai uno screenshot di questa pagina."
 msgstr ""
 
 #: templates/auth/forgot_password.html:3 templates/auth/forgot_password.html:10
@@ -11617,12 +11687,11 @@ msgid ""
 msgstr ""
 
 #: templates/errors/400.html:20
-msgid "Riprova ad accedere"
+msgid "Fai il test dei cookie"
 msgstr ""
 
-#: templates/errors/400.html:21 templates/errors/400.html:36
-#: templates/errors/dominio.html:24
-msgid "Vai alla home"
+#: templates/errors/400.html:21
+msgid "Riprova ad accedere"
 msgstr ""
 
 #: templates/errors/400.html:28
@@ -11641,6 +11710,10 @@ msgstr ""
 
 #: templates/errors/400.html:35
 msgid "Riapri il modulo"
+msgstr ""
+
+#: templates/errors/400.html:36 templates/errors/dominio.html:24
+msgid "Vai alla home"
 msgstr ""
 
 #: templates/errors/403.html:10

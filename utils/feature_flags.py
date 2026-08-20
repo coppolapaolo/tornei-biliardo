@@ -48,6 +48,10 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "auth.forgot_password": {"anonimo"},
     "auth.reset_password": {"anonimo"},
     "auth.verify_email": {"anonimo"},
+    # Il test dei cookie: serve a chi NON riesce a entrare, quindi anonimo
+    # non è opzionale — è il destinatario. Linkato dalla pagina 400.
+    "auth.diagnosi_cookie": {"anonimo", "player", "director"},
+    "auth.diagnosi_eco": {"anonimo", "player", "director"},
     # === Public (polymorphic: every role sees, template adapts) ===
     "main.index": {"anonimo", "player", "director"},
     "main.public_garas_list": {"anonimo", "player", "director"},
