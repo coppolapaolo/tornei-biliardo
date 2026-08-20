@@ -17,8 +17,8 @@
     <p class="c7-empty__text">{{ _('Per riconoscerti tra una pagina e l\'altra serve un cookie, e il tuo browser non lo sta mandando.') }}</p>
     <p class="c7-empty__text" style="margin-top: 10px; color: var(--c7-ink-faint);">{{ _('Controlla che i cookie non siano bloccati nelle impostazioni del browser (o dell\'app da cui hai aperto il collegamento) e riprova.') }}</p>
     <div class="c7-empty__actions">
-      <a href="{{ url_for('auth.login') }}" class="btn btn-primary">{{ _('Riprova ad accedere') }}</a>
-      <a href="{{ url_for('main.index') }}" class="btn btn-secondary">{{ _('Vai alla home') }}</a>
+      <a href="{{ url_for('auth.diagnosi_cookie') }}" class="btn btn-primary">{{ _('Fai il test dei cookie') }}</a>
+      <a href="{{ url_for('auth.login') }}" class="btn btn-secondary">{{ _('Riprova ad accedere') }}</a>
     </div>
   </div>
   {% else %}

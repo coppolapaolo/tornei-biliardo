@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Test dei cookie') }} - {{ config.APP_NAME }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 520px; margin: 6vh auto 0;">
+  <div style="text-align: center; margin-bottom: 24px;">
+    <div class="c7-kicker">{{ config.APP_NAME }}</div>
+    <h1 style="margin: 6px 0 0;">{{ _('Test dei cookie') }}</h1>
+    <p class="text-muted" style="margin-top: 8px; font-size: 14px;">
+      {{ _('Questa pagina controlla, direttamente sul tuo dispositivo, se i cookie funzionano su questo sito.') }}
+    </p>
+  </div>
+
+  {# I quattro verdetti, riempiti dal JavaScript qui sotto. Ogni riga ha un
+     data-esito (attesa/ok/no) che i test integrazione e chi legge il DOM
+     possono interrogare senza dipendere dai testi tradotti. #}
+  <div class="c7-stack" id="diagnosi" data-stato="in-corso">
+    <div class="c7-card" style="padding: 14px 16px;" id="riga-indirizzo" data-esito="attesa">
+      <strong>{{ _('Indirizzo') }}</strong>
+      <div class="text-muted" style="font-size: 13px;" id="testo-indirizzo">…</div>
+    </div>
+    <div class="c7-card" style="padding: 14px 16px;" id="riga-abilitati" data-esito="attesa">
+      <strong>{{ _('Il browser dichiara di accettare i cookie') }}</strong>
+      <div class="text-muted" style="font-size: 13px;" id="testo-abilitati">…</div>
+    </div>
+    <div class="c7-card" style="padding: 14px 16px;" id="riga-scrittura" data-esito="attesa">
+      <strong>{{ _('Il browser salva un cookie di prova') }}</strong>
+      <div class="text-muted" style="font-size: 13px;" id="testo-scrittura">…</div>
+    </div>
+    <div class="c7-card" style="padding: 14px 16px;" id="riga-giro" data-esito="attesa">
+      <strong>{{ _('Il cookie di accesso arriva al server') }}</strong>
+      <div class="text-muted" style="font-size: 13px;" id="testo-giro">…</div>
+    </div>
+
+    <div class="c7-card" style="padding: 14px 16px; display: none;" id="verdetto">
+      <strong id="verdetto-titolo"></strong>
+      <div style="font-size: 14px; margin-top: 6px;" id="verdetto-testo"></div>
+    </div>
+
+    <a href="{{ url_for('auth.login') }}" class="btn btn-primary w-100">{{ _('Vai al login') }}</a>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function () {
+    var SI = {{ _('Sì')|tojson }};
+    var NO = {{ _('No')|tojson }};
+
+    function esito(id, ok, testo) {
+      var riga = document.getElementById('riga-' + id);
+      riga.dataset.esito = ok ? 'ok' : 'no';
+      riga.style.borderLeft = '4px solid ' + (ok ? 'var(--c7-ok)' : 'var(--c7-err)');
+      document.getElementById('testo-' + id).textContent = testo;
+      return ok;
+    }
+
+    function verdetto(titolo, testo) {
+      var box = document.getElementById('verdetto');
+      box.style.display = 'block';
+      document.getElementById('verdetto-titolo').textContent = titolo;
+      document.getElementById('verdetto-testo').textContent = testo;
+      document.getElementById('diagnosi').dataset.stato = 'concluso';
+    }
+
+    // 1. Dove siamo davvero (Chrome nasconde il «www.» nella barra).
+    var conWww = location.hostname.indexOf('www.') === 0;
+    esito('indirizzo', true, location.origin);
+
+    // 2. Cosa dichiara il browser.
+    var dichiara = navigator.cookieEnabled;
+    esito('abilitati', dichiara, dichiara ? SI : NO);
+
+    // 3. Il browser salva davvero un cookie? (prova di prima parte, via JS)
+    document.cookie = 'diagnosi_prova=1; path=/; SameSite=Lax';
+    var salva = document.cookie.indexOf('diagnosi_prova=1') !== -1;
+    esito('scrittura', salva, salva ? SI : NO);
+
+    // 4. Il giro completo: il cookie di sessione appena ricevuto torna al
+    //    server con la prossima richiesta?
+    fetch({{ url_for('auth.diagnosi_eco')|tojson }}, { credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (dati) {
+        var ok = esito('giro', dati.cookie_arrivato && dati.sessione_valida,
+                       (dati.cookie_arrivato ? SI : NO));
+        if (ok) {
+          verdetto({{ _('Qui i cookie funzionano')|tojson }},
+                   {{ _('Su questo browser il sito può riconoscerti: se il login continua a fallire, fai uno screenshot di questa pagina e segnala il problema.')|tojson }});
+        } else if (!salva) {
+          verdetto({{ _('Il browser non salva i cookie di questo sito')|tojson }},
+                   {{ _('Tocca l\'icona accanto all\'indirizzo, apri le impostazioni del sito e usa «Cancella e reimposta»; controlla anche eventuali blocchi per questo sito nelle impostazioni dei cookie del browser.')|tojson }});
+        } else {
+          verdetto({{ _('Il cookie si salva ma non arriva al server')|tojson }},
+                   {{ _('Qualcosa tra il telefono e il sito lo sta togliendo: controlla app di blocco pubblicità, VPN o risparmio dati e riprova senza.')|tojson }});
+        }
+      })
+      .catch(function () {
+        esito('giro', false, NO);
+        verdetto({{ _('Il controllo non è riuscito')|tojson }},
+                 {{ _('La richiesta di verifica non è arrivata al server. Riprova; se succede ancora, fai uno screenshot di questa pagina.')|tojson }});
+      });
+
+    // Il «www.» mancante non è un errore ma va detto: l'indirizzo senza www
+    // ha un certificato diverso e i cookie non si condividono tra i due.
+    if (!conWww) {
+      esito('indirizzo', false, location.origin);
+    }
+  })();
+</script>
+{% endblock %}

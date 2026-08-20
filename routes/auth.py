@@ -1,6 +1,16 @@
 # routes/auth.py - Route di autenticazione
 import json
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import (
+    Blueprint,
+    current_app,
+    flash,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
 from markupsafe import Markup, escape
 from flask_login import login_user, logout_user, login_required
 
@@ -29,6 +39,48 @@ def niente_cache(response):
     """
     response.headers["Cache-Control"] = "no-store"
     return response
+
+
+@auth_bp.route("/diagnosi")
+def diagnosi_cookie():
+    """Pagina che misura, sul dispositivo dell'utente, dove muore il cookie.
+
+    Nata dal caso che il log da solo non può spiegare: righe «CSRF fallito …
+    cookie=assente» da un telefono le cui impostazioni dicono di accettare i
+    cookie. Il server vede solo che il cookie non è arrivato; se il browser
+    non l'ha salvato, non l'ha rimandato, o qualcosa in mezzo l'ha tolto, lo
+    si può stabilire solo da dentro il browser stesso. Questa pagina fa i
+    test e mostra un verdetto leggibile — e interrogabile al telefono, senza
+    chiedere all'utente di aprire strumenti da sviluppatore.
+    """
+    # Tocca la sessione: così questa risposta rimanda di sicuro il cookie,
+    # e l'eco qui sotto misura un giro completo andata-e-ritorno.
+    from flask_wtf.csrf import generate_csrf
+
+    generate_csrf()
+    return render_template("auth/diagnosi_cookie.html")
+
+
+@auth_bp.route("/diagnosi/eco")
+def diagnosi_eco():
+    """L'altra metà della diagnosi: dice se il cookie è tornato indietro.
+
+    GET di proposito: niente CSRF di mezzo — è proprio il meccanismo che
+    stiamo diagnosticando — e nessuno stato cambiato.
+    """
+    nome_cookie = current_app.config.get("SESSION_COOKIE_NAME", "session")
+    cookie_arrivato = nome_cookie in request.cookies
+    sessione_valida = bool(session.get("csrf_token"))
+
+    # Nel log di produzione, accanto alle righe «CSRF fallito», così le
+    # diagnosi degli utenti si possono correlare ai loro tentativi.
+    current_app.logger.warning(
+        "Diagnosi cookie: cookie=%s, sessione_valida=%s, UA=%r",
+        "presente" if cookie_arrivato else "assente",
+        sessione_valida,
+        request.headers.get("User-Agent", ""),
+    )
+    return jsonify(cookie_arrivato=cookie_arrivato, sessione_valida=sessione_valida)
 
 
 @auth_bp.route("/login", methods=["GET", "POST"])

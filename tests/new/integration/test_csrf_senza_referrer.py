@@ -204,3 +204,38 @@ def test_con_cookie_e_token_guasto_la_pagina_400_dice_di_riaprire(
     )
     assert risposta.status_code == 400
     assert 'data-causa="modulo-non-valido"' in risposta.get_data(as_text=True)
+
+
+def test_la_diagnosi_cookie_e_aperta_e_misura_il_giro_completo(app):
+    """La pagina del test dei cookie serve a chi non riesce a entrare:
+    deve aprirsi da anonimi, e l'eco deve dire la verità nei due casi.
+
+    Contesto applicativo annidato per la stessa ragione del fixture
+    `csrf_client`: quello di sessione fa sopravvivere `g.csrf_token` fra i
+    test, e `generate_csrf()` smette di toccare la sessione — la pagina
+    uscirebbe senza Set-Cookie solo nei test, mai in produzione.
+    """
+    with app.app_context():
+        client = app.test_client()
+        pagina = client.get("/auth/diagnosi")
+        assert pagina.status_code == 200
+        assert 'id="diagnosi"' in pagina.get_data(as_text=True)
+        assert pagina.headers.get("Cache-Control") == "no-store"
+
+        # Il client ha appena ricevuto il cookie di sessione: il giro è vero.
+        eco = client.get("/auth/diagnosi/eco").get_json()
+        assert eco == {"cookie_arrivato": True, "sessione_valida": True}
+
+        # Un client nuovo, senza cookie: il giro deve dire di no, non fingere.
+        eco_nudo = app.test_client().get("/auth/diagnosi/eco").get_json()
+        assert eco_nudo["cookie_arrivato"] is False
+
+
+def test_la_pagina_400_senza_cookie_porta_alla_diagnosi(csrf_client, db_session):
+    risposta = csrf_client.post(
+        "/auth/login",
+        base_url="https://localhost",
+        data={"username": "x", "password": "y", "csrf_token": "z"},
+    )
+    assert risposta.status_code == 400
+    assert "/auth/diagnosi" in risposta.get_data(as_text=True)
