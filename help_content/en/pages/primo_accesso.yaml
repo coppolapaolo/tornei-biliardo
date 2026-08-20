@@ -55,6 +55,7 @@ blocks:
     title: "Where the command is"
     items:
       - "**iPhone and iPad, in Safari**: tap the Share button — the square with the upward arrow, at the bottom — scroll the list and choose «Add to Home Screen»."
+      - "**iPhone and iPad, in Chrome (or Firefox, or Edge)**: the Share button is there too, at the top right; in the menu look for «Add to Home Screen». If you cannot see it, scroll to the end of the list or tap «Edit Actions» to bring it up."
       - "**Android, in Chrome**: tap the three dots at the top right and choose «Install app»; if it is not there, «Add to Home screen» does the same."
       - "**Android, in Firefox**: the three dots, then «Add to Home screen»."
       - "**Android, in Samsung Internet**: the menu at the bottom right, then «Add page to» and «Home screen»."
