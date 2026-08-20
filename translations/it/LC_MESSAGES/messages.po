@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-19 17:46+0200\n"
+"POT-Creation-Date: 2026-08-20 08:14+0000\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -18,23 +18,23 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app.py:604 templates/errors/403.html:3
+#: app.py:678 templates/errors/403.html:3
 msgid "Accesso negato"
 msgstr ""
 
-#: app.py:622
+#: app.py:696
 msgid "Non è il tuo turno"
 msgstr ""
 
-#: app.py:623
+#: app.py:697
 msgid "Colpo irregolare"
 msgstr ""
 
-#: app.py:642
+#: app.py:716
 msgid "Operazione non consentita"
 msgstr ""
 
-#: app.py:656
+#: app.py:730
 msgid "Tiro non valido"
 msgstr ""
 
@@ -885,7 +885,7 @@ msgid ""
 "a un esaminatore per farlo valere."
 msgstr ""
 
-#: models/gamification/frontend_bridge.py:494 templates/base.html:487
+#: models/gamification/frontend_bridge.py:494 templates/base.html:503
 msgid "Diventa esaminatore"
 msgstr ""
 
@@ -1299,37 +1299,37 @@ msgstr ""
 msgid "Hai ottenuto il ruolo di %(role)s."
 msgstr ""
 
-#: routes/auth.py:70
+#: routes/auth.py:86
 msgid "Che piacere rivederti!"
 msgstr ""
 
-#: routes/auth.py:71 templates/base.html:608
+#: routes/auth.py:87 templates/base.html:624
 msgid "Tutto pronto per giocare?"
 msgstr ""
 
-#: routes/auth.py:98
+#: routes/auth.py:114
 msgid ""
 "Il tuo account non è ancora verificato. Senza email confermata non potrai"
 " recuperare la password se la dimentichi."
 msgstr ""
 
-#: routes/auth.py:106
+#: routes/auth.py:122
 msgid "Vai al profilo per verificare l'email"
 msgstr ""
 
-#: routes/auth.py:113
+#: routes/auth.py:129
 msgid "Username o password errati."
 msgstr ""
 
-#: routes/auth.py:152
+#: routes/auth.py:168
 msgid "Registrazione completata! Controlla la tua email per verificare l'account."
 msgstr ""
 
-#: routes/auth.py:163 templates/onboarding.html:12
+#: routes/auth.py:179 templates/onboarding.html:12
 msgid "Ti diamo il benvenuto!"
 msgstr ""
 
-#: routes/auth.py:164
+#: routes/auth.py:180
 msgid "Registrazione completata con successo."
 msgstr ""
 
@@ -2267,7 +2267,7 @@ msgstr ""
 msgid "Esami certificati superati"
 msgstr ""
 
-#: routes/gamification/features.py:61 templates/base.html:328
+#: routes/gamification/features.py:61 templates/base.html:344
 #: templates/gamification/admin/dashboard.html:102
 #: templates/gamification/admin/dashboard.html:145
 #: templates/gamification/admin/feature_create.html:69
@@ -2648,43 +2648,43 @@ msgstr ""
 msgid "Password attuale errata o nuova password non valida."
 msgstr ""
 
-#: templates/base.html:60
+#: templates/base.html:76
 msgid "competitivo"
 msgstr ""
 
-#: templates/base.html:61
+#: templates/base.html:77
 msgid "globale (tornei + casual)"
 msgstr ""
 
-#: templates/base.html:154
+#: templates/base.html:170
 msgid "Tornei Biliardo"
 msgstr ""
 
-#: templates/base.html:156
+#: templates/base.html:172
 msgid "amministrazione"
 msgstr ""
 
-#: templates/base.html:157
+#: templates/base.html:173
 msgid "direzione gara"
 msgstr ""
 
-#: templates/base.html:158 templates/base.html:259
+#: templates/base.html:174 templates/base.html:275
 msgid "giocatore"
 msgstr ""
 
-#: templates/base.html:165
+#: templates/base.html:181
 msgid "Generale"
 msgstr ""
 
-#: templates/admin/kpi.html:37 templates/base.html:167 templates/base.html:425
+#: templates/admin/kpi.html:37 templates/base.html:183 templates/base.html:441
 msgid "Dashboard"
 msgstr ""
 
-#: templates/base.html:171
+#: templates/base.html:187
 msgid "Sale Biliardo"
 msgstr ""
 
-#: templates/base.html:176 templates/base.html:443
+#: templates/base.html:192 templates/base.html:459
 #: templates/challenge/catalog.html:3 templates/challenge/catalog.html:8
 #: templates/components/_gara_info.html:69
 #: templates/components/_history_campionati_tab.html:96
@@ -2697,12 +2697,12 @@ msgstr ""
 msgid "Esercizi"
 msgstr ""
 
-#: templates/base.html:181 templates/exam/catalog.html:3
+#: templates/base.html:197 templates/exam/catalog.html:3
 #: templates/exam/catalog.html:6 templates/player/history.html:34
 msgid "Esami"
 msgstr ""
 
-#: templates/base.html:186 templates/components/_history_filters.html:70
+#: templates/base.html:202 templates/components/_history_filters.html:70
 #: templates/components/_player_dashboard_content.html:12
 #: templates/individual_match/admin_overview.html:4
 #: templates/individual_match/admin_overview.html:10
@@ -2711,101 +2711,101 @@ msgstr ""
 msgid "Sfide individuali"
 msgstr ""
 
-#: templates/base.html:191 templates/base.html:407
+#: templates/base.html:207 templates/base.html:423
 #: templates/gamification/admin/feature_create.html:59
 #: templates/help/_ui.html:10 templates/help/index.html:6
 msgid "Guida"
 msgstr ""
 
-#: templates/base.html:198
+#: templates/base.html:214
 msgid "Persone"
 msgstr ""
 
 #: templates/admin/accessi.html:37 templates/admin/users_list.html:10
-#: templates/base.html:201 templates/base.html:438
+#: templates/base.html:217 templates/base.html:454
 #: templates/gamification/admin/dashboard.html:103
 msgid "Utenti"
 msgstr ""
 
 #: templates/admin/accessi.html:33 templates/admin/accessi.html:111
-#: templates/admin/users_list.html:94 templates/base.html:206
+#: templates/admin/users_list.html:94 templates/base.html:222
 msgid "Accessi"
 msgstr ""
 
-#: templates/base.html:211
+#: templates/base.html:227
 msgid "Richieste Direttore"
 msgstr ""
 
-#: templates/admin/venue_manager_requests.html:4 templates/base.html:216
+#: templates/admin/venue_manager_requests.html:4 templates/base.html:232
 msgid "Richieste Gestore Sala"
 msgstr ""
 
-#: templates/base.html:227
+#: templates/base.html:243
 msgid "Richieste Esaminatore"
 msgstr ""
 
 #: templates/admin/users_list.html:137 templates/admin/users_list.html:212
-#: templates/base.html:233 templates/components/_user_info_card.html:102
+#: templates/base.html:249 templates/components/_user_info_card.html:102
 msgid "Gamification"
 msgstr ""
 
-#: templates/base.html:235
+#: templates/base.html:251
 msgid "Traguardi e XP"
 msgstr ""
 
-#: templates/base.html:245
+#: templates/base.html:261
 msgid "Debug"
 msgstr ""
 
-#: templates/base.html:246 templates/base.html:520
+#: templates/base.html:262 templates/base.html:536
 msgid "Reset DB"
 msgstr ""
 
-#: templates/base.html:257
+#: templates/base.html:273
 msgid "amministratore"
 msgstr ""
 
-#: templates/base.html:258
+#: templates/base.html:274
 msgid "direttore"
 msgstr ""
 
-#: templates/base.html:271 templates/base.html:349
+#: templates/base.html:287 templates/base.html:365
 msgid "Login"
 msgstr ""
 
-#: templates/base.html:272
+#: templates/base.html:288
 #: templates/components/_index_registration_info.html:33
 #: templates/login.html:40 templates/no_campionato.html:15
 #: templates/register.html:38
 msgid "Registrati"
 msgstr ""
 
-#: templates/base.html:295 templates/components/_gara_header.html:33
+#: templates/base.html:311 templates/components/_gara_header.html:33
 #: templates/help/index.html:11
 msgid "Home"
 msgstr ""
 
-#: templates/base.html:336
+#: templates/base.html:352
 msgid "Lv"
 msgstr ""
 
-#: templates/base.html:365
+#: templates/base.html:381
 msgid "Non è riuscito"
 msgstr ""
 
-#: templates/base.html:367
+#: templates/base.html:383
 msgid "Fatto"
 msgstr ""
 
-#: templates/base.html:369 templates/player/venue_detail.html:262
+#: templates/base.html:385 templates/player/venue_detail.html:262
 msgid "Attenzione"
 msgstr ""
 
-#: templates/base.html:371
+#: templates/base.html:387
 msgid "Informazione"
 msgstr ""
 
-#: templates/base.html:381 templates/challenge/create.html:8
+#: templates/base.html:397 templates/challenge/create.html:8
 #: templates/components/_campionato_create_modal.html:7
 #: templates/components/_challenge_management_modal.html:19
 #: templates/components/_challenge_management_modal.html:76
@@ -2822,120 +2822,120 @@ msgstr ""
 msgid "Chiudi"
 msgstr ""
 
-#: templates/base.html:411 templates/privacy.html:3
+#: templates/base.html:427 templates/privacy.html:3
 msgid "Privacy e Cookie"
 msgstr ""
 
-#: templates/admin/venue_manager_requests.html:14 templates/base.html:429
+#: templates/admin/venue_manager_requests.html:14 templates/base.html:445
 msgid "Sale"
 msgstr ""
 
-#: templates/base.html:434
+#: templates/base.html:450
 msgid "Sfide"
 msgstr ""
 
-#: templates/base.html:447 templates/components/_user_menu.html:8
+#: templates/base.html:463 templates/components/_user_menu.html:8
 #: templates/player/notifications.html:3 templates/player/notifications.html:8
 msgid "Notifiche"
 msgstr ""
 
-#: templates/base.html:456
+#: templates/base.html:472
 msgid "DEBUG MODE - Informazioni Sistema"
 msgstr ""
 
-#: templates/base.html:460
+#: templates/base.html:476
 msgid "Utente:"
 msgstr ""
 
-#: templates/base.html:467
+#: templates/base.html:483
 msgid "User ID:"
 msgstr ""
 
-#: templates/base.html:474
+#: templates/base.html:490
 msgid "Esami:"
 msgstr ""
 
-#: templates/base.html:476 templates/components/_history_exams_tab.html:66
+#: templates/base.html:492 templates/components/_history_exams_tab.html:66
 msgid "esaminatore"
 msgstr ""
 
-#: templates/base.html:476 templates/base.html:479
+#: templates/base.html:492 templates/base.html:495
 msgid "sì"
 msgstr ""
 
-#: templates/base.html:476 templates/base.html:479
+#: templates/base.html:492 templates/base.html:495
 msgid "no"
 msgstr ""
 
-#: templates/base.html:479
+#: templates/base.html:495
 msgid "override"
 msgstr ""
 
-#: templates/base.html:495
+#: templates/base.html:511
 msgid "Endpoint:"
 msgstr ""
 
-#: templates/base.html:499
+#: templates/base.html:515
 msgid "Method:"
 msgstr ""
 
-#: templates/base.html:505 templates/base.html:519
+#: templates/base.html:521 templates/base.html:535
 msgid "Database:"
 msgstr ""
 
-#: templates/base.html:513
+#: templates/base.html:529
 msgid "Not accessible"
 msgstr ""
 
-#: templates/base.html:521
+#: templates/base.html:537
 msgid "Save Reset"
 msgstr ""
 
-#: templates/base.html:524
+#: templates/base.html:540
 msgid "Quick Login:"
 msgstr ""
 
-#: templates/base.html:537
+#: templates/base.html:553
 msgid "Test Fixtures:"
 msgstr ""
 
-#: templates/base.html:539
+#: templates/base.html:555
 msgid "Player"
 msgstr ""
 
-#: templates/base.html:544
+#: templates/base.html:560
 msgid "Fill Gara"
 msgstr ""
 
-#: templates/base.html:548
+#: templates/base.html:564
 msgid "Iscrivi"
 msgstr ""
 
-#: templates/base.html:552
+#: templates/base.html:568
 msgid "Completare i match in corso del turno attuale con risultati random?"
 msgstr ""
 
-#: templates/base.html:553
+#: templates/base.html:569
 msgid "Complete Round"
 msgstr ""
 
-#: templates/base.html:557
+#: templates/base.html:573
 msgid "Complete Match"
 msgstr ""
 
-#: templates/base.html:561
+#: templates/base.html:577
 msgid "Completare l'intera gara con risultati random fino alla fine?"
 msgstr ""
 
-#: templates/base.html:562
+#: templates/base.html:578
 msgid "Complete Gara"
 msgstr ""
 
-#: templates/base.html:577 templates/base.html:583
+#: templates/base.html:593 templates/base.html:599
 msgid "Conferma"
 msgstr ""
 
-#: templates/base.html:578 templates/base.html:642
+#: templates/base.html:594 templates/base.html:658
 msgid "Close"
 msgstr ""
 
@@ -2945,8 +2945,8 @@ msgstr ""
 #: templates/admin/campionato_wizard_step1.html:158
 #: templates/admin/campionato_wizard_step2.html:8
 #: templates/admin/gara_edit.html:11 templates/admin/venue_form.html:296
-#: templates/admin/venue_manager_requests.html:155 templates/base.html:582
-#: templates/base.html:655 templates/challenge/_training_board.html:92
+#: templates/admin/venue_manager_requests.html:155 templates/base.html:598
+#: templates/base.html:671 templates/challenge/_training_board.html:92
 #: templates/challenge/builder.html:33 templates/challenge/builder.html:262
 #: templates/challenge/create.html:14
 #: templates/components/_campionato_create_modal.html:35
@@ -2975,68 +2975,68 @@ msgstr ""
 msgid "Annulla"
 msgstr ""
 
-#: templates/base.html:598
+#: templates/base.html:614
 msgid "XP OTTENUTI"
 msgstr ""
 
-#: templates/base.html:599
+#: templates/base.html:615
 msgid "LEVEL UP!"
 msgstr ""
 
-#: templates/base.html:600
+#: templates/base.html:616
 msgid "Nuovo livello raggiunto!"
 msgstr ""
 
-#: templates/base.html:601
+#: templates/base.html:617
 msgid "NUOVO TRAGUARDO!"
 msgstr ""
 
-#: templates/base.html:602
+#: templates/base.html:618
 msgid "STREAK!"
 msgstr ""
 
-#: templates/base.html:603
+#: templates/base.html:619
 msgid "Freeze attivo"
 msgstr ""
 
-#: templates/base.html:604
+#: templates/base.html:620
 msgid "STREAK PERSA"
 msgstr ""
 
-#: templates/base.html:605
+#: templates/base.html:621
 msgid "Non mollare, riprovare!"
 msgstr ""
 
-#: templates/base.html:606
+#: templates/base.html:622
 msgid "QUEST COMPLETATA!"
 msgstr ""
 
-#: templates/base.html:607
+#: templates/base.html:623
 msgid "TI DIAMO IL BENTORNATO!"
 msgstr ""
 
-#: templates/base.html:609
+#: templates/base.html:625
 msgid "Ciao!"
 msgstr ""
 
-#: templates/base.html:610
+#: templates/base.html:626
 #, python-format
 msgid "Ciao %(username)s!"
 msgstr ""
 
-#: templates/base.html:641
+#: templates/base.html:657
 msgid "Save Reset Snapshot"
 msgstr ""
 
-#: templates/base.html:646
+#: templates/base.html:662
 msgid "Nome snapshot"
 msgstr ""
 
-#: templates/base.html:650
+#: templates/base.html:666
 msgid "Descrizione (opzionale)"
 msgstr ""
 
-#: templates/admin/campionato_detail.html:163 templates/base.html:656
+#: templates/admin/campionato_detail.html:163 templates/base.html:672
 #: templates/gamification/admin/level_config.html:42
 #: templates/gamification/admin/level_config.html:174
 #: templates/gamification/admin/streak_config.html:34
@@ -11598,27 +11598,50 @@ msgid ""
 msgstr ""
 
 #: templates/errors/400.html:3
-msgid "Sessione scaduta"
+msgid "Richiesta non valida"
 msgstr ""
 
-#: templates/errors/400.html:10
+#: templates/errors/400.html:16
+msgid "Il browser non ha inviato i cookie"
+msgstr ""
+
+#: templates/errors/400.html:17
+msgid ""
+"Per riconoscerti tra una pagina e l'altra serve un cookie, e il tuo "
+"browser non lo sta mandando."
+msgstr ""
+
+#: templates/errors/400.html:18
+msgid ""
+"Controlla che i cookie non siano bloccati nelle impostazioni del browser "
+"(o dell'app da cui hai aperto il collegamento) e riprova."
+msgstr ""
+
+#: templates/errors/400.html:20
+msgid "Riprova ad accedere"
+msgstr ""
+
+#: templates/errors/400.html:21 templates/errors/400.html:36
+#: templates/errors/dominio.html:24
+msgid "Vai alla home"
+msgstr ""
+
+#: templates/errors/400.html:28
 msgid "Il tavolo si è raffreddato"
 msgstr ""
 
-#: templates/errors/400.html:11
-msgid "La pagina era aperta da troppo tempo e la sessione è scaduta."
+#: templates/errors/400.html:29
+msgid ""
+"Il modulo che hai inviato non era più valido: succede con una pagina "
+"rimasta aperta a lungo o ripescata dalla cronologia."
 msgstr ""
 
-#: templates/errors/400.html:12
-msgid "Torna indietro, ricarica e reinvia il modulo."
+#: templates/errors/400.html:30
+msgid "Ricarica la pagina — non basta tornare indietro — e reinvia il modulo."
 msgstr ""
 
-#: templates/errors/400.html:14 templates/errors/dominio.html:23
-msgid "Torna indietro"
-msgstr ""
-
-#: templates/errors/400.html:15 templates/errors/dominio.html:24
-msgid "Vai alla home"
+#: templates/errors/400.html:35
+msgid "Riapri il modulo"
 msgstr ""
 
 #: templates/errors/403.html:10
@@ -11688,6 +11711,10 @@ msgstr ""
 
 #: templates/errors/500.html:12
 msgid "Ricarica la pagina. Se il problema resta, riprova tra qualche minuto."
+msgstr ""
+
+#: templates/errors/dominio.html:23
+msgid "Torna indietro"
 msgstr ""
 
 #: templates/exam/catalog.html:7

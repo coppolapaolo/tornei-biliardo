@@ -15,6 +15,22 @@ from utils.safe_redirect import safe_next_url
 auth_bp = Blueprint("auth", __name__)
 
 
+@auth_bp.after_request
+def niente_cache(response):
+    """Le pagine di questo blueprint non vanno mai servite da una cache.
+
+    Ognuna contiene un token CSRF legato alla sessione di chi l'ha chiesta.
+    Senza un `Cache-Control` esplicito (misurato in produzione: non c'era),
+    browser e proxy possono applicare la cache euristica: la pagina di login
+    riservita ripescata da lì porta il token di una sessione che non esiste
+    più, e l'invio finisce sulla pagina 400 — l'ennesima causa che si traveste
+    da «sessione scaduta». `no-store` chiude anche il caso della pagina
+    ripescata dalla history del telefono giorni dopo.
+    """
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
 @auth_bp.route("/login", methods=["GET", "POST"])
 @limiter.limit("10/minute", methods=["POST"])
 def login():

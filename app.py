@@ -645,15 +645,24 @@ def create_app(config_name=None):
         # indistinguibile nei log da una sessione davvero scaduta. È così che
         # il 400 al login è rimasto senza spiegazione: nel log c'era solo la
         # pagina servita.
+        # Se il browser non ha mandato proprio il cookie di sessione, il
+        # problema non è il modulo: sono i cookie bloccati (o una webview che
+        # non li tiene). Per quell'utente OGNI invio fallirà identico, e
+        # dirgli «ricarica e riprova» è un consiglio che non può funzionare:
+        # la pagina deve dirgli dei cookie, o resta chiuso fuori senza capire.
+        nome_cookie = app.config.get("SESSION_COOKIE_NAME", "session")
+        senza_cookie = nome_cookie not in request.cookies
+
         app.logger.warning(
-            "CSRF fallito su %s %s: %s (referrer=%r, origin=%r)",
+            "CSRF fallito su %s %s: %s (referrer=%r, origin=%r, cookie=%s)",
             request.method,
             request.path,
             getattr(e, "description", e),
             request.referrer,
             request.headers.get("Origin"),
+            "assente" if senza_cookie else "presente",
         )
-        return render_template("errors/400.html"), 400
+        return render_template("errors/400.html", senza_cookie=senza_cookie), 400
 
     @app.errorhandler(404)
     def not_found(e):

@@ -1,19 +1,41 @@
 {% extends "base.html" %}
 
-{% block title %}400 - {{ _('Sessione scaduta') }}{% endblock %}
+{% block title %}400 - {{ _('Richiesta non valida') }}{% endblock %}
 
 {% block content %}
 <div style="max-width: 520px; margin: 8vh auto 0;">
-  <div class="c7-empty">
-    <div class="c7-empty__ico c7-empty__ico--warn"><i class="fas fa-hourglass-end"></i></div>
+  {# Questa pagina è un imbuto: ci arrivano cause diverse (modulo di un'altra
+     sessione, pagina ripescata dalla cache, cookie bloccati) e per mesi le ha
+     raccontate tutte come «sessione scaduta». Il gestore in app.py ora passa
+     `senza_cookie`, e il testo dice la causa vera: a chi ha i cookie bloccati
+     «ricarica e riprova» è un consiglio che non può funzionare. #}
+  {% if senza_cookie %}
+  <div class="c7-empty" data-causa="cookie-assenti">
+    <div class="c7-empty__ico c7-empty__ico--warn"><i class="fas fa-cookie-bite"></i></div>
     <div class="c7-num-xl" style="margin-top: 14px; color: var(--c7-ink-faint);">400</div>
-    <h1 class="c7-empty__title">{{ _('Il tavolo si è raffreddato') }}</h1>
-    <p class="c7-empty__text">{{ _('La pagina era aperta da troppo tempo e la sessione è scaduta.') }}</p>
-    <p class="c7-empty__text" style="margin-top: 10px; color: var(--c7-ink-faint);">{{ _('Torna indietro, ricarica e reinvia il modulo.') }}</p>
+    <h1 class="c7-empty__title">{{ _('Il browser non ha inviato i cookie') }}</h1>
+    <p class="c7-empty__text">{{ _('Per riconoscerti tra una pagina e l\'altra serve un cookie, e il tuo browser non lo sta mandando.') }}</p>
+    <p class="c7-empty__text" style="margin-top: 10px; color: var(--c7-ink-faint);">{{ _('Controlla che i cookie non siano bloccati nelle impostazioni del browser (o dell\'app da cui hai aperto il collegamento) e riprova.') }}</p>
     <div class="c7-empty__actions">
-      <a href="javascript:history.back()" class="btn btn-primary">{{ _('Torna indietro') }}</a>
+      <a href="{{ url_for('auth.login') }}" class="btn btn-primary">{{ _('Riprova ad accedere') }}</a>
       <a href="{{ url_for('main.index') }}" class="btn btn-secondary">{{ _('Vai alla home') }}</a>
     </div>
   </div>
+  {% else %}
+  <div class="c7-empty" data-causa="modulo-non-valido">
+    <div class="c7-empty__ico c7-empty__ico--warn"><i class="fas fa-hourglass-end"></i></div>
+    <div class="c7-num-xl" style="margin-top: 14px; color: var(--c7-ink-faint);">400</div>
+    <h1 class="c7-empty__title">{{ _('Il tavolo si è raffreddato') }}</h1>
+    <p class="c7-empty__text">{{ _('Il modulo che hai inviato non era più valido: succede con una pagina rimasta aperta a lungo o ripescata dalla cronologia.') }}</p>
+    <p class="c7-empty__text" style="margin-top: 10px; color: var(--c7-ink-faint);">{{ _('Ricarica la pagina — non basta tornare indietro — e reinvia il modulo.') }}</p>
+    <div class="c7-empty__actions">
+      {# GET dello stesso indirizzo, non location.reload(): questa pagina è la
+         risposta a un POST, e ricaricarla ritenterebbe proprio l'invio
+         fallito. La GET riapre il modulo con un token nuovo. #}
+      <a href="{{ request.path }}" class="btn btn-primary">{{ _('Riapri il modulo') }}</a>
+      <a href="{{ url_for('main.index') }}" class="btn btn-secondary">{{ _('Vai alla home') }}</a>
+    </div>
+  </div>
+  {% endif %}
 </div>
 {% endblock %}
