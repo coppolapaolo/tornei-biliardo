@@ -154,10 +154,17 @@ blocks:
 
   - type: text
     text: >-
-      Sì, ma separatamente. Nel tuo profilo il rating ha due modalità:
-      **competitivo** (solo gare ufficiali) e **globale** (gare più
-      amichevoli). Puoi passare dall'una all'altra con un tocco. Le classifiche
-      delle gare, invece, non sono toccate dalle amichevoli.
+      Sì. Nel tuo [profilo](/aiuto/account/profilo_e_statistiche) le amichevoli
+      stanno fra le partite recenti insieme a quelle di gara, con l'etichetta
+      «Individuale», e sono contate fra le partite giocate, vinte e perse. Lo
+      stesso nello storico, nella linguetta «Partite».
+
+  - type: text
+    text: >-
+      A tenerle separate è il **rating**, che ha due modalità: **competitivo**
+      (solo gare ufficiali) e **globale** (gare più amichevoli). Puoi passare
+      dall'una all'altra con un tocco. Le classifiche delle gare, invece, non
+      sono toccate dalle amichevoli.
 
   - type: shot
     shot: statistiche-amichevoli

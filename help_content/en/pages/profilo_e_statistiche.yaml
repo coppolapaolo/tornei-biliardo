@@ -39,7 +39,10 @@ blocks:
         text: "A numeric estimate of your strength, worked out from results."
         hint: profilo.rating
       - name: "Statistics"
-        text: "Matches played, won, lost, racks and percentages."
+        text: >-
+          Championships and competitions played, wins, losses, total matches
+          and win percentage. It counts **everything you have played**,
+          friendly matches included.
 
   - type: heading
     id: rating
@@ -75,6 +78,30 @@ blocks:
       gives anything away and the result really does say who is stronger.
       Between different categories the score is altered by design, and using it
       to measure players' strength would distort it.
+
+  - type: heading
+    id: partite_recenti
+    title: "Recent matches"
+
+  - type: text
+    text: >-
+      Scrolling down the profile, past the statistics and the drills, you find
+      your **last ten matches**, wherever they come from: the ones played in a
+      competition and the friendly ones, in the same list. Every row opens with
+      the outcome — a trophy if you won, a cross if you lost — then the
+      opponent and the score.
+
+  - type: text
+    text: >-
+      Under the name, a label says **where that match comes from**:
+      «Championship», «Competition» or «Individual» for friendly matches. Next
+      to it are the competition and the date. The arrow on the right opens the
+      match.
+
+  - type: text
+    text: >-
+      «All», at the top right, takes you to the full history: there the matches
+      do not stop at the last ten and you can filter them.
 
   - type: heading
     id: storico
@@ -119,9 +146,10 @@ blocks:
 
   - type: text
     text: >-
-      If you would rather not show a particular competition or match in your
-      public profile you can hide it: it stays in the official standings —
-      those are untouchable — but disappears from your shop window. See
+      What others see of your profile is up to you: from the privacy settings
+      you can switch off your statistics, your recent matches, your standings
+      or your drill statistics. They go off as whole blocks, not one match at a
+      time, and the official standings do not change either way. See
       [Privacy and data](/aiuto/account/privacy_e_dati).
 
   - type: heading
@@ -156,6 +184,6 @@ blocks:
       - q: "Can I change my username?"
         a: "No: it appears in standings that are already published, and changing it would make past results unrecognisable."
       - q: "Do friendly matches show in my profile?"
-        a: "Yes, in the overall statistics. The competitive rating excludes them."
+        a: "Yes: in the recent matches list, labelled «Individual», and in the counts of matches played, won and lost. The only thing that leaves them out is the competitive rating: to count them, switch to the overall one."
       - q: "Who can see my email address?"
         a: "No other player. It is stored encrypted and is only used for the app's own messages."
