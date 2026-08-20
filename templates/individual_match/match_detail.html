@@ -85,6 +85,20 @@
     {% include "components/_unified_rack_input.html" with context %}
     {% endif %}
 
+    {# Tabellone orizzontale (issue #170). Il componente è lo stesso delle
+       partite di gara e usa proprio le funzioni JS di questa pagina
+       (`addRack`/`removeRack`/`confirmResult`/`rejectResult`), quindi un
+       triangolo segnato col telefono appoggiato alla sponda passa per lo
+       stesso endpoint del segnapunti verticale. Lo mostra il foglio di stile
+       quando lo schermo è basso e largo.
+
+       Non compare col referto TPA aperto, per la stessa ragione del
+       segnapunti qui sopra: il punteggio discende dal referto (ADR-044). #}
+    {% set user_is_player = current_user.id in [match.player1_id, match.player2_id] %}
+    {% if user_is_player and not tpa_live %}
+    {% include "components/_match_scoreboard.html" with context %}
+    {% endif %}
+
     {# Referto TPA. *Prendere* un referto e' la funzione da sbloccare; una volta
        che esiste, riguarda tutti e due i giocatori — anche quello che non ha
        sbloccato niente, che lo apre in sola lettura. #}

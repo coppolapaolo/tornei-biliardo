@@ -1222,7 +1222,32 @@ input[type="number"].form-control {
   min-height: 0;
 }
 .c7-board__rule { height: 70%; background: rgba(242, 248, 247, .14); }
-.c7-board__side { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
+.c7-board__side { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-width: 0; }
+
+/* Mezza schermata è il pulsante (issue #170). Il bersaglio è tutta la colonna,
+   non il testo che ci sta dentro: si prende al buio, con una mano sola.
+   `align-self: stretch` e non `height: 100%` per non toccare il filo di mezzo,
+   che vive nella stessa griglia e ha un'altezza sua. */
+.c7-board__side--tap {
+  align-self: stretch;
+  border: 0; background: transparent; color: inherit;
+  font-family: inherit; padding: 0;
+  border-radius: var(--c7-r-card-lg);
+  cursor: pointer;
+  transition: background-color .12s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+/* Il riscontro al tocco: `:active` per la pressione, `is-flash` per il tocco
+   fulmineo, che finirebbe prima di vedersi. Chi segna sta guardando il tavolo. */
+.c7-board__side--tap:active,
+.c7-board__side--tap.is-flash { background: rgba(242, 248, 247, .18); }
+/* Raggiungibile da tastiera: è un pulsante, e deve vedersi che lo è. */
+.c7-board__side--tap:focus-visible { outline: 3px solid var(--c7-accent-bright); outline-offset: -4px; }
+/* Qual è la tua metà: prima lo diceva il riempimento del proprio `+1`. */
+.c7-board__you {
+  font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--c7-accent-bright);
+}
 .c7-board__name {
   font-size: 15px; font-weight: 800; letter-spacing: -.01em;
   max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
@@ -1271,6 +1296,13 @@ input[type="number"].form-control {
   cursor: pointer;
 }
 .c7-board__undo:disabled { opacity: .4; cursor: not-allowed; }
+/* Con i `+1` spariti l'annulla resta solo nella barra: smette di essere
+   un'icona muta accanto a due pulsanti e si prende il suo nome. */
+.c7-board__undo--wide {
+  width: auto; min-width: 74px; padding: 0 22px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  font-family: inherit; font-size: 15px; font-weight: 800;
+}
 .c7-score__state--idle { background: var(--c7-sunken); color: var(--c7-ink-muted); }
 
 /* --------------------------------------------------------------------------
