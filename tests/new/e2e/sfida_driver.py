@@ -244,3 +244,75 @@ class SfidaDriver:
             user_id=giocatore.id, rating_system=RatingSystem.ELO_GLOBAL
         ).first()
         return riga.rating_value if riga else None
+
+    # ── Il referto TPA (ADR-044) ────────────────────────────────────
+
+    def pagina_referto(self, match_id: int) -> Any:
+        """La pagina del referto. Restituisce la **risposta**, non l'HTML.
+
+        Qui il codice di stato è parte di quello che si osserva: chi non ha
+        sbloccato la funzione e non ha un referto da guardare prende 403, e
+        quel 403 è un fatto della journey quanto il testo della pagina.
+        """
+        return self.client.get(f"/match/matches/{match_id}/tpa")
+
+    def html_referto(self, match_id: int) -> str:
+        risposta = self.pagina_referto(match_id)
+        assert risposta.status_code == 200, risposta.status_code
+        return risposta.get_data(as_text=True)
+
+    def apri_referto(self, match_id: int) -> Any:
+        return self.client.post(f"/match/matches/{match_id}/tpa/open")
+
+    def prendi_referto(self, match_id: int) -> None:
+        """Apertura riuscita. Fallisce forte se il referto non c'è."""
+        risposta = self.apri_referto(match_id)
+        assert risposta.status_code in (200, 302), risposta.status_code
+        assert self.referto(match_id) is not None, "il referto non è stato aperto"
+
+    def premi(self, match_id: int, comando: str) -> Any:
+        return self.client.post(
+            f"/match/matches/{match_id}/tpa/press", json={"command": comando}
+        )
+
+    def premi_tutti(self, match_id: int, *comandi: str) -> Any:
+        risposta = None
+        for comando in comandi:
+            risposta = self.premi(match_id, comando)
+            assert risposta.status_code == 200, (
+                f"comando {comando!r} rifiutato: "
+                f"{risposta.get_data(as_text=True)[:200]}"
+            )
+        return risposta
+
+    def vinci_rack_nel_referto(self, match_id: int, posto: int) -> Any:
+        """Spacca imbucando tutto: un rack chiuso in un turno solo.
+
+        Le bilie del rack le dice il referto (`game_type`), non il test: a
+        palla 8 sono otto, a palla 9 nove, e un «9» annotato su un rack da
+        otto è un comando che il tastierino non proponeva — quindi rifiutato.
+
+        Il posto si dichiara ogni volta perché a rack finito il motore mette
+        in spaccata l'avversario (spaccata alternata): senza `seat:` si
+        annoterebbe il rack dell'altro.
+        """
+        referto = self.referto(match_id)
+        assert referto is not None, "nessun referto aperto su questo match"
+        tutte = str(referto.game_type)
+        return self.premi_tutti(match_id, f"seat:{posto}", "1", tutte, "end")
+
+    def annulla_tocco(self, match_id: int) -> Any:
+        return self.client.post(f"/match/matches/{match_id}/tpa/undo")
+
+    def stato_referto(self, match_id: int) -> Any:
+        return self.client.get(f"/match/matches/{match_id}/tpa/state")
+
+    def chiudi_referto(self, match_id: int) -> Any:
+        return self.client.post(f"/match/matches/{match_id}/tpa/close")
+
+    def referto(self, match_id: int) -> Any:
+        """Il referto di questo match dal DB, o `None` se non ce n'è uno."""
+        from models.tpa.models import TpaReferto
+
+        db.session.expire_all()
+        return TpaReferto.query.filter_by(individual_match_id=match_id).first()

@@ -15,6 +15,8 @@ from flask_login import current_user
 from models.exceptions import DomainError, http_status_for_exception
 from models.individual_match.quick_match_service import QuickMatchService
 from models.status_enum import MatchStatus
+from models.tpa.engine import GAME_TYPE_BY_DISCIPLINE
+from models.tpa.services import FEATURE_CODE as TPA_FEATURE, TpaRefertoService
 from models.user.permissions import RoleRequirement
 
 from . import individual_match_bp
@@ -69,17 +71,59 @@ def quick_match():
         flash(str(exc), "danger")
         return redirect(url_for("individual_match.quick_match"))
 
-    if request.is_json:
-        return jsonify(
-            {
-                "success": True,
-                "match_id": match.id,
-                "url": url_for("individual_match.match_detail", match_id=match.id),
-            }
-        )
+    col_referto = _open_tpa_referto(match, _flag(data.get("tpa_referto")))
+    destinazione = (
+        url_for("individual_match.tpa_referto", match_id=match.id)
+        if col_referto
+        else url_for("individual_match.match_detail", match_id=match.id)
+    )
 
-    flash(_("Partita aperta: segnate pure."), "success")
-    return redirect(url_for("individual_match.match_detail", match_id=match.id))
+    if request.is_json:
+        return jsonify({"success": True, "match_id": match.id, "url": destinazione})
+
+    flash(
+        (
+            _("Partita aperta: il referto è tuo.")
+            if col_referto
+            else _("Partita aperta: segnate pure.")
+        ),
+        "success",
+    )
+    return redirect(destinazione)
+
+
+def _flag(value) -> bool:
+    """Una spunta del modulo. Presente e affermativa, o niente."""
+    return str(value).lower() in ("1", "true", "on", "yes")
+
+
+def _open_tpa_referto(match, wanted: bool) -> bool:
+    """Il referto scelto nel modulo, aperto subito dopo la partita.
+
+    **Perché qui e non dentro `QuickMatchService.start`**: sono due
+    `@transactional` diversi, e annidarli è il modo noto per far tornare
+    indietro anche quello esterno (`models/transaction/CLAUDE.md`). La partita
+    è già salvata quando arriviamo qui, quindi le due scritture restano
+    separate — e separate devono restare anche nell'esito.
+
+    **Perché il rifiuto non ferma la partita**: la disciplina si sceglie nello
+    stesso modulo, e a One Pocket il TPA non vuol dire niente. Chi ha spuntato
+    la casella su una disciplina che il referto non copre voleva comunque
+    giocare: si gioca, senza referto, e il perché sta scritto per esteso sulla
+    pagina del referto (`blocking_reason`).
+
+    Lo sblocco lo si controlla qui e non nel servizio perché il gate della
+    gamification, per il referto, sta sull'*apertura*: è la stessa regola di
+    `@feature_required` su `tpa_open`.
+    """
+    if not wanted or not current_user.can_access(TPA_FEATURE):
+        return False
+    try:
+        TpaRefertoService.open_referto(match.id, current_user.id)
+        return True
+    except DomainError as exc:
+        logger.info("Referto TPA non aperto all'avvio rapido: %s", exc)
+        return False
 
 
 def _quick_match_form():
@@ -129,6 +173,10 @@ def _quick_match_form():
     if preselected is not None:
         frequent = [preselected] + [p for p in frequent if p.id != preselected.id]
 
+    # Il referto TPA si chiede **qui** o non si chiede: va aperto prima del
+    # primo triangolo, e l'avvio rapido porta dritti al segnapunti. Le
+    # discipline che il TPA copre servono alla pagina per far sparire la
+    # domanda quando la risposta non vorrebbe dire niente.
     return render_template(
         "individual_match/quick_match.html",
         defaults=defaults,
@@ -136,6 +184,8 @@ def _quick_match_form():
         frequent_opponents=frequent,
         verified_venues=verified_venues,
         in_progress=_own_matches_in_progress(),
+        tpa_disponibile=current_user.can_access(TPA_FEATURE),
+        tpa_discipline=sorted(GAME_TYPE_BY_DISCIPLINE),
     )
 
 
