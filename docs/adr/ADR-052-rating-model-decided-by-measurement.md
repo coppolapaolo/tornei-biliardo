@@ -257,12 +257,22 @@ un'approssimazione. È la ragione per cui FargoRate può contare i rack di corse
 di lunghezza diversa nello stesso calderone, ed è il motivo per cui questa
 strada è praticabile senza correzioni.
 
-Attenzione a non estendere l'argomento all'handicap. L'handicap usato finora
-nelle gare è la **wild ball**, e agisce *dentro* il rack: cambia la probabilità
-di vincerlo, quindi i rack di quelle partite non sono un campione valido più di
-quanto lo sia l'esito del match. Il rack come unità di misura **non** rende
-recuperabili quelle partite, e la regola di ADR-049 resta esattamente com'è.
-Diverso sarebbe l'handicap a rack regalati o a corsa asimmetrica — ma sono
+### L'handicap non cambia di segno, e per le partite fra pari vale il guadagno pieno
+
+La regola di ADR-049 resta esattamente com'è, in entrambe le direzioni.
+
+Fra due giocatori della **stessa categoria** non c'è alcun handicap in gioco —
+nessuno concede niente a nessuno — quindi quelle partite contano per l'Elo già
+oggi, e nel modello nuovo contano allo stesso modo, con in più il margine di
+vittoria. Sono anche la maggioranza delle partite di una gara con handicap:
+è lì, non altrove, che il passaggio all'unità rack rende di più.
+
+Fra **categorie diverse** l'esclusione resta necessaria, e il passaggio al rack
+non la rimuove. L'handicap usato finora nelle gare è la **wild ball**, che
+agisce *dentro* il rack: altera la probabilità di vincerlo, quindi quei rack non
+sono un campione più valido di quanto lo sia l'esito del match. Contarli in
+dettaglio non li rende utilizzabili — li rende sbagliati con più precisione.
+Diverso sarebbe l'handicap a rack regalati o a corsa asimmetrica, ma sono
 formati che l'app oggi non modella (vedi *Fuori perimetro*).
 
 ### I parametri non si copiano, si stimano
