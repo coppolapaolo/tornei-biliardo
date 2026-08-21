@@ -779,7 +779,7 @@ class TrioMatch(db.Model):
 
         # Complete if all 3 confirmed
         if confirmations == 3:
-            self._finalize_trio()
+            self._finalize_trio(closed_by_director=False)
             return {
                 "success": True,
                 "is_completed": True,
@@ -806,7 +806,7 @@ class TrioMatch(db.Model):
         if not self.awaiting_confirmation:
             raise ValueError("Trio non in attesa di conferma")
 
-        self._finalize_trio()
+        self._finalize_trio(closed_by_director=True)
 
         return {
             "success": True,
@@ -814,8 +814,22 @@ class TrioMatch(db.Model):
             "message": "Partita validata dall'amministratore",
         }
 
-    def _finalize_trio(self) -> None:
-        """Internal method to finalize the trio match."""
+    def _finalize_trio(self, closed_by_director: bool = False) -> None:
+        """Chiude il trio, in uno dei due stati finali.
+
+        Args:
+            closed_by_director: ha firmato il direttore scavalcando le
+                conferme. Porta a `CLOSED_UNILATERALLY`: il risultato e' agli
+                atti e nessun giocatore puo' piu' annullare.
+
+                Con `False` hanno confermato tutti e tre, e la partita va in
+                `CONFIRMED_BY_BOTH` — esattamente come una partita a due
+                chiusa dai suoi due giocatori. E' la parita' che al trio
+                mancava: prima entrambe le strade finivano in
+                `CLOSED_UNILATERALLY`, quindi la finestra per annullare
+                l'ultimo triangolo si chiudeva nell'istante della terza
+                conferma invece che alla validazione del direttore.
+        """
         from .state_service import MatchStateService
 
         # Mark as completed
@@ -837,7 +851,9 @@ class TrioMatch(db.Model):
             # perché `is_trio` è una colonna vera e questa partita ce l'ha.
             #
             # Use state service to complete match and emit SSE
-            MatchStateService.to_completed(match_obj.id)
+            MatchStateService.to_completed(
+                match_obj.id, confirmed_by_players=not closed_by_director
+            )
 
     def handle_forfeit(
         self, forfeiting_player_id: int, added_by_id: int = None

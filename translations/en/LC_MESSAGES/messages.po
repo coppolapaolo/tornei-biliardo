@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-21 15:49+0200\n"
+"POT-Creation-Date: 2026-08-21 16:07+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -1231,7 +1231,7 @@ msgstr "each set race to %(n)s racks"
 msgid "ogni set esattamente %(n)s triangoli"
 msgstr "each set exactly %(n)s racks"
 
-#: models/match/scoring_service.py:170
+#: models/match/scoring_service.py:170 models/match/trio_scoring_service.py:148
 msgid ""
 "Il risultato è già stato validato: per correggerlo serve il direttore di "
 "gara"
@@ -1592,35 +1592,35 @@ msgstr "Competition Director"
 msgid "Amministratore"
 msgstr "Administrator"
 
-#: routes/main.py:294
+#: routes/main.py:292
 #, python-format
 msgid "Iscrizioni dal %(start)s al %(end)s."
 msgstr "Registration open from %(start)s to %(end)s."
 
-#: routes/main.py:300
+#: routes/main.py:298
 #, python-format
 msgid "Iscrizioni aperte fino al %(end)s."
 msgstr "Registration open until %(end)s."
 
-#: routes/main.py:305
+#: routes/main.py:303
 #, python-format
 msgid "Iscrizioni aperte dal %(start)s."
 msgstr "Registration open from %(start)s."
 
-#: routes/main.py:311
+#: routes/main.py:309
 msgid "Sei già iscritto"
 msgstr "You're already registered"
 
-#: routes/main.py:312
+#: routes/main.py:310
 #, python-format
 msgid "Risulti iscritto a %(gara)s."
 msgstr "You are registered for %(gara)s."
 
-#: routes/main.py:318
+#: routes/main.py:316
 msgid "Sei in lista d'attesa"
 msgstr "You're on the waiting list"
 
-#: routes/main.py:320
+#: routes/main.py:318
 #, python-format
 msgid ""
 "Sei in lista d'attesa per %(gara)s, in posizione %(position)s. Se si "
@@ -1629,38 +1629,38 @@ msgstr ""
 "You're on the waiting list for %(gara)s, in position %(position)s. If a "
 "place frees up, you're moved in automatically."
 
-#: routes/main.py:330
+#: routes/main.py:328
 msgid "Puoi iscriverti"
 msgstr "You can register"
 
-#: routes/main.py:332
+#: routes/main.py:330
 #, python-format
 msgid "Le iscrizioni a %(gara)s sono aperte: premi «Iscriviti» per confermare."
 msgstr "Registration for %(gara)s is open: press “Register” to confirm."
 
-#: routes/main.py:342 templates/components/_unified_cards.html:79
+#: routes/main.py:340 templates/components/_unified_cards.html:79
 msgid "Iscrizioni non ancora aperte"
 msgstr "Registrations not yet open"
 
-#: routes/main.py:344
+#: routes/main.py:342
 #, python-format
 msgid "Le iscrizioni a %(gara)s non sono ancora aperte."
 msgstr "Registration for %(gara)s is not open yet."
 
-#: routes/main.py:353
+#: routes/main.py:351
 msgid "Iscrizioni chiuse"
 msgstr "Registration closed"
 
-#: routes/main.py:354
+#: routes/main.py:352
 #, python-format
 msgid "Le iscrizioni a %(gara)s sono chiuse."
 msgstr "Registration for %(gara)s is closed."
 
-#: routes/main.py:361
+#: routes/main.py:359
 msgid "Gara già iniziata"
 msgstr "Competition already started"
 
-#: routes/main.py:363
+#: routes/main.py:361
 #, python-format
 msgid ""
 "%(gara)s è già iniziata: non è più possibile iscriversi, ma puoi seguire "
@@ -1669,29 +1669,29 @@ msgstr ""
 "%(gara)s has already started: you can no longer register, but you can "
 "follow the results from this page."
 
-#: routes/main.py:372
+#: routes/main.py:370
 msgid "Gara conclusa"
 msgstr "Competition finished"
 
-#: routes/main.py:374
+#: routes/main.py:372
 #, python-format
 msgid "%(gara)s è conclusa: qui trovi la classifica finale."
 msgstr "%(gara)s is over: here are the final standings."
 
-#: routes/main.py:382
+#: routes/main.py:380
 msgid "Gara annullata"
 msgstr "Competition cancelled"
 
-#: routes/main.py:383
+#: routes/main.py:381
 #, python-format
 msgid "%(gara)s è stata annullata."
 msgstr "%(gara)s has been cancelled."
 
-#: routes/main.py:389
+#: routes/main.py:387
 msgid "Iscrizione non riuscita"
 msgstr "Registration failed"
 
-#: routes/main.py:391
+#: routes/main.py:389
 #, python-format
 msgid ""
 "Non è stato possibile iscriverti a %(gara)s. Riprova dal pulsante "
@@ -2700,7 +2700,7 @@ msgstr "The export file does not exist or has expired."
 msgid "Il file di export è scaduto. Richiedi un nuovo export."
 msgstr "The export file has expired. Request a new export."
 
-#: routes/player/matches.py:116
+#: routes/player/matches.py:130
 msgid "Puoi ritirare solo te stesso da questo trio"
 msgstr "You can only forfeit yourself from this trio"
 
@@ -5096,6 +5096,7 @@ msgstr "Approve"
 #: templates/admin/venue_manager_requests.html:118
 #: templates/admin/venue_manager_requests.html:157
 #: templates/components/_match_scoreboard.html:162
+#: templates/components/_trio_rack_input.html:217
 #: templates/components/_unified_rack_input.html:253
 #: templates/components/_unified_rack_input.html:259
 #: templates/individual_match/match_detail.html:100
@@ -8944,7 +8945,7 @@ msgstr ""
 "nothing."
 
 #: templates/components/_distance_configurator.html:135
-#, python-brace-format, python-format
+#, python-brace-format
 msgid "Si giocano esattamente {n} rack"
 msgstr "Exactly {n} racks played"
 
@@ -8974,7 +8975,7 @@ msgid "al {n}"
 msgstr "race to {n}"
 
 #: templates/components/_distance_configurator.html:144
-#, python-brace-format, python-format
+#, python-brace-format
 msgid "{sets}, ogni set {racks}"
 msgstr "{sets}, each set {racks}"
 
@@ -10580,6 +10581,7 @@ msgid "vince"
 msgstr "wins"
 
 #: templates/components/_match_scoreboard.html:152
+#: templates/components/_trio_rack_input.html:209
 #: templates/components/_unified_rack_input.html:252
 #: templates/components/_unified_rack_input.html:258
 #: templates/individual_match/dashboard.html:89
@@ -10591,7 +10593,7 @@ msgstr "Accept"
 
 #: templates/components/_match_scoreboard.html:157
 #: templates/components/_match_scoreboard.html:180
-#: templates/components/_trio_rack_input.html:319
+#: templates/components/_trio_rack_input.html:402
 #: templates/components/_unified_rack_input.html:288
 msgid "Annulla ultimo triangolo"
 msgstr "Undo last rack"
@@ -11640,134 +11642,153 @@ msgstr "SSR points for %(name)s"
 msgid "Salva punti SSR"
 msgstr "Save SSR points"
 
-#: templates/components/_trio_rack_input.html:39
+#: templates/components/_trio_rack_input.html:23
+#, python-format
+msgid "%(primo)s e %(secondo)s"
+msgstr "%(primo)s and %(secondo)s"
+
+#: templates/components/_trio_rack_input.html:55
 msgid "Girone all'italiana"
 msgstr "Round-robin"
 
-#: templates/components/_trio_rack_input.html:41
+#: templates/components/_trio_rack_input.html:57
 #, python-format
 msgid "Girone %(current)s/%(total)s"
 msgstr "Round %(current)s/%(total)s"
 
-#: templates/components/_trio_rack_input.html:45
+#: templates/components/_trio_rack_input.html:61
 #, python-format
 msgid "Triangoli %(played)s/%(total)s"
 msgstr "Rack %(played)s/%(total)s"
 
-#: templates/components/_trio_rack_input.html:47
-#: templates/components/_trio_rack_input.html:341
+#: templates/components/_trio_rack_input.html:63
+#: templates/components/_trio_rack_input.html:424
 msgid "bonus"
 msgstr "bonus"
 
-#: templates/components/_trio_rack_input.html:72
+#: templates/components/_trio_rack_input.html:88
 msgid "Aspetta"
 msgstr "Waiting"
 
-#: templates/components/_trio_rack_input.html:94
-#: templates/components/_trio_rack_input.html:262
+#: templates/components/_trio_rack_input.html:110
+#: templates/components/_trio_rack_input.html:323
 #, python-format
 msgid "Vincitore: %(name)s"
 msgstr "Winner: %(name)s"
 
-#: templates/components/_trio_rack_input.html:96
-#: templates/components/_trio_rack_input.html:264
+#: templates/components/_trio_rack_input.html:112
+#: templates/components/_trio_rack_input.html:325
 msgid "Pareggio!"
 msgstr "Draw!"
 
-#: templates/components/_trio_rack_input.html:101
-#: templates/components/_trio_rack_input.html:269
+#: templates/components/_trio_rack_input.html:117
+#: templates/components/_trio_rack_input.html:330
 #, python-format
 msgid "(+%(bonus)s triangoli bonus applicati a tutti)"
 msgstr "(+%(bonus)s bonus rack applied to all)"
 
-#: templates/components/_trio_rack_input.html:107
+#: templates/components/_trio_rack_input.html:123
 msgid "Conferme giocatori:"
 msgstr "Player confirmations:"
 
-#: templates/components/_trio_rack_input.html:131
+#: templates/components/_trio_rack_input.html:147
 msgid "Come direttore puoi validare direttamente"
 msgstr "As a director you can validate directly"
 
-#: templates/components/_trio_rack_input.html:135
+#: templates/components/_trio_rack_input.html:151
 msgid "Valida risultato"
 msgstr "Validate result"
 
-#: templates/components/_trio_rack_input.html:147
+#: templates/components/_trio_rack_input.html:188
 #: templates/components/_unified_rack_input.html:239
 msgid "Hai confermato"
 msgstr "You confirmed"
 
-#: templates/components/_trio_rack_input.html:151
-msgid "In attesa che gli altri giocatori confermino"
-msgstr "Waiting for other players to confirm"
+#: templates/components/_trio_rack_input.html:192
+#: templates/components/_unified_rack_input.html:240
+msgid "In attesa di"
+msgstr "Waiting for"
 
-#: templates/components/_trio_rack_input.html:154
-msgid "Conferma il risultato per completare la partita"
-msgstr "Confirm the result to complete the match"
+#: templates/components/_trio_rack_input.html:197
+#: templates/components/_unified_rack_input.html:226
+msgid "Il risultato è pronto per la conferma."
+msgstr "The result is ready to be confirmed."
 
-#: templates/components/_trio_rack_input.html:157
-msgid "Conferma risultato"
-msgstr "Confirm result"
+#: templates/components/_trio_rack_input.html:202
+msgid "hanno confermato"
+msgstr "confirmed"
 
-#: templates/components/_trio_rack_input.html:166
+#: templates/components/_trio_rack_input.html:203
+#: templates/components/_unified_rack_input.html:248
+msgid "Conferma o rifiuta per chiudere la partita."
+msgstr "Confirm or reject to close the match."
+
+#: templates/components/_trio_rack_input.html:227
 msgid "In gioco"
 msgstr "Playing"
 
-#: templates/components/_trio_rack_input.html:182
+#: templates/components/_trio_rack_input.html:243
 msgid "Assegna un tavolo per abilitare i controlli"
 msgstr "Assign a table to enable controls"
 
-#: templates/components/_trio_rack_input.html:206
+#: templates/components/_trio_rack_input.html:267
 msgid "Stai aspettando il tuo turno"
 msgstr "You're waiting for your turn"
 
-#: templates/components/_trio_rack_input.html:209
+#: templates/components/_trio_rack_input.html:270
 #, python-format
 msgid "Aspetta che %(p1)s e %(p2)s finiscano questo triangolo"
 msgstr "Wait for %(p1)s and %(p2)s to finish this rack"
 
-#: templates/components/_trio_rack_input.html:216
+#: templates/components/_trio_rack_input.html:277
 msgid "Partita in corso"
 msgstr "Match in progress"
 
-#: templates/components/_trio_rack_input.html:229
-#: templates/components/_trio_rack_input.html:244
+#: templates/components/_trio_rack_input.html:290
+#: templates/components/_trio_rack_input.html:305
 #: templates/components/_unified_rack_input.html:206
 #: templates/components/_unified_rack_input.html:300
 msgid "Dichiara forfait"
 msgstr "Declare forfeit"
 
-#: templates/components/_trio_rack_input.html:251
+#: templates/components/_trio_rack_input.html:312
 #, python-format
 msgid "Forfait: %(name)s"
 msgstr "Forfeit: %(name)s"
 
-#: templates/components/_trio_rack_input.html:278
+#: templates/components/_trio_rack_input.html:351
+#: templates/components/_unified_rack_input.html:184
+#: templates/components/_unified_rack_input.html:217
+msgid "Partita conclusa"
+msgstr "Match finished"
+
+#: templates/components/_trio_rack_input.html:353
+#: templates/components/_unified_rack_input.html:218
+msgid ""
+"Se l'ultimo triangolo è stato segnato per errore puoi ancora annullarlo, "
+"finché il direttore non valida il risultato."
+msgstr ""
+"If the last rack was scored by mistake you can still undo it, until the "
+"director validates the result."
+
+#: templates/components/_trio_rack_input.html:358
 msgid "Risultato validato"
 msgstr "Result validated"
 
-#: templates/components/_trio_rack_input.html:283
-msgid "In attesa di validazione"
-msgstr "Awaiting validation"
-
-#: templates/components/_trio_rack_input.html:285
-msgid "Il direttore di gara validera il risultato"
-msgstr "The competition director will validate the result"
-
-#: templates/components/_trio_rack_input.html:297
+#: templates/components/_trio_rack_input.html:370
 msgid "Storico triangoli"
 msgstr "Rack history"
 
-#: templates/components/_trio_rack_input.html:336
+#: templates/components/_trio_rack_input.html:419
 msgid "1 girone all'italiana (3 triangoli)"
 msgstr "1 round-robin (3 racks)"
 
-#: templates/components/_trio_rack_input.html:338
+#: templates/components/_trio_rack_input.html:421
 #, python-format
 msgid "%(n)s gironi all'italiana (%(racks)s triangoli)"
 msgstr "%(n)s round-robins (%(racks)s racks)"
 
-#: templates/components/_trio_rack_input.html:343
+#: templates/components/_trio_rack_input.html:426
 msgid "vince chi ha piu triangoli"
 msgstr "most racks wins"
 
@@ -11908,46 +11929,21 @@ msgstr "finished"
 msgid "ha vinto il set."
 msgstr "won the set."
 
-#: templates/components/_unified_rack_input.html:184
-#: templates/components/_unified_rack_input.html:217
-msgid "Partita conclusa"
-msgstr "Match finished"
-
 #: templates/components/_unified_rack_input.html:189
 msgid "Accetta il risultato"
 msgstr "Accept the result"
-
-#: templates/components/_unified_rack_input.html:218
-msgid ""
-"Se l'ultimo triangolo è stato segnato per errore puoi ancora annullarlo, "
-"finché il direttore non valida il risultato."
-msgstr ""
-"If the last rack was scored by mistake you can still undo it, until the "
-"director validates the result."
 
 #: templates/components/_unified_rack_input.html:225
 msgid "Distanza raggiunta"
 msgstr "Distance reached"
 
-#: templates/components/_unified_rack_input.html:226
-msgid "Il risultato è pronto per la conferma."
-msgstr "The result is ready to be confirmed."
-
 #: templates/components/_unified_rack_input.html:233
 msgid "Entrambi i giocatori hanno confermato."
 msgstr "Both players have confirmed."
 
-#: templates/components/_unified_rack_input.html:240
-msgid "In attesa di"
-msgstr "Waiting for"
-
 #: templates/components/_unified_rack_input.html:247
 msgid "ha confermato"
 msgstr "confirmed"
-
-#: templates/components/_unified_rack_input.html:248
-msgid "Conferma o rifiuta per chiudere la partita."
-msgstr "Confirm or reject to close the match."
 
 #: templates/components/_unified_rack_input.html:256
 msgid "Conferma il risultato finale."
