@@ -279,9 +279,13 @@ class QuestService:
         if quest is None:
             raise ValueError(f"Quest {quest_id} not found")
 
-        if quest.status != QuestStatus.ACTIVE:
+        # `effective_status`, non la colonna: una quest della settimana scorsa
+        # ha ancora ACTIVE in colonna (nessuno scheduler la spegne), ma per le
+        # date è finita — e a una quest finita non ci si iscrive.
+        if quest.effective_status != QuestStatus.ACTIVE:
             raise ValueError(
-                f"Quest '{quest.name}' is not active (status: {quest.status.value})"
+                f"Quest '{quest.name}' is not active "
+                f"(status: {quest.effective_status.value})"
             )
 
         # Skip gamification for admin users
@@ -467,8 +471,20 @@ class QuestService:
 
         results = []
 
-        # Find active quests that match this activity type
-        active_quests = Quest.query.filter_by(status=QuestStatus.ACTIVE).all()
+        # Attive per colonna E per finestra temporale. La colonna da sola non
+        # basta: `update_quest_statuses` non ha uno scheduler, quindi le quest
+        # delle settimane passate restano ACTIVE in colonna per sempre — e
+        # questa query, chiamata a ogni partita, le arruolava tutte. Un utente
+        # alla prima vittoria completava la quest di OGNI settimana seminata,
+        # con gli XP moltiplicati (visto in produzione il 2026-08-19: tripli,
+        # alla terza settimana dal varo). Le date sono colonne: il filtro
+        # giusto si esprime in SQL.
+        now = utc_now()
+        active_quests = (
+            Quest.query.filter_by(status=QuestStatus.ACTIVE)
+            .filter(Quest.start_date <= now, Quest.end_date >= now)
+            .all()
+        )
 
         for quest in active_quests:
             requirements = json.loads(quest.requirements)
