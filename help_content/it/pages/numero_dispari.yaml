@@ -90,6 +90,18 @@ blocks:
       - "**Contro**: dura più di una partita normale e occupa un tavolo più a lungo."
       - "**Disponibile solo** con distanze da 2 a 7, e non nelle gare a tabellone."
 
+  - type: note
+    tone: info
+    title: "Il finale è quello di ogni altra partita"
+    text: >-
+      Finiti i triangoli, il trio si chiude come una partita a due: chi ha
+      vinto e chi ha segnato il triangolo decisivo risultano d'accordo senza
+      fare niente, e a chi resta compaiono **Accetta** e **Rifiuta**. Se le tre
+      firme sono già tutte implicite — per esempio quando a segnare è il
+      direttore — la partita si chiude da sola, e resta comunque annullabile
+      finché il direttore non valida. Vedi [Giocare una
+      partita](/aiuto/giocare/giocare_una_partita).
+
   - type: heading
     id: lista_attesa
     title: "4. Lista d'attesa — solo numeri pari"
@@ -161,3 +173,5 @@ blocks:
         a: "È possibile solo con distanze da 2 a 7 e non nelle gare a tabellone. Se la distanza è fuori intervallo, l'opzione resta spenta."
       - q: "In un trio ho vinto due triangoli su tre. Ho vinto la partita?"
         a: "Sì, se nessun altro ne ha vinti altrettanti. In caso di parità al punteggio più alto, nessuno prende la vittoria."
+      - q: "Nel trio è comparso Accetta/Rifiuta a me e non agli altri due. Perché?"
+        a: "Perché le loro firme erano già implicite: chi ha vinto e chi ha segnato il triangolo decisivo non hanno niente da confermare. Se il trio finisce in parità nessuno ha vinto, e le firme da raccogliere sono di più."
