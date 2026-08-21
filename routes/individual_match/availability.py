@@ -9,8 +9,6 @@ separate, partly-broken set of routes on the ``player`` blueprint
 See docs/adr/ADR-032-availability-surface-consolidation.md.
 """
 
-from datetime import datetime
-
 from flask import render_template, request, redirect, url_for, flash
 from flask_babel import _
 from flask_login import current_user
@@ -21,6 +19,7 @@ from models.location.models import BilliardHall
 from models.user.models import User
 from models.user.permissions import RoleRequirement
 from utils.geo import clamp_radius, haversine_km
+from utils.local_time import parse_local_datetime
 from utils.route_helpers import ajax_error, ajax_success, is_ajax_request
 
 from . import individual_match_bp
@@ -222,13 +221,20 @@ def request_availability_match(target_user_id):
             redirect_endpoint="individual_match.discover_players",
         )
 
+    # Data e ora arrivano dal modulo di scoperta in **due campi separati**,
+    # scritti da chi guarda l'orologio della sua città. Il DB tiene i naive
+    # come UTC e `|datetime_local` in lettura ci risomma il fuso: uno
+    # `strptime` diretto salvava la stringa grezza e spostava l'appuntamento di
+    # tutto il fuso, in silenzio — le 21:00 diventavano le 23:00 a Roma
+    # (ADR-043, la stessa correzione già fatta sul modulo della proposta).
+    #
+    # `parse_local_datetime` legge un `datetime-local`, quindi i due campi si
+    # rimettono insieme con la T in mezzo. Torna `None` sul malformato invece
+    # di sollevare, e la risposta all'utente resta quella di prima.
     proposed_datetime = None
     if proposed_date and proposed_time:
-        try:
-            proposed_datetime = datetime.strptime(
-                f"{proposed_date} {proposed_time}", "%Y-%m-%d %H:%M"
-            )
-        except ValueError:
+        proposed_datetime = parse_local_datetime(f"{proposed_date}T{proposed_time}")
+        if proposed_datetime is None:
             return _availability_error(
                 _("Formato data/ora non valido"),
                 redirect_endpoint="individual_match.discover_players",

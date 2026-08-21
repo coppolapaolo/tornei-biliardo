@@ -336,3 +336,126 @@ class SfidaDriver:
 
         db.session.expire_all()
         return Notification.query.filter_by(user_id=giocatore.id).all()
+
+    # ── Dichiararsi disponibile, e farsi trovare ────────────────────
+
+    def crea_sala(self, nome: str | None = None, **campi: Any) -> int:
+        """Una sala biliardo. Allestimento, non azione.
+
+        Le sale le censisce l'amministrazione, che è un altro dominio e ha i
+        suoi test: qui è lo scenario, come lo sono i giocatori.
+        """
+        from models.location.models import BilliardHall
+
+        sala = BilliardHall(
+            name=nome or f"Sala {uuid.uuid4().hex[:6]}",
+            city=campi.pop("city", "Udine"),
+            is_active=campi.pop("is_active", True),
+            verified=campi.pop("verified", True),
+            **campi,
+        )
+        db.session.add(sala)
+        db.session.commit()
+        return sala.id
+
+    def pagina_disponibilita(self) -> str:
+        risposta = self.client.get("/match/availability")
+        assert risposta.status_code == 200, risposta.status_code
+        return risposta.get_data(as_text=True)
+
+    def dichiarati_disponibile(self, sala_id: int, **campi: Any) -> Any:
+        modulo: dict[str, Any] = {"venue_id": str(sala_id), "is_available": "true"}
+        modulo.update(campi)
+        return self.client.post("/match/availability/venue", data=modulo)
+
+    def togli_disponibilita(self, disponibilita_id: int) -> Any:
+        return self.client.post(f"/match/availability/venue/{disponibilita_id}/remove")
+
+    def mie_disponibilita(self, giocatore: Giocatore) -> list[Any]:
+        from models.location.models import UserLocationAvailability
+
+        db.session.expire_all()
+        return UserLocationAvailability.query.filter_by(user_id=giocatore.id).all()
+
+    @staticmethod
+    def trovati(pagina: str) -> list[int]:
+        """Gli id dei giocatori elencati nella pagina di scoperta.
+
+        Si leggono dall'`action` del modulo di richiesta, non dal nome: il
+        nome di chi è entrato compare comunque nella barra laterale, quindi
+        cercarlo nel testo risponde sempre di sì — anche a chi non è
+        nell'elenco.
+        """
+        import re
+
+        return [
+            int(x)
+            for x in re.findall(r"/match/availability/request-match/(\d+)", pagina)
+        ]
+
+    def pagina_scoperta(self, **query: Any) -> str:
+        risposta = self.client.get("/match/availability/discover", query_string=query)
+        assert risposta.status_code == 200, risposta.status_code
+        return risposta.get_data(as_text=True)
+
+    def chiedi_partita(self, destinatario: Giocatore, **campi: Any) -> Any:
+        """La richiesta che parte dalla scoperta: diventa una proposta diretta."""
+        modulo: dict[str, Any] = {"location": "Sala di prova"}
+        modulo.update(campi)
+        return self.client.post(
+            f"/match/availability/request-match/{destinatario.id}", data=modulo
+        )
+
+    def imposta_fuso(self, nome: str) -> Any:
+        """Il fuso del lettore, dedotto dal browser e salvato (ADR-043)."""
+        return self.client.post("/auth/timezone", json={"timezone": nome})
+
+    def ultima_proposta(self) -> Any:
+        from models.individual_match.models import MatchProposal
+
+        db.session.expire_all()
+        return MatchProposal.query.order_by(MatchProposal.id.desc()).first()
+
+    # ── Le tre sparse ───────────────────────────────────────────────
+
+    def crea_admin(self) -> Giocatore:
+        """Un amministratore. Serve solo per il quadro d'insieme."""
+        sigla = uuid.uuid4().hex[:8]
+        user = User(
+            username=f"admin_{sigla}",
+            email=f"admin_{sigla}@example.test",
+            role=UserRole.ADMIN.value,
+        )
+        user.set_password(PASSWORD)
+        db.session.add(user)
+        db.session.commit()
+        return Giocatore(id=user.id, username=user.username, ruolo=user.role)
+
+    def pagina_statistiche(self) -> str:
+        risposta = self.client.get("/match/statistics")
+        assert risposta.status_code == 200, risposta.status_code
+        return risposta.get_data(as_text=True)
+
+    def statistiche(self) -> dict[str, Any]:
+        """Gli stessi numeri della pagina, in forma leggibile da un test.
+
+        Stessa route e stessa funzione: `user_statistics` risponde in JSON a
+        chi lo chiede. Non è una scorciatoia sul servizio.
+        """
+        risposta = self.client.get(
+            "/match/statistics", headers={"Content-Type": "application/json"}
+        )
+        assert risposta.status_code == 200, risposta.status_code
+        return risposta.get_json()["statistics"]
+
+    def chiudi_unilateralmente(self, match_id: int, vincitore: Giocatore) -> Any:
+        """La chiusura d'ufficio (route storica `/complete`)."""
+        return self.client.post(
+            f"/match/matches/{match_id}/complete", json={"winner_id": vincitore.id}
+        )
+
+    def aggiorna_orari(self, match_id: int, **campi: Any) -> Any:
+        return self.client.post(f"/match/matches/{match_id}/update-times", json=campi)
+
+    def pagina_quadro_admin(self) -> Any:
+        return self.client.get("/match/admin/overview")
