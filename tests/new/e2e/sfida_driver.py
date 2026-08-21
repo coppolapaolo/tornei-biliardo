@@ -316,3 +316,23 @@ class SfidaDriver:
 
         db.session.expire_all()
         return TpaReferto.query.filter_by(individual_match_id=match_id).first()
+
+    # ── Quello che arriva a chi non stava guardando ─────────────────
+
+    def pagina_notifiche(self) -> str:
+        """L'elenco delle notifiche di chi è entrato adesso."""
+        risposta = self.client.get("/player/notifications")
+        assert risposta.status_code == 200, risposta.status_code
+        return risposta.get_data(as_text=True)
+
+    def notifiche(self, giocatore: Giocatore) -> list[Any]:
+        """Le notifiche di un giocatore, dal DB.
+
+        La pagina dice cosa legge; questa dice **quante** ne sono partite —
+        che è la domanda opposta e altrettanto importante: una notifica per
+        triangolo renderebbe illeggibile tutta la casella.
+        """
+        from models.notification.models import Notification
+
+        db.session.expire_all()
+        return Notification.query.filter_by(user_id=giocatore.id).all()
