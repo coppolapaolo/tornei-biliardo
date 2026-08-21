@@ -44,6 +44,8 @@ def _partita(
     esclusione: Optional[str] = None,
     is_trio: bool = False,
     mese: str = "2026-03",
+    race_to: bool = False,
+    distanza: int = 5,
 ) -> Any:
     """Una partita finta, già nella forma che il censimento consuma."""
     from datetime import datetime
@@ -55,7 +57,8 @@ def _partita(
         player_ids=list(player_ids),
         racks=racks,
         ended_at=datetime(int(anno), int(mm), 15),
-        distanza=5,
+        distanza=distanza,
+        race_to=race_to,
         multi_set=False,
         is_trio=is_trio,
         esclusione=esclusione,
@@ -91,6 +94,42 @@ class TestMultiSet:
                 raise ValueError("gara mancante")
 
         assert censimento._e_multi_set(Rotto()) is False
+
+
+class TestFormatoDellaPartita:
+    """Corsa a N o N rack esatti: la distinzione che lo script nascondeva."""
+
+    def test_una_partita_a_rack_esatti_non_e_una_corsa(self):
+        """Le gare fatte finora hanno quasi sempre distanza esatta.
+
+        Lo script etichettava tutto «al N», il modo di dire delle corse, e il
+        fatto strutturale piu' importante dei dati restava invisibile.
+        """
+        match = SimpleNamespace(distance_config=SimpleNamespace(is_race_to_racks=False))
+        assert censimento._e_race_to(match) is False
+
+    def test_le_due_distribuzioni_restano_separate(self):
+        """Contarle insieme sommerebbe cose che producono rack diversi."""
+        partite = [
+            _partita([1, 2], race_to=False, distanza=5),
+            _partita([1, 2], race_to=False, distanza=5),
+            _partita([2, 3], race_to=True, distanza=7),
+        ]
+        dati = censimento._censimento(partite, "prova")
+
+        assert dati["rack"]["distanze_esatte"] == {5: 2}
+        assert dati["rack"]["distanze_a_corsa"] == {7: 1}
+
+    def test_solo_i_rack_esatti_in_numero_pari_possono_finire_pari(self):
+        """Una corsa non finisce mai in parita': si gioca finche' uno arriva."""
+        partite = [
+            _partita([1, 2], race_to=False, distanza=4),  # pari -> pareggiabile
+            _partita([1, 2], race_to=False, distanza=5),  # dispari -> no
+            _partita([2, 3], race_to=True, distanza=4),  # corsa -> no
+        ]
+        dati = censimento._censimento(partite, "prova")
+
+        assert dati["rack"]["partite_pareggiabili"] == 1
 
 
 class TestPercentili:

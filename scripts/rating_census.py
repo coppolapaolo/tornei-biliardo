@@ -87,6 +87,7 @@ class Partita:
         "racks",
         "ended_at",
         "distanza",
+        "race_to",
         "multi_set",
         "is_trio",
         "esclusione",
@@ -100,6 +101,7 @@ class Partita:
         racks: int,
         ended_at: Any,
         distanza: Optional[int],
+        race_to: bool,
         multi_set: bool,
         is_trio: bool,
         esclusione: Optional[str],
@@ -110,6 +112,7 @@ class Partita:
         self.racks = racks
         self.ended_at = ended_at
         self.distanza = distanza
+        self.race_to = race_to
         self.multi_set = multi_set
         self.is_trio = is_trio
         self.esclusione = esclusione
@@ -149,6 +152,7 @@ def _partite_torneo() -> List[Partita]:
                 racks=_racks_di(match),
                 ended_at=match.ended_at,
                 distanza=_distanza_di(match),
+                race_to=_e_race_to(match),
                 multi_set=_e_multi_set(match),
                 is_trio=bool(getattr(match, "is_trio", False)),
                 esclusione=motivo.value if motivo is not None else None,
@@ -183,6 +187,7 @@ def _partite_casual() -> List[Partita]:
             racks=(im.player1_score or 0) + (im.player2_score or 0),
             ended_at=im.ended_at,
             distanza=getattr(im, "distance", None),
+            race_to=_e_race_to(im),
             multi_set=False,
             is_trio=False,
             esclusione=None,
@@ -201,6 +206,26 @@ def _racks_di(match: Any) -> int:
             + (trio.player3_racks or 0)
         )
     return (match.player1_score or 0) + (match.player2_score or 0)
+
+
+def _e_race_to(match: Any) -> bool:
+    """La partita è una **corsa** a N, o si giocano N rack **esatti**?
+
+    È la distinzione più importante di tutto il censimento, e per mesi è stata
+    invisibile perché lo script etichettava tutto «al N», il modo di dire delle
+    corse. Nelle gare fatte finora la distanza è quasi sempre esatta: si
+    giocano N rack e si può pareggiare, non si smette appena uno arriva a N.
+
+    Cambia due cose concrete: quanti rack produce una partita (esattamente N
+    contro N..2N-1) e come si passa dalla probabilità di rack a quella di
+    partita — binomiale contro binomiale negativa.
+
+    Come per il multi-set, la fonte è il value object `Distance` (ADR-027).
+    """
+    try:
+        return bool(match.distance_config.is_race_to_racks)
+    except Exception:  # pragma: no cover - dati storici incompleti
+        return True
 
 
 def _e_multi_set(match: Any) -> bool:
@@ -253,7 +278,8 @@ def _censimento(partite: Sequence[Partita], etichetta: str) -> Dict[str, Any]:
     rack_per_giocatore: Counter = Counter()
     grafo = nx.Graph()
     mesi: Counter = Counter()
-    distanze: Counter = Counter()
+    distanze_corsa: Counter = Counter()
+    distanze_esatte: Counter = Counter()
     rack_totali = 0
     trii = 0
     multi_set = 0
@@ -266,7 +292,8 @@ def _censimento(partite: Sequence[Partita], etichetta: str) -> Dict[str, Any]:
         if partita.multi_set:
             multi_set += 1
         if partita.distanza is not None:
-            distanze[partita.distanza] += 1
+            bersaglio = distanze_corsa if partita.race_to else distanze_esatte
+            bersaglio[partita.distanza] += 1
         if partita.ended_at is None:
             senza_data += 1
         else:
@@ -309,7 +336,11 @@ def _censimento(partite: Sequence[Partita], etichetta: str) -> Dict[str, Any]:
             "media_per_partita": (
                 round(rack_totali / len(ammissibili), 2) if ammissibili else 0.0
             ),
-            "distribuzione_distanze": dict(sorted(distanze.items())),
+            "distanze_a_corsa": dict(sorted(distanze_corsa.items())),
+            "distanze_esatte": dict(sorted(distanze_esatte.items())),
+            "partite_pareggiabili": sum(
+                quante for n, quante in distanze_esatte.items() if n % 2 == 0
+            ),
         },
         "giocatori": {
             "totali": len(rack_per_giocatore),
@@ -383,11 +414,21 @@ def _stampa(dati: Dict[str, Any]) -> None:
     logger.info("Rack (l'unità di misura del modello nuovo)")
     logger.info("  totali .................. %d", rack["totali"])
     logger.info("  media per partita ....... %s", rack["media_per_partita"])
-    if rack["distribuzione_distanze"]:
-        distanze = ", ".join(
-            f"al {d}: {n}" for d, n in rack["distribuzione_distanze"].items()
+    if rack["distanze_esatte"]:
+        logger.info(
+            "  a rack esatti ........... %s",
+            ", ".join(f"{d} rack: {n}" for d, n in rack["distanze_esatte"].items()),
         )
-        logger.info("  distanze ................ %s", distanze)
+    if rack["distanze_a_corsa"]:
+        logger.info(
+            "  a corsa ................. %s",
+            ", ".join(f"al {d}: {n}" for d, n in rack["distanze_a_corsa"].items()),
+        )
+    if rack["partite_pareggiabili"]:
+        logger.info(
+            "  possono finire pari ..... %d  (rack esatti in numero pari)",
+            rack["partite_pareggiabili"],
+        )
 
     logger.info("")
     logger.info("Giocatori")
@@ -462,6 +503,21 @@ def _verdetto(dati: Dict[str, Any]) -> None:
         rilievi.append(
             f"solo {finestre} finestre mensili abbastanza popolate: la "
             "validazione a origine mobile misurerebbe la fortuna di un mese"
+        )
+
+    esatte = sum(dati["rack"]["distanze_esatte"].values())
+    corse = sum(dati["rack"]["distanze_a_corsa"].values())
+    if esatte and corse:
+        rilievi.append(
+            f"convivono due formati ({esatte} a rack esatti, {corse} a corsa): "
+            "la probabilità di partita si ricava dalla binomiale nel primo caso "
+            "e dalla binomiale negativa nel secondo, e vanno tenuti separati"
+        )
+    if dati["rack"]["partite_pareggiabili"]:
+        rilievi.append(
+            f"{dati['rack']['partite_pareggiabili']} partite possono finire "
+            "pari: l'Elo binario di oggi non sa prevedere un pareggio, un "
+            "modello a rack lo deriva — il confronto va fatto sui tre esiti"
         )
 
     if dati["partite"]["multi_set"]:
