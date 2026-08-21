@@ -829,21 +829,29 @@ class IndividualSet(BaseModel):
         """Check if set is completed."""
         return self.status == MatchStatus.CLOSED_UNILATERALLY.value
 
-    def remove_last_rack(self, user_id: int) -> Optional["IndividualRack"]:
+    def remove_last_rack(
+        self, user_id: int, player_id: Optional[int] = None
+    ) -> Optional["IndividualRack"]:
         """Remove the last rack from this set (soft delete).
 
         Args:
             user_id: ID of user removing the rack
+            player_id: se dato, si toglie l'ultimo triangolo **vinto da lui**.
+                Il segnapunti al meglio dei set ha due comandi distinti, uno
+                per giocatore: senza questo filtro toglierebbe l'ultimo
+                triangolo del set chiunque l'avesse vinto, cioè una cosa
+                diversa da quella scritta sul pulsante.
 
         Returns:
             The removed rack, or None if no racks to remove
         """
         # Find last rack in this set
-        last_rack = (
-            IndividualRack.query.filter_by(individual_set_id=self.id, is_deleted=False)
-            .order_by(IndividualRack.rack_number.desc())
-            .first()
+        query = IndividualRack.query.filter_by(
+            individual_set_id=self.id, is_deleted=False
         )
+        if player_id is not None:
+            query = query.filter_by(winner_id=player_id)
+        last_rack = query.order_by(IndividualRack.rack_number.desc()).first()
 
         if not last_rack:
             return None

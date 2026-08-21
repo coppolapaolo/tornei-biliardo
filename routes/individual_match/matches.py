@@ -96,6 +96,40 @@ def start_match(match_id):
             return redirect(url_for("individual_match.match_detail", match_id=match_id))
 
 
+@individual_match_bp.route("/matches/<int:match_id>/sets/next", methods=["POST"])
+@RoleRequirement.player_or_director_required
+def start_next_set(match_id):
+    """Comincia il set successivo di una sfida al meglio dei set.
+
+    Il segnapunti condiviso offre «Inizia il set N» anche sulle sfide
+    individuali, ma l'endpoint esisteva solo per le partite di gara: qui il
+    pulsante chiamava una funzione che non c'era, e la partita restava
+    bloccata dopo il primo set — senza modo di segnare né di chiuderla.
+    """
+    try:
+        nuovo_set = IndividualMatchService.start_next_set(match_id, current_user.id)
+
+        from routes.sse import emit_individual_match_event
+
+        emit_individual_match_event(
+            match_id,
+            "set_started",
+            {"started_by": current_user.id, "set_number": nuovo_set.set_number},
+        )
+
+        if request.is_json:
+            return jsonify({"success": True, "set_number": nuovo_set.set_number})
+
+        flash(_("Set %(n)s iniziato.", n=nuovo_set.set_number), "success")
+        return redirect(url_for("individual_match.match_detail", match_id=match_id))
+
+    except ValueError as e:
+        if request.is_json:
+            return jsonify({"success": False, "error": str(e)}), 400
+        flash(str(e), "danger")
+        return redirect(url_for("individual_match.match_detail", match_id=match_id))
+
+
 @individual_match_bp.route("/matches/<int:match_id>/racks/add", methods=["POST"])
 @RoleRequirement.player_or_director_required
 def add_rack(match_id):

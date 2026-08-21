@@ -37,6 +37,28 @@ class MatchLifecycleService:
 
     @staticmethod
     @transactional(domain="individual_match")
+    def start_next_set(match_id: int, user_id: int):
+        """Comincia il set successivo di una sfida al meglio dei set.
+
+        Un set finito non tira dietro il seguente: qualcuno deve cominciarlo,
+        perché fra un set e l'altro al tavolo succedono cose (si cambia, si
+        beve, si aspetta). Finché non c'è, però, non si può segnare niente e
+        la partita non si può nemmeno chiudere — quindi il comando deve
+        esistere davvero. Sulle sfide individuali non c'era: il segnapunti
+        offriva «Inizia il set N» e il pulsante chiamava una funzione che
+        nessuno aveva scritto.
+        """
+        match = db.session.get(IndividualMatch, match_id)
+        if match is None:
+            raise ValueError("Match non trovato")
+
+        if user_id not in [match.player1_id, match.player2_id]:
+            raise ValueError("Only match players can start the next set")
+
+        return match.start_next_set()
+
+    @staticmethod
+    @transactional(domain="individual_match")
     def confirm_match_result(match_id: int, user_id: int) -> IndividualMatch:
         """Confirm match result by a player (new UX)."""
         match = db.session.get(IndividualMatch, match_id)
