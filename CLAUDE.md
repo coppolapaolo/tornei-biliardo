@@ -44,6 +44,14 @@ python scripts/generate_schema_docs.py          # Regenerate DB schema docs
 
 **Production URL**: https://www.torneibiliardo.it
 
+> ⚠️ **`recalc_elo.py` è un dry-run finché non gli si passa `--commit`.**
+> Senza, rigioca tutta la storia, stampa cosa cambierebbe e fa rollback: sembra
+> aver lavorato, e non ha scritto niente. Vale anche per
+> `repair_match_ended_at.py` e `repair_round_classification_racks.py`
+> (`--apply`): è la convenzione degli script che toccano dati storici, e va
+> verificata sul singolo script invece che ricordata a memoria, perché il nome
+> del flag non è lo stesso per tutti.
+
 ```bash
 # Run migrations (with tracking)
 python migrations/runner.py              # Run pending migrations
@@ -145,11 +153,14 @@ e non importa nulla dal progetto.
 > si deriva al primo uso, quindi l'ordine non è più fatale; resta però
 > l'unica regola facile da rispettare, ed è presidiata staticamente da
 > `tests/new/unit/test_script_import_order.py`. Gli script di analisi che si
-> lanciano a mano in sviluppo (`recalc_elo.py`, `diagnose_elo.py`,
-> `set_gara_handicap.py`, `migrate_gamification_rules.py`) **non** usano
-> `prod_env` e restano fuori dalla regola: non caricano env di produzione, quindi per loro l'ordine non
+> lanciano a mano in sviluppo (`diagnose_elo.py`, `set_gara_handicap.py`,
+> `migrate_gamification_rules.py`) **non** usano `prod_env` e restano fuori
+> dalla regola: non caricano env di produzione, quindi per loro l'ordine non
 > significa nulla. Se un domani dovessero girare in produzione, vanno prima
-> agganciati a `bootstrap_and_create_app`.
+> agganciati a `bootstrap_and_create_app`. `recalc_elo.py` **è già stato
+> agganciato** (era in questo elenco fino al 2026-08-21): gira in console di
+> produzione, e chi si fida dell'elenco vecchio gli sconsiglia il comando che
+> invece funziona.
 
 > ⚠️ `scripts/send_match_reminders.py` è **registrato** e gira ogni ora
 > (confermato dal log del 2026-08-17). Non è accorpabile a `daily_jobs.py`:
