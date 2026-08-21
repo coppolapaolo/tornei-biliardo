@@ -29,7 +29,7 @@ class MatchLifecycleService:
         if match is None:
             raise ValueError("Match non trovato")
 
-        if user_id not in [match.player1_id, match.player2_id]:
+        if not match.is_player(user_id):
             raise ValueError("Only match players can start the match")
 
         match.start_match()
@@ -52,7 +52,7 @@ class MatchLifecycleService:
         if match is None:
             raise ValueError("Match non trovato")
 
-        if user_id not in [match.player1_id, match.player2_id]:
+        if not match.is_player(user_id):
             raise ValueError("Only match players can start the next set")
 
         return match.start_next_set()
@@ -65,7 +65,7 @@ class MatchLifecycleService:
         if match is None:
             raise ValueError("Match non trovato")
 
-        if user_id not in [match.player1_id, match.player2_id]:
+        if not match.is_player(user_id):
             raise ValueError("Only match players can confirm the result")
 
         if not match.is_ready_for_validation():
@@ -82,7 +82,7 @@ class MatchLifecycleService:
         if match is None:
             raise ValueError("Match non trovato")
 
-        if user_id not in [match.player1_id, match.player2_id]:
+        if not match.is_player(user_id):
             raise ValueError("Only match players can reject the result")
 
         if not match.is_ready_for_validation():
@@ -99,7 +99,7 @@ class MatchLifecycleService:
         if match is None:
             raise ValueError("Match non trovato")
 
-        if user_id not in [match.player1_id, match.player2_id]:
+        if not match.is_player(user_id):
             raise ValueError("Only match players can complete the match")
 
         match.complete_match(winner_id)
@@ -123,7 +123,7 @@ class MatchLifecycleService:
         if match is None:
             raise ValueError("Match non trovato")
 
-        if user_id not in [match.player1_id, match.player2_id]:
+        if not match.is_player(user_id):
             raise ValueError("Only match players can cancel the match")
 
         match.cancel_match(reason)

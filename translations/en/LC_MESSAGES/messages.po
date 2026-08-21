@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-21 16:09+0200\n"
+"POT-Creation-Date: 2026-08-21 16:31+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -125,6 +125,7 @@ msgid "persa"
 msgstr "lost"
 
 #: models/dashboard/activity_feedback.py:164
+#: templates/individual_match/statistics.html:185
 msgid "pari"
 msgstr "drawn"
 
@@ -180,389 +181,389 @@ msgstr "%(name)s, passed"
 msgid "%(name)s, non superato"
 msgstr "%(name)s, not passed"
 
-#: models/dashboard/activity_feedback.py:597
+#: models/dashboard/activity_feedback.py:602
 #, python-format
 msgid "invariato %(suffix)s"
 msgstr "unchanged %(suffix)s"
 
-#: models/dashboard/activity_feedback.py:611
+#: models/dashboard/activity_feedback.py:616
 msgid "stabile"
 msgstr "steady"
 
-#: models/dashboard/activity_feedback.py:661
-#: models/dashboard/activity_feedback.py:1039
+#: models/dashboard/activity_feedback.py:666
+#: models/dashboard/activity_feedback.py:1044
 #, python-format
 msgid "%(num)s vinta"
 msgid_plural "%(num)s vinte"
 msgstr[0] "%(num)s won"
 msgstr[1] "%(num)s won"
 
-#: models/dashboard/activity_feedback.py:662
-#: models/dashboard/activity_feedback.py:1044
+#: models/dashboard/activity_feedback.py:667
+#: models/dashboard/activity_feedback.py:1049
 #, python-format
 msgid "%(num)s pari"
 msgid_plural "%(num)s pari"
 msgstr[0] "%(num)s drawn"
 msgstr[1] "%(num)s drawn"
 
-#: models/dashboard/activity_feedback.py:663
-#: models/dashboard/activity_feedback.py:1049
+#: models/dashboard/activity_feedback.py:668
+#: models/dashboard/activity_feedback.py:1054
 #, python-format
 msgid "%(num)s persa"
 msgid_plural "%(num)s perse"
 msgstr[0] "%(num)s lost"
 msgstr[1] "%(num)s lost"
 
-#: models/dashboard/activity_feedback.py:707
+#: models/dashboard/activity_feedback.py:712
 #, python-format
 msgid "Il tuo record è %(n)s settimane"
 msgstr "Your record is %(n)s weeks"
 
-#: models/dashboard/activity_feedback.py:709
+#: models/dashboard/activity_feedback.py:714
 msgid "È la tua serie più lunga finora"
 msgstr "This is your longest run so far"
 
-#: models/dashboard/activity_feedback.py:716
+#: models/dashboard/activity_feedback.py:721
 #, python-format
 msgid "%(num)s settimana di streak"
 msgid_plural "%(num)s settimane di streak"
 msgstr[0] "%(num)s week streak"
 msgstr[1] "%(num)s week streak"
 
-#: models/dashboard/activity_feedback.py:754
+#: models/dashboard/activity_feedback.py:759
 #, python-format
 msgid "%(pos)s° in %(campionato)s"
 msgstr "Place %(pos)s in %(campionato)s"
 
-#: models/dashboard/activity_feedback.py:759
+#: models/dashboard/activity_feedback.py:764
 #, python-format
 msgid "Su %(num)s giocatore in classifica"
 msgid_plural "Su %(num)s giocatori in classifica"
 msgstr[0] "Out of %(num)s ranked player"
 msgstr[1] "Out of %(num)s ranked players"
 
-#: models/dashboard/activity_feedback.py:786
+#: models/dashboard/activity_feedback.py:791
 #, python-format
 msgid "Punteggio medio %(avg)s"
 msgstr "Average score %(avg)s"
 
-#: models/dashboard/activity_feedback.py:788
+#: models/dashboard/activity_feedback.py:793
 msgid "Nessun punteggio registrato"
 msgstr "No score recorded"
 
-#: models/dashboard/activity_feedback.py:795
+#: models/dashboard/activity_feedback.py:800
 #, python-format
 msgid "%(num)s esercizio completato"
 msgid_plural "%(num)s esercizi completati"
 msgstr[0] "%(num)s drill completed"
 msgstr[1] "%(num)s drills completed"
 
-#: models/dashboard/activity_feedback.py:818
+#: models/dashboard/activity_feedback.py:823
 msgid "Continua a giocare per salire di livello"
 msgstr "Keep playing to level up"
 
-#: models/dashboard/activity_feedback.py:824
+#: models/dashboard/activity_feedback.py:829
 #, python-format
 msgid "Livello %(level)s al %(pct)s%%"
 msgstr "Level %(level)s at %(pct)s%%"
 
-#: models/dashboard/activity_feedback.py:835
+#: models/dashboard/activity_feedback.py:840
 msgid "Cosa sta funzionando"
 msgstr "What is working"
 
-#: models/dashboard/activity_feedback.py:838
+#: models/dashboard/activity_feedback.py:843
 msgid "Streak e classifica"
 msgstr "Streak and ranking"
 
-#: models/dashboard/activity_feedback.py:839
+#: models/dashboard/activity_feedback.py:844
 msgid "Tutti i tuoi numeri"
 msgstr "All your numbers"
 
-#: models/dashboard/activity_feedback.py:1158
+#: models/dashboard/activity_feedback.py:1163
 msgid "Account creato"
 msgstr "Account created"
 
-#: models/dashboard/activity_feedback.py:1160
+#: models/dashboard/activity_feedback.py:1165
 #, python-format
 msgid "La tua città: %(city)s"
 msgstr "Your city: %(city)s"
 
-#: models/dashboard/activity_feedback.py:1162
+#: models/dashboard/activity_feedback.py:1167
 msgid "Il tuo profilo è attivo"
 msgstr "Your profile is active"
 
-#: models/dashboard/activity_feedback.py:1167
+#: models/dashboard/activity_feedback.py:1172
 msgid "Gioca il primo match"
 msgstr "Play your first match"
 
-#: models/dashboard/activity_feedback.py:1168
+#: models/dashboard/activity_feedback.py:1173
 msgid "Da qui parte il tuo Elo"
 msgstr "This is where your Elo starts"
 
-#: models/dashboard/activity_feedback.py:1172
+#: models/dashboard/activity_feedback.py:1177
 msgid "Prova un esercizio"
 msgstr "Try a drill"
 
-#: models/dashboard/activity_feedback.py:1173
+#: models/dashboard/activity_feedback.py:1178
 msgid "Sblocca il punteggio di precisione"
 msgstr "Unlock your accuracy score"
 
-#: models/dashboard/activity_feedback.py:1178
+#: models/dashboard/activity_feedback.py:1183
 msgid "Il tuo profilo è pronto"
 msgstr "Your profile is ready"
 
-#: models/dashboard/activity_feedback.py:1179
+#: models/dashboard/activity_feedback.py:1184
 msgid "Fai la prima attività e qui comparirà il tuo andamento."
 msgstr "Do your first activity and your progress will show up here."
 
-#: models/dashboard/activity_feedback.py:1181
+#: models/dashboard/activity_feedback.py:1186
 msgid "Il tuo Elo parte da 1200: si muove alla prima partita registrata."
 msgstr "Your Elo starts at 1200: it moves with your first recorded match."
 
-#: models/dashboard/activity_feedback.py:1215
+#: models/dashboard/activity_feedback.py:1220
 msgid "Come stai andando"
 msgstr "How you are doing"
 
-#: models/dashboard/activity_feedback.py:1228
+#: models/dashboard/activity_feedback.py:1233
 msgid "Elo gara"
 msgstr "Competition Elo"
 
-#: models/dashboard/activity_feedback.py:1228
-#: models/dashboard/activity_feedback.py:1317
+#: models/dashboard/activity_feedback.py:1233
+#: models/dashboard/activity_feedback.py:1322
 msgid "Elo"
 msgstr "Elo"
 
-#: models/dashboard/activity_feedback.py:1238
+#: models/dashboard/activity_feedback.py:1243
 msgid "Elo, invariato"
 msgstr "Elo, unchanged"
 
-#: models/dashboard/activity_feedback.py:1238
+#: models/dashboard/activity_feedback.py:1243
 msgid "ti aspetta lì"
 msgstr "waiting for you there"
 
-#: models/dashboard/activity_feedback.py:1254
+#: models/dashboard/activity_feedback.py:1259
 #, python-format
 msgid "in %(num)s"
 msgstr "in %(num)s"
 
-#: models/dashboard/activity_feedback.py:1257
+#: models/dashboard/activity_feedback.py:1262
 #, python-format
 msgid "in %(num)s partita"
 msgid_plural "in %(num)s partite"
 msgstr[0] "in %(num)s match"
 msgstr[1] "in %(num)s matches"
 
-#: models/dashboard/activity_feedback.py:1259
-#: models/dashboard/activity_feedback.py:1296
-#: models/dashboard/activity_feedback.py:1386
+#: models/dashboard/activity_feedback.py:1264
+#: models/dashboard/activity_feedback.py:1301
+#: models/dashboard/activity_feedback.py:1391
 #, python-format
 msgid "in %(num)s gara"
 msgid_plural "in %(num)s gare"
 msgstr[0] "in %(num)s competition"
 msgstr[1] "in %(num)s competitions"
 
-#: models/dashboard/activity_feedback.py:1269
+#: models/dashboard/activity_feedback.py:1274
 msgid "massimo"
 msgstr "all-time high"
 
-#: models/dashboard/activity_feedback.py:1285
+#: models/dashboard/activity_feedback.py:1290
 #: templates/individual_match/statistics.html:53
 msgid "TPA di carriera"
 msgstr "Career TPA"
 
-#: models/dashboard/activity_feedback.py:1294
-#: models/dashboard/activity_feedback.py:1384
+#: models/dashboard/activity_feedback.py:1299
+#: models/dashboard/activity_feedback.py:1389
 msgid "Miglior piazzamento"
 msgstr "Best placing"
 
-#: models/dashboard/activity_feedback.py:1300 templates/admin/kpi.html:194
+#: models/dashboard/activity_feedback.py:1305 templates/admin/kpi.html:194
 #: templates/admin/kpi.html:254 templates/admin/kpi.html:859
 msgid "Match giocati"
 msgstr "Matches played"
 
-#: models/dashboard/activity_feedback.py:1303
+#: models/dashboard/activity_feedback.py:1308
 #, python-format
 msgid "%(won)s vinti"
 msgstr "%(won)s won"
 
-#: models/dashboard/activity_feedback.py:1318
+#: models/dashboard/activity_feedback.py:1323
 #: templates/individual_match/statistics.html:32
 msgid "TPA"
 msgstr "TPA"
 
-#: models/dashboard/activity_feedback.py:1334
-#: models/dashboard/activity_feedback.py:1583
+#: models/dashboard/activity_feedback.py:1339
+#: models/dashboard/activity_feedback.py:1588
 msgid "dalla più vecchia"
 msgstr "oldest first"
 
-#: models/dashboard/activity_feedback.py:1340
+#: models/dashboard/activity_feedback.py:1345
 msgid "Dove eri rimasto"
 msgstr "Where you left off"
 
-#: models/dashboard/activity_feedback.py:1342
+#: models/dashboard/activity_feedback.py:1347
 #, python-format
 msgid "%(num)s settimana fa"
 msgid_plural "%(num)s settimane fa"
 msgstr[0] "%(num)s week ago"
 msgstr[1] "%(num)s weeks ago"
 
-#: models/dashboard/activity_feedback.py:1350
+#: models/dashboard/activity_feedback.py:1355
 #, python-format
 msgid "%(num)s attività nel mese"
 msgid_plural "%(num)s attività nel mese"
 msgstr[0] "%(num)s activities this month"
 msgstr[1] "%(num)s activities this month"
 
-#: models/dashboard/activity_feedback.py:1358
+#: models/dashboard/activity_feedback.py:1363
 msgid "L'Elo è scivolato, ma la tua precisione al tavolo continua a crescere."
 msgstr "Your Elo slipped, but your accuracy at the table keeps improving."
 
-#: models/dashboard/activity_feedback.py:1377
+#: models/dashboard/activity_feedback.py:1382
 msgid "Partite vinte"
 msgstr "Matches won"
 
-#: models/dashboard/activity_feedback.py:1379
+#: models/dashboard/activity_feedback.py:1384
 #, python-format
 msgid "su %(num)s giocata"
 msgid_plural "su %(num)s giocate"
 msgstr[0] "of %(num)s played"
 msgstr[1] "of %(num)s played"
 
-#: models/dashboard/activity_feedback.py:1388
+#: models/dashboard/activity_feedback.py:1393
 msgid "Attività recenti"
 msgstr "Recent activity"
 
-#: models/dashboard/activity_feedback.py:1393
 #: models/dashboard/activity_feedback.py:1398
+#: models/dashboard/activity_feedback.py:1403
 msgid "Le tue ultime attività"
 msgstr "Your latest activities"
 
-#: models/dashboard/activity_feedback.py:1395
+#: models/dashboard/activity_feedback.py:1400
 msgid "Le tue ultime partite"
 msgstr "Your latest matches"
 
-#: models/dashboard/activity_feedback.py:1396
-#: models/dashboard/activity_feedback.py:1582
+#: models/dashboard/activity_feedback.py:1401
+#: models/dashboard/activity_feedback.py:1587
 msgid "Le tue ultime gare"
 msgstr "Your latest competitions"
 
-#: models/dashboard/activity_feedback.py:1397
+#: models/dashboard/activity_feedback.py:1402
 msgid "I tuoi ultimi esercizi"
 msgstr "Your latest drills"
 
-#: models/dashboard/activity_feedback.py:1407
+#: models/dashboard/activity_feedback.py:1412
 #, python-format
 msgid "ultima partita %(date)s"
 msgstr "last match %(date)s"
 
-#: models/dashboard/activity_feedback.py:1408
+#: models/dashboard/activity_feedback.py:1413
 msgid "oggi"
 msgstr "today"
 
-#: models/dashboard/activity_feedback.py:1411
+#: models/dashboard/activity_feedback.py:1416
 #, python-format
 msgid "%(value)s all'inizio"
 msgstr "%(value)s at the start"
 
-#: models/dashboard/activity_feedback.py:1412
+#: models/dashboard/activity_feedback.py:1417
 #, python-format
 msgid "oggi %(value)s"
 msgstr "today %(value)s"
 
-#: models/dashboard/activity_feedback.py:1430
-#: models/dashboard/activity_feedback.py:1476 routes/gamification/admin.py:343
+#: models/dashboard/activity_feedback.py:1435
+#: models/dashboard/activity_feedback.py:1481 routes/gamification/admin.py:343
 #: routes/gamification/features.py:50
 msgid "Esercizi completati"
 msgstr "Drills completed"
 
-#: models/dashboard/activity_feedback.py:1432
+#: models/dashboard/activity_feedback.py:1437
 msgid "nella tua finestra recente"
 msgstr "in your recent window"
 
-#: models/dashboard/activity_feedback.py:1437
+#: models/dashboard/activity_feedback.py:1442
 #, python-format
 msgid "in %(num)s sessione"
 msgid_plural "in %(num)s sessioni"
 msgstr[0] "in %(num)s session"
 msgstr[1] "in %(num)s sessions"
 
-#: models/dashboard/activity_feedback.py:1440
+#: models/dashboard/activity_feedback.py:1445
 msgid "Punteggio esercizi"
 msgstr "Drill score"
 
-#: models/dashboard/activity_feedback.py:1479
+#: models/dashboard/activity_feedback.py:1484
 #, python-format
 msgid "%(num)s superato"
 msgid_plural "%(num)s superati"
 msgstr[0] "%(num)s passed"
 msgstr[1] "%(num)s passed"
 
-#: models/dashboard/activity_feedback.py:1484
+#: models/dashboard/activity_feedback.py:1489
 #, python-format
 msgid "%(num)s fallito"
 msgid_plural "%(num)s falliti"
 msgstr[0] "%(num)s failed"
 msgstr[1] "%(num)s failed"
 
-#: models/dashboard/activity_feedback.py:1501
+#: models/dashboard/activity_feedback.py:1506
 #, python-format
 msgid "%(value)s alla prima"
 msgstr "%(value)s on the first"
 
-#: models/dashboard/activity_feedback.py:1502
+#: models/dashboard/activity_feedback.py:1507
 #, python-format
 msgid "%(value)s oggi"
 msgstr "%(value)s today"
 
-#: models/dashboard/activity_feedback.py:1522
+#: models/dashboard/activity_feedback.py:1527
 msgid "Come vanno le tue gare"
 msgstr "How your competitions are going"
 
-#: models/dashboard/activity_feedback.py:1526
+#: models/dashboard/activity_feedback.py:1531
 #: routes/gamification/features.py:47
 msgid "Gare organizzate"
 msgstr "Competitions organized"
 
-#: models/dashboard/activity_feedback.py:1528
+#: models/dashboard/activity_feedback.py:1533
 msgid "da quando sei direttore"
 msgstr "since you became a director"
 
-#: models/dashboard/activity_feedback.py:1538
+#: models/dashboard/activity_feedback.py:1543
 #, python-format
 msgid "%(num)s da chiudere"
 msgid_plural "%(num)s da chiudere"
 msgstr[0] "%(num)s to close"
 msgstr[1] "%(num)s to close"
 
-#: models/dashboard/activity_feedback.py:1549
+#: models/dashboard/activity_feedback.py:1554
 #, python-format
 msgid "%(taken)s posti occupati"
 msgstr "%(taken)s seats taken"
 
-#: models/dashboard/activity_feedback.py:1554
+#: models/dashboard/activity_feedback.py:1559
 #, python-format
 msgid "%(free)s liberi"
 msgstr "%(free)s free"
 
-#: models/dashboard/activity_feedback.py:1564
+#: models/dashboard/activity_feedback.py:1569
 msgid "Iscrizioni gestite"
 msgstr "Registrations managed"
 
-#: models/dashboard/activity_feedback.py:1566
+#: models/dashboard/activity_feedback.py:1571
 msgid "in tutte le tue gare"
 msgstr "across all your competitions"
 
-#: models/dashboard/activity_feedback.py:1574
+#: models/dashboard/activity_feedback.py:1579
 #, python-format
 msgid "%(n)s iscritti a %(gara)s"
 msgstr "%(n)s registered for %(gara)s"
 
-#: models/dashboard/activity_feedback.py:1576
+#: models/dashboard/activity_feedback.py:1581
 #, python-format
 msgid "%(n)s a %(gara)s"
 msgstr "%(n)s at %(gara)s"
 
-#: models/dashboard/activity_feedback.py:1591
+#: models/dashboard/activity_feedback.py:1596
 #, python-format
 msgid "%(gara)s, %(n)s iscritti"
 msgstr "%(gara)s, %(n)s registered"
@@ -973,6 +974,7 @@ msgstr "View"
 #: models/individual_match/proposal_service.py:192
 #: models/individual_match/proposal_service.py:491
 #: models/individual_match/quick_match_service.py:342
+#: models/individual_match/services.py:177
 msgid "Un giocatore"
 msgstr "One player"
 
@@ -981,6 +983,7 @@ msgstr "One player"
 #: models/individual_match/proposal_service.py:584
 #: models/individual_match/proposal_service.py:629
 #: models/individual_match/quick_match_service.py:345
+#: models/individual_match/services.py:179
 #, python-format
 msgid "a %(loc)s"
 msgstr "at %(loc)s"
@@ -1108,6 +1111,21 @@ msgstr ""
 #: templates/individual_match/proposal_detail.html:105
 msgid "Vai alla partita"
 msgstr "Go to the match"
+
+#: models/individual_match/services.py:184
+#: templates/individual_match/proposal_detail.html:185
+#: templates/individual_match/proposals.html:249
+msgid "Proposta rifiutata"
+msgstr "Proposal declined"
+
+#: models/individual_match/services.py:186
+#, python-format
+msgid "%(player)s ha rifiutato la tua proposta di match%(location)s"
+msgstr "%(player)s declined your match proposal%(location)s"
+
+#: models/individual_match/services.py:192
+msgid "Vedi la proposta"
+msgstr "See the proposal"
 
 #: models/kpi/notifications.py:45
 #, python-format
@@ -2541,7 +2559,7 @@ msgid "Match completato con successo!"
 msgstr "Match completed successfully!"
 
 #: routes/individual_match/matches.py:315
-#: templates/individual_match/match_detail.html:450
+#: templates/individual_match/match_detail.html:453
 msgid "Risultato confermato! In attesa dell'altro giocatore."
 msgstr "Result confirmed! Waiting for the other player."
 
@@ -3408,13 +3426,13 @@ msgstr "Match timing (optional)"
 
 #: templates/components/_match_admin_controls.html:151
 #: templates/components/_match_info.html:58 templates/gara_detail.html:592
-#: templates/individual_match/match_detail.html:261
+#: templates/individual_match/match_detail.html:264
 msgid "Inizio"
 msgstr "Start"
 
 #: templates/components/_match_admin_controls.html:156
 #: templates/components/_match_info.html:62 templates/gara_detail.html:596
-#: templates/individual_match/match_detail.html:268
+#: templates/individual_match/match_detail.html:271
 msgid "Fine"
 msgstr "End"
 
@@ -3446,7 +3464,9 @@ msgstr "Resolve Tiebreakers"
 msgid ""
 "Ci sono parimerito nelle prime %(pos)s posizioni. Inserire il punteggio "
 "finale dello Spot Shot Rally (SSR) per ogni giocatore."
-msgstr "There are ties in the top %(pos)s places. Enter the final Spot Shot Rally (SSR) score for each player."
+msgstr ""
+"There are ties in the top %(pos)s places. Enter the final Spot Shot Rally"
+" (SSR) score for each player."
 
 #: templates/gara_detail.html:663
 msgid "Punteggi più alti = posizione migliore"
@@ -3619,13 +3639,13 @@ msgstr ""
 #: templates/components/_match_admin_controls.html:310
 #: templates/components/_match_admin_controls.html:352
 #: templates/gara_detail.html:752 templates/gara_detail.html:767
-#: templates/individual_match/match_detail.html:367
-#: templates/individual_match/match_detail.html:397
-#: templates/individual_match/match_detail.html:423
-#: templates/individual_match/match_detail.html:454
-#: templates/individual_match/match_detail.html:481
-#: templates/individual_match/match_detail.html:507
-#: templates/individual_match/match_detail.html:546
+#: templates/individual_match/match_detail.html:370
+#: templates/individual_match/match_detail.html:400
+#: templates/individual_match/match_detail.html:426
+#: templates/individual_match/match_detail.html:457
+#: templates/individual_match/match_detail.html:484
+#: templates/individual_match/match_detail.html:510
+#: templates/individual_match/match_detail.html:549
 #: templates/individual_match/proposal_detail.html:190
 #: templates/individual_match/proposals.html:252
 #: templates/match_detail.html:179 templates/match_detail.html:211
@@ -3733,7 +3753,7 @@ msgstr "Use 'Start SSR' to enter tiebreaker scores"
 #: templates/components/_match_admin_controls.html:310
 #: templates/components/_match_admin_controls.html:352
 #: templates/gara_detail.html:780
-#: templates/individual_match/match_detail.html:546
+#: templates/individual_match/match_detail.html:549
 #: templates/match_detail.html:179 templates/match_detail.html:211
 #: templates/match_detail.html:247 templates/match_detail.html:280
 #: templates/match_detail.html:306 templates/match_detail.html:436
@@ -3898,7 +3918,7 @@ msgstr "Drills are technical drills you can complete during the match."
 msgid "Errore durante l'aggiunta del triangolo al trio"
 msgstr "Error adding rack to trio"
 
-#: templates/individual_match/match_detail.html:429
+#: templates/individual_match/match_detail.html:432
 #: templates/match_detail.html:217 templates/match_detail.html:337
 #: templates/match_detail.html:468
 msgid "Errore durante la rimozione del triangolo"
@@ -3916,7 +3936,7 @@ msgstr "Are you sure you want to declare forfeit for this player?"
 msgid "Errore durante la registrazione del forfait"
 msgstr "Error registering forfeit"
 
-#: templates/individual_match/match_detail.html:373
+#: templates/individual_match/match_detail.html:376
 #: templates/match_detail.html:312
 msgid "Errore durante l'aggiunta del triangolo"
 msgstr "Error while adding rack"
@@ -3929,7 +3949,7 @@ msgstr "Unable to remove rack"
 msgid "Impossibile confermare il risultato"
 msgstr "Unable to confirm result"
 
-#: templates/individual_match/match_detail.html:460
+#: templates/individual_match/match_detail.html:463
 #: templates/match_detail.html:362
 msgid "Errore durante la conferma"
 msgstr "Error during confirmation"
@@ -3944,7 +3964,7 @@ msgstr "Are you sure you want to reject the result? The last rack will be remove
 msgid "Impossibile rifiutare il risultato"
 msgstr "Unable to reject the result"
 
-#: templates/individual_match/match_detail.html:487
+#: templates/individual_match/match_detail.html:490
 #: templates/match_detail.html:387
 msgid "Errore durante il rifiuto"
 msgstr "Error during rejection"
@@ -3961,7 +3981,7 @@ msgstr ""
 msgid "Impossibile dichiarare forfait"
 msgstr "Unable to declare forfeit"
 
-#: templates/individual_match/match_detail.html:512
+#: templates/individual_match/match_detail.html:515
 #: templates/match_detail.html:414
 msgid "Errore durante la dichiarazione di forfait"
 msgstr "Error during forfeit declaration"
@@ -6428,7 +6448,7 @@ msgid "Carica Foto"
 msgstr "Upload Photo"
 
 #: templates/admin/venue_detail.html:315
-#: templates/individual_match/match_detail.html:258
+#: templates/individual_match/match_detail.html:261
 msgid "Orari"
 msgstr "Opening hours"
 
@@ -10386,17 +10406,17 @@ msgid "hai inserito"
 msgstr "you entered"
 
 #: templates/components/_match_admin_controls.html:331
-#: templates/individual_match/match_detail.html:525
+#: templates/individual_match/match_detail.html:528
 msgid "Inserisci almeno un orario"
 msgstr "Enter at least one time"
 
 #: templates/components/_match_admin_controls.html:349
-#: templates/individual_match/match_detail.html:543
+#: templates/individual_match/match_detail.html:546
 msgid "Tempi aggiornati con successo"
 msgstr "Timing updated successfully"
 
 #: templates/components/_match_admin_controls.html:357
-#: templates/individual_match/match_detail.html:551
+#: templates/individual_match/match_detail.html:554
 msgid "Errore durante l'aggiornamento dei tempi"
 msgstr "Error updating timing"
 
@@ -14166,8 +14186,8 @@ msgid "G"
 msgstr "T"
 
 #: templates/individual_match/availability.html:17
-#: templates/individual_match/statistics.html:186
-#: templates/individual_match/statistics.html:194
+#: templates/individual_match/statistics.html:203
+#: templates/individual_match/statistics.html:212
 msgid "V"
 msgstr "W"
 
@@ -14815,31 +14835,31 @@ msgstr "Propose another date"
 msgid "Vedi le statistiche"
 msgstr "See the statistics"
 
-#: templates/individual_match/match_detail.html:275
+#: templates/individual_match/match_detail.html:278
 msgid "Aggiorna gli orari"
 msgstr "Update the opening hours"
 
-#: templates/individual_match/match_detail.html:397
+#: templates/individual_match/match_detail.html:400
 msgid "Impossibile iniziare il set successivo"
 msgstr "Unable to start the next set"
 
-#: templates/individual_match/match_detail.html:403
+#: templates/individual_match/match_detail.html:406
 msgid "Errore durante l'avvio del set successivo"
 msgstr "Error while starting the next set"
 
-#: templates/individual_match/match_detail.html:409
+#: templates/individual_match/match_detail.html:412
 msgid "Rimuovere l'ultimo triangolo vinto da questo giocatore?"
 msgstr "Remove the last rack won by this player?"
 
-#: templates/individual_match/match_detail.html:436
+#: templates/individual_match/match_detail.html:439
 msgid "Confermare il risultato della sfida?"
 msgstr "Confirm the match result?"
 
-#: templates/individual_match/match_detail.html:448
+#: templates/individual_match/match_detail.html:451
 msgid "Sfida completata!"
 msgstr "Match completed!"
 
-#: templates/individual_match/match_detail.html:467
+#: templates/individual_match/match_detail.html:470
 msgid ""
 "Rifiutare il risultato? L'ultimo triangolo verrà rimosso e si potrà "
 "continuare a giocare."
@@ -14847,15 +14867,15 @@ msgstr ""
 "Reject the result? The last rack will be removed and you can continue "
 "playing."
 
-#: templates/individual_match/match_detail.html:478
+#: templates/individual_match/match_detail.html:481
 msgid "Ultimo triangolo rimosso. Continuate a giocare!"
 msgstr "Last rack removed. Continue playing!"
 
-#: templates/individual_match/match_detail.html:494
+#: templates/individual_match/match_detail.html:497
 msgid "Sei sicuro di voler dichiarare forfait? L'avversario vincerà la sfida."
 msgstr "Are you sure you want to forfeit? Your opponent will win the match."
 
-#: templates/individual_match/match_detail.html:504
+#: templates/individual_match/match_detail.html:507
 msgid "Forfait dichiarato."
 msgstr "Forfeit declared."
 
@@ -14979,11 +14999,6 @@ msgstr "It is visible to the whole community: the first to accept takes it."
 #: templates/individual_match/proposals.html:239
 msgid "Sei sicuro di voler rifiutare questa proposta?"
 msgstr "Are you sure you want to decline this proposal?"
-
-#: templates/individual_match/proposal_detail.html:185
-#: templates/individual_match/proposals.html:249
-msgid "Proposta rifiutata"
-msgstr "Proposal declined"
 
 #: templates/individual_match/proposal_detail.html:195
 #: templates/individual_match/proposals.html:257
@@ -15247,71 +15262,84 @@ msgstr "Propose a match"
 msgid "Triangoli vinti su giocati"
 msgstr "Racks won out of played"
 
-#: templates/individual_match/statistics.html:165
+#: templates/individual_match/statistics.html:172
 msgid "Vinte e perse"
 msgstr "Won and lost"
 
 #: templates/individual_match/statistics.html:184
+msgid "vinte"
+msgstr "won"
+
+#: templates/individual_match/statistics.html:184
+msgid "perse"
+msgstr "lost"
+
+#: templates/individual_match/statistics.html:201
 msgid "Ultime sfide"
 msgstr "Latest matches"
 
-#: templates/individual_match/statistics.html:187
-#: templates/individual_match/statistics.html:194
+#: templates/individual_match/statistics.html:204
+#: templates/individual_match/statistics.html:212
 msgid "P"
 msgstr "L"
 
-#: templates/individual_match/statistics.html:202
+#: templates/individual_match/statistics.html:206
+#: templates/individual_match/statistics.html:213
+msgid "X"
+msgstr "D"
+
+#: templates/individual_match/statistics.html:223
 #, python-format
 msgid "%(n)s vittoria di fila"
 msgid_plural "%(n)s vittorie di fila"
 msgstr[0] "%(n)s win in a row"
 msgstr[1] "%(n)s wins in a row"
 
-#: templates/individual_match/statistics.html:205
+#: templates/individual_match/statistics.html:226
 #, python-format
 msgid "%(n)s sconfitta di fila"
 msgid_plural "%(n)s sconfitte di fila"
 msgstr[0] "%(n)s loss in a row"
 msgstr[1] "%(n)s losses in a row"
 
-#: templates/individual_match/statistics.html:217
+#: templates/individual_match/statistics.html:238
 msgid "Per disciplina"
 msgstr "By discipline"
 
-#: templates/individual_match/statistics.html:224
-#: templates/individual_match/statistics.html:250
-#: templates/individual_match/statistics.html:272
+#: templates/individual_match/statistics.html:245
+#: templates/individual_match/statistics.html:271
+#: templates/individual_match/statistics.html:293
 #, python-format
 msgid "%(n)s match"
 msgid_plural "%(n)s match"
 msgstr[0] "%(n)s match"
 msgstr[1] "%(n)s matches"
 
-#: templates/individual_match/statistics.html:239
+#: templates/individual_match/statistics.html:260
 msgid "Testa a testa"
 msgstr "Head to head"
 
-#: templates/individual_match/statistics.html:241
+#: templates/individual_match/statistics.html:262
 #, python-format
 msgid "e altri %(n)s"
 msgstr "and %(n)s more"
 
-#: templates/individual_match/statistics.html:265
+#: templates/individual_match/statistics.html:286
 msgid "Mese per mese"
 msgstr "Month by month"
 
-#: templates/individual_match/statistics.html:273
+#: templates/individual_match/statistics.html:294
 #, python-format
 msgid "%(n)s vinto"
 msgid_plural "%(n)s vinti"
 msgstr[0] "%(n)s won"
 msgstr[1] "%(n)s won"
 
-#: templates/individual_match/statistics.html:298
+#: templates/individual_match/statistics.html:319
 msgid "I tuoi traguardi"
 msgstr "Your achievements"
 
-#: templates/individual_match/statistics.html:299
+#: templates/individual_match/statistics.html:320
 msgid "Achievement, livelli e strisce"
 msgstr "Achievements, levels and streaks"
 

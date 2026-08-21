@@ -70,19 +70,6 @@ class TestIMieiNumeri:
 
         assert sfida.statistiche()["total_matches"] == 0
 
-    @pytest.mark.xfail(
-        strict=True,
-        reason=(
-            "Un pareggio è contato come sconfitta. `get_user_statistics` fa "
-            "`lost_matches = total_matches - won_matches`, e chi non ha vinto "
-            "ha perso: una partita finita 2-2 su «esattamente 4» compare "
-            "fra le sconfitte. Lo stesso `else` sta nel dettaglio per "
-            "disciplina, nel testa a testa e nel riepilogo per mese, quindi "
-            "il numero è coerentemente sbagliato dappertutto. Correggerlo "
-            "vuol dire anche decidere come la schermata mostra i pareggi — "
-            "oggi non li nomina — quindi non è solo una sottrazione."
-        ),
-    )
     def test_un_pareggio_non_e_una_sconfitta(self, sfida: SfidaDriver):
         io_, avversario = sfida.crea_giocatori(2)
         sfida.entra(io_)
@@ -265,35 +252,53 @@ class TestGliOrariCorrettiDopo:
         assert risposta.status_code == 400
         assert sfida.partita(match_id).started_at == prima
 
-    @pytest.mark.xfail(
-        strict=True,
-        reason=(
-            "Gli orari di una partita da avvio rapido non li corregge "
-            "nessuno dei due giocatori. `IndividualMatchService.update_times` "
-            "ammette «il proponente o un admin», e una partita quick un "
-            "proponente non ce l'ha: `proposal_id` è `None` per costruzione "
-            "(ADR-051), quindi `is_proposer` è falso per tutti e due. E "
-            "l'«o un admin» del servizio non li salva: la route è "
-            "`player_or_director_required`, che gli amministratori li esclude "
-            "apposta, quindi quel ramo non lo raggiunge nessuno. Il pannello "
-            "«Orari» sulla pagina della partita, per una quick, non compare "
-            "proprio. La regola è di quando ogni partita nasceva da una "
-            "proposta; il percorso nuovo l'ha lasciata indietro. Da decidere "
-            "chi può: i due giocatori sono simmetrici — `IndividualMatch` non "
-            "ricorda chi l'ha aperta — quindi la scelta è fra «tutti e due» e "
-            "«nessuno, e allora si toglie il pannello»."
-        ),
-    )
-    def test_i_due_giocatori_non_correggono_la_loro_partita_veloce(
-        self, sfida: SfidaDriver
-    ):
+    def test_gli_orari_li_correggono_i_due_giocatori(self, sfida: SfidaDriver):
+        """Chi gioca, non chi ha proposto.
+
+        Il permesso era «il proponente o un admin», e il proponente è un
+        concetto della **proposta**: una partita da avvio rapido non ne ha, e
+        lì non poteva correggere gli orari nessuno dei due. Punteggio e orari
+        sono proprietà della partita e valgono allo stesso modo comunque sia
+        nata — chi segna, corregge.
+        """
         io_, avversario = sfida.crea_giocatori(2)
         sfida.entra(io_)
         match_id = sfida.apri_partita(avversario, distance="5")
 
+        assert (
+            sfida.aggiorna_orari(match_id, started_at="2026-12-01T21:00").status_code
+            == 200
+        )
+
+        # E anche l'altro: fra i due non c'è un padrone della partita.
+        sfida.esci()
+        sfida.entra(avversario)
+        assert (
+            sfida.aggiorna_orari(match_id, ended_at="2026-12-01T22:30").status_code
+            == 200
+        )
+
+        partita = sfida.partita(match_id)
+        assert partita.started_at is not None and partita.ended_at is not None
+
+    def test_vale_uguale_per_una_partita_nata_da_una_proposta(self, sfida: SfidaDriver):
+        """Le due strade portano alla stessa partita, e si comporta uguale."""
+        match_id = self._partita_da_proposta(sfida)
+
         risposta = sfida.aggiorna_orari(match_id, started_at="2026-12-01T21:00")
 
         assert risposta.status_code == 200
+
+    def test_il_pannello_orari_compare_a_tutti_e_due(self, sfida: SfidaDriver):
+        io_, avversario = sfida.crea_giocatori(2)
+        sfida.entra(io_)
+        match_id = sfida.apri_partita(avversario, distance="5")
+
+        assert "Orari" in sfida.pagina(match_id)
+
+        sfida.esci()
+        sfida.entra(avversario)
+        assert "Orari" in sfida.pagina(match_id)
 
 
 # ══════════════════════════════════════════════════════════════════════

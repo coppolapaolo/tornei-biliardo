@@ -414,24 +414,6 @@ class TestLeNotifiche:
         pagina = sfida.pagina_notifiche()
         assert invitato.username in pagina
 
-    @pytest.mark.xfail(
-        strict=True,
-        reason=(
-            "Rifiutare una proposta non avvisa nessuno. `MatchProposalService."
-            "reject_proposal` — la sola cosa che la route `/decline` chiama — "
-            "porta l'invito a REJECTED e finisce lì; `ProposalService."
-            "reject_invitation`, che pure c'è, non manda niente e da una route "
-            "non ci arriva nessuno. Accettare avvisa, scadere avvisa, essere "
-            "scartati per l'accettazione di un altro avvisa: rifiutare no. "
-            "Chi ha proposto resta ad aspettare una risposta che c'è già "
-            "stata, e la vede solo riaprendo l'elenco delle proposte. "
-            "Sulle proposte **aperte** il silenzio si può difendere (un "
-            "rifiuto per invitato sarebbe rumore); su quelle **dirette** — un "
-            "invito a una persona sola — è una risposta persa. Da decidere: "
-            "il codice sa già distinguere i due casi, `accept_proposal` lo fa "
-            "già per gli scartati."
-        ),
-    )
     def test_rifiutare_avvisa_chi_aveva_proposto(self, sfida: SfidaDriver):
         io_, invitato = sfida.crea_giocatori(2)
         sfida.entra(io_)

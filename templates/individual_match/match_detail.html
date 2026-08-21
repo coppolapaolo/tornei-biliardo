@@ -251,9 +251,12 @@
     </section>
     {% endif %}
 
-    {# Modifica dei tempi: chi ha proposto il match, o l'amministratore. #}
-    {% set is_proposer = match.proposal and match.proposal.proposer_id == current_user.id %}
-    {% if is_proposer or current_user.is_admin %}
+    {# Modifica degli orari: **i due giocatori**, e la domanda la fa la
+       partita. Prima chiedeva «sei il proponente?» passando dalla proposta —
+       un oggetto che una partita da avvio rapido non ha — e lì il pannello
+       non compariva a nessuno dei due. Punteggio e orari sono proprietà della
+       partita: si comportano allo stesso modo comunque sia nata. #}
+    {% if match.is_player(current_user.id) %}
     <section class="c7-card">
       <h3 class="mb-3">{{ _('Orari') }}</h3>
       <div class="c7-grid" style="grid-template-columns:1fr 1fr">

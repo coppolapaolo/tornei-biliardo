@@ -33,10 +33,10 @@ class IndividualRackService:
         if match is None:
             raise ValueError("Match non trovato")
 
-        if user_id not in (match.player1_id, match.player2_id):
+        if not match.is_player(user_id):
             raise ValueError("User is not part of this match")
 
-        if winner_id not in (match.player1_id, match.player2_id):
+        if not match.is_player(winner_id):
             raise ValueError("Invalid winner ID")
 
         # A partita finita non si segna più. La regola era già scritta —
@@ -135,7 +135,7 @@ class IndividualRackService:
         if match is None:
             raise ValueError("Match non trovato")
 
-        if user_id not in (match.player1_id, match.player2_id):
+        if not match.is_player(user_id):
             raise ValueError("User is not part of this match")
 
         if match.is_multi_set:
@@ -244,7 +244,7 @@ class IndividualRackService:
         if match is None:
             raise ValueError("Match non trovato")
 
-        if user_id not in [match.player1_id, match.player2_id]:
+        if not match.is_player(user_id):
             raise ValueError("Only match players can add rack results")
 
         rack = match.add_rack_result(winner_id)
@@ -273,7 +273,7 @@ class IndividualRackService:
             raise ValueError(f"Rack {rack_id} not found")
 
         match = rack.match
-        if disputing_player_id not in [match.player1_id, match.player2_id]:
+        if not match.is_player(disputing_player_id):
             raise ValueError("Only match players can dispute rack results")
 
         return {

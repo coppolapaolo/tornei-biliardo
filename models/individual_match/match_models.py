@@ -216,6 +216,45 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
                 player2_racks=self.player2_score,
             )
 
+    # ------------------------------------------------------------------
+    # Chi prende parte, e com'è finita per lui
+    # ------------------------------------------------------------------
+
+    def is_player(self, user_id: Optional[int]) -> bool:
+        """Se questa persona è uno dei due che giocano.
+
+        È la domanda che decide chi può segnare, correggere gli orari,
+        confermare o rifiutare il risultato — e **non dipende da come la
+        partita è nata**. Una partita da avvio rapido e una nata da una
+        proposta accettata, una volta che esistono, sono la stessa cosa: il
+        *proponente* è un concetto della proposta, e la proposta è soltanto
+        uno dei modi di arrivare qui.
+
+        Prima questa condizione era riscritta in ogni servizio
+        (``user_id not in [match.player1_id, match.player2_id]``) e gli orari
+        — unico caso — la chiedevano alla **proposta**: su una partita da
+        avvio rapido, che proposta non ne ha, non poteva correggerli nessuno
+        dei due giocatori.
+        """
+        if user_id is None:
+            return False
+        return user_id in (self.player1_id, self.player2_id)
+
+    def outcome_for(self, user_id: int) -> str:
+        """Com'è finita per questo giocatore: ``won``, ``lost`` o ``tie``.
+
+        Il pareggio è un **esito**, non l'assenza di una vittoria: su
+        «esattamente N» triangoli si finisce pari, e dedurre le sconfitte per
+        differenza (``perse = giocate - vinte``) è il modo in cui la stessa
+        partita finiva fra le sconfitte in cinque conteggi diversi.
+
+        Stesso vocabolario di ``PlayerHistoryService``, che lo storico usa
+        già per tenere insieme partite di gara e sfide individuali.
+        """
+        if self.winner_id is None:
+            return "tie"
+        return "won" if self.winner_id == user_id else "lost"
+
     def can_add_rack(self) -> bool:
         """Check if a rack can be added to the match.
 
