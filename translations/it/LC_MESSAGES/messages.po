@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-21 09:53+0000\n"
+"POT-Creation-Date: 2026-08-21 15:49+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -18,23 +18,23 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app.py:678 templates/errors/403.html:3
+#: app.py:683 templates/errors/403.html:3
 msgid "Accesso negato"
 msgstr ""
 
-#: app.py:696
+#: app.py:701
 msgid "Non è il tuo turno"
 msgstr ""
 
-#: app.py:697
+#: app.py:702
 msgid "Colpo irregolare"
 msgstr ""
 
-#: app.py:716
+#: app.py:721
 msgid "Operazione non consentita"
 msgstr ""
 
-#: app.py:730
+#: app.py:735
 msgid "Tiro non valido"
 msgstr ""
 
@@ -4524,8 +4524,8 @@ msgid "In attesa"
 msgstr ""
 
 #: templates/admin/campionato_detail.html:246
-#: templates/components/_unified_match_score.html:82
-#: templates/components/_unified_match_score.html:93
+#: templates/components/_unified_match_score.html:88
+#: templates/components/_unified_match_score.html:99
 #: templates/exam/requests.html:19 utils/status_ui.py:194
 msgid "Confermato"
 msgstr ""
@@ -8663,6 +8663,41 @@ msgid ""
 "cambierebbero nulla."
 msgstr ""
 
+#: templates/components/_distance_configurator.html:135
+#, python-brace-format
+msgid "Si giocano esattamente {n} rack"
+msgstr ""
+
+#: templates/components/_distance_configurator.html:136
+#, python-brace-format
+msgid "Si vince a {n} rack"
+msgstr ""
+
+#: templates/components/_distance_configurator.html:139
+#, python-brace-format
+msgid "Si vince a {n} set"
+msgstr ""
+
+#: templates/components/_distance_configurator.html:140
+#, python-brace-format
+msgid "Si giocano {n} set"
+msgstr ""
+
+#: templates/components/_distance_configurator.html:142
+#, python-brace-format
+msgid "esattamente {n} rack"
+msgstr ""
+
+#: templates/components/_distance_configurator.html:143
+#, python-brace-format
+msgid "al {n}"
+msgstr ""
+
+#: templates/components/_distance_configurator.html:144
+#, python-brace-format
+msgid "{sets}, ogni set {racks}"
+msgstr ""
+
 #: templates/components/_double_knockout_algorithm_info.html:9
 #, python-format
 msgid "Doppio KO — turno %(num)s"
@@ -11441,30 +11476,30 @@ msgstr ""
 msgid "Crea Match"
 msgstr ""
 
-#: templates/components/_unified_match_score.html:57
+#: templates/components/_unified_match_score.html:63
 msgid "1 girone all'italiana"
 msgstr ""
 
-#: templates/components/_unified_match_score.html:57
+#: templates/components/_unified_match_score.html:63
 #, python-format
 msgid "%(n)s gironi all'italiana"
 msgstr ""
 
-#: templates/components/_unified_match_score.html:59
+#: templates/components/_unified_match_score.html:65
 msgid "vince chi fa più triangoli"
 msgstr ""
 
-#: templates/components/_unified_match_score.html:102
+#: templates/components/_unified_match_score.html:108
 #, python-format
 msgid "%(n)s set giocati"
 msgstr ""
 
-#: templates/components/_unified_match_score.html:104
+#: templates/components/_unified_match_score.html:110
 #, python-format
 msgid "%(n)s triangoli giocati"
 msgstr ""
 
-#: templates/components/_unified_match_score.html:113
+#: templates/components/_unified_match_score.html:119
 msgid "ha vinto"
 msgstr ""
 

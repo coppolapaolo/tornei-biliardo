@@ -377,6 +377,11 @@ def create_app(config_name=None):
             # confondeva, e mostrava la differenza triangoli sotto l'etichetta
             # "totali" (issue #89, ADR-047).
             "ClassificationSystem": ClassificationSystem,
+            # Quali strategie sono "a tabellone". Il JS del configuratore di
+            # distanza se lo riscriveva a mano (`['direct_elimination',
+            # 'double_knockout']`): due letterali che nessun test vede e che
+            # restano indietro in silenzio se l'insieme cambia.
+            "bracket_strategies": sorted(BRACKET_STRATEGIES),
             # Minimi di formato per i form a tabellone: il JS li legge da un
             # data attribute invece di riscriverli, cosi' UI e sorteggio non
             # possono divergere sul pavimento del tabellone.
