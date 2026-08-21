@@ -66,7 +66,11 @@ class RatingCalculationService:
         rete di sicurezza.
         """
         if systems is None:
-            systems = [RatingSystem.ELO, RatingSystem.ELO_GLOBAL]
+            systems = [
+                RatingSystem.ELO,
+                RatingSystem.ELO_GLOBAL,
+                RatingSystem.RACK,
+            ]
 
         for system in systems:
             if MatchRatingHistory.exists_for_match(match.id, system):
@@ -76,7 +80,9 @@ class RatingCalculationService:
                 )
                 continue
 
-            if match.is_trio and match.trio_match:
+            if system == RatingSystem.RACK:
+                RatingCalculationService._process_rack_pool(match)
+            elif match.is_trio and match.trio_match:
                 RatingCalculationService._process_trio_match(
                     match.trio_match, match.id, system
                 )
@@ -232,6 +238,55 @@ class RatingCalculationService:
         return {"processed": processed, "skipped": skipped, "total": len(merged)}
 
     @staticmethod
+    def recalculate_all_rack() -> dict:
+        """Reset e replay del pool a rack (ADR-052).
+
+        Stessa forma di ``recalculate_all_elo``: puro e in transazione, il
+        chiamante gestisce il commit. Perimetro identico al pool competitivo —
+        solo partite di gara, stesso filtro ``RatingEligibility`` — perché il
+        pool a rack nasce come candidato a **sostituire** quello, non ad
+        affiancare il globale.
+
+        Non tocca ``User.elo_rating``: il pool non è mostrato da nessuna parte.
+
+        Returns:
+            dict: contatori ``{processed, skipped, total}``.
+        """
+        from models.status_enum import MatchStatus
+
+        db.session.query(PlayerRating).filter_by(
+            rating_system=RatingSystem.RACK
+        ).delete()
+        db.session.query(MatchRatingHistory).filter_by(
+            rating_system=RatingSystem.RACK
+        ).delete()
+        db.session.flush()
+
+        matches = (
+            Match.query.filter(Match.status.in_(MatchStatus.finished_values()))
+            .order_by(Match.ended_at.asc(), Match.id.asc())
+            .all()
+        )
+        categorie = RatingEligibility.build_index(matches)
+
+        processed = 0
+        skipped = 0
+        for match in matches:
+            if not RatingEligibility.counts_for_rating(match, categorie):
+                skipped += 1
+                continue
+            if match.is_trio:
+                # Fuori dal pool per costruzione: vedi `_process_rack_pool`.
+                skipped += 1
+                continue
+            RatingCalculationService.process_match_result(
+                match, systems=[RatingSystem.RACK]
+            )
+            processed += 1
+
+        return {"processed": processed, "skipped": skipped, "total": len(matches)}
+
+    @staticmethod
     def revert_match_result(match: Match) -> None:
         """Annulla i delta di rating applicati per questo match.
 
@@ -267,6 +322,72 @@ class RatingCalculationService:
 
         logger.info(
             f"Revert rating per match {match.id}: annullati {len(records)} delta."
+        )
+
+    @staticmethod
+    def _process_rack_pool(match: Match) -> None:
+        """Aggiorna il pool a rack per una partita 1v1 (ADR-052).
+
+        Legge il **punteggio**, non il vincitore: è tutta la differenza col
+        motore storico. Le regole stanno in `rack_engine`, che non conosce il
+        database; qui c'è solo la persistenza.
+
+        **I trii restano fuori, per ora.** Un trio è un girone interno, ma in
+        `TrioMatch` i rack sono per giocatore e non per coppia: non esiste il
+        dato con cui costruire i tre confronti, e inventarne una ripartizione
+        significherebbe far dire ai numeri qualcosa che non hanno visto. In
+        produzione sono 18 partite su 367. Quando servirà, la strada è
+        registrare i rack per coppia, non indovinare qui.
+        """
+        from . import rack_engine
+
+        if match.is_trio:
+            logger.info("Match %s è un trio: fuori dal pool RACK.", match.id)
+            return
+
+        p1_id, p2_id = match.player1_id, match.player2_id
+        if not p1_id or not p2_id:
+            return
+
+        rack1 = match.player1_score or 0
+        rack2 = match.player2_score or 0
+        if rack1 + rack2 == 0:
+            return
+
+        obj1 = PlayerRating.get_user_rating(p1_id, RatingSystem.RACK)
+        obj2 = PlayerRating.get_user_rating(p2_id, RatingSystem.RACK)
+        r1 = obj1.rating_value if obj1 else rack_engine.PARTENZA
+        r2 = obj2.rating_value if obj2 else rack_engine.PARTENZA
+        # Nel pool RACK `games_played` conta i rack, non le partite: è la
+        # *robustness*, e regola la sensibilità dell'aggiornamento.
+        giocati1 = obj1.games_played if obj1 else 0
+        giocati2 = obj2.games_played if obj2 else 0
+
+        delta = rack_engine.variazione(r1, r2, rack1, rack2, giocati1, giocati2)
+        totale = rack1 + rack2
+
+        for user_id, vecchio, nuovo, obj in (
+            (p1_id, r1, r1 + delta, obj1),
+            (p2_id, r2, r2 - delta, obj2),
+        ):
+            RatingCalculationService._update_player_rating_db(
+                user_id,
+                vecchio,
+                nuovo,
+                obj,
+                RatingSystem.RACK,
+                match_id=match.id,
+                games_increment=totale,
+            )
+
+        logger.info(
+            "Pool RACK, match %s: %s-%s → delta %+.2f (k su %d/%d rack)",
+            match.id,
+            rack1,
+            rack2,
+            delta,
+            giocati1,
+            giocati2,
         )
 
     @staticmethod
@@ -431,12 +552,13 @@ class RatingCalculationService:
     @staticmethod
     def _update_player_rating_db(
         user_id: int,
-        old_val: int,
-        new_val: int,
+        old_val: float,
+        new_val: float,
         exist_obj: Optional[PlayerRating],
         rating_system: RatingSystem,
         match_id: Optional[int] = None,
         individual_match_id: Optional[int] = None,
+        games_increment: int = 1,
     ) -> None:
         """Salva il rating, registra la history e (solo ELO competitivo) sincronizza
         User.elo_rating.
@@ -446,13 +568,13 @@ class RatingCalculationService:
         """
         # Update/Create PlayerRating per il pool indicato
         if exist_obj:
-            exist_obj.update_rating(new_val)
+            exist_obj.update_rating(new_val, games_increment)
         else:
             new_rating = PlayerRating(
                 user_id=user_id,
                 rating_system=rating_system,
                 rating_value=new_val,
-                games_played=1,
+                games_played=games_increment,
             )
             db.session.add(new_rating)
 
@@ -466,11 +588,12 @@ class RatingCalculationService:
                 old_rating=old_val,
                 new_rating=new_val,
                 delta=new_val - old_val,
-                games_increment=1,
+                games_increment=games_increment,
             )
         )
 
-        # Sync su User SOLO per l'ELO competitivo (display-only per ELO_GLOBAL)
+        # Sync su User SOLO per l'ELO competitivo (display-only per ELO_GLOBAL
+        # e per il pool RACK, che non è ancora mostrato da nessuna parte)
         if rating_system == RatingSystem.ELO:
             from models.user.models import User
 

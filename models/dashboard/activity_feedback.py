@@ -326,7 +326,12 @@ def _elo_series(user_id: int) -> Tuple[List[int], Optional[int], bool]:
     if not rows:
         return [], None, False
 
-    series = [rows[0].old_rating] + [row.new_rating for row in rows]
+    # Interi: `_current_elo` dichiara `Sequence[int]` e da qui in giù il valore
+    # finisce in `str()`. Le colonne sono in virgola mobile per il pool a rack
+    # (ADR-052), ma i due pool letti qui scrivono interi per costruzione.
+    series = [int(round(rows[0].old_rating))] + [
+        int(round(row.new_rating)) for row in rows
+    ]
     all_time_high = (
         db.session.query(db.func.max(MatchRatingHistory.new_rating))
         .filter(
