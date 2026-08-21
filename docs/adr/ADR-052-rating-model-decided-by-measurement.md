@@ -317,6 +317,12 @@ modo che la frequenza marginale stazionaria torni a `p`.
 
 ### Dove vive cosa
 
+- Il passo 0: `scripts/rating_census.py`, di **sola lettura**, quindi
+  eseguibile in console di produzione senza disabilitare la web app — al
+  contrario di quasi tutti gli altri script. Misura i due perimetri (`ELO`
+  solo gare, `ELO_GLOBAL` gare + sfide) con lo stesso filtro
+  `RatingEligibility` del motore, così che un conteggio diverso da quello che
+  il motore processa sia un errore dello script e non una scoperta.
 - Il banco di prova: `scripts/rating_backtest.py`, di sviluppo, su copia del
   `.db`, con `--dry-run` come comportamento predefinito (convenzione di
   `scripts/repair_round_classification_racks.py`).
