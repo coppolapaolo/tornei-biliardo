@@ -149,6 +149,51 @@ class MatchProposalService:
             if existing_match and existing_match.status == MatchStatus.SCHEDULED.value:
                 db.session.delete(existing_match)
 
+        # Chi ha proposto merita la risposta. Accettare avvisa, scadere
+        # avvisa, essere scartati per l'accettazione di un altro avvisa:
+        # rifiutare no, e chi aveva proposto restava ad aspettare qualcosa che
+        # era già successo.
+        #
+        # Solo sulle proposte **dirette**, cioè quelle rivolte a qualcuno in
+        # particolare. Una proposta aperta la vedono in molti e non è rivolta a
+        # nessuno: un avviso per ogni rifiuto sarebbe rumore.
+        if proposal.proposal_type == ProposalType.DIRECT:
+            MatchProposalService._notify_rejection(proposal, user_id)
+
+    @staticmethod
+    def _notify_rejection(proposal: MatchProposal, rejecter_id: int) -> None:
+        """Avvisa chi ha proposto che l'invito è stato rifiutato.
+
+        Un errore qui non deve annullare il rifiuto: la notifica è un di più,
+        la risposta è il fatto. Stessa scelta di ``accept_proposal``.
+        """
+        from flask_babel import gettext as _
+        from ..notification.factory import NotificationFactory
+        from ..notification.models import NotificationPriority, NotificationType
+        from ..user.models import User
+
+        try:
+            rejecter = db.session.get(User, rejecter_id)
+            nome = rejecter.username if rejecter else _("Un giocatore")
+            luogo = proposal.location_display or ""
+            dove = " " + _("a %(loc)s", loc=luogo) if luogo else ""
+
+            NotificationFactory.create_bulk_notification(
+                user_ids=[proposal.proposer_id],
+                notification_type=NotificationType.MATCH_DECLINED,
+                title=_("Proposta rifiutata"),
+                message=_(
+                    "%(player)s ha rifiutato la tua proposta di match%(location)s",
+                    player=nome,
+                    location=dove,
+                ),
+                priority=NotificationPriority.NORMAL,
+                action_url=f"/match/proposals/{proposal.id}",
+                action_text=_("Vedi la proposta"),
+            )
+        except Exception:  # pragma: no cover - la notifica non blocca il rifiuto
+            pass
+
     @staticmethod
     def cancel_proposal(proposal_id: int, user_id: int) -> None:
         """Cancel a proposal."""
@@ -348,7 +393,15 @@ class IndividualMatchService:
     ) -> IndividualMatch:
         """Update individual match start and end times.
 
-        Permission: proposer or admin can edit.
+        Permesso: **i due giocatori**, e la domanda la fa la partita
+        (`IndividualMatch.is_player`), non la proposta.
+
+        Prima chiedeva «sei il proponente?» passando da `match.proposal`, che
+        è un oggetto di un altro concetto — il modo in cui la partita è nata —
+        e che una partita da avvio rapido non ha: lì il pannello «Orari» non
+        compariva a nessuno dei due. Punteggio e orari sono proprietà della
+        partita e si comportano allo stesso modo comunque sia nata, come già
+        fa il segnapunti.
 
         Args:
             match_id: ID of the individual match
@@ -366,18 +419,8 @@ class IndividualMatchService:
         if not match:
             raise ValueError(f"IndividualMatch {match_id} not found")
 
-        # Permission check: proposer or admin
-        if user_id:
-            from ..user.models import User
-
-            user = db.session.get(User, user_id)
-            proposal = match.proposal
-            is_proposer = proposal and proposal.proposer_id == user_id
-            is_admin = user and user.is_admin
-            if not (is_proposer or is_admin):
-                raise ValueError(
-                    "Solo il proponente o un admin può modificare gli orari"
-                )
+        if user_id is not None and not match.is_player(user_id):
+            raise ValueError("Gli orari li correggono i due giocatori")
 
         # Coerenza temporale: end non può precedere start (considerando i
         # valori già presenti quando se ne aggiorna uno solo).

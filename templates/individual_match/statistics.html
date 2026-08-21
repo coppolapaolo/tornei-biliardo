@@ -160,20 +160,37 @@
     </div>
   </div>
 
-  {# ---------- Vinte e perse ---------- #}
+  {# ---------- Vinte, perse e pari ----------
+     Il pareggio è un esito suo: su «esattamente N» triangoli si finisce pari,
+     e prima finiva fra le sconfitte perché si contavano per differenza. La
+     percentuale di vittorie resta sulle partite giocate, pareggi compresi. #}
+  {% set won = statistics.won_matches or 0 %}
+  {% set lost = statistics.lost_matches or 0 %}
+  {% set tied = statistics.tied_matches or 0 %}
   <div class="c7-card">
-    <div class="c7-sechead mb-3"><h2>{{ _("Vinte e perse") }}</h2></div>
-    {% set won = statistics.won_matches or 0 %}
-    {% set lost = statistics.lost_matches or 0 %}
+    <div class="c7-sechead mb-3">
+      <h2>{{ _("Vinte e perse") }}</h2>
+    </div>
     <div class="d-flex align-items-baseline gap-2">
       <span class="c7-num-lg" style="color:var(--c7-ok)">{{ won }}</span>
       <span class="c7-sep">–</span>
       <span class="c7-num-lg" style="color:var(--c7-err)">{{ lost }}</span>
+      {% if tied %}
+      <span class="c7-sep">–</span>
+      <span class="c7-num-lg" style="color:var(--c7-ink-muted)">{{ tied }}</span>
+      {% endif %}
     </div>
-    {# Barra a due segmenti, come il riepilogo degli achievement nella #11a. #}
+    <div class="c7-rows__sub" style="margin-top:4px">
+      {{ _("vinte") }} <span class="c7-sep">·</span> {{ _("perse") }}
+      {%- if tied %} <span class="c7-sep">·</span> {{ _("pari") }}{% endif %}
+    </div>
+    {# Barra dei segmenti, come il riepilogo degli achievement nella #11a. #}
     <div class="d-flex gap-1" style="margin-top:12px;height:8px">
-      <span style="flex:{{ won or 0 }};background:var(--c7-ok);border-radius:999px"></span>
-      <span style="flex:{{ lost or 0 }};background:var(--c7-line);border-radius:999px"></span>
+      <span style="flex:{{ won }};background:var(--c7-ok);border-radius:999px"></span>
+      <span style="flex:{{ lost }};background:var(--c7-line);border-radius:999px"></span>
+      {% if tied %}
+      <span style="flex:{{ tied }};background:var(--c7-ink-faint);border-radius:999px"></span>
+      {% endif %}
     </div>
   </div>
 
@@ -185,13 +202,17 @@
       <span class="c7-sechead__note">
         <span class="c7-num">{{ statistics.recent_wins or 0 }}</span>{{ _("V") }} ·
         <span class="c7-num">{{ statistics.recent_losses or 0 }}</span>{{ _("P") }}
+        {%- if statistics.recent_ties %} ·
+        <span class="c7-num">{{ statistics.recent_ties }}</span>{{ _("X") }}{% endif %}
       </span>
     </div>
     <div class="c7-card">
       <div class="d-flex flex-wrap gap-1">
         {% for match in statistics.recent_matches[-10:] %}
-        <span class="c7-state c7-state--{{ 'ok' if match.won else 'err' }}" style="width:34px;padding:0">
-          {{ _('V') if match.won else _('P') }}
+        {% set stile = {'won': ['ok', _('V')], 'lost': ['err', _('P')],
+                        'tie': ['muted', _('X')]}[match.outcome] %}
+        <span class="c7-state c7-state--{{ stile[0] }}" style="width:34px;padding:0">
+          {{ stile[1] }}
         </span>
         {% endfor %}
       </div>

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-21 09:53+0000\n"
+"POT-Creation-Date: 2026-08-21 13:54+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -118,6 +118,7 @@ msgid "persa"
 msgstr ""
 
 #: models/dashboard/activity_feedback.py:164
+#: templates/individual_match/statistics.html:185
 msgid "pari"
 msgstr ""
 
@@ -946,6 +947,7 @@ msgstr ""
 #: models/individual_match/proposal_service.py:192
 #: models/individual_match/proposal_service.py:491
 #: models/individual_match/quick_match_service.py:342
+#: models/individual_match/services.py:177
 msgid "Un giocatore"
 msgstr ""
 
@@ -954,6 +956,7 @@ msgstr ""
 #: models/individual_match/proposal_service.py:584
 #: models/individual_match/proposal_service.py:629
 #: models/individual_match/quick_match_service.py:345
+#: models/individual_match/services.py:179
 #, python-format
 msgid "a %(loc)s"
 msgstr ""
@@ -1078,6 +1081,21 @@ msgstr ""
 #: templates/components/_match_card.html:174
 #: templates/individual_match/proposal_detail.html:105
 msgid "Vai alla partita"
+msgstr ""
+
+#: models/individual_match/services.py:184
+#: templates/individual_match/proposal_detail.html:185
+#: templates/individual_match/proposals.html:249
+msgid "Proposta rifiutata"
+msgstr ""
+
+#: models/individual_match/services.py:186
+#, python-format
+msgid "%(player)s ha rifiutato la tua proposta di match%(location)s"
+msgstr ""
+
+#: models/individual_match/services.py:192
+msgid "Vedi la proposta"
 msgstr ""
 
 #: models/kpi/notifications.py:45
@@ -2473,7 +2491,7 @@ msgid "Match completato con successo!"
 msgstr ""
 
 #: routes/individual_match/matches.py:315
-#: templates/individual_match/match_detail.html:450
+#: templates/individual_match/match_detail.html:453
 msgid "Risultato confermato! In attesa dell'altro giocatore."
 msgstr ""
 
@@ -3338,13 +3356,13 @@ msgstr ""
 
 #: templates/components/_match_admin_controls.html:151
 #: templates/components/_match_info.html:58 templates/gara_detail.html:592
-#: templates/individual_match/match_detail.html:261
+#: templates/individual_match/match_detail.html:264
 msgid "Inizio"
 msgstr ""
 
 #: templates/components/_match_admin_controls.html:156
 #: templates/components/_match_info.html:62 templates/gara_detail.html:596
-#: templates/individual_match/match_detail.html:268
+#: templates/individual_match/match_detail.html:271
 msgid "Fine"
 msgstr ""
 
@@ -3509,13 +3527,13 @@ msgstr ""
 #: templates/components/_match_admin_controls.html:310
 #: templates/components/_match_admin_controls.html:352
 #: templates/gara_detail.html:753 templates/gara_detail.html:768
-#: templates/individual_match/match_detail.html:367
-#: templates/individual_match/match_detail.html:397
-#: templates/individual_match/match_detail.html:423
-#: templates/individual_match/match_detail.html:454
-#: templates/individual_match/match_detail.html:481
-#: templates/individual_match/match_detail.html:507
-#: templates/individual_match/match_detail.html:546
+#: templates/individual_match/match_detail.html:370
+#: templates/individual_match/match_detail.html:400
+#: templates/individual_match/match_detail.html:426
+#: templates/individual_match/match_detail.html:457
+#: templates/individual_match/match_detail.html:484
+#: templates/individual_match/match_detail.html:510
+#: templates/individual_match/match_detail.html:549
 #: templates/individual_match/proposal_detail.html:190
 #: templates/individual_match/proposals.html:252
 #: templates/match_detail.html:179 templates/match_detail.html:211
@@ -3621,7 +3639,7 @@ msgstr ""
 #: templates/components/_match_admin_controls.html:310
 #: templates/components/_match_admin_controls.html:352
 #: templates/gara_detail.html:781
-#: templates/individual_match/match_detail.html:546
+#: templates/individual_match/match_detail.html:549
 #: templates/match_detail.html:179 templates/match_detail.html:211
 #: templates/match_detail.html:247 templates/match_detail.html:280
 #: templates/match_detail.html:306 templates/match_detail.html:436
@@ -3784,7 +3802,7 @@ msgstr ""
 msgid "Errore durante l'aggiunta del triangolo al trio"
 msgstr ""
 
-#: templates/individual_match/match_detail.html:429
+#: templates/individual_match/match_detail.html:432
 #: templates/match_detail.html:217 templates/match_detail.html:337
 #: templates/match_detail.html:468
 msgid "Errore durante la rimozione del triangolo"
@@ -3802,7 +3820,7 @@ msgstr ""
 msgid "Errore durante la registrazione del forfait"
 msgstr ""
 
-#: templates/individual_match/match_detail.html:373
+#: templates/individual_match/match_detail.html:376
 #: templates/match_detail.html:312
 msgid "Errore durante l'aggiunta del triangolo"
 msgstr ""
@@ -3815,7 +3833,7 @@ msgstr ""
 msgid "Impossibile confermare il risultato"
 msgstr ""
 
-#: templates/individual_match/match_detail.html:460
+#: templates/individual_match/match_detail.html:463
 #: templates/match_detail.html:362
 msgid "Errore durante la conferma"
 msgstr ""
@@ -3830,7 +3848,7 @@ msgstr ""
 msgid "Impossibile rifiutare il risultato"
 msgstr ""
 
-#: templates/individual_match/match_detail.html:487
+#: templates/individual_match/match_detail.html:490
 #: templates/match_detail.html:387
 msgid "Errore durante il rifiuto"
 msgstr ""
@@ -3845,7 +3863,7 @@ msgstr ""
 msgid "Impossibile dichiarare forfait"
 msgstr ""
 
-#: templates/individual_match/match_detail.html:512
+#: templates/individual_match/match_detail.html:515
 #: templates/match_detail.html:414
 msgid "Errore durante la dichiarazione di forfait"
 msgstr ""
@@ -6229,7 +6247,7 @@ msgid "Carica Foto"
 msgstr ""
 
 #: templates/admin/venue_detail.html:315
-#: templates/individual_match/match_detail.html:258
+#: templates/individual_match/match_detail.html:261
 msgid "Orari"
 msgstr ""
 
@@ -10055,17 +10073,17 @@ msgid "hai inserito"
 msgstr ""
 
 #: templates/components/_match_admin_controls.html:331
-#: templates/individual_match/match_detail.html:525
+#: templates/individual_match/match_detail.html:528
 msgid "Inserisci almeno un orario"
 msgstr ""
 
 #: templates/components/_match_admin_controls.html:349
-#: templates/individual_match/match_detail.html:543
+#: templates/individual_match/match_detail.html:546
 msgid "Tempi aggiornati con successo"
 msgstr ""
 
 #: templates/components/_match_admin_controls.html:357
-#: templates/individual_match/match_detail.html:551
+#: templates/individual_match/match_detail.html:554
 msgid "Errore durante l'aggiornamento dei tempi"
 msgstr ""
 
@@ -13752,8 +13770,8 @@ msgid "G"
 msgstr ""
 
 #: templates/individual_match/availability.html:17
-#: templates/individual_match/statistics.html:186
-#: templates/individual_match/statistics.html:194
+#: templates/individual_match/statistics.html:203
+#: templates/individual_match/statistics.html:212
 msgid "V"
 msgstr ""
 
@@ -14389,45 +14407,45 @@ msgstr ""
 msgid "Vedi le statistiche"
 msgstr ""
 
-#: templates/individual_match/match_detail.html:275
+#: templates/individual_match/match_detail.html:278
 msgid "Aggiorna gli orari"
 msgstr ""
 
-#: templates/individual_match/match_detail.html:397
+#: templates/individual_match/match_detail.html:400
 msgid "Impossibile iniziare il set successivo"
 msgstr ""
 
-#: templates/individual_match/match_detail.html:403
+#: templates/individual_match/match_detail.html:406
 msgid "Errore durante l'avvio del set successivo"
 msgstr ""
 
-#: templates/individual_match/match_detail.html:409
+#: templates/individual_match/match_detail.html:412
 msgid "Rimuovere l'ultimo triangolo vinto da questo giocatore?"
 msgstr ""
 
-#: templates/individual_match/match_detail.html:436
+#: templates/individual_match/match_detail.html:439
 msgid "Confermare il risultato della sfida?"
 msgstr ""
 
-#: templates/individual_match/match_detail.html:448
+#: templates/individual_match/match_detail.html:451
 msgid "Sfida completata!"
 msgstr ""
 
-#: templates/individual_match/match_detail.html:467
+#: templates/individual_match/match_detail.html:470
 msgid ""
 "Rifiutare il risultato? L'ultimo triangolo verrà rimosso e si potrà "
 "continuare a giocare."
 msgstr ""
 
-#: templates/individual_match/match_detail.html:478
+#: templates/individual_match/match_detail.html:481
 msgid "Ultimo triangolo rimosso. Continuate a giocare!"
 msgstr ""
 
-#: templates/individual_match/match_detail.html:494
+#: templates/individual_match/match_detail.html:497
 msgid "Sei sicuro di voler dichiarare forfait? L'avversario vincerà la sfida."
 msgstr ""
 
-#: templates/individual_match/match_detail.html:504
+#: templates/individual_match/match_detail.html:507
 msgid "Forfait dichiarato."
 msgstr ""
 
@@ -14550,11 +14568,6 @@ msgstr ""
 #: templates/individual_match/proposal_detail.html:177
 #: templates/individual_match/proposals.html:239
 msgid "Sei sicuro di voler rifiutare questa proposta?"
-msgstr ""
-
-#: templates/individual_match/proposal_detail.html:185
-#: templates/individual_match/proposals.html:249
-msgid "Proposta rifiutata"
 msgstr ""
 
 #: templates/individual_match/proposal_detail.html:195
@@ -14815,71 +14828,84 @@ msgstr ""
 msgid "Triangoli vinti su giocati"
 msgstr ""
 
-#: templates/individual_match/statistics.html:165
+#: templates/individual_match/statistics.html:172
 msgid "Vinte e perse"
 msgstr ""
 
 #: templates/individual_match/statistics.html:184
+msgid "vinte"
+msgstr ""
+
+#: templates/individual_match/statistics.html:184
+msgid "perse"
+msgstr ""
+
+#: templates/individual_match/statistics.html:201
 msgid "Ultime sfide"
 msgstr ""
 
-#: templates/individual_match/statistics.html:187
-#: templates/individual_match/statistics.html:194
+#: templates/individual_match/statistics.html:204
+#: templates/individual_match/statistics.html:212
 msgid "P"
 msgstr ""
 
-#: templates/individual_match/statistics.html:202
+#: templates/individual_match/statistics.html:206
+#: templates/individual_match/statistics.html:213
+msgid "X"
+msgstr ""
+
+#: templates/individual_match/statistics.html:223
 #, python-format
 msgid "%(n)s vittoria di fila"
 msgid_plural "%(n)s vittorie di fila"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/individual_match/statistics.html:205
+#: templates/individual_match/statistics.html:226
 #, python-format
 msgid "%(n)s sconfitta di fila"
 msgid_plural "%(n)s sconfitte di fila"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/individual_match/statistics.html:217
+#: templates/individual_match/statistics.html:238
 msgid "Per disciplina"
 msgstr ""
 
-#: templates/individual_match/statistics.html:224
-#: templates/individual_match/statistics.html:250
-#: templates/individual_match/statistics.html:272
+#: templates/individual_match/statistics.html:245
+#: templates/individual_match/statistics.html:271
+#: templates/individual_match/statistics.html:293
 #, python-format
 msgid "%(n)s match"
 msgid_plural "%(n)s match"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/individual_match/statistics.html:239
+#: templates/individual_match/statistics.html:260
 msgid "Testa a testa"
 msgstr ""
 
-#: templates/individual_match/statistics.html:241
+#: templates/individual_match/statistics.html:262
 #, python-format
 msgid "e altri %(n)s"
 msgstr ""
 
-#: templates/individual_match/statistics.html:265
+#: templates/individual_match/statistics.html:286
 msgid "Mese per mese"
 msgstr ""
 
-#: templates/individual_match/statistics.html:273
+#: templates/individual_match/statistics.html:294
 #, python-format
 msgid "%(n)s vinto"
 msgid_plural "%(n)s vinti"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/individual_match/statistics.html:298
+#: templates/individual_match/statistics.html:319
 msgid "I tuoi traguardi"
 msgstr ""
 
-#: templates/individual_match/statistics.html:299
+#: templates/individual_match/statistics.html:320
 msgid "Achievement, livelli e strisce"
 msgstr ""
 

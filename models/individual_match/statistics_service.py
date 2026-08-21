@@ -19,6 +19,11 @@ from ..location.models import BilliardHall, UserLocationAvailability
 from ..status_enum import Discipline, MatchStatus
 from ..user.models import User
 
+#: Dall'esito di una partita alla voce del conteggio. Esiste per non
+#: riscrivere `if vinto / elif pari / else` in ogni riepilogo: gli esiti sono
+#: tre, e li nomina `IndividualMatch.outcome_for`.
+_VOCE_ESITO = {"won": "wins", "lost": "losses", "tie": "ties"}
+
 
 class IndividualMatchStatisticsService:
     """Service for individual match statistics and queries."""
@@ -59,9 +64,14 @@ class IndividualMatchStatisticsService:
             user_id, [MatchStatus.CLOSED_UNILATERALLY, MatchStatus.CONFIRMED_BY_BOTH]
         )
 
+        # Gli esiti li dice la partita (`outcome_for`), e sono tre: il
+        # pareggio esiste — su «esattamente N» triangoli si finisce pari — e
+        # dedurre le sconfitte per differenza lo contava fra quelle.
+        esiti = [m.outcome_for(user_id) for m in matches]
         total_matches = len(matches)
-        won_matches = sum(1 for m in matches if m.winner_id == user_id)
-        lost_matches = total_matches - won_matches
+        won_matches = esiti.count("won")
+        lost_matches = esiti.count("lost")
+        tied_matches = esiti.count("tie")
 
         total_racks_won = sum(m.get_user_score(user_id) for m in matches)
         total_racks_played = sum(m.player1_score + m.player2_score for m in matches)
@@ -84,13 +94,16 @@ class IndividualMatchStatisticsService:
             disc = m.discipline or Discipline.EIGHT_BALL.value
             entry = by_discipline_map.setdefault(
                 disc,
-                {"discipline": disc, "total_matches": 0, "wins": 0, "losses": 0},
+                {
+                    "discipline": disc,
+                    "total_matches": 0,
+                    "wins": 0,
+                    "losses": 0,
+                    "ties": 0,
+                },
             )
             entry["total_matches"] += 1
-            if m.winner_id == user_id:
-                entry["wins"] += 1
-            else:
-                entry["losses"] += 1
+            entry[_VOCE_ESITO[m.outcome_for(user_id)]] += 1
         for entry in by_discipline_map.values():
             entry["win_percentage"] = (
                 entry["wins"] / entry["total_matches"] * 100
@@ -115,12 +128,10 @@ class IndividualMatchStatisticsService:
                     "total_matches": 0,
                     "wins": 0,
                     "losses": 0,
+                    "ties": 0,
                 }
             entry["total_matches"] += 1
-            if m.winner_id == user_id:
-                entry["wins"] += 1
-            else:
-                entry["losses"] += 1
+            entry[_VOCE_ESITO[m.outcome_for(user_id)]] += 1
         head_to_head = sorted(
             h2h_map.values(), key=lambda e: e["total_matches"], reverse=True
         )
@@ -129,17 +140,24 @@ class IndividualMatchStatisticsService:
         # recent_matches in ordine cronologico ASC, così [-10:] nel template
         # sono i 10 più recenti.
         chrono = list(reversed(matches))
-        recent_matches = [{"won": m.winner_id == user_id} for m in chrono]
+        recent_matches = [
+            {"won": m.outcome_for(user_id) == "won", "outcome": m.outcome_for(user_id)}
+            for m in chrono
+        ]
         last10 = recent_matches[-10:]
-        recent_wins = sum(1 for r in last10 if r["won"])
-        recent_losses = len(last10) - recent_wins
+        recent_wins = sum(1 for r in last10 if r["outcome"] == "won")
+        recent_losses = sum(1 for r in last10 if r["outcome"] == "lost")
+        recent_ties = sum(1 for r in last10 if r["outcome"] == "tie")
 
-        # Striscia attuale (dai match più recenti)
+        # Striscia attuale (dai match più recenti). Un pareggio non è né una
+        # vittoria né una sconfitta: interrompe la striscia, non la prosegue.
         current_streak = 0
         current_streak_type = None
         for m in matches:  # DESC
-            won = m.winner_id == user_id
-            t = "win" if won else "loss"
+            esito = m.outcome_for(user_id)
+            if esito == "tie":
+                break
+            t = "win" if esito == "won" else "loss"
             if current_streak_type is None:
                 current_streak_type, current_streak = t, 1
             elif t == current_streak_type:
@@ -176,6 +194,7 @@ class IndividualMatchStatisticsService:
             "total_matches": total_matches,
             "won_matches": won_matches,
             "lost_matches": lost_matches,
+            "tied_matches": tied_matches,
             "win_percentage": (
                 (won_matches / total_matches * 100) if total_matches > 0 else 0
             ),
@@ -192,6 +211,7 @@ class IndividualMatchStatisticsService:
             "recent_matches": recent_matches,
             "recent_wins": recent_wins,
             "recent_losses": recent_losses,
+            "recent_ties": recent_ties,
             "current_streak": current_streak,
             "current_streak_type": current_streak_type,
             "monthly_activity": monthly_activity,

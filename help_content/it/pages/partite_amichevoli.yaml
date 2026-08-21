@@ -92,8 +92,10 @@ blocks:
           gioco](/aiuto/approfondimenti/formati_di_gioco).
       - title: "Invia"
         text: >-
-          L'avversario riceve una notifica e può accettare o rifiutare. Finché
-          non risponde, la proposta resta «in attesa» e puoi ritirarla.
+          L'avversario riceve una notifica e può accettare o rifiutare. In tutti
+          e due i casi ti arriva la risposta: se accetta trovi la partita fra
+          quelle da giocare, se rifiuta te lo dice una notifica. Finché non
+          risponde, la proposta resta «in attesa» e puoi ritirarla.
 
   - type: heading
     id: rispondere
@@ -181,6 +183,17 @@ blocks:
       l'altro al tavolo si cambia, si beve, si aspetta.
 
   - type: heading
+    id: orari
+    title: "Correggere gli orari"
+
+  - type: text
+    text: >-
+      Capita di segnare la partita mezz'ora dopo averla giocata, o di lasciare
+      il segnapunti aperto a partita finita. Nella pagina della sfida c'è
+      **Orari**: si correggono inizio e fine, e li può sistemare **ognuno dei
+      due giocatori** — come per il punteggio, che segnate tutti e due.
+
+  - type: heading
     id: disponibilita
     title: "Farsi trovare"
 
@@ -218,6 +231,15 @@ blocks:
       (solo gare ufficiali) e **globale** (gare più amichevoli). Puoi passare
       dall'una all'altra con un tocco. Le classifiche delle gare, invece, non
       sono toccate dalle amichevoli.
+
+  - type: note
+    tone: info
+    title: "I pareggi si contano a parte"
+    text: >-
+      Con «esattamente N» triangoli si può finire pari. Un pareggio non è una
+      sconfitta: nelle statistiche ha una voce sua, e fra le ultime sfide
+      compare come **X**. La percentuale di vittorie resta calcolata su tutte
+      le partite giocate, pareggi compresi.
 
   - type: shot
     shot: statistiche-amichevoli

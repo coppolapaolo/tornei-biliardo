@@ -94,8 +94,11 @@ blocks:
           formats](/aiuto/approfondimenti/formati_di_gioco).
       - title: "Send it"
         text: >-
-          Your opponent gets a notification and can accept or decline. Until
-          they answer the proposal stays «pending» and you can withdraw it.
+          Your opponent gets a notification and can accept or decline. Either
+          way the answer comes back to you: if they accept you find the match
+          among the ones to play, if they decline a notification tells you.
+          Until they answer the proposal stays «pending» and you can withdraw
+          it.
 
   - type: heading
     id: rispondere
@@ -182,6 +185,17 @@ blocks:
       and the next you swap ends, get a drink, wait.
 
   - type: heading
+    id: orari
+    title: "Fixing the times"
+
+  - type: text
+    text: >-
+      It happens that you record a match half an hour after playing it, or
+      leave the scoreboard open once it is over. The match page has **Times**:
+      you fix the start and the end, and **either of the two players** can do
+      it — just like the score, which you both record.
+
+  - type: heading
     id: disponibilita
     title: "Being findable"
 
@@ -219,6 +233,15 @@ blocks:
       **competitive** (official competitions only) and **overall**
       (competitions plus friendlies). You can switch with one tap. Competition
       standings, on the other hand, are untouched by friendlies.
+
+  - type: note
+    tone: info
+    title: "Draws are counted on their own"
+    text: >-
+      With «exactly N» racks a match can end level. A draw is not a loss: it
+      has its own figure in the statistics, and among your recent matches it
+      shows as **D**. The win percentage is still worked out over every match
+      played, draws included.
 
   - type: shot
     shot: statistiche-amichevoli
