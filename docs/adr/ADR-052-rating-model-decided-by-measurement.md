@@ -1,7 +1,7 @@
 # ADR-052 Fra Elo iterativo a rack e rifit globale si decide misurando
 
 **Data**: 2026-08-21
-**Stato**: Proposed
+**Stato**: Accepted
 **Decisori**: Paolo Coppola
 
 ## Contesto
@@ -323,9 +323,12 @@ modo che la frequenza marginale stazionaria torni a `p`.
   solo gare, `ELO_GLOBAL` gare + sfide) con lo stesso filtro
   `RatingEligibility` del motore, così che un conteggio diverso da quello che
   il motore processa sia un errore dello script e non una scoperta.
-- Il banco di prova: `scripts/rating_backtest.py`, di sviluppo, su copia del
-  `.db`, con `--dry-run` come comportamento predefinito (convenzione di
-  `scripts/repair_round_classification_racks.py`).
+- La simulazione che ha deciso: `scripts/rating_model_simulation.py`, in
+  Python puro e senza dipendenze nuove, così che i numeri dell'*Esito* siano
+  rifattibili fra due anni.
+- Il banco di prova, **se** un giorno si farà: `scripts/rating_backtest.py`, di
+  sviluppo, su copia del `.db`, con `--dry-run` come comportamento predefinito
+  (convenzione di `scripts/repair_round_classification_racks.py`).
 - Lo script **non** usa `prod_env` finché resta di sviluppo, quindi resta fuori
   dalla regola sull'ordine degli import; se un giorno dovesse girare in
   produzione va prima agganciato a `bootstrap_and_create_app`.
@@ -342,3 +345,117 @@ modo che la frequenza marginale stazionaria torni a `p`.
 - ADR-048 — fatti riassegnati, derivati ricalcolati
 - ADR-045 — niente scritture spensierate sul DB di produzione
 - `models/rating/CLAUDE.md`
+
+---
+
+## Esito (2026-08-21)
+
+Il passo 0 ha risposto, e la risposta ha cambiato il seguito: **il backtest
+previsto non si fa**, e la scelta si chiude lo stesso.
+
+### Cosa ha detto il censimento
+
+286 partite ammissibili, **1375 rack**, 51 giocatori di cui 5 sopra i 200 rack,
+9 mesi con 5 finestre utilizzabili. E tre cose che non ci si aspettava:
+
+* le partite sono a **rack esatti**, non a corsa (la somma delle distanze fa
+  1366 rack, contro i ~1900 che servirebbero alle corse). Quindi i **pareggi**
+  esistono, e sono 62 partite;
+* il grafo dei confronti è spezzato in **2 componenti**, 43 e 8 giocatori: fra
+  i due gruppi i rating non sono confrontabili, perché nessuna partita li
+  collega. Non è un problema per la previsione — quelle partite non esistono —
+  ma lo diventerebbe il giorno che una classifica li ordinasse insieme;
+* **40 partite senza data di fine**, che si sono rivelate un difetto e non un
+  dato: vedi sotto.
+
+### Perché il backtest non si fa
+
+Simulando 60 circoli con questa struttura, la prova prevista dall'ADR separa i
+due modelli **nel 32% dei casi**. Nei restanti due terzi risponderebbe
+«indistinguibili», cioè farebbe scattare la regola di aggiudicazione invece di
+decidere: si sarebbe costruita l'impalcatura per invocare il pareggio.
+Servirebbero ~4000 rack per il 78%, ~14 000 per la certezza.
+
+### Cosa dice la simulazione
+
+`scripts/rating_model_simulation.py`, log-loss sui tre esiti fuori campione,
+finestre mensili a origine mobile (più bassa predice meglio):
+
+| a volume attuale (1375 rack) | stabili | +8/mese | +20/mese |
+|---|---|---|---|
+| motore attuale, K=32 (oggi) | 0,7179 | 0,7174 | 0,7099 |
+| motore attuale, K ritarato a 64 | 0,7101 | 0,7094 | 0,6982 |
+| iterativo a rack | **0,6900** | **0,6911** | 0,6842 |
+| globale, tutta la storia | 0,6961 | 0,6974 | 0,6931 |
+| globale, con emivita 3 mesi | 0,6919 | 0,6912 | **0,6810** |
+
+Se ne leggono tre cose, di solidità decrescente.
+
+**1. Il guadagno vero è il cambio di unità, e non è ambiguo.** Fra il motore di
+oggi e *qualunque* modello a rack ci sono 0,02–0,03, in tutti gli scenari. È
+l'unico risultato con un margine grande rispetto alle differenze in gioco.
+
+**2. Fra i tre modelli a rack le differenze sono piccole (≤ 0,006) e cambiano
+segno con la deriva**, che è **incognita**: nessuno sa se i giocatori del
+circolo migliorino, e i dati attuali non bastano a dirlo. Una cosa però è
+stabile: il rifit globale **senza dimenticanza** è sempre il peggiore dei tre,
+perché pesa una partita di due anni fa quanto quella di ieri.
+
+**3. Una parte del guadagno non richiede di cambiare modello.** Portare `K` da
+32 a 64 vale da solo circa un terzo del cambio di unità. Il fattore dominante,
+a questo volume, è **quanto in fretta il rating dimentica** — non l'unità di
+misura e non l'estimatore.
+
+### La decisione
+
+**Si passa all'unità rack, con il modello iterativo.**
+
+L'unità perché il guadagno è grande e stabile. Il modello iterativo perché a
+questo volume vince o pareggia, è l'unico spiegabile a chi legge il proprio
+rating («hai preso +6 punti stasera»), conserva `revert_match_result` e non
+richiede un job notturno che scriva sul DB — che su storage di rete è
+esattamente ciò che si preferisce evitare (ADR-045). È anche il caso previsto
+dalla regola di aggiudicazione fissata prima della misura: a parità, vince
+l'iterativo.
+
+Conseguenze operative, in ordine:
+
+1. **la taratura di `k` è parte dell'implementazione, non una rifinitura**: a
+   parametri non tarati il modello nuovo perde contro quello vecchio, ed è così
+   che questa analisi ha rischiato di concludere il contrario;
+2. `PlayerRating.rating_value` deve diventare **in virgola mobile**: con delta
+   dell'ordine di 1–2 punti, l'arrotondamento a intero è dello stesso ordine
+   del segnale;
+3. il modello nuovo nasce come **membro aggiuntivo di `RatingSystem`**,
+   calcolato in parallelo e non mostrato, finché non si decide di sostituire il
+   pool visibile.
+
+### Emendamento al protocollo
+
+Il protocollo del passo 3 aveva un buco: **non prescriveva la taratura
+annidata**. Senza, un backtest premia il modello con più parametri, perché
+quei parametri sono stati scelti guardando gli stessi dati su cui viene
+valutato. Se un giorno il backtest si farà — a ~4000 rack — la taratura di ogni
+modello va fatta dentro una validazione interna al solo periodo di
+addestramento.
+
+### Cosa resta aperto, con la sua soglia
+
+A ~14 000 rack il confronto fra iterativo e globale diventa decidibile davvero,
+e a quel punto sarà anche misurabile se i giocatori migliorino. Se lo si
+riaprirà, il candidato non è il rifit globale di questo ADR ma **quello con la
+dimenticanza**: la variante senza è già stata scartata dai numeri qui sopra.
+
+### Il difetto trovato per strada
+
+Le 40 partite senza `ended_at` non erano un dato ma un guasto:
+`_complete_match_after_confirmation` scriveva la data dentro un
+`if hasattr(self, "completed_at")`, e la colonna era stata rinominata
+`ended_at`. Restavano quindi senza data **esattamente** le partite chiuse dai
+due giocatori con la doppia conferma — e SQLite ordina i NULL per primi, quindi
+`recalculate_all_elo` le rigiocava prima di tutte le altre, mentre il pool
+globale le spingeva in coda. I due pool ricostruivano due storie diverse.
+Corretto, con `scripts/repair_match_ended_at.py` per le righe storiche.
+
+È il motivo per cui il passo 0 valeva la pena a prescindere dal suo esito:
+contare i dati ha trovato un difetto che nessun test vedeva.
