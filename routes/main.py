@@ -177,10 +177,8 @@ def campionato_detail_public(campionato_id):
 
     campionato = db.get_or_404(Campionato, campionato_id)
 
-    # Get all garas for this campionato
-    garas = (
-        Gara.query.filter_by(campionato_id=campionato_id).order_by(Gara.number).all()
-    )
+    # Tutte le gare del campionato
+    gare = Gara.query.filter_by(campionato_id=campionato_id).order_by(Gara.number).all()
 
     # Calculate general classification using the service (handles Amalfi, Random, etc.)
     campionato_service = TournamentService()
@@ -190,14 +188,14 @@ def campionato_detail_public(campionato_id):
 
     # Determine last completed gara number
     last_completed_gara_number = None
-    completed_garas = [g for g in garas if g.status == GaraStatus.COMPLETED.value]
-    if completed_garas:
-        last_completed_gara_number = max(g.number for g in completed_garas)
+    gare_concluse = [g for g in gare if g.status == GaraStatus.COMPLETED.value]
+    if gare_concluse:
+        last_completed_gara_number = max(g.number for g in gare_concluse)
 
     return render_template(
         "public/campionato_detail.html",
         campionato=campionato,
-        garas=garas,
+        gare=gare,
         general_classification=general_classification,
         last_completed_gara_number=last_completed_gara_number,
     )
