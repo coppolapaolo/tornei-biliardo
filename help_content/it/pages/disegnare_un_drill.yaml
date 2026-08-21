@@ -310,7 +310,7 @@ blocks:
       - title: "Scegli come si conta"
         text: "«A punteggio» oppure «Superata o non superata»: le stesse due possibilità del modulo normale."
       - title: "Tocca «Salva l'esercizio»"
-        text: "È il pulsante in fondo alla pagina. Il esercizio entra nel catalogo con l'immagine del disegno, come se l'avessi fotografato. «Annulla» esce senza salvare niente."
+        text: "È il pulsante in fondo alla pagina. L'esercizio entra nel catalogo con l'immagine del disegno, come se l'avessi fotografato. «Annulla» esce senza salvare niente."
 
   - type: note
     tone: info

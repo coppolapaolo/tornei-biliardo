@@ -82,8 +82,12 @@ class MatchStateService:
 
     @staticmethod
     @transactional(domain="match")
-    def to_completed(match_id: int, closed_by_director: bool = False) -> Match:
-        """Transition playing/pending → completed.
+    def to_completed(
+        match_id: int,
+        closed_by_director: bool = False,
+        confirmed_by_players: bool = False,
+    ) -> Match:
+        """Transition playing/pending → uno dei due stati finali.
 
         Side effects:
         - Records PlayerEncounter for anti-rematch logic
@@ -109,6 +113,22 @@ class MatchStateService:
                 `round_creation.py` aveva dovuto perfino zittire il type
                 checker con un `# type: ignore[attr-defined]`, che è il
                 momento in cui il codice dice a voce alta di essere sbagliato.
+            confirmed_by_players: la partita la chiudono i **giocatori**, che
+                hanno confermato tutti. Porta a `CONFIRMED_BY_BOTH` invece che
+                a `CLOSED_UNILATERALLY`, e quindi lascia aperta la finestra in
+                cui l'ultimo triangolo si puo' ancora annullare.
+
+                Serve al trio. La partita a due non passa di qui: chiude da
+                `_complete_match_after_confirmation()`, che lo stato se lo
+                scrive da se'. Il trio invece ha bisogno dei quattro effetti
+                collaterali di questo metodo (anti-reincontro, rilascio del
+                tavolo, evento SSE, classifica), e prima li otteneva al prezzo
+                di finire sempre nello stato sbagliato: chiuso dai tre
+                giocatori o firmato dal direttore, per il modello era la stessa
+                cosa. Il riquadro «Risultato validato» del trio nasceva da li'
+                — cercava su `Match` un flag che non esiste, perche' la
+                distinzione che voleva mostrare non veniva scritta da nessuna
+                parte.
 
         Returns:
             The updated Match object
@@ -136,7 +156,20 @@ class MatchStateService:
                 "Non è possibile completare un match che non è ancora iniziato"
             )
 
-        match.status = MatchStatus.CLOSED_UNILATERALLY.value
+        # Quale dei due stati finali. Non e' una sfumatura di etichetta: da qui
+        # dipende se i giocatori possono ancora annullare l'ultimo triangolo.
+        # `CONFIRMED_BY_BOTH` e' quel che i giocatori hanno concordato, e resta
+        # disfacibile finche' il direttore non mette agli atti; `CLOSED_
+        # UNILATERALLY` e' gia' agli atti (`scoring_service.py`, ramo `riapri`).
+        #
+        # Il default resta la chiusura d'ufficio, che e' quella storica di
+        # questo metodo: forfait, bye, risultato inserito a mano, turno gia'
+        # deciso. Solo chi sa di star chiudendo *per accordo* lo dichiara.
+        match.status = (
+            MatchStatus.CONFIRMED_BY_BOTH.value
+            if confirmed_by_players
+            else MatchStatus.CLOSED_UNILATERALLY.value
+        )
 
         # Auto-set ended_at if not already manually set
         if match.ended_at is None:

@@ -26,6 +26,10 @@ class RatingSystem(Enum):
     ELO = "elo"  # Competitivo: SOLO match di torneo. Pilota categoria/handicap.
     ELO_GLOBAL = "elo_global"  # Tornei + casual VALIDATED. SOLO display (dual ELO).
     INTERNAL = "internal"  # Club internal rating
+    # A rack, scala FargoRate (base 2/100). Calcolato in parallelo e non
+    # mostrato: convive coi pool storici finché non si decide lo scambio
+    # (ADR-052). NON è convertibile negli altri due — misura un'altra cosa.
+    RACK = "rack"
 
 
 class PlayerRating(BaseModel):
@@ -38,7 +42,13 @@ class PlayerRating(BaseModel):
         db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
     )
     rating_system = db.Column(db.Enum(RatingSystem), nullable=False)
-    rating_value = db.Column(db.Integer, nullable=False)
+    # In virgola mobile per il pool RACK, dove una partita muove il rating di
+    # pochi punti e l'arrotondamento a intero sarebbe dello stesso ordine del
+    # segnale (ADR-052). Nessuna migration: SQLite ha tipizzazione dinamica e
+    # l'affinità INTEGER conserva i decimali — converte a intero solo quando è
+    # senza perdita — quindi le righe esistenti restano intere e le nuove
+    # scrivono REAL. Su un motore diverso servirebbe un ALTER.
+    rating_value = db.Column(db.Float, nullable=False)
 
     # Rating details
     confidence = db.Column(db.Float, nullable=True)  # Confidence level (0.0-1.0)
@@ -66,8 +76,14 @@ class PlayerRating(BaseModel):
         """Get user's rating in a specific system."""
         return cls.query.filter_by(user_id=user_id, rating_system=rating_system).first()
 
-    def update_rating(self, new_rating: int, games_increment: int = 1) -> None:
-        """Update rating value and statistics."""
+    def update_rating(self, new_rating: float, games_increment: int = 1) -> None:
+        """Update rating value and statistics.
+
+        Nel pool ``RACK`` ``games_increment`` sono i **rack** della partita, non
+        uno: lì ``games_played`` è la *robustness*, cioè quanti rack il
+        giocatore ha nel sistema, ed è ciò che regola la sensibilità
+        dell'aggiornamento. Negli altri pool resta il conteggio delle partite.
+        """
         self.rating_value = new_rating
         self.games_played += games_increment
         self.last_updated = utc_now()
@@ -115,9 +131,10 @@ class MatchRatingHistory(BaseModel):
     )
     rating_system = db.Column(db.Enum(RatingSystem), nullable=False)
 
-    old_rating = db.Column(db.Integer, nullable=False)
-    new_rating = db.Column(db.Integer, nullable=False)
-    delta = db.Column(db.Integer, nullable=False)
+    # In virgola mobile per la stessa ragione di `PlayerRating.rating_value`.
+    old_rating = db.Column(db.Float, nullable=False)
+    new_rating = db.Column(db.Float, nullable=False)
+    delta = db.Column(db.Float, nullable=False)
     games_increment = db.Column(db.Integer, nullable=False, default=1)
 
     user = db.relationship("User", foreign_keys=[user_id])

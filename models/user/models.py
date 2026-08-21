@@ -239,7 +239,12 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
         from models.rating.models import PlayerRating, RatingSystem
 
         obj = PlayerRating.get_user_rating(self.id, RatingSystem.ELO_GLOBAL)
-        return obj.rating_value if obj else None
+        if obj is None:
+            return None
+        # `rating_value` è in virgola mobile per il pool a rack (ADR-052), ma
+        # questo pool scrive interi per costruzione: senza l'arrotondamento
+        # l'interfaccia mostrerebbe «1184.0».
+        return int(round(obj.rating_value))
 
     # Flask-Login integration: utente attivo solo se non soft-deleted
     @property

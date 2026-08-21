@@ -1,0 +1,18 @@
+# Ambito del grafo graphify: il sorgente dell'app + i test + le migration.
+#
+# Fuori restano gli artefatti generati e gli output degli strumenti: non
+# descrivono il progetto, e diluirebbero il grafo con roba che nessuno
+# interrogherebbe mai. Le immagini in particolare costano estrazione vision.
+#
+# Nota: un .graphifyignore puo' solo escludere di piu' del .gitignore, mai
+# re-includere — quindi le negazioni di .gitignore (es. !.claude/skills/) non
+# rientrano da qui.
+
+static/
+help_content/
+design_handoff_home_feedback/
+_bmad-output/
+.qoder/
+.claude/
+graphify-out/
+docs/reference/inspiration/

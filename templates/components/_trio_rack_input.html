@@ -8,6 +8,22 @@
    - user_is_player: True if current user is one of the 3 trio players
    - user_can_manage: True if current user is admin/director
 #}
+{# Un elenco di nomi da leggere ad alta voce: «Anna», oppure «Anna e Bruno».
+
+   La congiunzione non si puo' scrivere a mano in un `join(' e ')`: e' testo
+   che l'utente legge, e in inglese diventerebbe «Anna e Bruno». Qui e' una
+   frase intera con due segnaposto, quindi il traduttore puo' anche cambiarne
+   l'ordine se la sua lingua lo richiede.
+
+   Due nomi bastano: in un trio, chi guarda la pagina e' uno dei tre. #}
+{% macro elenco_nomi(nomi) -%}
+    {%- if nomi|length == 1 -%}
+        {{ nomi[0] }}
+    {%- elif nomi|length > 1 -%}
+        {{ _('%(primo)s e %(secondo)s', primo=nomi[0], secondo=nomi[1]) }}
+    {%- endif -%}
+{%- endmacro %}
+
 {% if match.is_trio and match.trio_match %}
 {% set trio = match.trio_match %}
 {% set config = trio.trio_config %}
@@ -135,27 +151,72 @@
                         <i class="fas fa-check-double"></i> {{ _('Valida risultato') }}
                     </button>
                 {% elif user_is_player %}
-                    {# Player: needs to confirm, wait for others, or already confirmed #}
+                    {# Gli stessi tre stati della partita a due
+                       (`_unified_rack_input.html`), con le stesse parole: chi
+                       gioca un trio e chi gioca a due sta guardando lo stesso
+                       momento della partita e non deve impararlo due volte.
+                       L'unica differenza e' l'attesa al plurale, perche' qui
+                       le firme mancanti possono essere due.
+
+                       `namespace` e non una lista con `.append()`: dentro un
+                       `for` la variabile d'appoggio si chiamerebbe `_`, che in
+                       questi template e' gettext. #}
                     {% set user_confirmed = (
                         (current_user.id == trio.player1_id and trio.player1_confirmed) or
                         (current_user.id == trio.player2_id and trio.player2_confirmed) or
                         (current_user.id == trio.player3_id and trio.player3_confirmed)
                     ) %}
+                    {% set ns = namespace(mancanti=[], confermati=[]) %}
+                    {% for p, ok in [
+                        (trio.player1, trio.player1_confirmed),
+                        (trio.player2, trio.player2_confirmed),
+                        (trio.player3, trio.player3_confirmed)
+                    ] %}
+                        {% if p.id != current_user.id %}
+                            {% if ok %}
+                                {% set ns.confermati = ns.confermati + [p.username] %}
+                            {% else %}
+                                {% set ns.mancanti = ns.mancanti + [p.username] %}
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
                     {% if user_confirmed %}
+                        {# 2. Hai confermato tu #}
                         <p class="mb-2 mt-2">
                             <span class="badge bg-success">
                                 <i class="fas fa-check"></i> {{ _('Hai confermato') }}
                             </span>
                         </p>
                         <small class="text-muted">
-                            {{ _('In attesa che gli altri giocatori confermino') }}
+                            {{ _('In attesa di') }} {{ elenco_nomi(ns.mancanti) }}.
                         </small>
                     {% else %}
-                        <p class="mb-2 mt-2">{{ _('Conferma il risultato per completare la partita') }}</p>
-                        <button class="btn btn-success btn-lg"
-                                onclick="confirmTrioResult(this)">
-                            <i class="fas fa-check"></i> {{ _('Conferma risultato') }}
-                        </button>
+                        {% if ns.mancanti %}
+                            {# 1. Distanza raggiunta, nessun altro si e' ancora espresso #}
+                            <p class="mb-2 mt-2">{{ _('Il risultato è pronto per la conferma.') }}</p>
+                        {% else %}
+                            {# 3. Hanno gia' confermato tutti gli altri: manchi solo tu #}
+                            <p class="mb-2 mt-2">
+                                <strong>{{ elenco_nomi(ns.confermati) }}</strong>
+                                {{ _('hanno confermato') }}.<br>
+                                {{ _('Conferma o rifiuta per chiudere la partita.') }}
+                            </p>
+                        {% endif %}
+                        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                            <button class="btn btn-success btn-lg"
+                                    onclick="confirmTrioResult(this)">
+                                <i class="fas fa-check"></i> {{ _('Accetta') }}
+                            </button>
+                            {# Rifiutare *e'* togliere l'ultimo triangolo e azzerare
+                               le firme — la stessa cosa che fa `reject_result` nella
+                               partita a due. Non serve un secondo endpoint che
+                               ripeta quel gesto: cambia il nome, non l'azione. #}
+                            <button class="btn btn-danger btn-lg"
+                                    onclick="removeTrioLastRack(this)">
+                                <i class="fas fa-times"></i> {{ _('Rifiuta') }}
+                            </button>
+                        </div>
                     {% endif %}
                 {% endif %}
             </div>
@@ -271,18 +332,30 @@
                 {% endif %}
             </div>
 
-            {# Show validation status for completed trio #}
-            {% if match.validated_by_admin %}
+            {# 4. Partita conclusa.
+
+               Come si e' chiuso lo dice lo **stato**, esattamente come nella
+               partita a due: `CONFIRMED_BY_BOTH` = l'hanno chiusa i giocatori
+               e possono ancora disfarla, `CLOSED_UNILATERALLY` = e' agli atti.
+
+               Fino al 2026-08-21 qui si chiedeva `match.validated_by_admin`,
+               che su `Match` non esiste (vive su `Rack`): Jinja lo valuta
+               falso senza protestare, quindi questo riquadro non e' mai
+               comparso a nessuno. Non era pero' solo il template a sbagliare —
+               la distinzione che cercava di mostrare non veniva scritta da
+               nessuna parte, perche' il trio finiva sempre nello stesso stato. #}
+            {% set status_str = match.status.value|default(match.status) %}
+            {% if status_str == MatchStatus.CONFIRMED_BY_BOTH.value %}
+                <div class="alert alert-success text-center mb-3">
+                    <i class="fas fa-check"></i>
+                    <strong>{{ _('Partita conclusa') }}</strong>
+                    <br>
+                    <small class="text-muted">{{ _("Se l'ultimo triangolo è stato segnato per errore puoi ancora annullarlo, finché il direttore non valida il risultato.") }}</small>
+                </div>
+            {% else %}
                 <div class="alert alert-success text-center mb-3">
                     <i class="fas fa-check-circle"></i>
                     {{ _('Risultato validato') }}
-                </div>
-            {% elif user_is_player and not user_can_manage %}
-                <div class="alert alert-warning text-center mb-3">
-                    <i class="fas fa-clock"></i>
-                    {{ _('In attesa di validazione') }}
-                    <br>
-                    <small class="text-muted">{{ _('Il direttore di gara validera il risultato') }}</small>
                 </div>
             {% endif %}
         {% endif %}
@@ -313,7 +386,17 @@
                             <i class="fas fa-check"></i> {{ rack.winner.username }}
                         </span>
                     </div>
-                    {% if rack.can_undo and (user_can_manage or user_is_player) and not trio.is_completed %}
+                    {# La finestra si chiude col **sigillo del direttore**, non
+                       con la terza conferma: quel che i giocatori hanno
+                       concordato possono ancora disfarlo, come nella partita a
+                       due. Prima la condizione era `not trio.is_completed`,
+                       quindi l'annulla spariva nell'istante in cui l'ultimo
+                       confermava. Il rifiuto vero sta sul server
+                       (`TrioScoringService.remove_last_rack`): qui si decide
+                       solo se mostrare il pulsante. #}
+                    {% set status_str = match.status.value|default(match.status) %}
+                    {% if rack.can_undo and (user_can_manage or user_is_player)
+                          and status_str != MatchStatus.CLOSED_UNILATERALLY.value %}
                     <button class="btn btn-outline-danger btn-sm"
                             onclick="removeTrioLastRack(this)"
                             title="{{ _('Annulla ultimo triangolo') }}">

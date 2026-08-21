@@ -31,8 +31,22 @@ def add_trio_rack(match_id):
 
         trio_id = match.trio_match.id
 
+        # Come nel segnapunti a due (`add_rack_for_player`): il permesso si
+        # guarda **su questa gara**, non sul ruolo globale.
+        from models.user.permissions import PermissionChecker
+
+        dirige_la_gara = bool(
+            match.gara_id
+            and PermissionChecker.can_manage_competition(current_user, match.gara_id)
+        )
+
         # Use the service layer (same as admin)
-        result = TrioMatchService.add_trio_rack(trio_id, winner_id)
+        result = TrioMatchService.add_trio_rack(
+            trio_id,
+            winner_id,
+            added_by_id=current_user.id,
+            authoritative=dirige_la_gara,
+        )
         return jsonify(result)
 
     except ValueError as ve:

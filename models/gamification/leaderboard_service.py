@@ -236,7 +236,9 @@ class LeaderboardService:
                     leaderboard_type=LeaderboardType.ELO_RATING,
                     user_id=pr.user_id,
                     rank=rank,
-                    score=pr.rating_value,
+                    # Virgola mobile per il pool a rack (ADR-052); questo pool
+                    # scrive interi, e in classifica si mostrano tali.
+                    score=int(round(pr.rating_value)),
                     calculated_at=utc_now(),
                 )
             )

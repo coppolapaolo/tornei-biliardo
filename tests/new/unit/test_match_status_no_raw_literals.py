@@ -354,3 +354,106 @@ def test_il_presidio_riconosce_una_violazione_introdotta(tmp_path):
         if _CONFRONTO_DIRETTO.search(riga) or _SELECTATTR_PARTITE.search(riga)
     ]
     assert len(trovate) == 2, f"i pattern non riconoscono le violazioni: {trovate}"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Lo stato passato per una variabile locale
+#
+# I pattern qui sopra pretendono che il soggetto sia scritto per intero:
+# `match.status`, `set.status`. Basta una riga di indirezione per uscire dal
+# loro cono di luce —
+#
+#     {% set status_str = match.status.value|default(match.status) %}
+#     {% set is_completed = status_str in ['completed', 'validated'] %}
+#
+# — e il letterale torna invisibile. Non e' un caso di scuola: al 2026-08-21
+# `_unified_match_score.html` faceva esattamente cosi', col presidio verde,
+# mentre il file gemello `_unified_rack_input.html` usava l'enum nello stesso
+# identico punto e con la stessa identica indirezione.
+#
+# Questo controllo e' per file, non per riga: prima raccoglie i nomi legati a
+# uno `.status`, poi cerca quei nomi confrontati con un valore grezzo.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# {% set status_str = match.status.value|default(match.status) %}
+#   → cattura `status_str`.
+#
+# Il soggetto a destra e' ristretto a `_SOGGETTI_DIRETTI` per la stessa ragione
+# per cui lo e' il confronto diretto: un `.status` qualunque puo' essere di
+# un'altra entita', e i vocabolari si sovrappongono. `proposal.status` vale
+# anche `'pending'`, ma e' una **proposta**, non una partita — accettare ogni
+# `.status` segnalava `individual_match/proposal_detail.html` per un letterale
+# che li' e' quello giusto.
+_LEGAME_DA_STATUS = re.compile(
+    rf"\{{%-?\s*set\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*[^%]*{_SOGGETTI_DIRETTI}"
+)
+
+
+def _violazioni_per_indirezione(percorsi: list[Path]) -> list[str]:
+    trovate: list[str] = []
+    for percorso in percorsi:
+        testo = percorso.read_text(encoding="utf-8")
+        nomi = set(_LEGAME_DA_STATUS.findall(testo))
+        if not nomi:
+            continue
+        alternative = "|".join(re.escape(n) for n in sorted(nomi))
+        confronto = re.compile(
+            rf"\b(?:{alternative})\b\s*(?:==|!=|\bin\b)\s*"
+            rf"[\[(]?\s*{_Q}(?:{_VALORI}){_Q}"
+        )
+        for numero, riga in enumerate(testo.splitlines(), start=1):
+            if _RIGA_DI_COMMENTO.match(riga):
+                continue
+            if _LEGAME_DA_STATUS.search(riga):
+                continue  # la riga che *lega* il nome, non quella che confronta
+            if confronto.search(riga):
+                trovate.append(
+                    f"{percorso.relative_to(PROJECT_ROOT)}:{numero}: {riga.strip()}"
+                )
+    return trovate
+
+
+def test_i_template_non_confrontano_lo_stato_passando_da_una_variabile():
+    """Mettere lo stato in una variabile non lo affranca dall'enum."""
+    violazioni = _violazioni_per_indirezione(_sorgenti_template())
+    assert not violazioni, (
+        "Stato di partita messo in una variabile e poi confrontato con una\n"
+        "stringa scritta a mano. Vale la stessa regola del confronto diretto:\n"
+        "MatchStatus.is_finished(...) / is_active(...), o "
+        "MatchStatus.<MEMBRO>.value.\n\n" + "\n".join(violazioni)
+    )
+
+
+def test_il_presidio_riconosce_lo_stato_passato_per_una_variabile(tmp_path):
+    """L'indirezione deve essere vista, e il passaggio dall'enum lasciato stare."""
+    colpevole = tmp_path / "_colpevole.html"
+    colpevole.write_text(
+        "{% set status_str = match.status.value|default(match.status) %}\n"
+        "{% set is_completed = status_str in ['completed', 'validated'] %}\n"
+        "{% set is_in_progress = status_str == 'playing' %}\n",
+        encoding="utf-8",
+    )
+    innocente = tmp_path / "_innocente.html"
+    innocente.write_text(
+        "{% set status_str = match.status.value|default(match.status) %}\n"
+        "{% set chiusa = status_str == MatchStatus.CONFIRMED_BY_BOTH.value %}\n"
+        "{% set is_completed = MatchStatus.is_finished(status_str) %}\n",
+        encoding="utf-8",
+    )
+
+    def _conta(percorso):
+        testo = percorso.read_text(encoding="utf-8")
+        nomi = set(_LEGAME_DA_STATUS.findall(testo))
+        alternative = "|".join(re.escape(n) for n in sorted(nomi))
+        confronto = re.compile(
+            rf"\b(?:{alternative})\b\s*(?:==|!=|\bin\b)\s*"
+            rf"[\[(]?\s*{_Q}(?:{_VALORI}){_Q}"
+        )
+        return [
+            r
+            for r in testo.splitlines()
+            if confronto.search(r) and not _LEGAME_DA_STATUS.search(r)
+        ]
+
+    assert len(_conta(colpevole)) == 2, "l'indirezione non viene riconosciuta"
+    assert not _conta(innocente), "il passaggio dall'enum non deve essere segnalato"

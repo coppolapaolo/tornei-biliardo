@@ -89,6 +89,18 @@ blocks:
       - "**Against**: it lasts longer than a normal match and occupies a table for longer."
       - "**Only available** with distances from 2 to 7, and not in bracket competitions."
 
+  - type: note
+    tone: info
+    title: "The ending is the one every match has"
+    text: >-
+      Once the racks are over, a trio closes like a two-player match: whoever
+      won and whoever entered the deciding rack count as agreeing without
+      doing anything, and everyone else gets **Accept** and **Reject**. If all
+      three signatures are already implicit — when the director is the one
+      entering the rack, for instance — the match closes by itself, and can
+      still be undone until the director validates. See [Playing a
+      match](/aiuto/giocare/giocare_una_partita).
+
   - type: heading
     id: lista_attesa
     title: "4. Waitlist — even numbers only"
@@ -159,3 +171,5 @@ blocks:
         a: "It is only possible with distances from 2 to 7 and not in bracket competitions. If the distance is outside that range the option stays off."
       - q: "In a trio I won two racks out of three. Did I win the match?"
         a: "Yes, if nobody else won as many. If there is a tie at the top score, nobody takes the win."
+      - q: "In a trio I got Accept/Reject and the other two did not. Why?"
+        a: "Because their signatures were already implicit: whoever won and whoever entered the deciding rack have nothing to confirm. If a trio ends level nobody won, so there are more signatures to collect."
