@@ -57,6 +57,7 @@ class BaseMatchMixin:
     player2_confirmed: bool
     player1_confirmed_at: Optional[datetime]
     player2_confirmed_at: Optional[datetime]
+    ended_at: Optional[datetime]
 
     # Properties that must be implemented by concrete classes
     @property
@@ -216,8 +217,19 @@ class BaseMatchMixin:
             # IndividualMatch - set to VALIDATED for bilateral confirmation
             self.status = IndividualMatchStatus.CONFIRMED_BY_BOTH
 
-        if hasattr(self, "completed_at"):
-            self.completed_at = utc_now()
+        # La seconda conferma *è* l'istante in cui la partita finisce: questo
+        # metodo scatta solo da lì. Si scrive solo se la data non c'è già,
+        # perché il direttore può averla fissata a mano (`MatchService`).
+        #
+        # Fino al 2026-08-21 la condizione chiedeva `completed_at`, colonna
+        # rinominata in `ended_at` tempo prima: da allora `hasattr` era sempre
+        # falso e la riga sotto non si eseguiva più. Nessun errore, nessun
+        # test rosso — solo partite senza data di fine. E non un campione
+        # casuale: esattamente quelle che i due giocatori avevano confermato,
+        # il 14% dello storico. Con i NULL che SQLite ordina *per primi*, il
+        # replay dell'Elo le rigiocava prima di tutte le altre.
+        if self.ended_at is None:
+            self.ended_at = utc_now()
 
         # Emit SSE event for tournament matches (gara matches)
         if is_tournament_match and hasattr(self, "gara_id") and self.gara_id:
