@@ -9,8 +9,11 @@ from __future__ import annotations
 
 from typing import Optional, Dict, Any
 
+from flask_babel import gettext as _
 from sqlalchemy import func
+
 from ..base import db, utc_now
+from ..exceptions import ValidationError
 from ..transaction.manager import transactional
 from .models import IndividualMatch, IndividualRack
 
@@ -35,6 +38,26 @@ class IndividualRackService:
 
         if winner_id not in (match.player1_id, match.player2_id):
             raise ValueError("Invalid winner ID")
+
+        # A partita finita non si segna più. La regola era già scritta —
+        # `can_add_rack()` sul modello, e `match_scoring_state` che le fa
+        # sparire i «+1» — ma nessuno la chiedeva qui, e l'interfaccia non è un
+        # controllo: il tabellone orizzontale resta aperto sul telefono
+        # appoggiato alla sponda, e una pagina che non sa di essere vecchia
+        # manda comunque il triangolo.
+        #
+        # In «esattamente N» non è contabilità: a 2-2 su quattro la partita è
+        # **pari**, e un triangolo di troppo la portava a 3-2 assegnando la
+        # vittoria a chi aveva premuto — dopo che era finita, e cancellando la
+        # firma che il pareggio aveva già raccolto (`reset_confirmations`).
+        #
+        # Nel formato libero `can_add_rack()` risponde sempre di sì: là un
+        # traguardo non c'è, e `is_ready_for_validation()` è vera dal primo
+        # triangolo.
+        if not match.can_add_rack():
+            raise ValidationError(
+                _("La partita è arrivata alla distanza: non si segna più.")
+            )
 
         if match.is_multi_set:
             # Al meglio dei set il triangolo appartiene al **set in corso**, e

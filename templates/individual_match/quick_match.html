@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "components/_form_macros.html" import choice, stepper, form_macros_scripts %}
+{% from "components/_form_macros.html" import choice, stepper, toggle, form_macros_scripts %}
 
 {% block title %}{{ _("Avvio rapido") }} - {{ config.APP_NAME }}{% endblock %}
 
@@ -190,6 +190,27 @@
         </div>
       </div>
     </div>
+
+    {# ---------- Il referto TPA: si sceglie adesso o non si sceglie ----------
+
+       Fuori da `settingsDetail` di proposito. Tutto il resto di «come si
+       gioca» si può cambiare anche dopo, quindi sta bene chiuso dietro
+       «Cambia»; il referto no: va aperto **prima del primo triangolo**
+       (ADR-044) e l'avvio rapido porta dritti al segnapunti, dove la prima
+       cosa che si fa è segnare. Nascosto qui dentro, la domanda arriverebbe
+       sempre troppo tardi — che è esattamente com'è andata.
+
+       Compare solo a chi ha sbloccato la funzione: a tutti gli altri sarebbe
+       una porta dipinta sul muro. #}
+    {% if tpa_disponibile and feature_visible('individual_match.tpa_referto') %}
+    <div id="tpaChoice">
+      {{ toggle('tpa_referto', _("Tengo il referto TPA"),
+                _("Si annota visita per visita e il punteggio viene da lì: niente «+1» a mano.")) }}
+      <p style="margin:-8px 2px 0;font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
+        {{ _("Va deciso adesso: a triangoli già segnati il referto non si apre più.") }}
+      </p>
+    </div>
+    {% endif %}
   </form>
 
   {# Barra d'azione in fondo, fuori dal form e agganciata con `form=`: dentro la
@@ -290,6 +311,27 @@
         const format = currentValue('match_format') || 'single';
         document.getElementById('singleSetConfig').classList.toggle('d-none', format !== 'single');
         document.getElementById('multiSetConfig').classList.toggle('d-none', format !== 'multi');
+        syncTpaChoice();
+    }
+
+    // Il referto TPA non copre tutto: a One Pocket, Straight Pool e Bank Pool
+    // il TPA non vuol dire niente, e ai match a set non si applica (ADR-044).
+    // Dove la risposta non avrebbe senso, la domanda sparisce — e la spunta si
+    // toglie, così non parte una richiesta che il server rifiuterebbe in
+    // silenzio.
+    const tpaChoice = document.getElementById('tpaChoice');
+    const tpaDiscipline = {{ (tpa_discipline or [])|tojson }};
+
+    function syncTpaChoice() {
+        if (!tpaChoice) return;
+        const discipline = document.getElementById('discipline').value;
+        const format = currentValue('match_format') || 'single';
+        const ok = tpaDiscipline.indexOf(discipline) !== -1 && format !== 'multi';
+        tpaChoice.classList.toggle('d-none', !ok);
+        if (!ok) {
+            const box = tpaChoice.querySelector('input[name="tpa_referto"]');
+            if (box) box.checked = false;
+        }
     }
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -300,6 +342,7 @@
 
         document.querySelectorAll('input[name="match_format"]').forEach(r =>
             r.addEventListener('change', syncMatchFormat));
+        document.getElementById('discipline').addEventListener('change', syncTpaChoice);
 
         // Il riepilogo e i campi sono due viste della stessa cosa: o l'una o
         // l'altra, mai il doppione.

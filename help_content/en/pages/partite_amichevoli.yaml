@@ -47,6 +47,13 @@ blocks:
           Under «How it is played» you get a summary of venue, discipline and
           distance. Happy with it? Touch nothing. Otherwise tap **Change** and
           fix what you need.
+      - title: "Decide whether to keep the TPA scoresheet"
+        text: >-
+          If you have unlocked the scoresheet, **I'll keep the TPA scoresheet**
+          sits above the button. It is the one thing that has to be decided now:
+          the scoresheet must be started before the first rack, so afterwards it
+          is no longer possible. If you are not interested, leave it and score
+          as usual.
       - title: "Start scoring"
         text: >-
           The match starts right away. Your opponent gets a notification: they

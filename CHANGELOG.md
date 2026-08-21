@@ -43,6 +43,28 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
   gia' per il segnapunti normale. Prima la pagina del referto faceva polling a
   orologio per conto suo, e la pagina del match non si accorgeva di niente.
 - Le sei route del referto in `docs/reference/PRODUCTION_INVENTORY.md`.
+- **Il referto TPA si sceglie all'avvio rapido.** Nel modulo, per chi ha
+  sbloccato la funzione, c'è la spunta «Tengo il referto TPA»: la partita nasce
+  col referto già aperto e si va lì invece che al segnapunti. Il referto va
+  aperto **prima del primo triangolo**, e l'avvio rapido porta dritti a
+  segnare: la finestra per prenderlo era larga un tocco e si chiudeva senza
+  dire niente. Su una disciplina che il TPA non copre, o su un match a set, la
+  domanda sparisce e la partita parte comunque — senza referto.
+
+### Corretto
+
+- **A partita finita non si segna più.** L'aggiunta di un triangolo non
+  chiedeva mai `can_add_rack()`: la pagina i «+1» li toglie da sola, ma il
+  tabellone orizzontale resta aperto sul telefono appoggiato alla sponda e una
+  pagina vecchia mandava comunque il triangolo. In «esattamente N» non era
+  contabilità: a 2-2 su quattro la partita è **pari**, e un triangolo di troppo
+  la portava a 3-2 assegnando la vittoria a chi aveva premuto, dopo che era
+  finita. Il formato libero non è toccato.
+- **L'ora scritta è l'ora che si rilegge, anche nella richiesta di partita.**
+  La richiesta che parte dalla scoperta giocatori rimetteva insieme data e ora
+  con `datetime.strptime` e salvava la stringa grezza in una colonna che il DB
+  tiene naive-UTC: un appuntamento per le 21:00 tornava alle 23:00 (ADR-043).
+- Un `.po` inglese di nuovo al 100%, senza voci fuzzy.
 
 ### Rimosso
 
