@@ -80,7 +80,12 @@
 
     // 4. Il giro completo: il cookie di sessione appena ricevuto torna al
     //    server con la prossima richiesta?
-    fetch({{ url_for('auth.diagnosi_eco')|tojson }}, { credentials: 'same-origin' })
+    // I due esiti locali viaggiano nella query string: nel log del server la
+    // riga «Diagnosi cookie» dice anche cosa ha visto il browser, e una
+    // diagnosi si legge per intero senza chiedere screenshot all'utente.
+    var eco = {{ url_for('auth.diagnosi_eco')|tojson }}
+      + '?dichiara=' + (dichiara ? 1 : 0) + '&salva=' + (salva ? 1 : 0);
+    fetch(eco, { credentials: 'same-origin' })
       .then(function (r) { return r.json(); })
       .then(function (dati) {
         var ok = esito('giro', dati.cookie_arrivato && dati.sessione_valida,

@@ -72,12 +72,26 @@ def diagnosi_eco():
     cookie_arrivato = nome_cookie in request.cookies
     sessione_valida = bool(session.get("csrf_token"))
 
+    # La pagina allega l'esito dei test fatti DENTRO il browser (scrittura e
+    # rilettura di un cookie di prova, tutta in locale): è l'informazione che
+    # il server da solo non può avere, e che separa i due casi rimasti — il
+    # browser che rifiuta di salvare, e qualcosa fra telefono e sito che
+    # strappa l'header a un cookie salvato benissimo. Senza, dal log si
+    # leggeva solo «cookie=assente» per entrambi (visto il 2026-08-20:
+    # Samsung Internet e Chrome sullo stesso Android 10, indistinguibili).
+    def _riferito(nome: str) -> str:
+        valore = request.args.get(nome)
+        return {"1": "si", "0": "no"}.get(valore or "", "?")
+
     # Nel log di produzione, accanto alle righe «CSRF fallito», così le
     # diagnosi degli utenti si possono correlare ai loro tentativi.
     current_app.logger.warning(
-        "Diagnosi cookie: cookie=%s, sessione_valida=%s, UA=%r",
+        "Diagnosi cookie: cookie=%s, sessione_valida=%s, "
+        "browser_dichiara=%s, browser_salva=%s, UA=%r",
         "presente" if cookie_arrivato else "assente",
         sessione_valida,
+        _riferito("dichiara"),
+        _riferito("salva"),
         request.headers.get("User-Agent", ""),
     )
     return jsonify(cookie_arrivato=cookie_arrivato, sessione_valida=sessione_valida)
