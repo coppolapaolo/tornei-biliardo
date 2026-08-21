@@ -30,8 +30,14 @@ Parametri:
    nessuno stato risultava mai "in corso". `|default` sceglie il ramo giusto
    perche' scatta sull'Undefined, non sulla presenza di `status`. #}
 {% set status_str = match.status.value|default(match.status) %}
-{% set is_completed = status_str in ['completed', 'validated'] %}
-{% set is_in_progress = status_str in ['in_progress', 'playing'] %}
+{# I due stati finali e i due attivi si chiedono all'enum, non alle stringhe:
+   i **nomi** dei membri sono stati corretti il 2026-08-17, i **valori** su
+   disco no. Chi un giorno allineerà anche quelli romperà ogni confronto
+   scritto a mano, in silenzio — qui invece un membro sbagliato solleva
+   all'import. Il file gemello `_unified_rack_input.html` passa già dall'enum
+   nello stesso identico punto. #}
+{% set is_completed = MatchStatus.is_finished(status_str) %}
+{% set is_in_progress = MatchStatus.is_active(status_str) %}
 
 {# === TRIO: tre punteggi === #}
 {% if trio_mode and match.trio_match is defined and match.trio_match %}
