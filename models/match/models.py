@@ -5,7 +5,10 @@ Data Structures: Match, Rack, MatchResult, TrioMatch
 Dependencies: models.base.db, datetime
 """
 
-from typing import Optional, TYPE_CHECKING
+from typing import Any, Optional, TYPE_CHECKING
+
+from sqlalchemy import event, inspect
+
 from models.base import db, TimestampMixin, utc_now
 from models.status_enum import MatchStatus, Discipline
 from .base_match import BaseMatchMixin
@@ -435,6 +438,59 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
 
             # Reset confirmations since score changed
             self.reset_confirmations()
+
+
+@event.listens_for(Match, "before_insert")
+@event.listens_for(Match, "before_update")
+def _timbra_la_fine(_mapper: Any, _connection: Any, match: "Match") -> None:
+    """Una partita che entra in uno stato finale riceve la sua data di fine.
+
+    **Perché un hook e non una riga nei chiamanti.** Fino al 2026-08-21
+    ``ended_at`` non era una proprietà dello stato finale: era l'effetto
+    collaterale di chiamare ``MatchStateService.to_completed``. Chi chiudeva
+    una partita per altre strade non scriveva la data, e le strade erano
+    quattro:
+
+    * la doppia conferma dei giocatori (``BaseMatchMixin``), che per giunta
+      ci provava dentro un ``hasattr(self, "completed_at")`` rimasto falso
+      dopo il rinomino della colonna;
+    * il **pareggio** a rack esatti non validato dal direttore
+      (``ScoringService._handle_rack_completion``);
+    * il **ritiro** di un giocatore, che chiude d'ufficio le sue partite
+      (``WithdrawPolicyService``);
+    * il **bye** Amalfi chiuso col punteggio della sfida
+      (``AmalfiChallengeByeService``).
+
+    In produzione erano 63 partite finite senza data su 367. E non era un
+    buco innocuo: SQLite ordina i NULL **per primi**, quindi
+    ``recalculate_all_elo`` — che rigioca la storia con ``ORDER BY ended_at``
+    — le processava prima di tutte le altre, mentre il pool globale le
+    spingeva in coda. I due pool ricostruivano due storie diverse.
+
+    Correggere i quattro punti avrebbe lasciato scoperto il quinto, quello
+    che ancora non esiste. Qui l'invariante è garantita dove si scrive:
+    qualunque percorso, presente o futuro, la rispetta senza saperlo.
+
+    **Solo sulla transizione.** Un aggiornamento qualunque di una partita già
+    chiusa non deve inventarle una data di oggi: le 63 righe storiche vanno
+    riparate ricostruendo la data vera
+    (``scripts/repair_match_ended_at.py``), non timbrandole quando qualcuno
+    le sfiora. Per questo si controlla che lo stato sia **cambiato** in
+    questo flush.
+
+    Una data già presente non viene mai toccata: il direttore può fissare
+    data e ora di fine a mano (``MatchService``), e la sua vince.
+    """
+    if match.ended_at is not None:
+        return
+    if not MatchStatus.is_finished(match.status):
+        return
+
+    storia = inspect(match).attrs.status.history
+    if not storia.has_changes():
+        return
+
+    match.ended_at = utc_now()
 
 
 class Rack(db.Model):
