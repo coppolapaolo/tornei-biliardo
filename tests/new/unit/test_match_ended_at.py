@@ -116,6 +116,91 @@ class TestDoppiaConfermaScriveLaData:
         assert partita.ended_at == scelta
 
 
+class TestOgniStatoFinaleTimbraLaData:
+    """L'invariante non dipende da quale percorso ha chiuso la partita.
+
+    I percorsi che chiudevano senza scrivere la data erano quattro, e
+    correggerli uno a uno avrebbe lasciato scoperto il quinto. Qui si verifica
+    la garanzia a valle: qualunque scrittura che porti la partita in uno stato
+    finale le lascia una data.
+    """
+
+    def test_il_pareggio_a_rack_esatti_riceve_la_data(self, db_session, partita):
+        """`ScoringService` chiude cosi' i pari, senza passare da to_completed."""
+        partita.player1_score = 2
+        partita.player2_score = 2
+        partita.winner_id = None
+        partita.status = MatchStatus.CLOSED_UNILATERALLY.value
+        db_session.flush()
+
+        assert partita.ended_at is not None
+
+    def test_il_walkover_da_ritiro_riceve_la_data(self, db_session, partita):
+        """`WithdrawPolicyService` assegna il punteggio e chiude d'ufficio."""
+        partita.player1_score = 5
+        partita.player2_score = 0
+        partita.winner_id = partita.player1_id
+        partita.status = MatchStatus.CLOSED_UNILATERALLY.value
+        db_session.flush()
+
+        assert partita.ended_at is not None
+
+    def test_una_partita_creata_gia_chiusa_riceve_la_data(
+        self, db_session, isolated_players, partita
+    ):
+        """Il bye Amalfi nasce direttamente in stato finale: vale l'insert."""
+        from models.match.models import Match
+
+        bye = Match(
+            gara_id=partita.gara_id,
+            round_number=1,
+            player1_id=isolated_players[2].id,
+            player2_id=None,
+            player1_score=1,
+            player2_score=0,
+            status=MatchStatus.CLOSED_UNILATERALLY.value,
+        )
+        db_session.add(bye)
+        db_session.flush()
+
+        assert bye.ended_at is not None
+
+    def test_uno_stato_non_finale_non_timbra_niente(self, db_session, partita):
+        partita.status = MatchStatus.PLAYING.value
+        db_session.flush()
+
+        assert partita.ended_at is None
+
+    def test_una_data_gia_scritta_non_viene_sovrascritta(self, db_session, partita):
+        scelta = datetime(2026, 3, 14, 21, 30)
+        partita.ended_at = scelta
+        partita.status = MatchStatus.CLOSED_UNILATERALLY.value
+        db_session.flush()
+
+        assert partita.ended_at == scelta
+
+    def test_toccare_una_partita_gia_chiusa_non_le_inventa_una_data(
+        self, db_session, partita
+    ):
+        """Il punto piu' delicato dell'intero hook.
+
+        Le 63 righe storiche vanno riparate ricostruendo la data **vera** con
+        `repair_match_ended_at.py`. Se l'hook timbrasse a ogni aggiornamento,
+        basterebbe un ricalcolo che sfiora quelle partite per scrivergli sopra
+        la data di oggi — e la ricostruzione diventerebbe impossibile.
+        Si timbra solo la **transizione**.
+        """
+        partita.status = MatchStatus.CLOSED_UNILATERALLY.value
+        db_session.flush()
+        partita.ended_at = None  # come le righe storiche in produzione
+        db_session.flush()
+
+        partita.player1_score = 4  # un aggiornamento qualunque
+        db_session.flush()
+
+        assert partita.ended_at is None
+
+
 def _rack(quando, cancellato=False):
     return SimpleNamespace(created_at=quando, added_at=None, is_deleted=cancellato)
 

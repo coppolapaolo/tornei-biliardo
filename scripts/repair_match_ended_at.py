@@ -1,17 +1,18 @@
 """Ricostruisce la data di fine delle partite di gara che ne sono prive.
 
-**Perché serve.** `BaseMatchMixin._complete_match_after_confirmation` scriveva
-la data di fine dentro un `if hasattr(self, "completed_at")`. La colonna era
-stata rinominata `ended_at`, quindi da quel rinomino in poi il guard è sempre
-stato falso e la riga non si è più eseguita: nessun errore, nessun test rosso,
-solo partite senza data. Il difetto è corretto dal 2026-08-21; questo script
-ripara le righe già scritte.
+**Perché serve.** Fino al 2026-08-21 `ended_at` non era una proprietà dello
+stato finale: era l'effetto collaterale di chiamare
+`MatchStateService.to_completed`. Chi chiudeva una partita per altre strade non
+scriveva la data, e le strade erano quattro — la doppia conferma dei giocatori,
+il pareggio a rack esatti, il ritiro che chiude d'ufficio le partite, e il bye
+Amalfi. In produzione erano **63 partite finite senza data su 367**.
 
-**Perché non è un dettaglio.** Le partite rimaste senza data non sono un
-campione casuale: sono **quelle chiuse dai due giocatori con la doppia
-conferma** (`CONFIRMED_BY_BOTH`). Quelle chiuse dal direttore passano da
-`MatchStateService.to_completed`, che la data la scrive. In produzione erano
-40 su 367 (censimento del 2026-08-21).
+L'invariante è ora garantita dove si scrive, da un hook su `Match` che timbra
+la data quando lo stato **entra** in un valore finale: nessun percorso futuro
+può dimenticarsene. Questo script ripara le righe già scritte, e i due
+interventi sono indipendenti — l'hook timbra solo la transizione, quindi non
+sovrascrive con la data di oggi le righe storiche che questo script deve
+ancora ricostruire. L'ordine fra deploy e riparazione è quindi libero.
 
 E un `ended_at` nullo non è solo un buco: SQLite ordina i NULL **per primi**,
 quindi `RatingCalculationService.recalculate_all_elo`, che rigioca la storia
