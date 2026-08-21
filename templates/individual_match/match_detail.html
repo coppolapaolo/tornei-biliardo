@@ -309,6 +309,16 @@
             }
 
             if (shouldReload) {
+                // Stessa ragione dell'aggiunta di un triangolo: col tabellone
+                // aperto una ricarica spegnerebbe lo schermo poco dopo. Se
+                // l'unica cosa cambiata è il punteggio, lo si riscrive.
+                if (window.c7Board && window.c7Board.aperto()
+                    && event.type === 'rack_updated'
+                    && data.can_add
+                    && data.player1_score !== undefined) {
+                    window.c7Board.aggiorna(data.player1_score, data.player2_score);
+                    return;
+                }
                 console.log('[Poll] ' + event.type + ', reloading...');
                 location.reload();
             }
@@ -328,6 +338,24 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    // Col tabellone aperto non si ricarica: una navigazione
+                    // rilascia il blocco dello schermo, e il telefono
+                    // appoggiato alla sponda si spegnerebbe fra un triangolo e
+                    // l'altro. Il punteggio lo riscrive il tabellone.
+                    // Al traguardo sì: lì non cambiano due cifre, cambia cosa
+                    // c'è da fare.
+                    // `can_add` e non `is_ready_for_validation`: senza
+                    // distanza quest'ultima è vera dal primo triangolo, e la
+                    // partita non è affatto finita.
+                    if (window.c7Board && window.c7Board.aperto() && data.can_add) {
+                        // `restore()` **prima**: rimette i figli che aveva
+                        // clonato all'inizio, cioè col punteggio vecchio. Fatto
+                        // dopo, cancellerebbe l'aggiornamento — e il tabellone
+                        // resterebbe fermo mentre il punteggio va avanti.
+                        restore();
+                        window.c7Board.aggiorna(data.player1_score, data.player2_score);
+                        return;
+                    }
                     location.reload();
                 } else {
                     showError({{ _('Errore:')|tojson }} + ' ' + data.error);

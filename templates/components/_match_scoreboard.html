@@ -207,6 +207,54 @@
         var board = document.getElementById('matchBoard');
         if (!board) { return; }
 
+        /* Il tabellone si aggiorna da sé, senza ricaricare la pagina
+           -------------------------------------------------------------
+           Ricaricare a ogni triangolo **butta via il blocco dello schermo**:
+           una navigazione lo rilascia, e dopo il reload lo si richiede al
+           caricamento della pagina, cioè senza che nessuno abbia toccato
+           niente — il momento in cui Safari è più restio a concederlo. Il
+           risultato è che il blocco viveva solo l'istante fra il tocco e il
+           reload, e mai nei minuti in cui il telefono sta appoggiato alla
+           sponda: esattamente quando serve.
+
+           Finché il tabellone è aperto, quindi, il punteggio si riscrive qui.
+           La pagina sotto si ricarica quando il tabellone si chiude — o
+           subito, se la partita è arrivata al traguardo e quel che cambia non
+           sono più due cifre. */
+        window.c7Board = {
+            aperto: function () {
+                return orizzontale.matches
+                    && !document.body.classList.contains('c7-board-off');
+            },
+            aggiorna: function (p1, p2) {
+                var lati = board.querySelectorAll('.c7-board__side');
+                if (lati.length < 2) { return; }
+                [[lati[0], p1, p2], [lati[1], p2, p1]].forEach(function (voce) {
+                    var lato = voce[0], mio = voce[1], altrui = voce[2];
+                    var cifra = lato.querySelector('.c7-board__num');
+                    if (cifra) {
+                        cifra.textContent = mio;
+                        cifra.classList.toggle('c7-board__num--behind', mio < altrui);
+                    }
+                    var nome = lato.querySelector('.c7-board__name');
+                    if (nome) {
+                        nome.classList.toggle('c7-board__name--behind', mio < altrui);
+                    }
+                    lato.querySelectorAll('.c7-board__pip').forEach(function (pip, i) {
+                        pip.classList.toggle('is-on', i < mio);
+                        pip.classList.toggle('is-on--muted', i < mio && mio < altrui);
+                    });
+                });
+                daRicaricare = true;
+            }
+        };
+
+        var daRicaricare = false;
+
+        function ricaricaSeServe() {
+            if (daRicaricare) { window.location.reload(); }
+        }
+
         /* Il tocco che tiene acceso lo schermo non deve segnare un triangolo
            -----------------------------------------------------------------
            Nessuna API dice «lo schermo sta per spegnersi», quindi quel tocco
@@ -261,7 +309,21 @@
         });
         if (orizzontale.addEventListener) { orizzontale.addEventListener('change', aggiornaRisveglio); }
         var chiudi = board.querySelector('.c7-board__close');
-        if (chiudi) { chiudi.addEventListener('click', lasciaSpegnere); }
+        if (chiudi) {
+            chiudi.addEventListener('click', function () {
+                lasciaSpegnere();
+                ricaricaSeServe();
+            });
+        }
+        // Raddrizzato il telefono, la pagina sotto deve dire il vero.
+        if (orizzontale.addEventListener) {
+            orizzontale.addEventListener('change', function () {
+                if (!orizzontale.matches) { ricaricaSeServe(); }
+            });
+        }
+        // Qualunque tocco sul tabellone è un gesto buono per riavere il
+        // blocco: se al caricamento era stato rifiutato, si recupera qui.
+        board.addEventListener('pointerdown', tieniAcceso, true);
         aggiornaRisveglio();
 
         // La guardia sta sul contenitore e in fase di cattura: da lì ferma

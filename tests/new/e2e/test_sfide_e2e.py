@@ -231,6 +231,33 @@ class TestSfidaSenzaLimite:
         assert sfida.stato(match_id) == MatchStatus.CONFIRMED_BY_BOTH
         assert sfida.punteggio(match_id) == (2, 0)
 
+    def test_il_segnapunti_sa_che_si_puo_ancora_segnare(self, sfida: SfidaDriver):
+        """`can_add` è quello che il tabellone guarda per non ricaricarsi.
+
+        Senza distanza `is_ready_for_validation` è vera dal primo triangolo, e
+        chi la scambiasse per «la partita è finita» ricaricherebbe la pagina a
+        ogni tocco — buttando via il blocco dello schermo, che è il motivo per
+        cui il telefono sulla sponda si spegneva.
+        """
+        io_, avversario = sfida.crea_giocatori(2)
+        sfida.entra(io_)
+        match_id = sfida.apri_partita(avversario, match_format="free")
+
+        esito = sfida.segna(match_id, io_).get_json()
+
+        assert esito["is_ready_for_validation"] is True
+        assert esito["can_add"] is True, "senza distanza si segna quanto si vuole"
+
+    def test_alla_distanza_il_segnapunti_dice_che_si_e_chiuso(self, sfida: SfidaDriver):
+        io_, avversario = sfida.crea_giocatori(2)
+        sfida.entra(io_)
+        match_id = sfida.apri_partita(avversario, match_format="single", distance=2)
+        sfida.segna(match_id, io_)
+
+        esito = sfida.segna(match_id, io_).get_json()
+
+        assert esito["can_add"] is False
+
     def test_senza_nemmeno_un_triangolo_non_c_e_niente_da_terminare(
         self, sfida: SfidaDriver
     ):
