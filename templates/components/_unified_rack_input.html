@@ -25,7 +25,7 @@ Parametri:
 
 {# Stato partita — Match usa 'playing', IndividualMatch usa 'in_progress' #}
 {% set status_str = match.status.value|default(match.status) %}
-{% set is_in_progress = status_str in ['in_progress', 'playing'] %}
+{% set is_in_progress = MatchStatus.is_active(status_str) %}
 {% set is_completed_not_validated = status_str == MatchStatus.CLOSED_UNILATERALLY.value %}
 
 {# I due stati finali si distinguono per **quante firme** hanno chiuso la

@@ -128,18 +128,22 @@ function updateDistancePreview() {
 
     const previewText = document.getElementById('preview-text');
 
+    /* I segnaposto sono in stile JS (`{n}`) e non `%(n)s`: quest'ultimo
+     * verrebbe interpolato da Python e arriverebbe qui gia' consumato. */
     if (!isMultiSet) {
-        previewText.textContent = exactNumber
-            ? 'Si giocano esattamente ' + distance + ' rack'
-            : 'Si vince a ' + distance + ' rack';
+        previewText.textContent = (exactNumber
+            ? {{ _('Si giocano esattamente {n} rack')|tojson }}
+            : {{ _('Si vince a {n} rack')|tojson }}).replace('{n}', distance);
     } else {
-        const sets = isRaceToSets
-            ? 'Si vince a ' + matchDistance + ' set'
-            : 'Si giocano ' + matchDistance + ' set';
-        const racks = exactNumber
-            ? 'esattamente ' + distance + ' rack'
-            : 'al ' + distance;
-        previewText.textContent = sets + ', ogni set ' + racks;
+        const sets = (isRaceToSets
+            ? {{ _('Si vince a {n} set')|tojson }}
+            : {{ _('Si giocano {n} set')|tojson }}).replace('{n}', matchDistance);
+        const racks = (exactNumber
+            ? {{ _('esattamente {n} rack')|tojson }}
+            : {{ _('al {n}')|tojson }}).replace('{n}', distance);
+        previewText.textContent = {{ _('{sets}, ogni set {racks}')|tojson }}
+            .replace('{sets}', sets)
+            .replace('{racks}', racks);
     }
 
     syncBracketDistance();
@@ -161,7 +165,7 @@ function syncBracketDistance() {
     const strategy = document.getElementById('matchmaking_strategy');
     if (!nota || !strategy) { return; }
 
-    const isBracket = ['direct_elimination', 'double_knockout'].indexOf(strategy.value) >= 0;
+    const isBracket = {{ bracket_strategies|tojson }}.indexOf(strategy.value) >= 0;
     const exact = document.getElementById('exact_number');
     const exactRow = document.getElementById('exact_number_row');
     const raceToSets = document.getElementById('is_race_to_sets');

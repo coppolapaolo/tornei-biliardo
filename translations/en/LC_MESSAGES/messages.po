@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-21 09:53+0000\n"
+"POT-Creation-Date: 2026-08-21 15:49+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -18,23 +18,23 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app.py:678 templates/errors/403.html:3
+#: app.py:683 templates/errors/403.html:3
 msgid "Accesso negato"
 msgstr "Access denied"
 
-#: app.py:696
+#: app.py:701
 msgid "Non è il tuo turno"
 msgstr "Not your turn yet"
 
-#: app.py:697
+#: app.py:702
 msgid "Colpo irregolare"
 msgstr "Illegal shot"
 
-#: app.py:716
+#: app.py:721
 msgid "Operazione non consentita"
 msgstr "That shot isn't allowed."
 
-#: app.py:730
+#: app.py:735
 msgid "Tiro non valido"
 msgstr "Foul shot"
 
@@ -4685,8 +4685,8 @@ msgid "In attesa"
 msgstr "Pending"
 
 #: templates/admin/campionato_detail.html:246
-#: templates/components/_unified_match_score.html:82
-#: templates/components/_unified_match_score.html:93
+#: templates/components/_unified_match_score.html:88
+#: templates/components/_unified_match_score.html:99
 #: templates/exam/requests.html:19 utils/status_ui.py:194
 msgid "Confermato"
 msgstr "Confirmed"
@@ -8943,6 +8943,41 @@ msgstr ""
 "matters, so racks played after the winner is decided would change "
 "nothing."
 
+#: templates/components/_distance_configurator.html:135
+#, python-brace-format, python-format
+msgid "Si giocano esattamente {n} rack"
+msgstr "Exactly {n} racks played"
+
+#: templates/components/_distance_configurator.html:136
+#, python-brace-format
+msgid "Si vince a {n} rack"
+msgstr "Race to {n} racks"
+
+#: templates/components/_distance_configurator.html:139
+#, python-brace-format
+msgid "Si vince a {n} set"
+msgstr "Race to {n} sets"
+
+#: templates/components/_distance_configurator.html:140
+#, python-brace-format
+msgid "Si giocano {n} set"
+msgstr "{n} sets played"
+
+#: templates/components/_distance_configurator.html:142
+#, python-brace-format
+msgid "esattamente {n} rack"
+msgstr "exactly {n} racks"
+
+#: templates/components/_distance_configurator.html:143
+#, python-brace-format
+msgid "al {n}"
+msgstr "race to {n}"
+
+#: templates/components/_distance_configurator.html:144
+#, python-brace-format, python-format
+msgid "{sets}, ogni set {racks}"
+msgstr "{sets}, each set {racks}"
+
 #: templates/components/_double_knockout_algorithm_info.html:9
 #, python-format
 msgid "Doppio KO — turno %(num)s"
@@ -11784,30 +11819,30 @@ msgstr "Hi"
 msgid "Crea Match"
 msgstr "Create Match"
 
-#: templates/components/_unified_match_score.html:57
+#: templates/components/_unified_match_score.html:63
 msgid "1 girone all'italiana"
 msgstr "1 round-robin group"
 
-#: templates/components/_unified_match_score.html:57
+#: templates/components/_unified_match_score.html:63
 #, python-format
 msgid "%(n)s gironi all'italiana"
 msgstr "%(n)s round-robin groups"
 
-#: templates/components/_unified_match_score.html:59
+#: templates/components/_unified_match_score.html:65
 msgid "vince chi fa più triangoli"
 msgstr "whoever wins more racks takes it"
 
-#: templates/components/_unified_match_score.html:102
+#: templates/components/_unified_match_score.html:108
 #, python-format
 msgid "%(n)s set giocati"
 msgstr "%(n)s sets played"
 
-#: templates/components/_unified_match_score.html:104
+#: templates/components/_unified_match_score.html:110
 #, python-format
 msgid "%(n)s triangoli giocati"
 msgstr "%(n)s racks played"
 
-#: templates/components/_unified_match_score.html:113
+#: templates/components/_unified_match_score.html:119
 msgid "ha vinto"
 msgstr "won"
 
@@ -15133,12 +15168,12 @@ msgstr "I'll keep the TPA scoresheet"
 msgid ""
 "Si annota visita per visita e il punteggio viene da lì: niente «+1» a "
 "mano."
-msgstr ""
-"Scored visit by visit, with the score derived from it: no manual “+1”."
+msgstr "Scored visit by visit, with the score derived from it: no manual “+1”."
 
 #: templates/individual_match/quick_match.html:210
 msgid "Va deciso adesso: a triangoli già segnati il referto non si apre più."
-msgstr "Decide now: once racks have been scored the scoresheet can no longer be "
+msgstr ""
+"Decide now: once racks have been scored the scoresheet can no longer be "
 "opened."
 
 #: templates/individual_match/quick_match.html:220
