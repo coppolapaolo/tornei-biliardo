@@ -128,6 +128,53 @@ blocks:
       pending; if they disagree they can reject it and you fix it.
 
   - type: heading
+    id: senza-limite
+    title: "The match with no limit"
+
+  - type: text
+    text: >-
+      One of the formats is **Free**: no distance, you play as long as you
+      like. Scoring works as always, but there is no finish line to close the
+      match by itself — you two close it.
+
+  - type: steps
+    items:
+      - title: "When you are done, tap «End the match»"
+        text: >-
+          You find it under the score. From that moment the page tells you that
+          you closed it and that the other player is missing: until they answer,
+          the result is not final.
+      - title: "Your opponent accepts"
+        text: >-
+          On their phone they see that you closed the match, with **Accept** and
+          **Reject**. If they accept, the match is over; if they reject, the last
+          rack is taken back and you keep playing.
+
+  - type: note
+    tone: info
+    title: "Both signatures are needed"
+    text: >-
+      The rule of friendly matches holds here too: nobody closes a match alone.
+      With a distance it is the finish line that says when it is over; without
+      one, you say so — but the two of you together.
+
+  - type: heading
+    id: al-meglio-dei-set
+    title: "Best of sets"
+
+  - type: text
+    text: >-
+      Choosing **Multi-set** you decide two numbers: how many racks it takes to
+      win a set, and how many sets to win the match. The big score at the top
+      counts **sets**, not racks.
+
+  - type: text
+    text: >-
+      When a set ends, the next one does not start by itself: the page says so
+      and offers **Start the set** with the number of the one that is beginning. That is on purpose — between one set
+      and the next you swap ends, get a drink, wait.
+
+  - type: heading
     id: disponibilita
     title: "Being findable"
 

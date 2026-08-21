@@ -56,18 +56,61 @@
     </form>
     {% endif %}
 
-    {# Distanza libera: si finisce quando lo decidono i giocatori. #}
+    {# Distanza libera: si finisce quando lo decidono i giocatori — **in due**.
+
+       Qui c'era il solo pulsante «Termina la sfida», identico prima e dopo
+       averlo premuto: chi lo premeva non vedeva succedere niente e non sapeva
+       di dover aspettare l'altro. Ora la card racconta i tre momenti, come fa
+       il segnapunti quando c'è una distanza: nessuno ha ancora chiuso, hai
+       chiuso tu, ha chiuso l'altro. #}
     {% if match.distance is none and state == MatchStatus.IN_PROGRESS.value %}
     {% set total_racks = (match.player1_score or 0) + (match.player2_score or 0) %}
+    {% set sono_p1 = current_user.id == match.player1_id %}
+    {% set altro = match.player2 if sono_p1 else match.player1 %}
+    {% set altro_nome = altro.username if altro else _('Avversario') %}
+    {% set ho_chiuso = match.player1_confirmed if sono_p1 else match.player2_confirmed %}
+    {% set ha_chiuso_altro = match.player2_confirmed if sono_p1 else match.player1_confirmed %}
     {% if total_racks > 0 %}
     <div class="c7-card">
       <div class="c7-kicker">{{ _('Distanza libera') }}</div>
+
+      {% if ho_chiuso %}
+      <div class="c7-flash c7-flash--info" style="margin-top:10px">
+        <span class="c7-flash__ico"><i class="fas fa-hourglass-half"></i></span>
+        <span class="c7-flash__body">
+          <span class="c7-flash__title">{{ _('Hai chiuso la sfida') }}</span>
+          <span class="c7-flash__text">
+            {{ _('Manca la conferma di %(name)s: fino ad allora il risultato non è definitivo.', name=altro_nome) }}
+          </span>
+        </span>
+      </div>
+
+      {% elif ha_chiuso_altro %}
+      <div class="c7-flash c7-flash--info" style="margin-top:10px">
+        <span class="c7-flash__ico"><i class="fas fa-flag-checkered"></i></span>
+        <span class="c7-flash__body">
+          <span class="c7-flash__title">{{ _('%(name)s ha chiuso la sfida', name=altro_nome) }}</span>
+          <span class="c7-flash__text">
+            {{ _('Accetta il risultato per chiuderla, oppure rifiuta se non è quello giusto.') }}
+          </span>
+        </span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+        <button class="btn btn-success" onclick="confirmResult(this)">{{ _('Accetta') }}</button>
+        <button class="btn btn-danger" onclick="rejectResult(this)">{{ _('Rifiuta') }}</button>
+      </div>
+
+      {% else %}
       <p style="margin:8px 0 0;font-size:13px;font-weight:600;line-height:1.45;color:var(--c7-ink-soft)">
         {{ _('Questa sfida non ha una distanza: finisce quando lo decidete voi.') }}
       </p>
       <button class="btn btn-primary w-100" style="margin-top:14px" onclick="confirmResult(this)">
         <i class="fas fa-flag-checkered"></i> {{ _('Termina la sfida') }}
       </button>
+      <div class="text-center" style="margin-top:8px;font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
+        {{ _('Serve anche la conferma di %(name)s.', name=altro_nome) }}
+      </div>
+      {% endif %}
     </div>
     {% endif %}
     {% endif %}
@@ -82,6 +125,10 @@
     {% set show_forfeit = user_is_player %}
     {% set api_format = 'json' %}
     {% set require_table_assignment = False %}
+    {# Al meglio dei set il segnapunti deve sapere **quale set** si sta
+       giocando: senza, non mostrava né i tasti del set né il comando per
+       cominciare il successivo, e la sfida restava ferma dopo il primo. #}
+    {% set current_set = match.get_current_set() if match.is_multi_set else none %}
     {% include "components/_unified_rack_input.html" with context %}
     {% endif %}
 
@@ -244,6 +291,22 @@
         url: '/sse/poll/individual_match/' + matchId,
         onEvent: function(event) {
             var data = event.data;
+
+            // Col tabellone aperto, **ogni** notizia sul punteggio lo riallinea
+            // a quello che dice il server — anche quando l'ha causata questo
+            // telefono. È la rete di sicurezza del non-ricaricare: se la
+            // risposta a un tocco si fosse persa per strada, il triangolo sul
+            // server c'è e sullo schermo no, e senza ricariche nessuno se ne
+            // accorgerebbe fino alla chiusura del tabellone. Qui il numero
+            // torna quello vero al primo giro di controllo.
+            if (window.c7Board && window.c7Board.aperto()
+                && event.type === 'rack_updated'
+                && data.can_add
+                && data.player1_score !== undefined) {
+                window.c7Board.aggiorna(data.player1_score, data.player2_score);
+                return;
+            }
+
             var shouldReload = false;
 
             if (event.type === 'match_started' && data.started_by !== currentUserId) {
@@ -281,6 +344,24 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    // Col tabellone aperto non si ricarica: una navigazione
+                    // rilascia il blocco dello schermo, e il telefono
+                    // appoggiato alla sponda si spegnerebbe fra un triangolo e
+                    // l'altro. Il punteggio lo riscrive il tabellone.
+                    // Al traguardo sì: lì non cambiano due cifre, cambia cosa
+                    // c'è da fare.
+                    // `can_add` e non `is_ready_for_validation`: senza
+                    // distanza quest'ultima è vera dal primo triangolo, e la
+                    // partita non è affatto finita.
+                    if (window.c7Board && window.c7Board.aperto() && data.can_add) {
+                        // `restore()` **prima**: rimette i figli che aveva
+                        // clonato all'inizio, cioè col punteggio vecchio. Fatto
+                        // dopo, cancellerebbe l'aggiornamento — e il tabellone
+                        // resterebbe fermo mentre il punteggio va avanti.
+                        restore();
+                        window.c7Board.aggiorna(data.player1_score, data.player2_score);
+                        return;
+                    }
                     location.reload();
                 } else {
                     showError({{ _('Errore:')|tojson }} + ' ' + data.error);
@@ -290,6 +371,36 @@
             .catch(error => {
                 console.error('Error:', error);
                 showError({{ _("Errore durante l'aggiunta del triangolo")|tojson }});
+                restore();
+            });
+    }
+
+    // Il set successivo. Il segnapunti condiviso chiama proprio questo nome
+    // (`start_set_func`, default `startNextSet`): finché la funzione non
+    // esisteva qui, il pulsante «Inizia il set N» era muto — e la sfida al
+    // meglio dei set non arrivava in fondo.
+    function startNextSet(btn) {
+        const restore = withLoading(btn);
+        fetch(`/match/matches/${matchId}/sets/next`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken()
+            },
+            body: JSON.stringify({})
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    showError({{ _('Errore:')|tojson }} + ' ' + (data.error || {{ _("Impossibile iniziare il set successivo")|tojson }}));
+                    restore();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError({{ _("Errore durante l'avvio del set successivo")|tojson }});
                 restore();
             });
     }

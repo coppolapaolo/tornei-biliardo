@@ -362,6 +362,7 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "individual_match.cancel_proposal": {"player", "director"},
     "individual_match.decline_proposal": {"player", "director"},
     "individual_match.start_match": {"player", "director"},
+    "individual_match.start_next_set": {"player", "director"},
     "individual_match.add_rack": {"player", "director"},
     "individual_match.remove_rack": {"player", "director"},
     "individual_match.confirm_result": {"player", "director"},

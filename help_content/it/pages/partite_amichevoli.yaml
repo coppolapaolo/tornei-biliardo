@@ -128,6 +128,53 @@ blocks:
       corregge.
 
   - type: heading
+    id: senza-limite
+    title: "La sfida senza limite"
+
+  - type: text
+    text: >-
+      Fra i formati c'è anche **Libero**: nessuna distanza, si gioca finché
+      volete. Il segnapunti funziona come sempre, ma non c'è nessun traguardo
+      che chiuda la partita da solo — a chiuderla siete voi.
+
+  - type: steps
+    items:
+      - title: "Quando avete finito, tocca «Termina la sfida»"
+        text: >-
+          Lo trovi sotto al punteggio. Da quel momento la pagina ti dice che
+          hai chiuso e che manca l'altro: finché non risponde, il risultato non
+          è definitivo.
+      - title: "L'avversario accetta"
+        text: >-
+          Sul suo telefono compare che hai chiuso la sfida, con **Accetta** e
+          **Rifiuta**. Se accetta la partita è conclusa; se rifiuta, l'ultimo
+          triangolo viene tolto e si torna a giocare.
+
+  - type: note
+    tone: info
+    title: "Serve la firma di tutti e due"
+    text: >-
+      Vale anche qui la regola delle amichevoli: nessuno chiude una partita da
+      solo. Con la distanza è il traguardo a dire quando è finita, senza
+      distanza lo dite voi — ma in due.
+
+  - type: heading
+    id: al-meglio-dei-set
+    title: "Al meglio dei set"
+
+  - type: text
+    text: >-
+      Scegliendo **Multi-set** decidi due numeri: quanti triangoli servono per
+      vincere un set, e quanti set per vincere la sfida. Il punteggio grande in
+      cima conta i **set**, non i triangoli.
+
+  - type: text
+    text: >-
+      Quando un set finisce non ne comincia un altro da solo: la pagina te lo
+      dice e ti offre **Inizia il set** col numero di quello che comincia. È voluto — fra un set e
+      l'altro al tavolo si cambia, si beve, si aspetta.
+
+  - type: heading
     id: disponibilita
     title: "Farsi trovare"
 

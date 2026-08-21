@@ -62,3 +62,11 @@ def driver(client):
     from gara_driver import GaraDriver
 
     return GaraDriver(client)
+
+
+@pytest.fixture
+def sfida(client):
+    """Guida una sfida individuale parlando solo HTTP (`sfida_driver.py`)."""
+    from sfida_driver import SfidaDriver
+
+    return SfidaDriver(client)

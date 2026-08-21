@@ -402,6 +402,10 @@ class IndividualMatchService:
         return MatchLifecycleService.start_match(match_id, user_id)
 
     @staticmethod
+    def start_next_set(match_id: int, user_id: int):
+        return MatchLifecycleService.start_next_set(match_id, user_id)
+
+    @staticmethod
     def confirm_match_result(match_id: int, user_id: int) -> IndividualMatch:
         """Confirm match result by a player (new UX)."""
         return MatchLifecycleService.confirm_match_result(match_id, user_id)

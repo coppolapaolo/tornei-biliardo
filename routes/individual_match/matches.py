@@ -17,6 +17,7 @@ from models.individual_match.services import IndividualMatchService
 from models.status_enum import Discipline
 from models.user.permissions import RoleRequirement
 from utils.local_time import parse_local_datetime
+from utils.status_ui import match_scoring_state
 
 from . import individual_match_bp
 
@@ -96,6 +97,40 @@ def start_match(match_id):
             return redirect(url_for("individual_match.match_detail", match_id=match_id))
 
 
+@individual_match_bp.route("/matches/<int:match_id>/sets/next", methods=["POST"])
+@RoleRequirement.player_or_director_required
+def start_next_set(match_id):
+    """Comincia il set successivo di una sfida al meglio dei set.
+
+    Il segnapunti condiviso offre «Inizia il set N» anche sulle sfide
+    individuali, ma l'endpoint esisteva solo per le partite di gara: qui il
+    pulsante chiamava una funzione che non c'era, e la partita restava
+    bloccata dopo il primo set — senza modo di segnare né di chiuderla.
+    """
+    try:
+        nuovo_set = IndividualMatchService.start_next_set(match_id, current_user.id)
+
+        from routes.sse import emit_individual_match_event
+
+        emit_individual_match_event(
+            match_id,
+            "set_started",
+            {"started_by": current_user.id, "set_number": nuovo_set.set_number},
+        )
+
+        if request.is_json:
+            return jsonify({"success": True, "set_number": nuovo_set.set_number})
+
+        flash(_("Set %(n)s iniziato.", n=nuovo_set.set_number), "success")
+        return redirect(url_for("individual_match.match_detail", match_id=match_id))
+
+    except ValueError as e:
+        if request.is_json:
+            return jsonify({"success": False, "error": str(e)}), 400
+        flash(str(e), "danger")
+        return redirect(url_for("individual_match.match_detail", match_id=match_id))
+
+
 @individual_match_bp.route("/matches/<int:match_id>/racks/add", methods=["POST"])
 @RoleRequirement.player_or_director_required
 def add_rack(match_id):
@@ -130,11 +165,20 @@ def add_rack(match_id):
                 "player1_score": match.player1_score,
                 "player2_score": match.player2_score,
                 "is_ready_for_validation": match.is_ready_for_validation(),
+                # `can_add` viaggia anche nell'evento: chi lo riceve ha il
+                # tabellone aperto e deve decidere se gli basta riscrivere le
+                # cifre. Non dipende da chi guarda (vedi `match_scoring_state`).
+                "can_add": match_scoring_state(match, current_user)["can_add"],
                 "added_by": current_user.id,
             },
         )
 
         if request.is_json:
+            # `can_add`: si può ancora segnare? Non è `is_ready_for_validation`,
+            # che nel **formato libero** è vera fin dal primo triangolo pur
+            # restando la partita apertissima. Serve al tabellone per sapere se
+            # gli basta riscrivere due cifre o se deve cambiare quel che offre
+            # — e quindi se la pagina va ricaricata.
             return jsonify(
                 {
                     "success": True,
@@ -142,6 +186,7 @@ def add_rack(match_id):
                     "player1_score": match.player1_score,
                     "player2_score": match.player2_score,
                     "is_ready_for_validation": match.is_ready_for_validation(),
+                    "can_add": match_scoring_state(match, current_user)["can_add"],
                 }
             )
         else:
