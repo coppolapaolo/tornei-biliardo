@@ -3,7 +3,7 @@ section: account
 kind: approfondimento
 audience: [giocatore]
 minutes: 4
-summary: "What others see of you, how to hide individual results, how to download your data and how to close your account."
+summary: "What others see of you, what to show in your public profile, how to download your data and how to close your account."
 screens: [player.privacy_settings, player.delete_account, main.privacy_policy]
 related: [profilo_e_statistiche]
 
@@ -46,22 +46,23 @@ blocks:
 
   - type: heading
     id: nascondere
-    title: "Hiding individual results"
+    title: "What to show in your profile"
 
   - type: text
     text: >-
-      From your history you can hide a competition, a single match or a whole
-      championship from **your profile**. It is a choice about your own shop
-      window.
+      From the privacy settings you decide which parts of your public profile
+      stay on: **statistics**, **recent matches**, **standings** and **drill
+      statistics**. Each one goes off as a whole — there is no way to hide a
+      single match and keep the others.
 
   - type: note
     tone: warning
     title: "Official standings do not change"
     text: >-
-      Hiding a result removes it from your profile, **not** from the
-      competition's standings: those are the record of a contest other people
-      took part in, and cannot be rewritten by one person. Anyone opening the
-      competition page will still see your result.
+      Switching off your recent matches removes them from your profile, **not**
+      from the competition's standings: those are the record of a contest other
+      people took part in, and cannot be rewritten by one person. Anyone opening
+      the competition page will still see your result.
 
   - type: heading
     id: scaricare

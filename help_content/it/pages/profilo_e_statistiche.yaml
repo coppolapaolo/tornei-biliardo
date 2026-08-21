@@ -39,7 +39,10 @@ blocks:
         text: "Una stima numerica della tua forza, calcolata dai risultati."
         hint: profilo.rating
       - name: "Statistiche"
-        text: "Partite giocate, vinte, perse, triangoli e percentuali."
+        text: >-
+          Campionati e gare giocate, vittorie, sconfitte, totale delle partite
+          e percentuale di vittorie. Conta **tutto quello che hai giocato**,
+          comprese le partite amichevoli.
 
   - type: heading
     id: rating
@@ -75,6 +78,29 @@ blocks:
       nulla e il risultato dice davvero chi è più forte. Fra categorie diverse
       il punteggio è alterato per costruzione, e usarlo per misurare la forza
       dei giocatori la falserebbe.
+
+  - type: heading
+    id: partite_recenti
+    title: "Le partite recenti"
+
+  - type: text
+    text: >-
+      Scorrendo il profilo, dopo le statistiche e gli esercizi, trovi le
+      **ultime dieci partite**, da qualunque parte vengano: quelle giocate in
+      gara e quelle amichevoli, nello stesso elenco. Ogni riga si apre con
+      l'esito — una coppa se hai vinto, una croce se hai perso — poi
+      l'avversario e il punteggio.
+
+  - type: text
+    text: >-
+      Sotto al nome, un'etichetta dice **da dove viene** quella partita:
+      «Campionato», «Gara» oppure «Individuale» per le amichevoli. Accanto ci
+      sono la competizione e la data. La freccia a destra apre la partita.
+
+  - type: text
+    text: >-
+      Con **Tutte**, in alto a destra, si passa allo storico completo: lì le
+      partite non si fermano alle ultime dieci e si possono filtrare.
 
   - type: heading
     id: storico
@@ -120,9 +146,11 @@ blocks:
 
   - type: text
     text: >-
-      Se preferisci non mostrare una certa gara o una certa partita nel tuo
-      profilo pubblico puoi nasconderla: resta nelle classifiche ufficiali —
-      quelle non si toccano — ma sparisce dalla tua vetrina. Vedi [Privacy e
+      Quello che gli altri vedono del tuo profilo lo decidi tu: dalle
+      impostazioni di privacy puoi spegnere le statistiche, le partite recenti,
+      le classifiche o le statistiche degli esercizi. Si spengono a blocchi
+      interi, non una partita alla volta, e le classifiche ufficiali non
+      cambiano comunque. Vedi [Privacy e
       dati](/aiuto/account/privacy_e_dati).
 
   - type: heading
@@ -157,6 +185,6 @@ blocks:
       - q: "Posso cambiare nome utente?"
         a: "No: compare in classifiche già pubblicate, e cambiarlo renderebbe irriconoscibili i risultati passati."
       - q: "Le partite amichevoli compaiono nel profilo?"
-        a: "Sì, nelle statistiche globali. Il rating competitivo le esclude."
+        a: "Sì: nell'elenco delle partite recenti, con l'etichetta «Individuale», e nei conteggi delle partite giocate, vinte e perse. A tenerle fuori è solo il rating competitivo: per contarle serve quello globale."
       - q: "Chi vede il mio indirizzo email?"
         a: "Nessun altro giocatore. È conservato cifrato e serve solo alle comunicazioni dell'app."

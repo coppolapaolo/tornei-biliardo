@@ -3,7 +3,7 @@ section: account
 kind: approfondimento
 audience: [giocatore]
 minutes: 4
-summary: "Cosa vedono gli altri di te, come nascondere singoli risultati, come scaricare i tuoi dati e come chiudere l'account."
+summary: "Cosa vedono gli altri di te, cosa mostrare nel profilo pubblico, come scaricare i tuoi dati e come chiudere l'account."
 screens: [player.privacy_settings, player.delete_account, main.privacy_policy]
 related: [profilo_e_statistiche]
 
@@ -45,18 +45,20 @@ blocks:
 
   - type: heading
     id: nascondere
-    title: "Nascondere singoli risultati"
+    title: "Cosa mostrare nel profilo"
 
   - type: text
     text: >-
-      Dallo storico puoi nascondere una gara, una singola partita o un intero
-      campionato dal **tuo profilo**. È una scelta di vetrina personale.
+      Dalle impostazioni di privacy decidi quali parti del tuo profilo pubblico
+      restano accese: **statistiche**, **partite recenti**, **classifiche** e
+      **statistiche esercizi**. Ognuna si spegne per intero — non c'è modo di
+      nascondere una singola partita e lasciare le altre.
 
   - type: note
     tone: warning
     title: "Le classifiche ufficiali non cambiano"
     text: >-
-      Nascondere un risultato lo toglie dal tuo profilo, **non** dalla
+      Spegnere le partite recenti le toglie dal tuo profilo, **non** dalla
       classifica della gara: quella è il verbale di una competizione a cui
       hanno partecipato altri, e non può essere riscritta da un singolo. Chi
       apre la pagina della gara continuerà a vedere il tuo risultato.
