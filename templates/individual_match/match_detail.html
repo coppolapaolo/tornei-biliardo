@@ -291,6 +291,22 @@
         url: '/sse/poll/individual_match/' + matchId,
         onEvent: function(event) {
             var data = event.data;
+
+            // Col tabellone aperto, **ogni** notizia sul punteggio lo riallinea
+            // a quello che dice il server — anche quando l'ha causata questo
+            // telefono. È la rete di sicurezza del non-ricaricare: se la
+            // risposta a un tocco si fosse persa per strada, il triangolo sul
+            // server c'è e sullo schermo no, e senza ricariche nessuno se ne
+            // accorgerebbe fino alla chiusura del tabellone. Qui il numero
+            // torna quello vero al primo giro di controllo.
+            if (window.c7Board && window.c7Board.aperto()
+                && event.type === 'rack_updated'
+                && data.can_add
+                && data.player1_score !== undefined) {
+                window.c7Board.aggiorna(data.player1_score, data.player2_score);
+                return;
+            }
+
             var shouldReload = false;
 
             if (event.type === 'match_started' && data.started_by !== currentUserId) {
@@ -309,16 +325,6 @@
             }
 
             if (shouldReload) {
-                // Stessa ragione dell'aggiunta di un triangolo: col tabellone
-                // aperto una ricarica spegnerebbe lo schermo poco dopo. Se
-                // l'unica cosa cambiata è il punteggio, lo si riscrive.
-                if (window.c7Board && window.c7Board.aperto()
-                    && event.type === 'rack_updated'
-                    && data.can_add
-                    && data.player1_score !== undefined) {
-                    window.c7Board.aggiorna(data.player1_score, data.player2_score);
-                    return;
-                }
                 console.log('[Poll] ' + event.type + ', reloading...');
                 location.reload();
             }
