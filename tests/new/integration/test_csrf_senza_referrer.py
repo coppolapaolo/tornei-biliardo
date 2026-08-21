@@ -230,6 +230,12 @@ def test_la_diagnosi_cookie_e_aperta_e_misura_il_giro_completo(app):
         eco_nudo = app.test_client().get("/auth/diagnosi/eco").get_json()
         assert eco_nudo["cookie_arrivato"] is False
 
+        # Gli esiti locali riferiti dalla pagina non devono rompere l'eco,
+        # né presenti né assenti né malformati.
+        for query in ("", "?dichiara=1&salva=0", "?salva=banana"):
+            risposta = client.get("/auth/diagnosi/eco" + query)
+            assert risposta.status_code == 200
+
 
 def test_la_pagina_400_senza_cookie_porta_alla_diagnosi(csrf_client, db_session):
     risposta = csrf_client.post(
