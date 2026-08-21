@@ -24,8 +24,16 @@ def trio_add_rack(trio_id):
     try:
         winner_id = int(request.form["winner_id"])
 
-        # Usa il service layer invece del direct database access
-        result = TrioMatchService.add_trio_rack(trio_id, winner_id)
+        # Usa il service layer invece del direct database access.
+        # `authoritative`: qui ci si arriva solo passando da
+        # `@trio_manager_required`, quindi chi segna dirige per costruzione e
+        # il suo punteggio non ha bisogno della firma dei giocatori.
+        result = TrioMatchService.add_trio_rack(
+            trio_id,
+            winner_id,
+            added_by_id=current_user.id,
+            authoritative=True,
+        )
         return jsonify(result)
 
     except ValueError as ve:

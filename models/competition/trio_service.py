@@ -8,6 +8,8 @@ Dependencies: models.base.db, models.match.models.TrioMatch,
 
 from __future__ import annotations
 
+from typing import Optional
+
 from models.base import db
 from models.transaction.manager import transactional
 
@@ -17,8 +19,25 @@ class TrioMatchService:
 
     @staticmethod
     @transactional(domain="competition")
-    def add_trio_rack(trio_id: int, winner_id: int) -> dict:
+    def add_trio_rack(
+        trio_id: int,
+        winner_id: int,
+        added_by_id: Optional[int] = None,
+        authoritative: bool = False,
+    ) -> dict:
         """Aggiunge un rack a una partita trio con validazione.
+
+        Args:
+            trio_id: la partita trio
+            winner_id: chi ha vinto il triangolo
+            added_by_id: chi lo sta **inserendo**, che non e' detto sia chi ha
+                vinto. Fino al 2026-08-21 non veniva passato da nessuno: la
+                colonna `TrioRack.added_by_id` esisteva e restava vuota. Ora
+                serve, perche' chi segna il triangolo che chiude la partita ha
+                gia' riconosciuto il risultato e non gli si chiede di
+                confermarlo una seconda volta.
+            authoritative: chi segna dirige anche la gara. Come nella partita a
+                due: il suo punteggio e' gia' quello ufficiale.
 
         Returns:
             Dict con stato aggiornato del trio
@@ -36,7 +55,12 @@ class TrioMatchService:
         # Aggiungi rack e gestisci rotazione
         from models.match.trio_scoring_service import TrioScoringService
 
-        TrioScoringService.add_rack_win(trio.id, winner_id)
+        TrioScoringService.add_rack_win(
+            trio.id,
+            winner_id,
+            added_by_id=added_by_id,
+            authoritative=authoritative,
+        )
 
         # Prepara risposta con nuovo stato
         state = trio.get_current_state()

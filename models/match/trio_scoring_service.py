@@ -15,6 +15,8 @@ from __future__ import annotations
 
 from typing import Optional, TYPE_CHECKING
 
+from flask_babel import gettext as _
+
 from models.base import db
 from models.status_enum import MatchStatus
 from models.transaction.manager import transactional
@@ -38,7 +40,10 @@ class TrioScoringService:
     @staticmethod
     @transactional(domain="match")
     def add_rack_win(
-        trio_id: int, winner_id: int, added_by_id: Optional[int] = None
+        trio_id: int,
+        winner_id: int,
+        added_by_id: Optional[int] = None,
+        authoritative: bool = False,
     ) -> Optional["TrioRack"]:
         """Add a rack win for a player in the round-robin.
 
@@ -48,6 +53,8 @@ class TrioScoringService:
             trio_id: ID of the TrioMatch
             winner_id: ID of the player who won the rack
             added_by_id: ID of user adding the rack (for audit)
+            authoritative: chi segna dirige anche la gara: il punteggio e' gia'
+                quello ufficiale e non ha bisogno della firma di nessuno
 
         Returns:
             The created TrioRack, or None if invalid (completed, wrong player, etc.)
@@ -102,7 +109,9 @@ class TrioScoringService:
 
         # Check if trio is completed
         if trio.total_racks_played >= config.total_played_racks:
-            TrioScoringService._apply_bonus_and_complete(trio)
+            TrioScoringService._apply_bonus_and_complete(
+                trio, added_by_id=added_by_id, authoritative=authoritative
+            )
 
         return trio_rack
 
@@ -125,6 +134,21 @@ class TrioScoringService:
         trio = db.session.get(TrioMatch, trio_id)
         if trio is None:
             return None
+
+        # Il sigillo del direttore vale anche qui. Fino al 2026-08-21 questa
+        # difesa esisteva solo nel template (il pulsante spariva), quindi una
+        # POST diretta all'endpoint riapriva una partita gia' messa agli atti.
+        # Nella partita a due il rifiuto e' sempre stato sul server
+        # (`ScoringService.remove_rack`); questo e' lo stesso rifiuto, con le
+        # stesse parole.
+        match_obj = db.session.get(Match, trio.match_id)
+        if match_obj and match_obj.status == MatchStatus.CLOSED_UNILATERALLY.value:
+            raise ValueError(
+                _(
+                    "Il risultato è già stato validato: per correggerlo serve "
+                    "il direttore di gara"
+                )
+            )
 
         last = trio.last_rack
         if not last:
@@ -384,15 +408,31 @@ class TrioScoringService:
             trio.waiting_player_id = trio.player_ids[waiting_idx]
 
     @staticmethod
-    def _apply_bonus_and_complete(trio: "TrioMatch") -> None:
+    def _apply_bonus_and_complete(
+        trio: "TrioMatch",
+        added_by_id: Optional[int] = None,
+        authoritative: bool = False,
+    ) -> None:
         """Apply bonus flag and set trio to awaiting confirmation.
 
         Note: bonus_racks don't create actual rack records - the bonus is virtual
         and applied equally to all players for display/classification purposes.
         Since it's equal for all, it doesn't affect winner determination.
 
-        The trio enters 'awaiting_confirmation' state - user must call
-        confirm_result() to finalize the match.
+        Il trio entra in `awaiting_confirmation`, ma non a mani vuote: le firme
+        che sono gia' implicite nel gesto appena compiuto vengono date qui,
+        con le stesse tre regole della partita a due (`ScoringService.add_rack`):
+
+        - **chi ha vinto** non ha ragione di contestare il proprio risultato;
+        - **chi ha inserito** il triangolo decisivo ha gia' dichiarato come e'
+          finita: richiederglielo e' chiedere due volte la stessa cosa, con in
+          mezzo una schermata che sembra un ostacolo;
+        - **chi dirige la gara** scrive gia' il punteggio ufficiale, da
+          qualunque schermata lo faccia.
+
+        Se le firme implicite sono tutte e tre, la partita si chiude da sola —
+        e resta comunque annullabile finche' il direttore non valida: il gesto
+        e' implicito, non irrevocabile.
         """
         config = trio.trio_config
 
@@ -408,6 +448,28 @@ class TrioScoringService:
 
         # Enter awaiting confirmation state (don't complete yet)
         trio.awaiting_confirmation = True
+
+        # Firme implicite (vedi docstring). `winner_id` puo' essere None: il
+        # trio ammette il pareggio, e li' nessuno ha "vinto" alcunche'.
+        gia_daccordo = set()
+        if trio.winner_id is not None:
+            gia_daccordo.add(trio.winner_id)
+        if added_by_id is not None and added_by_id in trio.player_ids:
+            gia_daccordo.add(added_by_id)
+        if authoritative:
+            gia_daccordo.update(trio.player_ids)
+
+        for player_id in gia_daccordo:
+            if player_id == trio.player1_id:
+                trio.player1_confirmed = True
+            elif player_id == trio.player2_id:
+                trio.player2_confirmed = True
+            elif player_id == trio.player3_id:
+                trio.player3_confirmed = True
+
+        # Tutte e tre implicite: non resta niente da chiedere a nessuno.
+        if trio.player1_confirmed and trio.player2_confirmed and trio.player3_confirmed:
+            trio._finalize_trio(closed_by_director=False)
 
 
 __all__ = ["TrioScoringService"]
