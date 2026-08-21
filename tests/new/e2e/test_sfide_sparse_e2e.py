@@ -297,6 +297,60 @@ class TestGliOrariCorrettiDopo:
 
 
 # ══════════════════════════════════════════════════════════════════════
+# La prima schermata, e chi ci si può giocare
+# ══════════════════════════════════════════════════════════════════════
+
+
+@pytest.mark.e2e
+class TestLaPrimaSchermata:
+    """`/match/` è la porta di casa delle sfide: da lì si parte sempre."""
+
+    def test_al_primo_ingresso_si_apre_e_non_promette_niente(self, sfida: SfidaDriver):
+        io_ = sfida.crea_giocatore()
+        sfida.entra(io_)
+
+        risposta = sfida.client.get("/match/")
+
+        assert risposta.status_code == 200
+
+    def test_le_partite_in_corso_ci_compaiono(self, sfida: SfidaDriver):
+        io_, avversario = sfida.crea_giocatori(2)
+        sfida.entra(io_)
+        match_id = sfida.apri_partita(avversario, distance="5")
+
+        pagina = sfida.client.get("/match/").get_data(as_text=True)
+
+        assert f"/match/matches/{match_id}" in pagina
+        assert avversario.username in pagina
+
+    def test_l_elenco_avversari_conosce_chi_ho_gia_incontrato(self, sfida: SfidaDriver):
+        """L'elenco che riempie il menù a tendina della proposta.
+
+        Non è la ricerca: sono le persone contro cui **si è già giocato**, ed
+        è la scorciatoia vera, perché in sala si rigioca quasi sempre con le
+        stesse. Chi non si è mai incontrato non ci compare — si trova
+        cercandolo.
+        """
+        io_, avversario, mai_visto = sfida.crea_giocatori(3)
+        sfida.entra(io_)
+        match_id = sfida.apri_partita(avversario, distance="2")
+        sfida.segna_piu_volte(match_id, io_, 2)
+        sfida.conferma(match_id)
+        sfida.esci()
+        sfida.entra(avversario)
+        sfida.conferma(match_id)
+        sfida.esci()
+
+        sfida.entra(io_)
+        elenco = sfida.client.get("/match/players/opponents").get_json()
+
+        nomi = [voce["username"] for voce in elenco]
+        assert avversario.username in nomi
+        assert mai_visto.username not in nomi
+        assert io_.username not in nomi
+
+
+# ══════════════════════════════════════════════════════════════════════
 # Il quadro d'insieme
 # ══════════════════════════════════════════════════════════════════════
 

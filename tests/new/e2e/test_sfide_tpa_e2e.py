@@ -364,6 +364,30 @@ class TestIlRefertoSiSceglieAllAvvio:
         assert risposta.status_code == 200
         assert risposta.get_json()["url"].endswith("/tpa")
 
+    def test_anche_col_modulo_vero_e_non_solo_via_json(self, sfida: SfidaDriver):
+        """La casella manda `1`, non `true`: il modulo è quello del browser.
+
+        Il resto di queste journey passa dalla chiamata JSON che fa la pagina;
+        qui si manda quello che manda davvero un `<input type="checkbox">`
+        premuto — cioè il suo `value`. Sono due formati diversi della stessa
+        richiesta, e uno solo dei due arriva dai telefoni.
+        """
+        io_, avversario = sfida.crea_giocatori(2)
+        sfida.entra(io_)
+
+        risposta = sfida.client.post(
+            "/match/quick",
+            data={"opponent_id": str(avversario.id), "tpa_referto": "1"},
+            follow_redirects=False,
+        )
+
+        assert risposta.status_code == 302
+        assert risposta.headers["Location"].endswith("/tpa")
+        match_id = int(
+            re.search(r"/matches/(\d+)/tpa", risposta.headers["Location"])[1]
+        )
+        assert sfida.referto(match_id) is not None
+
     def test_senza_la_spunta_niente_referto(self, sfida: SfidaDriver):
         io_, avversario = sfida.crea_giocatori(2)
         sfida.entra(io_)

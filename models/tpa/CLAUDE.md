@@ -146,7 +146,13 @@ del dominio (`routes/individual_match/matches.py`).
   discende dal referto (`_sync_match_score`), e due segnapunti si
   contraddicono. Il template del match nasconde il segnapunti normale.
 - **Non aprire un referto a rack già segnati**: partirebbe da 0-0 e dovrebbe
-  cancellare rack veri.
+  cancellare rack veri. Da cui il secondo punto d'ingresso: l'avvio rapido
+  porta dritti al segnapunti, quindi la finestra per prendere il referto sarebbe
+  larga un tocco — il modulo lo chiede prima (spunta `tpa_referto`, aperta da
+  `routes/individual_match/quick.py`, **fuori** dalla transazione di
+  `QuickMatchService.start`: sono due `@transactional` diversi). Se lì il
+  referto non si può aprire — disciplina non coperta, match a set — la partita
+  parte lo stesso, senza.
 - **Non allineare le regole al PDF Accu-Stats** senza migrare i referti
   esistenti: le tre divergenze note sono volute e fissate da un test.
 

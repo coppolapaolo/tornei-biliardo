@@ -47,6 +47,12 @@ blocks:
           Sotto «Come si gioca» c'è il riepilogo di sala, disciplina e distanza.
           Vanno bene? Non toccare niente. Altrimenti tocca **Cambia** e correggi
           quello che serve.
+      - title: "Decidi se tenere il referto TPA"
+        text: >-
+          Se hai sbloccato il referto, sopra il pulsante c'è **Tengo il referto
+          TPA**. È l'unica cosa che va decisa adesso: il referto va aperto prima
+          del primo triangolo, quindi dopo non si può più. Se non ti interessa,
+          lascia stare e si segna come sempre.
       - title: "Inizia a segnare"
         text: >-
           La partita parte subito. L'avversario riceve una notifica: non deve

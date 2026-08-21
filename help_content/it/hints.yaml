@@ -542,6 +542,14 @@ hints:
     page: partite_amichevoli
     section: avvio-rapido
 
+  - id: sfida.referto_all_avvio
+    label: "Tengo il referto TPA"
+    short: "Va deciso adesso: il referto si apre prima del primo triangolo, e l'avvio rapido porta dritti al segnapunti."
+    anchor: sfida-referto-all-avvio
+    screens: [individual_match.quick_match]
+    page: referto_tpa
+    section: aprire
+
 tours:
   - screen: dashboard.dashboard
     title: "La tua home"
