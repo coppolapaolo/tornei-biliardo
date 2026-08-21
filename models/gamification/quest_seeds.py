@@ -112,4 +112,12 @@ def seed_weekly_quests(db_session, reference_date: Optional[date] = None) -> int
         )
         created += 1
 
+    # Manutenzione nello stesso giro: questo è l'unico codice che gira di
+    # sicuro a ogni avvio dell'app, quindi oltre a seminare la settimana nuova
+    # spegne in colonna quelle finite. Serve alle query per colonna (liste,
+    # UI) — la protezione degli XP non dipende da qui, sta nel filtro sulle
+    # date di `record_activity_for_quests` — ed è ciò che ripara da solo il
+    # DB di produzione al primo avvio dopo la correzione, senza migration.
+    QuestService.update_quest_statuses()
+
     return created
