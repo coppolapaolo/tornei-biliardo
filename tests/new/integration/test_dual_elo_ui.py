@@ -48,7 +48,7 @@ def test_user_elo_global_rating_property(app, db_session, isolated_players):
             user_id=user.id,
             rating_system=RatingSystem.ELO_GLOBAL,
             rating_value=1333,
-            games_played=1,
+            robustness=1,
         )
     )
     db_session.commit()

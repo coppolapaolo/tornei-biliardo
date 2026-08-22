@@ -26,10 +26,6 @@ class RatingSystem(Enum):
     ELO = "elo"  # Competitivo: SOLO match di torneo. Pilota categoria/handicap.
     ELO_GLOBAL = "elo_global"  # Tornei + casual VALIDATED. SOLO display (dual ELO).
     INTERNAL = "internal"  # Club internal rating
-    # A rack, scala FargoRate (base 2/100). Calcolato in parallelo e non
-    # mostrato: convive coi pool storici finché non si decide lo scambio
-    # (ADR-052). NON è convertibile negli altri due — misura un'altra cosa.
-    RACK = "rack"
 
 
 class PlayerRating(BaseModel):
@@ -52,7 +48,13 @@ class PlayerRating(BaseModel):
 
     # Rating details
     confidence = db.Column(db.Float, nullable=True)  # Confidence level (0.0-1.0)
-    games_played = db.Column(db.Integer, nullable=False, default=0)
+    #: Quanti **rack** il giocatore ha nel sistema. È la *robustness* di
+    #: FargoRate, e serve a una cosa sola: regolare quanto in fretta il rating
+    #: si muove (ADR-052). Fino al 2026-08-22 si chiamava `games_played`, nome
+    #: rimasto vero fino al passaggio al motore a rack e falso dopo — la stessa
+    #: trappola di `rack_difference`, che conteneva un totale. Rinominata
+    #: mentre nessuno la leggeva ancora fuori da qui.
+    robustness = db.Column(db.Integer, nullable=False, default=0)
     last_updated = db.Column(db.DateTime, nullable=False, default=utc_now)
 
     # External rating details
@@ -76,16 +78,13 @@ class PlayerRating(BaseModel):
         """Get user's rating in a specific system."""
         return cls.query.filter_by(user_id=user_id, rating_system=rating_system).first()
 
-    def update_rating(self, new_rating: float, games_increment: int = 1) -> None:
+    def update_rating(self, new_rating: float, robustness_increment: int = 1) -> None:
         """Update rating value and statistics.
 
-        Nel pool ``RACK`` ``games_increment`` sono i **rack** della partita, non
-        uno: lì ``games_played`` è la *robustness*, cioè quanti rack il
-        giocatore ha nel sistema, ed è ciò che regola la sensibilità
-        dell'aggiornamento. Negli altri pool resta il conteggio delle partite.
+        ``robustness_increment`` sono i **rack** della partita, non uno.
         """
         self.rating_value = new_rating
-        self.games_played += games_increment
+        self.robustness += robustness_increment
         self.last_updated = utc_now()
 
     def __repr__(self) -> str:
@@ -104,7 +103,7 @@ class MatchRatingHistory(BaseModel):
        no-op — protegge da MatchCompletedEvent ri-emessi (reset→ricompletamento)
        e da recalc_elo lanciato su match già processati.
     2. **Revert**: quando un match viene riaperto/resettato si ripristina
-       `old_rating` e si decrementa `games_played`, poi si eliminano i record.
+       `old_rating` e si decrementa `robustness`, poi si eliminano i record.
 
     Nota (Elo è path-dependent): il revert per-match è esatto se il match è
     l'ultimo processato per quei giocatori; altrimenti i rating successivi
@@ -135,7 +134,9 @@ class MatchRatingHistory(BaseModel):
     old_rating = db.Column(db.Float, nullable=False)
     new_rating = db.Column(db.Float, nullable=False)
     delta = db.Column(db.Float, nullable=False)
-    games_increment = db.Column(db.Integer, nullable=False, default=1)
+    #: I rack che questa partita ha aggiunto alla robustness dei due, così che
+    #: annullarla sappia quanti toglierne.
+    robustness_increment = db.Column(db.Integer, nullable=False, default=1)
 
     user = db.relationship("User", foreign_keys=[user_id])
 

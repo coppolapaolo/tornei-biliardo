@@ -3,7 +3,7 @@
 Bug (review 2026-06-09, HIGH correttezza) — `calculation_service.py:39`:
 `process_match_result` non era idempotente. Ogni MatchCompletedEvent ri-emesso
 (reset→ricompletamento) o un recalc_elo su match già processati ri-applicava il
-delta Elo e ri-incrementava games_played in modo cumulativo.
+delta Elo e ri-incrementava robustness in modo cumulativo.
 
 Fix: `match_rating_history` registra il delta per ogni (match, giocatore,
 sistema). Idempotenza (skip se esiste già history) + revert su riapertura.
@@ -95,12 +95,14 @@ def test_process_is_idempotent(db_session):
     db.session.flush()
     elo1_after_first = _elo(p1.id)
     elo2_after_first = _elo(p2.id)
-    games1 = PlayerRating.get_user_rating(p1.id, RatingSystem.ELO).games_played
+    games1 = PlayerRating.get_user_rating(p1.id, RatingSystem.ELO).robustness
 
     # Vincitore sale sopra 1200, perdente scende sotto.
     assert elo1_after_first > 1200
     assert elo2_after_first < 1200
-    assert games1 == 1
+    # `robustness` conta i **rack**, non le partite: dal passaggio al motore
+    # a rack è la *robustness* (ADR-052). Il match di prova finisce 4-3.
+    assert games1 == 7
     # Dual pool: un match torneo crea 2 record ELO + 2 ELO_GLOBAL.
     assert (
         MatchRatingHistory.query.filter_by(
@@ -114,7 +116,7 @@ def test_process_is_idempotent(db_session):
     db.session.flush()
     assert _elo(p1.id) == elo1_after_first
     assert _elo(p2.id) == elo2_after_first
-    assert PlayerRating.get_user_rating(p1.id, RatingSystem.ELO).games_played == 1
+    assert PlayerRating.get_user_rating(p1.id, RatingSystem.ELO).robustness == 7
     assert (
         MatchRatingHistory.query.filter_by(
             match_id=match.id, rating_system=RatingSystem.ELO
@@ -142,7 +144,7 @@ def test_revert_restores_rating_and_games(db_session):
     db.session.flush()
     assert _elo(p1.id) == 1200
     assert _elo(p2.id) == 1200
-    assert PlayerRating.get_user_rating(p1.id, RatingSystem.ELO).games_played == 0
+    assert PlayerRating.get_user_rating(p1.id, RatingSystem.ELO).robustness == 0
     assert MatchRatingHistory.query.filter_by(match_id=match.id).count() == 0
 
 
@@ -169,7 +171,7 @@ def test_reprocess_after_revert_applies_again(db_session):
 
     # Stesso risultato del primo calcolo, non raddoppiato.
     assert _elo(p1.id) == elo1
-    assert PlayerRating.get_user_rating(p1.id, RatingSystem.ELO).games_played == 1
+    assert PlayerRating.get_user_rating(p1.id, RatingSystem.ELO).robustness == 7
 
 
 @pytest.mark.unit
@@ -350,8 +352,8 @@ def test_to_playing_reopen_triggers_revert(db_session):
 
     RatingCalculationService.process_match_result(match)
     db.session.flush()
-    # Tre pool: 2 ELO + 2 ELO_GLOBAL + 2 RACK per il match torneo (ADR-052).
-    assert MatchRatingHistory.query.filter_by(match_id=match.id).count() == 6
+    # Dual pool: 2 ELO + 2 ELO_GLOBAL per il match torneo.
+    assert MatchRatingHistory.query.filter_by(match_id=match.id).count() == 4
 
     # Riapertura: completed → playing.
     MatchStateService.to_playing(match.id)
