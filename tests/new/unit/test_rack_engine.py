@@ -13,20 +13,27 @@ from models.rating import rack_engine
 
 
 class TestProbabilitaDelRack:
-    """La scala è quella di FargoRate: 100 punti = probabilità doppia."""
+    """`SCALA` punti di differenza = probabilità doppia sul singolo rack."""
 
     def test_a_pari_rating_e_una_moneta(self):
-        assert rack_engine.probabilita_rack(500, 500) == pytest.approx(0.5)
+        base = rack_engine.PARTENZA
+        assert rack_engine.probabilita_rack(base, base) == pytest.approx(0.5)
 
-    def test_cento_punti_valgono_due_a_uno_sul_singolo_rack(self):
-        """È la definizione della scala, non una conseguenza dei parametri."""
-        p = rack_engine.probabilita_rack(600, 500)
+    def test_un_intervallo_di_scala_vale_due_a_uno_sul_singolo_rack(self):
+        """È la definizione della scala, non una conseguenza dei parametri.
+
+        Scritto in funzione di `SCALA` di proposito: quel numero è un'unità di
+        misura e può cambiare (ADR-052), ma il significato dell'intervallo no.
+        """
+        base = rack_engine.PARTENZA
+        p = rack_engine.probabilita_rack(base + rack_engine.SCALA, base)
         assert p == pytest.approx(2 / 3, abs=1e-9)
         assert p / (1 - p) == pytest.approx(2.0)
 
     def test_e_simmetrica(self):
-        assert rack_engine.probabilita_rack(500, 600) == pytest.approx(
-            1 - rack_engine.probabilita_rack(600, 500)
+        base, scala = rack_engine.PARTENZA, rack_engine.SCALA
+        assert rack_engine.probabilita_rack(base, base + scala) == pytest.approx(
+            1 - rack_engine.probabilita_rack(base + scala, base)
         )
 
 
@@ -61,18 +68,18 @@ class TestVariazione:
         ragione per cui il `k` è comune: la variante con un `k` a testa,
         suggerita dal materiale di partenza, faceva comparire punti dal nulla.
         """
-        da_a = rack_engine.variazione(560, 500, 5, 2, 40, 300)
-        da_b = rack_engine.variazione(500, 560, 2, 5, 300, 40)
+        da_a = rack_engine.variazione(1260, 1200, 5, 2, 40, 300)
+        da_b = rack_engine.variazione(1200, 1260, 2, 5, 300, 40)
         assert da_a == pytest.approx(-da_b)
 
     def test_battere_l_atteso_alza_il_rating(self):
-        assert rack_engine.variazione(500, 500, 5, 0, 0, 0) > 0
+        assert rack_engine.variazione(1200, 1200, 5, 0, 0, 0) > 0
 
     def test_perdere_lo_abbassa(self):
-        assert rack_engine.variazione(500, 500, 0, 5, 0, 0) < 0
+        assert rack_engine.variazione(1200, 1200, 0, 5, 0, 0) < 0
 
     def test_a_pari_rating_il_pareggio_non_muove_niente(self):
-        assert rack_engine.variazione(500, 500, 3, 3, 0, 0) == pytest.approx(0.0)
+        assert rack_engine.variazione(1200, 1200, 3, 3, 0, 0) == pytest.approx(0.0)
 
     def test_il_margine_conta(self):
         """È la ragione d'essere dell'intero motore.
@@ -80,8 +87,8 @@ class TestVariazione:
         Nel modello storico un 5-0 e un 5-4 muovono i rating in modo identico,
         perché legge solo chi ha vinto. Qui no.
         """
-        netta = rack_engine.variazione(500, 500, 5, 0, 0, 0)
-        tirata = rack_engine.variazione(500, 500, 5, 4, 0, 0)
+        netta = rack_engine.variazione(1200, 1200, 5, 0, 0, 0)
+        tirata = rack_engine.variazione(1200, 1200, 5, 4, 0, 0)
         assert netta > tirata > 0
 
     def test_vincere_sotto_le_aspettative_puo_costare_punti(self):
@@ -91,13 +98,13 @@ class TestVariazione:
         dell'esito. Contro un avversario molto più debole, vincere 5-4 è una
         brutta serata.
         """
-        assert rack_engine.variazione(700, 500, 5, 4, 0, 0) < 0
+        assert rack_engine.variazione(1400, 1200, 5, 4, 0, 0) < 0
 
     def test_un_giocatore_nuovo_si_muove_piu_in_fretta_di_uno_con_storico(self):
-        nuovo = rack_engine.variazione(500, 500, 5, 1, 0, 0)
-        rodato = rack_engine.variazione(500, 500, 5, 1, 2000, 2000)
+        nuovo = rack_engine.variazione(1200, 1200, 5, 1, 0, 0)
+        rodato = rack_engine.variazione(1200, 1200, 5, 1, 2000, 2000)
         assert nuovo > rodato > 0
 
     def test_senza_rack_giocati_non_si_muove_niente(self):
         """Il walkover è già escluso a monte: qui è la rete, non la regola."""
-        assert rack_engine.variazione(500, 600, 0, 0, 0, 0) == 0.0
+        assert rack_engine.variazione(1200, 1300, 0, 0, 0, 0) == 0.0
