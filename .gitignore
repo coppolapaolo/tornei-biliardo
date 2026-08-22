@@ -46,11 +46,15 @@ coverage.json
 .pytest_cache/
 
 # Virtual environments
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
+# Senza slash finale: `venv/` copre solo la directory, e un `venv` *symlink*
+# passava il filtro. E' successo il 2026-08-22 — il link finito in main
+# puntava a un percorso del Mac di chi lo ha committato, e su PythonAnywhere
+# `git pull` ha sostituito con quello il virtualenv vero (ADR-052).
+env
+venv
+ENV
+env.bak
+venv.bak
 
 # Database
 *.db
