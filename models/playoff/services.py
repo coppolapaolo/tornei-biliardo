@@ -704,6 +704,16 @@ class PlayoffService:
         # Get gara params (explicit or inherited from campionato)
         params = config.get_gara_params()
 
+        # Next gara number: after all existing gare in campionato
+        from ..competition.models import Gara as GaraModel
+
+        last_gara = (
+            GaraModel.query.filter_by(campionato_id=config.campionato_id)
+            .order_by(GaraModel.number.desc())
+            .first()
+        )
+        max_number = last_gara.number if last_gara else 0
+
         # Determine date — always use today or later to avoid past-date rejection
         gara_date: Any
         gara_time: Any
@@ -717,14 +727,21 @@ class PlayoffService:
             gara_date = date_type.today()
             gara_time = time_type(20, 0)
 
-        # Next gara number: after all existing gare in campionato
-        from ..competition.models import Gara as GaraModel
-
-        max_number = (
-            db.session.query(db.func.max(GaraModel.number))
-            .filter_by(campionato_id=config.campionato_id)
-            .scalar()
-        ) or 0
+        # La gara di playoff è per costruzione l'**ultima** del campionato, e
+        # `GaraService` pretende che le gare numerate siano in ordine
+        # cronologico (ADR-016): una data anteriore all'ultima in calendario
+        # viene rifiutata, la route trasforma il rifiuto in un messaggio e i
+        # playoff restano semplicemente irraggiungibili. Succede ogni volta
+        # che il campionato viene terminato *prima* della data dell'ultima
+        # gara — comprese quelle mai giocate, che la terminazione
+        # soft-elimina ma che il controllo di sequenza continua a vedere.
+        # Non si sceglie una data qualsiasi: si sceglie la prima ammissibile.
+        if last_gara is not None:
+            ultima = datetime.combine(
+                last_gara.date, last_gara.time or time_type(20, 0)
+            )
+            if datetime.combine(gara_date, gara_time) < ultima:
+                gara_date, gara_time = ultima.date(), ultima.time()
 
         gara = GaraService.create_gara(
             number=max_number + 1,

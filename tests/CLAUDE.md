@@ -141,7 +141,19 @@ questo file lo dichiarava, ma nessun test lo importava).
 | `test_gara_e2e_amalfi.py` | Gara Amalfi intera + sequenza dei turni + configurazioni rifiutate |
 | `test_gara_e2e_random.py` | Gara Random intera + turni tutti insieme + classifica complessiva |
 | `test_gara_e2e_interazioni.py` | Percorsi di segnatura, annullamenti, permessi, iscrizioni, dispari |
+| `campionato_driver.py` | Il driver del livello **sopra** la gara: wizard, gare numerate, terminazione, playoff |
+| `test_campionato_e2e_playoff.py` | Campionato con quattro gare Amalfi (tre turni, «esattamente N rack») → classifica generale → playoff, sia con le conferme dei giocatori sia con la lista composta dal direttore |
 | `test_complete_workflows.py` | Promozione a direttore, workflow storici |
+
+**Perché il livello campionato ha il suo file.** Le gare sono coperte una per
+una e i playoff hanno i loro test di route, ma ciascuno parte dallo stato
+dell'altro *costruito a mano*: `test_avvio_playoff_route.py` scrive
+`terminated_at` e le righe di classifica direttamente sul DB. Il giunto fra le
+due metà non lo percorreva nessuno — ed è dove è nato il bug 8 di
+`docs/debug20260528.md`, e dove è stato trovato il secondo (data della gara di
+playoff, `tests/new/unit/test_playoff_gara_date_sequence.py`). L'allestimento
+costa: si usa `campionato_terminato` (quattro gare, ~14 s) solo dove le quattro
+gare contano, e `campionato_breve` (una gara) per permessi e vincoli.
 
 **Cosa cerca questo livello** — e cosa no. Le regole di dominio (trio, bye,
 lista d'attesa, anti-reincontro, spareggi) hanno i loro test di unità, dove si

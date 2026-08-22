@@ -4,6 +4,20 @@
 **Priority**: P2 (Feature, not Bug)
 **Last Updated**: 2025-12-29
 
+> ⚠️ **Questo documento descrive lo stato di dicembre 2025 ed è superato.** Il
+> flusso c'è ed è percorribile via interfaccia dall'avvio dei playoff fino alla
+> finale giocata: `PlayoffService.start_playoff` / `create_playoff_gara` /
+> `admin_add_player`, le route in `routes/admin/campionato.py` e
+> `routes/player/playoff.py`. Il percorso intero è coperto da
+> `tests/new/e2e/test_campionato_e2e_playoff.py`, che lo attraversa solo con
+> richieste HTTP. Le sezioni «What's Missing» e «Required APIs» qui sotto
+> parlano di firme e metodi che nel frattempo sono cambiati: si leggano come
+> cronaca, non come lavoro da fare. Resta aperto quello che i test hanno
+> trovato e non risolto: la gara di playoff eredita solo una parte dei
+> parametri (disciplina, distanza, turni, strategia, dispari, sede, quota) e
+> per il resto prende i default del modello — fra cui lo spareggio SSR acceso,
+> che le gare create dal form hanno spento.
+
 ## Overview
 
 The Playoff system allows automatic qualification and creation of special tournaments

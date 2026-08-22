@@ -275,6 +275,14 @@ class GaraDriver:
         Senza `vincitore_id` vince il primo giocatore: a un test che sta
         verificando il *percorso* non interessa chi vince, gli interessa che la
         partita si chiuda e il turno avanzi.
+
+        I due formati chiudono in modi diversi e la sequenza di rack non può
+        essere la stessa. Nel race-to basta portare uno dei due al traguardo.
+        Nel formato **esattamente N rack** il traguardo non esiste: la partita
+        finisce quando i rack giocati sono N, e vince chi ne ha di più — quindi
+        si segnano tutti gli N, dando al vincitore la maggioranza. Segnarne N
+        di fila allo stesso giocatore chiuderebbe lo stesso, ma su un punteggio
+        (N-0) che non distinguerebbe i due formati.
         """
         partita = db.session.get(Match, match_id)
         assert partita is not None, f"partita {match_id} inesistente"
@@ -283,19 +291,57 @@ class GaraDriver:
 
         vincitore_id = vincitore_id or partita.player1_id
         assert vincitore_id in (partita.player1_id, partita.player2_id)
+        perdente_id = (
+            partita.player2_id
+            if vincitore_id == partita.player1_id
+            else partita.player1_id
+        )
 
-        traguardo = partita.distance_config.get_winning_racks()
-        for _ in range(traguardo * 2):  # tetto di sicurezza, mai raggiunto
+        # La sequenza è calcolata su una partita da zero, e resta sufficiente
+        # anche se qualche rack è già segnato: in entrambi i formati serve al
+        # più un rack per ciascuno di quelli previsti, mai di più. Il `break`
+        # sullo stato la interrompe appena la partita è chiusa.
+        for segnare_a in self._sequenza_rack(partita, vincitore_id, perdente_id):
             partita = db.session.get(Match, match_id)
             assert partita is not None
             if MatchStatus.is_finished(partita.status):
                 break
-            risposta = self.aggiungi_rack(match_id, vincitore_id)
+            risposta = self.aggiungi_rack(match_id, segnare_a)
             assert risposta.status_code == 200, risposta.get_data(as_text=True)
-        else:  # pragma: no cover - scatta solo se il race-to non chiude mai
-            raise AssertionError(f"partita {match_id} non si chiude")
+
+        partita = db.session.get(Match, match_id)
+        assert partita is not None
+        assert MatchStatus.is_finished(
+            partita.status
+        ), f"partita {match_id} non si chiude ({partita.status})"
 
         return vincitore_id
+
+    @staticmethod
+    def _sequenza_rack(
+        partita: Match, vincitore_id: int, perdente_id: int
+    ) -> list[int]:
+        """A chi va ciascun rack, nell'ordine in cui si segnano.
+
+        I rack si alternano invece di andare tutti al vincitore: un punteggio
+        3-2 su «esattamente 5» è chiuso, mentre su «al 5» non lo è, ed è la
+        differenza che rende il test capace di accorgersi se il formato
+        configurato non è quello che la partita sta usando davvero.
+        """
+        distanza = partita.distance_config
+        if distanza.is_race_to_racks:
+            return [vincitore_id] * distanza.get_winning_racks()
+
+        totali = distanza.racks
+        al_vincitore = totali // 2 + 1
+        sequenza: list[int] = []
+        restano = [al_vincitore, totali - al_vincitore]
+        while sum(restano) > 0:
+            for indice, giocatore in enumerate((vincitore_id, perdente_id)):
+                if restano[indice] > 0:
+                    sequenza.append(giocatore)
+                    restano[indice] -= 1
+        return sequenza
 
     def gioca_turno(self, gara_id: int, numero: int) -> None:
         """Porta a termine tutte le partite giocabili di un turno."""
